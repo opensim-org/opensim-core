@@ -1,0 +1,1093 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ControlSet name="GIL01_fast1_CMC">
+	
+   <defaults>
+		
+      <ControlLinear name="default">
+			
+         <is_model_control> true </is_model_control>
+			
+         <extrapolate> false </extrapolate>
+			
+         <default_min> 0.02 </default_min>
+			
+         <default_max> 1.00 </default_max>
+			
+         <use_steps> true </use_steps>
+		
+      </ControlLinear>
+	
+   </defaults>
+	
+   <objects>
+		
+      <ControlLinear name="FX.excitation">
+			
+         <default_min> -1000 </default_min>
+			
+         <default_max>  1000 </default_max>
+			
+         <use_steps> false </use_steps>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="FY.excitation">
+			
+         <default_min> -1000 </default_min>
+			
+         <default_max>  1000 </default_max>
+			
+         <use_steps> false </use_steps>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="FZ.excitation">
+			
+         <default_min> -1000 </default_min>
+			
+         <default_max>  1000 </default_max>
+			
+         <use_steps> false </use_steps>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="MX.excitation">
+			
+         <default_min> -1000 </default_min>
+			
+         <default_max>  1000 </default_max>
+			
+         <use_steps> false </use_steps>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="MY.excitation">
+			
+         <default_min> -1000 </default_min>
+			
+         <default_max>  1000 </default_max>
+			
+         <use_steps> false </use_steps>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="MZ.excitation">
+			
+         <default_min> -1000 </default_min>
+			
+         <default_max>  1000 </default_max>
+			
+         <use_steps> false </use_steps>
+		
+      </ControlLinear>
+		
+		<!-- right -->
+		
+      <ControlLinear name="hip_flexion_r_reserve.excitation">
+			
+         <default_min> -1000.0 </default_min>
+			
+         <default_max>  1000.0 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="hip_adduction_r_reserve.excitation">
+			
+         <default_min> -1000.0 </default_min>
+			
+         <default_max>  1000.0 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="hip_rotation_r_reserve.excitation">
+			
+         <default_min> -1000.0 </default_min>
+			
+         <default_max>  1000.0 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="knee_angle_r_reserve.excitation">
+			
+         <default_min> -1000.0 </default_min>
+			
+         <default_max>  1000.0 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="ankle_angle_r_reserve.excitation">
+			
+         <default_min> -1000.0 </default_min>
+			
+         <default_max>  1000.0 </default_max>
+		
+      </ControlLinear>
+		
+		<!-- left -->
+		
+      <ControlLinear name="hip_flexion_l_reserve.excitation">
+			
+         <default_min> -1000.0 </default_min>
+			
+         <default_max>  1000.0 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="hip_adduction_l_reserve.excitation">
+			
+         <default_min> -1000.0 </default_min>
+			
+         <default_max>  1000.0 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="hip_rotation_l_reserve.excitation">
+			
+         <default_min> -1000.0 </default_min>
+			
+         <default_max>  1000.0 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="knee_angle_l_reserve.excitation">
+			
+         <default_min> -1000.0 </default_min>
+			
+         <default_max>  1000.0 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="ankle_angle_l_reserve.excitation">
+			
+         <default_min> -1000.0 </default_min>
+			
+         <default_max>  1000.0 </default_max>
+		
+      </ControlLinear>
+		
+		<!-- back -->
+		
+      <ControlLinear name="lumbar_extension_reserve.excitation">
+			
+         <default_min> -1000.0 </default_min>
+			
+         <default_max>  1000.0 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="lumbar_bending_reserve.excitation">
+			
+         <default_min> -1000.0 </default_min>
+			
+         <default_max>  1000.0 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="lumbar_rotation_reserve.excitation">
+			
+         <default_min> -1000.0 </default_min>
+			
+         <default_max>  1000.0 </default_max>
+		
+      </ControlLinear>
+		
+		<!--Right Arm-->
+		
+      <ControlLinear name="arm_flex_r.excitation">
+			
+         <default_min> -1 </default_min>
+			
+         <default_max>  1 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="arm_add_r.excitation">
+			
+         <default_min> -1 </default_min>
+			
+         <default_max>  1 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="arm_rot_r.excitation">
+			
+         <default_min> -1 </default_min>
+			
+         <default_max>  1 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="elbow_flex_r.excitation">
+			
+         <default_min> -1 </default_min>
+			
+         <default_max>  1 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="pro_sup_r.excitation">
+			
+         <default_min> -1 </default_min>
+			
+         <default_max>  1 </default_max>
+		
+      </ControlLinear>
+		
+		<!--Left Arm-->
+		
+      <ControlLinear name="arm_flex_l.excitation">
+			
+         <default_min> -1 </default_min>
+			
+         <default_max>  1 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="arm_add_l.excitation">
+			
+         <default_min> -1 </default_min>
+			
+         <default_max>  1 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="arm_rot_l.excitation">
+			
+         <default_min> -1 </default_min>
+			
+         <default_max>  1 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="elbow_flex_l.excitation">
+			
+         <default_min> -1 </default_min>
+			
+         <default_max>  1 </default_max>
+		
+      </ControlLinear>
+		
+      <ControlLinear name="pro_sup_l.excitation">
+			
+         <default_min> -1 </default_min>
+			
+         <default_max>  1 </default_max>
+		
+      </ControlLinear>
+
+		<!-- muscles -->
+				
+		
+      <ControlLinear name="glut_med1_r.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>0.9988</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.2724</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>0.9988</t>
+               <value>1</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.2724</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+					
+		
+      <ControlLinear name="glut_med2_r.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>0.9988</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.2724</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>0.9988</t>
+               <value>1</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.2724</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+				
+		
+      <ControlLinear name="glut_med3_r.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>0.9988</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.2724</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>0.9988</t>
+               <value>1</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.2724</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+				
+		
+      <ControlLinear name="glut_min1_r.excitation"/>
+		
+      <ControlLinear name="glut_min2_r.excitation"/>
+		
+      <ControlLinear name="glut_min3_r.excitation"/>
+		
+		
+      <ControlLinear name="semimem_r.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>1.1356</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.2724</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>1.1356</t>
+               <value>0.5</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.2724</t>
+               <value>0.5</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+		
+		
+      <ControlLinear name="semiten_r.excitation"/>
+
+		
+      <ControlLinear name="bifemlh_r.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>1.0672</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.204</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>1.0672</t>
+               <value>1</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.204</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+		
+		
+      <ControlLinear name="bifemsh_r.excitation"/>
+				
+		
+      <ControlLinear name="sar_r.excitation"/>
+		
+		
+      <ControlLinear name="add_long_r.excitation"/>
+		
+      <ControlLinear name="add_brev_r.excitation"/>
+		
+      <ControlLinear name="add_mag1_r.excitation"/>
+		
+      <ControlLinear name="add_mag2_r.excitation"/>
+		
+      <ControlLinear name="add_mag3_r.excitation"/>
+		
+		
+      <ControlLinear name="tfl_r.excitation"/>
+		
+		
+      <ControlLinear name="pect_r.excitation"/>
+		
+      <ControlLinear name="grac_r.excitation"/>
+		
+      <ControlLinear name="glut_max1_r.excitation"/>
+		
+      <ControlLinear name="glut_max2_r.excitation"/>
+		
+      <ControlLinear name="glut_max3_r.excitation"/>
+		
+      <ControlLinear name="iliacus_r.excitation"/>
+		
+      <ControlLinear name="psoas_r.excitation"/>
+		
+      <ControlLinear name="quad_fem_r.excitation"/>
+		
+      <ControlLinear name="gem_r.excitation"/>
+		
+      <ControlLinear name="peri_r.excitation"/>
+		
+		
+      <ControlLinear name="rect_fem_r.excitation"/>
+		
+		
+      <ControlLinear name="vas_med_r.excitation"/>
+		
+      <ControlLinear name="vas_int_r.excitation"/>
+		
+      <ControlLinear name="vas_lat_r.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>0.9988</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.3408</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>0.9988</t>
+               <value>1</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.3408</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+		
+		
+      <ControlLinear name="med_gas_r.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>1.0672</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.375</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>1.0672</t>
+               <value>1</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.375</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+
+		
+      <ControlLinear name="lat_gas_r.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>1.0672</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.375</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>1.0672</t>
+               <value>1</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.375</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+
+		
+      <ControlLinear name="soleus_r.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>1.0672</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.375</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>1.0672</t>
+               <value>1</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.375</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>		
+		
+      <ControlLinear name="tib_post_r.excitation"/>
+		
+      <ControlLinear name="flex_dig_r.excitation"/>
+		
+      <ControlLinear name="flex_hal_r.excitation"/>
+		
+		
+      <ControlLinear name="tib_ant_r.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>1.2724</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.375</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>1.2724</t>
+               <value>0.5</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.375</t>
+               <value>0.75</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.546</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+		
+      <ControlLinear name="per_brev_r.excitation"/>
+		
+      <ControlLinear name="per_long_r.excitation"/>
+		
+      <ControlLinear name="per_tert_r.excitation"/>
+		
+      <ControlLinear name="ext_dig_r.excitation"/>
+		
+      <ControlLinear name="ext_hal_r.excitation"/>
+		
+		
+      <ControlLinear name="glut_med1_l.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>1.3426</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.6118</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>1.3426</t>
+               <value>1</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.6118</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+		
+		
+      <ControlLinear name="glut_med2_l.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>1.3426</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.6118</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>1.3426</t>
+               <value>1</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.6118</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+		
+		
+      <ControlLinear name="glut_med3_l.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>1.3426</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.6118</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>1.3426</t>
+               <value>1</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.6118</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+		
+		
+      <ControlLinear name="glut_min1_l.excitation"/>
+		
+      <ControlLinear name="glut_min2_l.excitation"/>
+		
+      <ControlLinear name="glut_min3_l.excitation"/>
+		
+      <ControlLinear name="semimem_l.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>1.4772</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.6118</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>1.4772</t>
+               <value>0.5</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.6118</t>
+               <value>0.5</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+		
+		
+      <ControlLinear name="semiten_l.excitation"/>
+		
+		
+      <ControlLinear name="bifemlh_l.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>1.4099</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.5445</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>1.4099</t>
+               <value>1</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.5445</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+		
+		
+      <ControlLinear name="bifemsh_l.excitation"/>
+		
+		
+      <ControlLinear name="sar_l.excitation"/>
+		
+		
+      <ControlLinear name="add_long_l.excitation"/>
+		
+      <ControlLinear name="add_brev_l.excitation"/>
+		
+      <ControlLinear name="add_mag1_l.excitation"/>
+		
+      <ControlLinear name="add_mag2_l.excitation"/>
+		
+      <ControlLinear name="add_mag3_l.excitation"/>
+		
+		
+      <ControlLinear name="tfl_l.excitation"/>
+		
+		
+      <ControlLinear name="pect_l.excitation"/>
+		
+      <ControlLinear name="grac_l.excitation"/>
+		
+      <ControlLinear name="glut_max1_l.excitation"/>
+		
+      <ControlLinear name="glut_max2_l.excitation"/>
+		
+      <ControlLinear name="glut_max3_l.excitation"/>
+		
+		
+      <ControlLinear name="iliacus_l.excitation"/>
+				
+		
+      <ControlLinear name="psoas_l.excitation"/>
+		
+		
+      <ControlLinear name="quad_fem_l.excitation"/>
+		
+      <ControlLinear name="gem_l.excitation"/>
+		
+      <ControlLinear name="peri_l.excitation"/>
+		
+		
+      <ControlLinear name="rect_fem_l.excitation"/>
+			
+		
+      <ControlLinear name="vas_med_l.excitation"/>
+		
+      <ControlLinear name="vas_int_l.excitation"/>
+		
+      <ControlLinear name="vas_lat_l.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>1.3426</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.6791</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>1.3426</t>
+               <value>1</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.6791</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+		
+		
+      <ControlLinear name="med_gas_l.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>1.4099</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.7128</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>1.4099</t>
+               <value>1</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.7128</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+		
+		
+      <ControlLinear name="lat_gas_l.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>1.4099</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.7128</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>1.4099</t>
+               <value>1</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.7128</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+
+		
+      <ControlLinear name="soleus_l.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>1.4099</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.7128</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>1.4099</t>
+               <value>1</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.7128</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+		
+      <ControlLinear name="tib_post_l.excitation"/>
+		
+      <ControlLinear name="flex_dig_l.excitation"/>
+		
+      <ControlLinear name="flex_hal_l.excitation"/>
+		
+		
+      <ControlLinear name="tib_ant_l.excitation">
+         <min_nodes>
+            <ControlLinearNode>
+               <t>1.6118</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.7128</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>0.02</value>
+            </ControlLinearNode>
+         </min_nodes>
+         <max_nodes>
+            <ControlLinearNode>
+               <t>1.6118</t>
+               <value>0.5</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.7128</t>
+               <value>0.75</value>
+            </ControlLinearNode>
+            <ControlLinearNode>
+               <t>1.881</t>
+               <value>1</value>
+            </ControlLinearNode>
+         </max_nodes>
+      </ControlLinear>
+		
+		
+      <ControlLinear name="per_brev_l.excitation"/>
+		
+      <ControlLinear name="per_long_l.excitation"/>
+		
+      <ControlLinear name="per_tert_l.excitation"/>
+		
+      <ControlLinear name="ext_dig_l.excitation"/>
+		
+      <ControlLinear name="ext_hal_l.excitation"/>
+		
+		
+      <ControlLinear name="ercspn_r.excitation"/>
+		
+		
+      <ControlLinear name="ercspn_l.excitation"/>
+		
+      <ControlLinear name="intobl_r.excitation"/>
+		
+      <ControlLinear name="intobl_l.excitation"/>
+		
+      <ControlLinear name="extobl_r.excitation"/>
+		
+      <ControlLinear name="extobl_l.excitation"/>
+		
+		
+		
+		
+		
+		
+	
+   </objects>
+
+</ControlSet>
