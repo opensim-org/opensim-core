@@ -129,13 +129,16 @@ void Millard2012AccelerationMuscle::constructProperties()
         FiberCompressiveForceCosPennationCurve());   
 
     //Nonlinear damping coefficients 
-    constructProperty_tendon_force_length_damping(1e-3);
-    constructProperty_fiber_compressive_force_length_damping(1e-1);
-    constructProperty_fiber_force_length_damping(1e-1);
-    constructProperty_fiber_compressive_force_cos_pennation_damping(1e-1);
+    constructProperty_tendon_force_length_damping(1e-1);
+    constructProperty_fiber_compressive_force_length_damping(1e-3);
+    constructProperty_fiber_force_length_damping(1e-3);
+    constructProperty_fiber_compressive_force_cos_pennation_damping(1e-3);
+
+    //Linear fiber damping as in Shutte's model
+    constructProperty_fiber_damping(1e-2);
 
     //Mass property
-    constructProperty_mass(0.1);
+    constructProperty_mass(0.01);
 }
 
 void Millard2012AccelerationMuscle::buildMuscle()
@@ -973,7 +976,6 @@ void Millard2012AccelerationMuscle::
                                          * mvi.fiberVelocityAlongTendon;
 
     mdi.tendonPower                  = -mdi.tendonForce * mvi.tendonVelocity;   
-
     
     mdi.musclePower                  = -mdi.tendonForce * dmcl_dt;
 
@@ -989,6 +991,7 @@ void Millard2012AccelerationMuscle::
     double dfkVdt     =  (ami.fkV)    * ami.cosphi  * fiso * ami.dlceAT_dt;    
     double dfcphiVdt  =  (ami.fcphiV)               * fiso * ami.dlceAT_dt;
     double dfseVdt    = -(ami.fseV)                 * fiso * ami.dtl_dt;
+    double dfibVdt    = -(ami.fibV                  * fiso * ami.dlce_dt);
 
     double dfpeVEMdt   =  ami.fpeVEM   * ami.cosphi  * fiso * ami.dlceAT_dt;
     double dfkVEMdt    = -ami.fkVEM    * ami.cosphi  * fiso * ami.dlceAT_dt;
@@ -1023,7 +1026,8 @@ void Millard2012AccelerationMuscle::
     double dSysEdt = dKEdt 
                     + (dfpePEdt + dfkPEdt + dfcphiPEdt + dfsePEdt)
                     - (dFibWdt + dBoundaryWdt)
-                    - (dfpeVdt + dfkVdt + dfcphiVdt + dfseVdt);
+                    - (dfpeVdt + dfkVdt + dfcphiVdt + dfseVdt)
+                    - dfibVdt;
 
     double tol = sqrt(SimTK::Eps);
     
@@ -1447,11 +1451,12 @@ SimTK::Vec2 Millard2012AccelerationMuscle::
     double cosPhi   = ami.cosphi;
     double sinPhi   = ami.sinphi;
     double fcphiVEM = ami.fcphiVEM;
-    
+    double fibV     = ami.fibV;
+
     SimTK::Vec2 fceIJ;
 
-    fceIJ[0] = fiso * ((a*fal*fv + fpeVEM - fkVEM)*cosPhi - fcphiVEM);
-    fceIJ[1] = fiso * ((a*fal*fv + fpeVEM - fkVEM)*sinPhi);
+    fceIJ[0] = fiso * ((a*fal*fv + fpeVEM - fkVEM + fibV)*cosPhi - fcphiVEM);
+    fceIJ[1] = fiso * ((a*fal*fv + fpeVEM - fkVEM + fibV)*sinPhi);
 
     return fceIJ;
 }
@@ -1496,11 +1501,13 @@ SimTK::Vec2 Millard2012AccelerationMuscle::
     double fpeVEM   = ami.fpeVEM;
     double fkVEM    = ami.fkVEM;
     double fcphiVEM = ami.fcphiVEM;
+    double fibV     = ami.fibV;
 
     double dfal_dlce        = ami.dfal_dlce;    
     double dfpeVEM_dlce     = ami.dfpeVEM_dlce;
     double dfkVEM_dlce      = ami.dfkVEM_dlce;
     double dfcphiVEM_dlce   = ami.dfcphiVEM_dlce;
+    double dfibV_dlce       = ami.dfibV_dlce;
 
     double sinPhi   = ami.sinphi;
     double cosPhi   = ami.cosphi;
@@ -1508,15 +1515,15 @@ SimTK::Vec2 Millard2012AccelerationMuscle::
     
     // I  d/dlce( fiso * ((a *  fal  *fv + fpeVEM - fkVEM)*cosPhi - fcphiVEM);    
     double DFm_DlceI = fiso*(
-                (a*dfal_dlce*fv + dfpeVEM_dlce - dfkVEM_dlce)*cosPhi 
-              + (a*   fal   *fv + fpeVEM      -     fkVEM )*(-sinPhi*dphi_dlce)
+              (a*dfal_dlce*fv + dfpeVEM_dlce - dfkVEM_dlce + dfibV_dlce)*cosPhi 
+            + (a*   fal   *fv + fpeVEM      -  fkVEM + fibV)*(-sinPhi*dphi_dlce)
               - (dfcphiVEM_dlce)
               );
 
     // J  d/dlce( fiso *  (a *  fal  *fv + fpeVEM - fkVEM)*sinPhi
     double DFm_DlceJ = fiso*(
-                (a*dfal_dlce*fv + dfpeVEM_dlce - dfkVEM_dlce)*sinPhi 
-              + (a*   fal   *fv + fpeVEM         -     fkVEM)*(cosPhi*dphi_dlce)             
+         (a*dfal_dlce*fv + dfpeVEM_dlce - dfkVEM_dlce + dfibV_dlce)*sinPhi 
+        + (a*   fal   *fv + fpeVEM      -   fkVEM     + fibV)*(cosPhi*dphi_dlce)             
               );
 
     SimTK::Vec2 DFm_DlceIJ;
@@ -1681,6 +1688,7 @@ void Millard2012AccelerationMuscle::
         double bk   = get_fiber_compressive_force_length_damping();
         double bcphi= get_fiber_compressive_force_cos_pennation_damping();
         double bse  = get_tendon_force_length_damping();
+        double bfib = get_fiber_damping();
 
         double tendonSlackLength    = getTendonSlackLength();
         double optimalFiberLength   = getOptimalFiberLength();
@@ -1715,6 +1723,7 @@ void Millard2012AccelerationMuscle::
         ami.fpeV   =    ami.fpe * dlceN_dt  * bpe;
         ami.fkV    = -  ami.fk  * dlceN_dt  * bk;
         ami.fcphiV = - ami.fcphi* dlceNAT_dt* bcphi;
+        ami.fibV   =              dlceN_dt  * bfib;
 
     //Visco elastic multipliers
         ami.fseVEM      = ami.fse   + ami.fseV; 
@@ -1729,6 +1738,7 @@ void Millard2012AccelerationMuscle::
         ami.dfseV_dtl    =     ami.dfse_dtl  * dtlN_dt   * bse;   
         ami.dfpeV_dlce   =     ami.dfpe_dlce * dlceN_dt  * bpe;
         ami.dfkV_dlce    =  -  ami.dfk_dlce  * dlceN_dt  * bk;
+        
 
         //Since there is a kinematic dependence of dlceNAT_dt on the fiber
         //length, the partial derivative for fcphi is a little more involved
@@ -1747,7 +1757,7 @@ void Millard2012AccelerationMuscle::
 
         ami.dfcphiV_dlce =  - ami.dfcphi_dlce* dlceNAT_dt     * bcphi;
                             - ami.fcphi      * DdlceNATdt_Dlce* bcphi;
-      
+        ami.dfibV_dlce   = 0; //Including for future upgrade ...
 
     //Visco elastic multiplier partial derivatives      
         ami.dfseVEM_dtl     = ami.dfse_dtl    + ami.dfseV_dtl;  
