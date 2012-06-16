@@ -441,13 +441,10 @@ double MuscleFixedWidthPennationModel::
      caller.c_str() );
     SimTK::Vec2 pose;
 
-    double tanPhi = m_parallelogramHeight/fiberLengthAT;
-    
-    //Not returing phi as well is slightly wasteful, but I've opted to not to
-    //to make the function name clearer
-
-    double phi = atan(tanPhi);
-    double fiberLength = m_parallelogramHeight/sin(phi);
+    //double tanPhi = m_parallelogramHeight/fiberLengthAT;    
+    //double phi = atan(tanPhi);
+    double fiberLength = sqrt(m_parallelogramHeight*m_parallelogramHeight
+                              +fiberLengthAT*fiberLengthAT);
    
 
     return fiberLength;

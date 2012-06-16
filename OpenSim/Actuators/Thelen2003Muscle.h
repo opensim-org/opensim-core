@@ -137,8 +137,8 @@ public:
     OpenSim_DECLARE_PROPERTY(Flen, double,
         "maximum normalized lengthening force");
 
-    OpenSim_DECLARE_PROPERTY(activation_minimum_value, double,
-        "minimum activation value permitted");
+    //OpenSim_DECLARE_PROPERTY(activation_minimum_value, double,
+    //    "minimum activation value permitted");
     
     OpenSim_DECLARE_PROPERTY(fv_linear_extrap_threshold, double,
         "fv threshold where linear extrapolation is used");
@@ -234,6 +234,7 @@ private:
     //=====================================================================
     //bool initializedModel;
 
+    double activation_minimum_value;
     //Activation Dynamics
     MuscleFirstOrderActivationDynamicModel actMdl;
 

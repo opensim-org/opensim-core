@@ -39,6 +39,13 @@ MuscleFirstOrderActivationDynamicModel::
     constructProperties();
 }
 
+void MuscleFirstOrderActivationDynamicModel::buildModel()
+{
+    //This simple quantity is precomputed to save a division, a 
+    //subtraction and an assignment ...
+    m_minAS = m_minActivation/(1-m_minActivation); 
+}
+
 /*
 Detailed Computational Cost
         Comparison  Div.    Mult.   Add.    Assign
@@ -71,11 +78,9 @@ MuscleFirstOrderActivationDynamicModel::
 
     set_activation_time_constant(tauActivation);
     set_deactivation_time_constant(tauDeactivation);
-    set_minimum_activation(minActivation);
-
-    //This simple quantity is precomputed to save a division, a 
-    //subtraction and an assignment ...
-    m_minAS = minActivation/(1-minActivation); 
+    m_minActivation = minActivation;
+    buildModel();
+    
 
 }
         
@@ -88,9 +93,11 @@ void MuscleFirstOrderActivationDynamicModel::constructProperties()
 {
     constructProperty_activation_time_constant(0.010);
     constructProperty_deactivation_time_constant(0.040);
-    constructProperty_minimum_activation(0.01);
+    //constructProperty_minimum_activation(0.01);
+    //m_minAS = get_minimum_activation()/(1-get_minimum_activation());
 
-    m_minAS = get_minimum_activation()/(1-get_minimum_activation());
+    m_minActivation = 0.01;
+    buildModel();
 }
 
 double MuscleFirstOrderActivationDynamicModel::
@@ -124,7 +131,7 @@ double MuscleFirstOrderActivationDynamicModel::
 
 double MuscleFirstOrderActivationDynamicModel::getMinActivation() const
 {
-    return get_minimum_activation();
+    return m_minActivation;
 }
 
 
@@ -132,6 +139,7 @@ void MuscleFirstOrderActivationDynamicModel::
     setActivationTimeConstant(double activationTimeConstant) 
 {
     set_activation_time_constant(activationTimeConstant);
+    buildModel();
 }
         
 
@@ -139,13 +147,16 @@ void MuscleFirstOrderActivationDynamicModel::
     setDeactivationTimeConstant(double deactivationTimeConstant) 
 {
     set_deactivation_time_constant(deactivationTimeConstant);
+    buildModel();
 }
         
 
 void MuscleFirstOrderActivationDynamicModel::
     setMinActivation(double minimumActivation)
 {
-    set_minimum_activation(minimumActivation);
+    //set_minimum_activation(minimumActivation);
+    m_minActivation = minimumActivation;
+    buildModel();
 }
 
 double MuscleFirstOrderActivationDynamicModel::
@@ -196,7 +207,7 @@ double MuscleFirstOrderActivationDynamicModel::
                     "%s: Excitation must be bounded by 0 and 1",getName().c_str());
 
 
-                    double minAct = get_minimum_activation();
+                    double minAct = m_minActivation;
 
                     SimTK_ERRCHK2_ALWAYS(activation >= minAct && activation<=1,
                     "MuscleFirstOrderActivationDynamicModel::calcDerivative",

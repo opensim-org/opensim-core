@@ -30,6 +30,7 @@
 #include "Thelen2003Muscle.h"
 #include <iostream>
 
+
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -127,7 +128,7 @@ void Thelen2003Muscle::constructProperties()
     constructProperty_KshapePassive(5.0);   
     constructProperty_Af(0.25); 
     constructProperty_Flen(1.8);
-    constructProperty_activation_minimum_value(0.01);  
+    activation_minimum_value = 0.01;  
     constructProperty_fv_linear_extrap_threshold(0.95);
 }
 
@@ -160,7 +161,7 @@ double Thelen2003Muscle::getFlen() const
 {   return get_Flen(); }
 
 double Thelen2003Muscle::getActivationMinimumValue() const 
-{   return get_activation_minimum_value(); }
+{   return activation_minimum_value; }
 
 double Thelen2003Muscle::getForceVelocityExtrapolationThreshold() const 
 {   return get_fv_linear_extrap_threshold(); }
@@ -181,7 +182,7 @@ bool Thelen2003Muscle::setActivationTimeConstant(double aActTimeConstant)
 bool Thelen2003Muscle::setActivationMinimumValue(double aActMinValue)
 {
     if(aActMinValue > 0 && aActMinValue < 1.0){
-        set_activation_minimum_value(aActMinValue);
+        activation_minimum_value=aActMinValue;
         return true;
     }
     return false;
@@ -301,7 +302,12 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
     //shares the muscle stretch between the muscle fiber and the tendon 
     //according to their relative stiffness.
     double activation = getActivation(s);
-    double tol = 1e-8;  //Should this be user settable?
+
+    //Tolerance, in Newtons, of the desired equilibrium
+    double tol = 1e-8*getMaxIsometricForce();  //Should this be user settable?
+    if(tol < SimTK::Eps*1000){
+        tol = SimTK::Eps*1000;
+    }
     int maxIter = 200;  //Should this be user settable?
 
     SimTK::Vector soln = initMuscleState(s,activation, tol, maxIter);

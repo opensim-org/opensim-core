@@ -148,10 +148,10 @@ public:
         "activation time constant in seconds");            
     OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
         "deactivation time constant in seconds");
-    OpenSim_DECLARE_PROPERTY(minimum_activation, double,
-        "minimum activation allowed");                       
+    //OpenSim_DECLARE_PROPERTY(minimum_activation, double,
+    //    "minimum activation allowed");                       
     /**@}**/
-
+    
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
@@ -288,7 +288,9 @@ public:
     int getMaxDerivativeOrder() const;  /*virtual*/ 
     ///@endcond
 
-    private:           
+    private:      
+        void buildModel();
+        double m_minActivation;
         double m_minAS; //scaled version of m_minA
            
         void setNull();

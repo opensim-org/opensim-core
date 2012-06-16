@@ -648,7 +648,12 @@ void Millard2012AccelerationMuscle::
     //shares the muscle stretch between the muscle fiber and the tendon 
     //according to their relative stiffness.
     double activation = getActivation(s);
-    double tol = 1e-8;  //Should this be user settable?
+
+    //Tolerance, in Newtons, of the desired equilibrium
+    double tol = 1e-8*getMaxIsometricForce();  //Should this be user settable?
+    if(tol < SimTK::Eps*1000){
+        tol = SimTK::Eps*1000;
+    }
     int maxIter = 500;  //Should this be user settable?  
     double newtonStepFraction = 0.75;
     SimTK::Vector soln = initMuscleState(   s,
