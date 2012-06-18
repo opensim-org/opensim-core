@@ -696,9 +696,9 @@ SimTK::Vector Thelen2003Muscle::
     double cosphi   = cos(phi);
     double lce = 0;
     if(phi > sqrt(SimTK::Eps)){
-        lce      = vol/sin(phi);
+        lce = l0cosphi/cosphi;    //= vol/sin(phi);
     }else{
-        lce      = 0.5*ofl;
+        lce = l0cosphi;     //= 0.5*ofl;
     }
 
     double tl       = tsl*1.01;
@@ -748,7 +748,7 @@ SimTK::Vector Thelen2003Muscle::
     int iter = 0;
     
 
-    while( abs(ferr) > aSolTolerance && iter < aMaxIterations){
+    while( (abs(ferr) > aSolTolerance) && (iter < aMaxIterations) ){
 
         if(lce > 0 + SimTK::Eps && phi < SimTK::Pi/2 - SimTK::Eps){
             //Update the multipliers and their partial derivativaes
@@ -791,7 +791,7 @@ SimTK::Vector Thelen2003Muscle::
                         phi = SimTK::Pi-SimTK::Eps;
                     }
                     cosphi = cos(phi);
-                    tl  = ml - lce*cos(phi);
+                    tl  = ml - lce*cosphi;
                     lceN = lce/ofl;
                     tlN  = tl/tsl;
 
