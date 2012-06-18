@@ -105,22 +105,20 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
 	setNull();
 
 	// CREATE DOCUMENT
-	{
-		// Check file exists before trying to parse it. Is there a faster way to do this?
-		// This maybe slower than we like but definitely faster than 
-		// going all the way down to the parser to throw an exception for null document!
-		// -Ayman 8/06
-		if(aFileName.empty()) {
-			string msg =
-				"Object: ERR- Empty filename encountered.";
-			throw Exception(msg,__FILE__,__LINE__);
-		} else 
-			if(!ifstream(aFileName.c_str(), ios_base::in).good()) {
-			string msg =
-				"Object: ERR- Could not open file " + aFileName+ ". It may not exist or you don't have permission to read it.";
-			throw Exception(msg,__FILE__,__LINE__);
-		}	
-	}
+	// Check file exists before trying to parse it. Is there a faster way to do this?
+	// This maybe slower than we like but definitely faster than 
+	// going all the way down to the parser to throw an exception for null document!
+	// -Ayman 8/06
+	if(aFileName.empty()) {
+		string msg =
+			"Object: ERR- Empty filename encountered.";
+		throw Exception(msg,__FILE__,__LINE__);
+	} else 
+		if(!ifstream(aFileName.c_str(), ios_base::in).good()) {
+		string msg =
+			"Object: ERR- Could not open file " + aFileName+ ". It may not exist or you don't have permission to read it.";
+		throw Exception(msg,__FILE__,__LINE__);
+	}	
 
 	_document = new XMLDocument(aFileName);
 
@@ -128,7 +126,21 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
 	SimTK::Xml::Element myNode =  _document->getRootDataElement(); //either actual root or node after OpenSimDocument
 
 	// UPDATE OBJECT
-	if (aUpdateFromXMLNode) updateFromXMLNode(myNode, _document->getDocumentVersion());
+    // Set current working directory to directory in which we found
+    // the XML document so that contained file names will be interpreted
+    // relative to that directory. Make sure we switch back properly in case
+    // of an exception.
+	if (aUpdateFromXMLNode) {
+		const string saveWorkingDirectory = IO::getCwd();
+		const string directoryOfXMLFile = IO::getParentDirectory(aFileName);
+		IO::chDir(directoryOfXMLFile);
+        try {
+            updateFromXMLNode(myNode, _document->getDocumentVersion());
+        } catch (...) {
+            IO::chDir(saveWorkingDirectory);
+            throw; // re-issue the exception
+        }
+    }
 
 }
 //_____________________________________________________________________________
@@ -687,58 +699,50 @@ UpdateFromXMLNodeArrayProperty(Property_Deprecated* aProperty,
     aProperty->setValueIsDefault(false);
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // OBJECT XML METHODS
-//-----------------------------------------------------------------------------
-void Object::	// Populate Object from XML node corresponding to Obj property
-InitializeObjectFromXMLNode(Property_Deprecated*                aProperty, 
-                            const SimTK::Xml::element_iterator& rObjectElement, 
-                            Object*                             aObject, 
-                            int                                 versionNumber)
+//------------------------------------------------------------------------------
+// Populate this Object from XML element corresponding to an Object Property.
+// We check for a file="xxx" attribute and read the object from that file
+// if it is present. Otherwise we punt to updateFromXMLNode() and read the
+// object directly from the supplied element.
+void Object::readObjectFromXMLNodeOrFile
+   (SimTK::Xml::Element& objectElement, 
+    int                  versionNumber)
 {
 	// If object is from non-inlined, detect it and set attributes
 	// However we need to do that on the finalized object as copying
 	// does not keep track of XML related issues
-	//DOMElement *refNode;
-	//XMLDocument *childDocument;
-	std::string file = "";
-	file = rObjectElement->getOptionalAttributeValueAs<std::string>("file", file);
+	const std::string file = 
+        objectElement.getOptionalAttributeValueAs<std::string>("file", "");
 
-	bool inlinedObject = (file == ""); // otherwise object is described in file and it has root element
+    // otherwise object is described in file and it has root element
+	const bool inlinedObject = (file == ""); 
 
-	aProperty->setValueIsDefault(false);
+    if (inlinedObject) {
+        // This object comes from the main XML document.
+		updateFromXMLNode(objectElement, versionNumber);
+        return;
+    }
 
-	// CONSTRUCT THE OBJECT BASED ON THE ELEMENT
-	// Used to call a special copy method that took DOMElement* but 
-	// that ended up causing XML to be parsed twice.  Got rid of that
-	// copy method! - Eran, Feb/07
- 	// Set inlining attributes on final object
-	if (!inlinedObject){
-		// When including contents from another file it's assumed file path is relative
-        // to a parent directory. Ideally we can tell which is the case. For now leaving
-        // this assumption as it was in versions before 3.0
-        std::string savedCwd = IO::getCwd();
-	    IO::chDir(IO::getParentDirectory(getDocument()->getFileName()));
-        XMLDocument* newDoc=0;
-        try {
-            std::cout << "read object from file [" << file <<"] cwd =" << IO::getCwd() << std::endl;
-            newDoc = new XMLDocument(file);
-        } catch(const Exception &ex){
-            // if file can't be opened, maybe it's relative to a parent document
-            IO::chDir(savedCwd);
-            std::cout << "failure reading object from file [" << file <<"] cwd =" 
-                << IO::getCwd() << "Error:" << ex.getMessage() 
-                << std::endl;
-           return;
-        }
-		aObject->_inlined=false;
-		SimTK::Xml::Element e = newDoc->getRootDataElement();
-		aObject->updateFromXMLNode(e, newDoc->getDocumentVersion());
-        IO::chDir(savedCwd);
-	}
-	else
-		aObject->updateFromXMLNode(*rObjectElement, versionNumber);
-	//aObject->updateFromXMLNode();
+    // This object specifies an external file from which it should be read.
+
+	// When including contents from another file it's assumed file path is 
+    // relative to the current working directory, which is usually set to be
+    // the directory that contained the top-level XML file.
+    XMLDocument* newDoc=0;
+    try {
+        std::cout << "reading object from file [" << file <<"] cwd =" 
+                  << IO::getCwd() << std::endl;
+        newDoc = new XMLDocument(file);
+    } catch(const std::exception& ex){
+        std::cout << "failure reading object from file [" << file <<"] cwd =" 
+            << IO::getCwd() << "Error:" << ex.what() << std::endl;
+        return;
+    }
+	_inlined=false;
+	SimTK::Xml::Element e = newDoc->getRootDataElement();
+	updateFromXMLNode(e, newDoc->getDocumentVersion());
 }
 
 template<class T> static void 
@@ -804,8 +808,10 @@ void Object::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
 try {
 	// NAME
-	string dName="";
-	dName = aNode.getOptionalAttributeValueAs<std::string>("name", dName);
+	const string dName = 
+        aNode.getOptionalAttributeValueAs<std::string>("name", "");
+
+    // Set the name of this object.
 	setName(dName);
 
 	// UPDATE DEFAULT OBJECTS
@@ -828,7 +834,7 @@ try {
     // TODO: get rid of this
 	for(int i=0;i<_propertySet.getSize();i++) {
 
-		Property_Deprecated *property = _propertySet.get(i);
+		Property_Deprecated* property = _propertySet.get(i);
 
 		// TYPE
 		Property_Deprecated::PropertyType type = property->getType();	
@@ -933,10 +939,13 @@ try {
                     ++iter;
 				}
 				if (iter != aNode.element_end())
-					InitializeObjectFromXMLNode(property, iter, &object, versionNumber);
+					object.readObjectFromXMLNodeOrFile(*iter, versionNumber);
+                	property->setValueIsDefault(false);
 				}
-			else
-				InitializeObjectFromXMLNode(property, iter, &object, versionNumber);
+			else {
+				object.readObjectFromXMLNodeOrFile(*iter, versionNumber);
+                property->setValueIsDefault(false);
+            }
 			break; 
         }
 
@@ -944,26 +953,6 @@ try {
 		case(Property_Deprecated::ObjArray) : 
 		case(Property_Deprecated::ObjPtr) : {
 			property->setValueIsDefault(true);
-
-			// GET ENCLOSING ELEMENT
-			//DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			//if(elmt==NULL) {
-			//	if (_debugLevel>=4) {
-			//		cout<<"Object.updateFromXMLNode: ERR- failed to find element ";
-			//		cout<<name<<endl;
-			//	}
-			//	break;
-			//}
-
-
-			// Call parseFileAttribute to take care of the case where a file attribute points to
-			// an external XML file.  Essentially this will make elmt point to the top level
-			// element of the other file
-			//{
-			//	DOMElement *refNode;
-			//	XMLDocument *childDocument;
-			//	parseFileAttribute(elmt, refNode, childDocument, elmt);
-			//}
 
             // FIND THE PROPERTY ELEMENT (in aNode)
 			const SimTK::Xml::element_iterator propElementIter = aNode.element_begin(name);
@@ -1006,7 +995,6 @@ try {
 				} else {
 					property->appendValue(object);
 				}
-				//object->_document = _document;	// Propagate _document ptr.
 				object->updateFromXMLNode(*iter, versionNumber);
 				iter++;
 			}

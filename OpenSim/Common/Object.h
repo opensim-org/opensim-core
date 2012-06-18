@@ -506,10 +506,23 @@ public:
     uses the defaults table to get an instance. **/
 	static Object* makeObjectFromFile(const std::string& fileName);
 
+    /** We're given an XML element from which we are to populate this %Object.
+    If the element has a \c file attribute, we'll instead read the %Object from
+    that file. Otherwise we'll invoke updateFromXMLNode() to read the %Object
+    directly from the supplied element. Note that a relative file name will
+    be interpreted relative to the current working directory, but that will
+    normally have been set earlier to the directory containing the top-level 
+    (root) %Object, such as the Model file. **/
+	void readObjectFromXMLNodeOrFile
+       (SimTK::Xml::Element& objectElement, 
+        int                  versionNumber);
+
 	/** Use this method to deserialize an object from a SimTK::Xml::Element. The 
     element is assumed to be in the format consistent with the passed-in 
-    \a versionNumber. **/
-	virtual void updateFromXMLNode(SimTK::Xml::Element& node, 
+    \a versionNumber. If there is a file attribute in \a objectElement it
+    will be ignored; if you want it processed you should call 
+    readObjectFromXMLNodeOrFile() instead. **/
+	virtual void updateFromXMLNode(SimTK::Xml::Element& objectElement, 
                                    int                  versionNumber);
 
     /** Serialize this object into the XML node that represents it.   
@@ -771,8 +784,7 @@ private:
 
 	// Functions to support deserialization. 
 	void generateXMLDocument();
-	void InitializeObjectFromXMLNode(Property_Deprecated *aProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
-	void InitializeObjectFromXMLNode2(AbstractProperty *aAbstractProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
+
 	void updateDefaultObjectsFromXMLNode();
 	void updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent);
 
@@ -1220,7 +1232,7 @@ ObjectProperty<T>::readFromXMLElement
 		// Create an Object of the element tag's type.
 		Object* object = Object::newInstanceOfType(objTypeTag);
         assert(object); // we just checked above
-		object->updateFromXMLNode(*iter, versionNumber);
+		object->readObjectFromXMLNodeOrFile(*iter, versionNumber);
 
         T* objectT = dynamic_cast<T*>(object);
         assert(objectT); // should have worked by construction
