@@ -510,7 +510,7 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
 			}
 			else { 
 				if (root.getElementTag()=="IKTool"){
-					root.setElementTag("InverseKinemtaticsTool");
+					root.setElementTag("InverseKinematicsTool");
 					Xml::element_iterator toolIter(root.element_begin("IKTrialSet"));
 					if (toolIter== root.element_end())
 						throw (Exception("Old IKTool setup file doesn't have required IKTrialSet element.. Aborting"));
