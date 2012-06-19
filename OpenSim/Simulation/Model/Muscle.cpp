@@ -574,8 +574,7 @@ void Muscle::computeForce(const SimTK::State& s,
 	// gradients, it will setForce(+1) and setForce(-1) to compute the derivative with respect to force.
 	if (getForce(s) < -SimTK::SqrtEps) {
 		string msg = getConcreteClassName()
-            + "::computeForce, muscle force < 0 for muscle '" 
-            + getName() +"' ";
+            + "::computeForce, muscle "+ getName() + " force < 0";
 		cout << msg << " at time = " << s.getTime() << endl;
 		//throw Exception(msg);
     }
