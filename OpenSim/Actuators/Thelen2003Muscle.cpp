@@ -648,10 +648,6 @@ SimTK::Vector Thelen2003Muscle::
     initMuscleState(SimTK::State& s, double aActivation, 
                               double aSolTolerance, int aMaxIterations) const
 {
-    
-
-   
-
     //results vector format
     //1: flag (0 = converged 
     //         1=diverged, 

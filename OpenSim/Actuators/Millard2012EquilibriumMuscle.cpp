@@ -974,9 +974,9 @@ SimTK::Vector Millard2012EquilibriumMuscle::
     //*******************************
     //Position level
     double lce = 0.5*ofl;
-    double tl       = tsl*1.01;
+    double tl  = tsl*1.01;
 
-    if(ml - tsl*1.01 > 0){
+    if((ml - tl) > 0){
         lce      = penMdl.calcFiberLength( ml, tl, caller);
     }
     

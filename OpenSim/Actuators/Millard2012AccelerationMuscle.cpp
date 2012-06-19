@@ -69,10 +69,8 @@ void Millard2012AccelerationMuscle::setNull()
 
 
 void Millard2012AccelerationMuscle::constructProperties()
-{
-    
-
-    constructProperty_default_activation(1.0);
+{ 
+    constructProperty_default_activation(0.0); //getMinActivation()
 
     constructProperty_default_fiber_length(getOptimalFiberLength());
     
@@ -1121,7 +1119,7 @@ SimTK::Vector Millard2012AccelerationMuscle::
     double lce = 0.5*ofl;
     double tl  = tsl*1.01;
 
-    if(ml - tsl*1.01 > 0){
+    if((ml - tl) > 0){
         lce      = m_penMdl.calcFiberLength( ml, tl, caller);
     }
     
