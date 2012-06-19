@@ -188,6 +188,8 @@ public:
 	int getDataAtTime(double aTime,int aN,Array<double> &rData) const;
 	int getDataColumn(int aStateIndex,double *&rData) const;
 	int getDataColumn(int aStateIndex,Array<double> &rData) const;
+    // Set entries in a column of the storage to a fixed value, 
+    void setDataColumnToFixedValue(const std::string& columnName, double newValue);
 	void setDataColumn(int aStateIndex,const Array<double> &aData);
 	int getDataColumn(const std::string& columnName,double *&rData) const;
 	void getDataColumn(const std::string& columnName, Array<double>& data, double startTime=0.0);

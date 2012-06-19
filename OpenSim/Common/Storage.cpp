@@ -1101,6 +1101,25 @@ setDataColumn(int aStateIndex,const Array<double> &aData)
 		vec->setDataValue(aStateIndex,aData[i]);
 	}
 }
+/**
+ * set values in the column specified by columnName to newValue
+ */
+void Storage::setDataColumnToFixedValue(const std::string& columnName, double newValue) {
+    int n = _storage.getSize();
+    int aStateIndex = getStateIndex(columnName);
+	if(aStateIndex==-1) {
+		cout<<"Storage.setDataColumnToFixedValue: ERR- column not found." << endl;
+		return;
+	}
+
+	// ASSIGNMENT
+	for(int i=0;i<n;i++) {
+		StateVector *vec = getStateVector(i);
+		if(vec==NULL) continue;
+		vec->setDataValue(aStateIndex,newValue);
+	}
+
+}
 
 //_____________________________________________________________________________
 /**

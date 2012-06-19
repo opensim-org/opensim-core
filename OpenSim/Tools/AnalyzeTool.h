@@ -118,6 +118,7 @@ public:
 	//ControlSet& getControlSet();
 	void setStatesStorage(Storage& aStore);
 	static Storage *createStatesStorageFromCoordinatesAndSpeeds(const Model& aModel, const Storage& aQStore, const Storage& aUStore);
+    static void fixMuscleStatesToValidRange(Storage& aStore, const Model& aModel);
 	Storage& getStatesStorage();
 
 	const std::string &getStatesFileName() const { return _statesFileName; }
