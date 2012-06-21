@@ -41,9 +41,6 @@
 #include "ForceSet.h"
 #include "ExternalLoads.h"
 
-class SimTK::State;
-class SimTK::System;
-
 namespace OpenSim { 
 
 class PrescribedForce;
