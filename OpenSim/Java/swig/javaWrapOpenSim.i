@@ -23,7 +23,6 @@
 #include <OpenSim/Common/StateVector.h>
 #include <OpenSim/Common/StorageInterface.h>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/Range.h>
 #include <OpenSim/Common/Scale.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/Units.h>
