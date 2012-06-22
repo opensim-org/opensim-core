@@ -40,7 +40,6 @@
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/OptimizationTarget.h>
 #include <SimTKmath.h>
-class OpenSim::CMC;
 
 namespace OpenSim {
 
