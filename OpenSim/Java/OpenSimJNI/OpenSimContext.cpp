@@ -135,7 +135,8 @@ void OpenSimContext::updateDisplayer(Force& f) {
   if (dynamic_cast<Muscle*>(&f)!= NULL)
     return dynamic_cast<Muscle*>(&f)->updateDisplayer(*_configState);
   if (f.hasGeometryPath()){
-    Object& pathObj = f.getPropertySet().get("GeometryPath")->getValueObj();
+    AbstractProperty& pathProp = f.updPropertyByName("GeometryPath");
+    Object& pathObj = pathProp.updValueAsObject();
     return dynamic_cast<GeometryPath*>(&pathObj)->updateDisplayer(*_configState);
   }
   if (f.getDisplayer()!= NULL)
