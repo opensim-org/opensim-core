@@ -204,15 +204,14 @@ void CustomJoint::constructCoordinates()
 			Coordinate& origCoord = savedCoordinates.get(coordIndex);
 			coord->setDefaultValue(origCoord.getDefaultValue());
 			coord->setDefaultSpeedValue(origCoord.getDefaultSpeedValue());
-			coord->setInitialValue(origCoord.getInitialValue());
 			coord->setRangeMin(origCoord.getRangeMin());
 			coord->setRangeMax(origCoord.getRangeMax());
 			coord->setMotionType(origCoord.getMotionType());
 			coord->setDefaultClamped(origCoord.getDefaultClamped());
 			coord->setDefaultLocked(origCoord.getDefaultLocked());
 			coord->setDefaultIsPrescribed(origCoord.getDefaultIsPrescribed());
-			if (origCoord.getPrescribedFunction()!=NULL)
-				coord->setPrescribedFunction(*origCoord.getPrescribedFunction());
+			if (origCoord.getDefaultIsPrescribed())
+				coord->setPrescribedFunction(origCoord.getPrescribedFunction());
 		}
 		_coordinateSet.append(coord);
 	}

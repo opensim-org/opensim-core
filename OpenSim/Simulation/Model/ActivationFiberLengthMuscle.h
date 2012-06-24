@@ -100,8 +100,8 @@ public:
 	void setActivation(SimTK::State& s, double activation) const;
 	void setFiberLength(SimTK::State& s, double fiberLength) const;
 
-	virtual Array<std::string> getStateVariableNames() const;
-	virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const;
+	virtual Array<std::string> getStateVariableNames() const OVERRIDE_11;
+	virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const OVERRIDE_11;
 
 	//--------------------------------------------------------------------------
     // State Variable Derivative

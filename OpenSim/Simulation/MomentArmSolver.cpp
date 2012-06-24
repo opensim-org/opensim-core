@@ -61,7 +61,6 @@ double MomentArmSolver::solve(const State &s, const Coordinate &aCoord,
 	State s_ma = s;
 
 	aCoord.setLocked(s_ma, false);
-	aCoord.setClamped(s_ma, false);
 
 	double angle = aCoord.getValue(s_ma);
 

@@ -227,7 +227,8 @@ protected:
 	SimTK::MobilizedBodyIndex getMobilizedBodyIndex(Body *aBody) const {return aBody->_index;} 
 	void setMobilizedBodyIndex(Body *aBody, SimTK::MobilizedBodyIndex index) const {aBody->_index = index;}
 	void setCoordinateMobilizedBodyIndex(Coordinate *aCoord, SimTK::MobilizedBodyIndex index) const {aCoord->_bodyIndex = index;}
-	void setCoordinateMobilityIndex(Coordinate *aCoord, int index) const {aCoord->_mobilityIndex = index;}
+	void setCoordinateMobilizerQIndex(Coordinate *aCoord, int index) const
+		{ aCoord->_mobilizerQIndex = SimTK::MobilizerQIndex(index);}
 	void setCoordinateModel(Coordinate *aCoord, Model *aModel) const {aCoord->_model = aModel;}
 
 

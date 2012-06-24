@@ -125,7 +125,7 @@ protected:
 private:
 	void setNull();
 	void setupProperties();
-	void determineType();
+
 	friend class SimbodyEngine;
 
 //=============================================================================

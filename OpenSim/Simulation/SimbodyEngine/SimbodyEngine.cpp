@@ -165,25 +165,6 @@ SimbodyEngine& SimbodyEngine::operator=(const SimbodyEngine &aEngine)
 //--------------------------------------------------------------------------
 // COORDINATES
 //--------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Update all coordinates in the model with the ones in the
- * passed-in coordinate set. If the coordinate does not exist
- * in the model, it is not added.
- *
- * @param aCoordinateSet set of coordinates to be updated/added
- */
-void SimbodyEngine::updateCoordinateSet(CoordinateSet& aCoordinateSet)
-{
-	for (int i = 0; i < aCoordinateSet.getSize(); i++) {
-        if (_model->updCoordinateSet().contains(aCoordinateSet.get(i).getName())) {
-    		Coordinate& modelCoordinate = _model->updCoordinateSet().get(aCoordinateSet.get(i).getName());
-			modelCoordinate.updateFromCoordinate(aCoordinateSet.get(i));
-        }
-	}
-
-	cout << "Updated coordinates in model " << _model->getName() << endl;
-}
 
 //_____________________________________________________________________________
 /**

@@ -33,7 +33,6 @@
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include "Joint.h"
-#include "Coordinate.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <string>

@@ -239,7 +239,7 @@ void FreeJoint::addToSystem(SimTK::MultibodySystem& system) const
 			// Translations enabled by Translation mobilizer, first, but appear second in coordinate set
 			setCoordinateMobilizedBodyIndex(&coord, ((i > 2) ? (_masslessBodyIndex) : (getMobilizedBodyIndex(_body))));
 			// The mobility index is the same as the order in which the coordinate appears in the coordinate set.
-			setCoordinateMobilityIndex(&coord, (i < 3 ? i : i-3));
+			setCoordinateMobilizerQIndex(&coord, (i < 3 ? i : i-3));
 		}
 	}
 	else {*/

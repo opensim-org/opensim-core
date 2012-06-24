@@ -30,12 +30,9 @@
 
 
 // INCLUDE
-#include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include "Joint.h"
-#include "Coordinate.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {

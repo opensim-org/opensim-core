@@ -541,7 +541,7 @@ void Joint::addToSystem(SimTK::MultibodySystem& system) const
 		// The mobility index is the same as the order in which the coordinate appears in the coordinate set.
 		// The functions (and their dependencies) determine how the coordinates gets used when constructing
 		// the transform from parent to child.
-		q._mobilityIndex = iq;
+		q._mobilizerQIndex = SimTK::MobilizerQIndex(iq);
 	}
 }
 

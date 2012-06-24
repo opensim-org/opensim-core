@@ -47,10 +47,6 @@
 
 namespace OpenSim {
 
-class Coordinate;
-class Model;
-class GeometryPath;
-class SimbodyEngine;
 class WrapObject;
 
 //=============================================================================

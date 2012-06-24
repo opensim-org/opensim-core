@@ -120,7 +120,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
 			const Coordinate &coord = modelCoordSet.get(coordRef->getName());
 			if(coord.getLocked(s)){
 				//cout << "AssemblySolver: coordinate " << coord.getName() << " is locked/prescribed and will be excluded." << endl;
-				_assembler->lockQ(coord.getBodyIndex(), SimTK::MobilizerQIndex(coord.getMobilityIndex()));
+				_assembler->lockQ(coord.getBodyIndex(), SimTK::MobilizerQIndex(coord.getMobilizerQIndex()));
 				//No longer need the lock on
 				coord.setLocked(s, false);
 				
@@ -130,7 +130,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
 			}
 			else{
 				// Make this reference and its current value a goal of the Assembler
-				SimTK::QValue *coordGoal = new SimTK::QValue(coord.getBodyIndex(), SimTK::MobilizerQIndex(coord.getMobilityIndex()),
+				SimTK::QValue *coordGoal = new SimTK::QValue(coord.getBodyIndex(), SimTK::MobilizerQIndex(coord.getMobilizerQIndex()),
 														 coordRef->getValue(s) );
 				// keep a handle to the goal so we can update
 				_coordinateAssemblyConditions.push_back(coordGoal);

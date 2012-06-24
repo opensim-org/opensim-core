@@ -2262,7 +2262,7 @@
 										<default_speed_value>       0.00000000 </default_speed_value>
 										<initial_value>       1.57079633 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
-										<clamped> true </clamped>
+										<clamped> false </clamped>
 										<locked> true </locked>
 										<prescribed_function/>
 									</Coordinate>
@@ -2399,7 +2399,7 @@
 										<default_speed_value>       0.00000000 </default_speed_value>
 										<initial_value>       1.57079633 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
-										<clamped> true </clamped>
+										<clamped> false </clamped>
 										<locked> true </locked>
 										<prescribed_function/>
 									</Coordinate>

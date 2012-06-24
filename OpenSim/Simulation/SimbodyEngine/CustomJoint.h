@@ -44,7 +44,7 @@ namespace OpenSim {
 //                              CUSTOM JOINT
 //==============================================================================
 /**
- * A class implementing a custom joint.  The underlying joint in Simbody
+ * A class implementing a custom joint.  The underlying component in Simbody
  * is a Function-based mobilizer.
  *
  * @author Frank C. Anderson, Ajay Seth

@@ -189,7 +189,7 @@ void Force::applyGeneralizedForce(const SimTK::State &s, const Coordinate &aCoor
 										double aForce, Vector &mobilityForces) const
 {
 	_model->getMatterSubsystem().addInMobilityForce(s, SimTK::MobilizedBodyIndex(aCoord.getBodyIndex()), 
-									SimTK::MobilizerUIndex(aCoord.getMobilityIndex()), aForce, mobilityForces);
+									SimTK::MobilizerUIndex(aCoord.getMobilizerQIndex()), aForce, mobilityForces);
 }
 
 

@@ -31,11 +31,7 @@
 //=============================================================================
 #include "PathWrapPoint.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/GeometryPath.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
 //=============================================================================
 // STATICS

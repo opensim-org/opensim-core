@@ -61,6 +61,8 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 int main()
 {
 	try {
+		Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
+
 		testMomentArmDefinitionForModel("BothLegs22.osim", "r_knee_angle", "VASINT", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), 0.0, "VASINT of BothLegs with no mass: FAILED");
 		cout << "VASINT of BothLegs with no mass: PASSED\n" << endl;
 
@@ -204,14 +206,14 @@ SimTK::Vector computeGenForceScaling(const Model &osimModel, const SimTK::State 
 				&& (ac.getJoint().getName() != "tib_pat_r") ){
 			MobilizedBodyIndex modbodIndex = ac.getBodyIndex();
 			const MobilizedBody& mobod = osimModel.getMatterSubsystem().getMobilizedBody(modbodIndex);
-			SpatialVec Hcol = mobod.getHCol(s, SimTK::MobilizerUIndex(0)); //ac.getMobilityIndex())); // get n’th column of H
+			SpatialVec Hcol = mobod.getHCol(s, SimTK::MobilizerUIndex(0)); //ac.getMobilizerQIndex())); // get n’th column of H
 
 			double thetaScale = Hcol[0].norm(); // magnitude of the rotational part of this column of H
 			
-			double Ci = C[mobod.getFirstUIndex(s)+ac.getMobilityIndex()];
+			double Ci = C[mobod.getFirstUIndex(s)+ac.getMobilizerQIndex()];
 			double Wi = 1.0/thetaScale;
 			//if(thetaScale)
-				W[mobod.getFirstUIndex(s)+ac.getMobilityIndex()] = Ci; 
+				W[mobod.getFirstUIndex(s)+ac.getMobilizerQIndex()] = Ci; 
 		}
 	}
 
@@ -290,6 +292,9 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 	int nsteps = 10;
 	double dq = (rom[1]-rom[0])/nsteps;
 	
+	cout << "___________________________________________________________________________________" << endl;
+	cout << "MA  genforce/fm::dl/dtheta  joint angle       IDTorq :: EquiTorq  MA::MA_dl/dtheta" << endl;
+	cout << "===================================================================================" << endl;
 	for(int i = 0; i <=nsteps; i++){
 		coord.setValue(s, q, true);
 		double angle = coord.getValue(s);

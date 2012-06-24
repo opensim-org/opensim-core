@@ -98,7 +98,6 @@ public:
 private:
 	void setNull();
 	void setupProperties();
-	void determineType();
 
 //=============================================================================
 };	// END of class FunctionThresholdCondition

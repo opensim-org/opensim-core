@@ -119,7 +119,6 @@ public:
 	// COORDINATES
 	//--------------------------------------------------------------------------
 #ifndef SWIG
-	virtual void updateCoordinateSet(CoordinateSet& aCoordinateSet);
 	virtual void getUnlockedCoordinates(const SimTK::State& s, CoordinateSet& rUnlockedCoordinates) const;
 #endif
 

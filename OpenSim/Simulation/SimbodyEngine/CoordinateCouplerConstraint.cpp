@@ -245,13 +245,13 @@ void CoordinateCouplerConstraint::addToSystem(SimTK::MultibodySystem& system) co
 		// Error checking was handled in connectToModel()
 	    Coordinate& aCoordinate = _model->updCoordinateSet().get(_independentCoordNames[i]);
 		mob_bodies.push_back(aCoordinate._bodyIndex);
-		mob_qs.push_back(SimTK::MobilizerQIndex(aCoordinate._mobilityIndex));
+		mob_qs.push_back(SimTK::MobilizerQIndex(aCoordinate._mobilizerQIndex));
 	}
 
 	// Last coordinate in the coupler is the dependent coordinate
 	Coordinate& aCoordinate = _model->updCoordinateSet().get(_dependentCoordName);
 	mob_bodies.push_back(aCoordinate._bodyIndex);
-	mob_qs.push_back(SimTK::MobilizerQIndex(aCoordinate._mobilityIndex));
+	mob_qs.push_back(SimTK::MobilizerQIndex(aCoordinate._mobilizerQIndex));
 
 	if (!mob_qs.size() & (mob_qs.size() != mob_bodies.size())) {
 		errorMessage = "CoordinateCouplerConstraint:: requires at least one body and coordinate." ;
@@ -308,7 +308,7 @@ void CoordinateCouplerConstraint::scale(const ScaleSet& aScaleSet)
 		scaleFactor = bodyScaleFactors[0];
 
 		// We can handle non-uniform scaling along transform axes of custom joints ONLY at this time
-		const Joint *joint =  dynamic_cast<const Joint*>(depCoordinate._joint);
+		const Joint *joint =  dynamic_cast<const Joint*>(depCoordinate._joint.get());
 		// Simplifies things if we have uniform scaling so check first
 		// TODO: Non-uniform scaling below has not been exercised! - ASeth
 		if(joint) {
