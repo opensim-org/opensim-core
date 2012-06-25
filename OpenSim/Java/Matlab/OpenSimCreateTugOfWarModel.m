@@ -11,6 +11,10 @@ import org.opensim.modeling.*
 % Turn up debug level so that exceptions due to typos etc. are handled gracefully
 OpenSimObject.setDebugLevel(3);
 
+%///////////////////////////////////////////
+%// DEFINE BODIES AND JOINTS OF THE MODEL //
+%///////////////////////////////////////////
+
 % Create a blank model
 model = Model();
 model.setName('TugOfWar')
@@ -20,43 +24,58 @@ zeroVec3 = ArrayDouble.createVec3(0);
 
 % Set gravity as 0 since there is no ground contact model in this version
 % of the example
-model.setGravity(zeroVec3)
+model.setGravity(zeroVec3);
 
-% Add DisplayGeometry to ground body. Model comes with a ground body already
+% GROUND BODY
+
+% Get a reference to the model's ground body
 ground = model.getGroundBody();
+
+% Add display geometry to the ground to visualize in the GUI
 ground.addDisplayGeometry('ground.vtp');
 ground.addDisplayGeometry('anchor1.vtp');
 ground.addDisplayGeometry('anchor2.vtp');
 
+% "BLOCK" BODY
+
 % Create a block Body with associate dimensions, mass properties, and DisplayGeometry
-blockMass = 20.0; blockSideLength = 0.1;
-blockSideLength = 0.1;
 block = Body();
-block.setMass(20)
-block.setMassCenter(zeroVec3)
-block.setName('Block')
+block.setName('Block');
+block.setMass(20);
+block.setMassCenter(zeroVec3);
+% Need to set inertia
 block.addDisplayGeometry('block.vtp');
 
-% Create a FreeJoint to connect the block to ground
-% Note that the constructor takes both bodies (ground, block)
-locationInParentVec3 = ArrayDouble.createVec3([0, .05, 0]);
-blockToGround = FreeJoint('blockToGround', ground, locationInParentVec3, zeroVec3, block, zeroVec3, zeroVec3, false);
+% FREE JOINT
 
-% set bounds on coordinates to make them reasonable, names could also be assigned here if needed
+% Create a new free joint with 6 degrees-of-freedom (coordinates) between the block and ground bodies
+blockSideLength      = 0.1;
+locationInParentVec3 = ArrayDouble.createVec3([0, blockSideLength/2, 0]);
+blockToGround        = FreeJoint('blockToGround', ground, locationInParentVec3, zeroVec3, block, zeroVec3, zeroVec3, false);
+
+% Set bounds on coordinates
 jointCoordinateSet=blockToGround.getCoordinateSet();
-for c =0:2 
-	jointCoordinateSet.get(c).setRange([-pi/2, pi/2]);
-	jointCoordinateSet.get(c+3).setRange([-1, 1]);
-end
+angleRange 	  = [-pi/2, pi/2];
+positionRange = [-1, 1];
+jointCoordinateSet.get(0).setRange(angleRange);
+jointCoordinateSet.get(1).setRange(angleRange);
+jointCoordinateSet.get(2).setRange(angleRange);
+jointCoordinateSet.get(3).setRange(positionRange);
+jointCoordinateSet.get(4).setRange(positionRange);
+jointCoordinateSet.get(5).setRange(positionRange);
 
-% add the block body to the model
+% Add the block body to the model
 model.addBody(block)
 
-% Set the muscle parameters
-maxIsometricForce = 1000.0;
+%///////////////////////////////////////
+%// DEFINE FORCES ACTING ON THE MODEL //
+%///////////////////////////////////////
+
+% Set muscle parameters
+maxIsometricForce  = 1000.0;
 optimalFiberLength = 0.25;
-tendonSlackLength = 0.1;
-pennationAngle = 0.0;
+tendonSlackLength  = 0.1;
+pennationAngle 	   = 0.0;
 
 % Create new muscles
 muscle1 = Thelen2003Muscle();
@@ -72,7 +91,7 @@ muscle1.addNewPathPoint('muscle1-point2', block, ArrayDouble.createVec3([0.0,0.0
 
 % Repeat for Muscle 2
 muscle2 = Thelen2003Muscle();
-muscle2.setName('muscle2')
+muscle2.setName('muscle2');
 muscle2.setMaxIsometricForce(maxIsometricForce)
 muscle2.setOptimalFiberLength(optimalFiberLength)
 muscle2.setTendonSlackLength(tendonSlackLength)
@@ -99,19 +118,19 @@ slopeAndIntercept1=ArrayDouble(0.0, 2);
 slopeAndIntercept2=ArrayDouble(0.0, 2);
 
 % Muscle1 control has slope of -1 starting 1 at t = 0
-slopeAndIntercept1.setitem(0, -1.0/(finalTime-initialTime))
-slopeAndIntercept1.setitem(1,  1.0)
+slopeAndIntercept1.setitem(0, -1.0/(finalTime-initialTime));
+slopeAndIntercept1.setitem(1,  1.0);
 
 % Muscle2 control has slope of 0.95 starting 0.05 at t = 0
-slopeAndIntercept2.setitem(0, 0.95/(finalTime-initialTime))
-slopeAndIntercept2.setitem(1,  0.05)
+slopeAndIntercept2.setitem(0, 0.95/(finalTime-initialTime));
+slopeAndIntercept2.setitem(1, 0.05);
 
 % Set the indiviudal muscle control functions for the prescribed muscle controller
-muscleController.prescribeControlForActuator('muscle1', LinearFunction(slopeAndIntercept1))
-muscleController.prescribeControlForActuator('muscle2', LinearFunction(slopeAndIntercept2))
+muscleController.prescribeControlForActuator('muscle1', LinearFunction(slopeAndIntercept1));
+muscleController.prescribeControlForActuator('muscle2', LinearFunction(slopeAndIntercept2));
 
 % Add the control set controller to the model
-model.addController(muscleController)
+model.addController(muscleController);
 
-model.disownAllComponents()
-model.print('tug_of_war_muscles_controller.osim')
+model.disownAllComponents();
+model.print('tug_of_war_muscles_controller.osim');
