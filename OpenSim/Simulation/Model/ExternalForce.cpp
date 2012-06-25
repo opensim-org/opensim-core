@@ -137,13 +137,13 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
  */
 void ExternalForce::constructProperties()
 {
-	constructProperty_applied_to_body();
-	constructProperty_force_expressed_in_body();
-	constructProperty_point_expressed_in_body();
-	constructProperty_force_identifier();
-	constructProperty_point_identifier();
-	constructProperty_torque_identifier();
-	constructProperty_data_source_name();
+	constructProperty_applied_to_body("");
+	constructProperty_force_expressed_in_body("");
+	constructProperty_point_expressed_in_body("");
+	constructProperty_force_identifier("");
+	constructProperty_point_identifier("");
+	constructProperty_torque_identifier("");
+	constructProperty_data_source_name("");
 }
 
 void ExternalForce::setDataSource(const Storage *dataSource)
