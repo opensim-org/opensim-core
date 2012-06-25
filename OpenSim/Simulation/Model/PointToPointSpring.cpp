@@ -126,6 +126,12 @@ void PointToPointSpring::updateDisplayer(const SimTK::State& s)
                                                  globalLocation1);
 	_model->getSimbodyEngine().transformPosition(s, body2, getPoint2(),
                                                  globalLocation2);
+
+	if (_displayer.countGeometry()==0){
+		Geometry *g = new LineGeometry();
+		g->setFixed(false);
+		_displayer.addGeometry(g);
+	}
 	((LineGeometry *)_displayer.getGeometry(0))->
         setPoints(globalLocation1, globalLocation2);
 }
