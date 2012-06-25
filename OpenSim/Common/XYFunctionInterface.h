@@ -49,6 +49,9 @@ namespace OpenSim {
     #endif
 #endif
 
+// Excluding this from Doxygen until it has better documentation! -Sam Hamner
+    /// @cond
+
 #if 1
 class XYPoint {
 public:
@@ -64,8 +67,7 @@ public:
 
 };
 #endif
-// Excluding this from Doxygen until it has better documentation! -Sam Hamner
-    /// @cond
+
 class OSIMCOMMON_API XYFunctionInterface : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(XYFunctionInterface, Object);
 

@@ -46,7 +46,7 @@
 #include "LinearFunction.h"
 #include "PiecewiseLinearFunction.h"
 #include "MultiplierFunction.h"
-#include "StateFunction.h"
+
 #include "VisibleObject.h"
 #include "ObjectGroup.h"
 #include "StorageInterface.h"

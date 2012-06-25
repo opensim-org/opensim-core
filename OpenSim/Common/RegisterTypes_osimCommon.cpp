@@ -49,7 +49,6 @@
 #include "GeometrySet.h"
 #include "VisibleObject.h"
 #include "ObjectGroup.h"
-#include "StateFunction.h"
 
 #include <string>
 #include <iostream>

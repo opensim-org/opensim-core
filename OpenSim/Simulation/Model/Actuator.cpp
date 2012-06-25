@@ -31,7 +31,6 @@
 //=============================================================================
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/DebugUtilities.h>
-#include <OpenSim/Common/StateFunction.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
@@ -157,7 +156,6 @@ void Actuator_::addInControls(const Vector& actuatorControls, Vector& modelContr
 /** Default constructor */
 Actuator::Actuator()
 {
-	setNull();
 	constructProperties();
 }
 
@@ -172,13 +170,6 @@ void Actuator::constructProperties()
 	constructProperty_max_control( Infinity);
 }
 
-/**
- * Set the data members of this Actuator to their null values.
- */
-void Actuator::setNull()
-{
-    _overrideForceFunction = NULL;
-}
 
 // Create the underlying computational system component(s) that support the
 // Actuator model component
@@ -268,28 +259,9 @@ double Actuator::getOverrideForce(const SimTK::State& s ) const
 {
     return getDiscreteVariable(s, "override_force");
 }
-double Actuator::computeOverrideForce( const SimTK::State& s ) const {
-	double appliedForce = 0;
-      if( _overrideForceFunction ) {
-          appliedForce = _overrideForceFunction->calcValue(s);
-      } else {
-          appliedForce = getOverrideForce(s);
-      }
-	  setForce(s, appliedForce);
-	  return appliedForce;
-}
-void Actuator::setOverrideForceFunction( StateFunction* overrideFunc ) {
-       _overrideForceFunction = overrideFunc;
-}
-
-const StateFunction* Actuator::getOverrideForceFunction() const {
-       return( _overrideForceFunction); 
-}
-
-StateFunction* Actuator::updOverrideForceFunction() {
-       return( _overrideForceFunction); 
-}
-
-void Actuator::resetOverrideForceFunction() {
-     _overrideForceFunction = NULL;
+double Actuator::computeOverrideForce( const SimTK::State& s ) const 
+{
+	double appliedForce = getOverrideForce(s);
+	setForce(s, appliedForce);
+	return appliedForce;
 }
