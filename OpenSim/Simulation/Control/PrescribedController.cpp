@@ -73,31 +73,6 @@ PrescribedController::PrescribedController() :
 
 //_____________________________________________________________________________
 /**
- * Constructor.
- */
-PrescribedController::PrescribedController(Model& aModel) :
-	Controller(aModel),
-	_prescribedControlFunctionsProp(PropertyObj("ControlFunctions", FunctionSet())),
-    _prescribedControlFunctions((FunctionSet&)_prescribedControlFunctionsProp.getValueObj())
-{
-	setNull();
-}
-//_____________________________________________________________________________
-/**
- * Constructor from an XML Document
-  */
-  PrescribedController::PrescribedController(const std::string &aFileName, bool aUpdateFromXMLNode) :
-	Controller(aFileName, aUpdateFromXMLNode),
-	_prescribedControlFunctionsProp(PropertyObj("ControlFunctions", FunctionSet())),
-    _prescribedControlFunctions((FunctionSet&)_prescribedControlFunctionsProp.getValueObj())
-{
-      setNull();
-	  SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
-      if(aUpdateFromXMLNode) updateFromXMLNode(e, getDocument()->getDocumentVersion());
-}
-
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  */
 PrescribedController::PrescribedController(const PrescribedController &aPrescribedController) :
@@ -150,7 +125,6 @@ void PrescribedController::setupProperties()
  */
 void PrescribedController::copyData(const PrescribedController &aController)
 {
-	Controller::copyData(aController);
 	_prescribedControlFunctions = aController._prescribedControlFunctions;
 }
 
@@ -182,9 +156,9 @@ void PrescribedController::computeControls(const SimTK::State& s, SimTK::Vector&
 	SimTK::Vector actControls(1, 0.0);
 	SimTK::Vector time(1, s.getTime());
 
-	for(int i=0; i<_actuatorSet.getSize(); i++){
+	for(int i=0; i<getActuatorSet().getSize(); i++){
 		actControls[0] = _prescribedControlFunctions[i].calcValue(time);
-		_actuatorSet[i].addInControls(actControls, controls);
+		getActuatorSet()[i].addInControls(actControls, controls);
 	}  
 }
 
@@ -194,7 +168,7 @@ void PrescribedController::computeControls(const SimTK::State& s, SimTK::Vector&
 
 void PrescribedController::prescribeControlForActuator(int index, OpenSim::Function *prescribedFunction)
 {
-	SimTK_ASSERT( index < _actuatorSet.getSize(), "PrescribedController::computeControl:  index > number of actuators" );
+	SimTK_ASSERT( index < getActuatorSet().getSize(), "PrescribedController::computeControl:  index > number of actuators" );
 	SimTK_ASSERT( index >= 0,  "PrescribedController::computeControl:  index < 0" );
 	if(index >= _prescribedControlFunctions.getSize())
 		_prescribedControlFunctions.setSize(index+1);
@@ -203,7 +177,7 @@ void PrescribedController::prescribeControlForActuator(int index, OpenSim::Funct
 
 void PrescribedController::prescribeControlForActuator(const std::string actName, OpenSim::Function *prescribedFunction)
 {
-	int index = _actuatorNameList.findIndex(actName);
+	int index = getProperty_actuator_list().findIndex(actName);
 	if(index < 0 )
 		throw Exception("PrescribedController does not have "+actName+" in its list of actuators to control.");
 	prescribeControlForActuator(index, prescribedFunction);

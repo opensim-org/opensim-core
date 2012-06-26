@@ -29,17 +29,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/DebugUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Control/Controller.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-
 #include "Actuator.h"
-#include "ForceAdapter.h"
-#include "Simbody.h"
-#include <sstream>
-#include <limits>
+
 
 using namespace std;
 using namespace OpenSim;

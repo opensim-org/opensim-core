@@ -131,7 +131,7 @@ CMC::CMC(const CMC &aController) :
  * @param aTaskSet Set of tracking tasks.
  */
 CMC::CMC(Model *aModel,CMC_TaskSet *aTaskSet) :
-	TrackingController(*aModel), _paramList(-1) , _f(0.0)
+	_paramList(-1) , _f(0.0)
 {
 	// NULL
 	setNull();
@@ -183,7 +183,7 @@ void CMC::copyData( const CMC &aCmc )
  */
 //
 CMC::CMC( const std::string &aFileName, bool aUpdateFromXMLNode) :
-    TrackingController(aFileName, false)
+    TrackingController()
 {
     setNull();
     setupProperties();
@@ -1071,13 +1071,13 @@ FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
 // compute the control value for all actuators this Controller is responsible for
 void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
 {
-	SimTK_ASSERT( _controlSet.getSize() == _actuatorSet.getSize() , 
+	SimTK_ASSERT( _controlSet.getSize() == getActuatorSet().getSize() , 
 		"CMC::computeControls number of controls does not match number of actuators.");
 	
 	SimTK::Vector actControls(1, 0.0);
-	for(int i=0; i<_actuatorSet.getSize(); i++){
+	for(int i=0; i<getActuatorSet().getSize(); i++){
 		actControls[0] = _controlSet[_controlSetIndices[i]].getControlValue(s.getTime());
-		_actuatorSet[i].addInControls(actControls, controls);
+		getActuatorSet()[i].addInControls(actControls, controls);
 	}
 
 	double *val = &controls[0];
@@ -1120,7 +1120,7 @@ void CMC::addToSystem( SimTK::MultibodySystem& system)  const
 
 	system.updDefaultSubsystem().addEventHandler(computeControlsHandler );
 
-	int nActs = _actuatorSet.getSize();
+	int nActs = getActuatorSet().getSize();
 
 	mutableThis->_controlSetIndices.setSize(nActs);
 
@@ -1134,7 +1134,7 @@ void CMC::addToSystem( SimTK::MultibodySystem& system)  const
 
 	std::string actName = "";
 	for(int i=0; i < nActs; ++i ) {
-        Actuator& act = _actuatorSet.get(i);
+        Actuator& act = getActuatorSet().get(i);
 
         ControlLinear *control = new ControlLinear();
         control->setName(act.getName() + ".excitation" );

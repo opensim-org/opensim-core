@@ -68,18 +68,21 @@ int main()
 
 		OpenSim::Body *linkage1 = new OpenSim::Body("linkage1", linkageMass, linkageMassCenter, linkageMass*linkageInertia);
 		// Graphical representation
-		linkage1->addDisplayGeometry("linkage1.vtp");
+		linkage1->addDisplayGeometry("cylinder.vtp");
+		linkage1->scale(Vec3(0.05, 2*linkageLength, 0.05), false);
 		
 		// Creat a second linkage body
 		OpenSim::Body *linkage2 = new OpenSim::Body("linkage2", linkageMass, linkageMassCenter, linkageMass*linkageInertia);
-		linkage2->addDisplayGeometry("linkage1.vtp");
+		linkage2->addDisplayGeometry("cylinder.vtp");
+		linkage2->scale(Vec3(0.05, 2*linkageLength, 0.05), false);
 
 		// Creat a block to be the pelvis
 		double blockMass = 20.0, blockSideLength = 0.2;
 		Vec3 blockMassCenter(0);
 		Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
 		OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
-		block->addDisplayGeometry("big_block_centered.vtp");
+		block->addDisplayGeometry("box.vtp");
+		block->scale(Vec3(blockSideLength), false);
 
 		// Create 1 degree-of-freedom pin joints between the bodies to creat a kinematic chain from ground through the block
 		
@@ -179,6 +182,10 @@ int main()
 		ControlSetController *legController = new ControlSetController();
 		legController->setControlSet(controlSet);
 		osimModel.addController(legController);		
+
+		// enable the model visualizer see the model in action, which can be
+		// useful for debugging
+		//osimModel.setUseVisualizer(true);
 
 		// Initialize system
 		SimTK::State& si = osimModel.initSystem();

@@ -64,25 +64,7 @@ TrackingController::TrackingController() : Controller()
 {
 	setNull();
 }
-//_____________________________________________________________________________
-/**
- * Constructor.
- */
-TrackingController::TrackingController(Model& aModel) :	Controller(aModel)
-{
-	setNull();
-}
-//_____________________________________________________________________________
-/**
- * Constructor from an XML Document
-  */
-  TrackingController::TrackingController(const std::string &aFileName, bool aUpdateFromXMLNode) :
-      Controller(aFileName, aUpdateFromXMLNode)
-{
-      setNull();
-	  SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
-      if(aUpdateFromXMLNode) updateFromXMLNode(e, getDocument()->getDocumentVersion());
-}
+
 
 //_____________________________________________________________________________
 /**
@@ -131,7 +113,6 @@ void TrackingController::setupProperties()
  */
 void TrackingController::copyData(const TrackingController &aController)
 {
-	Controller::copyData(aController);
 	_desiredStatesStorage = aController._desiredStatesStorage;
 }
 

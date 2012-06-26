@@ -95,13 +95,8 @@ public:
 	//    of aKv.  Remember to add a line describing aKv in    //
 	//    the comment above (below the line describing aKp).   //
 	/////////////////////////////////////////////////////////////
-	TugOfWarController( Model& aModel, double aKp ) : 
-		Controller( aModel ), kp( aKp ) {
-
-		// Read the mass of the block.
-		blockMass = aModel.getBodySet().get( "block" ).getMass();
-		std::cout << std::endl << "blockMass = " << blockMass
-			<< std::endl;
+	TugOfWarController(double aKp) : Controller(), kp( aKp ) 
+	{
 	}
 
 	/**
@@ -110,15 +105,17 @@ public:
 	 * @param s Current state of the system
 	 * @param controls Controls being calculated
 	 */
-	virtual void computeControls( const SimTK::State& s, SimTK::Vector &controls )
-	const {
-
+	void computeControls(const SimTK::State& s, SimTK::Vector &controls) const
+	{
 		// Get the current time in the simulation.
 		double t = s.getTime();
 
+		// Read the mass of the block.
+		double blockMass = getModel().getBodySet().get( "block" ).getMass();
+
 		// Get pointers to each of the muscles in the model.
-		Muscle* leftMuscle = dynamic_cast<Muscle*>	( &_actuatorSet.get(0) );
-		Muscle* rightMuscle = dynamic_cast<Muscle*> ( &_actuatorSet.get(1) );
+		Muscle* leftMuscle = dynamic_cast<Muscle*>	( &getActuatorSet().get(0) );
+		Muscle* rightMuscle = dynamic_cast<Muscle*> ( &getActuatorSet().get(1) );
 
 		// Compute the desired position of the block in the tug-of-war
 		// model.
@@ -219,11 +216,6 @@ private:
 	//    for this controller.                                  //
 	//////////////////////////////////////////////////////////////
 
-	/**
-	 * Mass of the block in the tug-of-war model, used to compute the
-	 * desired force on the block at each time step in a simulation
-	 */
-	double blockMass;
 };
 
 
@@ -266,8 +258,7 @@ int main()
 		////////////////////////////////////////////////////////
 
 		// Create the controller.
-		TugOfWarController *controller = new
-			TugOfWarController( osimModel, kp );
+		TugOfWarController *controller = new TugOfWarController(kp);
 
 		// Give the controller the Model's actuators so it knows
 		// to control those actuators.

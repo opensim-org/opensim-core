@@ -86,15 +86,6 @@ public:
 	PrescribedController(Model& aModel);
 
 	/**
-	 * Constructor from an XML Document.
-	 *
-	 * @param aFileName: The XML file in which this Controller is defined
-	 * @param aUpdateFromXMLNode: A flag indicating whether or not to call
-	 * updateFromXMLNode(SimTK::Xml::Element& aNode) from this constructor.
-	 */
-	PrescribedController(const std::string &aFileName, bool aUpdateFromXMLNode = true);
-
-	/**
 	 * Copy constructor. 
 	 *
 	 * @param aController The controller to be copied.

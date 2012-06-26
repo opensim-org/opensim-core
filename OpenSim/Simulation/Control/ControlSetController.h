@@ -80,15 +80,6 @@ public:
 	ControlSetController();
 
 	/**
-	 * Constructor from an XML Document.
-	 * @param aFileName The name of the XML file in which this Controller is
-	 * defined.
-	 * @param aUpdateFromXMLNode A flag indicating whether or not to call
-	 * updateFromXMLNode(SimTK::Xml::Element& aNode) from this constructor.  
-	 */
-	ControlSetController(const std::string &aFileName, bool aUpdateFromXMLNode = true);
-
-	/**
 	 * Copy constructor.  This constructor is called by any code that contains
 	 * a command of the form "Controller newController(oldController);".
 	 * @param aController The controller to be copied.

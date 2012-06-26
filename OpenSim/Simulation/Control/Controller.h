@@ -1,5 +1,7 @@
+#ifndef OPENSIM_CONTROLLER_H_
+#define OPENSIM_CONTROLLER_H_
+
 // Controller.h
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c)  2010, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -30,8 +32,6 @@
  * Author: Ajay Seth, Frank C. Anderson, Chand T. John, Samuel R. Hamner
  */
 
-#ifndef _Controller_h_
-#define _Controller_h_
 
 //============================================================================
 // INCLUDE
@@ -50,9 +50,9 @@ namespace OpenSim {
 class Model;
 
 /**
- * Controller is an abstract ModelComponent that specified  
- * the interface for all Controllers in OpenSim.
- * The defining method of Controller is computeControls().
+ * Controller is an abstract ModelComponent that defines the Controller  
+ * in OpenSim.
+ * The defining method of a Controller is its computeControls() method.
  * @see computeControls()
  *
  * @author Ajay Seth
@@ -60,25 +60,23 @@ class Model;
 class OSIMSIMULATION_API Controller : public ModelComponent {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Controller, ModelComponent);
 
-//=============================================================================
-// DATA
-//=============================================================================
-// These are the member variables of the Controller class.  
-protected:
-     /** Flag indicating whether the Controller is disabled or not.  Disabled 
-	means that the controller is not present in subsequent dynamics realizations. */
-	PropertyBool _isDisabledProp;
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations 
+    These are the serializable properties associated with a Controller. **/
+    /**@{**/
+
+	OpenSim_DECLARE_PROPERTY(isDisabled, bool, 
+		"Flag (true or false) indicating whether or not the controller is disabled." );
+
+	OpenSim_DECLARE_LIST_PROPERTY(actuator_list, std::string,
+		"The list of model actuators that this controller will control."
+        "The keyword ALL indicates the controller will controll all the acuators in the model" );
 
     /** number of controls this controller computes */
     int _numControls;
-
-    /** list of actuator names to be controlled */
-    PropertyStrArray _actuatorNameListProp;
-    Array<std::string>& _actuatorNameList;
-
-    /** set of actuators that the controller controls */ 
-	Set<Actuator> _actuatorSet;
-
 
 //=============================================================================
 // METHODS
@@ -91,37 +89,41 @@ public:
 	/** Default constructor. */
 	Controller();
 
-	/** A convenience constructor.
-	 * @param aModel The model that is to be controlled by this Controller. */
-	Controller(Model& aModel);
+	// Uses default (compiler-generated) destructor, copy constructor and copy 
+    // assignment operator.
 
-	/** Constructor from an XML Document.
+	//--------------------------------------------------------------------------
+	// Controller Interface
+	//--------------------------------------------------------------------------
+	/** Get whether or not this controller is disabled.
+	 * @return true when controller is disabled.
+	 */
+	bool isDisabled() const;
+
+	/** Disable this controller.
+	 * @param disableFlag Disable if true.
+	 */
+	void setDisabled(bool disableFlag);
+
+	/** Compute the control for actuator
+	 *  This method defines the behavior for any concrete controller 
+	 *  and therefore must be implemented by concrete subclasses.
 	 *
-	 * @param aFileName The XML file in which this a controller is defined.
-	 * @param aUpdateFromXMLNode A flag indicating whether or not to call
-	 * updateFromXMLNode(SimTK::Xml::Element& aNode) from this constructor.
-	 * This method is only necessary
-	 * if changes to the XML format (i.e. tag names) are made and future
-	 * versions must convert old syntax to the latest.
+	 * @param s			system state 
+	 * @param controls	writable model controls (all actuators)
 	 */
-	Controller(const std::string &aFileName, bool aUpdateFromXMLNode = true);
+	virtual void computeControls(const SimTK::State& s, SimTK::Vector &controls) const = 0;
 
-	/** Copy constructor.  
-	 * @param aController The controller to be copied.
-	 */
-	Controller(const Controller &aController);
-
-	/** Default destructor.	 */
-	virtual ~Controller();
+	/** replace the current set of actuators with the provided set */
+    void setActuators(const Set<Actuator>& actuators );
+	/** add to the current set of actuators */
+	void addActuator(const Actuator& actuator);
+	/** get a const reference to the current set of actuators */
+	const Set<Actuator>& getActuatorSet() const;
+	/** get a writable reference to the set of actuators for this controller */
+	Set<Actuator>& updActuators();
 
 protected:
-
-	/** Copy the member variables of the specified controller.  This method is
-	 * called by the copy constructor of the Controller class.
-	 *
-	 * @param aController The controller whose data is to be copied.
-	 */
-	void copyData(const Controller &aController);
 
 	/** Model component interface that permits the controller to be "wired" up
 	   to its actuators. Subclasses can override to perform additional setup. */
@@ -132,63 +134,12 @@ protected:
 		measures, etc... required by the controller. */
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
-public:
-
-#ifndef SWIG
-
-	/**
-	 * Assignment operator.  Copy contents of one Controller into another.
-	 *
-	 * @param aController The controller to be copied.
-	 * @return Reference to the controller with updated contents.
-	 */
-	Controller& operator=(const Controller &aController);
-
-#endif
-
-	//--------------------------------------------------------------------------
-	// Controller Interface
-	//--------------------------------------------------------------------------
-	/** Get whether or not this controller is disabled.
-	 *
-	 * @return true when controller is disabled.
-	 */
-	virtual bool isDisabled() const;
-
-	/** Disable this controller.
-	 *
-	 * @param disableFlag Disable if true.
-	 */
-	virtual void setDisabled(bool disableFlag);
-
-	/** Compute the control for actuator
-	 *  This method defines the behavior for any concrete controller 
-	 *  and therefore must be implemented by concrete subclasses.
-	 *
-	 * @param s system state 
-	 * @param controls writable model controls
-	 */
-	virtual void computeControls(const SimTK::State& s, SimTK::Vector &controls) const = 0;
-
-	/** replace the current set of actuators with the provided set */
-    virtual void setActuators( Set<Actuator>& actuators );
-	/** add to the current set of actuators */
-	void addActuator(Actuator *actuator);
-	/** get a const reference to the current set of actuators */
-	virtual const Set<Actuator>& getActuatorSet() const;
-	/** get a writable reference to the set of actuators for this controller */
-	virtual Set<Actuator>& updActuators();
-	/** get the names of the actuators being controlled */
-	virtual const Array<std::string>& getActuatorNames() const { return _actuatorNameList; }
-
 private:
-	// This method sets all pointer member variables to NULL. 
-	void setNull();
-	// Connect properties to local pointers.  */
-	virtual void setupProperties();
+	// the (sub)set of Model actuators that this controller controls */ 
+	Set<Actuator> _actuatorSet;
+
+	// construct and initialize properties
+	virtual void constructProperties();
 
 	//friend class ControlSet;
 	friend class ControllerSet;
@@ -200,6 +151,6 @@ private:
 //=============================================================================
 //=============================================================================
 
-#endif // __Controller_h__
+#endif // OPENSIM_CONTROLLER_H_
 
 

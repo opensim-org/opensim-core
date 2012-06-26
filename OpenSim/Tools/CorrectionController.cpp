@@ -79,7 +79,7 @@ CorrectionController::CorrectionController() :
  */
 CorrectionController::
 CorrectionController(const string &aFileName, bool aUpdateFromXMLNode) :
-	TrackingController(aFileName,false), 
+	TrackingController(), 
    _kp(_kpProp.getValueDbl()), 
    _kv(_kvProp.getValueDbl())
 {
@@ -159,9 +159,6 @@ setupProperties()
 void CorrectionController::
 copyData(const CorrectionController &aController)
 {
-	// Copy parent class's members first.
-	Controller::copyData(aController);
-
 	// Copy this class's members.
 	_kp = aController._kp;
 	_kv = aController._kv;
@@ -246,8 +243,9 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
 	double newControl = 0.0;
 
 
-   	for(int i=0; i<_actuatorSet.getSize(); i++){
-		CoordinateActuator* act = dynamic_cast<CoordinateActuator*>(&_actuatorSet[i]);
+   	for(int i=0; i< getActuatorSet().getSize(); i++){
+		CoordinateActuator* act = 
+			dynamic_cast<CoordinateActuator*>(&getActuatorSet().get(i));
 		SimTK_ASSERT( act,  "CorrectionController::computeControls dynamic cast failed");
 
 		Coordinate *aCoord = act->getCoordinate();
@@ -269,7 +267,7 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
 		}
 
 		SimTK::Vector actControls(1, newControl);
-		_actuatorSet[i].addInControls(actControls, controls);
+		getActuatorSet()[i].addInControls(actControls, controls);
 	}
 }
 
@@ -282,11 +280,6 @@ void CorrectionController::addToSystem(SimTK::MultibodySystem& system) const
 void CorrectionController::connectToModel(Model& model)
 {
 	Super::connectToModel(model);
-
-	_actuatorSet.setSize(0);
-	_actuatorSet.setMemoryOwner(false);
-	
-	std::cout << std::endl;
 
 	// create an actuator for each generalized coordinate in the model 
 	// add these actuators to the model and set their indexes 
@@ -309,9 +302,9 @@ void CorrectionController::connectToModel(Model& model)
 			
 		actuator->setOptimalForce(1.0);
 		
-		_actuatorSet.append(actuator);
+		updActuators().append(actuator);
    }
-	_numControls = _actuatorSet.getSize();
+	_numControls = getActuatorSet().getSize();
 
 	printf(" CorrectionController::connectToModel(): end  num Actuators= %d kv=%f kp=%f \n",  _model->getForceSet().getSize(), _kv, _kp );
 }

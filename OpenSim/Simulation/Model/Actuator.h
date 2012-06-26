@@ -30,7 +30,6 @@
  */
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Function.h>
 #include "Force.h"
 
 

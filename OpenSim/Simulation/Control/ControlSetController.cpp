@@ -71,18 +71,7 @@ ControlSetController::ControlSetController() :
     _controlsFileName(_controlsFileNameProp.getValueStr() ) {
 	setNull();
 }
-//_____________________________________________________________________________
-/**
- * Constructor from an XML Document
- */
-ControlSetController::ControlSetController(const std::string &aFileName, bool aUpdateFromXMLNode) :
-	Controller(aFileName, false),
-     _controlsFileName(_controlsFileNameProp.getValueStr())
-{
-	setNull();
-	SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
-	if(aUpdateFromXMLNode) updateFromXMLNode(e, getDocument()->getDocumentVersion());
-}
+
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -135,12 +124,8 @@ setupProperties()
 /**
  * Copy the member variables of the specified controller.
  */
-void ControlSetController::
-copyData(const ControlSetController &aController)
-{
-    // Copy parent class's members first.
-    Controller::copyData(aController);
-    
+void ControlSetController::copyData(const ControlSetController &aController)
+{   
     _controlsFileName = aController._controlsFileName;
 }
 
@@ -184,8 +169,10 @@ void ControlSetController::computeControls(const SimTK::State& s, SimTK::Vector&
 	std::string actName = "";
 	int index = -1;
 
-	for(int i=0; i<_actuatorSet.getSize(); i++){
-		actName = _actuatorSet[i].getName();
+	int na = getActuatorSet().getSize();
+
+	for(int i=0; i< na; ++i){
+		actName = getActuatorSet()[i].getName();
 		index = _controlSet->getIndex(actName);
 		if(index < 0){
 			actName = actName + ".excitation";
@@ -194,7 +181,7 @@ void ControlSetController::computeControls(const SimTK::State& s, SimTK::Vector&
 
 		if(index >= 0){
 			SimTK::Vector actControls(1, _controlSet->get(index).getControlValue(s.getTime()));
-			_actuatorSet[i].addInControls(actControls, controls);
+			getActuatorSet()[i].addInControls(actControls, controls);
 		}
 	}
 }
@@ -254,8 +241,8 @@ void ControlSetController::connectToModel(Model& model)
 		if(actName.length()>ext.length() && !(actName.compare(actName.length()-ext.length(), ext.length(), ".excitation"))){
 			actName.erase(actName.length()-ext.length(), ext.length());
 		}
-		if(_actuatorNameList.findIndex(actName) < 0) // not already in the list of actuators for this controller
-			_actuatorNameList.append(actName);
+		if(getProperty_actuator_list().findIndex(actName) < 0) // not already in the list of actuators for this controller
+			updProperty_actuator_list().appendValue(actName);
 	}
 
     // Controller::connectToModel() calls setActuators() with actuators in the

@@ -56,7 +56,6 @@ using namespace OpenSim;
 using namespace std;
 
 
-
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -64,54 +63,9 @@ using namespace std;
 /**
  * Default constructor.
  */
-Controller::Controller() :
-	ModelComponent(),
-    _actuatorNameList(_actuatorNameListProp.getValueStrArray())
+Controller::Controller() 
 {
-	setNull();
-}
-//_____________________________________________________________________________
-/**
- * Constructor.
- */
-Controller::Controller(Model& aModel) :
-	ModelComponent(),
-   _actuatorNameList(_actuatorNameListProp.getValueStrArray())
-{
-	setNull();
-	_model = &aModel;
-}
-//_____________________________________________________________________________
-/**
- * Constructor from an XML Document
-  */
-  Controller::Controller(const std::string &aFileName, bool aUpdateFromXMLNode) :
-      ModelComponent(aFileName, false),
-      _actuatorNameList(_actuatorNameListProp.getValueStrArray())
-{
-      setNull();
-	  SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
-      if(aUpdateFromXMLNode) updateFromXMLNode(e, getDocument()->getDocumentVersion());
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- */
-Controller::Controller(const Controller &aController) :
-	ModelComponent(aController),
-    _actuatorNameList(_actuatorNameListProp.getValueStrArray())
-{
-	setNull();
-	copyData(aController);
-}
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-Controller::~Controller()
-{
-
+	constructProperties();
 }
 
 
@@ -119,69 +73,21 @@ Controller::~Controller()
 // CONSTRUCTION
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Set NULL values for all member variables.
- */
-void Controller::setNull()
-{
-	setupProperties();
-    _actuatorSet.setMemoryOwner(false);
-
-	// MODEL
-	_model = NULL;
-}
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void Controller::setupProperties()
+void Controller::constructProperties()
 {
-     string comment;
+	constructProperty_isDisabled(false);
+	constructProperty_actuator_list();
 
-    comment = "A list of actuators that this controller will control."
-              "The keyword ALL indicates the controller will controll all the acuators in the model";
-    _actuatorNameListProp.setComment(comment);
-    _actuatorNameListProp.setName("actuator_list");
-    _propertySet.append(&_actuatorNameListProp);
-
-    comment = "Flag (true or false) indicating whether or not the controller is disabled.";
-    _isDisabledProp.setComment(comment);
-    _isDisabledProp.setName("isDisabled");
-	_isDisabledProp.setValue(false);
-    _propertySet.append( &_isDisabledProp );
-}
-//_____________________________________________________________________________
-/**
- * Copy the member variables of the specified controller.
- */
-void Controller::copyData(const Controller &aController)
-{
-	_isDisabledProp.setValue(aController._isDisabledProp.getValueBool());
-    _actuatorNameList = aController._actuatorNameList;
+	// Set is only a reference list, not ownership
+	_actuatorSet.setMemoryOwner(false);
 }
 
 
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//-----------------------------------------------------------------------------
-// ASSIGNMENT
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- */
-Controller& Controller::
-operator=(const Controller &aController)
-{
-	// BASE CLASS
-	ModelComponent::operator=(aController);
 
-	// DATA
-	copyData(aController);
-
-	return(*this);
-}
 
 
 //=============================================================================
@@ -198,7 +104,7 @@ operator=(const Controller &aController)
 bool Controller::isDisabled() const
 {
     if( _model->getAllControllersEnabled() ) {
-	   return( _isDisabledProp.getValueBool() );
+	   return( get_isDisabled() );
     } else {
        return( true );
     }
@@ -209,7 +115,7 @@ bool Controller::isDisabled() const
  */
 void Controller::setDisabled(bool aTrueFalse)
 {
-	_isDisabledProp.setValue(aTrueFalse);
+	upd_isDisabled()=aTrueFalse;
 }
 
 // for any post XML deseraialization intialization
@@ -217,20 +123,20 @@ void Controller:: connectToModel(Model& model)
 {
 	Super::connectToModel(model);
 
-	if(_actuatorNameList.getSize() > 0){
-		if(IO::Uppercase(_actuatorNameList[0]) == "ALL"){
-			setActuators(model.updActuators());
+	if(getProperty_actuator_list().size() > 0){
+		if(IO::Uppercase(get_actuator_list(0)) == "ALL"){
+			setActuators(model.getActuators());
 			// setup actuators to ensure actuators added by controllers are also setup properly
 			// TODO: Adopt the controls (discrete state variables) of the Actuator
 			return;
 		}
 		else{
 			Set<Actuator> actuatorsByName;
-			for(int i =0; i < _actuatorNameList.getSize(); i++){
-				if(model.updActuators().contains(_actuatorNameList[i]))
-					actuatorsByName.append(&model.updActuators().get(_actuatorNameList[i]));
+			for(int i =0; i <  getProperty_actuator_list().size(); i++){
+				if(model.getActuators().contains(get_actuator_list(i)))
+					actuatorsByName.append(&model.updActuators().get(get_actuator_list(i)));
 				else
-					cerr << "WARN: Controller::setup : Actuator " << _actuatorNameList[i] << " was not found and will be ignored.." << endl;
+					cerr << "WARN: Controller::setup : Actuator " << get_actuator_list(i) << " was not found and will be ignored." << endl;
 			}
 			actuatorsByName.setMemoryOwner(false);
 			setActuators(actuatorsByName);
@@ -247,22 +153,31 @@ void Controller::addToSystem(SimTK::MultibodySystem& system) const
 }
 
 // makes a request for which actuators a controller will control
-void Controller::setActuators( Set<Actuator>& actuators ) {
+void Controller::setActuators(const Set<Actuator>& actuators )
+{
 	//Rebuild consistent set of actuator lists
 	_actuatorSet.setSize(0);
-	_actuatorNameList.setSize(0);
+	updProperty_actuator_list().clear();
 	for(int i=0; i< actuators.getSize(); i++){
-		addActuator(&actuators[i]);
+		addActuator(actuators[i]);
 	}
+	// make sure controller does not take ownership
 	_actuatorSet.setMemoryOwner(false);
 }
 
-void Controller::addActuator(Actuator *actuator)
+void Controller::addActuator(const Actuator& actuator)
 {
-	_actuatorSet.append(actuator);
-	_actuatorNameList.append(actuator->getName());
-}
+	// want to keep a reference not make a clone
+	// but set interface does not take const pointer
+	// just const ref that forces a copy
+	// const_cast only to add to the private set of actuators
+	Actuator* mutable_act = const_cast<Actuator *>(&actuator);
+	_actuatorSet.append(mutable_act);
 
+	int found = updProperty_actuator_list().findIndex(actuator.getName());
+	if(found < 0) //add if the actuator isn't already in the list
+		updProperty_actuator_list().appendValue(actuator.getName());
+}
 
 Set<Actuator>& Controller::updActuators() { return _actuatorSet; }
 
