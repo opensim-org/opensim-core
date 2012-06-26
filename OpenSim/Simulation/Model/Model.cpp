@@ -1912,6 +1912,8 @@ const Object& Model::getObjectByTypeAndName(const std::string& typeString, const
         return getControllerSet().get(nameString);
 	else if (typeString=="Joint") 
         return getJointSet().get(nameString);
+    else if (typeString=="Probe") 
+        return getProbeSet().get(nameString);
 	throw Exception("Model::getObjectByTypeAndName: no object of type "+typeString+
 		" and name "+nameString+" was found in the model.");
 
