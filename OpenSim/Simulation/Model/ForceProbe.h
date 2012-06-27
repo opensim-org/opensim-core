@@ -60,10 +60,19 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
+
+    /** List of Forces to probe.  **/
     OpenSim_DECLARE_LIST_PROPERTY(force_names, std::string,
         "Specify a list of model Forces whose impulse should be calculated. "
         "If multiple Forces are given, the probe value will be the summation"
         " of all forces, and the integral will be the summation of all impulses.");
+
+    /** Exponent to apply to each force prior to the Probe operation. 
+    For example, if two forces F1 and F2 are given in force_names, then the
+    Probe value will be equal to Force_F1^exponent + Force_F2^exponent.  **/
+    OpenSim_DECLARE_PROPERTY(exponent, double,
+        "Exponent to apply to each force prior to the Probe operation.");
+
     /**@}**/
 
 //==============================================================================
@@ -75,7 +84,7 @@ public:
     /** Default constructor */
     ForceProbe();
     /** Convenience constructor */
-    ForceProbe(const Array<std::string>& force_names);
+    ForceProbe(const Array<std::string>& force_names, const double exponent);
 
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.
@@ -83,11 +92,17 @@ public:
     //--------------------------------------------------------------------------
     // Get and Set
     //--------------------------------------------------------------------------
-    /** Returns the name(s) of the Forces being probed */
+    /** Returns the name(s) of the Forces being probed. */
     const Property<std::string>& getForceNames() const;
 
-    /** Sets the name(s) of the Forces being probed */
+    /** Sets the name(s) of the Forces being probed. */
     void setForceNames(const Array<std::string>& forceNames);
+
+    /** Returns the exponent to apply to each force. */
+    const double getExponent() const;
+
+    /** Sets the exponent to apply to each force. */
+    void setExponent(const double exponent);
 
 
     //-----------------------------------------------------------------------------

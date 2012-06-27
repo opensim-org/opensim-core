@@ -59,10 +59,18 @@ public:
     These are the serializable properties associated with this class. Others
     are inherited from the superclass. **/
     /**@{**/
+
+    /** List of Joints to probe.  **/
     OpenSim_DECLARE_LIST_PROPERTY(joint_names, std::string,
         "Specify a list of model Joints whose work should be calculated. "
         "If multiple Joints are given, the probe value will be the summation"
         " of all joint powers.");
+
+    /** Exponent to apply to each actuator power prior to the Probe operation. 
+    For example, if two actuators A1 and A2 are given in actuator_names, then the
+    Probe value will be equal to Power_A1^exponent + Power_A2^exponent.  **/
+    OpenSim_DECLARE_PROPERTY(exponent, double,
+        "Exponent to apply to each joint power prior to the Probe operation.");
     /**@}**/
 
 //=============================================================================
@@ -75,7 +83,7 @@ public:
     /** Default constructor */
     JointPowerProbe();
     /** Convenience constructor */
-    JointPowerProbe(const Array<std::string>& joint_names);
+    JointPowerProbe(const Array<std::string>& joint_names, const double exponent);
 
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
@@ -88,6 +96,12 @@ public:
 
     /** Sets the names of the Joints being probed. */
     void setJointNames(const Array<std::string>& aJointNames);
+
+    /** Returns the exponent to apply to each joint power. */
+    const double getExponent() const;
+
+    /** Sets the exponent to apply to each joint power. */
+    void setExponent(const double exponent);
 
 
 

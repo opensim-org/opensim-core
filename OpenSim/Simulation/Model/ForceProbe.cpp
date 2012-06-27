@@ -61,12 +61,13 @@ ForceProbe::ForceProbe()
 /** 
  * Convenience constructor
  */
-ForceProbe::ForceProbe(const Array<string>& force_names)
+ForceProbe::ForceProbe(const Array<string>& force_names, const double exponent)
 {
     setNull();
     constructProperties();
 
     set_force_names(force_names);
+    set_exponent(exponent);
 }
 
 
@@ -84,6 +85,7 @@ void ForceProbe::setNull()
 void ForceProbe::constructProperties()
 {
     constructProperty_force_names();
+    constructProperty_exponent(1.0);
 }
 
 
@@ -92,7 +94,7 @@ void ForceProbe::constructProperties()
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Get the Force names that the ForceProbe is acting on.
+ * Returns the name(s) of the Forces being probed.
  */
 const Property<string>& ForceProbe::getForceNames() const
 {
@@ -101,13 +103,30 @@ const Property<string>& ForceProbe::getForceNames() const
 
 //_____________________________________________________________________________
 /**
- * Set the Force names that the ForceProbe is acting on.
+ * Sets the name(s) of the Forces being probed.
  */
 void ForceProbe::setForceNames(const Array<string>& forceNames)
 {
     set_force_names(forceNames);
 }
 
+//_____________________________________________________________________________
+/**
+ * Returns the exponent to apply to each force.
+ */
+const double ForceProbe::getExponent() const
+{
+    return get_exponent();
+}
+
+//_____________________________________________________________________________
+/**
+ * Sets the exponent to apply to each force.
+ */
+void ForceProbe::setExponent(const double exponent)
+{
+    set_exponent(exponent);
+}
 
 
 
@@ -172,7 +191,7 @@ double ForceProbe::computeProbeValue(const State& s) const
             Ftmp = forceValues.get(0);
 
         // Append to total "Force" force
-        TotalF += Ftmp;
+        TotalF += std::pow(Ftmp, getExponent());
     }
 
     return TotalF;

@@ -50,12 +50,13 @@ ActuatorPowerProbe::ActuatorPowerProbe()
 
 //_____________________________________________________________________________
 // Convenience constructor.
-ActuatorPowerProbe::ActuatorPowerProbe(Array<string> actuator_names)
+ActuatorPowerProbe::ActuatorPowerProbe(const Array<string> actuator_names, const double exponent)
 {
     setNull();
     constructProperties();
 
     set_actuator_names(actuator_names);
+    set_exponent(exponent);
 }
 
 
@@ -71,22 +72,46 @@ void ActuatorPowerProbe::setNull(void)
 void ActuatorPowerProbe::constructProperties(void)
 {
     constructProperty_actuator_names();
+    constructProperty_exponent(1.0);
 }
 
 //=============================================================================
 // GET AND SET
 //=============================================================================
-// Returns the names of the Actuators being probed.
+//_____________________________________________________________________________
+/**
+ * Returns the names of the Actuators being probed.
+ */
 const Property<string>& ActuatorPowerProbe::getActuatorNames() const
 {
     return getProperty_actuator_names();
 }
 
 //_____________________________________________________________________________
-// Sets the names of the Actuators being probed.
+/**
+ * Sets the names of the Actuators being probed.
+ */
 void ActuatorPowerProbe::setActuatorNames(const Array<string>& actuatorNames)
 {
     set_actuator_names(actuatorNames);
+}
+
+//_____________________________________________________________________________
+/**
+ * Returns the exponent to apply to each actuator power.
+ */
+const double ActuatorPowerProbe::getExponent() const
+{
+    return get_exponent();
+}
+
+//_____________________________________________________________________________
+/**
+ * Sets the exponent to apply to each actuator power.
+ */
+void ActuatorPowerProbe::setExponent(const double exponent)
+{
+    set_exponent(exponent);
 }
 
 
@@ -142,7 +167,7 @@ double ActuatorPowerProbe::computeProbeValue(const State& s) const
         double actPower = _model->getActuators().get(k).getPower(s);
         
         // Append to total "Actuator" power
-        TotalP += actPower;
+        TotalP += std::pow(actPower, getExponent());
     }
 
     return(TotalP);

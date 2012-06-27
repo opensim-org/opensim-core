@@ -60,10 +60,17 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
+    /** List of Actuators to probe.  **/
     OpenSim_DECLARE_LIST_PROPERTY(actuator_names, std::string,
         "Specify a list of model Actuators whose work should be calculated. "
         "If multiple Actuators are given, the probe value will be the summation"
         " of all actuator powers.");
+
+    /** Exponent to apply to each actuator power prior to the Probe operation. 
+    For example, if two actuators A1 and A2 are given in actuator_names, then the
+    Probe value will be equal to Power_A1^exponent + Power_A2^exponent.  **/
+    OpenSim_DECLARE_PROPERTY(exponent, double,
+        "Exponent to apply to each actuator power prior to the Probe operation.");
     /**@}**/
 
 //==============================================================================
@@ -75,7 +82,7 @@ public:
     /** Default constructor */
     ActuatorPowerProbe();
     /** Convenience constructor */
-    explicit ActuatorPowerProbe(Array<std::string> actuator_names);
+    ActuatorPowerProbe(const Array<std::string> actuator_names, const double exponent);
 
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.
@@ -88,6 +95,13 @@ public:
 
     /** Sets the names of the Actuators being probed. */
     void setActuatorNames(const Array<std::string>& actuatorNames);
+
+    /** Returns the exponent to apply to each actuator power. */
+    const double getExponent() const;
+
+    /** Sets the exponent to apply to each actuator power. */
+    void setExponent(const double exponent);
+
 
     //--------------------------------------------------------------------------
     // Computation

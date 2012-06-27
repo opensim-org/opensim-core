@@ -52,11 +52,13 @@ JointPowerProbe::JointPowerProbe()
 
 //_____________________________________________________________________________
 // Convenience constructor.
-JointPowerProbe::JointPowerProbe(const Array<string>& joint_names)
+JointPowerProbe::JointPowerProbe(const Array<string>& joint_names, const double exponent)
 {
     setNull();
     constructProperties();
+
     set_joint_names(joint_names);
+    set_exponent(exponent);
 }
 
 //_____________________________________________________________________________
@@ -71,6 +73,7 @@ void JointPowerProbe::setNull()
 void JointPowerProbe::constructProperties()
 {
     constructProperty_joint_names();
+    constructProperty_exponent(1.0);
 }
 
 
@@ -92,6 +95,24 @@ const Property<string>& JointPowerProbe::getJointNames() const
 void JointPowerProbe::setJointNames(const Array<string>& aJointNames)
 {
     set_joint_names(aJointNames);
+}
+
+//_____________________________________________________________________________
+/**
+ * Returns the exponent to apply to each joint power.
+ */
+const double JointPowerProbe::getExponent() const
+{
+    return get_exponent();
+}
+
+//_____________________________________________________________________________
+/**
+ * Sets the exponent to apply to each joint power.
+ */
+void JointPowerProbe::setExponent(const double exponent)
+{
+    set_exponent(exponent);
 }
 
 
@@ -148,7 +169,7 @@ double JointPowerProbe::computeProbeValue(const State& s) const
         double jointPower = _model->getJointSet().get(k).calcPower(s);
         
         // Append to total "Joint" power
-        TotalP += jointPower;
+        TotalP += std::pow(jointPower, getExponent());
     }
 
     return(TotalP);

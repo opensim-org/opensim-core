@@ -135,9 +135,6 @@ void Probe::addToSystem(MultibodySystem& system) const
     //Measure::Constant beforeOperationValue(system, 1);		// debug
 
 
-    //cout << beforeOperationValue << endl;
-    //std::system("pause");
-
     // Assign the correct (operation) Measure subclass to the operand
     // ----------------------------------------------------------------
 
