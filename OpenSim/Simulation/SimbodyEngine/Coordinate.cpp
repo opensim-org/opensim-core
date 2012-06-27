@@ -441,7 +441,9 @@ const OpenSim::Function& Coordinate::getPrescribedFunction() const
  */
 void Coordinate::setPrescribedFunction(const OpenSim::Function& function)
 {
-	upd_prescribed_function() = *function.clone();
+	//Optional property so clear out previous function value if any
+	updProperty_prescribed_function().clear();
+	updProperty_prescribed_function().adoptAndAppendValue(function.clone());
 }
 
 //_____________________________________________________________________________

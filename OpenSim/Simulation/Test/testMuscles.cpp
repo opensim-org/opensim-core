@@ -64,8 +64,8 @@ static const double maxIsometricForce = 100.0, optimalFiberLength = 0.1, tendonS
 static const double activation = 0.01, deactivation = 0.4,	activation1 = 7.6,	activation2 = 2.5;
 
 void simulateMuscle(const PathActuator &aMuscle, const double &startX, const double &act0, 
-					Function *motion, 
-					Function *control, 
+					const Function *motion, 
+					const Function *control, 
 					const double &accuracy);
 
 void testPathActuator();
@@ -133,8 +133,8 @@ int main()
 // TODO: Test will fail wih prescribe motion until the work done by this constraint is accounted for.
 //==========================================================================================================
 void simulateMuscle(const PathActuator &aMuscModel, const double &startX, const double &act0, 
-					Function *motion,  // prescribe motion of free end of muscle
-					Function *control, // prescribed excitation signal to the muscle
+					const Function *motion,  // prescribe motion of free end of muscle
+					const Function *control, // prescribed excitation signal to the muscle
 					const double &accuracy)
 {
 	cout << "\n******************************************************" << endl;
