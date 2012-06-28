@@ -31,8 +31,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
+#include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
@@ -40,7 +39,6 @@
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include "MuscleAnalysis.h"
-
 
 using namespace OpenSim;
 using namespace std;
@@ -118,8 +116,7 @@ Analysis(aMuscleAnalysis)
 /**
  * Set NULL values for all member variables.
  */
-void MuscleAnalysis::
-setNull()
+void MuscleAnalysis::setNull()
 {
 	setName("MuscleAnalysis");
 	setupProperties();
@@ -154,8 +151,7 @@ setNull()
 /**
  * Set up the properties.
  */
-void MuscleAnalysis::
-setupProperties()
+void MuscleAnalysis::setupProperties()
 {
 	_muscleListProp.setComment("List of muscles for which to perform the analysis."
 		" Use 'all' to perform the analysis for all muscles.");
@@ -179,8 +175,7 @@ setupProperties()
 /**
  * Construct the description for the MuscleAnalysis files.
  */
-void MuscleAnalysis::
-constructDescription()
+void MuscleAnalysis::constructDescription()
 {
 	char descrip[1024];
 
@@ -200,11 +195,9 @@ constructDescription()
 /**
  * Allocate storage for the muscle variables.
  */
-void MuscleAnalysis::
-allocateStorageObjects()
+void MuscleAnalysis::allocateStorageObjects()
 {
 	if(_model==NULL) return;
-	if (!getOn()) return;
 
 	// CLEAR EXISTING WORK ARRAYS
 	_storageList.setMemoryOwner(true);
@@ -216,21 +209,56 @@ allocateStorageObjects()
 
 	// FOR MOMENT ARMS AND MOMEMTS
 	const CoordinateSet& qSet = _model->getCoordinateSet();
-	int nq = qSet.getSize();
+	_coordinateList = _coordinateListProp.getValueStrArray();
+
+	if(IO::Lowercase(_coordinateList[0]) == "all"){
+		_coordinateList.setSize(0);
+		for(int i=0; i < qSet.getSize(); ++i) {
+			_coordinateList.append(qSet[i].getName());
+		}
+	} 
+	else{
+		int i=0;
+		while(i <_coordinateList.getSize()){
+			int found = qSet.getIndex(_coordinateList[i]);
+			if(found < 0){
+				cout << "MuscleAnalysis: WARNING - coordinate ";
+				cout << _coordinateList[i] << " is not part of model." << endl;
+				_coordinateList.remove(i);
+			}
+			else{
+				++i;
+			}
+		}
+	}
+
+	int nq = _coordinateList.getSize();
 	Storage *store;
 	for(int i=0;i<nq;i++) {
-		const Coordinate& q = qSet.get(i);
-		string name = "MomentArm_" + q.getName();
+		string name = "MomentArm_" + _coordinateList[i];
 		store = new Storage(1000,name);
 		store->setDescription(getDescription());
 		_storageList.append(store);
 	}
 	for(int i=0;i<nq;i++) {
-		const Coordinate& q = qSet.get(i);
-		string name = "Moment_" + q.getName();
+		string name = "Moment_" + _coordinateList[i];
 		store = new Storage(1000,name);
 		store->setDescription(getDescription());
 		_storageList.append(store);
+	}
+
+	// POPULATE ACTIVE MOMENT ARM ARRAY
+	_momentArmStorageArray.setSize(0);
+
+	for(int i=0; i<nq; i++) {
+		int found = qSet.getIndex(_coordinateList[i]);
+		if(found >=0){
+			StorageCoordinatePair *pair = new StorageCoordinatePair();
+			pair->q = &qSet[found];
+			pair->momentArmStore = _storageList[i];
+			pair->momentStore = _storageList[i+nq];
+			_momentArmStorageArray.append(pair);
+		}
 	}
 
 	// EVERYTHING ELSE
@@ -266,7 +294,6 @@ allocateStorageObjects()
 	_pennationAngularVelocityStore = new Storage(1000,"PennationAngularVelocity");
 	_pennationAngularVelocityStore->setDescription(getDescription());
 	_storageList.append(_pennationAngularVelocityStore );
-
 
 	_forceStore = new Storage(1000,"TendonForce");
 	_forceStore->setDescription(getDescription());
@@ -304,20 +331,6 @@ allocateStorageObjects()
 	_musclePowerStore->setDescription(getDescription());
 	_storageList.append(_musclePowerStore );
 
-	// UPDATE ALL STORAGE OBJECTS
-	updateStorageObjects();
-}
-//_____________________________________________________________________________
-/**
- * Update storage objects.  This is necessary if the modle, mucle, or
- * coordinate list is changed.
- */
-void MuscleAnalysis::
-updateStorageObjects()
-{
-	if(_model==NULL) return;
-	if (!getOn()) return;
-
 	// POPULATE MUSCLE LIST FOR "all"
 	ForceSet& fSet = _model->updForceSet();
 	_muscleList = _muscleListProp.getValueStrArray();
@@ -345,42 +358,9 @@ updateStorageObjects()
 	}
 	_muscleList = tmpMuscleList;
 
-	// POPULATE COORDINATE LIST FOR "all"
-	CoordinateSet& qSet = _model->updCoordinateSet();
-	_coordinateList = _coordinateListProp.getValueStrArray();
-	int nq = qSet.getSize();
-	int nActiveQ = _coordinateList.getSize();
-	if((nActiveQ==1) && (_coordinateList.get(0)=="all")) {
-		_coordinateList.setSize(0);
-		for(int i=0;i<nq;i++) {
-			Coordinate& q = qSet.get(i);
-			_coordinateList.append(q.getName());
-		}
-	}
-	// POPULATE ACTIVE MOMENT ARM ARRAY
-	Array<string> tmpCoordinateList("");  // For making sure the coordinates in the list really exist.
-	_momentArmStorageArray.setSize(0);
-	nActiveQ = _coordinateList.getSize();
-	for(int i=0; i<nActiveQ; i++) {
-		string name = _coordinateList[i];
-		for(int j=0; j<nq; j++) {
-			Coordinate& q = qSet.get(j);
-			if(name == q.getName()) {
-				StorageCoordinatePair *pair = new StorageCoordinatePair();
-				pair->q = &q;
-				pair->momentArmStore = _storageList[j];
-				pair->momentStore = _storageList[j+nq];
-				_momentArmStorageArray.append(pair);
-				tmpCoordinateList.append(q.getName());
-			}
-		}
-	}
-	_coordinateList = tmpCoordinateList;
-	//cout<<"Number of active moment arm storage array = "<<_momentArmStorageArray.getSize()<<endl;
-
 	// CONSTRUCT AND SET COLUMN LABELS
 	constructColumnLabels();
-	Storage *store;
+
 	int size = _storageList.getSize();
 	for(int i=0;i<size;i++) {
 		store = _storageList[i];
@@ -388,6 +368,7 @@ updateStorageObjects()
 		store->setColumnLabels(getColumnLabels());
 	}
 }
+
 //-----------------------------------------------------------------------------
 // COLUMN LABELS
 //-----------------------------------------------------------------------------
@@ -395,8 +376,7 @@ updateStorageObjects()
 /**
  * Construct the column labels for the MuscleAnalysis storage files.
  */
-void MuscleAnalysis::
-constructColumnLabels()
+void MuscleAnalysis::constructColumnLabels()
 {
 	if(!_model) return;
 	int size = _muscleList.getSize();
@@ -439,7 +419,7 @@ MuscleAnalysis& MuscleAnalysis::operator=(const MuscleAnalysis &aAnalysis)
  */
 void MuscleAnalysis::setModel(Model& aModel)
 {
-	Analysis::setModel(aModel);
+	Super::setModel(aModel);
 	allocateStorageObjects();
 }
 //_____________________________________________________________________________
@@ -448,15 +428,13 @@ void MuscleAnalysis::setModel(Model& aModel)
  *
  * @param aMuscles is the array of names of muscles to analyze.
  */
-void MuscleAnalysis::
-setMuscles(OpenSim::Array<std::string>& aMuscles)
+void MuscleAnalysis::setMuscles(OpenSim::Array<std::string>& aMuscles)
 {
 	int size = aMuscles.getSize();
 	_muscleListProp.getValueStrArray().setSize(aMuscles.getSize());
 	for(int i=0; i<size; i++){
 		_muscleListProp.getValueStrArray().get(i) = aMuscles.get(i);
 	}
-	updateStorageObjects();
 }
 //_____________________________________________________________________________
 /**
@@ -472,7 +450,6 @@ setCoordinates(OpenSim::Array<std::string>& aCoordinates)
 	for(int i=0; i<size; i++){
 		_coordinateListProp.getValueStrArray().get(i) = aCoordinates[i];
 	}
-	updateStorageObjects();
 }
 //-----------------------------------------------------------------------------
 // STORAGE CAPACITY
@@ -540,39 +517,82 @@ int MuscleAnalysis::record(const SimTK::State& s)
 	double sysMass = _model->getMatterSubsystem().calcSystemMass(s);
 	bool hasMass = sysMass > SimTK::Eps;
 
-	for(int i=0; i<nm; ++i) {
-		penang[i] = _muscleArray[i]->getPennationAngle(s);
-		len[i] = _muscleArray[i]->getLength(s);
-		tlen[i] = _muscleArray[i]->getTendonLength(s);
-		fiblen[i] = _muscleArray[i]->getFiberLength(s);
-		normfiblen[i] = _muscleArray[i]->getNormalizedFiberLength(s);
+	// Just warn once per instant
+	bool lengthWarning = false;
+	bool forceWarning = false;
+	bool dynamicsWarning = false;
 
-		// Compute muscle forces that are dependent on Positions, Velocities
-		// so that later quantities are valid and setForce is called
-		_muscleArray[i]->computeActuation(s);
-		force[i] = _muscleArray[i]->getForce(s);
-		fibforce[i] = _muscleArray[i]->getFiberForce(s);
-		actfibforce[i] = _muscleArray[i]->getActiveFiberForce(s);
-		passfibforce[i] = _muscleArray[i]->getPassiveFiberForce(s);
-		actfibforcealongten[i] = _muscleArray[i]->getActiveFiberForceAlongTendon(s);
-		passfibforcealongten[i] = _muscleArray[i]->getPassiveFiberForceAlongTendon(s);	
+	for(int i=0; i<nm; ++i) {
+		try{
+			len[i] = _muscleArray[i]->getLength(s);
+			tlen[i] = _muscleArray[i]->getTendonLength(s);
+			fiblen[i] = _muscleArray[i]->getFiberLength(s);
+			normfiblen[i] = _muscleArray[i]->getNormalizedFiberLength(s);
+			penang[i] = _muscleArray[i]->getPennationAngle(s);
+		}
+		catch (const std::exception& e) {
+			if(lengthWarning){
+				cout << "WARNING- MuscleAnalysis::record() unable to evaluate ";
+				cout << "muscle length at time " << s.getTime() << " for reason: ";
+				cout << e.what() << endl;
+				lengthWarning = true;
+			}
+			continue;
+		}
+
+		try{
+			// Compute muscle forces that are dependent on Positions, Velocities
+			// so that later quantities are valid and setForce is called
+			_muscleArray[i]->computeActuation(s);
+			force[i] = _muscleArray[i]->getForce(s);
+			fibforce[i] = _muscleArray[i]->getFiberForce(s);
+			actfibforce[i] = _muscleArray[i]->getActiveFiberForce(s);
+			passfibforce[i] = _muscleArray[i]->getPassiveFiberForce(s);
+			actfibforcealongten[i] = _muscleArray[i]->getActiveFiberForceAlongTendon(s);
+			passfibforcealongten[i] = _muscleArray[i]->getPassiveFiberForceAlongTendon(s);
+		}
+		catch (const std::exception& e) {
+			if(forceWarning){
+				cout << "WARNING- MuscleAnalysis::record() unable to evaluate ";
+				cout << "muscle forces at time " << s.getTime() << " for reason: ";
+				cout << e.what() << endl;
+				forceWarning = true;
+			}
+			continue;
+		}
 	}
 
 	// Cannot compute system dynamics without mass
 	if(hasMass){
 		// state derivatives (activation rate and fiber velocity) evaluated at dynamics
-		_model->getMultibodySystem().realize(s,SimTK::Stage::Dynamics);
+		//_model->getMultibodySystem().realize(s,SimTK::Stage::Dynamics);
 
 		for(int i=0; i<nm; ++i) {
-			//Velocities
-			fibVel[i] = _muscleArray[i]->getFiberVelocity(s);
-			normFibVel[i] =  _muscleArray[i]->getNormalizedFiberVelocity(s);
-			penAngVel[i] =  _muscleArray[i]->getPennationAngularVelocity(s);
-			//Powers
-			fibPower[i] = _muscleArray[i]->getFiberPower(s);
-			tendonPower[i] = _muscleArray[i]->getTendonPower(s);
-			muscPower[i] = _muscleArray[i]->getMusclePower(s);
+			try{
+				//Velocities
+				fibVel[i] = _muscleArray[i]->getFiberVelocity(s);
+				normFibVel[i] =  _muscleArray[i]->getNormalizedFiberVelocity(s);
+				penAngVel[i] =  _muscleArray[i]->getPennationAngularVelocity(s);
+				//Powers
+				fibPower[i] = _muscleArray[i]->getFiberPower(s);
+				tendonPower[i] = _muscleArray[i]->getTendonPower(s);
+				muscPower[i] = _muscleArray[i]->getMusclePower(s);
+			}
+			catch (const std::exception& e) {
+				if(dynamicsWarning){
+					cout << "WARNING- MuscleAnalysis::record() unable to evaluate ";
+					cout << "muscle forces at time " << s.getTime() << " for reason: ";
+					cout << e.what() << endl;
+					dynamicsWarning = true;
+				}
+			continue;
+			}
 		}
+	}
+	else {
+		cout << "WARNING- MuscleAnalysis::record() unable to evaluate ";
+		cout << "muscle dynamics at time " << s.getTime() << " because ";
+		cout << "model has no mass and system dynamics cannot be computed.";
 	}
 
 	// APPEND TO STORAGE
@@ -642,10 +662,11 @@ int MuscleAnalysis::record(const SimTK::State& s)
  *
  * @return -1 on error, 0 otherwise.
  */
-int MuscleAnalysis::
-begin(SimTK::State& s )
+int MuscleAnalysis::begin(SimTK::State& s )
 {
 	if(!proceed()) return(0);
+
+	allocateStorageObjects();
 
 	// RESET STORAGE
 	Storage *store;
@@ -689,8 +710,7 @@ begin(SimTK::State& s )
  *
  * @return -1 on error, 0 otherwise.
  */
-int MuscleAnalysis::
-step(const SimTK::State& s, int stepNumber )
+int MuscleAnalysis::step(const SimTK::State& s, int stepNumber )
 {
 	if(!proceed(stepNumber)) return(0);
 
@@ -713,8 +733,7 @@ step(const SimTK::State& s, int stepNumber )
  *
  * @return -1 on error, 0 otherwise.
  */
-int MuscleAnalysis::
-end(SimTK::State& s )
+int MuscleAnalysis::end(SimTK::State& s )
 {
 	if (!proceed()) return 0;
 	record(s);
@@ -747,19 +766,6 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 	for(int i=0; i<_storageList.getSize(); ++i){
 		Storage::printResult(_storageList[i],prefix+_storageList[i]->getName(),aDir,aDT,aExtension);
 	}
-	/*
-	Storage::printResult(_pennationAngleStore,prefix+"PennationAngle",aDir,aDT,aExtension);
-	Storage::printResult(_lengthStore,prefix+"Length",aDir,aDT,aExtension);
-	Storage::printResult(_fiberLengthStore,prefix+"FiberLength",aDir,aDT,aExtension);
-	Storage::printResult(_normalizedFiberLengthStore,prefix+"NormalizedFiberLength",aDir,aDT,aExtension);
-	Storage::printResult(_tendonLengthStore,prefix+"TendonLength",aDir,aDT,aExtension);
-	Storage::printResult(_forceStore,prefix+"Force",aDir,aDT,aExtension);
-	Storage::printResult(_fiberForceStore,prefix+"FiberForce",aDir,aDT,aExtension);
-	Storage::printResult(_activeFiberForceStore,prefix+"ActiveFiberForce",aDir,aDT,aExtension);
-	Storage::printResult(_passiveFiberForceStore,prefix+"PassiveFiberForce",aDir,aDT,aExtension);
-	Storage::printResult(_activeFiberForceAlongTendonStore,prefix+"ActiveFiberForceAlongTendon",aDir,aDT,aExtension);
-	Storage::printResult(_passiveFiberForceAlongTendonStore,prefix+"PassiveFiberForceAlongTendon",aDir,aDT,aExtension);
-	*/
 
 	int size = _momentArmStorageArray.getSize();
 	for(int i=0;i<size;i++) {

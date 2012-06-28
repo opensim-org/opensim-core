@@ -613,8 +613,19 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
 		aModel.assemble(s);
 
 		// equilibrateMuscles before realization as it may affect forces
-		if(aSolveForEquilibrium) aModel.equilibrateMuscles(s);
-
+		if(aSolveForEquilibrium){
+			try{// might not be able to equilibrate if model is in
+				// a non-physical pose. For example, a pose where the 
+				// muscle length is shorter than the tendon slack-length.
+				// the muscle will throw an Exception in this case.
+				aModel.equilibrateMuscles(s);
+			}
+			catch (const std::exception& e) {
+				cout << "WARNING- AnalyzeTool::run() unable to equilibrate muscles ";
+				cout << "at time = " << t <<"." << endl;
+				cout << "Reason: " << e.what() << endl;
+			}
+		}
 		// Make sure model is atleast ready to provide kinematics
 		aModel.getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 

@@ -162,7 +162,6 @@ private:
 	void setupProperties();
 	void constructDescription();
 	void allocateStorageObjects();
-	void updateStorageObjects();
 	void constructColumnLabels();
 
 public:

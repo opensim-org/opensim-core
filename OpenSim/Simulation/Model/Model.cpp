@@ -919,12 +919,32 @@ void Model::equilibrateMuscles(SimTK::State& state)
 {
 	getMultibodySystem().realize(state, Stage::Velocity);
 
+	bool failed = false;
+	string errorMsg = "";
+
     for (int i = 0; i < _forceSet.getSize(); i++)
     {
         Muscle* muscle = dynamic_cast<Muscle*>(&_forceSet.get(i));
-        if (muscle != NULL)
-            muscle->equilibrate(state);
+        if (muscle != NULL){
+			try{
+				muscle->equilibrate(state);
+			}
+			catch (const std::exception& e) {
+				if(!failed){ // haven't failed to equlibrate other muscles yet
+					errorMsg = e.what();
+					failed = true;
+				}
+				// just because one muscle failed to equilibrate doesn't mean 
+				// it isn't still useful to have remaining muscles equilibrate
+				// in an analysis, for example, we might not be reporting about
+				// all muscles, so continue with the rest.
+				continue;
+			}
+		}
     }
+
+	if(failed) // Notify the caller of the failure to equlibrate 
+		throw Exception("Model::equilibrateMuscles() "+errorMsg, __FILE__, __LINE__);
 }
 
 //_____________________________________________________________________________

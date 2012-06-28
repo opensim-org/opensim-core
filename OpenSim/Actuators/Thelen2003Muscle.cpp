@@ -22,14 +22,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/DebugUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <SimTKcommon/internal/ExceptionMacros.h>
-
 #include "Thelen2003Muscle.h"
-#include <iostream>
-
 
 //=============================================================================
 // STATICS
@@ -319,7 +313,18 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
     double passiveForce   = soln[4];
     double tendonForce    = soln[5];
 
-    std::string fcnName = "Thelen2003Muscle::"
+	if(flag_status == 0){ // normal opertaion
+		setForce(s,tendonForce);
+		setFiberLength(s,fiberLength);
+	}
+	else{// In case the following Exception is being trapped
+		// provide values that indicate the failure but allow the
+		// caller to continue.
+		setForce(s, SimTK::NaN);
+		setFiberLength(s, SimTK::NaN);
+	}
+
+	std::string fcnName = "Thelen2003Muscle::"
                             "computeInitialFiberEquilibrium(SimTK::State& s)";
     std::string muscleName = getName();
 
@@ -351,12 +356,6 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
     //4: fiber length (m)
     //5: passive force (N)
     //6: tendon force (N)  
-    
-    //Thelen2003Muscle* mthis =  const_cast<Thelen2003Muscle*>(this);
-    //mthis->initializedModel = true;
-    setForce(s,tendonForce);
-    setFiberLength(s,fiberLength);
- 
 }
 
 void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s, 

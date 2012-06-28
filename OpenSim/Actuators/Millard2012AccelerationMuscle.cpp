@@ -668,6 +668,19 @@ void Millard2012AccelerationMuscle::
     double passiveForce   = soln[5];
     double tendonForce    = soln[6];
 
+	if(flag_status == 0){ // normal opertaion
+		setForce(s,tendonForce);
+		setFiberLength(s,fiberLength);
+		setFiberVelocity(s,fiberVelocity);
+	}
+	else{// In case the following Exception is being trapped
+		// provide values that indicate the failure but allow the
+		// caller to continue.
+		setForce(s, SimTK::NaN);
+		setFiberLength(s, SimTK::NaN);
+		setFiberVelocity(s, SimTK::NaN);
+	}
+
     std::string fcnName = "Millard2012AccelerationMuscle::"
                             "computeInitialFiberEquilibrium(SimTK::State& s)";
     std::string muscleName = getName();
@@ -691,11 +704,7 @@ void Millard2012AccelerationMuscle::
     //4: fiber length (m)
     //5: fiber velocity (m/s)
     //6: passive force (N)
-    //7: tendon force (N)                   
-    setForce(s,tendonForce);
-    setFiberLength(s,fiberLength);
-    setFiberVelocity(s,fiberVelocity);
-       
+    //7: tendon force (N)                          
 }
 
 void Millard2012AccelerationMuscle::
