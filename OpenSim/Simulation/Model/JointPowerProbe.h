@@ -104,7 +104,6 @@ public:
     void setExponent(const double exponent);
 
 
-
     //--------------------------------------------------------------------------
     // Computation
     //--------------------------------------------------------------------------
@@ -112,13 +111,15 @@ public:
     double computeProbeValue(const SimTK::State& state) const OVERRIDE_11;
 
 
+//==============================================================================
+// PRIVATE
+//==============================================================================
+private:
     //--------------------------------------------------------------------------
     // ModelComponent Interface
     //--------------------------------------------------------------------------
-protected:
     void connectToModel(Model& aModel) OVERRIDE_11;
     
-private:
     void setNull();
     void constructProperties();
 

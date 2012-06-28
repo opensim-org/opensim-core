@@ -34,31 +34,14 @@ using namespace std;
 using namespace OpenSim;
 
 
-//=============================================================================
-// DESTRUCTOR AND CONSTRUCTORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-ProbeSet::~ProbeSet(void)
-{
-}
-
 //_____________________________________________________________________________
 /**
  * Default constructor of a ProbeSet.
  */
 ProbeSet::ProbeSet()
 {
-    setNull();
 }
 
-ProbeSet::ProbeSet(Model& model) :
-    ModelComponentSet<Probe>(model)
-{
-    setNull();
-}
 
 //_____________________________________________________________________________
 /**
@@ -67,19 +50,9 @@ ProbeSet::ProbeSet(Model& model) :
 ProbeSet::ProbeSet(const ProbeSet& aAbsProbeSet):
     ModelComponentSet<Probe>(aAbsProbeSet)
 {
-    setNull();
     *this = aAbsProbeSet;
 }
 
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-/**
- * Set the data members of this ProbeSet to their null values.
- */
-void ProbeSet::setNull()
-{
-}
 
 
 

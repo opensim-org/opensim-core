@@ -172,7 +172,7 @@ void Probe::addToSystem(MultibodySystem& system) const
     // Throw exception (invalid operation)
     // -------------------------------------
     else {
-        string errorMessage = getConcreteClassName() + ": Invalid probe operation. Currently supports 'value', 'integrate', 'differentiate', and 'scale'.";
+        string errorMessage = getConcreteClassName() + ": Invalid probe operation: " + getOperation() + ". Currently supports 'value', 'integrate', 'differentiate', and 'scale'.";
         throw (Exception(errorMessage.c_str()));
     }
 

@@ -1,5 +1,5 @@
-#ifndef __ProbeSet_h__
-#define __ProbeSet_h__
+#ifndef OPENSIM_PROBE_SET_H_
+#define OPENSIM_PROBE_SET_H_
 
 // ProbeSet.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -45,10 +45,6 @@
 namespace OpenSim {
 
 
-class Model;
-
-//class ScaleSet;
-
 //=============================================================================
 //=============================================================================
 /**
@@ -58,19 +54,12 @@ class Model;
  * @version 1.0
  */
 
-class OSIMSIMULATION_API ProbeSet : public ModelComponentSet<Probe>
-{
-    OpenSim_DECLARE_CONCRETE_OBJECT(ProbeSet, ModelComponentSet<Probe>);
-private:
-    void setNull();
+class OSIMSIMULATION_API ProbeSet : public ModelComponentSet<Probe> {
+OpenSim_DECLARE_CONCRETE_OBJECT(ProbeSet, ModelComponentSet<Probe>);
+
 public:
     ProbeSet();
-    ProbeSet(Model& model);
-
-    ProbeSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode=true):
-    ModelComponentSet<Probe>(model, aFileName, aUpdateFromXMLNode) {};
     ProbeSet(const ProbeSet& aAbsProbeSet);
-    ~ProbeSet(void);
 
 
 //=============================================================================
@@ -80,4 +69,4 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // __ProbeSet_h__
+#endif // OPENSIM_PROBE_SET_H_

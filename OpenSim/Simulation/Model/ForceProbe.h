@@ -107,8 +107,12 @@ public:
     // Computation
     //-----------------------------------------------------------------------------
     /** Compute the Force */
-    virtual double computeProbeValue(const SimTK::State& state) const;
+    virtual double computeProbeValue(const SimTK::State& state) const OVERRIDE_11;
 
+
+//==============================================================================
+// PRIVATE
+//==============================================================================
 private:
     //--------------------------------------------------------------------------
     // ModelComponent Interface
