@@ -164,7 +164,7 @@ void ForceProbe::connectToModel(Model& model)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Compute the Force upon which the Probe operation will be based on.
+ * Compute the Force.
  */
 double ForceProbe::computeProbeValue(const State& s) const
 {

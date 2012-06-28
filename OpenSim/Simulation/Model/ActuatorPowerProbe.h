@@ -38,17 +38,16 @@
 
 namespace OpenSim {
 
-class Model;
-
 //===============================================================================
 //                         ACTUATOR POWER PROBE
 //===============================================================================
 /**
  * ActuatorPowerProbe is a ModelComponent Probe for computing an operation on a 
  * actuator power or sum of actuator powers in the model during a simulation.
- * E.g. Work is the integral of power with respect to time.
+ * E.g. Actuator work is the integral of actuator power with respect to time, so by using the
+ * ActuatorPowerProbe with the 'integrate' operation, Actuator work may be computed.
  *
- * @author Ajay Seth, Tim Dorn
+ * @author Tim Dorn
  */
 class OSIMSIMULATION_API ActuatorPowerProbe : public Probe {
 OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorPowerProbe, Probe);
@@ -106,7 +105,7 @@ public:
     //--------------------------------------------------------------------------
     // Computation
     //--------------------------------------------------------------------------
-    /** Compute the Actuator power upon which the Probe operation will be based. */
+    /** Compute the Actuator power. */
     double computeProbeValue(const SimTK::State& state) const OVERRIDE_11;
 
 

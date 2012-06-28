@@ -37,16 +37,16 @@
 
 namespace OpenSim {
 
-class Model;
-
 //==============================================================================
+//                               JOINT POWER PROBE
 //==============================================================================
 /**
  * JointPowerProbe is a ModelComponent Probe for computing an operation on a 
  * joint power or sum of joint powers in the model during a simulation.
- * E.g. Work is the integral of power with respect to time.
+ * E.g. Joint work is the integral of joint power with respect to time, so by using the
+ * JointPowerProbe with the 'integrate' operation, Joint work may be computed.
  *
- * @author Ajay Seth, Tim Dorn
+ * @author Tim Dorn
  * @version 1.0
  */
 class OSIMSIMULATION_API JointPowerProbe : public Probe {
@@ -66,9 +66,9 @@ public:
         "If multiple Joints are given, the probe value will be the summation"
         " of all joint powers.");
 
-    /** Exponent to apply to each actuator power prior to the Probe operation. 
-    For example, if two actuators A1 and A2 are given in actuator_names, then the
-    Probe value will be equal to Power_A1^exponent + Power_A2^exponent.  **/
+    /** Exponent to apply to each joint power prior to the Probe operation. 
+    For example, if two joints J1 and J2 are given in joint_names, then the
+    Probe value will be equal to JointPower_J1^exponent + JointPower_J2^exponent.  **/
     OpenSim_DECLARE_PROPERTY(exponent, double,
         "Exponent to apply to each joint power prior to the Probe operation.");
     /**@}**/
@@ -108,8 +108,7 @@ public:
     //--------------------------------------------------------------------------
     // Computation
     //--------------------------------------------------------------------------
-    /** Compute the Joint power upon which the Probe operation will be 
-    based on. **/
+    /** Compute the Joint power. **/
     double computeProbeValue(const SimTK::State& state) const OVERRIDE_11;
 
 

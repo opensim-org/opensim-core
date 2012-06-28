@@ -36,8 +36,6 @@
 #include "Model.h"
 
 namespace OpenSim { 
-class Model;
-class Force;
 
 //==============================================================================
 //                               FORCE PROBE
@@ -108,7 +106,7 @@ public:
     //-----------------------------------------------------------------------------
     // Computation
     //-----------------------------------------------------------------------------
-    /** Compute the Force upon which the Probe operation will be based on. */
+    /** Compute the Force */
     virtual double computeProbeValue(const SimTK::State& state) const;
 
 private:

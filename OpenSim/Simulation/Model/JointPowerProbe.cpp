@@ -1,5 +1,5 @@
 // JointPowerProbe.cpp
-// Authors: Frank C. Anderson, Ajay Seth, Tim Dorn
+// Authors: Tim Dorn
 /*
  * Copyright (c)  2006-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -153,7 +153,9 @@ void JointPowerProbe::connectToModel(Model& aModel)
 // COMPUTATION
 //=============================================================================
 //_____________________________________________________________________________
-// Compute the Joint power upon which the Probe operation will be based on.
+/**
+ * Compute the Joint power.
+ */
 double JointPowerProbe::computeProbeValue(const State& s) const
 {
     int nA = getJointNames().size();

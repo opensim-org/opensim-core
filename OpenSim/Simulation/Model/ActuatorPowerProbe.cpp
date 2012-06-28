@@ -150,7 +150,7 @@ void ActuatorPowerProbe::connectToModel(Model& model)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Compute the Actuator power upon which the Probe operation will be based on.
+ * Compute the Actuator power.
  */
 double ActuatorPowerProbe::computeProbeValue(const State& s) const
 {
