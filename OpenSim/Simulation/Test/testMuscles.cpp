@@ -47,8 +47,8 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
 #include <OpenSim/Simulation/Model/PathActuator.h>
-#include <OpenSim/Simulation/Model/ActuatorWorkMeter.h>
-#include <OpenSim/Simulation/Model/JointWorkMeter.h>
+#include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
+#include <OpenSim/Simulation/Model/JointPowerProbe.h>
 #include <OpenSim/Actuators/RigidTendonMuscle.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
@@ -200,6 +200,8 @@ void simulateMuscle(const PathActuator &aMuscModel, const double &startX, const 
 
 	model.addForce(aMuscle);
 
+    
+
 	// Create a prescribed controller that simply applies controls as function of time
 	PrescribedController muscleController;
 	if(control != NULL){
@@ -211,14 +213,22 @@ void simulateMuscle(const PathActuator &aMuscModel, const double &startX, const 
 		model.addController(&muscleController);
 	}
 
-	// Add an energy meter to measure the work done by the muscle actuator 
-	ActuatorWorkMeter workMeter(*aMuscle, 0.0);
-	model.addComponent(&workMeter);
+    // Set names for muscles / joints.
+    Array<string> muscNames;
+	muscNames.append(aMuscle->getName());
+    Array<string> jointNames;
+	jointNames.append("slider");
 
-	// Add an energy meter to measure the work done by the joint
+	// Add an ActuatorPowerProbe to measure the work done by the muscle actuator 
+    ActuatorPowerProbe muscWorkProbe(muscNames, 1);
+	muscWorkProbe.setOperation("integrate");
+	model.addProbe(&muscWorkProbe);
+
+	// Add a JointPowerProbe to measure the work done by the joint
 	// will be 0 unless joint has prescribed motion
-	JointWorkMeter jointWorkMeter(slider, 0.0);
-	model.addComponent(&jointWorkMeter);
+    JointPowerProbe jointWorkProbe(jointNames, 1);
+	jointWorkProbe.setOperation("integrate");
+	model.addProbe(&jointWorkProbe);
 
 	// Since all components are allocated on the stack don't have model own them (and try to free)
 	model.disownAllComponents();
@@ -252,10 +262,10 @@ void simulateMuscle(const PathActuator &aMuscModel, const double &startX, const 
 
 	model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
 
-	double Emuscle0 = workMeter.getWork(si);
+	double Emuscle0 = muscWorkProbe.getRecordValues(si).get(0);
 	//cout << "Muscle initial energy = " << Emuscle0 << endl;
 	double Esys0 = model.getMultibodySystem().calcEnergy(si);
-	Esys0 += (Emuscle0 + jointWorkMeter.getWork(si));
+	Esys0 += (Emuscle0 + jointWorkProbe.getRecordValues(si).get(0));
 	double PEsys0 = model.getMultibodySystem().calcPotentialEnergy(si);
 	//cout << "Total initial system energy = " << Esys0 << endl; 
 
@@ -290,11 +300,11 @@ void simulateMuscle(const PathActuator &aMuscModel, const double &startX, const 
 	double KEsysCheck =  0.5*ballMass*xSpeed*xSpeed;
 	double PEsys =  model.getMultibodySystem().calcPotentialEnergy(si);
 
-	double muscleWork = workMeter.getWork(si);
+	double muscleWork = muscWorkProbe.getRecordValues(si).get(0);
 	cout << "Muscle work = " << muscleWork << endl;
 
-	double jointWork = jointWorkMeter.getWork(si);
-	double ESysMinusWork = Esys - workMeter.getWork(si) - jointWork; 
+	double jointWork = jointWorkProbe.getRecordValues(si).get(0);
+	double ESysMinusWork = Esys - muscleWork - jointWork; 
 	cout << "Esys - Work = " << ESysMinusWork << " :: Esys0 = " << Esys0 << endl; 
 	ASSERT_EQUAL(ESysMinusWork, Esys0, accuracy, __FILE__, __LINE__, 
 		"testMuscles: System energy-work not conserved.");
