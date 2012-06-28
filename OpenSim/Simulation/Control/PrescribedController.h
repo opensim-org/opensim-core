@@ -80,12 +80,6 @@ public:
 	PrescribedController();
 
 	/**
-	 * Constructor to create and add to a Model.
-	 * @param aModel The model that has actuators being controlled by this Controller.
-	 */
-	PrescribedController(Model& aModel);
-
-	/**
 	 * Copy constructor. 
 	 *
 	 * @param aController The controller to be copied.
