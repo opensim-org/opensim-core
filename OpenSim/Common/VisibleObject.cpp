@@ -300,6 +300,7 @@ void VisibleObject::getRotationsAndTranslationsAsArray6(double aArray[]) const
 
 void VisibleObject::setGeometryFileName(int i, const std::string &aGeometryFileName)
 {
+    _propGeometrySet.setValueIsDefault(false);
 	_geometrySet.append(new DisplayGeometry(aGeometryFileName));
 }
 
@@ -350,18 +351,20 @@ void VisibleObject::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
 					aNode.insertNodeAfter(aNode.element_end(), moveNode);
 				}
 			}
-			SimTK::Xml::element_iterator geometryIter = aNode.element_begin("geometry_files");
-			string propValue="";
-			bool hasPieces=false;
-			if (geometryIter!= aNode.element_end()){
-				SimTK::Array_<SimTK::String> value;
-				geometryIter->getValueAs(value);
-				for(unsigned i=0;i< value.size(); i++) {
-					setGeometryFileName(0, value[i]);	// This actually appends
-							hasPieces=true;
-						}
+	    Object::updateFromXMLNode(aNode, versionNumber);
+		SimTK::Xml::element_iterator geometryIter = aNode.element_begin("geometry_files");
+		string propValue="";
+		bool hasPieces=false;
+		if (geometryIter!= aNode.element_end()){
+			SimTK::Array_<SimTK::String> value;
+			geometryIter->getValueAs(value);
+			for(unsigned i=0;i< value.size(); i++) {
+				setGeometryFileName(0, value[i]);	// This actually appends
+						hasPieces=true;
 					}
 				}
 			}
-	Object::updateFromXMLNode(aNode, versionNumber);
+		}
+    else
+        Object::updateFromXMLNode(aNode, versionNumber);
 }
