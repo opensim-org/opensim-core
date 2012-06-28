@@ -33,381 +33,835 @@
 //     Add more test cases to address specific problems with probes
 //
 //==========================================================================================================
-#include <OpenSim/Common/osimCommon.h>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Simulation/osimSimulation.h>
-#include <OpenSim/Actuators/osimActuators.h>
-#include <OpenSim/Simulation/Model/PathActuator.h>
-#include <OpenSim/Actuators/RigidTendonMuscle.h>
+
+#include <OpenSim/OpenSim.h>
+#include <OpenSim/Simulation/Control/Controller.h>
+#include <OpenSim/Actuators/FiberCompressiveForceCosPennationCurve.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <OpenSim/Analyses/MuscleAnalysis.h>
+
+#include <OpenSim/Actuators/Thelen2003Muscle.h>
+#include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
+#include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>
+
 #include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
 #include <OpenSim/Simulation/Model/ForceProbe.h>
 #include <OpenSim/Simulation/Model/JointPowerProbe.h>
-//#include <OpenSim/Simulation/Model/MuscleMetabolicPowerProbeBhargava2004.h>
-//#include <OpenSim/Simulation/Model/MuscleMetabolicPowerProbeUmberger2003.h>
 #include <OpenSim/Simulation/Model/SystemEnergyProbe.h>
+
+#include <OpenSim/Simulation/Model/MetabolicMuscle.h>
+#include <OpenSim/Simulation/Model/MetabolicMuscleSet.h>
+#include <OpenSim/Simulation/Model/MuscleMetabolicPowerProbeBhargava2004.h>
+#include <OpenSim/Simulation/Model/MuscleMetabolicPowerProbeUmberger2003.h>
+
 #include <OpenSim/Analyses/ProbeReporter.h>
 #include <OpenSim/Analyses/ForceReporter.h>
 
-using namespace OpenSim;
+
 using namespace std;
-
-//==========================================================================================================
-static const double accuracy = 1e-4;
-
-// MUSCLE CONSTANTS
-static const double maxIsometricForce = 100.0, optimalFiberLength = 0.1, tendonSlackLength = 0.2, pennationAngle = 0.0;
-static const double activation = 0.01, deactivation = 0.4,	activation1 = 7.6,	activation2 = 2.5;
-
-void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &act0, 
-                    Function *motion, 
-                    Function *control, 
-                    const double &accuracy);
-
-void testRigidTendonMuscle();
+using namespace OpenSim;
+using namespace SimTK;
 
 
-//==========================================================================================================
+/**
+* This controller allows the user to apply one of a set of prescribed activation
+* to the model
+*
+* @params aModel: a reference to the current model, as required by the parent class
+* @params u: a parameter that modifies the activation type
+* @params actType: the type of activation: 0 for constant, 1 for a sin wave
+*/
+class MuscleController : public Controller{
+OpenSim_DECLARE_CONCRETE_OBJECT(MuscleController, Controller);
+public:
+	MuscleController(Model& aModel, double aU, int aActType):
+	  Controller(aModel),u(aU), actType(aActType){
+		
+		switch(actType){
+			case 0:
+				cout << endl<<"Constant Excitation: " << u << endl;
+				break;
+			case 1:
+				cout << endl<<"Sin Excitation: 0.5+0.5*sin(2*Pi)" << endl; 
+				break;
+			default:
+				cout << endl<<"Default Excitation: 0.1" << endl; 
+		}
+
+	  }
+
+	virtual void computeControls(const SimTK::State& s, SimTK::Vector &controls)
+	const{
+		//Muscle* muscle1 = dynamic_cast<Muscle*>(&_actuatorSet.get(0));
+		double time = s.getTime();
+		switch(actType){
+			case 0:
+				controls[0] = u;
+				break;
+			case 1:
+				controls[0] = 0.5 + 0.5*sin(2*Pi*time);	 
+				break;
+			default:
+				controls[0] = 0.1;
+		}
+		 
+	}
+
+	double getInitialExcitation(double t0)
+	const{
+		double u0 = 0.0;
+		switch(actType){
+			case 0:
+				u0 = u;
+				break;
+			case 1:
+				u0 = 0.5 + 0.5*sin(2*Pi*t0);	 
+				break;
+			default:
+				u0 = 0.1;
+		}
+		return u0;
+	}
+
+	void setInitialExcitation(double aU)
+	{
+		u = aU;
+	}
+
+private:
+	double u;
+	int actType;
+
+};
+
+
+
+
+//______________________________________________________________________________
+/**
+ * Create a muscle bench marking system. The bench mark consists of a single muscle 
+ * spans a distance. The distance the muscle spans can be controlled, as can the 
+ * excitation of the muscle.
+ */
 int main()
 {
-    SimTK::Array_<std::string> failures;
+	try {
+		//Bench Mark Configuration parameters
+		//							 add muscles,  prescribed motion         										
+		bool config_mdlComponents[2]	= {	true,  true };  
+		int	config_blockmotion		= 2;    //0 - Muscle held at 1 resting length apart
+                                            //1 - Ramp function 
+										    //2 - Muscle stretched according to a full +/-200% strain sinewave
+		int config_activationType	= 0;    //0 - Muscle activation set to a constant value
+										    //1 - Muscle activated according to a sine wave
+		double config_activationU = 0.5;    // atof(argv[1]); 
+		double mcl_stretch = 0.3;           // atof(argv[2]);
+		double mcl_bias    = 0.1;           // atof(argv[3]);
+		double mcl_cycles = 1;              // atof(argv[4]);
+
+		//Block Parameters
+		double	blk_mass		= 20;       //kg
+		double	blk_sidelen		= 0.1;      //0.1m^3
+		double  gravityY		= -9.81;    //N/kg
+
+		//Muscle Parameters
+		double mcl_maxIsoF	= 100.0;	//N
+		double mcl_optFibL	= 0.1;		//m
+		double mcl_tenSlkL	= 0.2;		//m
+		double mcl_penAng	= SimTK::Pi/4;      // atof(argv[9]);		//radians? degrees
+		double mcl_tau_a	= 0.01;
+		double mcl_tau_da	= 0.04;
+        double mcl_tau_min  = 0.05;
+		double mcl_muscleLength = mcl_optFibL*cos(mcl_penAng) + mcl_tenSlkL;
+		double mcl_tmaxstrain = 0.04;
+		//Simulation parameters
+		double t0 = 0;
+		double t1 = 4.0;                // atof(argv[5]);
+		double int_maxstep	= 1;
+		double int_minstep	= 1e-15;
+		double int_accuracy	= 1e-6;     // atof(argv[6]);
+		double int_tolerance= 1e-6;     // atof(argv[6]);
+
+        int config_musclemodel = 1;     // atoi(argv[7]); 
+        int config_printCurves = 0;     // atoi(argv[8]);
+
+        std::string path = ".";
+
+        //0: Thelen model
+        //1: Millard2012Equilibrium Model
+        //2: Millard2012Acceleration Model
+
+        string config_filename = "";
+
+        switch(config_musclemodel){
+        case 0:
+            config_filename = "Thelen2003Muscle";
+            break;
+        case 1: 
+            config_filename = "Millard2012EquilibriumMuscle";
+            break;
+        case 2:
+            config_filename = "Millard2012AccelerationMuscle";
+            break;
+        default:
+            config_filename = "InvalidMuscleName";
+        }
+		
+		// Create an OpenSim model and set its name
+		cout<<"\nCreating OpenSim model\n" << endl;
+		Model osimModel;
+		osimModel.setName("ASMESBC2012 Plot Generation");
+
+		//******************************************
+		// Ground
+		//******************************************
+		// Get a reference to the model's ground body
+		cout<<"..adding ground and geometry" << endl;
+		OpenSim::Body& ground = osimModel.getGroundBody();
+
+		//Add display geometry to show the ground in the GUI
+		ground.addDisplayGeometry("ground.vtp");
+		ground.addDisplayGeometry("anchor1.vtp");
+		//ground.addDisplayGeometry("anchor2.vtp");
 
 
-    try { testRigidTendonMuscle();
-        cout << "RigidTendonMuscle Test passed" << endl; }
-    catch (const Exception& e)
-        { e.print(cerr); failures.push_back("testRigidTendonMuscle"); }
+		//******************************************
+		// Block
+		//******************************************
+
+		Vec3	blockMassCenter(0);
+		Inertia	blockInertia	= blk_mass
+			*Inertia::brick(blk_sidelen,blk_sidelen,blk_sidelen);
+		
+		//Question 1: why use a reference for ground, but a pointer for the block?
+
+		//Create the new block
+		OpenSim::Body *block = new OpenSim::Body("block",blk_mass,blockMassCenter,
+			blockInertia);
+
+		//Add display geometry to the block to visualize it
+		block->addDisplayGeometry("block.vtp");
+		
+		//Adding block parameters and geometry
+		cout<<"..adding block parameters " << blk_mass << "kg " <<
+			blk_sidelen << "m  and geometry" << endl;
+
+		//******************************************
+		// Block-Ground Joint
+		//******************************************
 
 
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
+		//Now join the block to the ground using a 6 dof joint
+		Vec3 locationInParent(0, 0, 0),
+			orientationInParent(0), locationInBody(0),
+			orientationInBody(0);
+		FreeJoint *blockToGround = new 
+			FreeJoint("blockToGround",ground,locationInParent,
+			orientationInParent, *block, locationInBody,
+			orientationInBody);
+
+        Array<string> jointNames;
+        jointNames.append("blockToGround");
+
+		//Get a reference to the coordinate set (6 dof) between block and ground
+		CoordinateSet& jointCoordinateSet = blockToGround->getCoordinateSet();
+
+		double angleRange[2]	= {-Pi/2,Pi/2};
+		double positionRange[2]	= {-10, 10};
+		jointCoordinateSet[0].setRange(angleRange);
+		jointCoordinateSet[1].setRange(angleRange);
+		jointCoordinateSet[2].setRange(angleRange);
+		jointCoordinateSet[3].setRange(positionRange);
+		jointCoordinateSet[4].setRange(positionRange);
+		jointCoordinateSet[5].setRange(positionRange);
+
+		//Add the block body to the model
+		osimModel.addBody(block);
+
+		cout<<"..adding a free joint between the block and the ground " << endl; 
+		
+		//******************************************
+		// Gravity
+		//******************************************
+		osimModel.setGravity(Vec3(0,gravityY,0));
+
+
+
+		//******************************************
+		// Prescribed Motion
+		//******************************************
+		if(config_mdlComponents[1] == true)
+		{
+			int pmSize = 1000;			
+			OpenSim::Array<double> zeroCoeff;
+            OpenSim::Array<double> rampCoeff;
+			OpenSim::Array<double> constCoeff;
+			OpenSim::Array<double> pmTime;
+			OpenSim::Array<double> pmPos;
+			double delta = (t1-t0)/(double)(pmSize-1); 
+
+			constCoeff.setSize(pmSize);
+			zeroCoeff.setSize(2);
+            rampCoeff.setSize(2);
+			pmTime.setSize(pmSize);
+			pmPos.setSize(pmSize);			
+					
+			const CoordinateSet &blkCrdSet = osimModel.getCoordinateSet();
+
+			for(int i=0; i< pmSize; i++){
+				pmTime.set(i,i*delta);
+				pmPos.set(i, mcl_muscleLength
+                    + mcl_bias*mcl_optFibL
+                    + mcl_stretch*mcl_optFibL
+                      *sin(i*delta*2*Pi*mcl_cycles/(t1-t0)));
+				constCoeff.set(i,mcl_muscleLength + mcl_bias*mcl_optFibL);
+
+                if(i==0){
+                     double tmp = mcl_muscleLength
+                        + mcl_bias*mcl_optFibL
+                        + mcl_stretch*mcl_optFibL
+                          *sin(i*delta*2*Pi*mcl_cycles/(t1-t0));
+                     printf("\nInitial Gap Length: %f\n",tmp);
+                }
+			}
+
+			zeroCoeff.set(0,0);
+			zeroCoeff.set(1,0);
+
+            rampCoeff.set(0,mcl_muscleLength + mcl_bias*mcl_optFibL);
+            rampCoeff.set(1, mcl_muscleLength 
+                           + mcl_bias*mcl_optFibL + mcl_stretch*mcl_optFibL);
+			//constCoeff.set(0,mcl_muscleLength);
+			//constCoeff.set(1,mcl_muscleLength);
+
+			//LinearFunction *constVal  = new LinearFunction(constCoeff);
+
+			LinearFunction *zero = new LinearFunction(zeroCoeff);
+			LinearFunction *ramp = new LinearFunction(rampCoeff);
+            SimmSpline *ncs_sinWave = new SimmSpline(   pmTime.getSize(),
+                                                        &pmTime[0],
+                                                        &pmPos[0],
+                                                        "sine wave");
+
+			SimmSpline *constVal = new SimmSpline(  pmTime.getSize(),
+                                                    &pmTime[0],
+                                                    &constCoeff[0],
+                                                    "1 muscle length");
+
+            SimTK::Vector time0(1);
+            time0[0] = 0;
+
+			for(int i=0; i< blkCrdSet.getSize(); i++){
+				Coordinate &blkCrd = blkCrdSet.get(i);
+
+				switch(i){
+					case 0:		//rot x
+						blkCrd.setPrescribedFunction(*zero);	
+						blkCrd.setDefaultValue(0.0);
+						cout<<"..adding a constant value of 0 to the " << 
+                            blkCrd.getName() << endl;
+						break;
+					case 1:		//rot y
+						blkCrd.setPrescribedFunction(*zero);					
+						blkCrd.setDefaultValue(0.0);
+						cout<<"..adding a constant value of 0 to the " << 
+                            blkCrd.getName() << endl;
+						break;
+					case 2:		//rot z
+						blkCrd.setPrescribedFunction(*zero);
+						blkCrd.setDefaultValue(0.0);
+						cout<<"..adding a constant value of 0 to the " << 
+                            blkCrd.getName() << endl;
+						break;
+					case 3:		//trans x
+						blkCrd.setPrescribedFunction(*zero);
+						blkCrd.setDefaultValue(0.0);
+						cout<<"..adding a constant value of 0 to the " << 
+                            blkCrd.getName() << endl;
+						break;
+					case 4:		//trans y
+						blkCrd.setPrescribedFunction(*zero);
+						blkCrd.setDefaultValue(0.0);
+						cout<<"..adding a constant value of 0 to the " << 
+                            blkCrd.getName() << endl;
+						break;
+					case 5:		//trans z
+						switch(config_blockmotion){
+							case 0:
+								blkCrd.setPrescribedFunction(*constVal);
+								blkCrd.setDefaultValue(constVal->calcValue(time0));
+								cout<<"..adding a constant separation to the " 
+                                    << blkCrd.getName() << endl;
+								break;
+							case 1:
+								blkCrd.setPrescribedFunction(*ramp);                                
+                                blkCrd.setDefaultValue(ramp->calcValue(time0));
+								cout<<"..adding a ramp function to the " 
+                                    << blkCrd.getName() << endl;
+								break;
+                            case 2:
+								blkCrd.setPrescribedFunction(*ncs_sinWave);                                
+								blkCrd.setDefaultValue(ncs_sinWave->calcValue(time0));
+								cout<<"..adding a sinewave function to the " 
+                                    << blkCrd.getName() << endl;                                
+                                printf("... span at t=0: %f\n", 
+                                        ncs_sinWave->calcValue(time0));
+								break;
+							default:
+								blkCrd.setPrescribedFunction(*zero);
+								blkCrd.setDefaultValue(0.0);
+								cout<<"..adding a constant value of 0 to the " 
+                                    << blkCrd.getName() << endl;
+						}
+						
+						break;
+					default:
+						cout<<"..Error: prescribedFunction Code, blockCoord index exceeded. " << endl;
+				}
+			
+			}
+		}
+		
+		//******************************************
+		// Muscles
+		//******************************************
+        std::string mclAccName = "muscleAcceleration";
+		Millard2012AccelerationMuscle* muscleAcc = new
+               Millard2012AccelerationMuscle(mclAccName,
+                                            mcl_maxIsoF,
+                                            mcl_optFibL,
+                                            mcl_tenSlkL,
+                                            mcl_penAng);
+
+        muscleAcc->set_fiber_force_length_damping(1e-3);//1e-1
+        muscleAcc->set_fiber_compressive_force_length_damping(1e-3);
+        muscleAcc->set_fiber_compressive_force_cos_pennation_damping(1e-3);
+        muscleAcc->set_tendon_force_length_damping(1e-1);//5e-
+        //muscleAcc->set_fiber_damping(1e-2);
+        muscleAcc->set_mass(0.01);
+
+        std::string mclEqName = "muscleEquilibrium";
+        Millard2012EquilibriumMuscle* muscleEq = new
+               Millard2012EquilibriumMuscle(mclEqName,
+                                            mcl_maxIsoF,
+                                            mcl_optFibL,
+                                            mcl_tenSlkL,
+                                            mcl_penAng);
+
+        std::string mclThelenName = "muscleThelen";
+        Thelen2003Muscle* muscleThEq = new
+                            Thelen2003Muscle(mclThelenName,
+                                            mcl_maxIsoF,
+                                            mcl_optFibL,
+                                            mcl_tenSlkL,
+                                            mcl_penAng);
+
+		MuscleController* muscleControl = new MuscleController(osimModel, 
+                                                       config_activationU, 
+                                                       config_activationType);
+
+        
+       
+        Array<string> muscNames;
+        
+		if(config_mdlComponents[0] == true){
+			
+
+			//Specify the paths for the muscle
+            switch(config_musclemodel){
+                case 0: 
+                {
+                    muscleThEq->addNewPathPoint("muscle-point1",ground,Vec3(0,0,0));
+			        muscleThEq->addNewPathPoint("muscle-point2",*block,Vec3(0,0,0));
+			        muscleControl->setActuators(osimModel.updActuators());			
+			        osimModel.addForce(muscleThEq);
+                    muscNames.append(muscleThEq->getName());
+                    cout<<"..adding one Thelen2003Muscle " << endl; 	
+                }break;
+                case 1: 
+                {
+                    muscleEq->addNewPathPoint("muscle-point1",ground,Vec3(0,0,0));
+			        muscleEq->addNewPathPoint("muscle-point2",*block,Vec3(0,0,0));
+			        muscleControl->setActuators(osimModel.updActuators());			
+			        osimModel.addForce(muscleEq);
+                    muscNames.append(muscleEq->getName());
+                    cout<<"..adding one Millard2012EqulibriumMuscle " << endl;
+
+
+                    if(config_printCurves == 1){
+                        muscleEq->getActiveForceLengthCurve()
+                            .printMuscleCurveToCSVFile(path);
+                        muscleEq->getForceVelocityInverseCurve()
+                            .printMuscleCurveToCSVFile(path);
+                        //muscleEq->getFiberForceLengthCurve()
+                        //    .printMuscleCurveToCSVFile(path);
+                        //muscleEq->getFiberCompressiveForceLengthCurve()
+                        //    .printMuscleCurveToCSVFile(path);
+                        //muscleEq->getFiberCompressiveForceCosPennationCurve()
+                        //    .printMuscleCurveToCSVFile(path);
+                    }
+                }break;
+                case 2: 
+                {
+                    muscleAcc->addNewPathPoint("muscle-point1",ground,Vec3(0,0,0));
+			        muscleAcc->addNewPathPoint("muscle-point2",*block,Vec3(0,0,0));
+			        muscleControl->setActuators(osimModel.updActuators());			
+			        osimModel.addForce(muscleAcc);
+                    muscNames.append(muscleAcc->getName());
+
+                    if(config_printCurves == 1){
+                        muscleAcc->getActiveForceLengthCurve()
+                            .printMuscleCurveToCSVFile(path);
+                        muscleAcc->getForceVelocityCurve()
+                            .printMuscleCurveToCSVFile(path);
+                        //muscleAcc->getFiberForceLengthCurve()
+                        //    .printMuscleCurveToCSVFile(path);
+                        //muscleAcc->getFiberCompressiveForceLengthCurve()
+                        //    .printMuscleCurveToCSVFile(path);
+                        //muscleAcc->getFiberCompressiveForceCosPennationCurve()
+                        //    .printMuscleCurveToCSVFile(path);
+                    }
+
+                    cout<<"..adding one Millard2012AccelerationMuscle " << endl; 	
+                }break;
+                default:
+                    cout<<"..Invalid Muscle Model Selection " << endl;
+            }
+
+			
+			//osimModel.addAnalysis(muscleReporter);
+			osimModel.addController(muscleControl);
+
+			
+			cout<<"..and its analysis " << endl; 	
+			cout<<"..and a controller " << endl; 	
+		}
+		
+
+        // --------------------------------------------------------------------
+        // ADD PROBES TO THE MODEL TO GET INTERESTING VALUES
+        // --------------------------------------------------------------------
+        cout << "------------\nPROBES\n------------" << endl;
+
+        // Add ActuatorPowerProbe to measure work done by the muscle 
+        ActuatorPowerProbe* muscWorkProbe = new ActuatorPowerProbe(muscNames, 1);
+        muscWorkProbe->setName("ActuatorPower");
+        muscWorkProbe->setOperation("integrate");
+        osimModel.addProbe(muscWorkProbe);
+        cout << "1) Added ActuatorPowerProbe to measure work done by the muscle" << endl; 
+
+        // Add ActuatorPowerProbe to measure power generated by the muscle 
+        ActuatorPowerProbe* muscPowerProbe = new ActuatorPowerProbe(*muscWorkProbe);	// use copy constructor
+        muscPowerProbe->setOperation("value");
+        osimModel.addProbe(muscPowerProbe);
+        cout << "2) Added ActuatorPowerProbe to measure power generated by the muscle" << endl; 
+
+        // Add ActuatorPowerProbe to measure the square of the power generated by the muscle 
+        ActuatorPowerProbe* muscPowerSquaredProbe = new ActuatorPowerProbe(*muscPowerProbe);	// use copy constructor
+        muscPowerSquaredProbe->setName("Squared");
+        muscPowerSquaredProbe->setExponent(2.0);
+        osimModel.addProbe(muscPowerSquaredProbe);
+        cout << "3) Added ActuatorPowerProbe to measure the square of the power generated by the muscle" << endl; 
+
+        // Add JointPowerProbe to measure work done by the joint 
+        JointPowerProbe* jointWorkProbe = new JointPowerProbe(jointNames, 1);
+        jointWorkProbe->setName("JointPower");
+        jointWorkProbe->setOperation("integrate");
+        osimModel.addProbe(jointWorkProbe);
+        cout << "4) Added JointPowerProbe to measure work done by the joint" << endl;
+
+        // Add JointPowerProbe to measure power generated by the joint 
+        JointPowerProbe* jointPowerProbe = new JointPowerProbe(*jointWorkProbe);	// use copy constructor
+        jointPowerProbe->setOperation("value");
+        osimModel.addProbe(jointPowerProbe);
+        cout << "5) Added JointPowerProbe to measure power generated by the joint" << endl;
+
+        // Add ForceProbe to measure the impulse of the muscle force 
+        ForceProbe* impulseProbe = new ForceProbe(muscNames, 1);
+        impulseProbe->setName("Force");
+        impulseProbe->setOperation("integrate");
+        osimModel.addProbe(impulseProbe);
+        cout << "6) Added ForceProbe to measure the impulse of the muscle force" << endl;
+
+        // Add ForceProbe to report the muscle force 
+        ForceProbe* forceProbe = new ForceProbe(*impulseProbe);			// use copy constructor
+        forceProbe->setOperation("value");
+        osimModel.addProbe(forceProbe);
+        cout << "7) Added ForceProbe to report the muscle force" << endl;
+
+        // Add ForceProbe to report the square of the muscle force 
+        ForceProbe* forceSquaredProbe = new ForceProbe(*forceProbe);			// use copy constructor
+        forceSquaredProbe->setName("Squared");
+        forceSquaredProbe->setExponent(2.0);
+        osimModel.addProbe(forceSquaredProbe);
+        cout << "8) Added ForceProbe to report the square of the muscle force " << endl;
+
+        // Add ForceProbe to report the square of the muscle force for the same muscle repeated twice
+        ForceProbe* forceSquaredProbeTwice = new ForceProbe(*forceSquaredProbe);			// use copy constructor
+        forceSquaredProbeTwice->setName("Squared_RepeatedTwice");
+        Array<string> muscNamesTwice = muscNames;
+        muscNamesTwice.append(muscNames.get(0));
+        forceSquaredProbeTwice->setForceNames(muscNamesTwice);
+        osimModel.addProbe(forceSquaredProbeTwice);
+        cout << "9) Added ForceProbe to report the square of the muscle force for the same muscle repeated twice" << endl;
+
+        // Add ForceProbe to report -3.5X the muscle force 
+        double scaleFactor = -3.50;
+        ForceProbe* forceProbeScale = new ForceProbe(*impulseProbe);		// use copy constructor
+        forceProbeScale->setOperation("scale");
+        forceProbeScale->setOperationParameter(scaleFactor);
+        osimModel.addProbe(forceProbeScale);
+        cout << "10) Added ForceProbe to report -3.5X the muscle force" << endl;
+
+        // Add ForceProbe to report the differentiated muscle force 
+        ForceProbe* forceProbeDiff = new ForceProbe(*impulseProbe);		// use copy constructor
+        forceProbeDiff->setOperation("differentiate");
+        osimModel.addProbe(forceProbeDiff);
+        cout << "11) Added ForceProbe to report the differentiated muscle force" << endl;
+
+        // Add SystemEnergyProbe to measure the system KE+PE
+        SystemEnergyProbe* sysEnergyProbe = new SystemEnergyProbe(true, true);
+        sysEnergyProbe->setName("SystemEnergy");
+        sysEnergyProbe->setOperation("value");
+        sysEnergyProbe->setComputeKineticEnergy(true);
+        sysEnergyProbe->setComputePotentialEnergy(true);
+        osimModel.addProbe(sysEnergyProbe);
+        cout << "12) Added SystemEnergyProbe to measure the system KE+PE" << endl;
+
+        // Add SystemEnergyProbe to measure system power (d/dt system KE+PE)
+        SystemEnergyProbe* sysPowerProbe = new SystemEnergyProbe(*sysEnergyProbe);	// use copy constructor
+        sysPowerProbe->setDisabled(false);
+        sysPowerProbe->setOperation("differentiate");
+        osimModel.addProbe(sysPowerProbe);
+        cout << "13) Added SystemEnergyProbe to measure system power (d/dt system KE+PE)" << endl;
+
+
+        // Add muscle metabolic power probes
+        // --------------------------------------------------
+        bool addMuscleMetabolicProbes = true;
+        if(addMuscleMetabolicProbes) {
+            
+            MetabolicMuscle m(1.0, 0.5, 40, 133, 74, 111);
+            m.setName(muscNames.get(0));
+            MetabolicMuscleSet mms;
+            mms.append(m);
+            //cout << m << endl;
+            //cout << mms << endl;
+        
+            // MuscleMetabolicPowerProbeBhargava2004 Power Probe
+            MuscleMetabolicPowerProbeBhargava2004* metabolicPowerProbeBhargava = new MuscleMetabolicPowerProbeBhargava2004(true, true, true, false, true);
+            metabolicPowerProbeBhargava->setName("metabolicPowerBhargava");
+            metabolicPowerProbeBhargava->setMetabolicMuscleSet(mms);
+            metabolicPowerProbeBhargava->setOperation("value");
+            osimModel.addProbe(metabolicPowerProbeBhargava);
+            cout << "14) Added MuscleMetabolicPowerProbeBhargava2004 to measure muscle metabolic power" << endl;
+            
+            // MuscleMetabolicPowerProbeBhargava2004 Energy Probe
+            MuscleMetabolicPowerProbeBhargava2004* metabolicEnergyProbeBhargava = new MuscleMetabolicPowerProbeBhargava2004(*metabolicPowerProbeBhargava);   // use copy constructor
+            metabolicEnergyProbeBhargava->setOperation("integrate");
+            osimModel.addProbe(metabolicEnergyProbeBhargava);
+            cout << "15) Added MuscleMetabolicPowerProbeBhargava2004 to measure muscle metabolic energy" << endl;
+            
+            // MuscleMetabolicPowerProbeUmberger2003 Power Probe
+            MuscleMetabolicPowerProbeUmberger2003* metabolicPowerProbeUmberger = new MuscleMetabolicPowerProbeUmberger2003(true, true, false, true);
+            metabolicPowerProbeUmberger->setName("metabolicPowerUmberger");
+            metabolicPowerProbeUmberger->setMetabolicMuscleSet(mms);
+            metabolicPowerProbeUmberger->setOperation("value");
+            osimModel.addProbe(metabolicPowerProbeUmberger);
+            cout << "16) Added MuscleMetabolicPowerProbeUmberger2003 to measure muscle metabolic power" << endl;
+            
+            // MuscleMetabolicPowerProbeUmberger2003 Energy Probe
+            MuscleMetabolicPowerProbeUmberger2003* metabolicEnergyProbeUmberger = new MuscleMetabolicPowerProbeUmberger2003(*metabolicPowerProbeUmberger);   // use copy constructor
+            metabolicEnergyProbeUmberger->setOperation("integrate");
+            osimModel.addProbe(metabolicEnergyProbeUmberger);
+            cout << "17) Added MuscleMetabolicPowerProbeUmberger2003 to measure muscle metabolic energy" << endl;
+
+            
+            
+            
+            
+            
+        }
+
+
+
+        // --------------------------------------------------------------------
+        // ADD REPORTERS
+        // --------------------------------------------------------------------
+        ProbeReporter* probeReporter = new ProbeReporter(&osimModel);
+        osimModel.addAnalysis(probeReporter);
+        ForceReporter* forceReporter = new ForceReporter(&osimModel);
+        osimModel.addAnalysis(forceReporter);
+        MuscleAnalysis* muscleReporter = new MuscleAnalysis(&osimModel);
+        osimModel.addAnalysis(muscleReporter);
+        osimModel.print("testProbesModel.osim");
+        // --------------------------------------------------------------------
+        
+      
+        
+
+
+
+
+
+        // --------------------------------------------------------------------
+        // SYSTEM INTEGRATION
+        // --------------------------------------------------------------------
+		//Initialize the MB system
+		SimTK::State& si = osimModel.initSystem();
+
+
+		//Initialize the muscles 
+		if(config_mdlComponents[0] == true){
+			     
+            switch(config_musclemodel){
+                case 0: 
+                {
+                    muscleThEq->setActivation(si,muscleControl->getInitialExcitation(0.0));
+		            muscleThEq->setDefaultActivation(muscleControl->getInitialExcitation(0.0));		           
+		            muscleThEq->setDefaultFiberLength(mcl_optFibL);
+		            muscleThEq->setFiberLength(si,mcl_optFibL);
+		            muscleThEq->setOptimalFiberLength(mcl_optFibL);	
+                }break;
+                case 1: 
+                {
+                    muscleEq->setActivation(si,muscleControl->getInitialExcitation(0.0));
+		            muscleEq->setDefaultActivation(muscleControl->getInitialExcitation(0.0));		           
+		            muscleEq->setDefaultFiberLength(mcl_optFibL);
+		            muscleEq->setFiberLength(si,mcl_optFibL);
+		            muscleEq->setOptimalFiberLength(mcl_optFibL);		
+                }break;
+                case 2: 
+                {
+                    muscleAcc->setActivation(si,muscleControl->getInitialExcitation(0.0));
+		            muscleAcc->setDefaultActivation(muscleControl->getInitialExcitation(0.0));		           
+		            muscleAcc->setDefaultFiberLength(mcl_optFibL);
+		            muscleAcc->setFiberLength(si,mcl_optFibL);
+		            muscleAcc->setOptimalFiberLength(mcl_optFibL);	 	
+                }break;
+                default:
+                    cout<<"..Invalid Muscle Model Selection " << endl;
+            }
+        
+
+			osimModel.getMultibodySystem().realize(si,SimTK::Stage::Velocity);
+			//Compute initial conditions for muscles
+            SimTK::Vector weights(si.getNY());
+            weights = 1;
+            SimTK::Vector cweights(si.getNYErr());
+            cweights = 1;
+            SimTK::Vector yerrest(si.getNY());
+            yerrest = 1;
+            SimTK::Real tol = 1e-6;
+
+            //cout << si.getYErr() << endl;
+            osimModel.getMultibodySystem().project(si,tol);
+
+            //cout << si.getYErr() << endl;            
+            osimModel.getMultibodySystem().realize(si,SimTK::Stage::Velocity);
+			//cout << si.getY() << endl;
+
+            osimModel.getMultibodySystem().realize(si,SimTK::Stage::Dynamics);
+            osimModel.equilibrateMuscles(si);
+            
+		}
+        SimTK::State siInit(si);
+
+
+        // Get initial muscle and system energy
+        // ---------------------------------------
+        //double Emuscle0 = muscWorkProbe.getRecordValues(si).get(0);
+        //double Ejoint0 = jointWorkProbe.getRecordValues(si).get(0);
+        //double Esys0 = sysEnergyProbe.getRecordValues(si).get(0);
+        //cout << "-----------------------------------------------------\n" << endl;
+        //cout << "Muscle work at start of simulation = " << Emuscle0 << endl;
+        //cout << "Joint work at start of simulation = " << Ejoint0 << endl;
+        //cout << "System energy at start of simulation = " << Esys0 << endl;
+        //cout << "Total energy = " << Esys0 + Emuscle0 + Ejoint0 << endl; 
+
+
+		// Create the integrator and manager for the simulation	
+        // --------------------------------------------------------
+		//SimTK::RungeKuttaFeldbergIntegrator integrator(osimModel.getMultibodySystem());
+		SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
+		//CPodesIntegrator integrator(osimModel.getMultibodySystem(),CPodes::BDF,CPodes::Newton);
+		integrator.setMaximumStepSize(int_maxstep);
+		integrator.setMinimumStepSize(int_minstep);
+		integrator.setAccuracy(int_accuracy);
+		//integrator.setAbsoluteTolerance(int_tolerance);
+		Manager manager(osimModel, integrator);
+
+		// Print out details of the model
+		//osimModel.printDetailedInfo(si, cout);
+
+		// Print out the initial position and velocity states
+		//si.getQ().dump("Initial q's"); // block positions
+		//si.getU().dump("Initial u's"); // block velocities
+		//cout << "Initial time: " << si.getTime() << endl;
+
+
+        //Integrate from t0 to t1
+		manager.setInitialTime(t0);
+		manager.setFinalTime(t1);
+		cout<<"\nIntegrating from " << t0 << " to " << t1 << endl;
+
+
+		clock_t startTime = clock();
+		manager.integrate(si);
+		double simTime = 1.e3*(clock()-startTime)/(double)CLOCKS_PER_SEC;
+        cout << "Simulation took " << simTime << " ms" << endl;
+
+        
+		// Save the simulation results (states, forces, probes)
+        // -----------------------------------------------------
+        Storage states(manager.getStateStorage());
+        states.print("testProbes_states.sto");
+        probeReporter->getProbeStorage().print("testProbes_probes.sto");
+        forceReporter->getForceStorage().print("testProbes_forces.sto");
+        cout << "\nDone with printing results..." << endl;
+        
+
+        // Test a bunch of probe outputs
+        // -------------------------------
+        osimModel.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
+        ASSERT_EQUAL(forceProbeScale->getRecordValues(si).get(0), scaleFactor*forceProbe->getRecordValues(si).get(0), 1e-4, __FILE__, __LINE__, "Error with 'scale' operation.");
+        ASSERT_EQUAL(forceSquaredProbe->getRecordValues(si).get(0), pow(forceProbe->getRecordValues(si).get(0), 2), 1e-4, __FILE__, __LINE__, "Error with forceSquaredProbe probe.");
+        ASSERT_EQUAL(forceSquaredProbeTwice->getRecordValues(si).get(0), 2*pow(forceProbe->getRecordValues(si).get(0), 2), 1e-4, __FILE__, __LINE__, "Error with forceSquaredProbeTwice probe.");
+        
+
+
+        // Test system energy - work using
+        // "integrate" operation on muscWorkProbe, jointWorkProbe
+        // "value" operation on sysEnergyProbe
+        // Not quite working yet with Matt's muscles.
+        // Will ignore for now until testMuscles passes.
+        // ---------------------------------------------------------
+        //double muscleWorkAtEnd = muscWorkProbe.getRecordValues(si).get(0);
+        //double jointWorkAtEnd = jointWorkProbe.getRecordValues(si).get(0);
+        //double systemEnergyAtEnd = sysEnergyProbe.getRecordValues(si).get(0);
+        //double ESysMinusWork = systemEnergyAtEnd - muscleWorkAtEnd - jointWorkAtEnd; 
+        //cout << "Muscle work at end of simulation = " << muscleWorkAtEnd << endl;
+        //cout << "Joint work at end of simulation = " << jointWorkAtEnd << endl;
+        //cout << "System energy at end of simulation = " << systemEnergyAtEnd << endl;
+        //cout << "Total system energy - work = " << ESysMinusWork << endl; 
+        //ASSERT_EQUAL(Esys0, ESysMinusWork, 1e-4, __FILE__, __LINE__, "System energy with muscle not conserved.");
+
+        
+
+	}
+    catch (const std::exception& ex)
+    {
+        cout << ex.what() << endl;
+		return 1;
+    }
+    catch (...)
+    {
+        cout << "UNRECOGNIZED EXCEPTION" << endl;
         return 1;
     }
 
-    cout << "testProbes Done" << endl;
-    return 0;
+	
+    cout << "\ntestProbes completed successfully.\n";
+	return 0;
 }
 
-
-
-//==========================================================================================================
-// Main test driver to be used on any muscle model (derived from Muscle) so new cases should be easy to add
-// Currently, the test only verifies that the work done by the muscle corresponds to the change in system
-// energy.
-//
-// TODO: Test will fail wih prescribe motion until the work done by this constraint is accounted for.
-//==========================================================================================================
-void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &act0, 
-                    Function *motion,  // prescribe motion of free end of muscle
-                    Function *control, // prescribed excitation signal to the muscle
-                    const double &accuracy)
-{
-    cout << "\n******************************************************" << endl;
-    cout << " Test " << aMuscle.getConcreteClassName() << " Muscle Actuator Type." <<endl;
-    cout << "******************************************************" << endl;
-    using SimTK::Vec3;
-
-    // Define the initial and final simulation times
-    double initialTime = 0.0;
-    double finalTime = 1.0;
-    
-    //Physical properties of the model
-    double ballMass = 10;
-    double ballRadius = 0.05;
-    double anchorWidth = 0.1;
-
-    // Create an OpenSim model and set its name
-    Model model;
-
-    // Get a reference to the model's ground body
-    Body& ground = model.getGroundBody();
-    ground.addDisplayGeometry("box.vtp");
-    ground.updDisplayer()->setScaleFactors(Vec3(anchorWidth, anchorWidth, 2*anchorWidth));
-
-    OpenSim::Body ball("ball", ballMass , Vec3(0),  ballMass*SimTK::Inertia::sphere(ballRadius));
-    ball.addDisplayGeometry("sphere.vtp");
-    ball.updDisplayer()->setScaleFactors(Vec3(2*ballRadius));
-    // ball connected  to ground via a slider along X
-    double xSinG = optimalFiberLength*cos(pennationAngle)+tendonSlackLength;
-    SliderJoint slider("slider", ground, Vec3(anchorWidth/2+xSinG, 0, 0), Vec3(0), ball, Vec3(0), Vec3(0));
-    CoordinateSet& jointCoordinateSet = slider.getCoordinateSet();
-    jointCoordinateSet[0].setName("tx");
-    jointCoordinateSet[0].setDefaultValue(1.0);
-    jointCoordinateSet[0].setRangeMin(0); jointCoordinateSet[0].setRangeMax(1.0);
-    if(motion != NULL)
-        jointCoordinateSet[0].setPrescribedFunction(*motion);
-    // add ball to model
-    model.addBody(&ball);
-
-    //Attach the muscle
-    const string &actuatorType = aMuscle.getConcreteClassName();
-    aMuscle.setName("muscle");
-    aMuscle.addNewPathPoint("muscle-box", ground, Vec3(anchorWidth/2,0,0));
-    aMuscle.addNewPathPoint("muscle-ball", ball, Vec3(-ballRadius,0,0));
-    
-    ActivationFiberLengthMuscle_Deprecated *aflMuscle = dynamic_cast<ActivationFiberLengthMuscle_Deprecated *>(&aMuscle);
-    if(aflMuscle){
-        // Define the default states for the muscle that has activation and fiber-length states
-        aflMuscle->setDefaultActivation(act0);
-        aflMuscle->setDefaultFiberLength(aflMuscle->getOptimalFiberLength());
-    }else{
-        ActivationFiberLengthMuscle *aflMuscle2 = dynamic_cast<ActivationFiberLengthMuscle *>(&aMuscle);
-        if(aflMuscle2){
-            // Define the default states for the muscle that has activation and fiber-length states
-            aflMuscle2->setDefaultActivation(act0);
-            aflMuscle2->setDefaultFiberLength(aflMuscle2->getOptimalFiberLength());
-        }
-    }
-
-
-    model.addForce(&aMuscle);
-
-    // Create a prescribed controller that simply applies controls as function of time
-    PrescribedController muscleController;
-    if(control != NULL){
-        muscleController.setActuators(model.updActuators());
-        // Set the indiviudal muscle control functions for the prescribed muscle controller
-        muscleController.prescribeControlForActuator("muscle", control->clone());
-
-        // Add the control set controller to the model
-        model.addController(&muscleController);
-    }
-
-
-    // --------------------------------------------------------------------
-    // ADD PROBES TO THE MODEL TO GET INTERESTING VALUES
-    // --------------------------------------------------------------------
-    Array<string> muscNames;
-    muscNames.append(aMuscle.getName());
-
-    Array<string> jointNames;
-    jointNames.append("slider");
-
-    // Add ActuatorPowerProbe to measure work done by the muscle 
-    ActuatorPowerProbe muscWorkProbe(muscNames, 1);
-    muscWorkProbe.setName("ActuatorPower");
-    muscWorkProbe.setOperation("integrate");
-    model.addProbe(&muscWorkProbe);
-
-    // Add ActuatorPowerProbe to measure power generated by the muscle 
-    ActuatorPowerProbe muscPowerProbe(muscWorkProbe);	// use copy constructor
-    muscPowerProbe.setOperation("value");
-    model.addProbe(&muscPowerProbe);
-
-    // Add ActuatorPowerProbe to measure power generated by the muscle 
-    ActuatorPowerProbe muscPowerSquaredProbe(muscPowerProbe);	// use copy constructor
-    muscPowerSquaredProbe.setName("Squared");
-    muscPowerSquaredProbe.setExponent(2.0);
-    model.addProbe(&muscPowerSquaredProbe);
-
-    // Add JointPowerProbe to measure work done by the joint 
-    JointPowerProbe jointWorkProbe(jointNames, 1);
-    jointWorkProbe.setName("JointPower");
-    jointWorkProbe.setOperation("integrate");
-    model.addProbe(&jointWorkProbe);
-
-    // Add JointPowerProbe to measure power generated by the joint 
-    JointPowerProbe jointPowerProbe(jointWorkProbe);	// use copy constructor
-    jointPowerProbe.setOperation("value");
-    model.addProbe(&jointPowerProbe);
-
-    // Add ForceProbe to measure the impulse of the muscle force 
-    ForceProbe impulseProbe(muscNames, 1);
-    impulseProbe.setName("Force");
-    impulseProbe.setOperation("integrate");
-    model.addProbe(&impulseProbe);
-
-    // Add ForceProbe to report the muscle force 
-    ForceProbe forceProbe(impulseProbe);			// use copy constructor
-    forceProbe.setOperation("value");
-    model.addProbe(&forceProbe);
-
-    // Add ForceProbe to report the squared muscle force 
-    ForceProbe forceSquaredProbe(forceProbe);			// use copy constructor
-    forceSquaredProbe.setName("Squared");
-    forceSquaredProbe.setExponent(2.0);
-    model.addProbe(&forceSquaredProbe);
-
-    // Add ForceProbe to report the squared muscle force for the same muscle repeated twice
-    ForceProbe forceSquaredProbeTwice(forceSquaredProbe);			// use copy constructor
-    forceSquaredProbeTwice.setName("Squared_RepeatedTwice");
-    Array<string> muscNamesTwice = muscNames;
-    muscNamesTwice.append(aMuscle.getName());
-    forceSquaredProbeTwice.setForceNames(muscNamesTwice);
-    model.addProbe(&forceSquaredProbeTwice);
-
-    // Add ForceProbe to report -3.5X the muscle force 
-    double scaleFactor = -3.50;
-    ForceProbe forceProbeScale(impulseProbe);		// use copy constructor
-    forceProbeScale.setOperation("scale");
-    forceProbeScale.setOperationParameter(scaleFactor);
-    model.addProbe(&forceProbeScale);
-
-    // Add SystemEnergyProbe to measure the system KE+PE
-    SystemEnergyProbe sysEnergyProbe(true, true);
-    sysEnergyProbe.setName("SystemEnergy");
-    sysEnergyProbe.setOperation("value");
-    model.addProbe(&sysEnergyProbe);
-
-    // Add SystemEnergyProbe to measure system power (d/dt system KE+PE)
-    SystemEnergyProbe sysPowerProbe(sysEnergyProbe);	// use copy constructor
-    sysPowerProbe.setDisabled(false);
-    sysPowerProbe.setOperation("differentiate");
-    model.addProbe(&sysPowerProbe);
-
-    // Add muscle metabolic probes as well
-    // NEED TO WAIT UNTIL MUSCLE MODELS ARE FINISHED
-    // --------------------------------------------------
-    //bool addMuscleMetabolicProbes = false;
-    //if(addMuscleMetabolicProbes) {
-    //    
-    //    MetabolicMuscle m(1.0, 0.5, 40, 133, 74, 111);
-    //    m.setName(aMuscle.getName());
-    //    MetabolicMuscleSet mms;
-    //    mms.append(m);
-    //
-    //    // MuscleMetabolicPowerProbeBhargava2004 Energy Rate Probe
-    //    MuscleMetabolicPowerProbeBhargava2004 metabolicRateProbeBhargava(true, true, true, false, true);
-    //    metabolicRateProbeBhargava.setMetabolicMuscleSet(mms);
-    //    metabolicRateProbeBhargava.setOperation("value");
-    //    
-    //    // MuscleMetabolicPowerProbeBhargava2004 Energy Probe
-    //    MuscleMetabolicPowerProbeBhargava2004 metabolicEnergyProbeBhargava(metabolicRateProbeBhargava);   // use copy constructor
-    //    metabolicEnergyProbeBhargava.setOperation("integrate");
-    //    
-    //    // MuscleMetabolicPowerProbeUmberger2003 Energy Rate Probe
-    //    MuscleMetabolicPowerProbeUmberger2003 metabolicRateProbeUmberger(true, true, false, true);
-    //    
-    //    metabolicRateProbeUmberger.setMetabolicMuscleSet(mms);
-    //    metabolicRateProbeUmberger.setOperation("value");
-    //    
-    //    // MuscleMetabolicPowerProbeUmberger2003 Energy Probe
-    //    MuscleMetabolicPowerProbeUmberger2003 metabolicEnergyProbeUmberger(metabolicRateProbeUmberger);   // use copy constructor
-    //    metabolicEnergyProbeUmberger.setOperation("integrate");
-    //    
-    //    cout << "ADDING MUSCLE METABOLIC PROBES" << endl;
-    //    model.addProbe(&metabolicRateProbeBhargava);
-    //    model.addProbe(&metabolicEnergyProbeBhargava);
-    //    model.addProbe(&metabolicRateProbeUmberger);
-    //    model.addProbe(&metabolicEnergyProbeUmberger);
-    //    
-    //}
-
-
-
-    // --------------------------------------------------------------------
-    // ADD PROBEREPORTER AND FORCEREPORTER TO RECORD VALUES
-    // --------------------------------------------------------------------
-    ProbeReporter* probeReporter = new ProbeReporter(&model);
-    model.addAnalysis(probeReporter);
-    ForceReporter* forceReporter = new ForceReporter(&model);
-    model.addAnalysis(forceReporter);
-    // --------------------------------------------------------------------
-
-    // Since all components are allocated on the stack don't have model own them (and try to free)
-    model.disownAllComponents();
-    model.setName(actuatorType+"ModelTest");
-    model.print(actuatorType+"ModelTest.osim");
-    model.printBasicInfo(cout);
-
-    // Initialize the system and get the default state
-    SimTK::State& si = model.initSystem();
-
-    // Define non-zero (defaults are 0) states for the free joint
-    CoordinateSet& modelCoordinateSet = model.updCoordinateSet();
-    modelCoordinateSet[0].setValue(si, startX); // set x-translation value
-
-    // Check muscle is setup correctly 
-    const PathActuator &muscle = dynamic_cast<const PathActuator&>(model.updActuators().get("muscle"));
-    model.getMultibodySystem().realize(si, SimTK::Stage::Position);
-   
-    double length = muscle.getLength(si);
-    double trueLength = startX + xSinG - anchorWidth/2;
-    ASSERT_EQUAL(trueLength, length, 0.01*accuracy);
-    model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
-
-
-    // Get initial muscle and system energy
-    // ---------------------------------------
-    double Emuscle0 = muscWorkProbe.getRecordValues(si).get(0);
-    double Esys0 = sysEnergyProbe.getRecordValues(si).get(0);
-    Esys0 += (Emuscle0 + jointWorkProbe.getRecordValues(si).get(0));
-    //cout << "Total initial system energy = " << Esys0 << endl; 
-
-
-    // Create the integrator and manager
-    // -----------------------------------
-    SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-    integrator.setAccuracy(accuracy);
-    Manager manager(model, integrator);
-
-
-    // Integrate from initial time to final time
-    // ------------------------------------------
-    manager.setInitialTime(initialTime);
-    manager.setFinalTime(finalTime);
-    cout<<"\nIntegrating from " << initialTime<< " to " << finalTime << endl;
-    const clock_t start = clock();		// Start timing the simulation
-    manager.integrate(si);				// Simulate
-    double comp_time = (double)(clock()-start)/CLOCKS_PER_SEC;		// how long did it take?
-
-
-    // Test system energy - work using
-    // "integrate" operation on muscWorkProbe, jointWorkProbe
-    // "value" operation on sysEnergyProbe
-    // ---------------------------------------------------------
-    model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
-    double muscleWorkAtEnd = muscWorkProbe.getRecordValues(si).get(0);
-    double jointWorkAtEnd = jointWorkProbe.getRecordValues(si).get(0);
-    double systemEnergyAtEnd = sysEnergyProbe.getRecordValues(si).get(0);
-    double ESysMinusWork = systemEnergyAtEnd - muscleWorkAtEnd - jointWorkAtEnd; 
-
-    cout << "Muscle work at end of simulation = " << muscleWorkAtEnd << endl;
-    cout << "Joint work at end of simulation = " << jointWorkAtEnd << endl;
-    cout << "System energy at end of simulation = " << systemEnergyAtEnd << endl;
-    cout << "Total system energy - work = " << ESysMinusWork << endl; 
-    ASSERT_EQUAL(Esys0, ESysMinusWork, 0.5*accuracy, __FILE__, __LINE__, "System energy with muscle not conserved.");
-
-
-    // Test 'Scale' operator is working using
-    // "value" operation on forceProbe
-    // "scale" operation on forceProbeScale
-    ASSERT_EQUAL(forceProbeScale.getRecordValues(si).get(0), scaleFactor*forceProbe.getRecordValues(si).get(0), 0.5*accuracy, __FILE__, __LINE__, "Error with 'scale' operation.");
-
-
-
-    // Save the simulation results (states, forces, probes)
-    // -----------------------------------------------------
-    Storage states(manager.getStateStorage());
-    states.print(actuatorType+"_states.sto");
-    probeReporter->getProbeStorage().print(actuatorType+"_probes.sto");
-    forceReporter->getForceStorage().print(actuatorType+"_forces.sto");
-
-    cout << "Done with printing results..." << endl;
-    //system("pause");
-    
-    // Minimum requirement to pass is simulation of single muscle on slider is real-time
-    //ASSERT(comp_time <= (finalTime-initialTime));
-    cout << actuatorType << " simulation in " << comp_time << "s, for " << accuracy << " accuracy." << endl;
-}
-
-
-
-
-
-
-void testRigidTendonMuscle()
-{
-    RigidTendonMuscle muscle("muscle",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
-
-    double x0 = 0;
-    double act0 = 0.2;
-
-    Constant control(0.5);
-
-    Sine motion(0.1, SimTK::Pi, 0);
-
-    simulateMuscle(muscle, x0, act0, NULL, &control, accuracy);
-}
 

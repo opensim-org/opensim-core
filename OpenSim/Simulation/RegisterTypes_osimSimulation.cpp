@@ -66,10 +66,10 @@
 #include "Model/ForceProbe.h"
 #include "Model/JointPowerProbe.h"
 #include "Model/SystemEnergyProbe.h"
-//#include "Model/MuscleMetabolicRateProbeUmberger2003.h"	// coming soon
-//#include "Model/MuscleMetabolicRateProbeBhargava2004.h"	// coming soon
-//#include "Model/MetabolicMuscle.h"						// coming soon
-//#include "Model/MetabolicMuscleSet.h"						// coming soon
+#include "Model/MetabolicMuscle.h"
+#include "Model/MetabolicMuscleSet.h"
+#include "Model/MuscleMetabolicPowerProbeUmberger2003.h"
+#include "Model/MuscleMetabolicPowerProbeBhargava2004.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -208,10 +208,10 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::RegisterType( ForceProbe() );
     Object::RegisterType( JointPowerProbe() );
     Object::RegisterType( SystemEnergyProbe() );
-    ///Object::RegisterType( MuscleMetabolicRateProbeUmberger2003() );	// coming soon
-    ///Object::RegisterType( MuscleMetabolicRateProbeBhargava2004() );	// coming soon
-    ///Object::RegisterType( MetabolicMuscle() );						// coming soon
-    ///Object::RegisterType( MetabolicMuscleSet() );					// coming soon
+    Object::RegisterType( MetabolicMuscle() );
+    Object::RegisterType( MetabolicMuscleSet() );
+    Object::RegisterType( MuscleMetabolicPowerProbeUmberger2003() );
+    Object::RegisterType( MuscleMetabolicPowerProbeBhargava2004() );
 
 
     // OLD Versions
