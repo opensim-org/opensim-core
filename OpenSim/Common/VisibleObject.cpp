@@ -351,20 +351,18 @@ void VisibleObject::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
 					aNode.insertNodeAfter(aNode.element_end(), moveNode);
 				}
 			}
-	    Object::updateFromXMLNode(aNode, versionNumber);
-		SimTK::Xml::element_iterator geometryIter = aNode.element_begin("geometry_files");
-		string propValue="";
-		bool hasPieces=false;
-		if (geometryIter!= aNode.element_end()){
-			SimTK::Array_<SimTK::String> value;
-			geometryIter->getValueAs(value);
-			for(unsigned i=0;i< value.size(); i++) {
-				setGeometryFileName(0, value[i]);	// This actually appends
-						hasPieces=true;
+			SimTK::Xml::element_iterator geometryIter = aNode.element_begin("geometry_files");
+			string propValue="";
+			bool hasPieces=false;
+			if (geometryIter!= aNode.element_end()){
+				SimTK::Array_<SimTK::String> value;
+				geometryIter->getValueAs(value);
+				for(unsigned i=0;i< value.size(); i++) {
+					setGeometryFileName(0, value[i]);	// This actually appends
+							hasPieces=true;
+						}
 					}
 				}
 			}
-		}
-    else
-        Object::updateFromXMLNode(aNode, versionNumber);
+	Object::updateFromXMLNode(aNode, versionNumber);
 }
