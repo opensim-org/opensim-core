@@ -98,12 +98,16 @@ private:
 	SimmSpline* _natCubicSpline;
 	GCVSpline* _gcvSpline;
 	PiecewiseConstantFunction* _mStepFunction;
+    Function* _genericFunction;
 
 	double _scaleFactor;  // = 1.0 unless function is a MultiplierFunction
+
 
 public:
     static bool isXYFunction(Function* f);
 	XYFunctionInterface(Function* f);
+
+    bool isSpecifiedByControlPoints() const; // Flag to indicate whether function can be edited by changing control points
 
     int getNumberOfPoints() const;
 	const double* getXValues() const;

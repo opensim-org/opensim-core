@@ -60,7 +60,8 @@ XYFunctionInterface::XYFunctionInterface(Function* f) :
    _linearFunction(0),
    _natCubicSpline(0),
    _gcvSpline(0),
-   _mStepFunction(0)
+   _mStepFunction(0),
+   _genericFunction(0)
 {
 	Function* func;
 	MultiplierFunction* mf = dynamic_cast<MultiplierFunction*>(f);
@@ -107,11 +108,25 @@ XYFunctionInterface::XYFunctionInterface(Function* f) :
 		_functionType = typeGCVSpline;
 		return;
 	}
-
-	throw Exception("Object " + getName() + " of type " + 
-        getConcreteClassName() + " is not an XYFunction.");
+    _genericFunction = func;
+	
 }
 
+bool XYFunctionInterface::isSpecifiedByControlPoints() const 
+{
+	switch (_functionType)
+	{
+	   case typeGCVSpline:
+	   case typeNatCubicSpline:
+           return true;
+	   case typeConstant:
+	   case typePiecewiseConstantFunction:
+	   case typePiecewiseLinearFunction:
+	   case typeLinearFunction:
+	   default:
+			return false;
+	}
+}
 int XYFunctionInterface::getNumberOfPoints() const
 {
 	switch (_functionType)
@@ -196,7 +211,12 @@ const double* XYFunctionInterface::getYValues() const
 	}
 
 	double* scaledY = new double[numPoints];
-	memcpy(scaledY, yValues, numPoints*sizeof(double));
+    if (tmp){
+        scaledY[0] = tmp[0];
+        scaledY[1] = tmp[1];
+    }
+    else
+	    memcpy(scaledY, yValues, numPoints*sizeof(double));
 	for (int i=0; i<numPoints; i++)
 		scaledY[i] *= _scaleFactor;
 
@@ -389,7 +409,7 @@ int XYFunctionInterface::addPoint(double aX, double aY)
 Array<XYPoint>* XYFunctionInterface::renderAsLineSegments(int aIndex)
 {
 	if (_functionType == typeUndefined || _functionType == typeConstant ||
-		_functionType == typeLinearFunction || aIndex < 0 || aIndex >= getNumberOfPoints() - 1)
+		aIndex < 0 || aIndex >= getNumberOfPoints() - 1)
 		return NULL;
 
 	Array<XYPoint>* xyPts = new Array<XYPoint>(XYPoint());
@@ -425,7 +445,10 @@ Array<XYPoint>* XYFunctionInterface::renderAsLineSegments(int aIndex)
 		xyPts->append(XYPoint(x[aIndex], y[aIndex]));
 		xyPts->append(XYPoint(x[aIndex], y[aIndex+1]));
 		xyPts->append(XYPoint(x[aIndex+1], y[aIndex+1]));
-	} 
+    } else if (_functionType == typeLinearFunction) {
+        xyPts->append(XYPoint(x[aIndex], y[aIndex]));
+        xyPts->append(XYPoint(x[aIndex+1], y[aIndex+1]));
+    }
 
 	return xyPts;
 }
