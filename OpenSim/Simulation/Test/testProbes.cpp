@@ -74,7 +74,7 @@ class MuscleController : public Controller{
 OpenSim_DECLARE_CONCRETE_OBJECT(MuscleController, Controller);
 public:
 	MuscleController(Model& aModel, double aU, int aActType):
-	  Controller(aModel),u(aU), actType(aActType){
+	  Controller(), u(aU), actType(aActType){
 		
 		switch(actType){
 			case 0:
