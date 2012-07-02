@@ -101,6 +101,7 @@ void MuscleMetabolicPowerProbeBhargava2004::constructProperties()
     constructProperty_use_force_dependent_shortening_prop_constant(false);
     constructProperty_basal_coefficient(1.51);
     constructProperty_basal_exponent(1.0);
+    constructProperty_normalize_mechanical_work_rate_by_muscle_mass(false);
     constructProperty_MetabolicMuscleSet(MetabolicMuscleSet());
 }
 
@@ -195,6 +196,15 @@ double MuscleMetabolicPowerProbeBhargava2004::getBasalCoefficient() const
 double MuscleMetabolicPowerProbeBhargava2004::getBasalExponent() const
 {
     return get_basal_exponent();
+}
+
+//_____________________________________________________________________________
+/**
+ * Get whether the mechanical work rate is to be normalized by muscle mass (true/false).
+ */
+bool MuscleMetabolicPowerProbeBhargava2004::isMechanicalWorkRateNormalizedToMuscleMass() const
+{
+    return get_normalize_mechanical_work_rate_by_muscle_mass();
 }
 
 //_____________________________________________________________________________
@@ -313,6 +323,15 @@ void MuscleMetabolicPowerProbeBhargava2004::setBasalExponent(const double aBasal
 
 //_____________________________________________________________________________
 /**
+ * Set whether the mechanical work rate is to be normalized by muscle mass (true/false).
+ */
+void MuscleMetabolicPowerProbeBhargava2004::setMechanicalWorkRateNormalizedToMuscleMass(const bool normalizeWorkRate)
+{
+    set_normalize_mechanical_work_rate_by_muscle_mass(normalizeWorkRate);
+}
+
+//_____________________________________________________________________________
+/**
  * Set the MetabolicMuscleSet containing the set of MetabolicMuscle parameters
  * that are specific to the calculation of the total muscle metabolic energy rate.
  */
@@ -346,6 +365,7 @@ void MuscleMetabolicPowerProbeBhargava2004::connectToModel(Model& aModel)
 /**
  * Compute muscle metabolic power.
  * Units = W/kg.
+ * Note: for muscle velocities, Vm, we define Vm<0 as shortening and Vm>0 as lengthening.
  */
 double MuscleMetabolicPowerProbeBhargava2004::computeProbeValue(const State& s) const
 {
@@ -375,6 +395,7 @@ double MuscleMetabolicPowerProbeBhargava2004::computeProbeValue(const State& s) 
         double max_shortening_velocity = m->getMaxContractionVelocity();
         double activation = m->getActivation(s);
         double excitation = m->getControl(s);
+        double fiber_force_passive = m->getPassiveFiberForce(s);
         double fiber_force_active = m->getActiveFiberForce(s);
         double fiber_force_total = m->getFiberForce(s);
         double fiber_length_normalized = m->getNormalizedFiberLength(s);
@@ -384,10 +405,24 @@ double MuscleMetabolicPowerProbeBhargava2004::computeProbeValue(const State& s) 
         double fast_twitch_excitation = (1 - mm.getRatioSlowTwitchFibers()) * (1 - cos(Pi/2 * excitation));
         double alpha, fiber_length_dependence;
 
+        // Get the unnormalized total active force, F_iso that 'would' be developed at the current activation
+        // and fiber length under isometric conditions (i.e. Vm=0)
+        double F_iso = (fiber_force_active/m->getForceVelocityMultiplier(s));
+
+        // DEBUG
+        //cout << "fiber_velocity_normalized = " << fiber_velocity_normalized << endl;
+        //cout << "fiber_velocity_multiplier = " << m->getForceVelocityMultiplier(s) << endl;
+        //cout << "fiber_force_passive = " << fiber_force_passive << endl;
+        //cout << "fiber_force_active = " << fiber_force_active << endl;
+        //cout << "fiber_force_total = " << fiber_force_total << endl;
+        //cout << "max_isometric_force = " << max_isometric_force << endl;
+        //cout << "F_iso = " << F_iso << endl;
+        //system("pause");
+
 
         // Warnings
         if (fiber_length_normalized < 0)
-            cout << "WARNING: (t = " << s.getTime() << "), muscle '" << m->getName() << "' has negative normalized fiber-length." << endl; 
+            cout << "WARNING: " << getName() << "  (t = " << s.getTime() << "), muscle '" << m->getName() << "' has negative normalized fiber-length." << endl; 
 
 
 
@@ -418,37 +453,41 @@ double MuscleMetabolicPowerProbeBhargava2004::computeProbeValue(const State& s) 
 
 
         // SHORTENING HEAT RATE for muscle i
-        // --> note that we define Vm>0 as shortening and Vm<0 as lengthening
+        // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
         // -----------------------------------------------------------------------
         if (isShorteningRateOn())
         {
             if (usingForceDepShorteningPropConstant())
             {
-                if (fiber_velocity >= 0)    // concentric contraction, Vm>0
-                    alpha = (0.16 * max_isometric_force) + (0.18 * fiber_force_active);
-                else						// eccentric contraction, Vm<0
-                    alpha = 0.157 * fiber_force_active;
+                if (fiber_velocity <= 0)    // concentric contraction, Vm<0
+                    alpha = (0.16 * F_iso) + (0.18 * fiber_force_total);
+                else						// eccentric contraction, Vm>0
+                    alpha = 0.157 * fiber_force_total;
             }
             else
             {
-                if (fiber_velocity >= 0)    // concentric contraction, Vm>0
-                    alpha = 0.25;
-                else						// eccentric contraction, Vm<0
+                if (fiber_velocity <= 0)    // concentric contraction, Vm<0
+                    alpha = 0.25 * max_isometric_force;
+                else						// eccentric contraction, Vm>0
                     alpha = 0.0;
             }
-            Sdot = alpha * fiber_velocity;
+            Sdot = -alpha * fiber_velocity;
         }
         
 
 
         // MECHANICAL WORK RATE for muscle i
+        // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
         // ------------------------------------------
         if (isWorkRateOn())
         {
-            if (fiber_velocity >= 0)    // concentric contraction, Vm>0
-                Wdot = fiber_force_active*fiber_velocity;
-            else						// eccentric contraction, Vm<0
+            if (fiber_velocity <= 0)    // concentric contraction, Vm<0
+                Wdot = -fiber_force_active*fiber_velocity;
+            else						// eccentric contraction, Vm>0
                 Wdot = 0;
+
+            if (isMechanicalWorkRateNormalizedToMuscleMass())
+                Wdot /= mm.getMuscleMass();
         }
 
 
@@ -478,6 +517,7 @@ double MuscleMetabolicPowerProbeBhargava2004::computeProbeValue(const State& s) 
             cout << "fiber_length_normalized = " << fiber_length_normalized << endl;
             cout << "fiber_length_dependence = " << fiber_length_dependence << endl;
             cout << "fiber_velocity = " << fiber_velocity << endl;
+            cout << "fiber_velocity_normalized = " << fiber_velocity_normalized << endl;
             cout << "slow_twitch_excitation = " << slow_twitch_excitation << endl;
             cout << "fast_twitch_excitation = " << fast_twitch_excitation << endl;
             cout << "max shortening velocity = " << max_shortening_velocity << endl;
@@ -493,6 +533,12 @@ double MuscleMetabolicPowerProbeBhargava2004::computeProbeValue(const State& s) 
     }
 
     double EdotTotal = Edot.sum() + Bdot;
+
+	if(EdotTotal < 1.0 && isActivationRateOn() && isMaintenanceRateOn() && isShorteningRateOn() && isWorkRateOn()) {
+			cout << "WARNING: " << getName() << "  (t = " << s.getTime() << "), the model has a net metabolic energy rate of less than 1.0 W.kg-1." << endl; 
+			EdotTotal = 1.0;			// not allowed to fall below 1.0 W.kg-1
+	}
+
     return(EdotTotal);
 }
 

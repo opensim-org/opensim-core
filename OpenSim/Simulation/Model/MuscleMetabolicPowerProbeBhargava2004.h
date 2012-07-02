@@ -125,19 +125,13 @@ namespace OpenSim {
  * <B>Wdot = F_CE * v_CE       </B>,   <I>v_CE >= 0 (concentric / isometric contraction)</I>\n
  * <B>Wdot = 0                 </B>,   <I>v_CE <  0 (eccentric contraction)</I>
  *     - v_CE = muscle fiber velocity at the current time.
- *     - F_CE = force developed by the contractile element of muscle at the current time.
- * 
+ *     - F_CE = force developed by the contractile element of muscle at the current time.\n
+ * <I> Note: if normalize_mechanical_work_rate_by_muscle_mass ia set to true, then the mechanical work rate
+ *       for each muscle is normalized by its muscle mass (kg).</I>
  *
  *
  * @author Tim Dorn
  */
-
-//class Model;
-//class Probe;
-//class Muscle;
-//class MetabolicMuscle;
-//class MetabolicMuscleSet;
-
 
 class OSIMSIMULATION_API MuscleMetabolicPowerProbeBhargava2004 : public Probe {
 OpenSim_DECLARE_CONCRETE_OBJECT(MuscleMetabolicPowerProbeBhargava2004, Probe);
@@ -168,17 +162,25 @@ public:
     OpenSim_DECLARE_PROPERTY(mechanical_work_rate_on, bool,
         "Specify whether the mechanical work rate is to be calculated (true/false).");
 
+    /** Default curve shown in doxygen. **/
     OpenSim_DECLARE_PROPERTY(normalized_fiber_length_dependence_on_maintenance_rate, PiecewiseLinearFunction,
         "Contains a PiecewiseLinearFunction object that describes the normalized fiber length dependence on maintenance rate.");
 
+    /** Disabled by default. **/
     OpenSim_DECLARE_PROPERTY(use_force_dependent_shortening_prop_constant, bool,
         "Specify whether to use a force dependent shortening proportionality constant (true/false).");
 
+    /** Default value = 1.51. **/
     OpenSim_DECLARE_PROPERTY(basal_coefficient, double,
         "Basal metabolic coefficient.");
 
+    /** Default value = 1.0. **/
     OpenSim_DECLARE_PROPERTY(basal_exponent, double,
         "Basal metabolic exponent.");
+
+    /** Disabled by default. **/
+    OpenSim_DECLARE_PROPERTY(normalize_mechanical_work_rate_by_muscle_mass, bool,
+        "Specify whether the mechanical work rate for each muscle is to be normalized by muscle mass (true/false).");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(MetabolicMuscleSet,
         "A MetabolicMuscleSet containing the muscle information required to calculate metabolic energy expenditure. "
@@ -216,10 +218,12 @@ public:
     PiecewiseLinearFunction getFiberLengthDependenceMaintenanceRateFunction() const;
     /** Returns true if the shortening metabolic rate is a function of fiber force, false if it is not. */
     bool usingForceDepShorteningPropConstant() const;
-    /** Returns the basal metabolic rate coefficient. */
+    /** Returns the basal metabolic rate coefficient (W/kg). */
     double getBasalCoefficient() const;
     /** Returns the basal metabolic rate exponent. */
     double getBasalExponent() const;
+    /** Returns if the mechanical work rate is to be normalized by muscle mass (true/false). */
+    bool isMechanicalWorkRateNormalizedToMuscleMass() const;
     /** Returns a const MetabolicMuscleSet containing the Muscle(s) being probed. */
     const MetabolicMuscleSet& getMetabolicMuscleSet() const;
     /** Returns an updatable MetabolicMuscleSet containing the Muscle(s) being probed. */
@@ -243,6 +247,8 @@ public:
     void setBasalCoefficient(const double aBasalCoeff);
     /** Sets the basal metabolic rate exponent. */
     void setBasalExponent(const double aBasalExp);
+    /** Sets if the mechanical work rate is to be normalized by muscle mass (true/false). */
+    void setMechanicalWorkRateNormalizedToMuscleMass(const bool normalizeWorkRate);
     /** Sets the MetabolicMuscleSet containing the Muscle(s) being probed. */
     void setMetabolicMuscleSet(const MetabolicMuscleSet mms);
 

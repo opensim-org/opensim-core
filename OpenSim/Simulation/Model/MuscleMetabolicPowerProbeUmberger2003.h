@@ -98,10 +98,10 @@ namespace OpenSim {
  *
  *     - l_CE = muscle fiber length at the current time.
  *     - l_CE_opt = optimal fiber length of the muscle.
- *     - F_iso = maximum isometric muscle strength.
+ *     - F_CE_iso = force that would be developed by the contractile element of muscle under isometric conditions with the current activation and fiber length.
  *     - u = muscle excitation at the current time.
  *     - a = muscle activation at the current time.
- *     - S = aerobic/anaerobic scaling factor, defined by the property scaling_factor.
+ *     - S = aerobic/anaerobic scaling factor, defined by the 'scaling_factor' property..
  *
  *
  * <H2><B> SHORTENING HEAT RATE </B></H2>
@@ -120,31 +120,26 @@ namespace OpenSim {
  *
  *     - l_CE = muscle fiber length at the current time.
  *     - l_CE_opt = optimal fiber length of the muscle.
- *     - F_iso = maximum isometric muscle strength... xxx:WRONG.. TO FIX
+ *     - F_CE = force developed by the contractile element of muscle at the current time.
+ *     - F_CE_iso = force that would be developed by the contractile element of muscle under isometric conditions with the current activation and fiber length.
  *     - v_CE = muscle fiber velocity at the current time.
  *     - v_CE_max = maximum shortening velocity of the muscle.
  *     - v_CE_norm = normalized muscle fiber velocity = v_CE/v_CE_max.
- *     - F_CE = force developed by the contractile element of muscle at the current time.
- *     - S = aerobic/anaerobic scaling factor, defined by the property scaling_factor.
+ *     - S = aerobic/anaerobic scaling factor, defined by the 'scaling_factor' property.
  *
  *
  * <H2><B> MECHANICAL WORK RATE </B></H2>
  * If <I>mechanical_work_rate_on</I> is set to true, then Wdot is calculated as follows:\n
- * <B>Wdot = (F_CE * v_CE) / m  </B>    ,   <I>v_CE >= 0 (concentric / isometric contraction)</I>\n
- * <B>Wdot = 0                  </B>    ,   <I>v_CE <  0 (eccentric contraction)</I>
+ * <B>Wdot = F_CE * v_CE       </B>,   <I>v_CE >= 0 (concentric / isometric contraction)</I>\n
+ * <B>Wdot = 0                 </B>,   <I>v_CE <  0 (eccentric contraction)</I>
  *     - v_CE = muscle fiber velocity at the current time.
  *     - F_CE = force developed by the contractile element of muscle at the current time.\n
- * <I>Note that this work rate is a mass specific work rate.</I>
+ * <I> Note: if normalize_mechanical_work_rate_by_muscle_mass ia set to true, then the mechanical work rate
+ *       for each muscle is normalized by its muscle mass (kg).</I>
  *
  *
  * @author Tim Dorn
  */
-
-
-//class Muscle;
-//class MetabolicMuscle;
-//class MetabolicMuscleSet;
-
 
 class OSIMSIMULATION_API MuscleMetabolicPowerProbeUmberger2003 : public Probe {
 OpenSim_DECLARE_CONCRETE_OBJECT(MuscleMetabolicPowerProbeUmberger2003, Probe);
@@ -171,15 +166,21 @@ public:
     OpenSim_DECLARE_PROPERTY(mechanical_work_rate_on, bool,
         "Specify whether the mechanical work rate is to be calculated (true/false).");
 
-    /** Enabled by default. **/
+    /** Default value = 1.0. **/
     OpenSim_DECLARE_PROPERTY(scaling_factor, double,
         "Scaling factor (S=1.0 for primarily anaerobic conditions and S=1.5 for primarily aerobic conditions. See Umberger et al., (2002).");
 
+    /** Default value = 1.51. **/
     OpenSim_DECLARE_PROPERTY(basal_coefficient, double,
         "Basal metabolic coefficient.");
 
+    /** Default value = 1.0. **/
     OpenSim_DECLARE_PROPERTY(basal_exponent, double,
         "Basal metabolic exponent.");
+
+    /** Disabled by default. **/
+    OpenSim_DECLARE_PROPERTY(normalize_mechanical_work_rate_by_muscle_mass, bool,
+        "Specify whether the mechanical work rate for each muscle is to be normalized by muscle mass (true/false).");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(MetabolicMuscleSet,
         "A MetabolicMuscleSet containing the muscle information required to calculate metabolic energy expenditure. "
@@ -213,10 +214,12 @@ public:
     bool isWorkRateOn() const;
     /** Returns the aerobic/anaerobic scaling factor S. */
     double getScalingFactor() const;
-    /** Returns the basal metabolic rate coefficient. */
+    /** Returns the basal metabolic rate coefficient (W/kg). */
     double getBasalCoefficient() const;
     /** Returns the basal metabolic rate exponent. */
     double getBasalExponent() const;
+    /** Returns if the mechanical work rate is to be normalized by muscle mass (true/false). */
+    bool isMechanicalWorkRateNormalizedToMuscleMass() const;
     /** Returns a const MetabolicMuscleSet containing the Muscle(s) being probed. */
     const MetabolicMuscleSet& getMetabolicMuscleSet() const;
     /** Returns an updatable MetabolicMuscleSet containing the Muscle(s) being probed. */
@@ -236,6 +239,8 @@ public:
     void setBasalCoefficient(const double aBasalCoeff);
     /** Sets the basal metabolic rate exponent. */
     void setBasalExponent(const double aBasalExp);
+    /** Sets if the mechanical work rate is to be normalized by muscle mass (true/false). */
+    void setMechanicalWorkRateNormalizedToMuscleMass(const bool normalizeWorkRate);
     /** Sets the MetabolicMuscleSet containing the Muscle(s) being probed. */
     void setMetabolicMuscleSet(const MetabolicMuscleSet mms);
 

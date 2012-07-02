@@ -92,6 +92,7 @@ void MuscleMetabolicPowerProbeUmberger2003::constructProperties()
     constructProperty_scaling_factor(1.0);
     constructProperty_basal_coefficient(1.51);
     constructProperty_basal_exponent(1.0);
+    constructProperty_normalize_mechanical_work_rate_by_muscle_mass(false);
     constructProperty_MetabolicMuscleSet(MetabolicMuscleSet());
 }
 
@@ -165,6 +166,15 @@ double MuscleMetabolicPowerProbeUmberger2003::getBasalCoefficient() const
 double MuscleMetabolicPowerProbeUmberger2003::getBasalExponent() const
 {
     return get_basal_exponent();
+}
+
+//_____________________________________________________________________________
+/**
+ * Get whether the mechanical work rate is to be normalized by muscle mass (true/false).
+ */
+bool MuscleMetabolicPowerProbeUmberger2003::isMechanicalWorkRateNormalizedToMuscleMass() const
+{
+    return get_normalize_mechanical_work_rate_by_muscle_mass();
 }
 
 //_____________________________________________________________________________
@@ -262,6 +272,15 @@ void MuscleMetabolicPowerProbeUmberger2003::setBasalExponent(const double aBasal
 
 //_____________________________________________________________________________
 /**
+ * Set whether the mechanical work rate is to be normalized by muscle mass (true/false).
+ */
+void MuscleMetabolicPowerProbeUmberger2003::setMechanicalWorkRateNormalizedToMuscleMass(const bool normalizeWorkRate)
+{
+    set_normalize_mechanical_work_rate_by_muscle_mass(normalizeWorkRate);
+}
+
+//_____________________________________________________________________________
+/**
  * Set the MetabolicMuscleSet containing the set of MetabolicMuscle parameters
  * that are specific to the calculation of the total muscle metabolic energy rate.
  */
@@ -295,6 +314,7 @@ void MuscleMetabolicPowerProbeUmberger2003::connectToModel(Model& aModel)
 /**
  * Compute muscle metabolic power.
  * Units = W/kg.
+ * Note: for muscle velocities, Vm, we define Vm<0 as shortening and Vm>0 as lengthening.
  */
 double MuscleMetabolicPowerProbeUmberger2003::computeProbeValue(const State& s) const
 {
@@ -321,10 +341,10 @@ double MuscleMetabolicPowerProbeUmberger2003::computeProbeValue(const State& s) 
 
         // Get some muscle properties at the current time state
         double max_isometric_force = m->getMaxIsometricForce();
-        double Fiso = 1.0;          // xxx: TO FIX
         double max_shortening_velocity = m->getMaxContractionVelocity();
         double activation = m->getActivation(s);
         double excitation = m->getControl(s);
+        double fiber_force_passive = m->getPassiveFiberForce(s);
         double fiber_force_active = m->getActiveFiberForce(s);
         double fiber_force_total = m->getFiberForce(s);
         double fiber_length_normalized = m->getNormalizedFiberLength(s);
@@ -339,6 +359,20 @@ double MuscleMetabolicPowerProbeUmberger2003::computeProbeValue(const State& s) 
             A = excitation;
         else
             A = (excitation + activation) / 2;
+
+        // Get the normalized active fiber force, F_iso, that 'would' be developed at the current activation
+        // and fiber length under isometric conditions (i.e. Vm=0)
+        double F_iso = (fiber_force_active/m->getForceVelocityMultiplier(s)) / max_isometric_force;
+
+        // DEBUG
+        //cout << "fiber_velocity_normalized = " << fiber_velocity_normalized << endl;
+        //cout << "fiber_velocity_multiplier = " << m->getForceVelocityMultiplier(s) << endl;
+        //cout << "fiber_force_active = " << fiber_force_active << endl;
+        //cout << "fiber_force_total = " << fiber_force_total << endl;
+        //cout << "max_isometric_force = " << max_isometric_force << endl;
+        //cout << "F_iso = " << F_iso << endl;
+        //system("pause");
+
 
         // Set normalized hill constants: A_rel and B_rel
         A_rel = 0.1 + 0.4*(1 - mm.getRatioSlowTwitchFibers());
@@ -360,15 +394,14 @@ double MuscleMetabolicPowerProbeUmberger2003::computeProbeValue(const State& s) 
             if (fiber_length_normalized <= 1.0)
                 AMdot = getScalingFactor() * std::pow(A, 0.6) * unscaledAMdot;
             else
-                AMdot = getScalingFactor() * std::pow(A, 0.6) * 
-                ((0.4 * unscaledAMdot) + (0.6 * unscaledAMdot * Fiso));
+                AMdot = getScalingFactor() * std::pow(A, 0.6) * ((0.4 * unscaledAMdot) + (0.6 * unscaledAMdot * F_iso));
         }
 
 
 
         // SHORTENING HEAT RATE for muscle i
         // --> depends on the normalized fiber length of the contractile element
-        // --> note that we define Vm>0 as shortening and Vm<0 as lengthening
+        // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
         // -----------------------------------------------------------------------
         if (isShorteningRateOn())
         {
@@ -376,41 +409,62 @@ double MuscleMetabolicPowerProbeUmberger2003::computeProbeValue(const State& s) 
             double Vmax_fasttwitch = 2.5*Vmax_slowtwitch;
             double alpha_shortening_fasttwitch = 153 / Vmax_fasttwitch;
             double alpha_shortening_slowtwitch = 100 / Vmax_slowtwitch;
-            double unscaledSdot, tmp;
+            double unscaledSdot, tmp_slowTwitch, tmp_fastTwitch;
 
-            // Calculate unscaled heat rate --- muscle velocity dependent
+            // Calculate UNSCALED heat rate --- muscle velocity dependent
             // -----------------------------------------------------------
-            if (fiber_velocity_normalized >= 0)    // concentric contraction, Vm>0
+            if (fiber_velocity_normalized <= 0)    // concentric contraction, Vm<0
             {
-                tmp = alpha_shortening_slowtwitch * fiber_velocity_normalized * mm.getRatioSlowTwitchFibers();
-                if (tmp > 100) tmp=100;		// limit maximum value to 100 W.kg-1
+                const double maxShorteningRate = 100;
 
-                unscaledSdot = tmp + (alpha_shortening_fasttwitch * fiber_velocity_normalized * (1-mm.getRatioSlowTwitchFibers()));
+                tmp_slowTwitch = alpha_shortening_slowtwitch * fiber_velocity_normalized * mm.getRatioSlowTwitchFibers();
+                if (tmp_slowTwitch > maxShorteningRate) {
+                    cout << "WARNING: " << getName() << "  (t = " << s.getTime() << 
+                        "Slow twitch shortening heat rate exceeds the max value of " << maxShorteningRate << 
+                        " W/kg. Setting to " << maxShorteningRate << " W/kg." << endl; 
+                    tmp_slowTwitch = maxShorteningRate;		// limit maximum value to 100 W.kg-1
+                }
+
+                tmp_fastTwitch = alpha_shortening_fasttwitch * fiber_velocity_normalized * (1-mm.getRatioSlowTwitchFibers());
+                if (tmp_fastTwitch > maxShorteningRate) {
+                    cout << "WARNING: " << getName() << "  (t = " << s.getTime() << 
+                        "Fast twitch shortening heat rate exceeds the max value of " << maxShorteningRate << 
+                        " W/kg. Setting to " << maxShorteningRate << " W/kg." << endl; 
+                    tmp_fastTwitch = maxShorteningRate;		// limit maximum value to 100 W.kg-1
+                }
+
+                unscaledSdot = -tmp_slowTwitch - tmp_fastTwitch;                               // unscaled shortening heat rate: muscle shortening
             }
 
-            else								// eccentric contraction, Vm<0
-                unscaledSdot = -0.3 * alpha_shortening_slowtwitch;
+            else	// eccentric contraction, Vm>0
+                unscaledSdot = -0.3 * alpha_shortening_slowtwitch * fiber_velocity_normalized;  // unscaled shortening heat rate: muscle lengthening
 
 
-            // Calculate scaled heat rate --- muscle length dependent
-            // -----------------------------------------------------------
-            if (fiber_length_normalized <= 1.0)
+            // Calculate SCALED heat rate --- muscle velocity and length dependent
+            // ---------------------------------------------------------------------
+            if (fiber_velocity_normalized <= 0)     // concentric contraction, Vm<0
                 Sdot = getScalingFactor() * std::pow(A, 2.0) * unscaledSdot;
-            else
-                Sdot = getScalingFactor() * A * unscaledSdot * Fiso;
+            else                                    // eccentric contraction,  Vm>0
+                Sdot = getScalingFactor() * A * unscaledSdot;
+
+            if (fiber_length_normalized > 1.0)
+                Sdot *= F_iso;  
         }
         
 
 
         // MECHANICAL WORK RATE for muscle i
-        // --> note that we define Vm>0 as shortening and Vm<0 as lengthening
-        // -----------------------------------------------------------------------
+        // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
+        // ------------------------------------------
         if (isWorkRateOn())
         {
-            if (fiber_velocity >= 0)    // concentric contraction, Vm>0
-                Wdot = (fiber_force_active*fiber_velocity) / mm.getMuscleMass();
-            else						// eccentric contraction, Vm<0
+            if (fiber_velocity <= 0)    // concentric contraction, Vm<0
+                Wdot = -fiber_force_active*fiber_velocity;
+            else						// eccentric contraction, Vm>0
                 Wdot = 0;
+
+            if (isMechanicalWorkRateNormalizedToMuscleMass())
+                Wdot /= mm.getMuscleMass();
         }
 
 
@@ -450,8 +504,8 @@ double MuscleMetabolicPowerProbeUmberger2003::computeProbeValue(const State& s) 
 
     double EdotTotal = Edot.sum() + Bdot;
 
-	if(EdotTotal < 1.0) {
-			cout << "WARNING: (t = " << s.getTime() << "), the model has a net metabolic energy rate of less than 1.0 W.kg-1." << endl; 
+	if(EdotTotal < 1.0 && isActivationMaintenanceRateOn() && isShorteningRateOn() && isWorkRateOn()) {
+			cout << "WARNING: " << getName() << "  (t = " << s.getTime() << "), the model has a net metabolic energy rate of less than 1.0 W.kg-1." << endl; 
 			EdotTotal = 1.0;			// not allowed to fall below 1.0 W.kg-1
 	}
 
