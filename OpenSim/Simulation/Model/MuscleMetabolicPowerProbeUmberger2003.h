@@ -59,7 +59,9 @@ namespace OpenSim {
  *
  * <I>Note that the equations below that describe the particular implementation of 
  * MuscleMetabolicPowerProbeUmberger2003 may slightly differ from the equations
- * described in the representative publications above.</I>
+ * described in the representative publications above. Note also that we define
+ * positive muscle velocity to indicate lengthening (eccentric contraction) and
+ * negative muscle velocity to indicate shortening (concentric contraction).</I>
  *
  *
  * Muscle metabolic power (or rate of metabolic energy consumption) is equal to the
@@ -106,17 +108,17 @@ namespace OpenSim {
  *
  * <H2><B> SHORTENING HEAT RATE </B></H2>
  * If <I>shortening_rate_on</I> is set to true, then Sdot is calculated as follows:\n
- * <B>Sdot = [(alphaS_slow * v_CE_norm * r) + (alphaS_fast * v_CE_norm * (1-r))] * A^2 * S           </B>,   <I>l_CE <= l_CE_opt   &   v_CE >= 0 (concentric / isometric contraction)</I>\n
- * <B>Sdot = [(alphaS_slow * v_CE_norm * r) + (alphaS_fast * v_CE_norm * (1-r))] * A^2 * S * F_iso   </B>,   <I>l_CE >  l_CE_opt   &   v_CE >= 0 (concentric / isometric contraction)</I>\n
- * <B>Sdot = alphaL + v_CE_norm * A * S           </B>,   <I>l_CE <= l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>\n
- * <B>Sdot = alphaL + v_CE_norm * A * S * F_iso   </B>,   <I>l_CE >  l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>
+ * <B>Sdot = -[(alphaS_slow * v_CE_norm * r) + (alphaS_fast * v_CE_norm * (1-r))] * A^2 * S           </B>,   <I>l_CE <= l_CE_opt   &   v_CE >= 0 (concentric / isometric contraction)</I>\n
+ * <B>Sdot = -[(alphaS_slow * v_CE_norm * r) + (alphaS_fast * v_CE_norm * (1-r))] * A^2 * S * F_iso   </B>,   <I>l_CE >  l_CE_opt   &   v_CE >= 0 (concentric / isometric contraction)</I>\n
+ * <B>Sdot = -alphaL * v_CE_norm * A * S           </B>,   <I>l_CE <= l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>\n
+ * <B>Sdot = -alphaL * v_CE_norm * A * S * F_iso   </B>,   <I>l_CE >  l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>
  * 
  *     - <B>A = u          </B>,    <I>u >  a </I>
  *     - <B>A = (u+a)/2    </B>,    <I>u <= a </I>
  *
  *     - <B>alphaS_slow = 100 /     ( v_CE_max / (1 + (1.5*r)) ) </B>
  *     - <B>alphaS_fast = 153 / 2.5*( v_CE_max / (1 + (1.5*r)) ) </B>
- *     - <B>alphaL = -0.3 * alphaS_slow </B>
+ *     - <B>alphaL = 0.3 * alphaS_slow </B>
  *
  *     - l_CE = muscle fiber length at the current time.
  *     - l_CE_opt = optimal fiber length of the muscle.
@@ -130,8 +132,8 @@ namespace OpenSim {
  *
  * <H2><B> MECHANICAL WORK RATE </B></H2>
  * If <I>mechanical_work_rate_on</I> is set to true, then Wdot is calculated as follows:\n
- * <B>Wdot = F_CE * v_CE       </B>,   <I>v_CE >= 0 (concentric / isometric contraction)</I>\n
- * <B>Wdot = 0                 </B>,   <I>v_CE <  0 (eccentric contraction)</I>
+ * <B>Wdot = -F_CE * v_CE       </B>,   <I>v_CE >= 0 (concentric / isometric contraction)</I>\n
+ * <B>Wdot = 0                  </B>,   <I>v_CE <  0 (eccentric contraction)</I>
  *     - v_CE = muscle fiber velocity at the current time.
  *     - F_CE = force developed by the contractile element of muscle at the current time.\n
  * <I> Note: if normalize_mechanical_work_rate_by_muscle_mass ia set to true, then the mechanical work rate

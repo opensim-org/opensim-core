@@ -55,7 +55,9 @@ namespace OpenSim {
  *
  * <I>Note that the equations below that describe the particular implementation of 
  * MuscleMetabolicPowerProbeBhargava2004 may slightly differ from the equations
- * described in the representative publication above.</I>
+ * described in the representative publication above. Note also that we define
+ * positive muscle velocity to indicate lengthening (eccentric contraction) and
+ * negative muscle velocity to indicate shortening (concentric contraction).</I>
  *
  *
  * Muscle metabolic power (or rate of metabolic energy consumption) is equal to the
@@ -105,7 +107,7 @@ namespace OpenSim {
  *
  * <H2><B> SHORTENING HEAT RATE </B></H2>
  * If <I>shortening_rate_on</I> is set to true, then Sdot is calculated as follows:\n
- * <B>Sdot = alpha * v_CE</B>
+ * <B>Sdot = -alpha * v_CE</B>
  *
  * If use_force_dependent_shortening_prop_constant = true,
  *     - <B>alpha = (0.16 * F_CE_iso) + (0.18 * F_CE)   </B>,   <I>v_CE >= 0 (concentric / isometric contraction)</I>
@@ -122,8 +124,8 @@ namespace OpenSim {
  *
  * <H2><B> MECHANICAL WORK RATE </B></H2>
  * If <I>mechanical_work_rate_on</I> is set to true, then Wdot is calculated as follows:\n
- * <B>Wdot = F_CE * v_CE       </B>,   <I>v_CE >= 0 (concentric / isometric contraction)</I>\n
- * <B>Wdot = 0                 </B>,   <I>v_CE <  0 (eccentric contraction)</I>
+ * <B>Wdot = -F_CE * v_CE       </B>,   <I>v_CE >= 0 (concentric / isometric contraction)</I>\n
+ * <B>Wdot = 0                  </B>,   <I>v_CE <  0 (eccentric contraction)</I>
  *     - v_CE = muscle fiber velocity at the current time.
  *     - F_CE = force developed by the contractile element of muscle at the current time.\n
  * <I> Note: if normalize_mechanical_work_rate_by_muscle_mass ia set to true, then the mechanical work rate
