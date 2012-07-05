@@ -68,8 +68,9 @@ public:
         "'differentiate', 'scale'");
 
     OpenSim_DECLARE_PROPERTY(operation_parameter, double,
-        "For 'integrate' this is the initial condition, for 'scale' "
-        "this is the scale factor.");
+        "Parameter that is required for some operations only. "
+        "For 'integrate' operation_parameter is the initial condition, "
+        "for 'scale' operation_parameter is the scale factor.");
     /**@}**/
 
 //=============================================================================
@@ -96,17 +97,23 @@ public:
     void setOperationParameter(double operation_parameter);
 
     
-    /** Returns the column labels for the probe values for reporting. */
+    /** Returns the column labels for the probe values for reporting. 
+        Note that in OpenSim 3.0, only scalar values are returned, so 
+        developers will need to call getRecordLabels.get(0) to return 
+        the probe label.*/
     Array<std::string> getRecordLabels() const;
 
-    /** Returns the probe values after being operated on. */
+    /** Returns the probe values post-operation. 
+        Note that in OpenSim 3.0, only scalar values are returned, so 
+        developers will need to call getRecordValues.get(0) to return 
+        the value of the probe (after the operation has been performed)*/
     Array<double> getRecordValues(const SimTK::State& state) const;
 
 #ifndef SWIG
     // This is the Probe interface that must be implemented by concrete Probe
     // objects.
 
-    /**Computes the probe value (this is the scalar value of the probe prior to any operation being performed on it.
+    /**Computes the probe value pre-operation (i.e., prior to any operation being performed on it).
        Probe value is computed at the SimTK::Report Stage.
        This method must be overridden for each subclass Probe.
 
