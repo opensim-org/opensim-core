@@ -2,7 +2,7 @@
 #define _MuscleAnalysis_h_
 // MuscleAnalysis.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//	AUTHORS: Katherine Holzbaur, Frank C. Anderson
+//	AUTHORS: Ajay Seth, Matt Millard, Katherine Holzbaur, Frank C. Anderson
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
@@ -127,7 +127,8 @@ private:
 	Storage *_passiveFiberForceAlongTendonStore;
 
 	/** Fiber power */
-	Storage *_fiberPowerStore;
+	Storage *_fiberActivePowerStore;
+    Storage *_fiberPassivePowerStore;
 	/** Tendon power */
 	Storage *_tendonPowerStore;
 	/** Muscle actuator power */
@@ -176,18 +177,41 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void setModel(Model& aModel);
 	void setStorageCapacityIncrements(int aIncrement);
-	Storage* getPennationAngleStorage() const { return _pennationAngleStore; }
-	Storage* getMuscleTendonLengthStorage() const { return _lengthStore; }
-	Storage* getFiberLengthStorage() const { return _fiberLengthStore; }
-	Storage* getNormalizedFiberLengthStorage() const { return _normalizedFiberLengthStore; }
-	Storage* getTendonLegthStorage() const { return _tendonLengthStore; }
-	Storage* getForceStorage() const { return _forceStore; }
-	Storage* getFiberForceStorage() const { return _fiberForceStore; }
-	Storage* getActiveFiberForceStorage() const { return _activeFiberForceStore; }
-	Storage* getPassiveFiberForceStorage() const { return _passiveFiberForceStore; }
-	Storage* getActiveFiberForceAlongTendonStorage() const { return _activeFiberForceAlongTendonStore; }
-	Storage* getPassiveFiberForceAlongTendonStorage() const { return _passiveFiberForceAlongTendonStore; }
-	void setMuscles(Array<std::string>& aMuscles);
+	
+    Storage* getPennationAngleStorage() const { 
+        return _pennationAngleStore; }
+	Storage* getMuscleTendonLengthStorage() const { 
+        return _lengthStore; }
+	Storage* getFiberLengthStorage() const { 
+        return _fiberLengthStore; }
+	Storage* getNormalizedFiberLengthStorage() const { 
+        return _normalizedFiberLengthStore; }
+	Storage* getTendonLengthStorage() const { 
+        return _tendonLengthStore; }
+
+	Storage* getForceStorage() const { 
+        return _forceStore; }
+	Storage* getFiberForceStorage() const { 
+        return _fiberForceStore; }
+	Storage* getActiveFiberForceStorage() const { 
+        return _activeFiberForceStore; }
+	Storage* getPassiveFiberForceStorage() const { 
+        return _passiveFiberForceStore; }
+	Storage* getActiveFiberForceAlongTendonStorage() const { 
+        return _activeFiberForceAlongTendonStore; }
+	Storage* getPassiveFiberForceAlongTendonStorage() const { 
+        return _passiveFiberForceAlongTendonStore; }
+	
+    Storage* getFiberActivePowerStorage() const { 
+        return _fiberActivePowerStore; }
+    Storage* getFiberPassivePowerStorage() const { 
+        return _fiberPassivePowerStore; }
+    Storage* getTendonPowerStorage() const { 
+        return _tendonPowerStore; }
+    Storage* getMusclePowerStorage() const { 
+        return _musclePowerStore; }
+
+    void setMuscles(Array<std::string>& aMuscles);
 	void setCoordinates(Array<std::string>& aCoordinates);
 
 	void setComputeMoments(bool aTrueFalse) {

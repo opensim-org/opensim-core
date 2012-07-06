@@ -215,8 +215,11 @@ public:
 	    of muscle force w.r.t. muscle length */
     double getMuscleStiffness(const SimTK::State& s) const;
 
-	/** get the current fiber power (W) */
-	double getFiberPower(const SimTK::State& s) const;
+	/** get the current active fiber power (W) */
+	double getFiberActivePower(const SimTK::State& s) const;
+	/** get the current passive fiber power (W) */
+	double getFiberPassivePower(const SimTK::State& s) const;
+
 	/** get the current tendon power (W) */
     double getTendonPower(const SimTK::State& s) const;
 	/** get the current muscle power (W) */
@@ -603,7 +606,8 @@ protected:
             tendonStiffness             force/length         N/m    [9]
             muscleStiffness             force/length         N/m    [10]
                                         
-            fiberPower                  force*velocity       W (N*m/s)
+            fiberActivePower            force*velocity       W (N*m/s)
+            fiberPassivePower           force*velocity       W (N*m/s)
             tendonPower                 force*velocity       W (N*m/s)
             musclePower                 force*velocity       W (N*m/s)
 
@@ -674,8 +678,8 @@ protected:
         double tendonStiffness;         // force/length         N/m
         double muscleStiffness;         // force/length         N/m
                                         //
-        double fiberPower;              // force*velocity       W
-        double fiberPowerAlongTendon;   // force*velocity       W
+        double fiberActivePower;        // force*velocity       W
+        double fiberPassivePower;       // force*velocity       W
         double tendonPower;             // force*velocity       W
         double musclePower;             // force*velocity       W
 
@@ -694,8 +698,8 @@ protected:
             fiberStiffnessAlongTendon(SimTK::NaN),
             tendonStiffness(SimTK::NaN),
             muscleStiffness(SimTK::NaN),
-            fiberPower(SimTK::NaN),
-            fiberPowerAlongTendon(SimTK::NaN),
+            fiberActivePower(SimTK::NaN),
+            fiberPassivePower(SimTK::NaN),
             tendonPower(SimTK::NaN),
             musclePower(SimTK::NaN),
             userDefinedDynamicsExtras(0, SimTK::NaN){};

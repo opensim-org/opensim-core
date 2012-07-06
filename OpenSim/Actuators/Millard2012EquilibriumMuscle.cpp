@@ -849,7 +849,7 @@ void Millard2012EquilibriumMuscle::calcMuscleDynamicsInfo(const SimTK::State& s,
     mdi.fiberForceAlongTendon        = FmAT;
     mdi.normFiberForce               = Fm/fiso;
     mdi.activeFiberForce             = a*fal*fv*fiso;
-    mdi.passiveFiberForce            = fpe*fiso;
+    mdi.passiveFiberForce            = ((fpe-fk)-fcphi*cosPhi)*fiso;
                                      
     mdi.tendonForce                  = fse*fiso;
     mdi.normTendonForce              = fse;
@@ -859,17 +859,6 @@ void Millard2012EquilibriumMuscle::calcMuscleDynamicsInfo(const SimTK::State& s,
     mdi.tendonStiffness              = dFt_dtl;
     mdi.muscleStiffness              = Ke;
                                      
-    mdi.fiberPower                   = -mdi.activeFiberForce*mvi.fiberVelocity;
-
-    //This is not necessary, and will be removed soon.
-    mdi.fiberPowerAlongTendon        = -mdi.activeFiberForce*cosPhi 
-                                         * mvi.fiberVelocityAlongTendon;
-
-    mdi.tendonPower                  = -mdi.tendonForce * mvi.tendonVelocity;   
-
-    double dmcldt = getLengtheningSpeed(s);
-    mdi.musclePower                  = -mdi.tendonForce * dmcldt;
-
     //Check that the derivative of system energy less work is zero within
     //a reasonable numerical tolerance. Throw an exception if this is not true
     
@@ -880,17 +869,29 @@ void Millard2012EquilibriumMuscle::calcMuscleDynamicsInfo(const SimTK::State& s,
     double dFibCPhiPEdt = -fcphi*fiso*(dlce*cosPhi -lce*sinPhi*dphidt);
     double dTdnPEdt     = fse*fiso*dtl;
 
-    double dFibWdt  = mdi.fiberPower;
-    double dBoundaryWdt = -mdi.musclePower;
+    double dFibWdt      = -mdi.activeFiberForce*mvi.fiberVelocity;
+    double dmcldt       = getLengtheningSpeed(s);
+    double dBoundaryWdt = mdi.tendonForce * dmcldt;
+
+
     double dSysEdt = (dFibKPEdt + dFibPEdt + dTdnPEdt + dFibCPhiPEdt)
                  - dFibWdt - dBoundaryWdt;
     double tol = sqrt(SimTK::Eps);
     
+    /////////////////////////////
+    //Populate the power entries
+    /////////////////////////////
+    mdi.fiberActivePower    =   dFibWdt;
+    mdi.fiberPassivePower   =   -(dFibKPEdt + dFibPEdt + dFibCPhiPEdt); 
+    mdi.tendonPower         =   -dTdnPEdt;       
+    mdi.musclePower         =   -dBoundaryWdt;
+
+
     //For debugging purposes
-    if(abs(dSysEdt) >= tol){
-        printf("KE+PE-W Tol Violation at time %f, by %f \n",simTime,dSysEdt);
-        tol = sqrt(SimTK::Eps);
-    }
+    //if(abs(dSysEdt) >= tol){
+    //    printf("KE+PE-W Tol Violation at time %f, by %f \n",simTime,dSysEdt);
+    //    tol = sqrt(SimTK::Eps);
+    //}
     
     //if(abs(tmp) > tol)
     //    printf("%s: d/dt(system energy-work) > tol, (%f > %f) at time %f",

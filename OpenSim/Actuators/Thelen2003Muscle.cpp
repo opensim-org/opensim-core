@@ -579,30 +579,28 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
     mdi.tendonStiffness              = dFt_dtl;
     mdi.muscleStiffness              = Ke;
                                      
-    mdi.fiberPower                   = -mdi.activeFiberForce*mvi.fiberVelocity;
-
-    //This is not necessary, and will be removed soon.
-    mdi.fiberPowerAlongTendon        = -mdi.activeFiberForce*cosphi 
-                                         * mvi.fiberVelocityAlongTendon;
-
-    mdi.tendonPower                  = -mdi.tendonForce * mvi.tendonVelocity;   
-
-    double dmcldt = getLengtheningSpeed(s);
-    mdi.musclePower                  = -mdi.tendonForce * dmcldt;
+    
 
     //Check that the derivative of system energy less work is zero within
-    //a reasonable numerical tolerance. Throw an exception if this is not true
-    
-    
-
-    double dFibPEdt = fpe*fiso*dlce;
-    double dTdnPEdt = fse*fiso*dtl;
-    double dFibWdt  = mdi.fiberPower;
-    double dBoundaryWdt = -mdi.musclePower;
-    double ddt_KEPEmW = dFibPEdt+dTdnPEdt-dFibWdt-dBoundaryWdt;
+    //a reasonable numerical tolerance. Throw an exception if this is not true    
+    double dFibPEdt     = fpe*fiso*dlce;
+    double dTdnPEdt     = fse*fiso*dtl;
+    double dFibWdt      = -mdi.activeFiberForce*mvi.fiberVelocity;
+    double dmcldt       = getLengtheningSpeed(s);
+    double dBoundaryWdt = mdi.tendonForce * dmcldt;
+    double ddt_KEPEmW   = dFibPEdt+dTdnPEdt-dFibWdt-dBoundaryWdt;
     SimTK::Vector userVec(1);
     userVec(0) = ddt_KEPEmW;  
     mdi.userDefinedDynamicsExtras = userVec;
+
+    /////////////////////////////
+    //Populate the power entries
+    /////////////////////////////
+    mdi.fiberActivePower             = dFibWdt;
+    mdi.fiberPassivePower            = -dFibPEdt;
+    mdi.tendonPower                  = -dTdnPEdt;       
+    mdi.musclePower                  = -dBoundaryWdt;
+
 
     //double tol = sqrt(SimTK::Eps);    
     //if(abs(dFibPEdt) > tol || abs(tmp) >= tol){

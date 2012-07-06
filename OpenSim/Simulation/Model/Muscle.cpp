@@ -435,10 +435,17 @@ double Muscle::getMuscleStiffness(const SimTK::State& s) const
 }
 
 /* get the current fiber power (W) */
-double Muscle::getFiberPower(const SimTK::State& s) const
+double Muscle::getFiberActivePower(const SimTK::State& s) const
 {
 	const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
-	return mdi.fiberPower;
+	return mdi.fiberActivePower;
+}
+
+/* get the current fiber active power (W) */
+double Muscle::getFiberPassivePower(const SimTK::State& s) const
+{
+	const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
+	return mdi.fiberPassivePower;
 }
 
 /* get the current tendon power (W) */

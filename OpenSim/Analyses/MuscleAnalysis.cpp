@@ -1,6 +1,7 @@
 // MuscleAnalysis.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //	AUTHOR: Katherine Holzbaur, Frank C. Anderson
+//	AUTHOR: Ajay Seth, Matt Millard, Katherine Holzbaur, Frank C. Anderson
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /* Copyright (c)  2006 Stanford University
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -140,6 +141,11 @@ void MuscleAnalysis::setNull()
 	_activeFiberForceAlongTendonStore = NULL;
 	_passiveFiberForceAlongTendonStore = NULL;
 
+    _fiberActivePowerStore  =   NULL;
+    _fiberPassivePowerStore =   NULL;
+    _tendonPowerStore       =   NULL;
+    _musclePowerStore       =   NULL;
+
 	// DEFAULT VALUES
 	_muscleListProp.getValueStrArray().setSize(1);
 	_muscleListProp.getValueStrArray().get(0) = "all";
@@ -153,17 +159,19 @@ void MuscleAnalysis::setNull()
  */
 void MuscleAnalysis::setupProperties()
 {
-	_muscleListProp.setComment("List of muscles for which to perform the analysis."
-		" Use 'all' to perform the analysis for all muscles.");
+	_muscleListProp.setComment( "List of muscles for which to "
+                                "perform the analysis. Use 'all' to perform"
+                                " the analysis for all muscles.");
 	_muscleListProp.setName("muscle_list");
 	_propertySet.append( &_muscleListProp );
 
-	_coordinateListProp.setComment("List of generalized coordinates for which to "
-		"compute moment arms. Use 'all' to compute for all coordinates.");
+	_coordinateListProp.setComment("List of generalized coordinates for which"
+        " to compute moment arms. Use 'all' to compute for all coordinates.");
 	_coordinateListProp.setName("moment_arm_coordinate_list");
 	_propertySet.append( &_coordinateListProp );
 
-	_computeMomentsProp.setComment("Flag indicating whether moments should be computed.");
+	_computeMomentsProp.setComment("Flag indicating whether moments should be"
+                                   " computed.");
 	_computeMomentsProp.setName("compute_moments");
 	_propertySet.append( &_computeMomentsProp );
 
@@ -180,7 +188,8 @@ void MuscleAnalysis::constructDescription()
 	char descrip[1024];
 
 	strcpy(descrip,"\nThis analysis gathers basic information about muscles ");
-	strcat(descrip,"during a simulation (e.g., forces, tendon lenghts, moment arms, etc).");
+	strcat(descrip,"during a simulation (e.g., forces, tendon lenghts,"
+        " moment arms, etc).");
 
 	strcat(descrip,"\nUnits are S.I. units (second, meters, Newtons, ...)");
 	if(getInDegrees()) {
@@ -291,7 +300,8 @@ void MuscleAnalysis::allocateStorageObjects()
 	_normFiberVelocityStore->setDescription(getDescription());
 	_storageList.append(_normFiberVelocityStore );
 
-	_pennationAngularVelocityStore = new Storage(1000,"PennationAngularVelocity");
+	_pennationAngularVelocityStore = new Storage(1000,
+        "PennationAngularVelocity");
 	_pennationAngularVelocityStore->setDescription(getDescription());
 	_storageList.append(_pennationAngularVelocityStore );
 
@@ -311,17 +321,23 @@ void MuscleAnalysis::allocateStorageObjects()
 	_passiveFiberForceStore->setDescription(getDescription());
 	_storageList.append(_passiveFiberForceStore );
 
-	_activeFiberForceAlongTendonStore = new Storage(1000,"ActiveFiberForceAlongTendon");
+	_activeFiberForceAlongTendonStore = new Storage(1000,
+        "ActiveFiberForceAlongTendon");
 	_activeFiberForceAlongTendonStore->setDescription(getDescription());
 	_storageList.append(_activeFiberForceAlongTendonStore );
 
-	_passiveFiberForceAlongTendonStore = new Storage(1000,"PassiveFiberForceAlongTendon");
+	_passiveFiberForceAlongTendonStore = new Storage(1000,
+        "PassiveFiberForceAlongTendon");
 	_passiveFiberForceAlongTendonStore->setDescription(getDescription());
 	_storageList.append(_passiveFiberForceAlongTendonStore );
 
-	_fiberPowerStore = new Storage(1000,"FiberPower");
-	_fiberPowerStore->setDescription(getDescription());
-	_storageList.append(_fiberPowerStore );
+	_fiberActivePowerStore = new Storage(1000,"FiberActivePower");
+	_fiberActivePowerStore->setDescription(getDescription());
+	_storageList.append(_fiberActivePowerStore );
+
+    _fiberPassivePowerStore = new Storage(1000,"FiberPassivePower");
+	_fiberPassivePowerStore->setDescription(getDescription());
+	_storageList.append(_fiberPassivePowerStore );
 
 	_tendonPowerStore = new Storage(1000,"TendonPower");
 	_tendonPowerStore->setDescription(getDescription());
@@ -512,7 +528,8 @@ int MuscleAnalysis::record(const SimTK::State& s)
 	Array<double> actfibforcealongten(nan,nm), passfibforcealongten(nan,nm);
 
 	// Muscle and component powers
-	Array<double> fibPower(nan,nm), tendonPower(nan,nm), muscPower(nan,nm);
+	Array<double> fibActivePower(nan,nm), fibPassivePower(nan,nm),
+                  tendonPower(nan,nm), muscPower(nan,nm);
 
 	double sysMass = _model->getMatterSubsystem().calcSystemMass(s);
 	bool hasMass = sysMass > SimTK::Eps;
@@ -574,7 +591,8 @@ int MuscleAnalysis::record(const SimTK::State& s)
 				normFibVel[i] =  _muscleArray[i]->getNormalizedFiberVelocity(s);
 				penAngVel[i] =  _muscleArray[i]->getPennationAngularVelocity(s);
 				//Powers
-				fibPower[i] = _muscleArray[i]->getFiberPower(s);
+				fibActivePower[i] = _muscleArray[i]->getFiberActivePower(s);
+				fibPassivePower[i] = _muscleArray[i]->getFiberPassivePower(s);
 				tendonPower[i] = _muscleArray[i]->getTendonPower(s);
 				muscPower[i] = _muscleArray[i]->getMusclePower(s);
 			}
@@ -599,21 +617,29 @@ int MuscleAnalysis::record(const SimTK::State& s)
 	_pennationAngleStore->append(tReal,penang.getSize(),&penang[0]);
 	_lengthStore->append(tReal,len.getSize(),&len[0]);
 	_fiberLengthStore->append(tReal,fiblen.getSize(),&fiblen[0]);
-	_normalizedFiberLengthStore->append(tReal,normfiblen.getSize(),&normfiblen[0]);
+	_normalizedFiberLengthStore
+        ->append(tReal,normfiblen.getSize(),&normfiblen[0]);
 	_tendonLengthStore->append(tReal,tlen.getSize(),&tlen[0]);
 
 	_fiberVelocityStore->append(tReal,fibVel.getSize(),&fibVel[0]);
 	_normFiberVelocityStore->append(tReal,normFibVel.getSize(),&normFibVel[0]);
-	_pennationAngularVelocityStore->append(tReal,penAngVel.getSize(),&penAngVel[0]);
+	_pennationAngularVelocityStore
+        ->append(tReal,penAngVel.getSize(),&penAngVel[0]);
 
 	_forceStore->append(tReal,force.getSize(),&force[0]);
 	_fiberForceStore->append(tReal,fibforce.getSize(),&fibforce[0]);
 	_activeFiberForceStore->append(tReal,actfibforce.getSize(),&actfibforce[0]);
-	_passiveFiberForceStore->append(tReal,passfibforce.getSize(),&passfibforce[0]);
-	_activeFiberForceAlongTendonStore->append(tReal,actfibforcealongten.getSize(),&actfibforcealongten[0]);
-	_passiveFiberForceAlongTendonStore->append(tReal,passfibforcealongten.getSize(),&passfibforcealongten[0]);
+	_passiveFiberForceStore
+        ->append(tReal,passfibforce.getSize(),&passfibforce[0]);
+	_activeFiberForceAlongTendonStore
+        ->append(tReal,actfibforcealongten.getSize(),&actfibforcealongten[0]);
+	_passiveFiberForceAlongTendonStore
+        ->append(tReal,passfibforcealongten.getSize(),&passfibforcealongten[0]);
 
-	_fiberPowerStore->append(tReal,fibPower.getSize(),&fibPower[0]);
+	_fiberActivePowerStore
+        ->append(tReal,fibActivePower.getSize(),&fibActivePower[0]);
+    _fiberPassivePowerStore
+        ->append(tReal,fibPassivePower.getSize(),&fibPassivePower[0]);
 	_tendonPowerStore->append(tReal,tendonPower.getSize(),&tendonPower[0]);
 	_musclePowerStore->append(tReal,muscPower.getSize(),&muscPower[0]);
 
@@ -635,7 +661,7 @@ int MuscleAnalysis::record(const SimTK::State& s)
 
 			bool locked = q->getLocked(tempState);
 
-			_model->getMultibodySystem().realize(tempState, s.getSystemStage() );
+			_model->getMultibodySystem().realize(tempState, s.getSystemStage());
 			// LOOP OVER MUSCLES
 			for(int j=0; j<nm; j++) {
 				ma[j] = _muscleArray[j]->computeMomentArm(tempState,*q);
@@ -769,10 +795,14 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 
 	int size = _momentArmStorageArray.getSize();
 	for(int i=0;i<size;i++) {
-		string fileName = prefix + _momentArmStorageArray.get(i)->momentArmStore->getName();
-		Storage::printResult(_momentArmStorageArray.get(i)->momentArmStore,fileName,aDir,aDT,aExtension);
-		fileName = prefix + _momentArmStorageArray.get(i)->momentStore->getName();
-		Storage::printResult(_momentArmStorageArray.get(i)->momentStore,fileName,aDir,aDT,aExtension);
+		string fileName = prefix + _momentArmStorageArray.get(i)
+            ->momentArmStore->getName();
+		Storage::printResult(_momentArmStorageArray.get(i)
+            ->momentArmStore,fileName,aDir,aDT,aExtension);
+		fileName = prefix + _momentArmStorageArray.get(i)
+            ->momentStore->getName();
+		Storage::printResult(_momentArmStorageArray.get(i)
+            ->momentStore,fileName,aDir,aDT,aExtension);
 	}
 
 	return(0);

@@ -181,8 +181,8 @@ calcMuscleDynamicsInfo(const State& s, MuscleDynamicsInfo& mdi) const
 	mdi.normTendonForce = (normActiveForce+mli.fiberPassiveForceLengthMultiplier)
                           * mli.cosPennationAngle;
 
-	mdi.fiberPower = -(mdi.activeFiberForce + mdi.passiveFiberForce)
-                      * fvi.fiberVelocity;
+	mdi.fiberActivePower = -(mdi.activeFiberForce) * fvi.fiberVelocity;
+    mdi.fiberPassivePower = -(mdi.passiveFiberForce) * fvi.fiberVelocity;
 	mdi.tendonPower = 0;
 	mdi.musclePower = -getMaxIsometricForce()*mdi.normTendonForce
                         * fvi.fiberVelocity;
