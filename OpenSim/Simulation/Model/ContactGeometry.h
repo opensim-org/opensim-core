@@ -78,6 +78,14 @@ protected:
 	 */
     ContactGeometry(const SimTK::Vec3& location, const SimTK::Vec3& orientation, OpenSim::Body& body);
 public:
+    /** Display Preference to apply to the contact geometry.  **/
+    OpenSim_DECLARE_PROPERTY(display_preference, int,
+        "Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded");
+
+    /** Display Color to apply to the contact geometry.  **/
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE(color, double, 3,
+        "Display Color");
+
 	ContactGeometry(const ContactGeometry& geom);
 	~ContactGeometry();
 
@@ -164,6 +172,7 @@ private:
     // INITIALIZATION
 	void setNull();
 	void setupProperties();
+    void constructProperties();
 //=============================================================================
 };	// END of class ContactGeometry
 //=============================================================================

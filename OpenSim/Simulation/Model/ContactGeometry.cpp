@@ -42,6 +42,7 @@ ContactGeometry::ContactGeometry() :
 {
 	setNull();
 	setupProperties();
+    constructProperties();
 }
 
 ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, Body& body) :
@@ -51,6 +52,7 @@ ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, 
 {
 	setNull();
 	setupProperties();
+    constructProperties();
     _body = &body;
     _bodyName = body.getName();
     _locationInBody = location;
@@ -64,6 +66,7 @@ ContactGeometry::ContactGeometry(const ContactGeometry& geom) : ModelComponent(g
 {
 	setNull();
 	setupProperties();
+    //constructProperties();
     copyData(geom);
 }
 
@@ -90,6 +93,19 @@ void ContactGeometry::setupProperties()
 	_orientationInBodyProp.setName("orientation");
 	_orientationInBodyProp.setValue(Vec3(0));
 	_propertySet.append(&_orientationInBodyProp);
+}
+
+//_____________________________________________________________________________
+/**
+ * Connect properties to local pointers.
+ */
+void ContactGeometry::constructProperties()
+{
+    constructProperty_display_preference(1);
+    Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
+	defaultColor[0] = 0.0; 
+
+    constructProperty_color(defaultColor);
 }
 
 void ContactGeometry::copyData(const ContactGeometry& source)

@@ -126,7 +126,15 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	WrapObject();
+    /** Display Preference to apply to the contact geometry.  **/
+    OpenSim_DECLARE_PROPERTY(display_preference, int,
+        "Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded");
+
+    /** Display Color to apply to the contact geometry.  **/
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE(color, double, 3,
+        "Display Color");
+
+    WrapObject();
 	WrapObject(const WrapObject& aWrapObject);
 	virtual ~WrapObject();
 
@@ -165,6 +173,7 @@ protected:
 	void setGeometryQuadrants(AnalyticGeometry *aGeometry) const;
 private:
 	void setNull();
+    void constructProperties();
 //=============================================================================
 };	// END of class WrapObject
 //=============================================================================

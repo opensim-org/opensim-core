@@ -65,6 +65,7 @@ WrapObject::WrapObject() :
 {
 	setNull();
 	setupProperties();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -92,6 +93,7 @@ WrapObject::WrapObject(const WrapObject& aWrapObject) :
 {
 	setNull();
 	setupProperties();
+    //constructProperties();
 	copyData(aWrapObject);
 }
 
@@ -135,6 +137,15 @@ void WrapObject::setupProperties()
 	_displayerProp.setName("display");
 	_propertySet.append(&_displayerProp);
 
+}
+
+void WrapObject::constructProperties()
+{
+    constructProperty_display_preference(1);
+    Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
+	defaultColor[0] = 0.0; 
+
+    constructProperty_color(defaultColor);
 }
 
 //_____________________________________________________________________________
