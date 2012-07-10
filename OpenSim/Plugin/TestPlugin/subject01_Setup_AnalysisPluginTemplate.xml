@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20302">
+	<AnalyzeTool name="subject01">
+		<!--Name of the .osim file used to construct a model.-->
+		<model_file> subject01_simbody_adjusted.osim </model_file>
+		<!--Replace the model's force set with sets specified in
+		    <force_set_files>? If false, the force set is appended to.-->
+		<results_directory> Results </results_directory>
+		<!--Output precision.  It is 20 by default.-->
+		<output_precision> 20 </output_precision>
+		<!--Initial time for the simulation.-->
+		<initial_time>       0.50000000 </initial_time>
+		<!--Final time for the simulation.-->
+		<final_time>       4.00000000 </final_time>
+		<AnalysisSet name="Analyses">
+			<objects>
+				<AnalysisPlugin_Template name="AnalysisPlugin_Template">
+					<!--Flag (true or false) specifying whether whether on. True by default.-->
+					<on> true </on>
+					<!--Start time.-->
+					<start_time>       0.50000000 </start_time>
+					<!--End time.-->
+					<end_time>       4.00000000 </end_time>
+					<!--Specifies how often to store results during a simulation. More
+					    specifically, the interval (a positive integer) specifies how many
+					    successful integration steps should be taken before results are
+					    recorded again.-->
+					<step_interval> 1 </step_interval>
+					<!--Flag (true or false) indicating whether the results are in degrees or
+					    not.-->
+					<in_degrees> true </in_degrees>
+
+					<body_names> all </body_names>
+				</AnalysisPlugin_Template>
+			</objects>
+			<groups/>
+		</AnalysisSet>
+		<!--Motion file (.mot) or storage file (.sto) containing the time history
+		    of the generalized coordinates for the model. These can be specified
+		    in place of the states file.-->
+		<coordinates_file> subject01_walk1_ik.mot </coordinates_file>
+		<!--Storage file (.sto) containing the time history of the generalized
+		    speeds for the model. If coordinates_file is used in place of
+		    states_file, these can be optionally set as well to give the speeds.
+		    If not specified, speeds will be computed from coordinates by
+		    differentiation.-->
+		<lowpass_cutoff_frequency_for_coordinates>      6.0 </lowpass_cutoff_frequency_for_coordinates>
+	</AnalyzeTool>
+</OpenSimDocument>
+
