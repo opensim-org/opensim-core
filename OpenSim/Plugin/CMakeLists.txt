@@ -9,7 +9,7 @@ endif(COMMAND cmake_policy)
 SET(KIT plugin)
 SET(UKIT PLUGIN)
 
-SET(NameSpace "OpenSim_")
+SET(NameSpace "")
 
 FILE(GLOB SOURCE_FILES *.cpp)
 FILE(GLOB INCLUDE_FILES *.h)
@@ -19,7 +19,7 @@ SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release"
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-SET(OPENSIM_INSTALL_DIR "C:/OpenSim3.0/" CACHE PATH 
+SET(OPENSIM_INSTALL_DIR "C:/Program Files (x86)/OpenSim 3.0/" CACHE PATH 
     "Top-level directory of OpenSim install")
 
 SET(PLUGIN_NAME "osimPlugin" CACHE STRING "Name of shared library to create")

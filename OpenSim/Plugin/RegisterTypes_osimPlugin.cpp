@@ -31,8 +31,6 @@
 #include "RegisterTypes_osimPlugin.h"
 
 #include "AnalysisPlugin_Template.h"
-//#include "MyAnalysis.h"
-//#include "MyJointReaction.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -46,7 +44,6 @@ static dllObjectInstantiator instantiator;
  */
 OSIMPLUGIN_API void RegisterTypes_osimPlugin()
 {
-	//Object::RegisterType( MyAnalysis() );
 	Object::RegisterType( AnalysisPlugin_Template() );
 }
 

@@ -1,8 +1,8 @@
 // AnalysisPlugin_Template.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//	AUTHOR: Frank C. Anderson, Ajay Seth
+//	AUTHOR: Frank C. Anderson, Ajay Seth, Tim Dorn
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-/* Copyright (c)  2008 Stanford University
+/* Copyright (c)  2012 Stanford University
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -30,220 +30,61 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include "AnalysisPlugin_Template.h"
 
 using namespace OpenSim;
 using namespace std;
 
-//=============================================================================
-// CONSTANTS
-//=============================================================================
 
 //=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
+// CONSTRUCTOR(S) AND SETUP
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Destructor.
- * Delete any variables allocated using the "new" operator.  You will not
- * necessarily have any of these.
+ * Default constructor
  */
-AnalysisPlugin_Template::~AnalysisPlugin_Template()
+AnalysisPlugin_Template::AnalysisPlugin_Template() : Analysis()
 {
-	//deleteStorage();
-}
-//_____________________________________________________________________________
-/*
- * Construct an AnalysisPlugin_Template instance.
- *
- * @param aModel Model for which the analysis is to be run.
- */
-AnalysisPlugin_Template::AnalysisPlugin_Template(Model *aModel) :
-	Analysis(aModel),
-	//_bool(_boolProp.getValueBool()),
-	//_boolArray(_boolArrayProp.getValueBoolArray()),
-	//_int(_intProp.getValueInt()),
-	//_intArray(_intArrayProp.getValueIntArray()),
-	//_dbl(_dblProp.getValueDbl()),
-	//_dblArray(_dblArrayProp.getValueDblArray()),
-	//_vec3(_vec3Prop.getValueDblVec3()),
-	//_str(_strProp.getValueStr()),
-	_bodyNames(_strArrayProp.getValueStrArray())
-{
-	// make sure members point to NULL if not valid. 
-	setNull();
-	if(_model==NULL) return;
-
-	// DESCRIPTION AND LABELS
-	constructDescription();
-	constructColumnLabels();
-
-}
-//_____________________________________________________________________________
-/*
- * Construct an object from file.
- *
- * The object is constructed from the root element of the XML document.
- * The type of object is the tag name of the XML root element.
- *
- * @param aFileName File name of the document.
- */
-AnalysisPlugin_Template::AnalysisPlugin_Template(const std::string &aFileName):
-	Analysis(aFileName, false),
-	//_bool(_boolProp.getValueBool()),
-	//_boolArray(_boolArrayProp.getValueBoolArray()),
-	//_int(_intProp.getValueInt()),
-	//_intArray(_intArrayProp.getValueIntArray()),
-	//_dbl(_dblProp.getValueDbl()),
-	//_dblArray(_dblArrayProp.getValueDblArray()),
-	//_vec3(_vec3Prop.getValueDblVec3()),
-	//_str(_strProp.getValueStr()),
-	_bodyNames(_strArrayProp.getValueStrArray())
-{
-	setNull();
-
-	// Read properties from XML
-	updateFromXMLNode();
+    setNull();
+    constructProperties();
 }
 
-// Copy constrctor and virtual copy 
-//_____________________________________________________________________________
-/*
- * Copy constructor.
- *
- */
-AnalysisPlugin_Template::AnalysisPlugin_Template(const AnalysisPlugin_Template &aAnalysisPlugin_Template):
-	Analysis(aAnalysisPlugin_Template),
-	//_bool(_boolProp.getValueBool()),
-	//_boolArray(_boolArrayProp.getValueBoolArray()),
-	//_int(_intProp.getValueInt()),
-	//_intArray(_intArrayProp.getValueIntArray()),
-	//_dbl(_dblProp.getValueDbl()),
-	//_dblArray(_dblArrayProp.getValueDblArray()),
-	//_vec3(_vec3Prop.getValueDblVec3()),
-	//_str(_strProp.getValueStr()),
-	_bodyNames(_strArrayProp.getValueStrArray())
-{
-	setNull();
-	// COPY TYPE AND NAME
-	*this = aAnalysisPlugin_Template;
-}
-//_____________________________________________________________________________
-/**
- * Clone
- *
- */
-Object* AnalysisPlugin_Template::copy() const
-{
-	AnalysisPlugin_Template *object = new AnalysisPlugin_Template(*this);
-	return(object);
 
-}
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//-----------------------------------------------------------------------------
-// ASSIGNMENT
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/*
- * Assign this object to the values of another.
- *
- * @return Reference to this object.
- */
-AnalysisPlugin_Template& AnalysisPlugin_Template::
-operator=(const AnalysisPlugin_Template &aAnalysisPlugin_Template)
-{
-	// Base Class
-	Analysis::operator=(aAnalysisPlugin_Template);
-
-	// Member Variables
-	_bodyNames = aAnalysisPlugin_Template._bodyNames;
-
-	return(*this);
-}
 
 //_____________________________________________________________________________
 /**
- * SetNull().
+ * SetNull()
  */
 void AnalysisPlugin_Template::
 setNull()
 {
-	setType("AnalysisPlugin_Template");
-	setupProperties();
-
-	// Property Default Values
-	//_bool = true;
-	//_boolArray.setSize(0);
-	//_int = 0;
-	//_intArray.setSize(0);
-	//_dbl = 0.0;
-	//_dblArray.setSize(0);
-	//_vec3[0] = _vec3[1] = _vec3[2] = 0.0;
-	//_str = "";
-	_bodyNames.setSize(1);
-	_bodyNames[0] = "all";
+    _bodyIndices = NULL;
+    _bodypos = NULL;
 }
+
+
 //_____________________________________________________________________________
 /*
- * Set up the properties for your analysis.
- *
- * You should give each property a meaningful name and an informative comment.
- * The name you give each property is the tag that will be used in the XML
- * file.  The comment will appear before the property in the XML file.
- * In addition, the comments are used for tool tips in the OpenSim GUI.
- *
- * All properties are added to the property set.  Once added, they can be
- * read in and written to file.
+ * constructProperties()
  */
 void AnalysisPlugin_Template::
-setupProperties()
+constructProperties()
 {
-	// Uncomment and rename the properties required for your analysis
+    Array<string> defaultBodyNames;
+    defaultBodyNames.append("all");
+    constructProperty_body_names(defaultBodyNames);
 
-	//_boolProp.setName("bool_parameter");
-	//_boolProp.setComment("Flag indicating whether or not to ...");
-	//_propertySet.append(&_boolProp);
-
-	//_boolArrayProp.setName("array_of_bool_params");
-	//_boolArrayProp.setComment("Array of flags indicating whether or not to ...");
-	//_propertySet.append(&_boolArrayProp);
-
-	//_intProp.setName("integer_parameter");
-	//_intProp.setComment("Number of ...");
-	//_propertySet.append(&_intProp);
-
-	//_intArrayProp.setName("array_of_integer_paramters");
-	//_intArrayProp.setComment("Array of numbers per ...");
-	//_propertySet.append(&_intArrayProp);
-
-	//_dblProp.setName("double_precision_parameter");
-	//_dblProp.setComment("A double precision value for...");
-	//_propertySet.append(&_dblProp);
-
-	//_dblArrayProp.setName("array_of_doubles");
-	//_dblArrayProp.setComment("Array of double precision parameters ...");
-	//_propertySet.append(&_dblArrayProp);
-
-	//_vec3Prop.setName("vec3_parameter");
-	//_vec3Prop.setComment("Vector in 3 space.");
-	//_propertySet.append(&_vec3Prop);
-
-	//_strProp.setName("string_parameter");
-	//_strProp.setComment("String parameter identifying ...");
-	//_propertySet.append(&_strProp);
-
-	_strArrayProp.setName("body_names");
-	_strArrayProp.setComment("Names of the bodies on which to perform the analysis."
-		"The key word 'All' indicates that the analysis should be performed for all bodies.");
-	_propertySet.append(&_strArrayProp);
+    // Here are some examples of other constructing other scalar property types.
+    // Uncomment them as you need them.
+    // ------------------------------------------------------
+    //constructProperty_string_property("defaultString");
+    //constructProperty_int_property(10);
+    //constructProperty_bool_property(true);
+    //constructProperty_double_property(1.5);
 }
+
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -290,17 +131,17 @@ constructColumnLabels()
 
 	const BodySet& bodySet = _model->getBodySet();
 
-	if(_bodyNames[0] == "all"){
+	if(get_body_names(0) == "all"){
 		_bodyIndices.setSize(bodySet.getSize());
 		// Get indices of all the bodies.
 		for(int j=0;j<bodySet.getSize();j++)
 			_bodyIndices[j]=j;
 	}
 	else{
-		_bodyIndices.setSize(_bodyNames.getSize());
+		_bodyIndices.setSize(getProperty_body_names().size());
 		// Get indices of just the bodies listed.
-		for(int j=0;j<_bodyNames.getSize();j++)
-			_bodyIndices[j]=bodySet.getIndex(_bodyNames[j]);
+		for(int j=0;j<getProperty_body_names().size();j++)
+			_bodyIndices[j]=bodySet.getIndex(get_body_names(j));
 	}
 
 	//Do the analysis on the bodies that are in the indices list
@@ -337,9 +178,6 @@ setupStorage()
 }
 
 
-//=============================================================================
-// GET AND SET
-//=============================================================================
 //_____________________________________________________________________________
 /**
  * Set the model for which this analysis is to be run.
@@ -355,7 +193,7 @@ void AnalysisPlugin_Template::
 setModel(Model& aModel)
 {
 	// SET THE MODEL IN THE BASE CLASS
-	Analysis::setModel(aModel);
+	Super::setModel(aModel);
 
 	// UPDATE VARIABLES IN THIS CLASS
 	constructDescription();
