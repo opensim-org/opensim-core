@@ -30,12 +30,12 @@ FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 #
 # Copy files to run dir
 #
-FOREACH (dataFile ${TEST_FILES})
- ADD_CUSTOM_COMMAND(
-    TARGET testVersioning
-    COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy
-    ${dataFile}
-    ${OpenSim_BINARY_DIR}/OpenSim/Tools/Test)
-    # MESSAGE( "IN file "${dataFile} )
- ENDFOREACH (dataFile) 
+#FOREACH (dataFile ${TEST_FILES})
+# ADD_CUSTOM_COMMAND(
+#    TARGET testVersioning
+#    COMMAND ${CMAKE_COMMAND}
+#    ARGS -E copy
+#    ${dataFile}
+#    ${OpenSim_BINARY_DIR}/OpenSim/Tools/Test)
+#    # MESSAGE( "IN file "${dataFile} )
+# ENDFOREACH (dataFile) 
