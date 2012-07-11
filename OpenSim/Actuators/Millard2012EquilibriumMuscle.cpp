@@ -65,25 +65,25 @@ void Millard2012EquilibriumMuscle::constructProperties()
 
     constructProperty_default_fiber_length(getOptimalFiberLength());
     
-    constructProperty_activation_model(
+    constructProperty_MuscleFirstOrderActivationDynamicModel(
         MuscleFirstOrderActivationDynamicModel());
 
-    constructProperty_active_force_length_curve(
+    constructProperty_ActiveForceLengthCurve(
         ActiveForceLengthCurve());
 
-    constructProperty_force_velocity_inverse_curve(
+    constructProperty_ForceVelocityInverseCurve(
         ForceVelocityInverseCurve());
 
-    constructProperty_fiber_force_length_curve(
+    constructProperty_FiberForceLengthCurve(
         FiberForceLengthCurve());
 
-    constructProperty_tendon_force_length_curve(
+    constructProperty_TendonForceLengthCurve(
         TendonForceLengthCurve());
 
-    constructProperty_fiber_compressive_force_length_curve(
+    constructProperty_FiberCompressiveForceLengthCurve(
         FiberCompressiveForceLengthCurve());
 
-    constructProperty_fiber_compressive_force_cospennation_curve(
+    constructProperty_FiberCompressiveForceCosPennationCurve(
         FiberCompressiveForceCosPennationCurve());       
 }
 
@@ -102,39 +102,39 @@ void Millard2012EquilibriumMuscle::buildMuscle()
 
     std::string tmp = aName;
     tmp.append("_MuscleFirstOrderActivationDynamicModel");
-    MuscleFirstOrderActivationDynamicModel& actMdl = upd_activation_model();
+    MuscleFirstOrderActivationDynamicModel& actMdl = upd_MuscleFirstOrderActivationDynamicModel();
     actMdl.setName(tmp);
 
     tmp = aName;
     tmp.append("_ActiveForceLengthCurve");
-    ActiveForceLengthCurve& falCurve = upd_active_force_length_curve();
+    ActiveForceLengthCurve& falCurve = upd_ActiveForceLengthCurve();
     falCurve.setName(tmp);
 
     tmp = aName;
     tmp.append("_ForceVelocityInverseCurve");
-    ForceVelocityInverseCurve& fvInvCurve = upd_force_velocity_inverse_curve();
+    ForceVelocityInverseCurve& fvInvCurve = upd_ForceVelocityInverseCurve();
     fvInvCurve.setName(tmp);
 
     tmp = aName;
     tmp.append("_FiberForceLengthCurve");
-    FiberForceLengthCurve& fpeCurve = upd_fiber_force_length_curve();
+    FiberForceLengthCurve& fpeCurve = upd_FiberForceLengthCurve();
     fpeCurve.setName(tmp);
 
     tmp = aName;
     tmp.append("_TendonForceLengthCurve");
-    TendonForceLengthCurve& fseCurve = upd_tendon_force_length_curve();
+    TendonForceLengthCurve& fseCurve = upd_TendonForceLengthCurve();
     fseCurve.setName(tmp);
 
     tmp = aName;
     tmp.append("_FiberCompressiveForceLengthCurve");
     FiberCompressiveForceLengthCurve& fkCurve 
-        = upd_fiber_compressive_force_length_curve();
+        = upd_FiberCompressiveForceLengthCurve();
     fkCurve.setName(tmp);
 
     tmp = aName;
     tmp.append("_FiberCompressiveForceCosPennationCurve");
     FiberCompressiveForceCosPennationCurve& fcphi = 
-        upd_fiber_compressive_force_cospennation_curve();
+        upd_FiberCompressiveForceCosPennationCurve();
     fcphi.setName(tmp);
 
 
@@ -387,49 +387,49 @@ const MuscleFirstOrderActivationDynamicModel& Millard2012EquilibriumMuscle::
     getActivationModel() const
 {
     ensureMuscleUpToDate();    
-    return get_activation_model();
+    return get_MuscleFirstOrderActivationDynamicModel();
 }
 
 const ActiveForceLengthCurve& Millard2012EquilibriumMuscle::
     getActiveForceLengthCurve() const
 {
     ensureMuscleUpToDate();
-    return get_active_force_length_curve();    
+    return get_ActiveForceLengthCurve();    
 }
 
 const ForceVelocityInverseCurve& Millard2012EquilibriumMuscle::
     getForceVelocityInverseCurve() const
 {
     ensureMuscleUpToDate();
-    return get_force_velocity_inverse_curve();
+    return get_ForceVelocityInverseCurve();
 }
 
 const FiberForceLengthCurve& Millard2012EquilibriumMuscle::
     getFiberForceLengthCurve() const
 {
     ensureMuscleUpToDate();
-    return get_fiber_force_length_curve();
+    return get_FiberForceLengthCurve();
 }
 
 const TendonForceLengthCurve& Millard2012EquilibriumMuscle::
     getTendonForceLengthCurve() const
 {
     ensureMuscleUpToDate();
-    return get_tendon_force_length_curve();
+    return get_TendonForceLengthCurve();
 }
 
 const FiberCompressiveForceLengthCurve& Millard2012EquilibriumMuscle::
     getFiberCompressiveForceLengthCurve() const
 {
     ensureMuscleUpToDate();
-    return get_fiber_compressive_force_length_curve();
+    return get_FiberCompressiveForceLengthCurve();
 }
 
 const FiberCompressiveForceCosPennationCurve& Millard2012EquilibriumMuscle::
     getFiberCompressiveForceCosPennationCurve() const
 {
     ensureMuscleUpToDate();
-    return get_fiber_compressive_force_cospennation_curve();
+    return get_FiberCompressiveForceCosPennationCurve();
 }
 
 double Millard2012EquilibriumMuscle::
@@ -447,36 +447,36 @@ double Millard2012EquilibriumMuscle::
 void Millard2012EquilibriumMuscle::setActivationModel(
         MuscleFirstOrderActivationDynamicModel& aActivationMdl)
 {
-    set_activation_model(aActivationMdl);
+    set_MuscleFirstOrderActivationDynamicModel(aActivationMdl);
 }
 void Millard2012EquilibriumMuscle::setActiveForceLengthCurve(
         ActiveForceLengthCurve& aActiveForceLengthCurve)
 {
-    set_active_force_length_curve(aActiveForceLengthCurve);
+    set_ActiveForceLengthCurve(aActiveForceLengthCurve);
 }
 
 void Millard2012EquilibriumMuscle::setForceVelocityInverseCurve(
         ForceVelocityInverseCurve& aForceVelocityInverseCurve)
 {   
-    set_force_velocity_inverse_curve(aForceVelocityInverseCurve);
+    set_ForceVelocityInverseCurve(aForceVelocityInverseCurve);
 }
 
 void Millard2012EquilibriumMuscle::setFiberForceLengthCurve(
         FiberForceLengthCurve& aFiberForceLengthCurve)
 {
-    set_fiber_force_length_curve(aFiberForceLengthCurve);
+    set_FiberForceLengthCurve(aFiberForceLengthCurve);
 }
 
 void Millard2012EquilibriumMuscle::setTendonForceLengthCurve(
         TendonForceLengthCurve& aTendonForceLengthCurve)
 {
-    set_tendon_force_length_curve(aTendonForceLengthCurve);
+    set_TendonForceLengthCurve(aTendonForceLengthCurve);
 }
 
 void Millard2012EquilibriumMuscle::setFiberCompressiveForceLengthCurve(
         FiberCompressiveForceLengthCurve& aFiberCompressiveForceLengthCurve)
 {
-    set_fiber_compressive_force_length_curve(
+    set_FiberCompressiveForceLengthCurve(
         aFiberCompressiveForceLengthCurve);
 }
 
@@ -484,7 +484,7 @@ void Millard2012EquilibriumMuscle::setFiberCompressiveForceCosPennationCurve(
         FiberCompressiveForceCosPennationCurve& 
         aFiberCompressiveForceCosPennationCurve)
 {
-    set_fiber_compressive_force_cospennation_curve(
+    set_FiberCompressiveForceCosPennationCurve(
         aFiberCompressiveForceCosPennationCurve);
 }
 
@@ -609,15 +609,15 @@ void Millard2012EquilibriumMuscle::calcMuscleLengthInfo(const SimTK::State& s,
 
     //Get muscle model specific properties
     const TendonForceLengthCurve& fseCurve 
-        = getProperty_tendon_force_length_curve().getValue(); 
+        = getProperty_TendonForceLengthCurve().getValue(); 
     const FiberForceLengthCurve& fpeCurve 
-        = getProperty_fiber_force_length_curve().getValue(); 
+        = getProperty_FiberForceLengthCurve().getValue(); 
     const ActiveForceLengthCurve& falCurve
-        = getProperty_active_force_length_curve().getValue(); 
+        = getProperty_ActiveForceLengthCurve().getValue(); 
     const FiberCompressiveForceLengthCurve& fkCurve
-        = getProperty_fiber_compressive_force_length_curve().getValue(); 
+        = getProperty_FiberCompressiveForceLengthCurve().getValue(); 
     const FiberCompressiveForceCosPennationCurve& fcphiCurve
-        = getProperty_fiber_compressive_force_cospennation_curve().getValue(); 
+        = getProperty_FiberCompressiveForceCosPennationCurve().getValue(); 
 
     //Populate the output struct
     mli.fiberLength       = getStateVariable(s, STATE_FIBER_LENGTH_NAME); 
@@ -733,7 +733,7 @@ void Millard2012EquilibriumMuscle::calcFiberVelocityInfo(const SimTK::State& s,
 
     //3. Evaluate the inverse force velocity curve        
     const ForceVelocityInverseCurve& fvInvCurve 
-        = getProperty_force_velocity_inverse_curve().getValue(); 
+        = getProperty_ForceVelocityInverseCurve().getValue(); 
 
     double dlceN = fvInvCurve.calcValue(fv);
     double dlce  = dlceN*getMaxContractionVelocity()*optFiberLen;
@@ -784,7 +784,7 @@ void Millard2012EquilibriumMuscle::calcMuscleDynamicsInfo(const SimTK::State& s,
         double fiso           = getMaxIsometricForce();
         double penHeight      = penMdl.getParallelogramHeight();
         const TendonForceLengthCurve& fseCurve 
-            = getProperty_tendon_force_length_curve().getValue();
+            = getProperty_TendonForceLengthCurve().getValue();
     //Prep strings that will be useful to make sensible exception messages
         std::string muscleName = getName();
         std::string fcnName     = ".calcMuscleDynamicsInfo";
@@ -940,17 +940,17 @@ SimTK::Vector Millard2012EquilibriumMuscle::
 
     //Get muscle model specific properties
     const TendonForceLengthCurve& fseCurve 
-        = getProperty_tendon_force_length_curve().getValue(); 
+        = getProperty_TendonForceLengthCurve().getValue(); 
     const FiberForceLengthCurve& fpeCurve 
-        = getProperty_fiber_force_length_curve().getValue(); 
+        = getProperty_FiberForceLengthCurve().getValue(); 
     const ActiveForceLengthCurve& falCurve
-        = getProperty_active_force_length_curve().getValue(); 
+        = getProperty_ActiveForceLengthCurve().getValue(); 
     const FiberCompressiveForceLengthCurve& fkCurve
-        = getProperty_fiber_compressive_force_length_curve().getValue(); 
+        = getProperty_FiberCompressiveForceLengthCurve().getValue(); 
     const FiberCompressiveForceCosPennationCurve& fcphiCurve
-        = getProperty_fiber_compressive_force_cospennation_curve().getValue(); 
+        = getProperty_FiberCompressiveForceCosPennationCurve().getValue(); 
     const ForceVelocityInverseCurve& fvInvCurve 
-        = getProperty_force_velocity_inverse_curve().getValue(); 
+        = getProperty_ForceVelocityInverseCurve().getValue(); 
 
     //For initialization only we need a force-velocity curve:
     double concentricSlope      = fvInvCurve.getConcentricMinSlope();
@@ -1229,7 +1229,7 @@ double Millard2012EquilibriumMuscle::
     double activation = getActivation(s);
 
     const MuscleFirstOrderActivationDynamicModel& actMdl 
-        = getProperty_activation_model().getValue(); 
+        = getProperty_MuscleFirstOrderActivationDynamicModel().getValue(); 
 
     double dadt = actMdl.calcDerivative(activation,excitation);
     return dadt;
@@ -1305,13 +1305,13 @@ double Millard2012EquilibriumMuscle::
     caller.append(".calcFiberStiffness");
 
     const FiberForceLengthCurve& fpeCurve 
-        = getProperty_fiber_force_length_curve().getValue(); 
+        = getProperty_FiberForceLengthCurve().getValue(); 
     const ActiveForceLengthCurve& falCurve
-        = getProperty_active_force_length_curve().getValue(); 
+        = getProperty_ActiveForceLengthCurve().getValue(); 
     const FiberCompressiveForceLengthCurve& fkCurve
-        = getProperty_fiber_compressive_force_length_curve().getValue(); 
+        = getProperty_FiberCompressiveForceLengthCurve().getValue(); 
     const FiberCompressiveForceCosPennationCurve& fcphiCurve
-        = getProperty_fiber_compressive_force_cospennation_curve().getValue();
+        = getProperty_FiberCompressiveForceCosPennationCurve().getValue();
 
     
     double DlceN_Dlce = 1/optFibLen;
@@ -1352,13 +1352,13 @@ double Millard2012EquilibriumMuscle::
     caller.append("calcFiberStiffnessAlongTendon");
 
     const FiberForceLengthCurve& fpeCurve 
-        = getProperty_fiber_force_length_curve().getValue(); 
+        = getProperty_FiberForceLengthCurve().getValue(); 
     const ActiveForceLengthCurve& falCurve
-        = getProperty_active_force_length_curve().getValue(); 
+        = getProperty_ActiveForceLengthCurve().getValue(); 
     const FiberCompressiveForceLengthCurve& fkCurve
-        = getProperty_fiber_compressive_force_length_curve().getValue(); 
+        = getProperty_FiberCompressiveForceLengthCurve().getValue(); 
     const FiberCompressiveForceCosPennationCurve& fcphiCurve
-        = getProperty_fiber_compressive_force_cospennation_curve().getValue();
+        = getProperty_FiberCompressiveForceCosPennationCurve().getValue();
 
     
     double DlceN_Dlce = 1/optFibLen;

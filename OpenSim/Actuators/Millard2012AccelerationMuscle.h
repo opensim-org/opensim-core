@@ -277,23 +277,23 @@ public:
     OpenSim_DECLARE_PROPERTY( default_fiber_velocity, double,
                        "assumed initial fiber velocity if none is assigned.");
 
-    OpenSim_DECLARE_PROPERTY(   activation_model, 
+    OpenSim_DECLARE_UNNAMED_PROPERTY( 
                                 MuscleFirstOrderActivationDynamicModel,
                                 "activation dynamics model with a lower bound");   
     
-    OpenSim_DECLARE_PROPERTY(   active_force_length_curve,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(
                                 ActiveForceLengthCurve,
                                 "active force length curve");
 
-    OpenSim_DECLARE_PROPERTY(   force_velocity_curve,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(
                                 ForceVelocityCurve,
                                 "force velocity curve");
 
-    OpenSim_DECLARE_PROPERTY(   fiber_force_length_curve,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(
                                 FiberForceLengthCurve,
                                 "fiber force length curve");
 
-    OpenSim_DECLARE_PROPERTY(   tendon_force_length_curve,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(
                                 TendonForceLengthCurve,
                                 "Tendon force length curve");
 
@@ -301,12 +301,12 @@ public:
     //point of the active force length curve should be accompanied by an update
     //to the engagment point of this curve. I bet many users might miss this
     //subtlety 
-    OpenSim_DECLARE_PROPERTY(   fiber_compressive_force_length_curve,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(
                                 FiberCompressiveForceLengthCurve,
                                 "fiber compressive force length curve");
     
 
-    OpenSim_DECLARE_PROPERTY(fiber_compressive_force_cospennation_curve,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(
                            FiberCompressiveForceCosPennationCurve,
                            "fiber compressive force cos(pennationAngle) curve");
 
