@@ -572,8 +572,11 @@ public:
     has been created programmatically, and also very useful for testing and
     debugging. **/
     bool print(const std::string& fileName);
-    /**@}**/
 
+    /** dump the properties of this %Object into an std::string and return it.
+    Mainly intended for debugging. **/
+    std::string dump() const; 
+    /**@}**/
 	//--------------------------------------------------------------------------
 	// ADVANCED/OBSCURE/QUESTIONABLE/BUGGY
 	//--------------------------------------------------------------------------

@@ -1610,7 +1610,21 @@ void Object::updateFromXMLDocument()
 	updateFromXMLNode(e, _document->getDocumentVersion());
 }
 
-
+std::string Object::dump() const {
+	std::stringstream strstream;
+    strstream << getConcreteClassName() << " Object " 
+         << (getName().empty()?"NONAME":getName())
+         << std::endl;
+    for (int p=0; p < getNumProperties(); ++p) {
+        const AbstractProperty& ap = getPropertyByIndex(p); 
+        strstream << ap.getName() << "=" << ap.toString() << std::endl;
+        if (ap.isObjectProperty()) {
+            for (int i=0; i < ap.size(); ++i)
+                strstream << ap.getValueAsObject(i).dump();
+        }
+    }
+    return strstream.str();
+    }
 /** 
     * The following code accounts for an object made up to call 
     * RegisterTypes_osimCommon function on entry to the DLL in a cross platform manner 
