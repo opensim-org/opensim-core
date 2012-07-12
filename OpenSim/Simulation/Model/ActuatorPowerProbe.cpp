@@ -50,12 +50,14 @@ ActuatorPowerProbe::ActuatorPowerProbe()
 
 //_____________________________________________________________________________
 // Convenience constructor.
-ActuatorPowerProbe::ActuatorPowerProbe(const Array<string> actuator_names, const double exponent)
+ActuatorPowerProbe::ActuatorPowerProbe(const Array<string> actuator_names, 
+    const bool sum_powers_together, const double exponent)
 {
     setNull();
     constructProperties();
 
     set_actuator_names(actuator_names);
+    set_sum_powers_together(sum_powers_together);
     set_exponent(exponent);
 }
 
@@ -72,6 +74,7 @@ void ActuatorPowerProbe::setNull(void)
 void ActuatorPowerProbe::constructProperties(void)
 {
     constructProperty_actuator_names();
+    constructProperty_sum_powers_together(false);
     constructProperty_exponent(1.0);
 }
 
@@ -89,11 +92,12 @@ const Property<string>& ActuatorPowerProbe::getActuatorNames() const
 
 //_____________________________________________________________________________
 /**
- * Sets the names of the Actuators being probed.
+ * Returns whether to report sum of all actuator powers together
+   or report the actuator powers individually.
  */
-void ActuatorPowerProbe::setActuatorNames(const Array<string>& actuatorNames)
+const bool ActuatorPowerProbe::getSumPowersTogether() const
 {
-    set_actuator_names(actuatorNames);
+    return get_sum_powers_together();
 }
 
 //_____________________________________________________________________________
@@ -103,6 +107,25 @@ void ActuatorPowerProbe::setActuatorNames(const Array<string>& actuatorNames)
 const double ActuatorPowerProbe::getExponent() const
 {
     return get_exponent();
+}
+
+//_____________________________________________________________________________
+/**
+ * Sets the names of the Actuators being probed.
+ */
+void ActuatorPowerProbe::setActuatorNames(const Array<string>& actuatorNames)
+{
+    set_actuator_names(actuatorNames);
+}
+
+//_____________________________________________________________________________
+/**
+ * Sets whether to report sum of all actuator powers together
+   or report the actuator powers individually.
+ */
+void ActuatorPowerProbe::setSumPowersTogether(const bool sum_powers_together)
+{
+    set_sum_powers_together(sum_powers_together);
 }
 
 //_____________________________________________________________________________
@@ -152,13 +175,20 @@ void ActuatorPowerProbe::connectToModel(Model& model)
 /**
  * Compute the Actuator power.
  */
-double ActuatorPowerProbe::computeProbeValue(const State& s) const
+SimTK::Vector ActuatorPowerProbe::computeProbeInputs(const State& s) const
 {
     int nA = getActuatorNames().size();
-    double TotalP = 0;			// Initialize at zero
+    SimTK::Vector TotalP;
+
+    if (getSumPowersTogether()) {
+        TotalP.resize(1);
+        TotalP(0) = 0;       // Initialize to zero
+    }
+    else
+        TotalP.resize(nA);
 
     // Loop through each actuator in the list of actuator_names
-    for (int i=0; i<nA; i++)
+    for (int i=0; i<nA; ++i)
     {
         string actName = getActuatorNames()[i];
         int k = _model->getActuators().getIndex(actName);
@@ -166,10 +196,50 @@ double ActuatorPowerProbe::computeProbeValue(const State& s) const
         // Get the "Actuator" power from the Actuator object
         double actPower = _model->getActuators().get(k).getPower(s);
         
-        // Append to total "Actuator" power
-        TotalP += std::pow(actPower, getExponent());
+        // Append to output vector
+        if (getSumPowersTogether())
+            TotalP(0) += std::pow(actPower, getExponent());
+        else
+            TotalP(i) = std::pow(actPower, getExponent());
     }
 
     return(TotalP);
+}
+
+
+//_____________________________________________________________________________
+/** 
+ * Provide labels for the probe values being reported.
+ */
+Array<string> ActuatorPowerProbe::getProbeLabels() const 
+{
+    Array<string> labels;
+
+    // Report sum of actuator powers
+    if (getSumPowersTogether()) {
+        if (getScaleFactor() != 1.0) {
+            char n[10];
+            sprintf(n, "%f", getScaleFactor());
+            labels.append(getName()+"_Summed_SCALED_BY_"+n+"X");
+        }
+        else
+            labels.append(getName()+"_Summed_"+getOperation());
+    }
+
+    // Report actuator powers individually
+    else {
+        for (int i=0; i<getActuatorNames().size(); ++i) {
+            if (getScaleFactor() != 1.0) {
+            char n[10];
+            sprintf(n, "%f", getScaleFactor());
+            labels.append(getName()+"_"+getActuatorNames()[i]+"_SCALED_BY_"+n+"X");
+        }
+        else
+            labels.append(getName()+"_"+getActuatorNames()[i]+"_"+getOperation());
+        }
+    }
+
+
+    return labels;
 }
 

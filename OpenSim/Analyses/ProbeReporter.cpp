@@ -205,7 +205,7 @@ void ProbeReporter::constructColumnLabels(const SimTK::State& s)
             if (p.isDisabled()) continue; // Skip over disabled probes
 
             // Get column names for the probe after the operation
-            Array<string> probeLabels = p.getRecordLabels();
+            Array<string> probeLabels = p.getProbeLabels();
             columnLabels.append(probeLabels);
         }
         
@@ -252,8 +252,9 @@ int ProbeReporter::record(const SimTK::State& s)
         if (!nextProbe.isDisabled())
         {
             // Get probe values after the probe operation
-            Array<double> values = nextProbe.getRecordValues(s);
-            nextRow.getData().append(values);
+            SimTK::Vector values = nextProbe.getProbeOutputs(s);
+            for (int i=0; i<values.size(); i++)
+                nextRow.getData().append(values(i));
         }
     }
 

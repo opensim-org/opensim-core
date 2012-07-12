@@ -65,7 +65,7 @@ public:
             "ProbeMeasure::Implementation::calcCachedValueVirtual():"
             " derivOrder %d seen but only 0 allowed.", derivOrder);
  
-        value = m_probe.computeProbeValue(s);
+        value = m_probe.computeProbeInputs(s)(0);
     }
 
 private:
@@ -105,8 +105,10 @@ void Probe::setNull(void)
 void Probe::constructProperties(void)
 {
     constructProperty_isDisabled(false);
-    constructProperty_operation("value"); // means "pass the value through"
-    constructProperty_operation_parameter(0.0);
+    constructProperty_probe_operation("value");     // means "pass the value through".
+    Vector defaultInitCond(1, 0.0);         // Set the default initial condition to be a scalar equal to zero.
+    constructProperty_initial_conditions_for_integration(defaultInitCond);
+    constructProperty_scale_factor(1.0);
 }
 
 //_____________________________________________________________________________
@@ -140,39 +142,49 @@ void Probe::addToSystem(MultibodySystem& system) const
 
     // Return the original probe value (no operation)
     if (getOperation() == "value")
-        mutableThis->afterOperationValue = beforeOperationValue;
+        mutableThis->afterOperationValue = Measure::Scale(system, getScaleFactor(), beforeOperationValue);
 
     // Integrate the probe value
     // -----------------------------
     else if (getOperation() == "integrate") {
-        Measure::Constant initCond(system, getOperationParameter());		// initial condition
-        mutableThis->afterOperationValue = Measure::Integrate(system, beforeOperationValue, initCond);
+        // check to see that size of initial condition vector
+        // is the same size as the data being integrated.
+        if (getInitialConditions().size() != getProbeLabels().getSize())  {
+            char numIC[5];
+            sprintf(numIC, "%d", getInitialConditions().size());
+            char numData[5];
+            sprintf(numData, "%d", getProbeLabels().getSize());
+
+            string errorMessage = getConcreteClassName() + ": Mismatch between the size of the data labels corresponding to the size of the data vector being integrated ("+numData
+                +") and size of initial conditions vector ("+numIC+").";
+            throw (Exception(errorMessage.c_str()));
+        }
+        Measure::Constant initCond(system, getInitialConditions()(0));		// initial conditions
+        mutableThis->afterOperationValue = Measure::Scale(system, getScaleFactor(), Measure::Integrate(system, beforeOperationValue, initCond));
     }
 
     // Differentiate the probe value
     // -----------------------------
     else if (getOperation() == "differentiate")
-        mutableThis->afterOperationValue = Measure::Differentiate(system, beforeOperationValue);
+        mutableThis->afterOperationValue = Measure::Scale(system, getScaleFactor(), Measure::Differentiate(system, beforeOperationValue));
 
-    // Scale the probe value
-    // -----------------------------
-    else if (getOperation() == "scale")
-        mutableThis->afterOperationValue = Measure::Scale(system, getOperationParameter(), beforeOperationValue);
 
-    // Get the minimum of the probe value
+    // Get the minimum of the probe value (Sherm to implement)
     // ----------------------------------
     //else if (getOperation() == "minimum")
     //	mutableThis->afterOperationValue = Measure::Minimum(system, beforeOperationValue);
 
-    // Get the maximum of the probe value
+
+    // Get the maximum of the probe value (Sherm to implement)
     // ----------------------------------
     //else if (getOperation() == "maximum")
     //	mutableThis->afterOperationValue = Measure::Maximum(system, beforeOperationValue);
 
+
     // Throw exception (invalid operation)
     // -------------------------------------
     else {
-        string errorMessage = getConcreteClassName() + ": Invalid probe operation: " + getOperation() + ". Currently supports 'value', 'integrate', 'differentiate', and 'scale'.";
+        string errorMessage = getConcreteClassName() + ": Invalid probe operation: " + getOperation() + ". Currently supports 'value', 'integrate', 'differentiate'.";
         throw (Exception(errorMessage.c_str()));
     }
 
@@ -200,18 +212,29 @@ bool Probe::isDisabled() const
  */
 string Probe::getOperation() const
 {
-    return get_operation();
+    return get_probe_operation();
 }
 
 //_____________________________________________________________________________
 /**
- * Gets the operation parameter for the operation.
+ * Gets the initial_conditions_for_integration.
  *
- * @return operation_parameter double
+ * @return initial_conditions_for_integration SimTK::Vector
  */
-double Probe::getOperationParameter() const
+Vector Probe::getInitialConditions() const
 {
-    return get_operation_parameter();
+    return get_initial_conditions_for_integration();
+}
+
+//_____________________________________________________________________________
+/**
+ * Gets the scaling_factor.
+ *
+ * @return scaling_factor double
+ */
+double Probe::getScaleFactor() const
+{
+    return get_scale_factor();
 }
 
 //_____________________________________________________________________________
@@ -229,20 +252,30 @@ void Probe::setDisabled(bool isDisabled)
  * Sets the operation being performed on the Probe value.
  *
  */
-void Probe::setOperation(string operation) 
+void Probe::setOperation(string probe_operation) 
 {
-    set_operation(operation);
+    set_probe_operation(probe_operation);
 }
 
 
 //_____________________________________________________________________________
 /**
- * Sets the operation_parameter for the operation.
+ * Sets the initial_conditions_for_integration.
  *
  */
-void Probe::setOperationParameter(double operation_parameter) 
+void Probe::setInitialConditions(Vector initial_conditions_for_integration) 
 {
-    set_operation_parameter(operation_parameter);
+    set_initial_conditions_for_integration(initial_conditions_for_integration);
+}
+
+//_____________________________________________________________________________
+/**
+ * Sets the scaling_factor.
+ *
+ */
+void Probe::setScaleFactor(double scaling_factor) 
+{
+    set_scale_factor(scaling_factor);
 }
 
 
@@ -250,31 +283,13 @@ void Probe::setOperationParameter(double operation_parameter)
 // REPORTING
 //=============================================================================
 //_____________________________________________________________________________
-/** 
- * Provide names of the probe value integrals (column labels) to be reported.
- */
-Array<string> Probe::getRecordLabels() const 
-{
-    Array<string> labels;
-    if (getOperation() == "scale") {
-        char n[10];
-        sprintf(n, "%f", getOperationParameter());
-        labels.append(getName()+"_"+getOperation()+"_"+n+"X");
-    }
-    else
-        labels.append(getName()+"_"+getOperation());
-
-    return labels;
-}
-
-//_____________________________________________________________________________
 /**
  * Provide the probe values to be reported that correspond to the probe labels.
  */
-Array<double> Probe::getRecordValues(const State& s) const 
+SimTK::Vector Probe::getProbeOutputs(const State& s) const 
 {
-    Array<double> values;
-    values.append(afterOperationValue.getValue(s));
+    Vector values(1);
+    values(0) = afterOperationValue.getValue(s);         // need to return a Vector of the same size as the input (computeProbeInputs(s))
 
     return values;
 }

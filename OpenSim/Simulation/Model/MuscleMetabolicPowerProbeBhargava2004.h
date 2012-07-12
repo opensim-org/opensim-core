@@ -44,7 +44,7 @@ namespace OpenSim {
 //=============================================================================
 /**
  * MuscleMetabolicPowerProbeBhargava2004 is a ModelComponent Probe for computing the 
- * metabolic energy rate of a set of Muscles in the model during a simulation. 
+ * net metabolic energy rate of a set of Muscles in the model during a simulation. 
  * 
  * Based on the following paper:
  *
@@ -259,7 +259,10 @@ public:
     // Computation
     //-----------------------------------------------------------------------------
     /** Compute muscle metabolic power. */
-    virtual double computeProbeValue(const SimTK::State& state) const OVERRIDE_11;
+    virtual SimTK::Vector computeProbeInputs(const SimTK::State& state) const OVERRIDE_11;
+
+    /** Returns the column labels of the probe values for reporting.  */
+    virtual OpenSim::Array<std::string> getProbeLabels() const OVERRIDE_11;
 
     /** Check that the MetabolicMuscle represents a valid muscle in the model. */
     Muscle* checkValidMetabolicMuscle(MetabolicMuscle mm) const;

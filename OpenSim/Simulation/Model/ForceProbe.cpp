@@ -61,12 +61,14 @@ ForceProbe::ForceProbe()
 /** 
  * Convenience constructor
  */
-ForceProbe::ForceProbe(const Array<string>& force_names, const double exponent)
+ForceProbe::ForceProbe(const Array<string>& force_names, 
+    const bool sum_forces_together, const double exponent)
 {
     setNull();
     constructProperties();
 
     set_force_names(force_names);
+    set_sum_forces_together(sum_forces_together);
     set_exponent(exponent);
 }
 
@@ -85,6 +87,7 @@ void ForceProbe::setNull()
 void ForceProbe::constructProperties()
 {
     constructProperty_force_names();
+    constructProperty_sum_forces_together(false);
     constructProperty_exponent(1.0);
 }
 
@@ -103,11 +106,12 @@ const Property<string>& ForceProbe::getForceNames() const
 
 //_____________________________________________________________________________
 /**
- * Sets the name(s) of the Forces being probed.
+ * Returns whether to report sum of all forces together
+   or report the forces individually.
  */
-void ForceProbe::setForceNames(const Array<string>& forceNames)
+const bool ForceProbe::getSumForcesTogether() const
 {
-    set_force_names(forceNames);
+    return get_sum_forces_together();
 }
 
 //_____________________________________________________________________________
@@ -117,6 +121,25 @@ void ForceProbe::setForceNames(const Array<string>& forceNames)
 const double ForceProbe::getExponent() const
 {
     return get_exponent();
+}
+
+//_____________________________________________________________________________
+/**
+ * Sets the name(s) of the Forces being probed.
+ */
+void ForceProbe::setForceNames(const Array<string>& forceNames)
+{
+    set_force_names(forceNames);
+}
+
+//_____________________________________________________________________________
+/**
+ * Sets whether to report sum of all force values together
+   or report the force values individually.
+ */
+void ForceProbe::setSumForcesTogether(const bool sum_forces_together)
+{
+    set_sum_forces_together(sum_forces_together);
 }
 
 //_____________________________________________________________________________
@@ -166,13 +189,20 @@ void ForceProbe::connectToModel(Model& model)
 /**
  * Compute the Force.
  */
-double ForceProbe::computeProbeValue(const State& s) const
+SimTK::Vector ForceProbe::computeProbeInputs(const State& s) const
 {
     int nF = getForceNames().size();
-    double TotalF = 0;		// Initialize at zero
+    SimTK::Vector TotalF;
+
+    if (getSumForcesTogether()) {
+        TotalF.resize(1);
+        TotalF(0) = 0;       // Initialize to zero
+    }
+    else
+        TotalF.resize(nF);
 
     // Loop through each force in the list of force_names
-    for (int i=0; i<nF; i++)
+    for (int i=0; i<nF; ++i)
     {
         double Ftmp = 0.0;
         string forceName = getForceNames()[i];
@@ -190,9 +220,49 @@ double ForceProbe::computeProbeValue(const State& s) const
         else 
             Ftmp = forceValues.get(0);
 
-        // Append to total "Force" force
-        TotalF += std::pow(Ftmp, getExponent());
+        // Append to output vector
+        if (getSumForcesTogether())
+            TotalF(0) += std::pow(Ftmp, getExponent());
+        else
+            TotalF(i) = std::pow(Ftmp, getExponent());
     }
 
     return TotalF;
+}
+
+
+//_____________________________________________________________________________
+/** 
+ * Provide labels for the probe values being reported.
+ */
+Array<string> ForceProbe::getProbeLabels() const 
+{
+    Array<string> labels;
+
+    // Report sum of force values
+    if (getSumForcesTogether()) {
+        if (getScaleFactor() != 1.0) {
+            char n[10];
+            sprintf(n, "%f", getScaleFactor());
+            labels.append(getName()+"_Summed_SCALED_BY_"+n+"X");
+        }
+        else
+            labels.append(getName()+"_Summed_"+getOperation());
+    }
+
+    // Report force values individually
+    else {
+        for (int i=0; i<getForceNames().size(); ++i) {
+            if (getScaleFactor() != 1.0) {
+            char n[10];
+            sprintf(n, "%f", getScaleFactor());
+            labels.append(getName()+"_"+getForceNames()[i]+"_SCALED_BY_"+n+"X");
+        }
+        else
+            labels.append(getName()+"_"+getForceNames()[i]+"_"+getOperation());
+        }
+    }
+
+
+    return labels;
 }

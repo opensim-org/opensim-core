@@ -127,11 +127,11 @@ void MuscleActiveFiberPowerProbe::connectToModel(Model& model)
 /**
 Compute the muscle fiberpower upon which the Probe operation will be based on.
  */
-double MuscleActiveFiberPowerProbe::computeProbeValue(const State& s) const
+SimTK::Vector MuscleActiveFiberPowerProbe::computeProbeInputs(const State& s) const
 {
     int nA = getMuscleNames().size();
-    double TotalP = 0;			// Initialize at zero
-
+    SimTK::Vector TotalP(1, 0.0);       // Initialize at zero
+ 
     // Loop through each muscle in the list of actuator_names
     for (int i=0; i<nA; i++)
     {
@@ -142,9 +142,28 @@ double MuscleActiveFiberPowerProbe::computeProbeValue(const State& s) const
         double fiberPower = _model->getMuscles().get(k).getFiberActivePower(s);
         
         // Append to total "Actuator" power
-        TotalP += fiberPower;
+        TotalP(0) += fiberPower;
     }
 
     return(TotalP);
 }
 
+
+//_____________________________________________________________________________
+/** 
+ * Provide labels for the probe values being reported.
+ */
+Array<string> MuscleActiveFiberPowerProbe::getProbeLabels() const 
+{
+    Array<string> labels;
+
+    if (getScaleFactor() != 1.0) {
+        char n[10];
+        sprintf(n, "%f", getScaleFactor());
+        labels.append(getName()+"_SCALED_BY_"+n+"X");
+    }
+    else
+        labels.append(getName()+"_"+getOperation());
+
+    return labels;
+}

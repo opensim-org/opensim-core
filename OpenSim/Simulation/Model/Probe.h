@@ -41,13 +41,60 @@ class Model;
 //==============================================================================
 //==============================================================================
 /**
- * This class represents a Probe which will can perform an "operation" on any model value.
- * This model value must be a scalar value. Each Probe subclass represents a different 
- * type of Probe. The actual "operation" is done by a SimTK::Measure. 
- * In creating child class Probes, the user must override the computeProbeValue() method.
+ * This class represents a Probe which is designed to query a Vector of model values
+ * given system state. This model quantity is specified as a SimTK::Vector by the pure
+ * virtual method computeProbeInputs(s), which must be specified for each child Probe. 
+ * In addition, the Probe model component interface allows <I> operations </I> to be
+ * performed on this value (specified by the property: probe_operation), and then have 
+ * this result scaled (by the scalar property: 'scale_factor'). 
+ * 
+ * The data flow of the Probe is shown below:
+  \verbatim
+ 
+  ---------------------------
+  |  SimTK::Vector          |
+  |  computeProbeInputs(s)  |
+  ---------------------------
+               |
+               V
+     ---------------------         -------------------------         ----------------------
+     |  Query the model  |  ---->  |  Apply the operation  |  ---->  |  Scale the output  |
+     |                   |         |   'probe_operation'   |         |   'scale_factor'   |
+     ---------------------         -------------------------         ----------------------
+                                                                               |
+                                                                               V
+                                                                    ------------------------
+                                                                    |  SimTK::Vector       |
+                                                                    |  getProbeOutputs(s)  |
+                                                                    ------------------------
+  \endverbatim
+ * The model query is performed at Stage::Report, so that model values are up to date
+ * and is based on the specific Probe's overridden method computeProbeInputs(s). 
+ * The final output of the probe is available by accessing getProbeOutputs(s). 
+ * Note that all queries, operations, and scaling are performed by SimTK::Measures. 
+ * Note also that to define a new child Probe class, two methods which are declared
+ * as pure virtual in this Probe abstract class need to be overridden:\n
+ * - computeProbeInputs()  ---   defines the input probe values (i.e., model queries).
+ * - getProbeLabels()      ---   defines the labels that correspond to each probe value.
+ *
+ * The Probe interface differs from the Analysis interface in two fundamental ways:
+ * -  (1) Operations can be performed on probes (i.e., in addition to simply reporting 
+ *        a model value, model values (probe input values) may have operations performed
+ *        on them such as integration and differentiation.
+ *
+ * -  (2) Analyses are not formally part of the model structure (i.e. they are not 
+ *        ModelComponents), and because of this, analysis results can not be accessed with
+ *        the model and state value -- they can only be accessed by file at the end of a 
+ *        simulation. Probes, on the other hand, are ModelComponents and therefore can be
+ *        accessed at any time during a simulation from the API, and can also be used to
+ *        compute model values that are fed back into ths system through ths use of 
+ *        Controllers. Note that Probe values can also be reported to file at the end of a
+ *        simulation by attaching a ProbeReporter analysis to the simulation.
+ *
  *
  * @author Tim Dorn
  */
+
 class OSIMSIMULATION_API Probe : public ModelComponent {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Probe, ModelComponent);
 public:
@@ -62,15 +109,17 @@ public:
         "Flag indicating whether the Probe is disabled or not. Disabled"
         " means that the Probe will not be reported using the ProbeReporter.");
 
-    OpenSim_DECLARE_PROPERTY(operation, std::string,
+    OpenSim_DECLARE_PROPERTY(probe_operation, std::string,
         "The operation to perform on the probe value: "
-        "'value'(no operation, just return the probe value), 'integrate', "
-        "'differentiate', 'scale'");
+        "'value'(no operation, just return the probe value), 'integrate', 'differentiate'");
 
-    OpenSim_DECLARE_PROPERTY(operation_parameter, double,
-        "Parameter that is required for some operations only. "
-        "For 'integrate' operation_parameter is the initial condition, "
-        "for 'scale' operation_parameter is the scale factor.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(initial_conditions_for_integration, SimTK::Vector,
+        "Vector of initial conditions to be specified if the 'integrate'"
+        "operation is selected. Note that the size of initial conditions "
+        "must be the same size as the data being integrated.");
+
+    OpenSim_DECLARE_PROPERTY(scale_factor, double,
+        "Constant value to scale (multiply) the probe output by.");
     /**@}**/
 
 //=============================================================================
@@ -89,38 +138,45 @@ public:
     /** Return the operation being performed on the probe value. */
     std::string getOperation() const;
     /** Set the operation being performed on the probe value. */
-    void setOperation(std::string operation);
+    void setOperation(std::string probe_operation);
 
-    /** Return the operation parameter for the operation. */
-    double getOperationParameter() const;
-    /** Set the operation parameter for the operation. */
-    void setOperationParameter(double operation_parameter);
+    /** Return the initial conditions (when the probe_operation is set to 'integrate'). */
+    SimTK::Vector getInitialConditions() const;
+    /** Set the initial conditions (when the probe_operation is set to 'integrate'). */
+    void setInitialConditions(SimTK::Vector initial_conditions_for_integration);
 
-    
-    /** Returns the column labels for the probe values for reporting. 
-        Note that in OpenSim 3.0, only scalar values are returned, so 
-        developers will need to call getRecordLabels.get(0) to return 
-        the probe label.*/
-    Array<std::string> getRecordLabels() const;
+    /** Return the scale_factor to apply to the probe output. */
+    double getScaleFactor() const;
+    /** Set the scale_factor to apply to the probe output. */
+    void setScaleFactor(double scale_factor);
 
-    /** Returns the probe values post-operation. 
-        Note that in OpenSim 3.0, only scalar values are returned, so 
-        developers will need to call getRecordValues.get(0) to return 
-        the value of the probe (after the operation has been performed)*/
-    Array<double> getRecordValues(const SimTK::State& state) const;
 
 #ifndef SWIG
     // This is the Probe interface that must be implemented by concrete Probe
     // objects.
 
-    /**Computes the probe value pre-operation (i.e., prior to any operation being performed on it).
-       Probe value is computed at the SimTK::Report Stage.
+    /** Returns the column labels of the Probe values for reporting. 
+        This method must be overridden for each subclass Probe to
+        provide meaningful names to the probe outputs. 
+
+        @return         The Array<std::string> of Probe labels. **/
+    virtual OpenSim::Array<std::string> getProbeLabels() const=0;
+
+
+    /**Computes the values of the probe inputs prior to any operation being performed.
        This method must be overridden for each subclass Probe.
 
     @param  state   System state from which value is computed.  
-    @return         The SimTK::Vector of probe values. **/
-    virtual double computeProbeValue(const SimTK::State& state) const=0;
+    @return         The SimTK::Vector of Probe input values. **/
+    virtual SimTK::Vector computeProbeInputs(const SimTK::State& state) const=0;
 #endif
+
+    /** Returns the values of the probe after the operation has been performed.
+
+    @param  state   System state from which value is computed.  
+    @return         The SimTK::Vector of probe output values.**/
+    SimTK::Vector getProbeOutputs(const SimTK::State& state) const;
+
 protected:
     // ModelComponent interface.
     /** Concrete probes may override; be sure to invoke Super::connectToModel()
@@ -135,10 +191,12 @@ private:
     void setNull();
     void constructProperties();
 
+
 //=============================================================================
 // DATA
 //=============================================================================
     SimTK::Measure afterOperationValue;
+
 //=============================================================================
 };	// END of class Probe
 //=============================================================================

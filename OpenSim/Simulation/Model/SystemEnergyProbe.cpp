@@ -125,17 +125,38 @@ void SystemEnergyProbe::connectToModel(Model& aModel)
 // COMPUTATION
 //==============================================================================
 //_____________________________________________________________________________
-// Compute the System energy which the Probe operation will be based on.
-double SystemEnergyProbe::computeProbeValue(const State& s) const
+/** 
+ * Compute the System energy which the Probe operation will be based on.
+ */
+SimTK::Vector SystemEnergyProbe::computeProbeInputs(const State& s) const
 {
-    double TotalP = 0;
+    SimTK::Vector TotalE(1, 0.0);       // Initialize at zero
     
     if (getComputeKineticEnergy())
-        TotalP += _model->getMultibodySystem().calcKineticEnergy(s);
+        TotalE(0) += _model->getMultibodySystem().calcKineticEnergy(s);
 
     if (getComputePotentialEnergy())
-        TotalP += _model->getMultibodySystem().calcPotentialEnergy(s);
+        TotalE(0) += _model->getMultibodySystem().calcPotentialEnergy(s);
     
-    return(TotalP);
+    return(TotalE);
 }
 
+
+//_____________________________________________________________________________
+/** 
+ * Provide labels for the probe values being reported.
+ */
+Array<string> SystemEnergyProbe::getProbeLabels() const 
+{
+    Array<string> labels;
+
+    if (getScaleFactor() != 1.0) {
+        char n[10];
+        sprintf(n, "%f", getScaleFactor());
+        labels.append(getName()+"_SCALED_BY_"+n+"X");
+    }
+    else
+        labels.append(getName()+"_"+getOperation());
+
+    return labels;
+}

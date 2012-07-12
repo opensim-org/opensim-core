@@ -2,7 +2,7 @@
 #define OPENSIM_ACTUATOR_POWER_PROBE_H_
 
 // ActuatorPowerProbe.h
-// Author: Ajay Seth, Tim Dorn
+// Author: Tim Dorn
 /*
  * Copyright (c)  2011-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -61,9 +61,13 @@ public:
     /**@{**/
     /** List of Actuators to probe.  **/
     OpenSim_DECLARE_LIST_PROPERTY(actuator_names, std::string,
-        "Specify a list of model Actuators whose work should be calculated. "
-        "If multiple Actuators are given, the probe value will be the summation"
-        " of all actuator powers.");
+        "Specify a list of model Actuators whose power should be calculated.");
+
+    /** Flag to specify whether to report the sum of all powers,
+        or report each power value separately.  **/
+    OpenSim_DECLARE_PROPERTY(sum_powers_together, bool,
+        "Flag to specify whether to report the sum of all actuator powers, "
+        "or report each actuator power value separately.");
 
     /** Exponent to apply to each actuator power prior to the Probe operation. 
     For example, if two actuators A1 and A2 are given in actuator_names, then the
@@ -81,7 +85,8 @@ public:
     /** Default constructor */
     ActuatorPowerProbe();
     /** Convenience constructor */
-    ActuatorPowerProbe(const Array<std::string> actuator_names, const double exponent);
+    ActuatorPowerProbe(const Array<std::string> actuator_names, 
+        const bool sum_powers_together, const double exponent);
 
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.
@@ -92,11 +97,19 @@ public:
     /** Returns the names of the Actuators being probed. */
     const Property<std::string>& getActuatorNames() const;
 
-    /** Sets the names of the Actuators being probed. */
-    void setActuatorNames(const Array<std::string>& actuatorNames);
+    /** Returns whether to report sum of all actuator powers together
+        or report the actuator powers individually. */
+    const bool getSumPowersTogether() const;
 
     /** Returns the exponent to apply to each actuator power. */
     const double getExponent() const;
+
+    /** Sets the names of the Actuators being probed. */
+    void setActuatorNames(const Array<std::string>& actuatorNames);
+
+    /** Sets whether to report sum of all actuator powers together
+        or report the actuator powers individually. */
+    void setSumPowersTogether(bool sum_powers_together);
 
     /** Sets the exponent to apply to each actuator power. */
     void setExponent(const double exponent);
@@ -106,7 +119,10 @@ public:
     // Computation
     //--------------------------------------------------------------------------
     /** Compute the Actuator power. */
-    double computeProbeValue(const SimTK::State& state) const OVERRIDE_11;
+    SimTK::Vector computeProbeInputs(const SimTK::State& state) const OVERRIDE_11;
+
+    /** Returns the column labels of the probe values for reporting.  */
+    virtual OpenSim::Array<std::string> getProbeLabels() const OVERRIDE_11;
 
 
 //==============================================================================

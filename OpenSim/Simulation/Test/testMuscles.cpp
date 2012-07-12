@@ -302,13 +302,13 @@ void simulateMuscle(
 	jointNames.append("slider");
 
 	// Add an ActuatorPowerProbe to measure the work done by the muscle actuator 
-    ActuatorPowerProbe muscWorkProbe(muscNames, 1);
+    ActuatorPowerProbe muscWorkProbe(muscNames, true, 1);
 	muscWorkProbe.setOperation("integrate");
 	model.addProbe(&muscWorkProbe);
 
 	// Add a JointPowerProbe to measure the work done by the joint
 	// will be 0 unless joint has prescribed motion
-    JointPowerProbe jointWorkProbe(jointNames, 1);
+    JointPowerProbe jointWorkProbe(jointNames, true, 1);
 	jointWorkProbe.setOperation("integrate");
 	model.addProbe(&jointWorkProbe);
 
@@ -363,10 +363,10 @@ void simulateMuscle(
 
 	model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
 
-	double Emuscle0 = muscWorkProbe.getRecordValues(si).get(0);
+	double Emuscle0 = muscWorkProbe.getProbeOutputs(si)(0);
 	//cout << "Muscle initial energy = " << Emuscle0 << endl;
 	double Esys0 = model.getMultibodySystem().calcEnergy(si);
-	Esys0 += (Emuscle0 + jointWorkProbe.getRecordValues(si).get(0));
+	Esys0 += (Emuscle0 + jointWorkProbe.getProbeOutputs(si)(0));
 	double PEsys0 = model.getMultibodySystem().calcPotentialEnergy(si);
 	//cout << "Total initial system energy = " << Esys0 << endl; 
 
@@ -400,7 +400,7 @@ void simulateMuscle(
 	    muscleAnalysis.printResults(actuatorType, "testMuscleResults");
     }
 
-	double muscleWork = muscWorkProbe.getRecordValues(si).get(0);
+	double muscleWork = muscWorkProbe.getProbeOutputs(si)(0);
 	cout << "Muscle work = " << muscleWork << endl;
 
     /*==========================================================================
@@ -423,14 +423,14 @@ void simulateMuscle(
 	    double xSpeed = modelCoordinateSet[0].getSpeedValue(si);
 	    double KEsysCheck =  0.5*ballMass*xSpeed*xSpeed;
 	    double PEsys =  model.getMultibodySystem().calcPotentialEnergy(si);
-        double jointWork = jointWorkProbe.computeProbeValue(si);
+        double jointWork = jointWorkProbe.computeProbeInputs(si)(0);
 	    double ESysMinusWork = Esys 
-                                - muscWorkProbe.computeProbeValue(si) 
+                                - muscWorkProbe.computeProbeInputs(si)(0)
                                 - jointWork; 
 
 
         double muscleWork = 0;//fiberWorkMeter.get
-        muscWorkProbe.computeProbeValue(si);
+        muscWorkProbe.computeProbeInputs(si);
 	    cout << "Muscle work = " << muscleWork << endl;  
         cout << "Esys - Work = " << ESysMinusWork 
              << " :: Esys0 = " << Esys0 << endl; 

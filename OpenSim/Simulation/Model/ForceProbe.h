@@ -61,9 +61,13 @@ public:
 
     /** List of Forces to probe.  **/
     OpenSim_DECLARE_LIST_PROPERTY(force_names, std::string,
-        "Specify a list of model Forces whose impulse should be calculated. "
-        "If multiple Forces are given, the probe value will be the summation"
-        " of all forces, and the integral will be the summation of all impulses.");
+        "Specify a list of model Forces whose value should be calculated.");
+
+    /** Flag to specify whether to report the sum of all forces,
+        or report each force value separately.  **/
+    OpenSim_DECLARE_PROPERTY(sum_forces_together, bool,
+        "Flag to specify whether to report the sum of all forces, "
+        "or report each force value separately.");
 
     /** Exponent to apply to each force prior to the Probe operation. 
     For example, if two forces F1 and F2 are given in force_names, then the
@@ -82,7 +86,8 @@ public:
     /** Default constructor */
     ForceProbe();
     /** Convenience constructor */
-    ForceProbe(const Array<std::string>& force_names, const double exponent);
+    ForceProbe(const Array<std::string>& force_names, 
+        const bool sum_forces_together, const double exponent);
 
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.
@@ -93,11 +98,19 @@ public:
     /** Returns the name(s) of the Forces being probed. */
     const Property<std::string>& getForceNames() const;
 
-    /** Sets the name(s) of the Forces being probed. */
-    void setForceNames(const Array<std::string>& forceNames);
+    /** Returns whether to report sum of all forces together
+        or report the forces individually. */
+    const bool getSumForcesTogether() const;
 
     /** Returns the exponent to apply to each force. */
     const double getExponent() const;
+
+    /** Sets the name(s) of the Forces being probed. */
+    void setForceNames(const Array<std::string>& forceNames);
+
+    /** Sets whether to report sum of all force values together
+        or report the force values individually. */
+    void setSumForcesTogether(bool sum_forces_together);
 
     /** Sets the exponent to apply to each force. */
     void setExponent(const double exponent);
@@ -107,7 +120,10 @@ public:
     // Computation
     //-----------------------------------------------------------------------------
     /** Compute the Force */
-    virtual double computeProbeValue(const SimTK::State& state) const OVERRIDE_11;
+    virtual SimTK::Vector computeProbeInputs(const SimTK::State& state) const OVERRIDE_11;
+
+    /** Returns the column labels of the probe values for reporting.  */
+    virtual OpenSim::Array<std::string> getProbeLabels() const OVERRIDE_11;
 
 
 //==============================================================================

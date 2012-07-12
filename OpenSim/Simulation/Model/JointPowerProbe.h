@@ -2,7 +2,7 @@
 #define OPENSIM_JOINT_POWER_PROBE_H_
 
 // JointPowerProbe.h
-// Author: Ajay Seth, Tim Dorn
+// Author: Tim Dorn
 /*
  * Copyright (c)  2011, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -62,9 +62,13 @@ public:
 
     /** List of Joints to probe.  **/
     OpenSim_DECLARE_LIST_PROPERTY(joint_names, std::string,
-        "Specify a list of model Joints whose work should be calculated. "
-        "If multiple Joints are given, the probe value will be the summation"
-        " of all joint powers.");
+        "Specify a list of model Joints whose power should be calculated.");
+
+    /** Flag to specify whether to report the sum of all powers,
+        or report each power value separately.  **/
+    OpenSim_DECLARE_PROPERTY(sum_powers_together, bool,
+        "Flag to specify whether to report the sum of all joint powers, "
+        "or report each joint power value separately.");
 
     /** Exponent to apply to each joint power prior to the Probe operation. 
     For example, if two joints J1 and J2 are given in joint_names, then the
@@ -83,7 +87,8 @@ public:
     /** Default constructor */
     JointPowerProbe();
     /** Convenience constructor */
-    JointPowerProbe(const Array<std::string>& joint_names, const double exponent);
+    JointPowerProbe(const Array<std::string>& joint_names, 
+        const bool sum_powers_together, const double exponent);
 
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
@@ -94,11 +99,19 @@ public:
     /** Returns the names of the Joints being probed. */
     const Property<std::string>& getJointNames() const;
 
-    /** Sets the names of the Joints being probed. */
-    void setJointNames(const Array<std::string>& aJointNames);
+    /** Returns whether to report sum of all joint powers together
+        or report the joint powers individually. */
+    const bool getSumPowersTogether() const;
 
     /** Returns the exponent to apply to each joint power. */
     const double getExponent() const;
+
+    /** Sets the names of the Joints being probed. */
+    void setJointNames(const Array<std::string>& aJointNames);
+
+    /** Sets whether to report sum of all joint powers together
+        or report the joint powers individually. */
+    void setSumPowersTogether(bool sum_powers_together);
 
     /** Sets the exponent to apply to each joint power. */
     void setExponent(const double exponent);
@@ -108,7 +121,10 @@ public:
     // Computation
     //--------------------------------------------------------------------------
     /** Compute the Joint power. **/
-    double computeProbeValue(const SimTK::State& state) const OVERRIDE_11;
+    SimTK::Vector computeProbeInputs(const SimTK::State& state) const OVERRIDE_11;
+
+    /** Returns the column labels of the probe values for reporting.  */
+    virtual OpenSim::Array<std::string> getProbeLabels() const OVERRIDE_11;
 
 
 //==============================================================================

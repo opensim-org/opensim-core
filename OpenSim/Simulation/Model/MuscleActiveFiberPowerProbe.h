@@ -87,7 +87,10 @@ public:
     // Computation
     //--------------------------------------------------------------------------
     /** Compute the Actuator power upon which the Probe operation will be based. */
-    double computeProbeValue(const SimTK::State& state) const OVERRIDE_11;
+    SimTK::Vector computeProbeInputs(const SimTK::State& state) const OVERRIDE_11;
+
+    /** Returns the column labels of the probe values for reporting.  */
+    virtual OpenSim::Array<std::string> getProbeLabels() const OVERRIDE_11;
 
 
 //==============================================================================

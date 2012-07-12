@@ -367,7 +367,7 @@ void MuscleMetabolicPowerProbeBhargava2004::connectToModel(Model& aModel)
  * Units = W/kg.
  * Note: for muscle velocities, Vm, we define Vm<0 as shortening and Vm>0 as lengthening.
  */
-double MuscleMetabolicPowerProbeBhargava2004::computeProbeValue(const State& s) const
+SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const State& s) const
 {
     // Initialize metabolic energy rate values
     double Adot, Mdot, Sdot, Bdot, Wdot;
@@ -532,16 +532,35 @@ double MuscleMetabolicPowerProbeBhargava2004::computeProbeValue(const State& s) 
         }
     }
 
-    double EdotTotal = Edot.sum() + Bdot;
+    SimTK::Vector EdotTotal(1, Edot.sum() + Bdot);
 
-	if(EdotTotal < 1.0 && isActivationRateOn() && isMaintenanceRateOn() && isShorteningRateOn() && isWorkRateOn()) {
+	if(EdotTotal(0) < 1.0 && isActivationRateOn() && isMaintenanceRateOn() && isShorteningRateOn() && isWorkRateOn()) {
 			cout << "WARNING: " << getName() << "  (t = " << s.getTime() << "), the model has a net metabolic energy rate of less than 1.0 W.kg-1." << endl; 
-			EdotTotal = 1.0;			// not allowed to fall below 1.0 W.kg-1
+			EdotTotal(0) = 1.0;			// not allowed to fall below 1.0 W.kg-1
 	}
 
     return(EdotTotal);
 }
 
+
+//_____________________________________________________________________________
+/** 
+ * Provide labels for the probe values being reported.
+ */
+Array<string> MuscleMetabolicPowerProbeBhargava2004::getProbeLabels() const 
+{
+    Array<string> labels;
+
+    if (getScaleFactor() != 1.0) {
+        char n[10];
+        sprintf(n, "%f", getScaleFactor());
+        labels.append(getName()+"_SCALED_BY_"+n+"X");
+    }
+    else
+        labels.append(getName()+"_"+getOperation());
+
+    return labels;
+}
 
 
 //_____________________________________________________________________________

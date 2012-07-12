@@ -52,12 +52,14 @@ JointPowerProbe::JointPowerProbe()
 
 //_____________________________________________________________________________
 // Convenience constructor.
-JointPowerProbe::JointPowerProbe(const Array<string>& joint_names, const double exponent)
+JointPowerProbe::JointPowerProbe(const Array<string>& joint_names, 
+    const bool sum_powers_together, const double exponent)
 {
     setNull();
     constructProperties();
 
     set_joint_names(joint_names);
+    set_sum_powers_together(sum_powers_together);
     set_exponent(exponent);
 }
 
@@ -73,6 +75,7 @@ void JointPowerProbe::setNull()
 void JointPowerProbe::constructProperties()
 {
     constructProperty_joint_names();
+    constructProperty_sum_powers_together(false);
     constructProperty_exponent(1.0);
 }
 
@@ -90,11 +93,12 @@ const Property<string>& JointPowerProbe::getJointNames() const
 
 //_____________________________________________________________________________
 /**
- * Sets the names of the Joints being probed.
+ * Returns whether to report sum of all joint powers together
+   or report the joint powers individually.
  */
-void JointPowerProbe::setJointNames(const Array<string>& aJointNames)
+const bool JointPowerProbe::getSumPowersTogether() const
 {
-    set_joint_names(aJointNames);
+    return get_sum_powers_together();
 }
 
 //_____________________________________________________________________________
@@ -104,6 +108,25 @@ void JointPowerProbe::setJointNames(const Array<string>& aJointNames)
 const double JointPowerProbe::getExponent() const
 {
     return get_exponent();
+}
+
+//_____________________________________________________________________________
+/**
+ * Sets the names of the Joints being probed.
+ */
+void JointPowerProbe::setJointNames(const Array<string>& aJointNames)
+{
+    set_joint_names(aJointNames);
+}
+
+//_____________________________________________________________________________
+/**
+ * Sets whether to report sum of all joint powers together
+   or report the joint powers individually.
+ */
+void JointPowerProbe::setSumPowersTogether(const bool sum_powers_together)
+{
+    set_sum_powers_together(sum_powers_together);
 }
 
 //_____________________________________________________________________________
@@ -156,13 +179,20 @@ void JointPowerProbe::connectToModel(Model& aModel)
 /**
  * Compute the Joint power.
  */
-double JointPowerProbe::computeProbeValue(const State& s) const
+SimTK::Vector JointPowerProbe::computeProbeInputs(const State& s) const
 {
-    int nA = getJointNames().size();
-    double TotalP = 0;				// Initialize at zero
+    int nJ = getJointNames().size();
+    SimTK::Vector TotalP;
+
+    if (getSumPowersTogether()) {
+        TotalP.resize(1);
+        TotalP(0) = 0;       // Initialize to zero
+    }
+    else
+        TotalP.resize(nJ);
 
     // Loop through each joint in the list of joint_names
-    for (int i=0; i<nA; i++)
+    for (int i=0; i<nJ; ++i)
     {
         string jointName = getJointNames()[i];
         int k = _model->getJointSet().getIndex(jointName);
@@ -170,10 +200,49 @@ double JointPowerProbe::computeProbeValue(const State& s) const
         // Get the "Joint" power from the Joint object
         double jointPower = _model->getJointSet().get(k).calcPower(s);
         
-        // Append to total "Joint" power
-        TotalP += std::pow(jointPower, getExponent());
+        // Append to output vector
+        if (getSumPowersTogether())
+            TotalP(0) += std::pow(jointPower, getExponent());
+        else
+            TotalP(i) = std::pow(jointPower, getExponent());
     }
 
     return(TotalP);
 }
 
+
+//_____________________________________________________________________________
+/** 
+ * Provide labels for the probe values being reported.
+ */
+Array<string> JointPowerProbe::getProbeLabels() const 
+{
+    Array<string> labels;
+
+    // Report sum of joint powers
+    if (getSumPowersTogether()) {
+        if (getScaleFactor() != 1.0) {
+            char n[10];
+            sprintf(n, "%f", getScaleFactor());
+            labels.append(getName()+"_Summed_SCALED_BY_"+n+"X");
+        }
+        else
+            labels.append(getName()+"_Summed_"+getOperation());
+    }
+
+    // Report joint powers individually
+    else {
+        for (int i=0; i<getJointNames().size(); ++i) {
+            if (getScaleFactor() != 1.0) {
+            char n[10];
+            sprintf(n, "%f", getScaleFactor());
+            labels.append(getName()+"_"+getJointNames()[i]+"_SCALED_BY_"+n+"X");
+        }
+        else
+            labels.append(getName()+"_"+getJointNames()[i]+"_"+getOperation());
+        }
+    }
+
+
+    return labels;
+}
