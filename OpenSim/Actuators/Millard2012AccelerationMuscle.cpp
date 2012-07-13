@@ -1132,11 +1132,17 @@ SimTK::Vector Millard2012AccelerationMuscle::
 
     //*******************************
     //Position level
-    double lce = 0.5*ofl;
+    double lce = 0;
     double tl  = tsl*1.01;
 
     if((ml - tl) > 0){
-        lce      = m_penMdl.calcFiberLength( ml, tl, caller);
+        lce = m_penMdl.calcFiberLength( ml, tl, caller);
+    }else{
+        if(m_penMdl.getParallelogramHeight() > 0){
+            lce = m_penMdl.getParallelogramHeight()*1.01;
+        }else{
+            lce = 0.5*ofl;
+        }
     }
     
     double phi      = m_penMdl.calcPennationAngle(lce,caller);

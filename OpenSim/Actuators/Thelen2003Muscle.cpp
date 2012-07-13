@@ -656,6 +656,8 @@ SimTK::Vector Thelen2003Muscle::
     //5: passive force (N)
     //6: tendon force (N)
     SimTK::Vector results = SimTK::Vector(6);
+    std::string caller = getName();
+    caller.append(".initMuscleState");
 
     //I'm using smaller variable names here to make it possible to write out 
     //lengthy equations
@@ -684,17 +686,23 @@ SimTK::Vector Thelen2003Muscle::
 
     //*******************************
     //Position level
-    double l0cosphi = ml - tsl*1.01;
-    double phi      = atan(vol/l0cosphi);
-    double cosphi   = cos(phi);
     double lce = 0;
-    if(phi > sqrt(SimTK::Eps)){
-        lce = l0cosphi/cosphi;    //= vol/sin(phi);
-    }else{
-        lce = l0cosphi;     //= 0.5*ofl;
-    }
+    double tl  = tsl*1.01;
 
-    double tl       = tsl*1.01;
+    if((ml - tl) > 0){
+        lce = penMdl.calcFiberLength( ml, tl, caller);
+    }else{
+        if(penMdl.getParallelogramHeight() > 0){
+            lce = penMdl.getParallelogramHeight()*1.01;
+        }else{
+            lce = 0.5*ofl;
+        }
+    }
+    
+    double phi      = penMdl.calcPennationAngle(lce,caller);
+    double cosphi   = cos(phi);
+    double sinphi   = sin(phi);  
+
     //Normalized quantities
     double tlN  = tl/tsl;
     double lceN = lce/ofl;

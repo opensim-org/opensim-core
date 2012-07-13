@@ -982,11 +982,17 @@ SimTK::Vector Millard2012EquilibriumMuscle::
 
     //*******************************
     //Position level
-    double lce = 0.5*ofl;
+    double lce = 0;
     double tl  = tsl*1.01;
 
     if((ml - tl) > 0){
-        lce      = penMdl.calcFiberLength( ml, tl, caller);
+        lce = penMdl.calcFiberLength( ml, tl, caller);
+    }else{
+        if(penMdl.getParallelogramHeight() > 0){
+            lce = penMdl.getParallelogramHeight()*1.01;
+        }else{
+            lce = 0.5*ofl;
+        }
     }
     
     double phi      = penMdl.calcPennationAngle(lce,caller);
