@@ -67,7 +67,7 @@ setNull()
 
 //_____________________________________________________________________________
 /*
- * constructProperties()
+ * Connect properties to local pointers.
  */
 void AnalysisPlugin_Template::
 constructProperties()

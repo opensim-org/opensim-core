@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20302">
+	<ForwardTool name="Three Masses">
+		<!--Name of the .osim file used to construct a model.-->
+		<model_file> ThreeMasses.osim </model_file>
+		<!--Replace the model's force set with sets specified in
+		    <force_set_files>? If false, the force set is appended to.-->
+		<replace_force_set> false </replace_force_set>
+		<!--List of xml files used to construct an force set for the model.-->
+		<force_set_files> </force_set_files>
+		<!--Directory used for writing results.-->
+		<results_directory> . </results_directory>
+		<!--Output precision.  It is 8 by default.-->
+		<output_precision> 8 </output_precision>
+		<!--Initial time for the simulation.-->
+		<initial_time>       0.00000000 </initial_time>
+		<!--Final time for the simulation.-->
+		<final_time>       20.00000000 </final_time>
+		<!--Flag indicating whether or not to compute equilibrium values for
+		    states other than the coordinates or speeds.  For example, equilibrium
+		    muscle fiber lengths or muscle forces.-->
+		<solve_for_equilibrium_for_auxiliary_states> false </solve_for_equilibrium_for_auxiliary_states>
+		<!--Maximum number of integrator steps.-->
+		<maximum_number_of_integrator_steps> 20000 </maximum_number_of_integrator_steps>
+		<!--Maximum integration step size.-->
+		<maximum_integrator_step_size>       1.00000000 </maximum_integrator_step_size>
+		<!--Minimum integration step size.-->
+		<minimum_integrator_step_size>       0.00000001 </minimum_integrator_step_size>
+		<!--Integrator error tolerance. When the error is greater, the integrator
+		    step size is decreased.-->
+		<integrator_error_tolerance>       0.00001000 </integrator_error_tolerance>
+		<!--Set of analyses to be run during the investigation.-->
+		<AnalysisSet name="Analyses">
+			<objects>
+				<ForceReporter name="ForceReporter">
+					<!--Flag (true or false) specifying whether whether on. True by default.-->
+					<on> true </on>
+					<!--Start time.-->
+					<start_time>       0.00000000 </start_time>
+					<!--End time.-->
+					<end_time>       5.00000000 </end_time>
+					<!--Specifies how often to store results during a simulation. More
+					    specifically, the interval (a positive integer) specifies how many
+					    successful integration steps should be taken before results are
+					    recorded again.-->
+					<step_interval> 1 </step_interval>
+					<!--Flag (true or false) indicating whether the results are in degrees or
+					    not.-->
+					<in_degrees> true </in_degrees>
+					<!--Flag indicating whether to include forces due to constraints.-->
+					<include_constraint_forces> false </include_constraint_forces>
+				</ForceReporter>
+			</objects>
+			<groups/>
+		</AnalysisSet>
+		<!--Controller objects in the model.-->
+		<ControllerSet name="Controllers">
+			<objects/>
+			<groups/>
+		</ControllerSet>
+		<!--XML file (.xml) containing the forces applied to the model as
+		    ExternalLoads.-->
+		<external_loads_file>  </external_loads_file>
+		<!--Storage file (.sto) containing the initial states for the forward
+		    simulation. This file often contains multiple rows of data, each row
+		    being a time-stamped array of states. The first column contains the
+		    time.  The rest of the columns contain the states in the order
+		    appropriate for the model. In a storage file, unlike a motion file
+		    (.mot), non-uniform time spacing is allowed.  If the user-specified
+		    initial time for a simulation does not correspond exactly to one of
+		    the time stamps in this file, inerpolation is NOT used because it is
+		    usually necessary to being a simulation from an exact set of states.
+		    Instead, the closest earlier set of states is used. Having a states
+		    file that contains the entire trajectory of a simulations allows for
+		    corrective springs for perturbation analysis to be added.-->
+		<states_file>  </states_file>
+		<!--Flag (true or false) indicating whether or not the integrator should
+		    use a particular time stepping.  If true, the time stepping is
+		    extracted from the initial states file.  In this situation, therefore,
+		    the initial states file must contain all the time steps in a
+		    simulation and be written out to high precision (usually 20 decimal
+		    places).  Setting this flag to true can be useful when reproducing a
+		    previous forward simulation with as little drift as possible.  If this
+		    flag is false, the integrator is left to determine its own time
+		    stepping.-->
+		<use_specified_dt> false </use_specified_dt>
+	</ForwardTool>
+</OpenSimDocument>
+

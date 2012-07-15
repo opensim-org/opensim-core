@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20001">
+	<Model name="pendulum">
+		<defaults>
+		</defaults>
+		<credits> Tim Dorn </credits>
+		<publications> List of publications related to model... </publications>
+		
+		<ForceSet name="">
+			<objects>
+			
+				<BodyDrag name="pend_drag">
+					<body_name> pend </body_name>
+					<coefficient> 0.3 </coefficient>
+					<exponent> 2 </exponent>
+				</BodyDrag>
+				
+			</objects>
+			<groups/>
+		</ForceSet>
+		
+		<length_units> meters </length_units>
+		<force_units> N </force_units>
+		<!--Acceleration due to gravity.-->
+		<gravity>       0.00000000000000000000      -9.80664999999999940000       0.00000000000000000000 </gravity>
+		<!--Bodies in the model.-->
+		<BodySet name="">
+			<objects>
+				<Body name="ground">
+					<mass>       0.00000000000000000000 </mass>
+					<mass_center>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </mass_center>
+					<inertia_xx>       0.00000000000000000000 </inertia_xx>
+					<inertia_yy>       0.00000000000000000000 </inertia_yy>
+					<inertia_zz>       0.00000000000000000000 </inertia_zz>
+					<inertia_xy>       0.00000000000000000000 </inertia_xy>
+					<inertia_xz>       0.00000000000000000000 </inertia_xz>
+					<inertia_yz>       0.00000000000000000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint/>
+					<VisibleObject name="">
+						<geometry_files>  </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000000000000000       0.050000000000000000000       0.05000000000000000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				
+				<Body name="pend">
+					<mass>       0.75000000000000000000 </mass>
+					<mass_center>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </mass_center>
+					<inertia_xx>       0.02500000000000000100 </inertia_xx>
+					<inertia_yy>       0.02500000000000000100 </inertia_yy>
+					<inertia_zz>       0.02500000000000000100 </inertia_zz>
+					<inertia_xy>       0.00000000000000000000 </inertia_xy>
+					<inertia_xz>       0.00000000000000000000 </inertia_xz>
+					<inertia_yz>       0.00000000000000000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<CustomJoint name="pin1">
+							<parent_body> ground </parent_body>
+							<location_in_parent>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </orientation_in_parent>
+							<location>       0.00000000000000000000       0.50000000000000000000       0.00000000000000000000 </location>
+							<orientation>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="r1_z">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       1.570796327 </default_value>
+										<default_speed_value>       0.00000000000000000000 </default_speed_value>
+										<initial_value>       0.00000000000000000000 </initial_value>
+										<range>       -3.141592654  3.141592654 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+							<SpatialTransform name="">
+								<!--3 Axes for rotations are listed first.-->
+								<TransformAxis name="rotation1">
+									<function>
+										<LinearFunction name="">
+											<coefficients>       1.00000000000000000000       0.00000000000000000000 </coefficients>
+										</LinearFunction>
+									</function>
+									<coordinates> r1_z </coordinates>
+									<axis>       0.00000000000000000000       0.00000000000000000000       1.00000000000000000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="rotation2">
+									<function>
+										<Constant name="">
+											<value>       0.00000000000000000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000000000000000       1.00000000000000000000       0.00000000000000000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="rotation3">
+									<function>
+										<Constant name="">
+											<value>       0.00000000000000000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       1.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </axis>
+								</TransformAxis>
+								<!--3 Axes for translations are listed next.-->
+								<TransformAxis name="translation1">
+									<function>
+										<Constant name="">
+											<value>       0.00000000000000000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       1.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="translation2">
+									<function>
+										<Constant name="">
+											<value>       0.00000000000000000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000000000000000       1.00000000000000000000       0.00000000000000000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="translation3">
+									<function>
+										<Constant name="">
+											<value>       0.00000000000000000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000000000000000       0.00000000000000000000       1.00000000000000000000 </axis>
+								</TransformAxis>
+							</SpatialTransform>
+						</CustomJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> pendulum.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1 1 1 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+			</objects>
+			<groups/>
+		</BodySet>
+		<!--Constraints in the model.-->
+		<ConstraintSet name="">
+			<objects/>
+			<groups/>
+		</ConstraintSet>
+		<!--Markers in the model.-->
+		<MarkerSet name="">
+			<objects/>
+			<groups/>
+		</MarkerSet>
+		<!--ContactGeometry objects in the model.-->
+		<ContactGeometrySet name="">
+			<objects/>
+			<groups/>
+		</ContactGeometrySet>
+	</Model>
+</OpenSimDocument>
+
