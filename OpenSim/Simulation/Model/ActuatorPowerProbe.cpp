@@ -203,7 +203,7 @@ SimTK::Vector ActuatorPowerProbe::computeProbeInputs(const State& s) const
             TotalP(i) = std::pow(actPower, getExponent());
     }
 
-    return(TotalP);
+    return TotalP;
 }
 
 

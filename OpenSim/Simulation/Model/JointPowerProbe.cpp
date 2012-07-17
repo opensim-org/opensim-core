@@ -207,7 +207,7 @@ SimTK::Vector JointPowerProbe::computeProbeInputs(const State& s) const
             TotalP(i) = std::pow(jointPower, getExponent());
     }
 
-    return(TotalP);
+    return TotalP;
 }
 
 

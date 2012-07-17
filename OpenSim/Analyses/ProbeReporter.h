@@ -56,8 +56,32 @@
 namespace OpenSim { 
 
 /**
- * A class for recording the Probe information applied to a model
- * during a simulation.
+ * A class for reporting the outputs of all model-connected Probes to file during
+ * a simulation. This analysis will, at each 'step_interval', cycle through all
+ * model Probes and retrieve the SimTK::Vector of probe outputs via getProbeOutputs(s)
+ * and store them into a Storage object, which will get recorded to a file at the
+ * termination of the simulation. The column labels for each Probe output will
+ * come from the overridden method Array<string> getProbeLabels() from the specific
+ * Probe subclass. A schematic of the ProbeReporter functionality is shown below
+ * (diagram below assumes a single probe, but ProbeReporter will cycle through every
+ * probe in the Model):
+   \verbatim
+                                
+                                ----------------------------
+                                |  SimTK::Vector           |
+                          |---> |  computeProbeOutputs(s)  | ----|
+                          |     ----------------------------     |
+  -------------------     |                                      |     --------------------------------------------
+  |  ProbeReporter  | -----                                      ----> |  Output to internal Storage and          |
+  |  Analysis       | -----                                      ----> |  ultimately to file at end of simulation |
+  -------------------     |                                      |     --------------------------------------------
+                          |     ----------------------------     |
+                          |---> |  Array<string>           | ----|
+                                |  getProbeLabels()        |
+                                ----------------------------
+
+  \endverbatim
+ * 
  *
  * @author Tim Dorn
  */

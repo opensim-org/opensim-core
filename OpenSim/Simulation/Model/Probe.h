@@ -77,6 +77,11 @@ class Model;
  * - computeProbeInputs()  ---   defines the input probe values (i.e., model queries).
  * - getProbeLabels()      ---   defines the labels that correspond to each probe value.
  *
+ * <B> Available probe operations: </B>
+ * - 'value' (default): returns the probe input value.
+ * - 'integrate': returns the integral of the probe input value.
+ * - 'differentiate': returns the derivative of the probe input value.
+ *
  * The Probe interface differs from the Analysis interface in two fundamental ways:
  * -  (1) Operations can be performed on probes (i.e., in addition to simply reporting 
  *        a model value, model values (probe input values) may have operations performed
@@ -87,7 +92,7 @@ class Model;
  *        the model and state value -- they can only be accessed by file at the end of a 
  *        simulation. Probes, on the other hand, are ModelComponents and therefore can be
  *        accessed at any time during a simulation from the API, and can also be used to
- *        compute model values that are fed back into ths system through ths use of 
+ *        compute model values that are fed back into ths system through via custom designed 
  *        Controllers. Note that Probe values can also be reported to file at the end of a
  *        simulation by attaching a ProbeReporter analysis to the simulation.
  *
@@ -114,9 +119,9 @@ public:
         "'value'(no operation, just return the probe value), 'integrate', 'differentiate'");
 
     OpenSim_DECLARE_OPTIONAL_PROPERTY(initial_conditions_for_integration, SimTK::Vector,
-        "Vector of initial conditions to be specified if the 'integrate'"
-        "operation is selected. Note that the size of initial conditions "
-        "must be the same size as the data being integrated.");
+        "Vector of initial conditions to be specified if the 'integrate' operation is "
+        "selected. Note that the size of initial conditions must be the same size as "
+        "the data being integrated, otherwise an exception will be thrown.");
 
     OpenSim_DECLARE_PROPERTY(scale_factor, double,
         "Constant value to scale (multiply) the probe output by.");
@@ -195,7 +200,9 @@ private:
 //=============================================================================
 // DATA
 //=============================================================================
-    SimTK::Measure afterOperationValue;
+    SimTK::Measure_<SimTK::Vector> afterOperationValue;
+    SimTK::Measure afterOperationValueIntegrate;
+
 
 //=============================================================================
 };	// END of class Probe

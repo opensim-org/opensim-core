@@ -208,7 +208,7 @@ void ProbeReporter::constructColumnLabels(const SimTK::State& s)
             Array<string> probeLabels = p.getProbeLabels();
             columnLabels.append(probeLabels);
         }
-        
+        //cout << "COL SIZE = " << columnLabels.getSize() << endl;
         _probeStore.setColumnLabels(columnLabels);
     }
 }
