@@ -51,17 +51,12 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(ContactGeometry, ModelComponent);
 //=============================================================================
 protected:
 	Body* _body;
-	PropertyStr _bodyNameProp;
-    std::string& _bodyName;
-	PropertyDblVec3 _locationInBodyProp;
-	SimTK::Vec3& _locationInBody;
-	PropertyDblVec3 _orientationInBodyProp;
-	SimTK::Vec3& _orientationInBody;
-
 	VisibleObject	_displayer;
+
 //=============================================================================
 // METHODS
 //=============================================================================
+public:
 	// CONSTRUCTION
 	/**
 	 * Construct an empty ContactGeometry.  This constructor is protected, and is used
@@ -77,7 +72,20 @@ protected:
 	 * @param body         the Body this geometry is attached to
 	 */
     ContactGeometry(const SimTK::Vec3& location, const SimTK::Vec3& orientation, OpenSim::Body& body);
-public:
+
+
+    /** Body name.  **/
+    OpenSim_DECLARE_PROPERTY(body_name, std::string,
+        "Body name to connect the contact geometry to");
+
+    /** Location.  **/
+    OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
+        "Location of geometry center in the body frame");
+
+    /** Orientation.  **/
+    OpenSim_DECLARE_PROPERTY(orientation, SimTK::Vec3,
+        "Orientation of geometry in the body frame");
+
     /** Display Preference to apply to the contact geometry.  **/
     OpenSim_DECLARE_PROPERTY(display_preference, int,
         "Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded");
@@ -86,20 +94,6 @@ public:
     OpenSim_DECLARE_LIST_PROPERTY_SIZE(color, double, 3,
         "Display Color");
 
-	ContactGeometry(const ContactGeometry& geom);
-	~ContactGeometry();
-
-    #ifndef SWIG
-    ContactGeometry& operator=(const ContactGeometry& source) {
-        if (&source != this) {
-            Super::operator=(source);
-            copyData(source);
-        }
-        return *this;
-    }
-    #endif
-
-	void copyData(const ContactGeometry& geom);
 
 	// ACCESSORS
 	/**
@@ -141,6 +135,14 @@ public:
      * Body to be set to NULL, then resolved when connectToModel() is called.
 	 */
     void setBodyName(const std::string& name);
+    /**
+	 * Get the display_preference of this geometry.
+	 */
+    const int getDisplayPreference();
+    /**
+	 * Set the display_preference of this geometry.
+	 */
+    void setDisplayPreference(const int dispPref);
 	/**
 	 * Create a new SimTK::ContactGeometry based on this object.
 	 */
@@ -171,7 +173,6 @@ protected:
 private:
     // INITIALIZATION
 	void setNull();
-	void setupProperties();
     void constructProperties();
 //=============================================================================
 };	// END of class ContactGeometry

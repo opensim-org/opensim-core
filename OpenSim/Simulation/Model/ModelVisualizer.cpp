@@ -28,6 +28,9 @@
 #include <OpenSim/Simulation/Wrap/WrapCylinder.h>
 #include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
 #include <OpenSim/Simulation/Wrap/WrapSphere.h>
+
+#include <OpenSim/Simulation/Model/ContactGeometrySet.h>
+#include <OpenSim/Simulation/Model/ContactSphere.h>
 #include <OpenSim/version.h>
 
 #include "Model.h"
@@ -220,8 +223,8 @@ void DefaultGeometry::generateDecorations
         }
     }
 
-    // Display wrap objects.
 
+    // Display wrap objects.
     if (hints.getShowWrapGeometry()) {
         const double opacity = 0.5;
         const double rez = 2;
@@ -273,6 +276,39 @@ void DefaultGeometry::generateDecorations
             }
         }
     }
+
+
+    // Display contact geometry objects.
+    if (hints.getShowContactGeometry()) {
+        const double opacity = 0.75;
+        const double rez = 2;
+        const Vec3 color(SimTK::Green);
+        Transform ztoy;
+        ztoy.updR().setRotationFromAngleAboutX(SimTK_PI/2);
+        const ContactGeometrySet& contactGeometries = _model.getContactGeometrySet();
+
+        for (int i = 0; i < contactGeometries.getSize(); i++) {
+            const OpenSim::Body& body = contactGeometries.get(i).getBody();
+            const Transform& X_GB = 
+                matter.getMobilizedBody(body.getIndex()).getBodyTransform(state);
+            const string type = contactGeometries.get(i).getConcreteClassName();
+            const int displayPref = contactGeometries.get(i).getDisplayPreference();
+            //cout << type << ": " << contactGeometries.get(i).getName() << ": disp pref = " << displayPref << endl;
+
+            if (type == "ContactSphere" && displayPref == 4) {
+                ContactSphere* sphere = 
+                    dynamic_cast<ContactSphere*>(&contactGeometries.get(i));
+                if (sphere != NULL) {
+                    Transform X_GW = X_GB*sphere->getTransform();
+                    geometry.push_back(
+                        DecorativeSphere(sphere->getRadius())
+                            .setTransform(X_GW).setResolution(rez)
+                            .setColor(color).setOpacity(opacity));
+                }
+            }
+        }
+    }
+
 
     // Ask all the ModelComponents to generate dynamic geometry.
     _model.generateDecorations(false, _model.getDisplayHints(),

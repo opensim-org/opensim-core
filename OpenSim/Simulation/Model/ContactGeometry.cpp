@@ -35,65 +35,40 @@ using SimTK::Rotation;
 
 namespace OpenSim {
 
-ContactGeometry::ContactGeometry() :
-    _bodyName(_bodyNameProp.getValueStr()),
-    _locationInBody(_locationInBodyProp.getValueDblVec()),
-    _orientationInBody(_orientationInBodyProp.getValueDblVec())
+//=============================================================================
+// CONSTRUCTOR
+//=============================================================================
+// Uses default (compiler-generated) destructor, copy constructor, copy 
+// assignment operator.
+
+//_____________________________________________________________________________
+// Default constructor.
+ContactGeometry::ContactGeometry() : ModelComponent()
 {
 	setNull();
-	setupProperties();
     constructProperties();
 }
 
-ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, Body& body) :
-    _bodyName(_bodyNameProp.getValueStr()),
-    _locationInBody(_locationInBodyProp.getValueDblVec()),
-    _orientationInBody(_orientationInBodyProp.getValueDblVec())
+//_____________________________________________________________________________
+// Convienience constructor.
+ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, Body& body) : ModelComponent()
 {
 	setNull();
-	setupProperties();
     constructProperties();
+
     _body = &body;
-    _bodyName = body.getName();
-    _locationInBody = location;
-    _orientationInBody = orientation;
+    set_body_name(body.getName());
+    set_location(location);
+    set_orientation(orientation);
 }
 
-ContactGeometry::ContactGeometry(const ContactGeometry& geom) : ModelComponent(geom),
-    _bodyName(_bodyNameProp.getValueStr()),
-    _locationInBody(_locationInBodyProp.getValueDblVec()),
-    _orientationInBody(_orientationInBodyProp.getValueDblVec())
-{
-	setNull();
-	setupProperties();
-    //constructProperties();
-    copyData(geom);
-}
 
-ContactGeometry::~ContactGeometry()
-{
-}
 
 void ContactGeometry::setNull()
 {
     _body = NULL;
 }
 
-void ContactGeometry::setupProperties()
-{
-	_bodyNameProp.setName("body_name");
-	_propertySet.append(&_bodyNameProp);
-
-	// Location in body
-	_locationInBodyProp.setName("location");
-    _locationInBodyProp.setValue(Vec3(0));
-	_propertySet.append(&_locationInBodyProp);
-
-	// Orientation in body
-	_orientationInBodyProp.setName("orientation");
-	_orientationInBodyProp.setValue(Vec3(0));
-	_propertySet.append(&_orientationInBodyProp);
-}
 
 //_____________________________________________________________________________
 /**
@@ -101,47 +76,42 @@ void ContactGeometry::setupProperties()
  */
 void ContactGeometry::constructProperties()
 {
+    constructProperty_body_name("Unassigned");
+    constructProperty_location(Vec3(0));
+    constructProperty_orientation(Vec3(0));
     constructProperty_display_preference(1);
+
     Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
 	defaultColor[0] = 0.0; 
-
     constructProperty_color(defaultColor);
-}
-
-void ContactGeometry::copyData(const ContactGeometry& source)
-{
-    _body = source._body;
-    _bodyName = source._bodyName;
-    _locationInBody = source._locationInBody;
-    _orientationInBody = source._orientationInBody;
 }
 
 const Vec3& ContactGeometry::getLocation() const
 {
-    return _locationInBody;
+    return get_location();
 }
 
 void ContactGeometry::setLocation(const Vec3& location)
 {
-    _locationInBody = location;
+    set_location(location);
 }
 
 const Vec3& ContactGeometry::getOrientation() const
 {
-    return _orientationInBody;
+    return get_orientation();
 }
 
 void ContactGeometry::setOrientation(const Vec3& orientation)
 {
-    _orientationInBody = orientation;
+    set_orientation(orientation);
 }
 
 SimTK::Transform ContactGeometry::getTransform()
 {
     return SimTK::Transform(Rotation(SimTK::BodyRotationSequence,
-        _orientationInBody[0], SimTK::XAxis,
-        _orientationInBody[1], SimTK::YAxis,
-        _orientationInBody[2], SimTK::ZAxis), _locationInBody);
+        get_orientation()[0], SimTK::XAxis,
+        get_orientation()[1], SimTK::YAxis,
+        get_orientation()[2], SimTK::ZAxis), get_location());
 }
 
 Body& ContactGeometry::getBody()
@@ -157,29 +127,39 @@ const Body& ContactGeometry::getBody() const
 void ContactGeometry::setBody(Body& body)
 {
     _body = &body;
-    _bodyName = body.getName();
+    set_body_name(body.getName());
 }
 
 const std::string& ContactGeometry::getBodyName()
 {
-    return _bodyName;
+    return get_body_name();
 }
 
 void ContactGeometry::setBodyName(const std::string& name)
 {
-    _bodyName = name;
+    set_body_name(name);
     _body = NULL;
+}
+
+const int ContactGeometry::getDisplayPreference()
+{
+    return get_display_preference();
+}
+
+void ContactGeometry::setDisplayPreference(const int dispPref)
+{
+    set_display_preference(dispPref);
 }
 
 void ContactGeometry::connectToModel(Model& aModel)
 {
     try {
-    	_body = &aModel.updBodySet().get(_bodyName);
+    	_body = &aModel.updBodySet().get(get_body_name());
 		_model = &aModel;
     }
 	catch (...)
     {
-        std::string errorMessage = "Invalid body (" + _bodyName + ") specified in contact geometry " + getName();
+        std::string errorMessage = "Invalid body (" + get_body_name() + ") specified in contact geometry " + getName();
 		throw (Exception(errorMessage.c_str()));
 	}
 	_body->updDisplayer()->addDependent(updDisplayer());
