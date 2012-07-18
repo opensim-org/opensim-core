@@ -145,7 +145,7 @@ SimTK::Vector MuscleActiveFiberPowerProbe::computeProbeInputs(const State& s) co
         TotalP(0) += fiberPower;
     }
 
-    return(TotalP);
+    return TotalP;
 }
 
 

@@ -509,7 +509,7 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
 			EdotTotal(0) = 1.0;			// not allowed to fall below 1.0 W.kg-1
 	}
 
-    return(EdotTotal);
+    return EdotTotal;
 }
 
 

@@ -138,7 +138,7 @@ SimTK::Vector SystemEnergyProbe::computeProbeInputs(const State& s) const
     if (getComputePotentialEnergy())
         TotalE(0) += _model->getMultibodySystem().calcPotentialEnergy(s);
     
-    return(TotalE);
+    return TotalE;
 }
 
 
