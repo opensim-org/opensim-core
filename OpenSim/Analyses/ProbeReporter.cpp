@@ -235,7 +235,7 @@ void ProbeReporter::deleteStorage()
  */
 int ProbeReporter::record(const SimTK::State& s)
 {
-    if(_model==NULL) return(-1);
+    if(_model==NULL) return -1;
 
     // MAKE SURE ALL ProbeReporter QUANTITIES ARE VALID
     _model->getMultibodySystem().realize(s, SimTK::Stage::Report );
@@ -260,7 +260,7 @@ int ProbeReporter::record(const SimTK::State& s)
 
     _probeStore.append(nextRow);
 
-    return(0);
+    return 0;
 }
 //_____________________________________________________________________________
 /**
@@ -280,7 +280,7 @@ int ProbeReporter::record(const SimTK::State& s)
 int ProbeReporter::
 begin(SimTK::State& s)
 {
-    if(!proceed()) return(0);
+    if(!proceed()) return 0;
 
     //tidyProbeNames();
     // LABELS
@@ -294,7 +294,7 @@ begin(SimTK::State& s)
         status = record(s);
     }
 
-    return(status);
+    return status;
 }
 //_____________________________________________________________________________
 /**
@@ -315,11 +315,11 @@ begin(SimTK::State& s)
 int ProbeReporter::
 step(const SimTK::State& s, int stepNumber )
 {
-    if(!proceed( stepNumber )) return(0);
+    if(!proceed( stepNumber )) return 0;
 
     record(s);
 
-    return(0);
+    return 0;
 }
 //_____________________________________________________________________________
 /**
@@ -342,7 +342,7 @@ end(SimTK::State& s )
 
     record(s);
 
-    return(0);
+    return 0;
 }
 
 
@@ -372,12 +372,12 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 {
     if(!getOn()) {
         printf("ProbeReporter.printResults: Off- not printing.\n");
-        return(0);
+        return 0;
     }
 
     std::string prefix=aBaseName+"_"+getName()+"_";
     Storage::printResult(&_probeStore, prefix+"probes", aDir, aDT, aExtension);
 
-    return(0);
+    return 0;
 }
 
