@@ -28,7 +28,6 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 // INCLUDE
-#include "OpenSim/Common/PropertyStr.h"
 #include "Force.h"
 
 namespace OpenSim {
@@ -245,9 +244,9 @@ private:
 	bool _appliesTorque;
 
 	/** force data as a function of time used internally */
-	SimTK::Array_<Function*> _forceFunctions;
-	SimTK::Array_<Function*> _torqueFunctions;
-	SimTK::Array_<Function*> _pointFunctions;
+	ArrayPtrs<Function> _forceFunctions;
+	ArrayPtrs<Function> _torqueFunctions;
+	ArrayPtrs<Function> _pointFunctions;
 
 	friend class ExternalLoads;
 //==============================================================================

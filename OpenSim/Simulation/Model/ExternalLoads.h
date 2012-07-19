@@ -33,6 +33,7 @@
 // INCLUDES
 #include "ModelComponentSet.h"
 #include "ExternalForce.h"
+#include "OpenSim/Common/PropertyStr.h"
 #include "OpenSim/Common/PropertyDbl.h"
 
 namespace OpenSim {
@@ -77,19 +78,19 @@ protected:
 	std::string &_dataFileName;
 	/** Name of the file containing the model kinematics corresponding to the
 	external loads. */
-	OpenSim::PropertyStr _externalLoadsModelKinematicsFileNameProp;
+	PropertyStr _externalLoadsModelKinematicsFileNameProp;
 	std::string &_externalLoadsModelKinematicsFileName;
 	/** Low-pass cut-off frequency for filtering the model kinematics corresponding
 	to the external loads. A negative value results in no filtering.
 	The default value is -1.0, so no filtering. */
-	OpenSim::PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
+	PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
 	double &_lowpassCutoffFrequencyForLoadKinematics;
 
 private:
 	/* If point of applications for external forces must be re-expressed
 	   then build new storages to be assigned to the individual ExternalForces
 	   with the transformed point data. Hang-on to them so we can delete them. */
-	SimTK::Array_<Storage *> _storages;
+	ArrayPtrs<Storage> _storages;
 
 //=============================================================================
 // METHODS

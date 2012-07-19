@@ -240,25 +240,25 @@ void ExternalForce::connectToModel(Model& model)
 			"\n. Please make sure data file contains exactly 3 unique columns with this common prefix."));
 
 	// clear out functions from previous data source
-	_forceFunctions.clear();
-	_pointFunctions.clear();
-	_torqueFunctions.clear();
+	_forceFunctions.clearAndDestroy();
+	_pointFunctions.clearAndDestroy();
+	_torqueFunctions.clearAndDestroy();
 
 	// Create functions now that we should have good data remaining
 	if(_appliesForce){
 		for(int i=0; i<3; ++i){
 			switch(nt) {
 				case 1 :
-					_forceFunctions.push_back(new Constant(force[i][0]));
+					_forceFunctions.append(new Constant(force[i][0]));
 					break;
 				case 2 :
-					_forceFunctions.push_back(new PiecewiseLinearFunction(force[i].getSize(), &time[0], &(force[i][0])) );
+					_forceFunctions.append(new PiecewiseLinearFunction(force[i].getSize(), &time[0], &(force[i][0])) );
 					break;
 				case 3 :
-					_forceFunctions.push_back(new PiecewiseLinearFunction(force[i].getSize(), &time[0], &(force[i][0])) );
+					_forceFunctions.append(new PiecewiseLinearFunction(force[i].getSize(), &time[0], &(force[i][0])) );
 					break;
 				default:
-					_forceFunctions.push_back(new GCVSpline( 3, force[i].getSize(), &time[0], &(force[i][0])) );
+					_forceFunctions.append(new GCVSpline( 3, force[i].getSize(), &time[0], &(force[i][0])) );
 			}	
 		}
 
@@ -266,16 +266,16 @@ void ExternalForce::connectToModel(Model& model)
 			for(int i=0; i<3; ++i){
 				switch(nt) {
 				case 1:
-					_pointFunctions.push_back(new Constant(point[i][0]));
+					_pointFunctions.append(new Constant(point[i][0]));
 					break;
 				case 2:
-					_pointFunctions.push_back(new PiecewiseLinearFunction(point[i].getSize(), &time[0], &(point[i][0])) );
+					_pointFunctions.append(new PiecewiseLinearFunction(point[i].getSize(), &time[0], &(point[i][0])) );
 					break;
 				case 3:
-					_pointFunctions.push_back(new PiecewiseLinearFunction(point[i].getSize(), &time[0], &(point[i][0])) );
+					_pointFunctions.append(new PiecewiseLinearFunction(point[i].getSize(), &time[0], &(point[i][0])) );
 					break;
 				default:
-					_pointFunctions.push_back(new GCVSpline( 3, point[i].getSize(), &time[0], &(point[i][0])) );
+					_pointFunctions.append(new GCVSpline( 3, point[i].getSize(), &time[0], &(point[i][0])) );
 				}
 			}
 		}
@@ -284,16 +284,16 @@ void ExternalForce::connectToModel(Model& model)
 		for(int i=0; i<3; ++i){
 			switch(nt) {
 				case 1:
-					_torqueFunctions.push_back(new Constant(torque[i][0]));
+					_torqueFunctions.append(new Constant(torque[i][0]));
 					break;
 				case 2:
-					_torqueFunctions.push_back(new PiecewiseLinearFunction(torque[i].getSize(), &time[0], &(torque[i][0])) );
+					_torqueFunctions.append(new PiecewiseLinearFunction(torque[i].getSize(), &time[0], &(torque[i][0])) );
 					break;
 				case 3:
-					_torqueFunctions.push_back(new PiecewiseLinearFunction(torque[i].getSize(), &time[0], &(torque[i][0])) );
+					_torqueFunctions.append(new PiecewiseLinearFunction(torque[i].getSize(), &time[0], &(torque[i][0])) );
 					break;
 				default:
-					_torqueFunctions.push_back(new GCVSpline( 3, torque[i].getSize(), &time[0], &(torque[i][0])) );
+					_torqueFunctions.append(new GCVSpline( 3, torque[i].getSize(), &time[0], &(torque[i][0])) );
 			}
 		}
 	}

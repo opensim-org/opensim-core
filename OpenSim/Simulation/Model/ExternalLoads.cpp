@@ -50,7 +50,7 @@ using SimTK::Vec3;
  */
 ExternalLoads::~ExternalLoads()
 {
-	_storages.clear();
+	_storages.clearAndDestroy();
 }
 //_____________________________________________________________________________
 /**
@@ -124,7 +124,7 @@ void ExternalLoads::setNull()
 
 	// PROPERTIES
 	setupSerializedMembers();
-	_storages.clear();
+	_storages.clearAndDestroy();
 }
 
 
@@ -206,7 +206,7 @@ void ExternalLoads::invokeConnectToModel(Model& aModel)
 	Super::invokeConnectToModel(aModel);
 
 	// add loaded storage into list of storages for later garbage collection
-	_storages.push_back(forceData);
+	_storages.append(forceData);
 }
 
 //-----------------------------------------------------------------------------
@@ -378,7 +378,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 	exF_transformedPoint->setPointExpressedInBodyName(exForce.getAppliedToBodyName());
 	exF_transformedPoint->setDataSource(newDataSource);
 
-	_storages.push_back(newDataSource);
+	_storages.append(newDataSource);
 
 	//newDataSource->print("NewDataSource_TransformedP.sto");
 
