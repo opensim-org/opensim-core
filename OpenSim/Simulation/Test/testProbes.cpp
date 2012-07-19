@@ -845,6 +845,8 @@ int main()
         // --------------------------------------------------------------------
 		//Initialize the MB system
 		SimTK::State& si = osimModel.initSystem();
+        SimTK::Vector testRealInitConditions = forceSquaredProbeTwiceReportedIndividually3->getProbeOutputs(si);
+
         cout << "System mass = " << osimModel.getMatterSubsystem().calcSystemMass(si) << " kg." << endl;
 
 		//Initialize the muscles 
@@ -961,13 +963,16 @@ int main()
         // Test a bunch of probe outputs
         // -------------------------------
         osimModel.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
-        //ASSERT_EQUAL(forceSquaredProbeTwiceScaled->getProbeOutputs(si)(0), scaleFactor1*forceSquaredProbeTwice->getProbeOutputs(si)(0), 1e-4, __FILE__, __LINE__, "Error with 'scale' operation.");
-        //ASSERT_EQUAL(forceProbeScale->getProbeOutputs(si)(0), scaleFactor2*forceProbe->getProbeOutputs(si)(0), 1e-4, __FILE__, __LINE__, "Error with 'scale' operation.");
-        //ASSERT_EQUAL(forceSquaredProbe->getProbeOutputs(si)(0), forceSquaredProbeTwiceScaled->getProbeOutputs(si)(0), 1e-4, __FILE__, __LINE__, "forceSquaredProbeTwiceScaled != forceSquaredProbe.");
-        //ASSERT_EQUAL(forceSquaredProbe->getProbeOutputs(si)(0), pow(forceProbe->getProbeOutputs(si)(0), 2), 1e-4, __FILE__, __LINE__, "Error with forceSquaredProbe probe.");
-        //ASSERT_EQUAL(forceSquaredProbeTwice->getProbeOutputs(si)(0), 2*pow(forceProbe->getProbeOutputs(si)(0), 2), 1e-4, __FILE__, __LINE__, "Error with forceSquaredProbeTwice probe.");
-        
-
+        ASSERT_EQUAL(forceSquaredProbeTwiceScaled->getProbeOutputs(si)(0), scaleFactor1*forceSquaredProbeTwice->getProbeOutputs(si)(0), 1e-4, __FILE__, __LINE__, "Error with 'scale' operation.");
+        ASSERT_EQUAL(forceProbeScale->getProbeOutputs(si)(0), scaleFactor2*forceProbe->getProbeOutputs(si)(0), 1e-4, __FILE__, __LINE__, "Error with 'scale' operation.");
+        ASSERT_EQUAL(forceSquaredProbe->getProbeOutputs(si)(0), forceSquaredProbeTwiceScaled->getProbeOutputs(si)(0), 1e-4, __FILE__, __LINE__, "forceSquaredProbeTwiceScaled != forceSquaredProbe.");
+        ASSERT_EQUAL(forceSquaredProbe->getProbeOutputs(si)(0), pow(forceProbe->getProbeOutputs(si)(0), 2), 1e-4, __FILE__, __LINE__, "Error with forceSquaredProbe probe.");
+        ASSERT_EQUAL(forceSquaredProbeTwice->getProbeOutputs(si)(0), 2*pow(forceProbe->getProbeOutputs(si)(0), 2), 1e-4, __FILE__, __LINE__, "Error with forceSquaredProbeTwice probe.");
+        for (int i=0; i<initCondVec.size(); ++i)  {
+            stringstream myError;
+            myError << "Initial condition[" << i << "] for vector integration is not being correctly applied." << endl;
+            ASSERT_EQUAL(testRealInitConditions(i), initCondVec(i), 1e-4, __FILE__, __LINE__, myError.str());
+        }
 
         // Test system energy - work using
         // "integrate" operation on muscWorkProbe, jointWorkProbe
