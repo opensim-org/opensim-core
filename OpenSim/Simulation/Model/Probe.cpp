@@ -149,7 +149,7 @@ void Probe::addToSystem(MultibodySystem& system) const
     // because currently, the Integrate SimTK::Measure can only reliably
     // operate on scalar values).
     ProbeMeasure<SimTK::Vector> beforeOperationValue(system, *this); 
-    SimTK::Array_<ProbeMeasure<double>> beforeOperationValueIntegrate;
+    SimTK::Array_<ProbeMeasure<double> > beforeOperationValueIntegrate;
 
     if (getOperation() == "integrate") { 
         for (int i=0; i<getInitialConditions().size(); ++i) {
@@ -157,10 +157,8 @@ void Probe::addToSystem(MultibodySystem& system) const
             beforeOperationValueIntegrate.push_back(tmpPM);
         }
     }
-    //else {
-         
-        //Measure::Constant beforeOperationValue(system, 1);		// debug
-    //}
+    //Measure::Constant beforeOperationValue(system, 1);		// debug
+
 
 
     // Assign the correct (operation) Measure subclass to the operand
