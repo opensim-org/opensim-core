@@ -98,15 +98,15 @@ int main()
 			locationInChild, orientationInChild);
 		
 		double range[2] = {-SimTK::Pi*2, SimTK::Pi*2};
-		CoordinateSet& ankleCoordinateSet = ankle->getCoordinateSet();
+		CoordinateSet& ankleCoordinateSet = ankle->upd_CoordinateSet();
 		ankleCoordinateSet[0].setName("q1");
 		ankleCoordinateSet[0].setRange(range);
 
-		CoordinateSet& kneeCoordinateSet = knee->getCoordinateSet();
+		CoordinateSet& kneeCoordinateSet = knee->upd_CoordinateSet();
 		kneeCoordinateSet[0].setName("q2");
 		kneeCoordinateSet[0].setRange(range);
 
-		CoordinateSet& hipCoordinateSet = hip->getCoordinateSet();
+		CoordinateSet& hipCoordinateSet = hip->upd_CoordinateSet();
 		hipCoordinateSet[0].setName("q3");
 		hipCoordinateSet[0].setRange(range);
 

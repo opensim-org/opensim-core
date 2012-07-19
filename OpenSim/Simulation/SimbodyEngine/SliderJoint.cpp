@@ -59,21 +59,10 @@ SliderJoint::~SliderJoint()
 SliderJoint::SliderJoint() :
 	Joint()
 {
-	setNull();
-	setupProperties();
-}
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aJoint SliderJoint to be copied.
- */
-SliderJoint::SliderJoint(const SliderJoint &aJoint) :
-   Joint(aJoint)
-{
-	setNull();
-	setupProperties();
-	copyData(aJoint);
+	constructCoordinates();
+
+	const CoordinateSet& coordinateSet = get_CoordinateSet();
+	coordinateSet[0].setMotionType(Coordinate::Translational);
 }
 
 //_____________________________________________________________________________
@@ -85,43 +74,17 @@ SliderJoint::SliderJoint(const SliderJoint &aJoint) :
 	Joint(name, parent, locationInParent,orientationInParent,
 			body, locationInBody, orientationInBody, reverse)
 {
-	setNull();
-	setupProperties();
-	_body->setJoint(*this);
+	constructCoordinates();
+
+	const CoordinateSet& coordinateSet = get_CoordinateSet();
+	coordinateSet[0].setMotionType(Coordinate::Translational);
+	
+	updBody().setJoint(*this);
 }
 
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-
-//_____________________________________________________________________________
-/**
- * Copy data members from one SliderJoint to another.
- *
- * @param aJoint SliderJoint to be copied.
- */
-void SliderJoint::copyData(const SliderJoint &aJoint)
-{
-	Joint::copyData(aJoint);
-}
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this SliderJoint to their null values.
- */
-void SliderJoint::setNull()
-{
-	constructCoordinates();
-	_coordinateSet[0].setMotionType(Coordinate::Translational);
-}
-
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void SliderJoint::setupProperties()
-{
-}
 
 //_____________________________________________________________________________
 /**
@@ -135,32 +98,22 @@ void SliderJoint::connectToModel(Model& aModel)
 	string errorMessage;
 
 	// Base class
-	Joint::connectToModel(aModel);
+	Super::connectToModel(aModel);
+
+	const std::string& parentName = get_parent_body();
 
 	// Look up the parent and child bodies by name in the
-	if (!aModel.updBodySet().contains(_parentName)) {
-		errorMessage += "Invalid parent body (" + _parentName + ") specified in joint " + getName();
+	if (!aModel.updBodySet().contains(parentName)) {
+		errorMessage += "Invalid parent body (" + parentName + ") specified in joint " + getName();
 		throw (Exception(errorMessage.c_str()));
 	}
-	_parentBody = &aModel.updBodySet().get(_parentName);
+	setParentBody(aModel.updBodySet().get(parentName));
 }
 
 //=============================================================================
 // OPERATORS
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-SliderJoint& SliderJoint::operator=(const SliderJoint &aJoint)
-{
-	Joint::operator=(aJoint);
-	copyData(aJoint);
-	return(*this);
-}
-
 
 //=============================================================================
 // GET AND SET
@@ -178,7 +131,7 @@ SliderJoint& SliderJoint::operator=(const SliderJoint &aJoint)
 void SliderJoint::scale(const ScaleSet& aScaleSet)
 {
 	// Joint knows how to scale locations of the joint in parent and on the body
-	Joint::scale(aScaleSet);
+	Super::scale(aScaleSet);
 }
 
 //=============================================================================
@@ -187,23 +140,36 @@ void SliderJoint::scale(const ScaleSet& aScaleSet)
 //_____________________________________________________________________________
 void SliderJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
+	const SimTK::Vec3& orientation = get_orientation();
+	const SimTK::Vec3& location = get_location();
+
 	// CHILD TRANSFORM
-	Rotation rotation(BodyRotationSequence, _orientation[0],XAxis, _orientation[1],YAxis, _orientation[2],ZAxis);
-	SimTK::Transform childTransform(rotation,_location);
+	Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
+	SimTK::Transform childTransform(rotation, location);
+
+	const SimTK::Vec3& orientationInParent = get_orientation_in_parent();
+	const SimTK::Vec3& locationInParent = get_location_in_parent();
 
 	// PARENT TRANSFORM
-	Rotation parentRotation(BodyRotationSequence,_orientationInParent[0],XAxis,_orientationInParent[1],YAxis,_orientationInParent[2],ZAxis);
-	SimTK::Transform parentTransform(parentRotation, _locationInParent);
+	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
+	SimTK::Transform parentTransform(parentRotation, locationInParent);
 
-	// CREATE MOBILIZED BODY
-	MobilizedBody::Slider
-		simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(_parentBody)),
-			parentTransform,SimTK::Body::Rigid(_body->getMassProperties()),
-			childTransform);
+	SliderJoint* mutableThis = const_cast<SliderJoint*>(this);
 
-	setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
+	mutableThis->createMobilizedBody(parentTransform, childTransform);
 
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);
 }
 
+void SliderJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform) {
+
+	// CREATE MOBILIZED BODY
+	MobilizedBody::Slider
+		simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(&updParentBody())),
+			parentTransform,SimTK::Body::Rigid(updBody().getMassProperties()),
+			childTransform);
+
+	setMobilizedBodyIndex(&updBody(), simtkBody.getMobilizedBodyIndex());
+
+}

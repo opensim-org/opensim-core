@@ -65,15 +65,12 @@ protected:
 public:
 	// CONSTRUCTION
 	SliderJoint();
-	SliderJoint(const SliderJoint &aJoint);
+
 	// Convenience constructor
 	SliderJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
 					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
 				    bool reverse=false);
 	virtual ~SliderJoint();
-
-	SliderJoint& operator=(const SliderJoint &aJoint);
-	void copyData(const SliderJoint &aJoint);
 
 
 	virtual int numCoordinates() const {return _numMobilities;};
@@ -87,8 +84,7 @@ protected:
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 private:
-	void setNull();
-	void setupProperties();
+	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
 
 //=============================================================================
 };	// END of class SliderJoint

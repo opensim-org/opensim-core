@@ -59,21 +59,10 @@ PinJoint::~PinJoint()
 PinJoint::PinJoint() :
 	Joint()
 {
-	setNull();
-	setupProperties();
-}
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aJoint PinJoint to be copied.
- */
-PinJoint::PinJoint(const PinJoint &aJoint) :
-   Joint(aJoint)
-{
-	setNull();
-	setupProperties();
-	copyData(aJoint);
+	constructCoordinates();
+
+	const CoordinateSet& coordinateSet = get_CoordinateSet();
+	coordinateSet[0].setMotionType(Coordinate::Rotational);
 }
 
 //_____________________________________________________________________________
@@ -85,43 +74,17 @@ PinJoint::PinJoint(const PinJoint &aJoint) :
 	Joint(name, parent, locationInParent,orientationInParent,
 			body, locationInBody, orientationInBody, reverse)
 {
-	setNull();
-	setupProperties();
-	_body->setJoint(*this);
+	constructCoordinates();
+
+	const CoordinateSet& coordinateSet = get_CoordinateSet();
+	coordinateSet[0].setMotionType(Coordinate::Rotational);
+
+	updBody().setJoint(*this);
 }
 
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-
-//_____________________________________________________________________________
-/**
- * Copy data members from one PinJoint to another.
- *
- * @param aJoint PinJoint to be copied.
- */
-void PinJoint::copyData(const PinJoint &aJoint)
-{
-	Joint::copyData(aJoint);
-}
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this PinJoint to their null values.
- */
-void PinJoint::setNull()
-{
-	constructCoordinates();
-	_coordinateSet[0].setMotionType(Coordinate::Rotational);
-}
-
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void PinJoint::setupProperties()
-{
-}
 
 //_____________________________________________________________________________
 /**
@@ -135,32 +98,17 @@ void PinJoint::connectToModel(Model& aModel)
 	string errorMessage;
 
 	// Base class
-	Joint::connectToModel(aModel);
+	Super::connectToModel(aModel);
+
+	const std::string& parentName = get_parent_body();
 
 	// Look up the parent and child bodies by name in the
-	if (!aModel.updBodySet().contains(_parentName)) {
-		errorMessage += "Invalid parent body (" + _parentName + ") specified in joint " + getName();
+	if (!aModel.updBodySet().contains(parentName)) {
+		errorMessage += "Invalid parent body (" + parentName + ") specified in joint " + getName();
 		throw (Exception(errorMessage.c_str()));
 	}
-	_parentBody = &aModel.updBodySet().get(_parentName);
+	setParentBody(aModel.updBodySet().get(parentName));
 }
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-PinJoint& PinJoint::operator=(const PinJoint &aJoint)
-{
-	Joint::operator=(aJoint);
-	copyData(aJoint);
-	return(*this);
-}
-
 
 //=============================================================================
 // GET AND SET
@@ -178,7 +126,7 @@ PinJoint& PinJoint::operator=(const PinJoint &aJoint)
 void PinJoint::scale(const ScaleSet& aScaleSet)
 {
 	// Joint knows how to scale locations of the joint in parent and on the body
-	Joint::scale(aScaleSet);
+	Super::scale(aScaleSet);
 }
 
 //=============================================================================
@@ -187,22 +135,35 @@ void PinJoint::scale(const ScaleSet& aScaleSet)
 //_____________________________________________________________________________
 void PinJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
+	const SimTK::Vec3& orientation = getProperty_orientation().getValue();
+	const SimTK::Vec3& location = getProperty_location().getValue();
+
 	// CHILD TRANSFORM
-	Rotation rotation(BodyRotationSequence, _orientation[0],XAxis, _orientation[1],YAxis, _orientation[2],ZAxis);
-	SimTK::Transform childTransform(rotation,_location);
+	Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
+	SimTK::Transform childTransform(rotation, location);
+
+	const SimTK::Vec3& orientationInParent = getProperty_orientation_in_parent().getValue();
+	const SimTK::Vec3& locationInParent = getProperty_location_in_parent().getValue();
 
 	// PARENT TRANSFORM
-	Rotation parentRotation(BodyRotationSequence,_orientationInParent[0],XAxis,_orientationInParent[1],YAxis,_orientationInParent[2],ZAxis);
-	SimTK::Transform parentTransform(parentRotation, _locationInParent);
+	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
+	SimTK::Transform parentTransform(parentRotation, locationInParent);
 
-	// CREATE MOBILIZED BODY
-	MobilizedBody::Pin
-		simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(_parentBody)),
-			parentTransform,SimTK::Body::Rigid(_body->getMassProperties()),
-			childTransform);
-
-	setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
+	PinJoint* mutableThis = const_cast<PinJoint*>(this);
+	mutableThis->createMobilizedBody(parentTransform, childTransform);
 
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);
+}
+
+void PinJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform) {
+
+	// CREATE MOBILIZED BODY
+	MobilizedBody::Pin
+		simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(&updParentBody())),
+			parentTransform,SimTK::Body::Rigid(updBody().getMassProperties()),
+			childTransform);
+
+	setMobilizedBodyIndex(&updBody(), simtkBody.getMobilizedBodyIndex());
+
 }

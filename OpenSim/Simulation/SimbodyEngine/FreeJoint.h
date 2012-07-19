@@ -70,14 +70,8 @@ public:
 	FreeJoint(const std::string &name, Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
 		  Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
 		  /*bool useEulerAngles=true,*/ bool reverse=false);
-	FreeJoint(const FreeJoint &aJoint);
+
 	virtual ~FreeJoint();
-
-#ifndef SWIG
-	FreeJoint& operator=(const FreeJoint &aJoint);
-#endif
-
-	void copyData(const FreeJoint &aJoint);
 
 	virtual int numCoordinates() const {return _numMobilities;};
 
@@ -94,7 +88,8 @@ protected:
 private:
 	SimTK::MobilizedBodyIndex _masslessBodyIndex;
 	void setNull();
-	void setupProperties();
+	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
+
 
 
 //=============================================================================

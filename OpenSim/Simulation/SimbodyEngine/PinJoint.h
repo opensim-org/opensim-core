@@ -65,15 +65,11 @@ protected:
 public:
 	// CONSTRUCTION
 	PinJoint();
-	PinJoint(const PinJoint &aJoint);
 	// Convenience constructor
 	PinJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
 					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
 					bool reverse=false);
 	virtual ~PinJoint();
-
-	PinJoint& operator=(const PinJoint &aJoint);
-	void copyData(const PinJoint &aJoint);
 
 	virtual int numCoordinates() const {return _numMobilities;};
 
@@ -85,9 +81,7 @@ protected:
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 private:
-	void setNull();
-	void setupProperties();
-
+	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
 //=============================================================================
 };	// END of class PinJoint
 //=============================================================================

@@ -130,7 +130,7 @@ void testSpringMass()
 
 	double positionRange[2] = {-10, 10};
 	// Rename coordinates for a slider joint
-	CoordinateSet &slider_coords = slider.getCoordinateSet();
+	CoordinateSet &slider_coords = slider.upd_CoordinateSet();
 	slider_coords[0].setName("ball_h");
 	slider_coords[0].setRange(positionRange);
 	slider_coords[0].setMotionType(Coordinate::Translational);
@@ -233,7 +233,7 @@ void testBushingForce()
 
 	double positionRange[2] = {-10, 10};
 	// Rename coordinates for a slider joint
-	CoordinateSet &slider_coords = slider.getCoordinateSet();
+	CoordinateSet &slider_coords = slider.upd_CoordinateSet();
 	slider_coords[0].setName("ball_h");
 	slider_coords[0].setRange(positionRange);
 	slider_coords[0].setMotionType(Coordinate::Translational);
@@ -489,7 +489,7 @@ void testCoordinateLimitForce()
 
 	double positionRange[2] = {0.1, 2};
 	// Rename coordinates for a slider joint
-	CoordinateSet &slider_coords = slider.getCoordinateSet();
+	CoordinateSet &slider_coords = slider.upd_CoordinateSet();
 	slider_coords[0].setName("ball_h");
 	slider_coords[0].setRange(positionRange);
 	slider_coords[0].setMotionType(Coordinate::Translational);
@@ -631,7 +631,7 @@ void testCoordinateLimitForceRotational()
 	// NOTE: Angular limits are in degrees NOT radians
 	double positionRange[2] = {-30, 90};
 	// Rename coordinates for a slider joint
-	CoordinateSet &pin_coords = pin.getCoordinateSet();
+	CoordinateSet &pin_coords = pin.upd_CoordinateSet();
 	pin_coords[0].setName("theta");
 	pin_coords[0].setRange(positionRange);
 	pin_coords[0].setMotionType(Coordinate::Rotational);
@@ -756,7 +756,7 @@ void testExternalForce()
 	// Add joint connecting the tower to the ground and associate joint to tower body
 	FreeJoint freeJoint("groundTower", ground, Vec3(0), Vec3(0), tower, Vec3(0, -0.5, 0), Vec3(0));
 	// Rename coordinates for the free joint
-	CoordinateSet &freeCoords = freeJoint.getCoordinateSet();
+	CoordinateSet &freeCoords = freeJoint.upd_CoordinateSet();
 	for(int i=0; i< freeCoords.getSize(); ++i){
 		if(freeCoords[i].getMotionType() == Coordinate::Translational){
 			freeCoords[i].setRange(posRange);

@@ -59,21 +59,7 @@ WeldJoint::~WeldJoint()
 WeldJoint::WeldJoint() :
 	Joint()
 {
-	setNull();
-	setupProperties();
-}
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aJoint WeldJoint to be copied.
- */
-WeldJoint::WeldJoint(const WeldJoint &aJoint) :
-   Joint(aJoint)
-{
-	setNull();
-	setupProperties();
-	copyData(aJoint);
+	constructCoordinates();
 }
 
 //_____________________________________________________________________________
@@ -85,42 +71,13 @@ WeldJoint::WeldJoint(const WeldJoint &aJoint) :
 	Joint(name, parent, locationInParent,orientationInParent,
 			body, locationInBody, orientationInBody, reverse)
 {
-	setNull();
-	setupProperties();
-	_body->setJoint(*this);
+	constructCoordinates();
+	updBody().setJoint(*this);
 }
 
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-
-//_____________________________________________________________________________
-/**
- * Copy data members from one WeldJoint to another.
- *
- * @param aJoint WeldJoint to be copied.
- */
-void WeldJoint::copyData(const WeldJoint &aJoint)
-{
-	Joint::copyData(aJoint);
-}
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this WeldJoint to their null values.
- */
-void WeldJoint::setNull()
-{
-	constructCoordinates();
-}
-
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void WeldJoint::setupProperties()
-{
-}
 
 //_____________________________________________________________________________
 /**
@@ -132,25 +89,13 @@ void WeldJoint::setupProperties()
 void WeldJoint::connectToModel(Model& aModel)
 {
 	// Base class
-	Joint::connectToModel(aModel);
+	Super::connectToModel(aModel);
 }
 
 //=============================================================================
 // OPERATORS
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-WeldJoint& WeldJoint::operator=(const WeldJoint &aJoint)
-{
-	Joint::operator=(aJoint);
-	copyData(aJoint);
-	return(*this);
-}
-
 
 //=============================================================================
 // GET AND SET
@@ -168,7 +113,7 @@ WeldJoint& WeldJoint::operator=(const WeldJoint &aJoint)
 void WeldJoint::scale(const ScaleSet& aScaleSet)
 {
 	// Joint knows how to scale locations of the joint in parent and on the body
-	Joint::scale(aScaleSet);
+	Super::scale(aScaleSet);
 }
 
 //=============================================================================
@@ -177,22 +122,35 @@ void WeldJoint::scale(const ScaleSet& aScaleSet)
 //_____________________________________________________________________________
 void WeldJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	// CHILD TRANSFORM
-	Rotation rotation(BodyRotationSequence, _orientation[0],XAxis, _orientation[1],YAxis, _orientation[2],ZAxis);
-	SimTK::Transform childTransform(rotation,_location);
 
+	const SimTK::Vec3& orientation = getProperty_orientation().getValue();
+	const SimTK::Vec3& location = getProperty_location().getValue();
+
+	// CHILD TRANSFORM
+	Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
+	SimTK::Transform childTransform(rotation, location);
+
+	const SimTK::Vec3& locationInParent = getProperty_location_in_parent().getValue();
+	const SimTK::Vec3& orientationInParent = getProperty_orientation_in_parent().getValue();
+	
 	// PARENT TRANSFORM
-	Rotation parentRotation(BodyRotationSequence,_orientationInParent[0],XAxis,_orientationInParent[1],YAxis,_orientationInParent[2],ZAxis);
-	SimTK::Transform parentTransform(parentRotation, _locationInParent);
+	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
+	SimTK::Transform parentTransform(parentRotation, locationInParent);
+
+	WeldJoint* mutableThis = const_cast<WeldJoint*>(this);
+	mutableThis->createMobilizedBody(parentTransform, childTransform);
+    // TODO: Joints require super class to be called last.
+    Super::addToSystem(system);
+}
+
+void WeldJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform) {
 
 	// CREATE MOBILIZED BODY
 	MobilizedBody::Weld
-		simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(_parentBody)),
-			parentTransform,SimTK::Body::Rigid(_body->getMassProperties()),
+		simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(&(updParentBody()))),
+			parentTransform,SimTK::Body::Rigid(updBody().getMassProperties()),
 			childTransform);
+	
+	setMobilizedBodyIndex(&(updBody()), simtkBody.getMobilizedBodyIndex());
 
-	setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
-
-    // TODO: Joints require super class to be called last.
-    Super::addToSystem(system);
 }

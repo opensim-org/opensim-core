@@ -167,7 +167,7 @@ public:
 		OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, bool reverse=false) : 
 			Joint(name, parent, locationInParent,orientationInParent,
 					body, locationInBody, orientationInBody, reverse)
-		{ _body->setJoint(*this); }
+		{ updBody().setJoint(*this); }
 
 	virtual int numCoordinates() const {return _numMobilities;};
 
@@ -176,23 +176,31 @@ protected:
 	{
 		using namespace SimTK;
 
+		const SimTK::Vec3& orientation = get_orientation();
+		const SimTK::Vec3& location = get_location();
+
 		// CHILD TRANSFORM
-		Rotation rotation(BodyRotationSequence, _orientation[0],XAxis, _orientation[1],YAxis, _orientation[2],ZAxis);
-		SimTK::Transform childTransform(rotation,_location);
+		Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
+		SimTK::Transform childTransform(rotation,location);
+
+		const SimTK::Vec3& orientationInParent = get_orientation_in_parent();
+		const SimTK::Vec3& locationInParent = get_location_in_parent();
 
 		// PARENT TRANSFORM
-		Rotation parentRotation(BodyRotationSequence,_orientationInParent[0],XAxis,_orientationInParent[1],YAxis,_orientationInParent[2],ZAxis);
-		SimTK::Transform parentTransform(parentRotation, _locationInParent);
+		Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
+		SimTK::Transform parentTransform(parentRotation, locationInParent);
+
+		CompoundJoint* mutableThis = const_cast<CompoundJoint*>(this);
 
 		// CREATE MOBILIZED BODY for body rotation about body Z
 		MobilizedBody::Pin
-			simtkMasslessBody1(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(_parentBody)),
+			simtkMasslessBody1(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(&(mutableThis->updParentBody()))),
 				parentTransform, SimTK::Body::Massless(), childTransform);
 
 		// Find the joint frame with Z aligned to body X
 		Rotation rotToX(BodyRotationSequence, 0.0,XAxis, Pi/2,YAxis, 0.0,ZAxis);
-		SimTK::Transform childTransform1(rotToX*rotation, _location);
-		SimTK::Transform parentTransform1(rotToX*parentRotation, _locationInParent);
+		SimTK::Transform childTransform1(rotToX*rotation, location);
+		SimTK::Transform parentTransform1(rotToX*parentRotation, locationInParent);
 
 		// CREATE MOBILIZED BODY for body rotation about body X
 		MobilizedBody::Pin simtkMasslessBody2(simtkMasslessBody1, parentTransform1, SimTK::Body::Massless(), childTransform1);
@@ -200,13 +208,13 @@ protected:
 
 		// Now Find the joint frame with Z aligned to body Y
 		Rotation rotToY(BodyRotationSequence, -Pi/2,XAxis, 0.0,YAxis, 0.0,ZAxis);
-		SimTK::Transform childTransform2(rotToY*childTransform1.R(), _location);
-		SimTK::Transform parentTransform2(rotToY*parentTransform1.R(), _locationInParent);
+		SimTK::Transform childTransform2(rotToY*childTransform1.R(), location);
+		SimTK::Transform parentTransform2(rotToY*parentTransform1.R(), locationInParent);
 
 		// CREATE MOBILIZED BODY for body rotation about body Y
-		MobilizedBody::Pin mobBod(simtkMasslessBody1, parentTransform2, SimTK::Body::Rigid(_body->getMassProperties()), childTransform2);
+		MobilizedBody::Pin mobBod(simtkMasslessBody1, parentTransform2, SimTK::Body::Rigid(mutableThis->updBody().getMassProperties()), childTransform2);
 
-		setMobilizedBodyIndex(_body, mobBod.getMobilizedBodyIndex());
+		setMobilizedBodyIndex(&(mutableThis->updBody()), mobBod.getMobilizedBodyIndex());
 
         // TODO: Joints require super class to be called last.
         Super::addToSystem(system);
@@ -509,6 +517,9 @@ void testCustomVsUniversalPin()
 	osimModel.addAnalysis(kinAnalysis);
 
 	osimModel.disownAllComponents();
+
+	std::cout << osimModel.getCoordinateSet().getSize() << std::endl;
+
 	osimModel.print("test_joints_model.osim");
 
 	testEquivalentBodyForceForGenForces(&osimModel);
@@ -729,7 +740,7 @@ void testEllipsoidJoint()
 	EllipsoidJoint hip("", ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0), ellipsoidRadii);
 
 	// Rename hip coordinates for an ellipsoid joint
-	CoordinateSet& hip_coords = hip.getCoordinateSet();
+	CoordinateSet& hip_coords = hip.upd_CoordinateSet();
 	for(int i=0; i<hip_coords.getSize(); i++){
 		std::stringstream coord_name;
 		coord_name << "hip_q" << i;
@@ -959,7 +970,7 @@ void testFreeJoint(bool useEulerAngles)
 	FreeJoint hip("", ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0), useEulerAngles);
 
 	// Rename hip coordinates for a free joint
-	CoordinateSet& hip_coords = hip.getCoordinateSet();
+	CoordinateSet& hip_coords = hip.upd_CoordinateSet();
 	for(int i=0; i<hip_coords.getSize(); i++){
 		std::stringstream coord_name;
 		coord_name << "hip_q" << i;
@@ -1234,7 +1245,7 @@ void testSliderJoint()
 	PinJoint hip("", ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
 
 	// Rename hip coordinates for a pin joint
-	CoordinateSet& hip_coords = hip.getCoordinateSet();
+	CoordinateSet& hip_coords = hip.upd_CoordinateSet();
 	for(int i=0; i<hip_coords.getSize(); i++){
 		std::stringstream coord_name;
 		coord_name << "hip_q" << i;
@@ -1249,7 +1260,7 @@ void testSliderJoint()
 
 	// create slider knee joint
 	SliderJoint knee("", osim_thigh, kneeInFemur, oInP, osim_shank, kneeInTibia, oInB);
-	CoordinateSet& kneeCoords =	knee.getCoordinateSet();
+	CoordinateSet& kneeCoords =	knee.upd_CoordinateSet();
 	kneeCoords[0].setName("knee_qx");
 	kneeCoords[0].setMotionType(Coordinate::Translational);
 
@@ -1545,7 +1556,7 @@ void testEquivalentBodyForceFromGeneralizedForce()
 	PinJoint hip("hip", ground, hipInGround+Vec3(1,2,3), ohInP, osim_thigh, hipInFemur+Vec3(-1,2,-3), ohInB);
 
 	// Rename hip coordinates for a pin joint
-	CoordinateSet& hip_coords = hip.getCoordinateSet();
+	CoordinateSet& hip_coords = hip.upd_CoordinateSet();
 	for(int i=0; i<hip_coords.getSize(); i++){
 		std::stringstream coord_name;
 		coord_name << "hip_q" << i;
@@ -1562,7 +1573,7 @@ void testEquivalentBodyForceFromGeneralizedForce()
 	Vec3 okInB(randomAngle.getValue(),  randomAngle.getValue(), randomAngle.getValue());
 	Vec3 okInP(randomAngle.getValue(), randomAngle.getValue(), randomAngle.getValue());
 	SliderJoint knee("knee", osim_thigh, kneeInFemur, okInP, osim_shank, kneeInTibia, okInB);
-	CoordinateSet& kneeCoords =	knee.getCoordinateSet();
+	CoordinateSet& kneeCoords =	knee.upd_CoordinateSet();
 	kneeCoords[0].setName("knee_qx");
 	kneeCoords[0].setMotionType(Coordinate::Translational);
 
@@ -1613,10 +1624,10 @@ void testEquivalentBodyForceForGenForces(Model *model)
 	// Construct the system vector of body forces from a Joint's  equivalence to generalized force calculations
 	for(int j=0; j < model->getJointSet().getSize(); ++j){
 		Joint &joint = model->getJointSet()[j];
-		OpenSim::Body &body = joint.getBody();
+		OpenSim::Body &body = joint.updBody();
 		MobilizedBodyIndex mbx = body.getIndex();
 
-		OpenSim::Body &parent = joint.getParentBody();
+		OpenSim::Body &parent = joint.updParentBody();
 		MobilizedBodyIndex mpx = parent.getIndex();
 
 		Vec3 rB_Bo(0), rB_Po(0);

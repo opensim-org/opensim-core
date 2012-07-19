@@ -55,11 +55,15 @@ private:
 //=============================================================================
 // DATA
 //=============================================================================
-protected:
-
-	/** Ellipsoid radii mobilizer frame as a Vec3(rX, rY, rZ) */
-	PropertyDblVec3 _ellipsoidRadiiProp;
-	SimTK::Vec3 &_ellipsoidRadii;
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations 
+    These are the serializable properties associated with an EllipsoidJoint. **/
+    /**@{**/
+	OpenSim_DECLARE_PROPERTY(radii_x_y_z, SimTK::Vec3, 
+		"Ellipsoid radii mobilizer frame as a Vec3(rX, rY, rZ).");
 
 //=============================================================================
 // METHODS
@@ -71,11 +75,8 @@ public:
 	EllipsoidJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
 				OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
 				SimTK::Vec3 ellipsoidRadii, bool reverse=false);
-	EllipsoidJoint(const EllipsoidJoint &aJoint);
-	virtual ~EllipsoidJoint();
 
-	EllipsoidJoint& operator=(const EllipsoidJoint &aJoint);
-	void copyData(const EllipsoidJoint &aJoint);
+	virtual ~EllipsoidJoint();
 
 	virtual int numCoordinates() const {return _numMobilities;};
 
@@ -93,8 +94,8 @@ protected:
     void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
 
 private:
-	void setNull();
-	void setupProperties();
+	void constructProperties();
+	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
 
 
 //=============================================================================

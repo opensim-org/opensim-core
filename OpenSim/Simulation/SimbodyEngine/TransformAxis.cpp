@@ -88,7 +88,7 @@ void TransformAxis::connectToJoint(const Joint& aJoint)
 	// Look up the coordinates by name.
     const Property<string>& coordNames = getProperty_coordinates();
 	int nc = coordNames.size();
-	CoordinateSet& coords = _joint->getCoordinateSet();
+	const CoordinateSet& coords = _joint->getCoordinateSet();
 
     // If a Function has been assigned then we have to insist that any 
     // specified coordinates actually exist in this joint.
@@ -144,7 +144,7 @@ double TransformAxis::getValue(const State& s )
 {
     const Property<string>& coordNames = getCoordinateNames();
 	const int nc = coordNames.size();
-	CoordinateSet& coords = _joint->getCoordinateSet();
+	const CoordinateSet& coords = _joint->getCoordinateSet();
 
 	Vector workX(nc, 0.0);
 	for (int i=0; i < nc; ++i)

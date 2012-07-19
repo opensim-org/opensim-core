@@ -108,7 +108,7 @@ void testControlSetControllerOnBlock()
 	SimTK::Vec3 noRotation(0);
 	SliderJoint blockToGround("",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
 	// Create 6 coordinates (degrees-of-freedom) between the ground and block
-	CoordinateSet& jointCoordinateSet = blockToGround.getCoordinateSet();
+	CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
 	double posRange[2] = {-1, 1};
 	jointCoordinateSet[0].setName("xTranslation");
 	jointCoordinateSet[0].setMotionType(Coordinate::Translational);
@@ -202,7 +202,7 @@ void testPrescribedControllerOnBlock(bool disabled)
 	SimTK::Vec3 noRotation(0);
 	SliderJoint blockToGround("",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
 	// Create 6 coordinates (degrees-of-freedom) between the ground and block
-	CoordinateSet& jointCoordinateSet = blockToGround.getCoordinateSet();
+	CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
 	double posRange[2] = {-1, 1};
 	jointCoordinateSet[0].setName("xTranslation");
 	jointCoordinateSet[0].setMotionType(Coordinate::Translational);
@@ -296,7 +296,7 @@ void testCorrectionControllerOnBlock()
 	SimTK::Vec3 noRotation(0);
 	SliderJoint blockToGround("",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
 	// Create 6 coordinates (degrees-of-freedom) between the ground and block
-	CoordinateSet& jointCoordinateSet = blockToGround.getCoordinateSet();
+	CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
 	double posRange[2] = {-1, 1};
 	jointCoordinateSet[0].setName("xTranslation");
 	jointCoordinateSet[0].setMotionType(Coordinate::Translational);

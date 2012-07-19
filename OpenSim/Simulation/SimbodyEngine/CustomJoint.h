@@ -88,7 +88,7 @@ public:
 	
     // default destructor, copy constructor, copy assignment
 
-	int numCoordinates() const {return _coordinateSet.getSize();};
+	int numCoordinates() const {return get_CoordinateSet().getSize();};
 
 	// Transforms
 	const SpatialTransform& getSpatialTransform() const

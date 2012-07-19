@@ -98,7 +98,7 @@ int main()
 		FreeJoint *blockToGround = new FreeJoint("blockToGround", ground, locationInParent, orientationInParent, *block, locationInBody, orientationInBody);
 		
 		// Get a reference to the coordinate set (6 degrees-of-freedom) between the block and ground bodies
-		CoordinateSet& jointCoordinateSet = blockToGround->getCoordinateSet();
+		CoordinateSet& jointCoordinateSet = blockToGround->upd_CoordinateSet();
 
 		// Set the angle and position ranges for the coordinate set
 		double angleRange[2] = {-SimTK::Pi/2, SimTK::Pi/2};

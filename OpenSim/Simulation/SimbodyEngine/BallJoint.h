@@ -73,11 +73,7 @@ public:
 				OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
 				/*bool useEulerAngles=true,*/ bool reverse=false);
 
-	BallJoint(const BallJoint &aJoint);
 	virtual ~BallJoint();
-
-	BallJoint& operator=(const BallJoint &aJoint);
-	void copyData(const BallJoint &aJoint);
 
 	virtual int numCoordinates() const {return _numMobilities;};
 
@@ -92,10 +88,7 @@ protected:
     void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
 
 private:
-	void setNull();
-	void setupProperties();
-
-
+	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
 //=============================================================================
 };	// END of class BallJoint
 //=============================================================================

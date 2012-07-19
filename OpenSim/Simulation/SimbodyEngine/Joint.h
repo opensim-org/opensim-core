@@ -30,17 +30,14 @@
 // INCLUDE
 #include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyStrArray.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/Function.h>
-#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include "Body.h"
 #include "Coordinate.h"
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
 
 namespace OpenSim {
-
-class CoordinateSet;
 
 //=============================================================================
 //=============================================================================
@@ -53,73 +50,75 @@ class CoordinateSet;
 class OSIMSIMULATION_API Joint : public ModelComponent {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Joint, ModelComponent);
 
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-	/** Name of the parent body to which this joint connects its owner body. */
-	PropertyStr _parentNameProp;
-	std::string& _parentName;
+public:
 
-	/** Location of the joint in the parent body specified in the parent
-	reference frame. */
-	PropertyDblVec3 _locationInParentProp;
-	SimTK::Vec3& _locationInParent;
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations 
+    These are the serializable properties associated with a Joint. **/
+    /**@{**/
+	OpenSim_DECLARE_PROPERTY(parent_body, std::string, 
+		"Name of the parent body to which this joint connects its owner body.");
 
-	/** Orientation of the joint in the parent body specified in the parent
-	reference frame.  Euler XYZ body-fixed rotation angles are used to express
-	the orientation. */
-	PropertyDblVec3 _orientationInParentProp;
-	SimTK::Vec3& _orientationInParent;
+	OpenSim_DECLARE_PROPERTY(location_in_parent, SimTK::Vec3, 
+		"Location of the joint in the parent body specified in the parent "
+		"reference frame. Default is (0,0,0).");
 
-	/** Location of the joint in the child body specified in the child
-	reference frame.  For SIMM models, this vector is always the zero vector
-	(i.e., the body reference frame coincides with the joint).  */
-	PropertyDblVec3 _locationProp;
-	SimTK::Vec3& _location;
+	OpenSim_DECLARE_PROPERTY(orientation_in_parent, SimTK::Vec3, 
+		"Orientation of the joint in the parent body specified in the parent "
+		"reference frame. Euler XYZ body-fixed rotation angles are used to "
+		"express the orientation. Default is (0,0,0).");
 
-	/** Orientation of the joint in the owing body specified in the owning body
-	reference frame.  Euler XYZ body-fixed rotation angles are used to express
-	the orientation. */
-	PropertyDblVec3 _orientationProp;
-	SimTK::Vec3& _orientation;
+	OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3, 
+		"Location of the joint in the child body specified in the child "
+		"reference frame. For SIMM models, this vector is always the zero "
+		"vector (i.e., the body reference frame coincides with the joint). ");
 
-	/** Set holding the generalized coordinates (q's) that parmeterize this joint. */
-	PropertyObj _coordinateSetProp;
-	CoordinateSet &_coordinateSet;
+	OpenSim_DECLARE_PROPERTY(orientation, SimTK::Vec3, 
+		"Orientation of the joint in the owing body specified in the owning body "
+		"reference frame.  Euler XYZ body-fixed rotation angles are used to "
+		"express the orientation. " );
 
-	/** Whether the joint transform defines parent->child or child->parent. */
-	PropertyBool _reverseProp;
-	bool& _reverse;
+	OpenSim_DECLARE_UNNAMED_PROPERTY(CoordinateSet, 
+		"Set holding the generalized coordinates (q's) that parmeterize this joint." );
 
-	/** Body to which this joint belongs. */
-	Body *_body;
-
-	/** Body to which this body is attached. */
-	Body *_parentBody;
+    OpenSim_DECLARE_PROPERTY(reverse, bool, 
+		"Whether the joint transform defines parent->child or child->parent."); 
+    /**@}**/
 
 //=============================================================================
 // METHODS
 //=============================================================================
-public:
-	// DEFAULT CONSTRUCTION
+
+	//--------------------------------------------------------------------------
+	// CONSTRUCTION
+	//--------------------------------------------------------------------------
+	/** DEFAULT CONSTRUCTION */
 	Joint();
-	// Convenience Constructor
+
+	/** Convenience Constructor */
 	Joint(const std::string &name, Body &parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
 		  Body &body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, bool reverse=false);
 
-	Joint(const Joint &aJoint);
 	virtual ~Joint();
 
-#ifndef SWIG
-	Joint& operator=(const Joint &aJoint);
-#endif
-	void copyData(const Joint &aJoint);
-
 	// GET & SET
-	// Relating to the joint's body
+	/**
+	 * Set the body to which this joint belongs.
+	 *
+	 * @param aBody Body to which this joint should belong.
+	 */
 	virtual void setBody(OpenSim::Body &aBody);
-	virtual OpenSim::Body& getBody() const;
+
+	/**
+	 * Get the body to which this joint belongs.
+	 *
+	 * @return Body to which this joint belongs.
+	 */
+	const OpenSim::Body& getBody() const;
+	OpenSim::Body& updBody();
+
 	virtual void setLocation(const SimTK::Vec3& aLocation);
 	virtual void getLocation(SimTK::Vec3& rLocation) const;
 	virtual void setOrientation(const SimTK::Vec3& aOrientation);
@@ -128,8 +127,16 @@ public:
 	// Relating to the parent body
 	void setParentName(const std::string& aName);
 	std::string getParentName() const;
-	virtual void setParentBody(OpenSim::Body &aBody);
-	virtual OpenSim::Body& getParentBody() const;
+
+	void setParentBody(OpenSim::Body &aBody);
+	/**
+	 * Get the parent body to which this joint attaches.
+	 *
+	 * @return Parent body to which this joint attaches.
+	 */
+	const OpenSim::Body& getParentBody() const;
+	OpenSim::Body& updParentBody();
+
 	virtual void setLocationInParent(const SimTK::Vec3& aLocation);
 	virtual void getLocationInParent(SimTK::Vec3& rLocation) const;
 	virtual void setOrientationInParent(const SimTK::Vec3& aOrientation);
@@ -137,29 +144,34 @@ public:
 
 	// A set of functions that use double[] to be invoked by GUI, not Vec3 aware
 	virtual void getOrientationInChild(double rOrientation[]) const {
+		const SimTK::Vec3& _orientation = get_orientation();
 		for(int i=0; i<3; i++) rOrientation[i]=_orientation[i];
 	};
 	virtual void getOrientationInParent(double rOrientation[]) const {
+		const SimTK::Vec3& _orientationInParent = get_orientation_in_parent();
 		for(int i=0; i<3; i++) rOrientation[i]=_orientationInParent[i];
 	};
 	virtual void getLocationInChild(double rLocation[]) const {
+		const SimTK::Vec3& _location = get_location();
 		for(int i=0; i<3; i++) rLocation[i]=_location[i];
 	};
 	virtual void getLocationInParent(double rLocation[]) const {
+		const SimTK::Vec3& _locationInParent = get_location_in_parent();
 		for(int i=0; i<3; i++) rLocation[i]=_locationInParent[i];
 	};
 
 	virtual void setLocationInChild(const SimTK::Vec3& aLocation) {
-		_location = aLocation;
-	};
-	virtual void getLocationInChild(SimTK::Vec3& rLocation) const {
-		rLocation = _location;
+		set_location(aLocation);
+	}
+
+	virtual const SimTK::Vec3& getLocationInChild() const {
+		return get_location();
 	};
 
 	// Coordinate Set
-	virtual CoordinateSet& getCoordinateSet() const { return _coordinateSet; }
+	const CoordinateSet& getCoordinateSet() const { return get_CoordinateSet(); }
 
-	virtual bool getReverse() const { return _reverse; }
+	virtual bool getReverse() const { return get_reverse(); }
 
 	//Model building
 	virtual int numCoordinates() const = 0;
@@ -210,8 +222,16 @@ public:
 	void updateName(const std::string &aName);
 
     // ModelComponent interface.
+	
+	/**
+	* Perform some set up functions that happen after the
+	* object has been deserialized or copied.
+	*
+	* @param aModel OpenSim model containing this Joint.
+	*/
 	void connectToModel(Model& aModel) OVERRIDE_11;
 protected:
+
     // TODO: child overrides must invoke Joint::addToSystem()
     // *after* they create the MobilizedBody. This is an API bug
     // since we want to have children invoke parent first.
@@ -236,10 +256,19 @@ protected:
 	   acting at its mobilizer frame B, expressed in ground.  */
 	SimTK::SpatialVec calcEquivalentSpatialForceForMobilizedBody(const SimTK::State &s, const SimTK::MobilizedBodyIndex mbx, const SimTK::Vector &mobilityForces) const;
 
-
 private:
+//=============================================================================
+// DATA
+//=============================================================================
+
+	/** Body to which this joint belongs. */
+	SimTK::ReferencePtr<Body> _body;
+
+	/** Body to which this body is attached. */
+	SimTK::ReferencePtr<Body> _parentBody;
+
 	void setNull();
-	void setupProperties();
+	void constructProperties();
     friend class JointSet;
 
 //=============================================================================

@@ -226,13 +226,13 @@ void simulateMuscle(
 	ground.updDisplayer()
         ->setScaleFactors(Vec3(anchorWidth, anchorWidth, 2*anchorWidth));
 
-	OpenSim::Body ball("ball", 
+	OpenSim::Body * ball = new OpenSim::Body("ball", 
                         ballMass , 
                         Vec3(0),  
                         ballMass*SimTK::Inertia::sphere(ballRadius));
 	
-    ball.addDisplayGeometry("sphere.vtp");
-	ball.updDisplayer()->setScaleFactors(Vec3(2*ballRadius));
+    ball->addDisplayGeometry("sphere.vtp");
+	ball->updDisplayer()->setScaleFactors(Vec3(2*ballRadius));
 	// ball connected  to ground via a slider along X
 	double xSinG = optimalFiberLength*cos(pennationAngle)+tendonSlackLength;
 
@@ -240,11 +240,11 @@ void simulateMuscle(
                         ground, 
                         Vec3(anchorWidth/2+xSinG, 0, 0), 
                         Vec3(0), 
-                        ball, 
+                        *ball, 
                         Vec3(0), 
                         Vec3(0));
 
-	CoordinateSet& jointCoordinateSet = slider.getCoordinateSet();
+	CoordinateSet& jointCoordinateSet = slider.upd_CoordinateSet();
 	    jointCoordinateSet[0].setName("tx");
 	    jointCoordinateSet[0].setDefaultValue(1.0);
 	    jointCoordinateSet[0].setRangeMin(0); 
@@ -253,13 +253,13 @@ void simulateMuscle(
     if(motion != NULL)
 		jointCoordinateSet[0].setPrescribedFunction(*motion);
 	// add ball to model
-	model.addBody(&ball);
+	model.addBody(ball);
 
 	//Attach the muscle
 	const string &actuatorType = aMuscle->getConcreteClassName();
 	aMuscle->setName("muscle");
 	aMuscle->addNewPathPoint("muscle-box", ground, Vec3(anchorWidth/2,0,0));
-	aMuscle->addNewPathPoint("muscle-ball", ball, Vec3(-ballRadius,0,0));
+	aMuscle->addNewPathPoint("muscle-ball", *ball, Vec3(-ballRadius,0,0));
 	
 	ActivationFiberLengthMuscle_Deprecated *aflMuscle 
         = dynamic_cast<ActivationFiberLengthMuscle_Deprecated *>(aMuscle);
@@ -284,15 +284,15 @@ void simulateMuscle(
 
 	// Create a prescribed controller that simply 
     //applies controls as function of time
-	PrescribedController muscleController;
+	PrescribedController * muscleController = new PrescribedController();
 	if(control != NULL){
-		muscleController.setActuators(model.updActuators());
+		muscleController->setActuators(model.updActuators());
 		// Set the indiviudal muscle control functions 
         //for the prescribed muscle controller
-		muscleController.prescribeControlForActuator("muscle",control->clone());
+		muscleController->prescribeControlForActuator("muscle",control->clone());
 
 		// Add the control set controller to the model
-		model.addController(&muscleController);
+		model.addController(muscleController);
 	}
 
     // Set names for muscles / joints.
@@ -302,19 +302,19 @@ void simulateMuscle(
 	jointNames.append("slider");
 
 	// Add an ActuatorPowerProbe to measure the work done by the muscle actuator 
-    ActuatorPowerProbe muscWorkProbe(muscNames, true, 1);
-	muscWorkProbe.setOperation("integrate");
-	model.addProbe(&muscWorkProbe);
+    ActuatorPowerProbe * muscWorkProbe = new ActuatorPowerProbe(muscNames, true, 1);
+	muscWorkProbe->setOperation("integrate");
+	model.addProbe(muscWorkProbe);
 
 	// Add a JointPowerProbe to measure the work done by the joint
 	// will be 0 unless joint has prescribed motion
-    JointPowerProbe jointWorkProbe(jointNames, true, 1);
-	jointWorkProbe.setOperation("integrate");
-	model.addProbe(&jointWorkProbe);
+    JointPowerProbe * jointWorkProbe = new JointPowerProbe(jointNames, true, 1);
+	jointWorkProbe->setOperation("integrate");
+	model.addProbe(jointWorkProbe);
 
 	/* Since all components are allocated on the stack don't have model 
        own them (and try to free)*/
-	model.disownAllComponents();
+//	model.disownAllComponents();
 	model.setName(actuatorType+"ModelTest");
 	model.print(actuatorType+"ModelTest.osim");
 
@@ -322,9 +322,9 @@ void simulateMuscle(
        muscle during the simulation. If you uncomment, remember to 
        uncomment the corresponding calls to write the results to 
        file after the simualtion.*/
-    MuscleAnalysis muscleAnalysis;
-    muscleAnalysis.setMuscles(Array<string>("muscle",1));
-	model.addAnalysis(&muscleAnalysis);
+	MuscleAnalysis * muscleAnalysis = new MuscleAnalysis();
+    muscleAnalysis->setMuscles(Array<string>("muscle",1));
+	model.addAnalysis(muscleAnalysis);
    
     /*
         Muscle *musclePtr = dynamic_cast<Muscle *>(aMuscle);
@@ -363,10 +363,10 @@ void simulateMuscle(
 
 	model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
 
-	double Emuscle0 = muscWorkProbe.getProbeOutputs(si)(0);
+	double Emuscle0 = muscWorkProbe->getProbeOutputs(si)(0);
 	//cout << "Muscle initial energy = " << Emuscle0 << endl;
 	double Esys0 = model.getMultibodySystem().calcEnergy(si);
-	Esys0 += (Emuscle0 + jointWorkProbe.getProbeOutputs(si)(0));
+	Esys0 += (Emuscle0 + jointWorkProbe->getProbeOutputs(si)(0));
 	double PEsys0 = model.getMultibodySystem().calcPotentialEnergy(si);
 	//cout << "Total initial system energy = " << Esys0 << endl; 
 
@@ -397,10 +397,10 @@ void simulateMuscle(
     //An analysis only writes to a dir that exists, so create here.
     if(printResults == true){
 	    IO::makeDir("testMuscleResults");
-	    muscleAnalysis.printResults(actuatorType, "testMuscleResults");
+	    muscleAnalysis->printResults(actuatorType, "testMuscleResults");
     }
 
-	double muscleWork = muscWorkProbe.getProbeOutputs(si)(0);
+	double muscleWork = muscWorkProbe->getProbeOutputs(si)(0);
 	cout << "Muscle work = " << muscleWork << endl;
 
     /*==========================================================================
@@ -423,14 +423,14 @@ void simulateMuscle(
 	    double xSpeed = modelCoordinateSet[0].getSpeedValue(si);
 	    double KEsysCheck =  0.5*ballMass*xSpeed*xSpeed;
 	    double PEsys =  model.getMultibodySystem().calcPotentialEnergy(si);
-        double jointWork = jointWorkProbe.computeProbeInputs(si)(0);
+        double jointWork = jointWorkProbe->computeProbeInputs(si)(0);
 	    double ESysMinusWork = Esys 
-                                - muscWorkProbe.computeProbeInputs(si)(0)
+                                - muscWorkProbe->computeProbeInputs(si)(0)
                                 - jointWork; 
 
 
         double muscleWork = 0;//fiberWorkMeter.get
-        muscWorkProbe.computeProbeInputs(si);
+        muscWorkProbe->computeProbeInputs(si);
 	    cout << "Muscle work = " << muscleWork << endl;  
         cout << "Esys - Work = " << ESysMinusWork 
              << " :: Esys0 = " << Esys0 << endl; 
@@ -451,13 +451,13 @@ void simulateMuscle(
   
     if(flag_test_dKEPEW_dt && musclePtr){
         Storage *fiberActivePwrSto  
-            = muscleAnalysis.getFiberActivePowerStorage(); 
+			= muscleAnalysis->getFiberActivePowerStorage(); 
         Storage *fiberPassivePwrSto 
-            = muscleAnalysis.getFiberPassivePowerStorage();
+            = muscleAnalysis->getFiberPassivePowerStorage();
         Storage *tendonPwrSto       
-            = muscleAnalysis.getTendonPowerStorage();
+            = muscleAnalysis->getTendonPowerStorage();
         Storage *musclePwrSto       
-            = muscleAnalysis.getMusclePowerStorage();
+            = muscleAnalysis->getMusclePowerStorage();
 
         double *fiberActivePwrDat  = NULL;
         double *fiberPassivePwrDat = NULL;

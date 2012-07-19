@@ -263,7 +263,7 @@ int main()
         jointNames.append("blockToGround");
 
 		//Get a reference to the coordinate set (6 dof) between block and ground
-		CoordinateSet& jointCoordinateSet = blockToGround->getCoordinateSet();
+		CoordinateSet& jointCoordinateSet = blockToGround->upd_CoordinateSet();
 
 		double angleRange[2]	= {-Pi/2,Pi/2};
 		double positionRange[2]	= {-10, 10};

@@ -65,14 +65,10 @@ protected:
 public:
 	// CONSTRUCTION
 	WeldJoint();
-	WeldJoint(const WeldJoint &aJoint);
 	// Convenience constructor
 	WeldJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
 					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, bool reverse=false);
 	virtual ~WeldJoint();
-
-	WeldJoint& operator=(const WeldJoint &aJoint);
-	void copyData(const WeldJoint &aJoint);
 
 	virtual int numCoordinates() const {return _numMobilities;};
 
@@ -84,9 +80,8 @@ public:
 protected:
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
-private:
-	void setNull();
-	void setupProperties();
+public:
+	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
 
 //=============================================================================
 };	// END of class WeldJoint

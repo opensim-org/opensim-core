@@ -59,8 +59,7 @@ BallJoint::BallJoint() :
 	Joint()
 	//_useEulerAngles(_useEulerAnglesProp.getValueBool())
 {
-	setNull();
-	setupProperties();
+	constructCoordinates();
 }
 //_____________________________________________________________________________
 /**
@@ -72,63 +71,14 @@ BallJoint::BallJoint(const std::string &name, OpenSim::Body& parent, Vec3 locati
 			body, locationInBody, orientationInBody, reverse)
 	//_useEulerAngles(_useEulerAnglesProp.getValueBool())
 {
-	setNull();
-	setupProperties();
+	constructCoordinates();
 	//_useEulerAngles = useEulerAngles;
-	_body->setJoint(*this);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aJoint BallJoint to be copied.
- */
-BallJoint::BallJoint(const BallJoint &aJoint) :
-   Joint(aJoint)
-   //_useEulerAngles(_useEulerAnglesProp.getValueBool())
-{
-	setNull();
-	setupProperties();
-	copyData(aJoint);
+	updBody().setJoint(*this);
 }
 
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-
-//_____________________________________________________________________________
-/**
- * Copy data members from one BallJoint to another.
- *
- * @param aJoint BallJoint to be copied.
- */
-void BallJoint::copyData(const BallJoint &aJoint)
-{
-	Joint::copyData(aJoint);
-	//_useEulerAngles = aJoint._useEulerAngles;
-}
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this BallJoint to their null values.
- */
-void BallJoint::setNull()
-{
-	constructCoordinates();
-}
-
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void BallJoint::setupProperties()
-{
-	//_useEulerAnglesProp.setName("use_euler_angles");
-	//_useEulerAnglesProp.setComment("Set flag to true to use Euler angles to parameterize rotations.");
-	//_useEulerAnglesProp.setValue(true);
-	//_propertySet.append(&_useEulerAnglesProp);
-}
 
 //_____________________________________________________________________________
 /**
@@ -146,19 +96,6 @@ void BallJoint::connectToModel(Model& aModel)
 //=============================================================================
 // OPERATORS
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-BallJoint& BallJoint::operator=(const BallJoint &aJoint)
-{
-	Joint::operator=(aJoint);
-	copyData(aJoint);
-	return(*this);
-}
-
 
 //=============================================================================
 // GET AND SET
@@ -185,13 +122,19 @@ void BallJoint::scale(const ScaleSet& aScaleSet)
 //_____________________________________________________________________________
 void BallJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
+	const SimTK::Vec3& orientation = get_orientation();
+	const SimTK::Vec3& location = get_location();
+
 	// CHILD TRANSFORM
-	Rotation rotation(BodyRotationSequence, _orientation[0],XAxis, _orientation[1],YAxis, _orientation[2],ZAxis);
-	SimTK::Transform childTransform(rotation,_location);
+	Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
+	SimTK::Transform childTransform(rotation,location);
+
+	const SimTK::Vec3& orientationInParent = get_orientation_in_parent();
+	const SimTK::Vec3& locationInParent = get_location_in_parent();
 
 	// PARENT TRANSFORM
-	Rotation parentRotation(BodyRotationSequence,_orientationInParent[0],XAxis,_orientationInParent[1],YAxis,_orientationInParent[2],ZAxis);
-	SimTK::Transform parentTransform(parentRotation, _locationInParent);
+	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
+	SimTK::Transform parentTransform(parentRotation, locationInParent);
 
 	// CREATE MOBILIZED BODY
 	/*if(_useEulerAngles){
@@ -202,11 +145,8 @@ void BallJoint::addToSystem(SimTK::MultibodySystem& system) const
 		setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
 	}
 	else{*/
-		MobilizedBody::Ball
-			simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(_parentBody)),
-				parentTransform,SimTK::Body::Rigid(_body->getMassProperties()),
-				childTransform);
-		setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
+	BallJoint* mutableThis = const_cast<BallJoint*>(this);
+	mutableThis->createMobilizedBody(parentTransform, childTransform);
 	//}
 
     // TODO: Joints require super class to be called last.
@@ -222,11 +162,16 @@ void BallJoint::initStateFromProperties(SimTK::State& s) const
     if (matter.getUseEulerAngles(s))
         return;
     int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
-    double xangle = _coordinateSet.get(zero).getDefaultValue();
-    double yangle = _coordinateSet.get(1).getDefaultValue();
-    double zangle = _coordinateSet.get(2).getDefaultValue();
+
+	const CoordinateSet& coordinateSet = get_CoordinateSet();
+
+	double xangle = coordinateSet.get(zero).getDefaultValue();
+    double yangle = coordinateSet.get(1).getDefaultValue();
+    double zangle = coordinateSet.get(2).getDefaultValue();
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
-    matter.getMobilizedBody(MobilizedBodyIndex(_body->getIndex())).setQToFitRotation(s, r);
+	
+	BallJoint* mutableThis = const_cast<BallJoint*>(this);
+    matter.getMobilizedBody(MobilizedBodyIndex(mutableThis->updBody().getIndex())).setQToFitRotation(s, r);
 }
 
 void BallJoint::setPropertiesFromState(const SimTK::State& state)
@@ -237,12 +182,25 @@ void BallJoint::setPropertiesFromState(const SimTK::State& state)
     const MultibodySystem&        system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-        Rotation r = matter.getMobilizedBody(MobilizedBodyIndex(_body->getIndex())).getBodyRotation(state);
+        Rotation r = matter.getMobilizedBody(MobilizedBodyIndex(updBody().getIndex())).getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
-        int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
-        _coordinateSet.get(zero).setDefaultValue(angles[0]);
-        _coordinateSet.get(1).setDefaultValue(angles[1]);
-        _coordinateSet.get(2).setDefaultValue(angles[2]);
+	
+		const CoordinateSet& coordinateSet = get_CoordinateSet();
+
+		int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
+        coordinateSet.get(zero).setDefaultValue(angles[0]);
+        coordinateSet.get(1).setDefaultValue(angles[1]);
+        coordinateSet.get(2).setDefaultValue(angles[2]);
     }
 }
 
+void BallJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform) {
+
+	// CREATE MOBILIZED BODY
+	MobilizedBody::Ball
+		simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(&updParentBody())),
+			parentTransform,SimTK::Body::Rigid(updBody().getMassProperties()),
+			childTransform);
+
+	setMobilizedBodyIndex(&updBody(), simtkBody.getMobilizedBodyIndex());
+}

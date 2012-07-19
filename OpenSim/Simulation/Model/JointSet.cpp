@@ -91,8 +91,8 @@ void JointSet::invokeAddToSystem(SimTK::MultibodySystem& system) const
     map<Body*, int> bodyMap;
     for (int i = 0; i < getSize(); i++)
     {
-        const Joint& joint = static_cast<const Joint&>(get(i));
-        bodyMap[&joint.getBody()] = i;
+        Joint& joint = get(i);
+        bodyMap[&joint.updBody()] = i;
     }
 	for (int i = 0; i < getSize(); i++){
 		if (getDebugLevel()>=2) cout << "Calling addToSystem for Joint " << get(i).getName() << " ..." << endl;
@@ -106,19 +106,18 @@ void JointSet::addToSystemForOneJoint(SimTK::MultibodySystem& system, int jointI
     if (hasProcessed[jointIndex])
         return;
     hasProcessed[jointIndex] = true;
-    const Joint& joint = static_cast<const Joint&>(get(jointIndex));
-    if (joint._parentBody != NULL)
-    {
-        // Make sure the parent joint is processed first.
+    Joint& joint = get(jointIndex);
 
-        map<Body*, int>::const_iterator parent = bodyMap.find(&joint.getParentBody());
-        if (parent != bodyMap.end())
-        {
-            int parentIndex = parent->second;
-            if (!hasProcessed[parentIndex])
-                addToSystemForOneJoint(system, parentIndex, bodyMap, hasProcessed);
-        }
+    // Make sure the parent joint is processed first.
+
+    map<Body*, int>::const_iterator parent = bodyMap.find(&joint.updParentBody());
+    if (parent != bodyMap.end())
+    {
+        int parentIndex = parent->second;
+        if (!hasProcessed[parentIndex])
+            addToSystemForOneJoint(system, parentIndex, bodyMap, hasProcessed);
     }
+
     static_cast<const Joint&>(get(jointIndex)).addToSystem(system);
 }
 

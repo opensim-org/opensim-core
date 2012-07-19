@@ -60,7 +60,6 @@ FreeJoint::FreeJoint() :
 	//_useEulerAngles(_useEulerAnglesProp.getValueBool())
 {
 	setNull();
-	setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -75,42 +74,14 @@ FreeJoint::FreeJoint() :
 	//_useEulerAngles(_useEulerAnglesProp.getValueBool())
 {
 	setNull();
-	setupProperties();
 	//_useEulerAngles = useEulerAngles;
-	_body->setJoint(*this);
+	updBody().setJoint(*this);
 	setName(name);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aJoint FreeJoint to be copied.
- */
-FreeJoint::FreeJoint(const FreeJoint &aJoint) :
-   Joint(aJoint)
-	//_useEulerAngles(_useEulerAnglesProp.getValueBool())
-{
-	setNull();
-	setupProperties();
-	copyData(aJoint);
 }
 
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-
-//_____________________________________________________________________________
-/**
- * Copy data members from one FreeJoint to another.
- *
- * @param aJoint FreeJoint to be copied.
- */
-void FreeJoint::copyData(const FreeJoint &aJoint)
-{
-	Joint::copyData(aJoint);
-	//_useEulerAngles = aJoint._useEulerAngles;
-}
 
 //_____________________________________________________________________________
 /**
@@ -121,38 +92,29 @@ void FreeJoint::setNull()
 	constructCoordinates();
 	// We know we have three rotations followed by three translations
 	// Replace default names _coord_? with more meaningful names
+
+	const CoordinateSet& coordinateSet = get_CoordinateSet();
+	
 	string dirStrings[] = {"x", "y", "z"};
 	for (int i=0; i< 3; i++){
-		string oldName = _coordinateSet.get(i).getName();
+		string oldName = coordinateSet.get(i).getName();
 		int pos=oldName.find("_coord_"); 
 		if (pos != string::npos){
 			oldName.replace(pos, 8, ""); 
-			_coordinateSet.get(i).setName(oldName+"_"+dirStrings[i]+"Rotation");
-			_coordinateSet.get(i).setMotionType(Coordinate::Rotational);
+			coordinateSet.get(i).setName(oldName+"_"+dirStrings[i]+"Rotation");
+			coordinateSet.get(i).setMotionType(Coordinate::Rotational);
 		}
 	}
 	for (int i=3; i< 6; i++){
-		string oldName = _coordinateSet.get(i).getName();
+		string oldName = coordinateSet.get(i).getName();
 		int pos=oldName.find("_coord_"); 
 		if (pos != string::npos){
 			oldName.replace(pos, 8, ""); 
-			_coordinateSet.get(i).setName(oldName+"_"+dirStrings[i-3]+"Translation");
-			_coordinateSet.get(i).setMotionType(Coordinate::Translational);
+			coordinateSet.get(i).setName(oldName+"_"+dirStrings[i-3]+"Translation");
+			coordinateSet.get(i).setMotionType(Coordinate::Translational);
 		}
 	}
 
-}
-
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void FreeJoint::setupProperties()
-{
-	//_useEulerAnglesProp.setName("use_euler_angles");
-	//_useEulerAnglesProp.setComment("Set flag to true to use Euler angles to parameterize rotations.");
-	//_useEulerAnglesProp.setValue(true);
-	//_propertySet.append(&_useEulerAnglesProp);
 }
 
 //_____________________________________________________________________________
@@ -165,25 +127,8 @@ void FreeJoint::setupProperties()
 void FreeJoint::connectToModel(Model& aModel)
 {
 	// Base class
-	Joint::connectToModel(aModel);
+	Super::connectToModel(aModel);
 }
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-FreeJoint& FreeJoint::operator=(const FreeJoint &aJoint)
-{
-	Joint::operator=(aJoint);
-	copyData(aJoint);
-	return(*this);
-}
-
 
 //=============================================================================
 // GET AND SET
@@ -209,13 +154,19 @@ void FreeJoint::scale(const ScaleSet& aScaleSet)
 //_____________________________________________________________________________
 void FreeJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
+	const SimTK::Vec3& orientation = get_orientation();
+	const SimTK::Vec3& location = get_location();
+
 	// CHILD TRANSFORM
-	Rotation rotation(BodyRotationSequence, _orientation[0],XAxis, _orientation[1],YAxis, _orientation[2],ZAxis);
-	SimTK::Transform childTransform(rotation,_location);
+	Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
+	SimTK::Transform childTransform(rotation, location);
+
+	const SimTK::Vec3& orientationInParent = get_orientation_in_parent();
+	const SimTK::Vec3& locationInParent = get_location_in_parent();
 
 	// PARENT TRANSFORM
-	Rotation parentRotation(BodyRotationSequence,_orientationInParent[0],XAxis,_orientationInParent[1],YAxis,_orientationInParent[2],ZAxis);
-	SimTK::Transform parentTransform(parentRotation, _locationInParent);
+	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
+	SimTK::Transform parentTransform(parentRotation, locationInParent);
 
 	SimTK::Transform noTransform(Rotation(), Vec3(0));
 
@@ -243,11 +194,8 @@ void FreeJoint::addToSystem(SimTK::MultibodySystem& system) const
 		}
 	}
 	else {*/
-		MobilizedBody::Free
-			simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(_parentBody)),
-			parentTransform, SimTK::Body::Rigid(_body->getMassProperties()), childTransform);
-
-		setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
+		FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
+		mutableThis->createMobilizedBody(parentTransform, childTransform);
 	//}
 
     // TODO: Joints require super class to be called last.
@@ -262,34 +210,52 @@ void FreeJoint::initStateFromProperties(SimTK::State& s) const
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (matter.getUseEulerAngles(s))
         return;
-    int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
-    double xangle = _coordinateSet.get(zero).getDefaultValue();
-    double yangle = _coordinateSet.get(1).getDefaultValue();
-    double zangle = _coordinateSet.get(2).getDefaultValue();
+	int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
+   
+	const CoordinateSet& coordinateSet = get_CoordinateSet();
+
+	double xangle = coordinateSet.get(zero).getDefaultValue();
+    double yangle = coordinateSet.get(1).getDefaultValue();
+    double zangle = coordinateSet.get(2).getDefaultValue();
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
-	Vec3 t( _coordinateSet.get(3).getDefaultValue(), 
-			_coordinateSet.get(4).getDefaultValue(), 
-			_coordinateSet.get(5).getDefaultValue());
-    matter.getMobilizedBody(MobilizedBodyIndex(_body->getIndex())).setQToFitTransform(s, Transform(r, t));
+	Vec3 t( coordinateSet.get(3).getDefaultValue(), 
+			coordinateSet.get(4).getDefaultValue(), 
+			coordinateSet.get(5).getDefaultValue());
+	
+	FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
+    matter.getMobilizedBody(MobilizedBodyIndex(mutableThis->updBody().getIndex())).setQToFitTransform(s, Transform(r, t));
 }
 
 void FreeJoint::setPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+	Super::setPropertiesFromState(state);
 
     // Override default behavior in case of quaternions.
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-        Rotation r = matter.getMobilizedBody(MobilizedBodyIndex(_body->getIndex())).getMobilizerTransform(state).R();
-		Vec3 t = matter.getMobilizedBody(MobilizedBodyIndex(_body->getIndex())).getMobilizerTransform(state).p();
+        Rotation r = matter.getMobilizedBody(MobilizedBodyIndex(updBody().getIndex())).getMobilizerTransform(state).R();
+		Vec3 t = matter.getMobilizedBody(MobilizedBodyIndex(updBody().getIndex())).getMobilizerTransform(state).p();
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
         int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
-        _coordinateSet.get(zero).setDefaultValue(angles[0]);
-        _coordinateSet.get(1).setDefaultValue(angles[1]);
-        _coordinateSet.get(2).setDefaultValue(angles[2]);
-		_coordinateSet.get(3).setDefaultValue(t[0]); 
-		_coordinateSet.get(4).setDefaultValue(t[1]); 
-		_coordinateSet.get(5).setDefaultValue(t[2]);
+		
+		const CoordinateSet& coordinateSet = get_CoordinateSet();
+ 
+		coordinateSet.get(zero).setDefaultValue(angles[0]);
+        coordinateSet.get(1).setDefaultValue(angles[1]);
+        coordinateSet.get(2).setDefaultValue(angles[2]);
+		coordinateSet.get(3).setDefaultValue(t[0]); 
+		coordinateSet.get(4).setDefaultValue(t[1]); 
+		coordinateSet.get(5).setDefaultValue(t[2]);
     }
+}
+
+void FreeJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform) {
+
+	// CREATE MOBILIZED BODY
+	MobilizedBody::Free
+		simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(&updParentBody())),
+		parentTransform, SimTK::Body::Rigid(updBody().getMassProperties()), childTransform);
+
+	setMobilizedBodyIndex(&updBody(), simtkBody.getMobilizedBodyIndex());
 }

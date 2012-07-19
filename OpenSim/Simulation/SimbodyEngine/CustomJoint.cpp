@@ -74,7 +74,7 @@ CustomJoint::CustomJoint(const std::string &name, OpenSim::Body& parent,
 	constructProperties();
 	set_SpatialTransform(aSpatialTransform);
 
-	_body->setJoint(*this);
+	updBody().setJoint(*this);
 	constructCoordinates();
 	updSpatialTransform().connectToJoint(*this);
 }
@@ -93,7 +93,7 @@ CustomJoint::CustomJoint(const std::string &name, OpenSim::Body& parent,
 {
 	constructProperties();
 
-	_body->setJoint(*this);
+	updBody().setJoint(*this);
 	constructCoordinates();
 	updSpatialTransform().connectToJoint(*this);
 }
@@ -132,7 +132,7 @@ void CustomJoint::connectToModel(Model& aModel)
 	for (int i=0; i<6; i++) {
         const TransformAxis& transform = getSpatialTransform()[i];
 		for (int j=0; j<transform.getCoordinateNames().size(); j++) {
-			Coordinate* c = &(getCoordinateSet().get(transform.getCoordinateNames()[j]));
+			Coordinate* c = &(upd_CoordinateSet().get(transform.getCoordinateNames()[j]));
 			// If the coordinate is not already in the array, add it.
 			if (coords.findIndex(c) == -1)
 				coords.append(c);
@@ -141,12 +141,12 @@ void CustomJoint::connectToModel(Model& aModel)
 	// Now remove all the coordinates from the set (without deleting),
 	// and add them back in in the right order.
 	bool currentOwnership = getCoordinateSet().getMemoryOwner();
-	getCoordinateSet().setMemoryOwner(false);
+	upd_CoordinateSet().setMemoryOwner(false);
 	for (int i=0; i<nc; i++)
-		getCoordinateSet().remove(0);
-	getCoordinateSet().setMemoryOwner(currentOwnership);
+		upd_CoordinateSet().remove(0);
+	upd_CoordinateSet().setMemoryOwner(currentOwnership);
 	for (int i=0; i<coords.getSize(); i++)
-		getCoordinateSet().append(coords[i]);
+		upd_CoordinateSet().append(coords[i]);
 }
 
 
@@ -186,11 +186,13 @@ void CustomJoint::scale(const ScaleSet& aScaleSet)
 
 void CustomJoint::constructCoordinates()
 {
+	CoordinateSet& coordinateSet = upd_CoordinateSet();
+
 	// In case we're making a copy, we need to restore "properties" from 
 	// _coordinateSet after we construct them anew
-	CoordinateSet savedCoordinates = _coordinateSet;
+	CoordinateSet savedCoordinates = coordinateSet;
 
-	_coordinateSet.setSize(0);
+	coordinateSet.setSize(0);
 
 	// Check how many coordinates are required
 	int ncoords = getSpatialTransform().getCoordinateNames().getSize();
@@ -213,7 +215,7 @@ void CustomJoint::constructCoordinates()
 			if (origCoord.getDefaultIsPrescribed())
 				coord->setPrescribedFunction(origCoord.getPrescribedFunction());
 		}
-		_coordinateSet.append(coord);
+		coordinateSet.append(coord);
 	}
 }
 
@@ -223,26 +225,36 @@ void CustomJoint::constructCoordinates()
 //_____________________________________________________________________________
 void CustomJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
+	const SimTK::Vec3& orientation = getProperty_orientation().getValue();
+	const SimTK::Vec3& location = getProperty_location().getValue();
+
     // CHILD TRANSFORM
-	Rotation rotation(BodyRotationSequence, _orientation[0],XAxis, _orientation[1],YAxis, _orientation[2],ZAxis);
-	SimTK::Transform childTransform(rotation,_location);
+	Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
+	SimTK::Transform childTransform(rotation, location);
+
+	const SimTK::Vec3& orientationInParent = getProperty_orientation_in_parent().getValue();
+	const SimTK::Vec3& locationInParent = getProperty_location_in_parent().getValue();
 
 	// PARENT TRANSFORM
-	Rotation parentRotation(BodyRotationSequence,_orientationInParent[0],XAxis,_orientationInParent[1],YAxis,_orientationInParent[2],ZAxis);
-	SimTK::Transform parentTransform(parentRotation, _locationInParent);
+	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
+	SimTK::Transform parentTransform(parentRotation, locationInParent);
 
+	const CoordinateSet& coordinateSet = get_CoordinateSet();
 	// Some initializations
-	int numMobilities = _coordinateSet.getSize();  // Note- should check that all coordinates are used.
+	int numMobilities = coordinateSet.getSize();  // Note- should check that all coordinates are used.
 	std::vector<std::vector<int> > coordinateIndices = 
         getSpatialTransform().getCoordinateIndices();
 	std::vector<const SimTK::Function*> functions = 
         getSpatialTransform().getFunctions();
 	std::vector<Vec3> axes = getSpatialTransform().getAxes();
 
-	SimTK::MobilizedBodyIndex parentIndex = getMobilizedBodyIndex(_parentBody);
+	// Workaround for new API with const functions
+	CustomJoint* mutableThis = const_cast<CustomJoint*>(this);
+
+	SimTK::MobilizedBodyIndex parentIndex = getMobilizedBodyIndex(&(mutableThis->updParentBody()));
 	if (!parentIndex.isValid())
 		throw(Exception("CustomJoint " + getName() + " has invalid parent body "
-                        +_parentBody->getName()));
+                        +mutableThis->updParentBody().getName()));
 	int nu = numMobilities;
 	assert(nu > 0);
     assert(nu <= 6);
@@ -252,10 +264,10 @@ void CustomJoint::addToSystem(SimTK::MultibodySystem& system) const
 	// CREATE MOBILIZED BODY
 	MobilizedBody::FunctionBased
 		simtkBody(system.updMatterSubsystem().updMobilizedBody(parentIndex),
-			parentTransform,SimTK::Body::Rigid(_body->getMassProperties()),
+			parentTransform,SimTK::Body::Rigid(mutableThis->updBody().getMassProperties()),
 			childTransform,numMobilities,functions,coordinateIndices,axes, 
             (getReverse() ? MobilizedBody::Reverse : MobilizedBody::Forward));
-	setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
+	setMobilizedBodyIndex(&mutableThis->updBody(), simtkBody.getMobilizedBodyIndex());
 
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);
@@ -374,16 +386,18 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
     // Delegate to superclass now.
 	Super::updateFromXMLNode(aNode, versionNumber);
 
+	const CoordinateSet& coordinateSet = get_CoordinateSet();
+
 	// Fix coordinate type post deserialization
 	// Fix coordinate type post deserialization
-	for (int i=0; i<_coordinateSet.getSize(); i++){
-		OpenSim::Coordinate& nextCoord=_coordinateSet.get(i);
+	for (int i=0; i<coordinateSet.getSize(); i++){
+		OpenSim::Coordinate& nextCoord = coordinateSet.get(i);
 		// Find TransformAxis for the coordinate and use it to set Coordinate's motionType
 		for(int axisIndex=0; axisIndex<6; axisIndex++){
 			const TransformAxis& nextAxis = getSpatialTransform()[axisIndex];
 			const Property<std::string>& coordNames = nextAxis.getCoordinateNames();
 			if (coordNames.findIndex(nextCoord.getName())!=-1){
-				_coordinateSet.get(i).setMotionType((axisIndex>2)? 
+				coordinateSet.get(i).setMotionType((axisIndex>2)? 
 						Coordinate::Translational : Coordinate::Rotational);
 				break;
 			}
