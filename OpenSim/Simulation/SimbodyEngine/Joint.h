@@ -218,9 +218,6 @@ public:
 	* @param aScaleSet Set of XYZ scale factors for the bodies.
 	*/
 	virtual void scale(const ScaleSet& aScaleSet);
-
-	void updateName(const std::string &aName);
-
     // ModelComponent interface.
 	
 	/**
