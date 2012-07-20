@@ -61,6 +61,18 @@ LinearFunction::LinearFunction() :
 
 //_____________________________________________________________________________
 /**
+ * Construct by defining the slope and intercept
+ */
+LinearFunction::LinearFunction(double slope, double intercept) :
+    _coefficients(_coefficientsProp.getValueDblArray())
+{   
+    setNull();
+    setupProperties();
+    setSlope(slope);
+    setIntercept(intercept);
+}
+//_____________________________________________________________________________
+/**
  */
 LinearFunction::LinearFunction(Array<double> coefficients) :
 	_coefficients(_coefficientsProp.getValueDblArray())

@@ -69,7 +69,9 @@ public:
 	//--------------------------------------------------------------------------
 	LinearFunction();
 	LinearFunction(Array<double> coefficients);
+    LinearFunction(double slope, double intercept);
 	LinearFunction(const LinearFunction &aSpline);
+    
 	virtual ~LinearFunction();
 
 private:
@@ -91,9 +93,18 @@ public:
 public:
 	/** Set Coefficients for slope and intercept */
 	void setCoefficients(Array<double> coefficients);
+    /** Set slope */
+    void setSlope(double slope) {_coefficients[0] = slope; }
+    /** Set intercept */
+    void setIntercept(double intercept) {_coefficients[1] = intercept; }
 	/** Get Coefficients */
 	const Array<double> getCoefficients() const
 	{ return _coefficients; }
+    /** Get Slope */
+    double getSlope() { return _coefficients[0]; }
+    /** Get Intercept */ 
+    double getIntercept() { return _coefficients[1]; }
+    
 
 	//--------------------------------------------------------------------------
 	// EVALUATION
