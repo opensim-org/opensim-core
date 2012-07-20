@@ -149,6 +149,10 @@ public:
 	const GeometrySet& getGeometrySet() const { 
 		return (_geometrySet); 
 	};
+
+    GeometrySet& updGeometrySet() {
+        return (_geometrySet);
+    };
 	// TRANSFORM
 	const SimTK::Transform& getTransform() const {
 		return _transform;
