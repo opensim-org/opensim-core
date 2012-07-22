@@ -59,6 +59,7 @@
 #include "Model/PrescribedForce.h"
 #include "Model/PointToPointSpring.h"
 #include "Model/BushingForce.h"
+#include "Model/FunctionBasedBushingForce.h"
 #include "Model/ExternalLoads.h"
 
 #include "Manager/Manager.h"
