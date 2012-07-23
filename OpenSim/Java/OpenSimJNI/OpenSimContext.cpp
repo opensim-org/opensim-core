@@ -113,6 +113,8 @@ bool OpenSimContext::isConstrained(const Coordinate& coord) const {
 
 // Muscles
 double OpenSimContext::getActivation(Muscle& m) {
+  // realize to dynamics as required by new muscle models before asking for activation
+  _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Dynamics);
   return m.getActivation(*_configState);
 }
 
