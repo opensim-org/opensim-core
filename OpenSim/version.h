@@ -31,6 +31,18 @@
 #if defined(__cplusplus) || defined(SWIG)
 #include <string>
 #include <cstdio>
+
+#define STR(var) #var
+#define MAKE_STRING(a) STR(a)
+#define GET_SYSTEM_INFO \
+    MAKE_STRING(OSIM_SYS_INFO)
+
+#define GET_COMPILER_INFO \
+    MAKE_STRING(OSIM_COMPILER_INFO)
+
+#define GET_OS_NAME \
+    MAKE_STRING(OSIM_OS_NAME)
+
 namespace OpenSim {
 #endif
 
@@ -46,6 +58,53 @@ namespace OpenSim {
 	std::string GetVersion() {
 		return OpenSimVersion;
 	}
+
+	std::string GetOSInfoVerbose() {
+		const char * str = GET_SYSTEM_INFO;
+		return str;
+	}
+	std::string GetOSInfo() {
+		const char * str = GET_OS_NAME;
+		return str;
+	}
+	std::string GetCompilerVersion() {
+		std::string os = GetOSInfo();
+		std::string str;
+
+		if( 0 == os.compare("Windows")) {
+			switch( atoi(GET_COMPILER_INFO) ) {
+				case 1700:
+					str = "Visual Studio 2011";
+					break;
+				case 1600:
+					str = "Visual Studio 2010";
+					break;
+				case 1500:
+					str = "Visual Studio 2008";
+					break;
+				case 1400:
+					str = "Visual Studio 2005";
+					break;
+				case 1310:
+					str = "Visual Studio 2003";
+					break;
+				case 1300:
+					str = "Visual Studio 2002";
+					break;
+			}
+		} else if( 0 == os.compare("Darwin")) {
+			str = "Mac OS X :";
+			str += GET_COMPILER_INFO;
+		} else if( 0 == os.compare("Linux")){
+			str = "Linux :";
+			str = GET_COMPILER_INFO;
+		} else {
+			str = GET_COMPILER_INFO;
+		}
+	
+		return str;
+	}
+
 }
 #endif
 
