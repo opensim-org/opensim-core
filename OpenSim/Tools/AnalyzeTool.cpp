@@ -438,10 +438,10 @@ void AnalyzeTool::fixMuscleStatesToValidRange(Storage& aStore, const Model& aMod
             string actuatorName = currentLabel.substr(0, idx);
             if (muscles.contains(actuatorName)){
                 const Muscle& musc = muscles.get(actuatorName);
-                const Thelen2003Muscle& thelenMuscle = dynamic_cast<const Thelen2003Muscle&>(musc);
-                if (currentActivation < thelenMuscle.getActivationMinimumValue()){
+                const Thelen2003Muscle* thelenMuscle = dynamic_cast<const Thelen2003Muscle *>(&musc);
+                if (thelenMuscle!= NULL && currentActivation < thelenMuscle->getActivationMinimumValue()){
                     needFixing = true;
-                    data[i-1] = thelenMuscle.getActivationMinimumValue();
+                    data[i-1] = thelenMuscle->getActivationMinimumValue();
                     aStore.setDataColumnToFixedValue(currentLabel, data[i-1]);
                 }
             }
