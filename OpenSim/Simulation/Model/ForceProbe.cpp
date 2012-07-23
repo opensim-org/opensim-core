@@ -233,6 +233,19 @@ SimTK::Vector ForceProbe::computeProbeInputs(const State& s) const
 
 //_____________________________________________________________________________
 /** 
+ * Returns the number of probe inputs in the vector returned by computeProbeInputs().
+ */
+int ForceProbe::getNumProbeInputs() const
+{
+    if (getSumForcesTogether())
+        return 1;
+    else
+        return getForceNames().size();
+}
+
+
+//_____________________________________________________________________________
+/** 
  * Provide labels for the probe values being reported.
  */
 Array<string> ForceProbe::getProbeLabels() const 

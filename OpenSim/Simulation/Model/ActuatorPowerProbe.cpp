@@ -209,6 +209,19 @@ SimTK::Vector ActuatorPowerProbe::computeProbeInputs(const State& s) const
 
 //_____________________________________________________________________________
 /** 
+ * Returns the number of probe inputs in the vector returned by computeProbeInputs().
+ */
+int ActuatorPowerProbe::getNumProbeInputs() const
+{
+    if (getSumPowersTogether())
+        return 1;
+    else
+        return getActuatorNames().size();
+}
+
+
+//_____________________________________________________________________________
+/** 
  * Provide labels for the probe values being reported.
  */
 Array<string> ActuatorPowerProbe::getProbeLabels() const 

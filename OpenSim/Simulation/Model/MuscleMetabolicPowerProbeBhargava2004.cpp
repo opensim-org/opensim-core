@@ -545,6 +545,16 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
 
 //_____________________________________________________________________________
 /** 
+ * Returns the number of probe inputs in the vector returned by computeProbeInputs().
+ */
+int MuscleMetabolicPowerProbeBhargava2004::getNumProbeInputs() const
+{
+    return 1;
+}
+
+
+//_____________________________________________________________________________
+/** 
  * Provide labels for the probe values being reported.
  */
 Array<string> MuscleMetabolicPowerProbeBhargava2004::getProbeLabels() const 

@@ -515,6 +515,16 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
 
 //_____________________________________________________________________________
 /** 
+ * Returns the number of probe inputs in the vector returned by computeProbeInputs().
+ */
+int MuscleMetabolicPowerProbeUmberger2003::getNumProbeInputs() const
+{
+    return 1;
+}
+
+
+//_____________________________________________________________________________
+/** 
  * Provide labels for the probe values being reported.
  */
 Array<string> MuscleMetabolicPowerProbeUmberger2003::getProbeLabels() const 

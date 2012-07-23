@@ -151,6 +151,16 @@ SimTK::Vector MuscleActiveFiberPowerProbe::computeProbeInputs(const State& s) co
 
 //_____________________________________________________________________________
 /** 
+ * Returns the number of probe inputs in the vector returned by computeProbeInputs().
+ */
+int MuscleActiveFiberPowerProbe::getNumProbeInputs() const
+{
+    return 1;
+}
+
+
+//_____________________________________________________________________________
+/** 
  * Provide labels for the probe values being reported.
  */
 Array<string> MuscleActiveFiberPowerProbe::getProbeLabels() const 

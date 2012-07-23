@@ -89,6 +89,9 @@ public:
     /** Compute the Actuator power upon which the Probe operation will be based. */
     SimTK::Vector computeProbeInputs(const SimTK::State& state) const OVERRIDE_11;
 
+    /** Returns the number of probe inputs in the vector returned by computeProbeInputs(). */
+    int getNumProbeInputs() const OVERRIDE_11;
+
     /** Returns the column labels of the probe values for reporting.  */
     virtual OpenSim::Array<std::string> getProbeLabels() const OVERRIDE_11;
 

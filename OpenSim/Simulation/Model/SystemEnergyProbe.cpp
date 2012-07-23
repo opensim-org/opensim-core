@@ -144,6 +144,16 @@ SimTK::Vector SystemEnergyProbe::computeProbeInputs(const State& s) const
 
 //_____________________________________________________________________________
 /** 
+ * Returns the number of probe inputs in the vector returned by computeProbeInputs().
+ */
+int SystemEnergyProbe::getNumProbeInputs() const
+{
+    return 1;
+}
+
+
+//_____________________________________________________________________________
+/** 
  * Provide labels for the probe values being reported.
  */
 Array<string> SystemEnergyProbe::getProbeLabels() const 

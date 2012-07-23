@@ -972,6 +972,8 @@ int main()
             stringstream myError;
             myError << "Initial condition[" << i << "] for vector integration is not being correctly applied." << endl;
             ASSERT_EQUAL(testRealInitConditions(i), initCondVec(i), 1e-4, __FILE__, __LINE__, myError.str());
+            //if (testRealInitConditions(i) != initCondVec(i))
+            //    cout << "WARNING: Initial condition[" << i << "] for vector integration is not being correctly applied.\nThis is actually an error, but I have made it into a warning for now so that the test passes..." << endl;
         }
 
         // Test system energy - work using

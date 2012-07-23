@@ -142,20 +142,15 @@ void Probe::addToSystem(MultibodySystem& system) const
     // references to the allocated System resources.
     Probe* mutableThis = const_cast<Probe*>(this);
 
-    // Create a Measure of the value to be probed (operand).
-    // NOTE: NEED TO HANDLE THIS FOR INTEGRATION AS A SPECIAL CASE FOR NOW...
-    // In the case of using the 'Integrate' operation, we need to create
-    // an array of scalar ProbeMeasures (this will be fixed by Sherm soon
-    // because currently, the Integrate SimTK::Measure can only reliably
-    // operate on scalar values).
-    ProbeMeasure<SimTK::Vector> beforeOperationValue(system, *this); 
-    SimTK::Array_<ProbeMeasure<double> > beforeOperationValueIntegrate;
+    // Create a <double> Measure of the value to be probed (operand).
+    // For now, this is scalarized, i.e. a separate Measure is created
+    // for each probe input element in the Vector.
+    //ProbeMeasure<SimTK::Vector> beforeOperationValueVector(system, *this); 
+    SimTK::Array_<ProbeMeasure<double> > beforeOperationValues;
 
-    if (getOperation() == "integrate") { 
-        for (int i=0; i<getInitialConditions().size(); ++i) {
-            ProbeMeasure<double> tmpPM(system, *this); 
-            beforeOperationValueIntegrate.push_back(tmpPM);
-        }
+    for (int i=0; i<getNumProbeInputs(); ++i) {
+        ProbeMeasure<double> tmpPM(system, *this); 
+        beforeOperationValues.push_back(tmpPM);
     }
     //Measure::Constant beforeOperationValue(system, 1);		// debug
 
@@ -165,8 +160,12 @@ void Probe::addToSystem(MultibodySystem& system) const
     // ----------------------------------------------------------------
 
     // Return the original probe value (no operation)
-    if (getOperation() == "value")
-        mutableThis->afterOperationValue = Measure_<SimTK::Vector>::Scale(system, getScaleFactor(), beforeOperationValue);
+    if (getOperation() == "value") {
+        for (int i=0; i<getNumProbeInputs(); ++i) {
+            mutableThis->afterOperationValues = Measure::Scale(system, getScaleFactor(), 
+                beforeOperationValues[i]);   
+        }
+    }
 
     // Integrate the probe value
     // -----------------------------
@@ -184,33 +183,42 @@ void Probe::addToSystem(MultibodySystem& system) const
                 +numData+") and size of initial conditions vector ("+numIC+").";
             throw (Exception(errorMessage.c_str()));
         }
-        for (int i=0; i<getInitialConditions().size(); ++i) {
+        for (int i=0; i<getNumProbeInputs(); ++i) {
             Measure::Constant initCond(system, getInitialConditions()(i));		// initial conditions
-            mutableThis->afterOperationValueIntegrate = Measure::Scale(system, getScaleFactor(), 
-                Measure::Integrate(system, beforeOperationValueIntegrate[i], initCond));
+            mutableThis->afterOperationValues = Measure::Scale(system, getScaleFactor(), 
+                Measure::Integrate(system, beforeOperationValues[i], initCond));
         }
     }
 
 
     // Differentiate the probe value
     // -----------------------------
-    else if (getOperation() == "differentiate")
-        mutableThis->afterOperationValue = Measure_<SimTK::Vector>::Scale(system, getScaleFactor(), 
-        Measure_<SimTK::Vector>::Differentiate(system, beforeOperationValue));
-
+    else if (getOperation() == "differentiate") {
+        for (int i=0; i<getNumProbeInputs(); ++i) {
+            mutableThis->afterOperationValues = Measure::Scale(system, getScaleFactor(), 
+                Measure::Differentiate(system, beforeOperationValues[i]));
+        }
+    }
 
     // Get the minimum of the probe value (Sherm to implement)
     // ----------------------------------
-    //else if (getOperation() == "minimum")
-    //	mutableThis->afterOperationValue = Measure_<SimTK::Vector>::Scale(system, getScaleFactor(), 
-    //Measure_<SimTK::Vector>::Minimum(system, beforeOperationValue));
+    //else if (getOperation() == "minimum") {
+    //    for (int i=0; i<getNumProbeInputs(); ++i) {
+    //        mutableThis->afterOperationValues = Measure::Scale(system, getScaleFactor(), 
+    //            Measure::Minimum(system, beforeOperationValues[i]));
+    //    }
+    //}
+    	
 
 
     // Get the maximum of the probe value (Sherm to implement)
     // ----------------------------------
-    //else if (getOperation() == "maximum")
-    //	mutableThis->afterOperationValue = Measure_<SimTK::Vector>::Scale(system, getScaleFactor(), 
-    //Measure_<SimTK::Vector>::Maximum(system, beforeOperationValue));
+    //else if (getOperation() == "maximum") {
+    //    for (int i=0; i<getNumProbeInputs(); ++i) {
+    //        mutableThis->afterOperationValues = Measure::Scale(system, getScaleFactor(), 
+    //            Measure::Maximum(system, beforeOperationValues[i]));
+    //    }
+    //}
 
 
     // Throw exception (invalid operation)
@@ -320,21 +328,20 @@ void Probe::setScaleFactor(double scaling_factor)
  */
 SimTK::Vector Probe::getProbeOutputs(const State& s) const 
 {
-    // NOTE: NEED TO HANDLE THIS FOR INTEGRATION AS A SPECIAL CASE FOR NOW...
-    // In the case of using the 'Integrate' operation, we need to merge
-    // the scalar outputs back into a SimTK::Vector (this will be fixed by Sherm soon
-    // because currently, the Integrate SimTK::Measure can only reliably
-    // operate on scalar values).
-    if (getOperation() == "integrate") {
-        SimTK::Vector output(getInitialConditions().size());
-        for (int i=0; i<getInitialConditions().size(); ++i) {
-            output(i) = afterOperationValueIntegrate.getValue(s);
-        }
-        return output;
+    // For now, this is scalarized, i.e. compile the result of the separate
+    // Measure for each scalar element of the probe input into a SimTK::Vector
+    // of outputs.
+    SimTK::Vector output(getNumProbeInputs());
+    for (int i=0; i<getNumProbeInputs(); ++i) {
+        if (getOperation() == "integrate")
+            output(i) = afterOperationValues.getValue(s) + getInitialConditions()(i);  // temp fix for now because init condition is always overridden to zero.
+        else
+        output(i) = afterOperationValues.getValue(s);
     }
-    else
-        return afterOperationValue.getValue(s);         // need to return a Vector of the same size as the input (computeProbeInputs(s))
+    return output;
 
+
+    //return afterOperationValueVector.getValue(s);         // need to return a Vector of the same size as the input (computeProbeInputs(s))
 }
 
 

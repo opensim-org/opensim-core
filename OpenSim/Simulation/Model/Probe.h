@@ -74,8 +74,9 @@ class Model;
  * Note that all queries, operations, and scaling are performed by SimTK::Measures. 
  * Note also that to define a new child Probe class, two methods which are declared
  * as pure virtual in this Probe abstract class need to be overridden:\n
- * - computeProbeInputs()  ---   defines the input probe values (i.e., model queries).
- * - getProbeLabels()      ---   defines the labels that correspond to each probe value.
+ * - computeProbeInputs()  ---   returns the input probe values (i.e., model queries).
+ * - getNumProbeInputs()   ---   returns the size of the vector of input probe values (i.e., model queries).
+ * - getProbeLabels()      ---   returns the labels that correspond to each probe value.
  *
  * <B> Available probe operations: </B>
  * - 'value' (default): returns the probe input value.
@@ -174,6 +175,14 @@ public:
     @param  state   System state from which value is computed.  
     @return         The SimTK::Vector of Probe input values. **/
     virtual SimTK::Vector computeProbeInputs(const SimTK::State& state) const=0;
+
+
+    /**Returns the number of probe inputs in the vector returned by computeProbeInputs().
+       This method must be overridden for each subclass Probe.
+
+    @param  state   System state from which value is computed.  
+    @return         The SimTK::Vector of Probe input values. **/
+    virtual int getNumProbeInputs() const=0;
 #endif
 
     /** Returns the values of the probe after the operation has been performed.
@@ -200,8 +209,8 @@ private:
 //=============================================================================
 // DATA
 //=============================================================================
-    SimTK::Measure_<SimTK::Vector> afterOperationValue;
-    SimTK::Measure afterOperationValueIntegrate;
+    //SimTK::Measure_<SimTK::Vector> afterOperationValueVector;
+    SimTK::Measure afterOperationValues;
 
 
 //=============================================================================
