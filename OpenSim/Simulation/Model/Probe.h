@@ -210,7 +210,7 @@ private:
 // DATA
 //=============================================================================
     //SimTK::Measure_<SimTK::Vector> afterOperationValueVector;
-    SimTK::Measure afterOperationValues;
+    SimTK::Array_<SimTK::Measure> afterOperationValues;
 
 
 //=============================================================================
