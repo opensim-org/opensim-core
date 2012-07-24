@@ -366,8 +366,8 @@ if(BUILD_VERSIONED_LIBRARIES)
     mark_as_advanced(Simbody_LIBRARIES_VN Simbody_STATIC_LIBRARIES_VN)
 endif()
 
-# Leave Simbody_ROOT_DIR visible
 mark_as_advanced(
+	Simbody_ROOT_DIR
     Simbody_INCLUDE_DIR
     Simbody_BIN_DIR
     Simbody_LIB_DIR
