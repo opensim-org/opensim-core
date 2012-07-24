@@ -100,8 +100,6 @@ FunctionBasedBushingForce::FunctionBasedBushingForce(const string&    body1Name,
     set_f_xx_function( LinearFunction( transStiffness[0], 0.0) );
     set_f_yy_function( LinearFunction( transStiffness[1], 0.0) );
     set_f_zz_function( LinearFunction( transStiffness[2], 0.0) );
-	set_rotational_stiffness(rotStiffness);
-	set_translational_stiffness(transStiffness);
 	set_rotational_damping(rotDamping);
 	set_translational_damping(transDamping);
 }
@@ -136,15 +134,13 @@ void FunctionBasedBushingForce::constructProperties()
     constructProperty_f_xx_function( zeroFunc );
     constructProperty_f_yy_function( zeroFunc );
     constructProperty_f_zz_function( zeroFunc );
-    constructProperty_moment_visual_scale( 1.0 );
-    constructProperty_force_visual_scale( 1.0 );
+    
     constructProperty_rotational_damping(Vec3(0));
 	constructProperty_translational_damping(Vec3(0));
-
-    // TO Do:  delete these stiffness properties
-	constructProperty_rotational_stiffness(Vec3(0));
-	constructProperty_translational_stiffness(Vec3(0));
 	
+    constructProperty_moment_visual_scale( 1.0 );
+    constructProperty_force_visual_scale( 1.0 );
+    constructProperty_visual_aspect_ratio(1.0);
 }
 
 //_____________________________________________________________________________
@@ -579,22 +575,13 @@ void FunctionBasedBushingForce::generateDecorations
     {
         // invoke parent class method
         Super::generateDecorations(fixed,hints,state,geometryArray); 
-        
-        // draw function based bushing stuff
-
-        // TO DO:  come up with a good way to scale the force and moment
-        /*
-        const double defaultLen = 1.0; // default length of axis line
-        const double thickness = 2; // thickness of axis line
-        const double scaleAx = 0.2; // scale factor on geometry
-        const double scaleMoments = 1.0;
-        const double scaleForces = 0.05;
-        double axLen = scaleAx*defaultLen;
-        */
-        
+        // the frame on body 1 will be red
         SimTK::Vec3 frame1color(1.0,0.0,0.0);
+        // the frame on body 2 will be blue
         SimTK::Vec3 frame2color(0.0,0.5,1.0);
+        // the moment on body 2 will be yellow
         SimTK::Vec3 moment2color(1.0,1.0,0.0);
+        // the force on body 2 will be green
         SimTK::Vec3 force2color(0.0,1.0,0.0);
 
         // create frames to be fixed on body 1 and body 2
@@ -614,6 +601,8 @@ void FunctionBasedBushingForce::generateDecorations
         geometryArray.push_back(body1Frame);
         geometryArray.push_back(body2Frame);
 
+
+        // if the model is moving, calculate and draw the bushing forces.
         if(!fixed){
 
             SpatialVec F_GM( Vec3(0.0),Vec3(0.0) );
@@ -632,13 +621,11 @@ void FunctionBasedBushingForce::generateDecorations
                 _model->getBodySet().get(get_body_2()), p_b2M_b2, p_GM_G);
 
             // Add moment on body2 as line vector starting at bushing location
-            //SimTK::Real m_thickness(10*get_moment_visual_scale()*F_GM[0].norm());
-            //SimTK::DecorativeLine body2Moment(p_GM_G, p_GM_G + get_moment_visual_scale()*F_GM[0]);
             SimTK::Vec3 scaled_M_GM(get_moment_visual_scale()*F_GM[0]);
             SimTK::Real m_length(scaled_M_GM.norm());
-            SimTK::Real m_radius(m_length/20.0);
+            SimTK::Real m_radius(m_length/get_visual_aspect_ratio()/2.0);
             SimTK::Transform   X_m2cylinder( SimTK::Rotation( SimTK::UnitVec3(scaled_M_GM), SimTK::YAxis), p_GM_G + scaled_M_GM/2.0);
-            SimTK::DecorativeCylinder body2Moment(m_radius, m_length/2.0);// p_GM_G, p_GM_G + get_force_visual_scale()*F_GM[1]);
+            SimTK::DecorativeCylinder body2Moment(m_radius, m_length/2.0);
             body2Moment.setTransform(X_m2cylinder);
             body2Moment.setColor(moment2color);
             geometryArray.push_back(body2Moment);
@@ -646,17 +633,14 @@ void FunctionBasedBushingForce::generateDecorations
             // Add force on body2 as line vector starting at bushing location
             SimTK::Vec3 scaled_F_GM(get_force_visual_scale()*F_GM[1]);
             SimTK::Real f_length(scaled_F_GM.norm());
-            SimTK::Real f_radius(f_length/20.0);
+            SimTK::Real f_radius(f_length/get_visual_aspect_ratio()/2.0);
             SimTK::Transform   X_f2cylinder( SimTK::Rotation( SimTK::UnitVec3(scaled_F_GM), SimTK::YAxis), p_GM_G + scaled_F_GM/2.0);
-            SimTK::DecorativeCylinder body2Force(f_radius, f_length/2.0);// p_GM_G, p_GM_G + get_force_visual_scale()*F_GM[1]);
-            //body2Moment.setLineThickness(f_thickness);
-            //body2Force.setLineThickness(3);
+            SimTK::DecorativeCylinder body2Force(f_radius, f_length/2.0);
             body2Force.setTransform(X_f2cylinder);
             body2Force.setColor(force2color);
             
             geometryArray.push_back(body2Force);
 
-            //std::cout << "moment thickness " << m_thickness << ", force thickness " << f_thickness << std::endl;
         }
 
     }

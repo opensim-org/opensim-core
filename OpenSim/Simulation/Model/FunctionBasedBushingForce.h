@@ -89,16 +89,21 @@ public:
         "Function defining the contribution of y deflection to the force in the y direction.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(f_zz_function, Function,
         "Function defining the contribution of z deflection to the force in the z direction.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(visual_aspect_ratio, double,
+        "Scalar number signifying the ratio of length/diameter used to display the force and "
+        "moment vectors.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(moment_visual_scale, double,
         "Value multiplying the bushing moments before displaying the moment vector");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(force_visual_scale, double,
         "Value multiplying the bushing forces before displaying the force vector");
     // To do:  Delete these stiffness properties
     //--------------------------------------------------------
+    /*
 	OpenSim_DECLARE_PROPERTY(rotational_stiffness, SimTK::Vec3,
 		"Stiffness parameters resisting relative rotation.");
 	OpenSim_DECLARE_PROPERTY(translational_stiffness, SimTK::Vec3,
 		"Stiffness parameters resisting relative translation.");
+    */
     //-------------------------------------------------------
 	OpenSim_DECLARE_PROPERTY(rotational_damping, SimTK::Vec3,
 		"Damping parameters resisting relative angular velocity.");
@@ -163,8 +168,15 @@ public:
     body 2. **/
 	void setBody2BushingLocation(const SimTK::Vec3& location, 
                                  const SimTK::Vec3& orientation=SimTK::Vec3(0));
-    void setMomentVisualScale(double scale) {set_moment_visual_scale(scale);}
+    /** Set the value used to scale the bushing moment on body2 when drawing it to screen.  
+        A moment of magnitude |M| will be drawn on screen with a length of (|M|*scale).  **/
+    void setMomentVisualScale(double scale) {set_moment_visual_scale(scale);};
+    /** Set the value used to scale the bushing force on body2 when drawing it to screen.  
+        A force of magnitude |F| will be drawn on screen with a length of (|F|*scale).  **/
     void setForceVisualScale(double scale) {set_force_visual_scale(scale);}
+    /** Set the aspect ratio used to control the thickness of the bushing force and moment
+        in drawn in the visualizer.  ratio = length/diameter.*/
+    void setVisualAspectRatio(double ratio) {set_visual_aspect_ratio(ratio);}
 	//--------------------------------------------------------------------------
 	// COMPUTATION
 	//--------------------------------------------------------------------------
