@@ -50,7 +50,7 @@
  * (i.e. larger transition regions).
  *
  * Damping factor is also phased in through the transiton region from 0 to the
- * to the value provided.
+ * value provided.
  *
  * Limiting force is guaranteed to be zero within the upper and lower limits.
  *
