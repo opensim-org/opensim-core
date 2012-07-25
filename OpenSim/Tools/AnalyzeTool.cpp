@@ -16,10 +16,9 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
-#include <OpenSim/Analyses/MuscleAnalysisV1.h> //MM
+
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
-//#include <OpenSim/Analyses/MomentArmAnalysis.h>
 
 using namespace OpenSim;
 using namespace std;

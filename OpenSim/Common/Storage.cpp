@@ -2854,9 +2854,9 @@ void Storage::addToRdStorage(Storage& rStorage, double aStartTime, double aEndTi
 	double time, stateTime;
 
 	/* Loop through the rows in rStorage from aStartTime to aEndTime,
-	 * looking for a match (by time) in the rows of SimmMotionData.
-	 * If you find a match, add the columns in the SimmMotionData
-	 * to the end of the state vector in the Storage. If you
+	 * looking for a match (by time) in the rows of Storage.
+	 * If you find a match, add the columns in the Storage
+	 * to the end of the state vector in the rStorage. If you
 	 * don't find one, it's a fatal error so throw an exception.
 	 * Don't add a column if its name is 'unassigned'.
 	 */

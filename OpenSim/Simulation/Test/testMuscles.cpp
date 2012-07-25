@@ -34,7 +34,6 @@
 //      1. PathActuator (Base of Muscle, is controlled tension along a GeometryPath)
 //		2. RigidTendonMuscle (Stateless muscle with user-defined fiber f-l, f-v splines)
 //      3. Thelen2003Muscle_Deprecated (Simm implementation)
-//		4. Thelen2003MuscleV1 (Updated to correspond to the Thelen paper.)
 //		4. Thelen2003Muscle (Uses the Muscle interface)
 //		5. Schutte1993Muscle(_Deprecated)
 //		6. Delp1990Muscle(_Deprecated)
@@ -117,7 +116,6 @@ void testMillard2012EquilibriumMuscle();
 void testMillard2012AccelerationMuscle();
 void testSchutte1993Muscle();
 void testDelp1990Muscle();
-void testThelen2003MuscleV1();
 
 int main()
 {
@@ -130,10 +128,9 @@ int main()
          "        transfers cannot be measured and its correctness cannot be\n"
          "        determined\n"
          "    2) testThelen2003Muscle_Deprecated\n"
-         "    3) testThelen2003MuscleV1 \n"
-         "    4) testShutte1993Muscle\n"
-         "    5)  testDelp1990Muscle \n"
-         "        These muscle models (items 2,3,4,5) do not implement\n "
+         "    3) testShutte1993Muscle\n"
+         "    4)  testDelp1990Muscle \n"
+         "        These muscle models (items 2,3,4) do not implement\n "
          "        calcMuscleDynamicsInfo and so its impossible to measure the\n"
          "        internal power and energy transfer within these internal\n "
          "        power transfers cannot be measured and its correctness\n "
@@ -153,12 +150,6 @@ int main()
 		{ e.print(cerr); failures.push_back("testThelen2003Muscle_Deprecated");}
     */
 		
-    /*
-	try { testThelen2003MuscleV1();
-		cout << "Thelen2003MuscleV1 Test passed" << endl; }
-    catch (const Exception& e)
-		{ e.print(cerr); failures.push_back("testThelen2003MuscleV1"); }
-	*/
 	/*
 	try { testSchutte1993Muscle();
 		cout << "Schutte1993Muscle_Deprecated Test passed" << endl; }
@@ -940,37 +931,4 @@ void testDelp1990Muscle()
         SimulationTestTolerance,
         false);
 
-}
-
-
-
-void testThelen2003MuscleV1()
-{
-	double activation = 0.01, deactivation = 0.4;
-
-	Thelen2003MuscleV1 muscle(  "muscle",
-                                MaxIsometricForce0,
-                                OptimalFiberLength0,
-                                TendonSlackLength0,
-                                PennationAngle0);
-
-	muscle.setActivationTimeConstant(Activation0);
-	muscle.setDeactivationTimeConstant(Deactivation0);
-
-	double x0 = 0;
-	double act0 = 0.2;
-
-	Constant control(0.5);
-
-	Sine motion(0.1, SimTK::Pi, 0);
-
-	simulateMuscle(muscle, 
-        x0, 
-        act0, 
-        &motion, 
-        &control, 
-        IntegrationAccuracy,
-        SimulationTest,
-        SimulationTestTolerance,
-        false);
 }

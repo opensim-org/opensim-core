@@ -32,7 +32,7 @@
  * passed to the createStorage method. Initially this is as follows
  *
  * ".sto", ".mot" -> Storage
- * ".trc" -> SimmMotionData
+ * ".trc" -> Storage
  * 
  * There's support for users plugging in their own classes and having them handle arbitrary 
  * extensions for example ".c3d", ".trb" files

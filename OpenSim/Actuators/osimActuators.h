@@ -40,8 +40,7 @@
 #include "Schutte1993Muscle_Deprecated.h"
 #include "Delp1990Muscle_Deprecated.h"
 #include "Thelen2003Muscle_Deprecated.h"
-#include "Thelen2003MuscleV1.h" //MM
-#include "Thelen2003Muscle.h" //MM
+#include "Thelen2003Muscle.h"
 #include "RigidTendonMuscle.h"
 #include "Millard2012EquilibriumMuscle.h"
 #include "Millard2012AccelerationMuscle.h"
