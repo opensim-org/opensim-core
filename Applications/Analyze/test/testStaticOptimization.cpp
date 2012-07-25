@@ -47,10 +47,10 @@ int main()
 {
 	try {
 		// test with arm26 model and updated Thelen2003Muscle model
-		//testArm26(false);
+		testArm26(true);
 
 		// test with arm26 model and deprecated Thelen2003Muscle model
-		testArm26(true);
+		testArm26(false);
 	}
 	catch (const std::exception& e) {
         cout << "Failed: "<< e.what() << endl;
