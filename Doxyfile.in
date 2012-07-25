@@ -752,6 +752,7 @@ EXCLUDE_PATTERNS       = *.svn \
                          */Java/* \
                          */Matlab/* \
                          */SQP/* \
+                         */Wrap/* \
                          */Utilities/* \
                          */Models/* \
                          */Applications/*

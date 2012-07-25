@@ -35,6 +35,9 @@
 
 namespace OpenSim {
 
+// Excluding this from Doxygen until it has better documentation! -Sam Hamner
+/// @cond
+
 class OSIMCOMMON_API StreamLogCallback : public LogCallback
 {
 private:
@@ -48,8 +51,7 @@ public:
 	void log(const std::string &aStr);
 };
 
-// Excluding this from Doxygen until it has better documentation! -Sam Hamner
-/// @cond
+
 class OSIMCOMMON_API LogBuffer : public std::stringbuf
 {
 public:
