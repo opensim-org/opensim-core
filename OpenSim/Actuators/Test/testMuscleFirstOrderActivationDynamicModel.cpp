@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
             MuscleFirstOrderActivationDynamicModel actMdl2;
             actMdl2.setActivationTimeConstant(2*tauA);
             actMdl2.setDeactivationTimeConstant(2*tauD);
-            actMdl2.setMinActivation(2*amin);
+            actMdl2.setMinimumActivation(2*amin);
 
             cout << endl;
             cout<<"*****************************************************"<<endl;
@@ -318,7 +318,7 @@ int main(int argc, char* argv[])
             cout<<"TEST: Exceptions thrown correctly.                   "<<endl;           
             cout << endl;
 
-            SimTK::Vector xEX1(1),xV(2),xEX3(3);
+            SimTK::Vector xEX1(1),xV(2),xEX3(3), xVC(2);
             xEX1 = 0;//Too few arguments
             xEX3 = 0;//Too many arguments
             xV(0) = 0.5;//Valid
@@ -349,6 +349,43 @@ int main(int argc, char* argv[])
             SimTK_TEST_MUST_THROW(fcnActMdl->calcDerivative(dEX1,xV));
             SimTK_TEST_MUST_THROW(fcnActMdl->calcDerivative(dEX2,xV));
 
+            //Test excitation clamping - code should print a cerr, and continue
+            //with a clamped value of excitation and activation.
+
+            //Question: how to test that a message is written to cerr?
+
+            cout<<"*****************************************************"<<endl;
+            cout<<"TEST: Excitation and Activation Clamping Correctness "<<endl;           
+            cout << endl; 
+            //legal excitation, illegal activation            
+            xV[1] = 0.5;
+            xVC[1] = 0.5;
+
+            xV[0] = -1;
+            xVC[0] = fcnActMdl->getMinimumActivation();
+            SimTK_TEST_EQ(  fcnActMdl->calcDerivative(dV,xV),
+                            fcnActMdl->calcDerivative(dV,xVC)) ;
+            xV[0] = 2;
+            xVC[0] = fcnActMdl->getMaximumActivation();
+            SimTK_TEST_EQ(  fcnActMdl->calcDerivative(dV,xV),
+                            fcnActMdl->calcDerivative(dV,xVC)) ;
+            
+            //illegal excitation, legal activation
+            xV[0] = 0.5;
+            xVC[0] = 0.5;
+
+            xV[1] = -1;
+            xVC[1] = 0;
+
+            SimTK_TEST_EQ(  fcnActMdl->calcDerivative(dV,xV),
+                            fcnActMdl->calcDerivative(dV,xVC)) ;
+            xV[1] = 2;
+            xVC[1] = 1;
+
+            SimTK_TEST_EQ( fcnActMdl->calcDerivative(dV,xV),
+                           fcnActMdl->calcDerivative(dV,xVC));
+            cout<<"*****************************************************"<<endl;
+
             //It occurs to me that it doesn't make sense to have this in a
             //function object, because the derivative I'm computing is not
             //the derivative of the function w.r.t. the 0th parameter,
@@ -357,9 +394,9 @@ int main(int argc, char* argv[])
 
             //SimTK_ASSERT_
             //SimTK_TEST_MUST_THROW
-            cout<<"PASSED: Constructor, and SimTK::Function interface checked"<<endl;
-            cout<<endl;
-
+            cout<<"PASSED: Constructor, SimTK::Function interface checked"<<endl;
+            cout <<"       Exceptions checked, clamping checked" << endl;
+            
             SimTK_END_TEST();
         }
     catch (OpenSim::Exception ex)

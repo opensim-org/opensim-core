@@ -246,7 +246,28 @@ public:
         ~1 flops
     \endverbatim
     */
-    double getMinActivation() const;
+    double getMinimumActivation() const;
+
+
+    /**
+    @returns The maximum activation level
+        
+    <B>Computational Cost</B>
+    \verbatim
+        ~1 flops
+    \endverbatim
+    */
+    double getMaximumActivation() const;
+
+    /**
+    @returns activation that has been clamped to a legal range, that is between
+             minActivation specified in the constructor and 1.0
+    <B>Computational Cost</B>
+    \verbatim
+        ~2 flops
+    \endverbatim
+    */
+    double clampActivation(double activation) const;
 
     /**        
     @param The activation time constant in (units of seconds)
@@ -276,7 +297,7 @@ public:
         ~1 flops
     \endverbatim
     */
-    void setMinActivation(double minimumActivation);
+    void setMinimumActivation(double minimumActivation);
 
     ///@cond
     /*This is useful for testing purposes only. Don't even think

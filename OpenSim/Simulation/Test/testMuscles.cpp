@@ -59,28 +59,57 @@ using namespace OpenSim;
 using namespace std;
 
 //==============================================================================
-static const double accuracy = 1e-8;
+static const double IntegrationAccuracy         = 1e-8;
+static const double SimulationTestTolerance     = 1e-6;
+static const double InitializationTestTolerance = 1e-8;
+static const double CorrectnessTestTolerance    = 1e-8;
+
+static const int SimulationTest         = 0;
+static const int InitializationTest     = 1;
+static const int CorrectnessTest        = 2;
 
 // MUSCLE CONSTANTS
-static const double maxIsometricForce = 100.0, 
-                    optimalFiberLength = 0.1, 
-                    tendonSlackLength = 0.2, 
-                    pennationAngle = 0.0;
+static const double MaxIsometricForce0  = 100.0, 
+                    OptimalFiberLength0 = 0.1, 
+                    TendonSlackLength0  = 0.2, 
+                    PennationAngle0     = 0.0,
+                    PennationAngle1     = SimTK::Pi/4;
 
-static const double activation = 0.01, 
-                    deactivation = 0.4,	
-                    activation1 = 7.6,	
-                    activation2 = 2.5;
+static const double Activation0     = 0.01, 
+                    Deactivation0   = 0.4,	
+                    ShutteDelpActivation1 = 7.6,	
+                    ShutteDelpActivation2 = 2.5;
 
-void simulateMuscle(const PathActuator &aMuscle, 
-                    const double &startX, 
-                    const double &act0, 
+/*
+This function completes a controlled activation, controlled stretch simulation 
+of a muscle. After the simulation has completed, the results can be 
+tested in a number of different ways to ensure that the muscle model is 
+functioning
+
+@param aMuscle  a path actuator
+@param startX   the starting position of the muscle anchor. I have no idea
+                why this value is included.
+@param act0     the initial activation of the muscle
+@param motion   the forced stretch of the simulation
+@param control  the activation control signal that is applied to the muscle
+@param accuracy the desired accuracy of the integrated solution
+@param testType 0: No test, just simulate the muscle 
+                1: Initialization test
+                2: Correctness test: ensure that d/dt(KE+PE-W) = 0 
+@param testTolerance    the desired tolerance associated with the test
+@param printResults print the osim model associated with this test.
+*/
+void simulateMuscle(const Muscle &aMuscle, 
+                    double startX, 
+                    double act0, 
 					const Function *motion, 
 					const Function *control, 
-					const double &accuracy,
+					double integrationAccuracy,
+                    int testType,
+                    double testTolerance,
                     bool printResults);
 
-void testPathActuator();
+//void testPathActuator();
 void testRigidTendonMuscle();
 void testThelen2003Muscle_Deprecated();
 void testThelen2003Muscle();
@@ -191,12 +220,14 @@ int main()
 ================================================================================
 */
 void simulateMuscle(
-        const PathActuator &aMuscModel, 
-        const double &startX, 
-        const double &act0, 
+        const Muscle &aMuscModel, 
+        double startX, 
+        double act0, 
 		const Function *motion,  // prescribe motion of free end of muscle
 		const Function *control, // prescribed excitation signal to the muscle
-		const double &accuracy,
+		double integrationAccuracy,
+        int testType,
+        double testTolerance,
         bool printResults)
 {
 	cout << "\n******************************************************" << endl;
@@ -204,6 +235,10 @@ void simulateMuscle(
          << " Muscle Actuator Type." <<endl;
 	cout << "******************************************************" << endl;
 	using SimTK::Vec3;
+
+//==========================================================================
+// 0. SIMULATION SETUP: Create the block and ground
+//==========================================================================
 
 	// Define the initial and final simulation times
 	double initialTime = 0.0;
@@ -216,6 +251,10 @@ void simulateMuscle(
 
 	// Create an OpenSim model
 	Model model;
+
+    double optimalFiberLength = aMuscModel.getOptimalFiberLength();
+    double pennationAngle     = aMuscModel.getPennationAngleAtOptimalFiberLength();
+    double tendonSlackLength  = aMuscModel.getTendonSlackLength();
 
 	// Use a copy of the muscle model passed in to add path points later
 	PathActuator *aMuscle = aMuscModel.clone();
@@ -254,6 +293,11 @@ void simulateMuscle(
 		jointCoordinateSet[0].setPrescribedFunction(*motion);
 	// add ball to model
 	model.addBody(ball);
+
+
+//==========================================================================
+// 1. SIMULATION SETUP: Add the muscle
+//==========================================================================
 
 	//Attach the muscle
 	const string &actuatorType = aMuscle->getConcreteClassName();
@@ -301,6 +345,10 @@ void simulateMuscle(
     Array<string> jointNames;
 	jointNames.append("slider");
 
+//==========================================================================
+// 2. SIMULATION SETUP: Instrument the test with probes
+//==========================================================================
+
 	// Add an ActuatorPowerProbe to measure the work done by the muscle actuator 
     ActuatorPowerProbe * muscWorkProbe = new ActuatorPowerProbe(muscNames, true, 1);
 	muscWorkProbe->setOperation("integrate");
@@ -341,6 +389,10 @@ void simulateMuscle(
 	// Define visualizer for debugging
 	//model.setUseVisualizer(true);
 
+//==========================================================================
+// 3. SIMULATION Initialization
+//==========================================================================
+
 	// Initialize the system and get the default state    
 	SimTK::State& si = model.initSystem();
 	model.getMultibodySystem().realize(si,SimTK::Stage::Dynamics);
@@ -352,13 +404,16 @@ void simulateMuscle(
     // set x-translation value
 	modelCoordinateSet[0].setValue(si, startX, true); 
 
+    //Copy the initial state
+    SimTK::State initialState(si);
+
 	// Check muscle is setup correctly 
 	const PathActuator &muscle 
         = dynamic_cast<const PathActuator&>(model.updActuators().get("muscle"));
 	double length = muscle.getLength(si);
 	double trueLength = startX + xSinG - anchorWidth/2;
 	
-    ASSERT_EQUAL(length/trueLength, 1.0, accuracy, __FILE__, __LINE__, 
+    ASSERT_EQUAL(length/trueLength, 1.0, testTolerance, __FILE__, __LINE__, 
 		"testMuscles: path failed to initialize to correct length." );
 
 	model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
@@ -370,9 +425,13 @@ void simulateMuscle(
 	double PEsys0 = model.getMultibodySystem().calcPotentialEnergy(si);
 	//cout << "Total initial system energy = " << Esys0 << endl; 
 
+//==========================================================================
+// 4. SIMULATION Integration
+//==========================================================================
+
 	// Create the integrator
 	SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-	integrator.setAccuracy(accuracy);
+	integrator.setAccuracy(integrationAccuracy);
 
 	// Create the manager
 	Manager manager(model, integrator);
@@ -394,6 +453,26 @@ void simulateMuscle(
 	Storage states(manager.getStateStorage());
 	states.print(actuatorType+"_states.sto");
 
+
+//==========================================================================
+// 5. SIMULATION Reporting
+//==========================================================================
+
+    double realTimeMultiplier = ((finalTime-initialTime)/comp_time);
+    printf("testMuscles: Realtime Multiplier: %f\n"
+           "           :  simulation duration / clock duration\n"
+           "              > 1 : faster than real time\n"
+           "              = 1 : real time\n"
+           "              < 1 : slower than real time\n",
+            realTimeMultiplier );
+    
+    /*
+    ASSERT(comp_time <= (finalTime-initialTime));
+    printf("testMuscles: PASSED Realtime test\n"
+           "             %s simulation time: %f with accuracy %f\n\n",
+                         actuatorType.c_str(), comp_time , accuracy);
+    */
+
     //An analysis only writes to a dir that exists, so create here.
     if(printResults == true){
 	    IO::makeDir("testMuscleResults");
@@ -403,20 +482,41 @@ void simulateMuscle(
 	double muscleWork = muscWorkProbe->getProbeOutputs(si)(0);
 	cout << "Muscle work = " << muscleWork << endl;
 
-    /*==========================================================================
-      Correctness test:  KE+PE-W = const ?
-    
-      Check that system energy less work is conserved
-      *This test of correctness is not being used because I've been unable
-       to successfully wire the MuscleFiberActivePowerProbe into the model, 
-       nor have I generalized the MuscleDynamicInfo interface enough to permit
-       an explicit KE+PE-W test.
-    ============================================================================
-    */
-    bool flag_testKEPEW = false;
-	Muscle *musclePtr = dynamic_cast<Muscle *>(aMuscle);
+//==========================================================================
+// 6. SIMULATION Tests
+//==========================================================================
+   
 
-    if(flag_testKEPEW && musclePtr){
+
+/*==========================================================================
+    7. Initialization test: dF/dt ?= K*dl/dt for t = 0
+
+    dF/dt : the rate change of muscle force
+    K     : the stiffness of the whole muscle
+    dl/dt : the length change of the whole mucle
+
+    Here we compute dF/dt numerically, while at time zero we have the analytical
+    values for K and dl/dt
+============================================================================
+*/    
+    if(testType == 1){
+      cout << "CREATE THE INITIALIZATION TEST" << endl;    
+    }
+
+
+/*==========================================================================
+    8a. Correctness test:  KE+PE-W = const ?
+    
+    Check that system energy less work is conserved
+    *This test of correctness is not being used because I've been unable
+    to successfully wire the MuscleFiberActivePowerProbe into the model, 
+    nor have I generalized the MuscleDynamicInfo interface enough to permit
+    an explicit KE+PE-W test.
+============================================================================
+*/    
+	
+
+    if(false){
         model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
 	    double Esys = model.getMultibodySystem().calcEnergy(si);
 	    double KEsys =  model.getMultibodySystem().calcKineticEnergy(si);
@@ -434,22 +534,21 @@ void simulateMuscle(
 	    cout << "Muscle work = " << muscleWork << endl;  
         cout << "Esys - Work = " << ESysMinusWork 
              << " :: Esys0 = " << Esys0 << endl; 
-	    ASSERT_EQUAL(ESysMinusWork, Esys0, accuracy, __FILE__, __LINE__, 
+	    ASSERT_EQUAL(ESysMinusWork, Esys0, testTolerance, __FILE__, __LINE__, 
 	    	"testMuscles: System energy-work -not conserved.");
 	    	    
 	    //Minimum requirement to pass is simulation of single 
         //muscle on slider is real-time
 
     }
-    /*==========================================================================
-      Correctness test:  d/dt(KE+PE-W) = 0 ?
+
+/*==========================================================================
+    8b. Correctness test:  d/dt(KE+PE-W) = 0 ?
     
-      Check that the derivative of system energy less work is conserved
-    ============================================================================
-    */
-    bool flag_test_dKEPEW_dt = true;
-  
-    if(flag_test_dKEPEW_dt && musclePtr){
+    Check that the derivative of system energy less work is conserved
+============================================================================
+*/      
+    if(testType == 2){
         Storage *fiberActivePwrSto  
 			= muscleAnalysis->getFiberActivePowerStorage(); 
         Storage *fiberPassivePwrSto 
@@ -490,7 +589,7 @@ void simulateMuscle(
             if(SimTK::isNaN(dKEPEW_dt) == false && flag_notTested == false){
                 ASSERT_EQUAL(   dKEPEW_dt, 
                                 0.0, 
-                                accuracy,  
+                                testTolerance,  
                                 __FILE__, 
                                 __LINE__,
 	    	                "testMuscles: d/dt(system energy-work) non-zero.");
@@ -504,7 +603,7 @@ void simulateMuscle(
             printf("testMuscles: PASSED Correctness test\n"
                   "            : d/dt(system energy-work) = 0\n"
                   "            : with a numerical accuracy of %fe-6\n\n",
-                                accuracy*1e6);
+                                testTolerance*1e6);
         }else{
             ASSERT_EQUAL(0.0,1.0,0.1,
                    "testMuscles: INCOMPLETE Correctness test\n"
@@ -514,31 +613,13 @@ void simulateMuscle(
 
     }
 
-    if(!musclePtr){
+    /*if(!musclePtr){
 
         ASSERT_EQUAL(0.0,1.0,0.1,
                    "testMuscles: INCOMPLETE Correctness test\n"
                "             Actuator not of type Muscle tested\n\n");
-    }
+    }*/
 
-    /*==========================================================================
-      Timing Test:  Real time 
-    ============================================================================
-    */
-    double realTimeMultiplier = ((finalTime-initialTime)/comp_time);
-    printf("testMuscles: Realtime Multiplier: %f\n"
-           "           :  simulation duration / clock duration\n"
-           "              > 1 : faster than real time\n"
-           "              = 1 : real time\n"
-           "              < 1 : slower than real time\n",
-            realTimeMultiplier );
-    
-    /*
-    ASSERT(comp_time <= (finalTime-initialTime));
-    printf("testMuscles: PASSED Realtime test\n"
-           "             %s simulation time: %f with accuracy %f\n\n",
-                         actuatorType.c_str(), comp_time , accuracy);
-    */
 
 }
 
@@ -547,14 +628,14 @@ void simulateMuscle(
 // Individudal muscle model (derived from Muscle) test cases can be added here
 //==============================================================================
 
-void testPathActuator()
+/*void testPathActuator()
 {
 	double x0 = 0;
 	double act0 = 0.2;
 	double loadX = 50;
 
 	PathActuator muscle;
-	muscle.setOptimalForce(maxIsometricForce);
+	muscle.setOptimalForce(maxIsometricForce0);
 
 	Constant control(0.5);
 
@@ -564,28 +645,66 @@ void testPathActuator()
 	//simulateMuscle(muscle, x0, act0, NULL, &control, accuracy);
 	// eccentric 
 	simulateMuscle(muscle, x0, act0, &motion, &control, accuracy,false);
-}
+}*/
 
 
 void testRigidTendonMuscle()
 {
 	RigidTendonMuscle   muscle( "muscle",
-                                maxIsometricForce,
-                                optimalFiberLength,
-                                tendonSlackLength,
-                                pennationAngle);
+                                MaxIsometricForce0,
+                                OptimalFiberLength0,
+                                TendonSlackLength0,
+                                PennationAngle0);
 
 	double x0 = 0;
-	double act0 = 0.2;
+	double act0 = 0.5;
+	Constant control(act0);
 
-	Constant control(0.5);
+	Sine sineWave(0.1, SimTK::Pi, 0);
 
-	Sine motion(0.1, SimTK::Pi, 0);
+    /*
+    void simulateMuscle(const Muscle &aMuscle, 
+                    double startX, 
+                    double act0, 
+					const Function *motion, 
+					const Function *control, 
+					double integrationAccuracy,
+                    int testType,
+                    double testTolerance,
+                    bool printResults);
+    */
 
 	// concentric
-	simulateMuscle(muscle, x0, act0, NULL, &control, accuracy,false);
+	simulateMuscle(muscle, 
+        x0, 
+        act0, 
+        NULL, 
+        &control, 
+        IntegrationAccuracy,
+        SimulationTest,
+        SimulationTestTolerance,
+        false);
 	// eccentric 
-	simulateMuscle(muscle, x0, act0, &motion, &control, accuracy,false);
+	simulateMuscle(muscle, 
+        x0, 
+        act0, 
+        &sineWave, 
+        &control, 
+        IntegrationAccuracy,
+        CorrectnessTest,
+        CorrectnessTestTolerance,
+        false);
+
+    simulateMuscle(muscle, 
+        x0, 
+        act0, 
+        &sineWave, 
+        &control, 
+        IntegrationAccuracy,
+        InitializationTest,
+        InitializationTestTolerance,
+        false);
+
 }
 
 
@@ -593,13 +712,13 @@ void testRigidTendonMuscle()
 void testThelen2003Muscle_Deprecated()
 {
 	Thelen2003Muscle_Deprecated muscle("muscle",
-                                        maxIsometricForce,
-                                        optimalFiberLength,
-                                        tendonSlackLength,
-                                        pennationAngle);
+                                        MaxIsometricForce0,
+                                        OptimalFiberLength0,
+                                        TendonSlackLength0,
+                                        PennationAngle0);
 
-	muscle.setActivationTimeConstant(activation);
-	muscle.setDeactivationTimeConstant(deactivation);
+	muscle.setActivationTimeConstant(Activation0);
+	muscle.setDeactivationTimeConstant(Deactivation0);
 
 	double x0 = 0;
 	double act0 = 0.2;
@@ -608,48 +727,85 @@ void testThelen2003Muscle_Deprecated()
 
 	Sine motion(0.1, SimTK::Pi, 0);
 
-	simulateMuscle(muscle, x0, act0, NULL, &control, accuracy,false);
-	// Uncomment when work done by prescribed motion 
-    // constraint is accounted for.
-	simulateMuscle(muscle, x0, act0, &motion, &control, accuracy,false);
+	simulateMuscle( muscle, 
+                    x0, 
+                    act0, 
+                    NULL, 
+                    &control, 
+                    IntegrationAccuracy,
+                    SimulationTest,
+                    SimulationTestTolerance,
+                    false);
+	
 }
 
 void testThelen2003Muscle()
 {
 	Thelen2003Muscle muscle("muscle",
-                            maxIsometricForce,
-                            optimalFiberLength,
-                            tendonSlackLength,
-                            pennationAngle);
+                            MaxIsometricForce0,
+                            OptimalFiberLength0,
+                            TendonSlackLength0,
+                            PennationAngle0);
 
-	muscle.setActivationTimeConstant(activation);
-	muscle.setDeactivationTimeConstant(deactivation);
+    Thelen2003Muscle muscle1("muscle",
+                            MaxIsometricForce0,
+                            OptimalFiberLength0,
+                            TendonSlackLength0,
+                            PennationAngle1);
+
+	muscle.setActivationTimeConstant(Activation0);
+	muscle.setDeactivationTimeConstant(Deactivation0);
 
 	double x0 = 0;
 	double act0 = 0.2;
 
 	Constant control(0.5);
 
-	Sine motion(0.1, SimTK::Pi, 0);
+	Sine motion(OptimalFiberLength0, SimTK::Pi*2, 0);
 
-	simulateMuscle(muscle, x0, act0, &motion, &control, accuracy,true);
-	// Uncomment when work done by prescribed 
-    // motion constraint is accounted for.
-	//simulateMuscle(muscle, x0, act0, &motion, &control, accuracy);
+	simulateMuscle(muscle, 
+        x0, 
+        act0, 
+        &motion, 
+        &control, 
+        IntegrationAccuracy,
+        InitializationTest,
+        InitializationTestTolerance,
+        false);
+
+    simulateMuscle(muscle, 
+        x0, 
+        act0, 
+        &motion, 
+        &control, 
+        IntegrationAccuracy,
+        CorrectnessTest,
+        CorrectnessTestTolerance,
+        false);
+
+    simulateMuscle(muscle1, 
+        x0, 
+        act0, 
+        &motion, 
+        &control, 
+        IntegrationAccuracy,
+        CorrectnessTest,
+        CorrectnessTestTolerance,
+        false);
 }
 
 
 void testMillard2012EquilibriumMuscle()
 {
 	Millard2012EquilibriumMuscle muscle("muscle",
-                            maxIsometricForce,
-                            optimalFiberLength,
-                            tendonSlackLength,
-                            pennationAngle);
+                            MaxIsometricForce0,
+                            OptimalFiberLength0,
+                            TendonSlackLength0,
+                            PennationAngle0);
 
     MuscleFirstOrderActivationDynamicModel actMdl = muscle.getActivationModel();
-    actMdl.setActivationTimeConstant(activation);
-    actMdl.setDeactivationTimeConstant(deactivation);
+    actMdl.setActivationTimeConstant(Activation0);
+    actMdl.setDeactivationTimeConstant(Deactivation0);
     muscle.setActivationModel(actMdl);
 
 	double x0 = 0;
@@ -659,20 +815,41 @@ void testMillard2012EquilibriumMuscle()
 
 	Sine motion(0.1, SimTK::Pi, 0);
 
-	simulateMuscle(muscle, x0, act0, &motion, &control, accuracy,true);
+	simulateMuscle(muscle, 
+        x0, 
+        act0, 
+        &motion, 
+        &control, 
+        IntegrationAccuracy,
+        InitializationTest,
+        InitializationTestTolerance,
+        false);
+
+    simulateMuscle(muscle, 
+        x0, 
+        act0, 
+        &motion, 
+        &control, 
+        IntegrationAccuracy,
+        CorrectnessTest,
+        CorrectnessTestTolerance,
+        false);
 }
 
 void testMillard2012AccelerationMuscle()
 {
 	Millard2012AccelerationMuscle muscle("muscle",
-                            maxIsometricForce,
-                            optimalFiberLength,
-                            tendonSlackLength,
-                            pennationAngle);
+                            MaxIsometricForce0,
+                            OptimalFiberLength0,
+                            TendonSlackLength0,
+                            PennationAngle0);
+
+    //otherwise the simulations are a bit slow ...
+    muscle.setMass(muscle.getMass()*10);
 
     MuscleFirstOrderActivationDynamicModel actMdl = muscle.getActivationModel();
-    actMdl.setActivationTimeConstant(activation);
-    actMdl.setDeactivationTimeConstant(deactivation);
+    actMdl.setActivationTimeConstant(Activation0);
+    actMdl.setDeactivationTimeConstant(Deactivation0);
     muscle.setActivationModel(actMdl);
 
 	double x0 = 0;
@@ -682,19 +859,37 @@ void testMillard2012AccelerationMuscle()
 
 	Sine motion(0.1, SimTK::Pi, 0);
 
-	simulateMuscle(muscle, x0, act0, &motion, &control, accuracy,true);
+	simulateMuscle(muscle, 
+        x0, 
+        act0, 
+        &motion, 
+        &control, 
+        IntegrationAccuracy,
+        InitializationTest,
+        InitializationTestTolerance,
+        false);
+
+    simulateMuscle(muscle, 
+        x0, 
+        act0, 
+        &motion, 
+        &control, 
+        IntegrationAccuracy,
+        CorrectnessTest,
+        CorrectnessTestTolerance,
+        false);
 }
 
 void testSchutte1993Muscle()
 {
 	Schutte1993Muscle_Deprecated muscle("muscle",
-                                        maxIsometricForce,
-                                        optimalFiberLength,
-                                        tendonSlackLength,
-                                        pennationAngle);
+                                        MaxIsometricForce0,
+                                        OptimalFiberLength0,
+                                        TendonSlackLength0,
+                                        PennationAngle0);
 
-	muscle.setActivation1(activation1);
-	muscle.setActivation2(activation2);
+	muscle.setActivation1(ShutteDelpActivation1);
+	muscle.setActivation2(ShutteDelpActivation2);
 
 	double x0 = 0;
 	double act0 = 0.2;
@@ -703,20 +898,29 @@ void testSchutte1993Muscle()
 
 	Sine motion(0.1, SimTK::Pi, 0);
 
-	simulateMuscle(muscle, x0, act0, NULL, &control, accuracy,false);
+	simulateMuscle(muscle, 
+        x0, 
+        act0, 
+        &motion, 
+        &control, 
+        IntegrationAccuracy,
+        SimulationTest,
+        SimulationTestTolerance,
+        false);
+
 }
 
 
 void testDelp1990Muscle()
 {
 	Delp1990Muscle_Deprecated muscle("muscle",
-                                    maxIsometricForce,
-                                    optimalFiberLength,
-                                    tendonSlackLength,
-                                    pennationAngle);
+                                    MaxIsometricForce0,
+                                    OptimalFiberLength0,
+                                    TendonSlackLength0,
+                                    PennationAngle0);
 
-	muscle.setActivation1(activation1);
-	muscle.setActivation2(activation2);
+	muscle.setActivation1(ShutteDelpActivation1);
+	muscle.setActivation2(ShutteDelpActivation2);
 	muscle.setMass(0.1);
 
 	double x0 = 0;
@@ -726,7 +930,16 @@ void testDelp1990Muscle()
 
 	Sine motion(0.1, SimTK::Pi, 0);
 
-	simulateMuscle(muscle, x0, act0, NULL, &control, accuracy,false);
+	simulateMuscle(muscle, 
+        x0, 
+        act0, 
+        &motion, 
+        &control, 
+        IntegrationAccuracy,
+        SimulationTest,
+        SimulationTestTolerance,
+        false);
+
 }
 
 
@@ -736,13 +949,13 @@ void testThelen2003MuscleV1()
 	double activation = 0.01, deactivation = 0.4;
 
 	Thelen2003MuscleV1 muscle(  "muscle",
-                                maxIsometricForce,
-                                optimalFiberLength,
-                                tendonSlackLength,
-                                pennationAngle);
+                                MaxIsometricForce0,
+                                OptimalFiberLength0,
+                                TendonSlackLength0,
+                                PennationAngle0);
 
-	muscle.setActivationTimeConstant(activation);
-	muscle.setDeactivationTimeConstant(deactivation);
+	muscle.setActivationTimeConstant(Activation0);
+	muscle.setDeactivationTimeConstant(Deactivation0);
 
 	double x0 = 0;
 	double act0 = 0.2;
@@ -751,5 +964,13 @@ void testThelen2003MuscleV1()
 
 	Sine motion(0.1, SimTK::Pi, 0);
 
-	simulateMuscle(muscle, x0, act0, NULL, &control, accuracy,false);
+	simulateMuscle(muscle, 
+        x0, 
+        act0, 
+        &motion, 
+        &control, 
+        IntegrationAccuracy,
+        SimulationTest,
+        SimulationTestTolerance,
+        false);
 }

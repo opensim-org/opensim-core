@@ -240,7 +240,7 @@ private:
 
     //Fiber and Tendon Kinematics
     MuscleFixedWidthPennationModel penMdl;
-
+    
     //=====================================================================
     // Private Accessor names
     //=====================================================================
@@ -256,10 +256,14 @@ private:
     SimTK::Vector initMuscleState(SimTK::State& s, double aActivation,
                              double aSolTolerance, int aMaxIterations) const;
 
+    
+    double calcFm(double ma, double fal, double fv, 
+                 double fpe, double fiso) const;
+
+    double calcActiveFm(double ma, double fal, 
+                        double fv, double fiso) const;
+
     //Stiffness related functions
-    double calcFm(double ma, double fal, double fv, double fpe, double fiso) const;
-
-
     double calcDFmDlce(double lce, double a,  double fv, 
                       double fiso, double ofl) const;
 
@@ -295,6 +299,8 @@ private:
     double calcDdlceDaFalFv(double aAct, double fal, 
                             double aFalFv) const;
 
+    bool isFiberLengthValid(const SimTK::State& s, 
+                            double dlceN) const;
 
 };    
 } // end of namespace OpenSim

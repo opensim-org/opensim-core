@@ -136,7 +136,27 @@ public:
     ///obviously wrong values
     MuscleFixedWidthPennationModel();
 
-        
+    /**
+        @returns    the minimum fiber length. For this pennation model the 
+                    minimum numerically stable fiber length 
+                    is parallelogram_height plus 0.001*optimalFiberLength
+    */        
+    double getMinimumFiberLength() const;
+
+    /**
+        @returns    the minimum fiber length along the tendon. For this 
+                    pennation model the minimum numerically stable fiber length 
+                    is parallelogram_height plus 0.001*optimalFiberLength
+    */        
+    double getMinimumFiberLengthAlongTendon() const;
+
+    /**
+       This function will clamp fiberLength within 0.001*optimalFiberLengths of 
+       the minimum fiber length at which singularities occur.
+       @param fiberLength is the length of the fiber in meters
+       
+    */
+    double clampFiberLength(double fiberLength) const;
 
     /**
         @returns height of the paralleogram (m)
@@ -290,7 +310,9 @@ public:
 
     /**
     This function calculates the pennation angle of the fiber given its
-    current length.
+    current length. The pennation angle is saturated at SimTK::Pi/2 for fiber
+    lengths that are less than, or equal to, the minimum physical fiber length
+    for this pennation model.
 
     @param fiberLength  the length of the fiber (meters)  
 
@@ -298,14 +320,7 @@ public:
                         string is used to help the user debug their model
                         when an assertion fails.
     @returns            the current pennation angle (radians)
-
-    <B>Conditions:</B>
-    \verbatim
-        0 <  fiberLength 
-        parallelogramHeight < fiberLength
-    \endverbatim
-
-
+  
     <B>Example:</B>
     \code
         double optFibLen = 0.1;
@@ -670,6 +685,10 @@ private:
     /**The height of the parallelogram (in meters). Since the width is 
     constant, the height of the parallelogram is also constant.*/
     double m_parallelogramHeight;
+    double m_minimumFiberLength;
+    double m_maximumSinPennation;
+    double m_maximumPennationAngle;
+    double m_minimumFiberLengthAlongTendon;
 };
 }
 #endif //OPENSIM_MUSCLEFIXEDWIDTHPENNATIONMODEL_H_

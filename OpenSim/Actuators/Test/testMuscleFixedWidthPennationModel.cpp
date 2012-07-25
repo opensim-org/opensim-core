@@ -811,9 +811,7 @@ int main(int argc, char* argv[])
         SimTK_TEST_MUST_THROW(valTest = 
             fibKinEmpty.calcPennationAngularVelocity(tan(0.7),0.1,0.1,nameTest));
 
-        //calcPennationAngle
-        SimTK_TEST_MUST_THROW(fibKin.calcPennationAngle(0,caller));
-        SimTK_TEST_MUST_THROW(fibKin.calcPennationAngle(paraHeight*0.99,caller));
+        
 
         //calcPennationAngularVelocity
         SimTK_TEST_MUST_THROW(fibKin.calcPennationAngularVelocity(
@@ -853,7 +851,27 @@ int main(int argc, char* argv[])
                                                                 1,
                                                                 0.1,
                                                                 caller));
+        cout << endl;
+        cout << "**************************************************" << endl;
+        cout << "TEST: Pennation angle clamping" << endl;
 
+        //calcPennationAngle
+
+
+        double maxPenAngle = asin(fibKin.getParallelogramHeight()/
+                 (fibKin.getParallelogramHeight() + 0.001*optFibLen));
+
+        //printf("Clamped Angle %f, expected %f\n",
+        //    fibKin.calcPennationAngle(0,caller),
+        //    maxPenAngle);
+
+        SimTK_TEST_EQ_TOL(fibKin.calcPennationAngle(0,caller), 
+                      maxPenAngle,1e-12);
+
+        SimTK_TEST_EQ_TOL(fibKin.calcPennationAngle(paraHeight*0.99,caller),
+                      maxPenAngle,1e-12);
+
+        cout << "**************************************************" << endl;
         SimTK_END_TEST();
 
     }

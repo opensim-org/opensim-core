@@ -25,7 +25,7 @@
 
 //#include <SimTKcommon\Testing.h>
 #include "MuscleFirstOrderActivationDynamicModel.h"
-
+using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 //=============================================================================
@@ -129,11 +129,25 @@ double MuscleFirstOrderActivationDynamicModel::
 }
         
 
-double MuscleFirstOrderActivationDynamicModel::getMinActivation() const
+double MuscleFirstOrderActivationDynamicModel::getMinimumActivation() const
 {
     return m_minActivation;
 }
 
+double MuscleFirstOrderActivationDynamicModel::getMaximumActivation() const
+{
+    return 1.0;
+}
+
+double MuscleFirstOrderActivationDynamicModel::
+    clampActivation(double activation) const
+{
+    //Clamp the lower bound
+    double clampedActivation = max(m_minActivation, activation);
+    //Clamp the upper bound
+    clampedActivation = min(1.0, clampedActivation);
+    return clampedActivation;
+}
 
 void MuscleFirstOrderActivationDynamicModel::
     setActivationTimeConstant(double activationTimeConstant) 
@@ -152,7 +166,7 @@ void MuscleFirstOrderActivationDynamicModel::
         
 
 void MuscleFirstOrderActivationDynamicModel::
-    setMinActivation(double minimumActivation)
+    setMinimumActivation(double minimumActivation)
 {
     //set_minimum_activation(minimumActivation);
     m_minActivation = minimumActivation;
@@ -201,32 +215,67 @@ double MuscleFirstOrderActivationDynamicModel::
                     double activation = x(0);
                     double excitation = x(1);      
                    
-                    
-                    SimTK_ERRCHK1_ALWAYS(excitation >= 0 && excitation <= 1,
-                    "MuscleFirstOrderActivationDynamicModel::calcDerivative",
-                    "%s: Excitation must be bounded by 0 and 1",getName().c_str());
+                    //This exception was causing problems, so we're clamping
+                    //excitation
+                    //SimTK_ERRCHK1_ALWAYS(excitation >= 0 && excitation <= 1,
+                    //"MuscleFirstOrderActivationDynamicModel::calcDerivative",
+                    //"%s: Excitation must be bounded by 0 and 1",getName().c_str());
 
+                    double clampedExcitation = max(0.0, excitation);
+                    clampedExcitation        = min(1.0, clampedExcitation);
 
                     double minAct = m_minActivation;
 
-                    SimTK_ERRCHK2_ALWAYS(activation >= minAct && activation<=1,
-                    "MuscleFirstOrderActivationDynamicModel::calcDerivative",
-                    "%s: Activation must be between minA and 1 (%f and 1)",
-                        getName().c_str(), minAct);
-                    
+                    //SimTK_ERRCHK2_ALWAYS(activation >= minAct && activation<=1,
+                    //"MuscleFirstOrderActivationDynamicModel::calcDerivative",
+                    //"%s: Activation must be between minA and 1 (%f and 1)",
+                    //    getName().c_str(), minAct);
+                    double clampedActivation = clampActivation(activation);
 
-                    double aS = activation/(1-minAct);
+
+                    double aS = clampedActivation/(1-minAct);
                     double tau = 0;
 
                     double ta = get_activation_time_constant();
                     double td = get_deactivation_time_constant();
 
-                    if(excitation > (aS-m_minAS)){
+                    if(clampedExcitation > (aS-m_minAS)){
                         tau = ta*(0.5 + 1.5*(aS-m_minAS));
                     }else{
                         tau = td*(0.5+1.5*(aS-m_minAS));
                     }
-                    da = (excitation - (aS-m_minAS))/tau;
+                    da = (clampedExcitation - (aS-m_minAS))/tau;
+
+                    //Log warnings : commented out because these warnings
+                    //utterly swamp the command window.
+                    /*
+                    if(clampedExcitation != excitation){
+                        cerr << endl;
+                        cerr << "MuscleFirstOrderActivationDynamicModel::"
+                                "calcDerivative"
+                             << endl;
+
+                        cerr <<"    :" << getName().c_str() << endl;
+                        cerr <<"    :Excitation was outside of 0-1. " << endl;
+                        cerr <<"    :Clamping excitation to 0-1 and continuing" 
+                             << endl;
+                        cerr << endl;
+                    }
+
+                    if(activation != clampedActivation){
+                        cerr << endl;
+                        cerr << "MuscleFirstOrderActivationDynamicModel::"
+                                "calcDerivative"
+                             << endl;
+
+                        cerr <<"    :" << getName().c_str() << endl;
+                        cerr <<"    :Activation was outside of minActivation-1."
+                             << endl;
+                        cerr <<"    :Clamping activation to minActivation-1 "
+                               "and continuing" 
+                             << endl;
+                        cerr << endl;
+                    }*/
 
                 }else{
                    SimTK_ERRCHK1_ALWAYS(false,
