@@ -423,6 +423,13 @@ public:
     */
     void computeInitialFiberEquilibrium(SimTK::State& s) const FINAL_11;
     
+    ///@cond
+    //--------------------------------------------------------------------------
+	// DEPRECATED : API users don't even think about using this!!!
+	//--------------------------------------------------------------------------
+    double computeIsometricForce(   SimTK::State& s, 
+                                    double activation) const OVERRIDE_11;
+    ///@endcond
 
 protected:
     /** Courtesy of Ajay*/

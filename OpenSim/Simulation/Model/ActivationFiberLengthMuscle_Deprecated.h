@@ -123,8 +123,8 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void computeInitialFiberEquilibrium(SimTK::State& s ) const;
 	virtual double computeActuation( const SimTK::State& s ) const = 0;
-	virtual double computeIsometricForce(SimTK::State& s, double activation) const = 0;
-	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) const;
+	//virtual double computeIsometricForce(SimTK::State& s, double activation) const = 0;
+	//virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) const;
   	virtual double evaluateForceLengthVelocityCurve(double aActivation, double aNormalizedLength, double aNormalizedVelocity) const;
  	virtual double calcPennation( double aFiberLength, double aOptimalFiberLength, double aInitialPennationAngle) const;
  

@@ -255,7 +255,12 @@ public:
 	// End of Muscle's State Dependent Accessors.
     //@} 
 
-
+    ///@cond
+    //--------------------------------------------------------------------------
+	// DEPRECATED : API users don't even think about using this!!!
+	//--------------------------------------------------------------------------	
+    double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) const;
+    ///@endcond
 //=============================================================================
 // PROTECTED METHODS
 //=============================================================================
@@ -299,6 +304,15 @@ protected:
 	/** compute initial fiber length (velocity) such that muscle fiber and tendon are 
 	    in static equilibrium and update the state */
 	virtual void computeInitialFiberEquilibrium(SimTK::State& s) const = 0;
+
+    ///@cond
+    //--------------------------------------------------------------------------
+	// DEPRECATED : API users don't even think about using this!!!
+	//--------------------------------------------------------------------------	
+    /** compute the fiber-length state and resulting muscle force that yields
+	    zero fiber velocity (isometric) for the given activation */
+	virtual double computeIsometricForce(SimTK::State& s, double activation) const =0;
+    ///@endcond
 
 	// End of Muscle's State Related Calculations.
     //@} 

@@ -108,11 +108,7 @@ public:
     //--------------------------------------------------------------------------
 	double getActivationRate(const SimTK::State& s) const;
 
-	//--------------------------------------------------------------------------
-	// DEPRECATED 
-	//--------------------------------------------------------------------------
-	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) const;
-   
+    
 	//--------------------------------------------------------------------------
 	// SCALING
 	//--------------------------------------------------------------------------
@@ -131,10 +127,6 @@ protected:
 	/** compute initial fiber length (velocity) such that muscle fiber and tendon are 
 	    in static equilibrium and update the state */
 	virtual void computeInitialFiberEquilibrium(SimTK::State& s) const;
-
-	/** compute the fiber-length state and resulting muscle force that yields
-	    zero fiber velocity (isometric) for the given activation */
-	virtual double computeIsometricForce(SimTK::State& s, double activation) const =0;
 
 
 	/** Model Component Interface */

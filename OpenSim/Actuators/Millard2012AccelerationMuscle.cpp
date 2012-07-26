@@ -618,6 +618,17 @@ postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 // Muscle.h Interface
 //==============================================================================
 
+/*To be deprecated: this is just for backwards compatibility */
+double Millard2012AccelerationMuscle::computeIsometricForce(SimTK::State& s, 
+                                                double activation) const
+{
+    //Initialize activation to the users desired setting
+    setActivation(s,activation);
+    computeInitialFiberEquilibrium(s);
+    return getTendonForce(s);
+}
+
+
 double  Millard2012AccelerationMuscle::
     computeActuation(const SimTK::State& s) const
 {    
@@ -706,6 +717,7 @@ void Millard2012AccelerationMuscle::
     //6: passive force (N)
     //7: tendon force (N)                          
 }
+
 
 void Millard2012AccelerationMuscle::
     calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const

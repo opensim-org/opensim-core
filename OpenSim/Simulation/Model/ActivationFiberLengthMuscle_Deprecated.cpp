@@ -457,7 +457,7 @@ void ActivationFiberLengthMuscle_Deprecated::computeInitialFiberEquilibrium(SimT
  * @todo Reimplement this methods with more accurate representation of the
  * force-velocity curve.
  */
-double ActivationFiberLengthMuscle_Deprecated::computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) const
+/*double ActivationFiberLengthMuscle_Deprecated::computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) const
 {
 	double isometricForce = computeIsometricForce(s, aActivation);
 
@@ -470,7 +470,7 @@ double ActivationFiberLengthMuscle_Deprecated::computeIsokineticForceAssumingInf
 	double normalizedForceVelocity = evaluateForceLengthVelocityCurve(1.0,1.0,normalizedVelocity);
 
 	return isometricForce * normalizedForceVelocity;
-}
+}*/
 
 SimTK::SystemYIndex ActivationFiberLengthMuscle_Deprecated::getStateVariableSystemIndex(const string &stateVariableName) const
 {
