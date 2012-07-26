@@ -205,7 +205,7 @@ void ProbeReporter::constructColumnLabels(const SimTK::State& s)
             if (p.isDisabled()) continue; // Skip over disabled probes
 
             // Get column names for the probe after the operation
-            Array<string> probeLabels = p.getProbeLabels();
+            Array<string> probeLabels = p.getProbeOutputLabels();
             columnLabels.append(probeLabels);
         }
         //cout << "COL SIZE = " << columnLabels.getSize() << endl;

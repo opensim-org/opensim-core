@@ -224,34 +224,19 @@ int ActuatorPowerProbe::getNumProbeInputs() const
 /** 
  * Provide labels for the probe values being reported.
  */
-Array<string> ActuatorPowerProbe::getProbeLabels() const 
+Array<string> ActuatorPowerProbe::getProbeOutputLabels() const 
 {
     Array<string> labels;
 
     // Report sum of actuator powers
-    if (getSumPowersTogether()) {
-        if (getScaleFactor() != 1.0) {
-            char n[10];
-            sprintf(n, "%f", getScaleFactor());
-            labels.append(getName()+"_Summed_SCALED_BY_"+n+"X");
-        }
-        else
-            labels.append(getName()+"_Summed_"+getOperation());
-    }
+    if (getSumPowersTogether())
+        labels.append(getName()+"_Summed");
 
     // Report actuator powers individually
     else {
-        for (int i=0; i<getActuatorNames().size(); ++i) {
-            if (getScaleFactor() != 1.0) {
-            char n[10];
-            sprintf(n, "%f", getScaleFactor());
-            labels.append(getName()+"_"+getActuatorNames()[i]+"_SCALED_BY_"+n+"X");
-        }
-        else
-            labels.append(getName()+"_"+getActuatorNames()[i]+"_"+getOperation());
-        }
+        for (int i=0; i<getActuatorNames().size(); ++i)
+            labels.append(getName()+"_"+getActuatorNames()[i]);
     }
-
 
     return labels;
 }

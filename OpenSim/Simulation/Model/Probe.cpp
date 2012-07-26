@@ -119,7 +119,7 @@ void Probe::constructProperties(void)
     constructProperty_probe_operation("value");             // means "pass the value through".
     Vector defaultInitCond(1, 0.0);                         // Set the default initial condition to zero.
     constructProperty_initial_conditions_for_integration(defaultInitCond);
-    constructProperty_scale_factor(1.0);
+    constructProperty_gain(1.0);
 }
 
 //_____________________________________________________________________________
@@ -129,6 +129,9 @@ void Probe::constructProperties(void)
 void Probe::connectToModel(Model& model)
 {
     Super::connectToModel(model);
+
+    if (getName() == "")
+        setName("UnnamedProbe");
 }
 
 //_____________________________________________________________________________
@@ -138,6 +141,9 @@ void Probe::connectToModel(Model& model)
 void Probe::addToSystem(MultibodySystem& system) const
 {
     Super::addToSystem(system);
+
+    if (isDisabled())
+        return;
 
     // Make writable briefly so we can finalize the Probe to include 
     // references to the allocated System resources.
@@ -169,7 +175,7 @@ void Probe::addToSystem(MultibodySystem& system) const
     // ---------------------------------------------------------------------
     if (getOperation() == "value") {
         for (int i=0; i<getNumProbeInputs(); ++i) {
-            mutableThis->afterOperationValues[i] = Measure::Scale(system, getScaleFactor(), 
+            mutableThis->afterOperationValues[i] = Measure::Scale(system, getGain(), 
                 beforeOperationValues[i]);   
         }
     }
@@ -181,11 +187,11 @@ void Probe::addToSystem(MultibodySystem& system) const
     else if (getOperation() == "integrate") {
         // check to see that size of initial condition vector
         // is the same size as the data being integrated.
-        if (getInitialConditions().size() != getProbeLabels().getSize())  {
+        if (getInitialConditions().size() != getProbeOutputLabels().getSize())  {
             char numIC[5];
             sprintf(numIC, "%d", getInitialConditions().size());
             char numData[5];
-            sprintf(numData, "%d", getProbeLabels().getSize());
+            sprintf(numData, "%d", getProbeOutputLabels().getSize());
 
             string errorMessage = getConcreteClassName() + "(" + getName() + 
                 "): Mismatch between the size of the data labels corresponding to the size of the data vector being integrated ("
@@ -194,7 +200,7 @@ void Probe::addToSystem(MultibodySystem& system) const
         }
         for (int i=0; i<getNumProbeInputs(); ++i) {
             Measure::Constant initCond(system, getInitialConditions()(i));		// initial conditions
-            mutableThis->afterOperationValues[i] = Measure::Scale(system, getScaleFactor(), 
+            mutableThis->afterOperationValues[i] = Measure::Scale(system, getGain(), 
                 Measure::Integrate(system, beforeOperationValues[i], initCond));
         }
     }
@@ -205,7 +211,7 @@ void Probe::addToSystem(MultibodySystem& system) const
     // ---------------------------------------------------------------------
     else if (getOperation() == "differentiate") {
         for (int i=0; i<getNumProbeInputs(); ++i) {
-            mutableThis->afterOperationValues[i] = Measure::Scale(system, getScaleFactor(), 
+            mutableThis->afterOperationValues[i] = Measure::Scale(system, getGain(), 
                 Measure::Differentiate(system, beforeOperationValues[i]));
         }
     }
@@ -216,7 +222,7 @@ void Probe::addToSystem(MultibodySystem& system) const
     // ---------------------------------------------------------------------
     //else if (getOperation() == "minimum") {
     //    for (int i=0; i<getNumProbeInputs(); ++i) {
-    //        mutableThis->afterOperationValues[i] = Measure::Scale(system, getScaleFactor(), 
+    //        mutableThis->afterOperationValues[i] = Measure::Scale(system, getGain(), 
     //            Measure::Minimum(system, beforeOperationValues[i]));
     //    }
     //}
@@ -227,7 +233,7 @@ void Probe::addToSystem(MultibodySystem& system) const
     // ---------------------------------------------------------------------
     //else if (getOperation() == "maximum") {
     //    for (int i=0; i<getNumProbeInputs(); ++i) {
-    //        mutableThis->afterOperationValues[i] = Measure::Scale(system, getScaleFactor(), 
+    //        mutableThis->afterOperationValues[i] = Measure::Scale(system, getGain(), 
     //            Measure::Maximum(system, beforeOperationValues[i]));
     //    }
     //}
@@ -285,9 +291,9 @@ Vector Probe::getInitialConditions() const
  *
  * @return scaling_factor double
  */
-double Probe::getScaleFactor() const
+double Probe::getGain() const
 {
-    return get_scale_factor();
+    return get_gain();
 }
 
 //_____________________________________________________________________________
@@ -326,9 +332,9 @@ void Probe::setInitialConditions(Vector initial_conditions_for_integration)
  * Sets the scaling_factor.
  *
  */
-void Probe::setScaleFactor(double scaling_factor) 
+void Probe::setGain(double gain) 
 {
-    set_scale_factor(scaling_factor);
+    set_gain(gain);
 }
 
 
@@ -341,6 +347,12 @@ void Probe::setScaleFactor(double scaling_factor)
  */
 SimTK::Vector Probe::getProbeOutputs(const State& s) const 
 {
+    if (isDisabled()) {
+        string errorMessage = getConcreteClassName() + ": Cannot get the output from Probe '" + getName() + "' because it has been disabled.";
+        throw (Exception(errorMessage.c_str()));
+    }
+
+
     // For now, this is scalarized, i.e. compile the result of the separate
     // Measure for each scalar element of the probe input into a SimTK::Vector
     // of outputs.

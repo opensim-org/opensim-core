@@ -64,7 +64,7 @@
 #include "Model/PathActuator.h"
 #include "Model/ProbeSet.h"
 #include "Model/ActuatorPowerProbe.h"
-#include "Model/ForceProbe.h"
+#include "Model/ActuatorForceProbe.h"
 #include "Model/JointPowerProbe.h"
 #include "Model/SystemEnergyProbe.h"
 #include "Model/MetabolicMuscle.h"
@@ -207,14 +207,13 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( PathActuator() );
     Object::RegisterType( ProbeSet() );
     Object::RegisterType( ActuatorPowerProbe() );
-    Object::RegisterType( ForceProbe() );
+    Object::RegisterType( ActuatorForceProbe() );
     Object::RegisterType( JointPowerProbe() );
     Object::RegisterType( SystemEnergyProbe() );
     Object::RegisterType( MetabolicMuscle() );
     Object::RegisterType( MetabolicMuscleSet() );
     Object::RegisterType( MuscleMetabolicPowerProbeUmberger2003() );
     Object::RegisterType( MuscleMetabolicPowerProbeBhargava2004() );
-
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.

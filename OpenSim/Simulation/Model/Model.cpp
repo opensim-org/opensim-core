@@ -287,7 +287,6 @@ void Model::copyData(const Model &aModel)
 	_lengthUnitsStr = aModel._lengthUnitsStr;
 	_forceUnitsStr = aModel._forceUnitsStr;
 	_forceSet = aModel._forceSet;
-	_probeSet = aModel._probeSet;
 	_analysisSet = aModel._analysisSet;
     _gravity = aModel._gravity;
     _bodySet=aModel._bodySet;
@@ -296,6 +295,7 @@ void Model::copyData(const Model &aModel)
 	_componentSet=aModel._componentSet;
     _markerSet = aModel._markerSet;
     _contactGeometrySet = aModel._contactGeometrySet;
+    _probeSet = aModel._probeSet;
 
 }
 //_____________________________________________________________________________
@@ -377,13 +377,13 @@ void Model::setupProperties()
     _controllerSetProp.setComment("Controllers in the model.");
     _propertySet.append(&_controllerSetProp);
 
-	_probeSetProp.setName("ProbeSet");
-	_probeSetProp.setComment("Probes in the model.");
-    _propertySet.append(&_probeSetProp);
-
 	_componentSetProp.setName("ComponentSet");
 	_componentSetProp.setComment("Additional components in the model.");
     _propertySet.append(&_componentSetProp);
+
+    _probeSetProp.setName("ProbeSet");
+	_probeSetProp.setComment("Probes in the model.");
+    _propertySet.append(&_probeSetProp);
 }
 
 //------------------------------------------------------------------------------
@@ -401,7 +401,6 @@ void Model::buildSystem() {
 	_modelComponents.setSize(0);	// Make sure we start on a clean slate
 	_stateVariableNames.setSize(0);
 	_stateVariableSystemIndices.setSize(0);
-	tidyProbeNames();
 
     // Finish building the Model.
 	setup();
@@ -631,10 +630,6 @@ void Model::addToSystem(SimTK::MultibodySystem& system) const
     static_cast<const ModelComponentSet<Force>&>(getForceSet()).invokeAddToSystem(*_system);
 	if (getDebugLevel()>=2) cout << "Finished addToSystem for Forces." << endl;
 
-	// Probes add their parts to the System.
-	static_cast<const ModelComponentSet<Probe>&>(getProbeSet()).invokeAddToSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished addToSystem for Probes." << endl;
-
 	// Controllers add their parts to the System.
     static_cast<const ModelComponentSet<Controller>&>(getControllerSet()).invokeAddToSystem(*_system);
 	if (getDebugLevel()>=2) cout << "Finished addToSystem for Controllers." << endl;
@@ -642,6 +637,11 @@ void Model::addToSystem(SimTK::MultibodySystem& system) const
 	// Misc ModelComponents add their parts to the System.
 	_componentSet.invokeAddToSystem(*_system);
 	if (getDebugLevel()>=2) cout << "Finished addToSystem for user added Components." << endl;
+
+    // Probes add their parts to the System.
+	static_cast<const ModelComponentSet<Probe>&>(getProbeSet()).invokeAddToSystem(*_system);
+	if (getDebugLevel()>=2) cout << "Finished addToSystem for Probes." << endl;
+
 }
 
 /**
@@ -752,10 +752,9 @@ void Model::setup()
     updMarkerSet().connectMarkersToModel(*this);
     updContactGeometrySet().invokeConnectToModel(*this);
 	updForceSet().invokeConnectToModel(*this);
-	updProbeSet().invokeConnectToModel(*this);
 	updControllerSet().invokeConnectToModel(*this);
-
 	_componentSet.invokeConnectToModel(*this);
+    updProbeSet().invokeConnectToModel(*this);
 
 	// TODO: Get rid of the SimbodyEngine
 	updSimbodyEngine().connectSimbodyEngineToModel(*this);
@@ -845,9 +844,9 @@ void Model::initStateFromProperties(SimTK::State& state) const
     _contactGeometrySet.invokeInitStateFromProperties(state);
     _jointSet.invokeInitStateFromProperties(state);
     _forceSet.invokeInitStateFromProperties(state);
-	_probeSet.invokeInitStateFromProperties(state);
 	_controllerSet.invokeInitStateFromProperties(state);
 	_componentSet.invokeInitStateFromProperties(state);
+    _probeSet.invokeInitStateFromProperties(state);
 
 	// All model components have allocated their state variables so we can speed up access
 	// through model if we build a flat list of available state variables by name an their
@@ -894,9 +893,9 @@ void Model::setPropertiesFromState(const SimTK::State& state)
     _contactGeometrySet.invokeSetPropertiesFromState(state);
     _jointSet.invokeSetPropertiesFromState(state);
     _forceSet.invokeSetPropertiesFromState(state);
-	_probeSet.invokeSetPropertiesFromState(state);
 	_controllerSet.invokeSetPropertiesFromState(state);
 	_componentSet.invokeSetPropertiesFromState(state);
+    _probeSet.invokeSetPropertiesFromState(state);
 }
 
 void Model::generateDecorations
@@ -910,9 +909,9 @@ void Model::generateDecorations
     _contactGeometrySet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
     _jointSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
     _forceSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
-	_probeSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
 	_controllerSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
 	_componentSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
+    _probeSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
 }
 
 void Model::equilibrateMuscles(SimTK::State& state)
@@ -1847,11 +1846,11 @@ void Model::disownAllComponents()
 	updBodySet().setMemoryOwner(false);
 	updConstraintSet().setMemoryOwner(false);
 	updForceSet().setMemoryOwner(false);
-	updProbeSet().setMemoryOwner(false);
 	updContactGeometrySet().setMemoryOwner(false);
 	updControllerSet().setMemoryOwner(false);
 	updAnalysisSet().setMemoryOwner(false);
 	updMarkerSet().setMemoryOwner(false);
+    updProbeSet().setMemoryOwner(false);
 }
 
 void Model::overrideAllActuators( SimTK::State& s, bool flag) {
@@ -1937,35 +1936,4 @@ const Object& Model::getObjectByTypeAndName(const std::string& typeString, const
 	throw Exception("Model::getObjectByTypeAndName: no object of type "+typeString+
 		" and name "+nameString+" was found in the model.");
 
-}
-
-
-void Model::tidyProbeNames()
-{
-	Array<string> probeNames("");
-	const ProbeSet& probes = getProbeSet();
-	probes.getNames(probeNames);
-	// Make sure names are unique and non-empty. If empty assign names AutoProbexxx
-	int nP = probeNames.getSize();
-	//cout << "number of probes = " << nP << endl;
-	for(int i=0; i<nP; i++){
-		int j=1;
-		if (probeNames[i]==""){
-			bool validNameFound=false;
-			char pad[100];
-			// Make up a candidate name
-			sprintf(pad, "%s%d", probes.get(i).getConcreteClassName().c_str(), j++);
-			while(!validNameFound){
-				validNameFound = (probeNames.findIndex(string(pad))== -1);
-				if (!validNameFound){
-					sprintf(pad, "%s%d", probes.get(i).getConcreteClassName().c_str(), j++);
-					//sprintf(pad, "Probe%d", j++);
-				}
-			}
-			string newName(pad);
-			updProbeSet()[i].setName(newName);
-			probeNames.set(i, newName);
-			cout << "Changing blank name for probe to " << newName << endl;
-		}
-	}
 }

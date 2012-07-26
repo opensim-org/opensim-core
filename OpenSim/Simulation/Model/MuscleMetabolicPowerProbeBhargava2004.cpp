@@ -557,18 +557,10 @@ int MuscleMetabolicPowerProbeBhargava2004::getNumProbeInputs() const
 /** 
  * Provide labels for the probe values being reported.
  */
-Array<string> MuscleMetabolicPowerProbeBhargava2004::getProbeLabels() const 
+Array<string> MuscleMetabolicPowerProbeBhargava2004::getProbeOutputLabels() const 
 {
     Array<string> labels;
-
-    if (getScaleFactor() != 1.0) {
-        char n[10];
-        sprintf(n, "%f", getScaleFactor());
-        labels.append(getName()+"_SCALED_BY_"+n+"X");
-    }
-    else
-        labels.append(getName()+"_"+getOperation());
-
+    labels.append(getName());
     return labels;
 }
 

@@ -228,34 +228,19 @@ int JointPowerProbe::getNumProbeInputs() const
 /** 
  * Provide labels for the probe values being reported.
  */
-Array<string> JointPowerProbe::getProbeLabels() const 
+Array<string> JointPowerProbe::getProbeOutputLabels() const 
 {
     Array<string> labels;
 
     // Report sum of joint powers
-    if (getSumPowersTogether()) {
-        if (getScaleFactor() != 1.0) {
-            char n[10];
-            sprintf(n, "%f", getScaleFactor());
-            labels.append(getName()+"_Summed_SCALED_BY_"+n+"X");
-        }
-        else
-            labels.append(getName()+"_Summed_"+getOperation());
-    }
+    if (getSumPowersTogether())
+        labels.append(getName()+"_Summed");
 
     // Report joint powers individually
     else {
-        for (int i=0; i<getJointNames().size(); ++i) {
-            if (getScaleFactor() != 1.0) {
-            char n[10];
-            sprintf(n, "%f", getScaleFactor());
-            labels.append(getName()+"_"+getJointNames()[i]+"_SCALED_BY_"+n+"X");
-        }
-        else
-            labels.append(getName()+"_"+getJointNames()[i]+"_"+getOperation());
-        }
+        for (int i=0; i<getJointNames().size(); ++i)
+            labels.append(getName()+"_"+getJointNames()[i]);
     }
-
 
     return labels;
 }

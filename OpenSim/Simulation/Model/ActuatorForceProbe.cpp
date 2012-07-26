@@ -1,4 +1,4 @@
-// ForceProbe.cpp
+// ActuatorForceProbe.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //	AUTHOR: Tim Dorn
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -31,7 +31,7 @@
 //=============================================================================
 // INCLUDE
 //=============================================================================
-#include "ForceProbe.h"
+#include "ActuatorForceProbe.h"
 #include "ForceSet.h"
 
 
@@ -51,7 +51,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-ForceProbe::ForceProbe()
+ActuatorForceProbe::ActuatorForceProbe()
 {
     setNull();
     constructProperties();
@@ -61,21 +61,21 @@ ForceProbe::ForceProbe()
 /** 
  * Convenience constructor
  */
-ForceProbe::ForceProbe(const Array<string>& force_names, 
+ActuatorForceProbe::ActuatorForceProbe(const Array<string>& actuator_names, 
     const bool sum_forces_together, const double exponent)
 {
     setNull();
     constructProperties();
 
-    set_force_names(force_names);
+    set_actuator_names(actuator_names);
     set_sum_forces_together(sum_forces_together);
     set_exponent(exponent);
 }
 
 
 //_____________________________________________________________________________
-// Set the data members of this ForceProbe to their null values.
-void ForceProbe::setNull()
+// Set the data members of this ActuatorForceProbe to their null values.
+void ActuatorForceProbe::setNull()
 {
     // no data members
 }
@@ -84,9 +84,9 @@ void ForceProbe::setNull()
 /**
  * Connect properties to local pointers.
  */
-void ForceProbe::constructProperties()
+void ActuatorForceProbe::constructProperties()
 {
-    constructProperty_force_names();
+    constructProperty_actuator_names();
     constructProperty_sum_forces_together(false);
     constructProperty_exponent(1.0);
 }
@@ -97,56 +97,56 @@ void ForceProbe::constructProperties()
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Returns the name(s) of the Forces being probed.
+ * Returns the name(s) of the Actuator forces being probed.
  */
-const Property<string>& ForceProbe::getForceNames() const
+const Property<string>& ActuatorForceProbe::getActuatorNames() const
 {
-    return getProperty_force_names();
+    return getProperty_actuator_names();
 }
 
 //_____________________________________________________________________________
 /**
- * Returns whether to report sum of all forces together
+ * Returns whether to report sum of all Actuator forces together
    or report the forces individually.
  */
-const bool ForceProbe::getSumForcesTogether() const
+const bool ActuatorForceProbe::getSumForcesTogether() const
 {
     return get_sum_forces_together();
 }
 
 //_____________________________________________________________________________
 /**
- * Returns the exponent to apply to each force.
+ * Returns the exponent to apply to each Actuator force.
  */
-const double ForceProbe::getExponent() const
+const double ActuatorForceProbe::getExponent() const
 {
     return get_exponent();
 }
 
 //_____________________________________________________________________________
 /**
- * Sets the name(s) of the Forces being probed.
+ * Sets the name(s) of the Actuator forces being probed.
  */
-void ForceProbe::setForceNames(const Array<string>& forceNames)
+void ActuatorForceProbe::setActuatorNames(const Array<string>& actuator_names)
 {
-    set_force_names(forceNames);
+    set_actuator_names(actuator_names);
 }
 
 //_____________________________________________________________________________
 /**
- * Sets whether to report sum of all force values together
+ * Sets whether to report sum of all actuator force values together
    or report the force values individually.
  */
-void ForceProbe::setSumForcesTogether(const bool sum_forces_together)
+void ActuatorForceProbe::setSumForcesTogether(const bool sum_forces_together)
 {
     set_sum_forces_together(sum_forces_together);
 }
 
 //_____________________________________________________________________________
 /**
- * Sets the exponent to apply to each force.
+ * Sets the exponent to apply to each actuator force.
  */
-void ForceProbe::setExponent(const double exponent)
+void ActuatorForceProbe::setExponent(const double exponent)
 {
     set_exponent(exponent);
 }
@@ -161,20 +161,20 @@ void ForceProbe::setExponent(const double exponent)
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aModel OpenSim model containing this ForceProbe.
+ * @param aModel OpenSim model containing this ActuatorForceProbe.
  */
-void ForceProbe::connectToModel(Model& model)
+void ActuatorForceProbe::connectToModel(Model& model)
 {
     Super::connectToModel(model);
 
-    // check that each Force in the force_names array exists in the model
-    int nF = getForceNames().size();
+    // check that each Actuator in the actuator_names array exists in the model
+    int nF = getActuatorNames().size();
     for (int i=0; i<nF; i++) {
-        string forceName = getForceNames()[i];
+        string forceName = getActuatorNames()[i];
         int k = model.getForceSet().getIndex(forceName);
         if (k<0) {
-            string errorMessage = getConcreteClassName() + ": Invalid Force '" 
-                                  + forceName + "' specified in <force_names>.";
+            string errorMessage = getConcreteClassName() + ": Invalid Actuator '" 
+                                  + forceName + "' specified in <actuator_names>.";
             throw OpenSim::Exception(errorMessage);
         }
     }
@@ -189,9 +189,9 @@ void ForceProbe::connectToModel(Model& model)
 /**
  * Compute the Force.
  */
-SimTK::Vector ForceProbe::computeProbeInputs(const State& s) const
+SimTK::Vector ActuatorForceProbe::computeProbeInputs(const State& s) const
 {
-    int nF = getForceNames().size();
+    int nF = getActuatorNames().size();
     SimTK::Vector TotalF;
 
     if (getSumForcesTogether()) {
@@ -201,24 +201,12 @@ SimTK::Vector ForceProbe::computeProbeInputs(const State& s) const
     else
         TotalF.resize(nF);
 
-    // Loop through each force in the list of force_names
+    // Loop through each actuator in the list of actuator_names
     for (int i=0; i<nF; ++i)
     {
-        double Ftmp = 0.0;
-        string forceName = getForceNames()[i];
-        int k = _model->getForceSet().getIndex(forceName);
-
-        // Get the "Force" force from the Force object method getRecordValues(s)
-        Array<double> forceValues = _model->getForceSet().get(k).getRecordValues(s);
-        
-        // For body forces (which have 6 output forces), we give a warning
-        if(forceValues.getSize() != 1) {
-            cout << "Warning: Force [" << forceName << "] does not have a single output (it has " << forceValues.getSize() << "). Summing together.." << endl;
-            for (int j=0; j<forceValues.getSize(); j++)
-                Ftmp += forceValues.get(j);
-        }
-        else 
-            Ftmp = forceValues.get(0);
+        // Get the Actuator force
+        int k = _model->getForceSet().getIndex(getActuatorNames()[i]);
+        double Ftmp = _model->getActuators().get(k).getForce(s);
 
         // Append to output vector
         if (getSumForcesTogether())
@@ -235,12 +223,12 @@ SimTK::Vector ForceProbe::computeProbeInputs(const State& s) const
 /** 
  * Returns the number of probe inputs in the vector returned by computeProbeInputs().
  */
-int ForceProbe::getNumProbeInputs() const
+int ActuatorForceProbe::getNumProbeInputs() const
 {
     if (getSumForcesTogether())
         return 1;
     else
-        return getForceNames().size();
+        return getActuatorNames().size();
 }
 
 
@@ -248,34 +236,19 @@ int ForceProbe::getNumProbeInputs() const
 /** 
  * Provide labels for the probe values being reported.
  */
-Array<string> ForceProbe::getProbeLabels() const 
+Array<string> ActuatorForceProbe::getProbeOutputLabels() const 
 {
     Array<string> labels;
 
-    // Report sum of force values
-    if (getSumForcesTogether()) {
-        if (getScaleFactor() != 1.0) {
-            char n[10];
-            sprintf(n, "%f", getScaleFactor());
-            labels.append(getName()+"_Summed_SCALED_BY_"+n+"X");
-        }
-        else
-            labels.append(getName()+"_Summed_"+getOperation());
-    }
+    // Report sum of actuator forces
+    if (getSumForcesTogether())
+        labels.append(getName()+"_Summed");
 
-    // Report force values individually
+    // Report actuator forces individually
     else {
-        for (int i=0; i<getForceNames().size(); ++i) {
-            if (getScaleFactor() != 1.0) {
-            char n[10];
-            sprintf(n, "%f", getScaleFactor());
-            labels.append(getName()+"_"+getForceNames()[i]+"_SCALED_BY_"+n+"X");
-        }
-        else
-            labels.append(getName()+"_"+getForceNames()[i]+"_"+getOperation());
-        }
+        for (int i=0; i<getActuatorNames().size(); ++i)
+            labels.append(getName()+"_"+getActuatorNames()[i]);
     }
-
 
     return labels;
 }
