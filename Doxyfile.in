@@ -743,7 +743,7 @@ EXCLUDE_PATTERNS       = *.svn \
                          *.sto \
                          *ArrayPtrs* \
                          *Instantiator* \
-                         *InducedAccelerations* \
+                         *Analytic* \
                          */src/* \
                          */test* \
                          */Test* \

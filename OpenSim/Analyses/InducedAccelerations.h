@@ -1,5 +1,5 @@
-#ifndef _InducedAccelerations_h_
-#define _InducedAccelerations_h_
+#ifndef OPENSIM_INDUCED_ACCELERATIONS_H_
+#define OPENSIM_INDUCED_ACCELERATIONS_H_
 // InducedAccelerations.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //	AUTHOR: Ajay Seth
@@ -36,32 +36,13 @@
 //=============================================================================
 // Headers define the various property types that OpenSim objects can read 
 #include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyBoolArray.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyIntArray.h>
+#include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 // Header to define analysis (DLL) interface
 #include "osimAnalysesDLL.h"
-#include <SimTKsimbody.h>
-#include <map>
-#include <string>
-// #include <iostream.h>
 
-
-//=============================================================================
-//=============================================================================
-/*
- * A class to perform Induced Accelerations using the hard constraint method
- * Reports the contributions of all forces. 
- *
- * @author Ajay Seth
- * @version 1.0
- */
 namespace OpenSim { 
 
 class Model;
@@ -70,6 +51,26 @@ class CoordinateSet;
 class ConstraintSet;
 class ExternalForce;
 
+//=============================================================================
+//=============================================================================
+/**
+ * A class to perform an Induced Accelerations analysis using a constraint-
+ * method of replacing external (contact) forces in order to determine
+ * the contributions of actuators to external reaction forces and thus
+ * model accelerations including that of the center-of-mass.
+ * The analysis reports the contributions of all forces to user identified
+ * accelerations of coordinates, bodies and/or center-of-mass. 
+ *
+ * Induced Accelerations can apply any OpenSim::Constraint that implements
+ * setContactPointForInducedAccelerations() to replace external forces, which
+ * are pecisely the same external forces (ExternalLoads file) applied
+ * during the forward dynamics simulation being analyzed.
+ *
+ * The ConstraintSet supplied must have the same number constraints as
+ * external forces AND apply to the same bodies with respect to ground.
+ *
+ * @author Ajay Seth
+ */
 class OSIMANALYSES_API InducedAccelerations : public Analysis {
 OpenSim_DECLARE_CONCRETE_OBJECT(InducedAccelerations, Analysis);
 
@@ -93,7 +94,9 @@ protected:
 	PropertyStrArray _bodyNamesProp;
 	Array<std::string> &_bodyNames;
 
-	/** Set containing the constraints used to represent contact in the analysis */
+	/** Set containing the constraints used to represent contact in the analysis.
+		These must correspond to the number of external forces and involve the 
+		same bodies in contact with ground. */
 	PropertyObj _constraintSetProp;
 	ConstraintSet &_constraintSet;
 
@@ -130,10 +133,6 @@ protected:
 	// Hold the actual model gravity since we will be changing it back and forth from 0
 	SimTK::Vec3 _gravity;
 
-	// Mapping of constraint type for switch case handling! *Added by Sam Hamner 07-Mar-2011
-	// enum constraintValue { ROLL, POINT, PIN, WELD };
-	// std::map <std::string, constraintValue> constraintMap;
-	
 
 //=============================================================================
 // METHODS
@@ -148,7 +147,7 @@ public:
 
 
 	/**
-	 * Construct an object from file.
+	 * Construct InducedAccelerations from file.
 	 *
 	 * @param aFileName File name of the document.
 	 */

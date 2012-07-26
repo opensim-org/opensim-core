@@ -192,15 +192,7 @@ void InducedAccelerations::setNull()
 }
 //_____________________________________________________________________________
 /*
- * Set up the properties for your analysis.
- *
- * You should give each property a meaningful name and an informative comment.
- * The name you give each property is the tag that will be used in the XML
- * file.  The comment will appear before the property in the XML file.
- * In addition, the comments are used for tool tips in the OpenSim GUI.
- *
- * All properties are added to the property set.  Once added, they can be
- * read in and written to file.
+ * Set up the properties the analysis.
  */
 void InducedAccelerations::setupProperties()
 {
@@ -216,16 +208,19 @@ void InducedAccelerations::setupProperties()
 	_propertySet.append(&_bodyNamesProp);
 
 	_constraintSetProp.setName("ConstraintSet");
-	_constraintSetProp.setComment("Specify the constraints used to replace ground contact."
-								  "Currently, RollingOnSurfaceConstraints are supported ");
+	_constraintSetProp.setComment("Specify the constraints used to replace external forces applied "
+		"to run the forward simulation. Currently, RollingOnSurfaceConstraint, PointConstraint "
+		"and WeldConstraint are supported. There must be as many constraints listed as external "
+		"forces applied to the model. Constraints must be between the body to which the external "
+		"force is applied and ground.");
 	_propertySet.append(&_constraintSetProp);
 
 	_forceThresholdProp.setName("force_threshold");
-	_forceThresholdProp.setComment("The minimum amount of contact force (N) that is sufficient to be replaced with a constraint.");
+	_forceThresholdProp.setComment("The minimum amount of external force (N) that is neccessary to be replaced with a constraint.");
 	_propertySet.append(&_forceThresholdProp);
 
 	_computePotentialsOnlyProp.setName("compute_potentials_only");
-	_computePotentialsOnlyProp.setComment("Only compute the potential (acceleration/force) of a muscle to accelerate the model.");
+	_computePotentialsOnlyProp.setComment("Only compute the potential (acceleration/force) of an actuator to accelerate the model.");
 	_propertySet.append(&_computePotentialsOnlyProp);
 
 	_reportConstraintReactionsProp.setName("report_constraint_reactions");
@@ -238,7 +233,7 @@ void InducedAccelerations::setupProperties()
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Construct a description for the body kinematics files.
+ * Construct a description for the output files.
  */
 void InducedAccelerations::constructDescription()
 {
