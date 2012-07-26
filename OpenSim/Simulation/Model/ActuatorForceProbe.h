@@ -59,9 +59,9 @@ public:
     These are the serializable properties associated with this class. **/
     /**@{**/
 
-    /** List of Forces to probe.  **/
+    /** List of Actuator forces to probe.  **/
     OpenSim_DECLARE_LIST_PROPERTY(actuator_names, std::string,
-        "Specify a list of model Actuator forces whose value should be calculated.");
+        "Specify a list of model actuator forces whose value should be calculated.");
 
     /** Flag to specify whether to report the sum of all forces,
         or report each force value separately.  **/
@@ -69,11 +69,11 @@ public:
         "Flag to specify whether to report the sum of all actuator forces, "
         "or report each force value separately.");
 
-    /** Exponent to apply to each force prior to the Probe operation. 
-    For example, if two forces F1 and F2 are given in actuator_names, then the
-    Probe value will be equal to Force_F1^exponent + Force_F2^exponent.  **/
+    /** Element-wise power exponent to apply to each force prior to the Probe operation. 
+    For example, if two actuators A1 and A2 are given in actuator_names, then the
+    Probe value will be equal to Force_A1^exponent + Force_A2^exponent.  **/
     OpenSim_DECLARE_PROPERTY(exponent, double,
-        "Exponent to apply to each force prior to the Probe operation.");
+        "Element-wise power exponent to apply to each actuator force prior to the Probe operation.");
 
     /**@}**/
 

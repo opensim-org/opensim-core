@@ -69,11 +69,11 @@ public:
         "Flag to specify whether to report the sum of all actuator powers, "
         "or report each actuator power value separately.");
 
-    /** Exponent to apply to each actuator power prior to the Probe operation. 
+    /** Element-wise power exponent to apply to each actuator power prior to the Probe operation. 
     For example, if two actuators A1 and A2 are given in actuator_names, then the
     Probe value will be equal to Power_A1^exponent + Power_A2^exponent.  **/
     OpenSim_DECLARE_PROPERTY(exponent, double,
-        "Exponent to apply to each actuator power prior to the Probe operation.");
+        "Element-wise power exponent to apply to each actuator power prior to the Probe operation.");
     /**@}**/
 
 //==============================================================================

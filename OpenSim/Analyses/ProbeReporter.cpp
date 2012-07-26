@@ -282,7 +282,6 @@ begin(SimTK::State& s)
 {
     if(!proceed()) return 0;
 
-    //tidyProbeNames();
     // LABELS
     constructColumnLabels(s);
     // RESET STORAGE

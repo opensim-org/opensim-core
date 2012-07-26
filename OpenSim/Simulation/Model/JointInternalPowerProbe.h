@@ -1,7 +1,7 @@
-#ifndef OPENSIM_JOINT_POWER_PROBE_H_
-#define OPENSIM_JOINT_POWER_PROBE_H_
+#ifndef OPENSIM_JOINT_INTERNAL_POWER_PROBE_H_
+#define OPENSIM_JOINT_INTERNAL_POWER_PROBE_H_
 
-// JointPowerProbe.h
+// JointInternalPowerProbe.h
 // Author: Tim Dorn
 /*
  * Copyright (c)  2011, Stanford University. All rights reserved. 
@@ -38,19 +38,20 @@
 namespace OpenSim {
 
 //==============================================================================
-//                               JOINT POWER PROBE
+//                        JOINT INTERNAL POWER PROBE
 //==============================================================================
 /**
- * JointPowerProbe is a ModelComponent Probe for computing an operation on a 
- * joint power or sum of joint powers in the model during a simulation.
- * E.g. Joint work is the integral of joint power with respect to time, so by using the
- * JointPowerProbe with the 'integrate' operation, Joint work may be computed.
+ * JointInternalPowerProbe is a ModelComponent Probe for computing an operation on 
+ * internal joint power or sum of joint powers in the model during a simulation.
+ * E.g. Joint internal work is the integral of joint internal power with respect to time, 
+ * so by using the JointInternalPowerProbe with the 'integrate' operation, Joint internal
+ * work may be computed.
  *
  * @author Tim Dorn
  * @version 1.0
  */
-class OSIMSIMULATION_API JointPowerProbe : public Probe {
-OpenSim_DECLARE_CONCRETE_OBJECT(JointPowerProbe, Probe);
+class OSIMSIMULATION_API JointInternalPowerProbe : public Probe {
+OpenSim_DECLARE_CONCRETE_OBJECT(JointInternalPowerProbe, Probe);
 public:
 //==============================================================================
 // PROPERTIES
@@ -70,11 +71,11 @@ public:
         "Flag to specify whether to report the sum of all joint powers, "
         "or report each joint power value separately.");
 
-    /** Exponent to apply to each joint power prior to the Probe operation. 
+    /** Element-wise power exponent to apply to each joint power prior to the Probe operation. 
     For example, if two joints J1 and J2 are given in joint_names, then the
     Probe value will be equal to JointPower_J1^exponent + JointPower_J2^exponent.  **/
     OpenSim_DECLARE_PROPERTY(exponent, double,
-        "Exponent to apply to each joint power prior to the Probe operation.");
+        "Element-wise power exponent to apply to each joint power prior to the Probe operation.");
     /**@}**/
 
 //=============================================================================
@@ -85,9 +86,9 @@ public:
     // Constructor(s) and Setup
     //--------------------------------------------------------------------------
     /** Default constructor */
-    JointPowerProbe();
+    JointInternalPowerProbe();
     /** Convenience constructor */
-    JointPowerProbe(const Array<std::string>& joint_names, 
+    JointInternalPowerProbe(const Array<std::string>& joint_names, 
         const bool sum_powers_together, const double exponent);
 
     // Uses default (compiler-generated) destructor, copy constructor, copy 
@@ -145,12 +146,12 @@ private:
     void constructProperties();
 
 //=============================================================================
-};	// END of class JointPowerProbe
+};	// END of class JointInternalPowerProbe
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // OPENSIM_JOINT_POWER_PROBE_H_
+#endif // OPENSIM_JOINT_INTERNAL_POWER_PROBE_H_
 
 

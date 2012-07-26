@@ -67,11 +67,13 @@ class Model;
   |   =========================         ======================           |
   |                                               |                      |
   |                                               V                      |
-  |                                     ========================         |
+  |                                     ========================         |  
   |                                     |  SimTK::Vector       |         |
   |                                     |  getProbeOutputs(s)  |---------------->
   |                                     ========================         |
-  |                                                                      |
+  |                                    This method is called by the      |
+  |                                   ProbeReporter, or alternatively    |
+  |                                        by the API developer          |
   |----------------------------------------------------------------------|
 
   \endverbatim
@@ -81,19 +83,19 @@ class Model;
  * Note that all queries, operations, and scaling are performed by SimTK::Measures. 
  * Note also that to define a new child Probe class, three methods which are declared
  * as pure virtual in this Probe abstract class need to be overridden:\n
- * - computeProbeInputs()  ---   returns the input probe values (i.e., model queries).
- * - getNumProbeInputs()   ---   returns the size of the vector of input probe values (i.e., model queries).
- * - getProbeOutputLabels()      ---   returns the labels that correspond to each probe value.
+ * - computeProbeInputs()     ---   returns the input probe values (i.e., model queries).
+ * - getNumProbeInputs()      ---   returns the size of the vector of input probe values (i.e., model queries).
+ * - getProbeOutputLabels()   ---   returns the labels that correspond to each probe value.
  *
  * <B> Available probe operations: </B>
  * - 'value' (default): returns the probe input value.
- * - 'integrate': returns the integral of the probe input value.
- * - 'differentiate': returns the derivative of the probe input value.
+ * - 'integrate'      : returns the integral of the probe input value.
+ * - 'differentiate'  : returns the derivative of the probe input value.
  *
  * The Probe interface differs from the Analysis interface in two fundamental ways:
  * -  (1) Operations can be performed on probes (i.e., in addition to simply reporting 
  *        a model value, model values (probe input values) may have operations performed
- *        on them such as integration and differentiation.
+ *        on them such as integration and differentiation).
  *
  * -  (2) Analyses are not formally part of the model structure (i.e. they are not 
  *        ModelComponents), and because of this, analysis results can not be accessed with
@@ -135,7 +137,7 @@ public:
     /**@}**/
 
 //=============================================================================
-// PUBLIC METHODS
+// METHODS
 //=============================================================================
     Probe();
 

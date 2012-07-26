@@ -47,7 +47,7 @@
 #include <OpenSim/Actuators/osimActuators.h>
 #include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
-#include <OpenSim/Simulation/Model/JointPowerProbe.h>
+#include <OpenSim/Simulation/Model/JointInternalPowerProbe.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 
@@ -345,9 +345,9 @@ void simulateMuscle(
 	muscWorkProbe->setOperation("integrate");
 	model.addProbe(muscWorkProbe);
 
-	// Add a JointPowerProbe to measure the work done by the joint
+	// Add a JointInternalPowerProbe to measure the work done by the joint
 	// will be 0 unless joint has prescribed motion
-    JointPowerProbe * jointWorkProbe = new JointPowerProbe(jointNames, true, 1);
+    JointInternalPowerProbe * jointWorkProbe = new JointInternalPowerProbe(jointNames, true, 1);
 	jointWorkProbe->setOperation("integrate");
 	model.addProbe(jointWorkProbe);
 

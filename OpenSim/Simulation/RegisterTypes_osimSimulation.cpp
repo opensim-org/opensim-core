@@ -65,7 +65,7 @@
 #include "Model/ProbeSet.h"
 #include "Model/ActuatorPowerProbe.h"
 #include "Model/ActuatorForceProbe.h"
-#include "Model/JointPowerProbe.h"
+#include "Model/JointInternalPowerProbe.h"
 #include "Model/SystemEnergyProbe.h"
 #include "Model/MetabolicMuscle.h"
 #include "Model/MetabolicMuscleSet.h"
@@ -208,7 +208,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::RegisterType( ProbeSet() );
     Object::RegisterType( ActuatorPowerProbe() );
     Object::RegisterType( ActuatorForceProbe() );
-    Object::RegisterType( JointPowerProbe() );
+    Object::RegisterType( JointInternalPowerProbe() );
     Object::RegisterType( SystemEnergyProbe() );
     Object::RegisterType( MetabolicMuscle() );
     Object::RegisterType( MetabolicMuscleSet() );

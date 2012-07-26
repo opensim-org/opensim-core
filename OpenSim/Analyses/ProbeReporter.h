@@ -67,18 +67,22 @@ namespace OpenSim {
  * Probe in the Model):
    \verbatim
                                 
-                                ----------------------------
+                                DEVELOPER NEEDS TO IMPLEMENT
+                                THIS INSIDE THE CHILD PROBE
+                                ============================
                                 |  SimTK::Vector           |
                           |---> |  computeProbeOutputs(s)  | ----|
-                          |     ----------------------------     |
-  -------------------     |                                      |     --------------------------------------------
-  |  ProbeReporter  | -----                                      ----> |  Output to internal Storage and          |
-  |  Analysis       | -----                                      ----> |  ultimately to file at end of simulation |
-  -------------------     |                                      |     --------------------------------------------
-                          |     ----------------------------     |
+                          |     ============================     |
+  ===================     |                                      |     ==========================
+  |  ProbeReporter  | -----                                      ----> |  Output to file        |
+  |  Analysis       | -----                                      ----> |  at end of simulation  |
+  ===================     |                                      |     ==========================
+                          |     ============================     |
                           |---> |  Array<string>           | ----|
                                 |  getProbeOutputLabels()  |
-                                ----------------------------
+                                ============================
+                                DEVELOPER NEEDS TO IMPLEMENT
+                                THIS INSIDE THE CHILD PROBE
 
   \endverbatim
  * 

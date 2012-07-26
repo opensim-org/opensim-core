@@ -1,4 +1,4 @@
-// JointPowerProbe.cpp
+// JointInternalPowerProbe.cpp
 // Authors: Tim Dorn
 /*
  * Copyright (c)  2006-12, Stanford University. All rights reserved. 
@@ -29,7 +29,7 @@
 //=============================================================================
 // INCLUDE
 //=============================================================================
-#include "JointPowerProbe.h"
+#include "JointInternalPowerProbe.h"
 
 using namespace std;
 using namespace SimTK;
@@ -44,7 +44,7 @@ using namespace OpenSim;
 
 //_____________________________________________________________________________
 // Default constructor.
-JointPowerProbe::JointPowerProbe() 
+JointInternalPowerProbe::JointInternalPowerProbe() 
 {
     setNull();
     constructProperties();
@@ -52,7 +52,7 @@ JointPowerProbe::JointPowerProbe()
 
 //_____________________________________________________________________________
 // Convenience constructor.
-JointPowerProbe::JointPowerProbe(const Array<string>& joint_names, 
+JointInternalPowerProbe::JointInternalPowerProbe(const Array<string>& joint_names, 
     const bool sum_powers_together, const double exponent)
 {
     setNull();
@@ -64,15 +64,15 @@ JointPowerProbe::JointPowerProbe(const Array<string>& joint_names,
 }
 
 //_____________________________________________________________________________
-// Set the data members of this JointPowerProbe to their null values.
-void JointPowerProbe::setNull()
+// Set the data members of this JointInternalPowerProbe to their null values.
+void JointInternalPowerProbe::setNull()
 {
     // no data members
 }
 
 //_____________________________________________________________________________
 // Allocate and initialize properties.
-void JointPowerProbe::constructProperties()
+void JointInternalPowerProbe::constructProperties()
 {
     constructProperty_joint_names();
     constructProperty_sum_powers_together(false);
@@ -86,7 +86,7 @@ void JointPowerProbe::constructProperties()
 /**
  * Returns the names of the Joints being probed.
  */
-const Property<string>& JointPowerProbe::getJointNames() const
+const Property<string>& JointInternalPowerProbe::getJointNames() const
 {
     return getProperty_joint_names();
 }
@@ -96,7 +96,7 @@ const Property<string>& JointPowerProbe::getJointNames() const
  * Returns whether to report sum of all joint powers together
    or report the joint powers individually.
  */
-const bool JointPowerProbe::getSumPowersTogether() const
+const bool JointInternalPowerProbe::getSumPowersTogether() const
 {
     return get_sum_powers_together();
 }
@@ -105,7 +105,7 @@ const bool JointPowerProbe::getSumPowersTogether() const
 /**
  * Returns the exponent to apply to each joint power.
  */
-const double JointPowerProbe::getExponent() const
+const double JointInternalPowerProbe::getExponent() const
 {
     return get_exponent();
 }
@@ -114,7 +114,7 @@ const double JointPowerProbe::getExponent() const
 /**
  * Sets the names of the Joints being probed.
  */
-void JointPowerProbe::setJointNames(const Array<string>& aJointNames)
+void JointInternalPowerProbe::setJointNames(const Array<string>& aJointNames)
 {
     set_joint_names(aJointNames);
 }
@@ -124,7 +124,7 @@ void JointPowerProbe::setJointNames(const Array<string>& aJointNames)
  * Sets whether to report sum of all joint powers together
    or report the joint powers individually.
  */
-void JointPowerProbe::setSumPowersTogether(const bool sum_powers_together)
+void JointInternalPowerProbe::setSumPowersTogether(const bool sum_powers_together)
 {
     set_sum_powers_together(sum_powers_together);
 }
@@ -133,7 +133,7 @@ void JointPowerProbe::setSumPowersTogether(const bool sum_powers_together)
 /**
  * Sets the exponent to apply to each joint power.
  */
-void JointPowerProbe::setExponent(const double exponent)
+void JointInternalPowerProbe::setExponent(const double exponent)
 {
     set_exponent(exponent);
 }
@@ -149,9 +149,9 @@ void JointPowerProbe::setExponent(const double exponent)
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aModel OpenSim model containing this JointPowerProbe.
+ * @param aModel OpenSim model containing this JointInternalPowerProbe.
  */
-void JointPowerProbe::connectToModel(Model& aModel)
+void JointInternalPowerProbe::connectToModel(Model& aModel)
 {
     Super::connectToModel(aModel);
 
@@ -179,7 +179,7 @@ void JointPowerProbe::connectToModel(Model& aModel)
 /**
  * Compute the Joint power.
  */
-SimTK::Vector JointPowerProbe::computeProbeInputs(const State& s) const
+SimTK::Vector JointInternalPowerProbe::computeProbeInputs(const State& s) const
 {
     int nJ = getJointNames().size();
     SimTK::Vector TotalP;
@@ -215,7 +215,7 @@ SimTK::Vector JointPowerProbe::computeProbeInputs(const State& s) const
 /** 
  * Returns the number of probe inputs in the vector returned by computeProbeInputs().
  */
-int JointPowerProbe::getNumProbeInputs() const
+int JointInternalPowerProbe::getNumProbeInputs() const
 {
     if (getSumPowersTogether())
         return 1;
@@ -228,7 +228,7 @@ int JointPowerProbe::getNumProbeInputs() const
 /** 
  * Provide labels for the probe values being reported.
  */
-Array<string> JointPowerProbe::getProbeOutputLabels() const 
+Array<string> JointInternalPowerProbe::getProbeOutputLabels() const 
 {
     Array<string> labels;
 

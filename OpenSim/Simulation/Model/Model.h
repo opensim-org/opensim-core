@@ -835,7 +835,6 @@ private:
 	void createGroundBodyIfNecessary();
     void setDefaultProperties();
 	void createMultibodySystem();
-	void tidyProbeNames();
 
 	// Copy only the model-defining data members from source.
 	void copyData(const Model& source);
