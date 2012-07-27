@@ -168,14 +168,13 @@ void ActuatorForceProbe::connectToModel(Model& model)
     Super::connectToModel(model);
 
     // check that each Actuator in the actuator_names array exists in the model
-    int nF = getActuatorNames().size();
-    for (int i=0; i<nF; i++) {
-        string forceName = getActuatorNames()[i];
-        int k = model.getForceSet().getIndex(forceName);
+    int nA = getActuatorNames().size();
+    for (int i=0; i<nA; i++) {
+        string actName = getActuatorNames()[i];
+        int k = model.getActuators().getIndex(actName);
         if (k<0) {
-            string errorMessage = getConcreteClassName() + ": Invalid Actuator '" 
-                                  + forceName + "' specified in <actuator_names>.";
-            throw OpenSim::Exception(errorMessage);
+            string errorMessage = getConcreteClassName() + ": Invalid Actuator '" + actName + "' specified in <actuator_names>.";
+            throw (Exception(errorMessage.c_str()));
         }
     }
 }
@@ -191,7 +190,7 @@ void ActuatorForceProbe::connectToModel(Model& model)
  */
 SimTK::Vector ActuatorForceProbe::computeProbeInputs(const State& s) const
 {
-    int nF = getActuatorNames().size();
+    int nA = getActuatorNames().size();
     SimTK::Vector TotalF;
 
     if (getSumForcesTogether()) {
@@ -199,13 +198,13 @@ SimTK::Vector ActuatorForceProbe::computeProbeInputs(const State& s) const
         TotalF(0) = 0;       // Initialize to zero
     }
     else
-        TotalF.resize(nF);
+        TotalF.resize(nA);
 
     // Loop through each actuator in the list of actuator_names
-    for (int i=0; i<nF; ++i)
+    for (int i=0; i<nA; ++i)
     {
         // Get the Actuator force
-        int k = _model->getForceSet().getIndex(getActuatorNames()[i]);
+        int k = _model->getActuators().getIndex(getActuatorNames()[i]);
         double Ftmp = _model->getActuators().get(k).getForce(s);
 
         // Append to output vector
@@ -214,7 +213,6 @@ SimTK::Vector ActuatorForceProbe::computeProbeInputs(const State& s) const
         else
             TotalF(i) = std::pow(Ftmp, getExponent());
     }
-
     return TotalF;
 }
 
