@@ -238,7 +238,7 @@ operator=(const Analysis &aAnalysis)
  * Return whether or not to proceed with this callback.
  * The callback will not proceed (i.e., returns false) if either the
  * analysis is turned off or if aStep is not an even multiple of
- * the step interval set @see rdStepAnalysis.
+ * the step interval.
  *
  * @return True or False.
  */

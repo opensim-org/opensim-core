@@ -1,6 +1,6 @@
-#ifndef _rdSerializableObject_h_
-#define _rdSerializableObject_h_
-// rdSerializableObject.h:
+#ifndef _SerializableObject_h_
+#define _SerializableObject_h_
+// SerializableObject.h:
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c)  2005, Stanford University. All rights reserved. 
@@ -40,7 +40,7 @@
 #include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/SimmSpline.h>
-#include "rdSerializableObject2.h"
+#include "SerializableObject2.h"
 
 //=============================================================================
 //=============================================================================
@@ -53,8 +53,8 @@
 using std::string;
 namespace OpenSim { 
 
-class rdSerializableObject : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(rdSerializableObject, Object);
+class SerializableObject : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(SerializableObject, Object);
 public:
 	//=============================================================================
 	// PROPERTIES
@@ -77,7 +77,7 @@ public:
 	OpenSim_DECLARE_PROPERTY(Test_Str_2, std::string,
 		"Comment on a string");			
 	// Obj
-	OpenSim_DECLARE_PROPERTY(Test_Obj_2, rdSerializableObject3,
+	OpenSim_DECLARE_PROPERTY(Test_Obj_2, SerializableObject3,
 		"Comment on an Object");			
 	// IntArray
 	OpenSim_DECLARE_LIST_PROPERTY(Test_IntArray_2, int,
@@ -97,17 +97,17 @@ public:
 	OpenSim_DECLARE_PROPERTY(Test_DblVec3_2, SimTK::Vec3,
 		"Point at 3,5,7");
 	// Nameless Obj
-	OpenSim_DECLARE_UNNAMED_PROPERTY(rdSerializableObject3,
+	OpenSim_DECLARE_UNNAMED_PROPERTY(SerializableObject3,
 		"Comment on nameless Object");
 	//=============================================================================
 	// METHODS
 	//=============================================================================
 public:
-	rdSerializableObject(){
+	SerializableObject(){
 		setNull();
 		setupSerializedMembers();
 	}
-	rdSerializableObject(const std::string &aFileName) 
+	SerializableObject(const std::string &aFileName) 
     :	Object(aFileName,false)
 	{
 		setNull();
@@ -115,7 +115,7 @@ public:
 		SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
 		updateFromXMLNode(e, getDocument()->getDocumentVersion());
 	}
-	rdSerializableObject(const rdSerializableObject& source)
+	SerializableObject(const SerializableObject& source)
     :   Object(source)
 	{
 		setNull();
@@ -130,7 +130,7 @@ private:
     // recreated from scratch; the new ones are copied automatically in the
     // base class but the local index must be reset here using copyProperty_()
     // methods.
-	void setupSerializedMembers(const rdSerializableObject* sourcep=0){
+	void setupSerializedMembers(const SerializableObject* sourcep=0){
 		int i;
 
 		// Bool
@@ -169,7 +169,7 @@ private:
 		_propertySet.append(pStr.clone());
 
 		// Obj
-		rdSerializableObject2 obj;
+		SerializableObject2 obj;
 		PropertyObj pObj("Test_Obj",obj);
 		pObj.setComment("Comment on deprecated Object");
 		_propertySet.append(pObj.clone());
@@ -203,7 +203,7 @@ private:
 
 		// ObjArray
 		ArrayPtrs<Object> arrayObj;
-		rdSerializableObject2 object;
+		SerializableObject2 object;
 		object.setName("Obj1");
 		arrayObj.append(object.clone());
 		object.setName("Obj2");
@@ -236,7 +236,7 @@ private:
 
         if (sourcep) {
             // Just reset local indices for copy construction of new props.
-            const rdSerializableObject& source = *sourcep;
+            const SerializableObject& source = *sourcep;
             copyProperty_Test_Bool_2(source);
             copyProperty_Test_Int_2(source);
             copyProperty_Test_Infinity_2(source);
@@ -251,7 +251,7 @@ private:
             copyProperty_Test_ObjArray_2(source);
             copyProperty_MyTransformProperty_2(source);
             copyProperty_Test_DblVec3_2(source);
-            copyProperty_rdSerializableObject3(source);
+            copyProperty_SerializableObject3(source);
             return;
         }
 
@@ -265,7 +265,7 @@ private:
         constructProperty_Test_Str_2("ABC");
 
 		// Obj
-		rdSerializableObject3 obj2;
+		SerializableObject3 obj2;
 		obj2.setName("Test_Obj_2");
         constructProperty_Test_Obj_2(obj2);
 
@@ -292,7 +292,7 @@ private:
 
 		// ObjArray
 		ArrayPtrs<Object> arrayObj2;
-		rdSerializableObject2 object2;
+		SerializableObject2 object2;
 		object2.setName("Obj1");
 		arrayObj2.append(object2.clone());
 		object2.setName("Obj2");
@@ -311,13 +311,13 @@ private:
         constructProperty_Test_DblVec3_2(SimTK::Vec3(3., 5., 7.));
 
 		// Nameless Obj
-        constructProperty_rdSerializableObject3(obj2);
+        constructProperty_SerializableObject3(obj2);
 	}
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
-	rdSerializableObject& operator=(const rdSerializableObject &aObject){
+	SerializableObject& operator=(const SerializableObject &aObject){
 		Object::operator=(aObject);
 		return(*this);
 	};
@@ -329,7 +329,7 @@ public:
 	virtual bool isValidDefaultType(const Object *aObject) const{
 		if(aObject==NULL) return(false);
 
-		string type1 = "rdSerializableObject2";
+		string type1 = "SerializableObject2";
 		if(type1 == aObject->getConcreteClassName()) return(true);
 
 		return(false);
@@ -342,4 +342,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // __rdSerializableObject_h__
+#endif // __SerializableObject_h__

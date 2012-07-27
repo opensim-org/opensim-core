@@ -73,7 +73,7 @@
  * Engineering Software, Vol. 8, No. 2, 104-113.
  *
  * This class inherits from Function and so can be used as input to
- * any class requiring an rdFuction as input.
+ * any class requiring an Fuction as input.
  *
  * @author Frank C. Anderson
  */

@@ -46,7 +46,7 @@
  * A class implementing a smooth function with a natural cubic spline.
  *
  * This class inherits from Function and so can be used as input to
- * any class requiring an rdFuction as input.
+ * any class requiring an Fuction as input.
  *
  * @author Peter Loan
  * @version 1.0

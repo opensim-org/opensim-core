@@ -707,14 +707,7 @@ restoreConfiguration(SimTK::State& s, const SimTK::State& initialState)
 /**
  * Compute the controls for a simulation.
  *
- * The caller should send in an initial guess.
- *
- * @param s state of system model
- * @param rDT Integration time step in normalized time that is to be taken
- * next.  Note that the controller can change the value of rDT.
- * @param aT Current time in normalized time.
- * @param rControlSet Control set used for the simulation.  This method
- * alters the control set in order to control the simulation.
+ * This method alters the control set in order to control the simulation.
  */
 void CMC::
 computeControls(SimTK::State& s, ControlSet &controlSet)

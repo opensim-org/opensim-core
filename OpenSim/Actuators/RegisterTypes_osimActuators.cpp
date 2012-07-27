@@ -68,7 +68,7 @@ static osimActuatorsInstantiator instantiator;
 //_____________________________________________________________________________
 /**
  * The purpose of this routine is to register all class types exported by
- * the rdSimulation library.
+ * the Simulation library.
  */
 OSIMACTUATORS_API void RegisterTypes_osimActuators()
 {

@@ -44,15 +44,15 @@
 #include <iostream>
 #include <string>
 
-#include "rdSerializableObject.h"
-#include "rdSerializableObject2.h"
+#include "SerializableObject.h"
+#include "SerializableObject2.h"
 
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
 
-class rdObjSet : public Set<rdSerializableObject> {
-OpenSim_DECLARE_CONCRETE_OBJECT(rdObjSet, Set<rdSerializableObject>);
+class ObjSet : public Set<SerializableObject> {
+OpenSim_DECLARE_CONCRETE_OBJECT(ObjSet, Set<SerializableObject>);
 };
 
 static void indent(int nSpaces) {
@@ -108,22 +108,22 @@ int main()
 
 	try {
 		// TYPE REGISTRATION
-		Object::registerType(rdSerializableObject());
-		Object::registerType(rdSerializableObject2());
-		Object::registerType(rdSerializableObject3());
+		Object::registerType(SerializableObject());
+		Object::registerType(SerializableObject2());
+		Object::registerType(SerializableObject3());
 
-        rdObjSet objSet;
-        const Set<rdSerializableObject>& baseSet = objSet;
+        ObjSet objSet;
+        const Set<SerializableObject>& baseSet = objSet;
 
-        SimTK_TEST(objSet.getClassName() == "rdObjSet");
-        SimTK_TEST(baseSet.getClassName() == "Set<rdSerializableObject>");
-        SimTK_TEST(baseSet.getConcreteClassName() == "rdObjSet");
+        SimTK_TEST(objSet.getClassName() == "ObjSet");
+        SimTK_TEST(baseSet.getClassName() == "Set<SerializableObject>");
+        SimTK_TEST(baseSet.getConcreteClassName() == "ObjSet");
 
 		// OBJECT 1
-		rdSerializableObject obj1;
+		SerializableObject obj1;
 		obj1.setName("TestObject");
 		obj1.print("obj1.xml");
-        rdSerializableObject obj1copy(obj1);
+        SerializableObject obj1copy(obj1);
         obj1copy.setAllPropertiesUseDefault(true);
         obj1copy.set_Test_Bool_2(false);
         obj1copy.print("obj1copy.xml");
@@ -132,11 +132,11 @@ int main()
         //cerr << xx;
 
 		// OBJECT 2
-		rdSerializableObject obj2("obj1.xml");
+		SerializableObject obj2("obj1.xml");
 		obj2.print("roundtrip.xml");
 
 		// OBJECT 3
-		rdSerializableObject obj3("obj1Defaults.xml");
+		SerializableObject obj3("obj1Defaults.xml");
 		//Property_Deprecated* pObjArr = obj3.getPropertySet().get(11);
 		//PropertyObjArray<OpenSim::Object>* objs = (PropertyObjArray<OpenSim::Object> *)pObjArr;
 		//Object* dObj = objs->getValueObjPtr(1);
@@ -186,14 +186,14 @@ int main()
         SimTK_TEST(!obj1.hasProperty("No_Such_Property"));
 
         // Now check new property system's handing of nameless, one-object
-        // property (of type T=rdSerializableObject3).
+        // property (of type T=SerializableObject3).
 
-        SimTK_TEST(obj1.hasProperty<rdSerializableObject3>());
-        SimTK_TEST(obj1.hasProperty("rdSerializableObject3"));
+        SimTK_TEST(obj1.hasProperty<SerializableObject3>());
+        SimTK_TEST(obj1.hasProperty("SerializableObject3"));
 
         // Check for correct object return type.
-        SimTK_TEST(obj1.getProperty_rdSerializableObject3()[0]
-                    .getConcreteClassName() == "rdSerializableObject3");
+        SimTK_TEST(obj1.getProperty_SerializableObject3()[0]
+                    .getConcreteClassName() == "SerializableObject3");
 
         cout << "\n------------------------------------------" << endl;
         cout << "DUMPOBJ(obj1)" << endl;
@@ -201,8 +201,8 @@ int main()
 
         obj1.updProperty_Test_Str_2() = "DID THIS GET COPIED??";
 
-        rdSerializableObject copyOfObj1(obj1);
-        rdSerializableObject assignOfObj1;
+        SerializableObject copyOfObj1(obj1);
+        SerializableObject assignOfObj1;
         assignOfObj1 = obj1;
 
         cout << "\n------------------------------------------" << endl;

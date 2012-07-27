@@ -1,6 +1,6 @@
-#ifndef _rdSerializableObject2_h_
-#define _rdSerializableObject2_h_
-// rdSerializableObject2.h:
+#ifndef _SerializableObject2_h_
+#define _SerializableObject2_h_
+// SerializableObject2.h:
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c)  2005, Stanford University. All rights reserved. 
@@ -37,8 +37,6 @@
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyBool.h>
 
-//extern template class OSIMCOMMON_API Array<double>;
-
 //=============================================================================
 //=============================================================================
 /**
@@ -49,8 +47,8 @@
 */
 namespace OpenSim { 
 
-class rdSerializableObject2 : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(rdSerializableObject2, Object);
+class SerializableObject2 : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(SerializableObject2, Object);
 
 	//=============================================================================
 	// MEMBER DATA
@@ -60,18 +58,18 @@ OpenSim_DECLARE_CONCRETE_OBJECT(rdSerializableObject2, Object);
 	// METHODS
 	//=============================================================================
 public:
-	rdSerializableObject2(){
+	SerializableObject2(){
 		setNull();
 		setupSerializedMembers();
 	}
-	rdSerializableObject2(const std::string &aFileName) :
+	SerializableObject2(const std::string &aFileName) :
 	Object(aFileName,false)
 	{
 		setNull();
 		setupSerializedMembers();
 		updateFromXMLDocument();
 	}
-	//rdSerializableObject2(const rdSerializableObject2 &aObject){
+	//SerializableObject2(const SerializableObject2 &aObject){
 	//	setNull();
 	//	setupSerializedMembers();
 	//	*this = aObject;
@@ -102,7 +100,7 @@ private:
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
-	//rdSerializableObject2& operator=(const rdSerializableObject2 &aObject){
+	//SerializableObject2& operator=(const SerializableObject2 &aObject){
 	//	Object::operator=(aObject);
  //       updPropertyByIndex(0).updValue<bool>()=
  //           aObject.getPropertyByIndex(0).getValue<bool>();
@@ -116,8 +114,8 @@ public:
 	//=============================================================================
 };
 
-class rdSerializableObject3 : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(rdSerializableObject3, Object);
+class SerializableObject3 : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(SerializableObject3, Object);
 
 	//=============================================================================
 	// MEMBER DATA
@@ -127,18 +125,18 @@ OpenSim_DECLARE_CONCRETE_OBJECT(rdSerializableObject3, Object);
 	// METHODS
 	//=============================================================================
 public:
-	rdSerializableObject3(){
+	SerializableObject3(){
 		setNull();
 		setupSerializedMembers();
 	}
-	rdSerializableObject3(const std::string &aFileName) :
+	SerializableObject3(const std::string &aFileName) :
 	Object(aFileName,false)
 	{
 		setNull();
 		setupSerializedMembers();
 		updateFromXMLDocument();
 	}
-	rdSerializableObject3(const rdSerializableObject3 &aObject){
+	SerializableObject3(const SerializableObject3 &aObject){
 		setNull();
 		setupSerializedMembers();
 		*this = aObject;
@@ -163,7 +161,7 @@ private:
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
-	rdSerializableObject3& operator=(const rdSerializableObject3 &aObject){
+	SerializableObject3& operator=(const SerializableObject3 &aObject){
 		Object::operator=(aObject);
         updPropertyByIndex(0).updValue<bool>()=
             aObject.getPropertyByIndex(0).getValue<bool>();
@@ -182,4 +180,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // __rdSerializableObject2_h__
+#endif // __SerializableObject2_h__

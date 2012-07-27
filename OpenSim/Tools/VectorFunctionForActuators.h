@@ -36,8 +36,6 @@
 #include <OpenSim/Common/VectorFunctionUncoupledNxN.h>
 #include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
 
-//extern template class RDTOOLS_API Array<double>;
-
 //=============================================================================
 //=============================================================================
 /**

@@ -40,7 +40,7 @@
 #include "SimTKmath.h"
 
 // DEFINES
-#define RDSPLINE_MAXSIZE 2048
+#define SPLINE_MAXSIZE 2048
 
 using SimTK::Vector;
 //=============================================================================
@@ -59,7 +59,7 @@ class OSIMCOMMON_API Spline
 //=============================================================================
 private:
 	int _status;
-	char _name[RDSPLINE_MAXSIZE];
+	char _name[SPLINE_MAXSIZE];
 	double _ti,_tf;
 	int _order;
 	int _nknots;
