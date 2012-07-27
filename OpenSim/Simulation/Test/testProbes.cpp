@@ -696,7 +696,7 @@ int main()
             MetabolicMuscle m(0.5, 0.5, 40, 133, 74, 111);
             m.setName(muscNames.get(0));
             MetabolicMuscleSet mms;
-            mms.append(m);
+            mms.cloneAndAppend(m);
             //cout << m << endl;
             //cout << mms << endl;
         

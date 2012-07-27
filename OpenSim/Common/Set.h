@@ -472,18 +472,17 @@ virtual bool append(T *aObject)
 
 //_____________________________________________________________________________
 /**
- * Append to the array.  A copy is made of the object and added to the Set.
- * The original object is unaffected.
+ * cloneAndAppend creates a clone of the passed in object and appends the clone to the array.  
+ * The original object is unaffected and is not associated with the Set. The clone is created 
+ * using the method clone() available to OpenSim::Object
  *
- * @param aObject Object to be appended.
+ * @param aObject Object whose clone is to be appended.
  * @return True if the append was successful, false otherwise.
  */
-#ifndef SWIG
-virtual bool append(const T& aObject)
+virtual bool cloneAndAppend(const T& aObject)
 {
 	return append(aObject.clone());
 }
-#endif
 //-----------------------------------------------------------------------------
 // INSERT
 //-----------------------------------------------------------------------------

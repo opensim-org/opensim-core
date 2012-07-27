@@ -53,7 +53,7 @@ public:
 	void createMarkerWeightSet(Set<MarkerWeight>& aWeights){
 		for(int i=0; i< getSize(); i++){
 			if(IKMarkerTask *nextTask = dynamic_cast<IKMarkerTask *>(&get(i))){
-				aWeights.append(*(new MarkerWeight(nextTask->getName(), nextTask->getWeight())));
+				aWeights.cloneAndAppend(*(new MarkerWeight(nextTask->getName(), nextTask->getWeight())));
 			}
 		}
 	};

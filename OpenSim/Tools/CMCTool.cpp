@@ -614,7 +614,7 @@ bool CMCTool::run()
 		Storage stateStorage(taskSet.getDataFileName());
 		GCVSplineSet* stateFuntcions = new GCVSplineSet(3, &stateStorage);
 		for (int i=0; i< stateFuntcions->getSize(); i++)
-			qAndPosSet->append(stateFuntcions->get(i));
+			qAndPosSet->cloneAndAppend(stateFuntcions->get(i));
 
 	}
     taskSet.setFunctions(*qAndPosSet);  	 	 

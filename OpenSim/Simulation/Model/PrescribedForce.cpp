@@ -122,9 +122,9 @@ void PrescribedForce::setForceFunctions(Function* forceX, Function* forceY, Func
 	FunctionSet& forceFunctions = updForceFunctions();
 
 	forceFunctions.setSize(0);
-	forceFunctions.append(*forceX);
-	forceFunctions.append(*forceY);
-	forceFunctions.append(*forceZ);
+	forceFunctions.cloneAndAppend(*forceX);
+	forceFunctions.cloneAndAppend(*forceY);
+	forceFunctions.cloneAndAppend(*forceZ);
 }
 
 
@@ -133,9 +133,9 @@ void PrescribedForce::setPointFunctions(Function* pointX, Function* pointY, Func
 	FunctionSet& pointFunctions = updPointFunctions();
 
 	pointFunctions.setSize(0);
-	pointFunctions.append(*pointX);
-	pointFunctions.append(*pointY);
-	pointFunctions.append(*pointZ);
+	pointFunctions.cloneAndAppend(*pointX);
+	pointFunctions.cloneAndAppend(*pointY);
+	pointFunctions.cloneAndAppend(*pointZ);
 }
 
 void PrescribedForce::setTorqueFunctions(Function* torqueX, Function* torqueY, Function* torqueZ)
@@ -143,9 +143,9 @@ void PrescribedForce::setTorqueFunctions(Function* torqueX, Function* torqueY, F
 	FunctionSet& torqueFunctions = updTorqueFunctions();
 
 	torqueFunctions.setSize(0);
-	torqueFunctions.append(*torqueX);
-	torqueFunctions.append(*torqueY);
-	torqueFunctions.append(*torqueZ);
+	torqueFunctions.cloneAndAppend(*torqueX);
+	torqueFunctions.cloneAndAppend(*torqueY);
+	torqueFunctions.cloneAndAppend(*torqueZ);
 
 }
 
