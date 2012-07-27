@@ -415,39 +415,6 @@ setStatesFromMotion(const SimTK::State& s, const Storage &aMotion, bool aInDegre
 	delete qStore;
 	delete uStore;
 }
-/**
- * Old files created pre 3.0 may have invalid states (e.g. 0. acivation or very short fiberlength)
- * this function tries to bring the file to valid range and issues a warning accordingly
- */
-void AnalyzeTool::fixMuscleStatesToValidRange(Storage& aStore, const Model& aModel)
-{
-    // detect 0s in activation and replace with default 
-    // possibly detect .01 in fiberlength and replace with and replace with default 
-    const Array<string> &lbls = aStore.getColumnLabels();
-    bool needFixing = false;
-    StateVector* firstRow = aStore.getStateVector(0);
-    const Array<double>& data  = firstRow->getData();
-    const Set<Muscle>& muscles = aModel.getMuscles();
-    for (int i=1;i<lbls.size() ; ++i){
-        const string currentLabel = lbls.get(i);
-        int idx = currentLabel.find(".activation");
-        double currentActivation = data[i-1];   // account for time in labels indexing
-        if (idx >=0){
-            // get actuator name
-            string actuatorName = currentLabel.substr(0, idx);
-            if (muscles.contains(actuatorName)){
-                const Muscle& musc = muscles.get(actuatorName);
-                const Thelen2003Muscle* thelenMuscle = dynamic_cast<const Thelen2003Muscle *>(&musc);
-                if (thelenMuscle!= NULL && currentActivation < thelenMuscle->getActivationMinimumValue()){
-                    needFixing = true;
-                    data[i-1] = thelenMuscle->getActivationMinimumValue();
-                    aStore.setDataColumnToFixedValue(currentLabel, data[i-1]);
-                }
-            }
-        }
-    }
-}
-
 //_____________________________________________________________________________
 /**
  * Verify that the controls and states are consistent with the
