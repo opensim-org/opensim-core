@@ -160,6 +160,18 @@ double Thelen2003Muscle::getActivationMinimumValue() const
 double Thelen2003Muscle::getForceVelocityExtrapolationThreshold() const 
 {   return get_fv_linear_extrap_threshold(); }
 
+const MuscleFirstOrderActivationDynamicModel& Thelen2003Muscle::
+    getActivationModel() const
+{    
+    return actMdl;
+}
+
+const MuscleFixedWidthPennationModel& Thelen2003Muscle::
+    getPennationModel() const
+{    
+    return penMdl;
+}
+
 //=============================================================================
 // SET
 //=============================================================================
@@ -258,6 +270,101 @@ bool Thelen2003Muscle::
     return false;
 }
 
+//==============================================================================
+// XXXXXXXXXXXXXXXXXXXX  START OF TO BE DEPRECATED   XXXXXXXXXXXXXXXXXXXXXXXXXXX
+//==============================================================================
+double Thelen2003Muscle::
+calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
+                                       double aActivation) const
+{
+        string caller = getName();
+        caller.append(  "Thelen2003Muscle::"
+                        "calcInextensibleTendonActiveFiberForce");
+
+        double inextensibleTendonActiveFiberForce = 0;
+
+        double muscleLength = getLength(s);
+        double muscleVelocity = getLengtheningSpeed(s);
+        double tendonSlackLength = getTendonSlackLength();
+        double tendonVelocity = 0.0; //Inextensible tendon;
+
+        double fiberLength  = penMdl.calcFiberLength(muscleLength,
+                                             tendonSlackLength,caller);
+        
+        if(fiberLength > penMdl.getMinimumFiberLength()){
+            double phi      = penMdl.calcPennationAngle(fiberLength,caller);
+        
+            double fiberVelocity   = penMdl.calcFiberVelocity(fiberLength,
+                                            sin(phi),cos(phi),
+                                            muscleLength,tendonSlackLength,
+                                          muscleVelocity,tendonVelocity,caller);
+
+            inextensibleTendonActiveFiberForce = 
+                calcActiveFiberForceAlongTendon(    aActivation,
+                                                    fiberLength,
+                                                    fiberVelocity);
+        }
+
+
+        return inextensibleTendonActiveFiberForce;
+}
+
+double Thelen2003Muscle::
+            calcActiveFiberForceAlongTendon(double activation, 
+                                            double fiberLength, 
+                                            double fiberVelocity) const
+{
+    string caller = getName();
+    caller.append("::Thelen2003Muscle::calcActiveFiberForceAlongTendon");
+
+    double activeFiberForce = 0;    
+    double clampedFiberLength = penMdl.clampFiberLength(fiberLength);
+
+    //If the fiber is in a legal range, compute the force its generating
+    if(fiberLength > penMdl.getMinimumFiberLength()){
+
+        //Clamp activation to a legal range        
+        double clampedActivation = actMdl.clampActivation(activation);
+
+        //Normalize fiber length and velocity
+        double normFiberLength    = clampedFiberLength/getOptimalFiberLength();
+        double normFiberVelocity  = fiberVelocity / 
+                        (getOptimalFiberLength() * getMaxContractionVelocity());
+
+
+        //Evaluate the force active length and force velocity multipliers
+        double fal  = calcfal(normFiberLength);
+
+        double fv = SimTK::NaN;
+        double fvTol = 1e-6;
+        int fvMaxIter= 100;        
+        SimTK::Vector fvSoln   = calcfvInv( clampedActivation,
+                                            fal,
+                                            normFiberVelocity,
+                                            fvTol,
+                                            fvMaxIter);
+        //if the Newton method converged for fv
+        if(fvSoln[0] > 0.5){
+            fv = fvSoln[1];
+        }
+
+        double fiso = getMaxIsometricForce();
+
+        //Evaluate the pennation angle
+        double phi = penMdl.calcPennationAngle(fiberLength,caller);
+
+        //Compute the active fiber force 
+        activeFiberForce = fiso * clampedActivation * fal * fv * cos(phi);
+    }
+    //Compute the active fiber force
+    
+
+    return activeFiberForce;
+}
+
+//==============================================================================
+// XXXXXXXXXXXXXXXXXXXX  END OF TO BE DEPRECATED   XXXXXXXXXXXXXXXXXXXXXXXXXXX
+//==============================================================================
 
 //==============================================================================
 // Muscle.h Interface
@@ -272,31 +379,20 @@ double  Thelen2003Muscle::computeActuation(const SimTK::State& s) const
     return( mdi.tendonForce );
 }
 
-/*To be deprecated: this is just for backwards compatibility */
-double Thelen2003Muscle::computeIsometricForce(SimTK::State& s, 
-                                                double activation) const
-{
-    //Initialize activation to the users desired setting
-    setActivation(s,activation);
-    computeInitialFiberEquilibrium(s);
-    return getTendonForce(s);
-}
+
 
 
 void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
 {
     try{
-        //Initialize activation to the users desired setting
-        setActivation(s,getActivation(s));
+        //Initialize activation to the users desired setting, while enforcing
+        //that it lie in within the allowable bounds.
+        double clampedActivation = actMdl.clampActivation(getActivation(s));
+        setActivation(s,clampedActivation);
 
         //Initialize the multibody system to the initial state vector
         setFiberLength(s, getOptimalFiberLength());
-        _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
-
-        //Compute an initial muscle state that develops the desired force and
-        //shares the muscle stretch between the muscle fiber and the tendon 
-        //according to their relative stiffness.
-        double activation = getActivation(s);
+        _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);        
 
         //Tolerance, in Newtons, of the desired equilibrium
         double tol = 1e-8*getMaxIsometricForce();  //Should this be user settable?
@@ -306,7 +402,7 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
         int maxIter = 200;  //Should this be user settable?
 
     
-        SimTK::Vector soln = initMuscleState(s,activation, tol, maxIter);
+        SimTK::Vector soln = initMuscleState(s,clampedActivation, tol, maxIter);
     
         int flag_status    = (int)soln[0];
         double solnErr        = soln[1];
@@ -318,8 +414,7 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
 	    if(flag_status == 0){ // normal operation
 		    setForce(s,tendonForce);
 		    setFiberLength(s,fiberLength);
-	    }
-	    else{// If the initialization routine fails in an anticipated way
+	    }else{// If the initialization routine fails in an anticipated way
              // give a detailed error report, and continue with some valid
              // initial conditions.
 
@@ -332,51 +427,44 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
                 //4: fiber length (m)
                 //5: passive force (N)
                 //6: tendon force (N) 
-
-		    cerr << "Initialization Error:" << endl;              
-            cerr << "    Continuing with initial tendon force of 0 " << endl;
-            cerr << "    and a fiber length equal to the optimal fiber length ..." 
-             << endl;
-
-            std::string fcnName = "Thelen2003Muscle::"
-                             "computeInitialFiberEquilibrium(SimTK::State& s)";
-            std::string muscleName = getName();
-
+          
             double initFiberLength = getOptimalFiberLength();
 
-            if(flag_status == 2 || flag_status == 3){
+            if(flag_status == 2 || flag_status == 1){
                 initFiberLength = penMdl.getMinimumFiberLength();
+            }else{
+                std::string muscleName = getName();
+                std::string fcnName = "Thelen2003Muscle::"
+                             "computeInitialFiberEquilibrium(SimTK::State& s)";
+                char msgBuffer[1000];
+                int n = sprintf(msgBuffer,
+                    "Warning: No suitable initial conditions found for\n"
+                    "  %s: \n"
+                    "  by %s \n"
+                    "Continuing with an initial fiber force and "
+                        "length of 0 and %f\n"
+                    "    Here is a report from the routine:\n \n"
+                    "        Solution Error      : %f > tol (%f) \n"
+                    "        Newton Iterations   : %i of max. iterations (%i)\n"
+                    "    Check that the initial activation is valid,"
+                        " and that the whole \n"
+                    "    length doesn't produce a pennation"
+                        " angle of 90 degrees, nor a fiber\n"
+                    "    length less than 0:\n"
+                    "        Activation          : %f \n" 
+                    "        Whole muscle length : %f \n\n", 
+                    muscleName.c_str(),
+                    fcnName.c_str(), 
+                    initFiberLength,
+                    abs(solnErr),
+                    tol,
+                    iterations,
+                    maxIter,
+                    getActivation(s), 
+                    getLength(s));
+
+                cerr << msgBuffer << endl;
             }
-
-
-            char msgBuffer[1000];
-            int n = sprintf(msgBuffer,
-               "Warning: No suitable initial conditions found for\n"
-               "  %s: \n"
-               "  by %s \n"
-               "Continuing with a muscle force of 0, and a fiber length of %f\n"
-               "    Here is a report from the routine:\n \n"
-               "        Solution Error      : %f > tol (%f) \n"
-               "        Newton Iterations   : %i of max. iterations (%i) \n"
-               "    Check that the initial activation is valid, and that the"
-                   " whole \n"
-               "    length doesn't produce a pennation angle of 90 degrees, "
-                   "nor a fiber\n"
-               "    length less than 0:\n"
-               "        Activation          : %f \n" 
-               "        Whole muscle length : %f \n\n", 
-                muscleName.c_str(),
-                fcnName.c_str(), 
-                initFiberLength,
-                abs(solnErr),
-                tol,
-                iterations,
-                maxIter,
-                getActivation(s), 
-                getLength(s));
-
-            cerr << msgBuffer << endl;
-
             setForce(s,0.0);
 		    setFiberLength(s,initFiberLength);
 	    }
@@ -796,8 +884,10 @@ double Thelen2003Muscle::calcActivationRate(const SimTK::State& s) const
 // Numerical Guts: Initialization
 //==============================================================================
 SimTK::Vector Thelen2003Muscle::
-    initMuscleState(SimTK::State& s, double aActivation, 
-                              double aSolTolerance, int aMaxIterations) const
+    initMuscleState(    SimTK::State& s, 
+                        double aActivation, 
+                        double aSolTolerance, 
+                        int aMaxIterations) const
 {
     //results vector format
     //1: flag (0 = converged 
@@ -843,14 +933,10 @@ SimTK::Vector Thelen2003Muscle::
     double lce = 0;
     double tl  = tsl*1.01;
 
-    if((ml - tl) > 0){
+    if((ml - tl) > penMdl.getMinimumFiberLengthAlongTendon()){
         lce = penMdl.calcFiberLength( ml, tl, caller);
     }else{
-        if(penMdl.getParallelogramHeight() > 0){
-            lce = penMdl.getParallelogramHeight()*1.01;
-        }else{
-            lce = 0.5*ofl;
-        }
+        lce = penMdl.getMinimumFiberLength();
     }
     
     double phi      = penMdl.calcPennationAngle(lce,caller);
@@ -901,11 +987,11 @@ SimTK::Vector Thelen2003Muscle::
     //Initialize the loop
     
     int iter = 0;
-    
 
     while( (abs(ferr) > aSolTolerance) && (iter < aMaxIterations) ){
 
-        if(lce > 0 + SimTK::Eps && phi < SimTK::Pi/2 - SimTK::Eps){
+        if(lce > penMdl.getMinimumFiberLength() 
+                && phi < SimTK::Pi/2 - SimTK::Eps){
             //Update the multipliers and their partial derivativaes
             fse         = calcfse(tlN);
             fal         = calcfal(lceN);
@@ -937,14 +1023,11 @@ SimTK::Vector Thelen2003Muscle::
                 delta_lce   = - ferr/dferr_d_lce;
                 lce         = lce + delta_lce;
             
-                if(lce > 0){
+                if(lce > penMdl.getMinimumFiberLength()){
                     //Update position level quantities, only if they won't go 
                     //singular
-                    if(vol/lce < 1){
-                        phi = asin(vol/lce);
-                    }else{
-                        phi = SimTK::Pi-SimTK::Eps;
-                    }
+
+                    phi = penMdl.calcPennationAngle(lce,caller);
                     cosphi = cos(phi);
                     tl  = ml - lce*cosphi;
                     lceN = lce/ofl;
@@ -1009,34 +1092,20 @@ SimTK::Vector Thelen2003Muscle::
         
     	std::string muscleName = getName();
 
-        //Check for the fiber length singularity
-        if(lce < 0 + SimTK::Eps){
+        //Check for the fiber length singularity - when it approaches its lower
+        //bound
+        if(lce <= penMdl.getMinimumFiberLength()){
             results[0] = 2.0;
             results[1] = ferr;
             results[2] = (double)iter;
-            results[3] = 0.0;
+            results[3] = penMdl.getMinimumFiberLength();
             results[4] = 0.0;
             results[5] = 0.0;
 
-            printf("\nInitialization failed: fiber length approaching 0, \n"
-                   "                       for %s, a Thelen2003Muscle \n"
-                   "                       with an error of %f\n", 
-                   muscleName.c_str(), ferr);
-        //Check for a pennation angle singularity   
-        }else if(phi > SimTK::Pi/2 - SimTK::Eps){
-            results[0] = 3.0;
-            results[1] = ferr;
-            results[2] = (double)iter;
-            results[3] = lce;
-            results[4] = 0.0;
-            results[5] = 0.0;
-
-            printf("\nInitialization failed: pennation angle approaching Pi/2, \n"
-                   "                       for %s, a Thelen2003Muscle \n"
-                   "                       with an error of %f\n", 
-                   muscleName.c_str(), ferr);
-
-        //Not enough iterations
+            //printf("\nInitialization failed: "
+            //                        "fiber length approaching lower bound \n"
+            //       "                       of %f\n", 
+            //      muscleName.c_str(), penMdl.getMinimumFiberLength());           
         }else{ 
             results[0] = 1.0;
             results[1] = ferr;
@@ -1045,10 +1114,10 @@ SimTK::Vector Thelen2003Muscle::
             results[4] = fpe*fiso;
             results[5] = fse*fiso;
 
-            printf("\nInitialization failed: solution did not converge in %i, \n"
-                   "                       for %s, a Thelen2003Muscle \n"
-                   "                       with an error of %f\n", 
-                   iter, muscleName.c_str() ,ferr);
+            //printf("\nInitialization failed: solution did not converge in %i, \n"
+            //       "                       for %s, a Thelen2003Muscle \n"
+            //       "                       with an error of %f\n", 
+            //       iter, muscleName.c_str() ,ferr);
 
         }
  
@@ -1526,13 +1595,15 @@ double Thelen2003Muscle::calcDdlceDaFalFv(const double aAct,
         return dlcedFm;
 }
 
-
+//This is here because it is non-trivial to correctly invert the piece wise
+//continuous force velocity curve specified by the modified Thelen2003Muscle
+//force velocity curve. This converges quickly and is well tested.
 SimTK::Vector Thelen2003Muscle::
-        calcfvInv(const double aAct,const double aFal, const double dlceN,
-                               const double tolerance, int maxIterations) const
+        calcfvInv(double aAct,double aFal,double dlceN,
+                  double tolerance, int maxIterations) const
 {
     SimTK::Vector result(2);
-    result(0) = 0.0; //value of flag: 0 converged, 1 diverged
+    result(0) = 0.0; //value of flag: 0 diverged, 1 converged
     result(1) = 0.0; //value of fv
     double ferr=1;
     double iter= 0;
@@ -1543,7 +1614,7 @@ SimTK::Vector Thelen2003Muscle::
     double aFalFv = fv*aAct*aFal;
     double delta_aFalFv = 0;
 
-    while(abs(ferr) > tolerance && iter < maxIterations)
+    while(abs(ferr) >= tolerance && iter < maxIterations)
     {
         dlceN1 = calcdlceN(aAct,aFal, aFalFv);
         ferr   = dlceN1-dlceN;

@@ -177,7 +177,8 @@ prepareToOptimize(SimTK::State& s, double *x)
 			//This is necessary ONLY for backward compatibility with deprecated muscle models
 			//ActivationFiberLengthMuscle_Deprecated* depmus = dynamic_cast<ActivationFiberLengthMuscle_Deprecated*>(mus);
 			//if(depmus){
-					fOpt = mus->computeIsokineticForceAssumingInfinitelyStiffTendon(tempState, activation);
+				fOpt = mus->calcInextensibleTendonActiveFiberForce(tempState,
+                                                                   activation);
 			//}
 			//else{
 			//	fOpt = mus->getMaxIsometricForce()*

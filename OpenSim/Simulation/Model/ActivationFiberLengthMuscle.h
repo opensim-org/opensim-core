@@ -124,11 +124,11 @@ protected:
 
 	/** Calculate activation rate */
 	virtual double calcActivationRate(const SimTK::State& s) const = 0;
-	/** compute initial fiber length (velocity) such that muscle fiber and tendon are 
+
+	/* compute initial fiber length (velocity) such that muscle fiber and tendon are 
 	    in static equilibrium and update the state */
-	virtual void computeInitialFiberEquilibrium(SimTK::State& s) const;
-
-
+    //virtual void computeInitialFiberEquilibrium(SimTK::State& s) const;
+    
 	/** Model Component Interface */
 	virtual void addToSystem(SimTK::MultibodySystem& system) const;
 	virtual void initStateFromProperties(SimTK::State& s) const;

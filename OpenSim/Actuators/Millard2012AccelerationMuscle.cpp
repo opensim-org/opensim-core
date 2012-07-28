@@ -481,6 +481,13 @@ const MuscleFirstOrderActivationDynamicModel& Millard2012AccelerationMuscle::
     return get_MuscleFirstOrderActivationDynamicModel();
 }
 
+const MuscleFixedWidthPennationModel& Millard2012AccelerationMuscle::
+    getPennationModel() const
+{
+    ensureMuscleUpToDate();
+    return m_penMdl;
+}
+
 const ActiveForceLengthCurve& Millard2012AccelerationMuscle::
     getActiveForceLengthCurve() const
 {
@@ -615,18 +622,103 @@ postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 
 
 //==============================================================================
+// XXXXXXXXXXXXXXXXXXXX  START OF TO BE DEPRECATED   XXXXXXXXXXXXXXXXXXXXXXXXXXX
+//==============================================================================
+double Millard2012AccelerationMuscle::
+calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
+                                       double aActivation) const
+{
+        string caller = getName();
+        caller.append(  "Millard2012AccelerationMuscle::"
+                        "calcInextensibleTendonActiveFiberForce");
+
+        double inextensibleTendonActiveFiberForce = 0;
+
+        double muscleLength = getLength(s);
+        double muscleVelocity = getLengtheningSpeed(s);
+        double tendonSlackLength = getTendonSlackLength();
+        double tendonVelocity = 0.0; //Inextensible tendon;
+
+        double fiberLength  = m_penMdl.calcFiberLength(muscleLength,
+                                             tendonSlackLength,caller);
+
+
+        if(fiberLength > m_penMdl.getMinimumFiberLength()){
+            double phi      = m_penMdl.calcPennationAngle(fiberLength,caller);
+        
+            double fiberVelocity   = m_penMdl.calcFiberVelocity(fiberLength,
+                                            sin(phi),cos(phi),
+                                            muscleLength,tendonSlackLength,
+                                          muscleVelocity,tendonVelocity,caller);
+
+            inextensibleTendonActiveFiberForce = 
+                calcActiveFiberForceAlongTendon(    aActivation,
+                                                    fiberLength,
+                                                    fiberVelocity);
+        }
+
+
+        return inextensibleTendonActiveFiberForce;
+}
+
+
+double Millard2012AccelerationMuscle::
+            calcActiveFiberForceAlongTendon(double activation, 
+                                            double fiberLength, 
+                                            double fiberVelocity) const
+{
+    string caller = getName();
+    caller.append("::MillardAccelerationMuscle::calcActiveFiberForceAlongTendon");
+
+    double activeFiberForce = 0;    
+    double clampedFiberLength = m_penMdl.clampFiberLength(fiberLength);
+
+    //If the fiber is in a legal range, compute the force its generating
+    if(fiberLength >  m_penMdl.getMinimumFiberLength()){
+
+        //Clamp activation to a legal range
+        MuscleFirstOrderActivationDynamicModel actMdl 
+            = get_MuscleFirstOrderActivationDynamicModel();
+        double clampedActivation = actMdl.clampActivation(activation);
+
+        //Normalize fiber length and velocity
+        double normFiberLength    = clampedFiberLength/getOptimalFiberLength();
+        double normFiberVelocity  = fiberVelocity / 
+                        (getOptimalFiberLength() * getMaxContractionVelocity());
+
+        //Get the necessary curves
+        const ActiveForceLengthCurve& falCurve
+            = getProperty_ActiveForceLengthCurve().getValue();
+        const ForceVelocityCurve& fvCurve
+            = getProperty_ForceVelocityCurve().getValue();
+
+        //Evaluate the force active length and force velocity multipliers
+        double fal  = falCurve.calcValue(normFiberLength);
+        double fv   = fvCurve.calcValue(normFiberVelocity);
+        double fiso = getMaxIsometricForce();
+
+        //Evaluate the pennation angle
+        double phi = m_penMdl.calcPennationAngle(fiberLength,caller);
+
+        //Compute the active fiber force 
+        activeFiberForce = fiso * clampedActivation * fal * fv * cos(phi);
+    }
+    //Compute the active fiber force
+    
+
+    return activeFiberForce;
+}
+
+//==============================================================================
+// XXXXXXXXXXXXXXXXXXXX  END OF TO BE DEPRECATED     XXXXXXXXXXXXXXXXXXXXXXXXXXX
+//==============================================================================
+
+
+
+//==============================================================================
 // Muscle.h Interface
 //==============================================================================
 
-/*To be deprecated: this is just for backwards compatibility */
-double Millard2012AccelerationMuscle::computeIsometricForce(SimTK::State& s, 
-                                                double activation) const
-{
-    //Initialize activation to the users desired setting
-    setActivation(s,activation);
-    computeInitialFiberEquilibrium(s);
-    return getTendonForce(s);
-}
 
 
 double  Millard2012AccelerationMuscle::
@@ -1077,7 +1169,6 @@ void Millard2012AccelerationMuscle::
     mdi.userDefinedDynamicsExtras[MDIFiberAcceleration]=ddlce_dtt;
 
 }
-
 
 
 //==============================================================================

@@ -503,13 +503,17 @@ double MuscleFixedWidthPennationModel::
     double denominator = (t2*cosPennation*fiberLength + 
                           t6*muscleLength - t6*tendonLength);
 
-    SimTK_ERRCHK1_ALWAYS( denominator >= SimTK::Eps ,
-     "MuscleFixedWidthPennationModel::calcFiberVelocity",
-     "%s: Equation is singular: check pennation angle",
-     caller.c_str() );
+    double fiberVelocity = SimTK::NaN;
 
-    double fiberVelocity = (muscleVelocity - tendonVelocity)*t2*fiberLength 
+    //SimTK_ERRCHK1_ALWAYS( denominator >= SimTK::Eps ,
+    // "MuscleFixedWidthPennationModel::calcFiberVelocity",
+    // "%s: Equation is singular: check pennation angle",
+    // caller.c_str() );
+
+    if(denominator > SimTK::Eps){
+        fiberVelocity = (muscleVelocity - tendonVelocity)*t2*fiberLength 
                             / denominator;
+    }
     return fiberVelocity;
 }
 
@@ -519,17 +523,22 @@ double MuscleFixedWidthPennationModel::
                     std::string& caller) const
 {
     double fiberLengthAT = muscleLength-tendonLength;
-    SimTK_ERRCHK1_ALWAYS( fiberLengthAT >= SimTK::Eps ,
-     "MuscleFixedWidthPennationModel::calcFiberLength",
-     "%s: Equation is singular: pennation angle of 90 predicted",
-     caller.c_str() );
-    SimTK::Vec2 pose;
+    //SimTK_ERRCHK1_ALWAYS( fiberLengthAT >= SimTK::Eps ,
+    // "MuscleFixedWidthPennationModel::calcFiberLength",
+    // "%s: Equation is singular: pennation angle of 90 predicted",
+    // caller.c_str() );
+    //SimTK::Vec2 pose;
 
-    //double tanPhi = m_parallelogramHeight/fiberLengthAT;    
-    //double phi = atan(tanPhi);
-    double fiberLength = sqrt(m_parallelogramHeight*m_parallelogramHeight
-                              +fiberLengthAT*fiberLengthAT);
-   
+    double fiberLength = 0;
+
+    if(fiberLengthAT >= getMinimumFiberLengthAlongTendon()){
+        //double tanPhi = m_parallelogramHeight/fiberLengthAT;    
+        //double phi = atan(tanPhi);
+        fiberLength = sqrt(m_parallelogramHeight*m_parallelogramHeight
+                                  +fiberLengthAT*fiberLengthAT);
+    }else{
+        fiberLength = getMinimumFiberLength();
+    }
 
     return fiberLength;
 }

@@ -46,10 +46,10 @@ void testArm26(const string& muscleModelClassName);
 int main()
 {
 	Array<string> muscleModelNames; 
-	muscleModelNames.append("Thelen2003Muscle_Deprecated");
-	muscleModelNames.append("Thelen2003Muscle");
+    muscleModelNames.append("Thelen2003Muscle");	
 	muscleModelNames.append("Millard2012EquilibriumMuscle");
 	muscleModelNames.append("Millard2012AccelerationMuscle");
+    muscleModelNames.append("Thelen2003Muscle_Deprecated");	
 
     cout << "=========================================================" << endl;
     cout << "                       WARNING                           " << endl;
@@ -59,16 +59,18 @@ int main()
     cout << endl;
     cout << "                This is not a test                      " << endl;
     cout << endl;
-    cout << "A valid test might be done by instead checking the results" <<endl;
-    cout << "of static against an analytical system, say an analytical " <<endl;
-    cout << "muscle model for which the solution to the optimization   " <<endl;
-    cout << "problem is known by construction.  M.Millard 2012" << endl;
+    cout << "A valid test might be done by instead checking that " <<endl;
+    cout << "1. IPOPT can correctly solve a quadradic problem " <<endl;
+    cout << "2. That the muscle forces provided to static are in fact   "<<endl;
+    cout << "   linear with activation, as is assumed in a static " << endl;
+    cout << "   optimization.                       M.Millard 2012" << endl;
     cout << "=========================================================" << endl;
 	
 	SimTK::Array_<std::string> failures;
 	
 	for(int i=0; i< muscleModelNames.getSize(); ++i){
-		try { testArm26(muscleModelNames[i]); }
+		try { 
+            testArm26(muscleModelNames[i]); }
 		catch (const std::exception& e) {
 			cout << e.what() <<endl; 
 			failures.push_back("testArm26_"+muscleModelNames[i]);
@@ -92,6 +94,21 @@ void testArm26(const string& muscleModelClassName)
 	cout << "       "<< muscleModelClassName << endl;
 	cout << "==============================================" << endl;
 
+    string std_force = "std_";
+    string std_activation = "std_";
+    string std_bounds_force = "std_";
+    string std_bounds_activation = "std_";
+
+    std_force.append(muscleModelClassName);
+    std_activation.append(muscleModelClassName);
+    std_bounds_force.append(muscleModelClassName);
+    std_bounds_activation.append(muscleModelClassName);
+
+    std_force.append("_arm26_StaticOptimization_force.sto");
+    std_activation.append("_arm26_StaticOptimization_activation.sto");
+    std_bounds_force.append("_arm26_bounds_StaticOptimization_force.sto");
+    std_bounds_activation.append("_arm26_bounds_StaticOptimization_activation.sto");
+
 	string resultsDir = "Results_"+muscleModelClassName;
 	const string& muscName = muscleModelClassName;
 
@@ -100,12 +117,12 @@ void testArm26(const string& muscleModelClassName)
 	analyze1.run();
 
 	Storage activations1(resultsDir+"/arm26_StaticOptimization_activation.sto");
-	Storage stdActivations1("std_arm26_StaticOptimization_activation.sto");
+	Storage stdActivations1(std_activation);
 	// Uncomment to use muscle model specific standard
 	//Storage stdActivations1("std_arm26_"+muscName+"_SO_activation.sto");
 
 	Storage forces1(resultsDir+"/arm26_StaticOptimization_force.sto");
-    Storage stdForces1("std_arm26_StaticOptimization_force.sto");
+    Storage stdForces1(std_force);
 	// Uncomment to use muscle model specific standard
 	//Storage stdForces1("std_arm26_"+muscName+"_SO_force.sto");
 
@@ -126,12 +143,12 @@ void testArm26(const string& muscleModelClassName)
 
 	Storage activations2(
 		resultsDir+"/arm26_bounds_StaticOptimization_activation.sto");
-	Storage stdActivations2("std_arm26_bounds_StaticOptimization_activation.sto"); 
+	Storage stdActivations2(std_bounds_activation); 
 	// Uncomment to use muscle model specific standard
 	//Storage stdActivations2("std_arm26_bounds_"+muscName+"_SO_activation.sto");
 
 	Storage forces2(resultsDir+"/arm26_bounds_StaticOptimization_force.sto");
-    Storage stdForces2("std_arm26_bounds_StaticOptimization_force.sto");
+    Storage stdForces2(std_bounds_force);
 	// Uncomment to use muscle model specific standard
 	//Storage stdForces2("std_arm26_bounds_"+muscName+"_SO_force.sto");
 

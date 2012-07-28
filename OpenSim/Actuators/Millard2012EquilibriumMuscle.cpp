@@ -138,6 +138,23 @@ void Millard2012EquilibriumMuscle::buildMuscle()
     fcphi.setName(tmp);
 
 
+    //For initialization only we need a force-velocity curve:
+    double concentricSlope      = fvInvCurve.getConcentricMinSlope();
+    double isometricSlope       = fvInvCurve.getIsometricMaxSlope();
+    double eccentricSlope       = fvInvCurve.getEccentricMinSlope();
+    double concentricCurviness  = fvInvCurve.getConcentricCurviness();
+    double eccentricCurviness   = fvInvCurve.getEccentricCurviness();
+    double eccentricForceMax    = 
+        fvInvCurve.getMaxEccentricVelocityForceMultiplier();
+
+     fvCurve = ForceVelocityCurve(  concentricSlope,
+                                    isometricSlope,
+                                    eccentricSlope,
+                                    eccentricForceMax,
+                                    concentricCurviness,
+                                    eccentricCurviness,
+                                    caller);
+
     setObjectIsUpToDateWithProperties();
 
 }
@@ -390,6 +407,13 @@ const MuscleFirstOrderActivationDynamicModel& Millard2012EquilibriumMuscle::
     return get_MuscleFirstOrderActivationDynamicModel();
 }
 
+const MuscleFixedWidthPennationModel& Millard2012EquilibriumMuscle::
+    getPennationModel() const
+{
+    ensureMuscleUpToDate();
+    return penMdl;
+}
+
 const ActiveForceLengthCurve& Millard2012EquilibriumMuscle::
     getActiveForceLengthCurve() const
 {
@@ -509,22 +533,97 @@ postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 }
 
 
+
+//==============================================================================
+// XXXXXXXXXXXXXXXXXXXX  START OF TO BE DEPRECATED   XXXXXXXXXXXXXXXXXXXXXXXXXXX
+//==============================================================================
+double Millard2012EquilibriumMuscle::
+calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
+                                       double aActivation) const
+{
+        string caller = getName();
+        caller.append(  "Millard2012EquilibriumMuscle::"
+                        "calcInextensibleTendonActiveFiberForce");
+        double inextensibleTendonActiveFiberForce = 0;
+
+        double muscleLength = getLength(s);
+        double muscleVelocity = getLengtheningSpeed(s);
+        double tendonSlackLength = getTendonSlackLength();
+        double tendonVelocity = 0.0; //Inextensible tendon;
+
+        double fiberLength  = penMdl.calcFiberLength(muscleLength,
+                                             tendonSlackLength,caller);
+        
+        if(fiberLength > penMdl.getMinimumFiberLength()){
+            double phi      = penMdl.calcPennationAngle(fiberLength,caller);
+        
+            double fiberVelocity   = penMdl.calcFiberVelocity(fiberLength,
+                                            sin(phi),cos(phi),
+                                            muscleLength,tendonSlackLength,
+                                         muscleVelocity,tendonVelocity,caller);
+
+            inextensibleTendonActiveFiberForce = 
+                calcActiveFiberForceAlongTendon(    aActivation,
+                                                    fiberLength,
+                                                    fiberVelocity);
+        }
+
+
+        return inextensibleTendonActiveFiberForce;
+}
+
+double Millard2012EquilibriumMuscle::
+            calcActiveFiberForceAlongTendon(double activation, 
+                                            double fiberLength, 
+                                            double fiberVelocity) const
+{
+    string caller = getName();
+    caller.append("::MillardEquilibriumMuscle::calcActiveFiberForceAlongTendon");
+
+    double activeFiberForce = 0;    
+    double clampedFiberLength = penMdl.clampFiberLength(fiberLength);
+
+    //If the fiber is in a legal range, compute the force its generating
+    if(fiberLength > penMdl.getMinimumFiberLength()){
+
+        //Clamp activation to a legal range
+        MuscleFirstOrderActivationDynamicModel actMdl 
+            = get_MuscleFirstOrderActivationDynamicModel();
+        double clampedActivation = actMdl.clampActivation(activation);
+
+        //Normalize fiber length and velocity
+        double normFiberLength    = clampedFiberLength/getOptimalFiberLength();
+        double normFiberVelocity  = fiberVelocity / 
+                        (getOptimalFiberLength() * getMaxContractionVelocity());
+
+        //Get the necessary curves
+        const ActiveForceLengthCurve& falCurve
+            = getProperty_ActiveForceLengthCurve().getValue();
+
+        //Evaluate the force active length and force velocity multipliers
+        double fal  = falCurve.calcValue(normFiberLength);
+        double fv   = fvCurve.calcValue(normFiberVelocity);
+        double fiso = getMaxIsometricForce();
+
+        //Evaluate the pennation angle
+        double phi = penMdl.calcPennationAngle(fiberLength,caller);
+
+        //Compute the active fiber force 
+        activeFiberForce = fiso * clampedActivation * fal * fv * cos(phi);
+    }
+    //Compute the active fiber force
+    
+
+    return activeFiberForce;
+}
+
+//==============================================================================
+// XXXXXXXXXXXXXXXXXXXX  END OF TO BE DEPRECATED   XXXXXXXXXXXXXXXXXXXXXXXXXXX
+//==============================================================================
+
 //==============================================================================
 // Muscle.h Interface
 //==============================================================================
-
-
-/*To be deprecated: this is just for backwards compatibility */
-double Millard2012EquilibriumMuscle::computeIsometricForce(SimTK::State& s, 
-                                                double activation) const
-{
-    //Initialize activation to the users desired setting
-    setActivation(s,activation);
-    computeInitialFiberEquilibrium(s);
-    return getTendonForce(s);
-}
-
-
 double  Millard2012EquilibriumMuscle::
     computeActuation(const SimTK::State& s) const
 {    
@@ -913,6 +1012,8 @@ void Millard2012EquilibriumMuscle::calcMuscleDynamicsInfo(const SimTK::State& s,
 }
 
 
+
+
 //==============================================================================
 // Numerical Guts: Initialization
 //==============================================================================
@@ -964,23 +1065,7 @@ SimTK::Vector Millard2012EquilibriumMuscle::
     const ForceVelocityInverseCurve& fvInvCurve 
         = getProperty_ForceVelocityInverseCurve().getValue(); 
 
-    //For initialization only we need a force-velocity curve:
-    double concentricSlope      = fvInvCurve.getConcentricMinSlope();
-    double isometricSlope       = fvInvCurve.getIsometricMaxSlope();
-    double eccentricSlope       = fvInvCurve.getEccentricMinSlope();
-    double concentricCurviness  = fvInvCurve.getConcentricCurviness();
-    double eccentricCurviness   = fvInvCurve.getEccentricCurviness();
-    double eccentricForceMax    = 
-        fvInvCurve.getMaxEccentricVelocityForceMultiplier();
-
-    ForceVelocityCurve fvCurve( concentricSlope,
-                                isometricSlope,
-                                eccentricSlope,
-                                eccentricForceMax,
-                                concentricCurviness,
-                                eccentricCurviness,
-                                caller);
-
+   
     //Shorter version of normalized muscle multipliers
 
     double fse = 0; //Normalized tendon (series element) force

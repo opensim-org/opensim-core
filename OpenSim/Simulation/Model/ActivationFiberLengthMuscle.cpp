@@ -246,7 +246,8 @@ postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 //--------------------------------------------------------------------------
 // COMPUTATIONS
 //--------------------------------------------------------------------------
-void ActivationFiberLengthMuscle::computeInitialFiberEquilibrium(SimTK::State& s) const
+//The concrete classes are the only ones qualified to write this routine.
+/*void ActivationFiberLengthMuscle::computeInitialFiberEquilibrium(SimTK::State& s) const
 {
 	// Reasonable initial activation value
 	//cout << getName() << "'s activation is: " << getActivation(s) << endl;
@@ -260,7 +261,7 @@ void ActivationFiberLengthMuscle::computeInitialFiberEquilibrium(SimTK::State& s
 	double force = computeIsometricForce(s, getActivation(s));
 	//cout << getName() << "'s Equilibrium activation is: " << getActivation(s) << endl;
 	//cout << getName() << "'s Equilibrium fiber-length is: " << getFiberLength(s) << endl;
-}
+}*/
 
 //==============================================================================
 // FORCE APPLICATION
