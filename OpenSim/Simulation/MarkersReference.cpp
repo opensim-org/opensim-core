@@ -180,7 +180,7 @@ void MarkersReference::setMarkerWeightSet(Set<MarkerWeight> &markerWeights)
 {
 	_markerWeightSet.setSize(0);
     for(int i=0; i<markerWeights.getSize(); i++)
-		_markerWeightSet.append(&markerWeights[i]);
+		_markerWeightSet.adoptAndAppend(&markerWeights[i]);
 
 	//Make sure the input set no longer owns the weightings
 	_markerWeightSet.setMemoryOwner(false);

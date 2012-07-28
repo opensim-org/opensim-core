@@ -177,7 +177,7 @@ construct(int aDegree,const Storage *aStore,double aErrorVariance)
 		delete fp;  
 
 		// ADD SPLINE
-		append(spline);
+		adoptAndAppend(spline);
 	}
 	//printf("\n%d splines constructed.\n\n",i);
 

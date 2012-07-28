@@ -532,7 +532,7 @@ const Manager& ForwardTool::getManager() const {
 				CorrectionController* cc = new CorrectionController();
 				cc->setKp(16.0);
 				cc->setKv(8.0);
-				_controllerSet.append(cc);
+				_controllerSet.adoptAndAppend(cc);
 				_parsingLog+= "This setup file contains corrective springs.\n";
 				_parsingLog+= "Corrective springs are deprecated in OpenSim 2.0\n";
 				_parsingLog+= "Instead, a Corrective Controller has been created.\n";

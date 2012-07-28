@@ -134,7 +134,7 @@ void testControlSetControllerOnBlock()
 	control.setName("actuator");
 	// Create a control set and add the controls to the set
 	ControlSet actuatorControls;
-	actuatorControls.append(&control);
+	actuatorControls.adoptAndAppend(&control);
 	actuatorControls.setMemoryOwner(false);
 	actuatorControls.setControlValues(initialTime, controlForce);
 	actuatorControls.setControlValues(finalTime, controlForce);

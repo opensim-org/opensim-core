@@ -393,13 +393,13 @@ void InducedAccelerations::setupStorage()
 	if(nc && (IO::Uppercase(_coordNames.get(0)) == "ALL")) {
 		nc = modelCoordSet.getSize();
 		for(int i=0; i<nc; i++)
-			_coordSet.append(&modelCoordSet.get(i));
+			_coordSet.adoptAndAppend(&modelCoordSet.get(i));
 	}
 	else{
 		for(int i=0; i<nc; i++){
 			int index = modelCoordSet.getIndex(_coordNames[i]);
 			if(index<0) throw Exception("InducedAcceleration: ERR- Could not find coordinate '"+_coordNames[i],__FILE__,__LINE__);
-			_coordSet.append(&modelCoordSet.get(index));
+			_coordSet.adoptAndAppend(&modelCoordSet.get(index));
 		}
 	}
 
@@ -425,7 +425,7 @@ void InducedAccelerations::setupStorage()
 	if(nb && (IO::Uppercase(_bodyNames.get(0)) == "ALL")) {
 		nb = modelBodySet.getSize();
 		for(int i=0; i<nb; i++)
-			_bodySet.append(&modelBodySet.get(i));
+			_bodySet.adoptAndAppend(&modelBodySet.get(i));
 	}
 	else{
 		for(int i=0; i<nb; i++){
@@ -434,7 +434,7 @@ void InducedAccelerations::setupStorage()
 			else{
 				int bi =  modelBodySet.getIndex(_bodyNames[i]);
 				if(bi<0) throw Exception("InducedAcceleration: ERR- Could not find body '"+_bodyNames[i],__FILE__,__LINE__);
-				_bodySet.append(&modelBodySet.get(bi));
+				_bodySet.adoptAndAppend(&modelBodySet.get(bi));
 			}
 		}
 	}
@@ -822,7 +822,7 @@ void InducedAccelerations::initialize(const SimTK::State& s)
 	for(int i=0; i<_constraintSet.getSize(); i++){
 		Constraint* contactConstraint = &_constraintSet.get(i);
 		if(contactConstraint)
-			_model->updConstraintSet().append(contactConstraint);
+			_model->updConstraintSet().adoptAndAppend(contactConstraint);
 	}
 
 	// Create a set of constraints used to model contact with the ground

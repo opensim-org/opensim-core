@@ -341,7 +341,7 @@ bool InverseKinematicsTool::run()
 			}
 			else if(IKMarkerTask *markerTask = dynamic_cast<IKMarkerTask *>(&_ikTaskSet[i])){
 				MarkerWeight *markerWeight = new MarkerWeight(markerTask->getName(), markerTask->getWeight());
-				markerWeights.append(markerWeight);
+				markerWeights.adoptAndAppend(markerWeight);
 			}
 		}
 

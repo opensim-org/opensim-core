@@ -131,7 +131,7 @@ ControlSet::ControlSet(const Storage& aStorage, int numControls, int startIndex)
 		control = ExtractControl(aStorage,j+startIndex);
 
 		// APPEND ON TO CONTROL SET
-		append(control);
+		adoptAndAppend(control);
 	}
 
 }

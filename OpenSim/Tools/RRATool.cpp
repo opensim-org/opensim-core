@@ -614,13 +614,13 @@ bool RRATool::run()
 	if(desiredPointsFlag) {
 		int nps=posSet->getSize();
 		for(int i=0;i<nps;i++) {
-			qAndPosSet->append(&posSet->get(i));
+			qAndPosSet->adoptAndAppend(&posSet->get(i));
 		}
 	}
 	if(desiredKinFlag) {
 		int nqs=qSet->getSize();
 		for(int i=0;i<nqs;i++) {
-			qAndPosSet->append(&qSet->get(i));
+			qAndPosSet->adoptAndAppend(&qSet->get(i));
 		}
 	}
 	if (taskSet.getDataFileName()!=""){

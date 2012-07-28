@@ -470,7 +470,7 @@ addAnalysisSetToModel()
 		if(!&_analysisSet.get(i)) continue;
 		Analysis *analysis = _analysisSet.get(i).clone();
 		_model->addAnalysis(analysis);
-		_analysisCopies.append(analysis);
+		_analysisCopies.adoptAndAppend(analysis);
 	}
 }
 //_____________________________________________________________________________
@@ -499,7 +499,7 @@ addControllerSetToModel()
 		if(!&_controllerSet.get(i)) continue;
 		Controller *controller = _controllerSet.get(i).clone();
 		_model->addController(controller);
-		_controllerCopies.append(controller);
+		_controllerCopies.adoptAndAppend(controller);
 	}
 }
 //_____________________________________________________________________________
@@ -763,7 +763,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 		// controls_file was specified, create a ControlSetController for it
 		ControlSetController* csc = new ControlSetController();
 		csc->setControlSetFileName(controlsFileName);
-		_controllerSet.append(csc);
+		_controllerSet.adoptAndAppend(csc);
 	}
 	//Object::updateFromXMLNode(aNode, versionNumber);
 }
@@ -819,7 +819,7 @@ void AbstractTool::setControlsFileName(const std::string& controlsFilename)
 	// Create a new controlsetController and add it to the tool
 	ControlSetController* csc = new ControlSetController();
 	csc->setControlSetFileName(controlsFilename);
-	_controllerSet.append(csc);
+	_controllerSet.adoptAndAppend(csc);
 }
 //_____________________________________________________________________________
 /**
@@ -910,7 +910,7 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
 			sprintf(pad,"%d", f+1);
 			std::string suffix = "ExternalForce_"+string(pad);
 			xf->setName(suffix);
-			_externalLoads.append(xf);
+			_externalLoads.adoptAndAppend(xf);
 		}
 		_externalLoads.setDataFileName(oldFile);
 		std::string newName=oldFile.substr(0, oldFile.length()-4)+".xml";

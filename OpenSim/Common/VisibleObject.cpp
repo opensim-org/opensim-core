@@ -301,7 +301,7 @@ void VisibleObject::getRotationsAndTranslationsAsArray6(double aArray[]) const
 void VisibleObject::setGeometryFileName(int i, const std::string &aGeometryFileName)
 {
     _propGeometrySet.setValueIsDefault(false);
-	_geometrySet.append(new DisplayGeometry(aGeometryFileName));
+	_geometrySet.adoptAndAppend(new DisplayGeometry(aGeometryFileName));
 }
 
 const int VisibleObject::getNumGeometryFiles() const

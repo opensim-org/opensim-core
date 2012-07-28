@@ -660,7 +660,7 @@ SimTK::SystemYIndex Model::getStateVariableSystemIndex(const string &stateVariab
  * Add any Component derived from ModelComponent to the Model.
  */
 void Model::addComponent(ModelComponent* aComponent) {
-	_componentSet.append(aComponent);
+	_componentSet.adoptAndAppend(aComponent);
 	_componentSet.invokeConnectToModel(*this);
 }
 
@@ -670,7 +670,7 @@ void Model::addComponent(ModelComponent* aComponent) {
  */
 void Model::addBody(OpenSim::Body *aBody)
 {
-	updBodySet().append(aBody);
+	updBodySet().adoptAndAppend(aBody);
 	updBodySet().invokeConnectToModel(*this);
 	updJointSet().populate(*this);
 	updCoordinateSet().populate(*this);
@@ -682,7 +682,7 @@ void Model::addBody(OpenSim::Body *aBody)
  */
 void Model::addConstraint(OpenSim::Constraint *aConstraint)
 {
-	updConstraintSet().append(aConstraint);
+	updConstraintSet().adoptAndAppend(aConstraint);
 	updConstraintSet().invokeConnectToModel(*this);
 }
 
@@ -702,7 +702,7 @@ void Model::addForce(OpenSim::Force *aForce)
  */
 void Model::addProbe(OpenSim::Probe *aProbe)
 {
-	updProbeSet().append(aProbe);
+	updProbeSet().adoptAndAppend(aProbe);
 	updProbeSet().invokeConnectToModel(*this);
 }
 
@@ -712,7 +712,7 @@ void Model::addProbe(OpenSim::Probe *aProbe)
  */
 void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)
 {
-	updContactGeometrySet().append(aContactGeometry);
+	updContactGeometrySet().adoptAndAppend(aContactGeometry);
 	updContactGeometrySet().invokeConnectToModel(*this);
 }
 
@@ -723,7 +723,7 @@ void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)
 void Model::addController(Controller *aController)
 {
 	if (aController ) {
-	   updControllerSet().append(aController);
+	   updControllerSet().adoptAndAppend(aController);
 	   updControllerSet().invokeConnectToModel(*this);
     }
 }
@@ -783,7 +783,7 @@ void Model::createGroundBodyIfNecessary()
 
 	if(ground==NULL) {
 		ground = new Body();
-		_bodySet.append(ground);
+		_bodySet.adoptAndAppend(ground);
 	}
 	// Set member variables
 	ground->setName(SimbodyGroundName);
@@ -1218,7 +1218,7 @@ void Model::addAnalysis(Analysis *aAnalysis)
 	if (aAnalysis )
 	{
 //		aAnalysis->setModel(this);
-		_analysisSet.append(aAnalysis);
+		_analysisSet.adoptAndAppend(aAnalysis);
 	}
 }
 //_____________________________________________________________________________
@@ -1538,7 +1538,7 @@ int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
 		{
     		OpenSim::Body& body = updBodySet().get(bodyName);
 			marker->changeBody(body);
-			_markerSet.append(marker);
+			_markerSet.adoptAndAppend(marker);
 			numAdded++;
 		}
 	}
@@ -1578,7 +1578,7 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 			{
 				_markerSet.remove(&modelMarker);
 				// Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
-				_markerSet.append(updatingMarker.clone());
+				_markerSet.adoptAndAppend(updatingMarker.clone());
 			}
 			else
 			{
@@ -1592,7 +1592,7 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 			 */
 			// Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
 			if (getBodySet().contains(updatingBodyName))
-				_markerSet.append(updatingMarker.clone());
+				_markerSet.adoptAndAppend(updatingMarker.clone());
 		}
 	}
 

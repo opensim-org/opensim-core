@@ -116,19 +116,6 @@ public:
     /**
      * Adding an object to the set causes its Model field to be set.
      */
-    bool append(T* aObject)
-    {
-        return Set<T>::append(aObject);
-    }
-#ifndef SWIG
-	bool append(T& aObject)
-    {
-        return Set<T>::append(aObject.clone());
-    }
-#endif
-    /**
-     * Adding an object to the set causes its Model field to be set.
-     */
     bool insert(int aIndex, T* aObject)
     {
         return Set<T>::insert(aIndex, aObject);

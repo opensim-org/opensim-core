@@ -175,7 +175,7 @@ ControllerSet& ControllerSet::operator=(const ControllerSet &aControllerSet)
  */
 bool ControllerSet::addController(Controller *aController)
 {
-	bool success = Set<Controller>::append(aController);
+	bool success = Set<Controller>::adoptAndAppend(aController);
 
 	if(success) {
 		aController->connectToModel(*_model);

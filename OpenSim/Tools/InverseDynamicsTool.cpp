@@ -229,14 +229,14 @@ void InverseDynamicsTool::getJointsByName(Model &model, const Array<std::string>
 		//Check for kewords first starting with ALL
 		if(IO::Uppercase(jointNames[i]) == "ALL"){
 			for(int j=0; j<modelJoints.getSize(); ++j){
-				joints.append(&modelJoints[j]);
+				joints.adoptAndAppend(&modelJoints[j]);
 			}
 			break;
 		} 
 		
 		int k = modelJoints.getIndex(jointNames[i]);
 		if (k >= 0){
-			joints.append(&modelJoints[k]);
+			joints.adoptAndAppend(&modelJoints[k]);
 		} else {
 			cout << "\nWARNING: InverseDynamicsTool could not find Joint named '" << jointNames[i] << "' to report body forces." << endl;
 		}

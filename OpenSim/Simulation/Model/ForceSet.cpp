@@ -212,7 +212,7 @@ bool ForceSet::remove(int aIndex)
 bool ForceSet::
 append(Force *aForce)
 {
-	bool success = ModelComponentSet<Force>::append(aForce);
+	bool success = ModelComponentSet<Force>::adoptAndAppend(aForce);
 
 	if((success)&&(_model!=NULL)) {
 		updateActuators();
@@ -235,7 +235,7 @@ append(Force *aForce)
 bool ForceSet::
 append(Force &aForce)
 {
-	bool success = ModelComponentSet<Force>::append(aForce);
+    bool success = ModelComponentSet<Force>::cloneAndAppend(aForce);
 
 
 	if((success)&&(_model!=NULL)) {
@@ -272,7 +272,7 @@ bool ForceSet::append(ForceSet &aForceSet, bool aAllowDuplicateNames)
 			}
 		}
 		if(!nameExists) {
-			if(!ModelComponentSet<Force>::append(&aForceSet.get(i))) 
+			if(!ModelComponentSet<Force>::adoptAndAppend(&aForceSet.get(i))) 
 				success = false;
 		}
 	}
@@ -345,7 +345,7 @@ void ForceSet::updateActuators()
     for (int i = 0; i < getSize(); ++i)
     {
         Actuator* act = dynamic_cast<Actuator*>(&get(i));
-        if (act != NULL)  _actuators.append(act);
+        if (act != NULL)  _actuators.adoptAndAppend(act);
     }
 }
 
@@ -373,7 +373,7 @@ void ForceSet::updateMuscles()
     for (int i = 0; i < getSize(); ++i)
     {
         Muscle* m = dynamic_cast<Muscle*>(&get(i));
-        if (m != NULL)  _muscles.append(m);
+        if (m != NULL)  _muscles.adoptAndAppend(m);
     }
 }
 

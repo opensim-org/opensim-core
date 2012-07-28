@@ -108,7 +108,7 @@ const ElasticFoundationForce::ContactParametersSet& ElasticFoundationForce::getC
 
 void ElasticFoundationForce::addContactParameters(ElasticFoundationForce::ContactParameters* params)
 {
-    updContactParametersSet().append(params);
+    updContactParametersSet().adoptAndAppend(params);
 }
 
 double ElasticFoundationForce::getTransitionVelocity() const

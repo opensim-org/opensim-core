@@ -458,14 +458,14 @@ void getGroupNamesContaining(const std::string &aObjectName, Array<std::string> 
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Append to the array.  A copy is NOT made of the specified object.  If
+ * Append to the array, and adopt passed in pointer.  A copy is NOT made of the specified object.  If
  * getMemoryOwner() is true, this Set takes over ownership of the object and
  * deletes it when the Set itself is deleted.
  *
  * @param aObject Object to be appended.
  * @return True if the append was successful, false otherwise.
  */
-virtual bool append(T *aObject)
+virtual bool adoptAndAppend(T *aObject)
 {
 	return( _objects.append(aObject) );
 }
@@ -481,7 +481,7 @@ virtual bool append(T *aObject)
  */
 virtual bool cloneAndAppend(const T& aObject)
 {
-	return append(aObject.clone());
+	return adoptAndAppend(aObject.clone());
 }
 //-----------------------------------------------------------------------------
 // INSERT

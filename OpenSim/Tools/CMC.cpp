@@ -562,7 +562,7 @@ computeInitialStates(SimTK::State& s, double &rTI)
 		if(!SimTK::isNaN(xmin)) x->setControlValueMin(tiReal,xmin);
 		double xmax = xPredictor.getControlValueMax(tiReal);
 		if(!SimTK::isNaN(xmax)) x->setControlValueMax(tiReal,xmax);
-		xiSet.append(x);
+		xiSet.adoptAndAppend(x);
 	}
 
 	// ACTUATOR EQUILIBRIUM
@@ -1160,7 +1160,7 @@ void CMC::addToSystem( SimTK::MultibodySystem& system)  const
 		control->setDefaultParameterMin(xmin);
 		control->setDefaultParameterMax(xmax);
 
-		mutableThis->_controlSet.append(control);
+		mutableThis->_controlSet.adoptAndAppend(control);
 		mutableThis->_controlSetIndices.set(i, i);
 	}
 

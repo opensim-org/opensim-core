@@ -110,7 +110,7 @@ getContactParametersSet()
 void HuntCrossleyForce::
 addContactParameters(HuntCrossleyForce::ContactParameters* params)
 {
-    updContactParametersSet().append(params);
+    updContactParametersSet().adoptAndAppend(params);
 }
 
 double HuntCrossleyForce::getTransitionVelocity() const

@@ -134,7 +134,7 @@ void Controller:: connectToModel(Model& model)
 			Set<Actuator> actuatorsByName;
 			for(int i =0; i <  getProperty_actuator_list().size(); i++){
 				if(model.getActuators().contains(get_actuator_list(i)))
-					actuatorsByName.append(&model.updActuators().get(get_actuator_list(i)));
+					actuatorsByName.adoptAndAppend(&model.updActuators().get(get_actuator_list(i)));
 				else
 					cerr << "WARN: Controller::setup : Actuator " << get_actuator_list(i) << " was not found and will be ignored." << endl;
 			}
@@ -172,7 +172,7 @@ void Controller::addActuator(const Actuator& actuator)
 	// just const ref that forces a copy
 	// const_cast only to add to the private set of actuators
 	Actuator* mutable_act = const_cast<Actuator *>(&actuator);
-	_actuatorSet.append(mutable_act);
+	_actuatorSet.adoptAndAppend(mutable_act);
 
 	int found = updProperty_actuator_list().findIndex(actuator.getName());
 	if(found < 0) //add if the actuator isn't already in the list

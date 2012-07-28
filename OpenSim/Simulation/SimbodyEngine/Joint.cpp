@@ -427,7 +427,7 @@ void Joint::constructCoordinates()
 		name << getName() << "_coord_" << i;
 		Coordinate *coord = new Coordinate();
 		coord->setName(name.str());
-		coordinateSet.append(coord);
+		coordinateSet.adoptAndAppend(coord);
 	}
 }
 

@@ -254,7 +254,7 @@ bool ModelScaler::processModel(SimTK::State& s, Model* aModel, const string& aPa
 		bodyScale->setSegmentName(bodySet.get(i).getName());
 		bodyScale->setScaleFactors(unity);
 		bodyScale->setApply(true);
-		theScaleSet.append(bodyScale);
+		theScaleSet.adoptAndAppend(bodyScale);
 	}
 
 	try

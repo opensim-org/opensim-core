@@ -146,7 +146,7 @@ void CustomJoint::connectToModel(Model& aModel)
 		upd_CoordinateSet().remove(0);
 	upd_CoordinateSet().setMemoryOwner(currentOwnership);
 	for (int i=0; i<coords.getSize(); i++)
-		upd_CoordinateSet().append(coords[i]);
+		upd_CoordinateSet().adoptAndAppend(coords[i]);
 }
 
 
@@ -215,7 +215,7 @@ void CustomJoint::constructCoordinates()
 			if (origCoord.getDefaultIsPrescribed())
 				coord->setPrescribedFunction(origCoord.getPrescribedFunction());
 		}
-		coordinateSet.append(coord);
+		coordinateSet.adoptAndAppend(coord);
 	}
 }
 

@@ -147,7 +147,7 @@ void testExternalLoad()
 	xf.setName("grav");
 
 	ExternalLoads* extLoads = new ExternalLoads(model);
-	extLoads->append(&xf);
+	extLoads->adoptAndAppend(&xf);
 
 	extLoads->print("ExternalLoads_test.xml");
 
@@ -227,7 +227,7 @@ void testExternalLoad()
 	// Empty out existing external forces
 	extLoads->setMemoryOwner(false);
 	extLoads->setSize(0);
-	extLoads->append(&xf2);
+	extLoads->adoptAndAppend(&xf2);
 
 	//Ask external loads to transform point expressed in ground to the applied body
 	extLoads->setDataFileName(forceStore2.getName());

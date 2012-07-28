@@ -302,7 +302,7 @@ void CorrectionController::connectToModel(Model& model)
 			
 		actuator->setOptimalForce(1.0);
 		
-		updActuators().append(actuator);
+		updActuators().adoptAndAppend(actuator);
    }
 	_numControls = getActuatorSet().getSize();
 

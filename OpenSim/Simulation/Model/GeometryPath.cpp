@@ -522,7 +522,7 @@ PathPoint* GeometryPath::appendNewPathPoint(const std::string& proposedName,
 	newPoint->setBody(aBody);
 	newPoint->setName(proposedName);
 	for (int i=0; i<3; i++) newPoint->setLocationCoord(i, aPositionOnBody[i]);
-	_pathPointSet.append(newPoint);
+	_pathPointSet.adoptAndAppend(newPoint);
 
 	return newPoint;
 }
@@ -692,7 +692,7 @@ void GeometryPath::addPathWrap(const SimTK::State& s, WrapObject& aWrapObject)
 	newWrap->setWrapObject(aWrapObject);
 	newWrap->setMethod(PathWrap::hybrid);
 	newWrap->connectToModelAndPath(getModel(), *this);
-	_pathWrapSet.append(newWrap);
+	_pathWrapSet.adoptAndAppend(newWrap);
 
 }
 

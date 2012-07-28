@@ -89,7 +89,7 @@ void CoordinateSet::populate(Model& model)
 		Joint& nextJoint = model.getJointSet().get(i);
 		for(int j=0; j< nextJoint.numCoordinates(); j++){
 			// Append a pointer (address) otherwise the model will get a copy that will not be updated properly
-			append(&(nextJoint.getCoordinateSet()[j]));
+			adoptAndAppend(&(nextJoint.getCoordinateSet()[j]));
 		}
 	}
 }

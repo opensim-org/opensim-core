@@ -193,7 +193,7 @@ Marker* MarkerSet::addMarker(const string& aName, const double aOffset[3], OpenS
     // Body will be based on this name when marker is connected to Model.
 	m->setBodyName(aBody.getName()); 
 	m->connectMarkerToModel(aBody.getModel());
-	append(m);
+	adoptAndAppend(m);
 
 	return m;
 }

@@ -133,7 +133,7 @@ void JointSet::populate(Model& aModel)
         if (aModel.getBodySet().get(i).hasJoint()) { // Ground body doesn't have a jnt
             Joint& nextJoint = aModel.getBodySet().get(i).getJoint();
 			nextJoint.setBody(aModel.getBodySet().get(i));
-            append(&nextJoint);
+            adoptAndAppend(&nextJoint);
         }
     }
 }

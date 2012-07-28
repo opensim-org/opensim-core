@@ -179,7 +179,7 @@ void SimbodyEngine::getUnlockedCoordinates(const SimTK::State &s, CoordinateSet&
 
 	for (int i = 0; i < _model->getCoordinateSet().getSize(); i++)
 		if (!_model->getCoordinateSet().get(i).getLocked(s))
-			rUnlockedCoordinates.append(&_model->getCoordinateSet().get(i));
+			rUnlockedCoordinates.adoptAndAppend(&_model->getCoordinateSet().get(i));
 }
 
 

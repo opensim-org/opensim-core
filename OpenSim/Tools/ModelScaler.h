@@ -133,14 +133,14 @@ public:
 	 */
 	void addMeasurement(Measurement* aMeasurement)
 	{
-		_measurementSet.append(aMeasurement);
+		_measurementSet.adoptAndAppend(aMeasurement);
 	}
 	/**
 	 * add a scale factor to current scaleSet
 	 */
 	void addScale(Scale *aScale)
 	{
-		_scaleSet.append(aScale);
+		_scaleSet.adoptAndAppend(aScale);
 	}
 	//--------------------------------------------------------------------------
 	// GET AND SET

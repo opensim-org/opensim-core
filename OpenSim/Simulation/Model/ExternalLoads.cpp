@@ -464,7 +464,7 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
 				oldPrescribedForce.getTorqueFunctionNames(aFunctionNames);
 				newExternalForce->setTorqueIdentifier(createIdentifier(aFunctionNames, labels));
 				//newExternalForce->setDataSourceName("");
-				append(newExternalForce);
+				adoptAndAppend(newExternalForce);
 			}
 			delete dataSource;
 		}
