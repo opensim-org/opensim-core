@@ -25,20 +25,10 @@
 */
 
 // INCLUDE
-#include <string>
-#include <iostream>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include "OpenSim/Common/PiecewiseLinearFunction.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/LoadModel.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Tools/ForwardTool.h>
-#include <OpenSim/Analyses/Kinematics.h>
-#include <OpenSim/Analyses/Actuation.h>
-#include <OpenSim/Analyses/PointKinematics.h>
-#include <OpenSim/Analyses/BodyKinematics.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
@@ -55,12 +45,12 @@ void testRunningModel();
 int main() {
 	Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 	//Object::renameType("Thelen2003Muscle", "Millard2012AccelerationMuscle");
+	//Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
     SimTK::Array_<std::string> failures;
 
 	try {testSingleRigidTendonMuscle();}
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testSingleRigidTendonMuscle"); }
-
     try {testSingleMuscle();}
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testSingleMuscle"); }
@@ -76,7 +66,7 @@ int main() {
     try {testGait2354();}
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testGait2354"); }
- 
+
 	try {testEMGDrivenArm();}
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testEMGDrivenArm"); }
@@ -171,6 +161,7 @@ void testArm26() {
 	cout << "******************************************************************\n" << endl;
 	CMCTool cmc("arm26_Setup_CMC.xml");
 	cmc.run();
+
 	Storage results("Results_Arm26/arm26_states.sto"), standard("std_arm26_states.sto");
 
 	Array<double> rms_tols(0.05, 2*2+2*6); // activations within 5%

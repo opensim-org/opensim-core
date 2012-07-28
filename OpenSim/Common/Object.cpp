@@ -563,6 +563,9 @@ registerType(const Object& aObject)
 /*static*/ void Object::
 renameType(const std::string& oldTypeName, const std::string& newTypeName)
 {
+	if(oldTypeName == newTypeName)
+		return; 
+
     std::map<std::string,Object*>::const_iterator p = 
         _mapTypesToDefaultObjects.find(newTypeName);
 

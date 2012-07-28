@@ -31,7 +31,7 @@
 //=============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Common/FunctionSet.h>
+#include <OpenSim/Common/SimmSpline.h>
 #include "PrescribedForce.h"
 
 //=============================================================================

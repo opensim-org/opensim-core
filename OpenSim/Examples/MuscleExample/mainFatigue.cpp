@@ -207,7 +207,7 @@ int main()
 		
 		// Create the force reporter
 		ForceReporter* reporter = new ForceReporter(&osimModel);
-		osimModel.updAnalysisSet().append(reporter);
+		osimModel.updAnalysisSet().adoptAndAppend(reporter);
 		// Create the manager
 		Manager manager(osimModel, integrator);
 

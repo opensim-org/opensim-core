@@ -43,10 +43,12 @@
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a smooth function with a natural cubic spline.
+ * A class implementing a smooth function with a cubic spline as 
+ * implemented in SIMM. Use a SIMM Spline if you want to reproduce
+ * the behavior of a joint function created in SIMM.
  *
  * This class inherits from Function and so can be used as input to
- * any class requiring an Fuction as input.
+ * any class requiring a Fuction as input.
  *
  * @author Peter Loan
  * @version 1.0

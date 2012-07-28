@@ -150,9 +150,9 @@ int main()
 		control_BICshort->setName("BICshort"); control_BRA->setName("BRA");
 		
 		ControlSet *muscleControls = new ControlSet();
-		muscleControls->append(control_TRIlong); muscleControls->append(control_TRIlat);
-		muscleControls->append(control_TRImed); muscleControls->append(control_BIClong);
-		muscleControls->append(control_BICshort); muscleControls->append(control_BRA);
+		muscleControls->adoptAndAppend(control_TRIlong); muscleControls->adoptAndAppend(control_TRIlat);
+		muscleControls->adoptAndAppend(control_TRImed); muscleControls->adoptAndAppend(control_BIClong);
+		muscleControls->adoptAndAppend(control_BICshort); muscleControls->adoptAndAppend(control_BRA);
 		
 		ControlSetController *muscleController = new ControlSetController();
 		muscleController->setControlSet(muscleControls);

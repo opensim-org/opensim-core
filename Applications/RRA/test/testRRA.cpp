@@ -25,20 +25,10 @@
 */
 
 // INCLUDE
-#include <string>
-#include <iostream>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/LoadModel.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Tools/RRATool.h>
-#include <OpenSim/Tools/ForwardTool.h>
-#include <OpenSim/Analyses/Kinematics.h>
-#include <OpenSim/Analyses/Actuation.h>
-#include <OpenSim/Analyses/PointKinematics.h>
-#include <OpenSim/Analyses/BodyKinematics.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;

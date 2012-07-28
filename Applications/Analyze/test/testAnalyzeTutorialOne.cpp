@@ -48,7 +48,7 @@ int main()
 		analyze1.run();
         /* Once this runs to completion we'll make the test more meaningful by comparing output 
          * to a validated standard. Let's make sure we don't crash during run first! -Ayman 5/29/12
-		Storage resultFiberLength("BothLegs_fiberLength.sto");
+		Storage resultFiberLength("testPlotterTool/BothLegs_fiberLength.sto");
         Storage standardFiberLength("std_BothLegs_fiberLength.sto");
 		CHECK_STORAGE_AGAINST_STANDARD(resultFiberLength, standardFiberLength, Array<double>(0.0001, 100), __FILE__, __LINE__, "testAnalyzeTutorialOne failed");
         */

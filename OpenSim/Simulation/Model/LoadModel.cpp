@@ -52,7 +52,7 @@ typedef OpenSim::Model* (*CREATEMODEL_ParamsForces)(const string&,OpenSim::Force
 /**
  * Load and create a model from a dynamically loaded library (DLL).
  *
- * @param aModelLibraryName Name of the model DLL (e.g., rdBlock_D).  Do not
+ * @param aModelLibraryName Name of the model DLL.  Do not
  * include the library (.lib) or DLL (.dll) extension in the name of the
  * model library.
  * @param aModelFileName Name of the model xml file (optional).

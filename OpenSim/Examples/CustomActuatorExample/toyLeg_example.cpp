@@ -166,7 +166,7 @@ int main()
 		ControlLinear *control1 = new ControlLinear();
 		control1->setName("spring"); // change this between 'piston' and 'spring'
 		//control1->setUseSteps(true);
-		controlSet->append(control1);
+		controlSet->adoptAndAppend(control1);
 
 		// set control values for the piston
 		/*controlSet->setControlValues(t0, controlT0);
@@ -194,7 +194,7 @@ int main()
 		
 		ForceReporter *forces = new ForceReporter(&osimModel);
 		
-		osimModel.updAnalysisSet().append(forces);
+		osimModel.updAnalysisSet().adoptAndAppend(forces);
 		
 		// Pin joint initial states
 

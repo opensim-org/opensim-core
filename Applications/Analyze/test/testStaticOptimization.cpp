@@ -1,5 +1,5 @@
 // testStaticOptimization.cpp
-// Author: Ayman Habib
+// Author: Ayman Habib, Matt Millard, Ajay Seth
 /*
 * Copyright (c)  2005, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -27,13 +27,7 @@
 */
 
 // INCLUDE
-#include <string>
-#include <iostream>
-#include <OpenSim/version.h>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Analyses/StaticOptimization.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -41,22 +35,22 @@
 using namespace OpenSim;
 using namespace std;
 
-static int typeThelen2003Muscle_Deprecated      = 0;
-static int typeThelen2003Muscle                 = 1;
-static int typeMillard2012EquilibriumMuscle     = 2;
-static int typeMillard2012AccelerationMuscle    = 3;
-
-/**
-@param muscleModelType selects the muscle model to test
-        0: Thelen2003Muscle_Deprecated
-        1: Thelen2003Muscle
-        2: Millard2012EquilibriumMuscle
-        3: Millard2012AccelerationMuscle
+/** @param muscleModelClassName selects from:
+        Thelen2003Muscle_Deprecated
+        Thelen2003Muscle
+        Millard2012EquilibriumMuscle
+        Millard2012AccelerationMuscle
 */
-void testArm26(int muscleModelType);
+void testArm26(const string& muscleModelClassName);
 
 int main()
 {
+	Array<string> muscleModelNames; 
+	muscleModelNames.append("Thelen2003Muscle_Deprecated");
+	muscleModelNames.append("Thelen2003Muscle");
+	muscleModelNames.append("Millard2012EquilibriumMuscle");
+	muscleModelNames.append("Millard2012AccelerationMuscle");
+
     cout << "=========================================================" << endl;
     cout << "                       WARNING                           " << endl;
     cout << "Athough this file says it testsStaticOptimization, it is" << endl;
@@ -70,131 +64,85 @@ int main()
     cout << "muscle model for which the solution to the optimization   " <<endl;
     cout << "problem is known by construction.  M.Millard 2012" << endl;
     cout << "=========================================================" << endl;
-
-	try {
-        testArm26(typeMillard2012AccelerationMuscle);
-        testArm26(typeMillard2012EquilibriumMuscle);
-		
-
-
-        testArm26(typeThelen2003Muscle_Deprecated);
-		testArm26(typeThelen2003Muscle);
-
-        
-      
+	
+	SimTK::Array_<std::string> failures;
+	
+	for(int i=0; i< muscleModelNames.getSize(); ++i){
+		try { testArm26(muscleModelNames[i]); }
+		catch (const std::exception& e) {
+			cout << e.what() <<endl; 
+			failures.push_back("testArm26_"+muscleModelNames[i]);
+		}
 	}
-	catch (const std::exception& e) {
-        cout << "Failed: "<< e.what() << endl;
+  
+    if (!failures.empty()) {
+        cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
+
     cout << "Done" << endl;
     return 0;
 }
 
-void testArm26(int muscleModelType)
+void testArm26(const string& muscleModelClassName)
 {
-	string resultsDir = "";
-	//if(	useDeprecatedMuscle ){
-	//	Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
-	//	resultsDir = "Results_Deprecated";
-	//}
+	Object::renameType( "Thelen2003Muscle", muscleModelClassName);
 
-    switch(muscleModelType){
-        case 0:{
-            Object::renameType( "Thelen2003Muscle", 
-                                "Thelen2003Muscle_Deprecated");
-            cout << "==============================================" << endl;
-            cout << "      Thelen2003Muscle_Deprecated "<< endl;
-            cout << "==============================================" << endl;
+	cout << "==============================================" << endl;
+	cout << "       "<< muscleModelClassName << endl;
+	cout << "==============================================" << endl;
 
-		    resultsDir = "Results_Thelen2003Muscle_Deprecated";
-        } break;
-
-        case 1:{
-            //Do nothing: muscles are already Thelen2003Muscle
-            cout << "==============================================" << endl;
-            cout << "      Thelen2003Muscle "<< endl;
-            cout << "==============================================" << endl;
-            resultsDir = "Results_Thelen2003Muscle";
-        } break;
-            
-        case 2:{
-            cout << "==============================================" << endl;
-            cout << "      Millard2012EquilibriumMuscle "<< endl;
-            cout << "==============================================" << endl;
-            Object::renameType( "Thelen2003Muscle", 
-                                "Millard2012EquilibriumMuscle");
-            resultsDir = "Results_Millard2012EquilibriumMuscle";
-        } break;
-
-        case 3:{
-            cout << "==============================================" << endl;
-            cout << "      Millard2012AccelerationMuscle "<< endl;
-            cout << "==============================================" << endl;
-            Object::renameType( "Thelen2003Muscle", 
-                                "Millard2012AccelerationMuscle");
-            resultsDir = "Results_Millard2012AccelerationMuscle";
-        } break;
-        default:
-            cout << "==============================================" << endl;
-            cout << "      INVALID  muscleModelType"<< endl;
-            cout << "==============================================" << endl;
-    }
+	string resultsDir = "Results_"+muscleModelClassName;
+	const string& muscName = muscleModelClassName;
 
 	AnalyzeTool analyze1("arm26_Setup_StaticOptimization.xml");
 	analyze1.setResultsDir(resultsDir);
 	analyze1.run();
-	Storage resultActivation1(
-        resultsDir+"/arm26_StaticOptimization_activation.sto"), 
-        standardActivation1(resultsDir
-                +"/std_arm26_StaticOptimization_activation.sto");
 
-	Storage resultForce1(resultsDir+"/arm26_StaticOptimization_force.sto"), 
-        standardForce1(resultsDir+"/std_arm26_StaticOptimization_force.sto");
+	Storage activations1(resultsDir+"/arm26_StaticOptimization_activation.sto");
+	Storage stdActivations1("std_arm26_StaticOptimization_activation.sto");
+	// Uncomment to use muscle model specific standard
+	//Storage stdActivations1("std_arm26_"+muscName+"_SO_activation.sto");
 
-	CHECK_STORAGE_AGAINST_STANDARD(resultActivation1, 
-                                    standardActivation1, 
-                                    Array<double>(0.025, 6), 
-                                    __FILE__,
-                                    __LINE__, 
-                                    "testArm failed");
+	Storage forces1(resultsDir+"/arm26_StaticOptimization_force.sto");
+    Storage stdForces1("std_arm26_StaticOptimization_force.sto");
+	// Uncomment to use muscle model specific standard
+	//Storage stdForces1("std_arm26_"+muscName+"_SO_force.sto");
 
-	CHECK_STORAGE_AGAINST_STANDARD(resultForce1, 
-                                    standardForce1, 
-                                    Array<double>(2.0, 6),
-                                    __FILE__, 
-                                    __LINE__, 
-                                    "testArm failed");
+	CHECK_STORAGE_AGAINST_STANDARD(activations1, stdActivations1, 
+									Array<double>(0.025, 6), __FILE__, __LINE__, 
+                                   "Arm26 activations "+muscName+" failed");
 
-	cout << resultsDir <<": testArm passed" << endl;
+	CHECK_STORAGE_AGAINST_STANDARD(forces1, stdForces1, 
+                                    Array<double>(2.0, 6), __FILE__, __LINE__, 
+                                    "Arm26 forces "+muscName+" failed.");
+
+	cout << resultsDir <<": test Arm26 passed." << endl;
+	cout << "==========================================================\n" << endl;
 
 	AnalyzeTool analyze2("arm26_bounds_Setup_StaticOptimization.xml");
 	analyze2.setResultsDir(resultsDir);
 	analyze2.run();
 
-	Storage resultActivation2(
-        resultsDir+"/arm26_bounds_StaticOptimization_activation.sto"), 
-        standardActivation2(resultsDir
-            +"/std_arm26_bounds_StaticOptimization_activation.sto");
+	Storage activations2(
+		resultsDir+"/arm26_bounds_StaticOptimization_activation.sto");
+	Storage stdActivations2("std_arm26_bounds_StaticOptimization_activation.sto"); 
+	// Uncomment to use muscle model specific standard
+	//Storage stdActivations2("std_arm26_bounds_"+muscName+"_SO_activation.sto");
 
-	Storage resultForce2(
-        resultsDir+"/arm26_bounds_StaticOptimization_force.sto"),
-        standardForce2(resultsDir
-        +"/std_arm26_bounds_StaticOptimization_force.sto");
+	Storage forces2(resultsDir+"/arm26_bounds_StaticOptimization_force.sto");
+    Storage stdForces2("std_arm26_bounds_StaticOptimization_force.sto");
+	// Uncomment to use muscle model specific standard
+	//Storage stdForces2("std_arm26_bounds_"+muscName+"_SO_force.sto");
 
-	CHECK_STORAGE_AGAINST_STANDARD(resultActivation2, 
-        standardActivation2, 
-        Array<double>(0.03, 6),
-        __FILE__, 
-        __LINE__, 
-        "testArm with bounds failed");
+	CHECK_STORAGE_AGAINST_STANDARD(activations2, stdActivations2,
+        Array<double>(0.03, 6), __FILE__, __LINE__, 
+        "Arm26 activation "+muscName+" with bounds failed.");
 
-	CHECK_STORAGE_AGAINST_STANDARD(resultForce2, 
-        standardForce2, 
-        Array<double>(2.5, 6), 
-        __FILE__, 
-        __LINE__, 
-        "testArm with bounds failed");
+	CHECK_STORAGE_AGAINST_STANDARD(forces2, stdForces2, 
+        Array<double>(2.5, 6), __FILE__,  __LINE__, 
+        "Arm26 forces "+muscName+" with bounds failed.");
 
-	cout << resultsDir << ": testArm with bounds passed" << endl;
+	cout << resultsDir << ": testbArm26 with bounds passed" << endl;
+	cout << "==========================================================\n" << endl;
 }

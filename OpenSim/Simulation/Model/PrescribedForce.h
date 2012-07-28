@@ -29,11 +29,7 @@
  */
 // INCLUDE
 #include "OpenSim/Simulation/osimSimulationDLL.h"
-#include "OpenSim/Common/PropertyStr.h"
-#include "OpenSim/Common/PropertyBool.h"
-#include "OpenSim/Common/PropertyObj.h"
 #include "OpenSim/Common/Function.h"
-#include "OpenSim/Common/SimmSpline.h"
 #include "OpenSim/Common/FunctionSet.h"
 #include "Force.h"
 

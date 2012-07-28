@@ -27,9 +27,6 @@
 */
 
 // INCLUDE
-#include <string>
-#include <iostream>
-#include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
