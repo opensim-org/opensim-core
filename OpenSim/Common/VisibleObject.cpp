@@ -334,6 +334,7 @@ void VisibleObject::setDisplayPreference(const DisplayGeometry::DisplayPreferenc
 // Handle conversion from older format
 void VisibleObject::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 { 
+    SimTK::Array_<SimTK::String> oldGeometryFiles;
 	if ( versionNumber < XMLDocument::getLatestVersion()){
 		if (versionNumber<20101){
 			SimTK::Xml::element_iterator visPropIter = aNode.element_begin("VisibleProperties");
@@ -355,14 +356,13 @@ void VisibleObject::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
 			string propValue="";
 			bool hasPieces=false;
 			if (geometryIter!= aNode.element_end()){
-				SimTK::Array_<SimTK::String> value;
-				geometryIter->getValueAs(value);
-				for(unsigned i=0;i< value.size(); i++) {
-					setGeometryFileName(0, value[i]);	// This actually appends
-							hasPieces=true;
-						}
-					}
-				}
+				geometryIter->getValueAs(oldGeometryFiles);
 			}
+        }
+    }
 	Object::updateFromXMLNode(aNode, versionNumber);
+    if (oldGeometryFiles.size()>0){
+        for(unsigned i=0; i< oldGeometryFiles.size(); i++) 
+            setGeometryFileName(i, oldGeometryFiles[i]);
+    }
 }
