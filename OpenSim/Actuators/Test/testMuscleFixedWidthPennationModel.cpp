@@ -822,10 +822,11 @@ int main(int argc, char* argv[])
                                                         paraHeight,caller));
 
         //calcFiberLength
-        SimTK_TEST_MUST_THROW(fibKin.calcFiberLength(1.0, 1.0, caller));
+        SimTK_TEST_EQ(fibKin.calcFiberLength(1.0, 1.0, caller),
+            fibKin.getMinimumFiberLength());
 
         //calcFiberVelocity
-        SimTK_TEST_MUST_THROW(fibKin.calcFiberVelocity(1,1,0, 1,1,0,0,caller));
+        SimTK_TEST(SimTK::isNaN(fibKin.calcFiberVelocity(1,1,0, 1,1,0,0,caller)));
 
         //calc_DTendonLength_DfiberLength
         SimTK_TEST_MUST_THROW(fibKin.calc_DTendonLength_DfiberLength(paraHeight,

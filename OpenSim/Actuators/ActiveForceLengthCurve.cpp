@@ -66,10 +66,13 @@ void ActiveForceLengthCurve::setNull()
 
 void ActiveForceLengthCurve::constructProperties()
 {
-    constructProperty_min_norm_active_fiber_length(0.4);
-    constructProperty_transition_norm_fiber_length(0.75);
-    constructProperty_max_norm_active_fiber_length(1.6);
-    constructProperty_shallow_ascending_slope(0.75);
+    constructProperty_min_norm_active_fiber_length(0.47-0.0259);//actual: 0.47
+        //but added width for the corner is 0.0259. See
+        //SmoothSegmentedFunctionFactory createActiveForceLengthCurve 
+        //implementation for details
+    constructProperty_transition_norm_fiber_length(0.6259); 
+    constructProperty_max_norm_active_fiber_length(1.57+0.0259);//actual 1.57
+    constructProperty_shallow_ascending_slope(0.8616); //actual 0.8
     constructProperty_minimum_value(0.01); 
 }
 
@@ -84,7 +87,7 @@ void ActiveForceLengthCurve::buildCurve()
         double dydx = get_shallow_ascending_slope();
         double minVal=get_minimum_value();
 
-        double curviness = 0.75;
+        double curviness = 1;
 
         //Here's where you call the SmoothSegmentedFunctionFactory
         SmoothSegmentedFunction tmp = 

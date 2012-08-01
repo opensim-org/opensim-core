@@ -149,7 +149,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         @param lce0   Normalized fiber length at the left-most shoulder of the 
                       active force-length curve. The value of the active force
                       length curve for lce < lce0 will be equal to the value
-                      set in shoulderVal. Normally lce0 is 0.5.
+                      set in shoulderVal. Normally lce0 is 0.47.
         
         @param lce1   Normalized fiber length at the transition point between 
                       the ascending limb and the plateau region of the active 
@@ -174,7 +174,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         @param plateauSlope   The slope of the plateau of the active force
                               length curve between lce1 and lce2. This parameter
                               can vary depending on the muscle model, but a 
-                              value of 0.5 is a good place to start.
+                              value of 0.8616 is a good place to start.
 
         @param curviness  The dimensionless 'curviness' parameter that 
                           can vary between 0 (a line) to 1 (a smooth, but 

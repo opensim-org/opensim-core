@@ -76,7 +76,7 @@ void ForceVelocityCurve::constructProperties()
     constructProperty_isometric_slope(5);
     constructProperty_min_eccentric_slope(0.0);
     constructProperty_max_eccentric_velocity_force_multiplier(1.8);
-    constructProperty_concentric_curviness(0.4);
+    constructProperty_concentric_curviness(0.5);
     constructProperty_eccentric_curviness(0.9);
 }
 

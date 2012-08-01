@@ -95,14 +95,21 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
     //Compute the locations of the joining point of each elbow section.
 
     //Calculate the location of the shoulder
-       double xs    = x1 + 0.75*(x2-x1);
+       double xDelta = 0.0259*x2; //half the width of the sarcomere 0.0259, 
+                                  //widened to 
+                                  //gap where optimal force is developed
+
+       double xs    = (x2-xDelta);//x1 + 0.75*(x2-x1);
    
    //Calculate the intermediate points located on the ascending limb
        double y0    = ylow;   
        double dydx0 = 0;
-       double y1    = 1 - dydx*(xs-x1);
 
-       double x01   = x0 + 0.5*(x1-x0);
+
+       double y1    = 1 - dydx*(xs-x1);
+       double dydx01   = (y1-y0)/(x1-(x0+xDelta));
+
+       double x01   = x0 + xDelta + 0.5*(x1-(x0+xDelta));
        double y01   = y0 + 0.5*(y1-y0);
    
    //Calculate the intermediate points of the plateau
@@ -110,9 +117,9 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
        double y1s   = y1 + 0.5*(1-y1);
        double dydx1s= dydx;
    
-       double dydx01c0 = 0.5*(y1s-y01)/(x1s-x01) + 0.5*(y01-y0)/(x01-x0);
-       double dydx01c1 = 2*( (y1-y0)/(x1-x0));
-       double dydx01   = (1-c)*dydx01c0 + c*dydx01c1; 
+       //double dydx01c0 = 0.5*(y1s-y01)/(x1s-x01) + 0.5*(y01-y0)/(x01-x0);
+       //double dydx01c1 = 2*( (y1-y0)/(x1-x0));
+       //double dydx01(1-c)*dydx01c0 + c*dydx01c1; 
        
        //x2 entered
        double y2 = 1;
@@ -123,12 +130,12 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
        double y3 = ylow;
        double dydx3 = 0;
        
-       double x23 = x2 + 0.5*(x3-x2);
+       double x23 = (x2+xDelta) + 0.5*((x3-xDelta)-(x2+xDelta)); //x2 + 0.5*(x3-x2);
        double y23 = y2 + 0.5*(y3-y2);
              
-       double dydx23c0 = 0.5*((y23-y2)/(x23-x2)) + 0.5*((y3-y23)/(x3-x23));
-       double dydx23c1 = 2*(y3-y2)/(x3-x2);
-       double dydx23   = (1-c)*dydx23c0 + c*dydx23c1; 
+       //double dydx23c0 = 0.5*((y23-y2)/(x23-x2)) + 0.5*((y3-y23)/(x3-x23));
+       //double dydx23c1 = 2*(y3-y2)/(x3-x2);
+       double dydx23   =  (y3-y2)/( (x3-xDelta)-(x2+xDelta)); //(1-c)*dydx23c0 + c*dydx23c1; 
     
     //Compute the locations of the control points
        SimTK::Matrix p0 = SegmentedQuinticBezierToolkit::

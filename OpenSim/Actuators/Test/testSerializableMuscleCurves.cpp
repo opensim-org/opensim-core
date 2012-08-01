@@ -166,10 +166,10 @@ void testActiveForceLengthCurve()
         cout << "Passed: Testing get/set methods" << endl;
 
         //====================================================================
-        double p1 = 0.4;
-        double p2 = 0.75;
-        double p3 = 1.6;
-        double p4 = 0.75;
+        double p1 = 0.47-0.0259;
+        double p2 = 0.6259;
+        double p3 = 1.57+0.0259;
+        double p4 = 0.8616;
         double p5 = 0.01;
 
 
@@ -323,7 +323,7 @@ void testForceVelocityCurve()
         double p2 = 5;
         double p3 = 0.0;
         double p4 = 1.8;
-        double p5 = 0.4;
+        double p5 = 0.5;
         double p6 = 0.9;
 
         printf("4. Testing default property values: "
@@ -357,6 +357,8 @@ void testForceVelocityCurve()
             SimTK::Vec2 tmp = fvCurve4.getCurveDomain();
             SimTK_TEST(tmp(0) == -1.0 &&
                        tmp(1) == 1.0);
+
+           // fvCurve4.setConcentricCurviness(1.0);
 
         cout <<"    d. printMuscleCurveToCSVFile" << endl;            
             fvCurve4.printMuscleCurveToCSVFile("");
@@ -471,7 +473,7 @@ void testForceVelocityInverseCurve()
         double p2 = 5;
         double p3 = 0.1;
         double p4 = 1.8;
-        double p5 = 0.4;
+        double p5 = 0.5;
         double p6 = 0.9;
 
         printf("4. Testing default property values:"
