@@ -223,7 +223,7 @@
 			<apply> true </apply>
 			<!--Weight given to a marker or coordinate for solving inverse kinematics
 			    problems.-->
-			<weight>    10.00000000 </weight>
+			<weight>    1000.00000000 </weight>
 			<!--Indicates the source of the coordinate value for this task.  Possible
 			    values are default_value (use default value of coordinate, as
 			    specified in the model file, as the fixed target value), manual_value
@@ -287,5 +287,7 @@
 			<value>       0.00000000 </value>
 		</IKCoordinateTask>
 	</objects>
-</IKTaskSet>
+		<groups/>
+	</IKTaskSet>
+</OpenSimDocument>
 
