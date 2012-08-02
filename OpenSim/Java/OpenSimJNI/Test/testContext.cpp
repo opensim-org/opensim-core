@@ -143,7 +143,15 @@ int main()
 	double length2 = context->getMuscleLength(*dTRIlong);
 	cout << length2 << endl;
 	ASSERT_EQUAL(.315748, length2, 1e-5);
-	// Analyze Tool for plotting?
+    // Test that we can lock coordinates to specific value and make this persistant.
+	context->setValue(dr_elbow_flex, 0.5);
+    context->setLocked(dr_elbow_flex, true );
+    model->print("wrist_locked_elbow.osim");
+    context->recreateSystemKeepStage();
+	const Coordinate& dr_elbow_flexNew = model->getCoordinateSet().get("r_elbow_flex");
+	assert(context->getLocked(dr_elbow_flexNew));
+	ASSERT_EQUAL(0.5, context->getValue(dr_elbow_flexNew), 0.000001);
+
 	return status;
   } catch (const std::exception& e) {
       cout << "Exception: " << e.what() << endl;
