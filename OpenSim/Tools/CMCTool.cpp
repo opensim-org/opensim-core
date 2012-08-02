@@ -403,7 +403,7 @@ bool CMCTool::run()
     bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
 
     CMC_TaskSet taskSet(_taskSetFileName);  	 	 
-	taskSet.print("cmcTasksRT.xml");
+	//taskSet.print("cmcTasksRT.xml");
     cout<<"\n\n taskSet size = "<<taskSet.getSize()<<endl<<endl; 		 
 
     CMC* controller = new CMC(_model,&taskSet);	// Need to make it a pointer since Model takes ownership 
