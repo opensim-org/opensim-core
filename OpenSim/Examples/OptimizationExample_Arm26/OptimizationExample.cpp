@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Samuel R. Hamner                                                *
+ * Author(s): Samuel R. Hamner, Ajay Seth                                                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -22,12 +22,11 @@
  * -------------------------------------------------------------------------- */
 
 /* 
- *  Below is an example of an OpenSim application that provides its own 
- *  main() routine.  This application is a forward simulation of tug-of-war between two
- *  muscles pulling on a block.
+ *  Example of an OpenSim program that optimizes the performance of a model.
+ *  The main() loads the arm26 model and maximizes the forward velocity of
+ *  the hand during a muscle-driven forward simulation by finding the set
+ *  of (constant) controls.
  */
-
-// Author:  Samuel Hamner
 
 //==============================================================================
 //==============================================================================
@@ -36,6 +35,8 @@
 
 using namespace OpenSim;
 using namespace SimTK;
+using namespace std;
+
 // Global variables to define integration time window, optimizer step count,
 // the best solution.
 int stepCount = 0;
@@ -55,10 +56,10 @@ class ExampleOptimizationSystem : public OptimizerSystem {
         // make a copy of out initial states
         State s = si;
 
-        // Access the controller set of the model and update the control values
-		((ControlSetController *)(&osimModel.updControllerSet()[0]))->updControlSet()->setControlValues(initialTime, &newControls[0]);
-		((ControlSetController *)(&osimModel.updControllerSet()[0]))->updControlSet()->setControlValues(finalTime, &newControls[0]);
-        
+        // Update the control values
+		//newControls.dump("New Controls In:");
+		osimModel.updDefaultControls() = newControls;
+
 		// Create the integrator for the simulation.
 		RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
 		integrator.setAccuracy(1.0e-6);
@@ -69,7 +70,11 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 		// Integrate from initial time to final time
 		manager.setInitialTime(initialTime);
 		manager.setFinalTime(finalTime);
+
 		osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
+
+		//osimModel.getControls(s).dump("Model Controls:");
+
 		manager.integrate(s);
 
 		/* Calculate the scalar quantity we want to minimize or maximize. 
@@ -80,7 +85,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 		Vec3 massCenter;
 		Vec3 velocity;
 		osimModel.getBodySet().get("r_ulna_radius_hand").getMassCenter(massCenter);
-		osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
+		osimModel.getMultibodySystem().realize(s, Stage::Velocity);
 		osimModel.getSimbodyEngine().getVelocity(s, osimModel.getBodySet().get("r_ulna_radius_hand"), massCenter, velocity);
 		
 		f = -velocity[0];
@@ -105,7 +110,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 			osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
 			statesDegrees.print("Arm26_bestSoFar_states_degrees.sto");
 			bestSoFar = f;
-			std::cout << "\nOptimization Step #: " << stepCount << "  controls = " << newControls <<  " bestSoFar = " << f << std::endl;
+			cout << "\nOptimization Step #: " << stepCount << "  controls = " << newControls <<  " bestSoFar = " << f << std::endl;
 		}		    
 
       return(0);
@@ -127,35 +132,10 @@ int main()
 {
 	try {
 		std::clock_t startTime = std::clock();	
+	
 		// Create a new OpenSim model
-		LoadOpenSimLibrary("osimActuators");
 		Model osimModel("Arm26_Optimize.osim");
 		
-		// Define the initial and final controls
-		ControlLinear *control_TRIlong = new ControlLinear();
-		ControlLinear *control_TRIlat = new ControlLinear();
-		ControlLinear *control_TRImed = new ControlLinear();
-		ControlLinear *control_BIClong = new ControlLinear();
-		ControlLinear *control_BICshort = new ControlLinear();
-		ControlLinear *control_BRA = new ControlLinear();
-
-		/* NOTE: Each contoller must be set to the corresponding 
-		 *		muscle name in the model file. */
-		control_TRIlong->setName("TRIlong"); control_TRIlat->setName("TRIlat"); 
-		control_TRImed->setName("TRImed"); control_BIClong->setName("BIClong");
-		control_BICshort->setName("BICshort"); control_BRA->setName("BRA");
-		
-		ControlSet *muscleControls = new ControlSet();
-		muscleControls->adoptAndAppend(control_TRIlong); muscleControls->adoptAndAppend(control_TRIlat);
-		muscleControls->adoptAndAppend(control_TRImed); muscleControls->adoptAndAppend(control_BIClong);
-		muscleControls->adoptAndAppend(control_BICshort); muscleControls->adoptAndAppend(control_BRA);
-		
-		ControlSetController *muscleController = new ControlSetController();
-		muscleController->setControlSet(muscleControls);
-        muscleController->setName("MuscleController");
-
-		// Add the controller to the model
-		osimModel.addController(muscleController);
 		
 		// Initialize the system and get the state representing the state system
 		
@@ -175,35 +155,22 @@ int main()
 		osimModel.equilibrateMuscles(si);
 
 		// The number of controls will equal the number of muscles in the model!
-		int numControls = 6;
+		int numControls = osimModel.getNumControls();
 		
 		// Initialize the optimizer system we've defined.
 		ExampleOptimizationSystem sys(numControls, si, osimModel);
 		Real f = NaN;
 		
-		/* Define and set bounds for the parameter we will optimize */
-		Vector lower_bounds(numControls);
-		Vector upper_bounds(numControls);
-
-		for(int i=0;i<numControls;i++) {
-			lower_bounds[i] = 0.01;
-			upper_bounds[i] = 0.99; // leave room for derivative perturbations
-		}
+		/* Define initial values and bounds for the controls to optimize */
+		Vector controls(numControls, 0.01);
+		Vector lower_bounds(numControls, 0.01);
+		Vector upper_bounds(numControls, 0.99);
 
 		sys.setParameterLimits( lower_bounds, upper_bounds );
 		
-        // set the initial values (guesses) for the controls
-		Vector controls(numControls);
-        controls[0]  = 0.01;
-        controls[1]  = 0.01;
-		controls[2]  = 0.01;
-		controls[3]  = 0.01;
-		controls[4]  = 0.01;
-		controls[5]  = 0.01;
-
-			// Create an optimizer. Pass in our OptimizerSystem
+		// Create an optimizer. Pass in our OptimizerSystem
 		// and the name of the optimization algorithm.
-			Optimizer opt(sys, SimTK::LBFGSB);
+		Optimizer opt(sys, SimTK::LBFGSB);
 		//Optimizer opt(sys, InteriorPoint);
 
 		// Specify settings for the optimizer
@@ -216,9 +183,14 @@ int main()
 		f = opt.optimize(controls);
 	
 		// osimModel.print("optimization_model_ARM.osim");
-		std::cout << "Elapsed time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n";
+		cout << "Elapsed time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms" << endl;
+		
+		const Set<Actuator>& actuators = osimModel.getActuators();
+		for(int i=0; i<actuators.getSize(); ++i){
+			cout << actuators[i].getName() << " control value = " << controls[i] << endl;
+		}
 
-        std::cout << "OpenSim example completed successfully.\n";
+        cout << "OpenSim example completed successfully.\n";
 	}
     catch (const std::exception& ex)
     {
