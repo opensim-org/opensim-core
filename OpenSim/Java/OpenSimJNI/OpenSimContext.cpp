@@ -42,7 +42,7 @@
 #include <OpenSim/Tools/Measurement.h>
 #include <OpenSim/Tools/MarkerPlacer.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
-
+#include "OpenSimContext.h"
 
 namespace OpenSim {
 
