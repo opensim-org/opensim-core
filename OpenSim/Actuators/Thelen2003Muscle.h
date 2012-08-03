@@ -329,7 +329,7 @@ private:
     double calcDdlceDaFalFv(double aAct, double fal, 
                             double aFalFv) const;
 
-    bool isFiberLengthValid(const SimTK::State& s, 
+    bool isFiberLengthClamped(const SimTK::State& s, 
                             double dlceN) const;
 
 };    

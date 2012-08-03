@@ -149,11 +149,11 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         @param lce0   Normalized fiber length at the left-most shoulder of the 
                       active force-length curve. The value of the active force
                       length curve for lce < lce0 will be equal to the value
-                      set in shoulderVal. Normally lce0 is 0.47.
+                      set in shoulderVal. Normally lce0 is approximately 0.5
         
         @param lce1   Normalized fiber length at the transition point between 
                       the ascending limb and the plateau region of the active 
-                      force length curve. Values for lce1 can vary.
+                      force length curve.
         
         @param lce2   Normalized fiber length at the maximum active force length
                       curve value of 1. Normally lce2 is by definition 1.
@@ -161,7 +161,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         @param lce3   Normalized fiber length of the at the right most shoulder
                       of the active-force length curve. The value of the active
                       force length curve for lce > lce2 will be equal to the 
-                      value of shoulderVal. Normally lce3 is 1.5
+                      value of shoulderVal. Normally lce3 is approximately 1.5
 
         @param minActiveForceLengthValue
                               The minimum value of the active force length 

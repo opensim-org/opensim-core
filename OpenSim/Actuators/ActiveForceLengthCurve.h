@@ -139,13 +139,25 @@ public:
     \endverbatim    
 
     <B> Default Parameter Values </B>
+    
+    The default parameters have been chosen so that the resulting curve
+    closely matches the active force length curve for human sarcomeres as 
+    documented by Nigg and Herzog
+
+    Nigg, BM., and Herzog, W. Biomechanics of the Musculo-skeletal Sytem. 
+    Wiley 1994. ISBN 0 471 94444 0
+
+
+    
     \verbatim
-        minActiveNormFiberLength ....... 0.4
-        transitionNormFiberLength ...... 0.75
-        maxActiveNormFiberLength ....... 1.6
-        shallowAscendingSlope .......... 0.75
-        minValue ....................... 0.05
+        minActiveNormFiberLength ....... 0.4441
+        transitionNormFiberLength ...... 0.6259
+        maxActiveNormFiberLength ....... 1.5959
+        shallowAscendingSlope .......... 0.8616
+        minValue ....................... 0.01
     \endverbatim
+
+    
 
     <B> Example </B>
     @code

@@ -511,7 +511,7 @@ double MuscleFixedWidthPennationModel::
     // "%s: Equation is singular: check pennation angle",
     // caller.c_str() );
 
-    if(denominator > SimTK::Eps){
+    if(abs(denominator) > SimTK::Eps){
         fiberVelocity = (muscleVelocity - tendonVelocity)*t2*fiberLength 
                             / denominator;
     }
