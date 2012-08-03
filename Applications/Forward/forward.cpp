@@ -125,15 +125,11 @@ int main(int argc,char **argv)
 	// CONSTRUCT
 	cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
 	ForwardTool forward(setupFileName);
-	//forward.print("check.xml");
 
 	// PRINT MODEL INFORMATION
 	Model& model = forward.getModel();
 
 	cout<<"-----------------------------------------------------------------------"<<endl;
-	cout<<"Loaded library\n";
-	cout<<"-----------------------------------------------------------------------"<<endl;
-	cout<<"-----------------------------------------------------------------------"<<endl<<endl;
 
 	// start timing
 	std::clock_t startTime = std::clock();
