@@ -1,4 +1,26 @@
- %  
+% ----------------------------------------------------------------------- %
+% The OpenSim API is a toolkit for musculoskeletal modeling and           %
+% simulation. See http://opensim.stanford.edu and the NOTICE file         %
+% for more information. OpenSim is developed at Stanford University       %
+% and supported by the US National Institutes of Health (U54 GM072970,    %
+% R24 HD065690) and by DARPA through the Warrior Web program.             %
+%                                                                         %   
+% Copyright (c) 2005-2012 Stanford University and the Authors             %
+% Author(s): Edith Arnold                                                 %
+%                                                                         %
+% Licensed under the Apache License, Version 2.0 (the "License");         %
+% you may not use this file except in compliance with the License.        %
+% You may obtain a copy of the License at                                 %
+% http://www.apache.org/licenses/LICENSE-2.0.                             %
+%                                                                         % 
+% Unless required by applicable law or agreed to in writing, software     %
+% distributed under the License is distributed on an "AS IS" BASIS,       %
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied %
+% See the License for the specific language governing permissions and     %
+% limitations under the License.                                          %
+% ----------------------------------------------------------------------- %
+
+%  
 %   This is a Matlab function that generates OpenSim Setup Files for the 
 %   Analyze>MuscleAnalysis tool and runs the Analyze tool.
 %
@@ -19,7 +41,7 @@
 %   http://www.mathworks.com/support/solutions/en/data/1-3PRRDV/
 %  
 % =========================================================================
-% =====
+
 % Pull in the modeling classes straight from the OpenSim distribution
 import org.opensim.modeling.*
 
@@ -30,13 +52,13 @@ OpenSimObject.setDebugLevel(3);
 subjectDir = uigetdir('testData', 'Select the folder that contains the current subject data');
 
 % Go to the folder in the subject's folder where IK Results are
-ik_results_folder = [subjectDir './IKResults/'];
+ik_results_folder = [subjectDir '\IKResults\'];
 
 % specify where setup files will be printed.
-setupfiles_folder = [subjectDir './AnalyzeSetup/'];
+setupfiles_folder = [subjectDir '\AnalyzeSetup\'];
 
 % specify where results will be printed.
-results_folder = [subjectDir './AnalyzeResults/'];
+results_folder = [subjectDir '\AnalyzeResults\'];
 
 % %% To send an email at the end of this function define these variables appropriately:
 % % more details available here:
@@ -67,7 +89,7 @@ trialsForAn = dir([ik_results_folder '*_ik.mot']);
 nTrials =length(trialsForAn);
 
 for trial= 1:nTrials;
-    %get the name of the file for this trial
+    % get the name of the file for this trial
     motIKCoordsFile = trialsForAn(trial).name;
     
     % create name of trial from .trc file name
