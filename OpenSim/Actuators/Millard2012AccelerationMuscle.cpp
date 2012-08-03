@@ -131,13 +131,13 @@ void Millard2012AccelerationMuscle::constructProperties()
     constructProperty_tendon_force_length_damping(1e-1);
     constructProperty_fiber_compressive_force_length_damping(1e-2);
     constructProperty_fiber_force_length_damping(1e-2);
-    constructProperty_fiber_compressive_force_cos_pennation_damping(1e-2);
+    constructProperty_fiber_compressive_force_cos_pennation_damping(1.0);
 
     //Linear fiber damping as in Shutte's model
     constructProperty_fiber_damping(1e-2);
 
     //Mass property
-    constructProperty_mass(0.01);
+    constructProperty_mass(0.02);
 }
 
 void Millard2012AccelerationMuscle::buildMuscle()
@@ -755,8 +755,8 @@ void Millard2012AccelerationMuscle::
 
         //Tolerance, in Newtons, of the desired equilibrium
         double tol = 1e-8*getMaxIsometricForce();  //Should this be user settable?
-        if(tol < SimTK::Eps*1000){
-            tol = SimTK::Eps*1000;
+        if(tol < SimTK::SignificantReal*10){
+            tol = SimTK::SignificantReal*10;
         }
         int maxIter = 500;  //Should this be user settable?  
         double newtonStepFraction = 0.75;
@@ -1421,12 +1421,23 @@ SimTK::Vector Millard2012AccelerationMuscle::
                             +  (1)*ami.dphi_dt*ami.dphi_dt
                             +  lce*(2*ami.dphi_dt*ami.d_dphidt_dlce); 
 
-        if(abs(ddlce_dtt) > aSolTolerance 
-            && abs(d_ddlcedtt_dlce) > SimTK::SignificantReal){
-            //Take a full Newton Step
-            delta_lce   = - ddlce_dtt/d_ddlcedtt_dlce;
-            lce         = lce + aNewtonStepFraction*delta_lce;
+        if(abs(ddlce_dtt) > aSolTolerance){
+
+            //If the derivative is good take a Newton step
+            if(abs(d_ddlcedtt_dlce) > SimTK::SignificantReal){
+                delta_lce   = - ddlce_dtt/d_ddlcedtt_dlce;
+                lce         = lce + aNewtonStepFraction*delta_lce;
+            }else{ //If we've stagnated, perturb the current solution
             
+                double perturbation = 
+                    2.0*((double)rand())/((double)RAND_MAX)-1.0;
+                double lengthPerturbation = 
+                    0.5*perturbation*getOptimalFiberLength();
+                lce = lce + lengthPerturbation;
+
+            }
+
+
             if(lce < m_penMdl.getMinimumFiberLength()){
                 minFiberLengthCtr++;
                 lce = m_penMdl.getMinimumFiberLength(); 
@@ -1477,7 +1488,7 @@ SimTK::Vector Millard2012AccelerationMuscle::
         //Stiffness of the muscle is the stiffness of the tendon and the 
         //fiber (along the tendon) in series
         Ke = 1;
-        if(abs(dFceAT_dlceAT + dFse_dtl) > SimTK::Eps 
+        if(abs(dFceAT_dlceAT + dFse_dtl) > SimTK::SignificantReal 
             && tl > getTendonSlackLength()){
             
             Ke     =(dFceAT_dlceAT*dFse_dtl)/(dFceAT_dlceAT + dFse_dtl);

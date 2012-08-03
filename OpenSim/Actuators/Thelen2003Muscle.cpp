@@ -397,8 +397,8 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
 
         //Tolerance, in Newtons, of the desired equilibrium
         double tol = 1e-8*getMaxIsometricForce();  //Should this be user settable?
-        if(tol < SimTK::Eps*1000){
-            tol = SimTK::Eps*1000;
+        if(tol < SimTK::SignificantReal*10){
+            tol = SimTK::SignificantReal*10;
         }
         int maxIter = 200;  //Should this be user settable?
 
@@ -1006,12 +1006,19 @@ SimTK::Vector Thelen2003Muscle::
 
             dferr_d_lce = dFmAT_dlce - dFt_d_lce;
 
-            if(abs(ferr) > aSolTolerance 
-                && abs(dferr_d_lce) > SimTK::SignificantReal){
-                //Take a full Newton Step
-                delta_lce   = - ferr/dferr_d_lce;
-                lce         = lce + delta_lce;
-            
+            if(abs(ferr) > aSolTolerance){
+                //Take a full Newton Step                            
+                if(abs(dferr_d_lce) > SimTK::SignificantReal){
+                    delta_lce   = - ferr/dferr_d_lce;
+                    lce         = lce + delta_lce;                
+                }else{ //If we've stagnated, perturb the current solution            
+                    double perturbation = 
+                    2.0*((double)rand())/((double)RAND_MAX)-1.0;
+                    double lengthPerturbation = 
+                        0.5*perturbation*getOptimalFiberLength();
+                    lce = lce + lengthPerturbation;
+                }
+
                 if(lce < penMdl.getMinimumFiberLength()){
                     minFiberLengthCtr++;
                     lce = penMdl.getMinimumFiberLength();
@@ -1048,7 +1055,7 @@ SimTK::Vector Thelen2003Muscle::
                 //the if statement here is to handle the special case when the
                 //negative stiffness of the fiber (which could happen in this
                 // model) is equal to the positive stiffness of the tendon.
-                if( abs(dFmAT_dlceAT + dFt_d_tl) > SimTK::Eps
+                if( abs(dFmAT_dlceAT + dFt_d_tl) > SimTK::SignificantReal
                     && tl > getTendonSlackLength()){
                     Ke      = (dFmAT_dlceAT*dFt_d_tl)/(dFmAT_dlceAT + dFt_d_tl); 
                     dtl     = (1/dFt_d_tl)*Ke*dml;
@@ -1621,7 +1628,7 @@ SimTK::Vector Thelen2003Muscle::
         dlceN1_d_Fm = calcDdlceDaFalFv(aAct,aFal,aFalFv);
 
 
-        if(abs(dlceN1_d_Fm) > SimTK::Eps){
+        if(abs(dlceN1_d_Fm) > SimTK::SignificantReal){
            delta_aFalFv = -ferr/(dlceN1_d_Fm);
            aFalFv = aFalFv + delta_aFalFv;
         }

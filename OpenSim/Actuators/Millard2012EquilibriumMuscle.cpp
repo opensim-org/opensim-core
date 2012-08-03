@@ -670,8 +670,8 @@ void Millard2012EquilibriumMuscle::
 
         //tol is the desired tolerance in Newtons
         double tol = 1e-8*getMaxIsometricForce();  //Should this be user settable?
-        if(tol < SimTK::Eps*1000){
-            tol = SimTK::Eps*1000;
+        if(tol < SimTK::SignificantReal*10){
+            tol = SimTK::SignificantReal*10;
         }
 
         int maxIter = 200;                          //Should this be user settable?    
@@ -902,13 +902,13 @@ void Millard2012EquilibriumMuscle::calcFiberVelocityInfo(const SimTK::State& s,
 
     
     //2. Compute fv - but check for singularities first
-    SimTK_ERRCHK1_ALWAYS(cosphi > SimTK::Eps, fcnName.c_str(),
+    SimTK_ERRCHK1_ALWAYS(cosphi > SimTK::SignificantReal, fcnName.c_str(),
         "%s: Pennation angle is 90 degrees, and is causing a singularity", 
         muscleName.c_str());
-    SimTK_ERRCHK1_ALWAYS(a > SimTK::Eps, fcnName.c_str(),
+    SimTK_ERRCHK1_ALWAYS(a > SimTK::SignificantReal, fcnName.c_str(),
         "%s: Activation is 0, and is causing a singularity", 
         muscleName.c_str());
-    SimTK_ERRCHK1_ALWAYS(fal > SimTK::Eps, fcnName.c_str(),
+    SimTK_ERRCHK1_ALWAYS(fal > SimTK::SignificantReal, fcnName.c_str(),
         "%s: The active force length curve value is 0,"
         " and is causing a singularity", muscleName.c_str());
 
@@ -1004,10 +1004,10 @@ void Millard2012EquilibriumMuscle::calcMuscleDynamicsInfo(const SimTK::State& s,
     double fcphi= mli.userDefinedLengthExtras[MLIfcphi];
 
     //Compute the stiffness of the muscle fiber
-    SimTK_ERRCHK1_ALWAYS(lce > SimTK::Eps, fcnName.c_str(),
+    SimTK_ERRCHK1_ALWAYS(lce > SimTK::SignificantReal, fcnName.c_str(),
         "%s: The muscle fiber has a length of 0, and is causing a singularity", 
         muscleName.c_str());
-    SimTK_ERRCHK1_ALWAYS(cosPhi > SimTK::Eps, fcnName.c_str(),
+    SimTK_ERRCHK1_ALWAYS(cosPhi > SimTK::SignificantReal, fcnName.c_str(),
         "%s: Pennation angle is 90 degrees, and is causing a singularity", 
         muscleName.c_str());
 
@@ -1261,12 +1261,20 @@ SimTK::Vector Millard2012EquilibriumMuscle::
             //Error Derivative
             dferr_d_lce = dFmAT_dlce - dFt_d_lce;
 
-            if(abs(ferr) > aSolTolerance 
-                && abs(dferr_d_lce) > SimTK::SignificantReal){
-                //Take a full Newton Step
-                delta_lce   = - ferr/dferr_d_lce;
-                lce         = lce + delta_lce;
-            
+            if(abs(ferr) > aSolTolerance){
+                
+                //Take a full Newton Step if the derivative is non-zero
+                if(abs(dferr_d_lce) > SimTK::SignificantReal){
+                    delta_lce   = - ferr/dferr_d_lce;
+                    lce         = lce + delta_lce;
+                }else{ //If we've stagnated, perturb the current solution            
+                    double perturbation = 
+                    2.0*((double)rand())/((double)RAND_MAX)-1.0;
+                    double lengthPerturbation = 
+                        0.5*perturbation*getOptimalFiberLength();
+                    lce = lce + lengthPerturbation;
+                }
+
                 if(lce < penMdl.getMinimumFiberLength()){
                     minFiberLengthCtr++;
                     lce = penMdl.getMinimumFiberLength();
@@ -1305,7 +1313,7 @@ SimTK::Vector Millard2012EquilibriumMuscle::
                 //the if statement here is to handle the special case when the
                 //negative stiffness of the fiber (which happens in this model)
                 //is equal to the positive stiffness of the tendon.
-                if( abs(dFmAT_dlceAT + dFt_d_tl) > SimTK::Eps
+                if( abs(dFmAT_dlceAT + dFt_d_tl) > SimTK::SignificantReal
                     && tl > getTendonSlackLength()){
                     Ke      = (dFmAT_dlceAT*dFt_d_tl)/(dFmAT_dlceAT + dFt_d_tl); 
                     dtl     = (1/dFt_d_tl)*Ke*dml;                    
@@ -1421,7 +1429,7 @@ double Millard2012EquilibriumMuscle::calcFv(double a,
                                             double cosphi,
                                             std::string& caller) const
 {
-    SimTK_ERRCHK1_ALWAYS(cosphi > SimTK::Eps,
+    SimTK_ERRCHK1_ALWAYS(cosphi > SimTK::SignificantReal,
         "Millard2012EquilibriumMuscle::calcFv",
         "%s: The pennation angle is 90 degrees, and is causing a singularity", 
         caller.c_str());
