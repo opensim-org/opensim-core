@@ -19,28 +19,6 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-%  
-%   This is a Matlab function that generates OpenSim Setup Files for the 
-%   Analyze>MuscleAnalysis tool and runs the Analyze tool.
-%
-%   This work was developed as part of the batch processing demonstration 
-%   during the OpenSim Advanced Users' Workshop, August 15-17, 2011 at
-%   Stanford University and made freely available on The Musculoskeletal 
-%   Modeler's Kitchen on simtk.org.
-%  
-% 
-%   Author:  Edith Arnold
-%            Neuromuscular Biomechanics Lab
-%            Stanford University
-%   Contact: https://simtk.org/home/modelerskitchen
-%
-%   Acknowledgements:  This work was made possible with guidance from Jeff
-%   Reinbolt, Ajay Seth, and Ayman Habib of the Neuromuscular Biomechanics
-%   Laband the MathWorks Support website:
-%   http://www.mathworks.com/support/solutions/en/data/1-3PRRDV/
-%  
-% =========================================================================
-
 % Pull in the modeling classes straight from the OpenSim distribution
 import org.opensim.modeling.*
 
