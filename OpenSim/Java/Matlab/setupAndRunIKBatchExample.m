@@ -14,9 +14,9 @@
 %                                                                         % 
 % Unless required by applicable law or agreed to in writing, software     %
 % distributed under the License is distributed on an "AS IS" BASIS,       %
-% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied %
-% See the License for the specific language governing permissions and     %
-% limitations under the License.                                          %
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
+% implied. See the License for the specific language governing            %
+% permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
 % This example script runs multiple inverse kinematics trials for the model Subject01. 
@@ -56,6 +56,8 @@ model.initSystem();
 ikTool.setModel(model);
 
 trialsForIK = dir(fullfile(trc_data_folder, '*.trc'));
+
+nTrials = size(trialsForIK);
 
 % Loop through the trials
 for trial= 1:nTrials;
