@@ -42,31 +42,50 @@ void testGait2354WithController(); // included additional controller
 
 int main() {
 	Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
-    try {
+
+	SimTK::Array_<std::string> failures;
+
+	// test manager/integration process
+	try { testPendulum(); cout << "\nPendulum test PASSED " << endl; }	
+    catch (const std::exception& e)
+		{ cout << e.what() <<endl; failures.push_back("testPendulum"); }
+	
+	// test application of external loads
+    try { testPendulumExternalLoad(); 
+		cout << "\nPendulum with external load test PASSED " << endl; }
+	catch (const std::exception& e)
+		{ cout << e.what() <<endl; failures.push_back("testPendulumExternalLoad"); }
+
+	// test application of external loads
+    try { testPendulumExternalLoadWithPointInGround(); 
+		cout << "\nPendulum with external load and point in ground PASSED " << endl; }
+	catch (const std::exception& e)
+		{ cout << e.what() <<endl; failures.push_back("testPendulumExternalLoadWithPointInGround"); }
+	
+	// now add computation of controls and generation of muscle forces
+    try { testArm26(); 
+		cout << "\narm26 test PASSED " << endl; }
+	catch (const std::exception& e)
+		{ cout << e.what() <<endl; failures.push_back("testArm26"); }
 		
-        testPendulum();	// test manager/integration process
-		cout << "\nPendulum test PASSED " << endl;
+	// include applied ground reactions forces 
+    try { testGait2354(); 
+		cout << "\ngait2354 test PASSED " << endl; }
+	catch (const std::exception& e)
+		{ cout << e.what() <<endl; failures.push_back("testGait2354"); }		
+		
+	// finally include a controller
+    try { testGait2354WithController(); 
+		cout << "\ngait2354 with correction controller test PASSED " << endl; }
+	catch (const std::exception& e)
+		{ cout << e.what() <<endl; failures.push_back("testGait2354WithController"); }	
 
-		testPendulumExternalLoad(); // test application of external loads
-		cout << "\nPendulum with external load test PASSED " << endl;
-
-		testPendulumExternalLoadWithPointInGround(); // test application of external loads 
-		cout << "\nPendulum with external load and point in ground PASSED " << endl;
-
-		testArm26();	// now add computation of controls and generation of muscle forces
-		cout << "\narm26 test PASSED " << endl;
-
-		testGait2354();    //finally include applied ground reactions forces 
-		cout << "\ngait2354 test PASSED " << endl;
-
-		testGait2354WithController();
-		cout << "\ngait2354 with correction controller test PASSED " << std::endl;
-	}
-    catch (const std::exception& e) {
-        cout << "\n" << e.what() << endl;
+    if (!failures.empty()) {
+        cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
-    cout << "\nDone" << endl;
+
+	cout << "Done" << endl;
     return 0;
 }
 

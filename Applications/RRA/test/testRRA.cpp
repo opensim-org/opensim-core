@@ -38,7 +38,7 @@ int main() {
 		rra.run();
 		checkCOM("subject01_RRA_adjusted.osim", "torso", SimTK::Vec3(0.00598028440188985017, 0.34551, 0.1), Array<double>(1e-4, 3));
 		Storage result("ResultsRRA/subject01_walk1_RRA_Kinematics_q.sto"), standard("subject01_walk1_RRA_Kinematics_q_standard.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(result, standard, Array<double>(0.5, 24),"",-1,"Exception");
+		CHECK_STORAGE_AGAINST_STANDARD(result, standard, Array<double>(0.5, 24), __FILE__, __LINE__,"testRRA: kinematics comparison failed");
     }
     catch (const Exception& e) {
         e.print(cerr);
