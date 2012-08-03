@@ -209,7 +209,7 @@ protected:
     //--------------------------------------------------------------------------
     // Visual support in SimTK visualizer
     // -------------------------------------------------------------------------
-    void FunctionBasedBushingForce::generateDecorations(
+    void generateDecorations(
         bool fixed, 
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
