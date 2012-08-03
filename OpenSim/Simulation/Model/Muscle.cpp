@@ -34,10 +34,10 @@
 
 #include "Model.h"
 
-#include "OpenSim\Actuators\Thelen2003Muscle.h"
-#include "OpenSim\Actuators\Millard2012EquilibriumMuscle.h"
-#include "OpenSim\Actuators\Millard2012AccelerationMuscle.h"
-#include "OpenSim\Actuators\MuscleFixedWidthPennationModel.h"
+#include "OpenSim/Actuators/Thelen2003Muscle.h"
+#include "OpenSim/Actuators/Millard2012EquilibriumMuscle.h"
+#include "OpenSim/Actuators/Millard2012AccelerationMuscle.h"
+#include "OpenSim/Actuators/MuscleFixedWidthPennationModel.h"
 
 #include <OpenSim/Common/XMLDocument.h>
 

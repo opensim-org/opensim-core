@@ -768,7 +768,7 @@ void Millard2012AccelerationMuscle::
 
         int flag_status    = (int)soln[0];
         double solnErr        = soln[1];
-        double iterations     = (int)soln[2];
+        int iterations     = (int)soln[2];
         double fiberLength    = soln[3];
         double fiberVelocity  = soln[4];
         double passiveForce   = soln[5];
