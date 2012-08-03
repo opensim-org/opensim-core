@@ -144,11 +144,13 @@ addStateVariable(const std::string& stateVariableName,
         throw Exception("ModelComponent::addStateVariable: State variable '" + 
             stateVariableName + "' already exists.");
     }
+
+	int order = _namedStateVariableInfo.size();
     // assign a "slot" for a state variable by name
     // state variable index will be invalid by default
     // upon allocation during realizeTopology the index will be set
     _namedStateVariableInfo[stateVariableName] = 
-        StateVariableInfo(invalidatesStage);
+        StateVariableInfo(invalidatesStage, order);
 }
 
 void ModelComponent::
@@ -466,10 +468,10 @@ getStateVariablesNamesAddedByModelComponent() const
     std::map<std::string, StateVariableInfo>::const_iterator it;
     it = _namedStateVariableInfo.begin();
     
-    Array<std::string> names;
+    Array<std::string> names("",_namedStateVariableInfo.size());
 
     while(it != _namedStateVariableInfo.end()){
-        names.append(it->first);
+        names[it->second.order] = it->first;
         it++;
     }
     return names;
@@ -570,17 +572,17 @@ void ModelComponent::realizeAcceleration(const SimTK::State& s) const
 
     if(_namedStateVariableInfo.size()>0){
         std::map<std::string, StateVariableInfo>::const_iterator it;
-        int cnt = 0;
+
         for (it = _namedStateVariableInfo.begin(); 
              it != _namedStateVariableInfo.end(); ++it)
         {
             const StateVariableInfo& svi = it->second;
             if(svi.invalidatesStage == Stage::Dynamics)
-                subSys.updZDot(s)[ZIndex(svi.index)] = derivs[cnt++];
+                subSys.updZDot(s)[ZIndex(svi.index)] = derivs[svi.order];
             else if(svi.invalidatesStage == Stage::Velocity)
-                subSys.updUDot(s)[UIndex(svi.index)] = derivs[cnt++];
+                subSys.updUDot(s)[UIndex(svi.index)] = derivs[svi.order];
             else if(svi.invalidatesStage == Stage::Position)
-                subSys.updQDot(s)[QIndex(svi.index)] = derivs[cnt++];
+                subSys.updQDot(s)[QIndex(svi.index)] = derivs[svi.order];
         }
     }
 

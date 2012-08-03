@@ -204,6 +204,9 @@ void LiuThelen2003Muscle::setDefaultFatiguedMotorUnits(double fatiguedMotorUnits
 SimTK::Vector LiuThelen2003Muscle::
 computeStateVariableDerivatives(const SimTK::State& s) const
 {
+	Array<string> names = getStateVariableNames();
+	cout << "State names: " << names << endl;
+
 	SimTK::Vector derivs = Super::computeStateVariableDerivatives(s);
 	derivs.resizeKeep(4);
     if (!isDisabled(s)) {
@@ -211,6 +214,10 @@ computeStateVariableDerivatives(const SimTK::State& s) const
 	    derivs[3] = getFatiguedMotorUnitsDeriv(s);
     } else
         derivs[2] = derivs[3] = 0;
+
+	derivs.dump("State values:");
+	cout << endl;
+
 	return derivs;
 }
 

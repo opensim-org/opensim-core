@@ -589,8 +589,8 @@ template <class T> friend class ModelComponentSet;
     using the addStateVariable() method, then %computeStateVariableDerivatives()
     must be implemented to provide time derivatives for those states.
     Override to return a Vector of the same size as the number of state 
-    variables defined and in order of getStateVariableNames(). Default returns 
-    empty (no derivatives are defined). Implement like this:
+    variables defined and in order added to the system (also @see addToSystem()).
+	Default returns empty (no derivatives are defined). Implement like this:
     @code
     SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const {
         // Collect derivatives from parent class and above first.
@@ -850,13 +850,15 @@ private:
 
     // Structure to hold related info about state variables 
     struct StateVariableInfo {
-        StateVariableInfo() : index(SimTK::InvalidIndex) {}
-        explicit StateVariableInfo(SimTK::Stage invalidates) 
-        :   invalidatesStage(invalidates), index(SimTK::InvalidIndex) {}
+        StateVariableInfo() : index(SimTK::InvalidIndex), order(SimTK::InvalidIndex){}
+        explicit StateVariableInfo(SimTK::Stage invalidates, int order) 
+        :   invalidatesStage(invalidates), index(SimTK::InvalidIndex), order(order) {}
         // Model
         SimTK::Stage    invalidatesStage;
         // System (can be QIndex, UIndex, or Zindex type)
-        int             index;
+        int  index;
+		// Order of creation is order of the state variable derivatives
+		int  order;
     };
 
     // Structure to hold related info about discrete variables 
