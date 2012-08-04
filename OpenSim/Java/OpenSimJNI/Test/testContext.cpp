@@ -144,9 +144,10 @@ int main()
 	cout << length2 << endl;
 	ASSERT_EQUAL(.315748, length2, 1e-5);
     // Test that we can lock coordinates to specific value and make this persistant.
-	context->setValue(dr_elbow_flex, 0.5);
-    context->setLocked(dr_elbow_flex, true );
-    model->print("wrist_locked_elbow.osim");
+    Coordinate& dr_elbow_flex_mod = model->updCoordinateSet().get("r_elbow_flex");
+    dr_elbow_flex_mod.setDefaultValue(0.5);
+ 	dr_elbow_flex_mod.setDefaultLocked(true);
+    //model->print("wrist_locked_elbow.osim");
     context->recreateSystemKeepStage();
 	const Coordinate& dr_elbow_flexNew = model->getCoordinateSet().get("r_elbow_flex");
 	assert(context->getLocked(dr_elbow_flexNew));

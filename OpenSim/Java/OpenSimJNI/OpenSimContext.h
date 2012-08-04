@@ -96,9 +96,9 @@ public:
     double getValue(const Coordinate& coord);
 	bool getLocked(const Coordinate& coord);
 	void setValue(const Coordinate& coord, double d, bool enforceConstraints=true);
-	void setClamped(const Coordinate& coord, bool newValue);
+	void setClamped(Coordinate& coord, bool newValue);
 	bool getClamped(const Coordinate& coord);
-	void setLocked(const Coordinate& coord, bool newValue);
+	void setLocked(Coordinate& coord, bool newValue);
 	bool isConstrained(const Coordinate& coord) const;
 	// Constraints
 	bool isDisabled(const Constraint& constraint) const {

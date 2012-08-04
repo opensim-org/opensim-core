@@ -103,12 +103,9 @@ void OpenSimContext::setValue(const Coordinate& coord, double d, bool enforceCon
     return;
 }
 
-void OpenSimContext::setClamped(const Coordinate&  coord, bool newValue) {
-  SimTK::Stage stg = _configState->getSystemStage();
-  coord.setClamped(*_configState, newValue );
-  _model->updateAssemblyConditions(*_configState);
-  _model->assemble(*_configState);
-  _model->getMultibodySystem().realize(*_configState, stg);
+void OpenSimContext::setClamped(Coordinate&  coord, bool newValue) {
+   coord.setDefaultClamped(newValue);
+   recreateSystemKeepStage();
    return;
 }
 
@@ -116,14 +113,11 @@ bool OpenSimContext::getClamped(const Coordinate& coord) {
   return coord.getClamped(*_configState);
 }
 
-void OpenSimContext::setLocked(const Coordinate& coord, bool newValue) {
-  // This invalidates state back to Model, try to restore by re-realizing
-  SimTK::Stage stg = _configState->getSystemStage();
-  coord.setLocked(*_configState, newValue );
-  _model->updateAssemblyConditions(*_configState);
-  _model->assemble(*_configState);
-  _model->getMultibodySystem().realize(*_configState, stg);
-    return;
+void OpenSimContext::setLocked(Coordinate& coord, bool newValue) {
+   coord.setDefaultValue(getValue(coord));
+   coord.setDefaultLocked(newValue);
+   recreateSystemKeepStage();
+   return;
 }
 
 bool OpenSimContext::isConstrained(const Coordinate& coord) const {
