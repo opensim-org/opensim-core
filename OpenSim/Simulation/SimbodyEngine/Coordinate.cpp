@@ -499,7 +499,7 @@ void Coordinate::setLocked(SimTK::State& s, bool aLocked) const
 	SimTK::Constraint *lock = NULL;
 
 	// Get constraint
-	if(int(_lockedConstraintIndex) != SimTK::InvalidIndex){
+	if(_lockedConstraintIndex.isValid()){
 		lock = &_model->updMultibodySystem().updMatterSubsystem().updConstraint(_lockedConstraintIndex);
 	}
 	else{
@@ -528,7 +528,7 @@ void Coordinate::setLocked(SimTK::State& s, bool aLocked) const
  */
 bool Coordinate::getLocked(const SimTK::State& s) const
 {
-	if(int(_lockedConstraintIndex) != SimTK::InvalidIndex){
+	if(_lockedConstraintIndex.isValid()){
 		bool disabled = _model->updMultibodySystem().updMatterSubsystem().getConstraint(_lockedConstraintIndex).isDisabled(s);
 		return !disabled;
 	}
@@ -552,21 +552,20 @@ bool Coordinate::getLocked(const SimTK::State& s) const
 void Coordinate::setIsPrescribed(SimTK::State& s, bool isPrescribed) const
 {
 	// Do nothing if the same
-	if(isPrescribed == get_prescribed()) return;
+	if(isPrescribed == this->isPrescribed(s) ) return;
 	
 	// The underlying SimTK constraint
 	SimTK::Constraint *prescribe = NULL;
 
 	// Get constraint
-	if(int(_prescribedConstraintIndex) != SimTK::InvalidIndex){
+	if(_prescribedConstraintIndex.isValid()){
 		//get constraint
 		prescribe = &_model->updMultibodySystem().updMatterSubsystem().updConstraint(_prescribedConstraintIndex);
 	}
 	else{
-		string msg = "Preecribed motion for coordinate not found.";
+		string msg = "Prescribed motion for coordinate not found.";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-
 
 	// Now enable if prescribed motion constraint otherwise disable
 	if(isPrescribed){	

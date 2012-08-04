@@ -280,7 +280,7 @@ void WeldConstraint::setBody1WeldLocation(Vec3 location, Vec3 orientation)
 	_orientationInBody1 = orientation;
 
 	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
-	if(int(_index) != SimTK::InvalidIndex){
+	if(_index.isValid()){
 		SimTK::Constraint::Weld &simConstraint = (SimTK::Constraint::Weld &)_model->updMatterSubsystem().updConstraint(_index);
 		// Build the transforms
 		SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(_orientationInBody1);
@@ -296,7 +296,7 @@ void WeldConstraint::setBody2WeldLocation(Vec3 location, Vec3 orientation)
 	_orientationInBody2 = orientation;
 
 	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
-	if(int(_index) != SimTK::InvalidIndex){
+	if(_index.isValid()){
 		SimTK::Constraint::Weld &simConstraint = (SimTK::Constraint::Weld &)_model->updMatterSubsystem().updConstraint(_index);
 		// Build the transforms
 		SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(_orientationInBody2);

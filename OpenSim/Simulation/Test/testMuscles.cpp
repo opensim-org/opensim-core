@@ -21,9 +21,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//==========================================================================================================
-//	testMuscles builds various OpenSim models using the OpenSim API and compares muscle behavior
-//  for varying physical parameters (fiber-to-tendon ratio, tendon stiffness, etc...)
+//=============================================================================
+//	testMuscles simulates various OpenSim models using the OpenSim API and 
+//  compares muscle behavior for varying physical parameters (fiber-to-tendon 
+//  ratio, tendon stiffness, etc...)
 //
 //	Models tested include:
 //      1. PathActuator (Base of Muscle, is controlled tension along a GeometryPath)
@@ -216,9 +217,11 @@ void simulateMuscle(
         double testTolerance,
         bool printResults)
 {
+	string prescribed = (motion == NULL) ? "." : " with Prescribed Motion.";
+
 	cout << "\n******************************************************" << endl;
-	cout << " Test " << aMuscModel.getConcreteClassName() 
-         << " Muscle Actuator Type." <<endl;
+	cout << "Test " << aMuscModel.getConcreteClassName() 
+         << " Model" << prescribed << endl;
 	cout << "******************************************************" << endl;
 	using SimTK::Vec3;
 
@@ -275,8 +278,10 @@ void simulateMuscle(
 	    jointCoordinateSet[0].setRangeMin(0); 
         jointCoordinateSet[0].setRangeMax(1.0);
 	
-    if(motion != NULL)
+    if(motion != NULL){
 		jointCoordinateSet[0].setPrescribedFunction(*motion);
+		jointCoordinateSet[0].setDefaultIsPrescribed(true);
+	}
 	// add ball to model
 	model.addBody(ball);
 

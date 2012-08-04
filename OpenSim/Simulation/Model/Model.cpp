@@ -1681,7 +1681,7 @@ int Model::getNumControls() const
  * Throws an exception if called before Model::initSystem() */
 Vector& Model::updControls(const SimTK::State &s) const
 {
-	if(_system == NULL || (int(_modelControlsIndex) == SimTK::InvalidIndex)){
+	if( (_system == NULL) || (!_modelControlsIndex.isValid()) ){
 		throw Exception("Model::updControls() requires an initialized Model./n" 
 			"Prior call to Model::initSystem() is required.");
 	}
@@ -1694,7 +1694,7 @@ Vector& Model::updControls(const SimTK::State &s) const
 /** Const access to controls does not invalidate dynamics */
 const Vector& Model::getControls(const SimTK::State &s) const
 {
-	if(_system == NULL || (int(_modelControlsIndex) == SimTK::InvalidIndex)){
+	if( (_system == NULL) || (!_modelControlsIndex.isValid()) ){
 		throw Exception("Model::getControls() requires an initialized Model./n" 
 			"Prior call to Model::initSystem() is required.");
 	}

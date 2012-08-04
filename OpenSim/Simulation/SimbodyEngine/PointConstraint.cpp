@@ -233,7 +233,7 @@ void PointConstraint::setBody1PointLocation(Vec3 location)
 {
 	_locationInBody1 = location;
 	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
-	if(int(_index) != SimTK::InvalidIndex){
+	if(_index.isValid()){
 		SimTK::Constraint::Ball &simConstraint = (SimTK::Constraint::Ball &)_model->updMatterSubsystem().updConstraint(_index);
 		simConstraint.setDefaultPointOnBody1(_locationInBody1);
 	}
@@ -244,7 +244,7 @@ void PointConstraint::setBody2PointLocation(Vec3 location)
 {
 	_locationInBody2 = location;
 	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
-	if(int(_index) != SimTK::InvalidIndex){
+	if(_index.isValid()){
 		SimTK::Constraint::Ball &simConstraint = (SimTK::Constraint::Ball &)_model->updMatterSubsystem().updConstraint(_index);
 		simConstraint.setDefaultPointOnBody2(_locationInBody2);
 	}

@@ -261,7 +261,7 @@ void ConstantDistanceConstraint::setBody1PointLocation(Vec3 location)
 {
 	_locationInBody1 = location;
 	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
-	if(int(_index) != SimTK::InvalidIndex){
+	if(_index.isValid()){
 		SimTK::Constraint::Rod &simConstraint = (SimTK::Constraint::Rod &)_model->updMatterSubsystem().updConstraint(_index);
 		simConstraint.setDefaultPointOnBody1(_locationInBody1);
 	}
@@ -272,7 +272,7 @@ void ConstantDistanceConstraint::setBody2PointLocation(Vec3 location)
 {
 	_locationInBody2 = location;
 	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
-	if(int(_index) != SimTK::InvalidIndex){
+	if(_index.isValid()){
 		SimTK::Constraint::Rod &simConstraint = (SimTK::Constraint::Rod &)_model->updMatterSubsystem().updConstraint(_index);
 		simConstraint.setDefaultPointOnBody2(_locationInBody2);
 	}
@@ -281,10 +281,9 @@ void ConstantDistanceConstraint::setBody2PointLocation(Vec3 location)
 /** Set the constant distance between the two points*/
 void ConstantDistanceConstraint::setConstantDistance(double distance)
 {
-
 	_constantDistance = distance;
 	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
-	if(int(_index) != SimTK::InvalidIndex){
+	if(_index.isValid()){
 		SimTK::Constraint::Rod &simConstraint = (SimTK::Constraint::Rod &)_model->updMatterSubsystem().updConstraint(_index);
 		simConstraint.setDefaultRodLength(_constantDistance);
 	}
