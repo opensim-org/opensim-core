@@ -6,7 +6,8 @@
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %   
 % Copyright (c) 2005-2012 Stanford University and the Authors             %
-%                                                                         %   
+% Author(s): Dan Lichtwark                                                %
+%                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
 % You may obtain a copy of the License at                                 %
@@ -18,6 +19,9 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
+
+% strengthScaler.m                                                        
+% Author: Dan Lichtwark                                                   
 
 function strengthScaler(Model_In, Model_Out, scaleFactor)
 % OSIMstrength_scaler(Model_In, Model_Out, scaleFactor)
@@ -61,7 +65,7 @@ Muscles1 = Model1.getMuscles();
 %Count the muscles
 nMuscles = Muscles1.getSize();
 
-disp(['Number of muscles in orginal model: ' nuModel2str(nMuscles)]);
+disp(['Number of muscles in orginal model: ' numModel2str(nMuscles)]);
 
 % Get the set of forces that are in the scaled model
 % (Should be the same as the original at this point.)

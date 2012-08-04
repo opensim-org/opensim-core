@@ -20,6 +20,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
+% setupAndRunIKBatchExample.m                                                 
+% Author: Edith Arnold
+
 % This example script runs multiple inverse kinematics trials for the model Subject01. 
 % All input files are in the folder ../Matlab/testData/Subject01
 % To see the results load the model and ik output in the GUI.
