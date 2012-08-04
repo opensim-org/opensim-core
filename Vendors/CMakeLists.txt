@@ -1,9 +1,5 @@
 #-----------------------------------------------------------------------------
-IF(BUILD_UTILITIES)
-	SUBDIRS(CFSQP lepton MotionAnalysis)
-ELSE(BUILD_UTILITIES)
-	SUBDIRS(CFSQP lepton)
-ENDIF(BUILD_UTILITIES)
+SUBDIRS(CFSQP lepton)
 
 IF(WIN32)
 	FILE(GLOB VTK_LIBS "vtk_dll/*.dll")
