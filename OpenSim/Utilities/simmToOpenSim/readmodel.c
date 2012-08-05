@@ -39,6 +39,14 @@
 #define INIT_SEGMENT_FILE_ARRAY_SIZE 5
 #define SEGMENT_FILE_ARRAY_INCREMENT 10
 
+static char* beginposeString = "beginpose";
+static char* endposeString = "endpose";
+static char* ignoreString1 = "read_script_file";
+static char* ignoreString2 = "write_script_file";
+static char* ignoreString3 = "crosshair_visibility";
+static char* ignoreString4 = "muscle_point_visibility";
+static char* ignoreString5 = "shadow_visibility";
+
 
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
 
@@ -122,7 +130,23 @@ ReturnCode read_model_file(Scene* scene, ModelStruct* ms, char filename[], SBool
          read_nonempty_line(fp,buffer);
          continue;
       }
-
+      /* Skip over unsupported options */
+      if (STRINGS_ARE_EQUAL(buffer, ignoreString1) ||
+          STRINGS_ARE_EQUAL(buffer, ignoreString2) ||
+          STRINGS_ARE_EQUAL(buffer, ignoreString3) ||
+          STRINGS_ARE_EQUAL(buffer, ignoreString4) ||
+          STRINGS_ARE_EQUAL(buffer, ignoreString5))
+      {
+          _read_til(fp, '\n');
+          continue;
+      }
+      if (STRINGS_ARE_EQUAL(buffer, beginposeString)){
+          // skip until endposeString
+          while(STRINGS_ARE_NOT_EQUAL(buffer, endposeString))
+            read_line(fp,buffer);
+          _read_til(fp, '\n');
+          continue;
+      }
       if (STRINGS_ARE_EQUAL(buffer,"name"))
       {
          read_line(fp,buffer);
@@ -595,7 +619,7 @@ ReturnCode read_model_file(Scene* scene, ModelStruct* ms, char filename[], SBool
          error(recover,errorbuffer);
          model_errors++;
       }
-      if (model_errors > 10)
+      if (model_errors > 50)
       {
          error(none,"Too many errors to continue.");
          goto input_error;

@@ -78,16 +78,31 @@ void Muscle::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 				XMLDocument::renameChildNode(*pathIter, "MusclePointSet", "PathPointSet");
 				XMLDocument::renameChildNode(*pathIter, "MuscleWrapSet", "PathWrapSet");
             } else { // There was no GeometryPath, just MusclePointSet
-				XMLDocument::renameChildNode(aNode, "MusclePointSet", "PathPointSet");
-				XMLDocument::renameChildNode(aNode, "MuscleWrapSet", "PathWrapSet");
+                SimTK::Xml::element_iterator musclePointSetIter = aNode.element_begin("MusclePointSet");
+                bool pathPointSetFound=false;
+                if (musclePointSetIter != aNode.element_end()){
+				    XMLDocument::renameChildNode(aNode, "MusclePointSet", "PathPointSet");
+                    pathPointSetFound=true;
+                }
+                bool pathWrapSetFound=false;
+                SimTK::Xml::element_iterator muscleWrapSetIter = aNode.element_begin("MuscleWrapSet");
+                if (muscleWrapSetIter != aNode.element_end()){
+				    XMLDocument::renameChildNode(aNode, "MuscleWrapSet", "PathWrapSet");
+                    pathWrapSetFound=true;
+                }
 				// Now create a "GeometryPath" node and move MusclePointSet & MuscleWrapSet under it
 				SimTK::Xml::Element myPathElement("GeometryPath");
-				SimTK::Xml::element_iterator  pathPointSetIter = aNode.element_begin("PathPointSet");
-				SimTK::Xml::Node moveNode = aNode.removeNode(pathPointSetIter);
-				myPathElement.insertNodeAfter(myPathElement.element_end(),moveNode);
-				SimTK::Xml::element_iterator  pathWrapSetIter = aNode.element_begin("PathWrapSet");
-				moveNode = aNode.removeNode(pathWrapSetIter);
-				myPathElement.insertNodeAfter(myPathElement.element_end(),moveNode);
+                SimTK::Xml::Node moveNode;
+                if (pathPointSetFound) {
+				    SimTK::Xml::element_iterator  pathPointSetIter = aNode.element_begin("PathPointSet");
+				    moveNode = aNode.removeNode(pathPointSetIter);
+				    myPathElement.insertNodeAfter(myPathElement.element_end(),moveNode);
+                }
+                if (pathWrapSetFound) {
+				    SimTK::Xml::element_iterator  pathWrapSetIter = aNode.element_begin("PathWrapSet");
+				    moveNode = aNode.removeNode(pathWrapSetIter);
+				    myPathElement.insertNodeAfter(myPathElement.element_end(),moveNode);
+                }
 				aNode.insertNodeAfter(aNode.element_end(), myPathElement);
             }
 			XMLDocument::renameChildNode(aNode, "pennation_angle", "pennation_angle_at_optimal");
