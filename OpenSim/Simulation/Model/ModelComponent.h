@@ -243,7 +243,8 @@ public:
     /**
      * Set the value of a ModelingOption flag for this ModelComponent.
      * if the integer value exceeds the number of option names used to
-     * define the options, an exception is thrown.
+     * define the options, an exception is thrown. The SimTK::State 
+     * Stage will be reverted back to Stage::Instance.
      *
      * @param state  the State in which to set the flag
      * @param name   the name (string) of the modeling option of interest
