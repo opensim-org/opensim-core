@@ -44,7 +44,8 @@ void MuscleFirstOrderActivationDynamicModel::buildModel()
 {
     //This simple quantity is precomputed to save a division, a 
     //subtraction and an assignment ...
-    m_minAS = m_minActivation/(1-m_minActivation); 
+    double minActivation = get_minimum_activation();
+    m_minAS = minActivation/(1-minActivation); 
 }
 
 /*
@@ -65,13 +66,15 @@ MuscleFirstOrderActivationDynamicModel::
     name.append("_activation");
     setName(name);
 
-    double smallTol = sqrt(SimTK::Eps);
-    SimTK_ERRCHK1_ALWAYS( tauActivation>smallTol && tauDeactivation>smallTol,
+   
+    SimTK_ERRCHK1_ALWAYS( tauActivation>SimTK::SignificantReal 
+                            && tauDeactivation>SimTK::SignificantReal,
         "MuscleFirstOrderActivationDynamicModel::"
         "MuscleFirstOrderActivationDynamicModel",
         "%s: Activation/Deactivation time constants", name.c_str());
 
-    SimTK_ERRCHK1_ALWAYS( minActivation >= 0 && minActivation < 1-smallTol,
+    SimTK_ERRCHK1_ALWAYS( minActivation >= 0 
+                            && minActivation < 1-SimTK::SignificantReal,
         "MuscleFirstOrderActivationDynamicModel::"
         "MuscleFirstOrderActivationDynamicModel",
         "%s: Minimum activation must be greater than 0 and less than 1",
@@ -79,7 +82,7 @@ MuscleFirstOrderActivationDynamicModel::
 
     set_activation_time_constant(tauActivation);
     set_deactivation_time_constant(tauDeactivation);
-    m_minActivation = minActivation;
+    set_minimum_activation(minActivation);
     buildModel();
     
 
@@ -96,8 +99,7 @@ void MuscleFirstOrderActivationDynamicModel::constructProperties()
     constructProperty_deactivation_time_constant(0.040);
     //constructProperty_minimum_activation(0.01);
     //m_minAS = get_minimum_activation()/(1-get_minimum_activation());
-
-    m_minActivation = 0.01;
+    constructProperty_minimum_activation(0.01);
     buildModel();
 }
 
@@ -132,7 +134,7 @@ double MuscleFirstOrderActivationDynamicModel::
 
 double MuscleFirstOrderActivationDynamicModel::getMinimumActivation() const
 {
-    return m_minActivation;
+    return get_minimum_activation();
 }
 
 double MuscleFirstOrderActivationDynamicModel::getMaximumActivation() const
@@ -144,34 +146,51 @@ double MuscleFirstOrderActivationDynamicModel::
     clampActivation(double activation) const
 {
     //Clamp the lower bound
-    double clampedActivation = max(m_minActivation, activation);
+    double clampedActivation = max(get_minimum_activation(), activation);
     //Clamp the upper bound
     clampedActivation = min(1.0, clampedActivation);
     return clampedActivation;
 }
 
-void MuscleFirstOrderActivationDynamicModel::
+bool MuscleFirstOrderActivationDynamicModel::
     setActivationTimeConstant(double activationTimeConstant) 
 {
-    set_activation_time_constant(activationTimeConstant);
-    buildModel();
+
+    if(activationTimeConstant > SimTK::SignificantReal){
+        set_activation_time_constant(activationTimeConstant);
+        buildModel();
+        return true;
+    }else{
+        return false;
+    }
 }
         
 
-void MuscleFirstOrderActivationDynamicModel::
+bool MuscleFirstOrderActivationDynamicModel::
     setDeactivationTimeConstant(double deactivationTimeConstant) 
 {
-    set_deactivation_time_constant(deactivationTimeConstant);
-    buildModel();
+
+    if(deactivationTimeConstant > SimTK::SignificantReal){
+        set_deactivation_time_constant(deactivationTimeConstant);
+        buildModel();
+        return true;
+    }else{
+        return false;
+    }
 }
         
 
-void MuscleFirstOrderActivationDynamicModel::
+bool MuscleFirstOrderActivationDynamicModel::
     setMinimumActivation(double minimumActivation)
 {
-    //set_minimum_activation(minimumActivation);
-    m_minActivation = minimumActivation;
-    buildModel();
+
+    if(minimumActivation >= 0.0){
+        set_minimum_activation(minimumActivation);
+        buildModel();
+        return true;
+    }else{
+        return false;
+    }
 }
 
 double MuscleFirstOrderActivationDynamicModel::
@@ -225,7 +244,7 @@ double MuscleFirstOrderActivationDynamicModel::
                     double clampedExcitation = max(0.0, excitation);
                     clampedExcitation        = min(1.0, clampedExcitation);
 
-                    double minAct = m_minActivation;
+                    double minAct = get_minimum_activation();
 
                     //SimTK_ERRCHK2_ALWAYS(activation >= minAct && activation<=1,
                     //"MuscleFirstOrderActivationDynamicModel::calcDerivative",

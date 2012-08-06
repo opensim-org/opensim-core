@@ -323,8 +323,15 @@ int main(int argc, char* argv[])
         double paraHeight= optFibLen*sin(optPenAng);
         double tendonSlackLen= optFibLen;
 
-        MuscleFixedWidthPennationModel fibKin(optFibLen, optPenAng, caller);
-        MuscleFixedWidthPennationModel fibKin2(optFibLen*2, optPenAng, caller);
+        MuscleFixedWidthPennationModel fibKin(  optFibLen, 
+                                                optPenAng,
+                                                SimTK::Pi/2.0, 
+                                                caller);
+
+        MuscleFixedWidthPennationModel fibKin2( optFibLen*2, 
+                                                optPenAng,
+                                                SimTK::Pi/2.0, 
+                                                caller);
 
         cout << "**************************************************" << endl;
         cout << "Test: Serialization" << endl;
@@ -795,11 +802,11 @@ int main(int argc, char* argv[])
 
         //constructor
         SimTK_TEST_MUST_THROW(MuscleFixedWidthPennationModel fibKinEX = 
-            MuscleFixedWidthPennationModel(0, optPenAng, caller));
+            MuscleFixedWidthPennationModel(0, optPenAng, SimTK::Pi/2.0,caller));
         SimTK_TEST_MUST_THROW(MuscleFixedWidthPennationModel fibKinEX = 
-            MuscleFixedWidthPennationModel(optFibLen, -0.01, caller));
+            MuscleFixedWidthPennationModel(optFibLen, -0.01, SimTK::Pi/2.0, caller));
         SimTK_TEST_MUST_THROW(MuscleFixedWidthPennationModel fibKinEX = 
-            MuscleFixedWidthPennationModel(optFibLen, SimTK::Pi/2, caller));
+            MuscleFixedWidthPennationModel(optFibLen, SimTK::Pi/2, SimTK::Pi/2.0, caller));
 
         //Unset properties
         MuscleFixedWidthPennationModel fibKinEmpty;
@@ -861,8 +868,9 @@ int main(int argc, char* argv[])
         //calcPennationAngle
 
 
-        double maxPenAngle = asin(fibKin.getParallelogramHeight()/
-                 (fibKin.getParallelogramHeight() + 0.001*optFibLen));
+        double maxPenAngle = SimTK::Pi/2.0 * (7.0/8.0);
+
+        fibKin.setMaximumPennationAngle(maxPenAngle);
 
         //printf("Clamped Angle %f, expected %f\n",
         //    fibKin.calcPennationAngle(0,caller),
@@ -893,7 +901,7 @@ int main(int argc, char* argv[])
 
 	
 
-    cout << "\nThelen_Bench_1 completed successfully.\n";
+    cout << "\nDone. testMuscleFixedWidthPenationModel completed.\n";
 	return 0;
 }
 

@@ -149,6 +149,8 @@ public:
         "activation time constant in seconds");            
     OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
         "deactivation time constant in seconds");
+    OpenSim_DECLARE_PROPERTY(minimum_activation, double,
+        "activation lower bound");
     //OpenSim_DECLARE_PROPERTY(minimum_activation, double,
     //    "minimum activation allowed");                       
     /**@}**/
@@ -229,6 +231,8 @@ public:
     */
     double getActivationTimeConstant() const;
         
+
+
     /**        
     @returns The deactivation time constant in (units of seconds)
         
@@ -272,33 +276,36 @@ public:
 
     /**        
     @param The activation time constant in (units of seconds)
-        
+    @returns a bool that indicates if the value was set or not        
+
     <B>Computational Cost</B>
     \verbatim
         ~1 flops
     \endverbatim
     */
-    void setActivationTimeConstant(double activationTimeConstant);
+    bool setActivationTimeConstant(double activationTimeConstant);
         
     /**        
-    @returns The deactivation time constant in (units of seconds)
+    @param The deactivation time constant in (units of seconds)
+    @returns a bool that indicates if the value was set or not        
         
     <B>Computational Cost</B>
     \verbatim
         ~1 flops
     \endverbatim
     */
-    void setDeactivationTimeConstant(double deactivationTimeConstant);
+    bool setDeactivationTimeConstant(double deactivationTimeConstant);
         
     /**
     @returns The minimum activation level
+    @returns a bool that indicates if the value was set or not        
         
     <B>Computational Cost</B>
     \verbatim
         ~1 flops
     \endverbatim
     */
-    void setMinimumActivation(double minimumActivation);
+    bool setMinimumActivation(double minimumActivation);
 
     ///@cond
     /*This is useful for testing purposes only. Don't even think
@@ -312,7 +319,6 @@ public:
 
     private:      
         void buildModel();
-        double m_minActivation;
         double m_minAS; //scaled version of m_minA
            
         void setNull();

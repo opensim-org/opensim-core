@@ -336,6 +336,7 @@ public:
     OpenSim_DECLARE_PROPERTY(   mass,
                                 double,
                                 "lumped mass");
+
     /**@}**/
 
 
@@ -529,6 +530,8 @@ public:
     \endverbatim
     */
     void setMass(double mass);
+
+
 //==============================================================================
 // State Variable Related Functions
 //==============================================================================

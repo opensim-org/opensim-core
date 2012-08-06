@@ -274,6 +274,7 @@ int main(int argc, char* argv[])
 
             //Generate a range of activation values
             actV.resize(100);
+            amin = actMdl.getMinimumActivation();
             for(int i=0; i<actV.size(); i++){
                 actV(i) = (1-amin)*((double)i)/((double)actV.size()-1.0) + amin;
             }

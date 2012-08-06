@@ -80,7 +80,7 @@ void Thelen2003Muscle::addToSystem(SimTK::MultibodySystem& system) const
     //Appropriately set the properties of the activation model
         double activationTimeConstant  = getActivationTimeConstant();
         double deactivationTimeConstant= getDeactivationTimeConstant();
-        double activationMinValue      = getActivationMinimumValue();
+        double activationMinValue      = getMinimumActivation();
 
 
         MuscleFirstOrderActivationDynamicModel tmp1(activationTimeConstant, 
@@ -97,6 +97,7 @@ void Thelen2003Muscle::addToSystem(SimTK::MultibodySystem& system) const
 
         MuscleFixedWidthPennationModel tmp2( optimalFiberLength,
                                             pennationAngle, 
+                                            acos(0.1),
                                             caller);
 
     mthis->penMdl = tmp2;    
@@ -122,9 +123,9 @@ void Thelen2003Muscle::constructProperties()
     constructProperty_KshapeActive(0.45);   
     constructProperty_KshapePassive(5.0);   
     constructProperty_Af(0.25); 
-    constructProperty_Flen(1.8);
-    activation_minimum_value = 0.01;  
+    constructProperty_Flen(1.8);    
     constructProperty_fv_linear_extrap_threshold(0.95);
+    //acos(0.05) = 84.26 degrees    
 }
 
 //=============================================================================
@@ -136,6 +137,10 @@ double Thelen2003Muscle::getActivationTimeConstant() const
 
 double Thelen2003Muscle::getDeactivationTimeConstant() const 
 {   return get_deactivation_time_constant(); }
+
+double Thelen2003Muscle::getMinimumActivation() const 
+{   return actMdl.getMinimumActivation(); }
+
 
 double Thelen2003Muscle::getFmaxTendonStrain() const 
 {   return get_FmaxTendonStrain(); }
@@ -155,9 +160,6 @@ double Thelen2003Muscle::getAf() const
 double Thelen2003Muscle::getFlen() const 
 {   return get_Flen(); }
 
-double Thelen2003Muscle::getActivationMinimumValue() const 
-{   return activation_minimum_value; }
-
 double Thelen2003Muscle::getForceVelocityExtrapolationThreshold() const 
 {   return get_fv_linear_extrap_threshold(); }
 
@@ -173,6 +175,11 @@ const MuscleFixedWidthPennationModel& Thelen2003Muscle::
     return penMdl;
 }
 
+double Thelen2003Muscle::getMaximumPennationAngle() const
+{
+    return penMdl.getMaximumPennationAngle();
+}
+
 //=============================================================================
 // SET
 //=============================================================================
@@ -181,15 +188,6 @@ bool Thelen2003Muscle::setActivationTimeConstant(double aActTimeConstant)
 {
     if(aActTimeConstant > 0){
         set_activation_time_constant(aActTimeConstant);           
-        return true;
-    }
-    return false;
-}
-
-bool Thelen2003Muscle::setActivationMinimumValue(double aActMinValue)
-{
-    if(aActMinValue > 0 && aActMinValue < 1.0){
-        activation_minimum_value=aActMinValue;
         return true;
     }
     return false;
@@ -269,6 +267,29 @@ bool Thelen2003Muscle::
         return true;
     }
     return false;
+}
+
+bool Thelen2003Muscle::
+    setMaximumPennationAngle(double maxPennationAngle) 
+{
+    if(maxPennationAngle > 0.0 &&
+       maxPennationAngle < acos(0.001)){    
+           penMdl.setMaximumPennationAngle(maxPennationAngle);
+           return true;
+    }
+
+    return false;
+}
+
+bool Thelen2003Muscle::setMinimumActivation(double aActivationMinValue)
+{
+    if(aActivationMinValue > 0.001){        
+        actMdl.setMinimumActivation(aActivationMinValue);      
+        return true;
+    }else{
+        return false;
+    }
+
 }
 
 //==============================================================================
@@ -615,13 +636,7 @@ void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s,
 
     //default values that are appropriate when fiber length has been clamped
     //to its mimimum allowable value.
-    double dlce     = 0;
-    double dlceAT   = 0;
-    double dphidt   = 0;
-    double dtl      = dmcldt; 
-    double fiberLengthValid = 0.0;
-    //Switching condition: if the fiber is clamped and the tendon and the 
-    //                   : fiber are out of equilibrium
+    
 
     double fse  = calcfse(tl/tendonSlackLen);    
     double fal  = mli.fiberActiveForceLengthMultiplier;
@@ -634,26 +649,28 @@ void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s,
 
     double dlceN    = calcdlceN(a,fal,afalfv);
     
-
-    if(isFiberLengthClamped(s,dlceN)){
-        fiberLengthValid = 1.0;        
-        //7. Compute the other related velocity components
-        //double dlceAT = penMdl.
-        dlce     = dlceN*getMaxContractionVelocity()*optFiberLen;
-        
-        double tanPhi = tan(phi);
-        dphidt    = penMdl.calcPennationAngularVelocity(tanPhi,lce,
-                                                                dlce   ,caller);
-        
-        dlceAT   = penMdl.calcFiberVelocityAlongTendon(lce,
+    double dlce     = dlceN*getMaxContractionVelocity()*optFiberLen;
+    double tanPhi = tan(phi);
+    double dphidt    = penMdl.calcPennationAngularVelocity(tanPhi,lce,
+                                                             dlce,caller);
+    double dlceAT   = penMdl.calcFiberVelocityAlongTendon(lce,
                                                     dlce,sinphi,cosphi, dphidt);
 
-        dtl       = penMdl.calcTendonVelocity(cosphi,sinphi,dphidt,
+    double dtl       = penMdl.calcTendonVelocity(cosphi,sinphi,dphidt,
                                                         lce,  dlce,dmcldt);
-    }else{
-         afalfv   = 0;
-         fv       = 0;
-         dlceN    = 0;                  
+    
+    
+    //Switching condition: if the fiber is clamped and the tendon and the 
+    //                   : fiber are out of equilibrium
+    double fiberStateClamped = 0.0;
+    if(isFiberStateClamped(s,dlceN)){
+         dlce = 0;
+         dlceAT = 0;
+         dlceN = 0;
+         dphidt = 0;
+         dtl = dmcldt;
+         fv = 1.0;
+         fiberStateClamped = 1.0;
     }
         
     
@@ -672,7 +689,7 @@ void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s,
 
     fvi.userDefinedVelocityExtras.resize(2);
     fvi.userDefinedVelocityExtras[0]=fse;
-    fvi.userDefinedVelocityExtras[1]=fiberLengthValid;
+    fvi.userDefinedVelocityExtras[1]=fiberStateClamped;
 }
 
 
@@ -715,7 +732,7 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
                             getStateVariable(s, STATE_ACTIVATION_NAME));
 
     double lce      = mli.fiberLength;
-    double fiberLengthValid = mvi.userDefinedVelocityExtras[1];
+    double fiberStateClamped = mvi.userDefinedVelocityExtras[1];
     double dlce     = mvi.fiberVelocity;
     double phi      = mli.pennationAngle;
     double cosphi   = mli.cosPennationAngle;
@@ -749,7 +766,7 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
     double fal  = mli.fiberActiveForceLengthMultiplier;
     double fpe  = mli.fiberPassiveForceLengthMultiplier;
     double fv   = mvi.fiberForceVelocityMultiplier;
-    double fse  = mvi.userDefinedVelocityExtras(0);
+    double fse  = mvi.userDefinedVelocityExtras[0];
     
     double aFm          = 0; //active fiber force
     double Fm           = 0;
@@ -759,7 +776,7 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
     double dFt_dtl      = 0; 
     double Ke           = 0;
 
-    if(fiberLengthValid > 0.5){        
+    if(fiberStateClamped < 0.5){        
         aFm          = calcActiveFm(a,fal,fv,fiso);
         Fm           = calcFm(a,fal,fv,fpe,fiso);
         dFm_dlce     = calcDFmDlce(lce,a,fv,fiso,optFiberLen);
@@ -833,22 +850,26 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
    
 }
 
-bool Thelen2003Muscle::
-    isFiberLengthClamped(const SimTK::State& s, double dlceN) const
+double Thelen2003Muscle:: getMinimumFiberLength() const
 {
-    bool valid = true;
+    return penMdl.getMinimumFiberLength();
+}
+
+
+bool Thelen2003Muscle::
+    isFiberStateClamped(const SimTK::State& s, double dlceN) const
+{
+    bool clamped = false;
 
     //Is the fiber length  clamped and it is shortening, then the fiber length
     //not valid
-    bool isClamped = false;
     if( (getStateVariable(s, STATE_FIBER_LENGTH_NAME) 
-            <= penMdl.getMinimumFiberLength())
+            <= getMinimumFiberLength())
         && dlceN <= 0){
-        valid = false;
+        clamped = true;
     }
 
-    return valid;
-     
+    return clamped;     
 }
 
 //==============================================================================

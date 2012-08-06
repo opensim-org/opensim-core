@@ -80,20 +80,27 @@ namespace OpenSim {
  journal paper (marked with a *) to prevent some of these singularities:
  
  -# *\f$ a(t) \rightarrow a_{min} > 0 \f$ : A modified activation dynamic 
- equation is used - MuscleFirstOrderActivationDynamicModel - which smoothly 
- approaches some minimum value that is greater than zero.
+    equation is used - MuscleFirstOrderActivationDynamicModel - which smoothly 
+    approaches some minimum value that is greater than zero.
  -# \f$ f_{AL}(l_{CE}) > 0 \f$ . The active force length curve of the Thelen 
     muscle is a Gaussian, which is always greater than 0.
  -# \f$ \phi \rightarrow \frac{\pi}{2} \f$ . This singularity cannot be removed 
     without changing the first equation, and still exists in the present 
     Thelen2003Muscle formulation.
  -# *\f$ f_{V}(\dot{l}_{CE}) \le 0 \f$ or 
- \f$ f_{V}(\dot{l}_{CE}) \ge F^M_{len}\f$: Equation 6 in Thelen 2003 has been 
-  modified so that \f$ V^M \f$ is linearly
-  extrapolated when \f$ F^M < 0\f$ (during a concentric contraction), and when
-  \f$ F^M > 0.95 F^M_{len}\f$ (during an eccentric contraction). These two 
-  modifications make the force velocity curve invertible. The original force
-  velocity curve as published by Thelen was not invertible.
+    \f$ f_{V}(\dot{l}_{CE}) \ge F^M_{len}\f$: Equation 6 in Thelen 2003 has been 
+    modified so that \f$ V^M \f$ is linearly extrapolated when \f$ F^M < 0\f$ 
+    (during a concentric contraction), and when \f$ F^M > 0.95 F^M_{len}\f$ 
+    (during an eccentric contraction). These two modifications make the force 
+    velocity curve invertible. The original force velocity curve as published 
+    by Thelen was not invertible.   
+ -# A unilateral constraint has been implemented to prevent the fiber from 
+    approaching a fiber length that is smaller than 0.01*optimal fiber length,
+    or a fiber length that creates a pennation angle greater than the maximum 
+    pennation angle specified by the pennation model. Note that this unilateral 
+    constraint does not prevent the muscle fiber from becoming shorter than is 
+    physiologically possible (that is shorter than approximately half a 
+    normalized fiber length).
 
   <B> References </B>
 
@@ -142,6 +149,8 @@ public:
     
     OpenSim_DECLARE_PROPERTY(fv_linear_extrap_threshold, double,
         "fv threshold where linear extrapolation is used");
+
+
     /**@}**/
 
 //==============================================================================
@@ -160,7 +169,8 @@ public:
 //==============================================================================
     // Properties    
     double getActivationTimeConstant() const;
-    double getActivationMinimumValue() const;
+    double getActivationMinimum() const;
+    double getMinimumActivation() const;
     double getDeactivationTimeConstant() const;
     double getFmaxTendonStrain() const;
     double getFmaxMuscleStrain() const;
@@ -170,16 +180,35 @@ public:
     double getFlen() const;
     double getForceVelocityExtrapolationThreshold() const;
 
-    bool setActivationTimeConstant(double aActivationTimeConstant);
-    bool setActivationMinimumValue(double aActivationMinValue);
+    /**
+     @returns the minimum fiber length, which is the maximum of two values:
+        the smallest fiber length allowed by the pennation model, and the 
+        minimum fiber length in the active force length curve. When the fiber
+        length reaches this value, it is constrained to this value until the 
+        fiber velocity goes positive.
+    */
+    double getMinimumFiberLength() const;
+
+    /**
+    @return the maximum pennation angle allowed by this muscle model (radians)
+    */
+    double getMaximumPennationAngle() const;
+
+    bool setActivationTimeConstant(double aActivationTimeConstant);   
     bool setDeactivationTimeConstant(double aDeactivationTimeConstant);
+    bool setMinimumActivation(double aActivationMinValue);
     bool setFmaxTendonStrain(double aFmaxTendonStrain);
     bool setFmaxFiberStrain(double aFmaxMuscleStrain);
     bool setKshapeActive(double aKShapeActive);
     bool setKshapePassive(double aKshapePassive);
     bool setAf(double aAf);
-    bool setFlen(double aFlen);;
+    bool setFlen(double aFlen);
     bool setForceVelocityExtrapolationThreshold(double aFvThresh);
+
+    /**
+    @param maxPennationAngle is the maximum pennation (radians). 
+    */
+    bool setMaximumPennationAngle(double maxPennationAngle);
 
     /**
    @returns the MuscleFirstOrderActivationDynamicModel 
@@ -329,7 +358,9 @@ private:
     double calcDdlceDaFalFv(double aAct, double fal, 
                             double aFalFv) const;
 
-    bool isFiberLengthClamped(const SimTK::State& s, 
+    //Returns true if the fiber state is currently clamped to prevent the 
+    //fiber from attaining a length that is too short.
+    bool isFiberStateClamped(const SimTK::State& s, 
                             double dlceN) const;
 
 };    

@@ -82,7 +82,9 @@ public:
     OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,
         "optimal or resting fiber length in units of meters");            
     OpenSim_DECLARE_PROPERTY(optimal_pennation_angle, double,
-        "pennation angle in radians of a fiber at its optimal length");                     
+        "pennation angle in radians of a fiber at its optimal length");     
+    OpenSim_DECLARE_PROPERTY(maximum_pennation_angle, double,
+        "maximum pennation angle in radians");  
     /**@}**/
 
 //==============================================================================
@@ -131,11 +133,23 @@ public:
 
     */
     MuscleFixedWidthPennationModel(double optimalFiberLength, 
-                                            double optimalPennationAngle,
+                                   double optimalPennationAngle,
+                                   double maximumPennationAngle,
                                             std::string& caller);
     ///Default constructor. Populates member data with NaN's and other
     ///obviously wrong values
     MuscleFixedWidthPennationModel();
+
+    bool setOptimalPennationAngle(double aOptimalPennationAngle);
+
+    bool setOptimalFiberLength(double aOptimalFiberLength);
+
+    bool setMaximumPennationAngle(double aMaximumPennationAngle);
+
+    /**
+        @returns the maximum pennation angle allowed 
+    */
+    double getMaximumPennationAngle() const;
 
     /**
         @returns    the minimum fiber length. For this pennation model the 
@@ -682,13 +696,14 @@ private:
     void setNull();
     void constructProperties();
     void ensurePropertiesSet() const;
+    void ensureModelUpToDate() const;
+    void buildModel();
 
     /**The height of the parallelogram (in meters). Since the width is 
     constant, the height of the parallelogram is also constant.*/
     double m_parallelogramHeight;
     double m_minimumFiberLength;
-    double m_maximumSinPennation;
-    double m_maximumPennationAngle;
+    double m_maximumSinPennation;   
     double m_minimumFiberLengthAlongTendon;
 };
 }

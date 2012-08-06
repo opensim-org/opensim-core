@@ -129,7 +129,7 @@ void Millard2012AccelerationMuscle::constructProperties()
 
     //Nonlinear damping coefficients 
     constructProperty_tendon_force_length_damping(1e-1);
-    constructProperty_fiber_compressive_force_length_damping(1e-2);
+    constructProperty_fiber_compressive_force_length_damping(1.0);
     constructProperty_fiber_force_length_damping(1e-2);
     constructProperty_fiber_compressive_force_cos_pennation_damping(1.0);
 
@@ -137,7 +137,8 @@ void Millard2012AccelerationMuscle::constructProperties()
     constructProperty_fiber_damping(1e-2);
 
     //Mass property
-    constructProperty_mass(0.02);
+    constructProperty_mass(0.1);
+
 }
 
 void Millard2012AccelerationMuscle::buildMuscle()
@@ -148,8 +149,11 @@ void Millard2012AccelerationMuscle::buildMuscle()
     caller.append(".buildMuscle()");
 
 
-    m_penMdl = MuscleFixedWidthPennationModel(optFibLen,optPenAng,caller);
-    
+    m_penMdl = MuscleFixedWidthPennationModel(  optFibLen,
+                                                optPenAng, 
+                                                SimTK::Pi/2.0,
+                                                caller);
+   
     std::string aName = getName();
 
     std::string tmp = aName;
@@ -543,6 +547,7 @@ double Millard2012AccelerationMuscle::getMass() const
     return get_mass();
 }
 
+
 //=============================================================================
 // SET
 //=============================================================================
@@ -600,6 +605,8 @@ void Millard2012AccelerationMuscle::setMass(double mass)
 
     set_mass(mass);
 }
+
+
 
 //==============================================================================
 // Protected Useful Functions
