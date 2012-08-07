@@ -169,7 +169,6 @@ public:
 //==============================================================================
     // Properties    
     double getActivationTimeConstant() const;
-    double getActivationMinimum() const;
     double getMinimumActivation() const;
     double getDeactivationTimeConstant() const;
     double getFmaxTendonStrain() const;
