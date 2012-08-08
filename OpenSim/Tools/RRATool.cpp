@@ -540,10 +540,11 @@ bool RRATool::run()
 	}
 
 	// Adjust COM to reduce residuals (formerly RRA pass 1) if requested
+	string massAdjMsg;
 	if(desiredKinFlag) {
 		if(_adjustCOMToReduceResiduals) {
 		
-			adjustCOMToReduceResiduals(s, *qStore,*uStore);
+			massAdjMsg = adjustCOMToReduceResiduals(s, *qStore,*uStore);
 
 			// If not adjusting kinematics, we don't proceed with CMC, and just stop here.
 			if(!_adjustKinematicsToReduceResiduals) {
@@ -853,14 +854,20 @@ bool RRATool::run()
 	*/
 	controller->getPositionErrorStorage()->print(getResultsDir() + "/" + getName() + "_pErr.sto");
 
+	stringstream adjQMsg;
     if(_model->getAnalysisSet().getIndex("Actuation") != -1) {
 	    Actuation& actuation = (Actuation&)_model->getAnalysisSet().get("Actuation");
 	    Array<double> FAve(0.0,3),MAve(0.0,3);
 	    Storage *forceStore = actuation.getForceStorage();
 	    computeAverageResiduals(*forceStore,FAve,MAve);
-	    cout<<"\n\nAverage residuals:\n";
-	    cout<<"FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
-	    cout<<"MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl<<endl<<endl;
+
+		adjQMsg << "************************************************************" << endl;
+		adjQMsg << "*                   Final Average Residuals                *" << endl;
+		adjQMsg << "************************************************************" << endl;
+		adjQMsg << "* After "<<_adjustedCOMBody<<" COM and Kinematics adjustments:"<< endl;
+		adjQMsg <<  "*  FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
+		adjQMsg <<  "*  MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl;
+		adjQMsg <<  "************************************************************\n" << endl;
 
 	    // Write the average residuals (DC offsets) out to a file
 	    ofstream residualFile((getResultsDir() + "/" + getName() + "_avgResiduals.txt").c_str());
@@ -876,6 +883,8 @@ bool RRATool::run()
 
 	// Write new model file
 	if(_adjustCOMToReduceResiduals) writeAdjustedModel();
+
+	cout << massAdjMsg << adjQMsg.str() << endl;
 
 	//_model->removeController(controller); // So that if this model is from GUI it doesn't double-delete it.
 
@@ -973,7 +982,7 @@ computeAverageResiduals(const Storage &aForceStore,OpenSim::Array<double> &rFAve
 //cout << "moments=" << rMAve <<  endl;
 
 }
-void RRATool::
+string RRATool::
 adjustCOMToReduceResiduals(SimTK::State& s, const Storage &qStore, const Storage &uStore)
 {
 	// Create a states storage from q's and u's
@@ -994,25 +1003,34 @@ adjustCOMToReduceResiduals(SimTK::State& s, const Storage &qStore, const Storage
 	cout<<"\nNote: requested COM adjustment time range "<<ti<<" - "<<tf<<" clamped to nearest available data times "<<actualTi<<" - "<<actualTf<<endl;
 
 	computeAverageResiduals(s, *_model, ti, tf, *statesStore, FAve, MAve);
-	cout<<"Average residuals before adjusting "<<_adjustedCOMBody<<" COM:"<<endl;
-	cout<<"FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
-	cout<<"MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl<<endl;
+
+	std::stringstream resMsg;
+
+	//          123456789012345678901234567890123456789012345678901234567890
+	resMsg <<  "* Average residuals before adjusting "<<_adjustedCOMBody<<" COM:"<<endl;
+	resMsg <<  "*  FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
+	resMsg <<  "*  MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl;
+	resMsg <<  "************************************************************" << endl;
 
     SimTK::Vector  restoreStates(s.getNY());
     restoreStates = s.getY();
 
-	adjustCOMToReduceResiduals(FAve,MAve);
+	string massMsg = adjustCOMToReduceResiduals(FAve,MAve);
 	SimTK::State &si = _model->initSystem();
 
     si.updY() = restoreStates;
     _model->getMultibodySystem().realize(si, Stage::Position );
     
 	computeAverageResiduals(si, *_model, ti, tf, *statesStore, FAve, MAve);
-	cout<<"Average residuals after adjusting "<<_adjustedCOMBody<<" COM:"<<endl;
-	cout<<"FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
-	cout<<"MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl<<endl;
+
+	resMsg <<  "* Average residuals after adjusting "<<_adjustedCOMBody<<" COM:"<<endl;
+	resMsg <<  "*  FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
+	resMsg <<  "*  MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl;
+	resMsg <<  "************************************************************\n" << endl;
 
 	delete statesStore;
+
+	return massMsg+resMsg.str();
 }
 
 // Uses an inverse dynamics analysis to compute average residuals
@@ -1066,7 +1084,7 @@ computeAverageResiduals(SimTK::State& s, Model &aModel,double aTi,double aTf,con
  * @param aMAve The average residual moments.  The dimension of aMAve should
  * be 3.
  */
-void RRATool::
+string RRATool::
 adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Array<double> &aMAve)
 {
 	// CHECK SIZE
@@ -1082,7 +1100,7 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
 	if(bodyWeight<SimTK::Zero) {
 		cout<<"\nRRATool.adjustCOMToReduceResiduals: ERR- ";
 		cout<<_adjustedCOMBody<<" has no weight.\n";
-		return;
+		return "";
 	}
 	
 	//---- COM CHANGE ----
@@ -1094,9 +1112,9 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
 	if(dx > limit) dx = limit;
 	if(dx < -limit) dx = -limit;
 
-	cout<<"RRATool.adjustCOMToReduceResiduals:\n";
-	cout<<_adjustedCOMBody<<" weight = "<<bodyWeight<<"\n";
-	cout<<"dx="<<dx<<", dz="<<dz<<endl;
+	//cout<<"RRATool.adjustCOMToReduceResiduals:\n";
+	//cout<<_adjustedCOMBody<<" weight = "<<bodyWeight<<"\n";
+	//cout<<"dx="<<dx<<", dz="<<dz<<endl;
 
 	// GET EXISTING COM
 	Vec3 com;
@@ -1113,7 +1131,7 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
 	//---- MASS CHANGE ----
 	// Get recommended mass change.
 	double dmass = aFAve[1] / g[1];
-	cout<<"\ndmass = "<<dmass<<endl;
+	//cout<<"\ndmass = "<<dmass<<endl;
 	// Loop through bodies
 	int i;
 	int nb = _model->getNumBodies();
@@ -1125,12 +1143,28 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
 		mass[i] = bodySet[i].getMass();
 		massTotal += mass[i];
 	}
-	cout<<"\nRecommended mass adjustments:"<<endl;
+
+	std::stringstream msg;
+    //       123456789012345678901234567890123456789012345678901234567890
+	msg <<"\n************************************************************" << endl;
+	msg <<  "*      Summary of Mass Adjustments to Reduce Residuals     *" << endl;
+	msg <<  "************************************************************" << endl;
+	msg <<  "* Body adjusted: " << _adjustedCOMBody << endl;
+	msg <<  "* Mass Center adjustment: dx ="<< dx <<", dz =" << dz <<endl;
+	msg <<  "* New Mass Center location: " << com << endl;
+	msg <<  "************************************************************" << endl;
+	msg <<  "* Recommended mass adjustments:                             "  <<endl;
+	msg <<  "*  Total mass change: " << dmass << endl; 
+
 	for(i=0;i<nb;i++) {
 		massChange[i] = dmass * mass[i]/massTotal;
 		massNew[i] = mass[i] + massChange[i];
-		cout<<bodySet[i].getName()<<":  orig mass = "<<mass[i]<<", new mass = "<<massNew[i]<<endl;
+		msg << "*  " << bodySet[i].getName()<<": orig mass = "
+			<<mass[i]<<", new mass = "<<massNew[i] << endl;
 	}
+	msg <<  "************************************************************" << endl;
+
+	return msg.str();
 }
 
 //_____________________________________________________________________________

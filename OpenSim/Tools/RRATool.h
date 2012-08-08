@@ -26,20 +26,12 @@
 // This software, originally developed by Realistic Dynamics, Inc., was
 // transferred to Stanford University on November 1, 2006.
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#ifndef RRATool_h__
-#define RRATool_h__
+#ifndef OPENSIM_RRATool_h__
+#define OPENSIM_RRATool_h__
 
 #include "osimToolsDLL.h"
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Control/ControlSet.h>
-#include <OpenSim/Tools/CMCTool.h>
+
 
 #ifdef SWIG
 	#ifdef OSIMTOOLS_API
@@ -50,7 +42,9 @@
 
 namespace OpenSim {
 
-
+class ForceSet;
+class ControlSet;
+class Storage;
 //=============================================================================
 //=============================================================================
 /**
@@ -205,8 +199,8 @@ public:
 #ifndef SWIG
 	ControlSet* constructRRAControlSet(ControlSet *aControlConstraints);
 	void initializeControlSetUsingConstraints(const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints, ControlSet& rControlSet );
-	void adjustCOMToReduceResiduals(SimTK::State& s, const Storage &qStore, const Storage &uStore);
-	void adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Array<double> &aMAve);
+	std::string adjustCOMToReduceResiduals(SimTK::State& s, const Storage &qStore, const Storage &uStore);
+	std::string adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Array<double> &aMAve);
 	void addNecessaryAnalyses();
 	void writeAdjustedModel();
 
@@ -220,4 +214,4 @@ public:
 
 }; // end namespace
 
-#endif  // RRATool_h__
+#endif  // OPENSIM_RRATool_h__
