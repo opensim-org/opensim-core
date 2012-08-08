@@ -303,6 +303,10 @@ void Millard2012AccelerationMuscle::
 SimTK::Vector Millard2012AccelerationMuscle::
     computeStateVariableDerivatives(const SimTK::State& s) const 
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012AccelerationMuscle: Muscle is not"
+        " to date with properties");
+
     SimTK::Vector derivs(getNumStateVariables(),0.);
 
     if(!isDisabled(s)){
@@ -391,6 +395,9 @@ double Millard2012AccelerationMuscle::
     getStateVariableDeriv(const SimTK::State& s, 
                           const std::string &aStateName) const
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012AccelerationMuscle: Muscle is not"
+        " to date with properties");
 	return getCacheVariable<double>(s, aStateName + "_deriv");
 }
 
@@ -447,6 +454,10 @@ void Millard2012AccelerationMuscle::
                             const std::string &aStateName, 
                             double aValue) const
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012AccelerationMuscle: Muscle is not"
+        " to date with properties");
+
 	double& cacheVariable = updCacheVariable<double>(s, aStateName + "_deriv");
 	cacheVariable = aValue;
 	markCacheVariableValid(s, aStateName + "_deriv");
@@ -538,12 +549,14 @@ const FiberCompressiveForceCosPennationCurve& Millard2012AccelerationMuscle::
 double Millard2012AccelerationMuscle::
     getFiberStiffnessAlongTendon(const SimTK::State& s) const
 {
+    ensureMuscleUpToDate();
     const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
     return mdi.fiberStiffnessAlongTendon;
 }
 
 double Millard2012AccelerationMuscle::getMass() const
 {
+    ensureMuscleUpToDate();
     return get_mass();
 }
 
@@ -615,6 +628,10 @@ void Millard2012AccelerationMuscle::setMass(double mass)
 void Millard2012AccelerationMuscle::
 postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012AccelerationMuscle: Muscle is not"
+        " to date with properties");
+
 	GeometryPath& path = upd_GeometryPath();
 
 	path.postScale(s, aScaleSet);
@@ -636,6 +653,10 @@ double Millard2012AccelerationMuscle::
 calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
                                        double aActivation) const
 {
+        SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012AccelerationMuscle: Muscle is not"
+        " to date with properties");
+
         string caller = getName();
         caller.append(  "Millard2012AccelerationMuscle::"
                         "calcInextensibleTendonActiveFiberForce");
@@ -674,9 +695,11 @@ double Millard2012AccelerationMuscle::
             calcActiveFiberForceAlongTendon(double activation, 
                                             double fiberLength, 
                                             double fiberVelocity) const
-{
+{   
+
     string caller = getName();
-    caller.append("::MillardAccelerationMuscle::calcActiveFiberForceAlongTendon");
+    caller.append(  "::MillardAccelerationMuscle::"
+                    "calcActiveFiberForceAlongTendon");
 
     double activeFiberForce = 0;    
     double clampedFiberLength = m_penMdl.clampFiberLength(fiberLength);
@@ -732,6 +755,10 @@ double Millard2012AccelerationMuscle::
 double  Millard2012AccelerationMuscle::
     computeActuation(const SimTK::State& s) const
 {    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012AccelerationMuscle: Muscle is not"
+        " to date with properties");
+
     ensureMuscleUpToDate();
     const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
     setForce(s,         mdi.tendonForce);
@@ -744,6 +771,9 @@ void Millard2012AccelerationMuscle::
     computeInitialFiberEquilibrium(SimTK::State& s) const
 {
     try{
+        SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012AccelerationMuscle: Muscle is not"
+        " to date with properties");
 
         ensureMuscleUpToDate();
         //Initialize activation to the users desired setting
@@ -878,7 +908,11 @@ void Millard2012AccelerationMuscle::
 void Millard2012AccelerationMuscle::
     calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const
 {    
-    ensureMuscleUpToDate();
+    //ensureMuscleUpToDate();
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012AccelerationMuscle: Muscle is not"
+        " to date with properties");
+    
     double simTime = s.getTime(); //for debugging purposes
 
     //Get whole muscle properties
@@ -961,7 +995,12 @@ void Millard2012AccelerationMuscle::
 void Millard2012AccelerationMuscle::
     calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
 {
-    ensureMuscleUpToDate();
+    //ensureMuscleUpToDate();
+    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012AccelerationMuscle: Muscle is not"
+        " to date with properties");
+
     double simTime = s.getTime(); //for debugging purposes
 
 
@@ -1040,7 +1079,11 @@ void Millard2012AccelerationMuscle::
 void Millard2012AccelerationMuscle::
     calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
 {
-        ensureMuscleUpToDate();
+        //ensureMuscleUpToDate();
+        SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012AccelerationMuscle: Muscle is not"
+        " to date with properties");
+    
         double simTime = s.getTime(); //for debugging purposes
 
     //Get the quantities that we've already computed
@@ -1619,6 +1662,10 @@ SimTK::Vector Millard2012AccelerationMuscle::
 double Millard2012AccelerationMuscle::
     calcActivationRate(const SimTK::State& s) const 
 {    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012AccelerationMuscle: Muscle is not"
+        " to date with properties");
+
     double excitation = getExcitation(s);
     double activation = getActivation(s);
 

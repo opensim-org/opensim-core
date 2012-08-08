@@ -262,11 +262,11 @@ void Millard2012EquilibriumMuscle::initStateFromProperties(SimTK::State& s) cons
 
     ensureMuscleUpToDate();
 
-    Millard2012EquilibriumMuscle* mthis = 
-        const_cast<Millard2012EquilibriumMuscle*>(this);
+    //Millard2012EquilibriumMuscle* mthis = 
+    //    const_cast<Millard2012EquilibriumMuscle*>(this);
 
-    mthis->setActivation(s, getDefaultActivation());
-    mthis->setFiberLength(s, getDefaultFiberLength());
+    setActivation(s, getDefaultActivation());
+    setFiberLength(s, getDefaultFiberLength());
 
 }
     
@@ -287,6 +287,10 @@ void Millard2012EquilibriumMuscle::
 SimTK::Vector Millard2012EquilibriumMuscle::
 computeStateVariableDerivatives(const SimTK::State& s) const 
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012EquilibriumMuscle: Muscle is not"
+        " to date with properties");
+
     SimTK::Vector derivs(getNumStateVariables(), 0.);
     if (!isDisabled(s)) {
         derivs[0] = getActivationRate(s);
@@ -324,7 +328,7 @@ double Millard2012EquilibriumMuscle::
 double Millard2012EquilibriumMuscle::
     getFiberVelocity(const SimTK::State& s) const
 {
-    ensureMuscleUpToDate();
+    ensureMuscleUpToDate();       
     FiberVelocityInfo fvi = getFiberVelocityInfo(s);
     return fvi.fiberVelocity;
 }
@@ -361,7 +365,12 @@ double Millard2012EquilibriumMuscle::
     getStateVariableDeriv(const SimTK::State& s, 
                           const std::string &aStateName) const
 {
-	return getCacheVariable<double>(s, aStateName + "_deriv");
+    //ensureMuscleUpToDate();
+	SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012EquilibriumMuscle: Muscle is not"
+        " to date with properties");
+
+    return getCacheVariable<double>(s, aStateName + "_deriv");
 }
 
 //=============================================================================
@@ -409,6 +418,10 @@ void Millard2012EquilibriumMuscle::
                             const std::string &aStateName, 
                             double aValue) const
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012EquilibriumMuscle: Muscle is not"
+        " to date with properties");
+
 	double& cacheVariable = updCacheVariable<double>(s, aStateName + "_deriv");
 	cacheVariable = aValue;
 	markCacheVariableValid(s, aStateName + "_deriv");
@@ -485,6 +498,7 @@ const TendonForceLengthCurve& Millard2012EquilibriumMuscle::
 
 double Millard2012EquilibriumMuscle::getMaximumPennationAngle() const
 {
+    ensureMuscleUpToDate();
     return penMdl.getMaximumPennationAngle();
 }
 
@@ -518,6 +532,7 @@ const FiberCompressiveForceCosPennationCurve& Millard2012EquilibriumMuscle::
 double Millard2012EquilibriumMuscle::
     getFiberStiffnessAlongTendon(const SimTK::State& s) const
 {
+    ensureMuscleUpToDate();
     const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
     return mdi.fiberStiffnessAlongTendon;
 }
@@ -605,6 +620,10 @@ void Millard2012EquilibriumMuscle::setFiberCompressiveForceCosPennationCurve(
 void Millard2012EquilibriumMuscle::
 postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012EquilibriumMuscle: Muscle is not"
+        " to date with properties");
+
 	GeometryPath& path = upd_GeometryPath();
 
 	path.postScale(s, aScaleSet);
@@ -627,6 +646,10 @@ double Millard2012EquilibriumMuscle::
 calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
                                        double aActivation) const
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012EquilibriumMuscle: Muscle is not"
+        " to date with properties");
+
         string caller = getName();
         caller.append(  "Millard2012EquilibriumMuscle::"
                         "calcInextensibleTendonActiveFiberForce");
@@ -662,7 +685,8 @@ double Millard2012EquilibriumMuscle::
                                             double fiberVelocity) const
 {
     string caller = getName();
-    caller.append("::MillardEquilibriumMuscle::calcActiveFiberForceAlongTendon");
+    caller.append(  "::MillardEquilibriumMuscle"
+                    "::calcActiveFiberForceAlongTendon");
 
     double activeFiberForce = 0;    
     //If the fiber is in a legal range, compute the force its generating
@@ -709,7 +733,11 @@ double Millard2012EquilibriumMuscle::
 double  Millard2012EquilibriumMuscle::
     computeActuation(const SimTK::State& s) const
 {    
-    ensureMuscleUpToDate();
+    //ensureMuscleUpToDate();    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012EquilibriumMuscle: Muscle is not"
+        " to date with properties");
+
     const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
     setForce(s,         mdi.tendonForce);
     return( mdi.tendonForce );
@@ -722,7 +750,11 @@ void Millard2012EquilibriumMuscle::
 {
     try{
 
-        ensureMuscleUpToDate();
+        //ensureMuscleUpToDate();
+        SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012EquilibriumMuscle: Muscle is not"
+        " to date with properties");
+
         //Initialize activation to the users desired setting
         const MuscleFirstOrderActivationDynamicModel& actMdl 
             = get_MuscleFirstOrderActivationDynamicModel();
@@ -844,7 +876,11 @@ void Millard2012EquilibriumMuscle::
 void Millard2012EquilibriumMuscle::calcMuscleLengthInfo(const SimTK::State& s, 
                                                MuscleLengthInfo& mli) const
 {    
-    ensureMuscleUpToDate();
+    //ensureMuscleUpToDate();
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012EquilibriumMuscle: Muscle is not"
+        " to date with properties");
+
     double simTime = s.getTime(); //for debugging purposes
 
     //Get whole muscle properties
@@ -931,7 +967,11 @@ void Millard2012EquilibriumMuscle::calcMuscleLengthInfo(const SimTK::State& s,
 void Millard2012EquilibriumMuscle::calcFiberVelocityInfo(const SimTK::State& s, 
                                                FiberVelocityInfo& fvi) const
 {
-    ensureMuscleUpToDate();
+    //ensureMuscleUpToDate();
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012EquilibriumMuscle: Muscle is not"
+        " to date with properties");
+
     double simTime = s.getTime(); //for debugging purposes
 
 
@@ -1044,7 +1084,11 @@ void Millard2012EquilibriumMuscle::calcFiberVelocityInfo(const SimTK::State& s,
 void Millard2012EquilibriumMuscle::calcMuscleDynamicsInfo(const SimTK::State& s, 
                                                MuscleDynamicsInfo& mdi) const
 {
-        ensureMuscleUpToDate();
+        //ensureMuscleUpToDate();
+        SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012EquilibriumMuscle: Muscle is not"
+        " to date with properties");
+
         double simTime = s.getTime(); //for debugging purposes
 
     //Get the quantities that we've already computed
@@ -1207,7 +1251,7 @@ SimTK::Vector Millard2012EquilibriumMuscle::
     initMuscleState(SimTK::State& s, double aActivation, 
                               double aSolTolerance, int aMaxIterations) const
 {
-    ensureMuscleUpToDate();   
+    //ensureMuscleUpToDate();   
     std::string caller = getName();
     caller.append(".initMuscleState");
     //results vector format
@@ -1516,6 +1560,10 @@ SimTK::Vector Millard2012EquilibriumMuscle::
 double Millard2012EquilibriumMuscle::
     calcActivationRate(const SimTK::State& s) const 
 {    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012EquilibriumMuscle: Muscle is not"
+        " to date with properties");
+
     const MuscleFirstOrderActivationDynamicModel& actMdl 
         = get_MuscleFirstOrderActivationDynamicModel();
 
@@ -1553,12 +1601,14 @@ bool Millard2012EquilibriumMuscle::
 
 double Millard2012EquilibriumMuscle::getMinimumFiberLength() const
 {
+    ensureMuscleUpToDate();
     return m_minimumFiberLength;
 }
 
 
 double Millard2012EquilibriumMuscle::getMinimumFiberLengthAlongTendon() const
 {
+    ensureMuscleUpToDate();
     return m_minimumFiberLengthAlongTendon;
 }
 

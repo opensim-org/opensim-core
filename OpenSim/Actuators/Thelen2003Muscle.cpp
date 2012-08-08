@@ -67,15 +67,14 @@ Thelen2003Muscle(const std::string& aName,  double aMaxIsometricForce,
     setOptimalFiberLength(aOptimalFiberLength);
     setTendonSlackLength(aTendonSlackLength);
     setPennationAngleAtOptimalFiberLength(aPennationAngle);
+
 }
 
 void Thelen2003Muscle::addToSystem(SimTK::MultibodySystem& system) const 
 {
     Super::addToSystem(system);
 
-    //const cast *this so you can initialize the member variables actMdl and
-    //penMdl
-    Thelen2003Muscle* mthis =  const_cast<Thelen2003Muscle*>(this);
+    
 
     //Appropriately set the properties of the activation model
         double activationTimeConstant  = getActivationTimeConstant();
@@ -87,6 +86,10 @@ void Thelen2003Muscle::addToSystem(SimTK::MultibodySystem& system) const
                                                     deactivationTimeConstant, 
                                                     activationMinValue, 
                                                     getName());
+
+    //const cast *this so you can initialize the member variables actMdl and
+    //penMdl
+    Thelen2003Muscle* mthis =  const_cast<Thelen2003Muscle*>(this);
     mthis->actMdl = tmp1; 
 
     //Appropriately set the properties of the pennation model
@@ -298,7 +301,9 @@ bool Thelen2003Muscle::setMinimumActivation(double aActivationMinValue)
 double Thelen2003Muscle::
 calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
                                        double aActivation) const
-{
+{      
+
+
         string caller = getName();
         caller.append(  "Thelen2003Muscle::"
                         "calcInextensibleTendonActiveFiberForce");
@@ -394,6 +399,8 @@ double Thelen2003Muscle::
 
 double  Thelen2003Muscle::computeActuation(const SimTK::State& s) const
 {
+
+
     const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
     const FiberVelocityInfo& mvi = getFiberVelocityInfo(s);
     const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
@@ -407,6 +414,7 @@ double  Thelen2003Muscle::computeActuation(const SimTK::State& s) const
 void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
 {
     try{
+
         //Initialize activation to the users desired setting, while enforcing
         //that it lie in within the allowable bounds.
         double clampedActivation = actMdl.clampActivation(getActivation(s));
@@ -526,6 +534,8 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
 void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s, 
                                                MuscleLengthInfo& mli) const
 {    
+
+
     double simTime = s.getTime(); //for debugging purposes
 
     double optFiberLength   = getOptimalFiberLength();
@@ -568,6 +578,8 @@ void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s,
 void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s, 
                                                FiberVelocityInfo& fvi) const
 {
+
+
     double simTime = s.getTime(); //for debugging purposes
 
 
@@ -703,6 +715,8 @@ void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s,
 void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s, 
                                                MuscleDynamicsInfo& mdi) const
 {
+
+
         double simTime = s.getTime(); //for debugging purposes
 
     //Get the quantities that we've already computed
@@ -880,6 +894,8 @@ bool Thelen2003Muscle::
 /** Get the rate change of activation */
 double Thelen2003Muscle::calcActivationRate(const SimTK::State& s) const 
 {    
+
+
     double excitation = getExcitation(s);
     double activation = getActivation(s);
     double dadt = actMdl.calcDerivative(activation,excitation);
@@ -1547,8 +1563,8 @@ double Thelen2003Muscle::calcdlceN(double act,double fal,double actFalFv) const
 }
 
 double Thelen2003Muscle::
-    calcfv(const double aFse, const double aFpe, const double aFal, 
-                           const double aCosPhi, const double aAct) const
+    calcfv(double aFse,     double aFpe, double aFal, 
+           double aCosPhi,  double aAct) const
 {
     //This only works for an equilibrium model, but its a lot less 
     //computationally expensive (and error prone) than trying to invert the 
@@ -1557,8 +1573,8 @@ double Thelen2003Muscle::
     return fv;
 }
 
-double Thelen2003Muscle::calcDdlceDaFalFv(const double aAct, 
-                                   const double aFal, const double aFalFv) const
+double Thelen2003Muscle::calcDdlceDaFalFv(double aAct, 
+                                          double aFal, double aFalFv) const
 {
     //The variable names have all been switched to closely match with 
     //the notation in Thelen 2003.
