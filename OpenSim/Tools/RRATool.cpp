@@ -1150,8 +1150,8 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
 	msg <<  "*      Summary of Mass Adjustments to Reduce Residuals     *" << endl;
 	msg <<  "************************************************************" << endl;
 	msg <<  "* Body adjusted: " << _adjustedCOMBody << endl;
-	msg <<  "* Mass Center adjustment: dx ="<< dx <<", dz =" << dz <<endl;
-	msg <<  "* New Mass Center location: " << com << endl;
+	msg <<  "* Mass Center (COM) adjustment: dx ="<< dx <<", dz =" << dz <<endl;
+	msg <<  "* New COM location: " << com << endl;
 	msg <<  "************************************************************" << endl;
 	msg <<  "* Recommended mass adjustments:                             "  <<endl;
 	msg <<  "*  Total mass change: " << dmass << endl; 
@@ -1162,6 +1162,9 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
 		msg << "*  " << bodySet[i].getName()<<": orig mass = "
 			<<mass[i]<<", new mass = "<<massNew[i] << endl;
 	}
+	msg <<  "************************************************************" << endl;
+	msg <<  "* Note: Edit the model to make recommended adjustments to  *" << endl; 
+	msg <<	"*       mass properties.                                   *" << endl;
 	msg <<  "************************************************************" << endl;
 
 	return msg.str();
