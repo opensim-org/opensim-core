@@ -170,7 +170,6 @@
 using namespace OpenSim;
 using namespace SimTK;
 
-static bool trace=false;
 %}
 
 %feature("director") OpenSim::AnalysisWrapper;
@@ -322,8 +321,6 @@ static bool trace=false;
   if (Object::getDebugLevel()>=3){
 	  try {
 	  $action
-	  if (trace)
-		std::cout << "In Function:" << __FUNCTION__ << std::endl;
 	  }
 	  catch(std::exception& _ex){
 		  jclass excep = jenv->FindClass("java/lang/RuntimeException");
