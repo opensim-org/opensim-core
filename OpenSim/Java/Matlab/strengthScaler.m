@@ -21,18 +21,20 @@
 % ----------------------------------------------------------------------- %
 
 % strengthScaler.m                                                        
-% Author: Dan Lichtwark                                                   
+% Author: Dan Lichtwark
 
-function strengthScaler(Model_In, Model_Out, scaleFactor)
-% OSIMstrength_scaler(Model_In, Model_Out, scaleFactor)
+function strengthScaler(scaleFactor, Model_In, Model_Out)
+% OSIMstrength_scaler(scaleFactor, Model_In, Model_Out)
 % Test program to load muscles and change strength of muscles and re-save
 % model
 %
-% Inputs - Model_In (string) - existing model path and file name 
+% Inputs - scaleFactor (double) - amount to scale all muscle forces
+%          Model_In (string) - existing model path and file name 
 %          Model_Out (string) - new model path and file name 
-%          scaleFactor (double) - amount to scale all muscle forces
 %
-% eg. strengthScaler('mySimpleBlockModel.osim', 'myStrongerBlockModel.osim', 2)
+% eg. strengthScaler(2)
+% eg. strengthScaler(2, 'mySimpleBlockModel.osim')
+% eg. strengthScaler(2, 'mySimpleBlockModel.osim', 'myStrongerBlockModel.osim')
 %
 % Author: Glen Lichtwark (The University of Queensland)
 % with invaluable assistance from Ayman Habib (Stanford University)
@@ -41,14 +43,21 @@ function strengthScaler(Model_In, Model_Out, scaleFactor)
 
 import org.opensim.modeling.*
 
-if nargin < 1
-    [Model_In, path, filter] = uigetfile('.osim');
+error(nargchk(1, 3, nargin));
+
+filepath = '';
+
+if nargin < 2
+    [Model_In, path] = uigetfile('.osim');
+    Model_Out = [Model_In(1:end-5),'_MuscleScaled.osim'];    
+    filepath = [path Model_In];
+elseif nargin < 3
     Model_Out = [Model_In(1:end-5),'_MuscleScaled.osim'];
-    scaleFactor = 2;
+    filepath = Model_In;
 end
 
 %Create the Original OpenSim model from a .osim file
-Model1 = Model(strcat(path,Model_In));
+Model1 = Model(filepath);
 Model1.initSystem;
 
 % Create a copy of the original OpenSim model for the Modified Model
@@ -65,7 +74,7 @@ Muscles1 = Model1.getMuscles();
 %Count the muscles
 nMuscles = Muscles1.getSize();
 
-disp(['Number of muscles in orginal model: ' numModel2str(nMuscles)]);
+disp(['Number of muscles in orginal model: ' num2str(nMuscles)]);
 
 % Get the set of forces that are in the scaled model
 % (Should be the same as the original at this point.)
