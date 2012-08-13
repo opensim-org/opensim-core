@@ -77,9 +77,6 @@ private:
 	PropertyStr _constraintsFileNameProp;
 	std::string &_constraintsFileName;
 
-	/** Name of the file containing the actuator controls output by rra. */
-	PropertyStr _rraControlsFileNameProp;
-	std::string &_rraControlsFileName;
 	/** Low-pass cut-off frequency for filtering the desired kinematics. A negative
 	value results in no filtering.  The default value is -1.0, so no filtering. */
 	PropertyDbl _lowpassCutoffFrequencyProp;
@@ -164,9 +161,6 @@ public:
     const std::string &getTaskSetFileName() { return _taskSetFileName; } 		 
     void setTaskSetFileName(const std::string &aFileName) { _taskSetFileName = aFileName; }
 
-	const std::string &getRRAControlsFileName() { return _rraControlsFileName; }
-	void setRRAControlsFileName(const std::string &aFileName) { _rraControlsFileName = aFileName; }
-
 	const std::string &getOutputModelFileName() { return _outputModelFile; }
 	void setOutputModelFileName(const std::string &aFileName) { _outputModelFile = aFileName; }
 
@@ -197,7 +191,7 @@ public:
 
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 #ifndef SWIG
-	ControlSet* constructRRAControlSet(ControlSet *aControlConstraints);
+
 	void initializeControlSetUsingConstraints(const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints, ControlSet& rControlSet );
 	std::string adjustCOMToReduceResiduals(SimTK::State& s, const Storage &qStore, const Storage &uStore);
 	std::string adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Array<double> &aMAve);

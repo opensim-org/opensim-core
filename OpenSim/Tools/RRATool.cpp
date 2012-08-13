@@ -68,7 +68,6 @@ RRATool::RRATool() :
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
     _taskSetFileName(_taskSetFileNameProp.getValueStr()),
 	_constraintsFileName(_constraintsFileNameProp.getValueStr()),
-	_rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_numericalDerivativeStepSize(_numericalDerivativeStepSizeProp.getValueDbl()),
@@ -92,11 +91,8 @@ RRATool::RRATool(const string &aFileName, bool aLoadModel) :
 	AbstractTool(aFileName, false),
 	_desiredPointsFileName(_desiredPointsFileNameProp.getValueStr()),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
-	//_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-	//_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
     _taskSetFileName(_taskSetFileNameProp.getValueStr()),
 	_constraintsFileName(_constraintsFileNameProp.getValueStr()),
-	_rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_numericalDerivativeStepSize(_numericalDerivativeStepSizeProp.getValueDbl()),
@@ -162,7 +158,6 @@ RRATool(const RRATool &aTool) :
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
     _taskSetFileName(_taskSetFileNameProp.getValueStr()),
 	_constraintsFileName(_constraintsFileNameProp.getValueStr()),
-	_rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_numericalDerivativeStepSize(_numericalDerivativeStepSizeProp.getValueDbl()),
@@ -192,7 +187,6 @@ setNull()
 	_desiredKinematicsFileName = "";
     _taskSetFileName = "";
 	_constraintsFileName = "";
-	_rraControlsFileName = "";
 	_lowpassCutoffFrequency = -1.0;
 	//_lowpassCutoffFrequencyForLoadKinematics = -1.0;
  	_optimizerAlgorithm = "ipopt";
@@ -238,12 +232,6 @@ void RRATool::setupProperties()
 	_constraintsFileNameProp.setComment(comment);
 	_constraintsFileNameProp.setName("constraints_file");
 	_propertySet.append( &_constraintsFileNameProp );
-
-	comment = "File containing the controls output by RRA.";
-	comment += " These can be used to place constraints on the residuals during CMC.";
-	_rraControlsFileNameProp.setComment(comment);
-	_rraControlsFileNameProp.setName("rra_controls_file");
-	_propertySet.append( &_rraControlsFileNameProp );
 
 	comment = "Low-pass cut-off frequency for filtering the desired kinematics.";
 	comment += " A negative value results in no filtering. The default value is -1.0, so no filtering.";
@@ -333,7 +321,6 @@ operator=(const RRATool &aTool)
 	_desiredKinematicsFileName = aTool._desiredKinematicsFileName;
     _taskSetFileName = aTool._taskSetFileName;
 	_constraintsFileName = aTool._constraintsFileName;
-	_rraControlsFileName = aTool._rraControlsFileName;
 	_lowpassCutoffFrequency = aTool._lowpassCutoffFrequency;
     _targetDT = aTool._targetDT;  	 	 
 	_numericalDerivativeStepSize = aTool._numericalDerivativeStepSize;
@@ -630,9 +617,6 @@ bool RRATool::run()
 		controlConstraints = new ControlSet(_constraintsFileName);
 	}
 
-	// RRA CONTROLS
-	ControlSet *rraControlSet = constructRRAControlSet(controlConstraints);
-
 	// ---- INITIAL STATES ----
 	Array<double> q(0.0,nq);
 	Array<double> u(0.0,nu);
@@ -743,7 +727,7 @@ bool RRATool::run()
 	manager.setFinalTime(_tf-_targetDT-SimTK::Zero);
 
 	// Initialize integrand controls using controls read in from file (which specify min/max control values)
-	initializeControlSetUsingConstraints(rraControlSet,controlConstraints, controller->updControlSet());
+	initializeControlSetUsingConstraints(NULL,controlConstraints, controller->updControlSet());
 
 	// Initial auxilliary states
 	time_t startTime,finishTime;
@@ -1266,93 +1250,6 @@ initializeControlSetUsingConstraints(
 		}
 #endif
 	}	
-}
-//_____________________________________________________________________________
-/**
- * Create a set of control constraints based on an RRA solution.
- * If RRA (Residual Reduction Algorithm) was run to compute or reduce the 
- * residuals as a preprocessing step, those residuals need to be applied 
- * during the CMC run.  They are applied by reading in the residuals computed
- * during RRA and then using these controls to place narrow constraints on 
- * the controls for the residual actuators active during the CMC run.
- *
- * @param aControlConstraints Constraints based on a previous RRA solution
- * to be used during this run of CMC.
- */
-ControlSet* RRATool::
-constructRRAControlSet(ControlSet *aControlConstraints)
-{
-	if(_rraControlsFileName=="") return(NULL);
-	
-	OPENSIM_FUNCTION_NOT_IMPLEMENTED();
-	// Need to make sure code below still works after changes to controls/control constraints
-#if 0
-	int i;
-	ControlLinear *controlConstraint=NULL;
-	string rraControlName,cmcControlName;
-	ControlLinear *rraControl=NULL;
-
-	// LOAD RRA CONTROLS
-	ControlSet *rraControlSet=NULL;
-	rraControlSet = new ControlSet(_rraControlsFileName);
-
-	// Loop through controls looking for corresponding actuators
-	int nrra = rraControlSet->getSize();
-	for(i=0;i<nrra;i++) {
-		rraControl = (ControlLinear*)&rraControlSet->get(i);
-		if(rraControl==NULL) continue;
-		rraControlName = rraControl->getName();
-
-		// Does control exist in the model?
-		// TODO- We are not using this functionality at the moment,
-		// so I'm going to comment this out.
-		//int index = _model->getControlIndex(rraControlName);
-		int index = 0;
-
-		// Add a constraint based on the rra control 
-		if(index>=0) {
-
-			// Create control constraint set if necessary
-			if(aControlConstraints==NULL) {
-				aControlConstraints = new ControlSet();
-				aControlConstraints->setName("ControlConstraints");
-			}
-
-			// Get control constraint
-			controlConstraint = (ControlLinear*)&&aControlConstraints->get(rraControlName);
-			// Control constraint already exists, so clear the existing nodes
-			if(controlConstraint!=NULL) {
-					controlConstraint->getNodeArray().setSize(0);
-			// Make a new control constraint
-			} else {
-				controlConstraint = new ControlLinear();
-				controlConstraint->setName(rraControlName);
-				aControlConstraints->append(controlConstraint);
-			}
-
-			// Set max and min values
-			ArrayPtrs<ControlLinearNode> &nodes = rraControl->getNodeArray();
-			int j,nnodes = nodes.getSize();
-			double t,x,max,min,dx;
-			for(j=0;j<nnodes;j++) {
-				t = nodes[j]->getTime();
-				x = nodes[j]->getValue();
-				dx = 1.00 * (nodes[j]->getMax() - nodes[j]->getMin());
-				max = x + dx;
-				min = x - dx;
-				controlConstraint->setControlValue(t,x);
-				controlConstraint->setControlValueMax(t,max);
-				controlConstraint->setControlValueMin(t,min);
-				//cout<<controlConstraint->getName()<<": t="<<t<<" min="<<min<<" x="<<x<<" max="<<max<<endl;
-			}
-		}
-	}
-
-	// Print out modified control constraints
-	//if(aControlConstraints!=NULL) aControlConstraints->print("cmc_aControlConstraints_check.xml");
-
-	return(rraControlSet);
-#endif
 }
 
 //_____________________________________________________________________________
