@@ -20,10 +20,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-% strengthScaler.m                                                        
+% prescribeMotionInModel.m                                                        
 % Author: Dominic Farris
 
-function prescribeMotionInModel(Model_In, Sto_In, Model_Out)
+function prescribeMotionInModel(Model_In, Mot_In, Model_Out)
 
 % Function to take an existing model file and coordinate data accessed from an IK solution
 % and write it as a Natural Cubic Spline Function to the Prescribed
@@ -31,7 +31,7 @@ function prescribeMotionInModel(Model_In, Sto_In, Model_Out)
 % Dominic Farris
 %
 % Inputs - Model_In - Existing model stored in osim file
-%        - Sto_In - A file contains motion data for the particular model
+%        - Mot_In - A file contains motion data for the particular model
 %        - Model_Out - The output file with prescribed motion
 %
 % e.g. prescribedMotionInModel('myInputModel.osim','myMotionFile', 'myOutputModel.osim')
@@ -50,28 +50,33 @@ error(nargchk(0, 3, nargin));
 
 % If there aren't enough arguments passed in system will ask user to
 % manually select file(s)
+
 if nargin < 1
-    [Model_In, modelpath] = uigetfile('.osim');
-    [Sto_In, stopath] = uigetfile('.mot');
-    Model_Out = [Model_In(1:end-5),'_Prescribed.osim'];
+    [Model_In, modelpath] = uigetfile('.osim', 'Please select a model file');
+    [Mot_In, motpath] = uigetfile('.mot', 'Please select a motion file');
+    fileoutpath = [Model_In(1:end-5),'_Prescribed.osim'];
     modelfilepath = [modelpath Model_In];
-    stofilepath = [stopath Sto_In];    
+    motfilepath = [motpath Mot_In];    
 elseif nargin < 2
-    [Sto_In, stopath] = uigetfile('.mot');
-    Model_Out = [Model_In(1:end-5),'_Prescribed.osim'];  
-    stofilepath = [stopath Sto_In];       
+    [Mot_In, motpath] = uigetfile('.mot', 'Please select a motion file');
+    fileoutpath = [Model_In(1:end-5),'_Prescribed.osim'];  
+    motfilepath = [motpath Mot_In];       
     modelfilepath = Model_In;    
 elseif nargin < 3
-    Model_Out = [Model_In(1:end-5),'_Prescribed.osim'];
+    fileoutpath = [Model_In(1:end-5),'_Prescribed.osim'];
     modelfilepath = Model_In;    
-    stofilepath = Sto_In;
+    motfilepath = Mot_In;
+else
+    modelfilepath = Model_In;
+    motfilepath = Mot_In;
+    fileoutpath = Model_Out;
 end
 
 % Initialize model
-osimModel = Model(modelfilepath);
+osimModel=Model(modelfilepath);
 
 % Create the coordinate storage object from the input .sto file
-coordinateSto=Storage(stofilepath);
+coordinateSto=Storage(motfilepath);
 
 % Rename the modified Model
 osimModel.setName('modelWithPrescribedMotion');
@@ -101,20 +106,23 @@ for i=0:nCoords-1
     Spline = SimmSpline();
     
     %Now to write Time and coordvalue to Spline
-    if strcmp(motion,'Rotational')% if the motion type is rotational we must convert to radians from degrees
+    if strcmp(motion,'Rotational')
+        % if the motion type is rotational we must convert to radians from degrees
         for j = 0:coordvalue.getSize()-1
-        Spline.addPoint(Time.getitem(i),coordvalue.getitem(i)/(180/pi));
+            Spline.addPoint(Time.getitem(j),coordvalue.getitem(j)/(180/pi));
         end
     else % else we assume it's translational and can be left 'as is'
         for j = 0:coordvalue.getSize()-1
-        Spline.addPoint(Time.getitem(i),coordvalue.getitem(i));
+            Spline.addPoint(Time.getitem(j),coordvalue.getitem(j));
         end
     end
 
     % Add the SimmSpline to the PrescribedFunction of the Coordinate
     % being edited
     currentcoord.setPrescribedFunction(Spline);
+    currentcoord.setDefaultIsPrescribed(1);
 end
 
 %  Save the Modified Model to a file
-osimModel.print(Model_Out);
+osimModel.print(fileoutpath);
+disp(['The new model has been saved at ' fileoutpath]);

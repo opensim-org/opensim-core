@@ -43,17 +43,21 @@ function strengthScaler(scaleFactor, Model_In, Model_Out)
 
 import org.opensim.modeling.*
 
-error(nargchk(1, 3, nargin));
+% Turn up debug level so that exceptions due to typos etc. are handled gracefully
+OpenSimObject.setDebugLevel(3);
 
-filepath = '';
+error(nargchk(1, 3, nargin));
 
 if nargin < 2
     [Model_In, path] = uigetfile('.osim');
-    Model_Out = [Model_In(1:end-5),'_MuscleScaled.osim'];    
+    fileoutpath = [Model_In(1:end-5),'_MuscleScaled.osim'];    
     filepath = [path Model_In];
 elseif nargin < 3
-    Model_Out = [Model_In(1:end-5),'_MuscleScaled.osim'];
+    fileoutpath = [Model_In(1:end-5),'_MuscleScaled.osim'];
     filepath = Model_In;
+else
+    filepath = Model_In;
+    fileoutpath = Model_Out;
 end
 
 %Create the Original OpenSim model from a .osim file
@@ -97,6 +101,7 @@ for i = 0:nMuscles-1
 end
  
 % save the updated model to an OSIM xml file
-Model2.print(Model_Out)
-    
+Model2.print(fileoutpath)
+disp(['The new model has been saved at ' fileoutpath]);
+
 end
