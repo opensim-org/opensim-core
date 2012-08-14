@@ -25,7 +25,7 @@
 
 #include "Probe.h"
 #include "Model.h"
-#include "MetabolicMuscleSet.h"
+#include "MetabolicMuscleParameterSet.h"
 
 
 namespace OpenSim { 
@@ -144,38 +144,46 @@ public:
     These are the serializable properties associated with this class. **/
     /**@{**/
     /** Enabled by default. **/
-    OpenSim_DECLARE_PROPERTY(activation_maintenance_rate_on, bool,
+    OpenSim_DECLARE_PROPERTY(activation_maintenance_rate_on, 
+        bool,
         "Specify whether the activation & maintenance heat rate is to be calculated (true/false).");
 
     /** Enabled by default. **/
-    OpenSim_DECLARE_PROPERTY(shortening_rate_on, bool,
+    OpenSim_DECLARE_PROPERTY(shortening_rate_on, 
+        bool,
         "Specify whether the shortening heat rate is to be calculated (true/false).");
 
     /** Enabled by default. **/
-    OpenSim_DECLARE_PROPERTY(basal_rate_on, bool,
+    OpenSim_DECLARE_PROPERTY(basal_rate_on, 
+        bool,
         "Specify whether the basal heat rate is to be calculated (true/false).");
 
     /** Enabled by default. **/
-    OpenSim_DECLARE_PROPERTY(mechanical_work_rate_on, bool,
+    OpenSim_DECLARE_PROPERTY(mechanical_work_rate_on, 
+        bool,
         "Specify whether the mechanical work rate is to be calculated (true/false).");
 
     /** Default value = 1.0. **/
-    OpenSim_DECLARE_PROPERTY(scaling_factor, double,
+    OpenSim_DECLARE_PROPERTY(scaling_factor, 
+        double,
         "Scaling factor (S=1.0 for primarily anaerobic conditions and S=1.5 for primarily aerobic conditions. See Umberger et al., (2002).");
 
     /** Default value = 1.51. **/
-    OpenSim_DECLARE_PROPERTY(basal_coefficient, double,
+    OpenSim_DECLARE_PROPERTY(basal_coefficient, 
+        double,
         "Basal metabolic coefficient.");
 
     /** Default value = 1.0. **/
-    OpenSim_DECLARE_PROPERTY(basal_exponent, double,
+    OpenSim_DECLARE_PROPERTY(basal_exponent, 
+        double,
         "Basal metabolic exponent.");
 
     /** Disabled by default. **/
-    OpenSim_DECLARE_PROPERTY(normalize_mechanical_work_rate_by_muscle_mass, bool,
+    OpenSim_DECLARE_PROPERTY(normalize_mechanical_work_rate_by_muscle_mass, 
+        bool,
         "Specify whether the mechanical work rate for each muscle is to be normalized by muscle mass (true/false).");
 
-    OpenSim_DECLARE_UNNAMED_PROPERTY(MetabolicMuscleSet,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(MetabolicMuscleParameterSet,
         "A MetabolicMuscleSet containing the muscle information required to calculate metabolic energy expenditure. "
         "If multiple muscles are contained in the set, then the probe value will equal the summation of all metabolic powers.");
 
@@ -194,50 +202,6 @@ public:
         bool shortening_rate_on, bool basal_rate_on, bool work_rate_on);
 
 
-    //--------------------------------------------------------------------------
-    // Get and Set
-    //--------------------------------------------------------------------------
-    /** Returns if the activation & maintenance metabolic rates are to be included in the calculation (true/false). */
-    bool isActivationMaintenanceRateOn() const;
-    /** Returns if the maintenance metabolic rate is to be included in the calculation (true/false). */
-    bool isShorteningRateOn() const;
-    /** Returns if the basal metabolic rate is to be included in the calculation (true/false). */
-    bool isBasalRateOn() const;
-    /** Returns if the mechanical work rate is to be included in the calculation (true/false). */
-    bool isWorkRateOn() const;
-    /** Returns the aerobic/anaerobic scaling factor S. */
-    double getScalingFactor() const;
-    /** Returns the basal metabolic rate coefficient (W/kg). */
-    double getBasalCoefficient() const;
-    /** Returns the basal metabolic rate exponent. */
-    double getBasalExponent() const;
-    /** Returns if the mechanical work rate is to be normalized by muscle mass (true/false). */
-    bool isMechanicalWorkRateNormalizedToMuscleMass() const;
-    /** Returns a const MetabolicMuscleSet containing the Muscle(s) being probed. */
-    const MetabolicMuscleSet& getMetabolicMuscleSet() const;
-    /** Returns an updatable MetabolicMuscleSet containing the Muscle(s) being probed. */
-    MetabolicMuscleSet& updMetabolicMuscleSet();
-
-    /** Sets if the activation & maintenance metabolic rates are to be included in the calculation (true/false). */
-    void setActivationMaintenanceRateOn(const bool aActMainRateOn);
-    /** Sets if the shortening metabolic rate is to be included in the calculation (true/false). */
-    void setShorteningRateOn(const bool aShortRateOn);
-    /** Sets if the basal metabolic rate is to be included in the calculation (true/false). */
-    void setBasalRateOn(const bool aBasalRateOn);
-    /** Sets if the mechanical work rate is to be included in the calculation (true/false). */
-    void setWorkRateOn(const bool aWorkRateOn);
-    /** Sets the aerobic/anaerobic scaling factor S. */
-    void setScalingFactor(const double S);
-    /** Sets the basal metabolic rate coefficient. */
-    void setBasalCoefficient(const double aBasalCoeff);
-    /** Sets the basal metabolic rate exponent. */
-    void setBasalExponent(const double aBasalExp);
-    /** Sets if the mechanical work rate is to be normalized by muscle mass (true/false). */
-    void setMechanicalWorkRateNormalizedToMuscleMass(const bool normalizeWorkRate);
-    /** Sets the MetabolicMuscleSet containing the Muscle(s) being probed. */
-    void setMetabolicMuscleSet(const MetabolicMuscleSet mms);
-
-
     //-----------------------------------------------------------------------------
     // Computation
     //-----------------------------------------------------------------------------
@@ -252,8 +216,8 @@ public:
         to name your probe appropiately!  */
     virtual OpenSim::Array<std::string> getProbeOutputLabels() const OVERRIDE_11;
 
-    /** Check that the MetabolicMuscle represents a valid muscle in the model. */
-    Muscle* checkValidMetabolicMuscle(MetabolicMuscle mm) const;
+    /** Check that the MetabolicMuscleParameter represents a valid muscle in the model. */
+    Muscle* checkValidMetabolicMuscle(MetabolicMuscleParameter mm) const;
 
 
 //==============================================================================

@@ -1,7 +1,7 @@
 #ifndef OPENSIM_METABOLIC_MUSCLE_H_
 #define OPENSIM_METABOLIC_MUSCLE_H_
 /* -------------------------------------------------------------------------- *
- *                        OpenSim:  MetabolicMuscle.h                         *
+ *                  OpenSim:  MetabolicMuscleParameter.h                      *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -49,9 +49,9 @@ namespace OpenSim {
 //class Model;
 //class Muscle;
 
-class OSIMSIMULATION_API MetabolicMuscle : public Object  
+class OSIMSIMULATION_API MetabolicMuscleParameter : public Object  
 {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MetabolicMuscle, Object);
+    OpenSim_DECLARE_CONCRETE_OBJECT(MetabolicMuscleParameter, Object);
 
 //==============================================================================
 // PROPERTIES
@@ -90,9 +90,9 @@ public:
     //--------------------------------------------------------------------------
     // Constructor(s) and Setup
     //--------------------------------------------------------------------------
-    MetabolicMuscle();
+    MetabolicMuscleParameter();
 
-    MetabolicMuscle(double muscle_mass, double ratio_slow_twitch_fibers, 
+    MetabolicMuscleParameter(double muscle_mass, double ratio_slow_twitch_fibers, 
         double activation_constant_slow_twitch, double activation_constant_fast_twitch, 
         double maintenance_constant_slow_twitch, double maintenance_constant_fast_twitch); 
 
@@ -122,7 +122,7 @@ private:
     void constructProperties();
 
 //=============================================================================
-};	// END of class MetabolicMuscle
+};	// END of class MetabolicMuscleParameter
 //=============================================================================
 //=============================================================================
 

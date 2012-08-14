@@ -25,7 +25,7 @@
 
 #include "Probe.h"
 #include "Model.h"
-#include "MetabolicMuscleSet.h"
+#include "MetabolicMuscleParameterSet.h"
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 
 namespace OpenSim { 
@@ -136,46 +136,56 @@ public:
     These are the serializable properties associated with this class. **/
     /**@{**/
     /** Enabled by default. **/
-    OpenSim_DECLARE_PROPERTY(activation_rate_on, bool,
+    OpenSim_DECLARE_PROPERTY(activation_rate_on, 
+        bool,
         "Specify whether the activation heat rate is to be calculated (true/false).");
 
     /** Enabled by default. **/
-    OpenSim_DECLARE_PROPERTY(maintenance_rate_on, bool,
+    OpenSim_DECLARE_PROPERTY(maintenance_rate_on, 
+        bool,
         "Specify whether the maintenance heat rate is to be calculated (true/false).");
 
     /** Enabled by default. **/
-    OpenSim_DECLARE_PROPERTY(shortening_rate_on, bool,
+    OpenSim_DECLARE_PROPERTY(shortening_rate_on, 
+        bool,
         "Specify whether the shortening heat rate is to be calculated (true/false).");
 
     /** Enabled by default. **/
-    OpenSim_DECLARE_PROPERTY(basal_rate_on, bool,
+    OpenSim_DECLARE_PROPERTY(basal_rate_on, 
+        bool,
         "Specify whether the basal heat rate is to be calculated (true/false).");
 
     /** Enabled by default. **/
-    OpenSim_DECLARE_PROPERTY(mechanical_work_rate_on, bool,
+    OpenSim_DECLARE_PROPERTY(mechanical_work_rate_on, 
+        bool,
         "Specify whether the mechanical work rate is to be calculated (true/false).");
 
     /** Default curve shown in doxygen. **/
-    OpenSim_DECLARE_PROPERTY(normalized_fiber_length_dependence_on_maintenance_rate, PiecewiseLinearFunction,
+    OpenSim_DECLARE_PROPERTY(normalized_fiber_length_dependence_on_maintenance_rate, 
+        PiecewiseLinearFunction,
         "Contains a PiecewiseLinearFunction object that describes the normalized fiber length dependence on maintenance rate.");
 
     /** Disabled by default. **/
-    OpenSim_DECLARE_PROPERTY(use_force_dependent_shortening_prop_constant, bool,
+    OpenSim_DECLARE_PROPERTY(use_force_dependent_shortening_prop_constant, 
+        bool,
         "Specify whether to use a force dependent shortening proportionality constant (true/false).");
 
     /** Default value = 1.51. **/
-    OpenSim_DECLARE_PROPERTY(basal_coefficient, double,
+    OpenSim_DECLARE_PROPERTY(basal_coefficient, 
+        double,
         "Basal metabolic coefficient.");
 
     /** Default value = 1.0. **/
-    OpenSim_DECLARE_PROPERTY(basal_exponent, double,
+    OpenSim_DECLARE_PROPERTY(basal_exponent, 
+        double,
         "Basal metabolic exponent.");
 
     /** Disabled by default. **/
-    OpenSim_DECLARE_PROPERTY(normalize_mechanical_work_rate_by_muscle_mass, bool,
+    OpenSim_DECLARE_PROPERTY(normalize_mechanical_work_rate_by_muscle_mass, 
+        bool,
         "Specify whether the mechanical work rate for each muscle is to be normalized by muscle mass (true/false).");
 
-    OpenSim_DECLARE_UNNAMED_PROPERTY(MetabolicMuscleSet,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(MetabolicMuscleParameterSet,
         "A MetabolicMuscleSet containing the muscle information required to calculate metabolic energy expenditure. "
         "If multiple muscles are contained in the set, then the probe value will equal the summation of all metabolic powers.");
 
@@ -192,58 +202,6 @@ public:
     /** Convenience constructor */
     MuscleMetabolicPowerProbeBhargava2004(bool activation_rate_on, bool maintenance_rate_on, 
         bool shortening_rate_on, bool basal_rate_on, bool work_rate_on);
-        
-
-    //--------------------------------------------------------------------------
-    // Get and Set
-    //--------------------------------------------------------------------------
-    /** Returns if the activation metabolic rate is to be included in the calculation (true/false). */
-    bool isActivationRateOn() const;
-    /** Returns if the maintenance metabolic rate is to be included in the calculation (true/false). */
-    bool isMaintenanceRateOn() const;
-    /** Returns if the shortening metabolic rate is to be included in the calculation (true/false). */
-    bool isShorteningRateOn() const;
-    /** Returns if the basal metabolic rate is to be included in the calculation (true/false). */
-    bool isBasalRateOn() const;
-    /** Returns if the mechanical work rate is to be included in the calculation (true/false). */
-    bool isWorkRateOn() const;
-    /** Returns the PiecewiseLinearFunction used in calculating the fiber length dependence of the maintenance metabolic rate. */
-    PiecewiseLinearFunction getFiberLengthDependenceMaintenanceRateFunction() const;
-    /** Returns true if the shortening metabolic rate is a function of fiber force, false if it is not. */
-    bool usingForceDepShorteningPropConstant() const;
-    /** Returns the basal metabolic rate coefficient (W/kg). */
-    double getBasalCoefficient() const;
-    /** Returns the basal metabolic rate exponent. */
-    double getBasalExponent() const;
-    /** Returns if the mechanical work rate is to be normalized by muscle mass (true/false). */
-    bool isMechanicalWorkRateNormalizedToMuscleMass() const;
-    /** Returns a const MetabolicMuscleSet containing the Muscle(s) being probed. */
-    const MetabolicMuscleSet& getMetabolicMuscleSet() const;
-    /** Returns an updatable MetabolicMuscleSet containing the Muscle(s) being probed. */
-    MetabolicMuscleSet& updMetabolicMuscleSet();
-
-    /** Sets if the activation metabolic rate is to be included in the calculation (true/false). */
-    void setActivationRateOn(const bool aActRateOn);
-    /** Sets if the shortening metabolic rate is to be included in the calculation (true/false). */
-    void setMaintenanceRateOn(const bool aMainRateOn);
-    /** Sets if the shortening metabolic rate is to be included in the calculation (true/false). */
-    void setShorteningRateOn(const bool aShortRateOn);
-    /** Sets if the basal metabolic rate is to be included in the calculation (true/false). */
-    void setBasalRateOn(const bool aBasalRateOn);
-    /** Sets if the mechanical work rate is to be included in the calculation (true/false). */
-    void setWorkRateOn(const bool aWorkRateOn);
-    /** Sets the PiecewiseLinearFunction used in calculating the fiber length dependence of the maintenance metabolic rate. */
-    void setFiberLengthDependenceMaintenanceRateFunction(const PiecewiseLinearFunction aFunct);
-    /** Sets true if the shortening metabolic rate is a function of fiber force, false if it is not. */
-    void setUsingForceDepShorteningPropConstant(const bool aUseForceDepShortPropConst);
-    /** Sets the basal metabolic rate coefficient. */
-    void setBasalCoefficient(const double aBasalCoeff);
-    /** Sets the basal metabolic rate exponent. */
-    void setBasalExponent(const double aBasalExp);
-    /** Sets if the mechanical work rate is to be normalized by muscle mass (true/false). */
-    void setMechanicalWorkRateNormalizedToMuscleMass(const bool normalizeWorkRate);
-    /** Sets the MetabolicMuscleSet containing the Muscle(s) being probed. */
-    void setMetabolicMuscleSet(const MetabolicMuscleSet mms);
 
 
     //-----------------------------------------------------------------------------
@@ -260,8 +218,8 @@ public:
         to name your probe appropiately!*/
     virtual OpenSim::Array<std::string> getProbeOutputLabels() const OVERRIDE_11;
 
-    /** Check that the MetabolicMuscle represents a valid muscle in the model. */
-    Muscle* checkValidMetabolicMuscle(MetabolicMuscle mm) const;
+    /** Check that the MetabolicMuscleParameter represents a valid muscle in the model. */
+    Muscle* checkValidMetabolicMuscle(MetabolicMuscleParameter mm) const;
 
 
 //==============================================================================

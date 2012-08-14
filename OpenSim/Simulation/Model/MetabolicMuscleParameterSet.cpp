@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                      OpenSim:  MetabolicMuscleSet.cpp                      *
+ *                      OpenSim:  MetabolicMuscleParameterSet.cpp                      *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MetabolicMuscleSet.h"
+#include "MetabolicMuscleParameterSet.h"
 
 using namespace std;
 using namespace SimTK;
@@ -33,19 +33,20 @@ using namespace OpenSim;
 
 //_____________________________________________________________________________
 /**
- * Default constructor of a MetabolicMuscleSet.
+ * Default constructor of a MetabolicMuscleParameterSet.
  */
-MetabolicMuscleSet::MetabolicMuscleSet() : Set<MetabolicMuscle>()
+MetabolicMuscleParameterSet::MetabolicMuscleParameterSet() : Set<MetabolicMuscleParameter>()
 {
 }
 
 //_____________________________________________________________________________
 /**
- * Copy constructor of a MetabolicMuscleSet.
+ * Copy constructor of a MetabolicMuscleParameterSet.
  */
-MetabolicMuscleSet::MetabolicMuscleSet(const MetabolicMuscleSet& aMetabolicMuscleSet):
-    Set<MetabolicMuscle>(aMetabolicMuscleSet)
+MetabolicMuscleParameterSet::MetabolicMuscleParameterSet(
+    const MetabolicMuscleParameterSet& aMetabolicMuscleParameterSet):
+    Set<MetabolicMuscleParameter>(aMetabolicMuscleParameterSet)
 {
-    *this = aMetabolicMuscleSet;
+    *this = aMetabolicMuscleParameterSet;
 }
 

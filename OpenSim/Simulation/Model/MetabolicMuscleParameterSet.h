@@ -1,7 +1,7 @@
 #ifndef OPENSIM_METABOLIC_MUSCLESET_H_
 #define OPENSIM_METABOLIC_MUSCLESET_H_
 /* -------------------------------------------------------------------------- *
- *                       OpenSim:  MetabolicMuscleSet.h                       *
+ *                       OpenSim:  MetabolicMuscleParameterSet.h                       *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include "MetabolicMuscle.h"
+#include "MetabolicMuscleParameter.h"
 
 namespace OpenSim {
 
@@ -36,9 +36,9 @@ namespace OpenSim {
  * @author Tim Dorn
  */
 
-class OSIMSIMULATION_API MetabolicMuscleSet : public Set<MetabolicMuscle>
+class OSIMSIMULATION_API MetabolicMuscleParameterSet : public Set<MetabolicMuscleParameter>
 {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MetabolicMuscleSet, Set<MetabolicMuscle>);
+    OpenSim_DECLARE_CONCRETE_OBJECT(MetabolicMuscleParameterSet, Set<MetabolicMuscleParameter>);
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -46,13 +46,13 @@ public:
     //--------------------------------------------------------------------------
     // Constructor(s) and Setup
     //--------------------------------------------------------------------------
-    MetabolicMuscleSet();
-    MetabolicMuscleSet(const MetabolicMuscleSet& aMetabolicMuscleSet);
+    MetabolicMuscleParameterSet();
+    MetabolicMuscleParameterSet(const MetabolicMuscleParameterSet& aMetabolicMuscleParameterSet);
 
 
 
 //=============================================================================
-};	// END of class MetabolicMuscleSet
+};	// END of class MetabolicMuscleParameterSet
 //=============================================================================
 //=============================================================================
 

@@ -87,201 +87,9 @@ void MuscleMetabolicPowerProbeUmberger2003::constructProperties()
     constructProperty_basal_coefficient(1.51);
     constructProperty_basal_exponent(1.0);
     constructProperty_normalize_mechanical_work_rate_by_muscle_mass(false);
-    constructProperty_MetabolicMuscleSet(MetabolicMuscleSet());
+    constructProperty_MetabolicMuscleParameterSet(MetabolicMuscleParameterSet());
 }
 
-
-//=============================================================================
-// GET METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Get whether to include the Activation & Maintenance Heat Rates in the overall
- * metabolic energy rate calculation (true/false).
- */
-bool MuscleMetabolicPowerProbeUmberger2003::isActivationMaintenanceRateOn() const
-{
-    return get_activation_maintenance_rate_on();
-}
-
-//_____________________________________________________________________________
-/**
- * Get whether to include the Shortening Heat Rate in the overall
- * metabolic energy rate calculation (true/false).
- */
-bool MuscleMetabolicPowerProbeUmberger2003::isShorteningRateOn() const
-{
-    return get_shortening_rate_on();
-}
-
-//_____________________________________________________________________________
-/**
- * Get whether to include the Basal Heat Rate in the overall
- * metabolic energy rate calculation (true/false).
- */
-bool MuscleMetabolicPowerProbeUmberger2003::isBasalRateOn() const
-{
-    return get_basal_rate_on();
-}
-
-//_____________________________________________________________________________
-/**
- * Get whether to include the Mechanical Work Rate in the overall
- * metabolic energy rate calculation (true/false).
- */
-bool MuscleMetabolicPowerProbeUmberger2003::isWorkRateOn() const
-{
-    return get_mechanical_work_rate_on();
-}
-
-
-//_____________________________________________________________________________
-/**
- * Get the scaling factor S (see Umberger at al., (2002).
- */
-double MuscleMetabolicPowerProbeUmberger2003::getScalingFactor() const
-{
-    return get_scaling_factor();
-}
-
-//_____________________________________________________________________________
-/**
- * Get the basal coefficient used in the calculation of the Basal Heat Rate.
- */
-double MuscleMetabolicPowerProbeUmberger2003::getBasalCoefficient() const
-{
-    return get_basal_coefficient();
-}
-
-//_____________________________________________________________________________
-/**
- * Get the basal exponent used in the calculation of the Basal Heat Rate.
- */
-double MuscleMetabolicPowerProbeUmberger2003::getBasalExponent() const
-{
-    return get_basal_exponent();
-}
-
-//_____________________________________________________________________________
-/**
- * Get whether the mechanical work rate is to be normalized by muscle mass (true/false).
- */
-bool MuscleMetabolicPowerProbeUmberger2003::isMechanicalWorkRateNormalizedToMuscleMass() const
-{
-    return get_normalize_mechanical_work_rate_by_muscle_mass();
-}
-
-//_____________________________________________________________________________
-/**
- * Get a const of the MetabolicMuscleSet containing the set of MetabolicMuscle parameters
- * that are specific to the calculation of the total muscle metabolic energy rate.
- */
-const MetabolicMuscleSet& MuscleMetabolicPowerProbeUmberger2003::getMetabolicMuscleSet() const
-{
-    return get_MetabolicMuscleSet();
-}
-
-//_____________________________________________________________________________
-/**
- * Get an updatable reference to the MetabolicMuscleSet containing the set of 
- * MetabolicMuscle parameters that are specific to the calculation of the total
- * muscle metabolic energy rate.
- */
-MetabolicMuscleSet& MuscleMetabolicPowerProbeUmberger2003::updMetabolicMuscleSet()
-{
-    return upd_MetabolicMuscleSet();
-}
-
-
-//=============================================================================
-// SET METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Set whether to include the Activation Heat Rate in the overall
- * metabolic energy rate calculation.
- */
-void MuscleMetabolicPowerProbeUmberger2003::setActivationMaintenanceRateOn(const bool aActMainRateOn)
-{
-    set_activation_maintenance_rate_on(aActMainRateOn);
-}
-
-//_____________________________________________________________________________
-/**
- * Set whether to include the Shortening Heat Rate in the overall
- * metabolic energy rate calculation.
- */
-void MuscleMetabolicPowerProbeUmberger2003::setShorteningRateOn(const bool aShortRateOn)
-{
-    set_shortening_rate_on(aShortRateOn);
-}
-
-//_____________________________________________________________________________
-/**
- * Set whether to include the Basal Heat Rate in the overall
- * metabolic energy rate calculation.
- */
-void MuscleMetabolicPowerProbeUmberger2003::setBasalRateOn(const bool aBasalRateOn)
-{
-    set_basal_rate_on(aBasalRateOn);
-}
-
-//_____________________________________________________________________________
-/**
- * Set whether to include the Mechanical Work Rate in the overall
- * metabolic energy rate calculation.
- */
-void MuscleMetabolicPowerProbeUmberger2003::setWorkRateOn(const bool aWorkRateOn)
-{
-    set_mechanical_work_rate_on(aWorkRateOn);
-}
-
-
-//_____________________________________________________________________________
-/**
- * Set the scaling factor S (see Umberger at al., (2002).
- */
-void MuscleMetabolicPowerProbeUmberger2003::setScalingFactor(const double S)
-{
-    set_scaling_factor(S);
-}
-
-//_____________________________________________________________________________
-/**
- * Set the basal coefficient used in the calculation of the Basal Heat Rate.
- */
-void MuscleMetabolicPowerProbeUmberger2003::setBasalCoefficient(const double aBasalCoeff)
-{
-    set_basal_coefficient(aBasalCoeff);
-}
-
-//_____________________________________________________________________________
-/**
- * Set the basal exponent used in the calculation of the Basal Heat Rate.
- */
-void MuscleMetabolicPowerProbeUmberger2003::setBasalExponent(const double aBasalExp)
-{
-    set_basal_exponent(aBasalExp);
-}
-
-//_____________________________________________________________________________
-/**
- * Set whether the mechanical work rate is to be normalized by muscle mass (true/false).
- */
-void MuscleMetabolicPowerProbeUmberger2003::setMechanicalWorkRateNormalizedToMuscleMass(const bool normalizeWorkRate)
-{
-    set_normalize_mechanical_work_rate_by_muscle_mass(normalizeWorkRate);
-}
-
-//_____________________________________________________________________________
-/**
- * Set the MetabolicMuscleSet containing the set of MetabolicMuscle parameters
- * that are specific to the calculation of the total muscle metabolic energy rate.
- */
-void MuscleMetabolicPowerProbeUmberger2003::setMetabolicMuscleSet(const MetabolicMuscleSet mms)
-{
-    set_MetabolicMuscleSet(mms);
-}
 
 
 //=============================================================================
@@ -318,19 +126,19 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
 
     // BASAL METABOLIC RATE for whole body
     // ------------------------------------------
-    if (isBasalRateOn() == true)
+    if (get_basal_rate_on() == true)
     {
-        Bdot = getBasalCoefficient() * pow(_model->getMatterSubsystem().calcSystemMass(s), getBasalExponent());
+        Bdot = get_basal_coefficient() * pow(_model->getMatterSubsystem().calcSystemMass(s), get_basal_exponent());
     }
     
 
-    // Loop through each muscle in the MetabolicMuscleSet
-    int nM = getMetabolicMuscleSet().getSize();
+    // Loop through each muscle in the MetabolicMuscleParameterSet
+    int nM = get_MetabolicMuscleParameterSet().getSize();
     Vector Edot(nM);
     for (int i=0; i<nM; i++)
     {
         // Get a pointer to the current muscle in the model
-        MetabolicMuscle mm = getMetabolicMuscleSet().get(i);
+        MetabolicMuscleParameter mm = get_MetabolicMuscleParameterSet().get(i);
         Muscle* m = checkValidMetabolicMuscle(mm);
 
         // Get some muscle properties at the current time state
@@ -356,6 +164,20 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
 
         // Get the normalized active fiber force, F_iso, that 'would' be developed at the current activation
         // and fiber length under isometric conditions (i.e. Vm=0)
+        if (max_isometric_force == 0) {
+            stringstream errorMessage;
+            errorMessage << "Error: Max isometric force for muscle ' " 
+                << m->getName() << "' is zero." << endl;
+            throw (Exception(errorMessage.str()));
+        }
+
+        if (m->getForceVelocityMultiplier(s) == 0) {
+            stringstream errorMessage;
+            errorMessage << "Error: Force-velocity multiplier for muscle ' " 
+                << m->getName() << "' is zero." << endl;
+            throw (Exception(errorMessage.str()));
+        }
+
         double F_iso = (fiber_force_active/m->getForceVelocityMultiplier(s)) / max_isometric_force;
 
         // DEBUG
@@ -374,21 +196,23 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
 
         // Warnings
         if (fiber_length_normalized < 0)
-            cout << "WARNING: (t = " << s.getTime() << "), muscle '" << m->getName() << "' has negative normalized fiber-length." << endl; 
+            cout << "WARNING: (t = " << s.getTime() 
+            << "), muscle '" << m->getName() 
+            << "' has negative normalized fiber-length." << endl; 
 
 
 
         // ACTIVATION & MAINTENANCE HEAT RATE for muscle i
         // --> depends on the normalized fiber length of the contractile element
         // -----------------------------------------------------------------------
-        if (isActivationMaintenanceRateOn())
+        if (get_activation_maintenance_rate_on())
         {
             double unscaledAMdot = 128*(1 - mm.getRatioSlowTwitchFibers()) + 25;
 
             if (fiber_length_normalized <= 1.0)
-                AMdot = getScalingFactor() * std::pow(A, 0.6) * unscaledAMdot;
+                AMdot = get_scaling_factor() * std::pow(A, 0.6) * unscaledAMdot;
             else
-                AMdot = getScalingFactor() * std::pow(A, 0.6) * ((0.4 * unscaledAMdot) + (0.6 * unscaledAMdot * F_iso));
+                AMdot = get_scaling_factor() * std::pow(A, 0.6) * ((0.4 * unscaledAMdot) + (0.6 * unscaledAMdot * F_iso));
         }
 
 
@@ -397,9 +221,9 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
         // --> depends on the normalized fiber length of the contractile element
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
         // -----------------------------------------------------------------------
-        if (isShorteningRateOn())
+        if (get_shortening_rate_on())
         {
-			double Vmax_slowtwitch = max_shortening_velocity / (1 + 1.5*(1 - mm.getRatioSlowTwitchFibers()));
+            double Vmax_slowtwitch = max_shortening_velocity / (1 + 1.5*(1 - mm.getRatioSlowTwitchFibers()));
             double Vmax_fasttwitch = 2.5*Vmax_slowtwitch;
             double alpha_shortening_fasttwitch = 153 / Vmax_fasttwitch;
             double alpha_shortening_slowtwitch = 100 / Vmax_slowtwitch;
@@ -437,9 +261,9 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
             // Calculate SCALED heat rate --- muscle velocity and length dependent
             // ---------------------------------------------------------------------
             if (fiber_velocity_normalized <= 0)     // concentric contraction, Vm<0
-                Sdot = getScalingFactor() * std::pow(A, 2.0) * unscaledSdot;
+                Sdot = get_scaling_factor() * std::pow(A, 2.0) * unscaledSdot;
             else                                    // eccentric contraction,  Vm>0
-                Sdot = getScalingFactor() * A * unscaledSdot;
+                Sdot = get_scaling_factor() * A * unscaledSdot;
 
             if (fiber_length_normalized > 1.0)
                 Sdot *= F_iso;  
@@ -450,14 +274,14 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
         // MECHANICAL WORK RATE for muscle i
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
         // ------------------------------------------
-        if (isWorkRateOn())
+        if (get_mechanical_work_rate_on())
         {
             if (fiber_velocity <= 0)    // concentric contraction, Vm<0
                 Wdot = -fiber_force_active*fiber_velocity;
             else						// eccentric contraction, Vm>0
                 Wdot = 0;
 
-            if (isMechanicalWorkRateNormalizedToMuscleMass())
+            if (get_normalize_mechanical_work_rate_by_muscle_mass())
                 Wdot /= mm.getMuscleMass();
         }
 
@@ -466,7 +290,7 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
         // TOTAL METABOLIC ENERGY RATE for muscle i
         // ------------------------------------------
         Edot(i) = AMdot + Sdot + Wdot;
-		
+        
 
         // DEBUG
         // ----------
@@ -498,10 +322,15 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
 
     SimTK::Vector EdotTotal(1, Edot.sum() + Bdot);
 
-	if(EdotTotal(0) < 1.0 && isActivationMaintenanceRateOn() && isShorteningRateOn() && isWorkRateOn()) {
-			cout << "WARNING: " << getName() << "  (t = " << s.getTime() << "), the model has a net metabolic energy rate of less than 1.0 W.kg-1." << endl; 
-			EdotTotal(0) = 1.0;			// not allowed to fall below 1.0 W.kg-1
-	}
+    if(EdotTotal(0) < 1.0 
+        && get_activation_maintenance_rate_on() 
+        && get_shortening_rate_on() 
+        && get_mechanical_work_rate_on()) {
+            cout << "WARNING: " << getName() 
+                << "  (t = " << s.getTime() 
+                << "), the model has a net metabolic energy rate of less than 1.0 W.kg-1." << endl; 
+            EdotTotal(0) = 1.0;			// not allowed to fall below 1.0 W.kg-1
+    }
 
     return EdotTotal;
 }
@@ -531,22 +360,23 @@ Array<string> MuscleMetabolicPowerProbeUmberger2003::getProbeOutputLabels() cons
 
 //_____________________________________________________________________________
 /**
- * Check that the MetabolicMuscle is a valid object.
+ * Check that the MetabolicMuscleParameter is a valid object.
  * If all tests pass, a pointer to the muscle in the model is returned.
  *
- * @param mm MetabolicMuscle object to check
+ * @param mm MetabolicMuscleParameter object to check
  * @return *musc Muscle object in model
  */
-Muscle* MuscleMetabolicPowerProbeUmberger2003::checkValidMetabolicMuscle(MetabolicMuscle mm) const
+Muscle* MuscleMetabolicPowerProbeUmberger2003::checkValidMetabolicMuscle(MetabolicMuscleParameter mm) const
 {
-    string errorMessage;
+    stringstream errorMessage;
     Muscle* musc;
 
     // check that the muscle exists
     int k = _model->getMuscles().getIndex(mm.getName());
     if( k < 0 )	{
-        errorMessage = "MetabolicMuscle: Invalid muscle '" + mm.getName() + "' specified.";
-        throw (Exception(errorMessage.c_str()));
+        errorMessage << "MetabolicMuscleParameter: Invalid muscle '" 
+            << mm.getName() << "' specified." << endl;
+        throw (Exception(errorMessage.str()));
     }
     else {
         musc = &_model->updMuscles().get(k);
@@ -554,14 +384,16 @@ Muscle* MuscleMetabolicPowerProbeUmberger2003::checkValidMetabolicMuscle(Metabol
 
     // error checking: muscle_mass
     if (mm.getMuscleMass() <= 0) {
-        errorMessage = "MetabolicMuscle: Invalid muscle_mass for muscle: " + mm.getName() + ". muscle_mass must be positive.";
-        throw (Exception(errorMessage.c_str()));
+        errorMessage << "MetabolicMuscleParameter: Invalid muscle_mass for muscle: " 
+            << mm.getName() << ". muscle_mass must be positive." << endl;
+        throw (Exception(errorMessage.str()));
     }
 
     // error checking: ratio_slow_twitch_fibers
     if (mm.getRatioSlowTwitchFibers() < 0 || mm.getRatioSlowTwitchFibers() > 1)	{
-        errorMessage = "MetabolicMuscle: Invalid ratio_slow_twitch_fibers for muscle: " + mm.getName() + ". ratio_slow_twitch_fibers must be between 0 and 1.";
-        throw (Exception(errorMessage.c_str()));
+        errorMessage << "MetabolicMuscleParameter: Invalid ratio_slow_twitch_fibers for muscle: " 
+            << mm.getName() << ". ratio_slow_twitch_fibers must be between 0 and 1." << endl;
+        throw (Exception(errorMessage.str()));
     }
 
     //cout << "VALID muscle: " << mm.getName() << endl;

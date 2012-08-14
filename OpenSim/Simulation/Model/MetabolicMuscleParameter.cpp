@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                       OpenSim:  MetabolicMuscle.cpp                        *
+ *                  OpenSim:  MetabolicMuscleParameter.cpp                    *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -24,7 +24,7 @@
 //=============================================================================
 // INCLUDES & STATICS
 //=============================================================================
-#include "MetabolicMuscle.h"
+#include "MetabolicMuscleParameter.h"
 
 using namespace std;
 using namespace SimTK;
@@ -40,7 +40,7 @@ using namespace OpenSim;
 /**
  * Default constructor
  */
-MetabolicMuscle::MetabolicMuscle() : Object()
+MetabolicMuscleParameter::MetabolicMuscleParameter() : Object()
 {
     setNull();
     constructProperties();
@@ -50,7 +50,7 @@ MetabolicMuscle::MetabolicMuscle() : Object()
 /** 
  * Convenience constructor
  */
-MetabolicMuscle::MetabolicMuscle(double muscle_mass, double ratio_slow_twitch_fibers, 
+MetabolicMuscleParameter::MetabolicMuscleParameter(double muscle_mass, double ratio_slow_twitch_fibers, 
     double activation_constant_slow_twitch, double activation_constant_fast_twitch, 
     double maintenance_constant_slow_twitch, double maintenance_constant_fast_twitch): Object()
 {
@@ -69,9 +69,9 @@ MetabolicMuscle::MetabolicMuscle(double muscle_mass, double ratio_slow_twitch_fi
 
 //_____________________________________________________________________________
 /**
- * Set the data members of this MetabolicMuscle to their null values.
+ * Set the data members of this MetabolicMuscleParameter to their null values.
  */
-void MetabolicMuscle::setNull()
+void MetabolicMuscleParameter::setNull()
 {
     // no data members
 }
@@ -80,7 +80,7 @@ void MetabolicMuscle::setNull()
 /**
  * Connect properties to local pointers.
  */
-void MetabolicMuscle::constructProperties(void)
+void MetabolicMuscleParameter::constructProperties(void)
 {
     constructProperty_muscle_mass(1.0);
     constructProperty_ratio_slow_twitch_fibers(0.5);
@@ -99,32 +99,32 @@ void MetabolicMuscle::constructProperties(void)
 /**
  * Get the parameters.
  */
-double MetabolicMuscle::getMuscleMass() const
+double MetabolicMuscleParameter::getMuscleMass() const
 {
     return get_muscle_mass();
 }
 
-double MetabolicMuscle::getRatioSlowTwitchFibers() const
+double MetabolicMuscleParameter::getRatioSlowTwitchFibers() const
 {
     return get_ratio_slow_twitch_fibers();
 }
 
-double MetabolicMuscle::getActivationConstantSlowTwitch() const
+double MetabolicMuscleParameter::getActivationConstantSlowTwitch() const
 {
     return get_activation_constant_slow_twitch();
 }
 
-double MetabolicMuscle::getActivationConstantFastTwitch() const
+double MetabolicMuscleParameter::getActivationConstantFastTwitch() const
 {
     return get_activation_constant_fast_twitch();
 }
 
-double MetabolicMuscle::getMaintenanceConstantSlowTwitch() const
+double MetabolicMuscleParameter::getMaintenanceConstantSlowTwitch() const
 {
     return get_maintenance_constant_slow_twitch();
 }
 
-double MetabolicMuscle::getMaintenanceConstantFastTwitch() const
+double MetabolicMuscleParameter::getMaintenanceConstantFastTwitch() const
 {
     return get_maintenance_constant_fast_twitch();
 }
@@ -134,32 +134,32 @@ double MetabolicMuscle::getMaintenanceConstantFastTwitch() const
  * Set the parameters.
  */
 
-void MetabolicMuscle::setMuscleMass(const double aMuscleMass)
+void MetabolicMuscleParameter::setMuscleMass(const double aMuscleMass)
 {
     set_muscle_mass(aMuscleMass);
 }
 
-void MetabolicMuscle::setRatioSlowTwitchFibers(const double aRatioSlowTwitchFibers)
+void MetabolicMuscleParameter::setRatioSlowTwitchFibers(const double aRatioSlowTwitchFibers)
 {
     set_ratio_slow_twitch_fibers(aRatioSlowTwitchFibers);
 }
 
-void MetabolicMuscle::setActivationConstantSlowTwitch(const double aActivationConstantSlowTwitch)
+void MetabolicMuscleParameter::setActivationConstantSlowTwitch(const double aActivationConstantSlowTwitch)
 {
     set_activation_constant_slow_twitch(aActivationConstantSlowTwitch);
 }
 
-void MetabolicMuscle::setActivationConstantFastTwitch(const double aActivationConstantFastTwitch)
+void MetabolicMuscleParameter::setActivationConstantFastTwitch(const double aActivationConstantFastTwitch)
 {
     set_activation_constant_fast_twitch(aActivationConstantFastTwitch);
 }
 
-void MetabolicMuscle::setMaintenanceConstantSlowTwitch(const double aMaintenanceSlowTwitch)
+void MetabolicMuscleParameter::setMaintenanceConstantSlowTwitch(const double aMaintenanceSlowTwitch)
 {
     set_maintenance_constant_slow_twitch(aMaintenanceSlowTwitch);
 }
 
-void MetabolicMuscle::setMaintenanceConstantFastTwitch(const double aMaintenanceFastTwitch)
+void MetabolicMuscleParameter::setMaintenanceConstantFastTwitch(const double aMaintenanceFastTwitch)
 {
     set_maintenance_constant_fast_twitch(aMaintenanceFastTwitch);
 }

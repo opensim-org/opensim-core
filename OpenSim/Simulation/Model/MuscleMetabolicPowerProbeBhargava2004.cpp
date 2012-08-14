@@ -96,243 +96,9 @@ void MuscleMetabolicPowerProbeBhargava2004::constructProperties()
     constructProperty_basal_coefficient(1.51);
     constructProperty_basal_exponent(1.0);
     constructProperty_normalize_mechanical_work_rate_by_muscle_mass(false);
-    constructProperty_MetabolicMuscleSet(MetabolicMuscleSet());
+    constructProperty_MetabolicMuscleParameterSet(MetabolicMuscleParameterSet());
 }
 
-
-//=============================================================================
-// GET METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Get whether to include the Activation Heat Rate in the overall
- * metabolic energy rate calculation (true/false).
- */
-bool MuscleMetabolicPowerProbeBhargava2004::isActivationRateOn() const
-{
-    return get_activation_rate_on();
-}
-
-//_____________________________________________________________________________
-/**
- * Get whether to include the Maintenance Heat Rate in the overall
- * metabolic energy rate calculation (true/false).
- */
-bool MuscleMetabolicPowerProbeBhargava2004::isMaintenanceRateOn() const
-{
-    return get_maintenance_rate_on();
-}
-
-//_____________________________________________________________________________
-/**
- * Get whether to include the Shortening Heat Rate in the overall
- * metabolic energy rate calculation (true/false).
- */
-bool MuscleMetabolicPowerProbeBhargava2004::isShorteningRateOn() const
-{
-    return get_shortening_rate_on();
-}
-
-//_____________________________________________________________________________
-/**
- * Get whether to include the Basal Heat Rate in the overall
- * metabolic energy rate calculation (true/false).
- */
-bool MuscleMetabolicPowerProbeBhargava2004::isBasalRateOn() const
-{
-    return get_basal_rate_on();
-}
-
-//_____________________________________________________________________________
-/**
- * Get whether to include the Mechanical Work Rate in the overall
- * metabolic energy rate calculation (true/false).
- */
-bool MuscleMetabolicPowerProbeBhargava2004::isWorkRateOn() const
-{
-    return get_mechanical_work_rate_on();
-}
-
-
-//_____________________________________________________________________________
-/**
- * Get the PiecewiseLinearFunction that defines the fiber length dependence on
- * the Maintenance Heat Rate.
- */
-PiecewiseLinearFunction MuscleMetabolicPowerProbeBhargava2004::getFiberLengthDependenceMaintenanceRateFunction() const
-{
-    return get_normalized_fiber_length_dependence_on_maintenance_rate();
-}
-
-//_____________________________________________________________________________
-/**
- * Get whether to use the force dependent shortening proportionality constant
- * in the calculation of the Shortening Heat Rate (true/false).
- */
-bool MuscleMetabolicPowerProbeBhargava2004::usingForceDepShorteningPropConstant() const
-{
-    return get_use_force_dependent_shortening_prop_constant();
-}
-
-//_____________________________________________________________________________
-/**
- * Get the basal coefficient used in the calculation of the Basal Heat Rate.
- */
-double MuscleMetabolicPowerProbeBhargava2004::getBasalCoefficient() const
-{
-    return get_basal_coefficient();
-}
-
-//_____________________________________________________________________________
-/**
- * Get the basal exponent used in the calculation of the Basal Heat Rate.
- */
-double MuscleMetabolicPowerProbeBhargava2004::getBasalExponent() const
-{
-    return get_basal_exponent();
-}
-
-//_____________________________________________________________________________
-/**
- * Get whether the mechanical work rate is to be normalized by muscle mass (true/false).
- */
-bool MuscleMetabolicPowerProbeBhargava2004::isMechanicalWorkRateNormalizedToMuscleMass() const
-{
-    return get_normalize_mechanical_work_rate_by_muscle_mass();
-}
-
-//_____________________________________________________________________________
-/**
- * Get a const of the MetabolicMuscleSet containing the set of MetabolicMuscle parameters
- * that are specific to the calculation of the total muscle metabolic energy rate.
- */
-const MetabolicMuscleSet& MuscleMetabolicPowerProbeBhargava2004::getMetabolicMuscleSet() const
-{
-    return get_MetabolicMuscleSet();
-}
-
-//_____________________________________________________________________________
-/**
- * Get an updatable reference to the MetabolicMuscleSet containing the set of 
- * MetabolicMuscle parameters that are specific to the calculation of the total
- * muscle metabolic energy rate.
- */
-MetabolicMuscleSet& MuscleMetabolicPowerProbeBhargava2004::updMetabolicMuscleSet()
-{
-    return upd_MetabolicMuscleSet();
-}
-
-
-//=============================================================================
-// SET METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Set whether to include the Activation Heat Rate in the overall
- * metabolic energy rate calculation.
- */
-void MuscleMetabolicPowerProbeBhargava2004::setActivationRateOn(const bool aActRateOn)
-{
-    set_activation_rate_on(aActRateOn);
-}
-
-//_____________________________________________________________________________
-/**
- * Set whether to include the Maintenance Heat Rate in the overall
- * metabolic energy rate calculation.
- */
-void MuscleMetabolicPowerProbeBhargava2004::setMaintenanceRateOn(const bool aMainRateOn)
-{
-    set_maintenance_rate_on(aMainRateOn);
-}
-
-//_____________________________________________________________________________
-/**
- * Set whether to include the Shortening Heat Rate in the overall
- * metabolic energy rate calculation.
- */
-void MuscleMetabolicPowerProbeBhargava2004::setShorteningRateOn(const bool aShortRateOn)
-{
-    set_shortening_rate_on(aShortRateOn);
-}
-
-//_____________________________________________________________________________
-/**
- * Set whether to include the Basal Heat Rate in the overall
- * metabolic energy rate calculation.
- */
-void MuscleMetabolicPowerProbeBhargava2004::setBasalRateOn(const bool aBasalRateOn)
-{
-    set_basal_rate_on(aBasalRateOn);
-}
-
-//_____________________________________________________________________________
-/**
- * Set whether to include the Mechanical Work Rate in the overall
- * metabolic energy rate calculation.
- */
-void MuscleMetabolicPowerProbeBhargava2004::setWorkRateOn(const bool aWorkRateOn)
-{
-    set_mechanical_work_rate_on(aWorkRateOn);
-}
-
-
-//_____________________________________________________________________________
-/**
- * Set the PiecewiseLinearFunction that defines the fiber length dependence on
- * the Maintenance Heat Rate.
- */
-void MuscleMetabolicPowerProbeBhargava2004::setFiberLengthDependenceMaintenanceRateFunction(const PiecewiseLinearFunction aFunct)
-{
-    set_normalized_fiber_length_dependence_on_maintenance_rate(aFunct);
-}
-
-//_____________________________________________________________________________
-/**
- * Set whether to use the force dependent shortening proportionality constant
- * in the calculation of the Shortening Heat Rate.
- */
-void MuscleMetabolicPowerProbeBhargava2004::setUsingForceDepShorteningPropConstant(const bool aUseForceDepShortPropConst)
-{
-    set_use_force_dependent_shortening_prop_constant(aUseForceDepShortPropConst);
-}
-
-//_____________________________________________________________________________
-/**
- * Set the basal coefficient used in the calculation of the Basal Heat Rate.
- */
-void MuscleMetabolicPowerProbeBhargava2004::setBasalCoefficient(const double aBasalCoeff)
-{
-    set_basal_coefficient(aBasalCoeff);
-}
-
-//_____________________________________________________________________________
-/**
- * Set the basal exponent used in the calculation of the Basal Heat Rate.
- */
-void MuscleMetabolicPowerProbeBhargava2004::setBasalExponent(const double aBasalExp)
-{
-    set_basal_exponent(aBasalExp);
-}
-
-//_____________________________________________________________________________
-/**
- * Set whether the mechanical work rate is to be normalized by muscle mass (true/false).
- */
-void MuscleMetabolicPowerProbeBhargava2004::setMechanicalWorkRateNormalizedToMuscleMass(const bool normalizeWorkRate)
-{
-    set_normalize_mechanical_work_rate_by_muscle_mass(normalizeWorkRate);
-}
-
-//_____________________________________________________________________________
-/**
- * Set the MetabolicMuscleSet containing the set of MetabolicMuscle parameters
- * that are specific to the calculation of the total muscle metabolic energy rate.
- */
-void MuscleMetabolicPowerProbeBhargava2004::setMetabolicMuscleSet(const MetabolicMuscleSet mms)
-{
-    set_MetabolicMuscleSet(mms);
-}
 
 
 //=============================================================================
@@ -369,19 +135,19 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
 
     // BASAL METABOLIC RATE for whole body, so do outside of muscle loop
     // ------------------------------------------------------------------
-    if (isBasalRateOn())
+    if (get_basal_rate_on())
     {
-        Bdot = getBasalCoefficient() * pow(_model->getMatterSubsystem().calcSystemMass(s), getBasalExponent());
+        Bdot = get_basal_coefficient() * pow(_model->getMatterSubsystem().calcSystemMass(s), get_basal_exponent());
     }
     
 
-    // Loop through each muscle in the MetabolicMuscleSet
-    int nM = getMetabolicMuscleSet().getSize();
+    // Loop through each muscle in the MetabolicMuscleParameterSet
+    int nM = get_MetabolicMuscleParameterSet().getSize();
     Vector Edot(nM);
     for (int i=0; i<nM; i++)
     {
         // Get a pointer to the current muscle in the model
-        MetabolicMuscle mm = getMetabolicMuscleSet().get(i);
+        MetabolicMuscleParameter mm = get_MetabolicMuscleParameterSet().get(i);
         Muscle* m = checkValidMetabolicMuscle(mm);
 
         // Get important muscle values at the current time state
@@ -416,13 +182,15 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
 
         // Warnings
         if (fiber_length_normalized < 0)
-            cout << "WARNING: " << getName() << "  (t = " << s.getTime() << "), muscle '" << m->getName() << "' has negative normalized fiber-length." << endl; 
+            cout << "WARNING: " << getName() << "  (t = " << s.getTime() 
+            << "), muscle '" << m->getName() 
+            << "' has negative normalized fiber-length." << endl; 
 
 
 
         // ACTIVATION HEAT RATE for muscle i
         // ------------------------------------------
-        if (isActivationRateOn())
+        if (get_activation_rate_on())
         {
             const double decay_function_value = 1.0;    // This value is set to 1.0, as used by Anderson & Pandy (1999), however, in
                                                         // Bhargava et al., (2004) they assume a function here. We will ignore this
@@ -435,10 +203,10 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
 
         // MAINTENANCE HEAT RATE for muscle i
         // ------------------------------------------
-        if (isMaintenanceRateOn())
+        if (get_maintenance_rate_on())
         {
             Vector tmp(1, fiber_length_normalized);
-            fiber_length_dependence = getFiberLengthDependenceMaintenanceRateFunction().calcValue(tmp);
+            fiber_length_dependence = get_normalized_fiber_length_dependence_on_maintenance_rate().calcValue(tmp);
             
             Mdot = mm.getMuscleMass() * fiber_length_dependence * 
                 ( (mm.getMaintenanceConstantSlowTwitch() * slow_twitch_excitation) + (mm.getMaintenanceConstantFastTwitch() * fast_twitch_excitation) );
@@ -449,9 +217,9 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
         // SHORTENING HEAT RATE for muscle i
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
         // -----------------------------------------------------------------------
-        if (isShorteningRateOn())
+        if (get_shortening_rate_on())
         {
-            if (usingForceDepShorteningPropConstant())
+            if (get_use_force_dependent_shortening_prop_constant())
             {
                 if (fiber_velocity <= 0)    // concentric contraction, Vm<0
                     alpha = (0.16 * F_iso) + (0.18 * fiber_force_total);
@@ -473,14 +241,14 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
         // MECHANICAL WORK RATE for muscle i
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
         // ------------------------------------------
-        if (isWorkRateOn())
+        if (get_mechanical_work_rate_on())
         {
             if (fiber_velocity <= 0)    // concentric contraction, Vm<0
                 Wdot = -fiber_force_active*fiber_velocity;
             else						// eccentric contraction, Vm>0
                 Wdot = 0;
 
-            if (isMechanicalWorkRateNormalizedToMuscleMass())
+            if (get_normalize_mechanical_work_rate_by_muscle_mass())
                 Wdot /= mm.getMuscleMass();
         }
 
@@ -528,10 +296,16 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
 
     SimTK::Vector EdotTotal(1, Edot.sum() + Bdot);
 
-	if(EdotTotal(0) < 1.0 && isActivationRateOn() && isMaintenanceRateOn() && isShorteningRateOn() && isWorkRateOn()) {
-			cout << "WARNING: " << getName() << "  (t = " << s.getTime() << "), the model has a net metabolic energy rate of less than 1.0 W.kg-1." << endl; 
-			EdotTotal(0) = 1.0;			// not allowed to fall below 1.0 W.kg-1
-	}
+    if(EdotTotal(0) < 1.0 
+        && get_activation_rate_on() 
+        && get_maintenance_rate_on() 
+        && get_shortening_rate_on() 
+        && get_mechanical_work_rate_on()) {
+            cout << "WARNING: " << getName() 
+                << "  (t = " << s.getTime() 
+                << "), the model has a net metabolic energy rate of less than 1.0 W.kg-1." << endl; 
+            EdotTotal(0) = 1.0;			// not allowed to fall below 1.0 W.kg-1
+    }
 
     return EdotTotal;
 }
@@ -561,22 +335,22 @@ Array<string> MuscleMetabolicPowerProbeBhargava2004::getProbeOutputLabels() cons
 
 //_____________________________________________________________________________
 /**
- * Check that the MetabolicMuscle is a valid object.
+ * Check that the MetabolicMuscleParameter is a valid object.
  * If all tests pass, a pointer to the muscle in the model is returned.
  *
- * @param mm MetabolicMuscle object to check
+ * @param mm MetabolicMuscleParameter object to check
  * @return *musc Muscle object in model
  */
-Muscle* MuscleMetabolicPowerProbeBhargava2004::checkValidMetabolicMuscle(MetabolicMuscle mm) const
+Muscle* MuscleMetabolicPowerProbeBhargava2004::checkValidMetabolicMuscle(MetabolicMuscleParameter mm) const
 {
-    string errorMessage;
+    stringstream errorMessage;
     Muscle* musc;
 
     // check that the muscle exists
     int k = _model->getMuscles().getIndex(mm.getName());
     if( k < 0 )	{
-        errorMessage = "MetabolicMuscle: Invalid muscle '" + mm.getName() + "' specified.";
-        throw (Exception(errorMessage.c_str()));
+        errorMessage << "MetabolicMuscleParameter: Invalid muscle '" << mm.getName() << "' specified." << endl;
+        throw (Exception(errorMessage.str()));
     }
     else {
         musc = &_model->updMuscles().get(k);
@@ -584,14 +358,16 @@ Muscle* MuscleMetabolicPowerProbeBhargava2004::checkValidMetabolicMuscle(Metabol
 
     // error checking: muscle_mass
     if (mm.getMuscleMass() <= 0) {
-        errorMessage = "MetabolicMuscle: Invalid muscle_mass for muscle: " + mm.getName() + ". muscle_mass must be positive.";
-        throw (Exception(errorMessage.c_str()));
+        errorMessage << "MetabolicMuscleParameter: Invalid muscle_mass for muscle: " 
+            << mm.getName() << ". muscle_mass must be positive." << endl;
+        throw (Exception(errorMessage.str()));
     }
 
     // error checking: ratio_slow_twitch_fibers
     if (mm.getRatioSlowTwitchFibers() < 0 || mm.getRatioSlowTwitchFibers() > 1)	{
-        errorMessage = "MetabolicMuscle: Invalid ratio_slow_twitch_fibers for muscle: " + mm.getName() + ". ratio_slow_twitch_fibers must be between 0 and 1.";
-        throw (Exception(errorMessage.c_str()));
+        errorMessage << "MetabolicMuscleParameter: Invalid ratio_slow_twitch_fibers for muscle: " 
+            << mm.getName() << ". ratio_slow_twitch_fibers must be between 0 and 1." << endl;
+        throw (Exception(errorMessage.str()));
     }
 
     //cout << "VALID muscle: " << mm.getName() << endl;
