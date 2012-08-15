@@ -755,11 +755,12 @@ double Millard2012AccelerationMuscle::
 double  Millard2012AccelerationMuscle::
     computeActuation(const SimTK::State& s) const
 {    
+    //ensureMuscleUpToDate();
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
         "Millard2012AccelerationMuscle: Muscle is not"
         " to date with properties");
 
-    ensureMuscleUpToDate();
+    
     const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
     setForce(s,         mdi.tendonForce);
     return( mdi.tendonForce );
