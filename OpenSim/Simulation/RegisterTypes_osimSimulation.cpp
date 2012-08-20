@@ -53,7 +53,6 @@
 #include "Model/ExternalForce.h"
 #include "Model/PointToPointSpring.h"
 #include "Model/BushingForce.h"
-#include "Model/FunctionBasedBushingForce.h"
 #include "Model/ExternalLoads.h"
 #include "Model/PathActuator.h"
 #include "Model/ProbeSet.h"
@@ -61,10 +60,6 @@
 #include "Model/ActuatorForceProbe.h"
 #include "Model/JointInternalPowerProbe.h"
 #include "Model/SystemEnergyProbe.h"
-#include "Model/MetabolicMuscle.h"
-#include "Model/MetabolicMuscleSet.h"
-#include "Model/MuscleMetabolicPowerProbeUmberger2003.h"
-#include "Model/MuscleMetabolicPowerProbeBhargava2004.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -192,8 +187,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ExternalForce() );
     Object::registerType( PointToPointSpring() );
     Object::registerType( BushingForce() );
-    Object::registerType( FunctionBasedBushingForce() );
-
     Object::registerType( ControlSetController() );
     Object::registerType( PrescribedController() );
 
@@ -204,10 +197,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::RegisterType( ActuatorForceProbe() );
     Object::RegisterType( JointInternalPowerProbe() );
     Object::RegisterType( SystemEnergyProbe() );
-    Object::RegisterType( MetabolicMuscle() );
-    Object::RegisterType( MetabolicMuscleSet() );
-    Object::RegisterType( MuscleMetabolicPowerProbeUmberger2003() );
-    Object::RegisterType( MuscleMetabolicPowerProbeBhargava2004() );
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.

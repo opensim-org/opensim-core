@@ -182,18 +182,17 @@ void Probe::addToSystem(MultibodySystem& system) const
         // check to see that size of initial condition vector
         // is the same size as the data being integrated.
         if (getInitialConditions().size() != getProbeOutputLabels().getSize())  {
-            char numIC[5];
-            sprintf(numIC, "%d", getInitialConditions().size());
-            char numData[5];
-            sprintf(numData, "%d", getProbeOutputLabels().getSize());
-
-            string errorMessage = getConcreteClassName() + "(" + getName() + 
-                "): Mismatch between the size of the data labels corresponding to the size of the data vector being integrated ("
-                +numData+") and size of initial conditions vector ("+numIC+").";
-            throw (Exception(errorMessage.c_str()));
+            stringstream errorMessage;
+            errorMessage << getConcreteClassName() << "(" + getName() << 
+                "): Mismatch between the size of the data labels corresponding to the "
+                "size of the data vector being integrated (" 
+                <<  getProbeOutputLabels().getSize() 
+                << ") and size of initial conditions vector (" 
+                << getInitialConditions().size() << ")." << endl;
+            throw (Exception(errorMessage.str()));
         }
         for (int i=0; i<getNumProbeInputs(); ++i) {
-            Measure::Constant initCond(system, getInitialConditions()(i));		// initial conditions
+            Measure::Constant initCond(system, getInitialConditions()(i));
             mutableThis->afterOperationValues[i] = Measure::Scale(system, getGain(), 
                 Measure::Integrate(system, beforeOperationValues[i], initCond));
         }
@@ -212,7 +211,7 @@ void Probe::addToSystem(MultibodySystem& system) const
 
 
     // ---------------------------------------------------------------------
-    // Get the minimum of the probe value (Sherm to implement)
+    // Get the minimum of the probe value (TODO)
     // ---------------------------------------------------------------------
     //else if (getOperation() == "minimum") {
     //    for (int i=0; i<getNumProbeInputs(); ++i) {
@@ -223,7 +222,7 @@ void Probe::addToSystem(MultibodySystem& system) const
     	
 
     // ---------------------------------------------------------------------
-    // Get the maximum of the probe value (Sherm to implement)
+    // Get the maximum of the probe value (TODO)
     // ---------------------------------------------------------------------
     //else if (getOperation() == "maximum") {
     //    for (int i=0; i<getNumProbeInputs(); ++i) {
@@ -237,8 +236,11 @@ void Probe::addToSystem(MultibodySystem& system) const
     // Throw exception (invalid operation)
     // ---------------------------------------------------------------------
     else {
-        string errorMessage = getConcreteClassName() + ": Invalid probe operation: " + getOperation() + ". Currently supports 'value', 'integrate', 'differentiate'.";
-        throw (Exception(errorMessage.c_str()));
+        stringstream errorMessage;
+        errorMessage << getConcreteClassName() << ": Invalid probe operation: " 
+            << getOperation() 
+            << ". Currently supports 'value', 'integrate', 'differentiate'." << endl;
+        throw (Exception(errorMessage.str()));
     }
 
 }

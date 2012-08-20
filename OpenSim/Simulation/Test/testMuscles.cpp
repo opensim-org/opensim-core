@@ -47,9 +47,6 @@
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 
-
-#include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
-
 using namespace OpenSim;
 using namespace std;
 
