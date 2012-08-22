@@ -224,11 +224,11 @@ public:
 		simulationTime = -1.0;
 	}
 	virtual int step( const SimTK::State& s, int stepNumber) {
-        const SimTK::Vector& y = s.getY(); 
+        Array<double> rStateValues;
 		//std::string statedump= s.toString();
-		memcpy(statesCache, &y[0], statesCacheSize*sizeof(double));
-        //for(int i=0;i<statesCacheSize;i++ ) 
-		//	*(statesCache+i) = y[i];
+		_model->getStateValues(s, rStateValues);
+        for(int i=0;i<statesCacheSize;i++ ) 
+			*(statesCache+i) = rStateValues[i];
 		simulationTime = s.getTime();
 		return 0;
 	}
