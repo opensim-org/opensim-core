@@ -98,7 +98,7 @@ public:
 	* @param aFileName File name of the document.
 	*/
 	Tool(const std::string &aFileName, bool aUpdateFromXMLNode = true):
-		Object(aFileName, false), _inputsDir(_inputsDirProp.getValueStr()),
+		Object(aFileName, true), _inputsDir(_inputsDirProp.getValueStr()),
 		_resultsDir(_resultsDirProp.getValueStr()) {
 			setNull();
 			if(aUpdateFromXMLNode) updateFromXMLDocument();

@@ -64,7 +64,7 @@ ScaleTool::ScaleTool() :
  * Constructor from an XML file
  */
 ScaleTool::ScaleTool(const string &aFileName) :
-   Object(aFileName, false),
+   Object(aFileName, true),
 	_mass(_massProp.getValueDbl()),
 	_height(_heightProp.getValueDbl()),
 	_age(_ageProp.getValueDbl()),
