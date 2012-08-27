@@ -84,6 +84,10 @@ class Model;
  * - 'value' (default): returns the probe input value.
  * - 'integrate'      : returns the integral of the probe input value.
  * - 'differentiate'  : returns the derivative of the probe input value.
+ * - 'minimum'        : returns the minimum of the probe input value.
+ * - 'minabs'         : returns the absolute minimum of the probe input value (always positive).
+ * - 'maximum'        : returns the maximum of the probe input value.
+ * - 'maxabs'         : returns the absolute maximum of the probe input value (always positive).
  *
  * The Probe interface differs from the Analysis interface in two fundamental ways:
  * -  (1) Operations can be performed on probes (i.e., in addition to simply reporting 
@@ -118,7 +122,8 @@ public:
 
     OpenSim_DECLARE_PROPERTY(probe_operation, std::string,
         "The operation to perform on the probe input value: "
-        "'value'(no operation, just return the probe value), 'integrate', 'differentiate'");
+        "'value'(no operation, just return the probe value), 'integrate', "
+        "'differentiate', 'minimum', 'minabs', 'maximum', 'maxabs'.");
 
     OpenSim_DECLARE_PROPERTY(initial_conditions_for_integration, SimTK::Vector,
         "Vector of initial conditions to be specified if the 'integrate' operation is "
@@ -136,6 +141,9 @@ public:
 
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
+
+    /** Reset (initialize) the underlying Probe SimTK::Measure. */
+    void reset(SimTK::State& s);
 
     /** Returns true if the Probe is disabled or false if the probe is enabled. */
     bool isDisabled() const;
@@ -156,7 +164,7 @@ public:
     double getGain() const;
     /** Set the gain to apply to the probe output. */
     void setGain(double gain);
-
+    
 
 #ifndef SWIG
     // This is the Probe interface that must be implemented by concrete Probe

@@ -451,10 +451,12 @@ SimTK::State& Model::initializeState() {
     // initial configuration does not necessarily satisfy constraints.
     getMultibodySystem().realize(defaultState, Stage::Position);
 
-
-	createAssemblySolver(defaultState);
-
+    // Reset (initialize) all underlying Probe SimTK::Measures
+    for (int i=0; i<getProbeSet().getSize(); ++i)
+        getProbeSet().get(i).reset(defaultState);
+    
 	// do the assembly
+    createAssemblySolver(defaultState);
 	assemble(defaultState);
 
 	return defaultState;

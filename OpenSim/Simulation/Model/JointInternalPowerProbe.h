@@ -57,7 +57,8 @@ public:
 
     /** List of Joints to probe.  **/
     OpenSim_DECLARE_LIST_PROPERTY(joint_names, std::string,
-        "Specify a list of model Joints whose power should be calculated.");
+        "Specify a list of model Joints whose power should be calculated."
+        "Use 'all' to probe all joints.");
 
     /** Flag to specify whether to report the sum of all powers,
         or report each power value separately.  **/

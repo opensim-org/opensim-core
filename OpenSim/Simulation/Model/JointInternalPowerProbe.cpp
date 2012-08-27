@@ -150,6 +150,14 @@ void JointInternalPowerProbe::connectToModel(Model& aModel)
 {
     Super::connectToModel(aModel);
 
+    // Check to see if 'all' joints are selected for probing.
+    if (getProperty_joint_names()[0] == "all") {
+        Array<string> allJointNames;
+        _model->getJointSet().getNames(allJointNames);
+        set_joint_names(allJointNames);
+        //cout << "Set to all joints: " << allJointNames << endl;
+    }
+
     // check that each Joints in the joint_names array exists in the model
     int nA = getJointNames().size();
     for (int i=0; i<nA; i++) {

@@ -52,7 +52,8 @@ public:
 
     /** List of Actuator forces to probe.  **/
     OpenSim_DECLARE_LIST_PROPERTY(actuator_names, std::string,
-        "Specify a list of model actuator forces whose value should be calculated.");
+        "Specify a list of model actuator forces whose value should be calculated."
+        "Use 'all' to probe all actuators.");
 
     /** Flag to specify whether to report the sum of all forces,
         or report each force value separately.  **/

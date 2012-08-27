@@ -62,7 +62,7 @@ public:
         value = m_probe.computeProbeInputs(s);
     }
 
-
+    
 private:
     const OpenSim::Probe& m_probe;
     int i;
@@ -89,7 +89,9 @@ namespace OpenSim {
 // assignment operator.
 
 //_____________________________________________________________________________
-// Default constructor.
+/**
+ * Default constructor.
+ */
 Probe::Probe()
 {
     setNull();
@@ -97,7 +99,9 @@ Probe::Probe()
 }
 
 //_____________________________________________________________________________
-// Set the data members of this Probe to their null values.
+/**
+ * Set the data members of this Probe to their null values.
+ */
 void Probe::setNull(void)
 {
     // no data members that need initializing
@@ -110,8 +114,8 @@ void Probe::setNull(void)
 void Probe::constructProperties(void)
 {
     constructProperty_isDisabled(false);
-    constructProperty_probe_operation("value");             // means "pass the value through".
-    Vector defaultInitCond(1, 0.0);                         // Set the default initial condition to zero.
+    constructProperty_probe_operation("value");  // means "pass the value through".
+    Vector defaultInitCond(1, 0.0);              // Set default initial condition to zero.
     constructProperty_initial_conditions_for_integration(defaultInitCond);
     constructProperty_gain(1.0);
 }
@@ -191,8 +195,10 @@ void Probe::addToSystem(MultibodySystem& system) const
                 << getInitialConditions().size() << ")." << endl;
             throw (Exception(errorMessage.str()));
         }
+
         for (int i=0; i<getNumProbeInputs(); ++i) {
-            Measure::Constant initCond(system, getInitialConditions()(i));
+            //Measure::Constant initCond(system, getInitialConditions()(i));  // init cond is handled as a special case in getProbeOutputs()
+            Measure::Constant initCond(system, 0.0);
             mutableThis->afterOperationValues[i] = Measure::Scale(system, getGain(), 
                 Measure::Integrate(system, beforeOperationValues[i], initCond));
         }
@@ -211,25 +217,47 @@ void Probe::addToSystem(MultibodySystem& system) const
 
 
     // ---------------------------------------------------------------------
-    // Get the minimum of the probe value (TODO)
+    // Get the minimum of the probe value
     // ---------------------------------------------------------------------
-    //else if (getOperation() == "minimum") {
-    //    for (int i=0; i<getNumProbeInputs(); ++i) {
-    //        mutableThis->afterOperationValues[i] = Measure::Scale(system, getGain(), 
-    //            Measure::Minimum(system, beforeOperationValues[i]));
-    //    }
-    //}
+    else if (getOperation() == "minimum") {
+        for (int i=0; i<getNumProbeInputs(); ++i) {
+            mutableThis->afterOperationValues[i] = Measure::Scale(system, getGain(), 
+                Measure::Minimum(system, beforeOperationValues[i]));
+        }
+    }
+
+
+    // ---------------------------------------------------------------------
+    // Get the absolute minimum of the probe value
+    // ---------------------------------------------------------------------
+    else if (getOperation() == "minabs") {
+        for (int i=0; i<getNumProbeInputs(); ++i) {
+            mutableThis->afterOperationValues[i] = Measure::Scale(system, getGain(), 
+                Measure::MinAbs(system, beforeOperationValues[i]));
+        }
+    }
     	
 
     // ---------------------------------------------------------------------
-    // Get the maximum of the probe value (TODO)
+    // Get the maximum of the probe value
     // ---------------------------------------------------------------------
-    //else if (getOperation() == "maximum") {
-    //    for (int i=0; i<getNumProbeInputs(); ++i) {
-    //        mutableThis->afterOperationValues[i] = Measure::Scale(system, getGain(), 
-    //            Measure::Maximum(system, beforeOperationValues[i]));
-    //    }
-    //}
+    else if (getOperation() == "maximum") {
+        for (int i=0; i<getNumProbeInputs(); ++i) {
+            mutableThis->afterOperationValues[i] = Measure::Scale(system, getGain(), 
+                Measure::Maximum(system, beforeOperationValues[i]));
+        }
+    }
+
+
+    // ---------------------------------------------------------------------
+    // Get the absolute maximum of the probe value
+    // ---------------------------------------------------------------------
+    else if (getOperation() == "maxabs") {
+        for (int i=0; i<getNumProbeInputs(); ++i) {
+            mutableThis->afterOperationValues[i] = Measure::Scale(system, getGain(), 
+                Measure::MaxAbs(system, beforeOperationValues[i]));
+        }
+    }
 
 
     // ---------------------------------------------------------------------
@@ -239,11 +267,46 @@ void Probe::addToSystem(MultibodySystem& system) const
         stringstream errorMessage;
         errorMessage << getConcreteClassName() << ": Invalid probe operation: " 
             << getOperation() 
-            << ". Currently supports 'value', 'integrate', 'differentiate'." << endl;
+            << ". Currently supports 'value', 'integrate', 'differentiate', "
+            "'minimum', 'minabs', 'maximum', 'maxabs'." << endl;
         throw (Exception(errorMessage.str()));
     }
 
 }
+
+
+//_____________________________________________________________________________
+/**
+ * Reset (initialize) the underlying Probe SimTK::Measure.
+ * Only can do this for integrate, minimum, minabs, maximum, 
+ * maxabs SimTK::Measures. Else, do no resetting.
+ */
+void Probe::reset(SimTK::State& s)
+{
+    const double resetValue = 0.0;
+
+
+    for (int i=0; i<getNumProbeInputs(); ++i) {
+        const Measure::Scale& scaleMeasure = Measure::Scale::getAs(afterOperationValues[i]);
+
+        if (getOperation() == "integrate")
+            SimTK::Measure::Integrate::getAs(scaleMeasure.getOperandMeasure()).setValue(s, resetValue);
+
+        else if (getOperation() == "minimum")
+            SimTK::Measure::Minimum::getAs(scaleMeasure.getOperandMeasure()).setValue(s, resetValue);
+
+        else if (getOperation() == "minabs")
+            SimTK::Measure::MinAbs::getAs(scaleMeasure.getOperandMeasure()).setValue(s, resetValue);
+
+        else if (getOperation() == "maximum")
+            SimTK::Measure::Maximum::getAs(scaleMeasure.getOperandMeasure()).setValue(s, resetValue);
+
+        else if (getOperation() == "maxabs")
+            SimTK::Measure::MaxAbs::getAs(scaleMeasure.getOperandMeasure()).setValue(s, resetValue);
+    }
+}
+
+
 
 //=============================================================================
 // GET AND SET
@@ -344,8 +407,11 @@ void Probe::setGain(double gain)
 SimTK::Vector Probe::getProbeOutputs(const State& s) const 
 {
     if (isDisabled()) {
-        string errorMessage = getConcreteClassName() + ": Cannot get the output from Probe '" + getName() + "' because it has been disabled.";
-        throw (Exception(errorMessage.c_str()));
+        stringstream errorMessage;
+        errorMessage << getConcreteClassName() 
+            << ": Cannot get the output from Probe '" 
+            << getName() << "' because it has been disabled." << endl;
+        throw (Exception(errorMessage.str()));
     }
 
 

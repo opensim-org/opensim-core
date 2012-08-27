@@ -55,7 +55,8 @@ public:
     /**@{**/
     /** List of Actuators to probe.  **/
     OpenSim_DECLARE_LIST_PROPERTY(actuator_names, std::string,
-        "Specify a list of model Actuators whose power should be calculated.");
+        "Specify a list of model Actuators whose power should be calculated."
+        "Use 'all' to probe all actuators.");
 
     /** Flag to specify whether to report the sum of all powers,
         or report each power value separately.  **/

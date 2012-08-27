@@ -161,6 +161,14 @@ void ActuatorForceProbe::connectToModel(Model& model)
 {
     Super::connectToModel(model);
 
+    // Check to see if 'all' actuators are selected for probing.
+    if (getProperty_actuator_names()[0] == "all") {
+        Array<string> allActNames;
+        _model->getActuators().getNames(allActNames);
+        set_actuator_names(allActNames);
+        //cout << "Set to all actuators: " << allActNames << endl;
+    }
+
     // check that each Actuator in the actuator_names array exists in the model
     int nA = getActuatorNames().size();
     for (int i=0; i<nA; i++) {
