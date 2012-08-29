@@ -182,6 +182,13 @@ public:
 	Storage* getTendonLengthStorage() const { 
         return _tendonLengthStore; }
 
+    Storage* getFiberVelocityStorage() const { 
+        return _fiberVelocityStore; }
+    Storage* getNormalizedFiberVelocityStorage() const { 
+        return _normFiberVelocityStore; }
+    Storage* getPennationAngularVelocityStorage() const { 
+        return _pennationAngularVelocityStore; }
+
 	Storage* getForceStorage() const { 
         return _forceStore; }
 	Storage* getFiberForceStorage() const { 
