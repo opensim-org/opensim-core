@@ -1,75 +1,20 @@
 ###########################################
 ## For building with the rest of OpenSim ##
 ###########################################
-IF(BUILD_API_EXAMPLES)
 
-SET(EXAMPLE_CONTROLLER exampleController)
+cmake_minimum_required(VERSION 2.4)
 
-INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
-		    ${OpenSim_SOURCE_DIR}/Vendors)
-
-ADD_EXECUTABLE(${EXAMPLE_CONTROLLER} ControllerExample.cpp)
-TARGET_LINK_LIBRARIES(${EXAMPLE_CONTROLLER}
-	debug osimSimulation${CMAKE_DEBUG_POSTFIX}	optimized osimSimulation
-	debug osimActuators${CMAKE_DEBUG_POSTFIX}	optimized osimActuators
-	debug osimCommon${CMAKE_DEBUG_POSTFIX}		optimized osimCommon
-	debug osimAnalyses${CMAKE_DEBUG_POSTFIX}	optimized osimAnalyses
-	debug osimTools${CMAKE_DEBUG_POSTFIX}		optimized osimTools
-	${SIMTK_ALL_LIBS}
-)
-SET_TARGET_PROPERTIES(${EXAMPLE_CONTROLLER}
-	PROPERTIES
-	PROJECT_LABEL "Examples - ${EXAMPLE_CONTROLLER}"
-)
-
-FILE(GLOB DATA_FILES *.osim *.xml *.sto *.mot *.vtp *.obj)
-FOREACH (DATA_FILE ${DATA_FILES})
-  ADD_CUSTOM_COMMAND(
-	TARGET ${EXAMPLE_CONTROLLER}
-	COMMAND ${CMAKE_COMMAND}
-	ARGS -E copy
-	${DATA_FILE}
-	${OpenSim_BINARY_DIR}/OpenSim/Examples/ControllerExample
-  )
-ENDFOREACH (DATA_FILE)
-
-IF(BUILD_TESTING)
-  SET(TEST_EXAMPLE_CONTROLLER testExampleController)
-
-  ADD_EXECUTABLE(${TEST_EXAMPLE_CONTROLLER}Output testControllerExample.cpp)
-  TARGET_LINK_LIBRARIES(${TEST_EXAMPLE_CONTROLLER}Output
-	debug osimSimulation${CMAKE_DEBUG_POSTFIX}	optimized osimSimulation
-	debug osimActuators${CMAKE_DEBUG_POSTFIX}	optimized osimActuators
-	debug osimCommon${CMAKE_DEBUG_POSTFIX}		optimized osimCommon
-	debug osimAnalyses${CMAKE_DEBUG_POSTFIX}	optimized osimAnalyses
-	debug osimTools${CMAKE_DEBUG_POSTFIX}		optimized osimTools
-	${SIMTK_ALL_LIBS}
-  )
-  SET_TARGET_PROPERTIES(${TEST_EXAMPLE_CONTROLLER}Output
-	PROPERTIES 
-	PROJECT_LABEL "Tests - ${TEST_EXAMPLE_CONTROLLER}Output"
-  )
-
-  ADD_TEST(${TEST_EXAMPLE_CONTROLLER}Runs ${EXECUTABLE_OUTPUT_PATH}/${EXAMPLE_CONTROLLER})
-  ADD_TEST(${TEST_EXAMPLE_CONTROLLER}Output ${EXECUTABLE_OUTPUT_PATH}/${TEST_EXAMPLE_CONTROLLER}Output)
-ENDIF(BUILD_TESTING)
-
-################################################
-## For building with existing OpenSim install ##
-################################################
-ELSE(BUILD_API_EXAMPLES)
-
-cmake_minimum_required(VERSION 2.6)
-
+# Define project
 PROJECT (ControllerExample)
 
-SET(SOURCE_FILES ControllerExample.cpp) 
+SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME} 
+		CACHE PATH "Top-level directory of OpenSim install")
 
-SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME} CACHE PATH "Top-level directory of OpenSim install")
-
-SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release"
-      CACHE STRING "Semicolon separated list of supported configuration types, only supports Debug, Release, MinSizeRel, and RelWithDebInfo, anything else will be ignored." FORCE )
-
+# Change name of build target
+SET(TARGET exampleController)
+# Identify the cpp file(s) that were to be built
+SET(SOURCE ControllerExample.cpp)
+		
 # Location of headers
 SET(SIMTK_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include/SimTK/include)
 SET(OPENSIM_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include)
@@ -79,56 +24,54 @@ SET(OPENSIM_LIBS_DIR ${OPENSIM_INSTALL_DIR}/sdk/lib)
 SET(OPENSIM_DLLS_DIR ${OPENSIM_INSTALL_DIR}/bin)
 LINK_DIRECTORIES(${OPENSIM_LIBS_DIR} ${OPENSIM_DLLS_DIR})
 
+# Namespace
 SET(NameSpace "OpenSim_" CACHE STRING "Prefix for simtk lib names, includes trailing '_'. Leave empty to use stock SimTK libraries.")
 MARK_AS_ADVANCED(NameSpace)
 
-LINK_LIBRARIES(
-	debug osimCommon_d optimized osimCommon
-	debug osimSimulation_d optimized osimSimulation
-	debug osimAnalyses_d optimized osimAnalyses
-	debug osimActuators_d optimized osimActuators
-	debug osimTools_d optimized osimTools
-	debug ${NameSpace}SimTKcommon_d optimized   ${NameSpace}SimTKcommon
-	debug ${NameSpace}SimTKmath_d optimized  ${NameSpace}SimTKmath
-	debug ${NameSpace}SimTKsimbody_d optimized  ${NameSpace}SimTKsimbody
-	SimTKlapack pthreadVC2)
+ADD_EXECUTABLE(${TARGET} ${SOURCE})
 
-ADD_EXECUTABLE(main  ${SOURCE_FILES} ) 
+SET(SIMTK_COMMON_LIB debug ${NameSpace}SimTKcommon_d optimized ${NameSpace}SimTKcommon)
+SET(SIMTK_MATH_LIB debug ${NameSpace}SimTKmath_d optimized ${NameSpace}SimTKmath)
+SET(SIMTK_SIMBODY_LIB debug ${NameSpace}SimTKsimbody_d optimized ${NameSpace}SimTKsimbody)
 
-#IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	SET(CMAKE_INSTALL_PREFIX ${OPENSIM_INSTALL_DIR})
-#ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
+                    ${SIMTK_MATH_LIB} 
+                    ${SIMTK_SIMBODY_LIB} 
+					SimTKlapack
+                    pthreadVC2)
+
+TARGET_LINK_LIBRARIES(${TARGET}
+	debug osimSimulation_d	optimized osimSimulation
+	debug osimActuators_d	optimized osimActuators
+	debug osimCommon_d		optimized osimCommon
+	debug osimAnalyses_d	optimized osimAnalyses
+	debug osimTools_d		optimized osimTools
+	${SIMTK_ALL_LIBS}
+)
+
+IF(WIN32)
+	SET(PLATFORM_LIBS  pthreadVC2)
+ELSE (WIN32)
+  SET(NameSpace "")
+  IF(APPLE)
+	SET(PLATFORM_LIBS  SimTKAtlas)
+  ELSE(APPLE)
+	SET(PLTAFORM_LIBS SimTKAtlas_Lin_generic)
+  ENDIF(APPLE)
+ENDIF (WIN32)
+
+# This block copies the additional files into the running directory
+# For example vtp, obj files. Add to the end for more extentions
+FILE(GLOB DATA_FILES *.vtp *.obj *.osim)
+FOREACH (dataFile ${DATA_FILES})
+ ADD_CUSTOM_COMMAND(
+    TARGET ${TARGET}
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -E copy
+    ${dataFile}
+	${ControllerExample_BINARY_DIR})
+ ENDFOREACH (dataFile) 
 
 MARK_AS_ADVANCED(CMAKE_INSTALL_PREFIX)
 MARK_AS_ADVANCED(EXECUTABLE_OUTPUT_PATH)
 MARK_AS_ADVANCED(LIBRARY_OUTPUT_PATH)
-
-
-SET_TARGET_PROPERTIES(
-	main PROPERTIES
-	PROJECT_LABEL "Controller Example")
-
-INSTALL_TARGETS(/ main)
-
-ADD_CUSTOM_TARGET(copyDataFiles)
-
-FILE(GLOB DATA_FILES *.osim *.xml *.sto *.mot *.vtp *.obj)
-#
-# Copy files to run dir
-#
-FOREACH (dataFile ${DATA_FILES})
- # MESSAGE( "ControllerExample_SOURCE_DIR file "${ControllerExample_SOURCE_DIR})
- # MESSAGE( "datafile file "${dataFile})
- GET_FILENAME_COMPONENT(DATAFILE ${dataFile} NAME)
- ADD_CUSTOM_COMMAND(
-    TARGET copyDataFiles
-    COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy
-    ${dataFile}
-    ${ControllerExample_BINARY_DIR}/${DATAFILE})
-ENDFOREACH (dataFile) 
-
-
-ADD_DEPENDENCIES(main copyDataFiles)
-
-ENDIF(BUILD_API_EXAMPLES)

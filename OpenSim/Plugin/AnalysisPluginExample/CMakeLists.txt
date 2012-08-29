@@ -1,65 +1,66 @@
 Project(OpenSimPlugin)
 
 cmake_minimum_required(VERSION 2.6)
-if(COMMAND cmake_policy)
-        cmake_policy(SET CMP0003 NEW)
-        cmake_policy(SET CMP0005 NEW)
-endif(COMMAND cmake_policy)
 
-SET(KIT plugin)
 SET(UKIT PLUGIN)
-
-SET(NameSpace "")
 
 FILE(GLOB SOURCE_FILES *.cpp)
 FILE(GLOB INCLUDE_FILES *.h)
 
-SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release"
+SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release;Debug"
       CACHE STRING "Semicolon separated list of supported configuration types, only supports Debug, Release, MinSizeRel, and RelWithDebInfo, anything else will be ignored." FORCE )
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-SET(OPENSIM_INSTALL_DIR "C:/Program Files (x86)/OpenSim 3.0/" CACHE PATH 
-    "Top-level directory of OpenSim install")
-
+SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME} 
+		CACHE PATH "Top-level directory of OpenSim install")
+		
 SET(PLUGIN_NAME "osimPlugin" CACHE STRING "Name of shared library to create")
 
-### HEADERS
+# Location of headers
+SET(SIMTK_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include/SimTK/include)
 SET(OPENSIM_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include)
-SET(SIMTK_HEADERS_DIR   ${OPENSIM_INSTALL_DIR}/sdk/include/SimTK/include)
+INCLUDE_DIRECTORIES(${SIMTK_HEADERS_DIR} ${OPENSIM_HEADERS_DIR})
+# Libraries and dlls
+SET(OPENSIM_LIBS_DIR ${OPENSIM_INSTALL_DIR}/sdk/lib)
+SET(OPENSIM_DLLS_DIR ${OPENSIM_INSTALL_DIR}/bin)
+LINK_DIRECTORIES(${OPENSIM_LIBS_DIR} ${OPENSIM_DLLS_DIR})
 
-INCLUDE_DIRECTORIES(${OPENSIM_HEADERS_DIR} 
-                    ${SIMTK_HEADERS_DIR})
+# Namespace
+SET(NameSpace "OpenSim_" CACHE STRING "Prefix for simtk lib names, includes trailing '_'. Leave empty to use stock SimTK libraries.")
+MARK_AS_ADVANCED(NameSpace)
 
-### LIBRARIES
-SET(OPENSIM_LIBS_DIR  
-    ${OPENSIM_INSTALL_DIR}/lib
-    ${OPENSIM_INSTALL_DIR}/sdk/lib)
-LINK_DIRECTORIES(${OPENSIM_LIBS_DIR})
+SET(SIMTK_COMMON_LIB debug ${NameSpace}SimTKcommon_d optimized ${NameSpace}SimTKcommon)
+SET(SIMTK_MATH_LIB debug ${NameSpace}SimTKmath_d optimized ${NameSpace}SimTKmath)
+SET(SIMTK_SIMBODY_LIB debug ${NameSpace}SimTKsimbody_d optimized ${NameSpace}SimTKsimbody)
 
-# Assumes Windows
+SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
+                    ${SIMTK_MATH_LIB} 
+                    ${SIMTK_SIMBODY_LIB} 
+					SimTKlapack
+                    pthreadVC2)
+
 LINK_LIBRARIES(
-	debug osimCommon_d     optimized osimCommon
-	debug osimSimulation_d optimized osimSimulation
-	debug osimAnalyses_d   optimized osimAnalyses
-	debug osimActuators_d  optimized osimActuators
-	debug osimTools_d      optimized osimTools
-	debug     ${NameSpace}SimTKcommon_d
-    optimized ${NameSpace}SimTKcommon
-	debug     ${NameSpace}SimTKmath_d
-    optimized ${NameSpace}SimTKmath
-	debug     ${NameSpace}SimTKsimbody_d
-    optimized ${NameSpace}SimTKsimbody
-	SimTKlapack 
-    pthreadVC2
+	debug osimSimulation_d	optimized osimSimulation
+	debug osimActuators_d	optimized osimActuators
+	debug osimCommon_d		optimized osimCommon
+	debug osimAnalyses_d	optimized osimAnalyses
+	debug osimTools_d		optimized osimTools
+	${SIMTK_ALL_LIBS}
 )
 
-ADD_LIBRARY(${PLUGIN_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
+IF(WIN32)
+	SET(PLATFORM_LIBS  pthreadVC2)
+ELSE (WIN32)
+  SET(NameSpace "")
+  IF(APPLE)
+	SET(PLATFORM_LIBS  SimTKAtlas)
+  ELSE(APPLE)
+	SET(PLTAFORM_LIBS SimTKAtlas_Lin_generic)
+  ENDIF(APPLE)
+ENDIF (WIN32)
 
-IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	SET(CMAKE_INSTALL_PREFIX ${OPENSIM_INSTALL_DIR}/ CACHE PATH 
-        "Install path prefix." FORCE)
-ENDIF()
+ADD_LIBRARY(${PLUGIN_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
 MARK_AS_ADVANCED(EXECUTABLE_OUTPUT_PATH)
 MARK_AS_ADVANCED(LIBRARY_OUTPUT_PATH)
