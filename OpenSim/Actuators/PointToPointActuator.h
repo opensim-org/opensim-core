@@ -119,7 +119,6 @@ public:
 	double getOptimalForce() const OVERRIDE_11 // Part of Actuator interface.
     {   return get_optimal_force(); }
 
-    // default destructor, copy constructor, copy assignment
 
 private:
 	void constructProperties();
@@ -151,11 +150,6 @@ private:
 	// Setup method initializes Body reference pointers to match the names.
 	void connectToModel(Model& aModel) OVERRIDE_11;
 
-	//--------------------------------------------------------------------------
-	// Implement Object interface.
-	//--------------------------------------------------------------------------
-	void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1)
-        OVERRIDE_11;
 //=============================================================================
 // DATA
 //=============================================================================
