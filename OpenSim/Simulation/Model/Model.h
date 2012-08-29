@@ -625,6 +625,7 @@ public:
 	void setStateValues(SimTK::State& state, const double* stateValues) const;
 
     int getNumMuscleStates() const;
+    int getNumProbeStates() const;
 
 	//--------------------------------------------------------------------------
 	// INITIAL TIME

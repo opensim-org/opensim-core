@@ -1036,7 +1036,7 @@ int Model::getNumContactGeometries() const
 }
 
 /**
- * Get the number of Muscle state variabls in the model.
+ * Get the number of Muscle state variables in the model.
  *
  * @return Number of MuscleStates.
  */
@@ -1052,6 +1052,25 @@ int Model::getNumMuscleStates() const {
 	}
 	return(n);
 }
+
+/**
+ * Get the number of Probe state variables in the model.
+ *
+ * @return Number of MuscleStates.
+ */
+
+int Model::getNumProbeStates() const {
+
+	int n = 0;
+	for(int i=0;i<_probeSet.getSize();i++){
+        Probe *p = dynamic_cast<Probe*>( &_probeSet.get(i) );
+		if(p!=NULL) {
+			n += p->getNumInternalMeasureStates();
+		}
+	}
+	return(n);
+}
+
 //_____________________________________________________________________________
 /**
  * Get the total number of bodies in the model.

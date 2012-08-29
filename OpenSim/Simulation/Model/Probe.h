@@ -145,6 +145,9 @@ public:
     /** Reset (initialize) the underlying Probe SimTK::Measure. */
     void reset(SimTK::State& s);
 
+    /** Get the number of states in the underlying SimTK::Measure. */
+    int getNumInternalMeasureStates() const;
+
     /** Returns true if the Probe is disabled or false if the probe is enabled. */
     bool isDisabled() const;
     /** Set the Probe as disabled (true) or enabled (false). */
@@ -200,11 +203,13 @@ public:
     @return         The SimTK::Vector of probe output values.**/
     SimTK::Vector getProbeOutputs(const SimTK::State& state) const;
 
+
 protected:
     // ModelComponent interface.
     /** Concrete probes may override; be sure to invoke Super::connectToModel()
     at the beginning of the overriding method. **/
     void connectToModel(Model& model) OVERRIDE_11;
+
     /** Concrete probes may override; be sure to invoke Super::addToSystem()
     at the beginning of the overriding method. **/
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;

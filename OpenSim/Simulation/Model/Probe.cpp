@@ -292,7 +292,6 @@ void Probe::reset(SimTK::State& s)
 {
     const double resetValue = 0.0;
     
-
     for (int i=0; i<getNumProbeInputs(); ++i) {
         if (!isDisabled()) {
             //cout << "Resetting probe " << getName() << ",  (" << i << " / " << getNumProbeInputs() << ")." << endl;
@@ -435,10 +434,30 @@ SimTK::Vector Probe::getProbeOutputs(const State& s) const
         else
             output[i] = getGain() * afterOperationValues[i].getValue(s);
     }
+    
     return output;
 
     //return afterOperationValueVector.getValue(s);         // save for when we can directly operate on Vector SimTK::Measures
 }
+
+
+//_____________________________________________________________________________
+/**
+ * Returns the number of state variables this probe uses. It adds up
+ * all states from the underlying SimTK::Measures.
+ */
+int Probe::getNumInternalMeasureStates() const
+{
+    if (isDisabled())
+        return 0;
+
+    int n = 0;
+    for (int i=0; i<getNumProbeInputs(); ++i)
+        n += afterOperationValues[i].getNumTimeDerivatives();
+
+    return n;
+}
+
 
 
 } // end of namespace OpenSim
