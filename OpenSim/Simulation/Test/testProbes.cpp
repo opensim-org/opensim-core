@@ -579,7 +579,6 @@ if(addMuscleMetabolicProbes) {
     // MuscleMetabolicPowerProbeBhargava2004 Power Probe: MECHANICAL WORK RATE (normalized)
     MuscleMetabolicPowerProbeBhargava2004* BhargavaWorkNormalized = new MuscleMetabolicPowerProbeBhargava2004(false, false, false, false, true);
     BhargavaWorkNormalized->setName("BhargavaWorkNormalized");
-    BhargavaWorkNormalized->set_normalize_mechanical_work_rate_by_muscle_mass(true);
     BhargavaWorkNormalized->set_MetabolicMuscleParameterSet(mms);
     model.addProbe(BhargavaWorkNormalized);
     cout << probeCounter++ << ") Added MuscleMetabolicPowerProbeBhargava2004 to measure MECHANICAL WORK RATE (normalized)" << endl;
@@ -587,7 +586,6 @@ if(addMuscleMetabolicProbes) {
     // MuscleMetabolicPowerProbeUmberger2003 Power Probe: MECHANICAL WORK RATE (normalized)
     MuscleMetabolicPowerProbeUmberger2003* UmbergerWorkNormalized = new MuscleMetabolicPowerProbeUmberger2003(false, false, false, true);
     UmbergerWorkNormalized->setName("UmbergerWorkNormalized");
-    UmbergerWorkNormalized->set_normalize_mechanical_work_rate_by_muscle_mass(true);
     UmbergerWorkNormalized->set_MetabolicMuscleParameterSet(mms);
     model.addProbe(UmbergerWorkNormalized);
     cout << probeCounter++ << ") Added MuscleMetabolicPowerProbeUmberger2003 to measure MECHANICAL WORK RATE (normalized)" << endl;

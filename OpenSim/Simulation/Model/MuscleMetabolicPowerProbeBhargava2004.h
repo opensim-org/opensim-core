@@ -119,8 +119,6 @@ namespace OpenSim {
  * <B>Wdot = 0                  </B>,   <I>v_CE <  0 (eccentric contraction)</I>
  *     - v_CE = muscle fiber velocity at the current time.
  *     - F_CE = force developed by the contractile element of muscle at the current time.\n
- * <I> Note: if normalize_mechanical_work_rate_by_muscle_mass ia set to true, then the mechanical work rate
- *       for each muscle is normalized by its muscle mass (kg).</I>
  *
  *
  * @author Tim Dorn
@@ -179,11 +177,6 @@ public:
     OpenSim_DECLARE_PROPERTY(basal_exponent, 
         double,
         "Basal metabolic exponent.");
-
-    /** Disabled by default. **/
-    OpenSim_DECLARE_PROPERTY(normalize_mechanical_work_rate_by_muscle_mass, 
-        bool,
-        "Specify whether the mechanical work rate for each muscle is to be normalized by muscle mass (true/false).");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(MetabolicMuscleParameterSet,
         "A MetabolicMuscleSet containing the muscle information required to calculate metabolic energy expenditure. "

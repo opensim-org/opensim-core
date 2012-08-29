@@ -86,7 +86,6 @@ void MuscleMetabolicPowerProbeUmberger2003::constructProperties()
     constructProperty_scaling_factor(1.0);
     constructProperty_basal_coefficient(1.51);
     constructProperty_basal_exponent(1.0);
-    constructProperty_normalize_mechanical_work_rate_by_muscle_mass(false);
     constructProperty_MetabolicMuscleParameterSet(MetabolicMuscleParameterSet());
 }
 
@@ -281,8 +280,7 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
             else						// eccentric contraction, Vm>0
                 Wdot = 0;
 
-            if (get_normalize_mechanical_work_rate_by_muscle_mass())
-                Wdot /= mm.getMuscleMass();
+            Wdot /= mm.getMuscleMass();
         }
 
 

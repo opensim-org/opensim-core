@@ -95,7 +95,6 @@ void MuscleMetabolicPowerProbeBhargava2004::constructProperties()
     constructProperty_use_force_dependent_shortening_prop_constant(false);
     constructProperty_basal_coefficient(1.51);
     constructProperty_basal_exponent(1.0);
-    constructProperty_normalize_mechanical_work_rate_by_muscle_mass(false);
     constructProperty_MetabolicMuscleParameterSet(MetabolicMuscleParameterSet());
 }
 
@@ -247,9 +246,6 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
                 Wdot = -fiber_force_active*fiber_velocity;
             else						// eccentric contraction, Vm>0
                 Wdot = 0;
-
-            if (get_normalize_mechanical_work_rate_by_muscle_mass())
-                Wdot /= mm.getMuscleMass();
         }
 
 
