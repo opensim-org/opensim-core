@@ -55,15 +55,10 @@ class MarkerPlacer;
 class MarkerData;
 class Measurement;
 
-#ifdef SWIG
-    #ifdef OSIMSIMULATION_API
-        #undef OSIMSIMULATION_API
-        #define OSIMSIMULATION_API
-    #endif
-#endif
+static bool mapCxxExceptionsToJava = true;
 
 
-class /*OSIMSIMULATION_API*/ OpenSimContext : public Object {
+class OpenSimContext : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(OpenSimContext, Object);
 //=============================================================================
 // DATA

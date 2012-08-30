@@ -318,7 +318,7 @@ using namespace SimTK;
 }
 
 %exception {
-  if (Object::getDebugLevel()>=3){
+  if (OpenSim::mapCxxExceptionsToJava){
 	  try {
 	  $action
 	  }
