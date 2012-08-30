@@ -1623,20 +1623,17 @@ void Object::updateFromXMLDocument()
 	updateFromXMLNode(e, _document->getDocumentVersion());
 }
 
-std::string Object::dump() const {
-	std::stringstream strstream;
-    strstream << getConcreteClassName() << " Object " 
-         << (getName().empty()?"NONAME":getName())
-         << std::endl;
-    for (int p=0; p < getNumProperties(); ++p) {
-        const AbstractProperty& ap = getPropertyByIndex(p); 
-        strstream << ap.getName() << "=" << ap.toString() << std::endl;
-        if (ap.isObjectProperty()) {
-            for (int i=0; i < ap.size(); ++i)
-                strstream << ap.getValueAsObject(i).dump();
-        }
-    }
-    return strstream.str();
+std::string Object::dump(bool dumpName) {
+	SimTK::String outString;
+    XMLDocument doc;
+	std::string saveName = getName();
+	if (!dumpName) setName("");
+	Object::setSerializeAllDefaults(true);
+	updateXMLNode(doc.getRootElement());
+	Object::setSerializeAllDefaults(false);
+	setName(saveName);
+	doc.getRootElement().node_begin()->writeToString(outString);
+    return outString;
     }
 /** 
     * The following code accounts for an object made up to call 
