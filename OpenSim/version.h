@@ -25,6 +25,8 @@
 #if defined(__cplusplus) || defined(SWIG)
 #include <string>
 #include <cstdio>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define STR(var) #var
 #define MAKE_STRING(a) STR(a)
