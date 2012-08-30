@@ -91,7 +91,7 @@ InverseKinematicsTool::InverseKinematicsTool() : Tool(),
  * @param aFileName File name of the document.
  */
 InverseKinematicsTool::InverseKinematicsTool(const string &aFileName, bool aLoadModel) :
-	Tool(aFileName, false),
+	Tool(aFileName, true),
 	_modelFileName(_modelFileNameProp.getValueStr()),
 	_constraintWeight(_constraintWeightProp.getValueDbl()),
 	_accuracy(_accuracyProp.getValueDbl()),

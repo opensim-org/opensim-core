@@ -568,9 +568,9 @@ public:
     debugging. **/
     bool print(const std::string& fileName);
 
-    /** dump the properties of this %Object into an std::string and return it.
-    Mainly intended for debugging. **/
-    std::string dump() const; 
+    /** dump the XML representation of this %Object into an std::string and return it.
+    Mainly intended for debugging and for use by the XML browser in the GUI. **/
+    std::string dump(bool dumpName=false); 
     /**@}**/
 	//--------------------------------------------------------------------------
 	// ADVANCED/OBSCURE/QUESTIONABLE/BUGGY
