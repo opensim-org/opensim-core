@@ -7,15 +7,16 @@ SET(UKIT PLUGIN)
 FILE(GLOB SOURCE_FILES *.cpp)
 FILE(GLOB INCLUDE_FILES *.h)
 
-SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release;Debug"
-      CACHE STRING "Semicolon separated list of supported configuration types, only supports Debug, Release, MinSizeRel, and RelWithDebInfo, anything else will be ignored." FORCE )
-
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
 SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME} 
 		CACHE PATH "Top-level directory of OpenSim install")
 		
 SET(PLUGIN_NAME "osimPlugin" CACHE STRING "Name of shared library to create")
+
+# To add Debug feature add ";Debug" after Release on the line below
+SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release" 
+      CACHE STRING "Semicolon separated list of supported configuration types, only supports Debug, Release, MinSizeRel, and RelWithDebInfo, anything else will be ignored." FORCE )
 
 # Location of headers
 SET(SIMTK_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include/SimTK/include)

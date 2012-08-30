@@ -2,7 +2,7 @@
 ## For building with the rest of OpenSim ##
 ###########################################
 
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 2.6)
 
 # Define project
 PROJECT (ControllerExample)
@@ -14,7 +14,11 @@ SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
 SET(TARGET exampleController)
 # Identify the cpp file(s) that were to be built
 SET(SOURCE ControllerExample.cpp)
-		
+
+# To add Debug feature add ";Debug" after Release on the line below
+SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release" 
+      CACHE STRING "Semicolon separated list of supported configuration types, only supports Debug, Release, MinSizeRel, and RelWithDebInfo, anything else will be ignored." FORCE )
+	
 # Location of headers
 SET(SIMTK_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include/SimTK/include)
 SET(OPENSIM_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include)
