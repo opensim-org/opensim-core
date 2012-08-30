@@ -434,6 +434,17 @@ using namespace SimTK;
 		arr->set(2, es[2]);
 		return SimTK::Vec3::getAs(arr->get());
   };
+
+   SimTK::Vector  getAsVector() {
+		return SimTK::Vector(self->getSize(), &(*self)[0]);
+  };
+
+   void populateFromVector(SimTK::Vector aVector) {
+		int sz = aVector.size();
+		for(int i=0; i<sz; ++i)
+			self->append(aVector[i]);
+   }
+
    static  OpenSim::Array<double> getValuesFromVec3(SimTK::Vec3 vec3) {
 		OpenSim::Array<double> arr(0, 3);
 		for (int i=0; i<3; i++) arr[i] = vec3[i];
