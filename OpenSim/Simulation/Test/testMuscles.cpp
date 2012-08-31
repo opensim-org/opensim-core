@@ -362,7 +362,9 @@ void simulateMuscle(
        uncomment the corresponding calls to write the results to 
        file after the simualtion.*/
 	MuscleAnalysis * muscleAnalysis = new MuscleAnalysis();
-    muscleAnalysis->setMuscles(Array<string>("muscle",1));
+    Array<string> tmp; 
+	tmp.append("muscle");
+    muscleAnalysis->setMuscles(tmp);
 	model.addAnalysis(muscleAnalysis);
    
     /*
