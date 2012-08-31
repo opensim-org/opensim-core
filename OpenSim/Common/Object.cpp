@@ -1629,7 +1629,8 @@ std::string Object::dump(bool dumpName) {
 	std::string saveName = getName();
 	if (!dumpName) setName("");
 	Object::setSerializeAllDefaults(true);
-	updateXMLNode(doc.getRootElement());
+	SimTK::Xml::Element elem = doc.getRootElement();
+	updateXMLNode(elem);
 	Object::setSerializeAllDefaults(false);
 	setName(saveName);
 	doc.getRootElement().node_begin()->writeToString(outString);
