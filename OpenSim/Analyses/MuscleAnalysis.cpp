@@ -707,7 +707,7 @@ int MuscleAnalysis::begin(SimTK::State& s )
 		for(int i=0; i<nq; i++) {
 			q = _momentArmStorageArray[i]->q;
 			if (q->getLocked(s))
-				throw(Exception("Coordinate: "+q->getName()+" is locked and can't be varied. Aborting.")); 
+				cout << "MuscleAnalysis: WARNING - coordinate " << q->getName() << " is locked and can't be varied." << endl; 
 		}
 	}
 	if(_storageList.getSize()> 0 && _storageList.get(0)->getSize() <= 0) status = record(s);
