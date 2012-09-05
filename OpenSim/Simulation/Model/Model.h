@@ -814,9 +814,19 @@ public:
     /** Get the value of a state variable of this Model.
     @param state   the State for which to get the value
     @param name    the name (string) of the state variable of interest **/
-	/*virtual*/ double getStateVariable(const SimTK::State& state, 
-                                        const std::string&  name) const;
+	/*virtual*/ double getStateVariable(const SimTK::State& s, 
+                                        const std::string& name) const;
+
+    /** Set the value of a state variable of this Model.
+    @param state   the State for which to get the value
+    @param name    the name (string) of the state variable of interest 
+    @param value   the value of the state **/
+	/*virtual*/ void setStateVariable(SimTK::State& s, 
+                                        const std::string& name,
+                                        double value) const;
 	
+    /** Get the Y index of a state variable by name.
+    @param name    the name (string) of the state variable of interest **/
 	/*virtual*/ SimTK::SystemYIndex getStateVariableSystemIndex
        (const std::string &stateVariableName) const;
     /**@}**/

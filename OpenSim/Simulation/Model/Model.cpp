@@ -420,6 +420,14 @@ SimTK::State& Model::initializeState() {
     if (_system == NULL) 
         Exception("Model::initializeState(): call buildSystem() first.");
 
+    // Force simbody to allocate a fresh system state. This forces the
+    // realizeTopology() to actually do something. The correct solution here
+    // would be to NOT return the reference to updDefaultState(), and rather
+    // return a const getDefaultState(). -- see comment below. Otherwise,
+    // any state modification here will be changing the default state which is
+    // part of the model and hence should be read only (tim.d, 9/4/2012).
+    getMultibodySystem().invalidateSystemTopologyCache();
+
     // This tells Simbody to finalize the System.
     getMultibodySystem().realizeTopology();
     // Get a writable reference to the default state that is stored inside
@@ -1184,12 +1192,12 @@ Array<std::string> Model::getStateVariableNames() const
 	return _stateVariableNames;
 }
 
-double Model::getStateVariable(const SimTK::State& state, const std::string &name) const
+double Model::getStateVariable(const SimTK::State& s, const std::string &name) const
 {
 	int found = _stateVariableNames.findIndex(name);
 
 	if(found >= 0){
-		return state.getY()[_stateVariableSystemIndices[found]];
+		return s.getY()[_stateVariableSystemIndices[found]];
 	}
 	else{
 		std::stringstream msg;
@@ -1202,12 +1210,18 @@ double Model::getStateVariable(const SimTK::State& state, const std::string &nam
 	}
 }
 
+void Model::setStateVariable(SimTK::State& s, const std::string &name, double value) const
+{
+    s.updY()[getStateVariableSystemIndex(name)] = value;  
+}
+
 void Model::getStateValues(const SimTK::State& s, Array<double> &rStateValues) const
 {
 	rStateValues.setSize(getNumStateVariables());
 	for(int i=0; i< _stateVariableSystemIndices.getSize(); i++) 
 		rStateValues[i] = s.getY()[_stateVariableSystemIndices[i]];
 }
+
 void Model::setStateValues(SimTK::State& s, const double* aStateValues) const
 {
 	const SimTK::Stage& currentStage=s.getSystemStage();
