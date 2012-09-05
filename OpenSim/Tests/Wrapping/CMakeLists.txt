@@ -6,8 +6,9 @@ LINK_LIBRARIES( debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
 		debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
 		debug osimAnalyses${CMAKE_DEBUG_POSTFIX} optimized osimAnalyses)
 
-IF(BUILD_TESTING)
 ADD_EXECUTABLE(testWrapping testWrapping.cpp)
+
+TARGET_LINK_LIBRARIES(testWrapping ${LINK_LIBRARIES} )
 
 FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 
@@ -37,4 +38,3 @@ ENDIF (EXECUTABLE_OUTPUT_PATH)
 ADD_TEST(testWrapping ${TEST_PATH}/testWrapping)
 
 SET_TARGET_PROPERTIES(testWrapping PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Tests - testWrapping")
-ENDIF(BUILD_TESTING)

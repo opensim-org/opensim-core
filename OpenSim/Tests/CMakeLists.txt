@@ -9,54 +9,16 @@ ELSE(WIN32)
   SET( THREAD_LIB )
 ENDIF(WIN32)
 
-LINK_LIBRARIES(
-	debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
-        debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
-        debug osimAnalyses${CMAKE_DEBUG_POSTFIX} optimized osimAnalyses
-        debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators
-        debug osimTools${CMAKE_DEBUG_POSTFIX} optimized osimTools
-   	debug ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} optimized   ${NameSpace}SimTKcommon
-   	debug ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKmath
-   	
-   	debug ${NameSpace}SimTKsimbody${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKsimbody
-   	${MATH_LIBS_TO_USE})
-
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 	SET(CMAKE_INSTALL_PREFIX ${OPENSIM_INSTALL_DIR})
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 IF(BUILD_TESTING)
-# Automatically create tests using files named "test*.cpp"	
-FILE(GLOB TEST_PROGS "test*.cpp")
 
-FOREACH(TEST_PROG ${TEST_PROGS})
-    GET_FILENAME_COMPONENT(TEST_ROOT ${TEST_PROG} NAME_WE)
-
-    # Link with shared library
-    ADD_EXECUTABLE(${TEST_ROOT} ${TEST_PROG})
-    TARGET_LINK_LIBRARIES(${TEST_ROOT} ${LINK_LIBRARIES} )
-	ADD_TEST(${TEST_ROOT} ${EXECUTABLE_OUTPUT_PATH}/${TEST_ROOT} 1)
-    SET_TARGET_PROPERTIES(${TEST_ROOT} 
-		PROPERTIES 
-		PROJECT_LABEL "Tests - ${TEST_ROOT}")
-
-ENDFOREACH(TEST_PROG ${TEST_PROGS})
-
-# Also need to copy data files (.osim, .xml, .sto, .trc, .mot) to run directory
-FILE(GLOB TEST_FILES *.osim *.obj *.vtp *.xml *.sto *.mot)
-#
-# Copy files to run dir
-#
-FOREACH (dataFile ${TEST_FILES})
-  ADD_CUSTOM_COMMAND(
-     TARGET copyTestFiles
-     COMMAND ${CMAKE_COMMAND}
-     ARGS -E copy
-     ${dataFile}
-     ${OpenSim_BINARY_DIR}/OpenSim/Tests)
- 
-ENDFOREACH (dataFile) 
+ADD_SUBDIRECTORY(ControllerExample)
+ADD_SUBDIRECTORY(ExampleMain)
+ADD_SUBDIRECTORY(OptimizationExample_Arm26)
+ADD_SUBDIRECTORY(Wrapping)
 
 ENDIF(BUILD_TESTING)
 
-SUBDIRS(Wrapping)
