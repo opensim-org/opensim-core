@@ -13,12 +13,7 @@ SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
 		CACHE PATH "Top-level directory of OpenSim install")
 
 # Change name of build target
-IF(BUILD_API_EXAMPLES)
-SET(TARGET optimizationExample)
-ELSE(BUILD_API_EXAMPLES)
-# Change name of build target
 SET(TARGET optimizationExample CACHE TYPE STRING)
-ENDIF(BUILD_API_EXAMPLES)
 SET(SOURCE OptimizationExample.cpp)
 
 # To add Debug feature add ";Debug" after Release on the line below

@@ -12,12 +12,8 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors)
 SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME} 
 		CACHE PATH "Top-level directory of OpenSim install")
 
-IF(BUILD_API_EXAMPLES)
-SET(TARGET exampleController)
-ELSE(BUILD_API_EXAMPLES)
 # Change name of build target
 SET(TARGET exampleController CACHE TYPE STRING)
-ENDIF(BUILD_API_EXAMPLES)
 # Identify the cpp file(s) that were to be built
 SET(SOURCE ControllerExample.cpp)
 

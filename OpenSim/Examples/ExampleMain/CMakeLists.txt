@@ -13,12 +13,7 @@ SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
 		CACHE PATH "Top-level directory of OpenSim install")
 
 # Change name of build target
-IF(BUILD_API_EXAMPLES)
-SET(TARGET exampleMain)
-ELSE(BUILD_API_EXAMPLES)
-# Change name of build target
 SET(TARGET exampleMain CACHE TYPE STRING)
-ENDIF(BUILD_API_EXAMPLES)
 # Identify the cpp file(s) that were to be built
 SET(SOURCE TugOfWar1_CreateModel.cpp)
 
