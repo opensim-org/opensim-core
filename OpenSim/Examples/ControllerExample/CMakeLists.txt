@@ -12,10 +12,14 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors)
 SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME} 
 		CACHE PATH "Top-level directory of OpenSim install")
 
+IF(BUILD_API_EXAMPLES)
+SET(TARGET exampleController)
+ELSE(BUILD_API_EXAMPLES)
 # Change name of build target
 SET(TARGET exampleController CACHE TYPE STRING)
+ENDIF(BUILD_API_EXAMPLES)
 # Identify the cpp file(s) that were to be built
-SET(SOURCE ControllerExample.cpp CACHE TYPE STRING)
+SET(SOURCE ControllerExample.cpp)
 
 # To add Debug feature add ";Debug" after Release on the line below
 SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release" 
@@ -41,12 +45,16 @@ SET(SIMTK_MATH_LIB debug ${NameSpace}SimTKmath_d optimized ${NameSpace}SimTKmath
 SET(SIMTK_SIMBODY_LIB debug ${NameSpace}SimTKsimbody_d optimized ${NameSpace}SimTKsimbody)
 
 TARGET_LINK_LIBRARIES(${TARGET}
-	debug osimSimulation_d	optimized osimSimulation
-	debug osimActuators_d	optimized osimActuators
-	debug osimCommon_d		optimized osimCommon
-	debug osimAnalyses_d	optimized osimAnalyses
-	debug osimTools_d		optimized osimTools
-	${SIMTK_ALL_LIBS}
+	debug osimCommon_d optimized osimCommon
+	debug osimSimulation_d optimized osimSimulation
+	debug osimAnalyses_d optimized osimAnalyses
+	debug osimActuators_d optimized osimActuators
+	debug osimTools_d optimized osimTools
+	debug ${NameSpace}SimTKcommon_d optimized ${NameSpace}SimTKcommon
+	debug ${NameSpace}SimTKmath_d optimized  ${NameSpace}SimTKmath
+	debug ${NameSpace}SimTKsimbody_d optimized ${NameSpace}SimTKsimbody
+	SimTKlapack
+	${PLATFORM_LIBS}
 )
 
 IF(WIN32)
