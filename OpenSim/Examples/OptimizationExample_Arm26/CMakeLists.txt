@@ -13,9 +13,9 @@ SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
 		CACHE PATH "Top-level directory of OpenSim install")
 
 # Change name of build target
-SET(TARGET optimizationExample)
+SET(TARGET optimizationExample CACHE TYPE STRING)
 # Identify the cpp file(s) that were to be built
-SET(SOURCE OptimizationExample.cpp)
+SET(SOURCE OptimizationExample.cpp CACHE TYPE STRING)
 
 # To add Debug feature add ";Debug" after Release on the line below
 SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release" 

@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 2.6)
+
 SET(BUILD_API_EXAMPLES ON CACHE BOOL "Build examples that are used for the OpenSimAPIExamples distribution")
 MARK_AS_ADVANCED(BUILD_API_EXAMPLES)
 
