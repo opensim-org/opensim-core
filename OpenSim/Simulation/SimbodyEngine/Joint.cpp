@@ -45,7 +45,7 @@ using namespace OpenSim;
  */
 Joint::~Joint()
 {
-	if(_body != NULL)
+	if(!_body.empty())
 		_body->_joint = NULL;
 }
 //_____________________________________________________________________________
@@ -269,7 +269,7 @@ void Joint::setParentBody(OpenSim::Body& aBody)
 
 const OpenSim::Body& Joint::getParentBody() const
 {
-    if (_parentBody == NULL)
+    if (_parentBody.empty())
         throw Exception("Joint::getParentBody() : Joint has not been initialized");
 	return *_parentBody;
 }
