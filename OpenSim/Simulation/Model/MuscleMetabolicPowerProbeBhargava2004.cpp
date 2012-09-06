@@ -286,7 +286,7 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
             cout << "Bdot = " << Bdot << endl;
             cout << "Wdot = " << Wdot << endl;
             cout << "Edot = " << Edot(i) << endl;
-            system("pause");
+            int res = system("pause");
         }
     }
 

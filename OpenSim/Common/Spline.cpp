@@ -156,7 +156,7 @@ initialize(FILE *aFP)
 	// ORDER
 	status = fscanf(aFP,"%s",dum);
 	if(checkFileStatus(status)!=0) return(-1);
-	fscanf(aFP,"%d",&_order);
+	status = fscanf(aFP,"%d",&_order);
 	if(checkFileStatus(status)!=0) return(-1);
 	if(_order<=0) {
 		printf("Spline.initialize: ERROR- invalid order (%d).\n",
@@ -165,11 +165,11 @@ initialize(FILE *aFP)
 	}
 
 	// INTERVAL
-	fscanf(aFP,"%s",dum);
+	status = fscanf(aFP,"%s",dum);
 	if(checkFileStatus(status)!=0) return(-1);
-	fscanf(aFP,"%lf",&_ti);
+	status = fscanf(aFP,"%lf",&_ti);
 	if(checkFileStatus(status)!=0) return(-1);
-	fscanf(aFP,"%lf",&_tf);
+	status = fscanf(aFP,"%lf",&_tf);
 	if(checkFileStatus(status)!=0) return(-1);
 	if(_ti>_tf) {
 		printf("Spline.initialize: ERROR- invalid interval (%lf to %lf).\n",
@@ -178,9 +178,9 @@ initialize(FILE *aFP)
 	}
 
 	// NUMBER OF KNOTS
-	fscanf(aFP,"%s",dum);
+	status = fscanf(aFP,"%s",dum);
 	if(checkFileStatus(status)!=0) return(-1);
-	fscanf(aFP,"%d",&_nknots);
+	status = fscanf(aFP,"%d",&_nknots);
 	if(checkFileStatus(status)!=0) return(-1);
 	if(_nknots<=0) {
 		printf("Spline.initialize: ERROR- invalid number of knots (%d).\n",
@@ -198,14 +198,14 @@ initialize(FILE *aFP)
 
 	// KNOT VALUES
 	for(i=0;i<_nknots;i++) {
-		fscanf(aFP,"%lf",&_knots[i]);
+		status = fscanf(aFP,"%lf",&_knots[i]);
 		if(checkFileStatus(status)!=0) return(-1);
 	}
 
 	// NUMBER OF COEFFICIENTS
-	fscanf(aFP,"%s",dum);
+	status = fscanf(aFP,"%s",dum);
 	if(checkFileStatus(status)!=0) return(-1);
-	fscanf(aFP,"%d",&_ncoefs);
+	status = fscanf(aFP,"%d",&_ncoefs);
 	if(checkFileStatus(status)!=0) return(-1);
 	if(_ncoefs<=0) {
 		printf("Spline.initialize: ERROR- invalid number of");
