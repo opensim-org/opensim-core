@@ -28,25 +28,8 @@ ELSE(DOXYGEN_EXECUTABLE-NOTFOUND)
     # "doxygen" target directly; it isn't run by default.
     ADD_CUSTOM_TARGET(doxygen ${DOXYGEN_EXECUTABLE} ${DOXY_CONFIG}) 
 
-    ###################
-    # ADD LOCAL HACKS #
-    ###################
-    # OpenSim has its own main.html that should override the Doxygen-generated
-    # one (written by Sam Hamner and called "main_b").
-    FILE(TO_NATIVE_PATH
-        "${CMAKE_CURRENT_SOURCE_DIR}/OpenSim/doc/main_b.html"
-        mainb_source_file)
-    FILE(TO_NATIVE_PATH
-        "${PROJECT_BINARY_DIR}/html/main.html"
-        main_dest_file)
-
-    ADD_CUSTOM_COMMAND(TARGET doxygen POST_BUILD
-       COMMAND ${NATIVE_COPY_CMD} "${mainb_source_file}" "${main_dest_file}"
-       COMMENT "Replace Doxygen main.html with ours."
-       VERBATIM)
-
     # There is an "images" directory containing the pictures needed by
-    # Sam's "main_b". Copy all the files into html/images.
+    # the main page Copy all the files into html/images.
     FILE(GLOB ALL_IMAGES 
          "${CMAKE_CURRENT_SOURCE_DIR}/OpenSim/doc/images/*.gif"
          "${CMAKE_CURRENT_SOURCE_DIR}/OpenSim/doc/images/*.png")
