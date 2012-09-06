@@ -94,6 +94,7 @@ public:
 	void setClamped(Coordinate& coord, bool newValue);
 	bool getClamped(const Coordinate& coord);
 	void setLocked(Coordinate& coord, bool newValue);
+	bool isPrescribed(const Coordinate& coord) const;
 	bool isConstrained(const Coordinate& coord) const;
 	// Constraints
 	bool isDisabled(const Constraint& constraint) const {
