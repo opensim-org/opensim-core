@@ -386,7 +386,7 @@ void testPointConstraint()
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	State osim_state = osimModel->initSystem();
+	State& osim_state = osimModel->initSystem();
 
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
@@ -465,7 +465,7 @@ void testConstantDistanceConstraint()
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	State osim_state = osimModel->initSystem();
+	State& osim_state = osimModel->initSystem();
 
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
@@ -510,7 +510,7 @@ void testCoordinateLocking()
 	osimModel->setGravity(gravity_vec);
 
 	// Initialize the state of the model based on the defaults of ModelComponents.
-	State si = osimModel->initSystem();
+	State& si = osimModel->initSystem();
 
 	// Model joint states
 	CoordinateSet &coordinates = osimModel->updCoordinateSet();
@@ -646,7 +646,7 @@ void testWeldConstraint()
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	State osim_state = osimModel->initSystem();
+	State& osim_state = osimModel->initSystem();
 
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
@@ -718,7 +718,7 @@ void testPointOnLineConstraint()
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	State osim_state = osimModel->initSystem();
+	State& osim_state = osimModel->initSystem();
 
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
@@ -900,7 +900,7 @@ void testCoordinateCouplerConstraint()
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	State osim_state = osimModel->initSystem();
+	State& osim_state = osimModel->initSystem();
 
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations

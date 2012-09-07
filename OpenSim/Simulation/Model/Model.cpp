@@ -110,7 +110,8 @@ Model::Model() :
     _allControllersEnabled(true),
     _perturbActuatorForces(false),
     _system(NULL),
-	_defaultControls(*new Vector(0))
+	_defaultControls(*new Vector(0)),
+    _workingState()
 {
 	setNull();
 	setupProperties();
@@ -152,7 +153,8 @@ Model::Model(const string &aFileName) :
     _allControllersEnabled(true),
     _perturbActuatorForces(false),
     _system(NULL),
-	_defaultControls(*new Vector(0))
+	_defaultControls(*new Vector(0)),
+    _workingState()
 {
 	setNull();
 	setupProperties();
@@ -200,7 +202,8 @@ Model::Model(const Model &aModel) :
     _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
     _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
     _system(NULL),
-	_defaultControls(*new Vector(0))
+	_defaultControls(*new Vector(0)),
+    _workingState()
 {
 	//cout << "Construct copied model " <<  endl;
 	// Throw exception if something wrong happened and we don't have a dynamics engine.
@@ -291,6 +294,7 @@ void Model::copyData(const Model &aModel)
     _markerSet = aModel._markerSet;
     _contactGeometrySet = aModel._contactGeometrySet;
     _probeSet = aModel._probeSet;
+    _workingState = aModel._workingState;
 
 }
 //_____________________________________________________________________________
@@ -420,54 +424,69 @@ SimTK::State& Model::initializeState() {
     if (_system == NULL) 
         Exception("Model::initializeState(): call buildSystem() first.");
 
-    // Force simbody to allocate a fresh system state. This forces the
-    // realizeTopology() to actually do something. The correct solution here
-    // would be to NOT return the reference to updDefaultState(), and rather
-    // return a const getDefaultState(). -- see comment below. Otherwise,
-    // any state modification here will be changing the default state which is
-    // part of the model and hence should be read only (tim.d, 9/4/2012).
-    getMultibodySystem().invalidateSystemTopologyCache();
-
     // This tells Simbody to finalize the System.
+    getMultibodySystem().invalidateSystemTopologyCache();
     getMultibodySystem().realizeTopology();
-    // Get a writable reference to the default state that is stored inside
-    // the System. TODO: not sure it is a good idea to modify the default
-    // State (sherm 5/21/2012).
-    SimTK::State& defaultState = updMultibodySystem().updDefaultState();
+
+    // Set the model's operating state (internal member variable) to the 
+    // default state that is stored inside the System.
+    copyDefaultStateIntoWorkingState();
 
     // Set the Simbody modeling option that tells any joints that use 
     // quaternions to use Euler angles instead.
-    _matter->setUseEulerAngles(defaultState, true);
+    _matter->setUseEulerAngles(_workingState, true);
+
     // Process the modified modeling option.
-	getMultibodySystem().realizeModel(defaultState);
+	getMultibodySystem().realizeModel(_workingState);
 
     // Invoke the ModelComponent interface for initializing the state.
-    initStateFromProperties(defaultState);
+    initStateFromProperties(_workingState);
 
     // Realize instance variables that may have been set above. This 
-    // means floating point parameters such as mass properties and geometry
-    // placements are frozen.
-    getMultibodySystem().realize(defaultState, Stage::Instance);
+    // means floating point parameters such as mass properties and 
+    // geometry placements are frozen.
+    getMultibodySystem().realize(_workingState, Stage::Instance);
 
     // We can now collect up all the fixed geometry, which can depend only
     // on instance variable, not on configuration.
-    if (getUseVisualizer()) {
-        _modelViz->collectFixedGeometry(defaultState);
-    }
+    if (getUseVisualizer())
+        _modelViz->collectFixedGeometry(_workingState);
 
     // Realize the initial configuration in preparation for assembly. This
     // initial configuration does not necessarily satisfy constraints.
-    getMultibodySystem().realize(defaultState, Stage::Position);
+    getMultibodySystem().realize(_workingState, Stage::Position);
 
     // Reset (initialize) all underlying Probe SimTK::Measures
     for (int i=0; i<getProbeSet().getSize(); ++i)
-        getProbeSet().get(i).reset(defaultState);
+        getProbeSet().get(i).reset(_workingState);
     
-	// do the assembly
-    createAssemblySolver(defaultState);
-	assemble(defaultState);
+	// Do the assembly
+    createAssemblySolver(_workingState);
+	assemble(_workingState);
 
-	return defaultState;
+	return _workingState;
+}
+
+
+SimTK::State& Model::getWorkingState()
+{
+    if (!isValidSystem())
+        Exception("Model::getWorkingState(): call initializeState() first.");
+
+    return _workingState;
+}
+
+
+void Model::copyDefaultStateIntoWorkingState()
+{
+    _workingState = getMultibodySystem().getDefaultState();
+}
+
+
+SimTK::State& Model::copyDefaultStateIntoWorkingStateAndReturn()
+{
+    copyDefaultStateIntoWorkingState();
+    return getWorkingState();
 }
 
 
@@ -1233,8 +1252,9 @@ void Model::setStateValues(SimTK::State& s, const double* aStateValues) const
 // INITIAL STATES
 //=============================================================================
 
-void Model::setInitialTime( double ti ) {
-	    _system->updDefaultState().updTime() = ti;
+void Model::setInitialTime( double ti ) 
+{
+    getWorkingState().updTime() = ti;
 }
 
 //_____________________________________________________________________________
@@ -1347,8 +1367,8 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
 		initSystem();	// This crashes now trying to delete the old matterSubsystem
     	updSimbodyEngine().connectSimbodyEngineToModel(*this);
 	    getMultibodySystem().realizeTopology();
-		SimTK::State& newState = updMultibodySystem().updDefaultState();
-	    getMultibodySystem().realize( newState, SimTK::Stage::Velocity);
+        SimTK::State& newState = updMultibodySystem().updDefaultState();
+        getMultibodySystem().realize( newState, SimTK::Stage::Velocity);
 
 		for (i = 0; i < _forceSet.getSize(); i++) {
             PathActuator* act = dynamic_cast<PathActuator*>(&_forceSet.get(i));
@@ -1836,8 +1856,8 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
  */
 void Model::formQStorage(const Storage& originalStorage, Storage& qStorage) {
 
-    int nq =  _system->getDefaultState().getNQ();
-	Array<string> qNames;
+	int nq = getWorkingState().getNQ();
+    Array<string> qNames;
 	getCoordinateSet().getNames(qNames);
 
 

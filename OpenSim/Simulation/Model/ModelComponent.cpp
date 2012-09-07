@@ -410,7 +410,7 @@ const int ModelComponent::getStateIndex(const std::string& name) const
 SimTK::SystemYIndex ModelComponent::
 getStateVariableSystemIndex(const std::string& stateVariableName) const
 {
-    const SimTK::State& s = _model->getMultibodySystem().getDefaultState();
+    const SimTK::State& s = _model->getWorkingState();
 
     std::map<std::string, StateVariableInfo>::const_iterator it;
     it = _namedStateVariableInfo.find(stateVariableName);

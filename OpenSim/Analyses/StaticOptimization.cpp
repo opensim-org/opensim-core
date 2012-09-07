@@ -240,7 +240,6 @@ void StaticOptimization::
 setModel(Model& aModel)
 {
 	Analysis::setModel(aModel);
-	//SimTK::State& s = aModel->getMultibodySystem()->updDefaultState();
 }
 
 //-----------------------------------------------------------------------------
@@ -299,7 +298,7 @@ record(const SimTK::State& s)
 	if(!_modelWorkingCopy) return -1;
 
 	// Set model to whatever defaults have been updated to from the last iteration
-	SimTK::State& sWorkingCopy = _modelWorkingCopy->updMultibodySystem().updDefaultState();
+    SimTK::State& sWorkingCopy = _modelWorkingCopy->getWorkingState();
 	sWorkingCopy.setTime(s.getTime());
 	_modelWorkingCopy->initStateWithoutRecreatingSystem(sWorkingCopy); 
 
@@ -502,7 +501,7 @@ begin(SimTK::State& s )
 
 	// Replace model force set with only generalized forces
 	if(_model) {
-		SimTK::State& sWorkingCopyTemp = _modelWorkingCopy->updMultibodySystem().updDefaultState();
+        SimTK::State& sWorkingCopyTemp = _modelWorkingCopy->getWorkingState();
 		// Update the _forceSet we'll be computing inverse dynamics for
 		if(_ownsForceSet) delete _forceSet;
 		if(_useModelForceSet) {

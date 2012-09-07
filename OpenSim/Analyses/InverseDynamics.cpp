@@ -242,7 +242,6 @@ setModel(Model& aModel)
 {
     
 	Analysis::setModel(aModel);
-	//SimTK::State& s = aModel->getMultibodySystem()->updDefaultState();
 }
 
 //-----------------------------------------------------------------------------
@@ -312,7 +311,7 @@ record(const SimTK::State& s)
 
 //cout << "\nInverse Dynamics record() : \n" << endl;
 	// Set model Q's and U's
-	SimTK::State sWorkingCopy = _modelWorkingCopy->updMultibodySystem().updDefaultState();
+    SimTK::State sWorkingCopy = _modelWorkingCopy->getWorkingState();
 
 	// Set modeiling options for Actuators to be overriden
 	for(int i=0,j=0; i<_forceSet->getSize(); i++) {

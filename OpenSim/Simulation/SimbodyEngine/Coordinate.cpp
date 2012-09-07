@@ -619,7 +619,8 @@ Array<std::string> Coordinate::getStateVariableNames() const
 SimTK::SystemYIndex Coordinate::getStateVariableSystemIndex(const std::string &stateVariableName) const
 {
 	const MobilizedBody& mb=_model->getMatterSubsystem().getMobilizedBody(_bodyIndex);
-	const SimTK::State &state = _model->getMultibodySystem().getDefaultState();
+    const SimTK::State &state = _model->getWorkingState();
+
 	int index = -1;
 
 	if (stateVariableName == getName())

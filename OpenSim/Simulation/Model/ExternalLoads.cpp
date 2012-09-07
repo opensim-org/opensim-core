@@ -315,8 +315,8 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 	Vec3 force(SimTK::NaN); 
 	Vec3 torque(SimTK::NaN);
 	
-	// Checked that we had a model with a valid system, so get a writable state from it defaults
-	SimTK::State &s = _model->updMultibodySystem().updDefaultState();
+	// Checked that we had a model with a valid system, so get its working state
+    SimTK::State &s = _model->getWorkingState();
 
 	// get from (ground) and to (applied) bodies 
 	const Body &ground = _model->getGroundBody();

@@ -260,7 +260,7 @@ void Constraint::calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimT
 Array<std::string> Constraint::getRecordLabels() const
 {
 	SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
-	const SimTK::State &ds = _model->getMultibodySystem().getDefaultState();
+    const SimTK::State &ds = _model->getWorkingState();
 
 	// number of bodies being directly constrained
 	int ncb = simConstraint.getNumConstrainedBodies();

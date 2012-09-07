@@ -224,28 +224,42 @@ public:
 
     /** After buildSystem() has been called, and any additional modifications
     to the Simbody MultibodySystem have been made, call this method to finalize 
-    the MultibodySystem (by calling its realizeTopology() method), obtain a 
-    default state, and assemble it so that position constraints are 
+    the MultibodySystem (by calling its realizeTopology() method), obtain an 
+    initial state, and assemble it so that position constraints are 
     satisified. The initStateFromProperties() method of each contained
-    ModelComponent will be invoked. A reference to the internally-maintained 
-    default State is returned; your first action should usually be to copy it 
-    into your own State object, for example:
-    @code
-        SimTK::State myState = initializeState(); 
-    @endcode **/
+    ModelComponent will be invoked. A reference to the writable internally-
+    maintained model State is returned (note that this does not affect the 
+    system's default state (which is part of the model and hence read only).
+    The model's state can be reset to the system's default state at any time
+    by re-executing initializeState(). **/
     SimTK::State& initializeState();
+
     
 	/** Convenience method that invokes buildSystem() and then 
-    initializeState().  A reference to the internally-maintained default State 
-    is returned; your first action should usually be to copy it into your own
-    State object, for example:
-    @code
-        SimTK::State myState = initSystem(); 
-    @endcode **/
+    initializeState(). A reference to the writable internally-
+    maintained model State is returned (note that this does not affect the 
+    system's default state (which is part of the model and hence read only). **/
     SimTK::State& initSystem() SWIG_DECLARE_EXCEPTION {
         buildSystem();
         return initializeState();
     }
+
+
+    /** Convenience method that returns a reference to the model's 'working'
+    state. This is just returning the reference that was returned by 
+    initSystem() and initializeState() -- note that either of these methods
+    must be called prior to getWorkingState(), otherwise an empty state will
+    be returned. **/
+    SimTK::State& getWorkingState();
+
+    /** Method to copy a model's default state into the space allocated for
+    its working state. This is so that the default state does not get corrupted. **/
+    void copyDefaultStateIntoWorkingState();
+
+    /** Method to copy a model's default state into the space allocated for
+    its working state and return this state. **/
+    SimTK::State& copyDefaultStateIntoWorkingStateAndReturn();
+
 
 	/**
 	 * This is called after the Model is fully created but before starting a simulation.
@@ -957,6 +971,12 @@ private:
     // SimTK::MultibodySystem. It is constructed just knowing the Model and
     // then forwards requests through the Model at runtime.
     SimbodyEngine _simbodyEngine;
+
+    // This is the internal 'writable' state of the model.
+    // _workingState will be set to the system default state when
+    // initializeState() or initSystem() is called.
+    SimTK::State _workingState;
+
 
     //--------------------------------------------------------------------------
     //                              RUN TIME 

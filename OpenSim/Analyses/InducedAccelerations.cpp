@@ -526,7 +526,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 	_comIndAccs.setSize(0);
 	_constraintReactions.setSize(0);
 
-	SimTK::State s_analysis = _model->updMultibodySystem().updDefaultState();
+    SimTK::State s_analysis = _model->getWorkingState();
 
 	_model->initStateWithoutRecreatingSystem(s_analysis);
 	// Just need to set current time and position to determine state of constraints

@@ -71,7 +71,7 @@ void testStates()
   
     model.addController( controller );
 	// original default state
-    State state = model.initSystem();
+    State& state = model.initSystem();
 
 	// hold on to original default continuous state variables
     Vector y1 = state.getY();
@@ -94,26 +94,35 @@ void testStates()
 
 	// continuous state variables after simulation
     Vector y2 = state.getY();
+    y2.dump("y2: State after integration:");
 
-	// another default state from the system
-    State state2 = model.initSystem();
+	// reset model working state to default state
+    State& state2 = model.initializeState();
+
 	// another version of default continuous state variables 
 	// should be unaffected by simulation of the system
     Vector y3 = state2.getY();
 	y3.dump("y3: Model reset to Initial state:");
 
-	// update the default (properties) values from the state
-	// after the simulation
-    model.setPropertiesFromState(state);
+    // update state to contain muscle states that yield muscle equilibirium
+    model.equilibrateMuscles(state2);
+	state.getY().dump("y3: State after equilibrateMuscles:");
+	//==========================================================================================================
+	// Compute the force and torque at the specified times.
 
-	// get a new default state that should reflect the states 
-	// after the simulation
-    state2 = model.initSystem();
+    RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem());
+    Manager manager2(model, integrator);
+    manager2.setInitialTime(0.0);
+    manager2.setFinalTime(0.05);
+
+    // update state after a short simulation forward in time
+    manager2.integrate(state2);
+
 	// get the default continuous state variables updated
 	// from the state after the simulation
     Vector y4 = state2.getY();
-	y2.dump("y2: State after integration:");
-	y4.dump("y4: Default State after update:");
+	
+	y4.dump("y4: Default State after second simulation:");
 
     for (int i = 0; i < y1.size(); i++) 
     {
