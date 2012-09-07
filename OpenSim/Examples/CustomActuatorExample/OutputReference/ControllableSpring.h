@@ -44,8 +44,9 @@
 
 namespace OpenSim {
 
-class ControllableSpring : public PistonActuator
-{
+class ControllableSpring : public PistonActuator {
+OpenSim_DECLARE_CONCRETE_OBJECT(ControllableSpring, PistonActuator);
+
 //=============================================================================
 // DATA
 //=============================================================================
