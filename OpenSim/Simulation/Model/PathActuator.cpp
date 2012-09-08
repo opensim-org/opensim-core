@@ -220,7 +220,7 @@ void PathActuator::computeForce( const SimTK::State& s,
 /**
  * Compute the moment-arm of this muscle about a coordinate.
  */
-double PathActuator::computeMomentArm(SimTK::State& s, Coordinate& aCoord) const
+double PathActuator::computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const
 {
 	return getGeometryPath().computeMomentArm(s, aCoord);
 }

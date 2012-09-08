@@ -238,7 +238,7 @@ void Ligament::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 /**
  * Compute the moment-arm of this muscle about a coordinate.
  */
-double Ligament::computeMomentArm(SimTK::State& s, Coordinate& aCoord) const
+double Ligament::computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const
 {
 	return getGeometryPath().computeMomentArm(s, aCoord);
 }

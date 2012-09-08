@@ -111,7 +111,7 @@ public:
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
 	virtual double computeActuation( const SimTK::State& s) const;
-	virtual double computeMomentArm(SimTK::State& s, Coordinate& aCoord) const;
+	virtual double computeMomentArm( const SimTK::State& s, Coordinate& aCoord) const;
 
 	//--------------------------------------------------------------------------
 	// XML

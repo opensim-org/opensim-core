@@ -103,7 +103,7 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual double computeMomentArm(SimTK::State& s, Coordinate& aCoord) const;
+	virtual double computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const;
 	virtual void computeForce(const SimTK::State& s, 
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForces) const;
