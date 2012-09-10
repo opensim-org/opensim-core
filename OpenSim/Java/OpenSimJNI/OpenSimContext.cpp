@@ -120,8 +120,12 @@ void OpenSimContext::setLocked(Coordinate& coord, bool newValue) {
    return;
 }
 
+bool OpenSimContext::isPrescribed(const Coordinate& coord) const {
+  return (coord.isPrescribed(*_configState));
+}
+
 bool OpenSimContext::isConstrained(const Coordinate& coord) const {
-  return (coord.isPrescribed(*_configState) ||  coord.isDependent(*_configState));
+  return (coord.isDependent(*_configState));
 }
 
 // Muscles

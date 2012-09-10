@@ -65,48 +65,16 @@ PistonActuator::~PistonActuator()
  */
 PistonActuator::PistonActuator( string aBodyNameA, string aBodyNameB) :
 	Actuator(),
-	_bodyNameA(_propBodyNameA.getValueStr()),
-	_bodyNameB(_propBodyNameB.getValueStr()),
-	_pointsAreGlobal(_propPointsAreGlobal.getValueBool()),
-	_pointA(_propPointA.getValueDblVec()),
-	_pointB(_propPointB.getValueDblVec()),
-	_optimalForce(_propOptimalForce.getValueDbl()),
 	_bodyA(NULL),
 	_bodyB(NULL)
 {
-	// NULL
-	setNull();
-
-	// MEMBER VARIABLES
-	_bodyNameA = aBodyNameA;
-	_bodyNameB = aBodyNameB;
+	constructProperties();
 
 	if (_model) {
-		_bodyA = &_model->updBodySet().get(_bodyNameA);
-		_bodyB = &_model->updBodySet().get(_bodyNameB);
+		_bodyA = &_model->updBodySet().get(get_bodyA());
+		_bodyB = &_model->updBodySet().get(get_bodyB());
 	} 
 }
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param anActuator actuator to be copied.
- */
-PistonActuator::PistonActuator(const PistonActuator &anActuator) :
-	Actuator(anActuator),
-	_bodyNameA(_propBodyNameA.getValueStr()),
-	_bodyNameB(_propBodyNameB.getValueStr()),
-	_pointsAreGlobal(_propPointsAreGlobal.getValueBool()),
-	_pointA(_propPointA.getValueDblVec()),
-	_pointB(_propPointB.getValueDblVec()),
-	_optimalForce(_propOptimalForce.getValueDbl()),
-	_bodyA(NULL),
-	_bodyB(NULL)
-{
-	setNull();
-	copyData(anActuator);
-}
-
 
 //=============================================================================
 // CONSTRUCTION
@@ -118,7 +86,6 @@ PistonActuator::PistonActuator(const PistonActuator &anActuator) :
 void PistonActuator::
 setNull()
 {
-	setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -126,77 +93,18 @@ setNull()
  * Connect properties to local pointers.
  */
 void PistonActuator::
-setupProperties()
+constructProperties()
 {
 	SimTK::Vec3 x(0.0, 0.0, 0.0);
 
-	_propBodyNameA.setName("bodyA");
-	_propertySet.append( &_propBodyNameA );
+	constructProperty_bodyA("");
+	constructProperty_bodyB("");
 
-	_propBodyNameB.setName("bodyB");
-	_propertySet.append( &_propBodyNameB );
-
-	_propPointsAreGlobal.setName("points_are_global");
-	_propPointsAreGlobal.setValue(false);
-	_propertySet.append( &_propPointsAreGlobal );
-
-	_propPointA.setName("pointA");
-	_propPointA.setValue(x);
-	_propertySet.append( &_propPointA );
-
-	_propPointB.setName("pointB");
-	_propPointB.setValue(x);
-	_propertySet.append( &_propPointB );
-
-	_propOptimalForce.setName("optimal_force");
-	_propOptimalForce.setValue(1.0);
-	_propertySet.append( &_propOptimalForce );
+	constructProperty_points_are_global(false);
+	constructProperty_pointA(x);
+	constructProperty_pointB(x);
+	constructProperty_optimal_force(1.0);
 }
-
-//_____________________________________________________________________________
-/**
- * Copy the member data of the specified actuator.
- * @param aPistonActuator PistonActuator providing the data to be copied
- */
-void PistonActuator::
-copyData(const PistonActuator &aPistonActuator)
-{
-	// MEMBER VARIABLES
-	_bodyNameA = aPistonActuator._bodyNameA;
-	_bodyNameB = aPistonActuator._bodyNameB;
-	_pointsAreGlobal = aPistonActuator._pointsAreGlobal;
-	_pointA = aPistonActuator._pointA;
-	_pointB = aPistonActuator._pointB;
-
-	setOptimalForce(aPistonActuator.getOptimalForce());
-	setBodyA(aPistonActuator.getBodyA());
-	setBodyB(aPistonActuator.getBodyB());
-}
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//-----------------------------------------------------------------------------
-// ASSIGNMENT
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return  aBodyID ID (or number, or index) of the generalized Body.
- */
-PistonActuator& PistonActuator::
-operator=(const PistonActuator &aPistonActuator)
-{
-	// BASE CLASS
-	Actuator::operator =(aPistonActuator);
-
-	copyData(aPistonActuator);
-
-	return(*this);
-}
-
 
 //=============================================================================
 // GET AND SET
@@ -214,7 +122,7 @@ void PistonActuator::setBodyA(Body* aBody)
 {
 	_bodyA = aBody;
 	if(aBody)
-		_bodyNameA = aBody->getName();
+		set_bodyA(aBody->getName());
 }
 //_____________________________________________________________________________
 /**
@@ -227,7 +135,7 @@ void PistonActuator::setBodyB(Body* aBody)
 {
 	_bodyB = aBody;
 	if(aBody)
-		_bodyNameB = aBody->getName();
+		set_bodyB(aBody->getName());
 }
 //_____________________________________________________________________________
 /**
@@ -263,7 +171,7 @@ Body* PistonActuator::getBodyB() const
  */
 void PistonActuator::setOptimalForce(double aOptimalForce)
 {
-	_optimalForce = aOptimalForce;
+	set_optimal_force(aOptimalForce);
 }
 //_____________________________________________________________________________
 /**
@@ -273,7 +181,7 @@ void PistonActuator::setOptimalForce(double aOptimalForce)
  */
 double PistonActuator::getOptimalForce() const
 {
-	return(_optimalForce);
+	return(get_optimal_force());
 }
 //_____________________________________________________________________________
 /**
@@ -283,7 +191,7 @@ double PistonActuator::getOptimalForce() const
  */
 double PistonActuator::getStress( const SimTK::State& s) const
 {
-	return fabs(getForce(s)/_optimalForce); 
+	return fabs(getForce(s)/get_optimal_force()); 
 }
 
 
@@ -303,7 +211,7 @@ double PistonActuator::computeActuation( const SimTK::State& s ) const
 	if(_model==NULL) return 0;
 
 	// FORCE
-	return ( getControl(s) * _optimalForce );
+	return ( getControl(s) * getOptimalForce() );
 }
 
 
@@ -333,7 +241,9 @@ void PistonActuator::computeForce(const SimTK::State& s,
 
 	SimTK::Vec3 pointA_inGround, pointB_inGround;
 
-	if (_pointsAreGlobal)
+	SimTK::Vec3 _pointA = get_pointA();
+	SimTK::Vec3 _pointB = get_pointB();
+	if (get_points_are_global())
 	{
 		pointA_inGround = _pointA;
 		pointB_inGround = _pointB;
@@ -370,8 +280,8 @@ connectToModel(Model& aModel)
 	Super::connectToModel( aModel);
 
 	if (_model) {
-		_bodyA = &_model->updBodySet().get(_bodyNameA);
-		_bodyB = &_model->updBodySet().get(_bodyNameB);
+		_bodyA = &_model->updBodySet().get(upd_bodyA());
+		_bodyB = &_model->updBodySet().get(upd_bodyB());
 	}
 }
 
@@ -395,5 +305,5 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 	Actuator::updateFromXMLNode(aNode, versionNumber);
 	setBodyA(_bodyA);
 	setBodyB(_bodyB);
-	setOptimalForce(_optimalForce);
+	setOptimalForce(upd_optimal_force());
 }	

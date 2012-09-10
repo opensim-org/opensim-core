@@ -53,35 +53,30 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PistonActuator, Actuator);
 //=============================================================================
 protected:
 	// PROPERTIES
+
 	/** Name of Body to which the Body actuator is applied. */
-	PropertyStr _propBodyNameA;
+	OpenSim_DECLARE_PROPERTY(bodyA, std::string,
+	"Name of Body to which the Body actuator is applied.");
 
 	/** Name of Body to which the equal and opposite torque is applied. */
-	PropertyStr _propBodyNameB;
+	OpenSim_DECLARE_PROPERTY(bodyB, std::string,
+	"Name of Body to which the equal and opposite torque is applied.");
 
-	/** Point of application on each body*/
-	PropertyDblVec3 _propPointA;
-	PropertyDblVec3 _propPointB;
-	
+	/** Point of application on each body. */
+	OpenSim_DECLARE_PROPERTY(pointA, SimTK::Vec3,
+	"Point of application on each body.");
+
+	/** Name of Body to which the equal and opposite torque is applied. */
+	OpenSim_DECLARE_PROPERTY(pointB, SimTK::Vec3,
+	"Point of application on each body.");
+
 	/** bool to indicate whether or not the points are expressed in global frame*/
-	PropertyBool _propPointsAreGlobal;
+	OpenSim_DECLARE_PROPERTY(points_are_global, bool,
+	"bool to indicate whether or not the points are expressed in global frame.");
 
 	/** Optimal force. */
-	PropertyDbl _propOptimalForce;
-
-	// REFERENCES
-	std::string& _bodyNameA;
-	std::string& _bodyNameB;
-
-	/** force points of application:  assumed to be expressed in the frame
-	 *  of _bodyA  and _bodyB unless _pointsAreGlobal is true.  If _pointsAreGlobal is
-	 *  true, _pointA and _pointB are assumed to be expressed in the ground body */
-	SimTK::Vec3 &_pointA;
-	SimTK::Vec3 &_pointB;
-	bool &_pointsAreGlobal;
-	
-	/** Optimal force*/
-	double &_optimalForce;
+	OpenSim_DECLARE_PROPERTY(optimal_force, double,
+	"Optimal force.");
 
     /** Corresponding Body to which the force actuator is applied. */
     Body *_bodyA;
@@ -99,22 +94,12 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	PistonActuator( std::string aBodyNameA="", std::string abodyNameB="");
-	PistonActuator( const PistonActuator &aPistonActuator);
 	virtual ~PistonActuator();
-
-	void copyData(const PistonActuator &aPistonActuator);
 private:
 	void setNull();
-	void setupProperties();
-	
+	void constructProperties();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
 public:
-#ifndef SWIG
-	PistonActuator& operator=(const PistonActuator &aGenForce);
-#endif
 
 	//--------------------------------------------------------------------------
 	// GET AND SET
@@ -126,14 +111,14 @@ public:
 	Body* getBodyB() const;
 
 	// Force points of application
-	void setPointA(SimTK::Vec3 aPosition) { _pointA = aPosition; } ;
-	SimTK::Vec3 getPointA() const { return _pointA; };
-	void setPointB(SimTK::Vec3 aPosition) { _pointB = aPosition; } ;
-	SimTK::Vec3 getPointB() const { return _pointB; };
+	void setPointA(SimTK::Vec3 aPosition) { set_pointA(aPosition); } ;
+	SimTK::Vec3 getPointA() const { return get_pointA(); };
+	void setPointB(SimTK::Vec3 aPosition) { set_pointA(aPosition); } ;
+	SimTK::Vec3 getPointB() const { return get_pointB(); };
 
 	// flag for reference frame
-	void setPointsAreGlobal(bool aBool) {_pointsAreGlobal = aBool; };
-	bool getPointsAreGlobal() {return _pointsAreGlobal; };
+	void setPointsAreGlobal(bool aBool) {set_points_are_global(aBool); };
+	bool getPointsAreGlobal() {return get_points_are_global(); };
 
 	// OPTIMAL FORCE
 	void setOptimalForce(double aOptimalForce);
