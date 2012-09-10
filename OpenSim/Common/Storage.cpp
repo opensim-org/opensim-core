@@ -897,6 +897,22 @@ getData(int aTimeIndex,int aN,double *rData) const
 }
 //_____________________________________________________________________________
 /**
+ * Get the first aN states at a specified time index.
+ *
+ *	@param aTimeIndex Time index at which to get the states.
+ * @param aN Number of states to get.
+ * @param rData Array where the returned data will be set.  The
+ * size of rData is assumed to be at least aN.
+ * @return Number of states that were set.
+ */
+int Storage::
+getData(int aTimeIndex,int aN,Array<double> &rData) const
+{
+	if(rData==NULL) return(0);
+	else return getData(aTimeIndex,0,aN,&rData[0]);
+}
+//_____________________________________________________________________________
+/**
  * Get the first aN states at a specified time.
  * The values of the states are determined by linear interpolation.
  *
@@ -1340,6 +1356,21 @@ append(double aT,const SimTK::Vector& aY,bool aCheckForDuplicateTime)
 	// APPEND
 	return( append ( aT, aY.size(), &aY[0], aCheckForDuplicateTime ));
 }
+//_____________________________________________________________________________
+/**
+ * Append an array of data that occured at a specified time.
+ *
+ * @param aT Time stamp of the data.
+ * @param aY Array<double>.
+ * @return Index of the first empty storage element.
+ */
+int Storage::
+append(double aT,const Array<double>& aY,bool aCheckForDuplicateTime)
+{
+	// APPEND
+	return( append ( aT, aY.getSize(), &aY[0], aCheckForDuplicateTime ));
+}
+
 //_____________________________________________________________________________
 //_____________________________________________________________________________
 /**

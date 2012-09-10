@@ -177,6 +177,7 @@ public:
 	int getData(int aTimeIndex,int aStateIndex,int aN,double *rData) const;
 	int getData(int aTimeIndex,int aN,double **rData) const;
 	int getData(int aTimeIndex,int aN,double *rData) const;
+    int getData(int aTimeIndex,int aN,Array<double> &rData) const;
 #endif
 	int getDataAtTime(double aTime,int aN,double **rData) const;
 	int getDataAtTime(double aTime,int aN,double *rData) const;
@@ -230,6 +231,7 @@ public:
 	virtual int append(const Array<StateVector> &aArray);
 	virtual int append(double aT,int aN,const double *aY, bool aCheckForDuplicateTime=true);
 	virtual int append(double aT,const SimTK::Vector& aY, bool aCheckForDuplicateTime=true);
+    virtual int append(double aT,const Array<double>& aY, bool aCheckForDuplicateTime=true);
 	virtual int append(double aT, const SimTK::Vec3& aY,bool aCheckForDuplicateTime=true){
 		return append(aT, 3, &aY[0], aCheckForDuplicateTime);
 	}
