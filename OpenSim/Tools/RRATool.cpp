@@ -396,7 +396,7 @@ bool RRATool::run()
     controller->setCheckTargetTime(true);
 
 	//Make sure system is uptodate with model (i.e. added actuators, etc...)
-	SimTK::State s = _model->initSystem();
+	SimTK::State& s = _model->initSystem();
     _model->getMultibodySystem().realize(s, Stage::Position );
      taskSet.setModel(*_model);
     _model->equilibrateMuscles(s);

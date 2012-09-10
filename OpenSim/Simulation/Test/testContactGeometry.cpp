@@ -154,7 +154,7 @@ int testBouncingBall(bool useMesh)
 	Kinematics* kin = new Kinematics(osimModel);
 	osimModel->addAnalysis(kin);
 
-    SimTK::State osim_state = osimModel->initSystem();
+    SimTK::State& osim_state = osimModel->initSystem();
 	osim_state.updQ()[4] = height;
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
 
@@ -294,7 +294,7 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
 	ForceReporter* reporter = new ForceReporter(osimModel);
 	osimModel->addAnalysis(reporter);
 
-    SimTK::State osim_state = osimModel->initSystem();
+    SimTK::State& osim_state = osimModel->initSystem();
 	osim_state.updQ()[4] = height;
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
 

@@ -147,7 +147,7 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
 	delete osimModel;
 	// Check that serialization/deserialization is working correctly as well
 	osimModel = new Model("TestPrescribedForceModel.osim");
-    SimTK::State osim_state = osimModel->initSystem();
+    SimTK::State& osim_state = osimModel->initSystem();
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
 
 	//==========================================================================================================

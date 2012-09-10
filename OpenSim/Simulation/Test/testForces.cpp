@@ -156,7 +156,7 @@ void testSpringMass()
 	ForceReporter* reporter = new ForceReporter(osimModel);
 	osimModel->addAnalysis(reporter);
 
-	SimTK::State osim_state = osimModel->initSystem();
+	SimTK::State& osim_state = osimModel->initSystem();
 
 	slider_coords[0].setValue(osim_state, start_h);
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
@@ -259,7 +259,7 @@ void testBushingForce()
 	ForceReporter* reporter = new ForceReporter(osimModel);
 	osimModel->addAnalysis(reporter);
 
-	SimTK::State &osim_state = osimModel->initSystem();
+	SimTK::State& osim_state = osimModel->initSystem();
 
 	slider_coords[0].setValue(osim_state, start_h);
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
@@ -365,7 +365,7 @@ void testFunctionBasedBushingForce()
 	ForceReporter* reporter = new ForceReporter(osimModel);
 	osimModel->addAnalysis(reporter);
 
-	SimTK::State &osim_state = osimModel->initSystem();
+	SimTK::State& osim_state = osimModel->initSystem();
 
 	slider_coords[0].setValue(osim_state, start_h);
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
@@ -429,7 +429,7 @@ void testElasticFoundation()
 	ForceReporter* reporter = new ForceReporter(osimModel);
 	osimModel->addAnalysis(reporter);
 
-	SimTK::State osim_state = osimModel->initSystem();
+	SimTK::State& osim_state = osimModel->initSystem();
 
 	osimModel->getCoordinateSet().get("ball_ty").setValue(osim_state, start_h);
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
@@ -508,7 +508,7 @@ void testHuntCrossleyForce()
 	ForceReporter* reporter = new ForceReporter(osimModel);
 	osimModel->addAnalysis(reporter);
 
-	SimTK::State osim_state = osimModel->initSystem();
+	SimTK::State& osim_state = osimModel->initSystem();
 
 	osimModel->getCoordinateSet()[4].setValue(osim_state, start_h);
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
@@ -630,7 +630,7 @@ void testCoordinateLimitForce()
 	ForceReporter* reporter = new ForceReporter(osimModel);
 	osimModel->addAnalysis(reporter);
 
-	SimTK::State &osim_state = osimModel->initSystem();
+	SimTK::State& osim_state = osimModel->initSystem();
 
 	double dh = 0.2;
 	double start_h = positionRange[1];
@@ -761,7 +761,7 @@ void testCoordinateLimitForceRotational()
 	ForceReporter* reporter = new ForceReporter(osimModel);
 	osimModel->addAnalysis(reporter);
 
-	SimTK::State &osim_state = osimModel->initSystem();
+	SimTK::State& osim_state = osimModel->initSystem();
 
 	// Start 2 degrees beyond the upper limit
 	double start_q = SimTK_DEGREE_TO_RADIAN*positionRange[1] + SimTK::Pi/90;
@@ -889,7 +889,7 @@ void testExternalForce()
 	// Everything allocated on the stack, so no need for model to own to free
 	model.disownAllComponents();
 
-	SimTK::State &s = model.initSystem();
+	SimTK::State& s = model.initSystem();
 
 	// set the starting location of the tower to be right over the point
 	freeCoords[3].setValue(s, 0.1);
@@ -933,7 +933,7 @@ void testExternalForce()
 	model.disownAllComponents();
 
 	// recreate a new underlying system with corresponding state
-	SimTK::State s2 = model.initSystem();
+	SimTK::State& s2 = model.initSystem();
 
 	// set the starting location of the tower to be offset as to counter-balance the torque
 	// point is 0.1, by moving fwd to 0.3, force has -0.2m moment-arm to generate -2Nm
@@ -971,7 +971,7 @@ void testExternalForce()
 	model.disownAllComponents();
 
 	// recreate a new underlying system with corresponding state
-	SimTK::State s3 = model.initSystem();
+	SimTK::State& s3 = model.initSystem();
 
 	// only xf4 is should be affected and set it to offset Tz+px*Fy = 2+0.1*10 = 3.
 	freeCoords[3].setValue(s3, 0.4); // yield -3Nm for force only
@@ -1016,7 +1016,7 @@ void testExternalForce()
 	model.disownAllComponents();
 
 	// recreate a new underlying system with corresponding state
-	SimTK::State s4 = model.initSystem();
+	SimTK::State& s4 = model.initSystem();
 	model.getGravityForce().disable(s4);
 
 	// only xf4 is should be affected and set it to offset Tz+px*Fy = 2+0.1*10 = 3.

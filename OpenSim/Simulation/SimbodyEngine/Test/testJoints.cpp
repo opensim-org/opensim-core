@@ -523,7 +523,7 @@ void testCustomVsUniversalPin()
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	SimTK::State osim_state = testModel.initSystem();
+	SimTK::State& osim_state = testModel.initSystem();
 	
 
 	//==========================================================================================================
@@ -684,7 +684,7 @@ void testCustomJointVsFunctionBased()
 	
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	SimTK::State osim_state = osimModel->initSystem();
+	SimTK::State& osim_state = osimModel->initSystem();
 
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
@@ -785,7 +785,7 @@ void testEllipsoidJoint()
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	SimTK::State osim_state = osimModel->initSystem();
+	SimTK::State& osim_state = osimModel->initSystem();
 
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
@@ -916,7 +916,7 @@ void testWeldJoint(bool randomizeBodyOrder)
 	cout << "testWeldJoint: testEquivalentBodyForceForGenForces" << endl;
     testEquivalentBodyForceForGenForces(osimModel);
 
-	SimTK::State osim_state = osimModel->initSystem();
+	SimTK::State& osim_state = osimModel->initSystem();
 
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
@@ -1005,7 +1005,7 @@ void testFreeJoint(bool useEulerAngles)
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	SimTK::State osim_state = osimModel->initSystem();
+	SimTK::State& osim_state = osimModel->initSystem();
 
 	cout << "NQ_osim = " << osim_state.getNQ() << "   NQ_simbody = " << state.getNQ() << endl;
 
@@ -1096,7 +1096,7 @@ void testBallJoint(bool useEulerAngles)
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	SimTK::State osim_state = osimModel->initSystem();
+	SimTK::State& osim_state = osimModel->initSystem();
 
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
@@ -1187,7 +1187,7 @@ void testPinJoint()
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	SimTK::State osim_state = osimModel->initSystem();
+	SimTK::State& osim_state = osimModel->initSystem();
 
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
@@ -1278,7 +1278,7 @@ void testSliderJoint()
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	SimTK::State osim_state = osimModel.initSystem();
+	SimTK::State& osim_state = osimModel.initSystem();
 
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
@@ -1404,7 +1404,7 @@ void testCustomWithMultidimFunction()
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	SimTK::State osim_state = osimModel.initSystem();
+	SimTK::State& osim_state = osimModel.initSystem();
 
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
@@ -1480,7 +1480,7 @@ void testCustomVsCompoundJoint()
 	
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	SimTK::State osim_state = osimModel.initSystem();
+	SimTK::State& osim_state = osimModel.initSystem();
 	
 	//============================================================================================
 	// Setup CompoundJointed model
@@ -1517,7 +1517,7 @@ void testCustomVsCompoundJoint()
 	
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	SimTK::State state = compoundModel.initSystem();
+	SimTK::State& state = compoundModel.initSystem();
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
 	compareSimulations(compoundModel.updMultibodySystem(), state, &osimModel, osim_state, "testCustomVsCoupleJoint FAILED\n");
