@@ -35,7 +35,6 @@
 
 #include "Schutte1993Muscle_Deprecated.h"
 #include "Delp1990Muscle_Deprecated.h"
-#include "CoordinateLimitForce.h"
 #include "SpringGeneralizedForce.h"
 
 #include "RigidTendonMuscle.h"
@@ -77,7 +76,6 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 	Object::registerType( Thelen2003Muscle_Deprecated() );
 	Object::registerType( Schutte1993Muscle_Deprecated() );
 	Object::registerType( Delp1990Muscle_Deprecated() );
-	Object::registerType( CoordinateLimitForce() );
 	Object::registerType( SpringGeneralizedForce() );
 	Object::registerType( RigidTendonMuscle() );
 

@@ -37,6 +37,7 @@
 //==============================================================================
 #include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
 #include <OpenSim/OpenSim.h>
+#include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
 #include <OpenSim/Simulation/Model/ExternalForce.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 

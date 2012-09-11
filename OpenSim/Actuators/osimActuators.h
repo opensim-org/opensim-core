@@ -27,7 +27,6 @@
 #include "PointActuator.h"
 #include "TorqueActuator.h"
 #include "PointToPointActuator.h"
-#include "CoordinateLimitForce.h"
 #include "SpringGeneralizedForce.h"
 
 #include "Schutte1993Muscle_Deprecated.h"

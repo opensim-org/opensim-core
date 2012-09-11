@@ -37,6 +37,7 @@
 #include "Model/ContactHalfSpace.h"
 #include "Model/ContactMesh.h"
 #include "Model/ContactSphere.h"
+#include "Model/CoordinateLimitForce.h"
 #include "Model/CoordinateSet.h"
 #include "Model/ElasticFoundationForce.h"
 #include "Model/HuntCrossleyForce.h"
@@ -181,6 +182,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ContactHalfSpace() );
     Object::registerType( ContactMesh() );
     Object::registerType( ContactSphere() );
+    Object::registerType( CoordinateLimitForce() );
     Object::registerType( HuntCrossleyForce() );
     Object::registerType( ElasticFoundationForce() );
     Object::registerType( HuntCrossleyForce::ContactParameters() );

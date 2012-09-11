@@ -27,7 +27,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "osimActuatorsDLL.h"
 #include <OpenSim/Simulation/Model/Force.h>
 
 
@@ -54,7 +53,7 @@
  */
 namespace OpenSim { 
 
-class OSIMACTUATORS_API CoordinateLimitForce : public Force {
+class OSIMSIMULATION_API CoordinateLimitForce : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateLimitForce, Force);
 public:
 //==============================================================================
