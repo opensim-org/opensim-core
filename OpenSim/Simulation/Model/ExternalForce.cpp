@@ -228,11 +228,13 @@ void ExternalForce::connectToModel(Model& model)
 			"\n. Please make sure data file contains exactly 3 unique columns with this common prefix."));
 	}
 
-	_dataSource->getDataForIdentifier(torqueIdentifier, torque);
-	if(_appliesTorque && (torque.getSize() != 3)) // if specifying a point of application, it MUST have 3 components
+	if(_appliesTorque){
+		_dataSource->getDataForIdentifier(torqueIdentifier, torque);
+		if(torque.getSize() != 3) // if specifying a torque to be applied, it MUST have 3 components
 		throw(Exception("ExternalForce: 3 unique torque components could not be identified for torque identifier: "
 			+torqueIdentifier+
 			"\n. Please make sure data file contains exactly 3 unique columns with this common prefix."));
+	}
 
 	// clear out functions from previous data source
 	_forceFunctions.clearAndDestroy();
