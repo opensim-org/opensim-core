@@ -210,7 +210,8 @@ public:
         to name your probe appropiately!  */
     virtual OpenSim::Array<std::string> getProbeOutputLabels() const OVERRIDE_11;
 
-    /** Check that the MetabolicMuscleParameter represents a valid muscle in the model. */
+    /** Check that the MetabolicMuscleParameter represents a valid muscle in the model.
+        If it does, then return a pointer to that muscle object. */
     Muscle* checkValidMetabolicMuscle(MetabolicMuscleParameter mm) const;
 
 

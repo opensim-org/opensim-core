@@ -137,6 +137,8 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
     if (get_basal_rate_on())
     {
         Bdot = get_basal_coefficient() * pow(_model->getMatterSubsystem().calcSystemMass(s), get_basal_exponent());
+        if (Bdot == NaN)
+            cout << "WARNING::" << getName() << ": Bdot = NaN!" << endl;
     }
     
 
@@ -249,6 +251,17 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
         }
 
 
+        // NAN CHECKING
+        // ------------------------------------------
+        if (Adot == NaN)
+            cout << "WARNING::" << getName() << ": Adot (" << m->getName() << ") = NaN!" << endl;
+        if (Mdot == NaN)
+            cout << "WARNING::" << getName() << ": Mdot (" << m->getName() << ") = NaN!" << endl;
+        if (Sdot == NaN)
+            cout << "WARNING::" << getName() << ": Sdot (" << m->getName() << ") = NaN!" << endl;
+        if (Wdot == NaN)
+            cout << "WARNING::" << getName() << ": Wdot (" << m->getName() << ") = NaN!" << endl;
+
 
         // TOTAL METABOLIC ENERGY RATE for muscle i
         // ------------------------------------------
@@ -292,16 +305,21 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
 
     SimTK::Vector EdotTotal(1, Edot.sum() + Bdot);
 
-    if(EdotTotal(0) < 1.0 
-        && get_activation_rate_on() 
-        && get_maintenance_rate_on() 
-        && get_shortening_rate_on() 
-        && get_mechanical_work_rate_on()) {
-            cout << "WARNING: " << getName() 
-                << "  (t = " << s.getTime() 
-                << "), the model has a net metabolic energy rate of less than 1.0 W.kg-1." << endl; 
-            EdotTotal(0) = 1.0;			// not allowed to fall below 1.0 W.kg-1
-    }
+
+    // This check has been adopted from Umberger(2003), page 104, but it will 
+    // be ignored for now as it is unclear whether it refers to a single muscle, 
+    // or the total of all muscles in the model.
+    // -----------------------------------------------------------------------
+    //if(EdotTotal(0) < 1.0 
+    //    && get_activation_rate_on() 
+    //    && get_maintenance_rate_on() 
+    //    && get_shortening_rate_on() 
+    //    && get_mechanical_work_rate_on()) {
+    //        cout << "WARNING: " << getName() 
+    //            << "  (t = " << s.getTime() 
+    //            << "), the model has a net metabolic energy rate of less than 1.0 W.kg-1." << endl; 
+    //        EdotTotal(0) = 1.0;			// not allowed to fall below 1.0 W.kg-1
+    //}
 
     return EdotTotal;
 }
