@@ -123,7 +123,7 @@ void MuscleMetabolicPowerProbeBhargava2004::connectToModel(Model& aModel)
 //_____________________________________________________________________________
 /**
  * Compute muscle metabolic power.
- * Units = W/kg.
+ * Units = W.
  * Note: for muscle velocities, Vm, we define Vm<0 as shortening and Vm>0 as lengthening.
  */
 SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const State& s) const
@@ -132,11 +132,12 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
     double Adot, Mdot, Sdot, Bdot, Wdot;
     Adot = Mdot = Sdot = Bdot = Wdot = 0;
 
-    // BASAL METABOLIC RATE for whole body, so do outside of muscle loop
+    // BASAL METABOLIC RATE (W) (based on whole body mass, not muscle mass)
+    // so do outside of muscle loop.
     // ------------------------------------------------------------------
-    if (get_basal_rate_on())
-    {
-        Bdot = get_basal_coefficient() * pow(_model->getMatterSubsystem().calcSystemMass(s), get_basal_exponent());
+    if (get_basal_rate_on()) {
+        Bdot = get_basal_coefficient() 
+            * pow(_model->getMatterSubsystem().calcSystemMass(s), get_basal_exponent());
         if (Bdot == NaN)
             cout << "WARNING::" << getName() << ": Bdot = NaN!" << endl;
     }
@@ -189,7 +190,7 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
 
 
 
-        // ACTIVATION HEAT RATE for muscle i
+        // ACTIVATION HEAT RATE for muscle i (W)
         // ------------------------------------------
         if (get_activation_rate_on())
         {
@@ -202,7 +203,7 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
 
 
 
-        // MAINTENANCE HEAT RATE for muscle i
+        // MAINTENANCE HEAT RATE for muscle i (W)
         // ------------------------------------------
         if (get_maintenance_rate_on())
         {
@@ -215,7 +216,7 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
 
 
 
-        // SHORTENING HEAT RATE for muscle i
+        // SHORTENING HEAT RATE for muscle i (W)
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
         // -----------------------------------------------------------------------
         if (get_shortening_rate_on())
@@ -239,7 +240,7 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
         
 
 
-        // MECHANICAL WORK RATE for muscle i
+        // MECHANICAL WORK RATE for muscle i (W)
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
         // ------------------------------------------
         if (get_mechanical_work_rate_on())

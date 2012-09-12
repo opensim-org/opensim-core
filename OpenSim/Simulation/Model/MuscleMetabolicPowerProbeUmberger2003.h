@@ -59,36 +59,37 @@ namespace OpenSim {
  * rate at which heat is liberated plus the rate at which work is done:\n
  * <B>Edot = Bdot + sumOfAllMuscles(Adot + Mdot + Sdot + Wdot).</B>
  *
- *       - Bdot is the basal heat rate.
- *       - Adot is the activation heat rate.
- *       - Mdot is the maintenance heat rate.
- *       - Sdot is the shortening heat rate.
- *       - Wdot is the mechanical work rate.
+ *       - Bdot is the basal heat rate (W).
+ *       - Adot is the activation heat rate (W).
+ *       - Mdot is the maintenance heat rate (W).
+ *       - Sdot is the shortening heat rate (W).
+ *       - Wdot is the mechanical work rate (W).
  *
  *
  * This probe also uses muscle parameters stored in the MetabolicMuscle object for each muscle.
  * The full set of all MetabolicMuscles (MetabolicMuscleSet) is a property of this probe:
  * 
  * - m = The mass of the muscle (kg).
- * - r = Ratio of slow twitch fibers in the muscle (must be between 0 and 1).
+ * - r = Ratio of slow twitch fibers in the muscle (between 0 and 1).
  *
  *
  *
- * <H2><B> BASAL HEAT RATE </B></H2>
+ * <H2><B> BASAL HEAT RATE (W) </B></H2>
  * If <I>basal_rate_on</I> is set to true, then Bdot is calculated as follows:\n
- * <B>Bdot = basal_coefficient * (m_body^basal_exponent)</B>
+ * <B>Bdot = basal_coefficient * (m_body^basal_exponent) </B>
  *     - m_body = mass of the entire model
  *     - basal_coefficient and basal_exponent are defined by their respective properties.\n
  * <I>Note that this quantity is muscle independant. Rather it is calculated on a whole body level.</I>
  *
  *
- * <H2><B> ACTIVATION & MAINTENANCE HEAT RATE </B></H2>
+ * <H2><B> ACTIVATION & MAINTENANCE HEAT RATE (W) </B></H2>
  * If <I>activation_maintenance_rate_on</I> is set to true, then Adot+Mdot is calculated as follows:\n
- * <B>Adot+Mdot = [128*(1-r) + 25] * A^0.6 * S                        </B>,  <I> l_CE <= l_CE_opt </I>\n 
- * <B>Adot+Mdot = 0.4*[128*(1-r) + 25] + 0.6*F_iso*[128*(1-r) + 25]   </B>,  <I> l_CE >  l_CE_opt </I>
+ * <B>m * (Adot+Mdot = [128*(1-r) + 25] * A^0.6 * S)                        </B>,  <I> l_CE <= l_CE_opt </I>\n 
+ * <B>m * (Adot+Mdot = 0.4*[128*(1-r) + 25] + 0.6*F_iso*[128*(1-r) + 25])   </B>,  <I> l_CE >  l_CE_opt </I>
  *     - <B>A = u          </B>,    u >  a
  *     - <B>A = (u+a)/2    </B>,    u <= a
  *
+ *     - m = The mass of the muscle (kg).
  *     - l_CE = muscle fiber length at the current time.
  *     - l_CE_opt = optimal fiber length of the muscle.
  *     - F_CE_iso = force that would be developed by the contractile element of muscle under isometric conditions with the current activation and fiber length.
@@ -97,12 +98,12 @@ namespace OpenSim {
  *     - S = aerobic/anaerobic scaling factor, defined by the 'scaling_factor' property..
  *
  *
- * <H2><B> SHORTENING HEAT RATE </B></H2>
+ * <H2><B> SHORTENING HEAT RATE (W) </B></H2>
  * If <I>shortening_rate_on</I> is set to true, then Sdot is calculated as follows:\n
- * <B>Sdot = -[(alphaS_slow * v_CE_norm * r) + (alphaS_fast * v_CE_norm * (1-r))] * A^2 * S           </B>,   <I>l_CE <= l_CE_opt   &   v_CE >= 0 (concentric / isometric contraction)</I>\n
- * <B>Sdot = -[(alphaS_slow * v_CE_norm * r) + (alphaS_fast * v_CE_norm * (1-r))] * A^2 * S * F_iso   </B>,   <I>l_CE >  l_CE_opt   &   v_CE >= 0 (concentric / isometric contraction)</I>\n
- * <B>Sdot = -alphaL * v_CE_norm * A * S           </B>,   <I>l_CE <= l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>\n
- * <B>Sdot = -alphaL * v_CE_norm * A * S * F_iso   </B>,   <I>l_CE >  l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>
+ * <B>Sdot = m * (-[(alphaS_slow * v_CE_norm * r) + (alphaS_fast * v_CE_norm * (1-r))] * A^2 * S)           </B>,   <I>l_CE <= l_CE_opt   &   v_CE >= 0 (concentric / isometric contraction)</I>\n
+ * <B>Sdot = m * (-[(alphaS_slow * v_CE_norm * r) + (alphaS_fast * v_CE_norm * (1-r))] * A^2 * S * F_iso)   </B>,   <I>l_CE >  l_CE_opt   &   v_CE >= 0 (concentric / isometric contraction)</I>\n
+ * <B>Sdot = m * (-alphaL * v_CE_norm * A * S)           </B>,   <I>l_CE <= l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>\n
+ * <B>Sdot = m * (-alphaL * v_CE_norm * A * S * F_iso)   </B>,   <I>l_CE >  l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>
  * 
  *     - <B>A = u          </B>,    <I>u >  a </I>
  *     - <B>A = (u+a)/2    </B>,    <I>u <= a </I>
@@ -111,6 +112,7 @@ namespace OpenSim {
  *     - <B>alphaS_fast = 153 / 2.5*( v_CE_max / (1 + (1.5*r)) ) </B>
  *     - <B>alphaL = 0.3 * alphaS_slow </B>
  *
+ *     - m = The mass of the muscle (kg).
  *     - l_CE = muscle fiber length at the current time.
  *     - l_CE_opt = optimal fiber length of the muscle.
  *     - F_CE = force developed by the contractile element of muscle at the current time.
@@ -121,13 +123,12 @@ namespace OpenSim {
  *     - S = aerobic/anaerobic scaling factor, defined by the 'scaling_factor' property.
  *
  *
- * <H2><B> MECHANICAL WORK RATE </B></H2>
+ * <H2><B> MECHANICAL WORK RATE (W) </B></H2>
  * If <I>mechanical_work_rate_on</I> is set to true, then Wdot is calculated as follows:\n
- * <B>Wdot = -(F_CE * v_CE) / m       </B>,   <I>v_CE >= 0 (concentric / isometric contraction)</I>\n
+ * <B>Wdot = -(F_CE * v_CE)           </B>,   <I>v_CE >= 0 (concentric / isometric contraction)</I>\n
  * <B>Wdot = 0                        </B>,   <I>v_CE <  0 (eccentric contraction)</I>
  *     - v_CE = muscle fiber velocity at the current time.
- *     - F_CE = force developed by the contractile element of muscle at the current time.
- *     - m = The mass of the muscle (kg).\n
+ *     - F_CE = force developed by the contractile element of muscle at the current time.\n
  *
  *
  * @author Tim Dorn

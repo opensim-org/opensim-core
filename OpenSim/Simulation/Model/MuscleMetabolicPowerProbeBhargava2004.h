@@ -55,25 +55,25 @@ namespace OpenSim {
  * rate at which heat is liberated plus the rate at which work is done:\n
  * <B>Edot = Bdot + sumOfAllMuscles(Adot + Mdot + Sdot + Wdot).</B>
  *
- *       - Bdot is the basal heat rate.
- *       - Adot is the activation heat rate.
- *       - Mdot is the maintenance heat rate.
- *       - Sdot is the shortening heat rate.
- *       - Wdot is the mechanical work rate.
+ *       - Bdot is the basal heat rate (W).
+ *       - Adot is the activation heat rate (W).
+ *       - Mdot is the maintenance heat rate (W).
+ *       - Sdot is the shortening heat rate (W).
+ *       - Wdot is the mechanical work rate (W).
  *
  *
  * This probe also uses muscle parameters stored in the MetabolicMuscle object for each muscle.
  * The full set of all MetabolicMuscles (MetabolicMuscleSet) is a property of this probe:
  * 
  * - m = The mass of the muscle (kg).
- * - r = Ratio of slow twitch fibers in the muscle (must be between 0 and 1).
+ * - r = Ratio of slow twitch fibers in the muscle (between 0 and 1).
  * - Adot_slow = Activation constant for slow twitch fibers (W/kg).
  * - Adot_fast = Activation constant for fast twitch fibers (W/kg).
  * - Mdot_slow = Maintenance constant for slow twitch fibers (W/kg).
  * - Mdot_fast = Maintenance constant for slow twitch fibers (W/kg).
  *
  *
- * <H2><B> BASAL HEAT RATE </B></H2>
+ * <H2><B> BASAL HEAT RATE (W) </B></H2>
  * If <I>basal_rate_on</I> is set to true, then Bdot is calculated as follows:\n
  * <B>Bdot = basal_coefficient * (m_body^basal_exponent)</B>
  *     - m_body = mass of the entire model
@@ -81,13 +81,13 @@ namespace OpenSim {
  * <I>Note that this quantity is muscle independant. Rather it is calculated on a whole body level.</I>
  *
  *
- * <H2><B> ACTIVATION HEAT RATE </B></H2>
+ * <H2><B> ACTIVATION HEAT RATE (W) </B></H2>
  * If <I>activation_rate_on</I> is set to true, then Adot is calculated as follows:\n
  * <B>Adot = m * [ Adot_slow * r * sin((pi/2)*u)    +    Adot_fast * (1-r) * (1-cos((pi/2)*u)) ]</B>
  *     - u = muscle excitation at the current time.
  *
  *
- * <H2><B> MAINTENANCE HEAT RATE </B></H2>
+ * <H2><B> MAINTENANCE HEAT RATE (W) </B></H2>
  * If <I>maintenance_rate_on</I> is set to true, then Mdot is calculated as follows:\n
  * <B>Mdot = m * f * [ Mdot_slow * r * sin((pi/2)*u)    +    Mdot_fast * (1-r) * (1-cos((pi/2)*u)) ]</B>
  * - u = muscle excitation at the current time.
@@ -96,7 +96,7 @@ namespace OpenSim {
  * \image html fig_NormalizedFiberLengthDependenceOfMaintenanceHeatRateBhargava2004.png
  *
  *
- * <H2><B> SHORTENING HEAT RATE </B></H2>
+ * <H2><B> SHORTENING HEAT RATE (W) </B></H2>
  * If <I>shortening_rate_on</I> is set to true, then Sdot is calculated as follows:\n
  * <B>Sdot = -alpha * v_CE</B>
  *
@@ -113,7 +113,7 @@ namespace OpenSim {
  *     - <B>alpha = 0.00    </B>,   <I>v_CE <  0 (eccentric contraction)</I>
  *
  *
- * <H2><B> MECHANICAL WORK RATE </B></H2>
+ * <H2><B> MECHANICAL WORK RATE (W) </B></H2>
  * If <I>mechanical_work_rate_on</I> is set to true, then Wdot is calculated as follows:\n
  * <B>Wdot = -F_CE * v_CE       </B>,   <I>v_CE >= 0 (concentric / isometric contraction)</I>\n
  * <B>Wdot = 0                  </B>,   <I>v_CE <  0 (eccentric contraction)</I>

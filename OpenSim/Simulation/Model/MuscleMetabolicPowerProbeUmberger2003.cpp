@@ -114,7 +114,7 @@ void MuscleMetabolicPowerProbeUmberger2003::connectToModel(Model& aModel)
 //_____________________________________________________________________________
 /**
  * Compute muscle metabolic power.
- * Units = W/kg.
+ * Units = W.
  * Note: for muscle velocities, Vm, we define Vm<0 as shortening and Vm>0 as lengthening.
  */
 SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const State& s) const
@@ -123,11 +123,12 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
     double AMdot, Sdot, Bdot, Wdot;
     AMdot = Sdot = Bdot = Wdot = 0;
 
-    // BASAL METABOLIC RATE for whole body
-    // ------------------------------------------
-    if (get_basal_rate_on() == true)
-    {
-        Bdot = get_basal_coefficient() * pow(_model->getMatterSubsystem().calcSystemMass(s), get_basal_exponent());
+    // BASAL METABOLIC RATE (W) (based on whole body mass, not muscle mass)
+    // so do outside of muscle loop.
+    // ------------------------------------------------------------------
+    if (get_basal_rate_on()) {
+        Bdot = get_basal_coefficient() 
+            * pow(_model->getMatterSubsystem().calcSystemMass(s), get_basal_exponent());
         if (Bdot == NaN)
             cout << "WARNING::" << getName() << ": Bdot = NaN!" << endl;
     }
@@ -203,7 +204,7 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
 
 
 
-        // ACTIVATION & MAINTENANCE HEAT RATE for muscle i
+        // ACTIVATION & MAINTENANCE HEAT RATE for muscle i (W/kg)
         // --> depends on the normalized fiber length of the contractile element
         // -----------------------------------------------------------------------
         if (get_activation_maintenance_rate_on())
@@ -218,7 +219,7 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
 
 
 
-        // SHORTENING HEAT RATE for muscle i
+        // SHORTENING HEAT RATE for muscle i (W/kg)
         // --> depends on the normalized fiber length of the contractile element
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
         // -----------------------------------------------------------------------
@@ -272,7 +273,7 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
         
 
 
-        // MECHANICAL WORK RATE for muscle i
+        // MECHANICAL WORK RATE for muscle i (W/kg)
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
         // ------------------------------------------
         if (get_mechanical_work_rate_on())
@@ -299,8 +300,9 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
 
 
         // TOTAL METABOLIC ENERGY RATE for muscle i
+        // UNITS: W
         // ------------------------------------------
-        Edot(i) = AMdot + Sdot + Wdot;
+        Edot(i) = (AMdot + Sdot + Wdot) * mm.getMuscleMass();
         
 
         // DEBUG
