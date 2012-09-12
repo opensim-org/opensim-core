@@ -24,11 +24,15 @@ SET(BUILD_BINARY_DIR ${CMAKE_BINARY_DIR}
 SET(EXECUTABLE_OUTPUT_PATH ${BUILD_BINARY_DIR})
 SET(LIBRARY_OUTPUT_PATH ${BUILD_BINARY_DIR})
 
-# Decide if NameSpace for Simbody and other libraries is assumed.
-# Prefix, defaults to empty. Set to "OpenSim_" to use private Simbody 
-# libraries that you generated with prefix "OpenSim_".
-SET(NameSpace "" CACHE STRING 
-   "Prefix for Simbody/SimTK lib names, includes trailing '_'. Set to '' to use stock libraries.")
+# Use this to generate a private set of libraries whose names
+# won't conflict with installed versions.
+SET(BUILD_USING_NAMESPACE "" CACHE STRING
+	"All library names will be prefixed with 'xxx_' if this is set to xxx.")
+
+SET(NameSpace)
+IF(BUILD_USING_NAMESPACE)
+    SET(NameSpace "${BUILD_USING_NAMESPACE}_")
+ENDIF(BUILD_USING_NAMESPACE)
 
 # This will be initialized to the environment variable of the same name
 # if it is set, otherwise it will be empty.
@@ -215,6 +219,7 @@ IF(${CMAKE_C_COMPILER} MATCHES "cl")
 ENDIF(${CMAKE_C_COMPILER} MATCHES "cl")
 
 SET(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're building the GUI and have SWIG and Java installed on your machine.)")
+MARK_AS_ADVANCED( BUILD_JAVA_WRAPPING )
 
 
 # You can enable this advanced-variable feature to cause Visual Studio 
@@ -486,6 +491,8 @@ ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
 
 #-----------------------------------------------------------------------------
 SET(BUILD_API_ONLY OFF CACHE BOOL "Build API only (headers and libs, no GUI or Applications")
+MARK_AS_ADVANCED( BUILD_API_ONLY )
+
 IF(BUILD_API_ONLY)
 	SUBDIRS(Vendors OpenSim Documentation)
 	SET(OPENSIM_INSTALL_PACKAGE_BUILD OFF)

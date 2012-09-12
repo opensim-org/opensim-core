@@ -191,11 +191,11 @@ comprehensive. As you will quickly realize if you look around, this is a large
 system providing a great deal of functionality. It is, however, very easy to 
 use if you know where to begin -- and this reference documentation is most
 definitely \e not the place to start if you want to learn how to use 
-OpenSim. Instead, start with the tutorials in the OpenSim which
-you can find at the OpenSim project site http://opensim.stanford.edu/support/index.html,.
+OpenSim. Instead, start with the User's Guide, examples, and tutorials which
+you can find at the OpenSim project site http://opensim.stanford.edu/support/index.html.
 There is also a collection of working example programs that
 come with the OpenSim installation (in the sdk directory). If you have 
-specific questions, use the OpenSim help forum under the "Troubleshooting". 
+specific questions, use the OpenSim user forum (under "Troubleshooting"). 
 You can also file bug reports and make feature requests using the tools 
 provided there.
 
@@ -213,7 +213,6 @@ terms under which we offer OpenSim.
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Peter Eastman                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
