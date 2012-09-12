@@ -112,20 +112,7 @@ private:
 
 
 
-//==============================================================================
-//                           DEFAULT GEOMETRY
-//==============================================================================
-// This class implements a SimTK DecorationGenerator. We'll add one to the
-// Visualizer so it can invoke the generateDecorations() dispatcher to pick up 
-// per-frame geometry.
-class DefaultGeometry : public DecorationGenerator {
-public:
-    DefaultGeometry(Model& model) : _model(model) {}
-    void generateDecorations(const State& state, 
-                             Array_<DecorativeGeometry>& geometry);
-private:
-    Model&  _model;
-};
+
 
 // Draw a path point with a small body-axis-aligned cross centered on
 // the point.
@@ -204,7 +191,6 @@ void DefaultGeometry::generateDecorations
 
     // Display markers.
     if (hints.getShowMarkers()) {
-        const double radius=.005, opacity=1;
         const Vec3 pink(1,.6,.8);
         const MarkerSet& markers = _model.getMarkerSet();
         for (int i=0; i < markers.getSize(); ++i) {
@@ -212,8 +198,8 @@ void DefaultGeometry::generateDecorations
             const OpenSim::Body& body = marker.getBody();
             const Vec3& p_BM = marker.getOffset();
             geometry.push_back(
-                DecorativeSphere(radius).setBodyId(body.getIndex())
-                .setColor(pink).setOpacity(opacity)
+                DecorativeSphere(_dispMarkerRadius).setBodyId(body.getIndex())
+                .setColor(pink).setOpacity(_dispMarkerOpacity)
                 .setTransform(marker.getOffset()));
         }
     }
@@ -221,8 +207,6 @@ void DefaultGeometry::generateDecorations
 
     // Display wrap objects.
     if (hints.getShowWrapGeometry()) {
-        const double opacity = 0.5;
-        const double rez = 2;
         const Vec3 color(SimTK::Cyan);
         Transform ztoy;
         ztoy.updR().setRotationFromAngleAboutX(SimTK_PI/2);
@@ -242,8 +226,8 @@ void DefaultGeometry::generateDecorations
                         geometry.push_back(
                             DecorativeCylinder(cylinder->getRadius(), 
                                                cylinder->getLength()/2)
-                                .setTransform(X_GW).setResolution(rez)
-                                .setColor(color).setOpacity(opacity));
+                                .setTransform(X_GW).setResolution(_dispWrapResolution)
+                                .setColor(color).setOpacity(_dispWrapOpacity));
                     }
                 }
                 else if (type == "WrapEllipsoid") {
@@ -253,8 +237,8 @@ void DefaultGeometry::generateDecorations
                         Transform X_GW = X_GB*ellipsoid->getTransform();
                         geometry.push_back(
                             DecorativeEllipsoid(ellipsoid->getRadii())
-                                .setTransform(X_GW).setResolution(rez)
-                                .setColor(color).setOpacity(opacity));
+                                .setTransform(X_GW).setResolution(_dispWrapResolution)
+                                .setColor(color).setOpacity(_dispWrapOpacity));
                     }
                 }
                 else if (type == "WrapSphere") {
@@ -264,8 +248,8 @@ void DefaultGeometry::generateDecorations
                         Transform X_GW = X_GB*sphere->getTransform();
                         geometry.push_back(
                             DecorativeSphere(sphere->getRadius())
-                                .setTransform(X_GW).setResolution(rez)
-                                .setColor(color).setOpacity(opacity));
+                                .setTransform(X_GW).setResolution(_dispWrapResolution)
+                                .setColor(color).setOpacity(_dispWrapOpacity));
                     }
                 }
             }
@@ -275,8 +259,6 @@ void DefaultGeometry::generateDecorations
 
     // Display contact geometry objects.
     if (hints.getShowContactGeometry()) {
-        const double opacity = 0.75;
-        const double rez = 2;
         const Vec3 color(SimTK::Green);
         Transform ztoy;
         ztoy.updR().setRotationFromAngleAboutX(SimTK_PI/2);
@@ -297,8 +279,8 @@ void DefaultGeometry::generateDecorations
                     Transform X_GW = X_GB*sphere->getTransform();
                     geometry.push_back(
                         DecorativeSphere(sphere->getRadius())
-                            .setTransform(X_GW).setResolution(rez)
-                            .setColor(color).setOpacity(opacity));
+                            .setTransform(X_GW).setResolution(_dispContactResolution)
+                            .setColor(color).setOpacity(_dispContactOpacity));
                 }
             }
         }
@@ -426,7 +408,8 @@ void ModelVisualizer::createVisualizer() {
 
     // Add a DecorationGenerator to dispatch runtime generateDecorations()
     // calls.
-    _viz->addDecorationGenerator(new DefaultGeometry(_model));
+    _decoGen = new DefaultGeometry(_model);
+    _viz->addDecorationGenerator(_decoGen);
 
     // Add an input listener to handle display menu picks.
     _viz->addInputListener(new OpenSimInputListener(_model));

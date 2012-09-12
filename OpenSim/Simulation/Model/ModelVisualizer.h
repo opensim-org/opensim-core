@@ -30,7 +30,58 @@ that uses the OpenSim API. **/
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include "Simbody.h"
+
+
+namespace SimTK {
+
+//==============================================================================
+//                           DEFAULT GEOMETRY
+//==============================================================================
+// This class implements a SimTK DecorationGenerator. We'll add one to the
+// Visualizer so it can invoke the generateDecorations() dispatcher to pick up 
+// per-frame geometry.
+class DefaultGeometry : public DecorationGenerator {
+public:
+    DefaultGeometry(OpenSim::Model& model) : _model(model) {
+        _dispMarkerRadius = 0.005;
+        _dispMarkerOpacity = 1.0;
+        _dispWrapOpacity = 0.5;
+        _dispWrapResolution = 2.0;
+        _dispContactOpacity = 0.75;
+        _dispContactResolution = 2.0;
+    }
+
+    void generateDecorations(const SimTK::State& state, 
+                             SimTK::Array_<SimTK::DecorativeGeometry>& geometry);
+
+    double getDispMarkerRadius() {return _dispMarkerRadius;}
+    void   setDispMarkerRadius(double a) {_dispMarkerRadius=a;}
+    double getDispMarkerOpacity() {return _dispMarkerOpacity;}
+    void   setDispMarkerOpacity(double a) {_dispMarkerOpacity=a;}
+
+    double getDispWrapOpacity() {return _dispWrapOpacity;}
+    void   setDispWrapOpacity(double a) {_dispWrapOpacity=a;}
+    double getDispWrapResolution() {return _dispWrapResolution;}
+    void   setDispWrapResolution(double a) {_dispWrapResolution=a;}
+
+    double getDispContactOpacity() {return _dispContactOpacity;}
+    void   setDispContactOpacity(double a) {_dispContactOpacity=a;}
+    double getDispContactResolution() {return _dispContactResolution;}
+    void   setDispContactResolution(double a) {_dispContactResolution=a;}
+
+private:
+    OpenSim::Model&  _model;
+
+    // Displayer internal variables
+    double _dispMarkerRadius;
+    double _dispMarkerOpacity;
+    double _dispWrapOpacity;
+    double _dispWrapResolution;
+    double  _dispContactOpacity;
+    double _dispContactResolution;
+};
+
+}
 
 namespace OpenSim {
 
@@ -84,6 +135,10 @@ public:
     /** @name               Miscellaneous utilities
     Most users will not need to use these methods. **/
     /**@{**/
+
+    /** Return a pointer to the DefaultGeometry decoration generator used by 
+    this %ModelVisualizer. **/
+    SimTK::DefaultGeometry* getGeometryDecorationGenerator() {return _decoGen;}
 
     /** Return a const reference to the Model for which this %ModelVisualizer
     was constructed. **/
@@ -151,13 +206,20 @@ private:
     void createVisualizer();
 
 private:
-    Model&                  _model;
-    SimTK::Visualizer*      _viz;
+    Model&                       _model;
+    SimTK::Visualizer*           _viz;
+    SimTK::DefaultGeometry*      _decoGen;
 
     // This is just a reference -- it is owned by the Simbody Visualizer so 
     // don't delete it!
     SimTK::Visualizer::InputSilo*   _silo;
 };
+
+
+
+
+
+
 
 } // namespace OpenSim
 
