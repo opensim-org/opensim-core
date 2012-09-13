@@ -1585,7 +1585,7 @@ makeObjectFromFile(const std::string &aFileName)
 		const string saveWorkingDirectory = IO::getCwd();
 		const string directoryOfXMLFile = IO::getParentDirectory(aFileName);
 		IO::chDir(directoryOfXMLFile);
-		cout << "File name = "<< aFileName << "Cwd is now "<< directoryOfXMLFile << endl;
+		//cout << "File name = "<< aFileName << "Cwd is now "<< directoryOfXMLFile << endl;
         try {
 			newObject->_document=doc;
 			if (newFormat)
