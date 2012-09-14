@@ -908,7 +908,7 @@ getData(int aTimeIndex,int aN,double *rData) const
 int Storage::
 getData(int aTimeIndex,int aN,Array<double> &rData) const
 {
-	if(rData==NULL) return(0);
+	if(0 == rData.size()) return(0);
 	else return getData(aTimeIndex,0,aN,&rData[0]);
 }
 //_____________________________________________________________________________
