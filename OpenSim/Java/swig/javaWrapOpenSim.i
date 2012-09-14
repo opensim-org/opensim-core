@@ -464,6 +464,16 @@ using namespace SimTK;
 	static void LoadOpenSimLibrary(std::string libraryName){
 		LoadOpenSimLibrary(libraryName);
 	}
+
+	void setDefaultControls(SimTK::Vector& newControls) {
+		self->updDefaultControls() = newControls;
+	}
+}
+
+%extend OpenSim::Manager {
+	void setIntegratorAccuracy(double accuracy){
+		self->getIntegrator().setAccuracy(accuracy);
+	}
 }
 
 %extend OpenSim::Object {
