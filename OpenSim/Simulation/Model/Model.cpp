@@ -875,15 +875,16 @@ void Model::initStateFromProperties(SimTK::State& state) const
 	// All model components have allocated their state variables so we can speed up access
 	// through model if we build a flat list of available state variables by name an their
 	// corresponding system index in the underlying SimTK::System
-	Model *mutableThis = const_cast<Model *>(this);
+    Array<std::string> stateVarNames;
+    Array<SimTK::SystemYIndex> stateVarSysInd;
 
 	// underlying system can have more states than defined by model components
 	// model components may also have more underlying states than they expose
 	int nssv = state.getNY(); // the total number of state variables in the underlying system
 
 	// initially size arrays to handle all state variables even hidden ones
-	mutableThis->_stateVariableNames.setSize(nssv);
-	mutableThis->_stateVariableSystemIndices.setSize(nssv);
+    stateVarNames.setSize(nssv);
+    stateVarSysInd.setSize(nssv);
 
 	for(int i=0; i< _modelComponents.getSize(); i++){
 		const ModelComponent* comp=_modelComponents.get(i);
@@ -894,20 +895,28 @@ void Model::initStateFromProperties(SimTK::State& state) const
 
 		for(int j=0; j < ncsv; j++){
 			SimTK::SystemYIndex iy = comp->getStateVariableSystemIndex(names[j]);
-			mutableThis->_stateVariableNames[iy] = names[j];
-			mutableThis->_stateVariableSystemIndices[iy] = iy ;
+            stateVarNames[iy] = names[j];
+            stateVarSysInd[iy] = iy;
 		}
 	}
+    
 	// now prune out all unnamed state variables that were intended to be hidden
 	for(int i=0; i< nssv; i++){
-		if(_stateVariableNames[i] == ""){
-			mutableThis->_stateVariableNames.remove(i);
-			mutableThis->_stateVariableSystemIndices.remove(i);
+		if(stateVarNames[i] == ""){
+            stateVarNames.remove(i);
+            stateVarSysInd.remove(i);
 			nssv--; i--; // decrement the size and count by one
 		}
 	}
 	assert(nssv == getNumStateVariables());
 
+    // Now allocate the internal Arrays, stateVarNames, stateVarSysInd
+    // to the model using a const_cast. This should be the only write to
+    // the "Model" done during initializeState(), but can be done over
+    // and over without affecting simulation results.
+    Model *mutableThis = const_cast<Model *>(this);
+    mutableThis->_stateVariableNames = stateVarNames;
+    mutableThis->_stateVariableSystemIndices = stateVarSysInd;
 }
 
 void Model::setPropertiesFromState(const SimTK::State& state)
