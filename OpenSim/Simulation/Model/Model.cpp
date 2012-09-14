@@ -110,7 +110,7 @@ Model::Model() :
     _allControllersEnabled(true),
     _perturbActuatorForces(false),
     _system(NULL),
-	_defaultControls(*new Vector(0)),
+	_defaultControls(*new Vector()),
     _workingState()
 {
 	setNull();
@@ -153,7 +153,7 @@ Model::Model(const string &aFileName) :
     _allControllersEnabled(true),
     _perturbActuatorForces(false),
     _system(NULL),
-	_defaultControls(*new Vector(0)),
+	_defaultControls(*new Vector()),
     _workingState()
 {
 	setNull();
@@ -202,7 +202,7 @@ Model::Model(const Model &aModel) :
     _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
     _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
     _system(NULL),
-	_defaultControls(*new Vector(0)),
+	_defaultControls(*new Vector()),
     _workingState()
 {
 	//cout << "Construct copied model " <<  endl;
@@ -226,6 +226,8 @@ Model::~Model()
 	delete _forceSubsystem;
 	delete _matter;
 	delete _system;
+
+	delete &_defaultControls;
 }
 //_____________________________________________________________________________
 /**
