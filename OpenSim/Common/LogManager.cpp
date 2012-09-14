@@ -61,6 +61,13 @@ LogBuffer::LogBuffer()
 {
 }
 
+LogBuffer::~LogBuffer()
+{
+	for(int i = 0; i < _logCallbacks.size(); i++) {
+		delete _logCallbacks[i];
+	}
+}
+
 // Assumes caller owns this output stream (will never be deleted)
 bool LogBuffer::
 addLogCallback(LogCallback *aLogCallback)

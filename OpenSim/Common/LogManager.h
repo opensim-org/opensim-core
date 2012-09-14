@@ -51,6 +51,7 @@ class OSIMCOMMON_API LogBuffer : public std::stringbuf
 {
 public:
 	LogBuffer();
+	~LogBuffer();
 	bool addLogCallback(LogCallback *aLogCallback);
 	bool removeLogCallback(LogCallback *aLogCallback);
 
