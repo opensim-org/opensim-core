@@ -213,7 +213,12 @@ using namespace SimTK;
   public void setPickable(boolean onOff) {
 	 pickable=onOff;
   }
-  
+  public void markAdopted() {
+    if (swigCPtr != 0) {
+      if (swigCMemOwn) swigCMemOwn = false;
+    }
+  }  
+
 %}
 
 %typemap(javacode) OpenSim::MarkerData %{
@@ -487,6 +492,8 @@ using namespace SimTK;
 		  return availableClassNames;
 	}
 }
+
+
 /* rest of header files to be wrapped */
 %include <OpenSim/version.h>
 // osimCommon Library
