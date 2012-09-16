@@ -201,9 +201,9 @@ int main()
 
 		//////////////////////////
 		// PERFORM A SIMULATION //
-		//////////////////////////
-
-		//osimModel.setUseVisualizer(true);
+		/////////////////////////
+		
+		osimModel.setUseVisualizer(true);
 
 		// Initialize the system and get the default state
 		SimTK::State& si = osimModel.initSystem();
@@ -234,8 +234,7 @@ int main()
 		// Create the integrator for integrating system dynamics
 		SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
 		integrator.setAccuracy(1.0e-6);
-		
-		osimModel.setUseVisualizer(true);
+
 		// Create the manager managing the forward integration and its outputs
 		Manager manager(osimModel,  integrator);
 
