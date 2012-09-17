@@ -461,6 +461,9 @@ SimTK::State& Model::initializeState() {
     // Reset (initialize) all underlying Probe SimTK::Measures
     for (int i=0; i<getProbeSet().getSize(); ++i)
         getProbeSet().get(i).reset(_workingState);
+
+    // Reset the controller's storage
+    _controllerSet.constructStorage();
     
 	// Do the assembly
     createAssemblySolver(_workingState);

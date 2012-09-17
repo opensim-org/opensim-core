@@ -218,7 +218,7 @@ void ControllerSet::constructStorage()
 
     // CONTROLS
 	delete _controlStore;
-    _controlStore = new Storage(512,"controls");
+    _controlStore = new Storage(1023,"controls");
     columnLabels.append("time");
 
     for(int i=0;i<_actuatorSet->getSize();i++)
