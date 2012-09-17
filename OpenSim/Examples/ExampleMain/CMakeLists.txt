@@ -36,17 +36,17 @@ MARK_AS_ADVANCED(NameSpace)
 
 ADD_EXECUTABLE(${TARGET} ${SOURCE})
 
-SET(SIMTK_COMMON_LIB debug ${NameSpace}SimTKcommon_d optimized ${NameSpace}SimTKcommon)
-SET(SIMTK_MATH_LIB debug ${NameSpace}SimTKmath_d optimized ${NameSpace}SimTKmath)
-SET(SIMTK_SIMBODY_LIB debug ${NameSpace}SimTKsimbody_d optimized ${NameSpace}SimTKsimbody)
-
 TARGET_LINK_LIBRARIES(${TARGET}
 	debug osimSimulation_d	optimized osimSimulation
 	debug osimActuators_d	optimized osimActuators
 	debug osimCommon_d		optimized osimCommon
 	debug osimAnalyses_d	optimized osimAnalyses
 	debug osimTools_d		optimized osimTools
-	${SIMTK_ALL_LIBS}
+	debug ${NameSpace}SimTKcommon_d optimized ${NameSpace}SimTKcommon
+	debug ${NameSpace}SimTKmath_d optimized  ${NameSpace}SimTKmath
+	debug ${NameSpace}SimTKsimbody_d optimized ${NameSpace}SimTKsimbody
+	SimTKlapack
+	${PLATFORM_LIBS}
 )
 
 IF(WIN32)
