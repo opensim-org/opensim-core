@@ -562,6 +562,7 @@ void ModelComponent::realizeTopology(SimTK::State& s) const
 //------------------------------------------------------------------------------
 void ModelComponent::realizeAcceleration(const SimTK::State& s) const
 {
+    if(_namedStateVariableInfo.size()>0) {
     const SimTK::System&    sys = getModel().getMultibodySystem();
     const SimTK::Subsystem& subSys = sys.getDefaultSubsystem();
 
@@ -570,7 +571,6 @@ void ModelComponent::realizeAcceleration(const SimTK::State& s) const
     if(derivs.size() != _namedStateVariableInfo.size())
         throw Exception("ModelComponent: number of derivatives does not match number of state variables.");
 
-    if(_namedStateVariableInfo.size()>0){
         std::map<std::string, StateVariableInfo>::const_iterator it;
 
         for (it = _namedStateVariableInfo.begin(); 

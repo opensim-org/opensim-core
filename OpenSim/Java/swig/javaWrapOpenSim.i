@@ -263,6 +263,38 @@ using namespace SimTK;
       return originalModelPath + java.io.File.separator;
     else return "";
   }
+  public void adoptComponent(ModelComponent aComponent) {
+	aComponent.markAdopted();
+	addComponent(aComponent);
+  }
+  public void adoptBody(Body aBody) {
+	aBody.markAdopted();
+	addBody(aBody);
+  }
+  public void adoptConstraint(Constraint aConstraint) {
+	aConstraint.markAdopted();
+	addConstraint(aConstraint);
+  }
+  public void adoptForce(Force aForce) {
+	aForce.markAdopted();
+	addForce(aForce);
+  }
+  public void adoptProbe(Probe aProbe) {
+	aProbe.markAdopted();
+	addProbe(aProbe);
+  }
+  public void adoptContactGeometry(ContactGeometry aContactGeometry) {
+	aContactGeometry.markAdopted();
+	addContactGeometry(aContactGeometry);
+  }
+  public void adoptAnalysis(Analysis aAnalysis) {
+	aAnalysis.markAdopted();
+	addAnalysis(aAnalysis);
+  }
+  public void adoptController(Controller aController) {
+	aController.markAdopted();
+	addController(aController);
+  }
 %}
 
 %typemap(javacode) OpenSim::Array<std::string> %{

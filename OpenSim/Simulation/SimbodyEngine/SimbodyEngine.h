@@ -134,7 +134,6 @@ public:
 	// INERTIA
 	//--------------------------------------------------------------------------
 	virtual double getMass() const;
-#ifndef SWIG
 	virtual void getSystemInertia(const SimTK::State& s, double& rM, SimTK::Vec3& rCOM, double rI[3][3]) const;
 	virtual void getSystemInertia(const SimTK::State& s, double& rM, double *rCOM, double *rI) const;
 
@@ -151,7 +150,7 @@ public:
 	virtual void getAngularAcceleration(const SimTK::State& s, const OpenSim::Body &aBody, SimTK::Vec3& rAngAcc) const;
 	virtual void getAngularAccelerationBodyLocal(const SimTK::State& s, const OpenSim::Body &aBody, SimTK::Vec3& rAngAcc) const;
 	virtual Transform getTransform(const SimTK::State& s, const OpenSim::Body &aBody) const;
-
+#ifndef SWIG
 	//--------------------------------------------------------------------------
 	// LOAD ACCESS AND COMPUTATION
 	//--------------------------------------------------------------------------
