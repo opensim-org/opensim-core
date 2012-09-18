@@ -376,7 +376,7 @@ int main(int argc, char* argv[])
                 fibVel1(i)= paraHeight;                
 
                 //Computed pennation kinematics
-                penAng(i) = fibKin.calcPennationAngle(fibLen(i), caller);
+                penAng(i) = fibKin.calcPennationAngle(fibLen(i));
                 penAngVel(i) = fibKin.calcPennationAngularVelocity(
                                 tan(penAng(i)), fibLen(i),fibVel(i),caller);
                 penAngVel1(i) = fibKin.calcPennationAngularVelocity(
@@ -642,7 +642,7 @@ int main(int argc, char* argv[])
 
         for(int i=0;i<numPts; i++)
         {
-            tmp = fibKin.calcFiberLength(mclLen(i), tdnLen(i),caller);
+            tmp = fibKin.calcFiberLength(mclLen(i), tdnLen(i));
             err = abs(tmp-fibLen(i));
             if(err > maxErr){
                 maxErr=err;
@@ -816,7 +816,7 @@ int main(int argc, char* argv[])
         SimTK_TEST_MUST_THROW(fibKinEmpty.getOptimalPennationAngle());
         SimTK_TEST_MUST_THROW(fibKinEmpty.getParallelogramHeight());
         SimTK_TEST_MUST_THROW(valTest = 
-            fibKinEmpty.calcPennationAngle(0.1,nameTest));
+            fibKinEmpty.calcPennationAngle(0.1));
         SimTK_TEST_MUST_THROW(valTest = 
             fibKinEmpty.calcPennationAngularVelocity(tan(0.7),0.1,0.1,nameTest));
 
@@ -831,11 +831,11 @@ int main(int argc, char* argv[])
                                                         paraHeight,caller));
 
         //calcFiberLength
-        SimTK_TEST_EQ(fibKin.calcFiberLength(1.0, 1.0, caller),
+        SimTK_TEST_EQ(fibKin.calcFiberLength(1.0, 1.0),
             fibKin.getMinimumFiberLength());
 
         //calcFiberVelocity
-        SimTK_TEST(SimTK::isNaN(fibKin.calcFiberVelocity(1,1,0, 1,1,0,0,caller)));
+        SimTK_TEST_MUST_THROW(fibKin.calcFiberVelocity(1,1,0, 1,1,0,0,caller));
 
         //calc_DTendonLength_DfiberLength
         SimTK_TEST_MUST_THROW(fibKin.calc_DTendonLength_DfiberLength(paraHeight,
@@ -876,10 +876,10 @@ int main(int argc, char* argv[])
         //    fibKin.calcPennationAngle(0,caller),
         //    maxPenAngle);
 
-        SimTK_TEST_EQ_TOL(fibKin.calcPennationAngle(0,caller), 
+        SimTK_TEST_EQ_TOL(fibKin.calcPennationAngle(0), 
                       maxPenAngle,1e-12);
 
-        SimTK_TEST_EQ_TOL(fibKin.calcPennationAngle(paraHeight*0.99,caller),
+        SimTK_TEST_EQ_TOL(fibKin.calcPennationAngle(paraHeight*0.99),
                       maxPenAngle,1e-12);
 
         cout << "**************************************************" << endl;

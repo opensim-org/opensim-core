@@ -339,7 +339,7 @@ double Muscle::getNormalizedFiberVelocity(const SimTK::State& s) const
 /* get the current fiber velocity (m/s) projected onto the tendon direction */
 double Muscle::getFiberVelocityAlongTendon(const SimTK::State& s) const 
 {
-	return getFiberVelocityInfo(s).fiberVelocity * getMuscleLengthInfo(s).cosPennationAngle;
+	return getFiberVelocityInfo(s).fiberVelocityAlongTendon;
 }
 
 /* get the tendon velocity (m/s) */
@@ -360,11 +360,19 @@ double Muscle::getPennationAngularVelocity(const SimTK::State& s) const
 	return getFiberVelocityInfo(s).pennationAngularVelocity;
 }
 
-/* get the current fiber force (N) applied to the tendon */
+/* get the current fiber force (N)*/
 double Muscle::getFiberForce(const SimTK::State& s) const
 {
 	return getMuscleDynamicsInfo(s).activeFiberForce + getMuscleDynamicsInfo(s).passiveFiberForce;
 }
+
+/* get the current fiber force (N) applied to the tendon */
+double Muscle::getFiberForceAlongTendon(const SimTK::State& s) const
+{
+	const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
+    return mdi.fiberForceAlongTendon; 
+}
+
 
 /* get the current active fiber force (N) due to activation*force_length*force_velocity relationships */
 double Muscle::getActiveFiberForce(const SimTK::State& s) const
@@ -402,6 +410,16 @@ double Muscle::getFiberStiffness(const SimTK::State& s) const
 {
 	return getMuscleDynamicsInfo(s).fiberStiffness;
 }
+
+/* get the current fiber stiffness (N/m) defined as the partial derivative
+	of fiber force along the tendon w.r.t. small changes in fiber length 
+    along the tendon*/
+double Muscle::getFiberStiffnessAlongTendon(const SimTK::State& s) const
+{
+	const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
+    return mdi.fiberStiffnessAlongTendon;
+}
+
 
 /* get the current tendon stiffness (N/m) defined as the partial derivative
 	of tendon force w.r.t. tendon length */

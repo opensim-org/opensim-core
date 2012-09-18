@@ -37,11 +37,11 @@ void testArm26();
 void testEMGDrivenArm();
 
 int main() {
-	Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
+	//Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 	//Object::renameType("Thelen2003Muscle", "Millard2012AccelerationMuscle");
 	//Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
     SimTK::Array_<std::string> failures;
-
+    
 	try {testSingleRigidTendonMuscle();}
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testSingleRigidTendonMuscle"); }
@@ -52,7 +52,7 @@ int main() {
     try {testTwoMusclesOnBlock();}
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testTwoMusclesOnBlock"); }
-
+    
     try {testArm26();}
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testArm26"); }
@@ -111,7 +111,7 @@ void testSingleRigidTendonMuscle() {
 	Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
 
 	// Tolerance of 2mm or position error and 2mm/s translational velocity of the block
-	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.002, 4), __FILE__, __LINE__, "testSingleRigidTendonMuscle failed");
+	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.0025, 4), __FILE__, __LINE__, "testSingleRigidTendonMuscle failed");
 	cout << "testSingleRigidTendonMuscle passed\n" << endl;
 }
 
@@ -129,7 +129,7 @@ void testTwoMusclesOnBlock() {
 	Storage fwd_result("twoMusclesOnBlock_ForwardResults/twoMusclesOnBlock_forward_states.sto");
 	Storage cmc_result("twoMusclesOnBlock_ResultsCMC/twoMusclesOnBlock_tugOfWar_states.sto");
 
-	Array<double> rms_tols(0.0005, 6);
+	Array<double> rms_tols(0.0025, 6);
 	rms_tols[1] = 0.001; // block_u
 	rms_tols[2] = 0.05;  // muscle 1 activation
 	rms_tols[3] = 0.001; // muscle 1 fiber length 
@@ -168,8 +168,8 @@ void testEMGDrivenArm() {
 	Storage results("Results_Arm26_EMG/arm26_states.sto"), standard("std_arm26_states.sto");
 
 	Array<double> rms_tols(0.1, 2*2+2*6);
-	rms_tols[0] = 0.002; // shoulder q
-	rms_tols[1] = 0.002;  // elbow q
+	rms_tols[0] = 0.0025; // shoulder q
+	rms_tols[1] = 0.0025;  // elbow q
 	rms_tols[6] = 0.25;  // trilat normally off but because of bicep long EMG tracking it turns on
 	rms_tols[8] = 0.25;  // trimed normally off but because of bicep long EMG tracking it turns on
 	rms_tols[10] = 0.50;  // biceps long normally low but because of EMG tracking should be on more
