@@ -203,7 +203,7 @@ int main()
 		// PERFORM A SIMULATION //
 		/////////////////////////
 		
-		osimModel.setUseVisualizer(true);
+		//osimModel.setUseVisualizer(true);
 
 		// Initialize the system and get the default state
 		SimTK::State& si = osimModel.initSystem();
