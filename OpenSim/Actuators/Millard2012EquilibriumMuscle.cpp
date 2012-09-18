@@ -177,7 +177,7 @@ void Millard2012EquilibriumMuscle::buildMuscle()
     m_minimumFiberLength =  max(minActiveFiberLength,minPennatedFiberLength);
         
     //Minimum fiber length along the tendon
-    double phi = penMdl.calcPennationAngle(m_minimumFiberLength,caller);
+    double phi = penMdl.calcPennationAngle(m_minimumFiberLength);
     
     m_minimumFiberLengthAlongTendon 
         = penMdl.calcFiberLengthAlongTendon(m_minimumFiberLength,cos(phi));
@@ -661,8 +661,8 @@ calcInextensibleTendonActiveFiberForce(SimTK::State& s,
         double tendonVelocity = 0.0; //Inextensible tendon;
 
         double fiberLength  = penMdl.calcFiberLength(muscleLength,
-                                             tendonSlackLength,caller);
-        double phi      = penMdl.calcPennationAngle(fiberLength,caller);
+                                             tendonSlackLength);
+        double phi      = penMdl.calcPennationAngle(fiberLength);
       
         double fiberVelocity   = penMdl.calcFiberVelocity(fiberLength,
                                             sin(phi),cos(phi),
@@ -712,7 +712,7 @@ double Millard2012EquilibriumMuscle::
         double fiso = getMaxIsometricForce();
 
         //Evaluate the pennation angle
-        double phi = penMdl.calcPennationAngle(fiberLength,caller);
+        double phi = penMdl.calcPennationAngle(fiberLength);
 
         //Compute the active fiber force 
         activeFiberForce = fiso * clampedActivation * fal * fv * cos(phi);
@@ -910,7 +910,7 @@ void Millard2012EquilibriumMuscle::calcMuscleLengthInfo(const SimTK::State& s,
                                 getStateVariable(s, STATE_FIBER_LENGTH_NAME)); 
 
     mli.normFiberLength   = mli.fiberLength/optFiberLength;
-    mli.pennationAngle    = penMdl.calcPennationAngle(mli.fiberLength,caller);
+    mli.pennationAngle    = penMdl.calcPennationAngle(mli.fiberLength);
     mli.cosPennationAngle = cos(mli.pennationAngle);
     mli.sinPennationAngle = sin(mli.pennationAngle);
 
@@ -1312,9 +1312,9 @@ SimTK::Vector Millard2012EquilibriumMuscle::
     double lce = 0;
     double tl  = getTendonSlackLength()*1.01;
 
-    lce = clampFiberLength(penMdl.calcFiberLength( ml, tl, caller));        
+    lce = clampFiberLength(penMdl.calcFiberLength( ml, tl));        
 
-    double phi      = penMdl.calcPennationAngle(lce,caller);
+    double phi      = penMdl.calcPennationAngle(lce);
     double cosphi   = cos(phi);
     double sinphi   = sin(phi);       
     double tlN  = tl/tsl;
@@ -1437,7 +1437,7 @@ SimTK::Vector Millard2012EquilibriumMuscle::
                 //Update position level quantities, only if they won't go 
                 //singular
                     
-                phi = penMdl.calcPennationAngle(lce,caller);
+                phi = penMdl.calcPennationAngle(lce);
                     
 
                 sinphi = sin(phi);
@@ -1520,7 +1520,7 @@ SimTK::Vector Millard2012EquilibriumMuscle::
         if(iter < aMaxIterations){     
 
             lce = getMinimumFiberLength();
-            phi = penMdl.calcPennationAngle(lce,caller);
+            phi = penMdl.calcPennationAngle(lce);
             cosphi = cos(phi);
             tl  = penMdl.calcTendonLength(cosphi,lce,ml);
             lceN = lce/ofl;

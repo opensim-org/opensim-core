@@ -121,12 +121,12 @@ void Thelen2003Muscle::constructProperties()
 {
     constructProperty_activation_time_constant(0.015);
     constructProperty_deactivation_time_constant(0.050);
-    constructProperty_FmaxTendonStrain(0.033);
+    constructProperty_FmaxTendonStrain(0.04); // was 0.033
     constructProperty_FmaxMuscleStrain(0.6);
     constructProperty_KshapeActive(0.45);   
     constructProperty_KshapePassive(5.0);   
     constructProperty_Af(0.25); 
-    constructProperty_Flen(1.8);    
+    constructProperty_Flen(1.4);    //was 1.8, 
     constructProperty_fv_linear_extrap_threshold(0.95);
     //acos(0.05) = 84.26 degrees    
 }
@@ -316,10 +316,10 @@ calcInextensibleTendonActiveFiberForce(SimTK::State& s,
         double tendonVelocity = 0.0; //Inextensible tendon;
 
         double fiberLength  = penMdl.calcFiberLength(muscleLength,
-                                             tendonSlackLength,caller);
+                                             tendonSlackLength);
         
         if(fiberLength > penMdl.getMinimumFiberLength()){
-            double phi      = penMdl.calcPennationAngle(fiberLength,caller);
+            double phi      = penMdl.calcPennationAngle(fiberLength);
         
             double fiberVelocity   = penMdl.calcFiberVelocity(fiberLength,
                                             sin(phi),cos(phi),
@@ -378,7 +378,7 @@ double Thelen2003Muscle::
         double fiso = getMaxIsometricForce();
 
         //Evaluate the pennation angle
-        double phi = penMdl.calcPennationAngle(fiberLength,caller);
+        double phi = penMdl.calcPennationAngle(fiberLength);
 
         //Compute the active fiber force 
         activeFiberForce = fiso * clampedActivation * fal * fv * cos(phi);
@@ -550,7 +550,7 @@ void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s,
                             getStateVariable(s, STATE_FIBER_LENGTH_NAME));
 
     mli.normFiberLength   = mli.fiberLength/optFiberLength;       
-    mli.pennationAngle = penMdl.calcPennationAngle(mli.fiberLength,caller);    
+    mli.pennationAngle = penMdl.calcPennationAngle(mli.fiberLength);    
 
     mli.cosPennationAngle = cos(mli.pennationAngle);
     mli.sinPennationAngle = sin(mli.pennationAngle);
@@ -960,9 +960,9 @@ SimTK::Vector Thelen2003Muscle::
     double tl  = getTendonSlackLength()*1.01;
 
    
-    lce = penMdl.calcFiberLength( ml, tl, caller);    
+    lce = penMdl.calcFiberLength( ml, tl);    
     
-    double phi      = penMdl.calcPennationAngle(lce,caller);
+    double phi      = penMdl.calcPennationAngle(lce);
     double cosphi   = cos(phi);
     double sinphi   = sin(phi);  
 
@@ -1065,7 +1065,7 @@ SimTK::Vector Thelen2003Muscle::
                 //Update position level quantities, only if they won't go 
                 //singular
 
-                phi = penMdl.calcPennationAngle(lce,caller);
+                phi = penMdl.calcPennationAngle(lce);
                 cosphi = cos(phi);
                 tl  = ml - lce*cosphi;
                 lceN = lce/ofl;
@@ -1139,7 +1139,7 @@ SimTK::Vector Thelen2003Muscle::
         if(iter < aMaxIterations){ //if the fiber length hit its lower bound
 
             lce = penMdl.getMinimumFiberLength();
-            phi = penMdl.calcPennationAngle(lce,caller);
+            phi = penMdl.calcPennationAngle(lce);
             cosphi = cos(phi);
             tl  = penMdl.calcTendonLength(cosphi,lce,ml);
             lceN = lce/ofl;
@@ -1245,7 +1245,235 @@ double Thelen2003Muscle::calcDFseDtl(double tl, double fiso, double tsl) const
 }
 
 
+//==============================================================================
+//
+// Convenience Method
+//
+//==============================================================================
 
+void Thelen2003Muscle::printCurveToCSVFile(const CurveType ctype, 
+                                           const std::string&path) const
+{
+    /*
+        //Only compute up to the 2nd derivative
+    SimTK::Matrix results = calcSampledMuscleCurve(2);
+    SimTK::Array_<std::string> colNames(results.ncol());
+    colNames[0] = "x";
+    colNames[1] = "y";
+    colNames[2] = "dy/dx";
+    colNames[3] = "d2y/dx2";
+    
+    if(results.ncol() == 5){
+        colNames[4] = "int_y(x)";
+    }
+
+            std::string fname = _name;
+            SimTK_ERRCHK_ALWAYS(fname.length() > 0,
+                "SmoothSegmentedFunction::printMuscleCurveToCSVFile",
+                "Muscle Curve name is empty!");
+            fname.append(".csv");
+
+            printMatrixToFile(results,colNames,path,fname);*/
+
+    std::string fname = getName();
+
+    switch(ctype){
+        case FiberActiveForceLength:{
+            
+            fname.append(".csv");
+            
+            SimTK::Matrix data(100,3);
+            SimTK::Array_<std::string> colNames(data.ncol());
+            colNames[0] = "lceN";
+            colNames[1] = "fal";
+            colNames[2] = "DfalDlceN";
+
+            double delta = (2.0-0.0)/(data.nrow()-1.0);
+            double lceN = 0;
+            double lceN0 = 0;
+            for(int i=0; i<data.nrow(); i++){
+                lceN = lceN0 + i*delta;
+                data(i,0) = lceN;
+                data(i,1) = calcfal(lceN);
+                data(i,2) = calcDfalDlceN(lceN);
+            }
+
+            printMatrixToFile(data,colNames,path, fname);
+
+        }break;
+        case FiberPassiveForceLength:{
+            fname.append(".csv");
+            
+            SimTK::Matrix data(100,3);
+            SimTK::Array_<std::string> colNames(data.ncol());
+            colNames[0] = "lceN";
+            colNames[1] = "fpe";
+            colNames[2] = "DfpeDlceN";
+
+            double lceNMax = get_FmaxMuscleStrain()+1.0;
+            double lceNMin = 1.0;
+            double lceNExtra = 0.1*(lceNMax-lceNMin);
+
+            double delta = ((lceNMax + lceNExtra)-(lceNMin-lceNExtra))
+                           /(data.nrow()-1.0);
+            double lceN = 0;
+            double lceN0 = lceNMin-lceNExtra;
+
+            for(int i=0; i<data.nrow(); i++){
+                lceN = lceN0 + i*delta;
+                data(i,0) = lceN;
+                data(i,1) = calcfpe(lceN);
+                data(i,2) = calcDfpeDlceN(lceN);
+            }
+
+            printMatrixToFile(data,colNames,path, fname);
+
+        }break;
+        case FiberForceVelocity:{
+
+            fname.append(".csv");
+            
+            SimTK::Matrix data(1000,5);
+            SimTK::Array_<std::string> colNames(data.ncol());
+            colNames[0] = "a";
+            colNames[1] = "fal";
+            colNames[2] = "dlceN";
+            colNames[3] = "fv";
+            colNames[4] = "DfvDdlceN";
+
+            //Thelen's fv varies with activation
+            double a = 0;
+            double a0 = 0.1;
+            double da = 0.1;
+
+            //Thelen's fv varies with fiber velocity
+            double dlceNMax = 1.0;
+            double dlceNMin = -1.0;
+            double dlceNExtra = 0.1*(dlceNMax-dlceNMin);
+
+            double delta = ((dlceNMax + dlceNExtra)-(dlceNMin-dlceNExtra))
+                           /(100.0-1.0);
+            double dlceN = 0;
+            double dlceN0 = dlceNMin-dlceNExtra;
+
+            //Thelen's fv also varies with the value of the active force 
+            //length curve. Most experiments that establish fv do so at 
+            //a normalized fiber length of 1.0, where fal is 1. We will
+            //also make that assumption here
+
+            SimTK::Vector fvInv;
+            double DdlceDaFalFv = 0;
+            double DfvDdlceN = 0;
+
+            int idx = 0;
+            for(int i=0; i<=9; i++){
+                a = a0 + da*i;
+
+                for(int j=0; j<100; j++){
+                    dlceN = dlceN0 + j*delta;
+                    fvInv = calcfvInv(a, a*1.0, dlceN, 1e-6,100);
+                    DdlceDaFalFv = calcDdlceDaFalFv(a,a*1.0,a*1.0*fvInv[1]);
+                    DfvDdlceN = (1/(DdlceDaFalFv*a*1.0));
+
+                    data(idx,0) = a;
+                    data(idx,1) = 1.0;
+                    data(idx,2) = dlceN;
+                    data(idx,3) = fvInv[1];
+                    data(idx,4) = DfvDdlceN;
+                    
+                    idx++;
+                }
+            }
+            printMatrixToFile(data,colNames,path, fname);
+
+        }break;
+        case TendonForceLength:{
+            fname.append(".csv");
+            
+            SimTK::Matrix data(100,3);
+            SimTK::Array_<std::string> colNames(data.ncol());
+            colNames[0] = "ltN";
+            colNames[1] = "fse";
+            colNames[2] = "DfseDtlN";
+
+            double ltNMax = get_FmaxTendonStrain()+1.0;
+            double ltNMin = 1.0;
+            double ltNExtra = 0.1*(ltNMax-ltNMin);
+
+            double delta = ((ltNMax + ltNExtra)-(ltNMin-ltNExtra))
+                           /(data.nrow()-1.0);
+            double ltN = 0;
+            double ltN0 = ltNMin-ltNExtra;
+
+            for(int i=0; i<data.nrow(); i++){
+                ltN = ltN0 + i*delta;
+                data(i,0) = ltN;
+                data(i,1) = calcfse(ltN);
+                data(i,2) = calcDfseDtlN(ltN);
+            }
+
+            printMatrixToFile(data,colNames,path, fname);
+
+        }break;
+        default:{
+            std::string msg = "Thelen2003Muscle::printCurveToCSVFile ";
+            msg.append(getName());
+            msg.append(" invalid curve type");
+            SimTK_ASSERT(false,msg.c_str());
+        }
+    }
+
+}
+
+/*
+This function will print cvs file of the column vector col0 and the matrix data
+
+@params data: A matrix of data
+@params filename: The name of the file to print
+*/
+void Thelen2003Muscle::
+    printMatrixToFile(SimTK::Matrix& data, SimTK::Array_<std::string>& colNames,
+    const std::string& path, const std::string& filename) const
+{
+	
+    ofstream datafile;
+    std::string fullpath = path;
+    
+    if(fullpath.length() > 0)
+        fullpath.append("/");
+    
+    fullpath.append(filename);
+
+	datafile.open(fullpath.c_str(),std::ios::out);
+
+    if(!datafile){
+        datafile.close();
+        string name = getName();
+        SimTK_ERRCHK2_ALWAYS( false, 
+                "Thelen2003Muscle::printMatrixToFile",
+                "%s: Failed to open the file path: %s", 
+                name.c_str(),
+                fullpath.c_str());
+    }
+
+
+    for(int i = 0; i < (signed)colNames.size(); i++){
+        if(i < (signed)colNames.size()-1)
+            datafile << colNames[i] << ",";
+        else
+            datafile << colNames[i] << "\n";
+    }
+
+	for(int i = 0; i < data.nrow(); i++){		
+		for(int j = 0; j < data.ncol(); j++){
+			if(j<data.ncol()-1)
+				datafile << data(i,j) << ",";
+			else
+				datafile << data(i,j) << "\n";
+		}	
+	}
+	datafile.close();
+} 
 
 //==============================================================================
 //

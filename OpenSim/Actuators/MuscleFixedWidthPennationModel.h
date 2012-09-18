@@ -253,7 +253,7 @@ public:
                                 optFibLen, optPenAng, caller);
 
         double fibLen = optFibLen*2;
-        double penAng = fibKin.calcPennationAngle(fibLen,caller);
+        double penAng = fibKin.calcPennationAngle(fibLen);
 
         double fibVel = 0.2;
         double penAngVel = fibKin.calcPennationAngularVelocity(
@@ -343,7 +343,7 @@ public:
         string caller = "yourFunctionNameHere";
         MuscleFixedWidthPennationModel fibKin = 
                             MuscleFixedWidthPennationModel(
-                                optFibLen, optPenAng, caller);
+                                optFibLen, optPenAng);
 
         double fibLen = optFibLen*2;
         double penAng = fibKin.calcPennationAngle(fibLen,caller);
@@ -358,7 +358,7 @@ public:
     \endverbatim
 
     */
-    double calcPennationAngle(double fiberLength, std::string& caller) const;
+    double calcPennationAngle(double fiberLength) const;
         
     /**
     This function computes the angular velocity of the fiber.
@@ -391,7 +391,7 @@ public:
                                 optFibLen, optPenAng, caller);
 
         double fibLen = optFibLen*2;           
-        double penAng = fibKin.calcPennationAngle(fibLen,caller);
+        double penAng = fibKin.calcPennationAngle(fibLen);
         double fibVel = optFibLen*3/1.0; //3 fiber lengths / second
 
         //See constructor example to create fibKin
@@ -474,7 +474,7 @@ public:
                                 optFibLen, optPenAng, caller);
 
         double fibLen = optFibLen*2;
-        double penAng = fibKin.calcPennationAngle(fibLen,caller);
+        double penAng = fibKin.calcPennationAngle(fibLen);
         double mclLen = optFibLen*3;
 
         double tdnLen = fibKin.calcTendonLength(cos(penAng),fibLen, mclLen);
@@ -524,7 +524,7 @@ public:
                                 optFibLen, optPenAng, caller);
 
         double fibLen = optFibLen*2;            
-        double penAng = fibKin.calcPennationAngle(fibLen,caller);
+        double penAng = fibKin.calcPennationAngle(fibLen);
 
         double fibVel = optFibLen*3/1.0; //3 fiber lengths / second
         double penAngVel = fibKin.calcPennationAngularVelocity(
@@ -635,7 +635,7 @@ public:
                                 optFibLen, optPenAng, caller);
 
         double fibLen = optFibLen*2;
-        double penAng = fibKin.calcPennationAngle(fibLen,caller);
+        double penAng = fibKin.calcPennationAngle(fibLen);
         double DphiDlce = fibKin.calc_DPennationAngle_DfiberLength(fibLen, 
                                                                     caller);
 
@@ -666,8 +666,7 @@ public:
     @return the fiber length (meters)
     */
     double calcFiberLength(  double muscleLength, 
-                                double tendonLength, 
-                                std::string& caller) const;
+                                double tendonLength) const;
 
     /**
     @param fiberLength         The length of the fiber (meters) 

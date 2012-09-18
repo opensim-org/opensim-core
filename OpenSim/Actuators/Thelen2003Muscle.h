@@ -153,6 +153,11 @@ public:
 
     /**@}**/
 
+    enum CurveType{FiberActiveForceLength,
+                    FiberPassiveForceLength,
+                    FiberForceVelocity,
+                    TendonForceLength};
+
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
@@ -220,6 +225,12 @@ public:
             that this muscle model uses
    */
     const MuscleFixedWidthPennationModel& getPennationModel() const;
+
+//==============================================================================
+// Public Convenience Methods
+//==============================================================================
+    void printCurveToCSVFile(const CurveType ctype, 
+                            const std::string& path) const;
 
 //==============================================================================
 // Public Computations
@@ -361,6 +372,9 @@ private:
     //fiber from attaining a length that is too short.
     bool isFiberStateClamped(const SimTK::State& s, 
                             double dlceN) const;
+
+    void printMatrixToFile(SimTK::Matrix& data, SimTK::Array_<std::string>& colNames,
+    const std::string& path, const std::string& filename) const;
 
 };    
 } // end of namespace OpenSim
