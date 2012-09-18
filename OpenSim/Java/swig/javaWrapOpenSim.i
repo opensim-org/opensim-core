@@ -48,6 +48,11 @@
 #include <OpenSim/Simulation/Model/ContactGeometrySet.h>
 #include <OpenSim/Simulation/Model/Probe.h>
 #include <OpenSim/Simulation/Model/ProbeSet.h>
+#include <OpenSim/Simulation/Model/SystemEnergyProbe.h>
+#include <OpenSim/Simulation/Model/JointInternalPowerProbe.h>
+#include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
+#include <OpenSim/Simulation/Model/ActuatorForceProbe.h>
+
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 
 #include <OpenSim/Simulation/Model/Actuator.h>
@@ -213,7 +218,12 @@ using namespace SimTK;
   public void setPickable(boolean onOff) {
 	 pickable=onOff;
   }
-  
+  public void markAdopted() {
+    if (swigCPtr != 0) {
+      if (swigCMemOwn) swigCMemOwn = false;
+    }
+  }  
+
 %}
 
 %typemap(javacode) OpenSim::MarkerData %{
@@ -257,6 +267,38 @@ using namespace SimTK;
     else if(originalModelPath!=null && !originalModelPath.equals(""))
       return originalModelPath + java.io.File.separator;
     else return "";
+  }
+  public void adoptComponent(ModelComponent aComponent) {
+	aComponent.markAdopted();
+	addComponent(aComponent);
+  }
+  public void adoptBody(Body aBody) {
+	aBody.markAdopted();
+	addBody(aBody);
+  }
+  public void adoptConstraint(Constraint aConstraint) {
+	aConstraint.markAdopted();
+	addConstraint(aConstraint);
+  }
+  public void adoptForce(Force aForce) {
+	aForce.markAdopted();
+	addForce(aForce);
+  }
+  public void adoptProbe(Probe aProbe) {
+	aProbe.markAdopted();
+	addProbe(aProbe);
+  }
+  public void adoptContactGeometry(ContactGeometry aContactGeometry) {
+	aContactGeometry.markAdopted();
+	addContactGeometry(aContactGeometry);
+  }
+  public void adoptAnalysis(Analysis aAnalysis) {
+	aAnalysis.markAdopted();
+	addAnalysis(aAnalysis);
+  }
+  public void adoptController(Controller aController) {
+	aController.markAdopted();
+	addController(aController);
   }
 %}
 
@@ -487,6 +529,8 @@ using namespace SimTK;
 		  return availableClassNames;
 	}
 }
+
+
 /* rest of header files to be wrapped */
 %include <OpenSim/version.h>
 // osimCommon Library
@@ -636,7 +680,11 @@ using namespace SimTK;
 %template(SetProbes) OpenSim::Set<OpenSim::Probe>;
 %template(ModelComponentSetProbes) OpenSim::ModelComponentSet<OpenSim::Probe>;
 %include <OpenSim/Simulation/Model/ProbeSet.h>
-
+%include <OpenSim/Simulation/Model/SystemEnergyProbe.h>
+%include <OpenSim/Simulation/Model/SystemEnergyProbe.h>
+%include <OpenSim/Simulation/Model/JointInternalPowerProbe.h>
+%include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
+%include <OpenSim/Simulation/Model/ActuatorForceProbe.h>
 %include <OpenSim/Simulation/Model/ModelVisualizer.h>
 %include <OpenSim/Simulation/Model/Model.h>
 
