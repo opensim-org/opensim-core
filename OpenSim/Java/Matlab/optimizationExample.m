@@ -1,7 +1,6 @@
 %filename = optimizationExample.m
 %optimizationExample calls the Matlab optimizer in order to find
-%an optimal set of variables for prescribed controls used to control
-%muscles in the Thelene2003 model.
+%an optimal set of control variables for the arm26 muscle example.
 
 % Import modeling classes
 import org.opensim.modeling.*
@@ -10,37 +9,43 @@ import org.opensim.modeling.*
 OpenSimObject.setDebugLevel(3);
 
 % Read in osim model
-osimModel = Model('arm26.osim');
+modelFile = strcat('testData',filesep,'OptimizationExample',...
+    filesep,'Arm26_Optimize.osim');
+osimModel = Model(modelFile);
 
-% Ser optimization parameters
+% Optimization parameters can be sent into the objective function either
+% directly or as a structure.
 params.initialTime = 0;
-params.finalTime   = 3;
-params.lowerBound  = 0.01;
-params.upperBound  = 0.01;
+params.finalTime   = 0.25;
 params.model   	   = osimModel;
 
 % We must make variables that change on each iteration global since 
-% fminsearch will pass the original copy of params to subsequent 
+% fmincon will pass the original copy of params to subsequent 
 % iterations of the objective function. 
 global stepCount bestSoFar;
 stepCount = 0;
 bestSoFar = Inf;
 
-% Define initial LinearFunction coefficients, there must be two
-% for each muscle.
-initialCoefficients = 0.01*ones(1,2*osimModel.getMuscles.getSize());
+% Create array for initial control values, the number of controls is equal
+% to the number of muscles.
+initialCoefficients = 0.01*ones(1,osimModel.getMuscles().getSize());
 disp(strcat('Initial Coefficients: '))
 disp(initialCoefficients);
 
-
-
 % Set optimization parameters
-options = optimset('MaxIter',100);
+% MaxIter - Maximum number of iterations
+% TolFun  - Termination tolerance for function value
+% Algorithm - the interior-point algorithm is recommended by Matlabs
+% optimization toolbox literature.
+% (see Matlab Optimization Toolbox documents for more options)
+options = optimset('MaxIter',100,'TolFun',0.2,'Algorithm','interior-point');
+%options = optimset('MaxIter',100,'TolFun',0.2,'Algorithm','active-set');
+
 
 % Control bounds must be specified as a column vector, every row
 % corresponds to a control
-lowerBound = 0.01*ones(osimModel.getMuscles.getSize(),1);
-upperBound = 0.99*ones(osimModel.getMuscles.getSize(),1);
+lowerBound = 0.01*ones(osimModel.getMuscles().getSize(),1);
+upperBound = 0.99*ones(osimModel.getMuscles().getSize(),1);
 
 % Run the optimization
 fmincon(@(coeffs0) optimizationExampleOptimizer(coeffs0,params),...
