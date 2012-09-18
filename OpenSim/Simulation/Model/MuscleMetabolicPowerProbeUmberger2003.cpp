@@ -231,18 +231,16 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
             double alpha_shortening_slowtwitch = 100 / Vmax_slowtwitch;
             double unscaledSdot, tmp_slowTwitch, tmp_fastTwitch;
 
-            // Calculate UNSCALED heat rate --- muscle velocity dependent
-            // -----------------------------------------------------------
             if (fiber_velocity_normalized <= 0)    // concentric contraction, Vm<0
             {
-                const double maxShorteningRate = 100;
+                const double maxShorteningRate = 100.0;    // (W/kg)
 
                 tmp_slowTwitch = alpha_shortening_slowtwitch * fiber_velocity_normalized * mm.getRatioSlowTwitchFibers();
                 if (tmp_slowTwitch > maxShorteningRate) {
                     cout << "WARNING: " << getName() << "  (t = " << s.getTime() << 
                         "Slow twitch shortening heat rate exceeds the max value of " << maxShorteningRate << 
                         " W/kg. Setting to " << maxShorteningRate << " W/kg." << endl; 
-                    tmp_slowTwitch = maxShorteningRate;		// limit maximum value to 100 W.kg-1
+                    tmp_slowTwitch = maxShorteningRate;		// limit maximum value to 100 W/kg
                 }
 
                 tmp_fastTwitch = alpha_shortening_fasttwitch * fiber_velocity_normalized * (1-mm.getRatioSlowTwitchFibers());
@@ -250,23 +248,22 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
                     cout << "WARNING: " << getName() << "  (t = " << s.getTime() << 
                         "Fast twitch shortening heat rate exceeds the max value of " << maxShorteningRate << 
                         " W/kg. Setting to " << maxShorteningRate << " W/kg." << endl; 
-                    tmp_fastTwitch = maxShorteningRate;		// limit maximum value to 100 W.kg-1
+                    tmp_fastTwitch = maxShorteningRate;		// limit maximum value to 100 W/kg
                 }
 
-                unscaledSdot = -tmp_slowTwitch - tmp_fastTwitch;                               // unscaled shortening heat rate: muscle shortening
+                unscaledSdot = -tmp_slowTwitch - tmp_fastTwitch;                    // unscaled shortening heat rate: muscle shortening
+                Sdot = get_scaling_factor() * std::pow(A, 2.0) * unscaledSdot;      // scaled shortening heat rate: muscle shortening
             }
 
             else	// eccentric contraction, Vm>0
-                unscaledSdot = -0.3 * alpha_shortening_slowtwitch * fiber_velocity_normalized;  // unscaled shortening heat rate: muscle lengthening
+            {
+                unscaledSdot = 0.3 * alpha_shortening_slowtwitch * fiber_velocity_normalized;  // unscaled shortening heat rate: muscle lengthening
+                Sdot = get_scaling_factor() * A * unscaledSdot;                                // scaled shortening heat rate: muscle lengthening
+            }
 
 
-            // Calculate SCALED heat rate --- muscle velocity and length dependent
-            // ---------------------------------------------------------------------
-            if (fiber_velocity_normalized <= 0)     // concentric contraction, Vm<0
-                Sdot = get_scaling_factor() * std::pow(A, 2.0) * unscaledSdot;
-            else                                    // eccentric contraction,  Vm>0
-                Sdot = get_scaling_factor() * A * unscaledSdot;
-
+            // Fiber length dependance on scaled shortening heat rate
+            // (for both concentric and eccentric contractions).
             if (fiber_length_normalized > 1.0)
                 Sdot *= F_iso;  
         }

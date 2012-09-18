@@ -102,8 +102,8 @@ namespace OpenSim {
  * If <I>shortening_rate_on</I> is set to true, then Sdot is calculated as follows:\n
  * <B>Sdot = m * (-[(alphaS_slow * v_CE_norm * r) + (alphaS_fast * v_CE_norm * (1-r))] * A^2 * S)           </B>,   <I>l_CE <= l_CE_opt   &   v_CE >= 0 (concentric / isometric contraction)</I>\n
  * <B>Sdot = m * (-[(alphaS_slow * v_CE_norm * r) + (alphaS_fast * v_CE_norm * (1-r))] * A^2 * S * F_iso)   </B>,   <I>l_CE >  l_CE_opt   &   v_CE >= 0 (concentric / isometric contraction)</I>\n
- * <B>Sdot = m * (-alphaL * v_CE_norm * A * S)           </B>,   <I>l_CE <= l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>\n
- * <B>Sdot = m * (-alphaL * v_CE_norm * A * S * F_iso)   </B>,   <I>l_CE >  l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>
+ * <B>Sdot = m * (alphaL * v_CE_norm * A * S)           </B>,   <I>l_CE <= l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>\n
+ * <B>Sdot = m * (alphaL * v_CE_norm * A * S * F_iso)   </B>,   <I>l_CE >  l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>
  * 
  *     - <B>A = u          </B>,    <I>u >  a </I>
  *     - <B>A = (u+a)/2    </B>,    <I>u <= a </I>
