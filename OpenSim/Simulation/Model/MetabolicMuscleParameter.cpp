@@ -59,6 +59,7 @@ MetabolicMuscleParameter::MetabolicMuscleParameter(double muscle_mass,
     constructProperties();
 
     set_muscle_mass(muscle_mass);
+    set_calculate_mass_from_muscle_properties(calculate_mass_from_muscle_properties);
     set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
     set_activation_constant_slow_twitch(activation_constant_slow_twitch);
     set_activation_constant_fast_twitch(activation_constant_fast_twitch);

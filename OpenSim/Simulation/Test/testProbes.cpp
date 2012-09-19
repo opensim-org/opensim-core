@@ -490,7 +490,7 @@ void simulateMuscle(
 bool addMuscleMetabolicProbes = true;
 if(addMuscleMetabolicProbes) {
             
-    MetabolicMuscleParameter m(0.5, 0.5, 40, 133, 74, 111);
+    MetabolicMuscleParameter m(0.5, false, 0.5, 40, 133, 74, 111);
     m.setName(muscNames.get(0));
     MetabolicMuscleParameterSet mms;
     mms.cloneAndAppend(m);
