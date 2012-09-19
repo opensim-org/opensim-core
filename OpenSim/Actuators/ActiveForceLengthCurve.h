@@ -142,22 +142,23 @@ public:
     
     The default parameters have been chosen so that the resulting curve
     closely matches the active force length curve for human sarcomeres as 
-    documented by Nigg and Herzog
-
-    Nigg, BM., and Herzog, W. Biomechanics of the Musculo-skeletal Sytem. 
-    Wiley 1994. ISBN 0 471 94444 0
-
-
+    documented by Nigg and Herzog. The descending limb has been adjusted to 
+    match the in-vitro human fiber data reported by Gollapudi and Lin. The
+    default shoulder value is set to a rather high value of 0.1. This relatively
+    large value is in place to ensure that muscle model dynamic equations with
+    an active-force-length singularity do not take an unreasonable amount of 
+    time to simulate (simulation time grows inversely as the value of the active 
+    force length curve approaches 0). Muscle model formulations that do not have
+    this singularity (for example the Millard2012AccelerationMuscle) do, and 
+    should set the `minValue' to be 0.
     
     \verbatim
         minActiveNormFiberLength ....... 0.4441
         transitionNormFiberLength ...... 0.6259
-        maxActiveNormFiberLength ....... 1.5959
+        maxActiveNormFiberLength ....... 1.8123
         shallowAscendingSlope .......... 0.8616
-        minValue ....................... 0.01
-    \endverbatim
-
-    
+        minValue ....................... 0.1
+    \endverbatim    
 
     <B> Example </B>
     @code
@@ -165,6 +166,16 @@ public:
         double falVal  = falCurve3.calcValue(1.0);
         double dfalVal = falCurve3.calcDerivative(1.0,1);
     @endcode
+
+    <B>References</B>
+    \verbatim
+    Gollapudi, S.K., and Lin, D.C.(2009) Experimental determination of sarcomere
+    force-length relationship in type-1 human skeletal muscle fibers. 
+    J.Biomechanics, 42, 2011-2016. 
+
+    Nigg, BM., and Herzog, W. Biomechanics of the Musculo-skeletal System. 
+    Wiley 1994. ISBN 0 471 94444 0
+    \endverbatim
 
     */
     ActiveForceLengthCurve( double minActiveNormFiberLength, 

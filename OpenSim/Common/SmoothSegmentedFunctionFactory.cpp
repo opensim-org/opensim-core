@@ -442,18 +442,18 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
 
 
 SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
-          createFiberForceLengthCurve(double e0, double kiso, double curviness,
+          createFiberForceLengthCurve(double e0, double e1, double kiso, double curviness,
           bool computeIntegral, const std::string& curveName)
 {
     
     //Check the input arguments
-    SimTK_ERRCHK1_ALWAYS( e0>0 , 
+    SimTK_ERRCHK1_ALWAYS( e1>e0 , 
         "SmoothSegmentedFunctionFactory::createFiberForceLength", 
-        "%s: e0 must be greater than 0",curveName.c_str());
+        "%s: e1 must be greater than e0",curveName.c_str());
 
-    SimTK_ERRCHK2_ALWAYS( kiso > (1/e0) , 
-        "SmoothSegmentedFunctionFactory::createFiberForceLength", 
-        "%s: kiso must be greater than 1/e0 (%f)",curveName.c_str(),(1/e0));
+    SimTK_ERRCHK2_ALWAYS( kiso > (1/(e1-e0)) , 
+       "SmoothSegmentedFunctionFactory::createFiberForceLength", 
+       "%s: kiso must be greater than 1/e0 (%f)",curveName.c_str(),(1/(e1-e0)));
 
     SimTK_ERRCHK1_ALWAYS( (curviness>=0 && curviness <= 1) , 
         "SmoothSegmentedFunctionFactory::createFiberForceLength", 
@@ -464,10 +464,10 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
 
     //Translate the user parameters to quintic Bezier points
     double c = scaleCurviness(curviness);
-    double x0 = 1.0;
+    double x0 = 1.0 + e0;
     double y0 = 0;
     double dydx0 = 0;
-    double x1 = 1.0 + e0;
+    double x1 = 1.0 + e1;
     double y1 = 1;
     double dydx1 = kiso;
 
@@ -481,8 +481,8 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
     //std::string curveName = muscleName;
     //curveName.append("_fiberForceLengthCurve");
         //Instantiate a muscle curve object
-    SmoothSegmentedFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
-                                                                true,curveName);
+    SmoothSegmentedFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,
+                                        computeIntegral,true,curveName);
 
     return mclCrvFcn;
 }
@@ -491,25 +491,32 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
 
 
 SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
-          createTendonForceLengthCurve(double e0, double kiso, double curviness,
-                                    bool computeIntegral, 
-                                    const std::string& curveName)
+          createTendonForceLengthCurve( double eIso, double kIso, 
+                                        double fToe, double curviness,
+                                        bool computeIntegral, 
+                                        const std::string& curveName)
 {
     //Check the input arguments
-    //e0>0 
-    SimTK_ERRCHK1_ALWAYS( e0>0 , 
+    //eIso>0 
+    SimTK_ERRCHK2_ALWAYS( eIso>0 , 
         "SmoothSegmentedFunctionFactory::createTendonForceLengthCurve", 
-        "%s: e0 must be greater than 0, but %f was entered", curveName.c_str());
+        "%s: eIso must be greater than 0, but %f was entered", 
+        curveName.c_str(),eIso);
 
-    SimTK_ERRCHK2_ALWAYS( kiso > (1/e0) , 
+    SimTK_ERRCHK2_ALWAYS( (fToe>0 && fToe < 1) , 
         "SmoothSegmentedFunctionFactory::createTendonForceLengthCurve", 
-        "%s : kiso must be greater than 1/e0, (%f)", 
-        curveName.c_str(), (1/e0));
+        "%s: fToe must be greater than 0 and less than 1, but %f was entered", 
+        curveName.c_str(),fToe);
 
-    SimTK_ERRCHK1_ALWAYS( (curviness>=0 && curviness <= 1) , 
+    SimTK_ERRCHK3_ALWAYS( kIso > (1/eIso) , 
+       "SmoothSegmentedFunctionFactory::createTendonForceLengthCurve", 
+       "%s : kIso must be greater than 1/eIso, (%f), but kIso (%f) was entered", 
+        curveName.c_str(), (1/eIso),kIso);
+
+    SimTK_ERRCHK2_ALWAYS( (curviness>=0 && curviness <= 1) , 
         "SmoothSegmentedFunctionFactory::createTendonForceLengthCurve", 
         "%s : curviness must be between 0.0 and 1.0, but %f was entered"
-        , curveName.c_str());
+        , curveName.c_str(),curviness);
 
     std::string callerName = curveName;
     callerName.append(".createTendonForceLengthCurve");
@@ -519,24 +526,61 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
     double x0 = 1.0;
     double y0 = 0;
     double dydx0 = 0;
-    double x1 = 1.0 + e0;
-    double y1 = 1;
-    double dydx1 = kiso;
+
+    double xIso = 1.0 + eIso;
+    double yIso = 1;
+    double dydxIso = kIso;
+
+    //Location where the curved section becomes linear
+    double yToe = fToe;
+    double xToe = (yToe-1)/kIso + xIso;
+
+
+    //To limit the 2nd derivative of the toe region the line it tends to
+    //has to intersect the x axis to the right of the origin
+        double xFoot = 1.0+(xToe-1.0)/10.0;
+        double yFoot = 0;
+    double dydxToe = (yToe-yFoot)/(xToe-xFoot);
+
+    //Compute the location of the corner formed by the average slope of the
+    //toe and the slope of the linear section
+    double yToeMid = yToe/2.0;
+    double xToeMid = (yToeMid-yIso)/kIso + xIso;
+    double dydxToeMid = (yToeMid-yFoot)/(xToeMid-xFoot);
+
+    //Compute the location of the control point to the left of the corner
+    double xToeCtrl = xFoot + 0.5*(xToeMid-xFoot); 
+    double yToeCtrl = yFoot + dydxToeMid*(xToeCtrl-xFoot);
+
+
 
     //Compute the Quintic Bezier control points
-    SimTK::Matrix ctrlPts = SegmentedQuinticBezierToolkit::
-     calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c,callerName);
-    SimTK::Matrix mX(6,1);
-    SimTK::Matrix mY(6,1);
+    SimTK::Matrix p0 = SegmentedQuinticBezierToolkit::
+     calcQuinticBezierCornerControlPoints(x0,y0,dydx0,
+                                        xToeCtrl,yToeCtrl,dydxToeMid,
+                                        c,callerName);
+    SimTK::Matrix p1 = SegmentedQuinticBezierToolkit::
+     calcQuinticBezierCornerControlPoints(xToeCtrl, yToeCtrl, dydxToeMid,
+                                              xIso,     yIso,    dydxIso,
+                                                          c,     callerName);
+    SimTK::Matrix mX(6,2);
+    SimTK::Matrix mY(6,2);
 
-    mX(0) = ctrlPts(0);
-    mY(0) = ctrlPts(1);
+    mX(0) = p0(0);
+    mY(0) = p0(1);
+
+    mX(1) = p1(0);
+    mY(1) = p1(1);
 
     //std::string curveName = muscleName;
     //curveName.append("_tendonForceLengthCurve");
     //Instantiate a muscle curve object
-   SmoothSegmentedFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
-                                                                true,curveName);
+   SmoothSegmentedFunction mclCrvFcn(  mX,    mY,
+                                       x0,    xIso,
+                                       y0,    yIso,
+                                       dydx0, dydxIso,
+                                       computeIntegral,
+                                       true,curveName);
 
     return mclCrvFcn;
 }

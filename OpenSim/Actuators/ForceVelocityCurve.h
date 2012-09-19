@@ -117,8 +117,9 @@ public:
                 The slope of the force velocity curve at a normalized (w.r.t.
                 vmax * optimal fiber length) contraction velocity of 0, which
                 is also the maximum slope achieved by the force velocity curve.
-                A physiologically accurate value for this parameter is 5 [1]
-                (pp 55), which is the default value. Although this parameter 
+                A physiologically accurate value for this parameter is 5 
+                according to Leiber's text book (pp 55), which is the default 
+                value. Although this parameter 
                 can be changed, it must be positive and greater than 
                 max( (maxEccentricMultiplier-1)/1, 1). 
                 The value of this parameter also affects how much the eccentric 
@@ -174,10 +175,10 @@ public:
 
       <B> References: </B>
       \verbatim
-      [1]        Leiber, R.L (2010). Skeletal Muscle Structure, Function and 
-                Plasticity: The Physiological Basis of Rehabilitiation 
-                - Third Edition. Baltimore, WD: Lippincott Williams & Wilkins.
-        \endverbatim        
+      Leiber, R.L (2010). Skeletal Muscle Structure, Function and 
+      Plasticity: The Physiological Basis of Rehabilitiation 
+      - Third Edition. Baltimore, WD: Lippincott Williams & Wilkins.
+      \endverbatim        
 
       <B>Conditions:</B>
         \verbatim
@@ -208,8 +209,11 @@ public:
         \endverbatim
 
     <B> Example </B>
-
-
+    @code
+        ForceVelocityCurve fvCurve3(0,5,0,1.8,0.1,0.75,"testMuscle");
+        double falVal  = fvCurve3.calcValue(1.0);
+        double dfalVal = fvCurve3.calcDerivative(1.0,1);
+    @endcode
 
     */
     ForceVelocityCurve( double concentricMinSlope, 
@@ -279,7 +283,6 @@ public:
         the slope of the force velocity curve at the maximum eccentric 
         (lengthening) contraction velocity (1).
      */
-
      void setEccentricMinSlope(double aEccentricMinSlope);
 
      /**
@@ -424,7 +427,7 @@ private:
     void connectToModel(Model& aModel) OVERRIDE_11;
     ///ModelComponent Interface required function
     void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
-    /**
+    /*
     ModelComponent is being used for this one function, which is called just
     prior to a simulation beginning. This is the ideal time to actually
     create the curve because

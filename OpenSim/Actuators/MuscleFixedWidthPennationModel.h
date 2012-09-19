@@ -43,7 +43,7 @@ fixed width parallelogram pennation model makes a number of assumptions:
 The parallelogram pennation model achieves a constant area by permitting the 
 parallelogram to shear while maintaining a constant height. The constant area
 property is intended to mimic the constant volume property of muscle, which 
-arises because muscle is nearly all water.
+arises because muscle is incompressible for all practial purposes.
 
 \image html fig_MuscleFixedWidthPennationModel.png
 
@@ -97,6 +97,16 @@ public:
     @param optimalPennationAngle    The angle of the fiber (radians) when 
                                     it is at its optimal angle
 
+    @param maximumPennationAngle    The maximum pennation angle permitted. This
+                                    is particularly useful to set for muscle 
+                                    models that have a pennation singularity.
+                                    For those muscles that do not, this 
+                                    parameter must be greater than SimTK::Pi/2,
+                                    as a pennation angle of Pi/2 will cause
+                                    a singularity in several of the 
+                                    internal functions of this class.
+                                    
+
     @param caller       The name of the function calling this one. This 
                         string is used to help the user debug their model
                         when an assertion fails.
@@ -109,16 +119,18 @@ public:
     \verbatim
         0 <  optimalFiberLength
         0 <= optimalPennationAngle < SimTK::Pi/2
+        0 <= maximumPennationAngle < SimTK::Pi/2
     \endverbatim
 
     <B>Example:</B>
     \code
         double optFibLen = 0.1;
         double optPenAng = SimTK::Pi/4.0;
+        double maxPenAng = acos(0.001);
         string caller = "yourFunctionNameHere";
         MuscleFixedWidthPennationModel fibKin = 
                             MuscleFixedWidthPennationModel(
-                                optFibLen, optPenAng, caller);
+                                optFibLen, optPenAng, maxPenAng, caller);
     \endcode
 
                                         
@@ -236,9 +248,8 @@ public:
     @param DpennationAngle_DfiberLength The partial derivative of the 
                                         pennation angle with respect to 
                                         fiber length
-    @param caller The name of the function calling this one. This 
-                        string is used to help the user debug their model
-                        when an assertion fails.
+    @param DpennationAngularVelocity_DfiberLength The partial derivative of
+                              the pennation angular velocity w.r.t. fiber length                                              
     @return the partial derivative of the fiber velocity along the tendon with
             respect to a change in fiber length
 
@@ -247,10 +258,11 @@ public:
     \code
         double optFibLen = 0.1;
         double optPenAng = SimTK::Pi/4.0;
+        double maxPenAng = acos(0.1);
         string caller = "yourFunctionNameHere";
         MuscleFixedWidthPennationModel fibKin = 
                             MuscleFixedWidthPennationModel(
-                                optFibLen, optPenAng, caller);
+                                optFibLen, optPenAng, maxPenAng, caller);
 
         double fibLen = optFibLen*2;
         double penAng = fibKin.calcPennationAngle(fibLen);
@@ -331,9 +343,6 @@ public:
 
     @param fiberLength  the length of the fiber (meters)  
 
-    @param caller       The name of the function calling this one. This 
-                        string is used to help the user debug their model
-                        when an assertion fails.
     @returns            the current pennation angle (radians)
   
     <B>Example:</B>
@@ -418,8 +427,7 @@ public:
     @param fiberAcceleration The stretch acceleration of the fiber (meters/s^2) 
     @param sinPennationAngle The sine of the pennation angle (unitless)
     @param cosPennationAngle The cosine of the pennation angle (unitless)
-    @param pennationAngularVelocity The angular velocity of the pennation
-                                    angle.
+    @param pennationAngularVelocity The angular velocity of the pennation angle.
     @param caller The name of the function calling this one. This 
                         string is used to help the user debug their model
                         when an assertion fails.
@@ -441,7 +449,8 @@ public:
     @param cosPennationAngle The cosine of the pennation angle (unitless)
     @param pennationAngularVelocity The angular velocity of the pennation
                                     angle.
-    @param the angular acceleration of the pennation angle (rad/s^2)
+    @param pennationAngularAcceleration the angular acceleration of the 
+                                        pennation angle (rad/s^2)
     @return the acceleration of the fiber in the direction of the tendon
     */
     double calcFiberAccelerationAlongTendon(double fiberLength, 
@@ -518,10 +527,11 @@ public:
           
         double optFibLen = 0.1;
         double optPenAng = SimTK::Pi/4.0;
+        double maxPenAng = acos(0.1);
         string caller = "yourFunctionNameHere";
         MuscleFixedWidthPennationModel fibKin = 
                             MuscleFixedWidthPennationModel(
-                                optFibLen, optPenAng, caller);
+                                optFibLen, optPenAng, maxPenAng, caller);
 
         double fibLen = optFibLen*2;            
         double penAng = fibKin.calcPennationAngle(fibLen);
@@ -578,10 +588,11 @@ public:
     \code
         double optFibLen = 0.1;
         double optPenAng = SimTK::Pi/4.0;
+        double maxPenAng = acos(0.1);
         string caller = "yourFunctionNameHere";
         MuscleFixedWidthPennationModel fibKin = 
                             MuscleFixedWidthPennationModel(
-                                optFibLen, optPenAng, caller);
+                                optFibLen, optPenAng, maxPenAng, caller);
             
         double fibLen = optFibLen*2;
         double DphiDlce = fibKin.calc_DPennationAngle_DfiberLength(fibLen, 
@@ -629,10 +640,11 @@ public:
     \code
         double optFibLen = 0.1;
         double optPenAng = SimTK::Pi/4.0;
+        double maxPenAng = acos(0.1);
         string caller = "yourFunctionNameHere";
         MuscleFixedWidthPennationModel fibKin = 
                             MuscleFixedWidthPennationModel(
-                                optFibLen, optPenAng, caller);
+                                optFibLen, optPenAng, maxPenAng, caller);
 
         double fibLen = optFibLen*2;
         double penAng = fibKin.calcPennationAngle(fibLen);
@@ -660,9 +672,6 @@ public:
     /**
     @param muscleLength the length of the musculo tendon (meters)
     @param tendonLength the length of the tendon (meters
-    @param caller       The name of the function calling this one. This 
-                        string is used to help the user debug their model
-                        when an assertion fails.
     @return the fiber length (meters)
     */
     double calcFiberLength(  double muscleLength, 
@@ -682,8 +691,8 @@ public:
     @return the lengthening velocity of the fiber (meters/s)
     */
     double   calcFiberVelocity( double fiberLength,
-                                double sinPennation,
-                                double cosPennation,                                
+                                double sinPennationAngle,
+                                double cosPennationAngle,                                
                                 double muscleLength,
                                 double tendonLength,
                                 double muscleVelocity, 

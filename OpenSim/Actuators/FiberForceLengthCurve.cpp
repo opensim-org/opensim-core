@@ -27,9 +27,10 @@ using namespace SimTK;
 using namespace std;
 
 static int RefFiber_e0_Idx     = 0;
-static int RefFiber_kPE_Idx    = 1;
-static int RefFiber_klin_Idx   = 2;
-static int RefFiber_normPE_Idx = 3;
+static int RefFiber_e1_Idx     = 1;
+static int RefFiber_kPE_Idx    = 2;
+static int RefFiber_klin_Idx   = 3;
+static int RefFiber_normPE_Idx = 4;
 
 //=============================================================================
 // CONSTRUCTION
@@ -42,9 +43,12 @@ FiberForceLengthCurve::FiberForceLengthCurve()
     setNull();
     constructProperties();    
     setName("default_FiberForceLengthCurve");
+    ensureCurveUpToDate();
+
 }
 
-FiberForceLengthCurve::FiberForceLengthCurve(   double strainAtOneNormForce, 
+FiberForceLengthCurve::FiberForceLengthCurve(   double strainAtZeroForce,
+                                                double strainAtOneNormForce, 
                                                 double stiffnessAtOneNormForce,
                                                 double curviness,
                                                 const std::string& muscleName)
@@ -52,12 +56,14 @@ FiberForceLengthCurve::FiberForceLengthCurve(   double strainAtOneNormForce,
     setNull();
     constructProperties();
     setName(muscleName + "_FiberForceLengthCurve");
-
+    set_strain_at_zero_force(strainAtZeroForce);
     set_strain_at_one_norm_force(strainAtOneNormForce);
     setOptionalProperties(stiffnessAtOneNormForce, curviness);
 
     ensureCurveUpToDate();
 }
+
+
 
 
 void FiberForceLengthCurve::setNull()
@@ -67,7 +73,7 @@ void FiberForceLengthCurve::setNull()
 
 void FiberForceLengthCurve::constructProperties()
 {   
-
+    constructProperty_strain_at_zero_force(0.0);
     constructProperty_strain_at_one_norm_force(0.6);
     constructProperty_stiffness_at_one_norm_force();
     constructProperty_curviness();
@@ -75,12 +81,14 @@ void FiberForceLengthCurve::constructProperties()
 
 void FiberForceLengthCurve::buildCurve()
 {           
-        double e0   =  get_strain_at_one_norm_force();
+        double e0   = get_strain_at_zero_force();
+        double e1   =  get_strain_at_one_norm_force();
         double kiso =  m_stiffnessAtOneNormForceInUse;
         double c    =  m_curvinessInUse;        
 
         SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
-                                    createFiberForceLengthCurve(   e0,
+                                    createFiberForceLengthCurve(    e0,
+                                                                    e1,
                                                                     kiso,
                                                                     c,
                                                                     true,
@@ -102,17 +110,32 @@ void FiberForceLengthCurve::ensureCurveUpToDate()
             && getProperty_curviness().empty() == true)
         {
             //Get properties of the reference curve
-            double e0 = get_strain_at_one_norm_force();
-            SimTK::Vec4 refFiber = calcReferencePassiveFiber(e0);    
-
+            double e0 = get_strain_at_zero_force();
+            double e1 = get_strain_at_one_norm_force();
+            SimTK::Vec5 refFiber = calcReferencePassiveFiber(e0,e1);    
+            
             //Assign the stiffness
-            m_stiffnessAtOneNormForceInUse = refFiber[RefFiber_klin_Idx];
+            //m_stiffnessAtOneNormForceInUse = refFiber[RefFiber_klin_Idx];
+
+            //Matches the Thelen2003 default curve well, and additionally 
+            //matches the EDL passive force length curve found experimentally
+            //by TM Winters, Takahashi, Ward, and Lieber 2011 paper
+            m_stiffnessAtOneNormForceInUse = (0.6*8.3898637908858689)/(e1-e0);
+
+            m_curvinessInUse = 0.63753341725162227;
+
+            /* Fits the curviness to the reference curve, which is the one
+               that Thelen documented. This is *damn* slow, and Thelen's curve
+               was poorly justified.
 
             //Fit the curviness parameter            
-            m_curvinessInUse = calcCurvinessOfBestFit(refFiber[RefFiber_e0_Idx],
+            m_curvinessInUse = calcCurvinessOfBestFit(
+                                                refFiber[RefFiber_e0_Idx],
+                                                refFiber[RefFiber_e1_Idx],
                                                 refFiber[RefFiber_klin_Idx],
                                                 refFiber[RefFiber_normPE_Idx],
                                                 1e-6);
+            */
             m_fittedCurveBeingUsed = true;
 
         }
@@ -192,6 +215,14 @@ double FiberForceLengthCurve::getStrainAtOneNormForce() const
 }
 
 
+double FiberForceLengthCurve::getStrainAtZeroForce() const
+{    
+    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
+
+    return get_strain_at_zero_force();
+}
+
 double FiberForceLengthCurve::getStiffnessAtOneNormForceInUse() const
 {    
     FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
@@ -223,7 +254,14 @@ void FiberForceLengthCurve::
 }
 
 void FiberForceLengthCurve::
-        setOptionalProperties(double aStiffnessAtOneNormForce,double aCurviness)
+    setStrainAtZeroForce(double aStrainAtZeroForce)
+{
+        set_strain_at_zero_force(aStrainAtZeroForce);   
+}
+
+void FiberForceLengthCurve::
+        setOptionalProperties(  double aStiffnessAtOneNormForce,
+                                double aCurviness)
 {
         set_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
         set_curviness(aCurviness);
@@ -285,8 +323,9 @@ void FiberForceLengthCurve::
 // PRIVATE SERVICES
 //=============================================================================
 
-double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0, double k, 
-                                                   double area, double relTol)
+double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0, double e1, 
+                                                    double k, 
+                                                    double area, double relTol)
 {
 
             std::string name = getName();
@@ -297,12 +336,13 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0, double k,
             
             SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
                                     createFiberForceLengthCurve(   e0,
+                                                                   e1,
                                                                    k,
                                                                    c,
                                                                    true,
                                                                    name);
 
-            double val = tmp.calcIntegral(1+e0);
+            double val = tmp.calcIntegral(1+e1);
 
             double err      = (val-area)/area;
             double prevErr = 0;
@@ -313,7 +353,7 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0, double k,
             bool flag_improvement   = false;
             bool flag_Newton        = false;
 
-            int maxIter     = 10;
+            int maxIter     = 20;
             int iter        = 0;
             int localIter   = 0;
             int evalIter    = 0;
@@ -329,16 +369,21 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0, double k,
 
                     SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
                                     createFiberForceLengthCurve(   e0,
+                                                                   e1,
                                                                    k,
                                                                    c+step,
                                                                    true,
                                                                    name);                
-                    val     = tmp.calcIntegral(1+e0);
+                    val     = tmp.calcIntegral(1+e1);
                     errMin  = (val-area)/area; 
                                     
                     if(abs(errMin) < abs(err)){
                         prevC = c;
                         c   = c+step;
+                        if(c > 1.0){
+                            c = 1.0;}
+                        if(c < 0){
+                            c = 0;}
                         prevErr = err;
                         err = errMin;
                         flag_improvement = true;
@@ -366,16 +411,21 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0, double k,
                     if(abs(deltaC) < abs(step)){
                        SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
                                     createFiberForceLengthCurve(   e0,
+                                                                   e1,
                                                                    k,
                                                                    cNewton,
                                                                    true,
                                                                    name);                 
-                        val     = tmp.calcIntegral(1+e0);
+                        val     = tmp.calcIntegral(1+e1);
                         errMin  = (val-area)/area; 
                                     
                         if(abs(errMin) < abs(err)){
                             prevC = c;
                             c   = cNewton;
+                            if(c > 1.0){
+                                c = 1.0;}
+                            if(c < 0){
+                                c = 0;}
                             prevErr = err;
                             err = errMin;
                             flag_improvement = true;
@@ -386,10 +436,13 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0, double k,
                                 step = step*-1;
                       }
                         localIter++;
+                    }else{
+                        flag_Newton = false;
                     }
                 }
 
                 evalIter += localIter;
+
                 step = step/2.0;
                 iter++;
                 //printf("Root Finding Iter %i ,err: %f, eval %i\n",
@@ -406,37 +459,48 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0, double k,
 }
 
 
-SimTK::Vec4 FiberForceLengthCurve::
-    calcReferencePassiveFiber(double strainAtOneNormForce)
+SimTK::Vec5 FiberForceLengthCurve::
+    calcReferencePassiveFiber(  double strainAtZeroForce,
+                                double strainAtOneNormForce)
 {
-    SimTK::Vec4 properties;
-    double e0 = strainAtOneNormForce;
+    SimTK::Vec5 properties;
+    double e0 = strainAtZeroForce;
+    double e1 = strainAtOneNormForce;
+    double eD = e1-e0;
     double kPE = 5;
 
+    // Note that to expand this equation to make a curve that does not start
+    // at a strain of 0, we are changing notation a bit. Now e0 is the strain
+    // of zero force, and e1 is the strain at 1 unit force.
+    //
     //From Thelen 2003, the expression for the fiber force length curve is:
     // F = (e^(kPE*epsilon/e0) - 1) / (e^(kPE) - 1)
+    //
+    // Replacing e0 with eD = (e1-e0) yields
+    // F = (e^(kPE*epsilon/eD) - 1) / (e^(kPE) - 1)
     // Thus
-    // dF/depsilon = (kPE/e0) e^(kPE*epsilon/e0)  / (e^(kPE) - 1)
+    // dF/depsilon = (kPE/eD) e^(kPE*epsilon/eD)  / (e^(kPE) - 1)
     // The stiffness we want is given by this equation evaluated at
-    // epsilon = e0:
-
+    // epsilon = eD:
+    //
+    double epsilon = eD;
     double expkPE = exp(kPE);
-    double dFdepsilon = (kPE/e0)*expkPE / (expkPE-1);
+    double dFdepsilon = (kPE/eD)*exp(kPE*epsilon/eD) / (expkPE-1);
 
-    //From Thelen 2003, the expression for the fiber force length curve is:
-    // F = (e^(kPE*epsilon/e0) - 1) / (e^(kPE) - 1)
+    //The expression for the fiber force length curve we are using is:
+    // F = (e^(kPE*epsilon/eD) - 1) / (e^(kPE) - 1)
     // And the integral is
-    // int(F,epsilon) = ((e0/kPE)*e^(kPE*epsilon/e0) - epsilon) / (e^(kPE) - 1)
+    // int(F,epsilon) = ((eD/kPE)*e^(kPE*epsilon/eD) - epsilon) / (e^(kPE) - 1)
 
-    double epsilon = e0;
-    double intF1 = ((e0/kPE)*exp(kPE*epsilon/e0) - epsilon) / (expkPE - 1);
+    epsilon = eD;
+    double intF1 = ((eD/kPE)*exp(kPE*epsilon/eD) - epsilon)/(expkPE-1);
     epsilon = 0;
-    double intF0 = ((e0/kPE)*exp(kPE*epsilon/e0) - epsilon) / (expkPE - 1);
+    double intF0 = ((eD/kPE)*exp(kPE*epsilon/eD) - epsilon)/(expkPE-1);
 
     //Populate the property vector:
 
-    
-     properties[RefFiber_e0_Idx]     = e0;
+    properties[RefFiber_e0_Idx]     = e0;
+     properties[RefFiber_e1_Idx]     = e1;
      properties[RefFiber_kPE_Idx]    = kPE;
      properties[RefFiber_klin_Idx]   = dFdepsilon;
      properties[RefFiber_normPE_Idx] = intF1-intF0;

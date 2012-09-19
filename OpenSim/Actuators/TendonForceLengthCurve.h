@@ -66,29 +66,57 @@ namespace OpenSim {
 
  \image html fig_TendonForceLengthCurve.png
  
- If the optional parameters are not provided, the tendon force length curve is
- fitted to a linearly extrapolated exponential curve (Thelen 2003) so that the
- following mathematical properties match between the two curves:
- 
- \li The strain (e0) of the two curves under 1 unit force of tension
- \li The slope of the curve at a strain of e0 of the two curves 
- \li The area enclosed by the curves between a strain of 0 and e0 of the two
-     curves match with a small relative error.
+    If the optional parameters are not provided, the tendon force length curve is
+    fitted to match the average dimensionless in-vivo tendon curve 
+    reported by Maganarius et al and Magnusson et al. In addition,
+    the curve produced will have a characteristic toe region that appears
+    in the in-vitro tendon testing literature (for example see Lewis et al, 
+    figure 4), though does not show up strongly in the in-vivo literature. The
+    curve is fitted using only the strainAtOneNormForce and this hueristic
+    algorithm:
+          
+     \li stiffnessAtOneNormForce = 1.375/strainAtOneNormForce
+     \li normForceAtToeEnd = 1.0/3.0  (see Proske et al).
+     \li curviness = 0.5
+     
+     For strains less than 0, or greater than strainAtOneNormForce the C2 curve
+     is linearly extrapolated.
 
-    An example of a fitted curve can be seen in the figure below.
-
- \image html fig_TendonForceLengthCurve_Fitted.png
+     Note that this curve is not being fitted to the commonly used linearly
+     extrapolated exponential curve documented by Thelen, as it makes the 
+     toe region about half as stiff as both the in-vitro and in-vivo data
+     indicate is reasonable, and additionally, makes the linear section of
+     the curve nearly twice as stiff than the data indicates is reasonable.
 
  For more details on the fitting process see functions:
 
- \li TendonForceLengthCurve(double strainAtOneNormForce,const std::string& muscleName)
+ \li TendonForceLengthCurve(double strainAtOneNormForce,
+                            const std::string& muscleName)
  \li getStiffnessAtOneNormForceInUse()
+ \li getNormForceAtToeEndInUse()
  \li getCurvinessInUse()
 
  <B> References </B>
-    Thelen (2003). Adjustment of Muscle Mechanics Model Paramters to Simulate 
-    Dynamic Contractions in Older Adults. ASME J Biomech Eng (125).
+        \verbatim
+        Lewis, G. and Shaw, K.M. (1997). Tensile Properties of Human Tendon
+        Achillis: Effect of Donor Age and Strain Rate. The Journal of Foot 
+        and Ankle Surgery, 36, 435-445.
 
+        Maganaris, C.N. and Paul, J.P.(2002). Tensile properties of the in
+        vivo grastrocnemius tendon. J. Biomechanics 35:1639-1646
+
+        Magnusson S.P., Aagaard, P., Rosager, S., Dyhre-Poulsen, P., 
+        and Kjaer,M. (2001). Load-displacement properties of the human triceps
+        surae aponeurosis in vivo. Journal of Physiology, 531, 277-288.
+
+        Proske, U. and Morgan,D.L. (1987). Tendon Stiffness: Methods of 
+        Measurement and Significance for the Control of Movement. A Review. 
+        J. Biomechanics, 20,75-82.
+
+        Thelen, DG (2003). Adjustment of Muscle Mechanics Model 
+         Parameters to Simulate Dynamic Contractions in Older Adults. 
+         ASME J.Biomech. Eng., 125, 75-77.
+        \endverbatim
  <B>Computational Cost Details</B>
     All computational costs assume the following operation costs:
 
@@ -102,6 +130,7 @@ namespace OpenSim {
 
     These relative weightings will vary processor to processor, and so any of 
     the quoted computational costs are approximate.
+
 
   @author Matt Millard
 
@@ -117,6 +146,8 @@ public:
     /**@{**/
     OpenSim_DECLARE_PROPERTY(strain_at_one_norm_force, double,
         "tendon strain at a tension of 1 normalized force");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(norm_force_at_toe_end, double, 
+        "normalized force developed at the end of the toe region");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(stiffness_at_one_norm_force, double, 
         "tendon stiffness at a tension of 1 normalized force");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(curviness, double, 
@@ -161,6 +192,14 @@ public:
                         when the tendon is strained by strainAtOneNormForce
                         under a load of 1 normalized unit of force.
 
+        @param normForceAtToeEnd
+                        The normalized force developed at the end of the `toe'
+                        region. The toe region lies between 0 strain and 
+                        some intermediate strain less than the strain required
+                        to develop 1 norm force. The toe region is characterized
+                        by being both non-linear and more compliant than the
+                        rest of the tendon.
+
         @param curviness    
                 A dimensionless parameter between [0-1] that controls how 
                 the curve is drawn: 0 will create a curve that is
@@ -183,7 +222,7 @@ public:
      advantage of being C2 continuous which results in faster simulations when
      compared to the popular method of using a linearly extrapolated 
      exponential curve to parameterize the tendon force length curve, which 
-     is only C0 continuous. Details to appear in Millard et al 2012.
+     is only C0 continuous. Details to appear in Millard et al 2013.
 
       <B>Conditions:</B>
         \verbatim
@@ -205,17 +244,18 @@ public:
         @endcode
 
 
-
     */
     TendonForceLengthCurve( double strainAtOneNormForce, 
                             double stiffnessAtOneNormForce,
+                            double normForceAtToeEnd,
                             double curviness,
                             const std::string& muscleName);
 
     /**
-     Constructs a C2 continuous tendon force length curve that is fitted to a
-     conventional linearly extrapolated tendon curve. 
-        
+     Constructs a C2 continuous tendon force length curve that is fitted to 
+     match the shape of tendon-load displacement curves reported in in-vito 
+     load-displacement experiments, with the strains reported in in-vivo data.
+             
         @param strainAtOneNormForce
                 The tendon strain at which the tendon develops 1 unit of 
                 normalized force. The definition of strain used for this 
@@ -227,39 +267,41 @@ public:
                 it is strained by 4% of its resting length, or 
                 equivalently is stretched to 1.04 times its resting length.
 
-
         @param muscleName
                 The name of the muscle this curve belongs to. This name is used
                 to create the name of this curve, which is formed simply by 
                 appending "_TendonForceLengthCurve" to the string in muscleName.
                 This name is used for making intelligible error messages and 
                 also for naming the XML version of this curve when it is 
-                serialized.
-
-
-           \image html fig_TendonForceLengthCurve_Fitted.png
+                serialized.           
 
      This curve has the 
      advantage of being C2 continuous which results in faster simulations when
      compared to the popular method of using a linearly extrapolated 
      exponential curve to parameterize the tendon force length curve, which 
-     is only C0 continuous. Details to appear in Millard et al 2012. 
+     is only C0 continuous. Details to appear in Millard et al 2013. 
      
      This constructor will create a C2 continuous tendon force length curve that
-     closely approximates the commonly used linearly extrapolated exponental
-     curve as documented in Thelen 2003. The resulting curve is fitted to the
-     linearly extrapolated exponential curve so that
+     is fitted to match the average dimensionless in-vivo tendon curve 
+     reported by Maganarius et al and Magnusson et al. In addition,
+     the curve produced will have a characteristic toe region that appears
+     in the in-vitro tendon testing literature (for example see Lewis et al, 
+     or Proske), though does not show up strongly in the in-vivo literature. The
+     curve is fitted using only the strainAtOneNormForce and this hueristic
+     algorithm:
+          
+     \li stiffnessAtOneNormForce = 1.375/strainAtOneNormForce
+     \li normForceAtToeEnd = 1.0/3.0  (see Proske et al).
+     \li curviness = 0.5
      
-     
-     \li The strain (e0) of the two curves under 1 unit force of tension is identical
-     \li The slope of the curve at a strain of e0 of the two curves is identical 
-     \li The area enclosed by the curves between a strain of 0 and e0 of the two
-         curves match with a small error.
-     
-     The functions 'getStiffnessAtOneNormForceInUse()', and 'getCurvinessInUse()'
-     are used to fit this tendon curve to the linearly extrapolated exponential
-     curve. See the documentation of these functions for more details on how
-     these parameters are computed.
+     For strains less than 0, or greater than strainAtOneNormForce the C2 curve
+     is linearly extrapolated.
+
+     Note that this curve is not being fitted to the commonly used linearly
+     extrapolated exponential curve documented by Thelen, as this curve makes 
+     the toe region about half as stiff as both the in-vitro and in-vivo data
+     indicate is reasonable, and additionally, makes the linear section of
+     the curve nearly twice as stiff as the data indicates is reasonable.
 
       <B>Conditions:</B>
         \verbatim
@@ -267,27 +309,43 @@ public:
         \endverbatim
 
         \verbatim
-            ~870,080 flops
+            ~174,100 flops
         \endverbatim
 
         <B>Default Parameter Values</B>
          \verbatim
-             strainAtOneNormForce    = 0.04            
+             strainAtOneNormForce    = 0.049            
          \endverbatim
 
         <B>Example:</B>
         @code
-            TendonForceLengthCurve fseCurve3(0.10,"soleus");
+            TendonForceLengthCurve fseCurve3(0.05,"soleus");
             double fseVal  = fseCurve3.calcValue(1.02);
             double dfselVal = fseCurve3.calcDerivative(1.02,1);
         @endcode
 
 
         <B>References:</B>
+        \verbatim
+        Maganaris, C.N. and Paul, J.P.(2002). Tensile properties of the in
+        vivo grastrocnemius tendon. J. Biomechanics 35:1639-1646
+
+        Magnusson S.P., Aagaard, P., Rosager, S., Dyhre-Poulsen, P., 
+        and Kjaer,M. (2001). Load-displacement properties of the human triceps
+        surae aponeurosis in vivo. Journal of Physiology, 531, 277-288.
+
+        Lewis, G. and Shaw, K.M. (1997). Tensile Properties of Human Tendon
+        Achillis: Effect of Donor Age and Strain Rate. The Journal of Foot 
+        and Ankle Surgery, 36, 435-445.
+
+        Proske, U. and Morgan,D.L. (1987). Tendon Stiffness: Methods of 
+        Measurement and Significance for the Control of Movement. A Review. 
+        J. Biomechanics, 20,75-82.
+
         Thelen, DG (2003). Adjustment of Muscle Mechanics Model 
          Parameters to Simulate Dynamic Contractions in Older Adults. 
-         ASME J.Biomech. Eng., 125, 75-77)
-
+         ASME J.Biomech. Eng., 125, 75-77.
+        \endverbatim
 
     */
     TendonForceLengthCurve( double strainAtOneNormForce,                             
@@ -311,105 +369,47 @@ public:
      
      /**
         @returns The normalized stiffness (or slope) of the tendon curve 
-                when the tendon is strained by strainAtOneNormForce
-                under a load of 1 normalized unit of force.
+                 when the tendon is strained by strainAtOneNormForce
+                 under a load of 1 normalized unit of force.
 
-                If the optional parameter stiffnessAtOneNormForce has beens set,
-                its value is returned.
-        
-        If the optional parameter 'stiffnessAtOneNormForce' has not been set, 
-        then this function will calculate the stiffness of the curve so that 
-        it matches klin in Eqn. 5 in Thelen 2003. Note that the solution for 
-        klin in Thelen 2003 is approximate, and only correct to 3 decimal
-        places. This approximation causes noticable error particularly for
-        tendons that experience high loads (such as the Achillies tendon). 
-        The correct expressions, and the ones that are employed by this function,
-        for \f$ k_{lin}\f$ and \f$\epsilon_{toe}\f$ are derived below.
-        
-        The remainder of this documentation will use the 
-        notation that is found in Thelen 2003, where:
+        If the optional parameter stiffnessAtOneNormForce has beens set,
+        its value is returned.
 
-        \li \f$ \epsilon_0 \f$  : strainAtOneNormForce
-        \li \f$ F_{toe} \f$: 33/100
-        \li \f$ k_{toe} \f$: 3 (as in the paper)
-               
-        The exact solution for \f$ k_{lin}\f$ and 
-        \f$\epsilon_{toe}\f$ can be solved by introducing a continuity equation.
-        The values for etoe and klin must satisfy a C1 continuity condition, 
-        that is the slope of the linear extrapolation must match the slope of 
-        the exponental curve at the point where they join. First noting that 
-        the slope of the linear extrapolation is given by
-
-         \f[
-        k_{lin} = \frac{1-F_{toe}}{\epsilon_0 - \epsilon_{toe}}
-        \f]
-
-        the continuity equation can be expressed by taking the derivative of
-        the exponential and linear curves and equating them at 
-        \f$ \epsilon=\epsilon_{toe}\f$
-
-        \f[
-         \frac{F_{toe}(k_{toe} / \epsilon_{toe} )}{ e^{k_{toe}} - 1}
-         ( e^{ k_{toe} \epsilon / \epsilon_{toe} }) 
-         = \frac{1-F_{toe}}{\epsilon_0-\epsilon_{toe}}          
-        \f]
-
-        Evaluating the above equation at the junction point between the two
-        curves (\f$ \epsilon = \epsilon_{toe}\f$) yields an equation that
-        can be rearranged to express \f$ \epsilon_{toe} \f$ as a function of
-        \f$ \epsilon_{0} \f$ 
-        (with values of \f$F_{toe}=33.0/100.0, k_{toe}=3\f$):
-
-        \f[
-        \epsilon_{toe} = 99 \epsilon_{0} e^3 / (166 e^3 - 67)     
-        \f]
-        
-        which in double precision is
-        
-        \f[
-        \epsilon_{etoe} = 0.6086155378758797 \epsilon_{0}
-        \f]
-        
-        Substituting in the symbolic expression for \f$ \epsilon_{toe}\f$ to
-        the above equation for \f$ k_{lin} \f$ yields
-
-        \f[
-        k_{lin} = \frac{1-F_{toe}}
-                    {\epsilon_0(1 - 99 e^3 / (166 e^3 - 67))}
-        \f]
-
-        Which for values of \f$F_{toe}=33.0/100.0, k_{toe}=3\f$ and
-        some simplification is
-
-        \f[        
-        k_{lin} = \frac{67} { 100(\epsilon_0 - (99\epsilon_0 e^3)/(166e^3-67)) }
-        \f]
-
-        In double precision this evaluates to
-
-        \f[
-            k_{lin} = \frac{1.711871739526343}{\epsilon_0}
-        \f]
-
-        This is the slope of the tendon curve that is used if the paramter
-        'stiffnessAtOneNormForce' is not specified. The value for \f$ k_{lin}\f$
-        is recomputed using its analytical equation (rather than the double
-        floating point value) to ensure accuracy of the solution.
-
-        <B>Computational Costs</B>       
-        \verbatim
-            ~80 flops for a new strain value
-            ~5  flops for subsequent calls
-        \endverbatim
+        If the optional parameter `stiffnessAtOneNormForce' has not been set 
+        then it is assigned a value of 1.375/strainAtOneNormForce. This 
+        hueristic value appears to agree well with the in-vivo data of
+        Magnaris and Paul, Magnusson et al, and the in-vitro data produced
+        by Lewis's for tendon force length curve of the Achilles tendon.
 
         <B> References </B>
-        Thelen (2003). Adjustment of Muscle
-        Mechanics Model Paramters to Simulate Dynamic Contractions in Older
-        Adults. ASME J Biomech Eng (125).
+        \verbatim
+        Maganaris, C.N. and Paul, J.P.(2002). Tensile properties of the in
+        vivo grastrocnemius tendon. J. Biomechanics 35:1639-1646
+
+        Magnusson S.P., Aagaard, P., Rosager, S., Dyhre-Poulsen, P., 
+        and Kjaer,M. (2001). Load-displacement properties of the human triceps
+        surae aponeurosis in vivo. Journal of Physiology, 531, 277-288.
+
+        Lewis, G. and Shaw, K.M. (1997). Tensile Properties of Human Tendon
+        Achillis: Effect of Donor Age and Strain Rate. The Journal of Foot 
+        and Ankle Surgery, 36, 435-445.
+        \endverbatim
      */
      double getStiffnessAtOneNormForceInUse() const;
 
-    
+     /**
+     @returns the norm force developed at the point in the curve where the toe
+              region transitions to the linear stiffness region. By default
+              a value of 1.0/3.0 is used as reported by Proske et al.
+
+              <B>References</B>
+              \verbatim
+             Proske, U. and Morgan,D.L. (1987). Tendon Stiffness: Methods of 
+             Measurement and Significance for the Control of Movement. A Review. 
+             J. Biomechanics, 20,75-82.
+             \endverbatim
+     */
+     double getNormForceAtToeEndInUse() const;
 
      /**
         @returns A dimensionless parameter between [0-1] that controls how 
@@ -421,27 +421,18 @@ public:
         
         If the optional parameter 'curviness' has been set, its value is 
         returned.
+     
+        If the optional parameter `curviness' has not been set 
+        then it is assigned a value of 0.5. This produces a toe region 
+        that appears to agree well with the in-vitro curves for tendon force
+        length of the Achilles tendon as reported by Lewis.
 
-        If the optional parameter 'curviness' has not been set, 
-        then this function will calculate the curviness parameter so that the
-        curve has the same area (equivalent to the same normalized strain 
-        energy) between a strain of 0, and the strain where
-        the tendon develops 1 normalized unit of tension (e0) as a linearly
-        extrapolated exponential curve documented in Thelen 2003 
-        (with FToe = 0.33, and kToe = 3, as specified in the paper). 
-        
-        A root finding method (Bisection+Newton's method) is used for this task, 
-        and continues until the normalized area of the reference tendon and the
-        fit tendon agree with a relative error of 1e-6. If it is not possible
-        to fit the tendon to this precision then an exception is thrown.
-        
-        
-        <B> Computational Costs </B>
+        <B>References</B>
         \verbatim
-            ~0 flops if parameter is already computed
-            ~870,000 flops if curve fitting is required
+        Lewis, G. and Shaw, K.M. (1997). Tensile Properties of Human Tendon
+        Achillis: Effect of Donor Age and Strain Rate. The Journal of Foot 
+        and Ankle Surgery, 36, 435-445.
         \endverbatim
-
      */
      double getCurvinessInUse() const;
 
@@ -472,6 +463,10 @@ public:
                 when the tendon is strained by strainAtOneNormForce
                 under a load of 1 normalized unit of force.
     
+     @param aNormForceAtToeEnd
+                The normalized force developed at the end of the toe region,
+                after which the force length curve becomes linear
+
      @param aCurviness  
                 A dimensionless parameter between [0-1] that controls how 
                 the curve is drawn: 0 will create a curve that is
@@ -482,6 +477,7 @@ public:
 
      */
      void setOptionalProperties( double aStiffnessAtOneNormForce, 
+                                 double aNormForceAtToeEnd,
                                  double aCurviness);
 
     /**
@@ -636,7 +632,7 @@ private:
   	void connectToModel(Model& model) OVERRIDE_11;
     ///ModelComponent Interface required function
 	void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
-    /**
+    /*
     ModelComponent is being used for this one function, which is called just
     prior to a simulation beginning. This is the ideal time to actually
     create the curve because
@@ -653,7 +649,9 @@ private:
     void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11 {};
        
 
-    /**
+    /*
+        <B> No Longer Used</B>
+
         @param strainAtOneNormForce 
             The Cauchy or engineering strain of the tendon under 1 unit force
             of tension. Cauchy or engineering strain is defined as 
@@ -669,17 +667,22 @@ private:
                     [2]: Ftoe
                     [3]: ktoe
                     [4]: klin
-                    [5]: normalized potental energy from a strain of 0 to e0
+                    [5]: normalized potental energy from a strain of 0 to etoe
+                    [6]: normalized potental energy from a strain of 0 to e0
                 
     <B>Computational Costs</B>       
     \verbatim
         ~211 flops     
     \endverbatim
 
+   
+
     <B> References </B>
+        \verbatim
         Thelen (2003). Adjustment of Muscle
-        Mechanics Model Paramters to Simulate Dynamic Contractions in Older
+        Mechanics Model Parameters to Simulate Dynamic Contractions in Older
         Adults. ASME J Biomech Eng (125).
+        \endverbatim
     */
     SimTK::Vector 
         calcReferenceTendon(double strainAtOneNormForce);
@@ -701,12 +704,23 @@ private:
 
   void ensureCurveUpToDate();
 
-  double calcCurvinessOfBestFit(double e0,  double klin,
-                                double area,double relTol);
+  //<B> No Longer Used</B>
+  //BROKEN Since ftoe became a parameter of 
+  //SmoothSegmentedFunctionFactory::createTendonForceLengthCurve;
+  double calcCurvinessOfBestAreaFit(double e0,  double klin,
+                                    double eA,  double area,
+                                    double relTol);
+
+  //<B> No Longer Used</B>
+  //BROKEN Since ftoe became a parameter of 
+  //SmoothSegmentedFunctionFactory::createTendonForceLengthCurve;
+  double calcCurvinessOfBestToeFit(double e0,  double klin,
+                                   double eToe, double fToe,
+                                   double relTol);
 
   SmoothSegmentedFunction   m_curve;
 
-  
+  double   m_normForceAtToeEndInUse;
   double   m_stiffnessAtOneNormForceInUse;  
   double   m_curvinessInUse; 
   bool     m_isFittedCurveBeingUsed;

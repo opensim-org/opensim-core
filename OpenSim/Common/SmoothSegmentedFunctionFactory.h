@@ -109,7 +109,7 @@ useful to know that both the slope and the curviness parameter may need to be
 altered to achieve the desired shape.
 
 
-\image html fig_MuscleCurveFunctionFactory_quinticCornerSections.png
+\image html fig_SmoothSegmentedFunctionFactory_quinticCornerSections.png
 
 
 
@@ -197,7 +197,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
 
         @return SmoothSegmentedFunction object
 
-        \image html fig_MuscleCurveFunctionFactory_falCurve.png
+        \image html fig_SmoothSegmentedFunctionFactory_falCurve.png
 
        
         <B>Conditions:</B>
@@ -312,7 +312,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
 
         @return SmoothSegmentedFunction object
         
-                \image html fig_MuscleCurveFunctionFactory_fvCurve.png
+                \image html fig_SmoothSegmentedFunctionFactory_fvCurve.png
 
 
         <B>Conditions:</B>
@@ -364,7 +364,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         (e.g. "bicep_fiberForceVelocityInverseCurve")
         
 
-        \image html fig_MuscleCurveFunctionFactory_fvInvCurve.png
+        \image html fig_SmoothSegmentedFunctionFactory_fvInvCurve.png
 
         */
         static SmoothSegmentedFunction createFiberForceVelocityInverseCurve(
@@ -412,7 +412,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
 
         @return SmoothSegmentedFunction object
 
-        \image html fig_MuscleCurveFunctionFactory_fcphiCurve.png
+        \image html fig_SmoothSegmentedFunctionFactory_fcphiCurve.png
 
         <B>Conditions:</B>
         \verbatim
@@ -488,7 +488,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
 
         @return SmoothSegmentedFunction object
         
-        \image html fig_MuscleCurveFunctionFactory_fcCosPhiCurve.png
+        \image html fig_SmoothSegmentedFunctionFactory_fcCosPhiCurve.png
 
 
         <B>Conditions:</B>
@@ -566,7 +566,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
 
         @return SmoothSegmentedFunction object
 
-        \image html fig_MuscleCurveFunctionFactory_fpeCurve.png
+        \image html fig_SmoothSegmentedFunctionFactory_fpeCurve.png
 
         <B>Conditions:</B>
         \verbatim
@@ -599,9 +599,14 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
 
          /**
         This function will generate a C2 continuous curve that fits a fiber's 
-        tensile force length curve. 
+        tensile force length curve.
 
-        @param e0   The fiber strain at which the fiber develops 1 unit of 
+        @param e0   The fiber strain at which the fiber begins to develop force.
+                    Thus an e0 of 0.0 means that the fiber will start to develop
+                    passive force when it has a normalized length of 1.0. Note
+                    that e0 can be postive or negative.
+
+        @param e1   The fiber strain at which the fiber develops 1 unit of 
                     normalized force (1 maximum isometric force). Note that the 
                     '1' is left off. Thus an e0 of 0.6 means that the fiber 
                     will develop an 1 normalized force unit when it is strained 
@@ -631,12 +636,12 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         @return SmoothSegmentedFunction object
 
 
-        \image html fig_MuscleCurveFunctionFactory_fcLengthCurve.png
+        \image html fig_SmoothSegmentedFunctionFactory_fcLengthCurve.png
 
         <B>Conditions:</B>
-        \verbatim
-            e0 > 0
-            kiso > 1/e0
+        \verbatim            
+            e1 > e0            
+            kiso > 1/(e1-e0)
             0 <= curviness <= 1
         \endverbatim
 
@@ -648,18 +653,20 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
 
         <B>Example:</B>
         @code
-            double e0      = 0.6;
+            double e0      = 0.0;
+            double e1      = 0.6;
             double kiso    = 8.389863790885878;
             double c       = 0.65;
 
             SmoothSegmentedFunction fiberFLCurve = SmoothSegmentedFunctionFactory::
-                                              createFiberForceLengthCurve(e0,
+                                              createFiberForceLengthCurve(e0, e1
                                               kiso, c, true,"test");
             fiberFLCurve.printMuscleCurveToFile();
         @endcode
 
         */
-        static SmoothSegmentedFunction createFiberForceLengthCurve(double e0, 
+        static SmoothSegmentedFunction createFiberForceLengthCurve(
+                        double e0, double e1,
                         double kiso, double curviness,
                         bool computeIntegral, const std::string& curveName);
 
@@ -670,17 +677,21 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
 
 
 
-        @param e0   The tendon strain at which the tendon develops 1 unit of 
-                    normalized force (1 maximum isometric force). Note that the 
-                    '1' is left off. Thus an e0 of 0.04 means that the tendon 
+        @param eIso   The tendon strain at which the tendon develops 1 unit
+                    of normalized force (1 maximum isometric force). Note that 
+                    the'1' is left off. Thus an e0 of 0.04 means that the tendon 
                     will develop an 1 normalized force unit when it is strained 
-                    by 4% of its resting length, or to a normalized length of 
+                    by 4% of its resting length, at a normalized length of 
                     1.04
 
-        @param kiso     The normalized stiffness (or slope) of the tendon curve 
-                        when the tendon is strained by e0 
+        @param kIso    The normalized stiffness (or slope) of the tendon
+                        curve when the tendon is strained by e0 
                         (or has a length of 1+e0) under a load of 1 maximum
-                        isometric unit of force.
+                        isometric unit of force.        
+
+        @param fToe    The normalized force at which the tendon smoothly
+                       transitions from the curved low stiffness region to 
+                       the linear stiffness region.
 
         @param curviness    The dimensionless 'curviness' parameter that 
                             can vary between 0 (a line) to 1 (a smooth, but 
@@ -700,10 +711,11 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
 
         @return SmoothSegmentedFunction
 
-        \image html fig_MuscleCurveFunctionFactory_fseCurve.png
+        \image html fig_SmoothSegmentedFunctionFactory_fseCurve.png
 
         <B>Conditions:</B>
         \verbatim
+            0 < fToe < 1
             e0 > 0
             kiso > 1/e0
             0 <= curviness <= 1
@@ -719,19 +731,22 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         @code
             double e0   = 0.04;
             double kiso = 42.79679348815859;
+            double fToe = 1.0/3.0
             double c    = 0.75;
     
             SmoothSegmentedFunction tendonCurve = SmoothSegmentedFunctionFactory::
                                                 createTendonForceLengthCurve(
-                                                  e0,kiso,c,true,"test");
+                                                  e0,kiso,fToe,c,true,"test");
             tendonCurve.printMuscleCurveToFile();  
         @endcode
 
         
         */
         static SmoothSegmentedFunction 
-           createTendonForceLengthCurve(double e0,double kiso,double curviness,
-           bool computeIntegral, const std::string& curveName);
+           createTendonForceLengthCurve(double eIso, double kIso,
+                                        double fToe, double curviness,
+                                        bool computeIntegral, 
+                                        const std::string& curveName);
 
         
 

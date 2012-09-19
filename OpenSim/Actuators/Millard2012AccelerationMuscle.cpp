@@ -669,11 +669,11 @@ calcInextensibleTendonActiveFiberForce(SimTK::State& s,
         double tendonVelocity = 0.0; //Inextensible tendon;
 
         double fiberLength  = m_penMdl.calcFiberLength(muscleLength,
-                                             tendonSlackLength,caller);
+                                             tendonSlackLength);
 
 
         if(fiberLength > m_penMdl.getMinimumFiberLength()){
-            double phi      = m_penMdl.calcPennationAngle(fiberLength,caller);
+            double phi      = m_penMdl.calcPennationAngle(fiberLength);
         
             double fiberVelocity   = m_penMdl.calcFiberVelocity(fiberLength,
                                             sin(phi),cos(phi),
@@ -729,7 +729,7 @@ double Millard2012AccelerationMuscle::
         double fiso = getMaxIsometricForce();
 
         //Evaluate the pennation angle
-        double phi = m_penMdl.calcPennationAngle(fiberLength,caller);
+        double phi = m_penMdl.calcPennationAngle(fiberLength);
 
         //Compute the active fiber force 
         activeFiberForce = fiso * clampedActivation * fal * fv * cos(phi);
@@ -938,7 +938,7 @@ void Millard2012AccelerationMuscle::
     mli.fiberLength       = getStateVariable(s, STATE_FIBER_LENGTH_NAME); 
 
     mli.normFiberLength   = mli.fiberLength/optFiberLength;
-    mli.pennationAngle    = m_penMdl.calcPennationAngle(mli.fiberLength,caller);
+    mli.pennationAngle    = m_penMdl.calcPennationAngle(mli.fiberLength);
     mli.cosPennationAngle = cos(mli.pennationAngle);
     mli.sinPennationAngle = sin(mli.pennationAngle);
 
@@ -1346,9 +1346,9 @@ SimTK::Vector Millard2012AccelerationMuscle::
     double lce = 0;
     double tl  = getTendonSlackLength()*1.01;
 
-    lce = m_penMdl.calcFiberLength( ml, tl, caller);
+    lce = m_penMdl.calcFiberLength( ml, tl);
     
-    double phi      = m_penMdl.calcPennationAngle(lce,caller);
+    double phi      = m_penMdl.calcPennationAngle(lce);
     double cosphi   = cos(phi);
     double sinphi   = sin(phi);       
     double tlN      = tl/tsl;
@@ -1494,7 +1494,7 @@ SimTK::Vector Millard2012AccelerationMuscle::
                 lce = m_penMdl.getMinimumFiberLength(); 
             }
            
-            phi = m_penMdl.calcPennationAngle(lce,caller);
+            phi = m_penMdl.calcPennationAngle(lce);
             sinphi = sin(phi);
             cosphi = cos(phi);
             tl  =m_penMdl.calcTendonLength(cosphi,lce,ml);
@@ -1592,7 +1592,7 @@ SimTK::Vector Millard2012AccelerationMuscle::
         if(iter < aMaxIterations){
 
             lce = m_penMdl.getMinimumFiberLength();
-            phi = m_penMdl.calcPennationAngle(lce,caller);
+            phi = m_penMdl.calcPennationAngle(lce);
             sinphi = sin(phi);
             cosphi = cos(phi);
             

@@ -73,8 +73,11 @@ void ActiveForceLengthCurve::constructProperties()
         //SmoothSegmentedFunctionFactory createActiveForceLengthCurve 
         //implementation for details
     constructProperty_transition_norm_fiber_length(0.6259); 
-    constructProperty_max_norm_active_fiber_length(1.57+0.0259);//actual 1.57
-    constructProperty_shallow_ascending_slope(0.8616); //actual 0.8
+
+    //X Bridge Maximum Fiber Length: 1.57 + 0.0259
+    //Gollapudi & Lin Max Fiber Length: 1.8123
+    constructProperty_max_norm_active_fiber_length(1.8123);
+    constructProperty_shallow_ascending_slope(0.8616);
     constructProperty_minimum_value(0.1); 
 }
 

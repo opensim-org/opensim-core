@@ -1177,8 +1177,9 @@ int main(int argc, char* argv[])
                 double e0   = 0.04;
                 double kiso = 42.79679348815859;
                 double c    = 1.0;//0.75;    
+                double ftoe = 1.0/3.0;
             SmoothSegmentedFunction tendonCurve = SmoothSegmentedFunctionFactory::
-                           createTendonForceLengthCurve(e0,kiso,c,true,
+                           createTendonForceLengthCurve(e0,kiso,ftoe,c,true,
                            "test_tendonCurve");
             SimTK::Matrix tendonCurveSample=tendonCurve.calcSampledMuscleCurve(6);
             //tendonCurve.printMuscleCurveToCSVFile(filePath);
@@ -1215,16 +1216,16 @@ int main(int argc, char* argv[])
             cout << "   Exception Testing" << endl;
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction tendonCurveEX
                 = SmoothSegmentedFunctionFactory::
-                  createTendonForceLengthCurve(0,kiso,c,true,"test"));
+                  createTendonForceLengthCurve(0,kiso,ftoe,c,true,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction tendonCurveEX
                 = SmoothSegmentedFunctionFactory::
-                  createTendonForceLengthCurve(e0,(1/e0),c,true,"test"));
+                  createTendonForceLengthCurve(e0,(1/e0),ftoe,c,true,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction tendonCurveEX
                 = SmoothSegmentedFunctionFactory::
-                  createTendonForceLengthCurve(e0,kiso,-0.01,true,"test"));
+                  createTendonForceLengthCurve(e0,kiso,ftoe,-0.01,true,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction tendonCurveEX
                 = SmoothSegmentedFunctionFactory::
-                  createTendonForceLengthCurve(e0,kiso,1.01,true,"test"));
+                  createTendonForceLengthCurve(e0,kiso,ftoe,1.01,true,"test"));
             cout << "    passed" << endl;
 
         ///////////////////////////////////////
@@ -1236,7 +1237,7 @@ int main(int argc, char* argv[])
                 double kisof    = 8.389863790885878;
                 double cf       = 0.65;
             SmoothSegmentedFunction fiberFLCurve = SmoothSegmentedFunctionFactory::
-                                    createFiberForceLengthCurve(e0f,kisof,cf,
+                                    createFiberForceLengthCurve(0.0, e0f,kisof,cf,
                                     true,"test_fiberForceLength");
 
             SimTK::Matrix fiberFLCurveSample 
@@ -1277,16 +1278,16 @@ int main(int argc, char* argv[])
             cout << "   Exception Testing" << endl;
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFLCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                  createFiberForceLengthCurve(0,kisof,cf,true,"test"));
+                  createFiberForceLengthCurve(0.0,0,kisof,cf,true,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFLCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                  createFiberForceLengthCurve(e0f,1/e0f,cf,true,"test"));
+                  createFiberForceLengthCurve(0.0,e0f,1/e0f,cf,true,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFLCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                  createFiberForceLengthCurve(e0f,kisof,-0.01,true,"test"));
+                  createFiberForceLengthCurve(0.0,e0f,kisof,-0.01,true,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFLCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                  createFiberForceLengthCurve(e0f,kisof,1.01,true,"test"));
+                  createFiberForceLengthCurve(0.0,e0f,kisof,1.01,true,"test"));
             cout << "    passed" << endl;
         ///////////////////////////////////////
         //FIBER COMPRESSIVE FORCE LENGTH
