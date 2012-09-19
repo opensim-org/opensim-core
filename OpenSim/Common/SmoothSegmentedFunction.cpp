@@ -618,7 +618,7 @@ void SmoothSegmentedFunction::printMuscleCurveToCSVFile(const std::string& path)
 
             printMatrixToFile(results,colNames,path,fname);
 }
-/**
+/*
 This function will print cvs file of the column vector col0 and the matrix data
 
 @params data: A matrix of data

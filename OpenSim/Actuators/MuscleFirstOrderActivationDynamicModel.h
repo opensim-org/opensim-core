@@ -275,7 +275,8 @@ public:
     double clampActivation(double activation) const;
 
     /**        
-    @param The activation time constant in (units of seconds)
+    @param activationTimeConstant The activation time constant in 
+                                  units of seconds
     @returns a bool that indicates if the value was set or not        
 
     <B>Computational Cost</B>
@@ -286,7 +287,8 @@ public:
     bool setActivationTimeConstant(double activationTimeConstant);
         
     /**        
-    @param The deactivation time constant in (units of seconds)
+    @param deactivationTimeConstant The deactivation time constant 
+                                    in units of seconds
     @returns a bool that indicates if the value was set or not        
         
     <B>Computational Cost</B>

@@ -59,6 +59,56 @@ int main(int argc, char* argv[])
             testFiberForceLengthCurve();
             testFiberCompressiveForceLengthCurve();
             testFiberCompressiveForceCosPennationCurve();
+
+            cout << "================================================" << endl;
+            cout << "                   Timing Tests                 " << endl;
+            cout << "================================================" << endl;
+
+            double start = SimTK::realTime();
+            ActiveForceLengthCurve fal;
+            double test = fal.calcValue(1.0);//forces a build of the curve
+            double duration = SimTK::realTime() - start;
+            cout << "default ActiveForceLengthCurve " << duration << " s"<<endl;
+
+            start = SimTK::realTime();
+            ForceVelocityCurve fv;
+            test = fv.calcValue(1.0);
+            duration = SimTK::realTime() - start;
+            cout << "default ForceVelocityCurve " << duration << " s"<<endl;
+
+            start = SimTK::realTime();
+            ForceVelocityInverseCurve fvI;
+            test = fvI.calcValue(1.0);
+            duration = SimTK::realTime() - start;
+            cout << "default ForceVelocityInverseCurve "<<duration <<" s"<<endl;
+
+            start = SimTK::realTime();
+            FiberForceLengthCurve fpe;
+            test = fpe.calcValue(1.1);
+            duration = SimTK::realTime() - start;
+            cout << "default FiberForceLengthCurve "<<duration <<" s"<<endl;
+
+            start = SimTK::realTime();
+            TendonForceLengthCurve fse;
+            test = fse.calcValue(1.04);
+            duration = SimTK::realTime() - start;
+            cout << "default TendonForceLengthCurve "<<duration <<" s"<<endl;
+
+            start = SimTK::realTime();
+            FiberCompressiveForceLengthCurve fce;
+            test = fce.calcValue(0.01);
+            duration = SimTK::realTime() - start;
+            cout << "default FiberCompressiveForceLengthCurve "
+                <<duration <<" s"<<endl;
+
+
+            start = SimTK::realTime();
+            FiberCompressiveForceCosPennationCurve fcphi;
+            test = fcphi.calcValue(0.01);
+            duration = SimTK::realTime() - start;
+            cout << "default FiberCompressiveForceCosPennationCurve "
+                <<duration <<" s"<<endl;
+
             SimTK_END_TEST();
     }
     catch (const std::exception& ex)
@@ -170,7 +220,8 @@ void testActiveForceLengthCurve()
         //====================================================================
         double p1 = 0.47-0.0259;
         double p2 = 0.6259;
-        double p3 = 1.57+0.0259;
+        double p3 = 1.8123; //Approximately matches mean of Gallopudi & Lin 
+                            //active force length
         double p4 = 0.8616;
         double p5 = 0.1;
 
@@ -324,7 +375,7 @@ void testForceVelocityCurve()
         double p1 = 0.0;
         double p2 = 5;
         double p3 = 0.0;
-        double p4 = 1.8;
+        double p4 = 1.4;
         double p5 = 0.5;
         double p6 = 0.9;
 
@@ -474,7 +525,7 @@ void testForceVelocityInverseCurve()
         double p1 = 0.1;
         double p2 = 5;
         double p3 = 0.1;
-        double p4 = 1.8;
+        double p4 = 1.4;
         double p5 = 0.5;
         double p6 = 0.9;
 
@@ -550,7 +601,7 @@ void testTendonForceLengthCurve()
         TendonForceLengthCurve fseCurve2;
         //change all of the properties to something other than the default
         fseCurve2.setStrainAtOneNormForce(0.10);
-        fseCurve2.setOptionalProperties(50.0,0.8);
+        fseCurve2.setOptionalProperties(50.0,0.8,1.0/3.0);
 
 
         //These next few lines are just to read the object in, and repopulate
@@ -568,7 +619,7 @@ void testTendonForceLengthCurve()
         
 
         fseCurve2.setStrainAtOneNormForce(0.10);
-        fseCurve2.setOptionalProperties(50.0,0.8);
+        fseCurve2.setOptionalProperties(50.0,0.8,1.0/3.0);
 
         cout <<"    c. assignment operator" <<endl;
         fseCurve2=fseCurve1;
@@ -576,7 +627,7 @@ void testTendonForceLengthCurve()
         SimTK_TEST(fseCurve1==fseCurve2);
 
         fseCurve2.setStrainAtOneNormForce(0.10);
-        fseCurve2.setOptionalProperties(50.0,0.8);
+        fseCurve2.setOptionalProperties(50.0,0.8,1.0/3.0);
 
         cout <<"    d. copy constructor" <<endl;
         TendonForceLengthCurve fseCurve2p5(fseCurve2);
@@ -587,7 +638,7 @@ void testTendonForceLengthCurve()
 
         //====================================================================
         cout <<"2. Testing API constructor" << endl;
-        TendonForceLengthCurve fseCurve3(0.10,50,0.75,"testMuscle");
+        TendonForceLengthCurve fseCurve3(0.10,50,0.75,1.0/3.0,"testMuscle");
         double fseVal  = fseCurve3.calcValue(1.0999);
         double dfseVal = fseCurve3.calcDerivative(1.0999,1);
         cout << "Passed: Testing API constructor" << endl;
@@ -596,7 +647,7 @@ void testTendonForceLengthCurve()
         cout <<"3. Testing get/set methods and the fitted flag:" << endl;
 
         fseCurve2.setStrainAtOneNormForce(0.10);
-        fseCurve2.setOptionalProperties(50.0,0.8);
+        fseCurve2.setOptionalProperties(50.0,1.0/3.0,0.8);
 
         SimTK_TEST(fseCurve2.getStrainAtOneNormForce()      == 0.10);
         SimTK_TEST(fseCurve2.getStiffnessAtOneNormForceInUse()   == 50.0);
@@ -606,22 +657,21 @@ void testTendonForceLengthCurve()
         cout << "Passed: Testing get/set methods" << endl;
 
         //====================================================================
-        double p1 = 0.04;
-        double p2 = 42.796793488158585; //stiffness of fitted exponental curve
-
-        double p3 = 0.83401209498572515;//curviness that makes the Bezier curve
-                                        //have the same area as the fitted
-                                        //exponental curve.
+        double p1 = 0.049; //To match Maganaris & Paul in-vivo data
+        double p2 = 1.375/p1;
+        double p3 = 1.0/3.0;
+        double p4 = 0.5;
 
         printf("4. Testing default property values, "
-                "and fitted flag: \n\t%f\n\t%f\n\t%f\n"
-                ,p1,p2,p3);
+                "and fitted flag: \n\t%f\n\t%f\n\t%f\n\t%f\n"
+                ,p1,p2,p3,p4);
 
         TendonForceLengthCurve fseCurve4;
             double tol = 1e-6;
             SimTK_TEST_EQ_TOL(fseCurve4.getStrainAtOneNormForce(),p1,tol);
             SimTK_TEST_EQ_TOL(fseCurve4.getStiffnessAtOneNormForceInUse(),p2,tol);
-            SimTK_TEST_EQ_TOL(fseCurve4.getCurvinessInUse(),p3,tol);
+            SimTK_TEST_EQ_TOL(fseCurve4.getNormForceAtToeEndInUse(),p3,tol);
+            SimTK_TEST_EQ_TOL(fseCurve4.getCurvinessInUse(),p4,tol);
             SimTK_TEST(fseCurve4.isFittedCurveBeingUsed() == true);
 
         cout << "Passed" << endl;
@@ -655,7 +705,7 @@ void testTendonForceLengthCurve()
 
         cout <<"    c. calcIntegral at e0" << endl;
         value = fseCurve4.calcIntegral(1 + fseCurve4.getStrainAtOneNormForce());
-        double trueValue = 1.266816749781739e-002;
+        double trueValue = 0.019513948512907189;//1.266816749781739e-002;
         double relError = abs(value-trueValue)/trueValue;
         SimTK_TEST_EQ_TOL(relError, 0, 1e-4); 
         //An error of 1e-4 is used due to the way the integral is approximated 
@@ -740,7 +790,7 @@ void testFiberForceLengthCurve()
 
         //====================================================================
         cout <<"2. Testing API constructor" << endl;
-        FiberForceLengthCurve fpeCurve3(0.10,50,0.75,"testMuscle");
+        FiberForceLengthCurve fpeCurve3(0.0, 0.10,50,0.75,"testMuscle");
         double falVal  = fpeCurve3.calcValue(0.02);
         double dfalVal = fpeCurve3.calcDerivative(0.02,1);
         cout << "Passed: Testing API constructor" << endl;

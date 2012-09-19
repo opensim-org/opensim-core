@@ -759,7 +759,6 @@ double  Millard2012AccelerationMuscle::
         "Millard2012AccelerationMuscle: Muscle is not"
         " to date with properties");
 
-    ensureMuscleUpToDate();
     const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
     setForce(s,         mdi.tendonForce);
     return( mdi.tendonForce );
