@@ -37,6 +37,15 @@ namespace OpenSim {
  * The list of current metabolic properties are:
  *
  * - <B>muscle_mass</B> = The mass of the muscle (kg).
+ *
+ * - <B>calculate_mass_from_muscle_properties</B> = A flag used to specify that muscle 
+ * mass is computed from muscle properties. If set to true, the muscle_mass property will 
+ * be ignored, and will instead be computed from the following equation: 
+ * m = (Fmax/sigma)*rho*Lm_opt, where 
+ *        sigma = 0.25 MPa (specific tension of mammalian muscle); 
+ *        rho = 1059.7 kg/m^3 (density of mammalian muscle); 
+ *        Fmax and Lm_opt are the maximum isometric force and optimal fiber length, respectively, of the muscle.
+ *
  * - <B>ratio_slow_twitch_fibers</B> = Ratio of slow twitch fibers in the muscle (must be between 0 and 1).
  * - <B>activation_constant_slow_twitch</B> = Activation constant for slow twitch fibers (W/kg).
  * - <B>activation_constant_fast_twitch</B> = Activation constant for fast twitch fibers (W/kg).
@@ -46,12 +55,10 @@ namespace OpenSim {
  * @author Tim Dorn
  */
 
-//class Model;
-//class Muscle;
 
-class OSIMSIMULATION_API MetabolicMuscleParameter : public Object  
+class OSIMSIMULATION_API MetabolicMuscleParameter : public ModelComponent  
 {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MetabolicMuscleParameter, Object);
+    OpenSim_DECLARE_CONCRETE_OBJECT(MetabolicMuscleParameter, ModelComponent);
 
 //==============================================================================
 // PROPERTIES
@@ -61,6 +68,15 @@ class OSIMSIMULATION_API MetabolicMuscleParameter : public Object
     /**@{**/
     OpenSim_DECLARE_PROPERTY(muscle_mass, double,
         "The mass of the muscle (kg).");
+
+    OpenSim_DECLARE_PROPERTY(calculate_mass_from_muscle_properties, bool,
+        "A flag used to specify that muscle mass is computed from muscle properties. "
+        "If set to true, the muscle_mass property will be ignored, and will instead be "
+        "computed from the following equation: m = (Fmax/sigma)*rho*Lm_opt, where "
+        "sigma = 0.25 MPa (specific tension of mammalian muscle); "
+        "rho = 1059.7 kg/m^3 (density of mammalian muscle); "
+        "Fmax and Lm_opt are the maximum isometric force and optimal fiber length, "
+        "respectively, of the muscle.");
 
     OpenSim_DECLARE_PROPERTY(ratio_slow_twitch_fibers, double,
         "Ratio of slow twitch fibers in the muscle (must be between 0 and 1).");
@@ -82,6 +98,10 @@ class OSIMSIMULATION_API MetabolicMuscleParameter : public Object
 // DATA
 //=============================================================================
 protected:
+    Muscle* m;
+    double _muscMass;
+
+
 
 //=============================================================================
 // METHODS
@@ -92,9 +112,13 @@ public:
     //--------------------------------------------------------------------------
     MetabolicMuscleParameter();
 
-    MetabolicMuscleParameter(double muscle_mass, double ratio_slow_twitch_fibers, 
-        double activation_constant_slow_twitch, double activation_constant_fast_twitch, 
-        double maintenance_constant_slow_twitch, double maintenance_constant_fast_twitch); 
+    MetabolicMuscleParameter(double muscle_mass, 
+        bool calculate_mass_from_muscle_properties, 
+        double ratio_slow_twitch_fibers, 
+        double activation_constant_slow_twitch, 
+        double activation_constant_fast_twitch, 
+        double maintenance_constant_slow_twitch, 
+        double maintenance_constant_fast_twitch); 
 
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
@@ -102,6 +126,8 @@ public:
     //--------------------------------------------------------------------------
     // Get and Set
     //--------------------------------------------------------------------------
+    Muscle* getMuscle();
+
     double getMuscleMass() const;
     double getRatioSlowTwitchFibers() const;
     double getActivationConstantSlowTwitch() const;
@@ -118,6 +144,11 @@ public:
 
 
 private:
+    //--------------------------------------------------------------------------
+    // ModelComponent Interface
+    //--------------------------------------------------------------------------
+    void connectToModel(Model& aModel) OVERRIDE_11;
+
     void setNull();
     void constructProperties();
 

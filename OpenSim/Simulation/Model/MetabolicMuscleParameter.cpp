@@ -40,7 +40,7 @@ using namespace OpenSim;
 /**
  * Default constructor
  */
-MetabolicMuscleParameter::MetabolicMuscleParameter() : Object()
+MetabolicMuscleParameter::MetabolicMuscleParameter() : ModelComponent()
 {
     setNull();
     constructProperties();
@@ -50,9 +50,10 @@ MetabolicMuscleParameter::MetabolicMuscleParameter() : Object()
 /** 
  * Convenience constructor
  */
-MetabolicMuscleParameter::MetabolicMuscleParameter(double muscle_mass, double ratio_slow_twitch_fibers, 
+MetabolicMuscleParameter::MetabolicMuscleParameter(double muscle_mass, 
+    bool calculate_mass_from_muscle_properties, double ratio_slow_twitch_fibers, 
     double activation_constant_slow_twitch, double activation_constant_fast_twitch, 
-    double maintenance_constant_slow_twitch, double maintenance_constant_fast_twitch): Object()
+    double maintenance_constant_slow_twitch, double maintenance_constant_fast_twitch): ModelComponent()
 {
     setNull();
     constructProperties();
@@ -73,8 +74,10 @@ MetabolicMuscleParameter::MetabolicMuscleParameter(double muscle_mass, double ra
  */
 void MetabolicMuscleParameter::setNull()
 {
-    // no data members
+    m = NULL;
+    _muscMass = 0.0;
 }
+
 
 //_____________________________________________________________________________
 /**
@@ -83,11 +86,66 @@ void MetabolicMuscleParameter::setNull()
 void MetabolicMuscleParameter::constructProperties(void)
 {
     constructProperty_muscle_mass(1.0);
+    constructProperty_calculate_mass_from_muscle_properties(false);
     constructProperty_ratio_slow_twitch_fibers(0.5);
     constructProperty_activation_constant_slow_twitch(1.0);
     constructProperty_activation_constant_fast_twitch(1.0);
     constructProperty_maintenance_constant_slow_twitch(1.0);
     constructProperty_maintenance_constant_fast_twitch(1.0);
+}
+
+
+
+//=============================================================================
+// MODEL COMPONENT METHODS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Perform some set up functions that happen after the
+ * object has been deserialized or copied.
+ *
+ * @param aModel OpenSim model containing this MuscleMetabolicPowerProbeUmberger2003.
+ */
+void MetabolicMuscleParameter::connectToModel(Model& aModel)
+{
+    Super::connectToModel(aModel);
+
+    stringstream errorMessage;
+
+    // check that the muscle exists
+    int k = _model->getMuscles().getIndex(getName());
+    if( k < 0 )	{
+        errorMessage << "MetabolicMuscleParameter: Invalid muscle '" 
+            << getName() << "' specified." << endl;
+        throw (Exception(errorMessage.str()));
+    }
+    else {
+        m = &_model->updMuscles().get(k);
+    }
+
+    // set the muscle mass internal member variable: _muscMass
+    if (get_calculate_mass_from_muscle_properties()) {
+        double sigma = 0.25e6;      // (Pa), specific tension of mammalian muscle.
+        double rho = 1059.7;        // (kg/m^3), density of mammalian muscle.
+
+        _muscMass =  (m->getMaxIsometricForce() / sigma) * rho * m->getOptimalFiberLength();
+    }
+    else {
+        _muscMass = get_muscle_mass();
+
+        if (_muscMass <= 0) {
+            errorMessage << "MetabolicMuscleParameter: Invalid muscle_mass specified for muscle: " 
+                << getName() << ". muscle_mass must be positive." << endl;
+            throw (Exception(errorMessage.str()));
+        }
+    }
+
+    // error checking: ratio_slow_twitch_fibers
+    if (getRatioSlowTwitchFibers() < 0 || getRatioSlowTwitchFibers() > 1)	{
+        errorMessage << "MetabolicMuscleParameter: Invalid ratio_slow_twitch_fibers for muscle: " 
+            << getName() << ". ratio_slow_twitch_fibers must be between 0 and 1." << endl;
+        throw (Exception(errorMessage.str()));
+    }
 }
 
 
@@ -99,9 +157,14 @@ void MetabolicMuscleParameter::constructProperties(void)
 /**
  * Get the parameters.
  */
+Muscle* MetabolicMuscleParameter::getMuscle()
+{
+    return m;
+}
+
 double MetabolicMuscleParameter::getMuscleMass() const
 {
-    return get_muscle_mass();
+    return _muscMass;
 }
 
 double MetabolicMuscleParameter::getRatioSlowTwitchFibers() const

@@ -121,6 +121,10 @@ namespace OpenSim {
  *     - F_CE = force developed by the contractile element of muscle at the current time.\n
  *
  *
+ * Note that if enforce_minimum_heat_rate_per_muscle == true AND 
+ * activation_rate_on == shortening_rate_on == maintenance_rate_on == true, then the total heat
+ * rate (AMdot + Mdot + Sdot) will be capped to a minimum value of 1.0 W/kg (Umberger(2003), page 104).
+ *
  * @author Tim Dorn
  */
 
@@ -157,6 +161,12 @@ public:
     OpenSim_DECLARE_PROPERTY(mechanical_work_rate_on, 
         bool,
         "Specify whether the mechanical work rate is to be calculated (true/false).");
+
+    /** Enabled by default. **/
+    OpenSim_DECLARE_PROPERTY(enforce_minimum_heat_rate_per_muscle, 
+        bool,
+        "Specify whether the total heat rate for a muscle will be clamped to a "
+        "minimum value of 1.0 W/kg (true/false).");
 
     /** Default curve shown in doxygen. **/
     OpenSim_DECLARE_PROPERTY(normalized_fiber_length_dependence_on_maintenance_rate, 
@@ -210,10 +220,6 @@ public:
         Currently uses the Probe name as the column label, so be sure
         to name your probe appropiately!*/
     virtual OpenSim::Array<std::string> getProbeOutputLabels() const OVERRIDE_11;
-
-    /** Check that the MetabolicMuscleParameter represents a valid muscle in the model.
-        If it does, then return a pointer to that muscle object. */
-    Muscle* checkValidMetabolicMuscle(MetabolicMuscleParameter mm) const;
 
 
 //==============================================================================

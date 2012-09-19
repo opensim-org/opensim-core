@@ -82,8 +82,9 @@ void MuscleMetabolicPowerProbeUmberger2003::constructProperties()
     constructProperty_shortening_rate_on(true);
     constructProperty_basal_rate_on(true);
     constructProperty_mechanical_work_rate_on(true);
+    constructProperty_enforce_minimum_heat_rate_per_muscle(true);
 
-    constructProperty_scaling_factor(1.0);
+    constructProperty_scaling_factor(1.5);      // default value is for aerobic activities.
     constructProperty_basal_coefficient(1.51);
     constructProperty_basal_exponent(1.0);
     constructProperty_MetabolicMuscleParameterSet(MetabolicMuscleParameterSet());
@@ -103,6 +104,11 @@ void MuscleMetabolicPowerProbeUmberger2003::constructProperties()
  */
 void MuscleMetabolicPowerProbeUmberger2003::connectToModel(Model& aModel)
 {
+    // Connect all MetabolicMuscleParameter objects to the model as subcomponents
+    for (int i=0; i<get_MetabolicMuscleParameterSet().getSize(); ++i) {
+        includeAsSubComponent(&upd_MetabolicMuscleParameterSet().get(i));
+    }
+
     Super::connectToModel(aModel);
 }
 
@@ -141,7 +147,7 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
     {
         // Get a pointer to the current muscle in the model
         MetabolicMuscleParameter mm = get_MetabolicMuscleParameterSet().get(i);
-        Muscle* m = checkValidMetabolicMuscle(mm);
+        Muscle* m = mm.getMuscle();
 
         // Get some muscle properties at the current time state
         double max_isometric_force = m->getMaxIsometricForce();
@@ -270,9 +276,9 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
         
 
 
-        // MECHANICAL WORK RATE for muscle i (W/kg)
-        // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
-        // ------------------------------------------
+        // MECHANICAL WORK RATE for the contractile element of muscle i (W/kg).
+        // --> note that we define Vm<0 as shortening and Vm>0 as lengthening.
+        // -------------------------------------------------------------------
         if (get_mechanical_work_rate_on())
         {
             if (fiber_velocity <= 0)    // concentric contraction, Vm<0
@@ -294,12 +300,29 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
             cout << "WARNING::" << getName() << ": Wdot (" << m->getName() << ") = NaN!" << endl;
 
 
+        // This check is from Umberger(2003), page 104: the total heat rate 
+        // (i.e., AMdot + Sdot) for a given muscle cannot fall below 1.0 W/kg.
+        // -----------------------------------------------------------------------
+        double totalHeatRate = AMdot + Sdot;
+
+        if(get_enforce_minimum_heat_rate_per_muscle() && totalHeatRate < 1.0 
+            && get_activation_maintenance_rate_on() 
+            && get_shortening_rate_on()) {
+                //cout << "WARNING: " << getName() 
+                //    << "  (t = " << s.getTime() 
+                //    << "), the muscle '" << mm.getName() 
+                //    << "' has a net metabolic energy rate of less than 1.0 W/kg." << endl; 
+                totalHeatRate = 1.0;			// not allowed to fall below 1.0 W.kg-1
+        }
 
 
         // TOTAL METABOLIC ENERGY RATE for muscle i
         // UNITS: W
         // ------------------------------------------
-        Edot(i) = (AMdot + Sdot + Wdot) * mm.getMuscleMass();
+        Edot(i) = (totalHeatRate + Wdot) * mm.getMuscleMass();
+
+
+        
         
 
         // DEBUG
@@ -332,21 +355,6 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
 
     SimTK::Vector EdotTotal(1, Edot.sum() + Bdot);
 
-
-    // This check is from Umberger(2003), page 104, but it will be ignored
-    // for now as it is unclear whether it refers to a single muscle, or the
-    // total of all muscles in the model.
-    // -----------------------------------------------------------------------
-    //if(EdotTotal(0) < 1.0 
-    //    && get_activation_maintenance_rate_on() 
-    //    && get_shortening_rate_on() 
-    //    && get_mechanical_work_rate_on()) {
-    //        cout << "WARNING: " << getName() 
-    //            << "  (t = " << s.getTime() 
-    //            << "), the model has a net metabolic energy rate of less than 1.0 W.kg-1." << endl; 
-    //        EdotTotal(0) = 1.0;			// not allowed to fall below 1.0 W.kg-1
-    //}
-
     return EdotTotal;
 }
 
@@ -370,47 +378,4 @@ Array<string> MuscleMetabolicPowerProbeUmberger2003::getProbeOutputLabels() cons
     Array<string> labels;
     labels.append(getName());
     return labels;
-}
-
-
-//_____________________________________________________________________________
-/**
- * Check that the MetabolicMuscleParameter is a valid object.
- * If all tests pass, a pointer to the muscle in the model is returned.
- *
- * @param mm MetabolicMuscleParameter object to check
- * @return *musc Muscle object in model
- */
-Muscle* MuscleMetabolicPowerProbeUmberger2003::checkValidMetabolicMuscle(MetabolicMuscleParameter mm) const
-{
-    stringstream errorMessage;
-    Muscle* musc;
-
-    // check that the muscle exists
-    int k = _model->getMuscles().getIndex(mm.getName());
-    if( k < 0 )	{
-        errorMessage << "MetabolicMuscleParameter: Invalid muscle '" 
-            << mm.getName() << "' specified." << endl;
-        throw (Exception(errorMessage.str()));
-    }
-    else {
-        musc = &_model->updMuscles().get(k);
-    }
-
-    // error checking: muscle_mass
-    if (mm.getMuscleMass() <= 0) {
-        errorMessage << "MetabolicMuscleParameter: Invalid muscle_mass for muscle: " 
-            << mm.getName() << ". muscle_mass must be positive." << endl;
-        throw (Exception(errorMessage.str()));
-    }
-
-    // error checking: ratio_slow_twitch_fibers
-    if (mm.getRatioSlowTwitchFibers() < 0 || mm.getRatioSlowTwitchFibers() > 1)	{
-        errorMessage << "MetabolicMuscleParameter: Invalid ratio_slow_twitch_fibers for muscle: " 
-            << mm.getName() << ". ratio_slow_twitch_fibers must be between 0 and 1." << endl;
-        throw (Exception(errorMessage.str()));
-    }
-
-    //cout << "VALID muscle: " << mm.getName() << endl;
-    return musc;
 }
