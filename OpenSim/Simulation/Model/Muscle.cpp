@@ -188,8 +188,13 @@ void Muscle::connectToModel(Model& aModel)
 	addModelingOption("ignore_activation_dynamics", 1);
 	
 	// Cache the calculated values for this muscle categorized by their realization stage 
-	addCacheVariable<Muscle::MuscleLengthInfo>
-       ("lengthInfo", MuscleLengthInfo(), SimTK::Stage::Position);
+	
+    //Matt.Millard: changed length info to the velocity stage, as I need to know
+    //              both the position and velocity of the multibody system and
+    //              the muscles path before solving for the fiber length and
+    //              velocity in the reduced model.
+    addCacheVariable<Muscle::MuscleLengthInfo>
+       ("lengthInfo", MuscleLengthInfo(), SimTK::Stage::Velocity);
 	addCacheVariable<Muscle::FiberVelocityInfo>
        ("velInfo", FiberVelocityInfo(), SimTK::Stage::Velocity);
 	addCacheVariable<Muscle::MuscleDynamicsInfo>

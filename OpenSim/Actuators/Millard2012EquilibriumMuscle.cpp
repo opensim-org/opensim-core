@@ -72,6 +72,7 @@ const static int ElasticTendonActivation            = 5;
 //=============================================================================
 void Millard2012EquilibriumMuscle::setNull()
 {
+    setAuthors("Matthew Millard");
 }
 
 
@@ -203,7 +204,7 @@ void Millard2012EquilibriumMuscle::buildMuscle()
             {//No singularities, but fv should be invertible to guarantee
              //                  convergence of the Newton method
                 actMdl.setMinimumActivation(0.0);
-                falCurve.setMinValue(0.0);
+                //falCurve.setMinValue(0.0);
                 penMdl.setMaximumPennationAngle(acos(0.001));
 
                 SimTK_ERRCHK1_ALWAYS(
@@ -220,7 +221,7 @@ void Millard2012EquilibriumMuscle::buildMuscle()
             {//No singularities, but fv should be invertible to guarantee
              //                  convergence of the Newton method
                 actMdl.setMinimumActivation(0.0);
-                falCurve.setMinValue(0.0);
+                //falCurve.setMinValue(0.0);
                 penMdl.setMaximumPennationAngle(acos(0.001));
 
                 SimTK_ERRCHK1_ALWAYS(
@@ -342,10 +343,14 @@ void Millard2012EquilibriumMuscle::buildMuscle()
         = penMdl.calcFiberLengthAlongTendon(m_minimumFiberLength,cos(phi));
    
 
-    reducedFiberStateHint(0) = 0;
-    reducedFiberStateHint(1) = 0;
+    reducedFiberStateHint(0) = 0;           //n-1 fiber length
+    reducedFiberStateHint(1) = 0;           //n-1 fiber velocity
+    reducedFiberStateHint(2) = 0;           //n-1 time
+    reducedFiberStateHint(3) = 0;           //n-2 fiber velocity
+    reducedFiberStateHint(4) = 0;           //n-2 time;
+    
+    setObjectIsUpToDateWithProperties();    
 
-    setObjectIsUpToDateWithProperties();
 
 }
 
@@ -572,16 +577,28 @@ computeStateVariableDerivatives(const SimTK::State& s) const
                } break;
         case ApproxElasticTendonNoActivation:{ 
                 if(!isDisabled(s)){
-                    reducedFiberStateHint(0) = getFiberLength(s);
-                    reducedFiberStateHint(1) = getFiberVelocity(s);
+                    //if(abs(reducedFiberStateHint(2)-s.getTime())
+                    //     > SimTK::SignificantReal){
+                        reducedFiberStateHint(0) = getFiberLength(s);
+                        reducedFiberStateHint(3) = reducedFiberStateHint(1);
+                        reducedFiberStateHint(4) = reducedFiberStateHint(2);
+                        reducedFiberStateHint(1) = getFiberVelocity(s);
+                        reducedFiberStateHint(2) = s.getTime();
+                    //}
                 }
                } break;
         case ApproxElasticTendonActivation:{
-                    if (!isDisabled(s)) {
+                 if (!isDisabled(s)) {
+                    //if(abs(reducedFiberStateHint(2)-s.getTime())
+                    //    > SimTK::SignificantReal){
                         derivs[0] = getActivationRate(s);
                         reducedFiberStateHint(0) = getFiberLength(s);
+                        reducedFiberStateHint(3) = reducedFiberStateHint(1);
+                        reducedFiberStateHint(4) = reducedFiberStateHint(2);
                         reducedFiberStateHint(1) = getFiberVelocity(s);
-                    }            
+                        reducedFiberStateHint(2) = s.getTime();
+                    //}
+                 }            
                } break;
         case ElasticTendonNoActivation:{ 
                 if (!isDisabled(s)) {
@@ -1166,7 +1183,7 @@ void Millard2012EquilibriumMuscle::
         double pathLengtheningSpeed = getLengtheningSpeed(s);
         
         SimTK::Vector soln = estimateElasticTendonFiberState2(
-                                        getOptimalFiberLength()*0.95,0,
+                                        reducedFiberStateHint,
                                         activation, dactivation_dt,
                                         pathLength, pathLengtheningSpeed, 
                                         tol, maxIter);
@@ -1588,7 +1605,7 @@ SimTK::Vector Millard2012EquilibriumMuscle::
 
 SimTK::Vector Millard2012EquilibriumMuscle::
     estimateElasticTendonFiberState2(
-                    double previousFiberLength, double previousFiberVelocity,
+                    SimTK::Vec5 hint,
                     double aActivation, double dactivation_dt,
                     double pathLength, double pathLengtheningSpeed, 
                     double aSolTolerance, int aMaxIterations) const
@@ -1656,9 +1673,21 @@ SimTK::Vector Millard2012EquilibriumMuscle::
     double d2fpe_d2_lceN = 0;
 
     //*******************************
+    double prevFiberLength    = hint(0);
+    double prevFiberVelocity  = hint(1);
+    double prevTime           = hint(2);
+    double prev2FiberVelocity = hint(3);
+    double prev2Time          = hint(4);
+
+    if(prevFiberLength == 0){
+        prevFiberLength = penMdl.calcFiberLength(pathLength,
+                                    1.01*getTendonSlackLength());
+        prevFiberLength = clampFiberLength(prevFiberLength);
+    }
+
     //Position level
-    double lce = clampFiberLength(previousFiberLength);
-    double dlce_dt = previousFiberVelocity;
+    double lce = clampFiberLength(prevFiberLength);
+    double dlce_dt = prevFiberVelocity;
     double tl        = 0;
     double dtl_dt    = 0;
     //Compute fiber length and velocity assuming a 1% stretched rigid tendon
@@ -1692,7 +1721,18 @@ SimTK::Vector Millard2012EquilibriumMuscle::
                                                             sinphi, cosphi,
                                                                     dphi_dt);
     //Acceleration level
-    double d2lce_d2t = 0; //Assume the fiber acceleration is 0
+    //Assume the fiber acceleration is the same as the last time step
+    double d2lce_d2t = 0; 
+
+    //Estimating the fiber acceleration kills the convergence of this 
+    //method: it either takes a lot longer, or doesn't converge. Not worth it.
+    /*if(abs(prev2Time-prevTime) > SimTK::SignificantReal 
+       && abs(prevFiberVelocity) > SimTK::SignificantReal
+       && abs(prev2FiberVelocity) > SimTK::SignificantReal
+       && prevFiberLength > SimTK::SignificantReal){
+        //d2lce_d2t = (prevFiberVelocity-prev2FiberVelocity)/(prevTime-prev2Time);
+          
+    }*/
 
     //Error functions
     double F0 = 0; //Equlibrium equation
@@ -1709,9 +1749,9 @@ SimTK::Vector Millard2012EquilibriumMuscle::
     SimTK::FactorQTZ fJacQTZ;
     
     //Anti-stagnation routine variables
-    double  dFm_dlce,dFmAT_dlce,dFmAT_dlceAT,
-            dFt_d_tl,dFt_d_lce,
-            Ke;  
+    //double  dFm_dlce,dFmAT_dlce,dFmAT_dlceAT,
+    //        dFt_d_tl,dFt_d_lce,
+    //        Ke;  
     
     //*******************************
     //Initialize the loop
@@ -1721,6 +1761,8 @@ SimTK::Vector Millard2012EquilibriumMuscle::
 
     int rank;
     double cond;
+    double NewtonStepScale = 0;
+    double NewtonStepSize = 0;
 
     //If it is obvious the tendon is going to be slack don't do the 
     //big expensive loop
@@ -1838,14 +1880,22 @@ SimTK::Vector Millard2012EquilibriumMuscle::
             //Full rank? Take a step
             if(rank == 2 && tlN > 1){                                
                 fJacQTZ.solve(f,deltaL);
-                lce = lce + deltaL(0);
-                dlce_dt = dlce_dt + deltaL(1);
+                NewtonStepScale = 1;
+                NewtonStepSize = sqrt(deltaL(0)*deltaL(0) 
+                                    + deltaL(1)*deltaL(1)); 
+                //No big changes in fiber length!
+                if(NewtonStepSize > 0.25*optL){
+                    NewtonStepScale = abs(0.25*optL/NewtonStepSize);
+                }
 
-            //Lost rank and the tendon is slack? 
-            //set fiber length below the clamping value
+                lce = lce + NewtonStepScale*deltaL(0);
+                dlce_dt = dlce_dt + NewtonStepScale*deltaL(1);                
+            //If the tendon is slack set fiber length below the clamping value
+            //else risk a dreaded local minimum
             }else if( tlN < 1){
                 lce = 0;
                 dlce_dt = -1;
+
                 ferr = 1 + aSolTolerance;
             //Else we've lost rank and fiber length is not near its l
             //lower bound. Try spreading the velocity using the relative
@@ -1854,19 +1904,28 @@ SimTK::Vector Millard2012EquilibriumMuscle::
                 //Perturb the fiber length
                 double perturbation1 = 
                     2.0*((double)rand())/((double)RAND_MAX)-1.0;
+                double perturbation2 = 
+                    2.0*((double)rand())/((double)RAND_MAX)-1.0;
+
                 double lengthPerturbation = 
                     0.05*perturbation1*getOptimalFiberLength();
-                lce = falCurve.getTransitionFiberLength() + lengthPerturbation;   
+                double velocityPertubation = 
+                    0.05*perturbation2*optV;
+
+                lce = prevFiberLength + lengthPerturbation;   
                 lce = clampFiberLength(lce);
+                dlce_dt = prevFiberVelocity + velocityPertubation;
+
                 lceN = lce/optL;
                     phi = penMdl.calcPennationAngle(lce);
                     cosphi = cos(phi);
                 tl  =penMdl.calcTendonLength(cosphi,lce,ml);                
                 tlN  = tl/ltslk;
-               
+                ferr = 1 + aSolTolerance;
                 //Perturb the velocity by updating it according to the 
                 //relative stiffnesses of the fiber and the tendon, using the
                 //old fiber velocity
+                /*
                 fl         = falCurve.calcValue(lceN);
                 fpe         = fpeCurve.calcValue(lceN);
                 fse         = fseCurve.calcValue(tlN);            
@@ -1878,7 +1937,6 @@ SimTK::Vector Millard2012EquilibriumMuscle::
                                                 ,sinphi,cosphi,lce,lceN,optL);
                 dFmAT_dlceAT = calc_DFiberForceAT_DFiberLengthAT(dFmAT_dlce,
                                                sinphi,cosphi,lce);
-
 
                 //Tendon:
                 dFt_d_tl    = fseCurve.calcDerivative(tlN,1)*fiso/ltslk;            
@@ -1901,34 +1959,35 @@ SimTK::Vector Millard2012EquilibriumMuscle::
                 dlceAT_dt = penMdl.calcFiberVelocityAlongTendon(lce,dlce_dt,
                                                     sinphi,cosphi,dphi_dt);
 
+                
                 //Ensure the error is not acceptable
-                ferr = 1 + aSolTolerance;
+                
+                */
             }
                 
             //Clamp fiber length
             if(isFiberStateClamped(lce,dlce_dt)){
                     minFiberLengthCtr++;
                     lce = clampFiberLength(lce);
-                    dlce_dt = 0;
+                    dlce_dt = 0;                    
                     ferr = 1 + aSolTolerance;
             }
                  
-                
-                    
-                //Update position level quantities                 
-                lceN = lce/optL;
+    
+            //Update position level quantities                 
+            lceN = lce/optL;
 
-                phi = penMdl.calcPennationAngle(lce);                
-                sinphi = sin(phi);
-                cosphi = cos(phi);
+            phi = penMdl.calcPennationAngle(lce);                
+            sinphi = sin(phi);
+            cosphi = cos(phi);
 
-                tl  =penMdl.calcTendonLength(cosphi,lce,ml);                
-                tlN  = tl/ltslk;
+            tl  =penMdl.calcTendonLength(cosphi,lce,ml);                
+            tlN  = tl/ltslk;
 
-                dlceN_dt= dlce_dt/optV;
-                dtl_dt = penMdl.calcTendonVelocity( cosphi,sinphi,phi,
-                                                    lce,dlce_dt,
-                                                    dml_dt);
+            dlceN_dt= dlce_dt/optV;
+            dtl_dt = penMdl.calcTendonVelocity( cosphi,sinphi,phi,
+                                                lce,dlce_dt,
+                                                dml_dt);
             
         
         iter++;
@@ -2073,9 +2132,6 @@ void Millard2012EquilibriumMuscle::
         double pathLength = getLength(s);
         double pathLengtheningSpeed = getLengtheningSpeed(s);
 
-        double prevFiberLength = reducedFiberStateHint(0);
-        double prevFiberVelocity= reducedFiberStateHint(1);
-
         //For some reason the hint above is totally trashing my simulation
         //results ... I have no idea why.
         
@@ -2083,7 +2139,7 @@ void Millard2012EquilibriumMuscle::
         //                              reducedFiberStateHint(1));
 
         SimTK::Vector soln = estimateElasticTendonFiberState2(
-                                prevFiberLength, prevFiberVelocity,
+                                reducedFiberStateHint,
                                 activation, dactivation_dt,
                                 pathLength, pathLengtheningSpeed, 
                                 tol, maxIter);
@@ -2101,10 +2157,11 @@ void Millard2012EquilibriumMuscle::
         double tendonForce    = soln[5];
 
         //Debugging
-        /*if( prevFiberVelocity - fiberVelocity > 0.5){
+        /*if( tendonForce == 0 
+            && abs(reducedFiberStateHint(0)-fiberLength)>0.002){
             cout << "Big nonlinearity at " << simTime << endl;
             soln = estimateElasticTendonFiberState2(
-                                prevFiberLength, prevFiberVelocity,
+                                reducedFiberStateHint,
                                 activation, dactivation_dt,
                                 pathLength, pathLengtheningSpeed, 
                                 tol, maxIter);
@@ -2121,6 +2178,12 @@ void Millard2012EquilibriumMuscle::
             //solution has diverged!
             fiberLength = SimTK::NaN;
             fiberVelocity = SimTK::NaN;
+
+            /*SimTK::Vector soln = estimateElasticTendonFiberState2(
+                                reducedFiberStateHint,
+                                activation, dactivation_dt,
+                                pathLength, pathLengtheningSpeed, 
+                                tol, maxIter);*/
         }
 
         /*
@@ -2213,9 +2276,11 @@ void Millard2012EquilibriumMuscle::
 
     double simTime = s.getTime(); //for debugging purposes
 
+    int simMethod = getInitialSimulationMethod();
 
     //Get the quantities that we've already computed
         const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
+        
 
     //Get the static properties of this muscle
         double lenMcl             = getLength(s);
@@ -2239,7 +2304,7 @@ void Millard2012EquilibriumMuscle::
     
 
   
-    double lce  = mli.fiberLength;
+    double lce  = mli.fiberLength;    
     double lceN = mli.normFiberLength;
     double tl   = mli.tendonLength;
     double tlN  = mli.normTendonLength;
@@ -2254,7 +2319,7 @@ void Millard2012EquilibriumMuscle::
     double dlceN= SimTK::NaN;
     double fv   = SimTK::NaN;
 
-    int simMethod = getInitialSimulationMethod();
+    
     //=========================================================================
     //Rigid Tendon Fiber Velocity Computation
     //=========================================================================
@@ -2277,7 +2342,8 @@ void Millard2012EquilibriumMuscle::
     }else if( simMethod == ApproxElasticTendonNoActivation
            || simMethod == ApproxElasticTendonActivation){
     
-        dlce = mli.userDefinedLengthExtras[0];
+        dlce = mli.userDefinedLengthExtras[0];       
+
         dlceN= dlce/(optFibLen*getMaxContractionVelocity());
         fv = fvCurve.calcValue(dlceN);
     //=========================================================================

@@ -795,7 +795,7 @@ private:
 
     //Stores the fiber length and velocity of the last time step
     //used by the reduced method
-    mutable SimTK::Vec2 reducedFiberStateHint;
+    mutable SimTK::Vec5 reducedFiberStateHint;
 
     /*
     Solves fiber length and velocity to satisfy the equilibrium equations. 
@@ -822,6 +822,8 @@ private:
 
     @param previousFiberLength : A hint
     @param previousFiberVelocity : A hint
+    @param deltaTime : the amount of time that has passed between the hint and
+                       the current call.
     @param aActivation the initial activation of the muscle
     @param dactivation_dt the time derivative of activation
     @param pathLength length of the whole muscle
@@ -844,7 +846,7 @@ private:
 
     */
     SimTK::Vector estimateElasticTendonFiberState2(
-                    double previousFiberLength, double previousFiberVelocity,
+                    SimTK::Vec5 hint,
                     double aActivation, double dactivation_dt, 
                     double pathLength, double pathLengtheningSpeed,
                     double aSolTolerance, int aMaxIterations) const;
