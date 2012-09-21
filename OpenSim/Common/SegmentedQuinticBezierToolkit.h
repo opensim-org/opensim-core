@@ -667,6 +667,134 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         */
         static double clampU(double u);
 
+        
+///@cond
+/**
+Class that contains data that describes the Bezier curve set. This class is used
+by the function calcNumIntBezierYfcnX, which evaluates the numerical integral
+of a Bezier curve set.
+*/
+class BezierData {
+    public:
+        /**A 6xn matrix of Bezier control points for the X axis (domain)*/
+        SimTK::Matrix _mX;
+        /**A 6xn matrix of Bezier control points for the Y axis (range)*/
+        SimTK::Matrix _mY;
+        /**An n element array containing the approximate spline fits of the
+        inverse function of x(u), namely u(x)*/
+        SimTK::Array_< SimTK::Spline_<double> > _aArraySplineUX;
+        /**The initial value of the integral*/
+        double _initalValue;
+        /**The tolerance to use when computing u. Solving u(x) can only be done
+        numerically at the moment, first by getting a good guess (using the
+        splines) and then using Newton's method to polish the value up. This
+        is the tolerance that is used in the polishing stage*/
+        double _uTol;
+        /**The maximum number of interations allowed when evaluating u(x) using
+        Newton's method. In practice the guesses are usually very close to the
+        actual solution, so only 1-3 iterations are required.*/
+        int _uMaxIter;
+        /**If this flag is true the function is integrated from its left most
+        control point to its right most. If this flag is false, the function
+        is integrated from its right most control point to its left most.*/
+        bool  _flag_intLeftToRight;
+        /**The starting value*/
+        double _startValue; 
+
+        /**The name of the curve being intergrated. This is used to generate
+        useful error messages when something fails*/
+        std::string _name;
+};
+///@endcond
+
+///@cond
+/**
+This is the nice user interface class to MySystemGuts, which creates a System
+object that is required to use SimTK's integrators to integrate the Bezier
+curve sets
+*/
+//class MySystem;
+
+/**
+This is the implementation of the nice user interface class to MySystemGuts, 
+which creates a System object that is required to use SimTK's integrators to 
+integrate the Bezier curve sets. Used in function
+SegmentedQuinticBezierToolkit::calcNumIntBezierYfcnX
+*/
+class MySystem : public SimTK::System {
+public:
+
+    /**Local MySystem object used in function 
+    SegmentedQuinticBezierToolkit::calcNumIntBezierYfcnX*/
+    MySystem(const BezierData bdata) {
+        adoptSystemGuts(new MySystemGuts(bdata));
+        SimTK::DefaultSystemSubsystem defsub(*this);
+    }
+};
+
+
+/**
+Class that makes a system so that SimTK's integrators (which require a system)
+can be used to numerically integrate the BezierCurveSet. This class is used
+by the function calcNumIntBezierYfcnX, which evaluates the numerical integral
+of a Bezier curve set.
+
+A System is actually two classes: System::Guts does the work while System
+provides a pleasant veneer to make usage easier. This is the workhorse
+*/
+class MySystemGuts : public SimTK::System::Guts {
+    friend class MySystem;
+
+    MySystemGuts(const BezierData& bdata) : bdata(bdata) {}
+
+    // Implement required System::Guts virtuals.
+    MySystemGuts* cloneImpl() const {return new MySystemGuts(*this);}
+
+    // During realizeTopology() we allocate the needed State.
+    int realizeTopologyImpl(SimTK::State& state) const {
+        // HERE'S WHERE THE IC GETS SET
+        SimTK::Vector zInit(1, bdata._initalValue); // initial value for z
+        state.allocateZ(SimTK::SubsystemIndex(0), zInit);
+        return 0;
+    }
+
+    // During realizeAcceleration() we calculate the State derivative.
+    int realizeAccelerationImpl(const SimTK::State& state) const {
+        SimTK::Real x = state.getTime();
+
+        if(bdata._flag_intLeftToRight == false){
+            x = (SimTK::Real)bdata._startValue-state.getTime();
+        }
+
+        // HERE'S THE CALL TO YOUR FUNCTION
+        //Get the index within the spline set
+        
+        int idx = SegmentedQuinticBezierToolkit::calcIndex(x,bdata._mX, bdata._name);
+        //Get the value of u that corresponds to x
+        double u = SegmentedQuinticBezierToolkit::calcU(x,bdata._mX(idx),
+            bdata._aArraySplineUX[idx],bdata._uTol,bdata._uMaxIter,bdata._name);
+
+        //Compute the value of the curve at u;
+        double y=SegmentedQuinticBezierToolkit::
+            calcQuinticBezierCurveVal(u,bdata._mY(idx), bdata._name);
+        state.updZDot()[0] = y;
+        return 0;
+    }
+
+    // Disable prescribe and project since we have no constraints or
+    // prescribed state variables to worry about.
+    int prescribeImpl(SimTK::State&, SimTK::Stage) const {return 0;}
+    int projectImpl(SimTK::State&, SimTK::Real, const SimTK::Vector&, 
+                    const SimTK::Vector&, SimTK::Vector&, 
+                    SimTK::ProjectOptions) const {return 0;}
+    private:
+        /**The Bezier curve data that is being integrated*/
+        const BezierData bdata;
+};
+
+
+///@endcond
+
 };
 
 }
