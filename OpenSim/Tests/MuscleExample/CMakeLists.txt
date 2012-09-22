@@ -11,7 +11,7 @@ LINK_LIBRARIES( debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
 		${SIMTK_ALL_LIBS})
 
 # Variable definitions
-SET(EXAMPLE_TARGET exampleModel)
+SET(EXAMPLE_TARGET exampleMuscle)
 SET(EXAMPLE_DIR ${OpenSim_SOURCE_DIR}/OpenSim/Examples/MuscleExample)
 SET(TEST_TARGET testMuscleExample)
 SET(TEST_DIR ${OpenSim_BINARY_DIR}/OpenSim/Tests/MuscleExample)
