@@ -19,6 +19,7 @@ ADD_SUBDIRECTORY(ControllerExample)
 ADD_SUBDIRECTORY(ExampleMain)
 ADD_SUBDIRECTORY(OptimizationExample_Arm26)
 ADD_SUBDIRECTORY(CustomActuatorExample)
+ADD_SUBDIRECTORY(MuscleExample)
 
 ADD_SUBDIRECTORY(Wrapping)
 ENDIF(BUILD_TESTING)
