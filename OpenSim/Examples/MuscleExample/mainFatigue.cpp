@@ -8,8 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Jeffrey A. Reinbolt, Ayman Habib, Ajay Seth, Jack Middleton,    * 
- *            Samuel R. Hamner, Peter Loan                                    *
+ * Author(s): Peter Loan, Ajay Seth, Ayman Habib                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -17,32 +16,29 @@
  *                                                                            *
  * Unless required by applicable law or agreed to in writing, software        *
  * distributed under the License is distributed on an "AS IS" BASIS,          *
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied    *
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
 /* 
- *  Below is an example of an OpenSim application that provides its own 
- *  main() routine.  This application is a forward simulation of a tug-of-war between two
- *  muscles pulling on a block. One of the muscles fatigues and the other does not.
+ *  Below is an example of an OpenSim main() routine.  
+ *  This program is a forward simulation of a tug-of-war between two muscles 
+ *  pulling on a block. One of the muscles fatigues and the other does not.
  */
 
-// Author:  Jeff Reinbolt, Ayman Habib, Ajay Seth, Jack Middleton, Samuel Hamner, Peter Loan
-
-//==============================================================================
-//==============================================================================
+//=============================================================================
+//=============================================================================
 #include <OpenSim/OpenSim.h>
-#include <ctime>    // for clock()
-
-#include "LiuThelen2003Muscle.h"
+#include "FatigableMuscle.h"
+#include <OpenSim/Common/IO.h>
 
 using namespace OpenSim;
 using namespace SimTK;
 
-//______________________________________________________________________________
+//_____________________________________________________________________________
 /**
- * Run a simulation of block sliding with contact on by two muscles sliding with contact 
+ * Run a simulation of a sliding block being pulled by two muscle 
  */
 int main()
 {
@@ -54,7 +50,7 @@ int main()
 		///////////////////////////////////////////////
 		// Define the initial and final simulation times
 		double initialTime = 0.0;
-		double finalTime = 1.0;
+		double finalTime = 10.0;
 
 		///////////////////////////////////////////
 		// DEFINE BODIES AND JOINTS OF THE MODEL //
@@ -75,7 +71,7 @@ int main()
 
 		// BLOCK BODY
 
-		// Specify properties of a 20 kg, 0.1 m^3 block body
+		// Specify properties of a 20 kg, 10cm length block body
 		double blockMass = 20.0, blockSideLength = 0.1;
 		Vec3 blockMassCenter(0);
 		Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
@@ -117,32 +113,33 @@ int main()
 		// MUSCLE FORCES
 
 		// Create two new muscles
-		double maxIsometricForce= 1000.0, optimalFiberLength = 0.2, tendonSlackLength = 0.2;
-		double pennationAngle = 0.0, activationConstant = 0.015, deactivationConstant = 0.05, fatigueFactor = 0.30, recoveryFactor = 0.20;
+		double maxIsometricForce = 1000.0, optimalFiberLength = 0.2, 
+			   tendonSlackLength = 0.1,    pennationAngle = 0.0,  
+			   fatigueFactor = 0.30, recoveryFactor = 0.20;
 
 		// muscle 1 (model with fatigue)
-		LiuThelen2003Muscle* muscle1 = new LiuThelen2003Muscle("Liu",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle, fatigueFactor, recoveryFactor);
-		muscle1->setActivationTimeConstant(activationConstant);
-		muscle1->setDeactivationTimeConstant(deactivationConstant);
+		FatigableMuscle* muscle1 = new FatigableMuscle("muscle1",
+			maxIsometricForce, optimalFiberLength, tendonSlackLength, 
+			pennationAngle, fatigueFactor, recoveryFactor);
 		// muscle 2 (model without fatigue)
-		Thelen2003Muscle* muscle2 = new Thelen2003Muscle("Thelen",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
-		muscle2->setActivationTimeConstant(activationConstant);
-		muscle2->setDeactivationTimeConstant(deactivationConstant);
+		Millard2012EquilibriumMuscle* muscle2 = new Millard2012EquilibriumMuscle("muscle2",
+			maxIsometricForce, optimalFiberLength, tendonSlackLength,
+			pennationAngle);
 
 		// Define the path of the muscles
-		muscle1->addNewPathPoint("Liu-point1", ground, SimTK::Vec3(0.0, halfLength, -0.35));
-		muscle1->addNewPathPoint("Liu-point2", *block, SimTK::Vec3(0.0, halfLength, -halfLength));
+		muscle1->addNewPathPoint("muscle1-point1", ground, Vec3(0.0, halfLength, -0.35));
+		muscle1->addNewPathPoint("muscle1-point2", *block, Vec3(0.0, halfLength, -halfLength));
 
-		muscle2->addNewPathPoint("Thelen-point1", ground, SimTK::Vec3(0.0, halfLength, 0.35));
-		muscle2->addNewPathPoint("Thelen-point2", *block, SimTK::Vec3(0.0, halfLength, halfLength));
+		muscle2->addNewPathPoint("muscle2-point1", ground, Vec3(0.0, halfLength, 0.35));
+		muscle2->addNewPathPoint("muscle2-point2", *block, Vec3(0.0, halfLength, halfLength));
 
 		// Define the default states for the two muscles
 		// Activation
 		muscle1->setDefaultActivation(0.01);
 		muscle2->setDefaultActivation(0.01);
 		// Fiber length
-		muscle2->setDefaultFiberLength(0.1);
-		muscle1->setDefaultFiberLength(0.1);
+		muscle1->setDefaultFiberLength(optimalFiberLength);
+		muscle2->setDefaultFiberLength(optimalFiberLength);
 
 		// Add the two muscles (as forces) to the model
 		osimModel.addForce(muscle1);
@@ -162,11 +159,18 @@ int main()
 		slopeAndIntercept[0] = 1.0/(finalTime-initialTime);  
 
 		// Set the prescribed muscle controller to use the same muscle control function for each muscle
-		muscleController->prescribeControlForActuator("Liu", new LinearFunction(slopeAndIntercept));
-		muscleController->prescribeControlForActuator("Thelen", new LinearFunction(slopeAndIntercept));
+		muscleController->prescribeControlForActuator("muscle1", new Constant(1.0));
+		muscleController->prescribeControlForActuator("muscle2", new Constant(1.0));
 
 		// Add the muscle controller to the model
 		osimModel.addController(muscleController);
+
+		// Add a Muscle analysis
+		MuscleAnalysis* muscAnalysis = new MuscleAnalysis(&osimModel);
+		Array<std::string> coords(jointCoordinateSet[5].getName(),1);
+		muscAnalysis->setCoordinates(coords);
+		muscAnalysis->setComputeMoments(false);
+		osimModel.addAnalysis(muscAnalysis);
 
 		// Obtain the default acceleration due to gravity
 		Vec3 gravity = osimModel.getGravity();
@@ -200,7 +204,7 @@ int main()
 		// Create the integrator, force reporter, and manager for the simulation.
 		// Create the integrator
 		SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-		integrator.setAccuracy(1.0e-4);
+		integrator.setAccuracy(1.0e-6);
 		
 		// Create the force reporter
 		ForceReporter* reporter = new ForceReporter(&osimModel);
@@ -227,6 +231,10 @@ int main()
 
 		// Save the forces
 		reporter->getForceStorage().print("tugOfWar_forces.mot");
+
+		// Save the muscle analysis results
+		IO::makeDir("FatigueResults");
+		muscAnalysis->printResults("tugOfWar", "FatigueResults");
 
 		// Save the OpenSim model to a file
 		osimModel.print("tugOfWar_fatigue_model.osim");
