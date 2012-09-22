@@ -50,9 +50,10 @@ namespace OpenSim {
  * The Muscle base class, specifies the interface that must be implemented 
  * by derived muscle classes. The FatigableMuscle derives from
  * Millard2012EquilibriumMuscle, which is a concrete implementation of the 
- * Muscle interface. The dynamics for fatigue are added by overriding a 
- * addToSystem() which allocates the additional states, and 
-
+ * Muscle interface. The dynamics for fatigue are added by overriding methods 
+ * addToSystem() which allocates the additional states and 
+ * computeStateVariableDerivatives() to specify their dynamics (derivatives). 
+ *
  * @see Millard2012EquilibriumMuscle
  * @see Muscle
  */
