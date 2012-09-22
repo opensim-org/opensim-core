@@ -32,7 +32,7 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * This class extends a Millard2012EquilibriumMuscle by including two 
+ * This class extends a Millard2012EquilibriumMuscle by including three 
  * additional states to model the fatigue and recovery of muscle fibers. 
  * The equations for these states are (loosely) based on the following paper:
  * Liu, Jing Z., Brown, Robert, Yue, Guang H., "A Dynamical Model of Muscle
