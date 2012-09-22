@@ -237,7 +237,7 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
             else
             {
                 if (fiber_velocity <= 0)    // concentric contraction, Vm<0
-                    alpha = 0.25 * max_isometric_force;
+                    alpha = 0.25 * fiber_force_total;
                 else						// eccentric contraction, Vm>0
                     alpha = 0.0;
             }

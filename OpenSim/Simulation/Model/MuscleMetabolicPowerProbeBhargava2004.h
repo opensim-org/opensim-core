@@ -105,12 +105,14 @@ namespace OpenSim {
  *     - <B>alpha = 0.157 * F_CE                        </B>,   <I>v_CE <  0 (eccentric contraction)</I>
  * 
  *     - v_CE = muscle fiber velocity at the current time.
- *     - F_CE = force developed by the contractile element of muscle at the current time.
+ *     - F_CE = force developed by the contractile (active) element of muscle at the current time.
  *     - F_CE_iso = force that would be developed by the contractile element of muscle under isometric conditions with the current activation and fiber length.
  *
  * If use_force_dependent_shortening_prop_constant = false,
- *     - <B>alpha = 0.25,   </B>,   <I>v_CE >= 0 (concentric / isometric contraction)</I>
- *     - <B>alpha = 0.00    </B>,   <I>v_CE <  0 (eccentric contraction)</I>
+ *     - <B>alpha = 0.25 * (F_CE + F_PASSIVE),   </B>,   <I>v_CE >= 0 (concentric / isometric contraction)</I>
+ *     - <B>alpha = 0.00                         </B>,   <I>v_CE <  0 (eccentric contraction)</I>
+ *
+ *      where F_PASSIVE = passive force developed by the muscle fiber velocity at the current time.
  *
  *
  * <H2><B> MECHANICAL WORK RATE (W) </B></H2>
