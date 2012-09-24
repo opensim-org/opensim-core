@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Samuel R. Hamner                                                *
+ * Author(s): Samuel R. Hamner, Ajay Seth                                                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -16,18 +16,17 @@
  *                                                                            *
  * Unless required by applicable law or agreed to in writing, software        *
  * distributed under the License is distributed on an "AS IS" BASIS,          *
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied    *
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
 /* 
- *  Below is an example of an OpenSim application that provides its own 
- *  main() routine.  This application is a forward simulation of tug-of-war between two
- *  muscles pulling on a block.
+ *  Example of an OpenSim program that optimizes the performance of a model.
+ *  The main() loads the arm26 model and maximizes the forward velocity of
+ *  the hand during a muscle-driven forward simulation by finding the set
+ *  of (constant) controls.
  */
-
-// Author:  Samuel Hamner
 
 //==============================================================================
 //==============================================================================
@@ -36,6 +35,8 @@
 
 using namespace OpenSim;
 using namespace SimTK;
+using namespace std;
+
 // Global variables to define integration time window, optimizer step count,
 // the best solution.
 int stepCount = 0;
@@ -50,18 +51,18 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 	   ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
              numControls(numParameters), OptimizerSystem(numParameters), si(s), osimModel(aModel){}
 			 	
-	int objectiveFunc(  const Vector &newControls, const bool new_coefficients, Real& f ) const {
+	int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const {
 
         // make a copy of out initial states
         State s = si;
 
-        // Access the controller set of the model and update the control values
-		((ControlSetController *)(&osimModel.updControllerSet()[0]))->updControlSet()->setControlValues(initialTime, &newControls[0]);
-		((ControlSetController *)(&osimModel.updControllerSet()[0]))->updControlSet()->setControlValues(finalTime, &newControls[0]);
-        
+        // Update the control values
+		//newControls.dump("New Controls In:");
+		osimModel.updDefaultControls() = newControls;
+
 		// Create the integrator for the simulation.
-		RungeKuttaMersonIntegrator integrator(osimModel.getSystem());
-		integrator.setAccuracy(1.0e-5);
+		RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
+		integrator.setAccuracy(1.0e-6);
 
 		// Create a manager to run the simulation
 		Manager manager(osimModel, integrator);
@@ -69,7 +70,11 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 		// Integrate from initial time to final time
 		manager.setInitialTime(initialTime);
 		manager.setFinalTime(finalTime);
-		osimModel.getSystem().realize(s, Stage::Acceleration);
+
+		osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
+
+		//osimModel.getControls(s).dump("Model Controls:");
+
 		manager.integrate(s);
 
 		/* Calculate the scalar quantity we want to minimize or maximize. 
@@ -80,7 +85,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 		Vec3 massCenter;
 		Vec3 velocity;
 		osimModel.getBodySet().get("r_ulna_radius_hand").getMassCenter(massCenter);
-		osimModel.getSystem().realize(s, Stage::Acceleration);
+		osimModel.getMultibodySystem().realize(s, Stage::Velocity);
 		osimModel.getSimbodyEngine().getVelocity(s, osimModel.getBodySet().get("r_ulna_radius_hand"), massCenter, velocity);
 		
 		f = -velocity[0];
@@ -105,7 +110,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 			osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
 			statesDegrees.print("Arm26_bestSoFar_states_degrees.sto");
 			bestSoFar = f;
-			std::cout << "\nOptimization Step #: " << stepCount << "  controls = " << newControls <<  " bestSoFar = " << f << std::endl;
+			cout << "\nOptimization Step #: " << stepCount << "  controls = " << newControls <<  " bestSoFar = " << f << std::endl;
 		}		    
 
       return(0);
@@ -127,9 +132,11 @@ int main()
 {
 	try {
 		std::clock_t startTime = std::clock();	
+	
 		// Create a new OpenSim model
-		LoadOpenSimLibrary("osimActuators");
 		Model osimModel("Arm26_Optimize.osim");
+		
+		// Initialize the system and get the state representing the state system
 		
 		// Define the initial and final controls
 		ControlLinear *control_TRIlong = new ControlLinear();
@@ -137,96 +144,83 @@ int main()
 		ControlLinear *control_TRImed = new ControlLinear();
 		ControlLinear *control_BIClong = new ControlLinear();
 		ControlLinear *control_BICshort = new ControlLinear();
-		ControlLinear *control_BRA = new ControlLinear();
-
+		ControlLinear *control_BRA = new ControlLinear(); 
+  
 		/* NOTE: Each contoller must be set to the corresponding 
-		 *		muscle name in the model file. */
+		* muscle name in the model file. */
 		control_TRIlong->setName("TRIlong"); control_TRIlat->setName("TRIlat"); 
 		control_TRImed->setName("TRImed"); control_BIClong->setName("BIClong");
-		control_BICshort->setName("BICshort"); control_BRA->setName("BRA");
-		
+		control_BICshort->setName("BICshort"); control_BRA->setName("BRA"); 
+  
 		ControlSet *muscleControls = new ControlSet();
-		muscleControls->append(control_TRIlong); muscleControls->append(control_TRIlat);
-		muscleControls->append(control_TRImed); muscleControls->append(control_BIClong);
-		muscleControls->append(control_BICshort); muscleControls->append(control_BRA);
-		
+		muscleControls->adoptAndAppend(control_TRIlong);
+		muscleControls->adoptAndAppend(control_TRIlat);
+		muscleControls->adoptAndAppend(control_TRImed);
+		muscleControls->adoptAndAppend(control_BIClong);
+		muscleControls->adoptAndAppend(control_BICshort);
+		muscleControls->adoptAndAppend(control_BRA); 
+  
 		ControlSetController *muscleController = new ControlSetController();
 		muscleController->setControlSet(muscleControls);
-        muscleController->setName("MuscleController");
-
+		muscleController->setName("MuscleController"); 
+  
 		// Add the controller to the model
-		osimModel.addController(muscleController);
-		
-		// Initialize the system and get the state representing the state system
-		State& si = osimModel.initSystem();
+		osimModel.addController(muscleController); 
 
 		// Define the initial muscle states
-		const OpenSim::Set<OpenSim::Actuator> &muscleSet = osimModel.getActuators();
+		const Set<Muscle> &muscleSet = osimModel.getMuscles();
      	for(int i=0; i< muscleSet.getSize(); i++ ){
-			Actuator* act = &muscleSet.get(i);
-			OpenSim::Muscle* mus = dynamic_cast<Muscle*>(act);
-			mus->setDefaultActivation(0.5);
-			mus->setDefaultFiberLength(0.1);
-			//mus->initState(si);
+			ActivationFiberLengthMuscle* mus = dynamic_cast<ActivationFiberLengthMuscle*>(&muscleSet[i]);
+			if(mus){
+				mus->setDefaultActivation(0.5);
+				mus->setDefaultFiberLength(0.1);
+			}
 		}
+
+		State& si = osimModel.initSystem();
 	
 		// Make sure the muscles states are in equilibrium
 		osimModel.equilibrateMuscles(si);
 
 		// The number of controls will equal the number of muscles in the model!
-		int numControls = 6;
+		int numControls = osimModel.getNumControls();
 		
 		// Initialize the optimizer system we've defined.
 		ExampleOptimizationSystem sys(numControls, si, osimModel);
 		Real f = NaN;
 		
-		/* Define and set bounds for the parameter we will optimize */
-		Vector lower_bounds(numControls);
-		Vector upper_bounds(numControls);
-
-		for(int i=0;i<numControls;i++) {
-			lower_bounds[i] = 0.01;
-			upper_bounds[i] = 1.0;
-		}
+		/* Define initial values and bounds for the controls to optimize */
+		Vector controls(numControls, 0.01);
+		Vector lower_bounds(numControls, 0.01);
+		Vector upper_bounds(numControls, 0.99);
 
 		sys.setParameterLimits( lower_bounds, upper_bounds );
 		
-        // set the initial values (guesses) for the controls
-		Vector controls(numControls);
-        controls[0]  = 0.01;
-        controls[1]  = 0.01;
-		controls[2]  = 0.01;
-		controls[3]  = 0.01;
-		controls[4]  = 0.01;
-		controls[5]  = 0.01;
+		// Create an optimizer. Pass in our OptimizerSystem
+		// and the name of the optimization algorithm.
+		Optimizer opt(sys, SimTK::LBFGSB);
+		//Optimizer opt(sys, InteriorPoint);
 
-		try {
-			// Create an optimizer. Pass in our OptimizerSystem
-			// and the name of the optimization algorithm.
-			 Optimizer opt(sys, SimTK::LBFGSB);
-			//Optimizer opt(sys, InteriorPoint);
-
-			// Specify settings for the optimizer
-			opt.setConvergenceTolerance(0.2);
-			opt.useNumericalGradient(true);
-			opt.setMaxIterations(1000);
-			opt.setLimitedMemoryHistory(500);
+		// Specify settings for the optimizer
+		opt.setConvergenceTolerance(0.2);
+		opt.useNumericalGradient(true);
+		opt.setMaxIterations(1000);
+		opt.setLimitedMemoryHistory(500);
 			
-			// Optimize it!
-			f = opt.optimize(controls);
-		}
-		catch(const std::exception& e) {
-		std::cout << "OptimizationExample.cpp Caught exception :"  << std::endl;
-		std::cout << e.what() << std::endl;
-		}
+		// Optimize it!
+		f = opt.optimize(controls);
+	
+		osimModel.print("optimization_model_ARM.osim");
+		cout << "Elapsed time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms" << endl;
 		
-		// osimModel.print("optimization_model_ARM.osim");
-		std::cout << "Elapsed time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n";
-		char c;
-		std::cout << "Press RETURN to end program...\n" << std::endl;
-		std::cin.get(c);
+		const Set<Actuator>& actuators = osimModel.getActuators();
+		for(int i=0; i<actuators.getSize(); ++i){
+			cout << actuators[i].getName() << " control value = " << controls[i] << endl;
+		}
+
+        cout << "OpenSim example completed successfully.\n";
 	}
-    catch (std::exception ex)
+    catch (const std::exception& ex)
     {
         std::cout << ex.what() << std::endl;
         return 1;
