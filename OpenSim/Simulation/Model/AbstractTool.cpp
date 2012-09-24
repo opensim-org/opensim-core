@@ -719,8 +719,8 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 							SimTK::Xml::element_iterator kIter = aNode.element_begin("external_loads_model_kinematics_file");
 							if (kIter !=aNode.element_end()){
 								string kinFileName= "";
-								iter->getValueAs(kinFileName);
-								aNode.removeNode(iter);
+								kIter->getValueAs(kinFileName);
+								aNode.removeNode(kIter);
 								// Make sure no node already exist
 								Xml::element_iterator iter2(extLoadsElem.element_begin("external_loads_model_kinematics_file"));
 								if (iter2 == extLoadsElem.element_end())
@@ -731,7 +731,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 							SimTK::Xml::element_iterator fIter = aNode.element_begin("lowpass_cutoff_frequency_for_load_kinematics");
 							if (fIter !=aNode.element_end()){
 								SimTK::String freq;
-								iter->getValueAs(freq);
+								fIter->getValueAs(freq);
 								Xml::element_iterator iter2(extLoadsElem.element_begin("lowpass_cutoff_frequency_for_load_kinematics"));
 								if (iter2 == extLoadsElem.element_end())
 									iter->insertNodeAfter(iter->element_end(), Xml::Element("lowpass_cutoff_frequency_for_load_kinematics", freq));
@@ -747,11 +747,8 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 				}
 			}
 		}
-		else 
-			Object::updateFromXMLNode(aNode, 20303);
 	}
-	else 
-		Object::updateFromXMLNode(aNode, 20303);
+	Object::updateFromXMLNode(aNode, 20303);
 	// Create controllers and add them as needed.
 	if (controlsFileName!="" && controlsFileName!="Unassigned"){
 		// controls_file was specified, create a ControlSetController for it
@@ -759,7 +756,6 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 		csc->setControlSetFileName(controlsFileName);
 		_controllerSet.adoptAndAppend(csc);
 	}
-	//Object::updateFromXMLNode(aNode, versionNumber);
 }
 void AbstractTool::loadQStorage (const std::string& statesFileName, Storage& rQStore) const {
 	// Initial states

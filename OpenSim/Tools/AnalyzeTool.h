@@ -90,7 +90,6 @@ public:
 	AnalyzeTool(const AnalyzeTool &aObject);
 	explicit AnalyzeTool(Model& aModel);
 
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 private:
 	void setNull();
 	void setupProperties();
@@ -108,8 +107,6 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	//void setControlSet(ControlSet& aSet);
-	//ControlSet& getControlSet();
 	void setStatesStorage(Storage& aStore);
 	static Storage *createStatesStorageFromCoordinatesAndSpeeds(const Model& aModel, const Storage& aQStore, const Storage& aUStore);
 	Storage& getStatesStorage();
