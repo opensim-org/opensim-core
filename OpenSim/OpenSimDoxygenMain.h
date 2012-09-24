@@ -246,6 +246,24 @@ terms under which we offer OpenSim.
  * -------------------------------------------------------------------------- *
 @endverbatim
 
+<h2>How to Acknowledge Us</h2>
+Acknowledging the OpenSim project helps us and helps you. It allows us to track our impact, which is essential for securing funding to improve the software and provide support to our users (you).
+<br>
+If you use the OpenSim GUI, you must acknowledge the OpenSim project where appropriate, by citing the following paper. If you only use the OpenSim API, you are not required to acknowledge us, but we would be extremely grateful if you did so anyway.
+<br>
+<br>
+<i>Delp SL, Anderson FC, Arnold AS, Loan P, Habib A, John CT, Guendelman E, Thelen DG. OpenSim: Open-source Software to Create and Analyze Dynamic Simulations of Movement. IEEE Transactions on Biomedical Engineering. (2007)</i>
+<br>
+<br>
+We would also be grateful if you mention that OpenSim is funded by NIH Roadmap grant U54 GM072970, the NIH research infrastructure grant R24 HD065690, and the DARPA Warrior Web Program. We greatly appreciate this support, and the NIH and DARPA appreciate knowing that their funds are having an impact, particularly on medical research and human health.
+If you use plugins, models, or other components contributed by your fellow researchers, you must acknowledge their work as described in the license that accompanies each of these files.
+<br>
+<br>
+<h2>Author List</h2>
+The following people have contributed to the OpenSim API:
+<br>
+<br>
+Frank C. Anderson, Allison S. Arnold, Scott L. Delp, Matt S. DeMers, Tim Dorn, Brian Garner, Saryn R. Goldberg, Eran Guendelman, Ayman Habib, Samuel R. Hamner, Jennifer L. Hicks, Katherine R. S. Holzbaur, Chand T. John, Cassidy Kelly, May Q. Liu, Peter Loan, Jack Middleton, Matthew Millard, Paul C. Mitiguy, Jeffrey A. Reinbolt, Ajay Seth, Michael A. Sherman, Darryl G. Thelen, Kevin Xu
 **/
 
 #endif // _OpenSim_Doxygen_Main_h_
