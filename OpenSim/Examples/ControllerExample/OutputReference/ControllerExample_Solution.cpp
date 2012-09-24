@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                  OpenSim:  ControllerExample_Solution.cpp                  *
+ *                      OpenSim:  ControllerExample.cpp                       *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Chand T. John                                                   *
+ * Author(s): Chand T. John, Ajay Seth                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -16,24 +16,23 @@
  *                                                                            *
  * Unless required by applicable law or agreed to in writing, software        *
  * distributed under the License is distributed on an "AS IS" BASIS,          *
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied    *
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
 /* 
- *  Below is an example of an OpenSim application that provides its own 
- *  main() routine.  This application is a forward simulation of tug-of-war between two
- *  muscles pulling on a block.
+ *  Below is an extension example of an OpenSim application that provides its own 
+ *  main() routine.  It applies a controller to the forward simulation of a tug-of-war 
+ *  between two muscles pulling on a block.
  */
 
-// Author:  Chand T. John
+// Author:  Chand T. John and Ajay Seth
 
 //==============================================================================
 //==============================================================================
 
-// This line includes a large number of OpenSim functions and classes so that
-// those things will be available to this program.
+// Include OpenSim and functions
 #include <OpenSim/OpenSim.h>
 
 // This allows us to use OpenSim functions, classes, etc., without having to
@@ -54,13 +53,13 @@ double desiredModelZPosition( double t ) {
 	// z(t) = 0.15 sin( pi * t )
 	return 0.15 * sin( Pi * t );
 }
-//______________________________________________________________________________
+
 /**
  * The controller will try to make the model follow this velocity
  * in the z direction.
  */
 double desiredModelZVelocity( double t ) {
-	// z'(t) = (0.15*pi) cos( pi * t )
+	// z(t) = 0.15 sin( pi * t )
 	return 0.15 * Pi * cos( Pi * t );
 }
 //______________________________________________________________________________
@@ -78,25 +77,19 @@ double desiredModelZAcceleration( double t ) {
  * This controller will try to track a desired trajectory of the block in
  * the tug-of-war model.
  */
-class TugOfWarPDController : public Controller {
+class TugOfWarController : public Controller {
+OpenSim_DECLARE_CONCRETE_OBJECT(TugOfWarController, Controller);
 
 // This section contains methods that can be called in this controller class.
 public:
-
 	/**
 	 * Constructor
 	 *
 	 * @param aModel Model to be controlled
 	 * @param aKp Position gain by which the position error will be multiplied
-	 * @param aKv Velocity gain by which the velocity error will be multiplied
 	 */
-	TugOfWarPDController( Model& aModel, double aKp, double aKv ) : 
-		Controller( aModel ), kp( aKp ), kv( aKv ) {
-
-		// Read the mass of the block.
-		blockMass = aModel.getBodySet().get( "block" ).getMass();
-		std::cout << std::endl << "blockMass = " << blockMass
-			<< std::endl;
+	TugOfWarController(double aKp, double aKv) : Controller(), kp( aKp ), kv( aKv ) 
+	{
 	}
 
 	/**
@@ -105,17 +98,17 @@ public:
 	 * @param s Current state of the system
 	 * @param controls Controls being calculated
 	 */
-	virtual void computeControls( const SimTK::State& s, SimTK::Vector &controls )
-	const {
-
+	void computeControls(const SimTK::State& s, SimTK::Vector &controls) const
+	{
 		// Get the current time in the simulation.
 		double t = s.getTime();
 
+		// Read the mass of the block.
+		double blockMass = getModel().getBodySet().get( "block" ).getMass();
+
 		// Get pointers to each of the muscles in the model.
-		Muscle* leftMuscle = dynamic_cast<Muscle*>
-			( &_actuatorSet.get(0) );
-		Muscle* rightMuscle = dynamic_cast<Muscle*>
-			( &_actuatorSet.get(1) );
+		Muscle* leftMuscle = dynamic_cast<Muscle*>	( &getActuatorSet().get(0) );
+		Muscle* rightMuscle = dynamic_cast<Muscle*> ( &getActuatorSet().get(1) );
 
 		// Compute the desired position of the block in the tug-of-war
 		// model.
@@ -136,7 +129,7 @@ public:
 		// Get the current position of the block in the tug-of-war
 		// model.
 		double z  = zCoord.getValue(s);
-
+		
 		// Get the current velocity of the block in the tug-of-war
 		// model.
 		double zv = zCoord.getSpeedValue(s);
@@ -145,15 +138,15 @@ public:
 		// from the deviation of the block's current position from its
 		// desired position (this deviation is the "position error").
 		double pErrTerm = kp * ( zdes  - z  );
-
-		// Compute the correction to the desired acceleration arising
-		// from the deviation of the block's current velocity from its
-		// desired velocity (this deviation is the "velocity error").
+		
+		// Compute the total desired velocity based on the initial
+		// desired velocity plus the position error term we
+		// computed above.
 		double vErrTerm = kv * ( zdesv - zv );
 
 		// Compute the total desired acceleration based on the initial
-		// desired acceleration plus the correction terms we computed
-		// above: the position error term and the velocity error term.
+		// desired acceleration plus the position error term we
+		// computed above.
 		double desAcc = zdesa + vErrTerm + pErrTerm;
 
 		// Compute the desired force on the block as the mass of the
@@ -169,26 +162,26 @@ public:
 		// If desired force is in direction of one muscle's pull
 		// direction, then set that muscle's control based on desired
 		// force.  Otherwise, set the muscle's control to zero.
+		double leftControl = 0.0, rightControl = 0.0;
 		if( desFrc < 0 ) {
-			controls[0] = abs( desFrc ) / FoptL;
-			controls[1] = 0.0;
+			leftControl = abs( desFrc ) / FoptL;
+			rightControl = 0.0;
 		}
 		else if( desFrc > 0 ) {
-			controls[0] = 0.0;
-			controls[1] = abs( desFrc ) / FoptR;
+			leftControl = 0.0;
+			rightControl = abs( desFrc ) / FoptR;
 		}
-		else {
-			controls[0] = 0.0;
-			controls[1] = 0.0;
-		}
-
-		// Don't allow any control value to be less than zero.
-		if( controls[0] < 0.0 ) controls[0] = 0.0;
-		if( controls[1] < 0.0 ) controls[1] = 0.0;
-
 		// Don't allow any control value to be greater than one.
-		if( controls[0] > 1.0 ) controls[0] = 1.0;
-		if( controls[1] > 1.0 ) controls[1] = 1.0;
+		if( leftControl > 1.0 ) leftControl = 1.0;
+		if( rightControl > 1.0 ) rightControl = 1.0;
+
+		// Thelen muscle has only one control
+		Vector muscleControl(1, leftControl);
+		// Add in the controls computed for this muscle to the set of all model controls
+		leftMuscle->addInControls(muscleControl, controls);
+		// Specify control for other actuator (muscle) controlled by this controller
+		muscleControl[0] = rightControl;
+		rightMuscle->addInControls(muscleControl, controls);
 	}
 
 // This section contains the member variables of this controller class.
@@ -196,15 +189,9 @@ private:
 
 	/** Position gain for this controller */
 	double kp;
-
 	/** Velocity gain for this controller */
 	double kv;
 
-	/**
-	 * Mass of the block in the tug-of-war model, used to compute the
-	 * desired force on the block at each time step in a simulation
-	 */
-	double blockMass;
 };
 
 
@@ -218,7 +205,7 @@ int main()
 {
 	try {
 
-		// Need to load this DLL so muscle types are recognized.
+				// Need to load this DLL so muscle types are recognized.
 		LoadOpenSimLibrary( "osimActuators" );
 
 		// Create an OpenSim model from the model file provided.
@@ -226,9 +213,9 @@ int main()
 
 		// Define the initial and final simulation times.
 		double initialTime = 0.0;
-		double finalTime = 2.0;
+		double finalTime = 1.0;
 
-		// Set gains for the controller.
+		// Set gain for the controller.
 		double kp = 1600.0; // position gain
 		double kv = 80.0;   // velocity gain
 
@@ -236,17 +223,16 @@ int main()
 		std::cout << std::endl;
 		std::cout << "kp = " << kp << std::endl;
 		std::cout << "kv = " << kv << std::endl;
-
+		
 		// Create the controller.
-		TugOfWarPDController *pdController = new
-			TugOfWarPDController( osimModel, kp, kv );
+		TugOfWarController *controller = new TugOfWarController(kp, kv);
 
 		// Give the controller the Model's actuators so it knows
 		// to control those actuators.
-		pdController->setActuators( osimModel.updActuators() );
+		controller->setActuators( osimModel.updActuators() );
 
 		// Add the controller to the Model.
-		osimModel.addController( pdController );
+		osimModel.addController( controller );
 
 		// Initialize the system and get the state representing the
 		// system.
@@ -262,24 +248,22 @@ int main()
 		zCoord.setSpeedValue( si, 0.15 * Pi );
 
 		// Define the initial muscle states.
-		const Set<Actuator>& actuatorSet = osimModel.getActuators();
-		Muscle* muscle1 =
-			dynamic_cast<Muscle*>( &actuatorSet.get(0) );
-		Muscle* muscle2 =
-			dynamic_cast<Muscle*>( &actuatorSet.get(1) );
+		const Set<Muscle>& muscleSet = osimModel.getMuscles();
+		ActivationFiberLengthMuscle* muscle1 = dynamic_cast<ActivationFiberLengthMuscle*>( &muscleSet.get(0) );
+		ActivationFiberLengthMuscle* muscle2 = dynamic_cast<ActivationFiberLengthMuscle*>( &muscleSet.get(1) );
+		if((muscle1 == NULL) || (muscle2 == NULL)){
+			throw OpenSim::Exception("ControllerExample: muscle1 or muscle2 is not an ActivationFiberLengthMuscle and example cannot proceed.");
+		}
 		muscle1->setActivation(si, 0.01 ); // muscle1 activation
 		muscle1->setFiberLength(si, 0.2 ); // muscle1 fiber length
 		muscle2->setActivation(si, 0.01 ); // muscle2 activation
 		muscle2->setFiberLength(si, 0.2 ); // muscle2 fiber length
 
-        // Compute initial conditions for muscles.
-		//osimModel.computeEquilibriumForAuxiliaryStates(si);
-
 		// Create the integrator and manager for the simulation.
 		SimTK::RungeKuttaMersonIntegrator
 			integrator( osimModel.getMultibodySystem() );
 		integrator.setAccuracy( 1.0e-4 );
-		integrator.setAbsoluteTolerance( 1.0e-4 );
+
 		Manager manager( osimModel, integrator );
 
 		// Examine the model.
@@ -302,14 +286,9 @@ int main()
 
 		// Save the simulation results.
 		osimModel.printControlStorage( "tugOfWar_controls.sto" );
-		Storage statesDegrees( manager.getStateStorage() );
-		statesDegrees.print( "tugOfWar_states.sto" );
-		osimModel.updSimbodyEngine().convertRadiansToDegrees
-			( statesDegrees );
-		statesDegrees.setWriteSIMMHeader( true );
-		statesDegrees.print( "tugOfWar_states_degrees.mot" );
+		manager.getStateStorage().print( "tugOfWar_states.sto" );
 	}
-    catch ( std::exception ex ) {
+    catch (const std::exception &ex) {
 		
 		// In case of an exception, print it out to the screen.
         std::cout << ex.what() << std::endl;
