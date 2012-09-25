@@ -503,7 +503,7 @@ public:
         
         @param s the state of the system
     */
-    void computeInitialFiberEquilibrium(SimTK::State& s) const FINAL_11;
+    void computeInitialFiberEquilibrium(SimTK::State& s) const OVERRIDE_11;
     
 
     ///@cond TO BE DEPRECATED. 
@@ -560,17 +560,17 @@ protected:
     void connectToModel(Model& model) FINAL_11;
 
     /**Creates the ModelComponent so that it can be used in simulation*/
-	void addToSystem(SimTK::MultibodySystem& system) const FINAL_11;
+	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
     /**Initializes the state of the ModelComponent*/
-	void initStateFromProperties(SimTK::State& s) const FINAL_11;
+	void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
     
     /**Sets the default state for ModelComponent*/
-    void setPropertiesFromState(const SimTK::State& s) FINAL_11;
+    void setPropertiesFromState(const SimTK::State& s) OVERRIDE_11;
 	
     /**computes state variable derivatives*/
     SimTK::Vector computeStateVariableDerivatives(
-        const SimTK::State& s) const FINAL_11;
+        const SimTK::State& s) const OVERRIDE_11;
 
 //==============================================================================
 //State derivative helper methods
