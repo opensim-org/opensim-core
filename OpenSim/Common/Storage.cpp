@@ -198,7 +198,8 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
 	// to account for different assumptions between SIMM.mot OpenSim.sto
 
 	//MM if this is a SIMM Motion file, post process it as one. Else don't touch the data
-	if(indexTime != -1 || indexRange != -1){
+    size_t found = aFileName.find(".mot");
+    if(indexTime == -1 && found!=string::npos){
 		postProcessSIMMMotion();
 	}
 }
