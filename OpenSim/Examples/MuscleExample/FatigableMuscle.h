@@ -72,9 +72,9 @@ public:
     OpenSim_DECLARE_PROPERTY(recovery_factor, double, 
         "percentage of fatigued motor units that recover in unit time");
 	OpenSim_DECLARE_PROPERTY(default_active_motor_units, double, 
-        "default state value for the quantity of motor units that are active");
+        "default state value for the fraction of motor units that are active");
     OpenSim_DECLARE_PROPERTY(default_fatigued_motor_units, double, 
-        "default state value for the quantity of motor units that are fatigued");
+        "default state value for the fraction of motor units that are fatigued");
     /**@}**/
 
 public:
@@ -85,10 +85,10 @@ public:
 	// CONSTRUCTION
 	//-------------------------------------------------------------------------
 	FatigableMuscle();
-	FatigableMuscle(const std::string &aName, double aMaxIsometricForce, 
-					double aOptimalFiberLength, double aTendonSlackLength,
-					double aPennationAngle, double aFatigueFactor, 
-					double aRecoveryFactor);
+	FatigableMuscle(const std::string &name, double maxIsometricForce, 
+					double optimalFiberLength, double tendonSlackLength,
+					double pennationAngle, double fatigueFactor, 
+					double recoveryFactor);
 
     // employs the default destructor, copy constructor and copy assignment 
 	// that are automatically supplied by the compiler if none are defined
@@ -145,10 +145,10 @@ protected:
 	//-------------------------------------------------------------------------
 	// COMPUTATIONS
 	//-------------------------------------------------------------------------
-	/** Determine the initial state values based on initial fiber equlibrium.
+	/** Determine the initial state values based on initial fiber equilibrium.
 		For the FatigableMuscle, the active and fatigued motor units
-		states for based on infinite horizon (steady state) according to the
-		activation value already in the state. */
+		states are set to 1.0 and 0.0 respectively, which translates to 
+		no fatigue as the initial state. */
 	void computeInitialFiberEquilibrium(SimTK::State& s) const OVERRIDE_11;
 	
 	/** Compute the derivatives for state variables added by this muscle */
@@ -156,6 +156,7 @@ protected:
 		const OVERRIDE_11;
 
 private:
+	/** construct the new properties and set their default values */
 	void constructProperties();
 
 //=============================================================================
