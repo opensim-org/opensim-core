@@ -280,12 +280,9 @@ void Millard2012AccelerationMuscle::initStateFromProperties(SimTK::State& s) con
 
     ensureMuscleUpToDate();
 
-    Millard2012AccelerationMuscle* mthis = 
-        const_cast<Millard2012AccelerationMuscle*>(this);
-
-    mthis->setActivation(s, getDefaultActivation());
-    mthis->setFiberLength(s, getDefaultFiberLength());
-    mthis->setFiberVelocity(s,getDefaultFiberVelocity());
+    setActivation(s, getDefaultActivation());
+    setFiberLength(s, getDefaultFiberLength());
+    setFiberVelocity(s,getDefaultFiberVelocity());
 }
     
 void Millard2012AccelerationMuscle::

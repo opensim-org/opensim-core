@@ -540,18 +540,18 @@ protected:
     /**calculate muscle's position related values such fiber and tendon lengths,
     normalized lengths, pennation angle, etc... */
     void calcMuscleLengthInfo(const SimTK::State& s, 
-                              MuscleLengthInfo& mli) const FINAL_11;  
+                              MuscleLengthInfo& mli) const OVERRIDE_11;  
 
 
     /** calculate muscle's velocity related values such fiber and tendon 
         velocities,normalized velocities, pennation angular velocity, etc... */
-    virtual void  calcFiberVelocityInfo(const SimTK::State& s, 
-                                      FiberVelocityInfo& fvi) const FINAL_11;
+    void  calcFiberVelocityInfo(const SimTK::State& s, 
+                                FiberVelocityInfo& fvi) const OVERRIDE_11;
 
     /** calculate muscle's active and passive force-length, force-velocity, 
         tendon force, relationships and their related values */
-    virtual void  calcMuscleDynamicsInfo(const SimTK::State& s, 
-                                    MuscleDynamicsInfo& mdi) const FINAL_11;
+    void  calcMuscleDynamicsInfo(const SimTK::State& s, 
+                                 MuscleDynamicsInfo& mdi) const OVERRIDE_11;
 
 //==============================================================================
 //ModelComponent Interface requirements
