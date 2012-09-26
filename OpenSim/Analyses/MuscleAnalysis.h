@@ -52,7 +52,7 @@ namespace OpenSim {
  * A class for recording and computting basic quantities (length, shortening
  * velocity, tendon length, ...) for muscles during a simulation.
  *
- * @author Katherine Holzbaur, Frank C. Anderson
+ * @author Ajay Seth, Matthew Millard, Katherine Holzbaur, Frank C. Anderson 
  * @version 1.0
  */
 class OSIMANALYSES_API MuscleAnalysis : public Analysis {

@@ -109,6 +109,7 @@ ProbeReporter::ProbeReporter(const ProbeReporter &aProbeReporter):
  */
 void ProbeReporter::setNull()
 {
+	setAuthors("Tim Dorn");
     // NAME
     setName("ProbeReporter");
 }

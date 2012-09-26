@@ -72,6 +72,7 @@ ConstraintSet::ConstraintSet(const ConstraintSet& aAbsConstraintSet)
  */
 void ConstraintSet::setNull()
 {
+	setAuthors("Ajay Seth");
 }
 
 //=============================================================================

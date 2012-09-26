@@ -85,8 +85,9 @@ void UnilateralConstraint::copyData(const UnilateralConstraint &aUnilateralConst
 /**
  * Set the data members of this UnilateralConstraint to their null values.
  */
-void UnilateralConstraint::setNull(void)
+void UnilateralConstraint::setNull()
 {
+	setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________

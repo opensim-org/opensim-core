@@ -75,6 +75,7 @@ MetabolicMuscleParameter::MetabolicMuscleParameter(double muscle_mass,
  */
 void MetabolicMuscleParameter::setNull()
 {
+	setAuthors("Tim Dorn");
     m = NULL;
     _muscMass = 0.0;
 }

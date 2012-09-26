@@ -33,6 +33,7 @@ CoordinateReference::CoordinateReference() : Reference_<double>(),
 	_coordinateValueFunction(_coordinateValueFunctionProp.getValueObjPtrRef()),
 	_defaultWeight(_defaultWeightProp.getValueDbl())
 {
+	setAuthors("Ajay Seth");
 	_names.resize(getNumRefs());
 	_names[0] = getName();
 }
@@ -48,6 +49,7 @@ CoordinateReference::CoordinateReference(const std::string name, Function &refer
 	_coordinateValueFunction(_coordinateValueFunctionProp.getValueObjPtrRef()),
 	_defaultWeight(_defaultWeightProp.getValueDbl())
 {
+	setAuthors("Ajay Seth");
 	setValueFunction(referenceFunction);
 	_names.resize(getNumRefs());
 	_names[0] = getName();
@@ -70,13 +72,13 @@ CoordinateReference& CoordinateReference::operator=(const CoordinateReference& s
         copyData(source);
     }
 	return *this;
-};
+}
 
 void CoordinateReference::copyData(const CoordinateReference& source)
 {
 	_coordinateValueFunction = source._coordinateValueFunction->clone();
 	_defaultWeight = source._defaultWeight;
-};
+}
 
 
 /** get the names of the referettes */

@@ -152,6 +152,7 @@ void WeldConstraint::copyData(const WeldConstraint &aConstraint)
  */
 void WeldConstraint::setNull()
 {
+	setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________

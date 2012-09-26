@@ -68,7 +68,7 @@ FiberForceLengthCurve::FiberForceLengthCurve(   double strainAtZeroForce,
 
 void FiberForceLengthCurve::setNull()
 {
-
+	setAuthors("Matthew Millard");
 }
 
 void FiberForceLengthCurve::constructProperties()

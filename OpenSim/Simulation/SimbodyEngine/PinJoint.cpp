@@ -54,6 +54,7 @@ PinJoint::~PinJoint()
 PinJoint::PinJoint() :
 	Joint()
 {
+	setAuthors("Ajay Seth");
 	constructCoordinates();
 
 	const CoordinateSet& coordinateSet = get_CoordinateSet();
@@ -69,6 +70,7 @@ PinJoint::PinJoint() :
 	Joint(name, parent, locationInParent,orientationInParent,
 			body, locationInBody, orientationInBody, reverse)
 {
+	setAuthors("Ajay Seth");
 	constructCoordinates();
 
 	const CoordinateSet& coordinateSet = get_CoordinateSet();

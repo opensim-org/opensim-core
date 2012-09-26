@@ -97,6 +97,7 @@ MarkerFrame::~MarkerFrame()
  */
 void MarkerFrame::setNull()
 {
+	setAuthors("Peter Loan");
 }
 
 //=============================================================================

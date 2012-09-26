@@ -57,7 +57,7 @@ MuscleActiveFiberPowerProbe(const Array<string> muscle_names)
 // Set the data members of this MuscleActiveFiberPowerProbe to their null values.
 void MuscleActiveFiberPowerProbe::setNull(void)
 {
-    // No data members.
+	setAuthors("Matthew Millard");
 }
 
 //_____________________________________________________________________________

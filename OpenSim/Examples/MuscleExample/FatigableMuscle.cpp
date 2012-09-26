@@ -68,6 +68,7 @@ FatigableMuscle::FatigableMuscle(const std::string &name,
  */
 void FatigableMuscle::constructProperties()
 {
+	setAuthors("Ajay Seth");
     constructProperty_fatigue_factor(0.0);
     constructProperty_recovery_factor(0.0);
 	constructProperty_default_active_motor_units(0.0);

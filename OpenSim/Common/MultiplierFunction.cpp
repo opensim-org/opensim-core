@@ -102,6 +102,7 @@ MultiplierFunction::MultiplierFunction(const MultiplierFunction &aFunction) :
  */
 void MultiplierFunction::setNull()
 {
+	setAuthors("Peter Loan");
 	setupProperties();
 }
 //_____________________________________________________________________________

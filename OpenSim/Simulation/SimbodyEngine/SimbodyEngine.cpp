@@ -120,6 +120,7 @@ void SimbodyEngine::copyData(const SimbodyEngine &aEngine)
  */
 void SimbodyEngine::setNull()
 {
+	setAuthors("Frank C. Anderson, Ajay Seth");
     _model = NULL;
 }
     

@@ -106,6 +106,7 @@ StepFunction::StepFunction(const StepFunction &aStepFunction) :
  */
 void StepFunction::setNull()
 {
+	setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________

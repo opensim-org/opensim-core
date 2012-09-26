@@ -93,6 +93,7 @@ ExternalForce::ExternalForce(SimTK::Xml::Element& node) : Super(node)
 
 void ExternalForce::setNull()
 {
+	setAuthors("Ajay Seth");
 	_dataSource = NULL;
 	_appliedToBody = NULL;
 	_forceExpressedInBody = NULL;

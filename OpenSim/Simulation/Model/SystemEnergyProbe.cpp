@@ -60,7 +60,7 @@ SystemEnergyProbe::SystemEnergyProbe(bool computeKE, bool computePE)
 // Set the data members of this SystemEnergyProbe to their null values.
 void SystemEnergyProbe::setNull(void)
 {
-    // no data members
+    setAuthors("Tim Dorn");
 }
 
 //_____________________________________________________________________________

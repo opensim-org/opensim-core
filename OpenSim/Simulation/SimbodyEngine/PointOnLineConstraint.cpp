@@ -134,6 +134,7 @@ void PointOnLineConstraint::copyData(const PointOnLineConstraint &aConstraint)
  */
 void PointOnLineConstraint::setNull()
 {
+	setAuthors("Samuel R. Hamner ");
 }
 
 //_____________________________________________________________________________

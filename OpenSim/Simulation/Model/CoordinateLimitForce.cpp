@@ -104,6 +104,7 @@ operator=(const CoordinateLimitForce& source)
 // calculated at connectToModel().
 void CoordinateLimitForce::setNull()
 {
+	setAuthors("Ajay Seth");
 	upStep = NULL;
 	loStep = NULL;
 	

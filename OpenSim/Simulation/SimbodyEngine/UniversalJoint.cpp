@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                                       *
+ * Author(s): Tim Dorn                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -51,10 +51,10 @@ UniversalJoint::~UniversalJoint()
 /**
  * Default constructor.
  */
-UniversalJoint::UniversalJoint() :
-    Joint()
+UniversalJoint::UniversalJoint() : Joint()
 {
-    constructCoordinates();
+    setAuthors("Tim Dorn");
+	constructCoordinates();
 
     const CoordinateSet& coordinateSet = get_CoordinateSet();
     coordinateSet[0].setMotionType(Coordinate::Rotational);
@@ -70,7 +70,8 @@ UniversalJoint::UniversalJoint() :
     Joint(name, parent, locationInParent,orientationInParent,
             body, locationInBody, orientationInBody, reverse)
 {
-    constructCoordinates();
+    setAuthors("Tim Dorn");
+	constructCoordinates();
 
     const CoordinateSet& coordinateSet = get_CoordinateSet();
     coordinateSet[0].setMotionType(Coordinate::Rotational);

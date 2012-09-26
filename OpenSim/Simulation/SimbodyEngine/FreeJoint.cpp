@@ -84,6 +84,8 @@ FreeJoint::FreeJoint() :
  */
 void FreeJoint::setNull()
 {
+	setAuthors("Ajay Seth");
+
 	constructCoordinates();
 	// We know we have three rotations followed by three translations
 	// Replace default names _coord_? with more meaningful names

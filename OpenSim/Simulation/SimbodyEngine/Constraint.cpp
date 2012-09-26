@@ -96,6 +96,7 @@ void Constraint::copyData(const Constraint &aConstraint)
  */
 void Constraint::setNull(void)
 {
+	setAuthors("Frank Anderson, Ajay Seth");
 }
 
 //_____________________________________________________________________________

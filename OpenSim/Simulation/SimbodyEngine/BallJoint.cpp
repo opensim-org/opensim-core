@@ -50,24 +50,24 @@ BallJoint::~BallJoint()
 /**
  * Default constructor.
  */
-BallJoint::BallJoint() :
-	Joint()
-	//_useEulerAngles(_useEulerAnglesProp.getValueBool())
+BallJoint::BallJoint() : Joint()
 {
+	setAuthors("Ajay Seth");
 	constructCoordinates();
 }
 //_____________________________________________________________________________
 /**
  * Convenience Constructor.
  */
-BallJoint::BallJoint(const std::string &name, OpenSim::Body& parent, Vec3 locationInParent, Vec3 orientationInParent,
-					 OpenSim::Body& body, Vec3 locationInBody, Vec3 orientationInBody, /*bool useEulerAngles,*/ bool reverse) :
-	Joint(name, parent, locationInParent,orientationInParent,
-			body, locationInBody, orientationInBody, reverse)
-	//_useEulerAngles(_useEulerAnglesProp.getValueBool())
+BallJoint::BallJoint(const std::string &name, OpenSim::Body& parent, 
+					 Vec3 locationInParent, Vec3 orientationInParent,
+					 OpenSim::Body& body, Vec3 locationInBody, Vec3 orientationInBody, 
+					 bool reverse) :
+			Joint(name, parent, locationInParent,orientationInParent,
+					body, locationInBody, orientationInBody, reverse)
 {
+	setAuthors("Ajay Seth");
 	constructCoordinates();
-	//_useEulerAngles = useEulerAngles;
 	updBody().setJoint(*this);
 }
 
@@ -156,13 +156,12 @@ void BallJoint::initStateFromProperties(SimTK::State& s) const
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (matter.getUseEulerAngles(s))
         return;
-    int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
 
 	const CoordinateSet& coordinateSet = get_CoordinateSet();
 
-	double xangle = coordinateSet.get(zero).getDefaultValue();
-    double yangle = coordinateSet.get(1).getDefaultValue();
-    double zangle = coordinateSet.get(2).getDefaultValue();
+	double xangle = coordinateSet[0].getDefaultValue();
+    double yangle = coordinateSet[1].getDefaultValue();
+    double zangle = coordinateSet[2].getDefaultValue();
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
 	
 	BallJoint* mutableThis = const_cast<BallJoint*>(this);
@@ -182,10 +181,9 @@ void BallJoint::setPropertiesFromState(const SimTK::State& state)
 	
 		const CoordinateSet& coordinateSet = get_CoordinateSet();
 
-		int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
-        coordinateSet.get(zero).setDefaultValue(angles[0]);
-        coordinateSet.get(1).setDefaultValue(angles[1]);
-        coordinateSet.get(2).setDefaultValue(angles[2]);
+        coordinateSet[0].setDefaultValue(angles[0]);
+        coordinateSet[1].setDefaultValue(angles[1]);
+        coordinateSet[2].setDefaultValue(angles[2]);
     }
 }
 

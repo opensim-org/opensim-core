@@ -127,6 +127,7 @@ void GeometryPath::copyData(const GeometryPath &aPath)
  */
 void GeometryPath::setNull()
 {
+	setAuthors("Peter Loan");
 }
 
 //_____________________________________________________________________________

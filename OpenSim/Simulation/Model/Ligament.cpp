@@ -60,6 +60,7 @@ Ligament::Ligament()
  */
 void Ligament::constructProperties()
 {
+	setAuthors("Peter Loan");
 	constructProperty_GeometryPath(GeometryPath());
 	constructProperty_resting_length(0.0);
 	constructProperty_pcsa_force(0.0);

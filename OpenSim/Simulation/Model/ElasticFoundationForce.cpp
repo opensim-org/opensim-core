@@ -219,7 +219,7 @@ void ElasticFoundationForce::ContactParameters::setViscousFriction(double fricti
 
 void ElasticFoundationForce::ContactParametersSet::setNull()
 {
-    // no data members
+	setAuthors("Peter Eastman");
 }
 
 ElasticFoundationForce::ContactParametersSet::ContactParametersSet()

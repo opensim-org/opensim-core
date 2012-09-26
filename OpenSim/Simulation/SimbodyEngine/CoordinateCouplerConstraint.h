@@ -41,9 +41,10 @@ class Model;
 //=============================================================================
 //=============================================================================
  /** @file
- * A class implementing a CoordinateCoupler Constraint.  The underlying Constraint 
- * is a Constraint::CoordinateCoupler in Simbody, which relates coordinates
- * of the same or different body(ies) to one another at the position level (holonomic).
+ * A class implementing a CoordinateCoupler Constraint.  The underlying SimTK
+ * Constraint is a Constraint::CoordinateCoupler in Simbody, which relates 
+ * coordinates of the same or different body(ies) to one another at the 
+ * position level (i.e. holonomic).
  * Relationship between coordinates is a specified by a function that equates 
  * to zero only when the coordinates satisfy the function (constraint).
  *

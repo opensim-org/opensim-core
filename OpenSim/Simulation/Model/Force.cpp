@@ -78,7 +78,7 @@ void Force::copyData(const Force& source)
 // Set the data members of this Force to their null values.
 void Force::setNull()
 {
-    // the lone data member (_index) knows how to initialize itself
+	setAuthors("Peter Eastman, Ajay Seth");
 }
 
 //_____________________________________________________________________________

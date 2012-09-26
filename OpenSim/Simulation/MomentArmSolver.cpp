@@ -37,6 +37,7 @@ namespace OpenSim {
  */
 MomentArmSolver::MomentArmSolver(const Model &model) : Solver(model)
 {
+	setAuthors("Ajay Seth");
 }
 
 /*********************************************************************************

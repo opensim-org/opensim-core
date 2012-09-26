@@ -54,6 +54,7 @@ SliderJoint::~SliderJoint()
 SliderJoint::SliderJoint() :
 	Joint()
 {
+	setAuthors("Ajay Seth");
 	constructCoordinates();
 
 	const CoordinateSet& coordinateSet = get_CoordinateSet();
@@ -69,6 +70,7 @@ SliderJoint::SliderJoint() :
 	Joint(name, parent, locationInParent,orientationInParent,
 			body, locationInBody, orientationInBody, reverse)
 {
+	setAuthors("Ajay Seth");
 	constructCoordinates();
 
 	const CoordinateSet& coordinateSet = get_CoordinateSet();

@@ -126,9 +126,9 @@ operator=(const StaticOptimization &aStaticOptimization)
 /**
  * SetNull().
  */
-void StaticOptimization::
-setNull()
+void StaticOptimization::setNull()
 {
+	setAuthors("Jeffrey A. Reinbolt");
 	setupProperties();
 
 	// OTHER VARIABLES

@@ -69,7 +69,7 @@ ForceVelocityCurve::ForceVelocityCurve
 
 void ForceVelocityCurve::setNull()
 {
-   
+	setAuthors("Matthew Millard");
 }
 
 void ForceVelocityCurve::constructProperties()

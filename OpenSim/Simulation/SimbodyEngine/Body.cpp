@@ -194,7 +194,7 @@ void Body::copyData(const AbstractBody &aBody)
  */
 void Body::setNull()
 {
-	_model = NULL;
+	setAuthors("Frank C. Anderson, Ajay Seth");
 }
 
 //_____________________________________________________________________________

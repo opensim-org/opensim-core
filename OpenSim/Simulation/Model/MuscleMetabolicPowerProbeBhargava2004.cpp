@@ -71,7 +71,7 @@ MuscleMetabolicPowerProbeBhargava2004::MuscleMetabolicPowerProbeBhargava2004(boo
  */
 void MuscleMetabolicPowerProbeBhargava2004::setNull()
 {
-    // no data members
+	setAuthors("Tim Dorn");
 }
 
 //_____________________________________________________________________________

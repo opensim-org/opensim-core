@@ -21,11 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
- * Author: Ajay Seth Frank C. Anderson, Chand T. John, Samuel R. Hamner, 
- */
-
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
@@ -74,15 +69,13 @@ Controller::Controller()
  */
 void Controller::constructProperties()
 {
+	setAuthors("Ajay Seth, Frank Anderson, Chand John, Samuel Hamner");
 	constructProperty_isDisabled(false);
 	constructProperty_actuator_list();
 
 	// Set is only a reference list, not ownership
 	_actuatorSet.setMemoryOwner(false);
 }
-
-
-
 
 
 //=============================================================================

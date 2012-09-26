@@ -71,7 +71,7 @@ PointActuator::PointActuator(const string& bodyName)
 // Set the data members of this actuator to their null values.
 void PointActuator::setNull()
 {
-    // no data members
+	setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________

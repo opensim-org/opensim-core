@@ -83,6 +83,7 @@ EllipsoidJoint::EllipsoidJoint(const std::string &name, OpenSim::Body& parent, S
  */
 void EllipsoidJoint::constructProperties()
 {
+	setAuthors("Ajay Seth");
 	SimTK::Vec3 origin(NaN);
 	constructProperty_radii_x_y_z(origin);
 }

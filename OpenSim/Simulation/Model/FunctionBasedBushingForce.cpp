@@ -103,6 +103,7 @@ FunctionBasedBushingForce::FunctionBasedBushingForce(const string&    body1Name,
 // Set the data members of this FunctionBasedBushingForce to their null values.
 void FunctionBasedBushingForce::setNull()
 {
+	setAuthors("Matt DeMers");
     _b1 = NULL;
 	_b2 = NULL;
     // no data members

@@ -54,6 +54,7 @@ WeldJoint::~WeldJoint()
 WeldJoint::WeldJoint() :
 	Joint()
 {
+	setAuthors("Ajay Seth");
 	constructCoordinates();
 }
 
@@ -66,6 +67,7 @@ WeldJoint::WeldJoint() :
 	Joint(name, parent, locationInParent,orientationInParent,
 			body, locationInBody, orientationInBody, reverse)
 {
+	setAuthors("Ajay Seth");
 	constructCoordinates();
 	updBody().setJoint(*this);
 }

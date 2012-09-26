@@ -35,7 +35,7 @@ namespace OpenSim {
  * Reference value to be achieved for a specified coordinate that will be used
  * via optimization and/or tracking. Also contains a weighting that identifies
  * the relative importance of achieving one CoordinateReference relative to
- * others coordinates.
+ * other coordinates.
  *
  * @author Ajay Seth
  * @version 1.0

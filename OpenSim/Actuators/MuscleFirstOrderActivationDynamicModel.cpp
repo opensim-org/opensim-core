@@ -90,6 +90,7 @@ MuscleFirstOrderActivationDynamicModel::
         
 void MuscleFirstOrderActivationDynamicModel::setNull()
 {
+	setAuthors("Matthew Millard");
     m_minAS = SimTK::NaN;
 }
 

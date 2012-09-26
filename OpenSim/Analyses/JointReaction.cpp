@@ -71,7 +71,6 @@ JointReaction::JointReaction(Model *aModel) :
 	_inFrame(_inFrameProp.getValueStrArray())
 {
 	setNull();
-
 }
 //_____________________________________________________________________________
 /**
@@ -158,6 +157,7 @@ operator=(const JointReaction &aJointReaction)
 void JointReaction::
 setNull()
 {
+	setAuthors("Matt S. DeMers, Ajay Seth");
 	setupProperties();
 
 	// Property Default Values that are set if the associated fields are

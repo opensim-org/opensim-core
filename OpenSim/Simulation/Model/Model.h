@@ -94,7 +94,7 @@ related objects are maintained in a runtime section of the Model object. You
 can also ask a Model to provide visualization using the setUseVisualizer()
 method, in which case it will allocate an maintain a ModelVisualizer.
 
-@authors Frank C. Anderson, Peter Loan, Ajay Seth
+@authors Frank Anderson, Peter Loan, Ayman Habib, Ajay Seth, Michael Sherman
 @see ModelComponent, ModelVisualizer, SimTK::System
 **/
 

@@ -8,7 +8,8 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Frank C. Anderson, Peter Loan, Ayman Habib, Ajay Seth           *
+ * Author(s): Frank C. Anderson, Peter Loan, Ayman Habib, Ajay Seth,          *
+ *            Michael Sherman                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -305,6 +306,7 @@ void Model::copyData(const Model &aModel)
  */
 void Model::setNull()
 {
+	setAuthors("Frank Anderson, Peter Loan, Ayman Habib, Ajay Seth, Michael Sherman");
     _useVisualizer = false;
     _displayHints.clear();
     _allControllersEnabled = true;

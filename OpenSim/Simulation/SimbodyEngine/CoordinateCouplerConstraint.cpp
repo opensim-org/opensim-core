@@ -166,6 +166,7 @@ void CoordinateCouplerConstraint::copyData(const CoordinateCouplerConstraint &aC
  */
 void CoordinateCouplerConstraint::setNull()
 {
+	setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________

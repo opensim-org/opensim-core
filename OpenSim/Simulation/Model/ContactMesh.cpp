@@ -86,6 +86,7 @@ ContactMesh::ContactMesh(const ContactMesh& geom) :
 
 void ContactMesh::setNull()
 {
+	setAuthors("Peter Eastman");
 }
 
 void ContactMesh::setupProperties()

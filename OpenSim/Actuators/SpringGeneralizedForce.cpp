@@ -54,7 +54,7 @@ SpringGeneralizedForce::SpringGeneralizedForce(const string& coordinateName)
 // Set the data members of this force to their null values.
 void SpringGeneralizedForce::setNull()
 {
-	// no data members that need initializing
+	setAuthors("Frank C. Anderson ");
 }
 
 	

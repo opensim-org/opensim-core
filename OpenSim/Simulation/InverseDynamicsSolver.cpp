@@ -36,8 +36,9 @@ namespace OpenSim {
  *
  * @param model to assemble
  */
-	InverseDynamicsSolver::InverseDynamicsSolver(const Model &model) : Solver(model)
+InverseDynamicsSolver::InverseDynamicsSolver(const Model &model) : Solver(model)
 {
+	setAuthors("Ajay Seth");
 }
 
 /** Solve the inverse dynamics system of equations for generalized coordinate forces, Tau. 

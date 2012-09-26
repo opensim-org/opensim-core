@@ -91,6 +91,7 @@ Constant::Constant(const Constant &aConstant) :
  */
 void Constant::setNull()
 {
+	setAuthors("Peter Loan, Ajay Seth");
 }
 
 //_____________________________________________________________________________

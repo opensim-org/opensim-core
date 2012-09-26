@@ -55,6 +55,7 @@ Actuator_::Actuator_()
  */
 void Actuator_::setNull()
 {
+	setAuthors("Ajay Seth");
     _controlIndex = -1;
 }
 

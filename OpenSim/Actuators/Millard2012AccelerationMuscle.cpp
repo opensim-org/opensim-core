@@ -66,6 +66,7 @@ const static int MDIFiberAcceleration = 0;
 //=============================================================================
 void Millard2012AccelerationMuscle::setNull()
 {
+	setAuthors("Matthew Millard");
 }
 
 

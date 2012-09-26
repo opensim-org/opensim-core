@@ -78,6 +78,7 @@ TendonForceLengthCurve::TendonForceLengthCurve( double strainAtOneNormForce,
 
 void TendonForceLengthCurve::setNull()
 {
+	setAuthors("Matthew Millard");
 }
 
 void TendonForceLengthCurve::constructProperties()

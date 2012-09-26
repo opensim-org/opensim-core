@@ -78,7 +78,7 @@ BushingForce::BushingForce(const string&    body1Name,
 // Set the data members of this BushingForce to their null values.
 void BushingForce::setNull()
 {
-    // no data members
+	setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________

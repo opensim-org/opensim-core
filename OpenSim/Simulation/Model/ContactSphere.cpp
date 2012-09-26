@@ -62,6 +62,7 @@ ContactSphere::ContactSphere(const ContactSphere& geom) :
 
 void ContactSphere::setNull()
 {
+	setAuthors("Peter Eastman");
 }
 
 void ContactSphere::setupProperties()

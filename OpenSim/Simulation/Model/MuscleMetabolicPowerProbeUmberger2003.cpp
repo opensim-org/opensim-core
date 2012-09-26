@@ -69,7 +69,7 @@ MuscleMetabolicPowerProbeUmberger2003::MuscleMetabolicPowerProbeUmberger2003(boo
  */
 void MuscleMetabolicPowerProbeUmberger2003::setNull()
 {
-    // no data members
+	setAuthors("Tim Dorn");
 }
 
 //_____________________________________________________________________________

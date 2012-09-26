@@ -117,6 +117,7 @@ ForceReporter::ForceReporter(const ForceReporter &aForceReporter):
  */
 void ForceReporter::setNull()
 {
+	setAuthors("Ayman Habib ");
 	// NAME
 	setName("ForceReporter");
 
