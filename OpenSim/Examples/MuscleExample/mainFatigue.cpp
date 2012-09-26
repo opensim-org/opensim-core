@@ -74,23 +74,29 @@ int main()
 		// Specify properties of a 20 kg, 10cm length block body
 		double blockMass = 20.0, blockSideLength = 0.1;
 		Vec3 blockMassCenter(0);
-		Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
+		Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, 
+			blockSideLength, blockSideLength);
 
 		// Create a new block body with the specified properties
-		OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
+		OpenSim::Body *block = new OpenSim::Body("block", blockMass, 
+			blockMassCenter, blockInertia);
 
 		// Add display geometry to the block to visualize in the GUI
 		block->addDisplayGeometry("block.vtp");
 
 		// FREE JOINT
 
-		// Create a new free joint with 6 degrees-of-freedom (coordinates) between the block and ground bodies
+		// Create a new free joint with 6 degrees-of-freedom (coordinates) 
+		// between the block and ground bodies
 		double halfLength = blockSideLength/2.0;
 		Vec3 locationInParent(0, halfLength, 0), orientationInParent(0);
 		Vec3 locationInBody(0, halfLength, 0), orientationInBody(0);
-		FreeJoint *blockToGround = new FreeJoint("blockToGround", ground, locationInParent, orientationInParent, *block, locationInBody, orientationInBody);
+		FreeJoint *blockToGround = new FreeJoint("blockToGround", ground, 
+			locationInParent, orientationInParent, 
+			*block, locationInBody, orientationInBody);
 		
-		// Get a reference to the coordinate set (6 degrees-of-freedom) between the block and ground bodies
+		// Get a reference to the coordinate set (6 degrees-of-freedom) 
+		// between the block and ground bodies
 		CoordinateSet& jointCoordinateSet = blockToGround->upd_CoordinateSet();
 
 		// Set the angle and position ranges for the coordinate set
@@ -106,7 +112,6 @@ int main()
 		// Add the block body to the model
 		osimModel.addBody(block);
 
-
 		///////////////////////////////////////
 		// DEFINE FORCES ACTING ON THE MODEL //
 		///////////////////////////////////////
@@ -117,50 +122,52 @@ int main()
 			   tendonSlackLength = 0.1,    pennationAngle = 0.0,  
 			   fatigueFactor = 0.30, recoveryFactor = 0.20;
 
-		// muscle 1 (model with fatigue)
-		FatigableMuscle* muscle1 = new FatigableMuscle("muscle1",
+		// fatigable muscle (Millard2012EquilibriumMuscle with fatigue)
+		FatigableMuscle* fatigable = new FatigableMuscle("fatigable",
 			maxIsometricForce, optimalFiberLength, tendonSlackLength, 
 			pennationAngle, fatigueFactor, recoveryFactor);
-		// muscle 2 (model without fatigue)
-		Millard2012EquilibriumMuscle* muscle2 = new Millard2012EquilibriumMuscle("muscle2",
-			maxIsometricForce, optimalFiberLength, tendonSlackLength,
-			pennationAngle);
+
+		// original muscle model (muscle without fatigue)
+		Millard2012EquilibriumMuscle* original = 
+			new Millard2012EquilibriumMuscle("original",
+				maxIsometricForce, optimalFiberLength, tendonSlackLength,
+				pennationAngle);
 
 		// Define the path of the muscles
-		muscle1->addNewPathPoint("muscle1-point1", ground, Vec3(0.0, halfLength, -0.35));
-		muscle1->addNewPathPoint("muscle1-point2", *block, Vec3(0.0, halfLength, -halfLength));
+		fatigable->addNewPathPoint("fatigable-point1", ground, 
+			Vec3(0.0, halfLength, -0.35));
+		fatigable->addNewPathPoint("fatigable-point2", *block, 
+			Vec3(0.0, halfLength, -halfLength));
 
-		muscle2->addNewPathPoint("muscle2-point1", ground, Vec3(0.0, halfLength, 0.35));
-		muscle2->addNewPathPoint("muscle2-point2", *block, Vec3(0.0, halfLength, halfLength));
+		original->addNewPathPoint("original-point1", ground, 
+			Vec3(0.0, halfLength, 0.35));
+		original->addNewPathPoint("original-point2", *block, 
+			Vec3(0.0, halfLength, halfLength));
 
 		// Define the default states for the two muscles
 		// Activation
-		muscle1->setDefaultActivation(0.01);
-		muscle2->setDefaultActivation(0.01);
+		fatigable->setDefaultActivation(0.01);
+		original->setDefaultActivation(0.01);
 		// Fiber length
-		muscle1->setDefaultFiberLength(optimalFiberLength);
-		muscle2->setDefaultFiberLength(optimalFiberLength);
+		fatigable->setDefaultFiberLength(optimalFiberLength);
+		original->setDefaultFiberLength(optimalFiberLength);
 
 		// Add the two muscles (as forces) to the model
-		osimModel.addForce(muscle1);
-		osimModel.addForce(muscle2);
+		osimModel.addForce(fatigable);
+		osimModel.addForce(original);
 
 		///////////////////////////////////
 		// DEFINE CONTROLS FOR THE MODEL //
 		///////////////////////////////////
-		// Create a prescribed controller that simply supplies controls as a function of time.
+		// Create a prescribed controller that simply supplies controls as 
+		// a function of time.
 		// For muscles, controls are normalized motor-neuron excitations
 		PrescribedController *muscleController = new PrescribedController();
 		muscleController->setActuators(osimModel.updActuators());
-		// Define linear "ramp" for the control values for the two muscles
-		Array<double> slopeAndIntercept(0.0, 2);  // array of 2 doubles, with 0.0 as default
 	
-		// muscle control has slope of 1.0 if simulation period is 1s and intercept of 0.
-		slopeAndIntercept[0] = 1.0/(finalTime-initialTime);  
-
 		// Set the prescribed muscle controller to use the same muscle control function for each muscle
-		muscleController->prescribeControlForActuator("muscle1", new Constant(1.0));
-		muscleController->prescribeControlForActuator("muscle2", new Constant(1.0));
+		muscleController->prescribeControlForActuator("fatigable", new Constant(1.0));
+		muscleController->prescribeControlForActuator("original", new Constant(1.0));
 
 		// Add the muscle controller to the model
 		osimModel.addController(muscleController);
@@ -171,9 +178,6 @@ int main()
 		muscAnalysis->setCoordinates(coords);
 		muscAnalysis->setComputeMoments(false);
 		osimModel.addAnalysis(muscAnalysis);
-
-		// Obtain the default acceleration due to gravity
-		Vec3 gravity = osimModel.getGravity();
 
 		// Turn on the visualizer to view the simulation run live.
 		osimModel.setUseVisualizer(false);
@@ -196,7 +200,8 @@ int main()
 		coordinates[0].setLocked(si, true);
 		coordinates[1].setLocked(si, true);
 		coordinates[2].setLocked(si, true);
-		coordinates[4].setLocked(si, true); // don't let the block fall through or rise off the ground
+		// Last coordinate (index 5) is the Z translation of the block
+		coordinates[4].setLocked(si, true); 
 
 		// Compute initial conditions for muscles
 		osimModel.equilibrateMuscles(si);
@@ -230,15 +235,14 @@ int main()
 		manager.getStateStorage().print("tugOfWar_fatigue_states.sto");
 
 		// Save the forces
-		reporter->getForceStorage().print("tugOfWar_forces.mot");
+		reporter->getForceStorage().print("tugOfWar_fatigue_forces.mot");
 
 		// Save the muscle analysis results
-		IO::makeDir("FatigueResults");
-		muscAnalysis->printResults("tugOfWar", "FatigueResults");
+        IO::makeDir("MuscleAnalysisResults");
+        muscAnalysis->printResults("fatigue", "MuscleAnalysisResults");
 
 		// Save the OpenSim model to a file
 		osimModel.print("tugOfWar_fatigue_model.osim");
-
 	}
     catch (const std::exception& ex)
     {
