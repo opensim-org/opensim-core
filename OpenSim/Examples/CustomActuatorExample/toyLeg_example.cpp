@@ -145,39 +145,21 @@ int main()
 		// define the simulation times
 		double t0(0.0), tf(15);
 
-		// define the control values for the piston
-		//double controlT0[1] = {0.982}, controlTf[1] = {0.978};
-
-		// define the control values for the spring
-		//double controlT0[1] = {1.0}, controlT1[1] = {1.0}, controlT2[1] = {0.25},
-		//	controlT3[1] = {.25}, controlT4[1] = {5};
-
-		//ControlSet *controlSet = new ControlSet();
-		//ControlLinear *control1 = new ControlLinear();
-		//control1->setName("spring"); // change this between 'piston' and 'spring'
-		////control1->setUseSteps(true);
-		//controlSet->adoptAndAppend(control1);
-
-		//// set control values for the piston
-		///*controlSet->setControlValues(t0, controlT0);
-		//controlSet->setControlValues(tf, controlTf);*/
-
-		//// set control values for the spring
-		//controlSet->setControlValues(t0, controlT0);
-		//controlSet->setControlValues(4.0, controlT1);
-		//controlSet->setControlValues(7.0, controlT2);
-		//controlSet->setControlValues(10.0, controlT3);
-		//controlSet->setControlValues(tf, controlT4);
-
-		//ControlSetController *legController = new ControlSetController();
-		//legController->setControlSet(controlSet);
-		
+		// create a controller to control the piston and spring actuators
+		// the prescribed controller sets the controls as functions of time
 		PrescribedController *legController = new PrescribedController();
-
+		// give the legController control over all (two) model actuators
 		legController->setActuators(osimModel.updActuators());
-		legController->prescribeControlForActuator("piston", new LinearFunction(1, 0));
-		legController->prescribeControlForActuator("spring", new LinearFunction(1, 0));
 
+		// specify some control nodes for spring stiffness control
+		double t[] = {0.0, 4.0, 7.0,  10.0, 15.0};
+        double x[] = {1.0, 1.0, 0.25,  0.25, 5.0};
+
+		// specify the control function for each actuator
+		legController->prescribeControlForActuator("piston", new Constant(0.982));
+		legController->prescribeControlForActuator("spring", new PiecewiseLinearFunction(5, t, x));
+
+		// add the controller to the model
 		osimModel.addController(legController);		
 		
 		// define the acceration due to gravity
@@ -191,15 +173,11 @@ int main()
 		SimTK::State& si = osimModel.initSystem();
 		
 		// Pin joint initial states
-
 		double q1_i = -Pi/4;
 		double q2_i = - 2*q1_i;
 		CoordinateSet &coordinates = osimModel.updCoordinateSet();
 		coordinates[0].setValue(si, q1_i, true);
 		coordinates[1].setValue(si,q2_i, true);
-
-		// Compute initial conditions for muscles
-		osimModel.equilibrateMuscles(si);
 
 		// Setup integrator and manager
 		SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
@@ -225,7 +203,7 @@ int main()
 		manager.integrate(si);
 
 		// Save results
-		
+		osimModel.printControlStorage("SpringActuatedLeg_controls.sto");
 		Storage statesDegrees(manager.getStateStorage());
 		osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
 		//statesDegrees.print("PistonActuatedLeg_states_degrees.mot");
