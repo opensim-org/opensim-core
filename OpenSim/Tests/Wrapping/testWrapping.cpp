@@ -35,6 +35,7 @@ void simulateModelWithMuscles(const string &modelFile, double finalTime=0.5);
 int main()
 {
 	SimTK::Array_<std::string> failures;
+/*
 	try {// Baseline perfromance without wrapping
 		simulateModelWithMuscles("test_nowrap_vasint.osim");}
 	catch (const std::exception& e) {
@@ -64,7 +65,7 @@ int main()
 	catch (const std::exception& e) {
         std::cout << "Exception: " << e.what() << std::endl;
 		failures.push_back("Arnold2010_pelvisFixed (multiple wrap)"); }
-
+*/
 	try{// performance with multiple muscles and wrapping in upper-exremity
 		simulateModelWithMuscles("TestShoulderModel.osim", 0.02);}
 	catch (const std::exception& e) {
