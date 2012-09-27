@@ -3,233 +3,6 @@
 	<Model name="tugOfWar">
 		<credits>Unassigned</credits>
 		<publications>Unassigned</publications>
-		<ForceSet>
-			<objects>
-				<Thelen2003Muscle name="muscle1">
-					<!--Flag indicating whether the force is disabled or not.  Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<isDisabled>false</isDisabled>
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values-->
-					<min_control>0</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values-->
-					<max_control>1</max_control>
-					<!--The set of points defining the path of the muscle.-->
-					<GeometryPath>
-						<PathPointSet>
-							<objects>
-								<PathPoint name="muscle1-point1">
-									<location> 0 0.05 -0.35</location>
-									<body>ground</body>
-								</PathPoint>
-								<PathPoint name="muscle1-point2">
-									<location> 0 0 -0.05</location>
-									<body>block</body>
-								</PathPoint>
-							</objects>
-							<groups />
-						</PathPointSet>
-						<VisibleObject>
-							<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
-							<GeometrySet>
-								<objects />
-								<groups />
-							</GeometrySet>
-							<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-							<scale_factors> 1 1 1</scale_factors>
-							<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
-							<transform> -0 0 -0 0 0 0</transform>
-							<!--Whether to show a coordinate frame-->
-							<show_axes>false</show_axes>
-							<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-							<display_preference>4</display_preference>
-						</VisibleObject>
-						<PathWrapSet>
-							<objects />
-							<groups />
-						</PathWrapSet>
-					</GeometryPath>
-					<!--Optimal force.-->
-					<optimal_force>1</optimal_force>
-					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>1000</max_isometric_force>
-					<!--Optimal length of the muscle fibers-->
-					<optimal_fiber_length>0.25</optimal_fiber_length>
-					<!--Resting length of the tendon-->
-					<tendon_slack_length>0.1</tendon_slack_length>
-					<!--Angle between tendon and fibers at optimal fiber length-->
-					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
-					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths per second-->
-					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--Compute muscle dynamics ignoring tendon compliance. Tendon is assumed to be rigid.-->
-					<ignore_tendon_compliance>false</ignore_tendon_compliance>
-					<!--Compute muscle dynamics ignoring activation dynamics. Activation is equivalent to excitation.-->
-					<ignore_activation_dynamics>false</ignore_activation_dynamics>
-					<!--Assumed activation level if none is assigned.-->
-					<default_activation>1</default_activation>
-					<!--Assumed fiber length, unless otherwise assigned.-->
-					<default_fiber_length>0.25</default_fiber_length>
-					<!--time constant for ramping up muscle activation-->
-					<activation_time_constant>0.015</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
-					<deactivation_time_constant>0.05</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.45</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>5</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.25</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
-					<!--minimum activation value permitted-->
-					<activation_minimum_value>0.01</activation_minimum_value>
-					<!--fv threshold where linear extrapolation is used-->
-					<fv_linear_extrap_threshold>0.95</fv_linear_extrap_threshold>
-				</Thelen2003Muscle>
-				<Thelen2003Muscle name="muscle2">
-					<!--Flag indicating whether the force is disabled or not.  Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<isDisabled>false</isDisabled>
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values-->
-					<min_control>0</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values-->
-					<max_control>1</max_control>
-					<!--The set of points defining the path of the muscle.-->
-					<GeometryPath>
-						<PathPointSet>
-							<objects>
-								<PathPoint name="muscle2-point1">
-									<location> 0 0.05 0.35</location>
-									<body>ground</body>
-								</PathPoint>
-								<PathPoint name="muscle2-point2">
-									<location> 0 0 0.05</location>
-									<body>block</body>
-								</PathPoint>
-							</objects>
-							<groups />
-						</PathPointSet>
-						<VisibleObject>
-							<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
-							<GeometrySet>
-								<objects />
-								<groups />
-							</GeometrySet>
-							<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-							<scale_factors> 1 1 1</scale_factors>
-							<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
-							<transform> -0 0 -0 0 0 0</transform>
-							<!--Whether to show a coordinate frame-->
-							<show_axes>false</show_axes>
-							<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-							<display_preference>4</display_preference>
-						</VisibleObject>
-						<PathWrapSet>
-							<objects />
-							<groups />
-						</PathWrapSet>
-					</GeometryPath>
-					<!--Optimal force.-->
-					<optimal_force>1</optimal_force>
-					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>1000</max_isometric_force>
-					<!--Optimal length of the muscle fibers-->
-					<optimal_fiber_length>0.25</optimal_fiber_length>
-					<!--Resting length of the tendon-->
-					<tendon_slack_length>0.1</tendon_slack_length>
-					<!--Angle between tendon and fibers at optimal fiber length-->
-					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
-					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths per second-->
-					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--Compute muscle dynamics ignoring tendon compliance. Tendon is assumed to be rigid.-->
-					<ignore_tendon_compliance>false</ignore_tendon_compliance>
-					<!--Compute muscle dynamics ignoring activation dynamics. Activation is equivalent to excitation.-->
-					<ignore_activation_dynamics>false</ignore_activation_dynamics>
-					<!--Assumed activation level if none is assigned.-->
-					<default_activation>0.05</default_activation>
-					<!--Assumed fiber length, unless otherwise assigned.-->
-					<default_fiber_length>0.25</default_fiber_length>
-					<!--time constant for ramping up muscle activation-->
-					<activation_time_constant>0.015</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
-					<deactivation_time_constant>0.05</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.45</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>5</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.25</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
-					<!--minimum activation value permitted-->
-					<activation_minimum_value>0.01</activation_minimum_value>
-					<!--fv threshold where linear extrapolation is used-->
-					<fv_linear_extrap_threshold>0.95</fv_linear_extrap_threshold>
-				</Thelen2003Muscle>
-				<ElasticFoundationForce name="contactForce">
-					<!--Flag indicating whether the force is disabled or not.  Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<isDisabled>false</isDisabled>
-					<ElasticFoundationForce::ContactParametersSet name="contact_parameters">
-						<objects>
-							<ElasticFoundationForce::ContactParameters>
-								<!--Names of geometry objects affected by these parameters.-->
-								<geometry>cube floor</geometry>
-								<stiffness>10000000</stiffness>
-								<dissipation>0.1</dissipation>
-								<static_friction>0.2</static_friction>
-								<dynamic_friction>0.2</dynamic_friction>
-								<viscous_friction>0.01</viscous_friction>
-							</ElasticFoundationForce::ContactParameters>
-						</objects>
-						<groups />
-					</ElasticFoundationForce::ContactParametersSet>
-					<transition_velocity>0.01</transition_velocity>
-				</ElasticFoundationForce>
-				<PrescribedForce name="prescribedForce">
-					<!--Flag indicating whether the force is disabled or not.  Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<isDisabled>false</isDisabled>
-					<!--Name of the body the force is applied to.-->
-					<body>block</body>
-					<!--Flag indicating whether the point (specified in pointFunctions) is in global frame-->
-					<pointIsGlobal>false</pointIsGlobal>
-					<!--Flag indicating whether the quantities (specified in force/torqueFunctions) is in global frame-->
-					<forceIsGlobal>true</forceIsGlobal>
-					<!--Three functions describing the force to be applied.-->
-					<forceFunctions>
-						<PiecewiseLinearFunction>
-							<x> 0 3</x>
-							<y> 0 588.399</y>
-						</PiecewiseLinearFunction>
-						<Constant>
-							<value>0</value>
-						</Constant>
-						<Constant>
-							<value>0</value>
-						</Constant>
-					</forceFunctions>
-					<!--Three functions describing the location at which the force is applied.-->
-					<pointFunctions>
-						<Constant>
-							<value>0</value>
-						</Constant>
-						<Constant>
-							<value>0</value>
-						</Constant>
-						<Constant>
-							<value>0</value>
-						</Constant>
-					</pointFunctions>
-					<!--Three functions describing the torque the PrescribedForce applies.-->
-					<torqueFunctions />
-				</PrescribedForce>
-			</objects>
-			<groups />
-		</ForceSet>
 		<length_units>meters</length_units>
 		<force_units>N</force_units>
 		<!--Acceleration due to gravity.-->
@@ -329,83 +102,59 @@
 					<!--Joint that connects this body with the parent body.-->
 					<Joint>
 						<FreeJoint name="blockToGround">
+							<!--Name of the parent body to which this joint connects its owner body.-->
 							<parent_body>ground</parent_body>
-							<location_in_parent> 0 0.05 0</location_in_parent>
-							<orientation_in_parent> 0 0 0</orientation_in_parent>
-							<location> 0 0 0</location>
-							<orientation> 0 0 0</orientation>
-							<!--Generalized coordinates parameterizing this joint.-->
+							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+							<location_in_parent>0 0.05 0</location_in_parent>
+							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
+							<orientation_in_parent>0 0 0</orientation_in_parent>
+							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
+							<location>0 0 0</location>
+							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
+							<orientation>0 0 0</orientation>
+							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
 							<CoordinateSet>
 								<objects>
 									<Coordinate name="blockToGround_xRotation">
-										<!--Coordinate can describe rotational, translational, or coupled values. Defaults to rotational.-->
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
-										<default_value>0</default_value>
-										<default_speed_value>0</default_speed_value>
-										<initial_value>0</initial_value>
-										<range> -1.5708 1.5708</range>
-										<clamped>false</clamped>
-										<locked>false</locked>
-										<prescribed_function />
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-1.5707963267949 1.5707963267949</range>
 									</Coordinate>
 									<Coordinate name="blockToGround_yRotation">
-										<!--Coordinate can describe rotational, translational, or coupled values. Defaults to rotational.-->
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
-										<default_value>0</default_value>
-										<default_speed_value>0</default_speed_value>
-										<initial_value>0</initial_value>
-										<range> -1.5708 1.5708</range>
-										<clamped>false</clamped>
-										<locked>false</locked>
-										<prescribed_function />
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-1.5707963267949 1.5707963267949</range>
 									</Coordinate>
 									<Coordinate name="blockToGround_zRotation">
-										<!--Coordinate can describe rotational, translational, or coupled values. Defaults to rotational.-->
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
-										<default_value>0</default_value>
-										<default_speed_value>0</default_speed_value>
-										<initial_value>0</initial_value>
-										<range> -1.5708 1.5708</range>
-										<clamped>false</clamped>
-										<locked>false</locked>
-										<prescribed_function />
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-1.5707963267949 1.5707963267949</range>
 									</Coordinate>
 									<Coordinate name="blockToGround_xTranslation">
-										<!--Coordinate can describe rotational, translational, or coupled values. Defaults to rotational.-->
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>translational</motion_type>
-										<default_value>0</default_value>
-										<default_speed_value>0</default_speed_value>
-										<initial_value>0</initial_value>
-										<range> -1 1</range>
-										<clamped>false</clamped>
-										<locked>false</locked>
-										<prescribed_function />
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-1 1</range>
 									</Coordinate>
 									<Coordinate name="blockToGround_yTranslation">
-										<!--Coordinate can describe rotational, translational, or coupled values. Defaults to rotational.-->
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>translational</motion_type>
-										<default_value>0</default_value>
-										<default_speed_value>0</default_speed_value>
-										<initial_value>0</initial_value>
-										<range> -1 1</range>
-										<clamped>false</clamped>
-										<locked>false</locked>
-										<prescribed_function />
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-1 1</range>
 									</Coordinate>
 									<Coordinate name="blockToGround_zTranslation">
-										<!--Coordinate can describe rotational, translational, or coupled values. Defaults to rotational.-->
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>translational</motion_type>
-										<default_value>0</default_value>
-										<default_speed_value>0</default_speed_value>
-										<initial_value>0</initial_value>
-										<range> -1 1</range>
-										<clamped>false</clamped>
-										<locked>false</locked>
-										<prescribed_function />
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-1 1</range>
 									</Coordinate>
 								</objects>
 								<groups />
 							</CoordinateSet>
+							<!--Whether the joint transform defines parent->child or child->parent.-->
 							<reverse>false</reverse>
 						</FreeJoint>
 					</Joint>
@@ -463,36 +212,204 @@
 			</objects>
 			<groups />
 		</ConstraintSet>
+		<!--Forces in the model.-->
+		<ForceSet>
+			<objects>
+				<Thelen2003Muscle name="muscle1">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<PathPointSet>
+							<objects>
+								<PathPoint name="muscle1-point1">
+									<location> 0 0.05 -0.35</location>
+									<body>ground</body>
+								</PathPoint>
+								<PathPoint name="muscle1-point2">
+									<location> 0 0 -0.05</location>
+									<body>block</body>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<VisibleObject>
+							<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+							<GeometrySet>
+								<objects />
+								<groups />
+							</GeometrySet>
+							<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+							<scale_factors> 1 1 1</scale_factors>
+							<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+							<transform> -0 0 -0 0 0 0</transform>
+							<!--Whether to show a coordinate frame-->
+							<show_axes>false</show_axes>
+							<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+							<display_preference>4</display_preference>
+						</VisibleObject>
+						<PathWrapSet>
+							<objects />
+							<groups />
+						</PathWrapSet>
+					</GeometryPath>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>1000</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.25</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.1</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
+					<!--Assumed activation level if none is assigned.-->
+					<default_activation>1</default_activation>
+					<!--Assumed fiber length, unless otherwise assigned.-->
+					<default_fiber_length>0.25</default_fiber_length>
+				</Thelen2003Muscle>
+				<Thelen2003Muscle name="muscle2">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<PathPointSet>
+							<objects>
+								<PathPoint name="muscle2-point1">
+									<location> 0 0.05 0.35</location>
+									<body>ground</body>
+								</PathPoint>
+								<PathPoint name="muscle2-point2">
+									<location> 0 0 0.05</location>
+									<body>block</body>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<VisibleObject>
+							<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+							<GeometrySet>
+								<objects />
+								<groups />
+							</GeometrySet>
+							<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+							<scale_factors> 1 1 1</scale_factors>
+							<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+							<transform> -0 0 -0 0 0 0</transform>
+							<!--Whether to show a coordinate frame-->
+							<show_axes>false</show_axes>
+							<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+							<display_preference>4</display_preference>
+						</VisibleObject>
+						<PathWrapSet>
+							<objects />
+							<groups />
+						</PathWrapSet>
+					</GeometryPath>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>1000</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.25</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.1</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
+					<!--Assumed activation level if none is assigned.-->
+					<default_activation>0.05</default_activation>
+					<!--Assumed fiber length, unless otherwise assigned.-->
+					<default_fiber_length>0.25</default_fiber_length>
+				</Thelen2003Muscle>
+				<ElasticFoundationForce name="contactForce">
+					<!--Material properties.-->
+					<ElasticFoundationForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<ElasticFoundationForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>cube floor</geometry>
+								<stiffness>10000000</stiffness>
+								<dissipation>0.1</dissipation>
+								<static_friction>0.2</static_friction>
+								<dynamic_friction>0.2</dynamic_friction>
+								<viscous_friction>0.01</viscous_friction>
+							</ElasticFoundationForce::ContactParameters>
+						</objects>
+						<groups />
+					</ElasticFoundationForce::ContactParametersSet>
+				</ElasticFoundationForce>
+				<PrescribedForce name="prescribedForce">
+					<!--Name of the body the force is applied to.-->
+					<body>block</body>
+					<!--Three functions describing the force to be applied.-->
+					<FunctionSet name="forceFunctions">
+						<objects>
+							<PiecewiseLinearFunction>
+								<x> 0 3</x>
+								<y> 0 588.399</y>
+							</PiecewiseLinearFunction>
+							<Constant>
+								<value>0</value>
+							</Constant>
+							<Constant>
+								<value>0</value>
+							</Constant>
+						</objects>
+						<groups />
+					</FunctionSet>
+					<!--Three functions describing the location at which the force is applied.-->
+					<FunctionSet name="pointFunctions">
+						<objects>
+							<Constant>
+								<value>0</value>
+							</Constant>
+							<Constant>
+								<value>0</value>
+							</Constant>
+							<Constant>
+								<value>0</value>
+							</Constant>
+						</objects>
+						<groups />
+					</FunctionSet>
+				</PrescribedForce>
+			</objects>
+			<groups />
+		</ForceSet>
 		<!--Markers in the model.-->
 		<MarkerSet>
 			<objects />
 			<groups />
 		</MarkerSet>
-		<!--ContactGeometry components in the model.-->
+		<!--ContactGeometries  in the model.-->
 		<ContactGeometrySet>
 			<objects>
 				<ContactHalfSpace name="floor">
+					<!--Body name to connect the contact geometry to-->
 					<body_name>ground</body_name>
-					<location> 0 0 0</location>
-					<orientation> 0 0 -1.5708</orientation>
+					<!--Location of geometry center in the body frame-->
+					<location>0 0 0</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 -1.5707963267949</orientation>
 				</ContactHalfSpace>
 				<ContactMesh name="cube">
+					<!--Body name to connect the contact geometry to-->
 					<body_name>block</body_name>
-					<location> 0 0 0</location>
-					<orientation> 0 0 0</orientation>
+					<!--Location of geometry center in the body frame-->
+					<location>0 0 0</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
 					<filename>blockRemesh192.obj</filename>
 				</ContactMesh>
 			</objects>
 			<groups />
 		</ContactGeometrySet>
-		<!--Controller components in the model.-->
+		<!--Controllers in the model.-->
 		<ControllerSet name="Controllers">
 			<objects>
 				<PrescribedController>
-					<!--A list of actuators that this controller will control.The keyword ALL indicates the controller will controll all the acuators in the model-->
-					<actuator_list> muscle1 muscle2</actuator_list>
-					<!--Flag (true or false) indicating whether or not the controller is disabled.-->
-					<isDisabled>false</isDisabled>
+					<!--The list of model actuators that this controller will control.The keyword ALL indicates the controller will controll all the acuators in the model-->
+					<actuator_list>muscle1 muscle2</actuator_list>
 					<!--Functions (one per control) describing the controls for actuatorsspecified for this controller.-->
 					<FunctionSet name="ControlFunctions">
 						<objects>
@@ -514,5 +431,10 @@
 			<objects />
 			<groups />
 		</ComponentSet>
+		<!--Probes in the model.-->
+		<ProbeSet>
+			<objects />
+			<groups />
+		</ProbeSet>
 	</Model>
 </OpenSimDocument>
