@@ -156,7 +156,7 @@ int main()
         double x[] = {1.0, 1.0, 0.25,  0.25, 5.0};
 
 		// specify the control function for each actuator
-		legController->prescribeControlForActuator("piston", new Constant(0.982));
+		legController->prescribeControlForActuator("piston", new Constant(0.1));
 		legController->prescribeControlForActuator("spring", new PiecewiseLinearFunction(5, t, x));
 
 		// add the controller to the model
