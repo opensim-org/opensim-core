@@ -175,8 +175,8 @@ int main()
 		PrescribedController *legController = new PrescribedController();
 
 		legController->setActuators(osimModel.updActuators());
-		legController->prescribeControlForActuator("piston", new Constant(2.0));
-		legController->prescribeControlForActuator("spring", new Constant(2.0));
+		legController->prescribeControlForActuator("piston", new LinearFunction(1, 0));
+		legController->prescribeControlForActuator("spring", new LinearFunction(1, 0));
 
 		osimModel.addController(legController);		
 		
