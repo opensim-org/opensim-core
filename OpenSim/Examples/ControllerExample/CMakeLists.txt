@@ -15,7 +15,8 @@ SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
 # Change name of build target
 SET(TARGET exampleController CACHE TYPE STRING)
 # Identify the cpp file(s) that were to be built
-SET(SOURCE ControllerExample.cpp)
+FILE(GLOB SOURCE_FILES *.h *.cpp)
+SET(SOURCE ${SOURCE_FILES})
 
 # To add Debug feature add ";Debug" after Release on the line below
 SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release" 

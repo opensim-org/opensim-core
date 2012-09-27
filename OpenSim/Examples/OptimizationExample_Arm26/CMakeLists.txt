@@ -14,7 +14,8 @@ SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
 
 # Change name of build target
 SET(TARGET optimizationExample CACHE TYPE STRING)
-SET(SOURCE OptimizationExample.cpp)
+FILE(GLOB SOURCE_FILES *.h *.cpp)
+SET(SOURCE ${SOURCE_FILES})
 
 # To add Debug feature add ";Debug" after Release on the line below
 SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release" 

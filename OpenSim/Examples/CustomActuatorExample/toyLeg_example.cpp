@@ -64,21 +64,18 @@ int main()
 
 		OpenSim::Body *linkage1 = new OpenSim::Body("linkage1", linkageMass, linkageMassCenter, linkageMass*linkageInertia);
 		// Graphical representation
-		linkage1->addDisplayGeometry("cylinder.vtp");
-		linkage1->scale(Vec3(0.05, 2*linkageLength, 0.05), false);
-		
+		linkage1->addDisplayGeometry("linkage1.vtp");
+
 		// Creat a second linkage body
 		OpenSim::Body *linkage2 = new OpenSim::Body("linkage2", linkageMass, linkageMassCenter, linkageMass*linkageInertia);
-		linkage2->addDisplayGeometry("cylinder.vtp");
-		linkage2->scale(Vec3(0.05, 2*linkageLength, 0.05), false);
+		linkage2->addDisplayGeometry("linkage1.vtp");
 
 		// Creat a block to be the pelvis
 		double blockMass = 20.0, blockSideLength = 0.2;
 		Vec3 blockMassCenter(0);
 		Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
 		OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
-		block->addDisplayGeometry("box.vtp");
-		block->scale(Vec3(blockSideLength), false);
+		block->addDisplayGeometry("big_block_centered.vtp");
 
 		// Create 1 degree-of-freedom pin joints between the bodies to creat a kinematic chain from ground through the block
 		
@@ -148,52 +145,34 @@ int main()
 		// define the simulation times
 		double t0(0.0), tf(15);
 
+		// create a controller to control the piston and spring actuators
+		// the prescribed controller sets the controls as functions of time
+		PrescribedController *legController = new PrescribedController();
+		// give the legController control over all (two) model actuators
+		legController->setActuators(osimModel.updActuators());
+
+		// specify some control nodes for spring stiffness control
+		double t[] = {0.0, 4.0, 7.0,  10.0, 15.0};
+        double x[] = {1.0, 1.0, 0.25,  0.25, 5.0};
+
+		// specify the control function for each actuator
+		legController->prescribeControlForActuator("piston", new Constant(0.982));
+		legController->prescribeControlForActuator("spring", new PiecewiseLinearFunction(5, t, x));
+
+		// add the controller to the model
+		osimModel.addController(legController);		
+		
 		// define the acceration due to gravity
 		osimModel.setGravity(Vec3(0, -9.80665, 0));
 
-		// define the control values for the piston
-		//double controlT0[1] = {0.982}, controlTf[1] = {0.978};
-
-		// define the control values for the spring
-		double controlT0[1] = {1.0}, controlT1[1] = {1.0}, controlT2[1] = {0.25},
-			controlT3[1] = {.25}, controlT4[1] = {5};
-
-		ControlSet *controlSet = new ControlSet();
-		ControlLinear *control1 = new ControlLinear();
-		control1->setName("spring"); // change this between 'piston' and 'spring'
-		//control1->setUseSteps(true);
-		controlSet->adoptAndAppend(control1);
-
-		// set control values for the piston
-		/*controlSet->setControlValues(t0, controlT0);
-		controlSet->setControlValues(tf, controlTf);*/
-
-		// set control values for the spring
-		controlSet->setControlValues(t0, controlT0);
-		controlSet->setControlValues(4.0, controlT1);
-		controlSet->setControlValues(7.0, controlT2);
-		controlSet->setControlValues(10.0, controlT3);
-		controlSet->setControlValues(tf, controlT4);
-
-		ControlSetController *legController = new ControlSetController();
-		legController->setControlSet(controlSet);
-		osimModel.addController(legController);		
-
 		// enable the model visualizer see the model in action, which can be
 		// useful for debugging
-		//osimModel.setUseVisualizer(true);
+		osimModel.setUseVisualizer(false);
 
 		// Initialize system
 		SimTK::State& si = osimModel.initSystem();
-
-		// Add analyses to the model
-		
-		ForceReporter *forces = new ForceReporter(&osimModel);
-		
-		osimModel.updAnalysisSet().adoptAndAppend(forces);
 		
 		// Pin joint initial states
-
 		double q1_i = -Pi/4;
 		double q2_i = - 2*q1_i;
 		CoordinateSet &coordinates = osimModel.updCoordinateSet();
@@ -201,13 +180,13 @@ int main()
 		coordinates[1].setValue(si,q2_i, true);
 
 		// Setup integrator and manager
-		
 		SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
 		integrator.setAccuracy(1.0e-3);
 
+		ForceReporter *forces = new ForceReporter(&osimModel);	
+		osimModel.updAnalysisSet().adoptAndAppend(forces);
 		Manager manager(osimModel, integrator);
-		
-		
+	
 		//Examine the model
 		osimModel.printDetailedInfo(si, std::cout);
 		// Save the model
@@ -224,7 +203,7 @@ int main()
 		manager.integrate(si);
 
 		// Save results
-		
+		osimModel.printControlStorage("SpringActuatedLeg_controls.sto");
 		Storage statesDegrees(manager.getStateStorage());
 		osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
 		//statesDegrees.print("PistonActuatedLeg_states_degrees.mot");
