@@ -60,15 +60,15 @@ public:
 		"Name of the body the force is applied to.");
 	OpenSim_DECLARE_PROPERTY(force_expressed_in_body, std::string,
 		"Name of the body the force is expressed in (default is ground).");
-	OpenSim_DECLARE_PROPERTY(point_expressed_in_body, std::string,
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(point_expressed_in_body, std::string,
 		"Name of the body the point is expressed in (default is ground).");
-	OpenSim_DECLARE_PROPERTY(force_identifier, std::string,
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(force_identifier, std::string,
 		"Identifier (string) to locate the force to be applied in the data source.");
-	OpenSim_DECLARE_PROPERTY(point_identifier, std::string,
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(point_identifier, std::string,
 		"Identifier (string) to locate the point to be applied in the data source.");
-	OpenSim_DECLARE_PROPERTY(torque_identifier, std::string,
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(torque_identifier, std::string,
 		"Identifier (string) to locate the torque to be applied in the data source.");
-	OpenSim_DECLARE_PROPERTY(data_source_name, std::string,
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(data_source_name, std::string,
 		"Name of the data source (Storage) that will supply the force data.");
     /**@}**/
 
@@ -184,16 +184,22 @@ public:
      * point force and/or if it applies a torque. 
 	 */
 	bool appliesForce() const { 
+		if(getProperty_force_identifier().size() < 1)
+			return false;
         const std::string &forceIdentifier = get_force_identifier(); 
         return !((forceIdentifier.find_first_not_of(" \t")==std::string::npos) 
                   || (forceIdentifier == "Unassigned"));
     }
-	bool specifiesPoint() const { 
+	bool specifiesPoint() const {
+		if(getProperty_point_identifier().size() < 1)
+			return false;
         const std::string &pointIdentifier = get_point_identifier(); 
         return !((pointIdentifier.find_first_not_of(" \t")==std::string::npos) 
                   || (pointIdentifier == "Unassigned"));
     }
-	bool appliesTorque() const { 
+	bool appliesTorque() const {
+		if(getProperty_torque_identifier().size() < 1)
+			return false;
         const std::string &torqueIdentifier = get_torque_identifier(); 
         return !((torqueIdentifier.find_first_not_of(" \t")==std::string::npos) 
                   || (torqueIdentifier == "Unassigned"));

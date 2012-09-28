@@ -120,8 +120,8 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 	//	throw Exception("ExternalForce:: data source name must be assigned.");
 	//}
 
-	if(    get_force_identifier().empty() 
-        && get_torque_identifier().empty())
+	if(   appliesForce() && get_force_identifier().empty() ||
+        appliesTorque() && get_torque_identifier().empty())
 	{
 		throw Exception("ExternalForce:: no force or torque identified.");
 	}
@@ -154,10 +154,6 @@ void ExternalForce::connectToModel(Model& model)
 
 	const string& appliedToBodyName = get_applied_to_body();
 	const string& forceExpressedInBodyName = get_force_expressed_in_body();
-	const string& pointExpressedInBodyName = get_point_expressed_in_body();
-	const string& forceIdentifier = get_force_identifier();
-	const string& pointIdentifier = get_point_identifier();
-	const string& torqueIdentifier = get_torque_identifier();
 
     // This might not have been supplied in which case it will have size()==0.
 	const Property<string>& dataSourceProp = getProperty_data_source_name();
@@ -169,9 +165,10 @@ void ExternalForce::connectToModel(Model& model)
 	// hook up body pointers from names
 	if (_model){
 		_appliedToBody = &_model->updBodySet().get(appliedToBodyName);
-		_forceExpressedInBody = &_model->updBodySet().get(forceExpressedInBodyName);
-		_pointExpressedInBody = _specifiesPoint ? &_model->updBodySet().get(pointExpressedInBodyName) : NULL;
-	}
+			_forceExpressedInBody = &_model->updBodySet().get(forceExpressedInBodyName);
+		_pointExpressedInBody = _specifiesPoint ? 
+			&_model->updBodySet().get(get_point_expressed_in_body()) : NULL;
+		}
 
 	if(!_appliedToBody){
 		throw(Exception("ExternalForce: Could not find body '"+appliedToBodyName+"' to apply force to." ));
@@ -181,8 +178,9 @@ void ExternalForce::connectToModel(Model& model)
 			    "  ground is being assumed." << endl;
 	}
 	if(_specifiesPoint && !_pointExpressedInBody){
-		cout << "WARNING::ExternalForce could not find body '"+pointExpressedInBodyName+"' that point is expressed in-"
+		cout << "WARNING::ExternalForce could not find body '"+get_point_expressed_in_body()+"' that point is expressed in-"
 			    "  ground is being assumed." << endl;
+		_pointExpressedInBody = &_model->updBodySet().get("ground");
 	}
 
 	if(_dataSource == NULL){
@@ -215,25 +213,28 @@ void ExternalForce::connectToModel(Model& model)
 	if(!_appliesForce && _specifiesPoint)
 		throw(Exception("ExternalForce:"+getName()+" Point is specified for no applied force.")); 
 
-	_dataSource->getDataForIdentifier(forceIdentifier, force);
-	if(_appliesForce && (force.getSize() != 3)) // if applying force MUST have 3 components
-		throw(Exception("ExternalForce: 3 unique force components could not be found, for force identifier: "
-		+forceIdentifier+
-		"\n. Please make sure data file contains exactly 3 unique columns with this common prefix."));
+	
+	if(_appliesForce){ // if applying force MUST have 3 components
+		_dataSource->getDataForIdentifier(get_force_identifier(), force);
+		if(force.getSize() != 3)
+			throw(Exception("ExternalForce: 3 unique force components could not be found, for force identifier: "
+				+get_force_identifier()+
+				"\n. Please make sure data file contains exactly 3 unique columns with this common prefix."));
+	}
 
 	if(_specifiesPoint){
-		_dataSource->getDataForIdentifier(pointIdentifier, point);
+		_dataSource->getDataForIdentifier(get_point_identifier(), point);
 		if(point.getSize() != 3) // if specifying a point of application, it MUST have 3 components
 			throw(Exception("ExternalForce: 3 unique point components could not be found, for point identifier: "
-			+pointIdentifier+
+			+get_point_identifier()+
 			"\n. Please make sure data file contains exactly 3 unique columns with this common prefix."));
 	}
 
 	if(_appliesTorque){
-		_dataSource->getDataForIdentifier(torqueIdentifier, torque);
+		_dataSource->getDataForIdentifier(get_torque_identifier(), torque);
 		if(torque.getSize() != 3) // if specifying a torque to be applied, it MUST have 3 components
 		throw(Exception("ExternalForce: 3 unique torque components could not be identified for torque identifier: "
-			+torqueIdentifier+
+			+get_torque_identifier()+
 			"\n. Please make sure data file contains exactly 3 unique columns with this common prefix."));
 	}
 
