@@ -92,6 +92,7 @@ Joint::Joint(const std::string &name, Body& parent, SimTK::Vec3 locationInParent
  */
 void Joint::setNull()
 {
+	setAuthors("Frank C. Anderson, Peter Loan, Ajay Seth");
 	_parentBody = NULL;
 	_body = NULL;
 }

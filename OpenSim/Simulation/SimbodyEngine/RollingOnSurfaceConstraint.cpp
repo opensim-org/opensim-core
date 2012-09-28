@@ -115,6 +115,7 @@ void RollingOnSurfaceConstraint::copyData(const RollingOnSurfaceConstraint &aCon
  */
 void RollingOnSurfaceConstraint::setNull()
 {
+	setAuthors("Ajay Seth");
 	_defaultUnilateralConditions = std::vector<bool>(4, false);
 }
 

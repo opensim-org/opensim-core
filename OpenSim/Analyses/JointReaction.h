@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Matt S. DeMers, Ajay Seth, Frank C. Anderson                    *
+ * Author(s): Matt S. DeMers, Ajay Seth                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -56,7 +56,7 @@ class Model;
  * the child, parent or ground frames. The default behavior is the the force
  * on the child expressed in the ground frame.
  *
- * @author Matt DeMers, Ajay Seth, Frank C. Anderson
+ * @author Matt DeMers, Ajay Seth
  * @version 1.0
  */
 class OSIMANALYSES_API JointReaction : public Analysis {

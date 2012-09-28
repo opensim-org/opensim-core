@@ -99,6 +99,7 @@ CustomJoint::CustomJoint(const std::string &name, OpenSim::Body& parent,
  */
 void CustomJoint::constructProperties()
 {
+	setAuthors("Frank C. Anderson, Ajay Seth");
     constructProperty_SpatialTransform(SpatialTransform());
 }
 

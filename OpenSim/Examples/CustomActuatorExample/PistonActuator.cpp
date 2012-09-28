@@ -21,11 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
- * Author: Matt DeMers
- */
-
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
@@ -83,8 +78,7 @@ PistonActuator::PistonActuator( string aBodyNameA, string aBodyNameB) :
 /**
  * Set the data members of this actuator to their null values.
  */
-void PistonActuator::
-setNull()
+void PistonActuator::setNull()
 {
 }
 
@@ -92,9 +86,9 @@ setNull()
 /**
  * Connect properties to local pointers.
  */
-void PistonActuator::
-constructProperties()
+void PistonActuator::constructProperties()
 {
+	setAuthors("Matt S. DeMers");
 	SimTK::Vec3 x(0.0, 0.0, 0.0);
 
 	constructProperty_bodyA("");

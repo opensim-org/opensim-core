@@ -10,8 +10,8 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ajay Seth, Michael A. Sherman                                   *
- * Contributor(s): Frank C. Anderson, Jeffrey A. Reinbolt, Ayman Habib        *
+ * Author(s): Ajay Seth, Michael A. Sherman, Ayman Habib                      *
+ * Contributor(s): Frank C. Anderson, Jeffrey A. Reinbolt                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -47,8 +47,8 @@ class Model;
  * As a ModelComponent it provides resources to enable a Coordinate to be
  * locked, prescribed, or clamped (limited to a min-to-max range).
  *
- * @authors Ajay Seth, Michael Sherman, 
- * @contributors Frank C. Anderson, Jeffrey A. Reinbolt, Ayman Habib
+ * @authors Ajay Seth, Ayman Habib, Michael Sherman 
+ * @contributors Frank C. Anderson, Jeffrey A. Reinbolt
  */
 class OSIMSIMULATION_API Coordinate : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(Coordinate, ModelComponent);

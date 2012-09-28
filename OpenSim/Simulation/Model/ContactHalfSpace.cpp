@@ -54,6 +54,7 @@ ContactHalfSpace::ContactHalfSpace(const ContactHalfSpace& geom) :
 
 void ContactHalfSpace::setNull()
 {
+	setAuthors("Peter Eastman");
 }
 
 

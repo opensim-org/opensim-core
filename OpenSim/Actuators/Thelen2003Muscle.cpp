@@ -110,7 +110,7 @@ void Thelen2003Muscle::addToSystem(SimTK::MultibodySystem& system) const
 // Set the data members of this muscle to their null values.
 void Thelen2003Muscle::setNull()
 {
-    // no data members
+	setAuthors("Matthew Millard");
 }
 
 //_____________________________________________________________________________

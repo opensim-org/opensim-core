@@ -89,6 +89,7 @@ ContactGeometrySet::ContactGeometrySet
  */
 void ContactGeometrySet::setNull()
 {
+	setAuthors("Peter Eastman");
 }
 
 

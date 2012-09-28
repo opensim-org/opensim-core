@@ -105,8 +105,7 @@ ForceSet::ForceSet(const ForceSet &aForceSet) :
  */
 void ForceSet::setNull()
 {
-	// NAME
-	//setName("ForceSet");
+	setAuthors("Ajay Seth, Jack Middleton");
 
 	// PROPERTIES
 	setupSerializedMembers();

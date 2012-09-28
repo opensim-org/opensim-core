@@ -62,7 +62,7 @@ JointInternalPowerProbe::JointInternalPowerProbe(const Array<string>& joint_name
 // Set the data members of this JointInternalPowerProbe to their null values.
 void JointInternalPowerProbe::setNull()
 {
-    // no data members
+	setAuthors("Tim Dorn");
 }
 
 //_____________________________________________________________________________

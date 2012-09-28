@@ -124,6 +124,7 @@ void PointConstraint::copyData(const PointConstraint &aConstraint)
  */
 void PointConstraint::setNull()
 {
+	setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________

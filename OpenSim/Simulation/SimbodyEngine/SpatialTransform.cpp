@@ -54,6 +54,7 @@ SpatialTransform::SpatialTransform()
  */
 void SpatialTransform::setNull()
 {
+	setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________

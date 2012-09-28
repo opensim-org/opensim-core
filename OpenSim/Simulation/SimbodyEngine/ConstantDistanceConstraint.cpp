@@ -143,6 +143,7 @@ void ConstantDistanceConstraint::copyData(const ConstantDistanceConstraint &aCon
  */
 void ConstantDistanceConstraint::setNull()
 {
+	setAuthors("Matt S. DeMers");
 }
 
 //_____________________________________________________________________________

@@ -74,6 +74,7 @@ FiberCompressiveForceCosPennationCurve::
 
 void FiberCompressiveForceCosPennationCurve::setNull()
 {    
+	setAuthors("Matthew Millard");
 }
 
 void FiberCompressiveForceCosPennationCurve::constructProperties()

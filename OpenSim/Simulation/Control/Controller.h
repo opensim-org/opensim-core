@@ -23,11 +23,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
- * Author: Ajay Seth, Frank C. Anderson, Chand T. John, Samuel R. Hamner
- */
-
-
 //============================================================================
 // INCLUDE
 //============================================================================
@@ -45,8 +40,9 @@ namespace OpenSim {
 class Model;
 
 /**
- * Controller is an abstract ModelComponent that defines the Controller  
- * in OpenSim.
+ * Controller is an abstract ModelComponent that defines the interface for   
+ * an OpenSim Controller. A controller computes and sets the values of the  
+ * controls for the actuators under its control.
  * The defining method of a Controller is its computeControls() method.
  * @see computeControls()
  *

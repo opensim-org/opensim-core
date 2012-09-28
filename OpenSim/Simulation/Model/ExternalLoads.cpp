@@ -114,8 +114,7 @@ ExternalLoads::ExternalLoads(const ExternalLoads &otherExternalLoads) :
  */
 void ExternalLoads::setNull()
 {
-	// NAME
-	//setName("ExternalLoads");
+	setAuthors("Ajay Seth, Ayman Habib");
 
 	// PROPERTIES
 	setupSerializedMembers();

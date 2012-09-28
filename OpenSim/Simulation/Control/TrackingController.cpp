@@ -21,11 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
- * Author: Ajay Seth
- */
-
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
@@ -90,6 +85,7 @@ TrackingController::~TrackingController()
  */
 void TrackingController::setNull()
 {
+	setAuthors("Ajay Seth");
 	setupProperties();
 	_desiredStatesStorage = NULL;
 	_trackingTasks = NULL;

@@ -43,6 +43,8 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model &model, MarkersRefe
 							double constraintWeight) : AssemblySolver(model, coordinateReferences, constraintWeight),
 							_markersReference(markersReference)	
 {
+	setAuthors("Ajay Seth");
+
 	// Base AssemblySolver takes care of creating the underlying _assembler and setting up CoordinateReferences;
 	_markerAssemblyCondition = NULL;
 

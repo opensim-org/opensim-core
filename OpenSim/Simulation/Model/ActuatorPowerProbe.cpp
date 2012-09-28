@@ -61,7 +61,7 @@ ActuatorPowerProbe::ActuatorPowerProbe(const Array<string> actuator_names,
 // Set the data members of this ActuatorPowerProbe to their null values.
 void ActuatorPowerProbe::setNull(void)
 {
-    // No data members.
+    setAuthors("Tim Dorn");
 }
 
 //_____________________________________________________________________________

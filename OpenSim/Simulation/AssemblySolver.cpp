@@ -42,6 +42,7 @@ AssemblySolver::AssemblySolver
 	double constraintWeight) : Solver(model),
     _coordinateReferencesp(&coordinateReferences)
 {
+	setAuthors("Ajay Seth");
 	_assembler = NULL;
 	
 	_constraintWeight = constraintWeight;

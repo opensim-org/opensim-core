@@ -66,6 +66,7 @@ const static int MDIFiberAcceleration = 0;
 //=============================================================================
 void Millard2012AccelerationMuscle::setNull()
 {
+	setAuthors("Matthew Millard");
 }
 
 
@@ -280,12 +281,9 @@ void Millard2012AccelerationMuscle::initStateFromProperties(SimTK::State& s) con
 
     ensureMuscleUpToDate();
 
-    Millard2012AccelerationMuscle* mthis = 
-        const_cast<Millard2012AccelerationMuscle*>(this);
-
-    mthis->setActivation(s, getDefaultActivation());
-    mthis->setFiberLength(s, getDefaultFiberLength());
-    mthis->setFiberVelocity(s,getDefaultFiberVelocity());
+    setActivation(s, getDefaultActivation());
+    setFiberLength(s, getDefaultFiberLength());
+    setFiberVelocity(s,getDefaultFiberVelocity());
 }
     
 void Millard2012AccelerationMuscle::
@@ -755,10 +753,12 @@ double Millard2012AccelerationMuscle::
 double  Millard2012AccelerationMuscle::
     computeActuation(const SimTK::State& s) const
 {    
+    //ensureMuscleUpToDate();
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
         "Millard2012AccelerationMuscle: Muscle is not"
         " to date with properties");
 
+    
     const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
     setForce(s,         mdi.tendonForce);
     return( mdi.tendonForce );

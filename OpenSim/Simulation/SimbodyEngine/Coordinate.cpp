@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Frank C. Anderson, Ajay Seth, Jeffrey A. Reinbolt               *
+ * Author(s): Ajay Seth, Michael A. Sherman, Ayman Habib                      *
+ * Contributor(s): Frank C. Anderson, Jeffrey A. Reinbolt                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -114,6 +114,7 @@ Coordinate::Coordinate(const std::string &aName, MotionType aMotionType,
  */
 void Coordinate::constructProperties(void)
 {
+	setAuthors("Ajay Seth, Ayman Habib, Michael Sherman");
 	constructProperty_motion_type("rotational");
 	
 	constructProperty_default_value(0.0);

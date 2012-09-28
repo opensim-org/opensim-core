@@ -74,7 +74,7 @@ RigidTendonMuscle::RigidTendonMuscle(   const std::string& aName,
 // Set the data members of this RigidTendonMuscle to their null values.
 void RigidTendonMuscle::setNull()
 {
-    // no data members
+	setAuthors("Ajay Seth");
 }
 
 

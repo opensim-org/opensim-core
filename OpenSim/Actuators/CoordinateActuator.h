@@ -10,7 +10,8 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Frank C. Anderson                                               *
+ * Author(s): Ajay Seth                                                       *
+ * Contributor(s): Frank C. Anderson                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,17 +24,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
- */
-
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
-#include "Simbody.h"
-
 
 namespace OpenSim { 
 
@@ -45,11 +40,12 @@ class Model;
 //                           COORDINATE ACTUATOR
 //==============================================================================
 /**
- * A class that supports the application of a coordinate actuator to a model.
- * This actuator has no states; the control is simply the force to
- * be applied to the model.
+ * An actuator that applies a generalized force to along a generalized
+ * a generalized coordinate, which is proportional to its input control.
+ * It replaces the GeneralizeForce class implemented by Frank C. Anderson
  *
- * @author Frank C. Anderson
+ * @author Ajay Seth
+ * @contributor Frank C. Anderson
  */
 class OSIMACTUATORS_API CoordinateActuator : public Actuator {
 OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateActuator, Actuator);

@@ -103,6 +103,7 @@ LinearFunction::LinearFunction(const LinearFunction &aLinearFunction) :
  */
 void LinearFunction::setNull()
 {
+	setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________

@@ -60,6 +60,7 @@ FiberCompressiveForceLengthCurve::FiberCompressiveForceLengthCurve
 
 void FiberCompressiveForceLengthCurve::setNull()
 {
+	setAuthors("Matthew Millard");
 }
 
 void FiberCompressiveForceLengthCurve::constructProperties()

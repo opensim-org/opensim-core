@@ -21,11 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
- * Author: Ajay Seth
- */
-
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
@@ -97,6 +92,7 @@ PrescribedController::~PrescribedController()
  */
 void PrescribedController::setNull()
 {
+	setAuthors("Ajay Seth");
 	setupProperties();
 }
 

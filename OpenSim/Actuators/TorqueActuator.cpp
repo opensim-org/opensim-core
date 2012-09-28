@@ -66,6 +66,7 @@ TorqueActuator::TorqueActuator(const string& bodyNameA,
 // Construct and initialize properties.
 void TorqueActuator::constructProperties()
 {
+	setAuthors("Ajay Seth, Matt DeMers");
     constructProperty_bodyA();
     constructProperty_bodyB();
     constructProperty_torque_is_global(true);

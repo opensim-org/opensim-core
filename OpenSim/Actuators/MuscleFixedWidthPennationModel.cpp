@@ -30,6 +30,7 @@ using namespace std;
 
 void MuscleFixedWidthPennationModel::setNull()
 {
+	setAuthors("Matthew Millard");
     m_parallelogramHeight   = SimTK::NaN;
 }
 

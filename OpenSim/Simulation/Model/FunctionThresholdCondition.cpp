@@ -100,6 +100,7 @@ void FunctionThresholdCondition::copyData(const FunctionThresholdCondition &aCon
  */
 void FunctionThresholdCondition::setNull(void)
 {
+	setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________

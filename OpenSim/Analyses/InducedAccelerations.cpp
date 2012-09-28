@@ -170,6 +170,7 @@ operator=(const InducedAccelerations &aInducedAccelerations)
  */
 void InducedAccelerations::setNull()
 {
+	setAuthors("Ajay Seth");
 	setupProperties();
 
 	_forceThreshold = 6.00;

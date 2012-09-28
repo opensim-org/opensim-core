@@ -23,10 +23,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*
- * Author: Ajay Seth
- */
-
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyDblVec.h>

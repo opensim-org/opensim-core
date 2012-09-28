@@ -57,10 +57,9 @@ ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, 
     set_orientation(orientation);
 }
 
-
-
 void ContactGeometry::setNull()
 {
+	setAuthors("Peter Eastman");
     _body = NULL;
 }
 

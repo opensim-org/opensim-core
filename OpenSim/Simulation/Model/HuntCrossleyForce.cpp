@@ -221,7 +221,7 @@ void HuntCrossleyForce::ContactParameters::setViscousFriction(double friction)
 
 void HuntCrossleyForce::ContactParametersSet::setNull()
 {
-    // no data members
+	setAuthors("Peter Eastman");
 }
 
 HuntCrossleyForce::ContactParametersSet::ContactParametersSet()

@@ -42,6 +42,8 @@
 using namespace OpenSim;
 using namespace std;
 
+
+// TODO: TESTING
 int main()
 {
 	try {

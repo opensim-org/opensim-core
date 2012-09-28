@@ -42,6 +42,7 @@ MarkersReference::MarkersReference() : Reference_<SimTK::Vec3>(),
 		_defaultWeight(_defaultWeightProp.getValueDbl()),
 		_markerData(NULL)
 {
+	setAuthors("Ajay Seth");
 }
 
 MarkersReference::MarkersReference(const std::string markerFile, Units modelUnits) : Reference_<SimTK::Vec3>(), 
@@ -51,6 +52,7 @@ MarkersReference::MarkersReference(const std::string markerFile, Units modelUnit
 		_defaultWeight(_defaultWeightProp.getValueDbl()),
 		_markerData(NULL)
 {
+	setAuthors("Ajay Seth");
 	loadMarkersFile(markerFile, modelUnits);
 }
 

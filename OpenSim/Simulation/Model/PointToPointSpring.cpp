@@ -21,11 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
- * Author: Ajay Seth
- */
-
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
@@ -83,6 +78,7 @@ PointToPointSpring::PointToPointSpring(string body1Name, SimTK::Vec3 point1,
  */
 void PointToPointSpring::setNull()
 {
+	setAuthors("Ajay Seth"); 
 }
 
 

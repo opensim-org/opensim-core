@@ -63,7 +63,7 @@ ActiveForceLengthCurve::ActiveForceLengthCurve(double minActiveNormFiberLength,
 
 void ActiveForceLengthCurve::setNull()
 {
-    
+	setAuthors("Matthew Millard");
 }
 
 void ActiveForceLengthCurve::constructProperties()

@@ -113,6 +113,7 @@ Analysis(aMuscleAnalysis)
  */
 void MuscleAnalysis::setNull()
 {
+	setAuthors("Ajay Seth, Matthew Millard, Katherine Holzbaur, Frank Anderson");
 	setName("MuscleAnalysis");
 	setupProperties();
 	constructDescription();

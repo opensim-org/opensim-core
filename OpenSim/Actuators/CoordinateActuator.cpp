@@ -8,7 +8,8 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Frank C. Anderson, Ajay Seth                                    *
+ * Author(s): Ajay Seth                                                       *
+ * Contributor(s): Frank C. Anderson                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -20,11 +21,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
-/* 
- * Author: Frank C. Anderson, Ajay Seth
- */
-
 
 //==============================================================================
 // INCLUDES
@@ -58,7 +54,7 @@ CoordinateActuator::CoordinateActuator(const string& coordinateName)
 // Set the data members of this actuator to their null values.
 void CoordinateActuator::setNull()
 {
-	// no data members that need initializing
+	setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________
