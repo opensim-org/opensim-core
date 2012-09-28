@@ -5,9 +5,6 @@
 % Import modeling classes
 import org.opensim.modeling.*
 
-% Turn up debug level so that exceptions due to typos etc. are handled gracefully
-OpenSimObject.setDebugLevel(3);
-
 % Read in osim model
 modelFile = strcat('testData',filesep,'OptimizationExample',...
     filesep,'Arm26_Optimize.osim');

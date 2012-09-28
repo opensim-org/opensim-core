@@ -29,9 +29,6 @@
 % Pull in the modeling classes straight from the OpenSim distribution
 import org.opensim.modeling.*
 
-% Turn up debug level so that exceptions due to typos etc. are handled gracefully
-OpenSimObject.setDebugLevel(3);
-
 %///////////////////////////////////////////
 %// DEFINE BODIES AND JOINTS OF THE MODEL //
 %///////////////////////////////////////////

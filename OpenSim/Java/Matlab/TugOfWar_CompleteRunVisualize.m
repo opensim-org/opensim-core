@@ -28,9 +28,6 @@
 % directly
 import org.opensim.modeling.*
 
-% Turn up debug level so that exceptions due to typos etc. are handled gracefully
-OpenSimObject.setDebugLevel(3);
-
 % Generate a new model object by loading the tug of war model from file
 osimModel = Model('tug_of_war_muscles_controller.osim');
 

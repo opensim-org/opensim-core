@@ -30,9 +30,6 @@
 % Pull in the modeling classes straight from the OpenSim distribution
 import org.opensim.modeling.*
 
-% Turn up debug level so that exceptions due to typos etc. are handled gracefully
-OpenSimObject.setDebugLevel(3);
-
 % move to directory where this subject's files are kept
 subjectDir = uigetdir('testData', 'Select the folder that contains the current subject data');
 

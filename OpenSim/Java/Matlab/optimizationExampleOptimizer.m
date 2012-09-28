@@ -6,10 +6,6 @@ function f = optimizationExampleOptimizer(coeffs,params)
 	
 	% Import OpenSim modeling classes
 	import org.opensim.modeling.*
-
-	% Turn up debug level so that exceptions due to typos etc. are handled 
-    % gracefully
-	OpenSimObject.setDebugLevel(3);
 	
 	% Get access to step counter and current best velocity value.
 	global stepCount bestSoFar;
