@@ -40,6 +40,7 @@ FiberCompressiveForceCosPennationCurve::
         setNull();
         constructProperties();
         setName("default_FiberCompressiveForceCosPennationCurve");
+        ensureCurveUpToDate();
 }
 
 FiberCompressiveForceCosPennationCurve::
@@ -74,7 +75,8 @@ FiberCompressiveForceCosPennationCurve::
 
 void FiberCompressiveForceCosPennationCurve::setNull()
 {    
-	setAuthors("Matthew Millard");
+
+    setAuthors("Matthew Millard");
 }
 
 void FiberCompressiveForceCosPennationCurve::constructProperties()
@@ -132,8 +134,7 @@ void FiberCompressiveForceCosPennationCurve::ensureCurveUpToDate()
             getProperty_curviness().empty() == false)
         {
             
-            m_stiffnessAtPerpendicularInUse = 
-                get_stiffness_at_perpendicular();
+            m_stiffnessAtPerpendicularInUse = get_stiffness_at_perpendicular();
             m_curvinessInUse = get_curviness();
             m_isFittedCurveBeingUsed = false;
         }
@@ -159,7 +160,10 @@ void FiberCompressiveForceCosPennationCurve::ensureCurveUpToDate()
                 getName().c_str());  
         }
 
+           
         buildCurve();
+
+        
     }
 }
 //=============================================================================
@@ -168,11 +172,13 @@ void FiberCompressiveForceCosPennationCurve::ensureCurveUpToDate()
 void FiberCompressiveForceCosPennationCurve::connectToModel(Model& aModel)
 {
     Super::connectToModel(aModel);
+    ensureCurveUpToDate();
 }
 
 void FiberCompressiveForceCosPennationCurve::initStateFromProperties(SimTK::State& s) const
 {
     Super::initStateFromProperties(s);
+   
 }
 
 void FiberCompressiveForceCosPennationCurve::
@@ -180,9 +186,10 @@ addToSystem(SimTK::MultibodySystem& system) const
 {
     Super::addToSystem(system);
 
-    FiberCompressiveForceCosPennationCurve* mthis = 
-        const_cast<FiberCompressiveForceCosPennationCurve*>(this);    
-    mthis->ensureCurveUpToDate();
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberCompressiveCosPennationCurve: Curve is not"
+        " to date with its properties");
+
 }
 
 //=============================================================================
@@ -191,30 +198,18 @@ addToSystem(SimTK::MultibodySystem& system) const
 double FiberCompressiveForceCosPennationCurve::
     getEngagementAngleInDegrees() const
 {    
-    FiberCompressiveForceCosPennationCurve* mthis = 
-        const_cast<FiberCompressiveForceCosPennationCurve*>(this);    
-    mthis->ensureCurveUpToDate();
-
     return get_engagement_angle_in_degrees();
 }
 
 double FiberCompressiveForceCosPennationCurve::
     getStiffnessAtPerpendicularInUse() const
 {
-    FiberCompressiveForceCosPennationCurve* mthis = 
-        const_cast<FiberCompressiveForceCosPennationCurve*>(this);    
-    mthis->ensureCurveUpToDate();
-
     return m_stiffnessAtPerpendicularInUse;
 }
 
 double FiberCompressiveForceCosPennationCurve::
     getCurvinessInUse() const
 {
-    FiberCompressiveForceCosPennationCurve* mthis = 
-        const_cast<FiberCompressiveForceCosPennationCurve*>(this);    
-    mthis->ensureCurveUpToDate();
-
     return m_curvinessInUse;
 }
 
@@ -222,6 +217,7 @@ void FiberCompressiveForceCosPennationCurve::
     setEngagementAngleInDegrees(double aEngagementAngleInDegrees)
 {   
    set_engagement_angle_in_degrees(aEngagementAngleInDegrees);  
+   ensureCurveUpToDate();
 }
 
 void FiberCompressiveForceCosPennationCurve::
@@ -229,14 +225,11 @@ void FiberCompressiveForceCosPennationCurve::
 {    
     set_stiffness_at_perpendicular(aStiffnessAtPerpendicular);    
     set_curviness(aCurviness);
+    ensureCurveUpToDate();
 }
 
 bool FiberCompressiveForceCosPennationCurve::isFittedCurveBeingUsed() const
 {
-    FiberCompressiveForceCosPennationCurve* mthis = 
-        const_cast<FiberCompressiveForceCosPennationCurve*>(this);    
-    mthis->ensureCurveUpToDate();
-
     return m_isFittedCurveBeingUsed;
 }
 
@@ -246,53 +239,50 @@ bool FiberCompressiveForceCosPennationCurve::isFittedCurveBeingUsed() const
 
 double FiberCompressiveForceCosPennationCurve::
     calcValue(double cosPennationAngle) const
-{    
-    FiberCompressiveForceCosPennationCurve* mthis = 
-        const_cast<FiberCompressiveForceCosPennationCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
-    
+{   
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberCompressiveCosPennationCurve: Curve is not"
+        " to date with its properties");
+
     return m_curve.calcValue(cosPennationAngle);
 }
 
 double FiberCompressiveForceCosPennationCurve::
     calcDerivative(double cosPennationAngle, int order) const
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberCompressiveCosPennationCurve: Curve is not"
+        " to date with its properties");
+
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2, 
         "FiberCompressiveForceCosPennationCurve::calcDerivative",
         "order must be 0, 1, or 2, but %i was entered", order);
-       
-    FiberCompressiveForceCosPennationCurve* mthis = 
-        const_cast<FiberCompressiveForceCosPennationCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
-    
+           
     return m_curve.calcDerivative(cosPennationAngle,order);
 }
 
 double FiberCompressiveForceCosPennationCurve::
     calcIntegral(double cosPennationAngle) const
 {    
-    FiberCompressiveForceCosPennationCurve* mthis = 
-        const_cast<FiberCompressiveForceCosPennationCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
-    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberCompressiveCosPennationCurve: Curve is not"
+        " to date with its properties");
     return m_curve.calcIntegral(cosPennationAngle);
 }
 
 SimTK::Vec2 FiberCompressiveForceCosPennationCurve::getCurveDomain() const
 {
-    FiberCompressiveForceCosPennationCurve* mthis = 
-        const_cast<FiberCompressiveForceCosPennationCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
-    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberCompressiveCosPennationCurve: Curve is not"
+        " to date with its properties");
     return m_curve.getCurveDomain();
 }
 
 void FiberCompressiveForceCosPennationCurve::
     printMuscleCurveToCSVFile(const std::string& path) const
 {
-    FiberCompressiveForceCosPennationCurve* mthis = 
-        const_cast<FiberCompressiveForceCosPennationCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
-
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberCompressiveCosPennationCurve: Curve is not"
+        " to date with its properties");
     m_curve.printMuscleCurveToCSVFile(path);
 }

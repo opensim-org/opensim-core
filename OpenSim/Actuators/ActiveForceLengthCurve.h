@@ -128,7 +128,7 @@ public:
         
     <B>Conditions:</B>
     \verbatim
-        0 < minActiveFiberLength < transitionFiberLength < maxActiveFiberLength 
+        0 < minActiveFiberLength < transitionFiberLength < 1 < maxActiveFiberLength 
         0 <= shallowAscendingSlope < 1/(1-transitionFiberLength) 
         0 <= minimumValue 
     \endverbatim
@@ -166,6 +166,13 @@ public:
         double falVal  = falCurve3.calcValue(1.0);
         double dfalVal = falCurve3.calcDerivative(1.0,1);
     @endcode
+
+    Note that this object should be updated through the set methods provided. 
+    These set methods will take care of rebuilding the curve correctly. If you
+    modify the properties directly, the curve will not be rebuilt, and upon
+    calling a function like calcValue, calcDerivative, or printCurveToCSVFile
+    an exception will be thrown because the curve is out of date with its 
+    properties.
 
     <B>References</B>
     \verbatim
@@ -222,53 +229,35 @@ public:
   
 
     /**
-    @param minActiveNormFiberLength 
-        The normalized fiber length where the steep ascending limb of 
-        the active force length curve transitions to the minimumValue 
-        and has a first and second derivative of 0. 
-        
-        This parameter change is not encorporated into the new curve until 
-        either a simulation is initiated (at which time the curve is 
-        automatically updated) or buildCurve() is called
-    */
-    void setMinActiveFiberLength(double minActiveNormFiberLength);
-
-    /**
-     @param transitionNormFiberLength   
-        The normalized fiber length where the steep ascending limb 
-        transitions to the shallow ascending limb. 
-
-        This parameter change is not encorporated into the new curve until 
-        either a simulation is initiated (at which time the curve is 
-        automatically updated) or buildCurve() is called
-
-    */
-    void setTransitionFiberLength(double transitionNormFiberLength);
-
-    /**
-    @param maxActiveNormFiberLength   
-        The normalized fiber length where the descending limb 
-        transitions to the minimum value and has a first and second 
-        derivative of 0.
-        
-        This parameter change is not encorporated into the new curve until 
-        either a simulation is initiated (at which time the curve is 
-        automatically updated) or buildCurve() is called
-
-    */
-    void setMaxActiveFiberLength(double maxActiveNormFiberLength);
-
-    /**
-    @param shallowAscendingSlope
+        @param minActiveNormFiberLength 
+            The normalized fiber length where the steep ascending limb of 
+            the active force length curve transitions to the minimumValue 
+            and has a first and second derivative of 0. 
+        @param transitionNormFiberLength   
+            The normalized fiber length where the steep ascending limb 
+            transitions to the shallow ascending limb. 
+        @param maxActiveNormFiberLength   
+            The normalized fiber length where the descending limb 
+            transitions to the minimum value and has a first and second 
+            derivative of 0.
+       param shallowAscendingSlope
                 The slope of the shallow ascending limb.
 
-    
-        This parameter change is not encorporated into the new curve until 
-        either a simulation is initiated (at which time the curve is 
-        automatically updated) or buildCurve() is called
+        <B>Conditions</B>
+        \verbatim
+        0 < minActiveFiberLength < transitionFiberLength < 1 < maxActiveFiberLength
+        0 <= shallowAscendingSlope < 1/(1-transitionFiberLength) 
+        \endverbatim
+
+        <B>Computational Cost</B>
+        Curve is rebuilt at a cost of ~20,500 flops. 
 
     */
-    void setShallowAscendingSlope(double shallowAscendingSlope);
+    void setActiveFiberLengths( double minActiveNormFiberLength,
+                                double transitionNormFiberLength,
+                                double maxActiveNormFiberLength,
+                                double shallowAscendingSlope);
+
 
     /**
     @param minValue
@@ -277,10 +266,8 @@ public:
                 greater than 0, as a value of 0 will cause a singularity in the 
                 muscle dynamic equations.
 
-    
-        This parameter change is not encorporated into the new curve until 
-        either a simulation is initiated (at which time the curve is 
-        automatically updated) or buildCurve() is called
+    <B>Computational Costs</B>
+        Curve is rebuilt at a cost of ~20,500 flops. 
     */
     void setMinValue(double minValue);
 
@@ -288,9 +275,7 @@ public:
 
 
     /**
-    Calculates the value of the curve evaluated at 'normFiberLength'. Note that
-    if the curve is out of date it is rebuilt 
-    (at a cost of ~20,500 flops). 
+    Calculates the value of the curve evaluated at 'normFiberLength'.
 
     @param normFiberLength : the normalized length of the muscle fiber
     @return the value of the active force length curve 
@@ -306,8 +291,7 @@ public:
 
     /**
     Calculates the derivative of the active force length multiplier w.r.t. 
-    normalized fiber length. Note that if the curve is out of date it is rebuilt 
-    (which will cost ~20,500 flops). 
+    normalized fiber length. 
 
     @param normFiberLength : the normalized length of the muscle fiber
     @param order           : the order of the derivative. Only values of 0,1 and
@@ -328,8 +312,7 @@ public:
        This function returns a SimTK::Vec2 that contains in its 0th element
        the lowest value of the curve domain, and in its 1st element the highest
        value in the curve domain of the curve. Outside of this domain the curve
-       is approximated using linear extrapolation. Note that  if the curve is 
-       out of date is rebuilt (which will cost ~20,500 flops).
+       is approximated using linear extrapolation. 
 
        @return The minimum and maximum value of the domain, x, of the curve 
                   y(x). Within this range y(x) is a curve, outside of this range
@@ -339,8 +322,7 @@ public:
 
     /**This function will generate a csv file with a name that matches the 
        curve name (e.g. "bicepfemoris_fiberActiveForceLengthCurve.csv");
-       Note that  if the curve is out of date is rebuilt 
-       (which will cost ~20,500 flops).
+
        
        @param path The full path to the location. Note '/' slashes must be used,
             and do not put a '/' after the last folder.
@@ -380,6 +362,7 @@ public:
        */
        void printMuscleCurveToCSVFile(const std::string& path) const;
 
+       void ensureCurveUpToDate();
 //==============================================================================
 // PRIVATE
 //==============================================================================
@@ -431,8 +414,7 @@ private:
 
     */
     void buildCurve();
-    void ensureCurveUpToDate();
-
+    
     SmoothSegmentedFunction   m_curve;
     
 };

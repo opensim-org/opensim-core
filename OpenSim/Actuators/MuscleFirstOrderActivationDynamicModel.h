@@ -112,6 +112,14 @@ namespace OpenSim {
 
     \image html activationDynamics.png
 
+    <B>Usage</B>
+
+     Note that this object should be updated through the set methods provided. 
+     These set methods will take care of rebuilding the object correctly. If you
+     modify the properties directly, the object will not be rebuilt, and upon
+     calling a function an exception will be thrown because 
+     the object is out of date with its properties.
+
     <B>References</B>
 
     Thelen, DG.(2003), Adjustment of Muscle Mechanics Model
@@ -319,6 +327,7 @@ public:
     int getMaxDerivativeOrder() const;  /*virtual*/ 
     ///@endcond
 
+    void ensureModelUpToDate();
     private:      
         void buildModel();
         double m_minAS; //scaled version of m_minA

@@ -158,7 +158,7 @@ int main()
 		{ e.print(cerr); failures.push_back("testDelp1990Muscle"); }
 	*/
 
-
+    
     try { testRigidTendonMuscle();
 		cout << "RigidTendonMuscle Test passed" << endl; }
     catch (const Exception& e)
@@ -168,7 +168,7 @@ int main()
 		cout << "Thelen2003Muscle Test passed" << endl; }
     catch (const Exception& e)
 		{ e.print(cerr); failures.push_back("testThelen2003Muscle"); }
-
+    
     try { testMillard2012EquilibriumMuscle();
 		cout << "Millard2012EquilibriumMuscle Test passed" << endl; 
     }catch (const Exception& e){ 
@@ -734,6 +734,7 @@ void testThelen2003Muscle_Deprecated()
 
 void testThelen2003Muscle()
 {
+
 	Thelen2003Muscle muscle("muscle",
                             MaxIsometricForce0,
                             OptimalFiberLength0,

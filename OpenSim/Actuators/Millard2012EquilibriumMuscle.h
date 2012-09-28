@@ -69,7 +69,7 @@ the fiber are assumed to be equal and opposite:
 
 \f[
  f_{ISO}\Big(\mathbf{a}(t) \mathbf{f}_L(\hat{l}_{CE}) \mathbf{f}_V(\hat{v}_{CE}) 
-+ \mathbf{f}_{PE}(\hat{l}_{CE}) )\Big) \cos \phi
++ \mathbf{f}_{PE}(\hat{l}_{CE}) + \beta \hat{v}_{CE})\Big) \cos \phi
 -  f_{ISO}\mathbf{f}_{SE}(\hat{l}_{T}) = 0
 \f]
 
@@ -82,24 +82,22 @@ following configuration options:
 
 \li ignore_tendon_compliance: when set to true makes the tendon rigid. This 
 assumption is usually reasonable for short tendons, and results in a simulation
-speedup because fiber length is no longer a state vector. 
+speedup because fiber length is no longer a state. 
 
 <B>Fiber Configuration</B>
-
-\li use_reduced_fiber_dynamics: when set to true, and when the tendon is 
-elastic (ie ignore_tendon_compliance = false) the state of the fiber is
-estimated by solving a reduced equilibrium equation rather than integrating
-fiber state. The equation reduction is achieved by assuming that fiber length
-acceleration is zero. Simulation speed ups of between 2.5-20 are possible when 
-compared to an elastic tendon simulation with fiber length as a state. Note 
-that a reduced muscle with an elastic tendon simulations as fast, or marginally 
-faster than a rigid tendon muscle.
 
 \li ignore_activation_dynamics: when set to true, excitation is treated as 
 activation. This results in faster simulation times because the state vector
 is smaller.
 
-<B>Elastic Tendon, Full Fiber Dynamics,Full Activation Dynamics</B>
+\li use_fiber_damping: when set to true \f$\beta\f$ is set to a non-zero value.
+The addition of damping allows a different method simulataneously allows 
+the muscle to be more physiologically correct (it can have an activation of 
+zero, its active force length curve can go to zero, and its force velocity curve
+can be asymptotic) while reducing simulation time.
+
+
+<B>Elastic Tendon, No Fiber Damping</B>
 
 The most typical configuration used in the literature is to simulate a muscle
 with an elastic tendon, full fiber dynamics, and activation dynamics. The 
@@ -141,45 +139,88 @@ length ( to ensure \f$ \mathbf{f}_L(\hat{l}_{CE}) > 0 \f$). The fiber length is
  pennation angle, through the use of a unilateral constraint. Additionally, the
  force velocity curve is modified so that it is invertible.
 
- <B>(Rigid Tendon) and (Elastic Tendon, Reduced Fiber Dynamics)</B>
+ When an elastic tendon without fiber damping is selected, the minimum active
+ force length value is set to 0.1,  the minimum activation allowed is set
+ to 0.01, and the maximum pennation angle permitted is set to acos(0.1) or 
+ 84.3 degrees. This is done as a convenience for the user, to prevent the model 
+ from taking an unreasonable amount of time to simulate. 
+
+ <B>(Rigid Tendon) or (Elastic Tendon with Fiber Damping)</B>
 
  Neither of these formulations have any singularities. This allows the lower 
  bound of the active force length curve to be 0 
- (min( \f$ \mathbf{f}_L(\hat{l}_{CE})) = 0 \f$), activation can go to 0, the
- pennation angle can come much closer to \f$90^\circ\f$, and the force velocity
- curve need not be invertible.
+ (min( \f$ \mathbf{f}_L(\hat{l}_{CE})) = 0 \f$), activation can go to 0, and 
+ the force velocity curve need not be invertible.
 
- Physically this means that the muscle can be turned off, its fibers can 
- approach high pennation angles, and its characteristic curves do not need
- to be modified (active force length can go to 0, and the force velocity
- curve does not have to be invertible).
+ Physically this means that the muscle can be turned off, and its characteristic
+ curves do not need to be modified (active force length can go to 0, and the 
+ force velocity curve does not have to be invertible).
 
  The rigid tendon formulation removes these singularities by ignoring the 
  elasticity of the tendon. This assumption is reasonable for many muscles, but
  is up to the musculoskeletal model designer and user to determine when this 
  assumption can be made. 
  
- The elastic tendon with reduced fiber dynamics removes 
- singularities by assuming that fiber acceleration is 0. This model will produce
- forces that are very similar to an elastic tendon muscle with full fiber 
- dynamics, but will overestimate or underestimate the forces produced by the 
- fiber by ~5% when the fiber length has a large, and non-zero fiber 
- acceleration. Note that this method is still being tested, and so, its 
- accuracy relative to the full fiber dynamic model is not known in all 
- simulations. Additionally note that to use the elastic tendon with reduced 
- fiber dynamics that the ignore_tendon_compliance flag must be set to false.
+ The elastic tendon with fiber damping removes singularities by solving the
+ equilibrium equation using Newton's method. This is possible because the 
+ partial derivative of the equilibrium equation with respect to fiber velocity
+ is always positive if \f$ \beta > 0\f$, and thus permits Newton's method to
+ find a solution to the equilibrium equation.
 
+ When either of these singularity-free formulations are selected, the minimum 
+ active force length value is set to 0.0, the minimum activation allowed is 
+ set to 0.0. This is done as a convenience for the user, as these changes make 
+ the results of the model more realistic yet incurr no performance penality. The
+ maximum pennation angle is left as acos(0.1) or 84.3 degrees, because allowing
+ pennation angles higher than this results in a stiff fiber velocity state
+ at high pennation angles.
+
+ <B> Usage </B>
+    This object should be updated through the set methods provided. 
+    These set methods will take care of rebuilding the muscle correctly. If you
+    modify the properties directly, the muscle will not be rebuilt, and upon
+    calling any functions that have a SimTK::State with an input, an 
+    exception will be thrown because the muscle is out of date with its 
+    properties.
+
+ <B>Example</B>
+
+ @code
+ double fiso = 5000;
+ double optFiberLength = 0.025;
+ double tendonSlackLen = 0.25;
+ double pennationAngle = 30.0*(SimTK::Pi/180.0);
+
+ bool ignoreTendonCompliance = false;
+ bool ignoreActivationDynamics = false;
+ bool useFiberDamping = true;
+
+ Millard2012EquilibriumMuscle muscle(aConfig.muscleName,
+                                        aConfig.fiso,
+                                        aConfig.optFiberLen,
+                                        aConfig.tendonSlackLen,
+                                        aConfig.pennationAngle);
+
+ muscle.setMuscleConfiguration(ignoreTendonCompliance,
+                                ignoreActivationDynamics,
+                                useFiberDamping);
+
+    
+ @endcode
+
+ <B>Further Information...</B>
 
 For more information please see the
 doxygen for the properties that are objects themselves ( such as 
-MuscleFirstOrderActivationDynamicModel, MuscleFixedWidthPennationModel).
+MuscleFirstOrderActivationDynamicModel, MuscleFixedWidthPennationModel,
+ActiveForceLengthCurve, FiberForceLengthCurve, TendonForceLengthCurve, and
+ForceVelocityInverseCurve ).
 
 
 @author Matt Millard
 */
 class OSIMACTUATORS_API Millard2012EquilibriumMuscle : public Muscle {
 OpenSim_DECLARE_CONCRETE_OBJECT(Millard2012EquilibriumMuscle, Muscle);
-
 //class OSIMACTUATORS_API Millard2012EquilibriumMuscle : public Muscle {
 
 public:
@@ -190,10 +231,11 @@ public:
     These are the serializable properties associated with this class. **/
     /**@{**/
 
-    OpenSim_DECLARE_PROPERTY( use_reduced_fiber_dynamics, bool, 
-        "Use reduced equations to compute the fiber"
-        " state for an elastic tendon muscle.");
+    OpenSim_DECLARE_PROPERTY( use_fiber_damping, bool,
+        "Include fiber damping. This cannot be applied in the reduced model");
 
+    OpenSim_DECLARE_PROPERTY( fiber_damping, double,
+        "The linear damping of the fiber. Not included in reduced model.");
 
     OpenSim_DECLARE_PROPERTY( default_activation, double,
                        "assumed initial activation level if none is assigned.");
@@ -349,7 +391,7 @@ public:
     double getMaximumPennationAngle() const;
 
 
-    bool getUseReducedFiberDynamics() const;
+    bool getUseFiberDamping() const;
 
 //==============================================================================
 // Set Properties
@@ -362,14 +404,15 @@ public:
     void setActivationModel(
             MuscleFirstOrderActivationDynamicModel& aActivationMdl);
 
-    /**
+    //This is now set automatically depending on the configuration of the muscle
+    /*
     @param minActivation will set the minimum activation property in the 
             Activation model. This function is provided to ensure that the 
             desired minimum activation will not cause a numerical singularity 
             in this model.
     @returns true if the value was acceptable and the property was set
     */
-    bool setMinimumActivation(double minActivation);
+    //bool setMinimumActivation(double minActivation);
 
 
     /**
@@ -404,21 +447,14 @@ public:
             TendonForceLengthCurve& aTendonForceLengthCurve);
 
     /**
-    @param maxPennationAngle is the maximum pennation (radians). This method
-           will set the maximum pennation angle property of the pennation
-           model, and is provided to ensure that the desired maximum pennation 
-           angle will not cause a numerical singularity in this model.
-    @returns true if the value was acceptable and the property was set
+    @param ignoreTendonCompliance when set true uses a rigid tendon formulation
+    @param ignoreActivationDynamics when set true ignores activation dynamics
+                                    and treats the control signal as activation
+    @param useDamping when set true enables the damped fiber method of solving
     */
-    bool setMaximumPennationAngle(double maxPennationAngle);
-
-    /**
-    @param use the value to set the reduced fiber dynamics flag to. Note that the
-           ignore_tendon_compliance must be set to false for this option
-           to be used. This function cannot be called after the call to 
-           initSystem has been made.
-    */
-    bool setUseReducedFiberDynamics(bool use);
+    void setMuscleConfiguration(bool ignoreTendonCompliance,
+                                bool ignoreActivationDynamics,
+                                bool useDamping);
 
 
 
@@ -473,6 +509,8 @@ public:
     */
     void setFiberLength(SimTK::State& s, double fiberLength) const;
 
+    
+
     /**
     @returns A string arraw of the state variable names
     */
@@ -522,6 +560,12 @@ public:
                                             double fiberLength, 
                                             double fiberVelocity) const; 
 
+    /**
+    @param s the state of the system
+    @param aActivation the activation of the muscle
+    @returns the active fiber force generated by a rigid tendon equilibrium
+             muscle model.
+    */
     virtual double calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
                                              double aActivation) const FINAL_11;
     ///@endcond
@@ -600,8 +644,6 @@ private:
     static const std::string STATE_ACTIVATION_NAME;
     //The name used to access the fiber length state
 	static const std::string STATE_FIBER_LENGTH_NAME;
-
-    static const std::string MODELING_OPTION_USE_REDUCED_MODEL_NAME;
     
     //static const std::string PREVIOUS_FIBER_LENGTH_NAME;
     //static const std::string PREVIOUS_FIBER_VELOCITY_NAME;
@@ -615,17 +657,40 @@ private:
 
     /*Checks to make sure that none of the muscle model's properties have
     changed. If they have changed, then the muscle is rebuilt.*/
-    void ensureMuscleUpToDate() const;
+    void ensureMuscleUpToDate();
+    
 
     //Approximate muscle dynamics are the same as the regular 
     //equilibrium muscle dynamics
 
+     /*
+    Calculates the fiber velocity that satisfies the equilibrium equation given
+    a fixed fiber length
+    @param a activation
+    @param fal active force length multiplier
+    @param fpe passive force length multiplier
+    @param fse series elastic force length multiplier
+    @param beta damping coefficent
+    @param lce the fiber length
+    @param lceN the normalized fiber length
+    @param cosPhi cosine of the pennation angle
+    @returns [0] dlceN_dt
+             [1] err
+             [2] converged
+    */
+    SimTK::Vec3 calcDampedNormFiberVelocity(  double fiso,
+                                        double a,
+                                        double fal,
+                                        double fpe,
+                                        double fse,
+                                        double beta,                                       
+                                        double cosPhi) const;
 
     /*
     Calculates the force-velocity multiplier
     @param a activation
     @param fal the fiber active force length multiplier
-    @param fpe the fiber force length multiplier
+    @param fp the total normalized parallel fiber force multiplier
     @param fse the tendon force length multiplier
     @param cosphi the cosine of the pennation angle
     @param caller the name of the function calling this function. This name
@@ -635,9 +700,7 @@ private:
     */
     double calcFv(  double a, 
                     double fal, 
-                    double fpe, 
-                    double fk,                     
-                    double fcphi, 
+                    double fp,                                         
                     double fse, 
                     double cosphi,
                     std::string& caller) const;
@@ -649,46 +712,29 @@ private:
     @param fal the fiber active force length multiplier
     @param fv the fiber force velocity multiplier
     @param fpe the fiber force length multiplier  
+    @param dlceN the normalized fiber velocity
     @param cosphi the cosine of the pennation angle    
 
-    @return the force generated by the fiber, in the direction of the fiber
+    @return Vec3
+        [0] total fiber force
+        [1] active fiber force
+        [2] passive fiber force
     */
-    double calcFiberForce(  double fiso, 
-                            double a, 
-                            double fal,
-                            double fv,                             
-                            double fpe) const;    
+    SimTK::Vec3 calcFiberForce( double fiso, 
+                                double a, 
+                                double fal,
+                                double fv,                                 
+                                double fpe,
+                                double dlceN) const;    
 
 
     /*
-    
-    @param fiso the maximum isometric force the fiber can generate  
-    @param a activation
-    @param fal the fiber active force length multiplier
-    @param fv the fiber force velocity multiplier   
-
-    @return the active force generated by the fiber
-    */
-    double calcActiveFiberForce(  double fiso, 
-                            double a, 
-                            double fal,
-                            double fv) const;  
-
-    /*
-    @param fiso the maximum isometric force the fiber can generate  
-    @param a activation
-    @param fal the fiber active force length multiplier
-    @param fv the fiber force velocity multiplier
-    @param fpe the fiber force length multiplier 
+    @param total force developed by the fiber
     @param cosphi the cosine of the pennation angle    
 
     @return the force generated by the fiber, in the direction of the tendon
     */
-    double calcFiberForceAlongTendon(  double fiso, 
-                                        double a, 
-                                        double fal,
-                                        double fv,                             
-                                        double fpe,                                       
+    double calcFiberForceAlongTendon(   double fiberForce,                                       
                                         double cosPhi) const;  
 
 
@@ -708,14 +754,44 @@ private:
     */
     double calcFiberStiffness(  double fiso, 
                                 double a, 
-                                double fal,
                                 double fv,                             
-                                double fpe,                                
-                                double sinPhi,
-                                double cosPhi,
-                                double lce,
                                 double lceN,
                                 double optFibLen) const;
+
+    /*    
+    @param fiso the maximum isometric force the fiber can generate  
+    @param a activation
+    @param fal the fiber active force length multiplier 
+    @param beta damping coefficient
+    @param s damping force scaling
+    @param ds_d_dlce derivative of the damping scaling w.r.t. fiber length
+    @param dlceN_dt normalized fiber velocity 
+           (where 1 is the maximum fiber velocity)
+    @param the maximum contraction velocity in m/s
+    @return the partial derivative of fiber force 
+            w.r.t normalized fiber velocity
+    */
+    double calc_DFiberForce_DNormFiberVelocity( double fiso, 
+                                                double a, 
+                                                double fal,
+                                                double beta,                                                
+                                                double dlceN_dt) const;
+
+    /*
+    @param fiberForce the force, in Newtons, developed by the fiber
+    @param fiberStiffness the stiffness, in N/m, of the fiber
+    @param lce the fiber length
+    @param sinphi the sine of the pennation angle
+    @param cosphi the cosine of the pennation angle    
+
+    @return the partial derivative of fiber force along the tendon with respect
+            to small changes in fiber length (in the direction of the fiber)
+    */
+    double calc_DFiberForceAT_DFiberLength( double fiberForce,
+                                            double fiberStiffness,
+                                            double lce,
+                                            double sinPhi,
+                                            double cosPhi) const;
 
     /*
     @param dFm_d_lce the stiffness of the fiber in the direction of the fiber
@@ -730,31 +806,7 @@ private:
                                                double sinPhi,
                                                double cosPhi,
                                                double lce) const;
-    /*
-    @param fiso the maximum isometric force the fiber can generate  
-    @param a activation
-    @param fal the fiber active force length multiplier
-    @param fv the fiber force velocity multiplier
-    @param fpe the fiber  force length multiplier
-    @param sinphi the sine of the pennation angle
-    @param cosphi the cosine of the pennation angle    
-    @param lce the fiber length
-    @param lceN the normalized fiber length
-    @param optFibLen the optimal fiber length
-
-    @return the partial derivative of fiber force along the tendon with respect
-            to small changes in fiber length (in the direction of the fiber)
-    */
-    double calc_DFiberForceAT_DFiberLength( double fiso, 
-                                            double a, 
-                                            double fal,
-                                            double fv,                             
-                                            double fpe,                                            
-                                            double sinPhi,
-                                            double cosPhi,
-                                            double lce,
-                                            double lceN,
-                                            double optFibLen) const;
+    
 
     /*
     @param dFt_d_tl the partial derivative of tendon force with respect to small
@@ -783,19 +835,14 @@ private:
     //SimTK::ClonePtr<MuscleFixedWidthPennationModel> penMdl;
     MuscleFixedWidthPennationModel penMdl;
 
-    //Used in muscle initialization, and also in the calcActiveFiberForce
-    //function. This curve is too expensive to make more than once, so 
-    //we're storing it here as a private member variable
+    //Used in muscle initialization, and by every muscle model configuration
+    //except the equilibrium model that does not have fiber damping
     ForceVelocityCurve fvCurve;
 
     //Here I'm using the 'm_' to prevent me from trashing this variable with
     //a poorly chosen local variable.
     double m_minimumFiberLength;
     double m_minimumFiberLengthAlongTendon;
-
-    //Stores the fiber length and velocity of the last time step
-    //used by the reduced method
-    mutable SimTK::Vec5 reducedFiberStateHint;
 
     /*
     Solves fiber length and velocity to satisfy the equilibrium equations. 
@@ -811,45 +858,11 @@ private:
            attempts to initialize the model are given up, and an exception is 
            thrown.
     */
-    SimTK::Vector estimateElasticTendonFiberState(double aActivation, 
+    SimTK::Vector estimateMuscleFiberState(double aActivation, 
                             double pathLength, double pathLengtheningSpeed,
                             double aSolTolerance, int aMaxIterations) const;
     
-    /*
-    A method that solves for the fiber length and fiber velocity by solving 
-    the equilibrium equation, and the derivative of the equilibrium equation
-    by assuming that the acceleration of fiber length is 0.
-
-    @param previousFiberLength : A hint
-    @param previousFiberVelocity : A hint
-    @param deltaTime : the amount of time that has passed between the hint and
-                       the current call.
-    @param aActivation the initial activation of the muscle
-    @param dactivation_dt the time derivative of activation
-    @param pathLength length of the whole muscle
-    @param pathLengtheningSpeed lengthening speed of the muscle path
-    @param aSolTolerance the desired relative tolerance of the equilibrium 
-           solution
-    @param aMaxIterations the maximum number of Newton steps allowed before
-           attempts to initialize the model are given up, and an exception is 
-           thrown.
-
-    @returns A vector
-       Index: Name
-           0: flag_status    : 0 converged, 1 fiber at min length, 2 diverged
-           1: solnErr        : 2 norm of the error of the equilibrium equation
-                               and its first derivative
-           2: iterations     : Number of Newton iterations required
-           3: fiberLength    : length of the fiber in meters
-           4: fiberVelocity  : velocity of the fiber in meters/s
-           5: tendonForce    : force tendon is exerting in N
-
-    */
-    SimTK::Vector estimateElasticTendonFiberState2(
-                    SimTK::Vec5 hint,
-                    double aActivation, double dactivation_dt, 
-                    double pathLength, double pathLengtheningSpeed,
-                    double aSolTolerance, int aMaxIterations) const;
+   
 
     //Returns true if the fiber length is currently shorter than the minimum
     //value allowed by the pennation model and the active force length curve
@@ -866,13 +879,19 @@ private:
     bool isTendonElastic() const;
     //Returns true if activation is a state
     bool isActivationAState() const;
+    
+    //If the model configuration has a state equation with singularities in it, 
+    //this will return true, else it will return false.
+    bool canStateGoSingular() const;
     //Returns the simulation method called prior to the call to initSystem
-    int getInitialSimulationMethod() const;
+    int getSimulationMethod() const;
     //Calculates a flag that indicates the exact configuration of the simulation
     int calcSimulationMethod(bool ignoreTendonCompliance, 
                              bool ignoreActivationDynamics,
-                             bool useReducedFiberDynamics) const;
+                             bool useFiberDamping) const;
     
+    
+
 };    
 
 } // end of namespace OpenSim

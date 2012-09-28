@@ -93,11 +93,37 @@ namespace OpenSim {
  made to match a wide variety of shapes, should it be desired to fit the curve 
  to experimental data. 
  
+ <B>Usage</B>
+
+  Note that this object should be updated through the set methods provided. 
+ These set methods will take care of rebuilding the curve correctly. If you
+ modify the properties directly, the curve will not be rebuilt, and upon
+ calling a function like calcValue, calcDerivative, or printCurveToCSVFile
+ an exception will be thrown because the curve is out of date with its 
+ properties.
+
+ <B> Example </B>
+
+ @code
+ //Make a fitted fiber force length curve
+     FiberForceLengthCurve fpeCurve2;
+     fpeCurve2.setStrainAtOneNormForce(0.80);
+     double fpeVal2 = fpeCurve2.calcValue(0.1);
+
+ //Make a custom fiber force length curve by supplying every parameter
+     FiberForceLengthCurve fpeCurve3(0.0, 0.10,50,0.75,"testMuscle");
+            double fpe3Val  = fpeCurve3.calcValue(0.02);
+            double dfpe3Val = fpeCurve3.calcDerivative(0.02,1);
+
+ @endcode
+
  <B> Default Values </B>
 
  The default value for strainAtOneNormForce is 0.6, which matches the 
  experimental curve reported in Winters et al in Fig. 3a, and Thelen's fiber
  force length curve function described in his 2003 paper.
+
+ 
 
  <B> References </B>
 
@@ -379,21 +405,7 @@ public:
      bool isFittedCurveBeingUsed() const;
 
      /**
-    @param aStrainAtOneNormForce     
-                The fiber strain at which the fiber develops 1 unit of 
-                normalized force. The definition of strain used for this 
-                quantity is consistent with the Cauchy or engineering 
-                definition of strain: strain = (l-l0)/l0, where l is length,
-                and l0 is resting length. In this context 
-                strainAtOneNormForce = 0.6 means that 
-                the fiber will develop a tension of 1 normalized force when 
-                it is strained by 60% of its resting length, or 
-                equivalently is stretched to 1.6 times its resting length.
-    */
-     void setStrainAtOneNormForce(double aStrainAtOneNormForce);
-
-     /**
-    @param aStrainAtZeroForce     
+        @param aStrainAtZeroForce     
                 The fiber strain at which the fiber develops tenson. 
                 The definition of strain used for this 
                 quantity is consistent with the Cauchy or engineering 
@@ -401,10 +413,29 @@ public:
                 and l0 is resting length. In this context 
                 strainAtOneNormForce = 0.0 means that 
                 the fiber will start to develop tension at its resting length.
-    */
-     void setStrainAtZeroForce(double aStrainAtZeroForce);
 
+        @param aStrainAtOneNormForce     
+            The fiber strain at which the fiber develops 1 unit of 
+            normalized force. The definition of strain used for this 
+            quantity is consistent with the Cauchy or engineering 
+            definition of strain: strain = (l-l0)/l0, where l is length,
+            and l0 is resting length. In this context 
+            strainAtOneNormForce = 0.6 means that 
+            the fiber will develop a tension of 1 normalized force when 
+            it is strained by 60% of its resting length, or 
+            equivalently is stretched to 1.6 times its resting length.
     
+       <B>Conditions:</B>
+        \verbatim
+            strainAtOneNormForce > strainAtZeroForce            
+        \endverbatim
+
+       <B>Cost</B>
+         The  curve is rebuilt at a cost of ~174,100 flops
+     */
+     void setCurveStrains(double aStrainAtZeroForce,
+                          double aStrainAtOneNormForce); 
+
      /**
      @param aStiffnessAtOneNormForce
                 The normalized stiffness (or slope) of the fiber curve 
@@ -419,15 +450,20 @@ public:
                 linear extrapolation of 'stiffnessAtOneNormForce' and the
                 x axis as shown in the figure.
 
-    
+    <B>Conditions:</B>
+        \verbatim
+            stiffnessAtOneNormForce > 1/(strainAtOneNormForce-strainAtZeroForce)          
+        \endverbatim
+
+      <B>Cost</B>
+      The  curve is rebuilt at a cost of ~174,100 flops
      */    
      void setOptionalProperties(double aStiffnessAtOneNormForce,
                                 double aCurviness);
 
     /**
     Calculates the value of the curve evaluated at the desired normalized fiber
-    length. Note that if the curve is out of date it is rebuilt 
-    (at a cost of ~20,500 flops). 
+    length. 
 
     @param aNormLength
                 The normalized fiber length used to evaluate the fiber force 
@@ -450,8 +486,7 @@ public:
 
     /**
     Calculates the derivative of the fiber force length curve w.r.t. 
-    to the normalized fiber length. Note that if the curve is out of date it is 
-    rebuilt (at a cost of ~20,500 flops).
+    to the normalized fiber length. 
 
     @param aNormLength
                 The normalized fiber length used to evaluate the fiber force 
@@ -506,8 +541,7 @@ public:
        This function returns a SimTK::Vec2 that contains in its 0th element
        the lowest value of the curve domain, and in its 1st element the highest
        value in the curve domain of the curve. Outside of this domain the curve
-       is approximated using linear extrapolation. Note that  if the curve is 
-       out of date is rebuilt (which will cost ~20,500 flops).
+       is approximated using linear extrapolation. 
 
        @return The minimum and maximum value of the domain, x, of the curve 
                   y(x). Within this range y(x) is a curve, outside of this range
@@ -517,8 +551,7 @@ public:
 
     /**This function will generate a csv file with a name that matches the 
        curve name (e.g. "bicepfemoris_FiberForceLengthCurve.csv");
-       Note that  if the curve is out of date it is rebuilt 
-       (which will cost ~20,500 flops).
+       
        
        @param path The full path to the location. Note '/' slashes must be used,
             and do not put a '/' after the last folder.
@@ -558,6 +591,7 @@ public:
        */
        void printMuscleCurveToCSVFile(const std::string& path) const;
 
+        void ensureCurveUpToDate();
 //==============================================================================
 // PRIVATE
 //==============================================================================
@@ -614,7 +648,7 @@ private:
         If the curve is upto date nothing is done. If the curves parameters have
         changed then all of the 
     */
-    void ensureCurveUpToDate();
+   
 
     /*<B>NO LONGER USED</B>
      @returns The properties of the passive fiber length curve documented in 

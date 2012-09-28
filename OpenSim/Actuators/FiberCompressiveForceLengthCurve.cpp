@@ -38,6 +38,8 @@ FiberCompressiveForceLengthCurve::
     setNull();
     constructProperties();
     setName("default_FiberCompressiveForceLengthCurve");
+
+    ensureCurveUpToDate();
 }
 
 FiberCompressiveForceLengthCurve::FiberCompressiveForceLengthCurve
@@ -60,7 +62,8 @@ FiberCompressiveForceLengthCurve::FiberCompressiveForceLengthCurve
 
 void FiberCompressiveForceLengthCurve::setNull()
 {
-	setAuthors("Matthew Millard");
+
+    setAuthors("Matthew Millard");
 }
 
 void FiberCompressiveForceLengthCurve::constructProperties()
@@ -89,7 +92,8 @@ void FiberCompressiveForceLengthCurve::buildCurve()
         setObjectIsUpToDateWithProperties();
 }
 
-void FiberCompressiveForceLengthCurve::ensureCurveUpToDate()
+
+void FiberCompressiveForceLengthCurve::ensureCurveUpToDate() 
 {
     if(isObjectUpToDateWithProperties() == false){
 
@@ -113,8 +117,7 @@ void FiberCompressiveForceLengthCurve::ensureCurveUpToDate()
             getProperty_curviness().empty() == false)
         {
             
-            m_stiffnessAtZeroLengthInUse = 
-                get_stiffness_at_zero_length();
+            m_stiffnessAtZeroLengthInUse = get_stiffness_at_zero_length();
             m_curvinessInUse = get_curviness();
             m_isFittedCurveBeingUsed = false;
         }
@@ -151,6 +154,7 @@ void FiberCompressiveForceLengthCurve::ensureCurveUpToDate()
 void FiberCompressiveForceLengthCurve::connectToModel(Model& aModel)
 {
     Super::connectToModel(aModel);
+    ensureCurveUpToDate();
 }
 
 void FiberCompressiveForceLengthCurve::initStateFromProperties(SimTK::State& s) const
@@ -162,9 +166,9 @@ void FiberCompressiveForceLengthCurve::addToSystem(SimTK::MultibodySystem& syste
 {
     Super::addToSystem(system);
 
-    FiberCompressiveForceLengthCurve* mthis = 
-        const_cast<FiberCompressiveForceLengthCurve*>(this);    
-    mthis->buildCurve();
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberCompressiveForceLengthCurve: Curve is not"
+        " to date with its properties");
 }
 
 
@@ -174,37 +178,21 @@ void FiberCompressiveForceLengthCurve::addToSystem(SimTK::MultibodySystem& syste
 //=============================================================================
 double FiberCompressiveForceLengthCurve::getNormLengthAtZeroForce() const
 {
-    FiberCompressiveForceLengthCurve* mthis = 
-        const_cast<FiberCompressiveForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
-
     return get_norm_length_at_zero_force();
 }
 
 double FiberCompressiveForceLengthCurve::getStiffnessAtZeroLengthInUse() const
 {
-    FiberCompressiveForceLengthCurve* mthis = 
-        const_cast<FiberCompressiveForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
-
     return m_stiffnessAtZeroLengthInUse;
 }
 
 double FiberCompressiveForceLengthCurve::getCurvinessInUse() const
 {
-    FiberCompressiveForceLengthCurve* mthis = 
-        const_cast<FiberCompressiveForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
-
     return m_curvinessInUse;
 }
 
 bool FiberCompressiveForceLengthCurve::isFittedCurveBeingUsed() const
 {
-    FiberCompressiveForceLengthCurve* mthis = 
-        const_cast<FiberCompressiveForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
-
     return m_isFittedCurveBeingUsed;
 }
 
@@ -213,6 +201,7 @@ void FiberCompressiveForceLengthCurve::
     setNormLengthAtZeroForce(double aNormLengthAtZeroForce)
 {   
     set_norm_length_at_zero_force(aNormLengthAtZeroForce);
+    ensureCurveUpToDate();
 }
 
 void FiberCompressiveForceLengthCurve::
@@ -220,6 +209,7 @@ void FiberCompressiveForceLengthCurve::
 {
    set_stiffness_at_zero_length(aStiffnessAtZeroLength);
    set_curviness(aCurviness);
+   ensureCurveUpToDate();
 }
 
 
@@ -228,53 +218,49 @@ void FiberCompressiveForceLengthCurve::
 //=============================================================================
 
 double FiberCompressiveForceLengthCurve::calcValue(double aNormLength) const
-{    
-    FiberCompressiveForceLengthCurve* mthis = 
-        const_cast<FiberCompressiveForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
-    
+{        
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberCompressiveForceLengthCurve: Curve is not"
+        " to date with its properties");
     return m_curve.calcValue(aNormLength);
 }
 
 double FiberCompressiveForceLengthCurve::calcIntegral(double aNormLength) const
 {    
-    FiberCompressiveForceLengthCurve* mthis = 
-        const_cast<FiberCompressiveForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
-    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberCompressiveForceLengthCurve: Curve is not"
+        " to date with its properties");
     return m_curve.calcIntegral(aNormLength);
 }
 
 double FiberCompressiveForceLengthCurve::
     calcDerivative(double aNormLength, int order) const
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberCompressiveForceLengthCurve: Curve is not"
+        " to date with its properties");
+
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2, 
         "FiberCompressiveForceLengthCurve::calcDerivative",
         "order must be 0, 1, or 2, but %i was entered", order);
      
-        FiberCompressiveForceLengthCurve* mthis = 
-            const_cast<FiberCompressiveForceLengthCurve*>(this);    
-        mthis->ensureCurveUpToDate();    
-
     return m_curve.calcDerivative(aNormLength,order);
 }
 
 SimTK::Vec2 FiberCompressiveForceLengthCurve::getCurveDomain() const
 {
-   
-    FiberCompressiveForceLengthCurve* mthis = 
-        const_cast<FiberCompressiveForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
-    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberCompressiveForceLengthCurve: Curve is not"
+        " to date with its properties");   
     return m_curve.getCurveDomain();
 }
 
 void FiberCompressiveForceLengthCurve::
     printMuscleCurveToCSVFile(const std::string& path) const
 {    
-    FiberCompressiveForceLengthCurve* mthis = 
-        const_cast<FiberCompressiveForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
-    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberCompressiveForceLengthCurve: Curve is not"
+        " to date with its properties");
+
     m_curve.printMuscleCurveToCSVFile(path);
 }

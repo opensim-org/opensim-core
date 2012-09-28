@@ -65,6 +65,13 @@ much force is transmitted from the fiber to the tendon.\n
 2) This pennation model assumes that fiber length, and whole muscle length are
 known.
 
+ <B> Usage </B>
+    This object should be updated through the set methods provided. 
+    These set methods will take care of rebuilding the object correctly. If you
+    modify the properties directly, the object will not be rebuilt, and upon
+    calling any functions an exception will be thrown because the object is out 
+    of date with its properties.
+
 @author Matt Millard
 @version 0.0
 
@@ -699,12 +706,12 @@ public:
                                 double tendonVelocity,                                                                              
                                 std::string& caller) const;
 
-
+    void ensureModelUpToDate();
 private:
     void setNull();
     void constructProperties();
     void ensurePropertiesSet() const;
-    void ensureModelUpToDate() const;
+    
     void buildModel();
 
     /**The height of the parallelogram (in meters). Since the width is 

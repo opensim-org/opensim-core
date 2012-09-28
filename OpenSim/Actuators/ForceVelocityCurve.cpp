@@ -37,6 +37,7 @@ ForceVelocityCurve::ForceVelocityCurve()
     setNull();
     constructProperties();
     setName("default_ForceVelocityCurve");
+    ensureCurveUpToDate();
 }
 
 ForceVelocityCurve::ForceVelocityCurve
@@ -69,7 +70,8 @@ ForceVelocityCurve::ForceVelocityCurve
 
 void ForceVelocityCurve::setNull()
 {
-	setAuthors("Matthew Millard");
+   
+   setAuthors("Matthew Millard");
 }
 
 void ForceVelocityCurve::constructProperties()
@@ -123,6 +125,7 @@ void ForceVelocityCurve::ensureCurveUpToDate()
 void ForceVelocityCurve::connectToModel(Model& aModel)
 {
     Super::connectToModel(aModel);
+    ensureCurveUpToDate();
 }
 
 void ForceVelocityCurve::initStateFromProperties(SimTK::State& s) const
@@ -134,8 +137,9 @@ void ForceVelocityCurve::addToSystem(SimTK::MultibodySystem& system) const
 {
     Super::addToSystem(system);
 
-    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
-    mthis->ensureCurveUpToDate();
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+    "FiberForceVelocityCurve: Curve is not"
+    " to date with its properties"); 
 }
 
 
@@ -145,78 +149,63 @@ void ForceVelocityCurve::addToSystem(SimTK::MultibodySystem& system) const
 //=============================================================================
 double ForceVelocityCurve::getConcentricMinSlope() const
 {
-    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
-    mthis->ensureCurveUpToDate();
     return get_min_concentric_slope();
 }
 
 double ForceVelocityCurve::getIsometricMaxSlope() const
 {
-    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
-    mthis->ensureCurveUpToDate();
     return get_isometric_slope();
 }
 
 double ForceVelocityCurve::getEccentricMinSlope() const
 {
-    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
-    mthis->ensureCurveUpToDate();
+
     return get_min_eccentric_slope();
 }
 
 double ForceVelocityCurve::getMaxEccentricVelocityForceMultiplier() const
 {
-    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
-    mthis->ensureCurveUpToDate();
+
     return get_max_eccentric_velocity_force_multiplier();
 }
     
 double ForceVelocityCurve::getConcentricCurviness() const
 {
-    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
-    mthis->ensureCurveUpToDate();
+
     return get_concentric_curviness();
 }
     
 double ForceVelocityCurve::getEccentricCurviness() const
 {
-    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
-    mthis->ensureCurveUpToDate();
+
     return get_eccentric_curviness();
 }
 
-void ForceVelocityCurve::setConcentricMinSlope(double aConcentricMinSlope)
-{   
-    set_min_concentric_slope(aConcentricMinSlope);   
-}
 
-void ForceVelocityCurve::setIsometricMaxSlope(double aIsometricMaxSlope)
+void ForceVelocityCurve::setCurveShape(double aConcentricMinSlope,
+                                       double aIsometricMaxSlope,
+                                       double aEccentricMinSlope,
+                                       double aMaxForceMultiplier)
 {
+    set_min_concentric_slope(aConcentricMinSlope); 
     set_isometric_slope(aIsometricMaxSlope);
-}
-
-void ForceVelocityCurve::setEccentricMinSlope(double aEccentricMinSlope)
-{
     set_min_eccentric_slope(aEccentricMinSlope);
-}
-
-
-void ForceVelocityCurve::
-    setMaxEccentricVelocityForceMultiplier(double aMaxForceMultiplier)
-{
     set_max_eccentric_velocity_force_multiplier(aMaxForceMultiplier);
+    ensureCurveUpToDate();
 }
 
 
 void ForceVelocityCurve::setConcentricCurviness(double aConcentricCurviness)
 {
     set_concentric_curviness(aConcentricCurviness);
+    ensureCurveUpToDate();
 }
 
 
 void ForceVelocityCurve::setEccentricCurviness(double aEccentricCurviness)
 {
     set_eccentric_curviness(aEccentricCurviness);
+    ensureCurveUpToDate();
 }
 
 
@@ -226,8 +215,9 @@ void ForceVelocityCurve::setEccentricCurviness(double aEccentricCurviness)
 
 double ForceVelocityCurve::calcValue(double normFiberVelocity) const
 {   
-    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
-    mthis->ensureCurveUpToDate(); 
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+    "FiberForceVelocityCurve: Curve is not"
+    " to date with its properties");    
 
     return m_curve.calcValue(normFiberVelocity);
 }
@@ -235,31 +225,32 @@ double ForceVelocityCurve::calcValue(double normFiberVelocity) const
 double ForceVelocityCurve::calcDerivative(double normFiberVelocity, 
                                                  int order) const
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+    "FiberForceVelocityCurve: Curve is not"
+    " to date with its properties");    
+
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2, 
         "ForceVelocityCurve::calcDerivative",
         "order must be 0, 1, or 2, but %i was entered", order);
   
-    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
-    mthis->ensureCurveUpToDate();        
-
     return m_curve.calcDerivative(normFiberVelocity,order);
 }
 
 SimTK::Vec2 ForceVelocityCurve::getCurveDomain() const
 {
-    
-    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
-    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+    "FiberForceVelocityCurve: Curve is not"
+    " to date with its properties");    
+
     return m_curve.getCurveDomain();
 }
 
 void ForceVelocityCurve::
     printMuscleCurveToCSVFile(const std::string& path) const
 {
-    
-    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
-    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+    "FiberForceVelocityCurve: Curve is not"
+    " to date with its properties");    
+
     m_curve.printMuscleCurveToCSVFile(path);
 }

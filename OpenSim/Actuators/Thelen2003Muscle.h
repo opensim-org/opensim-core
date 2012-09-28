@@ -102,6 +102,13 @@ namespace OpenSim {
     physiologically possible (that is shorter than approximately half a 
     normalized fiber length).
 
+     <B> Usage </B>
+    This object should be updated through the set methods provided. 
+    These set methods will take care of rebuilding the object correctly. If you
+    modify the properties directly, the object will not be rebuilt, and upon
+    calling any functions an exception will be thrown because the object is out 
+    of date with its properties.
+
   <B> References </B>
 
    DG Thelen, Adjustment of muscle mechanics model parameters to simulate dynamic 
@@ -212,7 +219,7 @@ public:
     /**
     @param maxPennationAngle is the maximum pennation (radians). 
     */
-    bool setMaximumPennationAngle(double maxPennationAngle);
+    //bool setMaximumPennationAngle(double maxPennationAngle);
 
     /**
    @returns the MuscleFirstOrderActivationDynamicModel 
@@ -290,13 +297,17 @@ protected:
     /** Calculate activation rate */
     double calcActivationRate(const SimTK::State& s) const OVERRIDE_11; 
 
-    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    virtual void addToSystem(SimTK::MultibodySystem& system) const;
+	virtual void initStateFromProperties(SimTK::State& s) const;
+    virtual void setPropertiesFromState(const SimTK::State& state);
+    virtual void connectToModel(Model& aModel);
 
 
 private:
     void setNull();
     void constructProperties();
-
+    void buildMuscle();
+    void ensureMuscleUpToDate();
     //=====================================================================
     // Private Utility Class Members
     //      -Computes activation dynamics and fiber kinematics

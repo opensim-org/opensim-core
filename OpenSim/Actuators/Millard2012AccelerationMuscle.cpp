@@ -66,7 +66,8 @@ const static int MDIFiberAcceleration = 0;
 //=============================================================================
 void Millard2012AccelerationMuscle::setNull()
 {
-	setAuthors("Matthew Millard");
+
+    setAuthors("Matthew Millard");
 }
 
 
@@ -194,19 +195,27 @@ void Millard2012AccelerationMuscle::buildMuscle()
         upd_FiberCompressiveForceCosPennationCurve();
     fcphi.setName(tmp);
 
+     //Ensure all sub objects are up to date with properties;
+    actMdl.ensureModelUpToDate();
+    m_penMdl.ensureModelUpToDate();
+
+    falCurve.ensureCurveUpToDate();
+    fvCurve.ensureCurveUpToDate();
+    fpeCurve.ensureCurveUpToDate();
+    fseCurve.ensureCurveUpToDate();
+    fkCurve.ensureCurveUpToDate();
+    fcphi.ensureCurveUpToDate();
     
-    
+   
     setObjectIsUpToDateWithProperties();
 
 }
 
-void Millard2012AccelerationMuscle::ensureMuscleUpToDate() const
+void Millard2012AccelerationMuscle::ensureMuscleUpToDate()
 {
     if(isObjectUpToDateWithProperties() == false)
     {
-        Millard2012AccelerationMuscle* mthis = 
-            const_cast<Millard2012AccelerationMuscle*>(this);
-        mthis->buildMuscle(); 
+        buildMuscle(); 
     }
 }
 
@@ -253,7 +262,9 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
 {
     Super::addToSystem(system);
 
-    ensureMuscleUpToDate();
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012AccelerationMuscle: Muscle is not"
+        " to date with properties");
 
     addStateVariable(STATE_ACTIVATION_NAME);
     addStateVariable(STATE_FIBER_LENGTH_NAME);
@@ -279,8 +290,6 @@ void Millard2012AccelerationMuscle::initStateFromProperties(SimTK::State& s) con
 {
     Super::initStateFromProperties(s);
 
-    ensureMuscleUpToDate();
-
     setActivation(s, getDefaultActivation());
     setFiberLength(s, getDefaultFiberLength());
     setFiberVelocity(s,getDefaultFiberVelocity());
@@ -290,12 +299,12 @@ void Millard2012AccelerationMuscle::
     setPropertiesFromState(const SimTK::State& s)
 {
     Super::setPropertiesFromState(s);
-    
-    ensureMuscleUpToDate();
 
     setDefaultActivation(getStateVariable(s,STATE_ACTIVATION_NAME));
     setDefaultFiberLength(getStateVariable(s,STATE_FIBER_LENGTH_NAME));
     setDefaultFiberVelocity(getStateVariable(s,STATE_FIBER_VELOCITY_NAME));
+
+    ensureMuscleUpToDate();
 }
 
 SimTK::Vector Millard2012AccelerationMuscle::
@@ -321,33 +330,32 @@ SimTK::Vector Millard2012AccelerationMuscle::
 
 double Millard2012AccelerationMuscle::getDefaultActivation() const
 {
-    ensureMuscleUpToDate();
     return get_default_activation();
 }
 
 double Millard2012AccelerationMuscle::getDefaultFiberLength() const
 {
-    ensureMuscleUpToDate();
+    
     return get_default_fiber_length();
 }
 
 double Millard2012AccelerationMuscle::getDefaultFiberVelocity() const
 {
-    ensureMuscleUpToDate();
+   
     return get_default_fiber_velocity();
 }
 
 double Millard2012AccelerationMuscle::
     getActivationRate(const SimTK::State& s) const
 {
-    ensureMuscleUpToDate();
+ 
     return calcActivationRate(s);
 }
 
 double Millard2012AccelerationMuscle::
     getFiberVelocity(const SimTK::State& s) const
 {
-    ensureMuscleUpToDate();
+    
     FiberVelocityInfo fvi = getFiberVelocityInfo(s);
     return fvi.fiberVelocity;
 }
@@ -355,7 +363,7 @@ double Millard2012AccelerationMuscle::
 double Millard2012AccelerationMuscle::
     getFiberAcceleration(const SimTK::State& s) const
 {
-    ensureMuscleUpToDate();
+    
     MuscleDynamicsInfo fdi = getMuscleDynamicsInfo(s);
     return fdi.userDefinedDynamicsExtras[MDIFiberAcceleration];
 }
@@ -364,7 +372,7 @@ double Millard2012AccelerationMuscle::
 
 Array<std::string> Millard2012AccelerationMuscle::getStateVariableNames() const
 {
-    ensureMuscleUpToDate();
+    
     Array<std::string> stateVariableNames = 
         ModelComponent::getStateVariableNames();
 	
@@ -406,17 +414,20 @@ double Millard2012AccelerationMuscle::
 void Millard2012AccelerationMuscle::setDefaultActivation(double activation)
 {
     set_default_activation(activation);
+    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::setDefaultFiberLength(double fiberLength)
 {
     set_default_fiber_length(fiberLength);
+    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::
     setDefaultFiberVelocity(double fiberVelocity)
 {
     set_default_fiber_velocity(fiberVelocity);
+    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::
@@ -491,70 +502,70 @@ double Millard2012AccelerationMuscle::
 const MuscleFirstOrderActivationDynamicModel& Millard2012AccelerationMuscle::
     getActivationModel() const
 {
-    ensureMuscleUpToDate();
+    
     return get_MuscleFirstOrderActivationDynamicModel();
 }
 
 const MuscleFixedWidthPennationModel& Millard2012AccelerationMuscle::
     getPennationModel() const
 {
-    ensureMuscleUpToDate();
+    
     return m_penMdl;
 }
 
 const ActiveForceLengthCurve& Millard2012AccelerationMuscle::
     getActiveForceLengthCurve() const
 {
-    ensureMuscleUpToDate();
+    
     return get_ActiveForceLengthCurve();
 }
 
 const ForceVelocityCurve& Millard2012AccelerationMuscle::
     getForceVelocityCurve() const
 {
-    ensureMuscleUpToDate();
+    
     return get_ForceVelocityCurve();
 }
 
 const FiberForceLengthCurve& Millard2012AccelerationMuscle::
     getFiberForceLengthCurve() const
 {
-    ensureMuscleUpToDate();
+    
     return get_FiberForceLengthCurve();
 }
 
 const TendonForceLengthCurve& Millard2012AccelerationMuscle::
     getTendonForceLengthCurve() const
 {
-    ensureMuscleUpToDate();
+    
     return get_TendonForceLengthCurve();
 }
 
 const FiberCompressiveForceLengthCurve& Millard2012AccelerationMuscle::
     getFiberCompressiveForceLengthCurve() const
 {
-    ensureMuscleUpToDate();
+    
     return get_FiberCompressiveForceLengthCurve();
 }
 
 const FiberCompressiveForceCosPennationCurve& Millard2012AccelerationMuscle::
     getFiberCompressiveForceCosPennationCurve() const
 {
-    ensureMuscleUpToDate();
+    
     return get_FiberCompressiveForceCosPennationCurve();
 }
 
 double Millard2012AccelerationMuscle::
     getFiberStiffnessAlongTendon(const SimTK::State& s) const
 {
-    ensureMuscleUpToDate();
+    
     const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
     return mdi.fiberStiffnessAlongTendon;
 }
 
 double Millard2012AccelerationMuscle::getMass() const
 {
-    ensureMuscleUpToDate();
+    
     return get_mass();
 }
 
@@ -568,29 +579,34 @@ void Millard2012AccelerationMuscle::setActivationModel(
         MuscleFirstOrderActivationDynamicModel& aActivationMdl)
 {
     set_MuscleFirstOrderActivationDynamicModel(aActivationMdl);
+    ensureMuscleUpToDate();
 }
 void Millard2012AccelerationMuscle::setActiveForceLengthCurve(
         ActiveForceLengthCurve& aActiveForceLengthCurve)
 {
     set_ActiveForceLengthCurve(aActiveForceLengthCurve);
+    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::setForceVelocityCurve(
         ForceVelocityCurve& aForceVelocityCurve)
 {   
     set_ForceVelocityCurve(aForceVelocityCurve);
+    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::setFiberForceLengthCurve(
         FiberForceLengthCurve& aFiberForceLengthCurve)
 {
     set_FiberForceLengthCurve(aFiberForceLengthCurve);
+    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::setTendonForceLengthCurve(
         TendonForceLengthCurve& aTendonForceLengthCurve)
 {
     set_TendonForceLengthCurve(aTendonForceLengthCurve);
+    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::setFiberCompressiveForceLengthCurve(
@@ -598,6 +614,7 @@ void Millard2012AccelerationMuscle::setFiberCompressiveForceLengthCurve(
 {
     set_FiberCompressiveForceLengthCurve(
         aFiberCompressiveForceLengthCurve);
+    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::setFiberCompressiveForceCosPennationCurve(
@@ -606,6 +623,7 @@ void Millard2012AccelerationMuscle::setFiberCompressiveForceCosPennationCurve(
 {
     set_FiberCompressiveForceCosPennationCurve(
         aFiberCompressiveForceCosPennationCurve);
+    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::setMass(double mass) 
@@ -615,6 +633,7 @@ void Millard2012AccelerationMuscle::setMass(double mass)
         "%s: The mass is set too small!",getName().c_str());
 
     set_mass(mass);
+    ensureMuscleUpToDate();
 }
 
 
@@ -774,7 +793,6 @@ void Millard2012AccelerationMuscle::
         "Millard2012AccelerationMuscle: Muscle is not"
         " to date with properties");
 
-        ensureMuscleUpToDate();
         //Initialize activation to the users desired setting
         setActivation(s,getActivation(s));
         //Initialize the fiber length
@@ -1287,7 +1305,10 @@ SimTK::Vector Millard2012AccelerationMuscle::
                     int aMaxIterations,
                     double aNewtonStepFraction) const
 {
-    ensureMuscleUpToDate();   
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "Millard2012AccelerationMuscle: Muscle is not"
+        " to date with properties");
+
     std::string caller = getName();
     caller.append(".initMuscleState");
     //results vector format
@@ -1851,7 +1872,6 @@ void Millard2012AccelerationMuscle::
                                          double fcphi,
                                          double fse) const
 {
-    ensureMuscleUpToDate();
     std::string caller = getName();
     caller.append("Millard2012AccelerationMuscle::"
                   "calcAccelerationMuscleInfo");

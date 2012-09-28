@@ -49,6 +49,13 @@ namespace OpenSim {
  
  \image html fig_ForceVelocityInverseCurve.png
 
+ Note that this object should be updated through the set methods provided. 
+ These set methods will take care of rebuilding the curve correctly. If you
+ modify the properties directly, the curve will not be rebuilt, and upon
+ calling a function like calcValue, calcDerivative, or printCurveToCSVFile
+ an exception will be thrown because the curve is out of date with its 
+ properties.
+
   @author Matt Millard
 
  */
@@ -222,40 +229,47 @@ public:
                 eccentricMinSlope, and the isometricMaxSlope.
      */
      double getEccentricCurviness() const;
-
+     
      /**
      @param aConcentricMinSlope 
         the slope of the force velocity curve at the maximum concentric 
         contraction velocity (1).
-     */
-     void setConcentricMinSlope(double aConcentricMinSlope);
-     
-     /**
      @param aIsometricMaxSlope 
         the slope of the force velocity curve at a contraction velocity of 0.
-     */
-     void setIsometricMaxSlope(double aIsometricMaxSlope);
-
-     /**
      @param aEccentricMinSlope 
         the slope of the force velocity curve at the maximum eccentric 
         (lengthening) contraction velocity (1).
-     */
-
-     void setEccentricMinSlope(double aEccentricMinSlope);
-
-     /**
      @param aMaxForceMultiplier 
         the value of the force velocity curve, or the value of the force 
         velocity multiplier, at the maximum eccentric (lengthening) velocity
+     
+     <B>Conditions</B>
+      \verbatim
+            1)  0 < concentricMinSlope < 1            
+            2a) 1 < isometricMaxSlope
+            2b) (maxEccentricVelocityForceMultiplier-1)/1 < isometricMaxSlope            
+            3)  0 < eccentricMinSlope < (maxEccentricVelocityForceMultiplier-1)/1
+
+            4) 1 < maxEccentricVelocityForceMultiplier 
+      \endverbatim
+
+      <B>Computational Cost</B>
+      The curve is rebuilt at a cost of ~8,200 flops
+
      */
-     void setMaxEccentricVelocityForceMultiplier(double aMaxForceMultiplier);
+     void setCurveShape(double aConcentricMinSlope,
+                        double aIsometricMaxSlope,
+                        double aEccentricMinSlope,
+                        double aMaxForceMultiplier);
 
      /**
      @param aConcentricCurviness      
         The value of the curviness of the concentric curve, where 0 represents a 
         nearly straight line segment, and 1 represents a curve with the maximum 
         bend possible given the concentricMinSlope, and the isometricMaxSlope. 
+
+        <B>Computational Cost</B>
+      The curve is rebuilt at a cost of ~8,200 flops
      */
      void setConcentricCurviness(double aConcentricCurviness);
 
@@ -264,13 +278,14 @@ public:
         The value of the curviness of the eccentric curve, where 0 represents a 
         nearly straight line segment, and 1 represents a curve with the maximum 
         bend possible given the eccentricMinSlope, and the isometricMaxSlope.
+
+        <B>Computational Cost</B>
+      The curve is rebuilt at a cost of ~8,200 flops
      */
      void setEccentricCurviness(double aEccentricCurviness);
 
     /**
     Calculates the value of the curve evaluated at 'aForceVelocityMultiplier'. 
-    Note that if the curve is out of date it is rebuilt 
-    (at a cost of ~20,500 flops). 
 
     @param aForceVelocityMultiplier: the force velocity multiplier to evaluate
         the force velocity curve for the corresponding fiber velocity
@@ -289,8 +304,7 @@ public:
 
     /**
     Calculates the derivative of the force-velocity inverse curve w.r.t. 
-    the force velocity multiplier. Note that if the curve is out of date it is 
-    rebuilt (at a cost of ~20,500 flops).
+    the force velocity multiplier. 
 
     @param aForceVelocityMultiplier: the force velocity multiplier to evaluate
         the force velocity curve for the corresponding fiber velocity
@@ -314,8 +328,7 @@ public:
        This function returns a SimTK::Vec2 that contains in its 0th element
        the lowest value of the curve domain, and in its 1st element the highest
        value in the curve domain of the curve. Outside of this domain the curve
-       is approximated using linear extrapolation. Note that  if the curve is 
-       out of date is rebuilt (which will cost ~20,500 flops).
+       is approximated using linear extrapolation.
 
        @return The minimum and maximum value of the domain, x, of the curve 
                   y(x). Within this range y(x) is a curve, outside of this range
@@ -325,8 +338,7 @@ public:
 
     /**This function will generate a csv file with a name that matches the 
        curve name (e.g. "bicepfemoris_fiberForceVelocityInverseCurve.csv");
-       Note that  if the curve is out of date is rebuilt 
-       (which will cost ~20,500 flops).
+      
        
        @param path The full path to the location. Note '/' slashes must be used,
             and do not put a '/' after the last folder.
@@ -365,6 +377,7 @@ public:
        */
        void printMuscleCurveToCSVFile(const std::string& path) const;
 
+       void ensureCurveUpToDate();
 //==============================================================================
 // PRIVATE
 //==============================================================================
@@ -416,7 +429,7 @@ private:
 
     */
     void buildCurve();
-    void ensureCurveUpToDate();
+    
 
     SmoothSegmentedFunction   m_curve;
    

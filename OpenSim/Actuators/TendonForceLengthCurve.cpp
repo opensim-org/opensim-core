@@ -46,6 +46,7 @@ TendonForceLengthCurve::TendonForceLengthCurve()
     setNull();
     constructProperties();
     setName("default_TendonForceLengthCurve");
+    ensureCurveUpToDate();
 }
 
 TendonForceLengthCurve::TendonForceLengthCurve( double strainAtOneNormForce, 
@@ -78,7 +79,8 @@ TendonForceLengthCurve::TendonForceLengthCurve( double strainAtOneNormForce,
 
 void TendonForceLengthCurve::setNull()
 {
-	setAuthors("Matthew Millard");
+
+    setAuthors("Matthew Millard");
 }
 
 void TendonForceLengthCurve::constructProperties()
@@ -209,6 +211,7 @@ void TendonForceLengthCurve::ensureCurveUpToDate()
 void TendonForceLengthCurve::connectToModel(Model& model)
 {
     Super::connectToModel(model);
+    ensureCurveUpToDate();
 }
 
 void TendonForceLengthCurve::initStateFromProperties(SimTK::State& s) const
@@ -219,9 +222,9 @@ void TendonForceLengthCurve::initStateFromProperties(SimTK::State& s) const
 void TendonForceLengthCurve::addToSystem(SimTK::MultibodySystem& system) const
 {
     Super::addToSystem(system);
-
-    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "TendonForceLengthCurve: Tendon is not"
+        " to date with properties");
 }
 
 
@@ -231,45 +234,36 @@ void TendonForceLengthCurve::addToSystem(SimTK::MultibodySystem& system) const
 //=============================================================================
 double TendonForceLengthCurve::getStrainAtOneNormForce() const
 {
-    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
     return get_strain_at_one_norm_force();
 }
 
 
 double TendonForceLengthCurve::getStiffnessAtOneNormForceInUse() const
 {
-    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
     return m_stiffnessAtOneNormForceInUse;
 }
 
 
 double TendonForceLengthCurve::getCurvinessInUse() const
 {
-    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
     return m_curvinessInUse;
 }
 
 double TendonForceLengthCurve::getNormForceAtToeEndInUse() const
 {
-    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
     return m_normForceAtToeEndInUse;
 }
 
 bool TendonForceLengthCurve::isFittedCurveBeingUsed() const
 {
-    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
     return m_isFittedCurveBeingUsed;
 }
 
 void TendonForceLengthCurve::
     setStrainAtOneNormForce(double aStrainAtOneNormForce)
 {         
-    set_strain_at_one_norm_force(aStrainAtOneNormForce);  
+    set_strain_at_one_norm_force(aStrainAtOneNormForce); 
+    ensureCurveUpToDate();
 }
 
 void TendonForceLengthCurve::
@@ -280,6 +274,7 @@ void TendonForceLengthCurve::
     set_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
     set_norm_force_at_toe_end(aNormForceAtToeEnd);
     set_curviness(aCurviness);
+    ensureCurveUpToDate();
 }
 
 
@@ -292,42 +287,52 @@ void TendonForceLengthCurve::
 double TendonForceLengthCurve::
     calcValue(double aNormLength) const
 {
-    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "TendonForceLengthCurve: Tendon is not"
+        " to date with properties");
+  
     return m_curve.calcValue(aNormLength);
 }
 
 double TendonForceLengthCurve::
     calcDerivative(double aNormLength, int order) const
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "TendonForceLengthCurve: Tendon is not"
+        " to date with properties");
+
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2, 
         "TendonForceLengthCurve::calcDerivative",
         "order must be 0, 1, or 2, but %i was entered", order);
-    
-    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
+       
     return m_curve.calcDerivative(aNormLength,order);
 }
 
 double TendonForceLengthCurve::calcIntegral(double aNormLength) const
 {
-    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "TendonForceLengthCurve: Tendon is not"
+        " to date with properties");
+
     return m_curve.calcIntegral(aNormLength);
 }
 
 SimTK::Vec2 TendonForceLengthCurve::getCurveDomain() const
 {
-    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "TendonForceLengthCurve: Tendon is not"
+        " to date with properties");
+
     return m_curve.getCurveDomain();
 }
 
 void TendonForceLengthCurve::
     printMuscleCurveToCSVFile(const std::string& path) const
 {
-    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "TendonForceLengthCurve: Tendon is not"
+        " to date with properties");
+
     m_curve.printMuscleCurveToCSVFile(path);
 }
 

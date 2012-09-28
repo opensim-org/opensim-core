@@ -66,7 +66,7 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
 {
     //Ensure that the inputs are within a valid range
     double rootEPS = sqrt(SimTK::Eps);
-    SimTK_ERRCHK1_ALWAYS( (x0>0 && x1>x0+rootEPS  
+    SimTK_ERRCHK1_ALWAYS( (x0>=0 && x1>x0+rootEPS  
                         && x2>x1+rootEPS && x3>x2+rootEPS),
         "SmoothSegmentedFunctionFactory::createFiberActiveForceLengthCurve",
         "%s: This must be true: 0 < lce0 < lce1 < lce2 < lce3",

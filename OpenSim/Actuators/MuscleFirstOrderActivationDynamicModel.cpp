@@ -33,11 +33,19 @@ using namespace SimTK;
 // Code
 //=============================================================================
 MuscleFirstOrderActivationDynamicModel::
-    MuscleFirstOrderActivationDynamicModel():m_minAS(SimTK::NaN)
+    MuscleFirstOrderActivationDynamicModel()
 {
     setName("default_MuscleFirstOrderActivationDynamicModel");
     setNull();
     constructProperties();
+    buildModel();
+}
+
+void MuscleFirstOrderActivationDynamicModel::ensureModelUpToDate()
+{
+    if(isObjectUpToDateWithProperties()==false){
+        buildModel();
+    }
 }
 
 void MuscleFirstOrderActivationDynamicModel::buildModel()
@@ -46,6 +54,7 @@ void MuscleFirstOrderActivationDynamicModel::buildModel()
     //subtraction and an assignment ...
     double minActivation = get_minimum_activation();
     m_minAS = minActivation/(1-minActivation); 
+    setObjectIsUpToDateWithProperties();
 }
 
 /*
@@ -92,6 +101,7 @@ void MuscleFirstOrderActivationDynamicModel::setNull()
 {
 	setAuthors("Matthew Millard");
     m_minAS = SimTK::NaN;
+    
 }
 
 void MuscleFirstOrderActivationDynamicModel::constructProperties()
@@ -101,12 +111,16 @@ void MuscleFirstOrderActivationDynamicModel::constructProperties()
     //constructProperty_minimum_activation(0.01);
     //m_minAS = get_minimum_activation()/(1-get_minimum_activation());
     constructProperty_minimum_activation(0.01);
-    buildModel();
+    
 }
 
 double MuscleFirstOrderActivationDynamicModel::
     calcDerivative(double activation, double excitation) const
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "MuscleFirstOrderActivationDynamicModel: object is not"
+        " to date with properties");
+
     SimTK::Array_<int> dx(1);
     dx[0] = 0;
 
@@ -146,6 +160,10 @@ double MuscleFirstOrderActivationDynamicModel::getMaximumActivation() const
 double MuscleFirstOrderActivationDynamicModel::
     clampActivation(double activation) const
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "MuscleFirstOrderActivationDynamicModel: object is not"
+        " to date with properties");
+
     //Clamp the lower bound
     double clampedActivation = max(get_minimum_activation(), activation);
     //Clamp the upper bound
@@ -197,6 +215,10 @@ bool MuscleFirstOrderActivationDynamicModel::
 double MuscleFirstOrderActivationDynamicModel::
     calcValue(const SimTK::Vector& x) const
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "MuscleFirstOrderActivationDynamicModel: object is not"
+        " to date with properties");
+
     SimTK_ERRCHK1_ALWAYS(x.size() == 2,
         "MuscleFirstOrderActivationDynamicModel::calcDerivative",
         "%s: Two arguments are required: excitation and activation", 
@@ -217,6 +239,10 @@ double MuscleFirstOrderActivationDynamicModel::
     calcDerivative(const SimTK::Array_<int>& derivComponents, 
                     const SimTK::Vector& x) const
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "MuscleFirstOrderActivationDynamicModel: object is not"
+        " to date with properties");
+
     SimTK_ERRCHK1_ALWAYS(x.size() == 2,
         "MuscleFirstOrderActivationDynamicModel::calcDerivative",
         "%s: Two arguments are required: excitation and activation", 

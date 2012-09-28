@@ -163,6 +163,7 @@ SmoothSegmentedFunction::
         _arraySplineUX.resize(0);        
         _splineYintX = SimTK::Spline();
         _numBezierSections = (int)SimTK::NaN;
+       
  }
 
 

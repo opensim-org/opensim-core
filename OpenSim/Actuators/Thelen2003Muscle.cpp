@@ -48,6 +48,7 @@ Thelen2003Muscle::Thelen2003Muscle()
 {    
     setNull();
     constructProperties();
+    ensureMuscleUpToDate();
 }
 
 //_____________________________________________________________________________
@@ -68,50 +69,91 @@ Thelen2003Muscle(const std::string& aName,  double aMaxIsometricForce,
     setTendonSlackLength(aTendonSlackLength);
     setPennationAngleAtOptimalFiberLength(aPennationAngle);
 
-}
+    ensureMuscleUpToDate();
 
+}
+//====================================================================
+// Model Component Interface
+//====================================================================
 void Thelen2003Muscle::addToSystem(SimTK::MultibodySystem& system) const 
 {
     Super::addToSystem(system);
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+                    "Thelen2003Muscle: Muscle is not"
+                    " to date with properties");
+}
 
+void Thelen2003Muscle::connectToModel(Model& aModel)
+{
+    Super::connectToModel(aModel);
+    ensureMuscleUpToDate();
+}
+
+void Thelen2003Muscle::ensureMuscleUpToDate()
+{
+    if(isObjectUpToDateWithProperties()==false){
+        buildMuscle();
+    }
+}
+
+void Thelen2003Muscle::initStateFromProperties(SimTK::State& s) const
+{
+    Super::initStateFromProperties(s);
+
+}
     
 
+void Thelen2003Muscle::
+    setPropertiesFromState(const SimTK::State& s)
+{
+    Super::setPropertiesFromState(s);      
+    ensureMuscleUpToDate();
+      
+}
+
+
+void Thelen2003Muscle::buildMuscle(){
+    std::string caller(getName());
+    caller.append("_Thelen2003Muscle::buildMuscle");
+
     //Appropriately set the properties of the activation model
-        double activationTimeConstant  = getActivationTimeConstant();
-        double deactivationTimeConstant= getDeactivationTimeConstant();
-        double activationMinValue      = getMinimumActivation();
+    double activationTimeConstant  = getActivationTimeConstant();
+    double deactivationTimeConstant= getDeactivationTimeConstant();
+    double activationMinValue      = getMinimumActivation();
 
 
-        MuscleFirstOrderActivationDynamicModel tmp1(activationTimeConstant, 
-                                                    deactivationTimeConstant, 
-                                                    activationMinValue, 
-                                                    getName());
+    MuscleFirstOrderActivationDynamicModel tmp1(activationTimeConstant, 
+                                                deactivationTimeConstant, 
+                                                activationMinValue, 
+                                                caller);
+    actMdl = tmp1; 
 
-    //const cast *this so you can initialize the member variables actMdl and
-    //penMdl
-    Thelen2003Muscle* mthis =  const_cast<Thelen2003Muscle*>(this);
-    mthis->actMdl = tmp1; 
+    //Appropriately set the properties of the pennation model    
+    double optimalFiberLength = getOptimalFiberLength();
+    double pennationAngle     = getPennationAngleAtOptimalFiberLength();
 
-    //Appropriately set the properties of the pennation model
-        std::string caller(getName());
-        caller.append("_Thelen2003Muscle::addToSystem");
-        double optimalFiberLength = getOptimalFiberLength();
-        double pennationAngle     = getPennationAngleAtOptimalFiberLength();
+    MuscleFixedWidthPennationModel tmp2( optimalFiberLength,
+                                        pennationAngle, 
+                                        acos(0.1),
+                                        caller);
 
-        MuscleFixedWidthPennationModel tmp2( optimalFiberLength,
-                                            pennationAngle, 
-                                            acos(0.1),
-                                            caller);
+    penMdl = tmp2;   
 
-    mthis->penMdl = tmp2;    
- }
+    //Ensure all sub objects are up to date with properties.
+    actMdl.ensureModelUpToDate();
+    penMdl.ensureModelUpToDate();
 
+    setObjectIsUpToDateWithProperties();
+}
 //_____________________________________________________________________________
 // Set the data members of this muscle to their null values.
 void Thelen2003Muscle::setNull()
 {
-	setAuthors("Matthew Millard");
+    // no data members
+    setAuthors("Matthew Millard");
 }
+
+
 
 //_____________________________________________________________________________
 /**
@@ -190,7 +232,8 @@ double Thelen2003Muscle::getMaximumPennationAngle() const
 bool Thelen2003Muscle::setActivationTimeConstant(double aActTimeConstant)
 {
     if(aActTimeConstant > 0){
-        set_activation_time_constant(aActTimeConstant);           
+        set_activation_time_constant(aActTimeConstant);    
+        ensureMuscleUpToDate();
         return true;
     }
     return false;
@@ -200,6 +243,7 @@ bool Thelen2003Muscle::setDeactivationTimeConstant(double aDeActTimeConstant)
 {
     if(aDeActTimeConstant > 0){
         set_deactivation_time_constant(aDeActTimeConstant);       
+        ensureMuscleUpToDate();
         return true;
     }
     return false;
@@ -209,6 +253,7 @@ bool Thelen2003Muscle::setFmaxTendonStrain(double aFmaxTendonStrain)
 {
     if(aFmaxTendonStrain > 0){
         set_FmaxTendonStrain(aFmaxTendonStrain);
+        ensureMuscleUpToDate();
         return true;
     }
     return false;
@@ -218,6 +263,7 @@ bool Thelen2003Muscle::setFmaxFiberStrain(double aFmaxMuscleStrain)
 {
     if(aFmaxMuscleStrain > 0){
         set_FmaxMuscleStrain(aFmaxMuscleStrain);
+        ensureMuscleUpToDate();
         return true;
     }
     return false;
@@ -227,6 +273,7 @@ bool Thelen2003Muscle::setKshapeActive(double aKShapeActive)
 {
     if(aKShapeActive > 0){
         set_KshapeActive(aKShapeActive);
+        ensureMuscleUpToDate();
         return true; 
     }
     return false;
@@ -236,6 +283,7 @@ bool Thelen2003Muscle::setKshapePassive(double aKshapePassive)
 {
     if(aKshapePassive > 0){
         set_KshapePassive(aKshapePassive);
+        ensureMuscleUpToDate();
         return true;
     }
     return false;
@@ -246,6 +294,7 @@ bool Thelen2003Muscle::setAf(double aAf)
 {
     if(aAf > 0){
         set_Af(aAf);
+        ensureMuscleUpToDate();
         return true;
     }
     return false;
@@ -255,6 +304,7 @@ bool Thelen2003Muscle::setFlen(double aFlen)
 {
     if(aFlen > 1.0){
         set_Flen(aFlen);
+        ensureMuscleUpToDate();
         return true;
     }
     return false;
@@ -267,27 +317,30 @@ bool Thelen2003Muscle::
 {
     if(aFvThresh > 1.0/getFlen()){
         set_fv_linear_extrap_threshold(aFvThresh);
+        ensureMuscleUpToDate();
         return true;
     }
     return false;
 }
 
-bool Thelen2003Muscle::
+/*bool Thelen2003Muscle::
     setMaximumPennationAngle(double maxPennationAngle) 
 {
     if(maxPennationAngle > 0.0 &&
        maxPennationAngle < acos(0.001)){    
            penMdl.setMaximumPennationAngle(maxPennationAngle);
+           ensureMuscleUpToDate();
            return true;
     }
 
     return false;
-}
+}*/
 
 bool Thelen2003Muscle::setMinimumActivation(double aActivationMinValue)
 {
     if(aActivationMinValue > 0.001){        
-        actMdl.setMinimumActivation(aActivationMinValue);      
+        actMdl.setMinimumActivation(aActivationMinValue);     
+        ensureMuscleUpToDate();
         return true;
     }else{
         return false;
@@ -302,12 +355,14 @@ double Thelen2003Muscle::
 calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
                                        double aActivation) const
 {      
-
+        SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+                    "Thelen2003Muscle: Muscle is not"
+                    " to date with properties");
 
         string caller = getName();
         caller.append(  "Thelen2003Muscle::"
                         "calcInextensibleTendonActiveFiberForce");
-
+       
         double inextensibleTendonActiveFiberForce = 0;
 
         double muscleLength = getLength(s);
@@ -341,6 +396,10 @@ double Thelen2003Muscle::
                                             double fiberLength, 
                                             double fiberVelocity) const
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+                    "Thelen2003Muscle: Muscle is not"
+                    " to date with properties");
+
     string caller = getName();
     caller.append("::Thelen2003Muscle::calcActiveFiberForceAlongTendon");
 
@@ -399,7 +458,9 @@ double Thelen2003Muscle::
 
 double  Thelen2003Muscle::computeActuation(const SimTK::State& s) const
 {
-
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+                    "Thelen2003Muscle: Muscle is not"
+                    " to date with properties");
 
     const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
     const FiberVelocityInfo& mvi = getFiberVelocityInfo(s);
@@ -414,6 +475,10 @@ double  Thelen2003Muscle::computeActuation(const SimTK::State& s) const
 void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
 {
     try{
+
+        SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+                    "Thelen2003Muscle: Muscle is not"
+                    " to date with properties");
 
         //Initialize activation to the users desired setting, while enforcing
         //that it lie in within the allowable bounds.
@@ -534,7 +599,9 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
 void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s, 
                                                MuscleLengthInfo& mli) const
 {    
-
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+                    "Thelen2003Muscle: Muscle is not"
+                    " to date with properties");
 
     double simTime = s.getTime(); //for debugging purposes
 
@@ -578,7 +645,9 @@ void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s,
 void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s, 
                                                FiberVelocityInfo& fvi) const
 {
-
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+                    "Thelen2003Muscle: Muscle is not"
+                    " to date with properties");
 
     double simTime = s.getTime(); //for debugging purposes
 
@@ -715,7 +784,9 @@ void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s,
 void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s, 
                                                MuscleDynamicsInfo& mdi) const
 {
-
+        SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+                    "Thelen2003Muscle: Muscle is not"
+                    " to date with properties");
 
         double simTime = s.getTime(); //for debugging purposes
 
@@ -1274,6 +1345,10 @@ void Thelen2003Muscle::printCurveToCSVFile(const CurveType ctype,
             fname.append(".csv");
 
             printMatrixToFile(results,colNames,path,fname);*/
+
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+                    "Thelen2003Muscle: Muscle is not"
+                    " to date with properties");
 
     std::string fname = getName();
 

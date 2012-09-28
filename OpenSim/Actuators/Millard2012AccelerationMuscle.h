@@ -173,6 +173,16 @@ MuscleFirstOrderActivationDynamicModel.
 \li kg: kilograms
 \li s: seconds
 
+<B>Usage</B>
+
+ Note that this object should be updated through the set methods provided. 
+ These set methods will take care of rebuilding the muscle correctly. If you
+ modify the properties directly, the curve will not be rebuilt, and upon
+ calling a function that requires a state an exception will be thrown because 
+ the muscle is out of date with its properties.
+
+ Note that this muscle does not currently implement the ignore_tendon_compliance
+ flag, nor the ignore_activation_dynamics flag.
 
 <B>Nomenclature</B>
 
@@ -789,7 +799,7 @@ private:
 
     /*Checks to make sure that none of the muscle model's properties have
     changed. If they have changed, then the muscle is rebuilt.*/
-    void ensureMuscleUpToDate() const;
+    void ensureMuscleUpToDate();
 
     /*       
     @param ami A struct that holds all of the necessary quantities to compute

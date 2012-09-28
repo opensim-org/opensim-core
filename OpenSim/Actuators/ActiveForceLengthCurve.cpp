@@ -38,6 +38,8 @@ ActiveForceLengthCurve::ActiveForceLengthCurve()
     setNull();
     constructProperties();
     setName("default_ActiveForceLengthCurve");
+
+    ensureCurveUpToDate();
 }
 
 // Constructor with enough info to maek the curve.
@@ -63,7 +65,8 @@ ActiveForceLengthCurve::ActiveForceLengthCurve(double minActiveNormFiberLength,
 
 void ActiveForceLengthCurve::setNull()
 {
-	setAuthors("Matthew Millard");
+    
+    setAuthors("Matthew Millard");
 }
 
 void ActiveForceLengthCurve::constructProperties()
@@ -104,6 +107,7 @@ void ActiveForceLengthCurve::buildCurve()
                                             getName());
         this->m_curve = tmp;
         setObjectIsUpToDateWithProperties();
+    
 }
 
 void ActiveForceLengthCurve::ensureCurveUpToDate()
@@ -119,6 +123,7 @@ void ActiveForceLengthCurve::ensureCurveUpToDate()
 void ActiveForceLengthCurve::connectToModel(Model& aModel)
 {
     Super::connectToModel(aModel);
+    ensureCurveUpToDate();
 }
 
 void ActiveForceLengthCurve::initStateFromProperties(SimTK::State& s) const
@@ -130,8 +135,10 @@ void ActiveForceLengthCurve::addToSystem(SimTK::MultibodySystem& system) const
 {
     Super::addToSystem(system);
 
-    ActiveForceLengthCurve* mthis = const_cast<ActiveForceLengthCurve*>(this);    
-    mthis->buildCurve();
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "ActiveForceLengthCurve: Curve is not"
+        " to date with its properties");
+    
 }
 
 
@@ -142,69 +149,49 @@ void ActiveForceLengthCurve::addToSystem(SimTK::MultibodySystem& system) const
 
 
 double ActiveForceLengthCurve::getMinActiveFiberLength() const
-{
-    ActiveForceLengthCurve* mthis = const_cast<ActiveForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();  
+{ 
     return get_min_norm_active_fiber_length();
 }
 
 double ActiveForceLengthCurve::getTransitionFiberLength() const
 {
-    ActiveForceLengthCurve* mthis = const_cast<ActiveForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();  
     return get_transition_norm_fiber_length();
 }
 
 double ActiveForceLengthCurve::getMaxActiveFiberLength() const
 {
-    ActiveForceLengthCurve* mthis = const_cast<ActiveForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();  
     return get_max_norm_active_fiber_length();
 }
 
 double ActiveForceLengthCurve::getShallowAscendingSlope() const
 {
-    ActiveForceLengthCurve* mthis = const_cast<ActiveForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();  
     return get_shallow_ascending_slope();
 }
 
 double ActiveForceLengthCurve::getMinValue() const
 {
-    ActiveForceLengthCurve* mthis = const_cast<ActiveForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();  
     return get_minimum_value();
 }
 
 
 
 void ActiveForceLengthCurve::
-    setMinActiveFiberLength(double minActiveNormFiberLength)
+    setActiveFiberLengths(  double minActiveNormFiberLength,
+                            double transitionNormFiberLength,
+                            double maxActiveNormFiberLength,
+                            double shallowAscendingSlope)
 {   
     set_min_norm_active_fiber_length(minActiveNormFiberLength);   
-}
-
-void ActiveForceLengthCurve::
-    setTransitionFiberLength(double transitionNormFiberLength)
-{    
     set_transition_norm_fiber_length(transitionNormFiberLength);
-}
-
-void ActiveForceLengthCurve::
-    setMaxActiveFiberLength(double maxActiveNormFiberLength)
-{
     set_max_norm_active_fiber_length(maxActiveNormFiberLength);
-}
-
-void ActiveForceLengthCurve::
-    setShallowAscendingSlope(double aSlopeValue)
-{
-    set_shallow_ascending_slope(aSlopeValue);
+    set_shallow_ascending_slope(shallowAscendingSlope);
+    ensureCurveUpToDate();
 }
 
 void ActiveForceLengthCurve::setMinValue(double minimumValue)
 {    
-    set_minimum_value(minimumValue);    
+    set_minimum_value(minimumValue); 
+    ensureCurveUpToDate();
 }
 
 
@@ -214,28 +201,32 @@ void ActiveForceLengthCurve::setMinValue(double minimumValue)
 
 double ActiveForceLengthCurve::calcValue(double normFiberLength) const
 {
-    ActiveForceLengthCurve* mthis = const_cast<ActiveForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "ActiveForceLengthCurve: Curve is not"
+        " to date with its properties");
+
     return m_curve.calcValue(normFiberLength);
 }
 
 double ActiveForceLengthCurve::calcDerivative(double normFiberLength, 
                                                  int order) const
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "ActiveForceLengthCurve: Curve is not"
+        " to date with its properties");
+
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2, 
         "ActiveForceLengthCurve::calcDerivative",
         "order must be 0, 1, or 2, but %i was entered", order);
-    
-    ActiveForceLengthCurve* mthis = const_cast<ActiveForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
     
     return m_curve.calcDerivative(normFiberLength,order);
 }
 
 SimTK::Vec2 ActiveForceLengthCurve::getCurveDomain() const
 {
-    ActiveForceLengthCurve* mthis = const_cast<ActiveForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "ActiveForceLengthCurve: Curve is not"
+        " to date with its properties");  
     
     return m_curve.getCurveDomain();
 }
@@ -243,8 +234,8 @@ SimTK::Vec2 ActiveForceLengthCurve::getCurveDomain() const
 void ActiveForceLengthCurve::
     printMuscleCurveToCSVFile(const std::string& path) const
 {   
-    ActiveForceLengthCurve* mthis = const_cast<ActiveForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();    
-    
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "ActiveForceLengthCurve: Curve is not"
+        " to date with its properties");      
     m_curve.printMuscleCurveToCSVFile(path);
 }

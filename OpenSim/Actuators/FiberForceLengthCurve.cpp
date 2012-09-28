@@ -68,7 +68,8 @@ FiberForceLengthCurve::FiberForceLengthCurve(   double strainAtZeroForce,
 
 void FiberForceLengthCurve::setNull()
 {
-	setAuthors("Matthew Millard");
+
+    setAuthors("Matthew Millard");
 }
 
 void FiberForceLengthCurve::constructProperties()
@@ -186,6 +187,7 @@ void FiberForceLengthCurve::ensureCurveUpToDate()
 void FiberForceLengthCurve::connectToModel(Model& model)
 {
     Super::connectToModel(model);
+    ensureCurveUpToDate();
 }
 
 void FiberForceLengthCurve::initStateFromProperties(SimTK::State& s) const
@@ -197,8 +199,11 @@ void FiberForceLengthCurve::addToSystem(SimTK::MultibodySystem& system) const
 {
     Super::addToSystem(system);
 
-    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberForceLengthCurve: Curve is not"
+        " to date with its properties");
+
+
 }
 
 
@@ -208,63 +213,47 @@ void FiberForceLengthCurve::addToSystem(SimTK::MultibodySystem& system) const
 //=============================================================================
 double FiberForceLengthCurve::getStrainAtOneNormForce() const
 {    
-    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
-
     return get_strain_at_one_norm_force();
 }
 
 
 double FiberForceLengthCurve::getStrainAtZeroForce() const
 {    
-    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
-
     return get_strain_at_zero_force();
 }
 
 double FiberForceLengthCurve::getStiffnessAtOneNormForceInUse() const
 {    
-    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
 
     return m_stiffnessAtOneNormForceInUse;
 }
 
 double FiberForceLengthCurve::getCurvinessInUse() const
 {
-    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
-
     return m_curvinessInUse;
 }
 
 bool FiberForceLengthCurve::isFittedCurveBeingUsed() const
 {
-    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
-
     return m_fittedCurveBeingUsed;
 }
 
 void FiberForceLengthCurve::
-    setStrainAtOneNormForce(double aStrainAtOneNormForce)
+    setCurveStrains(double aStrainAtZeroForce, double aStrainAtOneNormForce)
 {
-        set_strain_at_one_norm_force(aStrainAtOneNormForce);   
+    set_strain_at_zero_force(aStrainAtZeroForce);
+    set_strain_at_one_norm_force(aStrainAtOneNormForce);
+    ensureCurveUpToDate();
 }
 
-void FiberForceLengthCurve::
-    setStrainAtZeroForce(double aStrainAtZeroForce)
-{
-        set_strain_at_zero_force(aStrainAtZeroForce);   
-}
 
 void FiberForceLengthCurve::
         setOptionalProperties(  double aStiffnessAtOneNormForce,
                                 double aCurviness)
 {
-        set_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
-        set_curviness(aCurviness);
+    set_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
+    set_curviness(aCurviness);
+    ensureCurveUpToDate();
 }
 
 //=============================================================================
@@ -274,8 +263,9 @@ void FiberForceLengthCurve::
 double FiberForceLengthCurve::
     calcValue(double aNormLength) const
 {
-    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberForceLengthCurve: Curve is not"
+        " to date with its properties");
 
     return m_curve.calcValue(aNormLength);
 }
@@ -283,12 +273,14 @@ double FiberForceLengthCurve::
 double FiberForceLengthCurve::
     calcDerivative(double aNormLength, int order) const
 {
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberForceLengthCurve: Curve is not"
+        " to date with its properties");
+
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2, 
         "FiberForceLengthCurve::calcDerivative",
         "order must be 0, 1, or 2, but %i was entered", order);
     
-    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
 
     return m_curve.calcDerivative(aNormLength,order);
 }
@@ -296,16 +288,18 @@ double FiberForceLengthCurve::
 double FiberForceLengthCurve::
     calcIntegral(double aNormLength) const
 {
-    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberForceLengthCurve: Curve is not"
+        " to date with its properties");
 
     return m_curve.calcIntegral(aNormLength);
 }
 
 SimTK::Vec2 FiberForceLengthCurve::getCurveDomain() const
 {
-    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberForceLengthCurve: Curve is not"
+        " to date with its properties");
 
     return m_curve.getCurveDomain();
 }
@@ -313,8 +307,9 @@ SimTK::Vec2 FiberForceLengthCurve::getCurveDomain() const
 void FiberForceLengthCurve::
     printMuscleCurveToCSVFile(const std::string& path) const
 {
-    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
-    mthis->ensureCurveUpToDate();
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+        "FiberForceLengthCurve: Curve is not"
+        " to date with its properties");
 
     m_curve.printMuscleCurveToCSVFile(path);
 }

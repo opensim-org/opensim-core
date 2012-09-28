@@ -145,11 +145,9 @@ void testActiveForceLengthCurve()
 
         cout <<"    b. serialization & deserialization" <<endl;
         ActiveForceLengthCurve falCurve2;
-        falCurve2.setMaxActiveFiberLength(2);
-        falCurve2.setTransitionFiberLength(0.8);
-        falCurve2.setMinActiveFiberLength(0);
+        falCurve2.setActiveFiberLengths(0,0.8,2,0.5);
         falCurve2.setMinValue(0.3);
-        falCurve2.setShallowAscendingSlope(0.5);
+
 
 
         //These next few lines are just to read the object in, and repopulate
@@ -166,13 +164,10 @@ void testActiveForceLengthCurve()
         
         SimTK_TEST(falCurve2 == falCurve1);        
         remove("default_ActiveForceLengthCurve.xml");  
-        
-
-        falCurve2.setMaxActiveFiberLength(2);
-        falCurve2.setTransitionFiberLength(0.8);
-        falCurve2.setMinActiveFiberLength(0);
+       
+        falCurve2.setActiveFiberLengths(0,0.8,2,0.5);
         falCurve2.setMinValue(0.3);
-        falCurve2.setShallowAscendingSlope(0.5);
+        
 
         cout <<"    c. assignment operator" <<endl;
         falCurve2=falCurve1;
@@ -180,11 +175,9 @@ void testActiveForceLengthCurve()
         
         SimTK_TEST(falCurve1==falCurve2);
 
-        falCurve2.setMaxActiveFiberLength(2);
-        falCurve2.setTransitionFiberLength(0.8);
-        falCurve2.setMinActiveFiberLength(0);
+        falCurve2.setActiveFiberLengths(0,0.8,2,0.5);
         falCurve2.setMinValue(0.3);
-        falCurve2.setShallowAscendingSlope(0.5);
+
 
         cout <<"    d. copy constructor" <<endl;
         ActiveForceLengthCurve falCurve2p5(falCurve2);
@@ -203,11 +196,9 @@ void testActiveForceLengthCurve()
         //cout <<"**************************************************"<<endl;
         cout <<"3. Testing get/set methods:" << endl;
 
-        falCurve2.setMinActiveFiberLength(0.01);
-        falCurve2.setTransitionFiberLength(0.8);
-        falCurve2.setMaxActiveFiberLength(2);        
-        falCurve2.setMinValue(0.3);
-        falCurve2.setShallowAscendingSlope(0.5);
+        falCurve2.setActiveFiberLengths(0.01,0.8,2,0.5);
+        falCurve2.setMinValue(0.3);     
+        
 
         SimTK_TEST(falCurve2.getMinActiveFiberLength() == 0.01);
         SimTK_TEST(falCurve2.getTransitionFiberLength()== 0.8);
@@ -293,12 +284,9 @@ void testForceVelocityCurve()
         cout <<"    b. serialization & deserialization" <<endl;
         ForceVelocityCurve fvCurve2;
         //change all of the properties to something other than the default
-        fvCurve2.setConcentricCurviness(0.5);
-        fvCurve2.setConcentricMinSlope(0);
+        fvCurve2.setCurveShape(0,10,0,2.0);
+        fvCurve2.setConcentricCurviness(0.5);        
         fvCurve2.setEccentricCurviness(0.5);
-        fvCurve2.setEccentricMinSlope(0);
-        fvCurve2.setMaxEccentricVelocityForceMultiplier(2.0);
-        fvCurve2.setIsometricMaxSlope(10);
 
 
         //These next few lines are just to read the object in, and repopulate
@@ -315,13 +303,9 @@ void testForceVelocityCurve()
         SimTK_TEST(fvCurve2 == fvCurve1);       
         remove("default_ForceVelocityCurve.xml");
         
-
-        fvCurve2.setConcentricCurviness(0.5);
-        fvCurve2.setConcentricMinSlope(0);
+        fvCurve2.setCurveShape(0,10,0,2.0);
+        fvCurve2.setConcentricCurviness(0.5);        
         fvCurve2.setEccentricCurviness(0.5);
-        fvCurve2.setEccentricMinSlope(0);
-        fvCurve2.setMaxEccentricVelocityForceMultiplier(2.0);
-        fvCurve2.setIsometricMaxSlope(10);
 
         cout <<"    c. assignment operator" <<endl;
         fvCurve2=fvCurve1;
@@ -329,12 +313,9 @@ void testForceVelocityCurve()
         
         SimTK_TEST(fvCurve1==fvCurve2);
 
-        fvCurve2.setConcentricCurviness(0.5);
-        fvCurve2.setConcentricMinSlope(0);
+        fvCurve2.setCurveShape(0,10,0,2.0);
+        fvCurve2.setConcentricCurviness(0.5);        
         fvCurve2.setEccentricCurviness(0.5);
-        fvCurve2.setEccentricMinSlope(0);
-        fvCurve2.setMaxEccentricVelocityForceMultiplier(2.0);
-        fvCurve2.setIsometricMaxSlope(10);
 
         cout <<"    d. copy constructor" <<endl;
         ForceVelocityCurve fvCurve2p5(fvCurve2);
@@ -355,12 +336,12 @@ void testForceVelocityCurve()
 
         cout <<"3. Testing get/set methods:" << endl;
 
+        fvCurve2.setCurveShape(0,10,0.1,2.0);
+        fvCurve2.setConcentricCurviness(0.5);        
+        fvCurve2.setEccentricCurviness(0.5);
+
         fvCurve2.setConcentricCurviness(0.5);
-        fvCurve2.setConcentricMinSlope(0);
         fvCurve2.setEccentricCurviness(0.6);
-        fvCurve2.setEccentricMinSlope(0.1);
-        fvCurve2.setMaxEccentricVelocityForceMultiplier(2.0);
-        fvCurve2.setIsometricMaxSlope(10);
 
         SimTK_TEST(fvCurve2.getConcentricCurviness()                    == 0.5);
         SimTK_TEST(fvCurve2.getConcentricMinSlope()                     == 0  );
@@ -447,11 +428,10 @@ void testForceVelocityInverseCurve()
         ForceVelocityInverseCurve fvCurve2;
         //change all of the properties to something other than the default
         fvCurve2.setConcentricCurviness(0.5);
-        fvCurve2.setConcentricMinSlope(0.05);
         fvCurve2.setEccentricCurviness(0.5);
-        fvCurve2.setEccentricMinSlope(0.06);
-        fvCurve2.setMaxEccentricVelocityForceMultiplier(2.0);
-        fvCurve2.setIsometricMaxSlope(10);
+        fvCurve2.setCurveShape(0.05,10,0.06,2);
+        
+
 
 
         //These next few lines are just to read the object in, and repopulate
@@ -467,13 +447,10 @@ void testForceVelocityInverseCurve()
         SimTK_TEST(fvCurve2 == fvCurve1);       
         remove("default_ForceVelocityInverseCurve.xml");
         
-
         fvCurve2.setConcentricCurviness(0.5);
-        fvCurve2.setConcentricMinSlope(0.05);
         fvCurve2.setEccentricCurviness(0.5);
-        fvCurve2.setEccentricMinSlope(0.06);
-        fvCurve2.setMaxEccentricVelocityForceMultiplier(2.0);
-        fvCurve2.setIsometricMaxSlope(10);
+        fvCurve2.setCurveShape(0.05,10,0.06,2);
+
 
         cout <<"    c. assignment operator" <<endl;
         fvCurve2=fvCurve1;
@@ -482,11 +459,8 @@ void testForceVelocityInverseCurve()
         SimTK_TEST(fvCurve1==fvCurve2);
 
         fvCurve2.setConcentricCurviness(0.5);
-        fvCurve2.setConcentricMinSlope(0.05);
         fvCurve2.setEccentricCurviness(0.5);
-        fvCurve2.setEccentricMinSlope(0.06);
-        fvCurve2.setMaxEccentricVelocityForceMultiplier(2.0);
-        fvCurve2.setIsometricMaxSlope(10);
+        fvCurve2.setCurveShape(0.05,10,0.06,2);
 
         cout <<"    d. copy constructor" <<endl;
         ForceVelocityInverseCurve fvCurve2p5(fvCurve2);
@@ -506,11 +480,8 @@ void testForceVelocityInverseCurve()
         cout <<"3. Testing get/set methods:" << endl;
 
         fvCurve2.setConcentricCurviness(0.5);
-        fvCurve2.setConcentricMinSlope(0.05);
         fvCurve2.setEccentricCurviness(0.5);
-        fvCurve2.setEccentricMinSlope(0.06);
-        fvCurve2.setMaxEccentricVelocityForceMultiplier(2.0);
-        fvCurve2.setIsometricMaxSlope(10);
+        fvCurve2.setCurveShape(0.05,10,0.06,2);
 
         SimTK_TEST(fvCurve2.getConcentricCurviness()                    == 0.5);
         SimTK_TEST(fvCurve2.getConcentricMinSlope()                     ==0.05);
@@ -752,7 +723,7 @@ void testFiberForceLengthCurve()
         cout <<"    b. serialization & deserialization" <<endl;
         FiberForceLengthCurve fpeCurve2;
         //change all of the properties to something other than the default
-        fpeCurve2.setStrainAtOneNormForce(0.80);
+        fpeCurve2.setCurveStrains(0,0.8);
         fpeCurve2.setOptionalProperties(10.0,0.8);
 
 
@@ -770,7 +741,7 @@ void testFiberForceLengthCurve()
         remove("default_FiberForceLengthCurve.xml");
         
 
-        fpeCurve2.setStrainAtOneNormForce(0.80);
+        fpeCurve2.setCurveStrains(0,0.80);
         fpeCurve2.setOptionalProperties(10.0,0.8);
 
         cout <<"    c. assignment operator" <<endl;
@@ -778,7 +749,7 @@ void testFiberForceLengthCurve()
                 
         SimTK_TEST(fpeCurve1==fpeCurve2);
 
-        fpeCurve2.setStrainAtOneNormForce(0.80);
+        fpeCurve2.setCurveStrains(0,0.80);
         fpeCurve2.setOptionalProperties(10.0,0.8);
 
         cout <<"    d. copy constructor" <<endl;
@@ -798,7 +769,7 @@ void testFiberForceLengthCurve()
         //====================================================================
         cout <<"3. Testing get/set methods and the fitted flag:" << endl;
 
-        fpeCurve2.setStrainAtOneNormForce(0.80);
+        fpeCurve2.setCurveStrains(0,0.80);
         fpeCurve2.setOptionalProperties(10.0,0.8);
 
         SimTK_TEST(fpeCurve2.getStrainAtOneNormForce()         == 0.80);

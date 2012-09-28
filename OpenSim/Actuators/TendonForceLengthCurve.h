@@ -88,6 +88,8 @@ namespace OpenSim {
      indicate is reasonable, and additionally, makes the linear section of
      the curve nearly twice as stiff than the data indicates is reasonable.
 
+
+
  For more details on the fitting process see functions:
 
  \li TendonForceLengthCurve(double strainAtOneNormForce,
@@ -95,6 +97,13 @@ namespace OpenSim {
  \li getStiffnessAtOneNormForceInUse()
  \li getNormForceAtToeEndInUse()
  \li getCurvinessInUse()
+
+  <B> Usage </B>
+    This object should be updated through the set methods provided. 
+    These set methods will take care of rebuilding the object correctly. If you
+    modify the properties directly, the object will not be rebuilt, and upon
+    calling any functions an exception will be thrown because the object is out 
+    of date with its properties.
 
  <B> References </B>
         \verbatim
@@ -117,6 +126,7 @@ namespace OpenSim {
          Parameters to Simulate Dynamic Contractions in Older Adults. 
          ASME J.Biomech. Eng., 125, 75-77.
         \endverbatim
+
  <B>Computational Cost Details</B>
     All computational costs assume the following operation costs:
 
@@ -454,6 +464,9 @@ public:
                 the tendon will develop a tension of 1 normalized force when 
                 it is strained by 4% of its resting length, or 
                 equivalently is stretched to 1.04 times its resting length.
+
+    <B>Computational Cost</B>
+    The curve is rebuilt at a cost of ~174,100 flops
     */
      void setStrainAtOneNormForce(double aStrainAtOneNormForce);
     
@@ -475,6 +488,10 @@ public:
                 linear extrapolation of 'stiffnessAtOneNormForce' and the
                 x axis as shown in the figure.
 
+        <B>Computational Cost</B>
+        The curve is rebuilt at a cost of ~174,100 flops
+
+
      */
      void setOptionalProperties( double aStiffnessAtOneNormForce, 
                                  double aNormForceAtToeEnd,
@@ -482,8 +499,7 @@ public:
 
     /**
     Calculates the value of the curve evaluated at the desired normalized fiber
-    length. Note that if the curve is out of date it is rebuilt (at a cost of 
-    ~20,500 flops). 
+    length. 
 
     @param aNormLength 
                 The normalized fiber length used to evaluate the tendon force 
@@ -505,8 +521,7 @@ public:
 
     /**
     Calculates the derivative of the tendon force length curve with respect to
-    the normalized fiber length. Note that if the curve is out of date it is 
-    rebuilt (at a cost of ~20,500 flops).
+    the normalized fiber length.
 
     @param aNormLength
                 The normalized fiber length used to evaluate the tendon force 
@@ -560,8 +575,7 @@ public:
        This function returns a SimTK::Vec2 that contains in its 0th element
        the lowest value of the curve domain, and in its 1st element the highest
        value in the curve domain of the curve. Outside of this domain the curve
-       is approximated using linear extrapolation. Note that  if the curve is 
-       out of date is rebuilt (which will cost ~20,500 flops).
+       is approximated using linear extrapolation. 
 
        @return The minimum and maximum value of the domain, x, of the curve 
                   y(x). Within this range y(x) is a curve, outside of this range
@@ -572,8 +586,7 @@ public:
 
     /**This function will generate a csv file with a name that matches the 
        curve name (e.g. "bicepfemoris_TendonForceLengthCurve.csv");
-       Note that  if the curve is out of date is rebuilt 
-       (which will cost ~20,500 flops).
+      
        
        @param path The full path to the location. Note '/' slashes must be used,
             and do not put a '/' after the last folder.
@@ -612,6 +625,7 @@ public:
        */
        void printMuscleCurveToCSVFile(const std::string& path) const;
 
+       void ensureCurveUpToDate();
 //==============================================================================
 // PRIVATE
 //==============================================================================
@@ -702,7 +716,7 @@ private:
     */
   void buildCurve();
 
-  void ensureCurveUpToDate();
+  
 
   //<B> No Longer Used</B>
   //BROKEN Since ftoe became a parameter of 

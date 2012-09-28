@@ -49,6 +49,13 @@ namespace OpenSim {
  
  \image html fig_FiberCompressiveForceLengthCurve.png
  
+  Note that this object should be updated through the set methods provided. 
+ These set methods will take care of rebuilding the curve correctly. If you
+ modify the properties directly, the curve will not be rebuilt, and upon
+ calling a function like calcValue, calcDerivative, or printCurveToCSVFile
+ an exception will be thrown because the curve is out of date with its 
+ properties.
+
   @author Matt Millard
 
  */
@@ -180,6 +187,8 @@ public:
             and l0 is the resting length of the fiber. This length must be 
             greater than 0.
 
+    <B>Cost </B>
+    The curve is rebuilt at a cost of ~174,100 flops
     */
      void setNormLengthAtZeroForce(double aNormLengthAtZeroForce);
 
@@ -196,6 +205,8 @@ public:
                 create a curve that smoothly fills the corner formed by the 
                 linear extrapolation of 'stiffnessAtOneNormForce' and the
                 x axis as shown in the figure.
+     <B>Cost </B>
+     The curve is rebuilt at a cost of ~174,100 flops
      */     
      void setOptionalProperties(double aStiffnessAtZeroLength, 
                                 double aCurviness);
@@ -210,8 +221,7 @@ public:
 
     /**
     Calculates the value of the curve evaluated at the desired normalized fiber
-    length. Note that if the curve is out of date it is rebuilt 
-    (at a cost of ~20,500 flops). 
+    length.  
 
     @param aNormLength: 
                 The normalized fiber length used to evaluate the fiber 
@@ -233,8 +243,7 @@ public:
 
     /**
     Calculates the derivative of the fiber force length curve w.r.t. 
-    to the normalized fiber length. Note that if the curve is out of date it is 
-    rebuilt (at a cost of ~20,500 flops).
+    to the normalized fiber length. 
 
     @param aNormLength: 
                 The normalized fiber length used to evaluate the compressive 
@@ -290,8 +299,7 @@ public:
        This function returns a SimTK::Vec2 that contains in its 0th element
        the lowest value of the curve domain, and in its 1st element the highest
        value in the curve domain of the curve. Outside of this domain the curve
-       is approximated using linear extrapolation. Note that  if the curve is 
-       out of date is rebuilt (which will cost ~20,500 flops).
+       is approximated using linear extrapolation. 
 
        @return The minimum and maximum value of the domain, x, of the curve 
                   y(x). Within this range y(x) is a curve, outside of this range
@@ -301,8 +309,7 @@ public:
 
     /**This function will generate a csv file with a name that matches the 
        curve name (e.g. "bicepfemoris_FiberCompressiveForceLengthCurve.csv");
-       Note that  if the curve is out of date is rebuilt 
-       (which will cost ~20,500 flops).
+       
        
        @param path The full path to the location. Note '/' slashes must be used,
             and do not put a '/' after the last folder.
@@ -341,6 +348,7 @@ public:
        */
        void printMuscleCurveToCSVFile(const std::string& path) const;
 
+       void ensureCurveUpToDate();
 //==============================================================================
 // PRIVATE
 //==============================================================================
@@ -391,7 +399,7 @@ private:
 
     */
     void buildCurve();
-    void ensureCurveUpToDate();
+    
 
     SmoothSegmentedFunction   m_curve;
     double m_stiffnessAtZeroLengthInUse;

@@ -101,8 +101,10 @@ public:
     // State Variable Derivative
     //--------------------------------------------------------------------------
 	double getActivationRate(const SimTK::State& s) const;
+	
 
-    
+
+
 	//--------------------------------------------------------------------------
 	// SCALING
 	//--------------------------------------------------------------------------
@@ -127,6 +129,7 @@ protected:
 	virtual void addToSystem(SimTK::MultibodySystem& system) const;
 	virtual void initStateFromProperties(SimTK::State& s) const;
     virtual void setPropertiesFromState(const SimTK::State& state);
+    virtual void connectToModel(Model& aModel) OVERRIDE_11;
 	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const;
 
 	/** State derivative access helper methods */
