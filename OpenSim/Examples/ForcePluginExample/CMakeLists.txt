@@ -40,8 +40,6 @@ endif(COMMAND cmake_policy)
 SET(KIT plugin)
 SET(UKIT PLUGIN)
 
-SET(NameSpace "OpenSim_")
-
 FILE(GLOB SOURCE_FILES *.cpp)
 FILE(GLOB INCLUDE_FILES *.h)
 
@@ -50,6 +48,14 @@ SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME} CACHE PATH "Top-level directory of OpenSim install")
 
 SET(PLUGIN_NAME "osimCoupledBushingForcePlugin" CACHE STRING "Name of shared library to create")
+
+SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release" 
+      CACHE STRING "Semicolon separated list of supported configuration types, only supports Debug, Release, MinSizeRel, and RelWithDebInfo, anything else will be ignored." FORCE )
+
+# Namespace
+SET(NameSpace "OpenSim_" CACHE STRING "Prefix for simtk lib names, includes trailing '_'. Leave empty to use stock SimTK libraries.")
+MARK_AS_ADVANCED(NameSpace)
+
 
 ### HEADERS
 SET(OPENSIM_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include)
