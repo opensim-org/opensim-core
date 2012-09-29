@@ -232,10 +232,8 @@ SimTK::Vec2 ActiveForceLengthCurve::getCurveDomain() const
 }
 
 void ActiveForceLengthCurve::
-    printMuscleCurveToCSVFile(const std::string& path) const
+    printMuscleCurveToCSVFile(const std::string& path)
 {   
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-        "ActiveForceLengthCurve: Curve is not"
-        " to date with its properties");      
+    ensureCurveUpToDate();    
     m_curve.printMuscleCurveToCSVFile(path);
 }

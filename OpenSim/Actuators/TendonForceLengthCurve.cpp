@@ -327,12 +327,9 @@ SimTK::Vec2 TendonForceLengthCurve::getCurveDomain() const
 }
 
 void TendonForceLengthCurve::
-    printMuscleCurveToCSVFile(const std::string& path) const
+    printMuscleCurveToCSVFile(const std::string& path)
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-        "TendonForceLengthCurve: Tendon is not"
-        " to date with properties");
-
+    ensureCurveUpToDate();
     m_curve.printMuscleCurveToCSVFile(path);
 }
 

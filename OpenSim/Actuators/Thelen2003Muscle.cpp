@@ -1323,8 +1323,9 @@ double Thelen2003Muscle::calcDFseDtl(double tl, double fiso, double tsl) const
 //==============================================================================
 
 void Thelen2003Muscle::printCurveToCSVFile(const CurveType ctype, 
-                                           const std::string&path) const
+                                           const std::string&path)
 {
+    ensureMuscleUpToDate();
     /*
         //Only compute up to the 2nd derivative
     SimTK::Matrix results = calcSampledMuscleCurve(2);

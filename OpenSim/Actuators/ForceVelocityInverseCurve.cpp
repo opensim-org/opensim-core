@@ -241,11 +241,8 @@ SimTK::Vec2 ForceVelocityInverseCurve::getCurveDomain() const
 }
 
 void ForceVelocityInverseCurve::
-    printMuscleCurveToCSVFile(const std::string& path) const
+    printMuscleCurveToCSVFile(const std::string& path)
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-    "FiberForceVelocityInverseCurve: Curve is not"
-    " to date with its properties");    
-
+    ensureCurveUpToDate();
     m_curve.printMuscleCurveToCSVFile(path);
 }

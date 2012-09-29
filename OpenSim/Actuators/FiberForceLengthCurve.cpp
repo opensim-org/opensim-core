@@ -305,12 +305,9 @@ SimTK::Vec2 FiberForceLengthCurve::getCurveDomain() const
 }
 
 void FiberForceLengthCurve::
-    printMuscleCurveToCSVFile(const std::string& path) const
+    printMuscleCurveToCSVFile(const std::string& path)
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-        "FiberForceLengthCurve: Curve is not"
-        " to date with its properties");
-
+    ensureCurveUpToDate();
     m_curve.printMuscleCurveToCSVFile(path);
 }
 

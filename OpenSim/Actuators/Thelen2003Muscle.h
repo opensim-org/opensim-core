@@ -237,7 +237,7 @@ public:
 // Public Convenience Methods
 //==============================================================================
     void printCurveToCSVFile(const CurveType ctype, 
-                            const std::string& path) const;
+                            const std::string& path);
 
 //==============================================================================
 // Public Computations

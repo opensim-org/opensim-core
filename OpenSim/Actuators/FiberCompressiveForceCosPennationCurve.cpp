@@ -279,10 +279,8 @@ SimTK::Vec2 FiberCompressiveForceCosPennationCurve::getCurveDomain() const
 }
 
 void FiberCompressiveForceCosPennationCurve::
-    printMuscleCurveToCSVFile(const std::string& path) const
+    printMuscleCurveToCSVFile(const std::string& path)
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-        "FiberCompressiveCosPennationCurve: Curve is not"
-        " to date with its properties");
+    ensureCurveUpToDate();
     m_curve.printMuscleCurveToCSVFile(path);
 }

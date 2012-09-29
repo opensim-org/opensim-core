@@ -337,8 +337,9 @@ public:
     SimTK::Vec2 getCurveDomain() const;
 
     /**This function will generate a csv file with a name that matches the 
-       curve name (e.g. "bicepfemoris_fiberForceVelocityInverseCurve.csv");
-      
+       curve name (e.g. "bicepfemoris_fiberForceVelocityInverseCurve.csv").
+       This function is not const to permit the curve to be rebuilt if it is out 
+       of date with its properties.
        
        @param path The full path to the location. Note '/' slashes must be used,
             and do not put a '/' after the last folder.
@@ -375,7 +376,7 @@ public:
        \endverbatim
 
        */
-       void printMuscleCurveToCSVFile(const std::string& path) const;
+       void printMuscleCurveToCSVFile(const std::string& path);
 
        void ensureCurveUpToDate();
 //==============================================================================
