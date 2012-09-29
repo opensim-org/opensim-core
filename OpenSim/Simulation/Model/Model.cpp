@@ -331,6 +331,7 @@ void Model::setNull()
 void Model::setupProperties()
 {
 	_creditsStrProp.setName("credits");
+	_creditsStrProp.setComment("This model was created by the model developers named under credits, please acknowledge their work and reference publications underneath!");
 	_propertySet.append(&_creditsStrProp);
 
 	_publicationsStrProp.setName("publications");
