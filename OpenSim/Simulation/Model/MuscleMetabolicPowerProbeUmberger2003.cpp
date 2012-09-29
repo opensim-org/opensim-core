@@ -172,21 +172,8 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
 
         // Get the normalized active fiber force, F_iso, that 'would' be developed at the current activation
         // and fiber length under isometric conditions (i.e. Vm=0)
-        if (max_isometric_force == 0) {
-            stringstream errorMessage;
-            errorMessage << "Error: Max isometric force for muscle ' " 
-                << m->getName() << "' is zero." << endl;
-            throw (Exception(errorMessage.str()));
-        }
-
-        if (m->getForceVelocityMultiplier(s) == 0) {
-            stringstream errorMessage;
-            errorMessage << "Error: Force-velocity multiplier for muscle ' " 
-                << m->getName() << "' is zero." << endl;
-            throw (Exception(errorMessage.str()));
-        }
-
-        double F_iso = (fiber_force_active/m->getForceVelocityMultiplier(s)) / max_isometric_force;
+        //double F_iso = (fiber_force_active/m->getForceVelocityMultiplier(s)) / max_isometric_force;
+        double F_iso = m->getActivation(s) * m->getActiveForceLengthMultiplier(s);
 
         // DEBUG
         //cout << "fiber_velocity_normalized = " << fiber_velocity_normalized << endl;
