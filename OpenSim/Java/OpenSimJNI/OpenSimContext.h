@@ -55,18 +55,34 @@ class MarkerPlacer;
 class MarkerData;
 class Measurement;
 
+// Flag to indicate whether calls to the API are made from within try/catch block
+// so that exceptions due to misuse, typos etc. are handled gracefully in scripts
+// Set to true by default.
 static bool mapCxxExceptionsToJava = true;
 
+//==============================================================================
+//                                 OpenSimContext
+//==============================================================================
+/** Class intended to keep the SimTK::State under an OpenSim model to make it possible
+to get/set values in the SimTK::State without exposing the SimTK::State class itself.
+
+The class provides convenient methods to get/set various state entries and query the 
+state for cache values. The main function this class provides is an adaptor of various
+data types from Java and scripting supported primitive, wrapped and array types to the 
+corresponding possibly templatized or SimTK native data types.
+
+Most methods of this class are implementated by delegating the call to the SimTK::State
+under the object, for example:
+Context::isDisabled(const Force& force) -> force.isDisabled(state)
+
+The class also provides convenient services to recreateSystem and realize to various stages.
+
+@author Ayman Habib & Jack Middleton 
+**/
 
 class OpenSimContext : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(OpenSimContext, Object);
-//=============================================================================
-// DATA
-//=============================================================================
 
-private:
-    SimTK::State* _configState;
-    Model* _model;
 
 public:
     OpenSimContext(SimTK::State* s, Model* model);
@@ -155,8 +171,6 @@ public:
 	// Analyses
 	int step(Analysis& analysis);
 	// Tools
-	//bool initializeTrial(IKTool& ikTool, int i);
-	//bool solveTrial( IKTool& ikTool, int i);
 	bool solveInverseKinematics( InverseKinematicsTool& ikTool);
 	void setStatesFromMotion(AnalyzeTool& analyzeTool, const Storage &aMotion, bool aInDegrees);
 	void loadStatesFromFile(AnalyzeTool& analyzeTool);
@@ -175,7 +189,7 @@ public:
 		assert(_configState); 
 		return (_configState->getTime()); 
 	}
-
+    // Convert SimTK::Transform into a double[] array of 16 doubles
 	static void getTransformAsDouble16(const Transform& aTransform, double flattened[]){
 		 double* matStart = &aTransform.toMat44()[0][0];
 		 for (int i=0; i<16; i++) flattened[i]=matStart[i];
@@ -197,16 +211,38 @@ public:
 	// Force re-realization
 	void realizePosition();
 	void realizeVelocity();
+//=============================================================================
+// DATA
+//=============================================================================
 
+private:
+    // SimTK::State supporting the OpenSim::Model 
+    SimTK::State* _configState;
+    // The OpenSim::model 
+    Model* _model;
 }; // class OpenSimContext
 
-// Concrete class to be used on the GUI side
+//==============================================================================
+//                                 OpenSimJavaObject
+//==============================================================================
+/**
+In some cases, the GUI ad/or scripting language needs to create objects that derive from OpenSim::Object
+The class OpenSim::Object however is not a concrete class, so we introduce OpenSimJavaObject
+for this purpose 
+**/
 class OpenSimJavaObject : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(OpenSimJavaObject, Object);
 };
 
-// Class used as base class for Java classes deriving from Analysis (used to be callback)
-// It lives on the C++ side so that it gets access to SimTK::State.
+//==============================================================================
+//                                 AnalysisWrapper
+//==============================================================================
+/**
+Class used as base class for Java classes deriving from Analysis (used to be callback)
+It lives on the C++ side so that it gets access to SimTK::State, but it returns quantities
+in Java data types
+**/
+
 class AnalysisWrapper : public Analysis {
 OpenSim_DECLARE_CONCRETE_OBJECT(AnalysisWrapper, Analysis);
 	double* statesCache;
@@ -239,6 +275,15 @@ public:
 }; // Class AnalysisWrapper
 
 
+//==============================================================================
+//                                 InterruptCallback
+//==============================================================================
+/**
+Class used to handle interrupts (synchronously). Works by adding it as an analysis
+And when the client (GUI in most cases) decides to interrupt the simulation/analysis,
+it calls the interrupt() method. When the step method is invoked later, an exception 
+is thrown.
+**/
 // Class to handle interrupts
 class InterruptCallback : public AnalysisWrapper {
 	bool _throwException;
@@ -258,41 +303,54 @@ public:
 	
 };
 
+//==============================================================================
+//                                 PropertyHelper
+//==============================================================================
+/**
+This class allows access to property values using template-free
+ methods. Note that this will work regardless of whether the given
+ AbstractProperty is the deprecated kind or the new one.
 
-// This class allows access to property values using template-free
-// methods. Note that this will work regardless of whether the given
-// AbstractProperty is the deprecated kind or the new one.
-//
-// An AbstractProperty represents a (name, list-of-values) pair, possibly
-// with restrictions on the minimum and maximum list length. Basic container
-// methods size(), resize(), clear(), and empty() are available; use resize()
-// before assigning a value to an indexed element.
-//
-// For properties that contain objects, you can obtain the values directly
-// from the base class via non-templatized methods.
+ An AbstractProperty represents a (name, list-of-values) pair, possibly
+ with restrictions on the minimum and maximum list length. Basic container
+ methods size(), resize(), clear(), and empty() are available; use resize()
+ before assigning a value to an indexed element.
+
+ For properties that contain objects, you can obtain the values directly
+ from the base class via non-templatized methods.
+ **/
 class PropertyHelper {
 public:
+    //=================Boolean Properties==================
+    // Recover boolean value from an AbstractProperty that was assumed to contain a boolean
+    // Will throw exception if the assumption was wrong/invalid. Use index only if the
+    // property contains an array of booleans.
     static bool getValueBool(const AbstractProperty& p, int index=-1) 
     {   return p.getValue<bool>(index); }
+    // Set boolean value in an AbstractProperty that was assumed to hold a boolean
+    // Will throw exception if the assumption was wrong/invalid. Use index only if the
+    // property contains an array of booleans.
     static void setValueBool(bool v, AbstractProperty& p, int index=-1) 
     {   p.updValue<bool>(index) = v; }
+    // Append a new boolean value to an AbstractProperty that was assumed to hold a variable size
+    // array of booleans. Will throw exception if the assumption was wrong/invalid. 
     static void appendValueBool(bool v, AbstractProperty& p) 
     {   p.appendValue<bool>(v); }
-
+    //=================Int Properties, see Boolean Properties for details ==================
     static int getValueInt(const AbstractProperty& p, int index=-1) 
     {   return p.getValue<int>(index); }
     static void setValueInt(int v, AbstractProperty& p, int index=-1) 
     {   p.updValue<int>(index) = v; }
     static void appendValueInt(int v, AbstractProperty& p) 
     {   p.appendValue<int>(v); }
-
+    //=================Double Properties, see Boolean Properties for details ==================
     static double getValueDouble(const AbstractProperty& p, int index=-1) 
     {   return p.getValue<double>(index); }
     static void setValueDouble(double v, AbstractProperty& p, int index=-1) 
     {   p.updValue<double>(index) = v; }
     static void appendValueDouble(double v, AbstractProperty& p) 
     {   p.appendValue<double>(v); }
-
+    //=================String Properties, see Boolean Properties for details ==================
     static std::string getValueString(const AbstractProperty& p, int index=-1) 
     {   return p.getValue<std::string>(index); }
     static void setValueString(const std::string& v, 
@@ -300,7 +358,7 @@ public:
     {   p.updValue<std::string>(index) = v; }
     static void appendValueString(const std::string& v, AbstractProperty& p) 
     {   p.appendValue<std::string>(v); }
-
+    //=================Transform Properties, treated as six Doubles ==================
     static double getValueTransform(const AbstractProperty& p, int index) 
     {   
         const PropertyTransform& pd = dynamic_cast<const PropertyTransform&>(p);
@@ -316,7 +374,7 @@ public:
         array6[index] = v; 
         pd.setValue(6, array6);
     }
-
+    //=================Vec3 Properties, treated as three Doubles ==================
     static double getValueVec3(const AbstractProperty& p, int index) 
     {   
         const Property<SimTK::Vec3>& pd = dynamic_cast<const Property<SimTK::Vec3>&>(p);
