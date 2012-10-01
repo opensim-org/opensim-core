@@ -173,7 +173,7 @@ public:
         "Specify whether the total heat rate for a muscle will be clamped to a "
         "minimum value of 1.0 W/kg (true/false).");
 
-    /** Default value = 1.0. **/
+    /** Default value = 1.5. **/
     OpenSim_DECLARE_PROPERTY(scaling_factor, 
         double,
         "Scaling factor (S=1.0 for primarily anaerobic conditions and S=1.5 for primarily aerobic conditions. See Umberger et al., (2002).");
