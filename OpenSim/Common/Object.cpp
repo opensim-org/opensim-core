@@ -38,7 +38,6 @@
 #include "PropertyDblVec.h"
 #include "PropertyTransform.h"
 #include "IO.h"
-#include "OldVersionException.h"
 
 #include "Simbody.h"
 
