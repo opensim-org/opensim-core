@@ -159,14 +159,23 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
         const double fiber_force_total = m->getFiberForce(s);
         const double fiber_length_normalized = m->getNormalizedFiberLength(s);
         const double fiber_velocity = m->getFiberVelocity(s);
+        double A;
 
         // Umberger defines fiber_velocity_normalized as Vm/LoM, not Vm/Vmax (p101, top left, Umberger(2003))
         //const double fiber_velocity_normalized = m->getNormalizedFiberVelocity(s);
         const double fiber_velocity_normalized = fiber_velocity / m->getOptimalFiberLength();
-        
-        const double slow_twitch_excitation = mm.getRatioSlowTwitchFibers() * sin(Pi/2 * excitation);
-        const double fast_twitch_excitation = (1 - mm.getRatioSlowTwitchFibers()) * (1 - cos(Pi/2 * excitation));
-        double A, A_rel, B_rel;
+
+
+        // ---------------------------------------------------------------------------
+        // NOT USED FOR THIS IMPLEMENTATION
+        //const double slow_twitch_excitation = mm.getRatioSlowTwitchFibers() * sin(Pi/2 * excitation);
+        //const double fast_twitch_excitation = (1 - mm.getRatioSlowTwitchFibers()) * (1 - cos(Pi/2 * excitation));
+
+        // Set normalized hill constants: A_rel and B_rel
+        //const double A_rel = 0.1 + 0.4*(1 - mm.getRatioSlowTwitchFibers());
+        //const double B_rel = A_rel * max_shortening_velocity;
+        // ---------------------------------------------------------------------------
+
 
         // Set activation dependence scaling parameter: A
         if (excitation > activation)
@@ -179,6 +188,7 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
         //double F_iso = (fiber_force_active/m->getForceVelocityMultiplier(s)) / max_isometric_force;
         double F_iso = m->getActivation(s) * m->getActiveForceLengthMultiplier(s);
 
+
         // DEBUG
         //cout << "fiber_velocity_normalized = " << fiber_velocity_normalized << endl;
         //cout << "fiber_velocity_multiplier = " << m->getForceVelocityMultiplier(s) << endl;
@@ -189,9 +199,7 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
         //system("pause");
 
 
-        // Set normalized hill constants: A_rel and B_rel
-        A_rel = 0.1 + 0.4*(1 - mm.getRatioSlowTwitchFibers());
-        B_rel = A_rel * max_shortening_velocity;
+        
 
         // Warnings
         if (fiber_length_normalized < 0)
@@ -233,6 +241,8 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
                 const double maxShorteningRate = 100.0;    // (W/kg)
 
                 tmp_slowTwitch = alpha_shortening_slowtwitch * fiber_velocity_normalized * mm.getRatioSlowTwitchFibers();
+
+                // Apply upper limit to the unscaled slow twitch shortening rate.
                 if (tmp_slowTwitch > maxShorteningRate) {
                     cout << "WARNING: " << getName() << "  (t = " << s.getTime() << 
                         "Slow twitch shortening heat rate exceeds the max value of " << maxShorteningRate << 
@@ -241,12 +251,14 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
                 }
 
                 tmp_fastTwitch = alpha_shortening_fasttwitch * fiber_velocity_normalized * (1-mm.getRatioSlowTwitchFibers());
-                if (tmp_fastTwitch > maxShorteningRate) {
-                    cout << "WARNING: " << getName() << "  (t = " << s.getTime() << 
-                        "Fast twitch shortening heat rate exceeds the max value of " << maxShorteningRate << 
-                        " W/kg. Setting to " << maxShorteningRate << " W/kg." << endl; 
-                    tmp_fastTwitch = maxShorteningRate;		// limit maximum value to 100 W/kg
-                }
+                // Umberger(2003) only applies an upper limit to the unscaled slow 
+                // twitch shortening rate. Fast twitch upper limit does not apply.
+                //if (tmp_fastTwitch > maxShorteningRate) {
+                //    cout << "WARNING: " << getName() << "  (t = " << s.getTime() << 
+                //        "Fast twitch shortening heat rate exceeds the max value of " << maxShorteningRate << 
+                //        " W/kg. Setting to " << maxShorteningRate << " W/kg." << endl; 
+                //    tmp_fastTwitch = maxShorteningRate;		// limit maximum value to 100 W/kg
+                //}
 
                 unscaledSdot = -tmp_slowTwitch - tmp_fastTwitch;                    // unscaled shortening heat rate: muscle shortening
                 Sdot = get_scaling_factor() * std::pow(A, 2.0) * unscaledSdot;      // scaled shortening heat rate: muscle shortening
@@ -330,11 +342,11 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
             cout << "fiber_force_active = " << fiber_force_active << endl;
             cout << "fiber_length_normalized = " << fiber_length_normalized << endl;
             cout << "fiber_velocity = " << fiber_velocity << endl;
-            cout << "slow_twitch_excitation = " << slow_twitch_excitation << endl;
-            cout << "fast_twitch_excitation = " << fast_twitch_excitation << endl;
+            //cout << "slow_twitch_excitation = " << slow_twitch_excitation << endl;
+            //cout << "fast_twitch_excitation = " << fast_twitch_excitation << endl;
             cout << "max shortening velocity = " << max_shortening_velocity << endl;
-            cout << "A_rel = " << A_rel << endl;
-            cout << "B_rel = " << B_rel << endl;
+            //cout << "A_rel = " << A_rel << endl;
+            //cout << "B_rel = " << B_rel << endl;
             cout << "AMdot = " << AMdot << endl;
             cout << "Sdot = " << Sdot << endl;
             cout << "Bdot = " << Bdot << endl;

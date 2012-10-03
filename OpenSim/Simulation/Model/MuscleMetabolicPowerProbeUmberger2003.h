@@ -119,7 +119,8 @@ namespace OpenSim {
  *     - F_CE_iso = force that would be developed by the contractile element of muscle under isometric conditions with the current activation and fiber length.
  *     - v_CE = muscle fiber velocity at the current time.
  *     - v_CE_max = maximum shortening velocity of the muscle.
- *     - v_CE_norm = normalized muscle fiber velocity = v_CE/v_CE_max.
+ *     - v_CE_norm = normalized muscle fiber velocity (defined for this model as v_CE/l_CE_opt).
+ *               Note that this is a different metric to the typical normalized_muscle_fiber_velocity of v_CE/v_CE_max.
  *     - S = aerobic/anaerobic scaling factor, defined by the 'scaling_factor' property (i.e. usually 1.0 for primarily anaerobic activities, 1.5 for primarily aerobic activities).
  *
  *
