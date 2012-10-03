@@ -150,18 +150,22 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
         Muscle* m = mm.getMuscle();
 
         // Get some muscle properties at the current time state
-        double max_isometric_force = m->getMaxIsometricForce();
-        double max_shortening_velocity = m->getMaxContractionVelocity();
-        double activation = m->getActivation(s);
-        double excitation = m->getControl(s);
-        double fiber_force_passive = m->getPassiveFiberForce(s);
-        double fiber_force_active = m->getActiveFiberForce(s);
-        double fiber_force_total = m->getFiberForce(s);
-        double fiber_length_normalized = m->getNormalizedFiberLength(s);
-        double fiber_velocity = m->getFiberVelocity(s);
-        double fiber_velocity_normalized = m->getNormalizedFiberVelocity(s);
-        double slow_twitch_excitation = mm.getRatioSlowTwitchFibers() * sin(Pi/2 * excitation);
-        double fast_twitch_excitation = (1 - mm.getRatioSlowTwitchFibers()) * (1 - cos(Pi/2 * excitation));
+        const double max_isometric_force = m->getMaxIsometricForce();
+        const double max_shortening_velocity = m->getMaxContractionVelocity();
+        const double activation = m->getActivation(s);
+        const double excitation = m->getControl(s);
+        const double fiber_force_passive = m->getPassiveFiberForce(s);
+        const double fiber_force_active = m->getActiveFiberForce(s);
+        const double fiber_force_total = m->getFiberForce(s);
+        const double fiber_length_normalized = m->getNormalizedFiberLength(s);
+        const double fiber_velocity = m->getFiberVelocity(s);
+
+        // Umberger defines fiber_velocity_normalized as Vm/LoM, not Vm/Vmax (p101, top left, Umberger(2003))
+        //const double fiber_velocity_normalized = m->getNormalizedFiberVelocity(s);
+        const double fiber_velocity_normalized = fiber_velocity / m->getOptimalFiberLength();
+        
+        const double slow_twitch_excitation = mm.getRatioSlowTwitchFibers() * sin(Pi/2 * excitation);
+        const double fast_twitch_excitation = (1 - mm.getRatioSlowTwitchFibers()) * (1 - cos(Pi/2 * excitation));
         double A, A_rel, B_rel;
 
         // Set activation dependence scaling parameter: A

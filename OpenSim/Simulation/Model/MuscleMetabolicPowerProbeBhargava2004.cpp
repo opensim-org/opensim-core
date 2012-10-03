@@ -159,18 +159,18 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
         Muscle* m = mm.getMuscle();
 
         // Get important muscle values at the current time state
-        double max_isometric_force = m->getMaxIsometricForce();
-        double max_shortening_velocity = m->getMaxContractionVelocity();
-        double activation = m->getActivation(s);
-        double excitation = m->getControl(s);
-        double fiber_force_passive = m->getPassiveFiberForce(s);
-        double fiber_force_active = m->getActiveFiberForce(s);
-        double fiber_force_total = m->getFiberForce(s);
-        double fiber_length_normalized = m->getNormalizedFiberLength(s);
-        double fiber_velocity = m->getFiberVelocity(s);
-        double fiber_velocity_normalized = m->getNormalizedFiberVelocity(s);
-        double slow_twitch_excitation = mm.getRatioSlowTwitchFibers() * sin(Pi/2 * excitation);
-        double fast_twitch_excitation = (1 - mm.getRatioSlowTwitchFibers()) * (1 - cos(Pi/2 * excitation));
+        const double max_isometric_force = m->getMaxIsometricForce();
+        const double max_shortening_velocity = m->getMaxContractionVelocity();
+        const double activation = m->getActivation(s);
+        const double excitation = m->getControl(s);
+        const double fiber_force_passive = m->getPassiveFiberForce(s);
+        const double fiber_force_active = m->getActiveFiberForce(s);
+        const double fiber_force_total = m->getFiberForce(s);
+        const double fiber_length_normalized = m->getNormalizedFiberLength(s);
+        const double fiber_velocity = m->getFiberVelocity(s);
+        const double fiber_velocity_normalized = m->getNormalizedFiberVelocity(s);
+        const double slow_twitch_excitation = mm.getRatioSlowTwitchFibers() * sin(Pi/2 * excitation);
+        const double fast_twitch_excitation = (1 - mm.getRatioSlowTwitchFibers()) * (1 - cos(Pi/2 * excitation));
         double alpha, fiber_length_dependence;
 
         // Get the unnormalized total active force, F_iso that 'would' be developed at the current activation
