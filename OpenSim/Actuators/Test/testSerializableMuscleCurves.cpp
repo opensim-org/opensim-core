@@ -630,7 +630,7 @@ void testTendonForceLengthCurve()
         //====================================================================
         double p1 = 0.049; //To match Maganaris & Paul in-vivo data
         double p2 = 1.375/p1;
-        double p3 = 1.0/3.0;
+        double p3 = 2.0/3.0;
         double p4 = 0.5;
 
         printf("4. Testing default property values, "
@@ -676,7 +676,7 @@ void testTendonForceLengthCurve()
 
         cout <<"    c. calcIntegral at e0" << endl;
         value = fseCurve4.calcIntegral(1 + fseCurve4.getStrainAtOneNormForce());
-        double trueValue = 0.018908175505045411;
+        double trueValue = 0.019800189393937052;
         double relError = abs(value-trueValue)/trueValue;
         SimTK_TEST_EQ_TOL(relError, 0, 1e-4); 
         //An error of 1e-4 is used due to the way the integral is approximated 
@@ -684,8 +684,13 @@ void testTendonForceLengthCurve()
 
         cout <<"    d. getCurveDomain" << endl;
             SimTK::Vec2 tmp = fseCurve4.getCurveDomain();
-            SimTK_TEST(fseCurve4.calcValue(tmp(0)) == 0 &&
-                       fseCurve4.calcValue(tmp(1)) == p3);
+            /*printf("Curve domain: %f - %f, in y: %f - %f\n",
+                    tmp(0),tmp(1), 
+                    fseCurve4.calcValue(tmp(0)), 
+                    fseCurve4.calcValue(tmp(1)));*/
+
+            SimTK_TEST_EQ_TOL(fseCurve4.calcValue(tmp(0)), 0, tol);
+            SimTK_TEST_EQ_TOL(fseCurve4.calcValue(tmp(1)), p3, tol);
 
         cout <<"    e. printMuscleCurveToCSVFile" << endl;            
 

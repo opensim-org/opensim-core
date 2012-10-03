@@ -142,7 +142,7 @@ void TendonForceLengthCurve::ensureCurveUpToDate()
         */
         m_stiffnessAtOneNormForceInUse = 1.375/e0;
 
-        m_normForceAtToeEndInUse = 1.0/3.0;
+        m_normForceAtToeEndInUse = 2.0/3.0;
             //refTendon[RefTendon_klin_Idx];
 
         //Fit the curviness parameter            
