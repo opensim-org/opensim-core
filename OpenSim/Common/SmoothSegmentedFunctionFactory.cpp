@@ -103,7 +103,7 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
        double xs    = (x2-xDelta);//x1 + 0.75*(x2-x1);
    
    //Calculate the intermediate points located on the ascending limb
-       double y0    = ylow;   
+       double y0    = 0;   
        double dydx0 = 0;
 
 
@@ -128,7 +128,7 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
    
    //Descending limb
        //x3 entered
-       double y3 = ylow;
+       double y3 = 0;
        double dydx3 = 0;
        
        double x23 = (x2+xDelta) + 0.5*((x3-xDelta)-(x2+xDelta)); //x2 + 0.5*(x3-x2);
@@ -140,7 +140,7 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
     
     //Compute the locations of the control points
        SimTK::Matrix p0 = SegmentedQuinticBezierToolkit::
-           calcQuinticBezierCornerControlPoints(x0, y0, dydx0,x01,y01,dydx01,c
+           calcQuinticBezierCornerControlPoints(x0, ylow, dydx0,x01,y01,dydx01,c
                                                                     ,name);
        SimTK::Matrix p1 = SegmentedQuinticBezierToolkit::
           calcQuinticBezierCornerControlPoints(x01,y01,dydx01,x1s,y1s,dydx1s,c
@@ -152,7 +152,7 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
            calcQuinticBezierCornerControlPoints(x2, y2, dydx2,x23,y23,dydx23,c
                                                                     ,name);
        SimTK::Matrix p4 = SegmentedQuinticBezierToolkit::
-           calcQuinticBezierCornerControlPoints(x23,y23,dydx23,x3, y3, dydx3,c
+           calcQuinticBezierCornerControlPoints(x23,y23,dydx23,x3, ylow, dydx3,c
                                                                      ,name);
                                     
         SimTK::Matrix mX(6,5), mY(6,5);
@@ -561,7 +561,7 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
                                         c,callerName);
     SimTK::Matrix p1 = SegmentedQuinticBezierToolkit::
      calcQuinticBezierCornerControlPoints(xToeCtrl, yToeCtrl, dydxToeMid,
-                                              xIso,     yIso,    dydxIso,
+                                              xToe,     yToe,    dydxIso,
                                                           c,     callerName);
     SimTK::Matrix mX(6,2);
     SimTK::Matrix mY(6,2);
@@ -576,8 +576,8 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
     //curveName.append("_tendonForceLengthCurve");
     //Instantiate a muscle curve object
    SmoothSegmentedFunction mclCrvFcn(  mX,    mY,
-                                       x0,    xIso,
-                                       y0,    yIso,
+                                       x0,    xToe,
+                                       y0,    yToe,
                                        dydx0, dydxIso,
                                        computeIntegral,
                                        true,curveName);

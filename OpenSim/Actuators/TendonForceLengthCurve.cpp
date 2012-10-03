@@ -202,6 +202,11 @@ void TendonForceLengthCurve::ensureCurveUpToDate()
     buildCurve();
 }
 
+  //Since the name is not counted as a property, but it can change,
+    //and needs to be kept up to date.
+    std::string name = getName();
+    m_curve.setName(name);
+
 }
 
 
@@ -330,7 +335,12 @@ void TendonForceLengthCurve::
     printMuscleCurveToCSVFile(const std::string& path)
 {
     ensureCurveUpToDate();
-    m_curve.printMuscleCurveToCSVFile(path);
+
+    double xmin = 0.9;
+    double xmax = 1.0+get_strain_at_one_norm_force()*1.1;
+
+
+    m_curve.printMuscleCurveToCSVFile(path,xmin,xmax);
 }
 
 

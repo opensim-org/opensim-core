@@ -145,6 +145,11 @@ void FiberCompressiveForceLengthCurve::ensureCurveUpToDate()
 
         buildCurve();
     }
+
+    //Since the name is not counted as a property, but it can change,
+    //and needs to be kept up to date.
+    std::string name = getName();
+    m_curve.setName(name);
 }
 
 
@@ -259,5 +264,9 @@ void FiberCompressiveForceLengthCurve::
     printMuscleCurveToCSVFile(const std::string& path)
 {    
     ensureCurveUpToDate();
-    m_curve.printMuscleCurveToCSVFile(path);
+
+    double xmin = 0;
+    double xmax = max(1.0,get_norm_length_at_zero_force());
+
+    m_curve.printMuscleCurveToCSVFile(path,xmin,xmax);
 }

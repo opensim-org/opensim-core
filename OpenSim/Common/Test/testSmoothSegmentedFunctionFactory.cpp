@@ -1101,7 +1101,7 @@ void testMuscleCurveC2Continuity(SmoothSegmentedFunction mcf,
 
     int multC0 = 5;
     int multC1 = 15;
-    int multC2 = 20;
+    int multC2 = 100;
 
     bool c0 = isFunctionContinuous(mcfSample(0), mcf, 0, 1e-6, multC0);
     bool c1 = isFunctionContinuous(mcfSample(0), mcf, 1, 1e-6, multC1);
@@ -1166,6 +1166,7 @@ int main(int argc, char* argv[])
 
             string filePath = "C:/mjhmilla/Stanford/dev";
             double tolDX = 1e-3;
+            double tolDXBig = 1e-2;
             double tolBig = 1e-6;
             double tolSmall = 1e-12;
         ///////////////////////////////////////
@@ -1173,22 +1174,24 @@ int main(int argc, char* argv[])
         ///////////////////////////////////////
             cout <<"**************************************************"<<endl;
             cout <<"TENDON CURVE TESTING                              "<<endl;
-
                 double e0   = 0.04;
-                double kiso = 42.79679348815859;
-                double c    = 1.0;//0.75;    
+                double kiso = 1.5/e0;
+                double c    = 0.5;//0.75;    
                 double ftoe = 1.0/3.0;
             SmoothSegmentedFunction tendonCurve = SmoothSegmentedFunctionFactory::
                            createTendonForceLengthCurve(e0,kiso,ftoe,c,true,
                            "test_tendonCurve");
-            SimTK::Matrix tendonCurveSample=tendonCurve.calcSampledMuscleCurve(6);
+            SimTK::Matrix tendonCurveSample
+                =tendonCurve.calcSampledMuscleCurve(6,1.0,1+e0);
             //tendonCurve.printMuscleCurveToCSVFile(filePath);
 
         //0. Test that each curve fulfills its contract at the end points.
             cout << "   Keypoint Testing" << endl;
             SimTK::Vec2 tendonCurveDomain = tendonCurve.getCurveDomain();
-            SimTK_TEST_EQ_TOL(tendonCurveDomain(0), 1, tolSmall);
-            SimTK_TEST_EQ_TOL(tendonCurveDomain(1), (1+e0), tolSmall);
+            SimTK_TEST_EQ_TOL(tendonCurve.calcValue(tendonCurveDomain(0)), 
+                              0, tolSmall);
+            SimTK_TEST_EQ_TOL(tendonCurve.calcValue(tendonCurveDomain(1)), 
+                             ftoe, tolSmall);
 
             SimTK_TEST_EQ_TOL(tendonCurve.calcValue(1.0)       ,0.0,tolSmall);  
             SimTK_TEST_EQ_TOL(tendonCurve.calcDerivative(1.0,1),0.0,tolBig);
@@ -1201,7 +1204,7 @@ int main(int argc, char* argv[])
             cout << endl;
         //1. Test each derivative sample for correctness against a numerically
         //   computed version
-            testMuscleCurveDerivatives(tendonCurve,tendonCurveSample,tolDX);
+            testMuscleCurveDerivatives(tendonCurve,tendonCurveSample,tolDXBig);
 
         //2. Test each integral, where computed for correctness.
             testMuscleCurveIntegral(tendonCurve, tendonCurveSample);
@@ -1241,7 +1244,7 @@ int main(int argc, char* argv[])
                                     true,"test_fiberForceLength");
 
             SimTK::Matrix fiberFLCurveSample 
-                            = fiberFLCurve.calcSampledMuscleCurve(6);
+                            = fiberFLCurve.calcSampledMuscleCurve(6,1.0,1.0+e0f);
 
         //0. Test that each curve fulfills its contract.
             cout << "   Keypoint Testing" << endl;
@@ -1305,7 +1308,7 @@ int main(int argc, char* argv[])
             //fiberCECurve.printMuscleCurveToFile("C:/mjhmilla/Stanford/dev"
             //    "/OpenSim_LOCALPROJECTS/MuscleLibrary_Bench_20120210/build");
         SimTK::Matrix fiberCECurveSample 
-                            = fiberCECurve.calcSampledMuscleCurve(6);
+                            = fiberCECurve.calcSampledMuscleCurve(6,0,lmax);
 
         //0. Test that each curve fulfills its contract.
             cout << "   Keypoint Testing" << endl;
@@ -1367,7 +1370,7 @@ int main(int argc, char* argv[])
                                     "test_fiberCompressiveForcePennationCurve");          
         
             SimTK::Matrix fiberCEPhiCurveSample 
-                            = fiberCEPhiCurve.calcSampledMuscleCurve(6);
+                            = fiberCEPhiCurve.calcSampledMuscleCurve(6,phi0,phi1);
 
         //0. Test that each curve fulfills its contract.
             cout << "   Keypoint Testing" << endl;
@@ -1431,7 +1434,7 @@ int main(int argc, char* argv[])
                          ,true,"test_fiberCompressiveForceCosPennationCurve");
 
             SimTK::Matrix fiberCECosPhiCurveSample 
-                            = fiberCECosPhiCurve.calcSampledMuscleCurve(6);
+                            = fiberCECosPhiCurve.calcSampledMuscleCurve(6,0,cosPhi0);
 
         //0. Test that each curve fulfills its contract.
             cout << "   Keypoint Testing" << endl;
@@ -1505,7 +1508,7 @@ int main(int argc, char* argv[])
             //fiberFVCurve.printMuscleCurveToCSVFile(filePath);
 
             SimTK::Matrix fiberFVCurveSample 
-                            = fiberFVCurve.calcSampledMuscleCurve(6);
+                            = fiberFVCurve.calcSampledMuscleCurve(6,-1.0,1.0);
 
         //0. Test that each curve fulfills its contract.
             cout << "   Keypoint Testing" << endl;
@@ -1596,7 +1599,7 @@ int main(int argc, char* argv[])
             //fiberFVInvCurve.printMuscleCurveToFile(filePath);
 
             SimTK::Matrix fiberFVInvCurveSample 
-                            = fiberFVInvCurve.calcSampledMuscleCurve(6);
+                            = fiberFVInvCurve.calcSampledMuscleCurve(6,0,fmaxE);
 
         //0. Test that each curve fulfills its contract.
             cout << "   Keypoint Testing" << endl;
@@ -1720,7 +1723,7 @@ int main(int argc, char* argv[])
 
 
             SimTK::Matrix fiberfalCurveSample 
-                            = fiberfalCurve.calcSampledMuscleCurve(6);
+                            = fiberfalCurve.calcSampledMuscleCurve(6,0,lce3);
 
         //0. Test that each curve fulfills its contract.
             cout << "   Keypoint Testing" << endl;
@@ -1808,8 +1811,8 @@ int main(int argc, char* argv[])
             //getCurveDomain doesn't throw an exception
 
             //printMuscleCurveToCSVFile should throw one when given a bad path
-            SimTK_TEST_MUST_THROW(fiberfalCurve.printMuscleCurveToCSVFile
-                                                        ("C:/aBadPath"));
+            SimTK_TEST_MUST_THROW(
+                fiberfalCurve.printMuscleCurveToCSVFile("C:/aBadPath",0,2.0));
             //fiberfalCurve.printMuscleCurveToCSVFile("C:/mjhmilla/Stanford/dev");
             cout << "    passed"<<endl;
         SimTK_END_TEST();

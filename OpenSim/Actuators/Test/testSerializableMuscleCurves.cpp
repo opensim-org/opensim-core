@@ -676,7 +676,7 @@ void testTendonForceLengthCurve()
 
         cout <<"    c. calcIntegral at e0" << endl;
         value = fseCurve4.calcIntegral(1 + fseCurve4.getStrainAtOneNormForce());
-        double trueValue = 0.019513948512907189;//1.266816749781739e-002;
+        double trueValue = 0.018908175505045411;
         double relError = abs(value-trueValue)/trueValue;
         SimTK_TEST_EQ_TOL(relError, 0, 1e-4); 
         //An error of 1e-4 is used due to the way the integral is approximated 
@@ -684,8 +684,8 @@ void testTendonForceLengthCurve()
 
         cout <<"    d. getCurveDomain" << endl;
             SimTK::Vec2 tmp = fseCurve4.getCurveDomain();
-            SimTK_TEST(tmp(0) == l0 &&
-                       tmp(1) == l1);
+            SimTK_TEST(fseCurve4.calcValue(tmp(0)) == 0 &&
+                       fseCurve4.calcValue(tmp(1)) == p3);
 
         cout <<"    e. printMuscleCurveToCSVFile" << endl;            
 

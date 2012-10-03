@@ -112,9 +112,15 @@ void ActiveForceLengthCurve::buildCurve()
 
 void ActiveForceLengthCurve::ensureCurveUpToDate()
 {
+    
     if(isObjectUpToDateWithProperties()==false){
         buildCurve();
     }
+
+    //Since the name is not counted as a property, but it can change,
+    //and needs to be kept up to date.
+    std::string name = getName();
+    m_curve.setName(name);
 }
 
 //=============================================================================
@@ -235,5 +241,9 @@ void ActiveForceLengthCurve::
     printMuscleCurveToCSVFile(const std::string& path)
 {   
     ensureCurveUpToDate();    
-    m_curve.printMuscleCurveToCSVFile(path);
+
+    double xmin = min(0.0,get_min_norm_active_fiber_length());
+    double xmax = max(2.0,get_max_norm_active_fiber_length());
+
+    m_curve.printMuscleCurveToCSVFile(path,xmin,xmax);
 }

@@ -112,6 +112,11 @@ void ForceVelocityInverseCurve::ensureCurveUpToDate()
     if(isObjectUpToDateWithProperties() == false){
         buildCurve();
     }
+
+    //Since the name is not counted as a property, but it can change,
+    //and needs to be kept up to date.
+    std::string name = getName();
+    m_curve.setName(name);
 }
 
 //=============================================================================
@@ -244,5 +249,9 @@ void ForceVelocityInverseCurve::
     printMuscleCurveToCSVFile(const std::string& path)
 {
     ensureCurveUpToDate();
-    m_curve.printMuscleCurveToCSVFile(path);
+
+    double xmin = 0;
+    double xmax = get_max_eccentric_velocity_force_multiplier();
+
+    m_curve.printMuscleCurveToCSVFile(path,xmin,xmax);
 }

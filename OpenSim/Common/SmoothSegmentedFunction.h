@@ -165,6 +165,8 @@ namespace OpenSim {
        @return The string name this object was given during construction*/
        std::string getName() const;
 
+       void setName(std::string &name);
+
        /**
        This function returns a SimTK::Vec2 that contains in its 0th element
        the lowest value of the curve domain, and in its 1st element the highest
@@ -184,7 +186,11 @@ namespace OpenSim {
        
        @param path The full path to the location. Note '/' slashes must be used,
             and do not put a '/' after the last folder.
-
+       @param x0 the left most domain point of the curve to print. The curve
+                 will extend to at least this point.
+       @param x1 the right most domain point of the curve to print. The 
+                 printed curve will extend at least to this point, perhaps
+                 beyond.
 
        For example the tendon 
        curve for a muscle named 'glutmax' will be:
@@ -231,7 +237,9 @@ namespace OpenSim {
        \endverbatim
 
        */
-       void printMuscleCurveToCSVFile(const std::string& path) const;
+       void printMuscleCurveToCSVFile(const std::string& path,
+                                      double domainMin,
+                                      double domainMax) const;
        
 ///@cond       
        /**
@@ -267,7 +275,9 @@ namespace OpenSim {
        @returns a matrix populated with x,y,dy/dx ... d^ny/dx^n,iy
        */
 
-       SimTK::Matrix calcSampledMuscleCurve(int maxOrder) const;
+       SimTK::Matrix calcSampledMuscleCurve(int maxOrder,
+                                            double domainMin,
+                                            double domainMax) const;
        ///@endcond
 
     private:

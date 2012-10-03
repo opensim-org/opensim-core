@@ -405,6 +405,11 @@ std::string SmoothSegmentedFunction::getName() const
     return _name;
 }
 
+void SmoothSegmentedFunction::setName(std::string &name) 
+{
+    _name = name;
+}
+
 SimTK::Vec2 SmoothSegmentedFunction::getCurveDomain() const
 {
     SimTK::Vec2 xrange;
@@ -446,7 +451,9 @@ _______________________________________________________________________
     **Approximate. Includes estimated cost of evaluating a cubic spline
                     with 100 knots
 */
-SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder) const{
+SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder,
+    double domainMin,
+    double domainMax) const{
     int pts = 1; //Number of points between each of the spline points used
                   //to fit u(x), and also the integral spline
     SimTK_ERRCHK_ALWAYS(maxOrder <= getMaxDerivativeOrder(),
@@ -510,8 +517,11 @@ SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder) cons
     //generate some sample points in the extrapolated region
     idx=0;
     x0 = _x0 - 0.1*(_x1-_x0);
+    if(domainMin < x0)
+        x0 = domainMin;
+
     x1 = _x0;
-    delta = 0.1*(x1-x0)/pts;
+    delta = (0.1)*(x1-x0)/(pts);
 
     for(int j=0;j<pts*10;j++){
         xsmpl(idx) = x0 + delta*j;
@@ -533,7 +543,10 @@ SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder) cons
     //generate some points in the extrapolated region
     x0 = _x1;
     x1 = _x1 + 0.1*(_x1-_x0);
-    delta = 0.1*(x1-x0)/pts;
+    if(domainMax > x1)
+        x1 = domainMax;
+
+    delta = (1.0/9.0)*(x1-x0)/(pts);
 
     for(int j=0;j<pts*10;j++){
         xsmpl(idx) = x0 + delta*j;
@@ -597,10 +610,13 @@ _______________________________________________________________________
     **Approximate. Includes estimated cost of evaluating a cubic spline
                     with 100 knots
 */
-void SmoothSegmentedFunction::printMuscleCurveToCSVFile(const std::string& path) const
+void SmoothSegmentedFunction::printMuscleCurveToCSVFile(
+                                                const std::string& path,
+                                                double domainMin,
+                                                double domainMax) const
 {
     //Only compute up to the 2nd derivative
-    SimTK::Matrix results = calcSampledMuscleCurve(2);
+    SimTK::Matrix results = calcSampledMuscleCurve(2,domainMin,domainMax);
     SimTK::Array_<std::string> colNames(results.ncol());
     colNames[0] = "x";
     colNames[1] = "y";

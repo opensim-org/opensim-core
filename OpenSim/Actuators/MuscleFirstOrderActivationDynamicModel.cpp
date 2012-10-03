@@ -46,6 +46,11 @@ void MuscleFirstOrderActivationDynamicModel::ensureModelUpToDate()
     if(isObjectUpToDateWithProperties()==false){
         buildModel();
     }
+
+    //Since the name is not counted as a property, but it can change,
+    //and needs to be kept up to date.
+    std::string name = getName();
+    setName(name);
 }
 
 void MuscleFirstOrderActivationDynamicModel::buildModel()
