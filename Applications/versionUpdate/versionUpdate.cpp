@@ -79,7 +79,7 @@ int main(int argc,char **argv)
 
 	Object* newObject = Object::makeObjectFromFile(inputFileName);
 
-	newObject->clone()->print(outputFileName);
+	newObject->print(outputFileName);
 
 	//----------------------------
 	// Catch any thrown exceptions
