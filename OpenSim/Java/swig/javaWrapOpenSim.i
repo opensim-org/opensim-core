@@ -113,6 +113,7 @@
 
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 
@@ -663,6 +664,7 @@ using namespace SimTK;
 
 %include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 %include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+%include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 %template(SetJoints) OpenSim::Set<OpenSim::Joint>;
 %template(ModelComponentSetJoints) OpenSim::ModelComponentSet<OpenSim::Joint>;

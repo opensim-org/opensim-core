@@ -90,6 +90,7 @@
 
 #include "SimbodyEngine/EllipsoidJoint.h"
 #include "SimbodyEngine/BallJoint.h"
+#include "SimbodyEngine/UniversalJoint.h"
 #include "SimbodyEngine/PinJoint.h"
 #include "SimbodyEngine/SliderJoint.h"
 #include "SimbodyEngine/FreeJoint.h"
@@ -164,6 +165,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( EllipsoidJoint() );
     Object::registerType( FreeJoint() );
     Object::registerType( BallJoint() );
+    Object::registerType( UniversalJoint() );
     Object::registerType( PinJoint() );
     Object::registerType( SliderJoint() );
     Object::registerType( TransformAxis() );
