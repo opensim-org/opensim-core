@@ -56,7 +56,7 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model &model, MarkersRefe
 		throw Exception("InverseKinematicsSolver: Model has no markers!");
 	}
 	
-	const SimTK::Array_<std::string> &markerNames = _markersReference.getNames();
+	const SimTK::Array_<std::string> &markerNames = _markersReference.getNames(); // size and content as in trc file
 
 	if(markerNames.size() < 1){
 		std::cout << "InverseKinematicsSolver: No markers available from data provided."  << std::endl;
@@ -193,6 +193,13 @@ void InverseKinematicsSolver::computeCurrentSquaredMarkerErrors(SimTK::Array_<do
 	for(unsigned int i=0; i<markerErrors.size(); i++)
 		markerErrors[i] = _markerAssemblyCondition->findCurrentMarkerErrorSquared(SimTK::Markers::MarkerIx(i));
 }
+
+/** Marker errors are reported in order different from tasks file or model, find name corresponding to passed in index  */
+SimTK::String InverseKinematicsSolver::getMarkerNameForIndex(int markerIndex) const
+{
+	return _markerAssemblyCondition->getMarkerName(SimTK::Markers::MarkerIx(markerIndex));
+}
+
 
 /** Internal method to convert the MarkerReferences into additional goals of the 
 	of the base assembly solver, that is going to do the assembly.  */

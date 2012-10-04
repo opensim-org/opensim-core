@@ -124,7 +124,9 @@ public:
 	double computeCurrentSquaredMarkerError(int markerIndex);
 	/** Compute and return the distance errors between all model marker and observations. */
 	void computeCurrentSquaredMarkerErrors(SimTK::Array_<double> &markerErrors);
-
+	/** Marker errors are reported in order different from tasks file or model, find marker name 
+	    corresponding to passed in index of marker error */
+	SimTK::String getMarkerNameForIndex(int markerErrorIndex) const;
 
 protected:
 	/** Internal method to convert the CoordinateReferences into goals of the 
