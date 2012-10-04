@@ -393,7 +393,7 @@ bool InverseKinematicsTool::run()
 				cout << "Frame " << i << " (t=" << s.getTime() << "):\t";
 				cout << "total squared error = " << totalSquaredMarkerError;
 				cout << ", marker error: RMS=" << sqrt(totalSquaredMarkerError/nm);
-				cout << ", max=" << sqrt(maxSquaredMarkerError) << " (" << markerNames[worst] << ")" << endl;
+				cout << ", max=" << sqrt(maxSquaredMarkerError) << " (" << ikSolver.getMarkerNameForIndex(worst) << ")" << endl;
 			}
 
 			if(_reportMarkerLocations){
