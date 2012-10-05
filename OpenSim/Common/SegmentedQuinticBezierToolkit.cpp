@@ -940,6 +940,7 @@ class BezierData {
 };
 ///@endcond
 
+namespace {
 ///@cond
 /**
 This is the nice user interface class to MySystemGuts, which creates a System
@@ -1022,6 +1023,7 @@ public:
     }
 };
 
+}
 ///@endcond
 
 /*
@@ -1132,3 +1134,4 @@ SimTK::Matrix SegmentedQuinticBezierToolkit::calcNumIntBezierYfcnX(
     //intXY.resizeKeep(idx,2);
     return intXY;
 }
+
