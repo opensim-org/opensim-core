@@ -87,9 +87,9 @@ void MuscleMetabolicPowerProbeBhargava2004::constructProperties()
     constructProperty_mechanical_work_rate_on(true);
     constructProperty_enforce_minimum_heat_rate_per_muscle(true);
 
-    int curvePoints = 5;
-    double curveX[] = {0.0, 0.5, 1.0, 1.5, 2.0};
-    double curveY[] = {0.5, 0.5, 1.0, 0.0, 0.0};
+    const int curvePoints = 5;
+    const double curveX[] = {0.0, 0.5, 1.0, 1.5, 2.0};
+    const double curveY[] = {0.5, 0.5, 1.0, 0.0, 0.0};
     PiecewiseLinearFunction fiberLengthDepCurveDefault(curvePoints, curveX, curveY, "defaultCurve");
     constructProperty_normalized_fiber_length_dependence_on_maintenance_rate(fiberLengthDepCurveDefault);
 
@@ -150,7 +150,7 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
     
 
     // Loop through each muscle in the MetabolicMuscleParameterSet
-    int nM = get_MetabolicMuscleParameterSet().getSize();
+    const int nM = get_MetabolicMuscleParameterSet().getSize();
     Vector Edot(nM);
     for (int i=0; i<nM; i++)
     {
@@ -176,7 +176,7 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
         // Get the unnormalized total active force, F_iso that 'would' be developed at the current activation
         // and fiber length under isometric conditions (i.e. Vm=0)
         //double F_iso = (fiber_force_active/m->getForceVelocityMultiplier(s));
-        double F_iso = m->getActivation(s) * m->getActiveForceLengthMultiplier(s) * max_isometric_force;
+        const double F_iso = m->getActivation(s) * m->getActiveForceLengthMultiplier(s) * max_isometric_force;
 
         // DEBUG
         //cout << "fiber_velocity_normalized = " << fiber_velocity_normalized << endl;
@@ -296,7 +296,7 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
 
         // DEBUG
         // ----------
-        bool debug = false;
+        const bool debug = false;
         if(debug) {
             cout << "muscle_mass = " << mm.getMuscleMass() << endl;
             cout << "ratio_slow_twitch_fibers = " << mm.getRatioSlowTwitchFibers() << endl;
@@ -324,12 +324,11 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
             cout << "Bdot = " << Bdot << endl;
             cout << "Wdot = " << Wdot << endl;
             cout << "Edot = " << Edot(i) << endl;
-            int res = system("pause");
+            system("pause");
         }
     }
 
     SimTK::Vector EdotTotal(1, Edot.sum() + Bdot);
-
     return EdotTotal;
 }
 

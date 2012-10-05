@@ -108,8 +108,8 @@ namespace OpenSim {
  *     - <B>A = u          </B>,    <I>u >  a </I>
  *     - <B>A = (u+a)/2    </B>,    <I>u <= a </I>
  *
- *     - <B>alphaS_slow = 100 /     ( v_CE_max / (1 + (1.5*r)) ) </B>
- *     - <B>alphaS_fast = 153 / 2.5*( v_CE_max / (1 + (1.5*r)) ) </B>
+ *     - <B>alphaS_fast = 153 / v_CE_max          </B>
+ *     - <B>alphaS_slow = 100 / (v_CE_max / 2.5)  </B>
  *     - <B>alphaL = 0.3 * alphaS_slow </B>
  *
  *     - m = The mass of the muscle (kg).

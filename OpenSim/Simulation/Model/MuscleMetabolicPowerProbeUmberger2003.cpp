@@ -214,7 +214,7 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
         // -----------------------------------------------------------------------
         if (get_activation_maintenance_rate_on())
         {
-            double unscaledAMdot = 128*(1 - mm.getRatioSlowTwitchFibers()) + 25;
+            const double unscaledAMdot = 128*(1 - mm.getRatioSlowTwitchFibers()) + 25;
 
             if (fiber_length_normalized <= 1.0)
                 AMdot = get_scaling_factor() * std::pow(A, 0.6) * unscaledAMdot;
@@ -230,10 +230,10 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
         // -----------------------------------------------------------------------
         if (get_shortening_rate_on())
         {
-            double Vmax_slowtwitch = max_shortening_velocity / (1 + 1.5*(1 - mm.getRatioSlowTwitchFibers()));
-            double Vmax_fasttwitch = 2.5*Vmax_slowtwitch;
-            double alpha_shortening_fasttwitch = 153 / Vmax_fasttwitch;
-            double alpha_shortening_slowtwitch = 100 / Vmax_slowtwitch;
+            const double Vmax_fasttwitch = max_shortening_velocity;
+            const double Vmax_slowtwitch = max_shortening_velocity / 2.5;
+            const double alpha_shortening_fasttwitch = 153 / Vmax_fasttwitch;
+            const double alpha_shortening_slowtwitch = 100 / Vmax_slowtwitch;
             double unscaledSdot, tmp_slowTwitch, tmp_fastTwitch;
 
             if (fiber_velocity_normalized <= 0)    // concentric contraction, Vm<0
@@ -330,7 +330,7 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
 
         // DEBUG
         // ----------
-        bool debug = false;
+        const bool debug = false;
         if(debug) {
             cout << "muscle_mass = " << mm.getMuscleMass() << endl;
             cout << "ratio_slow_twitch_fibers = " << mm.getRatioSlowTwitchFibers() << endl;
@@ -352,12 +352,11 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
             cout << "Bdot = " << Bdot << endl;
             cout << "Wdot = " << Wdot << endl;
             cout << "Edot = " << Edot(i) << endl;
-            int res = system("pause");
+            system("pause");
         }
     }
 
     SimTK::Vector EdotTotal(1, Edot.sum() + Bdot);
-
     return EdotTotal;
 }
 
