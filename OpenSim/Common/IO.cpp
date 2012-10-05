@@ -505,7 +505,7 @@ getCwd()
 {
 	char buffer[PATH_MAX];
 #if defined __linux__ || defined __APPLE__
-	getcwd(buffer, PATH_MAX); 
+	char* ptr = getcwd(buffer, PATH_MAX); 
 #else
 	_getcwd(buffer, PATH_MAX);
 #endif
