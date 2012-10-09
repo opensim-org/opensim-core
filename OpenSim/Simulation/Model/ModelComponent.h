@@ -24,17 +24,20 @@
  * -------------------------------------------------------------------------- */
 
 /** @file
- * This defines the abstract ModelComponent class, which is used to add computational
- * components to the underlying SimTK::System (MultibodySystem). It specifies
- * the interface that components must satisfy in order to be part of the system
- * and provides a series of helper methods for adding variables (state, discrete,
- * cache, ...) to the underlying system. As such, ModelComponent handles all of
- * the bookkeeping for variable indices and provides conveniece access via 
- * variable names.
+ * This defines the abstract ModelComponent class, which is used to add 
+ * computational components to the underlying SimTK::System (MultibodySystem). 
+ * It specifies the interface that components must satisfy in order to be part 
+ * of the system and provides a series of helper methods for adding variables 
+ * (state, discrete, cache, ...) to the underlying system. As such, 
+ * ModelComponent handles all of the bookkeeping for variable indices and  
+ * provides convenience access via variable names.
  *
- * All components, Bodies, Joints, Coordinates, Constraints, Forces, Controllers, .. 
- * and even Model itself, are ModelComponents. Each component is "connected" to a
- * SimTK::Subsystem and by default this is the System's DefaultSubsystem.
+ * All OpenSim components: Bodies, Joints, Coordinates, Constraints, Forces,   
+ * Actuators, Controllers, etc. and Model itself, are ModelComponents. Each  
+ * component is composed of one or more underlying Simbody multibody system 
+ * elements (MobilizedBody, Constraint, Force, or Measure) which are part of 
+ * a SimTK::Subsystem and by default this is the System's DefaultSubsystem.
+ * The SimTK::Subsystem is where new variables are allocated.
  */
 
 
