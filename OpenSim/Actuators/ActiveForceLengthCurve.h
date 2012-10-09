@@ -240,7 +240,7 @@ public:
             The normalized fiber length where the descending limb 
             transitions to the minimum value and has a first and second 
             derivative of 0.
-       param shallowAscendingSlope
+       @param shallowAscendingSlope
                 The slope of the shallow ascending limb.
 
         <B>Conditions</B>

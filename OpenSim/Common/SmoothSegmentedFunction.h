@@ -186,9 +186,11 @@ namespace OpenSim {
        
        @param path The full path to the location. Note '/' slashes must be used,
             and do not put a '/' after the last folder.
-       @param x0 the left most domain point of the curve to print. The curve
+       @param domainMin 
+                 the left most domain point of the curve to print. The curve
                  will extend to at least this point.
-       @param x1 the right most domain point of the curve to print. The 
+       @param domainMax 
+                 the right most domain point of the curve to print. The 
                  printed curve will extend at least to this point, perhaps
                  beyond.
 

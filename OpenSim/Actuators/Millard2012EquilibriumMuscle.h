@@ -41,6 +41,7 @@ The parent class, Muscle.h, provides
 
 //All of the sub-models required for a muscle model:
 #include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
+#include <OpenSim/Actuators/MuscleSecondOrderActivationDynamicModel.h>
 #include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 
 #include <OpenSim/Actuators/ActiveForceLengthCurve.h>
@@ -230,6 +231,8 @@ public:
     /** @name Property declarations 
     These are the serializable properties associated with this class. **/
     /**@{**/
+    OpenSim_DECLARE_PROPERTY( use_second_order_activation, bool,
+        "Use second order activation dynamics.");
 
     OpenSim_DECLARE_PROPERTY( use_fiber_damping, bool,
         "Include fiber damping. This cannot be applied in the reduced model");
@@ -240,13 +243,19 @@ public:
     OpenSim_DECLARE_PROPERTY( default_activation, double,
                        "assumed initial activation level if none is assigned.");
 
+
+
     OpenSim_DECLARE_PROPERTY( default_fiber_length, double,
                        "assumed initial fiber length if none is assigned.");
     
 
     OpenSim_DECLARE_UNNAMED_PROPERTY( 
-                                MuscleFirstOrderActivationDynamicModel,
-                                "activation dynamics model with a lower bound");   
+                      MuscleSecondOrderActivationDynamicModel,
+                      "2nd order activation dynamics model with a lower bound");
+
+    OpenSim_DECLARE_UNNAMED_PROPERTY( 
+                      MuscleFirstOrderActivationDynamicModel,
+                      "1st activation dynamics model with a lower bound");   
     
     OpenSim_DECLARE_UNNAMED_PROPERTY(
                                 ActiveForceLengthCurve,
@@ -319,7 +328,11 @@ public:
    @returns the MuscleFirstOrderActivationDynamicModel 
             that this muscle model uses
    */
-    const MuscleFirstOrderActivationDynamicModel& getActivationModel() const;
+    const MuscleFirstOrderActivationDynamicModel& 
+        getFirstOrderActivationModel() const;
+
+   const MuscleSecondOrderActivationDynamicModel& 
+       getSecondOrderActivationModel() const;
 
     /**
    @returns the MuscleFixedWidthPennationModel 
@@ -393,6 +406,8 @@ public:
 
     bool getUseFiberDamping() const;
 
+    bool getUseSecondOrderActivationDynamics() const;
+
 //==============================================================================
 // Set Properties
 //==============================================================================
@@ -401,8 +416,11 @@ public:
     @param aActivationMdl the MuscleFirstOrderActivationDynamicModel that this
                           muscle model uses to simulate activation dynamics
     */
-    void setActivationModel(
+    void setFirstOrderActivationModel(
             MuscleFirstOrderActivationDynamicModel& aActivationMdl);
+
+    void setSecondOrderActivationModel(
+            MuscleSecondOrderActivationDynamicModel& aActivation2Mdl);
 
     //This is now set automatically depending on the configuration of the muscle
     /*
@@ -451,13 +469,17 @@ public:
     @param ignoreActivationDynamics when set true ignores activation dynamics
                                     and treats the control signal as activation
     @param useDamping when set true enables the damped fiber method of solving
+    @param useSecondOrderActivation uses a second order model to describe 
+                                    activation dynamics rather than the usual
+                                    first order system
     */
     void setMuscleConfiguration(bool ignoreTendonCompliance,
                                 bool ignoreActivationDynamics,
-                                bool useDamping);
+                                bool useDamping,
+                                bool useSecondOrderActivation);
 
 
-
+    void setUseSecondOrderActivation(bool use2ndOrderAct);
 //==============================================================================
 // State Variable Related Functions
 //==============================================================================
@@ -475,9 +497,10 @@ public:
 
     /**
     @param s The state of the system
+    @param order the desired derivative order
     @returns the time derivative of activation
     */
-    double getActivationRate(const SimTK::State& s) const;
+    double getActivationDerivative(const SimTK::State& s,int order) const;
 
     /**
     @param s The state of the system
@@ -574,7 +597,7 @@ protected:
     void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 
         /** Calculate activation rate */
-    double calcActivationRate(const SimTK::State& s) const; 
+    double calcActivationDerivative(const SimTK::State& s, int order) const; 
 
 
 //==============================================================================
@@ -644,7 +667,10 @@ private:
     static const std::string STATE_ACTIVATION_NAME;
     //The name used to access the fiber length state
 	static const std::string STATE_FIBER_LENGTH_NAME;
-    
+    //The name of the derivative of activation, used by the second
+    //order activation dynamics model
+    static const std::string STATE_ACTIVATION_DERIVATIVE_NAME;
+
     //static const std::string PREVIOUS_FIBER_LENGTH_NAME;
     //static const std::string PREVIOUS_FIBER_VELOCITY_NAME;
 

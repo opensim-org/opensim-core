@@ -47,6 +47,8 @@
 #include "FiberCompressiveForceLengthCurve.h"
 #include "FiberCompressiveForceCosPennationCurve.h"
 #include "MuscleFirstOrderActivationDynamicModel.h"
+#include "MuscleSecondOrderActivationDynamicModel.h"
+
 #include "MuscleFixedWidthPennationModel.h"
 
 #include "Millard2012EquilibriumMuscle.h"

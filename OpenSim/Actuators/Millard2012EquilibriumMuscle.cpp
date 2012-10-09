@@ -44,6 +44,8 @@ using namespace SimTK;
 const string Millard2012EquilibriumMuscle::
     STATE_ACTIVATION_NAME = "activation";
 const string Millard2012EquilibriumMuscle::
+    STATE_ACTIVATION_DERIVATIVE_NAME = "activation_velocity";
+const string Millard2012EquilibriumMuscle::
     STATE_FIBER_LENGTH_NAME = "fiber_length"; 
 
 
@@ -84,6 +86,11 @@ void Millard2012EquilibriumMuscle::constructProperties()
     constructProperty_FiberForceLengthCurve(FiberForceLengthCurve());
     constructProperty_TendonForceLengthCurve(TendonForceLengthCurve());
 
+    constructProperty_use_second_order_activation(false);
+
+    MuscleSecondOrderActivationDynamicModel act2Mdl;
+    actMdl.setMinimumActivation(0.01);
+    constructProperty_MuscleSecondOrderActivationDynamicModel(act2Mdl);
 
 }
 
@@ -120,6 +127,12 @@ void Millard2012EquilibriumMuscle::buildMuscle()
         = upd_MuscleFirstOrderActivationDynamicModel();    
     actMdl.setName(tmp);
 
+    tmp = aName;
+    tmp.append("_MuscleSecondOrderActivationDynamicModel");
+    MuscleSecondOrderActivationDynamicModel& act2Mdl 
+        = upd_MuscleSecondOrderActivationDynamicModel();    
+    act2Mdl.setName(tmp);
+    
     tmp = aName;
     tmp.append("_ActiveForceLengthCurve");
     ActiveForceLengthCurve& falCurve = upd_ActiveForceLengthCurve();
@@ -171,6 +184,12 @@ void Millard2012EquilibriumMuscle::buildMuscle()
                 getName().c_str());
 
             SimTK_ERRCHK1_ALWAYS(
+                act2Mdl.getMinimumActivation() > SimTK::SignificantReal,
+                caller.c_str(),
+                "%s: Minimum activation must be greater than 0",
+                getName().c_str());
+
+            SimTK_ERRCHK1_ALWAYS(
                 falCurve.getMinValue() > SimTK::SignificantReal,
                 caller.c_str(),
                 "%s: Minimum Active Force Length Value must be greater than 0"
@@ -192,14 +211,16 @@ void Millard2012EquilibriumMuscle::buildMuscle()
                 getName().c_str());               
     }else{
             actMdl.setMinimumActivation(0.0);
+            act2Mdl.setMinimumActivation(0.0);
             falCurve.setMinValue(0.0);
             fvCurve.setCurveShape(0.0,fvInvCurve.getIsometricMaxSlope(), 0.0,
-                      fvInvCurve.getMaxEccentricVelocityForceMultiplier());
+                          fvInvCurve.getMaxEccentricVelocityForceMultiplier());
     }
 
     //Ensure all sub objects are up to date;
     penMdl.ensureModelUpToDate();
     actMdl.ensureModelUpToDate();
+    act2Mdl.ensureModelUpToDate();
 
     falCurve.ensureCurveUpToDate();
     fvCurve.ensureCurveUpToDate();
@@ -297,8 +318,15 @@ addToSystem(SimTK::MultibodySystem& system) const
                 addCacheVariable(STATE_ACTIVATION_NAME+"_deriv", 
                 value, 
                 SimTK::Stage::Dynamics);
+    
+        if(get_use_second_order_activation()){
+        addStateVariable(STATE_ACTIVATION_DERIVATIVE_NAME);     
+                addCacheVariable(STATE_ACTIVATION_DERIVATIVE_NAME+"_deriv", 
+                value, 
+                SimTK::Stage::Dynamics);
+        }
     }
-
+   
     if(isFiberLengthAState()){
         addStateVariable(STATE_FIBER_LENGTH_NAME);  
 	            addCacheVariable(STATE_FIBER_LENGTH_NAME+"_deriv", 
@@ -315,6 +343,13 @@ void Millard2012EquilibriumMuscle::initStateFromProperties(SimTK::State& s) cons
 
     if(isActivationAState()){
         setActivation(s, getDefaultActivation());   
+
+        //First time derivative of activation is set to zero ...
+        if(get_use_second_order_activation()){
+            setStateVariable(s,STATE_ACTIVATION_DERIVATIVE_NAME,0.0);    
+            markCacheVariableInvalid(s,"velInfo");
+            markCacheVariableInvalid(s,"dynamicsInfo");  
+        }
     }
 
     if(isFiberLengthAState()){
@@ -330,8 +365,11 @@ void Millard2012EquilibriumMuscle::
     Super::setPropertiesFromState(s);
        
     if(isActivationAState()){
-        setDefaultActivation(getStateVariable(s,STATE_ACTIVATION_NAME));
+        setDefaultActivation(getStateVariable(s,STATE_ACTIVATION_NAME));        
     }
+
+    //First derivative of activation is left as zero for now.   
+
     if(isFiberLengthAState()){
         setDefaultFiberLength(getStateVariable(s,STATE_FIBER_LENGTH_NAME));
     }
@@ -346,22 +384,29 @@ computeStateVariableDerivatives(const SimTK::State& s) const
         "Millard2012EquilibriumMuscle: Muscle is not"
         " to date with properties");
     SimTK::Vector derivs(getNumStateVariables(), 0.);
-
+    
     int idx = 0;
     //Activation is the first state
-    if(isActivationAState() && idx+1 <= getNumStateVariables()){
-        if (!isDisabled(s)) {
-            derivs[idx] = getActivationRate(s);
-            idx ++;
-        }
-    }
-    //Followed by fiber length, if it is a state
-    if(isFiberLengthAState() && idx+1 <= getNumStateVariables()){
-        if (!isDisabled(s)) {
-            derivs[idx] = getFiberVelocity(s);
-        }
-    }
+    if (!isDisabled(s)) {
+        if(isActivationAState() && idx+1 <= getNumStateVariables()){    
+                
+                derivs[idx] = getActivationDerivative(s,1);
+                idx ++;
 
+                if(get_use_second_order_activation() 
+                    && idx+1 <= getNumStateVariables()){  
+
+                    derivs[idx] = getActivationDerivative(s,2);
+                    idx ++;            
+                }
+            
+        }
+
+        //Followed by fiber length, if it is a state
+        if(isFiberLengthAState() && idx+1 <= getNumStateVariables()){       
+                derivs[idx] = getFiberVelocity(s);        
+        }
+    }
     return derivs;   
 }
 
@@ -369,15 +414,27 @@ computeStateVariableDerivatives(const SimTK::State& s) const
 // STATE RELATED GET FUNCTIONS
 //=============================================================================
 
+bool Millard2012EquilibriumMuscle::getUseSecondOrderActivationDynamics() const
+{
+    return get_use_second_order_activation();
+}
+
 double Millard2012EquilibriumMuscle::getDefaultActivation() const
 {
     double defaultActivation = 0;
 
-    const MuscleFirstOrderActivationDynamicModel& actMdl = 
-                get_MuscleFirstOrderActivationDynamicModel();
-    defaultActivation =  
-        actMdl.clampActivation(get_default_activation());
 
+    if(get_use_second_order_activation()){
+        const MuscleSecondOrderActivationDynamicModel& act2Mdl = 
+                    get_MuscleSecondOrderActivationDynamicModel();
+        defaultActivation =  
+            act2Mdl.clampActivation(get_default_activation());
+    }else{
+        const MuscleFirstOrderActivationDynamicModel& actMdl = 
+                    get_MuscleFirstOrderActivationDynamicModel();
+        defaultActivation =  
+            actMdl.clampActivation(get_default_activation());
+    }
     return defaultActivation;
                         
 }
@@ -388,21 +445,21 @@ double Millard2012EquilibriumMuscle::getDefaultFiberLength() const
 }
 
 double Millard2012EquilibriumMuscle::
-    getActivationRate(const SimTK::State& s) const
+    getActivationDerivative(const SimTK::State& s, int order) const
 {
     
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
         "Millard2012EquilibriumMuscle: Muscle is not"
         " to date with properties");
-    double activationRate = 0;
+    double activationDerivative = 0;
 
     if(isActivationAState()){
-        activationRate = calcActivationRate(s);
+        activationDerivative = calcActivationDerivative(s,order);
     }else{
-        activationRate = 0;
+        activationDerivative = 0;
     }
 
-    return activationRate;
+    return activationDerivative;
 }
 
 double Millard2012EquilibriumMuscle::
@@ -464,9 +521,17 @@ void Millard2012EquilibriumMuscle::setDefaultActivation(double activation)
 {
     //Even if activation isn't a state, all simulation methods have access
     //to the activation model
-    const MuscleFirstOrderActivationDynamicModel &actMdl = 
-        get_MuscleFirstOrderActivationDynamicModel();
-    set_default_activation(actMdl.clampActivation(activation));  
+    double defaultAct = 0;
+
+    if(get_use_second_order_activation()){
+        const MuscleSecondOrderActivationDynamicModel &act2Mdl = 
+            get_MuscleSecondOrderActivationDynamicModel();
+            set_default_activation(act2Mdl.clampActivation(activation));      
+    }else{
+        const MuscleFirstOrderActivationDynamicModel &actMdl = 
+            get_MuscleFirstOrderActivationDynamicModel();
+        set_default_activation(actMdl.clampActivation(activation));  
+    }
     ensureMuscleUpToDate();   
 }
 
@@ -484,15 +549,27 @@ void Millard2012EquilibriumMuscle::
         " to date with properties");
 
     if(isActivationAState())
-    { 
-        const MuscleFirstOrderActivationDynamicModel& actMdl 
-            = get_MuscleFirstOrderActivationDynamicModel();
-        double clampedActivation=actMdl.clampActivation(activation);
-        setStateVariable(s,STATE_ACTIVATION_NAME,clampedActivation);    
-        markCacheVariableInvalid(s,"velInfo");
-        markCacheVariableInvalid(s,"dynamicsInfo");            
+    {        
+        if(get_use_second_order_activation()){
+                const MuscleSecondOrderActivationDynamicModel& act2Mdl 
+                    = get_MuscleSecondOrderActivationDynamicModel();
+                double clampedActivation=act2Mdl.clampActivation(activation);
+                setStateVariable(s,STATE_ACTIVATION_NAME,clampedActivation);    
+                markCacheVariableInvalid(s,"velInfo");
+                markCacheVariableInvalid(s,"dynamicsInfo");    
+        }else{
+            const MuscleFirstOrderActivationDynamicModel& actMdl 
+                = get_MuscleFirstOrderActivationDynamicModel();
+            double clampedActivation=actMdl.clampActivation(activation);
+            setStateVariable(s,STATE_ACTIVATION_NAME,clampedActivation);    
+            markCacheVariableInvalid(s,"velInfo");
+            markCacheVariableInvalid(s,"dynamicsInfo");        
+            
+        }
     }    
 }
+
+
 
 void Millard2012EquilibriumMuscle::
     setFiberLength(SimTK::State& s, double fiberLength) const
@@ -525,6 +602,12 @@ void Millard2012EquilibriumMuscle::
 	markCacheVariableValid(s, aStateName + "_deriv");
 }
 
+void Millard2012EquilibriumMuscle::
+    setUseSecondOrderActivation(bool use2ndOrderAct){
+    set_use_second_order_activation(use2ndOrderAct);
+    ensureMuscleUpToDate();
+}
+
 //=============================================================================
 // GET
 //=============================================================================
@@ -542,10 +625,17 @@ double Millard2012EquilibriumMuscle::
 }
 
 const MuscleFirstOrderActivationDynamicModel& Millard2012EquilibriumMuscle::
-    getActivationModel() const
+    getFirstOrderActivationModel() const
 {
 
     return get_MuscleFirstOrderActivationDynamicModel();                 
+}
+
+const MuscleSecondOrderActivationDynamicModel& Millard2012EquilibriumMuscle::
+    getSecondOrderActivationModel() const
+{
+
+    return get_MuscleSecondOrderActivationDynamicModel();                 
 }
 
 const MuscleFixedWidthPennationModel& Millard2012EquilibriumMuscle::
@@ -589,9 +679,17 @@ double Millard2012EquilibriumMuscle::getMaximumPennationAngle() const
 double Millard2012EquilibriumMuscle::
     getMinimumActivation() const
 {
-    const MuscleFirstOrderActivationDynamicModel &actMdl 
+    double minActivation = 0 ;
+
+    if(get_use_second_order_activation()){
+        const MuscleSecondOrderActivationDynamicModel &act2Mdl 
+            = get_MuscleSecondOrderActivationDynamicModel();   
+        minActivation = act2Mdl.getMinimumActivation();
+    }else{
+        const MuscleFirstOrderActivationDynamicModel &actMdl 
             = get_MuscleFirstOrderActivationDynamicModel();   
-    double minActivation = actMdl.getMinimumActivation();
+        minActivation = actMdl.getMinimumActivation();
+    }
 
     return minActivation;
 }
@@ -619,10 +717,17 @@ bool Millard2012EquilibriumMuscle::
 //=============================================================================
 
 
-void Millard2012EquilibriumMuscle::setActivationModel(
+void Millard2012EquilibriumMuscle::setFirstOrderActivationModel(
         MuscleFirstOrderActivationDynamicModel& aActivationMdl)
 {
     set_MuscleFirstOrderActivationDynamicModel(aActivationMdl);
+    ensureMuscleUpToDate();    
+}
+
+void Millard2012EquilibriumMuscle::setSecondOrderActivationModel(
+        MuscleSecondOrderActivationDynamicModel& aActivation2Mdl)
+{
+    set_MuscleSecondOrderActivationDynamicModel(aActivation2Mdl);
     ensureMuscleUpToDate();    
 }
 
@@ -665,11 +770,13 @@ void Millard2012EquilibriumMuscle::setTendonForceLengthCurve(
 void Millard2012EquilibriumMuscle::
     setMuscleConfiguration(bool ignoreTendonCompliance,
                            bool ignoreActivationDynamics,
-                           bool useDamping)
+                           bool useDamping,
+                           bool useSecondOrderActivation)
 {
     set_ignore_tendon_compliance(ignoreTendonCompliance);
     set_ignore_activation_dynamics(ignoreActivationDynamics);
     set_use_fiber_damping(useDamping);
+    set_use_second_order_activation(useSecondOrderActivation);
     ensureMuscleUpToDate(); 
 }
 
@@ -823,10 +930,21 @@ void Millard2012EquilibriumMuscle::
 
     try{        
         //Initialize activation to the users desired setting
-        const MuscleFirstOrderActivationDynamicModel& actMdl 
-            = get_MuscleFirstOrderActivationDynamicModel();
-        setActivation(s, actMdl.clampActivation(getDefaultActivation()));
+        
+        double clampedActivation = getDefaultActivation();
 
+        if(get_use_second_order_activation()){
+            const MuscleSecondOrderActivationDynamicModel& act2Mdl 
+            = get_MuscleSecondOrderActivationDynamicModel();
+            clampedActivation = act2Mdl.clampActivation(clampedActivation);
+            setActivation(s, clampedActivation);
+        }else{
+            const MuscleFirstOrderActivationDynamicModel& actMdl 
+            = get_MuscleFirstOrderActivationDynamicModel();
+            clampedActivation = actMdl.clampActivation(clampedActivation);
+            setActivation(s,clampedActivation);
+            
+        }
         //Initialize the multibody system to the initial state vector
         setFiberLength(s, getOptimalFiberLength());
 
@@ -835,9 +953,7 @@ void Millard2012EquilibriumMuscle::
         //Compute an initial muscle state that develops the desired force and
         //shares the muscle stretch between the muscle fiber and the tendon 
         //according to their relative stiffness.    
-        double activation = actMdl.clampActivation(getDefaultActivation());
-        double excitation0 = 0;
-        double dactivation_dt = actMdl.calcDerivative(activation, excitation0);
+        double activation = clampedActivation;
 
         int flag_status       = -1;
         double solnErr        = SimTK::NaN;
@@ -1408,6 +1524,9 @@ void Millard2012EquilibriumMuscle::
     const MuscleFirstOrderActivationDynamicModel& actMdl 
                 = get_MuscleFirstOrderActivationDynamicModel();
 
+    const MuscleSecondOrderActivationDynamicModel& act2Mdl 
+                = get_MuscleSecondOrderActivationDynamicModel();
+
     //=========================================================================
     //Rigid Tendon Fiber Velocity Computation
     //=========================================================================
@@ -1433,10 +1552,15 @@ void Millard2012EquilibriumMuscle::
        
             double a = 0;
             if(isActivationAState()){
-                a = actMdl.clampActivation(
-                        getStateVariable(s, STATE_ACTIVATION_NAME));        
+                a = getStateVariable(s, STATE_ACTIVATION_NAME);
             }else{
-                a = actMdl.clampActivation(getControl(s));
+                a = getControl(s);
+            }
+
+            if(get_use_second_order_activation()){
+                a = act2Mdl.clampActivation(a);
+            }else{
+                a = actMdl.clampActivation(a);
             }
 
             const TendonForceLengthCurve& fseCurve 
@@ -1466,15 +1590,19 @@ void Millard2012EquilibriumMuscle::
             dlceN = fvInvCurve.calcValue(fv);
             dlce  = dlceN*getMaxContractionVelocity()*optFibLen;
 
-
     }else if( isTendonElastic() && get_use_fiber_damping() == true){
             
             double a = 0;
             if(isActivationAState()){
-                a = actMdl.clampActivation(
-                        getStateVariable(s, STATE_ACTIVATION_NAME));        
+                a = getStateVariable(s, STATE_ACTIVATION_NAME);
             }else{
-                a = actMdl.clampActivation(getControl(s));
+                a = getControl(s);
+            }
+
+            if(get_use_second_order_activation()){
+                a = act2Mdl.clampActivation(a);
+            }else{
+                a = actMdl.clampActivation(a);
             }
 
             const TendonForceLengthCurve& fseCurve 
@@ -1600,15 +1728,22 @@ void Millard2012EquilibriumMuscle::
     //1. Get fiber/tendon kinematic information
     const MuscleFirstOrderActivationDynamicModel& actMdl 
         = get_MuscleFirstOrderActivationDynamicModel();
+    const MuscleSecondOrderActivationDynamicModel& act2Mdl 
+        = get_MuscleSecondOrderActivationDynamicModel();
 
-    double a = 0;
-
+    double a = 0;   
     if(isActivationAState()){
-        a    = actMdl.clampActivation(
-                    getStateVariable(s, STATE_ACTIVATION_NAME));
+        a = getStateVariable(s, STATE_ACTIVATION_NAME);
     }else{
-        a = actMdl.clampActivation(getControl(s));
+        a = getControl(s);
     }
+
+    if(get_use_second_order_activation()){
+        a = act2Mdl.clampActivation(a);
+    }else{
+        a = actMdl.clampActivation(a);
+    }
+
 
     double lce      = mli.fiberLength;
     double lceN     = lce/optFiberLen;
@@ -1752,25 +1887,65 @@ void Millard2012EquilibriumMuscle::
 
 /** Get the rate change of activation */
 double Millard2012EquilibriumMuscle::
-    calcActivationRate(const SimTK::State& s) const 
+    calcActivationDerivative(const SimTK::State& s, int order) const 
 {    
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
         "Millard2012EquilibriumMuscle: Muscle is not"
         " to date with properties");
 
-    double dadt = 0;
+    double val = 0;
 
-    if(isActivationAState()){
-        const MuscleFirstOrderActivationDynamicModel& actMdl 
-            = get_MuscleFirstOrderActivationDynamicModel();
+    if(isActivationAState()){        
+        if(get_use_second_order_activation()){
 
-        double excitation = getExcitation(s);
-        double activation = actMdl.clampActivation(getActivation(s));    
+            const MuscleSecondOrderActivationDynamicModel& act2Mdl 
+            = get_MuscleSecondOrderActivationDynamicModel();
 
-        //Both activation and excitation are clamped in calcDerivative
-        dadt = actMdl.calcDerivative(activation,excitation);
+            double u    = getExcitation(s);
+            double a    = act2Mdl.clampActivation(getActivation(s));   
+            double dadt = getStateVariable(s,STATE_ACTIVATION_DERIVATIVE_NAME);
+
+            switch(order){                
+                case 0:{
+                           val = a;
+                       }break;
+                case 1:{
+                            val = dadt;
+                       }break;
+                case 2:{
+                            val = act2Mdl.calcDerivative(dadt,a,u);
+                       }break;
+                default:
+                    SimTK_ERRCHK_ALWAYS(false, 
+                        "Millard2012EquilibriumMuscle::calcActivationDerivative",
+                        "Invalid derivative requested");
+            }
+
+        }else{
+            const MuscleFirstOrderActivationDynamicModel& actMdl         
+                = get_MuscleFirstOrderActivationDynamicModel();
+
+                double u    = getExcitation(s);
+                double a    = actMdl.clampActivation(getActivation(s)); 
+
+                switch(order){                
+                    case 0:{
+                               val = a;
+                           }break;
+                    case 1:{
+                                val = actMdl.calcDerivative(a,u);
+                           }break;
+                    default:
+                        SimTK_ERRCHK_ALWAYS(false, 
+                            "Millard2012EquilibriumMuscle::calcActivationDerivative",
+                            "Invalid derivative requested");
+                }
+
+            }
+        
+        
     }
-    return dadt;
+    return val;
 }  
 
 //==============================================================================

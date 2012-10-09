@@ -217,11 +217,6 @@ public:
     bool setForceVelocityExtrapolationThreshold(double aFvThresh);
 
     /**
-    @param maxPennationAngle is the maximum pennation (radians). 
-    */
-    //bool setMaximumPennationAngle(double maxPennationAngle);
-
-    /**
    @returns the MuscleFirstOrderActivationDynamicModel 
             that this muscle model uses
    */

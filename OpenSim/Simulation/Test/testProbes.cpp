@@ -116,10 +116,10 @@ int main()
                     TendonSlackLength0,
                     PennationAngle0);
 
-    MuscleFirstOrderActivationDynamicModel actMdl = muscle.getActivationModel();
+    MuscleFirstOrderActivationDynamicModel actMdl = muscle.getFirstOrderActivationModel();
     actMdl.setActivationTimeConstant(Activation0);
     actMdl.setDeactivationTimeConstant(Deactivation0);
-    muscle.setActivationModel(actMdl);
+    muscle.setFirstOrderActivationModel(actMdl);
 
     double x0 = 0;
     double act0 = 0.2;
