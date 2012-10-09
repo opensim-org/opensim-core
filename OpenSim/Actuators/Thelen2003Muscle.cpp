@@ -1973,6 +1973,7 @@ SimTK::Vector Thelen2003Muscle::
            delta_aFalFv = -ferr/(dlceN1_d_Fm);
            aFalFv = aFalFv + delta_aFalFv;
         }
+        iter = iter+1;
     }
 
     if(abs(ferr) < tolerance){
