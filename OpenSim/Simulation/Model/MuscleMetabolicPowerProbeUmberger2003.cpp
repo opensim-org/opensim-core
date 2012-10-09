@@ -240,28 +240,19 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
             {
                 const double maxShorteningRate = 100.0;    // (W/kg)
 
-                tmp_slowTwitch = alpha_shortening_slowtwitch * fiber_velocity_normalized * mm.getRatioSlowTwitchFibers();
+                tmp_slowTwitch = -alpha_shortening_slowtwitch * fiber_velocity_normalized;
 
                 // Apply upper limit to the unscaled slow twitch shortening rate.
                 if (tmp_slowTwitch > maxShorteningRate) {
-                    cout << "WARNING: " << getName() << "  (t = " << s.getTime() << 
-                        "Slow twitch shortening heat rate exceeds the max value of " << maxShorteningRate << 
-                        " W/kg. Setting to " << maxShorteningRate << " W/kg." << endl; 
-                    tmp_slowTwitch = maxShorteningRate;		// limit maximum value to 100 W/kg
+                    //cout << "WARNING: " << getName() << "  (t = " << s.getTime() << 
+                    //    "Slow twitch shortening heat rate exceeds the max value of " << maxShorteningRate << 
+                    //    " W/kg. Setting to " << maxShorteningRate << " W/kg." << endl; 
+                    tmp_slowTwitch = maxShorteningRate;
                 }
 
                 tmp_fastTwitch = alpha_shortening_fasttwitch * fiber_velocity_normalized * (1-mm.getRatioSlowTwitchFibers());
-                // Umberger(2003) only applies an upper limit to the unscaled slow 
-                // twitch shortening rate. Fast twitch upper limit does not apply.
-                //if (tmp_fastTwitch > maxShorteningRate) {
-                //    cout << "WARNING: " << getName() << "  (t = " << s.getTime() << 
-                //        "Fast twitch shortening heat rate exceeds the max value of " << maxShorteningRate << 
-                //        " W/kg. Setting to " << maxShorteningRate << " W/kg." << endl; 
-                //    tmp_fastTwitch = maxShorteningRate;		// limit maximum value to 100 W/kg
-                //}
-
-                unscaledSdot = -tmp_slowTwitch - tmp_fastTwitch;                    // unscaled shortening heat rate: muscle shortening
-                Sdot = get_scaling_factor() * std::pow(A, 2.0) * unscaledSdot;      // scaled shortening heat rate: muscle shortening
+                unscaledSdot = (tmp_slowTwitch * mm.getRatioSlowTwitchFibers()) - tmp_fastTwitch;   // unscaled shortening heat rate: muscle shortening
+                Sdot = get_scaling_factor() * std::pow(A, 2.0) * unscaledSdot;                      // scaled shortening heat rate: muscle shortening
             }
 
             else	// eccentric contraction, Vm>0
