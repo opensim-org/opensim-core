@@ -331,7 +331,7 @@ void Model::setNull()
 void Model::setupProperties()
 {
 	_creditsStrProp.setName("credits");
-	_creditsStrProp.setComment("See the credits section below for information about this model's authors, data sources, intended uses, and more. See the publications section for the paper(s) you should cite when using this model. Do not remove either section if you modify or add to this model. If you are this model's author(s), add or update the credits and publications sections before distributing your model.");
+	_creditsStrProp.setComment("See the credits section below for information about this model's authors, data sources, intended uses, and more.\n\t\tSee the publications section for the paper(s) you should cite when using this model. Do not remove either section if you modify or add to this model.\n\t\tIf you are this model's author(s), add or update the credits and publications sections before distributing your model.");
 	_propertySet.append(&_creditsStrProp);
 
 	_publicationsStrProp.setName("publications");
