@@ -60,7 +60,7 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 {
   try {
 
-	SimTK::Xml::setXmlCondenseWhiteSpace(false);
+	//SimTK::Xml::setXmlCondenseWhiteSpace(false);
 	Object::registerType( FunctionSet() );
 	Object::registerType( GCVSplineSet() );
 	Object::registerType( ScaleSet() );
