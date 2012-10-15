@@ -769,6 +769,21 @@ UpdateXMLNodeArrayProperty(const Property_Deprecated*   aProperty,
 	} 
 }
 
+ static void 
+UpdateXMLNodeArrayPropertyBool(const Property_Deprecated*   aProperty,  
+                           SimTK::Xml::Element&         dParentNode, 
+                           const string&                aName)
+{
+
+	const Array<bool> &value = aProperty->getValueArray<bool>();
+	
+	Array<std::string> valAsStrings("");
+	for(int i=0;i<value.size(); i++) valAsStrings.append(value.get(i)?"true":"false");
+	if(!aProperty->getValueIsDefault()||Object::getSerializeAllDefaults()) {
+		SimTK::Xml::Element elt(aProperty->getName(), valAsStrings);
+		dParentNode.insertNodeAfter(dParentNode.node_end(), elt);
+	} 
+}
 static void 
 UpdateXMLNodeVec(const Property_Deprecated*     aProperty, 
                  SimTK::Xml::Element&           dParentNode, 
@@ -1190,7 +1205,8 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 			break;
 		// BoolArray
 		case(Property_Deprecated::BoolArray) :
-			UpdateXMLNodeArrayProperty<bool>(prop,myObjectElement,name);
+			//UpdateXMLNodeArrayProperty<bool>(prop,myObjectElement,name);
+			UpdateXMLNodeArrayPropertyBool(prop,myObjectElement,name);
 			break;
 		// IntArray
 		case(Property_Deprecated::IntArray) :
