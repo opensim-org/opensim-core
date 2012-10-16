@@ -204,7 +204,9 @@ public:
      */
     void recreateSystemKeepStage() {
         SimTK::Stage stageBeforeRecreatingSystem = _configState->getSystemStage();
+        SimTK::Vector y1 = _configState->getY();
         SimTK::State* newState = &_model->initSystem();
+        newState->updY() = y1;
         setState( newState );
         _model->getMultibodySystem().realize( *_configState, stageBeforeRecreatingSystem );
     }
