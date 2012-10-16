@@ -6,7 +6,7 @@
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %   
 % Copyright (c) 2005-2012 Stanford University and the Authors             %
-% Author(s): Dan Lichtwark                                                %
+% Author(s): Glen Lichtwark                                                %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -21,7 +21,7 @@
 % ----------------------------------------------------------------------- %
 
 % strengthScaler.m                                                        
-% Author: Dan Lichtwark
+% Author: Glen Lichtwark
 
 function strengthScaler(scaleFactor, Model_In, Model_Out)
 % OSIMstrength_scaler(scaleFactor, Model_In, Model_Out)
