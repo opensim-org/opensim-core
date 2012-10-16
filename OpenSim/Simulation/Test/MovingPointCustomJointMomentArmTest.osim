@@ -1,353 +1,394 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<OpenSimDocument Version="20001">
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30000">
 	<Model name="MovingPointCustomJointMomentArmTest">
-		<credits> Unassigned </credits>
-		<publications> Unassigned </publications>
-		<ForceSet name="">
-			<objects>
-        <Thelen2003Muscle name="vas_int_r">
-          <GeometryPath name="">
-            <PathPointSet name="">
-              <objects>
-                <PathPoint name="vas_int_r-P1">
-                  <location>       0.02900000000000000100      -0.19239999999999999000       0.03100000000000000000 </location>
-                  <VisibleObject name="">
-                    <geometry_files> </geometry_files>
-                    <VisibleProperties name="">
-                      <display_preference> 4 </display_preference>
-                      <show_normals> false </show_normals>
-                      <show_axes> false </show_axes>
-                      <material_name> DEFAULT </material_name>
-                    </VisibleProperties>
-                    <scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
-                  </VisibleObject>
-                  <body> femur_r </body>
-                </PathPoint>
-                <PathPoint name="vas_int_r-P2">
-                  <location>       0.03350000000000000200      -0.20840000000000000000       0.02850000000000000100 </location>
-                  <VisibleObject name="">
-                    <geometry_files> </geometry_files>
-                    <VisibleProperties name="">
-                      <display_preference> 4 </display_preference>
-                      <show_normals> false </show_normals>
-                      <show_axes> false </show_axes>
-                      <material_name> DEFAULT </material_name>
-                    </VisibleProperties>
-                    <scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
-                  </VisibleObject>
-                  <body> femur_r </body>
-                </PathPoint>
-                <ConditionalPathPoint name="vas_int_r-P3">
-                  <location>       0.03429999999999999700      -0.40300000000000002000       0.00549999999999999970 </location>
-                  <VisibleObject name="">
-                    <geometry_files> </geometry_files>
-                    <VisibleProperties name="">
-                      <display_preference> 4 </display_preference>
-                      <show_normals> false </show_normals>
-                      <show_axes> false </show_axes>
-                      <material_name> DEFAULT </material_name>
-                    </VisibleProperties>
-                    <scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
-                  </VisibleObject>
-                  <body> femur_r </body>
-                  <range>      -2.61799388000000020000      -1.41999988000000000000 </range>
-                  <coordinate> knee_angle_r </coordinate>
-                </ConditionalPathPoint>
-                <MovingPathPoint name="vas_int_r-P4">
-                  <location>       0.05546322000000000100       0.02529232000000000000       0.00180000000000000000 </location>
-                  <VisibleObject name="">
-                    <geometry_files> </geometry_files>
-                    <VisibleProperties name="">
-                      <display_preference> 4 </display_preference>
-                      <show_normals> false </show_normals>
-                      <show_axes> false </show_axes>
-                      <material_name> DEFAULT </material_name>
-                    </VisibleProperties>
-                    <scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
-                  </VisibleObject>
-                  <body> tibia_r </body>
-                  <x_location>
-                    <NaturalCubicSpline name="">
-                      <x>      -2.09439509999999980000      -1.99997278999999990000      -1.57079633000000010000      -1.45752445999999990000      -1.39626340000000000000      -1.04719754999999990000      -0.69813170000000002000      -0.52639130000000001000      -0.34906585000000001000      -0.17453293000000000000       0.00000000000000000000       0.00017453000000000000       0.00034906999999999999       0.02792526999999999900       0.08726646000000000400       0.17453293000000000000       2.09439509999999980000 </x>
-                      <y>       0.00827330000000000080       0.01068662000000000100       0.02020415999999999900       0.02235298000000000100       0.02345827000000000000       0.02927151000000000100       0.03494648000000000200       0.03787104000000000200       0.04125688999999999700       0.04652868999999999800       0.05546322000000000100       0.05547346000000000200       0.05548370999999999900       0.05717168999999999700       0.06127198999999999800       0.06843684999999999400       0.06488175000000000200 </y>
-                    </NaturalCubicSpline>
-                  </x_location>
-                  <x_coordinate> knee_angle_r </x_coordinate>
-                  <y_location>
-                    <NaturalCubicSpline name="">
-                      <x>      -2.09439509999999980000      -1.99997278999999990000      -1.57079633000000010000      -1.45752445999999990000      -1.39626340000000000000      -1.04719754999999990000      -0.69813170000000002000      -0.52639130000000001000      -0.34906585000000001000      -0.17453293000000000000       0.00000000000000000000       0.00017453000000000000       0.00034906999999999999       0.02792526999999999900       0.08726646000000000400       0.17453293000000000000       2.09439509999999980000 </x>
-                      <y>       0.02559904000000000000       0.02594872000000000200       0.02731240999999999900       0.02747964000000000000       0.02751510999999999900       0.02713627999999999900       0.02657369000000000100       0.02630725999999999900       0.02611870000000000200       0.02601291999999999800       0.02529232000000000000       0.02529106999999999900       0.02528980999999999900       0.02505258000000000100       0.02421912999999999800       0.02182877999999999900      -0.06857056000000000300 </y>
-                    </NaturalCubicSpline>
-                  </y_location>
-                  <y_coordinate> knee_angle_r </y_coordinate>
-                  <z_location>
-                    <NaturalCubicSpline name="">
-                      <x>      -2.09439999999999980000       2.09439999999999980000 </x>
-                      <y>       0.00180000000000000000       0.00180000000000000000 </y>
-                    </NaturalCubicSpline>
-                  </z_location>
-                  <z_coordinate> knee_angle_r </z_coordinate>
-                </MovingPathPoint>
-              </objects>
-              <groups/>
-            </PathPointSet>
-            <VisibleObject name="">
-              <geometry_files> </geometry_files>
-              <VisibleProperties name="">
-                <display_preference> 4 </display_preference>
-                <show_normals> false </show_normals>
-                <show_axes> false </show_axes>
-                <material_name> DEFAULT </material_name>
-              </VisibleProperties>
-              <scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
-            </VisibleObject>
-            <PathWrapSet name="">
-              <objects/>
-              <groups/>
-            </PathWrapSet>
-          </GeometryPath>
-          <!--maximum isometric force of the muscle fibers-->
-          <max_isometric_force>    5000.00000000000000000000 </max_isometric_force>
-          <!--optimal length of the muscle fibers-->
-          <optimal_fiber_length>       0.20700000000000000000 </optimal_fiber_length>
-          <!--resting length of the tendon-->
-          <tendon_slack_length>       0.31600000000000001000 </tendon_slack_length>
-          <!--angle between tendon and fibers at optimal fiber length-->
-          <pennation_angle>       0.05235987999999999800 </pennation_angle>
-          <!--time constant for ramping up of muscle activation-->
-          <activation_time_constant>       0.01000000000000000000 </activation_time_constant>
-          <!--time constant for ramping down of muscle activation-->
-          <deactivation_time_constant>       0.04000000000000000100 </deactivation_time_constant>
-          <!--maximum contraction velocity at full activation in fiber lengths per
-					    second-->
-          <Vmax>      10.00000000000000000000 </Vmax>
-          <!--maximum contraction velocity at low activation in fiber lengths per
-					    second-->
-          <Vmax0>       5.00000000000000000000 </Vmax0>
-          <!--tendon strain due to maximum isometric muscle force-->
-          <FmaxTendonStrain>       0.03300000000000000200 </FmaxTendonStrain>
-          <!--passive muscle strain due to maximum isometric muscle force-->
-          <FmaxMuscleStrain>       0.59999999999999998000 </FmaxMuscleStrain>
-          <!--shape factor for Gaussian active muscle force-length relationship-->
-          <KshapeActive>       0.50000000000000000000 </KshapeActive>
-          <!--exponential shape factor for passive force-length relationship-->
-          <KshapePassive>       4.00000000000000000000 </KshapePassive>
-          <!--passive damping in the force-velocity relationship-->
-          <damping>       0.05000000000000000300 </damping>
-          <!--force-velocity shape factor-->
-          <Af>       0.29999999999999999000 </Af>
-          <!--maximum normalized lengthening force-->
-          <Flen>       1.80000000000000000000 </Flen>
-        </Thelen2003Muscle>
-			</objects>
-			<groups/>
-			<datafile>  </datafile>
-		</ForceSet>
-		<length_units> Unassigned </length_units>
-		<force_units> Unassigned </force_units>
+		<!--See the credits section below for information about this model's authors, data sources, intended uses, and more.
+		See the publications section for the paper(s) you should cite when using this model. Do not remove either section if you modify or add to this model.
+		If you are this model's author(s), add or update the credits and publications sections before distributing your model.-->
+		<credits>Unassigned</credits>
+		<publications>Unassigned</publications>
+		<length_units>Unassigned</length_units>
+		<force_units>Unassigned</force_units>
 		<!--Acceleration due to gravity.-->
-		<gravity>       0.00000000      -9.8       0.00000000 </gravity>
+		<gravity> 0 -9.8 0</gravity>
 		<!--Bodies in the model.-->
-		<BodySet name="">
+		<BodySet>
 			<objects>
 				<Body name="ground">
-					<mass>       0.00000000 </mass>
-					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
-					<inertia_xx>       1.00000000 </inertia_xx>
-					<inertia_yy>       1.00000000 </inertia_yy>
-					<inertia_zz>       1.00000000 </inertia_zz>
-					<inertia_xy>       0.00000000 </inertia_xy>
-					<inertia_xz>       0.00000000 </inertia_xz>
-					<inertia_yz>       0.00000000 </inertia_yz>
+					<mass>0</mass>
+					<mass_center> 0 0 0</mass_center>
+					<inertia_xx>1</inertia_xx>
+					<inertia_yy>1</inertia_yy>
+					<inertia_zz>1</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
 					<!--Joint that connects this body with the parent body.-->
-					<Joint/>
-					<VisibleObject name="">
-						<geometry_files> </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
-							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
-						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					<Joint />
+					<VisibleObject>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 1 1 1</scale_factors>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>false</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
 					</VisibleObject>
-					<WrapObjectSet name="">
-						<objects/>
-						<groups/>
+					<WrapObjectSet>
+						<objects />
+						<groups />
 					</WrapObjectSet>
 				</Body>
 				<Body name="femur_r">
-					<mass>       8.80600000 </mass>
-					<mass_center>       0.00000000       0.50000000       0.00000000 </mass_center>
-					<inertia_xx>       0.12680000 </inertia_xx>
-					<inertia_yy>       0.03320000 </inertia_yy>
-					<inertia_zz>       0.13370000 </inertia_zz>
-					<inertia_xy>       0.00000000 </inertia_xy>
-					<inertia_xz>       0.00000000 </inertia_xz>
-					<inertia_yz>       0.00000000 </inertia_yz>
+					<mass>8.806</mass>
+					<mass_center> 0 0.5 0</mass_center>
+					<inertia_xx>0.1268</inertia_xx>
+					<inertia_yy>0.0332</inertia_yy>
+					<inertia_zz>0.1337</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
 					<!--Joint that connects this body with the parent body.-->
 					<Joint>
-						<WeldJoint name="">
-							<parent_body> ground </parent_body>
-							<location_in_parent>       0.00000000       0.00000000       0.00000000 </location_in_parent>
-							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
-							<location>       0.00200000       0.17150000       0.00000000 </location>
-							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
-							<!--Generalized coordinates parameterizing this joint.-->
-							<CoordinateSet name="">
-								<objects/>
-								<groups/>
+						<WeldJoint>
+							<!--Name of the parent body to which this joint connects its owner body.-->
+							<parent_body>ground</parent_body>
+							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+							<location_in_parent>0 0 0</location_in_parent>
+							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
+							<orientation_in_parent>0 0 0</orientation_in_parent>
+							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
+							<location>0.002 0.1715 0</location>
+							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
+							<orientation>0 0 0</orientation>
+							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+							<CoordinateSet>
+								<objects />
+								<groups />
 							</CoordinateSet>
-							<reverse> false </reverse>
+							<!--Whether the joint transform defines parent->child or child->parent.-->
+							<reverse>false</reverse>
 						</WeldJoint>
 					</Joint>
-					<VisibleObject name="">
-						<geometry_files> femur_r.vtp </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
-							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
-						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>femur_r.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> -0 0 -0 0 0 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 1 1 1</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups />
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 1 1 1</scale_factors>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>false</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
 					</VisibleObject>
-          <WrapObjectSet name="">
-            <objects>
-            </objects>
-            <groups/>
-          </WrapObjectSet>
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
 				</Body>
-        <Body name="tibia_r">
-          <mass>       3.70750000000000000000 </mass>
-          <mass_center>       0.00000000000000000000      -0.18670000000000000000       0.00000000000000000000 </mass_center>
-          <inertia_xx>       0.05040000000000000000 </inertia_xx>
-          <inertia_yy>       0.00510000000000000040 </inertia_yy>
-          <inertia_zz>       0.05110000000000000000 </inertia_zz>
-          <inertia_xy>       0.00000000000000000000 </inertia_xy>
-          <inertia_xz>       0.00000000000000000000 </inertia_xz>
-          <inertia_yz>       0.00000000000000000000 </inertia_yz>
-          <!--Joint that connects this body with the parent body.-->
-          <Joint>
-            <CustomJoint name="knee_r">
-              <parent_body> femur_r </parent_body>
-              <location_in_parent>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </location_in_parent>
-              <orientation_in_parent>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </orientation_in_parent>
-              <location>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </location>
-              <orientation>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </orientation>
-              <!--Generalized coordinates parameterizing this joint.-->
-              <CoordinateSet name="">
-                <objects>
-                  <Coordinate name="knee_angle_r">
-                    <!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-                    <motion_type> rotational </motion_type>
-                    <default_value>       0.00000000000000000000 </default_value>
-                    <default_speed_value>       0.00000000000000000000 </default_speed_value>
-                    <initial_value>       0.00000000000000000000 </initial_value>
-                    <range>      -2.09439509999999980000       0.17453293000000000000 </range>
-                    <clamped> false </clamped>
-                    <locked> false </locked>
-                    <prescribed_function/>
-                  </Coordinate>
-                </objects>
-                <groups/>
-              </CoordinateSet>
-              <reverse> false </reverse>
-              <SpatialTransform name="">
-                <!--3 Axes for rotations are listed first.-->
-                <TransformAxis name="rotation1">
-                  <function>
-                    <LinearFunction name="">
-                      <coefficients>       1.00000000000000000000       0.00000000000000000000 </coefficients>
-                    </LinearFunction>
-                  </function>
-                  <coordinates> knee_angle_r </coordinates>
-                  <axis>       0.00000000000000000000       0.00000000000000000000       1.00000000000000000000 </axis>
-                </TransformAxis>
-                <TransformAxis name="rotation2">
-                  <function>
-                    <Constant name="">
-                      <value>       0.00000000000000000000 </value>
-                    </Constant>
-                  </function>
-                  <coordinates> </coordinates>
-                  <axis>       0.00000000000000000000       1.00000000000000000000       0.00000000000000000000 </axis>
-                </TransformAxis>
-                <TransformAxis name="rotation3">
-                  <function>
-                    <Constant name="">
-                      <value>       0.00000000000000000000 </value>
-                    </Constant>
-                  </function>
-                  <coordinates> </coordinates>
-                  <axis>       1.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </axis>
-                </TransformAxis>
-                <!--3 Axes for translations are listed next.-->
-                <TransformAxis name="translation1">
-                  <function>
-                    <NaturalCubicSpline name="">
-                      <x>      -2.09439509999999980000      -1.74532924999999990000      -1.39626340000000000000      -1.04719754999999990000      -0.69813170000000002000      -0.34906585000000001000      -0.17453293000000000000       0.19734421999999999000       0.33739496000000002000       0.49017757000000001000       1.52146026999999990000       2.09439509999999980000 </x>
-                      <y>      -0.00320000000000000020       0.00178999999999999990       0.00410999999999999990       0.00410000000000000030       0.00211999999999999990      -0.00100000000000000000      -0.00309999999999999990      -0.00522699999999999990      -0.00543499999999999970      -0.00557400000000000000      -0.00543499999999999970      -0.00525000000000000030 </y>
-                    </NaturalCubicSpline>
-                  </function>
-                  <coordinates> knee_angle_r </coordinates>
-                  <axis>       1.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </axis>
-                </TransformAxis>
-                <TransformAxis name="translation2">
-                  <function>
-                    <NaturalCubicSpline name="">
-                      <x>      -2.09439509999999980000      -1.22173048000000000000      -0.52359878000000004000      -0.34906585000000001000      -0.17453293000000000000       0.15914855999999999000       2.09439509999999980000 </x>
-                      <y>      -0.42259999999999998000      -0.40820000000000001000      -0.39900000000000002000      -0.39760000000000001000      -0.39660000000000001000      -0.39526400000000000000      -0.39600000000000002000 </y>
-                    </NaturalCubicSpline>
-                  </function>
-                  <coordinates> knee_angle_r </coordinates>
-                  <axis>       0.00000000000000000000       1.00000000000000000000       0.00000000000000000000 </axis>
-                </TransformAxis>
-                <TransformAxis name="translation3">
-                  <function>
-                    <Constant name="">
-                      <value>       0.00000000000000000000 </value>
-                    </Constant>
-                  </function>
-                  <coordinates> </coordinates>
-                  <axis>       0.00000000000000000000       0.00000000000000000000       1.00000000000000000000 </axis>
-                </TransformAxis>
-              </SpatialTransform>
-            </CustomJoint>
-          </Joint>
-          <VisibleObject name="">
-            <geometry_files> tibia.vtp fibula.vtp </geometry_files>
-            <VisibleProperties name="">
-              <display_preference> 4 </display_preference>
-              <show_normals> false </show_normals>
-              <show_axes> false </show_axes>
-              <material_name> DEFAULT </material_name>
-            </VisibleProperties>
-            <scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
-          </VisibleObject>
-          <WrapObjectSet name="">
-            <objects/>
-            <groups/>
-          </WrapObjectSet>
-        </Body>
+				<Body name="tibia_r">
+					<mass>3.7075</mass>
+					<mass_center> 0 -0.1867 0</mass_center>
+					<inertia_xx>0.0504</inertia_xx>
+					<inertia_yy>0.0051</inertia_yy>
+					<inertia_zz>0.0511</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<CustomJoint name="knee_r">
+							<!--Name of the parent body to which this joint connects its owner body.-->
+							<parent_body>femur_r</parent_body>
+							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+							<location_in_parent>0 0 0</location_in_parent>
+							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
+							<orientation_in_parent>0 0 0</orientation_in_parent>
+							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
+							<location>0 0 0</location>
+							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
+							<orientation>0 0 0</orientation>
+							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+							<CoordinateSet>
+								<objects>
+									<Coordinate name="knee_angle_r">
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>rotational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+										<default_speed_value>0</default_speed_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-2.0943951 0.17453293</range>
+										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+										<clamped>false</clamped>
+										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+										<locked>false</locked>
+										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+										<prescribed_function />
+									</Coordinate>
+								</objects>
+								<groups />
+							</CoordinateSet>
+							<!--Whether the joint transform defines parent->child or child->parent.-->
+							<reverse>false</reverse>
+							<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+							<SpatialTransform>
+								<!--3 Axes for rotations are listed first.-->
+								<TransformAxis name="rotation1">
+									<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+									<coordinates>knee_angle_r</coordinates>
+									<!--Rotation or translation axis for the transform.-->
+									<axis>0 0 1</axis>
+									<!--Transform function of the generalized coordinates used to        represent the amount of transformation along a specified axis.-->
+									<function>
+										<LinearFunction>
+											<coefficients> 1 0</coefficients>
+										</LinearFunction>
+									</function>
+								</TransformAxis>
+								<TransformAxis name="rotation2">
+									<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+									<coordinates></coordinates>
+									<!--Rotation or translation axis for the transform.-->
+									<axis>0 1 0</axis>
+									<!--Transform function of the generalized coordinates used to        represent the amount of transformation along a specified axis.-->
+									<function>
+										<Constant>
+											<value>0</value>
+										</Constant>
+									</function>
+								</TransformAxis>
+								<TransformAxis name="rotation3">
+									<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+									<coordinates></coordinates>
+									<!--Rotation or translation axis for the transform.-->
+									<axis>1 0 0</axis>
+									<!--Transform function of the generalized coordinates used to        represent the amount of transformation along a specified axis.-->
+									<function>
+										<Constant>
+											<value>0</value>
+										</Constant>
+									</function>
+								</TransformAxis>
+								<!--3 Axes for translations are listed next.-->
+								<TransformAxis name="translation1">
+									<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+									<coordinates>knee_angle_r</coordinates>
+									<!--Rotation or translation axis for the transform.-->
+									<axis>1 0 0</axis>
+									<!--Transform function of the generalized coordinates used to        represent the amount of transformation along a specified axis.-->
+									<function>
+										<SimmSpline>
+											<x> -2.0944 -1.74533 -1.39626 -1.0472 -0.698132 -0.349066 -0.174533 0.197344 0.337395 0.490178 1.52146 2.0944</x>
+											<y> -0.0032 0.00179 0.00411 0.0041 0.00212 -0.001 -0.0031 -0.005227 -0.005435 -0.005574 -0.005435 -0.00525</y>
+										</SimmSpline>
+									</function>
+								</TransformAxis>
+								<TransformAxis name="translation2">
+									<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+									<coordinates>knee_angle_r</coordinates>
+									<!--Rotation or translation axis for the transform.-->
+									<axis>0 1 0</axis>
+									<!--Transform function of the generalized coordinates used to        represent the amount of transformation along a specified axis.-->
+									<function>
+										<SimmSpline>
+											<x> -2.0944 -1.22173 -0.523599 -0.349066 -0.174533 0.159149 2.0944</x>
+											<y> -0.4226 -0.4082 -0.399 -0.3976 -0.3966 -0.395264 -0.396</y>
+										</SimmSpline>
+									</function>
+								</TransformAxis>
+								<TransformAxis name="translation3">
+									<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+									<coordinates></coordinates>
+									<!--Rotation or translation axis for the transform.-->
+									<axis>0 0 1</axis>
+									<!--Transform function of the generalized coordinates used to        represent the amount of transformation along a specified axis.-->
+									<function>
+										<Constant>
+											<value>0</value>
+										</Constant>
+									</function>
+								</TransformAxis>
+							</SpatialTransform>
+						</CustomJoint>
+					</Joint>
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>tibia.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> -0 0 -0 0 0 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 1 1 1</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>fibula.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> -0 0 -0 0 0 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 1 1 1</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups />
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 1 1 1</scale_factors>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>false</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
+					</VisibleObject>
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+				</Body>
 			</objects>
-			<groups/>
+			<groups />
 		</BodySet>
 		<!--Constraints in the model.-->
-		<ConstraintSet name="">
-			<objects/>
-			<groups/>
+		<ConstraintSet>
+			<objects />
+			<groups />
 		</ConstraintSet>
+		<!--Forces in the model.-->
+		<ForceSet>
+			<objects>
+				<Thelen2003Muscle name="vas_int_r">
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<PathPointSet>
+							<objects>
+								<PathPoint name="vas_int_r-P1">
+									<location> 0.029 -0.1924 0.031</location>
+									<body>femur_r</body>
+								</PathPoint>
+								<PathPoint name="vas_int_r-P2">
+									<location> 0.0335 -0.2084 0.0285</location>
+									<body>femur_r</body>
+								</PathPoint>
+								<ConditionalPathPoint name="vas_int_r-P3">
+									<location> 0.0343 -0.403 0.0055</location>
+									<body>femur_r</body>
+									<range> -2.61799 -1.42</range>
+									<coordinate>knee_angle_r</coordinate>
+								</ConditionalPathPoint>
+								<MovingPathPoint name="vas_int_r-P4">
+									<location> 0.0554632 0.0252923 0.0018</location>
+									<body>tibia_r</body>
+									<x_location>
+										<SimmSpline>
+											<x> -2.0944 -1.99997 -1.5708 -1.45752 -1.39626 -1.0472 -0.698132 -0.526391 -0.349066 -0.174533 0 0.00017453 0.00034907 0.0279253 0.0872665 0.174533 2.0944</x>
+											<y> 0.0082733 0.0106866 0.0202042 0.022353 0.0234583 0.0292715 0.0349465 0.037871 0.0412569 0.0465287 0.0554632 0.0554735 0.0554837 0.0571717 0.061272 0.0684368 0.0648818</y>
+										</SimmSpline>
+									</x_location>
+									<x_coordinate>knee_angle_r</x_coordinate>
+									<y_location>
+										<SimmSpline>
+											<x> -2.0944 -1.99997 -1.5708 -1.45752 -1.39626 -1.0472 -0.698132 -0.526391 -0.349066 -0.174533 0 0.00017453 0.00034907 0.0279253 0.0872665 0.174533 2.0944</x>
+											<y> 0.025599 0.0259487 0.0273124 0.0274796 0.0275151 0.0271363 0.0265737 0.0263073 0.0261187 0.0260129 0.0252923 0.0252911 0.0252898 0.0250526 0.0242191 0.0218288 -0.0685706</y>
+										</SimmSpline>
+									</y_location>
+									<y_coordinate>knee_angle_r</y_coordinate>
+									<z_location>
+										<SimmSpline>
+											<x> -2.0944 2.0944</x>
+											<y> 0.0018 0.0018</y>
+										</SimmSpline>
+									</z_location>
+									<z_coordinate>knee_angle_r</z_coordinate>
+								</MovingPathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<VisibleObject>
+							<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+							<scale_factors> 1 1 1</scale_factors>
+							<!--Whether to show a coordinate frame-->
+							<show_axes>false</show_axes>
+							<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+							<display_preference>4</display_preference>
+						</VisibleObject>
+						<PathWrapSet>
+							<objects />
+							<groups />
+						</PathWrapSet>
+					</GeometryPath>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>5000</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.207</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.316</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0.05235988</pennation_angle_at_optimal>
+					<!--time constant for ramping up muscle activation-->
+					<activation_time_constant>0.01</activation_time_constant>
+					<!--time constant for ramping down of muscle activation-->
+					<deactivation_time_constant>0.04</deactivation_time_constant>
+					<!--tendon strain at maximum isometric muscle force-->
+					<FmaxTendonStrain>0.033</FmaxTendonStrain>
+					<!--passive muscle strain at maximum isometric muscle force-->
+					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
+					<!--shape factor for Gaussian active muscle force-length relationship-->
+					<KshapeActive>0.5</KshapeActive>
+					<!--exponential shape factor for passive force-length relationship-->
+					<KshapePassive>4</KshapePassive>
+					<!--force-velocity shape factor-->
+					<Af>0.3</Af>
+					<!--maximum normalized lengthening force-->
+					<Flen>1.8</Flen>
+				</Thelen2003Muscle>
+			</objects>
+			<groups />
+		</ForceSet>
 		<!--Markers in the model.-->
-		<MarkerSet name="">
-			<objects/>
-			<groups/>
+		<MarkerSet>
+			<objects />
+			<groups />
 		</MarkerSet>
-		<!--ContactGeometry objects in the model.-->
-		<ContactGeometrySet name="">
-			<objects/>
-			<groups/>
+		<!--ContactGeometries  in the model.-->
+		<ContactGeometrySet>
+			<objects />
+			<groups />
 		</ContactGeometrySet>
 	</Model>
 </OpenSimDocument>
-

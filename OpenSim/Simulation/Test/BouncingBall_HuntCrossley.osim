@@ -1,225 +1,259 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<OpenSimDocument Version="20001">
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30000">
 	<Model name="BouncingBall">
-		<credits> Unassigned </credits>
-		<publications> Unassigned </publications>
-		<ForceSet name="">
-			<objects>
-				<HuntCrossleyForce name="contact">
-					<isDisabled> false </isDisabled>
-					<HuntCrossleyForce::ContactParametersSet name="">
-						<objects>
-							<HuntCrossleyForce::ContactParameters name="">
-								<geometry> ball ground </geometry>
-                <stiffness>   10000.00000000 </stiffness>
-                <dissipation>       0.750000 </dissipation>
-                <static_friction>       0.30000000 </static_friction>
-                <dynamic_friction>       0.30000000 </dynamic_friction>
-                <viscous_friction>       0.30000000 </viscous_friction>
-							</HuntCrossleyForce::ContactParameters>
-						</objects>
-						<groups/>
-					</HuntCrossleyForce::ContactParametersSet>
-					<transition_velocity>       0.1000000 </transition_velocity>
-				</HuntCrossleyForce>
-			</objects>
-			<groups/>
-			<datafile>  </datafile>
-		</ForceSet>
-		<length_units> meters </length_units>
-		<force_units> N </force_units>
+		<!--See the credits section below for information about this model's authors, data sources, intended uses, and more.
+		See the publications section for the paper(s) you should cite when using this model. Do not remove either section if you modify or add to this model.
+		If you are this model's author(s), add or update the credits and publications sections before distributing your model.-->
+		<credits>Unassigned</credits>
+		<publications>Unassigned</publications>
+		<length_units>meters</length_units>
+		<force_units>N</force_units>
 		<!--Acceleration due to gravity.-->
-		<gravity>       0.00000000      -9.80650000       0.00000000 </gravity>
+		<gravity> 0 -9.8065 0</gravity>
 		<!--Bodies in the model.-->
-		<BodySet name="">
+		<BodySet>
 			<objects>
 				<Body name="ground">
-					<mass>       0.00000000 </mass>
-					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
-					<inertia_xx>       1.00000000 </inertia_xx>
-					<inertia_yy>       1.00000000 </inertia_yy>
-					<inertia_zz>       1.00000000 </inertia_zz>
-					<inertia_xy>       0.00000000 </inertia_xy>
-					<inertia_xz>       0.00000000 </inertia_xz>
-					<inertia_yz>       0.00000000 </inertia_yz>
+					<mass>0</mass>
+					<mass_center> 0 0 0</mass_center>
+					<inertia_xx>1</inertia_xx>
+					<inertia_yy>1</inertia_yy>
+					<inertia_zz>1</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
 					<!--Joint that connects this body with the parent body.-->
-					<Joint/>
-					<VisibleObject name="">
-						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
-						    .obj-->
-						<GeometrySet name="">
-							<objects/>
-							<groups/>
+					<Joint />
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects />
+							<groups />
 						</GeometrySet>
 						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-						<!--transform relative to owner specified as 3 rotations (rad) followed by
-						    3 translations rX rY rZ tx ty tz-->
-						<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+						<scale_factors> 1 1 1</scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+						<transform> -0 0 -0 0 0 0</transform>
 						<!--Whether to show a coordinate frame-->
-						<show_axes> false </show_axes>
-						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
-						    individual geometries-->
-						<display_preference> 4 </display_preference>
+						<show_axes>false</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
 					</VisibleObject>
-					<WrapObjectSet name="">
-						<objects/>
-						<groups/>
+					<WrapObjectSet>
+						<objects />
+						<groups />
 					</WrapObjectSet>
 				</Body>
 				<Body name="ball">
-					<mass>       1.00000000 </mass>
-					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
-					<inertia_xx>       1.00000000 </inertia_xx>
-					<inertia_yy>       1.00000000 </inertia_yy>
-					<inertia_zz>       1.00000000 </inertia_zz>
-					<inertia_xy>       0.00000000 </inertia_xy>
-					<inertia_xz>       0.00000000 </inertia_xz>
-					<inertia_yz>       0.00000000 </inertia_yz>
+					<mass>1</mass>
+					<mass_center> 0 0 0</mass_center>
+					<inertia_xx>1</inertia_xx>
+					<inertia_yy>1</inertia_yy>
+					<inertia_zz>1</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
 					<!--Joint that connects this body with the parent body.-->
 					<Joint>
-						<FreeJoint name="">
-							<parent_body> ground </parent_body>
-							<location_in_parent>       0.00000000       0.00000000       0.00000000 </location_in_parent>
-							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
-							<location>       0.00000000       0.00000000       0.00000000 </location>
-							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
-							<!--Generalized coordinates parameterizing this joint.-->
-              <CoordinateSet name="">
-                <objects>
-                  <Coordinate name="ball_rz">
-                    <!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-                    <motion_type> rotational </motion_type>
-                    <default_value>       0.00000000 </default_value>
-                    <default_speed_value>       0.00000000 </default_speed_value>
-                    <initial_value>       0.00000000 </initial_value>
-                    <range>      -1.57079633       1.57079633 </range>
-                    <clamped> false </clamped>
-                    <locked> false </locked>
-                    <prescribed_function/>
-                  </Coordinate>
-                  <Coordinate name="ball_rx">
-                    <!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-                    <motion_type> rotational </motion_type>
-                    <default_value>       0.00000000 </default_value>
-                    <default_speed_value>       0.00000000 </default_speed_value>
-                    <initial_value>       0.00000000 </initial_value>
-                    <range>      -1.57079633       1.57079633 </range>
-                    <clamped> false </clamped>
-                    <locked> false </locked>
-                    <prescribed_function/>
-                  </Coordinate>
-                  <Coordinate name="ball_ry">
-                    <!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-                    <motion_type> rotational </motion_type>
-                    <default_value>       0.00000000 </default_value>
-                    <default_speed_value>       0.00000000 </default_speed_value>
-                    <initial_value>       0.00000000 </initial_value>
-                    <range>      -1.57079633       1.57079633 </range>
-                    <clamped> false </clamped>
-                    <locked> false </locked>
-                    <prescribed_function/>
-                  </Coordinate>
-                  <Coordinate name="ball_tx">
-                    <!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-                    <motion_type> translational </motion_type>
-                    <default_value>       0.00000000 </default_value>
-                    <default_speed_value>       0.00000000 </default_speed_value>
-                    <initial_value>       0.00000000 </initial_value>
-                    <range>      -5.00000000       5.00000000 </range>
-                    <clamped> false </clamped>
-                    <locked> false </locked>
-                    <prescribed_function/>
-                  </Coordinate>
-                  <Coordinate name="ball_ty">
-                    <!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-                    <motion_type> translational </motion_type>
-                    <default_value>       0.00000000 </default_value>
-                    <default_speed_value>       0.00000000 </default_speed_value>
-                    <initial_value>       0.00000000 </initial_value>
-                    <range>      -1.00000000       2.00000000 </range>
-                    <clamped> false </clamped>
-                    <locked> false </locked>
-                    <prescribed_function/>
-                  </Coordinate>
-                  <Coordinate name="ball_tz">
-                    <!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-                    <motion_type> translational </motion_type>
-                    <default_value>       0.00000000 </default_value>
-                    <default_speed_value>       0.00000000 </default_speed_value>
-                    <initial_value>       0.00000000 </initial_value>
-                    <range>      -3.00000000       3.00000000 </range>
-                    <clamped> false </clamped>
-                    <locked> false </locked>
-                    <prescribed_function/>
-                  </Coordinate>
-                </objects>
-                <groups/>
-              </CoordinateSet>
-							<reverse> false </reverse>
-							<!--Set flag to true to use Euler angles to parameterize rotations.-->
-							<use_euler_angles> true </use_euler_angles>
+						<FreeJoint>
+							<!--Name of the parent body to which this joint connects its owner body.-->
+							<parent_body>ground</parent_body>
+							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+							<location_in_parent>0 0 0</location_in_parent>
+							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
+							<orientation_in_parent>0 0 0</orientation_in_parent>
+							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
+							<location>0 0 0</location>
+							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
+							<orientation>0 0 0</orientation>
+							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+							<CoordinateSet>
+								<objects>
+									<Coordinate name="ball_rz">
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>rotational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+										<default_speed_value>0</default_speed_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-1.57079633 1.57079633</range>
+										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+										<clamped>false</clamped>
+										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+										<locked>false</locked>
+										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+										<prescribed_function />
+									</Coordinate>
+									<Coordinate name="ball_rx">
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>rotational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+										<default_speed_value>0</default_speed_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-1.57079633 1.57079633</range>
+										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+										<clamped>false</clamped>
+										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+										<locked>false</locked>
+										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+										<prescribed_function />
+									</Coordinate>
+									<Coordinate name="ball_ry">
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>rotational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+										<default_speed_value>0</default_speed_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-1.57079633 1.57079633</range>
+										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+										<clamped>false</clamped>
+										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+										<locked>false</locked>
+										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+										<prescribed_function />
+									</Coordinate>
+									<Coordinate name="ball_tx">
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>translational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+										<default_speed_value>0</default_speed_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-5 5</range>
+										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+										<clamped>false</clamped>
+										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+										<locked>false</locked>
+										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+										<prescribed_function />
+									</Coordinate>
+									<Coordinate name="ball_ty">
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>translational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+										<default_speed_value>0</default_speed_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-1 2</range>
+										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+										<clamped>false</clamped>
+										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+										<locked>false</locked>
+										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+										<prescribed_function />
+									</Coordinate>
+									<Coordinate name="ball_tz">
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>translational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+										<default_speed_value>0</default_speed_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-3 3</range>
+										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+										<clamped>false</clamped>
+										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+										<locked>false</locked>
+										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+										<prescribed_function />
+									</Coordinate>
+								</objects>
+								<groups />
+							</CoordinateSet>
+							<!--Whether the joint transform defines parent->child or child->parent.-->
+							<reverse>false</reverse>
 						</FreeJoint>
 					</Joint>
-					<VisibleObject name="">
-						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
-						    .obj-->
-						<GeometrySet name="">
-							<objects/>
-							<groups/>
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects />
+							<groups />
 						</GeometrySet>
 						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-						<!--transform relative to owner specified as 3 rotations (rad) followed by
-						    3 translations rX rY rZ tx ty tz-->
-						<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+						<scale_factors> 1 1 1</scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+						<transform> -0 0 -0 0 0 0</transform>
 						<!--Whether to show a coordinate frame-->
-						<show_axes> false </show_axes>
-						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
-						    individual geometries-->
-						<display_preference> 4 </display_preference>
+						<show_axes>false</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
 					</VisibleObject>
-					<WrapObjectSet name="">
-						<objects/>
-						<groups/>
+					<WrapObjectSet>
+						<objects />
+						<groups />
 					</WrapObjectSet>
 				</Body>
 			</objects>
-			<groups/>
+			<groups />
 		</BodySet>
 		<!--Constraints in the model.-->
-		<ConstraintSet name="">
-			<objects/>
-			<groups/>
+		<ConstraintSet>
+			<objects />
+			<groups />
 		</ConstraintSet>
+		<!--Forces in the model.-->
+		<ForceSet>
+			<objects>
+				<HuntCrossleyForce name="contact">
+					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
+					<isDisabled>false</isDisabled>
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>ball ground</geometry>
+								<stiffness>10000</stiffness>
+								<dissipation>0.75</dissipation>
+								<static_friction>0.3</static_friction>
+								<dynamic_friction>0.3</dynamic_friction>
+								<viscous_friction>0.3</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+					<!--Slip velocity (creep) at which peak static friction occurs.-->
+					<transition_velocity>0.1</transition_velocity>
+				</HuntCrossleyForce>
+			</objects>
+			<groups />
+		</ForceSet>
 		<!--Markers in the model.-->
-		<MarkerSet name="">
-			<objects/>
-			<groups/>
+		<MarkerSet>
+			<objects />
+			<groups />
 		</MarkerSet>
-		<!--ContactGeometry objects in the model.-->
-		<ContactGeometrySet name="">
+		<!--ContactGeometries  in the model.-->
+		<ContactGeometrySet>
 			<objects>
 				<ContactHalfSpace name="ground">
-					<body_name> ground </body_name>
-					<location>       0.00000000       0.00000000       0.00000000 </location>
-					<orientation>       0.00000000       0.00000000      -1.57079633 </orientation>
+					<!--Body name to connect the contact geometry to-->
+					<body_name>ground</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>0 0 0</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 -1.57079633</orientation>
 				</ContactHalfSpace>
 				<ContactSphere name="ball">
-					<body_name> ball </body_name>
-					<location>       0.00000000       0.00000000       0.00000000 </location>
-					<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
-					<radius>       0.50000000 </radius>
+					<!--Body name to connect the contact geometry to-->
+					<body_name>ball</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>0 0 0</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.5</radius>
 				</ContactSphere>
 			</objects>
-			<groups/>
+			<groups />
 		</ContactGeometrySet>
 	</Model>
 </OpenSimDocument>
-

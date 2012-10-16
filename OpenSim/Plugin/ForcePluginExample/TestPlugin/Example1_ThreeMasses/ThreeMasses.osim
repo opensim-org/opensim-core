@@ -1,454 +1,574 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<OpenSimDocument Version="10902">
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30000">
 	<Model name="Three Masses">
-		<defaults>
-		</defaults>
-		<credits> Tim Dorn </credits>
-		<publications> List of publications related to model... </publications>
-		<ForceSet name="">
-			<objects>
-			
-				<BodyDrag name="sphere1_drag">
-					<body_name> sphere1 </body_name>
-					<coefficient> 0 </coefficient>
-					<exponent> 2 </exponent>
-				</BodyDrag>
-				
-				<BodyDrag name="sphere2_drag">
-					<body_name> sphere2 </body_name>
-					<coefficient> 0.7 </coefficient>
-					<exponent> 2 </exponent>
-				</BodyDrag>
-				
-				<BodyDrag name="sphere3_drag">
-					<body_name> sphere3 </body_name>
-					<coefficient> 1.4 </coefficient>
-					<exponent> 2 </exponent>
-					
-				</BodyDrag>
-			</objects>
-			<groups/>
-		</ForceSet>
-		<length_units> meters </length_units>
-		<force_units> N </force_units>
+		<!--See the credits section below for information about this model's authors, data sources, intended uses, and more.
+		See the publications section for the paper(s) you should cite when using this model. Do not remove either section if you modify or add to this model.
+		If you are this model's author(s), add or update the credits and publications sections before distributing your model.-->
+		<credits>Tim Dorn</credits>
+		<publications>List of publications related to model...</publications>
+		<length_units>meters</length_units>
+		<force_units>N</force_units>
 		<!--Acceleration due to gravity.-->
-		<gravity>       0.00000000      -9.80665000       0.00000000 </gravity>
+		<gravity> 0 -9.80665 0</gravity>
 		<!--Bodies in the model.-->
-		<BodySet name="">
+		<BodySet>
 			<objects>
 				<Body name="ground">
-					<mass>       0.00000000 </mass>
-					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
-					<inertia_xx>       0.00000000 </inertia_xx>
-					<inertia_yy>       0.00000000 </inertia_yy>
-					<inertia_zz>       0.00000000 </inertia_zz>
-					<inertia_xy>       0.00000000 </inertia_xy>
-					<inertia_xz>       0.00000000 </inertia_xz>
-					<inertia_yz>       0.00000000 </inertia_yz>
+					<mass>0</mass>
+					<mass_center> 0 0 0</mass_center>
+					<inertia_xx>0</inertia_xx>
+					<inertia_yy>0</inertia_yy>
+					<inertia_zz>0</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
 					<!--Joint that connects this body with the parent body.-->
-					<Joint/>
-					<VisibleObject name="">
-						<geometry_files> </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
-							<show_axes> true </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
-						<scale_factors>  1 1 1 </scale_factors>
+					<Joint />
+					<VisibleObject>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 1 1 1</scale_factors>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>true</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
 					</VisibleObject>
-					<WrapObjectSet name="">
-						<objects/>
-						<groups/>
+					<WrapObjectSet>
+						<objects />
+						<groups />
 					</WrapObjectSet>
 				</Body>
-				
 				<Body name="sphere1">
-					<mass>       10.0000000 </mass>
-					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
-					<inertia_xx>       0.02500000 </inertia_xx>
-					<inertia_yy>       0.02500000 </inertia_yy>
-					<inertia_zz>       0.02500000 </inertia_zz>
-					<inertia_xy>       0.00000000 </inertia_xy>
-					<inertia_xz>       0.00000000 </inertia_xz>
-					<inertia_yz>       0.00000000 </inertia_yz>
+					<mass>10</mass>
+					<mass_center> 0 0 0</mass_center>
+					<inertia_xx>0.025</inertia_xx>
+					<inertia_yy>0.025</inertia_yy>
+					<inertia_zz>0.025</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
 					<!--Joint that connects this body with the parent body.-->
 					<Joint>
 						<CustomJoint name="ground_sphere1">
-							<parent_body> ground </parent_body>
-							<location_in_parent>   1.00000000   0.00000000   0.00000000 </location_in_parent>
-							<orientation_in_parent>   0.00000000   0.00000000   0.00000000 </orientation_in_parent>
-							<location>   0.00000000   0.00000000   0.00000000 </location>
-							<orientation>   0.00000000   0.00000000   0.00000000 </orientation>
-							<!--Generalized coordinates parameterizing this joint.-->
-							<CoordinateSet name="">
+							<!--Name of the parent body to which this joint connects its owner body.-->
+							<parent_body>ground</parent_body>
+							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+							<location_in_parent>1 0 0</location_in_parent>
+							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
+							<orientation_in_parent>0 0 0</orientation_in_parent>
+							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
+							<location>0 0 0</location>
+							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
+							<orientation>0 0 0</orientation>
+							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+							<CoordinateSet>
 								<objects>
 									<Coordinate name="sphere1_TransX">
-										<!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-										<motion_type> translational </motion_type>
-										<default_value>   0.00000000 </default_value>
-										<default_speed_value>   0.00000000 </default_speed_value>
-										<initial_value>   0.00000000 </initial_value>
-										<range> -10.00000000  10.00000000 </range>
-										<clamped> false </clamped>
-										<locked> false </locked>
-										<prescribed_function/>
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>translational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+										<default_speed_value>0</default_speed_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-10 10</range>
+										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+										<clamped>false</clamped>
+										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+										<locked>false</locked>
+										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+										<prescribed_function />
 									</Coordinate>
 									<Coordinate name="sphere1_TransY">
-										<!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-										<motion_type> translational </motion_type>
-										<default_value>   0.00000000 </default_value>
-										<default_speed_value>   0.00000000 </default_speed_value>
-										<initial_value>   0.00000000 </initial_value>
-										<range>  -10.00000000   10.00000000 </range>
-										<clamped> false </clamped>
-										<locked> false </locked>
-										<prescribed_function/>
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>translational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+										<default_speed_value>0</default_speed_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-10 10</range>
+										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+										<clamped>false</clamped>
+										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+										<locked>false</locked>
+										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+										<prescribed_function />
 									</Coordinate>
 									<Coordinate name="sphere1_TransZ">
-										<!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-										<motion_type> translational </motion_type>
-										<default_value>   0.00000000 </default_value>
-										<default_speed_value>   0.00000000 </default_speed_value>
-										<initial_value>   0.00000000 </initial_value>
-										<range>  -10.00000000   10.00000000 </range>
-										<clamped> false </clamped>
-										<locked> false </locked>
-										<prescribed_function/>
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>translational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+										<default_speed_value>0</default_speed_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-10 10</range>
+										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+										<clamped>false</clamped>
+										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+										<locked>false</locked>
+										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+										<prescribed_function />
 									</Coordinate>
 								</objects>
-								<groups/>
+								<groups />
 							</CoordinateSet>
-							<reverse> false </reverse>
-							<SpatialTransform name="">
-								<!--3 Axes for translations are listed -->
+							<!--Whether the joint transform defines parent->child or child->parent.-->
+							<reverse>false</reverse>
+							<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+							<SpatialTransform>
+								<!--3 Axes for translations are listed next.-->
 								<TransformAxis name="translation1">
+									<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+									<coordinates>sphere1_TransX</coordinates>
+									<!--Rotation or translation axis for the transform.-->
+									<axis>1 0 0</axis>
+									<!--Transform function of the generalized coordinates used to        represent the amount of transformation along a specified axis.-->
 									<function>
-										<MultiplierFunction name="">
+										<MultiplierFunction>
 											<function>
-												<LinearFunction name="">
-													<coefficients>   1.00000000   0.00000000 </coefficients>
+												<LinearFunction>
+													<coefficients> 1 0</coefficients>
 												</LinearFunction>
 											</function>
-											<scale>   1.00000000 </scale>
+											<scale>1</scale>
 										</MultiplierFunction>
 									</function>
-									<coordinates> sphere1_TransX </coordinates>
-									<axis>   1.00000000   0.00000000   0.00000000 </axis>
 								</TransformAxis>
 								<TransformAxis name="translation2">
+									<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+									<coordinates>sphere1_TransY</coordinates>
+									<!--Rotation or translation axis for the transform.-->
+									<axis>0 1 0</axis>
+									<!--Transform function of the generalized coordinates used to        represent the amount of transformation along a specified axis.-->
 									<function>
-										<MultiplierFunction name="">
+										<MultiplierFunction>
 											<function>
-												<LinearFunction name="">
-													<coefficients>   1.00000000   0.00000000 </coefficients>
+												<LinearFunction>
+													<coefficients> 1 0</coefficients>
 												</LinearFunction>
 											</function>
-											<scale>   1.00000000 </scale>
+											<scale>1</scale>
 										</MultiplierFunction>
 									</function>
-									<coordinates> sphere1_TransY </coordinates>
-									<axis>   0.00000000   1.00000000   0.00000000 </axis>
 								</TransformAxis>
 								<TransformAxis name="translation3">
+									<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+									<coordinates>sphere1_TransZ</coordinates>
+									<!--Rotation or translation axis for the transform.-->
+									<axis>0 0 1</axis>
+									<!--Transform function of the generalized coordinates used to        represent the amount of transformation along a specified axis.-->
 									<function>
-										<MultiplierFunction name="">
+										<MultiplierFunction>
 											<function>
-												<LinearFunction name="">
-													<coefficients>   1.00000000   0.00000000 </coefficients>
+												<LinearFunction>
+													<coefficients> 1 0</coefficients>
 												</LinearFunction>
 											</function>
-											<scale>   1.00000000 </scale>
+											<scale>1</scale>
 										</MultiplierFunction>
 									</function>
-									<coordinates> sphere1_TransZ </coordinates>
-									<axis>   0.00000000   0.00000000   1.00000000 </axis>
 								</TransformAxis>
 							</SpatialTransform>
 						</CustomJoint>
 					</Joint>
-					<VisibleObject name="">
-						<geometry_files> sphere.vtp </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
-							<show_axes> true </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
-						<scale_factors>  1 1 1 </scale_factors>
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>sphere.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> -0 0 -0 0 0 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 1 1 1</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups />
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 1 1 1</scale_factors>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>true</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
 					</VisibleObject>
-					<WrapObjectSet name="">
-						<objects/>
-						<groups/>
+					<WrapObjectSet>
+						<objects />
+						<groups />
 					</WrapObjectSet>
 				</Body>
-				
 				<Body name="sphere2">
-					<mass>       100.0000000 </mass>
-					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
-					<inertia_xx>       0.02500000 </inertia_xx>
-					<inertia_yy>       0.02500000 </inertia_yy>
-					<inertia_zz>       0.02500000 </inertia_zz>
-					<inertia_xy>       0.00000000 </inertia_xy>
-					<inertia_xz>       0.00000000 </inertia_xz>
-					<inertia_yz>       0.00000000 </inertia_yz>
+					<mass>100</mass>
+					<mass_center> 0 0 0</mass_center>
+					<inertia_xx>0.025</inertia_xx>
+					<inertia_yy>0.025</inertia_yy>
+					<inertia_zz>0.025</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
 					<!--Joint that connects this body with the parent body.-->
 					<Joint>
 						<CustomJoint name="ground_sphere2">
-							<parent_body> ground </parent_body>
-							<location_in_parent>   3.00000000   0.00000000   0.00000000 </location_in_parent>
-							<orientation_in_parent>   0.00000000   0.00000000   0.00000000 </orientation_in_parent>
-							<location>   0.00000000   0.00000000   0.00000000 </location>
-							<orientation>   0.00000000   0.00000000   0.00000000 </orientation>
-							<!--Generalized coordinates parameterizing this joint.-->
-							<CoordinateSet name="">
+							<!--Name of the parent body to which this joint connects its owner body.-->
+							<parent_body>ground</parent_body>
+							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+							<location_in_parent>3 0 0</location_in_parent>
+							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
+							<orientation_in_parent>0 0 0</orientation_in_parent>
+							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
+							<location>0 0 0</location>
+							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
+							<orientation>0 0 0</orientation>
+							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+							<CoordinateSet>
 								<objects>
 									<Coordinate name="sphere2_TransX">
-										<!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-										<motion_type> translational </motion_type>
-										<default_value>   0.00000000 </default_value>
-										<default_speed_value>   0.00000000 </default_speed_value>
-										<initial_value>   0.00000000 </initial_value>
-										<range> -10.00000000  10.00000000 </range>
-										<clamped> false </clamped>
-										<locked> false </locked>
-										<prescribed_function/>
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>translational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+										<default_speed_value>0</default_speed_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-10 10</range>
+										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+										<clamped>false</clamped>
+										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+										<locked>false</locked>
+										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+										<prescribed_function />
 									</Coordinate>
 									<Coordinate name="sphere2_TransY">
-										<!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-										<motion_type> translational </motion_type>
-										<default_value>   0.00000000 </default_value>
-										<default_speed_value>   0.00000000 </default_speed_value>
-										<initial_value>   0.00000000 </initial_value>
-										<range>  -10.00000000   10.00000000 </range>
-										<clamped> false </clamped>
-										<locked> false </locked>
-										<prescribed_function/>
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>translational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+										<default_speed_value>0</default_speed_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-10 10</range>
+										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+										<clamped>false</clamped>
+										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+										<locked>false</locked>
+										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+										<prescribed_function />
 									</Coordinate>
 									<Coordinate name="sphere2_TransZ">
-										<!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-										<motion_type> translational </motion_type>
-										<default_value>   0.00000000 </default_value>
-										<default_speed_value>   0.00000000 </default_speed_value>
-										<initial_value>   0.00000000 </initial_value>
-										<range>  -10.00000000   10.00000000 </range>
-										<clamped> false </clamped>
-										<locked> false </locked>
-										<prescribed_function/>
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>translational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+										<default_speed_value>0</default_speed_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-10 10</range>
+										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+										<clamped>false</clamped>
+										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+										<locked>false</locked>
+										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+										<prescribed_function />
 									</Coordinate>
 								</objects>
-								<groups/>
+								<groups />
 							</CoordinateSet>
-							<reverse> false </reverse>
-							<SpatialTransform name="">
-								<!--3 Axes for translations are listed -->
+							<!--Whether the joint transform defines parent->child or child->parent.-->
+							<reverse>false</reverse>
+							<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+							<SpatialTransform>
+								<!--3 Axes for translations are listed next.-->
 								<TransformAxis name="translation1">
+									<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+									<coordinates>sphere2_TransX</coordinates>
+									<!--Rotation or translation axis for the transform.-->
+									<axis>1 0 0</axis>
+									<!--Transform function of the generalized coordinates used to        represent the amount of transformation along a specified axis.-->
 									<function>
-										<MultiplierFunction name="">
+										<MultiplierFunction>
 											<function>
-												<LinearFunction name="">
-													<coefficients>   1.00000000   0.00000000 </coefficients>
+												<LinearFunction>
+													<coefficients> 1 0</coefficients>
 												</LinearFunction>
 											</function>
-											<scale>   1.00000000 </scale>
+											<scale>1</scale>
 										</MultiplierFunction>
 									</function>
-									<coordinates> sphere2_TransX </coordinates>
-									<axis>   1.00000000   0.00000000   0.00000000 </axis>
 								</TransformAxis>
 								<TransformAxis name="translation2">
+									<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+									<coordinates>sphere2_TransY</coordinates>
+									<!--Rotation or translation axis for the transform.-->
+									<axis>0 1 0</axis>
+									<!--Transform function of the generalized coordinates used to        represent the amount of transformation along a specified axis.-->
 									<function>
-										<MultiplierFunction name="">
+										<MultiplierFunction>
 											<function>
-												<LinearFunction name="">
-													<coefficients>   1.00000000   0.00000000 </coefficients>
+												<LinearFunction>
+													<coefficients> 1 0</coefficients>
 												</LinearFunction>
 											</function>
-											<scale>   1.00000000 </scale>
+											<scale>1</scale>
 										</MultiplierFunction>
 									</function>
-									<coordinates> sphere2_TransY </coordinates>
-									<axis>   0.00000000   1.00000000   0.00000000 </axis>
 								</TransformAxis>
 								<TransformAxis name="translation3">
+									<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+									<coordinates>sphere2_TransZ</coordinates>
+									<!--Rotation or translation axis for the transform.-->
+									<axis>0 0 1</axis>
+									<!--Transform function of the generalized coordinates used to        represent the amount of transformation along a specified axis.-->
 									<function>
-										<MultiplierFunction name="">
+										<MultiplierFunction>
 											<function>
-												<LinearFunction name="">
-													<coefficients>   1.00000000   0.00000000 </coefficients>
+												<LinearFunction>
+													<coefficients> 1 0</coefficients>
 												</LinearFunction>
 											</function>
-											<scale>   1.00000000 </scale>
+											<scale>1</scale>
 										</MultiplierFunction>
 									</function>
-									<coordinates> sphere2_TransZ </coordinates>
-									<axis>   0.00000000   0.00000000   1.00000000 </axis>
 								</TransformAxis>
 							</SpatialTransform>
 						</CustomJoint>
 					</Joint>
-					<VisibleObject name="">
-						<geometry_files> sphere.vtp </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
-							<show_axes> true </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
-						<scale_factors>  1 1 1 </scale_factors>
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>sphere.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> -0 0 -0 0 0 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 1 1 1</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups />
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 1 1 1</scale_factors>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>true</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
 					</VisibleObject>
-					<WrapObjectSet name="">
-						<objects/>
-						<groups/>
+					<WrapObjectSet>
+						<objects />
+						<groups />
 					</WrapObjectSet>
 				</Body>
-				
 				<Body name="sphere3">
-					<mass>       100.0000000 </mass>
-					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
-					<inertia_xx>       0.02500000 </inertia_xx>
-					<inertia_yy>       0.02500000 </inertia_yy>
-					<inertia_zz>       0.02500000 </inertia_zz>
-					<inertia_xy>       0.00000000 </inertia_xy>
-					<inertia_xz>       0.00000000 </inertia_xz>
-					<inertia_yz>       0.00000000 </inertia_yz>
+					<mass>100</mass>
+					<mass_center> 0 0 0</mass_center>
+					<inertia_xx>0.025</inertia_xx>
+					<inertia_yy>0.025</inertia_yy>
+					<inertia_zz>0.025</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
 					<!--Joint that connects this body with the parent body.-->
 					<Joint>
 						<CustomJoint name="ground_sphere3">
-							<parent_body> ground </parent_body>
-							<location_in_parent>   5.00000000   0.00000000   0.00000000 </location_in_parent>
-							<orientation_in_parent>   0.00000000   0.00000000   0.00000000 </orientation_in_parent>
-							<location>   0.00000000   0.00000000   0.00000000 </location>
-							<orientation>   0.00000000   0.00000000   0.00000000 </orientation>
-							<!--Generalized coordinates parameterizing this joint.-->
-							<CoordinateSet name="">
+							<!--Name of the parent body to which this joint connects its owner body.-->
+							<parent_body>ground</parent_body>
+							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+							<location_in_parent>5 0 0</location_in_parent>
+							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
+							<orientation_in_parent>0 0 0</orientation_in_parent>
+							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
+							<location>0 0 0</location>
+							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
+							<orientation>0 0 0</orientation>
+							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+							<CoordinateSet>
 								<objects>
 									<Coordinate name="sphere3_TransX">
-										<!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-										<motion_type> translational </motion_type>
-										<default_value>   0.00000000 </default_value>
-										<default_speed_value>   0.00000000 </default_speed_value>
-										<initial_value>   0.00000000 </initial_value>
-										<range> -10.00000000  10.00000000 </range>
-										<clamped> false </clamped>
-										<locked> false </locked>
-										<prescribed_function/>
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>translational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+										<default_speed_value>0</default_speed_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-10 10</range>
+										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+										<clamped>false</clamped>
+										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+										<locked>false</locked>
+										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+										<prescribed_function />
 									</Coordinate>
 									<Coordinate name="sphere3_TransY">
-										<!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-										<motion_type> translational </motion_type>
-										<default_value>   0.00000000 </default_value>
-										<default_speed_value>   0.00000000 </default_speed_value>
-										<initial_value>   0.00000000 </initial_value>
-										<range>  -10.00000000   10.00000000 </range>
-										<clamped> false </clamped>
-										<locked> false </locked>
-										<prescribed_function/>
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>translational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+										<default_speed_value>0</default_speed_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-10 10</range>
+										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+										<clamped>false</clamped>
+										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+										<locked>false</locked>
+										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+										<prescribed_function />
 									</Coordinate>
 									<Coordinate name="sphere3_TransZ">
-										<!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-										<motion_type> translational </motion_type>
-										<default_value>   0.00000000 </default_value>
-										<default_speed_value>   0.00000000 </default_speed_value>
-										<initial_value>   0.00000000 </initial_value>
-										<range>  -10.00000000   10.00000000 </range>
-										<clamped> false </clamped>
-										<locked> false </locked>
-										<prescribed_function/>
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>translational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+										<default_speed_value>0</default_speed_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-10 10</range>
+										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+										<clamped>false</clamped>
+										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+										<locked>false</locked>
+										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+										<prescribed_function />
 									</Coordinate>
 								</objects>
-								<groups/>
+								<groups />
 							</CoordinateSet>
-							<reverse> false </reverse>
-							<SpatialTransform name="">
-								<!--3 Axes for translations are listed -->
+							<!--Whether the joint transform defines parent->child or child->parent.-->
+							<reverse>false</reverse>
+							<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+							<SpatialTransform>
+								<!--3 Axes for translations are listed next.-->
 								<TransformAxis name="translation1">
+									<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+									<coordinates>sphere3_TransX</coordinates>
+									<!--Rotation or translation axis for the transform.-->
+									<axis>1 0 0</axis>
+									<!--Transform function of the generalized coordinates used to        represent the amount of transformation along a specified axis.-->
 									<function>
-										<MultiplierFunction name="">
+										<MultiplierFunction>
 											<function>
-												<LinearFunction name="">
-													<coefficients>   1.00000000   0.00000000 </coefficients>
+												<LinearFunction>
+													<coefficients> 1 0</coefficients>
 												</LinearFunction>
 											</function>
-											<scale>   1.00000000 </scale>
+											<scale>1</scale>
 										</MultiplierFunction>
 									</function>
-									<coordinates> sphere3_TransX </coordinates>
-									<axis>   1.00000000   0.00000000   0.00000000 </axis>
 								</TransformAxis>
 								<TransformAxis name="translation2">
+									<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+									<coordinates>sphere3_TransY</coordinates>
+									<!--Rotation or translation axis for the transform.-->
+									<axis>0 1 0</axis>
+									<!--Transform function of the generalized coordinates used to        represent the amount of transformation along a specified axis.-->
 									<function>
-										<MultiplierFunction name="">
+										<MultiplierFunction>
 											<function>
-												<LinearFunction name="">
-													<coefficients>   1.00000000   0.00000000 </coefficients>
+												<LinearFunction>
+													<coefficients> 1 0</coefficients>
 												</LinearFunction>
 											</function>
-											<scale>   1.00000000 </scale>
+											<scale>1</scale>
 										</MultiplierFunction>
 									</function>
-									<coordinates> sphere3_TransY </coordinates>
-									<axis>   0.00000000   1.00000000   0.00000000 </axis>
 								</TransformAxis>
 								<TransformAxis name="translation3">
+									<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+									<coordinates>sphere3_TransZ</coordinates>
+									<!--Rotation or translation axis for the transform.-->
+									<axis>0 0 1</axis>
+									<!--Transform function of the generalized coordinates used to        represent the amount of transformation along a specified axis.-->
 									<function>
-										<MultiplierFunction name="">
+										<MultiplierFunction>
 											<function>
-												<LinearFunction name="">
-													<coefficients>   1.00000000   0.00000000 </coefficients>
+												<LinearFunction>
+													<coefficients> 1 0</coefficients>
 												</LinearFunction>
 											</function>
-											<scale>   1.00000000 </scale>
+											<scale>1</scale>
 										</MultiplierFunction>
 									</function>
-									<coordinates> sphere3_TransZ </coordinates>
-									<axis>   0.00000000   0.00000000   1.00000000 </axis>
 								</TransformAxis>
 							</SpatialTransform>
 						</CustomJoint>
 					</Joint>
-					<VisibleObject name="">
-						<geometry_files> sphere.vtp </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
-							<show_axes> true </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
-						<scale_factors>  1 1 1 </scale_factors>
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>sphere.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> -0 0 -0 0 0 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 1 1 1</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups />
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 1 1 1</scale_factors>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>true</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
 					</VisibleObject>
-					<WrapObjectSet name="">
-						<objects/>
-						<groups/>
+					<WrapObjectSet>
+						<objects />
+						<groups />
 					</WrapObjectSet>
 				</Body>
 			</objects>
-			<groups/>
+			<groups />
 		</BodySet>
 		<!--Constraints in the model.-->
-		<ConstraintSet name="">
-			<objects/>
-			<groups/>
+		<ConstraintSet>
+			<objects />
+			<groups />
 		</ConstraintSet>
+		<!--Forces in the model.-->
+		<ForceSet>
+			<objects />
+			<groups />
+		</ForceSet>
 		<!--Markers in the model.-->
-		<MarkerSet name="">
-			<objects/>
-			<groups/>
+		<MarkerSet>
+			<objects />
+			<groups />
 		</MarkerSet>
-		<!--ContactGeometry objects in the model.-->
-		<ContactGeometrySet name="">
-			<objects/>
-			<groups/>
+		<!--ContactGeometries  in the model.-->
+		<ContactGeometrySet>
+			<objects />
+			<groups />
 		</ContactGeometrySet>
 	</Model>
 </OpenSimDocument>
-
