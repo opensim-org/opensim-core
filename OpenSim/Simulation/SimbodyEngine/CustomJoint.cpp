@@ -412,4 +412,5 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                     " Please fix and retry loading.."));
 		}
 	}
+    updProperty_SpatialTransform().setValueIsDefault(false);
 }
