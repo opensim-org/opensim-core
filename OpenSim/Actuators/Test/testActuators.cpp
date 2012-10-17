@@ -35,7 +35,6 @@
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Common/Constant.h>
-#include <OpenSim/Simulation/Control/ControlSetController.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
