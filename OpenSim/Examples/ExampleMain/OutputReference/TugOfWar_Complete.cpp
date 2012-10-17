@@ -62,14 +62,28 @@ int main()
 		// Get a reference to the model's ground body
 		OpenSim::Body& ground = osimModel.getGroundBody();
 
-		// Add display geometry to the ground to visualize in the GUI
-		ground.addDisplayGeometry("ground.vtp");
-		ground.addDisplayGeometry("anchor1.vtp");
-		ground.addDisplayGeometry("anchor2.vtp");
+		// Add display geometry to the ground to visualize in the Visualizer and GUI
+		// add a checkered floor
+		ground.addDisplayGeometry("checkered_floor.vtp");
+		// add anchors for the muscles to be fixed too
+		ground.addDisplayGeometry("block.vtp");
+		ground.addDisplayGeometry("block.vtp");
+
+		// block is 0.1 by 0.1 by 0.1m cube and centered at origin. 
+		// transform anchors to be placed at the two extremes of the sliding block (to come)
+		GeometrySet& geometry = ground.updDisplayer()->updGeometrySet();
+		DisplayGeometry& anchor1 = geometry[1];
+		DisplayGeometry& anchor2 = geometry[2];
+		// scale the anchors
+		anchor1.setScaleFactors(Vec3(5, 1, 1));
+		anchor2.setScaleFactors(Vec3(5, 1, 1));
+		// reposition the anchors
+		anchor1.setTransform(Transform(Vec3(0, 0.05, 0.35)));
+		anchor2.setTransform(Transform(Vec3(0, 0.05, -0.35)));
 
 		// BLOCK BODY
 
-		// Specify properties of a 20 kg, 0.1 m^3 block body
+		// Specify properties of a 20 kg, 0.1m sides of cubed block body
 		double blockMass = 20.0, blockSideLength = 0.1;
 		Vec3 blockMassCenter(0);
 		Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
@@ -158,7 +172,7 @@ int main()
 		// Create new floor contact halfspace
 		ContactHalfSpace *floor = new ContactHalfSpace(SimTK::Vec3(0), SimTK::Vec3(0, 0, -0.5*SimTK_PI), ground, "floor");
 		// Create new cube contact mesh
-		OpenSim::ContactMesh *cube = new OpenSim::ContactMesh("blockRemesh192.obj", SimTK::Vec3(0), SimTK::Vec3(0), *block, "cube");
+		OpenSim::ContactMesh *cube = new OpenSim::ContactMesh("blockMesh.obj", SimTK::Vec3(0), SimTK::Vec3(0), *block, "cube");
 
 		// Add contact geometry to the model
 		osimModel.addContactGeometry(floor);
@@ -238,7 +252,8 @@ int main()
 		// PERFORM A SIMULATION //
 		//////////////////////////
 
-		//osimModel.setUseVisualizer(true);
+		// set use visualizer to true to visualize the simulation live
+		osimModel.setUseVisualizer(false);
 
 		// Initialize the system and get the default state
 		SimTK::State& si = osimModel.initSystem();
