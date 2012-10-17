@@ -45,13 +45,12 @@ void testAssembleModelWithConstraints(string modelFile);
 int main()
 {
 	try {
-		LoadOpenSimLibrary("osimActuators");
 		testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");
 		testAssembleModelWithConstraints("PushUpToesOnGroundLessPreciseConstraints.osim");
 		testAssembleModelWithConstraints("PushUpToesOnGroundWithMuscles.osim");
 	}
-	catch (const Exception& e) {
-        e.print(cerr);
+	catch (const std::exception& e) {
+		cout << "testAssembleModelWithConstraints FAILED: " << e.what() <<endl;
         return 1;
     }
     cout << "Done" << endl;
@@ -141,8 +140,8 @@ void testAssembleModelWithConstraints(string modelFile)
     Vector y4 = state2.getY();
     for (int i = 0; i < y1.size(); i++) 
     {
-        ASSERT_EQUAL(y1[i], y3[i], 1e-5);
-        ASSERT_EQUAL(y2[i], y4[i], 1e-5);
+        ASSERT_EQUAL(y1[i], y3[i], 1e-5, __FILE__, __LINE__, "Initial state changed after 2nd call to initSystem");
+        ASSERT_EQUAL(y2[i], y4[i], 1e-5,__FILE__, __LINE__, "State differed after 2nd simulation from same init state.");
     }
     ASSERT(max(abs(y1-y2)) > 1e-4);
 }

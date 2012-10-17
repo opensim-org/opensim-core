@@ -30804,7 +30804,7 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>       0.00000000 </default_value>
+										<default_value>       0.000000001 </default_value>
 										<default_speed_value>       0.00000000 </default_speed_value>
 										<initial_value>       0.00000000 </initial_value>
 										<range>       0.00000000       2.26892803 </range>
@@ -30883,7 +30883,7 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>       0.00000000 </default_value>
+										<default_value>       0.000000001 </default_value>
 										<default_speed_value>       0.00000000 </default_speed_value>
 										<initial_value>       0.00000000 </initial_value>
 										<range>       0.00000000       2.26892803 </range>
@@ -30962,9 +30962,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>       1.57079633 </default_value>
+										<default_value>       1.57079632 </default_value>
 										<default_speed_value>       0.00000000 </default_speed_value>
-										<initial_value>       1.57079633 </initial_value>
+										<initial_value>       1.57079632 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
 										<clamped> false </clamped>
 										<locked> true </locked>
@@ -31099,9 +31099,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>       1.57079633 </default_value>
+										<default_value>       1.57079632 </default_value>
 										<default_speed_value>       0.00000000 </default_speed_value>
-										<initial_value>       1.57079633 </initial_value>
+										<initial_value>       1.57079632 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
 										<clamped> false </clamped>
 										<locked> true </locked>
@@ -31236,9 +31236,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>      -1.57079633 </default_value>
+										<default_value>      -1.57079632 </default_value>
 										<default_speed_value>       0.00000000 </default_speed_value>
-										<initial_value>      -1.57079633 </initial_value>
+										<initial_value>      -1.57079632 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
 										<clamped> true </clamped>
 										<locked> true </locked>
@@ -33031,9 +33031,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>      -1.57079633 </default_value>
+										<default_value>      -1.57079632 </default_value>
 										<default_speed_value>       0.00000000 </default_speed_value>
-										<initial_value>      -1.57079633 </initial_value>
+										<initial_value>      -1.57079632 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
 										<clamped> true </clamped>
 										<locked> true </locked>
