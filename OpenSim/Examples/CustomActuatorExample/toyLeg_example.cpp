@@ -49,37 +49,50 @@ int main()
 		// Create a new OpenSim model
 		Model osimModel;
 		osimModel.setName("osimModel");
+		osimModel.setAuthors("Matt DeMers");
 
 		double Pi = SimTK::Pi;
-		
-		
+			
 		// Get the ground body
 		OpenSim::Body& ground = osimModel.getGroundBody();
-		ground.addDisplayGeometry("ground.vtp");
+		ground.addDisplayGeometry("checkered_floor.vtp");
 
 		// create linkage body
-		double linkageMass = 0.001, linkageLength = 0.5;
-		Vec3 linkageMassCenter(0,-linkageLength/2,0);
-		Inertia linkageInertia = Inertia::cylinderAlongY(0.0, 0.5);
+		double linkageMass = 0.001, linkageLength = 0.5, linkageDiameter = 0.06;
+		
+		Vec3 linkageDimensions(linkageDiameter, linkageLength, linkageDiameter);
+		Vec3 linkageMassCenter(0,linkageLength/2,0);
+		Inertia linkageInertia = Inertia::cylinderAlongY(linkageDiameter/2.0, linkageLength/2.0);
 
-		OpenSim::Body *linkage1 = new OpenSim::Body("linkage1", linkageMass, linkageMassCenter, linkageMass*linkageInertia);
+		OpenSim::Body* linkage1 = new OpenSim::Body("linkage1", linkageMass, linkageMassCenter, linkageMass*linkageInertia);
+
 		// Graphical representation
-		linkage1->addDisplayGeometry("linkage1.vtp");
-
+		linkage1->addDisplayGeometry("cylinder.vtp");
+		//This cylinder.vtp geometry is 1 meter tall, 1 meter diameter.  Scale and shift it to look pretty
+		GeometrySet& geometry = linkage1->updDisplayer()->updGeometrySet();
+		DisplayGeometry& thinCylinder = geometry[0];
+		thinCylinder.setScaleFactors(linkageDimensions);
+		thinCylinder.setTransform(Transform(Vec3(0.0,linkageLength/2.0,0.0)));
+		linkage1->addDisplayGeometry("sphere.vtp");
+		//This sphere.vtp is 1 meter in diameter.  Scale it.
+		geometry[1].setScaleFactors(Vec3(0.1));
+		
 		// Creat a second linkage body
-		OpenSim::Body *linkage2 = new OpenSim::Body("linkage2", linkageMass, linkageMassCenter, linkageMass*linkageInertia);
-		linkage2->addDisplayGeometry("linkage1.vtp");
+		OpenSim::Body* linkage2 = new OpenSim::Body(*linkage1);
+		linkage2->setName("linkage2");
 
 		// Creat a block to be the pelvis
 		double blockMass = 20.0, blockSideLength = 0.2;
 		Vec3 blockMassCenter(0);
 		Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
 		OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
-		block->addDisplayGeometry("big_block_centered.vtp");
+		block->addDisplayGeometry("block.vtp");
+		//This block.vtp is 0.1x0.1x0.1 meters.  scale its appearance
+		block->updDisplayer()->updGeometrySet()[0].setScaleFactors(Vec3(2.0));
 
 		// Create 1 degree-of-freedom pin joints between the bodies to creat a kinematic chain from ground through the block
 		
-		Vec3 orientationInGround(0), locationInGround(0), locationInParent(0.0, 0.5, 0.0), orientationInChild(0), locationInChild(0);
+		Vec3 orientationInGround(0), locationInGround(0), locationInParent(0.0, linkageLength, 0.0), orientationInChild(0), locationInChild(0);
 
 		PinJoint *ankle = new PinJoint("ankle", ground, locationInGround, orientationInGround, *linkage1, 
 			locationInChild, orientationInChild);

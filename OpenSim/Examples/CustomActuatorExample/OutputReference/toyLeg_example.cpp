@@ -55,31 +55,44 @@ int main()
 		
 		// Get the ground body
 		OpenSim::Body& ground = osimModel.getGroundBody();
-		ground.addDisplayGeometry("ground.vtp");
+		ground.addDisplayGeometry("checkered_floor.vtp");
 
 		// create linkage body
-		double linkageMass = 0.001, linkageLength = 0.5;
-		Vec3 linkageMassCenter(0,-linkageLength/2,0);
-		Inertia linkageInertia = Inertia::cylinderAlongY(0.0, 0.5);
+		double linkageMass = 0.001, linkageLength = 0.5, linkageDiameter = 0.06;
+		
+		Vec3 linkageDimensions(linkageDiameter, linkageLength, linkageDiameter);
+		Vec3 linkageMassCenter(0,linkageLength/2,0);
+		Inertia linkageInertia = Inertia::cylinderAlongY(linkageDiameter/2.0, linkageLength/2.0);
 
-		OpenSim::Body *linkage1 = new OpenSim::Body("linkage1", linkageMass, linkageMassCenter, linkageMass*linkageInertia);
+		OpenSim::Body* linkage1 = new OpenSim::Body("linkage1", linkageMass, linkageMassCenter, linkageMass*linkageInertia);
+
 		// Graphical representation
-		linkage1->addDisplayGeometry("linkage1.vtp");
-
+		linkage1->addDisplayGeometry("cylinder.vtp");
+		//This cylinder.vtp geometry is 1 meter tall, 1 meter diameter.  Scale and shift it to look pretty
+		GeometrySet& geometry = linkage1->updDisplayer()->updGeometrySet();
+		DisplayGeometry& thinCylinder = geometry[0];
+		thinCylinder.setScaleFactors(linkageDimensions);
+		thinCylinder.setTransform(Transform(Vec3(0.0,linkageLength/2.0,0.0)));
+		linkage1->addDisplayGeometry("sphere.vtp");
+		//This sphere.vtp is 1 meter in diameter.  Scale it.
+		geometry[1].setScaleFactors(Vec3(0.1));
+		
 		// Creat a second linkage body
-		OpenSim::Body *linkage2 = new OpenSim::Body("linkage2", linkageMass, linkageMassCenter, linkageMass*linkageInertia);
-		linkage2->addDisplayGeometry("linkage1.vtp");
+		OpenSim::Body* linkage2 = new OpenSim::Body(*linkage1);
+		linkage2->setName("linkage2");
 
 		// Creat a block to be the pelvis
 		double blockMass = 20.0, blockSideLength = 0.2;
 		Vec3 blockMassCenter(0);
 		Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
 		OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
-		block->addDisplayGeometry("big_block_centered.vtp");
+		block->addDisplayGeometry("block.vtp");
+		//This block.vtp is 0.1x0.1x0.1 meters.  scale its appearance
+		block->updDisplayer()->updGeometrySet()[0].setScaleFactors(Vec3(2.0));
 
 		// Create 1 degree-of-freedom pin joints between the bodies to creat a kinematic chain from ground through the block
 		
-		Vec3 orientationInGround(0), locationInGround(0), locationInParent(0.0, 0.5, 0.0), orientationInChild(0), locationInChild(0);
+		Vec3 orientationInGround(0), locationInGround(0), locationInParent(0.0, linkageLength, 0.0), orientationInChild(0), locationInChild(0);
 
 		PinJoint *ankle = new PinJoint("ankle", ground, locationInGround, orientationInGround, *linkage1, 
 			locationInChild, orientationInChild);
@@ -145,39 +158,21 @@ int main()
 		// define the simulation times
 		double t0(0.0), tf(15);
 
-		// define the control values for the piston
-		//double controlT0[1] = {0.982}, controlTf[1] = {0.978};
-
-		// define the control values for the spring
-		//double controlT0[1] = {1.0}, controlT1[1] = {1.0}, controlT2[1] = {0.25},
-		//	controlT3[1] = {.25}, controlT4[1] = {5};
-
-		//ControlSet *controlSet = new ControlSet();
-		//ControlLinear *control1 = new ControlLinear();
-		//control1->setName("spring"); // change this between 'piston' and 'spring'
-		////control1->setUseSteps(true);
-		//controlSet->adoptAndAppend(control1);
-
-		//// set control values for the piston
-		///*controlSet->setControlValues(t0, controlT0);
-		//controlSet->setControlValues(tf, controlTf);*/
-
-		//// set control values for the spring
-		//controlSet->setControlValues(t0, controlT0);
-		//controlSet->setControlValues(4.0, controlT1);
-		//controlSet->setControlValues(7.0, controlT2);
-		//controlSet->setControlValues(10.0, controlT3);
-		//controlSet->setControlValues(tf, controlT4);
-
-		//ControlSetController *legController = new ControlSetController();
-		//legController->setControlSet(controlSet);
-		
+		// create a controller to control the piston and spring actuators
+		// the prescribed controller sets the controls as functions of time
 		PrescribedController *legController = new PrescribedController();
-
+		// give the legController control over all (two) model actuators
 		legController->setActuators(osimModel.updActuators());
-		legController->prescribeControlForActuator("piston", new Constant(2.0));
-		legController->prescribeControlForActuator("spring", new Constant(2.0));
 
+		// specify some control nodes for spring stiffness control
+		double t[] = {0.0, 4.0, 7.0,  10.0, 15.0};
+        double x[] = {1.0, 1.0, 0.25,  0.25, 5.0};
+
+		// specify the control function for each actuator
+		legController->prescribeControlForActuator("piston", new Constant(0.1));
+		legController->prescribeControlForActuator("spring", new PiecewiseLinearFunction(5, t, x));
+
+		// add the controller to the model
 		osimModel.addController(legController);		
 		
 		// define the acceration due to gravity
@@ -185,21 +180,17 @@ int main()
 
 		// enable the model visualizer see the model in action, which can be
 		// useful for debugging
-		osimModel.setUseVisualizer(false);
+		osimModel.setUseVisualizer(true);
 
 		// Initialize system
 		SimTK::State& si = osimModel.initSystem();
 		
 		// Pin joint initial states
-
 		double q1_i = -Pi/4;
 		double q2_i = - 2*q1_i;
 		CoordinateSet &coordinates = osimModel.updCoordinateSet();
 		coordinates[0].setValue(si, q1_i, true);
 		coordinates[1].setValue(si,q2_i, true);
-
-		// Compute initial conditions for muscles
-		osimModel.equilibrateMuscles(si);
 
 		// Setup integrator and manager
 		SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
@@ -225,7 +216,7 @@ int main()
 		manager.integrate(si);
 
 		// Save results
-		
+		osimModel.printControlStorage("SpringActuatedLeg_controls.sto");
 		Storage statesDegrees(manager.getStateStorage());
 		osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
 		//statesDegrees.print("PistonActuatedLeg_states_degrees.mot");
