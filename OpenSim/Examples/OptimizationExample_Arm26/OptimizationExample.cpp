@@ -104,7 +104,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 		else if( f < bestSoFar){
 			manager.getStateStorage().print("Arm26_bestSoFar_states.sto");
 			bestSoFar = f;
-			cout << "\nOptimization Step #: " << stepCount << "  controls = " << newControls <<  " bestSoFar = " << f << std::endl;
+			cout << "\nobjective evaluation #: " << stepCount << "  controls = " << newControls <<  " bestSoFar = " << f << std::endl;
 		}		    
 
       return(0);
@@ -128,21 +128,21 @@ int main()
 		std::clock_t startTime = std::clock();	
 	
 		// Create a new OpenSim model
+		// Similar to arm26 model but without wrapping surfaces for better performance
 		Model osimModel("Arm26_Optimize.osim");
 		
-		
 		// Initialize the system and get the state representing the state system
-		
-		// Define the initial muscle states
+		State& si = osimModel.initSystem();
+
+		// initialize the starting shoulder angle
+		const CoordinateSet& coords = osimModel.getCoordinateSet();
+		coords.get("r_shoulder_elev").setValue(si, -1.57079633);
+
+		// Set the initial muscle activations 
 		const Set<Muscle> &muscleSet = osimModel.getMuscles();
      	for(int i=0; i< muscleSet.getSize(); i++ ){
-			ActivationFiberLengthMuscle* mus = dynamic_cast<ActivationFiberLengthMuscle*>(&muscleSet[i]);
-			if(mus){
-				mus->setDefaultActivation(0.05);
-			}
+			muscleSet[i].setActivation(si, 0.05);
 		}
-
-		State& si = osimModel.initSystem();
 	
 		// Make sure the muscles states are in equilibrium
 		osimModel.equilibrateMuscles(si);
