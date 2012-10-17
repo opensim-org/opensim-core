@@ -64,7 +64,7 @@
 #include "Model/SystemEnergyProbe.h"
 #include "Model/MetabolicMuscleParameter.h"
 #include "Model/MetabolicMuscleParameterSet.h"
-#include "Model/MuscleMetabolicPowerProbeUmberger2003.h"
+#include "Model/MuscleMetabolicPowerProbeUmberger2010.h"
 #include "Model/MuscleMetabolicPowerProbeBhargava2004.h"
 
 #include "Control/ControlSet.h"
@@ -210,7 +210,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::RegisterType( SystemEnergyProbe() );
     Object::RegisterType( MetabolicMuscleParameter() );
     Object::RegisterType( MetabolicMuscleParameterSet() );
-    Object::RegisterType( MuscleMetabolicPowerProbeUmberger2003() );
+    Object::RegisterType( MuscleMetabolicPowerProbeUmberger2010() );
     Object::RegisterType( MuscleMetabolicPowerProbeBhargava2004() );
 
     // OLD Versions

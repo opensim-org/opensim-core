@@ -94,7 +94,7 @@ void MuscleMetabolicPowerProbeBhargava2004::constructProperties()
     constructProperty_normalized_fiber_length_dependence_on_maintenance_rate(fiberLengthDepCurveDefault);
 
     constructProperty_use_force_dependent_shortening_prop_constant(false);
-    constructProperty_basal_coefficient(1.51);
+    constructProperty_basal_coefficient(1.2);  // default value for standing (Umberger, 2003, p105)
     constructProperty_basal_exponent(1.0);
     constructProperty_MetabolicMuscleParameterSet(MetabolicMuscleParameterSet());
 }

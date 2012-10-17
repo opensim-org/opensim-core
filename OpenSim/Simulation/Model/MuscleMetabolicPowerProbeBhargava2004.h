@@ -180,7 +180,7 @@ public:
         bool,
         "Specify whether to use a force dependent shortening proportionality constant (true/false).");
 
-    /** Default value = 1.51. **/
+    /** Default value = 1.2. **/
     OpenSim_DECLARE_PROPERTY(basal_coefficient, 
         double,
         "Basal metabolic coefficient.");

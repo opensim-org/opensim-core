@@ -1,7 +1,7 @@
-#ifndef OPENSIM_METABOLIC_POWER_PROBE_UMBERGER2003_H_
-#define OPENSIM_METABOLIC_POWER_PROBE_UMBERGER2003_H_
+#ifndef OPENSIM_METABOLIC_POWER_PROBE_UMBERGER2010_H_
+#define OPENSIM_METABOLIC_POWER_PROBE_UMBERGER2010_H_
 /* -------------------------------------------------------------------------- *
- *             OpenSim:  MuscleMetabolicPowerProbeUmberger2003.h              *
+ *             OpenSim:  MuscleMetabolicPowerProbeUmberger2010.h              *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -31,25 +31,26 @@
 namespace OpenSim { 
 
 //=============================================================================
-//             MUSCLE METABOLIC POWER PROBE (Umberger, et al., 2003)
+//             MUSCLE METABOLIC POWER PROBE (Umberger, et al., 2010)
 //=============================================================================
 /**
- * MuscleMetabolicPowerProbeUmberger2003 is a ModelComponent Probe for computing the 
+ * MuscleMetabolicPowerProbeUmberger2010 is a ModelComponent Probe for computing the 
  * net metabolic energy rate of a set of Muscles in the model during a simulation. 
  * 
  * Based on the following papers:
+ *
+ * <a href="http://www.ncbi.nlm.nih.gov/pubmed/20356877">
+ * Umberger, B. R. (2010). Stance and swing phase costs in human walking.
+ * J R Soc Interface 7, 1329-40.</a>
  *
  * <a href="http://www.ncbi.nlm.nih.gov/pubmed/12745424">
  * Umberger, B. R., Gerritsen, K. G. and Martin, P. E. (2003). 
  * A model of human muscle energy expenditure. 
  * Comput Methods Biomech Biomed Engin 6, 99-111.</a>
  *
- * <a href="http://www.ncbi.nlm.nih.gov/pubmed/20356877">
- * Umberger, B. R. (2010). Stance and swing phase costs in human walking.
- * J R Soc Interface 7, 1329-40.</a>
  *
  * <I>Note that the equations below that describe the particular implementation of 
- * MuscleMetabolicPowerProbeUmberger2003 may slightly differ from the equations
+ * MuscleMetabolicPowerProbeUmberger2010 may slightly differ from the equations
  * described in the representative publications above. Note also that we define
  * positive muscle velocity to indicate lengthening (eccentric contraction) and
  * negative muscle velocity to indicate shortening (concentric contraction).</I>
@@ -139,8 +140,8 @@ namespace OpenSim {
  * @author Tim Dorn
  */
 
-class OSIMSIMULATION_API MuscleMetabolicPowerProbeUmberger2003 : public Probe {
-OpenSim_DECLARE_CONCRETE_OBJECT(MuscleMetabolicPowerProbeUmberger2003, Probe);
+class OSIMSIMULATION_API MuscleMetabolicPowerProbeUmberger2010 : public Probe {
+OpenSim_DECLARE_CONCRETE_OBJECT(MuscleMetabolicPowerProbeUmberger2010, Probe);
 public:
 //==============================================================================
 // PROPERTIES
@@ -177,9 +178,9 @@ public:
     /** Default value = 1.5. **/
     OpenSim_DECLARE_PROPERTY(scaling_factor, 
         double,
-        "Scaling factor (S=1.0 for primarily anaerobic conditions and S=1.5 for primarily aerobic conditions. See Umberger et al., (2002).");
+        "Scaling factor (S=1.0 for primarily anaerobic conditions and S=1.5 for primarily aerobic conditions. See Umberger et al., (2003).");
 
-    /** Default value = 1.51. **/
+    /** Default value = 1.2. **/
     OpenSim_DECLARE_PROPERTY(basal_coefficient, 
         double,
         "Basal metabolic coefficient.");
@@ -202,9 +203,9 @@ public:
     // Constructor(s) and Setup
     //--------------------------------------------------------------------------
     /** Default constructor */
-    MuscleMetabolicPowerProbeUmberger2003();
+    MuscleMetabolicPowerProbeUmberger2010();
     /** Convenience constructor */
-    MuscleMetabolicPowerProbeUmberger2003(bool activation_maintenance_rate_on, 
+    MuscleMetabolicPowerProbeUmberger2010(bool activation_maintenance_rate_on, 
         bool shortening_rate_on, bool basal_rate_on, bool work_rate_on);
 
 
@@ -238,11 +239,11 @@ private:
 
 
 //=============================================================================
-};	// END of class MuscleMetabolicPowerProbeUmberger2003
+};	// END of class MuscleMetabolicPowerProbeUmberger2010
 
 }; //namespace
 //=============================================================================
 //=============================================================================
 
 
-#endif // #ifndef OPENSIM_METABOLIC_POWER_PROBE_UMBERGER2003_H_
+#endif // #ifndef OPENSIM_METABOLIC_POWER_PROBE_UMBERGER2010_H_

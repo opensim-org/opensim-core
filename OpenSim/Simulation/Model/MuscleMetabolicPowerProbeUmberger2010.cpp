@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *            OpenSim:  MuscleMetabolicPowerProbeUmberger2003.cpp             *
+ *            OpenSim:  MuscleMetabolicPowerProbeUmberger2010.cpp             *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -25,7 +25,7 @@
 //=============================================================================
 // INCLUDES and STATICS
 //=============================================================================
-#include "MuscleMetabolicPowerProbeUmberger2003.h"
+#include "MuscleMetabolicPowerProbeUmberger2010.h"
 
 
 using namespace std;
@@ -40,7 +40,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-MuscleMetabolicPowerProbeUmberger2003::MuscleMetabolicPowerProbeUmberger2003() : Probe()
+MuscleMetabolicPowerProbeUmberger2010::MuscleMetabolicPowerProbeUmberger2010() : Probe()
 {
     setNull();
     constructProperties();
@@ -50,7 +50,7 @@ MuscleMetabolicPowerProbeUmberger2003::MuscleMetabolicPowerProbeUmberger2003() :
 /** 
  * Convenience constructor
  */
-MuscleMetabolicPowerProbeUmberger2003::MuscleMetabolicPowerProbeUmberger2003(bool activation_maintenance_rate_on, 
+MuscleMetabolicPowerProbeUmberger2010::MuscleMetabolicPowerProbeUmberger2010(bool activation_maintenance_rate_on, 
     bool shortening_rate_on, bool basal_rate_on, bool work_rate_on) : Probe()
 {
     setNull();
@@ -65,9 +65,9 @@ MuscleMetabolicPowerProbeUmberger2003::MuscleMetabolicPowerProbeUmberger2003(boo
 
 //_____________________________________________________________________________
 /**
- * Set the data members of this MuscleMetabolicPowerProbeUmberger2003 to their null values.
+ * Set the data members of this MuscleMetabolicPowerProbeUmberger2010 to their null values.
  */
-void MuscleMetabolicPowerProbeUmberger2003::setNull()
+void MuscleMetabolicPowerProbeUmberger2010::setNull()
 {
 	setAuthors("Tim Dorn");
 }
@@ -76,7 +76,7 @@ void MuscleMetabolicPowerProbeUmberger2003::setNull()
 /**
  * Connect properties to local pointers.
  */
-void MuscleMetabolicPowerProbeUmberger2003::constructProperties()
+void MuscleMetabolicPowerProbeUmberger2010::constructProperties()
 {
     constructProperty_activation_maintenance_rate_on(true);
     constructProperty_shortening_rate_on(true);
@@ -85,7 +85,7 @@ void MuscleMetabolicPowerProbeUmberger2003::constructProperties()
     constructProperty_enforce_minimum_heat_rate_per_muscle(true);
 
     constructProperty_scaling_factor(1.5);      // default value is for aerobic activities.
-    constructProperty_basal_coefficient(1.51);
+    constructProperty_basal_coefficient(1.2);   // default value for standing (Umberger, 2003, p105)
     constructProperty_basal_exponent(1.0);
     constructProperty_MetabolicMuscleParameterSet(MetabolicMuscleParameterSet());
 }
@@ -100,9 +100,9 @@ void MuscleMetabolicPowerProbeUmberger2003::constructProperties()
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aModel OpenSim model containing this MuscleMetabolicPowerProbeUmberger2003.
+ * @param aModel OpenSim model containing this MuscleMetabolicPowerProbeUmberger2010.
  */
-void MuscleMetabolicPowerProbeUmberger2003::connectToModel(Model& aModel)
+void MuscleMetabolicPowerProbeUmberger2010::connectToModel(Model& aModel)
 {
     // Connect all MetabolicMuscleParameter objects to the model as subcomponents
     for (int i=0; i<get_MetabolicMuscleParameterSet().getSize(); ++i) {
@@ -123,7 +123,7 @@ void MuscleMetabolicPowerProbeUmberger2003::connectToModel(Model& aModel)
  * Units = W.
  * Note: for muscle velocities, Vm, we define Vm<0 as shortening and Vm>0 as lengthening.
  */
-SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const State& s) const
+SimTK::Vector MuscleMetabolicPowerProbeUmberger2010::computeProbeInputs(const State& s) const
 {
     // Initialize metabolic energy rate values
     double AMdot, Sdot, Bdot, Wdot;
@@ -356,7 +356,7 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2003::computeProbeInputs(const St
 /** 
  * Returns the number of probe inputs in the vector returned by computeProbeInputs().
  */
-int MuscleMetabolicPowerProbeUmberger2003::getNumProbeInputs() const
+int MuscleMetabolicPowerProbeUmberger2010::getNumProbeInputs() const
 {
     return 1;
 }
@@ -366,7 +366,7 @@ int MuscleMetabolicPowerProbeUmberger2003::getNumProbeInputs() const
 /** 
  * Provide labels for the probe values being reported.
  */
-Array<string> MuscleMetabolicPowerProbeUmberger2003::getProbeOutputLabels() const 
+Array<string> MuscleMetabolicPowerProbeUmberger2010::getProbeOutputLabels() const 
 {
     Array<string> labels;
     labels.append(getName());
