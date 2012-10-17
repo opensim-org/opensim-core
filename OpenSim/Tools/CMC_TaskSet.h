@@ -102,6 +102,10 @@ public:
         throw OpenSim::Exception("CMC_TaskSet::operator=() not implemented");
         return *this;
     }
+    CMC_TaskSet(const CMC_TaskSet& aCMCTaskSet):
+	_dataFileName(_dataFileNameProp.getValueStr()) {
+        _propertySet = aCMCTaskSet.getPropertySet();
+    }
 
 private:
 	void setNull();
