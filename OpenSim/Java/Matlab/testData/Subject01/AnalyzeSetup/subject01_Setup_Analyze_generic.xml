@@ -1,79 +1,81 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<OpenSimDocument Version="20302">
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30000">
 	<AnalyzeTool name="subject01_walk1">
-		
-		<model_file> ../subject01_gait2392_scaled.osim</model_file>
-		
-		<replace_force_set> false </replace_force_set>
-		
-		<force_set_files>  </force_set_files>
-		
-		<results_directory> ../AnalyzeResults </results_directory>
-		
-		<output_precision> 8 </output_precision>
-		
-		<initial_time>       0.80000000 </initial_time>
-		
-		<final_time>       1.18000000 </final_time>
-		
-		<solve_for_equilibrium_for_auxiliary_states> false </solve_for_equilibrium_for_auxiliary_states>
-		
-		<maximum_number_of_integrator_steps> 20000 </maximum_number_of_integrator_steps>
-		
-		<maximum_integrator_step_size>       1.00000000 </maximum_integrator_step_size>
-		
-		<minimum_integrator_step_size>       0.00000001 </minimum_integrator_step_size>
-		
-		<integrator_error_tolerance>       0.00001000 </integrator_error_tolerance>
-		
+		<!--Name of the .osim file used to construct a model.-->
+		<model_file>../subject01_gait2392_scaled.osim</model_file>
+		<!--Replace the model's force set with sets specified in <force_set_files>? If false, the force set is appended to.-->
+		<replace_force_set>false</replace_force_set>
+		<!--List of xml files used to construct an force set for the model.-->
+		<force_set_files />
+		<!--Directory used for writing results.-->
+		<results_directory>../AnalyzeResults</results_directory>
+		<!--Output precision.  It is 8 by default.-->
+		<output_precision>8</output_precision>
+		<!--Initial time for the simulation.-->
+		<initial_time>0.8</initial_time>
+		<!--Final time for the simulation.-->
+		<final_time>1.18</final_time>
+		<!--Flag indicating whether or not to compute equilibrium values for states other than the coordinates or speeds.  For example, equilibrium muscle fiber lengths or muscle forces.-->
+		<solve_for_equilibrium_for_auxiliary_states>false</solve_for_equilibrium_for_auxiliary_states>
+		<!--Maximum number of integrator steps.-->
+		<maximum_number_of_integrator_steps>20000</maximum_number_of_integrator_steps>
+		<!--Maximum integration step size.-->
+		<maximum_integrator_step_size>1</maximum_integrator_step_size>
+		<!--Minimum integration step size.-->
+		<minimum_integrator_step_size>1e-008</minimum_integrator_step_size>
+		<!--Integrator error tolerance. When the error is greater, the integrator step size is decreased.-->
+		<integrator_error_tolerance>1e-005</integrator_error_tolerance>
+		<!--Set of analyses to be run during the investigation.-->
 		<AnalysisSet name="Analyses">
 			<objects>
 				<Kinematics name="Kinematics">
-					
-					<on> true </on>
-					
-					<start_time> -infinity </start_time>
-					
-					<end_time> infinity </end_time>
-					
-					<step_interval> 10 </step_interval>
-					
-					<in_degrees> true </in_degrees>
-					
-					<coordinates> all </coordinates>
+					<!--Flag (true or false) specifying whether whether on. True by default.-->
+					<on>true</on>
+					<!--Start time.-->
+					<start_time>-Inf</start_time>
+					<!--End time.-->
+					<end_time>Inf</end_time>
+					<!--Specifies how often to store results during a simulation. More specifically, the interval (a positive integer) specifies how many successful integration steps should be taken before results are recorded again.-->
+					<step_interval>10</step_interval>
+					<!--Flag (true or false) indicating whether the results are in degrees or not.-->
+					<in_degrees>true</in_degrees>
+					<!--Names of generalized coordinates to record kinematics for.  Use 'all' to record all coordinates.-->
+					<coordinates> all</coordinates>
 				</Kinematics>
 				<MuscleAnalysis name="MuscleAnalysis">
-					
-					<on> true </on>
-					
-					<start_time> -infinity </start_time>
-					
-					<end_time> infinity </end_time>
-					
-					<step_interval> 1 </step_interval>
-					
-					<in_degrees> true </in_degrees>
-					
-					<muscle_list> all </muscle_list>
-					
-					<moment_arm_coordinate_list>  </moment_arm_coordinate_list>
-					
-					<compute_moments> false </compute_moments>
+					<!--Flag (true or false) specifying whether whether on. True by default.-->
+					<on>true</on>
+					<!--Start time.-->
+					<start_time>-Inf</start_time>
+					<!--End time.-->
+					<end_time>Inf</end_time>
+					<!--Specifies how often to store results during a simulation. More specifically, the interval (a positive integer) specifies how many successful integration steps should be taken before results are recorded again.-->
+					<step_interval>1</step_interval>
+					<!--Flag (true or false) indicating whether the results are in degrees or not.-->
+					<in_degrees>true</in_degrees>
+					<!--List of muscles for which to perform the analysis. Use 'all' to perform the analysis for all muscles.-->
+					<muscle_list> all</muscle_list>
+					<!--List of generalized coordinates for which to compute moment arms. Use 'all' to compute for all coordinates.-->
+					<moment_arm_coordinate_list />
+					<!--Flag indicating whether moments should be computed.-->
+					<compute_moments>false</compute_moments>
 				</MuscleAnalysis>
 			</objects>
-			<groups></groups>
+			<groups />
 		</AnalysisSet>
-		
-		<ControllerSet></ControllerSet>
-		
-		<external_loads_file> </external_loads_file>
-		
-		<states_file>  </states_file>
-		
-		<coordinates_file> ../subject01_walk1_ik.mot </coordinates_file>
-		
-		<speeds_file>  </speeds_file>
-		
-		<lowpass_cutoff_frequency_for_coordinates>      -1.00000000 </lowpass_cutoff_frequency_for_coordinates>
+		<!--Controller objects in the model.-->
+		<ControllerSet>
+			<!--All properties of this object have their default values.-->
+		</ControllerSet>
+		<!--XML file (.xml) containing the forces applied to the model as ExternalLoads.-->
+		<external_loads_file />
+		<!--Storage file (.sto) containing the time history of states for the model. This file often contains multiple rows of data, each row being a time-stamped array of states. The first column contains the time.  The rest of the columns contain the states in the order appropriate for the model. In a storage file, unlike a motion file (.mot), non-uniform time spacing is allowed.  If the user-specified initial time for a simulation does not correspond exactly to one of the time stamps in this file, inerpolation is NOT used because it is sometimes necessary to an exact set of states for analyses.  Instead, the closest earlier set of states is used.-->
+		<states_file />
+		<!--Motion file (.mot) or storage file (.sto) containing the time history of the generalized coordinates for the model. These can be specified in place of the states file.-->
+		<coordinates_file>../subject01_walk1_ik.mot</coordinates_file>
+		<!--Storage file (.sto) containing the time history of the generalized speeds for the model. If coordinates_file is used in place of states_file, these can be optionally set as well to give the speeds. If not specified, speeds will be computed from coordinates by differentiation.-->
+		<speeds_file />
+		<!--Low-pass cut-off frequency for filtering the coordinates_file data (currently does not apply to states_file or speeds_file). A negative value results in no filtering. The default value is -1.0, so no filtering.-->
+		<lowpass_cutoff_frequency_for_coordinates>-1</lowpass_cutoff_frequency_for_coordinates>
 	</AnalyzeTool>
 </OpenSimDocument>
