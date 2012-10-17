@@ -93,22 +93,16 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 		
 		// Store and print the results of a "random sample"
 		if( stepCount == 23 ){
-			Storage statesDegrees(manager.getStateStorage());
-			osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
-			statesDegrees.print("Arm26_randomSample_states_degrees.sto");
+			manager.getStateStorage().print("Arm26_randomSample_states.sto");
 		}
 		// Store and print the  results of the first step.
 		else if( stepCount == 1){ 
-			Storage statesDegrees(manager.getStateStorage());
-			osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
-			statesDegrees.print("Arm26_noActivation_states_degrees.sto");
+			manager.getStateStorage().print("Arm26_noActivation_states.sto");
 		}
 		// Use an if statement to only store and print the results of an 
 		//  optimization step if it is better than a previous result.
 		else if( f < bestSoFar){
-			Storage statesDegrees(manager.getStateStorage());
-			osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
-			statesDegrees.print("Arm26_bestSoFar_states_degrees.sto");
+			manager.getStateStorage().print("Arm26_bestSoFar_states.sto");
 			bestSoFar = f;
 			cout << "\nOptimization Step #: " << stepCount << "  controls = " << newControls <<  " bestSoFar = " << f << std::endl;
 		}		    
@@ -144,8 +138,7 @@ int main()
      	for(int i=0; i< muscleSet.getSize(); i++ ){
 			ActivationFiberLengthMuscle* mus = dynamic_cast<ActivationFiberLengthMuscle*>(&muscleSet[i]);
 			if(mus){
-				mus->setDefaultActivation(0.5);
-				mus->setDefaultFiberLength(0.1);
+				mus->setDefaultActivation(0.05);
 			}
 		}
 
@@ -174,21 +167,22 @@ int main()
 		//Optimizer opt(sys, InteriorPoint);
 
 		// Specify settings for the optimizer
-		opt.setConvergenceTolerance(0.2);
+		opt.setConvergenceTolerance(0.01);
 		opt.useNumericalGradient(true);
 		opt.setMaxIterations(1000);
 		opt.setLimitedMemoryHistory(500);
 			
 		// Optimize it!
 		f = opt.optimize(controls);
-	
-		// osimModel.print("optimization_model_ARM.osim");
-		cout << "Elapsed time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms" << endl;
+			
+		cout << "Elapsed time = " << (std::clock()-startTime)/CLOCKS_PER_SEC << "s" << endl;
 		
 		const Set<Actuator>& actuators = osimModel.getActuators();
 		for(int i=0; i<actuators.getSize(); ++i){
 			cout << actuators[i].getName() << " control value = " << controls[i] << endl;
 		}
+
+		cout << "\nMaximum hand velocity = " << -f << "m/s" << endl;
 
         cout << "OpenSim example completed successfully.\n";
 	}
