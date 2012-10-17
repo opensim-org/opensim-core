@@ -108,7 +108,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
 	const CoordinateSet &modelCoordSet = getModel().getCoordinateSet();
 
 	// Restrict solution to set range of any of the coordinates that are clamped
-/*	for(int i=0; i<modelCoordSet.getSize(); ++i){
+	for(int i=0; i<modelCoordSet.getSize(); ++i){
 		const Coordinate& coord = modelCoordSet[i];
 		if(coord.getClamped(s)){
 			_assembler->restrictQ(coord.getBodyIndex(), 
@@ -116,7 +116,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
 				coord.getRangeMin(), coord.getRangeMax());
 		}
 	}
-*/
+
 	SimTK::Array_<CoordinateReference>::iterator p;
 
 	// Cycle through coordinate references

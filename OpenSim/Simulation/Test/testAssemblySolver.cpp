@@ -30,7 +30,6 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Simulation/Control/ControlSetController.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ConstraintSet.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
@@ -45,6 +44,7 @@ void testAssembleModelWithConstraints(string modelFile);
 int main()
 {
 	try {
+		LoadOpenSimLibrary("osimActuators");
 		testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");
 		testAssembleModelWithConstraints("PushUpToesOnGroundLessPreciseConstraints.osim");
 		testAssembleModelWithConstraints("PushUpToesOnGroundWithMuscles.osim");
@@ -140,8 +140,8 @@ void testAssembleModelWithConstraints(string modelFile)
     Vector y4 = state2.getY();
     for (int i = 0; i < y1.size(); i++) 
     {
-        ASSERT_EQUAL(y1[i], y3[i], 1e-5, __FILE__, __LINE__, "Initial state changed after 2nd call to initSystem");
-        ASSERT_EQUAL(y2[i], y4[i], 1e-5,__FILE__, __LINE__, "State differed after 2nd simulation from same init state.");
+        ASSERT_EQUAL(y1[i], y3[i], 1e-4, __FILE__, __LINE__, "Initial state changed after 2nd call to initSystem");
+        ASSERT_EQUAL(y2[i], y4[i], 1e-4, __FILE__, __LINE__, "State differed after 2nd simulation from same init state.");
     }
-    ASSERT(max(abs(y1-y2)) > 1e-4);
+    ASSERT(max(abs(y1-y2)) > 1e-3, __FILE__, __LINE__, "Check that state changed after simulation FAILED");
 }
