@@ -145,8 +145,9 @@ int main()
 	ASSERT_EQUAL(.315748, length2, 1e-5);
     // Test that we can lock coordinates to specific value and make this persistant.
     Coordinate& dr_elbow_flex_mod = model->updCoordinateSet().get("r_elbow_flex");
-    dr_elbow_flex_mod.setDefaultValue(0.5);
+    //dr_elbow_flex_mod.setDefaultValue(0.5);
  	dr_elbow_flex_mod.setDefaultLocked(true);
+    context->setValue(dr_elbow_flex_mod, 0.5);
     //model->print("wrist_locked_elbow.osim");
     context->recreateSystemKeepStage();
 	const Coordinate& dr_elbow_flexNew = model->getCoordinateSet().get("r_elbow_flex");
