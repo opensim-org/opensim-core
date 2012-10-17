@@ -16,7 +16,7 @@
  *                                                                            *
  * Unless required by applicable law or agreed to in writing, software        *
  * distributed under the License is distributed on an "AS IS" BASIS,          *
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied    *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
@@ -93,22 +93,16 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 		
 		// Store and print the results of a "random sample"
 		if( stepCount == 23 ){
-			Storage statesDegrees(manager.getStateStorage());
-			osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
-			statesDegrees.print("Arm26_randomSample_states_degrees.sto");
+			manager.getStateStorage().print("Arm26_randomSample_states.sto");
 		}
 		// Store and print the  results of the first step.
 		else if( stepCount == 1){ 
-			Storage statesDegrees(manager.getStateStorage());
-			osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
-			statesDegrees.print("Arm26_noActivation_states_degrees.sto");
+			manager.getStateStorage().print("Arm26_noActivation_states.sto");
 		}
 		// Use an if statement to only store and print the results of an 
 		//  optimization step if it is better than a previous result.
 		else if( f < bestSoFar){
-			Storage statesDegrees(manager.getStateStorage());
-			osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
-			statesDegrees.print("Arm26_bestSoFar_states_degrees.sto");
+			manager.getStateStorage().print("Arm26_bestSoFar_states.sto");
 			bestSoFar = f;
 			cout << "\nOptimization Step #: " << stepCount << "  controls = " << newControls <<  " bestSoFar = " << f << std::endl;
 		}		    
@@ -136,44 +130,15 @@ int main()
 		// Create a new OpenSim model
 		Model osimModel("Arm26_Optimize.osim");
 		
+		
 		// Initialize the system and get the state representing the state system
 		
-		// Define the initial and final controls
-		ControlLinear *control_TRIlong = new ControlLinear();
-		ControlLinear *control_TRIlat = new ControlLinear();
-		ControlLinear *control_TRImed = new ControlLinear();
-		ControlLinear *control_BIClong = new ControlLinear();
-		ControlLinear *control_BICshort = new ControlLinear();
-		ControlLinear *control_BRA = new ControlLinear(); 
-  
-		/* NOTE: Each contoller must be set to the corresponding 
-		* muscle name in the model file. */
-		control_TRIlong->setName("TRIlong"); control_TRIlat->setName("TRIlat"); 
-		control_TRImed->setName("TRImed"); control_BIClong->setName("BIClong");
-		control_BICshort->setName("BICshort"); control_BRA->setName("BRA"); 
-  
-		ControlSet *muscleControls = new ControlSet();
-		muscleControls->adoptAndAppend(control_TRIlong);
-		muscleControls->adoptAndAppend(control_TRIlat);
-		muscleControls->adoptAndAppend(control_TRImed);
-		muscleControls->adoptAndAppend(control_BIClong);
-		muscleControls->adoptAndAppend(control_BICshort);
-		muscleControls->adoptAndAppend(control_BRA); 
-  
-		ControlSetController *muscleController = new ControlSetController();
-		muscleController->setControlSet(muscleControls);
-		muscleController->setName("MuscleController"); 
-  
-		// Add the controller to the model
-		osimModel.addController(muscleController); 
-
 		// Define the initial muscle states
 		const Set<Muscle> &muscleSet = osimModel.getMuscles();
      	for(int i=0; i< muscleSet.getSize(); i++ ){
 			ActivationFiberLengthMuscle* mus = dynamic_cast<ActivationFiberLengthMuscle*>(&muscleSet[i]);
 			if(mus){
-				mus->setDefaultActivation(0.5);
-				mus->setDefaultFiberLength(0.1);
+				mus->setDefaultActivation(0.05);
 			}
 		}
 
@@ -202,21 +167,22 @@ int main()
 		//Optimizer opt(sys, InteriorPoint);
 
 		// Specify settings for the optimizer
-		opt.setConvergenceTolerance(0.2);
+		opt.setConvergenceTolerance(0.01);
 		opt.useNumericalGradient(true);
 		opt.setMaxIterations(1000);
 		opt.setLimitedMemoryHistory(500);
 			
 		// Optimize it!
 		f = opt.optimize(controls);
-	
-		osimModel.print("optimization_model_ARM.osim");
-		cout << "Elapsed time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms" << endl;
+			
+		cout << "Elapsed time = " << (std::clock()-startTime)/CLOCKS_PER_SEC << "s" << endl;
 		
 		const Set<Actuator>& actuators = osimModel.getActuators();
 		for(int i=0; i<actuators.getSize(); ++i){
 			cout << actuators[i].getName() << " control value = " << controls[i] << endl;
 		}
+
+		cout << "\nMaximum hand velocity = " << -f << "m/s" << endl;
 
         cout << "OpenSim example completed successfully.\n";
 	}
