@@ -27,7 +27,8 @@ FILE(GLOB TEST_FILES
 	${EXAMPLE_DIR}/*.osim 
 	${EXAMPLE_DIR}/*.xml 
 	${EXAMPLE_DIR}/*.sto 
-	${EXAMPLE_DIR}/*.mot)
+	${EXAMPLE_DIR}/*.mot
+	*.obj *.osim *.xml *.sto *.mot)
 
 #
 # Copy files to run dir
