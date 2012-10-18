@@ -49,13 +49,13 @@ int main()
 		// Create a new OpenSim model
 		Model osimModel;
 		osimModel.setName("osimModel");
+		osimModel.setAuthors("Matt DeMers");
 
 		double Pi = SimTK::Pi;
-		
-		
+			
 		// Get the ground body
 		OpenSim::Body& ground = osimModel.getGroundBody();
-		ground.addDisplayGeometry("checker_ground.vtp");
+		ground.addDisplayGeometry("checkered_floor.vtp");
 
 		// create linkage body
 		double linkageMass = 0.001, linkageLength = 0.5, linkageDiameter = 0.06;

@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<OpenSimDocument Version="30000">
+<OpenSimDocument Version="20303">
 	<Model name="osimModel">
-		<!--See the credits section below for information about this model's authors, data sources, intended uses, and more.
-		See the publications section for the paper(s) you should cite when using this model. Do not remove either section if you modify or add to this model.
-		If you are this model's author(s), add or update the credits and publications sections before distributing your model.-->
-		<credits>Frank Anderson, Peter Loan, Ayman Habib, Ajay Seth, Michael Sherman</credits>
+		<credits>Matt DeMers</credits>
 		<publications>Unassigned</publications>
 		<length_units>meters</length_units>
 		<force_units>N</force_units>
@@ -30,7 +27,7 @@
 							<objects>
 								<DisplayGeometry>
 									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file>checker_ground.vtp</geometry_file>
+									<geometry_file>checkered_floor.vtp</geometry_file>
 									<!--Color used to display the geometry when visible-->
 									<color> 1 1 1</color>
 									<!--Name of texture file .jpg, .bmp-->
