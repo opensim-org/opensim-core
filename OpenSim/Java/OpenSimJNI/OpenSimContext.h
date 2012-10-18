@@ -96,6 +96,7 @@ public:
 	void computeConstrainedCoordinates( double statesBuffer[]);
 	void getStates( double statesBuffer[]);
 	void getStates( Array<double>&  rStates);
+    const SimTK::State& getCurrentStateRef() const { return (*_configState); };
         void recreateSystemAfterSystemExistsKeepStage(); 
         void recreateSystemAfterSystemExists(); 
 
