@@ -322,8 +322,8 @@ bool InverseKinematicsTool::run()
                         Constant reference(Constant(coordTask->getValue()));
 						coordRef = new CoordinateReference(coordTask->getName(), reference);
 				}
-				else{ // assume it should be held at its current/default value
-					double value = _model->getCoordinateSet().get(coordTask->getName()).getValue(s);
+				else{ // assume it should be held at its default value
+					double value = _model->getCoordinateSet().get(coordTask->getName()).getDefaultValue();
 					Constant reference = Constant(value);
 					coordRef = new CoordinateReference(coordTask->getName(), reference);
 				}
