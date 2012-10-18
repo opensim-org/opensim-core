@@ -38,11 +38,11 @@ int main() {
 	//Object::renameType("Thelen2003Muscle", "Millard2012AccelerationMuscle");
 	//Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
     SimTK::Array_<std::string> failures;
-
+/*
     try {testGait2354();}
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testGait2354"); }
-
+*/
     try {testRunningModel();}
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testRunningModel"); }

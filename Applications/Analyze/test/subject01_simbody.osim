@@ -224,6 +224,10 @@
 							</CoordinateSet>
 							<!--Whether the joint transform defines parent->child or child->parent.-->
 							<reverse>false</reverse>
+							<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+							<SpatialTransform>
+								<!--All properties of this object have their default values.-->
+							</SpatialTransform>
 						</CustomJoint>
 					</Joint>
 					<VisibleObject>
@@ -371,6 +375,10 @@
 							</CoordinateSet>
 							<!--Whether the joint transform defines parent->child or child->parent.-->
 							<reverse>false</reverse>
+							<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+							<SpatialTransform>
+								<!--All properties of this object have their default values.-->
+							</SpatialTransform>
 						</CustomJoint>
 					</Joint>
 					<VisibleObject>
@@ -454,6 +462,10 @@
 							</CoordinateSet>
 							<!--Whether the joint transform defines parent->child or child->parent.-->
 							<reverse>false</reverse>
+							<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+							<SpatialTransform>
+								<!--All properties of this object have their default values.-->
+							</SpatialTransform>
 						</CustomJoint>
 					</Joint>
 					<VisibleObject>
@@ -553,6 +565,10 @@
 							</CoordinateSet>
 							<!--Whether the joint transform defines parent->child or child->parent.-->
 							<reverse>false</reverse>
+							<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+							<SpatialTransform>
+								<!--All properties of this object have their default values.-->
+							</SpatialTransform>
 						</CustomJoint>
 					</Joint>
 					<VisibleObject>
@@ -636,6 +652,10 @@
 							</CoordinateSet>
 							<!--Whether the joint transform defines parent->child or child->parent.-->
 							<reverse>false</reverse>
+							<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+							<SpatialTransform>
+								<!--All properties of this object have their default values.-->
+							</SpatialTransform>
 						</CustomJoint>
 					</Joint>
 					<VisibleObject>
@@ -719,6 +739,10 @@
 							</CoordinateSet>
 							<!--Whether the joint transform defines parent->child or child->parent.-->
 							<reverse>false</reverse>
+							<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+							<SpatialTransform>
+								<!--All properties of this object have their default values.-->
+							</SpatialTransform>
 						</CustomJoint>
 					</Joint>
 					<VisibleObject>
@@ -834,6 +858,10 @@
 							</CoordinateSet>
 							<!--Whether the joint transform defines parent->child or child->parent.-->
 							<reverse>false</reverse>
+							<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+							<SpatialTransform>
+								<!--All properties of this object have their default values.-->
+							</SpatialTransform>
 						</CustomJoint>
 					</Joint>
 					<VisibleObject>
@@ -917,6 +945,10 @@
 							</CoordinateSet>
 							<!--Whether the joint transform defines parent->child or child->parent.-->
 							<reverse>false</reverse>
+							<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+							<SpatialTransform>
+								<!--All properties of this object have their default values.-->
+							</SpatialTransform>
 						</CustomJoint>
 					</Joint>
 					<VisibleObject>
@@ -1016,6 +1048,10 @@
 							</CoordinateSet>
 							<!--Whether the joint transform defines parent->child or child->parent.-->
 							<reverse>false</reverse>
+							<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+							<SpatialTransform>
+								<!--All properties of this object have their default values.-->
+							</SpatialTransform>
 						</CustomJoint>
 					</Joint>
 					<VisibleObject>
@@ -1099,6 +1135,10 @@
 							</CoordinateSet>
 							<!--Whether the joint transform defines parent->child or child->parent.-->
 							<reverse>false</reverse>
+							<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+							<SpatialTransform>
+								<!--All properties of this object have their default values.-->
+							</SpatialTransform>
 						</CustomJoint>
 					</Joint>
 					<VisibleObject>
@@ -1182,6 +1222,10 @@
 							</CoordinateSet>
 							<!--Whether the joint transform defines parent->child or child->parent.-->
 							<reverse>false</reverse>
+							<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+							<SpatialTransform>
+								<!--All properties of this object have their default values.-->
+							</SpatialTransform>
 						</CustomJoint>
 					</Joint>
 					<VisibleObject>
@@ -1297,6 +1341,10 @@
 							</CoordinateSet>
 							<!--Whether the joint transform defines parent->child or child->parent.-->
 							<reverse>false</reverse>
+							<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+							<SpatialTransform>
+								<!--All properties of this object have their default values.-->
+							</SpatialTransform>
 						</CustomJoint>
 					</Joint>
 					<VisibleObject>
