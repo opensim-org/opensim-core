@@ -34,6 +34,10 @@ IF(BUILD_USING_NAMESPACE)
     SET(NameSpace "${BUILD_USING_NAMESPACE}_")
 ENDIF(BUILD_USING_NAMESPACE)
 
+# Specify number of cores to run for build
+SET(PROCESSOR_COUNT 8 CACHE STRING "Number of processors in the CPU")
+MARK_AS_ADVANCED(PROCESSOR_COUNT)
+
 # This will be initialized to the environment variable of the same name
 # if it is set, otherwise it will be empty.
 SET(SimTK_INSTALL_DIR $ENV{SimTK_INSTALL_DIR} CACHE
@@ -447,6 +451,17 @@ ENDIF(WIN32)
 ## The following are required to uses Dart and the Cdash dashboard per Jesse
 ENABLE_TESTING()
 INCLUDE(CTest)
+
+# Sets the number of CPUs testing would use
+SET (cmd ${CMAKE_CTEST_COMMAND} -j${PROCESSOR_COUNT})
+IF (MSVC)
+    SET (cmd ${cmd} -C ${CMAKE_CFG_INTDIR})
+ELSE (MSVC)
+    SET (cmd ${cmd} -C ${CMAKE_BUILD_TYPE})
+ENDIF (MSVC)
+ADD_CUSTOM_TARGET (RUN_TESTS_PARALLEL
+    COMMAND ${cmd}
+)
 
 ## This adds a target "doxygen" for building the doxygen docs, as well as 
 ## an INSTALL procedure.
