@@ -46,7 +46,7 @@ using namespace std;
 
 // up version to 20301 for separation of RRATool, CMCTool
 // up version to 20302 for Muscle's pennation_angle -> pennation_angle_at_optimal
-const int XMLDocument::LatestVersion = 20303;	
+const int XMLDocument::LatestVersion = 30000;	
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
