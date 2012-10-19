@@ -96,6 +96,7 @@ public:
 	void computeConstrainedCoordinates( double statesBuffer[]);
 	void getStates( double statesBuffer[]);
 	void getStates( Array<double>&  rStates);
+    const SimTK::State& getCurrentStateRef() const { return (*_configState); };
         void recreateSystemAfterSystemExistsKeepStage(); 
         void recreateSystemAfterSystemExists(); 
 
@@ -204,7 +205,9 @@ public:
      */
     void recreateSystemKeepStage() {
         SimTK::Stage stageBeforeRecreatingSystem = _configState->getSystemStage();
+        SimTK::Vector y1 = _configState->getY();
         SimTK::State* newState = &_model->initSystem();
+        newState->updY() = y1;
         setState( newState );
         _model->getMultibodySystem().realize( *_configState, stageBeforeRecreatingSystem );
     }
