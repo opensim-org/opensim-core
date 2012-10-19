@@ -99,7 +99,12 @@ public:
     const SimTK::State& getCurrentStateRef() const { return (*_configState); };
         void recreateSystemAfterSystemExistsKeepStage(); 
         void recreateSystemAfterSystemExists(); 
-
+        void resetStateToDefault() {
+             SimTK::Stage stageBeforeRecreatingSystem = _configState->getSystemStage();
+             SimTK::State* newState = &_model->initSystem();
+             setState( newState );
+            _model->getMultibodySystem().realize( *_configState, stageBeforeRecreatingSystem );
+        }
 	// Transforms
     void transformPosition(const Body& body, double offset[], double gOffset[]);
     Transform getTransform(const Body& body);
