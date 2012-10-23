@@ -26,10 +26,6 @@ using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
 
-static const double DegreesToRadians = SimTK::Pi/180.0;
-
-
-
 //=============================================================================
 // CONSTRUCTION, COPY CONSTRUCTION, ASSIGNMENT
 //=============================================================================
@@ -95,8 +91,7 @@ void FiberCompressiveForceCosPennationCurve::buildCurve()
     double k     =  m_stiffnessAtPerpendicularInUse;
     double c     =  m_curvinessInUse;        
 
-    double cosAngle = cos(angle*DegreesToRadians);
-
+    double cosAngle = cos(angle*Pi/180.0);
     //Here's where you call the SmoothSegmentedFunctionFactory
     SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
         createFiberCompressiveForceCosPennationCurve(   cosAngle,
@@ -120,7 +115,7 @@ void FiberCompressiveForceCosPennationCurve::ensureCurveUpToDate()
             getProperty_curviness().empty() == true)
         {
             double eAngleRad = get_engagement_angle_in_degrees()
-                              *DegreesToRadians;
+                              *Pi/180.0;
 
             m_stiffnessAtPerpendicularInUse= -2.0/cos(eAngleRad); 
             m_curvinessInUse = 0.1;
