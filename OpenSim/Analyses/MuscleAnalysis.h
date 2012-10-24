@@ -220,7 +220,8 @@ public:
 	bool getComputeMoments() const {
 		return _computeMoments;
 	}
-	//const ArrayPtrs<StorageCoordinatePair>& getMomentArmStorageArray() const { return _momentArmStorageArray; }
+
+	const ArrayPtrs<StorageCoordinatePair>& getMomentArmStorageArray() const { return _momentArmStorageArray; }
 
 	//--------------------------------------------------------------------------
 	// ANALYSIS

@@ -651,15 +651,12 @@ int MuscleAnalysis::record(const SimTK::State& s)
 			maStore = _momentArmStorageArray[i]->momentArmStore;
 			mStore = _momentArmStorageArray[i]->momentStore;
 	       
-			// Make a writable copy of the state so moment arm can be computed
-			SimTK::State tempState = s;
+			bool locked = q->getLocked(s);
 
-			bool locked = q->getLocked(tempState);
-
-			_model->getMultibodySystem().realize(tempState, s.getSystemStage());
+			_model->getMultibodySystem().realize(s, s.getSystemStage());
 			// LOOP OVER MUSCLES
 			for(int j=0; j<nm; j++) {
-				ma[j] = _muscleArray[j]->computeMomentArm(tempState,*q);
+				ma[j] = _muscleArray[j]->computeMomentArm(s,*q);
 				m[j] = ma[j] * force[j];
 			}
 			maStore->append(s.getTime(),nm,&ma[0]);
