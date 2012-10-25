@@ -8,24 +8,24 @@
 		<ForceSet name="">
 			<objects>
 			
-				<BodyDrag name="sphere1_drag">
+				<BodyDragForce name="sphere1_drag">
 					<body_name> sphere1 </body_name>
 					<coefficient> 0 </coefficient>
 					<exponent> 2 </exponent>
-				</BodyDrag>
+				</BodyDragForce>
 				
-				<BodyDrag name="sphere2_drag">
+				<BodyDragForce name="sphere2_drag">
 					<body_name> sphere2 </body_name>
 					<coefficient> 0.7 </coefficient>
 					<exponent> 2 </exponent>
-				</BodyDrag>
+				</BodyDragForce>
 				
-				<BodyDrag name="sphere3_drag">
+				<BodyDragForce name="sphere3_drag">
 					<body_name> sphere3 </body_name>
 					<coefficient> 1.4 </coefficient>
 					<exponent> 2 </exponent>
-					
-				</BodyDrag>
+				</BodyDragForce>
+				
 			</objects>
 			<groups/>
 		</ForceSet>

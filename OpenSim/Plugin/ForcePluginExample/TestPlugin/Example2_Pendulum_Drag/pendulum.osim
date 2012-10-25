@@ -9,11 +9,11 @@
 		<ForceSet name="">
 			<objects>
 			
-				<BodyDrag name="pend_drag">
+				<BodyDragForce name="pend_drag">
 					<body_name> pend </body_name>
 					<coefficient> 0.3 </coefficient>
 					<exponent> 2 </exponent>
-				</BodyDrag>
+				</BodyDragForce>
 				
 			</objects>
 			<groups/>
