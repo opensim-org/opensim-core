@@ -1,13 +1,36 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="30000">
 	<Model name="Three Masses">
-		<!--See the credits section below for information about this model's authors, data sources, intended uses, and more.
-		See the publications section for the paper(s) you should cite when using this model. Do not remove either section if you modify or add to this model.
-		If you are this model's author(s), add or update the credits and publications sections before distributing your model.-->
-		<credits>Tim Dorn</credits>
-		<publications>List of publications related to model...</publications>
-		<length_units>meters</length_units>
-		<force_units>N</force_units>
+		<defaults>
+		</defaults>
+		<credits> Tim Dorn </credits>
+		<publications> List of publications related to model... </publications>
+		<ForceSet name="">
+			<objects>
+			
+				<BodyDragForce name="sphere1_drag">
+					<body_name> sphere1 </body_name>
+					<coefficient> 0 </coefficient>
+					<exponent> 2 </exponent>
+				</BodyDragForce>
+				
+				<BodyDragForce name="sphere2_drag">
+					<body_name> sphere2 </body_name>
+					<coefficient> 0.7 </coefficient>
+					<exponent> 2 </exponent>
+				</BodyDragForce>
+				
+				<BodyDragForce name="sphere3_drag">
+					<body_name> sphere3 </body_name>
+					<coefficient> 1.4 </coefficient>
+					<exponent> 2 </exponent>
+				</BodyDragForce>
+				
+			</objects>
+			<groups/>
+		</ForceSet>
+		<length_units> meters </length_units>
+		<force_units> N </force_units>
 		<!--Acceleration due to gravity.-->
 		<gravity> 0 -9.80665 0</gravity>
 		<!--Bodies in the model.-->

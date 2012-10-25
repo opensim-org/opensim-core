@@ -1,4 +1,4 @@
-Project(BodyDrag)
+Project(BodyDragForce)
 
 cmake_minimum_required(VERSION 2.6)
 if(COMMAND cmake_policy)
@@ -9,7 +9,7 @@ endif(COMMAND cmake_policy)
 SET(KIT plugin)
 SET(UKIT PLUGIN)
 
-SET(NameSpace "")
+SET(NameSpace "OpenSim_")
 
 FILE(GLOB SOURCE_FILES *.cpp)
 FILE(GLOB INCLUDE_FILES *.h)
@@ -22,7 +22,7 @@ SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 SET(OPENSIM_INSTALL_DIR "C:/Program Files (x86)/OpenSim 3.0/" CACHE PATH 
     "Top-level directory of OpenSim install")
 
-SET(PLUGIN_NAME "BodyDrag" CACHE STRING "Name of shared library to create")
+SET(PLUGIN_NAME "BodyDragForce" CACHE STRING "Name of shared library to create")
 
 ### HEADERS
 SET(OPENSIM_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include)

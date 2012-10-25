@@ -25,7 +25,7 @@
 #include <OpenSim/Common/Object.h>
 #include "RegisterTypes_osimPlugin.h"
 
-#include "BodyDrag.h"
+#include "BodyDragForce.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -39,7 +39,7 @@ static dllObjectInstantiator instantiator;
  */
 OSIMPLUGIN_API void RegisterTypes_osimPlugin()
 {
-	Object::RegisterType( BodyDrag() );
+	Object::RegisterType( BodyDragForce() );
 }
 
 dllObjectInstantiator::dllObjectInstantiator() 
