@@ -41,7 +41,7 @@ int main()
 	try {
 		LoadOpenSimLibrary("osimActuators");
 		testCopyModel("arm26.osim");
-		testCopyModel("snowboard.osim");
+		//testCopyModel("snowboard.osim");
 		testCopyModel("Neck3dof_point_constraint.osim");
 	}
 	catch (const Exception& e) {
