@@ -62,7 +62,6 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MuscleAnalysis, Analysis);
 // DATA
 //=============================================================================
 public:
-#ifndef SWIG
 	// STRUCT FOR PAIRING MOMENT ARM STORAGE OBJECTS WITH THEIR
 	// ASSOCIATE GENERALIZED COORDINATE
 	typedef struct {
@@ -75,8 +74,6 @@ public:
 
 	StorageCoordinatePair;
 	/// @endcond
-
-#endif
 private:
 
 	/** List of muscles for which to compute moment arms. */

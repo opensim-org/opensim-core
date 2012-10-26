@@ -31,7 +31,7 @@ that uses the OpenSim API. **/
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
-
+#ifndef SWIG
 namespace SimTK {
 
 //==============================================================================
@@ -50,10 +50,8 @@ public:
         _dispContactOpacity = 0.75;
         _dispContactResolution = 2.0;
     }
-
-    void generateDecorations(const SimTK::State& state, 
+     void generateDecorations(const SimTK::State& state, 
                              SimTK::Array_<SimTK::DecorativeGeometry>& geometry);
-
     double getDispMarkerRadius() {return _dispMarkerRadius;}
     void   setDispMarkerRadius(double a) {_dispMarkerRadius=a;}
     double getDispMarkerOpacity() {return _dispMarkerOpacity;}
@@ -82,6 +80,7 @@ private:
 };
 
 }
+#endif
 
 namespace OpenSim {
 
