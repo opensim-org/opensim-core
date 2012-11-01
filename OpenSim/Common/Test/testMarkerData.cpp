@@ -62,7 +62,7 @@ int main() {
 		ASSERT(md.getCameraRate()==250., __FILE__, __LINE__);
 		//ToBeTested md.convertToUnits(Units(Units::Meters));
 
-		MarkerData md2("Run_500 02.trc");
+		MarkerData md2("testNaNsParsing.trc");
 		double expectedData[] = {1006.513977, 1014.924316,-195.748917};
 		const MarkerFrame& frame2 = md2.getFrame(1);
 		ASSERT(frame2.getFrameTime()==.01, __FILE__, __LINE__);
@@ -74,7 +74,7 @@ int main() {
 		SimTK::Vec3 diff = (markers[1]-SimTK::Vec3(expectedData[0], expectedData[1], expectedData[2]));
 		ASSERT(diff.norm() < 1e-7, __FILE__, __LINE__);
 
-		MarkerData md3("chris_mri-prot-writing-trial-11-twosheet-right.trc");
+		MarkerData md3("testEformatParsing.trc");
 		double expectedData3[] = {-1.52E-01,	2.45E-01,	-1.71E+00};
 		const MarkerFrame& frame3 = md3.getFrame(0);
 		const SimTK::Array_<SimTK::Vec3>& markers3 = frame3.getMarkers();
