@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="20303">
-	<AnalyzeTool name="">
+	<AnalyzeTool name="BothLegs">
 		<!--Name of the .osim file used to construct a model.-->
 		<model_file>BothLegs.osim </model_file>
 		<!--Replace the model's force set with sets specified in <force_set_files>? If false, the force set is appended to.-->
@@ -8,7 +8,7 @@
 		<!--List of xml files used to construct an force set for the model.-->
 		<force_set_files />
 		<!--Directory used for writing results.-->
-		<results_directory>./testPlotterTool </results_directory>
+		<results_directory>testPlotterTool </results_directory>
 		<!--Output precision.  It is 8 by default.-->
 		<output_precision>8</output_precision>
 		<!--Initial time for the simulation.-->
@@ -40,9 +40,9 @@
 					<!--List of muscles for which to perform the analysis. Use 'all' to perform the analysis for all muscles.--> 
 					<muscle_list> RF VASINT</muscle_list> 
 					<!--List of generalized coordinates for which to compute moment arms. Use 'all' to compute for all coordinates.--> 
-					<moment_arm_coordinate_list> all</moment_arm_coordinate_list> 
+					<moment_arm_coordinate_list>r_knee_angle</moment_arm_coordinate_list> 
 					<!--Flag indicating whether moments should be computed.--> 
-					<compute_moments> false</compute_moments>
+					<compute_moments>false</compute_moments>
 				</MuscleAnalysis>
 			</objects>
 			<groups />
