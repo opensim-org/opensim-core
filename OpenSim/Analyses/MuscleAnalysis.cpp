@@ -411,7 +411,8 @@ MuscleAnalysis& MuscleAnalysis::operator=(const MuscleAnalysis &aAnalysis)
 	// MEMBER VARIABLES
 	_muscleListProp = aAnalysis._muscleListProp;
 	_coordinateListProp = aAnalysis._coordinateListProp;
-	_computeMoments = aAnalysis._computeMoments;
+	_computeMomentsProp = aAnalysis._computeMomentsProp;
+    _computeMoments = _computeMomentsProp.getValueBool();
 	allocateStorageObjects();
 
 	return (*this);
