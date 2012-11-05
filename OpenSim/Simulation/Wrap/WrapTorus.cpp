@@ -218,7 +218,26 @@ string WrapTorus::getDimensionsString() const
 
 	return dimensions.str();
 }
-
+//_____________________________________________________________________________
+/**
+ * Get the inner radius of the torus
+ *
+ * @return A Read containing the inner radius of the torus
+ */
+SimTK::Real WrapTorus::getInnerRadius() const
+{
+    return SimTK::Real(_innerRadius);
+}
+//_____________________________________________________________________________
+/**
+ * Get the outer radius of the torus
+ *
+ * @return A Read containing the outer radius of the torus
+ */
+SimTK::Real WrapTorus::getOuterRadius() const
+{
+    return SimTK::Real(_outerRadius);
+}
 //=============================================================================
 // OPERATORS
 //=============================================================================

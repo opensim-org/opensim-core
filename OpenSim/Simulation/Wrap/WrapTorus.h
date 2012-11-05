@@ -85,6 +85,8 @@ public:
    void copyData(const WrapTorus& aWrapTorus);
 	virtual const char* getWrapTypeName() const;
 	virtual std::string getDimensionsString() const;
+	SimTK::Real getInnerRadius() const;
+	SimTK::Real getOuterRadius() const;
 
 	virtual void scale(const SimTK::Vec3& aScaleFactors);
 	virtual void connectToModelAndBody(Model& aModel, OpenSim::Body& aBody);
