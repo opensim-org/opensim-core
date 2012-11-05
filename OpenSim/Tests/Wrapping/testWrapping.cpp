@@ -85,7 +85,7 @@ int main_new()
 
     SimTK::Array_<String> failures;
 
-    for (int i = 0; i < tests.size(); ++i) {
+    for (unsigned int i = 0; i < tests.size(); ++i) {
         cout << "testing " << tests[i].filename << " for " << tests[i].duration << " s" << endl;
         try { // performance with cylnder wrapping
             simulateModelWithPassiveMuscles(tests[i].filename, tests[i].duration);
@@ -471,19 +471,19 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         cableInfo.insLoc = insPoint->getLocation();
 
         int numVias = 0, numSurfs = 0;
-        for (int i = 0; i < activePathPoints.getSize(); ++i) {
-            PathPoint* pp = activePathPoints[i];
-            cout << "pp" << i << " = " << pp->getName() << " @ " << pp->getBodyName() << ", loc = " << pp->getLocation() << endl;
+        for (int j = 0; j < activePathPoints.getSize(); ++j) {
+            PathPoint* pp = activePathPoints[j];
+            cout << "pp" << j << " = " << pp->getName() << " @ " << pp->getBodyName() << ", loc = " << pp->getLocation() << endl;
         }
 
-        for (int i = 0; i < viaSet.getSize(); ++i) {
-            PathPoint* pp = &viaSet[i];
-            cout << "mp" << i << " = " << pp->getName() << " @ " << pp->getBodyName() << ", loc = " << pp->getLocation() << endl;
+        for (int j = 0; j < viaSet.getSize(); ++j) {
+            PathPoint* pp = &viaSet[j];
+            cout << "mp" << j << " = " << pp->getName() << " @ " << pp->getBodyName() << ", loc = " << pp->getLocation() << endl;
         }
 
         // add vias to cableInfo
-        for (int i = 1; i < viaSet.getSize()-1; ++i) { // skip first (origin) and last (insertion) points
-            const PathPoint& pp = viaSet[i];
+        for (int j = 1; j < viaSet.getSize()-1; ++j) { // skip first (origin) and last (insertion) points
+            const PathPoint& pp = viaSet[j];
             ObstacleInfo obs;
             obs.bodyName = pp.getBodyName();
             obs.X_BS.setP(pp.getLocation());
@@ -498,8 +498,8 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 
         Array<ObstacleInfo*> wrapObs;
         // add surfaces to cableInfo
-        for (int i = 0; i < wrapSet.getSize(); i++) {
-            const PathWrap& wrap = wrapSet[i];
+        for (int j = 0; j < wrapSet.getSize(); j++) {
+            const PathWrap& wrap = wrapSet[j];
             WrapObject* wrapObj = wrap.getWrapObject();
             ObstacleInfo obs;
             obs.wrapObjectPtr = wrapObj;
@@ -519,18 +519,18 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         // find active wrap surfaces and insert to obstacles list in order
         int obsIdx = 0;
         int viaPtIdx = 1; // skip first (origin) point
-        for (int i = 1; i < activePathPoints.getSize()-1; ++i) { // skip first (origin) and last (insertion)
-            PathPoint* pp = activePathPoints[i];
+        for (int j = 1; j < activePathPoints.getSize()-1; ++j) { // skip first (origin) and last (insertion)
+            PathPoint* pp = activePathPoints[j];
             if (*pp == viaSet[viaPtIdx]) {
                 viaPtIdx++;
                 obsIdx++;
                 continue;
             }
             else { // next two path points should be a wrap point
-                for (int j = 0; j < wrapSet.getSize(); ++j) {
-                    const Vec3& wrapStartPointLoc = wrapSet[j].getPreviousWrap().r1;
+                for (int k = 0; k < wrapSet.getSize(); ++k) {
+                    const Vec3& wrapStartPointLoc = wrapSet[k].getPreviousWrap().r1;
                     if (!wrapStartPointLoc.isInf() && pp->getLocation().isNumericallyEqual(wrapStartPointLoc)) {
-                        ObstacleInfo* obs = wrapObs[j];
+                        ObstacleInfo* obs = wrapObs[k];
                         obs->isActive = true;
                         // pp and next pp are wrap points
                         Transform X_SB = obs->X_BS.invert();
@@ -546,8 +546,8 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 
         // append inactive wrap surfaces to obstacle list
         // TODO find order of inactive wrap surfaces relative to via points
-        for (int i = 0; i < wrapObs.getSize(); ++i) {
-            ObstacleInfo* obs = wrapObs[i];
+        for (int j = 0; j < wrapObs.getSize(); ++j) {
+            ObstacleInfo* obs = wrapObs[j];
             if (!obs->isActive) {
                 cableInfo.obstacles.append(*obs);
             }
@@ -563,17 +563,17 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         cout << "org" << " = " << orgPoint->getName() << " @ " << orgPoint->getBody().getName() << ", loc = " << orgPoint->getLocation() << endl;
         cout << "ins" << " = " << insPoint->getName() << " @ " << insPoint->getBody().getName() << ", loc = " << insPoint->getLocation() << endl;
 
-        for (int i = 0; i < cableInfo.obstacles.getSize(); ++i) {
-            ObstacleInfo oi = cableInfo.obstacles[i];
-            cout << "ObsInfo " << i << ": via=" << oi.isVia << ", bodyName=" << oi.bodyName << ", loc=" << oi.X_BS.p() << ", P=" << oi.P_S << ", Q=" << oi.Q_S << endl;
+        for (int j = 0; j < cableInfo.obstacles.getSize(); ++j) {
+            ObstacleInfo oi = cableInfo.obstacles[j];
+            cout << "ObsInfo " << j << ": via=" << oi.isVia << ", bodyName=" << oi.bodyName << ", loc=" << oi.X_BS.p() << ", P=" << oi.P_S << ", Q=" << oi.Q_S << endl;
         }
 
 
-//        for (int i = 0; i < wrapSet.getSize(); ++i) {
-//            cout << "wrap object " << i << " name = " << wrapSet[i].getName() << endl;
-//            cout << "wrap point 0 = " << wrapSet[i].getWrapPoint(0).getLocation() << endl;
-//            cout << "wrap point 1 = " << wrapSet[i].getWrapPoint(1).getLocation() << endl;
-//            const WrapResult& wr = wrapSet[i].getPreviousWrap();
+//        for (int j = 0; j < wrapSet.getSize(); ++j) {
+//            cout << "wrap object " << j << " name = " << wrapSet[j].getName() << endl;
+//            cout << "wrap point 0 = " << wrapSet[j].getWrapPoint(0).getLocation() << endl;
+//            cout << "wrap point 1 = " << wrapSet[j].getWrapPoint(1).getLocation() << endl;
+//            const WrapResult& wr = wrapSet[j].getPreviousWrap();
 //            cout << "wrap result r1 = " << wr.r1 << endl;
 //            cout << "wrap result r2 = " << wr.r2 << endl;
 //            cout << "wrap result startpt = " << wr.startPoint << endl;
@@ -613,8 +613,8 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         }
 
         cout << "wraps to remove:" << endl;
-        for (int i = 0; i < toRemove.getSize(); ++i) {
-            cout << "    " << toRemove[i]->getName() << endl;
+        for (int j = 0; j < toRemove.getSize(); ++j) {
+            cout << "    " << toRemove[j]->getName() << endl;
         }
 
 //        cout << "indices to remove = " << toRemove << endl;
@@ -669,8 +669,8 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
                             insMobBody, cableInfo.insLoc);  // termination
 
         // Add obstacles
-        for (int i = 0; i < cableInfo.obstacles.getSize(); ++i) {
-            ObstacleInfo oi = cableInfo.obstacles[i];
+        for (int j = 0; j < cableInfo.obstacles.getSize(); ++j) {
+            ObstacleInfo oi = cableInfo.obstacles[j];
             const OpenSim::Body& osBody = osimModel.getBodySet().get(oi.bodyName);
             const MobilizedBody& mobBody = matter.getMobilizedBody(osBody.getIndex());
 
