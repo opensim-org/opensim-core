@@ -35,7 +35,6 @@
 #include "PropertyInt.h"
 #include "PropertyStr.h"
 #include "PropertyObj.h"
-#include "PropertyStrArray.h"
 #include "PropertyDblArray.h"
 #include "PropertyTransform.h"
 #include "Geometry.h"

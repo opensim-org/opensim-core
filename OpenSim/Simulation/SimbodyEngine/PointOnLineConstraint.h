@@ -28,7 +28,6 @@
 #include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Common/PropertyDblVec.h>
 #include "Constraint.h"
 #include "Body.h"

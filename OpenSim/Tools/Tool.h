@@ -26,7 +26,6 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/ArrayPtrs.h>

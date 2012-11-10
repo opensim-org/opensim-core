@@ -35,7 +35,6 @@
 #include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/PropertyBoolArray.h>
 #include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Simulation/Model/Model.h>

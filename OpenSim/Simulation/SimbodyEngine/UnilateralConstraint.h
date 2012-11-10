@@ -34,7 +34,6 @@
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Common/PropertyObjPtr.h>
 #include <SimTKsimbody.h>
 

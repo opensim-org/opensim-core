@@ -31,7 +31,6 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 #include "Object.h"
-#include "PropertyStrArray.h"
 #include "PropertyObj.h"
 #include "PropertyDblArray.h"
 #include "PropertyDblVec.h"

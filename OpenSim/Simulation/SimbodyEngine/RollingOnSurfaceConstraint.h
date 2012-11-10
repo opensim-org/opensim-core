@@ -27,7 +27,6 @@
 // INCLUDE
 #include <string>
 #include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Common/PropertyDblVec.h>
 #include "UnilateralConstraint.h"
 #include "Body.h"
