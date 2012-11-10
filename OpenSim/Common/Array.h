@@ -824,7 +824,7 @@ int searchBinary(const T &aValue,bool aFindFirst=false,
 	if(_size<=0) return(-1);
 	int lo = aLo;  if(lo<0) lo = 0;
 	int hi = aHi;  if((hi<0)||(hi>=_size)) hi = _size - 1;
-	int mid;
+	int mid = -1;
 
 	// CHECK lo AND hi
 	if(lo>hi) return(-1);
