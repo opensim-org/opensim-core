@@ -914,6 +914,26 @@ getData(int aTimeIndex,int aN,Array<double> &rData) const
 }
 //_____________________________________________________________________________
 /**
+ * Get the first aN states at a specified time index.
+ *
+ *	@param aTimeIndex Time index at which to get the states.
+ * @param aN Number of states to get.
+ * @param rData Array where the returned data will be set.  The
+ * size of rData is assumed to be at least aN.
+ * @return Number of states that were set.
+ */
+int Storage::
+getData(int aTimeIndex,int aN,SimTK::Vector& v) const
+{
+    Array<double> rData;
+    rData.setSize(aN);
+    int r = getData(aTimeIndex,0,aN,&rData[0]);
+    for (int i=0; i<aN; ++i)
+        v[i] = rData[i];
+	return r;
+}
+//_____________________________________________________________________________
+/**
  * Get the first aN states at a specified time.
  * The values of the states are determined by linear interpolation.
  *
@@ -1011,6 +1031,16 @@ getDataAtTime(double aT,int aN,Array<double> &rData) const
 {
 	double *data=&rData[0];
 	return getDataAtTime(aT,aN,&data);
+}
+int Storage::
+getDataAtTime(double aT,int aN,SimTK::Vector& v) const
+{
+    Array<double> rData;
+    rData.setSize(aN);
+    int r = getDataAtTime(aT,aN,rData);
+    for (int i=0; i<aN; ++i)
+        v[i] = rData[i];
+	return r;
 }
 //_____________________________________________________________________________
 /**

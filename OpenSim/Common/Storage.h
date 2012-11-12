@@ -178,10 +178,12 @@ public:
 	int getData(int aTimeIndex,int aN,double **rData) const;
 	int getData(int aTimeIndex,int aN,double *rData) const;
     int getData(int aTimeIndex,int aN,Array<double> &rData) const;
+    int getData(int aTimeIndex,int aN,SimTK::Vector &v) const;
 #endif
 	int getDataAtTime(double aTime,int aN,double **rData) const;
 	int getDataAtTime(double aTime,int aN,double *rData) const;
 	int getDataAtTime(double aTime,int aN,Array<double> &rData) const;
+    int getDataAtTime(double aTime,int aN,SimTK::Vector& v) const;
 	int getDataColumn(int aStateIndex,double *&rData) const;
 	int getDataColumn(int aStateIndex,Array<double> &rData) const;
     // Set entries in a column of the storage to a fixed value, 
