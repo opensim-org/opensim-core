@@ -102,7 +102,9 @@ public:
 	virtual std::string toString() const;
 	// SIZE
 	virtual int getArraySize() const { return _array.getSize(); }
-
+    virtual void clearValues() OVERRIDE_11 {
+        _array.setSize(0);
+    }
 
 //=============================================================================
 };	// END of class PropertyDblArray

@@ -394,6 +394,20 @@ public:
         Property<SimTK::Vec3>& pd = dynamic_cast<Property<SimTK::Vec3>&>(p);
         pd.updValue()[index] = v;
      }
+    // ================ String arrays ===================================================
+    static OpenSim::Array<std::string> getValueStringArray(const AbstractProperty& p)
+    {
+        OpenSim::Array<std::string> val = OpenSim::Array<std::string>();
+        for (int i=0; i< p.size(); i++)
+            val.append(p.getValue<std::string>(i));
+        return val;
+    }
+    static void setValueStringArray(AbstractProperty& p,  OpenSim::Array<std::string>& aStringArray)
+    {
+        p.clear();
+        for (int i=0; i< aStringArray.getSize(); i++)
+            p.appendValue<std::string>(aStringArray.get(i));
+    }
 
 };
 
