@@ -52,26 +52,16 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ConstantDistanceConstraint, Constraint);
 // DATA
 //=============================================================================
 protected:
-	/** Specify first of two bodies connected together by the constraint. */
-	PropertyStr _body1NameProp;
-	std::string& _body1Name;
 
-	/** Specify second of two bodies connected by the constraint. */
-	PropertyStr _body2NameProp;
-	std::string& _body2Name;
+	OpenSim_DECLARE_PROPERTY(body_1, std::string, "Specify first of two bodies connected together by the constraint.");
 
-	/** Location of the point in first body specified in body1 reference frame. */
-	PropertyDblVec3 _locationInBody1Prop;
-	SimTK::Vec3& _locationInBody1;
+	OpenSim_DECLARE_PROPERTY(body_2, std::string, "Specify second of two bodies connected together by the constraint.");
 
-	/** Location of the point in second body specified in body2 reference frame. */
-	PropertyDblVec3 _locationInBody2Prop;
-	SimTK::Vec3& _locationInBody2;
+	OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3, "Location of the point in first body specified in body1 reference frame.")
 
-	/** constant distance to be rigidly maintained between the two points fixed on each body.*/
-	PropertyDbl _constantDistanceProp;
-	double& _constantDistance;
+	OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3, "Location of the point in second body specified in body1 reference frame.")
 
+	OpenSim_DECLARE_PROPERTY(constant_distance, double, "constant distance to be rigidly maintained between the two points fixed on each body.");
 
 	/** First body point constraint joins. */
 	Body *_body1;
@@ -85,13 +75,9 @@ protected:
 public:
 	// CONSTRUCTION
 	ConstantDistanceConstraint();
-	ConstantDistanceConstraint(const ConstantDistanceConstraint &aConstraint);
 	ConstantDistanceConstraint(OpenSim::Body& body1, SimTK::Vec3& locationBody1, OpenSim::Body& body2, SimTK::Vec3& locationBody2, double& distance);
 	virtual ~ConstantDistanceConstraint();
 	
-	ConstantDistanceConstraint& operator=(const ConstantDistanceConstraint &aConstraint);
-	void copyData(const ConstantDistanceConstraint &aConstraint);
-
 	//SET 
 	void setBody1ByName(std::string aBodyName);
 	void setBody1PointLocation(SimTK::Vec3 location);
@@ -112,7 +98,7 @@ protected:
 
 private:
 	void setNull();
-	void setupProperties();
+	void constructProperties();
 
 //=============================================================================
 };	// END of class ConstantDistanceConstraint

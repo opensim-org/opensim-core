@@ -65,29 +65,18 @@ OpenSim_DECLARE_CONCRETE_OBJECT(RollingOnSurfaceConstraint,
 // DATA
 //=============================================================================
 protected:
-	/** Specify the rolling body for this constraint. */
-	PropertyStr _rollingBodyNameProp;
-	std::string& _rollingBodyName;
 
-	/** Specify the body containing the surface (plane) that the rolling body rolls on. */
-	PropertyStr _surfaceBodyNameProp;
-	std::string& _surfaceBodyName;
+	OpenSim_DECLARE_PROPERTY(rolling_body, std::string, "Specify the rolling body for this constraint.");
 
-	/** Surface normal direction in the surface body */
-	PropertyDblVec3 _surfaceNormalProp;
-	SimTK::Vec3& _surfaceNormal;
+	OpenSim_DECLARE_PROPERTY(surface_body, std::string, "Specify the body containing the surface (plane) that the rolling body rolls on.");
 
-	/** Surface height in the direction of the normal in the surface body */
-	PropertyDbl _surfaceHeightProp;
-	double& _surfaceHeight;
+	OpenSim_DECLARE_PROPERTY(surface_normal, SimTK::Vec3, "Surface normal direction in the surface body.");
 
-	/** Coulomb friction coefficient for rolling on the surface */
-	PropertyDbl _coulombFrictionCoefficientProp;
-	double& _coulombFrictionCoefficient;
+	OpenSim_DECLARE_PROPERTY(surface_height, double, "Surface height in the direction of the normal in the surface body.");
 
-	/** A guess at the area of contact approximated by a circle of radius: */
-	PropertyDbl _surfaceContactRadiusProp;
-	double& _surfaceContactRadius;
+	OpenSim_DECLARE_PROPERTY(friction_coefficient, double, "Coulomb friction coefficient for rolling on the surface.");
+
+	OpenSim_DECLARE_PROPERTY(contact_radius, double, "A guess at the area of contact approximated by a circle of radius.");
 
 	/** First body is the rolling body. */
 	Body *_rollingBody;
@@ -107,11 +96,7 @@ protected:
 public:
 	// CONSTRUCTION
 	RollingOnSurfaceConstraint();
-	RollingOnSurfaceConstraint(const RollingOnSurfaceConstraint &aConstraint);
 	virtual ~RollingOnSurfaceConstraint();
-
-	RollingOnSurfaceConstraint& operator=(const RollingOnSurfaceConstraint &aConstraint);
-	void copyData(const RollingOnSurfaceConstraint &aConstraint);
 
     // ModelComponent interface.
 	void connectToModel(Model& aModel) OVERRIDE_11;
@@ -169,7 +154,7 @@ public:
 private:
 
 	void setNull();
-	void setupProperties();
+	void constructProperties();
 
 //=============================================================================
 };	// END of class RollingOnSurfaceConstraint

@@ -56,95 +56,41 @@ WeldConstraint::~WeldConstraint()
  * Default constructor.
  */
 WeldConstraint::WeldConstraint() :
-	Constraint(),
-	_body1Name(_body1NameProp.getValueStr()),
-	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
-	_orientationInBody1(_orientationInBody1Prop.getValueDblVec()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec()),
-	_orientationInBody2(_orientationInBody2Prop.getValueDblVec())
+	Constraint()
 {
 	setNull();
-	setupProperties();
+	constructProperties();
 }
 
 WeldConstraint::WeldConstraint(const std::string &name, OpenSim::Body& body1, SimTK::Vec3 locationInBody1, SimTK::Vec3 orientationInBody1,
-							   OpenSim::Body& body2, SimTK::Vec3 locationInBody2, SimTK::Vec3 orientationInBody2) : Constraint(),
-	_body1Name(_body1NameProp.getValueStr()),
-	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
-	_orientationInBody1(_orientationInBody1Prop.getValueDblVec()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec()),
-	_orientationInBody2(_orientationInBody2Prop.getValueDblVec())
+							   OpenSim::Body& body2, SimTK::Vec3 locationInBody2, SimTK::Vec3 orientationInBody2) : Constraint()
 {
+	constructProperties();
 	setName(name);
-	_body1Name = body1.getName();
-	_body2Name = body2.getName();
-	_locationInBody1 = locationInBody1;
-	_orientationInBody1 = orientationInBody1;
-	_locationInBody2 = locationInBody2;
-	_orientationInBody2 = orientationInBody2;
+	set_body_1(body1.getName());
+	set_body_2(body2.getName());
+	set_location_body_1(locationInBody1);
+	set_orientation_body_1(orientationInBody1);
+	set_location_body_2(locationInBody2);
+	set_orientation_body_2(orientationInBody2);
 }
 
 WeldConstraint::WeldConstraint(const std::string &name, OpenSim::Body& body1, SimTK::Transform transformInBody1, 
-							   OpenSim::Body& body2, SimTK::Transform transformInBody2) : Constraint(),
-	_body1Name(_body1NameProp.getValueStr()),
-	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
-	_orientationInBody1(_orientationInBody1Prop.getValueDblVec()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec()),
-	_orientationInBody2(_orientationInBody2Prop.getValueDblVec())
+							   OpenSim::Body& body2, SimTK::Transform transformInBody2) : Constraint()
 {
+	constructProperties();
 	setName(name);
-	_body1Name = body1.getName();
-	_body2Name = body2.getName();
-	_locationInBody1 = transformInBody1.p();
-	_orientationInBody1 = transformInBody1.R().convertRotationToBodyFixedXYZ();
-	_locationInBody2 = transformInBody2.p();
-	_orientationInBody2 = transformInBody2.R().convertRotationToBodyFixedXYZ();
-}
-
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aConstraint WeldConstraint to be copied.
- */
-WeldConstraint::WeldConstraint(const WeldConstraint &aConstraint) :
-   Constraint(aConstraint),
-	_body1Name(_body1NameProp.getValueStr()),
-	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
-	_orientationInBody1(_orientationInBody1Prop.getValueDblVec()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec()),
-	_orientationInBody2(_orientationInBody2Prop.getValueDblVec())
-{
-	setNull();
-	setupProperties();
-	copyData(aConstraint);
+	set_body_1(body1.getName());
+	set_body_2(body2.getName());
+	set_location_body_1(transformInBody1.p());
+	set_orientation_body_1(transformInBody1.R().convertRotationToBodyFixedXYZ());
+	set_location_body_2(transformInBody2.p());
+	set_orientation_body_2(transformInBody2.R().convertRotationToBodyFixedXYZ());
 }
 
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-
-//_____________________________________________________________________________
-/**
- * Copy data members from one WeldConstraint to another.
- *
- * @param aConstraint WeldConstraint to be copied.
- */
-void WeldConstraint::copyData(const WeldConstraint &aConstraint)
-{
-	Constraint::copyData(aConstraint);
-	_body1Name = aConstraint._body1Name;
-	_body2Name = aConstraint._body2Name;
-	_locationInBody1 = aConstraint._locationInBody1;
-	_orientationInBody1 = aConstraint._orientationInBody1;
-	_locationInBody2 = aConstraint._locationInBody2;
-	_orientationInBody2 = aConstraint._orientationInBody2;
-}
 
 //_____________________________________________________________________________
 /**
@@ -159,38 +105,28 @@ void WeldConstraint::setNull()
 /**
  * Connect properties to local pointers.
  */
-void WeldConstraint::setupProperties()
+void WeldConstraint::constructProperties()
 {
 	// Body 1 name
-	_body1NameProp.setName("body_1");
-	_propertySet.append(&_body1NameProp);
+	constructProperty_body_1("");
 
 	// Body 2 name
-	_body2NameProp.setName("body_2");
-	_propertySet.append(&_body2NameProp);
+	constructProperty_body_2("");
 
 	//Default location and orientation (rotation sequence)
 	SimTK::Vec3 origin(0.0, 0.0, 0.0);
 
 	// Location in Body 1 
-	_locationInBody1Prop.setName("location_body_1");
-	_locationInBody1Prop.setValue(origin);
-	_propertySet.append(&_locationInBody1Prop);
+	constructProperty_location_body_1(origin);
 
 	// Orientation in Body 1 
-	_orientationInBody1Prop.setName("orientation_body_1");
-	_orientationInBody1Prop.setValue(origin);
-	_propertySet.append(&_orientationInBody1Prop);
+	constructProperty_orientation_body_1(origin);
 
 	// Location in Body 2 
-	_locationInBody2Prop.setName("location_body_2");
-	_locationInBody2Prop.setValue(origin);
-	_propertySet.append(&_locationInBody2Prop);
+	constructProperty_location_body_2(origin);
 
 	// Orientation in Body 2 
-	_orientationInBody2Prop.setName("orientation_body_2");
-	_orientationInBody2Prop.setValue(origin);
-	_propertySet.append(&_orientationInBody2Prop);
+	constructProperty_orientation_body_2(origin);
 
 }
 
@@ -209,16 +145,18 @@ void WeldConstraint::connectToModel(Model& aModel)
 
 	// Look up the two bodies being welded together by name in the
 	// model and might as well keep a pointer to them
-	if (!aModel.updBodySet().contains(_body1Name)) {
-		errorMessage = "Invalid weld body1 (" + _body1Name + ") specified in Constraint " + getName();
+	std::string body1Name = get_body_1();
+	std::string body2Name = get_body_2();
+	if (!aModel.updBodySet().contains(body1Name)) {
+		errorMessage = "Invalid weld body1 (" + body1Name + ") specified in Constraint " + getName();
 		throw (Exception(errorMessage.c_str()));
 	}
-	if (!aModel.updBodySet().contains(_body2Name)) {
-		errorMessage = "Invalid weld body2 (" + _body2Name + ") specified in Constraint " + getName();
+	if (!aModel.updBodySet().contains(body2Name)) {
+		errorMessage = "Invalid weld body2 (" + body2Name + ") specified in Constraint " + getName();
 		throw (Exception(errorMessage.c_str()));
 	}
-	_body1 = &aModel.updBodySet().get(_body1Name);
-	_body2 = &aModel.updBodySet().get(_body2Name);
+	_body1 = &aModel.updBodySet().get(body1Name);
+	_body2 = &aModel.updBodySet().get(body2Name);
 }
 
 void WeldConstraint::addToSystem(SimTK::MultibodySystem& system) const
@@ -229,10 +167,10 @@ void WeldConstraint::addToSystem(SimTK::MultibodySystem& system) const
 	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody(_body1->getIndex());
 	SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody(_body2->getIndex());
 	// Build the transforms
-	SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(_orientationInBody1);
-	SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(_orientationInBody2);
-	SimTK::Transform inb1(r1, _locationInBody1);
-	SimTK::Transform inb2(r2, _locationInBody2);
+	SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(get_orientation_body_1());
+	SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(get_orientation_body_2());
+	SimTK::Transform inb1(r1, get_location_body_1());
+	SimTK::Transform inb2(r2, get_location_body_2());
 
     // Now create a Simbody Constraint::Weld
     SimTK::Constraint::Weld simtkWeld(b1, inb1, b2, inb2);
@@ -243,22 +181,6 @@ void WeldConstraint::addToSystem(SimTK::MultibodySystem& system) const
 }
 
 //=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-WeldConstraint& WeldConstraint::operator=(const WeldConstraint &aConstraint)
-{
-	Constraint::operator=(aConstraint);
-	copyData(aConstraint);
-	return(*this);
-}
-
-//=============================================================================
 // SET
 //=============================================================================
 //_____________________________________________________________________________
@@ -266,26 +188,26 @@ WeldConstraint& WeldConstraint::operator=(const WeldConstraint &aConstraint)
  * Following methods set attributes of the weld constraint */
 void WeldConstraint::setBody1ByName(std::string aBodyName)
 {
-	_body1Name = aBodyName;
+	set_body_1(aBodyName);
 }
 
 void WeldConstraint::setBody2ByName(std::string aBodyName)
 {
-	_body2Name = aBodyName;
+	set_body_2(aBodyName);
 }
 
 /** Set the location and orientation (optional) for weld on body 1*/
 void WeldConstraint::setBody1WeldLocation(Vec3 location, Vec3 orientation)
 {
-	_locationInBody1 = location;
-	_orientationInBody1 = orientation;
+	set_location_body_1(location);
+	set_orientation_body_1(orientation);
 
 	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
 	if(_index.isValid()){
 		SimTK::Constraint::Weld &simConstraint = (SimTK::Constraint::Weld &)_model->updMatterSubsystem().updConstraint(_index);
 		// Build the transforms
-		SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(_orientationInBody1);
-		SimTK::Transform inb1(r1, _locationInBody1);
+		SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(get_orientation_body_1());
+		SimTK::Transform inb1(r1, get_location_body_1());
 		simConstraint.setDefaultFrameOnBody1(inb1);
 	}
 }
@@ -293,15 +215,15 @@ void WeldConstraint::setBody1WeldLocation(Vec3 location, Vec3 orientation)
 /** Set the location and orientation (optional) for weld on body 2*/
 void WeldConstraint::setBody2WeldLocation(Vec3 location, Vec3 orientation)
 {
-	_locationInBody2 = location;
-	_orientationInBody2 = orientation;
+	set_location_body_2(location);
+	set_orientation_body_2(orientation);
 
 	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
 	if(_index.isValid()){
 		SimTK::Constraint::Weld &simConstraint = (SimTK::Constraint::Weld &)_model->updMatterSubsystem().updConstraint(_index);
 		// Build the transforms
-		SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(_orientationInBody2);
-		SimTK::Transform inb2(r2, _locationInBody2);
+		SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(get_orientation_body_2());
+		SimTK::Transform inb2(r2, get_location_body_2());
 		simConstraint.setDefaultFrameOnBody2(inb2);
 	}
 }

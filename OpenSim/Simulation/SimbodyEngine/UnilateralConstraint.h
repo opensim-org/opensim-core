@@ -77,11 +77,7 @@ protected:
 //--------------------------------------------------------------------------
 public:
 	UnilateralConstraint();
-	UnilateralConstraint(const UnilateralConstraint &aUnilateralConstraint);
 	virtual ~UnilateralConstraint();
-
-	UnilateralConstraint& operator=(const UnilateralConstraint &aUnilateralConstraint);
-	void copyData(const UnilateralConstraint &aUnilateralConstraint);
 
 	virtual int getNumConstraintEquations() {return _numConstraintEquations;};
 

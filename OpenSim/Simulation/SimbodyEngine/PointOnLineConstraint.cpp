@@ -120,7 +120,6 @@ PointOnLineConstraint::PointOnLineConstraint(const PointOnLineConstraint &aConst
  */
 void PointOnLineConstraint::copyData(const PointOnLineConstraint &aConstraint)
 {
-	Constraint::copyData(aConstraint);
 	_lineBodyName = aConstraint._lineBodyName;
 	_lineDirection = aConstraint._lineDirection;
 	_pointOnLine = aConstraint._pointOnLine;
@@ -229,7 +228,6 @@ void PointOnLineConstraint::addToSystem(SimTK::MultibodySystem& system) const
 PointOnLineConstraint& PointOnLineConstraint::operator=(const PointOnLineConstraint &aConstraint)
 {
 	Constraint::operator=(aConstraint);
-	copyData(aConstraint);
 	return(*this);
 }
 

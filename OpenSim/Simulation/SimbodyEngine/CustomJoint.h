@@ -26,7 +26,6 @@
 
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>

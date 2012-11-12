@@ -45,7 +45,7 @@ using namespace OpenSim;
 Constraint::Constraint() 
 {
 	setNull();
-	setupProperties();
+	constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -54,40 +54,6 @@ Constraint::Constraint()
  */
 Constraint::~Constraint()
 {
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aConstraint Constraint to be copied.
- */
-Constraint::Constraint(const Constraint &aConstraint) :
-   ModelComponent(aConstraint)
-{
-	setNull();
-	setupProperties();
-	copyData(aConstraint);
-}
-
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy data members from one Constraint to another.
- *
- * @param aConstraint Constraint to be copied.
- */
-void Constraint::copyData(const Constraint &aConstraint)
-{
-	//_isDisabled = aConstraint._isDisabled;
-	_isDisabledProp.setValue(aConstraint._isDisabledProp.getValueBool());
-
-	// A copy is no longer a live Constraint with an underlying SimTK::Constraint
-	// The system must be created, at which time the constraint will be assigned an index
-	// corresponding to a valid system SimTK::Constraint.
-	_index.invalidate();
 }
 
 //_____________________________________________________________________________
@@ -103,11 +69,9 @@ void Constraint::setNull(void)
 /**
  * Connect properties to local pointers.
  */
-void Constraint::setupProperties(void)
+void Constraint::constructProperties(void)
 {
-	_isDisabledProp.setName("isDisabled");
-	_isDisabledProp.setValue(false);
-	_propertySet.append(&_isDisabledProp);
+	constructProperty_isDisabled(false);
 }
 
 //_____________________________________________________________________________
@@ -129,7 +93,7 @@ void Constraint::initStateFromProperties(SimTK::State& s) const
         _model->updMatterSubsystem().updConstraint(_index);
 
 	// Otherwise we have to change the status of the constraint
-	if(_isDisabledProp.getValueBool())
+	if(get_isDisabled())
 		simConstraint.disable(s);
 	else
 		simConstraint.enable(s);
@@ -138,27 +102,7 @@ void Constraint::initStateFromProperties(SimTK::State& s) const
 void Constraint::setPropertiesFromState(const SimTK::State& state)
 {
     Super::setPropertiesFromState(state);
-    _isDisabledProp.setValue(isDisabled(state));
-}
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-Constraint& Constraint::operator=(const Constraint &aConstraint)
-{
-	// BASE CLASS
-	Object::operator=(aConstraint);
-
-	copyData(aConstraint);
-
-	return(*this);
+    set_isDisabled(isDisabled(state));
 }
 
 //=============================================================================
@@ -221,7 +165,7 @@ bool Constraint::setDisabled(SimTK::State& s, bool isDisabled)
 		simConstraint.enable(s);
 
 	_model->updateAssemblyConditions(s);
-	_isDisabledProp.setValue(isDisabled);
+	set_isDisabled(isDisabled);
 	
 	return true;
 }

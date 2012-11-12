@@ -56,67 +56,26 @@ PointConstraint::~PointConstraint()
  * Default constructor.
  */
 PointConstraint::PointConstraint() :
-	Constraint(),
-	_body1Name(_body1NameProp.getValueStr()),
-	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec())
+	Constraint()
 {
 	setNull();
-	setupProperties();
-}
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aConstraint PointConstraint to be copied.
- */
-PointConstraint::PointConstraint(const PointConstraint &aConstraint) :
-   Constraint(aConstraint),
-	_body1Name(_body1NameProp.getValueStr()),
-	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec())
-{
-	setNull();
-	setupProperties();
-	copyData(aConstraint);
+	constructProperties();
 }
 
 PointConstraint::PointConstraint(OpenSim::Body& body1, SimTK::Vec3& locationBody1, OpenSim::Body& body2, SimTK::Vec3& locationBody2) :
-	Constraint(),
-	_body1Name(_body1NameProp.getValueStr()),
-	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec())
+	Constraint()
 {
 	setNull();
-	setupProperties();
-	_body1Name = body1.getName();
-	_locationInBody1 = locationBody1;
-	_body2Name = body2.getName();
-	_locationInBody2 = locationBody2;
+	constructProperties();
+	set_body_1(body1.getName());
+	set_location_body_1(locationBody1);
+	set_body_2(body2.getName());
+	set_location_body_2(locationBody2);
 
 }
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-
-//_____________________________________________________________________________
-/**
- * Copy data members from one PointConstraint to another.
- *
- * @param aConstraint PointConstraint to be copied.
- */
-void PointConstraint::copyData(const PointConstraint &aConstraint)
-{
-	Constraint::copyData(aConstraint);
-	_body1Name = aConstraint._body1Name;
-	_body2Name = aConstraint._body2Name;
-	_locationInBody1 = aConstraint._locationInBody1;
-	_locationInBody2 = aConstraint._locationInBody2;
-
-}
 
 //_____________________________________________________________________________
 /**
@@ -131,28 +90,22 @@ void PointConstraint::setNull()
 /**
  * Connect properties to local pointers.
  */
-void PointConstraint::setupProperties()
+void PointConstraint::constructProperties()
 {
 	// Body 1 name
-	_body1NameProp.setName("body_1");
-	_propertySet.append(&_body1NameProp);
+	constructProperty_body_1("");
 
 	// Body 2 name
-	_body2NameProp.setName("body_2");
-	_propertySet.append(&_body2NameProp);
-
+	constructProperty_body_2("");
+	//
 	//Default location and orientation (rotation sequence)
 	SimTK::Vec3 origin(0.0, 0.0, 0.0);
 
 	// Location in Body 1 
-	_locationInBody1Prop.setName("location_body_1");
-	_locationInBody1Prop.setValue(origin);
-	_propertySet.append(&_locationInBody1Prop);
+	constructProperty_location_body_1(origin);
 
 	// Location in Body 2 
-	_locationInBody2Prop.setName("location_body_2");
-	_locationInBody2Prop.setValue(origin);
-	_propertySet.append(&_locationInBody2Prop);
+	constructProperty_location_body_2(origin);
 }
 
 //_____________________________________________________________________________
@@ -167,18 +120,20 @@ void PointConstraint::connectToModel(Model& aModel) {
     
     string errorMessage;
 
+	std::string body1Name = get_body_1();
+	std::string body2Name = get_body_2();
 	// Look up the two bodies being connected together by name in the
 	// model and might as well keep a pointer to them
-	if (!aModel.updBodySet().contains(_body1Name)) {
-		errorMessage = "Invalid point constraint body1 (" + _body1Name + ") specified in Constraint " + getName();
+	if (!aModel.updBodySet().contains(body1Name)) {
+		errorMessage = "Invalid point constraint body1 (" + body1Name + ") specified in Constraint " + getName();
 		throw (Exception(errorMessage.c_str()));
 	}
-	if (!aModel.updBodySet().contains(_body2Name)) {
-		errorMessage = "Invalid point constraint body2 (" + _body2Name + ") specified in Constraint " + getName();
+	if (!aModel.updBodySet().contains(body2Name)) {
+		errorMessage = "Invalid point constraint body2 (" + body2Name + ") specified in Constraint " + getName();
 		throw (Exception(errorMessage.c_str()));
 	}
-	_body1 = &aModel.updBodySet().get(_body1Name);
-	_body2 = &aModel.updBodySet().get(_body2Name);
+	_body1 = &aModel.updBodySet().get(body1Name);
+	_body2 = &aModel.updBodySet().get(body2Name);
 }
 
 void PointConstraint::addToSystem(SimTK::MultibodySystem& system) const
@@ -190,27 +145,11 @@ void PointConstraint::addToSystem(SimTK::MultibodySystem& system) const
 	SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body2->getIndex());
 
     // Now create a Simbody Constraint::Point
-    SimTK::Constraint::Ball simtkPoint(b1, _locationInBody1, b2, _locationInBody2);
+    SimTK::Constraint::Ball simtkPoint(b1, get_location_body_1(), b2, get_location_body_2());
     
     // Beyond the const Component get the index so we can access the SimTK::Constraint later
 	PointConstraint* mutableThis = const_cast<PointConstraint *>(this);
 	mutableThis->_index  = simtkPoint.getConstraintIndex();
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-PointConstraint& PointConstraint::operator=(const PointConstraint &aConstraint)
-{
-	Constraint::operator=(aConstraint);
-	copyData(aConstraint);
-	return(*this);
 }
 
 //=============================================================================
@@ -221,33 +160,33 @@ PointConstraint& PointConstraint::operator=(const PointConstraint &aConstraint)
  * Following methods set attributes of the point constraint */
 void PointConstraint::setBody1ByName(std::string aBodyName)
 {
-	_body1Name = aBodyName;
+	set_body_1(aBodyName);
 }
 
 void PointConstraint::setBody2ByName(std::string aBodyName)
 {
-	_body2Name = aBodyName;
+	set_body_2(aBodyName);
 }
 
 /** Set the location for point on body 1*/
 void PointConstraint::setBody1PointLocation(Vec3 location)
 {
-	_locationInBody1 = location;
+	set_location_body_1(location);
 	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
 	if(_index.isValid()){
 		SimTK::Constraint::Ball &simConstraint = (SimTK::Constraint::Ball &)_model->updMatterSubsystem().updConstraint(_index);
-		simConstraint.setDefaultPointOnBody1(_locationInBody1);
+		simConstraint.setDefaultPointOnBody1(get_location_body_1());
 	}
 }
 
 /** Set the location for point on body 2*/
 void PointConstraint::setBody2PointLocation(Vec3 location)
 {
-	_locationInBody2 = location;
+	set_location_body_2(location);
 	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
 	if(_index.isValid()){
 		SimTK::Constraint::Ball &simConstraint = (SimTK::Constraint::Ball &)_model->updMatterSubsystem().updConstraint(_index);
-		simConstraint.setDefaultPointOnBody2(_locationInBody2);
+		simConstraint.setDefaultPointOnBody2(get_location_body_2());
 	}
 }
 

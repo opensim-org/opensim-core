@@ -30,7 +30,6 @@
 #include <math.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Common/PropertyBool.h>
 #include <SimTKsimbody.h>
 
 namespace OpenSim {
@@ -56,9 +55,8 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(Constraint, ModelComponent);
 //=============================================================================
 
 protected:
-	/** Flag indicating whether the constraint is disabled or not.  Disabled 
-	means that the constraint is not active in subsequent dynamics realizations. */
-	PropertyBool _isDisabledProp;
+
+	OpenSim_DECLARE_PROPERTY(isDisabled, bool, "Flag indicating whether the constraint is disabled or not. Disabled means that the constraint is not active in subsequent dynamics realization");
 
 	/** ID for the constraint in Simbody. */
 	SimTK::ConstraintIndex _index;
@@ -71,13 +69,7 @@ protected:
 //--------------------------------------------------------------------------
 public:
 	Constraint();
-	Constraint(const Constraint &aConstraint);
 	virtual ~Constraint();
-
-#ifndef SWIG
-	Constraint& operator=(const Constraint &aConstraint);
-#endif
-	void copyData(const Constraint &aConstraint);
 
 	virtual void updateFromConstraint(SimTK::State& s, const Constraint &aConstraint);
 	virtual bool isDisabled(const SimTK::State& s) const;
@@ -118,7 +110,7 @@ protected:
 
 private:
 	void setNull();
-	void setupProperties();
+	void constructProperties();
 
 	friend class SimbodyEngine;
 

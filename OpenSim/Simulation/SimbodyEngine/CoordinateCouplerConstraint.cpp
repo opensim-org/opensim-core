@@ -112,53 +112,15 @@ CoordinateCouplerConstraint::~CoordinateCouplerConstraint()
  * Default constructor.
  */
 CoordinateCouplerConstraint::CoordinateCouplerConstraint() :
-	Constraint(),
-	_function(_functionProp.getValueObjPtrRef()),
-	_independentCoordNames(_independentCoordNamesProp.getValueStrArray()),
-	_dependentCoordName(_dependentCoordNameProp.getValueStr()),
-    _scaleFactorProp(PropertyDbl("", 1.0)),
-    _scaleFactor(_scaleFactorProp.getValueDbl())
+	Constraint()
 {
 	setNull();
-	setupProperties();
-}
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aConstraint CoordinateCouplerConstraint to be copied.
- */
-CoordinateCouplerConstraint::CoordinateCouplerConstraint(const CoordinateCouplerConstraint &aConstraint) :
-   Constraint(aConstraint),
-	_function(_functionProp.getValueObjPtrRef()),
-	_independentCoordNames(_independentCoordNamesProp.getValueStrArray()),
-	_dependentCoordName(_dependentCoordNameProp.getValueStr()),
-    _scaleFactorProp(PropertyDbl("", 1.0)),
-    _scaleFactor(_scaleFactorProp.getValueDbl())
-{
-	setNull();
-	setupProperties();
-	copyData(aConstraint);
+	constructProperties();
 }
 
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-
-//_____________________________________________________________________________
-/**
- * Copy data members from one CoordinateCouplerConstraint to another.
- *
- * @param aConstraint CoordinateCouplerConstraint to be copied.
- */
-void CoordinateCouplerConstraint::copyData(const CoordinateCouplerConstraint &aConstraint)
-{
-	Constraint::copyData(aConstraint);
-	_function = (Function*)Object::SafeCopy(aConstraint._function);
-	_independentCoordNames = aConstraint._independentCoordNames;
-	_dependentCoordName = aConstraint._dependentCoordName;
-    _scaleFactor = aConstraint._scaleFactor;
-}
 
 //_____________________________________________________________________________
 /**
@@ -173,23 +135,19 @@ void CoordinateCouplerConstraint::setNull()
 /**
  * Connect properties to local pointers.
  */
-void CoordinateCouplerConstraint::setupProperties()
+void CoordinateCouplerConstraint::constructProperties()
 {
 	// Coordinate Coupler Function
-	_functionProp.setName("coupled_coordinates_function");
-	_propertySet.append(&_functionProp);
+	constructProperty_coupled_coordinates_function();
 
 	// coordinates that are coupled (by name)
-	_independentCoordNamesProp.setName("independent_coordinate_names");
-	_propertySet.append(&_independentCoordNamesProp);
+	constructProperty_independent_coordinate_names();
 
-		// coordinates that are coupled (by name)
-	_dependentCoordNameProp.setName("dependent_coordinate_name");
-	_propertySet.append(&_dependentCoordNameProp);
+	// coordinates that are coupled (by name)
+	constructProperty_dependent_coordinate_name("");
 
     // scale factor
-    _scaleFactorProp.setName("scale_factor");
-    _propertySet.append(&_scaleFactorProp);
+	constructProperty_scale_factor(1.0);
 }
 
 //_____________________________________________________________________________
@@ -207,18 +165,26 @@ void CoordinateCouplerConstraint::connectToModel(Model& aModel)
 
 	// Look up the bodies and coordinates being coupled by name in the
 	// model and keep lists of their indices
-	for(int i=0; i<_independentCoordNames.getSize(); i++){
-		if (!_model->updCoordinateSet().contains(_independentCoordNames[i])) {
+
+	Array<std::string> independentCoordNames;
+
+	for(int i = 0; i < getProperty_independent_coordinate_names().size(); i++) {
+		independentCoordNames.append(get_independent_coordinate_names(i));
+	}
+	
+
+	for(int i=0; i<independentCoordNames.getSize(); i++){
+		if (!_model->updCoordinateSet().contains(independentCoordNames[i])) {
 			errorMessage = "Coordinate coupler: unknown independent coordinate " ;
-			errorMessage += _independentCoordNames[i];
+			errorMessage += independentCoordNames[i];
 			throw (Exception(errorMessage));
 		}
 	}
 
 	// Last coordinate in the coupler is the dependent coordinate
-	if (!_model->updCoordinateSet().contains(_dependentCoordName)) {
+	if (!_model->updCoordinateSet().contains(get_dependent_coordinate_name())) {
 		errorMessage = "Coordinate coupler: unknown dependent coordinate " ;
-		errorMessage += _dependentCoordName;
+		errorMessage += get_dependent_coordinate_name();
 		throw (Exception(errorMessage));
 	}
 }
@@ -237,15 +203,21 @@ void CoordinateCouplerConstraint::addToSystem(SimTK::MultibodySystem& system) co
 
 	// Look up the bodies and coordinates being coupled by name in the
 	// model and keep lists of their indices
-	for(int i=0; i<_independentCoordNames.getSize(); i++){
+	Array<std::string> independentCoordNames;
+
+	for(int i = 0; i < getProperty_independent_coordinate_names().size(); i++) {
+		independentCoordNames.append(get_independent_coordinate_names(i));
+	}
+
+	for(int i=0; i<independentCoordNames.getSize(); i++){
 		// Error checking was handled in connectToModel()
-	    Coordinate& aCoordinate = _model->updCoordinateSet().get(_independentCoordNames[i]);
+	    Coordinate& aCoordinate = _model->updCoordinateSet().get(independentCoordNames[i]);
 		mob_bodies.push_back(aCoordinate._bodyIndex);
 		mob_qs.push_back(SimTK::MobilizerQIndex(aCoordinate._mobilizerQIndex));
 	}
 
 	// Last coordinate in the coupler is the dependent coordinate
-	Coordinate& aCoordinate = _model->updCoordinateSet().get(_dependentCoordName);
+	Coordinate& aCoordinate = _model->updCoordinateSet().get(get_dependent_coordinate_name());
 	mob_bodies.push_back(aCoordinate._bodyIndex);
 	mob_qs.push_back(SimTK::MobilizerQIndex(aCoordinate._mobilizerQIndex));
 
@@ -255,7 +227,8 @@ void CoordinateCouplerConstraint::addToSystem(SimTK::MultibodySystem& system) co
 	}
 
 	// Create and set the underlying coupler constraint function;
-	SimTK::Function *simtkCouplerFunction = new CompoundFunction(_function->createSimTKFunction(), _scaleFactor);
+	const Function& f = get_coupled_coordinates_function();
+	SimTK::Function *simtkCouplerFunction = new CompoundFunction(f.createSimTKFunction(), get_scale_factor());
 
 
 	// Now create a Simbody Constraint::CoordinateCoupler
@@ -281,7 +254,7 @@ void CoordinateCouplerConstraint::addToSystem(SimTK::MultibodySystem& system) co
  */
 void CoordinateCouplerConstraint::scale(const ScaleSet& aScaleSet)
 {
-	Coordinate& depCoordinate = _model->updCoordinateSet().get(_dependentCoordName);
+	Coordinate& depCoordinate = _model->updCoordinateSet().get(get_dependent_coordinate_name());
 	
 	// Only scale if the dependent coordinate is a translation
 	if (depCoordinate.getMotionType() == Coordinate::Translational){
@@ -321,22 +294,7 @@ void CoordinateCouplerConstraint::scale(const ScaleSet& aScaleSet)
 		}
 
 		// scale the user-defined OpenSim 
-        _scaleFactor *= scaleFactor;
+        set_scale_factor(get_scale_factor() * scaleFactor);
 	}
 }
 
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-CoordinateCouplerConstraint& CoordinateCouplerConstraint::operator=(const CoordinateCouplerConstraint &aConstraint)
-{
-	Constraint::operator=(aConstraint);
-	copyData(aConstraint);
-	return(*this);
-}

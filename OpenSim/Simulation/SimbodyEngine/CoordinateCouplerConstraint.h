@@ -59,24 +59,13 @@ OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateCouplerConstraint, Constraint);
 //=============================================================================
 protected:
 
-	/** Constraint function of generalized coordinates (to be specified) used to
-	evaluate the constraint errors and their derivatives, and must valid to at
-	least 2nd order. Constraint function must evaluate to zero when coordinates
-	satisfy constraint */
-	PropertyObjPtr<Function> _functionProp;
-	Function *&_function;
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(coupled_coordinates_function, Function, "Constraint function of generalized coordinates (to be specified) used to evaluate the constraint errors and their derivatives, and must valid to at least 2nd order. Constraint function must evaluate to zero when coordinates satisfy constraint");
 
-	/** List of names of the independent coordinates (restricted to 1 for now). */
-	PropertyStrArray _independentCoordNamesProp;
-	Array<std::string>& _independentCoordNames;
+	OpenSim_DECLARE_LIST_PROPERTY(independent_coordinate_names, std::string, "List of names of the independent coordinates (restricted to 1 for now).");
 
-	/** Name of the dependent coordinate. */
-	PropertyStr _dependentCoordNameProp;
-	std::string& _dependentCoordName;
-
-    // Scale factor for the function.
-    PropertyDbl _scaleFactorProp;
-    double& _scaleFactor;
+	OpenSim_DECLARE_PROPERTY(dependent_coordinate_name, std::string, "Name of the dependent coordinate.");
+	
+	OpenSim_DECLARE_PROPERTY(scale_factor, double, "Scale factor for the function.");
 
 //=============================================================================
 // METHODS
@@ -84,20 +73,28 @@ protected:
 public:
 	// CONSTRUCTION
 	CoordinateCouplerConstraint();
-	CoordinateCouplerConstraint(const CoordinateCouplerConstraint &aConstraint);
 	virtual ~CoordinateCouplerConstraint();
 
-	CoordinateCouplerConstraint& operator=(const CoordinateCouplerConstraint &aConstraint);
-	void copyData(const CoordinateCouplerConstraint &aConstraint);
-
 	// GET AND SET
-	void setIndependentCoordinateNames(const Array<std::string> &aCoordNames) { _independentCoordNames = aCoordNames; }
-	const Array<std::string>& getIndependentCoordinateNames() const { return _independentCoordNames; }
-	void setDependentCoordinateName(const std::string &aCoordName) { _dependentCoordName = aCoordName; }
-	const std::string& getDependentCoordinateName() const { return _dependentCoordName; }
-	Function& getFunction() const {return *_function; }
-	void setFunction(const Function &aFunction) {_function = aFunction.clone();}
-	void setFunction(Function *aFunction)  { _function = aFunction; }
+	void setIndependentCoordinateNames(const Array<std::string> &aCoordNames) { set_independent_coordinate_names(aCoordNames); }
+	const Array<std::string> getIndependentCoordinateNames() const { 
+		Array<std::string> coords;
+		for(int i = 0; i < getProperty_independent_coordinate_names().size(); i++) {
+			coords.append(get_independent_coordinate_names(i));
+		}
+		return coords; 
+	}
+	void setDependentCoordinateName(const std::string &aCoordName) { set_dependent_coordinate_name(aCoordName); }
+	const std::string& getDependentCoordinateName() const { return get_dependent_coordinate_name(); }
+	const Function& getFunction() const {
+		const Property<Function>& function = getProperty_coupled_coordinates_function();
+		if(function.empty()) {
+			throw Exception("CoordinateCouplerConstraint::getFunction(): no Function is defined");
+		}
+		return function.getValue(); 
+	}
+	void setFunction(const Function &aFunction) { set_coupled_coordinates_function(*aFunction.clone());}
+	void setFunction(Function *aFunction)  { set_coupled_coordinates_function(*aFunction); }
 
 	// SCALE
 	virtual void scale(const ScaleSet& aScaleSet);
@@ -111,7 +108,7 @@ protected:
 
 private:
 	void setNull();
-	void setupProperties();
+	void constructProperties();
 	friend class SimbodyEngine;
 
 //=============================================================================

@@ -54,32 +54,10 @@ UnilateralConstraint::~UnilateralConstraint()
 {
 }
 
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aUnilateralConstraint UnilateralConstraint to be copied.
- */
-UnilateralConstraint::UnilateralConstraint(const UnilateralConstraint &aUnilateralConstraint) :
-   Constraint(aUnilateralConstraint)
-{
-	setNull();
-	copyData(aUnilateralConstraint);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Copy data members from one UnilateralConstraint to another.
- *
- * @param aUnilateralConstraint UnilateralConstraint to be copied.
- */
-void UnilateralConstraint::copyData(const UnilateralConstraint &aUnilateralConstraint)
-{
-	Constraint::copyData(aUnilateralConstraint);
-}
 
 //_____________________________________________________________________________
 /**
@@ -102,27 +80,6 @@ void UnilateralConstraint::connectToModel(Model& aModel)
 	// Base class
 	Super::connectToModel(aModel);
 }
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-UnilateralConstraint& UnilateralConstraint::operator=(const UnilateralConstraint &aConstraint)
-{
-	// BASE CLASS
-	Constraint::operator=(aConstraint);
-
-	copyData(aConstraint);
-
-	return(*this);
-}
-
 
 //=============================================================================
 // GET AND SET
