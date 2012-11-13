@@ -382,7 +382,7 @@ const string& SimbodySimmModel::getGravityLabel(const SimTK::Vec3& aGravity) con
  * @param rIndependentCoordinate The independent coordinate, if any, that the coordinate depends on.
  * @return The function controlling the dependency.
  */
-OpenSim::Function* SimbodySimmModel::isDependent(const Coordinate* aCoordinate,
+const OpenSim::Function* SimbodySimmModel::isDependent(const Coordinate* aCoordinate,
                                                  const Coordinate** rIndependentCoordinate) const
 {
    for (int i=0; i<_model->getConstraintSet().getSize(); i++) {
@@ -391,7 +391,8 @@ OpenSim::Function* SimbodySimmModel::isDependent(const Coordinate* aCoordinate,
          if (ccc.getDependentCoordinateName() == aCoordinate->getName()) {
             string foo = ccc.getIndependentCoordinateNames().get(0);
             *rIndependentCoordinate = &_model->getCoordinateSet().get(ccc.getIndependentCoordinateNames().get(0));
-            return &ccc.getFunction();
+            const OpenSim::Function* ret = &ccc.getFunction();
+            return ret;
          }
       }
    }
