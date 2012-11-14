@@ -34,6 +34,8 @@
 #include "MarkerSet.h"
 #include "Muscle.h"
 #include "BodySet.h"
+#include "ForceSet.h"
+#include "Ligament.h"
 
 #include "Simbody.h"
 
@@ -159,6 +161,48 @@ void DefaultGeometry::generateDecorations
             const Array<PathPoint*>& points = 
                 muscle.getGeometryPath().getCurrentDisplayPath(state);
             if (points.getSize() == 0) 
+                continue;
+
+            const PathPoint* lastPoint = points[0];
+            Vec3 lastLoc_B = lastPoint->getLocation();
+            MobilizedBodyIndex lastBody = lastPoint->getBody().getIndex();
+
+            if (hints.getShowPathPoints())
+                drawPathPoint(lastBody, lastLoc_B, 0.9*SimTK::White, geometry);
+
+
+            Vec3 lastPos = matter.getMobilizedBody(lastBody)
+                                .getBodyTransform(state)*lastLoc_B;
+            for (int j = 1; j < points.getSize(); j++) {
+                const PathPoint* point = points[j];
+                const Vec3 loc_B = point->getLocation();
+                const MobilizedBodyIndex body = point->getBody().getIndex();
+                if (hints.getShowPathPoints())
+                    drawPathPoint(body, loc_B, 0.9*SimTK::White, geometry);
+
+                Vec3 pos = matter.getMobilizedBody(body)
+                                 .getBodyTransform(state)*loc_B;
+
+                geometry.push_back(DecorativeLine(lastPos, pos)
+                                    .setLineThickness(4)
+                                    .setColor(color));
+                lastPos = pos;
+            }
+        }
+
+        // Display ligaments
+        const ForceSet& forces = _model.getForceSet();
+        for (int i = 0; i < forces.getSize(); ++i) {
+            Ligament* ligament = dynamic_cast<Ligament*>(&forces.get(i));
+            if (ligament == 0)
+                continue;
+
+            const Vec3 color(1, 1, 1); // make ligaments white
+
+            ligament->updateDisplayer(state);
+            const Array<PathPoint*>& points =
+                ligament->getGeometryPath().getCurrentDisplayPath(state);
+            if (points.getSize() == 0)
                 continue;
 
             const PathPoint* lastPoint = points[0];
