@@ -61,16 +61,16 @@ int main()
 		testMomentArmDefinitionForModel("BothLegs22.osim", "r_knee_angle", "VASINT", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), 0.0, "VASINT of BothLegs with no mass: FAILED");
 		cout << "VASINT of BothLegs with no mass: PASSED\n" << endl;
 
-		testMomentArmDefinitionForModel("gait23_PatellaInFemur.osim", "hip_flexion_r", "rect_fem_r", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3), -1.0, "Rectus Femoris at hip with muscle attachment on patella defined w.r.t Femur: FAILED");
+		testMomentArmDefinitionForModel("testMomentArmsConstraintB.osim", "hip_flexion_r", "rect_fem_r", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3), -1.0, "Rectus Femoris at hip with muscle attachment on patella defined w.r.t Femur: FAILED");
 		cout << "Rectus Femoris at hip with muscle attachment on patella defined w.r.t Femur: PASSED\n" << endl;
 
-		testMomentArmDefinitionForModel("gait23_PatellaInFemur.osim", "knee_angle_r", "rect_fem_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Rectus Femoris with muscle attachment on patella defined w.r.t Femur: FAILED");
+		testMomentArmDefinitionForModel("testMomentArmsConstraintB.osim", "knee_angle_r", "rect_fem_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Rectus Femoris with muscle attachment on patella defined w.r.t Femur: FAILED");
 		cout << "Rectus Femoris with muscle attachment on patella defined w.r.t Femur: PASSED\n" << endl;
 
-		testMomentArmDefinitionForModel("gait23_PatellaInFemur.osim", "knee_angle_r", "vas_int_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Knee with Vasti attachment on patella defined w.r.t Femur: FAILED");
+		testMomentArmDefinitionForModel("testMomentArmsConstraintB.osim", "knee_angle_r", "vas_int_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Knee with Vasti attachment on patella defined w.r.t Femur: FAILED");
 		cout << "Knee with Vasti attachment on patella defined w.r.t Femur: PASSED\n" << endl;
 
-		testMomentArmDefinitionForModel("gait2354_patellae.osim", "knee_angle_r", "vas_int_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Knee with Vasti attachment on patella w.r.t Tibia: FAILED");
+		testMomentArmDefinitionForModel("testMomentArmsConstraintA.osim", "knee_angle_r", "vas_int_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Knee with Vasti attachment on patella w.r.t Tibia: FAILED");
 		cout << "Knee with Vasti attachment on patella w.r.t Tibia: PASSED\n" << endl;
 
 		testMomentArmDefinitionForModel("gait2354_simbody.osim", "knee_angle_r", "vas_int_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Knee with moving muscle point (no patella): FAILED");
