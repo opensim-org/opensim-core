@@ -56,33 +56,10 @@ PointOnLineConstraint::~PointOnLineConstraint()
  * Default constructor.
  */
 PointOnLineConstraint::PointOnLineConstraint() :
-	Constraint(),
-	_lineBodyName(_lineBodyNameProp.getValueStr()),
-	_lineDirection(_lineDirectionProp.getValueDblVec()),
-	_pointOnLine(_pointOnLineProp.getValueDblVec()),
-	_followerBodyName(_followerBodyNameProp.getValueStr()),
-	_pointOnFollower(_pointOnFollowerProp.getValueDblVec())
+	Constraint()
 {
 	setNull();
-	setupProperties();
-}
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aConstraint PointOnLineConstraint to be copied.
- */
-PointOnLineConstraint::PointOnLineConstraint(const PointOnLineConstraint &aConstraint) :
-   Constraint(aConstraint),
-	_lineBodyName(_lineBodyNameProp.getValueStr()),
-	_lineDirection(_lineDirectionProp.getValueDblVec()),
-	_pointOnLine(_pointOnLineProp.getValueDblVec()),
-	_followerBodyName(_followerBodyNameProp.getValueStr()),
-	_pointOnFollower(_pointOnFollowerProp.getValueDblVec())
-{
-	setNull();
-	setupProperties();
-	copyData(aConstraint);
+	constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -91,41 +68,21 @@ PointOnLineConstraint::PointOnLineConstraint(const PointOnLineConstraint &aConst
  */
    PointOnLineConstraint::PointOnLineConstraint(OpenSim::Body& lineBody, Vec3 lineDirection, Vec3 pointOnLine,
 			OpenSim::Body& followerBody, Vec3 followerPoint) :
-	Constraint(),
-	_lineBodyName(_lineBodyNameProp.getValueStr()),
-	_lineDirection(_lineDirectionProp.getValueDblVec()),
-	_pointOnLine(_pointOnLineProp.getValueDblVec()),
-	_followerBodyName(_followerBodyNameProp.getValueStr()),
-	_pointOnFollower(_pointOnFollowerProp.getValueDblVec())
+	Constraint()
 {
 	setNull();
-	setupProperties();
-	_lineBodyName = lineBody.getName();
-	_lineDirection = lineDirection;
-	_pointOnLine = pointOnLine;
-	_followerBodyName = followerBody.getName();
-	_pointOnFollower = followerPoint;
+	constructProperties();
+	set_line_body(lineBody.getName());
+	set_line_direction_vec(lineDirection);
+	set_point_on_line(pointOnLine);
+	set_follower_body(followerBody.getName());
+	set_point_on_follower(followerPoint);
 }
 
 
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-
-//_____________________________________________________________________________
-/**
- * Copy data members from one PointOnLineConstraint to another.
- *
- * @param aConstraint PointOnLineConstraint to be copied.
- */
-void PointOnLineConstraint::copyData(const PointOnLineConstraint &aConstraint)
-{
-	_lineBodyName = aConstraint._lineBodyName;
-	_lineDirection = aConstraint._lineDirection;
-	_pointOnLine = aConstraint._pointOnLine;
-	_followerBodyName = aConstraint._followerBodyName;
-	_pointOnFollower = aConstraint._pointOnFollower;
-}
 
 //_____________________________________________________________________________
 /**
@@ -140,34 +97,25 @@ void PointOnLineConstraint::setNull()
 /**
  * Connect properties to local pointers.
  */
-void PointOnLineConstraint::setupProperties()
+void PointOnLineConstraint::constructProperties()
 {
-
 	// Line Body Name
-	_lineBodyNameProp.setName("line_body");
-	_propertySet.append(&_lineBodyNameProp);
-
-	// Line Direction
-	_lineDirectionProp.setName("line_direction_vec");
-	_propertySet.append(&_lineDirectionProp);
+	constructProperty_line_body("");
 
 	//Default location and orientation (rotation sequence)
 	SimTK::Vec3 origin(0.0, 0.0, 0.0);
 
+	// Line Direction
+	constructProperty_line_direction_vec(origin);
+
 	// Default Point On Line
-	_pointOnLineProp.setName("point_on_line");
-	_pointOnLineProp.setValue(origin);
-	_propertySet.append(&_pointOnLineProp);
+	constructProperty_point_on_line(origin);
 
 	// Follower Body
-	_followerBodyNameProp.setName("follower_body");
-	_propertySet.append(&_followerBodyNameProp);
+	constructProperty_follower_body("");
 
 	// Point On Follower Body 
-	_pointOnFollowerProp.setName("point_on_follower");
-	_pointOnFollowerProp.setValue(origin);
-	_propertySet.append(&_pointOnFollowerProp);
-
+	constructProperty_point_on_follower(origin);
 }
 
 //_____________________________________________________________________________
@@ -183,16 +131,19 @@ void PointOnLineConstraint::connectToModel(Model& aModel) {
 	string errorMessage;
 	// Look up the two bodies being constrained together by name in the
 	// model and might as well keep a pointer to them
-	if (!aModel.updBodySet().contains(_lineBodyName)) {
-		errorMessage = "Invalid line body (" + _lineBodyName + ") specified in Constraint " + getName();
+	std::string lineBodyName = get_line_body();
+	std::string followerBodyName = get_follower_body();
+
+	if (!aModel.updBodySet().contains(lineBodyName)) {
+		errorMessage = "Invalid line body (" + lineBodyName + ") specified in Constraint " + getName();
 		throw (Exception(errorMessage.c_str()));
 	}
-	if (!aModel.updBodySet().contains(_followerBodyName)) {
-		errorMessage = "Invalid follower body (" + _followerBodyName + ") specified in Constraint " + getName();
+	if (!aModel.updBodySet().contains(followerBodyName)) {
+		errorMessage = "Invalid follower body (" + followerBodyName + ") specified in Constraint " + getName();
 		throw (Exception(errorMessage.c_str()));
 	}
-	_lineBody = &aModel.updBodySet().get(_lineBodyName);
-	_followerBody = &aModel.updBodySet().get(_followerBodyName);
+	_lineBody = &aModel.updBodySet().get(lineBodyName);
+	_followerBody = &aModel.updBodySet().get(followerBodyName);
 }
 
 void PointOnLineConstraint::addToSystem(SimTK::MultibodySystem& system) const
@@ -204,31 +155,16 @@ void PointOnLineConstraint::addToSystem(SimTK::MultibodySystem& system) const
 	SimTK::MobilizedBody fb = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_followerBody->getIndex());
 
 	// Normalize Line Direction
-	SimTK::UnitVec3 normLineDirection(_lineDirection.normalize());
+	SimTK::UnitVec3 normLineDirection(get_line_direction_vec().normalize());
 
     // Now create a Simbody Constraint::PointOnLine
 	//PointOnLine(MobilizedBody& lineBody_B, const UnitVec3& defaultLineDirection_B, const Vec3& defaultPointOnLine_B,
 	//           MobilizedBody& followerBody_F, const Vec3& defaultFollowerPoint_F);
-    SimTK::Constraint::PointOnLine simtkPointOnLine(lb, normLineDirection, _pointOnLine, fb, _pointOnFollower);
+    SimTK::Constraint::PointOnLine simtkPointOnLine(lb, normLineDirection, get_point_on_line(), fb, get_point_on_follower());
     
     // Beyond the const Component get the index so we can access the SimTK::Constraint later
 	PointOnLineConstraint* mutableThis = const_cast<PointOnLineConstraint *>(this);
 	mutableThis->_index = simtkPointOnLine.getConstraintIndex();
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-PointOnLineConstraint& PointOnLineConstraint::operator=(const PointOnLineConstraint &aConstraint)
-{
-	Constraint::operator=(aConstraint);
-	return(*this);
 }
 
 //=============================================================================
@@ -239,28 +175,28 @@ PointOnLineConstraint& PointOnLineConstraint::operator=(const PointOnLineConstra
  * Following methods set attributes of the point on line constraint */
 void PointOnLineConstraint::setLineBodyByName(std::string aBodyName)
 {
-	_lineBodyName = aBodyName;
+	set_line_body(aBodyName);
 }
 
 void PointOnLineConstraint::setFollowerBodyByName(std::string aBodyName)
 {
-	_followerBodyName = aBodyName;
+	set_follower_body(aBodyName);
 }
 
 /** Set the line direction for the point on line constraint*/
 void PointOnLineConstraint::setLineDirection(Vec3 direction)
 {
-	_lineDirection = direction;
+	set_line_direction_vec(direction);
 }
 
 /** Set the location of the point on the line*/
 void PointOnLineConstraint::setPointOnLine(Vec3 point)
 {
-	_pointOnLine = point;
+	set_point_on_line(point);
 }
 
 /** Set the location of the point on the follower body*/
 void PointOnLineConstraint::setPointOnFollower(Vec3 point)
 {
-	_pointOnFollower = point;
+	set_point_on_follower(point);
 }

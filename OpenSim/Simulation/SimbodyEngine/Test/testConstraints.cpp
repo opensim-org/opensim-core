@@ -528,9 +528,9 @@ void testCoordinateLocking()
 	osimModel = new Model("testLockingModel.osim");
 
 	// Re-initialize the state of the model based on now saved defaults of the model.
-	si = osimModel->initSystem();
+	State& si2 = osimModel->initSystem();
 
-	osimModel->getMultibodySystem().realize(si, Stage::Velocity );
+	osimModel->getMultibodySystem().realize(si2, Stage::Velocity );
  
 	// Create the integrator and manager for the simulation.
 	RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem());
@@ -541,20 +541,20 @@ void testCoordinateLocking()
 	Manager manager(*osimModel,  integrator);
 
 	// Print out the initial position and velocity states
-	si.getQ().dump("Initial q's"); // pendulum positions
-	si.getU().dump("Initial u's"); // pendulum velocities
-	Vector qi = si.getQ();
+	si2.getQ().dump("Initial q's"); // pendulum positions
+	si2.getU().dump("Initial u's"); // pendulum velocities
+	Vector qi = si2.getQ();
 
 	// Integrate from initial time to final time
 	manager.setInitialTime(0.0);
 	manager.setFinalTime(duration);
 	cout<<"\n\nIntegrating from "<<manager.getInitialTime()<<" to "<<manager.getFinalTime()<<std::endl;
-	manager.integrate(si);
+	manager.integrate(si2);
 
 	// Print out the final position and velocity states
-	Vector qf = si.getQ();
+	Vector qf = si2.getQ();
 	qf.dump("Final q's"); // pendulum positions
-	si.getU().dump("Final u's"); // pendulum velocities
+	si2.getU().dump("Final u's"); // pendulum velocities
 
 	stringstream errorMessage;
 	errorMessage << "testCoordinateLocking FAILED\ntestCoordinateLocking: q_err = " << qf[1]-qi[1];

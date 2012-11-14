@@ -50,26 +50,16 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PointOnLineConstraint, Constraint);
 // DATA
 //=============================================================================
 protected:
-	/** Specify the body on which the line is defined */
-	PropertyStr _lineBodyNameProp;
-	std::string& _lineBodyName;
 
-	/** Direction of the line in line body specified in the line body frame. */
-	PropertyDblVec3 _lineDirectionProp;
-	SimTK::Vec3& _lineDirection;
+	OpenSim_DECLARE_PROPERTY(line_body, std::string, "Specify the body on which the line is defined");
 
-	/** Specify the default point on the line in the line body frame. */
-	PropertyDblVec3 _pointOnLineProp;
-	SimTK::Vec3& _pointOnLine;
+	OpenSim_DECLARE_PROPERTY(line_direction_vec, SimTK::Vec3, "Direction of the line in line body specified in the line body frame.");
 
-	/** Specify the follower body constrained to the line. */
-	PropertyStr _followerBodyNameProp;
-	std::string& _followerBodyName;
+	OpenSim_DECLARE_PROPERTY(point_on_line, SimTK::Vec3, "Specify the default point on the line in the line body frame.");
+	
+	OpenSim_DECLARE_PROPERTY(follower_body, std::string, "Specify the follower body constrained to the line.");
 
-	/** Specify the  point on the follower bocy constrained to the line in 
-	the follower body reference frame. */
-	PropertyDblVec3 _pointOnFollowerProp;
-	SimTK::Vec3& _pointOnFollower;
+	OpenSim_DECLARE_PROPERTY(point_on_follower, SimTK::Vec3, "Specify the  point on the follower bocy constrained to the line in the follower body reference frame.");
 
 	/** Line body */
 	Body *_lineBody;
@@ -83,13 +73,9 @@ protected:
 public:
 	// CONSTRUCTION
 	PointOnLineConstraint();
-	PointOnLineConstraint(const PointOnLineConstraint &aConstraint);
 	PointOnLineConstraint(OpenSim::Body& lineBody, SimTK::Vec3 lineDirection, SimTK::Vec3 pointOnLine,
 		OpenSim::Body& followerBody, SimTK::Vec3 followerPoint);
 	virtual ~PointOnLineConstraint();
-
-	PointOnLineConstraint& operator=(const PointOnLineConstraint &aConstraint);
-	void copyData(const PointOnLineConstraint &aConstraint);
 
 	//SET 
 	void setLineBodyByName(std::string aBodyName);
@@ -108,7 +94,7 @@ protected:
 
 private:
 	void setNull();
-	void setupProperties();
+	void constructProperties();
 
 //=============================================================================
 };	// END of class PointOnLineConstraint
