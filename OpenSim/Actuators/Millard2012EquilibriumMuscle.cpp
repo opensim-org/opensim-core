@@ -957,7 +957,7 @@ void Millard2012EquilibriumMuscle::
 
         int flag_status       = -1;
         double solnErr        = SimTK::NaN;
-        double iterations     = SimTK::NaN;
+        int iterations     = 0;
         double fiberLength    = SimTK::NaN;
         double fiberVelocity  = SimTK::NaN;
         double tendonForce    = SimTK::NaN;
