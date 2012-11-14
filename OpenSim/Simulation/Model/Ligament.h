@@ -33,6 +33,7 @@
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/Function.h>
+#include <OpenSim/Common/LinearFunction.h>
 #include "Model.h"
 #include "Force.h"
 
@@ -76,7 +77,6 @@ public:
 // PUBLIC METHODS
 //==============================================================================
 	Ligament();
-
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.
 
@@ -99,6 +99,7 @@ public:
 	virtual const Function& getForceLengthCurve() const 
     {   return get_force_length_curve(); }
 	virtual bool setForceLengthCurve(const Function& aForceLengthCurve);
+	virtual void setLinearStiffness(double aStiffness, double aRestLength);
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
@@ -107,6 +108,7 @@ public:
 	virtual void computeForce(const SimTK::State& s, 
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForces) const;
+	double getTension(const SimTK::State& s) const;
 
 	//--------------------------------------------------------------------------
 	// SCALE

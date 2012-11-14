@@ -46,6 +46,7 @@ Ligament::Ligament()
 	constructProperties();
 }
 
+
 //_____________________________________________________________________________
 /*
  * Construct and initialize the properties for the ligament.
@@ -178,6 +179,29 @@ bool Ligament::setForceLengthCurve(const Function& aForceLengthCurve)
 	set_force_length_curve(aForceLengthCurve);
 	return true;
 }
+
+//_____________________________________________________________________________
+/**
+ * Set this ligament to have linear stiffness. This method will in turn
+ * set the ForceLengthCurve to a straight line, and the maxIsoForce
+ * to the stiffness value (for unit strain).
+ *
+ * @param aStiffness the linear stiffness value for this ligament
+ * @param aRestLength the rest length of the spring
+ */
+void Ligament::setLinearStiffness(double aStiffness, double aRestLength)
+{
+    // the ligament force uses the normalized stretch (strain), therefore to
+    // mimic a linear spring behaviour the force-length curve must incorporate
+    // the rest length.
+    // the resulting force term is:  f = K * (l-l0)
+
+    LinearFunction linearFunc(aRestLength, 0);
+    set_force_length_curve(linearFunc);
+    set_resting_length(aRestLength);
+    set_pcsa_force(aStiffness);
+}
+
 //=============================================================================
 // SCALING
 //=============================================================================
@@ -268,6 +292,20 @@ void Ligament::computeForce(const SimTK::State& s,
 		applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), 
                           force*PFDs[i]->direction(), bodyForces);
 	}
+}
+
+double Ligament::getTension(const SimTK::State& s) const {
+
+    const GeometryPath& path = getGeometryPath();
+    const double& restingLength = get_resting_length();
+    const double& pcsaForce = get_pcsa_force();
+
+    if (path.getLength(s) <= restingLength)
+        return 0;
+
+    double strain = (path.getLength(s) - restingLength) / restingLength;
+    return getForceLengthCurve().calcValue(SimTK::Vector(1, strain))
+                                                                   * pcsaForce;
 }
 
 //_____________________________________________________________________________

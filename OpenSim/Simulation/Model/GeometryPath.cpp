@@ -1232,11 +1232,11 @@ void GeometryPath::updateDisplayPath(const SimTK::State& s)
 	// that have a NULL path pointer. This means that they were
 	// created by an earlier call to updateDisplayPath() and are
 	// not part of the _currentPath.
-	for (int i=0; i<currentDisplayPath.getSize(); i++) {
-		PathPoint* mp = currentDisplayPath.get(i);
-		if (!mp->getPath())
-			delete mp;
-	}
+//	for (int i=0; i<currentDisplayPath.getSize(); i++) {
+//		PathPoint* mp = currentDisplayPath.get(i);
+//		if (!mp->getPath())
+//			delete mp;
+//	}
 	currentDisplayPath.setSize(0);
 
     const Array<PathPoint*>& currentPath =  getCacheVariable<Array<PathPoint*> >(s, "current_path");

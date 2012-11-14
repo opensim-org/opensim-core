@@ -78,9 +78,9 @@ Thelen2003Muscle(const std::string& aName,  double aMaxIsometricForce,
 void Thelen2003Muscle::addToSystem(SimTK::MultibodySystem& system) const 
 {
     Super::addToSystem(system);
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-                    "Thelen2003Muscle: Muscle is not"
-                    " to date with properties");
+//    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+//                    "Thelen2003Muscle: Muscle is not"
+//                    " to date with properties");
 }
 
 void Thelen2003Muscle::connectToModel(Model& aModel)
@@ -355,9 +355,9 @@ double Thelen2003Muscle::
 calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
                                        double aActivation) const
 {      
-        SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-                    "Thelen2003Muscle: Muscle is not"
-                    " to date with properties");
+//        SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+//                    "Thelen2003Muscle: Muscle is not"
+//                    " to date with properties");
 
         string caller = getName();
         caller.append(  "Thelen2003Muscle::"
@@ -396,9 +396,9 @@ double Thelen2003Muscle::
                                             double fiberLength, 
                                             double fiberVelocity) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-                    "Thelen2003Muscle: Muscle is not"
-                    " to date with properties");
+//    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+//                    "Thelen2003Muscle: Muscle is not"
+//                    " to date with properties");
 
     string caller = getName();
     caller.append("::Thelen2003Muscle::calcActiveFiberForceAlongTendon");
@@ -458,9 +458,9 @@ double Thelen2003Muscle::
 
 double  Thelen2003Muscle::computeActuation(const SimTK::State& s) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-                    "Thelen2003Muscle: Muscle is not"
-                    " to date with properties");
+//    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+//                    "Thelen2003Muscle: Muscle is not"
+//                    " to date with properties");
 
     const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
     const FiberVelocityInfo& mvi = getFiberVelocityInfo(s);
@@ -476,9 +476,9 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
 {
     try{
 
-        SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-                    "Thelen2003Muscle: Muscle is not"
-                    " to date with properties");
+//        SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+//                    "Thelen2003Muscle: Muscle is not"
+//                    " to date with properties");
 
         //Initialize activation to the users desired setting, while enforcing
         //that it lie in within the allowable bounds.
@@ -599,9 +599,9 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
 void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s, 
                                                MuscleLengthInfo& mli) const
 {    
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-                    "Thelen2003Muscle: Muscle is not"
-                    " to date with properties");
+//    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+//                    "Thelen2003Muscle: Muscle is not"
+//                    " to date with properties");
 
     double simTime = s.getTime(); //for debugging purposes
 
@@ -645,9 +645,9 @@ void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s,
 void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s, 
                                                FiberVelocityInfo& fvi) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-                    "Thelen2003Muscle: Muscle is not"
-                    " to date with properties");
+//    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+//                    "Thelen2003Muscle: Muscle is not"
+//                    " to date with properties");
 
     double simTime = s.getTime(); //for debugging purposes
 
@@ -784,9 +784,9 @@ void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s,
 void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s, 
                                                MuscleDynamicsInfo& mdi) const
 {
-        SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-                    "Thelen2003Muscle: Muscle is not"
-                    " to date with properties");
+//        SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+//                    "Thelen2003Muscle: Muscle is not"
+//                    " to date with properties");
 
         double simTime = s.getTime(); //for debugging purposes
 
@@ -1347,9 +1347,9 @@ void Thelen2003Muscle::printCurveToCSVFile(const CurveType ctype,
 
             printMatrixToFile(results,colNames,path,fname);*/
 
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-                    "Thelen2003Muscle: Muscle is not"
-                    " to date with properties");
+//    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+//                    "Thelen2003Muscle: Muscle is not"
+//                    " to date with properties");
 
     std::string fname = getName();
 

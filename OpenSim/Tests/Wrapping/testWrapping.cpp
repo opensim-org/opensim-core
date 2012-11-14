@@ -27,9 +27,11 @@
 #include "simbody/internal/CableTrackerSubsystem.h"
 #include "simbody/internal/CablePath.h"
 
+#include <exception>
 #include <set>
 #include <string>
 #include <iostream>
+#include <stdio.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -45,14 +47,19 @@ public:
     Real duration;
 };
 
-void simulate(Model& osimModel, State& si, double initialTime, double finalTime);
+Real stiffness = 5000;
+//Real restLength = 3.5;
+Real restLengthRatio = 0.7;
+Real damping = 0; //0.1;
+
+void simulate(Model& osimModel, State& si, double initialTime, double finalTime, string simulationName="");
 void simulateModelWithMusclesNoViz(const string &modelFile, double finalTime, double activation=0.5);
 void simulateModelWithPassiveMuscles(const string &modelFile, double finalTime);
 void simulateModelWithoutMuscles(const string &modelFile, double finalTime);
 void simulateModelWithLigaments(const string &modelFile, double finalTime);
 void simulateModelWithCables(const string &modelFile, double finalTime);
 
-int main()
+int main_old()
 {
     SimTK::Array_<std::string> failures;
 
@@ -71,12 +78,13 @@ int main()
     return 0;
 }
 
-int main_new()
+int main()
 {
     SimTK::Array_<TestInfo> tests;
-    tests.push_back(TestInfo("test_wrapCylinder_vasint.osim"));
-    tests.push_back(TestInfo("test_wrapEllipsoid_vasint.osim"));
-    tests.push_back(TestInfo("arm26_crop.osim"));
+//    tests.push_back(TestInfo("test_wrapCylinder_vasint.osim"));
+//    tests.push_back(TestInfo("test_wrapEllipsoid_vasint.osim"));
+    tests.push_back(TestInfo("test_wrapEllipsoid_vasint_bfsh.osim",2));
+//    tests.push_back(TestInfo("arm26_crop.osim"));
 //    tests.push_back(TestInfo("gait2392_pelvisFixed.osim",0.05));
 //    tests.push_back(TestInfo("Arnold2010_pelvisFixed_crop.osim"));
 //    tests.push_back(TestInfo("TestShoulderModel_crop.osim"));
@@ -88,7 +96,9 @@ int main_new()
     for (unsigned int i = 0; i < tests.size(); ++i) {
         cout << "testing " << tests[i].filename << " for " << tests[i].duration << " s" << endl;
         try { // performance with cylnder wrapping
-            simulateModelWithPassiveMuscles(tests[i].filename, tests[i].duration);
+//            simulateModelWithPassiveMuscles(tests[i].filename, tests[i].duration);
+//            simulateModelWithoutMuscles(tests[i].filename, tests[i].duration);
+            simulateModelWithLigaments(tests[i].filename, tests[i].duration);
             simulateModelWithCables(tests[i].filename, tests[i].duration);
 
         } catch (const std::exception& e) {
@@ -124,6 +134,7 @@ public:
     Vec3 orgLoc;
     String insBodyName;
     Vec3 insLoc;
+    Real length;
 
     Array<ObstacleInfo> obstacles;
 };
@@ -214,6 +225,7 @@ private:
         if (c*rate < -1)
             cout << "c*rate=" << c*rate << "; limited to -1\n";
         const Real tension = k*stretch*(1+std::max(c*rate,-1.));
+        cout << "tension=" << tension << endl;
         return tension;
     }
 
@@ -262,52 +274,83 @@ private:
 static Array_<State> saveStates;
 // This gets called periodically to dump out interesting things about
 // the cables and the system as a whole.
-class ShowStuff : public PeriodicEventReporter {
+class PrintCableStats : public PeriodicEventReporter {
 public:
 
-    ShowStuff(const MultibodySystem& mbs,
-              Real interval)
+    PrintCableStats(const MultibodySystem& mbs, const MyCableSpring& cable,
+            string filename, Real interval)
     :   PeriodicEventReporter(interval),
-        mbs(mbs) {}
-
-    static void showHeading(std::ostream& o) {
-        printf("%8s %10s %10s %10s %10s %10s %10s %10s %10s %12s\n",
-            "time", "length", "rate", "integ-rate", "unitpow", "tension", "disswork",
-            "KE", "PE", "KE+PE-W");
+        mbs(mbs), cable(cable) {
+        outfile = fopen(filename.c_str(), "w");
+        fprintf(outfile, "%8s %10s %10s %10s %10s %10s %10s %10s\n",
+            "time", "length", "rate", "integ_rate", "unitpow", "tension", "disswork",
+            "CPU_time");
     }
 
     /** This is the implementation of the EventReporter virtual. **/
     void handleEvent(const State& state) const OVERRIDE_11 {
-//        const CablePath& path1 = cable1.getCablePath();
-////        const CablePath& path2 = cable2.getCablePath();
-//        printf("%8g %10.4g %10.4g %10.4g %10.4g %10.4g %10.4g CPU=%g\n",
-//            state.getTime(),
-//            path1.getCableLength(state),
-//            path1.getCableLengthDot(state),
-//            path1.getIntegratedCableLengthDot(state),
-//            path1.calcCablePower(state, 1), // unit power
-//            cable1.getTension(state),
-//            cable1.getDissipatedEnergy(state),
-//            cpuTime());
-//        printf("%8s %10.4g %10.4g %10.4g %10.4g %10.4g %10.4g %10.4g %10.4g %12.6g\n",
-//            "",
-//            path2.getCableLength(state),
-//            path2.getCableLengthDot(state),
-//            path2.getIntegratedCableLengthDot(state),
-//            path2.calcCablePower(state, 1), // unit power
-//            cable2.getTension(state),
-//            cable2.getDissipatedEnergy(state),
-//            mbs.calcKineticEnergy(state),
-//            mbs.calcPotentialEnergy(state),
-//            mbs.calcEnergy(state)
-//                + cable1.getDissipatedEnergy(state)
-//                + cable2.getDissipatedEnergy(state));
+        const CablePath& path = cable.getCablePath();
+        fprintf(outfile, "%8g %10.4g %10.4g %10.4g %10.4g %10.4g %10.4g %g\n",
+            state.getTime(),
+            path.getCableLength(state),
+            path.getCableLengthDot(state),
+            path.getIntegratedCableLengthDot(state),
+            path.calcCablePower(state, 1), // unit power
+            cable.getTension(state),
+            cable.getDissipatedEnergy(state),
+            cpuTime());
+
         saveStates.push_back(state);
+    }
+
+    ~PrintCableStats() {
+//        cout << "~PrintCableStats()" << endl;
+        fclose(outfile);
     }
 private:
     const MultibodySystem&  mbs;
-//    MyCableSpring           cable1;
+    MyCableSpring           cable;
+    FILE*                   outfile;
 };
+
+class PrintLigamentStats : public PeriodicEventReporter {
+public:
+
+    PrintLigamentStats(const MultibodySystem& mbs, const Ligament& ligament,
+            string filename, Real interval)
+    :   PeriodicEventReporter(interval),
+        mbs(mbs), ligament(ligament) {
+        outfile = fopen(filename.c_str(), "w");
+        fprintf(outfile, "%8s %10s %10s %10s\n",
+            "time", "length", "tension", "CPU_time");
+    }
+
+    /** This is the implementation of the EventReporter virtual. **/
+    void handleEvent(const State& state) const OVERRIDE_11 {
+        const GeometryPath& path = ligament.getGeometryPath();
+        fprintf(outfile, "%8g %10.4g %10.4g %g\n",
+            state.getTime(),
+            path.getLength(state),
+//            path.getCableLengthDot(state),
+//            path.getIntegratedCableLengthDot(state),
+//            path.calcCablePower(state, 1), // unit power
+            ligament.getTension(state),
+//            ligament.getDissipatedEnergy(state),
+            cpuTime());
+
+        saveStates.push_back(state);
+    }
+
+    ~PrintLigamentStats() {
+//        cout << "~PrintLigamentStats()" << endl;
+        fclose(outfile);
+    }
+private:
+    const MultibodySystem&  mbs;
+    const Ligament&         ligament;
+    FILE*                   outfile;
+};
+
 
 void simulateModelWithMusclesNoViz(const string &modelFile, double finalTime, double activation)
 {
@@ -338,7 +381,7 @@ void simulateModelWithMusclesNoViz(const string &modelFile, double finalTime, do
 
     osimModel.printBasicInfo(cout);
 
-    simulate(osimModel, si, initialTime, finalTime);
+    simulate(osimModel, si, initialTime, finalTime, "activeMuscles");
 
 
 }// end of simulateModelWithMusclesNoViz()
@@ -367,7 +410,7 @@ void simulateModelWithPassiveMuscles(const string &modelFile, double finalTime)
     const Visualizer& viz = modelViz.getSimbodyVisualizer();
     viz.report(si);
 
-    simulate(osimModel, si, initialTime, finalTime);
+    simulate(osimModel, si, initialTime, finalTime, "muscles");
 
 
 }// end of simulateModelWithMusclesViz()
@@ -382,17 +425,13 @@ void simulateModelWithoutMuscles(const string &modelFile, double finalTime)
     osimModel.setUseVisualizer(true);
 
     // remove all forces
-    Set<OpenSim::Force> &forces = osimModel.updForceSet();
-    for(int i = 0; i<forces.getSize(); ++i){
-        forces.remove(&forces[i]);
-    }
+    osimModel.updForceSet().clearAndDestroy();
 
     SimTK::State& si = osimModel.initSystem();
 
-    simulate(osimModel, si, initialTime, finalTime);
+    simulate(osimModel, si, initialTime, finalTime, "noMuscles");
 
 }// end of simulateModelWithoutMuscles()
-
 
 
 void simulateModelWithLigaments(const string &modelFile, double finalTime)
@@ -401,18 +440,71 @@ void simulateModelWithLigaments(const string &modelFile, double finalTime)
     Model osimModel(modelFile);
     double initialTime = 0;
 
+    SimTK::State& si = osimModel.initSystem(); // init system so that we can get the initial path lengths
+
+
     // Show model visualizer
     osimModel.setUseVisualizer(true);
 
-    // TODO replace muscles with ligaments
-//    Set<OpenSim::Force> &forces = osimModel.updForceSet();
-//    for(int i = 0; i<forces.getSize(); ++i){
-//        forces.remove(&forces[i]);
-//    }
+    const Set<Muscle>& muscles = osimModel.getMuscles();
+    Array<Ligament*> ligaments;
 
-    SimTK::State& si = osimModel.initSystem();
+//    double initLen = muscles[0].getLength(si);
 
-    simulate(osimModel, si, initialTime, finalTime);
+    for (int i = 0; i < muscles.getSize(); ++i) {
+        Ligament* lig = new Ligament();
+        lig->updGeometryPath() = muscles[i].getGeometryPath();
+
+        // typical non-linear ligament force-length curve
+//        double x[17] = {-10.00000000, -0.00200000, -0.00100000,  0.00000000,  0.00131000,  0.00281000,  0.00431000,  0.00581000,  0.00731000,  0.00881000,  0.01030000,  0.01180000,  0.01230000,  9.20000000,  9.20100000,  9.20200000, 20.00000000};
+//        double y[17] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.01080000,  0.02570000,  0.04350000,  0.06520000,  0.09150000,  0.12300000,  0.16100000,  0.20800000,  0.22700000, 345.00000000, 345.00000000, 345.00000000, 345.00000000};
+//        SimmSpline spline(17,x,y,"");
+//        lig.setForceLengthCurve(spline);
+//        lig.setMaxIsometricForce(stiffness);
+//        lig.setRestingLength(restLength);
+
+        double initialLength = muscles[i].getLength(si);
+//        cout << "initial length = " << initialLength << endl;
+
+        double s = std::pow((float)i+1,3);
+        lig->setLinearStiffness(s*stiffness, initialLength*restLengthRatio);
+
+
+        ligaments.append(lig);
+    }
+
+    osimModel.invalidateSystem();
+
+    // remove all forces (muscles)
+    osimModel.updForceSet().clearAndDestroy();
+
+    // add new ligaments
+    for (int i = 0; i < ligaments.getSize(); ++i) {
+        osimModel.addForce(ligaments[i]);
+    }
+
+    osimModel.disownAllComponents(); // because Ligaments are on stack
+
+//    SimTK::State& si = osimModel.initSystem();
+
+    osimModel.buildSystem();
+    MultibodySystem& system = osimModel.updMultibodySystem();
+
+    for (int i = 0; i < osimModel.getForceSet().getSize(); ++i) {
+        Ligament* lig = dynamic_cast<Ligament*>(&osimModel.getForceSet()[i]);
+        if (lig != 0) {
+            char filename[1024];
+            sprintf(filename, "%s_ligament%d.txt", modelFile.substr(0, modelFile.find(".osim",0)).c_str(), i);
+            cout << "writing stats to " << filename << endl;
+            string filename_str(filename);
+            system.addEventReporter(new PrintLigamentStats(system, *lig, filename, 0.1*0.1));
+        }
+    }
+
+
+    SimTK::State& state = osimModel.initializeState();
+
+    simulate(osimModel, state, initialTime, finalTime, "ligaments");
 
 }// end of simulateModelWithoutMuscles()
 
@@ -444,13 +536,13 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
             numMuscles++;
             paths.append(&mus->updGeometryPath());
             pathNames.append(mus->getName());
-            cout << mus->getName() << ": " << mus->getGeometryPath().getWrapSet().getSize() << endl;
+//            cout << mus->getName() << ": " << mus->getGeometryPath().getWrapSet().getSize() << endl;
             continue;
         }
     }
 
-    cout << "num ligaments = " << numLigaments << endl;
-    cout << "num muscles = " << numMuscles << endl;
+//    cout << "num ligaments = " << numLigaments << endl;
+//    cout << "num muscles = " << numMuscles << endl;
 
     Array<CableInfo> cableInfos;
     std::set<String> wrapObjectsInUse;
@@ -465,21 +557,24 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         PathPoint* orgPoint = &viaSet[0];
         PathPoint* insPoint = &viaSet[viaSet.getSize()-1];
 
+        cableInfo.length = geomPath->getLength(si);
+//        cout << "initial length = " << cableInfo.length << endl;
         cableInfo.orgBodyName = orgPoint->getBody().getName();
         cableInfo.orgLoc = orgPoint->getLocation();
         cableInfo.insBodyName =  insPoint->getBody().getName();
         cableInfo.insLoc = insPoint->getLocation();
 
         int numVias = 0, numSurfs = 0;
-        for (int j = 0; j < activePathPoints.getSize(); ++j) {
-            PathPoint* pp = activePathPoints[j];
-            cout << "pp" << j << " = " << pp->getName() << " @ " << pp->getBodyName() << ", loc = " << pp->getLocation() << endl;
-        }
 
-        for (int j = 0; j < viaSet.getSize(); ++j) {
-            PathPoint* pp = &viaSet[j];
-            cout << "mp" << j << " = " << pp->getName() << " @ " << pp->getBodyName() << ", loc = " << pp->getLocation() << endl;
-        }
+//        for (int j = 0; j < activePathPoints.getSize(); ++j) {
+//            PathPoint* pp = activePathPoints[j];
+//            cout << pp << " pp" << j << " = " << pp->getName() << " @ " << pp->getBodyName() << ", loc = " << pp->getLocation() << endl;
+//        }
+//
+//        for (int j = 0; j < viaSet.getSize(); ++j) {
+//            PathPoint* pp = &viaSet[j];
+//            cout << "mp" << j << " = " << pp->getName() << " @ " << pp->getBodyName() << ", loc = " << pp->getLocation() << endl;
+//        }
 
         // add vias to cableInfo
         for (int j = 1; j < viaSet.getSize()-1; ++j) { // skip first (origin) and last (insertion) points
@@ -534,7 +629,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
                         obs->isActive = true;
                         // pp and next pp are wrap points
                         Transform X_SB = obs->X_BS.invert();
-                        PathPoint* pp_next = activePathPoints[++i]; // increment to next pp
+                        PathPoint* pp_next = activePathPoints[++j]; // increment to next pp
                         obs->P_S = X_SB*pp->getLocation();
                         obs->Q_S = X_SB*pp_next->getLocation();
                         cableInfo.obstacles.insert(obsIdx++, *obs);
@@ -555,20 +650,19 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 
         cableInfos.append(cableInfo);
 
-        cout << pathNames[i] << " path, num pts " << activePathPoints.getSize() << ", num vias = " << numVias << ", num surfs = " << numSurfs << endl;
-
-
-        // debugging
-
-        cout << "org" << " = " << orgPoint->getName() << " @ " << orgPoint->getBody().getName() << ", loc = " << orgPoint->getLocation() << endl;
-        cout << "ins" << " = " << insPoint->getName() << " @ " << insPoint->getBody().getName() << ", loc = " << insPoint->getLocation() << endl;
-
-        for (int j = 0; j < cableInfo.obstacles.getSize(); ++j) {
-            ObstacleInfo oi = cableInfo.obstacles[j];
-            cout << "ObsInfo " << j << ": via=" << oi.isVia << ", bodyName=" << oi.bodyName << ", loc=" << oi.X_BS.p() << ", P=" << oi.P_S << ", Q=" << oi.Q_S << endl;
-        }
-
-
+//        debugging
+//
+//        cout << pathNames[i] << " path, num pts " << activePathPoints.getSize() << ", num vias = " << numVias << ", num surfs = " << numSurfs << endl;
+//
+//
+//        cout << "org" << " = " << orgPoint->getName() << " @ " << orgPoint->getBody().getName() << ", loc = " << orgPoint->getLocation() << endl;
+//        cout << "ins" << " = " << insPoint->getName() << " @ " << insPoint->getBody().getName() << ", loc = " << insPoint->getLocation() << endl;
+//
+//        for (int j = 0; j < cableInfo.obstacles.getSize(); ++j) {
+//            ObstacleInfo oi = cableInfo.obstacles[j];
+//            cout << "ObsInfo " << j << ": via=" << oi.isVia << ", bodyName=" << oi.bodyName << ", loc=" << oi.X_BS.p() << ", P=" << oi.P_S << ", Q=" << oi.Q_S << endl;
+//        }
+//
 //        for (int j = 0; j < wrapSet.getSize(); ++j) {
 //            cout << "wrap object " << j << " name = " << wrapSet[j].getName() << endl;
 //            cout << "wrap point 0 = " << wrapSet[j].getWrapPoint(0).getLocation() << endl;
@@ -586,7 +680,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
     }
 
 
-    cout << "num forces before removal = " << osimModel.getForceSet().getSize() << endl;
+//    cout << "num forces before removal = " << osimModel.getForceSet().getSize() << endl;
 
     // remove all OpenSim forces
     osimModel.updForceSet().clearAndDestroy();
@@ -603,8 +697,8 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         const WrapObjectSet& wraps = osimModel.getBodySet()[i].getWrapObjectSet();
         // XXX hack to remove wrap objects, which is not supported in the API
         WrapObjectSet *mutableWraps = const_cast<WrapObjectSet *>(&wraps);
-        cout << "culling wrap objs from " << osimModel.getBodySet()[i].getName() << ", num wraps = " << wraps.getSize() << endl;
-//        mutableWraps->clearAndDestroy();
+//        cout << "culling wrap objs from " << osimModel.getBodySet()[i].getName() << ", num wraps = " << wraps.getSize() << endl;
+
         mutableWraps->setMemoryOwner(true);
         for (int j = 0; j < wraps.getSize(); ++j) {
             if (wrapObjectsInUse.find(wraps[j].getName()) == wrapObjectsInUse.end()) { // does not contain
@@ -612,16 +706,15 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
             }
         }
 
-        cout << "wraps to remove:" << endl;
-        for (int j = 0; j < toRemove.getSize(); ++j) {
-            cout << "    " << toRemove[j]->getName() << endl;
-        }
+//        cout << "wraps to remove:" << endl;
+//        for (int j = 0; j < toRemove.getSize(); ++j) {
+//            cout << "    " << toRemove[j]->getName() << endl;
+//        }
 
-//        cout << "indices to remove = " << toRemove << endl;
         for (int j = 0; j < toRemove.getSize(); ++j) {
             mutableWraps->remove(toRemove[j]);
         }
-        cout << "finished cull from " << osimModel.getBodySet()[i].getName() << ", num wraps = " << wraps.getSize() << endl;
+//        cout << "finished cull from " << osimModel.getBodySet()[i].getName() << ", num wraps = " << wraps.getSize() << endl;
 
     }
 
@@ -653,6 +746,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 
     // add cable system
     CableTrackerSubsystem cables(system);
+    MyCableSpring* cableToReport;
 
     for (int i = 0; i < cableInfos.getSize(); ++i) {
         const CableInfo& cableInfo = cableInfos[i];
@@ -730,12 +824,17 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
             }
         }
 
-        MyCableSpring cable(forceSubsystem, path, 100., 3.5, 0*0.1);
-        //    system.addEventReporter(new ShowStuff(system, cable, 0.1*0.1));
+        double s = std::pow((float)i+1,3);
+        MyCableSpring cable(forceSubsystem, path, s*stiffness, cableInfo.length*restLengthRatio, damping);
+
+
+        char filename[1024];
+        sprintf(filename, "%s_cable%d.txt", modelFile.substr(0, modelFile.find(".osim",0)).c_str(), i);
+        cout << "writing stats to " << filename << endl;
+        string filename_str(filename);
+        system.addEventReporter(new PrintCableStats(system, cable, filename, 0.1*0.1));
 
     }
-
-    system.addEventReporter(new ShowStuff(system, 0.1*0.1));
 
 //    system.invalidateSystemTopologyCache();
 //    system.realizeTopology();
@@ -754,10 +853,11 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 
     SimTK::State& state = osimModel.initializeState();
     viz.report(state);
-    for (int i = 0; i < cables.getNumCablePaths(); ++i) {
-        const CablePath& path = cables.getCablePath((CablePathIndex)i);
-        cout << "path " << i << " length = " << path.getCableLength(state) << endl;
-    }
+
+//    for (int i = 0; i < cables.getNumCablePaths(); ++i) {
+//        const CablePath& path = cables.getCablePath((CablePathIndex)i);
+//        cout << "path " << i << " length = " << path.getCableLength(state) << endl;
+//    }
 
 //    cout << "Hit ENTER ...";
 //    cout.flush();
@@ -766,16 +866,23 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
     // Simulate it.
     saveStates.clear(); saveStates.reserve(2000);
 
-    ShowStuff::showHeading(cout);
+    simulate(osimModel, state, initialTime, finalTime, "cables");
 
-    simulate(osimModel, state, initialTime, finalTime);
+    while (true) {
+        cout << "Hit ENTER FOR REPLAY, Q to quit ...";
+        cout.flush();
+        const char ch = getchar();
+        if (ch=='q' || ch=='Q') break;
+        for (unsigned i=0; i < saveStates.size(); ++i)
+            viz.report(saveStates[i]);
+    }
 
 }// end of simulateModelWithCables()
 
 
 
 
-void simulate(Model& osimModel, State& si, double initialTime, double finalTime) {
+void simulate(Model& osimModel, State& si, double initialTime, double finalTime, string simulationName) {
     //  osimModel.printBasicInfo(cout);
 
     // Dump model back out; no automated test provided here though.
@@ -791,15 +898,20 @@ void simulate(Model& osimModel, State& si, double initialTime, double finalTime)
     // Integrate from initial time to final time
     manager.setInitialTime(initialTime);
     manager.setFinalTime(finalTime);
-    cout << "\nIntegrating from " << initialTime << " to " << finalTime << endl;
+//    cout << "\nIntegrating from " << initialTime << " to " << finalTime << endl;
 
     const double start = SimTK::realTime();
     integrator.resetAllStatistics();
     manager.integrate(si);
-    cout << "simulation time = " << SimTK::realTime()-start
-         << " seconds (wallclock time)\n" << endl;
-
-    cout << "integrator iterations = " << integrator.getNumStepsTaken() << endl;
+    printf("sim=%s \t; model=%s \t; duration=%f s \t; simulationtime=%f s \t; numsteps=%d \n",
+            simulationName.c_str(), osimModel.getDocumentFileName().c_str(),
+            finalTime-initialTime, SimTK::realTime()-start, integrator.getNumStepsTaken());
+//    cout << "simulation=" << simulationName
+//         << "; model=" << osimModel.getDocumentFileName()
+//         << "; duration = " << finalTime-initialTime
+//         << " s; simulation_time = " << SimTK::realTime()-start << " s" << endl;
+//
+//    cout << "integrator iterations = " << integrator.getNumStepsTaken() << endl;
 
     // Save the simulation results
     Storage states(manager.getStateStorage());
