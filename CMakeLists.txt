@@ -424,6 +424,7 @@ ELSE(WIN32)
 					${Simbody_BIN_DIR}/*) # executables only (e.g. Visualizer)
 	FILE(GLOB THIRDPARTY_LIB_FILES 
 					${Simbody_LIB_DIR}/*.so
+					${Simbody_LIB_DIR}/*.so.*
 					${Simbody_LIB_DIR}/*.dylib)
 	FILE(GLOB THIRDPARTY_SDKLIB_FILES 
 					${Simbody_LIB_DIR}/*.a)
