@@ -150,13 +150,13 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2010::computeProbeInputs(const St
         Muscle* m = mm.getMuscle();
 
         // Get some muscle properties at the current time state
-        const double max_isometric_force = m->getMaxIsometricForce();
+        //const double max_isometric_force = m->getMaxIsometricForce();
         const double max_shortening_velocity = m->getMaxContractionVelocity();
         const double activation = m->getActivation(s);
         const double excitation = m->getControl(s);
-        const double fiber_force_passive = m->getPassiveFiberForce(s);
+        //const double fiber_force_passive = m->getPassiveFiberForce(s);
         const double fiber_force_active = m->getActiveFiberForce(s);
-        const double fiber_force_total = m->getFiberForce(s);
+        //const double fiber_force_total = m->getFiberForce(s);
         const double fiber_length_normalized = m->getNormalizedFiberLength(s);
         const double fiber_velocity = m->getFiberVelocity(s);
         double A;
@@ -270,6 +270,14 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2010::computeProbeInputs(const St
         
 
 
+        // Clamp fiber force. THIS SHOULD NEVER HAPPEN...
+        // BUT IT DOES...
+        if (fiber_force_active < 0)
+            fiber_force_active = 0.0;
+
+
+
+
         // MECHANICAL WORK RATE for the contractile element of muscle i (W/kg).
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening.
         // -------------------------------------------------------------------
@@ -326,10 +334,10 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2010::computeProbeInputs(const St
             cout << "muscle_mass = " << mm.getMuscleMass() << endl;
             cout << "ratio_slow_twitch_fibers = " << mm.getRatioSlowTwitchFibers() << endl;
             cout << "bodymass = " << _model->getMatterSubsystem().calcSystemMass(s) << endl;
-            cout << "max_isometric_force = " << max_isometric_force << endl;
+            //cout << "max_isometric_force = " << max_isometric_force << endl;
             cout << "activation = " << activation << endl;
             cout << "excitation = " << excitation << endl;
-            cout << "fiber_force_total = " << fiber_force_total << endl;
+            //cout << "fiber_force_total = " << fiber_force_total << endl;
             cout << "fiber_force_active = " << fiber_force_active << endl;
             cout << "fiber_length_normalized = " << fiber_length_normalized << endl;
             cout << "fiber_velocity = " << fiber_velocity << endl;
