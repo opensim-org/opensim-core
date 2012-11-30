@@ -155,7 +155,7 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2010::computeProbeInputs(const St
         const double activation = m->getActivation(s);
         const double excitation = m->getControl(s);
         //const double fiber_force_passive = m->getPassiveFiberForce(s);
-        const double fiber_force_active = m->getActiveFiberForce(s);
+        double fiber_force_active = m->getActiveFiberForce(s);
         //const double fiber_force_total = m->getFiberForce(s);
         const double fiber_length_normalized = m->getNormalizedFiberLength(s);
         const double fiber_velocity = m->getFiberVelocity(s);
