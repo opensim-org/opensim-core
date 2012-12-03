@@ -480,7 +480,7 @@ SET(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSim ${CPACK_PACKAGE_VERSION_MAJOR}.${CP
 IF(WIN32 AND NOT UNIX)
    # There is a bug in NSI that does not handle full unix paths properly. Make
    # sure there is at least one set of four (4) backlasshes.
-   SET(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\Install\\\\OpenSimInstallerIcon.bmp")
+   SET(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\Installer\\\\OpenSimInstallerIcon.bmp")
    # SET(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\OpenSim.exe")
    SET(CPACK_NSIS_DISPLAY_NAME  "${CPACK_PACKAGE_INSTALL_DIRECTORY} ")
    SET(CPACK_CREATE_DESKTOP_LINKS "${CPACK_PACKAGE_INSTALL_DIRECTORY}\\\\bin\\\\OpenSim.exe")
@@ -510,11 +510,11 @@ SET(BUILD_API_ONLY OFF CACHE BOOL "Build API only (headers and libs, no GUI or A
 MARK_AS_ADVANCED( BUILD_API_ONLY )
 
 IF(BUILD_API_ONLY)
-	SUBDIRS(Vendors OpenSim Documentation)
+	SUBDIRS(Vendors OpenSim)
 	SET(OPENSIM_INSTALL_PACKAGE_BUILD OFF)
 ELSE(BUILD_API_ONLY)
 IF(OPENSIM_INSTALL_PACKAGE_BUILD)
-	SUBDIRS(Vendors OpenSim Documentation Applications Models Gui)
+	SUBDIRS(Vendors OpenSim Applications Models Gui)
 ELSE(OPENSIM_INSTALL_PACKAGE_BUILD)
 	SUBDIRS(Vendors OpenSim Applications Models)
 ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
