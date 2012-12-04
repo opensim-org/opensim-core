@@ -70,6 +70,8 @@ public:
 		"force magnitude that scales the force-length curve");
 	OpenSim_DECLARE_PROPERTY(force_length_curve, Function,
 		"Function representing the force-length behavior of the ligament");
+    OpenSim_DECLARE_PROPERTY(damping, double,
+        "linear damping of the ligament");
     /**@}**/
 
 
@@ -99,6 +101,9 @@ public:
 	virtual const Function& getForceLengthCurve() const 
     {   return get_force_length_curve(); }
 	virtual bool setForceLengthCurve(const Function& aForceLengthCurve);
+    virtual double getDamping() const
+    {   return get_damping(); }
+    virtual bool setDamping(double aDamping);
 	virtual void setLinearStiffness(double aStiffness, double aRestLength);
 
 	//--------------------------------------------------------------------------

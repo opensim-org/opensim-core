@@ -65,6 +65,7 @@ void Ligament::constructProperties()
 	constructProperty_GeometryPath(GeometryPath());
 	constructProperty_resting_length(0.0);
 	constructProperty_pcsa_force(0.0);
+	constructProperty_damping(0.0);
 
 	int forceLengthCurvePoints = 13;
 	double forceLengthCurveX[] = {-5.00000000,  0.99800000,  0.99900000,  1.00000000,  1.10000000,  1.20000000,  1.30000000,  1.40000000,  1.50000000,  1.60000000,  1.60100000,  1.60200000,  5.00000000};
@@ -182,6 +183,19 @@ bool Ligament::setForceLengthCurve(const Function& aForceLengthCurve)
 
 //_____________________________________________________________________________
 /**
+ * Set the damping
+ *
+ * @param aDamping The damping value of the ligament.
+ * @return Whether the damping was successfully changed.
+ */
+bool Ligament::setDamping(double aDamping)
+{
+    set_damping(aDamping);
+    return true;
+}
+
+//_____________________________________________________________________________
+/**
  * Set this ligament to have linear stiffness. This method will in turn
  * set the ForceLengthCurve to a straight line, and the maxIsoForce
  * to the stiffness value (for unit strain).
@@ -277,13 +291,21 @@ void Ligament::computeForce(const SimTK::State& s,
 	const GeometryPath& path = getGeometryPath();
 	const double& restingLength = get_resting_length();
 	const double& pcsaForce = get_pcsa_force();
+    const double& c = get_damping();
 
-	if (path.getLength(s) <= restingLength)
+	const double length = path.getLength(s);
+	const double rate = path.getLengtheningSpeed(s);
+
+	if (length <= restingLength)
 		return;
 
-	double strain = (path.getLength(s) - restingLength) / restingLength;
-	double force = getForceLengthCurve().calcValue(SimTK::Vector(1, strain)) 
-                                                                   * pcsaForce;
+	double strain = (length - restingLength) / restingLength;
+    if (c*rate < -1)
+        cout << "c*rate=" << c*rate << "; limited to -1\n";
+//    const Real tension = k*stretch*(1+std::max(c*rate,-1.));
+
+	double unitForce = getForceLengthCurve().calcValue(SimTK::Vector(1, strain));
+	double force = unitForce * pcsaForce * (1+std::max(c*rate,-1.));
 
 	OpenSim::Array<PointForceDirection*> PFDs;
 	path.getPointForceDirections(s, &PFDs);
@@ -299,13 +321,22 @@ double Ligament::getTension(const SimTK::State& s) const {
     const GeometryPath& path = getGeometryPath();
     const double& restingLength = get_resting_length();
     const double& pcsaForce = get_pcsa_force();
+    const double& c = get_damping();
 
-    if (path.getLength(s) <= restingLength)
+    const double length = path.getLength(s);
+    const double rate = path.getLengtheningSpeed(s);
+
+    if (length <= restingLength)
         return 0;
 
-    double strain = (path.getLength(s) - restingLength) / restingLength;
-    return getForceLengthCurve().calcValue(SimTK::Vector(1, strain))
-                                                                   * pcsaForce;
+    double strain = (length - restingLength) / restingLength;
+    if (c*rate < -1)
+        cout << "c*rate=" << c*rate << "; limited to -1\n";
+//    const Real tension = k*stretch*(1+std::max(c*rate,-1.));
+
+    double unitForce = getForceLengthCurve().calcValue(SimTK::Vector(1, strain));
+    double force = unitForce * pcsaForce * (1+std::max(c*rate,-1.));
+    return force;
 }
 
 //_____________________________________________________________________________
