@@ -955,10 +955,10 @@ void simulate(Model& osimModel, State& si, double initialTime, double finalTime,
 //    cout << "integrator iterations = " << integrator.getNumStepsTaken() << endl;
 
     // Save the simulation results
-    Storage states(manager.getStateStorage());
-    states.print(osimModel.getName()+"_states.sto");
-    osimModel.updSimbodyEngine().convertRadiansToDegrees(states);
-    states.setWriteSIMMHeader(true);
-    states.print(osimModel.getName()+"_states_degrees.mot");
+//    Storage states(manager.getStateStorage());
+//    states.print(osimModel.getName()+"_states.sto");
+//    osimModel.updSimbodyEngine().convertRadiansToDegrees(states);
+//    states.setWriteSIMMHeader(true);
+//    states.print(osimModel.getName()+"_states_degrees.mot");
 } // end of simulate()
 

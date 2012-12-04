@@ -1,3 +1,5 @@
+
+sim=millard_eq 	; model=wrap_jump.osim 	; duration=1.000000 s 	; simulationtime=2.402860 s 	; numsteps=529 
 sim=thelen 	; model=wrap_jump.osim 	; duration=1.000000 s 	; simulationtime=2.947237 s 	; numsteps=679 
 sim=ligaments 	; model=wrap_jump.osim 	; duration=1.000000 s 	; simulationtime=1.050303 s 	; numsteps=66 
 sim=cables 	; model=wrap_jump.osim 	; duration=1.000000 s 	; simulationtime=1.003834 s 	; numsteps=40

@@ -1,3 +1,4 @@
+sim=millard_eq 	; model=wrap_ellipsoid.osim 	; duration=1.000000 s 	; simulationtime=1.150623 s 	; numsteps=166
 sim=thelen 	; model=wrap_ellipsoid.osim 	; duration=1.000000 s 	; simulationtime=1.090317 s 	; numsteps=149 
 sim=ligaments 	; model=wrap_ellipsoid.osim 	; duration=1.000000 s 	; simulationtime=1.004769 s 	; numsteps=54 
 sim=cables 	; model=wrap_ellipsoid.osim 	; duration=1.000000 s 	; simulationtime=1.335964 s 	; numsteps=58 
