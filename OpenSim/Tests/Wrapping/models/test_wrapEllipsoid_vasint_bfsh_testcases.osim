@@ -1,0 +1,40 @@
+
+Sliding
+
+              <WrapEllipsoid name="KnExt_at_fem_r">
+                <xyz_body_rotation>  0.17208946   0.55707227  -0.92868969 </xyz_body_rotation>
+                <translation>   0.015 -0.35   0.0 </translation>
+                <active> true </active>
+                <quadrant> all </quadrant>
+                <VisibleObject name="">
+                  <geometry_files> </geometry_files>
+                  <VisibleProperties name="">
+                    <display_preference> 0 </display_preference>
+                    <show_normals> false </show_normals>
+                    <show_axes> false </show_axes>
+                    <material_name> DEFAULT </material_name>
+                  </VisibleProperties>
+                  <scale_factors>   1.00000000   1.00000000   1.00000000 </scale_factors>
+                </VisibleObject>
+                <dimensions>   0.03   0.03   0.1 </dimensions>
+              </WrapEllipsoid>
+              
+              
+Flipping
+               <WrapEllipsoid name="KnExt_at_fem_r">
+                <xyz_body_rotation>  0.17208946   0.55707227  -0.92868969 </xyz_body_rotation>
+                <translation>   0.0155 -0.35   0.0 </translation>
+                <active> true </active>
+                <quadrant> all </quadrant>
+                <VisibleObject name="">
+                  <geometry_files> </geometry_files>
+                  <VisibleProperties name="">
+                    <display_preference> 0 </display_preference>
+                    <show_normals> false </show_normals>
+                    <show_axes> false </show_axes>
+                    <material_name> DEFAULT </material_name>
+                  </VisibleProperties>
+                  <scale_factors>   1.00000000   1.00000000   1.00000000 </scale_factors>
+                </VisibleObject>
+                <dimensions>   0.03   0.03   0.1 </dimensions>
+              </WrapEllipsoid>
