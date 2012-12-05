@@ -2212,7 +2212,19 @@ bool Millard2012EquilibriumMuscle::isFiberLengthAState() const
 bool Millard2012EquilibriumMuscle::isTendonElastic() const
 {
     bool elasticTendon = false;
-    switch(getSimulationMethod()){        
+    switch(getSimulationMethod()){ 
+         case RigidTendon_NoActivation:            
+            elasticTendon = false;
+            break;
+        case RigidTendon_Activation:              
+            elasticTendon = false;
+            break;
+        case RigidTendon_DampedFiber_NoActivation:
+            elasticTendon = false;
+            break;
+        case RigidTendon_DampedFiber_Activation:  
+            elasticTendon = false;
+            break;
         case ElasticTendon_DampedFiber_NoActivation:
             elasticTendon = true;
             break;
@@ -2228,7 +2240,7 @@ bool Millard2012EquilibriumMuscle::isTendonElastic() const
         default:
              SimTK_ASSERT(false,
                 "Invalid muscle configuration "
-                "returned by getSimulationMethod()");
+                "returned by isTendonElastic()");
     }
 
     return elasticTendon;
