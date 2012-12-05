@@ -2251,15 +2251,15 @@ bool Millard2012EquilibriumMuscle::isActivationAState() const
     bool activationState = false;
 
     switch(getSimulationMethod()){
-        case RigidTendon_Activation:
-            activationState = true;
+        case RigidTendon_NoActivation:            
+        case RigidTendon_DampedFiber_NoActivation:                   
+        case ElasticTendon_NoActivation:            
+        case ElasticTendon_DampedFiber_NoActivation:
+            activationState = false;
             break;
-        case RigidTendon_DampedFiber_Activation:
-            activationState = true;
-            break;        
-        case ElasticTendon_Activation:
-            activationState = true;
-            break;
+        case RigidTendon_Activation:    
+        case RigidTendon_DampedFiber_Activation:            
+        case ElasticTendon_Activation:         
         case ElasticTendon_DampedFiber_Activation:
             activationState = true;
             break;
