@@ -260,7 +260,7 @@ double MuscleSecondOrderActivationDynamicModel::
 
                     nDa = cu*omega2 
                         - (2*zeta*omega*da_dt 
-                        + (aS-minAS)*omega2);                                       
+                            + (aS-minAS)*omega2);                                       
 
                 }else{
                    SimTK_ERRCHK1_ALWAYS(false,

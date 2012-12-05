@@ -75,10 +75,11 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
         "SmoothSegmentedFunctionFactory::createFiberActiveForceLengthCurve",
         "%s: shoulderVal must be greater than, or equal to 0",
         curveName.c_str());
-    SimTK_ERRCHK1_ALWAYS(dydx >= 0 && dydx < (1/(x2-x1)),
+    double dydxUpperBound = (1-ylow)/(x2-x1);
+    SimTK_ERRCHK2_ALWAYS(dydx >= 0 && dydx < dydxUpperBound,
         "SmoothSegmentedFunctionFactory::createFiberActiveForceLengthCurve",
-        "%s: plateauSlope must be greater than 0",
-        curveName.c_str());
+        "%s: plateauSlope must be greater than 0 and less than %f",
+        curveName.c_str(),dydxUpperBound);
     SimTK_ERRCHK1_ALWAYS( (curviness >= 0 && curviness <= 1),
         "SmoothSegmentedFunctionFactory::createFiberActiveForceLengthCurve",
         "%s: curviness must be between 0 and 1",
