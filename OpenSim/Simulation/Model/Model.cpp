@@ -109,7 +109,6 @@ Model::Model() :
     _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
     _useVisualizer(false),
     _allControllersEnabled(true),
-    _perturbActuatorForces(false),
     _system(NULL),
 	_defaultControls(*new Vector()),
     _workingState()
@@ -152,7 +151,6 @@ Model::Model(const string &aFileName) :
     _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
     _useVisualizer(false),
     _allControllersEnabled(true),
-    _perturbActuatorForces(false),
     _system(NULL),
 	_defaultControls(*new Vector()),
     _workingState()
@@ -196,7 +194,6 @@ Model::Model(const Model &aModel) :
     _contactGeometrySet((ContactGeometrySet&)_contactGeometrySetProp.getValueObj()),
     _useVisualizer(false),
     _allControllersEnabled(true),
-    _perturbActuatorForces(false),
     _jointSet(JointSet()),
     _analysisSet(AnalysisSet()),
     _coordinateSet(CoordinateSet()),
@@ -281,25 +278,32 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 void Model::copyData(const Model &aModel)
 {
 	_fileName = aModel._fileName;
+    _validationLog = aModel._validationLog;
 	_creditsStr = aModel._creditsStr;
 	_publicationsStr = aModel._publicationsStr;
-	_lengthUnits = aModel._lengthUnits;
-	_forceUnits = aModel._forceUnits;
-	_lengthUnitsStr = aModel._lengthUnitsStr;
+    _lengthUnitsStr = aModel._lengthUnitsStr;
+    _lengthUnits = aModel._lengthUnits;
 	_forceUnitsStr = aModel._forceUnitsStr;
-	_forceSet = aModel._forceSet;
-	_analysisSet = aModel._analysisSet;
+	_forceUnits = aModel._forceUnits;
     _gravity = aModel._gravity;
+    _forceSet = aModel._forceSet;
+    _probeSet = aModel._probeSet;
     _bodySet=aModel._bodySet;
     _constraintSet=aModel._constraintSet;
-	_controllerSet=aModel._controllerSet;
-	_componentSet=aModel._componentSet;
     _markerSet = aModel._markerSet;
     _contactGeometrySet = aModel._contactGeometrySet;
-    _probeSet = aModel._probeSet;
-    _workingState = aModel._workingState;
+    _controllerSet=aModel._controllerSet;
+    _componentSet=aModel._componentSet;
 
+    _useVisualizer = aModel._useVisualizer;
+    _allControllersEnabled = aModel._allControllersEnabled;
+
+    // Note: SimTK systems are not copied, they will be
+    // initialized during the call to buildSystem().
+    // TODO: convert to new properties, it's a little confusing as to what
+    // should be copied and what shouldn't.
 }
+
 //_____________________________________________________________________________
 /**
  * Set the values of all data members to an appropriate "null" value.
@@ -310,7 +314,6 @@ void Model::setNull()
     _useVisualizer = false;
     _displayHints.clear();
     _allControllersEnabled = true;
-	_perturbActuatorForces = false,
     _groundBody = NULL;
 
     _system = NULL;

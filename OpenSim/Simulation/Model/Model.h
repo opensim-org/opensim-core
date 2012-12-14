@@ -989,8 +989,6 @@ private:
     // Global flag used to disable all Controllers.
 	bool _allControllersEnabled;
 
-    // Flag indicating the model has actuators that are being perturbed. 
-    bool _perturbActuatorForces; 
 
     //                      SIMBODY MULTIBODY SYSTEM
 	// The model owns the MultibodySystem, but the
