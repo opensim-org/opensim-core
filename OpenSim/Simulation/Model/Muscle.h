@@ -152,6 +152,8 @@ public:
 	double getFiberLength(const SimTK::State& s) const;
 	/** get the current pennation angle (radians) between the fiber and tendon at the current fiber length  */
 	double getPennationAngle(const SimTK::State& s) const;
+    /** get the cosine of the current pennation angle (radians) between the fiber and tendon at the current fiber length  */
+	double getCosPennationAngle(const SimTK::State& s) const;
 	/** get the current tendon length (m)  given the current joint angles and fiber length */
 	double getTendonLength(const SimTK::State& s) const;
 	/** get the current normalized fiber length (fiber_length/optimal_fiber_length) */

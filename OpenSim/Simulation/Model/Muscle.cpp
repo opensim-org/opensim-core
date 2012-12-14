@@ -275,6 +275,12 @@ double Muscle::getPennationAngle(const SimTK::State& s) const
 	return getMuscleLengthInfo(s).pennationAngle;
 }
 
+/* get the cosine of the current pennation angle (radians) between the fiber and tendon at the current fiber length  */
+double Muscle::getCosPennationAngle(const SimTK::State& s) const
+{
+	return getMuscleLengthInfo(s).cosPennationAngle;
+}
+
 /* get the current tendon length (m)  given the current joint angles and fiber length */
 double Muscle::getTendonLength(const SimTK::State& s) const
 {
