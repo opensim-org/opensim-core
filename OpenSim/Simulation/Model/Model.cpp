@@ -295,6 +295,7 @@ void Model::copyData(const Model &aModel)
     _controllerSet=aModel._controllerSet;
     _componentSet=aModel._componentSet;
 
+    _analysisSet=aModel._analysisSet;
     _useVisualizer = aModel._useVisualizer;
     _allControllersEnabled = aModel._allControllersEnabled;
 
