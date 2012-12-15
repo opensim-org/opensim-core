@@ -191,6 +191,7 @@ void AbstractProperty::readFromXMLParentElement(Xml::Element& parent,
     parent.insertNodeBefore(prev, 
                             dummy.removeNode(dummy.element_begin()));
     setValueIsDefault(false);
+	dummy.clearOrphan();
 }
 
 

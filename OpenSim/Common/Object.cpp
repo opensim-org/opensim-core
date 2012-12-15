@@ -1406,7 +1406,7 @@ print(const string &aFileName)
 		_document = new XMLDocument();
 		if (oldDoc){
 			_document->copyDefaultObjects(*oldDoc);
-			delete oldDoc;
+//			delete oldDoc;
 		}
 		SimTK::Xml::Element e = _document->getRootElement(); 
 		updateXMLNode(e);

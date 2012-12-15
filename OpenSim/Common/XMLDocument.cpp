@@ -59,7 +59,10 @@ const int XMLDocument::LatestVersion = 30000;
  */
 XMLDocument::~XMLDocument()
 {
-
+	for(int i = 0; i < _defaultObjects.size(); i++) {
+		delete _defaultObjects.get(i);
+	}
+	_defaultObjects.setSize(0);
 }
 
 //-----------------------------------------------------------------------------
