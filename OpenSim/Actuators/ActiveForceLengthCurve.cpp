@@ -75,7 +75,7 @@ void ActiveForceLengthCurve::constructProperties()
         //but added width for the corner is 0.0259. See
         //SmoothSegmentedFunctionFactory createActiveForceLengthCurve 
         //implementation for details
-    constructProperty_transition_norm_fiber_length(0.6259); 
+    constructProperty_transition_norm_fiber_length(0.73);//0.6259 
 
     //X Bridge Maximum Fiber Length: 1.57 + 0.0259
     //Gollapudi & Lin Max Fiber Length: 1.8123

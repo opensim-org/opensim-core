@@ -47,7 +47,7 @@ namespace OpenSim {
  This class serves as a serializable ForceVelocityCurve, for use in 
  muscle models. 
  
- \image html fig_ForceVelocityCurve.png
+ \image html fig_ForceVelocityCurveUPDATE.png
 
    Note that this object should be updated through the set methods provided. 
  These set methods will take care of rebuilding the curve correctly. If you
@@ -68,16 +68,26 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
-    OpenSim_DECLARE_PROPERTY(min_concentric_slope, double,
+
+    //better name: terminal_concentric_slope
+    OpenSim_DECLARE_PROPERTY(concentric_slope_at_vmax, double,
         "curve slope at the maximum normalized "
-        "concentric contraction velocity (-1)");
+        "concentric contraction velocity (norm. velocity of -1)");
+
+    OpenSim_DECLARE_PROPERTY(concentric_slope_near_vmax, double,
+        "Slope just prior to the maximum normalized"
+        "concentric (shortening) velocity (e.g. -1 < norm velocity < -0.8)");
 
     OpenSim_DECLARE_PROPERTY(isometric_slope, double, 
         "curve slope at isometric (normalized fiber velocity of 0)");
 
-    OpenSim_DECLARE_PROPERTY(min_eccentric_slope, double, 
+    OpenSim_DECLARE_PROPERTY(eccentric_slope_at_vmax, double, 
         "curve slope at the maximum normalized "
-        "eccentric contraction velocity (1)");
+        "eccentric (lengthening) contraction velocity (norm. velocity of 1)");
+
+    OpenSim_DECLARE_PROPERTY(eccentric_slope_near_vmax, double,
+        "Slope just prior to the maximum normalized"
+        "eccentric (lengthening) velocity (e.g. 0.8 < norm velocity < 1)");
 
     OpenSim_DECLARE_PROPERTY(max_eccentric_velocity_force_multiplier, double, 
         "curve value at the maximum normalized "
@@ -107,7 +117,7 @@ public:
      curve requries 6 different properties and a name in order to 
      construct a curve:
 
-     @param concentricMinSlope 
+     @param concentricSlopeAtVmax 
                 The slope of the force velocity curve at a normalized (w.r.t.
                 vmax * optimal fiber length) contraction velocity of -1, which
                 is also the minimum slope value the concentric side of the 
@@ -119,8 +129,13 @@ public:
                 invertible (this curve is not invertible when it has a 
                 minConcentricSlope of 0).
 
+     @param concentricSlopeNearVmax
+                The slope of the force velocity curve at a normalized (w.r.t
+                vmax * optimal fiber length) contraction velocity between
+                approximately -0.8 and -1
+
                 
-     @param isometricMaxSlope   
+     @param isometricSlope   
                 The slope of the force velocity curve at a normalized (w.r.t.
                 vmax * optimal fiber length) contraction velocity of 0, which
                 is also the maximum slope achieved by the force velocity curve.
@@ -134,7 +149,7 @@ public:
                 and 'concentricCurviness' parameters, as it places an upper 
                 limit on the maximum slope of the force velocity curve.
 
-     @param eccentricMinSlope   
+     @param eccentricSlopeAtVmax   
                 The slope of the force velocity curve at a normalized (w.r.t.
                 vmax * optimal fiber length) contraction velocity of 1, which
                 is also the minimum slope the eccentric side of the force
@@ -143,6 +158,11 @@ public:
                 transitions to the minimum value and has a first and second 
                 derivative of 0.
             
+    @param eccentricSlopeNearVmax
+                The slope of the force velocity curve at a normalized (w.r.t
+                vmax * optimal fiber length) eccentric contraction velocity 
+                (lengthening) between approximately 0.8 and 1
+
      @param maxEccentricVelocityForceMultiplier
                 The value of the force velocity curve, force velocity 
                 multiplier, at the maximum eccentric contraction velocity.
@@ -189,10 +209,10 @@ public:
 
       <B>Conditions:</B>
         \verbatim
-            1)  0 <= concentricMinSlope < 1            
-            2a) 1 < isometricMaxSlope
+            1)  0 <= concentricSlopeAtVmax < 1            
+            2a) 1 < isometricSlope
             2b) (maxEccentricVelocityForceMultiplier-1)/1 < isometricMaxSlope            
-            3)  0 <= eccentricMinSlope < (maxEccentricVelocityForceMultiplier-1)/1
+            3)  0 <= eccentricSlopeAtVmax < (maxEccentricVelocityForceMultiplier-1)/1
 
             4) 1 < maxEccentricVelocityForceMultiplier 
 
@@ -207,9 +227,9 @@ public:
 
         <B> Default Parameter Values </B>
         \verbatim
-            concentricMinSlope ...................  = 0.1 
-            isometricMaxSlope  ...................  = 5
-            eccentricMinSlope  ...................  = 0.1
+            concentricSlopeAtVmax ...................  = 0.1 
+            isometricSlope        ...................  = 5
+            eccentricSlopeAtVmax  ...................  = 0.1
             maxEccentricVelocityForceMultiplier...  = 1.8
             concentricCurviness ..................  = 0.1
             eccentricCurviness  ..................  = 0.75
@@ -223,9 +243,11 @@ public:
     @endcode
 
     */
-    ForceVelocityCurve( double concentricMinSlope, 
-                        double isometricMaxSlope,
-                        double eccentricMinSlope,
+    ForceVelocityCurve( double concentricSlopeAtVmax, 
+                        double concentricSlopeNearVmax,
+                        double isometricSlope,
+                        double eccentricSlopeAtVmax,
+                        double eccentricSlopeNearVmax,
                         double maxEccentricVelocityForceMultiplier,
                         double concentricCurviness,
                         double eccentricCurviness,
@@ -233,22 +255,33 @@ public:
 
 
     /**
+    @returns    The slope of the force velocity curve near the maximum
+                normalized concentric (shortening) contraction velocity. 
+    */
+     double getConcentricSlopeNearVmax() const;
+    /**
     @returns    The slope of the force velocity curve at the maximum
                 normalized contraction velocity (-1). 
     */
-     double getConcentricMinSlope() const;
+     double getConcentricSlopeAtVmax() const;
 
      /**
      @returns   The slope of the force velocity curve at a normalized 
                 contraction velocity of 0.
      */
-     double getIsometricMaxSlope() const;
+     double getIsometricSlope() const;
 
      /**
      @returns   The slope of the force velocity curve at the maximum eccentric
                 (lengthening) contraction velocity (1).
      */
-     double getEccentricMinSlope() const;
+     double getEccentricSlopeAtVmax() const;
+
+     /**
+    @returns    The slope of the force velocity curve near the maximum
+                normalized eccentric (lengthening) contraction velocity. 
+    */
+     double getEccentricSlopeNearVmax() const;
 
      /**
      @returns   The value of the force velocity multiplier at the maximum 
@@ -275,25 +308,32 @@ public:
 
 
      /**
-     @param aConcentricMinSlope 
+     @param aConcentricSlopeAtVmax 
         the slope of the force velocity curve at the maximum concentric 
-        contraction velocity (1).
-     @param aIsometricMaxSlope 
+        contraction velocity (-1).
+     @param aConcentricSlopeNearVmax
+        the slope of the force velocity curve near the maximum concentric
+        fiber velocity
+     @param aIsometricSlope 
         the slope of the force velocity curve at a contraction velocity of 0.
-     @param aEccentricMinSlope 
+     @param aEccentricSlopeAtVmax 
         the slope of the force velocity curve at the maximum eccentric 
         (lengthening) contraction velocity (1).
+     @param aEccentricSlopeNearVmax
+        the slope of the force velocity curve near the maximum eccentric
+        fiber velocity
      @param aMaxForceMultiplier 
         the value of the force velocity curve, or the value of the force 
         velocity multiplier, at the maximum eccentric (lengthening) velocity
      
      <B>Conditions</B>
       \verbatim
-            1)  0 <= concentricMinSlope < 1            
-            2a) 1 < isometricMaxSlope
-            2b) (maxEccentricVelocityForceMultiplier-1)/1 < isometricMaxSlope            
-            3)  0 <= eccentricMinSlope < (maxEccentricVelocityForceMultiplier-1)/1
-
+            1a) 0 <= concentricSlopeAtVmax < 1  
+            1b) concentricSlopeAtVmax < concentricSlopeNearVmax < 1
+            2a) 1 < isometricSlope
+            2b) (maxEccentricVelocityForceMultiplier-1)/1 < isometricSlope                        
+            3a) 0 <= eccentricSlopeAtVmax < (maxEccentricVelocityForceMultiplier-1)/1
+            3b) eccentricSlopeAtVmax < eccentricSlopeNearVmax < (maxEccentricVelocityForceMultiplier-1)/1 
             4) 1 < maxEccentricVelocityForceMultiplier 
       \endverbatim
 
@@ -301,9 +341,11 @@ public:
       The curve is rebuilt at a cost of ~8,200 flops
 
      */
-     void setCurveShape(double aConcentricMinSlope,
-                        double aIsometricMaxSlope,
-                        double aEccentricMinSlope,
+     void setCurveShape(double aConcentricSlopeAtVmax,
+                        double aConcentricSlopeNearVmax,
+                        double aIsometricSlope,
+                        double aEccentricSlopeAtVmax,
+                        double aEccentricSlopeNearVmax,
                         double aMaxForceMultiplier);
 
      /**

@@ -276,6 +276,17 @@ void TendonForceLengthCurve::
                             double aNormForceAtToeEnd,
                             double aCurviness)
 {
+    SimTK_ERRCHK_ALWAYS( aStiffnessAtOneNormForce > SimTK::SignificantReal*1000,
+        "TendonForceLengthCurve::setOptionalProperties",
+        "The tendon must have a non-zero stiffness");
+    SimTK_ERRCHK_ALWAYS( aNormForceAtToeEnd > SimTK::SignificantReal*1000 
+                      && aNormForceAtToeEnd <= 1,
+        "TendonForceLengthCurve::setOptionalProperties",
+        "The tendon must have a normForceAtToeEnd between 0 and 1");
+    SimTK_ERRCHK_ALWAYS( aCurviness >= 0 && aCurviness <= 1,
+        "TendonForceLengthCurve::setOptionalProperties",
+        "The tendon must have a curviness between 0 and 1");
+
     set_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
     set_norm_force_at_toe_end(aNormForceAtToeEnd);
     set_curviness(aCurviness);

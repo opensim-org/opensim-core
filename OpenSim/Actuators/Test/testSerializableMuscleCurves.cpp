@@ -283,8 +283,8 @@ void testForceVelocityCurve()
 
         cout <<"    b. serialization & deserialization" <<endl;
         ForceVelocityCurve fvCurve2;
-        //change all of the properties to something other than the default
-        fvCurve2.setCurveShape(0,10,0,2.0);
+        //change all of the properties to something other than the default        
+        fvCurve2.setCurveShape(0,0.1,10,0,0.1,2.0);
         fvCurve2.setConcentricCurviness(0.5);        
         fvCurve2.setEccentricCurviness(0.5);
 
@@ -303,7 +303,7 @@ void testForceVelocityCurve()
         SimTK_TEST(fvCurve2 == fvCurve1);       
         remove("default_ForceVelocityCurve.xml");
         
-        fvCurve2.setCurveShape(0,10,0,2.0);
+        fvCurve2.setCurveShape(0,0.1,10,0,0.1,2.0);
         fvCurve2.setConcentricCurviness(0.5);        
         fvCurve2.setEccentricCurviness(0.5);
 
@@ -313,7 +313,7 @@ void testForceVelocityCurve()
         
         SimTK_TEST(fvCurve1==fvCurve2);
 
-        fvCurve2.setCurveShape(0,10,0,2.0);
+        fvCurve2.setCurveShape(0,0.1,10,0,0.1,2.0);
         fvCurve2.setConcentricCurviness(0.5);        
         fvCurve2.setEccentricCurviness(0.5);
 
@@ -327,7 +327,7 @@ void testForceVelocityCurve()
         //====================================================================
 
         cout <<"2. Testing API constructor" << endl;
-        ForceVelocityCurve fvCurve3(0,5,0,1.8,0.1,0.75,"testMuscle");
+        ForceVelocityCurve fvCurve3(0,0.1,5,0,0.1,1.8,0.1,0.75,"testMuscle");
         double falVal  = fvCurve3.calcValue(1.0);
         double dfalVal = fvCurve3.calcDerivative(1.0,1);
         cout << "Passed: Testing API constructor" << endl;
@@ -336,7 +336,7 @@ void testForceVelocityCurve()
 
         cout <<"3. Testing get/set methods:" << endl;
 
-        fvCurve2.setCurveShape(0,10,0.1,2.0);
+        fvCurve2.setCurveShape(0,0.1,10,0.1,0.1,2.0);
         fvCurve2.setConcentricCurviness(0.5);        
         fvCurve2.setEccentricCurviness(0.5);
 
@@ -344,11 +344,11 @@ void testForceVelocityCurve()
         fvCurve2.setEccentricCurviness(0.6);
 
         SimTK_TEST(fvCurve2.getConcentricCurviness()                    == 0.5);
-        SimTK_TEST(fvCurve2.getConcentricMinSlope()                     == 0  );
+        SimTK_TEST(fvCurve2.getConcentricSlopeAtVmax()                  == 0  );
         SimTK_TEST(fvCurve2.getEccentricCurviness()                     == 0.6);
-        SimTK_TEST(fvCurve2.getEccentricMinSlope()                      == 0.1);
+        SimTK_TEST(fvCurve2.getEccentricSlopeAtVmax()                   == 0.1);
         SimTK_TEST(fvCurve2.getMaxEccentricVelocityForceMultiplier()    == 2.0);
-        SimTK_TEST(fvCurve2.getIsometricMaxSlope()                      ==  10);
+        SimTK_TEST(fvCurve2.getIsometricSlope()                         ==  10);
 
         cout << "Passed: Testing get/set methods" << endl;
 
@@ -366,9 +366,9 @@ void testForceVelocityCurve()
         ForceVelocityCurve fvCurve4;
         //fvCurve4.setName("default_ForceVelocityCurve");
 
-        SimTK_TEST(fvCurve4.getConcentricMinSlope()     == p1);
-        SimTK_TEST(fvCurve4.getIsometricMaxSlope()      == p2);
-        SimTK_TEST(fvCurve4.getEccentricMinSlope()      == p3);
+        SimTK_TEST(fvCurve4.getConcentricSlopeAtVmax()     == p1);
+        SimTK_TEST(fvCurve4.getIsometricSlope()            == p2);
+        SimTK_TEST(fvCurve4.getEccentricSlopeAtVmax()      == p3);
         SimTK_TEST(fvCurve4.getMaxEccentricVelocityForceMultiplier() == p4);
         SimTK_TEST(fvCurve4.getConcentricCurviness()    == p5);
         SimTK_TEST(fvCurve4.getEccentricCurviness()     == p6);
@@ -429,7 +429,7 @@ void testForceVelocityInverseCurve()
         //change all of the properties to something other than the default
         fvCurve2.setConcentricCurviness(0.5);
         fvCurve2.setEccentricCurviness(0.5);
-        fvCurve2.setCurveShape(0.05,10,0.06,2);
+        fvCurve2.setCurveShape(0.05,0.1,10,0.06,0.1,2);
         
 
 
@@ -449,7 +449,7 @@ void testForceVelocityInverseCurve()
         
         fvCurve2.setConcentricCurviness(0.5);
         fvCurve2.setEccentricCurviness(0.5);
-        fvCurve2.setCurveShape(0.05,10,0.06,2);
+        fvCurve2.setCurveShape(0.05,0.1,10,0.06,0.1,2);
 
 
         cout <<"    c. assignment operator" <<endl;
@@ -460,7 +460,7 @@ void testForceVelocityInverseCurve()
 
         fvCurve2.setConcentricCurviness(0.5);
         fvCurve2.setEccentricCurviness(0.5);
-        fvCurve2.setCurveShape(0.05,10,0.06,2);
+        fvCurve2.setCurveShape(0.05,0.1,10,0.06,0.1,2);
 
         cout <<"    d. copy constructor" <<endl;
         ForceVelocityInverseCurve fvCurve2p5(fvCurve2);
@@ -471,7 +471,7 @@ void testForceVelocityInverseCurve()
 
         //cout <<"**************************************************"<<endl;
         cout <<"2. Testing API constructor" << endl;
-        ForceVelocityInverseCurve fvCurve3(0.1,5,0.1,1.8,0.1,0.75,"testMuscle");
+        ForceVelocityInverseCurve fvCurve3(0.1,0.15,5,0.1,0.1,1.8,0.1,0.75,"testMuscle");
         double falVal  = fvCurve3.calcValue(1.0);
         double dfalVal = fvCurve3.calcDerivative(1.0,1);
         cout << "Passed: Testing API constructor" << endl;
@@ -481,14 +481,14 @@ void testForceVelocityInverseCurve()
 
         fvCurve2.setConcentricCurviness(0.5);
         fvCurve2.setEccentricCurviness(0.5);
-        fvCurve2.setCurveShape(0.05,10,0.06,2);
+        fvCurve2.setCurveShape(0.05,0.1,10,0.06,0.1,2);
 
         SimTK_TEST(fvCurve2.getConcentricCurviness()                    == 0.5);
-        SimTK_TEST(fvCurve2.getConcentricMinSlope()                     ==0.05);
+        SimTK_TEST(fvCurve2.getConcentricSlopeAtVmax()                  ==0.05);
         SimTK_TEST(fvCurve2.getEccentricCurviness()                     == 0.5);
-        SimTK_TEST(fvCurve2.getEccentricMinSlope()                      ==0.06);
+        SimTK_TEST(fvCurve2.getEccentricSlopeAtVmax()                   ==0.06);
         SimTK_TEST(fvCurve2.getMaxEccentricVelocityForceMultiplier()    == 2.0);
-        SimTK_TEST(fvCurve2.getIsometricMaxSlope()                      ==  10);
+        SimTK_TEST(fvCurve2.getIsometricSlope()                         ==  10);
 
         cout << "Passed: Testing get/set methods" << endl;
 
@@ -506,9 +506,9 @@ void testForceVelocityInverseCurve()
         ForceVelocityInverseCurve fvCurve4;
         fvCurve4.setName("fvInvCurve");
 
-        SimTK_TEST(fvCurve4.getConcentricMinSlope()     == p1);
-        SimTK_TEST(fvCurve4.getIsometricMaxSlope()      == p2);
-        SimTK_TEST(fvCurve4.getEccentricMinSlope()      == p3);
+        SimTK_TEST(fvCurve4.getConcentricSlopeAtVmax()  == p1);
+        SimTK_TEST(fvCurve4.getIsometricSlope()         == p2);
+        SimTK_TEST(fvCurve4.getEccentricSlopeAtVmax()   == p3);
         SimTK_TEST(fvCurve4.getMaxEccentricVelocityForceMultiplier() == p4);
         SimTK_TEST(fvCurve4.getConcentricCurviness()    == p5);
         SimTK_TEST(fvCurve4.getEccentricCurviness()     == p6);
@@ -729,7 +729,7 @@ void testFiberForceLengthCurve()
         FiberForceLengthCurve fpeCurve2;
         //change all of the properties to something other than the default
         fpeCurve2.setCurveStrains(0,0.8);
-        fpeCurve2.setOptionalProperties(10.0,0.8);
+        fpeCurve2.setOptionalProperties(10.0,1.0/3.0,0.8);
 
 
         //These next few lines are just to read the object in, and repopulate
@@ -747,7 +747,7 @@ void testFiberForceLengthCurve()
         
 
         fpeCurve2.setCurveStrains(0,0.80);
-        fpeCurve2.setOptionalProperties(10.0,0.8);
+        fpeCurve2.setOptionalProperties(10.0,1.0/3.0,0.8);
 
         cout <<"    c. assignment operator" <<endl;
         fpeCurve2=fpeCurve1;
@@ -755,7 +755,7 @@ void testFiberForceLengthCurve()
         SimTK_TEST(fpeCurve1==fpeCurve2);
 
         fpeCurve2.setCurveStrains(0,0.80);
-        fpeCurve2.setOptionalProperties(10.0,0.8);
+        fpeCurve2.setOptionalProperties(10.0,1.0/3.0,0.8);
 
         cout <<"    d. copy constructor" <<endl;
         FiberForceLengthCurve fpeCurve2p5(fpeCurve2);
@@ -766,7 +766,7 @@ void testFiberForceLengthCurve()
 
         //====================================================================
         cout <<"2. Testing API constructor" << endl;
-        FiberForceLengthCurve fpeCurve3(0.0, 0.10,50,0.75,"testMuscle");
+        FiberForceLengthCurve fpeCurve3(0.0, 0.10,50,1.0/3.0,0.75,"testMuscle");
         double falVal  = fpeCurve3.calcValue(0.02);
         double dfalVal = fpeCurve3.calcDerivative(0.02,1);
         cout << "Passed: Testing API constructor" << endl;
@@ -775,7 +775,7 @@ void testFiberForceLengthCurve()
         cout <<"3. Testing get/set methods and the fitted flag:" << endl;
 
         fpeCurve2.setCurveStrains(0,0.80);
-        fpeCurve2.setOptionalProperties(10.0,0.8);
+        fpeCurve2.setOptionalProperties(10.0,1.0/3.0,0.8);
 
         SimTK_TEST(fpeCurve2.getStrainAtOneNormForce()         == 0.80);
         SimTK_TEST(fpeCurve2.getStiffnessAtOneNormForceInUse() == 10.0);

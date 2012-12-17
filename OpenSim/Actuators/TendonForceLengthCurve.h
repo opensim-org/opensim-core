@@ -76,10 +76,11 @@ namespace OpenSim {
     algorithm:
           
      \li stiffnessAtOneNormForce = 1.375/strainAtOneNormForce
-     \li normForceAtToeEnd = 1.0/3.0  (see Proske et al).
+     \li normForceAtToeEnd = 2.0/3.0  
      \li curviness = 0.5
      
-     For strains less than 0, or greater than strainAtOneNormForce the C2 curve
+     For strains less than 0, or greater than the toe strain (which is computed
+     using normForceAtToeEnd and stiffnessAtOneNormForce) the C2 curve
      is linearly extrapolated.
 
      Note that this curve is not being fitted to the commonly used linearly
@@ -117,10 +118,6 @@ namespace OpenSim {
         Magnusson S.P., Aagaard, P., Rosager, S., Dyhre-Poulsen, P., 
         and Kjaer,M. (2001). Load-displacement properties of the human triceps
         surae aponeurosis in vivo. Journal of Physiology, 531, 277-288.
-
-        Proske, U. and Morgan,D.L. (1987). Tendon Stiffness: Methods of 
-        Measurement and Significance for the Control of Movement. A Review. 
-        J. Biomechanics, 20,75-82.
 
         Thelen, DG (2003). Adjustment of Muscle Mechanics Model 
          Parameters to Simulate Dynamic Contractions in Older Adults. 
@@ -206,9 +203,8 @@ public:
                         The normalized force developed at the end of the `toe'
                         region. The toe region lies between 0 strain and 
                         some intermediate strain less than the strain required
-                        to develop 1 norm force. The toe region is characterized
-                        by being both non-linear and more compliant than the
-                        rest of the tendon.
+                        to develop 1 norm force. The toe region is non-linear 
+                        and more compliant than the rest of the tendon.
 
         @param curviness    
                 A dimensionless parameter between [0-1] that controls how 
@@ -238,6 +234,7 @@ public:
         \verbatim
             strainAtOneNormForce > 0
             stiffnessAtOneNormForce > 1/strainAtOneNormForce
+            0 < normForceAtToeEnd < 1
             0 <= curviness <= 1
         \endverbatim
 
@@ -294,14 +291,13 @@ public:
      This constructor will create a C2 continuous tendon force length curve that
      is fitted to match the average dimensionless in-vivo tendon curve 
      reported by Maganarius et al and Magnusson et al. In addition,
-     the curve produced will have a characteristic toe region that appears
-     in the in-vitro tendon testing literature (for example see Lewis et al, 
-     or Proske), though does not show up strongly in the in-vivo literature. The
-     curve is fitted using only the strainAtOneNormForce and this hueristic
-     algorithm:
+     the curve produced will have a characteristic toe region fitted to the
+     in the in-vivo literature. The curve is fitted using only the 
+     strainAtOneNormForce and this hueristic algorithm:
           
      \li stiffnessAtOneNormForce = 1.375/strainAtOneNormForce
-     \li normForceAtToeEnd = 1.0/3.0  (see Proske et al).
+     \li normForceAtToeEnd =2.0/3.0 (fitted to data from Maganaris et al., 
+                                     and Magnusson et al.)
      \li curviness = 0.5
      
      For strains less than 0, or greater than strainAtOneNormForce the C2 curve
@@ -347,10 +343,6 @@ public:
         Lewis, G. and Shaw, K.M. (1997). Tensile Properties of Human Tendon
         Achillis: Effect of Donor Age and Strain Rate. The Journal of Foot 
         and Ankle Surgery, 36, 435-445.
-
-        Proske, U. and Morgan,D.L. (1987). Tendon Stiffness: Methods of 
-        Measurement and Significance for the Control of Movement. A Review. 
-        J. Biomechanics, 20,75-82.
 
         Thelen, DG (2003). Adjustment of Muscle Mechanics Model 
          Parameters to Simulate Dynamic Contractions in Older Adults. 
@@ -410,14 +402,20 @@ public:
      /**
      @returns the norm force developed at the point in the curve where the toe
               region transitions to the linear stiffness region. By default
-              a value of 1.0/3.0 is used as reported by Proske et al.
+              a value of 2.0/3.0 is used as it best fits the 
+              tendon-force--length curves reported by Magnaris et al. and
+              Magnussen et al.
 
-              <B>References</B>
-              \verbatim
-             Proske, U. and Morgan,D.L. (1987). Tendon Stiffness: Methods of 
-             Measurement and Significance for the Control of Movement. A Review. 
-             J. Biomechanics, 20,75-82.
-             \endverbatim
+     <B>References</B>
+     \verbatim
+        Maganaris, C.N. and Paul, J.P.(2002). Tensile properties of the in
+        vivo grastrocnemius tendon. J. Biomechanics 35:1639-1646
+
+        Magnusson S.P., Aagaard, P., Rosager, S., Dyhre-Poulsen, P., 
+        and Kjaer,M. (2001). Load-displacement properties of the human triceps
+        surae aponeurosis in vivo. Journal of Physiology, 531, 277-288.
+
+     \endverbatim
      */
      double getNormForceAtToeEndInUse() const;
 

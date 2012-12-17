@@ -154,17 +154,21 @@ void Millard2012EquilibriumMuscle::buildMuscle()
     fseCurve.setName(tmp);
 
     //For initialization only we need a force-velocity curve:
-    double concentricSlope      = fvInvCurve.getConcentricMinSlope();
-    double isometricSlope       = fvInvCurve.getIsometricMaxSlope();
-    double eccentricSlope       = fvInvCurve.getEccentricMinSlope();
+    double concentricSlopeAtVmax    = fvInvCurve.getConcentricSlopeAtVmax();
+    double concentricSlopeNearVmax  = fvInvCurve.getConcentricSlopeNearVmax();
+    double isometricSlope           = fvInvCurve.getIsometricSlope();
+    double eccentricSlopeAtVmax     = fvInvCurve.getEccentricSlopeAtVmax();
+    double eccentricSlopeNearVmax   = fvInvCurve.getEccentricSlopeNearVmax();
     double concentricCurviness  = fvInvCurve.getConcentricCurviness();
     double eccentricCurviness   = fvInvCurve.getEccentricCurviness();
     double eccentricForceMax    = 
         fvInvCurve.getMaxEccentricVelocityForceMultiplier();
 
-     fvCurve = ForceVelocityCurve(  concentricSlope,
+     fvCurve = ForceVelocityCurve(  concentricSlopeAtVmax,
+                                    concentricSlopeNearVmax,
                                     isometricSlope,
-                                    eccentricSlope,
+                                    eccentricSlopeAtVmax,
+                                    eccentricSlopeNearVmax,
                                     eccentricForceMax,
                                     concentricCurviness,
                                     eccentricCurviness,
@@ -203,8 +207,8 @@ void Millard2012EquilibriumMuscle::buildMuscle()
                 getName().c_str());
 
             SimTK_ERRCHK1_ALWAYS(
-                fvInvCurve.getConcentricMinSlope()> SimTK::SignificantReal
-                && fvInvCurve.getEccentricMinSlope()>SimTK::SignificantReal,
+                fvInvCurve.getConcentricSlopeAtVmax()> SimTK::SignificantReal
+                && fvInvCurve.getEccentricSlopeAtVmax()>SimTK::SignificantReal,
                 caller.c_str(),
                 "%s: ForceVelocityInverseCurve: ConcentricMinSlope and "
                 "EccentricMinSlope must be greater than 0.\n", 
@@ -213,8 +217,10 @@ void Millard2012EquilibriumMuscle::buildMuscle()
             actMdl.setMinimumActivation(0.0);
             act2Mdl.setMinimumActivation(0.0);
             falCurve.setMinValue(0.0);
-            fvCurve.setCurveShape(0.0,fvInvCurve.getIsometricMaxSlope(), 0.0,
-                          fvInvCurve.getMaxEccentricVelocityForceMultiplier());
+            fvCurve.setCurveShape(0.0,fvInvCurve.getConcentricSlopeNearVmax(),
+                fvInvCurve.getIsometricSlope(), 
+                0.0, fvInvCurve.getEccentricSlopeNearVmax(),
+                fvInvCurve.getMaxEccentricVelocityForceMultiplier());
     }
 
     //Ensure all sub objects are up to date;

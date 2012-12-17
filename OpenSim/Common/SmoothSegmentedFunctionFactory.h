@@ -253,18 +253,22 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
                       normalized concentric contraction velocity. Although 
                       physiologically the value of dydxC at the maximum 
                       concentric contracton velocity is by definition 0, a value
-                      of 0 is rarely used. If you are using an equilbrium type 
+                      of 0 is often used. If you are using an equilbrium type 
                       model this term must be positive and greater than zero so
                       that the fv curve can be inverted.
                       <br /><br />
                       Minimum Value: 0
                       Maximum Value: dydxC < 1 
                       <br /><br />
-                      Note that the stiffness (and thus simulation time) of an 
-                      eqilibrium-type muscle model is affected by the size of 
-                      this term: the closer to zero it is, the stiffer the model 
-                      is (but only when (dlce(t)/dt)/vmax approaches -1).
-                              
+
+        @param dydxNearC The slope of the force velocity curve as it approaches
+                         the maximum concentric (shortening) contraction velocity.
+                         <br /><br />
+                          Minimum Value: > dydxC
+                          Maximum Value: dydxNearC < 1 
+                          <br /><br />
+
+
         @param dydxIso  The slope of the fv curve when dlce(t)/dt = 0. 
                         <br /><br />
                         Minimim Value: dydxIso > 1.0
@@ -286,6 +290,14 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
                         integration problem for equilibrium-type muscle models: 
                         the closer to zero this term is, the stiffer the model 
                         will be (but only when (dlce(t)/dt)/vmax approaches 1.
+    
+        @param dydxNearE The slope of the force velocity curve as it approaches
+                         the maximum eccentric (lengthening) contraction velocity.
+                         <br /><br />
+                          Minimum Value: > dydxE
+                          Maximum Value: dydxNearE < (fmaxE-1)
+                          <br /><br />
+
 
         @param concCurviness    The dimensionless 'curviness' parameter that 
                                 can vary between 0 (a line) to 1 (a smooth, but 
@@ -318,8 +330,10 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         <B>Conditions:</B>
         \verbatim
             0 <= dydxC < 1
+            dydxC < dydxNearC < 1
             1 < dydxIso
             dydxE < (fmaxE-1) 
+            dydxE < dydxNearC < (fmaxE-1)
             0<= concCurviness <=0
             0 <= eccCurviness <= 0
         \endverbatim
@@ -334,19 +348,25 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         @code
             double fmaxE = 1.8;
             double dydxC = 0.1;
+            double dydxNearC = 0.25;
             double dydxE = 0.1;
+            double dydxNearE = 0.15;
             double dydxIso= 5;
             double concCurviness = 0.1;
             double eccCurviness = 0.75;
 
             SmoothSegmentedFunction fiberFVCurve = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, dydxE, 
-                                concCurviness,  eccCurviness,false,"test");
+                createFiberForceVelocityCurve(fmaxE, 
+                    dydxC, dydxNearC, dydxIso, dydxE, dydxNearE,
+                    concCurviness,  eccCurviness,false,"test");
             fiberFVCurve.printMuscleCurveToFile();
         @endcode             
         */
         static SmoothSegmentedFunction createFiberForceVelocityCurve(
-            double fmaxE, double dydxC, double dydxIso, double dydxE, 
+            double fmaxE, 
+            double dydxC, double dydxNearC, 
+            double dydxIso, 
+            double dydxE, double dydxNearE,
             double concCurviness, double eccCurviness,
             bool computeIntegral, const std::string& curveName);
 
@@ -368,7 +388,10 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
 
         */
         static SmoothSegmentedFunction createFiberForceVelocityInverseCurve(
-            double fmaxE, double dydxC, double dydxIso, double dydxE, 
+            double fmaxE, 
+            double dydxC, double dydxNearC, 
+            double dydxIso, 
+            double dydxE, double dydxNearE,
             double concCurviness, double eccCurviness, 
             bool computeIntegral, const std::string& muscleName);
 
@@ -601,21 +624,28 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         This function will generate a C2 continuous curve that fits a fiber's 
         tensile force length curve.
 
-        @param e0   The fiber strain at which the fiber begins to develop force.
-                    Thus an e0 of 0.0 means that the fiber will start to develop
-                    passive force when it has a normalized length of 1.0. Note
-                    that e0 can be postive or negative.
+        @param eZero The fiber strain at which the fiber begins to develop force.
+                     Thus an e0 of 0.0 means that the fiber will start to develop
+                     passive force when it has a normalized length of 1.0. Note
+                     that e0 can be postive or negative.
 
-        @param e1   The fiber strain at which the fiber develops 1 unit of 
+        @param eIso The fiber strain at which the fiber develops 1 unit of 
                     normalized force (1 maximum isometric force). Note that the 
                     '1' is left off. Thus an e0 of 0.6 means that the fiber 
                     will develop an 1 normalized force unit when it is strained 
                     by 60% of its resting length, or to a normalized length of 
                     1.6
 
-        @param kiso   The normalized stiffness (or slope) of the fiber curve 
-                      when the fiber is strained by e0 (or has a length of 1+e0)
-                      under a load of 1 maximum isometric unit of force.
+        @param kLow   The normalized stiffness (or slope) of the fiber curve 
+                      close to the location where the force-length curve 
+                      approaches a normalized force of 0. This is usually 
+                      chosen to be a small, but non-zero fraction of kIso 
+                      (kLow = 0.025 kIso is typical).
+
+        @param kIso   The normalized stiffness (or slope) of the fiber curve 
+                      when the fiber is strained by eIso (or has a length of 
+                      1+eIso) under a load of 1 maximum isometric unit of force.
+
 
         @param curviness    The dimensionless 'curviness' parameter that 
                             can vary between 0 (a line) to 1 (a smooth, but 
@@ -640,8 +670,9 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
 
         <B>Conditions:</B>
         \verbatim            
-            e1 > e0            
-            kiso > 1/(e1-e0)
+            eIso > eZero            
+            kIso > 1/(eIso-eZero)
+            0 < kLow < kIso
             0 <= curviness <= 1
         \endverbatim
 
@@ -653,22 +684,24 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
 
         <B>Example:</B>
         @code
-            double e0      = 0.0;
-            double e1      = 0.6;
-            double kiso    = 8.389863790885878;
-            double c       = 0.65;
+            double eIso      = 0.6;
+            double eZero     = 0.0;
+            double kIso      = 4.0/(eIso-eZero);
+            double kNearZero = 0.025*kIso
+            double c         = 0.5;
 
-            SmoothSegmentedFunction fiberFLCurve = SmoothSegmentedFunctionFactory::
-                                              createFiberForceLengthCurve(e0, e1
-                                              kiso, c, true,"test");
+            SmoothSegmentedFunction fiberFLCurve 
+            = SmoothSegmentedFunctionFactory::
+              createFiberForceLengthCurve(eZero, eIso,
+                                          kLow, kIso, c, true,"test");
             fiberFLCurve.printMuscleCurveToFile();
         @endcode
 
         */
         static SmoothSegmentedFunction createFiberForceLengthCurve(
-                        double e0, double e1,
-                        double kiso, double curviness,
-                        bool computeIntegral, const std::string& curveName);
+                       double eZero, double eIso,
+                       double kLow, double kIso,double curviness,
+                       bool computeIntegral, const std::string& curveName);
 
         /**
         Will generate a C2 continous (continuous to the second derivative) 

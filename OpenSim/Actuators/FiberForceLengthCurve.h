@@ -44,17 +44,20 @@ namespace OpenSim {
 
 /**
  This class serves as a serializable FiberForceLengthCurve, commonly used
- to model the parallel elastic element, for use in muscle models. This curve i
+ to model the parallel elastic element, for use in muscle models. This curve 
  is dimensionless, with force being normalized to maximum isometric force, and
  length normalized to resting muscle length. The user has control over the 
  maximum strain at no load, the strain developed under 1 unit force of 
- load, its stiffness at 1 unit load, and the shape of the 
- curve (its `curviness'). 
+ load using the fitted curve. Additionally, if desired it is possible to 
+ directly set the low force stiffness of the fiber, the stiffness of the fiber 
+ at one norm force, and the shape of the curve (its `curviness'). 
 
- All parameters but the strain of the fiber at 1 unit load are optional. 
- Note that the optional parameters must either be left blank, or all filled in. 
- Filling in one optional parameter but the others will throw an exception
- when the curve is built.
+ All parameters but the strain of the fiber at 1 unit load are optional. These
+ manditory parameters can be set using the constructor, or using the provided
+ `setCurveStrains' function. Note that the optional parameters must either be 
+ left blank, or all filled in using the provided function 
+ `setOptionalProperties'. Filling in one optional parameter but the others will 
+ throw an exception when the curve is built.
 
  <B>Manditory Properties</B>
 
@@ -62,36 +65,36 @@ namespace OpenSim {
 
  <B>Optional Properties</B>
  \li strainAtZeroForce
+ \li stiffnessAtLowForce
  \li stiffnessAtOneNormForce
  \li curviness
 
  The shape of the curve can be varied from a close approximation of a line to a
- sharply bent curve using the optional parameters. 
+ sharply bent curve using the optional parameters.
  
-  \image html fig_FiberForceLengthCurve.png
+  \image html fig_FiberForceLengthCurveUPDATE.png
 
  If the optional parameters are not specified, the curve is fit using a 
  hueristic algorithm that appears to agree well with experimentally measured
- fiber force length curves of Winters et al, and additionally, fits Thelen's
- fiber force length curve (matching its area, strain, and stiffness at one 
- norm force).
+ fiber force length curves of Winters et al.
 
  \li strainAtZeroForce  is set to 0
  \li strainAtOneNormForce  is set to 0.6
- \li stiffnessAtOneNormForce = 5.03391827453152134
-                                /(strainAtOneNormForce-strainAtZeroForce)
- \li curviness = 0.63753341725162227
+ \li stiffnessAtOneNormForce = 3.0 /(strainAtOneNormForce-strainAtZeroForce)
+                             = 3.0/0.6 = 5
+ \li stiffnessatLowForce = 0.025 * stiffnessAtOneNormForce
+                         = 0.125
+ \li curviness = 0.75
 
- The `magic numbers' are a result of fitting the curve to Thelen's 2003 default
- fiber force length curve (which agrees well with Winters et al's experimental
- data) so that the two curves have the same final stiffness, strain, and area.
- The advantage of this curve is that it is continuous to the second derivative 
- (the Thelen 2003 curve is only C0 continuous). The improved smoothness of the 
- curve makes the equations far easier to simulate and saves simulation time, and 
- permit a number of different solving techniques to be used that require 
- continuity. In addition, the extra parameters in this curve formulation can be 
- made to match a wide variety of shapes, should it be desired to fit the curve 
- to experimental data. 
+ The `magic numbers' are a result of fitting the curve Winters et al's 
+ experimental data. The advantage of this curve over the typical exponential
+ curve used in the literature is that it is continuous to the second derivative, 
+ where as the usual linearly extrapolated exponential curve is only C0 
+ continuous. The improved smoothness of the curve makes the equations a little
+ easier to simulate, but importantly permits derivative-based numerical methods
+ to be used with the curves. In addition, the extra parameters in this curve 
+ formulation can be made to match a wide variety of shapes, should it be desired
+ to fit the curve to experimental data. 
  
  <B>Usage</B>
 
@@ -111,7 +114,7 @@ namespace OpenSim {
      double fpeVal2 = fpeCurve2.calcValue(0.1);
 
  //Make a custom fiber force length curve by supplying every parameter
-     FiberForceLengthCurve fpeCurve3(0.0, 0.10,50,0.75,"testMuscle");
+     FiberForceLengthCurve fpeCurve3(-0.1, 0.50,0.1,5,0.75,"testMuscle");
             double fpe3Val  = fpeCurve3.calcValue(0.02);
             double dfpe3Val = fpeCurve3.calcDerivative(0.02,1);
 
@@ -122,8 +125,6 @@ namespace OpenSim {
  The default value for strainAtOneNormForce is 0.6, which matches the 
  experimental curve reported in Winters et al in Fig. 3a, and Thelen's fiber
  force length curve function described in his 2003 paper.
-
- 
 
  <B> References </B>
 
@@ -165,6 +166,8 @@ public:
         "Fiber strain at a tension of 1 normalized force");
     OpenSim_DECLARE_PROPERTY(strain_at_zero_force, double, 
         "Fiber strain at zero force");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(stiffness_at_low_force, double, 
+        "Fiber stiffness at the end of the low force region");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(stiffness_at_one_norm_force, double, 
         "Fiber stiffness at a tension of 1 normalized force");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(curviness, double, 
@@ -174,43 +177,15 @@ public:
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-      /**
-        Creates a default fitted fiber force length curve using only the strain 
-        the fiber undergoes at 1 normalized unit force of tensile load. The 
-        curve is given a the name `default_FiberForceLengthCurve'.
-
-     The manditory parameters required by this curve are set to their 
-     default values:
-
-     \li strainAtZeroForce  is set to 0
-     \li strainAtOneNormForce  is set to 0.6
-
-     The remaining parameters required by this curve are calculated
-     using a hueristic algorithm that appears to agree well with experimentally
-     measured fiber force length curves of Winters et al, and additionally, fits
-     Thelen's fiber force length curve (matching its area, strain, and stiffness
-     at one norm force).
-     
-     \li stiffnessAtOneNormForce = 5.03391827453152134
-                                    /(strainAtOneNormForce-strainAtZeroForce)
-     \li curviness = 0.63753341725162227
-
-     The `magic numbers' are a result of fitting the curve to Thelen's 2003 
-     default fiber force length curve (which agrees well with Winters et al's 
-     experimental data) so that the two curves have the same final stiffness, 
-     strain, and area. 
- 
-     <B> Default Values </B>
-
-     The default value for strainAtOneNormForce is 0.6, which matches the 
-     experimental curve reported in Winters et al in Fig. 3a, and Thelen's fiber
-     force length curve function described in his 2003 paper.
+    /**
+    Creates a default fitted fiber force length curve using only the strain 
+    the fiber undergoes at 1 normalized unit force of tensile load. The 
+    curve is given a the name `default_FiberForceLengthCurve'. The parameter
+    values used to create the default curve are specified in the class 
+    description
 
      <B> References </B>
      \verbatim
-        Thelen (2003). Adjustment of Muscle Mechanics Model Paramters to 
-        Simulate Dynamic Contractions in Older Adults. ASME J Biomech Eng (125).
-
         Winters, T.M., Takahashi,M., Lieber,R.L., and Ward,S.(2010). Whole Muscle
         Length-Tension Relationships are Accurately Modeled as Scaled Sarcomeres in
         Rabbit Hindlimb Muscles. J.Biomech 44:109-115.
@@ -222,10 +197,8 @@ public:
     // assignment operator.
 
     /**
-     Constructs a C2 continuous fiber force length curve. This curve has the 
-     advantage of being C2 continuous which results in slightly faster 
-     simulations and is required by a number of useful numerical solving 
-     routines.
+     Creates a fiber force length curve using the parameters specified by the
+     user. 
      
         @param strainAtZeroForce
                     The fiber strain at which the fiber starts to develop 
@@ -246,11 +219,13 @@ public:
                     develop a tension of 1 normalized force when it is strained 
                     by 60% of its resting length, or equivalently is stretched 
                     to 1.60 times its resting length.
+        
+        @param stiffnessAtLowForce     
+                The normalized stiffness (or slope) of the curve at low force.                
 
         @param stiffnessAtOneNormForce     
                 The normalized stiffness (or slope) of the fiber curve when the 
-                fiber is strained by strainAtOneNormForce under a load of 1 
-                normalized unit of force.
+                fiber is develops a tension of 1 normalized unit of force.
 
         @param curviness    
                 A dimensionless parameter between [0-1] that controls how 
@@ -270,8 +245,9 @@ public:
 
       <B>Conditions:</B>
         \verbatim
-            strainAtOneNormForce > strainAtZeroForce
+            strainAtOneNormForce >  strainAtZeroForce
             stiffnessAtOneNormForce > 1/(strainAtOneNormForce-strainAtZeroForce)
+            0 < strainAtLowForce < stiffnessAtOneNormForce
             0 <= curviness <= 1
         \endverbatim
 
@@ -280,22 +256,18 @@ public:
             ~174,100 flops
         \endverbatim
 
-    <B> Default Parameter Values </B>
-         \verbatim
-             strainAtOneNormForce    = 0.60,              
-         \endverbatim
-
 
         <B>Example:</B>
         @code
-            FiberForceLengthCurve fpeCurve3(0,0.60,8.4,0.65,"soleus");
+            FiberForceLengthCurve fpeCurve3(0,0.60,0.16,6.67,0.5,"soleus");
             double fpeVal  = fpeCurve3.calcValue(0.02);
             double dfpeVal = fpeCurve3.calcDerivative(0.02,1);
         @endcode
     */
     FiberForceLengthCurve(  double strainAtZeroForce,
                             double strainAtOneNormForce, 
-                            double stiffnessAtOneNormForce,
+                            double stiffnessAtLowForce,
+                            double stiffnessAtOneNormForce,                            
                             double curviness,
                             const std::string& muscleName);
 
@@ -331,24 +303,43 @@ public:
     */
      double getStrainAtOneNormForce() const;
 
+     /**
+     @returns   The slope of the curve when the fiber is just beginning to 
+                develop tensile force.
+                
+                If this optional property has been set, the value of this 
+                property is returned.
+                
+                If the property has not been set, the stiffness is computed 
+                using fitting algorithm that appears to produce curves that
+                matches Winters et al.'s in-vivo data well.
+
+                \verbatim 
+                        ~5 flops 
+                \endverbatim
+
+
+        <B> References </B>
+        \verbatim
+
+        Winters, T.M., Takahashi,M., Lieber,R.L., and Ward,S.(2010). 
+        Whole Muscle Length-Tension Relationships are Accurately Modeled as 
+        Scaled Sarcomeres in Rabbit Hindlimb Muscles. J.Biomech 44:109-115.
+        \endverbatim                
+     */
+     double getStiffnessAtLowForceInUse() const;
      
 
      /**
-     @returns   The slope of the curve (or stiffness of the fiber) when the 
-                fiber is under 1 normalized tensile force. 
+     @returns   The slope of the curve when the fiber is developing 1 normalized
+                force of tension.
                 
                 If this optional property has been set, the value of this 
                 property is returned.
                 
                 If the property has not been set, the stiffness is computed 
                 using the following hueristic algorithm which produces curves
-                that agree well with Winters et al.'s in-vivo data, and 
-                Thelen's exponential curve.
-
-                 \li strainAtZeroForce  is set to 0
-                 \li strainAtOneNormForce  is set to 0.6
-                 \li stiffnessAtOneNormForce = 5.03391827453152134
-                                /(strainAtOneNormForce-strainAtZeroForce)
+                that agree well with Winters et al.'s in-vivo data.
 
                \verbatim 
                         ~5 flops 
@@ -381,13 +372,9 @@ public:
         returned.
 
         If the optional parameter 'curviness' has not been set, 
-        then this function will use a value that appears to match Winters et
-        al.'s in vivo data, and Thelen's fiber force length curve:
+        then this function will use the default value mentioned in the class
+        description.
 
-        \li curviness = 0.63753341725162227
-      
-        
-        
         <B> Computational Costs </B>
 
         \verbatim
@@ -414,7 +401,7 @@ public:
                 strainAtOneNormForce = 0.0 means that 
                 the fiber will start to develop tension at its resting length.
 
-        @param aStrainAtOneNormForce     
+         @param aStrainAtOneNormForce     
             The fiber strain at which the fiber develops 1 unit of 
             normalized force. The definition of strain used for this 
             quantity is consistent with the Cauchy or engineering 
@@ -437,6 +424,12 @@ public:
                           double aStrainAtOneNormForce); 
 
      /**
+     @param aStiffnessAtLowForce
+                The normalized stiffness (or slope) of the fiber curve when
+                it is just beginning to develop force. The value used for
+                aStiffnessAtLowForce is typically a small fraction of the value
+                used in aStiffnessAtOneNormForce.
+
      @param aStiffnessAtOneNormForce
                 The normalized stiffness (or slope) of the fiber curve 
                 when the fiber is strained by strainAtOneNormForce
@@ -458,7 +451,8 @@ public:
       <B>Cost</B>
       The  curve is rebuilt at a cost of ~174,100 flops
      */    
-     void setOptionalProperties(double aStiffnessAtOneNormForce,
+     void setOptionalProperties(double aStiffnessAtLowForce,
+                                double aStiffnessAtOneNormForce,                               
                                 double aCurviness);
 
     /**
@@ -565,12 +559,9 @@ public:
             x, y, dy/dx, d2y/dx2,
        \endverbatim
        
-       The curve will be sampled from its linear extrapolation region
-       (the region with normalized fiber velocities < -1), through 
-       the curve, out to the other linear extrapolation region
-       (the region with normalized fiber velocities > 1). The width of 
-       each linear extrapolation region is 10% of the entire range of x, or 
-       0.1*(x1-x0).
+       The curve will be sampled from its zero force region, through 
+       the curve, out to strains beyond which the fiber generates passive
+       normalized forces greater than 1. 
 
        The curve is sampled quite densely: there are 200+20 rows    
 
@@ -686,11 +677,12 @@ private:
       
    //<B>NO LONGER USED</B>
    double calcCurvinessOfBestFit(double e0, double e1,
-                                 double k, 
+                                 double k0, double k1,
                                  double area, double relTol);
 
     SmoothSegmentedFunction   m_curve;    
     double m_stiffnessAtOneNormForceInUse;    
+    double m_stiffnessAtLowForceInUse;
     double m_curvinessInUse;
     bool   m_fittedCurveBeingUsed; 
 

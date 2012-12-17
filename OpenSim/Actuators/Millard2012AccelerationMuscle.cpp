@@ -100,18 +100,22 @@ void Millard2012AccelerationMuscle::constructProperties()
         ActiveForceLengthCurve(lceMin,lceTrans,lceMax,slope,minFal,getName()));
 
     ForceVelocityCurve defaultFv = ForceVelocityCurve();
-    double concSlope = 0;
-    double isoSlope  = defaultFv.getIsometricMaxSlope();
-    double eccSlope  = 0;
+    double concSlopeAtVmax = 0;
+    double concSlopeNearVmax = defaultFv.getConcentricSlopeNearVmax();
+    double isoSlope  = defaultFv.getIsometricSlope();
+    double eccSlopeNearVmax = defaultFv.getEccentricSlopeNearVmax();
+    double eccSlopeAtVmax  = 0;
     double maxFv     = defaultFv.getMaxEccentricVelocityForceMultiplier();
     double concCurviness= defaultFv.getConcentricCurviness();
     double eccCurviness = defaultFv.getEccentricCurviness();
 
     //Ensure the force velocity curve has asymptotes
     constructProperty_ForceVelocityCurve(
-        ForceVelocityCurve( concSlope,
+        ForceVelocityCurve( concSlopeAtVmax,
+                            concSlopeNearVmax,
                             isoSlope,
-                            eccSlope,
+                            eccSlopeAtVmax,
+                            eccSlopeNearVmax,
                             maxFv,
                             concCurviness,
                             eccCurviness,

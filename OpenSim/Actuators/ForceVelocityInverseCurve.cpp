@@ -41,9 +41,11 @@ ForceVelocityInverseCurve::ForceVelocityInverseCurve()
 }
 
 ForceVelocityInverseCurve::ForceVelocityInverseCurve
-   (double concentricMinSlope, 
-    double isometricMaxSlope,        
-    double eccentricMinSlope,
+   (double concentricSlopeAtVmax, 
+    double concentricSlopeNearVmax,
+    double isometricSlope,        
+    double eccentricSlopeAtVmax,
+    double eccentricSlopeNearVmax,
     double maxEccentricVelocityForceMultiplier,
     double concentricCurviness,
     double eccentricCurviness,
@@ -54,9 +56,11 @@ ForceVelocityInverseCurve::ForceVelocityInverseCurve
     setName(muscleName + "_ForceVelocityInverseCurve");
 
     
-    set_min_concentric_slope(concentricMinSlope);
-    set_isometric_slope(isometricMaxSlope);
-    set_min_eccentric_slope(eccentricMinSlope);
+    set_concentric_slope_at_vmax(concentricSlopeAtVmax);
+    set_concentric_slope_near_vmax(concentricSlopeNearVmax);
+    set_isometric_slope(isometricSlope);
+    set_eccentric_slope_at_vmax(eccentricSlopeAtVmax);
+    set_eccentric_slope_near_vmax(eccentricSlopeNearVmax);
     set_max_eccentric_velocity_force_multiplier(maxEccentricVelocityForceMultiplier);
     set_concentric_curviness(concentricCurviness);
     set_eccentric_curviness(eccentricCurviness);
@@ -73,34 +77,40 @@ void ForceVelocityInverseCurve::setNull()
 
 void ForceVelocityInverseCurve::constructProperties()
 {
-    constructProperty_min_concentric_slope(0.1);
+    constructProperty_concentric_slope_at_vmax(0.1);
+    constructProperty_concentric_slope_near_vmax(0.25);
     constructProperty_isometric_slope(5);
-    constructProperty_min_eccentric_slope(0.1);
+    constructProperty_eccentric_slope_at_vmax(0.1);
+    constructProperty_eccentric_slope_near_vmax(0.15);
     constructProperty_max_eccentric_velocity_force_multiplier(1.4);
-    constructProperty_concentric_curviness(0.5);
+    constructProperty_concentric_curviness(0.6);
     constructProperty_eccentric_curviness(0.9);
 }
 
 void ForceVelocityInverseCurve::buildCurve()
 {      
-        double dydxC =  get_min_concentric_slope();
-        double dydxIso= get_isometric_slope();
-        double dydxE =  get_min_eccentric_slope();
-        double fmax  =  get_max_eccentric_velocity_force_multiplier();
-        double ccurv =  get_concentric_curviness();
-        double ecurv =  get_eccentric_curviness();
+        double dydxC     =  get_concentric_slope_at_vmax();
+        double dydxNearC =  get_concentric_slope_near_vmax();
+        double dydxIso   =  get_isometric_slope();
+        double dydxE     =  get_eccentric_slope_at_vmax();
+        double dydxNearE =  get_eccentric_slope_near_vmax();
+        double fmax      =  get_max_eccentric_velocity_force_multiplier();
+        double ccurv     =  get_concentric_curviness();
+        double ecurv     =  get_eccentric_curviness();
 
         //Here's where you call the SmoothSegmentedFunctionFactory
         SmoothSegmentedFunction tmp = 
             SmoothSegmentedFunctionFactory::
             createFiberForceVelocityInverseCurve(  fmax,
-                                            dydxC,
-                                            dydxIso,
-                                            dydxE,
-                                            ccurv,
-                                            ecurv,
-                                            false,
-                                            getName());
+                                                    dydxC,
+                                                    dydxNearC,
+                                                    dydxIso,
+                                                    dydxE,
+                                                    dydxNearE,
+                                                    ccurv,
+                                                    ecurv,
+                                                    false,
+                                                    getName());
 
         this->m_curve = tmp;
         setObjectIsUpToDateWithProperties();      
@@ -148,19 +158,29 @@ addToSystem(SimTK::MultibodySystem& system) const
 //=============================================================================
 // GET & SET METHODS
 //=============================================================================
-double ForceVelocityInverseCurve::getConcentricMinSlope() const
+double ForceVelocityInverseCurve::getConcentricSlopeAtVmax() const
 {
-    return get_min_concentric_slope();
+    return get_concentric_slope_at_vmax();
 }
 
-double ForceVelocityInverseCurve::getIsometricMaxSlope() const
+double ForceVelocityInverseCurve::getConcentricSlopeNearVmax() const
+{
+    return get_concentric_slope_near_vmax();
+}
+
+double ForceVelocityInverseCurve::getIsometricSlope() const
 {
     return get_isometric_slope();
 }
 
-double ForceVelocityInverseCurve::getEccentricMinSlope() const
+double ForceVelocityInverseCurve::getEccentricSlopeAtVmax() const
 {
-    return get_min_eccentric_slope();
+    return get_eccentric_slope_at_vmax();
+}
+
+double ForceVelocityInverseCurve::getEccentricSlopeNearVmax() const
+{
+    return get_eccentric_slope_near_vmax();
 }
 
 double ForceVelocityInverseCurve::getMaxEccentricVelocityForceMultiplier() const
@@ -179,14 +199,18 @@ double ForceVelocityInverseCurve::getEccentricCurviness() const
 }
 
 
-void ForceVelocityInverseCurve::setCurveShape(double aConcentricMinSlope,
-                                                double aIsometricMaxSlope,
-                                                double aEccentricMinSlope,
+void ForceVelocityInverseCurve::setCurveShape(  double aConcentricSlopeAtVmax,
+                                                double aConcentricSlopeNearVmax,
+                                                double aIsometricSlope,
+                                                double aEccentricSlopeAtVmax,
+                                                double aEccentricSlopeNearVmax,
                                                 double aMaxForceMultiplier)
 {
-    set_min_concentric_slope(aConcentricMinSlope); 
-    set_isometric_slope(aIsometricMaxSlope);
-    set_min_eccentric_slope(aEccentricMinSlope);
+    set_concentric_slope_at_vmax(aConcentricSlopeAtVmax); 
+    set_concentric_slope_near_vmax(aConcentricSlopeNearVmax); 
+    set_isometric_slope(aIsometricSlope);
+    set_eccentric_slope_at_vmax(aEccentricSlopeAtVmax);
+    set_eccentric_slope_near_vmax(aEccentricSlopeNearVmax);
     set_max_eccentric_velocity_force_multiplier(aMaxForceMultiplier);
     ensureCurveUpToDate();
 }
@@ -194,14 +218,16 @@ void ForceVelocityInverseCurve::setCurveShape(double aConcentricMinSlope,
 
 
 
-void ForceVelocityInverseCurve::setConcentricCurviness(double aConcentricCurviness)
+void ForceVelocityInverseCurve::
+    setConcentricCurviness(double aConcentricCurviness)
 {
         set_concentric_curviness(aConcentricCurviness);
         ensureCurveUpToDate();
 }
 
 
-void ForceVelocityInverseCurve::setEccentricCurviness(double aEccentricCurviness)
+void ForceVelocityInverseCurve::
+    setEccentricCurviness(double aEccentricCurviness)
 {
         set_eccentric_curviness(aEccentricCurviness);
         ensureCurveUpToDate();
@@ -250,8 +276,8 @@ void ForceVelocityInverseCurve::
 {
     ensureCurveUpToDate();
 
-    double xmin = 0;
-    double xmax = get_max_eccentric_velocity_force_multiplier();
+    double xmin = -0.1;
+    double xmax = get_max_eccentric_velocity_force_multiplier()+0.1;
 
     m_curve.printMuscleCurveToCSVFile(path,xmin,xmax);
 }

@@ -1100,7 +1100,7 @@ void testMuscleCurveC2Continuity(SmoothSegmentedFunction mcf,
     cout << "   TEST: C2 Continuity " << endl;
 
     int multC0 = 5;
-    int multC1 = 15;
+    int multC1 = 50;
     int multC2 = 100;
 
     bool c0 = isFunctionContinuous(mcfSample(0), mcf, 0, 1e-6, multC0);
@@ -1165,7 +1165,7 @@ int main(int argc, char* argv[])
         //   function that created it
 
             string filePath = "C:/mjhmilla/Stanford/dev";
-            double tolDX = 1e-3;
+            double tolDX = 5e-3;
             double tolDXBig = 1e-2;
             double tolBig = 1e-6;
             double tolSmall = 1e-12;
@@ -1239,9 +1239,12 @@ int main(int argc, char* argv[])
                 double e0f      = 0.6;
                 double kisof    = 8.389863790885878;
                 double cf       = 0.65;
+                double klow     = 0.5*(1.0/e0f);
             SmoothSegmentedFunction fiberFLCurve = SmoothSegmentedFunctionFactory::
-                                    createFiberForceLengthCurve(0.0, e0f,kisof,cf,
-                                    true,"test_fiberForceLength");
+                                    createFiberForceLengthCurve(0.0, e0f,
+                                    klow,kisof,
+                                    cf,true,
+                                    "test_fiberForceLength");
 
             SimTK::Matrix fiberFLCurveSample 
                             = fiberFLCurve.calcSampledMuscleCurve(6,1.0,1.0+e0f);
@@ -1281,16 +1284,16 @@ int main(int argc, char* argv[])
             cout << "   Exception Testing" << endl;
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFLCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                  createFiberForceLengthCurve(0.0,0,kisof,cf,true,"test"));
+                  createFiberForceLengthCurve(0.0,0,klow,kisof,cf,true,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFLCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                  createFiberForceLengthCurve(0.0,e0f,1/e0f,cf,true,"test"));
+                  createFiberForceLengthCurve(0.0,e0f,klow,1/e0f,cf,true,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFLCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                  createFiberForceLengthCurve(0.0,e0f,kisof,-0.01,true,"test"));
+                  createFiberForceLengthCurve(0.0,e0f,klow,kisof,-0.01,true,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFLCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                  createFiberForceLengthCurve(0.0,e0f,kisof,1.01,true,"test"));
+                  createFiberForceLengthCurve(0.0,e0f,klow,kisof,1.01,true,"test"));
             cout << "    passed" << endl;
         ///////////////////////////////////////
         //FIBER COMPRESSIVE FORCE LENGTH
@@ -1496,13 +1499,18 @@ int main(int argc, char* argv[])
 
             double fmaxE = 1.8;
             double dydxC = 0.1;
+            double dydxNearC = 0.15;
             double dydxE = 0.1;
+            double dydxNearE = 0.1+0.0001;
             double dydxIso= 5;
             double concCurviness = 0.1;
             double eccCurviness = 0.75;
 
             SmoothSegmentedFunction fiberFVCurve = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                createFiberForceVelocityCurve(fmaxE, 
+                                dydxC, dydxNearC, 
+                                dydxIso,
+                                dydxE, dydxNearE,
                                 concCurviness,  eccCurviness,false,
                                 "test_fiberForceVelocityCurve");
             //fiberFVCurve.printMuscleCurveToCSVFile(filePath);
@@ -1545,43 +1553,53 @@ int main(int argc, char* argv[])
                 
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityCurve(1, dydxC, dydxIso, dydxE, 
+                createFiberForceVelocityCurve(1, 
+                                dydxC,dydxNearC,dydxIso, dydxE, dydxNearE, 
                                 concCurviness,  eccCurviness,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityCurve(fmaxE, -0.01, dydxIso, dydxE, 
+                createFiberForceVelocityCurve(fmaxE, 
+                                -0.01,dydxNearC,dydxIso, dydxE,  dydxNearE,
                                 concCurviness,  eccCurviness,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityCurve(fmaxE, 1.01, dydxIso, dydxE, 
+                createFiberForceVelocityCurve(fmaxE, 
+                                1.01, dydxNearC, dydxIso, dydxE,  dydxNearE,
                                 concCurviness,  eccCurviness,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityCurve(fmaxE, dydxC, 1.0, dydxE, 
+                createFiberForceVelocityCurve(fmaxE, 
+                                dydxC, dydxNearC, 1.0, dydxE, dydxNearE, 
                                 concCurviness,  eccCurviness,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, -0.01, 
+                createFiberForceVelocityCurve(fmaxE, 
+                                dydxC, dydxNearC, dydxIso, -0.01, dydxNearE, 
                                 concCurviness,  eccCurviness,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, (fmaxE-1), 
+                createFiberForceVelocityCurve(fmaxE, 
+                                dydxC, dydxNearC, dydxIso, (fmaxE-1), dydxNearE, 
                                 concCurviness,  eccCurviness,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                createFiberForceVelocityCurve(fmaxE, 
+                                dydxC, dydxNearC, dydxIso, dydxE, dydxNearE, 
                                 -0.01,  eccCurviness,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                createFiberForceVelocityCurve(fmaxE, 
+                                dydxC, dydxNearC, dydxIso, dydxE, dydxNearE, 
                                 1.01,  eccCurviness,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                createFiberForceVelocityCurve(fmaxE, 
+                                dydxC, dydxNearC, dydxIso, dydxE, dydxNearE, 
                                 concCurviness,  -0.01,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                createFiberForceVelocityCurve(fmaxE, 
+                                dydxC, dydxNearC, dydxIso, dydxE, dydxNearE, 
                                 1.01,  1.01,false,"test"));
             
             cout << "    passed" << endl;
@@ -1593,9 +1611,11 @@ int main(int argc, char* argv[])
             cout <<"FIBER FORCE VELOCITY INVERSE CURVE TESTING        "<<endl;
 
             SmoothSegmentedFunction fiberFVInvCurve = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityInverseCurve(fmaxE, dydxC, dydxIso, dydxE, 
-                     concCurviness,  eccCurviness,false,
-                     "test_fiberForceVelocityInverseCurve");
+                createFiberForceVelocityInverseCurve(fmaxE, dydxC, dydxNearC, 
+                    dydxIso, 
+                    dydxE, dydxNearE,
+                    concCurviness,  eccCurviness,false,
+                    "test_fiberForceVelocityInverseCurve");
             //fiberFVInvCurve.printMuscleCurveToFile(filePath);
 
             SimTK::Matrix fiberFVInvCurveSample 
@@ -1638,43 +1658,53 @@ int main(int argc, char* argv[])
                 cout << "   Exception Testing" << endl;
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityInverseCurve(1, dydxC, dydxIso, dydxE, 
+                createFiberForceVelocityInverseCurve(1, 
+                                dydxC, dydxNearC, dydxIso, dydxE, dydxNearE, 
                                 concCurviness,  eccCurviness,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityInverseCurve(fmaxE, 0, dydxIso, dydxE, 
+                createFiberForceVelocityInverseCurve(fmaxE, 
+                                0,  dydxNearC, dydxIso, dydxE, dydxNearE,
                                 concCurviness,  eccCurviness,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityInverseCurve(fmaxE, 1.01, dydxIso, dydxE, 
+                createFiberForceVelocityInverseCurve(fmaxE, 
+                                1.01,  dydxNearC, dydxIso, dydxE, dydxNearE,
                                 concCurviness,  eccCurviness,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityInverseCurve(fmaxE, dydxC, 1.0, dydxE, 
+                createFiberForceVelocityInverseCurve(fmaxE, 
+                                dydxC,  dydxNearC, 1.0, dydxE, dydxNearE,
                                 concCurviness,  eccCurviness,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityInverseCurve(fmaxE, dydxC, dydxIso, 0, 
+                createFiberForceVelocityInverseCurve(fmaxE, 
+                                dydxC,  dydxNearC, dydxIso, 0, dydxNearE,
                                 concCurviness,  eccCurviness,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityInverseCurve(fmaxE, dydxC, dydxIso, (fmaxE-1), 
+                createFiberForceVelocityInverseCurve(fmaxE, 
+                                dydxC,  dydxNearC, dydxIso, (fmaxE-1), dydxNearE,
                                 concCurviness,  eccCurviness,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityInverseCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                createFiberForceVelocityInverseCurve(fmaxE, 
+                                dydxC,  dydxNearC, dydxIso, dydxE, dydxNearE,
                                 -0.01,  eccCurviness,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityInverseCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                createFiberForceVelocityInverseCurve(fmaxE, 
+                                dydxC,  dydxNearC, dydxIso, dydxE, dydxNearE,
                                 1.01,  eccCurviness,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityInverseCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                createFiberForceVelocityInverseCurve(fmaxE, 
+                                dydxC,  dydxNearC, dydxIso, dydxE, dydxNearE,
                                 concCurviness,  -0.01,false,"test"));
             SimTK_TEST_MUST_THROW(SmoothSegmentedFunction fiberFVCurveEX 
                 = SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityInverseCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                createFiberForceVelocityInverseCurve(fmaxE, 
+                                dydxC,  dydxNearC, dydxIso, dydxE, dydxNearE,
                                 1.01,  1.01,false,"test"));
             
             cout << "    passed" << endl;

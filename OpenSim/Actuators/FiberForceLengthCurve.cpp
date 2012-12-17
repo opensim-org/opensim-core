@@ -49,6 +49,7 @@ FiberForceLengthCurve::FiberForceLengthCurve()
 
 FiberForceLengthCurve::FiberForceLengthCurve(   double strainAtZeroForce,
                                                 double strainAtOneNormForce, 
+                                                double stiffnessAtLowForce,
                                                 double stiffnessAtOneNormForce,
                                                 double curviness,
                                                 const std::string& muscleName)
@@ -56,9 +57,10 @@ FiberForceLengthCurve::FiberForceLengthCurve(   double strainAtZeroForce,
     setNull();
     constructProperties();
     setName(muscleName + "_FiberForceLengthCurve");
+
     set_strain_at_zero_force(strainAtZeroForce);
     set_strain_at_one_norm_force(strainAtOneNormForce);
-    setOptionalProperties(stiffnessAtOneNormForce, curviness);
+    setOptionalProperties(stiffnessAtLowForce,stiffnessAtOneNormForce,curviness);
 
     ensureCurveUpToDate();
 }
@@ -75,8 +77,10 @@ void FiberForceLengthCurve::setNull()
 void FiberForceLengthCurve::constructProperties()
 {   
     constructProperty_strain_at_zero_force(0.0);
-    constructProperty_strain_at_one_norm_force(0.6);
+    constructProperty_strain_at_one_norm_force(0.7);
+
     constructProperty_stiffness_at_one_norm_force();
+    constructProperty_stiffness_at_low_force();
     constructProperty_curviness();
 }
 
@@ -85,11 +89,15 @@ void FiberForceLengthCurve::buildCurve()
         double e0   = get_strain_at_zero_force();
         double e1   =  get_strain_at_one_norm_force();
         double kiso =  m_stiffnessAtOneNormForceInUse;
+        double klow =  m_stiffnessAtLowForceInUse; 
         double c    =  m_curvinessInUse;        
+
+        
 
         SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
                                     createFiberForceLengthCurve(    e0,
                                                                     e1,
+                                                                    klow,
                                                                     kiso,
                                                                     c,
                                                                     true,
@@ -108,22 +116,25 @@ void FiberForceLengthCurve::ensureCurveUpToDate()
         //Compute optional properties if they haven't been provided
         //=====================================================================
         if(    getProperty_stiffness_at_one_norm_force().empty() == true
-            && getProperty_curviness().empty() == true)
+            && getProperty_stiffness_at_low_force().empty() == true
+            && getProperty_curviness().empty() == true )
         {
             //Get properties of the reference curve
             double e0 = get_strain_at_zero_force();
             double e1 = get_strain_at_one_norm_force();
-            SimTK::Vec5 refFiber = calcReferencePassiveFiber(e0,e1);    
             
+            //SimTK::Vec5 refFiber = calcReferencePassiveFiber(e0,e1);                
             //Assign the stiffness
             //m_stiffnessAtOneNormForceInUse = refFiber[RefFiber_klin_Idx];
-
             //Matches the Thelen2003 default curve well, and additionally 
             //matches the EDL passive force length curve found experimentally
             //by TM Winters, Takahashi, Ward, and Lieber 2011 paper
-            m_stiffnessAtOneNormForceInUse = (0.6*8.3898637908858689)/(e1-e0);
 
-            m_curvinessInUse = 0.63753341725162227;
+            m_stiffnessAtOneNormForceInUse = 2.0/(e1-e0);//(0.6*8.3898637908858689)/(e1-e0);
+
+            m_stiffnessAtLowForceInUse = 0.2;
+
+            m_curvinessInUse = 0.75;//0.63753341725162227;
 
             /* Fits the curviness to the reference curve, which is the one
                that Thelen documented. This is *damn* slow, and Thelen's curve
@@ -144,37 +155,35 @@ void FiberForceLengthCurve::ensureCurveUpToDate()
         //=====================================================================
         //Get optional properties if they've both been provided
         //=====================================================================
-        if(    getProperty_stiffness_at_one_norm_force().empty() == false
-            && getProperty_curviness().empty() == false){
-
-                
-            m_stiffnessAtOneNormForceInUse
-                                = get_stiffness_at_one_norm_force();
-            m_curvinessInUse    = get_curviness();
-
-            m_fittedCurveBeingUsed = false;
-        }
-
         //=====================================================================
         //Error condition if only one optional parameter is set.
         //=====================================================================
         bool a = getProperty_stiffness_at_one_norm_force().empty();
         bool b = getProperty_curviness().empty();
+        bool c = getProperty_stiffness_at_low_force().empty();
 
-        //This is really a XOR operation ...
-        if( ( a && !b ) || ( !a && b ) ){
+        if(a == false && b == false && c == false){
+                
+            m_stiffnessAtOneNormForceInUse  = get_stiffness_at_one_norm_force();
+            m_stiffnessAtLowForceInUse      = get_stiffness_at_low_force();
+            m_curvinessInUse                = get_curviness();
 
-            //This error condition is checked to make sure that the reference
-            //fiber is being used to populate all optional properties or none
-            //of them. Anything different would result in an inconsistency in
-            //the computed curve - it wouldn't reflect the reference curve.
+            m_fittedCurveBeingUsed = false;
 
-            SimTK_ERRCHK1_ALWAYS(false,
-                "FiberForceLengthCurve::ensureCurveUpToDate()",
-                "%s: Optional parameters stiffness and curviness must both"
-                "be set, or both remain empty. You have set one parameter"
-                "and left the other blank.",
-                getName().c_str());  
+        }else if( ((a && b) && c) == false && ((a || b) || c) == true ){
+
+        //This error condition is checked to make sure that the reference
+        //tendon is being used to populate all optional properties or none
+        //of them. Anything different would result in an inconsistency in
+        //the computed curve - it wouldn't reflect the reference curve.
+
+        SimTK_ERRCHK1_ALWAYS(false,
+          "FiberForceLengthCurve::ensureCurveUpToDate()",
+          "%s: Optional parameters stiffness at one norm force, stiffness at " 
+          "low force, and curviness must all"
+          "be set, or both remain empty. You have set one parameter"
+          "and left the other blank.",
+          getName().c_str());  
         }
 
         buildCurve();
@@ -233,6 +242,13 @@ double FiberForceLengthCurve::getStiffnessAtOneNormForceInUse() const
     return m_stiffnessAtOneNormForceInUse;
 }
 
+double FiberForceLengthCurve::getStiffnessAtLowForceInUse() const
+{    
+
+    return m_stiffnessAtLowForceInUse;
+}
+
+
 double FiberForceLengthCurve::getCurvinessInUse() const
 {
     return m_curvinessInUse;
@@ -253,9 +269,11 @@ void FiberForceLengthCurve::
 
 
 void FiberForceLengthCurve::
-        setOptionalProperties(  double aStiffnessAtOneNormForce,
+        setOptionalProperties(  double aStiffnessAtLowForce,
+                                double aStiffnessAtOneNormForce,
                                 double aCurviness)
 {
+    set_stiffness_at_low_force(aStiffnessAtLowForce);
     set_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
     set_curviness(aCurviness);
     ensureCurveUpToDate();
@@ -325,8 +343,17 @@ void FiberForceLengthCurve::
 // PRIVATE SERVICES
 //=============================================================================
 
+/*
+    NOT IN USE ANYMORE. Why?
+      -calcCurvinessOfBestFit fits to Thelen's 2003 paper curve, which is
+       not the best source of data (TM. Winter's in-vivo data is)
+      -This routine is really expensive - takes about 0.5s to complete in 
+       Release mode on a fast machine. This adds up to some very noticable 
+       delays when used with a model that has 10-100 muscles.
+      
+*/
 double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0, double e1, 
-                                                    double k, 
+                                                    double k, double ftoe,
                                                     double area, double relTol)
 {
 
@@ -340,6 +367,7 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0, double e1,
                                     createFiberForceLengthCurve(   e0,
                                                                    e1,
                                                                    k,
+                                                                   ftoe,
                                                                    c,
                                                                    true,
                                                                    name);
@@ -373,6 +401,7 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0, double e1,
                                     createFiberForceLengthCurve(   e0,
                                                                    e1,
                                                                    k,
+                                                                   ftoe,
                                                                    c+step,
                                                                    true,
                                                                    name);                
@@ -415,6 +444,7 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0, double e1,
                                     createFiberForceLengthCurve(   e0,
                                                                    e1,
                                                                    k,
+                                                                   ftoe,
                                                                    cNewton,
                                                                    true,
                                                                    name);                 
