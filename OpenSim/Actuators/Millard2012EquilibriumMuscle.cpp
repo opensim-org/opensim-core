@@ -1051,7 +1051,7 @@ double  Millard2012EquilibriumMuscle::
             double fv  = fvCurve.calcValue(vmN);
             
             a = calcActivation(getMaxIsometricForce(),tendonForce,
-                               cos(phi),fal,fv,fpe,lmN);
+                               cos(phi),fal,fv,fpe,vmN);
 
         //6. Populate output vector
             output[0] = a;
