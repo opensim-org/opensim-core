@@ -92,8 +92,6 @@ ForceSet::ForceSet(const ForceSet &aForceSet) :
 {
 	setNull();
 
-	// Class Members
-	copyData(aForceSet);
 }
 
 //=============================================================================
@@ -112,21 +110,6 @@ void ForceSet::setNull()
 
 	_actuators.setMemoryOwner(false);
 
-	_muscles.setMemoryOwner(false);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy the member variables of the ForceSet.
- *
- * @param aAbsForceSet actuator set to be copied
- */
-void ForceSet::copyData(const ForceSet &aAbsForceSet)
-{
-    // ACTUATORS
-    _actuators = aAbsForceSet._actuators;
-	_actuators.setMemoryOwner(false);
-	_muscles = aAbsForceSet._muscles;
 	_muscles.setMemoryOwner(false);
 }
 
@@ -160,9 +143,6 @@ ForceSet& ForceSet::operator=(const ForceSet &aAbsForceSet)
 {
 	// BASE CLASS
 	Set<Force>::operator=(aAbsForceSet);
-
-	// Class Members
-	copyData(aAbsForceSet);
 
 	return(*this);
 }

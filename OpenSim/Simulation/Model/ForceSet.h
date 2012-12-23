@@ -73,8 +73,6 @@ public:
 	ForceSet(const ForceSet &aForceSet);
 	virtual ~ForceSet();
 
-	void copyData(const ForceSet &aAbsForceSet);
-
 private:
 	void setNull();
 	void setupSerializedMembers();
