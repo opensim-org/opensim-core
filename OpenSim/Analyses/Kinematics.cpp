@@ -182,17 +182,20 @@ allocateStorage()
 	// ACCELERATIONS
 	_storageList.setSize(0);
 	if(_recordAccelerations) {
+		if(_aStore) { delete _aStore; _aStore=NULL; }
 		_aStore = new Storage(1000,"Accelerations");
 		_aStore->setDescription(getDescription());
 		_storageList.append(_aStore);
 	}
 
 	// VELOCITIES
+	if(_vStore!=NULL) { delete _vStore;  _vStore=NULL; }
 	_vStore = new Storage(1000,"Speeds");
 	_vStore->setDescription(getDescription());
 	_storageList.append(_vStore);
 
 	// POSITIONS
+	if(_pStore!=NULL) { delete _pStore;  _pStore=NULL; }
 	_pStore = new Storage(1000,"Coordinates");
 	_pStore->setDescription(getDescription());
 	_storageList.append(_pStore);
