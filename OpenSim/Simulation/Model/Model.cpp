@@ -535,10 +535,15 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
 
 	for(unsigned int i=0; i<coordRefs.size(); i++){
 		const string &coordName = coordRefs[i].getName();
-		_assemblySolver->updateCoordinateReference(coordName, _coordinateSet.get(coordName).getValue(s));
+		Coordinate& c = _coordinateSet.get(coordName);
+		_assemblySolver->updateCoordinateReference(coordName, c.getValue(s));
+		if(~c.get_is_free_to_satisfy_constraints()){
+			// if the coordinate is free to change at will, then set its weight to 0
+			_assemblySolver->updateCoordinateReference(coordName, c.getValue(s), 0);
+		}
 	}
 
-	if(coord)
+	if(coord) // use specified weigting for coordinate being set
 		_assemblySolver->updateCoordinateReference(coord->getName(), coord->getValue(s), weight);
 
 
