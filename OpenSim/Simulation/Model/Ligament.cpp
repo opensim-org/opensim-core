@@ -113,6 +113,9 @@ void Ligament::connectToModel(Model& aModel)
  void Ligament::addToSystem(SimTK::MultibodySystem& system) const
 {
 	Super::addToSystem(system);
+	// Cache the computed tension and strain of the ligament
+	addCacheVariable<double>("tension", 0.0, SimTK::Stage::Velocity);
+	addCacheVariable<double>("strain", 0.0, SimTK::Stage::Velocity);
 }
 
 
@@ -233,6 +236,12 @@ void Ligament::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 	}
 }
 
+const double& Ligament::getTension(const SimTK::State& s) const
+{
+	return getCacheVariable<double>(s, "tension"); 
+}
+
+
 //=============================================================================
 // COMPUTATION
 //=============================================================================
@@ -254,12 +263,17 @@ void Ligament::computeForce(const SimTK::State& s,
 	const double& restingLength = get_resting_length();
 	const double& pcsaForce = get_pcsa_force();
 
-	if (path.getLength(s) <= restingLength)
-		return;
+	double force = 0;
 
-	double strain = (path.getLength(s) - restingLength) / restingLength;
-	double force = getForceLengthCurve().calcValue(SimTK::Vector(1, strain)) 
-                                                                   * pcsaForce;
+	if (path.getLength(s) <= restingLength){
+		setCacheVariable<double>(s, "tension", force);
+		return;
+	}
+	
+	// evaluate normalized tendon force length curve
+	force = getForceLengthCurve().calcValue(
+		SimTK::Vector(1, path.getLength(s)/restingLength))* pcsaForce;
+	setCacheVariable<double>(s, "tension", force);
 
 	OpenSim::Array<PointForceDirection*> PFDs;
 	path.getPointForceDirections(s, &PFDs);

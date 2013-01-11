@@ -27,12 +27,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyObjPtr.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Common/Function.h>
 #include "Model.h"
 #include "Force.h"
 
@@ -100,6 +95,9 @@ public:
     {   return get_force_length_curve(); }
 	virtual bool setForceLengthCurve(const Function& aForceLengthCurve);
 
+	// computed variables
+	const double& getTension(const SimTK::State& s) const;
+
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
@@ -127,6 +125,27 @@ protected:
 	void connectToModel(Model& aModel) OVERRIDE_11;
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 	void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
+
+	//Force reporting
+	/** 
+	 * Methods to query a Force for the value actually applied during simulation
+	 * The names of the quantities (column labels) is returned by this first function
+	 * getRecordLabels()
+	 */
+	OpenSim::Array<std::string> getRecordLabels() const {
+		OpenSim::Array<std::string> labels("");
+		labels.append(getName());
+		return labels;
+	}
+	/**
+	 * Given SimTK::State object extract all the values necessary to report forces, application location
+	 * frame, etc. used in conjunction with getRecordLabels and should return same size Array
+	 */
+	OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {
+		OpenSim::Array<double> values(1);
+		values.append(getTension(state));
+		return values;
+	}
 
 private:
 	void constructProperties();
