@@ -2081,7 +2081,7 @@
 									<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
 									<coordinates>ankle_angle_l</coordinates>
 									<!--Rotation or translation axis for the transform.-->
-									<axis>0.10501355 -0.17402245 0.97912632</axis>
+									<axis>0.10501355 0.17402245 0.97912632</axis>
 									<!--Transform function of the generalized coordinates used to        represent the amount of transformation along a specified axis.-->
 									<function>
 										<LinearFunction>
