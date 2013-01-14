@@ -16,5 +16,3 @@ ADD_DEFINITIONS(-DOSIM_SYS_INFO=${OPENSIM_SYSTEM_INFO}
 SUBDIRS(Common Simulation Actuators Analyses Utilities Tools Java Examples Tests doc)
 
 INSTALL_FILES(/sdk/include/OpenSim .h OpenSim.h)
-
-INSTALL(DIRECTORY Plugin DESTINATION  sdk/APIExamples  PATTERN ".svn" EXCLUDE)

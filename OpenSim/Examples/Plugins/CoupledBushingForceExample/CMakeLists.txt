@@ -1,34 +1,3 @@
-###########################################
-## For building with the rest of OpenSim ##
-###########################################
-IF(BUILD_API_EXAMPLES)
-
-SET(EXAMPLE_FORCE_PLUGIN exampleForcePlugin)
-
-INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
-		    ${OpenSim_SOURCE_DIR}/Vendors)
-
-ADD_LIBRARY(${EXAMPLE_FORCE_PLUGIN} SHARED CoupledBushingForce.cpp RegisterTypes_osimPlugin.cpp CoupledBushingForce.h osimPluginDLL.h RegisterTypes_osimPlugin.h)
-TARGET_LINK_LIBRARIES(${EXAMPLE_FORCE_PLUGIN}
-	debug osimSimulation${CMAKE_DEBUG_POSTFIX}	optimized osimSimulation
-	debug osimActuators${CMAKE_DEBUG_POSTFIX}	optimized osimActuators
-	debug osimCommon${CMAKE_DEBUG_POSTFIX}		optimized osimCommon
-	debug osimAnalyses${CMAKE_DEBUG_POSTFIX}	optimized osimAnalyses
-	debug osimTools${CMAKE_DEBUG_POSTFIX}		optimized osimTools
-	${SIMTK_ALL_LIBS}
-)
-SET_TARGET_PROPERTIES(${EXAMPLE_FORCE_PLUGIN}
-	PROPERTIES
-	DEFINE_SYMBOL OSIMPLUGIN_EXPORTS
-	PROJECT_LABEL "Examples - ${EXAMPLE_FORCE_PLUGIN}"
-	RUNTIME_OUTPUT_DIRECTORY ${OpenSim_BINARY_DIR}/OpenSim/Examples/ForcePluginExample
-)
-
-################################################
-## For building with existing OpenSim install ##
-################################################
-ELSE(BUILD_API_EXAMPLES)
-
 Project(CoupledBushingForcePlugin)
 
 cmake_minimum_required(VERSION 2.6)
@@ -50,6 +19,10 @@ SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME} CACHE PATH "Top-level directory of OpenSim install")
 
 SET(PLUGIN_NAME "osimCoupledBushingForcePlugin" CACHE STRING "Name of shared library to create")
+
+# To add Debug feature add ";Debug" after Release on the line below
+SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release" 
+      CACHE STRING "Semicolon separated list of supported configuration types, only supports Debug, Release, MinSizeRel, and RelWithDebInfo, anything else will be ignored." FORCE )
 
 ### HEADERS
 SET(OPENSIM_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include)
@@ -89,5 +62,3 @@ SET_TARGET_PROPERTIES(
 	PROJECT_LABEL "Libraries - ${PLUGIN_NAME}")
 
 INSTALL_TARGETS(/plugins RUNTIME_DIRECTORY /plugins  ${PLUGIN_NAME})
-
-ENDIF(BUILD_API_EXAMPLES)
