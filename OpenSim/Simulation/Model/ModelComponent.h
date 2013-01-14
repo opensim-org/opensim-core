@@ -206,7 +206,7 @@ public:
      * to update it. This is typically done by recomputing anchor points and positions based 
      * on transforms obtained from current state.
      */
-    virtual void updateDisplayer(const SimTK::State& s) {};
+    virtual void updateDisplayer(const SimTK::State& s) const {};
 
     /**
      * Get the number of "Continuous" state variables maintained by the ModelComponent

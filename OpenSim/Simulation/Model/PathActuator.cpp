@@ -283,9 +283,9 @@ VisibleObject* PathActuator::getDisplayer() const
 /**
  * Update the visible object used to represent the muscle.
  */
-void PathActuator::updateDisplayer(const SimTK::State& s)
+void PathActuator::updateDisplayer(const SimTK::State& s) const
 {
-	updGeometryPath().updateDisplayer(s);
+	getGeometryPath().updateDisplayer(s);
 }
 
 //=============================================================================

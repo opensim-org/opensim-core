@@ -297,7 +297,7 @@ VisibleObject* Ligament::getDisplayer() const
 /**
  * Update the visible object used to represent the Ligament.
  */
-void Ligament::updateDisplayer(const SimTK::State& s)
+void Ligament::updateDisplayer(const SimTK::State& s) const
 {
-	updGeometryPath().updateDisplayer(s);
+	getGeometryPath().updateDisplayer(s);
 }

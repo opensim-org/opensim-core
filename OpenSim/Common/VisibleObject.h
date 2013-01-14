@@ -223,7 +223,7 @@ public:
 	{
 		return _allGeometry.get(i);
 	}
-	int countGeometry()
+	int countGeometry() const
 	{
 		return _allGeometry.getSize();
 	};

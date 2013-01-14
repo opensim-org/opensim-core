@@ -172,18 +172,19 @@ public:
 	virtual VisibleObject* getDisplayer() const { 
 		return &_displayer; 
 	}
-	virtual void updateDisplayer(const SimTK::State& s);
+	
+	void updateDisplayer(const SimTK::State& s) const OVERRIDE_11;
 
     // Update the geometry attached to the path (location of path points and connecting segments
 	//  all in global/interial frame)
-	virtual void updateGeometry(const SimTK::State& s);
+	virtual void updateGeometry(const SimTK::State& s) const;
 
 private:
 	void setNull();
 	void setupProperties();
-	void updateDisplayPath(const SimTK::State& s);
-	void updateGeometrySize(const SimTK::State& );
-	void updateGeometryLocations(const SimTK::State& s);
+	void updateDisplayPath(const SimTK::State& s) const;
+	void updateGeometrySize(const SimTK::State& ) const;
+	void updateGeometryLocations(const SimTK::State& s) const;
 	void namePathPoints(int aStartingIndex);
     void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, int aIndex, const OpenSim::Body& aBody);
 

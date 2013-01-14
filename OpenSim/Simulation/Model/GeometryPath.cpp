@@ -320,7 +320,7 @@ const OpenSim::Array<PathPoint*>& GeometryPath::getCurrentDisplayPath(const SimT
  * correct size based on changes to the path.
  * 
  */
-void GeometryPath::updateGeometrySize(const SimTK::State& s)
+void GeometryPath::updateGeometrySize(const SimTK::State& s) const
 {
 	int numberOfSegements = _displayer.countGeometry();
     const Array<PathPoint*>& currentDisplayPath = getCacheVariable<Array<PathPoint*> >(s, "current_display_path");
@@ -357,7 +357,7 @@ void GeometryPath::updateGeometrySize(const SimTK::State& s)
  * to be in the right place based changes to the path.
  * 
  */
-void GeometryPath::updateGeometryLocations(const SimTK::State& s)
+void GeometryPath::updateGeometryLocations(const SimTK::State& s) const
 {
 	SimTK::Vec3 globalLocation;
 	SimTK::Vec3 previousPointGlobalLocation;
@@ -388,7 +388,7 @@ void GeometryPath::updateGeometryLocations(const SimTK::State& s)
  * by compute() only when the path has changed.
  * 
  */
-void GeometryPath::updateGeometry(const SimTK::State& s)
+void GeometryPath::updateGeometry(const SimTK::State& s) const
 {
     // check if the current path needs to recomputed
     computePath(s);
@@ -1220,12 +1220,12 @@ computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const
 /**
  * Update the visible object used to represent the path.
  */
-void GeometryPath::updateDisplayer(const SimTK::State& s)
+void GeometryPath::updateDisplayer(const SimTK::State& s) const
 {
     updateGeometry(s);
 }
 
-void GeometryPath::updateDisplayPath(const SimTK::State& s)
+void GeometryPath::updateDisplayPath(const SimTK::State& s) const
 {
     Array<PathPoint*>& currentDisplayPath = updCacheVariable<Array<PathPoint*> >(s, "current_display_path");
 	// Clear the current display path. Delete all path points

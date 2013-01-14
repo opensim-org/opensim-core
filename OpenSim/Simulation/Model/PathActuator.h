@@ -129,7 +129,7 @@ public:
 	// Visible Object Support
 	//--------------------------------------------------------------------------
 	virtual VisibleObject* getDisplayer() const;
-	virtual void updateDisplayer(const SimTK::State& s);
+	virtual void updateDisplayer(const SimTK::State& s) const;
 
 protected:
 	// Setup method to initialize coordinate reference
