@@ -36,11 +36,17 @@ int main()
 {
 	try {
 		Storage result1("SpringActuatedLeg_states_degrees.mot"), standard1("std_SpringActuatedLeg_states_degrees.mot");
-		CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(1, 24), __FILE__, __LINE__, "spring actuated leg states degrees failed");
+		Array<double> tolerances(1.0, 6);	// angles have 1 deg tolerance
+		tolerances[3] = tolerances[4] = tolerances[5] = 5.0; // angular speeds have a 5 deg/s tolerance
+
+		CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, tolerances, __FILE__, __LINE__, "spring actuated leg states degrees failed");
 		cout << "spring actuated leg states degrees passed\n";
 
+		Array<double> forceTol(1.0, 2); // piston actuator has a tolerance of 1N
+		forceTol[1] = 5.0; // spring has a tolerance of 5N 
+
 		Storage result2("actuator_forces.mot"), standard2("std_actuator_forces.mot");
-		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(1, 24), __FILE__, __LINE__, "actuator forces failed");
+		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, forceTol, __FILE__, __LINE__, "actuator forces failed");
 		cout << "actuator forces passed\n";
 	}
 	catch (const Exception& e) {

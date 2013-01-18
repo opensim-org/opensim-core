@@ -537,10 +537,6 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
 		const string &coordName = coordRefs[i].getName();
 		Coordinate& c = _coordinateSet.get(coordName);
 		_assemblySolver->updateCoordinateReference(coordName, c.getValue(s));
-		if(c.get_is_free_to_satisfy_constraints()){
-			// if the coordinate is free to change at will, then set its weight to 0
-			_assemblySolver->updateCoordinateReference(coordName, c.getValue(s), 0);
-		}
 	}
 
 	if(coord) // use specified weigting for coordinate being set
@@ -1566,7 +1562,7 @@ void Model::createAssemblySolver(const SimTK::State& s)
 	// that also satisfies the constraints. AssemblySolver takes over ownership
     // of coordsToTrack
 	_assemblySolver = new AssemblySolver(*this, *coordsToTrack);
-	_assemblySolver->setConstraintWeight(50.0);
+	_assemblySolver->setConstraintWeight(SimTK::Infinity);
 }
 
 void Model::updateAssemblyConditions(SimTK::State& s)

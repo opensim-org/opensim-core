@@ -49,20 +49,25 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WeldConstraint, Constraint);
 //=============================================================================
 // DATA
 //=============================================================================
+public:
+
+	/** Properties */
+	OpenSim_DECLARE_PROPERTY(body_1, std::string,
+		"Specify first of two bodies welded together by the constraint.");
+	OpenSim_DECLARE_PROPERTY(body_2, std::string,
+		"Specify second of two bodies welded together by the constraint.");
+	OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
+		"Location of the weld in first body specified in body1 reference frame.");
+	OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
+		"Location of the weld in second body specified in body2 reference frame.");
+	OpenSim_DECLARE_PROPERTY(orientation_body_1, SimTK::Vec3,
+		"Orientation of the weld axes on body1 specified in body1's reference frame."  
+		"Euler XYZ body-fixed rotation angles are used to express the orientation.");
+	OpenSim_DECLARE_PROPERTY(orientation_body_2, SimTK::Vec3,
+		"Orientation of the weld axes on body2 specified in body2's reference frame."
+		"Euler XYZ body-fixed rotation angles are used to express the orientation.");
+
 protected:
-
-	OpenSim_DECLARE_PROPERTY(body_1, std::string, "Specify first of two bodies welded together by the constraint.");
-
-	OpenSim_DECLARE_PROPERTY(body_2, std::string, "Specify second of two bodies welded together by the constraint.");
-
-	OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3, "Location of the weld in first body specified in body1 reference frame.");
-
-	OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3, "Location of the weld in second body specified in body1 reference frame.");
-
-	OpenSim_DECLARE_PROPERTY(orientation_body_1, SimTK::Vec3, "Orientation of the weld axes on body1 specified in body1's reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation.");
-
-	OpenSim_DECLARE_PROPERTY(orientation_body_2, SimTK::Vec3, "Orientation of the weld axes on body2 specified in body2's reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation.");
-
 	/** First body weld constraint joins. */
 	Body *_body1;
 

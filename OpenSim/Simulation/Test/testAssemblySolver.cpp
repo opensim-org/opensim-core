@@ -27,12 +27,7 @@
 //
 //==========================================================================================================
 #include <iostream>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Exception.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ConstraintSet.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/OpenSim.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "Simbody.h"
 
@@ -40,20 +35,23 @@ using namespace OpenSim;
 using namespace std;
 
 void testAssembleModelWithConstraints(string modelFile);
+void testAssemblySatisfiesConstraints(string modelFile);
+double calcLigamentLengthError(const SimTK::State &s, const Model &model);
 
 int main()
 {
 	try {
 		LoadOpenSimLibrary("osimActuators");
+		testAssemblySatisfiesConstraints("knee_patella_ligament.osim");
 		testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");
 		testAssembleModelWithConstraints("PushUpToesOnGroundLessPreciseConstraints.osim");
 		testAssembleModelWithConstraints("PushUpToesOnGroundWithMuscles.osim");
 	}
 	catch (const std::exception& e) {
-		cout << "testAssembleModelWithConstraints FAILED: " << e.what() <<endl;
+		cout << "\ntestAssemblySolver FAILED " << e.what() <<endl;
         return 1;
     }
-    cout << "Done" << endl;
+    cout << "\ntestAssemblySolver PASSED" << endl;
     return 0;
 }
 
@@ -63,6 +61,10 @@ int main()
 void testAssembleModelWithConstraints(string modelFile)
 {
 	using namespace SimTK;
+
+	cout << "****************************************************************************" << endl;
+	cout << " testAssembleModelWithConstraints with "<< modelFile << endl;
+	cout << "****************************************************************************\n" << endl;
 
 	//==========================================================================================================
 	// Setup OpenSim model
@@ -144,4 +146,85 @@ void testAssembleModelWithConstraints(string modelFile)
         ASSERT_EQUAL(y2[i], y4[i], 1e-4, __FILE__, __LINE__, "State differed after 2nd simulation from same init state.");
     }
     ASSERT(max(abs(y1-y2)) > 1e-3, __FILE__, __LINE__, "Check that state changed after simulation FAILED");
+}
+
+
+void testAssemblySatisfiesConstraints(string modelFile)
+{
+	using namespace SimTK;
+
+	cout << "****************************************************************************" << endl;
+	cout << " testAssemblySatisfiesConstraints :: "<< modelFile << endl;
+	cout << "****************************************************************************\n" << endl;
+	//==========================================================================================================
+	// Setup OpenSim model
+	Model model(modelFile);
+
+	const CoordinateSet &modelcoords = model.getCoordinateSet();
+	cout << "*********** Coordinate defaults (before initSystem) ******************** " << endl;
+	for(int i=0; i< modelcoords.getSize(); i++) {
+		cout << "Coordinate " << modelcoords[i].getName() 
+			<< " default value = " << modelcoords[i].getDefaultValue() << endl
+			<< " is_free to_satisfy_constraints = " << modelcoords[i].get_is_free_to_satisfy_constraints()
+			<< endl;
+	}
+
+	//model.setUseVisualizer(true);
+    State& state = model.initSystem();
+
+	const CoordinateSet &coords = model.getCoordinateSet();
+	cout << "***** Coordinate values (after initSystem including Assembly ********* " << endl;
+	for(int i=0; i< coords.getSize(); i++) {
+		cout << "Coordinate " << coords[i].getName() << " value = " 
+			<< coords[i].getValue(state) << endl;
+	}
+
+	//model.getVisualizer().show(state);
+	double cerr = calcLigamentLengthError(state, model);
+
+	double kneeAngle = -Pi/3; 
+
+	int N = 100;
+	double lower = -2*Pi/3, upper = Pi/18;
+	double delta = (upper-lower)/N;
+
+	double qerr = 0;
+	
+	for(int i=0; i<N; ++i){
+		kneeAngle = upper-i*delta;
+		coords[0].setValue(state, kneeAngle, true);
+		//model.getVisualizer().show(state);
+		cerr = calcLigamentLengthError(state, model);
+		qerr = coords[0].getValue(state)-kneeAngle;
+		//cout << "Assembly errors:: cerr = " << cerr << " m,  qerr = " 
+		//	<< convertRadiansToDegrees(qerr) << " degrees" << endl;
+		ASSERT_EQUAL(cerr, 0.0, 1e-4, __FILE__, __LINE__, "Constraint NOT satisfied to within assembly accuracy");
+	}
+
+}
+
+double calcLigamentLengthError(const SimTK::State &s, const Model &model)
+{
+	using namespace SimTK;
+	double error = 0;
+
+	ConstantDistanceConstraint* constraint = dynamic_cast<ConstantDistanceConstraint*>(&model.getConstraintSet()[0]);
+	const BodySet& bodies = model.getBodySet();
+	
+	if(constraint){
+		Vec3 p1inB1, p2inB2, p1inG, p2inG;
+		p1inB1 = constraint->get_location_body_1();
+		p2inB2 = constraint->get_location_body_2();
+
+		const OpenSim::Body& b1 = bodies.get(constraint->get_body_1());
+		const OpenSim::Body& b2 = bodies.get(constraint->get_body_2());
+
+		model.getSimbodyEngine().getPosition(s, b1, p1inB1, p1inG);
+		model.getSimbodyEngine().getPosition(s, b2, p2inB2, p2inG);
+
+		double length = (p2inG-p1inG).norm();
+		error = length - constraint->get_constant_distance();
+	}
+
+	return error;
 }

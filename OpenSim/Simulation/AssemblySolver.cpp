@@ -135,7 +135,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
 				_coordinateReferencesp->erase(p);
 				p--; //decrement since erase automatically points to next in the list
 			}
-			else{
+			else if(!(coord.get_is_free_to_satisfy_constraints())) {
 				// Make this reference and its current value a goal of the Assembler
 				SimTK::QValue *coordGoal = new SimTK::QValue(coord.getBodyIndex(), SimTK::MobilizerQIndex(coord.getMobilizerQIndex()),
 														 coordRef->getValue(s) );
@@ -207,7 +207,7 @@ void AssemblySolver::assemble(SimTK::State &state)
 	/*
 	printf("UNASSEMBLED CONFIGURATION (err=%g, cost=%g, qerr=%g)\n",
         _assembler->calcCurrentErrorNorm(), _assembler->calcCurrentGoal(), max(abs(_assembler->getInternalState().getQErr())));
-	cout << "Model numQs: " << _model.getNumCoordinates() << " Assembler num freeQs: " << _assembler->getNumFreeQs() << endl;
+	cout << "Model numQs: " << _assembler->getInternalState().getNQ() << " Assembler num freeQs: " << _assembler->getNumFreeQs() << endl;
 	*/
 
 	try{

@@ -49,16 +49,18 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PointConstraint, Constraint);
 //=============================================================================
 // DATA
 //=============================================================================
+public:
+	/** Properties */
+	OpenSim_DECLARE_PROPERTY(body_1, std::string,
+		"Specify first of two bodies connected together by the constraint.");
+	OpenSim_DECLARE_PROPERTY(body_2, std::string,
+		"Specify second of two bodies connected together by the constraint.");
+	OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
+		"Location of the point in first body specified in body1 reference frame.");
+	OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
+		"Location of the point in second body specified in body2 reference frame.");
+
 protected:
-
-	OpenSim_DECLARE_PROPERTY(body_1, std::string, "Specify first of two bodies connected together by the constraint.");
-
-	OpenSim_DECLARE_PROPERTY(body_2, std::string, "Specify second of two bodies connected together by the constraint.");
-
-	OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3, "Location of the point in first body specified in body1 reference frame.");
-
-	OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3, "Location of the point in second body specified in body1 reference frame.");
-
 	/** First body point constraint joins. */
 	Body *_body1;
 
