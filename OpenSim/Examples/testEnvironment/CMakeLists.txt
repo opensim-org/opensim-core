@@ -1,53 +1,3 @@
-###########################################
-## For building with the rest of OpenSim ##
-###########################################
-IF(BUILD_API_EXAMPLES)
-
-SET(TEST_ENVIRONMENT testEnvironment)
-
-INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-		    ${OpenSim_SOURCE_DIR}/Vendors)
-
-ADD_EXECUTABLE(${TEST_ENVIRONMENT} test.cpp)
-TARGET_LINK_LIBRARIES(${TEST_ENVIRONMENT}
-	debug osimSimulation${CMAKE_DEBUG_POSTFIX}	optimized osimSimulation
-	debug osimActuators${CMAKE_DEBUG_POSTFIX}	optimized osimActuators
-	debug osimCommon${CMAKE_DEBUG_POSTFIX}		optimized osimCommon
-	debug osimAnalyses${CMAKE_DEBUG_POSTFIX}	optimized osimAnalyses
-	debug osimTools${CMAKE_DEBUG_POSTFIX}		optimized osimTools
-	${SIMTK_ALL_LIBS}
-)
-SET_TARGET_PROPERTIES(${TEST_ENVIRONMENT}
-	PROPERTIES
-	PROJECT_LABEL "Utilities - ${TEST_ENVIRONMENT}"
-)
-
-FILE(GLOB DATA_FILES *.osim *.xml *.sto *.mot *.vtp *.obj)
-FOREACH (DATA_FILE ${DATA_FILES})
-  ADD_CUSTOM_COMMAND(
-	TARGET ${TEST_ENVIRONMENT}
-	COMMAND ${CMAKE_COMMAND}
-	ARGS -E copy
-	${DATA_FILE}
-	${OpenSim_BINARY_DIR}/OpenSim/Examples/testEnvironment
-  )
-ENDFOREACH (DATA_FILE)
-
-
-
-IF(BUILD_TESTING)
-  SET(TEST_EXAMPLE_MODEL testExampleModel)
-
-  ADD_TEST(${TEST_EXAMPLE_MODEL}Runs ${EXECUTABLE_OUTPUT_PATH}/${TEST_ENVIRONMENT})
-ENDIF(BUILD_TESTING)
-
-INSTALL_TARGETS(/bin ${TEST_ENVIRONMENT})
-
-################################################
-## For building with existing OpenSim install ##
-################################################
-ELSE(BUILD_API_EXAMPLES)
-
 cmake_minimum_required(VERSION 2.6)
 
 PROJECT (Test)
@@ -67,7 +17,7 @@ SET(SIMTK_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include/SimTK/include)
 SET(OPENSIM_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include)
 INCLUDE_DIRECTORIES(${SIMTK_HEADERS_DIR} ${OPENSIM_HEADERS_DIR})
 # Libraries and dlls
-SET(OPENSIM_LIBS_DIR ${OPENSIM_INSTALL_DIR}/sdk/lib)
+SET(OPENSIM_LIBS_DIR ${OPENSIM_INSTALL_DIR}/sdk/lib ${OPENSIM_INSTALL_DIR}/lib)
 SET(OPENSIM_DLLS_DIR ${OPENSIM_INSTALL_DIR}/bin)
 LINK_DIRECTORIES(${OPENSIM_LIBS_DIR} ${OPENSIM_DLLS_DIR})
 
@@ -114,5 +64,3 @@ SET_TARGET_PROPERTIES(
 	PROJECT_LABEL "Test Environment")
 
 INSTALL_TARGETS(/bin ${TARGET})
-
-ENDIF(BUILD_API_EXAMPLES)
