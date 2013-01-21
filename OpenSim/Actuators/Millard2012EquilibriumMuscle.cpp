@@ -1566,7 +1566,6 @@ void Millard2012EquilibriumMuscle::
     const ActiveForceLengthCurve& falCurve
         = get_ActiveForceLengthCurve(); 
     
-
     int simMethod = getSimulationMethod();
 
     //=========================================================================
@@ -1609,15 +1608,26 @@ void Millard2012EquilibriumMuscle::
     mli.tendonStrain      = mli.normTendonLength -  1.0;
         
     //Note the curves return normalized area. Each area must be un-normalized   
+    double fiberStrainAtFiso = fpeCurve.getStrainAtOneNormForce()
+                                -fpeCurve.getStrainAtZeroForce();
+    double fiberStretchAtFiso= fiberStrainAtFiso * optFiberLength;
+    double fiberPotentialScaling=  (fiberStretchAtFiso*maxIsoForce)
+                                   /(fiberStrainAtFiso*1.0);
+
     mli.fiberPotentialEnergy =  fpeCurve.calcIntegral(mli.normFiberLength)
-                                *(optFiberLength*maxIsoForce);
+                                *(fiberPotentialScaling);
     
      mli.tendonPotentialEnergy =  0;
     //Elastic tendon
 
     if(isTendonElastic()){     
+        double tendonStrainAtFiso = fseCurve.getStrainAtOneNormForce();
+        double tendonStretchAtFiso= tendonStrainAtFiso*tendonSlackLen;
+        double tendonPotentialScaling = (tendonStretchAtFiso*maxIsoForce)
+                                        /(tendonStrainAtFiso*1.0);
+
         mli.tendonPotentialEnergy = fseCurve.calcIntegral(mli.normTendonLength)
-                                    *(tendonSlackLen*maxIsoForce);
+                                    *(tendonPotentialScaling);
     }
     
     mli.musclePotentialEnergy=  mli.fiberPotentialEnergy 
@@ -2383,7 +2393,7 @@ SimTK::Vec3 Millard2012EquilibriumMuscle::
     SimTK::Vec3 result;
     
     int maxIter = 20; //This converges fast - 20 iterations is quite generous
-    double tol = 1e-8*fiso;
+    double tol = 1e-6*fiso;
     //Necessary if anyone is simulating an insect ...
     if(tol < SimTK::SignificantReal*100){
         tol = SimTK::SignificantReal*100;
