@@ -97,11 +97,13 @@ ENDIF()
 # In addition to the platform name we need to know the Application Binary
 # Interface (ABI) we're building for. Currently that is either x86, meaning
 # 32 bit Intel instruction set, or x64 for 64 bit Intel instruction set.
+# Kevin: Since Ubuntu 12 64bit libraries are in lib not lib64 (This in 
+# response of Sherm's change on Simbody)
 
 IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
     SET(PLATFORM_ABI x64)
 	SET(ARCH64 ON) 
-    SET(LIB64 64)
+	#    SET(LIB64 64) Ubuntu 12.05
 ELSE()
     SET(PLATFORM_ABI x86)
 ENDIF()
