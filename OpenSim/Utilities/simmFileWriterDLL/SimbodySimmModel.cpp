@@ -170,7 +170,7 @@ void SimbodySimmModel::connectSimbodySimmModel(const Model* aModel)
 
    const BodySet& bodySet = _model->getBodySet();
    for (int i = 0; i < bodySet.getSize(); i++) {
-      if (bodySet.get(i).isA("Body")) {
+      if (bodySet.get(i).getConcreteClassName()=="Body") {
          const Body& sb = bodySet.get(i);
          convertBody(sb, &_model->getMarkerSet());
       }
@@ -386,7 +386,7 @@ const OpenSim::Function* SimbodySimmModel::isDependent(const Coordinate* aCoordi
                                                  const Coordinate** rIndependentCoordinate) const
 {
    for (int i=0; i<_model->getConstraintSet().getSize(); i++) {
-      if (_model->getConstraintSet().get(i).isA("CoordinateCouplerConstraint")) {
+      if (_model->getConstraintSet().get(i).getConcreteClassName()==("CoordinateCouplerConstraint")) {
          const CoordinateCouplerConstraint& ccc = (CoordinateCouplerConstraint&)_model->getConstraintSet().get(i);
          if (ccc.getDependentCoordinateName() == aCoordinate->getName()) {
             string foo = ccc.getIndependentCoordinateNames().get(0);
@@ -457,21 +457,21 @@ void SimbodySimmModel::convertBody(const OpenSim::Body& aBody, const MarkerSet* 
 			ssj->addConstantDof(_rotationNames[rotationsSoFar++], defaultAxes[2], orientation[2] * 180.0 / SimTK::Pi);
 	}
 
-	if (joint.isA("WeldJoint")) {
+	if (joint.getConcreteClassName()==("WeldJoint")) {
 		// Nothing to do.
-	} else if (joint.isA("PinJoint")) {
+	} else if (joint.getConcreteClassName()==("PinJoint")) {
 		int index = 0;
 		string coordName = joint.getCoordinateSet().get(index).getName();
 		SimTK::Vec3 axis(0.0, 0.0, 1.0); // Pin joints always rotate about the Z axis.
 		ssj->addFunctionDof(axis, coordName, 0, Coordinate::Rotational);
-	} else if (joint.isA("SliderJoint")) {
+	} else if (joint.getConcreteClassName()==("SliderJoint")) {
 		int index = 0;
 		string coordName = joint.getCoordinateSet().get(index).getName();
 		SimTK::Vec3 axis(1.0, 0.0, 0.0); // Slider joints always translate along the X axis.
 		ssj->addFunctionDof(axis, coordName, 0, Coordinate::Translational);
-	} else if (joint.isA("EllipsoidJoint")) {
+	} else if (joint.getConcreteClassName()==("EllipsoidJoint")) {
 		// NOTE: Ellipsoid joints cannot be converted into SIMM joints.
-	} else if (joint.isA("FreeJoint")) {
+	} else if (joint.getConcreteClassName()==("FreeJoint")) {
 		SimTK::Vec3 xaxis(1.0, 0.0, 0.0);
 		SimTK::Vec3 yaxis(0.0, 1.0, 0.0);
 		SimTK::Vec3 zaxis(0.0, 0.0, 1.0);
@@ -482,7 +482,7 @@ void SimbodySimmModel::convertBody(const OpenSim::Body& aBody, const MarkerSet* 
 		ssj->addFunctionDof(xaxis, joint.getCoordinateSet().get(index++).getName(), 0, Coordinate::Rotational);
 		ssj->addFunctionDof(yaxis, joint.getCoordinateSet().get(index++).getName(), 0, Coordinate::Rotational);
 		ssj->addFunctionDof(zaxis, joint.getCoordinateSet().get(index).getName(), 0, Coordinate::Rotational);
-	} else if (joint.isA("CustomJoint")) {
+	} else if (joint.getConcreteClassName()==("CustomJoint")) {
 		const CustomJoint* cj = (CustomJoint*)(&joint);
 		const CoordinateSet& coordinates = aBody.getModel().getCoordinateSet();
 
@@ -561,7 +561,7 @@ bool SimbodySimmModel::isChildJointNeeded(const OpenSim::Joint& aJoint)
 bool SimbodySimmModel::isParentJointNeeded(const OpenSim::Joint& aJoint)
 {
 	// If the joint has no "real" DOFs (e.g., WeldJoints), then the parent joint is not needed.
-	if (aJoint.isA("WeldJoint"))
+	if (aJoint.getConcreteClassName()=="WeldJoint")
 		return false;
 
 	SimTK::Vec3 location;
@@ -588,17 +588,17 @@ bool SimbodySimmModel::isParentJointNeeded(const OpenSim::Joint& aJoint)
 		}
 	}
 
-	if (aJoint.isA("PinJoint")) {
+	if (aJoint.getConcreteClassName()==("PinJoint")) {
 		if (numRotations >= 3) // have already defined three rotations (can't add more)
 			return true;
-	} else if (aJoint.isA("SliderJoint")) {
+	} else if (aJoint.getConcreteClassName()==("SliderJoint")) {
 		if (translationsUsed[0]) // slider joint translations are always along the X axis
 			return true;
-	} else if (aJoint.isA("EllipsoidJoint")) {
+	} else if (aJoint.getConcreteClassName()==("EllipsoidJoint")) {
 		return true; // NOTE: ellipsoid joints cannot be converted to SIMM joints
-	} else if (aJoint.isA("FreeJoint")) {
+	} else if (aJoint.getConcreteClassName()==("FreeJoint")) {
 		return true;
-	} else if (aJoint.isA("CustomJoint")) {
+	} else if (aJoint.getConcreteClassName()==("CustomJoint")) {
 		const CustomJoint* cj = (CustomJoint*)(&aJoint);
 		const SpatialTransform& dofs = cj->getSpatialTransform();
 
@@ -991,7 +991,7 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
 	for (int i = 0; i < pts.getSize(); i++)
 	{
 		PathPoint& pt = pts.get(i);
-		if (pt.isA("ConditionalPathPoint")) {
+		if (pt.getConcreteClassName()==("ConditionalPathPoint")) {
 			ConditionalPathPoint* mvp = (ConditionalPathPoint*)(&pt);
 			Vec3& attachment = mvp->getLocation();
 			Array<double>& range = mvp->getRange();
@@ -1005,7 +1005,7 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
 			} else {
 				aStream << " ranges 1 " << mvp->getCoordinateName() << " (0.0, 1.0)" << endl;
 			}
-		} else if (pt.isA("MovingPathPoint")) {
+		} else if (pt.getConcreteClassName()==("MovingPathPoint")) {
 			MovingPathPoint* mpp = (MovingPathPoint*)(&pt);
 			Vec3& attachment = mpp->getLocation();
 			if (mpp->getXCoordinate()) {

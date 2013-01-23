@@ -208,7 +208,7 @@ SimTK::Function* MultiplierFunction::createSimTKFunction() const {
 
 void MultiplierFunction::init(Function* aFunction)
 {
-	if (aFunction->isA("MultiplierFunction")) {
+	if (aFunction->getConcreteClassName()==("MultiplierFunction")) {
 		MultiplierFunction* mf = (MultiplierFunction*)aFunction;
 		setFunction(mf->getFunction());
 		setScale(mf->getScale());

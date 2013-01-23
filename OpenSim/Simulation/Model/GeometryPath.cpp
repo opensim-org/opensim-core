@@ -592,7 +592,7 @@ bool GeometryPath::canDeletePathPoint( int aIndex)
 	int numOtherFixedPoints = 0;
 	for (int i = 0; i < _pathPointSet.getSize(); i++) {
 		if (i != aIndex) {
-			if (!_pathPointSet.get(i).isA("ConditionalPathPoint"))
+			if (!(_pathPointSet.get(i).getConcreteClassName()==("ConditionalPathPoint")))
 				numOtherFixedPoints++;
 		}
 	}
