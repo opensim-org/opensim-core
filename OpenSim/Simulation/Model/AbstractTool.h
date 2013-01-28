@@ -260,6 +260,7 @@ public:
 	
 	const ExternalLoads& getExternalLoads() const { return _externalLoads; }
 	ExternalLoads& updExternalLoads() { return _externalLoads; }
+    void setExternalLoads(ExternalLoads& el) { _externalLoads = el; }
 
 	// External loads get/set
 	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }

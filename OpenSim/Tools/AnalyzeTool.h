@@ -75,7 +75,7 @@ private:
 	/** Whether to write result storages to files. */
 	bool _printResultFiles;
 
-    /** Wheter the model and states should be loaded from input files */
+    /** Whether the model and states should be loaded from input files */
     bool _loadModelAndInput;
 //=============================================================================
 // METHODS
@@ -119,6 +119,9 @@ public:
 	void setSpeedsFileName(const std::string &aFileName) { _speedsFileName = aFileName; }
 	double getLowpassCutoffFrequency() const { return _lowpassCutoffFrequency; }
 	void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) { _lowpassCutoffFrequency = aLowpassCutoffFrequency; }
+    const bool getLoadModelAndInput() const { return _loadModelAndInput; }
+    void setLoadModelAndInput(bool b) { _loadModelAndInput = b; }
+
 
 	//--------------------------------------------------------------------------
 	// UTILITIES
