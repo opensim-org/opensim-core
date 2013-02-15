@@ -366,6 +366,8 @@ using namespace SimTK;
 
 %pragma(java) jniclassclassmodifiers="public class"
 
+SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
+
 %pragma(java) jniclassimports="import javax.swing.JOptionPane;"
 
 %pragma(java) jniclasscode=%{
@@ -513,11 +515,11 @@ using namespace SimTK;
 		return SimTK::Vec3::getAs(arr->get());
   };
 
-   SimTK::Vector  getAsVector() {
+   SimTK::Vector_<double>  getAsVector() {
 		return SimTK::Vector(self->getSize(), &(*self)[0]);
   };
 
-   void populateFromVector(SimTK::Vector aVector) {
+   void populateFromVector(SimTK::Vector_<double> aVector) {
 		int sz = aVector.size();
 		for(int i=0; i<sz; ++i)
 			self->append(aVector[i]);
@@ -570,8 +572,42 @@ using namespace SimTK;
 /* rest of header files to be wrapped */
 %include <OpenSim/version.h>
 %include <SimTKcommon.h>
+
 %include <SimTKcommon/Constants.h>
-%include <SimTKsimbody.h>
+%include <SimTKcommon/internal/Vec.h>
+%include <SimTKcommon/SmallMatrix.h>
+// Vec3
+namespace SimTK {
+%template(Vec3) Vec<3>;
+}
+// Mat33
+%include <SimTKcommon/internal/Mat.h>
+namespace SimTK {
+%template(Mat33) Mat<3, 3>;
+}
+// Vector and Matrix
+%include <SimTKcommon/internal/BigMatrix.h>
+namespace SimTK {
+%template(Vector) SimTK::Vector_<double>;
+%template(Matrix) SimTK::Matrix_<double>;
+}
+
+// Transform
+%include <SimTKcommon/internal/Transform.h>
+namespace SimTK {
+%template(Transform) SimTK::Transform_<double>;
+}
+
+%include <SimTKcommon/internal/MassProperties.h>
+namespace SimTK {
+%template(Inertia) SimTK::Inertia_<double>;
+%template(MassProperties) SimTK::MassProperties_<double>;
+}
+
+// State & Stage
+%include <SimTKcommon/internal/Stage.h>
+%include <SimTKcommon/internal/State.h>
+
 // osimCommon Library
 %include <OpenSim/Common/osimCommonDLL.h>
 %include <OpenSim/Common/Exception.h>
