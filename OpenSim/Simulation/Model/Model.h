@@ -561,7 +561,9 @@ public:
 
 	/** Writable access to the default values for controls. These values are used for 
 	    control value during a simulation unless updated, for example, by a Controller */
-	SimTK::Vector& updDefaultControls() const { return _defaultControls;} ;
+	SimTK::Vector& updDefaultControls() const { return _defaultControls; }
+	void setDefaultControls(const SimTK::Vector& controls) const
+	{	_defaultControls = controls; }
 	const SimTK::Vector& getDefaultControls() const { return _defaultControls; };
 
 	/**
@@ -569,9 +571,18 @@ public:
 	 * Only valid once underlying system for the model has been created.
 	 * Throws an exception if called before Model::initSystem()
 	 * This call invalidates the dynamics of the model.
-	 * @return writable controls Vector
+	 * @param[in]   s		  System state at which to apply the controls
+	 * @return		writable controls Vector
 	 */
-	SimTK::Vector& updControls(const SimTK::State &s) const;
+	SimTK::Vector& updControls(const SimTK::State& s) const;
+	/** 
+	 * Alternatively, set the controls on the model at a given state.
+	 * Note, this method invokes Model::updControls(s).
+	 * @param[in]   s		  System state at which to apply the controls
+	 * @controls	controls  The complete Vector of controls to be applied
+ 	 */
+	void setControls(const SimTK::State& s, const SimTK::Vector& controls) const
+	{	updControls(s) = controls; }
 	/** Const access to controls does not invalidate dynamics */
 	const SimTK::Vector& getControls(const SimTK::State &s) const;
 
