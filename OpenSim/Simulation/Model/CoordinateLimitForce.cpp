@@ -39,8 +39,8 @@ using namespace std;
 // Destructor.
 CoordinateLimitForce::~CoordinateLimitForce()
 {
-	delete upStep;
-	delete loStep;
+	delete _upStep;
+	delete _loStep;
 }
 //_____________________________________________________________________________
 // Default constructor.
@@ -74,39 +74,14 @@ CoordinateLimitForce::CoordinateLimitForce
 }
 
 //_____________________________________________________________________________
-// Copy constructor. Careful -- we want to NaN out all the local fields
-// rather than copy them.
-CoordinateLimitForce::CoordinateLimitForce(const CoordinateLimitForce& source) 
-:   Super(source)
-{
-	setNull(); // don't delete the copied function pointers!
-	copyData(source);
-}
-
-//_____________________________________________________________________________
-// Assignment operator. Careful -- we want to NaN out all the local fields
-// rather than copy them.
-CoordinateLimitForce& CoordinateLimitForce::
-operator=(const CoordinateLimitForce& source)
-{
-    if (&source != this) {
-	    Force::operator=(source);
-	    setNull(); // don't delete the copied function pointers!
-	    copyData(source);
-    }
-
-	return *this;
-}
-
-//_____________________________________________________________________________
 // Set the data members of this actuator to their null values. Note that we
 // also use this after copy construction or copy assignment; these should be
 // calculated at connectToModel().
 void CoordinateLimitForce::setNull()
 {
 	setAuthors("Ajay Seth");
-	upStep = NULL;
-	loStep = NULL;
+	_upStep = NULL;
+	_loStep = NULL;
 	
 	// Scaling for coordinate values in m or degrees (rotational) 
 	_w = SimTK::NaN;
@@ -136,26 +111,6 @@ void CoordinateLimitForce::constructProperties()
 	constructProperty_transition(0.1);
 	constructProperty_compute_dissipation_energy(false);
 }
-
-
-//_____________________________________________________________________________
-// Copy the member data of the specified actuator.
-// We don't want to copy any of our data members on copy construction or
-// copy assignment; they must be filled in later.
-// But property indices must get copied.
-void CoordinateLimitForce::copyData(const CoordinateLimitForce& source)
-{
-	copyProperty_coordinate(source);
-	copyProperty_upper_stiffness(source);
-	copyProperty_upper_limit(source);
-	copyProperty_lower_stiffness(source);
-	copyProperty_lower_limit(source);
-	copyProperty_damping(source);
-	copyProperty_transition(source);
-	copyProperty_compute_dissipation_energy(source);
-}
-
-
 
 
 //=============================================================================
@@ -271,11 +226,14 @@ void CoordinateLimitForce::connectToModel(Model& aModel)
 	_Klow = lowerStiffness/_w;
 	_damp = damping/_w;
 
+	delete _upStep;
+	delete _loStep;
+
 	// Define the transition from no stiffness to the upperStiffness as coordinate increases 
 	// beyond the upper limit
-	upStep = new SimTK::Function::Step(0.0, _Kup, _qup, _qup+_w*transition);
+	_upStep = new SimTK::Function::Step(0.0, _Kup, _qup, _qup+_w*transition);
 	// Define the transition from lowerStiffness to zero as coordinate increases to the lower limit
-	loStep = new SimTK::Function::Step(_Klow, 0.0, _qlow-_w*transition, _qlow);
+	_loStep = new SimTK::Function::Step(_Klow, 0.0, _qlow-_w*transition, _qlow);
 }
 
 
@@ -310,8 +268,8 @@ double CoordinateLimitForce::calcLimitForce( const SimTK::State& s) const
 {
 	double q = _coord->getValue(s);
 	SimTK::Vector qv(1,q);
-	double K_up = upStep->calcValue(qv);
-	double K_low = loStep->calcValue(qv);
+	double K_up = _upStep->calcValue(qv);
+	double K_low = _loStep->calcValue(qv);
 
 	double qdot = _coord->getSpeedValue(s);
 	double f_up = -K_up*(q - _qup);

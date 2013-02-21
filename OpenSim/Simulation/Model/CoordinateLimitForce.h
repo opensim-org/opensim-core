@@ -49,7 +49,6 @@
  * accessible as well as the power (nd optionally energy) dissipated. 
  *
  * @author Ajay Seth
- * @version 2.0
  */
 namespace OpenSim { 
 
@@ -118,10 +117,11 @@ public:
         double K_upper, double q_lower, double K_lower, double damping, 
         double dq, bool computeDissipationEnergy=false); 
     
-    // Copy constructor
-    CoordinateLimitForce(const CoordinateLimitForce &aForce);
-    virtual ~CoordinateLimitForce();
-    CoordinateLimitForce& operator=(const CoordinateLimitForce &aForce);
+    //use compiler default copy constructor and assignment operator
+
+	/** Destructor */
+    ~CoordinateLimitForce();
+
 
     //--------------------------------------------------------------------------
     // GET AND SET
@@ -237,8 +237,8 @@ private:
     // Smooth step functions for continuous transition from no stiffness and 
     // damping to constant values beyond the limits. These are heap allocated
     // and owned here so must be deleted in destructor.
-    SimTK::Function::Step *upStep;
-    SimTK::Function::Step *loStep;
+    SimTK::ReferencePtr<SimTK::Function::Step> _upStep;
+    SimTK::ReferencePtr<SimTK::Function::Step> _loStep;
 
     // Scaling for coordinate values in m or degrees (rotational) 
     double _w;

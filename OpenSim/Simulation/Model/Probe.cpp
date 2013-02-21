@@ -155,10 +155,11 @@ void Probe::addToSystem(MultibodySystem& system) const
     // save for when we can directly operate on Vector SimTK::Measures
     //ProbeMeasure<SimTK::Vector> beforeOperationValueVector(system, *this);
 
+	int npi = getNumProbeInputs();
     SimTK::Array_<ProbeMeasure<double> > beforeOperationValues;
-    mutableThis->afterOperationValues.resize(getNumProbeInputs());
+    mutableThis->afterOperationValues.resize(npi);
 
-    for (int i=0; i<getNumProbeInputs(); ++i) {
+    for (int i=0; i<npi; ++i) {
         ProbeMeasure<double> tmpPM(system, *this, i); 
         beforeOperationValues.push_back(tmpPM);
     }
@@ -172,7 +173,7 @@ void Probe::addToSystem(MultibodySystem& system) const
     // Return the original probe value (no operation)
     // ---------------------------------------------------------------------
     if (getOperation() == "value") {
-        for (int i=0; i<getNumProbeInputs(); ++i) {
+        for (int i=0; i<npi; ++i) {
             mutableThis->afterOperationValues[i] = beforeOperationValues[i];   
         }
     }

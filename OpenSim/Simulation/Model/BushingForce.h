@@ -27,8 +27,7 @@
 // INCLUDE
 #include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec.h>
+#include <OpenSim/Common/Property.h>
 #include "Force.h"
 
 namespace OpenSim {
@@ -70,13 +69,13 @@ public:
 	OpenSim_DECLARE_PROPERTY(orientation_body_2, SimTK::Vec3,
 		"Orientation of bushing frame in body 2 as x-y-z, body fixed Euler rotations.");
 	OpenSim_DECLARE_PROPERTY(rotational_stiffness, SimTK::Vec3,
-		"Stiffness parameters resisting relative rotation.");
+		"Stiffness parameters resisting relative rotation (Nm/rad).");
 	OpenSim_DECLARE_PROPERTY(translational_stiffness, SimTK::Vec3,
-		"Stiffness parameters resisting relative translation.");
+		"Stiffness parameters resisting relative translation (N/m).");
 	OpenSim_DECLARE_PROPERTY(rotational_damping, SimTK::Vec3,
-		"Damping parameters resisting relative angular velocity.");
+		"Damping parameters resisting relative angular velocity. (Nm/(rad/s))");
 	OpenSim_DECLARE_PROPERTY(translational_damping, SimTK::Vec3,
-		"Damping parameters resisting relative translational velocity.");
+		"Damping parameters resisting relative translational velocity. (N/(m/s)");
     /**@}**/
 
 //==============================================================================
