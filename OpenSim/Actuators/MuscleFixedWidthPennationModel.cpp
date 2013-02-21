@@ -594,7 +594,7 @@ double MuscleFixedWidthPennationModel::
         "MuscleFixedWidthPennationModel: Model is not"
         " to date with properties");
 
-    double t2 = cosPennation * cosPennation;
+    /*double t2 = cosPennation * cosPennation;
     double t6 = sinPennation * sinPennation;
     double denominator = (t2*cosPennation*fiberLength + 
                           t6*muscleLength - t6*tendonLength);
@@ -609,7 +609,9 @@ double MuscleFixedWidthPennationModel::
     if(abs(denominator) > SimTK::SignificantReal){
         fiberVelocity = (muscleVelocity - tendonVelocity)*t2*fiberLength 
                             / denominator;
-    }
+    }*/
+    double fiberVelocity = (muscleVelocity - tendonVelocity)*cosPennation;
+
     return fiberVelocity;
 }
 

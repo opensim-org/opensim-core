@@ -210,7 +210,7 @@ void testActiveForceLengthCurve()
 
         //====================================================================
         double p1 = 0.47-0.0259;
-        double p2 = 0.6259;
+        double p2 = 0.73;
         double p3 = 1.8123; //Approximately matches mean of Gallopudi & Lin 
                             //active force length
         double p4 = 0.8616;
@@ -357,7 +357,7 @@ void testForceVelocityCurve()
         double p2 = 5;
         double p3 = 0.0;
         double p4 = 1.4;
-        double p5 = 0.5;
+        double p5 = 0.6;
         double p6 = 0.9;
 
         printf("4. Testing default property values: "
@@ -497,7 +497,7 @@ void testForceVelocityInverseCurve()
         double p2 = 5;
         double p3 = 0.1;
         double p4 = 1.4;
-        double p5 = 0.5;
+        double p5 = 0.6;
         double p6 = 0.9;
 
         printf("4. Testing default property values:"
@@ -729,7 +729,7 @@ void testFiberForceLengthCurve()
         FiberForceLengthCurve fpeCurve2;
         //change all of the properties to something other than the default
         fpeCurve2.setCurveStrains(0,0.8);
-        fpeCurve2.setOptionalProperties(10.0,1.0/3.0,0.8);
+        fpeCurve2.setOptionalProperties(1.0/3.0,10.0,0.8);
 
 
         //These next few lines are just to read the object in, and repopulate
@@ -747,7 +747,7 @@ void testFiberForceLengthCurve()
         
 
         fpeCurve2.setCurveStrains(0,0.80);
-        fpeCurve2.setOptionalProperties(10.0,1.0/3.0,0.8);
+        fpeCurve2.setOptionalProperties(1.0/3.0,10.0,0.8);
 
         cout <<"    c. assignment operator" <<endl;
         fpeCurve2=fpeCurve1;
@@ -755,7 +755,7 @@ void testFiberForceLengthCurve()
         SimTK_TEST(fpeCurve1==fpeCurve2);
 
         fpeCurve2.setCurveStrains(0,0.80);
-        fpeCurve2.setOptionalProperties(10.0,1.0/3.0,0.8);
+        fpeCurve2.setOptionalProperties(1.0/3.0,10.0,0.8);
 
         cout <<"    d. copy constructor" <<endl;
         FiberForceLengthCurve fpeCurve2p5(fpeCurve2);
@@ -766,7 +766,7 @@ void testFiberForceLengthCurve()
 
         //====================================================================
         cout <<"2. Testing API constructor" << endl;
-        FiberForceLengthCurve fpeCurve3(0.0, 0.10,50,1.0/3.0,0.75,"testMuscle");
+        FiberForceLengthCurve fpeCurve3(0.0, 0.10,1.0/3.0,50,0.75,"testMuscle");
         double falVal  = fpeCurve3.calcValue(0.02);
         double dfalVal = fpeCurve3.calcDerivative(0.02,1);
         cout << "Passed: Testing API constructor" << endl;
@@ -775,7 +775,7 @@ void testFiberForceLengthCurve()
         cout <<"3. Testing get/set methods and the fitted flag:" << endl;
 
         fpeCurve2.setCurveStrains(0,0.80);
-        fpeCurve2.setOptionalProperties(10.0,1.0/3.0,0.8);
+        fpeCurve2.setOptionalProperties(1.0/3.0,10.0,0.8);
 
         SimTK_TEST(fpeCurve2.getStrainAtOneNormForce()         == 0.80);
         SimTK_TEST(fpeCurve2.getStiffnessAtOneNormForceInUse() == 10.0);
@@ -785,9 +785,9 @@ void testFiberForceLengthCurve()
         cout << "Passed: Testing get/set methods" << endl;
 
         //====================================================================
-        double p1 = 0.6;
-        double p2 = 8.3898637908858689;
-        double p3 = 0.63753341725162227;
+        double p1 = 0.7;
+        double p2 = 2.0/(0.7-0.0);
+        double p3 = 0.75;
 
         printf( "4. Testing default property values"
                 " and the fitted flag: \n\t%f,\n\t%f,\n\t%f\n",
@@ -832,7 +832,8 @@ void testFiberForceLengthCurve()
         cout <<"    c. calcIntegral at e0" << endl;
                 value = fpeCurve4.calcIntegral(1 
                     + fpeCurve4.getStrainAtOneNormForce());
-                double trueValue = 0.11592980705621746;
+                double trueValue = 0.2109609995660500; //computed using 
+                                                        //cumtrapz in matlab
                 double relError = abs(value-trueValue)/trueValue;
                 SimTK_TEST_EQ_TOL(relError, 0, 1e-4); 
 
