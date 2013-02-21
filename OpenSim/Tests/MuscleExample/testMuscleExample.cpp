@@ -40,7 +40,7 @@ int main()
 		CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(0.01, ncols), __FILE__, __LINE__, "tugOfWar fatigue states failed");
 		cout << "tugOfWar fatigue states passed\n";
 
-		Storage result2("tugOfWar_forces.mot"), standard2("std_tugOfWar_forces.mot");
+		Storage result2("tugOfWar_fatigue_forces.mot"), standard2("std_tugOfWar_forces.mot");
 		ncols = result2.getColumnLabels().getSize();
 		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(1.0, ncols), __FILE__, __LINE__, "tugOfWar forces failed");
 		cout << "tugOfWar forces passed\n";
