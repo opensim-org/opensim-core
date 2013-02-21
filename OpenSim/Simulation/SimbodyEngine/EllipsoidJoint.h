@@ -1,5 +1,5 @@
-#ifndef __EllipsoidJoint_h__
-#define __EllipsoidJoint_h__
+#ifndef OPENSIM_EllipsoidJoint_H
+#define OPENSIM_EllipsoidJoint_H
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  EllipsoidJoint.h                         *
  * -------------------------------------------------------------------------- *
@@ -59,6 +59,7 @@ public:
     /**@{**/
 	OpenSim_DECLARE_PROPERTY(radii_x_y_z, SimTK::Vec3, 
 		"Ellipsoid radii mobilizer frame as a Vec3(rX, rY, rZ).");
+	/**@}**/
 
 //=============================================================================
 // METHODS
@@ -100,6 +101,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __EllipsoidJoint_h__
+#endif // OPENSIM_EllipsoidJoint_H
 
 

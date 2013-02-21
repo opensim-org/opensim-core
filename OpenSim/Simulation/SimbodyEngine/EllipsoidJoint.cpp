@@ -84,8 +84,8 @@ EllipsoidJoint::EllipsoidJoint(const std::string &name, OpenSim::Body& parent, S
 void EllipsoidJoint::constructProperties()
 {
 	setAuthors("Ajay Seth");
-	SimTK::Vec3 origin(NaN);
-	constructProperty_radii_x_y_z(origin);
+	SimTK::Vec3 radii(NaN);
+	constructProperty_radii_x_y_z(radii);
 }
 
 //_____________________________________________________________________________
@@ -199,13 +199,12 @@ void EllipsoidJoint::initStateFromProperties(SimTK::State& s) const
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (matter.getUseEulerAngles(s))
         return;
-    int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
 
 	const CoordinateSet& coordinateSet = get_CoordinateSet();
 
-    double xangle = coordinateSet.get(zero).getDefaultValue();
-    double yangle = coordinateSet.get(1).getDefaultValue();
-    double zangle = coordinateSet.get(2).getDefaultValue();
+    double xangle = coordinateSet[0].getDefaultValue();
+    double yangle = coordinateSet[1].getDefaultValue();
+    double zangle = coordinateSet[2].getDefaultValue();
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
 	
 	EllipsoidJoint* mutableThis = const_cast<EllipsoidJoint*>(this);
@@ -222,18 +221,17 @@ void EllipsoidJoint::setPropertiesFromState(const SimTK::State& state)
     if (!matter.getUseEulerAngles(state)) {
         Rotation r = matter.getMobilizedBody(MobilizedBodyIndex(updBody().getIndex())).getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
-        int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
 
 		const CoordinateSet& coordinateSet = get_CoordinateSet();
 
-        coordinateSet.get(zero).setDefaultValue(angles[0]);
-        coordinateSet.get(1).setDefaultValue(angles[1]);
-        coordinateSet.get(2).setDefaultValue(angles[2]);
+        coordinateSet[0].setDefaultValue(angles[0]);
+        coordinateSet[1].setDefaultValue(angles[1]);
+        coordinateSet[2].setDefaultValue(angles[2]);
     }
 }
 
-void EllipsoidJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform) {
-
+void EllipsoidJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform)
+{
 	// CREATE MOBILIZED BODY
 	MobilizedBody::Ellipsoid
 		simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(&updParentBody())),
@@ -241,5 +239,4 @@ void EllipsoidJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK
 			childTransform, get_radii_x_y_z());
 
 	setMobilizedBodyIndex(&updBody(), simtkBody.getMobilizedBodyIndex());
-
 }
