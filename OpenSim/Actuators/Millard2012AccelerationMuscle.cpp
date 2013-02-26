@@ -157,8 +157,7 @@ void Millard2012AccelerationMuscle::buildMuscle()
 
     m_penMdl = MuscleFixedWidthPennationModel(  optFibLen,
                                                 optPenAng, 
-                                                SimTK::Pi/2.0,
-                                                caller);
+                                                SimTK::Pi/2.0);
    
     std::string aName = getName();
 
@@ -696,10 +695,8 @@ calcInextensibleTendonActiveFiberForce(SimTK::State& s,
         if(fiberLength > m_penMdl.getMinimumFiberLength()){
             double phi      = m_penMdl.calcPennationAngle(fiberLength);
         
-            double fiberVelocity   = m_penMdl.calcFiberVelocity(fiberLength,
-                                            sin(phi),cos(phi),
-                                            muscleLength,tendonSlackLength,
-                                          muscleVelocity,tendonVelocity,caller);
+            double fiberVelocity   = m_penMdl.calcFiberVelocity(cos(phi),
+                                          muscleVelocity,tendonVelocity);
 
             inextensibleTendonActiveFiberForce = 
                 calcActiveFiberForceAlongTendon(    aActivation,
@@ -936,81 +933,88 @@ void Millard2012AccelerationMuscle::
     
     double simTime = s.getTime(); //for debugging purposes
 
-    //Get whole muscle properties
-    double maxIsoForce      = getMaxIsometricForce();
-    double optFiberLength   = getOptimalFiberLength();
-    double mclLength        = getLength(s);
-    double tendonSlackLen   = getTendonSlackLength();
-    std::string caller      = getName();
-    caller.append(".calcMuscleLengthInfo");
+    try{
+        //Get whole muscle properties
+        double maxIsoForce      = getMaxIsometricForce();
+        double optFiberLength   = getOptimalFiberLength();
+        double mclLength        = getLength(s);
+        double tendonSlackLen   = getTendonSlackLength();
+        std::string caller      = getName();
+        caller.append(".calcMuscleLengthInfo");
 
-    //Get muscle model specific properties
-    const TendonForceLengthCurve& fseCurve = get_TendonForceLengthCurve(); 
-    const FiberForceLengthCurve& fpeCurve  = get_FiberForceLengthCurve(); 
-    const ActiveForceLengthCurve& falCurve = get_ActiveForceLengthCurve(); 
+        //Get muscle model specific properties
+        const TendonForceLengthCurve& fseCurve = get_TendonForceLengthCurve(); 
+        const FiberForceLengthCurve& fpeCurve  = get_FiberForceLengthCurve(); 
+        const ActiveForceLengthCurve& falCurve = get_ActiveForceLengthCurve(); 
 
-    const FiberCompressiveForceLengthCurve& fkCurve
-        = get_FiberCompressiveForceLengthCurve(); 
-    const FiberCompressiveForceCosPennationCurve& fcphiCurve
-        = get_FiberCompressiveForceCosPennationCurve(); 
+        const FiberCompressiveForceLengthCurve& fkCurve
+            = get_FiberCompressiveForceLengthCurve(); 
+        const FiberCompressiveForceCosPennationCurve& fcphiCurve
+            = get_FiberCompressiveForceCosPennationCurve(); 
 
-    //Populate the output struct
-    mli.fiberLength       = getStateVariable(s, STATE_FIBER_LENGTH_NAME); 
+        //Populate the output struct
+        mli.fiberLength       = getStateVariable(s, STATE_FIBER_LENGTH_NAME); 
 
-    mli.normFiberLength   = mli.fiberLength/optFiberLength;
-    mli.pennationAngle    = m_penMdl.calcPennationAngle(mli.fiberLength);
-    mli.cosPennationAngle = cos(mli.pennationAngle);
-    mli.sinPennationAngle = sin(mli.pennationAngle);
+        mli.normFiberLength   = mli.fiberLength/optFiberLength;
+        mli.pennationAngle    = m_penMdl.calcPennationAngle(mli.fiberLength);
+        mli.cosPennationAngle = cos(mli.pennationAngle);
+        mli.sinPennationAngle = sin(mli.pennationAngle);
 
-    mli.fiberLengthAlongTendon = mli.fiberLength*mli.cosPennationAngle;
+        mli.fiberLengthAlongTendon = mli.fiberLength*mli.cosPennationAngle;
     
-    mli.tendonLength      = m_penMdl.calcTendonLength(mli.cosPennationAngle,
-                                                   mli.fiberLength,mclLength);
-    mli.normTendonLength  = mli.tendonLength / tendonSlackLen;
-    mli.tendonStrain      = mli.normTendonLength -  1.0;
+        mli.tendonLength      = m_penMdl.calcTendonLength(mli.cosPennationAngle,
+                                                       mli.fiberLength,mclLength);
+        mli.normTendonLength  = mli.tendonLength / tendonSlackLen;
+        mli.tendonStrain      = mli.normTendonLength -  1.0;
         
-    //Note the curves return normalized area. Each area must be un-normalized   
-    mli.fiberPotentialEnergy =  fpeCurve.calcIntegral(mli.normFiberLength)
-                                *(optFiberLength*maxIsoForce);
+        //Note the curves return normalized area. Each area must be un-normalized   
+        mli.fiberPotentialEnergy =  fpeCurve.calcIntegral(mli.normFiberLength)
+                                    *(optFiberLength*maxIsoForce);
 
-    mli.tendonPotentialEnergy=  fseCurve.calcIntegral(mli.normTendonLength)
-                                *(tendonSlackLen*maxIsoForce);
+        mli.tendonPotentialEnergy=  fseCurve.calcIntegral(mli.normTendonLength)
+                                    *(tendonSlackLen*maxIsoForce);
 
-    double compForceLengthPE=   fkCurve.calcIntegral(mli.normFiberLength)
-                                *(optFiberLength*maxIsoForce);
+        double compForceLengthPE=   fkCurve.calcIntegral(mli.normFiberLength)
+                                    *(optFiberLength*maxIsoForce);
 
-    //Only the force dimension is normalized
-    double compForceCosPennationPE = 
-        fcphiCurve.calcIntegral(mli.cosPennationAngle)*(maxIsoForce);
+        //Only the force dimension is normalized
+        double compForceCosPennationPE = 
+            fcphiCurve.calcIntegral(mli.cosPennationAngle)*(maxIsoForce);
 
-    mli.musclePotentialEnergy=  mli.fiberPotentialEnergy 
-                              + mli.tendonPotentialEnergy
-                              + compForceLengthPE
-                              + compForceCosPennationPE;
+        mli.musclePotentialEnergy=  mli.fiberPotentialEnergy 
+                                  + mli.tendonPotentialEnergy
+                                  + compForceLengthPE
+                                  + compForceCosPennationPE;
 
-    mli.fiberPassiveForceLengthMultiplier= 
-        fpeCurve.calcValue(mli.normFiberLength);
-    mli.fiberActiveForceLengthMultiplier = 
-        falCurve.calcValue(mli.normFiberLength);
+        mli.fiberPassiveForceLengthMultiplier= 
+            fpeCurve.calcValue(mli.normFiberLength);
+        mli.fiberActiveForceLengthMultiplier = 
+            falCurve.calcValue(mli.normFiberLength);
     
    
 
-    double tendonForceLengthMultiplier=fseCurve.calcValue(mli.normTendonLength);
+        double tendonForceLengthMultiplier=fseCurve.calcValue(mli.normTendonLength);
 
-    //Put in the additional length related terms that are specific to this
-    //particular muscle model.
-    mli.userDefinedLengthExtras.resize(5);
+        //Put in the additional length related terms that are specific to this
+        //particular muscle model.
+        mli.userDefinedLengthExtras.resize(5);
 
 
 
-    mli.userDefinedLengthExtras[MLIfse]     = tendonForceLengthMultiplier;
-    mli.userDefinedLengthExtras[MLIfk]      = fkCurve.calcValue(
-                                                mli.normFiberLength);
-    mli.userDefinedLengthExtras[MLIfcphi]   = fcphiCurve.calcValue(
-                                                   mli.cosPennationAngle);
-    mli.userDefinedLengthExtras[MLIfkPE]    = compForceLengthPE;
-    mli.userDefinedLengthExtras[MLIfcphiPE] = compForceCosPennationPE;
-
+        mli.userDefinedLengthExtras[MLIfse]     = tendonForceLengthMultiplier;
+        mli.userDefinedLengthExtras[MLIfk]      = fkCurve.calcValue(
+                                                    mli.normFiberLength);
+        mli.userDefinedLengthExtras[MLIfcphi]   = fcphiCurve.calcValue(
+                                                       mli.cosPennationAngle);
+        mli.userDefinedLengthExtras[MLIfkPE]    = compForceLengthPE;
+        mli.userDefinedLengthExtras[MLIfcphiPE] = compForceCosPennationPE;
+    }catch(const std::exception &x){
+        std::string msg = "Exception caught in Millard2012AccelerationMuscle::" 
+                        "calcMuscleLengthInfo\n"                 
+                        "of " + getName()  + "\n"                            
+                        + x.what();
+        throw OpenSim::Exception(msg);
+    }
 }
 
 void Millard2012AccelerationMuscle::
@@ -1024,75 +1028,81 @@ void Millard2012AccelerationMuscle::
 
     double simTime = s.getTime(); //for debugging purposes
 
+    try{
+        //Get the quantities that we've already computed
+            const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
 
-    //Get the quantities that we've already computed
-        const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
+        //Get the static properties of this muscle
+            double mclLength      = getLength(s);
+            double mclVelocity    = getLengtheningSpeed(s);
+            double tendonSlackLen = getTendonSlackLength();
+            double optFiberLen    = getOptimalFiberLength();
 
-    //Get the static properties of this muscle
-        double mclLength      = getLength(s);
-        double mclVelocity    = getLengtheningSpeed(s);
-        double tendonSlackLen = getTendonSlackLength();
-        double optFiberLen    = getOptimalFiberLength();
+        //Prep strings that will be useful to make sensible exception messages
+            std::string muscleName = getName();
+            std::string fcnName     = ".calcFiberVelocityInfo";
 
-    //Prep strings that will be useful to make sensible exception messages
-        std::string muscleName = getName();
-        std::string fcnName     = ".calcFiberVelocityInfo";
+            std::string caller      = muscleName;        
+            caller.append(fcnName);
 
-        std::string caller      = muscleName;        
-        caller.append(fcnName);
+        //=========================================================================
+        // Compute fv by inverting the force-velocity relationship in the 
+        // equilibrium equations
+        //=========================================================================
 
-    //=========================================================================
-    // Compute fv by inverting the force-velocity relationship in the 
-    // equilibrium equations
-    //=========================================================================
+        //1. Get MuscleLengthInfo & available State information
+        double dlce   = getStateVariable(s, STATE_FIBER_VELOCITY_NAME);
+        double dlceN1  = dlce/(getMaxContractionVelocity()*optFiberLen);
+        double lce    = mli.fiberLength;
+        double phi    = mli.pennationAngle;
+        double cosphi = mli.cosPennationAngle;
+        double sinphi = mli.sinPennationAngle;
 
-    //1. Get MuscleLengthInfo & available State information
-    double dlce   = getStateVariable(s, STATE_FIBER_VELOCITY_NAME);
-    double dlceN1  = dlce/(getMaxContractionVelocity()*optFiberLen);
-    double lce    = mli.fiberLength;
-    double phi    = mli.pennationAngle;
-    double cosphi = mli.cosPennationAngle;
-    double sinphi = mli.sinPennationAngle;
-
-    double fal  = mli.fiberActiveForceLengthMultiplier;
-    double fpe  = mli.fiberPassiveForceLengthMultiplier;
-    double fse  = mli.userDefinedLengthExtras[MLIfse];
-    double fk   = mli.userDefinedLengthExtras[MLIfk];
-    double fcphi= mli.userDefinedLengthExtras[MLIfcphi];
+        double fal  = mli.fiberActiveForceLengthMultiplier;
+        double fpe  = mli.fiberPassiveForceLengthMultiplier;
+        double fse  = mli.userDefinedLengthExtras[MLIfse];
+        double fk   = mli.userDefinedLengthExtras[MLIfk];
+        double fcphi= mli.userDefinedLengthExtras[MLIfcphi];
 
     
-    //2. Compute fv - but check for singularities first     
-    const ForceVelocityCurve& fvCurve = get_ForceVelocityCurve(); 
-    double fv = fvCurve.calcValue(dlceN1);
+        //2. Compute fv - but check for singularities first     
+        const ForceVelocityCurve& fvCurve = get_ForceVelocityCurve(); 
+        double fv = fvCurve.calcValue(dlceN1);
     
-    //7. Compute the other related velocity components
-    //double dlceAT = m_penMdl.
-    double tanPhi = tan(phi);
-    double dphidt    = m_penMdl.calcPennationAngularVelocity(tanPhi,lce,
-                                                            dlce   ,caller);   
-    double dtl       = m_penMdl.calcTendonVelocity(cosphi,sinphi,dphidt,
-                                                    lce,  dlce,mclVelocity);
+        //7. Compute the other related velocity components
+        //double dlceAT = m_penMdl.
+        double tanPhi = tan(phi);
+        double dphidt    = m_penMdl.calcPennationAngularVelocity(tanPhi,lce,dlce);   
+        double dtl       = m_penMdl.calcTendonVelocity(cosphi,sinphi,dphidt,
+                                                        lce,  dlce,mclVelocity);
 
-    //Populate the struct;
-    fvi.fiberVelocity               = dlce;
-    fvi.fiberVelocityAlongTendon    = m_penMdl.calcFiberVelocityAlongTendon(lce,
-                                                    dlce,sinphi,cosphi, dphidt);
-    fvi.normFiberVelocity           = dlceN1;
+        //Populate the struct;
+        fvi.fiberVelocity               = dlce;
+        fvi.fiberVelocityAlongTendon    = m_penMdl.calcFiberVelocityAlongTendon(lce,
+                                                        dlce,sinphi,cosphi, dphidt);
+        fvi.normFiberVelocity           = dlceN1;
 
-    fvi.pennationAngularVelocity    = dphidt;
+        fvi.pennationAngularVelocity    = dphidt;
 
-    fvi.tendonVelocity              = dtl;
-    fvi.normTendonVelocity = dtl/getTendonSlackLength();
+        fvi.tendonVelocity              = dtl;
+        fvi.normTendonVelocity = dtl/getTendonSlackLength();
 
-    fvi.fiberForceVelocityMultiplier = fv;
+        fvi.fiberForceVelocityMultiplier = fv;
 
-    fvi.userDefinedVelocityExtras.resize(1);
-    fvi.userDefinedVelocityExtras[MVIdlceAT] = 
-        m_penMdl.calcFiberVelocityAlongTendon(lce,
-                                            dlce,
-                                            mli.sinPennationAngle,
-                                            mli.cosPennationAngle,
-                                            dphidt);
+        fvi.userDefinedVelocityExtras.resize(1);
+        fvi.userDefinedVelocityExtras[MVIdlceAT] = 
+            m_penMdl.calcFiberVelocityAlongTendon(lce,
+                                                dlce,
+                                                mli.sinPennationAngle,
+                                                mli.cosPennationAngle,
+                                                dphidt);
+    }catch(const std::exception &x){
+        std::string msg = "Exception caught in Millard2012AccelerationMuscle::" 
+                        "calcFiberVelocityInfo\n"                 
+                        "of " + getName()  + "\n"                            
+                        + x.what();
+        throw OpenSim::Exception(msg);
+    }
     
 }
 
@@ -1107,6 +1117,7 @@ void Millard2012AccelerationMuscle::
     
         double simTime = s.getTime(); //for debugging purposes
 
+    try{
     //Get the quantities that we've already computed
         const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
         const FiberVelocityInfo &mvi = getFiberVelocityInfo(s);        
@@ -1134,168 +1145,175 @@ void Millard2012AccelerationMuscle::
 
     //Get fiber/tendon kinematic information
 
-    double lce          = mli.fiberLength;
-    double lceN         = lce/ofl;    
-    double dlce_dt      = mvi.fiberVelocity;
-    double dlceN1_dt    = mvi.normFiberVelocity;
+        double lce          = mli.fiberLength;
+        double lceN         = lce/ofl;    
+        double dlce_dt      = mvi.fiberVelocity;
+        double dlceN1_dt    = mvi.normFiberVelocity;
     
-    double phi          = mli.pennationAngle;
-    double cosPhi       = mli.cosPennationAngle;
-    double sinPhi       = mli.sinPennationAngle;
-    double dphi_dt      = mvi.pennationAngularVelocity;
+        double phi          = mli.pennationAngle;
+        double cosPhi       = mli.cosPennationAngle;
+        double sinPhi       = mli.sinPennationAngle;
+        double dphi_dt      = mvi.pennationAngularVelocity;
     
-    double tl       = mli.tendonLength; 
-    double dtl_dt   = mvi.tendonVelocity;
-    double tlN      = mli.normTendonLength;
+        double tl       = mli.tendonLength; 
+        double dtl_dt   = mvi.tendonVelocity;
+        double tlN      = mli.normTendonLength;
    
-    double fal  = mli.fiberActiveForceLengthMultiplier;
-    double fpe  = mli.fiberPassiveForceLengthMultiplier;
-    double fv   = mvi.fiberForceVelocityMultiplier;    
-    double fse  = mli.userDefinedLengthExtras[MLIfse];
-    double fk   = mli.userDefinedLengthExtras[MLIfk];
-    double fcphi= mli.userDefinedLengthExtras[MLIfcphi];
+        double fal  = mli.fiberActiveForceLengthMultiplier;
+        double fpe  = mli.fiberPassiveForceLengthMultiplier;
+        double fv   = mvi.fiberForceVelocityMultiplier;    
+        double fse  = mli.userDefinedLengthExtras[MLIfse];
+        double fk   = mli.userDefinedLengthExtras[MLIfk];
+        double fcphi= mli.userDefinedLengthExtras[MLIfcphi];
 
     //========================================================================
     //Compute visco elastic multipliers and their derivatives derivatives
     //========================================================================
-    AccelerationMuscleInfo ami;
-    calcAccelerationMuscleInfo( ami,
-                                lce  ,dlce_dt,
-                                phi  ,dphi_dt,
-                                tl   ,dtl_dt,
-                                fal  ,fv,fpe,fk,fcphi,fse);
+        AccelerationMuscleInfo ami;
+        calcAccelerationMuscleInfo( ami,
+                                    lce  ,dlce_dt,
+                                    phi  ,dphi_dt,
+                                    tl   ,dtl_dt,
+                                    fal  ,fv,fpe,fk,fcphi,fse);
 
     //========================================================================
     //Compute visco elastic multipliers derivatives
     //========================================================================
-    SimTK::Vec2 fiberForceIJ = calcFiberForceIJ(a,ami);
-    double Fce  = calcFiberForce(fiberForceIJ,ami);    
-    double FceAT= calcFiberForceAlongTendon(fiberForceIJ);
+        SimTK::Vec2 fiberForceIJ = calcFiberForceIJ(a,ami);
+        double Fce  = calcFiberForce(fiberForceIJ,ami);    
+        double FceAT= calcFiberForceAlongTendon(fiberForceIJ);
 
-    double Fse = calcTendonForce(ami);
-    double m = getMass();
+        double Fse = calcTendonForce(ami);
+        double m = getMass();
 
-    double ddlce_dtt = (1/m)*(Fse-FceAT)*cosPhi + lce*dphi_dt*dphi_dt;        
+        double ddlce_dtt = (1/m)*(Fse-FceAT)*cosPhi + lce*dphi_dt*dphi_dt;        
 
     //=========================================================================
     // Compute the stiffness properties
     //=========================================================================
     //Compute the stiffness of the fiber along the tendon
-    SimTK::Vec2 fiberStiffnessIJ = calcFiberStiffnessIJ(a,ami);
-    double dFce_dlce = calcFiberStiffness(fiberForceIJ,fiberStiffnessIJ, ami);
+        SimTK::Vec2 fiberStiffnessIJ = calcFiberStiffnessIJ(a,ami);
+        double dFce_dlce = calcFiberStiffness(fiberForceIJ,fiberStiffnessIJ, ami);
 
-    double dFceAT_dlce = calc_DFiberForceAT_DFiberLength(fiberStiffnessIJ);
-    double dFceAT_dlceAT=
-        calc_DFiberForceAT_DFiberLengthAT(dFceAT_dlce, ami);   
+        double dFceAT_dlce = calc_DFiberForceAT_DFiberLength(fiberStiffnessIJ);
+        double dFceAT_dlceAT=
+            calc_DFiberForceAT_DFiberLengthAT(dFceAT_dlce, ami);   
 
     //Compute the stiffness of the tendon
-    double dFt_dtl    = calcTendonStiffness(ami);
+        double dFt_dtl    = calcTendonStiffness(ami);
 
     //Compute the stiffness of the whole muscle/tendon complex
-    double Ke = 0;
-    if (abs(dFceAT_dlceAT*dFt_dtl)>0)
-        Ke = (dFceAT_dlceAT*dFt_dtl)/(dFceAT_dlceAT+dFt_dtl);
+        double Ke = 0;
+        if (abs(dFceAT_dlceAT*dFt_dtl)>0)
+            Ke = (dFceAT_dlceAT*dFt_dtl)/(dFceAT_dlceAT+dFt_dtl);
 
     //Populate the output vector
-    
-
-    mdi.activation                   = a;
-    mdi.fiberForce                   = Fce; 
-    mdi.fiberForceAlongTendon        = FceAT;
-    mdi.normFiberForce               = Fce/fiso;
-    mdi.activeFiberForce             = a*ami.fal*ami.fv*fiso;
-    mdi.passiveFiberForce            = (( ami.fpeVEM-ami.fkVEM)
-                                         -ami.fcphiVEM*cosPhi)*fiso;
+   
+        mdi.activation                   = a;
+        mdi.fiberForce                   = Fce; 
+        mdi.fiberForceAlongTendon        = FceAT;
+        mdi.normFiberForce               = Fce/fiso;
+        mdi.activeFiberForce             = a*ami.fal*ami.fv*fiso;
+        mdi.passiveFiberForce            = (( ami.fpeVEM-ami.fkVEM)
+                                             -ami.fcphiVEM*cosPhi)*fiso;
     //ami.fpeVEM*fiso; 
                                      
-    mdi.tendonForce                  = Fse; 
-    mdi.normTendonForce              = ami.fse;      //just the elastic component
+        mdi.tendonForce                  = Fse; 
+        mdi.normTendonForce              = ami.fse;      
+        //just the elastic component
                                      
-    mdi.fiberStiffness               = dFce_dlce;
-    mdi.fiberStiffnessAlongTendon    = dFceAT_dlceAT;
-    mdi.tendonStiffness              = dFt_dtl;
-    mdi.muscleStiffness              = Ke;
+        mdi.fiberStiffness               = dFce_dlce;
+        mdi.fiberStiffnessAlongTendon    = dFceAT_dlceAT;
+        mdi.tendonStiffness              = dFt_dtl;
+        mdi.muscleStiffness              = Ke;
                                          
     //Check that the derivative of system energy less work is zero within
     //a reasonable numerical tolerance. 
         
-    double dfpePEdt    =  (ami.fpe)  * ami.cosphi   * fiso * ami.dlceAT_dt;
-    double dfkPEdt     = -(ami.fk)   * ami.cosphi   * fiso * ami.dlceAT_dt;    
-    double dfcphiPEdt  = -(ami.fcphi)               * fiso * ami.dlceAT_dt;
-    double dfsePEdt    =  (ami.fse)                 * fiso * ami.dtl_dt;
+        double dfpePEdt    =  (ami.fpe)  * ami.cosphi   * fiso * ami.dlceAT_dt;
+        double dfkPEdt     = -(ami.fk)   * ami.cosphi   * fiso * ami.dlceAT_dt;    
+        double dfcphiPEdt  = -(ami.fcphi)               * fiso * ami.dlceAT_dt;
+        double dfsePEdt    =  (ami.fse)                 * fiso * ami.dtl_dt;
 
-    double dfpeVdt    = -(ami.fpeV)   * ami.cosphi  * fiso * ami.dlceAT_dt;
-    double dfkVdt     =  (ami.fkV)    * ami.cosphi  * fiso * ami.dlceAT_dt;    
-    double dfcphiVdt  =  (ami.fcphiV)               * fiso * ami.dlceAT_dt;
-    double dfseVdt    = -(ami.fseV)                 * fiso * ami.dtl_dt;
-    double dfibVdt    = -(ami.fibV                  * fiso * ami.dlce_dt);
+        double dfpeVdt    = -(ami.fpeV)   * ami.cosphi  * fiso * ami.dlceAT_dt;
+        double dfkVdt     =  (ami.fkV)    * ami.cosphi  * fiso * ami.dlceAT_dt;    
+        double dfcphiVdt  =  (ami.fcphiV)               * fiso * ami.dlceAT_dt;
+        double dfseVdt    = -(ami.fseV)                 * fiso * ami.dtl_dt;
+        double dfibVdt    = -(ami.fibV                  * fiso * ami.dlce_dt);
 
-    double dfpeVEMdt   =  ami.fpeVEM   * ami.cosphi  * fiso * ami.dlceAT_dt;
-    double dfkVEMdt    = -ami.fkVEM    * ami.cosphi  * fiso * ami.dlceAT_dt;
-    double dfcphiVEMdt = -ami.fcphiVEM *               fiso * ami.dlceAT_dt;
-    double dfseVEMdt   =  ami.fseVEM   *               fiso * ami.dtl_dt;
+        double dfpeVEMdt   =  ami.fpeVEM   * ami.cosphi  * fiso * ami.dlceAT_dt;
+        double dfkVEMdt    = -ami.fkVEM    * ami.cosphi  * fiso * ami.dlceAT_dt;
+        double dfcphiVEMdt = -ami.fcphiVEM *               fiso * ami.dlceAT_dt;
+        double dfseVEMdt   =  ami.fseVEM   *               fiso * ami.dtl_dt;
 
-    double ddphi_dtt = m_penMdl.calcPennationAngularAcceleration(ami.lce,
+        double ddphi_dtt = m_penMdl.calcPennationAngularAcceleration(ami.lce,
                                                                 ami.dlce_dt,
                                                                 ddlce_dtt,
                                                                 ami.sinphi,
                                                                 ami.cosphi,
-                                                                ami.dphi_dt,
-                                                                caller);
+                                                                ami.dphi_dt);
 
-    double ddlceAT_dtt = m_penMdl.calcFiberAccelerationAlongTendon(ami.lce,
+        double ddlceAT_dtt = m_penMdl.calcFiberAccelerationAlongTendon(ami.lce,
                                                                     ami.dlce_dt,
                                                                     ddlce_dtt,
                                                                     ami.sinphi,
                                                                     ami.cosphi,
                                                                     ami.dphi_dt,
                                                                     ddphi_dtt);
-    //(d/dt) KE = 1/2 * m * dlceAT_dt*dlceAT_dt
-    double dKEdt = m*ami.dlceAT_dt*ddlceAT_dtt; 
+        //(d/dt) KE = 1/2 * m * dlceAT_dt*dlceAT_dt
+        double dKEdt = m*ami.dlceAT_dt*ddlceAT_dtt; 
 
-    double dFibWdt      = -mdi.activeFiberForce*mvi.fiberVelocity;
-    double dBoundaryWdt = mdi.tendonForce * dmcl_dt;
-    /*double dSysEdt      = (dfpePEdt + dfkPEdt + dfcphiPEdt + dfsePEdt)
-                         - dFibWdt 
-                         - dBoundaryWdt 
-                         + (dfpeVdt + dfkVdt + dfcphiVdt + dfseVdt);
-                         */
-    double dSysEdt = dKEdt 
-                    + (dfpePEdt + dfkPEdt + dfcphiPEdt + dfsePEdt)
-                    - (dFibWdt + dBoundaryWdt)
-                    - (dfpeVdt + dfkVdt + dfcphiVdt + dfseVdt)
-                    - dfibVdt;
+        double dFibWdt      = -mdi.activeFiberForce*mvi.fiberVelocity;
+        double dBoundaryWdt = mdi.tendonForce * dmcl_dt;
+        /*double dSysEdt      = (dfpePEdt + dfkPEdt + dfcphiPEdt + dfsePEdt)
+                             - dFibWdt 
+                             - dBoundaryWdt 
+                             + (dfpeVdt + dfkVdt + dfcphiVdt + dfseVdt);
+                             */
+        double dSysEdt = dKEdt 
+                        + (dfpePEdt + dfkPEdt + dfcphiPEdt + dfsePEdt)
+                        - (dFibWdt + dBoundaryWdt)
+                        - (dfpeVdt + dfkVdt + dfcphiVdt + dfseVdt)
+                        - dfibVdt;
 
-    double tol = sqrt(SimTK::Eps);
+        double tol = sqrt(SimTK::Eps);
     
-    //For debugging purposes
-    //if(abs(dSysEdt) >= tol){
-    //    printf("KE+PE-W Tol Violation at time %f, by %f \n",simTime,dSysEdt);
-    //    tol = sqrt(SimTK::Eps);
-    //}
+        //For debugging purposes
+        //if(abs(dSysEdt) >= tol){
+        //    printf("KE+PE-W Tol Violation at time %f,by %f \n",
+        //           simTime,dSysEdt);
+        //    tol = sqrt(SimTK::Eps);
+        //}
     
-    /////////////////////////////
-    //Populate the power entries
-    /////////////////////////////
-    mdi.fiberActivePower    = dFibWdt;
+        /////////////////////////////
+        //Populate the power entries
+        /////////////////////////////
+        mdi.fiberActivePower    = dFibWdt;
 
-    //The kinetic energy term looks a little weird here, but for this 
-    //interface this is, I think, the most logical place for it
-    mdi.fiberPassivePower   = -(dKEdt + (dfpePEdt + dfkPEdt + dfcphiPEdt)                    
-                                    - (dfpeVdt  + dfkVdt  + dfcphiVdt)
-                                    - dfibVdt);
-    mdi.tendonPower         = -(dfsePEdt-dfseVdt);       
-    mdi.musclePower         = -dBoundaryWdt;
+        //The kinetic energy term looks a little weird here, but for this 
+        //interface this is, I think, the most logical place for it
+        mdi.fiberPassivePower   = -(dKEdt + (dfpePEdt + dfkPEdt + dfcphiPEdt)                    
+                                        - (dfpeVdt  + dfkVdt  + dfcphiVdt)
+                                        - dfibVdt);
+        mdi.tendonPower         = -(dfsePEdt-dfseVdt);       
+        mdi.musclePower         = -dBoundaryWdt;
 
 
-    //if(abs(tmp) > tol)
-    //    printf("%s: d/dt(system energy-work) > tol, (%f > %f) at time %f",
-     //           fcnName.c_str(), tmp, tol, (double)s.getTime());
+        //if(abs(tmp) > tol)
+        //    printf("%s: d/dt(system energy-work) > tol, (%f > %f) at time %f",
+         //           fcnName.c_str(), tmp, tol, (double)s.getTime());
     
     
-    mdi.userDefinedDynamicsExtras.resize(1);
-    mdi.userDefinedDynamicsExtras[MDIFiberAcceleration]=ddlce_dtt;
+        mdi.userDefinedDynamicsExtras.resize(1);
+        mdi.userDefinedDynamicsExtras[MDIFiberAcceleration]=ddlce_dtt;
 
+    }catch(const std::exception &x){
+        std::string msg = "Exception caught in Millard2012AccelerationMuscle::" 
+                        "calcMuscleDynamicsInfo\n"                 
+                        "of " + getName()  + "\n"                            
+                        + x.what();
+        throw OpenSim::Exception(msg);
+    }
 }
 
 
@@ -1380,14 +1398,12 @@ SimTK::Vector Millard2012AccelerationMuscle::
     //Velocity level
     double dtl_dt    = 0;
     
-    double dlce_dt   = m_penMdl.calcFiberVelocity(lce, sinphi,cosphi, 
-                                              ml, tl, dml_dt, dtl_dt, caller);
+    double dlce_dt   = m_penMdl.calcFiberVelocity(cosphi,dml_dt, dtl_dt);
     double dlceN1_dt = dlce_dt/(vmax*ofl);
     
     double dphi_dt   = m_penMdl.calcPennationAngularVelocity(tan(phi),
                                                             lce,
-                                                            dlce_dt,
-                                                            caller);
+                                                            dlce_dt);
 
     //*******************************
     //Internal Kinematics Related Variables for the loop
@@ -1572,14 +1588,12 @@ SimTK::Vector Millard2012AccelerationMuscle::
             dtl_dt = dml_dt;
         }
 
-        dlce_dt= m_penMdl.calcFiberVelocity(lce,sinphi,cosphi,
-                        ml,tl,dml_dt,dtl_dt,caller);
+        dlce_dt= m_penMdl.calcFiberVelocity(cosphi,dml_dt,dtl_dt);
                    
         dlceN1_dt = dlce_dt/(vmax*ofl);
         dphi_dt   = m_penMdl.calcPennationAngularVelocity(tan(phi),
                                                             lce,
-                                                            dlce_dt,
-                                                            caller);
+                                                            dlce_dt);
        
         }
         
@@ -1626,14 +1640,12 @@ SimTK::Vector Millard2012AccelerationMuscle::
             tlN  = tl/tsl;    
 
             //this should be 0
-            dlce_dt= m_penMdl.calcFiberVelocity(lce,sinphi,cosphi,
-                        ml,tl,dml_dt,dtl_dt,caller);
+            dlce_dt= m_penMdl.calcFiberVelocity(cosphi,dml_dt,dtl_dt);
                    
             dlceN1_dt = dlce_dt/(vmax*ofl);
             dphi_dt   = m_penMdl.calcPennationAngularVelocity(tan(phi),
                                                             lce,
-                                                            dlce_dt,
-                                                            caller);
+                                                            dlce_dt);
             fal         = falCurve.calcValue(lceN);
             fpe         = fpeCurve.calcValue(lceN);
             fk          = fkCurve.calcValue(lceN);
@@ -1906,7 +1918,7 @@ void Millard2012AccelerationMuscle::
         ami.dtl_dt   = dtl_dt;
     
     //Calculated dependent kinematic quantities
-        ami.dphi_dlce = m_penMdl.calc_DPennationAngle_DfiberLength(lce,caller);
+        ami.dphi_dlce = m_penMdl.calc_DPennationAngle_DfiberLength(lce);
 
         ami.lceAT = m_penMdl.calcFiberLengthAlongTendon(ami.lce,ami.cosphi);
 
@@ -1929,8 +1941,7 @@ void Millard2012AccelerationMuscle::
                                                                  ami.sinphi,
                                                                  ami.cosphi,
                                                                  ami.dphi_dt,
-                                                                 ami.dphi_dlce,
-                                                                 caller);
+                                                                 ami.dphi_dlce);
 
         ami.d_dlceATdt_dlce = 
             m_penMdl.calc_DFiberVelocityAlongTendon_DfiberLength(lce,
@@ -1944,8 +1955,7 @@ void Millard2012AccelerationMuscle::
         ami.dtl_dlce = m_penMdl.calc_DTendonLength_DfiberLength(ami.lce,
                                                                 ami.sinphi,
                                                                 ami.cosphi,
-                                                                ami.dphi_dlce,
-                                                                caller);
+                                                                ami.dphi_dlce);
     //Multipliers
         ami.fse      = fse;  
         ami.fal      = fal;  

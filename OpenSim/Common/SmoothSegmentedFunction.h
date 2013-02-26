@@ -77,6 +77,8 @@ namespace OpenSim {
        /**Calculates the value of the curve this object represents.
 
        @param x The domain point of interest
+       @throws OpenSim::Exception
+        -If ax does not have a size of 1
        @returns The value of the curve
 
 
@@ -103,8 +105,16 @@ namespace OpenSim {
        
        @param order The order of the derivative to compute. Note that order must
                     be between 0 and 2. Calling 0 just calls calcValue. 
+       
+       @throws OpenSim::Exception
+        -If anything but 0's are stored in derivComponents
+        -If more than the 6th derivative is asked for
+        -If ax has a size other than 1
+       
        @return The value of the d^ny/dx^n th derivative evaluated at x         
                      
+        
+
        <B>Computational Costs</B>       
        \verbatim
             x in curve domain  : ~391 flops
@@ -121,6 +131,8 @@ namespace OpenSim {
        evaluated at x. 
        
        @param x the domain point of interest
+       @throws OpenSim::Exception
+        -If the function does not have a pre-computed integral
        @return the value of the functions integral evaluated at x
 
        The integral is approximate, though its errors are small.
@@ -193,6 +205,8 @@ namespace OpenSim {
                  the right most domain point of the curve to print. The 
                  printed curve will extend at least to this point, perhaps
                  beyond.
+        @throws OpenSim::Exception
+            -If the filename is empty
 
        For example the tendon 
        curve for a muscle named 'glutmax' will be:
@@ -248,6 +262,12 @@ namespace OpenSim {
        THIS FUNCTION IS PUBLIC FOR TESTING ONLY 
                    DO NOT USE THIS!
 
+       @param maxOrder The maximum derivative order to compute
+       @throws OpenSim::Exception
+        -If the requested derivatve order is greater than getMaxDerivativeOrder()
+       @returns a matrix populated with x,y,dy/dx ... d^ny/dx^n,iy
+
+
        This function will generate a SimTK::Matrix populated with samples of
        the muscle curves values, derivatives (up to 6) and its first integral. 
        The matrix has the following columns:
@@ -273,8 +293,6 @@ namespace OpenSim {
        have 200+20 rows. The active force length curve has 5 elbows, and so its
        sampled matrix will have 500+20 rows  
 
-       @param maxOrder The maximum derivative order to compute
-       @returns a matrix populated with x,y,dy/dx ... d^ny/dx^n,iy
        */
 
        SimTK::Matrix calcSampledMuscleCurve(int maxOrder,
@@ -394,6 +412,9 @@ namespace OpenSim {
         @param data A matrix of data
         @param path The desired path to the folder to write the file
         @param filename The name of the file to print
+        @throws OpenSim::Exception
+            -If the desired file cannot be created and openened, perhaps 
+             because the path doesn't exist.
         */
         void printMatrixToFile(SimTK::Matrix& data,
             SimTK::Array_<std::string>& colnames,

@@ -488,7 +488,7 @@ void testQuinticBezier_Exceptions(){
     SimTK::Array_< SimTK::Spline > aSplineUX(1);
     for(int i=0; i<100; i++){
         u(i) = ((double)i)/((double)99);
-        x(i)=SegmentedQuinticBezierToolkit::calcQuinticBezierCurveVal(u(i), xPts, name);
+        x(i)=SegmentedQuinticBezierToolkit::calcQuinticBezierCurveVal(u(i), xPts);
     }
 
     aSplineUX[0] = SimTK::SplineFitter<Real>::
@@ -515,15 +515,15 @@ void testQuinticBezier_Exceptions(){
 
     SimTK_TEST_MUST_THROW(SimTK::Matrix test1 = SegmentedQuinticBezierToolkit::
                      calcQuinticBezierCornerControlPoints(x0, y0, dydx0, 
-                                        x1, y1,dydx1, curvinessEX1,name));
+                                        x1, y1,dydx1, curvinessEX1));
 
     SimTK_TEST_MUST_THROW(SimTK::Matrix test2 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0, y0, dydx0, 
-                            x1, y1,dydx1, curvinessEX2,name));
+                            x1, y1,dydx1, curvinessEX2));
 
     SimTK_TEST_MUST_THROW(SimTK::Matrix test2 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0, y0, dydx0EX1, 
-                            x1, y1,dydx1EX1, curviness,name));
+                            x1, y1,dydx1EX1, curviness));
 
     //=========================================================================
     //Test exceptions for calcIndex
@@ -533,9 +533,9 @@ void testQuinticBezier_Exceptions(){
     double xEX2 = xPts(5)+0.01; //This is not in the set.
 
     SimTK_TEST_MUST_THROW(int t = SegmentedQuinticBezierToolkit::
-                            calcIndex(xEX1, xMPts,name));
+                            calcIndex(xEX1, xMPts));
     SimTK_TEST_MUST_THROW(int t = SegmentedQuinticBezierToolkit::
-                            calcIndex(xEX2, xMPts,name));
+                            calcIndex(xEX2, xMPts));
 
     //=========================================================================
     //Test exceptions for calcU
@@ -544,7 +544,7 @@ void testQuinticBezier_Exceptions(){
     //xEX1 is not within the curve, and so the Newton iteration will not
     //converge
     SimTK_TEST_MUST_THROW(double uPt = SegmentedQuinticBezierToolkit::
-                 calcU(xEX1, xPts, aSplineUX[0], 1e-8, 10,name));
+                 calcU(xEX1, xPts, aSplineUX[0], 1e-8, 10));
 
     //=========================================================================
     //Test exceptions for calcQuinticBezierCurveVal
@@ -556,41 +556,41 @@ void testQuinticBezier_Exceptions(){
     xPtsEX = 0;
 
     SimTK_TEST_MUST_THROW(double tst = SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveVal(uEX1,xPts,name));
+        calcQuinticBezierCurveVal(uEX1,xPts));
     SimTK_TEST_MUST_THROW(double tst = SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveVal(uEX2,xPts,name));
+        calcQuinticBezierCurveVal(uEX2,xPts));
     SimTK_TEST_MUST_THROW(double tst = SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveVal(0.5,xPtsEX,name));
+        calcQuinticBezierCurveVal(0.5,xPtsEX));
 
     //=========================================================================
     //Test exceptions for calcQuinticBezierCurveDerivU
     //=========================================================================
 
     SimTK_TEST_MUST_THROW(double tst = SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveDerivU(uEX1, xPts, (int)1, name));
+        calcQuinticBezierCurveDerivU(uEX1, xPts, (int)1));
     SimTK_TEST_MUST_THROW(double tst = SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveDerivU(uEX2, xPts, (int)1, name));
+        calcQuinticBezierCurveDerivU(uEX2, xPts, (int)1));
     SimTK_TEST_MUST_THROW(double tst = SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveDerivU(0.5, xPtsEX, (int)1, name));
+        calcQuinticBezierCurveDerivU(0.5, xPtsEX, (int)1));
     SimTK_TEST_MUST_THROW(double tst = SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveDerivU(0.5, xPts, 0, name));
+        calcQuinticBezierCurveDerivU(0.5, xPts, 0));
 
     //=========================================================================
     //Test exceptions for calcQuinticBezierCurveDerivDYDX
     //=========================================================================
     
     SimTK_TEST_MUST_THROW(double test= SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveDerivDYDX(uEX1,xPts,yPts,1,name));
+        calcQuinticBezierCurveDerivDYDX(uEX1,xPts,yPts,1));
     SimTK_TEST_MUST_THROW(double test= SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveDerivDYDX(uEX2,xPts,yPts,1,name));
+        calcQuinticBezierCurveDerivDYDX(uEX2,xPts,yPts,1));
     SimTK_TEST_MUST_THROW(double test= SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveDerivDYDX(0.5,xPts,yPts,0,name));
+        calcQuinticBezierCurveDerivDYDX(0.5,xPts,yPts,0));
     SimTK_TEST_MUST_THROW(double test= SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveDerivDYDX(0.5,xPts,yPts,7,name));
+        calcQuinticBezierCurveDerivDYDX(0.5,xPts,yPts,7));
     SimTK_TEST_MUST_THROW(double test= SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveDerivDYDX(0.5,xPtsEX,yPts,3,name));
+        calcQuinticBezierCurveDerivDYDX(0.5,xPtsEX,yPts,3));
     SimTK_TEST_MUST_THROW(double test= SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveDerivDYDX(0.5,xPts,xPtsEX,3,name));
+        calcQuinticBezierCurveDerivDYDX(0.5,xPts,xPtsEX,3));
     
     //=========================================================================
     //Test exceptions for calcNumIntBezierYfcnX
@@ -648,19 +648,19 @@ void testQuinticBezier_DU_DYDX()
             uV(i) = u;
 
             val= SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveVal(u,xPts,name);
+                calcQuinticBezierCurveVal(u,xPts);
             d1 = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivU(u,xPts,1,name);
+                calcQuinticBezierCurveDerivU(u,xPts,1);
             d2 = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivU(u,xPts,2,name);
+                calcQuinticBezierCurveDerivU(u,xPts,2);
             d3 = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivU(u,xPts,3,name);
+                calcQuinticBezierCurveDerivU(u,xPts,3);
             d4 = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivU(u,xPts,4,name);
+                calcQuinticBezierCurveDerivU(u,xPts,4);
             d5 = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivU(u,xPts,5,name);
+                calcQuinticBezierCurveDerivU(u,xPts,5);
             d6 = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivU(u,xPts,6,name);
+                calcQuinticBezierCurveDerivU(u,xPts,6);
 
             analyticDerXU(i,0) = u;
             analyticDerXU(i,1) = val;
@@ -672,19 +672,19 @@ void testQuinticBezier_DU_DYDX()
             analyticDerXU(i,7) = d6;
 
             val= SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveVal(u,yPts,name);
+                calcQuinticBezierCurveVal(u,yPts);
             d1 = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivU(u,yPts,1,name);
+                calcQuinticBezierCurveDerivU(u,yPts,1);
             d2 = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivU(u,yPts,2,name);
+                calcQuinticBezierCurveDerivU(u,yPts,2);
             d3 = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivU(u,yPts,3,name);
+                calcQuinticBezierCurveDerivU(u,yPts,3);
             d4 = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivU(u,yPts,4,name);
+                calcQuinticBezierCurveDerivU(u,yPts,4);
             d5 = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivU(u,yPts,5,name);
+                calcQuinticBezierCurveDerivU(u,yPts,5);
             d6 = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivU(u,yPts,6,name);
+                calcQuinticBezierCurveDerivU(u,yPts,6);
 
             analyticDerYU(i,0) = u;
             analyticDerYU(i,1) = val;
@@ -731,17 +731,17 @@ void testQuinticBezier_DU_DYDX()
         for(int i=0; i< analyticDerXU.nrow(); i++)
         {
             analyticDerXY(i,0) = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,1,name);
+                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,1);
             analyticDerXY(i,1) = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,2,name);
+                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,2);
             analyticDerXY(i,2) = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,3,name);
+                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,3);
             analyticDerXY(i,3) = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,4,name);
+                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,4);
             analyticDerXY(i,4) = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,5,name);
+                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,5);
             analyticDerXY(i,5) = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,6,name);
+                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,6);
         }
 
         //Generate numerical derivative curves for the first 3 derivatives
@@ -818,8 +818,7 @@ void sampleBezierCornerGeneration()
     
     
     SimTK::Matrix xyPts = SegmentedQuinticBezierToolkit::
-       calcQuinticBezierCornerControlPoints(x0,y0,dydx0, x1,y1,dydx1,
-                                                      curviness,name);
+       calcQuinticBezierCornerControlPoints(x0,y0,dydx0, x1,y1,dydx1,curviness);
 
     cout << "XY Corner Control Points" << endl;
     cout << xyPts << endl;

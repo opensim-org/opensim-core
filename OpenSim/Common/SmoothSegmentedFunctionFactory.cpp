@@ -141,20 +141,15 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
     
     //Compute the locations of the control points
        SimTK::Matrix p0 = SegmentedQuinticBezierToolkit::
-           calcQuinticBezierCornerControlPoints(x0, ylow, dydx0,x01,y01,dydx01,c
-                                                                    ,name);
+           calcQuinticBezierCornerControlPoints(x0,ylow,dydx0,x01,y01,dydx01,c);
        SimTK::Matrix p1 = SegmentedQuinticBezierToolkit::
-          calcQuinticBezierCornerControlPoints(x01,y01,dydx01,x1s,y1s,dydx1s,c
-                                                                    ,name);
+          calcQuinticBezierCornerControlPoints(x01,y01,dydx01,x1s,y1s,dydx1s,c);
        SimTK::Matrix p2 = SegmentedQuinticBezierToolkit::
-          calcQuinticBezierCornerControlPoints(x1s,y1s,dydx1s,x2, y2, dydx2,c
-                                                                    ,name);
+          calcQuinticBezierCornerControlPoints(x1s,y1s,dydx1s,x2, y2, dydx2,c);
        SimTK::Matrix p3 = SegmentedQuinticBezierToolkit::
-           calcQuinticBezierCornerControlPoints(x2, y2, dydx2,x23,y23,dydx23,c
-                                                                    ,name);
+           calcQuinticBezierCornerControlPoints(x2, y2, dydx2,x23,y23,dydx23,c);
        SimTK::Matrix p4 = SegmentedQuinticBezierToolkit::
-           calcQuinticBezierCornerControlPoints(x23,y23,dydx23,x3, ylow, dydx3,c
-                                                                     ,name);
+           calcQuinticBezierCornerControlPoints(x23,y23,dydx23,x3,ylow,dydx3,c);
                                     
         SimTK::Matrix mX(6,5), mY(6,5);
         mX(0) = p0(0);
@@ -241,21 +236,17 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
 
     SimTK::Matrix concPts1 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xC,yC,dydxC, 
-                                            xNearC, yNearC,dydxNearC,
-                                            cC,name);
+                                            xNearC, yNearC,dydxNearC,cC);
     SimTK::Matrix concPts2 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xNearC,yNearC,dydxNearC, 
-                                             xIso,  yIso,  dydxIso,  cC,
-                                             name);
+                                             xIso,  yIso,  dydxIso,  cC);
     SimTK::Matrix eccPts1 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xIso,      yIso,    dydxIso, 
-                                             xNearE,  yNearE,  dydxNearE, cE,
-                                             name);
+                                             xNearE,  yNearE,  dydxNearE, cE);
 
     SimTK::Matrix eccPts2 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xNearE, yNearE, dydxNearE, 
-                                                 xE,     yE,     dydxE, cE,
-                                                name);
+                                                 xE,     yE,     dydxE, cE);
 
     SimTK::Matrix mX(6,4), mY(6,4);
     mX(0) = concPts1(0);
@@ -340,21 +331,17 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
 
     SimTK::Matrix concPts1 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xC,yC,dydxC, 
-                                            xNearC, yNearC,dydxNearC,
-                                            cC,name);
+                                            xNearC, yNearC,dydxNearC,cC);
     SimTK::Matrix concPts2 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xNearC,yNearC,dydxNearC, 
-                                             xIso,  yIso,  dydxIso,  cC,
-                                             name);
+                                             xIso,  yIso,  dydxIso,  cC);
     SimTK::Matrix eccPts1 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xIso,      yIso,    dydxIso, 
-                                             xNearE,  yNearE,  dydxNearE, cE,
-                                             name);
+                                             xNearE,  yNearE,  dydxNearE, cE);
 
     SimTK::Matrix eccPts2 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xNearE, yNearE, dydxNearE, 
-                                                 xE,     yE,     dydxE, cE,
-                                                name);
+                                                 xE,     yE,     dydxE, cE);
 
     SimTK::Matrix mX(6,4), mY(6,4);
     mX(0) = concPts1(0);
@@ -404,7 +391,7 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
     double dydx1 = k;
 
     SimTK::Matrix ctrlPts = SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c,name);
+        calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c);
     
     SimTK::Matrix mX(6,1), mY(6,1);
     mX = ctrlPts(0);
@@ -450,7 +437,7 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
     double dydx1 = 0;
 
     SimTK::Matrix ctrlPts = SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c,name);
+        calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c);
     
     SimTK::Matrix mX(6,1), mY(6,1);
     mX = ctrlPts(0);
@@ -497,7 +484,7 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
     double dydx1 = 0;
 
     SimTK::Matrix ctrlPts = SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c,caller);
+        calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c);
 
     SimTK::Matrix mX(6,1), mY(6,1);
     mX(0) = ctrlPts(0);
@@ -577,13 +564,11 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
     //Compute the Quintic Bezier control points
     SimTK::Matrix p0 = SegmentedQuinticBezierToolkit::
      calcQuinticBezierCornerControlPoints(xZero, yZero, 0,
-                                           xLow, yLow,  kLow,
-                                              c, callerName);
+                                           xLow, yLow,  kLow,c);
     
     SimTK::Matrix p1 = SegmentedQuinticBezierToolkit::
      calcQuinticBezierCornerControlPoints(xLow, yLow, kLow,
-                                          xIso, yIso, kIso,
-                                             c, callerName);
+                                          xIso, yIso, kIso, c);
     SimTK::Matrix mX(6,2);
     SimTK::Matrix mY(6,2);
 
@@ -678,12 +663,10 @@ SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
     //Compute the Quintic Bezier control points
     SimTK::Matrix p0 = SegmentedQuinticBezierToolkit::
      calcQuinticBezierCornerControlPoints(x0,y0,dydx0,
-                                        xToeCtrl,yToeCtrl,dydxToeMid,
-                                        c,callerName);
+                                        xToeCtrl,yToeCtrl,dydxToeMid,c);
     SimTK::Matrix p1 = SegmentedQuinticBezierToolkit::
      calcQuinticBezierCornerControlPoints(xToeCtrl, yToeCtrl, dydxToeMid,
-                                              xToe,     yToe,    dydxIso,
-                                                          c,     callerName);
+                                              xToe,     yToe,    dydxIso, c);
     SimTK::Matrix mX(6,2);
     SimTK::Matrix mY(6,2);
 

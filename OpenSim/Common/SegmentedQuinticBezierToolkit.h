@@ -147,7 +147,11 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         @param splineUX   The spline for the approximate x(u) curve
         @param tol        The desired tolerance on u.   
         @param maxIter    The maximum number of Newton iterations allowed
-        @param caller     The string name of the parent calling this function
+
+        @throws OpenSim::Exception
+            -if ax is outside the range defined in this Bezier spline section
+            -if the desired tolerance is not met
+            -if the derivative goes to 0 to machine precision 
 
         This function will compute the u value that correesponds to the given x
         for a quintic Bezier curve. This is accomplished by using an approximate 
@@ -179,20 +183,19 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
             for(int i=0; i<100; i++){
                 u(i) = ( (double)i )/( (double)(100-1) );
                 x(i) = SegmentedQuinticBezierToolkit::
-                    calcQuinticBezierCurveVal(u(i),vX,"test"); 
+                    calcQuinticBezierCurveVal(u(i),vX); 
             }
             SimTK::Spline splineUX = SimTK::SplineFitter<Real>::
                 fitForSmoothingParameter(3,x,u,0).getSpline();
 
             //Now evalutate u at the given xVal
             double u = SegmentedQuinticBezierToolkit::
-                     calcU(xVal,vX, splineUX, 1e-12,20,"test");
+                     calcU(xVal,vX, splineUX, 1e-12,20);
 
             @endcode
         */
         static double calcU(double ax, const SimTK::Vector& bezierPtsX, 
-            const SimTK::Spline& splineUX, double tol, int maxIter,
-            const std::string& caller);
+            const SimTK::Spline& splineUX, double tol, int maxIter);
 
 
 
@@ -203,7 +206,9 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         @param x            A value that is interpolated by the set of Bezier 
                             curves
         @param bezierPtsX   A matrix of 6xn Bezier control points 
-        @param caller       The string name of the parent calling this function
+
+        @throws OpenSim::Exception
+        -If the index is not located within this set of Bezier points
 
         Given a set of Bezier curve control points, return the index of the
         set of control points that x lies within. This function has been coded
@@ -239,13 +244,12 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
 
             //The value of x for which we want the index for
             double xVal = 1.75;
-            int idx  = SegmentedQuinticBezierToolkit::calcIndex(xVal,mX,"test");
+            int idx  = SegmentedQuinticBezierToolkit::calcIndex(xVal,mX);
         @endcode
 
 
         */
-        static int calcIndex(double x, const SimTK::Matrix& bezierPtsX,
-                                                  const std::string& caller);
+        static int calcIndex(double x, const SimTK::Matrix& bezierPtsX);
 
 
         
@@ -257,7 +261,9 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         @param u        The independent variable of a Bezier curve, which ranges 
                         between 0.0 and 1.0.
         @param pts      The locations of the control points in 1 dimension.
-        @param caller   The string name of the parent calling this function
+        @throws OpenSim::Exception 
+            -If u is outside of [0,1]
+            -if pts has a length other than 6
         @return         The value of the Bezier curve located at u.
 
         Calculates the value of a quintic Bezier curve at value u. This 
@@ -307,13 +313,13 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
             vX(5) = 6;
 
             yVal = SegmentedQuinticBezierToolkit::
-                     calcQuinticBezierCurveVal(u,vX,"test");
+                     calcQuinticBezierCurveVal(u,vX);
             @endcode
 
 
         */
         static double calcQuinticBezierCurveVal(double u, 
-                            const SimTK::Vector& pts,const std::string& caller);
+                            const SimTK::Vector& pts);
 
         /**
         Calculates the value of a quintic Bezier derivative curve at value u. 
@@ -321,7 +327,10 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
                         between 0.0 and 1.0.
         @param pts      The locations of the control points in 1 dimension.
         @param order    The desired order of the derivative. Order must be >= 1
-        @param caller   The string name of the parent calling this function
+        @throws OpenSim::Exception if
+            -u is outside [0,1]
+            -pts is not 6 elements long
+            -if order is less than 1
         @return         The value of du/dx of Bezier curve located at u.
 
         Calculates the value of a quintic Bezier derivative curve at value u. 
@@ -374,12 +383,11 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
             vX(4) = 4;
             vX(5) = 6;
 
-            double dxdu  =calcQuinticBezierCurveDerivU(u,vX,1,"test");
+            double dxdu  =calcQuinticBezierCurveDerivU(u,vX,1);
             @endcode
         */
         static double calcQuinticBezierCurveDerivU(double u, 
-                           const SimTK::Vector& pts,int order, 
-                           const std::string& caller);
+                           const SimTK::Vector& pts,int order);
 
         /**
         Calculates the value of dydx of a quintic Bezier curve derivative at u.
@@ -389,7 +397,12 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         @param ypts     The 6 control points associated with the y axis
         @param order    The order of the derivative. Currently only orders from 1-6 
                         can be evaluated
-        @param caller   The string name of the parent calling this function
+        @throws OpenSim::Exception
+            -If u is outside [0,1]
+            -If xpts is not 6 elements long
+            -If ypts is not 6 elements long
+            -If the order is less than 1
+            -If the order is greater than 6
         @retval         The value of (d^n y)/(dx^n) evaluated at u
 
         Calculates the value of dydx of a quintic Bezier curve derivative at u.
@@ -443,13 +456,12 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
 
 
             d2ydx2 = SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(
-                     u,vX, vY, 2,"test");
+                     u,vX, vY, 2);
             @endcode
 
         */        
         static double  calcQuinticBezierCurveDerivDYDX(double u,
-              const SimTK::Vector& xpts, const SimTK::Vector& ypts, int order,
-              const std::string& caller);
+              const SimTK::Vector& xpts, const SimTK::Vector& ypts, int order);
 
         
         /**
@@ -464,10 +476,20 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         @param dydx1    Second intercept slope
         @param curviness A parameter that ranges between 0 and 1 to denote a 
                          straight line or a curve
-        @param caller   The string name of the parent calling this function
+        @throws OpenSim::Exception 
+         -If the curviness parameter is less than 0, or greater than 1;
+         -If the points and slopes are chosen so that an "S" shaped curve would 
+          be produced. This is tested by examining the points (x0,y0) and 
+          (x1,y1) together with the intersection (xC,yC) of the lines beginning 
+          at these points with slopes of dydx0 and dydx1 form a triangle. If the 
+          line segment from (x0,y0) to (x1,y1) is not the longest line segment, 
+          an exception is thrown. This is an overly conservative test as it 
+          prevents very deep 'V' shapes from being respresented.
+
         @return a SimTK::Matrix of 6 points Matrix(6,2) that correspond to the 
                          X, and Y control points for a quintic Bezier curve that
                          has the above properties
+
 
         Calculates the location of quintic Bezier curve control points to 
         create a C shaped curve that intersects points 0 (x0, y0) and point 1
@@ -496,13 +518,13 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
 
             SimTK::Matrix p0 = SegmentedQuinticBezierToolkit::
                calcQuinticBezierCornerControlPoints(x0, y0, dydx0,x1,y1,dydx01,
-                                                                     c,"test");
+                                                                     c);
             @endcode
 
         */
         static SimTK::Matrix calcQuinticBezierCornerControlPoints(double x0, 
             double y0, double dydx0, double x1, double y1, double dydx1, 
-            double curviness, const std::string& caller);
+            double curviness);
 
         /**
         This function numerically integrates the Bezier curve y(x).
@@ -517,7 +539,6 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         @param mY           The 6xn matrix of Bezier control points for y(u)
         @param aSplineUX    The array of spline objects that approximate u(x) on
                             each Bezier interval
-        @param caller       The string name of the parent calling this function
         @param flag_intLeftToRight  Setting this flag to true will evaluate the
                 integral from the left most point to the right most 
                 point. Setting this flag to false will cause the 
@@ -636,7 +657,7 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
             double ic0, double intAcc, double uTol, int uMaxIter,
             const SimTK::Matrix& mX, const SimTK::Matrix& mY,
             const SimTK::Array_<SimTK::Spline>& aSplineUX, 
-            bool flag_intLeftToRight,const std::string& caller);
+            bool flag_intLeftToRight,const std::string& name);
 
 
    private:
@@ -769,14 +790,14 @@ class MySystemGuts : public SimTK::System::Guts {
         // HERE'S THE CALL TO YOUR FUNCTION
         //Get the index within the spline set
         
-        int idx = SegmentedQuinticBezierToolkit::calcIndex(x,bdata._mX, bdata._name);
+        int idx = SegmentedQuinticBezierToolkit::calcIndex(x,bdata._mX);
         //Get the value of u that corresponds to x
         double u = SegmentedQuinticBezierToolkit::calcU(x,bdata._mX(idx),
-            bdata._aArraySplineUX[idx],bdata._uTol,bdata._uMaxIter,bdata._name);
+            bdata._aArraySplineUX[idx],bdata._uTol,bdata._uMaxIter);
 
         //Compute the value of the curve at u;
         double y=SegmentedQuinticBezierToolkit::
-            calcQuinticBezierCurveVal(u,bdata._mY(idx), bdata._name);
+            calcQuinticBezierCurveVal(u,bdata._mY(idx));
         state.updZDot()[0] = y;
         return 0;
     }

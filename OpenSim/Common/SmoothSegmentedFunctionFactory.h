@@ -195,18 +195,18 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
+        @throws SimTK::Exception if these conditions aren't met
+            -0 < lce0 < lce1 < lce2 < lce3 
+            -shoulderVal >= 0
+            -0 <= plateauSlope < (1/(lce3-lce2))
+            -0 <= curviness <= 1
+
         @return SmoothSegmentedFunction object
 
         \image html fig_SmoothSegmentedFunctionFactory_falCurve.png
 
        
         <B>Conditions:</B>
-        \verbatim
-            0 < lce0 < lce1 < lce2 < lce3 
-            shoulderVal >= 0
-            0 <= plateauSlope < (1/(lce3-lce2))
-            0 <= curviness <= 1
-        \endverbatim
 
         <B>Computational Costs</B>
         \verbatim 
@@ -322,21 +322,21 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
+        @throws SimTK::Exception unless these conditions are met
+       
+            -0 <= dydxC < 1
+            -dydxC < dydxNearC < 1
+            -1 < dydxIso
+            -dydxE < (fmaxE-1) 
+            -dydxE < dydxNearC < (fmaxE-1)
+            -0<= concCurviness <=0
+            -0 <= eccCurviness <= 0
+        
         @return SmoothSegmentedFunction object
         
                 \image html fig_SmoothSegmentedFunctionFactory_fvCurve.png
 
 
-        <B>Conditions:</B>
-        \verbatim
-            0 <= dydxC < 1
-            dydxC < dydxNearC < 1
-            1 < dydxIso
-            dydxE < (fmaxE-1) 
-            dydxE < dydxNearC < (fmaxE-1)
-            0<= concCurviness <=0
-            0 <= eccCurviness <= 0
-        \endverbatim
 
         <B>Computational Costs</B>
         \verbatim 
@@ -433,16 +433,18 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
+        @throws SimTK::Exception unless the following conditions are met
+            -0 < phi0 < SimTK::Pi/2
+            -kiso > 1/(SimTK::Pi/2-phi0)
+            -0 <= curviness <= 1
+
         @return SmoothSegmentedFunction object
 
         \image html fig_SmoothSegmentedFunctionFactory_fcphiCurve.png
 
-        <B>Conditions:</B>
-        \verbatim
-            0 < phi0 < SimTK::Pi/2
-            kiso > 1/(SimTK::Pi/2-phi0)
-            0 <= curviness <= 1
-        \endverbatim
+
+
+
 
         <B>Computational Costs</B>
         \verbatim 
@@ -509,17 +511,14 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
+        @throws SimTK::Exception unless the following conditions are met:
+            -0 < cosPhi0
+            -kiso > 1/(cosPhi0)
+            -0 <= curviness <= 1
+
         @return SmoothSegmentedFunction object
         
         \image html fig_SmoothSegmentedFunctionFactory_fcCosPhiCurve.png
-
-
-        <B>Conditions:</B>
-        \verbatim
-            0 < cosPhi0
-            kiso > 1/(cosPhi0)
-            0 <= curviness <= 1
-        \endverbatim
 
         <B>Computational Costs</B>
         \verbatim 
@@ -587,16 +586,15 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
+        @throws SimTK::Exception unless the following conditions are met
+            -e0 > 0
+            -kiso > 1/(e0)
+            -0 <= curviness <= 1
+
         @return SmoothSegmentedFunction object
 
         \image html fig_SmoothSegmentedFunctionFactory_fpeCurve.png
 
-        <B>Conditions:</B>
-        \verbatim
-            e0 > 0
-            kiso > 1/(e0)
-            0 <= curviness <= 1
-        \endverbatim
 
         <B>Computational Costs</B>
         \verbatim 
@@ -663,18 +661,17 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
+        @throws SimTK::Exception unless the following conditions are met
+            -eIso > eZero            
+            -kIso > 1/(eIso-eZero)
+            -0 < kLow < kIso
+            -0 <= curviness <= 1
+
         @return SmoothSegmentedFunction object
 
 
         \image html fig_SmoothSegmentedFunctionFactory_fcLengthCurve.png
 
-        <B>Conditions:</B>
-        \verbatim            
-            eIso > eZero            
-            kIso > 1/(eIso-eZero)
-            0 < kLow < kIso
-            0 <= curviness <= 1
-        \endverbatim
 
         <B>Computational Costs</B>
         \verbatim 
@@ -742,17 +739,16 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
+        @throws SimTK::Exception unless the following conditions are met:
+            -0 < fToe < 1
+            -e0 > 0
+            -kiso > 1/e0
+            -0 <= curviness <= 1
+
         @return SmoothSegmentedFunction
 
         \image html fig_SmoothSegmentedFunctionFactory_fseCurve.png
 
-        <B>Conditions:</B>
-        \verbatim
-            0 < fToe < 1
-            e0 > 0
-            kiso > 1/e0
-            0 <= curviness <= 1
-        \endverbatim
 
         <B>Computational Costs</B>
         \verbatim 

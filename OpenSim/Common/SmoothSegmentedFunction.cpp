@@ -115,7 +115,7 @@ SmoothSegmentedFunction::
         for(int i=0;i<NUM_SAMPLE_PTS;i++){
             u(i) = ( (double)i )/( (double)(NUM_SAMPLE_PTS-1) );
             x(i) = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveVal(u(i),_mX(s),_name);            
+                calcQuinticBezierCurveVal(u(i),_mX(s));            
             if(_numBezierSections > 1){
                 //Skip the last point of a set that has another set of points
                 //after it. Why? The last point and the starting point of the
@@ -206,11 +206,11 @@ double SmoothSegmentedFunction::calcValue(const SimTK::Vector& ax) const
     double yVal = 0;
     if(ax(0) >= _x0 && ax(0) <= _x1 )
     {
-        int idx  = SegmentedQuinticBezierToolkit::calcIndex(ax(0),_mX,_name);
+        int idx  = SegmentedQuinticBezierToolkit::calcIndex(ax(0),_mX);
         double u = SegmentedQuinticBezierToolkit::
-                 calcU(ax(0),_mX(idx), _arraySplineUX[idx], UTOL,MAXITER,_name);
+                 calcU(ax(0),_mX(idx), _arraySplineUX[idx], UTOL,MAXITER);
         yVal = SegmentedQuinticBezierToolkit::
-                 calcQuinticBezierCurveVal(u,_mY(idx),_name);
+                 calcQuinticBezierCurveVal(u,_mY(idx));
     }else{
         if(ax(0) < _x0){
             yVal = _y0 + _dydx0*(ax(0)-_x0);            
@@ -292,13 +292,13 @@ double SmoothSegmentedFunction::
     
             if(ax(0) >= _x0 && ax(0) <= _x1){        
                 int idx  = SegmentedQuinticBezierToolkit::
-                                calcIndex(ax(0),_mX,_name);
+                                calcIndex(ax(0),_mX);
                 double u = SegmentedQuinticBezierToolkit::
                                 calcU(ax(0),_mX(idx), _arraySplineUX[idx], 
-                                UTOL,MAXITER,_name);
+                                UTOL,MAXITER);
                 yVal = SegmentedQuinticBezierToolkit::
                             calcQuinticBezierCurveDerivDYDX(u, _mX(idx), 
-                            _mY(idx), derivComponents.size(),_name);
+                            _mY(idx), derivComponents.size());
             }else{
                     if(derivComponents.size() == 1){
                         if(ax(0) < _x0){
@@ -474,7 +474,7 @@ SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder,
         for(int i=0;i<NUM_SAMPLE_PTS;i++){
                 u = ( (double)i )/( (double)(NUM_SAMPLE_PTS-1) );
                 x(i) = SegmentedQuinticBezierToolkit::
-                    calcQuinticBezierCurveVal(u,_mX(s),_name);            
+                    calcQuinticBezierCurveVal(u,_mX(s));            
                 if(_numBezierSections > 1){
                    //Skip the last point of a set that has another set of points
                    //after it. Why? The last point and the starting point of the

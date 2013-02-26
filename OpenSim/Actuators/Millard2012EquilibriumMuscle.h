@@ -738,8 +738,6 @@ private:
     @param fp the total normalized parallel fiber force multiplier
     @param fse the tendon force length multiplier
     @param cosphi the cosine of the pennation angle
-    @param caller the name of the function calling this function. This name
-           is provided to generate meaningful exception messages
 
     @return the force velocity multiplier
     */
@@ -747,8 +745,7 @@ private:
                     double fal, 
                     double fp,                                         
                     double fse, 
-                    double cosphi,
-                    std::string& caller) const;
+                    double cosphi) const;
 
     /*
     
@@ -763,9 +760,10 @@ private:
     @return Vec3
         [0] total fiber force
         [1] active fiber force
-        [2] passive fiber force
+        [2] conservative passive fiber force
+        [3] non-conservative passive fiber force
     */
-    SimTK::Vec3 calcFiberForce( double fiso, 
+    SimTK::Vec4 calcFiberForce( double fiso, 
                                 double a, 
                                 double fal,
                                 double fv,                                 
@@ -885,8 +883,7 @@ private:
     double calc_DTendonForce_DFiberLength(  double dFt_d_tl, 
                                             double lce,
                                             double sinphi,
-                                            double cosphi,
-                                            std::string& caller) const;
+                                            double cosphi) const;
 
     //=====================================================================
     // Private Utility Class Members
@@ -908,6 +905,11 @@ private:
     //a poorly chosen local variable.
     double m_minimumFiberLength;
     double m_minimumFiberLengthAlongTendon;
+
+    //Stores the simulation method. This is stored rather than computed
+    //as the method calcSimulationMethod was really slow because it was
+    //causing the cpu to go to memory.
+    int m_simulationMethod;
 
     /*
     Solves fiber length and velocity to satisfy the equilibrium equations. 

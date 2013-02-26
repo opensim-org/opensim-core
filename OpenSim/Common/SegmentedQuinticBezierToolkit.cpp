@@ -105,9 +105,9 @@ void SegmentedQuinticBezierToolkit::
 
               u = ( (double)(i+offset) )/( (double)(NUM_SAMPLE_PTS-1) );
               y1Val(oidx) = calcQuinticBezierCurveDerivDYDX(u,
-                  ctrlPts(2*j),ctrlPts(2*j+1),1,caller);
+                  ctrlPts(2*j),ctrlPts(2*j+1),1);
               y2Val(oidx) = calcQuinticBezierCurveDerivDYDX(u,
-                  ctrlPts(2*j),ctrlPts(2*j+1),2,caller);
+                  ctrlPts(2*j),ctrlPts(2*j+1),2);
 
               tmp(0) = xVal(oidx);
               ySVal(oidx) = curveFit.calcValue( tmp );
@@ -139,15 +139,13 @@ void SegmentedQuinticBezierToolkit::
 */
 SimTK::Matrix SegmentedQuinticBezierToolkit::
     calcQuinticBezierCornerControlPoints(double x0, double y0, double dydx0, 
-                           double x1, double y1, double dydx1, double curviness,
-                           const std::string& caller)
+                           double x1, double y1, double dydx1, double curviness)
 {
     SimTK::Matrix xyPts(6,2); 
 
-    SimTK_ERRCHK1_ALWAYS( (curviness>=0 && curviness <= 1) , 
+    SimTK_ERRCHK_ALWAYS( (curviness>=0 && curviness <= 1) , 
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCornerControlPoints", 
-        "Error: double argument curviness must be between 0.0 and 1.0."
-        "Called by %s", caller.c_str());
+        "Error: double argument curviness must be between 0.0 and 1.0.");
 
 
     //1. Calculate the location where the two lines intersect
@@ -186,11 +184,10 @@ SimTK::Matrix SegmentedQuinticBezierToolkit::
     double c = x0x1*x0x1 + y0y1*y0y1;
 
     //This error message needs to be better.
-    SimTK_ERRCHK1_ALWAYS( ((c > a) && (c > b)), 
+    SimTK_ERRCHK_ALWAYS( ((c > a) && (c > b)), 
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCornerControlPoints", 
         "The intersection point for the two lines defined by the input"
-        "parameters must be consistent with a C shaped corner. Called by %s",
-        caller.c_str());
+        "parameters must be consistent with a C shaped corner.");
 
     //Start point
     xyPts(0,0) = x0;
@@ -245,23 +242,21 @@ Multiplications     Additions   Assignments
 21                  20          13
 */
 double  SegmentedQuinticBezierToolkit::
-    calcQuinticBezierCurveVal(double u, const SimTK::Vector& pts, 
-                                                   const std::string& caller)
+    calcQuinticBezierCurveVal(double u, const SimTK::Vector& pts)
 {
     double val = -1;
 
 
-    SimTK_ERRCHK2_ALWAYS( (u>=0 && u <= 1) , 
+    SimTK_ERRCHK1_ALWAYS( (u>=0 && u <= 1) , 
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveVal", 
         "Error: double argument u must be between 0.0 and 1.0"
-        "but %f was entered. Called by %s",u,caller.c_str());
+        "but %f was entered. Called by %s",u);
 
     
 
-    SimTK_ERRCHK1_ALWAYS( (pts.size() == 6) , 
+    SimTK_ERRCHK_ALWAYS( (pts.size() == 6) , 
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveVal", 
-        "Error: vector argument pts \nmust have a length of 6. Called by %s",
-        caller.c_str());
+        "Error: vector argument pts must have a length of 6.");
 
     //Compute the Bezier point
     double p0 = pts(0);
@@ -369,44 +364,39 @@ Detailed Computational Costs
 
 */
 double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(double u,
-                const SimTK::Vector& xpts, const SimTK::Vector& ypts, int order,
-                const std::string& caller)
+                const SimTK::Vector& xpts, const SimTK::Vector& ypts, int order)
 {
     double val = SimTK::NaN;
    
     //Bounds checking on the input
-    SimTK_ERRCHK1_ALWAYS( (u>=0 && u <= 1) , 
+    SimTK_ERRCHK_ALWAYS( (u>=0 && u <= 1) , 
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
-        "Error: double argument u must be between 0.0 and 1.0."
-        " Called by %s",caller.c_str());
+        "Error: double argument u must be between 0.0 and 1.0.");
 
-    SimTK_ERRCHK1_ALWAYS( (xpts.size()==6) , 
+    SimTK_ERRCHK_ALWAYS( (xpts.size()==6) , 
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
-        "Error: vector argument xpts \nmust have a length of 6."
-        " Called by %s",caller.c_str());
+        "Error: vector argument xpts \nmust have a length of 6.");
 
-    SimTK_ERRCHK1_ALWAYS( (ypts.size()==6) , 
+    SimTK_ERRCHK_ALWAYS( (ypts.size()==6) , 
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
-        "Error: vector argument ypts \nmust have a length of 6."
-        " Called by %s", caller.c_str());
+        "Error: vector argument ypts \nmust have a length of 6.");
 
-    SimTK_ERRCHK1_ALWAYS( (order >= 1),
+    SimTK_ERRCHK_ALWAYS( (order >= 1),
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
-        "Error: order must be greater than. Called by %s", caller.c_str());
+        "Error: order must be greater than.");
 
-    SimTK_ERRCHK1_ALWAYS( (order <= 6),
+    SimTK_ERRCHK_ALWAYS( (order <= 6),
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
-        "Error: order must be less than, or equal to 6.  Called by %s", 
-        caller.c_str());
+        "Error: order must be less than, or equal to 6.");
 
-    std::string localCaller = caller;
-    localCaller.append(".calcQuinticBezierCurveDerivDYDX");
+    //std::string localCaller = caller;
+    //localCaller.append(".calcQuinticBezierCurveDerivDYDX");
     //Compute the derivative d^n y/ dx^n
      switch(order){
         case 1: //Calculate dy/dx 
             { 
-                double dxdu =calcQuinticBezierCurveDerivU(u,xpts,1,localCaller);
-                double dydu =calcQuinticBezierCurveDerivU(u,ypts,1,localCaller);
+                double dxdu =calcQuinticBezierCurveDerivU(u,xpts,1);
+                double dydu =calcQuinticBezierCurveDerivU(u,ypts,1);
                 double dydx = dydu/dxdu;
 
                 val = dydx;
@@ -416,10 +406,10 @@ double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(double u,
             break;
         case 2: //Calculate d^2y/dx^2
             { 
-               double dxdu  =calcQuinticBezierCurveDerivU(u,xpts,1,localCaller);
-               double dydu  =calcQuinticBezierCurveDerivU(u,ypts,1,localCaller);
-               double d2xdu2=calcQuinticBezierCurveDerivU(u,xpts,2,localCaller);
-               double d2ydu2=calcQuinticBezierCurveDerivU(u,ypts,2,localCaller);
+               double dxdu  =calcQuinticBezierCurveDerivU(u,xpts,1);
+               double dydu  =calcQuinticBezierCurveDerivU(u,ypts,1);
+               double d2xdu2=calcQuinticBezierCurveDerivU(u,xpts,2);
+               double d2ydu2=calcQuinticBezierCurveDerivU(u,ypts,2);
                 
                 //Optimized code from Maple - 
                 //see MuscleCurveCodeOpt_20120210 for details
@@ -433,12 +423,12 @@ double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(double u,
             break;
         case 3: //Calculate d^3y/dx^3
             { 
-               double dxdu  =calcQuinticBezierCurveDerivU(u,xpts,1,localCaller);
-               double dydu  =calcQuinticBezierCurveDerivU(u,ypts,1,localCaller);
-               double d2xdu2=calcQuinticBezierCurveDerivU(u,xpts,2,localCaller);
-               double d2ydu2=calcQuinticBezierCurveDerivU(u,ypts,2,localCaller);
-               double d3xdu3=calcQuinticBezierCurveDerivU(u,xpts,3,localCaller);
-               double d3ydu3=calcQuinticBezierCurveDerivU(u,ypts,3,localCaller);
+               double dxdu  =calcQuinticBezierCurveDerivU(u,xpts,1);
+               double dydu  =calcQuinticBezierCurveDerivU(u,ypts,1);
+               double d2xdu2=calcQuinticBezierCurveDerivU(u,xpts,2);
+               double d2ydu2=calcQuinticBezierCurveDerivU(u,ypts,2);
+               double d3xdu3=calcQuinticBezierCurveDerivU(u,xpts,3);
+               double d3ydu3=calcQuinticBezierCurveDerivU(u,ypts,3);
 
                double t1 = 1 / dxdu;
                double t3 = dxdu*dxdu;//(dxdu ^ 2);
@@ -454,14 +444,14 @@ double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(double u,
             break;
         case 4: //Calculate d^4y/dx^4
             { 
-               double dxdu  =calcQuinticBezierCurveDerivU(u,xpts,1,localCaller);
-               double dydu  =calcQuinticBezierCurveDerivU(u,ypts,1,localCaller);
-               double d2xdu2=calcQuinticBezierCurveDerivU(u,xpts,2,localCaller);
-               double d2ydu2=calcQuinticBezierCurveDerivU(u,ypts,2,localCaller);
-               double d3xdu3=calcQuinticBezierCurveDerivU(u,xpts,3,localCaller);
-               double d3ydu3=calcQuinticBezierCurveDerivU(u,ypts,3,localCaller);
-               double d4xdu4=calcQuinticBezierCurveDerivU(u,xpts,4,localCaller);
-               double d4ydu4=calcQuinticBezierCurveDerivU(u,ypts,4,localCaller);
+               double dxdu  =calcQuinticBezierCurveDerivU(u,xpts,1);
+               double dydu  =calcQuinticBezierCurveDerivU(u,ypts,1);
+               double d2xdu2=calcQuinticBezierCurveDerivU(u,xpts,2);
+               double d2ydu2=calcQuinticBezierCurveDerivU(u,ypts,2);
+               double d3xdu3=calcQuinticBezierCurveDerivU(u,xpts,3);
+               double d3ydu3=calcQuinticBezierCurveDerivU(u,ypts,3);
+               double d4xdu4=calcQuinticBezierCurveDerivU(u,xpts,4);
+               double d4ydu4=calcQuinticBezierCurveDerivU(u,ypts,4);
 
                double t1 = 1 / dxdu;
                double t3 = dxdu*dxdu;//dxdu ^ 2;
@@ -490,16 +480,16 @@ double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(double u,
             break;
         case 5: 
             { 
-               double dxdu  =calcQuinticBezierCurveDerivU(u,xpts,1,localCaller);
-               double dydu  =calcQuinticBezierCurveDerivU(u,ypts,1,localCaller);
-               double d2xdu2=calcQuinticBezierCurveDerivU(u,xpts,2,localCaller);
-               double d2ydu2=calcQuinticBezierCurveDerivU(u,ypts,2,localCaller);
-               double d3xdu3=calcQuinticBezierCurveDerivU(u,xpts,3,localCaller);
-               double d3ydu3=calcQuinticBezierCurveDerivU(u,ypts,3,localCaller);
-               double d4xdu4=calcQuinticBezierCurveDerivU(u,xpts,4,localCaller);
-               double d4ydu4=calcQuinticBezierCurveDerivU(u,ypts,4,localCaller);
-               double d5xdu5=calcQuinticBezierCurveDerivU(u,xpts,5,localCaller);
-               double d5ydu5=calcQuinticBezierCurveDerivU(u,ypts,5,localCaller);
+               double dxdu  =calcQuinticBezierCurveDerivU(u,xpts,1);
+               double dydu  =calcQuinticBezierCurveDerivU(u,ypts,1);
+               double d2xdu2=calcQuinticBezierCurveDerivU(u,xpts,2);
+               double d2ydu2=calcQuinticBezierCurveDerivU(u,ypts,2);
+               double d3xdu3=calcQuinticBezierCurveDerivU(u,xpts,3);
+               double d3ydu3=calcQuinticBezierCurveDerivU(u,ypts,3);
+               double d4xdu4=calcQuinticBezierCurveDerivU(u,xpts,4);
+               double d4ydu4=calcQuinticBezierCurveDerivU(u,ypts,4);
+               double d5xdu5=calcQuinticBezierCurveDerivU(u,xpts,5);
+               double d5ydu5=calcQuinticBezierCurveDerivU(u,ypts,5);
 
                double t1 = 1 / dxdu;
                double t3 = dxdu*dxdu;//dxdu ^ 2;
@@ -541,18 +531,18 @@ double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(double u,
             break;
         case 6: 
             {
-               double dxdu  =calcQuinticBezierCurveDerivU(u,xpts,1,localCaller);
-               double dydu  =calcQuinticBezierCurveDerivU(u,ypts,1,localCaller);
-               double d2xdu2=calcQuinticBezierCurveDerivU(u,xpts,2,localCaller);
-               double d2ydu2=calcQuinticBezierCurveDerivU(u,ypts,2,localCaller);
-               double d3xdu3=calcQuinticBezierCurveDerivU(u,xpts,3,localCaller);
-               double d3ydu3=calcQuinticBezierCurveDerivU(u,ypts,3,localCaller);
-               double d4xdu4=calcQuinticBezierCurveDerivU(u,xpts,4,localCaller);
-               double d4ydu4=calcQuinticBezierCurveDerivU(u,ypts,4,localCaller);
-               double d5xdu5=calcQuinticBezierCurveDerivU(u,xpts,5,localCaller);
-               double d5ydu5=calcQuinticBezierCurveDerivU(u,ypts,5,localCaller);
-               double d6xdu6=calcQuinticBezierCurveDerivU(u,xpts,6,localCaller);
-               double d6ydu6=calcQuinticBezierCurveDerivU(u,ypts,6,localCaller);
+               double dxdu  =calcQuinticBezierCurveDerivU(u,xpts,1);
+               double dydu  =calcQuinticBezierCurveDerivU(u,ypts,1);
+               double d2xdu2=calcQuinticBezierCurveDerivU(u,xpts,2);
+               double d2ydu2=calcQuinticBezierCurveDerivU(u,ypts,2);
+               double d3xdu3=calcQuinticBezierCurveDerivU(u,xpts,3);
+               double d3ydu3=calcQuinticBezierCurveDerivU(u,ypts,3);
+               double d4xdu4=calcQuinticBezierCurveDerivU(u,xpts,4);
+               double d4ydu4=calcQuinticBezierCurveDerivU(u,ypts,4);
+               double d5xdu5=calcQuinticBezierCurveDerivU(u,xpts,5);
+               double d5ydu5=calcQuinticBezierCurveDerivU(u,ypts,5);
+               double d6xdu6=calcQuinticBezierCurveDerivU(u,xpts,6);
+               double d6ydu6=calcQuinticBezierCurveDerivU(u,ypts,6);
 
                double t1 = dxdu*dxdu;//(dxdu ^ 2);
                double t3 = (0.1e1 / t1 / dxdu);
@@ -651,24 +641,21 @@ d3y/du3             14              14          6
 
 */
 double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU(double u,
-                 const SimTK::Vector& pts,int order, const std::string& caller)
+                 const SimTK::Vector& pts,int order)
 {
     double val = -1;
 
-    SimTK_ERRCHK1_ALWAYS( (u>=0 && u <= 1) , 
+    SimTK_ERRCHK_ALWAYS( (u>=0 && u <= 1) , 
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
-        "Error: double argument u must be between 0.0 and 1.0."
-        "Called by %s",caller.c_str());
+        "Error: double argument u must be between 0.0 and 1.0.");
 
-    SimTK_ERRCHK1_ALWAYS( (pts.size()==6) , 
+    SimTK_ERRCHK_ALWAYS( (pts.size()==6) , 
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
-        "Error: vector argument pts \nmust have a length of 6."
-        " Called by %s",caller.c_str());
+        "Error: vector argument pts \nmust have a length of 6.");
 
-    SimTK_ERRCHK1_ALWAYS( (order >= 1),
+    SimTK_ERRCHK_ALWAYS( (order >= 1),
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
-        "Error: order must be greater than, or equal to 1 Called by %s"
-        ,caller.c_str());
+        "Error: order must be greater than, or equal to 1");
 
     //Compute the Bezier point
     double p0 = pts(0);
@@ -799,10 +786,10 @@ double SegmentedQuinticBezierToolkit::clampU(double u){
 */
 double SegmentedQuinticBezierToolkit::calcU(double ax, const SimTK::Vector& bezierPtsX, 
                                  const SimTK::Spline& splineUX, double tol, 
-                                 int maxIter, const std::string& caller)
+                                 int maxIter)
 {
-    std::string name = caller;
-    name.append(".calcU");
+    //std::string name = caller;
+    //name.append(".calcU");
 
     SimTK::Vector xV(1);
     xV(0) = ax;
@@ -817,10 +804,10 @@ double SegmentedQuinticBezierToolkit::calcU(double ax, const SimTK::Vector& bezi
             minX = bezierPtsX(i);
     }
 
-    SimTK_ERRCHK1_ALWAYS( ax >= minX && ax <= maxX, 
+    SimTK_ERRCHK_ALWAYS( ax >= minX && ax <= maxX, 
         "SegmentedQuinticBezierToolkit::calcU", 
         "Error: input ax was not in the domain of the Bezier curve specified \n"
-        "by the control points in bezierPtsX. Called by %s", caller.c_str());
+        "by the control points in bezierPtsX.");
 
 
     double u = splineUX.calcValue(xV);
@@ -828,7 +815,7 @@ double SegmentedQuinticBezierToolkit::calcU(double ax, const SimTK::Vector& bezi
     double f = 0;
 
 
-    f = calcQuinticBezierCurveVal(u,bezierPtsX,name)-ax;
+    f = calcQuinticBezierCurveVal(u,bezierPtsX)-ax;
     double df= 0;
     double du= 0;
     int iter = 0;
@@ -837,12 +824,12 @@ double SegmentedQuinticBezierToolkit::calcU(double ax, const SimTK::Vector& bezi
     //Newton iterate to the desired tolerance
     while(abs(f) > tol && iter < maxIter && pathologic == false){
        //Take a Newton step
-        df = calcQuinticBezierCurveDerivU(u,bezierPtsX,1,name);
+        df = calcQuinticBezierCurveDerivU(u,bezierPtsX,1);
         if(abs(df) > 0){
             du = -f/df;
             u  = u + du;
             u  = clampU(u); 
-            f = calcQuinticBezierCurveVal(u,bezierPtsX,name)-ax;
+            f = calcQuinticBezierCurveVal(u,bezierPtsX)-ax;
         }else{
             pathologic = true;
         }
@@ -850,15 +837,14 @@ double SegmentedQuinticBezierToolkit::calcU(double ax, const SimTK::Vector& bezi
     }
 
     //Check for convergence
-    SimTK_ERRCHK3_ALWAYS( (f <= tol), 
+    SimTK_ERRCHK2_ALWAYS( (f <= tol), 
         "SegmentedQuinticBezierToolkit::calcU", 
         "Error: desired tolerance of %f on U not met by the Newton iteration."
-        " A tolerance of %f was reached. Called by %s",tol, f, caller.c_str());
+        " A tolerance of %f was reached.",tol, f);
 
-    SimTK_ERRCHK1_ALWAYS( (pathologic==false), 
+    SimTK_ERRCHK_ALWAYS( (pathologic==false), 
         "SegmentedQuinticBezierToolkit::calcU", 
-        "Error: Newton iteration went pathologic: df = 0 to machine precision."
-        " Called by %s", caller.c_str());
+        "Error: Newton iteration went pathologic: df = 0 to machine precision.");
       
     
     //Return the value
@@ -872,8 +858,8 @@ Cost: n comparisons, for a quintic Bezier curve with n-spline sections
 Cost            3*n+2                       1*n      3                         
         
 */
-int SegmentedQuinticBezierToolkit::calcIndex(double x, const SimTK::Matrix& bezierPtsX,
-    const std::string& caller)
+int SegmentedQuinticBezierToolkit::calcIndex(double x, 
+                                             const SimTK::Matrix& bezierPtsX)
 {
     int idx = 0;
     bool flag_found = false;
@@ -892,10 +878,9 @@ int SegmentedQuinticBezierToolkit::calcIndex(double x, const SimTK::Matrix& bezi
         flag_found = true;
     }
 
-    SimTK_ERRCHK1_ALWAYS( (flag_found == true), 
+    SimTK_ERRCHK_ALWAYS( (flag_found == true), 
         "SegmentedQuinticBezierToolkit::calcIndex", 
-        "Error: A value of x was used that is not within the Bezier curve set."
-        " Called by %s",caller.c_str());
+        "Error: A value of x was used that is not within the Bezier curve set.");
 
     return idx;
 }

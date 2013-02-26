@@ -325,13 +325,11 @@ int main(int argc, char* argv[])
 
         MuscleFixedWidthPennationModel fibKin(  optFibLen, 
                                                 optPenAng,
-                                                SimTK::Pi/2.0, 
-                                                caller);
+                                                SimTK::Pi/2.0);
 
         MuscleFixedWidthPennationModel fibKin2( optFibLen*2, 
                                                 optPenAng,
-                                                SimTK::Pi/2.0, 
-                                                caller);
+                                                SimTK::Pi/2.0);
 
         cout << "**************************************************" << endl;
         cout << "Test: Serialization" << endl;
@@ -378,9 +376,9 @@ int main(int argc, char* argv[])
                 //Computed pennation kinematics
                 penAng(i) = fibKin.calcPennationAngle(fibLen(i));
                 penAngVel(i) = fibKin.calcPennationAngularVelocity(
-                                tan(penAng(i)), fibLen(i),fibVel(i),caller);
+                                tan(penAng(i)), fibLen(i),fibVel(i));
                 penAngVel1(i) = fibKin.calcPennationAngularVelocity(
-                                tan(penAng(i)), fibLen(i),fibVel1(i),caller);
+                                tan(penAng(i)), fibLen(i),fibVel1(i));
 
                 //Computed muscle kinematics
                 //Needs to be constant so I can numerically compute
@@ -562,7 +560,7 @@ int main(int argc, char* argv[])
         //A central difference cannot be taken on the ends
         for(int i=1; i<numPts-1; i++){
             DpenAngDfibLen(i) = fibKin.calc_DPennationAngle_DfiberLength(
-                                                            fibLen(i),caller);
+                                                            fibLen(i));
 
             //The isnan check needs to be in place because the numerical 
             //derivative might be NAN - the denominator of the numerical
@@ -604,7 +602,7 @@ int main(int argc, char* argv[])
         for(int i=1; i<numPts-1; i++){
             DtdnLenDfibLen(i) = fibKin.calc_DTendonLength_DfiberLength(
                 fibLen(i), sin(penAng(i)), cos(penAng(i)), 
-                DpenAngDfibLen(i), caller);
+                DpenAngDfibLen(i));
             //The isnan check needs to be in place because the numerical 
             //derivative might be NAN - the denominator of the numerical
             //difference can and does go to zero.
@@ -666,9 +664,7 @@ int main(int argc, char* argv[])
 
         for(int i=0;i<numPts; i++)
         {
-           tmp=fibKin.calcFiberVelocity(fibLen(i),sin(penAng(i)),cos(penAng(i)),
-                                        mclLen(i),tdnLen(i),mclVel(i),tdnVel(i),
-                                        caller);
+           tmp=fibKin.calcFiberVelocity(cos(penAng(i)),mclVel(i),tdnVel(i));
             err = abs(tmp-fibVel(i));
             if(err > maxErr){
                 maxErr=err;
@@ -704,7 +700,7 @@ int main(int argc, char* argv[])
 
         for(int i=0;i<numPts; i++)
         {
-           tmp1=fibKin.calc_DPennationAngle_DfiberLength(fibLen(i),caller);
+           tmp1=fibKin.calc_DPennationAngle_DfiberLength(fibLen(i));
 
            tmp=fibKin.calc_DFiberLengthAlongTendon_DfiberLength(fibLen(i),
                                                                 sin(penAng(i)),
@@ -757,14 +753,13 @@ int main(int argc, char* argv[])
 
         for(int i=0;i<numPts; i++)
         {
-           tmp1=fibKin.calc_DPennationAngle_DfiberLength(fibLen(i),caller);
+           tmp1=fibKin.calc_DPennationAngle_DfiberLength(fibLen(i));
            tmp2=fibKin.calc_DPennationAngularVelocity_DfiberLength(fibLen(i),
                                                                 fibVel1(i),
                                                                 sin(penAng(i)),
                                                                 cos(penAng(i)),
                                                                 penAngVel1(i),
-                                                                tmp1,
-                                                                caller);
+                                                                tmp1);
 
            tmp=fibKin.calc_DFiberVelocityAlongTendon_DfiberLength(fibLen(i),
                                                                 fibVel1(i),
@@ -802,11 +797,11 @@ int main(int argc, char* argv[])
 
         //constructor
         SimTK_TEST_MUST_THROW(MuscleFixedWidthPennationModel fibKinEX = 
-            MuscleFixedWidthPennationModel(0, optPenAng, SimTK::Pi/2.0,caller));
+            MuscleFixedWidthPennationModel(0, optPenAng, SimTK::Pi/2.0));
         SimTK_TEST_MUST_THROW(MuscleFixedWidthPennationModel fibKinEX = 
-            MuscleFixedWidthPennationModel(optFibLen, -0.01, SimTK::Pi/2.0, caller));
+            MuscleFixedWidthPennationModel(optFibLen, -0.01, SimTK::Pi/2.0));
         SimTK_TEST_MUST_THROW(MuscleFixedWidthPennationModel fibKinEX = 
-            MuscleFixedWidthPennationModel(optFibLen, SimTK::Pi/2, SimTK::Pi/2.0, caller));
+            MuscleFixedWidthPennationModel(optFibLen, SimTK::Pi/2, SimTK::Pi/2.0));
 
         //Unset properties
         MuscleFixedWidthPennationModel fibKinDirty;
@@ -827,22 +822,20 @@ int main(int argc, char* argv[])
 
         //calcPennationAngularVelocity
         SimTK_TEST_MUST_THROW(fibKin.calcPennationAngularVelocity(
-                                    tan(penAng(0)), 0, fibVel(0),caller));
+                                    tan(penAng(0)), 0, fibVel(0)));
 
         //calc_DPennationAngle_DfiberLength
         SimTK_TEST_MUST_THROW(fibKin.calc_DPennationAngle_DfiberLength(
-                                                        paraHeight,caller));
+                                                        paraHeight));
 
         //calcFiberLength
         SimTK_TEST_EQ(fibKin.calcFiberLength(1.0, 1.0),
             fibKin.getMinimumFiberLength());
 
-        //calcFiberVelocity
-        SimTK_TEST_MUST_THROW(fibKin.calcFiberVelocity(1,1,0, 1,1,0,0,caller));
 
         //calc_DTendonLength_DfiberLength
         SimTK_TEST_MUST_THROW(fibKin.calc_DTendonLength_DfiberLength(paraHeight,
-            sin(penAng(0)),cos(penAng(0)), 0.5, caller));
+            sin(penAng(0)),cos(penAng(0)), 0.5));
         cout << "    passed" << endl;
 
         //calc_DfiberVelocityAlongTendon_DfiberLength
@@ -853,8 +846,7 @@ int main(int argc, char* argv[])
                                                                 sin(0.1),
                                                                 cos(0.1),
                                                                 1,
-                                                                0.1,
-                                                                caller));
+                                                                0.1));
         //Pennation angle of 90 degrees exception
         SimTK_TEST_MUST_THROW(
             fibKin.calc_DPennationAngularVelocity_DfiberLength( 0,
@@ -862,8 +854,7 @@ int main(int argc, char* argv[])
                                                                 sin(SimTK::Pi/2),
                                                                 cos(SimTK::Pi/2),
                                                                 1,
-                                                                0.1,
-                                                                caller));
+                                                                0.1));
         cout << endl;
         cout << "**************************************************" << endl;
         cout << "TEST: Pennation angle clamping" << endl;
