@@ -738,6 +738,7 @@ void Model::addForce(OpenSim::Force *aForce)
  */
 void Model::addProbe(OpenSim::Probe *aProbe)
 {
+    _probeSetProp.setValueIsDefault(false);
 	updProbeSet().adoptAndAppend(aProbe);
 	updProbeSet().invokeConnectToModel(*this);
 }
@@ -1478,6 +1479,7 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
 	aOStream << "numBodies = " << getNumBodies() << std::endl;
 	aOStream << "numConstraints = " << getConstraintSet().getSize() << std::endl;
 	;
+	aOStream << "numProbes = " << getProbeSet().getSize() << std::endl;
 
 	/*
 	int n;
