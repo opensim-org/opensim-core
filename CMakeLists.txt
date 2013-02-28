@@ -141,7 +141,7 @@ MARK_AS_ADVANCED( BUILD_INST_SET )
 ## Release flags, overriding CMake's defaults.
 ## Watch out for optimizer bugs in particular gcc versions!
 
-IF(${CMAKE_C_COMPILER} MATCHES "gcc")
+IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
     string(TOLOWER ${BUILD_INST_SET} GCC_INST_SET)
 
     # Get the gcc version number in major.minor.build format
@@ -186,12 +186,12 @@ IF(${CMAKE_C_COMPILER} MATCHES "gcc")
     SET(CMAKE_C_FLAGS_MINSIZEREL       "-DNDEBUG -Os -m${GCC_INST_SET}" 
       CACHE STRING "gcc MinSizeRel build compile flags" FORCE)
 
-ENDIF(${CMAKE_C_COMPILER} MATCHES "gcc")
+ENDIF()
 
 ## When building in any of the Release modes, tell VC++ cl compiler to use intrinsics 
 ## (i.e. sqrt instruction rather than sqrt subroutine) with flag /Oi.
 
-IF(${CMAKE_C_COMPILER} MATCHES "cl")
+IF(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
     STRING(TOUPPER ${BUILD_INST_SET} CL_INST_SET)
 
     ## C++
@@ -222,7 +222,7 @@ IF(${CMAKE_C_COMPILER} MATCHES "cl")
 	"/MP /D NDEBUG /MD  /O1 /Ob1 /Oi /GS- /arch:${CL_INST_SET}" 
         CACHE STRING "VC++ MinSizeRel build compile flags" FORCE)
 
-ENDIF(${CMAKE_C_COMPILER} MATCHES "cl")
+ENDIF()
 
 SET(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're building the GUI and have SWIG and Java installed on your machine.)")
 MARK_AS_ADVANCED( BUILD_JAVA_WRAPPING )
@@ -295,18 +295,31 @@ IF(BUILD_USING_OTHER_LAPACK)
 "Basename of the actual Lapack library we're depending on; can't change here; see variable BUILD_USING_OTHER_LAPACK." FORCE)
 ENDIF(BUILD_USING_OTHER_LAPACK)
 
-IF(${CMAKE_C_COMPILER} MATCHES "cl")
+#IF(${CMAKE_C_COMPILER} MATCHES "cl")
     ## Assume Microsoft Visual Studio
-    SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthreadVC2)
-ELSE(${CMAKE_C_COMPILER} MATCHES "cl")
+	#    SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthreadVC2)
+	#ELSE(${CMAKE_C_COMPILER} MATCHES "cl")
+	#    IF(APPLE)
+	#    SET(REALTIME_LIB)
+	# ELSE()
+	#    SET(REALTIME_LIB rt)
+	# ENDIF()
+	#SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthread ${REALTIME_LIB} dl)
+	#ENDIF(${CMAKE_C_COMPILER} MATCHES "cl")
+
+IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
     IF(APPLE)
 	    SET(REALTIME_LIB)
     ELSE()
 	    SET(REALTIME_LIB rt)
     ENDIF()
     SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthread ${REALTIME_LIB} dl)
-ENDIF(${CMAKE_C_COMPILER} MATCHES "cl")
-
+    SET(MATH_LIBS_TO_USE_VN ${LAPACK_BEING_USED} pthread ${REALTIME_LIB} dl)
+ELSE()
+    ## Assume Microsoft Visual Studio
+    SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthreadVC2)
+    SET(MATH_LIBS_TO_USE_VN ${LAPACK_BEING_USED} pthreadVC2)
+ENDIF()
 # Copy libraries from ${SIMTK_BIN_DIR} to ${BUILD_BINARY_DIR}
 
 FILE(GLOB LIB_FILES "${Simbody_LIB_DIR}/*.a"
