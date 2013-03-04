@@ -1,5 +1,5 @@
-#ifndef __Constraint_h__
-#define __Constraint_h__
+#ifndef OPENSIM_CONSTRAINT_H_
+#define OPENSIM_CONSTRAINT_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  Constraint.h                           *
  * -------------------------------------------------------------------------- *
@@ -23,18 +23,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <math.h>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <SimTKsimbody.h>
 
 namespace OpenSim {
 
-class Model;
 class ScaleSet;
 
 //=============================================================================
@@ -51,23 +44,18 @@ class OSIMSIMULATION_API Constraint : public ModelComponent {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Constraint, ModelComponent);
 
 //=============================================================================
-// DATA
+// PROPERTY
 //=============================================================================
-
-protected:
+public:
 
 	OpenSim_DECLARE_PROPERTY(isDisabled, bool, "Flag indicating whether the constraint is disabled or not. Disabled means that the constraint is not active in subsequent dynamics realization");
-
-	/** ID for the constraint in Simbody. */
-	SimTK::ConstraintIndex _index;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 //--------------------------------------------------------------------------
 // CONSTRUCTION
-//--------------------------------------------------------------------------
-public:
+//-------------------------------------------------------------------------
 	Constraint();
 	virtual ~Constraint();
 
@@ -108,6 +96,9 @@ protected:
     void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
 	int getNumStateVariables() const  OVERRIDE_11 { return 0; };
 
+	/** ID for the constraint in Simbody. */
+	SimTK::ConstraintIndex _index;
+
 private:
 	void setNull();
 	void constructProperties();
@@ -121,6 +112,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __Constraint_h__
+#endif // OPENSIM_CONSTRAINT_H_
 
 

@@ -138,6 +138,7 @@ int main()
 										pointOnGround, *block, pointOnBlock, distance);
 
 		// Add the new point on a line constraint to the model
+		constDist->set_isDisabled(true); // disable by default
 		osimModel.addConstraint(constDist);
 
 		///////////////////////////////////////
@@ -266,8 +267,10 @@ int main()
 		double h_start = blockMass*gravity[1]/(stiffness*blockSideLength*blockSideLength);
 		modelCoordinateSet[4].setValue(si, h_start); // set y-translation which is height
 		
-		cout << "Start height = "<< h_start << endl;
+		// Enable constraint consistent with current configuration of the model
+		constDist->setDisabled(si, false);
 
+		cout << "Start height = "<< h_start << endl;
 		osimModel.getMultibodySystem().realize(si, Stage::Velocity);
 
 		// Compute initial conditions for muscles
