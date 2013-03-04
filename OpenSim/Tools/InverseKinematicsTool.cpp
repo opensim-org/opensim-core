@@ -336,8 +336,10 @@ bool InverseKinematicsTool::run()
 				coordinateReferences.push_back(*coordRef);
 			}
 			else if(IKMarkerTask *markerTask = dynamic_cast<IKMarkerTask *>(&_ikTaskSet[i])){
-				MarkerWeight *markerWeight = new MarkerWeight(markerTask->getName(), markerTask->getWeight());
-				markerWeights.adoptAndAppend(markerWeight);
+				if(markerTask->getApply()){
+					markerWeights.adoptAndAppend(
+						new MarkerWeight(markerTask->getName(), markerTask->getWeight()));
+				}
 			}
 		}
 

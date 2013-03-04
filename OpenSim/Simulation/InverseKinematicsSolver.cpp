@@ -217,16 +217,26 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
 	_markersReference.getWeights(s, markerWeights);
 	// get markers defined by the model 
 	const MarkerSet &modelMarkerSet = getModel().getMarkerSet();
+
+	// get markers with specified tasks/weights
+	const Set<MarkerWeight>& mwSet = _markersReference.updMarkerWeightSet();
 	
-	int index = 0;
+	int index = -1;
+	int wIndex = -1;
 	//Loop through all markers in the reference
-	for(unsigned int i=0; i < markerNames.size(); i++){
+	for(unsigned int i=0; i < markerNames.size(); ++i){
 		// Check if we have this marker in the model, else ignore it
 		index = modelMarkerSet.getIndex(markerNames[i], index);
-		if(index >= 0){
+		wIndex = mwSet.getIndex(markerNames[i],wIndex);
+		if((index >= 0) && (wIndex >=0)){
 			Marker &marker = modelMarkerSet[index];
-			const SimTK::MobilizedBody &mobod = getModel().getMatterSubsystem().getMobilizedBody(marker.getBody().getIndex());
-			_markerAssemblyCondition->addMarker(marker.getName(), mobod, marker.getOffset(), markerWeights[i]);
+			const SimTK::MobilizedBody &mobod =
+				getModel().getMatterSubsystem().
+				getMobilizedBody(marker.getBody().getIndex());
+				_markerAssemblyCondition->
+					addMarker(marker.getName(), mobod, marker.getOffset(),
+					markerWeights[i]);
+
 			//cout << "IKSolver Marker: " << markerNames[i] << " " << marker.getName() << "  weight: " << markerWeights[i] << endl;
 		}
 	}
