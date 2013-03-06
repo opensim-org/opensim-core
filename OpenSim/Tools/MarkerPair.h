@@ -73,7 +73,12 @@ public:
 	void copyData(const MarkerPair &aMarkerPair);
 
 	void getMarkerNames(std::string& aName1, std::string& aName2) const;
-	const std::string &getMarkerName(int i) const { return _markerNames.get(i); }
+	const std::string &getMarkerName(int i) const { 
+        if (_markerNames.getSize() < i+1)
+            throw Exception("MarkerPair: ERROR- Pair has incorrect number of Marker names, 2 required.",
+							 __FILE__,__LINE__);
+        return _markerNames.get(i); 
+    }
 	void setMarkerName(int i, const std::string &aName) { _markerNames.set(i,aName); }
 
 protected:
