@@ -409,6 +409,24 @@ public:
             p.appendValue<std::string>(aStringArray.get(i));
     }
 
+    static void removeItem(AbstractProperty& p, int index)
+    {
+        if (p.size()>index && p.getMinListSize() >= p.size()-1){
+            AbstractProperty* cloneP = p.clone();
+            p.clear();
+            for(int i=0; i<p.size();i++){
+                if (i!= index){
+                if (p.getTypeName()=="String")
+                    p.appendValue(cloneP->getValue<std::string>(i));
+                else if (p.getTypeName()=="Int")
+                    p.appendValue(cloneP->getValue<int>(i));
+                else if (p.getTypeName()=="double")
+                    p.appendValue(cloneP->getValue<double>(i));
+                }
+            }
+        }
+    }
+
 };
 
 } // namespace OpenSim
