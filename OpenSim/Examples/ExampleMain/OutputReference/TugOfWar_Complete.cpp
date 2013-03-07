@@ -48,6 +48,18 @@ int main()
     clock_t startTime = clock();
 
 	try {
+		//////////////////////
+		// MODEL PARAMETERS //
+		//////////////////////
+
+		// Specify body mass of a 20 kg, 0.1m sides of cubed block body
+		double blockMass = 20.0, blockSideLength = 0.1;
+
+		// Constant distance of constraint to limit the block's motion
+		double constantDistance = 0.2;
+
+		// Contact parameters
+		double stiffness = 1.0e7, dissipation = 0.1, friction = 0.2, viscosity=0.01;
 
 		///////////////////////////////////////////
 		// DEFINE BODIES AND JOINTS OF THE MODEL //
@@ -58,7 +70,6 @@ int main()
 		osimModel.setName("tugOfWar");
 
 		// GROUND BODY
-
 		// Get a reference to the model's ground body
 		OpenSim::Body& ground = osimModel.getGroundBody();
 
@@ -82,9 +93,6 @@ int main()
 		anchor2.setTransform(Transform(Vec3(0, 0.05, -0.35)));
 
 		// BLOCK BODY
-
-		// Specify properties of a 20 kg, 0.1m sides of cubed block body
-		double blockMass = 20.0, blockSideLength = 0.1;
 		Vec3 blockMassCenter(0);
 		Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
 
@@ -113,6 +121,15 @@ int main()
 		jointCoordinateSet[4].setRange(positionRange);
 		jointCoordinateSet[5].setRange(positionRange);
 
+		// GRAVITY
+		// Obtaine the default acceleration due to gravity
+		Vec3 gravity = osimModel.getGravity();
+
+		// Define non-zero default states for the free joint
+		jointCoordinateSet[3].setDefaultValue(constantDistance); // set x-translation value
+		double h_start = blockMass*gravity[1]/(stiffness*blockSideLength*blockSideLength);
+		jointCoordinateSet[4].setDefaultValue(h_start); // set y-translation which is height
+
 		// Add the block body to the model
 		osimModel.addBody(block);
 
@@ -127,29 +144,21 @@ int main()
 		/////////////////////////////////////////////
 		// DEFINE CONSTRAINTS IMPOSED ON THE MODEL //
 		/////////////////////////////////////////////
-
-		// Specify properties of a constant distance constraint to limit the block's motion
-		double distance = 0.2;
 		Vec3 pointOnGround(0, blockSideLength/2 ,0);
 		Vec3 pointOnBlock(0, 0, 0);
 
 		// Create a new constant distance constraint
-		ConstantDistanceConstraint *constDist = new ConstantDistanceConstraint(ground, 
-										pointOnGround, *block, pointOnBlock, distance);
+		ConstantDistanceConstraint *constDist = 
+			new ConstantDistanceConstraint(ground, 
+				pointOnGround, *block, pointOnBlock, constantDistance);
 
 		// Add the new point on a line constraint to the model
-		constDist->set_isDisabled(true); // disable by default
 		osimModel.addConstraint(constDist);
 
 		///////////////////////////////////////
 		// DEFINE FORCES ACTING ON THE MODEL //
 		///////////////////////////////////////
-
-		// GRAVITY
-		// Obtaine the default acceleration due to gravity
-		Vec3 gravity = osimModel.getGravity();
 	
-
 		// MUSCLE FORCES
 		// Create two new muscles with identical properties
 		double maxIsometricForce = 1000.0, optimalFiberLength = 0.25, tendonSlackLength = 0.1, pennationAngle = 0.0; 
@@ -178,9 +187,6 @@ int main()
 		// Add contact geometry to the model
 		osimModel.addContactGeometry(floor);
 		osimModel.addContactGeometry(cube);
-
-		// Contact parameters
-		double stiffness = 1.0e7, dissipation = 0.1, friction = 0.2, viscosity=0.01;
 
 		// Define contact parameters for elastic foundation force
 		OpenSim::ElasticFoundationForce::ContactParameters *contactParams = 
@@ -254,18 +260,10 @@ int main()
 		//////////////////////////
 
 		// set use visualizer to true to visualize the simulation live
-		osimModel.setUseVisualizer(false);
+		osimModel.setUseVisualizer(true);
 
 		// Initialize the system and get the default state
 		SimTK::State& si = osimModel.initSystem();
-
-		// Define non-zero (defaults are 0) states for the free joint
-		CoordinateSet& modelCoordinateSet = osimModel.updCoordinateSet();
-		modelCoordinateSet[3].setValue(si, distance); // set x-translation value
-		modelCoordinateSet[5].setValue(si, 0.0); // set z-translation value
-		modelCoordinateSet[3].setSpeedValue(si, 0.0); // set x-speed value
-		double h_start = blockMass*gravity[1]/(stiffness*blockSideLength*blockSideLength);
-		modelCoordinateSet[4].setValue(si, h_start); // set y-translation which is height
 		
 		// Enable constraint consistent with current configuration of the model
 		constDist->setDisabled(si, false);
