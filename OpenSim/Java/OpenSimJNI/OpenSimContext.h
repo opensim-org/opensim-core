@@ -411,17 +411,19 @@ public:
 
     static void removeItem(AbstractProperty& p, int index)
     {
-        if (p.size()>index && p.getMinListSize() >= p.size()-1){
+        if (p.size()>index){
             AbstractProperty* cloneP = p.clone();
             p.clear();
-            for(int i=0; i<p.size();i++){
+            for(int i=0; i<cloneP->size();i++){
                 if (i!= index){
-                if (p.getTypeName()=="String")
+                if (p.getTypeName()=="string")
                     p.appendValue(cloneP->getValue<std::string>(i));
-                else if (p.getTypeName()=="Int")
+                else if (p.getTypeName()=="int")
                     p.appendValue(cloneP->getValue<int>(i));
                 else if (p.getTypeName()=="double")
                     p.appendValue(cloneP->getValue<double>(i));
+                else if (p.getTypeName()=="bool")
+                    p.appendValue(cloneP->getValue<bool>(i));
                 }
             }
         }
