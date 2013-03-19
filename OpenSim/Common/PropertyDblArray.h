@@ -94,6 +94,7 @@ public:
 	// VALUE
 	virtual void setValue(const Array<double> &aArray);
 	virtual void setValue(int aSize,const double aArray[]);
+   virtual void clearValues() OVERRIDE_11 { _array.setSize(0); }
 	virtual Array<double>& getValueDblArray();
 #ifndef SWIG
 	virtual const Array<double>& getValueDblArray() const;

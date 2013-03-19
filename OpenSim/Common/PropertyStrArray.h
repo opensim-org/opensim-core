@@ -95,6 +95,7 @@ public:
 	virtual void setValue(int aSize,const std::string aArray[]);
 	virtual Array<std::string>& getValueStrArray();
 	virtual const Array<std::string>& getValueStrArray() const;
+    virtual void clearValues() OVERRIDE_11 { _array.setSize(0); }
 	// SIZE
 	virtual int getArraySize() const { return _array.getSize(); }
 	// VALUE as String

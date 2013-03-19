@@ -745,7 +745,21 @@ bool CMCTool::run()
 		localTime = localtime(&startTime);
 		cout<<"Start time = "<<asctime(localTime);
 		cout<<"\n================================================================\n";
+        try {
 		controller->computeInitialStates(s,_ti);
+        }
+        catch(const Exception& x) {
+		// TODO: eventually might want to allow writing of partial results
+		    x.print(cout);
+		    IO::chDir(saveWorkingDirectory);
+		    return false;
+	    }
+	    catch(...) {
+		    // TODO: eventually might want to allow writing of partial results
+		    IO::chDir(saveWorkingDirectory);
+		    // close open files if we die prematurely (e.g. Opt fail)
+		    return false;
+	    }
 		time(&finishTime);
 		cout<<endl;
         // copy the final states from the last integration 

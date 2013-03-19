@@ -98,6 +98,7 @@ public:
 	virtual int getArraySize() const { return _array.getSize(); }
 	// VALUE as String
 	virtual std::string toString() const;
+   virtual void clearValues() OVERRIDE_11 { _array.setSize(0); }
 
 //=============================================================================
 };	// END of class PropertyBoolArray
