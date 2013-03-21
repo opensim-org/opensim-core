@@ -313,7 +313,7 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 	double totalSquaredMarkerError = 0.0;
 	double maxSquaredMarkerError = 0.0;
 	int worst = -1;
-	// Errors are reported in the same order as the Reference/trc file rather than tasks/weights
+	// Report in the same order as the marker tasks/weights
 	ikSol->computeCurrentSquaredMarkerErrors(squaredMarkerErrors);
 	for(int j=0; j<nm; ++j){
 		totalSquaredMarkerError += squaredMarkerErrors[j];

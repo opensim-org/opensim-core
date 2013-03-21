@@ -1236,9 +1236,8 @@ initializeControlSetUsingConstraints(
                 //                 //  control suffix to the name of the control
                 index = aControlConstraints->getIndex(rControlSet.get(i).getName()+".excitation");
             }
-            if( index == -1 ) {
-                 cout << "Cannot find control constraint for: " << rControlSet.get(i).getName() << endl;
-            } else {
+            if( index > -1 ) { // if we have an associated control constraint 
+				// then, use it initialize the model's control 
                 rControlSet.set(i, aControlConstraints->get(index).clone() );
             }
         }
