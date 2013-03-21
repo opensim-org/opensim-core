@@ -31,7 +31,7 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
-
+#include <OpenSim/Analyses/ProbeReporter.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 
@@ -464,6 +464,21 @@ void AnalyzeTool::
 setPrintResultFiles(bool aToWrite)
 {
 	_printResultFiles=aToWrite;
+}
+
+void AnalyzeTool::
+disableIntegrationOnlyProbes()
+{
+	AnalysisSet& analysisSet = _model->updAnalysisSet();
+
+	for(int i=0;i<analysisSet.getSize();i++) {
+		Analysis& an = analysisSet.get(i);
+        if (an.getClassName()=="ProbeReporter"){
+            ProbeReporter& pReporter = dynamic_cast<ProbeReporter&>(an);
+            pReporter.disableIntegrationOnlyProbes();
+        }
+	}
+
 }
 //=============================================================================
 // RUN

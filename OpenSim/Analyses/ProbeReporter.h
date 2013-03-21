@@ -153,10 +153,23 @@ protected:
     virtual int
         record(const SimTK::State& s );
 //#endif
+public:
+    void disableIntegrationOnlyProbes() {
+        ProbeSet& probes = _model->updProbeSet();
+        int nP = probes.getSize();
+
+        for(int i=0 ; i<nP ; i++) {
+            Probe& nextProbe = (Probe&)probes[i];
+            if (nextProbe.getOperation()=="integrate" || nextProbe.getOperation()=="min" || nextProbe.getOperation()=="max"){
+                nextProbe.setDisabled(true);
+                std::cout << "Disabling probe " << nextProbe.getName() << " as invalid for non-integration context." << std::endl;
+
+            }
+        }
+    }
     //--------------------------------------------------------------------------
     // IO
     //--------------------------------------------------------------------------
-public:
     virtual int
         printResults(const std::string &aBaseName,const std::string &aDir="",
         double aDT=-1.0,const std::string &aExtension=".sto");

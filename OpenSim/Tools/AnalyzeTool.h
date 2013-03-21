@@ -122,7 +122,6 @@ public:
     const bool getLoadModelAndInput() const { return _loadModelAndInput; }
     void setLoadModelAndInput(bool b) { _loadModelAndInput = b; }
 
-
 	//--------------------------------------------------------------------------
 	// UTILITIES
 	//--------------------------------------------------------------------------
@@ -130,7 +129,7 @@ public:
 	void loadStatesFromFile(SimTK::State& s ) SWIG_DECLARE_EXCEPTION;
 	void verifyControlsStates();
 	void setPrintResultFiles(bool aToWrite);
-
+    void disableIntegrationOnlyProbes();
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
