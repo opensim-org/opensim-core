@@ -367,7 +367,7 @@ ReadLine(istream &aIS)
 {
 	std::string line;
 	getline(aIS, line);
-	int len=line.length();
+	int len=(int)line.length();
 	// deal with reading a DOS-format file in Linux
 	if(len>0 && line[len-1]=='\r') line=line.substr(0,len-1);
 	return line;
@@ -577,14 +577,14 @@ formatText(const string& aComment,const string& leadingWhitespace,int width,cons
         i = pos2;
         if(!newlineCount && count+whitespace.size()+word.size()<=(string::size_type)width) {
             formatted += whitespace+word;
-            count += whitespace.size()+word.size();
+            count += (int)(whitespace.size()+word.size());
         } else {
             if(!formatted.empty()) {
                 if(newlineCount) for(int j=0;j<newlineCount-1;j++) formatted += endlineTokenToInsert;
                 formatted += endlineTokenToInsert + leadingWhitespace;
             }
             formatted += word;
-            count = word.size();
+            count = (int)word.size();
         }
     }
     return formatted;

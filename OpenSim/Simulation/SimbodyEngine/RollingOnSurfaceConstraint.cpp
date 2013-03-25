@@ -156,7 +156,7 @@ void RollingOnSurfaceConstraint::addToSystem(SimTK::MultibodySystem& system) con
 	mutableThis->_indices.push_back(contactPointXdir.getConstraintIndex());
 	mutableThis->_indices.push_back(contactPointZdir.getConstraintIndex());
 
-	mutableThis->_numConstraintEquations = _indices.size();
+	mutableThis->_numConstraintEquations = (int)_indices.size();
 
 	// For compound constraints, the bodies and/or mobilities involved must be characterized by
 	// the first "master" constraint, which dictates the behavior of the other constraints

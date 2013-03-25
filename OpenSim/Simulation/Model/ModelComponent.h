@@ -791,7 +791,7 @@ template <class T> friend class ModelComponentMeasure;
     // query it and add to this to obtain the total number of states managed by 
     // this ModelComponent.
     int getNumStateVariablesAddedByModelComponent() const 
-    {   return _namedStateVariableInfo.size(); }
+    {   return (int)_namedStateVariableInfo.size(); }
     Array<std::string> getStateVariablesNamesAddedByModelComponent() const;
 
     const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;

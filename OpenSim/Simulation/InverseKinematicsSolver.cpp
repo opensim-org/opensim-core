@@ -85,7 +85,7 @@ void InverseKinematicsSolver::updateMarkerWeight(const std::string &markerName, 
 {
 	const Array_<std::string> &names = _markersReference.getNames();
 	SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), markerName);
-	int index = std::distance(names.begin(), p);
+	int index = (int)std::distance(names.begin(), p);
 	updateMarkerWeight(index, value);
 }
 
@@ -119,7 +119,7 @@ SimTK::Vec3 InverseKinematicsSolver::computeCurrentMarkerLocation(const std::str
 {
 	const Array_<std::string> &names = _markersReference.getNames();
 	SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), markerName);
-	int index = std::distance(names.begin(), p);
+	int index = (int)std::distance(names.begin(), p);
 	return computeCurrentMarkerLocation(index);
 }
 
@@ -146,7 +146,7 @@ double InverseKinematicsSolver::computeCurrentMarkerError(const std::string &mar
 {
 	const Array_<std::string> &names = _markersReference.getNames();
 	SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), markerName);
-	int index = std::distance(names.begin(), p);
+	int index = (int)std::distance(names.begin(), p);
 	return computeCurrentMarkerError(index);
 }
 
@@ -173,7 +173,7 @@ double InverseKinematicsSolver::computeCurrentSquaredMarkerError(const std::stri
 {
 	const Array_<std::string> &names = _markersReference.getNames();
 	SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), markerName);
-	int index = std::distance(names.begin(), p);
+	int index = (int)std::distance(names.begin(), p);
 	return computeCurrentSquaredMarkerError(index);
 }
 

@@ -819,7 +819,7 @@ SimTK::Matrix calcFunctionTimeIntegral(
                                 double endTime,
                                 double intAcc)
 {
-    SimTK::Matrix intXY(timeV.nelt(),2);
+    SimTK::Matrix intXY(timeV.size(),2);
 
     //Populate FunctionData
     FunctionData fdata(yF);

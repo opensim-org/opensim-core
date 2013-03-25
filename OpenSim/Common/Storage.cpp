@@ -465,7 +465,7 @@ parseColumnLabels(const char *aLabels)
 	if(aLabels==NULL) return;
 
 	// HANDLE ZERO LENGTH STRING
-	int len = strlen(aLabels);
+	int len = (int)strlen(aLabels);
 	if(len==0) return;
 
 	// SET NEW
@@ -1221,7 +1221,7 @@ void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<do
 OpenSim::Array<int>  Storage::getColumnIndicesForIdentifier(const std::string& identifier) const
 {
 	Array<int> found;
-	int lid = identifier.length();
+	int lid = (int)identifier.length();
 
 	if(lid < 1) // an empty identifier should not expect data back
 		return found;

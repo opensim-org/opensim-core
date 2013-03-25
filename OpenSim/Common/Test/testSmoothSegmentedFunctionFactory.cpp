@@ -359,7 +359,7 @@ not
 */
 bool isVectorMonotonic(SimTK::Vector y, int multEPS)
 {
-    double dir = y(y.nelt()-1)-y(0);
+    double dir = y(y.size()-1)-y(0);
     bool isMonotonic = true;
 
     if(dir < 0){
@@ -407,12 +407,12 @@ method
 SimTK::Vector calcTrapzIntegral(SimTK::Vector x, SimTK::Vector y, 
                                 bool flag_TrueIntForward_FalseIntBackward)
 {
-    SimTK::Vector inty(y.nelt());
+    SimTK::Vector inty(y.size());
     inty = 0;
 
 
     int startIdx = 1;
-    int endIdx = y.nelt()-1;
+    int endIdx = y.size()-1;
 
     if(flag_TrueIntForward_FalseIntBackward == true){
                
@@ -1018,7 +1018,7 @@ void testMuscleCurveIntegral(SmoothSegmentedFunction mcf,SimTK::Matrix mcfSample
         //cout << xWidth << endl;
         //cout <<endl;
 
-        SimTK::Vector intyCumError(xWidth.nelt());
+        SimTK::Vector intyCumError(xWidth.size());
         double supdf = 0;
 
         if(mcf.isIntegralComputedLeftToRight()){
@@ -1031,12 +1031,12 @@ void testMuscleCurveIntegral(SmoothSegmentedFunction mcf,SimTK::Matrix mcfSample
             }
             //margin of error
             intyCumError = intyCumError*2.0;
-            intyCumError += intyCumError(intyCumError.nelt()-1)*1.05;
+            intyCumError += intyCumError(intyCumError.size()-1)*1.05;
             
         }
         else{
             //Get the vector of accumulated errors right to left
-            int eidx = intyCumError.nelt()-1;
+            int eidx = intyCumError.size()-1;
             intyCumError(eidx) = xWidth(eidx)*xWidth(eidx)*0.5*mcfSample(eidx,1);
             for(int i=eidx-1; i>=0; i--){
                 supdf = max(mcfSample(i,1),mcfSample(i+1,1));

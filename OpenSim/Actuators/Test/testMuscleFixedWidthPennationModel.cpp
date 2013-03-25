@@ -158,7 +158,7 @@ not
 */
 bool isVectorMonotonic(SimTK::Vector y, int multEPS)
 {
-    double dir = y(y.nelt()-1)-y(0);
+    double dir = y(y.size()-1)-y(0);
     bool isMonotonic = true;
 
     if(dir < 0){
@@ -202,12 +202,12 @@ method
 SimTK::Vector calcTrapzIntegral(SimTK::Vector x, SimTK::Vector y, 
                                 bool flag_TrueIntForward_FalseIntBackward)
 {
-    SimTK::Vector inty(y.nelt());
+    SimTK::Vector inty(y.size());
     inty = 0;
 
 
     int startIdx = 1;
-    int endIdx = y.nelt()-1;
+    int endIdx = y.size()-1;
 
     if(flag_TrueIntForward_FalseIntBackward == true){
                

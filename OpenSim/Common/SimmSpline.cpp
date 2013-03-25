@@ -591,7 +591,7 @@ double SimmSpline::calcDerivative(const std::vector<int>& derivComponents, const
 
 	int n = _x.getSize();
     double aX = x[0];
-    int aDerivOrder = derivComponents.size();
+    int aDerivOrder = (int)derivComponents.size();
     if (aDerivOrder < 1 || aDerivOrder > 2)
 		throw Exception("SimmSpline::calcDerivative(): derivative order must be 1 or 2.");
 

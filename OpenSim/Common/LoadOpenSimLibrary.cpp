@@ -84,7 +84,7 @@ OpenSim::LoadOpenSimLibrary(const std::string &lpLibFileName, bool verbose)
 	string fixedLibFileName = IO::FixSlashesInFilePath(lpLibFileName);
 	string actualLibFileName = fixedLibFileName + libraryExtension;
 	static const string debugSuffix="_d";
-	bool hasDebugSuffix = (IO::GetSuffix(fixedLibFileName,debugSuffix.size())==debugSuffix);
+	bool hasDebugSuffix = (IO::GetSuffix(fixedLibFileName,(int)debugSuffix.size())==debugSuffix);
 	string actualNameLoaded;
 
 	OPENSIM_PORTABLE_HINSTANCE libraryHandle = NULL;
@@ -106,7 +106,7 @@ OpenSim::LoadOpenSimLibrary(const std::string &lpLibFileName, bool verbose)
 #endif
 
 	if(tryDebugThenRelease) {
-		if(hasDebugSuffix) IO::RemoveSuffix(fixedLibFileName,debugSuffix.size());
+		if(hasDebugSuffix) IO::RemoveSuffix(fixedLibFileName,(int)debugSuffix.size());
 		string debugLibFileName = fixedLibFileName + debugSuffix + libraryExtension;
 		string releaseLibFileName = fixedLibFileName + libraryExtension;
 		if ((libraryHandle = LoadLibrary(debugLibFileName,actualNameLoaded))) {

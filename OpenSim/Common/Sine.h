@@ -123,7 +123,7 @@ public:
 	
 	double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const
 	{
-		int n = derivComponents.size();
+		int n = (int)derivComponents.size();
 
 		return _amplitude*pow(_omega,n)*sin(_omega*x[0] + _phase + n*SimTK::Pi/2);
 	}

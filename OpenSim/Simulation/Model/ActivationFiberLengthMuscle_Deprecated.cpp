@@ -449,8 +449,8 @@ double ActivationFiberLengthMuscle_Deprecated::
 
 SimTK::SystemYIndex ActivationFiberLengthMuscle_Deprecated::getStateVariableSystemIndex(const string &stateVariableName) const
 {
-	unsigned int start = stateVariableName.find(".");
-	unsigned int end = stateVariableName.length();
+	unsigned start = (unsigned)stateVariableName.find(".");
+	unsigned end = (unsigned)stateVariableName.length();
 	
 	if(start == end)
 		return ModelComponent::getStateVariableSystemIndex(stateVariableName);

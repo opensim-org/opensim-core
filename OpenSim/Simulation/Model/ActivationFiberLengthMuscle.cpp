@@ -297,8 +297,8 @@ void ActivationFiberLengthMuscle::computeForce(const SimTK::State& s,
 SimTK::SystemYIndex ActivationFiberLengthMuscle::
 getStateVariableSystemIndex(const string &stateVariableName) const
 {
-	unsigned int start = stateVariableName.find(".");
-	unsigned int end = stateVariableName.length();
+	unsigned int start = (int)stateVariableName.find(".");
+	unsigned int end = (int)stateVariableName.length();
 	
 	if(start == end)
 		return ModelComponent::getStateVariableSystemIndex(stateVariableName);

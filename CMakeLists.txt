@@ -193,33 +193,37 @@ ENDIF()
 
 IF(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
     STRING(TOUPPER ${BUILD_INST_SET} CL_INST_SET)
+    set(BUILD_LIMIT_PARALLEL_COMPILES "" CACHE STRING
+        "Set a maximum number of simultaneous compilations.")
+    mark_as_advanced(BUILD_LIMIT_PARALLEL_COMPILES)
+    set(mxcpu ${BUILD_LIMIT_PARALLEL_COMPILES}) # abbreviation
 
     ## C++
     SET(CMAKE_CXX_FLAGS_DEBUG        
-	"/MP /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /GS- /arch:${CL_INST_SET}" 
+	"/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /GS- /arch:${CL_INST_SET}" 
         CACHE STRING "VC++ Debug build compile flags" FORCE)
     SET(CMAKE_CXX_FLAGS_RELEASE        
-	"/MP /D NDEBUG /MD  /O2 /Ob2 /Oi /GS- /arch:${CL_INST_SET}" 
+	"/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /GS- /arch:${CL_INST_SET}" 
         CACHE STRING "VC++ Release build compile flags" FORCE)
     SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO 
-	"/MP /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /GS- /arch:${CL_INST_SET}" 
+	"/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /GS- /arch:${CL_INST_SET}" 
         CACHE STRING "VC++ RelWithDebInfo build compile flags" FORCE)
     SET(CMAKE_CXX_FLAGS_MINSIZEREL 
-	"/MP /D NDEBUG /MD  /O1 /Ob1 /Oi /GS- /arch:${CL_INST_SET}" 
+	"/MP${mxcpu} /D NDEBUG /MD  /O1 /Ob1 /Oi /GS- /arch:${CL_INST_SET}" 
         CACHE STRING "VC++ MinSizeRel build compile flags" FORCE)
 
     ## C
     SET(CMAKE_C_FLAGS_DEBUG        
-	"/MP /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /GS- /arch:${CL_INST_SET}" 
+	"/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /GS- /arch:${CL_INST_SET}" 
         CACHE STRING "VC++ Debug build compile flags" FORCE)
     SET(CMAKE_C_FLAGS_RELEASE        
-	"/MP /D NDEBUG /MD  /O2 /Ob2 /Oi /GS- /arch:${CL_INST_SET}" 
+	"/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /GS- /arch:${CL_INST_SET}" 
         CACHE STRING "VC++ Release build compile flags" FORCE)
     SET(CMAKE_C_FLAGS_RELWITHDEBINFO 
-	"/MP /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /GS- /arch:${CL_INST_SET}" 
+	"/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /GS- /arch:${CL_INST_SET}" 
         CACHE STRING "VC++ RelWithDebInfo build compile flags" FORCE)
     SET(CMAKE_C_FLAGS_MINSIZEREL 
-	"/MP /D NDEBUG /MD  /O1 /Ob1 /Oi /GS- /arch:${CL_INST_SET}" 
+	"/MP${mxcpu} /D NDEBUG /MD  /O1 /Ob1 /Oi /GS- /arch:${CL_INST_SET}" 
         CACHE STRING "VC++ MinSizeRel build compile flags" FORCE)
 
 ENDIF()
@@ -287,7 +291,15 @@ link_directories(${Simbody_LIB_DIR})
 SET(BUILD_USING_OTHER_LAPACK "" CACHE STRING
  "If you have your own Lapack, put its library basename here. Default is to use SimTKlapack.")
 
-SET(LAPACK_BEING_USED SimTKlapack CACHE STRING
+set(default_lapack_libs "lapack;blas")
+if (WIN32) 
+    if (${PLATFORM_ABI} MATCHES "x64")
+        set(default_lapack_libs "liblapack;libblas")
+    else()
+        set(default_lapack_libs "SimTKlapack")
+    endif()
+endif()
+SET(LAPACK_BEING_USED ${default_lapack_libs} CACHE STRING
 "Basename of the actual Lapack library we're depending on; can't change here; see variable BUILD_USING_OTHER_LAPACK." FORCE)
 
 IF(BUILD_USING_OTHER_LAPACK)
@@ -317,8 +329,13 @@ IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
     SET(MATH_LIBS_TO_USE_VN ${LAPACK_BEING_USED} pthread ${REALTIME_LIB} dl)
 ELSE()
     ## Assume Microsoft Visual Studio
-    SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthreadVC2)
-    SET(MATH_LIBS_TO_USE_VN ${LAPACK_BEING_USED} pthreadVC2)
+    if(${PLATFORM_ABI} MATCHES "x64")
+        SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthreadVC2_x64)
+        SET(MATH_LIBS_TO_USE_VN ${LAPACK_BEING_USED} pthreadVC2_x64)
+    else()
+        SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthreadVC2)
+        SET(MATH_LIBS_TO_USE_VN ${LAPACK_BEING_USED} pthreadVC2)
+    endif()
 ENDIF()
 # Copy libraries from ${SIMTK_BIN_DIR} to ${BUILD_BINARY_DIR}
 

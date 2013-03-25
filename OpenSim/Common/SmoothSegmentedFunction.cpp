@@ -491,14 +491,14 @@ SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder,
         }         
 
         
-    SimTK::Vector xsmpl(pts*(midX.nelt()-1)+2*10*pts);
+    SimTK::Vector xsmpl(pts*(midX.size()-1)+2*10*pts);
     
     SimTK::Matrix results;
 
     if(_computeIntegral){
-        results.resize(pts*(midX.nelt()-1)+2*10*pts,maxOrder+2+1);
+        results.resize(pts*(midX.size()-1)+2*10*pts,maxOrder+2+1);
     }else{
-        results.resize(pts*(midX.nelt()-1)+2*10*pts,maxOrder+2);
+        results.resize(pts*(midX.size()-1)+2*10*pts,maxOrder+2);
     }
     //Array initialization is so ugly ...
     SimTK::Array_<int> d1y(1),d2y(2),d3y(3),d4y(4),d5y(5),d6y(6);

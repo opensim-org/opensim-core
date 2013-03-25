@@ -145,7 +145,7 @@ addStateVariable(const std::string& stateVariableName,
             stateVariableName + "' already exists.");
     }
 
-	int order = _namedStateVariableInfo.size();
+	int order = (int)_namedStateVariableInfo.size();
     // assign a "slot" for a state variable by name
     // state variable index will be invalid by default
     // upon allocation during realizeTopology the index will be set
@@ -468,7 +468,7 @@ getStateVariablesNamesAddedByModelComponent() const
     std::map<std::string, StateVariableInfo>::const_iterator it;
     it = _namedStateVariableInfo.begin();
     
-    Array<std::string> names("",_namedStateVariableInfo.size());
+    Array<std::string> names("",(int)_namedStateVariableInfo.size());
 
     while(it != _namedStateVariableInfo.end()){
         names[it->second.order] = it->first;

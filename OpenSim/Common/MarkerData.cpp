@@ -76,7 +76,7 @@ MarkerData::MarkerData(const string& aFileName) :
 
    /* Check if the suffix is TRC or TRB. Will read TRC by default */
 	string suffix;
-   int dot = aFileName.find_last_of(".");
+   int dot = (int)aFileName.find_last_of(".");
    suffix.assign(aFileName, dot+1, 3);
 
    if ((suffix == "TRB") || (suffix == "trb"))

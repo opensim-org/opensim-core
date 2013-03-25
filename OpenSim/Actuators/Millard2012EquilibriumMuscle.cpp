@@ -500,8 +500,8 @@ Array<std::string> Millard2012EquilibriumMuscle::getStateVariableNames() const
 SimTK::SystemYIndex Millard2012EquilibriumMuscle::
     getStateVariableSystemIndex(const std::string &stateVariableName) const
 {
-    unsigned int start = stateVariableName.find(".");
-	unsigned int end = stateVariableName.length();
+    unsigned start = (unsigned)stateVariableName.find(".");
+	unsigned end = (unsigned)stateVariableName.length();
 	
 	if(start == end)
 		return ModelComponent::getStateVariableSystemIndex(stateVariableName);

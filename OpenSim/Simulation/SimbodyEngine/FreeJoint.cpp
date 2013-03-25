@@ -95,7 +95,7 @@ void FreeJoint::setNull()
 	string dirStrings[] = {"x", "y", "z"};
 	for (int i=0; i< 3; i++){
 		string oldName = coordinateSet.get(i).getName();
-		int pos=oldName.find("_coord_"); 
+		int pos=(int)oldName.find("_coord_"); 
 		if (pos != string::npos){
 			oldName.replace(pos, 8, ""); 
 			coordinateSet.get(i).setName(oldName+"_"+dirStrings[i]+"Rotation");
@@ -104,7 +104,7 @@ void FreeJoint::setNull()
 	}
 	for (int i=3; i< 6; i++){
 		string oldName = coordinateSet.get(i).getName();
-		int pos=oldName.find("_coord_"); 
+		int pos=(int)oldName.find("_coord_"); 
 		if (pos != string::npos){
 			oldName.replace(pos, 8, ""); 
 			coordinateSet.get(i).setName(oldName+"_"+dirStrings[i-3]+"Translation");

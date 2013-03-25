@@ -580,7 +580,7 @@ getDefaultInstanceOfType(const std::string& objectTypeTag) {
     // First apply renames if any.
 
     // Avoid an infinite loop if there is a cycle in the rename table.
-    const int MaxRenames = _renamedTypesMap.size();
+    const int MaxRenames = (int)_renamedTypesMap.size();
     int renameCount = 0;
     while(true) {
         std::map<std::string,std::string>::const_iterator newNamep =

@@ -927,7 +927,7 @@ SimTK::Matrix SegmentedQuinticBezierToolkit::calcNumIntBezierYfcnX(
                             bool flag_intLeftToRight,
                             const std::string& caller)
 {
-    SimTK::Matrix intXY(vX.nelt(),2);
+    SimTK::Matrix intXY(vX.size(),2);
     BezierData bdata;
         bdata._mX             = mX;
         bdata._mY             = mY;
@@ -941,7 +941,7 @@ SimTK::Matrix SegmentedQuinticBezierToolkit::calcNumIntBezierYfcnX(
     //These aren't really times, but I'm perpetuating the SimTK language
     //so that I don't make a mistake
     double startTime = vX(0);
-    double endTime   = vX(vX.nelt()-1);
+    double endTime   = vX(vX.size()-1);
     
     if(flag_intLeftToRight){
         bdata._startValue = startTime;
@@ -969,7 +969,7 @@ SimTK::Matrix SegmentedQuinticBezierToolkit::calcNumIntBezierYfcnX(
             if(flag_intLeftToRight){
                 nextTimeInterval = vX(idx);
             }else{
-                nextTimeInterval = endTime-vX(vX.nelt()-idx-1);
+                nextTimeInterval = endTime-vX(vX.size()-idx-1);
             }
         }
         status=integ.stepTo(nextTimeInterval);
@@ -986,8 +986,8 @@ SimTK::Matrix SegmentedQuinticBezierToolkit::calcNumIntBezierYfcnX(
             intXY(idx,0) = nextTimeInterval;
             intXY(idx,1) = (double)state.getZ()[0];                        
         }else{
-            intXY(vX.nelt()-idx-1,0) = vX(vX.nelt()-idx-1);
-            intXY(vX.nelt()-idx-1,1) = (double)state.getZ()[0];
+            intXY(vX.size()-idx-1,0) = vX(vX.size()-idx-1);
+            intXY(vX.size()-idx-1,1) = (double)state.getZ()[0];
         }
         idx++;
 

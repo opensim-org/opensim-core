@@ -116,7 +116,7 @@ public:
 	}
 	virtual double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const
 	{
-	   int nd = derivComponents.size();
+	   int nd = (int)derivComponents.size();
 	   if (nd < 1)
 		   return SimTK::NaN;
 	

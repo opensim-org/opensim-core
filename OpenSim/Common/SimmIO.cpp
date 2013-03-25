@@ -125,7 +125,7 @@ bool OpenSim::readStringFromString(string &aString, string &rBuffer)
    /* only one string found */
    if (i == -1)
    {
-      i = aString.length();
+      i = (int)aString.length();
       rBuffer = aString;
       aString.erase(0, i);
    }
@@ -173,12 +173,12 @@ bool OpenSim::readTabDelimitedStringFromString(string &aString, string &rBuffer)
       return false;
 
    /* find first tab, line feed, or carriage return */
-   i = aString.find_first_of("\t\r\n", 0);
+   i = (int)aString.find_first_of("\t\r\n", 0);
 
    /* no tab, whole input string is one string */
    if (i == -1)
    {
-      i = aString.length();
+      i = (int)aString.length();
       rBuffer = aString;
       aString.erase(0, i);
    }
@@ -406,7 +406,7 @@ bool OpenSim::readCoordinatesFromString(string &aString, double rVec[3], bool al
  */
 int OpenSim::findFirstNonWhiteSpace(string &aString)
 {
-   return aString.find_first_not_of(" \t\r\n", 0);
+   return (int)aString.find_first_not_of(" \t\r\n", 0);
 }
 
 //_____________________________________________________________________________
@@ -418,7 +418,7 @@ int OpenSim::findFirstNonWhiteSpace(string &aString)
  */
 int OpenSim::findFirstWhiteSpace(string &aString)
 {
-   return aString.find_first_of(" \t\r\n", 0);
+   return (int)aString.find_first_of(" \t\r\n", 0);
 }
 
 //_____________________________________________________________________________
