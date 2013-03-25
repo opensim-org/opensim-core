@@ -23,7 +23,7 @@
 
 //============================================================================
 //	testProbes builds an OpenSim model containing a Millard2012Equilibrium
-//  muscle model using the OpenSim API and applys a bunch of probes to it.
+//  muscle model using the OpenSim API and applies a bunch of probes to it.
 //		
 //     Add more test cases to address specific problems with probes
 //
