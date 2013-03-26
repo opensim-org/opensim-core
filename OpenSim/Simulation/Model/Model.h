@@ -637,7 +637,7 @@ public:
 	 * @param[out] stateValues  Array used to collect the reordered state values.
 	 */
 	void getStateValues(const SimTK::State& state, Array<double>& stateValues) const;
-    SimTK::Vector Model::getStateValues(const SimTK::State& s) const;
+    SimTK::Vector Model::getStateValuesVector(const SimTK::State& s) const;
 
 	/**
 	 * Set the values of state variables which are passed in the same ordering

@@ -1263,7 +1263,7 @@ void Model::getStateValues(const SimTK::State& s, Array<double> &rStateValues) c
 		rStateValues[i] = s.getY()[_stateVariableSystemIndices[i]];
 }
 
-SimTK::Vector Model::getStateValues(const SimTK::State& s) const
+SimTK::Vector Model::getStateValuesVector(const SimTK::State& s) const
 {
     Vector rStateValues(getNumStateVariables());
 	for(int i=0; i< _stateVariableSystemIndices.getSize(); i++) 
