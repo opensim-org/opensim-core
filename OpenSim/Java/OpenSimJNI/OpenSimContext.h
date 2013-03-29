@@ -96,7 +96,10 @@ public:
 	void computeConstrainedCoordinates( double statesBuffer[]);
 	void getStates( double statesBuffer[]);
 	void getStates( Array<double>&  rStates);
+	/** Get reference to the single instance of SimTK::State maintained by the Context object **/
     const SimTK::State& getCurrentStateRef() const { return (*_configState); };
+	/** Return a "clone" of  the single instance of SimTK::State maintained by the Context object **/
+    SimTK::State getCurrentStateCopy() const { return SimTK::State(*_configState); };
         void recreateSystemAfterSystemExistsKeepStage(); 
         void recreateSystemAfterSystemExists(); 
         void resetStateToDefault() {
