@@ -637,7 +637,7 @@ public:
 	 * @param[out] stateValues  Array used to collect the reordered state values.
 	 */
 	void getStateValues(const SimTK::State& state, Array<double>& stateValues) const;
-    SimTK::Vector getStateValuesVector(const SimTK::State& s) const;
+    SimTK::Vector getStateValues(const SimTK::State& s) const;
 
 	/**
 	 * Set the values of state variables which are passed in the same ordering
@@ -837,6 +837,9 @@ public:
 	/** Get the names of the states. These are the continuous states introduced
     by OpenSim ModelComponents and exposed thru the ModelComponent API. **/
 	/*virtual*/ Array<std::string> getStateVariableNames() const;
+
+    const Array<SimTK::SystemYIndex>& getStateVariableSystemIndices() const
+    { return _stateVariableSystemIndices;}
 
     /** Get the value of a state variable of this Model.
     @param state   the State for which to get the value
