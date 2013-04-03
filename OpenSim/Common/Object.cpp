@@ -1039,6 +1039,8 @@ updateDefaultObjectsFromXMLNode()
 	if (iterDefault==_document->getRootDataElement().element_end() || 
 		!iterDefault->isValid()) return;	// No defaults, skip over
 
+    if (_document->hasDefaultObjects()) return; // Could be processed by base class, if so skip.
+
 	SimTK::Array_<SimTK::Xml::Element> elts = iterDefault->getAllElements();
 	for(unsigned it = 0; it < elts.size(); it++) {
 		SimTK::String stg = elts[it].getElementTag();
