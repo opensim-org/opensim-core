@@ -86,11 +86,12 @@ public:
 		NOTE: forces with internal states should be removed/disabled prior to solving if default state
 		      is inadequate */
 	virtual SimTK::Vector solve(SimTK::State &s, const FunctionSet &Qs, double time);
-	/** Same as above but for a given time series populate an Array (trajectory) of generalized-coordinate
+#ifndef SWIG
+    /** Same as above but for a given time series populate an Array (trajectory) of generalized-coordinate
 	    forces (Vectors) */
 	virtual void solve(SimTK::State &s, const FunctionSet &Qs, const SimTK::Array_<double> &times, 
 		SimTK::Array_<SimTK::Vector> &genForceTrajectory);
-
+#endif
 //=============================================================================
 };	// END of class InverseDynamicsSolver
 //=============================================================================
