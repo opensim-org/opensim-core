@@ -39,13 +39,20 @@
 #include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 #include <OpenSim/Common/SmoothSegmentedFunction.h>
 #include <OpenSim/Common/XYFunctionInterface.h>
+#include <OpenSim/Common/FunctionSet.h>
+
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
 #include <OpenSim/Simulation/Model/ComponentSet.h>
+
+#include <OpenSim/Simulation/Solver.h>
+#include <OpenSim/Simulation/InverseDynamicsSolver.h>
+
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
+#include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
 #include <OpenSim/Simulation/Model/ExternalForce.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/ContactHalfSpace.h>
@@ -287,6 +294,16 @@ using namespace SimTK;
        this.setValues(values, splits.length);
 	}
 %}
+
+%rename OpenSim::Model::addComponent addComponentImpl;
+%rename OpenSim::Model::addBody addBodyImpl;
+%rename OpenSim::Model::addConstraint addConstraintImpl;
+%rename OpenSim::Model::addForce addForceImpl;
+%rename OpenSim::Model::addProbe addProbeImpl;
+%rename OpenSim::Model::addContactGeometry addContactGeometryImpl;
+%rename OpenSim::Model::addController addControllerImpl;
+%rename OpenSim::Model::addAnalysis addAnalysisImpl;
+
 %typemap(javacode) OpenSim::Model %{
   private String originalModelPath = null;
   // Important that we only refer to originalModelPath if the model's getInputFileName() is not set
@@ -304,37 +321,45 @@ using namespace SimTK;
       return originalModelPath + java.io.File.separator;
     else return "";
   }
-  public void adoptComponent(ModelComponent aComponent) {
+
+  public void addComponent(ModelComponent aComponent) {
 	aComponent.markAdopted();
-	addComponent(aComponent);
+    addComponentImpl(aComponent);
   }
-  public void adoptBody(Body aBody) {
+
+  public void addBody(Body aBody) {
 	aBody.markAdopted();
-	addBody(aBody);
+    addBodyImpl(aBody);
   }
-  public void adoptConstraint(Constraint aConstraint) {
+
+  public void addConstraint(Constraint aConstraint) {
 	aConstraint.markAdopted();
-	addConstraint(aConstraint);
+    addConstraintImpl(aConstraint);
   }
-  public void adoptForce(Force aForce) {
-	aForce.markAdopted();
-	addForce(aForce);
-  }
-  public void adoptProbe(Probe aProbe) {
+
+  public void addProbe(Probe aProbe) {
 	aProbe.markAdopted();
-	addProbe(aProbe);
-  }
-  public void adoptContactGeometry(ContactGeometry aContactGeometry) {
+    addProbeImpl(aProbe);
+  }  
+  
+  public void addContactGeometry(ContactGeometry aContactGeometry) {
 	aContactGeometry.markAdopted();
-	addContactGeometry(aContactGeometry);
+    addContactGeometryImpl(aContactGeometry);
   }
-  public void adoptAnalysis(Analysis aAnalysis) {
+
+  public void addAnalysis(Analysis aAnalysis) {
 	aAnalysis.markAdopted();
-	addAnalysis(aAnalysis);
+	addAnalysisImpl(aAnalysis);
   }
-  public void adoptController(Controller aController) {
+
+  public void addForce(Force aForce) {
+	aForce.markAdopted();
+	addForceImpl(aForce);
+  }
+
+  public void addController(Controller aController) {
 	aController.markAdopted();
-	addController(aController);
+	addControllerImpl(aController);
   }
 %}
 
@@ -574,39 +599,46 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %include <SimTKcommon.h>
 
 %include <SimTKcommon/Constants.h>
-%include <SimTKcommon/internal/Vec.h>
+%include <SWIG/Vec.h>
 %include <SimTKcommon/SmallMatrix.h>
 // Vec3
 namespace SimTK {
 %template(Vec3) Vec<3>;
 }
 // Mat33
-%include <SimTKcommon/internal/Mat.h>
+%include <SWIG/Mat.h>
 namespace SimTK {
 %template(Mat33) Mat<3, 3>;
 }
 // Vector and Matrix
-%include <SimTKcommon/internal/BigMatrix.h>
+%include <SWIG/BigMatrix.h>
 namespace SimTK {
+%template(MatrixBaseDouble) SimTK::MatrixBase<double>;
+%template(VectorBaseDouble) SimTK::VectorBase<double>;
 %template(Vector) SimTK::Vector_<double>;
 %template(Matrix) SimTK::Matrix_<double>;
 }
 
+%include <SWIG/SpatialAlgebra.h>
+namespace SimTK {
+%template(SpatialVec) Vec<2,   Vec3>;
+//%template(VectorOfSpatialVec) Vector_<SpatialVec>;
+}
 // Transform
-%include <SimTKcommon/internal/Transform.h>
+%include <SWIG/Transform.h>
 namespace SimTK {
 %template(Transform) SimTK::Transform_<double>;
 }
 
-%include <SimTKcommon/internal/MassProperties.h>
+%include <SWIG/MassProperties.h>
 namespace SimTK {
 %template(Inertia) SimTK::Inertia_<double>;
 %template(MassProperties) SimTK::MassProperties_<double>;
 }
 
 // State & Stage
-%include <SimTKcommon/internal/Stage.h>
-%include <SimTKcommon/internal/State.h>
+%include <SWIG/Stage.h>
+%include <SWIG/State.h>
 
 // osimCommon Library
 %include <OpenSim/Common/osimCommonDLL.h>
@@ -631,6 +663,10 @@ namespace SimTK {
 %include <OpenSim/Common/Units.h>
 %include <OpenSim/Common/IO.h>
 %include <OpenSim/Common/Function.h>
+
+%template(SetFunctions) OpenSim::Set<OpenSim::Function>;
+%include <OpenSim/Common/FunctionSet.h>
+
 %include <OpenSim/Common/Constant.h>
 %include <OpenSim/Common/SimmSpline.h>
 %include <OpenSim/Common/StepFunction.h>
@@ -667,6 +703,9 @@ namespace SimTK {
 
 %template(SetMuscles) OpenSim::Set<OpenSim::Muscle>;
 
+%include <OpenSim/Simulation/Solver.h>
+%include <OpenSim/Simulation/InverseDynamicsSolver.h>
+
 %include <OpenSim/Simulation/Model/Force.h>
 %template(SetForces) OpenSim::Set<OpenSim::Force>;
 %template(ModelComponentSetForces) OpenSim::ModelComponentSet<OpenSim::Force>;
@@ -682,6 +721,7 @@ namespace SimTK {
 %template(ModelComponentSetExternalForces) OpenSim::ModelComponentSet<OpenSim::ExternalForce>;
 %include <OpenSim/Simulation/Model/ExternalLoads.h>
 %include <OpenSim/Simulation/Model/PrescribedForce.h>
+%include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
 
 %include <OpenSim/Simulation/Model/ContactGeometry.h>
 %template(SetContactGeometry) OpenSim::Set<OpenSim::ContactGeometry>;
