@@ -78,6 +78,19 @@ public:
      * Set the transition velocity for switching between static and dynamic friction.
      */
     void setTransitionVelocity(double velocity);
+    
+    // Access to ContactParameters
+    double getStiffness() const;
+    void setStiffness(double stiffness) ;
+    double getDissipation() const;
+    void setDissipation(double dissipation);
+    double getStaticFriction() const;
+    void setStaticFriction(double friction);
+    double getDynamicFriction() const;
+    void setDynamicFriction(double friction);
+    double getViscousFriction() const;
+    void setViscousFriction(double friction);
+    
 
 	//-----------------------------------------------------------------------------
 	// Reporting
@@ -107,7 +120,6 @@ private:
 };	// END of class HuntCrossleyForce
 //==============================================================================
 //==============================================================================
-
 
 //==============================================================================
 //                 HUNT CROSSLEY FORCE :: CONTACT PARAMETERS
@@ -177,6 +189,8 @@ public:
 private:
 	void setNull();
 };
+
+
 
 } // end of namespace OpenSim
 

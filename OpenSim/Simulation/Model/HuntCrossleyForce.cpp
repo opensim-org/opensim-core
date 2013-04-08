@@ -118,7 +118,17 @@ void HuntCrossleyForce::setTransitionVelocity(double velocity)
     set_transition_velocity(velocity);
 }
 
-
+double HuntCrossleyForce::getStiffness() const{ return get_contact_parameters().get(0).getStiffness(); };
+void HuntCrossleyForce::setStiffness(double stiffness) {upd_contact_parameters()[0].setStiffness(stiffness); };
+double HuntCrossleyForce::getDissipation() const  { return get_contact_parameters().get(0).getDissipation(); };
+void HuntCrossleyForce::setDissipation(double dissipation) {upd_contact_parameters()[0].setStiffness(dissipation); };
+double HuntCrossleyForce::getStaticFriction() const { return get_contact_parameters().get(0).getStaticFriction(); };
+void HuntCrossleyForce::setStaticFriction(double friction) {upd_contact_parameters()[0].setStiffness(friction); };
+double HuntCrossleyForce::getDynamicFriction() const  { return get_contact_parameters().get(0).getDynamicFriction(); };
+void HuntCrossleyForce::setDynamicFriction(double friction) {upd_contact_parameters()[0].setStiffness(friction); };
+double HuntCrossleyForce::getViscousFriction() const  { return get_contact_parameters().get(0).getViscousFriction(); };
+void HuntCrossleyForce::setViscousFriction(double friction) {upd_contact_parameters()[0].setStiffness(friction); };
+ 
 
 //==============================================================================
 //                HUNT CROSSLEY FORCE :: CONTACT PARAMETERS
