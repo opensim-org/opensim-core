@@ -622,7 +622,7 @@ namespace SimTK {
 %include <SWIG/SpatialAlgebra.h>
 namespace SimTK {
 %template(SpatialVec) Vec<2,   Vec3>;
-//%template(VectorOfSpatialVec) Vector_<SpatialVec>;
+%template(VectorOfSpatialVec) Vector_<SpatialVec>;
 }
 // Transform
 %include <SWIG/Transform.h>

@@ -2071,7 +2071,7 @@ private:
 #ifndef SWIG
 template <class ELT> class Vector_ : public VectorBase<ELT> {
 #else
-template <class ELT=double> class Vector_ : public VectorBase<double> {
+template <class ELT=double> class Vector_ : public VectorBase<ELT> {
 #endif
 #ifndef SWIG
     typedef typename CNT<ELT>::Scalar       S;
