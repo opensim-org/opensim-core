@@ -115,8 +115,7 @@ void Probe::constructProperties(void)
 {
     constructProperty_isDisabled(false);
     constructProperty_probe_operation("value");  // means "pass the value through".
-    Vector defaultInitCond(1, 0.0);              // Set default initial condition to zero.
-    constructProperty_initial_conditions_for_integration(defaultInitCond);
+    constructProperty_initial_conditions_for_integration();
     constructProperty_gain(1.0);
 }
 
@@ -351,7 +350,13 @@ string Probe::getOperation() const
  */
 Vector Probe::getInitialConditions() const
 {
-    return get_initial_conditions_for_integration();
+	int size = getProperty_initial_conditions_for_integration().size();
+	Vector v(size);
+	for(int i = 0; i < size ; i++)
+	{
+		v[i] = get_initial_conditions_for_integration(i);
+	}
+    return v;
 }
 
 //_____________________________________________________________________________

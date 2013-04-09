@@ -27,7 +27,7 @@
 //=============================================================================
 #include "ActuatorForceProbe.h"
 #include "ForceSet.h"
-
+#include <OpenSim/Common/IO.h>
 
 using namespace std;
 using namespace SimTK;
@@ -162,12 +162,16 @@ void ActuatorForceProbe::connectToModel(Model& model)
     Super::connectToModel(model);
 
     // Check to see if 'all' actuators are selected for probing.
-    if (getProperty_actuator_names()[0] == "all") {
-        Array<string> allActNames;
-        _model->getActuators().getNames(allActNames);
-        set_actuator_names(allActNames);
-        //cout << "Set to all actuators: " << allActNames << endl;
-    }
+	if(getProperty_actuator_names().size() > 0)
+	{
+		if(IO::Uppercase(get_actuator_names(0)) == "ALL")
+		{
+			Array<string> allActNames;
+			_model->getActuators().getNames(allActNames);
+			set_actuator_names(allActNames);
+			//cout << "Set to all actuators: " << allActNames << endl;
+		}
+	}
 
     // check that each Actuator in the actuator_names array exists in the model
     int nA = getActuatorNames().size();

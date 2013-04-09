@@ -25,6 +25,7 @@
 // INCLUDE
 //=============================================================================
 #include "JointInternalPowerProbe.h"
+#include <OpenSim/Common/IO.h>
 
 using namespace std;
 using namespace SimTK;
@@ -151,12 +152,15 @@ void JointInternalPowerProbe::connectToModel(Model& aModel)
     Super::connectToModel(aModel);
 
     // Check to see if 'all' joints are selected for probing.
-    if (getProperty_joint_names()[0] == "all") {
-        Array<string> allJointNames;
-        _model->getJointSet().getNames(allJointNames);
-        set_joint_names(allJointNames);
-        //cout << "Set to all joints: " << allJointNames << endl;
-    }
+	if(getProperty_joint_names().size() > 0)
+	{
+		if(IO::Uppercase(get_joint_names(0)) == "ALL")
+		{
+			Array<string> allJointNames;
+			_model->getJointSet().getNames(allJointNames);
+			set_joint_names(allJointNames);
+		}
+	}
 
     // check that each Joints in the joint_names array exists in the model
     int nA = getJointNames().size();
