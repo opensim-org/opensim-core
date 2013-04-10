@@ -1,5 +1,5 @@
-#ifndef __InverseDynamicsSolver_h__
-#define __InverseDynamicsSolver_h__
+#ifndef OPENSIM_InverseDynamicsSolver_H_
+#define OPENSIM_InverseDynamicsSolver_H_
 /* -------------------------------------------------------------------------- *
  *                     OpenSim:  InverseDynamicsSolver.h                      *
  * -------------------------------------------------------------------------- *
@@ -62,34 +62,30 @@ public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-	virtual ~InverseDynamicsSolver() {}
-
-	/** Construct an InverseDynamics solver with the coordinate references as the goal
-	    of the InverseDynamics and (optional)constraint weight. Defual is infitinet
-		constraint weighting (i.e. rigidly enforced) during InverseDynamics. */
-	InverseDynamicsSolver(const Model &model);
+	/** Construct an InverseDynamics solver applied to the provided model */
+	InverseDynamicsSolver(const Model& model);
 	
 	/** Solve the inverse dynamics system of equations for generalized coordinate forces, Tau. 
 	    Applied loads are computed by the model from the state.	 */
-	virtual SimTK::Vector solve(SimTK::State &s, const SimTK::Vector &udot = SimTK::Vector(0));
+	virtual SimTK::Vector solve(SimTK::State& s, const SimTK::Vector& udot = SimTK::Vector(0));
 
 	/** Solve the inverse dynamics system of equations for generalized coordinate forces, Tau. 
 	    Applied loads are explicity provided as generalized coordinate forces (MobilityForces)
 		and/or a Vector of Spatial-body forces */
-	virtual SimTK::Vector solve(const SimTK::State &s, const SimTK::Vector &udot, 
-		const SimTK::Vector &appliedMobilityForces, 
+	virtual SimTK::Vector solve(const SimTK::State& s, const SimTK::Vector& udot, 
+		const SimTK::Vector& appliedMobilityForces, 
 		const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces);
 	
 	/** Solve the inverse dynamics system of equations for generalized coordinate forces, Tau. 
 	    Now the state is updated from known coordinates, q, as functions of time.
 		Coordinate functions must be twice differentiable. 
 		NOTE: forces with internal states should be removed/disabled prior to solving if default state
-		      is inadequate */
-	virtual SimTK::Vector solve(SimTK::State &s, const FunctionSet &Qs, double time);
+		      is inappropriate */
+	virtual SimTK::Vector solve(SimTK::State& s, const FunctionSet& Qs, double time);
 #ifndef SWIG
     /** Same as above but for a given time series populate an Array (trajectory) of generalized-coordinate
 	    forces (Vectors) */
-	virtual void solve(SimTK::State &s, const FunctionSet &Qs, const SimTK::Array_<double> &times, 
+	virtual void solve(SimTK::State& s, const FunctionSet& Qs, const SimTK::Array_<double>& times, 
 		SimTK::Array_<SimTK::Vector> &genForceTrajectory);
 #endif
 //=============================================================================
@@ -97,4 +93,4 @@ public:
 //=============================================================================
 } // namespace
 
-#endif // __InverseDynamicsSolver_h__
+#endif // OPENSIM_InverseDynamicsSolver_H_
