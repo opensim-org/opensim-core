@@ -104,12 +104,55 @@ void MuscleMetabolicPowerProbeUmberger2010::constructProperties()
  */
 void MuscleMetabolicPowerProbeUmberger2010::connectToModel(Model& aModel)
 {
-    // Connect all MetabolicMuscleParameter objects to the model as subcomponents
-    for (int i=0; i<get_MetabolicMuscleParameterSet().getSize(); ++i) {
-        includeAsSubComponent(&upd_MetabolicMuscleParameterSet().get(i));
-    }
-
     Super::connectToModel(aModel);
+    stringstream errorMessage;
+
+    // -----------------------------------------------------------------------
+    // Check that the muscles in the MetabolicMuscleParameterSet exist in
+    // the model and set their pointers to the actual muscle objects.
+    // -----------------------------------------------------------------------
+    const int nM = get_MetabolicMuscleParameterSet().getSize();
+    for (int i=0; i<nM; ++i) {
+        MetabolicMuscleParameter& mm = get_MetabolicMuscleParameterSet()[i];
+        int k = _model->getMuscles().getIndex(mm.getName());
+        if( k < 0 )	{
+            errorMessage << "MetabolicMuscleParameter: Invalid muscle '" 
+                << mm.getName() << "' specified." << endl;
+            throw (Exception(errorMessage.str()));
+        }
+        else {
+             mm.setMuscle(&_model->updMuscles()[k]);
+        }
+
+
+        // Set the muscle mass internal member variable: _muscMass
+        if (mm.get_calculate_mass_from_muscle_properties()) {
+            double sigma = 0.25e6;      // (Pa), specific tension of mammalian muscle.
+            double rho = 1059.7;        // (kg/m^3), density of mammalian muscle.
+
+            const double muscMass = (mm.getMuscle()->getMaxIsometricForce() / sigma) 
+                                    * rho 
+                                    * mm.getMuscle()->getOptimalFiberLength();
+            mm.setMuscleMass(muscMass);
+        }
+        else {
+            mm.setMuscleMass(mm.get_muscle_mass());
+
+            if (mm.getMuscleMass() <= 0) {
+                errorMessage << "MetabolicMuscleParameter: Invalid muscle_mass specified for muscle: " 
+                    << mm.getName() << ". muscle_mass must be positive." << endl;
+                throw (Exception(errorMessage.str()));
+            }
+        }
+
+
+        // Error checking: ratio_slow_twitch_fibers
+        if (mm.get_ratio_slow_twitch_fibers() < 0 || mm.get_ratio_slow_twitch_fibers() > 1)	{
+            errorMessage << "MetabolicMuscleParameter: Invalid ratio_slow_twitch_fibers for muscle: " 
+                << getName() << ". ratio_slow_twitch_fibers must be between 0 and 1." << endl;
+            throw (Exception(errorMessage.str()));
+        }
+    }
 }
 
 
@@ -131,6 +174,7 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2010::computeProbeInputs(const St
 
     // BASAL METABOLIC RATE (W) (based on whole body mass, not muscle mass)
     // so do outside of muscle loop.
+    // TODO: system mass should be precalculated.
     // ------------------------------------------------------------------
     if (get_basal_rate_on()) {
         Bdot = get_basal_coefficient() 
@@ -146,8 +190,8 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2010::computeProbeInputs(const St
     for (int i=0; i<nM; i++)
     {
         // Get a pointer to the current muscle in the model
-        MetabolicMuscleParameter mm = get_MetabolicMuscleParameterSet().get(i);
-        Muscle* m = mm.getMuscle();
+        MetabolicMuscleParameter& mm = get_MetabolicMuscleParameterSet()[i];
+        const Muscle* m = mm.getMuscle();
 
         // Get some muscle properties at the current time state
         //const double max_isometric_force = m->getMaxIsometricForce();
@@ -168,11 +212,11 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2010::computeProbeInputs(const St
 
         // ---------------------------------------------------------------------------
         // NOT USED FOR THIS IMPLEMENTATION
-        //const double slow_twitch_excitation = mm.getRatioSlowTwitchFibers() * sin(Pi/2 * excitation);
-        //const double fast_twitch_excitation = (1 - mm.getRatioSlowTwitchFibers()) * (1 - cos(Pi/2 * excitation));
+        //const double slow_twitch_excitation = mm.get_ratio_slow_twitch_fibers() * sin(Pi/2 * excitation);
+        //const double fast_twitch_excitation = (1 - mm.get_ratio_slow_twitch_fibers()) * (1 - cos(Pi/2 * excitation));
 
         // Set normalized hill constants: A_rel and B_rel
-        //const double A_rel = 0.1 + 0.4*(1 - mm.getRatioSlowTwitchFibers());
+        //const double A_rel = 0.1 + 0.4*(1 - mm.get_ratio_slow_twitch_fibers());
         //const double B_rel = A_rel * max_shortening_velocity;
         // ---------------------------------------------------------------------------
 
@@ -214,7 +258,7 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2010::computeProbeInputs(const St
         // -----------------------------------------------------------------------
         if (get_activation_maintenance_rate_on())
         {
-            const double unscaledAMdot = 128*(1 - mm.getRatioSlowTwitchFibers()) + 25;
+            const double unscaledAMdot = 128*(1 - mm.get_ratio_slow_twitch_fibers()) + 25;
 
             if (fiber_length_normalized <= 1.0)
                 AMdot = get_scaling_factor() * std::pow(A, 0.6) * unscaledAMdot;
@@ -250,8 +294,8 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2010::computeProbeInputs(const St
                     tmp_slowTwitch = maxShorteningRate;
                 }
 
-                tmp_fastTwitch = alpha_shortening_fasttwitch * fiber_velocity_normalized * (1-mm.getRatioSlowTwitchFibers());
-                unscaledSdot = (tmp_slowTwitch * mm.getRatioSlowTwitchFibers()) - tmp_fastTwitch;   // unscaled shortening heat rate: muscle shortening
+                tmp_fastTwitch = alpha_shortening_fasttwitch * fiber_velocity_normalized * (1-mm.get_ratio_slow_twitch_fibers());
+                unscaledSdot = (tmp_slowTwitch * mm.get_ratio_slow_twitch_fibers()) - tmp_fastTwitch;   // unscaled shortening heat rate: muscle shortening
                 Sdot = get_scaling_factor() * std::pow(A, 2.0) * unscaledSdot;                      // scaled shortening heat rate: muscle shortening
             }
 
@@ -332,7 +376,7 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2010::computeProbeInputs(const St
         const bool debug = false;
         if(debug) {
             cout << "muscle_mass = " << mm.getMuscleMass() << endl;
-            cout << "ratio_slow_twitch_fibers = " << mm.getRatioSlowTwitchFibers() << endl;
+            cout << "ratio_slow_twitch_fibers = " << mm.get_ratio_slow_twitch_fibers() << endl;
             cout << "bodymass = " << _model->getMatterSubsystem().calcSystemMass(s) << endl;
             //cout << "max_isometric_force = " << max_isometric_force << endl;
             cout << "activation = " << activation << endl;

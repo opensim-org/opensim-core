@@ -56,10 +56,10 @@ namespace OpenSim {
  */
 
 
-class OSIMSIMULATION_API MetabolicMuscleParameter : public ModelComponent  
+class OSIMSIMULATION_API MetabolicMuscleParameter : public Object  
 {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MetabolicMuscleParameter, ModelComponent);
-
+    OpenSim_DECLARE_CONCRETE_OBJECT(MetabolicMuscleParameter, Object);
+public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
@@ -97,9 +97,15 @@ class OSIMSIMULATION_API MetabolicMuscleParameter : public ModelComponent
 //=============================================================================
 // DATA
 //=============================================================================
+// These private member variables are kept here because they apply to 
+// a single muscle, but are not set in this class -- rather, they are
+// set by the probes that own them.
 protected:
-    Muscle* m;
-    double _muscMass;
+    Muscle* _musc;          // pointer to the muscle that these parameters
+                            // apply to.
+    double _muscMass;       // The mass of the muscle (the value here depends
+                            // on if calculate_mass_from_muscle_properties
+                            // is true or false.
 
 
 
@@ -126,29 +132,18 @@ public:
     //--------------------------------------------------------------------------
     // Get and Set
     //--------------------------------------------------------------------------
-    Muscle* getMuscle();
+    const Muscle* getMuscle() const { return _musc; };
+    void setMuscle(Muscle* m) { _musc = m; }
 
-    double getMuscleMass() const;
-    double getRatioSlowTwitchFibers() const;
-    double getActivationConstantSlowTwitch() const;
-    double getActivationConstantFastTwitch() const;
-    double getMaintenanceConstantSlowTwitch() const;
-    double getMaintenanceConstantFastTwitch() const;
+    const double getMuscleMass() const { return _muscMass; };
+    void setMuscleMass(const double mass) { _muscMass = mass; }
 
-    void setMuscleMass(const double aMuscleMass);
-    void setRatioSlowTwitchFibers(const double aRatioSlowTwitchFibers);
-    void setActivationConstantSlowTwitch(const double aActivationConstantSlowTwitch);
-    void setActivationConstantFastTwitch(const double aActivationConstantFastTwitch);
-    void setMaintenanceConstantSlowTwitch(const double aMaintenanceSlowTwitch);
-    void setMaintenanceConstantFastTwitch(const double aMaintenanceFastTwitch);
 
 
 private:
     //--------------------------------------------------------------------------
-    // ModelComponent Interface
+    // Object Interface
     //--------------------------------------------------------------------------
-    void connectToModel(Model& aModel) OVERRIDE_11;
-
     void setNull();
     void constructProperties();
 

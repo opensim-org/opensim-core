@@ -113,12 +113,55 @@ void MuscleMetabolicPowerProbeBhargava2004::constructProperties()
  */
 void MuscleMetabolicPowerProbeBhargava2004::connectToModel(Model& aModel)
 {
-    // Connect all MetabolicMuscleParameter objects to the model as subcomponents
-    for (int i=0; i<get_MetabolicMuscleParameterSet().getSize(); ++i) {
-        includeAsSubComponent(&upd_MetabolicMuscleParameterSet().get(i));
-    }
-
     Super::connectToModel(aModel);
+    stringstream errorMessage;
+
+    // -----------------------------------------------------------------------
+    // Check that the muscles in the MetabolicMuscleParameterSet exist in
+    // the model and set their pointers to the actual muscle objects.
+    // -----------------------------------------------------------------------
+    const int nM = get_MetabolicMuscleParameterSet().getSize();
+    for (int i=0; i<nM; ++i) {
+        MetabolicMuscleParameter& mm = get_MetabolicMuscleParameterSet()[i];
+        int k = _model->getMuscles().getIndex(mm.getName());
+        if( k < 0 )	{
+            errorMessage << "MetabolicMuscleParameter: Invalid muscle '" 
+                << mm.getName() << "' specified." << endl;
+            throw (Exception(errorMessage.str()));
+        }
+        else {
+             mm.setMuscle(&_model->updMuscles()[k]);
+        }
+
+
+        // Set the muscle mass internal member variable: _muscMass
+        if (mm.get_calculate_mass_from_muscle_properties()) {
+            double sigma = 0.25e6;      // (Pa), specific tension of mammalian muscle.
+            double rho = 1059.7;        // (kg/m^3), density of mammalian muscle.
+
+            const double muscMass = (mm.getMuscle()->getMaxIsometricForce() / sigma) 
+                                    * rho 
+                                    * mm.getMuscle()->getOptimalFiberLength();
+            mm.setMuscleMass(muscMass);
+        }
+        else {
+            mm.setMuscleMass(mm.get_muscle_mass());
+
+            if (mm.getMuscleMass() <= 0) {
+                errorMessage << "MetabolicMuscleParameter: Invalid muscle_mass specified for muscle: " 
+                    << mm.getName() << ". muscle_mass must be positive." << endl;
+                throw (Exception(errorMessage.str()));
+            }
+        }
+
+
+        // Error checking: ratio_slow_twitch_fibers
+        if (mm.get_ratio_slow_twitch_fibers() < 0 || mm.get_ratio_slow_twitch_fibers() > 1)	{
+            errorMessage << "MetabolicMuscleParameter: Invalid ratio_slow_twitch_fibers for muscle: " 
+                << getName() << ". ratio_slow_twitch_fibers must be between 0 and 1." << endl;
+            throw (Exception(errorMessage.str()));
+        }
+    }
 }
 
 
@@ -140,6 +183,7 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
 
     // BASAL METABOLIC RATE (W) (based on whole body mass, not muscle mass)
     // so do outside of muscle loop.
+    // TODO: system mass should be precalculated.
     // ------------------------------------------------------------------
     if (get_basal_rate_on()) {
         Bdot = get_basal_coefficient() 
@@ -155,8 +199,8 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
     for (int i=0; i<nM; i++)
     {
         // Get a pointer to the current muscle in the model
-        MetabolicMuscleParameter mm = get_MetabolicMuscleParameterSet().get(i);
-        Muscle* m = mm.getMuscle();
+        MetabolicMuscleParameter& mm = get_MetabolicMuscleParameterSet()[i];
+        const Muscle* m = mm.getMuscle();
 
         // Get important muscle values at the current time state
         const double max_isometric_force = m->getMaxIsometricForce();
@@ -169,8 +213,8 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
         const double fiber_length_normalized = m->getNormalizedFiberLength(s);
         const double fiber_velocity = m->getFiberVelocity(s);
         const double fiber_velocity_normalized = m->getNormalizedFiberVelocity(s);
-        const double slow_twitch_excitation = mm.getRatioSlowTwitchFibers() * sin(Pi/2 * excitation);
-        const double fast_twitch_excitation = (1 - mm.getRatioSlowTwitchFibers()) * (1 - cos(Pi/2 * excitation));
+        const double slow_twitch_excitation = mm.get_ratio_slow_twitch_fibers() * sin(Pi/2 * excitation);
+        const double fast_twitch_excitation = (1 - mm.get_ratio_slow_twitch_fibers()) * (1 - cos(Pi/2 * excitation));
         double alpha, fiber_length_dependence;
 
         // Get the unnormalized total active force, F_iso that 'would' be developed at the current activation
@@ -205,7 +249,7 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
                                                         // Bhargava et al., (2004) they assume a function here. We will ignore this
                                                         // function and use 1.0 for now.
             Adot = mm.getMuscleMass() * decay_function_value * 
-                ( (mm.getActivationConstantSlowTwitch() * slow_twitch_excitation) + (mm.getActivationConstantFastTwitch() * fast_twitch_excitation) );
+                ( (mm.get_activation_constant_slow_twitch() * slow_twitch_excitation) + (mm.get_activation_constant_fast_twitch() * fast_twitch_excitation) );
         }
 
 
@@ -218,7 +262,7 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
             fiber_length_dependence = get_normalized_fiber_length_dependence_on_maintenance_rate().calcValue(tmp);
             
             Mdot = mm.getMuscleMass() * fiber_length_dependence * 
-                ( (mm.getMaintenanceConstantSlowTwitch() * slow_twitch_excitation) + (mm.getMaintenanceConstantFastTwitch() * fast_twitch_excitation) );
+                ( (mm.get_maintenance_constant_slow_twitch() * slow_twitch_excitation) + (mm.get_maintenance_constant_fast_twitch() * fast_twitch_excitation) );
         }
 
 
@@ -299,11 +343,11 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
         const bool debug = false;
         if(debug) {
             cout << "muscle_mass = " << mm.getMuscleMass() << endl;
-            cout << "ratio_slow_twitch_fibers = " << mm.getRatioSlowTwitchFibers() << endl;
-            cout << "activation_constant_slow_twitch = " << mm.getActivationConstantSlowTwitch() << endl;
-            cout << "activation_constant_fast_twitch = " << mm.getActivationConstantFastTwitch() << endl;
-            cout << "maintenance_constant_slow_twitch = " << mm.getMaintenanceConstantSlowTwitch() << endl;
-            cout << "maintenance_constant_fast_twitch = " << mm.getMaintenanceConstantFastTwitch() << endl;
+            cout << "ratio_slow_twitch_fibers = " << mm.get_ratio_slow_twitch_fibers() << endl;
+            cout << "activation_constant_slow_twitch = " << mm.get_activation_constant_slow_twitch() << endl;
+            cout << "activation_constant_fast_twitch = " << mm.get_activation_constant_fast_twitch() << endl;
+            cout << "maintenance_constant_slow_twitch = " << mm.get_maintenance_constant_slow_twitch() << endl;
+            cout << "maintenance_constant_fast_twitch = " << mm.get_maintenance_constant_fast_twitch() << endl;
             cout << "bodymass = " << _model->getMatterSubsystem().calcSystemMass(s) << endl;
             cout << "max_isometric_force = " << max_isometric_force << endl;
             cout << "activation = " << activation << endl;
