@@ -69,6 +69,8 @@
 #include <OpenSim/Simulation/Model/JointInternalPowerProbe.h>
 #include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
 #include <OpenSim/Simulation/Model/ActuatorForceProbe.h>
+#include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
+#include <OpenSim/Simulation/Model/MuscleMetabolicPowerProbeUmberger2010.h>
 
 #include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
@@ -815,10 +817,11 @@ namespace SimTK {
 %template(ModelComponentSetProbes) OpenSim::ModelComponentSet<OpenSim::Probe>;
 %include <OpenSim/Simulation/Model/ProbeSet.h>
 %include <OpenSim/Simulation/Model/SystemEnergyProbe.h>
-%include <OpenSim/Simulation/Model/SystemEnergyProbe.h>
 %include <OpenSim/Simulation/Model/JointInternalPowerProbe.h>
 %include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
 %include <OpenSim/Simulation/Model/ActuatorForceProbe.h>
+%include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
+%include <OpenSim/Simulation/Model/MuscleMetabolicPowerProbeUmberger2010.h>
 %include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 %include <OpenSim/Simulation/Model/ModelVisualizer.h>
 %include <OpenSim/Simulation/Model/Model.h>
