@@ -305,6 +305,15 @@ using namespace SimTK;
 %rename OpenSim::Model::addContactGeometry addContactGeometryImpl;
 %rename OpenSim::Model::addController addControllerImpl;
 %rename OpenSim::Model::addAnalysis addAnalysisImpl;
+%rename OpenSim::FunctionSet::adoptAndAppend adoptAndAppendImpl;
+
+%typemap(javacode) OpenSim::FunctionSet %{
+  public void adoptAndAppend(Function aFunction) {
+	aFunction.markAdopted();
+    adoptAndAppendImpl(aFunction);
+  }
+%}
+
 
 %typemap(javacode) OpenSim::Model %{
   private String originalModelPath = null;
@@ -820,6 +829,11 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/JointInternalPowerProbe.h>
 %include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
 %include <OpenSim/Simulation/Model/ActuatorForceProbe.h>
+%include <OpenSim/Simulation/Model/MetabolicMuscleParameter.h>
+
+%template(SetMetabolicMuscleParameters) OpenSim::Set<OpenSim::MetabolicMuscleParameter>;
+%include <OpenSim/Simulation/Model/MetabolicMuscleParameterSet.h>
+
 %include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
 %include <OpenSim/Simulation/Model/MuscleMetabolicPowerProbeUmberger2010.h>
 %include <OpenSim/Simulation/Model/ModelDisplayHints.h>
