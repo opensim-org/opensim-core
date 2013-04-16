@@ -196,13 +196,10 @@ Typedefs exist for the most common invocations of Inertia_\<P\>:
  - \ref SimTK::fInertia "fInertia" for single (float) precision
  - \ref SimTK::dInertia "dInertia" for double precision
 **/
-template <class P>
+template <class P=Real>
 class SimTK_SimTKCOMMON_EXPORT Inertia_ {
 #ifndef SWIG
-    typedef P               RealP;
-    typedef Vec<3,P>        Vec3P;
     typedef SymMat<3,P>     SymMat33P;
-    typedef Mat<3,3,P>      Mat33P;
     typedef Rotation_<P>    RotationP;
 #endif
 public:
@@ -220,23 +217,23 @@ Inertia_() : I_OF_F(NTraits<P>::getNaN()) {}
 /// matrix.
 explicit Inertia_(const P& moment) : I_OF_F(moment) 
 {   errChk("Inertia::Inertia(moment)"); }
-#ifndef SWIG
+
 /// Create an Inertia matrix for a point mass at a given location,
 /// measured from the origin OF of the implicit frame F, and expressed
 /// in F. Cost is 14 flops.
-Inertia_(const Vec3P& p, const RealP& mass) : I_OF_F(pointMassAt(p,mass)) {}
+Inertia_(const Vec3& p, const P& mass) : I_OF_F(pointMassAt(p,mass)) {}
 
 /// Create an inertia matrix from a vector of the \e moments of
 /// inertia (the inertia matrix diagonal) and optionally a vector of
 /// the \e products of inertia (the off-diagonals). Moments are
 /// in the order xx,yy,zz; products are xy,xz,yz.
-explicit Inertia_(const Vec3P& moments, const Vec3P& products=Vec3P(0)) 
+explicit Inertia_(const Vec3& moments, const Vec3& products=Vec3(0)) 
 {   I_OF_F.updDiag()  = moments;
     I_OF_F.updLower() = products;
     errChk("Inertia::Inertia(moments,products)"); }
 
 /// Create a principal inertia matrix (only non-zero on diagonal).
-Inertia_(const RealP& xx, const RealP& yy, const RealP& zz) 
+Inertia_(const P& xx, const P& yy, const P& zz) 
 {   I_OF_F = SymMat33P(xx,
                         0, yy,
                         0,  0, zz);
@@ -244,13 +241,13 @@ Inertia_(const RealP& xx, const RealP& yy, const RealP& zz)
 
 /// This is a general inertia matrix. Note the order of these
 /// arguments: moments of inertia first, then products of inertia.
-Inertia_(const RealP& xx, const RealP& yy, const RealP& zz,
-            const RealP& xy, const RealP& xz, const RealP& yz) 
+Inertia_(const P& xx, const P& yy, const P& zz,
+            const P& xy, const P& xz, const P& yz) 
 {   I_OF_F = SymMat33P(xx,
                         xy, yy,
                         xz, yz, zz);
     errChk("Inertia::setInertia(xx,yy,zz,xy,xz,yz)"); }
-
+#ifndef SWIG
 /// Construct an Inertia from a symmetric 3x3 matrix. The diagonals must
 /// be nonnegative and satisfy the triangle inequality.
 explicit Inertia_(const SymMat33P& I) : I_OF_F(I) 
@@ -259,7 +256,7 @@ explicit Inertia_(const SymMat33P& I) : I_OF_F(I)
 /// Construct an Inertia matrix from a 3x3 symmetric matrix. In Debug mode
 /// we'll test that the supplied matrix is numerically close to symmetric, and
 /// that it satisfies other requirements of an Inertia matrix.
-explicit Inertia_(const Mat33P& m)
+explicit Inertia_(const Mat33& m)
 {   SimTK_ERRCHK(m.isNumericallySymmetric(), 
                     "Inertia(Mat33)", "The supplied matrix was not symmetric.");
     I_OF_F = SymMat33P(m);
@@ -268,15 +265,15 @@ explicit Inertia_(const Mat33P& m)
 
 /// Set an inertia matrix to have only principal moments (that is, it
 /// will be diagonal). Returns a reference to "this" like an assignment operator.
-Inertia_& setInertia(const RealP& xx, const RealP& yy, const RealP& zz) {
-    I_OF_F = RealP(0); I_OF_F(0,0) = xx; I_OF_F(1,1) = yy;  I_OF_F(2,2) = zz;
+Inertia_& setInertia(const P& xx, const P& yy, const P& zz) {
+    I_OF_F = P(0); I_OF_F(0,0) = xx; I_OF_F(1,1) = yy;  I_OF_F(2,2) = zz;
     errChk("Inertia::setInertia(xx,yy,zz)");
     return *this;
 }
 
 /// Set principal moments and optionally off-diagonal terms.
 /// Returns a reference to "this" like an assignment operator.
-Inertia_& setInertia(const Vec3P& moments, const Vec3P& products=Vec3P(0)) {
+Inertia_& setInertia(const Vec3& moments, const Vec3& products=Vec3(0)) {
     I_OF_F.updDiag()  = moments;
     I_OF_F.updLower() = products;
     errChk("Inertia::setInertia(moments,products)");
@@ -288,9 +285,9 @@ Inertia_& setInertia(const Vec3P& moments, const Vec3P& products=Vec3P(0)) {
 /// Behaves like an assignment statement. Will throw an error message
 /// in Debug mode if the supplied elements do not constitute a valid
 /// Inertia matrix.
-Inertia_& setInertia(const RealP& xx, const RealP& yy, const RealP& zz,
-                        const RealP& xy, const RealP& xz, const RealP& yz) {
-    setInertia(Vec3P(xx,yy,zz), Vec3P(xy,xz,yz));
+Inertia_& setInertia(const P& xx, const P& yy, const P& zz,
+                        const P& xy, const P& xz, const P& yz) {
+    setInertia(Vec3(xx,yy,zz), Vec3(xy,xz,yz));
     errChk("Inertia::setInertia(xx,yy,zz,xy,xz,yz)");
     return *this;
 }
@@ -326,7 +323,7 @@ Inertia_& operator/=(const P& s) {I_OF_F /= s; return *this;}
 /// point mass of mass m (that is, the same as the body mass) located at CF 
 /// (measured in F) about OF. Cost is 20 flops.
 /// @see shiftToMassCenterInPlace(), shiftFromMassCenter()
-Inertia_ shiftToMassCenter(const Vec3P& CF, const RealP& mass) const 
+Inertia_ shiftToMassCenter(const Vec3& CF, const P& mass) const 
 {   Inertia_ I(*this); I -= pointMassAt(CF, mass);
     I.errChk("Inertia::shiftToMassCenter()");
     return I; }
@@ -341,7 +338,7 @@ Inertia_ shiftToMassCenter(const Vec3P& CF, const RealP& mass) const
 /// (measured in F) about OF. Cost is 20 flops.
 /// @see shiftToMassCenter() if you want to leave this object unmolested.
 /// @see shiftFromMassCenterInPlace()
-Inertia_& shiftToMassCenterInPlace(const Vec3P& CF, const RealP& mass) 
+Inertia_& shiftToMassCenterInPlace(const Vec3& CF, const P& mass) 
 {   (*this) -= pointMassAt(CF, mass);
     errChk("Inertia::shiftToMassCenterInPlace()");
     return *this; }
@@ -353,7 +350,7 @@ Inertia_& shiftToMassCenterInPlace(const Vec3P& CF, const RealP& mass)
 /// point mass of mass mtot (the total body mass) located at p, about CF.
 /// Cost is 20 flops.
 /// @see shiftFromMassCenterInPlace(), shiftToMassCenter()
-Inertia_ shiftFromMassCenter(const Vec3P& p, const RealP& mass) const
+Inertia_ shiftFromMassCenter(const Vec3& p, const P& mass) const
 {   Inertia_ I(*this); I += pointMassAt(p, mass);
     I.errChk("Inertia::shiftFromMassCenter()");
     return I; }
@@ -366,7 +363,7 @@ Inertia_ shiftFromMassCenter(const Vec3P& p, const RealP& mass) const
 /// Cost is 20 flops.
 /// @see shiftFromMassCenter() if you want to leave this object unmolested.
 /// @see shiftToMassCenterInPlace()
-Inertia_& shiftFromMassCenterInPlace(const Vec3P& p, const RealP& mass)
+Inertia_& shiftFromMassCenterInPlace(const Vec3& p, const P& mass)
 {   (*this) += pointMassAt(p, mass);
     errChk("Inertia::shiftFromMassCenterInPlace()");
     return *this; }
@@ -401,7 +398,7 @@ Inertia_& reexpressInPlace(const Rotation_<P>& R_FB)
 Inertia_& reexpressInPlace(const InverseRotation_<P>& R_FB)
 {   I_OF_F = (~R_FB).reexpressSymMat33(I_OF_F); return *this; }
 
-RealP trace() const {return I_OF_F.trace();}
+P trace() const {return I_OF_F.trace();}
 
 /// This is an implicit conversion to a const SymMat33.
 operator const SymMat33P&() const {return I_OF_F;}
@@ -411,15 +408,16 @@ const SymMat33P& asSymMat33() const {return I_OF_F;}
 
 /// Expand the internal packed representation into a full 3x3 symmetric
 /// matrix with all elements set.
-Mat33P toMat33() const {return Mat33P(I_OF_F);}
+Mat33 toMat33() const {return Mat33(I_OF_F);}
+#endif
 
 /// Obtain the inertia moments (diagonal of the Inertia matrix) as a Vec3
 /// ordered xx, yy, zz.
-const Vec3P& getMoments()  const {return I_OF_F.getDiag();}
+const Vec3& getMoments()  const {return I_OF_F.getDiag();}
 /// Obtain the inertia products (off-diagonals of the Inertia matrix)
 /// as a Vec3 with elements ordered xy, xz, yz.
-const Vec3P& getProducts() const {return I_OF_F.getLower();}
-#endif
+const Vec3& getProducts() const {return I_OF_F.getLower();}
+
 bool isNaN()    const {return I_OF_F.isNaN();}
 bool isInf()    const {return I_OF_F.isInf();}
 bool isFinite() const {return I_OF_F.isFinite();}
@@ -442,17 +440,17 @@ bool isNumericallyEqual(const Inertia_<P>& other, double tol) const
 static bool isValidInertiaMatrix(const SymMat33P& m) {
     if (m.isNaN()) return false;
 
-    const Vec3P& d = m.diag();
+    const Vec3& d = m.diag();
     if (!(d >= 0)) return false;    // diagonals must be nonnegative
 
-    const RealP Slop = std::max(d.sum(),RealP(1))
+    const P Slop = std::max(d.sum(),P(1))
                        * NTraits<P>::getSignificant();
 
     if (!(d[0]+d[1]+Slop>=d[2] && d[0]+d[2]+Slop>=d[1] && d[1]+d[2]+Slop>=d[0]))
         return false;               // must satisfy triangle inequality
 
     // Thanks to Paul Mitiguy for this condition on products of inertia.
-    const Vec3P& p = m.getLower();
+    const Vec3& p = m.getLower();
     if (!( d[0]+Slop>=std::abs(2*p[2])
         && d[1]+Slop>=std::abs(2*p[1])
         && d[2]+Slop>=std::abs(2*p[0])))
@@ -469,13 +467,13 @@ static Inertia_ pointMassAtOrigin() {return Inertia_(0);}
 /// a given location measured from the origin of the implicit F frame.
 /// This is equivalent to m*crossMatSq(p) but is implemented elementwise
 /// here for speed, giving a cost of 14 flops.
-static Inertia_ pointMassAt(const Vec3P& p, const RealP& m) {
-    const Vec3P mp = m*p;       // 3 flops
-    const RealP mxx = mp[0]*p[0];
-    const RealP myy = mp[1]*p[1];
-    const RealP mzz = mp[2]*p[2];
-    const RealP nmx = -mp[0];
-    const RealP nmy = -mp[1];
+static Inertia_ pointMassAt(const Vec3& p, const P& m) {
+    const Vec3 mp = m*p;       // 3 flops
+    const P mxx = mp[0]*p[0];
+    const P myy = mp[1]*p[1];
+    const P mzz = mp[2]*p[2];
+    const P nmx = -mp[0];
+    const P nmy = -mp[1];
     return Inertia_( myy+mzz,  mxx+mzz,  mxx+myy,
                         nmx*p[1], nmx*p[2], nmy*p[2] );
 }
@@ -489,33 +487,33 @@ static Inertia_ pointMassAt(const Vec3P& p, const RealP& m) {
 
 /// Create a UnitInertia matrix for a unit mass sphere of radius \a r centered
 /// at the origin.
-inline static Inertia_ sphere(const RealP& r);
+inline static Inertia_ sphere(const P& r);
 
 /// Unit-mass cylinder aligned along z axis;  use radius and half-length.
 /// If r==0 this is a thin rod; hz=0 it is a thin disk.
-inline static Inertia_ cylinderAlongZ(const RealP& r, const RealP& hz);
+inline static Inertia_ cylinderAlongZ(const P& r, const P& hz);
 
 /// Unit-mass cylinder aligned along y axis;  use radius and half-length.
 /// If r==0 this is a thin rod; hy=0 it is a thin disk.
-inline static Inertia_ cylinderAlongY(const RealP& r, const RealP& hy);
+inline static Inertia_ cylinderAlongY(const P& r, const P& hy);
 
 /// Unit-mass cylinder aligned along x axis; use radius and half-length.
 /// If r==0 this is a thin rod; hx=0 it is a thin disk.
-inline static Inertia_ cylinderAlongX(const RealP& r, const RealP& hx);
+inline static Inertia_ cylinderAlongX(const P& r, const P& hx);
 
 /// Unit-mass brick given by half-lengths in each direction. One dimension zero
 /// gives inertia of a thin rectangular sheet; two zero gives inertia
 /// of a thin rod in the remaining direction.
-inline static Inertia_ brick(const RealP& hx, const RealP& hy, const RealP& hz);
+inline static Inertia_ brick(const P& hx, const P& hy, const P& hz);
 
 /// Alternate interface to brick() that takes a Vec3 for the half lengths.
-inline static Inertia_ brick(const Vec3P& halfLengths);
+inline static Inertia_ brick(const Vec3& halfLengths);
 
 /// Unit-mass ellipsoid given by half-lengths in each direction.
-inline static Inertia_ ellipsoid(const RealP& hx, const RealP& hy, const RealP& hz);
+inline static Inertia_ ellipsoid(const P& hx, const P& hy, const P& hz);
 
 /// Alternate interface to ellipsoid() that takes a Vec3 for the half lengths.
-inline static Inertia_ ellipsoid(const Vec3P& halfLengths);
+inline static Inertia_ ellipsoid(const Vec3& halfLengths);
 
 //@}
 
@@ -538,8 +536,8 @@ void errChk(const char* methodName) const {
     SimTK_ERRCHK(!isNaN(), methodName,
         "Inertia matrix contains a NaN.");
 
-    const Vec3P& d = I_OF_F.getDiag();  // moments
-    const Vec3P& p = I_OF_F.getLower(); // products
+    const Vec3& d = I_OF_F.getDiag();  // moments
+    const Vec3& p = I_OF_F.getLower(); // products
     const Real Ixx = d[0], Iyy = d[1], Izz = d[2];
     const Real Ixy = p[0], Ixz = p[1], Iyz = p[2];
 
@@ -550,7 +548,7 @@ void errChk(const char* methodName) const {
     // TODO: This is looser than it should be as a workaround for distorted
     // rotation matrices that were produced by an 11,000 body chain that
     // Sam Flores encountered. 
-    const RealP Slop = std::max(d.sum(),RealP(1))
+    const P Slop = std::max(d.sum(),P(1))
                        * std::sqrt(NTraits<P>::getEps());
 
     SimTK_ERRCHK3(   Ixx+Iyy+Slop>=Izz 
@@ -683,10 +681,10 @@ Typedefs exist for the most common invocations of UnitInertia_\<P\>:
  - \ref SimTK::dUnitInertia "dUnitInertia" for double precision **/
 template <class P>
 class SimTK_SimTKCOMMON_EXPORT UnitInertia_ : public Inertia_<P> {
-    typedef P               RealP;
-    typedef Vec<3,P>        Vec3P;
+    typedef P               P;
+    typedef Vec<3,P>        Vec3;
     typedef SymMat<3,P>     SymMat33P;
-    typedef Mat<3,3,P>      Mat33P;
+    typedef Mat<3,3,P>      Mat33;
     typedef Rotation_<P>    RotationP;
     typedef Inertia_<P>     InertiaP;
 public:
@@ -699,23 +697,23 @@ UnitInertia_() {}
 /// Create a principal unit inertia matrix with identical diagonal elements.
 /// This is the unit inertia matrix of a unit mass sphere of radius 
 /// r = sqrt(5/2 * moment) centered on the origin.
-explicit UnitInertia_(const RealP& moment) : InertiaP(moment) {}
+explicit UnitInertia_(const P& moment) : InertiaP(moment) {}
 
 /// Create a unit inertia matrix from a vector of the \e moments of
 /// inertia (the inertia matrix diagonal) and optionally a vector of
 /// the \e products of inertia (the off-diagonals). Moments are
 /// in the order xx,yy,zz; products are xy,xz,yz.
-explicit UnitInertia_(const Vec3P& moments, const Vec3P& products=Vec3P(0))
+explicit UnitInertia_(const Vec3& moments, const Vec3& products=Vec3(0))
 :   InertiaP(moments,products) {}
 
 /// Create a principal unit inertia matrix (only non-zero on diagonal).
-UnitInertia_(const RealP& xx, const RealP& yy, const RealP& zz)
+UnitInertia_(const P& xx, const P& yy, const P& zz)
 :   InertiaP(xx,yy,zz) {}   
 
 /// This is a general unit inertia matrix. Note the order of these
 /// arguments: moments of inertia first, then products of inertia.
-UnitInertia_(const RealP& xx, const RealP& yy, const RealP& zz,
-            const RealP& xy, const RealP& xz, const RealP& yz)
+UnitInertia_(const P& xx, const P& yy, const P& zz,
+            const P& xy, const P& xz, const P& yz)
 :   InertiaP(xx,yy,zz,xy,xz,yz) {}
 
 /// Construct a UnitInertia from a symmetric 3x3 matrix. The diagonals must
@@ -725,7 +723,7 @@ explicit UnitInertia_(const SymMat33P& m) : InertiaP(m) {}
 /// Construct a UnitInertia from a 3x3 symmetric matrix. In Debug mode
 /// we'll test that the supplied matrix is numerically close to symmetric, 
 /// and that it satisfies other requirements of an inertia matrix.
-explicit UnitInertia_(const Mat33P& m) : InertiaP(m) {}
+explicit UnitInertia_(const Mat33& m) : InertiaP(m) {}
 
 /// Construct a UnitInertia matrix from an Inertia matrix. Note that there
 /// is no way to check whether this is really a unit inertia -- \e any
@@ -736,12 +734,12 @@ explicit UnitInertia_(const Inertia_<P>& I) : InertiaP(I) {}
 /// Set a UnitInertia matrix to have only principal moments (that is, it
 /// will be diagonal). Returns a reference to "this" like an assignment 
 /// operator.
-UnitInertia_& setUnitInertia(const RealP& xx, const RealP& yy, const RealP& zz) 
+UnitInertia_& setUnitInertia(const P& xx, const P& yy, const P& zz) 
 {   InertiaP::setInertia(xx,yy,zz); return *this; }
 
 /// Set principal moments and optionally off-diagonal terms.
 /// Returns a reference to "this" like an assignment operator.
-UnitInertia_& setUnitInertia(const Vec3P& moments, const Vec3P& products=Vec3P(0)) 
+UnitInertia_& setUnitInertia(const Vec3& moments, const Vec3& products=Vec3(0)) 
 {   InertiaP::setInertia(moments,products); return *this; }
 
 /// Set this UnitInertia to a general matrix. Note the order of these
@@ -749,8 +747,8 @@ UnitInertia_& setUnitInertia(const Vec3P& moments, const Vec3P& products=Vec3P(0
 /// Behaves like an assignment statement. Will throw an error message
 /// in Debug mode if the supplied elements do not constitute a valid
 /// inertia matrix.
-UnitInertia_& setUnitInertia(const RealP& xx, const RealP& yy, const RealP& zz,
-                        const RealP& xy, const RealP& xz, const RealP& yz) 
+UnitInertia_& setUnitInertia(const P& xx, const P& yy, const P& zz,
+                        const P& xy, const P& xz, const P& yz) 
 {   InertiaP::setInertia(xx,yy,zz,xy,xz,yz); return *this; }
 
 
@@ -766,7 +764,7 @@ UnitInertia_& setUnitInertia(const RealP& xx, const RealP& yy, const RealP& zz,
 /// inertias, G' = G - Gcom where Gcom is the inertia matrix of a fictitious, 
 /// unit-mass point located at CF (measured in F) taken about OF. (17 flops)
 /// @see shiftToCentroidInPlace(), shiftFromCentroid()
-UnitInertia_ shiftToCentroid(const Vec3P& CF) const 
+UnitInertia_ shiftToCentroid(const Vec3& CF) const 
 {   UnitInertia_ G(*this); 
     G.Inertia_<P>::operator-=(pointMassAt(CF));
     return G; }
@@ -783,7 +781,7 @@ UnitInertia_ shiftToCentroid(const Vec3P& CF) const
 /// the manner of assignment operators. Cost is 17 flops.
 /// @see shiftToCentroid() if you want to leave this object unmolested.
 /// @see shiftFromCentroidInPlace()
-UnitInertia_& shiftToCentroidInPlace(const Vec3P& CF) 
+UnitInertia_& shiftToCentroidInPlace(const Vec3& CF) 
 {   InertiaP::operator-=(pointMassAt(CF));
     return *this; }
 
@@ -794,7 +792,7 @@ UnitInertia_& shiftToCentroidInPlace(const Vec3P& CF)
 /// Gp is the inertia of a fictitious point located at p, taken about CF. Cost
 /// is 17 flops.
 /// @see shiftFromCentroidInPlace(), shiftToCentroid()
-UnitInertia_ shiftFromCentroid(const Vec3P& p) const
+UnitInertia_ shiftFromCentroid(const Vec3& p) const
 {   UnitInertia_ G(*this); 
     G.Inertia_<P>::operator+=(pointMassAt(p));
     return G; }
@@ -807,7 +805,7 @@ UnitInertia_ shiftFromCentroid(const Vec3P& p) const
 /// at p, taken about CF. Cost is 17 flops.
 /// @see shiftFromCentroid() if you want to leave this object unmolested.
 /// @see shitToCentroidInPlace()
-UnitInertia_& shiftFromCentroidInPlace(const Vec3P& p)
+UnitInertia_& shiftFromCentroidInPlace(const Vec3& p)
 {   InertiaP::operator+=(pointMassAt(p));
     return *this; }
 
@@ -879,55 +877,55 @@ static UnitInertia_ pointMassAtOrigin() {return UnitInertia_(0);}
 /// location measured from origin OF and expressed in F (where F is the
 /// implicit frame of this UnitInertia matrix).
 /// Cost is 11 flops.
-static UnitInertia_ pointMassAt(const Vec3P& p) 
+static UnitInertia_ pointMassAt(const Vec3& p) 
 {   return UnitInertia_(crossMatSq(p)); }
 
 /// Create a UnitInertia matrix for a unit mass sphere of radius \a r centered
 /// at the origin.
-static UnitInertia_ sphere(const RealP& r) {return UnitInertia_(RealP(0.4)*r*r);}
+static UnitInertia_ sphere(const P& r) {return UnitInertia_(P(0.4)*r*r);}
 
 /// Unit-mass cylinder aligned along z axis;  use radius and half-length.
 /// If r==0 this is a thin rod; hz=0 it is a thin disk.
-static UnitInertia_ cylinderAlongZ(const RealP& r, const RealP& hz) {
-    const RealP Ixx = (r*r)/4 + (hz*hz)/3;
+static UnitInertia_ cylinderAlongZ(const P& r, const P& hz) {
+    const P Ixx = (r*r)/4 + (hz*hz)/3;
     return UnitInertia_(Ixx,Ixx,(r*r)/2);
 }
 
 /// Unit-mass cylinder aligned along y axis;  use radius and half-length.
 /// If r==0 this is a thin rod; hy=0 it is a thin disk.
-static UnitInertia_ cylinderAlongY(const RealP& r, const RealP& hy) {
-    const RealP Ixx = (r*r)/4 + (hy*hy)/3;
+static UnitInertia_ cylinderAlongY(const P& r, const P& hy) {
+    const P Ixx = (r*r)/4 + (hy*hy)/3;
     return UnitInertia_(Ixx,(r*r)/2,Ixx);
 }
 
 /// Unit-mass cylinder aligned along x axis; use radius and half-length.
 /// If r==0 this is a thin rod; hx=0 it is a thin disk.
-static UnitInertia_ cylinderAlongX(const RealP& r, const RealP& hx) {
-    const RealP Iyy = (r*r)/4 + (hx*hx)/3;
+static UnitInertia_ cylinderAlongX(const P& r, const P& hx) {
+    const P Iyy = (r*r)/4 + (hx*hx)/3;
     return UnitInertia_((r*r)/2,Iyy,Iyy);
 }
 
 /// Unit-mass brick given by half-lengths in each direction. One dimension zero
 /// gives inertia of a thin rectangular sheet; two zero gives inertia
 /// of a thin rod in the remaining direction.
-static UnitInertia_ brick(const RealP& hx, const RealP& hy, const RealP& hz) {
-    const RealP oo3 = RealP(1)/RealP(3);
-    const RealP hx2=hx*hx, hy2=hy*hy, hz2=hz*hz;
+static UnitInertia_ brick(const P& hx, const P& hy, const P& hz) {
+    const P oo3 = P(1)/P(3);
+    const P hx2=hx*hx, hy2=hy*hy, hz2=hz*hz;
     return UnitInertia_(oo3*(hy2+hz2), oo3*(hx2+hz2), oo3*(hx2+hy2));
 }
 
 /// Alternate interface to brick() that takes a Vec3 for the half lengths.
-static UnitInertia_ brick(const Vec3P& halfLengths)
+static UnitInertia_ brick(const Vec3& halfLengths)
 {   return brick(halfLengths[0],halfLengths[1],halfLengths[2]); }
 
 /// Unit-mass ellipsoid given by half-lengths in each direction.
-static UnitInertia_ ellipsoid(const RealP& hx, const RealP& hy, const RealP& hz) {
-    const RealP hx2=hx*hx, hy2=hy*hy, hz2=hz*hz;
+static UnitInertia_ ellipsoid(const P& hx, const P& hy, const P& hz) {
+    const P hx2=hx*hx, hy2=hy*hy, hz2=hz*hz;
     return UnitInertia_((hy2+hz2)/5, (hx2+hz2)/5, (hx2+hy2)/5);
 }
 
 /// Alternate interface to ellipsoid() that takes a Vec3 for the half lengths.
-static UnitInertia_ ellipsoid(const Vec3P& halfLengths)
+static UnitInertia_ ellipsoid(const Vec3& halfLengths)
 {   return ellipsoid(halfLengths[0],halfLengths[1],halfLengths[2]); }
 
 //@}
@@ -946,28 +944,28 @@ void operator/=(int) {}
 // Implement Inertia methods which are pass-throughs to UnitInertia methods.
 
 template <class P> inline Inertia_<P> Inertia_<P>::
-sphere(const RealP& r) 
+sphere(const P& r) 
 {   return UnitInertia_<P>::sphere(r); }
 template <class P> inline Inertia_<P> Inertia_<P>::
-cylinderAlongZ(const RealP& r, const RealP& hz)
+cylinderAlongZ(const P& r, const P& hz)
 {   return UnitInertia_<P>::cylinderAlongZ(r,hz); }
 template <class P> inline Inertia_<P> Inertia_<P>::
-cylinderAlongY(const RealP& r, const RealP& hy)
+cylinderAlongY(const P& r, const P& hy)
 {   return UnitInertia_<P>::cylinderAlongY(r,hy); }
 template <class P> inline Inertia_<P> Inertia_<P>::
-cylinderAlongX(const RealP& r, const RealP& hx)
+cylinderAlongX(const P& r, const P& hx)
 {   return UnitInertia_<P>::cylinderAlongX(r,hx); }
 template <class P> inline Inertia_<P> Inertia_<P>::
-brick(const RealP& hx, const RealP& hy, const RealP& hz)
+brick(const P& hx, const P& hy, const P& hz)
 {   return UnitInertia_<P>::brick(hx,hy,hz); }
 template <class P> inline Inertia_<P> Inertia_<P>::
-brick(const Vec3P& halfLengths)
+brick(const Vec3& halfLengths)
 {   return UnitInertia_<P>::brick(halfLengths); }
 template <class P> inline Inertia_<P> Inertia_<P>::
-ellipsoid(const RealP& hx, const RealP& hy, const RealP& hz)
+ellipsoid(const P& hx, const P& hy, const P& hz)
 {   return UnitInertia_<P>::ellipsoid(hx,hy,hz); }
 template <class P> inline Inertia_<P> Inertia_<P>::
-ellipsoid(const Vec3P& halfLengths)
+ellipsoid(const Vec3& halfLengths)
 {   return UnitInertia_<P>::ellipsoid(halfLengths); }
 
 
@@ -1007,12 +1005,12 @@ Typedefs exist for the most common invocations of SpatialInertia_\<P\>:
  - \ref SimTK::dSpatialInertia "dSpatialInertia" for double precision **/
 template <class P> 
 class SimTK_SimTKCOMMON_EXPORT SpatialInertia_ {
-    typedef P               RealP;
-    typedef Vec<3,P>        Vec3P;
+    typedef P               P;
+    typedef Vec<3,P>        Vec3;
     typedef UnitInertia_<P> UnitInertiaP;
-    typedef Mat<3,3,P>      Mat33P;
-    typedef Vec<2, Vec3P>   SpatialVecP;
-    typedef Mat<2,2,Mat33P> SpatialMatP;
+    typedef Mat<3,3,P>      Mat33;
+    typedef Vec<2, Vec3>   SpatialVecP;
+    typedef Mat<2,2,Mat33> SpatialMatP;
     typedef Rotation_<P>    RotationP;
     typedef Transform_<P>   TransformP;
     typedef Inertia_<P>     InertiaP;
@@ -1020,27 +1018,27 @@ public:
 /// The default constructor fills everything with NaN, even in Release mode.
 SpatialInertia_() 
 :   m(nanP()), p(nanP()) {} // inertia is already NaN
-SpatialInertia_(RealP mass, const Vec3P& com, const UnitInertiaP& gyration) 
+SpatialInertia_(P mass, const Vec3& com, const UnitInertiaP& gyration) 
 :   m(mass), p(com), G(gyration) {}
 
 // default copy constructor, copy assignment, destructor
 
-SpatialInertia_& setMass(RealP mass)
+SpatialInertia_& setMass(P mass)
 {   SimTK_ERRCHK1(mass >= 0, "SpatialInertia::setMass()",
         "Negative mass %g is illegal.", (double)mass);
     m=mass; return *this; }
-SpatialInertia_& setMassCenter(const Vec3P& com)
+SpatialInertia_& setMassCenter(const Vec3& com)
 {   p=com; return *this;} 
 SpatialInertia_& setUnitInertia(const UnitInertiaP& gyration) 
 {   G=gyration; return *this; }
 
-RealP               getMass()        const {return m;}
-const Vec3P&        getMassCenter()  const {return p;}
+P               getMass()        const {return m;}
+const Vec3&        getMassCenter()  const {return p;}
 const UnitInertiaP& getUnitInertia() const {return G;}
 
 /// Calculate the first mass moment (mass-weighted COM location)
 /// from the mass and COM vector. Cost is 3 inline flops.
-Vec3P calcMassMoment() const {return m*p;}
+Vec3 calcMassMoment() const {return m*p;}
 
 /// Calculate the inertia matrix (second mass moment, mass-weighted gyration
 /// matrix) from the mass and unit inertia matrix. Cost is 6 inline flops.
@@ -1053,7 +1051,7 @@ InertiaP calcInertia() const {return m*G;}
 SpatialInertia_& operator+=(const SpatialInertia_& src) {
     SimTK_ERRCHK(m+src.m != 0, "SpatialInertia::operator+=()",
         "The combined mass cannot be zero.");
-    const RealP mtot = m+src.m, oomtot = 1/mtot;                    // ~11 flops
+    const P mtot = m+src.m, oomtot = 1/mtot;                    // ~11 flops
     p = oomtot*(calcMassMoment() + src.calcMassMoment());           // 10 flops
     G.setFromUnitInertia(oomtot*(calcInertia()+src.calcInertia())); // 19 flops
     m = mtot; // must do this last
@@ -1067,7 +1065,7 @@ SpatialInertia_& operator+=(const SpatialInertia_& src) {
 SpatialInertia_& operator-=(const SpatialInertia_& src) {
     SimTK_ERRCHK(m != src.m, "SpatialInertia::operator-=()",
         "The combined mass cannot be zero.");
-    const RealP mtot = m-src.m, oomtot = 1/mtot;                    // ~11 flops
+    const P mtot = m-src.m, oomtot = 1/mtot;                    // ~11 flops
     p = oomtot*(calcMassMoment() - src.calcMassMoment());           // 10 flops
     G.setFromUnitInertia(oomtot*(calcInertia()-src.calcInertia())); // 19 flops
     m = mtot; // must do this last
@@ -1076,11 +1074,11 @@ SpatialInertia_& operator-=(const SpatialInertia_& src) {
 
 /// Multiply a SpatialInertia by a scalar. Because we keep the mass
 /// factored out, this requires only a single multiply.
-SpatialInertia_& operator*=(const RealP& s) {m *= s; return *this;}
+SpatialInertia_& operator*=(const P& s) {m *= s; return *this;}
 
 /// Divide a SpatialInertia by a scalar. Because we keep the mass
 /// factored out, this requires only a single divide.
-SpatialInertia_& operator/=(const RealP& s) {m /= s; return *this;}
+SpatialInertia_& operator/=(const P& s) {m /= s; return *this;}
 
 /// Multiply a SpatialInertia by a SpatialVec to produce a SpatialVec
 /// result; 45 flops.
@@ -1116,14 +1114,14 @@ SpatialInertia_& reexpressInPlace(const InverseRotation_<P>& R_FB)
 /// the origin ("taken about" point) has changed from OF to OF+S.
 /// Cost is 37 flops.
 /// @see shiftInPlace()
-SpatialInertia_ shift(const Vec3P& S) const 
+SpatialInertia_ shift(const Vec3& S) const 
 {   return SpatialInertia_(*this).shiftInPlace(S); }
 
 /// Change origin from OF to OF+S, modifying the original object in place.
 /// Returns a reference to the modified object so that you can chain this
 /// operation in the manner of assignment operators. Cost is 37 flops.
 /// @see shift() if you want to leave this object unmolested.
-SpatialInertia_& shiftInPlace(const Vec3P& S) {
+SpatialInertia_& shiftInPlace(const Vec3& S) {
     G.shiftToCentroidInPlace(p);    // change to central inertia
     G.shiftFromCentroidInPlace(S);  // now inertia is about S
     p -= S; // was p=com-OF, now want p'=com-(OF+S)=p-S
@@ -1170,14 +1168,14 @@ SpatialInertia_& transformInPlace(const InverseTransform_<P>& X_FB) {
 }
 
 const SpatialMatP toSpatialMat() const {
-    Mat33P offDiag = crossMat(m*p);
+    Mat33 offDiag = crossMat(m*p);
     return SpatialMatP(m*G.toMat33(), offDiag,
-                       -offDiag,      Mat33P(m));
+                       -offDiag,      Mat33(m));
 }
 
 private:
-RealP           m;  // mass of this rigid body F
-Vec3P           p;  // location of body's COM from OF, expressed in F
+P           m;  // mass of this rigid body F
+Vec3           p;  // location of body's COM from OF, expressed in F
 UnitInertiaP    G;  // mass distribution; inertia is mass*gyration
 
 static P nanP() {return NTraits<P>::getNaN();} 
@@ -1248,13 +1246,13 @@ Typedefs exist for the most common invocations of ArticulatedInertia_\<P\>:
    precision **/
 template <class P> 
 class ArticulatedInertia_ {
-    typedef P               RealP;
-    typedef Vec<3,P>        Vec3P;
+    typedef P               P;
+    typedef Vec<3,P>        Vec3;
     typedef UnitInertia_<P> UnitInertiaP;
-    typedef Mat<3,3,P>      Mat33P;
+    typedef Mat<3,3,P>      Mat33;
     typedef SymMat<3,P>     SymMat33P;
-    typedef Vec<2, Vec3P>   SpatialVecP;
-    typedef Mat<2,2,Mat33P> SpatialMatP;
+    typedef Vec<2, Vec3>   SpatialVecP;
+    typedef Mat<2,2,Mat33> SpatialMatP;
     typedef Rotation_<P>    RotationP;
     typedef Transform_<P>   TransformP;
     typedef Inertia_<P>     InertiaP;
@@ -1263,7 +1261,7 @@ public:
 /// fill this in before referencing it.
 ArticulatedInertia_() {}
 /// Construct an ArticulatedInertia from the mass, first moment, and inertia matrices it contains.
-ArticulatedInertia_(const SymMat33P& mass, const Mat33P& massMoment, const SymMat33P& inertia)
+ArticulatedInertia_(const SymMat33P& mass, const Mat33& massMoment, const SymMat33P& inertia)
 :   M(mass), J(inertia), F(massMoment) {}
 
 /// Construct an articulated body inertia (ABI) from a rigid body spatial inertia (RBI). 
@@ -1274,14 +1272,14 @@ explicit ArticulatedInertia_(const SpatialInertia_<P>& rbi)
 /// Set the mass distribution matrix M in this ArticulatedInertia (symmetric).
 ArticulatedInertia_& setMass      (const SymMat33P& mass)       {M=mass;       return *this;}
 /// Set the mass first moment distribution matrix F in this ArticulatedInertia (full).
-ArticulatedInertia_& setMassMoment(const Mat33P&    massMoment) {F=massMoment; return *this;}
+ArticulatedInertia_& setMassMoment(const Mat33&    massMoment) {F=massMoment; return *this;}
 /// Set the mass second moment (inertia) matrix J in this ArticulatedInertia (symmetric).
 ArticulatedInertia_& setInertia   (const SymMat33P& inertia)    {J=inertia;    return *this;}
 
 /// Get the mass distribution matrix M from this ArticulatedInertia (symmetric).
 const SymMat33P& getMass()       const {return M;}
 /// Get the mass first moment distribution matrix F from this ArticulatedInertia (full).
-const Mat33P&    getMassMoment() const {return F;}
+const Mat33&    getMassMoment() const {return F;}
 /// Get the mass second moment (inertia) matrix J from this ArticulatedInertia (symmetric).
 const SymMat33P& getInertia()    const {return J;}
 
@@ -1307,22 +1305,22 @@ SpatialVecP operator*(const SpatialVecP& v) const
 ///       [~F'  M  ]     [ 0  1  ] [~F  M ] [-sx 1 ]
 /// </pre>
 /// where sx is the cross product matrix of s. Cost is 72 flops.
-SimTK_SimTKCOMMON_EXPORT ArticulatedInertia_ shift(const Vec3P& s) const;
+SimTK_SimTKCOMMON_EXPORT ArticulatedInertia_ shift(const Vec3& s) const;
 
 /// Rigid-shift this ABI in place. 72 flops.
 /// @see shift() for details
-SimTK_SimTKCOMMON_EXPORT ArticulatedInertia_& shiftInPlace(const Vec3P& s);
+SimTK_SimTKCOMMON_EXPORT ArticulatedInertia_& shiftInPlace(const Vec3& s);
 
 /// Convert the compactly-stored ArticulatedInertia (21 elements) into a 
 /// full SpatialMat with 36 elements.
 const SpatialMatP toSpatialMat() const {
-    return SpatialMatP( Mat33P(J),     F,
-                            ~F,       Mat33P(M) );
+    return SpatialMatP( Mat33(J),     F,
+                            ~F,       Mat33(M) );
 }
 private:
 SymMat33P M;
 SymMat33P J;
-Mat33P    F;
+Mat33    F;
 };
 
 /// Add two compatible articulated inertias. Cost is 21 flops.
@@ -1358,13 +1356,13 @@ Typedefs exist for the most common invocations of MassProperties_\<P\>:
 template <class P>
 class SimTK_SimTKCOMMON_EXPORT MassProperties_ {
 #ifndef SWIG
-    typedef P               RealP;
-    typedef Vec<3,P>        Vec3P;
+    typedef P               P;
+    typedef Vec<3,P>        Vec3;
     typedef UnitInertia_<P> UnitInertiaP;
-    typedef Mat<3,3,P>      Mat33P;
+    typedef Mat<3,3,P>      Mat33;
     typedef Mat<6,6,P>      Mat66P;
     typedef SymMat<3,P>     SymMat33P;
-    typedef Mat<2,2,Mat33P> SpatialMatP;
+    typedef Mat<2,2,Mat33> SpatialMatP;
     typedef Rotation_<P>    RotationP;
     typedef Transform_<P>   TransformP;
     typedef Inertia_<P>     InertiaP;
@@ -1372,23 +1370,23 @@ class SimTK_SimTKCOMMON_EXPORT MassProperties_ {
 public:
 /** Create a mass properties object in which the mass, mass center, and 
 inertia are meaningless; you must assign values before using this. **/
-MassProperties_() { setMassProperties(0,Vec3P(0),UnitInertiaP()); }
+MassProperties_() { setMassProperties(0,Vec3(0),UnitInertiaP()); }
 /** Create a mass properties object from individually supplied mass,
 mass center, and inertia matrix.  The inertia matrix is divided by the
 mass to produce the unit inertia. **/
 #ifndef SWIG
-MassProperties_(const P& m, const Vec3P& com, const InertiaP& inertia)
+MassProperties_(const P& m, const Vec3& com, const InertiaP& inertia)
     { setMassProperties(m,com,inertia); }
 
 /** Create a mass properties object from individually supplied mass,
 mass center, and unit inertia (gyration) matrix. **/
-MassProperties_(const RealP& m, const Vec3P& com, const UnitInertiaP& gyration)
+MassProperties_(const P& m, const Vec3& com, const UnitInertiaP& gyration)
     { setMassProperties(m,com,gyration); }
 
 /** Set mass, center of mass, and inertia. The inertia is divided by the mass to
 produce the unit inertia. Behaves like an assignment in that
 a reference to the modified MassProperties object is returned. **/
-MassProperties_& setMassProperties(const RealP& m, const Vec3P& com, const InertiaP& inertia) {
+MassProperties_& setMassProperties(const P& m, const Vec3& com, const InertiaP& inertia) {
     mass = m;
     comInB = com;
     if (m == 0) {
@@ -1404,16 +1402,16 @@ MassProperties_& setMassProperties(const RealP& m, const Vec3P& com, const Inert
 /** Set mass, center of mass, and unit inertia. Behaves like an assignment in
 that a reference to the modified MassProperties object is returned. **/
 MassProperties_& setMassProperties
-   (const RealP& m, const Vec3P& com, const UnitInertiaP& gyration)
+   (const P& m, const Vec3& com, const UnitInertiaP& gyration)
 {   mass=m; comInB=com; unitInertia_OB_B=gyration; return *this; }
 
 /** Return the mass currently stored in this MassProperties object. **/
-const RealP& getMass() const {return mass;}
+const P& getMass() const {return mass;}
 /** Return the mass center currently stored in this MassProperties object;
 this is expressed in an implicit frame we call "B", and measured from B's
 origin, but you have to know what that frame is in order to interpret the 
 returned vector. **/
-const Vec3P& getMassCenter() const {return comInB;}
+const Vec3& getMassCenter() const {return comInB;}
 /** Return the unit inertia currently stored in this MassProperties object;
 this is expressed in an implicit frame we call "B", and measured about B's
 origin, but you have to know what that frame is in order to interpret the 
@@ -1441,7 +1439,7 @@ InertiaP calcCentralInertia() const {
 about" point shifted from the (implicit) B frame origin to a new point that
 is supplied in \a newOriginB which must be a vector measured from the B frame
 origin and expressed in B. The result is still expressed in B. **/
-InertiaP calcShiftedInertia(const Vec3P& newOriginB) const {
+InertiaP calcShiftedInertia(const Vec3& newOriginB) const {
     return calcCentralInertia() + InertiaP(newOriginB-comInB, mass);
 }
 /** Return the inertia of this MassProperties object, but transformed to
@@ -1456,7 +1454,7 @@ the origin point shifted from the (implicit) B frame origin to a new point that
 is supplied in \a newOriginB which must be a vector measured from the B frame
 origin and expressed in B. This affects both the mass center vector and the
 inertia. The result is still expressed in B. **/
-MassProperties_ calcShiftedMassProps(const Vec3P& newOriginB) const {
+MassProperties_ calcShiftedMassProps(const Vec3& newOriginB) const {
     return MassProperties_(mass, comInB-newOriginB,
                             calcShiftedInertia(newOriginB));
 }
@@ -1502,7 +1500,7 @@ bool isNearlyMassless(const P& tol=SignificantReal) const {
 /** Return true only if the mass center stored here is \e exactly zero.\ If 
 the mass center resulted from a computation, you should use isNearlyCentral()
 instead. @see isNearlyCentral(), isExactlyMassless() **/
-bool isExactlyCentral() const { return comInB==Vec3P(0); }
+bool isExactlyCentral() const { return comInB==Vec3(0); }
 /** Return true if the mass center stored here is zero to within a small tolerance.
 By default we use SignificantReal (about 1e-14 in double precision) as the
 tolerance but you can override that. If you are just checking to see whether
@@ -1557,8 +1555,8 @@ Mat66P toMat66() const {
 }
 #endif
 private:
-RealP        mass;
-Vec3P        comInB;         // meas. from B origin, expr. in B
+P        mass;
+Vec3        comInB;         // meas. from B origin, expr. in B
 UnitInertiaP unitInertia_OB_B;   // about B origin, expr. in B
 };
 #ifndef SWIG
