@@ -305,12 +305,12 @@ using namespace SimTK;
 %rename OpenSim::Model::addContactGeometry addContactGeometryImpl;
 %rename OpenSim::Model::addController addControllerImpl;
 %rename OpenSim::Model::addAnalysis addAnalysisImpl;
-%rename OpenSim::FunctionSet::adoptAndAppend adoptAndAppendImpl;
+
 
 %typemap(javacode) OpenSim::FunctionSet %{
-  public void adoptAndAppend(Function aFunction) {
+  public boolean adoptAndAppend(Function aFunction) {
 	aFunction.markAdopted();
-    adoptAndAppendImpl(aFunction);
+    return super.adoptAndAppend(aFunction);
   }
 %}
 
