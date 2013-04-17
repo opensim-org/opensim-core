@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ajay Seth, Ayman Habib, Michael A. Sherman                      *
+ * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Author(s): Ajay Seth, Ayman Habib, Michael Sherman                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -44,7 +44,7 @@
 // INCLUDES
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "OpenSim/Common/Object.h"
-#include "SimTKsimbody.h"
+#include "Simbody.h"
 
 namespace OpenSim {
 
@@ -91,7 +91,7 @@ class ModelComponent;
  * a control signal (a voltage or current)) which it gets direct input from the user 
  * (via a joystick, key press, etc..). The throttle controls the motor torque output 
  * and therefore the behavior of the model. The input by the user to the throttle
- * the motor (the controls) is necesary to specify the model dynamics at any instant
+ * the motor (the controls) is necessary to specify the model dynamics at any instant
  * and therefore are considered part of the State in Simbody as Discrete State Variables.  
  * In OpenSim they are simplify referred to as \e DiscreteVariables. The ModelComponent 
  * provides services to enable developers of components to define and access its 
@@ -137,21 +137,26 @@ class ModelComponent;
  * long as time does not change. If the simulation (via numerical integration) steps
  * forward (or backward for a trial step) and updates the state, the control from
  * a previous state (time) should be invalid and an error generated for trying to access
- * the DiscreteVariable for the control value. To do this one specifies the "dependsOn" stage
+ * the DiscreteVariable for the control value. To do this one specifies the "invalidates" stage
  * (e.g. <tt>SimTK::Stage::Time</tt>) for a DiscreteVariable when the variable is added to
- * the ModelComponent. If the control is fixed (not changing with time) then the lowest
- * valid stage could just be Instance.
+ * the ModelComponent. A subsequent change to that variable will invalidate all
+ * state cache entries at that stage or higher. For example, if a DiscreteVariable is
+ * declared to invalidate <tt>Stage::Position</tt> then changing it will 
+ * invalidate cache entries that depend on positions, velocities, forces, and
+ * accelerations.
  *
- * Similar principles apply to CacheVariables, which requires a "lowestValid" stage to 
+ * Similar principles apply to CacheVariables, which requires a "dependsOn" stage to 
  * be specified when a CacheVariable is added to the component. In this case, the cache
- * variable augments the State (unlike a discrete state variable, which is a part
- * of the State) for the convenience of not recomputing a value unless necesary.
- * Accessing the cache variable at a stage lower than the lowestValid specified will trigger
+ * variable "shadows" the State (unlike a DiscreteVariable, which is a part
+ * of the State) holding already-computed state-dependent values so that they
+ * do not need to be recomputed until the state changes.
+ * Accessing the CacheVariable in a State whose current stage is lower than 
+ * that CacheVariable's specified dependsOn stage will trigger
  * an exception. It is up to the component to update the value of the cache variable.
  * ModelComponent provides methods to check if the cache is valid, update its value and 
  * mark as valid. 
 
- * All components: Bodies, Joints, Coordinates, Constraints, Forces, Controllers, .. 
+ * All components: Bodies, Joints, Coordinates, Constraints, Forces, Controllers, 
  * and even Model itself, are ModelComponents. Each component is "connected" to a
  * SimTK::Subsystem and by default this is the System's DefaultSubsystem.
  *
@@ -470,16 +475,38 @@ public:
 
 protected:
 template <class T> friend class ModelComponentSet;
+// Give the ModelComponentMeasure access to the realize() methods.
+template <class T> friend class ModelComponentMeasure;
 
-    /** @name               ModelComponent Protected Interface
-    The interface ensures that deserialization, resolution of inter-connections 
-    and dependencies, are performed systematically and prior to system 
-    creation, followed by allocation of necessary System resouces. These 
-    methods are virtual and must be implemented by subclasses of 
-    ModelComponents. Every implementation of virtual method xxx(args) must begin
+    /** @name           ModelComponent Basic Interface
+    The interface ensures that deserialization, resolution of inter-connections,
+    and handling of dependencies are performed systematically and prior to 
+    system creation, followed by allocation of necessary System resources. These 
+    methods are virtual and may be implemented by subclasses of 
+    ModelComponents. 
+    
+    @note Every implementation of virtual method xxx(args) must begin
     with the line "Super::xxx(args);" to ensure that the parent class methods
     execute before the child class method, starting with ModelComponent::xxx()
-    and going down. **/ 
+    and going down. 
+    
+    The base class implementations here do two things: (1) take care of any
+    needs of the %ModelComponent base class itself, and then (2) ensure that the 
+    corresponding calls are made to any subcomponents that have been specified 
+    by derived %ModelComponent objects, via calls to the 
+    includeAsSubComponent() method. So assuming that your concrete 
+    %ModelComponent and all intermediate classes from which it derives properly 
+    follow the requirement of calling the Super class method first, the order of
+    operations enforced here for a call to a single method will be
+      -# %ModelComponent base class computations
+      -# calls to that same method for \e all subcomponents
+      -# calls to that same method for intermediate %ModelComponent-derived 
+         objects' computations, in order down from %ModelComponent, and
+      -# finally a call to that method for the bottom-level concrete class. 
+
+    You should consider this ordering when designing a %ModelComponent. In 
+    particular the fact that all your subcomponents will be invoked before you
+    are may be surprising. **/ 
     //@{
 
     /** Perform any necessary initializations required to connect the 
@@ -560,10 +587,7 @@ template <class T> friend class ModelComponentSet;
         The state that will receive the new initial conditions.
 
     @see setPropertiesFromState() **/
-    virtual void initStateFromProperties(SimTK::State& state) const {
-        for(unsigned int i=0; i < _subComponents.size(); i++)
-            _subComponents[i]->initStateFromProperties(state);
-    };
+    virtual void initStateFromProperties(SimTK::State& state) const;
 
     /** Update this component's property values to match the specified State,
     if the component has created any state variable that is intended to
@@ -584,10 +608,7 @@ template <class T> friend class ModelComponentSet;
         property values.
 
     @see initStateFromProperties() **/
-    virtual void setPropertiesFromState(const SimTK::State& state) {
-        for(unsigned int i=0; i < _subComponents.size(); i++)
-            _subComponents[i]->setPropertiesFromState(state);
-    };
+    virtual void setPropertiesFromState(const SimTK::State& state);
 
     /** If a model component has allocated any continuous state variables
     using the addStateVariable() method, then %computeStateVariableDerivatives()
@@ -606,11 +627,10 @@ template <class T> friend class ModelComponentSet;
         return derivs;
     }
     @endcode
-    TODO: Subcomponents are not handled here.
+    This method is invoked from the base class realizeAcceleration() method.
     **/
     virtual SimTK::Vector 
-    computeStateVariableDerivatives(const SimTK::State& s) const
-    {   return SimTK::Vector(0); };
+    computeStateVariableDerivatives(const SimTK::State& s) const;
 
     /** Optional method for generating arbitrary display geometry that reflects
     this %ModelComponent at the specified \a state. This will be called once to 
@@ -661,12 +681,68 @@ template <class T> friend class ModelComponentSet;
        (bool                                        fixed, 
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const {}
+        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const;
 
-    // End of Model Component Interface (protected virtuals).
+    // End of Model Component Basic Interface (protected virtuals).
     //@} 
 
-    /** @name ModelComponent System Creation and Access Methods
+    /** @name           ModelComponent Advanced Interface
+    You probably won't need to override methods in this section. These provide
+    a way for you to perform computations ("realizations") that must be 
+    scheduled in carefully-ordered stages as described in the class description
+    above. The typical operation will be that the given SimTK::State provides
+    you with the inputs you need for your computation, which you will then 
+    write into some element of the state cache, where later computations can
+    pick it up.
+
+    @note Once again it is crucial that, if you override a method here,
+    you invoke the superclass method as the <em>first line</em> in your
+    implementation, via a call like "Super::realizePosition(state);". This 
+    will ensure that all necessary base class computations are performed, and
+    that subcomponents are handled properly.
+
+    @warning Currently the realize() methods here are invoked early in the
+    sequence of realizations at a given stage, meaning that you will not be
+    able to access other computations at that same stage.
+    @bug Should defer calls to these until at least kinematic realizations
+    at the same stage have been performed.
+
+    @see Simbody documentation for more information about realization.
+    **/
+    //@{
+    /** Obtain state resources that are needed unconditionally, and perform
+    computations that depend only on the system topology. **/
+    virtual void realizeTopology(SimTK::State& state) const;
+    /** Obtain state resources that may be needed, depending on modeling
+    options, and perform computations that depend only on topology and 
+    selected modeling options. **/
+    virtual void realizeModel(SimTK::State& state) const;
+    /** Perform computations that depend only on instance variables, like
+    lengths and masses. **/
+    virtual void realizeInstance(const SimTK::State& state) const;
+    /** Perform computations that depend only on time and earlier stages. **/
+    virtual void realizeTime(const SimTK::State& state) const;
+    /** Perform computations that depend only on position-level state
+    variables and computations performed in earlier stages (including time). **/
+    virtual void realizePosition(const SimTK::State& state) const;
+    /** Perform computations that depend only on velocity-level state 
+    variables and computations performed in earlier stages (including position, 
+    and time). **/
+    virtual void realizeVelocity(const SimTK::State& state) const;
+    /** Perform computations (typically forces) that may depend on 
+    dynamics-stage state variables, and on computations performed in earlier
+    stages (including velocity, position, and time), but not on other forces,
+    accelerations, constraint multipliers, or reaction forces. **/
+    virtual void realizeDynamics(const SimTK::State& state) const;
+    /** Perform computations that may depend on applied forces. **/
+    virtual void realizeAcceleration(const SimTK::State& state) const;
+    /** Perform computations that may depend on anything but are only used
+    for reporting and cannot affect subsequent simulation behavior. **/
+    virtual void realizeReport(const SimTK::State& state) const;
+    //@}
+
+
+    /** @name     ModelComponent System Creation and Access Methods
      * These methods support implementing concrete ModelComponents. Add methods
      * can only be called inside of addToSystem() and are useful for creating
      * the underlying SimTK::System level variables that are used for computing
@@ -781,10 +857,6 @@ template <class T> friend class ModelComponentSet;
     //@} 
 
 private:
-// Give the ModelComponentMeasure access to realizeTopology() and
-// realizeAcceleration();
-template <class T> friend class ModelComponentMeasure;
-
     // Get the number of continuous states that the ModelComponent added to 
     // the underlying computational system. It does not include the number of 
     // states already built-in by the SimTK::System level component. Should 
@@ -796,13 +868,6 @@ template <class T> friend class ModelComponentMeasure;
 
     const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;
     const SimTK::DefaultSystemSubsystem& updDefaultSubsystem();
-
-    // We only need a call at Topology stage (to allocate state variables
-    // and cache entries) and Acceleration stage (to ask the component to
-    // calculate state derivatives). These are invoked by the model component's
-    // measure.
-    void realizeTopology(SimTK::State& s) const;
-    void realizeAcceleration(const SimTK::State& s) const;
 
     void clearStateAllocations() {
         _namedModelingOptionInfo.clear();
@@ -910,65 +975,6 @@ private:
 };	// END of class ModelComponent
 //==============================================================================
 //=============================================================================
-
-
-
-//==============================================================================
-//                         MODEL COMPONENT MEASURE
-//==============================================================================
-/** @cond **/ // hide from Doxygen
-
-// Every OpenSim::ModelComponent is associated with a Simbody Measure of type
-// ModelComponentMeasure defined here. This provides a full set of realize()
-// methods for performing computations with System resources that are maintained
-// at the ModelComponent base level, such as calculating state derivatives.
-
-template <class T>
-class ModelComponentMeasure : public SimTK::Measure_<T> {
-public:
-    SimTK_MEASURE_HANDLE_PREAMBLE(ModelComponentMeasure, SimTK::Measure_<T>);
-
-    ModelComponentMeasure(SimTK::Subsystem& sub, 
-                          const OpenSim::ModelComponent& mc)
-    :   SimTK::Measure_<T>(sub, new Implementation(mc), 
-                    SimTK::AbstractMeasure::SetHandle()) {}
-
-    SimTK_MEASURE_HANDLE_POSTSCRIPT(ModelComponentMeasure, SimTK::Measure_<T>);
-};
-
-template <class T>
-class ModelComponentMeasure<T>::Implementation 
-:   public SimTK::Measure_<T>::Implementation {
-public:
-    // Don't allocate a value cache entry since this measure's value is
-    // just a dummy.
-    explicit Implementation(const ModelComponent& mc)
-    :   SimTK::Measure_<T>::Implementation(0), _modelComponent(mc) {}
-
-    // Implementations of Measure_<T>::Implementation virtual methods.
-
-    Implementation* cloneVirtual() const FINAL_11
-    {   return new Implementation(*this); }
-
-    int getNumTimeDerivativesVirtual() const FINAL_11 {return 0;}
-    SimTK::Stage getDependsOnStageVirtual(int order) const FINAL_11
-    {   return SimTK::Stage::Empty; }
-       
-    const T& getUncachedValueVirtual
-       (const SimTK::State& s, int derivOrder) const FINAL_11
-    {   return this->getValueZero(); }
-
-    void realizeMeasureTopologyVirtual(SimTK::State& s) const FINAL_11
-    {   _modelComponent.realizeTopology(s); }
-    void realizeMeasureAccelerationVirtual(const SimTK::State& s) const FINAL_11
-    {   _modelComponent.realizeAcceleration(s); }
-
-private:
-    const ModelComponent& _modelComponent;
-};
-
-/** @endcond **/
-
 
 } // end of namespace OpenSim
 

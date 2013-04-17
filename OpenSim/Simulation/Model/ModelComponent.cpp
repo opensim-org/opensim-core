@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                                       *
+ * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Author(s): Ajay Seth, Michael Sherman                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -29,7 +29,77 @@ using namespace SimTK;
 
 namespace OpenSim {
 
+//==============================================================================
+//                         MODEL COMPONENT MEASURE
+//==============================================================================
+// Every OpenSim::ModelComponent is associated with a Simbody Measure of type
+// ModelComponentMeasure defined here. This provides a full set of realize()
+// methods for performing computations with System resources that are maintained
+// at the ModelComponent base level, such as calculating state derivatives.
 
+template <class T>
+class ModelComponentMeasure : public SimTK::Measure_<T> {
+public:
+    SimTK_MEASURE_HANDLE_PREAMBLE(ModelComponentMeasure, SimTK::Measure_<T>);
+
+    ModelComponentMeasure(SimTK::Subsystem& sub, 
+                          const OpenSim::ModelComponent& mc)
+    :   SimTK::Measure_<T>(sub, new Implementation(mc), 
+                    SimTK::AbstractMeasure::SetHandle()) {}
+
+    SimTK_MEASURE_HANDLE_POSTSCRIPT(ModelComponentMeasure, SimTK::Measure_<T>);
+};
+
+
+template <class T>
+class ModelComponentMeasure<T>::Implementation 
+:   public SimTK::Measure_<T>::Implementation {
+public:
+    // Don't allocate a value cache entry since this measure's value is
+    // just a dummy.
+    explicit Implementation(const ModelComponent& mc)
+    :   SimTK::Measure_<T>::Implementation(0), _modelComponent(mc) {}
+
+    // Implementations of Measure_<T>::Implementation virtual methods.
+
+    Implementation* cloneVirtual() const FINAL_11
+    {   return new Implementation(*this); }
+
+    int getNumTimeDerivativesVirtual() const FINAL_11 {return 0;}
+    SimTK::Stage getDependsOnStageVirtual(int order) const FINAL_11
+    {   return SimTK::Stage::Empty; }
+       
+    const T& getUncachedValueVirtual
+       (const SimTK::State& s, int derivOrder) const FINAL_11
+    {   return this->getValueZero(); }
+
+    void realizeMeasureTopologyVirtual(SimTK::State& s) const FINAL_11
+    {   _modelComponent.realizeTopology(s); }
+    void realizeMeasureModelVirtual(SimTK::State& s) const FINAL_11
+    {   _modelComponent.realizeModel(s); }
+    void realizeMeasureInstanceVirtual(const SimTK::State& s) const FINAL_11
+    {   _modelComponent.realizeInstance(s); }
+    void realizeMeasureTimeVirtual(const SimTK::State& s) const FINAL_11
+    {   _modelComponent.realizeTime(s); }
+    void realizeMeasurePositionVirtual(const SimTK::State& s) const FINAL_11
+    {   _modelComponent.realizePosition(s); }
+    void realizeMeasureVelocityVirtual(const SimTK::State& s) const FINAL_11
+    {   _modelComponent.realizeVelocity(s); }
+    void realizeMeasureDynamicsVirtual(const SimTK::State& s) const FINAL_11
+    {   _modelComponent.realizeDynamics(s); }
+    void realizeMeasureAccelerationVirtual(const SimTK::State& s) const FINAL_11
+    {   _modelComponent.realizeAcceleration(s); }
+    void realizeMeasureReportVirtual(const SimTK::State& s) const FINAL_11
+    {   _modelComponent.realizeReport(s); }
+
+private:
+    const ModelComponent& _modelComponent;
+};
+
+
+//==============================================================================
+//                             MODEL COMPONENT
+//==============================================================================
 ModelComponent::ModelComponent() : _model(NULL) 
 {
 }
@@ -76,6 +146,7 @@ Model& ModelComponent::updModel()
     return *_model;
 }
 
+// Base class implementation of virtual method.
 void ModelComponent::connectToModel(Model& model)
 {
     _model = &model;
@@ -88,6 +159,7 @@ void ModelComponent::connectToModel(Model& model)
         _subComponents[i]->connectToModel(model);
 }
 
+// Base class implementation of virtual method.
 // Every ModelComponent owns an underlying SimTK::Measure 
 // which is a ModelComponentMeasure<T> and is added to the System's default
 // subsystem. That measure is used only for the side effect of its realize()
@@ -107,6 +179,37 @@ void ModelComponent::addToSystem(SimTK::MultibodySystem& system) const
     // subcomponents add themselves to the system before the parent component.
     for(unsigned int i=0; i<_subComponents.size(); i++)
         _subComponents[i]->addToSystem(system);
+}
+
+// Base class implementation of virtual method.
+void ModelComponent::initStateFromProperties(SimTK::State& state) const {
+    for(unsigned int i=0; i < _subComponents.size(); i++)
+        _subComponents[i]->initStateFromProperties(state);
+};
+
+// Base class implementation of virtual method.
+void ModelComponent::setPropertiesFromState(const SimTK::State& state) {
+    for(unsigned int i=0; i < _subComponents.size(); i++)
+        _subComponents[i]->setPropertiesFromState(state);
+};
+
+// Base class implementation of virtual method. Note that we're not handling
+// subcomponents here; this method gets called from realizeAcceleration()
+// which will be invoked for each subcomponent by its own ModelComponentMeasure.
+SimTK::Vector ModelComponent::
+computeStateVariableDerivatives(const SimTK::State& s) const
+{   return SimTK::Vector(0); };
+
+// Base class implementation of virtual method.
+void ModelComponent::generateDecorations
+    (bool                                        fixed, 
+    const ModelDisplayHints&                    hints,
+    const SimTK::State&                         state,
+    SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const 
+{
+    for(unsigned int i=0; i < _subComponents.size(); i++)
+        _subComponents[i]->
+            generateDecorations(fixed,hints,state,appendToThis);   
 }
 
 void ModelComponent::
@@ -486,9 +589,18 @@ const SimTK::DefaultSystemSubsystem& ModelComponent::
 updDefaultSubsystem()
 {   return updModel().updDefaultSubsystem(); }
 
+
 //------------------------------------------------------------------------------
 //                            REALIZE TOPOLOGY
 //------------------------------------------------------------------------------
+// This is the base class implementation of a virtual method that can be
+// overridden by derived model components, but they *must* invoke
+// Super::realizeTopology() as the first line in the overriding method so that
+// this code is executed before theirs.
+// This method is invoked from the ModelComponentMeasure associated with this
+// ModelComponent.
+// Note that subcomponent realize() methods will be invoked by their own
+// ModelComponentMeasures, so we do not need to forward to subcomponents here.
 void ModelComponent::realizeTopology(SimTK::State& s) const
 {
     const SimTK::System&    sys = getModel().getMultibodySystem();
@@ -526,7 +638,6 @@ void ModelComponent::realizeTopology(SimTK::State& s) const
         }
     }
 
-
     // Allocate Discrete State Variables
     if(_namedDiscreteVariableInfo.size()>0){
         std::map<std::string, DiscreteVariableInfo>::iterator it;
@@ -549,17 +660,14 @@ void ModelComponent::realizeTopology(SimTK::State& s) const
                (s, ci.dependsOnStage, ci.prototype->clone());
         }
     }
-
-    // Now do the same for subcomponents
-    for(unsigned int i=0; i< _subComponents.size(); i++)
-        _subComponents[i]->realizeTopology(s);
 }
-
 
 
 //------------------------------------------------------------------------------
 //                         REALIZE ACCELERATION
 //------------------------------------------------------------------------------
+// Base class implementation of virtual method.
+// Collect this component's state variable derivatives.
 void ModelComponent::realizeAcceleration(const SimTK::State& s) const
 {
     if(_namedStateVariableInfo.size()>0) {
@@ -585,10 +693,20 @@ void ModelComponent::realizeAcceleration(const SimTK::State& s) const
                 subSys.updQDot(s)[QIndex(svi.index)] = derivs[svi.order];
         }
     }
-
-    // Now do the same for subcomponents
-    for(unsigned int i=0; i< _subComponents.size(); i++)
-        _subComponents[i]->realizeAcceleration(s);
 }
+
+//------------------------------------------------------------------------------
+//                         OTHER REALIZE METHODS
+//------------------------------------------------------------------------------
+// Base class implementations of these virtual methods do nothing now but
+// could do something in the future. Users must still invoke Super::realizeXXX()
+// as the first line in their overrides to ensure future compatibility.
+void ModelComponent::realizeModel(SimTK::State& state) const {}
+void ModelComponent::realizeInstance(const SimTK::State& state) const {}
+void ModelComponent::realizeTime(const SimTK::State& state) const {}
+void ModelComponent::realizePosition(const SimTK::State& state) const {}
+void ModelComponent::realizeVelocity(const SimTK::State& state) const {}
+void ModelComponent::realizeDynamics(const SimTK::State& state) const {}
+void ModelComponent::realizeReport(const SimTK::State& state) const {}
 
 } // end of namespace OpenSim
