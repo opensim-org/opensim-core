@@ -705,20 +705,22 @@ public:
     int deleteUnusedMarkers(const Array<std::string>& aMarkerNames);
  
 	/**
-	 * Add an analysis to the model.
+	 * Add an Analysis to the %Model.
 	 *
-	 * @param aAnalysis pointer to the analysis to add
+	 * @param analysis  pointer to the Analysis to add
 	 */
-	void addAnalysis(Analysis *aAnalysis);
+	void addAnalysis(Analysis *analysis);
+    /** Add a Controller to the %Model. **/
 	void addController(Controller *aController);
 
 	/**
-	 * Remove an analysis from the model
+	 * Remove an Analysis from the %Model.
 	 *
 	 * @param analysis  Pointer to the analysis to remove.
      * @param deleteIt  Whether the removed object should be deleted.
 	 */
 	void removeAnalysis(Analysis* analysis, bool deleteIt=true);
+    /** Remove a Controller from the %Model. **/
 	void removeController(Controller *aController);
 
 	//--------------------------------------------------------------------------
@@ -887,7 +889,8 @@ private:
 
 	void createAssemblySolver(const SimTK::State& s);
 
-	friend class ModelComponent; // TODO: why?
+    // To provide access to private _modelComponents member.
+	friend class ModelComponent; 
 
 //==============================================================================
 // DATA MEMBERS
