@@ -139,6 +139,9 @@ public:
 	virtual double getLengtheningSpeed(const SimTK::State& s) const;
 	virtual void setLengtheningSpeed( const SimTK::State& s, double speed ) const;
 
+	void setColor(const SimTK::State& s, SimTK::Vec3& colour) const;
+
+	SimTK::Vec3 getColor(const SimTK::State& s) const;
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
@@ -164,6 +167,12 @@ protected:
 	void connectToModel(Model& aModel) OVERRIDE_11;
 	void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+
+	void generateDecorations(
+			bool 									fixed,
+			const ModelDisplayHints&				hints,
+			const SimTK::State&						state,
+			SimTK::Array_<SimTK::DecorativeGeometry>&	appendToThis) const;
 
 public:
 	//--------------------------------------------------------------------------

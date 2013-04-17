@@ -41,11 +41,13 @@
 
 #include <OpenSim/Simulation/MomentArmSolver.h>
 
+#include "ModelVisualizer.h"
 //=============================================================================
 // STATICS
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using namespace SimTK;
 using SimTK::Vec3;
 
 //=============================================================================
@@ -181,11 +183,57 @@ void GeometryPath::connectToModel(Model& aModel) {
 	Array<PathPoint *> pathPrototype;
 	mutableThis->addCacheVariable<Array<PathPoint *> >("current_path", pathPrototype, SimTK::Stage::Position);
 	mutableThis->addCacheVariable<Array<PathPoint *> >("current_display_path", pathPrototype, SimTK::Stage::Position);
+
+	mutableThis->addCacheVariable<SimTK::Vec3>("color", SimTK::Vec3(0,0,0), SimTK::Stage::Model);
 }
 
 void GeometryPath::initStateFromProperties( SimTK::State& s) const
 {
 	Super::initStateFromProperties(s);
+}
+
+void GeometryPath::generateDecorations( bool fixed, const ModelDisplayHints& hints, const SimTK::State& state, SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
+{
+		
+	Super::generateDecorations(fixed, hints, state, appendToThis);
+
+	if(fixed) { return; }
+
+	const SimbodyMatterSubsystem& matter = this->getModel().getMatterSubsystem();
+
+	this->updateDisplayer(state);
+	
+	const Array<PathPoint*>& points = this->getCurrentDisplayPath(state);
+
+	if (points.getSize() == 0) { return; }
+
+	const PathPoint* lastPoint = points[0];	
+	Vec3 lastLoc_B = lastPoint->getLocation();
+	MobilizedBodyIndex lastBody = lastPoint->getBody().getIndex();
+
+	if (hints.getShowPathPoints())
+	{
+		DefaultGeometry::drawPathPoint(lastBody, lastLoc_B, 0.9*SimTK::White, appendToThis);
+	}
+
+	Vec3 lastPos = matter.getMobilizedBody(lastBody).getBodyTransform(state)*lastLoc_B;
+	for(int j = 1; j < points.getSize(); j++)
+	{
+		const PathPoint* point = points[j];
+		const Vec3 loc_B = point->getLocation();
+		const MobilizedBodyIndex body = point->getBody().getIndex();
+
+		if(hints.getShowPathPoints())
+		{
+			DefaultGeometry::drawPathPoint(body, loc_B, 0.9*SimTK::White, appendToThis);
+		}
+
+		Vec3 pos = matter.getMobilizedBody(body).getBodyTransform(state)*loc_B;
+
+		appendToThis.push_back(DecorativeLine(lastPos, pos).setLineThickness(4).setColor(getColor(state)));
+
+		lastPos = pos;
+	}
 }
 
 //_____________________________________________________________________________
@@ -445,6 +493,16 @@ double GeometryPath::getLength( const SimTK::State& s) const
 void GeometryPath::setLength( const SimTK::State& s, double length ) const
 {
 	setCacheVariable<double>(s, "length", length); 
+}
+
+void GeometryPath::setColor(const SimTK::State& s, SimTK::Vec3& colour) const
+{
+	setCacheVariable<SimTK::Vec3>(s, "color", colour);
+}
+
+Vec3 GeometryPath::getColor(const SimTK::State& s) const
+{
+	return getCacheVariable<SimTK::Vec3>(s, "color");
 }
 
 
