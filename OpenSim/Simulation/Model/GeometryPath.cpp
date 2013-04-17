@@ -65,6 +65,7 @@ GeometryPath::GeometryPath() :
    _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_pathWrapSetProp(PropertyObj("", PathWrapSet())),
 	_pathWrapSet((PathWrapSet&)_pathWrapSetProp.getValueObj()),
+    _preScaleLength(0.0),
 	_owner(NULL)
 {
 	setNull();
@@ -99,6 +100,7 @@ GeometryPath::GeometryPath(const GeometryPath &aPath) :
    _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_pathWrapSetProp(PropertyObj("", PathWrapSet())),
 	_pathWrapSet((PathWrapSet&)_pathWrapSetProp.getValueObj()),
+    _preScaleLength(0.0),
 	_owner(NULL)
 {
 	setNull();
