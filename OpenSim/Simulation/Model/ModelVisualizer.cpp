@@ -118,7 +118,7 @@ private:
 
 // Draw a path point with a small body-axis-aligned cross centered on
 // the point.
-static void drawPathPoint(const MobilizedBodyIndex&             body,
+void DefaultGeometry::drawPathPoint(const MobilizedBodyIndex&             body,
                           const Vec3&                           pt_B,
                           const Vec3&                           color,
                           Array_<SimTK::DecorativeGeometry>&    geometry)
@@ -150,45 +150,6 @@ void DefaultGeometry::generateDecorations
 
     // Display the path and activation level of each muscle.
     if (hints.getShowMusclePaths()) {
-        const Set<Muscle>& muscles = _model.getMuscles();
-        for (int i = 0; i < muscles.getSize(); ++i) {
-            const Muscle& muscle = muscles[i];
-		    const double activation = 
-                SimTK::clamp(0., muscle.getActivation(state), 1.);
-            const Vec3 color(activation, 0, 1-activation); // blue to red
-
-            _model.updMuscles()[i].updateDisplayer(state);
-            const Array<PathPoint*>& points = 
-                muscle.getGeometryPath().getCurrentDisplayPath(state);
-            if (points.getSize() == 0) 
-                continue;
-
-            const PathPoint* lastPoint = points[0];
-            Vec3 lastLoc_B = lastPoint->getLocation();
-            MobilizedBodyIndex lastBody = lastPoint->getBody().getIndex();
-
-            if (hints.getShowPathPoints())
-                drawPathPoint(lastBody, lastLoc_B, 0.9*SimTK::White, geometry);
-
-
-            Vec3 lastPos = matter.getMobilizedBody(lastBody)
-                                .getBodyTransform(state)*lastLoc_B;
-            for (int j = 1; j < points.getSize(); j++) {
-                const PathPoint* point = points[j];
-                const Vec3 loc_B = point->getLocation();
-                const MobilizedBodyIndex body = point->getBody().getIndex();
-                if (hints.getShowPathPoints())
-                    drawPathPoint(body, loc_B, 0.9*SimTK::White, geometry);
-
-                Vec3 pos = matter.getMobilizedBody(body)
-                                 .getBodyTransform(state)*loc_B;
-
-                geometry.push_back(DecorativeLine(lastPos, pos)
-                                    .setLineThickness(4)
-                                    .setColor(color));
-                lastPos = pos;
-            }
-        }
 
         // Display ligaments
         const ForceSet& forces = _model.getForceSet();

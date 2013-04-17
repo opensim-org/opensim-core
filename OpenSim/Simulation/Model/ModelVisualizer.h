@@ -67,6 +67,11 @@ public:
     double getDispContactResolution() {return _dispContactResolution;}
     void   setDispContactResolution(double a) {_dispContactResolution=a;}
 
+static void drawPathPoint(const SimTK::MobilizedBodyIndex&             body,
+                          const SimTK::Vec3&                           pt_B,
+                          const SimTK::Vec3&                           color,
+                          SimTK::Array_<SimTK::DecorativeGeometry>&    geometry);
+
 private:
     OpenSim::Model&  _model;
 
@@ -180,6 +185,8 @@ public:
                           bool&                       isAbsolute,
                           SimTK::Array_<std::string>& attempts) const;
     /**@}**/
+
+
 private:
     friend class Model;
 
