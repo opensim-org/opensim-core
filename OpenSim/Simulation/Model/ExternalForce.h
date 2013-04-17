@@ -97,7 +97,7 @@ public:
 	 */
 	ExternalForce(const Storage& dataSource, 
                   const std::string& forceIdentifier="force", 
-                  const std::string& PointIdentifier="point", 
+                  const std::string& pointIdentifier="point", 
                   const std::string& torqueIdentifier="torque",
 		          const std::string& appliedToBodyName="", 
                   const std::string& forceExpressedInBodyName="ground", 

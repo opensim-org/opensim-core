@@ -48,7 +48,6 @@ class Model;
  * locked, prescribed, or clamped (limited to a min-to-max range).
  *
  * @authors Ajay Seth, Ayman Habib, Michael Sherman 
- * @contributors Frank C. Anderson, Jeffrey A. Reinbolt
  */
 class OSIMSIMULATION_API Coordinate : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(Coordinate, ModelComponent);

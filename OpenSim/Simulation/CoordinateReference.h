@@ -66,14 +66,15 @@ public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
+    CoordinateReference();
 
 	/** Create a CoordinateReference
 	* @param name of the reference to be found in the model and
-	* @param referenceFunction that specifies the value of the coordinate
+	* @param ReferenceFunction that specifies the value of the coordinate
 	*        to be matched at a given time
 	*/
-	CoordinateReference();
 	CoordinateReference(const std::string name, Function &ReferenceFunction);
+
 	CoordinateReference(const CoordinateReference& source);
 	CoordinateReference& operator=(const CoordinateReference& source);
 	virtual ~CoordinateReference() {}

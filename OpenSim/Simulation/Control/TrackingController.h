@@ -86,7 +86,7 @@ public:
 	/**
 	 * Copy constructor. 
 	 *
-	 * @param aController The controller to be copied.
+	 * @param TrackingController The controller to be copied.
 	 */
 	TrackingController(const TrackingController &TrackingController);
 
@@ -132,7 +132,7 @@ public:
 	/**
 	 * Assignment operator.  
 	 *
-	 * @param aController The controller to be copied.
+	 * @param TrackingController The controller to be copied.
 	 * @return Reference to the altered object.
 	 */
 	TrackingController& operator=(const TrackingController &TrackingController);

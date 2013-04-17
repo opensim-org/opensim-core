@@ -166,7 +166,7 @@ public:
     /** Obtain the rate at which energy is being dissipated by this 
     CoordinateLimit, that is, the power being lost. This is in units of 
     energy/time which is watts in J/s. 
-    @param[in]          state    
+    @param[in]          s    
         The State from which to obtain the current value of the power 
         dissipation.
     @return
@@ -176,7 +176,7 @@ public:
 
     /** Obtain energy dissipated by this CoordinateLimitForce over time
     in units of energy in J. 
-    @param[in]          state    
+    @param[in]          s    
         The State from which to obtain the current value of 
         dissipated energy 
     @return

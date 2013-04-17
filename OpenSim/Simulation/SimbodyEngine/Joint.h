@@ -189,7 +189,7 @@ public:
 	axis, then this should be evident in the reported results as a force or torque on the same axis. 
 	NOTE: Joints comprised of multiple mobilizers and/or constraints, should override this method and account for multiple
 	      internal components 
-	@param state constaining the generalized coordinate and speed values 
+	@param s constaining the generalized coordinate and speed values 
 	@param mobilityForces for the system as computed by inverse dynamics, for example 
 	@return spatial force, FB_G, acting on the body connected by this joint at its location B, expressed in ground.  */
 	virtual SimTK::SpatialVec calcEquivalentSpatialForce(const SimTK::State &s, const SimTK::Vector &mobilityForces) const;

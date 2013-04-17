@@ -579,7 +579,7 @@ public:
 	 * Alternatively, set the controls on the model at a given state.
 	 * Note, this method invokes Model::updControls(s).
 	 * @param[in]   s		  System state at which to apply the controls
-	 * @controls	controls  The complete Vector of controls to be applied
+	 * @param[in]   controls  The complete Vector of controls to be applied
  	 */
 	void setControls(const SimTK::State& s, const SimTK::Vector& controls) const
 	{	updControls(s) = controls; }
@@ -759,6 +759,7 @@ public:
 	/**
 	 * Print detailed information about the model.
 	 *
+     * @param s   the system State.
 	 * @param aOStream Output stream.
 	 */
 	void printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) const;
@@ -842,13 +843,13 @@ public:
     { return _stateVariableSystemIndices;}
 
     /** Get the value of a state variable of this Model.
-    @param state   the State for which to get the value
+    @param s   the State for which to get the value
     @param name    the name (string) of the state variable of interest **/
 	/*virtual*/ double getStateVariable(const SimTK::State& s, 
                                         const std::string& name) const;
 
     /** Set the value of a state variable of this Model.
-    @param state   the State for which to get the value
+    @param s   the State for which to get the value
     @param name    the name (string) of the state variable of interest 
     @param value   the value of the state **/
 	/*virtual*/ void setStateVariable(SimTK::State& s, 
@@ -856,7 +857,7 @@ public:
                                         double value) const;
 	
     /** Get the Y index of a state variable by name.
-    @param name    the name (string) of the state variable of interest **/
+    @param stateVariableName    the name (string) of the state variable of interest **/
 	/*virtual*/ SimTK::SystemYIndex getStateVariableSystemIndex
        (const std::string &stateVariableName) const;
     /**@}**/

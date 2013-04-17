@@ -95,6 +95,7 @@ public:
 	* The type of object is the tag name of the XML root element.
 	*
 	* @param aFileName File name of the document.
+    * @param aUpdateFromXMLNode
 	*/
 	Tool(const std::string &aFileName, bool aUpdateFromXMLNode = true):
 		Object(aFileName, true), _inputsDir(_inputsDirProp.getValueStr()),

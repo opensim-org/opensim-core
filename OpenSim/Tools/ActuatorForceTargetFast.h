@@ -61,7 +61,7 @@ class CMC;
  * accelreations cannot be achieved.  To insure that the constraints can
  * be achieved, a number of sufficiently strong actuators can be added
  * to the model.  Althernatively, one can use a different optimization
- * target @wee ActuatorForceTarget.  The benefits of using the fast
+ * target ActuatorForceTarget.  The benefits of using the fast
  * target are both speed and tracking accuracy.
  * 
  * @version 1.0

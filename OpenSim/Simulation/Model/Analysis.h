@@ -115,6 +115,7 @@ public:
 	 * The object is constructed from the root element of the XML document.
 	 * The type of object is the tag name of the XML root element.
 	 * @param aFileName File name of the document.
+     * @param aUpdateFromXMLNode
 	 */
 	Analysis(const std::string &aFileName, bool aUpdateFromXMLNode = true);
 

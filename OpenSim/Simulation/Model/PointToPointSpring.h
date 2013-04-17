@@ -95,8 +95,6 @@ public:
 	//-----------------------------------------------------------------------------
 	/**
 	* Spring end point bodies 
-	* 
-	* @param std::string bodyName<1/2>
 	*/
 	void setBody1Name(const std::string& body1Name) 
     {   set_body1(body1Name); }
@@ -107,8 +105,6 @@ public:
 
 	/**
 	* Spring end points 
-	* 
-	* @param Vec3 point<1/2> 
 	*/
 	void setPoint1(SimTK::Vec3 aPosition) { set_point1(aPosition); }
 	const SimTK::Vec3& getPoint1() const { return get_point1(); }

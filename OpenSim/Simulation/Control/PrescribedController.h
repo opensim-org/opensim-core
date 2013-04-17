@@ -75,7 +75,7 @@ public:
 	/**
 	 * Copy constructor. 
 	 *
-	 * @param aController The controller to be copied.
+	 * @param PrescribedController The controller to be copied.
 	 */
 	PrescribedController(const PrescribedController &PrescribedController);
 
@@ -118,7 +118,7 @@ public:
 	/**
 	 * Assignment operator.  
 	 *
-	 * @param aController The controller to be copied.
+	 * @param PrescribedController The controller to be copied.
 	 * @return Reference to the altered object.
 	 */
 	PrescribedController& operator=(const PrescribedController &PrescribedController);
@@ -148,22 +148,24 @@ public:
 	 * Compute the control values for all actuators under the control of this
 	 * Controller
 	 *
-	 * @param s system state 
-	 * @param model controls  
+	 * @param s             system state 
+	 * @param controls      model controls  
 	 */
 	virtual void computeControls(const SimTK::State& s, SimTK::Vector& controls) const;
 
 	/**
 	 *	Assign a prescribe control function for the desired actuator identified by its index.
-	 *  @param index,  the actuator's index in the controller's actuator set
-	 *  @param prescribedFunction, the actuator's control function
+     *
+	 *  @param index                the actuator's index in the controller's actuator set
+	 *  @param prescribedFunction   the actuator's control function
 	 */
 	void prescribeControlForActuator(int index, OpenSim::Function *prescribedFunction);
 
 	/**
 	 *	Assign a prescribe control function for the desired actuator identified by its name.
-	 *  @param name,  the actuator's name to be found in the controller's actuator set
-	 *  @param prescribedFunction, the actuator's control function
+     *
+	 *  @param actName                the actuator's name to be found in the controller's actuator set
+	 *  @param prescribedFunction     the actuator's control function
 	 */
 	void prescribeControlForActuator(const std::string actName, OpenSim::Function *prescribedFunction);
 

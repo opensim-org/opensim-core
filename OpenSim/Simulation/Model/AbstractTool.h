@@ -161,6 +161,7 @@ public:
 	* The type of object is the tag name of the XML root element.
 	*
 	* @param aFileName File name of the document.
+    * @param aUpdateFromXMLNode
 	*/
 	AbstractTool(const std::string &aFileName, bool aUpdateFromXMLNode = true);
 	
@@ -194,7 +195,7 @@ public:
 	* Only the essential document nodes are created (that is, nodes that
 	* correspond directly to member variables.).
 	*
-	* @param aTool Object to be copied.
+	* @param aObject Object to be copied.
 	* @see AbstractTool(const XMLDocument *aDocument)
 	* @see AbstractTool(const char *aFileName)
 	*/
@@ -357,7 +358,8 @@ public:
 	/**
 	* Print the results of the analysis.
 	*
-	* @param aFileName File to which to print the data.
+	* @param aBaseName Basename file to which to print the data.
+    * @param aDir Directory to which to print the data into.
 	* @param aDT Time interval between results (linear interpolation is used).
 	* If not included as an argument or negative, all time steps are printed
 	* without interpolation.

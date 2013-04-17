@@ -192,7 +192,6 @@ public:
     /**Returns the number of probe inputs in the vector returned by computeProbeInputs().
        This method must be overridden for each subclass Probe.
 
-    @param  state   System state from which value is computed.  
     @return         The SimTK::Vector of Probe input values. **/
     virtual int getNumProbeInputs() const=0;
 #endif

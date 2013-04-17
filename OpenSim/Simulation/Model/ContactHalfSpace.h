@@ -52,7 +52,7 @@ public:
      * x>0 are considered to be inside the geometry.
      *
 	 * @param location     the location of the geometry within the Body it is attached to
-	 * @param transform    the location and orientation of the half space within the Body it is attached to
+	 * @param orientation  the orientation of the half space within the Body it is attached to
      * @param body         the Body this half space is attached to
      */
     ContactHalfSpace(const SimTK::Vec3& location, const SimTK::Vec3& orientation, Body& body);
@@ -61,7 +61,7 @@ public:
      * x>0 are considered to be inside the geometry.
      *
 	 * @param location     the location of the geometry within the Body it is attached to
-	 * @param transform    the location and orientation of the half space within the Body it is attached to
+	 * @param orientation  the orientation of the half space within the Body it is attached to
      * @param body         the Body this half space is attached to
      * @param name         the name of this object
      */
