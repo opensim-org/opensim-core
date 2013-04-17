@@ -33,22 +33,43 @@ namespace OpenSim {
 //                              METABOLIC MUSCLE
 //=============================================================================
 /**
- * A class for holding the meatbolic properties of a muscle. 
+ * A class for holding the metabolic properties of a muscle. Note that as
+ * there may be many different implementations of metabolic calculators, 
+ * not all properties listed in this class may apply to the specific metabolic
+ * calculator you decide to use.
+ *
+ * MuscleMetabolicPowerProbeBhargava2004: Bhargava, L. J., Pandy, M. G. and 
+ * Anderson, F. C. (2004). A phenomenological model for estimating metabolic 
+ * energy consumption in muscle contraction. J Biomech 37, 81-8.
+ *
+ * MuscleMetabolicPowerProbeUmberger2010: Umberger, B. R., Gerritsen, K. G. 
+ * and Martin, P. E. (2003). A model of human muscle energy expenditure. 
+ * Comput Methods Biomech Biomed Engin 6, 99-111.
+ *
+ *
  * The list of current metabolic properties are:
  *
+ * --------------------------------------------------------------------------------
+ * MuscleMetabolicPowerProbeBhargava2004 AND MuscleMetabolicPowerProbeUmberger2010
+ * --------------------------------------------------------------------------------
  * - <B>muscle_mass</B> = The mass of the muscle (kg).
  *
  * - <B>calculate_mass_from_muscle_properties</B> = A flag used to specify that muscle 
  * mass is computed from muscle properties. If set to true, the muscle_mass property will 
- * be ignored, and will instead be computed from the following equation: 
+ * be ignored, and will instead be computed by the underlying metabolic calculator from
+ * the following equation: 
  * m = (Fmax/sigma)*rho*Lm_opt, where 
  *        sigma = 0.25 MPa (specific tension of mammalian muscle); 
  *        rho = 1059.7 kg/m^3 (density of mammalian muscle); 
  *        Fmax and Lm_opt are the maximum isometric force and optimal fiber length, respectively, of the muscle.
  *
  * - <B>ratio_slow_twitch_fibers</B> = Ratio of slow twitch fibers in the muscle (must be between 0 and 1).
- * - <B>activation_constant_slow_twitch</B> = Activation constant for slow twitch fibers (W/kg).
- * - <B>activation_constant_fast_twitch</B> = Activation constant for fast twitch fibers (W/kg).
+ *
+ * --------------------------------------------------------------------------------
+ * MuscleMetabolicPowerProbeBhargava2004 ONLY
+ * --------------------------------------------------------------------------------
+ * - <B>activation_constant_slow_twitch</B>  = Activation constant for slow twitch fibers (W/kg).
+ * - <B>activation_constant_fast_twitch</B>  = Activation constant for fast twitch fibers (W/kg).
  * - <B>maintenance_constant_slow_twitch</B> = Maintenance constant for slow twitch fibers (W/kg).
  * - <B>maintenance_constant_fast_twitch</B> = Maintenance constant for slow twitch fibers (W/kg).
  *
@@ -101,8 +122,6 @@ public:
 // a single muscle, but are not set in this class -- rather, they are
 // set by the probes that own them.
 protected:
-    Muscle* _musc;          // pointer to the muscle that these parameters
-                            // apply to.
     double _muscMass;       // The mass of the muscle (the value here depends
                             // on if calculate_mass_from_muscle_properties
                             // is true or false.
@@ -118,23 +137,20 @@ public:
     //--------------------------------------------------------------------------
     MetabolicMuscleParameter();
 
-    MetabolicMuscleParameter(double muscle_mass, 
-        bool calculate_mass_from_muscle_properties, 
-        double ratio_slow_twitch_fibers, 
-        double activation_constant_slow_twitch, 
-        double activation_constant_fast_twitch, 
-        double maintenance_constant_slow_twitch, 
-        double maintenance_constant_fast_twitch); 
+    MetabolicMuscleParameter(const double muscle_mass, 
+        const bool calculate_mass_from_muscle_properties, 
+        const double ratio_slow_twitch_fibers, 
+        const double activation_constant_slow_twitch, 
+        const double activation_constant_fast_twitch, 
+        const double maintenance_constant_slow_twitch, 
+        const double maintenance_constant_fast_twitch); 
 
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
 
     //--------------------------------------------------------------------------
-    // Get and Set
+    // Muscle Mass Variable (this is set by the underlying metabolic probe).
     //--------------------------------------------------------------------------
-    const Muscle* getMuscle() const { return _musc; };
-    void setMuscle(Muscle* m) { _musc = m; }
-
     const double getMuscleMass() const { return _muscMass; };
     void setMuscleMass(const double mass) { _muscMass = mass; }
 

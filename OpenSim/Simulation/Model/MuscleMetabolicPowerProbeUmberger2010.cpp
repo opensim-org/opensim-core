@@ -50,8 +50,11 @@ MuscleMetabolicPowerProbeUmberger2010::MuscleMetabolicPowerProbeUmberger2010() :
 /** 
  * Convenience constructor
  */
-MuscleMetabolicPowerProbeUmberger2010::MuscleMetabolicPowerProbeUmberger2010(bool activation_maintenance_rate_on, 
-    bool shortening_rate_on, bool basal_rate_on, bool work_rate_on) : Probe()
+MuscleMetabolicPowerProbeUmberger2010::MuscleMetabolicPowerProbeUmberger2010(
+    const bool activation_maintenance_rate_on, 
+    const bool shortening_rate_on, 
+    const bool basal_rate_on, 
+    const bool work_rate_on) : Probe()
 {
     setNull();
     constructProperties();
@@ -65,11 +68,13 @@ MuscleMetabolicPowerProbeUmberger2010::MuscleMetabolicPowerProbeUmberger2010(boo
 
 //_____________________________________________________________________________
 /**
- * Set the data members of this MuscleMetabolicPowerProbeUmberger2010 to their null values.
+ * Set the data members of this MuscleMetabolicPowerProbeUmberger2010 
+ * to their null values.
  */
 void MuscleMetabolicPowerProbeUmberger2010::setNull()
 {
 	setAuthors("Tim Dorn");
+    _muscleMap.clear();
 }
 
 //_____________________________________________________________________________
@@ -109,10 +114,12 @@ void MuscleMetabolicPowerProbeUmberger2010::connectToModel(Model& aModel)
 
     // -----------------------------------------------------------------------
     // Check that the muscles in the MetabolicMuscleParameterSet exist in
-    // the model and set their pointers to the actual muscle objects.
+    // the model and create the MuscleMap between the muscle name and the
+    // muscle pointer.
     // -----------------------------------------------------------------------
     const int nM = get_MetabolicMuscleParameterSet().getSize();
     for (int i=0; i<nM; ++i) {
+        Muscle* musc = NULL;        // Pointer to the OpenSim::Muscle
         MetabolicMuscleParameter& mm = get_MetabolicMuscleParameterSet()[i];
         int k = _model->getMuscles().getIndex(mm.getName());
         if( k < 0 )	{
@@ -121,18 +128,19 @@ void MuscleMetabolicPowerProbeUmberger2010::connectToModel(Model& aModel)
             throw (Exception(errorMessage.str()));
         }
         else {
-             mm.setMuscle(&_model->updMuscles()[k]);
-        }
+            musc = &_model->updMuscles()[k];  // Set muscle pointer
+            _muscleMap[mm.getName()] = musc;  // Add muscle pointer to the _muscleMap
+         }
 
 
         // Set the muscle mass internal member variable: _muscMass
         if (mm.get_calculate_mass_from_muscle_properties()) {
-            double sigma = 0.25e6;      // (Pa), specific tension of mammalian muscle.
-            double rho = 1059.7;        // (kg/m^3), density of mammalian muscle.
+            const double sigma = 0.25e6;      // (Pa), specific tension of mammalian muscle.
+            const double rho = 1059.7;        // (kg/m^3), density of mammalian muscle.
 
-            const double muscMass = (mm.getMuscle()->getMaxIsometricForce() / sigma) 
+            const double muscMass = (musc->getMaxIsometricForce() / sigma) 
                                     * rho 
-                                    * mm.getMuscle()->getOptimalFiberLength();
+                                    * musc->getOptimalFiberLength();
             mm.setMuscleMass(muscMass);
         }
         else {
@@ -185,13 +193,20 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2010::computeProbeInputs(const St
     
 
     // Loop through each muscle in the MetabolicMuscleParameterSet
-    int nM = get_MetabolicMuscleParameterSet().getSize();
+    const int nM = get_MetabolicMuscleParameterSet().getSize();
     Vector Edot(nM);
-    for (int i=0; i<nM; i++)
+    for (int i=0; i<nM; ++i)
     {
-        // Get a pointer to the current muscle in the model
+        // Get the current muscle from the muscleMap.
         MetabolicMuscleParameter& mm = get_MetabolicMuscleParameterSet()[i];
-        const Muscle* m = mm.getMuscle();
+        MuscleMap::const_iterator m_i = _muscleMap.find(mm.getName());
+        if (m_i == _muscleMap.end()) {
+            stringstream errorMessage;
+            errorMessage << getConcreteClassName() << ": Invalid muscle " 
+                << mm.getName() << " in the Metabolic MuscleMap." << endl;
+            throw (Exception(errorMessage.str()));
+        }
+        const Muscle* m = m_i->second;
 
         // Get some muscle properties at the current time state
         //const double max_isometric_force = m->getMaxIsometricForce();

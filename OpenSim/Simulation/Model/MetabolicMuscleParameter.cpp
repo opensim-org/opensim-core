@@ -50,10 +50,14 @@ MetabolicMuscleParameter::MetabolicMuscleParameter() : Object()
 /** 
  * Convenience constructor
  */
-MetabolicMuscleParameter::MetabolicMuscleParameter(double muscle_mass, 
-    bool calculate_mass_from_muscle_properties, double ratio_slow_twitch_fibers, 
-    double activation_constant_slow_twitch, double activation_constant_fast_twitch, 
-    double maintenance_constant_slow_twitch, double maintenance_constant_fast_twitch): Object()
+MetabolicMuscleParameter::MetabolicMuscleParameter(
+    const double muscle_mass, 
+    const bool calculate_mass_from_muscle_properties, 
+    const double ratio_slow_twitch_fibers, 
+    const double activation_constant_slow_twitch, 
+    const double activation_constant_fast_twitch, 
+    const double maintenance_constant_slow_twitch, 
+    const double maintenance_constant_fast_twitch): Object()
 {
     setNull();
     constructProperties();
@@ -76,8 +80,13 @@ MetabolicMuscleParameter::MetabolicMuscleParameter(double muscle_mass,
 void MetabolicMuscleParameter::setNull()
 {
 	setAuthors("Tim Dorn");
-    _musc = NULL;
-    _muscMass = 0.0;
+
+    // Actual muscle mass used. If calculate_mass_from_muscle_properties = true, 
+    // this value will set to the property value <muscle_mass> provided by the 
+    // user. If calculate_mass_from_muscle_properties = false, then this value
+    // will be set (by the metabolic probes) to the calculated mass based on
+    // the muscle's Fmax, opeimal fiber length, and specific tension. 
+    _muscMass = 0.0;            
 }
 
 

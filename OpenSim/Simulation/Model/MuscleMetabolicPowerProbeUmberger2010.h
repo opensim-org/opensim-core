@@ -199,14 +199,19 @@ public:
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
+    typedef std::map<std::string, OpenSim::Muscle*> MuscleMap;
+
     //--------------------------------------------------------------------------
     // Constructor(s) and Setup
     //--------------------------------------------------------------------------
     /** Default constructor */
     MuscleMetabolicPowerProbeUmberger2010();
     /** Convenience constructor */
-    MuscleMetabolicPowerProbeUmberger2010(bool activation_maintenance_rate_on, 
-        bool shortening_rate_on, bool basal_rate_on, bool work_rate_on);
+    MuscleMetabolicPowerProbeUmberger2010(
+        const bool activation_maintenance_rate_on, 
+        const bool shortening_rate_on, 
+        const bool basal_rate_on, 
+        const bool work_rate_on);
 
 
     //-----------------------------------------------------------------------------
@@ -228,6 +233,12 @@ public:
 // PRIVATE
 //==============================================================================
 private:
+    //--------------------------------------------------------------------------
+    // Data
+    //--------------------------------------------------------------------------
+    MuscleMap _muscleMap;
+
+
     //--------------------------------------------------------------------------
     // ModelComponent Interface
     //--------------------------------------------------------------------------

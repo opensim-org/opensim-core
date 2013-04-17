@@ -126,12 +126,12 @@ public:
         "'differentiate', 'minimum', 'minabs', 'maximum', 'maxabs'.");
 
     OpenSim_DECLARE_LIST_PROPERTY(initial_conditions_for_integration, double,
-        "Vector of initial conditions to be specified if the 'integrate' operation is "
+        "Array of initial conditions to be specified if the 'integrate' operation is "
         "selected. Note that the size of initial conditions must be the same size as "
         "the data being integrated, otherwise an exception will be thrown.");
 
     OpenSim_DECLARE_PROPERTY(gain, double,
-        "Constant gain value to scale the probe output by.");
+        "Constant gain to scale the probe output by.");
     /**@}**/
 
 //=============================================================================

@@ -84,7 +84,7 @@ functioning
 @param aMuscle  a path actuator
 @param startX   the starting position of the muscle anchor. I have no idea
                 why this value is included.
-@param act0     the initial activation of the muscle
+@param act0     the initial i of the muscle
 @param motion   the forced stretch of the simulation
 @param control  the activation control signal that is applied to the muscle
 @param accuracy the desired accuracy of the integrated solution
@@ -371,6 +371,7 @@ void simulateMuscle(
     JointInternalPowerProbe* jointWorkProbe = new JointInternalPowerProbe(jointNames, false, 1);
     jointWorkProbe->setName("JointWork");
     jointWorkProbe->setOperation("integrate");
+    jointWorkProbe->setInitialConditions(SimTK::Vector(1, 0.0));
     model.addProbe(jointWorkProbe);
     cout << probeCounter++ << ") Added JointPowerProbe to measure work done by the joint" << endl;
 
@@ -385,6 +386,7 @@ void simulateMuscle(
     ActuatorForceProbe* impulseProbe = new ActuatorForceProbe(muscNames, false, 1);
     impulseProbe->setName("ActuatorImpulse");
     impulseProbe->setOperation("integrate");
+    impulseProbe->setInitialConditions(SimTK::Vector(1, 0.0));
     model.addProbe(impulseProbe);
     cout << probeCounter++ << ") Added ActuatorForceProbe to measure the impulse of the muscle force" << endl;
 

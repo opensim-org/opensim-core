@@ -51,8 +51,12 @@ MuscleMetabolicPowerProbeBhargava2004::MuscleMetabolicPowerProbeBhargava2004() :
 /** 
  * Convenience constructor
  */
-MuscleMetabolicPowerProbeBhargava2004::MuscleMetabolicPowerProbeBhargava2004(bool activation_rate_on, 
-    bool maintenance_rate_on, bool shortening_rate_on, bool basal_rate_on, bool work_rate_on) : Probe()
+MuscleMetabolicPowerProbeBhargava2004::MuscleMetabolicPowerProbeBhargava2004(
+    const bool activation_rate_on, 
+    const bool maintenance_rate_on, 
+    const bool shortening_rate_on, 
+    const bool basal_rate_on, 
+    const bool work_rate_on) : Probe()
 {
     setNull();
     constructProperties();
@@ -118,10 +122,12 @@ void MuscleMetabolicPowerProbeBhargava2004::connectToModel(Model& aModel)
 
     // -----------------------------------------------------------------------
     // Check that the muscles in the MetabolicMuscleParameterSet exist in
-    // the model and set their pointers to the actual muscle objects.
+    // the model and create the MuscleMap between the muscle name and the
+    // muscle pointer.
     // -----------------------------------------------------------------------
     const int nM = get_MetabolicMuscleParameterSet().getSize();
     for (int i=0; i<nM; ++i) {
+        Muscle* musc = NULL;        // Pointer to the OpenSim::Muscle
         MetabolicMuscleParameter& mm = get_MetabolicMuscleParameterSet()[i];
         int k = _model->getMuscles().getIndex(mm.getName());
         if( k < 0 )	{
@@ -130,18 +136,19 @@ void MuscleMetabolicPowerProbeBhargava2004::connectToModel(Model& aModel)
             throw (Exception(errorMessage.str()));
         }
         else {
-             mm.setMuscle(&_model->updMuscles()[k]);
-        }
+            musc = &_model->updMuscles()[k];  // Set muscle pointer
+            _muscleMap[mm.getName()] = musc;  // Add muscle pointer to the _muscleMap
+         }
 
 
         // Set the muscle mass internal member variable: _muscMass
         if (mm.get_calculate_mass_from_muscle_properties()) {
-            double sigma = 0.25e6;      // (Pa), specific tension of mammalian muscle.
-            double rho = 1059.7;        // (kg/m^3), density of mammalian muscle.
+            const double sigma = 0.25e6;      // (Pa), specific tension of mammalian muscle.
+            const double rho = 1059.7;        // (kg/m^3), density of mammalian muscle.
 
-            const double muscMass = (mm.getMuscle()->getMaxIsometricForce() / sigma) 
+            const double muscMass = (musc->getMaxIsometricForce() / sigma) 
                                     * rho 
-                                    * mm.getMuscle()->getOptimalFiberLength();
+                                    * musc->getOptimalFiberLength();
             mm.setMuscleMass(muscMass);
         }
         else {
@@ -198,9 +205,16 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
     Vector Edot(nM);
     for (int i=0; i<nM; i++)
     {
-        // Get a pointer to the current muscle in the model
+        // Get the current muscle from the muscleMap.
         MetabolicMuscleParameter& mm = get_MetabolicMuscleParameterSet()[i];
-        const Muscle* m = mm.getMuscle();
+        MuscleMap::const_iterator m_i = _muscleMap.find(mm.getName());
+        if (m_i == _muscleMap.end()) {
+            stringstream errorMessage;
+            errorMessage << getConcreteClassName() << ": Invalid muscle " 
+                << mm.getName() << " in the Metabolic MuscleMap." << endl;
+            throw (Exception(errorMessage.str()));
+        }
+        const Muscle* m = m_i->second;
 
         // Get important muscle values at the current time state
         const double max_isometric_force = m->getMaxIsometricForce();
