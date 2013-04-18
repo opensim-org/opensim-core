@@ -66,6 +66,7 @@ GeometryPath::GeometryPath() :
 	_pathWrapSetProp(PropertyObj("", PathWrapSet())),
 	_pathWrapSet((PathWrapSet&)_pathWrapSetProp.getValueObj()),
     _preScaleLength(0.0),
+    _defaultColor(SimTK::Gray),
 	_owner(NULL)
 {
 	setNull();
@@ -100,6 +101,7 @@ GeometryPath::GeometryPath(const GeometryPath &aPath) :
    _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_pathWrapSetProp(PropertyObj("", PathWrapSet())),
 	_pathWrapSet((PathWrapSet&)_pathWrapSetProp.getValueObj()),
+    _defaultColor(SimTK::Gray),
     _preScaleLength(0.0),
 	_owner(NULL)
 {
@@ -123,6 +125,7 @@ void GeometryPath::copyData(const GeometryPath &aPath)
 	_pathPointSet = aPath._pathPointSet;
 	_displayer = aPath._displayer;
 	_pathWrapSet = aPath._pathWrapSet;
+    _defaultColor = aPath._defaultColor;
 }
 
 //_____________________________________________________________________________
@@ -175,31 +178,51 @@ void GeometryPath::connectToModel(Model& aModel) {
 {
 	Super::addToSystem(system);
 
-    // Beyond the const Component get the index so we can access the SimTK::Force later
-	GeometryPath* mutableThis = const_cast<GeometryPath *>(this);
-
     // allocate a slot to save the current length of the path in the cache
 	// given that the path is dependent on q's only, this variable should be valid at Position
-	mutableThis->addCacheVariable<double>("length", 0.0, SimTK::Stage::Position);
-	mutableThis->addCacheVariable<double>("speed", 0.0, SimTK::Stage::Velocity);
+	addCacheVariable<double>("length", 0.0, SimTK::Stage::Position);
+	addCacheVariable<double>("speed", 0.0, SimTK::Stage::Velocity);
 	Array<PathPoint *> pathPrototype;
-	mutableThis->addCacheVariable<Array<PathPoint *> >("current_path", pathPrototype, SimTK::Stage::Position);
-	mutableThis->addCacheVariable<Array<PathPoint *> >("current_display_path", pathPrototype, SimTK::Stage::Position);
+	addCacheVariable<Array<PathPoint *> >
+       ("current_path", pathPrototype, SimTK::Stage::Position);
+	addCacheVariable<Array<PathPoint *> >
+       ("current_display_path", pathPrototype, SimTK::Stage::Position);
 
-	mutableThis->addCacheVariable<SimTK::Vec3>("color", SimTK::Vec3(0,0,0), SimTK::Stage::Model);
+    // We consider this cache entry valid any time after it has been created
+    // and first marked valid, and we won't ever invalidate it.
+	addCacheVariable<SimTK::Vec3>("color", _defaultColor, 
+                                  SimTK::Stage::Topology);
 }
 
 void GeometryPath::initStateFromProperties( SimTK::State& s) const
 {
 	Super::initStateFromProperties(s);
+    markCacheVariableValid(s, "color"); // it is OK at its default value
 }
 
-void GeometryPath::generateDecorations( bool fixed, const ModelDisplayHints& hints, const SimTK::State& state, SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
-{
-		
+//------------------------------------------------------------------------------
+//                         GENERATE DECORATIONS
+//------------------------------------------------------------------------------
+// The GeometryPath takes care of drawing itself here, using information it
+// can extract from the supplied state, including position information and
+// color information that may have been calculated as late as Stage::Dynamics.
+// For example, muscles may want the color to reflect activation level and 
+// other path-using components might want to use forces (tension). We will
+// ensure that the state has been realized to Stage::Dynamics before looking
+// at it. (It is only guaranteed to be at Stage::Position here.)
+void GeometryPath::
+generateDecorations(bool fixed, const ModelDisplayHints& hints, 
+                    const SimTK::State& state, 
+                    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
+{		
 	Super::generateDecorations(fixed, hints, state, appendToThis);
 
-	if(fixed) { return; }
+    // There is no fixed geometry to generate here.
+	if (fixed) { return; }
+
+    // Ensure that the state has been realized to Stage::Dynamics to give
+    // clients of this path a chance to calculate meaningful color information.
+    this->getModel().getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
 
 	const SimbodyMatterSubsystem& matter = this->getModel().getMatterSubsystem();
 
@@ -232,7 +255,9 @@ void GeometryPath::generateDecorations( bool fixed, const ModelDisplayHints& hin
 
 		Vec3 pos = matter.getMobilizedBody(body).getBodyTransform(state)*loc_B;
 
-		appendToThis.push_back(DecorativeLine(lastPos, pos).setLineThickness(4).setColor(getColor(state)));
+		appendToThis.push_back(DecorativeLine(lastPos, pos)
+                               .setLineThickness(4)
+                               .setColor(getColor(state)));
 
 		lastPos = pos;
 	}
@@ -361,7 +386,7 @@ const OpenSim::Array<PathPoint*>& GeometryPath::getCurrentDisplayPath(const SimT
 {
 	// update the geometry to make sure the current display path is up to date.
     // updateGeometry(s);
-	return( getCacheVariable<Array <PathPoint*> >(s, "current_display_path" ) );
+	return getCacheVariable<Array <PathPoint*> >(s, "current_display_path" );
 }
 
 //_____________________________________________________________________________
@@ -373,7 +398,8 @@ const OpenSim::Array<PathPoint*>& GeometryPath::getCurrentDisplayPath(const SimT
 void GeometryPath::updateGeometrySize(const SimTK::State& s) const
 {
 	int numberOfSegements = _displayer.countGeometry();
-    const Array<PathPoint*>& currentDisplayPath = getCacheVariable<Array<PathPoint*> >(s, "current_display_path");
+    const Array<PathPoint*>& currentDisplayPath = 
+        getCacheVariable<Array<PathPoint*> >(s, "current_display_path");
 
 	// Track whether we're creating geometry from scratch or
 	// just updating
@@ -497,9 +523,9 @@ void GeometryPath::setLength( const SimTK::State& s, double length ) const
 	setCacheVariable<double>(s, "length", length); 
 }
 
-void GeometryPath::setColor(const SimTK::State& s, SimTK::Vec3& colour) const
+void GeometryPath::setColor(const SimTK::State& s, const SimTK::Vec3& color) const
 {
-	setCacheVariable<SimTK::Vec3>(s, "color", colour);
+	setCacheVariable<SimTK::Vec3>(s, "color", color);
 }
 
 Vec3 GeometryPath::getColor(const SimTK::State& s) const
@@ -517,7 +543,7 @@ Vec3 GeometryPath::getColor(const SimTK::State& s) const
 double GeometryPath::getLengtheningSpeed( const SimTK::State& s) const
 {
 	computeLengtheningSpeed(s);
-	return( getCacheVariable<double>(s, "speed") );
+	return getCacheVariable<double>(s, "speed");
 }
 void GeometryPath::setLengtheningSpeed( const SimTK::State& s, double speed ) const
 {
@@ -528,7 +554,7 @@ void GeometryPath::setPreScaleLength( const SimTK::State& s, double length ) {
     _preScaleLength = length;
 }
 double GeometryPath::getPreScaleLength( const SimTK::State& s) const {
-    return( _preScaleLength);
+    return _preScaleLength;
 }
 //=============================================================================
 // UTILITY

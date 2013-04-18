@@ -65,7 +65,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, ModelComponent);
 //=============================================================================
 // DATA
 //=============================================================================
-protected:
+private:
 	// the set of points defining the path
 	PropertyObj _pathPointSetProp;
 	PathPointSet &_pathPointSet;
@@ -77,6 +77,10 @@ protected:
 	// the wrap objects that are associated with this path
 	PropertyObj _pathWrapSetProp;
 	PathWrapSet &_pathWrapSet;
+
+    // used to initialize the color cache variable in case no one 
+    // sets the color later. TODO: make this a property?
+    SimTK::Vec3 _defaultColor;
 
 	// used for scaling tendon and fiber lengths
 	double _preScaleLength;
@@ -125,6 +129,30 @@ public:
 	Object* getOwner() const { return _owner; }
 	void setOwner(Object *anObject) {_owner = anObject; };
 
+    /** If you call this prior to addToSystem() it will be used to initialize
+    the color cache variable. Otherwise %GeometryPath will choose its own
+    default which will be some boring shade of gray. **/
+	void setDefaultColor(const SimTK::Vec3& color) {_defaultColor = color; };
+    /** Returns the color that will be used to initialize the color cache
+    at the next addToSystem() call. The actual color used to draw the path
+    will be taken from the cache variable, so may have changed. **/
+	const SimTK::Vec3& getDefaultColor() const { return _defaultColor; }
+
+    /** Set the value of the color cache variable owned by this %GeometryPath
+    object, in the cache of the given state. The value of this variable is used
+    as the color when the path is drawn, which occurs with the state realized 
+    to Stage::Dynamics. So you must call this method during realizeDynamics() or 
+    earlier in order for it to have any effect. **/
+	void setColor(const SimTK::State& s, const SimTK::Vec3& color) const;
+
+    /** Get the current value of the color cache entry owned by this
+    %GeometryPath object in the given state. You can access this value any time
+    after the state is initialized, at which point it will have been set to
+    the default color value specified in a call to setDefaultColor() earlier,
+    or it will have the default default color value chosen by %GeometryPath.
+    @see setDefaultColor() **/
+	SimTK::Vec3 getColor(const SimTK::State& s) const;
+
 	virtual double getLength( const SimTK::State& s) const;
 	virtual void setLength( const SimTK::State& s, double length) const;
 	virtual double getPreScaleLength( const SimTK::State& s) const;
@@ -139,9 +167,7 @@ public:
 	virtual double getLengtheningSpeed(const SimTK::State& s) const;
 	virtual void setLengtheningSpeed( const SimTK::State& s, double speed ) const;
 
-	void setColor(const SimTK::State& s, SimTK::Vec3& colour) const;
 
-	SimTK::Vec3 getColor(const SimTK::State& s) const;
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
@@ -169,10 +195,11 @@ protected:
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 	void generateDecorations(
-			bool 									fixed,
-			const ModelDisplayHints&				hints,
-			const SimTK::State&						state,
-			SimTK::Array_<SimTK::DecorativeGeometry>&	appendToThis) const;
+			bool 									    fixed,
+			const ModelDisplayHints&				    hints,
+			const SimTK::State&						    state,
+			SimTK::Array_<SimTK::DecorativeGeometry>&	appendToThis) const
+            OVERRIDE_11;
 
 public:
 	//--------------------------------------------------------------------------
