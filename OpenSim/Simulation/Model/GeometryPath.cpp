@@ -50,6 +50,8 @@ using namespace OpenSim;
 using namespace SimTK;
 using SimTK::Vec3;
 
+static const Vec3 DefaultDefaultColor(.5,.5,.5); // boring gray 
+
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -66,7 +68,7 @@ GeometryPath::GeometryPath() :
 	_pathWrapSetProp(PropertyObj("", PathWrapSet())),
 	_pathWrapSet((PathWrapSet&)_pathWrapSetProp.getValueObj()),
     _preScaleLength(0.0),
-    _defaultColor(SimTK::Gray),
+    _defaultColor(DefaultDefaultColor),
 	_owner(NULL)
 {
 	setNull();
@@ -101,7 +103,7 @@ GeometryPath::GeometryPath(const GeometryPath &aPath) :
    _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_pathWrapSetProp(PropertyObj("", PathWrapSet())),
 	_pathWrapSet((PathWrapSet&)_pathWrapSetProp.getValueObj()),
-    _defaultColor(SimTK::Gray),
+    _defaultColor(DefaultDefaultColor),
     _preScaleLength(0.0),
 	_owner(NULL)
 {

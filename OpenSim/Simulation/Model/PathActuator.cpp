@@ -221,7 +221,9 @@ double PathActuator::computeMomentArm(const SimTK::State& s, Coordinate& aCoord)
 	return getGeometryPath().computeMomentArm(s, aCoord);
 }
 
-//_____________________________________________________________________________
+//------------------------------------------------------------------------------
+//                            CONNECT TO MODEL
+//------------------------------------------------------------------------------
 /**
  * Perform some setup functions that happen after the
  * object has been deserialized or copied.
@@ -247,6 +249,29 @@ void PathActuator::connectToModel(Model& aModel)
 		return;
 
 	path.setOwner(this);
+}
+
+//------------------------------------------------------------------------------
+//                            REALIZE DYNAMICS
+//------------------------------------------------------------------------------
+// See if anyone has an opinion about the path color and change it if so.
+void PathActuator::realizeDynamics(const SimTK::State& state) const {
+    const SimTK::Vec3 color = computePathColor(state);
+    if (!color.isNaN())
+        getGeometryPath().setColor(state, color);
+}
+
+//------------------------------------------------------------------------------
+//                          COMPUTE PATH COLOR
+//------------------------------------------------------------------------------
+// This is the PathActuator base class implementation for choosing the path
+// color. Derived classes like Muscle will override this with something
+// meaningful.
+// TODO: should the default attempt to use the actuation level to control
+// colors? Not sure how to scale. Muscles could still override that with 
+// activation level.
+SimTK::Vec3 PathActuator::computePathColor(const SimTK::State& state) const {
+    return SimTK::Vec3(SimTK::NaN);
 }
 
 

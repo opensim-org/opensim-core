@@ -36,6 +36,8 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
+static const Vec3 DefaultLigamentColor(.9,.9,.9); // mostly white 
+
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -85,6 +87,8 @@ void Ligament::connectToModel(Model& aModel)
 {
 	GeometryPath& path = upd_GeometryPath();
 	const double& restingLength = get_resting_length();
+
+    path.setDefaultColor(DefaultLigamentColor);
 
 	// Specify underlying ModelComponents prior to calling 
     // Super::connectToModel() to automatically propagate connectToModel()

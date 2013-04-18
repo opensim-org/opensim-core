@@ -132,9 +132,22 @@ public:
 	virtual void updateDisplayer(const SimTK::State& s) const;
 
 protected:
-	// Setup method to initialize coordinate reference
-	void connectToModel(Model& aModel) OVERRIDE_11;
+    /** Override this method if you would like to calculate a color for use
+    when the path is displayed in the visualizer. You do not have to invoke
+    the base class method, just replace it completely. This method will be
+    invoked during realizeDynamics() so the supplied \a state has already been
+    realized through Stage::Velocity and you can access time, position, and
+    velocity dependent quantities. You must \e not attempt to realize the
+    passed-in \a state nay further since we are already in the middle of
+    realizing here. 
+    
+    Return SimTK::Vec3(NaN) if you want to leave the color unchanged. **/
+    virtual SimTK::Vec3 computePathColor(const SimTK::State& state) const;
 
+    /** Extension of parent class method; derived classes may extend further. **/
+	void connectToModel(Model& aModel) OVERRIDE_11;
+    /** Extension of parent class method; derived classes may extend further. **/
+    void realizeDynamics(const SimTK::State& state) const OVERRIDE_11;
 
 private:
 	void setNull();

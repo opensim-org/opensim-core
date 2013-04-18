@@ -320,14 +320,17 @@ protected:
 
 	/** Force interface applies tension to bodies, and Muscle also checks that 
 	    applied muscle tension is not negative. */
-	virtual void computeForce(const SimTK::State& state, 
-							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							  SimTK::Vector& generalizedForce) const;
+	void computeForce(const SimTK::State& state, 
+					  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+					  SimTK::Vector& generalizedForce) const OVERRIDE_11;
 
 	/** Potential energy stored by the muscle */
-	virtual double computePotentialEnergy(const SimTK::State& state) const;
-	
+	double computePotentialEnergy(const SimTK::State& state) const OVERRIDE_11;
 
+    /** Override PathActuator virtual to calculate a preferred color for the 
+    muscle path based on activation. **/
+    SimTK::Vec3 computePathColor(const SimTK::State& state) const OVERRIDE_11;
+	
 	/** Model Component creation interface */
 	void connectToModel(Model& aModel) OVERRIDE_11;
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
