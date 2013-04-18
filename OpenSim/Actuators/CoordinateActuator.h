@@ -45,7 +45,7 @@ class Model;
  * It replaces the GeneralizeForce class implemented by Frank C. Anderson
  *
  * @author Ajay Seth
- * @contributor Frank C. Anderson
+ * @author Frank C. Anderson
  */
 class OSIMACTUATORS_API CoordinateActuator : public Actuator {
 OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateActuator, Actuator);

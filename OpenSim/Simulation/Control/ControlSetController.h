@@ -146,8 +146,8 @@ public:
 	 * Compute the control values for all actuators under the control of this
 	 * Controller
 	 *
-	 * @param s system state 
-	 * @param model controls  
+	 * @param s         system state 
+	 * @param controls  return control values 
 	 */
 	virtual void computeControls(const SimTK::State& s, SimTK::Vector& controls) const;
 

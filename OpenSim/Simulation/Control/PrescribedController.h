@@ -129,16 +129,6 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 
-	
-	/**
-	 * Set this class's pointer to the set containing functions of the
-	 * desired controls to be executed by this Controller.
-	 *
-	 * @param functions Pointer to a Set of Functions- one per actuator
-	 */
-	//void setPrescribedControlFunctions(Array<OpenSim::Function> *functions);
-	//const Array<OpenSim::Function>& getPrescribedControlFunctions() const; 
-
 	// ON/OFF
 
 	//--------------------------------------------------------------------------
@@ -146,7 +136,7 @@ public:
 	//--------------------------------------------------------------------------
 	/**
 	 * Compute the control values for all actuators under the control of this
-	 * Controller
+	 * Controller.
 	 *
 	 * @param s             system state 
 	 * @param controls      model controls  

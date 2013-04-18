@@ -96,7 +96,8 @@ Set() :
 /**
  * Construct from file.
  *
- * @param aFileName Name of the file.
+ * @param aFileName             Name of the file.
+ * @param aUpdateFromXMLNode    Whether to update from XML.
  */
 Set(const std::string &aFileName, bool aUpdateFromXMLNode = true) :
 	Object(aFileName),
@@ -734,7 +735,7 @@ virtual T* getLast() const
  * approprite element is identified), so the performance of this method
  * is approximately ln(n), where n is the size of the array.
  *
- * @param aValue Value to which the array elements are compared.
+ * @param aObject Value to which the array elements are compared.
  * @param aFindFirst If true, find the first element that satisfies
  * the search.  If false, the index of any element that satisfies the
  * search can be returned- which index will be returned depends on the

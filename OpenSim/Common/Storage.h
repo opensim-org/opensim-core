@@ -196,7 +196,8 @@ public:
 	    It is desirable to access the block as a single entity provided an identifier that is common 
 	   to all components (such as prefix in the column label).
 	 @param identifier	string identifying a single block of data 
-	 @param rData		Array<Array<double>> of data belonging to the identifier */
+	 @param rData		Array<Array<double>> of data belonging to the identifier 
+     @param startTime   at what time to begin (if not 0) */
 	void getDataForIdentifier(const std::string& identifier, Array< Array<double> >& rData, double startTime=0.0) const;
 
 	/**

@@ -543,6 +543,7 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
                 integral from the left most point to the right most 
                 point. Setting this flag to false will cause the 
                 integral to be evaluated from right to left.
+        @param name         Name of caller.
         @return SimTK::Matrix Col 0: X vector, Col 1: int(y(x))
 
 
