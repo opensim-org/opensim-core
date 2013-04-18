@@ -27,16 +27,12 @@
 #include <OpenSim/Common/XMLDocument.h>
 #include "AbstractTool.h"
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/GCVSpline.h>
-#include <OpenSim/Common/GCVSplineSet.h>
 
-#include <OpenSim/Common/VectorFunction.h>
 #include "PrescribedForce.h"
 #include "ForceSet.h"
 #include "BodySet.h"
 #include "Model.h"
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/Control/ControlSetController.h>
 #include <OpenSim/Simulation/Control/ControlSetController.h>
 using namespace OpenSim;
 using namespace SimTK;
@@ -571,8 +567,9 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 	 catch (const Exception &ex) {
 		// Important to catch exceptions here so we can restore current working directory...
 		// And then we can rethrow the exception
-		 cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName
-			 << ". Please make sure the file exists and that it contains an ExternalLoads object or create a fresh one." << endl;
+		cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName;
+		cout << ". Please make sure the file exists and that it contains an ExternalLoads";
+		cout <<	"object or create a fresh one." << endl;
 		if(getDocument()) IO::chDir(savedCwd);
 		throw(ex);
 	}

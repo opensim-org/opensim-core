@@ -842,8 +842,7 @@ bool CMCTool::run()
 	cout<<"================================================================\n\n\n";
 
 	// ---- RESULTS -----
-	double dt = 0.001;
-	printResults(getName(),getResultsDir(),dt); // this will create results directory if necessary
+	printResults(getName(),getResultsDir()); // this will create results directory if necessary
     controller->updControlSet().print(getResultsDir() + "/" + getName() + "_controls.xml");
 	_model->printControlStorage(getResultsDir() + "/" + getName() + "_controls.sto");
 	manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
