@@ -445,12 +445,13 @@ public:
      *  All cache entries are lazily evaluated (on a need basis) so a set
      *  also marks the cache as valid.
      *
-     * @param state  the State for which to set the value
-     * @param name   the name of the state variable
-     * @param value  the variable's cache new value to set
+     * @param state  the State in which to store the new value
+     * @param name   the name of the cache variable
+     * @param value  the new value for this cache variable
      */
     template<typename T> void 
-    setCacheVariable(const SimTK::State& state, const std::string& name, T &value) const
+    setCacheVariable(const SimTK::State& state, const std::string& name, 
+                     const T& value) const
     {
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
