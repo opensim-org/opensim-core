@@ -31,7 +31,7 @@ namespace OpenSim {
 class Body;
 //=============================================================================
 //=============================================================================
-/** Convenience class for a generic representation of geomtery of a complex
+/** Convenience class for a generic representation of geometery of a complex
     Force (or any other object) with multiple points of contact through
 	which forces are applied to bodies. This represents one such point and an
 	array of these objects defines a complete Force distrbitution (ie. path).
@@ -47,11 +47,11 @@ class OSIMSIMULATION_API PointForceDirection
 // MEMBER VARIABLES
 //=============================================================================
 private:
-	/** Point of "conact" with on a body defined in the body frame */
+	/** Point of "contact" with a body, defined in the body frame */
 	SimTK::Vec3 _point;
-	/** The body in which the point isdefined */
+	/** The body in which the point is defined */
 	const Body &_body;
-	/** Direction of the force at the point defined in ground */
+	/** Direction of the force at the point, defined in ground */
 	SimTK::Vec3 _direction;
 	/** Optional parameter to scale the force that results from a scalar 
 	    (tension) multiplies the direction */
