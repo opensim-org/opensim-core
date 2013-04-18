@@ -256,6 +256,8 @@ void PathActuator::connectToModel(Model& aModel)
 //------------------------------------------------------------------------------
 // See if anyone has an opinion about the path color and change it if so.
 void PathActuator::realizeDynamics(const SimTK::State& state) const {
+    Super::realizeDynamics(state); // Mandatory first line
+
     const SimTK::Vec3 color = computePathColor(state);
     if (!color.isNaN())
         getGeometryPath().setColor(state, color);

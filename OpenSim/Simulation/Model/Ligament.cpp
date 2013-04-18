@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2013 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -76,7 +76,9 @@ void Ligament::constructProperties()
 	constructProperty_force_length_curve(forceLengthCurve);
 }
 
-//_____________________________________________________________________________
+//------------------------------------------------------------------------------
+//                            CONNECT TO MODEL
+//------------------------------------------------------------------------------
 /**
  * Perform some setup functions that happen after the
  * ligament has been deserialized or copied.
@@ -110,7 +112,33 @@ void Ligament::connectToModel(Model& aModel)
 	path.setOwner(this);
 }
 
-//_____________________________________________________________________________
+
+//------------------------------------------------------------------------------
+//                            REALIZE DYNAMICS
+//------------------------------------------------------------------------------
+// See if anyone has an opinion about the path color and change it if so.
+void Ligament::realizeDynamics(const SimTK::State& state) const {
+    Super::realizeDynamics(state); // Mandatory first line
+
+    const SimTK::Vec3 color = computePathColor(state);
+    if (!color.isNaN())
+        getGeometryPath().setColor(state, color);
+}
+
+//------------------------------------------------------------------------------
+//                          COMPUTE PATH COLOR
+//------------------------------------------------------------------------------
+// This is the Ligament base class implementation for choosing the path
+// color. Derived classes can override this with something meaningful.
+// TODO: should the default attempt to use the ligament tension to control
+// colors? Not sure how to scale.
+SimTK::Vec3 Ligament::computePathColor(const SimTK::State& state) const {
+    return SimTK::Vec3(SimTK::NaN);
+}
+
+//------------------------------------------------------------------------------
+//                             ADD TO SYSTEM
+//------------------------------------------------------------------------------
 /**
  * allocate and initialize the SimTK state for this ligament.
  */
@@ -120,12 +148,6 @@ void Ligament::connectToModel(Model& aModel)
 	// Cache the computed tension and strain of the ligament
 	addCacheVariable<double>("tension", 0.0, SimTK::Stage::Velocity);
 	addCacheVariable<double>("strain", 0.0, SimTK::Stage::Velocity);
-}
-
-
-void Ligament::initStateFromProperties( SimTK::State& s) const
-{
-	Super::initStateFromProperties(s);
 }
 
 

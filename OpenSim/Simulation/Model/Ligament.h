@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2013 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -121,10 +121,32 @@ public:
 	virtual void updateDisplayer(const SimTK::State& s) const;
 
 protected:
+    /** Override this method if you would like to calculate a color for use
+    when the %Ligament's path is displayed in the visualizer. You do not have 
+    to invoke the base class ("Super") method, just replace it completely. This
+    method will be invoked during realizeDynamics() so the supplied \a state has 
+    already been realized through Stage::Velocity and you can access time, 
+    position, and velocity dependent quantities. You must \e not attempt to 
+    realize the passed-in \a state any further since we are already in the 
+    middle of realizing here. Return SimTK::Vec3(SimTK::NaN) if you want to 
+    leave the color unchanged (that's what the base class implementation does).
+
+    @param[in] state    
+        A SimTK::State already realized through Stage::Velocity. Do not 
+        attempt to realize it any further.
+    @returns 
+        The desired color for the path as an RGB vector with each
+        component ranging from 0 to 1, or NaN to indicate that the color
+        should not be changed. **/
+    virtual SimTK::Vec3 computePathColor(const SimTK::State& state) const;
+
     // Implement ModelComponent interface.
+    /** Extension of parent class method; derived classes may extend further. **/
 	void connectToModel(Model& aModel) OVERRIDE_11;
+    /** Extension of parent class method; derived classes may extend further. **/
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-	void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
+    /** Extension of parent class method; derived classes may extend further. **/
+    void realizeDynamics(const SimTK::State& state) const OVERRIDE_11;
 
 	//Force reporting
 	/** 
