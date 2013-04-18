@@ -130,10 +130,6 @@ void InverseDynamicsTool::setNull()
  */
 void InverseDynamicsTool::setupProperties()
 {
-	_modelFileNameProp.setComment("Name of the .osim file used to construct a model.");
-	_modelFileNameProp.setName("model_file");
-	_propertySet.append( &_modelFileNameProp );
-
 	_coordinatesFileNameProp.setComment("The name of the file containing coordinate data. Can be a motion (.mot) or a states (.sto) file.");
 	_coordinatesFileNameProp.setName("coordinates_file");
 	_propertySet.append(&_coordinatesFileNameProp);
@@ -143,12 +139,6 @@ void InverseDynamicsTool::setupProperties()
 	_lowpassCutoffFrequencyProp.setComment(comment);
 	_lowpassCutoffFrequencyProp.setName("lowpass_cutoff_frequency_for_coordinates");
 	_propertySet.append( &_lowpassCutoffFrequencyProp );
-
-	SimTK::Vec2  defaultTimeRange(-std::numeric_limits<SimTK::Real>::infinity(), std::numeric_limits<SimTK::Real>::infinity());
-	_timeRangeProp.setComment("Time range over which the inverse dynamics problem is solved.");
-	_timeRangeProp.setName("time_range");
-	_timeRangeProp.setValue(defaultTimeRange);
-	_propertySet.append(&_timeRangeProp);
 
 	_outputGenForceFileNameProp.setComment("Name of the storage file (.sto) to which the generalized forces are written.");
 	_outputGenForceFileNameProp.setName("output_gen_force_file");
