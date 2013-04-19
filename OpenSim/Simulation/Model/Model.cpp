@@ -745,6 +745,16 @@ void Model::addProbe(OpenSim::Probe *aProbe)
 
 //_____________________________________________________________________________
 /**
+ * Remove a probe from the Model. Probe will be deleted as well since model owns it
+ */
+void Model::removeProbe(OpenSim::Probe *aProbe)
+{
+	updProbeSet().remove(aProbe);
+	updProbeSet().invokeConnectToModel(*this);
+}
+
+//_____________________________________________________________________________
+/**
  * Add a contact geometry to the Model.
  */
 void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)

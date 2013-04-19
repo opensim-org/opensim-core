@@ -379,7 +379,8 @@ public:
 	void addForce(Force *aForce);
 	void addProbe(Probe *aProbe);
 	void addContactGeometry(ContactGeometry *aContactGeometry);
-
+	/** remove passed in Probe from model **/
+    void removeProbe(Probe *aProbe);
 	//--------------------------------------------------------------------------
 	// FILE NAME
 	//--------------------------------------------------------------------------
