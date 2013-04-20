@@ -62,8 +62,7 @@ Kinematics::~Kinematics()
  * @param aModel Model for which the kinematics are to be recorded.
  */
 Kinematics::Kinematics(Model *aModel) :
-	Analysis(aModel),
-	_coordinates(_coordinatesProp.getValueStrArray())
+	Analysis(aModel)
 {
 	// NULL
 	setNull();
@@ -89,8 +88,7 @@ Kinematics::Kinematics(Model *aModel) :
  * @param aFileName File name of the document.
  */
 Kinematics::Kinematics(const std::string &aFileName):
-	Analysis(aFileName, false),
-	_coordinates(_coordinatesProp.getValueStrArray())
+	Analysis(aFileName, false)
 {
 	setNull();
 
@@ -102,21 +100,6 @@ Kinematics::Kinematics(const std::string &aFileName):
 
 }
 
-// Copy constrctor and virtual copy 
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- */
-Kinematics::Kinematics(const Kinematics &aKinematics):
-	Analysis(aKinematics),
-	_coordinates(_coordinatesProp.getValueStrArray())
-{
-	setNull();
-	// COPY TYPE AND NAME
-	*this = aKinematics;
-}
-
 //_____________________________________________________________________________
 /**
  * Set all member variables to their null or default values.
@@ -124,12 +107,10 @@ Kinematics::Kinematics(const Kinematics &aKinematics):
 void Kinematics::
 setNull()
 {
-	setupProperties();
+	constructProperties();
 
 	setName("Kinematics");
 	_pStore=_vStore=_aStore=0;
-	_coordinates.setSize(1);
-	_coordinates[0] = "all";
 
 	_recordAccelerations = true;
 }
@@ -138,35 +119,12 @@ setNull()
  * Connect properties to local pointers.
  */
 void Kinematics::
-setupProperties()
+constructProperties()
 {
-	_coordinatesProp.setComment("Names of generalized coordinates to record kinematics for.  Use 'all' to record all coordinates.");
-	_coordinatesProp.setName("coordinates");
-	_propertySet.append( &_coordinatesProp );
-}
-
-//--------------------------------------------------------------------------
-// OPERATORS
-//--------------------------------------------------------------------------
-Kinematics& Kinematics::operator=(const Kinematics &aKinematics)
-{
-	// BASE CLASS
-	Analysis::operator=(aKinematics);
-
-	_recordAccelerations = aKinematics._recordAccelerations;
-	_coordinates = aKinematics._coordinates;
-
-	// STORAGE
-	deleteStorage();
-	allocateStorage();
-
-	// CHECK MODEL
-	if(_model!=NULL) {
-		updateCoordinatesToRecord();
-		constructColumnLabels();
-	}
-
-	return(*this);
+	Array<std::string> coordArray;
+	coordArray.setSize(1);
+	coordArray[0] = "all";
+	constructProperty_coordinates(coordArray);
 }
 
 //=============================================================================
@@ -182,20 +140,17 @@ allocateStorage()
 	// ACCELERATIONS
 	_storageList.setSize(0);
 	if(_recordAccelerations) {
-		if(_aStore) { delete _aStore; _aStore=NULL; }
 		_aStore = new Storage(1000,"Accelerations");
 		_aStore->setDescription(getDescription());
 		_storageList.append(_aStore);
 	}
 
 	// VELOCITIES
-	if(_vStore!=NULL) { delete _vStore;  _vStore=NULL; }
 	_vStore = new Storage(1000,"Speeds");
 	_vStore->setDescription(getDescription());
 	_storageList.append(_vStore);
 
 	// POSITIONS
-	if(_pStore!=NULL) { delete _pStore;  _pStore=NULL; }
 	_pStore = new Storage(1000,"Coordinates");
 	_pStore->setDescription(getDescription());
 	_storageList.append(_pStore);
@@ -232,17 +187,17 @@ updateCoordinatesToRecord()
 	}
 
 	const CoordinateSet& coordSet = _model->getCoordinateSet();
-	_coordinateIndices.setSize(_coordinates.getSize());
-	for(int i=0; i<_coordinates.getSize(); i++) {
-		if(_coordinates[i] == "all") {
+	_coordinateIndices.setSize(getProperty_coordinates().size());
+	for(int i=0; i<getProperty_coordinates().size(); i++) {
+		if(get_coordinates(i) == "all") {
 			_coordinateIndices.setSize(coordSet.getSize());
 			for(int j=0;j<coordSet.getSize();j++) _coordinateIndices[j]=j;
 			break;
 		}
 		
-		int index = coordSet.getIndex(_coordinates[i]);
+		int index = coordSet.getIndex(get_coordinates(i));
 		if(index<0) 
-			throw Exception("Kinematics: ERR- Cound not find coordinate named '"+_coordinates[i]+"'",__FILE__,__LINE__);
+			throw Exception("Kinematics: ERR- Cound not find coordinate named '"+get_coordinates(i)+"'",__FILE__,__LINE__);
 		_coordinateIndices[i] = index;
 	}
 	_values.setSize(_coordinateIndices.getSize());
@@ -363,6 +318,7 @@ void Kinematics::setModel(Model& aModel)
 	// BASE CLASS
 	Analysis::setModel(aModel);
 
+	deleteStorage();
 	allocateStorage();
 
 	// UPDATE LABELS

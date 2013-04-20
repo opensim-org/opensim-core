@@ -53,9 +53,8 @@ OpenSim_DECLARE_CONCRETE_OBJECT(Kinematics, Analysis);
 private:
 
 protected:
-	/** Names of generalized coordinates whose kinematics are to be recorded. */
-	PropertyStrArray _coordinatesProp;
-	Array<std::string> &_coordinates;
+
+	OpenSim_DECLARE_LIST_PROPERTY(coordinates, std::string, "Names of generalized coordinates whose kinematics are to be recorded.");
 
 	Array<int> _coordinateIndices;
 	Array<double> _values;
@@ -73,12 +72,11 @@ protected:
 public:
 	Kinematics(Model *aModel=0);
 	Kinematics(const std::string &aFileName);
-	Kinematics(const Kinematics &aObject);
 	virtual ~Kinematics();
 
 private:
 	void setNull();
-	void setupProperties();
+	void constructProperties();
 	void constructDescription();
 	void constructColumnLabels();
 	void allocateStorage();
@@ -86,12 +84,6 @@ private:
 	void updateCoordinatesToRecord();
 
 public:
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
-#ifndef SWIG
-	Kinematics& operator=(const Kinematics &aKinematics);
-#endif
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
