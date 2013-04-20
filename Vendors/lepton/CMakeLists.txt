@@ -5,7 +5,7 @@ SET(UKIT LEPTON)
 ## Version stuff
 ##
 SET(OPENSIM_LEPTON_LIBRARY_NAME osim${KIT})
-SET(OPENSIM_LEEPTON_MAJOR_VERSION 1)
+SET(OPENSIM_LEPTON_MAJOR_VERSION 1)
 SET(OPENSIM_LEPTON_MINOR_VERSION 1)
 SET(OPENSIM_LEPTON_BUILD_VERSION 0)
 SET(OPENSIM_LEPTON_COPYRIGHT_YEARS "2005-6")
@@ -50,10 +50,15 @@ ELSE()
             ARCHIVE DESTINATION sdk/lib)
 ENDIF()
 
-# To include it in public release. (sherm 20120316: not sure this is right;
-# needs testing)
+# To include it in public release. 
+
 INSTALL(FILES ${INCLUDE_FILES}
-        DESTINATION sdk/include/Vendors/include/Lepton.h)
+        DESTINATION sdk/include/Vendors/lepton/include/)
+
+# Also need to grab all header files from sub dir /Vendors/lepton/include/lepton/		
+FILE(GLOB MORE_HEADERS include/lepton/*.h) 
+INSTALL(FILES ${MORE_HEADERS}
+	DESTINATION sdk/include/Vendors/lepton/include/lepton/)
 
 
 ENABLE_TESTING()
