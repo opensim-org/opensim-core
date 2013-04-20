@@ -55,6 +55,7 @@
 #include "Model/PointToPointSpring.h"
 #include "Model/BushingForce.h"
 #include "Model/FunctionBasedBushingForce.h"
+#include "Model/ExpressionBasedBushingForce.h"
 #include "Model/ExternalLoads.h"
 #include "Model/PathActuator.h"
 #include "Model/ProbeSet.h"
@@ -200,6 +201,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( PointToPointSpring() );
     Object::registerType( BushingForce() );
     Object::registerType( FunctionBasedBushingForce() );
+	Object::registerType( ExpressionBasedBushingForce() );
 
     Object::registerType( ControlSetController() );
     Object::registerType( PrescribedController() );

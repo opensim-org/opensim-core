@@ -402,11 +402,13 @@ SimTK::Transform SimbodyEngine::getTransform(const SimTK::State& s, const OpenSi
 //_____________________________________________________________________________
 /**
  * Compute the reaction forces and torques at all the joints in the model.
+ * For each joint, what's reported is the force and torque the joint structure
+ * applies on the child body at the joint frame attached to the child body.
+ * Both vectors are expressed in the ground reference frame.
  *
  * It is necessary to call computeAccelerations() before this method
- * to get valid results.  This method is expensive to call, beyond the
- * expense of computing the accelerations.  So, this method should be
- * called as infrequently as possible.
+ * to get valid results.  The cost to calculate joint forces and moments is 114 
+ * flops/body.
  *
  * @param rForces Matrix of reaction forces.  The size should be
  * at least NumberOfJoints x 3.

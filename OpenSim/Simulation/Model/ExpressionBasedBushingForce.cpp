@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                  OpenSim:  FunctionBasedBushingForce.cpp                   *
+ *                  OpenSim:  ExpressionBasedBushingForce.cpp                 *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -27,11 +27,21 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
-#include "FunctionBasedBushingForce.h"
+#include "ExpressionBasedBushingForce.h"
 
 using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
+
+
+// string formatting helper utility
+
+template <typename T>
+std::string to_string(T const& value) {
+    stringstream sstr;
+    sstr << value;
+    return sstr.str();
+}
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -41,14 +51,14 @@ using namespace OpenSim;
 
 //_____________________________________________________________________________
 // Default constructor.
-FunctionBasedBushingForce::FunctionBasedBushingForce()
+ExpressionBasedBushingForce::ExpressionBasedBushingForce()
 {
 	setNull();
     constructProperties();
 }
 
 // Convenience constructor for zero value force functions.
-FunctionBasedBushingForce::FunctionBasedBushingForce(const string&    body1Name, 
+ExpressionBasedBushingForce::ExpressionBasedBushingForce(const string&    body1Name, 
                            const Vec3&      point1, 
                            const Vec3&      orientation1,
 		                   const string&    body2Name, 
@@ -68,7 +78,7 @@ FunctionBasedBushingForce::FunctionBasedBushingForce(const string&    body1Name,
 }
 
 // Convenience constructor for linear functions.
-FunctionBasedBushingForce::FunctionBasedBushingForce(const string&    body1Name, 
+ExpressionBasedBushingForce::ExpressionBasedBushingForce(const string&    body1Name, 
                            const Vec3&      point1, 
                            const Vec3&      orientation1,
 		                   const string&    body2Name, 
@@ -88,30 +98,33 @@ FunctionBasedBushingForce::FunctionBasedBushingForce(const string&    body1Name,
 	set_orientation_body_1(orientation1);
 	set_location_body_2(point2);
 	set_orientation_body_2(orientation2);
-    // populate m_ii and f_ii as LinearFunction based on stiffness
-    set_m_x_theta_x_function( LinearFunction( rotStiffness[0], 0.0) );
-    set_m_y_theta_y_function( LinearFunction( rotStiffness[1], 0.0) );
-    set_m_z_theta_z_function( LinearFunction( rotStiffness[2], 0.0) );
-    set_f_x_delta_x_function( LinearFunction( transStiffness[0], 0.0) );
-    set_f_y_delta_y_function( LinearFunction( transStiffness[1], 0.0) );
-    set_f_z_delta_z_function( LinearFunction( transStiffness[2], 0.0) );
+    // populate moments and forces as linear (ramp) expressions based on stiffness
+	
+    setMxExpression( to_string(rotStiffness[0]) + string("*theta_x") );
+    setMyExpression( to_string(rotStiffness[1]) + string("*theta_y") );
+    setMzExpression( to_string(rotStiffness[2]) + string("*theta_z") );
+	setFxExpression( to_string(transStiffness[0]) + string("*delta_x") );
+	setFyExpression( to_string(transStiffness[1]) + string("*delta_y") );
+	setFzExpression( to_string(transStiffness[2]) + string("*delta_z") );
 	set_rotational_damping(rotDamping);
 	set_translational_damping(transDamping);
+	
 }
 
 //_____________________________________________________________________________
-// Set the data members of this FunctionBasedBushingForce to their null values.
-void FunctionBasedBushingForce::setNull()
+// Set the data members of this ExpressionBasedBushingForce to their null values.
+void ExpressionBasedBushingForce::setNull()
 {
 	setAuthors("Matt DeMers");
     _b1 = NULL;
 	_b2 = NULL;
     // no data members
+
 }
 
 //_____________________________________________________________________________
 // Allocate and initialize properties.
-void FunctionBasedBushingForce::constructProperties()
+void ExpressionBasedBushingForce::constructProperties()
 {
 	constructProperty_body_1();
 	constructProperty_body_2();
@@ -123,13 +136,19 @@ void FunctionBasedBushingForce::constructProperties()
 	constructProperty_orientation_body_2(Vec3(0));
 
     //set all deflection functions to zero
-    Constant zeroFunc = Constant(0.0);
-    constructProperty_m_x_theta_x_function( zeroFunc );
-    constructProperty_m_y_theta_y_function( zeroFunc );
-    constructProperty_m_z_theta_z_function( zeroFunc );
-    constructProperty_f_x_delta_x_function( zeroFunc );
-    constructProperty_f_y_delta_y_function( zeroFunc );
-    constructProperty_f_z_delta_z_function( zeroFunc );
+	std::string zero = "0.0";
+    constructProperty_Mx_expression( zero );
+    constructProperty_My_expression( zero );
+    constructProperty_Mz_expression( zero );
+    constructProperty_Fx_expression( zero );
+    constructProperty_Fy_expression( zero );
+    constructProperty_Fz_expression( zero );
+	setMxExpression( "0.0" );
+    setMyExpression( "0.0" );
+    setMzExpression( "0.0" );
+	setFxExpression( "0.0" );
+	setFyExpression( "0.0" );
+	setFzExpression( "0.0" );
     
     constructProperty_rotational_damping(Vec3(0));
 	constructProperty_translational_damping(Vec3(0));
@@ -144,9 +163,9 @@ void FunctionBasedBushingForce::constructProperties()
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aModel OpenSim model containing this FunctionBasedBushingForce.
+ * @param aModel OpenSim model containing this ExpressionBasedBushingForce.
  */
-void FunctionBasedBushingForce::connectToModel(Model& aModel)
+void ExpressionBasedBushingForce::connectToModel(Model& aModel)
 {
 	Super::connectToModel(aModel); // base class first
 
@@ -176,7 +195,7 @@ void FunctionBasedBushingForce::connectToModel(Model& aModel)
 	}
 }
 
-void FunctionBasedBushingForce::addToSystem(SimTK::MultibodySystem& system) const
+void ExpressionBasedBushingForce::addToSystem(SimTK::MultibodySystem& system) const
 {
     Super::addToSystem(system);
 
@@ -191,7 +210,7 @@ void FunctionBasedBushingForce::addToSystem(SimTK::MultibodySystem& system) cons
 	Body& body2 = _model->updBodySet().get(body2Name);
 
     // Beyond the const Component get access to underlying SimTK elements
-	FunctionBasedBushingForce* mutableThis = const_cast<FunctionBasedBushingForce *>(this);
+	ExpressionBasedBushingForce* mutableThis = const_cast<ExpressionBasedBushingForce *>(this);
 
     // Get underlying mobilized bodies
 	mutableThis->_b1 = &_model->updMatterSubsystem().getMobilizedBody(body1.getIndex());
@@ -210,18 +229,18 @@ void FunctionBasedBushingForce::addToSystem(SimTK::MultibodySystem& system) cons
 //=============================================================================
 //_____________________________________________________________________________
 // The following methods set properties of the bushing Force.
-void FunctionBasedBushingForce::setBody1ByName(const std::string& aBodyName)
+void ExpressionBasedBushingForce::setBody1ByName(const std::string& aBodyName)
 {
 	set_body_1(aBodyName);
 }
 
-void FunctionBasedBushingForce::setBody2ByName(const std::string& aBodyName)
+void ExpressionBasedBushingForce::setBody2ByName(const std::string& aBodyName)
 {
 	set_body_2(aBodyName);
 }
 
 /** Set the location and orientation (optional) for weld on body 1*/
-void FunctionBasedBushingForce::setBody1BushingLocation(const Vec3& location, 
+void ExpressionBasedBushingForce::setBody1BushingLocation(const Vec3& location, 
                                            const Vec3& orientation)
 {
 	set_location_body_1(location);
@@ -229,20 +248,61 @@ void FunctionBasedBushingForce::setBody1BushingLocation(const Vec3& location,
 }
 
 /** Set the location and orientation (optional) for weld on body 2*/
-void FunctionBasedBushingForce::setBody2BushingLocation(const Vec3& location, 
+void ExpressionBasedBushingForce::setBody2BushingLocation(const Vec3& location, 
                                            const Vec3& orientation)
 {
 	set_location_body_2(location);
 	set_orientation_body_2(orientation);
 }
 
+/** Set the expression for the Mx function and create it's lepton program */
+void ExpressionBasedBushingForce::setMxExpression(std::string expression) 
+{
+	set_Mx_expression(expression);
+	MxProg = Lepton::Parser::parse(expression).optimize().createProgram();
+}
+
+/** Set the expression for the My function and create it's lepton program */
+void ExpressionBasedBushingForce::setMyExpression(std::string expression) 
+{
+	set_My_expression(expression);
+	MyProg = Lepton::Parser::parse(expression).optimize().createProgram();
+}
+
+/** Set the expression for the Mz function and create it's lepton program */
+void ExpressionBasedBushingForce::setMzExpression(std::string expression) 
+{
+	set_Mz_expression(expression);
+	MzProg = Lepton::Parser::parse(expression).optimize().createProgram();
+}
+
+/** Set the expression for the Fx function and create it's lepton program */
+void ExpressionBasedBushingForce::setFxExpression(std::string expression) 
+{
+	set_Fx_expression(expression);
+	FxProg = Lepton::Parser::parse(expression).optimize().createProgram();
+}
+
+/** Set the expression for the Fy function and create it's lepton program */
+void ExpressionBasedBushingForce::setFyExpression(std::string expression) 
+{
+	set_Fy_expression(expression);
+	FyProg = Lepton::Parser::parse(expression).optimize().createProgram();
+}
+
+/** Set the expression for the Fz function and create it's lepton program */
+void ExpressionBasedBushingForce::setFzExpression(std::string expression) 
+{
+	set_Fz_expression(expression);
+	FzProg = Lepton::Parser::parse(expression).optimize().createProgram();
+}
 //=============================================================================
 // COMPUTATION
 //=============================================================================
 /** Compute the deflection (spatial separation) of the two frames connected
 	by the bushing force. Angualar displacement expressed in Euler angles.
 	The force and potential energy are determined by the deflection.  */
-SimTK::Vec6 FunctionBasedBushingForce::computeDeflection(const SimTK::State& s) const
+SimTK::Vec6 ExpressionBasedBushingForce::computeDeflection(const SimTK::State& s) const
 {
 	const Transform& X_GB1 = _b1->getBodyTransform(s);
 
@@ -267,7 +327,7 @@ SimTK::Vec6 FunctionBasedBushingForce::computeDeflection(const SimTK::State& s) 
 
 /** compute the bushing force at the bushing location
 */
-void FunctionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& state, 
+void ExpressionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& state, 
     SpatialVec& forces_on_M_in_ground, SpatialVec& forces_on_F_in_ground) const
 {
     const Transform& X_GB1 = _b1->getBodyTransform(state);
@@ -288,12 +348,21 @@ void FunctionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& state
     //------------------------------------------
     Vec6 fk = Vec6(0.0);
 
-    fk[0] = get_m_x_theta_x_function().calcValue(SimTK::Vector(1,dq[0]) );
-    fk[1] = get_m_y_theta_y_function().calcValue(SimTK::Vector(1,dq[1]) );
-    fk[2] = get_m_z_theta_z_function().calcValue(SimTK::Vector(1,dq[2]) );
-    fk[3] = get_f_x_delta_x_function().calcValue(SimTK::Vector(1,dq[3]) );
-    fk[4] = get_f_y_delta_y_function().calcValue(SimTK::Vector(1,dq[4]) );
-    fk[5] = get_f_z_delta_z_function().calcValue(SimTK::Vector(1,dq[5]) );
+	std::map<std::string, double> deflectionVars;
+	deflectionVars["theta_x"] = dq[0];
+	deflectionVars["theta_y"] = dq[1];
+	deflectionVars["theta_z"] = dq[2];
+	deflectionVars["delta_x"] = dq[3];
+	deflectionVars["delta_y"] = dq[4];
+	deflectionVars["delta_z"] = dq[5];
+
+	
+	fk[0] = MxProg.evaluate(deflectionVars);
+	fk[1] = MyProg.evaluate(deflectionVars);
+	fk[2] = MzProg.evaluate(deflectionVars);
+	fk[3] = FxProg.evaluate(deflectionVars);
+	fk[4] = FyProg.evaluate(deflectionVars);
+	fk[5] = FzProg.evaluate(deflectionVars);
 
     // Now evaluate velocities.
     const SpatialVec& V_GB1 = _b1->getBodyVelocity(state);
@@ -371,10 +440,10 @@ void FunctionBasedBushingForce::ComputeForcesAtBushing(const SimTK::State& state
 /**
  * Compute the force contribution to the system and add in to appropriate
  * bodyForce and/or system generalizedForce.
- * FunctionBasedBushingForce implementation based SimTK::Force::LinearBushing
+ * ExpressionBasedBushingForce implementation based SimTK::Force::LinearBushing
  * developed and implemented by Michael Sherman.
  */
-void FunctionBasedBushingForce::computeForce(const SimTK::State& s, 
+void ExpressionBasedBushingForce::computeForce(const SimTK::State& s, 
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForces) const
 {
@@ -425,7 +494,7 @@ double CoupledBushingForce::computePotentialEnergy(const SimTK::State& s) const
 
 // TO DO:  correct potential energy caculation
 /* Potential energy is computed by underlying SimTK::Force. */
-double FunctionBasedBushingForce::computePotentialEnergy(const SimTK::State& s) const
+double ExpressionBasedBushingForce::computePotentialEnergy(const SimTK::State& s) const
 {
 	return _model->getForceSubsystem().getForce(_index)
                                       .calcPotentialEnergyContribution(s);
@@ -438,7 +507,7 @@ double FunctionBasedBushingForce::computePotentialEnergy(const SimTK::State& s) 
  * Provide names of the quantities (column labels) of the force value(s) reported
  * 
  */
-OpenSim::Array<std::string> FunctionBasedBushingForce::getRecordLabels() const 
+OpenSim::Array<std::string> ExpressionBasedBushingForce::getRecordLabels() const 
 {
 	const string& body1Name = get_body_1();
 	const string& body2Name = get_body_2();
@@ -462,7 +531,7 @@ OpenSim::Array<std::string> FunctionBasedBushingForce::getRecordLabels() const
 /**
  * Provide the value(s) to be reported that correspond to the labels
  */
-OpenSim::Array<double> FunctionBasedBushingForce::
+OpenSim::Array<double> ExpressionBasedBushingForce::
 getRecordValues(const SimTK::State& state) const 
 {
     SpatialVec F_GM( Vec3(0.0),Vec3(0.0) );
@@ -514,12 +583,12 @@ getRecordValues(const SimTK::State& state) const
 /**
  * Get the visible object used to represent the spring.
  */
-VisibleObject* FunctionBasedBushingForce::getDisplayer() const
+VisibleObject* ExpressionBasedBushingForce::getDisplayer() const
 { 
 	return const_cast<VisibleObject*>(&_displayer); 
 }
 
-void FunctionBasedBushingForce::updateDisplayer(const SimTK::State& s)
+void ExpressionBasedBushingForce::updateDisplayer(const SimTK::State& s)
 {
 	SimTK::Vec3 globalLocation1, globalLocation2;
 	const OpenSim::Body& body1 = _model->getBodySet().get(get_body_1());
@@ -538,7 +607,7 @@ void FunctionBasedBushingForce::updateDisplayer(const SimTK::State& s)
         setPoints(globalLocation1, globalLocation2);
 }
 
-void FunctionBasedBushingForce::updateGeometry(const SimTK::State& s)
+void ExpressionBasedBushingForce::updateGeometry(const SimTK::State& s)
 {
 	if (_displayer.countGeometry()==0){
 		Geometry *g = new LineGeometry();
@@ -548,7 +617,7 @@ void FunctionBasedBushingForce::updateGeometry(const SimTK::State& s)
 	updateDisplayer(s);
 }
 
-void FunctionBasedBushingForce::generateDecorations
+void ExpressionBasedBushingForce::generateDecorations
        (bool                                        fixed, 
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,

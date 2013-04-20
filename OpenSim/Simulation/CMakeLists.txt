@@ -49,11 +49,13 @@ ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 
 IF(WIN32)
 TARGET_LINK_LIBRARIES(osim${KIT} 
-               debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon 
+               debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
+			   debug osimLepton${CMAKE_DEBUG_POSTFIX} optimized osimLepton
 		       ${SIMTK_ALL_LIBS})
 ELSE(WIN32)
 TARGET_LINK_LIBRARIES(osim${KIT} 
-               debug osimCommon${CMAKE_DEBUG_POSTFIX}     optimized osimCommon		     
+               debug osimCommon${CMAKE_DEBUG_POSTFIX}     optimized osimCommon
+			   debug osimLepton${CMAKE_DEBUG_POSTFIX}	  optimized osimLepton
 		       ${SIMTK_ALL_LIBS}
 		dl)
 ENDIF(WIN32)

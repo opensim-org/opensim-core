@@ -1,7 +1,7 @@
-#ifndef OPENSIM_FUNCTION_BASED_BUSHING_FORCE_H_
-#define OPENSIM_FUNCTION_BASED_BUSHING_FORCE_H_
+#ifndef OPENSIM_EXPRESSION_BASED_BUSHING_FORCE_H_
+#define OPENSIM_EXPRESSION_BASED_BUSHING_FORCE_H_
 /* -------------------------------------------------------------------------- *
- *                   OpenSim:  FunctionBasedBushingForce.h                    *
+ *                  OpenSim: ExpressionBasedBushingForce.h                    *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -31,18 +31,22 @@
 #include <OpenSim/Common/PropertyDblVec.h>
 #include "Force.h"
 #include <OpenSim/Common/osimCommon.h>
+#include <Vendors/lepton/include/Lepton.h>
+
 
 namespace OpenSim {
 
 //==============================================================================
-//                             FUNCTION BASED BUSHING FORCE
+//                             EXPRESSION BASED BUSHING FORCE
 //==============================================================================
 /**
- * A class implementing a bushing force driven by functions relating forces to 
- * deviations.  Thes functions can be arbitrary, user defined functions that
- * caputure nonlinearities in biologic structures.  This Function Based Bushing
- * does not capture coupling between the deflections (e.g. force in x due to 
- * rotation in z).
+ * A class implementing a bushing force driven by expressions relating forces to 
+ * deviations.  These expressions are user defined expressions 
+ * provided as strings that are parsed and evaluated during a simulation.
+ * Each expression can be a function of the bushing's rotational deflections 
+ * (theta_x, theta_y, theta_z) and translational deflections, (delta_x, delta_y,
+ * delta_z).  These user defined expressions can caputure nonlinearities and 
+ * coupling common in biologic structures.  
  *
  * A bushing force is the force increasing due to deviation between two frames. 
  * One can think of the Bushing as being composed of 3 translational and 3 
@@ -52,8 +56,8 @@ namespace OpenSim {
  *
  * @author Matt DeMers
  */
-class OSIMSIMULATION_API FunctionBasedBushingForce : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(FunctionBasedBushingForce, Force);
+class OSIMSIMULATION_API ExpressionBasedBushingForce : public Force {
+OpenSim_DECLARE_CONCRETE_OBJECT(ExpressionBasedBushingForce, Force);
 public:
 //==============================================================================
 // PROPERTIES
@@ -73,18 +77,18 @@ public:
 		"Location of bushing frame on body 2.");
 	OpenSim_DECLARE_PROPERTY(orientation_body_2, SimTK::Vec3,
 		"Orientation of bushing frame in body 2 as x-y-z, body fixed Euler rotations.");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(m_x_theta_x_function, Function,
-        "Function defining the contribution of theta_x deflection to the moment about body_2's x axis.");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(m_y_theta_y_function, Function,
-        "Function defining the contribution of theta_y deflection to the moment about body_2's y axis.");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(m_z_theta_z_function, Function,
-        "Function defining the contribution of theta_z deflection to the moment about body_2's z axis.");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(f_x_delta_x_function, Function,
-        "Function defining the contribution of x deflection to the force in the x direction.");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(f_y_delta_y_function, Function,
-        "Function defining the contribution of y deflection to the force in the y direction.");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(f_z_delta_z_function, Function,
-        "Function defining the contribution of z deflection to the force in the z direction.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(Mx_expression, std::string,
+        "Expression defining the contribution of theta_x deflection to the moment about body_2's x axis.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(My_expression, std::string,
+        "Expression defining the contribution of theta_y deflection to the moment about body_2's y axis.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(Mz_expression, std::string,
+        "Expression defining the contribution of theta_z deflection to the moment about body_2's z axis.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(Fx_expression, std::string,
+        "Expression defining the contribution of x deflection to the force in the x direction.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(Fy_expression, std::string,
+        "Expression defining the contribution of y deflection to the force in the y direction.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(Fz_expression, std::string,
+        "Expression defining the contribution of z deflection to the force in the z direction.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(visual_aspect_ratio, double,
         "Scalar number signifying the ratio of length/diameter used to display the force and "
         "moment vectors.");
@@ -111,6 +115,8 @@ protected:
     /** how to display the bushing */
 	VisibleObject _displayer;
 private:
+	// parser programs for efficiently evaluating the expressions
+	Lepton::ExpressionProgram MxProg, MyProg, MzProg, FxProg, FyProg, FzProg; 
 	// underlying SimTK system elements
 	// the mobilized bodies involved
 	const SimTK::MobilizedBody *_b1;
@@ -126,10 +132,10 @@ public:
 //==============================================================================
 	/** Default constructor leaves bodies unspecified, sets the bushing frames
       * to be at their body origins, and sets all bushing parameters to zero. **/
-	FunctionBasedBushingForce();
+	ExpressionBasedBushingForce();
     /** This convenience constructor defines and sets the bushing frames on 
       * each body, and sets all bushing functions to zero.  **/
-    FunctionBasedBushingForce(const std::string& body1Name, 
+    ExpressionBasedBushingForce(const std::string& body1Name, 
                  const SimTK::Vec3& point1, 
                  const SimTK::Vec3& orientation1,
 		         const std::string& body2Name, 
@@ -138,7 +144,7 @@ public:
     /** This convenience constructor defines a bushing that behaves like a
       * primitive bushing.  Stiffnesses are used to define linear functions for
       * force deflection profiles.**/
-	FunctionBasedBushingForce(const std::string& body1Name, 
+	ExpressionBasedBushingForce(const std::string& body1Name, 
                  const SimTK::Vec3& point1, 
                  const SimTK::Vec3& orientation1,
 		         const std::string& body2Name, 
@@ -171,14 +177,50 @@ public:
       * A force of magnitude |F| will be drawn on screen with a length of (|F|*scale).  **/
     void setForceVisualScale(double scale) {set_force_visual_scale(scale);}
     /** Set the aspect ratio used to control the thickness of the bushing force and moment
-        in drawn in the visualizer.  ratio = length/diameter.*/
+      * in drawn in the visualizer.  ratio = length/diameter.**/
     void setVisualAspectRatio(double ratio) {set_visual_aspect_ratio(ratio);}
+	/** Set the expression defining Mx as a function of the bushing deflections theta_x, 
+	  * theta_y, theta_z, delta_x, delta_y, delta_z **/
+	void setMxExpression(std::string expression);
+	/** Set the expression defining My as a function of the bushing deflections theta_x, 
+	  * theta_y, theta_z, delta_x, delta_y, delta_z **/
+	void setMyExpression(std::string expression);
+	/** Set the expression defining Mz as a function of the bushing deflections theta_x, 
+	  * theta_y, theta_z, delta_x, delta_y, delta_z **/
+	void setMzExpression(std::string expression);
+	/** Set the expression defining Fx as a function of the bushing deflections theta_x, 
+	  * theta_y, theta_z, delta_x, delta_y, delta_z **/
+	void setFxExpression(std::string expression);
+	/** Set the expression defining Fy as a function of the bushing deflections theta_x, 
+	  * theta_y, theta_z, delta_x, delta_y, delta_z **/
+	void setFyExpression(std::string expression);
+	/** Set the expression defining Fz as a function of the bushing deflections theta_x, 
+	  * theta_y, theta_z, delta_x, delta_y, delta_z **/
+	void setFzExpression(std::string expression);
+	/** Get the expression defining Mx as a function of the bushing deflections theta_x, 
+	  * theta_y, theta_z, delta_x, delta_y, delta_z **/
+	std::string getMxExpression() { return get_Mx_expression(); }
+	/** Get the expression defining My as a function of the bushing deflections theta_x, 
+	  * theta_y, theta_z, delta_x, delta_y, delta_z **/
+	std::string getMyExpression() { return get_My_expression(); }
+	/** Get the expression defining Mz as a function of the bushing deflections theta_x, 
+	  * theta_y, theta_z, delta_x, delta_y, delta_z **/
+	std::string getMzExpression() { return get_Mz_expression(); }
+	/** Get the expression defining Fx as a function of the bushing deflections theta_x, 
+	  * theta_y, theta_z, delta_x, delta_y, delta_z **/
+	std::string getFxExpression() { return get_Fx_expression(); }
+	/** Get the expression defining Fy as a function of the bushing deflections theta_x, 
+	  * theta_y, theta_z, delta_x, delta_y, delta_z **/
+	std::string getFyExpression() { return get_Fy_expression(); }
+	/** Get the expression defining Fz as a function of the bushing deflections theta_x, 
+	  * theta_y, theta_z, delta_x, delta_y, delta_z **/
+	std::string getFzExpression() { return get_Fz_expression(); }
 	//--------------------------------------------------------------------------
 	// COMPUTATION
 	//--------------------------------------------------------------------------
 	/** Compute the deflection (spatial separation) of the two frames connected
 	  * by the bushing force. Angualar displacement expressed in Euler angles.
-      * The force and potential energy are determined by the deflection.  */
+	  * The force and potential energy are determined by the deflection.  **/
 	virtual SimTK::Vec6 computeDeflection(const SimTK::State& s) const;
 
 	/** Compute the bushing force contribution to the system and add in to appropriate
@@ -216,7 +258,8 @@ protected:
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const;
-    void ComputeForcesAtBushing(const SimTK::State& state, 
+    
+	void ComputeForcesAtBushing(const SimTK::State& state, 
                                 SimTK::SpatialVec& forces_on_M_in_ground, 
                                 SimTK::SpatialVec& forces_on_F_in_ground) const;
 
@@ -225,7 +268,7 @@ private:
 	// Implement ModelComponent interface.
 	//--------------------------------------------------------------------------
 	void connectToModel(Model& aModel) OVERRIDE_11;
-	// Create a SimTK::Force::LinarBushing which implements this FunctionBasedBushingForce.
+	// Create a SimTK::Force::LinarBushing which implements this ExpressionBasedBushingForce.
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
     //--------------------------------------------------------------------------
 	// Visible Object Support for Java Gui
@@ -237,12 +280,12 @@ private:
 	void constructProperties();
 
 //==============================================================================
-};	// END of class FunctionBasedBushingForce
+};	// END of class ExpressionBasedBushingForce
 //==============================================================================
 //==============================================================================
 
 } // end of namespace OpenSim
 
-#endif // OPENSIM_FUNCTION_BASED_BUSHING_FORCE_H_
+#endif // OPENSIM_EXPRESSION_BASED_BUSHING_FORCE_H_
 
 
