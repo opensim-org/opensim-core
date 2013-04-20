@@ -66,29 +66,20 @@ OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, ModelComponent);
 // DATA
 //=============================================================================
 private:
-	// the set of points defining the path
-	PropertyObj _pathPointSetProp;
-	PathPointSet &_pathPointSet;
+	OpenSim_DECLARE_UNNAMED_PROPERTY(PathPointSet, "The set of points defining the path");
 
-	// used to display the path in the 3D window
-	PropertyObj _displayerProp;
-	VisibleObject &_displayer;
+	OpenSim_DECLARE_PROPERTY(display, VisibleObject, "Used to display the path in the 3D window");
 
-	// the wrap objects that are associated with this path
-	PropertyObj _pathWrapSetProp;
-	PathWrapSet &_pathWrapSet;
-
-    // used to initialize the color cache variable in case no one 
-    // sets the color later. TODO: make this a property?
-    SimTK::Vec3 _defaultColor;
+	OpenSim_DECLARE_UNNAMED_PROPERTY(PathWrapSet, "The wrap objecs that are associated with this path");
+	
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(default_color, SimTK::Vec3, "Used to initialize the colour cache variable");
 
 	// used for scaling tendon and fiber lengths
 	double _preScaleLength;
 
 	// object that owns this GeometryPath object
 	Object* _owner;
-
-
+	
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -97,7 +88,6 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	GeometryPath();
-	GeometryPath(const GeometryPath &aPath);
 	virtual ~GeometryPath();
 
 	void setName(const std::string &aName);
@@ -105,9 +95,9 @@ public:
 	GeometryPath& operator=(const GeometryPath &aPath);
 #endif
 	void copyData(const GeometryPath &aPath);
-	const PathPointSet& getPathPointSet() const { return _pathPointSet; }
-	PathPointSet& updPathPointSet() const { return _pathPointSet; }
-	PathWrapSet& getWrapSet() const { return _pathWrapSet; }
+	const PathPointSet& getPathPointSet() const { return get_PathPointSet(); }
+	PathPointSet& updPathPointSet() { return upd_PathPointSet(); }
+	const PathWrapSet& getWrapSet() const { return get_PathWrapSet(); }
 
 	//--------------------------------------------------------------------------
 	// UTILITY
@@ -132,11 +122,11 @@ public:
     /** If you call this prior to addToSystem() it will be used to initialize
     the color cache variable. Otherwise %GeometryPath will choose its own
     default which will be some boring shade of gray. **/
-	void setDefaultColor(const SimTK::Vec3& color) {_defaultColor = color; };
+	void setDefaultColor(const SimTK::Vec3& color) {set_default_color(color); };
     /** Returns the color that will be used to initialize the color cache
     at the next addToSystem() call. The actual color used to draw the path
     will be taken from the cache variable, so may have changed. **/
-	const SimTK::Vec3& getDefaultColor() const { return _defaultColor; }
+	const SimTK::Vec3& getDefaultColor() const { return get_default_color(); }
 
     /** Set the value of the color cache variable owned by this %GeometryPath
     object, in the cache of the given state. The value of this variable is used
@@ -194,6 +184,7 @@ protected:
 	void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
+	// Visual support GeometryPath drawing in SimTK visualizer.
 	void generateDecorations(
 			bool 									    fixed,
 			const ModelDisplayHints&				    hints,
@@ -205,8 +196,8 @@ public:
 	//--------------------------------------------------------------------------
 	// Visible Object Support
 	//--------------------------------------------------------------------------
-	virtual VisibleObject* getDisplayer() const { 
-		return &_displayer; 
+	virtual const VisibleObject* getDisplayer() const { 
+		return &get_display(); 
 	}
 	
 	void updateDisplayer(const SimTK::State& s) const OVERRIDE_11;
@@ -217,7 +208,7 @@ public:
 
 private:
 	void setNull();
-	void setupProperties();
+	void constructProperties();
 	void updateDisplayPath(const SimTK::State& s) const;
 	void updateGeometrySize(const SimTK::State& ) const;
 	void updateGeometryLocations(const SimTK::State& s) const;

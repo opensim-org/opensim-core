@@ -256,7 +256,7 @@ VisibleObject& VisibleObject::operator=(const VisibleObject &aObject)
  *
  * @return True if the two objects are equal, false otherwise.
  */
-bool VisibleObject::operator==(const VisibleObject &aObject)
+bool VisibleObject::operator==(const VisibleObject &aObject) const
 {
 	return(Object::operator==(aObject));
 }

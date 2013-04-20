@@ -118,7 +118,7 @@ private:
 public:
 #ifndef SWIG
 	VisibleObject& operator=(const VisibleObject &aObject);
-	virtual bool operator==(const VisibleObject &aObject);
+	virtual bool operator==(const VisibleObject &aObject) const;
 #endif
 	//--------------------------------------------------------------------------
 	// GET AND SET

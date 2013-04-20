@@ -314,7 +314,7 @@ void Ligament::computeForce(const SimTK::State& s,
 /**
  * Get the visible object used to represent the Ligament.
  */
-VisibleObject* Ligament::getDisplayer() const
+const VisibleObject* Ligament::getDisplayer() const
 { 
 	return getGeometryPath().getDisplayer(); 
 }

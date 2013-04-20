@@ -117,7 +117,7 @@ public:
 	//--------------------------------------------------------------------------
 	// Display
 	//--------------------------------------------------------------------------
-	virtual VisibleObject* getDisplayer() const;
+	virtual const VisibleObject* getDisplayer() const;
 	virtual void updateDisplayer(const SimTK::State& s) const;
 
 protected:
