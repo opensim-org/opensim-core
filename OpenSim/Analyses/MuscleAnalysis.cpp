@@ -544,7 +544,7 @@ int MuscleAnalysis::record(const SimTK::State& s)
 			penang[i] = _muscleArray[i]->getPennationAngle(s);
 		}
 		catch (const std::exception& e) {
-			if(lengthWarning){
+			if(!lengthWarning){
 				cout << "WARNING- MuscleAnalysis::record() unable to evaluate ";
 				cout << "muscle length at time " << s.getTime() << " for reason: ";
 				cout << e.what() << endl;
@@ -565,7 +565,7 @@ int MuscleAnalysis::record(const SimTK::State& s)
 			passfibforcealongten[i] = _muscleArray[i]->getPassiveFiberForceAlongTendon(s);
 		}
 		catch (const std::exception& e) {
-			if(forceWarning){
+			if(!forceWarning){
 				cout << "WARNING- MuscleAnalysis::record() unable to evaluate ";
 				cout << "muscle forces at time " << s.getTime() << " for reason: ";
 				cout << e.what() << endl;
@@ -593,7 +593,7 @@ int MuscleAnalysis::record(const SimTK::State& s)
 				muscPower[i] = _muscleArray[i]->getMusclePower(s);
 			}
 			catch (const std::exception& e) {
-				if(dynamicsWarning){
+				if(!dynamicsWarning){
 					cout << "WARNING- MuscleAnalysis::record() unable to evaluate ";
 					cout << "muscle forces at time " << s.getTime() << " for reason: ";
 					cout << e.what() << endl;
@@ -604,9 +604,12 @@ int MuscleAnalysis::record(const SimTK::State& s)
 		}
 	}
 	else {
-		cout << "WARNING- MuscleAnalysis::record() unable to evaluate ";
-		cout << "muscle dynamics at time " << s.getTime() << " because ";
-		cout << "model has no mass and system dynamics cannot be computed.";
+		if(!dynamicsWarning){
+			cout << "WARNING- MuscleAnalysis::record() unable to evaluate ";
+			cout << "muscle dynamics at time " << s.getTime() << " because ";
+			cout << "model has no mass and system dynamics cannot be computed." << endl;
+			dynamicsWarning = true;
+		}
 	}
 
 	// APPEND TO STORAGE

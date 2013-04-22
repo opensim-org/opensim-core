@@ -507,9 +507,7 @@ bool AnalyzeTool::run(bool plotting)
 
 //printf("\nbefore AnalyzeTool.run() initSystem \n");
 	// Call initSystem except when plotting
-	SimTK::State& s = (!plotting)? _model->initSystem(): _model->getWorkingState();
-    //SimTK::State& s = (!plotting)? _model->initSystem(): _model->copyDefaultStateIntoWorkingStateAndReturn();
-    //SimTK::State& s = _model->initSystem();
+	SimTK::State& s = (!plotting)? _model->initSystem(): _model->updWorkingState();
 
     _model->getMultibodySystem().realize(s, SimTK::Stage::Position );
 //printf("after AnalyzeTool.run() initSystem \n\n");

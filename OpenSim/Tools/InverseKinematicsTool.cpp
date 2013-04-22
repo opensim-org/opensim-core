@@ -283,7 +283,6 @@ bool InverseKinematicsTool::run()
 		cout<<"Running tool "<<getName()<<".\n";
 
 		// Initialize the the model's underlying computational system and get its default state.
-		//SimTK::State& s = modelFromFile?_model->initSystem(): _model->copyDefaultStateIntoWorkingStateAndReturn();
         SimTK::State& s = _model->initSystem();
 
 		//Convert old Tasks to references for assembly and tracking
