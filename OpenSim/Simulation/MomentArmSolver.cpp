@@ -38,6 +38,12 @@ namespace OpenSim {
 MomentArmSolver::MomentArmSolver(const Model &model) : Solver(model)
 {
 	setAuthors("Ajay Seth");
+	_stateCopy = model.getWorkingState();
+
+	// Get the body forces equivalent of the point forces of the path
+	_bodyForces = Vector_<SpatialVec>(getModel().getNumBodies(), SpatialVec(0));
+	// get the right size coupling vector
+	_coupling = _stateCopy.getU();
 }
 
 /*********************************************************************************
@@ -54,14 +60,25 @@ Refer to Moment-arm Theory document by Michael Sherman for details.
 double MomentArmSolver::solve(const State &s, const Coordinate &aCoord,
 							  const Array<PointForceDirection *> &pfds)
 {
+	//const clock_t start = clock();
+
 	//Local modifiable copy of the state
-	State s_ma = s;
+	_stateCopy.updQ() = s.getQ();
+	_stateCopy.updU() = s.getU();
+	State& s_ma = _stateCopy;
+
+	//const clock_t copyT = clock();
+	//cout << "MomentArmSolver::solve State copy time:" << 1000*(copyT-start)/CLOCKS_PER_SEC << "ms\n" <<endl;
+
+	getModel().getMultibodySystem().realize(s_ma, SimTK::Stage::Instance);
 
 	aCoord.setLocked(s_ma, false);
 
-	double angle = aCoord.getValue(s_ma);
+	double angle = aCoord.getValue(s_ma);	
 
-	getModel().getMultibodySystem().realize(s_ma, SimTK::Stage::Instance);
+	//const clock_t init = clock();
+	//cout << "MomentArmSolver::solve realize instance in:" << 1000*(init-copyT)/CLOCKS_PER_SEC << "ms\n" <<endl;
+
 
 	// Calculate coupling matrix C to determine the influence of other coordinates 
 	// (mobilities) on the coordinate of interest due to constraints
@@ -80,32 +97,36 @@ double MomentArmSolver::solve(const State &s, const Coordinate &aCoord,
 	
 	// Now calculate C. by checking how speeds of other coordinates change
 	// normalized by how much the speed of the coordinate of interest changed 
-    const Vector C = s_ma.getU() / aCoord.getSpeedValue(s_ma);
+    _coupling = s_ma.getU() / aCoord.getSpeedValue(s_ma);
+
+	//const clock_t computeC = clock();
+	//cout << "MomentArmSolver::solve compute C time:" << 1000*(computeC-init)/CLOCKS_PER_SEC << "ms\n" <<endl;
+
 
 	angle = aCoord.getValue(s_ma);
 
 	// Reset speeds to zero
     s_ma.updU() = 0;
 	
-	// Get the body forces equivalent of the point forces of the path
-	Vector_<SpatialVec> bodyForces(getModel().getNumBodies(), SpatialVec(0));
 			
 	// Apply body forces along the geometry described by pfds due to a tension of 1N
 	for(int i=0; i < pfds.getSize(); i++) {
 		getModel().getMatterSubsystem().addInStationForce(s_ma, SimTK::MobilizedBodyIndex(pfds[i]->body().getIndex()), 
-												   pfds[i]->point(), pfds[i]->direction(), bodyForces);
+												   pfds[i]->point(), pfds[i]->direction(), _bodyForces);
 	}
 
 	// Convert body spatial forces F to equivalent mobility forces f based on 
     // geometry (no dynamics required): f = ~J(q) * F.
-	Vector generalizedForces;
 	getModel().getMultibodySystem().getMatterSubsystem()
-        .multiplyBySystemJacobianTranspose(s_ma, bodyForces, generalizedForces);
+        .multiplyBySystemJacobianTranspose(s_ma, _bodyForces, _generalizedForces);
+
+	//const clock_t torqueT = clock();;
+	//cout << "MomentArmSolver::solve  compute effective torque in:" << 1000*(torqueT-computeC)/CLOCKS_PER_SEC << "ms\n" <<endl;
 
 	// Moment-arm is the effective torque (since tension is 1) at the 
     // coordinate of interest taking into account the generalized forces also 
     // acting on other coordinates that are coupled via constraint.
-	return ~C*generalizedForces;
+	return ~_coupling*_generalizedForces;
 }
 
 } // end of namespace OpenSim
