@@ -757,7 +757,7 @@ public:
             std::cerr << "Too many values for " 
             << SimTK::NiceTypeName<T>::name() << " property " << this->getName() 
             << "; input='" << valstream.str().substr(0,50) // limit displayed length 
-            << ". Expected " << this->getMaxListSize()
+            << "'. Expected " << this->getMaxListSize()
             << ", got " << values.size() << ". Ignoring extras.\n";
 
             values.resize(this->getMaxListSize());
