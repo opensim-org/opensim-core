@@ -152,7 +152,6 @@ private:
 	void setNull();
 	void setupProperties();
 	void constructDescription();
-	void allocateStorageObjects();
 	void constructColumnLabels();
 
 public:
@@ -167,7 +166,7 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void setModel(Model& aModel);
 	void setStorageCapacityIncrements(int aIncrement);
-	
+
     Storage* getPennationAngleStorage() const { 
         return _pennationAngleStore; }
 	Storage* getMuscleTendonLengthStorage() const { 
@@ -241,6 +240,11 @@ public:
 	virtual int
 		printResults(const std::string &aBaseName,const std::string &aDir="",
 		double aDT=-1.0,const std::string &aExtension=".sto");
+	/** 
+     * Intended for use only by GUI that holds one MuscleAnalysis and keeps changing attributes to generate various plots
+     * For all other use cases, the code handles the allocation/deallocation of resources internally.
+     */
+ 	void allocateStorageObjects();
 //=============================================================================
 };	// END of class MuscleAnalysis
 
