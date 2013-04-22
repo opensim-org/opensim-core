@@ -169,6 +169,14 @@ void ExpressionBasedBushingForce::connectToModel(Model& aModel)
 {
 	Super::connectToModel(aModel); // base class first
 
+	// must initialize the 6 force functions using the user provided expressions
+	setMxExpression(get_Mx_expression());
+	setMyExpression(get_My_expression());
+	setMzExpression(get_Mz_expression());
+	setFxExpression(get_Fx_expression());
+	setFyExpression(get_Fy_expression());
+	setFzExpression(get_Fz_expression());
+
 	string errorMessage;
 	const string& body1Name = get_body_1(); // error if unspecified
 	const string& body2Name = get_body_2();
@@ -258,6 +266,8 @@ void ExpressionBasedBushingForce::setBody2BushingLocation(const Vec3& location,
 /** Set the expression for the Mx function and create it's lepton program */
 void ExpressionBasedBushingForce::setMxExpression(std::string expression) 
 {
+	expression.erase( remove_if(expression.begin(), expression.end(), isspace), 
+						expression.end() );
 	set_Mx_expression(expression);
 	MxProg = Lepton::Parser::parse(expression).optimize().createProgram();
 }
@@ -265,6 +275,9 @@ void ExpressionBasedBushingForce::setMxExpression(std::string expression)
 /** Set the expression for the My function and create it's lepton program */
 void ExpressionBasedBushingForce::setMyExpression(std::string expression) 
 {
+	
+	expression.erase( remove_if(expression.begin(), expression.end(), isspace), 
+						expression.end() );
 	set_My_expression(expression);
 	MyProg = Lepton::Parser::parse(expression).optimize().createProgram();
 }
@@ -272,6 +285,8 @@ void ExpressionBasedBushingForce::setMyExpression(std::string expression)
 /** Set the expression for the Mz function and create it's lepton program */
 void ExpressionBasedBushingForce::setMzExpression(std::string expression) 
 {
+	expression.erase( remove_if(expression.begin(), expression.end(), isspace), 
+						expression.end() );
 	set_Mz_expression(expression);
 	MzProg = Lepton::Parser::parse(expression).optimize().createProgram();
 }
@@ -279,6 +294,8 @@ void ExpressionBasedBushingForce::setMzExpression(std::string expression)
 /** Set the expression for the Fx function and create it's lepton program */
 void ExpressionBasedBushingForce::setFxExpression(std::string expression) 
 {
+	expression.erase( remove_if(expression.begin(), expression.end(), isspace), 
+						expression.end() );
 	set_Fx_expression(expression);
 	FxProg = Lepton::Parser::parse(expression).optimize().createProgram();
 }
@@ -286,6 +303,8 @@ void ExpressionBasedBushingForce::setFxExpression(std::string expression)
 /** Set the expression for the Fy function and create it's lepton program */
 void ExpressionBasedBushingForce::setFyExpression(std::string expression) 
 {
+	expression.erase( remove_if(expression.begin(), expression.end(), isspace), 
+						expression.end() );
 	set_Fy_expression(expression);
 	FyProg = Lepton::Parser::parse(expression).optimize().createProgram();
 }
@@ -293,6 +312,8 @@ void ExpressionBasedBushingForce::setFyExpression(std::string expression)
 /** Set the expression for the Fz function and create it's lepton program */
 void ExpressionBasedBushingForce::setFzExpression(std::string expression) 
 {
+	expression.erase( remove_if(expression.begin(), expression.end(), isspace), 
+						expression.end() );
 	set_Fz_expression(expression);
 	FzProg = Lepton::Parser::parse(expression).optimize().createProgram();
 }

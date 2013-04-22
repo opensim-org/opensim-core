@@ -77,18 +77,24 @@ public:
 		"Location of bushing frame on body 2.");
 	OpenSim_DECLARE_PROPERTY(orientation_body_2, SimTK::Vec3,
 		"Orientation of bushing frame in body 2 as x-y-z, body fixed Euler rotations.");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(Mx_expression, std::string,
-        "Expression defining the contribution of theta_x deflection to the moment about body_2's x axis.");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(My_expression, std::string,
-        "Expression defining the contribution of theta_y deflection to the moment about body_2's y axis.");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(Mz_expression, std::string,
-        "Expression defining the contribution of theta_z deflection to the moment about body_2's z axis.");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(Fx_expression, std::string,
-        "Expression defining the contribution of x deflection to the force in the x direction.");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(Fy_expression, std::string,
-        "Expression defining the contribution of y deflection to the force in the y direction.");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(Fz_expression, std::string,
-        "Expression defining the contribution of z deflection to the force in the z direction.");
+    OpenSim_DECLARE_PROPERTY(Mx_expression, std::string,
+        "Expression defining the contribution of theta_x deflection to the moment about body_2's x axis."
+		"The expression is a string and can not have any whitespace separating characters.");
+    OpenSim_DECLARE_PROPERTY(My_expression, std::string,
+        "Expression defining the contribution of theta_y deflection to the moment about body_2's y axis."
+		"The expression is a string and can not have any whitespace separating characters.");
+    OpenSim_DECLARE_PROPERTY(Mz_expression, std::string,
+        "Expression defining the contribution of theta_z deflection to the moment about body_2's z axis."
+		"The expression is a string and can not have any whitespace separating characters.");
+    OpenSim_DECLARE_PROPERTY(Fx_expression, std::string,
+        "Expression defining the contribution of x deflection to the force in the x direction."
+		"The expression is a string and can not have any whitespace separating characters.");
+    OpenSim_DECLARE_PROPERTY(Fy_expression, std::string,
+        "Expression defining the contribution of y deflection to the force in the y direction."
+		"The expression is a string and can not have any whitespace separating characters.");
+    OpenSim_DECLARE_PROPERTY(Fz_expression, std::string,
+        "Expression defining the contribution of z deflection to the force in the z direction."
+		"The expression is a string and can not have any whitespace separating characters.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(visual_aspect_ratio, double,
         "Scalar number signifying the ratio of length/diameter used to display the force and "
         "moment vectors.");
