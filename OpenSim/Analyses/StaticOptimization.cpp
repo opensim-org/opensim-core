@@ -68,6 +68,8 @@ StaticOptimization::StaticOptimization(Model *aModel) :
 	_useModelForceSet(_useModelForceSetProp.getValueBool()),
 	_activationExponent(_activationExponentProp.getValueDbl()),
 	_useMusclePhysiology(_useMusclePhysiologyProp.getValueBool()),
+	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
+	_maximumIterations(_maximumIterationsProp.getValueInt()),
 	_modelWorkingCopy(NULL),
 	_numCoordinateActuators(0)
 {
@@ -87,6 +89,8 @@ StaticOptimization::StaticOptimization(const StaticOptimization &aStaticOptimiza
 	_useModelForceSet(_useModelForceSetProp.getValueBool()),
 	_activationExponent(_activationExponentProp.getValueDbl()),
 	_useMusclePhysiology(_useMusclePhysiologyProp.getValueBool()),
+	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
+	_maximumIterations(_maximumIterationsProp.getValueInt()),
 	_modelWorkingCopy(NULL),
 	_numCoordinateActuators(aStaticOptimization._numCoordinateActuators)
 {
@@ -117,6 +121,8 @@ operator=(const StaticOptimization &aStaticOptimization)
 	_numCoordinateActuators = aStaticOptimization._numCoordinateActuators;
 	_useModelForceSet = aStaticOptimization._useModelForceSet;
 	_activationExponent=aStaticOptimization._activationExponent;
+	_convergenceCriterion=aStaticOptimization._convergenceCriterion;
+	_maximumIterations=aStaticOptimization._maximumIterations;
 
 	_useMusclePhysiology=aStaticOptimization._useMusclePhysiology;
 	return(*this);
@@ -140,6 +146,8 @@ void StaticOptimization::setNull()
 	_activationExponent=2;
 	_useMusclePhysiology=true;
 	_numCoordinateActuators = 0;
+	_convergenceCriterion = 1e-4;
+	_maximumIterations = 100;
 
 	setName("StaticOptimization");
 }
@@ -165,6 +173,16 @@ setupProperties()
 		"If true muscle force-length curve is observed while running optimization.");
 	_useMusclePhysiologyProp.setName("use_muscle_physiology");
 	_propertySet.append(&_useMusclePhysiologyProp);
+
+	_convergenceCriterionProp.setComment(
+		"Value used to determine when the optimization solution has converged");
+	_convergenceCriterionProp.setName("optimizer_convergence_criterion");
+	_propertySet.append(&_convergenceCriterionProp);
+
+	_maximumIterationsProp.setComment(
+		"An integer for setting the maximum number of iterations the optimizer can use at each time.  ");
+	_maximumIterationsProp.setName("optimizer_max_iterations");
+	_propertySet.append(&_maximumIterationsProp);
 }
 
 //=============================================================================
@@ -318,8 +336,8 @@ record(const SimTK::State& s)
 	_numericalDerivativeStepSize = 0.0001;
 	_optimizerAlgorithm = "ipopt";
 	_printLevel = 0;
-	_optimizationConvergenceTolerance = 1e-004;
-	_maxIterations = 2000;
+	//_optimizationConvergenceTolerance = 1e-004;
+	//_maxIterations = 2000;
 
 	// Optimization target
 	_modelWorkingCopy->setAllControllersEnabled(false);
@@ -339,10 +357,10 @@ record(const SimTK::State& s)
 	// Optimizer options
 	//cout<<"\nSetting optimizer print level to "<<_printLevel<<".\n";
 	optimizer->setDiagnosticsLevel(_printLevel);
-	//cout<<"Setting optimizer convergence criterion to "<<_optimizationConvergenceTolerance<<".\n";
-	optimizer->setConvergenceTolerance(_optimizationConvergenceTolerance);
-	//cout<<"Setting optimizer maximum iterations to "<<_maxIterations<<".\n";
-	optimizer->setMaxIterations(_maxIterations);
+	//cout<<"Setting optimizer convergence criterion to "<<_convergenceCriterion<<".\n";
+	optimizer->setConvergenceTolerance(_convergenceCriterion);
+	//cout<<"Setting optimizer maximum iterations to "<<_maximumIterations<<".\n";
+	optimizer->setMaxIterations(_maximumIterations);
 	optimizer->useNumericalGradient(false);
 	optimizer->useNumericalJacobian(false);
 	if(algorithm == SimTK::InteriorPoint) {

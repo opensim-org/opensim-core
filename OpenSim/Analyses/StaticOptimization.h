@@ -29,6 +29,8 @@
 //=============================================================================
 #include "osimAnalysesDLL.h"
 #include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <SimTKcommon.h>
@@ -68,6 +70,12 @@ protected:
 	PropertyBool _useMusclePhysiologyProp;
 	bool	&_useMusclePhysiology;
 
+	PropertyDbl _convergenceCriterionProp;
+	double &_convergenceCriterion;
+
+	PropertyInt _maximumIterationsProp;
+	int &_maximumIterations;
+
 	Storage *_activationStorage;
 	Storage *_forceStorage;
 	GCVSplineSet _statesSplineSet;
@@ -82,8 +90,8 @@ protected:
 	double _numericalDerivativeStepSize;
 	std::string _optimizerAlgorithm;
 	int _printLevel;
-	double _optimizationConvergenceTolerance;
-	int _maxIterations;
+	//double _optimizationConvergenceTolerance;
+	//int _maxIterations;
 
 	Model *_modelWorkingCopy;
 
@@ -125,6 +133,10 @@ public:
 	double getActivationExponent() const { return _activationExponent; }
 	void setUseMusclePhysiology(const bool useIt) { _useMusclePhysiology=useIt; }
 	bool getUseMusclePhysiology() const { return _useMusclePhysiology; }
+	void setConvergenceCriterion(const double tolerance) { _convergenceCriterion = tolerance; }
+	double getConvergenceCriterion() { return _convergenceCriterion; }
+	void setMaxIterations( const int maxIt) { _maximumIterations = maxIt; }
+	int getMaxIterations() {return _maximumIterations; }
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------
