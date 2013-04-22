@@ -297,15 +297,23 @@ using namespace SimTK;
 	}
 %}
 
-%rename OpenSim::Model::addComponent addComponentImpl;
-%rename OpenSim::Model::addBody addBodyImpl;
-%rename OpenSim::Model::addConstraint addConstraintImpl;
-%rename OpenSim::Model::addForce addForceImpl;
-%rename OpenSim::Model::addProbe addProbeImpl;
-%rename OpenSim::Model::addContactGeometry addContactGeometryImpl;
-%rename OpenSim::Model::addController addControllerImpl;
-%rename OpenSim::Model::addAnalysis addAnalysisImpl;
+%rename OpenSim::Model::addComponent private_addComponent;
+%rename OpenSim::Model::addBody private_addBody;
+%rename OpenSim::Model::addConstraint private_addConstraint;
+%rename OpenSim::Model::addForce private_addForce;
+%rename OpenSim::Model::addProbe private_addProbe;
+%rename OpenSim::Model::addContactGeometry private_addContactGeometry;
+%rename OpenSim::Model::addController private_addController;
+%rename OpenSim::Model::addAnalysis private_addAnalysis;
 
+%javamethodmodifiers private_addComponent "private";
+%javamethodmodifiers private_addBody "private";
+%javamethodmodifiers private_addConstraint "private";
+%javamethodmodifiers private_addForce "private";
+%javamethodmodifiers private_addProbe "private";
+%javamethodmodifiers private_addContactGeometry "private";
+%javamethodmodifiers private_addController "private";
+%javamethodmodifiers private_addAnalysis "private";
 
 %typemap(javacode) OpenSim::FunctionSet %{
   public boolean adoptAndAppend(Function aFunction) {
@@ -313,7 +321,6 @@ using namespace SimTK;
     return super.adoptAndAppend(aFunction);
   }
 %}
-
 
 %typemap(javacode) OpenSim::Model %{
   private String originalModelPath = null;
@@ -335,42 +342,42 @@ using namespace SimTK;
 
   public void addComponent(ModelComponent aComponent) {
 	aComponent.markAdopted();
-    addComponentImpl(aComponent);
+    private_addComponent(aComponent);
   }
 
   public void addBody(Body aBody) {
 	aBody.markAdopted();
-    addBodyImpl(aBody);
+    private_addBody(aBody);
   }
 
   public void addConstraint(Constraint aConstraint) {
 	aConstraint.markAdopted();
-    addConstraintImpl(aConstraint);
+    private_addConstraint(aConstraint);
   }
 
   public void addProbe(Probe aProbe) {
 	aProbe.markAdopted();
-    addProbeImpl(aProbe);
+    private_addProbe(aProbe);
   }  
   
   public void addContactGeometry(ContactGeometry aContactGeometry) {
 	aContactGeometry.markAdopted();
-    addContactGeometryImpl(aContactGeometry);
+    private_addContactGeometry(aContactGeometry);
   }
 
   public void addAnalysis(Analysis aAnalysis) {
 	aAnalysis.markAdopted();
-	addAnalysisImpl(aAnalysis);
+	private_addAnalysis(aAnalysis);
   }
 
   public void addForce(Force aForce) {
 	aForce.markAdopted();
-	addForceImpl(aForce);
+	private_addForce(aForce);
   }
 
   public void addController(Controller aController) {
 	aController.markAdopted();
-	addControllerImpl(aController);
+	private_addController(aController);
   }
 %}
 
