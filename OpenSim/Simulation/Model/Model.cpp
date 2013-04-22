@@ -479,7 +479,16 @@ SimTK::State& Model::initializeState() {
 }
 
 
-SimTK::State& Model::getWorkingState()
+SimTK::State& Model::updWorkingState()
+{
+    if (!isValidSystem())
+        Exception("Model::updWorkingState(): call initializeState() first.");
+
+    return _workingState;
+}
+
+
+const SimTK::State& Model::getWorkingState() const
 {
     if (!isValidSystem())
         Exception("Model::getWorkingState(): call initializeState() first.");
@@ -487,17 +496,9 @@ SimTK::State& Model::getWorkingState()
     return _workingState;
 }
 
-
 void Model::copyDefaultStateIntoWorkingState()
 {
     _workingState = getMultibodySystem().getDefaultState();
-}
-
-
-SimTK::State& Model::copyDefaultStateIntoWorkingStateAndReturn()
-{
-    copyDefaultStateIntoWorkingState();
-    return getWorkingState();
 }
 
 
@@ -579,7 +580,7 @@ void Model::invalidateSystem()
         _system->getSystemGuts().invalidateSystemTopologyCache();
 }
 
-bool Model::isValidSystem()
+bool Model::isValidSystem() const
 {
     if (_system != NULL)
         return _system->systemTopologyHasBeenRealized();
@@ -1288,14 +1289,7 @@ void Model::setStateValues(SimTK::State& s, const double* aStateValues) const
 			s.updY()[_stateVariableSystemIndices[i]]=aStateValues[i]; 
 	 _system->realize(s, SimTK::Stage::Velocity );
 }
-//=============================================================================
-// INITIAL STATES
-//=============================================================================
 
-void Model::setInitialTime( double ti ) 
-{
-    getWorkingState().updTime() = ti;
-}
 
 //_____________________________________________________________________________
 /**

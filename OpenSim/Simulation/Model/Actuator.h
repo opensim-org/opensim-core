@@ -203,7 +203,7 @@ public:
     bool isForceOverriden(const SimTK::State& s ) const;
 
     /**
-    * set the force value  used when  the override is true 
+    * set the force value  used when the override is true 
     * 
     * @param s      current state
     * @param value  value of override force   

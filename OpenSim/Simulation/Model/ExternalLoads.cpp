@@ -315,11 +315,11 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 	Vec3 torque(SimTK::NaN);
 	
 	// Checked that we had a model with a valid system, so get its working state
-    SimTK::State &s = _model->getWorkingState();
+    SimTK::State& s = _model->updWorkingState();
 
 	// get from (ground) and to (applied) bodies 
-	const Body &ground = _model->getGroundBody();
-	const Body &appliedToBody = _model->getBodySet().get(exForce.getAppliedToBodyName());
+	const Body& ground = _model->getGroundBody();
+	const Body& appliedToBody = _model->getBodySet().get(exForce.getAppliedToBodyName());
 
 	/*std::map<int, int>      coordinatesToColumns;
 	// create a map entry for each coordinate 0 to nq-1, the contents of which would be -1 if not found in the file otherwise Q index

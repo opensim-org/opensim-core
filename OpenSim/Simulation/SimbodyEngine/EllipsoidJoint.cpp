@@ -99,6 +99,22 @@ void EllipsoidJoint::connectToModel(Model& aModel)
 {
 	// Base class
 	Super::connectToModel(aModel);
+
+	const SimTK::Vec3& orientation = get_orientation();
+	const SimTK::Vec3& location = get_location();
+
+    // CHILD TRANSFORM
+	Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
+	SimTK::Transform childTransform(rotation, location);
+	_jointFrameInBody = childTransform;
+
+	const SimTK::Vec3& orientationInParent = get_orientation_in_parent();
+	const SimTK::Vec3& locationInParent = get_location_in_parent();
+
+	// PARENT TRANSFORM
+	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
+	SimTK::Transform parentTransform(parentRotation, locationInParent);
+	_jointFrameInParent = parentTransform;
 }
 
 //=============================================================================
@@ -170,23 +186,11 @@ void EllipsoidJoint::scale(const ScaleSet& aScaleSet)
 //_____________________________________________________________________________
 void EllipsoidJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	const SimTK::Vec3& orientation = get_orientation();
-	const SimTK::Vec3& location = get_location();
 
-    // CHILD TRANSFORM
-	Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
-	SimTK::Transform childTransform(rotation, location);
-
-	const SimTK::Vec3& orientationInParent = get_orientation_in_parent();
-	const SimTK::Vec3& locationInParent = get_location_in_parent();
-
-	// PARENT TRANSFORM
-	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
-	SimTK::Transform parentTransform(parentRotation, locationInParent);
 
 	// CREATE MOBILIZED BODY
 	EllipsoidJoint* mutableThis = const_cast<EllipsoidJoint*>(this);
-	mutableThis->createMobilizedBody(parentTransform, childTransform);
+	mutableThis->createMobilizedBody(_jointFrameInParent, _jointFrameInBody);
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);
 }
@@ -240,3 +244,50 @@ void EllipsoidJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK
 
 	setMobilizedBodyIndex(&updBody(), simtkBody.getMobilizedBodyIndex());
 }
+
+void EllipsoidJoint::generateDecorations
+       (bool                                        fixed, 
+        const ModelDisplayHints&                    hints,
+        const SimTK::State&                         state,
+        SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const
+    {
+        // invoke parent class method
+        Super::generateDecorations(fixed,hints,state,geometryArray); 
+        // the frame on body 1 will be red
+        SimTK::Vec3 frame1color(1.0,0.0,0.0);
+        // the frame on body 2 will be blue
+        SimTK::Vec3 frame2color(0.0,0.5,1.0);
+        // the moment on body 2 will be yellow
+        SimTK::Vec3 moment2color(1.0,1.0,0.0);
+        // the force on body 2 will be green
+        SimTK::Vec3 force2color(0.0,1.0,0.0);
+
+		double dimension = get_radii_x_y_z().norm()/2;
+        // create frames to be fixed on body 1 and body 2
+        SimTK::DecorativeFrame bodyFrame(dimension);
+        SimTK::DecorativeFrame parentFrame(dimension);
+
+        // attach frame to body, translate and rotate it to the location of the joint
+        bodyFrame.setBodyId( getBody().getIndex() );
+        bodyFrame.setTransform(_jointFrameInBody);
+        bodyFrame.setColor(frame1color);
+
+        // attach frame to parent, translate and rotate it to the location of the joint
+        parentFrame.setBodyId( getParentBody().getIndex() );
+        parentFrame.setTransform(_jointFrameInParent);
+        parentFrame.setColor(frame2color);
+
+		// Construct the visible Ellipsoid
+		SimTK::DecorativeEllipsoid ellipsoid(get_radii_x_y_z());
+		ellipsoid.setTransform(_jointFrameInParent);
+		ellipsoid.setColor(Vec3(0.0, 1.0, 1.0));
+
+        geometryArray.push_back(bodyFrame);
+        geometryArray.push_back(parentFrame);
+		geometryArray.push_back(ellipsoid);
+
+        // if the model is moving, calculate and draw motion.
+        if(!fixed){
+		}
+
+    }

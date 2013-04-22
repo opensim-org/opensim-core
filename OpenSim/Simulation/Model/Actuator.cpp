@@ -220,9 +220,10 @@ void Actuator::setSpeed(const State &s, double speed) const
 }
 
 
-//_____________________________________________________________________________
+//___________________________________________________________________________
 /**
- * overrideForce sets flag indicating if an actuator's force compuation is overriden
+ * overrideForce sets flag to indicate actuator's force compuation is being
+ * overridden
  */
 void Actuator::overrideForce(SimTK::State& s, bool flag ) const 
 {
@@ -235,8 +236,7 @@ bool Actuator::isForceOverriden(const SimTK::State& s ) const
 }
        
 //_____________________________________________________________________________
-/**
- * setOverrideForce sets the value used when an actuator's force compuation is orriden
+/** set the value used when an actuator's force compuation is overridden
  */
 void Actuator::setOverrideForce(SimTK::State& s, double force ) const
 {

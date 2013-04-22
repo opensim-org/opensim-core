@@ -250,16 +250,12 @@ public:
     initSystem() and initializeState() -- note that either of these methods
     must be called prior to getWorkingState(), otherwise an empty state will
     be returned. **/
-    SimTK::State& getWorkingState();
+    const SimTK::State& getWorkingState() const;
+	SimTK::State& updWorkingState();
 
     /** Method to copy a model's default state into the space allocated for
     its working state. This is so that the default state does not get corrupted. **/
     void copyDefaultStateIntoWorkingState();
-
-    /** Method to copy a model's default state into the space allocated for
-    its working state and return this state. **/
-    SimTK::State& copyDefaultStateIntoWorkingStateAndReturn();
-
 
 	/**
 	 * This is called after the Model is fully created but before starting a simulation.
@@ -279,7 +275,7 @@ public:
 
 	/** Check that the underlying computational system representing the model is valid. 
 	    That is, is the system ready for performing calculations. */
-	bool isValidSystem();
+	bool isValidSystem() const;
  	/**
 	 * create a storage (statesStorage) that has same label order as model's states
 	 * with values populated from originalStorage, 0.0 for those states unspecified
@@ -654,11 +650,6 @@ public:
 
     int getNumMuscleStates() const;
     int getNumProbeStates() const;
-
-	//--------------------------------------------------------------------------
-	// INITIAL TIME
-	//--------------------------------------------------------------------------
-	void setInitialTime(  double ti);
 
     //--------------------------------------------------------------------------
     // SETS

@@ -58,7 +58,8 @@ public:
     These are the serializable properties associated with an EllipsoidJoint. **/
     /**@{**/
 	OpenSim_DECLARE_PROPERTY(radii_x_y_z, SimTK::Vec3, 
-		"Ellipsoid radii mobilizer frame as a Vec3(rX, rY, rZ).");
+		"Radii of the ellipsoid fixed to the parent frame, "
+		"specified as a Vec3(rX, rY, rZ).");
 	/**@}**/
 
 //=============================================================================
@@ -89,10 +90,19 @@ protected:
     void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
     void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
 
+    // Visual support in SimTK visualizer
+	void generateDecorations(
+        bool fixed, 
+        const ModelDisplayHints&                    hints,
+        const SimTK::State&                         state,
+        SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const;
+
 private:
 	void constructProperties();
 	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
 
+	SimTK::Transform _jointFrameInBody;
+	SimTK::Transform _jointFrameInParent;
 
 //=============================================================================
 };	// END of class EllipsoidJoint
