@@ -123,8 +123,16 @@ public:
 	//--------------------------------------------------------------------------
 	void setCoordinateValues(const OpenSim::Storage& aStorage);
 	bool hasCoordinateValues();
-
-	std::string getOutputGenForceFileName() { return _outputGenForceFileName;}
+    /**
+     * get/set the name of the file to be used as ouput from the tool
+     */
+	std::string getOutputGenForceFileName() const { return _outputGenForceFileName;}
+    void setOutputGenForceFileName(const std::string& desiredOutputFileName) {
+        _outputGenForceFileName = desiredOutputFileName;
+    }
+    /**
+     * get/set the name of the file containing coordinates
+     */
 	const std::string& getCoordinatesFileName() const { return _coordinatesFileName;};
 	void setCoordinatesFileName(const std::string& aCoordinateFile)  { 
 		_coordinatesFileName=aCoordinateFile;
