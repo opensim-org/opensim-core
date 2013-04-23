@@ -53,7 +53,7 @@ ENDIF()
 # To include it in public release. 
 
 INSTALL(FILES ${INCLUDE_FILES}
-        DESTINATION sdk/include/Vendors/lepton/include/)
+        DESTINATION sdk/include/Vendors/lepton/include/Lepton.h)
 
 # Also need to grab all header files from sub dir /Vendors/lepton/include/lepton/		
 FILE(GLOB MORE_HEADERS include/lepton/*.h) 
