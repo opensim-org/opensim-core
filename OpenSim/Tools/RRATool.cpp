@@ -228,7 +228,7 @@ void RRATool::setupProperties()
     _taskSetFileNameProp.setName("task_set_file"); 		 
     _propertySet.append( &_taskSetFileNameProp );
 
-	comment = "File containing the constraints on the controls.";
+	comment = "DEPRECATED File containing the constraints on the controls.";
 	_constraintsFileNameProp.setComment(comment);
 	_constraintsFileNameProp.setName("constraints_file");
 	_propertySet.append( &_constraintsFileNameProp );
@@ -615,6 +615,8 @@ bool RRATool::run()
 	ControlSet *controlConstraints = NULL;
 	if(_constraintsFileName!="") {
 		controlConstraints = new ControlSet(_constraintsFileName);
+        cout << "WARNING: Using DEPRECATED Control Constrails file "<< _constraintsFileName << 
+            " in RRA, generally unnecessary.\nSupport will be dropped in the future." << endl;
 	}
 
 	// ---- INITIAL STATES ----
