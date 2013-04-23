@@ -53,12 +53,12 @@ ENDIF()
 # To include it in public release. 
 
 INSTALL(FILES ${INCLUDE_FILES}
-        DESTINATION sdk/include/Vendors/lepton/include/Lepton.h)
+        DESTINATION sdk/include/Vendors/lepton/include)
 
 # Also need to grab all header files from sub dir /Vendors/lepton/include/lepton/		
 FILE(GLOB MORE_HEADERS include/lepton/*.h) 
 INSTALL(FILES ${MORE_HEADERS}
-	DESTINATION sdk/include/Vendors/lepton/include/lepton/)
+	DESTINATION sdk/include/Vendors/lepton/include/lepton)
 
 
 ENABLE_TESTING()
