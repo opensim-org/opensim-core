@@ -301,6 +301,15 @@ using namespace SimTK;
 	}
 %}
 
+%javamethodmodifiers OpenSim::Model::addComponent "private";
+%javamethodmodifiers OpenSim::Model::addBody "private";
+%javamethodmodifiers OpenSim::Model::addConstraint "private";
+%javamethodmodifiers OpenSim::Model::addForce "private";
+%javamethodmodifiers OpenSim::Model::addProbe "private";
+%javamethodmodifiers OpenSim::Model::addContactGeometry "private";
+%javamethodmodifiers OpenSim::Model::addController "private";
+%javamethodmodifiers OpenSim::Model::addAnalysis "private";
+
 %rename OpenSim::Model::addComponent private_addComponent;
 %rename OpenSim::Model::addBody private_addBody;
 %rename OpenSim::Model::addConstraint private_addConstraint;
@@ -310,14 +319,6 @@ using namespace SimTK;
 %rename OpenSim::Model::addController private_addController;
 %rename OpenSim::Model::addAnalysis private_addAnalysis;
 
-%javamethodmodifiers private_addComponent "private";
-%javamethodmodifiers private_addBody "private";
-%javamethodmodifiers private_addConstraint "private";
-%javamethodmodifiers private_addForce "private";
-%javamethodmodifiers private_addProbe "private";
-%javamethodmodifiers private_addContactGeometry "private";
-%javamethodmodifiers private_addController "private";
-%javamethodmodifiers private_addAnalysis "private";
 
 %typemap(javacode) OpenSim::FunctionSet %{
   public boolean adoptAndAppend(Function aFunction) {
