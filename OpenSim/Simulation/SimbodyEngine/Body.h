@@ -140,8 +140,11 @@ public:
 	virtual const SimTK::MobilizedBodyIndex getIndex() const {return _index;};
 	void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
 
+	/** add a wrap object to the body. Note that the body takes ownership of the WrapObject */
+	void addWrapObject(WrapObject* wrapObject);
 	WrapObject* getWrapObject(const std::string& aName) const;
 	const WrapObjectSet& getWrapObjectSet() const { return _wrapObjectSet; }
+	
 
 	/** Assemble body interial properties: mass, center of mass location, moment of inertia
 	    about the origin of the body and return as a SimTK::MassProperties */

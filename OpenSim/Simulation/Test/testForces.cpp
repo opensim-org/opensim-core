@@ -31,6 +31,7 @@
 //		5. CoordinateLimitForce
 //		6. RotationalCoordinateLimitForce
 //		7. ExternalForce
+//		8. PathSpring
 //		
 //     Add tests here as Forces are added to OpenSim
 //
@@ -39,6 +40,7 @@
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
 #include <OpenSim/Simulation/Model/ExternalForce.h>
+#include <OpenSim/Simulation/Model/PathSpring.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
@@ -52,11 +54,11 @@ const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 static int counter=0;
 //==============================================================================
 
+void testPathSpring();
 void testExternalForce();
 void testSpringMass();
 void testBushingForce();
 void testFunctionBasedBushingForce();
-void testExpressionBasedBushingForce();
 void testElasticFoundation();
 void testHuntCrossleyForce();
 void testCoordinateLimitForce();
@@ -65,6 +67,8 @@ void testCoordinateLimitForceRotational();
 int main()
 {
 	try {
+		testPathSpring();
+		cout << "path spring passed" << endl;
 		
 		testExternalForce();
 		cout << "external force passed" << endl;
@@ -77,9 +81,6 @@ int main()
 
         testFunctionBasedBushingForce();
         cout << "FunctionBasedBushingForce passed" << endl;
-
-		testExpressionBasedBushingForce();
-        cout << "ExpressionBasedBushingForce passed" << endl;
 
 		testElasticFoundation();
 		cout << "elastic foundation force passed" << endl;
@@ -104,6 +105,126 @@ int main()
 //==============================================================================
 // Test Cases
 //==============================================================================
+
+void testPathSpring()
+{
+	using namespace SimTK;
+
+	double mass = 1;
+	double stiffness = 10;
+	double restlength = 0.5;
+	double dissipation = 0.1;
+	double h0 = 0;
+	double start_h = 0.5;
+	double ball_radius = 0.25;
+
+	double omega = sqrt(stiffness/mass);
+
+	double dh = mass*gravity_vec(1)/stiffness;
+
+	// Setup OpenSim model
+	Model *osimModel = new Model;
+	osimModel->setName("PathSpring");
+	//OpenSim bodies
+    OpenSim::Body& ground = osimModel->getGroundBody();
+	OpenSim::Body pulleyBody("PulleyBody", mass ,Vec3(0),  mass*SimTK::Inertia::brick(0.1, 0.1, 0.1));
+	OpenSim::Body block("block", mass ,Vec3(0),  mass*SimTK::Inertia::brick(0.2, 0.1, 0.1));
+	block.addDisplayGeometry("box.vtp");
+	block.scale(Vec3(0.2, 0.1, 0.1), false);
+	
+	WrapCylinder* pulley = new WrapCylinder();
+	pulley->setRadius(0.1);
+	pulley->setLength(0.05);
+
+	// Add the wrap object to the body, which takes ownership of it
+	pulleyBody.addWrapObject(pulley);
+
+	// Add joints
+	WeldJoint weld("", ground, Vec3(0, 1.0, 0), Vec3(0), pulleyBody, Vec3(0), Vec3(0));
+	SliderJoint slider("", ground, Vec3(0), Vec3(0,0,Pi/2), block, Vec3(0), Vec3(0,0,Pi/2));
+
+	double positionRange[2] = {-10, 10};
+	// Rename coordinates for a slider joint
+	CoordinateSet &slider_coords = slider.upd_CoordinateSet();
+	slider_coords[0].setName("block_h");
+	slider_coords[0].setRange(positionRange);
+	slider_coords[0].setMotionType(Coordinate::Translational);
+
+	osimModel->addBody(&block);
+	osimModel->addBody(&pulleyBody);
+
+	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
+	osimModel->updBodySet().setMemoryOwner(false);
+
+	osimModel->setGravity(gravity_vec);
+
+	PathSpring spring("spring", restlength, stiffness, dissipation);
+	spring.updGeometryPath().appendNewPathPoint("origin", block, Vec3(-0.1, 0.0 ,0.0));
+	
+	int N = 10;
+	for(int i=1; i<N; ++i){
+		double angle = i*Pi/N;
+		double x = 0.1*cos(angle);
+		double y = 0.1*sin(angle);
+		spring.updGeometryPath().appendNewPathPoint("", pulleyBody, Vec3(-x, y ,0.0));
+	}
+
+	spring.updGeometryPath().appendNewPathPoint("insertion", block, Vec3(0.1, 0.0 ,0.0));
+
+	// BUG in defining wrapping API requires that the Force containing the GeometryPath be
+	// connected to the model before the wrap can be added
+	osimModel->addForce(&spring);
+
+	//osimModel->print("PathSpringModel.osim");
+
+	// Create the force reporter
+	ForceReporter* reporter = new ForceReporter(osimModel);
+	osimModel->addAnalysis(reporter);
+
+	//osimModel->setUseVisualizer(true);
+	SimTK::State& osim_state = osimModel->initSystem();
+
+	slider_coords[0].setValue(osim_state, start_h);
+    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
+
+	//==========================================================================
+	// Compute the force and torque at the specified times.
+
+    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
+	integrator.setAccuracy(1e-6);
+    Manager manager(*osimModel,  integrator);
+    manager.setInitialTime(0.0);
+
+	double final_t = 10.0;
+
+	manager.setFinalTime(final_t);
+	manager.integrate(osim_state);
+
+	// tension should only be velocity dependent
+	osimModel->getMultibodySystem().realize(osim_state, Stage::Velocity);
+
+	// Now check that the force reported by spring
+	double model_force = spring.getTension(osim_state);
+
+	// get acceleration of the block
+	osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
+	double hddot = osimModel->getCoordinateSet().get("block_h").getAccelerationValue(osim_state);
+
+	// the tension should be half the weight of the block
+	double analytical_force = -0.5*(gravity_vec(1)-hddot)*mass;
+
+	// Save the forces
+	reporter->getForceStorage().print("path_spring_forces.mot");  
+	
+	// something is wrong if the block does not reach equilibrium
+	ASSERT_EQUAL(analytical_force, model_force, 1e-3);
+
+	// Before exiting lets see if copying the spring works
+	PathSpring *copyOfSpring = spring.clone();
+	ASSERT(*copyOfSpring == spring);
+	
+	//Model modelFromFile("PathSpringModel.osim");
+}
 
 void testSpringMass()
 {
@@ -415,112 +536,6 @@ void testFunctionBasedBushingForce()
 
 	// Before exiting lets see if copying the spring works
 	FunctionBasedBushingForce *copyOfSpring = spring.clone();
-
-	ASSERT(*copyOfSpring == spring);
-}
-
-void testExpressionBasedBushingForce()
-{
-	using namespace SimTK;
-
-	double mass = 1;
-	double stiffness = 10;
-	double restlength = 0.0;
-	double h0 = 0;
-	double start_h = 0.5;
-	double ball_radius = 0.25;
-
-	double omega = sqrt(stiffness/mass);
-
-	double dh = mass*gravity_vec(1)/stiffness;
-
-	// Setup OpenSim model
-	Model *osimModel = new Model;
-	osimModel->setName("ExpressionBasedBushingTest");
-	//OpenSim bodies
-    OpenSim::Body& ground = osimModel->getGroundBody();
-	OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
-	ball.addDisplayGeometry("sphere.vtp");
-	ball.scale(Vec3(ball_radius), false);
-
-	// Add joints
-	SliderJoint slider("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
-
-	double positionRange[2] = {-10, 10};
-	// Rename coordinates for a slider joint
-	CoordinateSet &slider_coords = slider.upd_CoordinateSet();
-	slider_coords[0].setName("ball_h");
-	slider_coords[0].setRange(positionRange);
-	slider_coords[0].setMotionType(Coordinate::Translational);
-
-	osimModel->addBody(&ball);
-
-	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
-	osimModel->updBodySet().setMemoryOwner(false);
-
-	Vec3 rotStiffness(0);
-	Vec3 transStiffness(stiffness);
-	Vec3 rotDamping(0);
-	Vec3 transDamping(0);
-
-	osimModel->setGravity(gravity_vec);
-
-	ExpressionBasedBushingForce spring("ground", Vec3(0), Vec3(0), "ball", Vec3(0), Vec3(0), transStiffness, rotStiffness, transDamping, rotDamping);
-    spring.setName("linear_bushing");
-
-	osimModel->addForce(&spring);
-
-	osimModel->print("ExpressionBasedBushingForceModel.osim");
-
-	// Create the force reporter
-	ForceReporter* reporter = new ForceReporter(osimModel);
-	osimModel->addAnalysis(reporter);
-
-	SimTK::State& osim_state = osimModel->initSystem();
-
-	slider_coords[0].setValue(osim_state, start_h);
-    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
-
-	//==========================================================================
-	// Compute the force and torque at the specified times.
-
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
-	integrator.setAccuracy(1e-6);
-    Manager manager(*osimModel,  integrator);
-    manager.setInitialTime(0.0);
-
-	double final_t = 2.0;
-	double nsteps = 10;
-	double dt = final_t/nsteps;
-
-	for(int i = 1; i <=nsteps; i++){
-		manager.setFinalTime(dt*i);
-		manager.integrate(osim_state);
-		osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        osimModel->updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
-		
-		double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
-		ASSERT_EQUAL(height, pos(1), 1e-4);
-
-		//Now check that the force reported by spring
-		Array<double> model_force = spring.getRecordValues(osim_state);
-
-		// get the forces applied to the ground and ball
-		double analytical_force = -stiffness*height;
-		// analytical force corresponds in direction to the force on the ball Y index = 7
-		ASSERT_EQUAL(analytical_force, model_force[7], 2e-4);
-
-		manager.setInitialTime(dt*i);
-	}
-
-	manager.getStateStorage().print("function_based_bushing_model_states.sto");
-
-	// Save the forces
-	reporter->getForceStorage().print("function_based_bushing_forces.mot");  
-
-	// Before exiting lets see if copying the spring works
-	ExpressionBasedBushingForce *copyOfSpring = spring.clone();
 
 	ASSERT(*copyOfSpring == spring);
 }

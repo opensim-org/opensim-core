@@ -650,6 +650,10 @@ WrapObject* Body::getWrapObject(const string& aName) const
 	return NULL;
 }
 
+void Body::addWrapObject(WrapObject* wrap) {
+	_wrapObjectSet.adoptAndAppend(wrap);
+}
+
 //=============================================================================
 // I/O
 //=============================================================================

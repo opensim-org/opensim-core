@@ -744,7 +744,7 @@ bool GeometryPath::replacePathPoint(const SimTK::State& s, PathPoint* aOldPathPo
  *
  * @param aWrapObject The wrap object to use in the new wrap instance.
  */
-void GeometryPath::addPathWrap(const SimTK::State& s, WrapObject& aWrapObject)
+void GeometryPath::addPathWrap(WrapObject& aWrapObject)
 {
 	PathWrap* newWrap = new PathWrap();
 	newWrap->setWrapObject(aWrapObject);

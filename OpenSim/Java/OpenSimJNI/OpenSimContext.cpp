@@ -339,7 +339,7 @@ void OpenSimContext::setStartPoint(PathWrap& mw, int newStartPt) {
 }
 
 void OpenSimContext::addPathWrap(GeometryPath& p, WrapObject& awo) {
-    p.addPathWrap( *_configState, awo );
+    p.addPathWrap( awo );
     return;
 }
 

@@ -98,6 +98,7 @@ public:
 	const PathPointSet& getPathPointSet() const { return get_PathPointSet(); }
 	PathPointSet& updPathPointSet() { return upd_PathPointSet(); }
 	const PathWrapSet& getWrapSet() const { return get_PathWrapSet(); }
+	void addPathWrap(WrapObject& aWrapObject);
 
 	//--------------------------------------------------------------------------
 	// UTILITY
@@ -107,7 +108,7 @@ public:
 								OpenSim::Body& aBody, const SimTK::Vec3& aPositionOnBody);
 	bool canDeletePathPoint( int aIndex);
 	bool deletePathPoint(const SimTK::State& s, int aIndex);
-	void addPathWrap(const SimTK::State& s, WrapObject& aWrapObject);
+	
 	void moveUpPathWrap(const SimTK::State& s, int aIndex);
 	void moveDownPathWrap(const SimTK::State& s, int aIndex);
 	void deletePathWrap(const SimTK::State& s, int aIndex);

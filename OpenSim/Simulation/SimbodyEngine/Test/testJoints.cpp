@@ -785,6 +785,7 @@ void testEllipsoidJoint()
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
+	osimModel->setUseVisualizer(false);
 	SimTK::State osim_state = osimModel->initSystem();
 
 	//==========================================================================================================
