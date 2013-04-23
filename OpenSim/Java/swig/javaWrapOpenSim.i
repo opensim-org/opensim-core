@@ -146,6 +146,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 
 #include <OpenSim/Simulation/Model/Marker.h>
@@ -171,8 +173,10 @@
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
+#include <OpenSim/Simulation/Model/PathSpring.h>
 #include <OpenSim/Simulation/Model/BushingForce.h>
 #include <OpenSim/Simulation/Model/FunctionBasedBushingForce.h>
+#include <OpenSim/Simulation/Model/ExpressionBasedBushingForce.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/PointActuator.h>
 #include <OpenSim/Actuators/TorqueActuator.h>
@@ -813,6 +817,9 @@ namespace SimTK {
 %include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
+%include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
+%include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
+
 %template(SetJoints) OpenSim::Set<OpenSim::Joint>;
 %template(ModelComponentSetJoints) OpenSim::ModelComponentSet<OpenSim::Joint>;
 %include <OpenSim/Simulation/Model/JointSet.h>
@@ -860,8 +867,10 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/Muscle.h>
 %include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 %include <OpenSim/Simulation/Model/PointToPointSpring.h>
+%include <OpenSim/Simulation/Model/PathSpring.h>
 %include <OpenSim/Simulation/Model/BushingForce.h>
 %include <OpenSim/Simulation/Model/FunctionBasedBushingForce.h>
+%include <OpenSim/Simulation/Model/ExpressionBasedBushingForce.h>
 
 //osimAnalyses
 %include <OpenSim/Analyses/osimAnalysesDLL.h>
