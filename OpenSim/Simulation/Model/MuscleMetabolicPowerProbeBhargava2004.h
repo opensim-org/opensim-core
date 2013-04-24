@@ -25,7 +25,6 @@
 
 #include "Probe.h"
 #include "Model.h"
-#include "MetabolicMuscleParameterSet.h"
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 
 namespace OpenSim { 
@@ -133,6 +132,9 @@ namespace OpenSim {
 class OSIMSIMULATION_API MuscleMetabolicPowerProbeBhargava2004 : public Probe {
 OpenSim_DECLARE_CONCRETE_OBJECT(MuscleMetabolicPowerProbeBhargava2004, Probe);
 public:
+    class MetabolicMuscleParameter;
+    class MetabolicMuscleParameterSet;
+
 //==============================================================================
 // PROPERTIES
 //==============================================================================
@@ -142,27 +144,27 @@ public:
     /** Enabled by default. **/
     OpenSim_DECLARE_PROPERTY(activation_rate_on, 
         bool,
-        "Specify whether the activation heat rate is to be calculated (true/false).");
+        "Specify whether activation heat rate is to be calculated (true/false).");
 
     /** Enabled by default. **/
     OpenSim_DECLARE_PROPERTY(maintenance_rate_on, 
         bool,
-        "Specify whether the maintenance heat rate is to be calculated (true/false).");
+        "Specify whether maintenance heat rate is to be calculated (true/false).");
 
     /** Enabled by default. **/
     OpenSim_DECLARE_PROPERTY(shortening_rate_on, 
         bool,
-        "Specify whether the shortening heat rate is to be calculated (true/false).");
+        "Specify whether shortening heat rate is to be calculated (true/false).");
 
     /** Enabled by default. **/
     OpenSim_DECLARE_PROPERTY(basal_rate_on, 
         bool,
-        "Specify whether the basal heat rate is to be calculated (true/false).");
+        "Specify whether basal heat rate is to be calculated (true/false).");
 
     /** Enabled by default. **/
     OpenSim_DECLARE_PROPERTY(mechanical_work_rate_on, 
         bool,
-        "Specify whether the mechanical work rate is to be calculated (true/false).");
+        "Specify whether mechanical work rate is to be calculated (true/false).");
 
     /** Enabled by default. **/
     OpenSim_DECLARE_PROPERTY(enforce_minimum_heat_rate_per_muscle, 
@@ -173,12 +175,14 @@ public:
     /** Default curve shown in doxygen. **/
     OpenSim_DECLARE_PROPERTY(normalized_fiber_length_dependence_on_maintenance_rate, 
         PiecewiseLinearFunction,
-        "Contains a PiecewiseLinearFunction object that describes the normalized fiber length dependence on maintenance rate.");
+        "Contains a PiecewiseLinearFunction object that describes the "
+        "normalized fiber length dependence on maintenance rate.");
 
     /** Disabled by default. **/
     OpenSim_DECLARE_PROPERTY(use_force_dependent_shortening_prop_constant, 
         bool,
-        "Specify whether to use a force dependent shortening proportionality constant (true/false).");
+        "Specify whether to use a force dependent shortening proportionality "
+        "constant (true/false).");
 
     /** Default value = 1.2. **/
     OpenSim_DECLARE_PROPERTY(basal_coefficient, 
@@ -190,10 +194,12 @@ public:
         double,
         "Basal metabolic exponent.");
 
-    OpenSim_DECLARE_UNNAMED_PROPERTY(MetabolicMuscleParameterSet,
-        "A MetabolicMuscleSet containing the muscle information required to calculate metabolic energy expenditure. "
-        "If multiple muscles are contained in the set, then the probe value will equal the summation of all metabolic powers.");
-
+    OpenSim_DECLARE_PROPERTY(metabolic_parameters,
+        MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameterSet,
+        "A MetabolicMuscleParameterSet containing the muscle information "
+        "required to calculate metabolic energy expenditure. If multiple "
+        "muscles are contained in the set, then the probe will sum the "
+        "metabolic powers from all muscles.");
     /**@}**/
 
 //=============================================================================
@@ -251,6 +257,231 @@ private:
 
 //=============================================================================
 };	// END of class MuscleMetabolicPowerProbeBhargava2004
+//=============================================================================
+
+
+
+
+
+
+//==============================================================================
+//==============================================================================
+//==============================================================================
+//      MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameterSet
+//==============================================================================
+/**
+ * MetabolicMuscleParameterSet is a class that holds the set of 
+ * MetabolicMuscleParameters for each muscle.
+ */
+class OSIMSIMULATION_API 
+    MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameterSet 
+    : public Set<MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter>
+{
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+        MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameterSet, 
+        Set<MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter>);
+
+public:
+    MetabolicMuscleParameterSet()  { setAuthors("Tim Dorn"); }
+    
+
+//=============================================================================
+};	// END of class MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameterSet
+//=============================================================================
+
+
+
+
+
+
+
+
+//==============================================================================
+//==============================================================================
+//==============================================================================
+//       MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter
+//==============================================================================
+/**
+ * MetabolicMuscleParameter is an Object class that hold the metabolic
+ * parameters required to calculate metabolic power for a single muscle. 
+ *
+ * <H2><B> MetabolicMuscleParameter Properties </B></H2>
+ *
+ * REQUIRED PROPERTIES
+ * - <B>specific_tension</B> = The specific tension of the muscle (Pascals (N/m^2)).
+ * - <B>density</B> = The density of the muscle (kg/m^3).
+ * - <B>ratio_slow_twitch_fibers</B> = Ratio of slow twitch fibers in the muscle (must be between 0 and 1).
+ * - <B>activation_constant_slow_twitch</B>  = Activation constant for slow twitch fibers (W/kg).
+ * - <B>activation_constant_fast_twitch</B>  = Activation constant for fast twitch fibers (W/kg).
+ * - <B>maintenance_constant_slow_twitch</B> = Maintenance constant for slow twitch fibers (W/kg).
+ * - <B>maintenance_constant_fast_twitch</B> = Maintenance constant for slow twitch fibers (W/kg).
+ *
+ * OPTIONAL PROPERTIES
+ * - <B>use_provided_muscle_mass</B> = An optional flag that allows the user to
+ *      explicitly specify a muscle mass. If set to true, the <provided_muscle_mass>
+ *      property must be specified. The default setting is false, in which case, the
+ *      muscle mass is calculated from the following formula:
+ *          m = (Fmax/specific_tension)*density*Lm_opt, where 
+ *              specific_tension and density are properties defined above
+ *                  (note that their default values are set based on mammalian muscle,
+ *                  0.25e6 N/m^2 and 1059.7 kg/m^3, respectively);
+ *              Fmax and Lm_opt are the maximum isometric force and optimal 
+ *                  fiber length, respectively, of the muscle.
+ *
+ * - <B>provided_muscle_mass</B> = The user specified muscle mass (kg).
+ *
+ *
+ * @author Tim Dorn
+ */
+class OSIMSIMULATION_API 
+    MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter : public Object  
+{
+    OpenSim_DECLARE_CONCRETE_OBJECT(MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter, Object);
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(specific_tension, double,
+        "The specific tension of the muscle (Pascals (N/m^2)).");
+
+    OpenSim_DECLARE_PROPERTY(density, double,
+        "The density of the muscle (kg/m^3).");
+
+    OpenSim_DECLARE_PROPERTY(ratio_slow_twitch_fibers, double,
+        "Ratio of slow twitch fibers in the muscle (must be between 0 and 1).");
+
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(use_provided_muscle_mass, bool,
+        "An optional flag that allows the user to explicitly specify a muscle mass. "
+        "If set to true, the <provided_muscle_mass> property must be specified.");
+
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(provided_muscle_mass, double,
+        "The user specified muscle mass (kg).");
+
+    OpenSim_DECLARE_PROPERTY(activation_constant_slow_twitch, double,
+        "Activation constant for slow twitch fibers (W/kg).");
+
+    OpenSim_DECLARE_PROPERTY(activation_constant_fast_twitch, double,
+        "Activation constant for fast twitch fibers (W/kg).");
+
+    OpenSim_DECLARE_PROPERTY(maintenance_constant_slow_twitch, double,
+        "Maintenance constant for slow twitch fibers (W/kg).");
+
+    OpenSim_DECLARE_PROPERTY(maintenance_constant_fast_twitch, double,
+        "Maintenance constant for fast twitch fibers (W/kg).");
+    /**@}**/
+
+//=============================================================================
+// DATA
+//=============================================================================
+// These private member variables are kept here because they apply to 
+// a single muscle, but are not set in this class -- rather, they are
+// set by the probes that own them.
+protected:
+    double _muscMass;       // The mass of the muscle (depends on if
+                            // <use_provided_muscle_mass> is true or false.
+
+
+
+//=============================================================================
+// METHODS
+//=============================================================================
+public:
+    //--------------------------------------------------------------------------
+    // Constructor(s)
+    //--------------------------------------------------------------------------
+    MetabolicMuscleParameter() 
+    {
+        setNull();
+        constructProperties(); 
+    }
+
+    MetabolicMuscleParameter(
+        const double ratio_slow_twitch_fibers)
+    {
+        setNull();
+        constructProperties();
+        set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
+    }
+
+    MetabolicMuscleParameter(
+        const double ratio_slow_twitch_fibers, const double muscle_mass)
+    {
+        setNull();
+        constructProperties();
+        set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
+        set_use_provided_muscle_mass(true);
+        set_provided_muscle_mass(muscle_mass);
+    }
+
+    MetabolicMuscleParameter(
+        const double ratio_slow_twitch_fibers, 
+        const double activation_constant_slow_twitch,
+        const double activation_constant_fast_twitch,
+        const double maintenance_constant_slow_twitch,
+        const double maintenance_constant_fast_twitch)
+    {
+        setNull();
+        constructProperties();
+        set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
+        set_activation_constant_slow_twitch(activation_constant_slow_twitch);
+        set_activation_constant_fast_twitch(activation_constant_fast_twitch);
+        set_maintenance_constant_slow_twitch(maintenance_constant_slow_twitch);
+        set_maintenance_constant_fast_twitch(maintenance_constant_fast_twitch);
+    }
+
+
+    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // assignment operator.
+
+
+    //--------------------------------------------------------------------------
+    // Muscle mass (this is set by the underlying metabolic probe).
+    //--------------------------------------------------------------------------
+    const double getMuscleMass() const      { return _muscMass; }
+    void setMuscleMass(const double mass)   { _muscMass = mass; }
+
+
+
+private:
+    //--------------------------------------------------------------------------
+    // Object Interface
+    //--------------------------------------------------------------------------
+    void setNull()
+    {
+        setAuthors("Tim Dorn");
+
+        // Actual muscle mass used. If <use_provided_muscle_mass> == true, 
+        // this value will set to the property value <muscle_mass> provided by the 
+        // user. If <use_provided_muscle_mass> == false, then this value
+        // will be set (by the metabolic probes) to the calculated mass based on
+        // the muscle's Fmax, optimal fiber length, specific tension & muscle density. 
+        _muscMass = SimTK::NaN;  
+    }
+
+
+    void constructProperties()
+    {
+        constructProperty_specific_tension(0.25e6);  // (Pascals (N/m^2)), specific tension of mammalian muscle.
+        constructProperty_density(1059.7);           // (kg/m^3), density of mammalian muscle.
+        constructProperty_ratio_slow_twitch_fibers(0.5);
+        constructProperty_use_provided_muscle_mass(false);
+        constructProperty_provided_muscle_mass(SimTK::NaN);
+    
+        // defaults from Bhargava., et al (2004).
+        constructProperty_activation_constant_slow_twitch(40.0);
+        constructProperty_activation_constant_fast_twitch(133.0);
+        constructProperty_maintenance_constant_slow_twitch(74.0);
+        constructProperty_maintenance_constant_fast_twitch(111.0);   
+    }
+
+//=============================================================================
+};	// END of class MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter
+//=============================================================================
+
+
 
 }; //namespace
 //=============================================================================

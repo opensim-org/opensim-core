@@ -26,6 +26,7 @@
 // INCLUDES and STATICS
 //=============================================================================
 #include "MuscleMetabolicPowerProbeUmberger2010.h"
+#include <OpenSim/Simulation/Model/Muscle.h>
 
 
 using namespace std;
@@ -92,7 +93,7 @@ void MuscleMetabolicPowerProbeUmberger2010::constructProperties()
     constructProperty_scaling_factor(1.5);      // default value is for aerobic activities.
     constructProperty_basal_coefficient(1.2);   // default value for standing (Umberger, 2003, p105)
     constructProperty_basal_exponent(1.0);
-    constructProperty_MetabolicMuscleParameterSet(MetabolicMuscleParameterSet());
+    constructProperty_metabolic_parameters(MetabolicMuscleParameterSet());
 }
 
 
@@ -117,10 +118,10 @@ void MuscleMetabolicPowerProbeUmberger2010::connectToModel(Model& aModel)
     // the model and create the MuscleMap between the muscle name and the
     // muscle pointer.
     // -----------------------------------------------------------------------
-    const int nM = get_MetabolicMuscleParameterSet().getSize();
+    const int nM = get_metabolic_parameters().getSize();
     for (int i=0; i<nM; ++i) {
         Muscle* musc = NULL;        // Pointer to the OpenSim::Muscle
-        MetabolicMuscleParameter& mm = get_MetabolicMuscleParameterSet()[i];
+        MetabolicMuscleParameter& mm = get_metabolic_parameters()[i];
         int k = _model->getMuscles().getIndex(mm.getName());
         if( k < 0 )	{
             errorMessage << "MetabolicMuscleParameter: Invalid muscle '" 
@@ -133,28 +134,58 @@ void MuscleMetabolicPowerProbeUmberger2010::connectToModel(Model& aModel)
          }
 
 
-        // Set the muscle mass internal member variable: _muscMass
-        if (mm.get_calculate_mass_from_muscle_properties()) {
-            const double sigma = 0.25e6;      // (Pa), specific tension of mammalian muscle.
-            const double rho = 1059.7;        // (kg/m^3), density of mammalian muscle.
-
-            const double muscMass = (musc->getMaxIsometricForce() / sigma) 
-                                    * rho 
-                                    * musc->getOptimalFiberLength();
-            mm.setMuscleMass(muscMass);
-        }
-        else {
-            mm.setMuscleMass(mm.get_muscle_mass());
-
-            if (mm.getMuscleMass() <= 0) {
-                errorMessage << "MetabolicMuscleParameter: Invalid muscle_mass specified for muscle: " 
-                    << mm.getName() << ". muscle_mass must be positive." << endl;
+        // -----------------------------------------------------------------------
+        // Set the muscle mass internal member variable: _muscMass based on
+        // whether the <use_provided_muscle_mass> property is true or false.
+        // -----------------------------------------------------------------------
+        if (mm.get_use_provided_muscle_mass()) {
+            
+            // Check that the <provided_muscle_mass> has been correctly specified.
+            if (mm.get_provided_muscle_mass() <= 0) {
+                errorMessage << "ERROR: Negative <provided_muscle_mass> specified for " 
+                    << mm.getName() 
+                    << ". <provided_muscle_mass> must be a positive number (kg)." << endl;
                 throw (Exception(errorMessage.str()));
             }
+            else if (isnan(mm.get_provided_muscle_mass())) {
+                errorMessage << "ERROR: No <provided_muscle_mass> specified for " 
+                    << mm.getName() 
+                    << ". <provided_muscle_mass> must be a positive number (kg)." << endl;
+                throw (Exception(errorMessage.str()));
+            }
+
+            // Set explicit muscle mass.
+            mm.setMuscleMass(mm.get_provided_muscle_mass());
+        }
+
+        else {
+
+            // Check that <specific_tension> and <density> have been correctly specified.
+            if (mm.get_specific_tension() <= 0) {
+                errorMessage << "ERROR: Negative <specific_tension> specified for " 
+                    << mm.getName() 
+                    << ". <specific_tension> must be a positive number (N/m^2)." << endl;
+                throw (Exception(errorMessage.str()));
+            }
+            if (mm.get_density() <= 0) {
+                errorMessage << "ERROR: Negative <density> specified for " 
+                    << mm.getName() 
+                    << ". <density> must be a positive number (kg/m^3)." << endl;
+                throw (Exception(errorMessage.str()));
+            }
+
+            // Set muscle mass based on muscle properties.
+            const double muscMass = (musc->getMaxIsometricForce() / mm.get_specific_tension()) 
+                                    * mm.get_density() 
+                                    * musc->getOptimalFiberLength();
+
+            mm.setMuscleMass(muscMass);
         }
 
 
-        // Error checking: ratio_slow_twitch_fibers
+        // -----------------------------------------------------------------------
+        // Check that <ratio_slow_twitch_fibers> is between 0 and 1.
+        // -----------------------------------------------------------------------
         if (mm.get_ratio_slow_twitch_fibers() < 0 || mm.get_ratio_slow_twitch_fibers() > 1)	{
             errorMessage << "MetabolicMuscleParameter: Invalid ratio_slow_twitch_fibers for muscle: " 
                 << getName() << ". ratio_slow_twitch_fibers must be between 0 and 1." << endl;
@@ -193,12 +224,12 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2010::computeProbeInputs(const St
     
 
     // Loop through each muscle in the MetabolicMuscleParameterSet
-    const int nM = get_MetabolicMuscleParameterSet().getSize();
+    const int nM = get_metabolic_parameters().getSize();
     Vector Edot(nM);
     for (int i=0; i<nM; ++i)
     {
         // Get the current muscle from the muscleMap.
-        MetabolicMuscleParameter& mm = get_MetabolicMuscleParameterSet()[i];
+        MetabolicMuscleParameter& mm = get_metabolic_parameters()[i];
         MuscleMap::const_iterator m_i = _muscleMap.find(mm.getName());
         if (m_i == _muscleMap.end()) {
             stringstream errorMessage;
