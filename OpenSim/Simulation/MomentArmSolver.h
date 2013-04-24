@@ -63,8 +63,8 @@ public:
 
 	/** Solve for the effective moment-arm about the all coordinates (q) based 
     on the geometric distribution of forces described by GeometryPath. 
-	@param  State s				current state of the model
-	@param  GeometryPath path	path for which to calculate moment-arms
+	@param  s				    current state of the model
+	@param  path	            path for which to calculate moment-arms
 	@return Vector ma			resulting moment-arms for each mobility in model
 								has the same order and length as state.getU()
 	*/
