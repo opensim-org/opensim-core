@@ -353,6 +353,7 @@ using namespace SimTK;
   public void addBody(Body aBody) {
 	aBody.markAdopted();
     private_addBody(aBody);
+	aBody.getJoint().markAdopted();
   }
 
   public void addConstraint(Constraint aConstraint) {
