@@ -480,11 +480,15 @@ record(const SimTK::State& s)
 	target.printPerformance(sWorkingCopy, &_parameters[0]);
 
 	//update defaults for use in the next step
+
 	const Set<Actuator>& actuators = _modelWorkingCopy->getActuators();
 	for(int k=0; k < actuators.getSize(); ++k){
 		ActivationFiberLengthMuscle *mus = dynamic_cast<ActivationFiberLengthMuscle*>(&actuators[k]);
-		if(mus)
+		if(mus){
 			mus->setDefaultActivation(_parameters[k]);
+			// Don't send up red flags when the def
+			mus->setObjectIsUpToDateWithProperties();
+		}
 	}
 
 	_activationStorage->append(sWorkingCopy.getTime(),na,&_parameters[0]);

@@ -40,11 +40,12 @@ void testArm26(const string& muscleModelClassName, bool testResults);
 
 int main()
 {
-	Array<string> muscleModelNames; 
+	Array<string> muscleModelNames;
+    muscleModelNames.append("Thelen2003Muscle_Deprecated");	
     muscleModelNames.append("Thelen2003Muscle");	
 	muscleModelNames.append("Millard2012EquilibriumMuscle");
 	muscleModelNames.append("Millard2012AccelerationMuscle");
-    muscleModelNames.append("Thelen2003Muscle_Deprecated");	
+
 
     cout << "=========================================================" << endl;
     cout << "                       WARNING                           " << endl;
@@ -64,8 +65,10 @@ int main()
 	SimTK::Array_<std::string> failures;
 	
 	for(int i=0; i< muscleModelNames.getSize(); ++i){
-		try { 
-            testArm26(muscleModelNames[i],false); }
+		try { // regression test for the Thelen deprecate muscle
+			  // otherwise verify that SO runs with the new models
+            testArm26(muscleModelNames[i], i<1);
+		}
 		catch (const std::exception& e) {
 			cout << e.what() <<endl; 
 			failures.push_back("testArm26_"+muscleModelNames[i]);

@@ -594,10 +594,8 @@ computeConstraintVector(SimTK::State& s, const Vector &parameters,Vector &constr
 	// CONSTRAINTS
 	for(int i=0; i<getNumConstraints(); i++) {
 		Coordinate& coord = _model->getCoordinateSet().get(_accelerationIndices[i]);
-		Function& presribedFunc = _statesSplineSet.get(_statesStore->getStateIndex(coord.getName(),0));
-		std::vector<int> derivComponents(2);
-		derivComponents[0]=0;
-		derivComponents[1]=0;
+		Function& presribedFunc = _statesSplineSet.get(_statesStore->getStateIndex(coord.getSpeedName(),0));
+		std::vector<int> derivComponents(1,0); //take first derivative
 		double targetAcceleration = presribedFunc.calcDerivative(derivComponents,SimTK::Vector(1,s.getTime()));
 		//std::cout << "computeConstraintVector:" << targetAcceleration << " - " <<  actualAcceleration[i] << endl;
 		constraints[i] = targetAcceleration - actualAcceleration[i];

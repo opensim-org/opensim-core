@@ -52,7 +52,6 @@ using namespace std;
  */
 Kinematics::~Kinematics()
 {
-	deleteStorage();
 }
 //_____________________________________________________________________________
 /**
@@ -110,7 +109,10 @@ setNull()
 	constructProperties();
 
 	setName("Kinematics");
-	_pStore=_vStore=_aStore=0;
+	_pStore=_vStore=_aStore=NULL;
+
+	// Let the list own the storages so we don't have to manually delete them
+	_storageList.setMemoryOwner(true);
 
 	_recordAccelerations = true;
 }
@@ -134,11 +136,13 @@ constructProperties()
 /**
  * Allocate storage for the kinematics.
  */
-void Kinematics::
-allocateStorage()
+void Kinematics::allocateStorage()
 {
-	// ACCELERATIONS
+	//Free-up any past storages by resizing which will delete pointers
+	//if memory owner is set to true, as set in setNull() above
 	_storageList.setSize(0);
+
+	// ACCELERATIONS
 	if(_recordAccelerations) {
 		_aStore = new Storage(1000,"Accelerations");
 		_aStore->setDescription(getDescription());
@@ -318,7 +322,7 @@ void Kinematics::setModel(Model& aModel)
 	// BASE CLASS
 	Analysis::setModel(aModel);
 
-	deleteStorage();
+	// Allocate storages to containt the results of the analysis
 	allocateStorage();
 
 	// UPDATE LABELS
@@ -409,10 +413,12 @@ begin( SimTK::State& s )
 {
 	if(!proceed()) return(0);
 
+	double time = s.getTime();
+	
 	// RESET STORAGE
-	_pStore->reset(s.getTime());
-	_vStore->reset(s.getTime());
-	_aStore->reset(s.getTime());
+	_pStore->reset(time);
+	_vStore->reset(time);
+	_aStore->reset(time);
 
 	// RECORD
 	int status = 0;
