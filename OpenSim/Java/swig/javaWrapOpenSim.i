@@ -844,10 +844,6 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/JointInternalPowerProbe.h>
 %include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
 %include <OpenSim/Simulation/Model/ActuatorForceProbe.h>
-%include <OpenSim/Simulation/Model/MetabolicMuscleParameter.h>
-
-%template(SetMetabolicMuscleParameters) OpenSim::Set<OpenSim::MetabolicMuscleParameter>;
-%include <OpenSim/Simulation/Model/MetabolicMuscleParameterSet.h>
 
 %include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
 %include <OpenSim/Simulation/Model/MuscleMetabolicPowerProbeUmberger2010.h>
