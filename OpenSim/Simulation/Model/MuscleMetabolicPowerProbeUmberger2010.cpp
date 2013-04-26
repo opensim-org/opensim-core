@@ -79,7 +79,7 @@ void MuscleMetabolicPowerProbeUmberger2010::setNull()
 
 //_____________________________________________________________________________
 /**
- * Connect properties to local pointers.
+ * Construct and initilize object properties.
  */
 void MuscleMetabolicPowerProbeUmberger2010::constructProperties()
 {
@@ -92,9 +92,34 @@ void MuscleMetabolicPowerProbeUmberger2010::constructProperties()
     constructProperty_scaling_factor(1.5);      // default value is for aerobic activities.
     constructProperty_basal_coefficient(1.2);   // default value for standing (Umberger, 2003, p105)
     constructProperty_basal_exponent(1.0);
-    constructProperty_metabolic_parameters(MetabolicMuscleParameterSet());
+    constructProperty_metabolic_parameters(Set<MetabolicMuscleParameter>());
 }
 
+/** Get the number of muscles being analysed in the metabolic analysis. */
+const int MuscleMetabolicPowerProbeUmberger2010::getNumMetabolicMuscles() const  
+{ return get_metabolic_parameters().getSize(); }
+
+/* Get whether the muscle mass is being explicitly provided.
+    True means that it is using the property <provided_muscle_mass>
+    False means that the muscle mass is being calculated from muscle properties. */
+bool MuscleMetabolicPowerProbeUmberger2010::
+	isUsingProvidedMass(const std::string& muscleName)
+{ return getMetabolicParameters(muscleName)->get_use_provided_muscle_mass(); }
+
+/* Get the muscle mass used in the metabolic analysis. */
+const double MuscleMetabolicPowerProbeUmberger2010::
+	getMuscleMassUsed(const std::string& muscleName) const 
+{ return getMetabolicParameters(muscleName)->getMuscleMass(); }
+
+/* Get the ratio of slow twitch fibers for an existing muscle. */
+const double MuscleMetabolicPowerProbeUmberger2010::
+	getRatioSlowTwitchFibers(const std::string& muscleName) const 
+{ return getMetabolicParameters(muscleName)->get_ratio_slow_twitch_fibers(); }
+
+/* Set the ratio of slow twitch fibers for an existing muscle. */
+void MuscleMetabolicPowerProbeUmberger2010::
+	setRatioSlowTwitchFibers(const std::string& muscleName, const double& ratio) 
+{ updMetabolicParameters(muscleName)->set_ratio_slow_twitch_fibers(ratio); }
 
 
 //=============================================================================
@@ -116,7 +141,6 @@ void MuscleMetabolicPowerProbeUmberger2010::connectToModel(Model& aModel)
         connectIndividualMetabolicMuscle(aModel, upd_metabolic_parameters()[i]);
     }
 }
-
 
 //_____________________________________________________________________________
 /**
@@ -603,4 +627,72 @@ void MuscleMetabolicPowerProbeUmberger2010::setUseCalculatedMass(
 
     mm->set_use_provided_muscle_mass(false);
     mm->setMuscleMass();       // actual mass used.
+}
+
+
+//==============================================================================
+//                          MetabolicMuscleParameter
+//==============================================================================
+//--------------------------------------------------------------------------
+// Constructor(s)
+//--------------------------------------------------------------------------
+MuscleMetabolicPowerProbeUmberger2010::
+	MetabolicMuscleParameter::MetabolicMuscleParameter() 
+{
+	setNull();
+	constructProperties(); 
+}
+
+MuscleMetabolicPowerProbeUmberger2010::
+	MetabolicMuscleParameter::MetabolicMuscleParameter(
+	const std::string& muscleName,
+	double ratio_slow_twitch_fibers, 
+	double muscle_mass)
+{
+	setNull();
+	constructProperties();
+	setName(muscleName);
+	set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
+	set_use_provided_muscle_mass(true);
+	set_provided_muscle_mass(muscle_mass);
+}
+
+const double& MuscleMetabolicPowerProbeUmberger2010::
+	MetabolicMuscleParameter::getMuscleMass() const
+{ return _muscMass; }
+
+
+void MuscleMetabolicPowerProbeUmberger2010::
+	MetabolicMuscleParameter::setMuscleMass()    
+{ 
+	if (get_use_provided_muscle_mass())
+		_muscMass = get_provided_muscle_mass();
+	else {
+		_muscMass = (_musc->getMaxIsometricForce() / get_specific_tension()) 
+					* get_density() 
+					* _musc->getOptimalFiberLength();
+		}
+}
+
+void MuscleMetabolicPowerProbeUmberger2010::
+	MetabolicMuscleParameter::setNull()
+{
+	setAuthors("Tim Dorn");
+	// Actual muscle mass used. If <use_provided_muscle_mass> == true, 
+	// this value will set to the property value <muscle_mass> provided by the 
+	// user. If <use_provided_muscle_mass> == false, then this value
+	// will be set (by the metabolic probes) to the calculated mass based on
+	// the muscle's Fmax, optimal fiber length, specific tension & muscle density. 
+	_muscMass = SimTK::NaN;
+	_musc = NULL;
+}
+
+void MuscleMetabolicPowerProbeUmberger2010::
+	MetabolicMuscleParameter::constructProperties()
+{
+	constructProperty_specific_tension(0.25e6);  // (Pascals (N/m^2)), specific tension of mammalian muscle.
+	constructProperty_density(1059.7);           // (kg/m^3), density of mammalian muscle.
+	constructProperty_ratio_slow_twitch_fibers(0.5);
+	constructProperty_use_provided_muscle_mass(false);
+	constructProperty_provided_muscle_mass(SimTK::NaN);
 }

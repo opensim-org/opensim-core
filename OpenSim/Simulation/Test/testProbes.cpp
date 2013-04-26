@@ -499,10 +499,8 @@ void simulateMuscle(
     // Create the metabolic_parameters for Umberger2010.
     MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameter mU("myMuscle", 0.5, 0.5);
     mU.setName(muscNames.get(0));
-    MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameterSet metabolicParamsUmberger;
+    Set<MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameter> metabolicParamsUmberger;
     metabolicParamsUmberger.cloneAndAppend(mU);
-
-
         
     // MuscleMetabolicPowerProbeBhargava2004 Power Probe: BASAL HEAT RATE
     MuscleMetabolicPowerProbeBhargava2004* BhargavaBasal = new MuscleMetabolicPowerProbeBhargava2004(false, false, false, true, false);
