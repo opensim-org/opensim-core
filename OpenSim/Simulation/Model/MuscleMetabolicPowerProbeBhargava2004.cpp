@@ -26,7 +26,6 @@
 // INCLUDES and STATICS
 //=============================================================================
 #include "MuscleMetabolicPowerProbeBhargava2004.h"
-#include <OpenSim/Simulation/Model/Muscle.h>
 
 
 using namespace std;
@@ -119,88 +118,97 @@ void MuscleMetabolicPowerProbeBhargava2004::constructProperties()
 void MuscleMetabolicPowerProbeBhargava2004::connectToModel(Model& aModel)
 {
     Super::connectToModel(aModel);
-    stringstream errorMessage;
 
-    // -----------------------------------------------------------------------
-    // Check that the muscles in the MetabolicMuscleParameterSet exist in
-    // the model and create the MuscleMap between the muscle name and the
-    // muscle pointer.
-    // -----------------------------------------------------------------------
     const int nM = get_metabolic_parameters().getSize();
     for (int i=0; i<nM; ++i) {
-        Muscle* musc = NULL;        // Pointer to the OpenSim::Muscle
-        MetabolicMuscleParameter& mm = get_metabolic_parameters()[i];
-        int k = _model->getMuscles().getIndex(mm.getName());
-        if( k < 0 )	{
-            errorMessage << "MetabolicMuscleParameter: Invalid muscle '" 
-                << mm.getName() << "' specified." << endl;
+        connectIndividualMetabolicMuscle(aModel, upd_metabolic_parameters()[i]);
+    }
+}
+
+
+//_____________________________________________________________________________
+/**
+ * Connect an individual metabolic muscle to the model.
+ * Check that the muscles in the MetabolicMuscleParameterSet exist in
+ * the model and create the MuscleMap between the muscle name and the
+ * muscle pointer.
+ *
+ */
+void MuscleMetabolicPowerProbeBhargava2004::connectIndividualMetabolicMuscle(
+    Model& aModel, MetabolicMuscleParameter& mm)
+{
+    stringstream errorMessage;
+    cout << mm.getName() << endl;
+    cout << aModel.getMuscles() << endl;
+
+
+    int k = aModel.getMuscles().getIndex(mm.getName());
+    if( k < 0 )	{
+        errorMessage << "MetabolicMuscleParameter: Invalid muscle '" 
+            << mm.getName() << "' specified." << endl;
+        throw (Exception(errorMessage.str()));
+    }
+    else {
+        mm.setMuscle(&aModel.updMuscles()[k]);  // Set internal muscle pointer
+        _muscleMap[mm.getName()] = &mm;          // Add parameters to the _muscleMap
+    }
+
+
+    // -----------------------------------------------------------------------
+    // Set the muscle mass internal member variable: _muscMass based on
+    // whether the <use_provided_muscle_mass> property is true or false.
+    // -----------------------------------------------------------------------
+    if (mm.get_use_provided_muscle_mass()) {
+            
+        // Check that the <provided_muscle_mass> has been correctly specified.
+        if (mm.get_provided_muscle_mass() <= 0) {
+            errorMessage << "ERROR: Negative <provided_muscle_mass> specified for " 
+                << mm.getName() 
+                << ". <provided_muscle_mass> must be a positive number (kg)." << endl;
             throw (Exception(errorMessage.str()));
         }
-        else {
-            musc = &_model->updMuscles()[k];  // Set muscle pointer
-            _muscleMap[mm.getName()] = musc;  // Add muscle pointer to the _muscleMap
-         }
-
-
-        // -----------------------------------------------------------------------
-        // Set the muscle mass internal member variable: _muscMass based on
-        // whether the <use_provided_muscle_mass> property is true or false.
-        // -----------------------------------------------------------------------
-        if (mm.get_use_provided_muscle_mass()) {
-            
-            // Check that the <provided_muscle_mass> has been correctly specified.
-            if (mm.get_provided_muscle_mass() <= 0) {
-                errorMessage << "ERROR: Negative <provided_muscle_mass> specified for " 
-                    << mm.getName() 
-                    << ". <provided_muscle_mass> must be a positive number (kg)." << endl;
-                throw (Exception(errorMessage.str()));
-            }
-            else if (isnan(mm.get_provided_muscle_mass())) {
-                errorMessage << "ERROR: No <provided_muscle_mass> specified for " 
-                    << mm.getName() 
-                    << ". <provided_muscle_mass> must be a positive number (kg)." << endl;
-                throw (Exception(errorMessage.str()));
-            }
-
-            // Set explicit muscle mass.
-            mm.setMuscleMass(mm.get_provided_muscle_mass());
-        }
-
-        else {
-
-            // Check that <specific_tension> and <density> have been correctly specified.
-            if (mm.get_specific_tension() <= 0) {
-                errorMessage << "ERROR: Negative <specific_tension> specified for " 
-                    << mm.getName() 
-                    << ". <specific_tension> must be a positive number (N/m^2)." << endl;
-                throw (Exception(errorMessage.str()));
-            }
-            if (mm.get_density() <= 0) {
-                errorMessage << "ERROR: Negative <density> specified for " 
-                    << mm.getName() 
-                    << ". <density> must be a positive number (kg/m^3)." << endl;
-                throw (Exception(errorMessage.str()));
-            }
-
-            // Set muscle mass based on muscle properties.
-            const double muscMass = (musc->getMaxIsometricForce() / mm.get_specific_tension()) 
-                                    * mm.get_density() 
-                                    * musc->getOptimalFiberLength();
-
-            mm.setMuscleMass(muscMass);
-        }
-
-
-        // -----------------------------------------------------------------------
-        // Check that <ratio_slow_twitch_fibers> is between 0 and 1.
-        // -----------------------------------------------------------------------
-        if (mm.get_ratio_slow_twitch_fibers() < 0 || mm.get_ratio_slow_twitch_fibers() > 1)	{
-            errorMessage << "MetabolicMuscleParameter: Invalid ratio_slow_twitch_fibers for muscle: " 
-                << getName() << ". ratio_slow_twitch_fibers must be between 0 and 1." << endl;
+        else if (isnan(mm.get_provided_muscle_mass())) {
+            errorMessage << "ERROR: No <provided_muscle_mass> specified for " 
+                << mm.getName() 
+                << ". <provided_muscle_mass> must be a positive number (kg)." << endl;
             throw (Exception(errorMessage.str()));
         }
     }
+
+    else {
+
+        // Check that <specific_tension> and <density> have been correctly specified.
+        if (mm.get_specific_tension() <= 0) {
+            errorMessage << "ERROR: Negative <specific_tension> specified for " 
+                << mm.getName() 
+                << ". <specific_tension> must be a positive number (N/m^2)." << endl;
+            throw (Exception(errorMessage.str()));
+        }
+        if (mm.get_density() <= 0) {
+            errorMessage << "ERROR: Negative <density> specified for " 
+                << mm.getName() 
+                << ". <density> must be a positive number (kg/m^3)." << endl;
+            throw (Exception(errorMessage.str()));
+        }
+    }
+
+
+    // -----------------------------------------------------------------------
+    // Check that <ratio_slow_twitch_fibers> is between 0 and 1.
+    // -----------------------------------------------------------------------
+    if (mm.get_ratio_slow_twitch_fibers() < 0 || mm.get_ratio_slow_twitch_fibers() > 1)	{
+        errorMessage << "MetabolicMuscleParameter: Invalid ratio_slow_twitch_fibers for muscle: " 
+            << getName() << ". ratio_slow_twitch_fibers must be between 0 and 1." << endl;
+        throw (Exception(errorMessage.str()));
+    }
+
+
+    // -----------------------------------------------------------------------
+    // Set the mass used for this muscle.
+    // -----------------------------------------------------------------------
+    mm.setMuscleMass();
 }
+
 
 
 
@@ -236,16 +244,10 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
     Vector Edot(nM);
     for (int i=0; i<nM; i++)
     {
-        // Get the current muscle from the muscleMap.
-        MetabolicMuscleParameter& mm = get_metabolic_parameters()[i];
-        MuscleMap::const_iterator m_i = _muscleMap.find(mm.getName());
-        if (m_i == _muscleMap.end()) {
-            stringstream errorMessage;
-            errorMessage << getConcreteClassName() << ": Invalid muscle " 
-                << mm.getName() << " in the Metabolic MuscleMap." << endl;
-            throw (Exception(errorMessage.str()));
-        }
-        const Muscle* m = m_i->second;
+        // Get the current muscle parameters from the MetabolicMuscleParameterSet
+        // and the corresponding OpenSim::Muscle pointer from the muscleMap.
+        MetabolicMuscleParameter& mm = get_metabolic_parameters()[i];   
+        const Muscle* m = mm.getMuscle();
 
         // Get important muscle values at the current time state
         const double max_isometric_force = m->getMaxIsometricForce();
@@ -441,5 +443,156 @@ Array<string> MuscleMetabolicPowerProbeBhargava2004::getProbeOutputLabels() cons
     Array<string> labels;
     labels.append(getName());
     return labels;
+}
+
+
+
+
+//=============================================================================
+// METABOLIC PARAMETER ACCESSORS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Get const MetabolicMuscleParameter from the MuscleMap using a 
+ * string accessor.
+ */
+const MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter* 
+    MuscleMetabolicPowerProbeBhargava2004::getMetabolicParameters(
+    const std::string& muscleName) const
+{
+    MuscleMap::const_iterator m_i = _muscleMap.find(muscleName);
+    if (m_i == _muscleMap.end()) {
+        stringstream errorMessage;
+        errorMessage << getConcreteClassName() << ": Invalid muscle " 
+            << muscleName << " in the MetabolicMuscleParameter map." << endl;
+        throw (Exception(errorMessage.str()));
+    }
+    return m_i->second;
+}
+
+
+//_____________________________________________________________________________
+/**
+ * Get writable MetabolicMuscleParameter from the MuscleMap using a 
+ * string accessor.
+ */
+MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter* 
+    MuscleMetabolicPowerProbeBhargava2004::updMetabolicParameters(
+    const std::string& muscleName)
+{
+    MuscleMap::const_iterator m_i = _muscleMap.find(muscleName);
+    if (m_i == _muscleMap.end()) {
+        stringstream errorMessage;
+        errorMessage << getConcreteClassName() << ": Invalid muscle " 
+            << muscleName << " in the MetabolicMuscleParameter map." << endl;
+        throw (Exception(errorMessage.str()));
+    }
+    return m_i->second;
+}
+
+
+//_____________________________________________________________________________
+/**
+ * Reset the parameters for an existing muscle in the 
+ * MetabolicMuscleParameterSet.
+ */
+void MuscleMetabolicPowerProbeBhargava2004::setParametersForExistingMuscle(
+    const string& muscleName, 
+    const double ratio_slow_twitch_fibers, 
+    const double activation_constant_slow_twitch,
+    const double activation_constant_fast_twitch,
+    const double maintenance_constant_slow_twitch,
+    const double maintenance_constant_fast_twitch)
+{
+    MetabolicMuscleParameter* mm = updMetabolicParameters(muscleName);
+
+    mm->set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
+    mm->set_activation_constant_slow_twitch(activation_constant_slow_twitch);
+    mm->set_activation_constant_fast_twitch(activation_constant_fast_twitch);
+    mm->set_maintenance_constant_slow_twitch(maintenance_constant_slow_twitch);
+    mm->set_maintenance_constant_fast_twitch(maintenance_constant_fast_twitch);
+}
+
+
+//_____________________________________________________________________________
+/**
+ * Add a muscle and its parameters so that it can be included in the
+ * metabolic analysis.
+ */
+void MuscleMetabolicPowerProbeBhargava2004::addMuscle(
+    const string& muscleName, 
+    const double ratio_slow_twitch_fibers, 
+    const double activation_constant_slow_twitch,
+    const double activation_constant_fast_twitch,
+    const double maintenance_constant_slow_twitch,
+    const double maintenance_constant_fast_twitch)
+{
+    MetabolicMuscleParameter* mm = new MetabolicMuscleParameter(
+            muscleName,
+            ratio_slow_twitch_fibers, 
+            activation_constant_slow_twitch, 
+            activation_constant_fast_twitch, 
+            maintenance_constant_slow_twitch, 
+            maintenance_constant_fast_twitch);
+        
+    connectIndividualMetabolicMuscle(*_model, *mm);   // do checks and add to muscleMap 
+    upd_metabolic_parameters().adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
+}
+
+
+//_____________________________________________________________________________
+/**
+ * Remove a muscle from the MetabolicMuscleParameterSet.
+ */
+void MuscleMetabolicPowerProbeBhargava2004::removeMuscle(
+    const string& muscleName)
+{
+    // Step 1: Remove the reference to this MetabolicMuscleParameter
+    // from the muscle map.
+    // -----------------------------------------------------------------
+    _muscleMap.erase(muscleName);
+
+
+    // Step 2: Remove the MetabolicMuscleParameter object from
+    // the MetabolicMuscleParameterSet.
+    // -----------------------------------------------------------------
+    const int k = get_metabolic_parameters().getIndex(muscleName);
+    if (k<0) {
+        cout << "WARNING: MetabolicMuscleParameter: Invalid muscle '" 
+            << muscleName << "' specified. No metabolic muscles removed." << endl;
+        return;
+    }
+    upd_metabolic_parameters().remove(k);
+}
+
+
+//_____________________________________________________________________________
+/**
+ * Set an existing muscle in the MetabolicMuscleParameterSet 
+ * to use an provided muscle mass.
+ */
+void MuscleMetabolicPowerProbeBhargava2004::setUseProvidedMass(
+    const string& muscleName, const double providedMass)
+{
+    MetabolicMuscleParameter* mm = updMetabolicParameters(muscleName);
+
+    mm->set_use_provided_muscle_mass(true);
+    mm->set_provided_muscle_mass(providedMass);
+    mm->setMuscleMass();      // actual mass used.
+}
+
+
+//_____________________________________________________________________________
+/**
+ * Set an existing muscle in the MetabolicMuscleParameterSet 
+ * to calculate its own mass.
+ */
+void MuscleMetabolicPowerProbeBhargava2004::setUseCalculatedMass(
+    const string& muscleName)
+{
+    MetabolicMuscleParameter* mm = updMetabolicParameters(muscleName);
+
+    mm->set_use_provided_muscle_mass(false);
+    mm->setMuscleMass();       // actual mass used.
 }
 
