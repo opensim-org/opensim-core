@@ -147,7 +147,7 @@ public:
 //==============================================================================
 //==============================================================================
 	class MetabolicMuscleParameter;
-//	class MetabolicMuscleParameterSet;
+	class MetabolicMuscleParameterSet;
 
 //==============================================================================
 // PROPERTIES
@@ -198,7 +198,7 @@ public:
         "Basal metabolic exponent.");
 
     OpenSim_DECLARE_PROPERTY(metabolic_parameters,
-        Set<MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameter>,
+        MetabolicMuscleParameterSet,
         "A MetabolicMuscleParameterSet containing the muscle information "
         "required to calculate metabolic energy expenditure. If multiple "
         "muscles are contained in the set, then the probe will sum the "
@@ -253,9 +253,9 @@ public:
     myProbe->removeMuscle("muscleName3");
     myProbe->setOperation("integrate")           // See OpenSim::Probe for other operations
     @endcode
-    Note: it is important to first add the metabolic probe to the model before
+    @note It is important to first add the metabolic probe to the model before
     calling any other methods that may modify its properties. This is because 
-    some methods (e.g. addMuscle() or setUseCalculatedMass) may require information
+    some methods (e.g. addMuscle() or useCalculatedMass) may require information
     about the muscles to sucsessfully execute, and this information can only be
     obtained if the metabolic probe is already 'connected' to the model.
     */
@@ -264,17 +264,18 @@ public:
 
     /** Add a muscle and its parameters so that it can be included in the metabolic analysis. */
     void addMuscle(const std::string& muscleName, 
-        const double ratio_slow_twitch_fibers);
+        double ratio_slow_twitch_fibers);
 
     /** Add a muscle and its parameters so that it can be included in the metabolic analysis. */
     void addMuscle(const std::string& muscleName, 
-        const double ratio_slow_twitch_fibers, const double muscle_mass);
+        double ratio_slow_twitch_fibers, 
+		double muscle_mass);
 
     /** Remove a muscle from the metabolic analysis. */
     void removeMuscle(const std::string& muscleName);
 
     /** Set an existing muscle to use a provided muscle mass. */
-    void useProvidedMass(const std::string& muscleName, const double providedMass);
+    void useProvidedMass(const std::string& muscleName, double providedMass);
     
     /** Set an existing muscle to calculate its own mass. */
     void useCalculatedMass(const std::string& muscleName);
@@ -404,7 +405,7 @@ public:
 		//--------------------------------------------------------------------------
 		// Muscle mass
 		//--------------------------------------------------------------------------
-		const double& getMuscleMass() const;     
+		const double& getMuscleMass() const      { return _muscMass; }
 		void setMuscleMass();
 
 		//--------------------------------------------------------------------------
@@ -413,6 +414,10 @@ public:
 		const Muscle* getMuscle() const         { return _musc; }
 		void setMuscle(Muscle* m)               { _musc = m; }
 
+
+		//--------------------------------------------------------------------------
+		// Object interface
+		//--------------------------------------------------------------------------
 	private:
 		void setNull();
 		void constructProperties();
@@ -438,7 +443,7 @@ public:
 	 * MetabolicMuscleParameterSet is an internal container class containing the set 
 	 * of MetabolicMuscleParameters for each muscle that is probed.
 	 */
-/*	class MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameterSet 
+	class MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameterSet 
 		: public Set<MetabolicMuscleParameter>
 	{
 		class MetabolicMuscleParameter;
@@ -451,7 +456,7 @@ public:
 	//=============================================================================
 	};	// END of class MetabolicMuscleParameterSet
 	//=============================================================================
-*/ 
+
 
 //=============================================================================
 };	// END of class MuscleMetabolicPowerProbeUmberger2010

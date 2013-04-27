@@ -92,34 +92,10 @@ void MuscleMetabolicPowerProbeUmberger2010::constructProperties()
     constructProperty_aerobic_factor(1.5);      // default value is for aerobic activities.
     constructProperty_basal_coefficient(1.2);   // default value for standing (Umberger, 2003, p105)
     constructProperty_basal_exponent(1.0);
-    constructProperty_metabolic_parameters(Set<MetabolicMuscleParameter>());
+    constructProperty_metabolic_parameters(MetabolicMuscleParameterSet());
 }
 
-/** Get the number of muscles being analysed in the metabolic analysis. */
-const int MuscleMetabolicPowerProbeUmberger2010::getNumMetabolicMuscles() const  
-{ return get_metabolic_parameters().getSize(); }
 
-/* Get whether the muscle mass is being explicitly provided.
-    True means that it is using the property <provided_muscle_mass>
-    False means that the muscle mass is being calculated from muscle properties. */
-bool MuscleMetabolicPowerProbeUmberger2010::
-	isUsingProvidedMass(const std::string& muscleName)
-{ return getMetabolicParameters(muscleName)->get_use_provided_muscle_mass(); }
-
-/* Get the muscle mass used in the metabolic analysis. */
-const double MuscleMetabolicPowerProbeUmberger2010::
-	getMuscleMass(const std::string& muscleName) const 
-{ return getMetabolicParameters(muscleName)->getMuscleMass(); }
-
-/* Get the ratio of slow twitch fibers for an existing muscle. */
-const double MuscleMetabolicPowerProbeUmberger2010::
-	getRatioSlowTwitchFibers(const std::string& muscleName) const 
-{ return getMetabolicParameters(muscleName)->get_ratio_slow_twitch_fibers(); }
-
-/* Set the ratio of slow twitch fibers for an existing muscle. */
-void MuscleMetabolicPowerProbeUmberger2010::
-	setRatioSlowTwitchFibers(const std::string& muscleName, const double& ratio) 
-{ updMetabolicParameters(muscleName)->set_ratio_slow_twitch_fibers(ratio); }
 
 
 //=============================================================================
@@ -499,45 +475,16 @@ Array<string> MuscleMetabolicPowerProbeUmberger2010::getProbeOutputLabels() cons
 
 
 //=============================================================================
-// METABOLIC PARAMETER ACCESSORS
+// MUSCLE METABOLICS INTERFACE
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Get const MetabolicMuscleParameter from the MuscleMap using a 
- * string accessor.
- */
-const MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameter* 
-    MuscleMetabolicPowerProbeUmberger2010::getMetabolicParameters(
-    const std::string& muscleName) const
-{
-    MuscleMap::const_iterator m_i = _muscleMap.find(muscleName);
-    if (m_i == _muscleMap.end()) {
-        stringstream errorMessage;
-        errorMessage << getConcreteClassName() << ": Invalid muscle " 
-            << muscleName << " in the MetabolicMuscleParameter map." << endl;
-        throw (Exception(errorMessage.str()));
-    }
-    return m_i->second;
-}
-
-
-//_____________________________________________________________________________
-/**
- * Get writable MetabolicMuscleParameter from the MuscleMap using a 
- * string accessor.
- */
-MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameter* 
-    MuscleMetabolicPowerProbeUmberger2010::updMetabolicParameters(
-    const std::string& muscleName)
-{
-    MuscleMap::const_iterator m_i = _muscleMap.find(muscleName);
-    if (m_i == _muscleMap.end()) {
-        stringstream errorMessage;
-        errorMessage << getConcreteClassName() << ": Invalid muscle " 
-            << muscleName << " in the MetabolicMuscleParameter map." << endl;
-        throw (Exception(errorMessage.str()));
-    }
-    return m_i->second;
+/** 
+* Get the number of muscles being analysed in the metabolic analysis. 
+*/
+const int MuscleMetabolicPowerProbeUmberger2010::
+	getNumMetabolicMuscles() const  
+{ 
+	return get_metabolic_parameters().getSize(); 
 }
 
 
@@ -545,9 +492,9 @@ MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameter*
 /**
  * Add a muscle and its parameters so that it can be included in the metabolic analysis
  */
-void MuscleMetabolicPowerProbeUmberger2010::addMuscle(
-    const string& muscleName, 
-    const double ratio_slow_twitch_fibers)
+void MuscleMetabolicPowerProbeUmberger2010::
+	addMuscle(const string& muscleName, 
+    double ratio_slow_twitch_fibers)
 {
     MetabolicMuscleParameter* mm = new MetabolicMuscleParameter(
             muscleName,
@@ -561,10 +508,10 @@ void MuscleMetabolicPowerProbeUmberger2010::addMuscle(
 /**
  * Add a muscle and its parameters so that it can be included in the metabolic analysis
  */
-void MuscleMetabolicPowerProbeUmberger2010::addMuscle(
-    const string& muscleName, 
-    const double ratio_slow_twitch_fibers,
-    const double muscle_mass)
+void MuscleMetabolicPowerProbeUmberger2010::
+	addMuscle(const string& muscleName, 
+    double ratio_slow_twitch_fibers,
+    double muscle_mass)
 {
     MetabolicMuscleParameter* mm = new MetabolicMuscleParameter(
             muscleName,
@@ -580,8 +527,8 @@ void MuscleMetabolicPowerProbeUmberger2010::addMuscle(
 /**
  * Remove a muscle from the MetabolicMuscleParameterSet.
  */
-void MuscleMetabolicPowerProbeUmberger2010::removeMuscle(
-    const string& muscleName)
+void MuscleMetabolicPowerProbeUmberger2010::
+	removeMuscle(const string& muscleName)
 {
     // Step 1: Remove the reference to this MetabolicMuscleParameter
     // from the muscle map.
@@ -607,8 +554,8 @@ void MuscleMetabolicPowerProbeUmberger2010::removeMuscle(
  * Set an existing muscle in the MetabolicMuscleParameterSet 
  * to use an provided muscle mass.
  */
-void MuscleMetabolicPowerProbeUmberger2010::useProvidedMass(
-    const string& muscleName, const double providedMass)
+void MuscleMetabolicPowerProbeUmberger2010::
+	useProvidedMass(const string& muscleName, double providedMass)
 {
     MetabolicMuscleParameter* mm = updMetabolicParameters(muscleName);
 
@@ -623,8 +570,8 @@ void MuscleMetabolicPowerProbeUmberger2010::useProvidedMass(
  * Set an existing muscle in the MetabolicMuscleParameterSet 
  * to calculate its own mass.
  */
-void MuscleMetabolicPowerProbeUmberger2010::useCalculatedMass(
-    const string& muscleName)
+void MuscleMetabolicPowerProbeUmberger2010::
+	useCalculatedMass(const string& muscleName)
 {
     MetabolicMuscleParameter* mm = updMetabolicParameters(muscleName);
 
@@ -633,11 +580,99 @@ void MuscleMetabolicPowerProbeUmberger2010::useCalculatedMass(
 }
 
 
+//_____________________________________________________________________________
+/**
+/* Get whether the muscle mass is being explicitly provided.
+ * True means that it is using the property <provided_muscle_mass>
+ * False means that the muscle mass is being calculated from muscle properties. 
+ */
+bool MuscleMetabolicPowerProbeUmberger2010::
+	isUsingProvidedMass(const std::string& muscleName)
+{ 
+	return getMetabolicParameters(muscleName)->get_use_provided_muscle_mass(); 
+}
+
+
+//_____________________________________________________________________________
+/**
+/* Get the muscle mass used in the metabolic analysis. 
+ */
+const double MuscleMetabolicPowerProbeUmberger2010::
+	getMuscleMass(const std::string& muscleName) const 
+{ 
+	return getMetabolicParameters(muscleName)->getMuscleMass();
+}
+
+
+//_____________________________________________________________________________
+/**
+/* Get the ratio of slow twitch fibers for an existing muscle. 
+ */
+const double MuscleMetabolicPowerProbeUmberger2010::
+	getRatioSlowTwitchFibers(const std::string& muscleName) const 
+{ 
+	return getMetabolicParameters(muscleName)->get_ratio_slow_twitch_fibers();
+}
+
+
+//_____________________________________________________________________________
+/**
+/* Set the ratio of slow twitch fibers for an existing muscle. 
+ */
+void MuscleMetabolicPowerProbeUmberger2010::
+	setRatioSlowTwitchFibers(const std::string& muscleName, const double& ratio) 
+{ 
+	updMetabolicParameters(muscleName)->set_ratio_slow_twitch_fibers(ratio);
+}
+
+
+//_____________________________________________________________________________
+/**
+ * PRIVATE: Get const MetabolicMuscleParameter from the MuscleMap using a 
+ * string accessor.
+ */
+const MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameter* 
+	MuscleMetabolicPowerProbeUmberger2010::getMetabolicParameters(
+    const std::string& muscleName) const
+{
+    MuscleMap::const_iterator m_i = _muscleMap.find(muscleName);
+    if (m_i == _muscleMap.end()) {
+        stringstream errorMessage;
+        errorMessage << getConcreteClassName() << ": Invalid muscle " 
+            << muscleName << " in the MetabolicMuscleParameter map." << endl;
+        throw (Exception(errorMessage.str()));
+    }
+    return m_i->second;
+}
+
+
+//_____________________________________________________________________________
+/**
+ * PRIVATE: Get writable MetabolicMuscleParameter from the MuscleMap using a 
+ * string accessor.
+ */
+MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameter* 
+    MuscleMetabolicPowerProbeUmberger2010::updMetabolicParameters(
+    const std::string& muscleName)
+{
+    MuscleMap::const_iterator m_i = _muscleMap.find(muscleName);
+    if (m_i == _muscleMap.end()) {
+        stringstream errorMessage;
+        errorMessage << getConcreteClassName() << ": Invalid muscle " 
+            << muscleName << " in the MetabolicMuscleParameter map." << endl;
+        throw (Exception(errorMessage.str()));
+    }
+    return m_i->second;
+}
+
+
+
+
 //==============================================================================
 //                          MetabolicMuscleParameter
 //==============================================================================
 //--------------------------------------------------------------------------
-// Constructor(s)
+// Constructors
 //--------------------------------------------------------------------------
 MuscleMetabolicPowerProbeUmberger2010::
 	MetabolicMuscleParameter::MetabolicMuscleParameter() 
@@ -666,11 +701,10 @@ MuscleMetabolicPowerProbeUmberger2010::
 	
 }
 
-const double& MuscleMetabolicPowerProbeUmberger2010::
-	MetabolicMuscleParameter::getMuscleMass() const
-{ return _muscMass; }
 
-
+//--------------------------------------------------------------------------
+// Set muscle mass
+//--------------------------------------------------------------------------
 void MuscleMetabolicPowerProbeUmberger2010::
 	MetabolicMuscleParameter::setMuscleMass()    
 { 
@@ -683,6 +717,10 @@ void MuscleMetabolicPowerProbeUmberger2010::
 		}
 }
 
+
+//--------------------------------------------------------------------------
+// Object interface
+//--------------------------------------------------------------------------
 void MuscleMetabolicPowerProbeUmberger2010::
 	MetabolicMuscleParameter::setNull()
 {
@@ -705,3 +743,4 @@ void MuscleMetabolicPowerProbeUmberger2010::
 	constructProperty_use_provided_muscle_mass(false);
 	constructProperty_provided_muscle_mass(SimTK::NaN);
 }
+
