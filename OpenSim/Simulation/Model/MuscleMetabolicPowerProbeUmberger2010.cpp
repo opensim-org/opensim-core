@@ -89,7 +89,7 @@ void MuscleMetabolicPowerProbeUmberger2010::constructProperties()
     constructProperty_mechanical_work_rate_on(true);
     constructProperty_enforce_minimum_heat_rate_per_muscle(true);
 
-    constructProperty_scaling_factor(1.5);      // default value is for aerobic activities.
+    constructProperty_aerobic_factor(1.5);      // default value is for aerobic activities.
     constructProperty_basal_coefficient(1.2);   // default value for standing (Umberger, 2003, p105)
     constructProperty_basal_exponent(1.0);
     constructProperty_metabolic_parameters(Set<MetabolicMuscleParameter>());
@@ -108,7 +108,7 @@ bool MuscleMetabolicPowerProbeUmberger2010::
 
 /* Get the muscle mass used in the metabolic analysis. */
 const double MuscleMetabolicPowerProbeUmberger2010::
-	getMuscleMassUsed(const std::string& muscleName) const 
+	getMuscleMass(const std::string& muscleName) const 
 { return getMetabolicParameters(muscleName)->getMuscleMass(); }
 
 /* Get the ratio of slow twitch fibers for an existing muscle. */
@@ -163,7 +163,7 @@ void MuscleMetabolicPowerProbeUmberger2010::connectIndividualMetabolicMuscle(
     }
     else {
         mm.setMuscle(&aModel.updMuscles()[k]);  // Set internal muscle pointer
-        _muscleMap[mm.getName()] = &mm;          // Add parameters to the _muscleMap
+        _muscleMap[mm.getName()] = &mm;         // Add parameters to the _muscleMap
     }
 
 
@@ -330,9 +330,9 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2010::computeProbeInputs(const St
             const double unscaledAMdot = 128*(1 - mm.get_ratio_slow_twitch_fibers()) + 25;
 
             if (fiber_length_normalized <= 1.0)
-                AMdot = get_scaling_factor() * std::pow(A, 0.6) * unscaledAMdot;
+                AMdot = get_aerobic_factor() * std::pow(A, 0.6) * unscaledAMdot;
             else
-                AMdot = get_scaling_factor() * std::pow(A, 0.6) * ((0.4 * unscaledAMdot) + (0.6 * unscaledAMdot * F_iso));
+                AMdot = get_aerobic_factor() * std::pow(A, 0.6) * ((0.4 * unscaledAMdot) + (0.6 * unscaledAMdot * F_iso));
         }
 
 
@@ -365,13 +365,13 @@ SimTK::Vector MuscleMetabolicPowerProbeUmberger2010::computeProbeInputs(const St
 
                 tmp_fastTwitch = alpha_shortening_fasttwitch * fiber_velocity_normalized * (1-mm.get_ratio_slow_twitch_fibers());
                 unscaledSdot = (tmp_slowTwitch * mm.get_ratio_slow_twitch_fibers()) - tmp_fastTwitch;   // unscaled shortening heat rate: muscle shortening
-                Sdot = get_scaling_factor() * std::pow(A, 2.0) * unscaledSdot;                      // scaled shortening heat rate: muscle shortening
+                Sdot = get_aerobic_factor() * std::pow(A, 2.0) * unscaledSdot;                      // scaled shortening heat rate: muscle shortening
             }
 
             else	// eccentric contraction, Vm>0
             {
                 unscaledSdot = 0.3 * alpha_shortening_slowtwitch * fiber_velocity_normalized;  // unscaled shortening heat rate: muscle lengthening
-                Sdot = get_scaling_factor() * A * unscaledSdot;                                // scaled shortening heat rate: muscle lengthening
+                Sdot = get_aerobic_factor() * A * unscaledSdot;                                // scaled shortening heat rate: muscle lengthening
             }
 
 
@@ -543,22 +543,7 @@ MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameter*
 
 //_____________________________________________________________________________
 /**
- * Reset the parameters for an existing muscle in the 
- * MetabolicMuscleParameterSet.
- */
-void MuscleMetabolicPowerProbeUmberger2010::setParametersForExistingMuscle(
-    const string& muscleName, 
-    const double ratio_slow_twitch_fibers)
-{
-    MetabolicMuscleParameter* mm = updMetabolicParameters(muscleName);
-
-    mm->set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
-}
-
-
-//_____________________________________________________________________________
-/**
- * Add a muscle and its parameters to the MetabolicMuscleParameterSet.
+ * Add a muscle and its parameters so that it can be included in the metabolic analysis
  */
 void MuscleMetabolicPowerProbeUmberger2010::addMuscle(
     const string& muscleName, 
@@ -567,6 +552,24 @@ void MuscleMetabolicPowerProbeUmberger2010::addMuscle(
     MetabolicMuscleParameter* mm = new MetabolicMuscleParameter(
             muscleName,
             ratio_slow_twitch_fibers);
+
+    connectIndividualMetabolicMuscle(*_model, *mm);   // do checks and add to muscleMap 
+    upd_metabolic_parameters().adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
+}
+
+//_____________________________________________________________________________
+/**
+ * Add a muscle and its parameters so that it can be included in the metabolic analysis
+ */
+void MuscleMetabolicPowerProbeUmberger2010::addMuscle(
+    const string& muscleName, 
+    const double ratio_slow_twitch_fibers,
+    const double muscle_mass)
+{
+    MetabolicMuscleParameter* mm = new MetabolicMuscleParameter(
+            muscleName,
+            ratio_slow_twitch_fibers, 
+            muscle_mass);
 
     connectIndividualMetabolicMuscle(*_model, *mm);   // do checks and add to muscleMap 
     upd_metabolic_parameters().adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
@@ -604,7 +607,7 @@ void MuscleMetabolicPowerProbeUmberger2010::removeMuscle(
  * Set an existing muscle in the MetabolicMuscleParameterSet 
  * to use an provided muscle mass.
  */
-void MuscleMetabolicPowerProbeUmberger2010::setUseProvidedMass(
+void MuscleMetabolicPowerProbeUmberger2010::useProvidedMass(
     const string& muscleName, const double providedMass)
 {
     MetabolicMuscleParameter* mm = updMetabolicParameters(muscleName);
@@ -620,7 +623,7 @@ void MuscleMetabolicPowerProbeUmberger2010::setUseProvidedMass(
  * Set an existing muscle in the MetabolicMuscleParameterSet 
  * to calculate its own mass.
  */
-void MuscleMetabolicPowerProbeUmberger2010::setUseCalculatedMass(
+void MuscleMetabolicPowerProbeUmberger2010::useCalculatedMass(
     const string& muscleName)
 {
     MetabolicMuscleParameter* mm = updMetabolicParameters(muscleName);
@@ -653,8 +656,14 @@ MuscleMetabolicPowerProbeUmberger2010::
 	constructProperties();
 	setName(muscleName);
 	set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
-	set_use_provided_muscle_mass(true);
-	set_provided_muscle_mass(muscle_mass);
+    if (isnan(get_provided_muscle_mass())) {
+	    set_use_provided_muscle_mass(false);
+    }
+    else {
+        set_use_provided_muscle_mass(true);
+        set_provided_muscle_mass(muscle_mass);
+    }
+	
 }
 
 const double& MuscleMetabolicPowerProbeUmberger2010::

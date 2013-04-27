@@ -96,7 +96,7 @@ namespace OpenSim {
  *     - F_CE_iso = force that would be developed by the contractile element of muscle under isometric conditions with the current activation and fiber length.
  *     - u = muscle excitation at the current time.
  *     - a = muscle activation at the current time.
- *     - S = aerobic/anaerobic scaling factor, defined by the 'scaling_factor' property (i.e. usually 1.0 for primarily anaerobic activities, 1.5 for primarily aerobic activities).
+ *     - S = aerobic/anaerobic scaling factor, defined by the 'aerobic_factor' property (i.e. usually 1.0 for primarily anaerobic activities, 1.5 for primarily aerobic activities).
  *
  *
  * <H2><B> SHORTENING HEAT RATE (W) </B></H2>
@@ -122,7 +122,7 @@ namespace OpenSim {
  *     - v_CE_max = maximum shortening velocity of the muscle.
  *     - v_CE_norm = normalized muscle fiber velocity (defined for this model as v_CE/l_CE_opt).
  *               Note that this is a different metric to the typical normalized_muscle_fiber_velocity of v_CE/v_CE_max.
- *     - S = aerobic/anaerobic scaling factor, defined by the 'scaling_factor' property (i.e. usually 1.0 for primarily anaerobic activities, 1.5 for primarily aerobic activities).
+ *     - S = aerobic/anaerobic scaling factor, defined by the 'aerobic_factor' property (i.e. usually 1.0 for primarily anaerobic activities, 1.5 for primarily aerobic activities).
  *
  *
  * <H2><B> MECHANICAL WORK RATE (W) </B></H2>
@@ -182,9 +182,9 @@ public:
         "minimum value of 1.0 W/kg (true/false).");
 
     /** Default value = 1.5. **/
-    OpenSim_DECLARE_PROPERTY(scaling_factor, 
+    OpenSim_DECLARE_PROPERTY(aerobic_factor, 
         double,
-        "Scaling factor (S=1.0 for primarily anaerobic conditions and S=1.5 "
+        "Aerobic scale factor (S=1.0 for primarily anaerobic conditions and S=1.5 "
         "for primarily aerobic conditions. See Umberger et al., (2003).");
 
     /** Default value = 1.2. **/
@@ -262,30 +262,34 @@ public:
     /** Get the number of muscles being analysed in the metabolic analysis. */
     const int getNumMetabolicMuscles() const;  
 
-    /** Set the parameters for an existing muscle in the metabolic analysis. */
-    void setParametersForExistingMuscle(const std::string& muscleName, 
+    /** Add a muscle and its parameters so that it can be included in the metabolic analysis. */
+    void addMuscle(const std::string& muscleName, 
         const double ratio_slow_twitch_fibers);
 
     /** Add a muscle and its parameters so that it can be included in the metabolic analysis. */
     void addMuscle(const std::string& muscleName, 
-        const double ratio_slow_twitch_fibers);
+        const double ratio_slow_twitch_fibers, const double muscle_mass);
 
     /** Remove a muscle from the metabolic analysis. */
     void removeMuscle(const std::string& muscleName);
 
     /** Set an existing muscle to use a provided muscle mass. */
-    void setUseProvidedMass(const std::string& muscleName, const double providedMass);
+    void useProvidedMass(const std::string& muscleName, const double providedMass);
     
     /** Set an existing muscle to calculate its own mass. */
-    void setUseCalculatedMass(const std::string& muscleName);
+    void useCalculatedMass(const std::string& muscleName);
 
     /** Get whether the muscle mass is being explicitly provided.
         True means that it is using the property <provided_muscle_mass>
         False means that the muscle mass is being calculated from muscle properties. */
     bool isUsingProvidedMass(const std::string& muscleName);
 
-    /** Get the muscle mass used in the metabolic analysis. */
-    const double getMuscleMassUsed(const std::string& muscleName) const;
+    /** Get the muscle mass used in the metabolic analysis. The value
+        returned will depend on if the muscle mass is explicitly provided
+        (i.e. isUsingProvidedMass = true), or if it is being automatically
+        calculated from muscle data already present in the model
+        (i.e. isUsingProvidedMass = true). */
+    const double getMuscleMass(const std::string& muscleName) const;
 
     /** Get the ratio of slow twitch fibers for an existing muscle. */
     const double getRatioSlowTwitchFibers(const std::string& muscleName) const;

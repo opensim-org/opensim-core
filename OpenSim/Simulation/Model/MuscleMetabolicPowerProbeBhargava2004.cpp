@@ -138,9 +138,6 @@ void MuscleMetabolicPowerProbeBhargava2004::connectIndividualMetabolicMuscle(
     Model& aModel, MetabolicMuscleParameter& mm)
 {
     stringstream errorMessage;
-    cout << mm.getName() << endl;
-    cout << aModel.getMuscles() << endl;
-
 
     int k = aModel.getMuscles().getIndex(mm.getName());
     if( k < 0 )	{
@@ -493,29 +490,6 @@ MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter*
 
 //_____________________________________________________________________________
 /**
- * Reset the parameters for an existing muscle in the 
- * MetabolicMuscleParameterSet.
- */
-void MuscleMetabolicPowerProbeBhargava2004::setParametersForExistingMuscle(
-    const string& muscleName, 
-    const double ratio_slow_twitch_fibers, 
-    const double activation_constant_slow_twitch,
-    const double activation_constant_fast_twitch,
-    const double maintenance_constant_slow_twitch,
-    const double maintenance_constant_fast_twitch)
-{
-    MetabolicMuscleParameter* mm = updMetabolicParameters(muscleName);
-
-    mm->set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
-    mm->set_activation_constant_slow_twitch(activation_constant_slow_twitch);
-    mm->set_activation_constant_fast_twitch(activation_constant_fast_twitch);
-    mm->set_maintenance_constant_slow_twitch(maintenance_constant_slow_twitch);
-    mm->set_maintenance_constant_fast_twitch(maintenance_constant_fast_twitch);
-}
-
-
-//_____________________________________________________________________________
-/**
  * Add a muscle and its parameters so that it can be included in the
  * metabolic analysis.
  */
@@ -571,7 +545,7 @@ void MuscleMetabolicPowerProbeBhargava2004::removeMuscle(
  * Set an existing muscle in the MetabolicMuscleParameterSet 
  * to use an provided muscle mass.
  */
-void MuscleMetabolicPowerProbeBhargava2004::setUseProvidedMass(
+void MuscleMetabolicPowerProbeBhargava2004::useProvidedMass(
     const string& muscleName, const double providedMass)
 {
     MetabolicMuscleParameter* mm = updMetabolicParameters(muscleName);
@@ -587,7 +561,7 @@ void MuscleMetabolicPowerProbeBhargava2004::setUseProvidedMass(
  * Set an existing muscle in the MetabolicMuscleParameterSet 
  * to calculate its own mass.
  */
-void MuscleMetabolicPowerProbeBhargava2004::setUseCalculatedMass(
+void MuscleMetabolicPowerProbeBhargava2004::useCalculatedMass(
     const string& muscleName)
 {
     MetabolicMuscleParameter* mm = updMetabolicParameters(muscleName);

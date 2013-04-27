@@ -502,14 +502,6 @@ public:
     const int getNumMetabolicMuscles()   
     { return get_metabolic_parameters().getSize(); }
 
-    /** Set the parameters for an existing muscle in the metabolic analysis. */
-    void setParametersForExistingMuscle(const std::string& muscleName, 
-        const double ratio_slow_twitch_fibers, 
-        const double activation_constant_slow_twitch,
-        const double activation_constant_fast_twitch,
-        const double maintenance_constant_slow_twitch,
-        const double maintenance_constant_fast_twitch);
-
     /** Add a muscle and its parameters so that it can be included in the metabolic analysis. */
     void addMuscle(const std::string& muscleName, 
         const double ratio_slow_twitch_fibers, 
@@ -522,10 +514,10 @@ public:
     void removeMuscle(const std::string& muscleName);
 
     // Set an existing muscle to use a provided muscle mass. */
-    void setUseProvidedMass(const std::string& muscleName, const double providedMass);
+    void useProvidedMass(const std::string& muscleName, const double providedMass);
 
     /** Set an existing muscle to calculate its own mass. */
-    void setUseCalculatedMass(const std::string& muscleName);
+    void useCalculatedMass(const std::string& muscleName);
 
     /** Get whether the muscle mass is being explicitly provided.
        True means that it is using the property <provided_muscle_mass>
@@ -533,8 +525,12 @@ public:
     bool isUsingProvidedMass(const std::string& muscleName)
     { return getMetabolicParameters(muscleName)->get_use_provided_muscle_mass(); }
 
-    /** Get the muscle mass used in the metabolic analysis. */
-    const double getMuscleMassUsed(const std::string& muscleName) const 
+    /** Get the muscle mass used in the metabolic analysis. The value
+        returned will depend on if the muscle mass is explicitly provided
+        (i.e. isUsingProvidedMass = true), or if it is being automatically
+        calculated from muscle data already present in the model
+        (i.e. isUsingProvidedMass = true). */
+    const double getMuscleMass(const std::string& muscleName) const 
     { return getMetabolicParameters(muscleName)->getMuscleMass(); }
 
     /** Get the ratio of slow twitch fibers for an existing muscle. */

@@ -489,19 +489,7 @@ void simulateMuscle(
 // Add muscle metabolic power probes
 // --------------------------------------------------
 #ifdef ALSO_TEST_METABOLIC_PROBES
-    
-    // Create the metabolic_parameters for Bhargava2004.
-    MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter mB("myMuscle", 0.5, 40, 133, 74, 111);
-    mB.setName(muscNames.get(0));
-    MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameterSet metabolicParamsBhargava;
-    metabolicParamsBhargava.cloneAndAppend(mB);
-
-    // Create the metabolic_parameters for Umberger2010.
-    MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameter mU("myMuscle", 0.5, 0.5);
-    mU.setName(muscNames.get(0));
-    Set<MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameter> metabolicParamsUmberger;
-    metabolicParamsUmberger.cloneAndAppend(mU);
-        
+           
     // MuscleMetabolicPowerProbeBhargava2004 Power Probe: BASAL HEAT RATE
     MuscleMetabolicPowerProbeBhargava2004* BhargavaBasal = new MuscleMetabolicPowerProbeBhargava2004(false, false, false, true, false);
     model.addProbe(BhargavaBasal);
@@ -509,14 +497,15 @@ void simulateMuscle(
     BhargavaBasal->setName("BhargavaBASAL");
     cout << "name after = " << BhargavaBasal->getName() << " == " 
         << model.getProbeSet().get("BhargavaBASAL").getName() << endl;
-    BhargavaBasal->set_metabolic_parameters(metabolicParamsBhargava);
+    BhargavaBasal->addMuscle("muscle", 0.5, 40, 133, 74, 111);
+    cout << "isUsingProvidedMass(muscle) == " << BhargavaBasal->isUsingProvidedMass("muscle") << endl;
     cout << probeCounter++ << ") Added MuscleMetabolicPowerProbeBhargava2004 to measure BASAL muscle metabolic power" << endl;
 
     // MuscleMetabolicPowerProbeUmberger2010 Power Probe: BASAL HEAT RATE
     MuscleMetabolicPowerProbeUmberger2010* UmbergerBasal = new MuscleMetabolicPowerProbeUmberger2010(false, false, true, false);
     model.addProbe(UmbergerBasal);
     UmbergerBasal->setName("UmbergerBASAL");
-    UmbergerBasal->set_metabolic_parameters(metabolicParamsUmberger);
+    UmbergerBasal->addMuscle("muscle", 0.5, 0.5);
     cout << probeCounter++ << ") Added MuscleMetabolicPowerProbeUmberger2010 to measure BASAL muscle metabolic power" << endl;
 
     // MuscleMetabolicPowerProbeBhargava2004 Power Probe: ACTIVATION HEAT RATE
@@ -525,9 +514,9 @@ void simulateMuscle(
     BhargavaAct->setName("BhargavaAct");
     BhargavaAct->addMuscle("muscle", 0.5, 40, 133, 74, 111);
     cout << "using_provided_muscle_mass = " << BhargavaAct->isUsingProvidedMass("muscle")
-        << "   mass used = " << BhargavaAct->getMuscleMassUsed("muscle") << " kg." << endl;
-    BhargavaAct->setUseProvidedMass("muscle", 0.5);
-    double newMass = BhargavaAct->getMuscleMassUsed("muscle");
+        << "   mass used = " << BhargavaAct->getMuscleMass("muscle") << " kg." << endl;
+    BhargavaAct->useProvidedMass("muscle", 0.5);
+    double newMass = BhargavaAct->getMuscleMass("muscle");
     cout << "using_provided_muscle_mass = " << BhargavaAct->isUsingProvidedMass("muscle")
         << "   mass used = " << newMass << " kg." << endl;
     if (!BhargavaAct->isUsingProvidedMass("muscle") || newMass != 0.5)
@@ -565,10 +554,10 @@ void simulateMuscle(
     MuscleMetabolicPowerProbeBhargava2004* BhargavaActMain = new MuscleMetabolicPowerProbeBhargava2004(true, true, false, false, false);
     model.addProbe(BhargavaActMain);
     BhargavaActMain->setName("BhargavaActMain");
-    BhargavaActMain->addMuscle("muscle", 0.1, 44, 230, 104, 211);
+    BhargavaActMain->addMuscle("muscle", 0.5, 40, 133, 74, 211);
     double oldMainFastTwitch = BhargavaActMain->getMaintenanceConstantFastTwitch("muscle");
     cout << "(old) maintenance fast twitch = " << oldMainFastTwitch << endl;
-    BhargavaActMain->setParametersForExistingMuscle("muscle", 0.5, 40, 133, 74, 111);
+    BhargavaActMain->setMaintenanceConstantFastTwitch("muscle", 111);
     double newMainFastTwitch = BhargavaActMain->getMaintenanceConstantFastTwitch("muscle");
     cout << "(new) maintenance fast twitch = " << newMainFastTwitch << endl;
     if (oldMainFastTwitch != 211 || newMainFastTwitch != 111)
@@ -579,7 +568,7 @@ void simulateMuscle(
     MuscleMetabolicPowerProbeUmberger2010* UmbergerActMain = new MuscleMetabolicPowerProbeUmberger2010(true, false, false, false);
     model.addProbe(UmbergerActMain);
     UmbergerActMain->setName("UmbergerActMain");
-    UmbergerActMain->set_metabolic_parameters(metabolicParamsUmberger);
+    UmbergerActMain->addMuscle("muscle", 0.5, 0.5);
     cout << probeCounter++ << ") Added MuscleMetabolicPowerProbeUmberger2010 to measure ACTIVATION+MAINTENANCE muscle metabolic power" << endl;
 
     // MuscleMetabolicPowerProbeBhargava2004 Power Probe: SHORTENING HEAT RATE (setUsingForceDepShorteningPropConstant = true)
@@ -587,7 +576,7 @@ void simulateMuscle(
     model.addProbe(BhargavaShorteningForceDepTrue);
     BhargavaShorteningForceDepTrue->setName("BhargavaShorteningForceDepTrue");
     BhargavaShorteningForceDepTrue->set_use_force_dependent_shortening_prop_constant(true);
-    BhargavaShorteningForceDepTrue->set_metabolic_parameters(metabolicParamsBhargava);
+    BhargavaShorteningForceDepTrue->addMuscle("muscle", 0.5, 40, 133, 74, 111);
     cout << probeCounter++ << ") Added MuscleMetabolicPowerProbeBhargava2004 to measure SHORTENING muscle metabolic power (setUsingForceDepShorteningPropConstant = true)" << endl;
 
     // MuscleMetabolicPowerProbeBhargava2004 Power Probe: SHORTENING HEAT RATE (setUsingForceDepShorteningPropConstant = false)
@@ -602,35 +591,35 @@ void simulateMuscle(
     MuscleMetabolicPowerProbeUmberger2010* UmbergerShortening = new MuscleMetabolicPowerProbeUmberger2010(false, true, false, false);
     model.addProbe(UmbergerShortening);
     UmbergerShortening->setName("UmbergerShortening");
-    UmbergerShortening->set_metabolic_parameters(metabolicParamsUmberger);
+    UmbergerShortening->addMuscle("muscle", 0.5, 0.5);
     cout << probeCounter++ << ") Added MuscleMetabolicPowerProbeUmberger2010 to measure SHORTENING muscle metabolic power" << endl;
 
     // MuscleMetabolicPowerProbeBhargava2004 Power Probe: MECHANICAL WORK RATE (unnormalized)
     MuscleMetabolicPowerProbeBhargava2004* BhargavaWorkUnnormalized = new MuscleMetabolicPowerProbeBhargava2004(false, false, false, false, true);
     model.addProbe(BhargavaWorkUnnormalized);
     BhargavaWorkUnnormalized->setName("BhargavaWorkUnnormalized");
-    BhargavaWorkUnnormalized->set_metabolic_parameters(metabolicParamsBhargava);
+    BhargavaWorkUnnormalized->addMuscle("muscle", 0.5, 40, 133, 74, 111);
     cout << probeCounter++ << ") Added MuscleMetabolicPowerProbeBhargava2004 to measure MECHANICAL WORK RATE (unnormalized)" << endl;
 
     // MuscleMetabolicPowerProbeUmberger2010 Power Probe: MECHANICAL WORK RATE (unnormalized)
     MuscleMetabolicPowerProbeUmberger2010* UmbergerWorkUnnormalized = new MuscleMetabolicPowerProbeUmberger2010(false, false, false, true);
     model.addProbe(UmbergerWorkUnnormalized);
     UmbergerWorkUnnormalized->setName("UmbergerWorkUnnormalized");
-    UmbergerWorkUnnormalized->set_metabolic_parameters(metabolicParamsUmberger);
+    UmbergerWorkUnnormalized->addMuscle("muscle", 0.5, 0.5);
     cout << probeCounter++ << ") Added MuscleMetabolicPowerProbeUmberger2010 to measure MECHANICAL WORK RATE (unnormalized)" << endl;
 
     // MuscleMetabolicPowerProbeBhargava2004 Power Probe: MECHANICAL WORK RATE (normalized)
     MuscleMetabolicPowerProbeBhargava2004* BhargavaWorkNormalized = new MuscleMetabolicPowerProbeBhargava2004(false, false, false, false, true);
     model.addProbe(BhargavaWorkNormalized);
     BhargavaWorkNormalized->setName("BhargavaWorkNormalized");
-    BhargavaWorkNormalized->set_metabolic_parameters(metabolicParamsBhargava);
+    BhargavaWorkNormalized->addMuscle("muscle", 0.5, 40, 133, 74, 111);
     cout << probeCounter++ << ") Added MuscleMetabolicPowerProbeBhargava2004 to measure MECHANICAL WORK RATE (normalized)" << endl;
 
     // MuscleMetabolicPowerProbeUmberger2010 Power Probe: MECHANICAL WORK RATE (normalized)
     MuscleMetabolicPowerProbeUmberger2010* UmbergerWorkNormalized = new MuscleMetabolicPowerProbeUmberger2010(false, false, false, true);
     model.addProbe(UmbergerWorkNormalized);
     UmbergerWorkNormalized->setName("UmbergerWorkNormalized");
-    UmbergerWorkNormalized->set_metabolic_parameters(metabolicParamsUmberger);
+    UmbergerWorkNormalized->addMuscle("muscle", 0.5, 0.5);
     cout << probeCounter++ << ") Added MuscleMetabolicPowerProbeUmberger2010 to measure MECHANICAL WORK RATE (normalized)" << endl;
 
     // -------------------------------------------------------------------------------------------------
@@ -639,7 +628,7 @@ void simulateMuscle(
     MuscleMetabolicPowerProbeBhargava2004* metabolicPowerProbeBhargava = new MuscleMetabolicPowerProbeBhargava2004(true, true, true, true, true);
     model.addProbe(metabolicPowerProbeBhargava);
     metabolicPowerProbeBhargava->setName("metabolicPowerBhargava");
-    metabolicPowerProbeBhargava->set_metabolic_parameters(metabolicParamsBhargava);
+    metabolicPowerProbeBhargava->addMuscle("muscle", 0.5, 40, 133, 74, 111);
     metabolicPowerProbeBhargava->setOperation("value");
     cout << probeCounter++ << ") Added MuscleMetabolicPowerProbeBhargava2004 to measure TOTAL muscle metabolic power" << endl;
             
@@ -654,7 +643,7 @@ void simulateMuscle(
     MuscleMetabolicPowerProbeUmberger2010* metabolicPowerProbeUmberger = new MuscleMetabolicPowerProbeUmberger2010(true, true, true, true);
     model.addProbe(metabolicPowerProbeUmberger);
     metabolicPowerProbeUmberger->setName("metabolicPowerUmberger");
-    metabolicPowerProbeUmberger->set_metabolic_parameters(metabolicParamsUmberger);
+    metabolicPowerProbeUmberger->addMuscle("muscle", 0.5, 0.5);
     metabolicPowerProbeUmberger->setOperation("value");
     cout << probeCounter++ << ") Added MuscleMetabolicPowerProbeUmberger2010 to measure TOTAL muscle metabolic power" << endl;
             
