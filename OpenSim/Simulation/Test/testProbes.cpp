@@ -143,7 +143,7 @@ int main()
 
     catch (const Exception& e) { 
         e.print(cerr);
-        failures.push_back("testMillard2012EquilibriumMuscle");
+        failures.push_back("testProbes");
     }
 
 
@@ -527,7 +527,9 @@ void simulateMuscle(
     MuscleMetabolicPowerProbeBhargava2004* BhargavaMain = new MuscleMetabolicPowerProbeBhargava2004(false, true, false, false, false);
     model.addProbe(BhargavaMain);
     BhargavaMain->setName("BhargavaMain");
+    cout << "getNumMetabolicMusclesBefore = " << BhargavaMain->getNumMetabolicMuscles() << endl;
     BhargavaMain->addMuscle("muscle", 0.1, 44, 230, 104, 211);
+    cout << "getNumMetabolicMusclesAfter = " << BhargavaMain->getNumMetabolicMuscles() << endl;
     if (BhargavaMain->getNumMetabolicMuscles() != 1) {
         cout << "getNumMetabolicMuscles = " << BhargavaMain->getNumMetabolicMuscles() << endl;
         throw (OpenSim::Exception("(sizecheck A) Incorrect MetabolicMuscleParameterSet size (should be 1)"));
@@ -671,7 +673,10 @@ void simulateMuscle(
        own them (and try to free)*/
 //	model.disownAllComponents();
     model.setName("testProbesModel");
+    cout << "Saving model... " << endl;
     model.print("testProbesModel.osim");
+    cout << "Re-loading model... " << endl;
+    Model reloadedModel = Model("testProbesModel.osim");
 
     /* Setup analyses and reporters. */
     ProbeReporter* probeReporter = new ProbeReporter(&model);

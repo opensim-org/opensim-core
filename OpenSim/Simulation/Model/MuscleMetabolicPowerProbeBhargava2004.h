@@ -198,7 +198,7 @@ public:
         double,
         "Basal metabolic exponent.");
 
-    OpenSim_DECLARE_PROPERTY(metabolic_parameters,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(
         MetabolicMuscleParameterSet,
         "A MetabolicMuscleParameterSet containing the muscle information "
         "required to calculate metabolic energy expenditure. If multiple "
@@ -407,7 +407,8 @@ public:
 	class OSIMSIMULATION_API 
 		MetabolicMuscleParameter : public Object  
 	{
-		OpenSim_DECLARE_CONCRETE_OBJECT(MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter, Object);
+		OpenSim_DECLARE_CONCRETE_OBJECT(
+            MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter, Object);
 	public:
 	//==============================================================================
 	// PROPERTIES
@@ -527,10 +528,12 @@ public:
 	 * MetabolicMuscleParameters for each muscle.
 	 */
 	class OSIMSIMULATION_API 
-		MetabolicMuscleParameterSet : public Set<MetabolicMuscleParameter>
+        MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameterSet
+        : public Set<MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter>
 	{
 		OpenSim_DECLARE_CONCRETE_OBJECT(
-			MetabolicMuscleParameterSet, Set<MetabolicMuscleParameter>);
+			MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameterSet, 
+            Set<MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter>);
 
 	public:
 		MetabolicMuscleParameterSet()  { setAuthors("Tim Dorn"); }

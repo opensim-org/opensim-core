@@ -100,7 +100,7 @@ void MuscleMetabolicPowerProbeBhargava2004::constructProperties()
     constructProperty_use_force_dependent_shortening_prop_constant(false);
     constructProperty_basal_coefficient(1.2);  // default value for standing (Umberger, 2003, p105)
     constructProperty_basal_exponent(1.0);
-    constructProperty_metabolic_parameters(MetabolicMuscleParameterSet());
+    constructProperty_MetabolicMuscleParameterSet(MetabolicMuscleParameterSet());
 }
 
 
@@ -119,9 +119,9 @@ void MuscleMetabolicPowerProbeBhargava2004::connectToModel(Model& aModel)
 {
     Super::connectToModel(aModel);
 
-    const int nM = get_metabolic_parameters().getSize();
+    const int nM = get_MetabolicMuscleParameterSet().getSize();
     for (int i=0; i<nM; ++i) {
-        connectIndividualMetabolicMuscle(aModel, upd_metabolic_parameters()[i]);
+        connectIndividualMetabolicMuscle(aModel, upd_MetabolicMuscleParameterSet()[i]);
     }
 }
 
@@ -237,13 +237,13 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
     
 
     // Loop through each muscle in the MetabolicMuscleParameterSet
-    const int nM = get_metabolic_parameters().getSize();
+    const int nM = get_MetabolicMuscleParameterSet().getSize();
     Vector Edot(nM);
     for (int i=0; i<nM; i++)
     {
         // Get the current muscle parameters from the MetabolicMuscleParameterSet
         // and the corresponding OpenSim::Muscle pointer from the muscleMap.
-        MetabolicMuscleParameter& mm = get_metabolic_parameters()[i];   
+        MetabolicMuscleParameter& mm = get_MetabolicMuscleParameterSet()[i];   
         const Muscle* m = mm.getMuscle();
 
         // Get important muscle values at the current time state
@@ -455,7 +455,7 @@ Array<string> MuscleMetabolicPowerProbeBhargava2004::getProbeOutputLabels() cons
 const int MuscleMetabolicPowerProbeBhargava2004::
 	getNumMetabolicMuscles() const  
 { 
-	return get_metabolic_parameters().getSize(); 
+	return get_MetabolicMuscleParameterSet().getSize(); 
 }
 
 
@@ -480,8 +480,8 @@ void MuscleMetabolicPowerProbeBhargava2004::
             maintenance_constant_slow_twitch, 
             maintenance_constant_fast_twitch);
         
-    connectIndividualMetabolicMuscle(*_model, *mm);   // do checks and add to muscleMap 
-    upd_metabolic_parameters().adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
+    connectIndividualMetabolicMuscle(*_model, *mm);          // do checks and add to muscleMap 
+    upd_MetabolicMuscleParameterSet().adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
 }
 
 
@@ -508,8 +508,8 @@ void MuscleMetabolicPowerProbeBhargava2004::
             maintenance_constant_fast_twitch,
 			muscle_mass);
         
-    connectIndividualMetabolicMuscle(*_model, *mm);   // do checks and add to muscleMap 
-    upd_metabolic_parameters().adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
+    connectIndividualMetabolicMuscle(*_model, *mm);          // do checks and add to muscleMap 
+    upd_MetabolicMuscleParameterSet().adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
 }
 
 
@@ -529,13 +529,13 @@ void MuscleMetabolicPowerProbeBhargava2004::
     // Step 2: Remove the MetabolicMuscleParameter object from
     // the MetabolicMuscleParameterSet.
     // -----------------------------------------------------------------
-    const int k = get_metabolic_parameters().getIndex(muscleName);
+    const int k = get_MetabolicMuscleParameterSet().getIndex(muscleName);
     if (k<0) {
         cout << "WARNING: MetabolicMuscleParameter: Invalid muscle '" 
             << muscleName << "' specified. No metabolic muscles removed." << endl;
         return;
     }
-    upd_metabolic_parameters().remove(k);
+    upd_MetabolicMuscleParameterSet().remove(k);
 }
 
 
