@@ -42,9 +42,6 @@ function prescribeMotionInModel(Model_In, Mot_In, Model_Out)
 
 import org.opensim.modeling.*
 
-% Turn up debug level so that exceptions due to typos etc. are handled gracefully
-OpenSimObject.setDebugLevel(3);
-
 % Argument checking
 error(nargchk(0, 3, nargin));
 

@@ -43,9 +43,6 @@ function strengthScaler(scaleFactor, Model_In, Model_Out)
 
 import org.opensim.modeling.*
 
-% Turn up debug level so that exceptions due to typos etc. are handled gracefully
-OpenSimObject.setDebugLevel(3);
-
 error(nargchk(1, 3, nargin));
 
 if nargin < 2
