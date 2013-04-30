@@ -410,11 +410,11 @@ bool OpenSimContext::processModelScale(ModelScaler& modelScaler,
                      const std::string& aPathToSubject,
                      double aFinalMass) {
   aModel->getMultibodySystem().realizeTopology();
-    _configState=&aModel->updMultibodySystem().updDefaultState();
+    _configState=&aModel->updWorkingState();
   bool retValue= modelScaler.processModel(*_configState, aModel, aPathToSubject, aFinalMass);
   // Model has changed need to recreate a valid state
   aModel->getMultibodySystem().realizeTopology();
-    _configState=&aModel->updMultibodySystem().updDefaultState();
+    _configState=&aModel->updWorkingState();
   aModel->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
   return retValue;
 }
