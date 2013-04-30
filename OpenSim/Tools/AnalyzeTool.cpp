@@ -290,7 +290,7 @@ createStatesStorageFromCoordinatesAndSpeeds(const Model& aModel, const Storage& 
 	stateNames.insert(0, "time");
 
 	//Get the default state resulting from initializing the state after system creation
-	const SimTK::State &s = aModel.getMultibodySystem().getDefaultState();
+	const SimTK::State &s = aModel.getWorkingState();
 
 	Storage *statesStore = new Storage(512,"states");
 	statesStore->setColumnLabels(stateNames);

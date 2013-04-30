@@ -1401,7 +1401,7 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
 		initSystem();	// This crashes now trying to delete the old matterSubsystem
     	updSimbodyEngine().connectSimbodyEngineToModel(*this);
 	    getMultibodySystem().realizeTopology();
-        SimTK::State& newState = updMultibodySystem().updDefaultState();
+        SimTK::State& newState = updWorkingState();
         getMultibodySystem().realize( newState, SimTK::Stage::Velocity);
 
 		for (i = 0; i < _forceSet.getSize(); i++) {
