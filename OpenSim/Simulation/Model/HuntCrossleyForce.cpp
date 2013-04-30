@@ -139,7 +139,7 @@ double HuntCrossleyForce::getDissipation()   {
 void HuntCrossleyForce::setDissipation(double dissipation) {
         if (get_contact_parameters().getSize()==0)
             updContactParametersSet().adoptAndAppend(new HuntCrossleyForce::ContactParameters());
-        upd_contact_parameters()[0].setStiffness(dissipation); 
+        upd_contact_parameters()[0].setDissipation(dissipation); 
 };
 double HuntCrossleyForce::getStaticFriction()  { 
     if (get_contact_parameters().getSize()==0)
@@ -149,7 +149,7 @@ double HuntCrossleyForce::getStaticFriction()  {
 void HuntCrossleyForce::setStaticFriction(double friction) {
         if (get_contact_parameters().getSize()==0)
             updContactParametersSet().adoptAndAppend(new HuntCrossleyForce::ContactParameters());
-        upd_contact_parameters()[0].setStiffness(friction); 
+        upd_contact_parameters()[0].setStaticFriction(friction); 
 };
 double HuntCrossleyForce::getDynamicFriction()   { 
     if (get_contact_parameters().getSize()==0)
@@ -159,7 +159,7 @@ double HuntCrossleyForce::getDynamicFriction()   {
 void HuntCrossleyForce::setDynamicFriction(double friction) {
         if (get_contact_parameters().getSize()==0)
             updContactParametersSet().adoptAndAppend(new HuntCrossleyForce::ContactParameters());
-        upd_contact_parameters()[0].setStiffness(friction); 
+        upd_contact_parameters()[0].setDynamicFriction(friction); 
 };
 double HuntCrossleyForce::getViscousFriction()   { 
     if (get_contact_parameters().getSize()==0)
@@ -169,7 +169,7 @@ double HuntCrossleyForce::getViscousFriction()   {
 void HuntCrossleyForce::setViscousFriction(double friction) {
         if (get_contact_parameters().getSize()==0)
             updContactParametersSet().adoptAndAppend(new HuntCrossleyForce::ContactParameters());
-        upd_contact_parameters()[0].setStiffness(friction); 
+        upd_contact_parameters()[0].setViscousFriction(friction); 
 };
 
 void HuntCrossleyForce::addGeometry(const std::string& name)
