@@ -26,7 +26,7 @@
 import org.opensim.modeling.*
 
 % Read in osim model
-modelFile = getInstallDir() + strcat('Models',filesep,'Arm26.osim');
+modelFile = strcat('testData',filesep,'Arm26_Optimize.osim');
 %Create the Original OpenSim model from a .osim file
 osimModel = Model(modelFile);
 state = osimModel.initSystem;
