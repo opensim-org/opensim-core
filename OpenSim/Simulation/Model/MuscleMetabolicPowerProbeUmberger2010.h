@@ -382,11 +382,11 @@ public:
 		OpenSim_DECLARE_PROPERTY(ratio_slow_twitch_fibers, double,
 			"Ratio of slow twitch fibers in the muscle (must be between 0 and 1).");
 
-		OpenSim_DECLARE_OPTIONAL_PROPERTY(use_provided_muscle_mass, bool,
+		OpenSim_DECLARE_PROPERTY(use_provided_muscle_mass, bool,
 			"An optional flag that allows the user to explicitly specify a muscle mass. "
 			"If set to true, the <provided_muscle_mass> property must be specified.");
 
-		OpenSim_DECLARE_OPTIONAL_PROPERTY(provided_muscle_mass, double,
+		OpenSim_DECLARE_PROPERTY(provided_muscle_mass, double,
 			"The user specified muscle mass (kg).");
 		/**@}**/
 
