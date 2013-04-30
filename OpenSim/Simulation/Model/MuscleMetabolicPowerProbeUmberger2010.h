@@ -447,12 +447,12 @@ public:
 	 * of MetabolicMuscleParameters for each muscle that is probed.
 	 */
 	class OSIMSIMULATION_API 
-        MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameterSet 
-		: public Set<MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameter>
+        MetabolicMuscleParameterSet 
+		: public Set<MetabolicMuscleParameter>
 	{
 		OpenSim_DECLARE_CONCRETE_OBJECT(
-			MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameterSet, 
-            Set<MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameter>);
+			MetabolicMuscleParameterSet, 
+            Set<MetabolicMuscleParameter>);
 
 	public:
 		MetabolicMuscleParameterSet()  { setAuthors("Tim Dorn"); }   
