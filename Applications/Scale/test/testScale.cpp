@@ -66,13 +66,13 @@ void compareModel(const Model& resultModel, const std::string& stdFileName, doub
 	Model* refModel = new Model(stdFileName);
 	SimTK::State& sStd = refModel->initSystem();
 
-	SimTK::State& s = resultModel.updMultibodySystem().updDefaultState();
-	resultModel.updMultibodySystem().realize(s, SimTK::Stage::Velocity);
+	const SimTK::State& s = resultModel.getWorkingState();
+	resultModel.getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
 	ASSERT(sStd.getNQ()==s.getNQ());	
 	// put them in same configuration
 	sStd.updQ() = s.getQ();
-	refModel->updMultibodySystem().realize(sStd, SimTK::Stage::Velocity);
+	refModel->getMultibodySystem().realize(sStd, SimTK::Stage::Velocity);
 
 	ASSERT(sStd.getNU()==s.getNU());	
 	ASSERT(sStd.getNZ()==s.getNZ());	
@@ -105,8 +105,8 @@ void scaleGait2354()
 
 	model = subject->createModel();
 
-    SimTK::State& s = model->updMultibodySystem().updDefaultState();
-    model->updMultibodySystem().realize(s, SimTK::Stage::Position );
+    SimTK::State& s = model->updWorkingState();
+    model->getMultibodySystem().realize(s, SimTK::Stage::Position );
 
 	if(!model) {
 		//throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
@@ -161,22 +161,20 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
 
 	// processedModelContext.processModelScale(scaleTool.getModelScaler(), processedModel, "", scaleTool.getSubjectMass())
 	guiModel.getMultibodySystem().realizeTopology();
-	SimTK::State* configState=&guiModel.updMultibodySystem().updDefaultState();
+	SimTK::State* configState=&guiModel.updWorkingState();
 	bool retValue= subject->getModelScaler().processModel(*configState, &guiModel, setupFilePath, subject->getSubjectMass());
 	// Model has changed need to recreate a valid state 
 	guiModel.getMultibodySystem().realizeTopology();
-    configState=&guiModel.updMultibodySystem().updDefaultState();
+    configState=&guiModel.updWorkingState();
 	guiModel.getMultibodySystem().realize(*configState, SimTK::Stage::Position);
 
-	/*
+
 	if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply()) {
 		MarkerPlacer& placer = subject->getMarkerPlacer();
-	    if( false == placer.processModel(s, model, subject->getPathToSubject())) return(false);
+	    if( false == placer.processModel(*configState, &guiModel, subject->getPathToSubject())) 
+			throw Exception("testScale filed to place markers");
 	}
-	else {
-        return(1);
-	}
-	*/
+
 	// Compare ScaleSet
 	ScaleSet stdScaleSet = ScaleSet(setupFilePath+"std_subject01_scaleSet_applied.xml");
 
