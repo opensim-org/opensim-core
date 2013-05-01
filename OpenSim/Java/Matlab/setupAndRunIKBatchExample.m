@@ -91,8 +91,5 @@ for trial= 1:nTrials;
     fprintf(['Performing IK on cycle # ' num2str(trial) '\n']);
     % Run IK
     ikTool.run();
-    
-    % Rename the out.log so that it doesn't get overwritten
-    copyfile('out.log',[results_folder '\' name '_out.log'])
 
 end
