@@ -542,8 +542,10 @@ bool CMCTool::run()
 	if(desiredKinFlag) {
         _model->getMultibodySystem().realize(s, Stage::Time );
 	    _model->getSimbodyEngine().formCompleteStorages(s, *desiredKinStore,qStore,uStore);
-		_model->getSimbodyEngine().convertDegreesToRadians(*qStore);
-		_model->getSimbodyEngine().convertDegreesToRadians(*uStore);
+		if(qStore->isInDegrees()){
+			_model->getSimbodyEngine().convertDegreesToRadians(*qStore);
+			_model->getSimbodyEngine().convertDegreesToRadians(*uStore);
+		}
 	}
 
 	// Spline
@@ -571,8 +573,6 @@ bool CMCTool::run()
 		qSet = new GCVSplineSet(5,qStore);
 		delete qStore; qStore = NULL;
 
-		delete uStore;
-		uStore = qSet->constructStorage(1);
 		uSet = new GCVSplineSet(5,uStore);
 		delete uStore; uStore=NULL;
 
