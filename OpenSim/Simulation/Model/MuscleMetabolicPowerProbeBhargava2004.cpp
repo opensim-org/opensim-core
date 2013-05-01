@@ -591,7 +591,7 @@ void MuscleMetabolicPowerProbeBhargava2004::
 
 //_____________________________________________________________________________
 /**
-/* Get whether the muscle mass is being explicitly provided.
+ * Get whether the muscle mass is being explicitly provided.
  * True means that it is using the property <provided_muscle_mass>
  * False means that the muscle mass is being calculated from muscle properties. 
  */
@@ -604,7 +604,7 @@ bool MuscleMetabolicPowerProbeBhargava2004::
 
 //_____________________________________________________________________________
 /**
-/* Get the muscle mass used in the metabolic analysis. 
+ * Get the muscle mass used in the metabolic analysis. 
  */
 const double MuscleMetabolicPowerProbeBhargava2004::
 	getMuscleMass(const std::string& muscleName) const 
@@ -615,7 +615,7 @@ const double MuscleMetabolicPowerProbeBhargava2004::
 
 //_____________________________________________________________________________
 /**
-/* Get the ratio of slow twitch fibers for an existing muscle. 
+ * Get the ratio of slow twitch fibers for an existing muscle. 
  */
 const double MuscleMetabolicPowerProbeBhargava2004::
 	getRatioSlowTwitchFibers(const std::string& muscleName) const 
@@ -626,7 +626,7 @@ const double MuscleMetabolicPowerProbeBhargava2004::
 
 //_____________________________________________________________________________
 /**
-/* Set the ratio of slow twitch fibers for an existing muscle. 
+ * Set the ratio of slow twitch fibers for an existing muscle. 
  */
 void MuscleMetabolicPowerProbeBhargava2004::
 	setRatioSlowTwitchFibers(const std::string& muscleName, const double& ratio) 
@@ -637,7 +637,7 @@ void MuscleMetabolicPowerProbeBhargava2004::
 
 //_____________________________________________________________________________
 /** 
-/* Get the activation constant for slow twitch fibers for an existing muscle. 
+ * Get the activation constant for slow twitch fibers for an existing muscle. 
  */
 const double MuscleMetabolicPowerProbeBhargava2004::
 	getActivationConstantSlowTwitch(const std::string& muscleName) const
@@ -648,7 +648,7 @@ const double MuscleMetabolicPowerProbeBhargava2004::
 
 //_____________________________________________________________________________
 /** 
-/* Set the activation constant for slow twitch fibers for an existing muscle. 
+ * Set the activation constant for slow twitch fibers for an existing muscle. 
  */
 void MuscleMetabolicPowerProbeBhargava2004::
 	setActivationConstantSlowTwitch(const std::string& muscleName, const double& c) 
@@ -659,7 +659,7 @@ void MuscleMetabolicPowerProbeBhargava2004::
 
 //_____________________________________________________________________________
 /** 
-Get the activation constant for fast twitch fibers for an existing muscle. 
+ * Get the activation constant for fast twitch fibers for an existing muscle. 
  */
 const double MuscleMetabolicPowerProbeBhargava2004::
 	getActivationConstantFastTwitch(const std::string& muscleName) const 
@@ -670,7 +670,7 @@ const double MuscleMetabolicPowerProbeBhargava2004::
 
 //_____________________________________________________________________________
 /** 
-/* Set the activation constant for fast twitch fibers for an existing muscle. 
+ * Set the activation constant for fast twitch fibers for an existing muscle. 
  */
 void MuscleMetabolicPowerProbeBhargava2004::
 	setActivationConstantFastTwitch(const std::string& muscleName, const double& c) 
@@ -681,7 +681,7 @@ void MuscleMetabolicPowerProbeBhargava2004::
 
 //_____________________________________________________________________________
 /** 
-/* Get the maintenance constant for slow twitch fibers for an existing muscle. 
+ * Get the maintenance constant for slow twitch fibers for an existing muscle. 
  */
 const double MuscleMetabolicPowerProbeBhargava2004::
 	getMaintenanceConstantSlowTwitch(const std::string& muscleName) const 
@@ -692,8 +692,8 @@ const double MuscleMetabolicPowerProbeBhargava2004::
 
 //_____________________________________________________________________________
 /** 
-/* Set the maintenance constant for slow twitch fibers for an existing muscle. 
-*/
+ * Set the maintenance constant for slow twitch fibers for an existing muscle. 
+ */
 void MuscleMetabolicPowerProbeBhargava2004::
 	setMaintenanceConstantSlowTwitch(const std::string& muscleName, const double& c) 
 { 
@@ -703,7 +703,7 @@ void MuscleMetabolicPowerProbeBhargava2004::
 
 //_____________________________________________________________________________
 /** 
-/* Get the maintenance constant for fast twitch fibers for an existing muscle. 
+ * Get the maintenance constant for fast twitch fibers for an existing muscle. 
  */
 const double MuscleMetabolicPowerProbeBhargava2004::
 	getMaintenanceConstantFastTwitch(const std::string& muscleName) const 
@@ -714,7 +714,7 @@ const double MuscleMetabolicPowerProbeBhargava2004::
 
 //_____________________________________________________________________________
 /** 
-/* Set the maintenance constant for fast twitch fibers for an existing muscle. 
+ * Set the maintenance constant for fast twitch fibers for an existing muscle. 
  */
 void MuscleMetabolicPowerProbeBhargava2004::
 	setMaintenanceConstantFastTwitch(const std::string& muscleName, const double& c) 
