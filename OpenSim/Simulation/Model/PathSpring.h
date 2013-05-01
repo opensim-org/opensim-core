@@ -96,7 +96,7 @@ public:
     // assignment operator.
 
 	//--------------------------------------------------------------------------
-	// /** <B> Get and set PathSpring properties </B>
+	//  <B> Get and set PathSpring properties </B>
 	//--------------------------------------------------------------------------
 	// Properties
 	/** get/set the resting length */
@@ -122,7 +122,7 @@ public:
     {   return upd_GeometryPath(); }
 
 	//--------------------------------------------------------------------------
-	/** <B> State dependent values </B>
+	//  <B> State dependent values </B>
 	//--------------------------------------------------------------------------
 	/** get the length of the PathSpring. Accessible at Stage::Position*/
 	double getLength(const SimTK::State& s) const;
