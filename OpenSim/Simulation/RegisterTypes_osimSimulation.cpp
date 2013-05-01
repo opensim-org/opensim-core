@@ -214,11 +214,11 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( JointInternalPowerProbe() );
     Object::registerType( SystemEnergyProbe() );
     Object::registerType( MuscleMetabolicPowerProbeUmberger2010() );
-    Object::registerType( MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameterSet() );
-    Object::registerType( MuscleMetabolicPowerProbeUmberger2010::MetabolicMuscleParameter() );
+    Object::registerType( MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet() );
+    Object::registerType( MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter() );
     Object::registerType( MuscleMetabolicPowerProbeBhargava2004() );
-    Object::registerType( MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameterSet() );
-    Object::registerType( MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter() );
+    Object::registerType( MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet() );
+    Object::registerType( MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter() );
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.

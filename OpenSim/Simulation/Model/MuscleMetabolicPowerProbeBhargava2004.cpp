@@ -100,7 +100,8 @@ void MuscleMetabolicPowerProbeBhargava2004::constructProperties()
     constructProperty_use_force_dependent_shortening_prop_constant(false);
     constructProperty_basal_coefficient(1.2);  // default value for standing (Umberger, 2003, p105)
     constructProperty_basal_exponent(1.0);
-    constructProperty_MetabolicMuscleParameterSet(MetabolicMuscleParameterSet());
+    constructProperty_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet
+       (MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet());
 }
 
 
@@ -119,9 +120,12 @@ void MuscleMetabolicPowerProbeBhargava2004::connectToModel(Model& aModel)
 {
     Super::connectToModel(aModel);
 
-    const int nM = get_MetabolicMuscleParameterSet().getSize();
+    const int nM = 
+        get_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()
+        .getSize();
     for (int i=0; i<nM; ++i) {
-        connectIndividualMetabolicMuscle(aModel, upd_MetabolicMuscleParameterSet()[i]);
+        connectIndividualMetabolicMuscle(aModel, 
+            upd_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()[i]);
     }
 }
 
@@ -135,7 +139,8 @@ void MuscleMetabolicPowerProbeBhargava2004::connectToModel(Model& aModel)
  *
  */
 void MuscleMetabolicPowerProbeBhargava2004::connectIndividualMetabolicMuscle(
-    Model& aModel, MetabolicMuscleParameter& mm)
+    Model& aModel, 
+    MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter& mm)
 {
     stringstream errorMessage;
 
@@ -218,7 +223,8 @@ void MuscleMetabolicPowerProbeBhargava2004::connectIndividualMetabolicMuscle(
  * Units = W.
  * Note: for muscle velocities, Vm, we define Vm<0 as shortening and Vm>0 as lengthening.
  */
-SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const State& s) const
+SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::
+computeProbeInputs(const State& s) const
 {
     // Initialize metabolic energy rate values
     double Adot, Mdot, Sdot, Bdot, Wdot;
@@ -237,13 +243,16 @@ SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::computeProbeInputs(const St
     
 
     // Loop through each muscle in the MetabolicMuscleParameterSet
-    const int nM = get_MetabolicMuscleParameterSet().getSize();
+    const int nM = 
+        get_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()
+        .getSize();
     Vector Edot(nM);
     for (int i=0; i<nM; i++)
     {
         // Get the current muscle parameters from the MetabolicMuscleParameterSet
         // and the corresponding OpenSim::Muscle pointer from the muscleMap.
-        MetabolicMuscleParameter& mm = get_MetabolicMuscleParameterSet()[i];   
+        MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter& mm = 
+            get_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()[i];   
         const Muscle* m = mm.getMuscle();
 
         // Get important muscle values at the current time state
@@ -455,7 +464,8 @@ Array<string> MuscleMetabolicPowerProbeBhargava2004::getProbeOutputLabels() cons
 const int MuscleMetabolicPowerProbeBhargava2004::
 	getNumMetabolicMuscles() const  
 { 
-	return get_MetabolicMuscleParameterSet().getSize(); 
+	return get_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()
+        .getSize(); 
 }
 
 
@@ -472,7 +482,8 @@ void MuscleMetabolicPowerProbeBhargava2004::
     double maintenance_constant_slow_twitch,
     double maintenance_constant_fast_twitch)
 {
-    MetabolicMuscleParameter* mm = new MetabolicMuscleParameter(
+    MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter* mm = 
+        new MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter(
             muscleName,
             ratio_slow_twitch_fibers, 
             activation_constant_slow_twitch, 
@@ -481,7 +492,8 @@ void MuscleMetabolicPowerProbeBhargava2004::
             maintenance_constant_fast_twitch);
         
     connectIndividualMetabolicMuscle(*_model, *mm);          // do checks and add to muscleMap 
-    upd_MetabolicMuscleParameterSet().adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
+    upd_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()
+        .adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
 }
 
 
@@ -499,7 +511,8 @@ void MuscleMetabolicPowerProbeBhargava2004::
     double maintenance_constant_fast_twitch,
 	double muscle_mass)
 {
-    MetabolicMuscleParameter* mm = new MetabolicMuscleParameter(
+    MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter* mm = 
+        new MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter(
             muscleName,
             ratio_slow_twitch_fibers, 
             activation_constant_slow_twitch, 
@@ -509,7 +522,8 @@ void MuscleMetabolicPowerProbeBhargava2004::
 			muscle_mass);
         
     connectIndividualMetabolicMuscle(*_model, *mm);          // do checks and add to muscleMap 
-    upd_MetabolicMuscleParameterSet().adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
+    upd_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()
+        .adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
 }
 
 
@@ -529,13 +543,16 @@ void MuscleMetabolicPowerProbeBhargava2004::
     // Step 2: Remove the MetabolicMuscleParameter object from
     // the MetabolicMuscleParameterSet.
     // -----------------------------------------------------------------
-    const int k = get_MetabolicMuscleParameterSet().getIndex(muscleName);
+    const int k = 
+        get_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()
+        .getIndex(muscleName);
     if (k<0) {
         cout << "WARNING: MetabolicMuscleParameter: Invalid muscle '" 
             << muscleName << "' specified. No metabolic muscles removed." << endl;
         return;
     }
-    upd_MetabolicMuscleParameterSet().remove(k);
+    upd_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()
+        .remove(k);
 }
 
 
@@ -547,7 +564,8 @@ void MuscleMetabolicPowerProbeBhargava2004::
 void MuscleMetabolicPowerProbeBhargava2004::
 	useProvidedMass(const string& muscleName, double providedMass)
 {
-    MetabolicMuscleParameter* mm = updMetabolicParameters(muscleName);
+    MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter* mm = 
+        updMetabolicParameters(muscleName);
 
     mm->set_use_provided_muscle_mass(true);
     mm->set_provided_muscle_mass(providedMass);
@@ -563,7 +581,8 @@ void MuscleMetabolicPowerProbeBhargava2004::
 void MuscleMetabolicPowerProbeBhargava2004::
 	useCalculatedMass(const string& muscleName)
 {
-    MetabolicMuscleParameter* mm = updMetabolicParameters(muscleName);
+    MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter* mm = 
+        updMetabolicParameters(muscleName);
 
     mm->set_use_provided_muscle_mass(false);
     mm->setMuscleMass();       // actual mass used.
@@ -709,7 +728,7 @@ void MuscleMetabolicPowerProbeBhargava2004::
  * PRIVATE: Get const MetabolicMuscleParameter from the MuscleMap using a 
  * string accessor.
  */
-const MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter* 
+const MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter* 
     MuscleMetabolicPowerProbeBhargava2004::getMetabolicParameters(
     const std::string& muscleName) const
 {
@@ -729,7 +748,7 @@ const MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter*
  * PRIVATE: Get writable MetabolicMuscleParameter from the MuscleMap using a 
  * string accessor.
  */
-MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter* 
+MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter* 
     MuscleMetabolicPowerProbeBhargava2004::updMetabolicParameters(
     const std::string& muscleName)
 {
@@ -755,16 +774,16 @@ MuscleMetabolicPowerProbeBhargava2004::MetabolicMuscleParameter*
 //--------------------------------------------------------------------------
 // Constructors
 //--------------------------------------------------------------------------
-MuscleMetabolicPowerProbeBhargava2004::
-	MetabolicMuscleParameter::MetabolicMuscleParameter() 
+MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter::
+MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter() 
 {
 	setNull();
 	constructProperties(); 
 }
 
 
-MuscleMetabolicPowerProbeBhargava2004::
-	MetabolicMuscleParameter::MetabolicMuscleParameter(
+MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter::
+MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter(
 	const std::string& muscleName,
 	double ratio_slow_twitch_fibers, 
 	double muscle_mass)
@@ -785,8 +804,8 @@ MuscleMetabolicPowerProbeBhargava2004::
 }
 
 
-MuscleMetabolicPowerProbeBhargava2004::
-	MetabolicMuscleParameter::MetabolicMuscleParameter(
+MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter::
+MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter(
 	const std::string& muscleName,
 	double ratio_slow_twitch_fibers,
 	double activation_constant_slow_twitch,
@@ -818,8 +837,8 @@ MuscleMetabolicPowerProbeBhargava2004::
 //--------------------------------------------------------------------------
 // Set muscle mass
 //--------------------------------------------------------------------------
-void MuscleMetabolicPowerProbeBhargava2004::
-	MetabolicMuscleParameter::setMuscleMass()    
+void MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter::
+setMuscleMass()    
 { 
 	if (get_use_provided_muscle_mass())
 		_muscMass = get_provided_muscle_mass();
@@ -834,8 +853,7 @@ void MuscleMetabolicPowerProbeBhargava2004::
 //--------------------------------------------------------------------------
 // Object interface
 //--------------------------------------------------------------------------
-void MuscleMetabolicPowerProbeBhargava2004::
-	MetabolicMuscleParameter::setNull()
+void MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter::setNull()
 {
 	setAuthors("Tim Dorn");
 	// Actual muscle mass used. If <use_provided_muscle_mass> == true, 
@@ -847,8 +865,8 @@ void MuscleMetabolicPowerProbeBhargava2004::
 	_musc = NULL;
 }
 
-void MuscleMetabolicPowerProbeBhargava2004::
-	MetabolicMuscleParameter::constructProperties()
+void MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter::
+constructProperties()
 {
 	constructProperty_specific_tension(0.25e6);  // (Pascals (N/m^2)), specific tension of mammalian muscle.
 	constructProperty_density(1059.7);           // (kg/m^3), density of mammalian muscle.
