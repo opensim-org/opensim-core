@@ -564,6 +564,8 @@ bool CMCTool::run()
 
 	GCVSplineSet *qSet=NULL;
 	GCVSplineSet *uSet=NULL;
+	GCVSplineSet *uDotSet=NULL;
+
 	if(desiredKinFlag) {
 		cout<<"\nConstructing function set for tracking desired kinematics...\n\n";
 		qSet = new GCVSplineSet(5,qStore);
@@ -574,12 +576,14 @@ bool CMCTool::run()
 		uSet = new GCVSplineSet(5,uStore);
 		delete uStore; uStore=NULL;
 
+		Storage *dudtStore = uSet->constructStorage(1);
+		uDotSet = new GCVSplineSet(5,dudtStore);
+
 		// Print dudt for debugging
 		if (_verbose) {
-			Storage *dudtStore = qSet->constructStorage(2);
 			dudtStore->print("desiredKinematics_splinefit_accelerations.sto");
-			delete dudtStore; dudtStore=NULL;
 		}
+		delete dudtStore; dudtStore=NULL;
 	}
 
 	// ANALYSES
@@ -607,8 +611,10 @@ bool CMCTool::run()
 			qAndPosSet->cloneAndAppend(stateFuntcions->get(i));
 
 	}
-    taskSet.setFunctions(*qAndPosSet);  	 	 
- 
+
+    taskSet.setFunctions(*qAndPosSet);
+	taskSet.setFunctionsForVelocity(*uSet);
+	taskSet.setFunctionsForAcceleration(*uDotSet);
 
 	// CONSTRAINTS ON THE CONTROLS
 	ControlSet *controlConstraints = NULL;
