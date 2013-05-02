@@ -81,10 +81,11 @@ public:
 // PUBLIC METHODS
 //==============================================================================
 	
-	/** Defualt constructor */
+	/** Default constructor */
 	PathSpring();
 
 	/** Convenience constructor with PathSpring parameters
+     * @param name          name of this %PathSpring Object
 	 * @param restLength	the spring's resting length
 	 * @param stiffness		the spring stiffness
 	 * @param dissipation	the dissipation factor */

@@ -282,7 +282,7 @@ public:
     void useCalculatedMass(const std::string& muscleName);
 
     /** Get whether the muscle mass is being explicitly provided.
-        True means that it is using the property <provided_muscle_mass>
+        True means that it is using the property "provided_muscle_mass"
         False means that the muscle mass is being calculated from muscle properties. */
     bool isUsingProvidedMass(const std::string& muscleName);
 
@@ -356,7 +356,7 @@ public:
  *
  * OPTIONAL PROPERTIES
  * - <B>use_provided_muscle_mass</B> = An optional flag that allows the user to
- *      explicitly specify a muscle mass. If set to true, the <provided_muscle_mass>
+ *      explicitly specify a muscle mass. If set to true, the "provided_muscle_mass"
  *      property must be specified. The default setting is false, in which case, the
  *      muscle mass is calculated from the following formula:
  *          m = (Fmax/specific_tension)*density*Lm_opt, where 
