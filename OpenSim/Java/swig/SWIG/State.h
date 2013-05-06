@@ -920,7 +920,7 @@ Vector& updQErrWeights(SubsystemIndex);
 Vector& updUErrWeights(SubsystemIndex);
 
 /// You can call these as long as *system* stage >= Model.
-const Real&   getTime() const;
+const double&   getTime() const;
 const Vector& getY() const; // {Q,U,Z} packed and in that order
 
 /// These are just views into Y.
@@ -985,11 +985,11 @@ Vector& updZWeights();
 
 /// You can call these as long as System stage >= Model, but the
 /// stage will be backed up if necessary to the indicated stage.
-Real&   updTime();  // Back up to Stage::Time-1
+double&   updTime();  // Back up to Stage::Time-1
 Vector& updY();     // Back up to Stage::Dynamics-1
 
 /// An alternate syntax equivalent to updTime() and updY().
-void setTime(Real t);
+void setTime(double t);
 void setY(const Vector& y);
 
 /// These are just views into Y.
