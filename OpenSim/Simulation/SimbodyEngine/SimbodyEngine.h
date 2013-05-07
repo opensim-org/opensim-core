@@ -134,7 +134,7 @@ public:
 	// INERTIA
 	//--------------------------------------------------------------------------
 	virtual double getMass() const;
-#ifndef SWIG
+
 	virtual void getSystemInertia(const SimTK::State& s, double& rM, SimTK::Vec3& rCOM, double rI[3][3]) const;
 	virtual void getSystemInertia(const SimTK::State& s, double& rM, double *rCOM, double *rI) const;
 
@@ -167,7 +167,7 @@ public:
 	// EQUATIONS OF MOTION
 	//--------------------------------------------------------------------------
 	virtual void formEulerTransform(const SimTK::State& s, const OpenSim::Body &aBody, double *rE) const;
-#endif
+
 	//unimplemented virtual void formMassMatrix(double *rI) {};
 	//unimplemented virtual void formJacobianTranslation(const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, double *rJ, const OpenSim::Body *aRefBody=NULL) const {};
 	//unimplemented virtual void formJacobianOrientation(const OpenSim::Body &aBody, double *rJ0, const OpenSim::Body *aRefBody=NULL) const {};

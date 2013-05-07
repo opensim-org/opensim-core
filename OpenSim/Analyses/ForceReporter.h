@@ -110,7 +110,7 @@ public:
 	//--------------------------------------------------------------------------
 	void includeConstraintForces(bool flag) {_includeConstraintForces = flag;}
 
-#ifndef SWIG
+
 	virtual int
         begin(SimTK::State& s );
     virtual int
@@ -120,7 +120,7 @@ public:
 protected:
     virtual int
         record(const SimTK::State& s );
-#endif
+
 	//--------------------------------------------------------------------------
 	// IO
 	//--------------------------------------------------------------------------

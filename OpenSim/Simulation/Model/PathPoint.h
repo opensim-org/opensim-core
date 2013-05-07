@@ -113,7 +113,7 @@ public:
 	const double& getLocationCoord(int aXYZ) const { assert(aXYZ>=0 && aXYZ<=2); return _location[aXYZ]; }
 	void setLocationCoord(int aXYZ, double aValue) { assert(aXYZ>=0 && aXYZ<=2); _location[aXYZ]=aValue; }
 	// A variant that uses basic types for use by GUI
-#ifndef SWIG
+
 	void setLocation( const SimTK::State& s, const SimTK::Vec3& aLocation);
 	void setLocation( const SimTK::State& s, int aCoordIndex, double aLocation);
 	void setLocation( const SimTK::State& s, double pt[]){ // A variant that uses basic types for use by GUI
@@ -121,19 +121,19 @@ public:
 	}
 	void setBody(OpenSim::Body& aBody);
 	void changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody);
-#endif
+
 	OpenSim::Body& getBody() const { return *_body; }
 	const std::string& getBodyName() const { return _bodyName; }
 	GeometryPath* getPath() const { return _path; }
 
    virtual void scale(const SimTK::State& s, const SimTK::Vec3& aScaleFactors);
 	virtual WrapObject* getWrapObject() const { return NULL; }
-#ifndef SWIG
+
 	virtual bool isActive(const SimTK::State& s) const { return true; }
 	virtual void connectToModelAndPath(const Model& aModel, GeometryPath& aPath);
 	virtual void update(const SimTK::State& s) { }
 	virtual void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity);
-#endif
+
 	// Visible Object Support
 	virtual const VisibleObject* getDisplayer() const { return &_displayer; }
 	virtual VisibleObject*	updDisplayer() { return &_displayer; };

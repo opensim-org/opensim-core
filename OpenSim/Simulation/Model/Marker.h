@@ -122,9 +122,7 @@ public:
 	virtual bool setBodyNameUseDefault(bool aValue);
 	virtual OpenSim::Body& getBody() const { return *_body; }
 	virtual void changeBody( OpenSim::Body& aBody );
-#ifndef SWIG
 	virtual void changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody );
-#endif
 	virtual void scale(const SimTK::Vec3& aScaleFactors);
 	virtual void connectMarkerToModel(const Model& aModel);
 	virtual void updateGeometry();

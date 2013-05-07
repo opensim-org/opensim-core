@@ -142,7 +142,6 @@ public:
     // Analysis
     //--------------------------------------------------------------------------
 
-//#ifndef SWIG
     virtual int
         begin(SimTK::State& s );
     virtual int
@@ -152,7 +151,6 @@ public:
 protected:
     virtual int
         record(const SimTK::State& s );
-//#endif
 public:
     void disableIntegrationOnlyProbes() {
         ProbeSet& probes = _model->updProbeSet();
