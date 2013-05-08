@@ -529,7 +529,7 @@ double MuscleFixedWidthPennationModel::
 
     SimTK_ERRCHK_ALWAYS( fiberLength > m_parallelogramHeight ,
      "MuscleFixedWidthPennationModel::calc_DPennationAngle_DfiberLength",
-     "%s: Fiber length is below the minimum bound for this muscle.");
+     "Fiber length is below the minimum bound for this muscle.");
 
     // phi = asin( parallelogramHeight/lce)
     //d_phi/d_lce = d/dlce (asin(parallelogramHeight/lce))

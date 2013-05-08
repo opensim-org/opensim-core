@@ -250,7 +250,7 @@ double  SegmentedQuinticBezierToolkit::
     SimTK_ERRCHK1_ALWAYS( (u>=0 && u <= 1) , 
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveVal", 
         "Error: double argument u must be between 0.0 and 1.0"
-        "but %f was entered. Called by %s",u);
+        "but %f was entered.",u);
 
     
 
