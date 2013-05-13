@@ -30,6 +30,8 @@
 #include "PointActuator.h"
 #include "TorqueActuator.h"
 #include "PointToPointActuator.h"
+#include "ClutchedPathSpring.h"
+
 #include "Thelen2003Muscle.h"
 #include "Thelen2003Muscle_Deprecated.h"
 
@@ -73,6 +75,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 	Object::registerType( PointActuator() );
 	Object::registerType( TorqueActuator() );
 	Object::registerType( PointToPointActuator() );
+	Object::registerType( ClutchedPathSpring() );
 
 	Object::registerType( Thelen2003Muscle() );
 	Object::registerType( Thelen2003Muscle_Deprecated() );

@@ -51,7 +51,6 @@ using namespace std;
 const static double integ_accuracy = 1.0e-4;
 const static double duration = 1.0;
 const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
-static int counter=0;
 //==============================================================================
 
 void testPathSpring();

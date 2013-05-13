@@ -131,8 +131,8 @@ public:
 
 protected:
     /**
-     * This should be called whenever this object has been modified.  It clears the internal SimTK::Function object
-     * used to evaluate it.
+     * This should be called whenever this object has been modified.  It clears 
+	 * the internal SimTK::Function object used to evaluate it.
      */
     void resetFunction();
 

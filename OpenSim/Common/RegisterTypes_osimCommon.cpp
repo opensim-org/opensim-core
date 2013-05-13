@@ -37,6 +37,7 @@
 #include "StepFunction.h"
 #include "LinearFunction.h"
 #include "PiecewiseLinearFunction.h"
+#include "PiecewiseConstantFunction.h"
 #include "MultiplierFunction.h"
 #include "DisplayGeometry.h"
 #include "GeometrySet.h"
@@ -74,6 +75,7 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 	Object::registerType( StepFunction() );
 	Object::registerType( LinearFunction() );
 	Object::registerType( PiecewiseLinearFunction() );
+	Object::registerType( PiecewiseConstantFunction() );
 	Object::registerType( MultiplierFunction() );
 	Object::registerType( DisplayGeometry() );
 	Object::registerType( GeometrySet() );

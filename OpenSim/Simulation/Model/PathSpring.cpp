@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Peter Loan                                                      *
+ * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Author(s): Ajay Seth                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -27,7 +27,6 @@
 #include "PathSpring.h"
 #include "GeometryPath.h"
 #include "PointForceDirection.h"
-#include <OpenSim/Common/SimmSpline.h>
 
 //=============================================================================
 // STATICS
@@ -164,7 +163,7 @@ double PathSpring::getLength(const SimTK::State& s) const
 	return getGeometryPath().getLength(s);
 }
 
-double PathSpring::getStrain(const SimTK::State& s) const
+double PathSpring::getStretch(const SimTK::State& s) const
 {
 	const double& length = getLength(s);
 	const double& restingLength = get_resting_length();
@@ -183,7 +182,7 @@ double PathSpring::getTension(const SimTK::State& s) const
 	// note tension is positive and produces shortening
 	// damping opposes lengthening, which is positive lengthening speed
 	// there for stretch and lengthening speed increase tension
-	return getStiffness()*getStrain(s) *					//elastic force
+	return getStiffness()*getStretch(s) *					//elastic force
 				(1+getDissipation()*getLengtheningSpeed(s));   //dissipation 
 }
 
