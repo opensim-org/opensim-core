@@ -1,7 +1,7 @@
 #ifndef OPENSIM_METABOLIC_POWER_PROBE_UMBERGER2010_H_
 #define OPENSIM_METABOLIC_POWER_PROBE_UMBERGER2010_H_
 /* -------------------------------------------------------------------------- *
- *             OpenSim:  MuscleMetabolicPowerProbeUmberger2010.h              *
+ *               OpenSim:  MuscleMetabolicsUmberger2010Probe.h                *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -31,14 +31,14 @@
 namespace OpenSim { 
 
 // Helper classes defined below.
-class MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter;
-class MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet;
+class MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter;
+class MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet;
 
 //=============================================================================
 //             MUSCLE METABOLIC POWER PROBE (Umberger, et al., 2010)
 //=============================================================================
 /**
- * MuscleMetabolicPowerProbeUmberger2010 is a ModelComponent Probe for computing the 
+ * MuscleMetabolicsUmberger2010Probe is a ModelComponent Probe for computing the 
  * net metabolic energy rate of a set of Muscles in the model during a simulation. 
  * 
  * Based on the following papers:
@@ -54,7 +54,7 @@ class MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet;
  *
  *
  * <I>Note that the equations below that describe the particular implementation of 
- * MuscleMetabolicPowerProbeUmberger2010 may slightly differ from the equations
+ * MuscleMetabolicsUmberger2010Probe may slightly differ from the equations
  * described in the representative publications above. Note also that we define
  * positive muscle velocity to indicate lengthening (eccentric contraction) and
  * negative muscle velocity to indicate shortening (concentric contraction).</I>
@@ -141,11 +141,41 @@ class MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet;
  * activation_maintenance_rate_on == shortening_rate_on == true, then the total heat
  * rate (AMdot + Sdot) will be capped to a minimum value of 1.0 W/kg (Umberger(2003), page 104).
  *
+ *
+ *
+ *
+ * @name MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter
+ *
+ * MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter is an Object class that 
+ * holds the metabolic parameters required to calculate metabolic power for a single muscle.
+ *
+ * <H2><B> MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter Properties </B></H2>
+ *
+ * REQUIRED PROPERTIES
+ * - <B>specific_tension</B> = The specific tension of the muscle (Pascals (N/m^2)).
+ * - <B>density</B> = The density of the muscle (kg/m^3).
+ * - <B>ratio_slow_twitch_fibers</B> = Ratio of slow twitch fibers in the muscle (must be between 0 and 1).
+ *
+ * OPTIONAL PROPERTIES
+ * - <B>use_provided_muscle_mass</B> = An optional flag that allows the user to
+ *      explicitly specify a muscle mass. If set to true, the <provided_muscle_mass>
+ *      property must be specified. The default setting is false, in which case, the
+ *      muscle mass is calculated from the following formula:
+ *          m = (Fmax/specific_tension)*density*Lm_opt, where 
+ *              specific_tension and density are properties defined above
+ *                  (note that their default values are set based on mammalian muscle,
+ *                  0.25e6 N/m^2 and 1059.7 kg/m^3, respectively);
+ *              Fmax and Lm_opt are the maximum isometric force and optimal 
+ *                  fiber length, respectively, of the muscle.
+ *
+ * - <B>provided_muscle_mass</B> = The user specified muscle mass (kg).
+ *
+ *
  * @author Tim Dorn
  */
 
-class OSIMSIMULATION_API MuscleMetabolicPowerProbeUmberger2010 : public Probe {
-OpenSim_DECLARE_CONCRETE_OBJECT(MuscleMetabolicPowerProbeUmberger2010, Probe);
+class OSIMSIMULATION_API MuscleMetabolicsUmberger2010Probe : public Probe {
+OpenSim_DECLARE_CONCRETE_OBJECT(MuscleMetabolicsUmberger2010Probe, Probe);
 public:
 //==============================================================================
 // PROPERTIES
@@ -196,7 +226,7 @@ public:
         "Basal metabolic exponent.");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(
-        MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet,
+        MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet,
         "A set containing, for each muscle, the parameters "
         "required to calculate metabolic energy expenditure. If multiple "
         "muscles are contained in the set, then the probe will sum the "
@@ -209,17 +239,17 @@ public:
 //=============================================================================
     typedef std::map
        <std::string, 
-        MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter*> 
+        MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter*> 
         MuscleMap;
 
     //--------------------------------------------------------------------------
     // Constructor(s) and Setup
     //--------------------------------------------------------------------------
     /** Default constructor */
-    MuscleMetabolicPowerProbeUmberger2010();
+    MuscleMetabolicsUmberger2010Probe();
 
     /** Convenience constructor */
-    MuscleMetabolicPowerProbeUmberger2010(
+    MuscleMetabolicsUmberger2010Probe(
         const bool activation_maintenance_rate_on, 
         const bool shortening_rate_on, 
         const bool basal_rate_on, 
@@ -242,11 +272,11 @@ public:
 
 
     //-----------------------------------------------------------------------------
-    /** @name     MuscleMetabolicPowerProbeUmberger2010 Interface
+    /** @name     MuscleMetabolicsUmberger2010Probe Interface
     These accessor methods are to be used when setting up a new muscle 
     metabolic analysis from the API. The basic operation is as follows:
     @code
-    MuscleMetabolicPowerProbeUmberger2010* myProbe new MuscleMetabolicPowerProbeUmberger2010(...); 
+    MuscleMetabolicsUmberger2010Probe* myProbe new MuscleMetabolicsUmberger2010Probe(...); 
     model.addProbe(myProbe);
     myProbe->addMuscle("muscleName1", ... );
     myProbe->addMuscle("muscleName2", ... );
@@ -282,7 +312,7 @@ public:
     void useCalculatedMass(const std::string& muscleName);
 
     /** Get whether the muscle mass is being explicitly provided.
-        True means that it is using the property "provided_muscle_mass"
+        True means that it is using the property <provided_muscle_mass>
         False means that the muscle mass is being calculated from muscle properties. */
     bool isUsingProvidedMass(const std::string& muscleName);
 
@@ -316,7 +346,7 @@ private:
     void connectToModel(Model& aModel) OVERRIDE_11;
     void connectIndividualMetabolicMuscle
        (Model& aModel, 
-        MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter& mm);
+        MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter& mm);
 
     void setNull();
     void constructProperties();
@@ -326,57 +356,29 @@ private:
     // MetabolicMuscleParameter Private Interface
     //--------------------------------------------------------------------------
     // Get const MetabolicMuscleParameter from the MuscleMap using a string accessor.
-    const MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter* 
+    const MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter* 
         getMetabolicParameters(const std::string& muscleName) const;
 
     // Get writable MetabolicMuscleParameter from the MuscleMap using a string accessor.
-    MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter* 
+    MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter* 
         updMetabolicParameters(const std::string& muscleName);
 
 public:
 
 
 //=============================================================================
-};	// END of class MuscleMetabolicPowerProbeUmberger2010
+};	// END of class MuscleMetabolicsUmberger2010Probe
 //=============================================================================
 
 //==============================================================================
-//                          MetabolicMuscleParameter
+//          MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter
 //==============================================================================
-/**
- * MetabolicMuscleParameter is an internal containe class to hold the metabolic
- * parameters required to calculate metabolic power for a single muscle. 
- *
- * <H2><B> MetabolicMuscleParameter Properties </B></H2>
- *
- * REQUIRED PROPERTIES
- * - <B>specific_tension</B> = The specific tension of the muscle (Pascals (N/m^2)).
- * - <B>density</B> = The density of the muscle (kg/m^3).
- * - <B>ratio_slow_twitch_fibers</B> = Ratio of slow twitch fibers in the muscle (must be between 0 and 1).
- *
- * OPTIONAL PROPERTIES
- * - <B>use_provided_muscle_mass</B> = An optional flag that allows the user to
- *      explicitly specify a muscle mass. If set to true, the "provided_muscle_mass"
- *      property must be specified. The default setting is false, in which case, the
- *      muscle mass is calculated from the following formula:
- *          m = (Fmax/specific_tension)*density*Lm_opt, where 
- *              specific_tension and density are properties defined above
- *                  (note that their default values are set based on mammalian muscle,
- *                  0.25e6 N/m^2 and 1059.7 kg/m^3, respectively);
- *              Fmax and Lm_opt are the maximum isometric force and optimal 
- *                  fiber length, respectively, of the muscle.
- *
- * - <B>provided_muscle_mass</B> = The user specified muscle mass (kg).
- *
- *
- * @author Tim Dorn
- */
 class OSIMSIMULATION_API 
-    MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter 
+    MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter 
     : public Object  
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-        MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter, Object);
+        MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter, Object);
 public:
 //==============================================================================
 // PROPERTIES
@@ -407,9 +409,9 @@ public:
     //--------------------------------------------------------------------------
     // Constructor(s)
     //--------------------------------------------------------------------------
-    MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter(); 
+    MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter(); 
 
-    MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter(
+    MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter(
         const std::string& muscleName,
         double ratio_slow_twitch_fibers, 
         double muscle_mass = SimTK::NaN);
@@ -458,16 +460,16 @@ private:
  * of MetabolicMuscleParameters for each muscle that is probed.
  */
 class OSIMSIMULATION_API 
-    MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet 
-    : public Set<MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter>
+    MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet 
+    : public Set<MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter>
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-        MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet, 
-        Set<MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter>);
+        MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet, 
+        Set<MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter>);
 
 public:
-    MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet()  
-    {   setAuthors("Tim Dorn"); }   
+    MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet()  
+    {  }   
 
 //=============================================================================
 };	// END of class MetabolicMuscleParameterSet

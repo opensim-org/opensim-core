@@ -64,8 +64,8 @@
 #include "Model/ActuatorForceProbe.h"
 #include "Model/JointInternalPowerProbe.h"
 #include "Model/SystemEnergyProbe.h"
-#include "Model/MuscleMetabolicPowerProbeUmberger2010.h"
-#include "Model/MuscleMetabolicPowerProbeBhargava2004.h"
+#include "Model/MuscleMetabolicsUmberger2010Probe.h"
+#include "Model/MuscleMetabolicsBhargava2004Probe.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -213,12 +213,12 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ActuatorForceProbe() );
     Object::registerType( JointInternalPowerProbe() );
     Object::registerType( SystemEnergyProbe() );
-    Object::registerType( MuscleMetabolicPowerProbeUmberger2010() );
-    Object::registerType( MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet() );
-    Object::registerType( MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter() );
-    Object::registerType( MuscleMetabolicPowerProbeBhargava2004() );
-    Object::registerType( MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet() );
-    Object::registerType( MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter() );
+    Object::registerType( MuscleMetabolicsUmberger2010Probe() );
+    Object::registerType( MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet() );
+    Object::registerType( MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter() );
+    Object::registerType( MuscleMetabolicsBhargava2004Probe() );
+    Object::registerType( MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameterSet() );
+    Object::registerType( MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter() );
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.

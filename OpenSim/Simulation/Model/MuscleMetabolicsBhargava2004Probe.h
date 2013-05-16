@@ -1,7 +1,7 @@
 #ifndef OPENSIM_METABOLIC_POWER_PROBE_BHARGAVA2004_H_
 #define OPENSIM_METABOLIC_POWER_PROBE_BHARGAVA2004_H_
 /* -------------------------------------------------------------------------- *
- *             OpenSim:  MuscleMetabolicPowerProbeBhargava2004.h              *
+ *               OpenSim:  MuscleMetabolicsBhargava2004Probe.h                *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -31,14 +31,14 @@
 namespace OpenSim { 
 
 // Helper classes defined below.
-class MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter;
-class MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet;
+class MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter;
+class MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameterSet;
 
 //=============================================================================
 //             MUSCLE METABOLIC POWER PROBE (Bhargava, et al., 2004)
 //=============================================================================
 /**
- * MuscleMetabolicPowerProbeBhargava2004 is a ModelComponent Probe for computing the 
+ * MuscleMetabolicsBhargava2004Probe is a ModelComponent Probe for computing the 
  * net metabolic energy rate of a set of Muscles in the model during a simulation. 
  * 
  * Based on the following paper:
@@ -49,7 +49,7 @@ class MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet;
  * in muscle contraction. J Biomech 37, 81-8.</a>
  *
  * <I>Note that the equations below that describe the particular implementation of 
- * MuscleMetabolicPowerProbeBhargava2004 may slightly differ from the equations
+ * MuscleMetabolicsBhargava2004Probe may slightly differ from the equations
  * described in the representative publication above. Note also that we define
  * positive muscle velocity to indicate lengthening (eccentric contraction) and
  * negative muscle velocity to indicate shortening (concentric contraction).</I>
@@ -131,11 +131,45 @@ class MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet;
  * activation_rate_on == shortening_rate_on == maintenance_rate_on == true, then the total heat
  * rate (AMdot + Mdot + Sdot) will be capped to a minimum value of 1.0 W/kg (Umberger(2003), page 104).
  *
+ *
+ *
+ *
+ * @name MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter
+ *
+ * MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter is an Object class that 
+ * holds the metabolic parameters required to calculate metabolic power for a single muscle. 
+ *
+ * <H2><B> MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter Properties </B></H2>
+ *
+ * REQUIRED PROPERTIES
+ * - <B>specific_tension</B> = The specific tension of the muscle (Pascals (N/m^2)).
+ * - <B>density</B> = The density of the muscle (kg/m^3).
+ * - <B>ratio_slow_twitch_fibers</B> = Ratio of slow twitch fibers in the muscle (must be between 0 and 1).
+ * - <B>activation_constant_slow_twitch</B>  = Activation constant for slow twitch fibers (W/kg).
+ * - <B>activation_constant_fast_twitch</B>  = Activation constant for fast twitch fibers (W/kg).
+ * - <B>maintenance_constant_slow_twitch</B> = Maintenance constant for slow twitch fibers (W/kg).
+ * - <B>maintenance_constant_fast_twitch</B> = Maintenance constant for slow twitch fibers (W/kg).
+ *
+ * OPTIONAL PROPERTIES
+ * - <B>use_provided_muscle_mass</B> = An optional flag that allows the user to
+ *      explicitly specify a muscle mass. If set to true, the <provided_muscle_mass>
+ *      property must be specified. The default setting is false, in which case, the
+ *      muscle mass is calculated from the following formula:
+ *          m = (Fmax/specific_tension)*density*Lm_opt, where 
+ *              specific_tension and density are properties defined above
+ *                  (note that their default values are set based on mammalian muscle,
+ *                  0.25e6 N/m^2 and 1059.7 kg/m^3, respectively);
+ *              Fmax and Lm_opt are the maximum isometric force and optimal 
+ *                  fiber length, respectively, of the muscle.
+ *
+ * - <B>provided_muscle_mass</B> = The user specified muscle mass (kg).
+ *
+ *
  * @author Tim Dorn
  */
 
-class OSIMSIMULATION_API MuscleMetabolicPowerProbeBhargava2004 : public Probe {
-OpenSim_DECLARE_CONCRETE_OBJECT(MuscleMetabolicPowerProbeBhargava2004, Probe);
+class OSIMSIMULATION_API MuscleMetabolicsBhargava2004Probe : public Probe {
+OpenSim_DECLARE_CONCRETE_OBJECT(MuscleMetabolicsBhargava2004Probe, Probe);
 public:
 //==============================================================================
 // PROPERTIES
@@ -197,7 +231,7 @@ public:
         "Basal metabolic exponent.");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(
-        MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet,
+        MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameterSet,
         "A set containing, for each muscle, the parameters "
         "required to calculate metabolic energy expenditure. If multiple "
         "muscles are contained in the set, then the probe will sum the "
@@ -209,17 +243,17 @@ public:
 //=============================================================================
     typedef std::map
        <std::string, 
-       MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter*> 
+       MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter*> 
        MuscleMap;
 
     //--------------------------------------------------------------------------
     // Constructor(s) and Setup
     //--------------------------------------------------------------------------
     /** Default constructor */
-    MuscleMetabolicPowerProbeBhargava2004();
+    MuscleMetabolicsBhargava2004Probe();
 
     /** Convenience constructor */
-    MuscleMetabolicPowerProbeBhargava2004(
+    MuscleMetabolicsBhargava2004Probe(
         const bool activation_rate_on, 
         const bool maintenance_rate_on, 
         const bool shortening_rate_on, 
@@ -245,7 +279,7 @@ public:
 
 
     //-----------------------------------------------------------------------------
-    /** @name     MuscleMetabolicPowerProbeBhargava2004 Interface
+    /** @name     MuscleMetabolicsBhargava2004Probe Interface
     These accessor methods are to be used when setting up a new muscle 
     metabolic analysis from the API. The basic operation is as follows:
     @code
@@ -293,7 +327,7 @@ public:
     void useCalculatedMass(const std::string& muscleName);
 
     /** Get whether the muscle mass is being explicitly provided.
-       True means that it is using the property "provided_muscle_mass".
+       True means that it is using the property <provided_muscle_mass>
        False means that the muscle mass is being calculated from muscle properties. */
     bool isUsingProvidedMass(const std::string& muscleName);
 
@@ -352,7 +386,7 @@ private:
     //--------------------------------------------------------------------------
     void connectToModel(Model& aModel) OVERRIDE_11;
     void connectIndividualMetabolicMuscle(Model& aModel, 
-        MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter& mm);
+        MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter& mm);
 
     void setNull();
     void constructProperties();
@@ -362,59 +396,27 @@ private:
     // MetabolicMuscleParameter Private Interface
     //--------------------------------------------------------------------------
     // Get const MetabolicMuscleParameter from the MuscleMap using a string accessor.
-    const MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter* 
+    const MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter* 
         getMetabolicParameters(const std::string& muscleName) const;
 
     // Get writable MetabolicMuscleParameter from the MuscleMap using a string accessor.
-    MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter* 
+    MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter* 
         updMetabolicParameters(const std::string& muscleName);
 
 //=============================================================================
-};	// END of class MuscleMetabolicPowerProbeBhargava2004
+};	// END of class MuscleMetabolicsBhargava2004Probe
 //=============================================================================
 
 //==============================================================================
 //==============================================================================
-//                          MetabolicMuscleParameter
+//          MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter
 //==============================================================================
-/**
- * MetabolicMuscleParameter is an Object class that hold the metabolic
- * parameters required to calculate metabolic power for a single muscle. 
- *
- * <H2><B> MetabolicMuscleParameter Properties </B></H2>
- *
- * REQUIRED PROPERTIES
- * - <B>specific_tension</B> = The specific tension of the muscle (Pascals (N/m^2)).
- * - <B>density</B> = The density of the muscle (kg/m^3).
- * - <B>ratio_slow_twitch_fibers</B> = Ratio of slow twitch fibers in the muscle (must be between 0 and 1).
- * - <B>activation_constant_slow_twitch</B>  = Activation constant for slow twitch fibers (W/kg).
- * - <B>activation_constant_fast_twitch</B>  = Activation constant for fast twitch fibers (W/kg).
- * - <B>maintenance_constant_slow_twitch</B> = Maintenance constant for slow twitch fibers (W/kg).
- * - <B>maintenance_constant_fast_twitch</B> = Maintenance constant for slow twitch fibers (W/kg).
- *
- * OPTIONAL PROPERTIES
- * - <B>use_provided_muscle_mass</B> = An optional flag that allows the user to
- *      explicitly specify a muscle mass. If set to true, the "provided_muscle_mass"
- *      property must be specified. The default setting is false, in which case, the
- *      muscle mass is calculated from the following formula:
- *          m = (Fmax/specific_tension)*density*Lm_opt, where 
- *              specific_tension and density are properties defined above
- *                  (note that their default values are set based on mammalian muscle,
- *                  0.25e6 N/m^2 and 1059.7 kg/m^3, respectively);
- *              Fmax and Lm_opt are the maximum isometric force and optimal 
- *                  fiber length, respectively, of the muscle.
- *
- * - <B>provided_muscle_mass</B> = The user specified muscle mass (kg).
- *
- *
- * @author Tim Dorn
- */
 class OSIMSIMULATION_API 
-    MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter 
+    MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter 
     : public Object  
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-        MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter, Object);
+        MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter, Object);
 public:
 //==============================================================================
 // PROPERTIES
@@ -472,14 +474,14 @@ public:
     //--------------------------------------------------------------------------
     // Constructor(s)
     //--------------------------------------------------------------------------
-    MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter();
+    MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter();
 
-    MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter(
+    MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter(
             const std::string& muscleName,
             double ratio_slow_twitch_fibers, 
             double muscle_mass = SimTK::NaN);
 
-    MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter(
+    MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter(
         const std::string& muscleName,
         double ratio_slow_twitch_fibers, 
         double activation_constant_slow_twitch,
@@ -534,16 +536,16 @@ private:
  * MetabolicMuscleParameters for each muscle.
  */
 class OSIMSIMULATION_API 
-    MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet
-    : public Set<MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter>
+    MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameterSet
+    : public Set<MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter>
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-        MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet, 
-        Set<MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter>);
+        MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameterSet, 
+        Set<MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter>);
 
 public:
-    MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()  
-    {   setAuthors("Tim Dorn"); }
+    MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameterSet()  
+    {  }
     
 
 //=============================================================================

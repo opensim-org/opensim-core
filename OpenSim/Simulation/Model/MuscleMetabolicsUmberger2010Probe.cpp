@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *            OpenSim:  MuscleMetabolicPowerProbeBhargava2004.cpp             *
+ *              OpenSim:  MuscleMetabolicsUmberger2010Probe.cpp               *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -25,7 +25,7 @@
 //=============================================================================
 // INCLUDES and STATICS
 //=============================================================================
-#include "MuscleMetabolicPowerProbeBhargava2004.h"
+#include "MuscleMetabolicsUmberger2010Probe.h"
 
 
 using namespace std;
@@ -36,12 +36,11 @@ using namespace OpenSim;
 //=============================================================================
 // CONSTRUCTOR(S) AND SETUP
 //=============================================================================
-
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-MuscleMetabolicPowerProbeBhargava2004::MuscleMetabolicPowerProbeBhargava2004() : Probe()
+MuscleMetabolicsUmberger2010Probe::MuscleMetabolicsUmberger2010Probe() : Probe()
 {
     setNull();
     constructProperties();
@@ -51,9 +50,8 @@ MuscleMetabolicPowerProbeBhargava2004::MuscleMetabolicPowerProbeBhargava2004() :
 /** 
  * Convenience constructor
  */
-MuscleMetabolicPowerProbeBhargava2004::MuscleMetabolicPowerProbeBhargava2004(
-    const bool activation_rate_on, 
-    const bool maintenance_rate_on, 
+MuscleMetabolicsUmberger2010Probe::MuscleMetabolicsUmberger2010Probe(
+    const bool activation_maintenance_rate_on, 
     const bool shortening_rate_on, 
     const bool basal_rate_on, 
     const bool work_rate_on) : Probe()
@@ -61,8 +59,7 @@ MuscleMetabolicPowerProbeBhargava2004::MuscleMetabolicPowerProbeBhargava2004(
     setNull();
     constructProperties();
 
-    set_activation_rate_on(activation_rate_on);
-    set_maintenance_rate_on(maintenance_rate_on);
+    set_activation_maintenance_rate_on(activation_maintenance_rate_on);
     set_shortening_rate_on(shortening_rate_on);
     set_basal_rate_on(basal_rate_on);
     set_mechanical_work_rate_on(work_rate_on);
@@ -71,38 +68,36 @@ MuscleMetabolicPowerProbeBhargava2004::MuscleMetabolicPowerProbeBhargava2004(
 
 //_____________________________________________________________________________
 /**
- * Set the data members of this MuscleMetabolicPowerProbeBhargava2004 to their null values.
+ * Set the data members of this MuscleMetabolicsUmberger2010Probe 
+ * to their null values.
  */
-void MuscleMetabolicPowerProbeBhargava2004::setNull()
+void MuscleMetabolicsUmberger2010Probe::setNull()
 {
 	setAuthors("Tim Dorn");
+	setReferences("Umberger, B. R. (2010). Stance and swing phase costs in "
+    "human walking. J R Soc Interface 7, 1329-40.");
+    _muscleMap.clear();
 }
 
 //_____________________________________________________________________________
 /**
- * Connect properties to local pointers.
+ * Construct and initilize object properties.
  */
-void MuscleMetabolicPowerProbeBhargava2004::constructProperties()
+void MuscleMetabolicsUmberger2010Probe::constructProperties()
 {
-    constructProperty_activation_rate_on(true);
-    constructProperty_maintenance_rate_on(true);
+    constructProperty_activation_maintenance_rate_on(true);
     constructProperty_shortening_rate_on(true);
     constructProperty_basal_rate_on(true);
     constructProperty_mechanical_work_rate_on(true);
     constructProperty_enforce_minimum_heat_rate_per_muscle(true);
 
-    const int curvePoints = 5;
-    const double curveX[] = {0.0, 0.5, 1.0, 1.5, 2.0};
-    const double curveY[] = {0.5, 0.5, 1.0, 0.0, 0.0};
-    PiecewiseLinearFunction fiberLengthDepCurveDefault(curvePoints, curveX, curveY, "defaultCurve");
-    constructProperty_normalized_fiber_length_dependence_on_maintenance_rate(fiberLengthDepCurveDefault);
-
-    constructProperty_use_force_dependent_shortening_prop_constant(false);
-    constructProperty_basal_coefficient(1.2);  // default value for standing (Umberger, 2003, p105)
+    constructProperty_aerobic_factor(1.5);      // default value is for aerobic activities.
+    constructProperty_basal_coefficient(1.2);   // default value for standing (Umberger, 2003, p105)
     constructProperty_basal_exponent(1.0);
-    constructProperty_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet
-       (MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet());
+    constructProperty_MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet
+       (MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet());
 }
+
 
 
 
@@ -114,21 +109,19 @@ void MuscleMetabolicPowerProbeBhargava2004::constructProperties()
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aModel OpenSim model containing this MuscleMetabolicPowerProbeBhargava2004.
+ * @param aModel OpenSim model containing this MuscleMetabolicsUmberger2010Probe.
  */
-void MuscleMetabolicPowerProbeBhargava2004::connectToModel(Model& aModel)
+void MuscleMetabolicsUmberger2010Probe::connectToModel(Model& aModel)
 {
     Super::connectToModel(aModel);
 
     const int nM = 
-        get_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()
-        .getSize();
+        get_MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet().getSize();
     for (int i=0; i<nM; ++i) {
         connectIndividualMetabolicMuscle(aModel, 
-            upd_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()[i]);
+            upd_MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet()[i]);
     }
 }
-
 
 //_____________________________________________________________________________
 /**
@@ -138,21 +131,20 @@ void MuscleMetabolicPowerProbeBhargava2004::connectToModel(Model& aModel)
  * muscle pointer.
  *
  */
-void MuscleMetabolicPowerProbeBhargava2004::connectIndividualMetabolicMuscle(
+void MuscleMetabolicsUmberger2010Probe::connectIndividualMetabolicMuscle(
     Model& aModel, 
-    MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter& mm)
+    MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter& mm)
 {
     stringstream errorMessage;
 
     int k = aModel.getMuscles().getIndex(mm.getName());
     if( k < 0 )	{
-        errorMessage << "MetabolicMuscleParameter: Invalid muscle '" 
-            << mm.getName() << "' specified." << endl;
-        throw (Exception(errorMessage.str()));
+        cout << "WARNING: MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter: "
+            "Muscle '" << mm.getName() << "' not found in model. Ignoring..." << endl;
     }
     else {
         mm.setMuscle(&aModel.updMuscles()[k]);  // Set internal muscle pointer
-        _muscleMap[mm.getName()] = &mm;          // Add parameters to the _muscleMap
+        _muscleMap[mm.getName()] = &mm;         // Add parameters to the _muscleMap
     }
 
 
@@ -223,12 +215,11 @@ void MuscleMetabolicPowerProbeBhargava2004::connectIndividualMetabolicMuscle(
  * Units = W.
  * Note: for muscle velocities, Vm, we define Vm<0 as shortening and Vm>0 as lengthening.
  */
-SimTK::Vector MuscleMetabolicPowerProbeBhargava2004::
-computeProbeInputs(const State& s) const
+SimTK::Vector MuscleMetabolicsUmberger2010Probe::computeProbeInputs(const State& s) const
 {
     // Initialize metabolic energy rate values
-    double Adot, Mdot, Sdot, Bdot, Wdot;
-    Adot = Mdot = Sdot = Bdot = Wdot = 0;
+    double AMdot, Sdot, Bdot, Wdot;
+    AMdot = Sdot = Bdot = Wdot = 0;
 
     // BASAL METABOLIC RATE (W) (based on whole body mass, not muscle mass)
     // so do outside of muscle loop.
@@ -243,42 +234,59 @@ computeProbeInputs(const State& s) const
     
 
     // Loop through each muscle in the MetabolicMuscleParameterSet
-    const int nM = 
-        get_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()
-        .getSize();
+    const int nM = get_MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet().getSize();
     Vector Edot(nM);
-    for (int i=0; i<nM; i++)
+    for (int i=0; i<nM; ++i)
     {
         // Get the current muscle parameters from the MetabolicMuscleParameterSet
         // and the corresponding OpenSim::Muscle pointer from the muscleMap.
-        MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter& mm = 
-            get_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()[i];   
+        MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter& mm = 
+            get_MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet()[i];
         const Muscle* m = mm.getMuscle();
 
-        // Get important muscle values at the current time state
-        const double max_isometric_force = m->getMaxIsometricForce();
+        // Get some muscle properties at the current time state
+        //const double max_isometric_force = m->getMaxIsometricForce();
         const double max_shortening_velocity = m->getMaxContractionVelocity();
         const double activation = m->getActivation(s);
         const double excitation = m->getControl(s);
-        const double fiber_force_passive = m->getPassiveFiberForce(s);
-        const double fiber_force_active = m->getActiveFiberForce(s);
-        const double fiber_force_total = m->getFiberForce(s);
+        //const double fiber_force_passive = m->getPassiveFiberForce(s);
+        double fiber_force_active = m->getActiveFiberForce(s);
+        //const double fiber_force_total = m->getFiberForce(s);
         const double fiber_length_normalized = m->getNormalizedFiberLength(s);
         const double fiber_velocity = m->getFiberVelocity(s);
-        const double fiber_velocity_normalized = m->getNormalizedFiberVelocity(s);
-        const double slow_twitch_excitation = mm.get_ratio_slow_twitch_fibers() * sin(Pi/2 * excitation);
-        const double fast_twitch_excitation = (1 - mm.get_ratio_slow_twitch_fibers()) * (1 - cos(Pi/2 * excitation));
-        double alpha, fiber_length_dependence;
+        double A;
 
-        // Get the unnormalized total active force, F_iso that 'would' be developed at the current activation
+        // Umberger defines fiber_velocity_normalized as Vm/LoM, not Vm/Vmax (p101, top left, Umberger(2003))
+        //const double fiber_velocity_normalized = m->getNormalizedFiberVelocity(s);
+        const double fiber_velocity_normalized = fiber_velocity / m->getOptimalFiberLength();
+
+
+        // ---------------------------------------------------------------------------
+        // NOT USED FOR THIS IMPLEMENTATION
+        //const double slow_twitch_excitation = mm.get_ratio_slow_twitch_fibers() * sin(Pi/2 * excitation);
+        //const double fast_twitch_excitation = (1 - mm.get_ratio_slow_twitch_fibers()) * (1 - cos(Pi/2 * excitation));
+
+        // Set normalized hill constants: A_rel and B_rel
+        //const double A_rel = 0.1 + 0.4*(1 - mm.get_ratio_slow_twitch_fibers());
+        //const double B_rel = A_rel * max_shortening_velocity;
+        // ---------------------------------------------------------------------------
+
+
+        // Set activation dependence scaling parameter: A
+        if (excitation > activation)
+            A = excitation;
+        else
+            A = (excitation + activation) / 2;
+
+        // Get the normalized active fiber force, F_iso, that 'would' be developed at the current activation
         // and fiber length under isometric conditions (i.e. Vm=0)
-        //double F_iso = (fiber_force_active/m->getForceVelocityMultiplier(s));
-        const double F_iso = m->getActivation(s) * m->getActiveForceLengthMultiplier(s) * max_isometric_force;
+        //double F_iso = (fiber_force_active/m->getForceVelocityMultiplier(s)) / max_isometric_force;
+        double F_iso = m->getActivation(s) * m->getActiveForceLengthMultiplier(s);
+
 
         // DEBUG
         //cout << "fiber_velocity_normalized = " << fiber_velocity_normalized << endl;
         //cout << "fiber_velocity_multiplier = " << m->getForceVelocityMultiplier(s) << endl;
-        //cout << "fiber_force_passive = " << fiber_force_passive << endl;
         //cout << "fiber_force_active = " << fiber_force_active << endl;
         //cout << "fiber_force_total = " << fiber_force_total << endl;
         //cout << "max_isometric_force = " << max_isometric_force << endl;
@@ -286,65 +294,86 @@ computeProbeInputs(const State& s) const
         //system("pause");
 
 
+        
+
         // Warnings
         if (fiber_length_normalized < 0)
-            cout << "WARNING: " << getName() << "  (t = " << s.getTime() 
+            cout << "WARNING: (t = " << s.getTime() 
             << "), muscle '" << m->getName() 
             << "' has negative normalized fiber-length." << endl; 
 
 
 
-        // ACTIVATION HEAT RATE for muscle i (W)
-        // ------------------------------------------
-        if (get_activation_rate_on())
+        // ACTIVATION & MAINTENANCE HEAT RATE for muscle i (W/kg)
+        // --> depends on the normalized fiber length of the contractile element
+        // -----------------------------------------------------------------------
+        if (get_activation_maintenance_rate_on())
         {
-            const double decay_function_value = 1.0;    // This value is set to 1.0, as used by Anderson & Pandy (1999), however, in
-                                                        // Bhargava et al., (2004) they assume a function here. We will ignore this
-                                                        // function and use 1.0 for now.
-            Adot = mm.getMuscleMass() * decay_function_value * 
-                ( (mm.get_activation_constant_slow_twitch() * slow_twitch_excitation) + (mm.get_activation_constant_fast_twitch() * fast_twitch_excitation) );
+            const double unscaledAMdot = 128*(1 - mm.get_ratio_slow_twitch_fibers()) + 25;
+
+            if (fiber_length_normalized <= 1.0)
+                AMdot = get_aerobic_factor() * std::pow(A, 0.6) * unscaledAMdot;
+            else
+                AMdot = get_aerobic_factor() * std::pow(A, 0.6) * ((0.4 * unscaledAMdot) + (0.6 * unscaledAMdot * F_iso));
         }
 
 
 
-        // MAINTENANCE HEAT RATE for muscle i (W)
-        // ------------------------------------------
-        if (get_maintenance_rate_on())
-        {
-            Vector tmp(1, fiber_length_normalized);
-            fiber_length_dependence = get_normalized_fiber_length_dependence_on_maintenance_rate().calcValue(tmp);
-            
-            Mdot = mm.getMuscleMass() * fiber_length_dependence * 
-                ( (mm.get_maintenance_constant_slow_twitch() * slow_twitch_excitation) + (mm.get_maintenance_constant_fast_twitch() * fast_twitch_excitation) );
-        }
-
-
-
-        // SHORTENING HEAT RATE for muscle i (W)
+        // SHORTENING HEAT RATE for muscle i (W/kg)
+        // --> depends on the normalized fiber length of the contractile element
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
         // -----------------------------------------------------------------------
         if (get_shortening_rate_on())
         {
-            if (get_use_force_dependent_shortening_prop_constant())
+            const double Vmax_fasttwitch = max_shortening_velocity;
+            const double Vmax_slowtwitch = max_shortening_velocity / 2.5;
+            const double alpha_shortening_fasttwitch = 153 / Vmax_fasttwitch;
+            const double alpha_shortening_slowtwitch = 100 / Vmax_slowtwitch;
+            double unscaledSdot, tmp_slowTwitch, tmp_fastTwitch;
+
+            if (fiber_velocity_normalized <= 0)    // concentric contraction, Vm<0
             {
-                if (fiber_velocity <= 0)    // concentric contraction, Vm<0
-                    alpha = (0.16 * F_iso) + (0.18 * fiber_force_total);
-                else						// eccentric contraction, Vm>0
-                    alpha = 0.157 * fiber_force_total;
+                const double maxShorteningRate = 100.0;    // (W/kg)
+
+                tmp_slowTwitch = -alpha_shortening_slowtwitch * fiber_velocity_normalized;
+
+                // Apply upper limit to the unscaled slow twitch shortening rate.
+                if (tmp_slowTwitch > maxShorteningRate) {
+                    //cout << "WARNING: " << getName() << "  (t = " << s.getTime() << 
+                    //    "Slow twitch shortening heat rate exceeds the max value of " << maxShorteningRate << 
+                    //    " W/kg. Setting to " << maxShorteningRate << " W/kg." << endl; 
+                    tmp_slowTwitch = maxShorteningRate;
+                }
+
+                tmp_fastTwitch = alpha_shortening_fasttwitch * fiber_velocity_normalized * (1-mm.get_ratio_slow_twitch_fibers());
+                unscaledSdot = (tmp_slowTwitch * mm.get_ratio_slow_twitch_fibers()) - tmp_fastTwitch;   // unscaled shortening heat rate: muscle shortening
+                Sdot = get_aerobic_factor() * std::pow(A, 2.0) * unscaledSdot;                      // scaled shortening heat rate: muscle shortening
             }
-            else
+
+            else	// eccentric contraction, Vm>0
             {
-                if (fiber_velocity <= 0)    // concentric contraction, Vm<0
-                    alpha = 0.25 * fiber_force_total;
-                else						// eccentric contraction, Vm>0
-                    alpha = 0.0;
+                unscaledSdot = 0.3 * alpha_shortening_slowtwitch * fiber_velocity_normalized;  // unscaled shortening heat rate: muscle lengthening
+                Sdot = get_aerobic_factor() * A * unscaledSdot;                                // scaled shortening heat rate: muscle lengthening
             }
-            Sdot = -alpha * fiber_velocity;
+
+
+            // Fiber length dependance on scaled shortening heat rate
+            // (for both concentric and eccentric contractions).
+            if (fiber_length_normalized > 1.0)
+                Sdot *= F_iso;  
         }
         
 
 
-        // MECHANICAL WORK RATE for the contractile element of muscle i (W).
+        // Clamp fiber force. THIS SHOULD NEVER HAPPEN...
+        // BUT IT DOES...
+        if (fiber_force_active < 0)
+            fiber_force_active = 0.0;
+
+
+
+
+        // MECHANICAL WORK RATE for the contractile element of muscle i (W/kg).
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening.
         // -------------------------------------------------------------------
         if (get_mechanical_work_rate_on())
@@ -353,43 +382,45 @@ computeProbeInputs(const State& s) const
                 Wdot = -fiber_force_active*fiber_velocity;
             else						// eccentric contraction, Vm>0
                 Wdot = 0;
+
+            Wdot /= mm.getMuscleMass();
         }
 
 
         // NAN CHECKING
         // ------------------------------------------
-        if (Adot == NaN)
-            cout << "WARNING::" << getName() << ": Adot (" << m->getName() << ") = NaN!" << endl;
-        if (Mdot == NaN)
-            cout << "WARNING::" << getName() << ": Mdot (" << m->getName() << ") = NaN!" << endl;
+        if (AMdot == NaN)
+            cout << "WARNING::" << getName() << ": AMdot (" << m->getName() << ") = NaN!" << endl;
         if (Sdot == NaN)
             cout << "WARNING::" << getName() << ": Sdot (" << m->getName() << ") = NaN!" << endl;
         if (Wdot == NaN)
             cout << "WARNING::" << getName() << ": Wdot (" << m->getName() << ") = NaN!" << endl;
 
 
-        // This check is adapted from Umberger(2003), page 104: the total heat rate 
-        // (i.e., Adot + Mdot + Sdot) for a given muscle cannot fall below 1.0 W/kg.
+        // This check is from Umberger(2003), page 104: the total heat rate 
+        // (i.e., AMdot + Sdot) for a given muscle cannot fall below 1.0 W/kg.
         // -----------------------------------------------------------------------
-        double totalHeatRate = Adot + Mdot + Sdot;      // (W)
+        double totalHeatRate = AMdot + Sdot;
 
-        if(get_enforce_minimum_heat_rate_per_muscle() && totalHeatRate < 1.0 * mm.getMuscleMass()
-            && get_activation_rate_on() 
-            && get_maintenance_rate_on() 
+        if(get_enforce_minimum_heat_rate_per_muscle() && totalHeatRate < 1.0 
+            && get_activation_maintenance_rate_on() 
             && get_shortening_rate_on()) {
                 //cout << "WARNING: " << getName() 
                 //    << "  (t = " << s.getTime() 
                 //    << "), the muscle '" << mm.getName() 
                 //    << "' has a net metabolic energy rate of less than 1.0 W/kg." << endl; 
-                totalHeatRate = 1.0 * mm.getMuscleMass();			// not allowed to fall below 1.0 W.kg-1
+                totalHeatRate = 1.0;			// not allowed to fall below 1.0 W.kg-1
         }
 
 
         // TOTAL METABOLIC ENERGY RATE for muscle i
+        // UNITS: W
         // ------------------------------------------
-        Edot(i) = totalHeatRate + Wdot;
+        Edot(i) = (totalHeatRate + Wdot) * mm.getMuscleMass();
 
 
+        
+        
 
         // DEBUG
         // ----------
@@ -397,26 +428,20 @@ computeProbeInputs(const State& s) const
         if(debug) {
             cout << "muscle_mass = " << mm.getMuscleMass() << endl;
             cout << "ratio_slow_twitch_fibers = " << mm.get_ratio_slow_twitch_fibers() << endl;
-            cout << "activation_constant_slow_twitch = " << mm.get_activation_constant_slow_twitch() << endl;
-            cout << "activation_constant_fast_twitch = " << mm.get_activation_constant_fast_twitch() << endl;
-            cout << "maintenance_constant_slow_twitch = " << mm.get_maintenance_constant_slow_twitch() << endl;
-            cout << "maintenance_constant_fast_twitch = " << mm.get_maintenance_constant_fast_twitch() << endl;
             cout << "bodymass = " << _model->getMatterSubsystem().calcSystemMass(s) << endl;
-            cout << "max_isometric_force = " << max_isometric_force << endl;
+            //cout << "max_isometric_force = " << max_isometric_force << endl;
             cout << "activation = " << activation << endl;
             cout << "excitation = " << excitation << endl;
-            cout << "fiber_force_total = " << fiber_force_total << endl;
+            //cout << "fiber_force_total = " << fiber_force_total << endl;
             cout << "fiber_force_active = " << fiber_force_active << endl;
             cout << "fiber_length_normalized = " << fiber_length_normalized << endl;
-            cout << "fiber_length_dependence = " << fiber_length_dependence << endl;
             cout << "fiber_velocity = " << fiber_velocity << endl;
-            cout << "fiber_velocity_normalized = " << fiber_velocity_normalized << endl;
-            cout << "slow_twitch_excitation = " << slow_twitch_excitation << endl;
-            cout << "fast_twitch_excitation = " << fast_twitch_excitation << endl;
+            //cout << "slow_twitch_excitation = " << slow_twitch_excitation << endl;
+            //cout << "fast_twitch_excitation = " << fast_twitch_excitation << endl;
             cout << "max shortening velocity = " << max_shortening_velocity << endl;
-            cout << "alpha = " << alpha << endl;
-            cout << "Adot = " << Adot << endl;
-            cout << "Mdot = " << Mdot << endl;
+            //cout << "A_rel = " << A_rel << endl;
+            //cout << "B_rel = " << B_rel << endl;
+            cout << "AMdot = " << AMdot << endl;
             cout << "Sdot = " << Sdot << endl;
             cout << "Bdot = " << Bdot << endl;
             cout << "Wdot = " << Wdot << endl;
@@ -434,7 +459,7 @@ computeProbeInputs(const State& s) const
 /** 
  * Returns the number of probe inputs in the vector returned by computeProbeInputs().
  */
-int MuscleMetabolicPowerProbeBhargava2004::getNumProbeInputs() const
+int MuscleMetabolicsUmberger2010Probe::getNumProbeInputs() const
 {
     return 1;
 }
@@ -444,12 +469,13 @@ int MuscleMetabolicPowerProbeBhargava2004::getNumProbeInputs() const
 /** 
  * Provide labels for the probe values being reported.
  */
-Array<string> MuscleMetabolicPowerProbeBhargava2004::getProbeOutputLabels() const 
+Array<string> MuscleMetabolicsUmberger2010Probe::getProbeOutputLabels() const 
 {
     Array<string> labels;
     labels.append(getName());
     return labels;
 }
+
 
 
 
@@ -461,68 +487,48 @@ Array<string> MuscleMetabolicPowerProbeBhargava2004::getProbeOutputLabels() cons
 /** 
 * Get the number of muscles being analysed in the metabolic analysis. 
 */
-const int MuscleMetabolicPowerProbeBhargava2004::
+const int MuscleMetabolicsUmberger2010Probe::
 	getNumMetabolicMuscles() const  
 { 
-	return get_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()
-        .getSize(); 
+	return get_MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet().getSize(); 
 }
 
 
 //_____________________________________________________________________________
 /**
- * Add a muscle and its parameters so that it can be included in the
- * metabolic analysis.
+ * Add a muscle and its parameters so that it can be included in the metabolic analysis
  */
-void MuscleMetabolicPowerProbeBhargava2004::
+void MuscleMetabolicsUmberger2010Probe::
 	addMuscle(const string& muscleName, 
-    double ratio_slow_twitch_fibers, 
-    double activation_constant_slow_twitch,
-    double activation_constant_fast_twitch,
-    double maintenance_constant_slow_twitch,
-    double maintenance_constant_fast_twitch)
+    double ratio_slow_twitch_fibers)
 {
-    MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter* mm = 
-        new MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter(
+    MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter* mm = 
+        new MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter(
             muscleName,
-            ratio_slow_twitch_fibers, 
-            activation_constant_slow_twitch, 
-            activation_constant_fast_twitch, 
-            maintenance_constant_slow_twitch, 
-            maintenance_constant_fast_twitch);
-        
-    connectIndividualMetabolicMuscle(*_model, *mm);          // do checks and add to muscleMap 
-    upd_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()
+            ratio_slow_twitch_fibers);
+
+    connectIndividualMetabolicMuscle(*_model, *mm);   // do checks and add to muscleMap 
+    upd_MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet()
         .adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
 }
 
-
 //_____________________________________________________________________________
 /**
- * Add a muscle and its parameters so that it can be included in the
- * metabolic analysis.
+ * Add a muscle and its parameters so that it can be included in the metabolic analysis
  */
-void MuscleMetabolicPowerProbeBhargava2004::
+void MuscleMetabolicsUmberger2010Probe::
 	addMuscle(const string& muscleName, 
-    double ratio_slow_twitch_fibers, 
-    double activation_constant_slow_twitch,
-    double activation_constant_fast_twitch,
-    double maintenance_constant_slow_twitch,
-    double maintenance_constant_fast_twitch,
-	double muscle_mass)
+    double ratio_slow_twitch_fibers,
+    double muscle_mass)
 {
-    MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter* mm = 
-        new MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter(
+    MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter* mm = 
+        new MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter(
             muscleName,
             ratio_slow_twitch_fibers, 
-            activation_constant_slow_twitch, 
-            activation_constant_fast_twitch, 
-            maintenance_constant_slow_twitch, 
-            maintenance_constant_fast_twitch,
-			muscle_mass);
-        
+            muscle_mass);
+
     connectIndividualMetabolicMuscle(*_model, *mm);          // do checks and add to muscleMap 
-    upd_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()
+    upd_MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet()
         .adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
 }
 
@@ -531,7 +537,7 @@ void MuscleMetabolicPowerProbeBhargava2004::
 /**
  * Remove a muscle from the MetabolicMuscleParameterSet.
  */
-void MuscleMetabolicPowerProbeBhargava2004::
+void MuscleMetabolicsUmberger2010Probe::
 	removeMuscle(const string& muscleName)
 {
     // Step 1: Remove the reference to this MetabolicMuscleParameter
@@ -543,16 +549,13 @@ void MuscleMetabolicPowerProbeBhargava2004::
     // Step 2: Remove the MetabolicMuscleParameter object from
     // the MetabolicMuscleParameterSet.
     // -----------------------------------------------------------------
-    const int k = 
-        get_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()
-        .getIndex(muscleName);
+    const int k = get_MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet().getIndex(muscleName);
     if (k<0) {
         cout << "WARNING: MetabolicMuscleParameter: Invalid muscle '" 
             << muscleName << "' specified. No metabolic muscles removed." << endl;
         return;
     }
-    upd_MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameterSet()
-        .remove(k);
+    upd_MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet().remove(k);
 }
 
 
@@ -561,10 +564,10 @@ void MuscleMetabolicPowerProbeBhargava2004::
  * Set an existing muscle in the MetabolicMuscleParameterSet 
  * to use an provided muscle mass.
  */
-void MuscleMetabolicPowerProbeBhargava2004::
+void MuscleMetabolicsUmberger2010Probe::
 	useProvidedMass(const string& muscleName, double providedMass)
 {
-    MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter* mm = 
+    MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter* mm = 
         updMetabolicParameters(muscleName);
 
     mm->set_use_provided_muscle_mass(true);
@@ -578,10 +581,10 @@ void MuscleMetabolicPowerProbeBhargava2004::
  * Set an existing muscle in the MetabolicMuscleParameterSet 
  * to calculate its own mass.
  */
-void MuscleMetabolicPowerProbeBhargava2004::
+void MuscleMetabolicsUmberger2010Probe::
 	useCalculatedMass(const string& muscleName)
 {
-    MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter* mm = 
+    MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter* mm = 
         updMetabolicParameters(muscleName);
 
     mm->set_use_provided_muscle_mass(false);
@@ -591,11 +594,11 @@ void MuscleMetabolicPowerProbeBhargava2004::
 
 //_____________________________________________________________________________
 /**
- * Get whether the muscle mass is being explicitly provided.
+/* Get whether the muscle mass is being explicitly provided.
  * True means that it is using the property <provided_muscle_mass>
  * False means that the muscle mass is being calculated from muscle properties. 
  */
-bool MuscleMetabolicPowerProbeBhargava2004::
+bool MuscleMetabolicsUmberger2010Probe::
 	isUsingProvidedMass(const std::string& muscleName)
 { 
 	return getMetabolicParameters(muscleName)->get_use_provided_muscle_mass(); 
@@ -604,9 +607,9 @@ bool MuscleMetabolicPowerProbeBhargava2004::
 
 //_____________________________________________________________________________
 /**
- * Get the muscle mass used in the metabolic analysis. 
+/* Get the muscle mass used in the metabolic analysis. 
  */
-const double MuscleMetabolicPowerProbeBhargava2004::
+const double MuscleMetabolicsUmberger2010Probe::
 	getMuscleMass(const std::string& muscleName) const 
 { 
 	return getMetabolicParameters(muscleName)->getMuscleMass();
@@ -615,9 +618,9 @@ const double MuscleMetabolicPowerProbeBhargava2004::
 
 //_____________________________________________________________________________
 /**
- * Get the ratio of slow twitch fibers for an existing muscle. 
+/* Get the ratio of slow twitch fibers for an existing muscle. 
  */
-const double MuscleMetabolicPowerProbeBhargava2004::
+const double MuscleMetabolicsUmberger2010Probe::
 	getRatioSlowTwitchFibers(const std::string& muscleName) const 
 { 
 	return getMetabolicParameters(muscleName)->get_ratio_slow_twitch_fibers();
@@ -626,100 +629,12 @@ const double MuscleMetabolicPowerProbeBhargava2004::
 
 //_____________________________________________________________________________
 /**
- * Set the ratio of slow twitch fibers for an existing muscle. 
+/* Set the ratio of slow twitch fibers for an existing muscle. 
  */
-void MuscleMetabolicPowerProbeBhargava2004::
+void MuscleMetabolicsUmberger2010Probe::
 	setRatioSlowTwitchFibers(const std::string& muscleName, const double& ratio) 
 { 
 	updMetabolicParameters(muscleName)->set_ratio_slow_twitch_fibers(ratio);
-}
-
-
-//_____________________________________________________________________________
-/** 
- * Get the activation constant for slow twitch fibers for an existing muscle. 
- */
-const double MuscleMetabolicPowerProbeBhargava2004::
-	getActivationConstantSlowTwitch(const std::string& muscleName) const
-{ 
-	return getMetabolicParameters(muscleName)->get_activation_constant_slow_twitch(); 
-}
-
-
-//_____________________________________________________________________________
-/** 
- * Set the activation constant for slow twitch fibers for an existing muscle. 
- */
-void MuscleMetabolicPowerProbeBhargava2004::
-	setActivationConstantSlowTwitch(const std::string& muscleName, const double& c) 
-{ 
-	updMetabolicParameters(muscleName)->set_activation_constant_slow_twitch(c); 
-}
-
-
-//_____________________________________________________________________________
-/** 
- * Get the activation constant for fast twitch fibers for an existing muscle. 
- */
-const double MuscleMetabolicPowerProbeBhargava2004::
-	getActivationConstantFastTwitch(const std::string& muscleName) const 
-{ 
-	return getMetabolicParameters(muscleName)->get_activation_constant_fast_twitch(); 
-}
-
-
-//_____________________________________________________________________________
-/** 
- * Set the activation constant for fast twitch fibers for an existing muscle. 
- */
-void MuscleMetabolicPowerProbeBhargava2004::
-	setActivationConstantFastTwitch(const std::string& muscleName, const double& c) 
-{ 
-	updMetabolicParameters(muscleName)->set_activation_constant_fast_twitch(c); 
-}
-
-
-//_____________________________________________________________________________
-/** 
- * Get the maintenance constant for slow twitch fibers for an existing muscle. 
- */
-const double MuscleMetabolicPowerProbeBhargava2004::
-	getMaintenanceConstantSlowTwitch(const std::string& muscleName) const 
-{ 
-	return getMetabolicParameters(muscleName)->get_maintenance_constant_slow_twitch(); 
-}
-
-
-//_____________________________________________________________________________
-/** 
- * Set the maintenance constant for slow twitch fibers for an existing muscle. 
- */
-void MuscleMetabolicPowerProbeBhargava2004::
-	setMaintenanceConstantSlowTwitch(const std::string& muscleName, const double& c) 
-{ 
-	updMetabolicParameters(muscleName)->set_maintenance_constant_slow_twitch(c); 
-}
-
-
-//_____________________________________________________________________________
-/** 
- * Get the maintenance constant for fast twitch fibers for an existing muscle. 
- */
-const double MuscleMetabolicPowerProbeBhargava2004::
-	getMaintenanceConstantFastTwitch(const std::string& muscleName) const 
-{ 
-	return getMetabolicParameters(muscleName)->get_maintenance_constant_fast_twitch(); 
-}
-
-
-//_____________________________________________________________________________
-/** 
- * Set the maintenance constant for fast twitch fibers for an existing muscle. 
- */
-void MuscleMetabolicPowerProbeBhargava2004::
-	setMaintenanceConstantFastTwitch(const std::string& muscleName, const double& c) 
-{ 
-	updMetabolicParameters(muscleName)->set_maintenance_constant_fast_twitch(c);
 }
 
 
@@ -728,8 +643,8 @@ void MuscleMetabolicPowerProbeBhargava2004::
  * PRIVATE: Get const MetabolicMuscleParameter from the MuscleMap using a 
  * string accessor.
  */
-const MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter* 
-    MuscleMetabolicPowerProbeBhargava2004::getMetabolicParameters(
+const MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter* 
+	MuscleMetabolicsUmberger2010Probe::getMetabolicParameters(
     const std::string& muscleName) const
 {
     MuscleMap::const_iterator m_i = _muscleMap.find(muscleName);
@@ -748,8 +663,8 @@ const MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter*
  * PRIVATE: Get writable MetabolicMuscleParameter from the MuscleMap using a 
  * string accessor.
  */
-MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter* 
-    MuscleMetabolicPowerProbeBhargava2004::updMetabolicParameters(
+MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter* 
+    MuscleMetabolicsUmberger2010Probe::updMetabolicParameters(
     const std::string& muscleName)
 {
     MuscleMap::const_iterator m_i = _muscleMap.find(muscleName);
@@ -765,25 +680,21 @@ MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter*
 
 
 
-
-
-
 //==============================================================================
 //                          MetabolicMuscleParameter
 //==============================================================================
 //--------------------------------------------------------------------------
 // Constructors
 //--------------------------------------------------------------------------
-MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter::
-MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter() 
+MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter::
+MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter() 
 {
 	setNull();
 	constructProperties(); 
 }
 
-
-MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter::
-MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter(
+MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter::
+MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter(
 	const std::string& muscleName,
 	double ratio_slow_twitch_fibers, 
 	double muscle_mass)
@@ -792,37 +703,6 @@ MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter(
 	constructProperties();
 	setName(muscleName);
 	set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
-
-    if (isnan(get_provided_muscle_mass())) {
-	    set_use_provided_muscle_mass(false);
-    }
-    else {
-        set_use_provided_muscle_mass(true);
-        set_provided_muscle_mass(muscle_mass);
-    }
-	
-}
-
-
-MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter::
-MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter(
-	const std::string& muscleName,
-	double ratio_slow_twitch_fibers,
-	double activation_constant_slow_twitch,
-    double activation_constant_fast_twitch,
-    double maintenance_constant_slow_twitch,
-    double maintenance_constant_fast_twitch,
-	double muscle_mass)
-{
-	setNull();
-	constructProperties();
-	setName(muscleName);
-	set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
-	set_activation_constant_slow_twitch(activation_constant_slow_twitch);
-    set_activation_constant_fast_twitch(activation_constant_fast_twitch);
-    set_maintenance_constant_slow_twitch(maintenance_constant_slow_twitch);
-    set_maintenance_constant_fast_twitch(maintenance_constant_fast_twitch);
-
     if (isnan(get_provided_muscle_mass())) {
 	    set_use_provided_muscle_mass(false);
     }
@@ -837,7 +717,7 @@ MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter(
 //--------------------------------------------------------------------------
 // Set muscle mass
 //--------------------------------------------------------------------------
-void MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter::
+void MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter::
 setMuscleMass()    
 { 
 	if (get_use_provided_muscle_mass())
@@ -853,7 +733,7 @@ setMuscleMass()
 //--------------------------------------------------------------------------
 // Object interface
 //--------------------------------------------------------------------------
-void MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter::setNull()
+void MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter::setNull()
 {
 	setAuthors("Tim Dorn");
 	// Actual muscle mass used. If <use_provided_muscle_mass> == true, 
@@ -865,7 +745,7 @@ void MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter::setNull()
 	_musc = NULL;
 }
 
-void MuscleMetabolicPowerProbeBhargava2004_MetabolicMuscleParameter::
+void MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter::
 constructProperties()
 {
 	constructProperty_specific_tension(0.25e6);  // (Pascals (N/m^2)), specific tension of mammalian muscle.
@@ -873,11 +753,5 @@ constructProperties()
 	constructProperty_ratio_slow_twitch_fibers(0.5);
 	constructProperty_use_provided_muscle_mass(false);
 	constructProperty_provided_muscle_mass(SimTK::NaN);
-
-	// defaults from Bhargava., et al (2004).
-    constructProperty_activation_constant_slow_twitch(40.0);
-    constructProperty_activation_constant_fast_twitch(133.0);
-    constructProperty_maintenance_constant_slow_twitch(74.0);
-    constructProperty_maintenance_constant_fast_twitch(111.0);   
 }
 
