@@ -341,7 +341,7 @@ addToSystem(SimTK::MultibodySystem& system) const
    
     if(isFiberLengthAState()){
         addStateVariable(STATE_FIBER_LENGTH_NAME);  
-	            addCacheVariable(STATE_FIBER_LENGTH_NAME+"_deriv", 
+                addCacheVariable(STATE_FIBER_LENGTH_NAME+"_deriv", 
                 value, 
                 SimTK::Stage::Dynamics);
     }  
@@ -490,25 +490,25 @@ Array<std::string> Millard2012EquilibriumMuscle::getStateVariableNames() const
 {
     Array<std::string> stateVariableNames = 
         ModelComponent::getStateVariableNames();
-	
-	for(int i=0; i<stateVariableNames.getSize(); ++i){
-		stateVariableNames[i] = getName()+"."+stateVariableNames[i];
-	}
-	return stateVariableNames;
+    
+    for(int i=0; i<stateVariableNames.getSize(); ++i){
+        stateVariableNames[i] = getName()+"."+stateVariableNames[i];
+    }
+    return stateVariableNames;
 }
 
 SimTK::SystemYIndex Millard2012EquilibriumMuscle::
     getStateVariableSystemIndex(const std::string &stateVariableName) const
 {
     unsigned start = (unsigned)stateVariableName.find(".");
-	unsigned end = (unsigned)stateVariableName.length();
-	
-	if(start == end)
-		return ModelComponent::getStateVariableSystemIndex(stateVariableName);
-	else{
-		string localName = stateVariableName.substr(++start, end-start);
-		return ModelComponent::getStateVariableSystemIndex(localName);
-	}
+    unsigned end = (unsigned)stateVariableName.length();
+    
+    if(start == end)
+        return ModelComponent::getStateVariableSystemIndex(stateVariableName);
+    else{
+        string localName = stateVariableName.substr(++start, end-start);
+        return ModelComponent::getStateVariableSystemIndex(localName);
+    }
 }
 
 
@@ -516,7 +516,7 @@ double Millard2012EquilibriumMuscle::
     getStateVariableDeriv(const SimTK::State& s, 
                           const std::string &aStateName) const
 {
-	SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
+    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
         "Millard2012EquilibriumMuscle: Muscle is not"
         " to date with properties");
 
@@ -609,9 +609,9 @@ void Millard2012EquilibriumMuscle::
         " to date with properties");
 
     //Is there a way to check if aStateName is actually a state?
-	double& cacheVariable = updCacheVariable<double>(s, aStateName + "_deriv");
-	cacheVariable = aValue;
-	markCacheVariableValid(s, aStateName + "_deriv");
+    double& cacheVariable = updCacheVariable<double>(s, aStateName + "_deriv");
+    cacheVariable = aValue;
+    markCacheVariableValid(s, aStateName + "_deriv");
 }
 
 void Millard2012EquilibriumMuscle::
@@ -803,18 +803,18 @@ postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
         "Millard2012EquilibriumMuscle: Muscle is not"
         " to date with properties");
 
-	GeometryPath& path = upd_GeometryPath();
+    GeometryPath& path = upd_GeometryPath();
 
-	path.postScale(s, aScaleSet);
+    path.postScale(s, aScaleSet);
 
-	if (path.getPreScaleLength(s) > 0.0)
-	{
-		double scaleFactor = getLength(s) / path.getPreScaleLength(s);
-		upd_optimal_fiber_length() *= scaleFactor;
-		upd_tendon_slack_length() *= scaleFactor;
-		path.setPreScaleLength(s, 0.0) ;
+    if (path.getPreScaleLength(s) > 0.0)
+    {
+        double scaleFactor = getLength(s) / path.getPreScaleLength(s);
+        upd_optimal_fiber_length() *= scaleFactor;
+        upd_tendon_slack_length() *= scaleFactor;
+        path.setPreScaleLength(s, 0.0) ;
         ensureMuscleUpToDate();
-	}
+    }
 }
 
 
@@ -1169,7 +1169,7 @@ void Millard2012EquilibriumMuscle::
             case 0: //converged, all is normal
             {
                 setForce(s,tendonForce);
-		        setFiberLength(s,fiberLength);               
+                setFiberLength(s,fiberLength);               
 
             }break;
 
@@ -1246,7 +1246,7 @@ void Millard2012EquilibriumMuscle::
              << endl;
 
         setForce(s,0);
-		setFiberLength(s,getOptimalFiberLength());
+        setFiberLength(s,getOptimalFiberLength());
 
     }      
 }
@@ -1830,8 +1830,15 @@ void Millard2012EquilibriumMuscle::
                                     *getMaxContractionVelocity();
                     fv = fvCurve.calcValue(dlceN);
                 }else{
-                    cout << getName() <<
-                        " Fiber Velocity Newton Method Did Not Converge" <<endl;
+                    // Throw an exception here because there is no point
+                    // integrating a muscle velocity that is invalid. It
+                    // will end up producing invalid fiber lengths and 
+                    // ultimately cause numerical problems down the track
+                    // when trying to debug the simulation. The idea is to
+                    // produce an exception and catch this early before it
+                    // can wreak havoc with the simulation.
+                    throw (OpenSim::Exception(getName()+
+                        " Fiber Velocity Newton Method Did Not Converge"));
                 }
            
         
