@@ -70,7 +70,8 @@
 #include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
 #include <OpenSim/Simulation/Model/ActuatorForceProbe.h>
 #include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
-#include <OpenSim/Simulation/Model/MuscleMetabolicPowerProbeUmberger2010.h>
+#include <OpenSim/Simulation/Model/MuscleMetabolicsBhargava2004Probe.h>
+#include <OpenSim/Simulation/Model/MuscleMetabolicsUmberger2010Probe.h>
 
 #include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
@@ -847,7 +848,8 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/ActuatorForceProbe.h>
 
 %include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
-%include <OpenSim/Simulation/Model/MuscleMetabolicPowerProbeUmberger2010.h>
+%include <OpenSim/Simulation/Model/MuscleMetabolicsBhargava2004Probe.h>
+%include <OpenSim/Simulation/Model/MuscleMetabolicsUmberger2010Probe.h>
 %include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 %include <OpenSim/Simulation/Model/ModelVisualizer.h>
 %include <OpenSim/Simulation/Model/Model.h>
