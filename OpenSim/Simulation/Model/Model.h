@@ -115,8 +115,12 @@ public:
 
 	/** Constructor from an OpenSim XML model file. 
 	@param filename     Name of a file containing an OpenSim model in XML
-                        format; suffix is typically ".osim". **/
-	explicit Model(const std::string& filename) SWIG_DECLARE_EXCEPTION;
+                        format; suffix is typically ".osim". 
+                        
+    @param connectToModel  whether to call connectToModel to create a valid OpenSim Model or not on exit, 
+                        defaults to true. If set to false only deserialization is performed.
+    **/
+	explicit Model(const std::string& filename, bool connectToModel=true) SWIG_DECLARE_EXCEPTION;
 
 	/** Copy constructor copies model components but does not copy any run-time 
     objects.

@@ -122,7 +122,7 @@ Model::Model() :
 /**
  * Constructor from an XML file
  */
-Model::Model(const string &aFileName) :
+Model::Model(const string &aFileName, const bool connectModel) :
 	ModelComponent(aFileName, false),
 	_fileName("Unassigned"),
 	_creditsStr(_creditsStrProp.getValueStr()),
@@ -161,7 +161,7 @@ Model::Model(const string &aFileName) :
 	_fileName = aFileName;
     _analysisSet.setMemoryOwner(false);
 
-	setup();
+	if (connectModel) setup();
 	cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
 }
 //_____________________________________________________________________________

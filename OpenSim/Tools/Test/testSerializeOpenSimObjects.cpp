@@ -120,13 +120,14 @@ int main()
             Object* randClone = randomize(clone);
             testModel.updConstraintSet().cloneAndAppend(*Constraint::safeDownCast(randClone));
         }
+        /*
         ArrayPtrs<OpenSim::Controller> availableControllerTypes;
         Object::getRegisteredObjectsOfGivenType<OpenSim::Controller>(availableControllerTypes);
         for (int i=0; i< availableControllerTypes.getSize(); i++){
             Object* clone = availableControllerTypes[i]->clone();
             Object* randClone = randomize(clone);
             testModel.updControllerSet().cloneAndAppend(*Controller::safeDownCast(randClone));
-        }
+        }*/
         ArrayPtrs<OpenSim::Probe> availableProbeTypes;
         Object::getRegisteredObjectsOfGivenType<OpenSim::Probe>(availableProbeTypes);
         for (int i=0; i< availableProbeTypes.getSize(); i++){
@@ -136,9 +137,8 @@ int main()
         }
         
         testModel.print("allComponents.osim");
-        Model copyModel("allComponents.osim");
-        const Model* cloned = copyModel.clone();
-        ASSERT(testModel==*cloned);
+        Model deserializedModel("allComponents.osim", false);
+        ASSERT(testModel==deserializedModel);
         
 	}
 	catch (const Exception& e) {
