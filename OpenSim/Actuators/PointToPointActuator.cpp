@@ -253,10 +253,4 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
 	Super::updateFromXMLNode(aNode, versionNumber);
 
-    // Look up the bodies by name in the Model, and record pointers to the
-    // corresponding body objects.
-    if (!(get_bodyA().empty()|| get_bodyB().empty())) {
-	    _bodyA = &updModel().updBodySet().get(get_bodyA());
-	    _bodyB = &updModel().updBodySet().get(get_bodyB());
-    }
 }	
