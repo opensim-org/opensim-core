@@ -64,8 +64,8 @@
 #include "Model/ActuatorForceProbe.h"
 #include "Model/JointInternalPowerProbe.h"
 #include "Model/SystemEnergyProbe.h"
-#include "Model/MuscleMetabolicsUmberger2010Probe.h"
-#include "Model/MuscleMetabolicsBhargava2004Probe.h"
+#include "Model/Umberger2010MuscleMetabolicsProbe.h"
+#include "Model/Bhargava2004MuscleMetabolicsProbe.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -213,12 +213,12 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ActuatorForceProbe() );
     Object::registerType( JointInternalPowerProbe() );
     Object::registerType( SystemEnergyProbe() );
-    Object::registerType( MuscleMetabolicsUmberger2010Probe() );
-    Object::registerType( MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameterSet() );
-    Object::registerType( MuscleMetabolicsUmberger2010Probe_MetabolicMuscleParameter() );
-    Object::registerType( MuscleMetabolicsBhargava2004Probe() );
-    Object::registerType( MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameterSet() );
-    Object::registerType( MuscleMetabolicsBhargava2004Probe_MetabolicMuscleParameter() );
+    Object::registerType( Umberger2010MuscleMetabolicsProbe() );
+    Object::registerType( Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet() );
+    Object::registerType( Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter() );
+    Object::registerType( Bhargava2004MuscleMetabolicsProbe() );
+    Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet() );
+    Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter() );
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.
@@ -230,6 +230,15 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::renameType("MuscleViaPoint",    "ConditionalPathPoint");
     Object::renameType("MovingMusclePoint", "MovingPathPoint");
     Object::renameType("MusclePointSet",    "PathPointSet");
+
+	Object::renameType("MuscleMetabolicPowerProbeUmberger2010",  
+		"Umberger2010MuscleMetabolicsProbe");
+
+	Object::renameType("MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter",  
+		"Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter");
+
+	Object::renameType("MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet",  
+		"Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet");
 
   } catch (const std::exception& e) {
     std::cerr 
