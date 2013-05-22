@@ -98,6 +98,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
 
 	//cout << "Solving for contributor: " << _contributors[c] << endl;
 	// Need to be at the dynamics stage to disable a force
+	s_solver.setTime(aT);
 	_modelCopy.getMultibodySystem().realize(s_solver, SimTK::Stage::Dynamics);
 		
 	if(forceName == "total"){
@@ -297,6 +298,7 @@ double InducedAccelerationsSolver::
 		throw Exception(msg);
 	}
 
+	coord = &_modelCopy.getCoordinateSet()[ind];
 	return coord->getAccelerationValue(s_solver);
 }
 
@@ -313,6 +315,8 @@ const SimTK::SpatialVec& InducedAccelerationsSolver::
 		msg = msg +	"cannot find body '" + bodyName + "'.";
 		throw Exception(msg);
 	}
+
+	body = &_modelCopy.getBodySet()[ind];
 
 	return _modelCopy.getMatterSubsystem()
 		.getMobilizedBody(body->getIndex())

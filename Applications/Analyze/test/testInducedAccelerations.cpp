@@ -109,12 +109,32 @@ void testDoublePendulumWithSolver()
 		ASSERT_EQUAL(udot[0], udot_vel[0], 1e-5, __FILE__, __LINE__, "Induced Accelerations of velocity for double pendulum q1 FAILED");
 		ASSERT_EQUAL(udot[1], udot_vel[1], 1e-5, __FILE__, __LINE__, "Induced Accelerations of velocity for double pendulum q2 FAILED");
 
+		double q1ddot = iaaSolver.getInducedCoordinateAcceleration(s, "q1");
+		double q2ddot = iaaSolver.getInducedCoordinateAcceleration(s, "q2");
+
+		ASSERT_EQUAL(udot[0], q1ddot, 1e-5, __FILE__, __LINE__, "Induced Accelerations of velocity for double pendulum q1 FAILED");
+		ASSERT_EQUAL(udot[1], q2ddot, 1e-5, __FILE__, __LINE__, "Induced Accelerations of velocity for double pendulum q2 FAILED");
+
+		const SimTK::SpatialVec& rod1Acc = 
+			iaaSolver.getInducedBodyAcceleration(s, "rod1");
+		const SimTK::SpatialVec& rod2Acc = 
+			iaaSolver.getInducedBodyAcceleration(s, "rod2");
+
+		// The z-component of the angular acc of the body should be equivalent
+		// to the generalized coordinate of the rod connected to ground.
+		ASSERT_EQUAL(udot[0], rod1Acc[0][2], 1e-5, __FILE__, __LINE__, "Induced rod1 Acceleration due to velocity FAILED");
+		// The angular acceleration of rod2 should be sum the of coord accs.
+		ASSERT_EQUAL(udot[0]+udot[1], rod2Acc[0][2], 1e-5, __FILE__, __LINE__, "Induced rod2 Acceleration due to velocity FAILED");
+
 		// Compute gravity contribution
 		Vector udot_grav = iaaSolver.solve(s, "gravity"); 
 		udot = calcDoublePendulumUdot(pendulum, s, 0, 0, true, false);
 				
 		ASSERT_EQUAL(udot[0], udot_grav[0], 1e-5, __FILE__, __LINE__, "Induced Accelerations of gravity for double pendulum q1 FAILED");
 		ASSERT_EQUAL(udot[1], udot_grav[1], 1e-5, __FILE__, __LINE__, "Induced Accelerations of gravity for double pendulum q2 FAILED");
+
+		Vec3 comAcc = iaaSolver.getInducedMassCenterAcceleration(s);
+		//cout << "CoM Acceleration due to gravity: " << comAcc << endl;
 
 		// Compute Torq1 contribution
 		Vector udot_torq1 = iaaSolver.solve(s, "Torq1"); 
