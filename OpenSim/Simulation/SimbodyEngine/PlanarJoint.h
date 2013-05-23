@@ -1,5 +1,5 @@
-#ifndef __SliderJoint_h__
-#define __SliderJoint_h__
+#ifndef OPENSIM_PLANAR_JOINT_H_
+#define OPENSIM_PLANAR_JOINT_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  SliderJoint.h                           *
  * -------------------------------------------------------------------------- *
@@ -26,7 +26,6 @@
 
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/ScaleSet.h>
 #include "Joint.h"
 
 namespace OpenSim {
@@ -34,18 +33,19 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing an Slider joint.  The underlying implementation 
- * in Simbody is a MobilizedBody::Slider. Slider provides one DoF along the 
- * common X-axis of the joint frames (not body) in the parent and body.
+ * A PlanarJoint provides three DoFs: rotation about the the common Z of the
+ * parent and child joint frames, X and Y translation in the parent body's 
+ * joint frame. The underlying Simbody implementation is a 
+ * MobilizedBody::Planar. 
  *
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API SliderJoint : public Joint {
-OpenSim_DECLARE_CONCRETE_OBJECT(SliderJoint, Joint);
+class OSIMSIMULATION_API PlanarJoint : public Joint {
+OpenSim_DECLARE_CONCRETE_OBJECT(PlanarJoint, Joint);
 
 private:
-	static const int _numMobilities = 1;
+	static const int _numMobilities = 3;
 //=============================================================================
 // DATA
 //=============================================================================
@@ -59,16 +59,17 @@ protected:
 //=============================================================================
 public:
 	// CONSTRUCTION
-	SliderJoint();
+	PlanarJoint();
 
 	// Convenience constructor
-	SliderJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
+	PlanarJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
 					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
 				    bool reverse=false);
 
 	int numCoordinates() const { return _numMobilities; }
 
 protected:
+	/** Model component interface */
 	void connectToModel(Model& aModel) OVERRIDE_11;
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
@@ -76,12 +77,12 @@ private:
 	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
 
 //=============================================================================
-};	// END of class SliderJoint
+};	// END of class PlanarJoint
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SliderJoint_h__
+#endif // OPENSIM_PLANAR_JOINT_H_
 
 

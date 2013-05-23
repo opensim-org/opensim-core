@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                         OpenSim:  SliderJoint.cpp                          *
+ *                         OpenSim:  PlanarJoint.cpp                          *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -24,9 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <math.h>
-#include "SliderJoint.h"
+#include "PlanarJoint.h"
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -41,7 +39,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-SliderJoint::SliderJoint() :
+PlanarJoint::PlanarJoint() :
 	Joint()
 {
 	setAuthors("Ajay Seth");
@@ -55,7 +53,7 @@ SliderJoint::SliderJoint() :
 /**
  * Convenience Constructor.
  */
-	SliderJoint::SliderJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
+	PlanarJoint::PlanarJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
 					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, bool reverse) :
 	Joint(name, parent, locationInParent,orientationInParent,
 			body, locationInBody, orientationInBody, reverse)
@@ -78,19 +76,30 @@ SliderJoint::SliderJoint() :
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aModel OpenSim  model containing this SliderJoint.
+ * @param aModel OpenSim  model containing this PlanarJoint.
  */
-void SliderJoint::connectToModel(Model& aModel)
+void PlanarJoint::connectToModel(Model& aModel)
 {
+	string errorMessage;
+
 	// Base class
 	Super::connectToModel(aModel);
+
+	const std::string& parentName = get_parent_body();
+
+	// Look up the parent and child bodies by name in the
+	if (!aModel.updBodySet().contains(parentName)) {
+		errorMessage += "Invalid parent body (" + parentName + ") specified in joint " + getName();
+		throw (Exception(errorMessage.c_str()));
+	}
+	setParentBody(aModel.updBodySet().get(parentName));
 }
 
 //=============================================================================
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void SliderJoint::addToSystem(SimTK::MultibodySystem& system) const
+void PlanarJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
 	const SimTK::Vec3& orientation = get_orientation();
 	const SimTK::Vec3& location = get_location();
@@ -106,7 +115,7 @@ void SliderJoint::addToSystem(SimTK::MultibodySystem& system) const
 	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
 	SimTK::Transform parentTransform(parentRotation, locationInParent);
 
-	SliderJoint* mutableThis = const_cast<SliderJoint*>(this);
+	PlanarJoint* mutableThis = const_cast<PlanarJoint*>(this);
 
 	mutableThis->createMobilizedBody(parentTransform, childTransform);
 
@@ -114,14 +123,13 @@ void SliderJoint::addToSystem(SimTK::MultibodySystem& system) const
     Super::addToSystem(system);
 }
 
-void SliderJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform) {
-
+void PlanarJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform)
+{
 	// CREATE MOBILIZED BODY
-	MobilizedBody::Slider
+	MobilizedBody::Planar
 		simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(&updParentBody())),
 			parentTransform,SimTK::Body::Rigid(updBody().getMassProperties()),
 			childTransform);
 
 	setMobilizedBodyIndex(&updBody(), simtkBody.getMobilizedBodyIndex());
-
 }

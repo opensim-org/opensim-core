@@ -42,10 +42,6 @@
 //     Add tests here as new joint types are added to OpenSim
 //
 //==========================================================================================================
-#include <iostream>
-#include <sstream>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
@@ -61,8 +57,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
-#include <OpenSim/Simulation/Control/PrescribedController.h>
-#include <OpenSim/Actuators/CoordinateActuator.h>
+#include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
+
 
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Common/SimmSpline.h>
@@ -70,7 +66,6 @@
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/FunctionAdapter.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include "SimTKsimbody.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -226,6 +221,7 @@ void testEllipsoidJoint();
 void testWeldJoint(bool randomizeBodyOrder);
 void testPinJoint();
 void testSliderJoint();
+void testPlanarJoint();
 void testBallJoint(bool useEulerAngles);
 void testFreeJoint(bool useEulerAngles);
 void testCustomWithMultidimFunction();
@@ -241,6 +237,8 @@ int main()
 		testPinJoint();
 		// Compare behavior of a two body pendulum with OpenSim pin hip and slider knee
 		testSliderJoint();
+		// Compare behavior of a two body model connected via planar joints
+		testPlanarJoint();
 		// First compare behavior of a double pendulum with Universal hip and Pin-like knee
 		testCustomVsUniversalPin();
 		// Compare behavior of a double pendulum with pin hip and function-based translating tibia knee
@@ -1285,6 +1283,99 @@ void testSliderJoint()
 	// Compare Simbody system and OpenSim model simulations
 	compareSimulations(system, state, &osimModel, osim_state, "testSliderJoint FAILED\n");
 } // end testSliderJoint
+
+void testPlanarJoint()
+{
+	using namespace SimTK;
+
+	cout << endl;
+	cout << "=============================================================" << endl;
+	cout << " OpenSim PlanarJoint vs. Simbody MobilizedBody::Planar " << endl;
+	cout << "=============================================================" << endl;
+
+	Random::Uniform randomAngle(-Pi/2, Pi/2);
+	Vec3 oInB(randomAngle.getValue(),  randomAngle.getValue(), randomAngle.getValue());
+	Vec3 oInP(randomAngle.getValue(),  randomAngle.getValue(), randomAngle.getValue());
+
+	// Define the Simbody system
+    MultibodySystem system;
+    SimbodyMatterSubsystem matter(system);
+    GeneralForceSubsystem forces(system);
+	SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
+
+	// Thigh connected by hip
+	MobilizedBody::Planar thigh(matter.Ground(), SimTK::Transform(hipInGround), 
+		SimTK::Body::Rigid(MassProperties(femurMass, femurCOM, femurInertiaAboutCOM.shiftFromMassCenter(femurCOM, femurMass))), SimTK::Transform(hipInFemur));
+	//Pin knee connects shank
+	MobilizedBody::Planar shank(thigh, SimTK::Transform(Rotation(BodyRotationSequence, oInP[0], XAxis, oInP[1], YAxis, oInP[2],ZAxis), kneeInFemur),
+							 SimTK::Body::Rigid(tibiaMass), SimTK::Transform(Rotation(BodyRotationSequence, oInB[0], XAxis, oInB[1], YAxis, oInB[2],ZAxis), kneeInTibia));
+
+	// Simbody model state setup
+	system.realizeTopology();
+	State state = system.getDefaultState();
+	matter.setUseEulerAngles(state, true);
+    system.realizeModel(state);
+
+	//==========================================================================================================
+	// Setup OpenSim model
+	Model osimModel; 
+	//OpenSim bodies
+    OpenSim::Body& ground = osimModel.getGroundBody();
+
+	//OpenSim thigh
+	OpenSim::Body osim_thigh("thigh", femurMass, femurCOM, femurInertiaAboutCOM);
+
+	// create hip as an Ball joint
+	PlanarJoint hip("", ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
+
+	// Rename hip coordinates for a pin joint
+	CoordinateSet& hip_coords = hip.upd_CoordinateSet();
+	for(int i=0; i<hip_coords.getSize(); i++){
+		std::stringstream coord_name;
+		coord_name << "hip_q" << i;
+		hip_coords.get(i).setName(coord_name.str());
+	}
+
+	// Add the thigh body which now also contains the hip joint to the model
+	osimModel.addBody(&osim_thigh);
+
+	// Add OpenSim shank via a knee joint
+	OpenSim::Body osim_shank("shank", tibiaMass.getMass(), tibiaMass.getMassCenter(), tibiaMass.getInertia());
+
+	// create planar knee joint
+	PlanarJoint knee("", osim_thigh, kneeInFemur, oInP, osim_shank, kneeInTibia, oInB);
+	CoordinateSet& kneeCoords =	knee.upd_CoordinateSet();
+	kneeCoords[0].setName("knee_rz");
+	kneeCoords[0].setName("knee_tx");
+	kneeCoords[0].setMotionType(Coordinate::Translational);
+	kneeCoords[0].setName("knee_ty");
+	kneeCoords[0].setMotionType(Coordinate::Translational);
+
+	// Add the shank body which now also contains the knee joint to the model
+	osimModel.addBody(&osim_shank);
+
+	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
+	osimModel.updBodySet().setMemoryOwner(false);
+
+	osimModel.setGravity(gravity_vec);
+
+    //Add analyses before setting up the model for simulation
+	Kinematics *kinAnalysis = new Kinematics(&osimModel);
+	kinAnalysis->setInDegrees(false);
+	osimModel.addAnalysis(kinAnalysis);
+
+	cout << "testSliderJoint: testEquivalentBodyForceForGenForces" << endl;
+    testEquivalentBodyForceForGenForces(&osimModel);
+
+	// Need to setup model before adding an analysis since it creates the AnalysisSet
+	// for the model if it does not exist.
+	SimTK::State osim_state = osimModel.initSystem();
+
+	//==========================================================================================================
+	// Compare Simbody system and OpenSim model simulations
+	compareSimulations(system, state, &osimModel, osim_state, "testPlanarJoint FAILED\n");
+} // end testSliderJoint
+
 
 void testCustomWithMultidimFunction()
 {

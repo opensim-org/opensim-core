@@ -135,15 +135,13 @@ void Joint::connectToModel(Model& aModel) {
 	string errorMessage;
 
 	const std::string& parentName = get_parent_body();
+
 	// Look up the parent and child bodies by name in the
-	// body set
-    try {
-	    _parentBody = &aModel.updBodySet().get(parentName);
-    }
-    catch (...) {
+	if (!aModel.updBodySet().contains(parentName)) {
 		errorMessage += "Invalid parent body (" + parentName + ") specified in joint " + getName();
 		throw (Exception(errorMessage.c_str()));
 	}
+	setParentBody(aModel.updBodySet().get(parentName));
 
 	CoordinateSet& coordinateSet = upd_CoordinateSet();
 	coordinateSet.invokeConnectToModel(aModel);

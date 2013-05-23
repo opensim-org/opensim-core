@@ -101,6 +101,7 @@
 #include "SimbodyEngine/UniversalJoint.h"
 #include "SimbodyEngine/PinJoint.h"
 #include "SimbodyEngine/SliderJoint.h"
+#include "SimbodyEngine/PlanarJoint.h"
 #include "SimbodyEngine/FreeJoint.h"
 #include "SimbodyEngine/CustomJoint.h"
 #include "SimbodyEngine/WeldJoint.h"
@@ -177,6 +178,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( UniversalJoint() );
     Object::registerType( PinJoint() );
     Object::registerType( SliderJoint() );
+	Object::registerType( PlanarJoint() );
     Object::registerType( TransformAxis() );
     Object::registerType( Coordinate() );
     Object::registerType( SpatialTransform() );
