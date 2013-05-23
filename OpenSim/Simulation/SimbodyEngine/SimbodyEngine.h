@@ -176,7 +176,7 @@ public:
 	//--------------------------------------------------------------------------
 	// DERIVATIVES
 	//--------------------------------------------------------------------------
-	virtual void computeDerivatives(const SimTK::State& s, double *dqdt,double *dudt);
+	virtual void computeDerivatives(const SimTK::State& s, double *dqdt=NULL, double *dudt=NULL);
 
 	//--------------------------------------------------------------------------
 	// UTILITY

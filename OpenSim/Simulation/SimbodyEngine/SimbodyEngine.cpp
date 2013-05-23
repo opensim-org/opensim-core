@@ -460,7 +460,7 @@ void SimbodyEngine::computeReactions(const SimTK::State& s, Vector_<Vec3>& rForc
  * @param dqdt Derivatives of generalized coordinates.
  * @param dudt Derivatives of generalized speeds.
  */
-void SimbodyEngine::computeDerivatives(const SimTK::State& s, double *dqdt,double *dudt)
+void SimbodyEngine::computeDerivatives(const SimTK::State& s, double *dqdt, double *dudt)
 {
 	// COMPUTE ACCELERATIONS
 	try {
@@ -474,11 +474,15 @@ void SimbodyEngine::computeDerivatives(const SimTK::State& s, double *dqdt,doubl
 	Vector udot = _model->getMatterSubsystem().getUDot(s);
 
 	// ASSIGN THEM (MAYBE SLOW BUT CORRECT)
-	int nq = s.getNQ();
-	for(int i=0;i<nq;i++) dqdt[i] = qdot[i];
+	if(dqdt){
+		int nq = s.getNQ();
+		for(int i=0;i<nq;i++) dqdt[i] = qdot[i];
+	}
 
-	int nu = s.getNU();
-	for(int i=0;i<nu;i++) dudt[i] = udot[i];
+	if(dudt){
+		int nu = s.getNU();
+		for(int i=0;i<nu;i++) dudt[i] = udot[i];
+	}
 }
 
 

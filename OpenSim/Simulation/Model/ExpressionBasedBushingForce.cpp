@@ -513,14 +513,6 @@ double CoupledBushingForce::computePotentialEnergy(const SimTK::State& s) const
 }
 */
 
-// TO DO:  correct potential energy caculation
-/* Potential energy is computed by underlying SimTK::Force. */
-double ExpressionBasedBushingForce::computePotentialEnergy(const SimTK::State& s) const
-{
-	return _model->getForceSubsystem().getForce(_index)
-                                      .calcPotentialEnergyContribution(s);
-}
-
 //=============================================================================
 // Reporting
 //=============================================================================

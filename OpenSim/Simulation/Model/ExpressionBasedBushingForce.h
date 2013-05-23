@@ -236,9 +236,7 @@ public:
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForces) const;
 
-    /** Potential energy is determined by the elastic energy storage of the bushing.
-	  * In spatial terms, U = ~dq*[K]*dq, with K and dq defined above. */
-	virtual double computePotentialEnergy(const SimTK::State& s) const;
+    /** Potential energy calculation is not implemented */
 
     
 

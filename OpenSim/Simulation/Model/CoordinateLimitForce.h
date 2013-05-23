@@ -229,7 +229,6 @@ private:
     // Object helpers
     void setNull();
     void constructProperties();
-    void copyData(const CoordinateLimitForce &aForce);
 
     // Model Component Interface when computing energy
     SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const;
