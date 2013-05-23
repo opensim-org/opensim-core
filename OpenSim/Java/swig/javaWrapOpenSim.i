@@ -149,6 +149,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 
 #include <OpenSim/Simulation/Model/Marker.h>
@@ -822,6 +823,7 @@ namespace SimTK {
 %include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
+%include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 
 %template(SetJoints) OpenSim::Set<OpenSim::Joint>;
 %template(ModelComponentSetJoints) OpenSim::ModelComponentSet<OpenSim::Joint>;
