@@ -208,7 +208,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
 	if (hints.getShowPathPoints())
 	{
-		DefaultGeometry::drawPathPoint(lastBody, lastLoc_B, 0.9*SimTK::White, appendToThis);
+		DefaultGeometry::drawPathPoint(lastBody, lastLoc_B, getColor(state), appendToThis);
 	}
 
 	Vec3 lastPos = matter.getMobilizedBody(lastBody).getBodyTransform(state)*lastLoc_B;
@@ -220,7 +220,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
 		if(hints.getShowPathPoints())
 		{
-			DefaultGeometry::drawPathPoint(body, loc_B, 0.9*SimTK::White, appendToThis);
+			DefaultGeometry::drawPathPoint(body, loc_B, getColor(state), appendToThis);
 		}
 
 		Vec3 pos = matter.getMobilizedBody(body).getBodyTransform(state)*loc_B;

@@ -121,21 +121,11 @@ void DefaultGeometry::drawPathPoint(const MobilizedBodyIndex&             body,
                           const Vec3&                           color,
                           Array_<SimTK::DecorativeGeometry>&    geometry)
 {
-    const double MarkLen = .005; // half-length of marker line
-    const double thickness = 2;
-
-    geometry.push_back(DecorativeLine(pt_B-Vec3(MarkLen,0,0),
-                                      pt_B+Vec3(MarkLen,0,0))
-                            .setBodyId(body).setColor(color)
-                            .setLineThickness(thickness));
-    geometry.push_back(DecorativeLine(pt_B-Vec3(0,MarkLen,0),
-                                      pt_B+Vec3(0,MarkLen,0))
-                            .setBodyId(body).setColor(color)
-                            .setLineThickness(thickness));
-    geometry.push_back(DecorativeLine(pt_B-Vec3(0,0,MarkLen),
-                                      pt_B+Vec3(0,0,MarkLen))
-                            .setBodyId(body).setColor(color)
-                            .setLineThickness(thickness));
+    geometry.push_back(DecorativeSphere(0.005)
+                .setTransform(pt_B)
+                .setBodyId(body)
+                .setColor(color)
+                .setOpacity(0.8));
 }
 
 void DefaultGeometry::generateDecorations
