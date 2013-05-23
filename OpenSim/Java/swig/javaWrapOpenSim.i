@@ -70,8 +70,8 @@
 #include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
 #include <OpenSim/Simulation/Model/ActuatorForceProbe.h>
 #include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
-#include <OpenSim/Simulation/Model/MuscleMetabolicsBhargava2004Probe.h>
-#include <OpenSim/Simulation/Model/MuscleMetabolicsUmberger2010Probe.h>
+#include <OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.h>
+#include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
 
 #include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
