@@ -45,7 +45,7 @@ namespace OpenSim {
  * provided as strings that are parsed and evaluated during a simulation.
  * Each expression can be a function of the bushing's rotational deflections 
  * (theta_x, theta_y, theta_z) and translational deflections, (delta_x, delta_y,
- * delta_z).  These user defined expressions can caputure nonlinearities and 
+ * delta_z).  These user defined expressions can capture nonlinearities and 
  * coupling common in biologic structures.  
  *
  * A bushing force is the force increasing due to deviation between two frames. 
