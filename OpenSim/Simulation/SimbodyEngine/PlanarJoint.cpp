@@ -126,8 +126,14 @@ void PlanarJoint::addToSystem(SimTK::MultibodySystem& system) const
 void PlanarJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform)
 {
 	// CREATE MOBILIZED BODY
+    SimTK::MobilizedBodyIndex parentIndex = getMobilizedBodyIndex(&updParentBody());
+    if (!parentIndex.isValid()){
+        string errorMessage;
+        errorMessage += "Invalid parent body (" + get_parent_body() + ") specified in joint " + getName();
+		throw (Exception(errorMessage.c_str()));
+    }
 	MobilizedBody::Planar
-		simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(&updParentBody())),
+		simtkBody(_model->updMatterSubsystem().updMobilizedBody(parentIndex),
 			parentTransform,SimTK::Body::Rigid(updBody().getMassProperties()),
 			childTransform);
 
