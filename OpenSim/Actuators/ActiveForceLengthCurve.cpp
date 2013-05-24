@@ -86,28 +86,9 @@ void ActiveForceLengthCurve::constructProperties()
 
 void ActiveForceLengthCurve::buildCurve()
 {
-    
-        double lce0 = get_min_norm_active_fiber_length();
-        double lce1 = get_transition_norm_fiber_length();
-        double lce2 = 1.0;
-        double lce3 = get_max_norm_active_fiber_length();
-
-        double dydx = get_shallow_ascending_slope();
-        double minVal=get_minimum_value();
-
-        double curviness = 1;
-
-        //Here's where you call the SmoothSegmentedFunctionFactory
-        SmoothSegmentedFunction tmp = 
-            SmoothSegmentedFunctionFactory::
-            createFiberActiveForceLengthCurve(  lce0, lce1,
-                                                lce2, lce3,
-                                              minVal, dydx,
-                                           curviness, false, 
-                                            getName());
-        this->m_curve = tmp;
-        setObjectIsUpToDateWithProperties();
-    
+	m_curve = 
+		*(static_cast<SmoothSegmentedFunction*>(createSimTKFunction())); 
+	setObjectIsUpToDateWithProperties();
 }
 
 void ActiveForceLengthCurve::ensureCurveUpToDate()
@@ -124,27 +105,29 @@ void ActiveForceLengthCurve::ensureCurveUpToDate()
 }
 
 //=============================================================================
-// MODEL COMPPONENT INTERFACE
+//	OpenSim::Function Interface
 //=============================================================================
-void ActiveForceLengthCurve::connectToModel(Model& aModel)
-{
-    Super::connectToModel(aModel);
-    ensureCurveUpToDate();
-}
 
-void ActiveForceLengthCurve::initStateFromProperties(SimTK::State& s) const
+SimTK::Function* ActiveForceLengthCurve::createSimTKFunction() const
 {
-    Super::initStateFromProperties(s);
-}
+	// back the OpenSim::Function with this SimTK::Function 
+        
+		double lce0 = get_min_norm_active_fiber_length();
+        double lce1 = get_transition_norm_fiber_length();
+        double lce2 = 1.0;
+        double lce3 = get_max_norm_active_fiber_length();
 
-void ActiveForceLengthCurve::addToSystem(SimTK::MultibodySystem& system) const
-{
-    Super::addToSystem(system);
+        double dydx = get_shallow_ascending_slope();
+        double minVal=get_minimum_value();
 
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-        "ActiveForceLengthCurve: Curve is not"
-        " to date with its properties");
-    
+        double curviness = 1;
+         
+		return SmoothSegmentedFunctionFactory::
+            createFiberActiveForceLengthCurve(  lce0, lce1,
+                                                lce2, lce3,
+                                              minVal, dydx,
+                                           curviness, false, 
+                                            getName());
 }
 
 

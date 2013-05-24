@@ -25,7 +25,7 @@
 
 // INCLUDE
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
-#include <OpenSim/Simulation/Model/ModelComponent.h>
+#include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 #include <OpenSim/Common/SmoothSegmentedFunction.h>
 #include <simbody/internal/common.h>
@@ -153,8 +153,8 @@ namespace OpenSim {
   @author Matt Millard
 
  */
-class OSIMACTUATORS_API FiberForceLengthCurve : public ModelComponent {
-OpenSim_DECLARE_CONCRETE_OBJECT(FiberForceLengthCurve, ModelComponent);
+class OSIMACTUATORS_API FiberForceLengthCurve : public Function {
+OpenSim_DECLARE_CONCRETE_OBJECT(FiberForceLengthCurve, Function);
 public:
 //==============================================================================
 // PROPERTIES
@@ -589,37 +589,14 @@ public:
 // PRIVATE
 //==============================================================================
 private:
-    /*
-    This object extends the ModelComponent interface so that we can make use
-    of the 'addToSystem' function, which we are using to create the 
-    curve (using SmoothSegmentedFunctionFactory), which is an 
-    expensive operation, just once prior to simulation. 
-    
-    Thus the user is allowed to set the properties of this curve until just 
-    before the simulation begins. Just prior to the simulation starts 
-    'addToSystem' is called, and then this object will build the 
-    SmoothSegmentedFunction that defines the curve the user requested
-    */
-
-    ///ModelComponent Interface required function
-    void connectToModel(Model& model) OVERRIDE_11;
-    ///ModelComponent Interface required function
-    void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
-    /**
-    ModelComponent is being used for this one function, which is called just
-    prior to a simulation beginning. This is the ideal time to actually
-    create the curve because
-
-    \li The curve parameters cannot change anymore
-    \li This function is only called just prior to simulation, so the expensive
-        task of creating the curve will only be done when it is absolutely 
-        necessary
-
-    */
-    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-
-    ///ModelComponent Interface required function
-    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11 {};
+	/**
+	//--------------------------------------------------------------------------
+	<B> OpenSim::Function Interface </B>
+	//--------------------------------------------------------------------------
+    Create the underlying SimTK::Function that implements the calculations
+	    necessary for this curve. 
+	*/
+    SimTK::Function* createSimTKFunction() const OVERRIDE_11;
     
     void setNull();
     void constructProperties();
@@ -635,7 +612,7 @@ private:
         \endverbatim
 
     */
-    void buildCurve();
+    void buildCurve( bool computeIntegral = false );
 
     /**
         If the curve is upto date nothing is done. If the curves parameters have

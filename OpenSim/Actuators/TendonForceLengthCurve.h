@@ -25,7 +25,7 @@
 
 // INCLUDE
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
-#include <OpenSim/Simulation/Model/ModelComponent.h>
+#include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 #include <OpenSim/Common/SmoothSegmentedFunction.h>
 #include <simbody/internal/common.h>
@@ -142,8 +142,8 @@ namespace OpenSim {
   @author Matt Millard
 
  */
-class OSIMACTUATORS_API TendonForceLengthCurve : public ModelComponent {
-OpenSim_DECLARE_CONCRETE_OBJECT(TendonForceLengthCurve, ModelComponent);
+class OSIMACTUATORS_API TendonForceLengthCurve : public Function {
+OpenSim_DECLARE_CONCRETE_OBJECT(TendonForceLengthCurve, Function);
 public:
 //==============================================================================
 // PROPERTIES
@@ -204,7 +204,7 @@ public:
                         region. The toe region lies between 0 strain and 
                         some intermediate strain less than the strain required
                         to develop 1 norm force. The toe region is non-linear 
-                        and more compliant than the rest of the tendon.
+                        and more compliant than the rest of the tendon curve.
 
         @param curviness    
                 A dimensionless parameter between [0-1] that controls how 
@@ -330,7 +330,6 @@ public:
             double dfselVal = fseCurve3.calcDerivative(1.02,1);
         @endcode
 
-
         <B>References:</B>
         \verbatim
         Maganaris, C.N. and Paul, J.P.(2002). Tensile properties of the in
@@ -347,9 +346,7 @@ public:
         Thelen, DG (2003). Adjustment of Muscle Mechanics Model 
          Parameters to Simulate Dynamic Contractions in Older Adults. 
          ASME J.Biomech. Eng., 125, 75-77.
-        \endverbatim
-
-    */
+        \endverbatim  */
     TendonForceLengthCurve( double strainAtOneNormForce,                             
                             const std::string& muscleName);
 
@@ -362,12 +359,9 @@ public:
                 strainAtOneNormForce = 0.04 means that the tendon will develop 
                 a tension of 1 normalized force when it is strained by 4% of 
                 its resting length, or equivalently is stretched to 1.04 times 
-                its resting length.
-    */
+                its resting length.    */
      double getStrainAtOneNormForce() const;
-
-     
-    
+  
      
      /**
         @returns The normalized stiffness (or slope) of the tendon curve 
@@ -630,40 +624,15 @@ public:
 // PRIVATE
 //==============================================================================
 private:
-    /*
-    This object extends the ModelComponent interface so that we can make use
-    of the 'addToSystem' function, which we are using to create the 
-    curve (using SmoothSegmentedFunctionFactory), which is an 
-    expensive operation, just once prior to simulation. 
-    
-    Thus the user is allowed to set the properties of this curve until just 
-    before the simulation begins. Just prior to the simulation starts 
-    'addToSystem' is called, and then this object will build the 
-    SmoothSegmentedFunction that defines the curve the user requested
-    */
+    /**
+	//--------------------------------------------------------------------------
+	<B> OpenSim::Function Interface </B>
+	//--------------------------------------------------------------------------
+    /** Create the underlying SimTK::Function that implements the calculations
+	    necessary for this curve. */
+    SimTK::Function* createSimTKFunction() const OVERRIDE_11;
 
-    ///ModelComponent Interface required function
-  	void connectToModel(Model& model) OVERRIDE_11;
-    ///ModelComponent Interface required function
-	void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
-    /*
-    ModelComponent is being used for this one function, which is called just
-    prior to a simulation beginning. This is the ideal time to actually
-    create the curve because
-
-    \li The curve parameters cannot change anymore
-    \li This function is only called just prior to simulation, so the expensive
-        task of creating the curve will only be done when it is absolutely 
-        necessary
-
-    */
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-
-    ///ModelComponent Interface required function
-    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11 {};
-       
-
-    /*
+	/**
         <B> No Longer Used</B>
 
         @param strainAtOneNormForce 
@@ -687,17 +656,14 @@ private:
     <B>Computational Costs</B>       
     \verbatim
         ~211 flops     
-    \endverbatim
-
-   
+    \endverbatim  
 
     <B> References </B>
         \verbatim
         Thelen (2003). Adjustment of Muscle
         Mechanics Model Parameters to Simulate Dynamic Contractions in Older
         Adults. ASME J Biomech Eng (125).
-        \endverbatim
-    */
+        \endverbatim  */
     SimTK::Vector 
         calcReferenceTendon(double strainAtOneNormForce);
 
@@ -711,26 +677,9 @@ private:
         <B>Computational Costs</B>
         \verbatim 
             Curve Construction Costs :   ~20,500 flops
-        \endverbatim
+        \endverbatim    */
+  void buildCurve(bool computeIntegral = false);
 
-    */
-  void buildCurve();
-
-  
-
-  //<B> No Longer Used</B>
-  //BROKEN Since ftoe became a parameter of 
-  //SmoothSegmentedFunctionFactory::createTendonForceLengthCurve;
-  double calcCurvinessOfBestAreaFit(double e0,  double klin,
-                                    double eA,  double area,
-                                    double relTol);
-
-  //<B> No Longer Used</B>
-  //BROKEN Since ftoe became a parameter of 
-  //SmoothSegmentedFunctionFactory::createTendonForceLengthCurve;
-  double calcCurvinessOfBestToeFit(double e0,  double klin,
-                                   double eToe, double fToe,
-                                   double relTol);
 
   SmoothSegmentedFunction   m_curve;
 

@@ -342,7 +342,6 @@ double SmoothSegmentedFunction::calcIntegral(double x) const
         "%s: This curve was not constructed with its integral because"
         "computeIntegral was false",_name.c_str());
 
-
     double yVal = 0;    
     if(x >= _x0 && x <= _x1){
         yVal = _splineYintX.calcValue(SimTK::Vector(1,x));

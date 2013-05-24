@@ -74,22 +74,21 @@ void FiberCompressiveForceLengthCurve::constructProperties()
 }
 
 
-void FiberCompressiveForceLengthCurve::buildCurve()
+void FiberCompressiveForceLengthCurve::buildCurve( bool computeIntegral )
 {        
-        double l0   =  get_norm_length_at_zero_force();
-        double k    =  m_stiffnessAtZeroLengthInUse;
-        double c    =  m_curvinessInUse;        
+	SmoothSegmentedFunction* f = SmoothSegmentedFunctionFactory::
+		createFiberCompressiveForceLengthCurve( 
+				get_norm_length_at_zero_force(), 
+				m_stiffnessAtZeroLengthInUse,  
+				m_curvinessInUse,
+				computeIntegral,
+				getName());            
+	
+	m_curve = *f;  
 
-        //Here's where you call the SmoothSegmentedFunctionFactory
-        SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
-            createFiberCompressiveForceLengthCurve( l0,
-                                                    k,
-                                                    c,
-                                                    true,
-                                                    getName());            
-        this->m_curve = tmp;
-          
-        setObjectIsUpToDateWithProperties();
+	delete f; 
+
+	setObjectIsUpToDateWithProperties();
 }
 
 
@@ -154,26 +153,20 @@ void FiberCompressiveForceLengthCurve::ensureCurveUpToDate()
 
 
 //=============================================================================
-// MODEL COMPPONENT INTERFACE
+//	OpenSim::Function Interface
 //=============================================================================
-void FiberCompressiveForceLengthCurve::connectToModel(Model& aModel)
-{
-    Super::connectToModel(aModel);
-    ensureCurveUpToDate();
-}
 
-void FiberCompressiveForceLengthCurve::initStateFromProperties(SimTK::State& s) const
+SimTK::Function* FiberCompressiveForceLengthCurve::createSimTKFunction() const
 {
-    Super::initStateFromProperties(s);
-}
+	// back the OpenSim::Function with this SimTK::Function 
 
-void FiberCompressiveForceLengthCurve::addToSystem(SimTK::MultibodySystem& system) const
-{
-    Super::addToSystem(system);
-
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-        "FiberCompressiveForceLengthCurve: Curve is not"
-        " to date with its properties");
+	return SmoothSegmentedFunctionFactory::
+		createFiberCompressiveForceLengthCurve( 
+				get_norm_length_at_zero_force(), 
+				m_stiffnessAtZeroLengthInUse,  
+				m_curvinessInUse,
+				false,
+				getName());            
 }
 
 
@@ -235,6 +228,13 @@ double FiberCompressiveForceLengthCurve::calcIntegral(double aNormLength) const
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
         "FiberCompressiveForceLengthCurve: Curve is not"
         " to date with its properties");
+	
+	if (!m_curve.isIntegralAvailable()) {
+		FiberCompressiveForceLengthCurve* mutableThis = 
+			const_cast<FiberCompressiveForceLengthCurve*>(this); 
+		mutableThis->buildCurve(true); 
+	}
+
     return m_curve.calcIntegral(aNormLength);
 }
 

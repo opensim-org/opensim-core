@@ -28,7 +28,7 @@
 
 // INCLUDE
 #include <simbody/internal/common.h>
-#include <OpenSim/Simulation/Model/ModelComponent.h>
+#include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 #include <OpenSim/Common/SmoothSegmentedFunction.h>
 
@@ -67,9 +67,9 @@ namespace OpenSim {
 
  */
 class OSIMACTUATORS_API FiberCompressiveForceCosPennationCurve : 
-    public ModelComponent {OpenSim_DECLARE_CONCRETE_OBJECT(
+    public Function {OpenSim_DECLARE_CONCRETE_OBJECT(
                                 FiberCompressiveForceCosPennationCurve, 
-                                ModelComponent);
+                                Function);
 
 //class OSIMACTUATORS_API FiberCompressiveForceCosPennationCurve : public ModelComponent {
 //OpenSim_DECLARE_CONCRETE_OBJECT(FiberCompressiveForceCosPennationCurve, ModelComponent);
@@ -407,65 +407,41 @@ public:
        void printMuscleCurveToCSVFile(const std::string& path);
 
        void ensureCurveUpToDate();
-protected:
-    /*
-    This object extends the ModelComponent interface so that we can make use
-    of the 'addToSystem' function, which we are using to create the 
-    curve (using SmoothSegmentedFunctionFactory), which is an 
-    expensive operation, just once prior to simulation. 
-    
-    Thus the user is allowed to set the properties of this curve until just 
-    before the simulation begins. Just prior to the simulation starts 
-    'addToSystem' is called, and then this object will build the 
-    SmoothSegmentedFunction that defines the curve the user requested
-    */
-
-    ///ModelComponent Interface required function
-  	void connectToModel(Model& aModel) OVERRIDE_11;
-    ///ModelComponent Interface required function
-	void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
-    /**
-    ModelComponent is being used for this one function, which is called just
-    prior to a simulation beginning. This is the ideal time to actually
-    create the curve because
-
-    \li The curve parameters cannot change anymore
-    \li This function is only called just prior to simulation, so the expensive
-        task of creating the curve will only be done when it is absolutely 
-        necessary
-
-    */
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-
-    ///ModelComponent Interface required function
-    void setPropertiesFromState(const SimTK::State& state){}
     
 
 private:
-  void setNull();
-  void constructProperties();
+	/**
+	//--------------------------------------------------------------------------
+	<B> OpenSim::Function Interface </B>
+	//--------------------------------------------------------------------------
+	Create the underlying SimTK::Function that implements the calculations
+	necessary for this curve. */
+	SimTK::Function* createSimTKFunction() const OVERRIDE_11;
 
-  /**
-        This function will take all of the current property values, and if they
-        have changed since the last time the curve was built, and build a curve.
+	void setNull();
+	void constructProperties();
 
-        <B>Computational Costs</B>
-        \verbatim 
-            Curve Construction Costs :   ~20,500 flops
-        \endverbatim
+	/**
+	  This function will take all of the current property values, and if they
+	  have changed since the last time the curve was built, and build a curve.
 
-    */
-  void buildCurve();
-  
+	  <B>Computational Costs</B>
+	  \verbatim 
+	  Curve Construction Costs :   ~20,500 flops
+	  \endverbatim
+
+	 */
+	void buildCurve( bool computeIntegral = false );
 
 
 
-  SmoothSegmentedFunction m_curve;
-  double m_stiffnessAtPerpendicularInUse;
-  double m_curvinessInUse;
-  bool  m_isFittedCurveBeingUsed;
-};
 
-}
+	SmoothSegmentedFunction m_curve;
+	double m_stiffnessAtPerpendicularInUse;
+	double m_curvinessInUse;
+	bool  m_isFittedCurveBeingUsed;
+	};
+
+	}
 
 #endif //OPENSIM_FiberCompressiveForceCosPennationCurve_h__

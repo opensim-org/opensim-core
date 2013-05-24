@@ -92,32 +92,8 @@ void ForceVelocityCurve::constructProperties()
 
 void ForceVelocityCurve::buildCurve()
 {
-        
-        double dydxAtC   = get_concentric_slope_at_vmax();
-        double dydxNearC = get_concentric_slope_near_vmax(); 
-        double dydxIso   = get_isometric_slope();
-        double dydxAtE   =  get_eccentric_slope_at_vmax();
-        double dydxNearE =  get_eccentric_slope_near_vmax();
-        double fmax  =  get_max_eccentric_velocity_force_multiplier();
-        double ccurv =  get_concentric_curviness();
-        double ecurv =  get_eccentric_curviness();
-                                
-        //Here's where you call the SmoothSegmentedFunctionFactory
-        SmoothSegmentedFunction tmp = 
-            SmoothSegmentedFunctionFactory::
-            createFiberForceVelocityCurve(  fmax,
-                                            dydxAtC,
-                                            dydxNearC,
-                                            dydxIso,
-                                            dydxAtE,
-                                            dydxNearE,
-                                            ccurv,
-                                            ecurv,
-                                            false,
-                                            getName());
-        this->m_curve = tmp;
-          
-    
+	m_curve = 
+			*(static_cast<SmoothSegmentedFunction*>(createSimTKFunction())); 
     setObjectIsUpToDateWithProperties();
 }
 
@@ -133,27 +109,35 @@ void ForceVelocityCurve::ensureCurveUpToDate()
     m_curve.setName(name);
 }
 
+
 //=============================================================================
-// MODEL COMPPONENT INTERFACE
+//	OpenSim::Function Interface
 //=============================================================================
-void ForceVelocityCurve::connectToModel(Model& aModel)
-{
-    Super::connectToModel(aModel);
-    ensureCurveUpToDate();
-}
 
-void ForceVelocityCurve::initStateFromProperties(SimTK::State& s) const
+SimTK::Function* ForceVelocityCurve::createSimTKFunction() const
 {
-    Super::initStateFromProperties(s);
-}
+	// back the OpenSim::Function with this SimTK::Function 
+	double dydxAtC   = get_concentric_slope_at_vmax();
+	double dydxNearC = get_concentric_slope_near_vmax(); 
+	double dydxIso   = get_isometric_slope();
+	double dydxAtE   =  get_eccentric_slope_at_vmax();
+	double dydxNearE =  get_eccentric_slope_near_vmax();
+	double fmax  =  get_max_eccentric_velocity_force_multiplier();
+	double ccurv =  get_concentric_curviness();
+	double ecurv =  get_eccentric_curviness();
 
-void ForceVelocityCurve::addToSystem(SimTK::MultibodySystem& system) const
-{
-    Super::addToSystem(system);
-
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-    "FiberForceVelocityCurve: Curve is not"
-    " to date with its properties"); 
+	//Here's where you call the SmoothSegmentedFunctionFactory
+	return SmoothSegmentedFunctionFactory::
+		createFiberForceVelocityCurve(  fmax,
+				dydxAtC,
+				dydxNearC,
+				dydxIso,
+				dydxAtE,
+				dydxNearE,
+				ccurv,
+				ecurv,
+				false,
+				getName());
 }
 
 

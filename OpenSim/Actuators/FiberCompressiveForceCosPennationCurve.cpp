@@ -85,21 +85,19 @@ void FiberCompressiveForceCosPennationCurve::constructProperties()
 }
 
 
-void FiberCompressiveForceCosPennationCurve::buildCurve()
+void FiberCompressiveForceCosPennationCurve::buildCurve( bool computeIntegral )
 {
-    double angle =  get_engagement_angle_in_degrees();
-    double k     =  m_stiffnessAtPerpendicularInUse;
-    double c     =  m_curvinessInUse;        
+	SmoothSegmentedFunction* f = SmoothSegmentedFunctionFactory::
+		createFiberCompressiveForceCosPennationCurve(   
+				cos(get_engagement_angle_in_degrees()*Pi/180.0), 
+				m_stiffnessAtPerpendicularInUse,
+				m_curvinessInUse,
+				computeIntegral,
+				getName());       
 
-    double cosAngle = cos(angle*Pi/180.0);
-    //Here's where you call the SmoothSegmentedFunctionFactory
-    SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
-        createFiberCompressiveForceCosPennationCurve(   cosAngle,
-                                                        k,
-                                                        c,
-                                                        true,
-                                                        getName());       
-    this->m_curve = tmp;          
+	m_curve = *f; 
+	
+	delete f;  
        
     setObjectIsUpToDateWithProperties();
 }
@@ -166,31 +164,20 @@ void FiberCompressiveForceCosPennationCurve::ensureCurveUpToDate()
     std::string name = getName();
     m_curve.setName(name);
 }
-//=============================================================================
-// MODEL COMPONENT INTERFACE
-//=============================================================================
-void FiberCompressiveForceCosPennationCurve::connectToModel(Model& aModel)
+
+SimTK::Function* FiberCompressiveForceCosPennationCurve::createSimTKFunction() const
 {
-    Super::connectToModel(aModel);
-    ensureCurveUpToDate();
+	// back the OpenSim::Function with this SimTK::Function 
+    
+	return SmoothSegmentedFunctionFactory::
+		createFiberCompressiveForceCosPennationCurve(   
+				cos(get_engagement_angle_in_degrees()*Pi/180.0), 
+				m_stiffnessAtPerpendicularInUse,
+				m_curvinessInUse,
+				false,
+				getName());       
 }
 
-void FiberCompressiveForceCosPennationCurve::initStateFromProperties(SimTK::State& s) const
-{
-    Super::initStateFromProperties(s);
-   
-}
-
-void FiberCompressiveForceCosPennationCurve::
-addToSystem(SimTK::MultibodySystem& system) const
-{
-    Super::addToSystem(system);
-
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-        "FiberCompressiveCosPennationCurve: Curve is not"
-        " to date with its properties");
-
-}
 
 //=============================================================================
 // GET & SET METHODS
@@ -267,7 +254,14 @@ double FiberCompressiveForceCosPennationCurve::
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
         "FiberCompressiveCosPennationCurve: Curve is not"
         " to date with its properties");
-    return m_curve.calcIntegral(cosPennationAngle);
+	
+	if (!m_curve.isIntegralAvailable()) {
+		FiberCompressiveForceCosPennationCurve* mutableThis = 
+			const_cast<FiberCompressiveForceCosPennationCurve*>(this); 
+		mutableThis->buildCurve(true); 
+	}
+    
+	return m_curve.calcIntegral(cosPennationAngle);
 }
 
 SimTK::Vec2 FiberCompressiveForceCosPennationCurve::getCurveDomain() const

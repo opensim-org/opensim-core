@@ -201,7 +201,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
             -0 <= plateauSlope < (1/(lce3-lce2))
             -0 <= curviness <= 1
 
-        @return SmoothSegmentedFunction object
+        @return SmoothSegmentedFunction* 
 
         \image html fig_SmoothSegmentedFunctionFactory_falCurve.png
 
@@ -224,7 +224,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
             double plateauSlope = 0.75;
             double curviness    = 0.9;
 
-            SmoothSegmentedFunction fiberfalCurve = SmoothSegmentedFunctionFactory::
+            SmoothSegmentedFunction* fiberfalCurve = SmoothSegmentedFunctionFactory::
                 createFiberActiveForceLengthCurve(lce0, lce1, lce2, lce3, 
                               shoulderVal, plateauSlope, curviness,false,"test");
             fiberfalCurve.printMuscleCurveToFile();
@@ -232,7 +232,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         
 
         */
-        static SmoothSegmentedFunction createFiberActiveForceLengthCurve(
+        static SmoothSegmentedFunction* createFiberActiveForceLengthCurve(
             double lce0, double lce1, double lce2, double lce3, 
             double minActiveForceLengthValue, double plateauSlope, 
             double curviness, bool computeIntegral, 
@@ -332,7 +332,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
             -0<= concCurviness <=0
             -0 <= eccCurviness <= 0
         
-        @return SmoothSegmentedFunction object
+        @return SmoothSegmentedFunction* 
         
                 \image html fig_SmoothSegmentedFunctionFactory_fvCurve.png
 
@@ -362,7 +362,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
             fiberFVCurve.printMuscleCurveToFile();
         @endcode             
         */
-        static SmoothSegmentedFunction createFiberForceVelocityCurve(
+        static SmoothSegmentedFunction* createFiberForceVelocityCurve(
             double fmaxE, 
             double dydxC, double dydxNearC, 
             double dydxIso, 
@@ -387,7 +387,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         \image html fig_SmoothSegmentedFunctionFactory_fvInvCurve.png
 
         */
-        static SmoothSegmentedFunction createFiberForceVelocityInverseCurve(
+        static SmoothSegmentedFunction* createFiberForceVelocityInverseCurve(
             double fmaxE, 
             double dydxC, double dydxNearC, 
             double dydxIso, 
@@ -464,7 +464,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
             fiberCEPhiCurve.printMuscleCurveToFile();
         @endcode
         */
-        static SmoothSegmentedFunction 
+        static SmoothSegmentedFunction* 
             createFiberCompressiveForcePennationCurve(
                 double phi0, double kiso, double curviness, 
                 bool computeIntegral, const std::string& curveName);
@@ -516,7 +516,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
             -kiso > 1/(cosPhi0)
             -0 <= curviness <= 1
 
-        @return SmoothSegmentedFunction object
+        @return SmoothSegmentedFunction* 
         
         \image html fig_SmoothSegmentedFunctionFactory_fcCosPhiCurve.png
 
@@ -541,7 +541,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         
 
         */
-        static SmoothSegmentedFunction 
+        static SmoothSegmentedFunction* 
             createFiberCompressiveForceCosPennationCurve(
                 double cosPhi0, double kiso, double curviness, 
                 bool computeIntegral, const std::string& curveName);
@@ -591,7 +591,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
             -kiso > 1/(e0)
             -0 <= curviness <= 1
 
-        @return SmoothSegmentedFunction object
+        @return SmoothSegmentedFunction*
 
         \image html fig_SmoothSegmentedFunctionFactory_fpeCurve.png
 
@@ -614,7 +614,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         @endcode
 
         */
-        static SmoothSegmentedFunction 
+        static SmoothSegmentedFunction* 
             createFiberCompressiveForceLengthCurve(double l0, double kiso, 
             double curviness,bool computeIntegral,const std::string& curveName);
 
@@ -667,7 +667,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
             -0 < kLow < kIso
             -0 <= curviness <= 1
 
-        @return SmoothSegmentedFunction object
+        @return SmoothSegmentedFunction*
 
 
         \image html fig_SmoothSegmentedFunctionFactory_fcLengthCurve.png
@@ -695,7 +695,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
         @endcode
 
         */
-        static SmoothSegmentedFunction createFiberForceLengthCurve(
+        static SmoothSegmentedFunction* createFiberForceLengthCurve(
                        double eZero, double eIso,
                        double kLow, double kIso,double curviness,
                        bool computeIntegral, const std::string& curveName);
@@ -745,7 +745,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
             -kiso > 1/e0
             -0 <= curviness <= 1
 
-        @return SmoothSegmentedFunction
+        @return SmoothSegmentedFunction*
 
         \image html fig_SmoothSegmentedFunctionFactory_fseCurve.png
 
@@ -763,7 +763,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
             double fToe = 1.0/3.0
             double c    = 0.75;
     
-            SmoothSegmentedFunction tendonCurve = SmoothSegmentedFunctionFactory::
+            SmoothSegmentedFunction* tendonCurve = SmoothSegmentedFunctionFactory::
                                                 createTendonForceLengthCurve(
                                                   e0,kiso,fToe,c,true,"test");
             tendonCurve.printMuscleCurveToFile();  
@@ -771,7 +771,7 @@ class OSIMCOMMON_API SmoothSegmentedFunctionFactory
 
         
         */
-        static SmoothSegmentedFunction 
+        static SmoothSegmentedFunction* 
            createTendonForceLengthCurve(double eIso, double kIso,
                                         double fToe, double curviness,
                                         bool computeIntegral, 

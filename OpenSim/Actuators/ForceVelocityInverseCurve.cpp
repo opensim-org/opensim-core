@@ -89,32 +89,10 @@ void ForceVelocityInverseCurve::constructProperties()
 
 void ForceVelocityInverseCurve::buildCurve()
 {      
-        double dydxC     =  get_concentric_slope_at_vmax();
-        double dydxNearC =  get_concentric_slope_near_vmax();
-        double dydxIso   =  get_isometric_slope();
-        double dydxE     =  get_eccentric_slope_at_vmax();
-        double dydxNearE =  get_eccentric_slope_near_vmax();
-        double fmax      =  get_max_eccentric_velocity_force_multiplier();
-        double ccurv     =  get_concentric_curviness();
-        double ecurv     =  get_eccentric_curviness();
+	m_curve = 
+		*(static_cast<SmoothSegmentedFunction*>(createSimTKFunction())); 
 
-        //Here's where you call the SmoothSegmentedFunctionFactory
-        SmoothSegmentedFunction tmp = 
-            SmoothSegmentedFunctionFactory::
-            createFiberForceVelocityInverseCurve(  fmax,
-                                                    dydxC,
-                                                    dydxNearC,
-                                                    dydxIso,
-                                                    dydxE,
-                                                    dydxNearE,
-                                                    ccurv,
-                                                    ecurv,
-                                                    false,
-                                                    getName());
-
-        this->m_curve = tmp;
-        setObjectIsUpToDateWithProperties();      
-    
+	setObjectIsUpToDateWithProperties();      
 }
 
 void ForceVelocityInverseCurve::ensureCurveUpToDate()
@@ -129,30 +107,35 @@ void ForceVelocityInverseCurve::ensureCurveUpToDate()
     m_curve.setName(name);
 }
 
+
 //=============================================================================
-// MODEL COMPPONENT INTERFACE
+//	OpenSim::Function Interface
 //=============================================================================
-void ForceVelocityInverseCurve::connectToModel(Model& aModel)
+
+SimTK::Function* ForceVelocityInverseCurve::createSimTKFunction() const
 {
-    Super::connectToModel(aModel);
-    ensureCurveUpToDate();
+	double dydxC     =  get_concentric_slope_at_vmax();
+	double dydxNearC =  get_concentric_slope_near_vmax();
+	double dydxIso   =  get_isometric_slope();
+	double dydxE     =  get_eccentric_slope_at_vmax();
+	double dydxNearE =  get_eccentric_slope_near_vmax();
+	double fmax      =  get_max_eccentric_velocity_force_multiplier();
+	double ccurv     =  get_concentric_curviness();
+	double ecurv     =  get_eccentric_curviness();
+
+	//Here's where you call the SmoothSegmentedFunctionFactory
+	return SmoothSegmentedFunctionFactory::
+		createFiberForceVelocityInverseCurve(  fmax,
+				dydxC,
+				dydxNearC,
+				dydxIso,
+				dydxE,
+				dydxNearE,
+				ccurv,
+				ecurv,
+				false,
+				getName());
 }
-
-void ForceVelocityInverseCurve::initStateFromProperties(SimTK::State& s) const
-{
-    Super::initStateFromProperties(s);
-}
-
-void ForceVelocityInverseCurve::
-addToSystem(SimTK::MultibodySystem& system) const
-{
-    Super::addToSystem(system);
-
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-    "FiberForceVelocityInverseCurve: Curve is not"
-    " to date with its properties"); 
-}
-
 
 
 //=============================================================================

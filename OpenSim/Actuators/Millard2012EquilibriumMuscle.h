@@ -28,7 +28,7 @@
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 
 #include <simbody/internal/common.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
+
 /*
 The parent class, Muscle.h, provides 
     1. max_isometric_force
@@ -48,8 +48,6 @@ The parent class, Muscle.h, provides
 #include <OpenSim/Actuators/ForceVelocityCurve.h>
 #include <OpenSim/Actuators/ForceVelocityInverseCurve.h>
 #include <OpenSim/Actuators/FiberForceLengthCurve.h>
-//#include <OpenSim/Actuators/FiberCompressiveForceLengthCurve.h>
-//#include <OpenSim/Actuators/FiberCompressiveForceCosPennationCurve.h>
 #include <OpenSim/Actuators/TendonForceLengthCurve.h>
 
 
@@ -243,12 +241,9 @@ public:
     OpenSim_DECLARE_PROPERTY( default_activation, double,
                        "assumed initial activation level if none is assigned.");
 
-
-
     OpenSim_DECLARE_PROPERTY( default_fiber_length, double,
                        "assumed initial fiber length if none is assigned.");
     
-
     OpenSim_DECLARE_UNNAMED_PROPERTY( 
                       MuscleSecondOrderActivationDynamicModel,
                       "2nd order activation dynamics model with a lower bound");
@@ -273,9 +268,6 @@ public:
                                 TendonForceLengthCurve,
                                 "Tendon force length curve");
     
-
-
-
 //=============================================================================
 // Construction
 //=============================================================================
