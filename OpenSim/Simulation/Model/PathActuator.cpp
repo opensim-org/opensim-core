@@ -258,9 +258,11 @@ void PathActuator::connectToModel(Model& aModel)
 void PathActuator::realizeDynamics(const SimTK::State& state) const {
     Super::realizeDynamics(state); // Mandatory first line
 
-    const SimTK::Vec3 color = computePathColor(state);
-    if (!color.isNaN())
-        getGeometryPath().setColor(state, color);
+	if(!isDisabled(state)){
+		const SimTK::Vec3 color = computePathColor(state);
+		if (!color.isNaN())
+			getGeometryPath().setColor(state, color);
+	}
 }
 
 //------------------------------------------------------------------------------
