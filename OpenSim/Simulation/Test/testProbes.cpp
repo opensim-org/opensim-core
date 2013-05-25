@@ -647,6 +647,7 @@ void simulateMuscle(
     metabolicPowerProbeUmberger->setName("metabolicPowerUmberger");
     metabolicPowerProbeUmberger->addMuscle("muscle", 0.5, 0.5);
     metabolicPowerProbeUmberger->setOperation("value");
+    metabolicPowerProbeUmberger->set_report_total_metabolics_only(false);
     cout << probeCounter++ << ") Added Umberger2010MuscleMetabolicsProbe to measure TOTAL muscle metabolic power" << endl;
             
     // Umberger2010MuscleMetabolicsProbe Energy Probe
@@ -654,6 +655,7 @@ void simulateMuscle(
     model.addProbe(metabolicEnergyProbeUmberger);
     metabolicEnergyProbeUmberger->setName("metabolicEnergyUmberger");
     metabolicEnergyProbeUmberger->setOperation("integrate");
+    metabolicEnergyProbeUmberger->set_report_total_metabolics_only(true);
     cout << probeCounter++ << ") Added Umberger2010MuscleMetabolicsProbe to measure TOTAL muscle metabolic energy" << endl;
 
     cout << "\n" << endl;

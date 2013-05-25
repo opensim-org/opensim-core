@@ -26,7 +26,7 @@
 // INCLUDES and STATICS
 //=============================================================================
 #include "Bhargava2004MuscleMetabolicsProbe.h"
-
+//#define DEBUG_METABOLICS
 
 using namespace std;
 using namespace SimTK;
@@ -104,6 +104,7 @@ void Bhargava2004MuscleMetabolicsProbe::constructProperties()
     constructProperty_use_force_dependent_shortening_prop_constant(false);
     constructProperty_basal_coefficient(1.2);  // default value for standing (Umberger, 2003, p105)
     constructProperty_basal_exponent(1.0);
+    constructProperty_report_total_metabolics_only(false);
     constructProperty_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet
        (Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet());
 }
@@ -232,6 +233,9 @@ computeProbeInputs(const State& s) const
     // Initialize metabolic energy rate values
     double Adot, Mdot, Sdot, Bdot, Wdot;
     Adot = Mdot = Sdot = Bdot = Wdot = 0;
+    Vector EdotOutput(getNumProbeInputs());
+    EdotOutput = 0;
+
 
     // BASAL METABOLIC RATE (W) (based on whole body mass, not muscle mass)
     // so do outside of muscle loop.
@@ -243,13 +247,16 @@ computeProbeInputs(const State& s) const
         if (Bdot == NaN)
             cout << "WARNING::" << getName() << ": Bdot = NaN!" << endl;
     }
+    EdotOutput(0) += Bdot;       // TOTAL metabolic power storage
     
+    if (!get_report_total_metabolics_only())
+        EdotOutput(1) = Bdot;    // BASAL metabolic power storage
+
 
     // Loop through each muscle in the MetabolicMuscleParameterSet
     const int nM = 
         get_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet()
         .getSize();
-    Vector Edot(nM);
     for (int i=0; i<nM; i++)
     {
         // Get the current muscle parameters from the MetabolicMuscleParameterSet
@@ -277,17 +284,6 @@ computeProbeInputs(const State& s) const
         // and fiber length under isometric conditions (i.e. Vm=0)
         //double F_iso = (fiber_force_active/m->getForceVelocityMultiplier(s));
         const double F_iso = m->getActivation(s) * m->getActiveForceLengthMultiplier(s) * max_isometric_force;
-
-        // DEBUG
-        //cout << "fiber_velocity_normalized = " << fiber_velocity_normalized << endl;
-        //cout << "fiber_velocity_multiplier = " << m->getForceVelocityMultiplier(s) << endl;
-        //cout << "fiber_force_passive = " << fiber_force_passive << endl;
-        //cout << "fiber_force_active = " << fiber_force_active << endl;
-        //cout << "fiber_force_total = " << fiber_force_total << endl;
-        //cout << "max_isometric_force = " << max_isometric_force << endl;
-        //cout << "F_iso = " << F_iso << endl;
-        //system("pause");
-
 
         // Warnings
         if (fiber_length_normalized < 0)
@@ -390,67 +386,88 @@ computeProbeInputs(const State& s) const
 
         // TOTAL METABOLIC ENERGY RATE for muscle i
         // ------------------------------------------
-        Edot(i) = totalHeatRate + Wdot;
+        const double Edot = (totalHeatRate + Wdot) * mm.getMuscleMass(); 
+        EdotOutput(0) += Edot;       // Add to TOTAL metabolic power storage
+        if (!get_report_total_metabolics_only()) {
+            // Metabolic power storage for muscle i
+            EdotOutput(i+2) = Edot;  
+        }  
 
 
 
-        // DEBUG
-        // ----------
-        const bool debug = false;
-        if(debug) {
-            cout << "muscle_mass = " << mm.getMuscleMass() << endl;
-            cout << "ratio_slow_twitch_fibers = " << mm.get_ratio_slow_twitch_fibers() << endl;
-            cout << "activation_constant_slow_twitch = " << mm.get_activation_constant_slow_twitch() << endl;
-            cout << "activation_constant_fast_twitch = " << mm.get_activation_constant_fast_twitch() << endl;
-            cout << "maintenance_constant_slow_twitch = " << mm.get_maintenance_constant_slow_twitch() << endl;
-            cout << "maintenance_constant_fast_twitch = " << mm.get_maintenance_constant_fast_twitch() << endl;
-            cout << "bodymass = " << _model->getMatterSubsystem().calcSystemMass(s) << endl;
-            cout << "max_isometric_force = " << max_isometric_force << endl;
-            cout << "activation = " << activation << endl;
-            cout << "excitation = " << excitation << endl;
-            cout << "fiber_force_total = " << fiber_force_total << endl;
-            cout << "fiber_force_active = " << fiber_force_active << endl;
-            cout << "fiber_length_normalized = " << fiber_length_normalized << endl;
-            cout << "fiber_length_dependence = " << fiber_length_dependence << endl;
-            cout << "fiber_velocity = " << fiber_velocity << endl;
-            cout << "fiber_velocity_normalized = " << fiber_velocity_normalized << endl;
-            cout << "slow_twitch_excitation = " << slow_twitch_excitation << endl;
-            cout << "fast_twitch_excitation = " << fast_twitch_excitation << endl;
-            cout << "max shortening velocity = " << max_shortening_velocity << endl;
-            cout << "alpha = " << alpha << endl;
-            cout << "Adot = " << Adot << endl;
-            cout << "Mdot = " << Mdot << endl;
-            cout << "Sdot = " << Sdot << endl;
-            cout << "Bdot = " << Bdot << endl;
-            cout << "Wdot = " << Wdot << endl;
-            cout << "Edot = " << Edot(i) << endl;
-			std::cin.get();
-        }
+#ifdef DEBUG_METABOLICS
+        cout << "muscle_mass = " << mm.getMuscleMass() << endl;
+        cout << "ratio_slow_twitch_fibers = " << mm.get_ratio_slow_twitch_fibers() << endl;
+        cout << "activation_constant_slow_twitch = " << mm.get_activation_constant_slow_twitch() << endl;
+        cout << "activation_constant_fast_twitch = " << mm.get_activation_constant_fast_twitch() << endl;
+        cout << "maintenance_constant_slow_twitch = " << mm.get_maintenance_constant_slow_twitch() << endl;
+        cout << "maintenance_constant_fast_twitch = " << mm.get_maintenance_constant_fast_twitch() << endl;
+        cout << "bodymass = " << _model->getMatterSubsystem().calcSystemMass(s) << endl;
+        cout << "max_isometric_force = " << max_isometric_force << endl;
+        cout << "activation = " << activation << endl;
+        cout << "excitation = " << excitation << endl;
+        cout << "fiber_force_total = " << fiber_force_total << endl;
+        cout << "fiber_force_active = " << fiber_force_active << endl;
+        cout << "fiber_length_normalized = " << fiber_length_normalized << endl;
+        cout << "fiber_length_dependence = " << fiber_length_dependence << endl;
+        cout << "fiber_velocity = " << fiber_velocity << endl;
+        cout << "fiber_velocity_normalized = " << fiber_velocity_normalized << endl;
+        cout << "slow_twitch_excitation = " << slow_twitch_excitation << endl;
+        cout << "fast_twitch_excitation = " << fast_twitch_excitation << endl;
+        cout << "max shortening velocity = " << max_shortening_velocity << endl;
+        cout << "alpha = " << alpha << endl;
+        cout << "Adot = " << Adot << endl;
+        cout << "Mdot = " << Mdot << endl;
+        cout << "Sdot = " << Sdot << endl;
+        cout << "Bdot = " << Bdot << endl;
+        cout << "Wdot = " << Wdot << endl;
+        cout << "Edot = " << Edot << endl;
+		std::cin.get();
+#endif
     }
 
-    SimTK::Vector EdotTotal(1, Edot.sum() + Bdot);
-    return EdotTotal;
+    return EdotOutput;
 }
 
 
 //_____________________________________________________________________________
 /** 
  * Returns the number of probe inputs in the vector returned by computeProbeInputs().
+ * If report_total_metabolics_only = true, then only the TOTAL metabolics will be
+ * calculated. If report_total_metabolics_only = false, then the calculation will
+ * consist of a TOTAL value, a BASAL value, and each individual muscle
+ * contribution.
  */
 int Bhargava2004MuscleMetabolicsProbe::getNumProbeInputs() const
 {
-    return 1;
+    if (get_report_total_metabolics_only())
+        return 1;
+    else
+        return 2 + getNumMetabolicMuscles();
 }
 
 
 //_____________________________________________________________________________
 /** 
  * Provide labels for the probe values being reported.
+ * If report_total_metabolics_only = true, then only the TOTAL metabolics will be
+ * calculated. If report_total_metabolics_only = false, then the calculation will
+ * consist of a TOTAL value, a BASAL value, and each individual muscle
+ * contribution.
  */
 Array<string> Bhargava2004MuscleMetabolicsProbe::getProbeOutputLabels() const 
 {
     Array<string> labels;
-    labels.append(getName());
+    labels.append(getName()+"_TOTAL");
+
+    if (get_report_total_metabolics_only())
+        return labels;
+
+    labels.append(getName()+"_BASAL");
+
+    for (int i=0; i<getNumMetabolicMuscles(); ++i)
+        labels.append(getName()+"_"+get_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet()[i].getName());
+
     return labels;
 }
 

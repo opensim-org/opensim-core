@@ -225,12 +225,17 @@ public:
         double,
         "Basal metabolic exponent.");
 
+    /** Default value = false **/
+    OpenSim_DECLARE_PROPERTY(report_total_metabolics_only, 
+        bool,
+        "If set to false, the individual muscle metabolics, basal rate, and "
+        "total summation will be reported. If set to true, only the total "
+        "summation will be reported.");
+
     OpenSim_DECLARE_UNNAMED_PROPERTY(
         Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet,
         "A set containing, for each muscle, the parameters "
-        "required to calculate metabolic energy expenditure. If multiple "
-        "muscles are contained in the set, then the probe will sum the "
-        "metabolic powers from all muscles.");
+        "required to calculate muscle metabolic power.");
 
     /**@}**/
 
