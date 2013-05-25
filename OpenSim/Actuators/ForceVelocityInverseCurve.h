@@ -429,8 +429,9 @@ private:
 	//--------------------------------------------------------------------------
 	<B> OpenSim::Function Interface </B>
 	//--------------------------------------------------------------------------
-    /** Create the underlying SimTK::Function that implements the calculations
-	    necessary for this curve. */
+    Create the underlying SimTK::Function that implements the calculations
+		necessary for this curve. 
+	*/
     SimTK::Function* createSimTKFunction() const OVERRIDE_11;
     
     void setNull();

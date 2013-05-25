@@ -609,7 +609,7 @@ void Umberger2010MuscleMetabolicsProbe::
 
 //_____________________________________________________________________________
 /**
-/* Get whether the muscle mass is being explicitly provided.
+ * Get whether the muscle mass is being explicitly provided.
  * True means that it is using the property <provided_muscle_mass>
  * False means that the muscle mass is being calculated from muscle properties. 
  */
@@ -622,7 +622,7 @@ bool Umberger2010MuscleMetabolicsProbe::
 
 //_____________________________________________________________________________
 /**
-/* Get the muscle mass used in the metabolic analysis. 
+ * Get the muscle mass used in the metabolic analysis. 
  */
 const double Umberger2010MuscleMetabolicsProbe::
 	getMuscleMass(const std::string& muscleName) const 
@@ -633,7 +633,7 @@ const double Umberger2010MuscleMetabolicsProbe::
 
 //_____________________________________________________________________________
 /**
-/* Get the ratio of slow twitch fibers for an existing muscle. 
+ * Get the ratio of slow twitch fibers for an existing muscle. 
  */
 const double Umberger2010MuscleMetabolicsProbe::
 	getRatioSlowTwitchFibers(const std::string& muscleName) const 
@@ -644,7 +644,7 @@ const double Umberger2010MuscleMetabolicsProbe::
 
 //_____________________________________________________________________________
 /**
-/* Set the ratio of slow twitch fibers for an existing muscle. 
+ * Set the ratio of slow twitch fibers for an existing muscle. 
  */
 void Umberger2010MuscleMetabolicsProbe::
 	setRatioSlowTwitchFibers(const std::string& muscleName, const double& ratio) 
