@@ -63,6 +63,7 @@ CMCTool::~CMCTool()
  */
 CMCTool::CMCTool() :
 	AbstractTool(),
+	_excludedActuators(_excludedActuatorsProp.getValueStrArray()),
 	_desiredPointsFileName(_desiredPointsFileNameProp.getValueStr()),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	//_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
@@ -92,6 +93,7 @@ CMCTool::CMCTool() :
  */
 CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
 	AbstractTool(aFileName, false),
+	_excludedActuators(_excludedActuatorsProp.getValueStrArray()),
 	_desiredPointsFileName(_desiredPointsFileNameProp.getValueStr()),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	//_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
@@ -161,6 +163,7 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
 CMCTool::
 CMCTool(const CMCTool &aTool) :
 	AbstractTool(aTool),
+	_excludedActuators(_excludedActuatorsProp.getValueStrArray()),
 	_desiredPointsFileName(_desiredPointsFileNameProp.getValueStr()),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	//_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
@@ -224,6 +227,11 @@ setNull()
 void CMCTool::setupProperties()
 {
 	string comment;
+
+	_excludedActuatorsProp.setComment("List of individual Actuators by individual or user-defined group name "
+		" to be excluded from CMC's control.");
+	_excludedActuatorsProp.setName("actuators_to_exclude");
+	_propertySet.append(&_excludedActuatorsProp);
 
 	comment = "Motion (.mot) or storage (.sto) file containing the desired point trajectories.";
 	_desiredPointsFileNameProp.setComment(comment);
@@ -344,6 +352,7 @@ operator=(const CMCTool &aTool)
 	AbstractTool::operator=(aTool);
 
 	// MEMEBER VARIABLES
+	_excludedActuators = aTool._excludedActuators;
 	_desiredPointsFileName = aTool._desiredPointsFileName;
 	_desiredKinematicsFileName = aTool._desiredKinematicsFileName;
 	//_externalLoadsFileName = aTool._externalLoadsFileName;
@@ -408,7 +417,12 @@ bool CMCTool::run()
 
     CMC* controller = new CMC(_model,&taskSet);	// Need to make it a pointer since Model takes ownership 
     controller->setName( "CMC" );
-	controller->setActuators(_model->updActuators());
+
+	// Don't automatically give CMC all the model actuators
+	// Check to see if user has explicitly listed Actuators to be
+	// excluded from CMC's control.
+
+	controller->setActuators(getActuatorsForCMC(_excludedActuators));
     _model->addController(controller );
     controller->setDisabled(false);
     controller->setUseCurvatureFilter(false);
@@ -531,7 +545,7 @@ bool CMCTool::run()
 
 	int nq = _model->getNumCoordinates();
 	int nu = _model->getNumSpeeds();
-	int na = _model->getActuators().getSize();
+	int na = controller->getActuatorSet().getSize();
 
 	// Form complete storage objects for the q's and u's
 	// This means filling in unspecified generalized coordinates and
@@ -1079,4 +1093,44 @@ Storage& CMCTool::getForceStorage(){
 
 void CMCTool::setOriginalForceSet(const ForceSet &aForceSet) {
 	_originalForceSet = aForceSet;
+}
+
+
+/* Get the Set of model actuators for CMC that exclude user specified Actuators */
+Set<Actuator> CMCTool::
+	getActuatorsForCMC(const Array<std::string> &actuatorsByNameOrGroup)
+{	
+	Set<Actuator> actuatorsForCMC = _model->getActuators();
+	Array<string> groupNames;
+	actuatorsForCMC.getGroupNames(groupNames);
+
+	/* The search for inidividual group or force names IS case-sensitive BUT keywords are not*/
+	for(int i=0; i<actuatorsByNameOrGroup.getSize(); i++){
+		// index result when a name is not a force or group name for forces in the model
+		int k = -1;  
+		// It is possible to list actuators by name and group
+		// So check if name is a group name first	
+		if(groupNames.getSize() > 0){
+			k = groupNames.findIndex(actuatorsByNameOrGroup[i]);
+			if(k > -1){ //found
+				const ObjectGroup* group = actuatorsForCMC.getGroup(k);
+				Array<Object*> members = group->getMembers();
+				for(int j=0; j<members.getSize(); j++)
+					actuatorsForCMC.remove((Actuator *)members[j]);
+				actuatorsForCMC.removeGroup(actuatorsByNameOrGroup[i]);
+			}
+		} //otherwise, check for an individual acuator
+		else{
+			k = actuatorsForCMC.getIndex(actuatorsByNameOrGroup[i]);
+			if(k > -1){ //found
+				actuatorsForCMC.remove(k);
+			}
+		}
+		// No actuator(s) by group or individual name was found
+		if(k < 0)
+			cout << "\nCMCTool::WARNING could not find actuator or group named '" << actuatorsByNameOrGroup[i] << "' to be excluded from CMC." << endl;
+
+	}
+
+	return actuatorsForCMC;
 }

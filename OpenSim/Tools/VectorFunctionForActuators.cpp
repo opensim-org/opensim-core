@@ -57,7 +57,7 @@ VectorFunctionForActuators::~VectorFunctionForActuators()
  */
 VectorFunctionForActuators::
 VectorFunctionForActuators(SimTK::System *aActuatorSystem, Model* model, CMCActuatorSubsystem* actSubsystem) :
-	VectorFunctionUncoupledNxN(model->getActuators().getSize() ),
+	VectorFunctionUncoupledNxN(model->getControllerSet().get("CMC" ).getActuatorSet().getSize() ),
 	_f(0.0)
 {
 	setNull();
@@ -259,7 +259,7 @@ evaluate( const SimTK::State& s, double *aX, double *rF)
 	int i;
 	int N = getNX();
 
-    CMC& controller=  dynamic_cast<CMC&>(_model->updControllerSet().get(_model->getControllerSet().getIndex("CMC" )));
+    CMC& controller=  dynamic_cast<CMC&>(_model->updControllerSet().get("CMC" ));
     controller.updControlSet().setControlValues(_tf, aX);
 
     // create a Manager that will integrate just the actuator subsystem and use only the 
@@ -282,7 +282,7 @@ evaluate( const SimTK::State& s, double *aX, double *rF)
 	// Integration
     manager.integrate(actSysState, 0.000001);
 
-    const Set<Actuator>& forceSet = _model->getActuators();
+    const Set<Actuator>& forceSet = controller.getActuatorSet();
 	// Vector function values
 	int j = 0;
 	for(i=0;i<N;i++) {

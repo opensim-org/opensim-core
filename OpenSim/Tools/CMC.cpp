@@ -857,7 +857,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 		range = fmax[i] - fmin[i];
 		if(range<1.0) {
 			try {
-                cout<<"WARN- small force range for "<<_model->getActuators().get(i).getName()<<" ("<<fmin[i]<<" to "<<fmax[i]<<")\n";
+                cout<<"WARN- small force range for "<< getActuatorSet()[i].getName()<<" ("<<fmin[i]<<" to "<<fmax[i]<<")\n";
 			} catch(...) {};
 		}
 	}
@@ -1073,7 +1073,7 @@ void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
 
 void CMC::setActuators( Set<Actuator>& actSet ) 
 {
-	Controller::setActuators(actSet);
+	Super::setActuators(actSet);
 }
 
 // for any post XML deserialization intialization

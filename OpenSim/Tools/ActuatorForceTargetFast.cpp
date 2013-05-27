@@ -79,7 +79,7 @@ ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController):
 	int ny = _controller->getModel().getNumStateVariables();
 	int nq = _controller->getModel().getNumCoordinates();
 	int nu = _controller->getModel().getNumSpeeds();
-	int na = _controller->getModel().getActuators().getSize();
+	int na = _controller->getActuatorSet().getSize();
 
 	_y.setSize(ny);
 	_dydt.setSize(ny);
@@ -101,7 +101,7 @@ ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController):
 
 	// COMPUTE ACTUATOR AREAS
 	Array<double> f(1.0,na);
-	const Set<Actuator>& fSet = _controller->getModel().getActuators();
+	const Set<Actuator>& fSet = _controller->getActuatorSet();
 	for(int i=0,j=0;i<fSet.getSize();i++) {
         Actuator& act = fSet.get(i);
 		Muscle* musc = dynamic_cast<Muscle *>(&act);
@@ -128,7 +128,7 @@ prepareToOptimize(SimTK::State& s, double *x)
 	// in cases where we're tracking states
 	_saveState = s;
 #ifdef USE_LINEAR_CONSTRAINT_MATRIX
-	int nf = _controller->getModel().getActuators().getSize();
+	int nf = _controller->getActuatorSet().getSize();
 	int nc = getNumConstraints();
 
 	_constraintMatrix.resize(nc,nf);
@@ -157,7 +157,7 @@ prepareToOptimize(SimTK::State& s, double *x)
 	getController()->getModel().getMultibodySystem().realize( tempState, SimTK::Stage::Dynamics );
 
 	// COMPUTE MAX ISOMETRIC FORCE
-	const Set<Actuator>& fSet = _controller->getModel().getActuators();
+	const Set<Actuator>& fSet = _controller->getActuatorSet();
 	
 	double fOpt = SimTK::NaN;
 
@@ -213,7 +213,7 @@ prepareToOptimize(SimTK::State& s, double *x)
 int ActuatorForceTargetFast::
 objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 {
-	const Set<Actuator>& fSet = _controller->getModel().getActuators();
+	const Set<Actuator>& fSet = _controller->getActuatorSet();
 	double p = 0.0;
 	const CMC_TaskSet& tset=_controller->getTaskSet();
 	for(int i=0,j=0;i<fSet.getSize();i++) {
@@ -258,7 +258,7 @@ objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 int ActuatorForceTargetFast::
 gradientFunc(const Vector &x, const bool new_coefficients, Vector &gradient) const
 {
-    const Set<Actuator>& fSet = _controller->getModel().getActuators();
+    const Set<Actuator>& fSet = _controller->getActuatorSet();
     double p = 0.0;
     for(int i=0,index=0;i<fSet.getSize();i++) {
         Actuator& act = fSet.get(i);
@@ -322,7 +322,7 @@ void ActuatorForceTargetFast::
 computeConstraintVector(SimTK::State& s, const Vector &x,Vector &c) const
 {
 	CMC_TaskSet&  taskSet = _controller->updTaskSet();
-	const Set<Actuator>& fSet = _controller->getModel().getActuators();
+	const Set<Actuator>& fSet = _controller->getActuatorSet();
 	for(int i=0;i<fSet.getSize();i++) {
         Actuator& act = fSet.get(i);
         act.setOverrideForce(s, x[i]);

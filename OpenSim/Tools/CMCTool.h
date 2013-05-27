@@ -64,6 +64,11 @@ OpenSim_DECLARE_CONCRETE_OBJECT(CMCTool, AbstractTool);
 // MEMBER VARIABLES
 //=============================================================================
 private:
+
+	/** Idenitify the list of forces to be ignored for computing dynamics */
+	PropertyStrArray _excludedActuatorsProp;
+	Array<std::string> &_excludedActuators;
+
 	/** Name of the file containing the desired kinematic
 	trajectories. */
 	PropertyStr _desiredPointsFileNameProp;
@@ -140,7 +145,9 @@ public:
 private:
 	void setNull();
 	void setupProperties();
-	void constructCorrectiveSprings();
+	/* Get the Set of model actuators for CMC that exclude user specified Actuators */
+	Set<Actuator> getActuatorsForCMC(const Array<std::string> &actuatorsByNameOrGroup);
+
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -154,6 +161,12 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
+	const Array<std::string>& getExcludedActuators() const {
+		return _excludedActuators;
+	}
+	void setExcludedActuators(const Array<std::string> &excludedActs) {
+		_excludedActuators = excludedActs;
+	}
 
 	const std::string &getDesiredPointsFileName() { return _desiredPointsFileName; }
 	void setDesiredPointsFileName(const std::string &aFileName) { _desiredPointsFileName = aFileName; }

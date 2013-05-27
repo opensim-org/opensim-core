@@ -128,7 +128,7 @@ prepareToOptimize(SimTK::State& s, double *x)
 	_saveState = s;
 #ifdef USE_PRECOMPUTED_PERFORMANCE_MATRICES
 	int nu = _controller->getModel().getNumSpeeds();
-	int nf = _controller->getModel().getActuators().getSize();
+	int nf = _controller->getActuatorSet().getSize();
 	int ny = _controller->getModel().getNumStateVariables();
 	int nacc = _controller->updTaskSet().getDesiredAccelerations().getSize();
 
@@ -233,7 +233,7 @@ prepareToOptimize(SimTK::State& s, double *x)
 void ActuatorForceTarget::
 computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerformanceVector, Vector &rForcePerformanceVector)
 {
-	const Set<Actuator> &fSet = _controller->getModel().getActuators();
+	const Set<Actuator> &fSet = _controller->getActuatorSet();
 
 	for(int i=0;i<fSet.getSize();i++) {
         Actuator& act = fSet.get(i);
@@ -284,7 +284,7 @@ objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 #ifndef USE_PRECOMPUTED_PERFORMANCE_MATRICES
 
 	// Explicit computation of performance (use this if it's not actually linear)
-	int nf = _controller->getModel()->getActuators().getSize();
+	int nf = _controller->getActuatorSet().getSize();
 	int nacc = _controller->getTaskSet()->getDesiredAccelerations().getSize();
 	Vector pacc(nacc), pf(nf);
 	computePerformanceVectors(aF,pacc,pf);
