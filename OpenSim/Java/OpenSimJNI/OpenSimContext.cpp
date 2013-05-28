@@ -151,6 +151,7 @@ const Array<PathPoint*>& OpenSimContext::getCurrentDisplayPath(GeometryPath& g) 
 
 void OpenSimContext::updateDisplayer(Force& f) {
   // If muscle or force acting along a path then call respective updateDisplayer otherwise do nothing for now
+  realizeVelocity();
   if (dynamic_cast<Muscle*>(&f)!= NULL)
     return dynamic_cast<Muscle*>(&f)->updateDisplayer(*_configState);
   if (f.hasGeometryPath()){
