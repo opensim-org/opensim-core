@@ -170,7 +170,8 @@ void JointInternalPowerProbe::connectToModel(Model& aModel)
         if (k<0) {
             string errorMessage = getConcreteClassName() + ": Invalid Joint '" 
                     + jointName + "' specified in <joint_names>.";
-            throw OpenSim::Exception(errorMessage);
+            std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
+            setDisabled(true);
         }
     }
 }

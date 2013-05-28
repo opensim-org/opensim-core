@@ -112,7 +112,8 @@ void MuscleActiveFiberPowerProbe::connectToModel(Model& model)
         int k = model.getMuscles().getIndex(actName);
         if (k<0) {
             string errorMessage = getConcreteClassName() + ": Invalid Muscle '" + actName + "' specified in <muscle_names>.";
-            throw (Exception(errorMessage.c_str()));
+            std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
+            setDisabled(true);
         }
     }
 }
