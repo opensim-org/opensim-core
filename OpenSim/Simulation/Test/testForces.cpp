@@ -32,6 +32,7 @@
 //		6. RotationalCoordinateLimitForce
 //		7. ExternalForce
 //		8. PathSpring
+//		9. ExpressionBasedPointToPointForce
 //		
 //     Add tests here as Forces are added to OpenSim
 //
@@ -41,6 +42,7 @@
 #include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
 #include <OpenSim/Simulation/Model/ExternalForce.h>
 #include <OpenSim/Simulation/Model/PathSpring.h>
+#include <OpenSim/Simulation/Model/ExpressionBasedPointToPointForce.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
@@ -62,48 +64,170 @@ void testElasticFoundation();
 void testHuntCrossleyForce();
 void testCoordinateLimitForce();
 void testCoordinateLimitForceRotational();
+void testExpressionBasedPointToPointForce();
 
 int main()
 {
-	try {
-		testPathSpring();
-		cout << "path spring passed" << endl;
-		
-		testExternalForce();
-		cout << "external force passed" << endl;
+	SimTK::Array_<std::string> failures;
 
-		testSpringMass();
-		cout << "spring passed" << endl;
-	
-		testBushingForce();
-		cout << "bushing passed" << endl;
-
-        testFunctionBasedBushingForce();
-        cout << "FunctionBasedBushingForce passed" << endl;
-
-		testElasticFoundation();
-		cout << "elastic foundation force passed" << endl;
-
-		testHuntCrossleyForce();
-		cout << "Hunt-Crossley force passed" << endl;
-
-		testCoordinateLimitForce();
-		cout << "coordinate limit force passed" << endl;
-
-		testCoordinateLimitForceRotational();
-		cout << "rotational coordinate limit force passed" << endl;
+	try { testPathSpring(); }
+    catch (const std::exception& e){
+		cout << e.what() <<endl; failures.push_back("testPathSpring");
 	}
-    catch (const std::exception& e) {
-        cerr << "EXCEPTION: " << e.what() << endl;
+		
+	try { testExternalForce(); }
+    catch (const std::exception& e){
+		cout << e.what() <<endl; failures.push_back("testExternalForce");
+	}
+
+	try { testSpringMass(); }
+    catch (const std::exception& e){
+		cout << e.what() <<endl; failures.push_back("testP2PSpringMass");
+	}
+	
+	try { testBushingForce(); }
+    catch (const std::exception& e){
+		cout << e.what() <<endl; failures.push_back("testBushingForce");
+	}
+
+    try { testFunctionBasedBushingForce(); }
+    catch (const std::exception& e){
+		cout << e.what() <<endl; 
+		failures.push_back("testFunctionBasedBushingForce");
+	}
+
+	try { testElasticFoundation(); }
+    catch (const std::exception& e){
+		cout << e.what() <<endl; failures.push_back("testElasticFoundation");
+	}
+
+	try { testHuntCrossleyForce(); }
+    catch (const std::exception& e){
+		cout << e.what() <<endl; failures.push_back("testHuntCrossleyForce");
+	}
+
+	try { testCoordinateLimitForce(); }
+    catch (const std::exception& e){
+		cout << e.what() <<endl; failures.push_back("testCoordinateLimitForce");
+	}
+
+	try { testCoordinateLimitForceRotational(); }
+    catch (const std::exception& e){
+		cout << e.what() <<endl; 
+		failures.push_back("testCoordinateLimitForceRotational");
+	}
+
+	try { testExpressionBasedPointToPointForce(); }
+    catch (const std::exception& e){
+		cout << e.what() <<endl; 
+		failures.push_back("testExpressionBasedPointToPointForce");
+	}
+
+    if (!failures.empty()) {
+        cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
-    cout << "Done" << endl;
+
+	cout << "Done" << endl;
+
     return 0;
 }
 
 //==============================================================================
 // Test Cases
 //==============================================================================
+
+
+void testExpressionBasedPointToPointForce()
+{
+	using namespace SimTK;
+
+	double mass = 100;
+	double h0 = 0;
+	double start_h = 0.5;
+	double ball_radius = 0.25;
+
+	Random::Uniform rand;
+	Vec3 p1(rand.getValue(), rand.getValue(), rand.getValue());
+	Vec3 p2(rand.getValue(), rand.getValue(), rand.getValue());
+
+	// Setup OpenSim model
+	Model *model = new Model;
+	model->setName("ExpressionBasedPointToPointForce");
+	//OpenSim bodies
+    OpenSim::Body& ground = model->getGroundBody();
+	OpenSim::Body ball("ball", mass ,Vec3(0),  mass*SimTK::Inertia::sphere(0.1));
+	ball.addDisplayGeometry("sphere.vtp");
+	ball.scale(Vec3(ball_radius), false);
+
+	// define body's joint
+	FreeJoint free("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+	
+	model->addBody(&ball);
+
+	string expression("2/(d^2)-3.0*(d-0.2)*(1+0.0123456789*ddot)");
+
+	ExpressionBasedPointToPointForce* p2pForce = 
+		new ExpressionBasedPointToPointForce("ground", p1, "ball", p2, expression);
+	p2pForce->setName("P2PTestForce");
+
+	model->addForce(p2pForce);
+
+	// Create the force reporter
+	ForceReporter* reporter = new ForceReporter(model);
+	model->addAnalysis(reporter);
+
+	//model->setUseVisualizer(true);
+	SimTK::State& state = model->initSystem();
+
+	Vector& q = state.updQ();
+	Vector& u = state.updU();
+
+	for(int i=0; i < state.getNU(); ++i){
+		q[i] = rand.getValue();
+		u[i] = rand.getValue();
+	}
+
+	//==========================================================================
+	// Compute the force and torque at the specified times.
+
+    RungeKuttaMersonIntegrator integrator(model->getMultibodySystem() );
+	integrator.setAccuracy(1e-6);
+    Manager manager(*model,  integrator);
+    manager.setInitialTime(0.0);
+
+	double final_t = 1.0;
+
+	manager.setFinalTime(final_t);
+	manager.integrate(state);
+
+	// force is only velocity dependent but is only compute in Dynamics
+	model->getMultibodySystem().realize(state, Stage::Dynamics);
+
+	// Now check that the force reported by spring
+	double model_force = p2pForce->getForceMagnitude(state);
+	
+	// Save the forces
+	//reporter->getForceStorage().print("path_spring_forces.mot");
+	double d = model->getSimbodyEngine().calcDistance(state, ground, p1, ball, p2);
+	const MobilizedBody& b1 = model->getMatterSubsystem().getMobilizedBody(ground.getIndex());
+	const MobilizedBody& b2 = model->getMatterSubsystem().getMobilizedBody(ball.getIndex());
+
+	double ddot = b1.calcStationToStationDistanceTimeDerivative(state, p1, b2, p2);
+
+
+	//string expression("2/(d^2)-3.0*(d-0.2)*(1+0.0123456789*ddot)");
+	double analytical_force = 2/(d*d)-3.0*(d-0.2)*(1+0.0123456789*ddot);
+	
+	// something is wrong if the block does not reach equilibrium
+	ASSERT_EQUAL(analytical_force, model_force, 1e-5);
+
+	// Before exiting lets see if copying the P2P force works
+	ExpressionBasedPointToPointForce *copyOfP2pForce = p2pForce->clone();
+	ASSERT(*copyOfP2pForce == *p2pForce);
+	
+	model->print("ExpressionBasedPointToPointForceModel.osim");
+}
 
 void testPathSpring()
 {

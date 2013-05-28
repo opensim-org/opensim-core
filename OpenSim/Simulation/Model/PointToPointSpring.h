@@ -23,11 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/VisibleObject.h>
 #include "Force.h"
+#include <OpenSim/Common/VisibleObject.h>
 
 //==============================================================================
 //                          POINT TO POINT SPRING
@@ -58,7 +55,7 @@ public:
 	OpenSim_DECLARE_PROPERTY(point2, SimTK::Vec3,
 		"Force application point on body2.");
 	OpenSim_DECLARE_PROPERTY(stiffness, double,
-		"Spring stiffness.");
+		"Spring stiffness (N/m).");
 	OpenSim_DECLARE_PROPERTY(rest_length, double,
 		"Spring resting length.");
     /**@}**/
