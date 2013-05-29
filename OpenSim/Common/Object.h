@@ -348,7 +348,7 @@ public:
 
 	/** Get property of known type Property\<T> as a writable reference;
     the property must be present and have the right type. This is primarily
-    used by the Property delcaration macros for fast access to properties. **/
+    used by the Property declaration macros for fast access to properties. **/
 	template <class T> Property<T>& 
     updProperty(const PropertyIndex& index);
 
@@ -364,7 +364,7 @@ public:
     for testing or debugging, see clearObjectIsUpToDateWithProperties(). **/
     void setObjectIsUpToDateWithProperties()
     {   _objectIsUpToDate = true; }
-    /** Returns \c true if any property's value has changed since the last time
+    /** Returns \c true if no property's value has changed since the last time
     setObjectIsUpToDateWithProperties() was called. **/
     bool isObjectUpToDateWithProperties() const {return _objectIsUpToDate;}
 
