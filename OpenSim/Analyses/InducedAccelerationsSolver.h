@@ -159,7 +159,7 @@ public:
 		@return     A const reference to the Vector of the induced 
 					generalized accelerations (udot) from the specified force.
 	*/
-	const SimTK::Vector& solve(const SimTK::State& s,
+	const SimTK::Vector& solve(const SimTK::State& state,
 				const std::string& forceName,
 				bool computeActuatorPotentialOnly=false,
 				SimTK::Vector_<SimTK::SpatialVec>* constraintReactions=0);
