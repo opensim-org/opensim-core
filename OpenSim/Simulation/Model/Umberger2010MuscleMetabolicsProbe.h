@@ -37,13 +37,15 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
 //=============================================================================
 //             MUSCLE METABOLIC POWER PROBE (Umberger, et al., 2010)
 //=============================================================================
+
 /**
- * @name Umberger2010MuscleMetabolicsProbe Theory
- *
- * Umberger2010MuscleMetabolicsProbe is a ModelComponent Probe for computing the 
- * net metabolic energy rate of a set of Muscles in the model during a simulation. 
+ * %Umberger2010MuscleMetabolicsProbe is a Probe ModelComponent for computing 
+ * the net metabolic energy rate of a set of Muscles in the model during a 
+ * simulation. 
  * 
- * Based on the following papers:
+ * <h1>%Umberger2010MuscleMetabolicsProbe Theory</h1>
+ *
+ * The discussion here is based on the following papers:
  *
  * <a href="http://www.ncbi.nlm.nih.gov/pubmed/20356877">
  * Umberger, B. R. (2010). Stance and swing phase costs in human walking.
@@ -54,16 +56,15 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * A model of human muscle energy expenditure. 
  * Comput Methods Biomech Biomed Engin 6, 99-111.</a>
  *
- *
- * <I>Note that the equations below that describe the particular implementation of 
- * Umberger2010MuscleMetabolicsProbe may slightly differ from the equations
+ * <I>Note that the equations below that describe the particular implementation 
+ * of %Umberger2010MuscleMetabolicsProbe may slightly differ from the equations
  * described in the representative publications above. Note also that we define
  * positive muscle velocity to indicate lengthening (eccentric contraction) and
  * negative muscle velocity to indicate shortening (concentric contraction).</I>
  *
  *
- * Muscle metabolic power (or rate of metabolic energy consumption) is equal to the
- * rate at which heat is liberated plus the rate at which work is done:\n
+ * Muscle metabolic power (or rate of metabolic energy consumption) is equal to
+ * the rate at which heat is liberated plus the rate at which work is done:\n
  * <B>Edot = Bdot + sumOfAllMuscles(Adot + Mdot + Sdot + Wdot).</B>
  *
  *       - Bdot is the basal heat rate (W).
@@ -145,7 +146,7 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  *
  *
  *
- * @name Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter
+ * <H1>Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter</H1>
  *
  * Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter is an Object class that 
  * holds the metabolic parameters required to calculate metabolic power for a single muscle.

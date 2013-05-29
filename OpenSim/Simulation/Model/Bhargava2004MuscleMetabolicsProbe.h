@@ -37,12 +37,13 @@ class Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
 //             MUSCLE METABOLIC POWER PROBE (Bhargava, et al., 2004)
 //=============================================================================
 /**
- * @name Bhargava2004MuscleMetabolicsProbe Theory
+ * %Bhargava2004MuscleMetabolicsProbe is a Probe ModelComponent for computing 
+ * the net metabolic energy rate of a set of Muscles in the model during a 
+ * simulation. 
  *
- * Bhargava2004MuscleMetabolicsProbe is a ModelComponent Probe for computing the 
- * net metabolic energy rate of a set of Muscles in the model during a simulation. 
- * 
- * Based on the following paper:
+ * <h1>%Bhargava2004MuscleMetabolicsProbe Theory</h1>
+ *
+ * The discussion here is based on the following paper:
  *
  * <a href="http://www.ncbi.nlm.nih.gov/pubmed/14672571">
  * Bhargava, L. J., Pandy, M. G. and Anderson, F. C. (2004). 
@@ -50,7 +51,7 @@ class Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * in muscle contraction. J Biomech 37, 81-8.</a>
  *
  * <I>Note that the equations below that describe the particular implementation of 
- * Bhargava2004MuscleMetabolicsProbe may slightly differ from the equations
+ * %Bhargava2004MuscleMetabolicsProbe may slightly differ from the equations
  * described in the representative publication above. Note also that we define
  * positive muscle velocity to indicate lengthening (eccentric contraction) and
  * negative muscle velocity to indicate shortening (concentric contraction).</I>
@@ -135,7 +136,7 @@ class Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  *
  *
  *
- * @name Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter
+ * <h1>Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter</h1>
  *
  * Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter is an Object class that 
  * holds the metabolic parameters required to calculate metabolic power for a single muscle. 
