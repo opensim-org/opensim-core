@@ -26,7 +26,6 @@
 #include "Probe.h"
 #include "Model.h"
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
 
 namespace OpenSim { 
 
@@ -332,7 +331,7 @@ public:
     void useCalculatedMass(const std::string& muscleName);
 
     /** Get whether the muscle mass is being explicitly provided.
-       True means that it is using the property <provided_muscle_mass>
+       True means that it is using the property 'provided_muscle_mass'
        False means that the muscle mass is being calculated from muscle properties. */
     bool isUsingProvidedMass(const std::string& muscleName);
 
@@ -440,7 +439,7 @@ public:
 
     OpenSim_DECLARE_OPTIONAL_PROPERTY(use_provided_muscle_mass, bool,
         "An optional flag that allows the user to explicitly specify a muscle mass. "
-        "If set to true, the <provided_muscle_mass> property must be specified.");
+        "If set to true, the 'provided_muscle_mass' property must be specified.");
 
     OpenSim_DECLARE_OPTIONAL_PROPERTY(provided_muscle_mass, double,
         "The user specified muscle mass (kg).");

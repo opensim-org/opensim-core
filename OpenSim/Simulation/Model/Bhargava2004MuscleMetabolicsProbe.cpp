@@ -26,6 +26,7 @@
 // INCLUDES and STATICS
 //=============================================================================
 #include "Bhargava2004MuscleMetabolicsProbe.h"
+#include <OpenSim/Simulation/Model/Muscle.h>
 //#define DEBUG_METABOLICS
 
 using namespace std;
@@ -104,7 +105,7 @@ void Bhargava2004MuscleMetabolicsProbe::constructProperties()
     constructProperty_use_force_dependent_shortening_prop_constant(false);
     constructProperty_basal_coefficient(1.2);  // default value for standing (Umberger, 2003, p105)
     constructProperty_basal_exponent(1.0);
-    constructProperty_report_total_metabolics_only(false);
+    constructProperty_report_total_metabolics_only(true);
     constructProperty_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet
        (Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet());
 }

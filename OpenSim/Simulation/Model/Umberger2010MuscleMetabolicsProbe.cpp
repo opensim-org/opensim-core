@@ -26,6 +26,7 @@
 // INCLUDES and STATICS
 //=============================================================================
 #include "Umberger2010MuscleMetabolicsProbe.h"
+#include <OpenSim/Simulation/Model/Muscle.h>
 //#define DEBUG_METABOLICS
 
 using namespace std;
@@ -94,7 +95,7 @@ void Umberger2010MuscleMetabolicsProbe::constructProperties()
     constructProperty_aerobic_factor(1.5);      // default value is for aerobic activities.
     constructProperty_basal_coefficient(1.2);   // default value for standing (Umberger, 2003, p105)
     constructProperty_basal_exponent(1.0);
-    constructProperty_report_total_metabolics_only(false);
+    constructProperty_report_total_metabolics_only(true);
     constructProperty_Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet
        (Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet());
 }
