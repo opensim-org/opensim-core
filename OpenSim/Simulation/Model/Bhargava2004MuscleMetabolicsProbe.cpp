@@ -292,7 +292,6 @@ computeProbeInputs(const State& s) const
 
         // Get the unnormalized total active force, F_iso that 'would' be developed at the current activation
         // and fiber length under isometric conditions (i.e. Vm=0)
-        //double F_iso = (fiber_force_active/m->getForceVelocityMultiplier(s));
         const double F_iso = m->getActivation(s) * m->getActiveForceLengthMultiplier(s) * max_isometric_force;
 
         // Warnings

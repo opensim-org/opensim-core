@@ -293,10 +293,8 @@ SimTK::Vector Umberger2010MuscleMetabolicsProbe::computeProbeInputs(const State&
         else
             A = (excitation + activation) / 2;
 
-        // Get the normalized active fiber force, F_iso, that 'would' be developed at the current activation
-        // and fiber length under isometric conditions (i.e. Vm=0)
-        //double F_iso = (fiber_force_active/m->getForceVelocityMultiplier(s)) / max_isometric_force;
-        double F_iso = m->getActivation(s) * m->getActiveForceLengthMultiplier(s);   
+        // Normalized contractile element force-length curve
+        const double F_iso = m->getActiveForceLengthMultiplier(s);   
 
         // Warnings
         if (fiber_length_normalized < 0)

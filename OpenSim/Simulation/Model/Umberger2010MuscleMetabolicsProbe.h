@@ -38,6 +38,8 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
 //             MUSCLE METABOLIC POWER PROBE (Umberger, et al., 2010)
 //=============================================================================
 /**
+ * @name Umberger2010MuscleMetabolicsProbe Theory
+ *
  * Umberger2010MuscleMetabolicsProbe is a ModelComponent Probe for computing the 
  * net metabolic energy rate of a set of Muscles in the model during a simulation. 
  * 
@@ -89,15 +91,15 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  *
  * <H2><B> ACTIVATION & MAINTENANCE HEAT RATE (W) </B></H2>
  * If <I>activation_maintenance_rate_on</I> is set to true, then Adot+Mdot is calculated as follows:\n
- * <B>Adot+Mdot = [128*(1-r) + 25] * A^0.6 * S                                      </B>,  <I> l_CE <= l_CE_opt </I>\n 
- * <B>Adot+Mdot = (0.4*[128*(1-r) + 25] + 0.6*[128*(1-r) + 25]*F_iso) * A^0.6 * S   </B>,  <I> l_CE >  l_CE_opt </I>
+ * <B>Adot+Mdot = [128*(1-r) + 25] * A^0.6 * S                                         </B>,  <I> l_CE <= l_CE_opt </I>\n 
+ * <B>Adot+Mdot = (0.4*[128*(1-r) + 25] + 0.6*[128*(1-r) + 25]*F_CE_iso) * A^0.6 * S   </B>,  <I> l_CE >  l_CE_opt </I>
  *     - <B>A = u          </B>,    u >  a
  *     - <B>A = (u+a)/2    </B>,    u <= a
  *
  *     - m = The mass of the muscle (kg).
  *     - l_CE = muscle fiber length at the current time.
  *     - l_CE_opt = optimal fiber length of the muscle.
- *     - F_CE_iso = force that would be developed by the contractile element of muscle under isometric conditions with the current activation and fiber length.
+ *     - F_CE_iso = normalized contractile element force-length curve.
  *     - u = muscle excitation at the current time.
  *     - a = muscle activation at the current time.
  *     - S = aerobic/anaerobic scaling factor, defined by the 'aerobic_factor' property (i.e. usually 1.0 for primarily anaerobic activities, 1.5 for primarily aerobic activities).
@@ -107,8 +109,8 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * If <I>shortening_rate_on</I> is set to true, then Sdot is calculated as follows:\n
  * <B>Sdot = m * (-[(alphaS_slow * v_CE_norm * r) + (alphaS_fast * v_CE_norm * (1-r))] * A^2 * S)           </B>,   <I>l_CE <= l_CE_opt   &   v_CE >= 0 (concentric / isometric contraction)</I>\n
  * <B>Sdot = m * (-[(alphaS_slow * v_CE_norm * r) + (alphaS_fast * v_CE_norm * (1-r))] * A^2 * S * F_iso)   </B>,   <I>l_CE >  l_CE_opt   &   v_CE >= 0 (concentric / isometric contraction)</I>\n
- * <B>Sdot = m * (alphaL * v_CE_norm * A * S)           </B>,   <I>l_CE <= l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>\n
- * <B>Sdot = m * (alphaL * v_CE_norm * A * S * F_iso)   </B>,   <I>l_CE >  l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>
+ * <B>Sdot = m * (alphaL * v_CE_norm * A * S)              </B>,   <I>l_CE <= l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>\n
+ * <B>Sdot = m * (alphaL * v_CE_norm * A * S * F_CE_iso)   </B>,   <I>l_CE >  l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>
  * 
  *     - <B>A = u          </B>,    <I>u >  a </I>
  *     - <B>A = (u+a)/2    </B>,    <I>u <= a </I>
@@ -120,7 +122,6 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  *     - m = The mass of the muscle (kg).
  *     - l_CE = muscle fiber length at the current time.
  *     - l_CE_opt = optimal fiber length of the muscle.
- *     - F_CE = force developed by the contractile element of muscle at the current time.
  *     - F_CE_iso = force that would be developed by the contractile element of muscle under isometric conditions with the current activation and fiber length.
  *     - v_CE = muscle fiber velocity at the current time.
  *     - v_CE_max = maximum shortening velocity of the muscle.
@@ -242,6 +243,7 @@ public:
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
+    /** MuscleMap typedef */
     typedef std::map
        <std::string, 
         Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter*> 

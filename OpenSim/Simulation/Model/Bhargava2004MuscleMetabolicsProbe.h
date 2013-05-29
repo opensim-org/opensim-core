@@ -37,6 +37,8 @@ class Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
 //             MUSCLE METABOLIC POWER PROBE (Bhargava, et al., 2004)
 //=============================================================================
 /**
+ * @name Bhargava2004MuscleMetabolicsProbe Theory
+ *
  * Bhargava2004MuscleMetabolicsProbe is a ModelComponent Probe for computing the 
  * net metabolic energy rate of a set of Muscles in the model during a simulation. 
  * 
@@ -245,6 +247,7 @@ public:
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
+    /** MuscleMap typedef */
     typedef std::map
        <std::string, 
        Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter*> 
