@@ -105,7 +105,7 @@ void testAssembleModelWithConstraints(string modelFile)
 	
 	cout << "Total Vertical Constraint Force:" << totalYforce << " N " << endl;
 
-	double bw = -model.getSimbodyEngine().getMass()*(model.getGravity()[1]);
+	double bw = -model.getTotalMass(state)*(model.getGravity()[1]);
 
 	ASSERT_EQUAL(totalYforce/bw, 1.0, 0.02);
 

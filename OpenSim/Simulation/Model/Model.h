@@ -624,6 +624,15 @@ public:
 	const SimbodyEngine& getSimbodyEngine() const { return _simbodyEngine; }
 	SimbodyEngine& updSimbodyEngine() { return _simbodyEngine; }
 
+	//--------------------------------------------------------------------------
+	// Subsystem computations
+	//--------------------------------------------------------------------------
+	SimTK::Vector computeStateVariableDerivatives(const SimTK::State &s) const;
+	double getTotalMass(const SimTK::State &s) const;
+	SimTK::Inertia getInertiaAboutMassCenter(const SimTK::State &s) const;
+	SimTK::Vec3 calcMassCenterPosition(const SimTK::State &s) const;
+	SimTK::Vec3 calcMassCenterVelocity(const SimTK::State &s) const;
+	SimTK::Vec3 calcMassCenterAcceleration(const SimTK::State &s) const;
 
 	//--------------------------------------------------------------------------
 	// STATES

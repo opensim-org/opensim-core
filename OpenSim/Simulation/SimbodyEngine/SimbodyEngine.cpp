@@ -193,56 +193,6 @@ OpenSim::Body& SimbodyEngine::getGroundBody() const
 	return _model->getGroundBody();
 }
 
-
-//--------------------------------------------------------------------------
-// INERTIA
-//--------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the total mass of the model
- *
- * @return the mass of the model
- */
-double SimbodyEngine::getMass() const
-{
-	double totalMass = 0.0;
-
-	for (int i=0; i<_model->getBodySet().getSize(); i++)
-		totalMass += _model->getBodySet().get(i).getMass();
-
-	return totalMass;
-}
-
-//_____________________________________________________________________________
-/**
- * getSystemInertia
- *
- * @param rM
- * @param rCOM
- * @param rI
- */
-void SimbodyEngine::getSystemInertia(const SimTK::State& s, double& rM, Vec3& rCOM, double rI[3][3]) const
-{
-	rM = _model->getMatterSubsystem().calcSystemMass(s);
-	rCOM = _model->getMatterSubsystem().calcSystemMassCenterLocationInGround(s);
-	Mat33::updAs(&rI[0][0]) = _model->getMatterSubsystem().calcSystemCentralInertiaInGround(s).toMat33();
-}
-
-//_____________________________________________________________________________
-/**
- * getSystemInertia
- *
- * @param rM
- * @param rCOM
- * @param rI
- */
-void SimbodyEngine::getSystemInertia(const SimTK::State& s, double& rM, double *rCOM, double *rI) const
-{
-	rM                 = _model->getMatterSubsystem().calcSystemMass(s);
-	Vec3::updAs(rCOM) = _model->getMatterSubsystem().calcSystemMassCenterLocationInGround(s);
-	Mat33::updAs(rI)  = _model->getMatterSubsystem().calcSystemCentralInertiaInGround(s).toMat33();
-}
-
 //--------------------------------------------------------------------------
 // KINEMATICS
 //--------------------------------------------------------------------------
@@ -448,43 +398,6 @@ void SimbodyEngine::computeReactions(const SimTK::State& s, Vector_<Vec3>& rForc
          rForces[i] = reactionForces[bodies[i].getIndex()](1);
 	}
 }
-
-
-//--------------------------------------------------------------------------
-// DERIVATIVES
-//--------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Compute the derivatives of the generalized coordinates and speeds.
- *
- * @param dqdt Derivatives of generalized coordinates.
- * @param dudt Derivatives of generalized speeds.
- */
-void SimbodyEngine::computeDerivatives(const SimTK::State& s, double *dqdt, double *dudt)
-{
-	// COMPUTE ACCELERATIONS
-	try {
-		_model->getMultibodySystem().realize(s,Stage::Acceleration);
-	} catch(const std::exception& x) {
-		cout<<x.what()<<endl;
-		cout<<"SimbodyEngine.computeDerivatives: invalid derivatives."<<endl;
-		return;
-	}
-	Vector qdot = _model->getMatterSubsystem().getQDot(s);
-	Vector udot = _model->getMatterSubsystem().getUDot(s);
-
-	// ASSIGN THEM (MAYBE SLOW BUT CORRECT)
-	if(dqdt){
-		int nq = s.getNQ();
-		for(int i=0;i<nq;i++) dqdt[i] = qdot[i];
-	}
-
-	if(dudt){
-		int nu = s.getNU();
-		for(int i=0;i<nu;i++) dudt[i] = udot[i];
-	}
-}
-
 
 //--------------------------------------------------------------------------
 // UTILITY
@@ -834,7 +747,7 @@ bool SimbodyEngine::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFi
 	// so that the total model mass comes out to aFinalMass.
 	if (aFinalMass > 0.0)
 	{
-		double mass = getMass();
+		double mass = _model->getTotalMass(s);
 		if (mass > 0.0)
 		{
 			double factor = aFinalMass / mass;

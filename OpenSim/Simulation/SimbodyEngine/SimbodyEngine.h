@@ -131,14 +131,6 @@ public:
     virtual WrapObject* getWrapObject(const std::string& aName) const;
 
 	//--------------------------------------------------------------------------
-	// INERTIA
-	//--------------------------------------------------------------------------
-	virtual double getMass() const;
-
-	virtual void getSystemInertia(const SimTK::State& s, double& rM, SimTK::Vec3& rCOM, double rI[3][3]) const;
-	virtual void getSystemInertia(const SimTK::State& s, double& rM, double *rCOM, double *rI) const;
-
-	//--------------------------------------------------------------------------
 	// KINEMATICS
 	//--------------------------------------------------------------------------
 	virtual void getPosition(const SimTK::State& s, const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rPos) const;
@@ -172,11 +164,6 @@ public:
 	//unimplemented virtual void formJacobianTranslation(const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, double *rJ, const OpenSim::Body *aRefBody=NULL) const {};
 	//unimplemented virtual void formJacobianOrientation(const OpenSim::Body &aBody, double *rJ0, const OpenSim::Body *aRefBody=NULL) const {};
 	//unimplemented virtual void formJacobianEuler(const OpenSim::Body &aBody, double *rJE, const OpenSim::Body *aRefBody=NULL) const {};
-
-	//--------------------------------------------------------------------------
-	// DERIVATIVES
-	//--------------------------------------------------------------------------
-	virtual void computeDerivatives(const SimTK::State& s, double *dqdt=NULL, double *dudt=NULL);
 
 	//--------------------------------------------------------------------------
 	// UTILITY
