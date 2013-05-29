@@ -222,6 +222,7 @@ void OpenSimContext::setZCoordinate(MovingPathPoint& mmp, Coordinate&  newCoord)
 void OpenSimContext::setBody(PathPoint& pathPoint, Body&  newBody) {
    pathPoint.changeBodyPreserveLocation(*_configState, newBody);
    this->recreateSystemAfterSystemExists();
+   realizeVelocity();
 }
 
 
@@ -269,7 +270,8 @@ void OpenSimContext::setRangeMax(ConditionalPathPoint&  via, double d) {
 
 bool OpenSimContext::replacePathPoint(GeometryPath& p, PathPoint& mp, PathPoint& newPoint) {
    bool ret= p.replacePathPoint(*_configState, &mp, &newPoint );
-   this->recreateSystemAfterSystemExists();
+   recreateSystemAfterSystemExists();
+   realizeVelocity();
    p.updateGeometry(*_configState);
    return ret;
 }
@@ -436,6 +438,7 @@ double OpenSimContext::computeMeasurementScaleFactor(ModelScaler& modelScaler,
 void OpenSimContext::replaceTransformAxisFunction(TransformAxis& aDof, OpenSim::Function& aFunction) {
    aDof.setFunction(&aFunction);
    this->recreateSystemAfterSystemExists();
+   realizeVelocity();
 }
 
 // Force re-realization
