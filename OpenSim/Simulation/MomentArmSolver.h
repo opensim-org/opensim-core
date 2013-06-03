@@ -1,5 +1,5 @@
-#ifndef OPENSIM_MomentArmSolver_H_
-#define OPENSIM_MomentArmSolver_H_
+#ifndef OPENSIM_MOMENTARM_SOLVER_H_
+#define OPENSIM_MOMENTARM_SOLVER_H_
 /* -------------------------------------------------------------------------- *
  *                        OpenSim:  MomentArmSolver.h                         *
  * -------------------------------------------------------------------------- *
@@ -62,40 +62,45 @@ public:
 	virtual ~MomentArmSolver() {}
 
 	/** Solve for the effective moment-arm about the all coordinates (q) based 
-    on the geometric distribution of forces described by GeometryPath. 
-	@param  s				    current state of the model
-	@param  path	            path for which to calculate moment-arms
-	@return Vector ma			resulting moment-arms for each mobility in model
-								has the same order and length as state.getU()
+        on the geometric distribution of forces described by a GeometryPath. 
+	@param  state			    current state of the model
+	@param  coordinate			Coordinate about which we want the moment-arm
+	@param  path	            GeometryPath for which to calculate a moment-arm
+	@return ma					resulting moment-arm as a double
 	*/
-	SimTK::Vector solve(const SimTK::State& s, const GeometryPath &path);
+	double solve(const SimTK::State& state, const Coordinate &coordinate,
+		const GeometryPath &path) const;
 
 	/** Solve for the effective moment-arm about the specified coordinate based 
-    on the geometric distribution of forces described by the list of 
-    PointForceDirections. */
-	double solve(const SimTK::State& s, const Coordinate &aCoord, 
-		const Array<PointForceDirection *> &pfds);
+		on the geometric distribution of forces described by the list of 
+		PointForceDirections. 
+	@param  state				current state of the model
+	@param  coordinate			Coordinate about which we want the moment-arm
+	@param  pfds	            PointForceDirections applied to the model
+	@return ma					resulting moment-arm as a double
+	*/
+	double solve(const SimTK::State& state, const Coordinate &coordinate, 
+		const Array<PointForceDirection *> &pfds) const;
 
 private:
 	// Internal state of the solver initialized as a copy of the default state
-	SimTK::State _stateCopy;
+	mutable SimTK::State _stateCopy;
 
 	// Keep preallocated vector of the generalized forces
-	SimTK::Vector _generalizedForces;
+	mutable SimTK::Vector _generalizedForces;
 
 	// Keep preallocated vector of the Body_Forces
-	SimTK::Vector_<SimTK::SpatialVec> _bodyForces;
+	mutable SimTK::Vector_<SimTK::SpatialVec> _bodyForces;
 
 	// Keep preallocated vector of the coupling constraint factors
-	SimTK::Vector _coupling;
+	mutable SimTK::Vector _coupling;
 
-
-public:
-
-
+	// compute vector of constraint coupling factors
+	SimTK::Vector computeCouplingVector(SimTK::State &state, 
+		const Coordinate &coordinate) const;
 //=============================================================================
 };	// END of class MomentArmSolver
 //=============================================================================
 } // namespace
 
-#endif // OPENSIM_MomentArmSolver_H_
+#endif // OPENSIM_MOMENTARM_SOLVER_H_
