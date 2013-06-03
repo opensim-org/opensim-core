@@ -659,6 +659,53 @@ void Umberger2010MuscleMetabolicsProbe::
 
 //_____________________________________________________________________________
 /**
+ * Get the density for an existing muscle (kg/m^3).. 
+ */
+const double Umberger2010MuscleMetabolicsProbe::
+	getDensity(const std::string& muscleName) const 
+{ 
+	return getMetabolicParameters(muscleName)->get_density();
+}
+
+
+//_____________________________________________________________________________
+/**
+ * Set the density for an existing muscle (kg/m^3). 
+ */
+void Umberger2010MuscleMetabolicsProbe::
+	setDensity(const std::string& muscleName, const double& density) 
+{ 
+	updMetabolicParameters(muscleName)->set_density(density);
+}
+
+
+//_____________________________________________________________________________
+/**
+ * Get the specific tension for an existing muscle (Pascals (N/m^2)). 
+ */
+const double Umberger2010MuscleMetabolicsProbe::
+	getSpecificTension(const std::string& muscleName) const 
+{ 
+	return getMetabolicParameters(muscleName)->get_specific_tension();
+}
+
+
+//_____________________________________________________________________________
+/**
+ * Set the specific tension for an existing muscle (Pascals (N/m^2)). 
+ */
+void Umberger2010MuscleMetabolicsProbe::
+	setSpecificTension(const std::string& muscleName, const double& specificTension) 
+{ 
+	updMetabolicParameters(muscleName)->set_specific_tension(specificTension);
+}
+
+
+
+
+
+//_____________________________________________________________________________
+/**
  * PRIVATE: Get const MetabolicMuscleParameter from the MuscleMap using a 
  * string accessor.
  */

@@ -665,6 +665,50 @@ void Bhargava2004MuscleMetabolicsProbe::
 
 
 //_____________________________________________________________________________
+/**
+ * Get the density for an existing muscle (kg/m^3).. 
+ */
+const double Bhargava2004MuscleMetabolicsProbe::
+	getDensity(const std::string& muscleName) const 
+{ 
+	return getMetabolicParameters(muscleName)->get_density();
+}
+
+
+//_____________________________________________________________________________
+/**
+ * Set the density for an existing muscle (kg/m^3). 
+ */
+void Bhargava2004MuscleMetabolicsProbe::
+	setDensity(const std::string& muscleName, const double& density) 
+{ 
+	updMetabolicParameters(muscleName)->set_density(density);
+}
+
+
+//_____________________________________________________________________________
+/**
+ * Get the specific tension for an existing muscle (Pascals (N/m^2)). 
+ */
+const double Bhargava2004MuscleMetabolicsProbe::
+	getSpecificTension(const std::string& muscleName) const 
+{ 
+	return getMetabolicParameters(muscleName)->get_specific_tension();
+}
+
+
+//_____________________________________________________________________________
+/**
+ * Set the specific tension for an existing muscle (Pascals (N/m^2)). 
+ */
+void Bhargava2004MuscleMetabolicsProbe::
+	setSpecificTension(const std::string& muscleName, const double& specificTension) 
+{ 
+	updMetabolicParameters(muscleName)->set_specific_tension(specificTension);
+}
+
+
+//_____________________________________________________________________________
 /** 
  * Get the activation constant for slow twitch fibers for an existing muscle. 
  */
