@@ -174,6 +174,7 @@
 #include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
+#include <OpenSim/Simulation/Model/ExpressionBasedPointToPointForce.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
 #include <OpenSim/Simulation/Model/PathSpring.h>
 #include <OpenSim/Simulation/Model/BushingForce.h>
@@ -869,6 +870,7 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/Muscle.h>
 %include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 %include <OpenSim/Simulation/Model/PointToPointSpring.h>
+%include <OpenSim/Simulation/Model/ExpressionBasedPointToPointForce.h>
 %include <OpenSim/Simulation/Model/PathSpring.h>
 %include <OpenSim/Simulation/Model/BushingForce.h>
 %include <OpenSim/Simulation/Model/FunctionBasedBushingForce.h>
@@ -898,6 +900,14 @@ namespace SimTK {
 %include <OpenSim/Actuators/SpringGeneralizedForce.h>
 %include <OpenSim/Actuators/Thelen2003Muscle.h>
 %include <OpenSim/Actuators/RigidTendonMuscle.h>
+%include <OpenSim/Actuators/ActiveForceLengthCurve.h>
+%include <OpenSim/Actuators/FiberCompressiveForceCosPennationCurve.h>
+%include <OpenSim/Actuators/FiberCompressiveForceLengthCurve.h>
+%include <OpenSim/Actuators/FiberForceLengthCurve.h>
+%include <OpenSim/Actuators/ForceVelocityCurve.h>
+%include <OpenSim/Actuators/ForceVelocityInverseCurve.h>
+%include <OpenSim/Actuators/TendonForceLengthCurve.h>
+
 %include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 %include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>
 
