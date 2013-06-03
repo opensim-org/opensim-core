@@ -776,7 +776,7 @@ void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)
 void Model::addController(Controller *aController)
 {
 	if (aController ) {
-       _controllerSetProp..setValueIsDefault(false);
+       _controllerSetProp.setValueIsDefault(false);
 	   updControllerSet().adoptAndAppend(aController);
 	   updControllerSet().invokeConnectToModel(*this);
     }
