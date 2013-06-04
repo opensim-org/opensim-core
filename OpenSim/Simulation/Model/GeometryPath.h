@@ -144,40 +144,56 @@ public:
     @see setDefaultColor() **/
 	SimTK::Vec3 getColor(const SimTK::State& s) const;
 
-	virtual double getLength( const SimTK::State& s) const;
-	virtual void setLength( const SimTK::State& s, double length) const;
-	virtual double getPreScaleLength( const SimTK::State& s) const;
-	virtual void setPreScaleLength( const SimTK::State& s, double preScaleLength);
-	virtual const Array<PathPoint*>& getCurrentPath( const SimTK::State& s) const;
+	double getLength( const SimTK::State& s) const;
+	void setLength( const SimTK::State& s, double length) const;
+	double getPreScaleLength( const SimTK::State& s) const;
+	void setPreScaleLength( const SimTK::State& s, double preScaleLength);
+	const Array<PathPoint*>& getCurrentPath( const SimTK::State& s) const;
 
-	virtual const Array<PathPoint*>& getCurrentDisplayPath(const SimTK::State& s) const;
-	
-	/** get the the path as PointForceDirections directions */
-	void getPointForceDirections(const SimTK::State& s, OpenSim::Array<PointForceDirection*> *rPFDs) const;
+	const Array<PathPoint*>& getCurrentDisplayPath(const SimTK::State& s) const;
 
-	virtual double getLengtheningSpeed(const SimTK::State& s) const;
-	virtual void setLengtheningSpeed( const SimTK::State& s, double speed ) const;
+	double getLengtheningSpeed(const SimTK::State& s) const;
+	void setLengtheningSpeed( const SimTK::State& s, double speed ) const;
+
+	/** get the the path as PointForceDirections directions, which can be used
+	    to apply tension to bodies the points are connected to.*/
+	void getPointForceDirections(const SimTK::State& s, 
+		OpenSim::Array<PointForceDirection*> *rPFDs) const;
+
+	/** add in the equivalent spatial forces applied to the bodies for an applied
+		 tension along the GeometryPath to a set of bodyForces 
+	@param[in]  tension      scalar (double) of the applied (+ve) tensile force 
+	@param[out] bodyForces   resultant spatial force (torque, force) at each body
+	*/
+	void addInEquivalentForcesOnBodies(const SimTK::State& state,
+									   const double& tension, 
+						SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
 
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-private:
-	void computePath(const SimTK::State& s ) const;
-	void computeLengtheningSpeed(const SimTK::State& s) const;
-	void applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path ) const;
-	double _calc_path_length_change(const SimTK::State& s, WrapObject& wo, WrapResult& wr, const Array<PathPoint*>& path) const; 
-	virtual double calcLengthAfterPathComputation(const SimTK::State& s, const Array<PathPoint*>& currentPath) const;
-public:
 	virtual double computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const;
 
 	//--------------------------------------------------------------------------
 	// SCALING
 	//--------------------------------------------------------------------------
-	virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
-	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-	virtual int getNumStateVariables() const { return 0;};
+	void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+	void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
+	void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+
+	//--------------------------------------------------------------------------
+	// Visible Object Support
+	//--------------------------------------------------------------------------
+	virtual const VisibleObject* getDisplayer() const { 
+		return &get_display(); 
+	}
+	
+	void updateDisplayer(const SimTK::State& s) const OVERRIDE_11;
+
+    // Update the geometry attached to the path (location of path points and connecting segments
+	//  all in global/interial frame)
+	virtual void updateGeometry(const SimTK::State& s) const;
 
 protected:
     // ModelComponent interface.
@@ -193,21 +209,15 @@ protected:
 			SimTK::Array_<SimTK::DecorativeGeometry>&	appendToThis) const
             OVERRIDE_11;
 
-public:
-	//--------------------------------------------------------------------------
-	// Visible Object Support
-	//--------------------------------------------------------------------------
-	virtual const VisibleObject* getDisplayer() const { 
-		return &get_display(); 
-	}
-	
-	void updateDisplayer(const SimTK::State& s) const OVERRIDE_11;
-
-    // Update the geometry attached to the path (location of path points and connecting segments
-	//  all in global/interial frame)
-	virtual void updateGeometry(const SimTK::State& s) const;
-
 private:
+
+	void computePath(const SimTK::State& s ) const;
+	void computeLengtheningSpeed(const SimTK::State& s) const;
+	void applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path ) const;
+	double _calc_path_length_change(const SimTK::State& s, WrapObject& wo, WrapResult& wr, const Array<PathPoint*>& path) const; 
+	virtual double calcLengthAfterPathComputation(const SimTK::State& s, const Array<PathPoint*>& currentPath) const;
+
+
 	void setNull();
 	void constructProperties();
 	void updateDisplayPath(const SimTK::State& s) const;

@@ -289,6 +289,10 @@ public:
     myProbe->addMuscle("muscleName1", ... );
     myProbe->addMuscle("muscleName2", ... );
     myProbe->addMuscle("muscleName3", ... );
+    myProbe->useProvidedMass("muscleName1", 1.2);         // muscle1 mass = 1.2 kg
+    myProbe->useCalculatedMass("muscleName2");            // muscle2 mass is based on muscle properties (below)
+    myProbe->setDensity("muscleName2", 1100.0);           // muscle2 density is 1100 kg/m^3
+    myProbe->setSpecificTension("muscleName2", 0.26e6);   // muscle2 specific tension is 0.26e6 Pa
     myProbe->removeMuscle("muscleName3");
     myProbe->setOperation("integrate")           // See OpenSim::Probe for other operations
     @endcode
@@ -336,6 +340,18 @@ public:
 
     /** Set the ratio of slow twitch fibers for an existing muscle. */
     void setRatioSlowTwitchFibers(const std::string& muscleName, const double& ratio);
+
+    /** Get the density for an existing muscle (kg/m^3). */
+    const double getDensity(const std::string& muscleName) const;
+
+    /** Set the density for an existing muscle (kg/m^3). */
+    void setDensity(const std::string& muscleName, const double& density);
+
+    /** Get the specific tension for an existing muscle (Pascals (N/m^2)). */
+    const double getSpecificTension(const std::string& muscleName) const;
+
+    /** Set the specific tension for an existing muscle (Pascals (N/m^2)). */
+    void setSpecificTension(const std::string& muscleName, const double& specificTension);
 
 
 

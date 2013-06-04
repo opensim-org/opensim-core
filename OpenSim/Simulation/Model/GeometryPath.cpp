@@ -344,6 +344,47 @@ void GeometryPath::getPointForceDirections(const SimTK::State& s, OpenSim::Array
 	}
 }
 
+/* add in the equivalent spatial forces on bodies for an applied tension 
+	along the GeometryPath to a set of bodyForces */
+void GeometryPath::addInEquivalentForcesOnBodies(const SimTK::State& s,
+	const double& tension, SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const
+{
+	PathPoint* start = NULL;
+	PathPoint* end = NULL;
+	const SimTK::MobilizedBody* bo = NULL;
+	const SimTK::MobilizedBody* bf = NULL;
+    const Array<PathPoint*>& currentPath = getCurrentPath(s);
+	int np = currentPath.getSize();
+
+	const SimTK::SimbodyMatterSubsystem& matter = 
+										getModel().getMatterSubsystem();
+
+	// start point, end point and direction in ground
+	Vec3 po(0), pf(0), dir(0);
+
+	for (int i = 0; i < np-1; ++i) {
+		start = currentPath[i];
+		end = currentPath[i+1];
+		bo = &matter.getMobilizedBody(start->getBody().getIndex());
+		bf = &matter.getMobilizedBody(end->getBody().getIndex());
+
+		if (bo != bf)
+		{
+			// Find the positions of start and end in the inertial frame.
+			po = bo->findStationLocationInGround(s, start->getLocation());
+			pf = bf->findStationLocationInGround(s, end->getLocation());
+
+			// Form a vector from start to end, in the inertial frame.
+			dir = (pf - po).normalize();
+
+			// add in the tension point forces to body forces
+			matter.addInStationForce(s, *bo, start->getLocation(),
+				tension*dir, bodyForces);
+			matter.addInStationForce(s, *bf, end->getLocation(),
+				-tension*dir, bodyForces);
+		}		
+	}
+}
 //_____________________________________________________________________________
 /**
  * get the current display path of the path
@@ -1266,16 +1307,9 @@ double GeometryPath::calcLengthAfterPathComputation(const SimTK::State& s, const
 double GeometryPath::
 computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const
 {
-	// Get the underlying geometry of the muscle in terms of individual point 
-	// force directions
-	OpenSim::Array<PointForceDirection*> PFDs;
-	getPointForceDirections(s, &PFDs);
-	
 	MomentArmSolver maSolver(*_model);
-	double ma = maSolver.solve(s, aCoord, PFDs);
 
-	for(int i=0; i < PFDs.getSize(); i++)
-		delete PFDs[i];
+	double ma = maSolver.solve(s, aCoord,  *this);
 
 	return ma;
 }

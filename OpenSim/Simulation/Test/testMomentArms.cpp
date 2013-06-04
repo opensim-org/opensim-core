@@ -55,6 +55,8 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 
 int main()
 {
+	clock_t startTime = clock();
+
 	try {
 		Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 
@@ -112,6 +114,8 @@ int main()
         return 1;
     }
     cout << "Done" << endl;
+	cout << "GeometryPath MA compute time: " << 1.0e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms" << endl;
+
     return 0;
 }
 
@@ -229,6 +233,7 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 
 	// Load OpenSim model
 	Model osimModel(filename);
+	osimModel.initSystem();
 
 	MomentArmSolver maSolver(osimModel);
 
