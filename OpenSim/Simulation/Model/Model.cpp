@@ -697,6 +697,7 @@ SimTK::SystemYIndex Model::getStateVariableSystemIndex(const string &stateVariab
  * Add any Component derived from ModelComponent to the Model.
  */
 void Model::addComponent(ModelComponent* aComponent) {
+    _componentSetProp.setValueIsDefault(false);
 	_componentSet.adoptAndAppend(aComponent);
 	_componentSet.invokeConnectToModel(*this);
 }
@@ -708,6 +709,7 @@ void Model::addComponent(ModelComponent* aComponent) {
 void Model::addBody(OpenSim::Body *aBody)
 {
 	updBodySet().adoptAndAppend(aBody);
+    _bodySetProp.setValueIsDefault(false);
 	updBodySet().invokeConnectToModel(*this);
 	updJointSet().populate(*this);
 	updCoordinateSet().populate(*this);
@@ -719,6 +721,7 @@ void Model::addBody(OpenSim::Body *aBody)
  */
 void Model::addConstraint(OpenSim::Constraint *aConstraint)
 {
+    _constraintSetProp.setValueIsDefault(false);
 	updConstraintSet().adoptAndAppend(aConstraint);
 	updConstraintSet().invokeConnectToModel(*this);
 }
@@ -729,6 +732,7 @@ void Model::addConstraint(OpenSim::Constraint *aConstraint)
  */
 void Model::addForce(OpenSim::Force *aForce)
 {
+    _forceSetProp.setValueIsDefault(false);
 	updForceSet().append(aForce);
 	updForceSet().invokeConnectToModel(*this);
 }
@@ -760,6 +764,7 @@ void Model::removeProbe(OpenSim::Probe *aProbe)
  */
 void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)
 {
+    _contactGeometrySetProp.setValueIsDefault(false);
 	updContactGeometrySet().adoptAndAppend(aContactGeometry);
 	updContactGeometrySet().invokeConnectToModel(*this);
 }
@@ -771,6 +776,7 @@ void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)
 void Model::addController(Controller *aController)
 {
 	if (aController ) {
+       _controllerSetProp.setValueIsDefault(false);
 	   updControllerSet().adoptAndAppend(aController);
 	   updControllerSet().invokeConnectToModel(*this);
     }

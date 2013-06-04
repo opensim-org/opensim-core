@@ -124,6 +124,7 @@ void Bhargava2004MuscleMetabolicsProbe::constructProperties()
  */
 void Bhargava2004MuscleMetabolicsProbe::connectToModel(Model& aModel)
 {
+    if (isDisabled()) return;   // Nothing to connect
     Super::connectToModel(aModel);
 
     const int nM = 
@@ -154,6 +155,9 @@ void Bhargava2004MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
     if( k < 0 )	{
         cout << "WARNING: Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter: "
             "Muscle '" << mm.getName() << "' not found in model. Ignoring..." << endl;
+        setDisabled(true);
+        return;
+
     }
     else {
         mm.setMuscle(&aModel.updMuscles()[k]);  // Set internal muscle pointer

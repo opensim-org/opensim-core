@@ -84,6 +84,21 @@ public:
      */
     void setTransitionVelocity(double velocity);
 
+    /**
+     * Access to ContactParameters. Methods assume size 1 of ContactParametersSet and add one ContactParameter if needed
+     */
+    double getStiffness() ;
+    void setStiffness(double stiffness) ;
+    double getDissipation() ;
+    void setDissipation(double dissipation);
+    double getStaticFriction() ;
+    void setStaticFriction(double friction);
+    double getDynamicFriction() ;
+    void setDynamicFriction(double friction);
+    double getViscousFriction() ;
+    void setViscousFriction(double friction);
+    void addGeometry(const std::string& name);
+
 	//-----------------------------------------------------------------------------
 	// Reporting
 	//-----------------------------------------------------------------------------
