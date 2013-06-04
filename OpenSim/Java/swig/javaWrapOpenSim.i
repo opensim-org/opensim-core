@@ -49,6 +49,7 @@
 
 #include <OpenSim/Simulation/Solver.h>
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
+#include <OpenSim/Simulation/MomentArmSolver.h>
 
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
@@ -732,6 +733,7 @@ namespace SimTK {
 
 %include <OpenSim/Simulation/Solver.h>
 %include <OpenSim/Simulation/InverseDynamicsSolver.h>
+%include <OpenSim/Simulation/MomentArmSolver.h>
 
 %include <OpenSim/Simulation/Model/Force.h>
 %template(SetForces) OpenSim::Set<OpenSim::Force>;
