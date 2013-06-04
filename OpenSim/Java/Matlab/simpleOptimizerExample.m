@@ -73,5 +73,5 @@ initialCoefficients = 1.0*ones(1,1);
 [f,fval,exitflag,output] = fminsearch(@(coeffs0) simpleOptimizerObjectiveFunction(coeffs0,params),...
 	initialCoefficients);
 
-disp(strcat('Optimization #iterations=',num2str(output.iterations),' joint angle = ',num2str(radtodeg(f)),', moment arm = ',num2str(-fval)));
+disp(strcat('Optimization #iterations=',num2str(output.iterations),' joint angle = ',num2str(f*180/pi),', moment arm = ',num2str(-fval)));
 
