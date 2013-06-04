@@ -115,6 +115,7 @@ void Umberger2010MuscleMetabolicsProbe::constructProperties()
  */
 void Umberger2010MuscleMetabolicsProbe::connectToModel(Model& aModel)
 {
+    if (isDisabled()) return;   // Nothing to connect
     Super::connectToModel(aModel);
 
     const int nM = 
@@ -143,6 +144,8 @@ void Umberger2010MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
     if( k < 0 )	{
         cout << "WARNING: Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter: "
             "Muscle '" << mm.getName() << "' not found in model. Ignoring..." << endl;
+        setDisabled(true);
+        return;
     }
     else {
         mm.setMuscle(&aModel.updMuscles()[k]);  // Set internal muscle pointer
