@@ -86,8 +86,10 @@ void ActiveForceLengthCurve::constructProperties()
 
 void ActiveForceLengthCurve::buildCurve()
 {
+	SimTK::Function* f = createSimTKFunction(); 
 	m_curve = 
-		*(static_cast<SmoothSegmentedFunction*>(createSimTKFunction())); 
+			*(static_cast<SmoothSegmentedFunction*>(f));
+	delete f;  
 	setObjectIsUpToDateWithProperties();
 }
 
