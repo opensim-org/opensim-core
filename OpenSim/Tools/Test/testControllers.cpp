@@ -32,26 +32,7 @@
 //     Add tests here as new controller types are added to OpenSim
 //
 //==========================================================================================================
-#include <iostream>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Exception.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/ControllerSet.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Analyses/Kinematics.h>
-#include <OpenSim/Analyses/PointKinematics.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <OpenSim/Common/SimmSpline.h>
-#include <OpenSim/Common/FunctionAdapter.h>
-#include <OpenSim/Common/Constant.h>
-#include <OpenSim/Tools/CorrectionController.h>
-#include <OpenSim/Actuators/CoordinateActuator.h>
-#include <OpenSim/Simulation/Control/ControlSetController.h>
-#include <OpenSim/Simulation/Control/PrescribedController.h>
-#include <OpenSim/Simulation/Control/ControlLinear.h>
+#include <OpenSim/OpenSim.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
@@ -60,6 +41,9 @@ using namespace std;
 void testControlSetControllerOnBlock();
 void testPrescribedControllerOnBlock(bool disabled);
 void testCorrectionControllerOnBlock();
+void testPrescribedControllerFromFile(const std::string& modelFile,
+									  const std::string& actuatorsFile,
+									  const std::string& controlsFile);
 
 int main()
 {
@@ -71,6 +55,9 @@ int main()
 		testPrescribedControllerOnBlock(true);
 		cout << "Testing CorrectionController" << endl; 
 		testCorrectionControllerOnBlock();
+
+		testPrescribedControllerFromFile("arm26.osim", "arm26_Reserve_Actuators.xml",
+										 "arm26_controls.xml");
     }	
 	catch (const Exception& e) {
         e.print(cerr);
@@ -228,7 +215,7 @@ void testPrescribedControllerOnBlock(bool disabled)
 
 	// add the controller to the model
 	osimModel.addController(&actuatorController);
-
+	
 	osimModel.print("blockWithPrescribedController.osim");
 	Model modelfileFromFile("blockWithPrescribedController.osim");
 
@@ -318,3 +305,109 @@ void testCorrectionControllerOnBlock()
 
 	osimModel.disownAllComponents();
 }// end of testCorrectionControllerOnBlock()
+
+
+void testPrescribedControllerFromFile(const std::string& modelFile,
+									  const std::string& actuatorsFile,
+									  const std::string& controlsFile)
+{
+	using namespace SimTK;
+
+	double initialTime = 0.03;
+	double finalTime = 1.0;
+
+	// Create a new OpenSim model
+	Model osimModel(modelFile);
+
+	try{
+		ForceSet *forceSet=new ForceSet(osimModel, actuatorsFile);
+		osimModel.updForceSet().append(*forceSet);
+	}
+	catch(const std::exception& e){
+		cout << "Actuators not loaded: " << e.what() << endl;
+	}
+
+	ControlSetController csc;
+	ControlSet* cs = new ControlSet(controlsFile);
+	csc.setControlSet(cs);
+
+	// add the controller to the model
+	osimModel.addController(&csc);
+
+	// Initialize the system and get the state representing the state system
+	SimTK::State& si = osimModel.initSystem();
+
+	// Create the integrator and manager for the simulation.
+	SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
+	integrator.setAccuracy(1.0e-5);
+	Manager manager(osimModel, integrator);
+
+	// Integrate from initial time to final time
+	manager.setInitialTime(initialTime);
+	manager.setFinalTime(finalTime);
+	cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
+	manager.integrate(si);
+
+	string modelName = osimModel.getName();
+	// Save the simulation results
+	Storage std_states(manager.getStateStorage());
+	string outfileName = "std_"+modelName + "_states.sto";
+	std_states.print(outfileName);
+
+	outfileName = "std_"+modelName +"_controls.sto";
+	osimModel.printControlStorage(outfileName);
+	Storage std_controls(outfileName);
+
+
+	// don't double delete components allocated on the stack
+	osimModel.disownAllComponents();
+
+	// remove previous controllers
+	osimModel.updControllerSet().remove(0);
+	cout << "Number of Controllers should be 0 is ";
+		cout << osimModel.getControllerSet().getSize() << endl;
+	
+	
+	//************* Rerun with a PrescribedController ***********************/
+
+	PrescribedController prescribed(outfileName, 0);
+
+	// add the controller to the model
+	osimModel.addController(&prescribed);
+
+	// Initialize the system and get the state representing the state system
+	SimTK::State& s2 = osimModel.initSystem();
+
+	// Create the integrator and manager for the simulation.
+	SimTK::RungeKuttaMersonIntegrator integrator2(osimModel.getMultibodySystem());
+	integrator2.setAccuracy(1.0e-5);
+	Manager manager2(osimModel, integrator2);
+
+	// Integrate from initial time to final time
+	manager2.setInitialTime(initialTime);
+	manager2.setFinalTime(finalTime);
+	cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
+	manager2.integrate(s2);
+
+	// Save the simulation results
+	Storage states(manager2.getStateStorage());
+	outfileName = modelName + "_states.sto";
+	states.print(outfileName);
+
+	outfileName = modelName +"_controls.sto";
+	osimModel.printControlStorage(outfileName);
+	Storage controls(outfileName);
+
+	int nstates = osimModel.getNumStateVariables();
+	int ncontrols = osimModel.getNumControls();
+
+	CHECK_STORAGE_AGAINST_STANDARD(states, std_states, 
+		Array<double>(0.005, nstates), __FILE__, __LINE__,
+		"testPrescribedControllerFromFile '"+modelName+"'states failed");
+
+	CHECK_STORAGE_AGAINST_STANDARD(controls, std_controls, 
+		Array<double>(0.005, nstates), __FILE__, __LINE__,
+		"testPrescribedControllerFromFile '"+modelName+"'controls failed");
+	 
+	osimModel.disownAllComponents();
+}

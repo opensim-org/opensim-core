@@ -107,7 +107,7 @@ void Controller::setDisabled(bool aTrueFalse)
 }
 
 // for any post XML deseraialization intialization
-void Controller:: connectToModel(Model& model)
+void Controller::connectToModel(Model& model)
 {
 	Super::connectToModel(model);
 

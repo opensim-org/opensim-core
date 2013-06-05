@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ActuatorSet name="arm26">
+	<defaults/>
+	<objects>
+		<!-- Shoulder -->
+		<CoordinateActuator name="r_shoulder_elev_reserve">
+		  <coordinate> r_shoulder_elev </coordinate>
+		  <optimal_force> 1.0 </optimal_force>
+		</CoordinateActuator>
+		<!-- Elbow -->
+		<CoordinateActuator name="r_elbow_flex_reserve">
+		  <coordinate> r_elbow_flex </coordinate>
+		  <optimal_force> 1.0 </optimal_force>
+		</CoordinateActuator>
+	</objects>
+</ActuatorSet>

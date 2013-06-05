@@ -543,7 +543,7 @@ computeInitialStates(SimTK::State& s, double &rTI)
 	// CONSTRUCT CONTROL SET
 	ControlSet xiSet;
 
-	for(i=0;i<_numControls;i++) {
+	for(i=0;i< getNumControls();i++) {
 		ControlConstant *x = new ControlConstant();
         x->setName(_controlSet.get(i).getName());
         x->setIsModelControl(true);
@@ -593,7 +593,7 @@ computeInitialStates(SimTK::State& s, double &rTI)
 	setTargetDT(newTargetDT);
 
 	// REPEATEDLY CONTROL OVER THE FIRST TIME STEP
-	Array<double> xi(0.0,_numControls);
+	Array<double> xi(0.0, getNumControls());
 	for(i=0;i<2;i++) {
 
 		// CLEAR ANY PREVIOUS CONTROL NODES
@@ -1159,6 +1159,6 @@ void CMC::addToSystem( SimTK::MultibodySystem& system)  const
 		mutableThis->_controlSetIndices.set(i, i);
 	}
 
-    mutableThis->_numControls = _controlSet.getSize();
+    mutableThis->setNumControls(_controlSet.getSize());
 }
 

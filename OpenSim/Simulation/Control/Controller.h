@@ -29,9 +29,6 @@
 // These files contain declarations and definitions of variables and methods
 // that will be used by the Controller class.
 #include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Common/Set.h>
 
 namespace OpenSim { 
@@ -66,9 +63,6 @@ public:
 		"The list of model actuators that this controller will control."
         "The keyword ALL indicates the controller will controll all the acuators in the model" );
 
-    /** number of controls this controller computes */
-    int _numControls;
-
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -96,15 +90,6 @@ public:
 	 */
 	void setDisabled(bool disableFlag);
 
-	/** Compute the control for actuator
-	 *  This method defines the behavior for any concrete controller 
-	 *  and therefore must be implemented by concrete subclasses.
-	 *
-	 * @param s			system state 
-	 * @param controls	writable model controls (all actuators)
-	 */
-	virtual void computeControls(const SimTK::State& s, SimTK::Vector &controls) const = 0;
-
 	/** replace the current set of actuators with the provided set */
     void setActuators(const Set<Actuator>& actuators );
 	/** add to the current set of actuators */
@@ -113,6 +98,18 @@ public:
 	const Set<Actuator>& getActuatorSet() const;
 	/** get a writable reference to the set of actuators for this controller */
 	Set<Actuator>& updActuators();
+
+	/** Compute the control for actuator
+	 *  This method defines the behavior for any concrete controller 
+	 *  and therefore must be implemented by concrete subclasses.
+	 *
+	 * @param s			system state 
+	 * @param controls	writable model controls (all actuators)
+	 */
+	virtual void computeControls(const SimTK::State& s,
+								 SimTK::Vector &controls) const = 0;
+
+	int getNumControls() const {return _numControls;}
 
 protected:
 
@@ -125,12 +122,18 @@ protected:
 		measures, etc... required by the controller. */
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
+	/** Only a Controller can set its number of controls based on its actuators */
+	void setNumControls(int numControls) {_numControls = numControls; }
+
 private:
+	// number of controls this controller computes 
+    int _numControls;
+
 	// the (sub)set of Model actuators that this controller controls */ 
 	Set<Actuator> _actuatorSet;
 
 	// construct and initialize properties
-	virtual void constructProperties();
+	void constructProperties();
 
 	//friend class ControlSet;
 	friend class ControllerSet;
