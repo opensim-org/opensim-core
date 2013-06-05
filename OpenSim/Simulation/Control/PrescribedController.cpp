@@ -26,9 +26,8 @@
 //=============================================================================
 #include "PrescribedController.h"
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/GCVspline.h>
+#include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/PiecewiseConstantFunction.h>
-#include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 

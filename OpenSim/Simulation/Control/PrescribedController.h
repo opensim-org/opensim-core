@@ -26,11 +26,11 @@
  * -------------------------------------------------------------------------- */
 
 #include "Controller.h"
+#include <OpenSim/Common/FunctionSet.h>
 
 
 namespace OpenSim { 
 
-class FunctionSet;
 class Function;
 
 //=============================================================================
