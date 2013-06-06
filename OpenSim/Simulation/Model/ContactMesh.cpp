@@ -103,6 +103,7 @@ const std::string& ContactMesh::getFilename() const
 void ContactMesh::setFilename(const std::string& filename)
 {
     _filename = filename;
+    _filenameProp.setValueIsDefault(false);
     if (_geometry != NULL)
         delete _geometry;
     _geometry = NULL;
