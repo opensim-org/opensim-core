@@ -115,8 +115,8 @@ void Umberger2010MuscleMetabolicsProbe::constructProperties()
  */
 void Umberger2010MuscleMetabolicsProbe::connectToModel(Model& aModel)
 {
-    if (isDisabled()) return;   // Nothing to connect
     Super::connectToModel(aModel);
+    if (isDisabled()) return;   // Nothing to connect
 
     const int nM = 
         get_Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet().getSize();
