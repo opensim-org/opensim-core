@@ -190,6 +190,7 @@
 #include <OpenSim/Actuators/RigidTendonMuscle.h>
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>
+#include <OpenSim/Actuators/ClutchedPathSpring.h>
 
 #include <OpenSim/Tools/IKTask.h>
 #include <OpenSim/Tools/IKMarkerTask.h>
@@ -909,6 +910,7 @@ namespace SimTK {
 %include <OpenSim/Actuators/ForceVelocityCurve.h>
 %include <OpenSim/Actuators/ForceVelocityInverseCurve.h>
 %include <OpenSim/Actuators/TendonForceLengthCurve.h>
+%include <OpenSim/Actuators/ClutchedPathSpring.h>
 
 %include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 %include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>
