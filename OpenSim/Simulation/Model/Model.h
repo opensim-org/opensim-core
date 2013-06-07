@@ -569,21 +569,33 @@ public:
 
 	/**
 	 * Update the controls for this the model at a given state.
-	 * Only valid once underlying system for the model has been created.
+	 * Only callable once underlying system for the model has been created.
 	 * Throws an exception if called before Model::initSystem()
-	 * This call invalidates the dynamics of the model.
+	 * This call invalidates the dynamics of the model and invalidates the
+	 * value of the controls until they are marked as valid when the update
+	 * is completed (@see markControlsAsValid)
 	 * @param[in]   s		  System state at which to apply the controls
 	 * @return		writable controls Vector
 	 */
 	SimTK::Vector& updControls(const SimTK::State& s) const;
+	
+	/**
+	 * Mark controls as valid after an update at a given state.
+	 * Indicates that controls are valid for use at the dynamics stage.
+	 * If the stage is Velocity or lower the controls will remain invalid.
+	 * @param[in]   s		  System state in which the controls are updated 
+	 */
+	void markControlsAsValid(const SimTK::State& s) const;
+
 	/** 
 	 * Alternatively, set the controls on the model at a given state.
-	 * Note, this method invokes Model::updControls(s).
+	 * Note, this method will invalidate the dynamics of the model,
+	 * but will mark the controls as valid. (E.g. controllers will not be invoked)
 	 * @param[in]   s		  System state at which to apply the controls
 	 * @param[in]   controls  The complete Vector of controls to be applied
  	 */
-	void setControls(const SimTK::State& s, const SimTK::Vector& controls) const
-	{	updControls(s) = controls; }
+	void setControls(const SimTK::State& s, const SimTK::Vector& controls) const;
+
 	/** Const access to controls does not invalidate dynamics */
 	const SimTK::Vector& getControls(const SimTK::State &s) const;
 
