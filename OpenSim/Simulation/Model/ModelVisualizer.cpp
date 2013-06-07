@@ -326,6 +326,12 @@ void ModelVisualizer::createVisualizer() {
     }
     _viz = new SimTK::Visualizer(_model.getMultibodySystem(),
                                  searchPath);
+
+    // Make the Simbody Visualizer (that is, the display window) kill itself 
+    // when the API-side connection is lost (because the Visualizer object gets
+    // destructed). Otherwise it will hang around afterwards.
+    _viz->setShutdownWhenDestructed(true);
+
     _viz->setCameraClippingPlanes(.01,100.);
     _viz->setBackgroundColor(SimTK::Black);
     _viz->setBackgroundType(SimTK::Visualizer::SolidColor);
