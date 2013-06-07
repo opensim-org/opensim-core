@@ -298,7 +298,7 @@ void CorrectionController::connectToModel(Model& model)
 		
 		updActuators().adoptAndAppend(actuator);
    }
-	_numControls = getActuatorSet().getSize();
+	setNumControls(getActuatorSet().getSize());
 
 	printf(" CorrectionController::connectToModel(): end  num Actuators= %d kv=%f kp=%f \n",  _model->getForceSet().getSize(), _kv, _kp );
 }

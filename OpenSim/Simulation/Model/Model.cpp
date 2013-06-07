@@ -636,7 +636,11 @@ void Model::addToSystem(SimTK::MultibodySystem& system) const
 	// Create the shared cache that will hold all model controls
 	// This must be created before Actuator.addToSystem() since Actuator will append 
 	// its "slots" and retain its index by accessing this cached Vector
-	Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(), Stage::Velocity, Stage::Acceleration);
+	// value depends on velocity and invalidates dynamics BUT should not trigger
+	// recomputation of the controls which are necessary for dynamics
+	Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(), 
+		Stage::Velocity, Stage::Acceleration);
+
 	mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
 
     // Let all the ModelComponents add their parts to the System.
@@ -1783,8 +1787,42 @@ Vector& Model::updControls(const SimTK::State &s) const
 	}
 
 	// direct the system shared cache 
-	Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
+	Measure_<Vector>::Result controlsCache = 
+		Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem()
+			.getMeasure(_modelControlsIndex));
 	return controlsCache.updValue(s);
+}
+
+void Model::markControlsAsValid(const SimTK::State& s) const
+{
+	if( (_system == NULL) || (!_modelControlsIndex.isValid()) ){
+		throw Exception("Model::markControlsAsValid() requires an initialized Model./n" 
+			"Prior call to Model::initSystem() is required.");
+	}
+
+	Measure_<Vector>::Result controlsCache = 
+		Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem()
+			.getMeasure(_modelControlsIndex));
+	controlsCache.markAsValid(s);
+}
+
+void Model::setControls(const SimTK::State& s, const SimTK::Vector& controls) const
+{	
+	if( (_system == NULL) || (!_modelControlsIndex.isValid()) ){
+		throw Exception("Model::setControls() requires an initialized Model./n" 
+			"Prior call to Model::initSystem() is required.");
+	}
+
+	// direct the system shared cache 
+	Measure_<Vector>::Result controlsCache = 
+		Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem()
+		.getMeasure(_modelControlsIndex));
+	controlsCache.setValue(s, controls);
+
+	// Make sure to re-realize dynamics to make sure controls can affect forces
+	// and not just derivatives
+	if(s.getSystemStage() == Stage::Dynamics)
+		s.invalidateAllCacheAtOrAbove(Stage::Dynamics);
 }
 
 /** Const access to controls does not invalidate dynamics */
@@ -2034,18 +2072,20 @@ const Object& Model::getObjectByTypeAndName(const std::string& typeString, const
  */
 SimTK::Vector Model::computeStateVariableDerivatives(const SimTK::State &s) const
 {
-	Vector derivatives(_stateVariableSystemIndices.getSize());
+	int ny = _stateVariableSystemIndices.getSize();
+	Vector derivatives(ny);
 
 	try {
 		getMultibodySystem().realize(s, Stage::Acceleration);
-	} catch (const std::exception& e)
-	{
-		throw OpenSim::Exception("Model::computeStateVariableDerivatives: Invalid derivatives.");
+	}
+	catch (const std::exception& e){
+		string exmsg = e.what();
+		throw Exception(
+			"Model::computeStateVariableDerivatives: faile. See: "+exmsg);
 	}
 	Vector yDot = s.getYDot();
 
-	for(int i = 0; i < _stateVariableSystemIndices.getSize(); i++)
-	{
+	for(int i=0; i<ny; ++i){
 		derivatives[i] = yDot[_stateVariableSystemIndices[i]];
 	}
 
