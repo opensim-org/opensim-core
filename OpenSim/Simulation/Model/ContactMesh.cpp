@@ -34,6 +34,7 @@ ContactMesh::ContactMesh() :
     _geometry(NULL)
 {
     setNull();
+    setupProperties();
 }
 
 ContactMesh::ContactMesh(const std::string& filename, const SimTK::Vec3& location, const SimTK::Vec3& orientation, Body& body) :
