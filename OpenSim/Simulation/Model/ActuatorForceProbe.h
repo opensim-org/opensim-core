@@ -127,11 +127,13 @@ public:
 // PRIVATE
 //==============================================================================
 private:
+    // The index inside OpenSim::ActuatorSet that corresponds to each actuator
+    // force being probed.
+    SimTK::Array_<int> _actuatorIndex;
+
     //--------------------------------------------------------------------------
     // ModelComponent Interface
     //--------------------------------------------------------------------------
-
-
     void setNull();
     void constructProperties();
 

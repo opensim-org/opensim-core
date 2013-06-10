@@ -72,6 +72,7 @@ ActuatorForceProbe::ActuatorForceProbe(const Array<string>& actuator_names,
 void ActuatorForceProbe::setNull()
 {
    	setAuthors("Tim Dorn");
+    _actuatorIndex.clear();
 }
 
 //_____________________________________________________________________________
@@ -173,8 +174,9 @@ void ActuatorForceProbe::connectToModel(Model& model)
 		}
 	}
 
-    // check that each Actuator in the actuator_names array exists in the model
-    int nA = getActuatorNames().size();
+    // check that each Actuator in the actuator_names array exists in the model.
+    _actuatorIndex.clear();
+    const int nA = getActuatorNames().size();
     for (int i=0; i<nA; i++) {
         string actName = getActuatorNames()[i];
         int k = model.getActuators().getIndex(actName);
@@ -184,7 +186,14 @@ void ActuatorForceProbe::connectToModel(Model& model)
             setDisabled(true);
             //throw (Exception(errorMessage.c_str()));
         }
+        else
+            _actuatorIndex.push_back(k);
     }
+
+    // Sanity check. Should never actually happen!
+    if (nA != int(_actuatorIndex.size()))
+        throw (Exception("Size of _actuatorIndex does not match number of Actuators listed."));
+
 }
 
 
@@ -199,23 +208,16 @@ void ActuatorForceProbe::connectToModel(Model& model)
 SimTK::Vector ActuatorForceProbe::computeProbeInputs(const State& s) const
 {
     int nA = getActuatorNames().size();
-    SimTK::Vector TotalF;
+    SimTK::Vector TotalF(getNumProbeInputs());
+    TotalF = 0;
 
-    if (getSumForcesTogether()) {
-        TotalF.resize(1);
-        TotalF(0) = 0;       // Initialize to zero
-    }
-    else
-        TotalF.resize(nA);
-
-    // Loop through each actuator in the list of actuator_names
+    // Loop through each actuator in the list of actuator_names.
     for (int i=0; i<nA; ++i)
     {
-        // Get the Actuator force
-        int k = _model->getActuators().getIndex(getActuatorNames()[i]);
-        double Ftmp = _model->getActuators().get(k).getForce(s);
+        // Get the Actuator force.
+        const double Ftmp = _model->getActuators()[_actuatorIndex[i]].getForce(s);
 
-        // Append to output vector
+        // Append to output vector.
         if (getSumForcesTogether())
             TotalF(0) += std::pow(Ftmp, getExponent());
         else

@@ -132,6 +132,10 @@ public:
 // PRIVATE
 //==============================================================================
 private:
+    // The index inside OpenSim::JointSet that corresponds to each joint
+    // being probed.
+    SimTK::Array_<int> _jointIndex;
+
     //--------------------------------------------------------------------------
     // ModelComponent Interface
     //--------------------------------------------------------------------------

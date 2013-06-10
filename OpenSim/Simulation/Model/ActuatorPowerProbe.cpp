@@ -62,6 +62,7 @@ ActuatorPowerProbe::ActuatorPowerProbe(const Array<string> actuator_names,
 void ActuatorPowerProbe::setNull(void)
 {
     setAuthors("Tim Dorn");
+    _actuatorIndex.clear();
 }
 
 //_____________________________________________________________________________
@@ -159,8 +160,9 @@ void ActuatorPowerProbe::connectToModel(Model& model)
 		}
 	}
 
-    // check that each Actuator in the actuator_names array exists in the model
-    int nA = getActuatorNames().size();
+    // check that each Actuator in the actuator_names array exists in the model.
+    _actuatorIndex.clear();
+    const int nA = getActuatorNames().size();
     for (int i=0; i<nA; i++) {
         string actName = getActuatorNames()[i];
         int k = model.getActuators().getIndex(actName);
@@ -170,7 +172,13 @@ void ActuatorPowerProbe::connectToModel(Model& model)
             setDisabled(true);
             //throw (Exception(errorMessage.c_str()));
         }
+        else
+            _actuatorIndex.push_back(k);
     }
+
+    // Sanity check. Should never actually happen!
+    if (nA != int(_actuatorIndex.size()))
+        throw (Exception("Size of _actuatorIndex does not match number of Actuators listed."));
 }
 
 
@@ -187,25 +195,16 @@ void ActuatorPowerProbe::connectToModel(Model& model)
 SimTK::Vector ActuatorPowerProbe::computeProbeInputs(const State& s) const
 {
     int nA = getActuatorNames().size();
-    SimTK::Vector TotalP;
+    SimTK::Vector TotalP(getNumProbeInputs());
+    TotalP = 0;
 
-    if (getSumPowersTogether()) {
-        TotalP.resize(1);
-        TotalP(0) = 0;       // Initialize to zero
-    }
-    else
-        TotalP.resize(nA);
-
-    // Loop through each actuator in the list of actuator_names
+    // Loop through each actuator in the list of actuator_names.
     for (int i=0; i<nA; ++i)
     {
-        string actName = getActuatorNames()[i];
-        int k = _model->getActuators().getIndex(actName);
-
-        // Get the "Actuator" power from the Actuator object
-        double actPower = _model->getActuators().get(k).getPower(s);
+        // Get the "Actuator" power from the Actuator object.
+        const double actPower = _model->getActuators()[_actuatorIndex[i]].getPower(s);
         
-        // Append to output vector
+        // Append to output vector.
         if (getSumPowersTogether())
             TotalP(0) += std::pow(actPower, getExponent());
         else

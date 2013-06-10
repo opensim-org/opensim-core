@@ -64,6 +64,7 @@ JointInternalPowerProbe::JointInternalPowerProbe(const Array<string>& joint_name
 void JointInternalPowerProbe::setNull()
 {
 	setAuthors("Tim Dorn");
+    _jointIndex.clear();
 }
 
 //_____________________________________________________________________________
@@ -162,9 +163,10 @@ void JointInternalPowerProbe::connectToModel(Model& aModel)
 		}
 	}
 
-    // check that each Joints in the joint_names array exists in the model
-    int nA = getJointNames().size();
-    for (int i=0; i<nA; i++) {
+    // check that each Joints in the joint_names array exists in the model.
+    _jointIndex.clear();
+    const int nJ = getJointNames().size();
+    for (int i=0; i<nJ; i++) {
         string jointName = getJointNames()[i];
         int k = _model->getJointSet().getIndex(jointName);
         if (k<0) {
@@ -173,7 +175,13 @@ void JointInternalPowerProbe::connectToModel(Model& aModel)
             std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
             setDisabled(true);
         }
+        else
+            _jointIndex.push_back(k);
     }
+
+    // Sanity check. Should never actually happen!
+    if (nJ != int(_jointIndex.size()))
+        throw (Exception("Size of _jointIndex does not match number of Joints listed."));
 }
 
 
@@ -190,25 +198,16 @@ void JointInternalPowerProbe::connectToModel(Model& aModel)
 SimTK::Vector JointInternalPowerProbe::computeProbeInputs(const State& s) const
 {
     int nJ = getJointNames().size();
-    SimTK::Vector TotalP;
+    SimTK::Vector TotalP(getNumProbeInputs());
+    TotalP = 0;
 
-    if (getSumPowersTogether()) {
-        TotalP.resize(1);
-        TotalP(0) = 0;       // Initialize to zero
-    }
-    else
-        TotalP.resize(nJ);
-
-    // Loop through each joint in the list of joint_names
+    // Loop through each joint in the list of joint_names.
     for (int i=0; i<nJ; ++i)
     {
-        string jointName = getJointNames()[i];
-        int k = _model->getJointSet().getIndex(jointName);
-
-        // Get the "Joint" power from the Joint object
-        double jointPower = _model->getJointSet().get(k).calcPower(s);
+        // Get the "Joint" power from the Joint object.
+        const double jointPower = _model->getJointSet()[_jointIndex[i]].calcPower(s);
         
-        // Append to output vector
+        // Append to output vector.
         if (getSumPowersTogether())
             TotalP(0) += std::pow(jointPower, getExponent());
         else
