@@ -49,8 +49,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PrescribedController, Controller);
 //=============================================================================
 // DATA
 //=============================================================================
-
-protected:
+public:
 	/** FunctionSet of prescribed controls associated with each actuator  */
 	OpenSim_DECLARE_PROPERTY(ControlFunctions, FunctionSet,
 		"Functions (one per control) describing the controls for actuators"
