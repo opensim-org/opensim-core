@@ -133,7 +133,7 @@ void Force::setPropertiesFromState(const SimTK::State& state)
  *
  * @param isDisabled If true the force is disabled; if false the Force is enabled.
  */
-void Force::setDisabled(SimTK::State& s, bool isDisabled) 
+void Force::setDisabled(SimTK::State& s, bool isDisabled) const
 {
 	if(_index.isValid()){
 		SimTK::Force& simtkForce = _model->updForceSubsystem().updForce(_index);
@@ -142,7 +142,6 @@ void Force::setDisabled(SimTK::State& s, bool isDisabled)
 		else
 			simtkForce.enable(s);
 	}
-	set_isDisabled(isDisabled);
 }
 
 bool Force::isDisabled(const SimTK::State& s) const
