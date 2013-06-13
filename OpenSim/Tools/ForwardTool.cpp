@@ -275,7 +275,9 @@ bool ForwardTool::run()
 	manager.setSessionName(getName());
 	manager.setInitialTime(_ti);
 	manager.setFinalTime(_tf);
-    
+    if (!_printResultFiles){
+        manager.setWriteToStorage(false);
+    }
 	// Initialize integrator
 	integrator.setInternalStepLimit(_maxSteps);
 	integrator.setMaximumStepSize(_maxDT);
