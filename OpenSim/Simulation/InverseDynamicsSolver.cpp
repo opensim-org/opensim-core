@@ -43,7 +43,7 @@ InverseDynamicsSolver::InverseDynamicsSolver(const Model &model) : Solver(model)
 
 /** Solve the inverse dynamics system of equations for generalized coordinate forces, Tau. 
     Applied loads are computed by the model from the state.	 */
-Vector InverseDynamicsSolver::solve(SimTK::State &s, const SimTK::Vector &udot)
+Vector InverseDynamicsSolver::solve(const SimTK::State &s, const SimTK::Vector &udot)
 {
 	// Default is a statics inverse dynamics analysis, udot = 0;
 	Vector knownUdots(getModel().getNumSpeeds(), 0.0);
@@ -94,7 +94,7 @@ Vector InverseDynamicsSolver::solve(const SimTK::State &s, const SimTK::Vector &
 	Coordinate functions must be twice differentiable. 
 	NOTE: state dependent forces and other applied loads are NOT computed since these may depend on
 	state variables (like muscle fiber lengths) that are not known */
-Vector InverseDynamicsSolver::solve(State &s, const FunctionSet &Qs, double time)
+Vector InverseDynamicsSolver::solve(SimTK::State &s, const FunctionSet &Qs, double time)
 {
 	int nq = getModel().getNumCoordinates();
 
@@ -125,7 +125,7 @@ Vector InverseDynamicsSolver::solve(State &s, const FunctionSet &Qs, double time
 
 
 /** Same as above but for a given time series */
-void InverseDynamicsSolver::solve(State &s, const FunctionSet &Qs, const Array_<double> &times, Array_<Vector> &genForceTrajectory)
+void InverseDynamicsSolver::solve(SimTK::State &s, const FunctionSet &Qs, const Array_<double> &times, Array_<Vector> &genForceTrajectory)
 {
 	int nq = getModel().getNumCoordinates();
 	int nt = times.size();

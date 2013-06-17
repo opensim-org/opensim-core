@@ -67,7 +67,7 @@ public:
 	
 	/** Solve the inverse dynamics system of equations for generalized coordinate forces, Tau. 
 	    Applied loads are computed by the model from the state.	 */
-	virtual SimTK::Vector solve(SimTK::State& s, const SimTK::Vector& udot = SimTK::Vector(0));
+	virtual SimTK::Vector solve(const SimTK::State& s, const SimTK::Vector& udot = SimTK::Vector(0));
 
 	/** Solve the inverse dynamics system of equations for generalized coordinate forces, Tau. 
 	    Applied loads are explicity provided as generalized coordinate forces (MobilityForces)
