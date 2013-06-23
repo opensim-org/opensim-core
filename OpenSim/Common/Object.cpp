@@ -1412,6 +1412,7 @@ print(const string &aFileName)
 		}
 		SimTK::Xml::Element e = _document->getRootElement(); 
 		updateXMLNode(e);
+        _document->setFileName(aFileName);
 	} catch (const Exception &ex) {
 		// Important to catch exceptions here so we can restore current working directory...
 		// And then we can rethrow the exception
