@@ -222,6 +222,9 @@ public:
 	// Force re-realization
 	void realizePosition();
 	void realizeVelocity();
+
+	void cacheModelAndState();
+	void restoreStateFromCachedModel();
 //=============================================================================
 // DATA
 //=============================================================================
@@ -231,6 +234,9 @@ private:
     SimTK::State* _configState;
     // The OpenSim::model 
     Model* _model;
+
+	Model* clonedModel;
+	SimTK::State clonedState;
 }; // class OpenSimContext
 
 //==============================================================================
