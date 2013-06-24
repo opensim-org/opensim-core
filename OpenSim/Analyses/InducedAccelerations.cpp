@@ -827,6 +827,7 @@ void InducedAccelerations::initialize(const SimTK::State& s)
 		if(exf){
 			addContactConstraintFromExternalForce(exf);
 			exf->setDisabled(s_copy, true);
+			exf->set_isDisabled(true);
 		}
 	}
 
