@@ -210,15 +210,12 @@ computeStateVariableDerivatives(const SimTK::State& s) const
 
 	double fatigueMotorUnitsDeriv = getFatigueFactor()* getActiveMotorUnits(s) 
 			- getRecoveryFactor() * getFatiguedMotorUnits(s);
-    
-	//Compute the target activation rate based on the given activation model
-	const MuscleFirstOrderActivationDynamicModel& actMdl 
-            = get_MuscleFirstOrderActivationDynamicModel();
 
+	// compute the target activation rate
 	double excitation = getExcitation(s);
-	// use the activation dynamics model to calculate the target activation
-    double targetActivation = actMdl.clampActivation(getTargetActivation(s));
-	double targetActivationRate = actMdl.calcDerivative(targetActivation, excitation);
+    double targetActivation = clampActivation(getTargetActivation(s));
+    double targetActivationRate = calcActivationDerivative(targetActivation,
+                                                           excitation);
 
 	// specify the activation derivative based on the amount of active motor 
 	// units and the rate at which motor units are becoming active.

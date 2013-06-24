@@ -797,10 +797,8 @@ void testMillard2012EquilibriumMuscle()
                             TendonSlackLength0,
                             PennationAngle0);
 
-    MuscleFirstOrderActivationDynamicModel actMdl = muscle.getFirstOrderActivationModel();
-    actMdl.setActivationTimeConstant(Activation0);
-    actMdl.setDeactivationTimeConstant(Deactivation0);
-    muscle.setFirstOrderActivationModel(actMdl);
+    muscle.setActivationTimeConstant(Activation0);
+    muscle.setDeactivationTimeConstant(Deactivation0);
 
 	double x0 = 0;
 	double act0 = 0.2;
