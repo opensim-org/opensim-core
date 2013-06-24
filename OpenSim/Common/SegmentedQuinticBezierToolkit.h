@@ -250,6 +250,8 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
 
         */
         static int calcIndex(double x, const SimTK::Matrix& bezierPtsX);
+        
+		static int calcIndex(double x, const SimTK::Array_<SimTK::Vector>& bezierPtsX);
 
 
         
