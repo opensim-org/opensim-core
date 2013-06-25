@@ -392,14 +392,14 @@ public:
     void setTendonForceLengthCurve(
         TendonForceLengthCurve& aTendonForceLengthCurve);
 
-    /** @param s The state of the system.
+    /** @param[out] s The state of the system.
         @param fiberLength The desired fiber length (m). */
     void setFiberLength(SimTK::State& s, double fiberLength) const;
 
 //==============================================================================
 // MUSCLE.H INTERFACE
 //==============================================================================
-    /** @param s The state of the system.
+    /** @param[in] s The state of the system.
         @returns The tensile force the muscle is generating (N). */
     double computeActuation(const SimTK::State& s) const FINAL_11;
 
@@ -407,7 +407,7 @@ public:
     are developing the same force. The velocity of the entire musculotendon
     actuator is distributed between the fiber and tendon according to their
     relative stiffnesses.
-        @param s The state of the system. */
+        @param[in,out] s The state of the system. */
     void computeInitialFiberEquilibrium(SimTK::State& s) const OVERRIDE_11;
 
     /** This function computes the fiber length such that the fiber and tendon
@@ -416,8 +416,9 @@ public:
     a reasonable and robust solution while avoiding the indeterminate situation
     when the fiber and tendon have opposite stiffnesses (and, therefore, the
     distribution of the musculotendon actuator velocity is unclear).
-        @param s The state of the system. */
-    void computeStaticFiberEquilibrium(SimTK::State& s) const OVERRIDE_11;
+        @param[in,out] s The state of the system. */
+    void computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const 
+        OVERRIDE_11;
 
 //==============================================================================
 // TO BE DEPRECATED

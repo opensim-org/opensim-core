@@ -526,7 +526,7 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
 }
 
 void Millard2012EquilibriumMuscle::
-computeStaticFiberEquilibrium(SimTK::State& s) const
+computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
 {
     if(get_ignore_tendon_compliance()) {                    // rigid tendon
         return;
@@ -596,7 +596,7 @@ computeStaticFiberEquilibrium(SimTK::State& s) const
                 char msgBuffer[1000];
                 int n = sprintf(msgBuffer,
                     "WARNING: No suitable static solution found for %s by "
-                    "computeStaticFiberEquilibrium.\n"
+                    "computeFiberEquilibriumAtZeroVelocity().\n"
                     "Continuing with an initial fiber force of 0 and an "
                     "initial length of %f.\n"
                     "Here is a report from the routine:\n\n"
