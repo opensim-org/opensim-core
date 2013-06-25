@@ -310,6 +310,8 @@ void Ligament::computeForce(const SimTK::State& s,
 		applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), 
                           force*PFDs[i]->direction(), bodyForces);
 	}
+	for(int i=0; i < PFDs.getSize(); i++)
+		delete PFDs[i];
 }
 
 //_____________________________________________________________________________
