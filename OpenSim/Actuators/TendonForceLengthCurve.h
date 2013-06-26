@@ -513,14 +513,14 @@ public:
 
     /**
     Calculates the derivative of the tendon force length curve with respect to
-    the normalized fiber length.
+    the normalized tendon length.
 
     @param aNormLength
-                The normalized fiber length used to evaluate the tendon force 
+                The normalized tendon length used to evaluate the tendon force 
                 length curve for the corresponding normalized force. Here 
-                aNormLength = l/l0, where l is the length of the fiber and l0 
-                is the resting length of the fiber.  Thus normalized length of 
-                1.0 means the fiber is at its resting length.
+                aNormLength = l/l0, where l is the length of the tendon and l0 
+                is the tendon slack length. Thus, a normalized length of 1.0
+                means the tendon is at its resting length.
 
     @param order the order of the derivative. Only values of 0,1 and 2 are 
                   acceptable.
