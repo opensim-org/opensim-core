@@ -298,7 +298,9 @@ const OpenSim::Array <PathPoint*> & GeometryPath::getCurrentPath(const SimTK::St
 	return( getCacheVariable<Array <PathPoint*> >(s, "current_path" ) );
 }
 
-/** get the the path as PointForceDirections directions */
+/** get the the path as PointForceDirections directions 
+CAUTION: the return points are heap allocated; you must delete them yourself! 
+(TODO: that is really lame) */
 void GeometryPath::getPointForceDirections(const SimTK::State& s, OpenSim::Array<PointForceDirection*> *rPFDs) const
 {
 	int i;
