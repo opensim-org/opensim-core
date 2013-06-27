@@ -942,7 +942,7 @@ void Millard2012AccelerationMuscle::
         std::string caller      = getName();
         caller.append(".calcMuscleLengthInfo");
 
-        //Get muscle model specific properties
+		//Get muscle model specific properties
         const TendonForceLengthCurve& fseCurve = get_TendonForceLengthCurve(); 
         const FiberForceLengthCurve& fpeCurve  = get_FiberForceLengthCurve(); 
         const ActiveForceLengthCurve& falCurve = get_ActiveForceLengthCurve(); 
@@ -966,12 +966,62 @@ void Millard2012AccelerationMuscle::
                                                        mli.fiberLength,mclLength);
         mli.normTendonLength  = mli.tendonLength / tendonSlackLen;
         mli.tendonStrain      = mli.normTendonLength -  1.0;
-        
+
+        mli.fiberPassiveForceLengthMultiplier= 
+            fpeCurve.calcValue(mli.normFiberLength);
+        mli.fiberActiveForceLengthMultiplier = 
+            falCurve.calcValue(mli.normFiberLength); 
+
+        double tendonForceLengthMultiplier=fseCurve.calcValue(mli.normTendonLength);
+
+        //Put in the additional length related terms that are specific to this
+        //particular muscle model.
+        mli.userDefinedLengthExtras.resize(5);
+
+        mli.userDefinedLengthExtras[MLIfse]     = tendonForceLengthMultiplier;
+        mli.userDefinedLengthExtras[MLIfk]      = fkCurve.calcValue(
+                                                    mli.normFiberLength);
+        mli.userDefinedLengthExtras[MLIfcphi]   = fcphiCurve.calcValue(
+                                                       mli.cosPennationAngle);
+
+    }catch(const std::exception &x){
+        std::string msg = "Exception caught in Millard2012AccelerationMuscle::" 
+                        "calcMuscleLengthInfo\n"                 
+                        "of " + getName()  + "\n"                            
+                        + x.what();
+        throw OpenSim::Exception(msg);
+    }
+}
+
+
+void Millard2012AccelerationMuscle::calcMusclePotentialEnergyInfo(const SimTK::State& s,
+		MusclePotentialEnergyInfo& mpei) const
+{
+	try {
+		//Get whole muscle properties
+        double maxIsoForce      = getMaxIsometricForce();
+        double optFiberLength   = getOptimalFiberLength();
+        double mclLength        = getLength(s);
+        double tendonSlackLen   = getTendonSlackLength();
+
+		// Get the quantities that we've already computed.
+        const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
+
+		//Get muscle model specific properties
+        const TendonForceLengthCurve& fseCurve = get_TendonForceLengthCurve(); 
+        const FiberForceLengthCurve& fpeCurve  = get_FiberForceLengthCurve(); 
+        const ActiveForceLengthCurve& falCurve = get_ActiveForceLengthCurve(); 
+
+        const FiberCompressiveForceLengthCurve& fkCurve
+            = get_FiberCompressiveForceLengthCurve(); 
+        const FiberCompressiveForceCosPennationCurve& fcphiCurve
+            = get_FiberCompressiveForceCosPennationCurve(); 
+
         //Note the curves return normalized area. Each area must be un-normalized   
-        mli.fiberPotentialEnergy =  fpeCurve.calcIntegral(mli.normFiberLength)
+        mpei.fiberPotentialEnergy =  fpeCurve.calcIntegral(mli.normFiberLength)
                                     *(optFiberLength*maxIsoForce);
 
-        mli.tendonPotentialEnergy=  fseCurve.calcIntegral(mli.normTendonLength)
+        mpei.tendonPotentialEnergy=  fseCurve.calcIntegral(mli.normTendonLength)
                                     *(tendonSlackLen*maxIsoForce);
 
         double compForceLengthPE=   fkCurve.calcIntegral(mli.normFiberLength)
@@ -981,38 +1031,16 @@ void Millard2012AccelerationMuscle::
         double compForceCosPennationPE = 
             fcphiCurve.calcIntegral(mli.cosPennationAngle)*(maxIsoForce);
 
-        mli.musclePotentialEnergy=  mli.fiberPotentialEnergy 
-                                  + mli.tendonPotentialEnergy
+        mpei.musclePotentialEnergy=  mpei.fiberPotentialEnergy 
+                                  + mpei.tendonPotentialEnergy
                                   + compForceLengthPE
                                   + compForceCosPennationPE;
-
-        mli.fiberPassiveForceLengthMultiplier= 
-            fpeCurve.calcValue(mli.normFiberLength);
-        mli.fiberActiveForceLengthMultiplier = 
-            falCurve.calcValue(mli.normFiberLength);
-    
-   
-
-        double tendonForceLengthMultiplier=fseCurve.calcValue(mli.normTendonLength);
-
-        //Put in the additional length related terms that are specific to this
-        //particular muscle model.
-        mli.userDefinedLengthExtras.resize(5);
-
-
-
-        mli.userDefinedLengthExtras[MLIfse]     = tendonForceLengthMultiplier;
-        mli.userDefinedLengthExtras[MLIfk]      = fkCurve.calcValue(
-                                                    mli.normFiberLength);
-        mli.userDefinedLengthExtras[MLIfcphi]   = fcphiCurve.calcValue(
-                                                       mli.cosPennationAngle);
-        mli.userDefinedLengthExtras[MLIfkPE]    = compForceLengthPE;
-        mli.userDefinedLengthExtras[MLIfcphiPE] = compForceCosPennationPE;
-    }catch(const std::exception &x){
-        std::string msg = "Exception caught in Millard2012AccelerationMuscle::" 
-                        "calcMuscleLengthInfo\n"                 
-                        "of " + getName()  + "\n"                            
-                        + x.what();
+	}
+	catch(const std::exception &x){
+        std::string msg = "Exception caught in Thelen2003Muscle::" 
+                          "calcMusclePotentialEnergyInfo\n"                 
+                           "of " + getName()  + "\n"                            
+                           + x.what();
         throw OpenSim::Exception(msg);
     }
 }

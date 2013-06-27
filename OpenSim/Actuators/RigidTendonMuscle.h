@@ -100,6 +100,10 @@ protected:
 	    tendon force, relationships and their related values */
 	void  calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const;
 
+	/** calculate muscle's fiber and tendon potential energy */
+	void calcMusclePotentialEnergyInfo(const SimTK::State& s,
+		MusclePotentialEnergyInfo& mpei) const;
+
 	/** compute initial fiber length (velocity) such that muscle fiber and tendon are 
 	    in static equilibrium and update the state */
 	void computeInitialFiberEquilibrium(SimTK::State& s) const {}
@@ -107,9 +111,9 @@ protected:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual double computeActuation( const SimTK::State& s ) const;
-	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
-	virtual void equilibrate(SimTK::State& s) const {}
+	double computeActuation( const SimTK::State& s ) const;
+	double computeIsometricForce(SimTK::State& s, double activation) const;
+	void equilibrate(SimTK::State& s) const {}
     
 
 private:

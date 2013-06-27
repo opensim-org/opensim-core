@@ -856,9 +856,18 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 	for(i=0;i<N;i++) {
 		range = fmax[i] - fmin[i];
 		if(range<1.0) {
-			try {
-                cout<<"WARN- small force range for "<< getActuatorSet()[i].getName()<<" ("<<fmin[i]<<" to "<<fmax[i]<<")\n";
-			} catch(...) {};
+			cout << "CMC::computeControls WARNING- small force range for "
+				 << getActuatorSet()[i].getName()
+				 << " ("<<fmin[i]<<" to "<<fmax[i]<<")\n" << endl;
+			// if the force range is so small it means the control value, x, 
+			// is inconsequential and we might as well choose the smallest control
+			// value possible, or else the RootSolver will choose the last value
+			// it used to evaluate the force, which will be the maximum control
+			// value. In other words, if the fiber length is so short that no level
+			// of activation can produce force, the RootSolver gets the same answer
+			// for force if it uses xmin or:: xmax, but since it uses xmax last
+			// it returns xmax as the control value. Make xmax = xmin to avoid that.
+			xmax[i] = xmin[i];
 		}
 	}
 

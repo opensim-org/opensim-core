@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Peter Loan, Frank C. Anderson, Ajay Seth, Matthew Millard       *
+ * Author(s): Ajay Seth, Matthew Millard                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -143,9 +143,9 @@ public:
 	bool getIgnoreActivationDynamics(const SimTK::State& s) const;
 	void setIgnoreActivationDynamics(SimTK::State& s, bool ignore) const;
 
-	/** get the activation level of the muscle, which modulates the active force of the muscle 
-	    and has a normalized (0 to 1) value 
-        TODO: virtual to allow override by deprecated muscles. */
+	/** get the activation level of the muscle, which modulates the active force
+	    of the muscle and has a normalized (0 to 1) value 
+        Note: method remains virtual to permit override by deprecated muscles. */
 	virtual double getActivation(const SimTK::State& s) const;
 
 	/** get the current working fiber length (m) for the muscle */
@@ -271,6 +271,7 @@ protected:
 	struct MuscleLengthInfo;
 	struct FiberVelocityInfo;
 	struct MuscleDynamicsInfo;
+	struct MusclePotentialEnergyInfo;
 
 	/** Developer Access to intermediate values calculate by the muscle model */
 	const MuscleLengthInfo& getMuscleLengthInfo(const SimTK::State& s) const;
@@ -282,6 +283,8 @@ protected:
 	const MuscleDynamicsInfo& getMuscleDynamicsInfo(const SimTK::State& s) const;
 	MuscleDynamicsInfo& updMuscleDynamicsInfo(const SimTK::State& s) const;
 
+	const MusclePotentialEnergyInfo& getMusclePotentialEnergyInfo(const SimTK::State& s) const;
+	MusclePotentialEnergyInfo& updMusclePotentialEnergyInfo(const SimTK::State& s) const;
 
 	//--------------------------------------------------------------------------
 	// CALCULATIONS
@@ -295,18 +298,39 @@ protected:
 	//@{
 	/** calculate muscle's position related values such fiber and tendon lengths,
 		normalized lengths, pennation angle, etc... */
-	virtual void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const;
+	virtual void calcMuscleLengthInfo(const SimTK::State& s, 
+		MuscleLengthInfo& mli) const;
 
 	/** calculate muscle's fiber velocity and pennation angular velocity, etc... */
-	virtual void calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const;
+	virtual void calcFiberVelocityInfo(const SimTK::State& s, 
+		FiberVelocityInfo& fvi) const;
 
 	/** calculate muscle's active and passive force-length, force-velocity, 
 	    tendon force, relationships and their related values */
-	virtual void  calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const;
+	virtual void  calcMuscleDynamicsInfo(const SimTK::State& s, 
+		MuscleDynamicsInfo& mdi) const;
 
-	/** compute initial fiber length (velocity) such that muscle fiber and tendon are 
-	    in static equilibrium and update the state */
+	/** calculate muscle's fiber and tendon potential energy */
+	virtual void calcMusclePotentialEnergyInfo(const SimTK::State& s,
+		MusclePotentialEnergyInfo& mpei) const;
+
+	/** This function modifies the fiber length in the supplied state such that  
+    the fiber and tendon are developing the same force, taking activation and 
+    velocity into account. This routine can assume that the state contains a
+    meaningful estimate of muscle activation, joint positions, and joint 
+    velocities. For example, this can produce fiber lengths suited to 
+    beginning a forward dynamics simulation. If you are missing any of that 
+    information, don't call this method, use 
+    computeFiberEquilibriumAtZeroVelocity(). */
 	virtual void computeInitialFiberEquilibrium(SimTK::State& s) const = 0;
+
+    /** Provide a quick estimate of the fiber length assuming the 
+    musculotendon unit velocity is zero. The default implementation here just
+    calls computeInitialFiberEquilibrium(); you should override if you have
+    a better implementation for this case. */
+    virtual void computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const {
+        computeInitialFiberEquilibrium(s);
+    }
 
 	// End of Muscle's State Related Calculations.
     //@} 
@@ -361,7 +385,8 @@ private:
 //=============================================================================
 protected:
 
-	/** The assumed fixed muscle-width from which the fiber pennation angle is calculated */
+	/** The assumed fixed muscle-width from which the fiber pennation angle can
+	    be calculated. */
 	double _muscleWidth;
 
  /**
@@ -384,18 +409,13 @@ protected:
              tendonLength             length            m
              normTendonLength         length/length     m/m         [3]
              tendonStrain             length/length     m/m         [4]
-                                      
-                                      
+                                                               
              pennationAngle           angle             rad			[5]
              cosPennationAngle        NA                NA          
              sinPennationAngle        NA                NA          
-                                      
-             fiberPotentalEnergy      force*distance    J (Nm)   
-             tendonPotentalEnergy     force*distance    J (Nm)      
-             musclePotentalEnergy     force*distance    J (Nm)
-    
-             fiberPassiveForceLengthMultiplier   force/force     N/N           [6]
-             fiberActiveForceLengthMultiplier    force/force     N/N           [7]
+                                         
+             fiberPassiveForceLengthMultiplier   force/force     N/N      [6]
+             fiberActiveForceLengthMultiplier    force/force     N/N      [7]
         
             userDefinedLengthExtras     NA              NA            [8]
 
@@ -470,10 +490,6 @@ protected:
 		double cosPennationAngle;        //NA                NA         
         double sinPennationAngle;        //NA                NA         
 
-        double fiberPotentialEnergy;     //force*distance    J (Nm)     
-        double tendonPotentialEnergy;    //force*distance    J (Nm)     
-        double musclePotentialEnergy;    //force*distance    J (Nm)
-
         double fiberPassiveForceLengthMultiplier;   //NA             NA
         double fiberActiveForceLengthMultiplier;  //NA             NA
         
@@ -489,9 +505,6 @@ protected:
 			pennationAngle(SimTK::NaN), 
             cosPennationAngle(SimTK::NaN),
             sinPennationAngle(SimTK::NaN),
-            fiberPotentialEnergy(SimTK::NaN),
-            tendonPotentialEnergy(SimTK::NaN),
-            musclePotentialEnergy(SimTK::NaN), 
             fiberPassiveForceLengthMultiplier(SimTK::NaN), 
             fiberActiveForceLengthMultiplier(SimTK::NaN),
             userDefinedLengthExtras(0, SimTK::NaN){}
@@ -721,6 +734,48 @@ protected:
 			return o;
 		}
 	};
+
+	/**
+        MusclePotentialEnergyInfo contains quantities related to the potential
+        energy of the muscle (fiber + tendon) complex.
+        
+        The function that populates this struct, calcMusclePotentialEnrgyInfo, can
+		be called when position information is known. This function is the 
+        dependendent on calcMuscleLengthInfo. 
+
+        NAME                     DIMENSION				UNITS
+        fiberPotentalEnergy      force*distance			J (Nm)   [1]
+		tendonPotentalEnergy     force*distance			J (Nm)   [2]
+		musclePotentalEnergy     force*distance			J (Nm)	 [3]
+
+        userDefinedPotentialEnergyExtras						 [4]
+
+        [4] This vector is left for the muscle modeler to populate with any
+            computationally expensive quantities that are computed in 
+            calcMusclePotentialEnrgyInfo, that might be useful for others to
+			access.
+
+    */
+    struct MusclePotentialEnergyInfo {              //DIMENSION             UNITS
+		double fiberPotentialEnergy;     //force*distance    J (Nm)     
+        double tendonPotentialEnergy;    //force*distance    J (Nm)     
+        double musclePotentialEnergy;    //force*distance    J (Nm)
+
+        SimTK::Vector userDefinedPotentialEnergyExtras;//NA                  NA
+
+		MusclePotentialEnergyInfo(): 
+            fiberPotentialEnergy(SimTK::NaN),
+            tendonPotentialEnergy(SimTK::NaN),
+            musclePotentialEnergy(SimTK::NaN), 
+            userDefinedPotentialEnergyExtras(0,SimTK::NaN){};
+		friend std::ostream& operator<<(std::ostream& o, 
+            const MusclePotentialEnergyInfo& fvi) {
+			o << "Muscle::MusclePotentialEnergyInfo should not be serialized!" 
+              << std::endl;
+			return o;
+		}
+    };
+
 
 	/** to support deprecated muscles */
 	double _maxIsometricForce;

@@ -199,6 +199,8 @@ void Muscle::connectToModel(Model& aModel)
        ("velInfo", FiberVelocityInfo(), SimTK::Stage::Velocity);
 	addCacheVariable<Muscle::MuscleDynamicsInfo>
        ("dynamicsInfo", MuscleDynamicsInfo(), SimTK::Stage::Dynamics);
+	addCacheVariable<Muscle::MusclePotentialEnergyInfo>
+       ("potentialEnergyInfo", MusclePotentialEnergyInfo(), SimTK::Stage::Velocity);
  }
 
 void Muscle::setPropertiesFromState(const SimTK::State& state)
@@ -308,19 +310,19 @@ double Muscle::getTendonStrain(const SimTK::State& s) const
 /* the potential energy (J) stored in the fiber due to its parallel elastic element */
 double Muscle::getFiberPotentialEnergy(const SimTK::State& s) const
 {
-	return getMuscleLengthInfo(s).fiberPotentialEnergy;
+	return getMusclePotentialEnergyInfo(s).fiberPotentialEnergy;
 }
 
 /* the potential energy (J) stored in the tendon */	
 double Muscle::getTendonPotentialEnergy(const SimTK::State& s) const
 {
-	return getMuscleLengthInfo(s).tendonPotentialEnergy;
+	return getMusclePotentialEnergyInfo(s).tendonPotentialEnergy;
 }
 
 /* the total potential energy (J) stored in the muscle */	
 double Muscle::getMusclePotentialEnergy(const SimTK::State& s) const
 {
-	return getMuscleLengthInfo(s).musclePotentialEnergy;
+	return getMusclePotentialEnergyInfo(s).musclePotentialEnergy;
 }
 
 /* get the passive fiber (parallel elastic element) force multiplier */
@@ -534,6 +536,28 @@ updMuscleDynamicsInfo(const SimTK::State& s) const
 	return updCacheVariable<MuscleDynamicsInfo>(s, "dynamicsInfo");
 }
 
+const Muscle::MusclePotentialEnergyInfo& Muscle::
+getMusclePotentialEnergyInfo(const SimTK::State& s) const
+{
+	if(!isCacheVariableValid(s,"potentialEnergyInfo")){
+		MusclePotentialEnergyInfo& umpei = updMusclePotentialEnergyInfo(s);
+		calcMusclePotentialEnergyInfo(s, umpei);
+		markCacheVariableValid(s,"potentialEnergyInfo");
+		// don't bother fishing it out of the cache since 
+		// we just calculated it and still have a handle on it
+		return umpei;
+	}
+	return getCacheVariable<MusclePotentialEnergyInfo>(s, "potentialEnergyInfo");
+}
+
+Muscle::MusclePotentialEnergyInfo& Muscle::
+updMusclePotentialEnergyInfo(const SimTK::State& s) const
+{
+	return updCacheVariable<MusclePotentialEnergyInfo>(s, "potentialEnergyInfo");
+}
+
+
+
 //_____________________________________________________________________________
 /**
  * Get the stress in this muscle actuator.  It is calculated as the force 
@@ -572,13 +596,23 @@ void Muscle::calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& m
         + "::calcMuscleDynamicsInfo() NOT IMPLEMENTED.");
 }
 
+/* calculate muscle's fiber and tendon potential energy */
+void Muscle::calcMusclePotentialEnergyInfo(const SimTK::State& s, 
+	MusclePotentialEnergyInfo& mpei) const
+{
+	throw Exception("ERROR- "+getConcreteClassName()
+        + "::calcMusclePotentialEnergyInfo() NOT IMPLEMENTED.");
+}
+
+
 //=============================================================================
 // XXXXXXXXXXXXXXXXXXXXXXX     TO BE DEPRECATED   XXXXXXXXXXXXXXXXXXXXXXXXXXXX
 //=============================================================================
 double Muscle::calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
                                                   double aActivation) const
 {
-    return 0.0;
+    throw Exception("ERROR- "+getConcreteClassName()
+        + "::calcInextensibleTendonActiveFiberForce() NOT IMPLEMENTED.");
 }
 
 //=============================================================================
@@ -606,8 +640,8 @@ void Muscle::computeForce(const SimTK::State& s,
 
 double Muscle::computePotentialEnergy(const SimTK::State& s) const
 {
-	const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
-	return mli.musclePotentialEnergy;
+	const MusclePotentialEnergyInfo& mpei = getMusclePotentialEnergyInfo(s);
+	return mpei.musclePotentialEnergy;
 }
 
 SimTK::Vec3 Muscle::computePathColor(const SimTK::State& state) const {

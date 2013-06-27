@@ -593,8 +593,8 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
     }
 }
 
-void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s, 
-                                               MuscleLengthInfo& mli) const
+void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s,
+											MuscleLengthInfo& mli) const
 {    
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
                     "Thelen2003Muscle: Muscle is not"
@@ -627,16 +627,33 @@ void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s,
         mli.normTendonLength  = mli.tendonLength / tendonSlackLen;
         mli.tendonStrain      = mli.normTendonLength -  1.0;
         
-        mli.fiberPotentialEnergy = calcfpefisoPE(mli.fiberLength);
-        mli.tendonPotentialEnergy= calcfsefisoPE(mli.tendonStrain);
-        mli.musclePotentialEnergy=  mli.fiberPotentialEnergy 
-                                    + mli.tendonPotentialEnergy;
+
     
         mli.fiberPassiveForceLengthMultiplier= calcfpe(mli.normFiberLength);
         mli.fiberActiveForceLengthMultiplier = calcfal(mli.normFiberLength);
     }catch(const std::exception &x){
         std::string msg = "Exception caught in Thelen2003Muscle::" 
                           "calcMuscleLengthInfo\n"                 
+                           "of " + getName()  + "\n"                            
+                           + x.what();
+        throw OpenSim::Exception(msg);
+    }
+}
+
+void Thelen2003Muscle::calcMusclePotentialEnergyInfo(const SimTK::State& s,
+		MusclePotentialEnergyInfo& mpei) const
+{
+	try {
+		// Get the quantities that we've already computed.
+        const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
+        mpei.fiberPotentialEnergy = calcfpefisoPE(mli.fiberLength);
+        mpei.tendonPotentialEnergy= calcfsefisoPE(mli.tendonStrain);
+        mpei.musclePotentialEnergy=  mpei.fiberPotentialEnergy 
+                                    + mpei.tendonPotentialEnergy;
+	}
+	catch(const std::exception &x){
+        std::string msg = "Exception caught in Thelen2003Muscle::" 
+                          "calcMusclePotentialEnergyInfo\n"                 
                            "of " + getName()  + "\n"                            
                            + x.what();
         throw OpenSim::Exception(msg);

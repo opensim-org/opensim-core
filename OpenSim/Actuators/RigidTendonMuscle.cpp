@@ -141,8 +141,14 @@ calcMuscleLengthInfo(const State& s, MuscleLengthInfo& mli) const
 
 	mli.normTendonLength = 1.0;
 	mli.tendonStrain = 0.0;
+}
 
-	mli.musclePotentialEnergy =0;
+void RigidTendonMuscle::calcMusclePotentialEnergyInfo(const SimTK::State& s,
+		MusclePotentialEnergyInfo& mpei) const
+{
+	mpei.fiberPotentialEnergy = 0;
+	mpei.tendonPotentialEnergy = 0;
+	mpei.musclePotentialEnergy = 0;
 }
 
 /* calculate muscle's velocity related values such fiber and tendon velocities,

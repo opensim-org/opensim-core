@@ -544,8 +544,6 @@ void ActivationFiberLengthMuscle_Deprecated::calcMuscleLengthInfo(const SimTK::S
 
 	mli.fiberActiveForceLengthMultiplier = calcActiveForce(s, mli.normFiberLength);
 	mli.fiberPassiveForceLengthMultiplier = calcPassiveForce(s, mli.normFiberLength);
-
-	mli.musclePotentialEnergy = 0;
 }
 
 /* calculate muscle's velocity related values such fiber and tendon velocities,

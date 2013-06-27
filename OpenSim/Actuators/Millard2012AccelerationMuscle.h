@@ -715,8 +715,12 @@ protected:
     @param mdi the muscle dynamics info struct that will hold updated 
             information about the muscle that is available at the dynamics stage    
     */
-    virtual void  calcMuscleDynamicsInfo(const SimTK::State& s, 
+	void  calcMuscleDynamicsInfo(const SimTK::State& s, 
                                     MuscleDynamicsInfo& mdi) const FINAL_11;
+
+
+	void calcMusclePotentialEnergyInfo(const SimTK::State& s,
+		MusclePotentialEnergyInfo& mpei) const FINAL_11;
  
 //==============================================================================
 //ModelComponent Interface requirements
