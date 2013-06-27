@@ -167,21 +167,16 @@ prepareToOptimize(SimTK::State& s, double *x)
 	    Muscle* mus = dynamic_cast<Muscle*>(&act);
 		if(mus==NULL) {
 			fOpt = act.getOptimalForce();
-		} else {	
-			//This is necessary ONLY for backward compatibility with deprecated muscle models
-			//ActivationFiberLengthMuscle_Deprecated* depmus = dynamic_cast<ActivationFiberLengthMuscle_Deprecated*>(mus);
-			//if(depmus){
-				fOpt = mus->calcInextensibleTendonActiveFiberForce(tempState,
-                                                                   activation);
-			//}
-			//else{
-			//	fOpt = mus->getMaxIsometricForce()*
-			//		(mus->getActiveForceLengthMultiplier(s)*mus->getForceVelocityMultiplier(s) + 
-			//			mus->getPassiveForceMultiplier(s))*cos(mus->getPennationAngle(s));
-			//}
-			if( std::fabs(fOpt) < SimTK::TinyReal ) fOpt = SimTK::TinyReal;
 		}
-		_recipOptForceSquared[index++] = 1.0 / (fOpt*fOpt);
+		else{	
+			fOpt = mus->calcInextensibleTendonActiveFiberForce(tempState,
+                                                                   activation);
+		}
+		
+		if( std::fabs(fOpt) < SimTK::TinyReal )
+			fOpt = SimTK::TinyReal;
+
+		_recipOptForceSquared[index++] = 1.0 / (fOpt*fOpt);	
 	}
 
 //std::cout << "Fast:prepareToOptimize _recipOptForceSquared \n" << _recipOptForceSquared << std::endl;

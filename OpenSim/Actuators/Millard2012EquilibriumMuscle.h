@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Matthew Millard                                                 *
+ * Author(s): Matthew Millard, Tom Uchida, Ajay Seth                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -190,6 +190,8 @@ muscle: modeling and simulation of musculotendon dynamics. ASME Journal of
 Biomechanical Engineering 135(2):021005. http://dx.doi.org/10.1115/1.4023390.
 
 @author Matt Millard
+@author Tom Uchida
+@author Ajay Seth
 */
 
 class OSIMACTUATORS_API Millard2012EquilibriumMuscle : public Muscle {
@@ -508,11 +510,15 @@ protected:
     void calcMuscleDynamicsInfo(const SimTK::State& s,
                                 MuscleDynamicsInfo& mdi) const OVERRIDE_11;
 
+	/** Calculate the potential energy values associated with the muscle */
+	void  calcMusclePotentialEnergyInfo(const SimTK::State& s, 
+		MusclePotentialEnergyInfo& mpei) const OVERRIDE_11;
+
 //==============================================================================
 // MODELCOMPONENT INTERFACE REQUIREMENTS
 //==============================================================================
     /** Sets up the ModelComponent from the model, if necessary */
-    void connectToModel(Model& model) FINAL_11;
+    void connectToModel(Model& model) OVERRIDE_11;
 
     /** Creates the ModelComponent so that it can be used in simulation */
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;

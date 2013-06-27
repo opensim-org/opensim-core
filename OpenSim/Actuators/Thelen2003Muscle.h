@@ -289,6 +289,10 @@ protected:
     void  calcMuscleDynamicsInfo(const SimTK::State& s, 
                                     MuscleDynamicsInfo& mdi) const OVERRIDE_11;
 
+	/** calculate muscle's fiber and tendon potential energy */
+	void calcMusclePotentialEnergyInfo(const SimTK::State& s,
+		MusclePotentialEnergyInfo& mpei) const;
+
     /** Calculate activation rate */
     double calcActivationRate(const SimTK::State& s) const OVERRIDE_11; 
 
