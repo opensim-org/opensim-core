@@ -56,7 +56,7 @@ static const Vec3 DefaultDefaultColor(.5,.5,.5); // boring gray
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Default constructor.
  */
 GeometryPath::GeometryPath() :
@@ -69,7 +69,7 @@ GeometryPath::GeometryPath() :
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Destructor.
  */
 GeometryPath::~GeometryPath()
@@ -85,7 +85,7 @@ GeometryPath::~GeometryPath()
 // CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Copy data members from one GeometryPath to another.
  *
  * @param aPath GeometryPath to be copied.
@@ -99,7 +99,7 @@ void GeometryPath::copyData(const GeometryPath &aPath)
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Set the data members of this GeometryPath to their null values.
  */
 void GeometryPath::setNull()
@@ -108,7 +108,7 @@ void GeometryPath::setNull()
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Perform set up functions after model has been deserialized or copied.
  *
  * @param aModel The model containing this path.
@@ -141,7 +141,7 @@ void GeometryPath::connectToModel(Model& aModel) {
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Create the SimTK state, dicrete and/or cache for this GeometryPath.
  */
  void GeometryPath::addToSystem(SimTK::MultibodySystem& system) const 
@@ -236,7 +236,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Connect properties to local pointers.
  */
 void GeometryPath::constructProperties()
@@ -252,7 +252,7 @@ void GeometryPath::constructProperties()
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Set the name of the path. This method overrides the one in Object
  * so that the path points can be [re]named accordingly.
  *
@@ -268,7 +268,7 @@ void GeometryPath::setName(const string &aName)
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Name the path points based on their position in the set. To keep the
  * names up to date, this method should be called every time the path changes.
  *
@@ -288,7 +288,7 @@ void GeometryPath::namePathPoints(int aStartingIndex)
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * get the current path of the path
  *
  * @return The array of currently active path points.
@@ -301,9 +301,9 @@ getCurrentPath(const SimTK::State& s)  const
     return getCacheVariable< Array<PathPoint*> >(s, "current_path");
 }
 
-/** get the the path as PointForceDirections directions 
-CAUTION: the return points are heap allocated; you must delete them yourself! 
-(TODO: that is really lame) */
+// get the the path as PointForceDirections directions 
+// CAUTION: the return points are heap allocated; you must delete them yourself! 
+// (TODO: that is really lame)
 void GeometryPath::
 getPointForceDirections(const SimTK::State& s, 
                         OpenSim::Array<PointForceDirection*> *rPFDs) const
@@ -394,8 +394,9 @@ void GeometryPath::addInEquivalentForcesOnBodies(const SimTK::State& s,
         }		
     }
 }
+
 //_____________________________________________________________________________
-/**
+/*
  * get the current display path of the path
  *
  * @return The array of currently active path points, plus points along the
@@ -411,14 +412,14 @@ getCurrentDisplayPath(const SimTK::State& s) const
 }
 
 //_____________________________________________________________________________
-/**
- * updateGeometrySize updates the size of the array of geometry items to be of the
- * correct size based on changes to the path.
+/*
+ * updateGeometrySize updates the size of the array of geometry items to be of 
+ * the correct size based on changes to the path.
  * 
  */
 void GeometryPath::updateGeometrySize(const SimTK::State& s) const
 {
-    int numberOfSegements = get_display().countGeometry();
+    const int numberOfSegments = get_display().countGeometry();
     const Array<PathPoint*>& currentDisplayPath = 
         getCacheVariable<Array<PathPoint*> >(s, "current_display_path");
 
@@ -427,14 +428,14 @@ void GeometryPath::updateGeometrySize(const SimTK::State& s) const
 
     GeometryPath* mutableThis = const_cast<GeometryPath*>(this);	
     
-    bool update = (numberOfSegements!=0);  
+    bool update = (numberOfSegments!=0);  
     int newNumberOfSegments=currentDisplayPath.getSize()-1;
     if (newNumberOfSegments <= 0)
         return;
     // update geom array to have correct number of entries
-    if (!update || (update && (newNumberOfSegments != numberOfSegements))) {	
-        if (newNumberOfSegments > numberOfSegements) { // add entries
-            for (int segment = numberOfSegements; 
+    if (!update || (update && (newNumberOfSegments != numberOfSegments))) {	
+        if (newNumberOfSegments > numberOfSegments) { // add entries
+            for (int segment = numberOfSegments; 
                  segment < newNumberOfSegments; 
                  segment++)
             {
@@ -444,7 +445,7 @@ void GeometryPath::updateGeometrySize(const SimTK::State& s) const
             }
         }
         else {	// remove entries
-            for (int segment = numberOfSegements-1;
+            for (int segment = numberOfSegments-1;
                  segment >= newNumberOfSegments; 
                  segment--) //Remove back to front so no array packing is needed
             {
@@ -456,7 +457,7 @@ void GeometryPath::updateGeometrySize(const SimTK::State& s) const
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * updateGeometryLocations updates the locations of the array of geometry items 
  * to be in the right place based changes to the path.
  * 
@@ -489,8 +490,9 @@ void GeometryPath::updateGeometryLocations(const SimTK::State& s) const
         }
     }
 }
+
 //_____________________________________________________________________________
-/**
+/*
  * Update the geometric representation of the path.
  * The resulting geometry is maintained at the VisibleObject layer.
  * This function should not be made public. It is called internally
@@ -517,7 +519,7 @@ void GeometryPath::updateGeometry(const SimTK::State& s) const
 // OPERATORS
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Assignment operator.
  *
  * @param aPath The path from which to copy its data
@@ -541,7 +543,7 @@ GeometryPath& GeometryPath::operator=(const GeometryPath &aPath)
 // LENGTH
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
+/*
  * Compute the total length of the path.
  *
  * @return Total length of the path.
@@ -569,7 +571,7 @@ Vec3 GeometryPath::getColor(const SimTK::State& s) const
 
 
 //_____________________________________________________________________________
-/**
+/*
  * Compute the lengthening speed of the path.
  *
  * @return lengthening speed of the path.
@@ -590,11 +592,12 @@ void GeometryPath::setPreScaleLength( const SimTK::State& s, double length ) {
 double GeometryPath::getPreScaleLength( const SimTK::State& s) const {
     return _preScaleLength;
 }
+
 //=============================================================================
 // UTILITY
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Add a new path point, with default location, to the path.
  *
  * @param aIndex The position in the pathPointSet to put the new point in.
@@ -645,7 +648,7 @@ appendNewPathPoint(const std::string& proposedName,
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Determine an appropriate default XYZ location for a new path point.
  * Note that this method is internal and should not be called directly on a new 
  * point as the point is not really added to the path (done in addPathPoint() 
@@ -706,7 +709,7 @@ placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, int aIndex,
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * See if a path point can be deleted. All paths must have at least two
  * active path points to define the path.
  *
@@ -733,7 +736,7 @@ bool GeometryPath::canDeletePathPoint( int aIndex)
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Delete a path point.
  *
  * @param aIndex The index of the point to delete.
@@ -773,7 +776,7 @@ bool GeometryPath::deletePathPoint(const SimTK::State& s, int aIndex)
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Replace a path point in the set with another point. The new one is made a
  * member of all the same groups as the old one, and is inserted in the same
  * place the old one occupied.
@@ -815,7 +818,7 @@ replacePathPoint(const SimTK::State& s, PathPoint* aOldPathPoint,
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Create a new wrap instance and add it to the set.
  *
  * @param aWrapObject The wrap object to use in the new wrap instance.
@@ -830,7 +833,7 @@ void GeometryPath::addPathWrap(WrapObject& aWrapObject)
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Move a wrap instance up in the list. Changing the order of wrap instances for
  * a path may affect how the path wraps over the wrap objects.
  *
@@ -839,7 +842,9 @@ void GeometryPath::addPathWrap(WrapObject& aWrapObject)
 void GeometryPath::moveUpPathWrap(const SimTK::State& s, int aIndex)
 {
     if (aIndex > 0) {
-        upd_PathWrapSet().setMemoryOwner(false); // so the wrap object is not deleted by remove()
+        // Make sure wrap object is not deleted by remove().
+        upd_PathWrapSet().setMemoryOwner(false); 
+
         PathWrap& wrap = get_PathWrapSet().get(aIndex);
         upd_PathWrapSet().remove(aIndex);
         upd_PathWrapSet().insert(aIndex - 1, &wrap);
@@ -848,16 +853,18 @@ void GeometryPath::moveUpPathWrap(const SimTK::State& s, int aIndex)
 }
 
 //_____________________________________________________________________________
-/**
- * Move a wrap instance down in the list. Changing the order of wrap instances for
- * a path may affect how the path wraps over the wrap objects.
+/*
+ * Move a wrap instance down in the list. Changing the order of wrap instances
+ * for a path may affect how the path wraps over the wrap objects.
  *
  * @param aIndex The index of the wrap instance to move down.
  */
 void GeometryPath::moveDownPathWrap(const SimTK::State& s, int aIndex)
 {
     if (aIndex < get_PathWrapSet().getSize() - 1) {
-        upd_PathWrapSet().setMemoryOwner(false); // so wrap is not deleted by remove()
+        // Make sure wrap object is not deleted by remove().
+        upd_PathWrapSet().setMemoryOwner(false);
+
         PathWrap& wrap = get_PathWrapSet().get(aIndex);
         upd_PathWrapSet().remove(aIndex);
         upd_PathWrapSet().insert(aIndex + 1, &wrap);
@@ -866,7 +873,7 @@ void GeometryPath::moveDownPathWrap(const SimTK::State& s, int aIndex)
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Delete a wrap instance.
  *
  * @param aIndex The index of the wrap instance to delete.
@@ -881,7 +888,7 @@ void GeometryPath::deletePathWrap(const SimTK::State& s, int aIndex)
 // SCALING
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Perform computations that need to happen before the path is scaled.
  * For this object, that entails calculating and storing the path
  * length in the current body position.
@@ -894,7 +901,7 @@ void GeometryPath::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Scale the path based on XYZ scale factors for each body.
  *
  * @param aScaleSet XYZ scale factors for the bodies.
@@ -919,7 +926,7 @@ void GeometryPath::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Perform computations that need to happen after the path is scaled.
  * For this object, that entails updating the path.
  *
@@ -940,9 +947,8 @@ void GeometryPath::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 // PATH, WRAPPING, AND MOMENT ARM
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Calculate the current path.
- *
  */
 void GeometryPath::computePath(const SimTK::State& s) const
 {
@@ -977,16 +983,17 @@ void GeometryPath::computePath(const SimTK::State& s) const
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Compute lengthening speed of the path.
  */
 void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
 {
-    if (isCacheVariableValid(s, "speed"))  {
+    if (isCacheVariableValid(s, "speed"))
         return;
-    }
+
     SimTK::Vec3 posRelative, velRelative;
-    SimTK::Vec3 posStartInertial, posEndInertial, velStartInertial, velEndInertial;
+    SimTK::Vec3 posStartInertial, posEndInertial, 
+                velStartInertial, velEndInertial;
     SimTK::Vec3 velStartLocal, velEndLocal, velStartMoving, velEndMoving;
     PathPoint *start, *end;
     const Array<PathPoint*>& currentPath = getCurrentPath(s);
@@ -1038,7 +1045,7 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Apply the wrap objects to the current path.
  */
 void GeometryPath::
@@ -1169,29 +1176,36 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
                         result[i] = wo->wrapPathSegment(s, *path.get(pt1), 
                                                         *path.get(pt2), ws, wr);
                         if (result[i] == WrapObject::mandatoryWrap) {
-                            // mandatoryWrap means the path actually intersected
-                            // the wrap object. In this case, you *must* choose this segment
-                            // as the "best" one for wrapping. If the path has more than
-                            // one segment that intersects the object, the first one is taken
-                            // as the mandatory wrap (this is considered an ill-conditioned case).
+                            // "mandatoryWrap" means the path actually 
+                            // intersected the wrap object. In this case, you 
+                            // *must* choose this segment as the "best" one for
+                            // wrapping. If the path has more than one segment 
+                            // that intersects the object, the first one is
+                            // taken as the mandatory wrap (this is considered 
+                            // an ill-conditioned case).
                             best_wrap = wr;
-                            // store the best wrap in the pathWrap for possible use next time
+                            // Store the best wrap in the pathWrap for possible 
+                            // use next time.
                             ws.setPreviousWrap(wr);
                             break;
                         }  else if (result[i] == WrapObject::wrapped) {
-                            // E_WRAPPED means the path segment was wrapped over the object,
-                            // but you should consider the other segments as well to see if one
+                            // "wrapped" means the path segment was wrapped over
+                            // the object, but you should consider the other 
+                            // segments as well to see if one
                             // wraps with a smaller length change.
-                            double path_length_change = _calc_path_length_change(s, *wo, wr, path);
+                            double path_length_change = 
+                                _calc_path_length_change(s, *wo, wr, path);
                             if (path_length_change < min_length_change)
                             {
                                 best_wrap = wr;
-                                // store the best wrap in the pathWrap for possible use next time
+                                // Store the best wrap in the pathWrap for 
+                                // possible use next time
                                 ws.setPreviousWrap(wr);
                                 min_length_change = path_length_change;
                             } else {
-                                // the wrap was not shorter than the current minimum,
-                                // so just free the wrap points that were allocated.
+                                // The wrap was not shorter than the current 
+                                // minimum, so just free the wrap points that 
+                                // were allocated.
                                 wr.wrap_pts.setSize(0);
                             }
                         } else {
@@ -1207,19 +1221,20 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
                     ws.resetPreviousWrap();
                     ws.getWrapPoint(1).getWrapPath().setSize(0);
                 } else {
-                    // If wrapping did occur, copy wrap information into the PathStruct.
+                    // If wrapping did occur, copy wrap info into the PathStruct.
                     ws.getWrapPoint(0).getWrapPath().setSize(0);
 
                     Array<SimTK::Vec3>& wrapPath = ws.getWrapPoint(1).getWrapPath();
                     wrapPath = best_wrap.wrap_pts;
 
-                    // In OpenSim, all conversion to/from the wrap object's reference
-                    // frame will be performed inside wrapPathSegment(). Thus, all
-                    // points in this function will be in their respective body
-                    // reference frames.
+                    // In OpenSim, all conversion to/from the wrap object's 
+                    // reference frame will be performed inside 
+                    // wrapPathSegment(). Thus, all points in this function will
+                    // be in their respective body reference frames.
                     // for (j = 0; j < wrapPath.getSize(); j++){
                     //    convert_from_wrap_object_frame(wo, wrapPath.get(j));
-                    //    convert(ms->modelnum, wrapPath.get(j), wo->segment, ms->ground_segment);
+                    //    convert(ms->modelnum, wrapPath.get(j), wo->segment, 
+                    //            ms->ground_segment);
                     // }
 
                     ws.getWrapPoint(0).setWrapLength(0.0);
@@ -1230,7 +1245,7 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
                     ws.getWrapPoint(0).setLocation(s,best_wrap.r1);
                     ws.getWrapPoint(1).setLocation(s,best_wrap.r2);
 
-                    // Now insert the two new wrapping points into the mp[] array.
+                    // Now insert the two new wrapping points into mp[] array.
                     path.insert(best_wrap.endPoint, &ws.getWrapPoint(0));
                     path.insert(best_wrap.endPoint + 1, &ws.getWrapPoint(1));
                 }
@@ -1274,7 +1289,7 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * _calc_path_length_change - given the output of a successful path wrap
  * over a wrap object, determine the percent change in length of the
  * path segment incurred by wrapping.
@@ -1302,7 +1317,7 @@ _calc_path_length_change(const SimTK::State& s, WrapObject& wo, WrapResult& wr,
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Compute the total length of the path. This function
  * assumes that the path has already been updated.
  */
@@ -1318,9 +1333,9 @@ calcLengthAfterPathComputation(const SimTK::State& s,
         const PathPoint* p1 = currentPath[i];
         const PathPoint* p2 = currentPath[i+1];
 
-        // If both points are wrap points on the same wrap object, then this path
-        // segment wraps over the surface of a wrap object, so just add in the
-        // pre-calculated length.
+        // If both points are wrap points on the same wrap object, then this
+        // path segment wraps over the surface of a wrap object, so just add in 
+        // the pre-calculated length.
         if (   p1->getWrapObject() 
             && p2->getWrapObject() 
             && p1->getWrapObject() == p2->getWrapObject()) 
@@ -1339,7 +1354,7 @@ calcLengthAfterPathComputation(const SimTK::State& s,
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Compute the path's moment arms for  specified coordinate.
  *
  * @param aCoord, the coordinate
@@ -1354,7 +1369,7 @@ computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Update the visible object used to represent the path.
  */
 void GeometryPath::updateDisplayer(const SimTK::State& s) const
