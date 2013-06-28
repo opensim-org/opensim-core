@@ -114,9 +114,8 @@ void Millard2012EquilibriumMuscle::buildMuscle()
         // A few parameters may need to be adjusted to avoid singularities
         // (i.e., if an elastic tendon is used with no fiber damping).
         if(!get_ignore_tendon_compliance() && !get_use_fiber_damping()) {
-            if(get_minimum_activation() < SimTK::SignificantReal) {
-                set_minimum_activation(SimTK::SignificantReal);
-            }
+			set_minimum_activation(clamp(0.01, get_minimum_activation(), 1));
+
             if(falCurve.getMinValue() < 0.1) {
                 falCurve.setMinValue(0.1);
             }
@@ -130,6 +129,7 @@ void Millard2012EquilibriumMuscle::buildMuscle()
             }
 
         } else { //singularity-free model
+			set_minimum_activation(clamp(0, get_minimum_activation(), 1));
             falCurve.setMinValue(0.0);
             fvCurve.setCurveShape(0.0, conSlopeNearVmax, isometricSlope,
                                   0.0, eccSlopeNearVmax, eccForceMax);
