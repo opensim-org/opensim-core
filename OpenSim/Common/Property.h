@@ -547,11 +547,12 @@ public:
     static bool isA(const AbstractProperty& prop) 
     {   return dynamic_cast<const Property*>(&prop) != NULL; }
 
-    /** Attempt to downcast the given AbstractProperty to a concrete
+    /** Downcast the given AbstractProperty to a concrete
     property of this type (%Property\<T>). An exception is thrown if
-    this is not the right type; see isA() if you need to check first. **/
+    this is not the right type only in DEBUG mode; see isA() if you need to 
+	check first. **/
     static const Property& getAs(const AbstractProperty& prop) {
-        const Property* p = dynamic_cast<const Property*>(&prop);
+        const Property* p = SimTK_DYNAMIC_CAST_DEBUG<const Property*>(&prop);
         if (p) return *p;
         throw OpenSim::Exception
            ("Property<T>::getAs(): Property " + prop.getName() 
@@ -559,11 +560,12 @@ public:
             + std::string(SimTK::NiceTypeName<T>::name()));
     }
 
-    /** Attempt to downcast the given AbstractProperty to a writable concrete
+    /** Downcast the given AbstractProperty to a writable concrete
     property of this type (%Property\<T>). An exception is thrown if
-    this is not the right type; see isA() if you need to check first. **/
+    this is not the right type only in DEBUG mode; see isA() if you need to 
+	check first. **/
     static Property& updAs(AbstractProperty& prop) {
-        Property* p = dynamic_cast<Property*>(&prop);
+        Property* p = SimTK_DYNAMIC_CAST_DEBUG<Property*>(&prop);
         if (p) return *p;
         throw OpenSim::Exception
            ("Property<T>::updAs(): Property " + prop.getName() 
@@ -797,7 +799,7 @@ public:
     {   return dynamic_cast<const SimpleProperty*>(&prop) != NULL; }
 
     static const SimpleProperty& getAs(const AbstractProperty& prop) {
-        const SimpleProperty* p = dynamic_cast<const SimpleProperty*>(&prop);
+        const SimpleProperty* p = SimTK_DYNAMIC_CAST_DEBUG<const SimpleProperty*>(&prop);
         if (p) return *p;
         throw OpenSim::Exception
            ("SimpleProperty<T>::getAs(): Property " + prop.getName() 
@@ -807,7 +809,7 @@ public:
     }
 
     static SimpleProperty& updAs(AbstractProperty& prop) {
-        SimpleProperty* p = dynamic_cast<SimpleProperty*>(&prop);
+        SimpleProperty* p = SimTK_DYNAMIC_CAST_DEBUG<SimpleProperty*>(&prop);
         if (p) return *p;
         throw OpenSim::Exception
            ("SimpleProperty<T>::updAs(): Property " + prop.getName() 
@@ -969,7 +971,7 @@ public:
     {   return dynamic_cast<const ObjectProperty*>(&prop) != NULL; }
 
     static const ObjectProperty& getAs(const AbstractProperty& prop) {
-        const ObjectProperty* p = dynamic_cast<const ObjectProperty*>(&prop);
+        const ObjectProperty* p = SimTK_DYNAMIC_CAST_DEBUG<const ObjectProperty*>(&prop);
         if (p) return *p;
         throw OpenSim::Exception
            ("ObjectProperty<T>::getAs(): Property " + prop.getName() 
@@ -977,7 +979,7 @@ public:
     }
 
     static ObjectProperty& updAs(AbstractProperty& prop) {
-        ObjectProperty* p = dynamic_cast<ObjectProperty*>(&prop);
+        ObjectProperty* p = SimTK_DYNAMIC_CAST_DEBUG<ObjectProperty*>(&prop);
         if (p) return *p;
         throw OpenSim::Exception
            ("ObjectProperty<T>::updAs(): Property " + prop.getName() 
