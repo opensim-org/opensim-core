@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Matthew Millard                                                 *
+ * Author(s): Matthew Millard, Tom Uchida, Ajay Seth                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -679,7 +679,7 @@ calcActivationDerivative(double activation, double excitation) const
         if(clampedExcitation > aHat) {
             tau = getActivationTimeConstant() * (0.5 + 1.5*aHat);
         } else {
-            tau = getDeactivationTimeConstant() * (0.5 + 1.5*aHat);
+            tau = getDeactivationTimeConstant() / (0.5 + 1.5*aHat);
         }
         da = (clampedExcitation - aHat) / tau;
     }
@@ -1048,7 +1048,7 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
                 }
             }
 
-            fmAT = calcFiberForceAlongTendon(fm, mli.cosPennationAngle);
+            fmAT = fm * mli.cosPennationAngle;
             dFm_dlce = calcFiberStiffness(fiso, a,
                                           mvi.fiberForceVelocityMultiplier,
                                           mli.normFiberLength, optFiberLen);
@@ -1330,11 +1330,6 @@ double Millard2012EquilibriumMuscle::calcActivation(double fiso,
     return activation;
 }
 
-double Millard2012EquilibriumMuscle::
-calcFiberForceAlongTendon(double fiberForce,
-                          double cosPhi) const
-{   return fiberForce*cosPhi; }
-
 double Millard2012EquilibriumMuscle::calcFiberStiffness(double fiso,
                                                         double a,
                                                         double fv,
@@ -1530,7 +1525,7 @@ estimateMuscleFiberState(double aActivation,
         // Compute the force error
         fiberForceV = calcFiberForce(fiso,ma,fal,fv,fpe,dlceN);
         Fm   = fiberForceV[0];
-        FmAT = calcFiberForceAlongTendon(Fm,cosphi);
+        FmAT = Fm * cosphi;
         Ft   = fse*fiso;
         ferr = FmAT - Ft;
 
@@ -1687,6 +1682,10 @@ calcActiveFiberForceAlongTendon(double activation,
 {
     double activeFiberForce = SimTK::NaN;
 
+    if(fiberLength <= getMinimumFiberLength()) {
+        return 0.0;
+    }
+
     try {
         //Clamp activation to a legal range
         double ca = clampActivation(activation);
@@ -1713,7 +1712,7 @@ calcActiveFiberForceAlongTendon(double activation,
         //Compute the active fiber force
         Vec4 fiberForceV = calcFiberForce(fiso,ca,fal,fv,fpe,dlceN);
         double fa = fiberForceV[1];
-        activeFiberForce = calcFiberForceAlongTendon(fa,cos(phi));
+        activeFiberForce = fa * cos(phi);
 
     } catch(const std::exception &x) {
         std::string msg = "Exception caught in: " + getName()
