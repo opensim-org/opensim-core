@@ -76,19 +76,19 @@ void Millard2012EquilibriumMuscle::buildMuscle()
                                         maxPennationAngle);
 
         // Ensure object names are up-to-date
-        std::string aName = getName();
+        const std::string& aName = getName();
 
         ActiveForceLengthCurve& falCurve = upd_ActiveForceLengthCurve();
-        falCurve.setName(aName.append("_ActiveForceLengthCurve"));
+        falCurve.setName(aName+"_ActiveForceLengthCurve");
 
         ForceVelocityInverseCurve& fvInvCurve = upd_ForceVelocityInverseCurve();
-        fvInvCurve.setName(aName.append("_ForceVelocityInverseCurve"));
+        fvInvCurve.setName(aName+"_ForceVelocityInverseCurve");
 
         FiberForceLengthCurve& fpeCurve = upd_FiberForceLengthCurve();
-        fpeCurve.setName(aName.append("_FiberForceLengthCurve"));
+        fpeCurve.setName(aName+"_FiberForceLengthCurve");
 
         TendonForceLengthCurve& fseCurve = upd_TendonForceLengthCurve();
-        fseCurve.setName(aName.append("_TendonForceLengthCurve"));
+        fseCurve.setName(aName+"_TendonForceLengthCurve");
 
         // To initialize, we need to create a force-velocity curve
         double conSlopeAtVmax   = fvInvCurve.getConcentricSlopeAtVmax();
@@ -109,7 +109,7 @@ void Millard2012EquilibriumMuscle::buildMuscle()
                                      eccForceMax,
                                      conCurviness,
                                      eccCurviness,
-                                     aName.append("_ForceVelocityCurve"));
+                                     aName+"_ForceVelocityCurve");
 
         // A few parameters may need to be adjusted to avoid singularities
         // (i.e., if an elastic tendon is used with no fiber damping).
