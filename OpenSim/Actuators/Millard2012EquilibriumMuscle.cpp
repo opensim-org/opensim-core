@@ -114,8 +114,8 @@ void Millard2012EquilibriumMuscle::buildMuscle()
         // A few parameters may need to be adjusted to avoid singularities
         // (i.e., if an elastic tendon is used with no fiber damping).
         if(!get_ignore_tendon_compliance() && !get_use_fiber_damping()) {
-            if(get_minimum_activation() < 0.01) {
-                set_minimum_activation(0.01);
+            if(get_minimum_activation() < SimTK::SignificantReal) {
+                set_minimum_activation(SimTK::SignificantReal);
             }
             if(falCurve.getMinValue() < 0.1) {
                 falCurve.setMinValue(0.1);
@@ -1114,6 +1114,7 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         std::string msg = "Exception caught in Millard2012EquilibriumMuscle::"
                           "calcMuscleDynamicsInfo from " + getName() + "\n"
                           + x.what();
+		cerr << msg << endl;
         throw OpenSim::Exception(msg);
     }
 }
