@@ -56,6 +56,7 @@ namespace OpenSim {
 This class implements a configurable equilibrium muscle model, as described in
 Millard et al.\ (2013). An equilibrium model assumes that the forces generated
 by the fiber and tendon are equal:
+
 \f[
  f_{ISO}\Big(\mathbf{a}(t) \mathbf{f}_L(\hat{l}_{CE}) \mathbf{f}_V(\hat{v}_{CE})
 + \mathbf{f}_{PE}(\hat{l}_{CE}) + \beta \hat{v}_{CE}\Big) \cos \phi
@@ -75,9 +76,9 @@ fiber length from the state vector.
 as the activation signal. This results in faster simulations by reducing the
 size of the state vector.
 
-\li use_fiber_damping: set to <I>true</I> to include fiber damping in the model.
-The addition of damping reduces simulation time while allowing the muscle model
-to be more physiological (it can have an activation of zero, its
+\li fiber_damping: set to a value greater than 0.001 to include fiber damping in
+the model. The addition of damping reduces simulation time while allowing the
+muscle model to be more physiological (it can have an activation of zero, its
 active-force-length curve can go to zero, and its force-velocity curve can be
 asymptotic).
 
@@ -165,7 +166,7 @@ double pennationAngle     = 0.5;    //rad
 
 bool ignoreTendonCompliance   = false;
 bool ignoreActivationDynamics = false;
-bool useFiberDamping          = true;
+double dampingCoefficient     = 0.001;
 
 Millard2012EquilibriumMuscle myMuscle("myMuscle",
                                       maxIsometricForce,
@@ -175,7 +176,7 @@ Millard2012EquilibriumMuscle myMuscle("myMuscle",
 
 myMuscle.setMuscleConfiguration(ignoreTendonCompliance,
                                 ignoreActivationDynamics,
-                                useFiberDamping);
+                                dampingCoefficient);
 
 @endcode
 
@@ -203,10 +204,8 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
-    OpenSim_DECLARE_PROPERTY(use_fiber_damping, bool,
-        "Include fiber damping. Not included in reduced model.");
     OpenSim_DECLARE_PROPERTY(fiber_damping, double,
-        "The linear damping of the fiber. Not included in reduced model.");
+        "The linear damping of the fiber.");
     OpenSim_DECLARE_PROPERTY(default_activation, double,
         "Assumed initial activation level if none is assigned.");
     OpenSim_DECLARE_PROPERTY(default_fiber_length, double,
@@ -341,10 +340,11 @@ public:
     /** @param ignoreTendonCompliance Use a rigid (true) or elastic tendon.
         @param ignoreActivationDynamics Treat the excitation input as the
     activation signal (true) or use a first-order activation dynamic model.
-        @param useDamping Include (true) or exclude damping in the model. */
+        @param dampingCoefficient Specify the amount of damping to include in
+    the model (must be either 0 or greater than 0.001). */
     void setMuscleConfiguration(bool ignoreTendonCompliance,
                                 bool ignoreActivationDynamics,
-                                bool useDamping);
+                                double dampingCoefficient);
 
     /** @param dampingCoefficient Define the fiber damping coefficient. */
     void setFiberDamping(double dampingCoefficient);
@@ -405,19 +405,18 @@ public:
         @returns The tensile force the muscle is generating (N). */
     double computeActuation(const SimTK::State& s) const FINAL_11;
 
-    /** This function computes the fiber length such that the fiber and tendon
-    are developing the same force. The velocity of the entire musculotendon
-    actuator is distributed between the fiber and tendon according to their
-    relative stiffnesses.
+    /** Computes the fiber length such that the fiber and tendon are developing
+    the same force, distributing the velocity of the entire musculotendon
+    actuator between the fiber and tendon according to their relative
+    stiffnesses.
         @param[in,out] s The state of the system. */
     void computeInitialFiberEquilibrium(SimTK::State& s) const OVERRIDE_11;
 
-    /** This function computes the fiber length such that the fiber and tendon
-    are developing the same force. This is a static equilibrium version of
-    computeInitialFiberEquilibrium. By setting velocities to zero, we obtain
-    a reasonable and robust solution while avoiding the indeterminate situation
-    when the fiber and tendon have opposite stiffnesses (and, therefore, the
-    distribution of the musculotendon actuator velocity is unclear).
+    /** Computes the fiber length such that the fiber and tendon are developing
+    the same force, assuming velocities are zero. This is a static equilibrium
+    version of computeInitialFiberEquilibrium(). By setting velocities to zero,
+    we obtain a reasonable and robust solution that provides a rough solution
+    for fiber length.
         @param[in,out] s The state of the system. */
     void computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const 
         OVERRIDE_11;
@@ -538,6 +537,10 @@ private:
     static const std::string STATE_ACTIVATION_NAME;
     // The name used to access the fiber length state.
     static const std::string STATE_FIBER_LENGTH_NAME;
+
+    // Indicates whether fiber damping is included in the model (false if
+    // dampingCoefficient < 0.001).
+    bool use_fiber_damping;
 
     void setNull();
     void constructProperties();
