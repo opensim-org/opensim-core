@@ -214,8 +214,11 @@ private:
 	void computePath(const SimTK::State& s ) const;
 	void computeLengtheningSpeed(const SimTK::State& s) const;
 	void applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path ) const;
-	double _calc_path_length_change(const SimTK::State& s, WrapObject& wo, WrapResult& wr, const Array<PathPoint*>& path) const; 
-	virtual double calcLengthAfterPathComputation(const SimTK::State& s, const Array<PathPoint*>& currentPath) const;
+	double calcPathLengthChange(const SimTK::State& s, const WrapObject& wo, 
+                                const WrapResult& wr, 
+                                const Array<PathPoint*>& path) const; 
+	double calcLengthAfterPathComputation
+       (const SimTK::State& s, const Array<PathPoint*>& currentPath) const;
 
 
 	void setNull();
@@ -224,7 +227,8 @@ private:
 	void updateGeometrySize(const SimTK::State& ) const;
 	void updateGeometryLocations(const SimTK::State& s) const;
 	void namePathPoints(int aStartingIndex);
-    void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, int aIndex, const OpenSim::Body& aBody);
+    void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, 
+                           int aIndex, const OpenSim::Body& aBody);
 
 //=============================================================================
 };	// END of class GeometryPath

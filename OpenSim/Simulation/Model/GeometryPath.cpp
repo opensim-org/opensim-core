@@ -37,7 +37,7 @@
 #include "Model.h"
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/DebugUtilities.h>
-#include "SimTKsimbody.h"
+#include "Simbody.h"
 
 #include <OpenSim/Simulation/MomentArmSolver.h>
 
@@ -963,19 +963,23 @@ void GeometryPath::computePath(const SimTK::State& s) const
         updCacheVariable<Array<PathPoint*> >(s, "current_path");
     currentPath.setSize(0);
 
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // TODO: This is a bug. Here we are going to modify moving path point
+    // locations *in the property* which means they are out of sync with 
+    // the supplied state. These updates should be done in the state cache.
     GeometryPath * mutableThis = const_cast<GeometryPath*>(this);
-    // Add the fixed and active via points to the path.
-    int i;
-    for (i = 0; i < get_PathPointSet().getSize(); i++) {
-        mutableThis->upd_PathPointSet()[i].update(s);
-        if( get_PathPointSet()[i].isActive(s))
-        currentPath.append(&get_PathPointSet()[i]);
 
+    // Add the active fixed and moving via points to the path.
+    for (int i = 0; i < get_PathPointSet().getSize(); i++) {
+        // If this is a moving path point, update its location *in the
+        // PathPointSet property* (BAD).
+        mutableThis->upd_PathPointSet()[i].update(s);
+        if (get_PathPointSet()[i].isActive(s))
+            currentPath.append(&get_PathPointSet()[i]); // <--- !!!!BAD
     }
   
-    // Use the current path so far to check for intersection
-    // with wrap objects, which may add additional points to
-    // the path.
+    // Use the current path so far to check for intersection with wrap objects, 
+    // which may add additional points to the path.
     applyWrapObjects(s, currentPath);
     calcLengthAfterPathComputation(s, currentPath);
 
@@ -1054,43 +1058,34 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
     if (get_PathWrapSet().getSize() < 1)
         return;
 
-    int i, j, kk, pt1, pt2, maxIterations;
-    int start, end, wrapStart, wrapEnd;
-    double min_length_change, last_length;
     WrapResult best_wrap;
-    PathPoint *smp, *emp;
-    WrapObject* wo;
-    Array<int> result;
-    Array<int> order;
+    Array<int> result, order;
 
     result.setSize(get_PathWrapSet().getSize());
     order.setSize(get_PathWrapSet().getSize());
 
     // Set the initial order to be the order they are listed in the path.
-    for (i = 0; i < get_PathWrapSet().getSize(); i++)
+    for (int i = 0; i < get_PathWrapSet().getSize(); i++)
         order[i] = i;
 
     // If there is only one wrap object, calculate the wrapping only once.
     // If there are two or more objects, perform up to 8 iterations where
     // the result from one wrap object is used as the starting point for
     // the next wrap.
-    if (get_PathWrapSet().getSize() < 2)
-        maxIterations = 1;
-    else
-        maxIterations = 8;
-
-    for (kk = 0, last_length = SimTK::Infinity; kk < maxIterations; kk++)
+    const int maxIterations = get_PathWrapSet().getSize() < 2 ? 1 : 8;
+    double last_length = SimTK::Infinity;
+    for (int kk = 0; kk < maxIterations; kk++)
     {
-        for (i = 0; i < get_PathWrapSet().getSize(); i++)
+        for (int i = 0; i < get_PathWrapSet().getSize(); i++)
         {
             result[i] = 0;
             PathWrap& ws = get_PathWrapSet().get(order[i]);
-            wo = ws.getWrapObject();
+            const WrapObject* wo = ws.getWrapObject();
             best_wrap.wrap_pts.setSize(0);
-            min_length_change = SimTK::Infinity;
+            double min_length_change = SimTK::Infinity;
 
             // First remove this object's wrapping points from the current path.
-            for (j = 0; j <path.getSize(); j++) {
+            for (int j = 0; j <path.getSize(); j++) {
                 if( path.get(j) == &ws.getWrapPoint(0)) {
                     path.remove(j); // remove the first wrap point
                     path.remove(j); // remove the second wrap point
@@ -1113,37 +1108,36 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
                 // 1. startPoint and endPoint are 1-based, so subtract 1 from 
                 // them to get indices into get_PathPointSet(). -1 (or any value
                 // less than 1) means use the first (or last) point.
-                if (ws.getStartPoint() < 1)
-                    wrapStart = 0;
-                else
-                    wrapStart = ws.getStartPoint() - 1;
-
-                if (ws.getEndPoint() < 1)
-                    wrapEnd = get_PathPointSet().getSize() - 1;
-                else
-                    wrapEnd = ws.getEndPoint() - 1;
+                const int wrapStart = (ws.getStartPoint() < 1
+                                            ? 0 
+                                            : ws.getStartPoint() - 1);
+                const int wrapEnd   = (ws.getEndPoint() < 1
+                                            ? get_PathPointSet().getSize() - 1 
+                                            : ws.getEndPoint() - 1);
 
                 // 2. Scan forward from wrapStart in get_PathPointSet() to find 
                 // the first point that is active. Store a pointer to it (smp).
-                for (j = wrapStart; j <= wrapEnd; j++)
-                    if (get_PathPointSet().get(j).isActive(s))
+                int jfwd = wrapStart;
+                for (; jfwd <= wrapEnd; jfwd++)
+                    if (get_PathPointSet().get(jfwd).isActive(s))
                         break;
-                if (j > wrapEnd) // there are no active points in the path
+                if (jfwd > wrapEnd) // there are no active points in the path
                     return;
-                smp = &get_PathPointSet().get(j);
+                const PathPoint* const smp = &get_PathPointSet().get(jfwd);
 
                 // 3. Scan backwards from wrapEnd in get_PathPointSet() to find 
                 // the last point that is active. Store a pointer to it (emp).
-                for (j = wrapEnd; j >= wrapStart; j--)
-                    if (get_PathPointSet().get(j).isActive(s))
+                int jrev = wrapEnd;
+                for (; jrev >= wrapStart; jrev--)
+                    if (get_PathPointSet().get(jrev).isActive(s))
                         break;
-                if (j < wrapStart) // there are no active points in the path
+                if (jrev < wrapStart) // there are no active points in the path
                     return;
-                emp = &get_PathPointSet().get(j);
+                const PathPoint* const emp = &get_PathPointSet().get(jrev);
 
                 // 4. Now find the indices of smp and emp in _currentPath.
-                for (j = 0, start = -1, end = -1; j < path.getSize(); j++)
-                {
+                int start=-1, end=-1;
+                for (int j = 0; j < path.getSize(); j++) {
                     if (path.get(j) == smp)
                         start = j;
                     if (path.get(j) == emp)
@@ -1158,9 +1152,9 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
                 // wrapping over this wrap object. Check each path segment in 
                 // this range, choosing the best wrap as the one that changes 
                 // the path segment length the least:
-                for (pt1 = start; pt1 < end; pt1++)
+                for (int pt1 = start; pt1 < end; pt1++)
                 {
-                    pt2 = pt1 + 1;
+                    const int pt2 = pt1 + 1;
 
                     // As long as the two points are not auto wrap points on the
                     // same wrap object, check them for wrapping.
@@ -1194,7 +1188,7 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
                             // segments as well to see if one
                             // wraps with a smaller length change.
                             double path_length_change = 
-                                _calc_path_length_change(s, *wo, wr, path);
+                                calcPathLengthChange(s, *wo, wr, path);
                             if (path_length_change < min_length_change)
                             {
                                 best_wrap = wr;
@@ -1252,9 +1246,8 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
             }
         }
 
-        double length = calcLengthAfterPathComputation(s, path); 
-
-        if (DABS(length - last_length) < 0.0005) {
+        const double length = calcLengthAfterPathComputation(s, path); 
+        if (std::abs(length - last_length) < 0.0005) {
             break;
         } else {
             last_length = length;
@@ -1271,13 +1264,9 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
                 order[1] = 0;
 
                 // remove wrap object 0 from the list of path points
-                int index = 0;
-
-                PathWrap& ws = get_PathWrapSet().get(index);
-                for (j = 0; j < path.getSize(); j++)
-                {
-                    if (path.get(j) == &ws.getWrapPoint(0))
-                    {
+                PathWrap& ws = get_PathWrapSet().get(0);
+                for (int j = 0; j < path.getSize(); j++) {
+                    if (path.get(j) == &ws.getWrapPoint(0)) {
                         path.remove(j); // remove the first wrap point
                         path.remove(j); // remove the second wrap point
                         break;
@@ -1295,8 +1284,8 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
  * path segment incurred by wrapping.
  */
 double GeometryPath::
-_calc_path_length_change(const SimTK::State& s, WrapObject& wo, WrapResult& wr, 
-                         const Array<PathPoint*>& path)  const
+calcPathLengthChange(const SimTK::State& s, const WrapObject& wo, 
+                     const WrapResult& wr, const Array<PathPoint*>& path)  const
 {
     const PathPoint* pt1 = path.get(wr.startPoint);
     const PathPoint* pt2 = path.get(wr.endPoint);
