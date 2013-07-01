@@ -306,12 +306,14 @@ namespace OpenSim {
         SimTK::Array_<SimTK::Spline> _arraySplineUX;        
         /**Spline fit of the integral of the curve y(x)*/
         SimTK::Spline _splineYintX;
+		
         /**Bezier X1,...,Xn control point locations. Control points are 
         stored in 6x1 vectors in the order above*/
-        SimTK::Matrix _mX;
+		SimTK::Array_<SimTK::Vector> _mXVec; 
         /**Bezier Y1,...,Yn control point locations. Control points are 
         stored in 6x1 vectors in the order above*/
-        SimTK::Matrix _mY;
+		SimTK::Array_<SimTK::Vector> _mYVec; 
+
         /**The number of quintic Bezier curves that describe the relation*/
         int _numBezierSections;
 

@@ -788,12 +788,6 @@ double SegmentedQuinticBezierToolkit::calcU(double ax, const SimTK::Vector& bezi
                                  const SimTK::Spline& splineUX, double tol, 
                                  int maxIter)
 {
-    //std::string name = caller;
-    //name.append(".calcU");
-
-    SimTK::Vector xV(1);
-    xV(0) = ax;
-
     //Check to make sure that ax is in the curve domain
     double minX = 1e100;
     double maxX = -1e100;
@@ -809,8 +803,7 @@ double SegmentedQuinticBezierToolkit::calcU(double ax, const SimTK::Vector& bezi
         "Error: input ax was not in the domain of the Bezier curve specified \n"
         "by the control points in bezierPtsX.");
 
-
-    double u = splineUX.calcValue(xV);
+    double u = splineUX.calcValue(ax);
     u = clampU(u);
     double f = 0;
 
@@ -875,6 +868,34 @@ int SegmentedQuinticBezierToolkit::calcIndex(double x,
     //Check if the value x is identically the last point
     if(flag_found == false && x == bezierPtsX(5,bezierPtsX.ncol()-1)){
         idx = bezierPtsX.ncol()-1;
+        flag_found = true;
+    }
+
+    SimTK_ERRCHK_ALWAYS( (flag_found == true), 
+        "SegmentedQuinticBezierToolkit::calcIndex", 
+        "Error: A value of x was used that is not within the Bezier curve set.");
+
+    return idx;
+}
+
+int SegmentedQuinticBezierToolkit::calcIndex(double x, 
+                                             const SimTK::Array_<SimTK::Vector>& bezierPtsX)
+{
+    int idx = 0;
+    bool flag_found = false;
+
+	int n = bezierPtsX.size(); 
+    for(int i=0; i<n; i++){
+        if( x >= bezierPtsX[i](0) && x < bezierPtsX[i](5) ){
+            idx = i;
+            flag_found = true;
+			break; 
+        }
+    }
+
+    //Check if the value x is identically the last point
+    if(!flag_found && x == bezierPtsX[n-1](5)){
+        idx = n-1;
         flag_found = true;
     }
 

@@ -92,12 +92,12 @@ SmoothSegmentedFunction::
   SmoothSegmentedFunction(const SimTK::Matrix& mX, const SimTK::Matrix& mY,  
           double x0, double x1, double y0, double y1,double dydx0, double dydx1,
           bool computeIntegral, bool intx0x1, const std::string& name):
- _mX(mX),_mY(mY),_x0(x0),_x1(x1),_y0(y0),_y1(y1),_dydx0(dydx0),_dydx1(dydx1),
+_x0(x0),_x1(x1),_y0(y0),_y1(y1),_dydx0(dydx0),_dydx1(dydx1),
      _computeIntegral(computeIntegral),_intx0x1(intx0x1),_name(name)
 {
     
 
-    _numBezierSections = _mX.ncol();
+    _numBezierSections = mX.ncol();
 
     //////////////////////////////////////////////////
     //Generate the set of splines that approximate u(x)
@@ -115,7 +115,7 @@ SmoothSegmentedFunction::
         for(int i=0;i<NUM_SAMPLE_PTS;i++){
             u(i) = ( (double)i )/( (double)(NUM_SAMPLE_PTS-1) );
             x(i) = SegmentedQuinticBezierToolkit::
-                calcQuinticBezierCurveVal(u(i),_mX(s));            
+                calcQuinticBezierCurveVal(u(i),mX(s));            
             if(_numBezierSections > 1){
                 //Skip the last point of a set that has another set of points
                 //after it. Why? The last point and the starting point of the
@@ -140,7 +140,7 @@ SmoothSegmentedFunction::
         //////////////////////////////////////////////////
 
         SimTK::Matrix yInt =  SegmentedQuinticBezierToolkit::
-            calcNumIntBezierYfcnX(xALL,0,INTTOL, UTOL, MAXITER,_mX, _mY,
+            calcNumIntBezierYfcnX(xALL,0,INTTOL, UTOL, MAXITER,mX, mY,
             _arraySplineUX,_intx0x1,_name);
 
         //not correct
@@ -152,20 +152,27 @@ SmoothSegmentedFunction::
         _splineYintX = SimTK::SplineFitter<Real>::
                 fitForSmoothingParameter(3,yInt(0),yInt(1),0).getSpline();
     }
-  
+    
+	_mXVec.resize(_numBezierSections);
+	_mYVec.resize(_numBezierSections);
+    for(int s=0; s < _numBezierSections; s++){
+		_mXVec[s] = mX(s); 
+		_mYVec[s] = mY(s); 
+	}
 }
 
  SmoothSegmentedFunction::SmoothSegmentedFunction():
- _mX(0,0),_mY(0,0),_x0(SimTK::NaN),_x1(SimTK::NaN),_y0(SimTK::NaN)
+ _x0(SimTK::NaN),_x1(SimTK::NaN),_y0(SimTK::NaN)
      ,_y1(SimTK::NaN),_dydx0(SimTK::NaN),_dydx1(SimTK::NaN),
      _computeIntegral(false),_intx0x1(false),_name("NOT_YET_SET")
  {
         _arraySplineUX.resize(0);        
+		_mXVec.resize(0);
+		_mYVec.resize(0);
         _splineYintX = SimTK::Spline();
         _numBezierSections = (int)SimTK::NaN;
        
  }
-
 
  /*Detailed Computational Costs
  ________________________________________________________________________
@@ -187,12 +194,27 @@ If x is in the linear region
 ________________________________________________________________________
  
  */
+
 double SmoothSegmentedFunction::calcValue(double x) const
 {
-    return calcValue(SimTK::Vector(1,x));
+    double yVal = 0;
+    if(x >= _x0 && x <= _x1 )
+    {
+        int idx  = SegmentedQuinticBezierToolkit::calcIndex(x,_mXVec);
+        double u = SegmentedQuinticBezierToolkit::
+                 calcU(x,_mXVec[idx], _arraySplineUX[idx], UTOL,MAXITER);
+        yVal = SegmentedQuinticBezierToolkit::
+                 calcQuinticBezierCurveVal(u,_mYVec[idx]);
+    }else{
+        if(x < _x0){
+            yVal = _y0 + _dydx0*(x-_x0);            
+        }else{
+            yVal = _y1 + _dydx1*(x-_x1);                    
+        }    
+    }
+
+    return yVal;
 }
-
-
 
 double SmoothSegmentedFunction::calcValue(const SimTK::Vector& ax) const
 {
@@ -203,23 +225,7 @@ double SmoothSegmentedFunction::calcValue(const SimTK::Vector& ax) const
         "designed only for 1D functions, but a function with %i elements was"
         "entered",_name.c_str(),ax.nelt());
 
-    double yVal = 0;
-    if(ax(0) >= _x0 && ax(0) <= _x1 )
-    {
-        int idx  = SegmentedQuinticBezierToolkit::calcIndex(ax(0),_mX);
-        double u = SegmentedQuinticBezierToolkit::
-                 calcU(ax(0),_mX(idx), _arraySplineUX[idx], UTOL,MAXITER);
-        yVal = SegmentedQuinticBezierToolkit::
-                 calcQuinticBezierCurveVal(u,_mY(idx));
-    }else{
-        if(ax(0) < _x0){
-            yVal = _y0 + _dydx0*(ax(0)-_x0);            
-        }else{
-            yVal = _y1 + _dydx1*(ax(0)-_x1);                    
-        }    
-    }
-
-    return yVal;
+	return calcValue(ax(0)); 
 }
 
 /*Detailed Computational Costs
@@ -248,10 +254,42 @@ If x is in the linear region
                                     1                            1
 ________________________________________________________________________
     */
+
 double SmoothSegmentedFunction::calcDerivative(double x, int order) const
 {
-    return calcDerivative( SimTK::Array_<int>(order,0),
-                           SimTK::Vector(1,x));
+    //return calcDerivative( SimTK::Array_<int>(order,0),
+      //                     SimTK::Vector(1,x));
+    double yVal = 0;
+
+    //QUINTIC SPLINE
+
+    
+    if(order==0){
+                yVal = calcValue(x);
+    }else{
+            if(x >= _x0 && x <= _x1){        
+        		int idx  = SegmentedQuinticBezierToolkit::calcIndex(x,_mXVec);
+                double u = SegmentedQuinticBezierToolkit::
+                                calcU(x,_mXVec[idx], _arraySplineUX[idx], 
+                                UTOL,MAXITER);
+                yVal = SegmentedQuinticBezierToolkit::
+                            calcQuinticBezierCurveDerivDYDX(u, _mXVec[idx], 
+                            _mYVec[idx], order);
+/*
+							std::cout << _mX(3, idx) << std::endl;
+							std::cout << _mX(idx) << std::endl;*/
+            }else{
+                    if(order == 1){
+                        if(x < _x0){
+                            yVal = _dydx0;
+                        }else{
+                            yVal = _dydx1;}
+                    }else{
+                        yVal = 0;}   
+                }
+        }
+
+    return yVal;
 }
 
 
@@ -280,39 +318,8 @@ double SmoothSegmentedFunction::
         "designed only for 1D functions, but ax had a size of %i",
         _name.c_str(), ax.nelt());
 
-
-    double yVal = 0;
-
-    //QUINTIC SPLINE
-
-    
-    if(derivComponents.size()==0){
-                yVal = calcValue(ax);
-    }else{
-    
-            if(ax(0) >= _x0 && ax(0) <= _x1){        
-                int idx  = SegmentedQuinticBezierToolkit::
-                                calcIndex(ax(0),_mX);
-                double u = SegmentedQuinticBezierToolkit::
-                                calcU(ax(0),_mX(idx), _arraySplineUX[idx], 
-                                UTOL,MAXITER);
-                yVal = SegmentedQuinticBezierToolkit::
-                            calcQuinticBezierCurveDerivDYDX(u, _mX(idx), 
-                            _mY(idx), derivComponents.size());
-            }else{
-                    if(derivComponents.size() == 1){
-                        if(ax(0) < _x0){
-                            yVal = _dydx0;
-                        }else{
-                            yVal = _dydx1;}
-                    }else{
-                        yVal = 0;}   
-                }
-        }
-
-    return yVal;
+    return calcDerivative(ax(0), derivComponents.size());
 }
-
 
 /*Detailed Computational Costs
 ________________________________________________________________________
@@ -412,8 +419,13 @@ void SmoothSegmentedFunction::setName(std::string &name)
 SimTK::Vec2 SmoothSegmentedFunction::getCurveDomain() const
 {
     SimTK::Vec2 xrange;
-    xrange(0) = _mX(0,0);
-    xrange(1) = _mX( _mX.nrow()-1, _mX.ncol()-1);
+	
+	xrange(0) = 0; 
+	xrange(1) = 0; 
+	if (!_mXVec.empty()) {
+		xrange(0) = _mXVec[0](0); 
+		xrange(1) = _mXVec[_mXVec.size()-1](_mXVec[0].size()-1); 
+	}
     return xrange;
 }
 
@@ -473,7 +485,7 @@ SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder,
         for(int i=0;i<NUM_SAMPLE_PTS;i++){
                 u = ( (double)i )/( (double)(NUM_SAMPLE_PTS-1) );
                 x(i) = SegmentedQuinticBezierToolkit::
-                    calcQuinticBezierCurveVal(u,_mX(s));            
+                    calcQuinticBezierCurveVal(u,_mXVec[s]);    
                 if(_numBezierSections > 1){
                    //Skip the last point of a set that has another set of points
                    //after it. Why? The last point and the starting point of the
