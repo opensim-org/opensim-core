@@ -606,13 +606,16 @@ void Muscle::calcMusclePotentialEnergyInfo(const SimTK::State& s,
 
 
 //=============================================================================
-// XXXXXXXXXXXXXXXXXXXXXXX     TO BE DEPRECATED   XXXXXXXXXXXXXXXXXXXXXXXXXXXX
+// Required by CMC and Static Optimization
 //=============================================================================
 double Muscle::calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
-                                                  double aActivation) const
+                                                  double activation) const
 {
-    throw Exception("ERROR- "+getConcreteClassName()
-        + "::calcInextensibleTendonActiveFiberForce() NOT IMPLEMENTED.");
+	const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
+	const FiberVelocityInfo& fvi = getFiberVelocityInfo(s);
+    return getMaxIsometricForce()*activation*
+		mli.fiberActiveForceLengthMultiplier*fvi.fiberForceVelocityMultiplier
+		*mli.cosPennationAngle;
 }
 
 //=============================================================================

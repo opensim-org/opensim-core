@@ -259,7 +259,10 @@ public:
 
     ///@cond
     //--------------------------------------------------------------------------
-	// DEPRECATED : API users don't even think about using this!!!
+	// Estimate the muscle force for a given actiavtion based on a rigid tendon 
+	// assumption and neglecting passive fiber force. This provides a linear 
+	// relationship between activation and force. This is used by CMC and 
+	// StaticOptimization to solve the muscle force redundancy problem.
 	//--------------------------------------------------------------------------	
     virtual double calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
                                                   double aActivation) const;

@@ -355,19 +355,28 @@ MovingPathPoint& MovingPathPoint::operator=(const MovingPathPoint &aPoint)
  */
 void MovingPathPoint::update(const SimTK::State& s)
 {
-	if (_xCoordinate)
-		_location[0] = _xLocation->calcValue(SimTK::Vector(1, _xCoordinate->getValue(s)));
-	else // type == Constant
+	if (_xCoordinate) {
+        const double xval = SimTK::clamp(_xCoordinate->getRangeMin(),
+                                         _xCoordinate->getValue(s),
+                                         _xCoordinate->getRangeMax());
+		_location[0] = _xLocation->calcValue(SimTK::Vector(1, xval));
+    } else // type == Constant
 		_location[0] = _xLocation->calcValue(SimTK::Vector(1, 0.0));
 
-	if (_yCoordinate)
-		_location[1] = _yLocation->calcValue(SimTK::Vector(1, _yCoordinate->getValue(s)));
-	else // type == Constant
+	if (_yCoordinate) {
+        const double yval = SimTK::clamp(_yCoordinate->getRangeMin(),
+                                         _yCoordinate->getValue(s),
+                                         _yCoordinate->getRangeMax());
+		_location[1] = _yLocation->calcValue(SimTK::Vector(1, yval));
+    } else // type == Constant
 		_location[1] = _yLocation->calcValue(SimTK::Vector(1, 0.0));
 
-	if (_zCoordinate)
-		_location[2] = _zLocation->calcValue(SimTK::Vector(1, _zCoordinate->getValue(s)));
-	else // type == Constant
+	if (_zCoordinate) {
+        const double zval = SimTK::clamp(_zCoordinate->getRangeMin(),
+                                         _zCoordinate->getValue(s),
+                                         _zCoordinate->getRangeMax());
+		_location[2] = _zLocation->calcValue(SimTK::Vector(1, zval));
+    } else // type == Constant
 		_location[2] = _zLocation->calcValue(SimTK::Vector(1, 0.0));
 }
 

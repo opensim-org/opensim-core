@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Matthew Millard                                                 *
+ * Author(s): Matthew Millard, Tom Uchida, Ajay Seth                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -37,6 +37,7 @@ const string Millard2012EquilibriumMuscle::
     STATE_ACTIVATION_NAME = "activation";
 const string Millard2012EquilibriumMuscle::
     STATE_FIBER_LENGTH_NAME = "fiber_length";
+const double MIN_NONZERO_DAMPING_COEFFICIENT = 0.001;
 
 //==============================================================================
 // PROPERTIES
@@ -46,8 +47,7 @@ void Millard2012EquilibriumMuscle::setNull()
 
 void Millard2012EquilibriumMuscle::constructProperties()
 {
-    constructProperty_use_fiber_damping(true); //damped model used by default
-    constructProperty_fiber_damping(0.1);
+    constructProperty_fiber_damping(0.1); //damped model used by default
     constructProperty_default_activation(0.05);
     constructProperty_default_fiber_length(getOptimalFiberLength());
 
@@ -76,19 +76,25 @@ void Millard2012EquilibriumMuscle::buildMuscle()
                                         maxPennationAngle);
 
         // Ensure object names are up-to-date
-        std::string aName = getName();
+        const std::string& aName = getName();
 
         ActiveForceLengthCurve& falCurve = upd_ActiveForceLengthCurve();
-        falCurve.setName(aName.append("_ActiveForceLengthCurve"));
+        falCurve.setName(aName+"_ActiveForceLengthCurve");
 
         ForceVelocityInverseCurve& fvInvCurve = upd_ForceVelocityInverseCurve();
-        fvInvCurve.setName(aName.append("_ForceVelocityInverseCurve"));
+        fvInvCurve.setName(aName+"_ForceVelocityInverseCurve");
 
         FiberForceLengthCurve& fpeCurve = upd_FiberForceLengthCurve();
-        fpeCurve.setName(aName.append("_FiberForceLengthCurve"));
+        fpeCurve.setName(aName+"_FiberForceLengthCurve");
 
         TendonForceLengthCurve& fseCurve = upd_TendonForceLengthCurve();
-        fseCurve.setName(aName.append("_TendonForceLengthCurve"));
+        fseCurve.setName(aName+"_TendonForceLengthCurve");
+
+        // Include fiber damping in the model only if the damping coefficient is
+        // larger than MIN_NONZERO_DAMPING_COEFFICIENT. This is done to ensure
+        // we remain sufficiently far from the numerical singularity at beta=0.
+        use_fiber_damping = (getFiberDamping() >=
+                             MIN_NONZERO_DAMPING_COEFFICIENT);
 
         // To initialize, we need to create a force-velocity curve
         double conSlopeAtVmax   = fvInvCurve.getConcentricSlopeAtVmax();
@@ -109,14 +115,13 @@ void Millard2012EquilibriumMuscle::buildMuscle()
                                      eccForceMax,
                                      conCurviness,
                                      eccCurviness,
-                                     aName.append("_ForceVelocityCurve"));
+                                     aName+"_ForceVelocityCurve");
 
         // A few parameters may need to be adjusted to avoid singularities
         // (i.e., if an elastic tendon is used with no fiber damping).
-        if(!get_ignore_tendon_compliance() && !get_use_fiber_damping()) {
-            if(get_minimum_activation() < 0.01) {
-                set_minimum_activation(0.01);
-            }
+        if(!get_ignore_tendon_compliance() && !use_fiber_damping) {
+			set_minimum_activation(clamp(0.01, get_minimum_activation(), 1));
+
             if(falCurve.getMinValue() < 0.1) {
                 falCurve.setMinValue(0.1);
             }
@@ -130,6 +135,7 @@ void Millard2012EquilibriumMuscle::buildMuscle()
             }
 
         } else { //singularity-free model
+			set_minimum_activation(clamp(0, get_minimum_activation(), 1));
             falCurve.setMinValue(0.0);
             fvCurve.setCurveShape(0.0, conSlopeNearVmax, isometricSlope,
                                   0.0, eccSlopeNearVmax, eccForceMax);
@@ -201,7 +207,7 @@ double aTendonSlackLength, double aPennationAngle)
 // GET METHODS
 //==============================================================================
 bool Millard2012EquilibriumMuscle::getUseFiberDamping() const
-{   return get_use_fiber_damping(); }
+{   return use_fiber_damping; }
 double Millard2012EquilibriumMuscle::getFiberDamping() const
 {   return get_fiber_damping(); }
 double Millard2012EquilibriumMuscle::getDefaultActivation() const
@@ -298,17 +304,23 @@ getStateVariableSystemIndex(const std::string &stateVariableName) const
 void Millard2012EquilibriumMuscle::
 setMuscleConfiguration(bool ignoreTendonCompliance,
                        bool ignoreActivationDynamics,
-                       bool useDamping)
+                       double dampingCoefficient)
 {
     set_ignore_tendon_compliance(ignoreTendonCompliance);
     set_ignore_activation_dynamics(ignoreActivationDynamics);
-    set_use_fiber_damping(useDamping);
+    setFiberDamping(dampingCoefficient);
     ensureMuscleUpToDate();
 }
 
 void Millard2012EquilibriumMuscle::setFiberDamping(double dampingCoefficient)
 {
+    if(dampingCoefficient < MIN_NONZERO_DAMPING_COEFFICIENT) {
+        set_fiber_damping(0.0);
+        use_fiber_damping = false;
+    } else {
     set_fiber_damping(dampingCoefficient);
+        use_fiber_damping = true;
+    }
     ensureMuscleUpToDate();
 }
 
@@ -679,7 +691,7 @@ calcActivationDerivative(double activation, double excitation) const
         if(clampedExcitation > aHat) {
             tau = getActivationTimeConstant() * (0.5 + 1.5*aHat);
         } else {
-            tau = getDeactivationTimeConstant() * (0.5 + 1.5*aHat);
+            tau = getDeactivationTimeConstant() / (0.5 + 1.5*aHat);
         }
         da = (clampedExcitation - aHat) / tau;
     }
@@ -846,7 +858,7 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
             dlceN = dlce/(optFibLen*getMaxContractionVelocity());
             fv = fvCurve.calcValue(dlceN);
 
-        } else if(!get_ignore_tendon_compliance() && !get_use_fiber_damping()) {
+        } else if(!get_ignore_tendon_compliance() && !use_fiber_damping) {
 
             // Elastic tendon, no damping.
 
@@ -1048,7 +1060,7 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
                 }
             }
 
-            fmAT = calcFiberForceAlongTendon(fm, mli.cosPennationAngle);
+            fmAT = fm * mli.cosPennationAngle;
             dFm_dlce = calcFiberStiffness(fiso, a,
                                           mvi.fiberForceVelocityMultiplier,
                                           mli.normFiberLength, optFiberLen);
@@ -1114,6 +1126,7 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         std::string msg = "Exception caught in Millard2012EquilibriumMuscle::"
                           "calcMuscleDynamicsInfo from " + getName() + "\n"
                           + x.what();
+		cerr << msg << endl;
         throw OpenSim::Exception(msg);
     }
 }
@@ -1297,7 +1310,7 @@ calcFiberForce(double fiso,
                double fpe,
                double dlceN) const
 {
-    double beta = (get_use_fiber_damping()) ? get_fiber_damping() : 0.0;
+    double beta = getFiberDamping();
     double fa   = fiso * (a*fal*fv);
     double fp1  = fiso * fpe;
     double fp2  = fiso * beta*dlceN;
@@ -1319,7 +1332,7 @@ double Millard2012EquilibriumMuscle::calcActivation(double fiso,
                                                     double fpe,
                                                     double dlceN) const
 {
-    double beta = (get_use_fiber_damping()) ? get_fiber_damping() : 0.0;
+    double beta = getFiberDamping();
     double activation = 0.0;
 
     // If the fiber cannot generate any force due to its pennation angle,
@@ -1329,11 +1342,6 @@ double Millard2012EquilibriumMuscle::calcActivation(double fiso,
     }
     return activation;
 }
-
-double Millard2012EquilibriumMuscle::
-calcFiberForceAlongTendon(double fiberForce,
-                          double cosPhi) const
-{   return fiberForce*cosPhi; }
 
 double Millard2012EquilibriumMuscle::calcFiberStiffness(double fiso,
                                                         double a,
@@ -1530,7 +1538,7 @@ estimateMuscleFiberState(double aActivation,
         // Compute the force error
         fiberForceV = calcFiberForce(fiso,ma,fal,fv,fpe,dlceN);
         Fm   = fiberForceV[0];
-        FmAT = calcFiberForceAlongTendon(Fm,cosphi);
+        FmAT = Fm * cosphi;
         Ft   = fse*fiso;
         ferr = FmAT - Ft;
 
@@ -1687,6 +1695,10 @@ calcActiveFiberForceAlongTendon(double activation,
 {
     double activeFiberForce = SimTK::NaN;
 
+    if(fiberLength <= getMinimumFiberLength()) {
+        return 0.0;
+    }
+
     try {
         //Clamp activation to a legal range
         double ca = clampActivation(activation);
@@ -1713,7 +1725,7 @@ calcActiveFiberForceAlongTendon(double activation,
         //Compute the active fiber force
         Vec4 fiberForceV = calcFiberForce(fiso,ca,fal,fv,fpe,dlceN);
         double fa = fiberForceV[1];
-        activeFiberForce = calcFiberForceAlongTendon(fa,cos(phi));
+        activeFiberForce = fa * cos(phi);
 
     } catch(const std::exception &x) {
         std::string msg = "Exception caught in: " + getName()
