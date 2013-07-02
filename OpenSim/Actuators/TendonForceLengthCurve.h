@@ -125,16 +125,17 @@ namespace OpenSim {
 
     <B>Example</B>
     @code
-        TendonForceLengthCurve fseCurve1(0.10, 50, 0.75, "soleus");
-        double fseVal   = fseCurve1.calcValue(0.02);
-        double dfselVal = fseCurve1.calcDerivative(0.02, 1);
+        TendonForceLengthCurve fseCurve(0.049, 28.1, 0.67, 0.5, "testMuscle");
+        double fseVal   = fseCurve.calcValue(0.02);
+        double dfselVal = fseCurve.calcDerivative(0.02, 1);
     @endcode
 
     Note that this object should be updated through the set methods provided.
-    These set methods will take care of rebuilding the object correctly. If you
-    modify the properties directly, the object will not be rebuilt, and upon
-    calling any functions, an exception will be thrown because the curve is
-    out-of-date with its properties.
+    These set methods will take care of rebuilding the curve correctly. If you
+    modify the properties directly, the curve will not be rebuilt, and upon
+    calling a function like calcValue, calcDerivative, or printCurveToCSVFile,
+    an exception will be thrown because the curve is out-of-date with its
+    properties.
 
     <B>References</B>
     \li Lewis, G., Shaw, K.M. (1997) Tensile properties of human tendo Achillis:
@@ -233,8 +234,8 @@ public:
     shape of the curve: a value of 0 indicates that the curve is very close to a
     straight line segment and a value of 1 indicates a curve that smoothly fills
     the corner formed by the linear extrapolation of 'stiffnessAtOneNormForce'
-    and the x-axis, as shown in the figure. This property is set to 0.5 by
-    default. */
+    and the x-axis, as shown in the figure in the class description. This
+    property is set to 0.5 by default. */
     double getCurvinessInUse() const;
 
     /** @returns True if the optional properties are empty and the fitted curve
@@ -266,7 +267,8 @@ public:
         the curve: a value of 0 indicates that the curve is very close to a
         straight line segment and a value of 1 indicates a curve that smoothly
         fills the corner formed by the linear extrapolation of
-        'stiffnessAtOneNormForce' and the x-axis, as shown in the figure.
+        'stiffnessAtOneNormForce' and the x-axis, as shown in the figure in the
+        class description.
     */
     void setOptionalProperties(double aStiffnessAtOneNormForce,
                                double aNormForceAtToeEnd,

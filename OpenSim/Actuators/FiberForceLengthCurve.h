@@ -121,7 +121,7 @@ namespace OpenSim {
     Fig. 3a).
 
     \verbatim
-    strainAtZeroForce .......... 0
+    strainAtZeroForce .......... 0.0
     strainAtOneNormForce ....... 0.6
     stiffnessAtOneNormForce .... 3.0 / (strainAtOneNormForce-strainAtZeroForce) = 5.0
     stiffnessAtLowForce ........ 0.025 * stiffnessAtOneNormForce = 0.125
@@ -130,15 +130,15 @@ namespace OpenSim {
 
     <B>Example</B>
     @code
-        // Make a fitted fiber-force-length curve.
-        FiberForceLengthCurve fpeCurve1;
-        fpeCurve1.setCurveStrains(0, 0.8);
-        double fpeVal1 = fpeCurve1.calcValue(0.1);
+    // Make a fitted fiber-force-length curve.
+    FiberForceLengthCurve fpeCurve1;
+    fpeCurve1.setCurveStrains(0.0, 0.6);
+    double fpeVal1 = fpeCurve1.calcValue(0.1);
 
-        // Make a custom fiber-force-length curve by supplying all parameters.
-        FiberForceLengthCurve fpeCurve2(0, 0.60, 0.16, 6.67, 0.5, "soleus");
-        double fpeVal2  = fpeCurve2.calcValue(0.02);
-        double dfpeVal2 = fpeCurve2.calcDerivative(0.02, 1);
+    // Make a custom fiber-force-length curve by supplying all parameters.
+    FiberForceLengthCurve fpeCurve2(0.0, 0.6, 5.0, 0.125, 0.75, "testMuscle");
+    double fpeVal2  = fpeCurve2.calcValue(0.02);
+    double dfpeVal2 = fpeCurve2.calcDerivative(0.02, 1);
     @endcode
 
     Note that this object should be updated through the set methods provided.
