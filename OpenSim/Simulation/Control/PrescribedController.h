@@ -117,7 +117,7 @@ public:
 	void prescribeControlForActuator(const std::string actName,
 									 Function *prescribedFunction);
 
-protected:
+public:
 	/** Model component interface */
 	void connectToModel(Model& model) OVERRIDE_11;
 private:
