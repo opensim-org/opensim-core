@@ -98,9 +98,9 @@ namespace OpenSim {
 
     <B>Example</B>
     @code
-        ActiveForceLengthCurve falCurve3(0.5, 0.75, 1.5, 0.75, 0.01, "soleus");
-        double falVal  = falCurve3.calcValue(1.0);
-        double dfalVal = falCurve3.calcDerivative(1.0, 1);
+        ActiveForceLengthCurve falCurve1(0.5, 0.75, 1.5, 0.75, 0.01, "soleus");
+        double falVal  = falCurve1.calcValue(1.0);
+        double dfalVal = falCurve1.calcDerivative(1.0, 1);
     @endcode
 
     Note that this object should be updated through the set methods provided.
