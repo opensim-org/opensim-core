@@ -91,12 +91,8 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 		f = -velocity[0];
 		stepCount++;
 		
-		// Store and print the results of a "random sample"
-		if( stepCount == 23 ){
-			manager.getStateStorage().print("Arm26_randomSample_states.sto");
-		}
 		// Store and print the  results of the first step.
-		else if( stepCount == 1){ 
+		if( stepCount == 1){ 
 			manager.getStateStorage().print("Arm26_noActivation_states.sto");
 		}
 		// Use an if statement to only store and print the results of an 
@@ -141,7 +137,7 @@ int main()
 		// Set the initial muscle activations 
 		const Set<Muscle> &muscleSet = osimModel.getMuscles();
      	for(int i=0; i< muscleSet.getSize(); i++ ){
-			muscleSet[i].setActivation(si, 0.05);
+			muscleSet[i].setActivation(si, 0.01);
 		}
 	
 		// Make sure the muscles states are in equilibrium

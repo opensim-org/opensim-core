@@ -91,12 +91,8 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 		f = -velocity[0];
 		stepCount++;
 		
-		// Store and print the results of a "random sample"
-		if( stepCount == 23 ){
-			manager.getStateStorage().print("Arm26_randomSample_states.sto");
-		}
 		// Store and print the  results of the first step.
-		else if( stepCount == 1){ 
+		if( stepCount == 1){ 
 			manager.getStateStorage().print("Arm26_noActivation_states.sto");
 		}
 		// Use an if statement to only store and print the results of an 
@@ -138,7 +134,7 @@ int main()
      	for(int i=0; i< muscleSet.getSize(); i++ ){
 			ActivationFiberLengthMuscle* mus = dynamic_cast<ActivationFiberLengthMuscle*>(&muscleSet[i]);
 			if(mus){
-				mus->setDefaultActivation(0.05);
+				mus->setDefaultActivation(0.01);
 			}
 		}
 
