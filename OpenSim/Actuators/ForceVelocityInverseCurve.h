@@ -41,7 +41,8 @@ namespace OpenSim {
 /** This class serves as a serializable ForceVelocityInverseCurve for use in
     equilibrium muscle models. The inverse force-velocity curve is
     dimensionless: force is normalized to maximum isometric force and velocity
-    is normalized to the maximum muscle contraction velocity (vmax). Negative
+    is normalized to the maximum muscle contraction velocity (vmax), where vmax
+    is expressed in units of optimal_fiber_lengths per second. Negative
     normalized velocities correspond to concentric contraction (i.e.,
     shortening). The inverse force-velocity curve is constructed from 6
     properties, which are identical to those used to construct the

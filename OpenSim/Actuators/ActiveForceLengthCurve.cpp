@@ -42,7 +42,7 @@ ActiveForceLengthCurve::ActiveForceLengthCurve()
     ensureCurveUpToDate();
 }
 
-// Constructor with enough information to buid the curve.
+// Constructor with enough information to build the curve.
 ActiveForceLengthCurve::ActiveForceLengthCurve(double minActiveNormFiberLength,
                                                double transitionNormFiberLength,
                                                double maxActiveNormFiberLength,

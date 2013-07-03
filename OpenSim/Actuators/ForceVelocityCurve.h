@@ -41,8 +41,9 @@ namespace OpenSim {
 /** This class serves as a serializable ForceVelocityCurve for use in muscle
     models. The force-velocity curve is dimensionless: force is normalized to
     maximum isometric force and velocity is normalized to the maximum muscle
-    contraction velocity (vmax). Negative normalized velocities correspond to
-    concentric contraction (i.e., shortening). The force-velocity curve is
+    contraction velocity (vmax), where vmax is expressed in units of
+    optimal_fiber_lengths per second. Negative normalized velocities correspond
+    to concentric contraction (i.e., shortening). The force-velocity curve is
     constructed from 6 properties:
 
     @param concentricSlopeAtVmax
@@ -124,13 +125,14 @@ namespace OpenSim {
 
     <B>Example</B>
     @code
-        ForceVelocityCurve fvCurve(0.0, 5.0, 0.0, 1.4, 0.6, 0.9, "testMuscle");
+        ForceVelocityCurve fvCurve(0.0, 0.25, 5.0, 0.0, 0.15,
+                                   1.4, 0.6, 0.9, "testMuscle");
         double falVal  = fvCurve.calcValue(1.0);
         double dfalVal = fvCurve.calcDerivative(1.0, 1);
     @endcode
 
     <B>References</B>
-    \li Leiber, R.L. (2010) Skeletal @Muscle Structure, @Function and
+    \li Lieber, R.L. (2010) Skeletal %Muscle Structure, %Function, and
         Plasticity: The Physiological Basis of Rehabilitiation, 3rd ed.
         Baltimore: Lippincott Williams & Wilkins.
 
