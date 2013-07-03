@@ -78,9 +78,9 @@ Thelen2003Muscle(const std::string& aName,  double aMaxIsometricForce,
 void Thelen2003Muscle::addToSystem(SimTK::MultibodySystem& system) const 
 {
     Super::addToSystem(system);
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-                    "Thelen2003Muscle: Muscle is not"
-                    " to date with properties");
+	string errMsg =  getConcreteClassName()+" "+ getName() +
+				  " is not up to date with its properties";
+    SimTK_ASSERT(isObjectUpToDateWithProperties(), errMsg.c_str());
 }
 
 void Thelen2003Muscle::connectToModel(Model& aModel)

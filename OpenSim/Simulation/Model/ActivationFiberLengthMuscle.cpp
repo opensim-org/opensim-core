@@ -66,6 +66,19 @@ void ActivationFiberLengthMuscle::constructProperties()
 {
 	Super::addToSystem(system);   // invoke superclass implementation
 
+	const string& className = getConcreteClassName();
+	const string& suffix = " flag is not currently implemented.";
+
+	if(get_ignore_activation_dynamics()){
+		string errMsg = className + "::ignore_activation_dynamics" + suffix;
+		throw Exception(errMsg);
+	}
+
+	if(get_ignore_tendon_compliance()){
+		string errMsg = className + "::ignore_tendon_compliance" + suffix;
+		throw Exception(errMsg);
+	}
+
 	addStateVariable(STATE_ACTIVATION_NAME);
 	// Fiber length should be a position stage state variable.
 	// That is setting the fiber length should force position and above

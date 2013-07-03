@@ -95,6 +95,19 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
 {
 	Super::addToSystem(system);
 
+	const string& className = getConcreteClassName();
+	const string& suffix = " flag is not currently implemented.";
+
+	if(get_ignore_activation_dynamics()){
+		string errMsg = className + "::ignore_activation_dynamics" + suffix;
+		throw Exception(errMsg);
+	}
+
+	if(get_ignore_tendon_compliance()){
+		string errMsg = className + "::ignore_tendon_compliance" + suffix;
+		throw Exception(errMsg);
+	}
+
 	addStateVariable(STATE_ACTIVATION_NAME);
 	addStateVariable(STATE_FIBER_LENGTH_NAME);
 
