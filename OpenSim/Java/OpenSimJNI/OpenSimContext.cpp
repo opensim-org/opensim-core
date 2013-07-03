@@ -459,15 +459,9 @@ void OpenSimContext::cacheModelAndState()
 
 void OpenSimContext::restoreStateFromCachedModel() 
 {
-	try {
-		_model->initSystem();
-		clonedModel->initSystem();
-	} catch (OpenSim::Exception e) {
-		std::cerr << "Exception Caught: " << e.getMessage() << std::endl;
-		std::string errMsg = "Error: ";
-		errMsg + e.getMessage();
-		throw OpenSim::Exception(errMsg);
-	}
+	_model->initSystem();
+	clonedModel->initSystem();
+
 	Array<std::string> modelVariableNames = _model->getStateVariableNames();
 	Array<std::string> clonedModelVariableNames = clonedModel->getStateVariableNames();
 
