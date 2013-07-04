@@ -156,72 +156,20 @@ clampActivation(double activation) const
 }
 
 double MuscleFirstOrderActivationDynamicModel::
-calcValue(const SimTK::Vector& x) const
-{
-    SimTK_ERRCHK1_ALWAYS(x.size() == 2,
-        "MuscleFirstOrderActivationDynamicModel::calcDerivative",
-        "%s: Two arguments are required: activation and excitation",
-        getName().c_str());
-
-    return x(0); //activation
-}
-
-double MuscleFirstOrderActivationDynamicModel::
 calcDerivative(double activation, double excitation) const
 {
-    SimTK::Array_<int> dx(1);
-    dx[0] = 0;
+	const double& minAct = get_minimum_activation();
+    double clampedActivation = clamp(minAct, activation, 1.0);
+    double clampedExcitation = clamp(0.0, excitation, 1.0);
+    double aHat = (clampedActivation-minAct) / (1.0-minAct);
+    double tau = SimTK::NaN;
 
-    SimTK::Vector x(2);
-    x(0) = activation;
-    x(1) = excitation;
-
-    return calcDerivative(dx,x);
-}
-
-double MuscleFirstOrderActivationDynamicModel::
-calcDerivative(const SimTK::Array_<int>& derivComponents,
-               const SimTK::Vector& x) const
-{
-    SimTK_ERRCHK1_ALWAYS(x.size() == 2,
-        "MuscleFirstOrderActivationDynamicModel::calcDerivative",
-        "%s: Two arguments are required: excitation and activation",
-        getName().c_str());
-
-    double da = 0;
-
-    switch (derivComponents.size()) {
-        case 0:
-            da = calcValue(x);
-            break;
-        case 1:
-            if(derivComponents[0] == 0) {
-                double clampedActivation = clampActivation(x(0));
-                double clampedExcitation = clamp(0.0, x(1), 1.0);
-                double aHat = (clampedActivation-getMinimumActivation()) /
-                              (1.0-getMinimumActivation());
-                double tau = SimTK::NaN;
-
-                if(clampedExcitation > aHat) {
-                    tau = getActivationTimeConstant() * (0.5 + 1.5*aHat);
-                } else {
-                    //[FIXIT] -- should be quotient
-                    //tau = getDeactivationTimeConstant() / (0.5 + 1.5*aHat);
-                    tau = getDeactivationTimeConstant() * (0.5 + 1.5*aHat);
-                }
-                da = (clampedExcitation - aHat) / tau;
-            } else {
-                SimTK_ERRCHK1_ALWAYS(false,
-                    "MuscleFirstOrderActivationDynamicModel::calcDerivative",
-                    "%s: calcDerivative is only valid for the 0th partial",
-                    getName().c_str());
-            }
-            break;
-        default:
-            SimTK_ERRCHK1_ALWAYS(false,
-            "MuscleFirstOrderActivationDynamicModel::calcDerivative",
-            "%s: calcDerivative is only valid for the 0th and 1st derivatives",
-            getName().c_str());
+    if(clampedExcitation > aHat) {
+        tau = getActivationTimeConstant() * (0.5 + 1.5*aHat);
+    } else {
+        tau = getDeactivationTimeConstant() / (0.5 + 1.5*aHat);
     }
-    return da;
+    
+	return (clampedExcitation - aHat) / tau;
 }
+

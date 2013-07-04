@@ -55,7 +55,7 @@ int main()
 		testPrescribedControllerOnBlock(true);
 		cout << "Testing CorrectionController" << endl; 
 		testCorrectionControllerOnBlock();
-
+		cout << "Testing PrescribedController from File" << endl;
 		testPrescribedControllerFromFile("arm26.osim", "arm26_Reserve_Actuators.xml",
 										 "arm26_controls.xml");
     }	
@@ -370,10 +370,11 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
 	
 	//************* Rerun with a PrescribedController ***********************/
 
-	PrescribedController prescribed(outfileName, 0);
+	PrescribedController prescribed(outfileName, 1);
 
 	// add the controller to the model
 	osimModel.addController(&prescribed);
+	osimModel.print("TestPrescribedController.osim");
 
 	// Initialize the system and get the state representing the state system
 	SimTK::State& s2 = osimModel.initSystem();

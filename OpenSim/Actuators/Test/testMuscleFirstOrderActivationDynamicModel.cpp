@@ -43,10 +43,6 @@ void printMatrixToFile( const SimTK::Matrix& data, const std::string& filename);
 SimTK::Vector calcCentralDifference(const SimTK::Vector& x, 
                                  const SimTK::Vector& y, bool extrap_endpoints);
 
-SimTK::Vector calcCentralDifference(const SimTK::Matrix& xM,
-                                    const MuscleFirstOrderActivationDynamicModel& yF,
-                                    int dim,int order);
-
 bool isFunctionContinuous(const SimTK::Vector& xV, const SimTK::Vector& yV,
     const SimTK::Vector& dydxV, const SimTK::Vector& d2ydx2V, double minTol,
                                                     double taylorErrorMult);
@@ -238,7 +234,9 @@ int main(int argc, char* argv[])
             double tmp = 0;
             double maxDxDiff = 0;
             double minTol = 0.5;
-            double taylorMult = 2;
+            double taylorMult = 2.0000001;
+
+
             for(int i=0;i<actV.size();i++){
             
                 for(int j=0; j<uV.size(); j++){
@@ -319,89 +317,10 @@ int main(int argc, char* argv[])
             cout<<"*****************************************************"<<endl;
             cout<<"TEST: Exceptions thrown correctly.                   "<<endl;           
             cout << endl;
-
-            SimTK::Vector xEX1(1),xV(2),xEX3(3), xVC(2);
-            xEX1 = 0;//Too few arguments
-            xEX3 = 0;//Too many arguments
-            xV(0) = 0.5;//Valid
-            xV(1) = 0.5;
-
-            SimTK::Array_<int> dV(1),dEX1(2),dEX2(1);
-            dV[0] = 0;
-            dEX1[0] = 0;//2nd derivative not computed
-            dEX1[1] = 0;
-
-            dEX2[0] = 1;//Derivative w.r.t. first partial not computed
-
-
-            SimTK_TEST_MUST_THROW(MuscleFirstOrderActivationDynamicModel 
-                                    actMdlX(0,tauD,amin,"test"));
-            SimTK_TEST_MUST_THROW(MuscleFirstOrderActivationDynamicModel 
-                                    actMdlX(tauA,0,amin,"test"));
-            SimTK_TEST_MUST_THROW(MuscleFirstOrderActivationDynamicModel 
-                                    actMdlX(tauA,tauD,-SimTK::Eps,"test"));
-            SimTK_TEST_MUST_THROW(MuscleFirstOrderActivationDynamicModel 
-                                    actMdlX(tauA,tauD,1,"test"));
-             
-            MuscleFirstOrderActivationDynamicModel *fcnActMdl = &actMdl;
-
-            SimTK_TEST_MUST_THROW(fcnActMdl->calcValue(xEX1));
-            SimTK_TEST_MUST_THROW(fcnActMdl->calcValue(xEX3));
-            SimTK_TEST_MUST_THROW(fcnActMdl->calcDerivative(dV,xEX1));
-            SimTK_TEST_MUST_THROW(fcnActMdl->calcDerivative(dEX1,xV));
-            SimTK_TEST_MUST_THROW(fcnActMdl->calcDerivative(dEX2,xV));
-
-            //Test excitation clamping - code should print a cerr, and continue
-            //with a clamped value of excitation and activation.
-
-            //Question: how to test that a message is written to cerr?
-
-            cout<<"*****************************************************"<<endl;
-            cout<<"TEST: Excitation and Activation Clamping Correctness "<<endl;           
-            cout << endl; 
-            //legal excitation, illegal activation            
-            xV[1] = 0.5;
-            xVC[1] = 0.5;
-
-            xV[0] = -1;
-            xVC[0] = fcnActMdl->getMinimumActivation();
-            SimTK_TEST_EQ(  fcnActMdl->calcDerivative(dV,xV),
-                            fcnActMdl->calcDerivative(dV,xVC)) ;
-            xV[0] = 2;
-            xVC[0] = fcnActMdl->getMaximumActivation();
-            SimTK_TEST_EQ(  fcnActMdl->calcDerivative(dV,xV),
-                            fcnActMdl->calcDerivative(dV,xVC)) ;
-            
-            //illegal excitation, legal activation
-            xV[0] = 0.5;
-            xVC[0] = 0.5;
-
-            xV[1] = -1;
-            xVC[1] = 0;
-
-            SimTK_TEST_EQ(  fcnActMdl->calcDerivative(dV,xV),
-                            fcnActMdl->calcDerivative(dV,xVC)) ;
-            xV[1] = 2;
-            xVC[1] = 1;
-
-            SimTK_TEST_EQ( fcnActMdl->calcDerivative(dV,xV),
-                           fcnActMdl->calcDerivative(dV,xVC));
-            cout<<"*****************************************************"<<endl;
-
-            //It occurs to me that it doesn't make sense to have this in a
-            //function object, because the derivative I'm computing is not
-            //the derivative of the function w.r.t. the 0th parameter,
-            //activation, but time. Hmm. This interface is convenient for 
-            //other things though ...
-
-            //SimTK_ASSERT_
-            //SimTK_TEST_MUST_THROW
-            cout<<"PASSED: Constructor, SimTK::Function interface checked"<<endl;
-            cout <<"       Exceptions checked, clamping checked" << endl;
-            
+           
             SimTK_END_TEST();
         }
-    catch (OpenSim::Exception ex)
+    catch (const OpenSim::Exception& ex)
     {
         cout << ex.getMessage() << endl;
 		cin.get();
@@ -598,102 +517,6 @@ SimTK::Vector calcCentralDifference(const SimTK::Vector& x,
 	return dy;
 }
 
-/**
-    This function computes a standard central difference dy/dx at each point in
-    a vector x, for a SimTK::Function, to a desired tolerance. This 
-    function will take the best step size at each point to minimize the 
-    error caused by taking a numerical derivative, and the error caused by
-    numerical rounding error:
-
-    For a step size of h/2 to the left and to the right of the point of 
-    interest the error is
-
-    error = 1/4*h^2*c3 + r*f(x)/h,                  (1)
-         
-    Where c3 is the coefficient of the 3rd order Taylor series expansion
-    about point x. Thus c3 can be computed if the order + 2 derivative is
-    known (if it is not availble then c3 will be set to 1)
-        
-        c3 = (d^3f(x)/dx^3)/(6)                        (2)
-
-
-        
-    And r*f(x)/h is the rounding error that occurs due to the central 
-    difference.
-
-    Taking a first derivative of 1 and solving for h yields
-
-    h = (r*f(x)*2/c3)^(1/3)
-
-    Where r is SimTK::Eps
-
-     @param xM domain matrix
-     @param yF the function of interest
-     @param dim the dimension of x to compute the partial central difference 
-                along
-     @param the order of the derivative to take
-*/
-SimTK::Vector calcCentralDifference(const SimTK::Matrix& xM,
-                                    MuscleFirstOrderActivationDynamicModel& yF,
-                                    int dim, int order)
-{
-    //step size
-    double y = 0;
-    double h = 0;
-    double c3 = 0;
-
-    SimTK::Array_<int> val(order-1);
-    SimTK::Array_<int> d3ydx3(order+2);
-
-    for(int i=0; i<(signed)val.size(); i++)
-        val[i] = dim;
-
-    for(int i=0; i<(signed)d3ydx3.size(); i++)
-        d3ydx3[i] = dim;
-
-    SimTK::Vector xL(2),xR(2);
-    double yL,yR = 0;
-
-    SimTK::Vector dy(xM.nrow());
-
-    double y_C3min = sqrt(SimTK::Eps);
-    double y_C3max = 1e1;
-
-    double maxDerOrder = 1;
-
-    for(int i=0; i<xM.nrow(); i++){
-        if(maxDerOrder >= 3){
-            c3 = yF.calcDerivative(d3ydx3,~xM[i]);
-        }else{
-            c3 = 1;
-        }        
-        y = yF.calcDerivative(val,~xM[i]);
-
-        if(y/c3 < y_C3min){
-            c3 = 1;
-            y = y_C3min;
-        }
-        if(y/c3 > y_C3max){
-            c3 = 1;
-            y = y_C3max;
-        }
-
-        //Optimal step length that minimizes trunction and roundoff error
-        h = pow( SimTK::Eps*y*2/c3, (1.0/3.0) );
-
-        xL = ~xM[i];
-        xL(dim) = xL(dim)-h/2;
-        xR = ~xM[i];
-        xR(dim) = xR(dim)+h/2;
-
-        yL = yF.calcValue(xL);
-        yR = yF.calcValue(xR);
-
-        dy(i) = (yR-yL)/h;
-    }
-
-    return dy;
-}
 
 ///@cond
 class FunctionData {
@@ -765,9 +588,7 @@ class MySystemGuts : public SimTK::System::Guts {
         funcData.m_tmpXV(funcData.m_intDim) = z;
 
         //Compute the function derivative at the location of interest
-        Real dz = funcData.m_func.calcDerivative(
-                                        SimTK::Array_<int>(1,funcData.m_intDim),
-                                                              funcData.m_tmpXV);
+        Real dz = funcData.m_func.calcDerivative(funcData.m_tmpXV[0], funcData.m_tmpXV[1]);
         //if(z>funcData.m_ic+SimTK::Eps)
         //    printf(" dz: %f\n",dz);
         

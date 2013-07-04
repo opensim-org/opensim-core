@@ -171,14 +171,6 @@ public:
     /** Calculates the time derivative of activation. */
     double calcDerivative(double activation, double excitation) const;
 
-    ///@cond
-    // These methods are used for testing only.
-    double calcValue(const SimTK::Vector& x) const;
-    double calcDerivative(const SimTK::Array_<int>& derivComponents,
-                          const SimTK::Vector& x) const;
-    int getArgumentSize() const {return 2; } //activation and excitation
-    int getMaxDerivativeOrder() const {return 1; }
-    ///@endcond
 
 private:
     void setNull();
