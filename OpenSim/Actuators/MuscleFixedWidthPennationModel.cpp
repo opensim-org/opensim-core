@@ -399,5 +399,8 @@ calcFiberVelocity(double cosPennationAngle,
                   double muscleVelocity,
                   double tendonVelocity) const
 {
+    // Differentiate l^M cos(phi) + l^T = l^MT ....(1)
+    // Differentiate h = l^M sin(phi) .............(2)
+    // Solve (2) for phidot, substitute into (1), and solve for v^M.
     return (muscleVelocity-tendonVelocity)*cosPennationAngle;
 }
