@@ -22,7 +22,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <simbody/internal/common.h>
 
@@ -177,7 +176,6 @@ Millard2012EquilibriumMuscle myMuscle("myMuscle",
 myMuscle.setMuscleConfiguration(ignoreTendonCompliance,
                                 ignoreActivationDynamics,
                                 dampingCoefficient);
-
 @endcode
 
 Please refer to the doxygen for more information on the properties that are
@@ -218,8 +216,8 @@ public:
         "Activation lower bound.");
     OpenSim_DECLARE_UNNAMED_PROPERTY(ActiveForceLengthCurve,
         "Active-force-length curve.");
-    OpenSim_DECLARE_UNNAMED_PROPERTY(ForceVelocityInverseCurve,
-        "Inverse of the force-velocity curve.");
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ForceVelocityCurve,
+        "Force-velocity curve.");
     OpenSim_DECLARE_UNNAMED_PROPERTY(FiberForceLengthCurve,
         "Passive-force-length curve.");
     OpenSim_DECLARE_UNNAMED_PROPERTY(TendonForceLengthCurve,
@@ -279,8 +277,8 @@ public:
 
     /** @returns The ActiveForceLengthCurve used by this model. */
     const ActiveForceLengthCurve& getActiveForceLengthCurve() const;
-    /** @returns The ForceVelocityInverseCurve used by this model. */
-    const ForceVelocityInverseCurve& getForceVelocityInverseCurve() const;
+    /** @returns The ForceVelocityCurve used by this model. */
+    const ForceVelocityCurve& getForceVelocityCurve() const;
     /** @returns The FiberForceLengthCurve used by this model. */
     const FiberForceLengthCurve& getFiberForceLengthCurve() const;
     /** @returns The TendonForceLengthCurve used by this model. */
@@ -377,10 +375,9 @@ public:
     void setActiveForceLengthCurve(
         ActiveForceLengthCurve& aActiveForceLengthCurve);
 
-    /** @param aForceVelocityInverseCurve The ForceVelocityInverseCurve used by
-    the muscle model to calculate the derivative of fiber length. */
-    void setForceVelocityInverseCurve(
-        ForceVelocityInverseCurve& aForceVelocityInverseCurve);
+    /** @param aForceVelocityCurve The ForceVelocityCurve used by the muscle
+    model to calculate the derivative of fiber length. */
+    void setForceVelocityCurve(ForceVelocityCurve& aForceVelocityCurve);
 
     /** @param aFiberForceLengthCurve The FiberForceLengthCurve used by the
     muscle model to calculate the passive force the muscle fiber generates as a
@@ -698,9 +695,8 @@ private:
     // destruction, and cloned when copying.
     MuscleFixedWidthPennationModel penMdl;
 
-    // Used in muscle initialization, and by every muscle model configuration
-    // except the equilibrium model without fiber damping.
-    ForceVelocityCurve fvCurve;
+    // Singularity-free inverse of ForceVelocityCurve.
+    ForceVelocityInverseCurve fvInvCurve;
 
     // Here, I'm using the 'm_' to prevent me from trashing this variable with a
     // poorly chosen local variable.

@@ -20,7 +20,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
 #include "Millard2012EquilibriumMuscle.h"
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/DebugUtilities.h>
@@ -56,7 +55,7 @@ void Millard2012EquilibriumMuscle::constructProperties()
     constructProperty_minimum_activation(0.01);
 
     constructProperty_ActiveForceLengthCurve(ActiveForceLengthCurve());
-    constructProperty_ForceVelocityInverseCurve(ForceVelocityInverseCurve());
+    constructProperty_ForceVelocityCurve(ForceVelocityCurve());
     constructProperty_FiberForceLengthCurve(FiberForceLengthCurve());
     constructProperty_TendonForceLengthCurve(TendonForceLengthCurve());
 }
@@ -81,8 +80,8 @@ void Millard2012EquilibriumMuscle::buildMuscle()
         ActiveForceLengthCurve& falCurve = upd_ActiveForceLengthCurve();
         falCurve.setName(aName+"_ActiveForceLengthCurve");
 
-        ForceVelocityInverseCurve& fvInvCurve = upd_ForceVelocityInverseCurve();
-        fvInvCurve.setName(aName+"_ForceVelocityInverseCurve");
+        ForceVelocityCurve& fvCurve = upd_ForceVelocityCurve();
+        fvCurve.setName(aName+"_ForceVelocityCurve");
 
         FiberForceLengthCurve& fpeCurve = upd_FiberForceLengthCurve();
         fpeCurve.setName(aName+"_FiberForceLengthCurve");
@@ -96,28 +95,19 @@ void Millard2012EquilibriumMuscle::buildMuscle()
         use_fiber_damping = (getFiberDamping() >=
                              MIN_NONZERO_DAMPING_COEFFICIENT);
 
-        // To initialize, we need to create a force-velocity curve
-        double conSlopeAtVmax   = fvInvCurve.getConcentricSlopeAtVmax();
-        double conSlopeNearVmax = fvInvCurve.getConcentricSlopeNearVmax();
-        double isometricSlope   = fvInvCurve.getIsometricSlope();
-        double eccSlopeAtVmax   = fvInvCurve.getEccentricSlopeAtVmax();
-        double eccSlopeNearVmax = fvInvCurve.getEccentricSlopeNearVmax();
-        double conCurviness     = fvInvCurve.getConcentricCurviness();
-        double eccCurviness     = fvInvCurve.getEccentricCurviness();
-        double eccForceMax      = fvInvCurve.
+        // To initialize, we need to create an inverse force-velocity curve
+        double conSlopeAtVmax   = fvCurve.getConcentricSlopeAtVmax();
+        double conSlopeNearVmax = fvCurve.getConcentricSlopeNearVmax();
+        double isometricSlope   = fvCurve.getIsometricSlope();
+        double eccSlopeAtVmax   = fvCurve.getEccentricSlopeAtVmax();
+        double eccSlopeNearVmax = fvCurve.getEccentricSlopeNearVmax();
+        double conCurviness     = fvCurve.getConcentricCurviness();
+        double eccCurviness     = fvCurve.getEccentricCurviness();
+        double eccForceMax      = fvCurve.
                                   getMaxEccentricVelocityForceMultiplier();
 
-        fvCurve = ForceVelocityCurve(conSlopeAtVmax,
-                                     conSlopeNearVmax,
-                                     isometricSlope,
-                                     eccSlopeAtVmax,
-                                     eccSlopeNearVmax,
-                                     eccForceMax,
-                                     conCurviness,
-                                     eccCurviness);
-
         // A few parameters may need to be adjusted to avoid singularities
-        // (i.e., if an elastic tendon is used with no fiber damping).
+        // (e.g., if an elastic tendon is used with no fiber damping).
         if(!get_ignore_tendon_compliance() && !use_fiber_damping) {
 			set_minimum_activation(clamp(0.01, get_minimum_activation(), 1));
 
@@ -139,6 +129,19 @@ void Millard2012EquilibriumMuscle::buildMuscle()
             fvCurve.setCurveShape(0.0, conSlopeNearVmax, isometricSlope,
                                   0.0, eccSlopeNearVmax, eccForceMax);
         }
+
+        if(conSlopeAtVmax < 0.1 || eccSlopeAtVmax < 0.1) {
+            conSlopeAtVmax = 0.1;
+            eccSlopeAtVmax = 0.1;
+        }
+        fvInvCurve = ForceVelocityInverseCurve(conSlopeAtVmax,
+                                               conSlopeNearVmax,
+                                               isometricSlope,
+                                               eccSlopeAtVmax,
+                                               eccSlopeNearVmax,
+                                               eccForceMax,
+                                               conCurviness,
+                                               eccCurviness);
 
         // Ensure all sub-objects are up-to-date
         penMdl.ensureModelUpToDate();
@@ -224,9 +227,9 @@ const ActiveForceLengthCurve& Millard2012EquilibriumMuscle::
 getActiveForceLengthCurve() const
 {   return get_ActiveForceLengthCurve(); }
 
-const ForceVelocityInverseCurve& Millard2012EquilibriumMuscle::
-getForceVelocityInverseCurve() const
-{   return get_ForceVelocityInverseCurve(); }
+const ForceVelocityCurve& Millard2012EquilibriumMuscle::
+getForceVelocityCurve() const
+{   return get_ForceVelocityCurve(); }
 
 const FiberForceLengthCurve& Millard2012EquilibriumMuscle::
 getFiberForceLengthCurve() const
@@ -373,10 +376,10 @@ ActiveForceLengthCurve& aActiveForceLengthCurve)
     ensureMuscleUpToDate();
 }
 
-void Millard2012EquilibriumMuscle::setForceVelocityInverseCurve(
-ForceVelocityInverseCurve& aForceVelocityInverseCurve)
+void Millard2012EquilibriumMuscle::setForceVelocityCurve(
+ForceVelocityCurve& aForceVelocityCurve)
 {
-    set_ForceVelocityInverseCurve(aForceVelocityInverseCurve);
+    set_ForceVelocityCurve(aForceVelocityCurve);
     ensureMuscleUpToDate();
 }
 
@@ -855,7 +858,7 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
             dlce = penMdl.calcFiberVelocity(mli.cosPennationAngle,
                                             dlenMcl,dtldt);
             dlceN = dlce/(optFibLen*getMaxContractionVelocity());
-            fv = fvCurve.calcValue(dlceN);
+            fv = get_ForceVelocityCurve().calcValue(dlceN);
 
         } else if(!get_ignore_tendon_compliance() && !use_fiber_damping) {
 
@@ -888,9 +891,6 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
                         mli.cosPennationAngle);
 
             // Evaluate the inverse force-velocity curve.
-            const ForceVelocityInverseCurve& fvInvCurve =
-                get_ForceVelocityInverseCurve();
-
             dlceN = fvInvCurve.calcValue(fv);
             dlce  = dlceN*getMaxContractionVelocity()*optFibLen;
 
@@ -929,7 +929,7 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
                 dlceN = fiberVelocityV[0];
                 dlce  = dlceN*getOptimalFiberLength()
                         *getMaxContractionVelocity();
-                fv = fvCurve.calcValue(dlceN);
+                fv = get_ForceVelocityCurve().calcValue(dlceN);
             } else {
                 // Throw an exception here because there is no point integrating
                 // a muscle velocity that is invalid (it will end up producing
@@ -1239,9 +1239,6 @@ calcDampedNormFiberVelocity(double fiso,
     // Get a really excellent starting position to reduce the number of
     // iterations. This reduces the simulation time by about 1%.
     double fv = calcFv(max(a,0.01), max(fal,0.01), fpe, fse, max(cosPhi,0.01));
-
-    const ForceVelocityInverseCurve& fvInvCurve =
-        get_ForceVelocityInverseCurve();
     double dlceN_dt = fvInvCurve.calcValue(fv);
 
     // The approximation is poor beyond the maximum velocities.
@@ -1255,7 +1252,7 @@ calcDampedNormFiberVelocity(double fiso,
     double df_d_dlceNdt = 0.0;
 
     while(abs(err) > tol && iter < maxIter) {
-        fv = fvCurve.calcValue(dlceN_dt);
+        fv = get_ForceVelocityCurve().calcValue(dlceN_dt);
         fiberForceV = calcFiberForce(fiso,a,fal,fv,fpe,dlceN_dt);
         fiberForce = fiberForceV[0];
 
@@ -1366,7 +1363,8 @@ calc_DFiberForce_DNormFiberVelocity(double fiso,
                                     double dlceN_dt) const
 {
     // dfm_d_dlceNdt
-    return fiso * (a*fal*fvCurve.calcDerivative(dlceN_dt,1) + beta);
+    return fiso * (a*fal*get_ForceVelocityCurve().calcDerivative(dlceN_dt,1)
+                   + beta);
 }
 
 double Millard2012EquilibriumMuscle::
@@ -1532,7 +1530,8 @@ estimateMuscleFiberState(double aActivation,
         fal = falCurve.calcValue(lceN);
         fpe = fpeCurve.calcValue(lceN);
         fse = fseCurve.calcValue(tlN);
-        fv  = (staticSolution) ? 1.0 : fvCurve.calcValue(dlceN);
+        fv  = (staticSolution) ? 1.0
+                               : get_ForceVelocityCurve().calcValue(dlceN);
 
         // Compute the force error
         fiberForceV = calcFiberForce(fiso,ma,fal,fv,fpe,dlceN);
@@ -1714,7 +1713,7 @@ calcActiveFiberForceAlongTendon(double activation,
 
         //Evaluate the active-force-length and force-velocity multipliers
         double fal  = falCurve.calcValue(lceN);
-        double fv   = fvCurve.calcValue(dlceN);
+        double fv   = get_ForceVelocityCurve().calcValue(dlceN);
         double fiso = getMaxIsometricForce();
         double fpe  = fpeCurve.calcValue(lceN);
 
@@ -1849,7 +1848,7 @@ calcFiberStateGivenBoundaryCond(double lengthMT,
 
             double fal = falCurve.calcValue(lmN);
             double fpe = fpeCurve.calcValue(lmN);
-            double fv  = fvCurve.calcValue(vmN);
+            double fv  = get_ForceVelocityCurve().calcValue(vmN);
             a = calcActivation(getMaxIsometricForce(),tendonForce,
                                cos(phi),fal,fv,fpe,vmN);
 
