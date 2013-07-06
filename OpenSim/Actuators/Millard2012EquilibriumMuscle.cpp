@@ -114,8 +114,7 @@ void Millard2012EquilibriumMuscle::buildMuscle()
                                      eccSlopeNearVmax,
                                      eccForceMax,
                                      conCurviness,
-                                     eccCurviness,
-                                     aName+"_ForceVelocityCurve");
+                                     eccCurviness);
 
         // A few parameters may need to be adjusted to avoid singularities
         // (i.e., if an elastic tendon is used with no fiber damping).

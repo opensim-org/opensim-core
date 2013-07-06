@@ -32,31 +32,24 @@ namespace OpenSim {
 /** This is a muscle modeling utility class that computes the time derivative of
     activation using a first-order dynamic model. This activation model is a
     modification of those used by Thelen (2003) and Winters (1995). The time
-    derivative of activation (da/dt) is calculated as follows:
+    derivative of activation (\f$da/dt\f$) is calculated as follows:
     \f[ \frac{da}{dt} = \frac{u-a}{\tau(u,a)} \f]
-    where u is excitation, a is activation, and tau(u,a) is a variable time
-    constant:
-    \f[
-        \tau(u,a) = \begin{cases}
-            t_{\text{act}} (0.5 + 1.5a) & \text{if}\ u > a\\
-            t_{\text{deact}} / (0.5 + 1.5a) & \text{otherwise}
-        \end{cases}
-    \f]
+    where \f$u\f$ is excitation, \f$a\f$ is activation, and \f$\tau(u,a)\f$ is a
+    variable time constant:
+    \f[ \tau(u,a) = t_{\rm{act}} (0.5 + 1.5a) \quad {\rm{if}}\ u > a \f]
+    \f[ \tau(u,a) = t_{\rm{deact}} / (0.5 + 1.5a) \quad {\rm{otherwise}} \f]
 
     Since equilibrium muscle models typically have a numerical singularity in
     their state equations when activation is zero, we introduce a lower bound
-    on activation (a_min) and scale as follows:
-    \f[ \hat{a} = \frac{a - a_{\text{min}}}{1 - a_{\text{min}}} \f]
+    on activation (\f$a_{\rm{min}}\f$) and scale as follows:
+    \f[ \hat{a} = \frac{a - a_{\rm{min}}}{1 - a_{\rm{min}}} \f]
+
     whereupon we obtain the following activation dynamic model:
-    \f[
-        \begin{align}
-            \tau(u,a,a_{\text{min}}) &= \begin{cases}
-                t_{\text{act}} (0.5 + 1.5\hat{a}) & \text{if}\ u > \hat{a}\\
-                t_{\text{deact}} / (0.5 + 1.5\hat{a}) & \text{otherwise}
-            \end{cases}\\
-            \frac{da}{dt} &= \frac{u-\hat{a}}{\tau(u,a,a_{\text{min}})}
-        \end{align}
-    \f]
+    \f[ \tau(u,a,a_{\rm{min}}) = t_{\rm{act}} (0.5 + 1.5\hat{a})
+        \quad {\rm{if}}\ u > \hat{a} \f]
+    \f[ \tau(u,a,a_{\rm{min}}) = t_{\rm{deact}} / (0.5 + 1.5\hat{a})
+        \quad {\rm{otherwise}} \f]
+    \f[ \frac{da}{dt} = \frac{u-\hat{a}}{\tau(u,a,a_{\rm{min}})} \f]
 
     @param tauActivation
         Activation time constant. A typical value is 0.010 s (10 ms).

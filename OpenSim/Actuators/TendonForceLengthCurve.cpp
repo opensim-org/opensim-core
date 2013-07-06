@@ -45,19 +45,18 @@ TendonForceLengthCurve::TendonForceLengthCurve()
 {
     setNull();
     constructProperties();
-    setName("default_TendonForceLengthCurve");
+    setName(getConcreteClassName());
     ensureCurveUpToDate();
 }
 
 TendonForceLengthCurve::TendonForceLengthCurve(double strainAtOneNormForce,
                                                double stiffnessAtOneNormForce,
                                                double normForceAtToeEnd,
-                                               double curviness,
-                                               const std::string& muscleName)
+                                               double curviness)
 {
     setNull();
     constructProperties();
-    setName(muscleName + "_TendonForceLengthCurve");
+    setName(getConcreteClassName());
 
     setStrainAtOneNormForce(strainAtOneNormForce);
     setOptionalProperties(stiffnessAtOneNormForce,normForceAtToeEnd,curviness);
@@ -65,12 +64,11 @@ TendonForceLengthCurve::TendonForceLengthCurve(double strainAtOneNormForce,
     ensureCurveUpToDate();
 }
 
-TendonForceLengthCurve::TendonForceLengthCurve(double strainAtOneNormForce,
-                                               const std::string& muscleName)
+TendonForceLengthCurve::TendonForceLengthCurve(double strainAtOneNormForce)
 {
     setNull();
     constructProperties();
-    setName(muscleName + "_TendonForceLengthCurve");
+    setName(getConcreteClassName());
 
     setStrainAtOneNormForce(strainAtOneNormForce);
     ensureCurveUpToDate();
@@ -108,11 +106,6 @@ void TendonForceLengthCurve::buildCurve(bool computeIntegral)
 
 void TendonForceLengthCurve::ensureCurveUpToDate()
 {
-    // The name is not counted as a property but it can change, so it must be
-    // updated as well.
-    std::string name = getName();
-    m_curve.setName(name);
-
     if(isObjectUpToDateWithProperties()) {
         return;
     }

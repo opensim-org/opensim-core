@@ -65,12 +65,6 @@ namespace OpenSim {
         straight line segment and a value of 1 indicates a curve that smoothly
         fills the corner formed by the linear extrapolation of
         'stiffnessAtOneNormForce' and the x-axis, as shown in the figure.
-    @param muscleName
-        The name of the muscle to which this curve belongs. The muscle name is
-        used to create the name of this curve simply by appending
-        "_TendonForceLengthCurve" to the string in muscleName. The curve name is
-        used for reporting meaningful error messages and for naming the XML
-        version of this curve when it is serialized.
 
     Note that we use the Cauchy or engineering definition of strain throughout:
     strain = (l-l0)/l0, where l is the current tendon length and l0 is its slack
@@ -125,7 +119,7 @@ namespace OpenSim {
 
     <B>Example</B>
     @code
-        TendonForceLengthCurve fseCurve(0.049, 28.1, 0.67, 0.5, "testMuscle");
+        TendonForceLengthCurve fseCurve(0.049, 28.1, 0.67, 0.5);
         double fseVal   = fseCurve.calcValue(0.02);
         double dfselVal = fseCurve.calcDerivative(0.02, 1);
     @endcode
@@ -174,18 +168,16 @@ public:
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-    /** Creates a default fitted tendon-force-length curve using only the strain
-    the tendon undergoes at 1 normalized unit of tensile load. The curve is
-    given the name 'default_TendonForceLengthCurve'. */
+    /** The default constructor creates a tendon-force-length curve using the
+    default property values and assigns a default name. */
     TendonForceLengthCurve();
 
-    /** Constructs a tendon-force-length curve using the parameters specified by
-    the user. */
+    /** Constructs a tendon-force-length curve using the provided parameters and
+    assigns a default name. */
     TendonForceLengthCurve(double strainAtOneNormForce,
                            double stiffnessAtOneNormForce,
                            double normForceAtToeEnd,
-                           double curviness,
-                           const std::string& muscleName);
+                           double curviness);
 
     /** This constructor will create a C2-continuous tendon-force-length curve
     that is fit to match the average dimensionless in-vivo tendon curve reported
@@ -196,20 +188,13 @@ public:
         force. strainAtOneNormForce = 0.04 means that the tendon will develop a
         tension of 1 normalized force when it is strained by 4% of its slack
         length or, equivalently, is stretched to 1.04 times its resting length.
-    @param muscleName
-        The name of the muscle to which this curve belongs. The muscle name is
-        used to create the name of this curve simply by appending
-        "_TendonForceLengthCurve" to the string in muscleName. The curve name is
-        used for reporting meaningful error messages and for naming the XML
-        version of this curve when it is serialized.
 
     <B>Conditions</B>
     \verbatim
     strainAtOneNormForce > 0
     \endverbatim
     */
-    TendonForceLengthCurve(double strainAtOneNormForce,
-                           const std::string& muscleName);
+    TendonForceLengthCurve(double strainAtOneNormForce);
 
     /** @returns The tendon strain at which the tendon develops 1 unit of
     normalized force. strainAtOneNormForce = 0.04 means that the tendon will
