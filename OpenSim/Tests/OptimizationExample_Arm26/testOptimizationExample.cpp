@@ -28,22 +28,48 @@
 
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <istream>
 
 using namespace OpenSim;
 using namespace std;
 
+#define ARM26_DESIGN_SPACE_DIM 6
+#define REF_MAX_VEL 5.43
+
+// Reference solution used for testing.  
+const static double refControls[ARM26_DESIGN_SPACE_DIM] = {0.01, 0.01, 0.0639327, 0.99, 0.99, 0.72858};
+
+ 
 int main()
 {
-	try {
-	
-		Storage result2("Arm26_noActivation_states.sto"), standard2("std_Arm26_noActivation_states.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(0.01, 16), __FILE__, __LINE__, "Arm26 no activation states failed");
+	try {	
+		Storage result("Arm26_noActivation_states.sto"), standard("std_Arm26_noActivation_states.sto");
+		CHECK_STORAGE_AGAINST_STANDARD(result, standard, Array<double>(0.01, 16), __FILE__, __LINE__, "Arm26 no activation states failed");
 		cout << "Arm26 no activation states passed\n";
+
+		// Check the optimization result acheived at least a velocity of 5.43 m/s, and that the control values are within 20% of the reference values.  
+		ifstream resFile; 
+		resFile.open("Arm26_optimization_result"); 
+		ASSERT(resFile.is_open(), __FILE__, __LINE__, "Can't open optimization result file" );
+
+		vector<double> resVec;
+		for ( ; ; ) {
+			double tmp;
+			resFile >> tmp;   
+			if (!resFile.good()) 
+				break; 
+			resVec.push_back(tmp); 
+		}
 		
-		Array<double> tols(0.01, 16);
-		Storage result3("Arm26_bestSoFar_states.sto"), standard3("std_Arm26_bestSoFar_states.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(result3, standard3, tols, __FILE__, __LINE__, "Arm26 best so far states failed");
-		cout << "Arm26 best so far states passed\n";
+		ASSERT(resVec.size() == ARM26_DESIGN_SPACE_DIM+1, __FILE__, __LINE__, "Optimization result size mismatch" );
+			
+		for (int i = 0; i < ARM26_DESIGN_SPACE_DIM-1; i++) {
+			ASSERT(fabs(resVec[i] - refControls[i])/refControls[i] < 0.2, __FILE__, __LINE__, "Control value does not match reference" );
+		}
+		
+		ASSERT(resVec[ARM26_DESIGN_SPACE_DIM+1] < REF_MAX_VEL, __FILE__, __LINE__, "Optimized velocity smaller than reference" );
+		
+		cout << "Arm26 optimization results passed\n";
 	}
 	catch (const Exception& e) {
         e.print(cerr);

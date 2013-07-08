@@ -181,6 +181,15 @@ int main()
 		cout << "\nMaximum hand velocity = " << -f << "m/s" << endl;
 
         cout << "OpenSim example completed successfully.\n";
+		
+		// Dump out optimization results to a text file for testing
+		ofstream ofile; 
+		ofile.open("Arm26_optimization_result"); 
+		for(int i=0; i<actuators.getSize(); ++i){
+			ofile << controls[i] << endl;
+		}
+		ofile << -f <<endl;
+		ofile.close(); 
 	}
     catch (const std::exception& ex)
     {
