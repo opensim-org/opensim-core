@@ -66,8 +66,7 @@ int main()
 		for (int i = 0; i < ARM26_DESIGN_SPACE_DIM-1; i++) {
 			ASSERT(fabs(resVec[i] - refControls[i])/refControls[i] < 0.2, __FILE__, __LINE__, "Control value does not match reference" );
 		}
-		
-		ASSERT(resVec[ARM26_DESIGN_SPACE_DIM+1] < REF_MAX_VEL, __FILE__, __LINE__, "Optimized velocity smaller than reference" );
+		ASSERT(resVec[ARM26_DESIGN_SPACE_DIM] > REF_MAX_VEL, __FILE__, __LINE__, "Optimized velocity smaller than reference" );
 		
 		cout << "Arm26 optimization results passed\n";
 	}
