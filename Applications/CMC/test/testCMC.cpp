@@ -37,9 +37,7 @@ void testArm26();
 void testEMGDrivenArm();
 
 int main() {
-	//Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
-	//Object::renameType("Thelen2003Muscle", "Millard2012AccelerationMuscle");
-	//Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
+
     SimTK::Array_<std::string> failures;
     
 	try {testSingleRigidTendonMuscle();}
@@ -61,6 +59,28 @@ int main() {
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testEMGDrivenArm"); }
 
+	// redo with the Millard2012EquilibriumMuscle 
+	Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
+
+    try {testSingleMuscle();}
+    catch (const std::exception& e)
+		{	cout << e.what() <<endl; 
+			failures.push_back("testSingleMuscle_Millard"); }
+
+    try {testTwoMusclesOnBlock();}
+    catch (const std::exception& e)
+		{	cout << e.what() <<endl; 
+			failures.push_back("testTwoMusclesOnBlock_Millard"); }
+    
+    try {testArm26();}
+    catch (const std::exception& e)
+		{  cout << e.what() <<endl; failures.push_back("testArm26_Millard"); }
+
+	try {testEMGDrivenArm();}
+    catch (const std::exception& e)
+		{  cout << e.what() <<endl; failures.push_back("testEMGDrivenArm_Millard"); }
+
+
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
@@ -69,23 +89,6 @@ int main() {
 	cout << "Done" << endl;
 
     return 0;
-}
-
-void testSingleMuscle() {
-	cout<<"\n******************************************************************" << endl;
-	cout << "*                       testSingleThelenMuscle                   *" << endl;
-	cout << "******************************************************************\n" << endl;
-	ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
-	forward.run();
-
-	CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
-	cmc.run();
-
-	Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
-	Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
-
-	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.0005, 4), __FILE__, __LINE__, "testSingleMuscle failed");
-	cout << "testSingleMuscle passed\n" << endl;
 }
 
 void testSingleRigidTendonMuscle() {
@@ -112,8 +115,29 @@ void testSingleRigidTendonMuscle() {
 
 	// Tolerance of 2mm or position error and 2mm/s translational velocity of the block
 	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.0025, 4), __FILE__, __LINE__, "testSingleRigidTendonMuscle failed");
+	
 	cout << "testSingleRigidTendonMuscle passed\n" << endl;
 }
+
+void testSingleMuscle() {
+	cout<<"\n******************************************************************" << endl;
+	cout << "*                         testSingleMuscle                       *" << endl;
+	cout << "******************************************************************\n" << endl;
+	ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
+	forward.run();
+
+	CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
+	cmc.run();
+
+	Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
+	Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
+
+	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.0005, 4), __FILE__, __LINE__, "testSingleMuscle failed");
+	
+	const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
+	cout << "testSingleMuscle "+muscleType+" passed\n" << endl;
+}
+
 
 void testTwoMusclesOnBlock() {
 	cout<<"\n******************************************************************" << endl;
@@ -137,7 +161,9 @@ void testTwoMusclesOnBlock() {
 	rms_tols[5] = 0.001; // muscle 2 fiber length 
 
 	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, rms_tols, __FILE__, __LINE__, "testTwoMusclesOnBlock failed");
-	cout << "testTwoMusclesOnBlock passed\n" << endl;
+	
+	const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
+	cout << "testTwoMusclesOnBlock "+muscleType+" passed\n" << endl;
 }
 
 
@@ -155,6 +181,7 @@ void testArm26() {
 	
 	CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testArm26 failed");
 
+	const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
 	cout << "\ntestArm26 passed\n" << endl;
 }
 
@@ -168,8 +195,8 @@ void testEMGDrivenArm() {
 	Storage results("Results_Arm26_EMG/arm26_states.sto"), standard("std_arm26_states.sto");
 
 	Array<double> rms_tols(0.1, 2*2+2*6);
-	rms_tols[0] = 0.0025; // shoulder q
-	rms_tols[1] = 0.0025;  // elbow q
+	rms_tols[0] = 0.005; // shoulder q
+	rms_tols[1] = 0.005;  // elbow q
 	rms_tols[6] = 0.25;  // trilat normally off but because of bicep long EMG tracking it turns on
 	rms_tols[8] = 0.25;  // trimed normally off but because of bicep long EMG tracking it turns on
 	rms_tols[10] = 0.50;  // biceps long normally low but because of EMG tracking should be on more
@@ -177,5 +204,6 @@ void testEMGDrivenArm() {
 
 	CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testEMGDrivenArm failed");
 
+	const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
 	cout << "\n testEMGDrivenArm passed\n" << endl;
 }

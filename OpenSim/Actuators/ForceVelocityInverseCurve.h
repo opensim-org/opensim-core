@@ -23,10 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Actuators/osimActuatorsDLL.h>
-
-
 // INCLUDE
+#include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <simbody/internal/common.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
@@ -40,25 +38,81 @@
 #endif
 
 namespace OpenSim {
-//==============================================================================
-//                      FORCE VELOCITY INVERSE CURVE
-//==============================================================================
-/**
- This class serves as a serializable ForceVelocityInverseCurve, for use in 
- equilibrium muscle models. 
- 
- \image html fig_ForceVelocityInverseCurveUPDATE.png
+/** This class serves as a serializable ForceVelocityInverseCurve for use in
+    equilibrium muscle models. The inverse force-velocity curve is
+    dimensionless: force is normalized to maximum isometric force and velocity
+    is normalized to the maximum muscle contraction velocity (vmax), where vmax
+    is expressed in units of optimal_fiber_lengths per second. Negative
+    normalized velocities correspond to concentric contraction (i.e.,
+    shortening). The inverse force-velocity curve is constructed from 6
+    properties, which are identical to those used to construct the
+    corresponding force-velocity curve. See ForceVelocityCurve for descriptions
+    of these parameters.
 
- Note that this object should be updated through the set methods provided. 
- These set methods will take care of rebuilding the curve correctly. If you
- modify the properties directly, the curve will not be rebuilt, and upon
- calling a function like calcValue, calcDerivative, or printCurveToCSVFile
- an exception will be thrown because the curve is out of date with its 
- properties.
+    @param concentricSlopeAtVmax
+        An exception will be thrown if this parameter is set to 0.
+    @param concentricSlopeNearVmax
+        An exception will be thrown if this parameter is set to 0.
+    @param isometricSlope
+    @param eccentricSlopeAtVmax
+        An exception will be thrown if this parameter is set to 0.
+    @param eccentricSlopeNearVmax
+        An exception will be thrown if this parameter is set to 0.
+    @param maxEccentricVelocityForceMultiplier
+    @param concentricCurviness
+    @param eccentricCurviness
+    @param muscleName
+        The name of the muscle to which this curve belongs. The muscle name is
+        used to create the name of this curve simply by appending
+        "_ForceVelocityCurve" to the string in muscleName. The curve name is
+        used for reporting meaningful error messages and for naming the XML
+        version of this curve when it is serialized.
 
-  @author Matt Millard
+    \image html fig_ForceVelocityInverseCurve.png
+    <BR>
+    \image html fig_ForceVelocityCurve.png
 
- */
+    <B>Conditions</B>
+    \verbatim
+    1a)  0 < concentricSlopeAtVmax < 1
+    1b)  concentricSlopeAtVmax < concentricSlopeNearVmax < 1
+    2a)  1 < isometricSlope
+    2b)  (maxEccentricVelocityForceMultiplier-1)/1 < isometricSlope
+     3)  0 < eccentricSlopeAtVmax < (maxEccentricVelocityForceMultiplier-1)/1
+     4)  1 < maxEccentricVelocityForceMultiplier
+     5)  0 <= concentricCurviness <= 1
+     6)  0 <= eccentricCurviness <= 1
+    \endverbatim
+
+    <B>Default Parameter Values</B>
+    \verbatim
+    concentricSlopeAtVmax .................. 0.1
+    concentricSlopeNearVmax ................ 0.25
+    isometricSlope ......................... 5.0
+    eccentricSlopeAtVmax ................... 0.1
+    eccentricSlopeNearVmax ................. 0.15
+    maxEccentricVelocityForceMultiplier .... 1.4
+    concentricCurviness .................... 0.6
+    eccentricCurviness ..................... 0.9
+    \endverbatim
+
+    <B>Example</B>
+    @code
+        ForceVelocityInverseCurve fvInvCurve(0.1, 0.25, 5.0, 0.1, 0.15,
+                                             1.4, 0.6, 0.9, "testMuscle");
+        double fvInvVal  = fvInvCurve.calcValue(1.0);
+        double dfvInvVal = fvInvCurve.calcDerivative(1.0, 1);
+    @endcode
+
+    Note that this object should be updated through the set methods provided.
+    These set methods will take care of rebuilding the curve correctly. If you
+    modify the properties directly, the curve will not be rebuilt, and upon
+    calling a function like calcValue, calcDerivative, or printCurveToCSVFile,
+    an exception will be thrown because the curve is out-of-date with its
+    properties.
+
+    @author Matt Millard
+*/
 class OSIMACTUATORS_API ForceVelocityInverseCurve : public Function {
 OpenSim_DECLARE_CONCRETE_OBJECT(ForceVelocityInverseCurve, Function);
 public:
@@ -66,393 +120,238 @@ public:
 // PROPERTIES
 //==============================================================================
     /** @name Property declarations
-    These are the serializable properties associated with this class. **/
+        These are the serializable properties associated with this class. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(concentric_slope_at_vmax, double,
-        "curve slope at the maximum normalized "
-        "concentric contraction velocity (norm. velocity of -1)");
-
+        "Slope of force-velocity curve at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)");
     OpenSim_DECLARE_PROPERTY(concentric_slope_near_vmax, double,
-        "Slope just prior to the maximum normalized"
-        "concentric (shortening) velocity (e.g. -1 < norm velocity < -0.8)");
-
-    OpenSim_DECLARE_PROPERTY(isometric_slope, double, 
-        "curve slope at isometric (normalized fiber velocity of 0)");
-
-    OpenSim_DECLARE_PROPERTY(eccentric_slope_at_vmax, double, 
-        "curve slope at the maximum normalized "
-        "eccentric (lengthening) contraction velocity (norm. velocity of 1)");
-
+        "Slope of force-velocity curve just before reaching concentric_slope_at_vmax");
+    OpenSim_DECLARE_PROPERTY(isometric_slope, double,
+        "Slope of force-velocity curve at isometric (normalized velocity of 0)");
+    OpenSim_DECLARE_PROPERTY(eccentric_slope_at_vmax, double,
+        "Slope of force-velocity curve at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)");
     OpenSim_DECLARE_PROPERTY(eccentric_slope_near_vmax, double,
-        "Slope just prior to the maximum normalized"
-        "eccentric (lengthening) velocity (e.g. 0.8 < norm velocity < 1)");
-
-    OpenSim_DECLARE_PROPERTY(max_eccentric_velocity_force_multiplier, double, 
-        "curve value at the maximum normalized "
-        "eccentric contraction velocity");
-
+        "Slope of force-velocity curve just before reaching eccentric_slope_at_vmax");
+    OpenSim_DECLARE_PROPERTY(max_eccentric_velocity_force_multiplier, double,
+        "Value of force-velocity curve at the maximum normalized eccentric contraction velocity");
     OpenSim_DECLARE_PROPERTY(concentric_curviness, double,
-        "concentric curve bend, from "
-        "linear to maximum bend  (0-1)");
-
+        "Shape of concentric branch of force-velocity curve, from linear (0) to maximal curve (1)");
     OpenSim_DECLARE_PROPERTY(eccentric_curviness, double,
-        "eccentric curve bend, from "
-        "linear to maximum bend  (0-1)");
+        "Shape of eccentric branch of force-velocity curve, from linear (0) to maximal curve (1)");
     /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-
-    /** Default constructor creates an curve with the default property values,
-     and assigns it a default name **/
+    /** Creates an inverse force-velocity curve using the default parameter
+    values. The curve is given the name 'default_ForceVelocityInverseCurve'. */
     ForceVelocityInverseCurve();
 
-    // Uses default (compiler-generated) destructor, copy constructor, copy 
-    // assignment operator.
+    /** Constructs an inverse force-velocity curve using the parameters
+    specified by the user. */
+    ForceVelocityInverseCurve(double concentricSlopeAtVmax,
+                              double concentricSlopeNearVmax,
+                              double isometricSlope,
+                              double eccentricSlopeAtVmax,
+                              double eccentricSlopeNearVmax,
+                              double maxEccentricVelocityForceMultiplier,
+                              double concentricCurviness,
+                              double eccentricCurviness,
+                              const std::string& muscleName);
+
+    /** @returns The slope of the force-velocity curve at a normalized velocity
+    of -1, which is the minimum slope of the concentric side of the
+    force-velocity curve. */
+    double getConcentricSlopeAtVmax() const;
+
+    /** @returns The slope of the force-velocity curve near the maximum
+    normalized concentric (shortening) contraction velocity (between
+    approximately -0.8 and -1). */
+    double getConcentricSlopeNearVmax() const;
+
+    /** @returns The slope of the force-velocity curve at a normalized velocity
+    of 0, which is the maximum slope of the force-velocity curve. */
+    double getIsometricSlope() const;
+
+    /** @returns The slope of the force-velocity curve at a normalized velocity
+    of 1, which is the minimum slope of the eccentric side of the force-velocity
+    curve. */
+    double getEccentricSlopeAtVmax() const;
+
+    /** @returns The slope of the force-velocity curve near the maximum
+    normalized eccentric (lengthening) contraction velocity (between
+    approximately 0.8 and 1). */
+    double getEccentricSlopeNearVmax() const;
+
+    /** @returns The value of the force-velocity curve (i.e., the force-velocity
+    multiplier) at the maximum eccentric contraction velocity. */
+    double getMaxEccentricVelocityForceMultiplier() const;
+
+    /** @returns A dimensionless parameter between 0 and 1 that describes the
+    shape of the concentric branch of the force-velocity curve: a value of 0
+    indicates that the curve is very close to a straight line segment and a
+    value of 1 indicates a curve that smoothly fills the corner formed by the
+    linear extrapolation of 'concentricSlopeNearVmax' and 'isometricSlope', as
+    shown in the figure in the class description. */
+    double getConcentricCurviness() const;
+
+    /** @returns A dimensionless parameter between 0 and 1 that describes the
+    shape of the eccentric branch of the force-velocity curve: a value of 0
+    indicates that the curve is very close to a straight line segment and a
+    value of 1 indicates a curve that smoothly fills the corner formed by the
+    linear extrapolation of 'isometricSlope' and 'eccentricSlopeNearVmax', as
+    shown in the figure in the class description. */
+    double getEccentricCurviness() const;
 
     /**
-     Constructs a C2 continuous inverse force velocity curve. The inverse force 
-     velocity curve requries the 6 properties and a name to define the curve.
-     These properties are IDENTICAL to the ones used to specify the 
-     force velocity curve. 
-     
-     
+    @param aConcentricSlopeAtVmax
+        The slope of the force-velocity curve at a normalized velocity of -1,
+        which is the minimum slope of the concentric side of the force-velocity
+        curve.
+    @param aConcentricSlopeNearVmax
+        The slope of the force-velocity curve near the maximum normalized
+        concentric (shortening) contraction velocity (between approximately
+        -0.8 and -1).
+    @param aIsometricSlope
+        The slope of the force-velocity curve at a normalized velocity of 0,
+        which is the maximum slope of the force-velocity curve.
+    @param aEccentricSlopeAtVmax
+        The slope of the force-velocity curve at a normalized velocity of 1,
+        which is the minimum slope of the eccentric side of the force-velocity
+        curve.
+    @param aEccentricSlopeNearVmax
+        The slope of the force-velocity curve near the maximum normalized
+        eccentric (lengthening) contraction velocity (between approximately 0.8
+        and 1).
+    @param aMaxForceMultiplier
+        The value of the force-velocity curve (i.e., the force-velocity
+        multiplier) at the maximum eccentric contraction velocity.
 
-     @param concentricSlopeAtVmax
-                See ForceVelocityCurve for documentation. Note that if a value 
-                of 0 is used for this parameter an exception will be thrown 
-                when the curve is created.
-
-     @param concentricSlopeNearVmax
-                See ForceVelocityCurve for documentation. Note that if a value 
-                of 0 is used for this parameter an exception will be thrown 
-                when the curve is created. 
-
-     @param isometricSlope   
-                See ForceVelocityCurve for documentation. 
-
-     @param eccentricSlopeAtVmax
-                See ForceVelocityCurve for documentation. Note that if a value 
-                of 0 is used for this parameter an exception will be thrown 
-                when the curve is created.
-
-    @param eccentricSlopeNearVmax
-                See ForceVelocityCurve for documentation. Note that if a value 
-                of 0 is used for this parameter an exception will be thrown 
-                when the curve is created.                 
-
-     @param maxEccentricVelocityForceMultiplier
-                See ForceVelocityCurve for documentation. 
-                
-     @param concentricCurviness
-                See ForceVelocityCurve for documentation. 
-
-     @param eccentricCurviness
-                See ForceVelocityCurve for documentation. 
-
-
-     @param muscleName
-                The name of the muscle this curve belongs to. This name is used
-                to create the name of this curve, which is formed simply by 
-                appending "_ForceVelocityInverseCurve" to the string in muscleName.
-                This name is used for making intelligible error messages and 
-                also for naming the XML version of this curve when it is 
-                serialized.
-
-      <B>Conditions:</B>
-        \verbatim
-            1a)  0 < concentricSlopeAtVmax < 1            
-             b)  concentricSlopeAtVmax < concentricSlopeNearVmax < 1
-
-            2a) 1 < isometricSlope
-            2b) (maxEccentricVelocityForceMultiplier-1)/1 < isometricSlope            
-            3)  0 < eccentricSlopeAtVmax < (maxEccentricVelocityForceMultiplier-1)/1
-
-            4) 1 < maxEccentricVelocityForceMultiplier 
-
-            5) 0 <= concentricCurviness <= 1            
-            6) 0 <= eccentricCurviness <= 1
-        \endverbatim
-
-        <B>Computational Costs</B>
-        \verbatim 
-            ~8,200 flops
-        \endverbatim
-
-        <B> Default Parameter Values </B>
-        \verbatim
-            concentricSlopeAtVmax ...................  = 0.1 
-            concentricSlopeNearVmax .................  = 0.1
-            isometricSlope        ...................  = 5
-            eccentricSlopeAtVmax  ...................  = 0.1
-            maxEccentricVelocityForceMultiplier  ...  = 1.8
-            concentricCurviness   ..................  = 0.1
-            eccentricCurviness    ..................  = 0.75
-        \endverbatim
-
-    <B> Example </B>
-    @code
-        ForceVelocityInverseCurve fvInvCurve3(0.1,0.1,5,0.1,1.8,0.1,0.75,"soleus");
-        double fvInvVal  = fvInvCurve3.calcValue(1.0);
-        double dfvInvVal = fvInvCurve3.calcDerivative(1.0,1);
-    @endcode
-
-    */
-    ForceVelocityInverseCurve(  double concentricSlopeAtVmax, 
-                                double concentricSlopeNearVmax,
-                                double isometricSlope,
-                                double eccentricSlopeAtVmax,
-                                double eccentricSlopeNearVmax,
-                                double maxEccentricVelocityForceMultiplier,
-                                double concentricCurviness,
-                                double eccentricCurviness,
-                                const std::string& muscleName);
-
-
-    /**
-    @returns    The slope of the force velocity curve at the maximum
-                normalized contraction velocity (-1). 
-    */
-     double getConcentricSlopeAtVmax() const;
-
-    /**
-    @returns    The slope of the force velocity curve close to the maximum
-                normalized contraction velocity. 
-    */
-     double getConcentricSlopeNearVmax() const;
-
-     /**
-     @returns   The slope of the force velocity curve at a normalized 
-                contraction velocity of 0.
-     */
-     double getIsometricSlope() const;
-
-     /**
-     @returns   The slope of the force velocity curve at the maximum eccentric
-                (lengthening) contraction velocity (1).
-     */
-     double getEccentricSlopeAtVmax() const;
-
-    /**
-    @returns    The slope of the force velocity curve close to the maximum
-                normalized eccentric contraction velocity. 
-    */
-     double getEccentricSlopeNearVmax() const;
-
-
-     /**
-     @returns   The value of the force velocity multiplier at the maximum 
-                eccentric (lengthening) velocity.
-     */
-     double getMaxEccentricVelocityForceMultiplier() const;
-
-     /**
-     @returns   The value of the curviness of the concentric curve, where 0
-                represents a nearly straight line segment, and 1 represents 
-                a curve with the maximum bend possible given the 
-                concentricMinSlope, and the isometricMaxSlope. 
-     */
-     double getConcentricCurviness() const;
-
-     /**
-     @returns   The value of the curviness of the eccentric curve, where 0
-                represents a nearly straight line segment, and 1 represents 
-                a curve with the maximum bend possible given the 
-                eccentricMinSlope, and the isometricMaxSlope.
-     */
-     double getEccentricCurviness() const;
-     
-     /**
-     @param aConcentricSlopeAtVmax
-        the slope of the force velocity curve at the maximum concentric 
-        contraction velocity (1).
-     @param aConcentricSlopeNearVmax
-        the slope of the force velocity curve near the maximum concentric 
-        contraction velocity.
-     @param aIsometricSlope 
-        the slope of the force velocity curve at a contraction velocity of 0.
-     @param aEccentricSlopeAtVmax 
-        the slope of the force velocity curve at the maximum eccentric 
-        (lengthening) contraction velocity (1).
-     @param aEccentricSlopeNearVmax 
-        the slope of the force velocity curve near the maximum eccentric 
-        (lengthening) contraction velocity.
-     @param aMaxForceMultiplier 
-        the value of the force velocity curve, or the value of the force 
-        velocity multiplier, at the maximum eccentric (lengthening) velocity
-     
-     <B>Conditions</B>
-      \verbatim
-            1a)  0 < concentricSlopeAtVmax < 1            
-            1b) concentricSlopeAtVmax < concentricSlopeNearVmax < 1
-            2a) 1 < isometricSlope
-            2b) (maxEccentricVelocityForceMultiplier-1)/1 < isometricSlope            
-            3a)  0 < eccentricSlopeAtVmax < (maxEccentricVelocityForceMultiplier-1)/1
-            3b)  eccentricSlopeAtVmax < eccentricSlopeNearVmax < (maxEccentricVelocityForceMultiplier-1)/1
-            4) 1 < maxEccentricVelocityForceMultiplier 
-      \endverbatim
-
-      <B>Computational Cost</B>
-      The curve is rebuilt at a cost of ~8,200 flops
-
-     */
-     void setCurveShape(double aConcentricSlopeAtVmax,
-                        double aConcentricSlopeNearVmax,
-                        double aIsometricSlope,
-                        double aEccentricSlopeAtVmax,
-                        double aEccentricSlopeNearVmax,
-                        double aMaxForceMultiplier);
-
-     /**
-     @param aConcentricCurviness      
-        The value of the curviness of the concentric curve, where 0 represents a 
-        nearly straight line segment, and 1 represents a curve with the maximum 
-        bend possible given the concentricMinSlope, and the isometricMaxSlope. 
-
-        <B>Computational Cost</B>
-      The curve is rebuilt at a cost of ~8,200 flops
-     */
-     void setConcentricCurviness(double aConcentricCurviness);
-
-     /**
-     @param aEccentricCurviness
-        The value of the curviness of the eccentric curve, where 0 represents a 
-        nearly straight line segment, and 1 represents a curve with the maximum 
-        bend possible given the eccentricMinSlope, and the isometricMaxSlope.
-
-        <B>Computational Cost</B>
-      The curve is rebuilt at a cost of ~8,200 flops
-     */
-     void setEccentricCurviness(double aEccentricCurviness);
-
-    /**
-    Calculates the value of the curve evaluated at 'aForceVelocityMultiplier'. 
-
-    @param aForceVelocityMultiplier: the force velocity multiplier to evaluate
-        the force velocity curve for the corresponding fiber velocity
-        
-
-    @return the value of the curve evaluated at aForceVelocityMultiplier
-
-    <B>Computational Costs</B>
+    <B>Conditions</B>
     \verbatim
-        x in curve domain  : ~282 flops
-        x in linear section:   ~5 flops
+    1a)  0 < concentricSlopeAtVmax < 1
+    1b)  concentricSlopeAtVmax < concentricSlopeNearVmax < 1
+    2a)  1 < isometricSlope
+    2b)  (maxEccentricVelocityForceMultiplier-1)/1 < isometricMaxSlope
+    3a)  0 < eccentricSlopeAtVmax < (maxEccentricVelocityForceMultiplier-1)/1
+    3b)  eccentricSlopeAtVmax < eccentricSlopeNearVmax < (maxEccentricVelocityForceMultiplier-1)/1
+     4)  1 < maxEccentricVelocityForceMultiplier
     \endverbatim
-
     */
+    void setCurveShape(double aConcentricSlopeAtVmax,
+                       double aConcentricSlopeNearVmax,
+                       double aIsometricSlope,
+                       double aEccentricSlopeAtVmax,
+                       double aEccentricSlopeNearVmax,
+                       double aMaxForceMultiplier);
+
+    /**
+    @param aConcentricCurviness
+        A dimensionless parameter between 0 and 1 that describes the shape of
+        the concentric branch of the force-velocity curve: a value of 0
+        indicates that the curve is very close to a straight line segment and a
+        value of 1 indicates a curve that smoothly fills the corner formed by
+        the linear extrapolation of 'concentricSlopeNearVmax' and
+        'isometricSlope', as shown in the figure in the class description.
+
+    <B>Conditions</B>
+    \verbatim
+    0 <= concentricCurviness <= 1
+    \endverbatim
+    */
+    void setConcentricCurviness(double aConcentricCurviness);
+
+    /**
+    @param aEccentricCurviness
+        A dimensionless parameter between 0 and 1 that describes the shape of
+        the eccentric branch of the force-velocity curve: a value of 0 indicates
+        that the curve is very close to a straight line segment and a value of 1
+        indicates a curve that smoothly fills the corner formed by the linear
+        extrapolation of 'isometricSlope' and 'eccentricSlopeNearVmax', as shown
+        in the figure in the class description.
+
+    <B>Conditions</B>
+    \verbatim
+    0 <= eccentricCurviness <= 1
+    \endverbatim
+    */
+    void setEccentricCurviness(double aEccentricCurviness);
+
+    /** Evaluates the inverse force-velocity curve at a force-velocity
+    multiplier value of 'aForceVelocityMultiplier'. */
     double calcValue(double aForceVelocityMultiplier) const;
 
-    /**
-    Calculates the derivative of the force-velocity inverse curve w.r.t. 
-    the force velocity multiplier. 
-
-    @param aForceVelocityMultiplier: the force velocity multiplier to evaluate
-        the force velocity curve for the corresponding fiber velocity
-
-    @param order           : the order of the derivative. Only values of 0,1 and
-                             2 are acceptable.
-
-    @return the derivative of the force-velocity inverse curve w.r.t. normalized 
-            fiber velocity
-    
-    <B>Computational Costs</B>       
-    \verbatim
-        x in curve domain  : ~391 flops
-        x in linear section:   ~2 flops       
-    \endverbatim
-
+    /** Calculates the derivative of the inverse force-velocity curve with
+    respect to the force-velocity multiplier.
+    @param aForceVelocityMultiplier
+        The force-velocity multiplier value.
+    @param order
+        The order of the derivative. Only values of 0, 1, and 2 are acceptable.
+    @return
+        The derivative of the inverse force-velocity curve with respect to the
+        force-velocity multiplier.
     */
     double calcDerivative(double aForceVelocityMultiplier, int order) const;
 
-    /**
-       This function returns a SimTK::Vec2 that contains in its 0th element
-       the lowest value of the curve domain, and in its 1st element the highest
-       value in the curve domain of the curve. Outside of this domain the curve
-       is approximated using linear extrapolation.
-
-       @return The minimum and maximum value of the domain, x, of the curve 
-                  y(x). Within this range y(x) is a curve, outside of this range
-                  the function y(x) is a C2 (continuous to the second 
-                  derivative) linear extrapolation*/
+    /** Returns a SimTK::Vec2 containing the lower (0th element) and upper (1st
+    element) bounds on the domain of the curve. Outside this domain, the curve
+    is approximated using linear extrapolation.
+    @return
+        The minimum and maximum value of the domain, x, of the curve y(x).
+        Within this range, y(x) is a curve; outside this range, the function
+        y(x) is a C2-continuous linear extrapolation.
+    */
     SimTK::Vec2 getCurveDomain() const;
 
-    /**This function will generate a csv file with a name that matches the 
-       curve name (e.g. "bicepfemoris_fiberForceVelocityInverseCurve.csv").
-       This function is not const to permit the curve to be rebuilt if it is out 
-       of date with its properties.
-       
-       @param path The full path to the location. Note '/' slashes must be used,
-            and do not put a '/' after the last folder.
+    /** Generates a .csv file with a name that matches the curve name (e.g.,
+    "bicepsfemoris_ForceVelocityInverseCurve.csv"). This function is not const
+    to permit the curve to be rebuilt if it is out-of-date with its properties.
+    @param path
+        The full destination path. Note that forward slashes ('/') must be used
+        and there should not be a slash after the last folder.
 
-       The file will contain the following columns:
-       
-       \verbatim
-       Col# 1, 2,     3,       4,  
-            x, y, dy/dx, d2y/dx2,
-       \endverbatim
-       
-       The curve will be sampled from its linear extrapolation region
-       (the region with normalized fiber velocities < -1), through 
-       the curve, out to the other linear extrapolation region
-       (the region with normalized fiber velocities > 1). The width of 
-       each linear extrapolation region is 10% of the entire range of x, or 
-       0.1*(x1-x0).
+    The file will contain the following data:
+    \verbatim
+    column: 1 | 2 |     3 |       4
+      data: x | y | dy/dx | d2y/dx2
+    \endverbatim
 
-       The curve is sampled quite densely: there are 200+20 rows    
+    Samples will be taken from the concentric linear extrapolation region (the
+    region with normalized fiber velocities < -1), through the curve, out to the
+    eccentric linear extrapolation region (the region with normalized fiber
+    velocities > 1). The width of each linear extrapolation region is 10% of the
+    curve domain, or 0.1*(x1-x0). The curve is sampled quite densely: the
+    inverse force-velocity .csv file will have 200+20 rows.
 
-       <B>Computational Costs</B>
-       \verbatim
-            ~194,800 flops
-       \endverbatim
+    <B>Example</B>
+    To read the .csv file into Matlab, you need to set csvread to ignore the
+    header row. Since csvread is 0-indexed, the following example will begin
+    reading the .csv file from the first column of the second row:
+    \verbatim
+    data = csvread('bicepsfemoris_ForceVelocityInverseCurve.csv', 1, 0);
+    \endverbatim
+    */
+    void printMuscleCurveToCSVFile(const std::string& path);
 
-       <B>Example</B>
-       To read the csv file with a header in from Matlab, you need to use 
-       csvread set so that it will ignore the header row. This is accomplished
-       by using the extra two numerical arguments for csvread to tell the 
-       function to begin reading from the 1st row, and the 0th index (csvread
-       is 0 indexed). This is necessary to skip reading in the text header
-       \verbatim
-        data=csvread('bicepfemoris_fiberForceVelocityInverseCurve.csv',1,0);
-       \endverbatim
-
-       */
-       void printMuscleCurveToCSVFile(const std::string& path);
-
-       void ensureCurveUpToDate();
+    void ensureCurveUpToDate();
 //==============================================================================
 // PRIVATE
 //==============================================================================
 private:
-	/**
-	//--------------------------------------------------------------------------
-	<B> OpenSim::Function Interface </B>
-	//--------------------------------------------------------------------------
-    Create the underlying SimTK::Function that implements the calculations
-		necessary for this curve. 
-	*/
+    // OpenSim::Function Interface
+    // Create the underlying SimTK::Function that implements the calculations
+    // necessary for this curve.
     SimTK::Function* createSimTKFunction() const OVERRIDE_11;
-    
+
     void setNull();
     void constructProperties();
 
-    /**
-        This function will take all of the current property values
-        and build a curve.
-
-
-        <B>Computational Costs</B>
-        \verbatim 
-            Curve Construction Costs :   ~20,500 flops
-        \endverbatim
-
-    */
+    // This function will take all of the current property values and build a
+    // curve.
     void buildCurve();
-    
 
     SmoothSegmentedFunction   m_curve;
-   
+
 };
 
 }

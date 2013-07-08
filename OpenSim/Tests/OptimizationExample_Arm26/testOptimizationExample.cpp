@@ -35,17 +35,14 @@ using namespace std;
 int main()
 {
 	try {
-		
-/*		Storage result1("Arm26_randomSample_states.sto"), standard1("std_Arm26_randomSample_states.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(0.01, 24), __FILE__, __LINE__, "Arm26 random sample states failed");
-		cout << "Arm26 random sample states passed\n";
-*/		
+	
 		Storage result2("Arm26_noActivation_states.sto"), standard2("std_Arm26_noActivation_states.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(0.01, 24), __FILE__, __LINE__, "Arm26 no activation states failed");
+		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(0.01, 16), __FILE__, __LINE__, "Arm26 no activation states failed");
 		cout << "Arm26 no activation states passed\n";
 		
+		Array<double> tols(0.01, 16);
 		Storage result3("Arm26_bestSoFar_states.sto"), standard3("std_Arm26_bestSoFar_states.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(result3, standard3, Array<double>(0.01, 24), __FILE__, __LINE__, "Arm26 best so far states failed");
+		CHECK_STORAGE_AGAINST_STANDARD(result3, standard3, tols, __FILE__, __LINE__, "Arm26 best so far states failed");
 		cout << "Arm26 best so far states passed\n";
 	}
 	catch (const Exception& e) {

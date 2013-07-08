@@ -96,13 +96,31 @@ int main()
     context->setPropertiesFromState();
     OpenSim::Thelen2003Muscle* thelenMsl = dynamic_cast<Thelen2003Muscle*>(dTRIlong);
     AbstractProperty& dProp = thelenMsl->updPropertyByName("ignore_tendon_compliance");
-    PropertyHelper::setValueBool(true, dProp);
+    
+	PropertyHelper::setValueBool(true, dProp);
     cout << "Prop after is " << dProp.toString() << endl;
-    context->recreateSystemKeepStage();
+
+	bool exceptionThrown = false;
+	try{// adding to the system should cause Muscle that do not handle
+		// ignore_tendon_compliance to throw an exception
+		context->recreateSystemKeepStage();
+	}	
+	catch (const std::exception& e) {
+		cout << e.what() << endl;
+		exceptionThrown = true;
+		PropertyHelper::setValueBool(false, dProp);
+		cout << "Prop reset to " << dProp.toString() << endl;
+		// recreate the system so test can continue
+		context->recreateSystemKeepStage();
+	}
+
+	SimTK_ASSERT_ALWAYS(exceptionThrown, "Setting ignore_tendon_compliance must throw an exception.");
+
+
     AbstractProperty& dProp2 = thelenMsl->updPropertyByName("ignore_tendon_compliance");
     cout << "Prop after create system is " << dProp2.toString() << endl;
     bool after = PropertyHelper::getValueBool(dProp);
-    SimTK_ASSERT_ALWAYS(after, "Property has wrong value!!");
+    SimTK_ASSERT_ALWAYS(!after, "Property has wrong value!!");
 	context->updateDisplayer(*dTRIlong);
 	const OpenSim::Array<PathPoint*>& path = context->getCurrentPath(*dTRIlong);
 	cout << "Muscle Path" << endl;

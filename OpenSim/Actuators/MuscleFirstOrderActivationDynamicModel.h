@@ -22,319 +22,162 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-//=============================================================================
+
 // INCLUDES
-//=============================================================================
-
-//#include <string>
-//#include <SimTKcommon/internal/Function.h>
 #include "Simbody.h"
-
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Common/Object.h>
 
 namespace OpenSim {
+/** This is a muscle modeling utility class that computes the time derivative of
+    activation using a first-order dynamic model. This activation model is a
+    modification of those used by Thelen (2003) and Winters (1995). The time
+    derivative of activation (da/dt) is calculated as follows:
+    \f[ \frac{da}{dt} = \frac{u-a}{\tau(u,a)} \f]
+    where u is excitation, a is activation, and tau(u,a) is a variable time
+    constant:
+    \f[
+        \tau(u,a) = \begin{cases}
+            t_{\text{act}} (0.5 + 1.5a) & \text{if}\ u > a\\
+            t_{\text{deact}} / (0.5 + 1.5a) & \text{otherwise}
+        \end{cases}
+    \f]
 
-    /**
-    This function is a muscle modeling utility class that computes the 
-    derivative of activation with respect to time time using a modification 
-    of the activation model presented in Thelen 2003. The activation model 
-    presented by Thelen in Eqns. 1 and 2 in the Appendix closely follows 
-    the activation dynamic model found in Winters 1995 (Eqn. 2, line 2, Eqn 3) 
-    where the time derivative of activation (da/dt) is equal to the difference 
-    between excitation (u) and activation (a) scaled by a variable time-constant 
-    (tau(a,u)).
-    
+    Since equilibrium muscle models typically have a numerical singularity in
+    their state equations when activation is zero, we introduce a lower bound
+    on activation (a_min) and scale as follows:
+    \f[ \hat{a} = \frac{a - a_{\text{min}}}{1 - a_{\text{min}}} \f]
+    whereupon we obtain the following activation dynamic model:
+    \f[
+        \begin{align}
+            \tau(u,a,a_{\text{min}}) &= \begin{cases}
+                t_{\text{act}} (0.5 + 1.5\hat{a}) & \text{if}\ u > \hat{a}\\
+                t_{\text{deact}} / (0.5 + 1.5\hat{a}) & \text{otherwise}
+            \end{cases}\\
+            \frac{da}{dt} &= \frac{u-\hat{a}}{\tau(u,a,a_{\text{min}})}
+        \end{align}
+    \f]
+
+    @param tauActivation
+        Activation time constant. A typical value is 0.010 s (10 ms).
+    @param tauDeactivation
+        Deactivation time constant. A typical value is 0.040 s (40 ms).
+    @param minActivation
+        The minimum permissible activation. To avoid a numerical singularity at
+        a = 0, this value is typically set to between 0.01 and 0.1 for use with
+        an equilibrium muscle model.
+    @param muscleName
+        The name of the muscle to which this activation dynamic model belongs.
+        This string is used for reporting meaningful error messages.
+
+    <B>Conditions</B>
     \verbatim
-        da/dt    = (u-a)/tau(a,u)                                           (1)
+    tauActivation > 0
+    tauDeactivation > 0
+    0 <= minActivation < 1
     \endverbatim
 
-    The primary difference between the activation model presented by Thelen and
-    the one presented by Winters lies in the expression for tau(a,u), which 
-    differ only in the values for the constant terms within the braces:
-    
+    <B>Default Parameter Values</B>
     \verbatim
-                     t_act *(0.5+1.5*a) : u > a                             (2)
-        tau(a,u) = {                                         
-                     t_dact/(0.5+1.5*a) : u <= a                            (3)
+    tauActivation ...... 0.010
+    tauDeactivation .... 0.040
+    minActivation ...... 0.01
     \endverbatim
 
-    This model for activation dynamics presented in Eqn. 1 notably does not 
-    respect a lower bound for activation. Equilibrium muscle models (used 
-    ubiquituously to model muscle in lumped parameter musculoskeletal 
-    simulations) have a singularity in their state equations when activation 
-    goes to zero, making the above activation dynamic model unsuitable for 
-    simulating using equilibrium muscle models.
-
-    Equation 1 can be made to respect a lower bond on activation by introducing
-    a lower bound, amin, scaling activation to range from amin to 1
-
-    \verbatim
-        aS       = a/(1-amin)                                               (4)
-        aminS    = amin/(1-amin)                                            (5)
-    \endverbatim
-
-    , adjusting the calculation for the time constant to use the scaled 
-    activation
-
-    \verbatim
-                           t_act *(0.5+1.5*(aS-aminS)) : u > aS-asminS      (6)
-        tau(a,u,asmin) = {                                         
-                           t_dact/(0.5+1.5*(aS-aminS)) : u <= aS-asminS     (7)
-    \endverbatim
-
-    and finally updating the final expression for the derivative of activation
-
-    \verbatim
-        da/dt    = (u-(aS-aminS))/tau(a,u,amin)                             (8)
-    \endverbatim
-    
-
-    The phase portraits of this system with an aMin>0 is very similar to that of 
-    the activation dynamics equations that Thelen presented (which result when
-    aMin=0), though there are differences: the left two panels of the figure 
-    below shows a phase portrait of the Thelen activation model (dotted lines) 
-    against one with a lower bound of 0.05, which are slightly different.
-    The step response of this model is also very similar, however, there are 
-    differences between the Thelen activation model (shown in the figure below 
-    on the right panel in balc) and one with a lower bound of 0.05 (shown in 
-    green), particularly when the activation level approaches the minimum value.
-    All plots were generated with an activation time constant of 0.010s and a 
-    deactivation time constant of 0.040s. 
-    
-    The step response of the Thelen activation function and the modified version
-    are also shown below. Note that due to the nonlinear nature of the state
-    equations, the time activation and deactivation time constants do not relate 
-    directly to the rise and fall time of the step response. The 10%-90% rise 
-    time of both models is virtually identical: 30ms from 10%-90%, and then 86ms
-    from 90%-10%. Dividing these times by the rising and falling time constants 
-    respectively yields a rise time of 3*t_act, and 2.17*t_dact.
-
-    \image html activationDynamics.png
-
-    <B>Usage</B>
-
-     Note that this object should be updated through the set methods provided. 
-     These set methods will take care of rebuilding the object correctly. If you
-     modify the properties directly, the object will not be rebuilt, and upon
-     calling a function an exception will be thrown because 
-     the object is out of date with its properties.
+    Note that this object should be updated through the set methods provided.
+    These set methods will take care of rebuilding the object correctly. If you
+    modify the properties directly, the object will not be rebuilt, and upon
+    calling any function, an exception will be thrown because the object is
+    out-of-date with its properties.
 
     <B>References</B>
-
-    Thelen, DG.(2003), Adjustment of Muscle Mechanics Model
-    Parameters to Simulate Dynamic Contractions in Older Adults. 
-    ASME Journal of Biomechanical Engineering (125).
-
-    Winters, JM (1995). An Improved Muscle-Reflex Actuator for Use in 
-    Large-Scale Neuromusculoskeletal Models. Annals of Biomedical Engineering
-    (25), pp. 359-374.
-
-    <B>Computational Cost Details</B>
-    All computational costs assume the following operation costs:
-
-    \verbatim
-    Operation Type   : #flops
-    +,-,=,Boolean Op : 1 
-                   / : 10
-                 sqrt: 20
-                 trig: 40
-    \endverbatim
+    \li Thelen, D.G. (2003) Adjustment of muscle mechanics model parameters to
+        simulate dynamic contractions in older adults. ASME Journal of
+        Biomechanical Engineering 125(1):70--77.
+    \li Winters, J.M. (1995) An improved muscle-reflex actuator for use in
+        large-scale neuromusculoskeletal models. Annals of Biomedical
+        Engineering 23(4):359--374.
 
     @author Matt Millard
-    @version 0.0
-    */    
+*/
 class OSIMACTUATORS_API MuscleFirstOrderActivationDynamicModel : public Object{
 OpenSim_DECLARE_CONCRETE_OBJECT(MuscleFirstOrderActivationDynamicModel, Object);
 public:
+
 //==============================================================================
 // PROPERTIES
 //==============================================================================
     /** @name Property declarations
-    These are the serializable properties associated with this class. **/
+        These are the serializable properties associated with this class. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
-        "activation time constant in seconds");            
+        "Activation time constant in seconds");
     OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
-        "deactivation time constant in seconds");
+        "Deactivation time constant in seconds");
     OpenSim_DECLARE_PROPERTY(minimum_activation, double,
-        "activation lower bound");
-    //OpenSim_DECLARE_PROPERTY(minimum_activation, double,
-    //    "minimum activation allowed");                       
+        "Lower bound on activation");
     /**@}**/
-    
+
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-
-    /**
-    @param tauActivation The first order time constant associated with
-                            a muscle that is being activated (units of seconds) 
-                            A typical value is 0.010, or 10 ms.
-
-    @param tauDeactivation  The first order time constant associated with a
-                            muscle that is turning off, or being 
-                            deactivated (units of seconds). A typical value
-                            is 0.040 or 40 ms.
-
-    @param minActivation    The minimum activation allowed. Equilibrium 
-                            muscle models might set this value to be between
-                            0.01-0.1, as they have a singularity when 
-                            a = 0. Muscle models that don't have a 
-                            singularity at a=0 will set minActivation to be
-                            0. (Unitless).
-
-    @param muscleName       The name of the muscle that this activation 
-                            object belongs to. This string is used to
-                            create useful exception messages.
-
-    <B>Conditions</B>
-    \verbatim
-        0 < tauActivation 
-        0 < tauDeactivation 
-        0 <= minActivation < 1
-    \endverbatim
-
-    <B>Computational Cost</B>
-    \verbatim
-        ~15 flops
-    \endverbatim
-
-    */
-    MuscleFirstOrderActivationDynamicModel(double tauActivation, 
-                                            double tauDeactivation, 
-                                            double minActivation,
-                                            const std::string& muscleName);
-    ///Default constructor. Sets data members to NAN and other error
-    ///causing values
+    /** The default constructor creates an activation dynamic model with the
+    default property values and assigns it a default name. **/
     MuscleFirstOrderActivationDynamicModel();
 
+    /** Creates an activation dynamic model using the provided parameters. */
+    MuscleFirstOrderActivationDynamicModel(double tauActivation,
+                                           double tauDeactivation,
+                                           double minActivation,
+                                           const std::string& muscleName);
 
-    /**
-    @param excitation The excitation signal being sent to the muscle 
-                        (Unitless, [0,1])
-    @param activation   The current activation of the muscle(Unitless [0,1])
-    @returns the time derivative of activation
+    void ensureModelUpToDate();
 
-    <B>Conditions</B>
-    \verbatim
-        0 <= excitation <= 1
-    \endverbatim
-
-    <B>Computational Cost</B>
-    \verbatim
-        ~40 flops
-    \endverbatim
-    */
-    double calcDerivative(double activation, double excitation) const;
-
-
-    /**        
-    @returns The activation time constant in (units of seconds)
-        
-    <B>Computational Cost</B>
-    \verbatim
-        ~1 flops
-    \endverbatim
-    */
+    /** @returns The activation time constant (in seconds). */
     double getActivationTimeConstant() const;
-        
 
-
-    /**        
-    @returns The deactivation time constant in (units of seconds)
-        
-    <B>Computational Cost</B>
-    \verbatim
-        ~1 flops
-    \endverbatim
-    */
+    /** @returns The deactivation time constant (in seconds). */
     double getDeactivationTimeConstant() const;
-        
-    /**
-    @returns The minimum activation level
-        
-    <B>Computational Cost</B>
-    \verbatim
-        ~1 flops
-    \endverbatim
-    */
+
+    /** @returns The lower bound on activation. */
     double getMinimumActivation() const;
 
-
-    /**
-    @returns The maximum activation level
-        
-    <B>Computational Cost</B>
-    \verbatim
-        ~1 flops
-    \endverbatim
-    */
+    /** @returns The upper bound on activation. */
     double getMaximumActivation() const;
 
     /**
-    @returns activation that has been clamped to a legal range, that is between
-             minActivation specified in the constructor and 1.0
-    <B>Computational Cost</B>
-    \verbatim
-        ~2 flops
-    \endverbatim
-    */
-    double clampActivation(double activation) const;
-
-    /**        
-    @param activationTimeConstant The activation time constant in 
-                                  units of seconds
-    @returns a bool that indicates if the value was set or not        
-
-    <B>Computational Cost</B>
-    \verbatim
-        ~1 flops
-    \endverbatim
+    @param activationTimeConstant The activation time constant (in seconds).
+    @returns A boolean indicating whether the value was set.
     */
     bool setActivationTimeConstant(double activationTimeConstant);
-        
-    /**        
-    @param deactivationTimeConstant The deactivation time constant 
-                                    in units of seconds
-    @returns a bool that indicates if the value was set or not        
-        
-    <B>Computational Cost</B>
-    \verbatim
-        ~1 flops
-    \endverbatim
+
+    /**
+    @param deactivationTimeConstant The deactivation time constant (in seconds).
+    @returns A boolean indicating whether the value was set.
     */
     bool setDeactivationTimeConstant(double deactivationTimeConstant);
         
     /**
-    @returns The minimum activation level
-    @returns a bool that indicates if the value was set or not        
-        
-    <B>Computational Cost</B>
-    \verbatim
-        ~1 flops
-    \endverbatim
+    @param minimumActivation The lower bound on activation.
+    @returns A boolean indicating whether the value was set.
     */
     bool setMinimumActivation(double minimumActivation);
 
-    ///@cond
-    /*This is useful for testing purposes only. Don't even think
-        about using these functions!*/
-    double calcValue(const SimTK::Vector& x) const; /*virtual*/
-    double calcDerivative(const SimTK::Array_<int>& derivComponents, 
-                            const SimTK::Vector& x) const; /*virtual*/ 
-    int getArgumentSize() const;  /*virtual*/ 
-    int getMaxDerivativeOrder() const;  /*virtual*/ 
-    ///@endcond
+    /**
+    @returns Activation clamped to the range [minActivation, 1.0].
+    */
+    double clampActivation(double activation) const;
 
-    void ensureModelUpToDate();
-    private:      
-        void buildModel();
-        double m_minAS; //scaled version of m_minA
-           
-        void setNull();
-        void constructProperties();
+    /** Calculates the time derivative of activation. */
+    double calcDerivative(double activation, double excitation) const;
+
+
+private:
+    void setNull();
+    void constructProperties();
+    void buildModel();
+
 };
 
 }
-#endif //OPENSIM_MUSCLEFIRSTORDERACTIVATIONDYNAMICMODEL
+#endif //OPENSIM_MUSCLEFIRSTORDERACTIVATIONDYNAMICMODEL_H_
