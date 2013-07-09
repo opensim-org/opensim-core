@@ -34,10 +34,10 @@ using namespace OpenSim;
 using namespace std;
 
 #define ARM26_DESIGN_SPACE_DIM 6
-#define REF_MAX_VEL 5.43
+#define REF_MAX_VEL 5.48
 
 // Reference solution used for testing.  
-const static double refControls[ARM26_DESIGN_SPACE_DIM] = {0.01, 0.01, 0.0639327, 0.99, 0.99, 0.72858};
+const static double refControls[ARM26_DESIGN_SPACE_DIM] = {0.01, 0.01, 0.01, 0.99, 0.99, 0.948937};
 
  
 int main()
