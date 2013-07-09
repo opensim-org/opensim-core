@@ -188,7 +188,7 @@ void testActiveForceLengthCurve()
 
         //cout <<"**************************************************"<<endl;
         cout <<"2. Testing API constructor" << endl;
-        ActiveForceLengthCurve falCurve3(0.5, 0.75,1.5,0.75,0.01,"testMuscle");
+        ActiveForceLengthCurve falCurve3(0.5, 0.75,1.5,0.75,0.01);
         double falVal  = falCurve3.calcValue(1.0);
         double dfalVal = falCurve3.calcDerivative(1.0,1);
         cout << "Passed: Testing API constructor" << endl;
@@ -327,7 +327,7 @@ void testForceVelocityCurve()
         //====================================================================
 
         cout <<"2. Testing API constructor" << endl;
-        ForceVelocityCurve fvCurve3(0,0.1,5,0,0.1,1.8,0.1,0.75,"testMuscle");
+        ForceVelocityCurve fvCurve3(0,0.1,5,0,0.1,1.8,0.1,0.75);
         double falVal  = fvCurve3.calcValue(1.0);
         double dfalVal = fvCurve3.calcDerivative(1.0,1);
         cout << "Passed: Testing API constructor" << endl;
@@ -471,7 +471,7 @@ void testForceVelocityInverseCurve()
 
         //cout <<"**************************************************"<<endl;
         cout <<"2. Testing API constructor" << endl;
-        ForceVelocityInverseCurve fvCurve3(0.1,0.15,5,0.1,0.1,1.8,0.1,0.75,"testMuscle");
+        ForceVelocityInverseCurve fvCurve3(0.1,0.15,5,0.1,0.1,1.8,0.1,0.75);
         double falVal  = fvCurve3.calcValue(1.0);
         double dfalVal = fvCurve3.calcDerivative(1.0,1);
         cout << "Passed: Testing API constructor" << endl;
@@ -609,7 +609,7 @@ void testTendonForceLengthCurve()
 
         //====================================================================
         cout <<"2. Testing API constructor" << endl;
-        TendonForceLengthCurve fseCurve3(0.10,50,0.75,1.0/3.0,"testMuscle");
+        TendonForceLengthCurve fseCurve3(0.10,50,0.75,1.0/3.0);
         double fseVal  = fseCurve3.calcValue(1.0999);
         double dfseVal = fseCurve3.calcDerivative(1.0999,1);
         cout << "Passed: Testing API constructor" << endl;
@@ -766,7 +766,7 @@ void testFiberForceLengthCurve()
 
         //====================================================================
         cout <<"2. Testing API constructor" << endl;
-        FiberForceLengthCurve fpeCurve3(0.0, 0.10,1.0/3.0,50,0.75,"testMuscle");
+        FiberForceLengthCurve fpeCurve3(0.0, 0.10,1.0/3.0,50,0.75);
         double falVal  = fpeCurve3.calcValue(0.02);
         double dfalVal = fpeCurve3.calcDerivative(0.02,1);
         cout << "Passed: Testing API constructor" << endl;

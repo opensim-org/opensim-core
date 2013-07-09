@@ -36,7 +36,7 @@ ForceVelocityInverseCurve::ForceVelocityInverseCurve()
 {
     setNull();
     constructProperties();
-    setName("default_ForceVelocityInverseCurve");
+    setName(getConcreteClassName());
     ensureCurveUpToDate();
 }
 
@@ -48,12 +48,11 @@ ForceVelocityInverseCurve::ForceVelocityInverseCurve(
     double eccentricSlopeNearVmax,
     double maxEccentricVelocityForceMultiplier,
     double concentricCurviness,
-    double eccentricCurviness,
-    const std::string& muscleName)
+    double eccentricCurviness)
 {
     setNull();
     constructProperties();
-    setName(muscleName + "_ForceVelocityInverseCurve");
+    setName(getConcreteClassName());
 
     set_concentric_slope_at_vmax(concentricSlopeAtVmax);
     set_concentric_slope_near_vmax(concentricSlopeNearVmax);
@@ -98,11 +97,6 @@ void ForceVelocityInverseCurve::ensureCurveUpToDate()
     if(!isObjectUpToDateWithProperties()) {
         buildCurve();
     }
-
-    // The name is not counted as a property but it can change, so it must be
-    // updated as well.
-    std::string name = getName();
-    m_curve.setName(name);
 }
 
 //==============================================================================

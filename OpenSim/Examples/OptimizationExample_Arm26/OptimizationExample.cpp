@@ -62,7 +62,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 
 		// Create the integrator for the simulation.
 		RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-		integrator.setAccuracy(1.0e-6);
+		integrator.setAccuracy(1.0e-7);
 
 		// Create a manager to run the simulation
 		Manager manager(osimModel, integrator);
@@ -163,7 +163,7 @@ int main()
 		//Optimizer opt(sys, InteriorPoint);
 
 		// Specify settings for the optimizer
-		opt.setConvergenceTolerance(0.01);
+		opt.setConvergenceTolerance(1e-4);
 		opt.useNumericalGradient(true);
 		opt.setMaxIterations(1000);
 		opt.setLimitedMemoryHistory(500);
@@ -181,6 +181,15 @@ int main()
 		cout << "\nMaximum hand velocity = " << -f << "m/s" << endl;
 
         cout << "OpenSim example completed successfully.\n";
+		
+		// Dump out optimization results to a text file for testing
+		ofstream ofile; 
+		ofile.open("Arm26_optimization_result"); 
+		for(int i=0; i<actuators.getSize(); ++i){
+			ofile << controls[i] << endl;
+	}
+		ofile << -f <<endl;
+		ofile.close(); 
 	}
     catch (const std::exception& ex)
     {

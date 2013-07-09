@@ -37,8 +37,7 @@ ActiveForceLengthCurve::ActiveForceLengthCurve()
 {
     setNull();
     constructProperties();
-    setName("default_ActiveForceLengthCurve");
-
+    setName(getConcreteClassName());
     ensureCurveUpToDate();
 }
 
@@ -47,12 +46,11 @@ ActiveForceLengthCurve::ActiveForceLengthCurve(double minActiveNormFiberLength,
                                                double transitionNormFiberLength,
                                                double maxActiveNormFiberLength,
                                                double shallowAscendingSlope,
-                                               double minimumValue,
-                                               const std::string& muscleName)
+                                               double minimumValue)
 {
     setNull();
     constructProperties();
-    setName(muscleName + "_ActiveForceLengthCurve");
+    setName(getConcreteClassName());
 
     set_min_norm_active_fiber_length(minActiveNormFiberLength);
     set_transition_norm_fiber_length(transitionNormFiberLength);
@@ -96,11 +94,6 @@ void ActiveForceLengthCurve::ensureCurveUpToDate()
     if(!isObjectUpToDateWithProperties()) {
         buildCurve();
     }
-
-    // The name is not counted as a property but it can change, so it must be
-    // updated as well.
-    std::string name = getName();
-    m_curve.setName(name);
 }
 
 //==============================================================================

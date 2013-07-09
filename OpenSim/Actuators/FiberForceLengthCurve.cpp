@@ -41,7 +41,7 @@ FiberForceLengthCurve::FiberForceLengthCurve()
 {
     setNull();
     constructProperties();
-    setName("default_FiberForceLengthCurve");
+    setName(getConcreteClassName());
     ensureCurveUpToDate();
 }
 
@@ -49,12 +49,11 @@ FiberForceLengthCurve::FiberForceLengthCurve(double strainAtZeroForce,
                                              double strainAtOneNormForce,
                                              double stiffnessAtLowForce,
                                              double stiffnessAtOneNormForce,
-                                             double curviness,
-                                             const std::string& muscleName)
+                                             double curviness)
 {
     setNull();
     constructProperties();
-    setName(muscleName + "_FiberForceLengthCurve");
+    setName(getConcreteClassName());
 
     set_strain_at_zero_force(strainAtZeroForce);
     set_strain_at_one_norm_force(strainAtOneNormForce);
@@ -99,11 +98,6 @@ void FiberForceLengthCurve::buildCurve(bool computeIntegral)
 
 void FiberForceLengthCurve::ensureCurveUpToDate()
 {
-    // The name is not counted as a property but it can change, so it must be
-    // updated as well.
-    std::string name = getName();
-    m_curve.setName(name);
-
     if(isObjectUpToDateWithProperties()) {
         return;
     }

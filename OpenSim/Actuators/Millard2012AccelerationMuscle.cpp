@@ -97,7 +97,7 @@ void Millard2012AccelerationMuscle::constructProperties()
 
     //Ensure the Active Force Length Curve can go to 0
     constructProperty_ActiveForceLengthCurve(
-        ActiveForceLengthCurve(lceMin,lceTrans,lceMax,slope,minFal,getName()));
+        ActiveForceLengthCurve(lceMin,lceTrans,lceMax,slope,minFal));
 
     ForceVelocityCurve defaultFv = ForceVelocityCurve();
     double concSlopeAtVmax = 0;
@@ -118,8 +118,7 @@ void Millard2012AccelerationMuscle::constructProperties()
                             eccSlopeNearVmax,
                             maxFv,
                             concCurviness,
-                            eccCurviness,
-                            getName()));
+                            eccCurviness) );
 
     constructProperty_FiberForceLengthCurve(
         FiberForceLengthCurve());

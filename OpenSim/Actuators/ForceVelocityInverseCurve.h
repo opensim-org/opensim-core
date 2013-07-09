@@ -44,7 +44,7 @@ namespace OpenSim {
     is normalized to the maximum muscle contraction velocity (vmax), where vmax
     is expressed in units of optimal_fiber_lengths per second. Negative
     normalized velocities correspond to concentric contraction (i.e.,
-    shortening). The inverse force-velocity curve is constructed from 6
+    shortening). The inverse force-velocity curve is constructed from 8
     properties, which are identical to those used to construct the
     corresponding force-velocity curve. See ForceVelocityCurve for descriptions
     of these parameters.
@@ -61,12 +61,6 @@ namespace OpenSim {
     @param maxEccentricVelocityForceMultiplier
     @param concentricCurviness
     @param eccentricCurviness
-    @param muscleName
-        The name of the muscle to which this curve belongs. The muscle name is
-        used to create the name of this curve simply by appending
-        "_ForceVelocityCurve" to the string in muscleName. The curve name is
-        used for reporting meaningful error messages and for naming the XML
-        version of this curve when it is serialized.
 
     \image html fig_ForceVelocityInverseCurve.png
     <BR>
@@ -98,8 +92,7 @@ namespace OpenSim {
 
     <B>Example</B>
     @code
-        ForceVelocityInverseCurve fvInvCurve(0.1, 0.25, 5.0, 0.1, 0.15,
-                                             1.4, 0.6, 0.9, "testMuscle");
+        ForceVelocityInverseCurve fvInvCurve(0.1, 0.25, 5.0, 0.1, 0.15, 1.4, 0.6, 0.9);
         double fvInvVal  = fvInvCurve.calcValue(1.0);
         double dfvInvVal = fvInvCurve.calcDerivative(1.0, 1);
     @endcode
@@ -143,12 +136,12 @@ public:
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-    /** Creates an inverse force-velocity curve using the default parameter
-    values. The curve is given the name 'default_ForceVelocityInverseCurve'. */
+    /** The default constructor creates an inverse force-velocity curve using
+    the default property values and assigns a default name. */
     ForceVelocityInverseCurve();
 
-    /** Constructs an inverse force-velocity curve using the parameters
-    specified by the user. */
+    /** Constructs an inverse force-velocity curve using the provided parameters
+    and assigns a default name. */
     ForceVelocityInverseCurve(double concentricSlopeAtVmax,
                               double concentricSlopeNearVmax,
                               double isometricSlope,
@@ -156,8 +149,7 @@ public:
                               double eccentricSlopeNearVmax,
                               double maxEccentricVelocityForceMultiplier,
                               double concentricCurviness,
-                              double eccentricCurviness,
-                              const std::string& muscleName);
+                              double eccentricCurviness);
 
     /** @returns The slope of the force-velocity curve at a normalized velocity
     of -1, which is the minimum slope of the concentric side of the

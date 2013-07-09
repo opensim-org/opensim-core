@@ -41,8 +41,8 @@ namespace OpenSim {
 /** This class serves as a serializable ActiveForceLengthCurve, commonly used
     to model the active element in muscle models. The active-force-length curve
     is dimensionless: force is normalized to maximum isometric force and length
-    is normalized to resting fiber length. Five properties and a name are used
-    to construct a curve:
+    is normalized to resting fiber length. Five properties are used to construct
+    a curve:
 
     @param minActiveNormFiberLength
         The normalized fiber length where the steep ascending limb of the
@@ -60,12 +60,6 @@ namespace OpenSim {
         The minimum value of the active-force-length curve. If you are using an
         equilibrium model, this value must be greater than 0, as a value of 0
         will cause a singularity in the muscle dynamic equations.
-    @param muscleName
-        The name of the muscle to which this curve belongs. The muscle name is
-        used to create the name of this curve simply by appending
-        "_ActiveForceLengthCurve" to the string in muscleName. The curve name is
-        used for reporting meaningful error messages and for naming the XML
-        version of this curve when it is serialized.
 
       \image html fig_ActiveForceLengthCurve.png
 
@@ -98,7 +92,7 @@ namespace OpenSim {
 
     <B>Example</B>
     @code
-    ActiveForceLengthCurve falCurve1(0.44, 0.73, 1.8, 0.86, 0.1, "testMuscle");
+    ActiveForceLengthCurve falCurve1(0.44, 0.73, 1.8, 0.86, 0.1);
     double falVal  = falCurve1.calcValue(1.0);
     double dfalVal = falCurve1.calcDerivative(1.0, 1);
     @endcode
@@ -143,18 +137,17 @@ public:
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-    /** The default constructor creates a curve with the default property values
-    and assigns it a default name. **/
+    /** The default constructor creates an active-force-length curve using the
+    default property values and assigns a default name. */
     ActiveForceLengthCurve();
 
-    /** Constructs a C2-continuous active-force-length curve using the provided
-    parameters. */
+    /** Constructs an active-force-length curve using the provided parameters
+    and assigns a default name. */
     ActiveForceLengthCurve(double minActiveNormFiberLength,
                             double transitionNormFiberLength,
                             double maxActiveNormFiberLength,
                             double shallowAscendingSlope,
-                           double minimumValue,
-                            const std::string& muscleName);
+                           double minimumValue);
 
     /** @returns The normalized fiber length where the steep ascending limb of
     the active-force-length curve transitions to the minimum activation value

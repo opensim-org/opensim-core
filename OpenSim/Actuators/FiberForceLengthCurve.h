@@ -69,12 +69,6 @@ namespace OpenSim {
         straight line segment and a value of 1 indicates a curve that smoothly
         fills the corner formed by the linear extrapolation of
         'stiffnessAtOneNormForce' and the x-axis, as shown in the figure.
-    @param muscleName
-        The name of the muscle to which this curve belongs. The muscle name is
-        used to create the name of this curve simply by appending
-        "_FiberForceLengthCurve" to the string in muscleName. The curve name is
-        used for reporting meaningful error messages and for naming the XML
-        version of this curve when it is serialized.
 
     Note that we use the Cauchy or engineering definition of strain throughout:
     strain = (l-l0)/l0, where l is the current fiber length and l0 is its
@@ -93,9 +87,9 @@ namespace OpenSim {
 
     <B>Conditions</B>
     \verbatim
-    strainAtOneNormForce > strainAtZeroForce
+    strainAtZeroForce < strainAtOneNormForce
     stiffnessAtOneNormForce > 1/(strainAtOneNormForce-strainAtZeroForce)
-    0 < strainAtLowForce < stiffnessAtOneNormForce
+    0 < stiffnessAtLowForce < stiffnessAtOneNormForce
     0 <= curviness <= 1
     \endverbatim
 
@@ -122,9 +116,9 @@ namespace OpenSim {
 
     \verbatim
     strainAtZeroForce .......... 0.0
-    strainAtOneNormForce ....... 0.6
-    stiffnessAtOneNormForce .... 3.0 / (strainAtOneNormForce-strainAtZeroForce) = 5.0
-    stiffnessAtLowForce ........ 0.025 * stiffnessAtOneNormForce = 0.125
+    strainAtOneNormForce ....... 0.7
+    stiffnessAtLowForce ........ 0.2
+    stiffnessAtOneNormForce .... 2.0 / (strainAtOneNormForce-strainAtZeroForce) = 2.86
     curviness .................. 0.75
     \endverbatim
 
@@ -132,11 +126,11 @@ namespace OpenSim {
  @code
     // Make a fitted fiber-force-length curve.
     FiberForceLengthCurve fpeCurve1;
-    fpeCurve1.setCurveStrains(0.0, 0.6);
+    fpeCurve1.setCurveStrains(0.0, 0.7);
     double fpeVal1 = fpeCurve1.calcValue(0.1);
 
     // Make a custom fiber-force-length curve by supplying all parameters.
-    FiberForceLengthCurve fpeCurve2(0.0, 0.6, 5.0, 0.125, 0.75, "testMuscle");
+    FiberForceLengthCurve fpeCurve2(0.0, 0.7, 0.2, 2.86, 0.75);
     double fpeVal2  = fpeCurve2.calcValue(0.02);
     double dfpeVal2 = fpeCurve2.calcDerivative(0.02, 1);
  @endcode
@@ -183,19 +177,17 @@ public:
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-    /** Creates a default fitted fiber-force-length curve using only the strain
-    the fiber undergoes at 1 normalized unit of tensile load. The curve is given
-    the name 'default_FiberForceLengthCurve'. */
+    /** The default constructor creates a fiber-force-length curve using the
+    default property values and assigns a default name. */
     FiberForceLengthCurve();
 
-    /** Creates a fiber-force-length curve using the parameters specified by the
-    user. */
+    /** Constructs a fiber-force-length curve using the provided parameters and
+    assigns a default name. */
     FiberForceLengthCurve(double strainAtZeroForce,
                           double strainAtOneNormForce,
                             double stiffnessAtLowForce,
                           double stiffnessAtOneNormForce,
-                            double curviness,
-                            const std::string& muscleName);
+                          double curviness);
 
     /** @returns The fiber strain at which the fiber starts to develop force.
     strainAtZeroForce = 0.0 means that the fiber will begin developing tension
@@ -245,7 +237,7 @@ public:
 
     <B>Conditions</B>
         \verbatim
-        strainAtOneNormForce > strainAtZeroForce
+    strainAtZeroForce < strainAtOneNormForce
         \endverbatim
      */
      void setCurveStrains(double aStrainAtZeroForce,
@@ -269,7 +261,7 @@ public:
     <B>Conditions</B>
         \verbatim
         stiffnessAtOneNormForce > 1/(strainAtOneNormForce-strainAtZeroForce)
-    0 < strainAtLowForce < stiffnessAtOneNormForce
+    0 < stiffnessAtLowForce < stiffnessAtOneNormForce
     0 <= curviness <= 1
         \endverbatim
     */
