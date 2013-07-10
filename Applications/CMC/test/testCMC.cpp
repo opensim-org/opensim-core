@@ -35,11 +35,12 @@ void testSingleMuscle();
 void testTwoMusclesOnBlock();
 void testArm26();
 void testEMGDrivenArm();
+void testGait10dof18musc();
 
 int main() {
 
     SimTK::Array_<std::string> failures;
-    
+
 	try {testSingleRigidTendonMuscle();}
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testSingleRigidTendonMuscle"); }
@@ -80,6 +81,9 @@ int main() {
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testEMGDrivenArm_Millard"); }
 
+	try {testGait10dof18musc();}
+    catch (const std::exception& e)
+		{  cout << e.what() <<endl; failures.push_back("testGait10dof18musc_Millard"); }
 
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
@@ -182,7 +186,7 @@ void testArm26() {
 	CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testArm26 failed");
 
 	const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-	cout << "\ntestArm26 passed\n" << endl;
+	cout << "\ntestArm26 "+muscleType+" passed\n" << endl;
 }
 
 void testEMGDrivenArm() {
@@ -205,5 +209,26 @@ void testEMGDrivenArm() {
 	CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testEMGDrivenArm failed");
 
 	const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-	cout << "\n testEMGDrivenArm passed\n" << endl;
+	cout << "\ntestEMGDrivenArm "+muscleType+ " passed\n" << endl;
+}
+
+void testGait10dof18musc() {
+	cout<<"\n******************************************************************" << endl;
+	cout << "*                      testGait10dof18musc                       *" << endl;
+	cout << "******************************************************************\n" << endl;
+	CMCTool cmc("gait10dof18musc_Setup_CMC.xml");
+	cmc.run();
+
+	Storage results("gait10dof18musc_ResultsCMC/walk_subject_states.sto");
+	Storage standard("gait10dof18musc_std_walk_subject_states.sto");
+
+	Array<double> rms_tols(0.02, 2*10+2*18); // activations within 2%
+	for(int i=0; i<20; ++i){
+		rms_tols[i] = 0.01;  // angles and speeds within .6 degrees .6 degs/s 
+	}
+
+	CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testArm26 failed");
+
+	const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
+	cout << "\ntestGait10dof18musc "+muscleType+" passed\n" << endl;
 }
