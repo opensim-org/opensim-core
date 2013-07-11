@@ -134,6 +134,7 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
             IO::chDir(saveWorkingDirectory);
             throw; // re-issue the exception
         }
+        IO::chDir(saveWorkingDirectory);
     }
 
 }
