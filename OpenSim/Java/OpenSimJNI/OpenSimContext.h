@@ -415,7 +415,12 @@ public:
     {
         p.clear();
         for (int i=0; i< aStringArray.getSize(); i++)
-            p.appendValue<std::string>(aStringArray.get(i));
+			try {
+				p.appendValue<std::string>(aStringArray.get(i));
+			} catch (OpenSim::Exception e) {
+				OpenSim::Exception ex("ERROR- Invalid input (invalid character/spaces in input string)");
+				throw ex;
+			}
     }
 
     static void removeItem(AbstractProperty& p, int index)
