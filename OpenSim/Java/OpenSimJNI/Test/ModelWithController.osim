@@ -1,0 +1,1275 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30000">
+	<Model name="DW2013_WalkerModelTerrainAddCoordinateActuatorPrescribedController">
+		<credits>Daniel A. Jacobs, Ajay Seth</credits>
+		<publications>Unassigned</publications>
+		<length_units>meters</length_units>
+		<force_units>N</force_units>
+		<!--Acceleration due to gravity.-->
+		<gravity> 0 -9.80665 0</gravity>
+		<!--Bodies in the model.-->
+		<BodySet>
+			<objects>
+				<Body name="ground">
+					<mass>0</mass>
+					<mass_center> 0 0 0</mass_center>
+					<inertia_xx>1</inertia_xx>
+					<inertia_yy>1</inertia_yy>
+					<inertia_zz>1</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint />
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects />
+							<groups />
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 1 1 1</scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+						<transform> -0 0 -0 0 0 0</transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>false</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
+					</VisibleObject>
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+				</Body>
+				<Body name="Platform">
+					<mass>0</mass>
+					<mass_center> 0 0 0</mass_center>
+					<inertia_xx>0</inertia_xx>
+					<inertia_yy>0</inertia_yy>
+					<inertia_zz>0</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="PlatformToGround">
+							<!--Name of the parent body to which this joint connects its owner body.-->
+							<parent_body>ground</parent_body>
+							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+							<location_in_parent>0 0 0</location_in_parent>
+							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
+							<orientation_in_parent>0 0 -0.174532925199433</orientation_in_parent>
+							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
+							<location>0 0 0</location>
+							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
+							<orientation>0 0 0</orientation>
+							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+							<CoordinateSet>
+								<objects />
+								<groups />
+							</CoordinateSet>
+							<!--Whether the joint transform defines parent->child or child->parent.-->
+							<reverse>false</reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>box.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> -0 0 -0 0 0 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 1 1 1</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups />
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 10 0.05 1</scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+						<transform> -0 0 -0 4.5 0 0</transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>false</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
+					</VisibleObject>
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+				</Body>
+				<Body name="Pelvis_massless">
+					<mass>0</mass>
+					<mass_center> 0 0 0</mass_center>
+					<inertia_xx>0</inertia_xx>
+					<inertia_yy>0</inertia_yy>
+					<inertia_zz>0</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<SliderJoint name="PelvisMasslessToPlatform">
+							<!--Name of the parent body to which this joint connects its owner body.-->
+							<parent_body>Platform</parent_body>
+							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+							<location_in_parent>0 0.025 0</location_in_parent>
+							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
+							<orientation_in_parent>0 0 0</orientation_in_parent>
+							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
+							<location>0 0 0</location>
+							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
+							<orientation>0 0 0</orientation>
+							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+							<CoordinateSet>
+								<objects>
+									<Coordinate name="Pelvis_tx">
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>translational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>0 100</range>
+									</Coordinate>
+								</objects>
+								<groups />
+							</CoordinateSet>
+							<!--Whether the joint transform defines parent->child or child->parent.-->
+							<reverse>false</reverse>
+						</SliderJoint>
+					</Joint>
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects />
+							<groups />
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 1 1 1</scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+						<transform> -0 0 -0 0 0 0</transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>false</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
+					</VisibleObject>
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+				</Body>
+				<Body name="Pelvis">
+					<mass>0.5</mass>
+					<mass_center> 0 0 0</mass_center>
+					<inertia_xx>1</inertia_xx>
+					<inertia_yy>1</inertia_yy>
+					<inertia_zz>1</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<SliderJoint name="PelvisToPelvisMassless">
+							<!--Name of the parent body to which this joint connects its owner body.-->
+							<parent_body>Pelvis_massless</parent_body>
+							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+							<location_in_parent>0 0 0</location_in_parent>
+							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
+							<orientation_in_parent>0 0 1.5707963267949</orientation_in_parent>
+							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
+							<location>0 0 0</location>
+							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
+							<orientation>0 0 1.5707963267949</orientation>
+							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+							<CoordinateSet>
+								<objects>
+									<Coordinate name="Pelvis_ty">
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>translational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>1</default_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>0 5</range>
+									</Coordinate>
+								</objects>
+								<groups />
+							</CoordinateSet>
+							<!--Whether the joint transform defines parent->child or child->parent.-->
+							<reverse>false</reverse>
+						</SliderJoint>
+					</Joint>
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>sphere.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> -0 0 -0 0 0 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 1 1 1</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups />
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 0.08 0.08 0.4</scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+						<transform> -0 0 -0 0 0 0</transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>false</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
+					</VisibleObject>
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+				</Body>
+				<Body name="LeftThigh">
+					<mass>0.5</mass>
+					<mass_center> 0 0 0</mass_center>
+					<inertia_xx>1</inertia_xx>
+					<inertia_yy>1</inertia_yy>
+					<inertia_zz>0.0104166666666667</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="LThighToPelvis">
+							<!--Name of the parent body to which this joint connects its owner body.-->
+							<parent_body>Pelvis</parent_body>
+							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+							<location_in_parent>0 0 -0.2</location_in_parent>
+							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
+							<orientation_in_parent>0 0 0</orientation_in_parent>
+							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
+							<location>0 0.25 0</location>
+							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
+							<orientation>0 0 0</orientation>
+							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+							<CoordinateSet>
+								<objects>
+									<Coordinate name="LHip_rz">
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>rotational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0.523598775598299</default_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-1.74532925199433 1.74532925199433</range>
+									</Coordinate>
+								</objects>
+								<groups />
+							</CoordinateSet>
+							<!--Whether the joint transform defines parent->child or child->parent.-->
+							<reverse>false</reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>sphere.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> -0 0 -0 0 0 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 1 1 1</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups />
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 0.05 0.5 0.05</scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+						<transform> -0 0 -0 0 0 0</transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>false</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
+					</VisibleObject>
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+				</Body>
+				<Body name="RightThigh">
+					<mass>0.5</mass>
+					<mass_center> 0 0 0</mass_center>
+					<inertia_xx>1</inertia_xx>
+					<inertia_yy>1</inertia_yy>
+					<inertia_zz>0.0104166666666667</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="RThighToPelvis">
+							<!--Name of the parent body to which this joint connects its owner body.-->
+							<parent_body>Pelvis</parent_body>
+							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+							<location_in_parent>0 0 0.2</location_in_parent>
+							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
+							<orientation_in_parent>0 0 0</orientation_in_parent>
+							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
+							<location>0 0.25 0</location>
+							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
+							<orientation>0 0 0</orientation>
+							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+							<CoordinateSet>
+								<objects>
+									<Coordinate name="RHip_rz">
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>rotational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>-0.174532925199433</default_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-1.74532925199433 1.74532925199433</range>
+									</Coordinate>
+								</objects>
+								<groups />
+							</CoordinateSet>
+							<!--Whether the joint transform defines parent->child or child->parent.-->
+							<reverse>false</reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>sphere.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> -0 0 -0 0 0 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 1 1 1</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups />
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 0.05 0.5 0.05</scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+						<transform> -0 0 -0 0 0 0</transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>false</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
+					</VisibleObject>
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+				</Body>
+				<Body name="LeftShank">
+					<mass>0.05</mass>
+					<mass_center> 0 0 0</mass_center>
+					<inertia_xx>1</inertia_xx>
+					<inertia_yy>1</inertia_yy>
+					<inertia_zz>0.00104166666666667</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="LShankToLThigh">
+							<!--Name of the parent body to which this joint connects its owner body.-->
+							<parent_body>LeftThigh</parent_body>
+							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+							<location_in_parent>0 -0.25 0</location_in_parent>
+							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
+							<orientation_in_parent>0 0 0</orientation_in_parent>
+							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
+							<location>0 0.25 0</location>
+							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
+							<orientation>0 0 0</orientation>
+							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+							<CoordinateSet>
+								<objects>
+									<Coordinate name="LKnee_rz">
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>rotational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>-0.523598775598299</default_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-2.44346095279206 0</range>
+									</Coordinate>
+								</objects>
+								<groups />
+							</CoordinateSet>
+							<!--Whether the joint transform defines parent->child or child->parent.-->
+							<reverse>false</reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>sphere.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> -0 0 -0 0 0 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 1 1 1</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups />
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 0.05 0.5 0.05</scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+						<transform> -0 0 -0 0 0 0</transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>false</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
+					</VisibleObject>
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+				</Body>
+				<Body name="RightShank">
+					<mass>0.05</mass>
+					<mass_center> 0 0 0</mass_center>
+					<inertia_xx>1</inertia_xx>
+					<inertia_yy>1</inertia_yy>
+					<inertia_zz>0.00104166666666667</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="RShankToRThigh">
+							<!--Name of the parent body to which this joint connects its owner body.-->
+							<parent_body>RightThigh</parent_body>
+							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+							<location_in_parent>0 -0.25 0</location_in_parent>
+							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
+							<orientation_in_parent>0 0 0</orientation_in_parent>
+							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
+							<location>0 0.25 0</location>
+							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
+							<orientation>0 0 0</orientation>
+							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+							<CoordinateSet>
+								<objects>
+									<Coordinate name="RKnee_rz">
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>rotational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>-0.523598775598299</default_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-2.44346095279206 0</range>
+									</Coordinate>
+								</objects>
+								<groups />
+							</CoordinateSet>
+							<!--Whether the joint transform defines parent->child or child->parent.-->
+							<reverse>false</reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>sphere.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> -0 0 -0 0 0 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 1 1 1</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups />
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 0.05 0.5 0.05</scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+						<transform> -0 0 -0 0 0 0</transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>false</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
+					</VisibleObject>
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+				</Body>
+			</objects>
+			<groups />
+		</BodySet>
+		<!--Constraints in the model.-->
+		<ConstraintSet>
+			<objects />
+			<groups />
+		</ConstraintSet>
+		<!--Forces in the model.-->
+		<ForceSet>
+			<objects>
+				<HuntCrossleyForce name="LFootForce">
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>LFootContact PlatformContact</geometry>
+								<stiffness>1000000</stiffness>
+								<dissipation>1</dissipation>
+								<static_friction>0.8</static_friction>
+								<dynamic_friction>0.4</dynamic_friction>
+								<viscous_friction>0.4</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+					<!--Slip velocity (creep) at which peak static friction occurs.-->
+					<transition_velocity>0.2</transition_velocity>
+				</HuntCrossleyForce>
+				<HuntCrossleyForce name="RFootForce">
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>RFootContact PlatformContact</geometry>
+								<stiffness>1000000</stiffness>
+								<dissipation>1</dissipation>
+								<static_friction>0.8</static_friction>
+								<dynamic_friction>0.4</dynamic_friction>
+								<viscous_friction>0.4</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+					<!--Slip velocity (creep) at which peak static friction occurs.-->
+					<transition_velocity>0.2</transition_velocity>
+				</HuntCrossleyForce>
+				<HuntCrossleyForce name="LKneeForce">
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>LKneeContact PlatformContact</geometry>
+								<stiffness>1000000</stiffness>
+								<dissipation>1</dissipation>
+								<static_friction>0.8</static_friction>
+								<dynamic_friction>0.4</dynamic_friction>
+								<viscous_friction>0.4</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+					<!--Slip velocity (creep) at which peak static friction occurs.-->
+					<transition_velocity>0.2</transition_velocity>
+				</HuntCrossleyForce>
+				<HuntCrossleyForce name="RKneeForce">
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>RKneeContact PlatformContact</geometry>
+								<stiffness>1000000</stiffness>
+								<dissipation>1</dissipation>
+								<static_friction>0.8</static_friction>
+								<dynamic_friction>0.4</dynamic_friction>
+								<viscous_friction>0.4</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+					<!--Slip velocity (creep) at which peak static friction occurs.-->
+					<transition_velocity>0.2</transition_velocity>
+				</HuntCrossleyForce>
+				<HuntCrossleyForce name="LHipForce">
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>LHipContact PlatformContact</geometry>
+								<stiffness>1000000</stiffness>
+								<dissipation>1</dissipation>
+								<static_friction>0.8</static_friction>
+								<dynamic_friction>0.4</dynamic_friction>
+								<viscous_friction>0.4</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+					<!--Slip velocity (creep) at which peak static friction occurs.-->
+					<transition_velocity>0.2</transition_velocity>
+				</HuntCrossleyForce>
+				<HuntCrossleyForce name="RHipForce">
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>RHipContact PlatformContact</geometry>
+								<stiffness>1000000</stiffness>
+								<dissipation>1</dissipation>
+								<static_friction>0.8</static_friction>
+								<dynamic_friction>0.4</dynamic_friction>
+								<viscous_friction>0.4</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+					<!--Slip velocity (creep) at which peak static friction occurs.-->
+					<transition_velocity>0.2</transition_velocity>
+				</HuntCrossleyForce>
+				<CoordinateLimitForce name="LKneeLimitTorque">
+					<!--Coordinate (name) to be limited.-->
+					<coordinate>LKnee_rz</coordinate>
+					<!--Stiffness of the passive limit force when coordinate exceeds upper limit. Note, rotational stiffness expected in N*m/degree.-->
+					<upper_stiffness>0.5</upper_stiffness>
+					<!--The upper limit of the coordinate range of motion (rotations in degrees).-->
+					<upper_limit>0</upper_limit>
+					<!--Stiffness of the passive limit force when coordinate exceeds lower limit. Note, rotational stiffness expected in N*m/degree.-->
+					<lower_stiffness>0.5</lower_stiffness>
+					<!--The lower limit of the coordinate range of motion (rotations in degrees).-->
+					<lower_limit>-140</lower_limit>
+					<!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
+					<damping>0.1</damping>
+					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
+					<transition>5</transition>
+					<!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
+					<compute_dissipation_energy>false</compute_dissipation_energy>
+				</CoordinateLimitForce>
+				<CoordinateLimitForce name="RKneeLimitTorque">
+					<!--Coordinate (name) to be limited.-->
+					<coordinate>RKnee_rz</coordinate>
+					<!--Stiffness of the passive limit force when coordinate exceeds upper limit. Note, rotational stiffness expected in N*m/degree.-->
+					<upper_stiffness>0.5</upper_stiffness>
+					<!--The upper limit of the coordinate range of motion (rotations in degrees).-->
+					<upper_limit>0</upper_limit>
+					<!--Stiffness of the passive limit force when coordinate exceeds lower limit. Note, rotational stiffness expected in N*m/degree.-->
+					<lower_stiffness>0.5</lower_stiffness>
+					<!--The lower limit of the coordinate range of motion (rotations in degrees).-->
+					<lower_limit>-140</lower_limit>
+					<!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
+					<damping>0.1</damping>
+					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
+					<transition>5</transition>
+					<!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
+					<compute_dissipation_energy>false</compute_dissipation_energy>
+				</CoordinateLimitForce>
+				<CoordinateLimitForce name="LHipLimitTorque">
+					<!--Coordinate (name) to be limited.-->
+					<coordinate>LHip_rz</coordinate>
+					<!--Stiffness of the passive limit force when coordinate exceeds upper limit. Note, rotational stiffness expected in N*m/degree.-->
+					<upper_stiffness>0.5</upper_stiffness>
+					<!--The upper limit of the coordinate range of motion (rotations in degrees).-->
+					<upper_limit>100</upper_limit>
+					<!--Stiffness of the passive limit force when coordinate exceeds lower limit. Note, rotational stiffness expected in N*m/degree.-->
+					<lower_stiffness>0.5</lower_stiffness>
+					<!--The lower limit of the coordinate range of motion (rotations in degrees).-->
+					<lower_limit>-100</lower_limit>
+					<!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
+					<damping>0.1</damping>
+					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
+					<transition>5</transition>
+					<!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
+					<compute_dissipation_energy>false</compute_dissipation_energy>
+				</CoordinateLimitForce>
+				<CoordinateLimitForce name="RHipLimitTorque">
+					<!--Coordinate (name) to be limited.-->
+					<coordinate>RHip_rz</coordinate>
+					<!--Stiffness of the passive limit force when coordinate exceeds upper limit. Note, rotational stiffness expected in N*m/degree.-->
+					<upper_stiffness>0.5</upper_stiffness>
+					<!--The upper limit of the coordinate range of motion (rotations in degrees).-->
+					<upper_limit>100</upper_limit>
+					<!--Stiffness of the passive limit force when coordinate exceeds lower limit. Note, rotational stiffness expected in N*m/degree.-->
+					<lower_stiffness>0.5</lower_stiffness>
+					<!--The lower limit of the coordinate range of motion (rotations in degrees).-->
+					<lower_limit>-100</lower_limit>
+					<!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
+					<damping>0.1</damping>
+					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
+					<transition>5</transition>
+					<!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
+					<compute_dissipation_energy>false</compute_dissipation_energy>
+				</CoordinateLimitForce>
+				<HuntCrossleyForce name="ObstacleForces">
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>LFootContact RFootContact Obstacle1 Obstacle2 Obstacle3 Obstacle4 Obstacle5 Obstacle6 Obstacle7 Obstacle8 Obstacle9 Obstacle10 Obstacle11 Obstacle12 Obstacle13 Obstacle14 Obstacle15 Obstacle16 Obstacle17 Obstacle18 Obstacle19 Obstacle20 Obstacle21 Obstacle22 Obstacle23 Obstacle24 Obstacle25 Obstacle26 Obstacle27 Obstacle28 Obstacle29 Obstacle30 Obstacle31 Obstacle32 Obstacle33 Obstacle34 Obstacle35 Obstacle36 Obstacle37 Obstacle38 Obstacle39 Obstacle40</geometry>
+								<stiffness>1000000</stiffness>
+								<dissipation>1</dissipation>
+								<static_friction>0.8</static_friction>
+								<dynamic_friction>0.4</dynamic_friction>
+								<viscous_friction>0.4</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+					<!--Slip velocity (creep) at which peak static friction occurs.-->
+					<transition_velocity>0.2</transition_velocity>
+				</HuntCrossleyForce>
+				<CoordinateActuator name="right_hip_actuator">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>50</max_control>
+					<!--Name of the generalized coordinate to which the actuator applies.-->
+					<coordinate>RHip_rz</coordinate>
+				</CoordinateActuator>
+				<CoordinateActuator name="left_hip_actuator">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>50</max_control>
+					<!--Name of the generalized coordinate to which the actuator applies.-->
+					<coordinate>LHip_rz</coordinate>
+				</CoordinateActuator>
+			</objects>
+			<groups />
+		</ForceSet>
+		<!--Markers in the model.-->
+		<MarkerSet>
+			<objects />
+			<groups />
+		</MarkerSet>
+		<!--ContactGeometries  in the model.-->
+		<ContactGeometrySet>
+			<objects>
+				<ContactSphere name="LFootContact">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>LeftShank</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>0 -0.2 0</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+					<display_preference>4</display_preference>
+					<radius>0.05</radius>
+				</ContactSphere>
+				<ContactSphere name="RFootContact">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>RightShank</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>0 -0.2 0</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+					<display_preference>4</display_preference>
+					<radius>0.05</radius>
+				</ContactSphere>
+				<ContactSphere name="LKneeContact">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>LeftShank</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>0 0.25 0</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+					<display_preference>4</display_preference>
+					<radius>0.05</radius>
+				</ContactSphere>
+				<ContactSphere name="RKneeContact">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>RightShank</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>0 0.25 0</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+					<display_preference>4</display_preference>
+					<radius>0.05</radius>
+				</ContactSphere>
+				<ContactSphere name="LHipContact">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Pelvis</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>0 0 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+					<display_preference>4</display_preference>
+					<radius>0.05</radius>
+				</ContactSphere>
+				<ContactSphere name="RHipContact">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Pelvis</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>0 0 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+					<display_preference>4</display_preference>
+					<radius>0.05</radius>
+				</ContactSphere>
+				<ContactHalfSpace name="PlatformContact">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>0 0.025 0</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 -1.5707963267949</orientation>
+					<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+					<display_preference>4</display_preference>
+				</ContactHalfSpace>
+				<ContactSphere name="Obstacle1">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>5.64884146935032 -0.0345533684734363 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0744417105917954</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle2">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>8.83059299629614 -0.0369210205473365 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0774012756841706</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle3">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>8.78048862026884 -0.0216839572528092 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0583549465660115</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle4">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>6.66523742567131 -0.0381573248447826 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0789466560559783</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle5">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>9.36758476630172 -0.0379720067578307 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0787150084472884</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle6">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>9.23929686874575 -0.0184052721270532 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0542565901588165</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle7">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>6.52389593179781 -0.0340129759094293 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0737662198867866</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle8">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>7.99379883220944 -0.0158570802857806 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0510713503572257</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle9">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>7.32714467917249 -0.0312896437165866 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0703620546457332</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle10">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>8.88286991909702 -0.02441344846882 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.061766810586025</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle11">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>7.09115277536478 -0.0319451061124706 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0711813826405883</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle12">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>3.31700325981072 -0.0161081133751477 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0513851417189346</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle13">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>7.91465052974362 -0.0316758869514196 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0708448586892745</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle14">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>9.28529086322047 -0.0158267059320698 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0510333824150873</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle15">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>8.8429969470614 -0.0333724029155761 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0729655036444701</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle16">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>9.15375405966102 -0.0267543454989176 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0646929318736469</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle17">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>7.17052607500977 -0.0320247559405937 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0712809449257422</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle18">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>8.23852093006046 -0.0313128642444882 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0703910803056103</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle19">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>9.48561641098297 -0.017855944357401 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0535699304467513</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle20">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>8.72010449320388 -0.0231692574399872 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.060211571799984</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle21">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>7.21296498039031 -0.0330304094233357 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0725380117791696</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle22">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>7.18871854245018 -0.0317778413437605 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0709723016797006</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle23">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>6.36766034766102 -0.0281331727191313 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0664164658989141</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle24">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>4.56403982959571 -0.0211801980989697 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0577252476237121</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle25">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>9.09592112776465 -0.0345428358256516 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0744285447820645</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle26">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>6.55523516438861 -0.0233996103836354 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0604995129795443</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle27">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>9.12751217110047 -0.0297850722275193 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0684813402843992</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle28">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>8.88767281463322 -0.034939887069511 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0749248588368887</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle29">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>7.81062149166595 -0.0370126479319154 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0775158099148943</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle30">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>8.9881982052063 -0.0330894982626839 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0726118728283549</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle31">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>7.08929916431295 -0.0168205029495135 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0522756286868919</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle32">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>4.07046836950589 -0.0337000135224483 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0733750169030603</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle33">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>9.32676170672099 -0.0286517678609326 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0670647098261658</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle34">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>5.73117443294424 -0.0230909434655732 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0601136793319664</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle35">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>9.28980505040742 -0.0224691610090753 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0593364512613442</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle36">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>8.23931421951916 -0.0294475665936393 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0680594582420491</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle37">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>5.90503565573874 -0.0315411480753602 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0706764350942002</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle38">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>7.73686363059311 -0.0170117130719264 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.052514641339908</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle39">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>7.48199687354481 -0.0186570724552614 0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0545713405690767</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle40">
+					<!--Body name to connect the contact geometry to-->
+					<body_name>Platform</body_name>
+					<!--Location of geometry center in the body frame-->
+					<location>5.38211000133343 -0.0389072331990453 -0.2</location>
+					<!--Orientation of geometry in the body frame-->
+					<orientation>0 0 0</orientation>
+					<radius>0.0798840414988066</radius>
+				</ContactSphere>
+			</objects>
+			<groups />
+		</ContactGeometrySet>
+		<!--Controllers in the model.-->
+		<ControllerSet name="Controllers">
+			<objects>
+				<PrescribedController name="gait_controller">
+					<!--The list of model actuators that this controller will control.The keyword ALL indicates the controller will controll all the acuators in the model-->
+					<actuator_list>right_hip_actuator left_hip_actuator</actuator_list>
+					<!--Functions (one per control) describing the controls for actuatorsspecified for this controller.-->
+					<isDisabled>false</isDisabled>
+ 					<FunctionSet name="ControlFunctions">
+						<objects>
+							<PiecewiseConstantFunction name="right_hip_prescribed_fcn">
+								<x> 0 0.5</x>
+								<y> 0 3</y>
+							</PiecewiseConstantFunction>
+							<PiecewiseConstantFunction name="left_hip_prescribed_fcn">
+								<x> 0 0.7</x>
+								<y> 0 3</y>
+							</PiecewiseConstantFunction>
+						</objects>
+						<groups />
+					</FunctionSet>
+				</PrescribedController>
+			</objects>
+			<groups />
+		</ControllerSet>
+		<!--Additional components in the model.-->
+		<ComponentSet name="MiscComponents">
+			<objects />
+			<groups />
+		</ComponentSet>
+		<!--Probes in the model.-->
+		<ProbeSet>
+			<objects />
+			<groups />
+		</ProbeSet>
+	</Model>
+</OpenSimDocument>

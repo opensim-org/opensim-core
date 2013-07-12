@@ -44,6 +44,7 @@
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
+#include <OpenSim/OpenSim.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -52,6 +53,36 @@ using namespace std;
 #define ASSERT_EQUAL(expected, found, tolerance) { \
 double tol = std::max((tolerance), std::abs((expected)*(tolerance))); \
 if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
+
+//	Testing whether exception is thrown when giving invalid values to a property
+void testExceptions()
+{
+	// String property that takes an array of strings
+	bool propEditExceptionThrown = false;
+
+	Model * model = new Model("ModelWithController.osim");
+	OpenSimContext* context = new OpenSimContext(&model->initSystem(), model);
+	// Addint 
+	PrescribedController* control = dynamic_cast<PrescribedController*>(&(model->updControllerSet().get("gait_controller")));
+	AbstractProperty& prop = control->updPropertyByName("controls_file");
+	context->cacheModelAndState();
+	OpenSim::Array<std::string> stringArray;
+	stringArray.append("state");
+	stringArray.append("s.sto");
+
+	try {
+		PropertyHelper::setValueStringArray(prop, stringArray);
+	} catch (OpenSim::Exception e) {
+		propEditExceptionThrown = true;
+		PropertyHelper::setValueString("", prop);
+		std::cout << e.getMessage() << std::endl;
+	}
+
+	SimTK_ASSERT_ALWAYS(propEditExceptionThrown, "Incorrect exception was thrown");
+
+	delete model;
+	delete context;
+}
 
 int main()
 {
@@ -70,6 +101,8 @@ int main()
 	LoadOpenSimLibrary("osimActuators");
 	LoadOpenSimLibrary("osimSimulation");
 	LoadOpenSimLibrary("osimJavaJNI");
+	 
+	testExceptions();
 
 	Model *model = new Model("wrist.osim");
 	OpenSimContext* context = new OpenSimContext(&model->initSystem(), model);
@@ -85,10 +118,10 @@ int main()
 	delete context;
 	model = new Model("arm26_20.osim");
 	context = new OpenSimContext(&model->initSystem(), model);
+
     // Make a copy of state contained in context ad make sure content match 
     SimTK::State stateCopy = context->getCurrentStateCopy();
     assert(context->getCurrentStateRef().toString()==stateCopy.toString());
-
 	Array<std::string> stateNames = model->getStateVariableNames();
 	OpenSim::Force* dForce=&(model->updForceSet().get("TRIlong"));
 	Muscle* dTRIlong = dynamic_cast<Muscle*>(dForce);
