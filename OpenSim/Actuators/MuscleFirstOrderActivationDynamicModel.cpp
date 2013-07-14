@@ -152,24 +152,22 @@ setMinimumActivation(double minimumActivation)
 double MuscleFirstOrderActivationDynamicModel::
 clampActivation(double activation) const
 {
-    return clamp(get_minimum_activation(), activation, 1.0);
+    return clamp(getMinimumActivation(), activation, 1.0);
 }
 
 double MuscleFirstOrderActivationDynamicModel::
 calcDerivative(double activation, double excitation) const
 {
-	const double& minAct = get_minimum_activation();
-    double clampedActivation = clamp(minAct, activation, 1.0);
-    double clampedExcitation = clamp(0.0, excitation, 1.0);
-    double aHat = (clampedActivation-minAct) / (1.0-minAct);
+    // This model respects a lower bound on activation while preserving the
+    // expected steady-state value.
+    double clampedExcitation = clamp(getMinimumActivation(), excitation, 1.0);
+    double clampedActivation = clamp(getMinimumActivation(), activation, 1.0);
     double tau = SimTK::NaN;
 
-    if(clampedExcitation > aHat) {
-        tau = getActivationTimeConstant() * (0.5 + 1.5*aHat);
+    if(clampedExcitation > clampedActivation) {
+        tau = getActivationTimeConstant() * (0.5 + 1.5*clampedActivation);
     } else {
-        tau = getDeactivationTimeConstant() / (0.5 + 1.5*aHat);
+        tau = getDeactivationTimeConstant() / (0.5 + 1.5*clampedActivation);
     }
-    
-	return (clampedExcitation - aHat) / tau;
+	return (clampedExcitation - clampedActivation) / tau;
 }
-

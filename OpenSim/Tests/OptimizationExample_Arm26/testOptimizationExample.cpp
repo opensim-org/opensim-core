@@ -47,7 +47,7 @@ int main()
 		CHECK_STORAGE_AGAINST_STANDARD(result, standard, Array<double>(0.01, 16), __FILE__, __LINE__, "Arm26 no activation states failed");
 		cout << "Arm26 no activation states passed\n";
 
-		// Check the optimization result acheived at least a velocity of 5.43 m/s, and that the control values are within 20% of the reference values.  
+		// Check the optimization result acheived at least a velocity of 5.43 m/s, and that the control values are within either 20% of the reference values or 0.05 in absolute value.
 		ifstream resFile; 
 		resFile.open("Arm26_optimization_result"); 
 		ASSERT(resFile.is_open(), __FILE__, __LINE__, "Can't open optimization result file" );
@@ -64,7 +64,7 @@ int main()
 		ASSERT(resVec.size() == ARM26_DESIGN_SPACE_DIM+1, __FILE__, __LINE__, "Optimization result size mismatch" );
 			
 		for (int i = 0; i < ARM26_DESIGN_SPACE_DIM-1; i++) {
-			ASSERT(fabs(resVec[i] - refControls[i])/refControls[i] < 0.2, __FILE__, __LINE__, "Control value does not match reference" );
+			ASSERT(fabs(resVec[i] - refControls[i])/refControls[i] < 0.2 || fabs(resVec[i] - refControls[i]) < 0.05, __FILE__, __LINE__, "Control value does not match reference" );
 		}
 		ASSERT(resVec[ARM26_DESIGN_SPACE_DIM] > REF_MAX_VEL, __FILE__, __LINE__, "Optimized velocity smaller than reference" );
 		

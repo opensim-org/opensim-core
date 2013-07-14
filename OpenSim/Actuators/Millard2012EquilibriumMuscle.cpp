@@ -675,7 +675,7 @@ postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 
 double Millard2012EquilibriumMuscle::clampActivation(double activation) const
 {
-    return min(1.0, max(get_minimum_activation(), activation));
+    return clamp(getMinimumActivation(), activation, 1.0);
 }
 
 double Millard2012EquilibriumMuscle::
@@ -684,18 +684,18 @@ calcActivationDerivative(double activation, double excitation) const
     double da = 0.0;
 
     if(!get_ignore_activation_dynamics()) {
-        double clampedExcitation = min(1.0, max(0.0, excitation));
-        double clampedActivation = clampActivation(activation);
-        double aHat = (clampedActivation-getMinimumActivation()) /
-                      (1.0-getMinimumActivation());
+        // This model respects a lower bound on activation while preserving the
+        // expected steady-state value.
+        double clampedExcitation = clamp(getMinimumActivation(),excitation,1.0);
+        double clampedActivation = clamp(getMinimumActivation(),activation,1.0);
         double tau = SimTK::NaN;
 
-        if(clampedExcitation > aHat) {
-            tau = getActivationTimeConstant() * (0.5 + 1.5*aHat);
+        if(clampedExcitation > clampedActivation) {
+            tau = getActivationTimeConstant() * (0.5 + 1.5*clampedActivation);
         } else {
-            tau = getDeactivationTimeConstant() / (0.5 + 1.5*aHat);
+            tau = getDeactivationTimeConstant() / (0.5 + 1.5*clampedActivation);
         }
-        da = (clampedExcitation - aHat) / tau;
+        da = (clampedExcitation - clampedActivation) / tau;
     }
     return da;
 }
