@@ -851,7 +851,7 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
             // Rigid tendon.
 
             double dtldt = 0;
-            if(mli.tendonLength < getTendonSlackLength()) {
+            if(mli.tendonLength-getTendonSlackLength()<SimTK::SignificantReal) {
                 // The tendon is buckling, so has 100% of the path velocity.
                 dtldt = dlenMcl;
             }
