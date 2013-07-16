@@ -205,9 +205,16 @@ public:
     */
     void setMinValue(double minimumValue);
 
+	/** Implement the generic OpenSim::Function interface **/
+    double calcValue(const SimTK::Vector& x) const OVERRIDE_11
+    {
+        return calcValue(x[0]);
+    }
+
     /** Evaluates the active-force-length curve at a normalized fiber length of
     'normFiberLength'. */
     double calcValue(double normFiberLength) const;
+
 
     /** Calculates the derivative of the active-force-length multiplier with
     respect to the normalized fiber length.

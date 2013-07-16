@@ -269,6 +269,12 @@ public:
     */
     void setEccentricCurviness(double aEccentricCurviness);
 
+	/** Implement the generic OpenSim::Function interface **/
+    double calcValue(const SimTK::Vector& x) const OVERRIDE_11
+    {
+        return calcValue(x[0]);
+    }
+
     /** Evaluates the inverse force-velocity curve at a force-velocity
     multiplier value of 'aForceVelocityMultiplier'. */
     double calcValue(double aForceVelocityMultiplier) const;

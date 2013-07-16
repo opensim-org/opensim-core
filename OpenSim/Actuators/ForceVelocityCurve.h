@@ -301,6 +301,12 @@ public:
     */
     void setEccentricCurviness(double aEccentricCurviness);
 
+	/** Implement the generic OpenSim::Function interface **/
+    double calcValue(const SimTK::Vector& x) const OVERRIDE_11
+    {
+        return calcValue(x[0]);
+    }
+
     /** Evaluates the force-velocity curve at a normalized fiber velocity of
     'normFiberVelocity'. */
     double calcValue(double normFiberVelocity) const;
