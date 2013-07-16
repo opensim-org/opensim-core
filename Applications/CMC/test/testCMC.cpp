@@ -31,6 +31,7 @@ using namespace OpenSim;
 using namespace std;
 
 void testSingleRigidTendonMuscle();
+void testSingleMillardRigidTendonMuscle();
 void testSingleMuscle();
 void testTwoMusclesOnBlock();
 void testArm26();
@@ -62,6 +63,11 @@ int main() {
 
 	// redo with the Millard2012EquilibriumMuscle 
 	Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
+
+    try {testSingleMillardRigidTendonMuscle();}
+    catch (const std::exception& e)
+		{	cout << e.what() <<endl;
+			failures.push_back("testSingleMillardRigidTendonMuscle"); }
 
     try {testSingleMuscle();}
     catch (const std::exception& e)
@@ -122,6 +128,32 @@ void testSingleRigidTendonMuscle() {
 	
 	cout << "testSingleRigidTendonMuscle passed\n" << endl;
 }
+
+
+void testSingleMillardRigidTendonMuscle() {
+	cout<<"\n******************************************************************" << endl;
+	cout << "*               testSingleMillardRigidTendonMuscle               *" << endl;
+	cout << "******************************************************************\n" << endl;
+	ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
+    Model fwdModel = forward.getModel();
+    fwdModel.getMuscles()[0].set_ignore_tendon_compliance(true); //make tendon rigid
+    forward.setModel(fwdModel);
+	forward.run();
+
+	CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
+    Model cmcModel = cmc.getModel();
+    cmcModel.getMuscles()[0].set_ignore_tendon_compliance(true); //make tendon rigid
+    cmc.setModel(cmcModel);
+	cmc.run();
+
+	Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
+	Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
+
+	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.001, 3), __FILE__, __LINE__, "testSingleMillardRigidTendonMuscle failed");
+
+	cout << "testSingleMillardRigidTendonMuscle passed\n" << endl;
+}
+
 
 void testSingleMuscle() {
 	cout<<"\n******************************************************************" << endl;

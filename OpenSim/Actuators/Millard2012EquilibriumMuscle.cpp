@@ -675,7 +675,7 @@ postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 
 double Millard2012EquilibriumMuscle::clampActivation(double activation) const
 {
-    return min(1.0, max(get_minimum_activation(), activation));
+    return clamp(getMinimumActivation(), activation, 1.0);
 }
 
 double Millard2012EquilibriumMuscle::
@@ -684,18 +684,18 @@ calcActivationDerivative(double activation, double excitation) const
     double da = 0.0;
 
     if(!get_ignore_activation_dynamics()) {
-        double clampedExcitation = min(1.0, max(0.0, excitation));
-        double clampedActivation = clampActivation(activation);
-        double aHat = (clampedActivation-getMinimumActivation()) /
-                      (1.0-getMinimumActivation());
+        // This model respects a lower bound on activation while preserving the
+        // expected steady-state value.
+        double clampedExcitation = clamp(getMinimumActivation(),excitation,1.0);
+        double clampedActivation = clamp(getMinimumActivation(),activation,1.0);
         double tau = SimTK::NaN;
 
-        if(clampedExcitation > aHat) {
-            tau = getActivationTimeConstant() * (0.5 + 1.5*aHat);
+        if(clampedExcitation > clampedActivation) {
+            tau = getActivationTimeConstant() * (0.5 + 1.5*clampedActivation);
         } else {
-            tau = getDeactivationTimeConstant() / (0.5 + 1.5*aHat);
+            tau = getDeactivationTimeConstant() / (0.5 + 1.5*clampedActivation);
         }
-        da = (clampedExcitation - aHat) / tau;
+        da = (clampedExcitation - clampedActivation) / tau;
     }
     return da;
 }
@@ -850,21 +850,24 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
 
             // Rigid tendon.
 
-            double dtldt = 0;
-            if(mli.tendonLength < getTendonSlackLength()) {
-                // The tendon is buckling, so has 100% of the path velocity.
-                dtldt = dlenMcl;
-            }
+            if(mli.tendonLength < getTendonSlackLength()
+                                  - SimTK::SignificantReal) {
+                // The tendon is buckling, so fiber velocity is zero.
+                dlce  = 0.0;
+                dlceN = 0.0;
+                fv    = 1.0;
+            } else {
             dlce = penMdl.calcFiberVelocity(mli.cosPennationAngle,
-                                            dlenMcl,dtldt);
+                                                dlenMcl, 0.0);
             dlceN = dlce/(optFibLen*getMaxContractionVelocity());
             fv = get_ForceVelocityCurve().calcValue(dlceN);
+            }
 
         } else if(!get_ignore_tendon_compliance() && !use_fiber_damping) {
 
             // Elastic tendon, no damping.
 
-            double a = 0;
+            double a = SimTK::NaN;
             if(!get_ignore_activation_dynamics()) {
                 a = clampActivation(getStateVariable(s, STATE_ACTIVATION_NAME));
             } else {
@@ -898,7 +901,7 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
 
             // Elastic tendon, with damping.
 
-            double a = 0;
+            double a = SimTK::NaN;
             if(!get_ignore_activation_dynamics()) {
                 a = clampActivation(getStateVariable(s, STATE_ACTIVATION_NAME));
             } else {
@@ -925,7 +928,7 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
                 mli.cosPennationAngle);
 
             // If the Newton method converged, update the fiber velocity.
-            if(fiberVelocityV[2] > 0.5) {
+            if(fiberVelocityV[2] > 0.5) { //flag is set to 0.0 or 1.0
                 dlceN = fiberVelocityV[0];
                 dlce  = dlceN*getOptimalFiberLength()
                         *getMaxContractionVelocity();
@@ -1006,7 +1009,7 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         const TendonForceLengthCurve& fseCurve = get_TendonForceLengthCurve();
 
         // Compute dynamic quantities.
-        double a = 0.0;
+        double a = SimTK::NaN;
         if(!get_ignore_activation_dynamics()) {
             a = clampActivation(getStateVariable(s, STATE_ACTIVATION_NAME));
         } else {
@@ -1032,7 +1035,7 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         double dFt_dtl      = 0.0;
         double Ke           = 0.0;
 
-        if(fiberStateClamped < 0.5) {
+        if(fiberStateClamped < 0.5) { //flag is set to 0.0 or 1.0
             SimTK::Vec4 fiberForceV;
 
             fiberForceV = calcFiberForce(fiso, a,

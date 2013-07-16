@@ -40,16 +40,8 @@ namespace OpenSim {
     \f[ \tau(u,a) = t_{\rm{deact}} / (0.5 + 1.5a) \quad {\rm{otherwise}} \f]
 
     Since equilibrium muscle models typically have a numerical singularity in
-    their state equations when activation is zero, we introduce a lower bound
-    on activation (\f$a_{\rm{min}}\f$) and scale as follows:
-    \f[ \hat{a} = \frac{a - a_{\rm{min}}}{1 - a_{\rm{min}}} \f]
-
-    whereupon we obtain the following activation dynamic model:
-    \f[ \tau(u,a,a_{\rm{min}}) = t_{\rm{act}} (0.5 + 1.5\hat{a})
-        \quad {\rm{if}}\ u > \hat{a} \f]
-    \f[ \tau(u,a,a_{\rm{min}}) = t_{\rm{deact}} / (0.5 + 1.5\hat{a})
-        \quad {\rm{otherwise}} \f]
-    \f[ \frac{da}{dt} = \frac{u-\hat{a}}{\tau(u,a,a_{\rm{min}})} \f]
+    their state equations when activation is zero, we apply a lower activation
+    bound (\f$a_{\rm{min}}\f$) to both activation and excitation.
 
     @param tauActivation
         Activation time constant. A typical value is 0.010 s (10 ms).

@@ -407,7 +407,7 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
 		"testPrescribedControllerFromFile '"+modelName+"'states failed");
 
 	CHECK_STORAGE_AGAINST_STANDARD(controls, std_controls, 
-		Array<double>(0.005, nstates), __FILE__, __LINE__,
+		Array<double>(0.006, nstates), __FILE__, __LINE__,
 		"testPrescribedControllerFromFile '"+modelName+"'controls failed");
 	 
 	osimModel.disownAllComponents();
