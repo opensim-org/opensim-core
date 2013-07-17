@@ -43,7 +43,7 @@ int main()
 		Array<double> tols(0.01, 16);
 		// speeds are not matched as precisely
 		for(int i =6; i < 16; ++i)
-			tols[i] = 0.02;
+			tols[i] = 0.03;
 
 		Storage result2("tugOfWar_states.sto"), standard2("std_tugOfWar_states.sto");
 		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, tols, __FILE__, __LINE__, "tugOfWar states failed");
