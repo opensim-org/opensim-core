@@ -269,6 +269,12 @@ public:
                                double aStiffnessAtOneNormForce,
                                double aCurviness);
 
+	/** Implement the generic OpenSim::Function interface **/
+    double calcValue(const SimTK::Vector& x) const OVERRIDE_11
+    {
+        return calcValue(x[0]);
+    }
+
     /** Evaluates the fiber-force-length curve at a normalized fiber length of
     'normFiberLength'. */
     double calcValue(double normFiberLength) const;

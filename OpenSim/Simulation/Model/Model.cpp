@@ -1587,6 +1587,7 @@ void Model::createAssemblySolver(const SimTK::State& s)
     // of coordsToTrack
 	_assemblySolver = new AssemblySolver(*this, *coordsToTrack);
 	_assemblySolver->setConstraintWeight(SimTK::Infinity);
+    _assemblySolver->setAccuracy(1e-8);
 }
 
 void Model::updateAssemblyConditions(SimTK::State& s)

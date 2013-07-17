@@ -259,6 +259,12 @@ public:
                                double aNormForceAtToeEnd,
                                double aCurviness);
 
+    /** Implement the generic OpenSim::Function interface **/
+    double calcValue(const SimTK::Vector& x) const OVERRIDE_11
+    {
+        return calcValue(x[0]);
+    }
+
     /** Evaluates the tendon-force-length curve at a normalized tendon length of
     'aNormLength'. */
     double calcValue(double aNormLength) const;

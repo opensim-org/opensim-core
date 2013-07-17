@@ -241,6 +241,13 @@ public:
     */
     double calcValue(double aNormLength) const;
 
+ 
+	/** Implement the generic OpenSim::Function interface **/
+    double calcValue(const SimTK::Vector& x) const OVERRIDE_11
+    {
+        return calcValue(x[0]);
+    }
+
     /**
     Calculates the derivative of the fiber force length curve w.r.t. 
     to the normalized fiber length. 

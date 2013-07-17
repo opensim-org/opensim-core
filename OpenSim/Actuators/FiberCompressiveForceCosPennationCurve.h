@@ -305,6 +305,13 @@ public:
     */
     double calcValue(double cosPennationAngle) const;
 
+
+	/** Implement the generic OpenSim::Function interface **/
+    double calcValue(const SimTK::Vector& x) const OVERRIDE_11
+    {
+        return calcValue(x[0]);
+    }
+
     /**
     Calculates the derivative of the fiber compressive force pennation angle 
     curve w.r.t. to cosPennationAngle. 
