@@ -430,7 +430,7 @@ void Model::buildSystem() {
 // Requires that buildSystem() has already been called.
 SimTK::State& Model::initializeState() {
     if (_system == NULL) 
-        Exception("Model::initializeState(): call buildSystem() first.");
+        throw Exception("Model::initializeState(): call buildSystem() first.");
 
     // This tells Simbody to finalize the System.
     getMultibodySystem().invalidateSystemTopologyCache();
@@ -482,7 +482,7 @@ SimTK::State& Model::initializeState() {
 SimTK::State& Model::updWorkingState()
 {
     if (!isValidSystem())
-        Exception("Model::updWorkingState(): call initializeState() first.");
+        throw Exception("Model::updWorkingState(): call initializeState() first.");
 
     return _workingState;
 }
@@ -491,7 +491,7 @@ SimTK::State& Model::updWorkingState()
 const SimTK::State& Model::getWorkingState() const
 {
     if (!isValidSystem())
-        Exception("Model::getWorkingState(): call initializeState() first.");
+        throw Exception("Model::getWorkingState(): call initializeState() first.");
 
     return _workingState;
 }
