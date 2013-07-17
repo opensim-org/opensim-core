@@ -58,7 +58,6 @@ int main()
 	clock_t startTime = clock();
 
 	try {
-		Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 
 		testMomentArmDefinitionForModel("BothLegs22.osim", "r_knee_angle", "VASINT", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), 0.0, "VASINT of BothLegs with no mass: FAILED");
 		cout << "VASINT of BothLegs with no mass: PASSED\n" << endl;
@@ -235,6 +234,7 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 	Model osimModel(filename);
 	osimModel.initSystem();
 
+	// Create the moment-arm solver to solve for moment-arms
 	MomentArmSolver maSolver(osimModel);
 
 	Coordinate &coord = (coordName != "") ? osimModel.updCoordinateSet().get(coordName) :
@@ -300,7 +300,8 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 		double angle = coord.getValue(s);
 
 		//cout << "muscle  force: " << muscle.getForce(s) << endl;
-		double ma = muscle.computeMomentArm(s, coord);
+		//double ma = muscle.computeMomentArm(s, coord);
+		double ma = maSolver.solve(s, coord, muscle.getGeometryPath());
 		double ma_dldtheta = computeMomentArmFromDefinition(s, muscle.getGeometryPath(), coord);
 
 		cout << "r's = " << ma << "::" << ma_dldtheta <<"  at q = " << coord.getValue(s)*180/Pi; 
