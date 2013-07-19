@@ -334,12 +334,16 @@ void Millard2012EquilibriumMuscle::setDefaultActivation(double activation)
 
 void Millard2012EquilibriumMuscle::
 setActivation(SimTK::State& s, double activation) const
-{   
-    if(!get_ignore_activation_dynamics()) {
+{
+    if(get_ignore_activation_dynamics()) {
+        SimTK::Vector& controls(_model->updControls(s));
+        setControls(SimTK::Vector(1, activation), controls);
+        _model->setControls(s, controls);
+    } else {
         setStateVariable(s, STATE_ACTIVATION_NAME, clampActivation(activation));
-        markCacheVariableInvalid(s,"velInfo");
-        markCacheVariableInvalid(s,"dynamicsInfo");
     }
+    markCacheVariableInvalid(s,"velInfo");
+    markCacheVariableInvalid(s,"dynamicsInfo");
 }
 
 void Millard2012EquilibriumMuscle::setDefaultFiberLength(double fiberLength)
