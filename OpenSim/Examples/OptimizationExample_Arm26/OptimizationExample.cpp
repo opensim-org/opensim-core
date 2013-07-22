@@ -62,7 +62,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 
 		// Create the integrator for the simulation.
 		RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-		integrator.setAccuracy(1.0e-7);
+		integrator.setAccuracy(1.0e-6);
 
 		// Create a manager to run the simulation
 		Manager manager(osimModel, integrator);
@@ -163,7 +163,7 @@ int main()
 		//Optimizer opt(sys, InteriorPoint);
 
 		// Specify settings for the optimizer
-		opt.setConvergenceTolerance(1e-4);
+		opt.setConvergenceTolerance(0.01);
 		opt.useNumericalGradient(true);
 		opt.setMaxIterations(1000);
 		opt.setLimitedMemoryHistory(500);
