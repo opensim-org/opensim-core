@@ -2,7 +2,7 @@
 <OpenSimDocument Version="20301">
   <InverseKinematicsTool name="">
 		<!--Name of the .osim file used to construct a model.-->
-		<model_file> uwdynamic_ikOnly.osim </model_file>
+		<model_file> constraintTest_ikOnly.osim </model_file>
     <!-- A positive scalar that is used to weight the importance of satisfying constraints."
 		     A weighting of 'Infinity' or if it is unassigned results in the constraints being 
          strictly enforced.-->
@@ -354,7 +354,7 @@
 		</IKTaskSet>
 		<!--TRC file (.trc) containing the time history of experimental marker
 		    positions.-->
-		<marker_file> uw_running.trc </marker_file>
+		<marker_file> constraintTest.trc </marker_file>
 		<!--Name of file containing the joint angles used to set the initial
 		    configuration of the model for the purpose of placing the markers.
 		    These coordinate values can also be included in the optimization
@@ -376,7 +376,7 @@
     <!--Time range over which the IK problem is solved.-->
     <time_range> 0.0 0.5 </time_range>
 		<!--Name of the motion file (.mot) to which the results should be written.-->
-		<output_motion_file> uwdynamic_ik_new.mot </output_motion_file>
+		<output_motion_file> constraintTest_ik_new.mot </output_motion_file>
 	</InverseKinematicsTool>
 </OpenSimDocument>
 

@@ -57,9 +57,9 @@ int main()
 		CHECK_STORAGE_AGAINST_STANDARD(result3, standard, Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 Old setup failed");
 		cout << "testInverseKinematicsGait2354 Old setup passed" << endl;
 		*/
-		InverseKinematicsTool ik4("uwdynamic_setup_ik.xml");
+		InverseKinematicsTool ik4("constraintTest_setup_ik.xml");
 		ik4.run();
-		cout << "testInverseKinematicsUWDynamic passed" << endl;
+		cout << "testInverseKinematicsCosntraintTest passed" << endl;
 	}
 	catch (const Exception& e) {
         e.print(cerr);
