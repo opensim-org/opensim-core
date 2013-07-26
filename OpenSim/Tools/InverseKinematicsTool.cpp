@@ -346,8 +346,6 @@ bool InverseKinematicsTool::run()
 		markersReference.setMarkerWeightSet(markerWeights);
 		//Load the makers
 		markersReference.loadMarkersFile(_markerFileName);
-		// marker names
-		const SimTK::Array_<std::string>& markerNames =  markersReference.getNames();
 
 		// Determine the start time, if the provided time range is not specified then use time from marker reference
 		// also adjust the time range for the tool if the provided range exceeds that of the marker data
@@ -374,7 +372,7 @@ bool InverseKinematicsTool::run()
 		
 		Storage *modelMarkerLocations = _reportMarkerLocations ? new Storage(Nframes, "ModelMarkerLocations") : NULL;
 
-		for (int i = 1; i < Nframes; i++) {
+		for (int i = 0; i < Nframes; i++) {
 			s.updTime() = start_time + i*dt;
 			ikSolver.track(s);
 			
@@ -427,7 +425,7 @@ bool InverseKinematicsTool::run()
 
 			for(int j=0; j<nm; ++j){
 				for(int k=0; k<3; ++k)
-					labels.set(3*j+k+1, markerNames[j]+XYZ[k]);
+					labels.set(3*j+k+1, ikSolver.getMarkerNameForIndex(j)+XYZ[k]);
 			}
 			modelMarkerLocations->setColumnLabels(labels);
 			modelMarkerLocations->setName("Model Marker Locations from IK");

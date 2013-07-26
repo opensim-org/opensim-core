@@ -522,7 +522,7 @@ void MarkerData::findFrameRange(double aStartTime, double aEndTime, int& rStartF
 double MarkerData::getStartFrameTime() const
 {
 	if (_numFrames<=0)
-		return 1.0;
+		return SimTK::NaN;
 
 	return(_frames[0]->getFrameTime());
 
@@ -535,7 +535,7 @@ double MarkerData::getStartFrameTime() const
 double MarkerData::getLastFrameTime() const
 {
 	if (_numFrames<=0)
-		return -1.0;
+		return SimTK::NaN;
 
 	return(_frames[_numFrames-1]->getFrameTime());
 }

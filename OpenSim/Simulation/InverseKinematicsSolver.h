@@ -102,7 +102,7 @@ public:
 	void updateMarkerWeight(const std::string &markerName, double value);
 	/** Update a marker's weight by its index. */
 	void updateMarkerWeight(int markerIndex, double value);
-	/** Update all markers weights by order in the markersRerence passed in to
+	/** Update all markers weights by order in the markersReference passed in to
 	    construct the solver. */
 	void updateMarkerWeights(const SimTK::Array_<double> &weights);
 
@@ -124,9 +124,11 @@ public:
 	double computeCurrentSquaredMarkerError(int markerIndex);
 	/** Compute and return the distance errors between all model marker and observations. */
 	void computeCurrentSquaredMarkerErrors(SimTK::Array_<double> &markerErrors);
-	/** Marker errors are reported in order different from tasks file or model, find marker name 
-	    corresponding to passed in index of marker error */
-	SimTK::String getMarkerNameForIndex(int markerErrorIndex) const;
+	/** Marker locations and errors may be computed in an order that is different
+	    from tasks file or listed in the model. Retrun the corresponding marker
+		name for an index in the list of marker locations/errors returned by the
+		solver. */
+	SimTK::String getMarkerNameForIndex(int markerIndex) const;
 
 protected:
 	/** Internal method to convert the CoordinateReferences into goals of the 
