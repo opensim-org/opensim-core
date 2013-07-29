@@ -28,7 +28,7 @@
 // INCLUDES
 //=============================================================================
 #include <map>
-#include <OpenSim.h>
+#include "OpenSim/OpenSim.h"
 #include "osimExpPluginDLL.h"
 
 

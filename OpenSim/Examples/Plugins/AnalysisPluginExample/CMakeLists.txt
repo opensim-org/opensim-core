@@ -38,8 +38,7 @@ SET(SIMTK_SIMBODY_LIB debug ${NameSpace}SimTKsimbody_d optimized ${NameSpace}Sim
 SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
                     ${SIMTK_MATH_LIB} 
                     ${SIMTK_SIMBODY_LIB} 
-					SimTKlapack
-                    pthreadVC2)
+                    )
 
 LINK_LIBRARIES(
 	debug osimSimulation_d	optimized osimSimulation
@@ -49,17 +48,6 @@ LINK_LIBRARIES(
 	debug osimTools_d		optimized osimTools
 	${SIMTK_ALL_LIBS}
 )
-
-IF(WIN32)
-	SET(PLATFORM_LIBS  pthreadVC2)
-ELSE (WIN32)
-  SET(NameSpace "")
-  IF(APPLE)
-	SET(PLATFORM_LIBS  SimTKAtlas)
-  ELSE(APPLE)
-	SET(PLTAFORM_LIBS SimTKAtlas_Lin_generic)
-  ENDIF(APPLE)
-ENDIF (WIN32)
 
 ADD_LIBRARY(${PLUGIN_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 

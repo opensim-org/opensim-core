@@ -26,7 +26,6 @@
 // INCLUDES
 //=============================================================================
 
-#include "OpenSim.h"
 #include "Lepton.h"
 #include "SymbolicExpressionReporter.h"
 #include <iostream>

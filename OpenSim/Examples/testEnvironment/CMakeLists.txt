@@ -24,17 +24,6 @@ LINK_DIRECTORIES(${OPENSIM_LIBS_DIR} ${OPENSIM_DLLS_DIR})
 SET(NameSpace "OpenSim_" CACHE STRING "Prefix for simtk lib names, includes trailing '_'. Leave empty to use stock SimTK libraries.")
 MARK_AS_ADVANCED(NameSpace)
 
-IF(WIN32)
-	SET(PLATFORM_LIBS  pthreadVC2)
-ELSE (WIN32)
-  SET(NameSpace "")
-  IF(APPLE)
-	SET(PLATFORM_LIBS  SimTKAtlas)
-  ELSE(APPLE)
-	SET(PLTAFORM_LIBS SimTKAtlas_Lin_generic)
-  ENDIF(APPLE)
-ENDIF (WIN32)
-
 LINK_LIBRARIES(
 	debug osimCommon_d optimized osimCommon
 	debug osimSimulation_d optimized osimSimulation
@@ -44,8 +33,7 @@ LINK_LIBRARIES(
 	debug ${NameSpace}SimTKcommon_d optimized ${NameSpace}SimTKcommon
 	debug ${NameSpace}SimTKmath_d optimized  ${NameSpace}SimTKmath
 	debug ${NameSpace}SimTKsimbody_d optimized ${NameSpace}SimTKsimbody
-	SimTKlapack
-	${PLATFORM_LIBS})
+	)
 
 ADD_EXECUTABLE(${TARGET}  ${SOURCE_FILES}) 
 

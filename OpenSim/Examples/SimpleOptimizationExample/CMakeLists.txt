@@ -20,7 +20,7 @@ SET(SIMTK_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include/SimTK/include)
 SET(OPENSIM_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include)
 INCLUDE_DIRECTORIES(${SIMTK_HEADERS_DIR} ${OPENSIM_HEADERS_DIR})
 # Libraries and dlls
-SET(OPENSIM_LIBS_DIR ${OPENSIM_INSTALL_DIR}/sdk/lib)
+SET(OPENSIM_LIBS_DIR ${OPENSIM_INSTALL_DIR}/sdk/lib ${OPENSIM_INSTALL_DIR}/lib)
 SET(OPENSIM_DLLS_DIR ${OPENSIM_INSTALL_DIR}/bin)
 LINK_DIRECTORIES(${OPENSIM_LIBS_DIR} ${OPENSIM_DLLS_DIR})
 
@@ -39,20 +39,7 @@ TARGET_LINK_LIBRARIES(${TARGET}
 	debug ${NameSpace}SimTKcommon_d optimized ${NameSpace}SimTKcommon
 	debug ${NameSpace}SimTKmath_d optimized  ${NameSpace}SimTKmath
 	debug ${NameSpace}SimTKsimbody_d optimized ${NameSpace}SimTKsimbody
-	SimTKlapack
-	${PLATFORM_LIBS}
 )
-
-IF(WIN32)
-	SET(PLATFORM_LIBS  pthreadVC2)
-ELSE (WIN32)
-  SET(NameSpace "")
-  IF(APPLE)
-	SET(PLATFORM_LIBS  SimTKAtlas)
-  ELSE(APPLE)
-	SET(PLTAFORM_LIBS SimTKAtlas_Lin_generic)
-  ENDIF(APPLE)
-ENDIF (WIN32)
 
 # This block copies the additional files into the running directory
 # For example vtp, obj files. Add to the end for more extentions

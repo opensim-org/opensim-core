@@ -35,7 +35,7 @@ LINK_LIBRARIES(
 	debug ${NameSpace}SimTKcommon_d optimized   ${NameSpace}SimTKcommon
 	debug ${NameSpace}SimTKmath_d optimized  ${NameSpace}SimTKmath
 	debug ${NameSpace}SimTKsimbody_d optimized  ${NameSpace}SimTKsimbody
-	SimTKlapack pthreadVC2)
+	)
 
 ADD_EXECUTABLE(${TARGET}  ${SOURCE_FILES} ${INCLUDE_FILES}) 
 

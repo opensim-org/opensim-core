@@ -57,11 +57,10 @@ SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
 
 SET(PLUGIN_NAME "osimExpressionReporter")
 
-INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-${OpenSim_SOURCE_DIR}/OpenSim ${OpenSim_SOURCE_DIR}/Vendors/lepton/include ${SIMTK_HEADERS_DIR})
+INCLUDE_DIRECTORIES(${OPENSIM_INSTALL_DIR}/sdk/include ${OPENSIM_INSTALL_DIR}/sdk/include/Vendors/lepton/include ${OPENSIM_INSTALL_DIR}/sdk/include/SimTK/include)
 
 ### LIBRARIES
-SET(OPENSIM_LIBS_DIR  ${OPENSIM_INSTALL_DIR}/sdk/lib)
+SET(OPENSIM_LIBS_DIR ${OPENSIM_INSTALL_DIR}/lib ${OPENSIM_INSTALL_DIR}/sdk/lib)
 LINK_DIRECTORIES(${OPENSIM_LIBS_DIR})
 
 # SimmKinematicsEngine library only needed for SimmFileWriter...
@@ -75,7 +74,6 @@ LINK_LIBRARIES(
 	debug  ${NameSpace}SimTKmath_d optimized  ${NameSpace}SimTKmath
 	debug ${NameSpace}SimTKsimbody_d optimized  ${NameSpace}SimTKsimbody
 	debug osimLepton_d optimized osimLepton
-	SimTKlapack pthreadVC2
 )
 
 ADD_LIBRARY(${PLUGIN_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 

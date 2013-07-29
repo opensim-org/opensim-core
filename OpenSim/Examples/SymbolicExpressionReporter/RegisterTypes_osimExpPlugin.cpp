@@ -22,7 +22,7 @@
 
 #include <string>
 #include <iostream>
-#include <OpenSim.h>
+#include "OpenSim/OpenSim.h"
 #include "RegisterTypes_osimExpPlugin.h"
 
 #include "SymbolicExpressionReporter.h"
