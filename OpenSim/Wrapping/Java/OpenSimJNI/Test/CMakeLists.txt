@@ -30,6 +30,6 @@ FOREACH (dataFile ${TEST_FILES})
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy
     ${dataFile}
-    ${OpenSim_BINARY_DIR}/OpenSim/Java/OpenSimJNI/Test)
+    ${OpenSim_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/Test)
  ENDFOREACH (dataFile) 
 ENDIF(BUILD_JAVA_WRAPPING)
