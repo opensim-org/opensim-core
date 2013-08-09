@@ -122,9 +122,6 @@ setupProperties()
 	_propertySet.append( &_propFilterOn );
 }
 //_____________________________________________________________________________
-/**
- * Copy the member variables of the specified control.
- */
 void Control::
 copyData(const Control &aControl)
 {
@@ -168,33 +165,12 @@ operator=(const Control &aControl)
 // IS MODEL CONROL
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set whether or not this control is a model control.  A model control is
- * a control that is expected by a model. Controls that are not model
- * controls may be, for example, controls that are used to set up a
- * simulation.  Such examples might include an initial state of a model
- * (e.g., joint angle, joint angular velocity, ...) or the final time of
- * a siimulation.
- *
- * @param aTrueFalse If true, the control is treated as a model control.   If
- * false, the control is not treated as a model control.
- */
 void Control::
 setIsModelControl(bool aTrueFalse)
 {
 	_isModelControl = aTrueFalse;
 }
 //_____________________________________________________________________________
-/**
- * Get whether or not this control is a model control.  A model control is
- * a control that is expected by a model.  Controls that are not model
- * controls may be, for example, controls that are used to set up a
- * simulation.  Such examples might include an initial state of a model
- * (e.g., joint angle, joint angular velocity, ...) or the final time of
- * a siimulation.
- *
- * @return True if this control is a model control, false otherwise.
- */
 bool Control::
 getIsModelControl() const
 {
@@ -205,26 +181,12 @@ getIsModelControl() const
 // EXTRAPOLATE
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set whether or not to extrapolate for control curve evaluations that
- * are outide the region of confidence for a control.
- *
- * @param aTrueFalse If true, extrapolate when needed and possible to
- * determine the value of the control curve.
- */
 void Control::
 setExtrapolate(bool aTrueFalse)
 {
 	_extrapolate = aTrueFalse;
 }
 //_____________________________________________________________________________
-/**
- * Get whether or not to extrapolate for control curve evaluations that
- * are outide the region of confidence for a control.
- *
- * @return True if this control should use extrapolation when needed and
- * possible,
- */
 bool Control::
 getExtrapolate() const
 {
@@ -235,12 +197,6 @@ getExtrapolate() const
 // DEFAULT PARAMETER MINIMUM
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set the default minimum value of a control parameter.
- * The default minimum is used when no minimum value is specified.
- *
- * @param aMin Minimum value.
- */
 void Control::
 setDefaultParameterMin(double aMin)
 {
@@ -252,12 +208,6 @@ setDefaultParameterMin(double aMin)
 	}
 }
 //_____________________________________________________________________________
-/**
- * Get the default minimum value of a control parameter.
- * The default minimum is used when no minimum value is specified.
- *
- * @return Minimum value.
- */
 double Control::
 getDefaultParameterMin() const
 {
@@ -268,12 +218,6 @@ getDefaultParameterMin() const
 // DEFAULT PARAMETER MAXIMUM
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set the default maximum value of a control parameter.
- * The default maximum is used when no maximum value is specified.
- *
- * @param aMax Maximum value.
- */
 void Control::
 setDefaultParameterMax(double aMax)
 {
@@ -285,12 +229,6 @@ setDefaultParameterMax(double aMax)
 	}
 }
 //_____________________________________________________________________________
-/**
- * Get the default maximum value of a control parameter.
- * The default maximum is used when no maximum value is specified.
- *
- * @return Maximum value.
- */
 double Control::
 getDefaultParameterMax() const
 {
@@ -301,23 +239,12 @@ getDefaultParameterMax() const
 // FILTER ON
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set whether or not to apply a filter to the control values.
- *
- * @param aTrueFalse If true, will apply a filter to the control
- * values.  If false, a filter will not be used.
- */
 void Control::
 setFilterOn(bool aTrueFalse)
 {
 	_filterOn = aTrueFalse;
 }
 //_____________________________________________________________________________
-/**
- * Get whether or not to apply a filter to the control values.
- *
- * @return True if a filter will be used.  False otherwise.
- */
 bool Control::
 getFilterOn() const
 {
@@ -326,12 +253,6 @@ getFilterOn() const
 
 // Convenience methods
 //_____________________________________________________________________________
-/**
- * Get the first time where parameter is specified. Should be overriden by derived classes
- * that have a defined min time.
- *
- * @return 0.
- */
 const double Control::getFirstTime() const
 {
 	string msg = "Control.getFirstTime: This method must be overriden.";
@@ -339,12 +260,6 @@ const double Control::getFirstTime() const
 	return 0;
 }
 //_____________________________________________________________________________
-/**
- * Get the last time where parameter is specified. Should be overriden by derived classes
- * that have a defined max time.
- *
- * @return 0.
- */
 const double Control::getLastTime() const
 {
 	string msg = "Control.getLastTime: This method must be overriden.";
@@ -357,18 +272,6 @@ const double Control::getLastTime() const
 // SIMPLIFY
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Simplify the control (e.g., reduce the number of points in the control
- * curve) based on a set of specified properties.  Each implementation
- * is free to require whatever properties are needed to perform
- * the simplification.  Refer to the documentation in derived classes
- * to see what properties are required.
- *
- * @param aProperties Set of properties used to perform the simplify
- * operation.
- * @throw Exception This method does nothing.  It must be overriden
- * in derived classes.
- */
 void Control::
 simplify(const PropertySet &aProperties)
 {
@@ -381,11 +284,6 @@ simplify(const PropertySet &aProperties)
 // FILTER
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Filter the control curve at a particular time.
- *
- * @param aT Time at which to compute a new, filtered control value
- */
 void Control::
 filter(double aT)
 {

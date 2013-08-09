@@ -45,14 +45,6 @@ ControlConstant::~ControlConstant()
 {
 }
 //_____________________________________________________________________________
-/**
- * Default constructor.
- *
- * @param aX Value of the control.  By default, the control is assigned a
- * value of 0.0.
- * @param aName Name of the control.  By default, the control is given the
- * name "UNKNOWN".
- */
 ControlConstant::ControlConstant(double aX,const char *aName) :
 	_x(_propX.getValueDbl())
 {
@@ -214,20 +206,6 @@ getParameterMax(int aI) const
 // PARAMETER TIME
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Get the time at which a parameter is specified.
- *
- * Parameters for some types of control curves do not have a time at which
- * they are specified.  For example, in a Fourier series the control
- * parameters are the cooefficients in the expansion, and each term in
- * the expansion corresponds not to a specific time but to a frequency.
- * Another example is a constant that has the same value for all times.
- * In these cases, this method returns SimTK::NaN.
- *
- * @param aI Index of the parameter.
- * @return Time at which the control parameter occurs.  For ControlConstant
- * this value is not defined, and so SimTK::getNan() is always returned.
- */
 double ControlConstant::
 getParameterTime(int aI) const
 {
@@ -238,24 +216,6 @@ getParameterTime(int aI) const
 // PARAMETER NEIGHBORHOOD
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Get the time neighborhood (i.e., the lower and upper bounds of time)
- * in which a control parameter affects the value of the control curve.
- *
- * Changes in the specified parameter are guarranteed not to change the value
- * of the control curve below the lower bound time or above the upper bound
- * time.  If a parameter influences the value of the control curve for all
- * times, -SimTK::Infinity and SimTK::Infinity are returned for
- * the upper and lower bound times, respectively.
- *
- * @param aI Index of the parameter.
- * @param aTLower Time below which the curve is not affected the specified
- * parameter.  For ControlConstant, -SimTK::Infinity  is always
- * returned.
- * @param aTUpper Time above which the curve is not affected the specified
- * parameter.  For ControlConstant, SimTK::Infinity  is always
- * returned.
- */
 void ControlConstant::
 getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const
 {
@@ -267,17 +227,6 @@ getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const
 // PARAMETER LIST
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Get the list of parameters that affect the control curve at a
- * specified time.
- *
- * @param aT Time in question.
- * @param rList List of control parameters that affect the curve at time aT.
- * For ControlConstant, parameter 0 (i.e., the value of the constant)
- * should be the only paramter on the list.
- * @return Number of parameters in the list.  For ControlConstant, 1 should
- * always be returned.
- */
 int ControlConstant::
 getParameterList(double aT,Array<int> &rList)
 {
@@ -286,33 +235,6 @@ getParameterList(double aT,Array<int> &rList)
 	return(rList.getSize());
 }
 //_____________________________________________________________________________
-/**
- * Get the list of parameters that affect the control curve between two
- * specified times and that do NOT affect the control curve below the lower
- * of these two times.
- *
- * This method is useful when solving for a set of controls for a dynamic
- * simulation.  When solving for a set of controls, one always wants to
- * go forward in time.  Therefore, one does not want to change control
- * parameters that affect the control curve at past times.
- *
- * A control parameter is included in the list only if it affects
- * the control curve in the specified time interval AND does NOT
- * affect the control curve below the lower bound of the
- * specified time interval.  So, it is possible that some of the
- * parameters on the returned list could affect the control curve at
- * times greater than the upper bound of the specified time interval.
- *
- * @param aTLower Lower time bound.  The control curve is guarranteed
- * not to be affected below this time by any of the returned parameters.
- * @param aTUpper Upper time bound.  The control curve is NOT guarranteed
- * to not be affected for times greater than this time.
- * @param rList List of control parameters that affect the curve at time aT.
- * For ControlConstant, parameter 0 (i.e., the value of the constant)
- * should be the only paramter on the list.
- * @return Number of parameters in the list.  For ControlConstant, 1 should
- * always be returned.
- */
 int ControlConstant::
 getParameterList(double aTLower,double aTUpper,Array<int> &rList)
 {
@@ -324,35 +246,12 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList)
 // PARAMETER VALUE
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set the value of a control parameter.
- *
- * Class ControlConstant has only 1 parameter, which is the value of
- * the control.\n\n
- * Index     Parameter\n
- *   0       Control value
- *
- * @param aI Index of the parameter (only 0 is valid for ControlConstant).
- * @param aX Value of the parameter (value of the control for ControlConstant).
- * @see getNumParameters()
- */
 void ControlConstant::
 setParameterValue(int aI,double aX)
 {
 	_x = aX;
 }
 //_____________________________________________________________________________
-/**
- * Get the value of a control parameter.
- *
- * Class ControlConstant has only 1 parameter, which is the value of
- * the control.\n\n
- * Index     Parameter\n
- *   0       Control value
- *
- * @param aI Index of the parameter (only 0 is valid in this case).
- * @return Value of the parameter (value of the control in this case).
- */
 double ControlConstant::
 getParameterValue(int aI) const
 {
@@ -363,25 +262,12 @@ getParameterValue(int aI) const
 // CONTROL VALUE
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set the value of this control at time aT.
- *
- * @param aT Time at which to set the control.
- * @param aX Control value.
- */
 void ControlConstant::
 setControlValue(double aT,double aX)
 {
 	_x = aX;
 }
 //_____________________________________________________________________________
-/**
- * Get the value of this control at time aT.
- *
- * @param aT Time at which to get the control.
- * @return Control value.  For ControlConstant, aT is not used since the
- * control has a constant, time-independent value.
- */
 double ControlConstant::
 getControlValue(double aT)
 {
@@ -392,24 +278,12 @@ getControlValue(double aT)
 // CONTROL VALUE MIN
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set the minimum allowed value of this control at time aT.
- *
- * @param aT Time.
- * @param aMin Minimum control value.
- */
 void ControlConstant::
 setControlValueMin(double aT,double aMin)
 {
 	setDefaultParameterMin(aMin);
 }
 //_____________________________________________________________________________
-/**
- * Get the minimum allowed value of this control at time aT.
- *
- * @param aT Time.
- * @return Minimum control value.
- */
 double ControlConstant::
 getControlValueMin(double aT)
 {
@@ -420,24 +294,12 @@ getControlValueMin(double aT)
 // CONTROL VALUE MAX
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set the maximum allowed value of this control at time aT.
- *
- * @param aT Time.
- * @param aMax Maximum control value.
- */
 void ControlConstant::
 setControlValueMax(double aT,double aMax)
 {
 	setDefaultParameterMax(aMax);
 }
 //_____________________________________________________________________________
-/**
- * Get the maxium allowed value of this control at time aT.
- *
- * @param aT Time.
- * @return Maximum control value.
- */
 double ControlConstant::
 getControlValueMax(double aT)
 {

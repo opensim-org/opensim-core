@@ -36,6 +36,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * A class that represents a constant control curve.  That is, the value
  * of the control curve is the same at any value of time.
@@ -43,8 +45,6 @@
  * @author Frank C. Anderson
  * @version 1.0
  */
-namespace OpenSim { 
-
 class OSIMSIMULATION_API ControlConstant : public Control {
 OpenSim_DECLARE_CONCRETE_OBJECT(ControlConstant, Control);
 
@@ -63,7 +63,11 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	ControlConstant(double aX=0.0,const char *aName="UNKOWN");
+    /**
+     * @param aX Constant value of the control.
+     * @param aName Name of the control.
+     */
+    ControlConstant(double aX=0.0,const char *aName="UNKOWN");
 	ControlConstant(const ControlConstant &aControl);
 	virtual ~ControlConstant();
 
@@ -94,17 +98,48 @@ public:
 	virtual void setParameterMax(int aI,double aMax);
 	virtual double getParameterMax(int aI) const;
 	// Time and Neighborhood
-	virtual double getParameterTime(int aI) const;
-	virtual void getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const;
-	// List
-	virtual int getParameterList(double aT,Array<int> &rList);
-	virtual int getParameterList(double aT1,double aT2,Array<int> &rList);
-	// Value
-	virtual void setParameterValue(int aI,double aP);
-	virtual double getParameterValue(int aI) const;
-	// CONTROL VALUE
-	virtual void setControlValue(double aT,double aX);
-	virtual double getControlValue(double aT);
+    /**
+     * For ControlConstant, parameters are not associated with any specific time.
+     *
+     * @param aI Index of the parameter.
+     * @return SimTK::NaN
+     */
+    virtual double getParameterTime(int aI) const;
+    /**
+     * @param aI Index of the parameter.
+     * @param rTLower -SimTK::Infinity
+     * @param rTUpper SimTK::Infinity
+     */
+    virtual void getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const;
+
+    /**
+     * @param rList Parameter at index 0 (i.e., the value of the constant)
+     * is the only parameter on the list.
+     */
+    virtual int getParameterList(double aT,Array<int> &rList);
+    virtual int getParameterList(double aT1,double aT2,Array<int> &rList);
+
+    /**
+     * @param aI Only 0 is valid for ControlConstant.
+     * @param aX The constant value of this control curve.
+     */
+    virtual void setParameterValue(int aI,double aP);
+    /**
+     * @see setParameterValue()
+     * @param aI Only 0 is valid for ControlConstant.
+     * @return The constant value of this control curve.
+     */
+    virtual double getParameterValue(int aI) const;
+
+    /**
+     * @param aT Not used since the control value is constant in time.
+     * @param aX Control value.
+     */
+    virtual void setControlValue(double aT,double aX);
+    /**
+     * @param aT Not used since the control value is constant in time.
+     */
+    virtual double getControlValue(double aT);
 	virtual double getControlValueMin(double aT=0.0);
 	virtual void setControlValueMin(double aT,double aX);
 	virtual double getControlValueMax(double aT=0.0);

@@ -39,6 +39,9 @@
 
 //=============================================================================
 //=============================================================================
+
+namespace OpenSim { 
+
 /**
  * A class that represents a piece-wise linear control curve.
  *
@@ -47,11 +50,12 @@
  * The value of the control curve is computed by linearly interpolating
  * the values of the appropriate control nodes.
  *
+ * For this Control, <i>parameters</i> are the values of the
+ * ControlLinearNode's.
+ *
  * @author Frank C. Anderson
  * @version 1.0
  */
-namespace OpenSim { 
-
 class OSIMSIMULATION_API ControlLinear : public Control {
 OpenSim_DECLARE_CONCRETE_OBJECT(ControlLinear, Control);
 
@@ -95,18 +99,82 @@ public:
 	ControlLinear(const ControlLinear &aControl);
 	virtual ~ControlLinear();
 
+    /**
+     * Copy the member variables of the specified ControlLinear over
+     * to this ControlLinear.
+     */
 	void copyData(const ControlLinear &aControl);
 protected:
+    /**
+     * Connect properties to local pointers.
+     */
 	virtual void setupProperties();
 	
 private:
+    /**
+     * Set the member data to their NULL values.
+     */
 	void setNull();
-	double extrapolateBefore(double aT) const;
-	double extrapolateAfter(double aT) const;
-	double extrapolateMinBefore(double aT) const;
-	double extrapolateMinAfter(double aT) const;
-	double extrapolateMaxBefore(double aT) const;
-	double extrapolateMaxAfter(double aT) const;
+    /**
+     * Extrapolate the value of the control curve before the first node.
+     *
+     * Currently, simple linear extrapolation using the first two nodes is
+     * used.
+     *
+     * @param aT Time at which to evalute the control curve.
+     * @return Extrapolated value of the control curve.
+     */
+    double extrapolateBefore(double aT) const;
+    /**
+     * Extrapolate the value of the control curve after the last node.
+     *
+     * Currently, simple linear extrapolation using the last two nodes is
+     * used.
+     *
+     * @param aT Time at which to evalute the control curve.
+     * @return Extrapolated value of the control curve.
+     */
+    double extrapolateAfter(double aT) const;
+    /**
+     * Extrapolate the value of the control curve before the first node.
+     *
+     * Currently, simple linear extrapolation using the first two nodes is
+     * used.
+     *
+     * @param aT Time at which to evalute the control curve.
+     * @return Extrapolated value of the control curve.
+     */
+    double extrapolateMinBefore(double aT) const;
+    /**
+     * Extrapolate the value of the control curve after the last node.
+     *
+     * Currently, simple linear extrapolation using the last two nodes is
+     * used.
+     *
+     * @param aT Time at which to evalute the control curve.
+     * @return Extrapolated value of the control curve.
+     */
+    double extrapolateMinAfter(double aT) const;
+    /**
+     * Extrapolate the value of the control curve before the first node.
+     *
+     * Currently, simple linear extrapolation using the first two nodes is
+     * used.
+     *
+     * @param aT Time at which to evalute the control curve.
+     * @return Extrapolated value of the control curve.
+     */
+    double extrapolateMaxBefore(double aT) const;
+    /**
+     * Extrapolate the value of the control curve after the last node.
+     *
+     * Currently, simple linear extrapolation using the last two nodes is
+     * used.
+     *
+     * @param aT Time at which to evalute the control curve.
+     * @return Extrapolated value of the control curve.
+     */
+    double extrapolateMaxAfter(double aT) const;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -120,41 +188,116 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// PROPERTIES
-	// Flag indicating whether to interpolate between nodes using step functions
-	// or linear interpolation
+    /**
+     * Sets whether or not step functions are used between control nodes or
+     * linear interpolation.  When step functions are used, the value of the
+     * control curve between two nodes is the value of the node that occurs
+     * <b>later</b> in time.
+     *
+     * @param aTrueFalse If true, step functions will be used to determine the
+     * value between adjacent nodes.  If false, linear interpolation will be used.
+     */
 	void setUseSteps(bool aTrueFalse);
+
+    /**
+      * @see setUseSteps()
+      */
 	bool getUseSteps() const;
-	// Kp
+
+    /**
+     * Sets the position gain for PD follower filter.  This value is relevant
+     * only if the PD follower filter will be used.
+     *
+     * @see setFilterOn()
+     *
+     * @param aKp Value of position gain for the PD follower filter.
+     */
 	void setKp(double aKp);
+    /// @see setKp()
 	double getKp() const;
-	// Kv
+
+    /**
+     * Sets the velocity gain for PD follower filter.  This value is relevant
+     * only if the PD follower filter will be used.
+     *
+     * @see setFilterOn()
+     *
+     * @param aKv Value of velocity gain for the PD follower filter.
+     */
 	void setKv(double aKv);
+    /// @see setKv()
 	double getKv() const;
 	// PARAMETERS
-	// Number
-	virtual int getNumParameters() const;
-	// Parameter Min
-	virtual void setParameterMin(int aI,double aMin);
-	virtual double getParameterMin(int aI) const;
-	// Parameter Max
+    virtual int getNumParameters() const;
+
+    virtual void setParameterMin(int aI,double aMin);
+    virtual double getParameterMin(int aI) const;
+
 	virtual void setParameterMax(int aI,double aMax);
-	virtual double getParameterMax(int aI) const;
-	// Parameter Time and Neighborhood
-	virtual double getParameterTime(int aI) const;
-	virtual void getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const;
-	// Parmeter List
-	virtual int getParameterList(double aT,Array<int> &rList);
-	virtual int getParameterList(double aT1,double aT2,Array<int> &rList);
-	// Parameter Value
-	virtual void setParameterValue(int aI,double aP);
-	virtual double getParameterValue(int aI) const;
+    virtual double getParameterMax(int aI) const;
+    /**
+     * Get the time at which a parameter (control curve value) is specified.
+     *
+     * Not for minimum or maximum values of parameters; only for specified
+     * values of the control curve, as set via setParameterValue() or
+     * setControlValue().
+     *
+     * @param aI Index of the parameter.
+     * @throws Exception if aI is invalid.
+     */
+    virtual double getParameterTime(int aI) const;
+    /**
+     * @param rTLower The time of parameter aI-1 or of
+     * aI if there is no parameter aI-1.  If there are no ControlLinearNode's
+     * at all or if aI is invalid, rTLower is given the value SimTK::NaN.
+     * @param rTUpper The time of parameter aI+1 or of
+     * aI if there is no parameter aI+1.  If there are no ControlLinearNode's
+     * at all or if aI is invalid, rTUpper is given the value SimTK::NaN.
+     */
+    virtual void getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const;
+
+    /**
+     * @param rList If aT lies between two nodes, the indices of these
+     * two nodes are returned; if aT equals the time at which a node occurs, the
+     * index of that node is returned; if aT is less than the time of the first
+     * node in the array, the index of the first node (i.e., 0) is returned;
+     * if aT is greater than the time of the last node, the index of the last
+     * node (i.e., size-1) is returned.
+     */
+    virtual int getParameterList(double aT,Array<int> &rList);
+    virtual int getParameterList(double aT1,double aT2,Array<int> &rList);
+
+    /**
+     * @param aI Index of the parameter.
+     * @param aX The parameter value is simply the value of
+     * the aI-th ControlLinearNode (which is the value of the control curve).
+     */
+    virtual void setParameterValue(int aI,double aP);
+    /// @see setParameterValue()
+    virtual double getParameterValue(int aI) const;
+
 	// CONTROL VALUE
-	virtual void setControlValue(double aT,double aX);
-	virtual double getControlValue(double aT);
-	virtual double getControlValueMin(double aT=0.0);
-	virtual void setControlValueMin(double aT,double aX);
+    /**
+     * This method adds a set of control parameters at the specified time unless
+     * the specified time equals the time of an existing ControlLinearNode,
+     * in which case the parameters of that control node are changed.
+     */
+    virtual void setControlValue(double aT,double aX);
+    virtual double getControlValue(double aT);
+    virtual double getControlValueMin(double aT=0.0);
+    /**
+     * This method adds a set of control parameters at the specified time unless
+     * the specified time equals the time of an existing control node, in which
+     * case the parameters of that control node are changed.
+     */
+    virtual void setControlValueMin(double aT,double aX);
 	virtual double getControlValueMax(double aT=0.0);
-	virtual void setControlValueMax(double aT,double aX);
+    /**
+     * This method adds a set of control parameters at the specified time unless
+     * the specified time equals the time of an existing control node, in which
+     * case the parameters of that control node are changed.
+     */
+    virtual void setControlValueMax(double aT,double aX);
 	
 	// NODE ARRAY
 	void clearControlNodes();
@@ -168,26 +311,73 @@ public:
 		return (_maxNodes);
 	}
 	// Insert methods that allocate and insert a copy.
-	// These are called from GUI to work around early garbage collection
+    /// Called from GUI to work around early garbage collection.
 	void insertNewValueNode(int index, const ControlLinearNode& newNode) {
 		_xNodes.insert(index, newNode.clone());
 	}
-	void insertNewMinNode(int index, const ControlLinearNode& newNode) {
+    /// Called from GUI to work around early garbage collection.
+    void insertNewMinNode(int index, const ControlLinearNode& newNode) {
 		_minNodes.insert(index, newNode.clone());
 	}
-	void insertNewMaxNode(int index, const ControlLinearNode& newNode) {
+    /// Called from GUI to work around early garbage collection.
+    void insertNewMaxNode(int index, const ControlLinearNode& newNode) {
 		_maxNodes.insert(index, newNode.clone());
 	}
 	// Convenience methods
-	virtual const double getFirstTime() const;
-	virtual const double getLastTime() const;
+    /**
+     * The time corresponding to the first ControlLinearNode.
+     */
+    virtual const double getFirstTime() const;
+    /**
+     * The time corresponding to the last ControlLinearNode
+     */
+    virtual const double getLastTime() const;
 
 	// SIMPLIFY
-	virtual void simplify(const PropertySet &aProperties);
-	bool simplify(const double& cutoffFrequency, const double& distance);
+    /**
+     * The number of control nodes is reduced by first applying a lowpass filter
+     * to the sequence of control nodes using a specified cutoff frequency and
+     * then removing nodes that keep the curve within a specified distance
+     * to the low-pass filtered curve.
+     *
+     * The PropertySet should contain:\n
+     * <table>
+     * <tr><td>TYPE</td><td>NAME</td></tr>
+     * <tr><td>PropertyDbl</td><td>cutoff_frequency</td></tr>
+     * <tr><td>PropertyDbl</td><td>distance</td></tr>
+     * </table>
+     *
+     * @param aProperties PropertySet containing the needed properties for
+     * this method.
+     * @throws Exception if an error is encountered.
+     */
+    virtual void simplify(const PropertySet &aProperties);
+    /**
+     * Another interface to simplify that:
+     * (1) does not require properties, and (2) returns bool on failure
+     * for a more graceful batch simplification.
+     */
+    bool simplify(const double& cutoffFrequency, const double& distance);
+
+    /**
+     * Filter the control curve at a particular time using a PD follower filter.
+     *
+     * @see setFilterOn()
+     *
+     * @param aT Time at which to compute a new, filtered control value
+     */
 	virtual void filter(double aT);
 
-    // INTERPOLATE
+    /**
+     * Linearly interpolate or extrapolate given two points.
+     *
+     * @param aX1 X coordinate of point 1.
+     * @param aY1 Y coordinate of point 1.
+     * @param aX2 X coordinate of point 2.
+     * @param aY2 Y coordinate of point 2.
+     * @param aX X coordinate whose corresponding Y coordinate is desired.
+     * @return Y value corresponding to aX.
+     */
     static double Interpolate(double aX1,double aY1,double aX2,double aY2,double aX);
 
 private:

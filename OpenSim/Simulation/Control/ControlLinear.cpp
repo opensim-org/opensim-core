@@ -43,25 +43,11 @@ using namespace std;
 // CONSTRUCTOR(S)
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Destructor.
- */
 ControlLinear::~ControlLinear()
 {
 }
 //_____________________________________________________________________________
-/**
- * Default constructor.
- *
- * @param aX Pointer to an array of control nodes.  By default, the value of
- * aX is NULL.  If it is not NULL, the control nodes pointed to
- * by aX are copied.  This class keeps its own internal array of control
- * nodes.  The caller owns the array pointed to by aX, is free to use
- * this array in any way, and, if necessary, is responsible for deleting the
- * memory associated with aX.
- * @param aName Name of the control.
- *
- */
+
 ControlLinear::
 ControlLinear() :
 	_useSteps(_propUseSteps.getValueBool()),
@@ -74,11 +60,6 @@ ControlLinear() :
 	setNull();
 }
 //_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aControl Control to copy.
- */
 ControlLinear::ControlLinear(const ControlLinear &aControl) :
 	Control(aControl),
 	_useSteps(_propUseSteps.getValueBool()),
@@ -96,18 +77,12 @@ ControlLinear::ControlLinear(const ControlLinear &aControl) :
 // CONSTRUCTION/DESTRUCTION
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Set the member data to their NULL values.
- */
 void ControlLinear::
 setNull()
 {
 	setupProperties();
 }
 //_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
 void ControlLinear::
 setupProperties()
 {
@@ -137,9 +112,6 @@ setupProperties()
 	_propertySet.append( &_propKv );
 }
 //_____________________________________________________________________________
-/**
- * Copy the member variables of the specified control.
- */
 void ControlLinear::
 copyData(const ControlLinear &aControl)
 {
@@ -159,11 +131,6 @@ copyData(const ControlLinear &aControl)
 // ASSIGNMENT
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return  Reference to the altered object.
- */
 ControlLinear& ControlLinear::
 operator=(const ControlLinear &aControl)
 {
@@ -184,30 +151,12 @@ operator=(const ControlLinear &aControl)
 // USE STEPS
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set whether or not step functions are used between control nodes or
- * linear interpolation.  When step functions are used, the value of the
- * control curve between two nodes is the value of the node that occurs later
- * in time.
- *
- * @param aTrueFalse If true, step functions will be used to determine the
- * value between adjacent nodes.  If false, linear interpolation will be used.
- */
 void ControlLinear::
 setUseSteps(bool aTrueFalse)
 {
 	_useSteps = aTrueFalse;
 }
 //_____________________________________________________________________________
-/**
- * Get whether or not step functions are used between control nodes or
- * linear interpolation.  When step functions are used, the value of the
- * control curve between two nodes is the value of the node that occurs later
- * in time.
- *
- * @return True if steps functions are used.  False if linear interpolation
- * is used.
- */
 bool ControlLinear::
 getUseSteps() const
 {
@@ -218,24 +167,12 @@ getUseSteps() const
 // KP
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set position gain for PD follower filter.  This value is relevant only if
- * the PD follower filter will be used.
- *
- * @param aKp Value of position gain for the PD follower filter.
- */
 void ControlLinear::
 setKp(double aKp)
 {
 	_kp = aKp;
 }
 //_____________________________________________________________________________
-/**
- * Get position gain for PD follower filter.  This value is relevant only if
- * the PD follower filter will be used.
- *
- * @return Value of position gain for the PD follower filter.
- */
 double ControlLinear::
 getKp() const
 {
@@ -246,24 +183,12 @@ getKp() const
 // KV
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set velocity gain for PD follower filter.  This value is relevant only if
- * the PD follower filter will be used.
- *
- * @param aKv Value of velocity gain for the PD follower filter.
- */
 void ControlLinear::
 setKv(double aKv)
 {
 	_kv = aKv;
 }
 //_____________________________________________________________________________
-/**
- * Get velocity gain for PD follower filter.  This value is relevant only if
- * the PD follower filter will be used.
- *
- * @return Value of velocity gain for the PD follower filter.
- */
 double ControlLinear::
 getKv() const
 {
@@ -274,11 +199,6 @@ getKv() const
 // NUMBER OF PARAMETERS
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Get the number of parameters that are used to specify the control curve.
- *
- * @return Number of parameters.
- */
 int ControlLinear::
 getNumParameters() const
 {
@@ -289,26 +209,12 @@ getNumParameters() const
 // PARAMETER MIN
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set the minimum value of a control parameter.
- *
- * @param aI Index of the parameter.
- * @param aMin Minimum value of the parameter.
- * @throws Exception if aI is invalid.
- */
 void ControlLinear::
 setParameterMin(int aI,double aMin)
 {
 	_minNodes.get(aI)->setValue(aMin);
 }
 //_____________________________________________________________________________
-/**
- * Get the minimum value of a control parameter.
- *
- * @param aI Index of the parameter.
- * @return Minimum value of the parameter.
- * @throws Exception if aI is invalid.
- */
 double ControlLinear::
 getParameterMin(int aI) const
 {
@@ -319,26 +225,12 @@ getParameterMin(int aI) const
 // PARAMETER MAX
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set the maximum value of a control parameter.
- *
- * @param aI Index of the parameter.
- * @param aMax Maximum value of the parameter.
- * @throws Exception if aI is invalid.
- */
 void ControlLinear::
 setParameterMax(int aI,double aMax)
 {
 	_maxNodes.get(aI)->setValue(aMax);
 }
 //_____________________________________________________________________________
-/**
- * Get the maximum value of a control parameter.
- *
- * @param aI Index of the parameter.
- * @return Maximum value of the parameter.
- * @throws Exception if aI is invalid.
- */
 double ControlLinear::
 getParameterMax(int aI) const
 {
@@ -349,21 +241,6 @@ getParameterMax(int aI) const
 // PARAMETER TIME
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Get the time at which a parameter is specified.
- *
- * Parameters for some types of control curves do not have a time at which
- * they are specified.  For example, in a Fourier series the control
- * parameters are the cooefficients in the expansion, and each term in
- * the expansion corresponds not to a specific time but to a frequency.
- * Another example is a constant that has the same value for all times.
- * In these cases, this method returns SimTK::NaN.
- *
- * @param aI Index of the parameter.
- * @return Time at which the control parameter occurs.  For ControlLinear
- * this value is not defined, and so SimTK::NaN is always returned.
- * @throws Exception if aI is invalid.
- */
 double ControlLinear::
 getParameterTime(int aI) const
 {
@@ -374,27 +251,6 @@ getParameterTime(int aI) const
 // PARAMETER NEIGHBORHOOD
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Get the time neighborhood (i.e., the lower and upper bounds of time)
- * in which a control parameter affects the value of the control curve.
- *
- * Changes in the specified parameter are guarranteed not to change the value
- * of the control curve below the lower bound time or above the upper bound
- * time.  If a parameter influences the value of the control curve for all
- * times, -SimTK::Infinity and SimTK::Infinity are returned for
- * the upper and lower bound times, respectively.
- *
- * @param aI Index of the parameter.
- * @param rTLower Time below which the curve is not affected by the specified
- * parameter.  For ControlLinear, aTLower is the time of parameter aI-1 or of
- * aI if there is no parameter aI-1.  If there are no nodes at all or if
- * aI is invalid, aTLower is given the value SimTK::NaN.
- * @param rTUpper Time above which the curve is not affected by the specified
- * parameter.  For ControlLinear, aTUpper is the time of parameter aI+1 or of
- * aI if there is no parameter aI+1.  If there are no nodes at all or if
- * aI is invalid, aTUpper is given the value SimTK::NaN.
- * @throws Exception if aI is invalid.
- */
 void ControlLinear::
 getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const
 {
@@ -426,20 +282,6 @@ getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const
 // PARAMETER LIST
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Get the list of parameters that affect the control curve at a
- * specified time.
- *
- * @param aT Time in question.
- * @param rList Array of control parameters that affect the curve at time aT.
- * For ControlLinear, if aT lies between two nodes, the indices of these
- * two nodes are returned; if aT equals the time at which a node occurs, the
- * index of that node is returned; if aT is less than the time of the first
- * node in the array, the index of the first node (i.e., 0) is returned;
- * if aT is greater than the time of the last node, the index of the last
- * node (i.e., size-1) is returned.
- * @return Number of parameters in the list.
- */
 int ControlLinear::
 getParameterList(double aT,Array<int> &rList)
 {
@@ -478,31 +320,6 @@ getParameterList(double aT,Array<int> &rList)
 	return(rList.getSize());
 }
 //_____________________________________________________________________________
-/**
- * Get the list of parameters that affect the control curve between two
- * specified times and that do NOT affect the control curve below the lower
- * of these two times.
- *
- * This method is useful when solving for a set of controls for a dynamic
- * simulation.  When solving for a set of controls, one always wants to
- * go forward in time.  Therefore, one does not want to change control
- * parameters that affect the control curve at past times.
- *
- * A control parameter is included in the list only if it affects
- * the control curve in the specified time interval AND does NOT
- * affect the control curve below the lower bound of the
- * specified time interval.  So, it is possible that some of the
- * parameters on the returned list could affect the control curve at
- * times greater than the upper bound of the specified time interval.
- *
- * @param aTLower Lower time bound.  The control curves are not affected
- * below this time by any of the returned parameters.
- * @param aTUpper Upper time bound.  The control curves may be affected
- * for times greater than this time.
- * @param rList List of control parameters (their indices to be exact) that
- * affect the curve between aTLower and aTUpper but not before aTLower.
- * @return Number of parameters indices in the list.
- */
 int ControlLinear::
 getParameterList(double aTLower,double aTUpper,Array<int> &rList)
 {
@@ -551,28 +368,12 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList)
 // PARAMETER VALUE
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set the value of a control parameter.
- *
- * @param aI Index of the parameter.
- * @param aX Value of the parameter.  For ControlLinear, the parameter
- * value is simply the value of the control node.
- * @see getNumParameters()
- * @throws Exception if aI is invalid.
- */
 void ControlLinear::
 setParameterValue(int aI,double aX)
 {
 	_xNodes.get(aI)->setValue(aX);
 }
 //_____________________________________________________________________________
-/**
- * Get the value of a control parameter.
- *
- * @param aI Index of the parameter.
- * @return Value of the parameter.  For ControlLinear, the parameter value
- * is simply the value of the control node.
- */
 double ControlLinear::
 getParameterValue(int aI) const
 {
@@ -589,7 +390,7 @@ setControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT,double aValue)
 	int lower = aNodes.searchBinary(node);
 
 	// NO NODE
-	if(lower<0) {
+    if(lower<0) {
 		aNodes.insert(0, node.clone() );
 
 	// CHECK NODE
@@ -722,63 +523,24 @@ extrapolateAfter(ArrayPtrs<ControlLinearNode> &aNodes,double aT) const
 // CONTROL VALUE
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set the value of this control curve at time aT.
- *
- * This method adds a set of control parameters at the specified time unless
- * the specified time equals the time of an existing control node, in which
- * case the parameters of that control node are changed.
- *
- * @param aT Time at which to set the control.
- * @param aX Control value.
- */
 void ControlLinear::
 setControlValue(double aT,double aX)
 {
 	setControlValue(_xNodes,aT,aX);
 }
 //_____________________________________________________________________________
-/**
- * Get the value of this control at time aT.
- *
- * @param aT Time at which to get the control.
- * @return Control value.  If the value of the curve is not defined,
- * SimTK::NaN is returned.  If the control is set to extrapolate,
- * getExtraplate, and the time is before the first node or
- * after the last node, then an extrapolation is performed to determin
- * the value of the control curve.  Otherwise, the value of either the
- * first control node or last control node is returned.
- */
 double ControlLinear::
 getControlValue(double aT)
 {
 	return getControlValue(_xNodes,aT);
 }
 //_____________________________________________________________________________
-/**
- * Extrapolate the value of the control curve before the first node.
- *
- * Currently, simple linear extrapolation using the first two nodes is
- * used.
- *
- * @param aT Time at which to evalute the control curve.
- * @return Extrapolated value of the control curve.
- */
 double ControlLinear::
 extrapolateBefore(double aT) const
 {
 	return extrapolateBefore(_xNodes,aT);
 }
 //_____________________________________________________________________________
-/**
- * Extrapolate the value of the control curve after the last node.
- *
- * Currently, simple linear extrapolation using the last two nodes is
- * used.
- *
- * @param aT Time at which to evalute the control curve.
- * @return Extrapolated value of the control curve.
- */
 double ControlLinear::
 extrapolateAfter(double aT) const
 {
@@ -789,33 +551,12 @@ extrapolateAfter(double aT) const
 // CONTROL VALUE MINIMUM
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set the minimum value of this control curve at time aT.
- *
- * This method adds a set of control parameters at the specified time unless
- * the specified time equals the time of an existing control node, in which
- * case the parameters of that control node are changed.
- *
- * @param aT Time at which to set the control.
- * @param aMin Minimum allowed control value.
- */
 void ControlLinear::
 setControlValueMin(double aT,double aMin)
 {
 	setControlValue(_minNodes,aT,aMin);
 }
 //_____________________________________________________________________________
-/**
- * Get the minimum allowed value of this control at time aT.
- *
- * @param aT Time at which to get the control.
- * @return Minimum allowed control value.  If the value of the curve is not defined,
- * _defaultMin is returned.  If the control is set to extrapolate,
- * getExtraplate, and the time is before the first node or
- * after the last node, then an extrapolation is performed to determin
- * the value of the control curve.  Otherwise, the value of either the
- * first control node or last control node is returned.
- */
 double ControlLinear::
 getControlValueMin(double aT)
 {
@@ -825,30 +566,12 @@ getControlValueMin(double aT)
 		return getControlValue(_minNodes,aT);
 }
 //_____________________________________________________________________________
-/**
- * Extrapolate the value of the control curve before the first node.
- *
- * Currently, simple linear extrapolation using the first two nodes is
- * used.
- *
- * @param aT Time at which to evalute the control curve.
- * @return Extrapolated value of the control curve.
- */
 double ControlLinear::
 extrapolateMinBefore(double aT) const
 {
 	return extrapolateBefore(_minNodes,aT);
 }
 //_____________________________________________________________________________
-/**
- * Extrapolate the value of the control curve after the last node.
- *
- * Currently, simple linear extrapolation using the last two nodes is
- * used.
- *
- * @param aT Time at which to evalute the control curve.
- * @return Extrapolated value of the control curve.
- */
 double ControlLinear::
 extrapolateMinAfter(double aT) const
 {
@@ -860,33 +583,12 @@ extrapolateMinAfter(double aT) const
 // CONTROL VALUE MAXIMUM
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set the maximum value of this control curve at time aT.
- *
- * This method adds a set of control parameters at the specified time unless
- * the specified time equals the time of an existing control node, in which
- * case the parameters of that control node are changed.
- *
- * @param aT Time at which to set the control.
- * @param aMax Maximum allowed control value.
- */
 void ControlLinear::
 setControlValueMax(double aT,double aMax)
 {
 	setControlValue(_maxNodes,aT,aMax);
 }
 //_____________________________________________________________________________
-/**
- * Get the maximum allowed value of this control at time aT.
- *
- * @param aT Time at which to get the control.
- * @return Maximum allowed control value.  If the value of the curve is not defined,
- * _defaultMax is returned.  If the control is set to extrapolate,
- * getExtraplate, and the time is before the first node or
- * after the last node, then an extrapolation is performed to determin
- * the value of the control curve.  Otherwise, the value of either the
- * first control node or last control node is returned.
- */
 double ControlLinear::
 getControlValueMax(double aT)
 {
@@ -896,30 +598,12 @@ getControlValueMax(double aT)
 		return getControlValue(_maxNodes,aT);
 }
 //_____________________________________________________________________________
-/**
- * Extrapolate the value of the control curve before the first node.
- *
- * Currently, simple linear extrapolation using the first two nodes is
- * used.
- *
- * @param aT Time at which to evalute the control curve.
- * @return Extrapolated value of the control curve.
- */
 double ControlLinear::
 extrapolateMaxBefore(double aT) const
 {
 	return extrapolateBefore(_maxNodes,aT);
 }
 //_____________________________________________________________________________
-/**
- * Extrapolate the value of the control curve after the last node.
- *
- * Currently, simple linear extrapolation using the last two nodes is
- * used.
- *
- * @param aT Time at which to evalute the control curve.
- * @return Extrapolated value of the control curve.
- */
 double ControlLinear::
 extrapolateMaxAfter(double aT) const
 {
@@ -935,22 +619,12 @@ clearControlNodes()
 	_xNodes.setSize(0);
 }
 //_____________________________________________________________________________
-/**
- * Get const ref to the time corresponding to first node
- *
- * @return const ref to time corresponding to first node.
- */
 const double ControlLinear::getFirstTime() const
 {
 	const ControlLinearNode *node=_xNodes.get(0);
 	return node->getTime();
 }
 //_____________________________________________________________________________
-/**
- * Get const ref to the time corresponding to Last node
- *
- * @return const ref to time corresponding to last node.
- */
 const double ControlLinear::getLastTime() const
 {
 	const ControlLinearNode *node=_xNodes.getLast();
@@ -961,21 +635,6 @@ const double ControlLinear::getLastTime() const
 // SIMPLIFY
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Simplify the control curve.
- *
- * The number of control nodes is reduced by first applying a lowpass filter
- * to the sequence of control nodes using a specified cutoff frequency and
- * then removing nodes that keep the curve within a specified distance
- * to the low-pass filtered curve. 
- * 
- * @param aProperties Property set containing the needed properties for
- * this method.  The property set should contain:\n
- * \tTYPE          NAME
- * \tPropertyDbl cutoff_frequency\n
- * \tPropertyDbl distance\n\n
- * @throws Exception if an error is encountered.
- */
 void ControlLinear::
 simplify(const PropertySet &aProperties)
 {
@@ -1061,11 +720,7 @@ simplify(const PropertySet &aProperties)
 
 	cout<<"ControlLinear.simplify: final size = "<<_xNodes.getSize()<<".\n";
 }
-/**
- * Another interface to simplify that:
- * - Does not require properties
- * - returns bool on failure for a more graceful batch simplification
- */
+
 bool ControlLinear::
 simplify(const double& cutoffFrequency, const double& distance)
 {
@@ -1084,11 +739,6 @@ simplify(const double& cutoffFrequency, const double& distance)
 // FILTER CONTROL
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Filter the control curve at a particular time using a PD follower filter.
- *
- * @param aT Time at which to compute a new, filtered control value
- */
 void ControlLinear::
 filter(double aT)
 {
@@ -1170,16 +820,6 @@ filter(double aT)
 }
 
 //_____________________________________________________________________________
-/**
- * Linearly interpolate or extrapolate given two points.
- *
- * @param aX1 X coordinate of point 1.
- * @param aY1 Y coordinate of point 1.
- * @param aX2 X coordinate of point 2.
- * @param aY2 Y coordinate of point 2.
- * @param aX X coordinate whose corresponding Y coordinate is desired.
- * @return Y value corresponding to aX.
- */
 double ControlLinear::
 Interpolate(double aX1,double aY1,double aX2,double aY2,double aX)
 {
