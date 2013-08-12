@@ -294,8 +294,9 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 			if(coordRef == NULL)
 				throw Exception("InverseKinematicsTool: value for coordinate "+coordTask->getName()+" not found.");
 
-			coordinateReferences.push_back(*coordRef);
-		
+			// We have a valid coordinate reference so now set its weight according to the task
+			coordRef->setWeight(coordTask->getWeight());
+			coordinateReferences.push_back(*coordRef);		
 		}			
 	}
 	double constraintWeight = std::numeric_limits<SimTK::Real>::infinity();
