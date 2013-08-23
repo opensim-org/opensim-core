@@ -596,14 +596,22 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
     Array<double> dydt(0.0,ny);
     Array<double> yFromStorage(0.0,ny);
 
+    const Array<string>& labels =  aStatesStore.getColumnLabels();
+    int numOpenSimStates = labels.getSize()-1;
+
+    SimTK::Vector stateData;
+    stateData.resize(numOpenSimStates);
+
 	for(int i=iInitial;i<=iFinal;i++) {
 		tPrev = t;
 		aStatesStore.getTime(i,s.updTime()); // time
 		t = s.getTime();
         aModel.setAllControllersEnabled(true);
 
-		aStatesStore.getData(i,s.getNY(),&s.updY()[0]); // states
-
+		aStatesStore.getData(i,numOpenSimStates,&stateData[0]); // states
+		// Get data into local Vector and assign to State using common utility
+		// to handle internal (non-OpenSim) states that may exist
+        aModel.setStateValues(s, &stateData[0]);
 		// Adjust configuration to match constraints and other goals
 		aModel.assemble(s);
 
