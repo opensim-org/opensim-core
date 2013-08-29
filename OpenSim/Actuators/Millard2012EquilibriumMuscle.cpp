@@ -437,7 +437,7 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
     // Elastic tendon initialization routine.
     try {
         // Initialize activation as specified by the user.
-        double clampedActivation = clampActivation(get_default_activation());
+        double clampedActivation = clampActivation(getActivation(s));
         setActivation(s,clampedActivation);
 
         // Initialize the multibody system to the initial state vector.
