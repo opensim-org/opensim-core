@@ -106,8 +106,18 @@ public:
 
 	// External loads get/set
 	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
-	void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
+	void setExternalLoadsFileName(const std::string &aFileName) { 
+        _externalLoadsFileName = aFileName;
+        _externalLoadsFileNameProp.setValueIsDefault(false);
+    }
 
+    // Model file name
+    void setModelFileName(const std::string &aFileName) {
+        _modelFileName = aFileName;
+        _modelFileNameProp.setValueIsDefault(false);
+    }
+
+    std::string getModelFileName() const { return _modelFileName; };
 private:
 	void setNull();
 	void setupProperties();
