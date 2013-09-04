@@ -1,2 +1,2 @@
 
-SUBDIRS(Java)
+SUBDIRS(Java Python)

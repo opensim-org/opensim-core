@@ -231,6 +231,8 @@ ENDIF()
 SET(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're building the GUI and have SWIG and Java installed on your machine.)")
 MARK_AS_ADVANCED( BUILD_JAVA_WRAPPING )
 
+SET(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping and have SWIG and Python installed on your machine.)")
+MARK_AS_ADVANCED( BUILD_PYTHON_WRAPPING )
 
 # You can enable this advanced-variable feature to cause Visual Studio 
 # or Makefiles to print the compile/link commands they are executing. Very
