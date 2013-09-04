@@ -17,6 +17,7 @@ SET(SimTK_INCLUDE_PATH ${SIMTK_INCLUDE_DIR})
 ADD_CUSTOM_TARGET(PyWrap ${SWIG_EXECUTABLE} -v -c++ -python -I${OpenSim_SOURCE_DIR} -I${Simbody_INCLUDE_DIR} 
 	-o ${swig_generated_file_fullname} -outdir ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/Python/ ${swig_interface_file_fullname})
 
+SET_TARGET_PROPERTIES(PyWrap PROPERTIES PROJECT_LABEL "Python Bindings - Generate")
 
 FILE(GLOB SOURCE_FILES OpenSimContext.cpp *.cxx)
 FILE(GLOB INCLUDE_FILES ${swig_generated_file_fullname} OpenSimContext.h)
@@ -28,28 +29,28 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools osimSimmFileWriter)
+LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools osimSimmFileWriter ${PYTHON_LIBRARIES})
 
-ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
+ADD_LIBRARY(${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
-SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
+SET_TARGET_PROPERTIES(${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
-   PROJECT_LABEL "Libraries - osim${KIT}"
+   PROJECT_LABEL "Python Bindings - ${KIT}"
 )
 
-ADD_DEPENDENCIES(osim${KIT} osimTools)
+ADD_DEPENDENCIES(${KIT} osimTools)
 
 # Shared libraries are needed at runtime for applications, so we put them
 # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
 # or OpemSim/lib/*.dylib (Mac). Windows .lib files, and Linux/Mac .a static
 # archives are only needed at link time so go in sdk/lib.
 IF(WIN32)
-    INSTALL(TARGETS osim${KIT}
+    INSTALL(TARGETS ${KIT}
             RUNTIME DESTINATION bin
             LIBRARY DESTINATION sdk/lib
             ARCHIVE DESTINATION sdk/lib)
 ELSE()
-    INSTALL(TARGETS osim${KIT}
+    INSTALL(TARGETS ${KIT}
             RUNTIME DESTINATION bin
             LIBRARY DESTINATION lib
             ARCHIVE DESTINATION sdk/lib)

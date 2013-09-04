@@ -63,8 +63,9 @@ public:
 // PUBLIC METHODS
 //==============================================================================
     HuntCrossleyForce();
+#ifndef SWIG
     explicit HuntCrossleyForce(ContactParameters* params);
-
+#endif
     ContactParametersSet& updContactParametersSet();
     const ContactParametersSet& getContactParametersSet();
 
@@ -123,7 +124,7 @@ private:
 };	// END of class HuntCrossleyForce
 //==============================================================================
 //==============================================================================
-
+#ifndef SWIG
 //==============================================================================
 //                 HUNT CROSSLEY FORCE :: CONTACT PARAMETERS
 //==============================================================================
@@ -193,7 +194,7 @@ private:
 	void setNull();
 };
 
-
+#endif
 
 } // end of namespace OpenSim
 
