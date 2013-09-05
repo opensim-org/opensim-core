@@ -8,8 +8,8 @@
  * interface file instead. 
  * ----------------------------------------------------------------------------- */
 
-#ifndef SWIG_opensimModel_WRAP_H_
-#define SWIG_opensimModel_WRAP_H_
+#ifndef SWIG_pyOpenSim_WRAP_H_
+#define SWIG_pyOpenSim_WRAP_H_
 
 #include <map>
 #include <string>

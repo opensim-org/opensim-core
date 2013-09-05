@@ -31,26 +31,26 @@ SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
 LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools osimSimmFileWriter ${PYTHON_LIBRARIES})
 
-ADD_LIBRARY(${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
+ADD_LIBRARY(_${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
-SET_TARGET_PROPERTIES(${KIT} PROPERTIES
+SET_TARGET_PROPERTIES(_${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
-   PROJECT_LABEL "Python Bindings - ${KIT}"
+   PROJECT_LABEL "Python Bindings - _${KIT}"
 )
 
-ADD_DEPENDENCIES(${KIT} osimTools)
+ADD_DEPENDENCIES(_${KIT} osimTools)
 
 # Shared libraries are needed at runtime for applications, so we put them
 # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
 # or OpemSim/lib/*.dylib (Mac). Windows .lib files, and Linux/Mac .a static
 # archives are only needed at link time so go in sdk/lib.
 IF(WIN32)
-    INSTALL(TARGETS ${KIT}
+    INSTALL(TARGETS _${KIT}
             RUNTIME DESTINATION bin
             LIBRARY DESTINATION sdk/lib
             ARCHIVE DESTINATION sdk/lib)
 ELSE()
-    INSTALL(TARGETS ${KIT}
+    INSTALL(TARGETS _${KIT}
             RUNTIME DESTINATION bin
             LIBRARY DESTINATION lib
             ARCHIVE DESTINATION sdk/lib)

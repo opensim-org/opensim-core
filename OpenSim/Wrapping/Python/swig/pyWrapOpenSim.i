@@ -1,5 +1,5 @@
-%module(directors="1") opensimModel
-%module opensimModel
+%module(directors="1") pyOpenSim
+%module pyOpenSim
 #pragma SWIG nowarn=822,451,503,516,325
 %{
 #include <OpenSim/version.h>
