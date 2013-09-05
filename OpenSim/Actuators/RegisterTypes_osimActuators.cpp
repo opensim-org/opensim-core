@@ -56,6 +56,8 @@
 #include "Millard2012EquilibriumMuscle.h"
 #include "Millard2012AccelerationMuscle.h"
 
+#include "MuscleActivationDynamics.h"
+
 using namespace OpenSim;
 using namespace std;
 
@@ -97,6 +99,8 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 
     Object::RegisterType(Millard2012EquilibriumMuscle());
     Object::RegisterType(Millard2012AccelerationMuscle());
+
+    Object::RegisterType( MuscleActivationDynamics() );
 
 	// OLD Versions
 	//Associate an instance with old name to help deserialization
