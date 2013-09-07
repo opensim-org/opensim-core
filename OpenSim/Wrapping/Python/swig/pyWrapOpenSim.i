@@ -221,11 +221,7 @@
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
 
-#include <OpenSim/Wrapping/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
-
-#include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
-
-#include <OpenSim/Wrapping/Java/OpenSimJNI/OpenSimContext.h>
+#include <OpenSim/Wrapping/Python/OpenSimContext.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -233,7 +229,6 @@ using namespace SimTK;
 %}
 
 %feature("director") OpenSim::AnalysisWrapper;
-%feature("director") OpenSim::SimtkLogCallback;
 
 %feature("notabstract") ControlLinear;
 
@@ -946,8 +941,5 @@ namespace SimTK {
 %include <OpenSim/Tools/AnalyzeTool.h>
 %include <OpenSim/Tools/InverseKinematicsTool.h>
 
-%include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
+%include <OpenSim/Wrapping/Python/OpenSimContext.h>
 
-%include <OpenSim/Wrapping/Java/OpenSimJNI/OpenSimContext.h>
-
-%include <OpenSim/Wrapping/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>

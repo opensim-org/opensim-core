@@ -37,8 +37,14 @@ SET_TARGET_PROPERTIES(_${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
    PROJECT_LABEL "Python Bindings - _${KIT}"
 )
+IF(WIN32)
+	SET_TARGET_PROPERTIES(_${KIT}
+    PROPERTIES 
+    SUFFIX ".pyd")
+ENDIF()
 
 ADD_DEPENDENCIES(_${KIT} osimTools)
+ADD_DEPENDENCIES(_${KIT} PyWrap)
 
 # Shared libraries are needed at runtime for applications, so we put them
 # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
@@ -46,16 +52,19 @@ ADD_DEPENDENCIES(_${KIT} osimTools)
 # archives are only needed at link time so go in sdk/lib.
 IF(WIN32)
     INSTALL(TARGETS _${KIT}
-            RUNTIME DESTINATION bin
-            LIBRARY DESTINATION sdk/lib
-            ARCHIVE DESTINATION sdk/lib)
+            RUNTIME DESTINATION sdk/python/
+            LIBRARY DESTINATION sdk/python/
+            ARCHIVE DESTINATION sdk/python/)
 ELSE()
     INSTALL(TARGETS _${KIT}
-            RUNTIME DESTINATION bin
-            LIBRARY DESTINATION lib
-            ARCHIVE DESTINATION sdk/lib)
+            RUNTIME DESTINATION sdk/python/
+            LIBRARY DESTINATION sdk/python/
+            ARCHIVE DESTINATION sdk/python/)
 ENDIF()
 
+#install .py files
+FILE(GLOB PY_FILES "*.py")
+INSTALL(FILES ${PY_FILES} DESTINATION sdk/python/)
 
 
 ENDIF (PYTHONLIBS_FOUND)
