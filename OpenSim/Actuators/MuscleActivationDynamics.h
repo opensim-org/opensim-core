@@ -25,18 +25,20 @@
 
 #include "Simbody.h"
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
-#include <OpenSim/Common/Object.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Muscle.h>
 
 namespace OpenSim {
 /** A base class for modeling muscle activation dynamics. This class implements
-    a zeroth-order model, simply setting activation to the default value.
-    Activation models that derive from this base class must override the
-    getActivation() virtual method.
+    a zeroth-order model, simply setting activation to excitation. Activation
+    models can be derived from this base class by overriding the getActivation()
+    and setActivation() virtual methods.
 
     <b>Properties</b>
-    \li \c minimum_activation: Smallest permitted activation value
-    \li \c maximum_activation: Largest permitted activation value
-    \li \c default_activation: Default activation value
+    \li \c minimum_activation: Smallest permitted activation value.
+    \li \c maximum_activation: Largest permitted activation value.
+    \li \c default_activation: Default activation value.
 
     <b>Conditions</b>
     \verbatim
@@ -52,14 +54,14 @@ namespace OpenSim {
 
     @author Thomas Uchida, Ajay Seth
 **/
-class OSIMACTUATORS_API MuscleActivationDynamics : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(MuscleActivationDynamics, Object);
+class OSIMACTUATORS_API MuscleActivationDynamics : public ModelComponent {
+OpenSim_DECLARE_CONCRETE_OBJECT(MuscleActivationDynamics, ModelComponent);
 public:
 
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations
+    /** @name Property Declarations
         These are the serializable properties associated with this class. **/
     //@{
     OpenSim_DECLARE_PROPERTY(minimum_activation, double,
@@ -81,7 +83,8 @@ public:
     MuscleActivationDynamics();
 
     /** Creates an activation dynamic model using the provided properties. **/
-    MuscleActivationDynamics(double minimumActivation,
+    MuscleActivationDynamics(Muscle* muscle,
+                             double minimumActivation,
                              double maximumActivation,
                              double defaultActivation,
                              const std::string& name);
@@ -93,26 +96,42 @@ public:
     /** @name Accessors and Mutators **/
     //@{
 
+    /** Get/set a pointer to the Muscle to which this activation dynamic model
+        belongs. **/
+    const Muscle* getMuscle() const;
+    virtual void setMuscle(Muscle* muscle);
+
     /** Get/set the smallest permitted activation value. **/
     double getMinimumActivation() const;
-    void setMinimumActivation(double minimumActivation);
+    virtual void setMinimumActivation(double minimumActivation);
 
     /** Get/set the largest permitted activation value. **/
     double getMaximumActivation() const;
-    void setMaximumActivation(double maximumActivation);
+    virtual void setMaximumActivation(double maximumActivation);
 
     /** Get/set the default activation value. **/
     double getDefaultActivation() const;
-    void setDefaultActivation(double defaultActivation);
+    virtual void setDefaultActivation(double defaultActivation);
 
     //@}
 
     //--------------------------------------------------------------------------
-    // OTHER PUBLIC METHODS
+    // MODELCOMPONENT INTERFACE REQUIREMENTS
     //--------------------------------------------------------------------------
-    /** Returns the current activation level. Activation models that derive from
-        this base class must override the getActivation() virtual method. **/
+    /** @name ModelComponent Interface Requirements **/
+    //@{
+
+    /** Ensures Muscle pointer has been set. **/
+    virtual void connectToModel(Model& model) OVERRIDE_11;
+
+    //@}
+
+    //--------------------------------------------------------------------------
+    // STATE-DEPENDENT METHODS
+    //--------------------------------------------------------------------------
+    /** Get/set the current activation level. **/
     virtual double getActivation(const SimTK::State& s) const;
+    virtual void setActivation(SimTK::State& s, double activation) const;
 
 //==============================================================================
 // PRIVATE METHODS
@@ -120,6 +139,9 @@ public:
 private:
     void setNull();
     void constructProperties();
+
+    // Pointer to Muscle is required to get/set Control.
+    Muscle* m_muscle;
 
 }; // end of class MuscleActivationDynamics
 }  // end of namespace OpenSim

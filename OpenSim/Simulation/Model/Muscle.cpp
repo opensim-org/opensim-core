@@ -473,9 +473,9 @@ double Muscle::getMusclePower(const SimTK::State& s) const
 }
 
 
-void Muscle::setExcitation(SimTK::State& s, double excitaion) const
+void Muscle::setExcitation(SimTK::State& s, double excitation) const
 {
-	setControls(SimTK::Vector(1, excitaion), _model->updControls(s));
+	setControls(SimTK::Vector(1, excitation), _model->updControls(s));
 }
 
 /* Access to muscle calculation data structures */

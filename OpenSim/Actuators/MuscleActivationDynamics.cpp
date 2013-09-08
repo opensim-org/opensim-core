@@ -20,6 +20,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+
 #include "MuscleActivationDynamics.h"
 
 //==============================================================================
@@ -32,18 +33,23 @@ using namespace SimTK;
 //==============================================================================
 // CONSTRUCTORS
 //==============================================================================
-MuscleActivationDynamics::MuscleActivationDynamics() {
+MuscleActivationDynamics::MuscleActivationDynamics()
+{
     setNull();
     constructProperties();
     setName("default_MuscleActivationDynamics");
 }
 
-MuscleActivationDynamics::MuscleActivationDynamics(double minimumActivation,
+MuscleActivationDynamics::MuscleActivationDynamics(Muscle* muscle,
+                                                   double minimumActivation,
                                                    double maximumActivation,
                                                    double defaultActivation,
-                                                   const std::string& name) {
+                                                   const std::string& name)
+{
     setNull();
     constructProperties();
+
+    setMuscle(muscle);
     setMinimumActivation(minimumActivation);
     setMaximumActivation(maximumActivation);
     setDefaultActivation(defaultActivation);
@@ -53,6 +59,9 @@ MuscleActivationDynamics::MuscleActivationDynamics(double minimumActivation,
 //==============================================================================
 // ACCESSORS AND MUTATORS
 //==============================================================================
+const Muscle* MuscleActivationDynamics::getMuscle() const
+{   return m_muscle; }
+
 double MuscleActivationDynamics::getMinimumActivation() const
 {   return get_minimum_activation(); }
 
@@ -62,21 +71,27 @@ double MuscleActivationDynamics::getMaximumActivation() const
 double MuscleActivationDynamics::getDefaultActivation() const
 {   return get_default_activation(); }
 
-void MuscleActivationDynamics::setMinimumActivation(double minimumActivation) {
+void MuscleActivationDynamics::setMuscle(Muscle* muscle)
+{   m_muscle = muscle; }
+
+void MuscleActivationDynamics::setMinimumActivation(double minimumActivation)
+{
     // Minimum must be in the interval [0,maximum].
     set_minimum_activation( clamp(0,minimumActivation,getMaximumActivation()) );
-    // Default must be in the interval [minimum,maximum].
+    // Ensure default remains in the interval [minimum,maximum].
     setDefaultActivation(getDefaultActivation());
 }
 
-void MuscleActivationDynamics::setMaximumActivation(double maximumActivation) {
+void MuscleActivationDynamics::setMaximumActivation(double maximumActivation)
+{
     // Maximum must be in the interval [minimum,1].
     set_maximum_activation( clamp(getMinimumActivation(),maximumActivation,1) );
-    // Default must be in the interval [minimum,maximum].
+    // Ensure default remains in the interval [minimum,maximum].
     setDefaultActivation(getDefaultActivation());
 }
 
-void MuscleActivationDynamics::setDefaultActivation(double defaultActivation) {
+void MuscleActivationDynamics::setDefaultActivation(double defaultActivation)
+{
     // Default must be in the interval [minimum,maximum].
     set_default_activation( clamp(getMinimumActivation(),
                                   defaultActivation,
@@ -84,19 +99,49 @@ void MuscleActivationDynamics::setDefaultActivation(double defaultActivation) {
 }
 
 //==============================================================================
-// OTHER PUBLIC METHODS
+// MODELCOMPONENT INTERFACE REQUIREMENTS
 //==============================================================================
-double MuscleActivationDynamics::getActivation(const SimTK::State& s) const {
-    return getDefaultActivation();
+void MuscleActivationDynamics::connectToModel(Model& model)
+{
+    Super::connectToModel(model);
+    if(!m_muscle)
+        throw OpenSim::Exception("MuscleActivationDynamics::connectToModel() "
+                                 "requires a valid Muscle pointer to proceed.");
+}
+
+//==============================================================================
+// STATE-DEPENDENT METHODS
+//==============================================================================
+double MuscleActivationDynamics::getActivation(const SimTK::State& s) const
+{
+    if(!m_muscle)
+        throw OpenSim::Exception("MuscleActivationDynamics::getActivation() "
+                                 "requires a valid Muscle pointer to proceed.");
+    return m_muscle->getControl(s);
+}
+
+void MuscleActivationDynamics::setActivation(SimTK::State& s,
+                                             double activation) const
+{
+    if(!m_muscle)
+        throw OpenSim::Exception("MuscleActivationDynamics::setActivation() "
+                                 "requires a valid Muscle pointer to proceed.");
+    SimTK::Vector& controls(m_muscle->getModel().updControls(s));
+    m_muscle->setControls(SimTK::Vector(1,activation), controls);
+    m_muscle->getModel().setControls(s,controls);
 }
 
 //==============================================================================
 // PRIVATE METHODS
 //==============================================================================
 void MuscleActivationDynamics::setNull()
-{   setAuthors("Thomas Uchida, Ajay Seth"); }
+{
+    setAuthors("Thomas Uchida, Ajay Seth");
+    setMuscle(NULL);
+}
 
-void MuscleActivationDynamics::constructProperties() {
+void MuscleActivationDynamics::constructProperties()
+{
     constructProperty_minimum_activation(0);
     constructProperty_maximum_activation(1);
     constructProperty_default_activation(0.5);
