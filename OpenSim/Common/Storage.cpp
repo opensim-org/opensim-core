@@ -2567,18 +2567,6 @@ void Storage::interpolateAt(const Array<double> &targetTimes)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Print the contents of this storage instance to standard output.
- */
-void Storage::
-print() const
-{
-	cout<<"\nStorage.print:  "<<getName()<<"."<<endl;
-	for(int i=0;i<_storage.getSize();i++) {
-		getStateVector(i)->print();
-	}
-}
-//_____________________________________________________________________________
-/**
  * Set name of output file to be written into.
  * This has the side effect of openning the file for writing. The header will not have the correct
  * number of rows but this may not be an issue for ersion 2 of the Storage class

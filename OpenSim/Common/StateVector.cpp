@@ -534,25 +534,6 @@ divide(StateVector *aStateVector)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Print the contents of this StateVector to standard out.
- */
-void StateVector::
-print() const
-{
-	// TIME
-	char format[IO_STRLEN];
-	sprintf(format,"t=%s,\t\ty[%%d] =",IO::GetDoubleOutputFormat());
-	printf(format,_t,_data.getSize());
-
-	// DATA
-	sprintf(format," %s",IO::GetDoubleOutputFormat());
-	for(int i=0;i<_data.getSize();i++) {
-		printf(format,_data[i]);
-	}
-	printf("\n");
-}
-//_____________________________________________________________________________
-/**
  * Print the contents of this StateVector to file.
  *
  * The number of characters written to file is returned.  If an error

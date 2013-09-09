@@ -83,8 +83,10 @@ public:
 	void setMessage(const std::string &aMsg);
 	const char* getMessage() const;
 
+#ifndef SWIG
 	// PRINT
 	virtual void print(std::ostream &aOut) const;
+#endif
     // override virtual function from std::exception
     const char* what() const throw() {return getMessage();}
 

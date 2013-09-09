@@ -295,7 +295,6 @@ public:
 	//--------------------------------------------------------------------------
 	// IO
 	//--------------------------------------------------------------------------
-	void print() const;
 	bool print(const std::string &aFileName,const std::string &aMode="w", const std::string& aComment="") const;
 	int print(const std::string &aFileName,double aDT,const std::string &aMode="w") const;
 	void setOutputFileName(const std::string& aFileName) ;

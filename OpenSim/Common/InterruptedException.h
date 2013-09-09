@@ -45,10 +45,12 @@ public:
 		: Exception(aMsg,aFile,aLine)
 	{}
 
+#ifndef SWIG
 	virtual void print(std::ostream &aOut) {
 		if(!_msg.empty()) aOut << "Operation interrupted: " << _msg << std::endl;
 		else aOut << "Operation interrupted" << std::endl;
 	}
+#endif
 //=============================================================================
 };	// END CLASS InterruptedException
 
