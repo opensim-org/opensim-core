@@ -232,8 +232,20 @@ using namespace SimTK;
 
 %feature("notabstract") ControlLinear;
 
+/** Pass Doxygen documentation to python wrapper */
+%feature("autodoc", "3");
+
 %rename(OpenSimObject) OpenSim::Object;
 %rename(OpenSimException) OpenSim::Exception;
+
+%rename(printToXml) OpenSim::Object::print(const std::string&);
+%rename(printToXml) OpenSim::XMLDocument::print(const std::string&);
+%rename(printToXml) OpenSim::XMLDocument::print();
+%rename(printToFile) OpenSim::Storage::print;
+
+/* If needed %extend will be used, these operators are not supported.*/
+%ignore *::operator[];
+%ignore *::operator=;
 
 /* This file is for creation/handling of arrays */
 %include "std_carray.i";
