@@ -135,10 +135,14 @@ void ExternalForce::constructProperties()
 	constructProperty_data_source_name("");
 }
 
-void ExternalForce::setDataSource(const Storage *dataSource)
+void ExternalForce::setDataSource(const Storage &dataSource)
 { 
-	_dataSource = dataSource;
-	set_data_source_name(dataSource->getName());
+	_dataSource = &dataSource;
+
+	cout << "ExternalForce::" << getName() << endl;
+	cout <<	"Data source being set to " << _dataSource->getName() << endl;
+
+	set_data_source_name(_dataSource->getName());
 }
 
 void ExternalForce::connectToModel(Model& model)
@@ -176,14 +180,22 @@ void ExternalForce::connectToModel(Model& model)
 		_pointExpressedInBody = &_model->updBodySet().get("ground");
 	}
 
-	if(_dataSource == NULL){
-		throw(Exception("ExternalForce: Data source has not been set." ));
+	if(!_dataSource){
+		// No property set either
+		if((dataSourceProp.size()==0) || (dataSourceProp.getValue(0) == "")){
+			throw(Exception("ExternalForce: Not Data source has been set."));
+		}
+		// else: TODO load the data from the source. Currently this is overly
+		// complicated and handled by the ExternalLoads class.
 	}
 	else if(dataSourceProp.size()) {
         const string& dataSourceName = dataSourceProp.getValue();
         if (_dataSource->getName() != dataSourceName)
 		    throw(Exception("ExternalForce: Data source "+dataSourceName
               +" specified by name, but "+_dataSource->getName()+" was set." ));
+	}
+	else{
+		 set_data_source_name(_dataSource->getName());
 	}
 
 	// temporary data arrays

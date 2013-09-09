@@ -32,18 +32,23 @@ class Storage;
 class Function;
 
 /**
- * This applies a force and/or torque to a body according describe by arrays contained in a Storage
- * The source of the Storage may be experimental sensor recording or user generated data.
- * The Storage must be able to supply (1) array of time, (3) arrays for the x,y,z, components of  
- * force and/or torque in time.  Optionaly (3) arrays for the point of force application in time.
- * This Force must identify a force identifier (e.g. Force1.x Force1.y Force1.y) may be individual
- * labels for force components but they are collectively identified (as "Force1"). Similarly,  
- * identifiers for torque and point are expected. 
+ * An ExternalForce is a Force class specialized at applying an external force 
+ * and/or torque to a body as described by arrays (columns) of a Storage object.
+ * The source of the Storage may be experimental sensor recording or user 
+ * generated data. The Storage must be able to supply (1) an array of time, (2) 
+ * arrays for the x,y,z, components of force and/or torque in time. Optionaly,
+ * (3) arrays for the point of force application in time. An ExternalForce 
+ * must specify the identifier (e.g. Force1.x Force1.y Force1.z) for the force
+ * components (columns) listed in the Storage either by individual labels or
+ * collectively (e.g. as "Force1"). Similarly, identifiers for the applied
+ * torque and optionally the point of force application must be specified. 
  *
- * If an identifier is supplied and it cannot uniquely identify the quantity (force, torque, point) in 
- * the Storage an Excpetion is thrown.
+ * If an identifier is supplied and it cannot uniquely identify the force data 
+ * (e.g. the force, torque, or point) in the Storage, then an Excpetion is 
+ * thrown.
  *
- * An ExternalForce must apply either a force or a torque so both identifiers cannot be empty. 
+ * An ExternalForce must apply at least a force or a torque and therefore both 
+ * identifiers cannot be empty. 
  *
  * @author Ajay Seth
  */
@@ -93,7 +98,7 @@ public:
 	 * @param torqueIdentifier  string used to access the force data in the dataSource
 	 * @param appliedToBodyName			string used to specify the body to which the force is applied
 	 * @param forceExpressedInBodyName  string used to define in which body the force is expressed
-	 * @param pointExpressedInBodyName  string used to define the body in which the the point is expressed
+	 * @param pointExpressedInBodyName  string used to define the body in which the point is expressed
 	 */
 	ExternalForce(const Storage& dataSource, 
                   const std::string& forceIdentifier="force", 
@@ -115,7 +120,7 @@ public:
 	 *  Associate the data source from which the force, point and/or torque data
 	 *  is to be extracted.
 	 */
-	void setDataSource(const Storage *dataSource);
+	void setDataSource(const Storage& dataSource);
 
     /** Get the name of the data source for the force data. **/ 
 	const std::string& getDataSourceName() const 
@@ -124,7 +129,7 @@ public:
 	/**
 	 *  Specify or obtain the body to which the force will be applied
 	 */
-	void setAppliedToBodyName(const std::string &applyToName) 
+	void setAppliedToBodyName(const std::string& applyToName) 
     {   set_applied_to_body(applyToName); }
 	const std::string& getAppliedToBodyName() const 
     {   return get_applied_to_body(); }
@@ -132,7 +137,7 @@ public:
 	/**
 	 *  Specify or obtain the body in which the point of application is expressed
 	 */
-	void setPointExpressedInBodyName(const std::string &pointInBodyName) 
+	void setPointExpressedInBodyName(const std::string& pointInBodyName) 
     {   set_point_expressed_in_body(pointInBodyName); }
 	const std::string& getPointExpressedInBodyName() const 
     {   return get_point_expressed_in_body(); }
@@ -228,16 +233,18 @@ private:
 //==============================================================================
 
 	/** Pointer to the body that force is applied to */
-	Body *_appliedToBody;
+	SimTK::ReferencePtr<const Body> _appliedToBody;
 
 	/** Pointer to the body that force is expressed in */
-	Body *_forceExpressedInBody;
+	SimTK::ReferencePtr<const Body> _forceExpressedInBody;
 
 	/** Pointer to the body that point is expressed in */
-	Body *_pointExpressedInBody;
+	SimTK::ReferencePtr<const Body> _pointExpressedInBody;
 
-	/** Pointer to the data source owned by the caller/creator of this force */
-	const Storage *_dataSource;
+	/** Pointer to the data source owned by the caller/creator of this force. 
+	    Note that it is not a RefPtr because we want to point to the same data
+		source when the ExternalForce is copied, without copying the data. */
+	const Storage* _dataSource;
 
 	/** characterize the force/torque being applied */
 	bool _appliesForce;

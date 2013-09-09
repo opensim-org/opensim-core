@@ -190,11 +190,10 @@ ExternalLoads& ExternalLoads::operator=(const ExternalLoads &otherExternalLoads)
 
 void ExternalLoads::invokeConnectToModel(Model& aModel)
 {
-
 	Storage *forceData = new Storage(_dataFileName);
 
 	for(int i=0; i<getSize(); ++i)
-		get(i).setDataSource(forceData);
+		get(i).setDataSource(*forceData);
 
 	// BASE CLASS
 	Super::invokeConnectToModel(aModel);
@@ -370,7 +369,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 	ExternalForce *exF_transformedPoint = exForce.clone();
 	exF_transformedPoint->setName(exForce.getName()+"_transformedP");
 	exF_transformedPoint->setPointExpressedInBodyName(exForce.getAppliedToBodyName());
-	exF_transformedPoint->setDataSource(newDataSource);
+	exF_transformedPoint->setDataSource(*newDataSource);
 
 	_storages.append(newDataSource);
 

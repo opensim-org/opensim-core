@@ -291,7 +291,7 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 	
 	// Add external loads to the set of all model forces
 	for(int i=0; i<_externalLoads.getSize(); ++i){
-		aModel.updForceSet().append(_externalLoads[i]);
+		aModel.updForceSet().adoptAndAppend(&_externalLoads[i]);
 	}
 
 	if(!loadKinematics)

@@ -44,7 +44,7 @@ class Model;
  * tracking (slower divergence) if the ground reaction forces are applied
  * to a point that is expressed in the foot frame according to "ideal"
  * kinematics. ExternalLoads provides convenience methdods to perform this
- * "mapping" which is beyong the scope of an individual ExternalForce, but is
+ * "mapping" which is beyond the scope of an individual ExternalForce, but is
  * too much detail to have each Tool implement.
  *
  * An indiviudal ExternalForce has a property for its data source name, but 
