@@ -32,6 +32,7 @@
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Actuators/ClutchedPathSpring.h>
 #include <OpenSim/Common/PiecewiseConstantFunction.h>
+#include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -44,13 +45,17 @@ const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 //==============================================================================
 
 
-
+void testTorqueActuator();
 void testClutchedPathSpring();
 
 int main()
 {
 	SimTK::Array_<std::string> failures;
 
+	try {testTorqueActuator();}
+    catch (const std::exception& e){
+		cout << e.what() <<endl; failures.push_back("testTorqueActuator");
+	}
 	try {testClutchedPathSpring();}
     catch (const std::exception& e){
 		cout << e.what() <<endl; failures.push_back("testClutchedPathSpring");
@@ -66,6 +71,163 @@ int main()
 //==============================================================================
 // Test Cases
 //==============================================================================
+void testTorqueActuator()
+{
+	using namespace SimTK;
+	// start timing
+	std::clock_t startTime = std::clock();
+
+	// Setup OpenSim model
+	Model *model = new Model;
+
+	// turn off gravity
+	model->setGravity(Vec3(0));
+
+	//OpenSim bodies
+    OpenSim::Body& ground = model->getGroundBody();
+
+	//Cylindrical bodies
+	double r = 0.25, h = 1.0;
+	double m1 = 1.0, m2 = 2.0;
+	Inertia j1 = m1*Inertia::cylinderAlongY(r, h);
+	Inertia j2 = m2*Inertia::cylinderAlongY(r, h);
+
+	//OpenSim bodies
+	OpenSim::Body* bodyA 
+		= new OpenSim::Body("A", m1, Vec3(0), j1);
+	
+	OpenSim::Body* bodyB 
+		= new OpenSim::Body("B", m2, Vec3(0), j2);
+
+	// connect bodyA to ground with 6dofs
+	FreeJoint base("base", ground, Vec3(0), Vec3(0), *bodyA, Vec3(0), Vec3(0));
+
+	model->addBody(bodyA);
+
+	// connect bodyA to bodyB by a Ball joint
+	BallJoint bInA("bInA", *bodyA, Vec3(0,-h/2, 0), Vec3(0), 
+		                   *bodyB, Vec3(0, h/2, 0), Vec3(0));
+
+	model->addBody(bodyB);
+
+	// specify magnitude and direction of applied torque
+	double torqueMag = 2.1234567890;
+	Vec3 torqueAxis(1/sqrt(2.0), 0, 1/sqrt(2.0));
+	Vec3 torqueInG = torqueMag*torqueAxis;
+
+	State state = model->initSystem();
+
+	model->getMultibodySystem().realize(state, Stage::Dynamics);
+	Vector_<SpatialVec>& bodyForces = 
+		model->getMultibodySystem().updRigidBodyForces(state, Stage::Dynamics);
+	bodyForces.dump("Body Forces before applying torque");
+	model->getMatterSubsystem().addInBodyTorque(state, bodyA->getIndex(), 
+		torqueMag*torqueAxis, bodyForces);
+	model->getMatterSubsystem().addInBodyTorque(state, bodyB->getIndex(), 
+		-torqueMag*torqueAxis, bodyForces);
+	bodyForces.dump("Body Forces after applying torque to bodyA and bodyB");
+
+	model->getMultibodySystem().realize(state, Stage::Acceleration);
+	const Vector& udotBody = state.getUDot();
+	udotBody.dump("Accelerations due to body forces");
+
+	// clear body forces
+	bodyForces *= 0;
+
+	// update mobility forces
+	Vector& mobilityForces = model->getMultibodySystem()
+		.updMobilityForces(state, Stage::Dynamics);
+
+	// Apply torques as mobility forces of the ball joint
+	for(int i=0; i<3; ++i){
+		mobilityForces[6+i] = torqueInG[i];	
+	}
+
+	model->getMultibodySystem().realize(state, Stage::Acceleration);
+	const Vector& udotMobility = state.getUDot();
+	udotMobility.dump("Accelerations due to mobility forces");
+
+	for(int i=0; i<udotMobility.size(); ++i){
+		ASSERT_EQUAL(udotMobility[i], udotBody[i], 1.0e-12);
+	}
+
+	// clear the mobility forces
+	mobilityForces = 0;
+
+	//Now add the actuator to the model and control it to generate the same
+	//torque as applied directly to the multibody system (above)
+
+	// Create and add the torque actuator to the model
+	TorqueActuator* actuator = 
+		new TorqueActuator(*bodyA, *bodyB, torqueAxis, true);
+	actuator->setName("torque");
+	model->addForce(actuator);
+
+	// Create and add a controller to control the actuator
+	PrescribedController* controller = 	new PrescribedController();
+	controller->addActuator(*actuator);
+	// Apply torque about torqueAxis
+	controller->prescribeControlForActuator("torque", new Constant(torqueMag));
+
+	model->addController(controller);
+
+	ActuatorPowerProbe* powerProbe = new ActuatorPowerProbe(Array<string>("torque",1),false, 1); 
+	powerProbe->setOperation("integrate");
+	powerProbe->setInitialConditions(Vector(1, 0.0));
+
+	model->addProbe(powerProbe);
+
+	model->print("TestTorqueActuatorModel.osim");
+
+	// get a new system and state to reflect additions to the model
+	state = model->initSystem();
+
+	Vector derivs = model->computeStateVariableDerivatives(state);
+	derivs.dump("Model Derivatives");
+
+	const Vector &udotTorqueActuator = state.getUDot();
+
+	// Verify that the TorqueActuator also generates the same acceleration
+	// as the equivalent applied mobility force
+	for(int i=0; i<udotMobility.size(); ++i){
+		ASSERT_EQUAL(udotMobility[i], udotTorqueActuator[i], 1.0e-12);
+	}
+
+	// determine the initial kinetic energy of the system
+	double iKE = model->getMatterSubsystem().calcKineticEnergy(state);
+
+	RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
+	integrator.setAccuracy(integ_accuracy);
+    Manager manager(*model,  integrator);
+
+	manager.setInitialTime(0.0);
+
+	double final_t = 1.00;
+
+	manager.setFinalTime(final_t);
+	manager.integrate(state);
+
+	derivs = model->computeStateVariableDerivatives(state);
+
+	double fKE = model->getMatterSubsystem().calcKineticEnergy(state);
+
+	// Change in system kinetic energy can only be attributable to actuator work
+	double actuatorWork = (powerProbe->getProbeOutputs(state))[0];
+	// test that this is true
+	ASSERT_EQUAL(actuatorWork, fKE-iKE, integ_accuracy);
+
+	// Before exiting lets see if copying the spring works
+	TorqueActuator* copyOfActuator = actuator->clone();
+	ASSERT(*copyOfActuator == *actuator);
+	
+	// Check that de/serialization works
+	Model modelFromFile("TestTorqueActuatorModel.osim");
+	ASSERT(modelFromFile == *model);
+
+	std::cout << "Test TorqueActuator time = " << 
+		1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
+}
+
 
 void testClutchedPathSpring()
 {
@@ -250,5 +412,6 @@ void testClutchedPathSpring()
 	Model modelFromFile("ClutchedPathSpringModel.osim");
 	ASSERT(modelFromFile == *model);
 
-	std::cout << "Test clutched spring time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
+	std::cout << "Test clutched spring time = " << 
+		1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
 }

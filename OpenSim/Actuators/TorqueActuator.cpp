@@ -53,13 +53,16 @@ TorqueActuator::TorqueActuator()
 }
 //_____________________________________________________________________________
 // Constructor with given body names.
-TorqueActuator::TorqueActuator(const string& bodyNameA, 
-                               const string& bodyNameB)
+TorqueActuator::TorqueActuator(const Body& bodyA, const Body& bodyB,
+				   const SimTK::Vec3& axis, bool axisInGround)
 {
 	constructProperties();
 
-    if (!bodyNameA.empty()) set_bodyA(bodyNameA);
-    if (!bodyNameB.empty()) set_bodyB(bodyNameB);
+	setBodyA(bodyA);
+	setBodyB(bodyB);
+
+	set_axis(axis);
+	set_torque_is_global(axisInGround);
 }
 
 //_____________________________________________________________________________
@@ -87,11 +90,10 @@ void TorqueActuator::constructProperties()
  *
  * @param aBody Pointer to the generalized Body.
  */
-void TorqueActuator::setBodyA(Body* aBody)
+void TorqueActuator::setBodyA(const Body& aBody)
 {
-	_bodyA = aBody;
-	if(aBody)
-		set_bodyA(aBody->getName());
+	_bodyA = &aBody;
+	set_bodyA(aBody.getName());
 }
 //_____________________________________________________________________________
 /**
@@ -100,11 +102,10 @@ void TorqueActuator::setBodyA(Body* aBody)
  *
  * @param aBody Pointer to the generalized Body.
  */
-void TorqueActuator::setBodyB(Body* aBody)
+void TorqueActuator::setBodyB(const Body& aBody)
 {
-	_bodyB = aBody;
-	if(aBody)
-		set_bodyB(aBody->getName());
+	_bodyB = &aBody;
+	set_bodyB(aBody.getName());
 }
 
 
@@ -149,7 +150,7 @@ void TorqueActuator::computeForce(const State& s,
 	const bool torqueIsGlobal = getTorqueIsGlobal();
 	const Vec3& axis = getAxis();
 	
-    double force;
+    double force = 0;
 
     if( isForceOverriden(s) ) {
        force = computeOverrideForce(s);
@@ -161,7 +162,6 @@ void TorqueActuator::computeForce(const State& s,
 	if(!_bodyA)
 		return;
 	
-
     setForce(s, force );
 	Vec3 torque = force*UnitVec3(axis);
 	
@@ -171,14 +171,16 @@ void TorqueActuator::computeForce(const State& s,
 	applyTorque(s, *_bodyA, torque, bodyForces);
 
 	// if bodyB is not specified, use the ground body by default
-	if(!_bodyB)
+	if(_bodyB)
 		applyTorque(s, *_bodyB, -torque, bodyForces);
 
 	// get the angular velocity of the body in ground
-	Vec3 omega(0);
-	engine.getAngularVelocity(s, *_bodyA, omega);
-	// the speed of the body about the axis the torque is applied is the "speed" of the actuator used to compute power
-	setSpeed(s, ~omega*axis);
+	Vec3 omegaA(0), omegaB(0);
+	engine.getAngularVelocity(s, *_bodyA, omegaA);
+	engine.getAngularVelocity(s, *_bodyB, omegaB);
+	// the "speed" is the relative angular velocity of the bodies
+	// projected onto the torque axis.
+	setSpeed(s, ~(omegaA-omegaB)*axis);
 }
 //_____________________________________________________________________________
 /**

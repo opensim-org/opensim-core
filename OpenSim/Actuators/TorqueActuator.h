@@ -45,9 +45,11 @@ class Model;
 //                           TORQUE ACTUATOR
 //==============================================================================
 /**
- * A class that implements a torque actuator acting on a body.
- * This actuator has no states; the control is simply the force to
- * be applied to the model.
+ * A TorqueActuatorr applies equal and opposite torques on the two bodies 
+ * (bodyA and B) that it connects. The torque is applied about an axis
+ * specified in ground (global) by default, otherwise it is in bodyA's frame. 
+ * The magnitude of the torque is equal to the product of the optimal_force of 
+ * the actuator and its control signal.
  *
  * @author Ajay Seth, Matt DeMers
  */
@@ -82,10 +84,20 @@ public:
 	/** Default constructor leaves body names unspecified. **/
     TorqueActuator();
 
-    /** Construct with body names given. An empty name ("") is treated as
-    though it were unspecified. **/
-    TorqueActuator(const std::string& bodyNameA, 
-                   const std::string& bodyNameB);
+    /** Convenience Constructor.
+	 Create a torque actuator that applies equal and opposite torques
+	 on the two bodies (bodyA and B) that it connects. The torque is applied 
+	 about an axis specified in ground if axisInGround is true, otherwise
+	 it is specified in bodyA's body frame. 
+
+	 @param bodyA   the body that the actuator applies torque to
+	 @param bodyB	the body that the actuator applies the opposite torque to
+	 @param axis    the axis about which the torque is applied
+	 @param axisInGround flag to inidicate the axis is expressed in ground
+						   otherwise, it is expressed in bodyA's frame
+	*/
+    TorqueActuator(const Body& bodyA, const Body& bodyB,
+				   const SimTK::Vec3& axis, bool axisInGround=true);
 
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
@@ -113,18 +125,18 @@ public:
 	double getOptimalForce() const OVERRIDE_11 // Part of Actuator interface.
     {   return get_optimal_force(); }
 
+	/* Set the bodies to which this actuator applies torque. */
+	void setBodyA(const Body& body);
+	void setBodyB(const Body& body);
+	/* Get the bodies that this actuator applies torque to. */
+    const Body& getBodyA() const {return *_bodyA;}
+    const Body& getBodyB() const {return *_bodyB;}
+
 //==============================================================================
 // PRIVATE
 //==============================================================================
 private:
 	void constructProperties();
-
-	// Set the bodies to which this actuator applies; setting these pointers
-    // also sets the corresponding body name properties.
-	void setBodyA(Body* bodyp);
-	void setBodyB(Body* bodyp);
-    Body* getBodyA() const {return _bodyA;}
-    Body* getBodyB() const {return _bodyB;}
 
 	//--------------------------------------------------------------------------
 	// Implement Force interface
@@ -159,10 +171,10 @@ private:
     // and also on copy construction and copy assignment.
 
 	// Corresponding Body to which the torque actuator is applied.
-    SimTK::ReferencePtr<Body> _bodyA;
+    SimTK::ReferencePtr<const Body> _bodyA;
 
 	// Corresponding Body to which the equal and opposite torque is applied.
-    SimTK::ReferencePtr<Body> _bodyB;
+    SimTK::ReferencePtr<const Body> _bodyB;
 
 //==============================================================================
 };	// END of class TorqueActuator
