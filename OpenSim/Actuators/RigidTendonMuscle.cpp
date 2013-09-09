@@ -137,7 +137,7 @@ calcMuscleLengthInfo(const State& s, MuscleLengthInfo& mli) const
 	mli.fiberActiveForceLengthMultiplier = 
         get_active_force_length_curve().calcValue(arg);
 	mli.fiberPassiveForceLengthMultiplier = 
-        get_passive_force_length_curve().calcValue(arg);
+        SimTK::clamp(0, get_passive_force_length_curve().calcValue(arg), 10);
 
 	mli.normTendonLength = 1.0;
 	mli.tendonStrain = 0.0;
