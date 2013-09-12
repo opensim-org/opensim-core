@@ -841,8 +841,10 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 	_predictor->setTargetForces(&zero[0]);
 	_predictor->evaluate(s, &xmin[0], &fmin[0]);
 	_predictor->evaluate(s, &xmax[0], &fmax[0]);
-     SimTK::State newState = _predictor->getCMCActSubsys()->getCompleteState();
-	if(_verbose) {
+
+    SimTK::State newState = _predictor->getCMCActSubsys()->getCompleteState();
+	
+	 if(_verbose) {
 		cout<<endl<<endl;
 		cout<<"\ntiReal = "<<tiReal<<"  tfReal = "<<tfReal<<endl;
 		cout<<"Min forces:\n";

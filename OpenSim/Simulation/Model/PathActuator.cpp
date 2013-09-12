@@ -202,15 +202,7 @@ void PathActuator::computeForce( const SimTK::State& s,
 	// the force of this actuator used to compute power
     setForce(s,  force );
 
-	OpenSim::Array<PointForceDirection*> PFDs;
-	path.getPointForceDirections(s, &PFDs);
-
-	for (int i=0; i < PFDs.getSize(); i++) {
-		applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), 
-                          force*PFDs[i]->direction(), bodyForces);
-	}
-	for(int i=0; i < PFDs.getSize(); i++)
-		delete PFDs[i];
+	path.addInEquivalentForcesOnBodies(s, force, bodyForces);
 }
 
 /**
@@ -258,7 +250,9 @@ void PathActuator::connectToModel(Model& aModel)
 void PathActuator::realizeDynamics(const SimTK::State& state) const {
     Super::realizeDynamics(state); // Mandatory first line
 
-	if(!isDisabled(state)){
+	// if this force is disabled OR it is being overidden (not computing dynamics)
+	// then don't compute the color of the path.
+	if(!isDisabled(state) && !isForceOverriden(state)){
 		const SimTK::Vec3 color = computePathColor(state);
 		if (!color.isNaN())
 			getGeometryPath().setColor(state, color);

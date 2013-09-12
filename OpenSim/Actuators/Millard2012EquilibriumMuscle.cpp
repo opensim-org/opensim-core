@@ -1200,7 +1200,7 @@ computeStateVariableDerivatives(const SimTK::State& s) const
     SimTK::Vector derivs(getNumStateVariables(), 0.0);
     int idx = 0;
 
-    if (!isDisabled(s)) {
+    if (!isDisabled(s) && !isForceOverriden(s)) {
         // Activation is the first state (if it is a state at all)
         if(!get_ignore_activation_dynamics() &&
            idx+1 <= getNumStateVariables()) {

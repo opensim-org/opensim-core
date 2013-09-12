@@ -376,14 +376,13 @@ double Muscle::getPennationAngularVelocity(const SimTK::State& s) const
 /* get the current fiber force (N)*/
 double Muscle::getFiberForce(const SimTK::State& s) const
 {
-	return getMuscleDynamicsInfo(s).activeFiberForce + getMuscleDynamicsInfo(s).passiveFiberForce;
+	return getMuscleDynamicsInfo(s).fiberForce;
 }
 
 /* get the current fiber force (N) applied to the tendon */
 double Muscle::getFiberForceAlongTendon(const SimTK::State& s) const
 {
-	const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
-    return mdi.fiberForceAlongTendon; 
+	return getMuscleDynamicsInfo(s).fiberForceAlongTendon; 
 }
 
 
@@ -631,9 +630,10 @@ void Muscle::computeForce(const SimTK::State& s,
 {
 	Super::computeForce(s, bodyForces, generalizedForces); // Calls compute actuation.
 
-	// NOTE: Force could be negative, in particular during CMC, when the optimizer is computing
-	// gradients, it will setForce(+1) and setForce(-1) to compute the derivative with respect to force.
-	if (getForce(s) < -SimTK::SqrtEps) {
+	// NOTE: Force could be negative, in particular during CMC, when the optimizer
+	// is computing gradients, but in those cases the force will be overridden
+	// and will not be computed by the muscle
+	if (!isForceOverriden(s) && (getForce(s) < -SimTK::SqrtEps)) {
 		string msg = getConcreteClassName()
             + "::computeForce, muscle "+ getName() + " force < 0";
 		cout << msg << " at time = " << s.getTime() << endl;

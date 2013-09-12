@@ -1,5 +1,5 @@
-#ifndef __InverseDynamicsTool_h__
-#define __InverseDynamicsTool_h__
+#ifndef OPENSIM_INVERSE_DYNAMICS_TOOL_H_
+#define OPENSIM_INVERSE_DYNAMICS_TOOL_H_
 /* -------------------------------------------------------------------------- *
  *                      OpenSim:  InverseDynamicsTool.h                       *
  * -------------------------------------------------------------------------- *
@@ -53,6 +53,13 @@ class JointSet;
  * functions as that are twice differntiable to estimate velocities and
  * accelerations.
  *
+ * As an additional service, the InverseDynamicsTool can provide an equivalent 
+ * body force (torque and force) applied to the joint frame. Since generalized
+ * forces include scaling (due to units conversion as well as coupling between
+ * translations and rotations, for example) they are not necessarily joint torques
+ * or forces.  OpenSim employs a pseudo inverse to find the smallest applied  
+ * torque and/or force that will generate the equivalent generalized force.
+ *
  * @author Ajay Seth
  * @version 1.0
  */
@@ -73,15 +80,16 @@ protected:
 	PropertyDbl _lowpassCutoffFrequencyProp;
 	double &_lowpassCutoffFrequency;
 
-	// name of storage file containing generalized forces from innverse dynamics
+	/** name of storage file containing generalized forces from innverse dynamics */
 	PropertyStr _outputGenForceFileNameProp;
 	std::string &_outputGenForceFileName;
 
-	/** Idenitify the list of joints for which equivalent body forces acting at the joint should be reported */
+	/** Idenitify the list of joints for which equivalent body forces acting 
+	    at the joint frames should be reported */
 	PropertyStrArray _jointsForReportingBodyForcesProp;
 	Array<std::string> &_jointsForReportingBodyForces;
 
-	// name of storage file containing generalized forces from innverse dynamics
+	/** name of storage file containing equivalent body forces from inverse dynamics */
 	PropertyStr _outputBodyForcesAtJointsFileNameProp;
 	std::string &_outputBodyForcesAtJointsFileName;
 
@@ -154,4 +162,4 @@ public:
 //=============================================================================
 } // namespace
 
-#endif // __InverseDynamicsTool_h__
+#endif // OPENSIM_INVERSE_DYNAMICS_TOOL_H_

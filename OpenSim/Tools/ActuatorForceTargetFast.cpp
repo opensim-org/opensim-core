@@ -113,8 +113,6 @@ ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController):
 	    _recipAreaSquared[j] *= _recipAreaSquared[j];
         j++;
 	}
-//std::cout << "ActuatorForceTargetFast _recipAreaSquared= " << _recipAreaSquared << std::endl;
-
 }
 
 
@@ -139,13 +137,12 @@ prepareToOptimize(SimTK::State& s, double *x)
 	// Build linear constraint matrix and constant constraint vector
 	f = 0;
 
-
 	computeConstraintVector(s, f, _constraintVector);
 
 	for(int j=0; j<nf; j++) {
 		f[j] = 1;
 		computeConstraintVector(s, f, c);
-		for(int i=0; i<nc; i++) _constraintMatrix(i,j) = (c[i] - _constraintVector[i]);
+		_constraintMatrix(j) = (c - _constraintVector);
 		f[j] = 0;
 	}
 #endif
@@ -161,8 +158,8 @@ prepareToOptimize(SimTK::State& s, double *x)
 	
 	double fOpt = SimTK::NaN;
 
-	getController()->getModel().getMultibodySystem().realize(s, SimTK::Stage::Dynamics );
-	for(int i=0, index=0;i<fSet.getSize();i++) {
+	getController()->getModel().getMultibodySystem().realize(tempState, SimTK::Stage::Dynamics );
+	for(int i=0 ; i<fSet.getSize(); ++i) {
         Actuator& act = fSet.get(i);
 	    Muscle* mus = dynamic_cast<Muscle*>(&act);
 		if(mus==NULL) {
@@ -170,17 +167,14 @@ prepareToOptimize(SimTK::State& s, double *x)
 		}
 		else{	
 			fOpt = mus->calcInextensibleTendonActiveFiberForce(tempState,
-                                                                   activation);
+                                                              activation);
 		}
 		
 		if( std::fabs(fOpt) < SimTK::TinyReal )
 			fOpt = SimTK::TinyReal;
 
-		_recipOptForceSquared[index++] = 1.0 / (fOpt*fOpt);	
+		_recipOptForceSquared[i] = 1.0 / (fOpt*fOpt);	
 	}
-
-//std::cout << "Fast:prepareToOptimize _recipOptForceSquared \n" << _recipOptForceSquared << std::endl;
-
 	
 	// return false to indicate that we still need to proceed with optimization (did not do a lapack direct solve)
 	return false;
@@ -216,12 +210,8 @@ objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 	    Muscle* mus = dynamic_cast<Muscle*>(&act);
 	    if(mus) {
 		    p +=  aF[j] * aF[j] * _recipOptForceSquared[j];
-//std::cout << "ActuatorForceTargetFast::objectiveFunc area" << j << " " << act.getName() << "  =" << aF[j] * aF[j] *  _recipAreaSquared[j]  << std::endl;
-
 	    } else {
 		    p +=  aF[j] * aF[j] *  _recipAreaSquared[j];
-//std::cout << "ActuatorForceTargetFast::objectiveFunc force" << j << " " << act.getName() << "  =" << aF[j] * aF[j] * _recipOptForceSquared[j]  << std::endl;
-
         }
         j++;
 	}
@@ -286,11 +276,8 @@ gradientFunc(const Vector &x, const bool new_coefficients, Vector &gradient) con
 //______________________________________________________________________________
 /**
  * Compute constraint ic given x.
- * Note that the indexing starts at 1;
  *
- * @param x Array of controls.
- * @param ic Index of the constraint (indexing starts at 1, not 0).
- * @param c Value of constraint ic.
+ * @param x Array of active forces.
  * @return Status (normal termination = 0, error < 0).
  */
 int ActuatorForceTargetFast::
@@ -305,6 +292,7 @@ constraintFunc(const SimTK::Vector &x, const bool new_coefficients, SimTK::Vecto
 
 	// Use precomputed constraint matrix
 	constraints = _constraintMatrix * x + _constraintVector;
+	//cout <<"x = " << x[0] <<" contraintEqn = " << constraints[0] << endl;
 
 #endif
 	return(0);
@@ -318,11 +306,16 @@ computeConstraintVector(SimTK::State& s, const Vector &x,Vector &c) const
 {
 	CMC_TaskSet&  taskSet = _controller->updTaskSet();
 	const Set<Actuator>& fSet = _controller->getActuatorSet();
-	for(int i=0;i<fSet.getSize();i++) {
-        Actuator& act = fSet.get(i);
-        act.setOverrideForce(s, x[i]);
-        act.overrideForce(s,true);
 
+	int nf = fSet.getSize();
+
+	// Now override the actuator forces with computed active force
+	// (from static optimization) but also include the passive force
+	// contribution of muscles when applying forces to the model
+	for(int i=0;i<nf;i++) {
+        Actuator& act = fSet.get(i);
+		act.overrideForce(s,true);
+        act.setOverrideForce(s, x[i]);        
 	}
 	_controller->getModel().getMultibodySystem().realize(s, SimTK::Stage::Acceleration );
 
@@ -330,18 +323,17 @@ computeConstraintVector(SimTK::State& s, const Vector &x,Vector &c) const
 	Array<double> &w = taskSet.getWeights();
 	Array<double> &aDes = taskSet.getDesiredAccelerations();
 	Array<double> &a = taskSet.getAccelerations();
+
 	// CONSTRAINTS
 	for(int i=0; i<getNumConstraints(); i++)
 		c[i]=w[i]*(aDes[i]-a[i]);
+
 	// reset the actuator control 
 	for(int i=0;i<fSet.getSize();i++) {
-        Actuator& act = fSet.get(i);
-        act.overrideForce(s,false);
-
+        fSet[i].overrideForce(s,false);
 	}
-    _controller->getModel().getMultibodySystem().realizeModel(s);
-    _controller->getModel().getMultibodySystem().realize(s, SimTK::Stage::Position );
 
+    _controller->getModel().getMultibodySystem().realizeModel(s);
 }
 //______________________________________________________________________________
 /**
