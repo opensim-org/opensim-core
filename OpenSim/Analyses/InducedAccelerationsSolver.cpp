@@ -260,7 +260,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
 }
 
 const SimTK::State& InducedAccelerationsSolver::
-	getSolvedState(const SimTK::State& s)
+	getSolvedState(const SimTK::State& s) const
 {
 	const SimTK::State& s_solver = _modelCopy.getWorkingState();
 

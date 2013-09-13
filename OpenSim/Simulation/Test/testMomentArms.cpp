@@ -33,12 +33,8 @@
 //     Add more test cases to address specific problems with moment-arms
 //
 //==========================================================================================================
-#include <OpenSim/OpenSim.h>
-#include <iostream>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Simulation/MomentArmSolver.h>
+#include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include "SimTKmath.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -56,6 +52,7 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 int main()
 {
 	clock_t startTime = clock();
+	LoadOpenSimLibrary("osimActuators");
 
 	try {
 

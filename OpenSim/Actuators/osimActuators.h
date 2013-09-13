@@ -28,6 +28,7 @@
 #include "TorqueActuator.h"
 #include "PointToPointActuator.h"
 #include "SpringGeneralizedForce.h"
+#include "ClutchedPathSpring.h"
 
 #include "Schutte1993Muscle_Deprecated.h"
 #include "Delp1990Muscle_Deprecated.h"
@@ -36,7 +37,6 @@
 #include "RigidTendonMuscle.h"
 #include "Millard2012EquilibriumMuscle.h"
 #include "Millard2012AccelerationMuscle.h"
-
 
 #include "RegisterTypes_osimActuators.h"	// to expose RegisterTypes_osimActuators
 

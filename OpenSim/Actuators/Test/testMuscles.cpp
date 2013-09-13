@@ -38,17 +38,10 @@
 //
 //==============================================================================
 #include <OpenSim/Common/osimCommon.h>
-#include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
-#include <OpenSim/Simulation/Model/PathActuator.h>
-#include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
-#include <OpenSim/Simulation/Model/JointInternalPowerProbe.h>
+#include <OpenSim/Analyses/osimAnalyses.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <OpenSim/Analyses/MuscleAnalysis.h>
-
-
-#include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
 
 using namespace OpenSim;
 using namespace std;

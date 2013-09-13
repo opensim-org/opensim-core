@@ -184,7 +184,7 @@ protected:
 	/** Internal use function to get the solved state that is realized to
 	    Stage::Acceleration. If the state differes from the input state OR
 		the state is not at the acceleration stage, an exception is thrown. */
-	const SimTK::State& getSolvedState(const SimTK::State& s);
+	const SimTK::State& getSolvedState(const SimTK::State& s) const;
 	Array<bool> applyContactConstraintAccordingToExternalForces(SimTK::State &s);
 
 private:

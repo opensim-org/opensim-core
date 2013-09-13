@@ -31,13 +31,6 @@
 #include "Model.h"
 #include "Force.h"
 
-#ifdef SWIG
-	#ifdef OSIMACTUATORS_API
-		#undef OSIMACTUATORS_API
-		#define OSIMACTUATORS_API
-	#endif
-#endif
-
 namespace OpenSim {
 
 class GeometryPath;

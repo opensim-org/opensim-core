@@ -26,10 +26,8 @@
 //  adequately satified or that an appropriate exception is thrown.
 //
 //==========================================================================================================
-#include <iostream>
-#include <OpenSim/OpenSim.h>
+#include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include "Simbody.h"
 
 using namespace OpenSim;
 using namespace std;

@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                     *
+ * Author(s): OpenSim Team                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -58,6 +58,10 @@
 #include "Model/ExpressionBasedBushingForce.h"
 #include "Model/CoordinateLimitForce.h"
 #include "Model/ExternalLoads.h"
+#include "Model/PathActuator.h"
+#include "Model/ActuatorPowerProbe.h"
+#include "Model/JointInternalPowerProbe.h"
+#include "Model/MuscleActiveFiberPowerProbe.h"
 
 #include "Manager/Manager.h"
 
@@ -97,6 +101,10 @@
 #include "SimbodyEngine/TransformAxis.h"
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
+
+#include "MomentArmSolver.h"
+
 #include "RegisterTypes_osimSimulation.h"	// to expose RegisterTypes_osimSimulation
+
 
 #endif // _osimSimulation_h_

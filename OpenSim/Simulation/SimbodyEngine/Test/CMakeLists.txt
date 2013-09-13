@@ -3,10 +3,8 @@
 FILE(GLOB TEST_PROGS "test*.cpp")
 
 LINK_LIBRARIES(debug osimSimulation${CMAKE_DEBUG_POSTFIX}	optimized osimSimulation
-               debug osimActuators${CMAKE_DEBUG_POSTFIX}	optimized osimActuators
                debug osimCommon${CMAKE_DEBUG_POSTFIX}	optimized osimCommon
                debug osimAnalyses${CMAKE_DEBUG_POSTFIX}		optimized osimAnalyses
-               debug osimTools${CMAKE_DEBUG_POSTFIX}		optimized osimTools
                ${SIMTK_ALL_LIBS}
 )
 
