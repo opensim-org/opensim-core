@@ -262,6 +262,12 @@ void XMLDocument::writeDefaultObjects(SimTK::Xml::Element& elmt)
 	}
 }
 
+void XMLDocument::copyDefaultObjects(const XMLDocument &aDocument){
+        _defaultObjects.setSize(0);
+        for (int i=0; i< aDocument._defaultObjects.getSize(); i++)
+		    _defaultObjects.append(aDocument._defaultObjects.get(i)->clone());
+}
+
 /*static*/ 
 void  XMLDocument::renameChildNode(SimTK::Xml::Element& aNode, std::string oldElementName, std::string newElementName)
 {

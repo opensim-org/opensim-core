@@ -81,9 +81,7 @@ public:
 	XMLDocument();
 	XMLDocument(const std::string &aFileName);
 	XMLDocument(const XMLDocument &aDocument);
-	void copyDefaultObjects(const XMLDocument &aDocument){
-		_defaultObjects = aDocument._defaultObjects;
-	}
+	void copyDefaultObjects(const XMLDocument &aDocument);
 	void writeDefaultObjects(SimTK::Xml::Element& elmt);
 	//--------------------------------------------------------------------------
 	// VERSIONING /BACKWARD COMPATIBILITY SUPPORT
