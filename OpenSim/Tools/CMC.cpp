@@ -902,16 +902,18 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 			cout << ex.getMessage() << endl;
 			cout << "OPTIMIZATION FAILED..." << endl;
 			cout<<endl;
-			char tmp[1024],msg[1024];
-			strcpy(msg,"CMC.computeControls:  WARN- The optimizer could not find ");
-			sprintf(tmp,"a solution at time = %lf.\n",s.getTime() );
-			strcat(msg,tmp);
-			strcat(msg,"If using the fast target, try using the slow target.\n");
-			strcat(msg,"Starting at a slightly different initial time may also help.\n");
-			
-			cout<<"\n"<<msg<<endl<<endl;
-			string msgString = string(msg);
-         throw(new OpenSim::Exception(msg, __FILE__,__LINE__));
+
+			ostringstream msg;
+			msg << "CMC.computeControls: ERROR- Optimizer could not find a solution." << endl;
+			msg << "Unable to find a feasible solution at time = " << s.getTime() << "." << endl;
+			msg << "Model cannot generate the forces necessary to achieve the target acceleration." << endl;
+			msg << "Possible issues: 1. not all model degrees-of-freedom are actuated, " << endl;
+			msg	<< "2. there are tracking tasks for locked coordinates, and/or" << endl;
+			msg	<< "3. there are unnecessary control constraints on reserve/residual actuators." << endl;
+				   
+			cout<<"\n"<<msg.str()<<endl<<endl;
+
+         throw(new OpenSim::Exception(msg.str(), __FILE__,__LINE__));
 		}
 	} else {
 		// Got a direct solution, don't need to run optimizer
