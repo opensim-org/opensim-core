@@ -1,0 +1,12 @@
+testStorage
+version=1
+nRows=5
+nColumns=3
+inDegrees=no
+endheader
+time	column1	column2
+0.000	1.500	1.600
+0.010	9.210	3.215
+0.020	5.423	2.113
+0.030	4.114	6.829
+0.040	8.413	1.235

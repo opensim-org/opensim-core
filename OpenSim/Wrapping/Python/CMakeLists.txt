@@ -1,4 +1,4 @@
-SET(KIT pyOpenSim)
+SET(KIT opensim)
 SET(UKIT PYOPENSIM)
 
 IF(BUILD_PYTHON_WRAPPING)	
@@ -33,13 +33,15 @@ LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools osimSimmFileWrit
 
 ADD_LIBRARY(_${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
+# Resulting library must be named _opensim.so on Unix, _opensim.pyd on Windows.
 SET_TARGET_PROPERTIES(_${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
    PROJECT_LABEL "Python Bindings - _${KIT}"
+   PREFIX ""
 )
 IF(WIN32)
 	SET_TARGET_PROPERTIES(_${KIT}
-    PROPERTIES 
+    PROPERTIES
     SUFFIX ".pyd")
 ENDIF()
 
@@ -52,19 +54,21 @@ ADD_DEPENDENCIES(_${KIT} PyWrap)
 # archives are only needed at link time so go in sdk/lib.
 IF(WIN32)
     INSTALL(TARGETS _${KIT}
-            RUNTIME DESTINATION sdk/python/
-            LIBRARY DESTINATION sdk/python/
-            ARCHIVE DESTINATION sdk/python/)
+            RUNTIME DESTINATION sdk/python/opensim
+            LIBRARY DESTINATION sdk/python/opensim
+            ARCHIVE DESTINATION sdk/python/opensim)
 ELSE()
     INSTALL(TARGETS _${KIT}
-            RUNTIME DESTINATION sdk/python/
-            LIBRARY DESTINATION sdk/python/
-            ARCHIVE DESTINATION sdk/python/)
+            RUNTIME DESTINATION sdk/python/opensim
+            LIBRARY DESTINATION sdk/python/opensim
+            ARCHIVE DESTINATION sdk/python/opensim)
 ENDIF()
 
 #install .py files
-FILE(GLOB PY_FILES "*.py")
-INSTALL(FILES ${PY_FILES} DESTINATION sdk/python/)
+INSTALL(FILES setup.py DESTINATION sdk/python)
+INSTALL(FILES opensim.py DESTINATION sdk/python/opensim)
+INSTALL(FILES __init__.py DESTINATION sdk/python/opensim)
+INSTALL(DIRECTORY tests DESTINATION sdk/python/opensim)
 
 
 ENDIF (PYTHONLIBS_FOUND)

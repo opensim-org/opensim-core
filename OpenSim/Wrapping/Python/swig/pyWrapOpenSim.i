@@ -1,5 +1,5 @@
-%module(directors="1") pyOpenSim
-%module pyOpenSim
+%module(directors="1") opensim
+%module opensim
 #pragma SWIG nowarn=822,451,503,516,325
 %{
 #include <OpenSim/version.h>
@@ -238,9 +238,9 @@ using namespace SimTK;
 %rename(OpenSimObject) OpenSim::Object;
 %rename(OpenSimException) OpenSim::Exception;
 
-%rename(printToXml) OpenSim::Object::print(const std::string&);
-%rename(printToXml) OpenSim::XMLDocument::print(const std::string&);
-%rename(printToXml) OpenSim::XMLDocument::print();
+%rename(printToXML) OpenSim::Object::print(const std::string&);
+%rename(printToXML) OpenSim::XMLDocument::print(const std::string&);
+%rename(printToXML) OpenSim::XMLDocument::print();
 %rename(printToFile) OpenSim::Storage::print;
 
 /* If needed %extend will be used, these operators are not supported.*/
