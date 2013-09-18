@@ -5,7 +5,6 @@ IF(BUILD_JAVA_WRAPPING)
 
 INCLUDE(${CMAKE_ROOT}/Modules/FindJava.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/FindJNI.cmake)
-INCLUDE(${CMAKE_ROOT}/Modules/FindSWIG.cmake)
 
 IF(JAVA_INCLUDE_PATH)
 
