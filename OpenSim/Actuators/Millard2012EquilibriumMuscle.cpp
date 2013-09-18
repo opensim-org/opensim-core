@@ -1452,6 +1452,13 @@ estimateMuscleFiberState(double aActivation,
                          int aMaxIterations,
                          bool staticSolution) const
 {
+    // If seeking a static solution, set velocities to zero and avoid the
+    // velocity-sharing algorithm below, as it can produce nonzero fiber and
+    // tendon velocities even if pathLengtheningSpeed is zero.
+    if(abs(pathLengtheningSpeed) < SimTK::SignificantReal) {
+        staticSolution = true;
+    }
+
     // Results vector format:
     //   [0] flag: 0 = converged
     //             1 = diverged
@@ -1621,6 +1628,8 @@ estimateMuscleFiberState(double aActivation,
             negative stiffness of the fiber (which happens in this model) is
             equal to the positive stiffness of the tendon. */
             if(!staticSolution) {
+                // Keep velocities set to zero if seeking a static solution.
+
                 if( abs(dFmAT_dlceAT + dFt_d_tl) > SimTK::SignificantReal
                     && tlN > 1.0) {
                         Ke  = (dFmAT_dlceAT*dFt_d_tl)/(dFmAT_dlceAT + dFt_d_tl);
