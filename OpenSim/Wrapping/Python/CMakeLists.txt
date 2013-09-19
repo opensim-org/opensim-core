@@ -29,7 +29,7 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools osimSimmFileWriter ${PYTHON_LIBRARIES})
+LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools ${PYTHON_LIBRARIES})
 
 ADD_LIBRARY(_${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
