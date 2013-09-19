@@ -234,7 +234,7 @@ using namespace SimTK;
 
 %feature("director") OpenSim::AnalysisWrapper;
 %feature("director") OpenSim::SimtkLogCallback;
-
+%feature("director") SimTK::DecorativeGeometryImplementation;
 %feature("notabstract") ControlLinear;
 
 %rename(OpenSimObject) OpenSim::Object;
@@ -280,6 +280,8 @@ using namespace SimTK;
   }  
 
 %}
+
+%typemap(out) OpenSim::Joint %{ $result = $1; markAdopted(); %}
 
 %typemap(javacode) OpenSim::MarkerData %{
   public double[] getTimeRange() { return new double[]{getStartFrameTime(), getLastFrameTime()}; }
@@ -665,6 +667,18 @@ namespace SimTK {
 %template(Inertia) SimTK::Inertia_<double>;
 %template(MassProperties) SimTK::MassProperties_<double>;
 }
+%include <SWIG/common.h>
+%include <SWIG/Array.h>
+%include <SWIG/DecorativeGeometry.h>
+%extend SimTK::Array_<SimTK::DecorativeGeometry> {
+	int getSizeAsInt() {
+		return self->size();
+	}
+}
+namespace SimTK {
+%template(ArrayDecorativeGeometry) SimTK::Array_<SimTK::DecorativeGeometry>;
+}
+
 
 // State & Stage
 %include <SWIG/Stage.h>

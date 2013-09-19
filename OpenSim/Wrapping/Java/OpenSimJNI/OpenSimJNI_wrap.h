@@ -11,6 +11,30 @@
 #ifndef SWIG_opensimModel_WRAP_H_
 #define SWIG_opensimModel_WRAP_H_
 
+class SwigDirector_DecorativeGeometryImplementation : public SimTK::DecorativeGeometryImplementation, public Swig::Director {
+
+public:
+    void swig_connect_director(JNIEnv *jenv, jobject jself, jclass jcls, bool swig_mem_own, bool weak_global);
+    SwigDirector_DecorativeGeometryImplementation(JNIEnv *jenv);
+    virtual ~SwigDirector_DecorativeGeometryImplementation();
+    virtual void implementPointGeometry(SimTK::DecorativePoint const &arg0);
+    virtual void implementLineGeometry(SimTK::DecorativeLine const &arg0);
+    virtual void implementBrickGeometry(SimTK::DecorativeBrick const &arg0);
+    virtual void implementCylinderGeometry(SimTK::DecorativeCylinder const &arg0);
+    virtual void implementCircleGeometry(SimTK::DecorativeCircle const &arg0);
+    virtual void implementSphereGeometry(SimTK::DecorativeSphere const &arg0);
+    virtual void implementEllipsoidGeometry(SimTK::DecorativeEllipsoid const &arg0);
+    virtual void implementFrameGeometry(SimTK::DecorativeFrame const &arg0);
+    virtual void implementTextGeometry(SimTK::DecorativeText const &arg0);
+    virtual void implementMeshGeometry(SimTK::DecorativeMesh const &arg0);
+public:
+    bool swig_overrides(int n) {
+      return (n < 10 ? swig_override[n] : false);
+    }
+protected:
+    bool swig_override[10];
+};
+
 class SwigDirector_AnalysisWrapper : public OpenSim::AnalysisWrapper, public Swig::Director {
 
 public:

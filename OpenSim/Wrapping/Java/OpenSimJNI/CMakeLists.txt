@@ -15,7 +15,7 @@ SET(SimTK_INCLUDE_PATH ${SIMTK_INCLUDE_DIR})
 
 ADD_CUSTOM_TARGET(JavaWrap ${SWIG_EXECUTABLE} -v -c++ -java -package org.opensim.modeling -I${OpenSim_SOURCE_DIR} -I${Simbody_INCLUDE_DIR} 
 	-o ${swig_generated_file_fullname} -outdir ${OpenSim_SOURCE_DIR}/Gui/opensim/modeling/src/org/opensim/modeling ${swig_interface_file_fullname})
-SET_TARGET_PROPERTIES(JavaWrap PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD on)
+SET_TARGET_PROPERTIES(JavaWrap PROPERTIES PROJECT_LABEL "Java Bindings - Generate")
 
 
 FILE(GLOB SOURCE_FILES OpenSimContext.cpp)
@@ -35,11 +35,11 @@ ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 
 SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
-   PROJECT_LABEL "Libraries - osim${KIT}"
+   PROJECT_LABEL "Java Bindings - osim${KIT}"
 )
 
 ADD_DEPENDENCIES(osim${KIT} osimTools)
-
+ADD_DEPENDENCIES(osim${KIT} JavaWrap)
 # Shared libraries are needed at runtime for applications, so we put them
 # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
 # or OpemSim/lib/*.dylib (Mac). Windows .lib files, and Linux/Mac .a static
