@@ -517,8 +517,18 @@ getStateVariableSystemIndex(const std::string& stateVariableName) const
 
     std::map<std::string, StateVariableInfo>::const_iterator it;
     it = _namedStateVariableInfo.find(stateVariableName);
-    
-    if(it == _namedStateVariableInfo.end()) {
+    bool isFound = (it != _namedStateVariableInfo.end());
+
+    // Check subcomponents, if necessary.
+    unsigned int idx = 0;
+    while(idx<_subComponents.size() && !isFound) {
+        it = _subComponents[idx]->_namedStateVariableInfo.find(stateVariableName);
+        if(it != _subComponents[idx]->_namedStateVariableInfo.end())
+            isFound = true;
+        ++idx;
+    }
+
+    if(!isFound) {
         std::stringstream msg;
         msg << "ModelComponent::getStateVariableSystemIndex: ERR- name '" 
             << stateVariableName << "' not found.\n " 
