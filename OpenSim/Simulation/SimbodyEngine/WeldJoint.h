@@ -65,13 +65,8 @@ public:
 					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, bool reverse=false);
 	virtual ~WeldJoint();
 
-	virtual int numCoordinates() const {return _numMobilities;};
+	int numCoordinates() const OVERRIDE_11 {return _numMobilities;};
 
-	// SCALE
-	virtual void scale(const ScaleSet& aScaleSet);
-
-    // ModelComponent interface.
-	void connectToModel(Model& aModel) OVERRIDE_11;
 protected:
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 

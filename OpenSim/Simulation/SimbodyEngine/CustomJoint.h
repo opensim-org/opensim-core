@@ -23,16 +23,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include "Joint.h"
-#include <string>
 
 namespace OpenSim {
+
+class SpatialTransform;
 
 //==============================================================================
 //                              CUSTOM JOINT
@@ -67,7 +63,7 @@ public:
 	// CONSTRUCTION
 	CustomJoint();
 	
-	// Construct joint with supplied coordinates and transdorm axes
+	/** Construct joint with supplied coordinates and transform axes */
 	CustomJoint(const std::string& name, Body& parent, 
                 SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
 			    Body& body, SimTK::Vec3 locationInBody, 
@@ -82,16 +78,16 @@ public:
 	
     // default destructor, copy constructor, copy assignment
 
-	int numCoordinates() const {return get_CoordinateSet().getSize();};
+	int numCoordinates() const OVERRIDE_11 {return get_CoordinateSet().getSize();};
 
-	// Transforms
+	// Get and Set Transforms
 	const SpatialTransform& getSpatialTransform() const
     {   return get_SpatialTransform(); }
     SpatialTransform& updSpatialTransform() 
     {   return upd_SpatialTransform(); }
 
 	// SCALE
-	void scale(const ScaleSet& aScaleSet);
+	void scale(const ScaleSet& aScaleSet) OVERRIDE_11;
 
 	/** Override of the default implementation to account for versioning. */
 	void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1)

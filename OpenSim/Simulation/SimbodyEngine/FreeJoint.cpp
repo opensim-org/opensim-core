@@ -24,10 +24,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <math.h>
 #include "FreeJoint.h"
-#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 //=============================================================================
 // STATICS
@@ -112,37 +111,6 @@ void FreeJoint::setNull()
 		}
 	}
 
-}
-
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aEngine dynamics engine containing this FreeJoint.
- */
-void FreeJoint::connectToModel(Model& aModel)
-{
-	// Base class
-	Super::connectToModel(aModel);
-}
-
-//=============================================================================
-// GET AND SET
-//=============================================================================
-
-//=============================================================================
-// SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Scale a joint based on XYZ scale factors for the bodies.
- *
- * @param aScaleSet Set of XYZ scale factors for the bodies.
- * @todo Need to scale transforms appropriately, given an arbitrary axis.
- */
-void FreeJoint::scale(const ScaleSet& aScaleSet)
-{
 }
 
 //=============================================================================

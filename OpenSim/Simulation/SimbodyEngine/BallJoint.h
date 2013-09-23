@@ -24,15 +24,12 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/ScaleSet.h>
 #include "Joint.h"
-#include <OpenSim/Simulation/Model/Model.h>
 
-#include <string>
 
 namespace OpenSim {
+
+class Model;
 
 //=============================================================================
 //=============================================================================
@@ -70,14 +67,10 @@ public:
 
 	virtual ~BallJoint();
 
-	virtual int numCoordinates() const {return _numMobilities;};
-
-	// SCALE
-	virtual void scale(const ScaleSet& aScaleSet);
+	int numCoordinates() const OVERRIDE_11 {return _numMobilities;} ;
 
 protected:
     // ModelComponent interface.
-	void connectToModel(Model& aModel) OVERRIDE_11;
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
     void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
     void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;

@@ -24,16 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDES
-#include "osimCommonDLL.h"
-#include "Array.h"
-#include "ArrayPtrs.h"
 #include "AbstractProperty.h"
-#include "Simbody.h"
-
-#include <string>
-#include <cmath>
-#include <typeinfo>
-#include <limits>
 
 #ifdef SWIG
 #undef OVERRIDE_11

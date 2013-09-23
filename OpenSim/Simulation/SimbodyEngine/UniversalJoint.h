@@ -23,10 +23,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/ScaleSet.h>
 #include "Joint.h"
 
 namespace OpenSim {
@@ -67,13 +64,10 @@ public:
                     bool reverse=false);
     virtual ~UniversalJoint();
 
-    virtual int numCoordinates() const {return _numMobilities;};
+    int numCoordinates() const OVERRIDE_11 { return _numMobilities; }
 
-    // SCALE
-    virtual void scale(const ScaleSet& aScaleSet);
 
 protected:
-    void connectToModel(Model& aModel) OVERRIDE_11;
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 private:

@@ -25,12 +25,13 @@
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "OpenSim/Common/Object.h"
-#include "OpenSim/Simulation/SimbodyEngine/Joint.h"
 #include "OpenSim/Simulation/SimbodyEngine/Body.h"
 #include "OpenSim/Simulation/Model/ModelComponent.h"
 #include <SimTKsimbody.h>
 
 namespace OpenSim {
+
+class ScaleSet;
 
 /**
  * This class represents the physical shape of an object for use in contact modeling.

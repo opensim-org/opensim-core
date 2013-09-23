@@ -36,7 +36,7 @@ namespace OpenSim {
 /**
  * A class implementing an Pin joint.  The underlying implementation 
  * in Simbody is a MobilizedBody::Pin. Pin provides one DoF about the common
- * z-axis of the joint frames (not body) in the parent and body.
+ * z-axis of the joint (not body) frames in the parent and body.
  *
  * @author Ajay Seth
  * @version 1.0
@@ -66,13 +66,10 @@ public:
 					bool reverse=false);
 	virtual ~PinJoint();
 
-	virtual int numCoordinates() const {return _numMobilities;};
+	virtual int numCoordinates() const OVERRIDE_11 {return _numMobilities;};
 
-	// SCALE
-	virtual void scale(const ScaleSet& aScaleSet);
 
 protected:
-	void connectToModel(Model& aModel) OVERRIDE_11;
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 private:

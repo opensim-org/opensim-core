@@ -24,16 +24,16 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
 #include "Joint.h"
-#include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Common/ScaleSet.h>
 
 //=============================================================================
 // STATICS
 //=============================================================================
 using namespace std;
-//using namespace SimTK;
+using namespace SimTK;
 using namespace OpenSim;
 
 //=============================================================================
@@ -62,9 +62,10 @@ Joint::Joint() :
 /**
  * API constructor.
  */
-Joint::Joint(const std::string &name, Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-			 Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, bool reverse) :
-	ModelComponent()
+Joint::Joint(const std::string &name, 
+	OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
+	OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
+	bool reverse) :	ModelComponent()
 {
 	setNull();
 	constructProperties();
@@ -148,6 +149,22 @@ void Joint::connectToModel(Model& aModel) {
 
 	for(int i = 0; i< coordinateSet.getSize(); i++)
 		coordinateSet[i].setJoint(*this);
+
+	const SimTK::Vec3& orientation = get_orientation();
+	const SimTK::Vec3& location = get_location();
+
+	// CHILD TRANSFORM
+	Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
+	SimTK::Transform childTransform(rotation, location);
+	_jointFrameInBody = childTransform;
+
+	const SimTK::Vec3& orientationInParent = get_orientation_in_parent();
+	const SimTK::Vec3& locationInParent = get_location_in_parent();
+
+	// PARENT TRANSFORM
+	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
+	SimTK::Transform parentTransform(parentRotation, locationInParent);
+	_jointFrameInParent = parentTransform;
 }
 
 //=============================================================================
@@ -424,6 +441,19 @@ void Joint::constructCoordinates()
 		coordinateSet.adoptAndAppend(coord);
 	}
 }
+
+SimTK::MobilizedBodyIndex Joint::
+	getMobilizedBodyIndex(OpenSim::Body *aBody) const
+{
+	return aBody->_index;
+} 
+
+void Joint::setMobilizedBodyIndex(OpenSim::Body *aBody, 
+									SimTK::MobilizedBodyIndex index) const
+{ 
+	aBody->_index = index;
+}
+
 
 // TODO: note that child must invoke Joint::addToSystem()
 // *after* it creates its mobilized body; that is an API bug.

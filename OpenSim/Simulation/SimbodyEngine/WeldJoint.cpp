@@ -76,42 +76,6 @@ WeldJoint::WeldJoint() :
 // CONSTRUCTION
 //=============================================================================
 
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel OpenSim  model containing this WeldJoint.
- */
-void WeldJoint::connectToModel(Model& aModel)
-{
-	// Base class
-	Super::connectToModel(aModel);
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-
-//=============================================================================
-// GET AND SET
-//=============================================================================
-//=============================================================================
-// SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Scale a joint based on XYZ scale factors for the bodies.
- *
- * @param aScaleSet Set of XYZ scale factors for the bodies.
- * @todo Need to scale transforms appropriately, given an arbitrary axis.
- */
-void WeldJoint::scale(const ScaleSet& aScaleSet)
-{
-	// Joint knows how to scale locations of the joint in parent and on the body
-	Super::scale(aScaleSet);
-}
 
 //=============================================================================
 // Simbody Model building.

@@ -20,12 +20,10 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
+#include "SpatialTransform.h"
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/MultiplierFunction.h>
 #include <OpenSim/Common/LinearFunction.h>
-
-#include "SpatialTransform.h"
 
 using namespace std;
 using namespace OpenSim;

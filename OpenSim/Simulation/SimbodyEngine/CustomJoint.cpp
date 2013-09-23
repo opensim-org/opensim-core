@@ -24,16 +24,13 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/Constant.h>
-#include <OpenSim/Common/LinearFunction.h>
+#include "CustomJoint.h"
+#include "SpatialTransform.h"
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/Constant.h>
+#include <OpenSim/Common/LinearFunction.h>
 
-#include "CustomJoint.h"
-
-#include <iostream>
-#include <cmath>
 
 //=============================================================================
 // STATICS
@@ -163,7 +160,7 @@ void CustomJoint::scale(const ScaleSet& aScaleSet)
 	Vec3 scaleFactors(1.0);
 
 	// Joint knows how to scale locations of the joint in parent and on the body
-	Joint::scale(aScaleSet);
+	Super::scale(aScaleSet);
 
 	// SCALING TO DO WITH THE PARENT BODY -----
 	// Joint kinematics are scaled by the scale factors for the

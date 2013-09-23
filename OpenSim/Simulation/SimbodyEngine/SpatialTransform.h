@@ -23,21 +23,18 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/Function.h>
 #include "TransformAxis.h"
 
 namespace OpenSim {
 
+class TransformAxis;
 class CustomJoint;
 
 //==============================================================================
 //                           SPATIAL TRANSFORM
 //==============================================================================
 /**
- * A class encapsulating the spatial transformation bewteen two bodies that 
+ * A class encapsulating the spatial transformation between two bodies that 
  * defines the behaviour of a custom joint.
  *
  * @authors Ajay Seth

@@ -24,10 +24,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <math.h>
 #include "EllipsoidJoint.h"
-#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 //=============================================================================
 // STATICS
@@ -87,41 +86,6 @@ void EllipsoidJoint::constructProperties()
 	SimTK::Vec3 radii(NaN);
 	constructProperty_radii_x_y_z(radii);
 }
-
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aEngine dynamics engine containing this EllipsoidJoint.
- */
-void EllipsoidJoint::connectToModel(Model& aModel)
-{
-	// Base class
-	Super::connectToModel(aModel);
-
-	const SimTK::Vec3& orientation = get_orientation();
-	const SimTK::Vec3& location = get_location();
-
-    // CHILD TRANSFORM
-	Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
-	SimTK::Transform childTransform(rotation, location);
-	_jointFrameInBody = childTransform;
-
-	const SimTK::Vec3& orientationInParent = get_orientation_in_parent();
-	const SimTK::Vec3& locationInParent = get_location_in_parent();
-
-	// PARENT TRANSFORM
-	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
-	SimTK::Transform parentTransform(parentRotation, locationInParent);
-	_jointFrameInParent = parentTransform;
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-
 
 //=============================================================================
 // GET AND SET

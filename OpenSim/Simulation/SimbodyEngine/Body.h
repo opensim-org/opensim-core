@@ -30,6 +30,7 @@
 #include <math.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
+#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyDbl.h>
@@ -42,7 +43,6 @@
 namespace OpenSim {
 
 class Model;
-class Joint;
 class WrapObject;
 class WrapObjectSet;
 //=============================================================================

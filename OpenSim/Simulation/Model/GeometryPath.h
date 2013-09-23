@@ -25,12 +25,8 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <math.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "OpenSim/Simulation/Model/ModelComponent.h"
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/VisibleObject.h>
 #include "PathPointSet.h"

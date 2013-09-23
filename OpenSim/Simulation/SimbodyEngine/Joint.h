@@ -1,7 +1,7 @@
-#ifndef __Joint_h__
-#define __Joint_h__
+#ifndef OPENSIM_JOINT_H_
+#define OPENSIM_JOINT_H_
 /* -------------------------------------------------------------------------- *
- *                             OpenSim:  Joint.h                              *
+ *                            OpenSim:  Joint.h                               *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -23,16 +23,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 // INCLUDE
-#include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Common/Function.h>
-#include "Body.h"
-#include "Coordinate.h"
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Common/Function.h>
 
 namespace OpenSim {
+
+class Body;
+class ScaleSet;
 
 //=============================================================================
 //=============================================================================
@@ -132,41 +130,23 @@ public:
 	const OpenSim::Body& getParentBody() const;
 	OpenSim::Body& updParentBody();
 
-	virtual void setLocationInParent(const SimTK::Vec3& aLocation);
-	virtual void getLocationInParent(SimTK::Vec3& rLocation) const;
-	virtual void setOrientationInParent(const SimTK::Vec3& aOrientation);
-	virtual void getOrientationInParent(SimTK::Vec3& rOrientation) const;
+	void setLocationInParent(const SimTK::Vec3& aLocation);
+	void getLocationInParent(SimTK::Vec3& rLocation) const;
+	void setOrientationInParent(const SimTK::Vec3& aOrientation);
+	void getOrientationInParent(SimTK::Vec3& rOrientation) const;
 
-	// A set of functions that use double[] to be invoked by GUI, not Vec3 aware
-	virtual void getOrientationInChild(double rOrientation[]) const {
-		const SimTK::Vec3& _orientation = get_orientation();
-		for(int i=0; i<3; i++) rOrientation[i]=_orientation[i];
-	};
-	virtual void getOrientationInParent(double rOrientation[]) const {
-		const SimTK::Vec3& _orientationInParent = get_orientation_in_parent();
-		for(int i=0; i<3; i++) rOrientation[i]=_orientationInParent[i];
-	};
-	virtual void getLocationInChild(double rLocation[]) const {
-		const SimTK::Vec3& _location = get_location();
-		for(int i=0; i<3; i++) rLocation[i]=_location[i];
-	};
-	virtual void getLocationInParent(double rLocation[]) const {
-		const SimTK::Vec3& _locationInParent = get_location_in_parent();
-		for(int i=0; i<3; i++) rLocation[i]=_locationInParent[i];
-	};
-
-	virtual void setLocationInChild(const SimTK::Vec3& aLocation) {
+	void setLocationInChild(const SimTK::Vec3& aLocation) {
 		set_location(aLocation);
 	}
 
-	virtual const SimTK::Vec3& getLocationInChild() const {
+	const SimTK::Vec3& getLocationInChild() const {
 		return get_location();
-	};
+	}
 
 	// Coordinate Set
 	const CoordinateSet& getCoordinateSet() const { return get_CoordinateSet(); }
 
-	virtual bool getReverse() const { return get_reverse(); }
+	bool getReverse() const { return get_reverse(); }
 
 	//Model building
 	virtual int numCoordinates() const = 0;
@@ -175,10 +155,10 @@ public:
 	    model/system. If the parent is not connected (does not have a valid MobilzedBodyIndex) 
 		then throw an exception. It is up to the assembly routine to make sure it is
 		connecting in a valid sequence - not the joint. */
-	virtual void checkParentBody();
+	void checkParentBody();
 
 	// Utility
-	virtual bool isCoordinateUsed(Coordinate& aCoordinate) const;
+	bool isCoordinateUsed(Coordinate& aCoordinate) const;
 	
 	// Computation
 	/** Given some system mobility (generalized) forces, calculate the equivalent spatial body force for this Joint. 
@@ -189,7 +169,7 @@ public:
 	axis, then this should be evident in the reported results as a force or torque on the same axis. 
 	NOTE: Joints comprised of multiple mobilizers and/or constraints, should override this method and account for multiple
 	      internal components 
-	@param s constaining the generalized coordinate and speed values 
+	@param s containing the generalized coordinate and speed values 
 	@param mobilityForces for the system as computed by inverse dynamics, for example 
 	@return spatial force, FB_G, acting on the body connected by this joint at its location B, expressed in ground.  */
 	virtual SimTK::SpatialVec calcEquivalentSpatialForce(const SimTK::State &s, const SimTK::Vector &mobilityForces) const;
@@ -236,8 +216,8 @@ protected:
 
 	// Methods that allow access for Joint subclasses to data members of objects that
 	// Joint befriends like Body, Coordinate and SimbodyEngine
-	SimTK::MobilizedBodyIndex getMobilizedBodyIndex(Body *aBody) const {return aBody->_index;} 
-	void setMobilizedBodyIndex(Body *aBody, SimTK::MobilizedBodyIndex index) const {aBody->_index = index;}
+	SimTK::MobilizedBodyIndex getMobilizedBodyIndex(Body *aBody) const; 
+	void setMobilizedBodyIndex(Body *aBody, SimTK::MobilizedBodyIndex index) const;
 	void setCoordinateMobilizedBodyIndex(Coordinate *aCoord, SimTK::MobilizedBodyIndex index) const {aCoord->_bodyIndex = index;}
 	void setCoordinateMobilizerQIndex(Coordinate *aCoord, int index) const
 		{ aCoord->_mobilizerQIndex = SimTK::MobilizerQIndex(index);}
@@ -248,11 +228,15 @@ protected:
 	   acting at its mobilizer frame B, expressed in ground.  */
 	SimTK::SpatialVec calcEquivalentSpatialForceForMobilizedBody(const SimTK::State &s, const SimTK::MobilizedBodyIndex mbx, const SimTK::Vector &mobilityForces) const;
 
-private:
+
 //=============================================================================
 // DATA
 //=============================================================================
+protected:
+	SimTK::Transform _jointFrameInBody;
+	SimTK::Transform _jointFrameInParent;
 
+private:
 	/** Body to which this joint belongs. */
 	SimTK::ReferencePtr<Body> _body;
 
@@ -270,6 +254,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __Joint_h__
+#endif // OPENSIM_JOINT_H_
 
 

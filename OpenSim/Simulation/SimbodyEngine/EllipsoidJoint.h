@@ -1,5 +1,5 @@
-#ifndef OPENSIM_EllipsoidJoint_H
-#define OPENSIM_EllipsoidJoint_H
+#ifndef OPENSIM_ELLIPSOID_JOINT_H_
+#define OPENSIM_ELLIPSOID_JOINT_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  EllipsoidJoint.h                         *
  * -------------------------------------------------------------------------- *
@@ -23,13 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/ScaleSet.h>
 #include "Joint.h"
-#include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
 
@@ -75,17 +70,16 @@ public:
 
 	virtual ~EllipsoidJoint();
 
-	virtual int numCoordinates() const {return _numMobilities;};
+	int numCoordinates() const OVERRIDE_11 { return _numMobilities; }
 
 	//Set properties
 	void setEllipsoidRadii(SimTK::Vec3 radii);
 
 	// SCALE
-	virtual void scale(const ScaleSet& aScaleSet);
+	void scale(const ScaleSet& aScaleSet) OVERRIDE_11;
 
 protected:
     // ModelComponent interface.
-	void connectToModel(Model& aModel) OVERRIDE_11;
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
     void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
     void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
@@ -101,9 +95,6 @@ private:
 	void constructProperties();
 	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
 
-	SimTK::Transform _jointFrameInBody;
-	SimTK::Transform _jointFrameInParent;
-
 //=============================================================================
 };	// END of class EllipsoidJoint
 //=============================================================================
@@ -111,6 +102,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // OPENSIM_EllipsoidJoint_H
+#endif // OPENSIM_ELLIPSOID_JOINT_H_
 
 

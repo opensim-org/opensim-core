@@ -24,10 +24,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <math.h>
 #include "GimbalJoint.h"
-#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 //=============================================================================
 // STATICS
@@ -69,46 +68,6 @@ GimbalJoint::GimbalJoint(const std::string &name, OpenSim::Body& parent,
 	setAuthors("Tim Dorn");
 	constructCoordinates();
 	updBody().setJoint(*this);
-}
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
-
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aEngine dynamics engine containing this GimbalJoint.
- */
-void GimbalJoint::connectToModel(Model& aModel)
-{
-	// Base class
-	Super::connectToModel(aModel);
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-
-//=============================================================================
-// GET AND SET
-//=============================================================================
-//_____________________________________________________________________________
-
-//=============================================================================
-// SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Scale a joint based on XYZ scale factors for the bodies.
- *
- * @param aScaleSet Set of XYZ scale factors for the bodies.
- * @todo Need to scale transforms appropriately, given an arbitrary axis.
- */
-void GimbalJoint::scale(const ScaleSet& aScaleSet)
-{
 }
 
 //=============================================================================

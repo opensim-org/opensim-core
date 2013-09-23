@@ -1,5 +1,5 @@
-#ifndef __FreeJoint_h__
-#define __FreeJoint_h__
+#ifndef OPENSIM_FREE_JOINT_H_
+#define OPENSIM_FREE_JOINT_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  FreeJoint.h                            *
  * -------------------------------------------------------------------------- *
@@ -23,12 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/ScaleSet.h>
 #include "Joint.h"
-#include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
 
@@ -68,14 +64,10 @@ public:
 
 	virtual ~FreeJoint();
 
-	virtual int numCoordinates() const {return _numMobilities;};
+	int numCoordinates() const OVERRIDE_11  { return _numMobilities; }
 
-	// SCALE
-	virtual void scale(const ScaleSet& aScaleSet);
-
-    // ModelComponent interface.
-	void connectToModel(Model& aModel) OVERRIDE_11;
 protected:
+	// ModelComponent interface.
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
     void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
     void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
@@ -84,9 +76,6 @@ private:
 	SimTK::MobilizedBodyIndex _masslessBodyIndex;
 	void setNull();
 	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
-
-
-
 //=============================================================================
 };	// END of class FreeJoint
 //=============================================================================
@@ -94,6 +83,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __FreeJoint_h__
+#endif // OPENSIM_FREE_JOINT_H_
 
 

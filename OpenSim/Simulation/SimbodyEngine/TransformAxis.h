@@ -24,22 +24,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/PropertyObjPtr.h>
-#include <OpenSim/Common/Function.h>
-
-#include <iostream>
-#include <cmath>
-
+#include "Joint.h"
 
 namespace OpenSim {
 
-class Joint;
 class CustomJoint;
 class Coordinate;
 

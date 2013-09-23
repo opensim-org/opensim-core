@@ -24,11 +24,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <math.h>
 #include "UniversalJoint.h"
-#include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 //=============================================================================
 // STATICS
@@ -78,53 +76,6 @@ UniversalJoint::UniversalJoint() : Joint()
     coordinateSet[1].setMotionType(Coordinate::Rotational);
 
     updBody().setJoint(*this);
-}
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
-
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel OpenSim  model containing this UniversalJoint.
- */
-void UniversalJoint::connectToModel(Model& aModel)
-{
-    string errorMessage;
-
-    // Base class
-    Super::connectToModel(aModel);
-
-    const std::string& parentName = get_parent_body();
-
-    // Look up the parent and child bodies by name in the
-    if (!aModel.updBodySet().contains(parentName)) {
-        errorMessage += "Invalid parent body (" + parentName + ") specified in joint " + getName();
-        throw (Exception(errorMessage.c_str()));
-    }
-    setParentBody(aModel.updBodySet().get(parentName));
-}
-
-//=============================================================================
-// GET AND SET
-//=============================================================================
-//=============================================================================
-// SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Scale a joint based on XYZ scale factors for the bodies.
- *
- * @param aScaleSet Set of XYZ scale factors for the bodies.
- * @todo Need to scale transforms appropriately, given an arbitrary axis.
- */
-void UniversalJoint::scale(const ScaleSet& aScaleSet)
-{
-    // Joint knows how to scale locations of the joint in parent and on the body
-    Super::scale(aScaleSet);
 }
 
 //=============================================================================

@@ -23,8 +23,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/PropertyDbl.h>
 #include "Actuator.h"
 #include "GeometryPath.h"
 

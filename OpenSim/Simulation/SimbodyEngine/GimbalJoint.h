@@ -1,5 +1,5 @@
-#ifndef __GimbalJoint_h__
-#define __GimbalJoint_h__
+#ifndef OPENSIM_GIMBAL_JOINT_H__
+#define OPENSIM_GIMBAL_JOINT_H__
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  GimbalJoint.h                            *
  * -------------------------------------------------------------------------- *
@@ -24,13 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/ScaleSet.h>
 #include "Joint.h"
-#include <OpenSim/Simulation/Model/Model.h>
-
-#include <string>
 
 namespace OpenSim {
 
@@ -53,9 +47,6 @@ private:
 //=============================================================================
 protected:
 
-	/** Flag to use Euler angles to parameterize rotation of the body  */
-	//PropertyBool _useEulerAnglesProp;
-	//bool &_useEulerAngles;
 
 //=============================================================================
 // METHODS
@@ -70,14 +61,10 @@ public:
 
 	virtual ~GimbalJoint();
 
-	virtual int numCoordinates() const {return _numMobilities;};
-
-	// SCALE
-	virtual void scale(const ScaleSet& aScaleSet);
+	int numCoordinates() const OVERRIDE_11  {return _numMobilities;}
 
 protected:
     // ModelComponent interface.
-	void connectToModel(Model& aModel) OVERRIDE_11;
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
     void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
     void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;

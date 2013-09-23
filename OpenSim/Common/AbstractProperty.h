@@ -23,21 +23,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
- */
-
-
 // INCLUDES
 #include "osimCommonDLL.h"
-#include "Array.h"
-#include "ArrayPtrs.h"
 #include "Simbody.h"
 
-#include <string>
-#include <cmath>
-#include <typeinfo>
-#include <cassert>
 
 namespace OpenSim {
 

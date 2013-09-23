@@ -28,6 +28,7 @@
 #include <string>
 #include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>

@@ -30,7 +30,6 @@
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Force.h>
-#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 
 //==============================================================================
 //==============================================================================

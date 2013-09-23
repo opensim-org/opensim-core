@@ -43,6 +43,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
+#include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
