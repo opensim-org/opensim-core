@@ -24,7 +24,6 @@
 // INCLUDES
 //============================================================================
 #include "AbstractProperty.h"
-#include "Property.h"
 #include "Object.h"
 
 #include <string>
