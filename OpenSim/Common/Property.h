@@ -25,6 +25,7 @@
 
 // INCLUDES
 #include "AbstractProperty.h"
+#include "Exception.h"
 
 #ifdef SWIG
 #undef OVERRIDE_11
