@@ -1,7 +1,7 @@
 SET(KIT opensim)
 SET(UKIT PYOPENSIM)
 
-IF(BUILD_PYTHON_WRAPPING)	
+IF(BUILD_PYTHON_WRAPPING)
 
 INCLUDE(${CMAKE_ROOT}/Modules/FindPythonLibs.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/FindPythonInterp.cmake)
@@ -10,17 +10,20 @@ INCLUDE(${CMAKE_ROOT}/Modules/FindPythonInterp.cmake)
 IF(PYTHONLIBS_FOUND)
 
 # Run command to generate OpenSimJNI_wrap.cxx
-SET(swig_generated_file_fullname ${BUILD_BINARY_DIR}/OpenSim/Wrapping/Python/pyOpenSim_wrap.cxx)
-SET(swig_interface_file_fullname ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/Python/swig/pyWrapOpenSim.i)
-SET(SimTK_INCLUDE_PATH ${SIMTK_INCLUDE_DIR})		
+SET(swig_generated_file_fullname ${CMAKE_CURRENT_BINARY_DIR}/pyOpenSim_wrap.cxx)
+SET(swig_interface_file_fullname
+    ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/Python/swig/pyWrapOpenSim.i)
+SET(SimTK_INCLUDE_PATH ${SIMTK_INCLUDE_DIR})
 
-ADD_CUSTOM_TARGET(PyWrap ${SWIG_EXECUTABLE} -v -c++ -python -I${OpenSim_SOURCE_DIR} -I${Simbody_INCLUDE_DIR} 
-	-o ${swig_generated_file_fullname} -outdir ${BUILD_BINARY_DIR}/OpenSim/Wrapping/Python/ ${swig_interface_file_fullname})
+ADD_CUSTOM_TARGET(PyWrap ${SWIG_EXECUTABLE} -v -c++ -python
+    -I${OpenSim_SOURCE_DIR} -I${Simbody_INCLUDE_DIR}
+	-o ${swig_generated_file_fullname}
+    -outdir ${CMAKE_CURRENT_BINARY_DIR} ${swig_interface_file_fullname})
 
 SET_TARGET_PROPERTIES(PyWrap PROPERTIES PROJECT_LABEL "Python Bindings - Generate")
 
-FILE(GLOB SOURCE_FILES OpenSimContext.cpp ${BUILD_BINARY_DIR}/OpenSim/Wrapping/Python/*.cxx)
-FILE(GLOB INCLUDE_FILES ${BUILD_BINARY_DIR}/OpenSim/Wrapping/Python/*.h OpenSimContext.h)
+FILE(GLOB SOURCE_FILES OpenSimContext.cpp ${CMAKE_CURRENT_BINARY_DIR}/*.cxx)
+FILE(GLOB INCLUDE_FILES ${CMAKE_CURRENT_BINARY_DIR}/*.h OpenSimContext.h)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 					${OpenSim_SOURCE_DIR}/Vendors 
@@ -29,9 +32,10 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools ${PYTHON_LIBRARIES})
+LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools
+    ${PYTHON_LIBRARIES})
 
-ADD_LIBRARY(_${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
+ADD_LIBRARY(_${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 
 # Resulting library must be named _opensim.so on Unix, _opensim.pyd on Windows.
 SET_TARGET_PROPERTIES(_${KIT} PROPERTIES
@@ -59,10 +63,11 @@ INSTALL(TARGETS _${KIT}
 
 #install .py files
 INSTALL(FILES setup.py DESTINATION sdk/python)
-INSTALL(FILES ${BUILD_BINARY_DIR}/OpenSim/Wrapping/Python/opensim.py DESTINATION sdk/python/opensim)
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/opensim.py
+    DESTINATION sdk/python/opensim)
 INSTALL(FILES __init__.py DESTINATION sdk/python/opensim)
 INSTALL(DIRECTORY tests DESTINATION sdk/python/opensim)
 
 
-ENDIF (PYTHONLIBS_FOUND)
+ENDIF(PYTHONLIBS_FOUND)
 ENDIF(BUILD_PYTHON_WRAPPING)
