@@ -8,7 +8,11 @@ own project.
 
 """
 
+import inspect
 import os
+
+this_file_dir = os.path.dirname(
+                os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 import opensim as osim
 #import org.opensim.modeling as osim
@@ -121,7 +125,7 @@ def test_strengthenModel():
 
 def test_StorageToPieceWiseLinearFunction():
 
-    sto = osim.Storage('storage.sto')
+    sto = osim.Storage(os.path.join(this_file_dir, 'storage.sto'))
     column_name = 'column1'
     scale_factor = 2.5
 
