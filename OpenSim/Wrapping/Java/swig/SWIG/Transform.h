@@ -45,10 +45,14 @@ namespace SimTK {
 template <class P> class Transform_;
 template <class P> class InverseTransform_;
 
+#ifdef SWIG
+typedef Transform_<double>    Transform;
+typedef InverseTransform_<double> InverseTransform;
+#else
 typedef Transform_<Real>    Transform;
 typedef Transform_<float>   fTransform;
 typedef Transform_<double>  dTransform;
-
+#endif
 
 //-----------------------------------------------------------------------------
 /**
