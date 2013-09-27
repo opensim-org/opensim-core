@@ -637,10 +637,10 @@ public:
     just the object's name. **/
 	const std::string& toString() const;
 
+    #ifndef SWIG
 	/** OBSOLETE: Get a reference to the PropertySet maintained by the 
     Object. **/
 	PropertySet& getPropertySet() { return _propertySet; }
-    #ifndef SWIG
 	const PropertySet& getPropertySet() const { return _propertySet; }
     #endif
 
