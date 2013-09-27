@@ -211,6 +211,8 @@
 
 #include <OpenSim/Simulation/Solver.h>
 #include <OpenSim/Simulation/AssemblySolver.h>
+#include <OpenSim/Simulation/MarkersReference.h>
+#include <OpenSim/Simulation/CoordinateReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Tools/DynamicsTool.h>
 #include <OpenSim/Tools/InverseDynamicsTool.h>
@@ -951,6 +953,16 @@ namespace SimTK {
 %include <OpenSim/Tools/ScaleTool.h>
 %include <OpenSim/Simulation/Solver.h>
 %include <OpenSim/Simulation/AssemblySolver.h>
+%include <OpenSim/Simulation/Reference.h>
+
+%template(ReferenceVec3) OpenSim::Reference_<SimTK::Vec3>;
+%template(ReferenceDouble) OpenSim::Reference_<double>;
+%template(ArrayCoordinateReference) SimTK::Array_<OpenSim::CoordinateReference>;
+%template(SimTKArrayDouble) SimTK::Array_<double>;
+%template(SimTKArrayVec3) SimTK::Array_<SimTK::Vec3>;
+
+%include <OpenSim/Simulation/MarkersReference.h>
+%include <OpenSim/Simulation/CoordinateReference.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
 %include <OpenSim/Tools/Tool.h>
 %include <OpenSim/Tools/DynamicsTool.h>
