@@ -655,6 +655,7 @@ namespace SimTK {
 namespace SimTK {
 %template(SpatialVec) Vec<2,   Vec3>;
 %template(VectorOfSpatialVec) Vector_<SpatialVec>;
+%template(VectorOfVec3) Vector_<Vec3>;
 }
 // Transform
 %include <SWIG/Transform.h>
