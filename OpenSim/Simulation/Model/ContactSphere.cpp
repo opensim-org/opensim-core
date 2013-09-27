@@ -88,4 +88,24 @@ SimTK::ContactGeometry ContactSphere::createSimTKContactGeometry()
     return SimTK::ContactGeometry::Sphere(_radius);
 }
 
+
+//=============================================================================
+// VISUALIZER GEOMETRY
+//=============================================================================
+void ContactSphere::generateDecorations(bool fixed, const ModelDisplayHints& hints, 
+    const SimTK::State& s, SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
+{
+    Super::generateDecorations(fixed, hints, s, geometry); 
+
+    // There is no fixed geometry to generate here.
+    if (fixed) { return; }
+
+    geometry.push_back(SimTK::DecorativeSphere(getRadius())
+                           .setTransform(Transform(getLocation()))
+                           //.setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+                           .setBodyId(getBody().getIndex())
+                           .setColor(SimTK::Vec3(0,1,0))
+                           .setOpacity(0.5));
+}
+
 } // end of namespace OpenSim

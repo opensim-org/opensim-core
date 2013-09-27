@@ -99,6 +99,11 @@ private:
 	void setNull();
 	void setupProperties();
 
+    // VISUALIZATION
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints, 
+        const SimTK::State& s, 
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const OVERRIDE_11;
+
 //=============================================================================
 };	// END of class ContactSphere
 //=============================================================================
