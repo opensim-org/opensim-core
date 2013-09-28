@@ -289,13 +289,13 @@ void initializeSubsystem(SubsystemIndex, const String& name,
 /// been realized to Model stage, then we don't copy its state
 /// variables either, except those associated with the Topology stage.
 State(const State&);
-
+#ifndef SWIG
 /// Make the current State a copy of the source state, copying only
 /// state variables and not the cache. If the source state hasn't
 /// been realized to Model stage, then we don't copy its state
 /// variables either, except those associated with the Topology stage.
 State& operator=(const State&);
-
+#endif
 /// Register a new subsystem as a client of this State. The
 /// supplied strings are stored with the State but are not
 /// interpreted by it. The intent is that they can be used to

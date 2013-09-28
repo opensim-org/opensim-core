@@ -85,6 +85,7 @@ public:
         assert(LowestValid <= l && l <= HighestValid);
         level = Level(l);
     }
+#ifndef SWIG
     /** Stage will implicitly convert to int so you can use it as an index. **/
     operator int() const {return level;}
 
@@ -111,7 +112,7 @@ public:
     {   assert(level<HighestValid); level=Level(level+1); return prev(); }
     Stage operator--(int)     
     {   assert(level>LowestValid);  level=Level(level-1); return next(); }
-
+#endif
     /** Return the Stage following this one, with Stage::Infinity returned
     if this Stage is already at its highest value, Stage::Report. An exception
     is thrown if this Stage is already Stage::Infinity. **/

@@ -128,7 +128,7 @@ public:
     Transform_( const Vec<3,P>& p ) : R_BF(),  p_BF(p) { }
 
     // default copy, assignment, destructor
-
+#ifndef SWIG
     /// Assignment from InverseTransform. This means that the 
     /// transform we're assigning to must end up with the same @em meaning
     /// as the inverse transform X has, so we'll need to end up with:
@@ -150,7 +150,7 @@ public:
     template <int S>
     Transform_& operator-=(const Vec<3,P,S>& offset_B)
     {   p_BF -= offset_B; return *this; }
-
+#endif
     /// Assign a new value to this transform, explicitly providing
     /// the rotation and translation separately. We return a reference to
     /// the now-modified transform as though this were an assignment operator.

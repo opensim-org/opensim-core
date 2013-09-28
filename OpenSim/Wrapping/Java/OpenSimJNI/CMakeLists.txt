@@ -11,10 +11,14 @@ IF(JAVA_INCLUDE_PATH)
 # Run command to generate OpenSimJNI_wrap.cxx
 SET(swig_generated_file_fullname ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/OpenSimJNI_wrap.cxx)
 SET(swig_interface_file_fullname ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/Java/swig/javaWrapOpenSim.i)
+SET(SWIG_OUTPUT_DIR ${OpenSim_SOURCE_DIR}/Gui/opensim/modeling/src
+	CACHE PATH
+	"Directory, under which to generate .java files")
+
 SET(SimTK_INCLUDE_PATH ${SIMTK_INCLUDE_DIR})		
 
-ADD_CUSTOM_TARGET(JavaWrap ${SWIG_EXECUTABLE} -v -c++ -java -package org.opensim.modeling -I${OpenSim_SOURCE_DIR} -I${Simbody_INCLUDE_DIR} 
-	-o ${swig_generated_file_fullname} -outdir ${OpenSim_SOURCE_DIR}/Gui/opensim/modeling/src/org/opensim/modeling ${swig_interface_file_fullname})
+ADD_CUSTOM_TARGET(JavaWrap ${SWIG_EXECUTABLE} -v -c++ -java -package org.opensim.modeling -I${OpenSim_SOURCE_DIR} -I${Simbody_INCLUDE_DIR} -I${OpenSim_SOURCE_DIR}/OpenSim/Wrapping
+	-o ${swig_generated_file_fullname} -outdir ${SWIG_OUTPUT_DIR}/org/opensim/modeling ${swig_interface_file_fullname})
 SET_TARGET_PROPERTIES(JavaWrap PROPERTIES PROJECT_LABEL "Java Bindings - Generate")
 
 

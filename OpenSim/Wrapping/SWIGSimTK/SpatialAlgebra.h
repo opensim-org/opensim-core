@@ -722,7 +722,7 @@ transpose(const PhiMatrix& phi)
     PhiMatrixTranspose ret(phi);
     return ret;
 }
-
+#ifndef SWIG
 inline PhiMatrixTranspose
 operator~(const PhiMatrix& phi) {return transpose(phi);}
 
@@ -781,6 +781,7 @@ operator==(const PhiMatrixTranspose& p1, const PhiMatrixTranspose& p2)
 {
     return p1.l() == p2.l();
 }
+#endif
 } // namespace SimTK
 
 #endif // SimTK_SIMMATRIX_SPATIAL_ALGEBRA_H_

@@ -279,7 +279,7 @@ inline bool signbit(long double l) {return (*reinterpret_cast<unsigned long long
 
 namespace SimTK {
 
-
+#ifndef SWIG
 // This utility answers the question "if I put this integral value in an int and then
 // get it back, will its value be the same?".
 inline bool canStoreInInt(bool)            {return true;}
@@ -294,7 +294,7 @@ inline bool canStoreInInt(long i)          {return long(int(i)) == i;}
 inline bool canStoreInInt(unsigned long u) {return (unsigned long)(int(u)) == u;}
 inline bool canStoreInInt(long long i)          {return (long long)(int(i)) == i;}
 inline bool canStoreInInt(unsigned long long u) {return (unsigned long long)(int(u)) == u;}
-
+#endif
 // This utility answers the question "is this integral value a nonnegative number
 // that can be stored in an int?".
 inline bool canStoreInNonnegativeInt(bool)             {return true;}

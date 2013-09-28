@@ -1875,6 +1875,7 @@ void assign(const Iter& first, const Iter& last1) {
                    "Array_<T>::assign(Iter first, Iter last1)");
 }
 
+#ifndef SWIG
 /** Copy assignment operator destructs the current contents of this array and 
 then makes it a copy of the source array by repeated calls to the element 
 type's copy constructor. At most one reallocation of heap space occurs that 
@@ -1913,7 +1914,7 @@ Array_& operator=(const std::vector<T2,A>& src) {
                            "Array_<T>::operator=(std::vector)");
     return *this;
 }
-
+#endif
 /** This is a specialized algorithm providing constant time exchange of data 
 with another array that has identical element and index types. This is \e much 
 faster than using the std::swap() algorithm on the arrays since that would
@@ -2272,11 +2273,12 @@ not be empty.
 @par Complexity:
     Constant time. **/
 T& back() {return const_cast<T&>(this->Base::back());}
-
+#ifndef SWIG
 /** Select a subrange of this const array by starting index and length, and
 return a ArrayViewConst_ referencing that data without copying it. **/
 ArrayViewConst_<T,X> operator()(index_type index, size_type length) const
 {   return CBase::operator()(index,length); }
+
 /** Same as const form of operator()(index,length); exists to provide 
 non-operator access to that functionality in case it is needed. **/
 ArrayViewConst_<T,X> getSubArray(index_type index, size_type length) const
@@ -2286,6 +2288,7 @@ ArrayViewConst_<T,X> getSubArray(index_type index, size_type length) const
 return an ArrayView_ referencing that data without copying it. **/
 ArrayView_<T,X> operator()(index_type index, size_type length)
 {   return Base::operator()(index,length); }
+#endif
 /** Same as non-const operator()(index,length); exists to provide non-operator
 access to that functionality in case it is needed. **/
 ArrayView_<T,X> updSubArray(index_type index, size_type length)

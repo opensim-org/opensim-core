@@ -258,6 +258,7 @@ public:
         for (int j=0; j<N; ++j)
             (*this)(j) = src(j);
     }
+#ifndef SWIG
     /** Copy assignment copies only the elements that are present and does
     not touch any unused memory space between them if they are not packed. 
     Works correctly even if source and destination are the same object. **/
@@ -266,7 +267,7 @@ public:
            (*this)(j) = src(j); // no harm if src and 'this' are the same
         return *this;
     }
-#ifndef SWIG
+
     /** Explicit construction of a Mat from a SymMat (symmetric/Hermitian 
     matrix). Note that a SymMat is a Hermitian matrix when the elements are 
     complex, so in that case the resulting Mat's upper triangle values are 
