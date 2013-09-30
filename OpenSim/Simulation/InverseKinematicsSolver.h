@@ -128,7 +128,7 @@ public:
 	    from tasks file or listed in the model. Retrun the corresponding marker
 		name for an index in the list of marker locations/errors returned by the
 		solver. */
-	SimTK::String getMarkerNameForIndex(int markerIndex) const;
+	std::string getMarkerNameForIndex(int markerIndex) const;
 
 protected:
 	/** Internal method to convert the CoordinateReferences into goals of the 

@@ -195,7 +195,7 @@ void InverseKinematicsSolver::computeCurrentSquaredMarkerErrors(SimTK::Array_<do
 }
 
 /** Marker errors are reported in order different from tasks file or model, find name corresponding to passed in index  */
-SimTK::String InverseKinematicsSolver::getMarkerNameForIndex(int markerIndex) const
+std::string InverseKinematicsSolver::getMarkerNameForIndex(int markerIndex) const
 {
 	return _markerAssemblyCondition->getMarkerName(SimTK::Markers::MarkerIx(markerIndex));
 }
