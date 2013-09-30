@@ -145,7 +145,7 @@ public:
 
     /** Sets \c default_activation to the current value of the activation state
         variable. **/
-    void setPropertiesFromState(SimTK::State& s) OVERRIDE_11;
+    void setPropertiesFromState(const SimTK::State& s) OVERRIDE_11;
 
     /** Calculates the time derivative of activation using a first-order dynamic
         model. Respects the lower bound on activation while preserving the

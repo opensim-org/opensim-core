@@ -89,7 +89,8 @@ initStateFromProperties(SimTK::State& s) const
     setActivation(s, getDefaultActivation());
 }
 
-void FirstOrderMuscleActivationDynamics::setPropertiesFromState(SimTK::State& s)
+void FirstOrderMuscleActivationDynamics::
+setPropertiesFromState(const SimTK::State& s)
 {
     Super::setPropertiesFromState(s);
     setDefaultActivation(getActivation(s));
