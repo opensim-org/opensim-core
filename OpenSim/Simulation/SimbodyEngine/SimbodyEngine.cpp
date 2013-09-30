@@ -64,8 +64,7 @@ SimbodyEngine::~SimbodyEngine()
 }
 //_____________________________________________________________________________
 /**
- * Default constructor.  This constructor constructs a dynamic model of a
- * simple pendulum.
+ * Default constructor.  
  */
 SimbodyEngine::SimbodyEngine() :
     Object()
