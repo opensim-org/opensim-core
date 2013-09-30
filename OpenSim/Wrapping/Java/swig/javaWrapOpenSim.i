@@ -818,15 +818,6 @@ namespace SimTK {
 %include <OpenSim/Simulation/Wrap/WrapSphereObst.h>
 %include <OpenSim/Simulation/Wrap/WrapDoubleCylinderObst.h>
 
-%include <OpenSim/Simulation/SimbodyEngine/Body.h>
-%template(SetBodies) OpenSim::Set<OpenSim::Body>;
-%template(ModelComponentSetBodies) OpenSim::ModelComponentSet<OpenSim::Body>;
-%include <OpenSim/Simulation/Model/BodySet.h>
-
-%include <OpenSim/Simulation/Model/BodyScale.h>
-%template(SetBodyScales) OpenSim::Set<OpenSim::BodyScale>;
-%include <OpenSim/Simulation/Model/BodyScaleSet.h>
-
 %include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 %include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
 %include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
@@ -846,6 +837,15 @@ namespace SimTK {
 %include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
+
+%include <OpenSim/Simulation/SimbodyEngine/Body.h>
+%template(SetBodies) OpenSim::Set<OpenSim::Body>;
+%template(ModelComponentSetBodies) OpenSim::ModelComponentSet<OpenSim::Body>;
+%include <OpenSim/Simulation/Model/BodySet.h>
+
+%include <OpenSim/Simulation/Model/BodyScale.h>
+%template(SetBodyScales) OpenSim::Set<OpenSim::BodyScale>;
+%include <OpenSim/Simulation/Model/BodyScaleSet.h>
 
 %template(SetJoints) OpenSim::Set<OpenSim::Joint>;
 %template(ModelComponentSetJoints) OpenSim::ModelComponentSet<OpenSim::Joint>;
