@@ -1193,7 +1193,18 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 			break;
 		// BoolArray
 		case(Property_Deprecated::BoolArray) :
-			UpdateXMLNodeArrayProperty<bool>(prop,myObjectElement,name);
+			// print array as String and add it as such to element
+			//UpdateXMLNodeArrayProperty<bool>(prop,myObjectElement,name); BoolArray Handling on Write
+			stringValue = "";
+			{
+				int n = prop->getArraySize();
+				const Array<bool> &valueBs = prop->getValueArray<bool>();
+				for (int i=0; i<valueBs.size(); ++i) 
+					stringValue += (valueBs[i]?"true ":"false ");
+
+				SimTK::Xml::Element elt(prop->getName(), stringValue);
+				myObjectElement.insertNodeAfter(myObjectElement.node_end(), elt);
+			}
 			break;
 		// IntArray
 		case(Property_Deprecated::IntArray) :
