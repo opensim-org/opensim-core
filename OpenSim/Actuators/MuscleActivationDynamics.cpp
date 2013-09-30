@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2013 Stanford University and the Authors                *
- * Author(s): Thomas Uchida, Ajay Seth                                        *
+ * Author(s): Thomas Uchida, Ajay Seth, Michael Sherman                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,15 +23,12 @@
 
 #include "MuscleActivationDynamics.h"
 
-//==============================================================================
-// STATICS
-//==============================================================================
 using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
 //==============================================================================
-// CONSTRUCTORS
+// CONSTRUCTORS AND DESTRUCTOR
 //==============================================================================
 MuscleActivationDynamics::MuscleActivationDynamics()
 {
@@ -40,104 +37,76 @@ MuscleActivationDynamics::MuscleActivationDynamics()
     setName("default_MuscleActivationDynamics");
 }
 
-MuscleActivationDynamics::MuscleActivationDynamics(Muscle* muscle,
-                                                   double minimumActivation,
-                                                   double maximumActivation,
-                                                   double defaultActivation,
-                                                   const std::string& name)
+MuscleActivationDynamics::MuscleActivationDynamics(const std::string& name,
+                                                   ExcitationGetter* getter)
 {
     setNull();
     constructProperties();
-
-    setMuscle(muscle);
-    setMinimumActivation(minimumActivation);
-    setMaximumActivation(maximumActivation);
-    setDefaultActivation(defaultActivation);
     setName(name);
+    setExcitationGetter(getter);
+}
+
+MuscleActivationDynamics::~MuscleActivationDynamics()
+{
+    delete _excitationGetter;
 }
 
 //==============================================================================
 // ACCESSORS AND MUTATORS
 //==============================================================================
-const Muscle* MuscleActivationDynamics::getMuscle() const
-{   return m_muscle; }
-
 double MuscleActivationDynamics::getMinimumActivation() const
 {   return get_minimum_activation(); }
-
 double MuscleActivationDynamics::getMaximumActivation() const
 {   return get_maximum_activation(); }
-
 double MuscleActivationDynamics::getDefaultActivation() const
 {   return get_default_activation(); }
 
-void MuscleActivationDynamics::setMuscle(Muscle* muscle)
-{   m_muscle = muscle; }
-
 void MuscleActivationDynamics::setMinimumActivation(double minimumActivation)
 {
-    // Minimum must be in the interval [0,maximum].
     set_minimum_activation( clamp(0,minimumActivation,getMaximumActivation()) );
-    // Ensure default remains in the interval [minimum,maximum].
-    setDefaultActivation(getDefaultActivation());
+    set_default_activation( clampToValidInterval(getDefaultActivation()) );
 }
 
 void MuscleActivationDynamics::setMaximumActivation(double maximumActivation)
 {
-    // Maximum must be in the interval [minimum,1].
     set_maximum_activation( clamp(getMinimumActivation(),maximumActivation,1) );
-    // Ensure default remains in the interval [minimum,maximum].
-    setDefaultActivation(getDefaultActivation());
+    set_default_activation( clampToValidInterval(getDefaultActivation()) );
 }
 
 void MuscleActivationDynamics::setDefaultActivation(double defaultActivation)
 {
-    // Default must be in the interval [minimum,maximum].
-    set_default_activation( clamp(getMinimumActivation(),
-                                  defaultActivation,
-                                  getMaximumActivation()) );
+    set_default_activation(clampToValidInterval(defaultActivation));
 }
 
-//==============================================================================
-// MODELCOMPONENT INTERFACE REQUIREMENTS
-//==============================================================================
-void MuscleActivationDynamics::connectToModel(Model& model)
+void MuscleActivationDynamics::setExcitationGetter(ExcitationGetter* getter)
 {
-    Super::connectToModel(model);
-    if(!m_muscle)
-        throw OpenSim::Exception("MuscleActivationDynamics::connectToModel() "
-                                 "requires a valid Muscle pointer to proceed.");
+    delete _excitationGetter;
+    _excitationGetter = getter;
 }
 
 //==============================================================================
 // STATE-DEPENDENT METHODS
 //==============================================================================
-double MuscleActivationDynamics::getActivation(const SimTK::State& s) const
+double MuscleActivationDynamics::getExcitation(const SimTK::State& s) const
 {
-    if(!m_muscle)
-        throw OpenSim::Exception("MuscleActivationDynamics::getActivation() "
-                                 "requires a valid Muscle pointer to proceed.");
-    return m_muscle->getControl(s);
+    if(!_excitationGetter)
+        return 0;
+    return _excitationGetter->getExcitation(s);
 }
 
-void MuscleActivationDynamics::setActivation(SimTK::State& s,
-                                             double activation) const
-{
-    if(!m_muscle)
-        throw OpenSim::Exception("MuscleActivationDynamics::setActivation() "
-                                 "requires a valid Muscle pointer to proceed.");
-    SimTK::Vector& controls(m_muscle->getModel().updControls(s));
-    m_muscle->setControls(SimTK::Vector(1,activation), controls);
-    m_muscle->getModel().setControls(s,controls);
-}
+//==============================================================================
+// PROTECTED METHODS
+//==============================================================================
+double MuscleActivationDynamics::clampToValidInterval(double val) const
+{   return clamp(getMinimumActivation(),val,getMaximumActivation()); }
 
 //==============================================================================
 // PRIVATE METHODS
 //==============================================================================
 void MuscleActivationDynamics::setNull()
 {
-    setAuthors("Thomas Uchida, Ajay Seth");
-    setMuscle(NULL);
+    setAuthors("Thomas Uchida, Ajay Seth, Michael Sherman");
+    _excitationGetter = NULL;
 }
 
 void MuscleActivationDynamics::constructProperties()

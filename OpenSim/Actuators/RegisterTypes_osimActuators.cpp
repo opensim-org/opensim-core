@@ -56,7 +56,9 @@
 #include "Millard2012EquilibriumMuscle.h"
 #include "Millard2012AccelerationMuscle.h"
 
-#include "MuscleActivationDynamics.h"
+//#include "ConstantMuscleActivation.h"
+//#include "ZerothOrderMuscleActivationDynamics.h"
+//#include "FirstOrderMuscleActivationDynamics.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -100,7 +102,9 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
     Object::RegisterType(Millard2012EquilibriumMuscle());
     Object::RegisterType(Millard2012AccelerationMuscle());
 
-    Object::RegisterType( MuscleActivationDynamics() );
+    //Object::RegisterType( ConstantMuscleActivation() );
+    //Object::RegisterType( ZerothOrderMuscleActivationDynamics() );
+    //Object::RegisterType( FirstOrderMuscleActivationDynamics() );
 
 	// OLD Versions
 	//Associate an instance with old name to help deserialization

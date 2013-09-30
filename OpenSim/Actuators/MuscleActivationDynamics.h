@@ -1,5 +1,5 @@
-#ifndef OPENSIM_MUSCLEACTIVATIONDYNAMICS_H_
-#define OPENSIM_MUSCLEACTIVATIONDYNAMICS_H_
+#ifndef OPENSIM_MUSCLE_ACTIVATION_DYNAMICS_H_
+#define OPENSIM_MUSCLE_ACTIVATION_DYNAMICS_H_
 /* -------------------------------------------------------------------------- *
  *                    OpenSim:  MuscleActivationDynamics.h                    *
  * -------------------------------------------------------------------------- *
@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2013 Stanford University and the Authors                *
- * Author(s): Thomas Uchida, Ajay Seth                                        *
+ * Author(s): Thomas Uchida, Ajay Seth, Michael Sherman                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -26,14 +26,12 @@
 #include "Simbody.h"
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
 
 namespace OpenSim {
-/** A base class for modeling muscle activation dynamics. This class implements
-    a zeroth-order model, simply setting activation to excitation. Activation
-    models can be derived from this base class by overriding the getActivation()
-    and setActivation() virtual methods.
+/** An abstract class for modeling muscle activation dynamics. Activation models
+    that derive from this base class are responsible for creating and
+    maintaining whatever states and/or cache variables they require to override
+    the getActivation() and setActivation() pure virtual methods.
 
     <b>Properties</b>
     \li \c minimum_activation: Smallest permitted activation value.
@@ -52,11 +50,21 @@ namespace OpenSim {
     default_activation .... 0.5
     \endverbatim
 
-    @author Thomas Uchida, Ajay Seth
+    @author Thomas Uchida, Ajay Seth, Michael Sherman
 **/
+
 class OSIMACTUATORS_API MuscleActivationDynamics : public ModelComponent {
-OpenSim_DECLARE_CONCRETE_OBJECT(MuscleActivationDynamics, ModelComponent);
+OpenSim_DECLARE_ABSTRACT_OBJECT(MuscleActivationDynamics, ModelComponent);
 public:
+    /** The %ExcitationGetter abstract class defines a standard interface for
+        supplying muscle excitation to activation models. Each muscle must
+        provide an implementation of this class that overrides the pure virtual
+        getExcitation() method. **/
+    class ExcitationGetter {
+    public:
+        virtual ~ExcitationGetter() {}
+        virtual double getExcitation(const SimTK::State& s) const = 0;
+    };
 
 //==============================================================================
 // PROPERTIES
@@ -75,19 +83,23 @@ public:
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-    /** @name Constructors **/
+    /** @name Constructors and Destructor **/
     //@{
 
-    /** Default constructor. Creates an activation dynamic model with the
-        default property values and assigns it a default name. **/
+    /** Creates an activation dynamic model with the default property values and
+        assigns it a default name. An %ExcitationGetter must be created for
+        obtaining muscle excitation. **/
     MuscleActivationDynamics();
 
-    /** Creates an activation dynamic model using the provided properties. **/
-    MuscleActivationDynamics(Muscle* muscle,
-                             double minimumActivation,
-                             double maximumActivation,
-                             double defaultActivation,
-                             const std::string& name);
+    /** Creates an activation dynamic model with the default property values,
+        the specified name, and the specified %ExcitationGetter. Takes ownership
+        of the %ExcitationGetter object. **/
+    MuscleActivationDynamics(const std::string& name,
+                             ExcitationGetter* getter);
+
+    /** Deletes the %ExcitationGetter object. **/
+    ~MuscleActivationDynamics();
+
     //@}
 
     //--------------------------------------------------------------------------
@@ -96,42 +108,51 @@ public:
     /** @name Accessors and Mutators **/
     //@{
 
-    /** Get/set a pointer to the Muscle to which this activation dynamic model
-        belongs. **/
-    const Muscle* getMuscle() const;
-    virtual void setMuscle(Muscle* muscle);
-
-    /** Get/set the smallest permitted activation value. **/
+    /** Get the smallest permitted activation value. **/
     double getMinimumActivation() const;
-    virtual void setMinimumActivation(double minimumActivation);
+    /** %Set the smallest permitted activation value. Clamps minimum_activation
+        to the interval [0, maximum_activation] and default_activation to the
+        interval [minimum_activation, maximum_activation]. **/
+    void setMinimumActivation(double minimumActivation);
 
-    /** Get/set the largest permitted activation value. **/
+    /** Get the largest permitted activation value. **/
     double getMaximumActivation() const;
-    virtual void setMaximumActivation(double maximumActivation);
+    /** %Set the largest permitted activation value. Clamps maximum_activation
+        to the interval [minimum_activation, 1] and default_activation to the
+        interval [minimum_activation, maximum_activation]. **/
+    void setMaximumActivation(double maximumActivation);
 
-    /** Get/set the default activation value. **/
+    /** Get the default activation value. **/
     double getDefaultActivation() const;
-    virtual void setDefaultActivation(double defaultActivation);
+    /** %Set the default activation value. Clamps default_activation to the
+        interval [minimum_activation, maximum_activation]. **/
+    void setDefaultActivation(double defaultActivation);
 
-    //@}
-
-    //--------------------------------------------------------------------------
-    // MODELCOMPONENT INTERFACE REQUIREMENTS
-    //--------------------------------------------------------------------------
-    /** @name ModelComponent Interface Requirements **/
-    //@{
-
-    /** Ensures Muscle pointer has been set. **/
-    virtual void connectToModel(Model& model) OVERRIDE_11;
+    /** Define an %ExcitationGetter for obtaining muscle excitation. Takes
+        ownership of the %ExcitationGetter object. **/
+    void setExcitationGetter(ExcitationGetter* getter);
 
     //@}
 
     //--------------------------------------------------------------------------
     // STATE-DEPENDENT METHODS
     //--------------------------------------------------------------------------
-    /** Get/set the current activation level. **/
-    virtual double getActivation(const SimTK::State& s) const;
-    virtual void setActivation(SimTK::State& s, double activation) const;
+    /** Get the current activation. **/
+    virtual double getActivation(const SimTK::State& s) const = 0;
+
+    /** %Set activation to the value provided. **/
+    virtual void setActivation(SimTK::State& s, double activation) const = 0;
+
+    /** Get the muscle excitation using the %ExcitationGetter object. Returns
+        zero if no %ExcitationGetter exists. **/
+    double getExcitation(const SimTK::State& s) const;
+
+//==============================================================================
+// PROTECTED METHODS
+//==============================================================================
+protected:
+    /** Clamp to the interval [minimum_activation, maximum_activation]. **/
+    double clampToValidInterval(double val) const;
 
 //==============================================================================
 // PRIVATE METHODS
@@ -140,10 +161,9 @@ private:
     void setNull();
     void constructProperties();
 
-    // Pointer to Muscle is required to get/set Control.
-    Muscle* m_muscle;
+    ExcitationGetter* _excitationGetter;
 
 }; // end of class MuscleActivationDynamics
 }  // end of namespace OpenSim
 
-#endif //OPENSIM_MUSCLEACTIVATIONDYNAMICS_H_
+#endif //OPENSIM_MUSCLE_ACTIVATION_DYNAMICS_H_
