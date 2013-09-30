@@ -16,7 +16,7 @@ SET(swig_interface_file_fullname
 SET(SimTK_INCLUDE_PATH ${SIMTK_INCLUDE_DIR})
 
 ADD_CUSTOM_TARGET(PyWrap ${SWIG_EXECUTABLE} -v -c++ -python
-    -I${OpenSim_SOURCE_DIR} -I${Simbody_INCLUDE_DIR}
+    -I${OpenSim_SOURCE_DIR} -I${Simbody_INCLUDE_DIR} -I${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/
 	-o ${swig_generated_file_fullname}
     -outdir ${CMAKE_CURRENT_BINARY_DIR} ${swig_interface_file_fullname})
 

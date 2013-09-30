@@ -211,6 +211,8 @@
 
 #include <OpenSim/Simulation/Solver.h>
 #include <OpenSim/Simulation/AssemblySolver.h>
+#include <OpenSim/Simulation/MarkersReference.h>
+#include <OpenSim/Simulation/CoordinateReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Tools/DynamicsTool.h>
 #include <OpenSim/Tools/InverseDynamicsTool.h>
@@ -229,7 +231,8 @@ using namespace SimTK;
 %}
 
 %feature("director") OpenSim::AnalysisWrapper;
-
+%feature("director") OpenSim::SimtkLogCallback;
+%feature("director") SimTK::DecorativeGeometryImplementation;
 %feature("notabstract") ControlLinear;
 
 /** Pass Doxygen documentation to python wrapper */
@@ -636,19 +639,19 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %include <SimTKcommon.h>
 
 %include <SimTKcommon/Constants.h>
-%include <SWIG/Vec.h>
+%include <SWIGSimTK/Vec.h>
 %include <SimTKcommon/SmallMatrix.h>
 // Vec3
 namespace SimTK {
 %template(Vec3) Vec<3>;
 }
 // Mat33
-%include <SWIG/Mat.h>
+%include <SWIGSimTK/Mat.h>
 namespace SimTK {
 %template(Mat33) Mat<3, 3>;
 }
 // Vector and Matrix
-%include <SWIG/BigMatrix.h>
+%include <SWIGSimTK/BigMatrix.h>
 namespace SimTK {
 %template(MatrixBaseDouble) SimTK::MatrixBase<double>;
 %template(VectorBaseDouble) SimTK::VectorBase<double>;
@@ -656,26 +659,37 @@ namespace SimTK {
 %template(Matrix) SimTK::Matrix_<double>;
 }
 
-%include <SWIG/SpatialAlgebra.h>
+%include <SWIGSimTK/SpatialAlgebra.h>
 namespace SimTK {
 %template(SpatialVec) Vec<2,   Vec3>;
 %template(VectorOfSpatialVec) Vector_<SpatialVec>;
 }
 // Transform
-%include <SWIG/Transform.h>
+%include <SWIGSimTK/Transform.h>
 namespace SimTK {
 %template(Transform) SimTK::Transform_<double>;
 }
 
-%include <SWIG/MassProperties.h>
+%include <SWIGSimTK/MassProperties.h>
 namespace SimTK {
 %template(Inertia) SimTK::Inertia_<double>;
 %template(MassProperties) SimTK::MassProperties_<double>;
 }
+%include <SWIGSimTK/common.h>
+%include <SWIGSimTK/Array.h>
+%include <SWIGSimTK/DecorativeGeometry.h>
+%extend SimTK::Array_<SimTK::DecorativeGeometry> {
+	int getSizeAsInt() {
+		return self->size();
+	}
+}
+namespace SimTK {
+%template(ArrayDecorativeGeometry) SimTK::Array_<SimTK::DecorativeGeometry>;
+}
 
 // State & Stage
-%include <SWIG/Stage.h>
-%include <SWIG/State.h>
+%include <SWIGSimTK/Stage.h>
+%include <SWIGSimTK/State.h>
 
 // osimCommon Library
 %include <OpenSim/Common/osimCommonDLL.h>
@@ -928,6 +942,7 @@ namespace SimTK {
 %include <OpenSim/Tools/osimToolsDLL.h>
 %include <OpenSim/Tools/IKTask.h>
 %template(SetIKTasks) OpenSim::Set<OpenSim::IKTask>;
+%template(SetMarkerWeights) OpenSim::Set<MarkerWeight>;
 %include <OpenSim/Tools/IKMarkerTask.h>
 %include <OpenSim/Tools/IKCoordinateTask.h>
 %include <OpenSim/Tools/IKTaskSet.h>
@@ -943,6 +958,16 @@ namespace SimTK {
 %include <OpenSim/Tools/ScaleTool.h>
 %include <OpenSim/Simulation/Solver.h>
 %include <OpenSim/Simulation/AssemblySolver.h>
+%include <OpenSim/Simulation/Reference.h>
+
+%template(ReferenceVec3) OpenSim::Reference_<SimTK::Vec3>;
+%template(ReferenceDouble) OpenSim::Reference_<double>;
+%template(ArrayCoordinateReference) SimTK::Array_<OpenSim::CoordinateReference>;
+%template(SimTKArrayDouble) SimTK::Array_<double>;
+%template(SimTKArrayVec3) SimTK::Array_<SimTK::Vec3>;
+
+%include <OpenSim/Simulation/MarkersReference.h>
+%include <OpenSim/Simulation/CoordinateReference.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
 %include <OpenSim/Tools/Tool.h>
 %include <OpenSim/Tools/DynamicsTool.h>
