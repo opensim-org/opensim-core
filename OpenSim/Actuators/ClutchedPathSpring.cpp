@@ -46,14 +46,15 @@ ClutchedPathSpring::ClutchedPathSpring()
 	constructProperties();
 }
 
-ClutchedPathSpring::ClutchedPathSpring(const string& name, 
-			double stiffness, double dissipation, double relaxationTau)
+ClutchedPathSpring::ClutchedPathSpring(const string& name, double stiffness,
+					double dissipation, double relaxationTau, double stretch0)
 {
 	constructProperties();
 	setName(name);
 	set_stiffness(stiffness);
 	set_dissipation(dissipation);
 	set_relaxation_time_constant(relaxationTau);
+	set_initial_stretch(stretch0);
 }
 
 //_____________________________________________________________________________
@@ -66,7 +67,7 @@ void ClutchedPathSpring::constructProperties()
 	constructProperty_stiffness(SimTK::NaN);
 	constructProperty_dissipation(SimTK::NaN);
 	constructProperty_relaxation_time_constant(0.001); //1ms
-
+	constructProperty_initial_stretch(0.0);
 	setMinControl(0.0);
 	setMaxControl(1.0);
 
@@ -90,6 +91,14 @@ void ClutchedPathSpring::setDissipation(double dissipation)
 	set_dissipation(dissipation);
 }
 
+//_____________________________________________________________________________
+/*
+ * Set the initial stretch.
+ */
+void ClutchedPathSpring::setInitialStretch(double stretch0)
+{
+	set_initial_stretch(stretch0);
+}
 
 //_____________________________________________________________________________
 /**
@@ -102,6 +111,40 @@ void ClutchedPathSpring::setDissipation(double dissipation)
 	// if the stretch state changes
 	addStateVariable("stretch");
 }
+
+ void ClutchedPathSpring::initStateFromProperties(SimTK::State& state) const
+ {
+	 setStateVariable(state, "stretch", get_initial_stretch());
+ }
+
+ void ClutchedPathSpring::setPropertiesFromState(const SimTK::State& state)
+ {
+	 set_initial_stretch(getStretch(state));
+ }
+ 
+ Array<std::string> ClutchedPathSpring::getStateVariableNames() const
+ {
+	 Array<std::string> stateVariableNames = ModelComponent::getStateVariableNames();
+	 // Make state variable names unique to this muscle
+	 for(int i=0; i<stateVariableNames.getSize(); ++i){
+		 stateVariableNames[i] = getName()+"."+stateVariableNames[i];
+	 }
+	 return stateVariableNames;
+ }
+
+ SimTK::SystemYIndex ClutchedPathSpring::
+	 getStateVariableSystemIndex(const string& stateVariableName) const
+ {
+	 unsigned start = (unsigned)stateVariableName.find(".");
+	 unsigned end = (unsigned)stateVariableName.length();
+
+	 if(start == end)
+		 return ModelComponent::getStateVariableSystemIndex(stateVariableName);
+	 else{
+		 string localName = stateVariableName.substr(++start, end-start);
+		 return ModelComponent::getStateVariableSystemIndex(localName);
+	 }
+ }
 
 
 //=============================================================================

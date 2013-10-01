@@ -31,11 +31,11 @@ namespace OpenSim {
 
 /**
  * The ClutchedPathSpring is an actuator that has passive path spring behavior
- * only when the clutch is engaged. The clucth is engaged by a control signal 
+ * only when the clutch is engaged. The clutch is engaged by a control signal 
  * of 1 and is off for a control signal of 0. Off means the spring is not 
  * engaged and the path is free to change length with the motion of the bodies 
  * it is connected to. The tension produced by the spring is proportional
- * to the stretch (s) from the instant that the clutch is engaged.
+ * to the stretch (z) from the instant that the clutch is engaged.
  *
  * The spring tension = x*(K*z)*(1+D*Ldot), where
  *		- x is the control signal to the actuator
@@ -73,6 +73,10 @@ public:
 		"The time constant (s) for the spring to relax (go slack) after the clutch "
 		"is disengaged (i.e. control == 0).  If the clutch is re-engaged within the " 
 		"relaxation period there will be residual tension in the spring.");
+	OpenSim_DECLARE_PROPERTY(initial_stretch, double,
+		"The initial stretch (m) of the spring element. Note if the clucth is "
+		"not engaged, the actuator will 'slip' until there is no stretch according "
+		"to the relaxation_time_constant.");
     /**@}**/
 
 //=============================================================================
@@ -84,9 +88,10 @@ public:
      * @param name          the name of a %ClutchedPathSpring instance
 	 * @param stiffness		the spring stiffness (K) in N/m
 	 * @param dissipation	the dissipation factor (D) in s/m 
-	 * @param relaxationTau	the spring relaxation time constant (Tau) in s */
-	ClutchedPathSpring(const std::string& name, 
-		double stiffness, double dissipation, double relaxationTau);
+	 * @param relaxationTau	the spring relaxation time constant (Tau) in s 
+	 * @param stretch0      the initial stretch of the spring in m */
+	ClutchedPathSpring(const std::string& name, double stiffness,
+		 double dissipation, double relaxationTau, double stretch0=0.0);
 
     // default destructor, copy constructor, copy assignment
 
@@ -99,6 +104,9 @@ public:
 	/** Spring dissipation factor in s/m when clutch is engaged. */
 	double getDissipation() const {   return get_dissipation(); }
 	void setDissipation(double dissipation);
+	/** Initial spring stretch in m. */
+	double getInitialStretch() {return get_initial_stretch(); }
+	void setInitialStretch(double stretch0);
 
 	//--------------------------------------------------------------------------
 	//  <B> State dependent values </B>
@@ -132,8 +140,14 @@ protected:
 
     /** Implement ModelComponent interface. */
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void initStateFromProperties(SimTK::State& state) const OVERRIDE_11;
+	void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
+	Array<std::string> getStateVariableNames() const OVERRIDE_11;
+	SimTK::SystemYIndex getStateVariableSystemIndex(
+							const std::string& stateVariableName) const OVERRIDE_11;
 
-	SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const;
+	SimTK::Vector computeStateVariableDerivatives(
+							const SimTK::State& s) const OVERRIDE_11;
 
 
 private:
