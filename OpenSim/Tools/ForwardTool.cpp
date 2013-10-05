@@ -26,7 +26,6 @@
 #include <OpenSim/Common/XMLDocument.h>
 #include "ForwardTool.h"
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/InterruptedException.h>
 
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
