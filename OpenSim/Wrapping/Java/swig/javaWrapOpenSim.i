@@ -311,6 +311,16 @@ using namespace SimTK;
 	}
 %}
 
+%extend  SimTK::DecorativeGeometry {
+	bool hasUserRef() const {
+		return (self->getUserRef()!=0);
+	}
+
+	OpenSim::Object& getUserRefAsObject() {
+		return *((OpenSim::Object*)self->getUserRef());
+	}
+}
+
 %javamethodmodifiers OpenSim::Model::addComponent "private";
 %javamethodmodifiers OpenSim::Model::addBody "private";
 %javamethodmodifiers OpenSim::Model::addConstraint "private";
@@ -665,6 +675,12 @@ namespace SimTK {
 %template(Transform) SimTK::Transform_<double>;
 }
 
+//%include <SWIGSimTK/CoordinateAxis.h>
+//%include <SWIGSimTK/Rotation.h>
+//namespace SimTK {
+//%template(Rotation) SimTK::Rotation_<double>;
+//}
+//
 %include <SWIGSimTK/MassProperties.h>
 namespace SimTK {
 %template(Inertia) SimTK::Inertia_<double>;
@@ -672,12 +688,16 @@ namespace SimTK {
 }
 %include <SWIGSimTK/common.h>
 %include <SWIGSimTK/Array.h>
-%include <SWIGSimTK/DecorativeGeometry.h>
-%extend SimTK::Array_<SimTK::DecorativeGeometry> {
-	int getSizeAsInt() {
-		return self->size();
-	}
+
+typedef int MobilizedBodyIndex;
+
+namespace SimTK {
+%template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>; 
+%template(ArrayIndexInt) ArrayIndexTraits<int>; 
 }
+
+%include <SWIGSimTK/DecorativeGeometry.h>
+
 namespace SimTK {
 %template(ArrayDecorativeGeometry) SimTK::Array_<SimTK::DecorativeGeometry>;
 }
