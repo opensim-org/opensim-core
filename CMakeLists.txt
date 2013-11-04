@@ -502,7 +502,6 @@ ADD_CUSTOM_TARGET (RUN_TESTS_PARALLEL
 ## an INSTALL procedure.
 INCLUDE(ApiDoxygen.cmake)
 
-IF(OPENSIM_INSTALL_PACKAGE_BUILD)
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenSim project")
 SET(CPACK_PACKAGE_VENDOR "Stanford University, National Center for Biomedical Computation")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt")
@@ -511,6 +510,19 @@ SET(CPACK_PACKAGE_VERSION_MAJOR "3")
 SET(CPACK_PACKAGE_VERSION_MINOR "1")
 SET(CPACK_PACKAGE_VERSION_PATCH "0")
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSim ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
+
+# Create sysinfo.txt file and place under sdk to include product version, platform and compiler for troubleshooting purposes
+SET(VERSION_FILE_PATH ${CMAKE_BINARY_DIR}/sysinfo.txt)
+# MESSAGE("version file="${VERSION_FILE_PATH})
+FILE(WRITE ${VERSION_FILE_PATH} "Product Version="${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR})
+FILE(APPEND  ${VERSION_FILE_PATH} "\n")
+FILE(APPEND  ${VERSION_FILE_PATH} "Compiler="${CMAKE_GENERATOR} )
+FILE(APPEND  ${VERSION_FILE_PATH} "\n")
+FILE(APPEND  ${VERSION_FILE_PATH} "Platform="${Platform}-${PLATFORM_ABI})
+FILE(APPEND  ${VERSION_FILE_PATH} "\n")
+INSTALL(FILES ${VERSION_FILE_PATH} DESTINATION sdk)
+
+IF(OPENSIM_INSTALL_PACKAGE_BUILD)
 IF(WIN32 AND NOT UNIX)
    # There is a bug in NSI that does not handle full unix paths properly. Make
    # sure there is at least one set of four (4) backlasshes.
