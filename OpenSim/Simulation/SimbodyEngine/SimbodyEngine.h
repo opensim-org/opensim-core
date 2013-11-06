@@ -142,7 +142,7 @@ public:
 	virtual void getAngularVelocityBodyLocal(const SimTK::State& s, const OpenSim::Body &aBody, SimTK::Vec3& rAngVel) const;
 	virtual void getAngularAcceleration(const SimTK::State& s, const OpenSim::Body &aBody, SimTK::Vec3& rAngAcc) const;
 	virtual void getAngularAccelerationBodyLocal(const SimTK::State& s, const OpenSim::Body &aBody, SimTK::Vec3& rAngAcc) const;
-	virtual Transform getTransform(const SimTK::State& s, const OpenSim::Body &aBody) const;
+	virtual SimTK::Transform getTransform(const SimTK::State& s, const OpenSim::Body &aBody) const;
 
 	//--------------------------------------------------------------------------
 	// LOAD ACCESS AND COMPUTATION

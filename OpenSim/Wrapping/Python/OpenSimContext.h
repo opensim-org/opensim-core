@@ -199,7 +199,7 @@ public:
 		return (_configState->getTime()); 
 	}
     // Convert SimTK::Transform into a double[] array of 16 doubles
-	static void getTransformAsDouble16(const Transform& aTransform, double flattened[]){
+	static void getTransformAsDouble16(const SimTK::Transform& aTransform, double flattened[]){
 		 double* matStart = &aTransform.toMat44()[0][0];
 		 for (int i=0; i<16; i++) flattened[i]=matStart[i];
 	}
