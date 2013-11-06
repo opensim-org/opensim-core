@@ -180,11 +180,14 @@ solve(const SimTK::State& s, const Array<double> &ax,const Array<double> &bx,
 			}
 
 			// Adjust step to be not less than tolerance.
-			if( fabs(new_step[i]) < tol_act[i] )
-				if( new_step[i] > (double)0.0 )
+			if( fabs(new_step[i]) < tol_act[i] ) {
+				if( new_step[i] > (double)0.0 ) {
 					new_step[i] = tol_act[i];
-				else
+                }
+				else {
 					new_step[i] = -tol_act[i];
+                }
+            }
 
 			// Save previous approximation.
 			a[i] = b[i];  fa[i] = fb[i];
