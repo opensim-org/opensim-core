@@ -10,15 +10,31 @@ INCLUDE(${CMAKE_ROOT}/Modules/FindPythonInterp.cmake)
 IF(PYTHONLIBS_FOUND)
 
 # Run command to generate OpenSimJNI_wrap.cxx
-SET(swig_generated_file_fullname ${CMAKE_CURRENT_BINARY_DIR}/pyOpenSim_wrap.cxx)
+SET(swig_output_cxx_file_fullname
+    ${CMAKE_CURRENT_BINARY_DIR}/pyOpenSim_wrap.cxx)
+SET(swig_output_header_file_fullname
+    ${CMAKE_CURRENT_BINARY_DIR}/pyOpenSim_wrap.h)
 SET(swig_interface_file_fullname
     ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/Python/swig/pyWrapOpenSim.i)
 SET(SimTK_INCLUDE_PATH ${SIMTK_INCLUDE_DIR})
 
-ADD_CUSTOM_TARGET(PyWrap ${SWIG_EXECUTABLE} -v -c++ -python
-    -I${OpenSim_SOURCE_DIR} -I${Simbody_INCLUDE_DIR} -I${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/
-	-o ${swig_generated_file_fullname}
-    -outdir ${CMAKE_CURRENT_BINARY_DIR} ${swig_interface_file_fullname})
+# Using a custom command / custom target pair so that SWIG is only run when
+# it's out of date. Previously, we used a custom target only. But, custom
+# targets are always out of date.
+ADD_CUSTOM_COMMAND(
+    OUTPUT ${swig_output_cxx_file_fullname} ${swig_output_header_file_fullname}
+    COMMAND ${SWIG_EXECUTABLE} -v -c++ -python
+        -I${OpenSim_SOURCE_DIR}
+        -I${Simbody_INCLUDE_DIR}
+        -I${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/
+    	-o ${swig_output_cxx_file_fullname}
+        -outdir ${CMAKE_CURRENT_BINARY_DIR}
+        ${swig_interface_file_fullname}
+    DEPENDS osimCommon osimSimulation osimAnalyses osimTools)
+
+ADD_CUSTOM_TARGET(PyWrap
+    DEPENDS ${swig_output_cxx_file_fullname}
+        ${swig_output_header_file_fullname})
 
 SET_TARGET_PROPERTIES(PyWrap PROPERTIES PROJECT_LABEL "Python Bindings - Generate")
 
