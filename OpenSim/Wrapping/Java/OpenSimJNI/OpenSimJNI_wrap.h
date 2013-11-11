@@ -27,12 +27,13 @@ public:
     virtual void implementFrameGeometry(SimTK::DecorativeFrame const &arg0);
     virtual void implementTextGeometry(SimTK::DecorativeText const &arg0);
     virtual void implementMeshGeometry(SimTK::DecorativeMesh const &arg0);
+    virtual void implementMeshFileGeometry(SimTK::DecorativeMeshFile const &arg0);
 public:
     bool swig_overrides(int n) {
-      return (n < 10 ? swig_override[n] : false);
+      return (n < 11 ? swig_override[n] : false);
     }
 protected:
-    bool swig_override[10];
+    bool swig_override[11];
 };
 
 class SwigDirector_AnalysisWrapper : public OpenSim::AnalysisWrapper, public Swig::Director {
