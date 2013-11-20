@@ -732,7 +732,7 @@ void Object::readObjectFromXMLNodeOrFile
     try {
         std::cout << "reading object from file [" << file <<"] cwd =" 
                   << IO::getCwd() << std::endl;
-        newDoc = new XMLDocument(file);
+         newDoc = new XMLDocument(file);
 		_document = newDoc;
     } catch(const std::exception& ex){
         std::cout << "failure reading object from file [" << file <<"] cwd =" 
@@ -1634,7 +1634,12 @@ void Object::updateFromXMLDocument()
 	assert(_document!= 0);
 	
 	SimTK::Xml::Element e = _document->getRootDataElement(); 
+    const string saveWorkingDirectory = IO::getCwd();
+    string parentFileName = _document->getFileName();
+    const string directoryOfXMLFile = IO::getParentDirectory(parentFileName);
+	IO::chDir(directoryOfXMLFile);
 	updateFromXMLNode(e, _document->getDocumentVersion());
+    IO::chDir(saveWorkingDirectory);
 }
 
 std::string Object::dump(bool dumpName) {
