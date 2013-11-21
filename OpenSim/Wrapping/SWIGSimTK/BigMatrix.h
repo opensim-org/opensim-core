@@ -1095,12 +1095,12 @@ public:
  #ifndef SWIG
     /// Implicit conversion from compatible vector with negated elements.
     VectorBase(const TNeg& source) : Base(source) {}
-#endif
+
     /// Construct an owner vector of length m, with each element initialized to
     /// the given value.
     VectorBase(int m, const ELT& initialValue)
     :   Base(MatrixCommitment::Vector(),m,1,initialValue) {}  
- #ifndef SWIG
+
     /// Construct an owner vector of length m, with the elements initialized sequentially
     /// from a C++ array of elements which is assumed to be of length m. Note that we
     /// are expecting C++ packing; don't use this to initialize one Simmatrix vector
@@ -1920,8 +1920,9 @@ template <class ELT> class Matrix_ : public MatrixBase<ELT> {
 #endif
 public:
     Matrix_() : Base() { }
+#ifndef SWIG
     Matrix_(const MatrixCommitment& mc) : Base(mc) {}
-
+#endif
     // Copy constructor is deep.
     Matrix_(const Matrix_& src) : Base(src) { }
 #ifndef SWIG

@@ -279,11 +279,12 @@ void clear();
 /// anything that used to be in the State so use cautiously!
 void setNumSubsystems(int i);
 
+#ifndef SWIG
 /// Set the name and version for a given subsystem, which must already
 /// have a slot allocated.
 void initializeSubsystem(SubsystemIndex, const String& name, 
                                          const String& version);
-
+#endif
 /// Make the current State a copy of the source state, copying only
 /// state variables and not the cache. If the source state hasn't
 /// been realized to Model stage, then we don't copy its state
@@ -295,7 +296,7 @@ State(const State&);
 /// been realized to Model stage, then we don't copy its state
 /// variables either, except those associated with the Topology stage.
 State& operator=(const State&);
-#endif
+
 /// Register a new subsystem as a client of this State. The
 /// supplied strings are stored with the State but are not
 /// interpreted by it. The intent is that they can be used to
@@ -303,12 +304,14 @@ State& operator=(const State&);
 /// sure they match the currently instantiated System.
 /// The subsystem index (a small integer) is returned.
 SubsystemIndex addSubsystem(const String& name, const String& version);
-
+#endif
 int getNumSubsystems() const;
+
+#ifndef SWIG
 const String& getSubsystemName   (SubsystemIndex) const;
 const String& getSubsystemVersion(SubsystemIndex) const;
 const Stage&  getSubsystemStage  (SubsystemIndex) const;
-
+#endif
 /// This returns the *global* stage for this State.
 const Stage& getSystemStage() const;
 
@@ -329,6 +332,7 @@ void invalidateAll(Stage);
 /// to cache entries. "All" here refers to all Subsystems.
 void invalidateAllCacheAtOrAbove(Stage) const;
 
+#ifndef SWIG
 /// Advance a particular Subsystem's current stage by one to
 /// the indicated stage. The stage is passed in just to give us a
 /// chance to verify that all is as expected. You can only advance one stage at
@@ -336,6 +340,7 @@ void invalidateAllCacheAtOrAbove(Stage) const;
 /// what you can do later.
 /// @see advanceSystemToStage()
 void advanceSubsystemToStage(SubsystemIndex, Stage) const;
+
 /// Advance the System-level current stage by one to the indicated stage.
 /// This can only be done if <em>all</em> Subsystem have already been
 /// advanced to this Stage.
@@ -706,7 +711,7 @@ isCacheValueRealized() will return false.
 @see isCacheValueRealized(), markCacheValueRealized() **/
 void markCacheValueNotRealized(SubsystemIndex, CacheEntryIndex) const;
 /**@}**/
-
+#endif
 /// @name                Global Resource Dimensions
 ///
 /// These are the dimensions of the global shared state and cache resources,
