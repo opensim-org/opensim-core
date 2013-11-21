@@ -690,6 +690,15 @@ namespace SimTK {
 %include <SWIGSimTK/Array.h>
 
 typedef int MobilizedBodyIndex;
+typedef int SubsystemIndex;
+typedef int SystemQIndex;
+typedef int SystemQErrIndex;
+typedef int SystemZIndex;
+typedef int SystemYIndex;
+typedef int SystemYErrIndex;
+typedef int SystemUIndex;
+typedef int SystemUErrIndex;
+typedef int SystemUDotErrIndex;
 
 namespace SimTK {
 %template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>; 
