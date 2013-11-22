@@ -310,7 +310,7 @@ using namespace SimTK;
        this.setValues(values, splits.length);
 	}
 %}
-
+/*
 %extend  SimTK::DecorativeGeometry {
 	bool hasUserRef() const {
 		return (self->getUserRef()!=0);
@@ -320,7 +320,7 @@ using namespace SimTK;
 		return *((OpenSim::Object*)self->getUserRef());
 	}
 }
-
+*/
 %javamethodmodifiers OpenSim::Model::addComponent "private";
 %javamethodmodifiers OpenSim::Model::addBody "private";
 %javamethodmodifiers OpenSim::Model::addConstraint "private";

@@ -123,7 +123,7 @@ or addition, see setUserRef(). In any case the \a index is simply stored with
 the object and returned if you ask for it. If you don't set it the value 
 is -1. The \a index is copied if you copy the %DecorativeGeometry object. Be
 sure to change it afterwards if that is not the correct index for the copy. **/
-DecorativeGeometry& setIndexOnBody(int index);
+//DecorativeGeometry& setIndexOnBody(int index);
 
 /** Use this method to store an arbitrary reference pointer with this 
 %DecorativeGeometry object. This is particularly useful in selection operations
@@ -138,7 +138,7 @@ object will not be deleted when the %DecorativeGeometry object is deleted.
 %DecorativeGeometry object. That is likely to be incorrect in many 
 circumstances, depending on how you are using this value. Be sure to clear or 
 change the pointer if necessary after you make a copy. **/
-DecorativeGeometry& setUserRef(void* userRef);
+//DecorativeGeometry& setUserRef(void* userRef);
 
 /** This transform shifts the generated polygons with respect to this object's
 local frame. Subsequent calls with other transforms simply replace the earlier
@@ -180,13 +180,13 @@ int getBodyId() const;
 call for this %DecorativeGeometry object, or -1 if that method has not been
 called. Copy construction and copy assignment copy the \a index. Interpretation 
 of this integer is up to the caller. **/
-int getIndexOnBody() const;
+//int getIndexOnBody() const;
 
 /** Return the pointer value that was supplied to the most recent setUserRef()
 call for this %DecorativeGeometry object, or zero (nullptr) if that method has
 not been called. Copy construction and copy assignment copy the pointer. 
 Interpretation of this value is up to the caller. **/
-void* getUserRef() const; 
+//void* getUserRef() const; 
 
 /** Return the current setting of the "resolution" factor. A return value of
 -1 means "use the default". **/
@@ -578,7 +578,7 @@ private:
 
 
 /** This defines a displayable mesh by referencing a file name containing the mesh. If format is not supported
-  by visualizer it will be ignored. */
+  by visualizer it will be ignored. 
 class SimTK_SimTKCOMMON_EXPORT DecorativeMeshFile : public DecorativeGeometry {
 public:
     explicit DecorativeMeshFile(const std::string& meshFileName);
@@ -603,7 +603,7 @@ private:
     class DecorativeMeshFileRep& updRep();
     const DecorativeMeshFileRep& getRep() const;
 };
-
+*/
 
 /** This defines a single DecorativeGeometry object that is composed of a
 collection of other DecorativeGeometry objects. Parameters set for the
@@ -670,7 +670,7 @@ public:
     virtual void implementFrameGeometry(    const DecorativeFrame&)    = 0;
     virtual void implementTextGeometry(     const DecorativeText&)     = 0;
     virtual void implementMeshGeometry(     const DecorativeMesh&)     = 0;
-    virtual void implementMeshFileGeometry(     const DecorativeMeshFile&)     = 0;
+    //virtual void implementMeshFileGeometry(     const DecorativeMeshFile&)     = 0;
 };
 
 } // namespace SimTK
