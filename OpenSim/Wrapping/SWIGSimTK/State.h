@@ -818,6 +818,7 @@ SystemUErrIndex getUErrStart(SubsystemIndex) const;
 int getNUErr(SubsystemIndex) const;
 SystemUDotErrIndex getUDotErrStart(SubsystemIndex) const; 
 int getNUDotErr(SubsystemIndex) const;
+#ifndef SWIG
 SystemMultiplierIndex getMultipliersStart(SubsystemIndex) const;
 int getNMultipliers(SubsystemIndex) const;
 
@@ -826,7 +827,7 @@ SystemEventTriggerByStageIndex
 int getNEventTriggersByStage(SubsystemIndex, Stage) const;
 
 /// @}
-#ifndef SWIG
+
 /// @name Global-to-Subsystem Maps
 ///
 /// TODO -- not implemented yet.

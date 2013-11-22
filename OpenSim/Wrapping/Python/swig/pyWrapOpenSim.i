@@ -2,6 +2,8 @@
 %module opensim
 #pragma SWIG nowarn=822,451,503,516,325
 %{
+#define SWIG_FILE_WITH_INIT
+
 #include <OpenSim/version.h>
 #include <SimTKsimbody.h>
 #include <OpenSim/Common/osimCommonDLL.h>
@@ -272,17 +274,7 @@ using namespace SimTK;
      
     return( cacheId );
   }
-  // Flag to indicate if an object is pickable in the GUI
-  // Example of a non-pickable object would be a PathWrapPoint
-  private boolean pickable=true;
-  
-  public boolean isPickable() {
-	 return pickable;
-  }
-  
-  public void setPickable(boolean onOff) {
-	 pickable=onOff;
-  }
+
   public void markAdopted() {
     if (swigCPtr != 0) {
       if (swigCMemOwn) swigCMemOwn = false;
@@ -549,14 +541,18 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 		aInertia[1], aInertia[2], aInertia[3], aInertia[4], aInertia[5]));
 	}
 };
-
+*/
 
 %extend OpenSim::Array<double> {
-	void setValues(double dValues[], int size) {
-		self->setSize(size);
-		for(int i=0; i< size; i++)
-		 self->set(i, dValues[i]);
-	};
+	void appendVec3(SimTK::Vec3 vec3) {
+		for(int i=0; i<3; i++)
+			self->append(vec3[i]);
+	}
+	void appendVector(SimTK::Vector vec) {
+		for(int i=0; i<vec.size(); i++)
+			self->append(vec[i]);
+	}
+
 	SimTK::Vec3 getAsVec3() {
 		return SimTK::Vec3::getAs(self->get());
 	};
@@ -603,8 +599,13 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 		return stream.str(); 
   }
 
+  void setFromPyArray(double* dValues, int size) {
+		self->setSize(size);
+		for(int i=0; i< size; ++i)
+		    self->set(i, dValues[i]);
 };
-
+};
+/*
 %extend OpenSim::Model {
 	static void LoadOpenSimLibrary(std::string libraryName){
 		LoadOpenSimLibrary(libraryName);
@@ -632,8 +633,15 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 		  return availableClassNames;
 	}
 }
-*/
 
+%include "numpy.i"
+
+%init %{
+import_array();
+%}
+
+%apply (double* IN_ARRAY1, int DIM1) {(double* dValues, int size)}
+*/
 /* rest of header files to be wrapped */
 %include <OpenSim/version.h>
 %include <SimTKcommon.h>
@@ -663,6 +671,7 @@ namespace SimTK {
 namespace SimTK {
 %template(SpatialVec) Vec<2,   Vec3>;
 %template(VectorOfSpatialVec) Vector_<SpatialVec>;
+%template(VectorOfVec3) Vector_<Vec3>;
 }
 // Transform
 %include <SWIGSimTK/Transform.h>
@@ -677,12 +686,25 @@ namespace SimTK {
 }
 %include <SWIGSimTK/common.h>
 %include <SWIGSimTK/Array.h>
-%include <SWIGSimTK/DecorativeGeometry.h>
-%extend SimTK::Array_<SimTK::DecorativeGeometry> {
-	int getSizeAsInt() {
-		return self->size();
-	}
+
+typedef int MobilizedBodyIndex;
+typedef int SubsystemIndex;
+typedef int SystemQIndex;
+typedef int SystemQErrIndex;
+typedef int SystemZIndex;
+typedef int SystemYIndex;
+typedef int SystemYErrIndex;
+typedef int SystemUIndex;
+typedef int SystemUErrIndex;
+typedef int SystemUDotErrIndex;
+
+namespace SimTK {
+%template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>; 
+%template(ArrayIndexInt) ArrayIndexTraits<int>; 
 }
+
+%include <SWIGSimTK/DecorativeGeometry.h>
+
 namespace SimTK {
 %template(ArrayDecorativeGeometry) SimTK::Array_<SimTK::DecorativeGeometry>;
 }

@@ -2102,8 +2102,9 @@ public:
 
 
     explicit Vector_(int m) : Base(m) { }
-#endif
+
     Vector_(int m, const ELT* cppInitialValues) : Base(m, cppInitialValues) {}
+#endif
     Vector_(int m, const ELT& initialValue)     : Base(m, initialValue) {}
 #ifndef SWIG
     /// Construct a Vector which uses borrowed space with assumed

@@ -672,7 +672,7 @@ inline SpatialVec shiftForceFromTo(const SpatialVec& F_AP,
 
 /**@}**/
 
-
+#ifndef SWIG
 
 //==============================================================================
 //                                  PHI MATRIX
@@ -722,7 +722,7 @@ transpose(const PhiMatrix& phi)
     PhiMatrixTranspose ret(phi);
     return ret;
 }
-#ifndef SWIG
+
 inline PhiMatrixTranspose
 operator~(const PhiMatrix& phi) {return transpose(phi);}
 

@@ -92,6 +92,7 @@ public:
 	static void SetPrintOfflineDocuments(bool aTrueFalse);
 	static bool GetPrintOfflineDocuments();
 	// READ
+#ifndef SWIG
 	static std::string ReadToTokenLine(std::istream &aIS,const std::string &aToken);
 	static std::string ReadLine(std::istream &aIS);
 	static int ComputeNumberOfSteps(double aTI,double aTF,double aDT);
@@ -99,6 +100,7 @@ public:
 	static FILE* OpenFile(const std::string &aFileName,const std::string &aMode);
 	static std::ifstream* OpenInputFile(const std::string &aFileName,std::ios_base::openmode mode=std::ios_base::in);
 	static std::ofstream* OpenOutputFile(const std::string &aFileName,std::ios_base::openmode mode=std::ios_base::out);
+#endif
 	// Directory management
 	static int makeDir(const std::string &aDirName);
 	static int chDir(const std::string &aDirName);
