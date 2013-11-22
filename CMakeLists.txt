@@ -291,15 +291,11 @@ link_directories(${Simbody_LIB_DIR})
 
 # Determine which math libraries to use for this platform.
 SET(BUILD_USING_OTHER_LAPACK "" CACHE STRING
- "If you have your own Lapack, put its library basename here. Default is to use SimTKlapack.")
+ "If you have your own Lapack, put its library basename here. Default is to use lapack.")
 
 set(default_lapack_libs "lapack;blas")
 if (WIN32) 
-    if (${PLATFORM_ABI} MATCHES "x64")
-        set(default_lapack_libs "liblapack;libblas")
-    else()
-        set(default_lapack_libs "SimTKlapack")
-    endif()
+         set(default_lapack_libs "liblapack;libblas")
 endif()
 SET(LAPACK_BEING_USED ${default_lapack_libs} CACHE STRING
 "Basename of the actual Lapack library we're depending on; can't change here; see variable BUILD_USING_OTHER_LAPACK." FORCE)
