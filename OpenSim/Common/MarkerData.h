@@ -95,6 +95,8 @@ private:
 	void readTRCFile(const std::string& aFileName, MarkerData& aSMD);
 	void readTRCFileHeader(std::ifstream &in, const std::string& aFileName, MarkerData& aSMD);
 	void readTRBFile(const std::string& aFileName, MarkerData& aSMD);
+    void readStoFile(const std::string& aFileName);
+    void buildMarkerMap(const Storage& storageToReadFrom, std::map<int, std::string>& markerNames);
 
 //=============================================================================
 };	// END of class MarkerData

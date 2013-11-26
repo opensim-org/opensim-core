@@ -78,13 +78,15 @@ MarkerData::MarkerData(const string& aFileName) :
 	string suffix;
    int dot = (int)aFileName.find_last_of(".");
    suffix.assign(aFileName, dot+1, 3);
-
-   if ((suffix == "TRB") || (suffix == "trb"))
-      readTRBFile(aFileName, *this);
-   else
+   SimTK::String sExtension(suffix);
+   if (sExtension.toLower() == "trc") 
       readTRCFile(aFileName, *this);
+   else if (sExtension.toLower() == "sto")
+       readStoFile(aFileName);
+   else
+       throw Exception("MarkerData: ERROR- Marker file type is unsupported",__FILE__,__LINE__);
 
-	_fileName = aFileName;
+   _fileName = aFileName;
 
 	cout << "Loaded marker file " << _fileName << " (" << _numMarkers << " markers, " << _numFrames << " frames)" << endl;
 }
@@ -467,6 +469,89 @@ finish:
    fclose(file);
    return smNoError;
 #endif
+}
+
+//_____________________________________________________________________________
+/**
+ * Read sto file.
+ *
+ * @param aFilename name of sto file.
+ */
+void MarkerData::readStoFile(const string& aFileName)
+{
+
+	if (aFileName.empty())
+		throw Exception("MarkerData.readStoFile: ERROR- Marker file name is empty",__FILE__,__LINE__);
+
+    Storage store(aFileName);
+
+    // populate map between marker names and column numbers 
+    std::map<int, std::string>  markerIndices;
+    buildMarkerMap(store, markerIndices);
+
+    if (markerIndices.size()==0){
+        throw Exception("MarkerData.readStoFile: ERROR- No markers were identified. Markers should appear on consecutive columns as Marker1.x Marker1.y Marker1.z Marker2.x... etc.",__FILE__,__LINE__);
+    }
+    std::map<int, std::string>::iterator iter;
+
+    for (iter = markerIndices.begin(); iter != markerIndices.end(); iter++) {
+        SimTK::String markerNameWithSuffix = iter->second;
+        int startIndex = iter->first;
+        int dotIndex = markerNameWithSuffix.toLower().find_last_of(".x");
+        SimTK::String candidateMarkerName = markerNameWithSuffix.substr(0, dotIndex-1);
+        _markerNames.append(candidateMarkerName);
+    }
+    // use map to populate data for MarkerData header
+    _numMarkers = markerIndices.size();
+    _numFrames = store.getSize();
+    _firstFrameNumber = 1;
+	_dataRate = 250;
+	_cameraRate = 250;
+	_originalDataRate = 250;
+	_originalStartFrame = 1;
+	_originalNumFrames = _numFrames;
+	_fileName = aFileName;
+	_units = Units(Units::Meters);
+
+    double time;
+    int sz = store.getSize();
+    for (int i=0; i < sz; i++){
+        StateVector* nextRow = store.getStateVector(i);
+        time = nextRow->getTime();
+        int frameNum = i+1;
+        MarkerFrame *frame = new MarkerFrame(_numMarkers, frameNum, time, _units);
+        const Array<double>& rowData = nextRow->getData();
+        // Cycle thru map and add Marker coordinates to the frame. Same order as header.
+        for (iter = markerIndices.begin(); iter != markerIndices.end(); iter++) {
+            int startIndex = iter->first; // startIndex includes time but data doesn't!
+            frame->addMarker(SimTK::Vec3(rowData[startIndex-1], rowData[startIndex], rowData[startIndex+1]));
+        }
+        _frames.append(frame);
+   }
+   
+}
+/**
+ * Helper function to check column labels of passed in Storage for possibly being a MarkerName, and if true
+ * add the start index and corresponding name to the passed in std::map
+ */
+void MarkerData::buildMarkerMap(const Storage& storageToReadFrom, std::map<int, std::string>& markerNames)
+{
+    const Array<std::string> & labels = storageToReadFrom.getColumnLabels();
+    for (int i=1; i < labels.getSize()-2; i++){
+        // if label ends in .X, check that two labels that follow are .Y, .Z (case insensitive) with common prefix
+        // if so, add to map
+        SimTK::String nextLabel(labels.get(i));
+        int dotIndex = nextLabel.toLower().find_last_of(".x");
+        if (dotIndex > 1){  // possible marker
+            SimTK::String candidateMarkerName = nextLabel.substr(0, dotIndex-1);
+            SimTK::String nextLabel2 = labels.get(i+1);
+            SimTK::String nextLabel3 = labels.get(i+2);
+            if ((nextLabel2.toLower() == candidateMarkerName+".y") && (nextLabel3.toLower() == candidateMarkerName+".z")){
+                markerNames[i] = labels.get(i); // this includes trailing .x
+                i+= 2;
+            }
+        }
+    }
 }
 
 //=============================================================================
