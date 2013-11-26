@@ -164,14 +164,14 @@ void Umberger2010MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
             errorMessage << "ERROR: Negative <provided_muscle_mass> specified for " 
                 << mm.getName() 
                 << ". <provided_muscle_mass> must be a positive number (kg)." << endl;
-            std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
+            std::cout << "WARNING: " << errorMessage.str() << "Probe will be disabled." << std::endl;
             setDisabled(true);
         }
         else if (isnan(mm.get_provided_muscle_mass())) {
             errorMessage << "ERROR: No <provided_muscle_mass> specified for " 
                 << mm.getName() 
                 << ". <provided_muscle_mass> must be a positive number (kg)." << endl;
-            std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
+            std::cout << "WARNING: " << errorMessage.str() << "Probe will be disabled." << std::endl;
             setDisabled(true);
         }
     }
@@ -183,14 +183,14 @@ void Umberger2010MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
             errorMessage << "ERROR: Negative <specific_tension> specified for " 
                 << mm.getName() 
                 << ". <specific_tension> must be a positive number (N/m^2)." << endl;
-            std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
+            std::cout << "WARNING: " << errorMessage.str() << "Probe will be disabled." << std::endl;
             setDisabled(true);
         }
         if (mm.get_density() <= 0) {
             errorMessage << "ERROR: Negative <density> specified for " 
                 << mm.getName() 
                 << ". <density> must be a positive number (kg/m^3)." << endl;
-            std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
+            std::cout << "WARNING: " << errorMessage.str() << "Probe will be disabled." << std::endl;
             setDisabled(true);
         }
     }
@@ -202,7 +202,7 @@ void Umberger2010MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
     if (mm.get_ratio_slow_twitch_fibers() < 0 || mm.get_ratio_slow_twitch_fibers() > 1)	{
         errorMessage << "MetabolicMuscleParameter: Invalid ratio_slow_twitch_fibers for muscle: " 
             << getName() << ". ratio_slow_twitch_fibers must be between 0 and 1." << endl;
-             std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
+             std::cout << "WARNING: " << errorMessage.str() << "Probe will be disabled." << std::endl;
             setDisabled(true);
     }
 
