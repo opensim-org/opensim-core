@@ -772,7 +772,7 @@ Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter(
 	constructProperties();
 	setName(muscleName);
 	set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
-    if (isnan(get_provided_muscle_mass())) {
+    if (isnan(muscle_mass)) {
 	    set_use_provided_muscle_mass(false);
     }
     else {
