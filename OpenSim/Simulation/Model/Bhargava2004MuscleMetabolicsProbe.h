@@ -291,7 +291,7 @@ public:
     These accessor methods are to be used when setting up a new muscle 
     metabolic analysis from the API. The basic operation is as follows:
     @code
-    MuscleMetabolicPowerProbeUmberger2010* myProbe new MuscleMetabolicPowerProbeUmberger2010(...); 
+    Bhargava2004MuscleMetabolicsProbe* myProbe new Bhargava2004MuscleMetabolicsProbe(...); 
     model.addProbe(myProbe);
     myProbe->addMuscle("muscleName1", ... );
     myProbe->addMuscle("muscleName2", ... );
