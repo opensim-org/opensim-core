@@ -167,8 +167,8 @@ void JointInternalPowerProbe::connectToModel(Model& aModel)
     _jointIndex.clear();
     const int nJ = getJointNames().size();
     for (int i=0; i<nJ; i++) {
-        string jointName = getJointNames()[i];
-        int k = _model->getJointSet().getIndex(jointName);
+        const string& jointName = getJointNames()[i];
+        const int k = _model->getJointSet().getIndex(jointName);
         if (k<0) {
             string errorMessage = getConcreteClassName() + ": Invalid Joint '" 
                     + jointName + "' specified in <joint_names>.";
@@ -181,7 +181,7 @@ void JointInternalPowerProbe::connectToModel(Model& aModel)
 
     // Sanity check. Should never actually happen!
     if (nJ != int(_jointIndex.size()))
-        throw (Exception("Size of _jointIndex does not match number of Joints listed."));
+        throw (Exception("Size of _jointIndex does not match number of Joints listed in <joint_names>."));
 }
 
 

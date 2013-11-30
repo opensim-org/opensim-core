@@ -212,13 +212,13 @@ getNumParameters() const
 void ControlLinear::
 setParameterMin(int aI,double aMin)
 {
-	_minNodes.get(aI)->setValue(aMin);
+	_minNodes.get(aI)->set_value(aMin);
 }
 //_____________________________________________________________________________
 double ControlLinear::
 getParameterMin(int aI) const
 {
-	return(_minNodes.get(aI)->getValue());
+	return(_minNodes.get(aI)->get_value());
 }
 
 //-----------------------------------------------------------------------------
@@ -228,13 +228,13 @@ getParameterMin(int aI) const
 void ControlLinear::
 setParameterMax(int aI,double aMax)
 {
-	_maxNodes.get(aI)->setValue(aMax);
+	_maxNodes.get(aI)->set_value(aMax);
 }
 //_____________________________________________________________________________
 double ControlLinear::
 getParameterMax(int aI) const
 {
-	return(_maxNodes.get(aI)->getValue());
+	return(_maxNodes.get(aI)->get_value());
 }
 
 //-----------------------------------------------------------------------------
@@ -244,7 +244,7 @@ getParameterMax(int aI) const
 double ControlLinear::
 getParameterTime(int aI) const
 {
-	return(_xNodes.get(aI)->getTime());
+	return(_xNodes.get(aI)->get_t());
 }
 
 //-----------------------------------------------------------------------------
@@ -274,8 +274,8 @@ getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const
 	if(_useSteps) upper = aI;
 	else  upper = aI + 1;
 	if(upper>=size) upper = size-1;
-	rTLower = _xNodes.get(lower)->getTime();
-	rTUpper = _xNodes.get(upper)->getTime();
+	rTLower = _xNodes.get(lower)->get_t();
+	rTUpper = _xNodes.get(upper)->get_t();
 }
 
 //-----------------------------------------------------------------------------
@@ -292,7 +292,7 @@ getParameterList(double aT,Array<int> &rList)
 	if(size<=0) return(0);
 
 	// FIND THE NODE
-	_searchNode.setTime(aT);
+	_searchNode.set_t(aT);
 	int i = _xNodes.searchBinary(_searchNode);
 
 	// LESS THAN TIME OF FIRST NODE
@@ -333,7 +333,7 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList)
 	if(aTLower>aTUpper) return(0);
 
 	// LOWER NODE
-	_searchNode.setTime(aTLower);
+	_searchNode.set_t(aTLower);
 	int iL = _xNodes.searchBinary(_searchNode);
 	if(iL==-1) {
 		iL += 1;
@@ -346,7 +346,7 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList)
 	}
 
 	// UPPER NODE
-	_searchNode.setTime(aTUpper);
+	_searchNode.set_t(aTUpper);
 	int iU = _xNodes.searchBinary(_searchNode);
 	if(iU==-1) {
 		return(0);
@@ -371,13 +371,13 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList)
 void ControlLinear::
 setParameterValue(int aI,double aX)
 {
-	_xNodes.get(aI)->setValue(aX);
+	_xNodes.get(aI)->set_value(aX);
 }
 //_____________________________________________________________________________
 double ControlLinear::
 getParameterValue(int aI) const
 {
-	return(_xNodes.get(aI)->getValue());
+	return(_xNodes.get(aI)->get_value());
 }
 
 //-----------------------------------------------------------------------------
@@ -400,16 +400,16 @@ setControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT,double aValue)
 
 		// EQUAL TO LOWER NODE
 		if( (*aNodes[lower]) == node) {
-			aNodes[lower]->setTime(aT);
-			aNodes[lower]->setValue(aValue);
+			aNodes[lower]->set_t(aT);
+			aNodes[lower]->set_value(aValue);
 
 		// NOT AT END OF ARRAY
 		} else if(upper<aNodes.getSize()) {
 
 			// EQUAL TO UPPER NODE
 			if( (*aNodes[upper]) == node) {
-				aNodes[upper]->setTime(aT);
-				aNodes[upper]->setValue(aValue);
+				aNodes[upper]->set_t(aT);
+				aNodes[upper]->set_value(aValue);
 
 			// NOT EQUAL
 			} else {
@@ -432,7 +432,7 @@ getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT)
     if(size<=0) return(SimTK::NaN);
 
 	// GET NODE
-	_searchNode.setTime(aT);
+	_searchNode.set_t(aT);
 	int i = aNodes.searchBinary(_searchNode);
 
 	// BEFORE FIRST
@@ -441,7 +441,7 @@ getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT)
 		if(!_useSteps && getExtrapolate()) {
 			value = extrapolateBefore(aNodes, aT);
 		} else {
-			value = aNodes[0]->getValue();
+			value = aNodes[0]->get_value();
 		}
 
 	// AFTER LAST
@@ -449,7 +449,7 @@ getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT)
 		if(!_useSteps && getExtrapolate()) {
 			value = extrapolateAfter(aNodes, aT);
 		} else {
-			value = aNodes.getLast()->getValue();
+			value = aNodes.getLast()->get_value();
 		}
 
 	// IN BETWEEN
@@ -458,10 +458,10 @@ getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT)
 		// LINEAR INTERPOLATION
 		if(!_useSteps) {
 			double t1,v1,t2,v2;
-			t1 = aNodes[i]->getTime();
-			v1 = aNodes[i]->getValue();
-			t2 = aNodes[i+1]->getTime();
-			v2 = aNodes[i+1]->getValue();
+			t1 = aNodes[i]->get_t();
+			v1 = aNodes[i]->get_value();
+			t2 = aNodes[i+1]->get_t();
+			v2 = aNodes[i+1]->get_value();
 			value = Interpolate(t1,v1,t2,v2,aT);
 
 		// STEPS
@@ -476,8 +476,8 @@ getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT)
 			// at time t3.  During forward simulation, when the integrator reaches t2
 			// the control at t3 is known but for consistency with cmcgait we need to
 			// use the control value at t2.  Hence the (t(i),t(i+1)] choice.
-			if (aT == aNodes[i]->getTime()) value = aNodes[i]->getValue();
-			else value = aNodes[i+1]->getValue();
+			if (aT == aNodes[i]->get_t()) value = aNodes[i]->get_value();
+			else value = aNodes[i+1]->get_value();
 		}
 	}
 
@@ -488,13 +488,13 @@ double ControlLinear::
 extrapolateBefore(const ArrayPtrs<ControlLinearNode> &aNodes,double aT) const
 {
 	if(aNodes.getSize()<=0) return(SimTK::NaN);
-	if(aNodes.getSize()==1) return(aNodes[0]->getValue());
+	if(aNodes.getSize()==1) return(aNodes[0]->get_value());
 
 	double t1,v1,t2,v2;
-	t1 = aNodes[0]->getTime();
-	v1 = aNodes[0]->getValue();
-	t2 = aNodes[1]->getTime();
-	v2 = aNodes[1]->getValue();
+	t1 = aNodes[0]->get_t();
+	v1 = aNodes[0]->get_value();
+	t2 = aNodes[1]->get_t();
+	v2 = aNodes[1]->get_value();
 	double value = Interpolate(t1,v1,t2,v2,aT);
 
 	return(value);
@@ -505,15 +505,15 @@ extrapolateAfter(ArrayPtrs<ControlLinearNode> &aNodes,double aT) const
 {
 	int size = aNodes.getSize();
 	if(size<=0) return(SimTK::NaN);
-	if(size==1) return(aNodes[0]->getValue());
+	if(size==1) return(aNodes[0]->get_value());
 
 	int n1 = size - 2;
 	int n2 = size - 1;
 	double t1,v1,t2,v2;
-	t1 = aNodes[n1]->getTime();
-	v1 = aNodes[n1]->getValue();
-	t2 = aNodes[n2]->getTime();
-	v2 = aNodes[n2]->getValue();
+	t1 = aNodes[n1]->get_t();
+	v1 = aNodes[n1]->get_value();
+	t2 = aNodes[n2]->get_t();
+	v2 = aNodes[n2]->get_value();
 	double value = Interpolate(t1,v1,t2,v2,aT);
 
 	return(value);
@@ -622,13 +622,13 @@ clearControlNodes()
 const double ControlLinear::getFirstTime() const
 {
 	const ControlLinearNode *node=_xNodes.get(0);
-	return node->getTime();
+	return node->get_t();
 }
 //_____________________________________________________________________________
 const double ControlLinear::getLastTime() const
 {
 	const ControlLinearNode *node=_xNodes.getLast();
-	return node->getTime();
+	return node->get_t();
 }
 
 //-----------------------------------------------------------------------------
@@ -646,7 +646,7 @@ simplify(const PropertySet &aProperties)
 	int i;
 	Array<double> t(0.0,size);
 	for(i=0;i<size;i++) {
-		t[i] = _xNodes[i]->getTime();
+		t[i] = _xNodes[i]->get_t();
 	}
 
 	// SEARCH FOR THE MINIMUM TIME INTERVAL
@@ -753,7 +753,7 @@ filter(double aT)
 
 	// FIND CONTROL NODE
 	// Find the control node at time aT
-	_searchNode.setTime(aT);
+	_searchNode.set_t(aT);
 	int i = _xNodes.searchBinary(_searchNode);
 	// The following property is true after binary search:
 	// _xNodes[i].getValue() <= getControlValue(aT)
@@ -793,17 +793,17 @@ filter(double aT)
 	// ControlLinearNode class):
 	// (i <= 1 cases were handled above)
 	if (nodeOccursAtGivenTime) {
-		dt = _xNodes[i]->getTime() - _xNodes[i-1]->getTime();
-		dtPrev = _xNodes[i-1]->getTime() - _xNodes[i-2]->getTime();
-		xPrev = _xNodes[i-1]->getValue();
-		xPrevPrev = _xNodes[i-2]->getValue();
+		dt = _xNodes[i]->get_t() - _xNodes[i-1]->get_t();
+		dtPrev = _xNodes[i-1]->get_t() - _xNodes[i-2]->get_t();
+		xPrev = _xNodes[i-1]->get_value();
+		xPrevPrev = _xNodes[i-2]->get_value();
 
 	// If the time of the node at index i is less than aT:
 	} else {
-		dt = aT - _xNodes[i]->getTime();
-		dtPrev = _xNodes[i]->getTime() - _xNodes[i-1]->getTime();
-		xPrev = _xNodes[i]->getValue();
-		xPrevPrev = _xNodes[i-1]->getValue();
+		dt = aT - _xNodes[i]->get_t();
+		dtPrev = _xNodes[i]->get_t() - _xNodes[i-1]->get_t();
+		xPrev = _xNodes[i]->get_value();
+		xPrevPrev = _xNodes[i-1]->get_value();
 	}
 
 	// GET CURRENT CONTROL VALUE

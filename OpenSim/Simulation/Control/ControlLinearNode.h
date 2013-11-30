@@ -1,5 +1,5 @@
-#ifndef _ControlLinearNode_h_
-#define _ControlLinearNode_h_
+#ifndef OPENSIM_CONTROL_LINEAR_NODE_H_
+#define OPENSIM_CONTROL_LINEAR_NODE_H_
 /* -------------------------------------------------------------------------- *
  *                       OpenSim:  ControlLinearNode.h                        *
  * -------------------------------------------------------------------------- *
@@ -29,10 +29,9 @@
 
 
 // INCLUDES
-#include <OpenSim/Simulation/osimSimulationDLL.h>
+//#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Array.h>
-#include <OpenSim/Common/PropertyDbl.h>
 
 //=============================================================================
 //=============================================================================
@@ -54,6 +53,19 @@ namespace OpenSim {
 
 class OSIMSIMULATION_API ControlLinearNode : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(ControlLinearNode, Object);
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(t, double,
+		"Time at which the node occurs.");
+
+    OpenSim_DECLARE_PROPERTY(value, double,
+		"Value of the node.");
+
 
 //=============================================================================
 // MEMBER DATA
@@ -62,37 +74,22 @@ public:
 	/** Equality tolerance. */
 	//static double _EqualityTolerance;
 
-protected:
-	// PROPERTIES
-	/** Time at which the node occurs. */
-	PropertyDbl _propT;
-	/** Value of the node (may represent control value or min or max bounds, depending on which curve it's in). */
-	PropertyDbl _propValue;
-
-	// REFERENCES
-	/** Reference to the value of the T property. */
-	double &_t;
-	/** Reference to the value of the X property. */
-	double &_value;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
 	ControlLinearNode(double aT=0.0,double aValue=0.0);
-	ControlLinearNode(const ControlLinearNode &aNode);
 
-	virtual ~ControlLinearNode();
 private:
 	void setNull();
-	void setupProperties();
+	void constructProperties();
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	ControlLinearNode& operator=(const ControlLinearNode &aControl);
 	bool operator==(const ControlLinearNode &aControl) const;
 	bool operator<(const ControlLinearNode &aControl) const;
 
@@ -104,10 +101,7 @@ public:
 	//--------------------------------------------------------------------------
 	//static void SetEqualityTolerance(double aTol);
 	//static double GetEqualityTolerance();
-	void setTime(double aT);
-	double getTime() const;
-	void setValue(double aValue);
-	double getValue() const;
+
 
 	//--------------------------------------------------------------------------
 	// UTILITY
@@ -121,4 +115,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // __ControlLinearNode_h__
+#endif // OPENSIM_CONTROL_LINEAR_NODE_H_

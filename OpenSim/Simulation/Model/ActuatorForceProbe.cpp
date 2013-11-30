@@ -178,8 +178,8 @@ void ActuatorForceProbe::connectToModel(Model& model)
     _actuatorIndex.clear();
     const int nA = getActuatorNames().size();
     for (int i=0; i<nA; i++) {
-        string actName = getActuatorNames()[i];
-        int k = model.getActuators().getIndex(actName);
+        const string& actName = getActuatorNames()[i];
+        const int k = model.getActuators().getIndex(actName);
         if (k<0) {
             string errorMessage = getConcreteClassName() + ": Invalid Actuator '" + actName + "' specified in <actuator_names>.";
             std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
@@ -192,7 +192,7 @@ void ActuatorForceProbe::connectToModel(Model& model)
 
     // Sanity check. Should never actually happen!
     if (nA != int(_actuatorIndex.size()))
-        throw (Exception("Size of _actuatorIndex does not match number of Actuators listed."));
+        throw (Exception("Size of _actuatorIndex does not match number of Actuators listed in <actuator_names>."));
 
 }
 
