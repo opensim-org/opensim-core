@@ -870,7 +870,7 @@ Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter(
 	setName(muscleName);
 	set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
 
-    if (isnan(get_provided_muscle_mass())) {
+    if (isnan(muscle_mass)) {
 	    set_use_provided_muscle_mass(false);
     }
     else {
@@ -900,7 +900,7 @@ Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter(
     set_maintenance_constant_slow_twitch(maintenance_constant_slow_twitch);
     set_maintenance_constant_fast_twitch(maintenance_constant_fast_twitch);
 
-    if (isnan(get_provided_muscle_mass())) {
+    if (isnan(muscle_mass)) {
 	    set_use_provided_muscle_mass(false);
     }
     else {
