@@ -232,7 +232,7 @@ public:
         double,
         "Basal metabolic exponent.");
 
-    /** Default value = false **/
+    /** Default value = true **/
     OpenSim_DECLARE_PROPERTY(report_total_metabolics_only, 
         bool,
         "If set to false, the individual muscle metabolics, basal rate, and "

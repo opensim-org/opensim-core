@@ -397,9 +397,9 @@ computeProbeInputs(const State& s) const
         }
 
 
-        // TOTAL METABOLIC ENERGY RATE for muscle i
+        // TOTAL METABOLIC ENERGY RATE for muscle i (W)
         // ------------------------------------------
-        const double Edot = (totalHeatRate + Wdot) * mm.getMuscleMass(); 
+        const double Edot = totalHeatRate + Wdot;
         EdotOutput(0) += Edot;       // Add to TOTAL metabolic power storage
         if (!get_report_total_metabolics_only()) {
             // Metabolic power storage for muscle i
