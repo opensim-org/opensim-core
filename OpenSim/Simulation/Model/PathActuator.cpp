@@ -233,14 +233,12 @@ void PathActuator::connectToModel(Model& aModel)
     // TODO: this is awkward; subcomponent API needs to be revisited (sherm).
 	includeAsSubComponent(&path);
 
-    //TODO: can't call this at start of override; this is an API bug.
+	// Set owner here in case errors happen later so we can put useful message about responsible party.
+	path.setOwner(this);
+	//TODO: can't call this at start of override; this is an API bug.
 	Super::connectToModel(aModel);
 
-	// _model will be NULL when objects are being registered.
-	if (_model == NULL)
-		return;
 
-	path.setOwner(this);
 }
 
 //------------------------------------------------------------------------------
