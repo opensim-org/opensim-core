@@ -126,6 +126,25 @@ public:
     }
 
     //--------------------------------------------------------------------------
+    // SET MUSCLE STATES
+    //--------------------------------------------------------------------------
+    void setFiberLength(SimTK::State& s, double fiberLength) const
+    {
+        setStateVariable(s, stateName_fiberLength, fiberLength);
+        markCacheVariableInvalid(s, "lengthInfo");
+        markCacheVariableInvalid(s, "velInfo");
+        markCacheVariableInvalid(s, "dynamicsInfo");
+    }
+
+    void setNormFiberVelocity(SimTK::State& s, double normFiberVelocity) const
+    {
+        setStateVariable(s, stateName_fiberVelocity, normFiberVelocity *
+                         getMaxContractionVelocity() * getOptimalFiberLength());
+        markCacheVariableInvalid(s, "velInfo");
+        markCacheVariableInvalid(s, "dynamicsInfo");
+    }
+
+    //--------------------------------------------------------------------------
     // MODELCOMPONENT INTERFACE
     //--------------------------------------------------------------------------
     void connectToModel(Model& model) OVERRIDE_11
@@ -139,8 +158,8 @@ public:
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11
     {
         Super::addToSystem(system);
-        addStateVariable(stateName_fiberLength,   SimTK::Stage::Position);
-        addStateVariable(stateName_fiberVelocity, SimTK::Stage::Dynamics);
+        addStateVariable(stateName_fiberLength);
+        addStateVariable(stateName_fiberVelocity);
     }
 
     void initStateFromProperties(SimTK::State& s) const OVERRIDE_11
@@ -176,7 +195,11 @@ public:
     { get_ZerothOrderMuscleActivationDynamics().setActivation(s,activation); }
 
     double computeActuation(const SimTK::State& s) const OVERRIDE_11
-    { return get_ZerothOrderMuscleActivationDynamics().getActivation(s); }
+    {
+        const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
+        setForce(s, mdi.tendonForce);
+        return mdi.tendonForce;
+    }
 
     // Calculate position-level variables.
     void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli)
@@ -225,7 +248,8 @@ public:
     void calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi)
         const OVERRIDE_11
     {
-        mdi.activation = computeActuation(s);
+        mdi.activation =
+            get_ZerothOrderMuscleActivationDynamics().getActivation(s);
 
         // These expressions were obtained by solving the 'Vce' equations in [3]
         // for force F, then applying the modifications described in [1].
@@ -264,18 +288,6 @@ public:
         mdi.musclePower           = 0;
     }
 
-    //--------------------------------------------------------------------------
-    // SET FIBER LENGTH AND VELOCITY
-    //--------------------------------------------------------------------------
-    void setFiberLength(SimTK::State& s, double fiberLength) const
-    { setStateVariable(s, stateName_fiberLength, fiberLength); }
-
-    void setNormFiberVelocity(SimTK::State& s, double normFiberVelocity) const
-    {
-        setStateVariable(s, stateName_fiberVelocity, normFiberVelocity *
-                         getMaxContractionVelocity() * getOptimalFiberLength());
-    }
-
 private:
     static const std::string stateName_fiberLength;
     static const std::string stateName_fiberVelocity;
@@ -300,6 +312,8 @@ public:
         for (int i=0; i<_model->getMuscles().getSize(); ++i)
             controls[i] = _u;
     }
+
+    void setConstantExcitation(double u) { _u = u; }
 
 private:
     double _u;
@@ -584,6 +598,35 @@ void compareUmbergerProbeToPublishedResults()
 //   - total energy at final time equals integral of total rate
 //   - multiple muscles are correctly handled
 //   - less energy is liberated with lower activation
+void simulateModel(Model& model, Manager& manager, double t0, double t1)
+{
+    // Initialize model and state.
+    cout << "- initializing" << endl;
+    SimTK::State& state = model.initSystem();
+    for (int i=0; i<model.getMuscles().getSize(); ++i)
+        model.getMuscles().get(i).setIgnoreActivationDynamics(state, true);
+    model.getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
+    model.equilibrateMuscles(state);
+
+    // Prepare integrator.
+    const double integrationAccuracy = 1.0e-8;
+    SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
+    integrator.setAccuracy(integrationAccuracy);
+    manager.setIntegrator(&integrator);
+    manager.setInitialTime(t0);
+    manager.setFinalTime(t1);
+
+    // Simulate.
+    const clock_t tStart = clock();
+    cout << "- integrating from " << t0 << " to " << t1 << "s" << endl;
+    manager.integrate(state, 1.0e-3);
+    cout << "- simulation complete (" << (double)(clock()-tStart)/CLOCKS_PER_SEC
+         << " seconds elapsed)" << endl;
+
+    // Release integrator from manager.
+    manager.setIntegrator(0);
+}
+
 void testProbesUsingMillardMuscleSimulation()
 {
     //--------------------------------------------------------------------------
@@ -954,9 +997,7 @@ void testProbesUsingMillardMuscleSimulation()
     model.addAnalysis(muscleAnalysis);
 
     // Print the model.
-    printf("\n");
-    model.printBasicInfo(cout);
-    printf("\n");
+    printf("\n"); model.printBasicInfo(cout); printf("\n");
     const std::string baseFilename = "testMuscleMetabolicsProbes";
     if (OUTPUT_FILES) {
         const std::string fname = baseFilename + "Model.osim";
@@ -967,35 +1008,16 @@ void testProbesUsingMillardMuscleSimulation()
     //--------------------------------------------------------------------------
     // Run simulation.
     //--------------------------------------------------------------------------
-    cout << "- initializing" << endl;
-    SimTK::State& state = model.initSystem();
-    muscle1->setIgnoreActivationDynamics(state, true);
-    muscle2->setIgnoreActivationDynamics(state, true);
-    model.getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
-    model.equilibrateMuscles(state);
-
-    // Prepare integrator.
-    const double integrationAccuracy = 1.0e-8;
-    const double t0                  = 0.0;
-    const double t1                  = 2.0;
-    SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-    integrator.setAccuracy(integrationAccuracy);
-    Manager manager(model, integrator);
-    manager.setInitialTime(t0);
-    manager.setFinalTime(t1);
-
-    // Simulate.
-    clock_t tStart = clock();
-    cout << "- integrating from " << t0 << " to " << t1 << "s" << endl;
-    manager.integrate(state);
-    cout << "- simulation complete (" << (double)(clock()-tStart)/CLOCKS_PER_SEC
-         << " seconds elapsed)" << endl;
+    const double t0 = 0.0;
+    const double t1 = 2.0;
+    Manager manager(model);
+    simulateModel(model, manager, t0, t1);
 
     // Output results files.
     if (OUTPUT_FILES) {
         std::string fname = baseFilename + "_states.sto";
-        Storage states(manager.getStateStorage());
-        states.print(fname);
+        Storage stateStorage(manager.getStateStorage());
+        stateStorage.print(fname);
         cout << "+ saved state storage file: " << fname << endl;
 
         fname = baseFilename + "_probes.sto";
@@ -1015,71 +1037,72 @@ void testProbesUsingMillardMuscleSimulation()
     const Storage& probeStorage = probeReporter->getProbeStorage();
     const int numProbeOutputs = probeStorage.getColumnLabels().getSize()-1;
     ASSERT(numProbeOutputs == probeCounter+extraColumns, __FILE__, __LINE__,
-        "Incorrect number of columns in probe storage");
+        "Incorrect number of columns in probe storage.");
 
-    const int idx_umbActMaint_rate_m1 = probeStorage
+    std::map<std::string, int> probeCol;
+    probeCol["umbActMaint_rate_m1"] = probeStorage
       .getColumnIndicesForIdentifier("umbergerActMaint_rate_m1_TOTAL")[0]-1;
-    const int idx_umbShorten_rate_m1 = probeStorage
+    probeCol["umbShorten_rate_m1"] = probeStorage
       .getColumnIndicesForIdentifier("umbergerShorten_rate_m1_TOTAL")[0]-1;
-    const int idx_umbBasal_rate_m1 = probeStorage
+    probeCol["umbBasal_rate_m1"] = probeStorage
       .getColumnIndicesForIdentifier("umbergerBasal_rate_m1_TOTAL")[0]-1;
-    const int idx_umbMechWork_rate_m1 = probeStorage
+    probeCol["umbMechWork_rate_m1"] = probeStorage
       .getColumnIndicesForIdentifier("umbergerMechWork_rate_m1_TOTAL")[0]-1;
-    const int idx_umbTotal_rate_m1 = probeStorage
+    probeCol["umbTotal_rate_m1"] = probeStorage
       .getColumnIndicesForIdentifier("umbergerTotal_rate_m1_TOTAL")[0]-1;
-    const int idx_umbTotal_m1 = probeStorage
+    probeCol["umbTotal_m1"] = probeStorage
       .getColumnIndicesForIdentifier("umbergerTotal_m1_TOTAL")[0]-1;
-    const int idx_umbTotal_m2 = probeStorage
+    probeCol["umbTotal_m2"] = probeStorage
       .getColumnIndicesForIdentifier("umbergerTotal_m2_TOTAL")[0]-1;
-    const int idx_umbTotal_both = probeStorage
+    probeCol["umbTotal_both"] = probeStorage
       .getColumnIndicesForIdentifier("umbergerTotal_both_TOTAL")[0]-1;
-    const int idx_umbTotalAllPieces_both_total = probeStorage
+    probeCol["umbTotalAllPieces_both_total"] = probeStorage
       .getColumnIndicesForIdentifier("umbergerTotalAllPieces_both_TOTAL")[0]-1;
-    const int idx_umbTotalAllPieces_both_basal = probeStorage
+    probeCol["umbTotalAllPieces_both_basal"] = probeStorage
       .getColumnIndicesForIdentifier("umbergerTotalAllPieces_both_BASAL")[0]-1;
-    const int idx_umbTotalAllPieces_both_muscle1 = probeStorage
+    probeCol["umbTotalAllPieces_both_muscle1"] = probeStorage
       .getColumnIndicesForIdentifier("umbergerTotalAllPieces_both_muscle1")[0]-1;
-    const int idx_umbTotalAllPieces_both_muscle2 = probeStorage
+    probeCol["umbTotalAllPieces_both_muscle2"] = probeStorage
       .getColumnIndicesForIdentifier("umbergerTotalAllPieces_both_muscle2")[0]-1;
 
-    const int idx_bhaAct_rate_m1 = probeStorage
+    probeCol["bhaAct_rate_m1"] = probeStorage
       .getColumnIndicesForIdentifier("bhargavaAct_rate_m1_TOTAL")[0]-1;
-    const int idx_bhaMaint_rate_m1 = probeStorage
+    probeCol["bhaMaint_rate_m1"] = probeStorage
       .getColumnIndicesForIdentifier("bhargavaMaint_rate_m1_TOTAL")[0]-1;
-    const int idx_bhaShorten_rate_m1 = probeStorage
+    probeCol["bhaShorten_rate_m1"] = probeStorage
       .getColumnIndicesForIdentifier("bhargavaShorten_rate_m1_TOTAL")[0]-1;
-    const int idx_bhaBasal_rate_m1 = probeStorage
+    probeCol["bhaBasal_rate_m1"] = probeStorage
       .getColumnIndicesForIdentifier("bhargavaBasal_rate_m1_TOTAL")[0]-1;
-    const int idx_bhaMechWork_rate_m1 = probeStorage
+    probeCol["bhaMechWork_rate_m1"] = probeStorage
       .getColumnIndicesForIdentifier("bhargavaMechWork_rate_m1_TOTAL")[0]-1;
-    const int idx_bhaTotal_rate_m1 = probeStorage
+    probeCol["bhaTotal_rate_m1"] = probeStorage
       .getColumnIndicesForIdentifier("bhargavaTotal_rate_m1_TOTAL")[0]-1;
-    const int idx_bhaTotal_m1 = probeStorage
+    probeCol["bhaTotal_m1"] = probeStorage
       .getColumnIndicesForIdentifier("bhargavaTotal_m1_TOTAL")[0]-1;
-    const int idx_bhaTotal_m2 = probeStorage
+    probeCol["bhaTotal_m2"] = probeStorage
       .getColumnIndicesForIdentifier("bhargavaTotal_m2_TOTAL")[0]-1;
-    const int idx_bhaTotal_both = probeStorage
+    probeCol["bhaTotal_both"] = probeStorage
       .getColumnIndicesForIdentifier("bhargavaTotal_both_TOTAL")[0]-1;
-    const int idx_bhaTotalAllPieces_both_total = probeStorage
+    probeCol["bhaTotalAllPieces_both_total"] = probeStorage
       .getColumnIndicesForIdentifier("bhargavaTotalAllPieces_both_TOTAL")[0]-1;
-    const int idx_bhaTotalAllPieces_both_basal = probeStorage
+    probeCol["bhaTotalAllPieces_both_basal"] = probeStorage
       .getColumnIndicesForIdentifier("bhargavaTotalAllPieces_both_BASAL")[0]-1;
-    const int idx_bhaTotalAllPieces_both_muscle1 = probeStorage
+    probeCol["bhaTotalAllPieces_both_muscle1"] = probeStorage
       .getColumnIndicesForIdentifier("bhargavaTotalAllPieces_both_muscle1")[0]-1;
-    const int idx_bhaTotalAllPieces_both_muscle2 = probeStorage
+    probeCol["bhaTotalAllPieces_both_muscle2"] = probeStorage
       .getColumnIndicesForIdentifier("bhargavaTotalAllPieces_both_muscle2")[0]-1;
 
     Storage* forceStorage = muscleAnalysis->getActiveFiberForceStorage();
     const int numForceOutputs = forceStorage->getColumnLabels().getSize()-1;
     ASSERT(numForceOutputs == 2, __FILE__, __LINE__,
-        "Incorrect number of columns in active fiber force storage");
+        "Incorrect number of columns in active fiber force storage.");
     const int idx_force_muscle1 = forceStorage
         ->getColumnIndicesForIdentifier(muscle1->getName())[0]-1;
 
     Storage* fibVelStorage = muscleAnalysis->getFiberVelocityStorage();
     const int numFibVelOutputs = fibVelStorage->getColumnLabels().getSize()-1;
     ASSERT(numFibVelOutputs == 2, __FILE__, __LINE__,
-        "Incorrect number of columns in fiber velocity storage");
+        "Incorrect number of columns in fiber velocity storage.");
     const int idx_fibVel_muscle1 = fibVelStorage
         ->getColumnIndicesForIdentifier(muscle1->getName())[0]-1;
 
@@ -1099,32 +1122,32 @@ void testProbesUsingMillardMuscleSimulation()
         // Output from the probes reporting individual heat rates and mechanical
         // power must sum to the output from the probe reporting the total rate
         // of energy liberation.
-        ASSERT_EQUAL(probeData[idx_umbActMaint_rate_m1]
-                       + probeData[idx_umbShorten_rate_m1]
-                       + probeData[idx_umbBasal_rate_m1]
-                       + probeData[idx_umbMechWork_rate_m1],
-                     probeData[idx_umbTotal_rate_m1],
+        ASSERT_EQUAL(probeData[probeCol["umbActMaint_rate_m1"]]
+                       + probeData[probeCol["umbShorten_rate_m1"]]
+                       + probeData[probeCol["umbBasal_rate_m1"]]
+                       + probeData[probeCol["umbMechWork_rate_m1"]],
+                     probeData[probeCol["umbTotal_rate_m1"]],
                      100*SimTK::SignificantReal, __FILE__, __LINE__,
             "Umberger2010: wrong sum of individual rates and mechanical power.");
 
-        ASSERT_EQUAL(probeData[idx_bhaAct_rate_m1]
-                       + probeData[idx_bhaMaint_rate_m1]
-                       + probeData[idx_bhaShorten_rate_m1]
-                       + probeData[idx_bhaBasal_rate_m1]
-                       + probeData[idx_bhaMechWork_rate_m1],
-                     probeData[idx_bhaTotal_rate_m1],
+        ASSERT_EQUAL(probeData[probeCol["bhaAct_rate_m1"]]
+                       + probeData[probeCol["bhaMaint_rate_m1"]]
+                       + probeData[probeCol["bhaShorten_rate_m1"]]
+                       + probeData[probeCol["bhaBasal_rate_m1"]]
+                       + probeData[probeCol["bhaMechWork_rate_m1"]],
+                     probeData[probeCol["bhaTotal_rate_m1"]],
                      100*SimTK::SignificantReal, __FILE__, __LINE__,
             "Bhargava2004: wrong sum of individual rates and mechanical power.");
 
         // Total rate of energy liberation reported must not depend on whether
         // the individual components are reported as well.
-        ASSERT_EQUAL(probeData[idx_umbTotal_both],
-                     probeData[idx_umbTotalAllPieces_both_total],
+        ASSERT_EQUAL(probeData[probeCol["umbTotal_both"]],
+                     probeData[probeCol["umbTotalAllPieces_both_total"]],
                      100*SimTK::SignificantReal, __FILE__, __LINE__,
             "Umberger2010: total heat rate changes if components are reported.");
 
-        ASSERT_EQUAL(probeData[idx_bhaTotal_both],
-                     probeData[idx_bhaTotalAllPieces_both_total],
+        ASSERT_EQUAL(probeData[probeCol["bhaTotal_both"]],
+                     probeData[probeCol["bhaTotalAllPieces_both_total"]],
                      100*SimTK::SignificantReal, __FILE__, __LINE__,
             "Bhargava2004: total heat rate changes if components are reported.");
 
@@ -1140,11 +1163,11 @@ void testProbesUsingMillardMuscleSimulation()
 
         const double powerExpected = max(0.0, -forceData[idx_force_muscle1]
                                               * fibVelData[idx_fibVel_muscle1]);
-        ASSERT_EQUAL(probeData[idx_umbMechWork_rate_m1], powerExpected,
+        ASSERT_EQUAL(probeData[probeCol["umbMechWork_rate_m1"]], powerExpected,
                      1.0e-2, __FILE__, __LINE__,
             "Umberger2010: mechanical power disagrees with muscle analysis.");
 
-        ASSERT_EQUAL(probeData[idx_bhaMechWork_rate_m1], powerExpected,
+        ASSERT_EQUAL(probeData[probeCol["bhaMechWork_rate_m1"]], powerExpected,
                      1.0e-2, __FILE__, __LINE__,
             "Bhargava2004: mechanical power disagrees with muscle analysis.");
     }
@@ -1170,45 +1193,49 @@ void testProbesUsingMillardMuscleSimulation()
     probeStorageInt->getDataAtTime(t1, numProbeOutputs, probeDataInt);
 
     // Total energy at final time must equal integral of total rate.
-    ASSERT_EQUAL(probeData_t1[idx_umbTotal_m1],
-                 probeDataInt[idx_umbTotal_rate_m1],
+    ASSERT_EQUAL(probeData_t1[probeCol["umbTotal_m1"]],
+                 probeDataInt[probeCol["umbTotal_rate_m1"]],
                  1.0e-2, __FILE__, __LINE__,
-        "Umberger2010: integral of total rate differs from final total energy");
+        "Umberger2010: integral of total rate differs from final total energy.");
 
-    ASSERT_EQUAL(probeData_t1[idx_bhaTotal_m1],
-                 probeDataInt[idx_bhaTotal_rate_m1],
+    ASSERT_EQUAL(probeData_t1[probeCol["bhaTotal_m1"]],
+                 probeDataInt[probeCol["bhaTotal_rate_m1"]],
                  1.0e-2, __FILE__, __LINE__,
-        "Bhargava2004: integral of total rate differs from final total energy");
+        "Bhargava2004: integral of total rate differs from final total energy.");
 
     // Check reporting of metabolic probe components: Umberger2010.
-    ASSERT_EQUAL(probeData_t1[idx_umbTotalAllPieces_both_basal],
-                 probeDataInt[idx_umbBasal_rate_m1],
+    ASSERT_EQUAL(probeData_t1[probeCol["umbTotalAllPieces_both_basal"]],
+                 probeDataInt[probeCol["umbBasal_rate_m1"]],
                  1.0e-2, __FILE__, __LINE__,
         "Umberger2010: error in reporting components of metabolic probe.");
 
-    ASSERT_EQUAL(probeData_t1[idx_umbTotalAllPieces_both_muscle1],
-                 probeData_t1[idx_umbTotal_m1]-probeDataInt[idx_umbBasal_rate_m1],
+    ASSERT_EQUAL(probeData_t1[probeCol["umbTotalAllPieces_both_muscle1"]],
+                 probeData_t1[probeCol["umbTotal_m1"]]
+                 - probeDataInt[probeCol["umbBasal_rate_m1"]],
                  1.0e-2, __FILE__, __LINE__,
         "Umberger2010: error in reporting components of metabolic probe.");
 
-    ASSERT_EQUAL(probeData_t1[idx_umbTotalAllPieces_both_muscle2],
-                 probeData_t1[idx_umbTotal_m2]-probeDataInt[idx_umbBasal_rate_m1],
+    ASSERT_EQUAL(probeData_t1[probeCol["umbTotalAllPieces_both_muscle2"]],
+                 probeData_t1[probeCol["umbTotal_m2"]]
+                 - probeDataInt[probeCol["umbBasal_rate_m1"]],
                  1.0e-2, __FILE__, __LINE__,
         "Umberger2010: error in reporting components of metabolic probe.");
 
     // Check reporting of metabolic probe components: Bhargava2004.
-    ASSERT_EQUAL(probeData_t1[idx_bhaTotalAllPieces_both_basal],
-                 probeDataInt[idx_bhaBasal_rate_m1],
+    ASSERT_EQUAL(probeData_t1[probeCol["bhaTotalAllPieces_both_basal"]],
+                 probeDataInt[probeCol["bhaBasal_rate_m1"]],
                  1.0e-2, __FILE__, __LINE__,
         "Bhargava2004: error in reporting components of metabolic probe.");
 
-    ASSERT_EQUAL(probeData_t1[idx_bhaTotalAllPieces_both_muscle1],
-                 probeData_t1[idx_bhaTotal_m1]-probeDataInt[idx_bhaBasal_rate_m1],
+    ASSERT_EQUAL(probeData_t1[probeCol["bhaTotalAllPieces_both_muscle1"]],
+                 probeData_t1[probeCol["bhaTotal_m1"]]
+                 - probeDataInt[probeCol["bhaBasal_rate_m1"]],
                  1.0e-2, __FILE__, __LINE__,
         "Bhargava2004: error in reporting components of metabolic probe.");
 
-    ASSERT_EQUAL(probeData_t1[idx_bhaTotalAllPieces_both_muscle2],
-                 probeData_t1[idx_bhaTotal_m2]-probeDataInt[idx_bhaBasal_rate_m1],
+    ASSERT_EQUAL(probeData_t1[probeCol["bhaTotalAllPieces_both_muscle2"]],
+                 probeData_t1[probeCol["bhaTotal_m2"]]
+                 - probeDataInt[probeCol["bhaBasal_rate_m1"]],
                  1.0e-2, __FILE__, __LINE__,
         "Bhargava2004: error in reporting components of metabolic probe.");
 
@@ -1216,35 +1243,32 @@ void testProbesUsingMillardMuscleSimulation()
     //   Total energy for muscle1      = basal + heat1 + work1
     //   Total energy for muscle2      = basal + heat2 + work2
     //   Total energy for both muscles = basal + heat1 + heat2 + work1 + work2
-    ASSERT_EQUAL(probeData_t1[idx_umbTotal_both],
-                 probeData_t1[idx_umbTotal_m1] + probeData_t1[idx_umbTotal_m2]
-                 - probeDataInt[idx_umbBasal_rate_m1],
+    ASSERT_EQUAL(probeData_t1[probeCol["umbTotal_both"]],
+                 probeData_t1[probeCol["umbTotal_m1"]]
+                 + probeData_t1[probeCol["umbTotal_m2"]]
+                 - probeDataInt[probeCol["umbBasal_rate_m1"]],
                  1.0e-2, __FILE__, __LINE__,
         "Umberger2010: error in reporting data for multiple muscles.");
 
-    ASSERT_EQUAL(probeData_t1[idx_bhaTotal_both],
-                 probeData_t1[idx_bhaTotal_m1] + probeData_t1[idx_bhaTotal_m2]
-                 - probeDataInt[idx_bhaBasal_rate_m1],
+    ASSERT_EQUAL(probeData_t1[probeCol["bhaTotal_both"]],
+                 probeData_t1[probeCol["bhaTotal_m1"]]
+                 + probeData_t1[probeCol["bhaTotal_m2"]]
+                 - probeDataInt[probeCol["bhaBasal_rate_m1"]],
                  1.0e-2, __FILE__, __LINE__,
         "Bhargava2004: error in reporting data for multiple muscles.");
 
     //--------------------------------------------------------------------------
     // Run simulation with lower activation and ensure less energy is liberated.
     //--------------------------------------------------------------------------
-    cout << "\n- reconfiguring with lower activation and fewer probes" << endl;
-    model.removeController(controller);
-    model.removeAnalysis(muscleAnalysis);
-
+    cout << "- reconfiguring with lower activation and fewer probes" << endl;
     desiredActivation = 0.5;
     muscle1->setDefaultActivation(desiredActivation);
     muscle2->setDefaultActivation(desiredActivation);
-
-    ConstantExcitationMuscleController* controller2 =
-        new ConstantExcitationMuscleController(desiredActivation);
-    controller2->setActuators(model.updActuators());
-    model.addController(controller2);
+    controller->setConstantExcitation(desiredActivation);
 
     // Retain only the probes that report the total energy liberated.
+    model.removeAnalysis(probeReporter);
+    model.removeAnalysis(muscleAnalysis);
     int idx = 0;
     while (idx < model.getProbeSet().getSize()) {
         std::string thisName = model.getProbeSet().get(idx).getName();
@@ -1254,32 +1278,29 @@ void testProbesUsingMillardMuscleSimulation()
         else
             model.removeProbe(&model.getProbeSet().get(idx));
     }
+    ProbeReporter* probeReporter2 = new ProbeReporter(&model);
+    model.addAnalysis(probeReporter2);
 
-    // Initialize.
-    cout << "- initializing" << endl;
-    state.clear();
-    model.initSystem();
-    model.getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
-    model.equilibrateMuscles(state);
-    Manager manager2(model, integrator);
-    manager2.setInitialTime(t0);
-    manager2.setFinalTime(t1);
+    // Print the model.
+    printf("\n"); model.printBasicInfo(cout); printf("\n");
+    if (OUTPUT_FILES) {
+        const std::string fname = baseFilename + "Model2.osim";
+        model.print(fname);
+        cout << "+ saved model file: " << fname << endl;
+    }
 
     // Simulate.
-    tStart = clock();
-    cout << "- integrating from " << t0 << " to " << t1 << "s" << endl;
-    manager2.integrate(state);
-    cout << "- simulation complete (" << (double)(clock()-tStart)/CLOCKS_PER_SEC
-         << " seconds elapsed)" << endl;
+    Manager manager2(model);
+    simulateModel(model, manager2, t0, t1);
 
     if (OUTPUT_FILES) {
         std::string fname = baseFilename + "_states2.sto";
-        Storage states2(manager2.getStateStorage());
-        states2.print(fname);
+        Storage stateStorage2(manager2.getStateStorage());
+        stateStorage2.print(fname);
         cout << "+ saved state storage file: " << fname << endl;
 
         fname = baseFilename + "_probes2.sto";
-        probeReporter->getProbeStorage().print(fname);
+        probeReporter2->getProbeStorage().print(fname);
         cout << "+ saved probe storage file: " << fname << endl;
     }
 
@@ -1287,29 +1308,36 @@ void testProbesUsingMillardMuscleSimulation()
     // simulation, where muscle activation was higher.
     cout << "- checking total energy liberation results" << endl;
 
-    const int numProbeOutputs2 = probeStorage.getColumnLabels().getSize()-1;
+    const Storage& probeStorage2 = probeReporter2->getProbeStorage();
+    const int numProbeOutputs2 = probeStorage2.getColumnLabels().getSize()-1;
+    ASSERT(numProbeOutputs2 == 4, __FILE__, __LINE__,
+        "Incorrect number of columns in probe storage.");
+
     Array<double> probeData2_t1;
     probeData2_t1.setSize(numProbeOutputs2);
-    probeStorage.getDataAtTime(t1, numProbeOutputs2, probeData2_t1);
+    probeStorage2.getDataAtTime(t1, numProbeOutputs2, probeData2_t1);
 
-    ASSERT(probeData_t1[idx_umbTotal_m1] > probeData2_t1[probeStorage
-           .getColumnIndicesForIdentifier("umbergerTotal_m1_TOTAL")[0]-1],
-           __FILE__, __LINE__,
+    std::map<std::string, int> probeCol2;
+    probeCol2["umbTotal_m1"] = probeStorage2
+      .getColumnIndicesForIdentifier("umbergerTotal_m1_TOTAL")[0]-1;
+    probeCol2["umbTotal_m2"] = probeStorage2
+      .getColumnIndicesForIdentifier("umbergerTotal_m2_TOTAL")[0]-1;
+    probeCol2["bhaTotal_m1"] = probeStorage2
+      .getColumnIndicesForIdentifier("bhargavaTotal_m1_TOTAL")[0]-1;
+    probeCol2["bhaTotal_m2"] = probeStorage2
+      .getColumnIndicesForIdentifier("bhargavaTotal_m2_TOTAL")[0]-1;
+
+    ASSERT(probeData_t1[probeCol["umbTotal_m1"]] >
+           probeData2_t1[probeCol2["umbTotal_m1"]], __FILE__, __LINE__,
            "Umberger2010: total energy must decrease with lower activation.");
-
-    ASSERT(probeData_t1[idx_umbTotal_m2] > probeData2_t1[probeStorage
-           .getColumnIndicesForIdentifier("umbergerTotal_m2_TOTAL")[0]-1],
-           __FILE__, __LINE__,
+    ASSERT(probeData_t1[probeCol["umbTotal_m2"]] >
+           probeData2_t1[probeCol2["umbTotal_m2"]], __FILE__, __LINE__,
            "Umberger2010: total energy must decrease with lower activation.");
-
-    ASSERT(probeData_t1[idx_bhaTotal_m1] > probeData2_t1[probeStorage
-           .getColumnIndicesForIdentifier("bhargavaTotal_m1_TOTAL")[0]-1],
-           __FILE__, __LINE__,
+    ASSERT(probeData_t1[probeCol["bhaTotal_m1"]] >
+           probeData2_t1[probeCol2["bhaTotal_m1"]], __FILE__, __LINE__,
            "Bhargava2004: total energy must decrease with lower activation.");
-
-    ASSERT(probeData_t1[idx_bhaTotal_m2] > probeData2_t1[probeStorage
-           .getColumnIndicesForIdentifier("bhargavaTotal_m2_TOTAL")[0]-1],
-           __FILE__, __LINE__,
+    ASSERT(probeData_t1[probeCol["bhaTotal_m2"]] >
+           probeData2_t1[probeCol2["bhaTotal_m2"]], __FILE__, __LINE__,
            "Bhargava2004: total energy must decrease with lower activation.");
 }
 
