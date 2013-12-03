@@ -496,13 +496,12 @@ void MarkerData::readStoFile(const string& aFileName)
 
     for (iter = markerIndices.begin(); iter != markerIndices.end(); iter++) {
         SimTK::String markerNameWithSuffix = iter->second;
-        int startIndex = iter->first;
-        int dotIndex = markerNameWithSuffix.toLower().find_last_of(".x");
+        size_t dotIndex = markerNameWithSuffix.toLower().find_last_of(".x");
         SimTK::String candidateMarkerName = markerNameWithSuffix.substr(0, dotIndex-1);
         _markerNames.append(candidateMarkerName);
     }
     // use map to populate data for MarkerData header
-    _numMarkers = markerIndices.size();
+    _numMarkers = (int) markerIndices.size();
     _numFrames = store.getSize();
     _firstFrameNumber = 1;
 	_dataRate = 250;
@@ -541,9 +540,11 @@ void MarkerData::buildMarkerMap(const Storage& storageToReadFrom, std::map<int, 
         // if label ends in .X, check that two labels that follow are .Y, .Z (case insensitive) with common prefix
         // if so, add to map
         SimTK::String nextLabel(labels.get(i));
-        int dotIndex = nextLabel.toLower().find_last_of(".x");
+        size_t dotIndex = nextLabel.toLower().find_last_of(".x");
         if (dotIndex > 1){  // possible marker
             SimTK::String candidateMarkerName = nextLabel.substr(0, dotIndex-1);
+			// this may be replaced with getColumnIndicesForIdentifier(candidateMarkerName) but this will be more permissive
+			// as it allows for non-consecutive columns, could be non-triplet,...etc.
             SimTK::String nextLabel2 = labels.get(i+1);
             SimTK::String nextLabel3 = labels.get(i+2);
             if ((nextLabel2.toLower() == candidateMarkerName+".y") && (nextLabel3.toLower() == candidateMarkerName+".z")){
