@@ -49,13 +49,19 @@
 
 #include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Actuators/osimActuators.h>
-#include <OpenSim/Actuators/ZerothOrderMuscleActivationDynamics.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
 #include <OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.h>
 #include <OpenSim/Analyses/ProbeReporter.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+// The zeroth-order muscle activation dynamics model can be used only once the
+// API supports subcomponents that have states.
+//#define USE_ACTIVATION_DYNAMICS_MODEL
+#ifdef  USE_ACTIVATION_DYNAMICS_MODEL
+#include <OpenSim/Actuators/ZerothOrderMuscleActivationDynamics.h>
+#endif
 
 const bool DISPLAY_PROBE_OUTPUTS      = false;
 const bool DISPLAY_ERROR_CALCULATIONS = false;
@@ -66,6 +72,7 @@ using namespace SimTK;
 using namespace std;
 
 
+#ifdef USE_ACTIVATION_DYNAMICS_MODEL
 //==============================================================================
 //                              EXCITATION GETTER
 //==============================================================================
@@ -81,6 +88,7 @@ public:
 private:
     const Muscle& _muscle;
 };
+#endif
 
 
 //==============================================================================
@@ -99,8 +107,11 @@ public:
         "Brel = B_Hill / optimalFiberLength");
     OpenSim_DECLARE_PROPERTY(FmaxEccentric, double,
         "Asymptote on the eccentric side of the force-velocity curve.");
+
+    #ifdef USE_ACTIVATION_DYNAMICS_MODEL
     OpenSim_DECLARE_UNNAMED_PROPERTY(ZerothOrderMuscleActivationDynamics,
         "Activation dynamic model that simply sets activation to excitation.");
+    #endif
 
     //--------------------------------------------------------------------------
     // CONSTRUCTOR
@@ -119,10 +130,12 @@ public:
         constructProperty_Brel(Brel);
         constructProperty_FmaxEccentric(FmaxEccentric);
 
+        #ifdef USE_ACTIVATION_DYNAMICS_MODEL
         constructProperty_ZerothOrderMuscleActivationDynamics(
             ZerothOrderMuscleActivationDynamics());
         upd_ZerothOrderMuscleActivationDynamics().setExcitationGetter(
             new MyExcitationGetter(*this));
+        #endif
     }
 
     //--------------------------------------------------------------------------
@@ -149,9 +162,12 @@ public:
     //--------------------------------------------------------------------------
     void connectToModel(Model& model) OVERRIDE_11
     {
+        #ifdef USE_ACTIVATION_DYNAMICS_MODEL
         ZerothOrderMuscleActivationDynamics &zomad =
             upd_ZerothOrderMuscleActivationDynamics();
         includeAsSubComponent(&zomad);
+        #endif
+
         Super::connectToModel(model);
     }
 
@@ -192,7 +208,13 @@ public:
     void computeInitialFiberEquilibrium(SimTK::State& s) const OVERRIDE_11 {}
 
     void setActivation(SimTK::State& s, double activation) const OVERRIDE_11
-    { get_ZerothOrderMuscleActivationDynamics().setActivation(s,activation); }
+    {
+        #ifdef USE_ACTIVATION_DYNAMICS_MODEL
+        get_ZerothOrderMuscleActivationDynamics().setActivation(s, activation);
+        #else
+        setExcitation(s, activation);
+        #endif
+    }
 
     double computeActuation(const SimTK::State& s) const OVERRIDE_11
     {
@@ -248,8 +270,12 @@ public:
     void calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi)
         const OVERRIDE_11
     {
+        #ifdef USE_ACTIVATION_DYNAMICS_MODEL
         mdi.activation =
             get_ZerothOrderMuscleActivationDynamics().getActivation(s);
+        #else
+        mdi.activation = getExcitation(s);
+        #endif
 
         // These expressions were obtained by solving the 'Vce' equations in [3]
         // for force F, then applying the modifications described in [1].
