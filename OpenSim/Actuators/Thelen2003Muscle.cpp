@@ -1390,7 +1390,7 @@ void Thelen2003Muscle::printCurveToCSVFile(const CurveType ctype,
     switch(ctype){
         case FiberActiveForceLength:{
             
-            fname.append(".csv");
+            fname.append("_FiberActiveForceLength.csv");
             
             SimTK::Matrix data(100,3);
             SimTK::Array_<std::string> colNames(data.ncol());
@@ -1412,7 +1412,7 @@ void Thelen2003Muscle::printCurveToCSVFile(const CurveType ctype,
 
         }break;
         case FiberPassiveForceLength:{
-            fname.append(".csv");
+            fname.append("_FiberPassiveForceLength.csv");
             
             SimTK::Matrix data(100,3);
             SimTK::Array_<std::string> colNames(data.ncol());
@@ -1441,7 +1441,7 @@ void Thelen2003Muscle::printCurveToCSVFile(const CurveType ctype,
         }break;
         case FiberForceVelocity:{
 
-            fname.append(".csv");
+            fname.append("_FiberForceVelocity.csv");
             
             SimTK::Matrix data(1000,5);
             SimTK::Array_<std::string> colNames(data.ncol());
@@ -1475,18 +1475,20 @@ void Thelen2003Muscle::printCurveToCSVFile(const CurveType ctype,
             double DdlceDaFalFv = 0;
             double DfvDdlceN = 0;
 
+            const double fal = 1.0;
+
             int idx = 0;
             for(int i=0; i<=9; i++){
                 a = a0 + da*i;
 
                 for(int j=0; j<100; j++){
                     dlceN = dlceN0 + j*delta;
-                    fvInv = calcfvInv(a, a*1.0, dlceN, 1e-6,100);
-                    DdlceDaFalFv = calcDdlceDaFalFv(a,a*1.0,a*1.0*fvInv[1]);
-                    DfvDdlceN = (1/(DdlceDaFalFv*a*1.0));
+                    fvInv = calcfvInv(a, fal, dlceN, 1e-6,100);
+                    DdlceDaFalFv = calcDdlceDaFalFv(a,fal,a*fal*fvInv[1]);
+                    DfvDdlceN = (1/(DdlceDaFalFv*a*fal));
 
                     data(idx,0) = a;
-                    data(idx,1) = 1.0;
+                    data(idx,1) = fal;
                     data(idx,2) = dlceN;
                     data(idx,3) = fvInv[1];
                     data(idx,4) = DfvDdlceN;
@@ -1498,7 +1500,7 @@ void Thelen2003Muscle::printCurveToCSVFile(const CurveType ctype,
 
         }break;
         case TendonForceLength:{
-            fname.append(".csv");
+            fname.append("_TendonForceLength.csv");
             
             SimTK::Matrix data(100,3);
             SimTK::Array_<std::string> colNames(data.ncol());
