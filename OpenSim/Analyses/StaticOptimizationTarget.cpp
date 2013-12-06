@@ -245,7 +245,7 @@ setDX(int aIndex,double aValue)
 	validatePerturbationSize(aValue);
 
 	// SET VALUE (use get to do bounds checking)
-	_dx.get(aIndex) = aValue;
+	_dx.updElt(aIndex) = aValue;
 }
 //______________________________________________________________________________
 /**
@@ -258,7 +258,7 @@ setDX(double aValue)
 	validatePerturbationSize(aValue);
 
 	// SET VALUE
-	for(int i=0;i<getNumParameters();i++) _dx.get(i) = aValue;
+	for(int i=0;i<getNumParameters();i++) _dx.updElt(i) = aValue;
 }
 //______________________________________________________________________________
 /**

@@ -87,7 +87,9 @@ public:
 	bool contains(const std::string& aName) const;
 	void add(Property_Deprecated* aProperty);
 	void remove(Property_Deprecated* aProperty);
+#ifndef SWIG
 	const Array<Property_Deprecated*>& getProperties() const { return _properties; }
+#endif
 	Property_Deprecated* get(int aIndex);
 	int getPropertyIndex(Property_Deprecated* aProperty) const;
 

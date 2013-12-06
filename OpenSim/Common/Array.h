@@ -275,7 +275,7 @@ template <class T> inline std::istream& readArrayFromStream<T>(std::istream& in,
 	for(int i=0; i<simtkArray.getSize(); i++)
 		out[i] = simtkArray[i];
 }*/
-#endif
+
 //=============================================================================
 // CAPACITY
 //=============================================================================
@@ -361,6 +361,7 @@ bool ensureCapacity(int aCapacity)
 
 	return(true);
 }
+#endif
 //_____________________________________________________________________________
 /**
  * Trim the capacity of this array so that it is one larger than the size
@@ -396,6 +397,7 @@ void trim()
 	// SET CORRECT CAPACITY
 	_capacity = newCapacity;
 }
+#ifndef SWIG
 //_____________________________________________________________________________
 /**
  * Get the capacity of this storage instance.
@@ -430,7 +432,7 @@ int getCapacityIncrement() const
 {
 	return(_capacityIncrement);
 }
-
+#endif
 //=============================================================================
 // STORAGE OPERATIONS
 //=============================================================================
@@ -534,6 +536,7 @@ int append(const Array<T> &aArray)
 
 	return(_size);
 }
+#ifndef SWIG
 //_____________________________________________________________________________
 /**
  * Append an array of values.
@@ -556,7 +559,7 @@ int append(int aSize,const T *aArray)
 
 	return(_size);
 }
-
+#endif
 //-----------------------------------------------------------------------------
 // INSERT
 //-----------------------------------------------------------------------------
@@ -686,6 +689,7 @@ void set(int aIndex,const T &aValue)
 	// FIRST EMPTY
 	if(aIndex>=_size)  _size = aIndex+1;
 }
+#ifndef SWIG
 //_____________________________________________________________________________
 /**
  * Get a pointer to the low-level array.
@@ -702,7 +706,7 @@ T* get()
  *
  * @return Pointer to the low-level array.
  */
-#ifndef SWIG
+
 const T* get() const
 {
 	return(_array);
@@ -710,7 +714,7 @@ const T* get() const
 #endif
 //_____________________________________________________________________________
 /**
- * Get the value at a specified array index.
+ * Get a const reference to the value at a specified array index.
  *
  * If the index is negative or passed the end of the array, an exception
  * is thrown.
@@ -719,17 +723,43 @@ const T* get() const
  * overloaded operator[], which does no bounds checking.
  *
  * @param aIndex Index of the desired array element.
- * @return Reference to the array element.
+ * @return const reference to the array element.
  * @throws Exception if (aIndex<0)||(aIndex>=_size).
  * @see operator[].
  */
-T& get(int aIndex) const
+const T& get(int aIndex) const
 {
 	if((aIndex<0)||(aIndex>=_size)) {
 		throw(Exception("Array index out of bounds."));
 	}
 	return(_array[aIndex]);
 }
+
+#ifndef SWIG
+//_____________________________________________________________________________
+/**
+ * Get a writable reference to value at a specified array index.
+ *
+ * If the index is negative or passed the end of the array, an exception
+ * is thrown.
+ *
+ * For faster execution, the array elements can be accessed through the
+ * overloaded operator[], which does no bounds checking.
+ *
+ * @param aIndex Index of the desired array element.
+ * @return Writable reference to the array element.
+ * @throws Exception if (aIndex<0)||(aIndex>=_size).
+ * @see operator[].
+ */
+T& updElt(int aIndex) const
+{
+	if((aIndex<0)||(aIndex>=_size)) {
+		throw(Exception("Array index out of bounds."));
+	}
+	return(_array[aIndex]);
+}
+#endif
+
 #ifdef SWIG
   %extend {
     T getitem(int index) {
@@ -747,15 +777,29 @@ T& get(int aIndex) const
  * @return Last value in the array.
  * @throws Exception if the array is empty.
  */
-T& getLast() const
+const T& getLast() const
 {
 	if(_size<=0) {
 		throw(Exception("Array is empty."));
 	}
 	return(_array[_size-1]);
 }
-
-
+#ifndef SWIG
+//_____________________________________________________________________________
+/**
+ * Get writable reference to last value in the array.
+ *
+ * @return writable reference to Last value in the array.
+ * @throws Exception if the array is empty.
+ */
+T& updLast() const
+{
+	if(_size<=0) {
+		throw(Exception("Array is empty."));
+	}
+	return(_array[_size-1]);
+}
+#endif
 //=============================================================================
 // SEARCH
 //=============================================================================

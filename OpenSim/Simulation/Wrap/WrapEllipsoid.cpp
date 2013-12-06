@@ -615,8 +615,8 @@ calc_wrap_path:
 	{
 		SimTK::Vec3 r1p1, r2p2, r1w1, r2w2;
 
-		SimTK::Vec3& w1 = aWrapResult.wrap_pts.get(1);
-		SimTK::Vec3& w2 = aWrapResult.wrap_pts.get(aWrapResult.wrap_pts.getSize() - 2);
+		SimTK::Vec3& w1 = aWrapResult.wrap_pts.updElt(1);
+		SimTK::Vec3& w2 = aWrapResult.wrap_pts.updElt(aWrapResult.wrap_pts.getSize() - 2);
 
 		// check for wrong-way wrap by testing angle of first and last
 		// wrap path segments:

@@ -338,7 +338,7 @@ int WrapObject::wrapPathSegment(const SimTK::State& s, PathPoint& aPoint1, PathP
 		// Convert the surface points (between the tangent points) from the frame of
 		// the wrap object to the frame of the wrap object's body
 		for (int i = 0; i < aWrapResult.wrap_pts.getSize(); i++)
-			aWrapResult.wrap_pts.get(i) = _pose.shiftFrameStationToBase(aWrapResult.wrap_pts.get(i));
+			aWrapResult.wrap_pts.updElt(i) = _pose.shiftFrameStationToBase(aWrapResult.wrap_pts.get(i));
    }
 
    return return_code;

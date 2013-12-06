@@ -313,7 +313,7 @@ int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3
 		aWrapResult.r1 = cylinderToTorus.shiftBaseStationToFrame(aWrapResult.r1);
 		aWrapResult.r2 = cylinderToTorus.shiftBaseStationToFrame(aWrapResult.r2);
 		for (i = 0; i < aWrapResult.wrap_pts.getSize(); i++)
-			aWrapResult.wrap_pts.get(i) = cylinderToTorus.shiftBaseStationToFrame(aWrapResult.wrap_pts.get(i));
+			aWrapResult.wrap_pts.updElt(i) = cylinderToTorus.shiftBaseStationToFrame(aWrapResult.wrap_pts.get(i));
 	}
 
 	return wrapped;

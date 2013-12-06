@@ -603,7 +603,7 @@ getLastStateVector() const
 {
 	StateVector *vec = NULL;
 	try {
-		vec = &_storage.getLast();
+		vec = &_storage.updLast();
 	} catch(const Exception&) {
 		//x.print(cout);
 	}
@@ -621,7 +621,7 @@ getLastStateVector() const
 StateVector* Storage::
 getStateVector(int aTimeIndex) const
 {
-	return(&_storage.get(aTimeIndex));
+	return(&_storage.updElt(aTimeIndex));
 }
 
 //-----------------------------------------------------------------------------
@@ -1319,7 +1319,7 @@ append(const StateVector &aStateVector,bool aCheckForDuplicateTime)
 {
 	// TODO: use some tolerance when checking for duplicate time?
 	if(aCheckForDuplicateTime && _storage.getSize() && _storage.getLast().getTime()==aStateVector.getTime())
-		_storage.getLast() = aStateVector;
+		_storage.updLast() = aStateVector;
 	else
 		_storage.append(aStateVector);
 
@@ -3154,7 +3154,7 @@ void Storage::postProcessSIMMMotion()
 					double timeStep = (end - start)/(_storage.getSize()-1);
 					_columnLabels.append("time");
 					for(int i=0; i<_storage.getSize(); i++){
-						Array<double>& data=_storage.get(i).getData();
+						Array<double>& data=_storage.updElt(i).getData();
 						data.append(i*timeStep);
 					}
 					int timeColumnIndex=_columnLabels.findIndex("time");

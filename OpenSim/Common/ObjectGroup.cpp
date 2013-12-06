@@ -198,8 +198,8 @@ void ObjectGroup::replace(const Object* aOldObject, Object* aNewObject)
 	{
 		int index = _memberObjects.findIndex(const_cast<Object*>(aOldObject));
 		if(index >= 0) {
-			_memberObjects.get(index) = aNewObject;
-			_memberNames.get(index) = aNewObject->getName();
+			_memberObjects.updElt(index) = aNewObject;
+			_memberNames.updElt(index) = aNewObject->getName();
 		}
 	}
 }

@@ -143,9 +143,9 @@ void MuscleAnalysis::setNull()
 
 	// DEFAULT VALUES
 	_muscleListProp.getValueStrArray().setSize(1);
-	_muscleListProp.getValueStrArray().get(0) = "all";
+	_muscleListProp.getValueStrArray().updElt(0) = "all";
 	_coordinateListProp.getValueStrArray().setSize(1);
-	_coordinateListProp.getValueStrArray().get(0) = "all";
+	_coordinateListProp.getValueStrArray().updElt(0) = "all";
 	_computeMoments = true;
 }
 //_____________________________________________________________________________
@@ -445,7 +445,7 @@ void MuscleAnalysis::setMuscles(OpenSim::Array<std::string>& aMuscles)
 	int size = aMuscles.getSize();
 	_muscleListProp.getValueStrArray().setSize(aMuscles.getSize());
 	for(int i=0; i<size; i++){
-		_muscleListProp.getValueStrArray().get(i) = aMuscles.get(i);
+		_muscleListProp.getValueStrArray().updElt(i) = aMuscles.get(i);
 	}
 }
 //_____________________________________________________________________________
@@ -460,7 +460,7 @@ setCoordinates(OpenSim::Array<std::string>& aCoordinates)
 	int size = aCoordinates.getSize();
 	_coordinateListProp.getValueStrArray().setSize(size);
 	for(int i=0; i<size; i++){
-		_coordinateListProp.getValueStrArray().get(i) = aCoordinates[i];
+		_coordinateListProp.getValueStrArray().updElt(i) = aCoordinates[i];
 	}
 }
 //-----------------------------------------------------------------------------
