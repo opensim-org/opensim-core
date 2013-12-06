@@ -26,7 +26,13 @@
  */
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/PropertyDbl.h>
 #include "ControlLinearNode.h"
+
+
+//=============================================================================
+// STATIC CONSTANTS
+//=============================================================================
 
 
 using namespace OpenSim;
@@ -36,20 +42,41 @@ using namespace OpenSim;
 //=============================================================================
 //_____________________________________________________________________________
 /**
+ * Default constructor. 
+ *
  * @param aT Time.
  * @param aX Control value.
+ * @param aMin Minimum allowed control value.
+ * @param aMax Maximum allowed control value.
  *
  */
-ControlLinearNode::ControlLinearNode(double aT,double aValue)
+ControlLinearNode::
+ControlLinearNode(double aT,double aValue) :
+	_t(_propT.getValueDbl()),
+	_value(_propValue.getValueDbl())
 {
 	setNull();
-    constructProperties();
-
-	set_t(aT);
-	set_value(aValue);
+	_t = aT;
+	_value = aValue;
+}
+//_____________________________________________________________________________
+/**
+ * Copy constructor.
+ *
+ * @param aControl Control to copy.
+ */
+ControlLinearNode::ControlLinearNode(const ControlLinearNode &aControl) :
+	_t(_propT.getValueDbl()),
+	_value(_propValue.getValueDbl())
+{
+	setNull();
+	*this = aControl;
 }
 
 
+ControlLinearNode::~ControlLinearNode()
+{
+}
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -57,25 +84,48 @@ ControlLinearNode::ControlLinearNode(double aT,double aValue)
 /**
  * Set NULL value for the member variables.
  */
-void ControlLinearNode::setNull()
+void ControlLinearNode::
+setNull()
 {
-	setAuthors("Frank Anderson");
+	setupProperties();
 }
-
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void ControlLinearNode::constructProperties()
+void ControlLinearNode::
+setupProperties()
 {
-    constructProperty_t(0.0);
-    constructProperty_value(0.0);
+	_propT.setName("t");
+	_propT.setValue(0.0);
+	_propertySet.append(&_propT);
+
+	_propValue.setName("value");
+	_propValue.setValue(0.0);
+	_propertySet.append(&_propValue);
 }
 
 
 //=============================================================================
 // OPERATORS
 //=============================================================================
+//-----------------------------------------------------------------------------
+// ASSIGNMENT
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return Reference to the altered object.
+ */
+ControlLinearNode& ControlLinearNode::
+operator=(const ControlLinearNode &aNode)
+{
+	_t = aNode._t;
+	_value = aNode._value;
+	return(*this);
+}
+
 //-----------------------------------------------------------------------------
 // EQUALITY
 //-----------------------------------------------------------------------------
@@ -94,8 +144,8 @@ void ControlLinearNode::constructProperties()
 bool ControlLinearNode::
 operator==(const ControlLinearNode &aNode) const
 {
-	if((get_t()) > aNode.get_t()) return(false);
-	if((get_t()) < aNode.get_t()) return(false);
+	if((_t) > aNode._t) return(false);
+	if((_t) < aNode._t) return(false);
 	return(true);
 }
 
@@ -112,7 +162,7 @@ operator==(const ControlLinearNode &aNode) const
 bool ControlLinearNode::
 operator<(const ControlLinearNode &aNode) const
 {
-	if(get_t()<aNode.get_t()) return(true);
+	if(_t<aNode._t) return(true);
 	else return(false);
 }
 
@@ -166,8 +216,58 @@ GetEqualityTolerance()
 	return(_EqualityTolerance);
 }
 */
+//-----------------------------------------------------------------------------
+// TIME
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set the time at which this control node occurs.
+ *
+ * @param aTime Time at which this control node occurs.
+ */
+void ControlLinearNode::
+setTime(double aTime)
+{
+	_t = aTime;
+}
+//_____________________________________________________________________________
+/**
+ * Get the time at which this control node occurs.
+ *
+ * @return Time at which this control node occurs.
+ */
+double ControlLinearNode::
+getTime() const
+{
+	return(_t);
+}
 
-
+//-----------------------------------------------------------------------------
+// VALUE
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set the value of this control node.
+ *
+ * @param aValue Value of this control node.
+ */
+void ControlLinearNode::
+setValue(double aValue)
+{
+	_value = aValue;
+	_propValue.setValueIsDefault(false);
+}
+//_____________________________________________________________________________
+/**
+ * Get the value of this control node.
+ *
+ * @return Value of this control node.
+ */
+double ControlLinearNode::
+getValue() const
+{
+	return(_value);
+}
 
 //=============================================================================
 // UTILITY
@@ -194,11 +294,11 @@ toString()
 	const char *format = IO::GetDoubleOutputFormat();
 
 	strcpy(string,"t=");
-	sprintf(tmp,format,get_t());
+	sprintf(tmp,format,_t);
 	strcat(string,tmp);
 
 	strcat(string," value=");
-	sprintf(tmp,format,get_value());
+	sprintf(tmp,format,_value);
 	strcat(string,tmp);
 
 	return(string);

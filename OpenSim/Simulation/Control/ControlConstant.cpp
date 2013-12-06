@@ -24,29 +24,47 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Property_Deprecated.h>
+#include <OpenSim/Common/PropertyDbl.h>
 #include "ControlConstant.h"
+#include "SimTKcommon.h"
 
-using namespace OpenSim;
 
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
-// Uses default (compiler-generated) destructor, copy constructor, and copy
-// assignment operator.
 //_____________________________________________________________________________
 
-//_____________________________________________________________________________
+
+using namespace OpenSim;
 /**
-// Convienience constructor.
-*/
-ControlConstant::ControlConstant(double value, const char *aName)
+ * Destructor.
+ */
+ControlConstant::~ControlConstant()
+{
+}
+//_____________________________________________________________________________
+ControlConstant::ControlConstant(double aX,const char *aName) :
+	_x(_propX.getValueDbl())
 {
 	setNull();
-    constructProperties();
-
 	setIsModelControl(false);
-	set_value(value);
+	_x = aX;
 	setName(aName);
+}
+//_____________________________________________________________________________
+/**
+ * Copy constructor.
+ *
+ * @param aControl Control to copy.
+ */
+ControlConstant::ControlConstant(const ControlConstant &aControl) :
+	Control(aControl),
+	_x(_propX.getValueDbl())
+{
+	setNull();
+	copyData(aControl);
 }
 
 
@@ -57,24 +75,61 @@ ControlConstant::ControlConstant(double value, const char *aName)
 /**
  * Set the member data to their NULL values.
  */
-void ControlConstant::setNull()
+void ControlConstant::
+setNull()
 {
-    setAuthors("Ajay Seth");
+	setupProperties();
+	_x = 0.0;
 }
-
 //_____________________________________________________________________________
 /**
-// Allocate and initialize properties.
-*/
-void ControlConstant::constructProperties()
+ * Connect properties to local pointers.
+ */
+void ControlConstant::
+setupProperties()
 {
-	constructProperty_value(0.0);
-
+	_propX.setName("value");
+	_propX.setValue(0.0);
+	_propertySet.append( &_propX );
+}
+//_____________________________________________________________________________
+/**
+ * Copy the member variables of the specified control.
+ */
+void ControlConstant::
+copyData(const ControlConstant &aControl)
+{
+	_x = aControl.getParameterValue(0);
 }
 
 
 //=============================================================================
-// CONTROL INTERFACE
+// OPERATORS
+//=============================================================================
+//-----------------------------------------------------------------------------
+// ASSIGNMENT
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return  Reference to the altered object.
+ */
+ControlConstant& ControlConstant::
+operator=(const ControlConstant &aControl)
+{
+	// BASE CLASS
+	Control::operator=(aControl);
+
+	// DATA
+	copyData(aControl);
+
+	return(*this);
+}
+
+
+//=============================================================================
+// GET AND SET
 //=============================================================================
 //-----------------------------------------------------------------------------
 // NUMBER OF PARAMETERS
@@ -88,7 +143,7 @@ void ControlConstant::constructProperties()
 int ControlConstant::
 getNumParameters() const
 {
-	return 1;
+	return(1);
 }
 
 //-----------------------------------------------------------------------------
@@ -116,7 +171,7 @@ setParameterMin(int aI,double aMin)
 double ControlConstant::
 getParameterMin(int aI) const
 {
-	return getDefaultParameterMin();
+	return(getDefaultParameterMin());
 }
 
 //-----------------------------------------------------------------------------
@@ -144,7 +199,7 @@ setParameterMax(int aI,double aMax)
 double ControlConstant::
 getParameterMax(int aI) const
 {
-	return getDefaultParameterMax();
+	return(getDefaultParameterMax());
 }
 
 //-----------------------------------------------------------------------------
@@ -154,7 +209,7 @@ getParameterMax(int aI) const
 double ControlConstant::
 getParameterTime(int aI) const
 {
-	return SimTK::NaN;
+	return(SimTK::NaN);
 }
 
 //-----------------------------------------------------------------------------
@@ -194,13 +249,13 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList)
 void ControlConstant::
 setParameterValue(int aI,double aX)
 {
-	set_value(aX);
+	_x = aX;
 }
 //_____________________________________________________________________________
 double ControlConstant::
 getParameterValue(int aI) const
 {
-	return get_value();
+	return(_x);
 }
 
 //-----------------------------------------------------------------------------
@@ -210,13 +265,13 @@ getParameterValue(int aI) const
 void ControlConstant::
 setControlValue(double aT,double aX)
 {
-	set_value(aX);
+	_x = aX;
 }
 //_____________________________________________________________________________
 double ControlConstant::
 getControlValue(double aT)
 {
-	return get_value();
+	return(_x);
 }
 
 //-----------------------------------------------------------------------------

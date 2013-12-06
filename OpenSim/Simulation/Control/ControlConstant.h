@@ -1,5 +1,5 @@
-#ifndef OPENSIM_CONTROL_CONSTANT_H_
-#define OPENSIM_CONTROL_CONSTANT_H_
+#ifndef _ControlConstant_h_
+#define _ControlConstant_h_
 /* -------------------------------------------------------------------------- *
  *                        OpenSim:  ControlConstant.h                         *
  * -------------------------------------------------------------------------- *
@@ -47,17 +47,17 @@ namespace OpenSim {
  */
 class OSIMSIMULATION_API ControlConstant : public Control {
 OpenSim_DECLARE_CONCRETE_OBJECT(ControlConstant, Control);
-public:
-//==============================================================================
-// PROPERTIES
-//==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with this class. **/
-    /**@{**/
-    OpenSim_DECLARE_PROPERTY(value, double,
-		"The constant control value.");
 
+//=============================================================================
+// MEMBER DATA
+//=============================================================================
+protected:
+	// PROPERTIES
+	/** Control value. */
+	PropertyDbl _propX;
 
+	// REFERENCES
+	double &_x;
 
 //=============================================================================
 // METHODS
@@ -67,29 +67,36 @@ public:
      * @param aX Constant value of the control.
      * @param aName Name of the control.
      */
-    ControlConstant(double value=0.0, const char *aName="UnspecifiedName");
-	
+    ControlConstant(double aX=0.0,const char *aName="UNKOWN");
+	ControlConstant(const ControlConstant &aControl);
+	virtual ~ControlConstant();
 
 private:
-    //--------------------------------------------------------------------------
-	// Implement ModelComponent interface.
-	//--------------------------------------------------------------------------
 	void setNull();
-	void constructProperties();
+	void copyData(const ControlConstant &aControl);
+protected:
+	void setupProperties();
 	
 
+	//--------------------------------------------------------------------------
+	// OPERATORS
+	//--------------------------------------------------------------------------
 public:
+#ifndef SWIG
+	ControlConstant& operator=(const ControlConstant &aControl);
+#endif
 	//--------------------------------------------------------------------------
-	// Implement Control interface.
+	// GET AND SET
 	//--------------------------------------------------------------------------
-    int getNumParameters() const OVERRIDE_11; 
-
+	// PARAMETERS
+	// Number
+	virtual int getNumParameters() const;
 	// Min
-	void setParameterMin(int aI,double aMin) OVERRIDE_11;
-	double getParameterMin(int aI) const OVERRIDE_11;
+	virtual void setParameterMin(int aI,double aMin);
+	virtual double getParameterMin(int aI) const;
 	// Max
-	void setParameterMax(int aI,double aMax) OVERRIDE_11;
-	double getParameterMax(int aI) const OVERRIDE_11;
+	virtual void setParameterMax(int aI,double aMax);
+	virtual double getParameterMax(int aI) const;
 	// Time and Neighborhood
     /**
      * For ControlConstant, parameters are not associated with any specific time.
@@ -97,46 +104,46 @@ public:
      * @param aI Index of the parameter.
      * @return SimTK::NaN
      */
-    double getParameterTime(int aI) const OVERRIDE_11;
+    virtual double getParameterTime(int aI) const;
     /**
      * @param aI Index of the parameter.
      * @param rTLower -SimTK::Infinity
      * @param rTUpper SimTK::Infinity
      */
-    void getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const OVERRIDE_11;
+    virtual void getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const;
 
     /**
      * @param rList Parameter at index 0 (i.e., the value of the constant)
      * is the only parameter on the list.
      */
-    int getParameterList(double aT,Array<int> &rList) OVERRIDE_11;
-    int getParameterList(double aT1,double aT2,Array<int> &rList) OVERRIDE_11;
+    virtual int getParameterList(double aT,Array<int> &rList);
+    virtual int getParameterList(double aT1,double aT2,Array<int> &rList);
 
     /**
      * @param aI Only 0 is valid for ControlConstant.
      * @param aX The constant value of this control curve.
      */
-    void setParameterValue(int aI,double aP) OVERRIDE_11;
+    virtual void setParameterValue(int aI,double aP);
     /**
      * @see setParameterValue()
      * @param aI Only 0 is valid for ControlConstant.
      * @return The constant value of this control curve.
      */
-    double getParameterValue(int aI) const OVERRIDE_11;
+    virtual double getParameterValue(int aI) const;
 
     /**
      * @param aT Not used since the control value is constant in time.
      * @param aX Control value.
      */
-    void setControlValue(double aT,double aX) OVERRIDE_11;
+    virtual void setControlValue(double aT,double aX);
     /**
      * @param aT Not used since the control value is constant in time.
      */
-    double getControlValue(double aT) OVERRIDE_11;
-	double getControlValueMin(double aT=0.0) OVERRIDE_11;
-	void setControlValueMin(double aT,double aX) OVERRIDE_11;
-	double getControlValueMax(double aT=0.0) OVERRIDE_11;
-	void setControlValueMax(double aT,double aX) OVERRIDE_11;
+    virtual double getControlValue(double aT);
+	virtual double getControlValueMin(double aT=0.0);
+	virtual void setControlValueMin(double aT,double aX);
+	virtual double getControlValueMax(double aT=0.0);
+	virtual void setControlValueMax(double aT,double aX);
 
 //=============================================================================
 };	// END of class ControlConstant
@@ -145,4 +152,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // OPENSIM_CONTROL_CONSTANT_H_
+#endif // __ControlConstant_h__
