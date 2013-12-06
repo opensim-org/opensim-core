@@ -247,7 +247,7 @@ DecorativeGeometry& setRepresentation(const Representation&);
 Representation getRepresentation() const;
 
 void implementGeometry(DecorativeGeometryImplementation&) const;
-
+#ifndef SWIG
 // Bookkeeping below here -- internal use only. Don't look below or you will
 // turn into a pillar of salt.
 bool isOwnerHandle() const;
@@ -256,6 +256,7 @@ explicit DecorativeGeometry(class DecorativeGeometryRep* r) : rep(r) { }
 bool hasRep() const {return rep!=0;}
 const DecorativeGeometryRep& getRep() const {assert(rep); return *rep;}
 DecorativeGeometryRep&       updRep()       {assert(rep); return *rep;}
+#endif
 protected:
 DecorativeGeometryRep* rep;
 };
@@ -555,7 +556,6 @@ class SimTK_SimTKCOMMON_EXPORT DecorativeMesh : public DecorativeGeometry {
 public:
     explicit DecorativeMesh(const PolygonalMesh& mesh);
     const PolygonalMesh& getMesh() const;
-
     // Retain the derived type when setting generic geometry options.
     DecorativeMesh& setBodyId(int b)          {DecorativeGeometry::setBodyId(b);        return *this;}
     //DecorativeMesh& setIndexOnBody(int x)     {DecorativeGeometry::setIndexOnBody(x);   return *this;}

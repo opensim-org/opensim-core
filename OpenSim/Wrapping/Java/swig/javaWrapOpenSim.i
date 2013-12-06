@@ -159,6 +159,7 @@
 #include <OpenSim/Simulation/Model/PathPointSet.h>
 #include <OpenSim/Simulation/Model/ConditionalPathPoint.h>
 #include <OpenSim/Simulation/Model/MovingPathPoint.h>
+#include <OpenSim/Simulation/Model/PointForceDirection.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/Ligament.h>
 
@@ -637,6 +638,8 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 	}
 }
 
+%include "std_vector.i"
+%template(StdVecInt) std::vector<int>;
 
 /* rest of header files to be wrapped */
 %include <OpenSim/version.h>
@@ -755,6 +758,7 @@ namespace SimTK {
 %include <OpenSim/Common/MultiplierFunction.h>
 %include <OpenSim/Common/GCVSpline.h>
 %include <OpenSim/Common/Sine.h>
+
 %include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 %include <OpenSim/Common/SmoothSegmentedFunction.h>
 
@@ -770,6 +774,7 @@ namespace SimTK {
 %include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
 %include <OpenSim/Common/ScaleSet.h>
+%include <OpenSim/Common/MarkerFrame.h>
 %include <OpenSim/Common/MarkerData.h>
 
 // osimSimulation
@@ -917,6 +922,10 @@ namespace SimTK {
 %template(SetPathPoint) OpenSim::Set<OpenSim::PathPoint>;
 %template(ArrayPathPoint) OpenSim::Array<OpenSim::PathPoint*>;
 %include <OpenSim/Simulation/Model/PathPointSet.h>
+
+%include <OpenSim/Simulation/Model/PointForceDirection.h>
+%template(ArrayPointForceDirection) OpenSim::Array<OpenSim::PointForceDirection*>;
+
 %include <OpenSim/Simulation/Model/GeometryPath.h>
 %include <OpenSim/Simulation/Model/Ligament.h>
 %include <OpenSim/Simulation/Model/PathActuator.h>
@@ -962,6 +971,8 @@ namespace SimTK {
 %include <OpenSim/Actuators/ForceVelocityInverseCurve.h>
 %include <OpenSim/Actuators/TendonForceLengthCurve.h>
 %include <OpenSim/Actuators/ClutchedPathSpring.h>
+%include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
+%include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 
 %include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 %include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>

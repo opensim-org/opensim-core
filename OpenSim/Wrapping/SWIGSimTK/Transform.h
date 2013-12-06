@@ -232,7 +232,7 @@ public:
     /// Return a read-only reference to the z direction (unit vector)
     /// of the F frame, expressed in the B frame.
     const typename Rotation_<P>::ColType&  z() const  { return R().z(); }
-
+#ifndef SWIG
     /// Return a read-only reference to the inverse (transpose) of
     /// our contained rotation, that is R_FB.
     const InverseRotation_<P>&  RInv() const  { return ~R_BF; }
@@ -240,7 +240,7 @@ public:
     /// Return a writable (lvalue) reference to the inverse (transpose) of
     /// our contained rotation, that is R_FB.
     InverseRotation_<P>&  updRInv()  { return ~R_BF; }
-
+#endif
     /// Return a read-only reference to our translation vector p_BF.
     const Vec<3,P>&  p() const  { return p_BF; }
 

@@ -1185,7 +1185,7 @@ one in this array. If the array is empty, this \e may return null (0) but does
 not have to -- the only thing you can be sure of is that begin()==end() for an 
 empty array. **/
 T* end() {return const_cast<T*>(this->CBase::cend());}
-
+#ifndef SWIG
 /** Return a const reverse iterator pointing to the last element in the array 
 or crend() if the array is empty. **/
 const_reverse_iterator crbegin() const {return this->CBase::crbegin();}
@@ -1205,7 +1205,7 @@ const_reverse_iterator rend() const {return this->CBase::crend();}
 reverse iterator that has been incremented past the front of the array. You
 cannot dereference this iterator. **/
 reverse_iterator rend() {return reverse_iterator(begin());}
-
+#endif
 /** Return a const pointer to the first element of the array, or possibly
 (but not necessarily) null (0) if the array is empty.
 @note
@@ -2288,11 +2288,12 @@ ArrayViewConst_<T,X> getSubArray(index_type index, size_type length) const
 return an ArrayView_ referencing that data without copying it. **/
 ArrayView_<T,X> operator()(index_type index, size_type length)
 {   return Base::operator()(index,length); }
-#endif
+
 /** Same as non-const operator()(index,length); exists to provide non-operator
 access to that functionality in case it is needed. **/
 ArrayView_<T,X> updSubArray(index_type index, size_type length)
 {   return Base::updSubArray(index,length); }
+#endif
 /*@}    End of element access. **/
 
 

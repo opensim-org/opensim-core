@@ -76,10 +76,12 @@ public:
     /** Default construction gives Stage::Empty. **/
     Stage() : level(Stage::Empty) {}
     /** This is an implicit conversion from Stage::Level to Stage. **/
+#ifndef SWIG
     Stage(Level l) {
         assert(LowestValid <= l && l <= HighestValid);
         level = l;
     }
+#endif
     /** You can explicitly create a Stage from an int if it is in range. **/
     explicit Stage(int l) {
         assert(LowestValid <= l && l <= HighestValid);

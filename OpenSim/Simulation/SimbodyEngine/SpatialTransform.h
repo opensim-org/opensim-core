@@ -86,7 +86,9 @@ public:
 	OpenSim::Array<std::string> getCoordinateNames() const;
     /** For each axis, construct a list of the coordinate indices that dictate
     motion along that axis. **/
+#ifndef SWIG
 	std::vector<std::vector<int> > getCoordinateIndices() const;
+#endif
     /** Create a new SimTK::Function corresponding to each axis; these are
     heap allocated and it is up to the caller to delete them. **/
 	std::vector<const SimTK::Function*> getFunctions() const;
