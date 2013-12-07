@@ -1,0 +1,575 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30000">
+	<Model name="CoupledMovingPathPointMomentArmTest">
+		<credits>Unassigned</credits>
+		<publications>Unassigned</publications>
+		<length_units>Unassigned</length_units>
+		<force_units>Unassigned</force_units>
+		<!--Acceleration due to gravity.-->
+		<gravity> 0 -9.8 0</gravity>
+		<!--Bodies in the model.-->
+		<BodySet>
+			<objects>
+				<Body name="ground">
+					<mass>0</mass>
+					<mass_center> 0 0 0</mass_center>
+					<inertia_xx>1</inertia_xx>
+					<inertia_yy>1</inertia_yy>
+					<inertia_zz>1</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint />
+					<VisibleObject>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 1 1 1</scale_factors>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>false</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
+					</VisibleObject>
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+				</Body>
+				<Body name="femur">
+					<mass>8.806</mass>
+					<mass_center> 0 0.5 0</mass_center>
+					<inertia_xx>0.1268</inertia_xx>
+					<inertia_yy>0.0332</inertia_yy>
+					<inertia_zz>0.1337</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name ="FemurWeldToGround">
+							<!--Name of the parent body to which this joint connects its owner body.-->
+							<parent_body>ground</parent_body>
+							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+							<location_in_parent>0 0 0</location_in_parent>
+							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
+							<orientation_in_parent>0 0 0</orientation_in_parent>
+							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
+							<location>0.002 0.1715 0</location>
+							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
+							<orientation>0 0 0</orientation>
+							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+							<CoordinateSet>
+								<objects />
+								<groups />
+							</CoordinateSet>
+							<!--Whether the joint transform defines parent->child or child->parent.-->
+							<reverse>false</reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>femur_r.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> -0 0 -0 0 0 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 1 1 1</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups />
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 1 1 1</scale_factors>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>false</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
+					</VisibleObject>
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+				</Body>
+				<Body name="tibia_1">
+					<mass>3.51</mass>
+					<mass_center> 0 0 0</mass_center>
+					<inertia_xx>0.0477</inertia_xx>
+					<inertia_yy>0.0048</inertia_yy>
+					<inertia_zz>0.0484</inertia_zz>
+					<inertia_xy>0</inertia_xy>
+					<inertia_xz>0</inertia_xz>
+					<inertia_yz>0</inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="knee1">
+							<!--Name of the parent body to which this joint connects its owner body.-->
+							<parent_body>femur</parent_body>
+							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+							<location_in_parent>0.0033 -0.4009 0</location_in_parent>
+							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
+							<orientation_in_parent>0 0 0</orientation_in_parent>
+							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
+							<location>0 0 0</location>
+							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
+							<orientation>0 0 0</orientation>
+							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+							<CoordinateSet>
+								<objects>
+									<Coordinate name="knee_angle_1">
+										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+										<motion_type>rotational</motion_type>
+										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+										<default_value>0</default_value>
+										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+										<default_speed_value>0</default_speed_value>
+										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+										<range>-2.0943951023931954923084289221863 0.31415927</range>
+										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+										<clamped>false</clamped>
+										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+										<locked>false</locked>
+										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+										<prescribed_function />
+										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+										<prescribed>false</prescribed>
+                    <!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints. When true, 
+                        the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which 
+                        have this flag set to false, to dictate the value of unimportant coordinates if they are linked via constraints.-->
+                    <is_free_to_satisfy_constraints>true</is_free_to_satisfy_constraints>
+                  </Coordinate>
+								</objects>
+								<groups />
+							</CoordinateSet>
+							<!--Whether the joint transform defines parent->child or child->parent.-->
+							<reverse>false</reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>tibia_r.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> -0 0 -0 0 0 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 1 1 1</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups />
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 1 1 1</scale_factors>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>false</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
+					</VisibleObject>
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+				</Body>
+        <Body name="tibia_2">
+          <mass>3.51</mass>
+          <mass_center> 0 0 0</mass_center>
+          <inertia_xx>0.0477</inertia_xx>
+          <inertia_yy>0.0048</inertia_yy>
+          <inertia_zz>0.0484</inertia_zz>
+          <inertia_xy>0</inertia_xy>
+          <inertia_xz>0</inertia_xz>
+          <inertia_yz>0</inertia_yz>
+          <!--Joint that connects this body with the parent body.-->
+          <Joint>
+            <PinJoint name="knee2">
+              <!--Name of the parent body to which this joint connects its owner body.-->
+              <parent_body>tibia_1</parent_body>
+              <!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+              <location_in_parent>0.0033 -0.4009 0</location_in_parent>
+              <!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
+              <orientation_in_parent>0 0 0</orientation_in_parent>
+              <!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
+              <location>0 0 0</location>
+              <!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
+              <orientation>0 0 0</orientation>
+              <!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+              <CoordinateSet>
+                <objects>
+                  <Coordinate name="knee_angle_2">
+                    <!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+                    <motion_type>rotational</motion_type>
+                    <!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+                    <default_value>0</default_value>
+                    <!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+                    <default_speed_value>0</default_speed_value>
+                    <!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+                    <range>-2.0943951023931954923084289221863 0.31415927</range>
+                    <!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+                    <clamped>false</clamped>
+                    <!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+                    <locked>false</locked>
+                    <!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+                    <prescribed_function />
+                    <!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+                    <prescribed>false</prescribed>
+                    <!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints. When true, 
+                        the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which 
+                        have this flag set to false, to dictate the value of unimportant coordinates if they are linked via constraints.-->
+                    <is_free_to_satisfy_constraints>true</is_free_to_satisfy_constraints>
+                  </Coordinate>
+                </objects>
+                <groups />
+              </CoordinateSet>
+              <!--Whether the joint transform defines parent->child or child->parent.-->
+              <reverse>false</reverse>
+            </PinJoint>
+          </Joint>
+          <VisibleObject>
+            <!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+            <GeometrySet>
+              <objects>
+                <DisplayGeometry>
+                  <!--Name of geometry file .vtp, .stl, .obj-->
+                  <geometry_file>tibia_r.vtp</geometry_file>
+                  <!--Color used to display the geometry when visible-->
+                  <color> 1 1 1</color>
+                  <!--Name of texture file .jpg, .bmp-->
+                  <texture_file />
+                  <!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+                  <transform> -0 0 -0 0 0 0</transform>
+                  <!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+                  <scale_factors> 1 1 1</scale_factors>
+                  <!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+                  <display_preference>4</display_preference>
+                  <!--Display opacity between 0.0 and 1.0-->
+                  <opacity>1</opacity>
+                </DisplayGeometry>
+              </objects>
+              <groups />
+            </GeometrySet>
+            <!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+            <scale_factors> 1 1 1</scale_factors>
+            <!--Whether to show a coordinate frame-->
+            <show_axes>false</show_axes>
+            <!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+            <display_preference>4</display_preference>
+          </VisibleObject>
+          <WrapObjectSet>
+            <objects />
+            <groups />
+          </WrapObjectSet>
+        </Body>
+        <Body name="foot">
+          <mass>0.12606858</mass>
+          <mass_center> 0 0 0</mass_center>
+          <inertia_xx>0.00202166</inertia_xx>
+          <inertia_yy>0.00202166</inertia_yy>
+          <inertia_zz>0.00202166</inertia_zz>
+          <inertia_xy>0</inertia_xy>
+          <inertia_xz>0</inertia_xz>
+          <inertia_yz>0</inertia_yz>
+          <!--Joint that connects this body with the parent body.-->
+          <Joint>
+            <PlanarJoint name="footToGround">
+              <parent_body>ground</parent_body>
+              <location_in_parent> 0 0 0</location_in_parent>
+              <orientation_in_parent> 0 0 0</orientation_in_parent>
+              <location> 0 0 0</location>
+              <orientation> 0 0 0</orientation>
+              <!--Generalized coordinates parameterizing this joint.-->
+              <CoordinateSet>
+                <objects>
+                  <Coordinate name="foot_angle">
+                    <!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+                    <motion_type>rotational</motion_type>
+                    <!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+                    <default_value>0.09735134</default_value>
+                    <!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+                    <default_speed_value>0</default_speed_value>
+                    <!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+                    <range>-3.1415926535897932384626433832795 0.31415927</range>
+                    <!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+                    <clamped>false</clamped>
+                    <!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+                    <locked>false</locked>
+                    <!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+                    <prescribed_function />
+                  </Coordinate>
+                  <Coordinate name="foot_x">
+                    <!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+                    <motion_type>translational</motion_type>
+                    <!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+                    <default_value>0.0</default_value>
+                    <!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+                    <default_speed_value>0</default_speed_value>
+                    <!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+                    <range>-2.0 0.1 </range>
+                    <!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+                    <clamped>false</clamped>
+                    <!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+                    <locked>false</locked>
+                    <!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+                    <prescribed_function />
+                    <!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints. When true, 
+                        the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which 
+                        have this flag set to false, to dictate the value of unimportant coordinates if they are linked via constraints.-->
+                    <is_free_to_satisfy_constraints>true</is_free_to_satisfy_constraints>
+                  </Coordinate>
+                  <Coordinate name="foot_y">
+                    <!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+                    <motion_type>translational</motion_type>
+                    <!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+                    <default_value>0.09735134</default_value>
+                    <!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+                    <default_speed_value>0</default_speed_value>
+                    <!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+                    <range>-2.0 0.0</range>
+                    <!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+                    <clamped>false</clamped>
+                    <!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+                    <locked>false</locked>
+                    <!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+                    <prescribed_function />
+                    <!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints. When true, 
+                        the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which 
+                        have this flag set to false, to dictate the value of unimportant coordinates if they are linked via constraints.-->
+                    <is_free_to_satisfy_constraints>true</is_free_to_satisfy_constraints>
+                  </Coordinate>
+                </objects>
+                <groups />
+              </CoordinateSet>
+              <reverse>false</reverse>
+            </PlanarJoint>
+          </Joint>
+          <VisibleObject>
+            <!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+            <GeometrySet>
+              <objects>
+                <DisplayGeometry>
+                  <!--Name of geometry file .vtp, .stl, .obj-->
+                  <geometry_file>box.vtp</geometry_file>
+                  <!--Color used to display the geometry when visible-->
+                  <color> 1 1 1</color>
+                  <!--Name of texture file .jpg, .bmp-->
+                  <texture_file />
+                  <!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+                  <transform> -0 0 -0 0 0 0</transform>
+                  <!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+                  <scale_factors> 1 1 1</scale_factors>
+                  <!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+                  <display_preference>4</display_preference>
+                  <!--Display opacity between 0.0 and 1.0-->
+                  <opacity>1</opacity>
+                </DisplayGeometry>
+              </objects>
+              <groups />
+            </GeometrySet>
+            <!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+            <scale_factors> 0.25 0.05 0.10 </scale_factors>
+            <!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+            <transform> -0 0 -0 0 0 0</transform>
+            <!--Whether to show a coordinate frame-->
+            <show_axes>false</show_axes>
+            <!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+            <display_preference>4</display_preference>
+          </VisibleObject>
+          <WrapObjectSet>
+            <objects />
+            <groups />
+          </WrapObjectSet>
+        </Body>
+        
+
+			</objects>
+			<groups />
+		</BodySet>
+		<!--Constraints in the model.-->
+		<ConstraintSet>
+      <objects>
+        <WeldConstraint>
+          <body_1> foot </body_1>
+          <body_2> tibia_2 </body_2>
+          <!--Location of the weld in first body specified in body1 reference frame.-->
+          <location_body_1>0 0 0</location_body_1>
+          <!--Orientation of the weld axes on body1 specified in body1's reference frame.Euler XYZ body-fixed rotation angles are used to express the orientation.-->
+          <orientation_body_1>0 0 0</orientation_body_1>
+          <!--Location of the weld in second body specified in body2 reference frame.-->
+          <location_body_2>0 -0.483203 0</location_body_2>
+          <!--Orientation of the weld axes on body2 specified in body2's reference frame.Euler XYZ body-fixed rotation angles are used to express the orientation.-->
+          <orientation_body_2>0 0 0</orientation_body_2>
+        </WeldConstraint>
+        <CoordinateCouplerConstraint name="knee_angle_1_C">
+          <isDisabled>false</isDisabled>
+          <coupled_coordinates_function>
+            <LinearFunction>
+              <coefficients> 0.5 0</coefficients>
+            </LinearFunction>
+          </coupled_coordinates_function>
+          <independent_coordinate_names> foot_angle </independent_coordinate_names>
+          <dependent_coordinate_name> knee_angle_1 </dependent_coordinate_name>
+          <scale_factor>1</scale_factor>
+        </CoordinateCouplerConstraint>
+        <CoordinateCouplerConstraint name="knee_angle_2_C">
+          <isDisabled>false</isDisabled>
+          <coupled_coordinates_function>
+            <LinearFunction>
+              <coefficients> 0.5 0</coefficients>
+            </LinearFunction>
+          </coupled_coordinates_function>
+          <independent_coordinate_names> foot_angle </independent_coordinate_names>
+          <dependent_coordinate_name> knee_angle_2 </dependent_coordinate_name>
+          <scale_factor>1</scale_factor>
+        </CoordinateCouplerConstraint>
+      </objects>
+			<groups />
+		</ConstraintSet>
+		<!--Forces in the model.-->
+		<ForceSet>
+			<objects>
+				<Thelen2003Muscle name="vas_int_r">
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="vas_int_r-P1">
+									<location> 0.029 -0.1924 0.031</location>
+									<body>femur</body>
+								</PathPoint>
+								<PathPoint name="vas_int_r-P2">
+									<location> 0.0335 -0.2084 0.0285</location>
+									<body>femur</body>
+								</PathPoint>
+								<ConditionalPathPoint name="vas_int_r-P3">
+									<location> 0.0343 -0.403 0.0055</location>
+									<body>femur</body>
+									<range> -2.61799 -1.42</range>
+									<coordinate>knee_angle_1</coordinate>
+								</ConditionalPathPoint>
+								<MovingPathPoint name="vas_int_r-P4">
+									<location> 0.0554632 0.0252923 0.0018</location>
+									<body>tibia_1</body>
+									<x_location>
+										<SimmSpline>
+											<x> -2.0944 -1.99997 -1.5708 -1.45752 -1.39626 -1.0472 -0.698132 -0.526391 -0.349066 -0.174533 0 0.00017453 0.00034907 0.0279253 0.0872665 0.174533 2.0944</x>
+											<y> 0.0082733 0.0106866 0.0202042 0.022353 0.0234583 0.0292715 0.0349465 0.037871 0.0412569 0.0465287 0.0554632 0.0554735 0.0554837 0.0571717 0.061272 0.0684368 0.0648818</y>
+										</SimmSpline>
+									</x_location>
+									<x_coordinate>knee_angle_1</x_coordinate>
+									<y_location>
+										<SimmSpline>
+											<x> -2.0944 -1.99997 -1.5708 -1.45752 -1.39626 -1.0472 -0.698132 -0.526391 -0.349066 -0.174533 0 0.00017453 0.00034907 0.0279253 0.0872665 0.174533 2.0944</x>
+											<y> 0.025599 0.0259487 0.0273124 0.0274796 0.0275151 0.0271363 0.0265737 0.0263073 0.0261187 0.0260129 0.0252923 0.0252911 0.0252898 0.0250526 0.0242191 0.0218288 -0.0685706</y>
+										</SimmSpline>
+									</y_location>
+									<y_coordinate>knee_angle_1</y_coordinate>
+									<z_location>
+										<SimmSpline>
+											<x> -2.0944 2.0944</x>
+											<y> 0.0018 0.0018</y>
+										</SimmSpline>
+									</z_location>
+									<z_coordinate>knee_angle_1</z_coordinate>
+								</MovingPathPoint>
+                <MovingPathPoint name="vas_int_r-P5">
+                  <location> 0.0554632 0.0252923 0.0018</location>
+                  <body>tibia_2</body>
+                  <x_location>
+                    <SimmSpline>
+                      <x> -2.0944 -1.99997 -1.5708 -1.45752 -1.39626 -1.0472 -0.698132 -0.526391 -0.349066 -0.174533 0 0.00017453 0.00034907 0.0279253 0.0872665 0.174533 2.0944</x>
+                      <y> 0.0082733 0.0106866 0.0202042 0.022353 0.0234583 0.0292715 0.0349465 0.037871 0.0412569 0.0465287 0.0554632 0.0554735 0.0554837 0.0571717 0.061272 0.0684368 0.0648818</y>
+                    </SimmSpline>
+                  </x_location>
+                  <x_coordinate>knee_angle_2</x_coordinate>
+                  <y_location>
+                    <SimmSpline>
+                      <x> -2.0944 -1.99997 -1.5708 -1.45752 -1.39626 -1.0472 -0.698132 -0.526391 -0.349066 -0.174533 0 0.00017453 0.00034907 0.0279253 0.0872665 0.174533 2.0944</x>
+                      <y> 0.025599 0.0259487 0.0273124 0.0274796 0.0275151 0.0271363 0.0265737 0.0263073 0.0261187 0.0260129 0.0252923 0.0252911 0.0252898 0.0250526 0.0242191 0.0218288 -0.0685706</y>
+                    </SimmSpline>
+                  </y_location>
+                  <y_coordinate>knee_angle_2</y_coordinate>
+                  <z_location>
+                    <SimmSpline>
+                      <x> -2.0944 2.0944</x>
+                      <y> 0.0018 0.0018</y>
+                    </SimmSpline>
+                  </z_location>
+                  <z_coordinate>knee_angle_2</z_coordinate>
+                </MovingPathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--The wrap objecs that are associated with this path-->
+						<PathWrapSet>
+							<objects />
+							<groups />
+						</PathWrapSet>
+						<!--Used to display the path in the 3D window-->
+						<VisibleObject name="display">
+							<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+							<scale_factors> 1 1 1</scale_factors>
+							<!--Whether to show a coordinate frame-->
+							<show_axes>false</show_axes>
+							<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+							<display_preference>4</display_preference>
+						</VisibleObject>
+					</GeometryPath>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>5000</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.207</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.316</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0.05235988</pennation_angle_at_optimal>
+					<!--time constant for ramping up muscle activation-->
+					<activation_time_constant>0.01</activation_time_constant>
+					<!--time constant for ramping down of muscle activation-->
+					<deactivation_time_constant>0.04</deactivation_time_constant>
+					<!--tendon strain at maximum isometric muscle force-->
+					<FmaxTendonStrain>0.033</FmaxTendonStrain>
+					<!--passive muscle strain at maximum isometric muscle force-->
+					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
+					<!--shape factor for Gaussian active muscle force-length relationship-->
+					<KshapeActive>0.5</KshapeActive>
+					<!--exponential shape factor for passive force-length relationship-->
+					<KshapePassive>4</KshapePassive>
+					<!--force-velocity shape factor-->
+					<Af>0.3</Af>
+					<!--maximum normalized lengthening force-->
+					<Flen>1.8</Flen>
+				</Thelen2003Muscle>
+			</objects>
+			<groups />
+		</ForceSet>
+		<!--Markers in the model.-->
+		<MarkerSet>
+			<objects />
+			<groups />
+		</MarkerSet>
+		<!--ContactGeometries  in the model.-->
+		<ContactGeometrySet>
+			<objects />
+			<groups />
+		</ContactGeometrySet>
+	</Model>
+</OpenSimDocument>

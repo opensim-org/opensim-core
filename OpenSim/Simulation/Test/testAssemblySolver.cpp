@@ -60,7 +60,7 @@ void testAssembleModelWithConstraints(string modelFile)
 {
 	using namespace SimTK;
 
-	cout << "****************************************************************************" << endl;
+	cout << "\n****************************************************************************" << endl;
 	cout << " testAssembleModelWithConstraints with "<< modelFile << endl;
 	cout << "****************************************************************************\n" << endl;
 

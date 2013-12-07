@@ -74,7 +74,7 @@ protected:
 	Function* &_xLocation;
 
 	PropertyStr _xCoordinateNameProp;
-   std::string &_xCoordinateName;
+    std::string &_xCoordinateName;
 
 	const Coordinate* _xCoordinate;
 
@@ -82,7 +82,7 @@ protected:
 	Function* &_yLocation;
 
 	PropertyStr _yCoordinateNameProp;
-   std::string &_yCoordinateName;
+    std::string &_yCoordinateName;
 
 	const Coordinate* _yCoordinate;
 
@@ -90,7 +90,7 @@ protected:
 	Function* &_zLocation;
 
 	PropertyStr _zCoordinateNameProp;
-   std::string &_zCoordinateName;
+    std::string &_zCoordinateName;
 
 	const Coordinate* _zCoordinate;
 
@@ -127,6 +127,8 @@ public:
 	void update(const SimTK::State& s) OVERRIDE_11;
 	void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity) OVERRIDE_11;
 #endif
+	SimTK::Vec3 getdPointdQ(const SimTK::State& s) const OVERRIDE_11; 
+
 	const std::string& getXCoordinateName() const { return _xCoordinateName; }
 	const std::string& getYCoordinateName() const { return _yCoordinateName; }
 	const std::string& getZCoordinateName() const { return _zCoordinateName; }

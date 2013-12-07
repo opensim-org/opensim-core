@@ -31,6 +31,7 @@
 #include <OpenSim/Common/VisibleObject.h>
 #include "PathPointSet.h"
 #include <OpenSim/Simulation/Wrap/PathWrapSet.h>
+#include <OpenSim/Simulation/MomentArmSolver.h>
 
 
 #ifdef SWIG
@@ -74,7 +75,10 @@ private:
 	double _preScaleLength;
 
 	// object that owns this GeometryPath object
-	Object* _owner;
+	SimTK::ReferencePtr<Object> _owner;
+
+	// solver used to compute moment-arms
+	mutable SimTK::ReferencePtr<MomentArmSolver> _maSolver;
 	
 //=============================================================================
 // METHODS
@@ -86,11 +90,6 @@ public:
 	GeometryPath();
 	virtual ~GeometryPath();
 
-	void setName(const std::string &aName);
-#ifndef SWIG
-	GeometryPath& operator=(const GeometryPath &aPath);
-#endif
-	void copyData(const GeometryPath &aPath);
 	const PathPointSet& getPathPointSet() const { return get_PathPointSet(); }
 	PathPointSet& updPathPointSet() { return upd_PathPointSet(); }
 	const PathWrapSet& getWrapSet() const { return get_PathWrapSet(); }
@@ -156,14 +155,16 @@ public:
 	void getPointForceDirections(const SimTK::State& s, 
 		OpenSim::Array<PointForceDirection*> *rPFDs) const;
 
-	/** add in the equivalent spatial forces applied to the bodies for an applied
-		 tension along the GeometryPath to a set of bodyForces 
+	/** add in the equivalent body and generalized forces to be applied to the 
+	    multibody system resulting from a tension along the GeometryPath 
 	@param[in]  tension      scalar (double) of the applied (+ve) tensile force 
-	@param[out] bodyForces   resultant spatial force (torque, force) at each body
+	@param[in,out] bodyForces   Vector of SpatialVec's (torque, force) on bodies
+	@param[in,out] mobilityForces  Vector of generalized forces, one per mobility   
 	*/
-	void addInEquivalentForcesOnBodies(const SimTK::State& state,
-									   const double& tension, 
-						SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
+	void addInEquivalentForces(const SimTK::State& state,
+							   const double& tension, 
+						       SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+							   SimTK::Vector& mobilityForces) const;
 
 
 	//--------------------------------------------------------------------------

@@ -86,10 +86,10 @@ AssemblySolver::~AssemblySolver()
 	delete _assembler;
 }
 
-/** Internal method to convert the CoordinateReferences into goals of the 
-		assembly solver. Subclasses, override and call base to include other goals  
-		such as point of interest matching (Marker tracking). This method is
-		automatically called by assemble. */
+/* Internal method to convert the CoordinateReferences into goals of the 
+   assembly solver. Subclasses, override and call base to include other goals  
+   such as point of interest matching (Marker tracking). This method is
+   automatically called by assemble. */
 void AssemblySolver::setupGoals(SimTK::State &s)
 {
 	// wipe-out the previous SimTK::Assembler

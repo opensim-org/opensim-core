@@ -29,17 +29,13 @@
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include "ConditionalPathPoint.h"
+#include "MovingPathPoint.h"
 #include "PointForceDirection.h"
 #include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 #include <OpenSim/Simulation/Wrap/WrapResult.h>
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include "CoordinateSet.h"
 #include "Model.h"
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/DebugUtilities.h>
-#include "Simbody.h"
-
-#include <OpenSim/Simulation/MomentArmSolver.h>
 
 #include "ModelVisualizer.h"
 //=============================================================================
@@ -79,24 +75,10 @@ GeometryPath::~GeometryPath()
         // Free up allocated geometry objects
         disp->freeGeometry();
     }
+
+	delete _maSolver;
 }
 
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/*
- * Copy data members from one GeometryPath to another.
- *
- * @param aPath GeometryPath to be copied.
- */
-void GeometryPath::copyData(const GeometryPath &aPath)
-{
-    set_PathPointSet(aPath.get_PathPointSet());
-    set_display(aPath.get_display());
-    set_PathWrapSet(aPath.get_PathWrapSet());
-    set_default_color(aPath.get_default_color());
-}
 
 //_____________________________________________________________________________
 /*
@@ -105,6 +87,7 @@ void GeometryPath::copyData(const GeometryPath &aPath)
 void GeometryPath::setNull()
 {
     setAuthors("Peter Loan");
+	_maSolver = NULL;
 }
 
 //_____________________________________________________________________________
@@ -253,22 +236,6 @@ void GeometryPath::constructProperties()
 
 //_____________________________________________________________________________
 /*
- * Set the name of the path. This method overrides the one in Object
- * so that the path points can be [re]named accordingly.
- *
- * @param aName The new name of the path.
- */
-void GeometryPath::setName(const string &aName)
-{
-    // base class
-    ModelComponent::setName(aName);
-
-    // Rename all of the path points.
-    namePathPoints(0);
-}
-
-//_____________________________________________________________________________
-/*
  * Name the path points based on their position in the set. To keep the
  * names up to date, this method should be called every time the path changes.
  *
@@ -355,8 +322,10 @@ getPointForceDirections(const SimTK::State& s,
 
 /* add in the equivalent spatial forces on bodies for an applied tension 
     along the GeometryPath to a set of bodyForces */
-void GeometryPath::addInEquivalentForcesOnBodies(const SimTK::State& s,
-    const double& tension, SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const
+void GeometryPath::addInEquivalentForces(const SimTK::State& s,
+    const double& tension, 
+	SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+	SimTK::Vector& mobilityForces) const
 {
     PathPoint* start = NULL;
     PathPoint* end = NULL;
@@ -368,8 +337,13 @@ void GeometryPath::addInEquivalentForcesOnBodies(const SimTK::State& s,
     const SimTK::SimbodyMatterSubsystem& matter = 
                                         getModel().getMatterSubsystem();
 
-    // start point, end point and direction in ground
-    Vec3 po(0), pf(0), dir(0);
+    // start point, end point,  direction, and force vectors in ground
+    Vec3 po(0), pf(0), dir(0), force(0);
+	// partial velocity of point in body expressed in ground 
+	Vec3 dPodq_G(0), dPfdq_G(0);
+
+	// gen force (torque) due to moving point under tension
+	double fo, ff;
 
     for (int i = 0; i < np-1; ++i) {
         start = currentPath[i];
@@ -377,8 +351,7 @@ void GeometryPath::addInEquivalentForcesOnBodies(const SimTK::State& s,
         bo = &matter.getMobilizedBody(start->getBody().getIndex());
         bf = &matter.getMobilizedBody(end->getBody().getIndex());
 
-        if (bo != bf)
-        {
+        if (bo != bf) {
             // Find the positions of start and end in the inertial frame.
             po = bo->findStationLocationInGround(s, start->getLocation());
             pf = bf->findStationLocationInGround(s, end->getLocation());
@@ -386,11 +359,50 @@ void GeometryPath::addInEquivalentForcesOnBodies(const SimTK::State& s,
             // Form a vector from start to end, in the inertial frame.
             dir = (pf - po).normalize();
 
+			force = tension*dir;
+
             // add in the tension point forces to body forces
-            matter.addInStationForce(s, *bo, start->getLocation(),
-                tension*dir, bodyForces);
-            matter.addInStationForce(s, *bf, end->getLocation(),
-                -tension*dir, bodyForces);
+			bo->applyForceToBodyPoint(s, start->getLocation(), force, 
+				bodyForces);
+			bf->applyForceToBodyPoint(s, end->getLocation(), -force,
+				bodyForces);
+
+			const MovingPathPoint* mppo = 
+					dynamic_cast<MovingPathPoint *>(start);
+
+			if(mppo){
+				// torque (genforce) contribution due to relative movement 
+				// of a via point w.r.t. the body it is connected to.
+				dPodq_G = bo->expressVectorInGroundFrame(s, start->getdPointdQ(s));
+				fo = ~dPodq_G*force;			
+
+				// get the mobilized body the coordinate is couple to.
+				const SimTK::MobilizedBody& mpbod =
+					matter.getMobilizedBody(mppo->getXCoordinate()->getBodyIndex());
+
+				// apply the generalized (mobility) force to the coordinate's body
+				mpbod.applyOneMobilityForce(s, 
+					mppo->getXCoordinate()->getMobilizerQIndex(), 
+					fo, mobilityForces);
+			}
+
+			// do the same for the end point of this segment of the path
+			const MovingPathPoint* mppf = 
+					dynamic_cast<MovingPathPoint *>(end);
+
+			if(mppf){
+				dPfdq_G = bf->expressVectorInGroundFrame(s, end->getdPointdQ(s));
+				ff = ~dPfdq_G*(-force);
+
+				// get the mobilized body the coordinate is couple to.
+				const SimTK::MobilizedBody& mpbod =
+					matter.getMobilizedBody(mppf->getXCoordinate()->getBodyIndex());
+
+				mpbod.applyOneMobilityForce(s, 
+					mppf->getXCoordinate()->getMobilizerQIndex(), 
+					ff, mobilityForces);
+			}
+			
         }		
     }
 }
@@ -514,27 +526,6 @@ void GeometryPath::updateGeometry(const SimTK::State& s) const
     updateGeometrySize(s);
     updateGeometryLocations(s);
 }
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/*
- * Assignment operator.
- *
- * @param aPath The path from which to copy its data
- * @return Reference to this object.
- */
-GeometryPath& GeometryPath::operator=(const GeometryPath &aPath)
-{
-    // base class
-    ModelComponent::operator=(aPath);
-
-    copyData(aPath);
-
-    return(*this);
-}
-
 
 //=============================================================================
 // GET
@@ -1351,10 +1342,10 @@ calcLengthAfterPathComputation(const SimTK::State& s,
 double GeometryPath::
 computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const
 {
-    MomentArmSolver maSolver(*_model);
+	if(_maSolver == NULL)
+		_maSolver = new MomentArmSolver(*_model);
 
-    double ma = maSolver.solve(s, aCoord,  *this);
-    return ma;
+    return  _maSolver->solve(s, aCoord,  *this);
 }
 
 //_____________________________________________________________________________

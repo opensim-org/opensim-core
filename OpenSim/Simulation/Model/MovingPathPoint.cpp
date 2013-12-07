@@ -327,6 +327,22 @@ connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
     if (aModel.getCoordinateSet().contains(_zCoordinateName))
         _zCoordinate = &aModel.getCoordinateSet().get(_zCoordinateName);
 	// Update the XYZ location of the point (stored in _location).
+	
+	// As OpenSim 3.2 with corrections to the work and corresponding torque
+	// generate by the "gearing" that moves the point under tension,
+	// we no longer support independent components.
+	if(!((_xCoordinate == _yCoordinate) && (_xCoordinate == _zCoordinate))){
+		string msg = "MovingPathPoint:: Components of the same path point ";
+		msg += "must depend on same the coordinate. Condition: ";
+		msg += "x_coordinate == y_coordinate == z_coordinate  FAILED.";
+		throw Exception(msg, __FILE__, __LINE__);		
+	}
+
+	if(_xCoordinate == NULL){
+		string msg = "MovingPathPoint:: Coordinate '";
+		msg += _xCoordinateName + "' governing the moving point was not found.";
+		throw Exception(msg, __FILE__, __LINE__);	
+	}
 }
 
 //=============================================================================
@@ -416,6 +432,40 @@ void MovingPathPoint::getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity)
 	else
 		aVelocity[2] = 0.0;
 }
+
+//_____________________________________________________________________________
+/**
+ * Get the velocity of the point in the body's local reference frame.
+ *
+ * @param aVelocity The velocity.
+ */
+
+SimTK::Vec3 MovingPathPoint::getdPointdQ(const SimTK::State& s) const
+{
+	SimTK::Vec3 dPdq_B(0);
+
+	std::vector<int> derivComponents;
+	derivComponents.push_back(0);
+
+	if (_xCoordinate){
+		//Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
+		dPdq_B[0] = _xLocation->calcDerivative(derivComponents, 
+			SimTK::Vector(1, _xCoordinate->getValue(s)));
+	}
+	if (_yCoordinate){
+		//Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
+		dPdq_B[1] = _yLocation->calcDerivative(derivComponents, 
+			SimTK::Vector(1, _yCoordinate->getValue(s)));
+	}
+	if (_zCoordinate){
+		//Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
+		dPdq_B[2] = _zLocation->calcDerivative(derivComponents, 
+			SimTK::Vector(1, _zCoordinate->getValue(s)));
+	}
+
+	return dPdq_B;
+}
+
 
 void MovingPathPoint::scale(const SimTK::State& s, const SimTK::Vec3& aScaleFactors)
 {

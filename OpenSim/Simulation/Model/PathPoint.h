@@ -126,13 +126,20 @@ public:
 	const std::string& getBodyName() const { return _bodyName; }
 	GeometryPath* getPath() const { return _path; }
 
-   virtual void scale(const SimTK::State& s, const SimTK::Vec3& aScaleFactors);
+    virtual void scale(const SimTK::State& s, const SimTK::Vec3& aScaleFactors);
 	virtual WrapObject* getWrapObject() const { return NULL; }
 
 	virtual bool isActive(const SimTK::State& s) const { return true; }
 	virtual void connectToModelAndPath(const Model& aModel, GeometryPath& aPath);
 	virtual void update(const SimTK::State& s) { }
+
+	// get the relative velocity of the path point with resepct to the body
+	// it is connected to.
 	virtual void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity);
+	// get the partial of the point location w.r.t. to the coordinates (Q)
+	// it is dependent on.
+	virtual SimTK::Vec3 getdPointdQ(const SimTK::State& s) const
+	    { return SimTK::Vec3(0); }
 
 	// Visible Object Support
 	virtual const VisibleObject* getDisplayer() const { return &_displayer; }

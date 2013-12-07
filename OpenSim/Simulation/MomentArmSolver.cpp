@@ -74,9 +74,11 @@ double MomentArmSolver::solve(const State &state, const Coordinate &aCoord,
 
 	// zero out all the forces
 	_bodyForces *= 0;
+	_generalizedForces = 0;
 
 	// apply a tension of unity to the bodies of the path
-	path.addInEquivalentForcesOnBodies(s_ma, 1.0, _bodyForces);
+	Vector pathDependentMobilityForces(s_ma.getNU(), 0.0);
+	path.addInEquivalentForces(s_ma, 1.0, _bodyForces, pathDependentMobilityForces);
 
 	//_bodyForces.dump("bodyForces from addInEquivalentForcesOnBodies");
 
@@ -85,6 +87,7 @@ double MomentArmSolver::solve(const State &state, const Coordinate &aCoord,
 	getModel().getMultibodySystem().getMatterSubsystem()
         .multiplyBySystemJacobianTranspose(s_ma, _bodyForces, _generalizedForces);
 
+	_generalizedForces += pathDependentMobilityForces;
 	// Moment-arm is the effective torque (since tension is 1) at the 
     // coordinate of interest taking into account the generalized forces also 
     // acting on other coordinates that are coupled via constraint.

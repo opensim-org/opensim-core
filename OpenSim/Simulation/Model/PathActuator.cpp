@@ -202,7 +202,7 @@ void PathActuator::computeForce( const SimTK::State& s,
 	// the force of this actuator used to compute power
     setForce(s,  force );
 
-	path.addInEquivalentForcesOnBodies(s, force, bodyForces);
+	path.addInEquivalentForces(s, force, bodyForces, mobilityForces);
 }
 
 /**

@@ -7903,21 +7903,21 @@
 											<y> 0.0155805 0.0179938 0.0275081 0.0296564 0.0307615 0.0365695 0.0422074 0.0450902 0.048391 0.0534299 0.0617576 0.0617669 0.0617762 0.0633083 0.066994 0.0733035 0.0573481</y>
 										</SimmSpline>
 									</x_location>
-									<x_coordinate>knee_angle_r</x_coordinate>
+									<x_coordinate>knee_flexion_r</x_coordinate>
 									<y_location>
 										<SimmSpline>
 											<x> -2.0944 -1.99997 -1.5708 -1.45752 -1.39626 -1.0472 -0.698132 -0.526391 -0.349066 -0.174533 0 0.00017453 0.00034907 0.0279253 0.0872665 0.174533 2.0944</x>
 											<y> 0.0234116 0.0237613 0.0251141 0.0252795 0.0253146 0.0249184 0.0242373 0.0238447 0.0234197 0.0227644 0.020984 0.0209814 0.0209788 0.0205225 0.0191754 0.0159554 -0.0673774</y>
 										</SimmSpline>
 									</y_location>
-									<y_coordinate>knee_angle_r</y_coordinate>
+									<y_coordinate>knee_flexion_r</y_coordinate>
 									<z_location>
 										<SimmSpline>
 											<x> -2.0944 0.1745</x>
 											<y> 0.0014 0.0014</y>
 										</SimmSpline>
 									</z_location>
-									<z_coordinate>knee_angle_r</z_coordinate>
+									<z_coordinate>knee_flexion_r</z_coordinate>
 								</MovingPathPoint>
 							</objects>
 							<groups />
@@ -8005,21 +8005,21 @@
 											<y> 0.0082733 0.0106866 0.0202042 0.022353 0.0234583 0.0292715 0.0349465 0.037871 0.0412569 0.0465287 0.0554632 0.0554735 0.0554837 0.0571717 0.061272 0.0684368 0.0648818</y>
 										</SimmSpline>
 									</x_location>
-									<x_coordinate>knee_angle_r</x_coordinate>
+									<x_coordinate>knee_flexion_r</x_coordinate>
 									<y_location>
 										<SimmSpline>
 											<x> -2.0944 -1.99997 -1.5708 -1.45752 -1.39626 -1.0472 -0.698132 -0.526391 -0.349066 -0.174533 0 0.00017453 0.00034907 0.0279253 0.0872665 0.174533 2.0944</x>
 											<y> 0.025599 0.0259487 0.0273124 0.0274796 0.0275151 0.0271363 0.0265737 0.0263073 0.0261187 0.0260129 0.0252923 0.0252911 0.0252898 0.0250526 0.0242191 0.0218288 -0.0685706</y>
 										</SimmSpline>
 									</y_location>
-									<y_coordinate>knee_angle_r</y_coordinate>
+									<y_coordinate>knee_flexion_r</y_coordinate>
 									<z_location>
 										<SimmSpline>
 											<x> -2.0944 2.0944</x>
 											<y> 0.0018 0.0018</y>
 										</SimmSpline>
 									</z_location>
-									<z_coordinate>knee_angle_r</z_coordinate>
+									<z_coordinate>knee_flexion_r</z_coordinate>
 								</MovingPathPoint>
 							</objects>
 							<groups />
@@ -9777,21 +9777,21 @@
 											<y> 0.0155805 0.0179938 0.0275081 0.0296564 0.0307615 0.0365695 0.0422074 0.0450902 0.048391 0.0534299 0.0617576 0.0617669 0.0617762 0.0633083 0.066994 0.0733035 0.0573481</y>
 										</SimmSpline>
 									</x_location>
-									<x_coordinate>knee_angle_l</x_coordinate>
+									<x_coordinate>knee_flexion_l</x_coordinate>
 									<y_location>
 										<SimmSpline>
 											<x> -2.0944 -1.99997 -1.5708 -1.45752 -1.39626 -1.0472 -0.698132 -0.526391 -0.349066 -0.174533 0 0.00017453 0.00034907 0.0279253 0.0872665 0.174533 2.0944</x>
 											<y> 0.0234116 0.0237613 0.0251141 0.0252795 0.0253146 0.0249184 0.0242373 0.0238447 0.0234197 0.0227644 0.020984 0.0209814 0.0209788 0.0205225 0.0191754 0.0159554 -0.0673774</y>
 										</SimmSpline>
 									</y_location>
-									<y_coordinate>knee_angle_l</y_coordinate>
+									<y_coordinate>knee_flexion_l</y_coordinate>
 									<z_location>
 										<SimmSpline>
 											<x> -2.0944 0.1745</x>
 											<y> -0.0014 -0.0014</y>
 										</SimmSpline>
 									</z_location>
-									<z_coordinate>knee_angle_l</z_coordinate>
+									<z_coordinate>knee_flexion_l</z_coordinate>
 								</MovingPathPoint>
 							</objects>
 							<groups />
@@ -9879,21 +9879,21 @@
 											<y> 0.0082733 0.0106866 0.0202042 0.022353 0.0234583 0.0292715 0.0349465 0.037871 0.0412569 0.0465287 0.0554632 0.0554735 0.0554837 0.0571717 0.061272 0.0684368 0.0648818</y>
 										</SimmSpline>
 									</x_location>
-									<x_coordinate>knee_angle_l</x_coordinate>
+									<x_coordinate>knee_flexion_l</x_coordinate>
 									<y_location>
 										<SimmSpline>
 											<x> -2.0944 -1.99997 -1.5708 -1.45752 -1.39626 -1.0472 -0.698132 -0.526391 -0.349066 -0.174533 0 0.00017453 0.00034907 0.0279253 0.0872665 0.174533 2.0944</x>
 											<y> 0.025599 0.0259487 0.0273124 0.0274796 0.0275151 0.0271363 0.0265737 0.0263073 0.0261187 0.0260129 0.0252923 0.0252911 0.0252898 0.0250526 0.0242191 0.0218288 -0.0685706</y>
 										</SimmSpline>
 									</y_location>
-									<y_coordinate>knee_angle_l</y_coordinate>
+									<y_coordinate>knee_flexion_l</y_coordinate>
 									<z_location>
 										<SimmSpline>
 											<x> -2.0944 2.0944</x>
 											<y> -0.0018 -0.0018</y>
 										</SimmSpline>
 									</z_location>
-									<z_coordinate>knee_angle_l</z_coordinate>
+									<z_coordinate>knee_flexion_l</z_coordinate>
 								</MovingPathPoint>
 							</objects>
 							<groups />
