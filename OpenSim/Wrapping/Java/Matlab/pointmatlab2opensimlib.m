@@ -1,8 +1,8 @@
  function pointmatlab2opensimlib
 %% pointmatlab2opensimlib() adds OpenSim library paths to MATLAB path files
 %    Allows user to select the location of the OpenSim install directory
-%    and add these paths the matlab library paths. Will allow MATLAB users
-%    to run OpenSim calls in Matlab.
+%    and add these paths to the matlab library paths. Will allow MATLAB 
+%    users to run OpenSim calls in Matlab.
 %    Build Data: 10.17.2013
 %    Tested with Matlab 2012a and OpenSim 3.1 on Windows 7
 %    Authors: The OpenSim Team (James Dunne, Chris Dembia & Ayman Habib)  
@@ -34,13 +34,13 @@
    correctFolder=0;
     while ~correctFolder
         prospectiveOpenSimFolder = getenv('OPENSIM_HOME');
-        openSimFolder = uigetdir(prospectiveOpenSimFolder,['Select the folder where OpenSim is installed']);
+        openSimFolder = uigetdir(prospectiveOpenSimFolder,'Select the folder where OpenSim is installed.');
         if ~openSimFolder  % user cancelled process
             error('User cancelled function')
         end
         % Check if the correct OpenSim directory is selected
         if ~exist(fullfile(openSimFolder, 'sdk', 'buildinfo.txt'))
-            h = msgbox('Folder is not an OpenSim Install folder, please select OpenSim Install folder');
+            h = msgbox('Folder is not an OpenSim Install folder. Please select OpenSim Install folder','Error');
             uiwait(h)
         else
             correctFolder = 1;
@@ -66,7 +66,7 @@
     addpath(OpenSimLibPath)
     savepath
 %% Display message
-    h = msgbox( [char(openSimFolder) ' has been added to your Matlab Paths. To complete setup restart Matlab. To test your set up, type model = org.opensim.modeling.Model();']);
+    h = msgbox('Paths have been successfully updated. To complete setup, restart Matlab. To test your set up, type: model = org.opensim.modeling.Model();',  [char(openSimFolder) ' Successfully added!']);
     uiwait(h)
 end
 
@@ -117,7 +117,7 @@ function checkSystemInfo(openSimFolder)
  % opensim (both 64 bit?)
  if ~exist(fullfile(openSimFolder, 'sdk', 'buildinfo.txt'))
 	 % is systemInfo.txt file available?
-     h = msgbox('Unable to check OpenSim version (64 or 32). Buildinfo.txt not OpenSim\SDK folder');
+     h = msgbox('Unable to check OpenSim version (64 or 32). Buildinfo.txt not found in OpenSim\SDK folder. Please download OpenSim 3.2', 'Error');
      uiwait(h)
      return
  else
@@ -129,13 +129,13 @@ function checkSystemInfo(openSimFolder)
     OsimInstallBuild= platformID(length(platformID)-1:end);
     % matlab is 64 and OpenSim is 32
     if strncmp(computer('arch'),'win64',5) &&  ~strncmp(OsimInstallBuild,'86',2);  
-        h = msgbox('Error: Matlab version is 64 bit while OpenSim is 32 bit. Please install OpenSim 64bit');
+        h = msgbox('Matlab version is 64 bit while OpenSim is 32 bit. Please install OpenSim 64bit','Error');
         uiwait(h)
         error('Program exit')
     end
     % matlab is 32 and OpenSIm is 64
      if ~strncmp(computer('arch'),'win64',5) &&  strncmp(OsimInstallBuild,'86',2); 
-        h = msgbox('Error: Matlab version is 32 bit while OpenSim is 64 bit. Please install OpenSim 32bit');
+        h = msgbox('Matlab version is 32 bit while OpenSim is 64 bit. Please install OpenSim 32bit','Error');
         uiwait(h)
         error('Program exit') 
      end
@@ -149,7 +149,7 @@ function cleanMatlabSearchPath
  % the strings 'OpenSim' and 'bin' in them. This is to clean out older bin
  % folders.
 
- % get teh matlab path    
+ % get the matlab path    
  matlabPath         = path;
  % matlab path is just 1 long string soindex location of ';'
  matLabFoldersIndex = strfind(matlabPath,';');
