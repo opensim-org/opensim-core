@@ -1037,7 +1037,7 @@ public:
         out(j) = col; // overwrites row's j'th element
         return out;
     }
-#endif
+
     // These assume we are given a pointer to d[0] of a Mat<M,N,E,CS,RS> like this one.
     static const Mat& getAs(const ELT* p)  {return *reinterpret_cast<const Mat*>(p);}
     static Mat&       updAs(ELT* p)        {return *reinterpret_cast<Mat*>(p);}
@@ -1048,7 +1048,7 @@ public:
         m.setToNaN();
         return m;
     }
-
+#endif
     /// Return true if any element of this Mat contains a NaN anywhere.
     bool isNaN() const {
         for (int j=0; j<N; ++j)

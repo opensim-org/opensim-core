@@ -675,17 +675,19 @@ namespace SimTK {
 %template(VectorOfSpatialVec) Vector_<SpatialVec>;
 %template(VectorOfVec3) Vector_<Vec3>;
 }
+
+%include <SWIGSimTK/CoordinateAxis.h>
+%include <SWIGSimTK/Rotation.h>
+namespace SimTK {
+%template(Rotation) SimTK::Rotation_<double>;
+%template(InverseRotation) SimTK::InverseRotation_<double>;
+}
 // Transform
 %include <SWIGSimTK/Transform.h>
 namespace SimTK {
 %template(Transform) SimTK::Transform_<double>;
 }
 
-//%include <SWIGSimTK/CoordinateAxis.h>
-//%include <SWIGSimTK/Rotation.h>
-//namespace SimTK {
-//%template(Rotation) SimTK::Rotation_<double>;
-//}
 //
 %include <SWIGSimTK/MassProperties.h>
 namespace SimTK {

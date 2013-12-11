@@ -110,7 +110,7 @@ typedef Transform_<double>  dTransform;
  * on this memory layout.
  */
 //-----------------------------------------------------------------------------
-template <class P>
+template <class P=double>
 class Transform_ {
 public:
     /// Default constructor gives an identity transform.
@@ -219,7 +219,7 @@ public:
 
     /// Return a read-only reference to the contained rotation R_BF.
     const Rotation_<P>&  R() const  { return R_BF; }
-
+#ifndef SWIG
     /// Return a writable (lvalue) reference to the contained rotation R_BF.
     Rotation_<P>&  updR()           { return R_BF; }
 
@@ -232,11 +232,11 @@ public:
     /// Return a read-only reference to the z direction (unit vector)
     /// of the F frame, expressed in the B frame.
     const typename Rotation_<P>::ColType&  z() const  { return R().z(); }
-#ifndef SWIG
+#endif
     /// Return a read-only reference to the inverse (transpose) of
     /// our contained rotation, that is R_FB.
     const InverseRotation_<P>&  RInv() const  { return ~R_BF; }
-
+#ifndef SWIG
     /// Return a writable (lvalue) reference to the inverse (transpose) of
     /// our contained rotation, that is R_FB.
     InverseRotation_<P>&  updRInv()  { return ~R_BF; }
@@ -244,10 +244,11 @@ public:
     /// Return a read-only reference to our translation vector p_BF.
     const Vec<3,P>&  p() const  { return p_BF; }
 
+#ifndef SWIG
     /// Return a writable (lvalue) reference to our translation vector p_BF.
     /// Caution: if you write through this reference you update the transform.
     Vec<3,P>&  updP()  { return p_BF; }
-
+#endif
     /// Assign a new value to our translation vector. We expect the
     /// supplied vector @p p to be expressed in our B frame. A reference
     /// to the now-modified transform is returned as though this were
@@ -286,8 +287,9 @@ public:
 
     // OBSOLETE -- alternate name for p
     const Vec<3,P>& T() const {return p();}
+#ifndef SWIG
     Vec<3,P>&  updT()  {return updP();}
-
+#endif
 private:
     //TODO: these might not pack correctly; should use an array of 12 Reals.
     Rotation_<P> R_BF;   // rotation matrix that expresses F's axes in R
