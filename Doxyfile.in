@@ -756,7 +756,7 @@ EXCLUDE_PATTERNS       = *.svn \
                          *ArrayPtrs* \
                          *Instantiator* \
                          *Analytic* \
-                         */src/* \
+                         */Wrapping/* \
                          */test* \
                          */Test* \
                          */example* \
