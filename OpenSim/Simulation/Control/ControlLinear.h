@@ -247,6 +247,7 @@ public:
      */
     virtual double getParameterTime(int aI) const;
     /**
+	 * @param aI Index of the parameter.
      * @param rTLower The time of parameter aI-1 or of
      * aI if there is no parameter aI-1.  If there are no ControlLinearNode's
      * at all or if aI is invalid, rTLower is given the value SimTK::NaN.
@@ -257,6 +258,7 @@ public:
     virtual void getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const;
 
     /**
+	 * @param aT time
      * @param rList If aT lies between two nodes, the indices of these
      * two nodes are returned; if aT equals the time at which a node occurs, the
      * index of that node is returned; if aT is less than the time of the first
@@ -269,7 +271,7 @@ public:
 
     /**
      * @param aI Index of the parameter.
-     * @param aX The parameter value is simply the value of
+     * @param aP The parameter value is simply the value of
      * the aI-th ControlLinearNode (which is the value of the control curve).
      */
     virtual void setParameterValue(int aI,double aP);

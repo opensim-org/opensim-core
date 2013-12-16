@@ -48,22 +48,27 @@ namespace OpenSim {
     fiber at 1 normalized unit of force, and the shape of the curve (its
     'curviness'):
 
-    @param strainAtZeroForce
-        The fiber strain at which the fiber starts to develop force.
-        strainAtZeroForce = 0.0 means that the fiber will begin developing
-        tension when it is at its resting length.
-    @param strainAtOneNormForce
+	<h3>Properties</h3>
+    - \c strainAtZeroForce<br>
+		The fiber strain at which the fiber starts to develop force.
+		strainAtZeroForce = 0.0 means that the fiber will begin developing
+		tension when it is at its resting length.
+
+    - \c strainAtOneNormForce<br>
         The fiber strain at which the fiber develops 1 unit of normalized force.
         strainAtOneNormForce = 0.6 means that the fiber will develop a tension
         of 1 normalized force when it is strained by 60% of its resting length
         or, equivalently, when it is stretched to 1.6 times its resting length.
-    @param stiffnessAtLowForce
+
+    - \c stiffnessAtLowForce<br>
         The normalized stiffness (slope of the curve) when the fiber is just
         beginning to develop tensile force.
-    @param stiffnessAtOneNormForce
+
+    - \c stiffnessAtOneNormForce<br>
         The normalized stiffness (slope of the curve) when the fiber develops a
         tension of 1 normalized unit of force.
-    @param curviness
+
+    - \c curviness<br>
         A dimensionless parameter between 0 and 1 that describes the shape of
         the curve: a value of 0 indicates a curve that is very close to a
         straight line segment and a value of 1 indicates a curve that smoothly
@@ -74,18 +79,18 @@ namespace OpenSim {
     strain = (l-l0)/l0, where l is the current fiber length and l0 is its
     resting length.
 
-    <B>Required Parameters</B>
-    \li strainAtZeroForce
-    \li strainAtOneNormForce
+    <h3>Required Properties</h3>
+    - \c strainAtZeroForce
+    - \c strainAtOneNormForce
 
-    <B>Optional Parameters</B>
-    \li stiffnessAtLowForce
-    \li stiffnessAtOneNormForce
-    \li curviness
+    <h3>Optional Properties</h3>
+    - \c stiffnessAtLowForce
+    - \c stiffnessAtOneNormForce
+    - \c curviness
 
     \image html fig_FiberForceLengthCurve.png
 
-    <B>Conditions</B>
+    <h3>Conditions</h3>
     \verbatim
     strainAtZeroForce < strainAtOneNormForce
     stiffnessAtOneNormForce > 1/(strainAtOneNormForce-strainAtZeroForce)
@@ -109,7 +114,7 @@ namespace OpenSim {
     can be adjusted to match a wide variety of shapes, should it be desired to
     fit the curve to a different set of experimental data.
 
-    <B>Default Parameter Values</B>
+    <h3>Default Parameter Values</h3>
     If the optional parameters are not specified, the curve is fit to the
     experimentally measured fiber-force-length curves of Winters et al. (2010,
     Fig. 3a).
@@ -122,7 +127,7 @@ namespace OpenSim {
     curviness .................. 0.75
     \endverbatim
 
-    <B>Example</B>
+    <h3>Example</h3>
     @code
     // Make a fitted fiber-force-length curve.
     FiberForceLengthCurve fpeCurve1;
@@ -142,14 +147,14 @@ namespace OpenSim {
     an exception will be thrown because the curve is out-of-date with its
     properties.
 
-    <B>References</B>
-    \li Thelen, D.G. (2003) Adjustment of muscle mechanics model paramters to
-        simulate dynamic contractions in older adults. ASME Journal of
-        Biomechanical Engineering 125:70--77.
-    \li Winters, T.M., Takahashi, M., Lieber, R.L., and Ward, S. (2010) Whole
-        muscle length-tension relationships are accurately modeled as scaled
-        sarcomeres in rabbit hindlimb muscles. Journal of Biomechanics
-        44:109--115.
+    <h3>References</h3>
+    - Thelen, D.G. (2003) Adjustment of muscle mechanics model paramters to
+      simulate dynamic contractions in older adults. ASME Journal of
+      Biomechanical Engineering 125:70--77.
+    - Winters, T.M., Takahashi, M., Lieber, R.L., and Ward, S. (2010) Whole
+      muscle length-tension relationships are accurately modeled as scaled
+      sarcomeres in rabbit hindlimb muscles. Journal of Biomechanics
+      44:109--115.
 
     @author Matt Millard
 */
@@ -182,7 +187,8 @@ public:
     FiberForceLengthCurve();
 
     /** Constructs a fiber-force-length curve using the provided parameters and
-    assigns a default name. */
+    assigns a default name. See class documentation for the meaning of these
+	parameters, each of which corresponds to a property. */
     FiberForceLengthCurve(double strainAtZeroForce,
                           double strainAtOneNormForce,
                           double stiffnessAtLowForce,
@@ -265,9 +271,9 @@ public:
     0 <= curviness <= 1
     \endverbatim
     */
-    void setOptionalProperties(double aStiffnessAtLowForce,
-                               double aStiffnessAtOneNormForce,
-                               double aCurviness);
+    void setOptionalProperties(double stiffnessAtLowForce,
+                               double stiffnessAtOneNormForce,
+                               double curviness);
 
 	/** Implement the generic OpenSim::Function interface **/
     double calcValue(const SimTK::Vector& x) const OVERRIDE_11

@@ -154,7 +154,7 @@ class Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  *
  * OPTIONAL PROPERTIES
  * - <B>use_provided_muscle_mass</B> = An optional flag that allows the user to
- *      explicitly specify a muscle mass. If set to true, the <provided_muscle_mass>
+ *      explicitly specify a muscle mass. If set to true, the "provided_muscle_mass"
  *      property must be specified. The default setting is false, in which case, the
  *      muscle mass is calculated from the following formula:
  *          m = (Fmax/specific_tension)*density*Lm_opt, where 

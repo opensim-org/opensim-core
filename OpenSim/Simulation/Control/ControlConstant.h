@@ -107,12 +107,13 @@ public:
     virtual double getParameterTime(int aI) const;
     /**
      * @param aI Index of the parameter.
-     * @param rTLower -SimTK::Infinity
-     * @param rTUpper SimTK::Infinity
+     * @param rTLower -%SimTK::Infinity
+     * @param rTUpper %SimTK::Infinity
      */
     virtual void getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const;
 
     /**
+	 * @param aT time
      * @param rList Parameter at index 0 (i.e., the value of the constant)
      * is the only parameter on the list.
      */
@@ -123,7 +124,7 @@ public:
      * @param aI Only 0 is valid for ControlConstant.
      * @param aX The constant value of this control curve.
      */
-    virtual void setParameterValue(int aI,double aP);
+    virtual void setParameterValue(int aI,double aX);
     /**
      * @see setParameterValue()
      * @param aI Only 0 is valid for ControlConstant.

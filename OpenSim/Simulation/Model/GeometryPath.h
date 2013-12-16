@@ -157,6 +157,7 @@ public:
 
 	/** add in the equivalent body and generalized forces to be applied to the 
 	    multibody system resulting from a tension along the GeometryPath 
+	@param state	state used to evaluate forces
 	@param[in]  tension      scalar (double) of the applied (+ve) tensile force 
 	@param[in,out] bodyForces   Vector of SpatialVec's (torque, force) on bodies
 	@param[in,out] mobilityForces  Vector of generalized forces, one per mobility   

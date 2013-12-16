@@ -255,9 +255,9 @@ public:
         'stiffnessAtOneNormForce' and the x-axis, as shown in the figure in the
         class description.
     */
-    void setOptionalProperties(double aStiffnessAtOneNormForce,
-                               double aNormForceAtToeEnd,
-                               double aCurviness);
+    void setOptionalProperties(double stiffnessAtOneNormForce,
+                               double normForceAtToeEnd,
+                               double curviness);
 
     /** Implement the generic OpenSim::Function interface **/
     double calcValue(const SimTK::Vector& x) const OVERRIDE_11

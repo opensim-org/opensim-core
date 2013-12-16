@@ -193,7 +193,7 @@ public:
      *
      * @param aMax Maximum value.
      */
-    void setDefaultParameterMax(double aMin);
+    void setDefaultParameterMax(double aMax);
     /// @see setDefaultParameterMax()
 	double getDefaultParameterMax() const;
 	// Parameter Min
@@ -249,7 +249,7 @@ public:
      * Changes in the specified parameter are guaranteed not to change the value
      * of the control curve below the lower bound time or above the upper bound
      * time.  If a parameter influences the value of the control curve for all
-     * times, -SimTK::Infinity and SimTK::Infinity are returned for
+     * times, -%SimTK::Infinity and %SimTK::Infinity are returned for
      * the upper and lower bound times, respectively.
      *
      * @param aI Index of the parameter.
@@ -266,6 +266,7 @@ public:
      * specified time.
      *
      * @param aT Time in question.
+	 * @param rList The returned list of parameters.
      * @return Length of rList.
      */
     virtual int
@@ -306,7 +307,7 @@ public:
      * @param aX Value of the parameter. Meaning depends on the subclass.
      * @throws Exception if aI is invalid.
      */
-    virtual void setParameterValue(int aI,double aP) = 0;
+    virtual void setParameterValue(int aI,double aX) = 0;
 
 	// Control Value
     /**
@@ -347,7 +348,7 @@ public:
      * @param aT Time at which to set the control.
      * @param aMin Minimum allowed control value at time aT.
      */
-    virtual void setControlValueMin(double aT,double aX) = 0;
+    virtual void setControlValueMin(double aT,double aMin) = 0;
     /**
      * Gets the maximum allowed value of this control at time aT.
      *
@@ -366,7 +367,7 @@ public:
      * @param aT Time at which to set the control.
      * @param aMax Maximum allowed control value.
      */
-    virtual void setControlValueMax(double aT,double aX) = 0;
+    virtual void setControlValueMax(double aT,double aMax) = 0;
 	// Convenience methods to get first and last time.
     /**
      * Gets the first time for which a parameter is specified. Should be
