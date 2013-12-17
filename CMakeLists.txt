@@ -255,6 +255,7 @@ ENDIF(WIN32)
 ## Also translate ARCH64 to platform specific flags
 ## 
 ##################################################
+INCLUDE(InstallRequiredSystemLibraries)
 
 IF(WIN32)
 ELSE(WIN32)
@@ -384,7 +385,7 @@ SET(OPENSIM_INSTALL_PACKAGE_BUILD OFF CACHE BOOL "Build an installer (to post on
 MARK_AS_ADVANCED(OPENSIM_INSTALL_PACKAGE_BUILD)
 IF(OPENSIM_INSTALL_PACKAGE_BUILD)
 IF(WIN32)
-	SET(VTK_LIB_DIR ${OpenSim_SOURCE_DIR}/Vendors/vtk_dll CACHE PATH "Prebuilt VTK-shared libraries")	
+	SET(VTK_LIB_DIR ${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/${PLATFORM_ABI}/ CACHE PATH "Prebuilt VTK-shared libraries")	
 ENDIF(WIN32)
 ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
 
@@ -473,7 +474,7 @@ IF(WIN32)
         # and redistributable
 		INSTALL_FILES(/bin/ FILES 
 			${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcr71.dll
-		            ${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcp71.dll)
+		    ${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcp71.dll)
 		
 	ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
 ENDIF(WIN32)
