@@ -187,7 +187,7 @@ int main()
 		ofile.open("Arm26_optimization_result"); 
 		for(int i=0; i<actuators.getSize(); ++i){
 			ofile << controls[i] << endl;
-		}
+	}
 		ofile << -f <<endl;
 		ofile.close(); 
 	}

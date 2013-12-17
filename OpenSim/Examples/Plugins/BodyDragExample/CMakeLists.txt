@@ -50,6 +50,7 @@ LINK_LIBRARIES(
     optimized ${NameSpace}SimTKmath
 	debug     ${NameSpace}SimTKsimbody_d
     optimized ${NameSpace}SimTKsimbody
+    pthreadVC2
 )
 
 ADD_LIBRARY(${PLUGIN_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 

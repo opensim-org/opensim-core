@@ -45,7 +45,19 @@ TARGET_LINK_LIBRARIES(${TARGET}
 	debug ${NameSpace}SimTKcommon_d optimized ${NameSpace}SimTKcommon
 	debug ${NameSpace}SimTKmath_d optimized  ${NameSpace}SimTKmath
 	debug ${NameSpace}SimTKsimbody_d optimized ${NameSpace}SimTKsimbody
+	${PLATFORM_LIBS}
 )
+
+IF(WIN32)
+	SET(PLATFORM_LIBS  pthreadVC2)
+ELSE (WIN32)
+  SET(NameSpace "")
+  IF(APPLE)
+	SET(PLATFORM_LIBS  SimTKAtlas)
+  ELSE(APPLE)
+	SET(PLTAFORM_LIBS SimTKAtlas_Lin_generic)
+  ENDIF(APPLE)
+ENDIF (WIN32)
 
 # This block copies the additional files into the running directory
 # For example vtp, obj files. Add to the end for more extentions
