@@ -1,163 +1,259 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<OpenSimDocument Version="20302">
-	<ForceSet name="gait2354_CMC">
-		<defaults/>
-    <objects>
-			<PointActuator name="FX">
-				<isDisabled> false </isDisabled>
-				<!--Minimum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<min_control> -infinity </min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<max_control> infinity </max_control>
-				<body> pelvis </body>
-				<point>      -0.07243760       0.00000000       0.00000000 </point>
-				<point_is_global> false </point_is_global>
-				<direction>       1.00000000      -0.00000000      -0.00000000 </direction>
-				<force_is_global> true </force_is_global>
-				<optimal_force>     100.00000000 </optimal_force>
-			</PointActuator>
-			<PointActuator name="FY">
-				<isDisabled> false </isDisabled>
-				<!--Minimum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<min_control> -infinity </min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<max_control> infinity </max_control>
-				<body> pelvis </body>
-				<point>      -0.07243760       0.00000000       0.00000000 </point>
-				<point_is_global> false </point_is_global>
-				<direction>      -0.00000000       1.00000000      -0.00000000 </direction>
-				<force_is_global> true </force_is_global>
-				<optimal_force>     200.00000000 </optimal_force>
-			</PointActuator>
-			<PointActuator name="FZ">
-				<isDisabled> false </isDisabled>
-				<!--Minimum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<min_control> -infinity </min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<max_control> infinity </max_control>
-				<body> pelvis </body>
-				<point>      -0.07243760       0.00000000       0.00000000 </point>
-				<point_is_global> false </point_is_global>
-				<direction>      -0.00000000      -0.00000000       1.00000000 </direction>
-				<force_is_global> true </force_is_global>
-				<optimal_force>     100.00000000 </optimal_force>
-			</PointActuator>
-			<TorqueActuator name="MX">
-				<isDisabled> false </isDisabled>
-				<!--Minimum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<min_control> -infinity </min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<max_control> infinity </max_control>
-				<bodyA> pelvis </bodyA>
-				<bodyB> ground </bodyB>
-				<torque_is_global> true </torque_is_global>
-				<axis>       1.00000000      -0.00000000      -0.00000000 </axis>
-				<optimal_force>      80.00000000 </optimal_force>
-			</TorqueActuator>
-			<TorqueActuator name="MY">
-				<isDisabled> false </isDisabled>
-				<!--Minimum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<min_control> -infinity </min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<max_control> infinity </max_control>
-				<bodyA> pelvis </bodyA>
-				<bodyB> ground </bodyB>
-				<torque_is_global> true </torque_is_global>
-				<axis>      -0.00000000       1.00000000      -0.00000000 </axis>
-				<optimal_force>      80.00000000 </optimal_force>
-			</TorqueActuator>
-			<TorqueActuator name="MZ">
-				<isDisabled> false </isDisabled>
-				<!--Minimum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<min_control> -infinity </min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<max_control> infinity </max_control>
-				<bodyA> pelvis </bodyA>
-				<bodyB> ground </bodyB>
-				<torque_is_global> true </torque_is_global>
-				<axis>      -0.00000000      -0.00000000       1.00000000 </axis>
-				<optimal_force>      80.00000000 </optimal_force>
-			</TorqueActuator>
-			<CoordinateActuator name="ankle_angle_r_reserve">
-				<isDisabled> false </isDisabled>
-				<!--Minimum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<min_control> -infinity </min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<max_control> infinity </max_control>
-				<coordinate> ankle_angle_r </coordinate>
-				<optimal_force>       1.00000000 </optimal_force>
-			</CoordinateActuator>
-			<CoordinateActuator name="subtalar_angle_r_reserve">
-				<isDisabled> false </isDisabled>
-				<!--Minimum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<min_control> -infinity </min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<max_control> infinity </max_control>
-				<coordinate> subtalar_angle_r </coordinate>
-				<optimal_force>       1.00000000 </optimal_force>
-			</CoordinateActuator>
-			<CoordinateActuator name="mtp_angle_r_reserve">
-				<isDisabled> false </isDisabled>
-				<!--Minimum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<min_control> -infinity </min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<max_control> infinity </max_control>
-				<coordinate> mtp_angle_r </coordinate>
-				<optimal_force>     100.00000000 </optimal_force>
-			</CoordinateActuator>
-			<CoordinateActuator name="ankle_angle_l_reserve">
-				<isDisabled> false </isDisabled>
-				<!--Minimum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<min_control> -infinity </min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<max_control> infinity </max_control>
-				<coordinate> ankle_angle_l </coordinate>
-				<optimal_force>       1.00000000 </optimal_force>
-			</CoordinateActuator>
-			<CoordinateActuator name="subtalar_angle_l_reserve">
-				<isDisabled> false </isDisabled>
-				<!--Minimum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<min_control> -infinity </min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<max_control> infinity </max_control>
-				<coordinate> subtalar_angle_l </coordinate>
-				<optimal_force>       1.00000000 </optimal_force>
-			</CoordinateActuator>
-			<CoordinateActuator name="mtp_angle_l_reserve">
-				<isDisabled> false </isDisabled>
-				<!--Minimum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<min_control> -infinity </min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving
-				    for control values-->
-				<max_control> infinity </max_control>
-				<coordinate> mtp_angle_l </coordinate>
-				<optimal_force>     100.00000000 </optimal_force>
-			</CoordinateActuator>
-		</objects>
-		<groups/>
-	</ForceSet>
-</OpenSimDocument>
+<ForceSet name="gait2354_CMC">
+
+	<defaults>
+
+		<Force name="default">
+			<max_force> 10000.000 </max_force>
+			<min_force> -10000.000 </min_force>
+			<optimal_force> 1000.0 </optimal_force>
+			<body_A> </body_A>
+			<point_A> 0.000 0.000 0.000 </point_A>
+			<direction_A> 1.000 0.000 0.000 </direction_A>
+			<body_B> </body_B>
+			<point_B> 0.000 0.000 0.000 </point_B>
+		</Force>
+
+		<Torque name="default">
+			<max_force> 10000.000 </max_force>
+			<min_force> -10000.000 </min_force>
+			<optimal_force> 1000.0 </optimal_force>
+			<body_A> </body_A>
+			<direction_A> 1.000 0.000 0.000 </direction_A>
+			<body_B> </body_B>
+		</Torque>
+
+		<CoordinateActuator name="default">
+			<max_force> 10000.0 </max_force>
+			<min_force> -10000.0 </min_force>
+			<optimal_force> 1000.0 </optimal_force>
+			<coordinate> </coordinate>
+		</CoordinateActuator>
+
+	</defaults>
+
+	<objects>
+
+		<!-- Residuals -->
+    <!--
+    <Force name="FX">
+      <optimal_force> 100.00000000 </optimal_force>
+			<body_A> ground </body_A>
+			<point_A> 0.000 0.000 0.000 </point_A>
+			<direction_A> -1.000 0.000 0.000 </direction_A>
+			<body_B> pelvis </body_B>
+			<point_B> -0.0724376 0.00000000 0.00000000 </point_B>
+		</Force>
+      -->
+
+    <PointActuator name="FX">
+      <optimal_force> 100.00000000 </optimal_force>
+      <max_force> 10000.0 </max_force>
+      <min_force> -10000.0 </min_force>
+      <body> pelvis </body>
+      <point> -0.0724376 0.00000000 0.00000000 </point>
+      <point_is_global> false </point_is_global>
+      <direction> 1.0 0.0 0.0 </direction>
+      <force_is_global> true </force_is_global>
+    </PointActuator>
+
+    <!--
+		<Force name="FY">
+			<optimal_force> 200.00000000 </optimal_force>
+			<body_A> ground </body_A>
+			<point_A> 0.000 0.000 0.000 </point_A>
+			<direction_A> 0.000 -1.000 0.000 </direction_A>
+			<body_B> pelvis </body_B>
+			<point_B> -0.0724376 0.00000000 0.00000000 </point_B>
+		</Force>
+      -->
+
+    <PointActuator name="FY">
+      <optimal_force> 200.00000000 </optimal_force>
+      <max_force> 10000.0 </max_force>
+      <min_force> -10000.0 </min_force>
+      <body> pelvis </body>
+      <point> -0.0724376 0.00000000 0.00000000 </point>
+      <point_is_global> false </point_is_global>
+      <direction> 0 1 0 </direction>
+      <force_is_global> true </force_is_global>
+    </PointActuator>
+
+    <!--
+		<Force name="FZ">
+			<optimal_force> 100.00000000 </optimal_force>
+			<body_A> ground </body_A>
+			<point_A> 0.000 0.000 0.000 </point_A>
+			<direction_A> 0.000 0.000 -1.000 </direction_A>
+			<body_B> pelvis </body_B>
+			<point_B> -0.0724376 0.00000000 0.00000000 </point_B>
+		</Force>
+    -->
+    
+    <PointActuator name="FZ">
+      <optimal_force> 100.00000000 </optimal_force>
+      <max_force> 10000.0 </max_force>
+      <min_force> -10000.0 </min_force>
+      <body> pelvis </body>
+      <point> -0.0724376 0.00000000 0.00000000 </point>
+      <point_is_global> false </point_is_global>
+      <direction> 0 0 1 </direction>
+      <force_is_global> true </force_is_global>
+    </PointActuator>
+
+
+    <TorqueActuator name="MX">
+      <optimal_force> 80.00000000 </optimal_force>
+      <bodyA> pelvis </bodyA>
+	  <bodyB> ground </bodyB>
+      <axis> 1.000 0.000 0.000 </axis>
+      <torque_is_global> true </torque_is_global>
+    </TorqueActuator>
+
+    <!--
+    <CoordinateActuator name="MX">
+      <optimal_force> 80.00000000 </optimal_force>
+      <max_force> 10000.0 </max_force>
+      <min_force> -10000.0 </min_force>
+      <coordinate> pelvis_list </coordinate>
+    </CoordinateActuator>
+    -->
+    
+	<TorqueActuator name="MY">
+	  <optimal_force> 80.00000000 </optimal_force>
+      <bodyA> pelvis </bodyA>
+	  <bodyB> ground </bodyB>
+      <axis> 0.000 1.000 0.000 </axis>
+      <torque_is_global> true </torque_is_global>
+    </TorqueActuator>
+     
+    <!--
+    <CoordinateActuator name="MY">
+      <optimal_force> 80.00000000 </optimal_force>
+      <max_force> 10000.0 </max_force>
+      <min_force> -10000.0 </min_force>
+      <coordinate> pelvis_rotation </coordinate>
+    </CoordinateActuator>
+    -->
+
+		<TorqueActuator name="MZ">
+			<optimal_force> 80.00000000 </optimal_force>
+      <bodyA> pelvis </bodyA>
+	  <bodyB> ground </bodyB>
+      <axis> 0.000 0.000 1.000 </axis>
+      <torque_is_global> true </torque_is_global>
+		</TorqueActuator>
+
+<!--
+    <CoordinateActuator name="MZ">
+      <optimal_force> 80.00000000 </optimal_force>
+      <max_force> 10000.0 </max_force>
+      <min_force> -10000.0 </min_force>
+      <coordinate> pelvis_tilt </coordinate>
+    </CoordinateActuator>
+-->
+    
+		<!-- Right Leg -->
+
+		<!--
+		<CoordinateActuator name="hip_flexion_r_reserve">
+			<coordinate> hip_flexion_r </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="hip_adduction_r_reserve">
+			<coordinate> hip_adduction_r </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="hip_rotation_r_reserve">
+			<coordinate> hip_rotation_r </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="knee_angle_r_reserve">
+			<coordinate> knee_angle_r </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</CoordinateActuator>
+		-->
+
+		<CoordinateActuator name="ankle_angle_r_reserve">
+			<coordinate> ankle_angle_r </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="subtalar_angle_r_reserve">
+			<coordinate> subtalar_angle_r </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="mtp_angle_r_reserve">
+			<coordinate> mtp_angle_r </coordinate>
+			<optimal_force> 100.0 </optimal_force>
+		</CoordinateActuator>
+
+
+
+		<!-- Left Leg -->
+
+		<!--
+		<CoordinateActuator name="hip_flexion_l_reserve">
+			<coordinate> hip_flexion_l </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="hip_adduction_l_reserve">
+			<coordinate> hip_adduction_l </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="hip_rotation_l_reserve">
+			<coordinate> hip_rotation_l </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="knee_angle_l_reserve">
+			<coordinate> knee_angle_l </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</CoordinateActuator>
+		-->
+
+		<CoordinateActuator name="ankle_angle_l_reserve">
+			<coordinate> ankle_angle_l </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="subtalar_angle_l_reserve">
+			<coordinate> subtalar_angle_l </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="mtp_angle_l_reserve">
+			<coordinate> mtp_angle_l </coordinate>
+			<optimal_force> 100.0 </optimal_force>
+		</CoordinateActuator>
+
+
+
+		<!-- Back Joint -->
+		<!--
+		<CoordinateActuator name="lumbar_extension_reserve">
+			<coordinate> lumbar_extension </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="lumbar_bending_reserve">
+			<coordinate> lumbar_bending </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="lumbar_rotation_reserve">
+			<coordinate> lumbar_rotation </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</CoordinateActuator>
+		-->
+
+	</objects>
+
+</ForceSet>
 

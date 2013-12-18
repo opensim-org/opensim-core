@@ -14,9 +14,9 @@
 		<!--Output precision.  It is 8 by default.-->
 		<output_precision> 8 </output_precision>
 		<!--Initial time for the simulation.-->
-		<initial_time>       0.83000000 </initial_time>
+		<initial_time>       0.8000000 </initial_time>
 		<!--Final time for the simulation.-->
-		<final_time>       1.00000000 </final_time>
+		<final_time>       0.95000000 </final_time>
 		<!--Flag indicating whether or not to compute equilibrium values for
 		    states other than the coordinates or speeds.  For example, equilibrium
 		    muscle fiber lengths or muscle forces.-->

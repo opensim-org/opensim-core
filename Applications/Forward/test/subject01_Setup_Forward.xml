@@ -167,7 +167,7 @@
 		<!--Output precision.  It is 8 by default.-->
 		<output_precision> 20 </output_precision>
 		<!--Initial time for the simulation.-->
-		<initial_time>       0.80000000 </initial_time>
+		<initial_time>       0.8000000 </initial_time>
 		<!--Final time for the simulation.-->
 		<final_time>       0.95000000 </final_time>
 		<!--Flag indicating whether or not to compute equilibrium values for

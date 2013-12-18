@@ -16,7 +16,7 @@
 		<!--Initial time for the simulation.-->
 		<initial_time>       0.86200000 </initial_time>
 		<!--Final time for the simulation.-->
-		<final_time>       1.2500000 </final_time>
+		<final_time>       0.9500000 </final_time>
 		<!--Flag indicating whether or not to compute equilibrium values for
 		    states other than the coordinates or speeds.  For example, equilibrium
 		    muscle fiber lengths or muscle forces.-->
@@ -39,7 +39,7 @@
 					<!--Start time.-->
 					<start_time>       0.86200000 </start_time>
 					<!--End time.-->
-					<end_time>       1.54500000 </end_time>
+					<end_time>      0.9500000 </end_time>
 					<!--Specifies how often to store results during a simulation. More
 					    specifically, the interval (a positive integer) specifies how many
 					    successful integration steps should be taken before results are
@@ -58,7 +58,7 @@
 					<!--Start time.-->
 					<start_time>       0.86200000 </start_time>
 					<!--End time.-->
-					<end_time>       1.54500000 </end_time>
+					<end_time>       0.9500000 </end_time>
 					<!--Specifies how often to store results during a simulation. More
 					    specifically, the interval (a positive integer) specifies how many
 					    successful integration steps should be taken before results are

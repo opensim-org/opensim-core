@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30000">
+	<ExternalLoads name="Ex1">
+		<objects />
+		<groups />
+		<!--Storage file (.sto) containing (3) components of force and/or torque and point of application.Note: this file overrides the data source specified by the individual external forces if specified.-->
+		<datafile />
+		<!--Optional motion file (.mot) or storage file (.sto) containing the model kinematics used to transform a point expressed in ground to the body of force application.If the point is not expressed in ground, the point is not transformed-->
+		<external_loads_model_kinematics_file />
+		<!--Optional low-pass cut-off frequency for filtering the model kinematics corresponding used to transform the point of application. A negative value results in no filtering. The default value is -1.0, so no filtering.-->
+		<lowpass_cutoff_frequency_for_load_kinematics>-1</lowpass_cutoff_frequency_for_load_kinematics>
+	</ExternalLoads>
+</OpenSimDocument>
