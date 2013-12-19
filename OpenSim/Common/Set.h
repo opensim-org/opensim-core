@@ -242,8 +242,8 @@ friend std::ostream& operator<<(std::ostream &aOut,const Set<T> &aSet)
 
 	return(aOut);
 }
-#endif // SWIG
 
+#endif
 
 //=============================================================================
 // MEMORY OWNERSHIP
@@ -261,6 +261,8 @@ void setMemoryOwner(bool aTrueFalse)
 {
 	_objects.setMemoryOwner(aTrueFalse);
 }
+
+#ifndef SWIG
 //_____________________________________________________________________________
 /**
  * Get whether or not this array owns the memory pointed to by the pointers
@@ -365,7 +367,7 @@ int getCapacityIncrement() const
 {
 	return( _objects.getCapacityIncrement() );
 }
-
+#endif // SWIG
 //=============================================================================
 // STORAGE OPERATIONS
 //=============================================================================
@@ -702,6 +704,7 @@ virtual void getNames(OpenSim::Array<std::string> &rNames ) const
 		}
 	}
 }
+#ifndef SWIG
 //_____________________________________________________________________________
 /**
  * Get the last value in the array.
@@ -713,7 +716,6 @@ virtual T* getLast() const
 {
 	return( _objects.getLast() );
 }
-
 
 //=============================================================================
 // SEARCH
@@ -755,7 +757,7 @@ int searchBinary(const T &aObject,bool aFindFirst=false,
 {
 	return( _objects.searchBinary(aObject,aFindFirst,aLo,aHi) );
 }
-
+#endif
 //=============================================================================
 // GROUPS
 //=============================================================================
