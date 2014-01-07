@@ -1,5 +1,5 @@
- function pointmatlab2opensimlib
-%% pointmatlab2opensimlib() adds OpenSim library paths to MATLAB path files
+ function configureOpenSim
+%% configureOpenSim() adds OpenSim library paths to MATLAB path files
 %    Allows user to select the location of the OpenSim install directory
 %    and add these paths to the matlab library paths. Will allow MATLAB 
 %    users to run OpenSim calls in Matlab.
@@ -124,17 +124,17 @@ function checkSystemInfo(openSimFolder)
     fileID = fopen(fullfile(openSimFolder, 'sdk', 'buildinfo.txt'));
     OpenSimInstallInfo = textscan(fileID,'%s');
     fclose(fileID);
-    platformID=char(OpenSimInstallInfo{1,1}{6,1});
+    platformID=char(OpenSimInstallInfo{1,1}{end,1});
     % get the last two digits of the text string ie '86' or '64'
     OsimInstallBuild= platformID(length(platformID)-1:end);
     % matlab is 64 and OpenSim is 32
-    if strncmp(computer('arch'),'win64',5) &&  ~strncmp(OsimInstallBuild,'86',2);  
+    if strncmp(computer('arch'),'win64',5) &&  ~strncmp(OsimInstallBuild,'64',2) 
         h = msgbox('Matlab version is 64 bit while OpenSim is 32 bit. Please install OpenSim 64bit','Error');
         uiwait(h)
         error('Program exit')
     end
     % matlab is 32 and OpenSIm is 64
-     if ~strncmp(computer('arch'),'win64',5) &&  strncmp(OsimInstallBuild,'86',2); 
+     if ~strncmp(computer('arch'),'win64',5) &&  strncmp(OsimInstallBuild,'64',2) 
         h = msgbox('Matlab version is 32 bit while OpenSim is 64 bit. Please install OpenSim 32bit','Error');
         uiwait(h)
         error('Program exit') 
