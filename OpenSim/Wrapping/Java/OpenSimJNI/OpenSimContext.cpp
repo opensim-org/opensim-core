@@ -450,4 +450,32 @@ void OpenSimContext::realizeVelocity() {
   _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Velocity);
 
 }
+
+void OpenSimContext::cacheModelAndState() 
+{
+	clonedModel = _model->clone();
+	clonedState = this->getCurrentStateCopy();
+}
+
+void OpenSimContext::restoreStateFromCachedModel() 
+{
+	_model->initSystem();
+	clonedModel->initSystem();
+
+	Array<std::string> modelVariableNames = _model->getStateVariableNames();
+	Array<std::string> clonedModelVariableNames = clonedModel->getStateVariableNames();
+
+	for(int i = 0; i < modelVariableNames.getSize(); i++)
+	{
+		std::string name = modelVariableNames.get(i);
+		if(clonedModelVariableNames.findIndex(name) >= 0)
+		{
+			double value = clonedModel->getStateVariable(clonedState, name);
+			_model->setStateVariable(_model->updWorkingState(), name, value);
+		}
+	}
+	this->setState(&(_model->updWorkingState()));
+	this->realizePosition();
+	delete clonedModel;
+}
 } // namespace
