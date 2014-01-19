@@ -12,7 +12,7 @@ elif os.name == 'nt':
     lib_name = '_opensim.pyd'
 
 setup(name='opensim',
-      version='3.1',
+      version='3.2',
       description='OpenSim Simulation Framework',
       author='OpenSim Team',
       author_email='ahabib@stanford.edu',
