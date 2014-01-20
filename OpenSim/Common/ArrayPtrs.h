@@ -294,7 +294,7 @@ friend std::ostream& operator<<(std::ostream &aOut,const ArrayPtrs<T> &aArray)
 
 	return(aOut);
 }
-#endif
+
 
 //=============================================================================
 // MEMORY OWNERSHIP
@@ -414,6 +414,7 @@ bool ensureCapacity(int aCapacity)
 
 	return(true);
 }
+
 //_____________________________________________________________________________
 /**
  * Trim the capacity of this array so that it is one larger than the size
@@ -484,7 +485,7 @@ int getCapacityIncrement() const
 {
 	return(_capacityIncrement);
 }
-
+#endif
 //=============================================================================
 // STORAGE OPERATIONS
 //=============================================================================

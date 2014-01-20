@@ -57,13 +57,14 @@ namespace OpenSim {
  */
 class OSIMANALYSES_API MuscleAnalysis : public Analysis {
 OpenSim_DECLARE_CONCRETE_OBJECT(MuscleAnalysis, Analysis);
-
+#ifndef SWIG
 //=============================================================================
 // DATA
 //=============================================================================
 public:
 	// STRUCT FOR PAIRING MOMENT ARM STORAGE OBJECTS WITH THEIR
 	// ASSOCIATE GENERALIZED COORDINATE
+
 	typedef struct {
 		Coordinate *q;
 		Storage *momentArmStore;
@@ -73,6 +74,7 @@ public:
     /// @cond
 
 	StorageCoordinatePair;
+#endif
 	/// @endcond
 private:
 
@@ -216,9 +218,9 @@ public:
 	bool getComputeMoments() const {
 		return _computeMoments;
 	}
-
+#ifndef SWIG
 	const ArrayPtrs<StorageCoordinatePair>& getMomentArmStorageArray() const { return _momentArmStorageArray; }
-
+#endif
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------
