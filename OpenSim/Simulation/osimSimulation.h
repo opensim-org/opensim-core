@@ -52,6 +52,7 @@
 #include "Model/PrescribedForce.h"
 #include "Model/PointToPointSpring.h"
 #include "Model/ExpressionBasedPointToPointForce.h"
+#include "Model/ExpressionBasedCoordinateForce.h"
 #include "Model/PathSpring.h"
 #include "Model/BushingForce.h"
 #include "Model/FunctionBasedBushingForce.h"
