@@ -231,7 +231,7 @@ private:
     void constructProperties();
 
     // Model Component Interface when computing energy
-    SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const;
+    void computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11;
 
     // Smooth step functions for continuous transition from no stiffness and 
     // damping to constant values beyond the limits. These are heap allocated

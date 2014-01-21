@@ -619,18 +619,6 @@ public:
     */
     void setFiberVelocity(SimTK::State& s, double fiberVelocity) const;
 
-    /**
-    @returns A string arraw of the state variable names
-    */
-    Array<std::string> getStateVariableNames() const FINAL_11;
-
-    /**
-    @param stateVariableName the name of the state varaible in question
-    @returns The system index of the state variable in question
-    */
-    SimTK::SystemYIndex getStateVariableSystemIndex(
-        const std::string &stateVariableName) const FINAL_11;
-
 //==============================================================================
 // Public Computations Muscle.h
 //==============================================================================
@@ -749,8 +737,7 @@ protected:
     /**computes state variable derivatives
     @param s the state of the model
     */
-    SimTK::Vector computeStateVariableDerivatives(
-        const SimTK::State& s) const FINAL_11;
+    void computeStateVariableDerivatives(const SimTK::State& s) const FINAL_11;
  
 //==============================================================================
 //State derivative helper methods

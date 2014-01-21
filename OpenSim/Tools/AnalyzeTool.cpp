@@ -286,9 +286,20 @@ createStatesStorageFromCoordinatesAndSpeeds(const Model& aModel, const Storage& 
 		throw Exception("AnalyzeTool.initializeFromFiles: ERROR- The coordinates storage and speeds storage should have the same number of rows, but do not.",__FILE__,__LINE__);
 
 	Array<string> stateNames("", ny);
+	Array<string> qLabels = aQStore.getColumnLabels();
+	Array<string> uLabels = aUStore.getColumnLabels();
 	stateNames = aModel.getStateVariableNames();
 	stateNames.insert(0, "time");
-
+	
+	// Preserve the labels from the data file which are typically abreviated
+	// label[0] = time
+	for(int i=1; i<=nq; ++i){
+		stateNames[i] = qLabels[i];
+	}
+	for(int i=1; i<=nu; ++i){
+		stateNames[i+nq] = uLabels[i];
+	}
+	
 	//Get the default state resulting from initializing the state after system creation
 	const SimTK::State &s = aModel.getWorkingState();
 
@@ -298,7 +309,7 @@ createStatesStorageFromCoordinatesAndSpeeds(const Model& aModel, const Storage& 
 
 	// initialize the state storage from the default state so that states have relevant values
 	// that are not zero (for example muscle activations and fiber-lengths)
-	aModel.getStateValues(s, y);
+	SimTK::Vector stateValues = aModel.getStateVariableValues(s);
 
 	for(int index=0; index<aQStore.getSize(); index++) {
 		double t;
@@ -611,7 +622,12 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
 		aStatesStore.getData(i,numOpenSimStates,&stateData[0]); // states
 		// Get data into local Vector and assign to State using common utility
 		// to handle internal (non-OpenSim) states that may exist
-        aModel.setStateValues(s, &stateData[0]);
+		Array<std::string> stateNames = aStatesStore.getColumnLabels();
+        for (int j=0; j<stateData.size(); ++j){
+			// storage labels included time at index 0 so +1 to skip
+            aModel.setStateVariable(s, stateNames[j+1], stateData[j]);
+		}
+       
 		// Adjust configuration to match constraints and other goals
 		aModel.assemble(s);
 

@@ -200,16 +200,13 @@ constructColumnLabels()
 int StatesReporter::
 record(const SimTK::State& s)
 {
- 
 	if(_model==NULL) return(-1);
 
 	// MAKE SURE ALL StatesReporter QUANTITIES ARE VALID
     _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity );
 
-	StateVector nextRow = StateVector(s.getTime());
-	OpenSim::Array<double> StateValues;
-	_model->getStateValues(s, StateValues);
-	nextRow.getData().append(StateValues);
+	SimTK::Vector stateValues = _model->getStateVariableValues(s);
+	StateVector nextRow(s.getTime(), stateValues.size(), &stateValues[0]);
 	_statesStore.append(nextRow);
 
 	return(0);

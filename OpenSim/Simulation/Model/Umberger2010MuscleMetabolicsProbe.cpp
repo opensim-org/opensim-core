@@ -529,7 +529,6 @@ void Umberger2010MuscleMetabolicsProbe::
             muscleName,
             ratio_slow_twitch_fibers);
 
-    connectIndividualMetabolicMuscle(*_model, *mm);   // do checks and add to muscleMap 
     upd_Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet()
         .adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
 }
@@ -549,7 +548,6 @@ void Umberger2010MuscleMetabolicsProbe::
             ratio_slow_twitch_fibers, 
             muscle_mass);
 
-    connectIndividualMetabolicMuscle(*_model, *mm);          // do checks and add to muscleMap 
     upd_Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet()
         .adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
 }

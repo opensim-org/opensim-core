@@ -149,7 +149,6 @@ public:
 	/** Assemble body interial properties: mass, center of mass location, moment of inertia
 	    about the origin of the body and return as a SimTK::MassProperties */
 	SimTK::MassProperties getMassProperties();
-	virtual int getNumStateVariables() const { return 0; };
 
 protected:
     // Model component interface.

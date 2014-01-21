@@ -810,8 +810,9 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
 	int nu = _model->getNumSpeeds();
 
 	// Get coordinate file indices
-	Array<string> columnLabels;
+	Array<string> columnLabels, speedLabels;
 	columnLabels.append("time");
+	speedLabels = columnLabels;
 	string qName;
 	Array<int> index(-1,nq);
 	const CoordinateSet& coordinateSet = _model->getCoordinateSet();
@@ -820,12 +821,21 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
 		Coordinate& coord = coordinateSet.get(i);
 		qName = coord.getName();
 		columnLabels.append(qName);
-		index[i] = aQIn.getStateIndex(qName);
+		speedLabels.append(coord.getSpeedName());
+		int fix = aQIn.getStateIndex(qName);
+		if (fix==-1){
+			// try the complete path name to identify the state_name in storage
+			string name = coord.getJoint().getBody().getName()+"/"
+							+ coord.getJoint().getName()+"/"+coord.getName()+"/"
+							+ qName;
+			fix = aQIn.getStateIndex(name);
+		}
+		index[i] = fix;
 		if(index[i]<0) {
 			string msg = "Model::formCompleteStorages(): WARNING- Did not find column ";
 			msg += qName;
 			msg += " in storage object.\n";
-			cout<<msg;
+			cout << msg << endl;
 		}
 	}
 
@@ -893,7 +903,7 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
 	// Compute storage object for simulation
 	// Need to set column labels before converting rad->deg
 	rQComplete->setColumnLabels(columnLabels);
-	rUComplete->setColumnLabels(columnLabels);
+	rUComplete->setColumnLabels(speedLabels);
 	// Convert back to degrees
 	convertRadiansToDegrees(*rQComplete);
 	convertRadiansToDegrees(*rUComplete);

@@ -32,17 +32,20 @@ class FunctionSet;
 //=============================================================================
 //=============================================================================
 /**
- * Solve for the generalized coordinate coordinate forces (1 per degree-of-freedom)
- * that satisfy the unconstrained equations of motion given kinemtics: q, u, u_dot
+ * Solve for the generalized coordinate coordinate forces (1 per degree-of-
+ * freedom) that satisfy the unconstrained equations of motion given kinemtics:
+ * q, u, u_dot
 
  * The InverseDynamics equation: Tau = M*u_dot-G(q)-C(q,u)-A(q,u,t,x)
  *
- * The InverseDynamicsSolver utiliizes efficient methods in Simbody(TM) to compute
- * the generalized forces, Tau, without explicitly forming the Mass matrix, M.
- * System gravity, G, centrifugal and coriolis, C, forces are computed internally.
+ * The InverseDynamicsSolver utiliizes efficient methods in Simbody(TM) to
+ * compute the generalized forces, Tau, without explicitly forming the Mass
+ * matrix, M. System gravity, G, centrifugal and coriolis, C, forces are 
+ * computed internally.
  * Caller provides q,u,t (supplied by the State), the desired u_dot and the 
- * applied loads, A. If applied loads are from forces in the model, these loads
- * are automatically accounted for unless explicitly disabled.
+ * applied loads, A. If applied loads are due to forces in the model, these 
+ * loads are automatically computed and applied unless explicitly disabled in
+ * the model.
  *
  * @author Ajay Seth
  * @version 1.0
@@ -65,9 +68,14 @@ public:
 	/** Construct an InverseDynamics solver applied to the provided model */
 	InverseDynamicsSolver(const Model& model);
 	
-	/** Solve the inverse dynamics system of equations for generalized coordinate forces, Tau. 
-	    Applied loads are computed by the model from the state.	 */
-	virtual SimTK::Vector solve(const SimTK::State& s, const SimTK::Vector& udot = SimTK::Vector(0));
+	/** Solve the inverse dynamics system of equations for generalized 
+	    coordinate forces, Tau. Applied loads are computed by the model  
+		according to the state.
+		@param[in] s    the system state spefyfing time, coordinates and speeds
+		@param[in] udot the vector of generalized accelerations in the order
+		*/
+	virtual SimTK::Vector solve(const SimTK::State& s, 
+		const SimTK::Vector& udot = SimTK::Vector(0));
 
 	/** Solve the inverse dynamics system of equations for generalized coordinate forces, Tau. 
 	    Applied loads are explicity provided as generalized coordinate forces (MobilityForces)
@@ -78,7 +86,7 @@ public:
 	
 	/** Solve the inverse dynamics system of equations for generalized coordinate forces, Tau. 
 	    Now the state is updated from known coordinates, q, as functions of time.
-		Coordinate functions must be twice differentiable. 
+		Coordinate functions must be twice differentiable and are used to supply the 
 		NOTE: forces with internal states should be removed/disabled prior to solving if default state
 		      is inappropriate */
 	virtual SimTK::Vector solve(SimTK::State& s, const FunctionSet& Qs, double time);

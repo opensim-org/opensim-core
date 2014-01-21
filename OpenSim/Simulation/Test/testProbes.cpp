@@ -311,6 +311,7 @@ void simulateMuscle(
     ic1 = 9.0;      // some arbitary initial condition.
     muscWorkProbe->setInitialConditions(ic1);
     model.addProbe(muscWorkProbe);
+	model.setup();
     cout << probeCounter++ << ") Added ActuatorPowerProbe to measure work done by the muscle" << endl; 
     if (muscWorkProbe->getName() != "UnnamedProbe") {
         string errorMessage = "Incorrect default name for unnamed probe: " + muscWorkProbe->getName(); 

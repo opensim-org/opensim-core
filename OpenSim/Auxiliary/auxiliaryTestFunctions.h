@@ -24,6 +24,7 @@
 
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/Storage.h>
+#include "getRSS.h"
 
 template <typename T>
 void ASSERT_EQUAL(T expected, T found, T tolerance, std::string file="", int line=-1, std::string message="") {

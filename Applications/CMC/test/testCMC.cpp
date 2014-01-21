@@ -52,7 +52,7 @@ int main() {
     try {testTwoMusclesOnBlock();}
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testTwoMusclesOnBlock"); }
-    
+   
     try {testArm26();}
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testArm26"); }
@@ -168,10 +168,13 @@ void testSingleMuscle() {
 	Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
 	Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
 
-	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.0005, 4), __FILE__, __LINE__, "testSingleMuscle failed");
-	
+	Array<double> tols(0.0005, 4);
 	const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-	cout << "testSingleMuscle "+muscleType+" passed\n" << endl;
+	string base = "testSingleMuscle "+ muscleType;
+
+	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, tols, __FILE__, __LINE__, base+" failed");
+	
+	cout << "\n" << base << " passed\n" << endl;
 }
 
 
@@ -196,10 +199,13 @@ void testTwoMusclesOnBlock() {
 	rms_tols[4] = 0.05;  // muscle 2 activation
 	rms_tols[5] = 0.001; // muscle 2 fiber length 
 
-	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, rms_tols, __FILE__, __LINE__, "testTwoMusclesOnBlock failed");
-	
 	const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-	cout << "testTwoMusclesOnBlock "+muscleType+" passed\n" << endl;
+	string base = "testTwoMusclesOnBlock "+ muscleType;
+
+	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, rms_tols, __FILE__, __LINE__,
+		base+" failed");
+	
+	cout << "\n" << base << " passed\n" << endl;
 }
 
 
@@ -210,15 +216,27 @@ void testArm26() {
 	CMCTool cmc("arm26_Setup_CMC.xml");
 	cmc.run();
 
-	Storage results("Results_Arm26/arm26_states.sto"), standard("std_arm26_states.sto");
+	Storage results("Results_Arm26/arm26_states.sto"), temp("std_arm26_states.sto");
+	Storage *standard = new Storage();
+	cmc.getModel().formStateStorage(temp, *standard);
 
-	Array<double> rms_tols(0.05, 2*2+2*6); // activations within 5%
-	rms_tols[0] = rms_tols[1] = 0.01;  // angles within .6 degrees
-	
-	CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testArm26 failed");
-
+	Array<double> rms_tols(0.01, 2*2+2*6); // activations within 1% angles within .6 degrees
 	const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-	cout << "\ntestArm26 "+muscleType+" passed\n" << endl;
+	string base = "testArm26 "+ muscleType;
+
+	if(muscleType != "Thelen2003Muscle"){
+		rms_tols[6] = 0.05;
+		rms_tols[8] = 0.05;
+		rms_tols[10] = 0.05;
+		rms_tols[12] = 0.05;
+		rms_tols[14] = 0.05;
+	}
+
+	CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, 
+		base+" failed");
+
+	
+	cout << "\n" << base <<" passed\n" << endl;
 }
 
 void testEMGDrivenArm() {
@@ -228,17 +246,18 @@ void testEMGDrivenArm() {
 	CMCTool cmc("arm26_Setup_ComputedMuscleControl_EMG.xml");
 	cmc.run();
 
-	Storage results("Results_Arm26_EMG/arm26_states.sto"), standard("std_arm26_states.sto");
+	Storage results("Results_Arm26_EMG/arm26_states.sto"), temp("std_arm26_states.sto");
+	Storage *standard = new Storage();
+	cmc.getModel().formStateStorage(temp, *standard);
 
-	Array<double> rms_tols(0.1, 2*2+2*6);
-	rms_tols[0] = 0.005; // shoulder q
-	rms_tols[1] = 0.005;  // elbow q
+	Array<double> rms_tols(0.02, 2*2+2*6);
+	rms_tols[4] = 0.10;  // trilong
 	rms_tols[6] = 0.25;  // trilat normally off but because of bicep long EMG tracking it turns on
 	rms_tols[8] = 0.25;  // trimed normally off but because of bicep long EMG tracking it turns on
 	rms_tols[10] = 0.50;  // biceps long normally low but because of EMG tracking should be on more
 	rms_tols[12] = 0.50;  // biceps short normally on but because of EMG tracking should be lower
 
-	CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testEMGDrivenArm failed");
+	CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testEMGDrivenArm failed");
 
 	const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
 	cout << "\ntestEMGDrivenArm "+muscleType+ " passed\n" << endl;
@@ -252,14 +271,17 @@ void testGait10dof18musc() {
 	cmc.run();
 
 	Storage results("gait10dof18musc_ResultsCMC/walk_subject_states.sto");
-	Storage standard("gait10dof18musc_std_walk_subject_states.sto");
+	Storage temp("gait10dof18musc_std_walk_subject_states.sto");
+
+	Storage *standard = new Storage();
+	cmc.getModel().formStateStorage(temp, *standard);
 
 	Array<double> rms_tols(0.02, 2*10+2*18); // activations within 2%
 	for(int i=0; i<20; ++i){
 		rms_tols[i] = 0.01;  // angles and speeds within .6 degrees .6 degs/s 
 	}
 
-	CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testArm26 failed");
+	CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testArm26 failed");
 
 	const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
 	cout << "\ntestGait10dof18musc "+muscleType+" passed\n" << endl;

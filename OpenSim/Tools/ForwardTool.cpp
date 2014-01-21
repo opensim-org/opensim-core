@@ -291,16 +291,16 @@ bool ForwardTool::run()
 	manager.setFinalTime(_tf);
 
     // get values for state variables in rawData then assign by name to model
-    int numStateValriables = _model->getNumStateVariables();
-    Array<double> rawData = Array<double>(0.0, numStateValriables);
+    int numStateVariables = _model->getNumStateVariables();
+    Array<double> rawData = Array<double>(0.0, numStateVariables);
 	// SET THE INITIAL STATES
-	if(_yStore!=NULL) _yStore->getData(startIndexForYStore,numStateValriables,&rawData[0]);
+	if(_yStore!=NULL) _yStore->getData(startIndexForYStore,numStateVariables,&rawData[0]);
 	if(startIndexForYStore >= 0) {
-		_yStore->getData(startIndexForYStore,numStateValriables,&rawData[0]);
+		_yStore->getData(startIndexForYStore,numStateVariables,&rawData[0]);
 	}
     if (_yStore!=NULL || startIndexForYStore >= 0){
         Array<std::string> stateNames = _model->getStateVariableNames();
-        for (int i=0; i<numStateValriables; i++)
+        for (int i=0; i<numStateVariables; i++)
             _model->setStateVariable(s, stateNames[i], rawData[i]);
     }
 	// SOLVE FOR EQUILIBRIUM FOR AUXILIARY STATES (E.G., MUSCLE FIBER LENGTHS)

@@ -138,13 +138,7 @@ protected:
 	virtual void computeForce(const SimTK::State& state, 
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForce) const;
-public:
 
-	virtual Array<std::string> getStateVariableNames() const;
-	virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const;
-
-
-protected:
 	virtual void addToSystem(SimTK::MultibodySystem& system) const;
 	virtual void initStateFromProperties(SimTK::State& s) const;
     virtual void setPropertiesFromState(const SimTK::State& state);
@@ -152,7 +146,7 @@ protected:
 	virtual void setStateVariableDeriv(const SimTK::State& s, const std::string &aStateName, double aValue) const;
 	virtual double getStateVariableDeriv(const SimTK::State& s, const std::string &aStateName) const;
 
-	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const;
+	void computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11;
 
 	// Muscle interface
 	virtual void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const;

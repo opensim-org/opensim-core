@@ -122,29 +122,7 @@ void ClutchedPathSpring::setInitialStretch(double stretch0)
 	 set_initial_stretch(getStretch(state));
  }
  
- Array<std::string> ClutchedPathSpring::getStateVariableNames() const
- {
-	 Array<std::string> stateVariableNames = ModelComponent::getStateVariableNames();
-	 // Make state variable names unique to this muscle
-	 for(int i=0; i<stateVariableNames.getSize(); ++i){
-		 stateVariableNames[i] = getName()+"."+stateVariableNames[i];
-	 }
-	 return stateVariableNames;
- }
 
- SimTK::SystemYIndex ClutchedPathSpring::
-	 getStateVariableSystemIndex(const string& stateVariableName) const
- {
-	 unsigned start = (unsigned)stateVariableName.find(".");
-	 unsigned end = (unsigned)stateVariableName.length();
-
-	 if(start == end)
-		 return ModelComponent::getStateVariableSystemIndex(stateVariableName);
-	 else{
-		 string localName = stateVariableName.substr(++start, end-start);
-		 return ModelComponent::getStateVariableSystemIndex(localName);
-	 }
- }
 
 
 //=============================================================================
@@ -185,19 +163,15 @@ double ClutchedPathSpring::computeActuation(const SimTK::State& s) const
 	return tension;
 }
 
-SimTK::Vector ClutchedPathSpring::
+void ClutchedPathSpring::
 	computeStateVariableDerivatives(const SimTK::State& s) const
 {
-	SimTK::Vector derivs(1, 0.0);
-
-	double ldot = getLengtheningSpeed(s);
-
-	derivs[0] = getControl(s) > SimTK::SignificantReal ? // non-zero control
-					ldot : // clutch is engaged
+	double zdot = getControl(s) > SimTK::SignificantReal ? // non-zero control
+					getLengtheningSpeed(s) : // clutch is engaged
 					-getStretch(s)/get_relaxation_time_constant();
 
-	return derivs;
-} 
+	setStateVariableDerivative(s, "stretch", zdot);
+}
 
 SimTK::Vec3 ClutchedPathSpring::computePathColor(const SimTK::State& state) const 
 {

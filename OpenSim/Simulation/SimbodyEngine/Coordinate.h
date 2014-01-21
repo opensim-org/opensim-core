@@ -28,7 +28,6 @@
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <SimTKsimbody.h>
 
 class ModifiableConstant;
 
@@ -204,11 +203,6 @@ public:
 	/**@{**/
 	int getMobilizerQIndex() const { return _mobilizerQIndex; };
 	SimTK::MobilizedBodyIndex getBodyIndex() const { return _bodyIndex; };
-
-
-    // ModelComponent interface.
-	Array<std::string> getStateVariableNames() const OVERRIDE_11;
-	SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const OVERRIDE_11;
 	/**@}**/
 
 	//--------------------------------------------------------------------------
@@ -229,9 +223,12 @@ protected:
     // Also see connectToModel() above.
 	void connectToModel(Model& aModel) OVERRIDE_11;
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	//State structure is locked and now we can assign names to state variables
+	//allocated by underlying components after modeling options have been 
+	//factored in.
+	void realizeInstance(const SimTK::State& state) const OVERRIDE_11;
     void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
     void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
-	int getNumStateVariables() const  OVERRIDE_11 { return 2; }; // value and speed
 
 	// Only the coordinate or the joint itself can specify the owner
 	// of Coordinate
@@ -241,6 +238,42 @@ protected:
 // MODEL DATA
 //=============================================================================
 private:
+	// Class for handling state variable added (allocated) by this Component
+	class CoordinateStateVariable : public StateVariable {
+		public:
+		// Constructors
+        /** Convience constructor for defining a Component added state variable */ 
+		explicit CoordinateStateVariable(const std::string& name, //state var name
+						const Component& owner,		  //owning component
+						SimTK::SubsystemIndex subSysIndex,
+						int index) : 
+					StateVariable(name, owner, subSysIndex, index, false) {}
+
+		//override StateVariable virtual methods
+		double getValue(const SimTK::State& state) const OVERRIDE_11;
+		void setValue(SimTK::State& state, double value) const OVERRIDE_11;
+		double getDerivative(const SimTK::State& state) const OVERRIDE_11;
+		void setDerivative(const SimTK::State& state, double deriv) const OVERRIDE_11;
+	};
+
+	// Class for handling state variable added (allocated) by this Component
+	class SpeedStateVariable : public StateVariable {
+		public:
+		// Constructors
+        /** Convience constructor for defining a Component added state variable */ 
+		explicit SpeedStateVariable(const std::string& name, //state var name
+						const Component& owner,		  //owning component
+						SimTK::SubsystemIndex subSysIndex,
+						int index) : 
+					StateVariable(name, owner, subSysIndex, index, false) {}
+
+		//override StateVariable virtual methods
+		double getValue(const SimTK::State& state) const OVERRIDE_11;
+		void setValue(SimTK::State& state, double value) const OVERRIDE_11;
+		double getDerivative(const SimTK::State& state) const OVERRIDE_11;
+		void setDerivative(const SimTK::State& state, double deriv) const OVERRIDE_11;
+	};
+
 	// All coordinates (Simbody mobility) have associated constraints that
 	// perform joint locking, prescribed motion and range of motion.
 	// Constraints are created upon setup: locked, precribedFunction

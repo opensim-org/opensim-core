@@ -524,7 +524,6 @@ void Bhargava2004MuscleMetabolicsProbe::
             maintenance_constant_slow_twitch, 
             maintenance_constant_fast_twitch);
         
-    connectIndividualMetabolicMuscle(*_model, *mm);          // do checks and add to muscleMap 
     upd_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet()
         .adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
 }
@@ -554,7 +553,6 @@ void Bhargava2004MuscleMetabolicsProbe::
             maintenance_constant_fast_twitch,
 			muscle_mass);
         
-    connectIndividualMetabolicMuscle(*_model, *mm);          // do checks and add to muscleMap 
     upd_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet()
         .adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
 }

@@ -132,41 +132,6 @@ void Coordinate::constructProperties(void)
 	constructProperty_is_free_to_satisfy_constraints(false);
 }
 
-void Coordinate::addToSystem(SimTK::MultibodySystem& system) const
-{
-    Super::addToSystem(system);
-
-	//create lock constraint automatically
-	// The underlying SimTK constraint
-	SimTK::Constraint::PrescribedMotion lock(system.updMatterSubsystem(), 
-											 _lockFunction, 
-											 _bodyIndex, 
-											 SimTK::MobilizerQIndex(_mobilizerQIndex));
-
-	// Beyond the const Component get the index so we can access the SimTK::Constraint later
-	Coordinate* mutableThis = const_cast<Coordinate *>(this);
-	mutableThis->_lockedConstraintIndex = lock.getConstraintIndex();
-	//mutableThis->_model->addModelComponent(mutableThis);
-			
-	if(!getProperty_prescribed_function().empty()){
-		//create prescribed motion constraint automatically
-		SimTK::Constraint::PrescribedMotion prescribe( 
-				_model->updMatterSubsystem(), 
-				get_prescribed_function().createSimTKFunction(), 
-				_bodyIndex, 
-				SimTK::MobilizerQIndex(_mobilizerQIndex));
-		mutableThis->_prescribedConstraintIndex = prescribe.getConstraintIndex();
-	}
-	else{
-		// even if prescribed is set to true, if there is no prescribed 
-		// function defined, then it cannot be prescribed.
-		mutableThis->upd_prescribed() = false;
-	}
-
-	//TODO add clamping
-	addModelingOption("is_clamped", 1);
-}
-
 //_____________________________________________________________________________
 /**
  * Perform some set up functions that happen after the
@@ -205,6 +170,65 @@ void Coordinate::connectToModel(Model& aModel)
 	_lockFunction = new ModifiableConstant(get_default_value(), 1); 
 
 	_lockedWarningGiven=false;
+}
+
+void Coordinate::addToSystem(SimTK::MultibodySystem& system) const
+{
+    Super::addToSystem(system);
+
+	//create lock constraint automatically
+	// The underlying SimTK constraint
+	SimTK::Constraint::PrescribedMotion lock(system.updMatterSubsystem(), 
+											 _lockFunction, 
+											 _bodyIndex, 
+											 SimTK::MobilizerQIndex(_mobilizerQIndex));
+
+	// Beyond the const Component get the index so we can access the SimTK::Constraint later
+	Coordinate* mutableThis = const_cast<Coordinate *>(this);
+	mutableThis->_lockedConstraintIndex = lock.getConstraintIndex();
+	//mutableThis->_model->addModelComponent(mutableThis);
+			
+	if(!getProperty_prescribed_function().empty()){
+		//create prescribed motion constraint automatically
+		SimTK::Constraint::PrescribedMotion prescribe( 
+				_model->updMatterSubsystem(), 
+				get_prescribed_function().createSimTKFunction(), 
+				_bodyIndex, 
+				SimTK::MobilizerQIndex(_mobilizerQIndex));
+		mutableThis->_prescribedConstraintIndex = prescribe.getConstraintIndex();
+	}
+	else{
+		// even if prescribed is set to true, if there is no prescribed 
+		// function defined, then it cannot be prescribed.
+		mutableThis->upd_prescribed() = false;
+	}
+
+	//TODO add clamping
+	addModelingOption("is_clamped", 1);
+
+	SimTK::SubsystemIndex sbsix =
+		getModel().getMatterSubsystem().getMySubsystemIndex();
+
+	//Expose coordinate state variable
+	CoordinateStateVariable* csv 
+		= new CoordinateStateVariable(getName(), *this, sbsix, _mobilizerQIndex);
+	addStateVariable(csv);
+
+	//Expose coordinate's speed state variable  
+	SpeedStateVariable* ssv = 
+		new SpeedStateVariable(getSpeedName(), *this, sbsix, _mobilizerQIndex);
+	addStateVariable(ssv);
+}
+
+void Coordinate::realizeInstance(const SimTK::State& state) const
+{
+	const MobilizedBody& mb
+		= getModel().getMatterSubsystem().getMobilizedBody(_bodyIndex);
+
+	
+	int uix = state.getUStart() + mb.getFirstUIndex(state) + _mobilizerQIndex;
+
+	/* Set the YIndex on the StateVariable */
 }
 
 void Coordinate::initStateFromProperties(State& s) const
@@ -603,34 +627,71 @@ void Coordinate::setClamped(SimTK::State& s, bool aLocked) const
 	setModelingOption(s, "is_clamped", (int)aLocked);
 }
 
-//=============================================================================
-// UTILITY
-//=============================================================================
-//_____________________________________________________________________________
 
-Array<std::string> Coordinate::getStateVariableNames() const
+
+//-----------------------------------------------------------------------------
+// Coordinate::CoordinateStateVariable
+//-----------------------------------------------------------------------------
+double Coordinate::CoordinateStateVariable::
+	getValue(const SimTK::State& state) const
 {
-	Array<std::string> stateVariableNames("",getNumStateVariables());
-	stateVariableNames[0] = getName();
-	stateVariableNames[1] = getSpeedName();
-	return stateVariableNames;
+	return ((Coordinate *)&getOwner())->getValue(state);
+}
+
+void Coordinate::CoordinateStateVariable::
+	setValue(SimTK::State& state, double value) const
+{
+	((Coordinate *)&getOwner())->setValue(state, value);
+}
+
+double Coordinate::CoordinateStateVariable::
+	getDerivative(const SimTK::State& state) const
+{
+	//TODO: update to get qdot value from the mobilized body
+	return ((Coordinate *)&getOwner())->getSpeedValue(state); 
 }
 
 
-SimTK::SystemYIndex Coordinate::getStateVariableSystemIndex(const std::string &stateVariableName) const
+void Coordinate::CoordinateStateVariable::
+	setDerivative(const SimTK::State& state, double deriv) const
 {
-	const MobilizedBody& mb=_model->getMatterSubsystem().getMobilizedBody(_bodyIndex);
-    const SimTK::State &state = _model->getWorkingState();
+	string msg = "CoordinateStateVariable::setDerivative() - ERROR \n";
+	msg +=	"Coordinate derivative (qdot) is computed by the Multibody system.";
+	throw Exception(msg);
+}
 
-	int index = -1;
 
-	if (stateVariableName == getName())
-		index = state.getQStart() + mb.getFirstQIndex(state)+ _mobilizerQIndex;
-	else if (stateVariableName == getSpeedName())
-		index = state.getUStart() + mb.getFirstUIndex(state)+ _mobilizerQIndex;
-	else
-		throw Exception("Coordinate::getStateVariableSystemIndex: state variable "+stateVariableName+" not found."); 
-	
-	SimTK::SystemYIndex ix(index);
-	return ix;
+//-----------------------------------------------------------------------------
+// Coordinate::SpeedStateVariable
+//-----------------------------------------------------------------------------
+double Coordinate::SpeedStateVariable::
+	getValue(const SimTK::State& state) const
+{
+	//TODO: update to get qdot value from the mobilized body
+	return ((Coordinate *)&getOwner())->getSpeedValue(state);
+}
+
+void Coordinate::SpeedStateVariable::
+	setValue(SimTK::State& state, double deriv) const
+{
+	//TODO: update to set qdot value from the mobilized body
+	((Coordinate *)&getOwner())->setSpeedValue(state, deriv);
+}
+
+double Coordinate::SpeedStateVariable::
+	getDerivative(const SimTK::State& state) const
+{
+	const Coordinate& owner = *((Coordinate *)&getOwner());
+	const MobilizedBody& mb = owner.getModel().getMatterSubsystem()
+								.getMobilizedBody(owner.getBodyIndex());
+
+	return mb.getUDotAsVector(state)[owner.getMobilizerQIndex()];
+}
+
+void Coordinate::SpeedStateVariable::
+	setDerivative(const SimTK::State& state, double deriv) const
+{
+	string msg = "SpeedStateVariable::setDerivative() - ERROR \n";
+	msg +=	"Generalized speed derivative (udot) can only be set by the Multibody system.";
+	throw Exception(msg);
 }

@@ -459,8 +459,7 @@ bool CMCTool::run()
 		cout<<"\n\nWARN- a desired kinematics file was not specified.\n\n";
 	} else {
 		cout<<"\n\nLoading desired kinematics from file "<<_desiredKinematicsFileName<<" ...\n";
-        desiredKinStore = new Storage();
-        loadQStorage( _desiredKinematicsFileName, *desiredKinStore );
+        desiredKinStore = new Storage(_desiredKinematicsFileName);
 		desiredKinFlag = true;
 	}
 

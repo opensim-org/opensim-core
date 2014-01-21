@@ -136,32 +136,8 @@ void FreeJoint::addToSystem(SimTK::MultibodySystem& system) const
 	SimTK::Transform noTransform(Rotation(), Vec3(0));
 
 	// CREATE MOBILIZED BODY
-	/*if(_useEulerAngles){
-		MobilizedBody::Translation
-			simtkMasslessBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(_parentBody)),
-			parentTransform, SimTK::Body::Massless(), noTransform);
-		MobilizedBody::Gimbal
-				simtkBody(simtkMasslessBody, noTransform, SimTK::Body::Rigid(_body->getMassProperties()), childTransform);
-
-		const MobilizedBodyIndex _masslessBodyIndex = simtkMasslessBody.getMobilizedBodyIndex();
-		setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
-
-		// SETUP COORDINATES
-		// Each coordinate needs to know it's body index and mobility index.
-		for(int i =0; i < _numMobilities; i++){
-			Coordinate &coord = _coordinateSet.get(i);
-			coord.setJoint(*this);
-			setCoordinateModel(&coord, _model);
-			// Translations enabled by Translation mobilizer, first, but appear second in coordinate set
-			setCoordinateMobilizedBodyIndex(&coord, ((i > 2) ? (_masslessBodyIndex) : (getMobilizedBodyIndex(_body))));
-			// The mobility index is the same as the order in which the coordinate appears in the coordinate set.
-			setCoordinateMobilizerQIndex(&coord, (i < 3 ? i : i-3));
-		}
-	}
-	else {*/
-		FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
-		mutableThis->createMobilizedBody(parentTransform, childTransform);
-	//}
+	FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
+	mutableThis->createMobilizedBody(parentTransform, childTransform);
 
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);

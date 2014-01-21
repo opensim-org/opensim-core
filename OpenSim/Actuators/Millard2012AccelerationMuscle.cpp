@@ -271,21 +271,6 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
     addStateVariable(STATE_ACTIVATION_NAME);
     addStateVariable(STATE_FIBER_LENGTH_NAME);
     addStateVariable(STATE_FIBER_VELOCITY_NAME);
-
-    double value = 0.0;
-	addCacheVariable(   STATE_ACTIVATION_NAME+"_deriv", 
-                        value, 
-                        SimTK::Stage::Dynamics);
-
-    //These are dynamics level quantities so that when they are invalidated
-    //they do not invalidate the stae of the entire multibody system
-	addCacheVariable(   STATE_FIBER_LENGTH_NAME+"_deriv", 
-                        value, 
-                        SimTK::Stage::Dynamics);
-
-    addCacheVariable(   STATE_FIBER_VELOCITY_NAME+"_deriv", 
-                        value, 
-                        SimTK::Stage::Dynamics);
 }
 
 void Millard2012AccelerationMuscle::initStateFromProperties(SimTK::State& s) const
@@ -309,21 +294,20 @@ void Millard2012AccelerationMuscle::
     ensureMuscleUpToDate();
 }
 
-SimTK::Vector Millard2012AccelerationMuscle::
+void Millard2012AccelerationMuscle::
     computeStateVariableDerivatives(const SimTK::State& s) const 
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-        "Millard2012AccelerationMuscle: Muscle is not"
-        " to date with properties");
-
-    SimTK::Vector derivs(getNumStateVariables(),0.);
+	double adot=0, ldot=0, vdot=0;
 
     if(!isDisabled(s)){
-        derivs[0] = getActivationRate(s);
-        derivs[1] = getFiberVelocity(s);
-        derivs[2] = getFiberAcceleration(s);
+		adot = getActivationRate(s);
+        ldot = getFiberVelocity(s);
+        vdot = getFiberAcceleration(s);
     }
-    return derivs;
+
+	setStateVariableDerivative(s, STATE_ACTIVATION_NAME, adot);
+    setStateVariableDerivative(s, STATE_FIBER_LENGTH_NAME, ldot);
+    setStateVariableDerivative(s, STATE_FIBER_VELOCITY_NAME, vdot);
 }
 
 //=============================================================================
@@ -370,44 +354,6 @@ double Millard2012AccelerationMuscle::
     return fdi.userDefinedDynamicsExtras[MDIFiberAcceleration];
 }
 
-
-
-Array<std::string> Millard2012AccelerationMuscle::getStateVariableNames() const
-{
-    
-    Array<std::string> stateVariableNames = 
-        ModelComponent::getStateVariableNames();
-	
-	for(int i=0; i<stateVariableNames.getSize(); ++i){
-		stateVariableNames[i] = getName()+"."+stateVariableNames[i];
-	}
-	return stateVariableNames;
-}
-
-SimTK::SystemYIndex Millard2012AccelerationMuscle::
-    getStateVariableSystemIndex(const std::string &stateVariableName) const
-{
-    unsigned start = (unsigned)stateVariableName.find(".");
-	unsigned end = (unsigned)stateVariableName.length();
-	
-	if(start == end)
-		return ModelComponent::getStateVariableSystemIndex(stateVariableName);
-	else{
-		string localName = stateVariableName.substr(++start, end-start);
-		return ModelComponent::getStateVariableSystemIndex(localName);
-	}    
-}
-
-
-double Millard2012AccelerationMuscle::
-    getStateVariableDeriv(const SimTK::State& s, 
-                          const std::string &aStateName) const
-{
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-        "Millard2012AccelerationMuscle: Muscle is not"
-        " to date with properties");
-	return getCacheVariable<double>(s, aStateName + "_deriv");
-}
 
 //=============================================================================
 // STATE RELATED SET FUNCTIONS
@@ -459,20 +405,6 @@ void Millard2012AccelerationMuscle::
     
 }
 
-
-void Millard2012AccelerationMuscle::
-    setStateVariableDeriv(  const SimTK::State& s, 
-                            const std::string &aStateName, 
-                            double aValue) const
-{
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-        "Millard2012AccelerationMuscle: Muscle is not"
-        " to date with properties");
-
-	double& cacheVariable = updCacheVariable<double>(s, aStateName + "_deriv");
-	cacheVariable = aValue;
-	markCacheVariableValid(s, aStateName + "_deriv");
-}
 
 //=============================================================================
 // GET
@@ -793,12 +725,12 @@ void Millard2012AccelerationMuscle::
         "Millard2012AccelerationMuscle: Muscle is not"
         " to date with properties");
 
-        //Initialize activation to the users desired setting
-        setActivation(s,getActivation(s));
         //Initialize the fiber length
         setFiberLength(s, getOptimalFiberLength());
         //Initialize the fiber velocity
         setFiberVelocity(s, getDefaultFiberVelocity());
+		//Initialize activation to the users desired setting
+        setActivation(s,getActivation(s));
 
         _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 

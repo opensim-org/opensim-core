@@ -148,11 +148,11 @@ void FatigableMuscle::setTargetActivation(SimTK::State& s,
 {	setStateVariable(s, "target_activation", fatiguedAct); }
 
 double FatigableMuscle::getTargetActivationDeriv(const SimTK::State& s) const 
-{	return getStateVariableDeriv(s, "target_activation"); }
+{	return getStateVariableDerivative(s, "target_activation"); }
 
 void FatigableMuscle::setTargetActivationDeriv(const SimTK::State& s,
 										double fatiguedActDeriv) const 
-{	setStateVariableDeriv(s, "target_activation", fatiguedActDeriv); }
+{	setStateVariableDerivative(s, "target_activation", fatiguedActDeriv); }
 
 
 double FatigableMuscle::getActiveMotorUnits(const SimTK::State& s) const 
@@ -163,11 +163,11 @@ void FatigableMuscle::setActiveMotorUnits(SimTK::State& s,
 {	setStateVariable(s, "active_motor_units", activeMotorUnits); }
 
 double FatigableMuscle::getActiveMotorUnitsDeriv(const SimTK::State& s) const 
-{	return getStateVariableDeriv(s, "active_motor_units"); }
+{	return getStateVariableDerivative(s, "active_motor_units"); }
 
 void FatigableMuscle::setActiveMotorUnitsDeriv(const SimTK::State& s,
 										double activeMotorUnitsDeriv) const 
-{	setStateVariableDeriv(s, "active_motor_units", activeMotorUnitsDeriv); }
+{	setStateVariableDerivative(s, "active_motor_units", activeMotorUnitsDeriv); }
 
 double FatigableMuscle::getFatiguedMotorUnits(const SimTK::State& s) const
 {	return getStateVariable(s, "fatigued_motor_units"); }
@@ -177,11 +177,11 @@ void FatigableMuscle::setFatiguedMotorUnits(SimTK::State& s,
 {	setStateVariable(s, "fatigued_motor_units", fatiguedMotorUnits); }
 
 double FatigableMuscle::getFatiguedMotorUnitsDeriv(const SimTK::State& s) const 
-{	 return getStateVariableDeriv(s, "fatigued_motor_units"); }
+{	 return getStateVariableDerivative(s, "fatigued_motor_units"); }
 
 void FatigableMuscle::setFatiguedMotorUnitsDeriv(const SimTK::State& s,
 										double fatiguedMotorUnitsDeriv) const
-{	setStateVariableDeriv(s, "fatigued_motor_units", fatiguedMotorUnitsDeriv); }
+{	setStateVariableDerivative(s, "fatigued_motor_units", fatiguedMotorUnitsDeriv); }
 
 
 //=============================================================================
@@ -193,12 +193,12 @@ void FatigableMuscle::setFatiguedMotorUnitsDeriv(const SimTK::State& s,
  *
  * @param s  system state
  */
-SimTK::Vector FatigableMuscle::
-computeStateVariableDerivatives(const SimTK::State& s) const
+void FatigableMuscle::computeStateVariableDerivatives(const SimTK::State& s) const
 {
-	// vector of the derivatives to be returned
-	SimTK::Vector derivs(getNumStateVariables(), SimTK::NaN);
-	int nd = derivs.size();
+	// Allow Super to assign any state derivative values for states it allocated
+	Super::computeStateVariableDerivatives(s);
+
+	int nd = getNumStateVariables();
 
 	SimTK_ASSERT1(nd == 5, "FatigableMuscle: Expected 5 state variables"
         " but encountered  %f.", nd);
@@ -224,21 +224,10 @@ computeStateVariableDerivatives(const SimTK::State& s) const
 	double activationRate = activeMotorUnitsDeriv*targetActivation + 
 							getActiveMotorUnits(s)*targetActivationRate;
 
-	// set the actual activation rate of the muscle to the fatigued one
-	derivs[0] = activationRate;
-	// fiber length derivative
-	derivs[1] = getFiberVelocity(s);
-	// the target activation derivative
-	derivs[2] = targetActivationRate;
-	derivs[3] = activeMotorUnitsDeriv;
-	derivs[4] = fatigueMotorUnitsDeriv;
-
 	// cache the results for fast access by reporting, etc...
 	setTargetActivationDeriv(s, targetActivationRate);
 	setActiveMotorUnitsDeriv(s, activeMotorUnitsDeriv);
 	setFatiguedMotorUnitsDeriv(s, fatigueMotorUnitsDeriv);
-
-	return derivs;
 }
 
 /* Determine the initial state values based on initial fiber equlibrium. */

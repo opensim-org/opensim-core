@@ -190,16 +190,12 @@ public:
         setOptimalFiberLength(getFiberLength(s));
     }
 
-    SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const
-        OVERRIDE_11
+    void computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11
     {
         // This implementation is not intended for use in dynamic simulations.
-        SimTK::Vector derivs = Super::computeStateVariableDerivatives(s);
-        const int n = derivs.size();
-        derivs.resizeKeep(n + getNumStateVariables());
-        for (int i=0; i<getNumStateVariables(); ++i)
-            derivs[n+i] = 0;
-        return derivs;
+        const int n = getNumStateVariables();
+        setStateVariableDerivative(s, stateName_fiberLength, 0.0);
+		setStateVariableDerivative(s, stateName_fiberVelocity, 0.0);
     }
 
     //--------------------------------------------------------------------------
@@ -405,6 +401,8 @@ void generateUmbergerMuscleData(const std::string& muscleName,
     Umberger2010MuscleMetabolicsProbe* mechanicalPowerProbe =
         new Umberger2010MuscleMetabolicsProbe(false, false, false, true);
     model.addProbe(mechanicalPowerProbe);
+
+	model.setup();
     mechanicalPowerProbe->setName("mechanicalPowerProbe");
     mechanicalPowerProbe->setOperation("value");
     mechanicalPowerProbe->addMuscle(muscleName, slowTwitchRatio, muscleMass);
@@ -734,6 +732,7 @@ void testProbesUsingMillardMuscleSimulation()
 
     // Add a muscle to the probe without providing the muscle mass.
     umbergerTest->addMuscle(muscle1->getName(), 0.6);
+	model.setup();
     ASSERT(umbergerTest->getNumMetabolicMuscles()==1, __FILE__, __LINE__,
         "Muscle could not be added to Umberger2010MuscleMetabolicsProbe.");
     ASSERT(!umbergerTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
@@ -749,16 +748,19 @@ void testProbesUsingMillardMuscleSimulation()
 
     // Add another muscle to the probe, this time providing the muscle mass.
     umbergerTest->addMuscle(muscle2->getName(), 0.6, 1.0);
+	model.setup();
     ASSERT(umbergerTest->isUsingProvidedMass(muscle2->getName()), __FILE__,
         __LINE__, "Umberger probe should be using provided muscle mass.");
 
     // Remove a muscle from the probe.
     umbergerTest->removeMuscle(muscle1->getName());
+	model.setup();
     ASSERT(umbergerTest->getNumMetabolicMuscles()==1, __FILE__, __LINE__,
         "Muscle could not be removed from Umberger2010MuscleMetabolicsProbe.");
 
     // Remove the probe from the model.
     model.removeProbe(umbergerTest);
+	model.setup();
     ASSERT(model.getNumProbes()==0, __FILE__, __LINE__,
         "Umberger2010MuscleMetabolicsProbe could not be removed from the model.");
 
@@ -779,6 +781,7 @@ void testProbesUsingMillardMuscleSimulation()
 
     // Add a muscle to the probe without providing the muscle mass.
     bhargavaTest->addMuscle(muscle1->getName(), 0.6, 40, 133, 74, 111);
+	model.setup();
     ASSERT(bhargavaTest->getNumMetabolicMuscles()==1, __FILE__, __LINE__,
         "Muscle could not be added to Bhargava2004MuscleMetabolicsProbe.");
     ASSERT(!bhargavaTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
@@ -794,16 +797,19 @@ void testProbesUsingMillardMuscleSimulation()
 
     // Add another muscle to the probe, this time providing the muscle mass.
     bhargavaTest->addMuscle(muscle1->getName(), 0.6, 40, 133, 74, 111, 1.0);
+	model.setup();
     ASSERT(bhargavaTest->isUsingProvidedMass(muscle1->getName()), __FILE__,
         __LINE__, "Bhargava probe should be using provided muscle mass.");
 
     // Remove a muscle from the probe.
     bhargavaTest->removeMuscle(muscle1->getName());
+	model.setup();
     ASSERT(bhargavaTest->getNumMetabolicMuscles()==1, __FILE__, __LINE__,
         "Muscle could not be removed from Bhargava2004MuscleMetabolicsProbe.");
 
     // Remove the probe from the model.
     model.removeProbe(bhargavaTest);
+	model.setup();
     ASSERT(model.getNumProbes()==0, __FILE__, __LINE__,
         "Bhargava2004MuscleMetabolicsProbe could not be removed from the model.");
 
@@ -1316,6 +1322,7 @@ void testProbesUsingMillardMuscleSimulation()
     }
 
     // Simulate.
+	model.setup();
     Manager manager2(model);
     simulateModel(model, manager2, t0, t1);
 

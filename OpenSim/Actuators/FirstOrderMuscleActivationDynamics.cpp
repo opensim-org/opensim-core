@@ -96,13 +96,13 @@ setPropertiesFromState(const SimTK::State& s)
     setDefaultActivation(getActivation(s));
 }
 
-SimTK::Vector FirstOrderMuscleActivationDynamics::
+void FirstOrderMuscleActivationDynamics::
 computeStateVariableDerivatives(const SimTK::State& s) const
 {
-    SimTK::Vector derivs( getNumStateVariables(),
-                          calcActivationDerivative(getExcitation(s),
-                                                   getActivation(s)) );
-    return derivs;
+     double adot = 
+		 calcActivationDerivative(getExcitation(s), getActivation(s));
+
+	 setStateVariableDerivative(s, STATE_NAME_ACTIVATION, adot);
 }
 
 //==============================================================================

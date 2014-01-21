@@ -338,20 +338,18 @@ double CoordinateLimitForce::getDissipatedEnergy(const SimTK::State& s) const
 	if(isComputingDissipationEnergy()){
 		return getStateVariable(s, "dissipatedEnergy");
 	} else {
-		throw Exception("CoordinateLimitForce::getDissipatedEnergy() compute_dissipation_energy set to false");
+		throw Exception("CoordinateLimitForce::getDissipatedEnergy() compute_dissipation_energy set to false.");
 		return SimTK::NaN;
 	}
 }
 
-SimTK::Vector CoordinateLimitForce::
-computeStateVariableDerivatives(const SimTK::State& s) const
+void CoordinateLimitForce::
+	computeStateVariableDerivatives(const SimTK::State& s) const
 {
-    SimTK::Vector derivs(0, 0.0);
     if (!isDisabled(s) && isComputingDissipationEnergy()){
-		derivs.resize(1);
-        derivs[0] = getPowerDissipation(s);
+		setStateVariableDerivative(s, "dissipatedEnergy", 
+			getPowerDissipation(s));
 	}
-    return derivs;
 }
 
 

@@ -36,7 +36,7 @@ using namespace std;
         Millard2012EquilibriumMuscle
         Millard2012AccelerationMuscle
 */
-void testArm26(const string& muscleModelClassName, bool testResults);
+void testArm26(const string& muscleModelClassName, double atol, double ftol);
 
 int main()
 {
@@ -46,28 +46,18 @@ int main()
 	muscleModelNames.append("Millard2012EquilibriumMuscle");
 	muscleModelNames.append("Millard2012AccelerationMuscle");
 
+	// Tolerances for the differences between the current models
+	// and the 'standard' solution, which was closest to using 
+	// Thelen2003Muscle_Deprecated musle formulation.
+	double actTols[4] = {0.005, 0.025, 0.04, 0.04};
+	double forceTols[4] = {0.5, 4, 5, 6};
 
-    cout << "=========================================================" << endl;
-    cout << "                       WARNING                           " << endl;
-    cout << "Athough this file says it testsStaticOptimization, it is" << endl;
-    cout << "not a valid test. It merely checks to see if the current" << endl;
-    cout << "static results agree with past static results.          " << endl;
-    cout << endl;
-    cout << "                This is not a test                      " << endl;
-    cout << endl;
-    cout << "A valid test might be done by instead checking that " <<endl;
-    cout << "1. IPOPT can correctly solve a quadradic problem " <<endl;
-    cout << "2. That the muscle forces provided to static are in fact   "<<endl;
-    cout << "   linear with activation, as is assumed in a static " << endl;
-    cout << "   optimization.                       M.Millard 2012" << endl;
-    cout << "=========================================================" << endl;
-	
 	SimTK::Array_<std::string> failures;
 	
 	for(int i=0; i< muscleModelNames.getSize(); ++i){
 		try { // regression test for the Thelen deprecate muscle
 			  // otherwise verify that SO runs with the new models
-            testArm26(muscleModelNames[i], i<1);
+            testArm26(muscleModelNames[i], actTols[i], forceTols[i]);
 		}
 		catch (const std::exception& e) {
 			cout << e.what() <<endl; 
@@ -84,7 +74,7 @@ int main()
     return 0;
 }
 
-void testArm26(const string& muscleModelClassName, bool testResults)
+void testArm26(const string& muscleModelClassName, double actTol, double forceTol)
 {
 	Object::renameType( "Thelen2003Muscle", muscleModelClassName);
 
@@ -124,22 +114,20 @@ void testArm26(const string& muscleModelClassName, bool testResults)
 	// Uncomment to use muscle model specific standard
 	//Storage stdForces1("std_arm26_"+muscName+"_SO_force.sto");
 
-    if(testResults){
-	    CHECK_STORAGE_AGAINST_STANDARD(activations1, stdActivations1, 
-									    Array<double>(0.025, 6),
-                                        __FILE__, __LINE__, 
-                                       "Arm26 activations "+muscName+" failed");
 
-	    CHECK_STORAGE_AGAINST_STANDARD(forces1, stdForces1, 
-                                        Array<double>(2.0, 6),
-                                        __FILE__, __LINE__, 
-                                        "Arm26 forces "+muscName+" failed.");
-        cout << resultsDir <<": test Arm26 passed." << endl;
-    }else{
-        cout << "WARNING: NO TEST PERFORMED" << endl;
-    }
+	CHECK_STORAGE_AGAINST_STANDARD(activations1, stdActivations1, 
+									Array<double>(actTol, 6),
+                                    __FILE__, __LINE__, 
+                                    "Arm26 activations "+muscName+" failed");
+
+	CHECK_STORAGE_AGAINST_STANDARD(forces1, stdForces1, 
+                                    Array<double>(forceTol, 6),
+                                    __FILE__, __LINE__, 
+                                    "Arm26 forces "+muscName+" failed.");
+    cout << resultsDir <<": test Arm26 passed." << endl;
+  
 	
-	cout << "==========================================================\n" << endl;
+	cout << "=============================================================\n" << endl;
 
 	AnalyzeTool analyze2("arm26_bounds_Setup_StaticOptimization.xml");
 	analyze2.setResultsDir(resultsDir);
@@ -156,20 +144,16 @@ void testArm26(const string& muscleModelClassName, bool testResults)
 	// Uncomment to use muscle model specific standard
 	//Storage stdForces2("std_arm26_bounds_"+muscName+"_SO_force.sto");
 
-    if(testResults){
-	    CHECK_STORAGE_AGAINST_STANDARD(activations2, stdActivations2,
-            Array<double>(0.03, 6), 
-            __FILE__, __LINE__, 
-            "Arm26 activation "+muscName+" with bounds failed.");
+	CHECK_STORAGE_AGAINST_STANDARD(activations2, stdActivations2,
+        Array<double>(actTol, 6), 
+        __FILE__, __LINE__, 
+        "Arm26 activation "+muscName+" with bounds failed.");
 
-	    CHECK_STORAGE_AGAINST_STANDARD(forces2, stdForces2, 
-            Array<double>(2.5, 6),
-            __FILE__,  __LINE__, 
-            "Arm26 forces "+muscName+" with bounds failed.");
-    }else{
-        cout << "WARNING: NO TEST PERFORMED" << endl;
-    }
-
-	cout << resultsDir << ": testbArm26 with bounds passed" << endl;
-	cout << "==========================================================\n" << endl;
+	CHECK_STORAGE_AGAINST_STANDARD(forces2, stdForces2, 
+        Array<double>(forceTol, 6),
+        __FILE__,  __LINE__, 
+        "Arm26 forces "+muscName+" with bounds failed.");
+ 
+	cout << resultsDir << ": testArm26 with bounds passed" << endl;
+	cout << "=============================================================\n" << endl;
 }

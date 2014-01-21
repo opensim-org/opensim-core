@@ -150,8 +150,7 @@ protected:
 	// Model Component Interface
 	void connectToModel(Model& aModel) OVERRIDE_11;
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-	SimTK::Vector computeStateVariableDerivatives(const SimTK::State &s) const 
-                                                                OVERRIDE_11;
+	void computeStateVariableDerivatives(const SimTK::State &s) const OVERRIDE_11; 
 
 private:
 	void setNull();

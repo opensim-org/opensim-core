@@ -142,13 +142,7 @@ protected:
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 	void initStateFromProperties(SimTK::State& state) const OVERRIDE_11;
 	void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
-	Array<std::string> getStateVariableNames() const OVERRIDE_11;
-	SimTK::SystemYIndex getStateVariableSystemIndex(
-							const std::string& stateVariableName) const OVERRIDE_11;
-
-	SimTK::Vector computeStateVariableDerivatives(
-							const SimTK::State& s) const OVERRIDE_11;
-
+	void computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11;
 
 private:
 	void setNull();

@@ -129,9 +129,14 @@ void Joint::constructProperties(void)
 
 //_____________________________________________________________________________
 
-void Joint::connectToModel(Model& aModel) {
+void Joint::connectToModel(Model& aModel)
+{
+	CoordinateSet& coordinateSet = upd_CoordinateSet();
 
-	Super::connectToModel(aModel);
+	for(int i = 0; i< coordinateSet.getSize(); ++i){
+		coordinateSet[i].setJoint(*this);
+		addComponent(&coordinateSet[i]);
+	}
 
 	string errorMessage;
 
@@ -143,12 +148,6 @@ void Joint::connectToModel(Model& aModel) {
 		throw (Exception(errorMessage.c_str()));
 	}
 	setParentBody(aModel.updBodySet().get(parentName));
-
-	CoordinateSet& coordinateSet = upd_CoordinateSet();
-	coordinateSet.invokeConnectToModel(aModel);
-
-	for(int i = 0; i< coordinateSet.getSize(); i++)
-		coordinateSet[i].setJoint(*this);
 
 	const SimTK::Vec3& orientation = get_orientation();
 	const SimTK::Vec3& location = get_location();
@@ -165,6 +164,9 @@ void Joint::connectToModel(Model& aModel) {
 	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
 	SimTK::Transform parentTransform(parentRotation, locationInParent);
 	_jointFrameInParent = parentTransform;
+
+	//connect Coordinates as subcomponents of this Joint
+	Super::connectToModel(aModel);
 }
 
 //=============================================================================
@@ -459,8 +461,6 @@ void Joint::setMobilizedBodyIndex(OpenSim::Body *aBody,
 // *after* it creates its mobilized body; that is an API bug.
 void Joint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);
-
 	// Each coordinate needs to know it's body index and mobility index.
 	const CoordinateSet& coordinateSet = get_CoordinateSet();
 
@@ -475,6 +475,9 @@ void Joint::addToSystem(SimTK::MultibodySystem& system) const
 		// the transform from parent to child.
 		q._mobilizerQIndex = SimTK::MobilizerQIndex(iq);
 	}
+
+	// add sub components (e.g. Coordnates) once we have necessary system indices
+	Super::addToSystem(system);
 }
 
 void Joint::initStateFromProperties(SimTK::State& s) const

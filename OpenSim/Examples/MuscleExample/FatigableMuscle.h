@@ -152,8 +152,7 @@ protected:
 	void computeInitialFiberEquilibrium(SimTK::State& s) const OVERRIDE_11;
 	
 	/** Compute the derivatives for state variables added by this muscle */
-	SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) 
-		const OVERRIDE_11;
+	void computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11;
 
 private:
 	/** construct the new properties and set their default values */

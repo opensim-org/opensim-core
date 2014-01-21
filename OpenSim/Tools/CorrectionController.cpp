@@ -19,11 +19,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-//
-// This software, originally developed by Realistic Dynamics, Inc., was
-// transferred to Stanford University on November 1, 2006.
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 
 //=============================================================================
 // INCLUDES
@@ -36,7 +31,6 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include "CorrectionController.h"
 
@@ -110,7 +104,6 @@ setNull()
 {
     setupProperties();
     _model = NULL;	
-	 _desiredStatesStorage = NULL;
 }
 /**
  ** Assignment operator.
@@ -156,7 +149,6 @@ copyData(const CorrectionController &aController)
 	// Copy this class's members.
 	_kp = aController._kp;
 	_kv = aController._kv;
-	_desiredStatesStorage = aController._desiredStatesStorage;
 }
 
 
@@ -234,8 +226,7 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
 	Array<double> yDesired(0.0,nq+nu);
 	getDesiredStatesStorage().getDataAtTime(t, nq+nu,yDesired);
 	
-	double newControl = 0.0;
-
+	SimTK::Vector actControls(1, 0.0);
 
    	for(int i=0; i< getActuatorSet().getSize(); i++){
 		CoordinateActuator* act = 
@@ -244,23 +235,23 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
 
 		Coordinate *aCoord = act->getCoordinate();
 		if( aCoord->isConstrained(s) ) {
-			newControl =  0.0;
+			actControls =  0.0;
 		} 
 		else
 		{
-			int iqx = aCoord->getStateVariableSystemIndex(aCoord->getName());
-			int iux = aCoord->getStateVariableSystemIndex(aCoord->getSpeedName());
+			double qval = aCoord->getValue(s);
+			double uval = aCoord->getSpeedValue(s);
 
     		// COMPUTE EXCITATIONS
 			double oneOverFmax = 1.0 / act->getOptimalForce();
-			double pErr = s.getY()[iqx] - yDesired[iqx];
-			double vErr = s.getY()[iux] - yDesired[iux];
+			double pErr = qval - yDesired[2*i];
+			double vErr = uval - yDesired[2*i+1];
 			double pErrTerm = _kp*oneOverFmax*pErr;
 			double vErrTerm = _kv*oneOverFmax*vErr;
-			newControl = -vErrTerm - pErrTerm;
+			actControls = -vErrTerm - pErrTerm;
 		}
 
-		SimTK::Vector actControls(1, newControl);
+		
 		getActuatorSet()[i].addInControls(actControls, controls);
 	}
 }
@@ -291,7 +282,7 @@ void CorrectionController::connectToModel(Model& model)
 			actuator = new CoordinateActuator();
 			actuator->setCoordinate(&cs.get(i));
 			actuator->setName(name);
-			_model->updForceSet().append(actuator);
+			_model->addForce(actuator);
 		}
 			
 		actuator->setOptimalForce(1.0);
@@ -300,7 +291,8 @@ void CorrectionController::connectToModel(Model& model)
    }
 	setNumControls(getActuatorSet().getSize());
 
-	printf(" CorrectionController::connectToModel(): end  num Actuators= %d kv=%f kp=%f \n",  _model->getForceSet().getSize(), _kv, _kp );
+	printf(" CorrectionController::connectToModel()  num Actuators= %d kv=%f kp=%f \n",
+		_model->getForceSet().getSize(), _kv, _kp );
 }
 
 // for any intialization requiring a state or the complete system 

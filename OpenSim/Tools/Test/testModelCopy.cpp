@@ -31,6 +31,7 @@
 #include "SimTKsimbody.h"
 #include "SimTKmath.h"
 
+
 using namespace OpenSim;
 using namespace std;
 
@@ -54,6 +55,9 @@ int main()
 
 void testCopyModel(string fileName)
 {
+	size_t mem1 = getCurrentRSS( );
+	cout << "Memory use BEFORE load, copy and init: " << mem1 << "Bytes." << endl;
+
 	Model *model = new Model(fileName);
 	SimTK::State defaultState = model->initSystem();
 	Model *modelCopy = new Model(*model);
@@ -66,7 +70,7 @@ void testCopyModel(string fileName)
 	ASSERT ((defaultState.getY()-defaultStateOfCopy.getY()).norm() < 1e-7);
 	defaultState.getZ().dump("defaultState:Z");
 	ASSERT ((defaultState.getZ()-defaultStateOfCopy.getZ()).norm() < 1e-7);
-	
+
 	//  Now delete original model and make sure copy can stand
 	Model *newModel = modelCopy->clone();
 	// Compare state again
@@ -76,4 +80,9 @@ void testCopyModel(string fileName)
 	ASSERT ((defaultState.getY()-defaultStateOfCopy2.getY()).norm() < 1e-7);
 	ASSERT ((defaultState.getZ()-defaultStateOfCopy2.getZ()).norm() < 1e-7);
 	delete newModel;
+
+	size_t mem2 = getCurrentRSS( );
+	LONG64 delta = mem2-mem1;
+
+	cout << "Memory change AFTER copy and init:  " << delta/1024 << "KB." << endl;
 }

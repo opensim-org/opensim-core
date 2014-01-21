@@ -259,6 +259,9 @@ setFunctionsForVelocity(FunctionSet &aFuncSet)
 	int nTrk;
 	string name;
 	Function *f[3];
+
+	const CoordinateSet& coords = getModel()->getCoordinateSet(); 
+
 	for(i=0;i<getSize();i++) {
 
 		// OBJECT
@@ -274,10 +277,12 @@ setFunctionsForVelocity(FunctionSet &aFuncSet)
 		name = task.getName();
 		if(name.empty()) continue;
 
+		const Coordinate& coord = coords.get(name);
+
 		// FIND FUNCTION(S)
 		f[0] = f[1] = f[2] = NULL;
 		nTrk = task.getNumTaskFunctions();
-		iFunc = aFuncSet.getIndex(name,iFunc);
+		iFunc = aFuncSet.getIndex(coord.getSpeedName(),iFunc);
 		for(j=0;j<nTrk;j++) {
 			try {
 				f[j] = &aFuncSet.get(iFunc);
@@ -285,12 +290,6 @@ setFunctionsForVelocity(FunctionSet &aFuncSet)
 				x.print(cout);
 			}
 			if(f[j]==NULL) break;
-			if(name == f[j]->getName()) {
-				iFunc++;
-			} else {
-				f[j] = NULL;
-				break;
-			}
 		}
 		task.setTaskFunctionsForVelocity(f[0],f[1],f[2]);
 	}
@@ -346,6 +345,9 @@ setFunctionsForAcceleration(FunctionSet &aFuncSet)
 	int nTrk;
 	string name;
 	Function *f[3];
+
+	const CoordinateSet& coords = getModel()->getCoordinateSet(); 
+
 	for(i=0;i<getSize();i++) {
 
 		// OBJECT
@@ -360,10 +362,12 @@ setFunctionsForAcceleration(FunctionSet &aFuncSet)
 		name = task.getName();
 		if(name.empty()) continue;
 
+		const Coordinate& coord = coords.get(name);
+
 		// FIND FUNCTION(S)
 		f[0] = f[1] = f[2] = NULL;
 		nTrk = task.getNumTaskFunctions();
-		iFunc = aFuncSet.getIndex(name,iFunc);
+		iFunc = aFuncSet.getIndex(coord.getSpeedName(),iFunc);
 		for(j=0;j<nTrk;j++) {
 			try {
 				f[j] = &aFuncSet.get(iFunc);
@@ -371,12 +375,6 @@ setFunctionsForAcceleration(FunctionSet &aFuncSet)
 				x.print(cout);
 			}
 			if(f[j]==NULL) break;
-			if(name == f[j]->getName()) {
-				iFunc++;
-			} else {
-				f[j] = NULL;
-				break;
-			}
 		}
 		task.setTaskFunctionsForAcceleration(f[0],f[1],f[2]);
 	}

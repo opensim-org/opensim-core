@@ -1001,8 +1001,6 @@ bool Thelen2003Muscle::
 /** Get the rate change of activation */
 double Thelen2003Muscle::calcActivationRate(const SimTK::State& s) const 
 {    
-
-
     double excitation = getExcitation(s);
     double activation = getActivation(s);
     double dadt = actMdl.calcDerivative(activation,excitation);

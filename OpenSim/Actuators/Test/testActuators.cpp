@@ -182,8 +182,7 @@ void testTorqueActuator()
 	// get a new system and state to reflect additions to the model
 	state = model->initSystem();
 
-	Vector derivs = model->computeStateVariableDerivatives(state);
-	derivs.dump("Model Derivatives");
+	model->computeStateVariableDerivatives(state);
 
 	const Vector &udotTorqueActuator = state.getUDot();
 
@@ -207,7 +206,7 @@ void testTorqueActuator()
 	manager.setFinalTime(final_t);
 	manager.integrate(state);
 
-	derivs = model->computeStateVariableDerivatives(state);
+	model->computeStateVariableDerivatives(state);
 
 	double fKE = model->getMatterSubsystem().calcKineticEnergy(state);
 

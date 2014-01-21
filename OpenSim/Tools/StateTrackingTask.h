@@ -75,16 +75,27 @@ public:
 
 #ifndef SWIG
 	StateTrackingTask& operator=(const StateTrackingTask &aTaskObject) {
-	// BASE CLASS
-	TrackingTask::operator =(aTaskObject);
-	// DATA
-	copyData(aTaskObject);
+		// BASE CLASS
+		TrackingTask::operator =(aTaskObject);
+		// DATA
+		copyData(aTaskObject);
 
-	return(*this);
+		return(*this);
 	}
 #endif
 	virtual double getTaskError(const SimTK::State& s) {
-		return (_pTrk[0]->calcValue(SimTK::Vector(1,s.getTime()))- _model->getStateVariable(s, getName()));
+		double val = SimTK::NaN;
+		std::string::size_type dix = getName().find(".");
+		if(dix != std::string::npos){
+			std::string varName = getName();
+			varName.replace(dix, 1, "/");
+			val = _model->getStateVariable(s, varName);
+		}
+		else{
+			val = _model->getStateVariable(s, getName());
+		}
+
+		return (_pTrk[0]->calcValue(SimTK::Vector(1,s.getTime()))- val);
 	}
 	/**
 	 * Return the gradient of the tracking error as a vector, whose length 

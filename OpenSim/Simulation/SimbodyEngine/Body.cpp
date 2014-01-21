@@ -265,23 +265,24 @@ void Body::setupProperties()
  */
 void Body::connectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel);
+	if(_joint)
+		addComponent(_joint);
 
 	for(int i=0; i<_wrapObjectSet.getSize(); i++)
 		_wrapObjectSet.get(i).connectToModelAndBody(aModel, *this);
-	if(this->getName() != "ground") {
-		if(_joint) _joint->connectToModel(aModel);
-    }
+
+	Super::connectToModel(aModel);
 }
 
 void Body::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);
-
 	if(getName() == "ground"){
 		Body * mutableThis = const_cast<Body *>(this);
 		mutableThis->_index = SimTK::GroundIndex;
 	}
+
+	// Add subcomponents of the Body (namely its Joint)
+	Super::addToSystem(system);
 
 }
 

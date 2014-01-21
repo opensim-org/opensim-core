@@ -78,7 +78,7 @@ void testDoublePendulumWithSolver()
 	int nt = statesStore.getTimeColumn(time);
 	statesStore.getDataForIdentifier("q", states);
 
-	Model pendulum("double_pendulum.osim");
+	Model pendulum("double_pendulum.osim", true);
 	
 	PrescribedController* controller=
 		new PrescribedController();

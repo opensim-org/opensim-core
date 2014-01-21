@@ -248,11 +248,11 @@ int main()
 		// Compare behavior of a double pendulum (1) with welded foot and toes
 		testWeldJoint(false);
 		// Compare previous OpenSim model but with randomized body order in BodySet to test connectBodies
-		testWeldJoint(true);
+		//testWeldJoint(true);
 
 		// Compare behavior of a double pendulum with an OpenSim Ball hip and custom pin knee
-		// OpenSim, system restricted to using euelr angles exclusively to support EllipsoidJoint
-		// and teh fact that coordinates cannot map to/from quaternions
+		// OpenSim, system restricted to using euler angles exclusively to support EllipsoidJoint
+		// and the fact that coordinates cannot map to/from quaternions
 		//testBallJoint(false);
 		// Compare behavior of a double pendulum with an OpenSim Ball hip and custom pin knee
 		testBallJoint(true);
@@ -844,7 +844,7 @@ void testWeldJoint(bool randomizeBodyOrder)
 	hipTransform[1].setFunction(new LinearFunction());	
 
 	// create custom hip joint
-	CustomJoint hip("", ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0), hipTransform);
+	CustomJoint hip("hip", ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0), hipTransform);
 	
 	tempBodySet.adoptAndAppend(&osim_thigh);
 
@@ -857,22 +857,21 @@ void testWeldJoint(bool randomizeBodyOrder)
 	kneeTransform[2].setFunction(new LinearFunction());	
 
 	// create custom knee joint
-	CustomJoint knee("", osim_thigh, kneeInFemur, Vec3(0), osim_shank, kneeInTibia, Vec3(0), kneeTransform);
+	CustomJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0), osim_shank, kneeInTibia, Vec3(0), kneeTransform);
 
 	//osim_shank.setJoint((Joint *)&knee);
 	tempBodySet.adoptAndAppend(&osim_shank);
 
 	// Add foot body at ankle
 	OpenSim::Body osim_foot("foot", footMass.getMass(), footMass.getMassCenter(), footMass.getInertia());
-	WeldJoint ankle("", osim_shank, ankleInTibia, Vec3(0), osim_foot, ankleInFoot, Vec3(0));
+	WeldJoint ankle("ankle", osim_shank, ankleInTibia, Vec3(0), osim_foot, ankleInFoot, Vec3(0));
 
 	tempBodySet.adoptAndAppend(&osim_foot);
 
 	// Add toes body at mtp
 	OpenSim::Body osim_toes ("toes", toesMass.getMass(), toesMass.getMassCenter(), toesMass.getInertia());
-	WeldJoint mtp("", osim_foot, mtpInFoot, Vec3(0), osim_toes, mtpInToes, Vec3(0));
+	WeldJoint mtp("mtp", osim_foot, mtpInFoot, Vec3(0), osim_toes, mtpInToes, Vec3(0));
 
-	osim_toes.setJoint(mtp);
 	tempBodySet.adoptAndAppend(&osim_toes);
 
 	int order[] = {0, 1, 2, 3};
@@ -903,7 +902,7 @@ void testWeldJoint(bool randomizeBodyOrder)
 	}
 
 	for(int i=0; i<4; i++){
-		osimModel->updBodySet().insert(i, &tempBodySet.get(order[i]));
+		osimModel->addBody(&tempBodySet.get(order[i]));
 	}
 
 	// BAD: have to set memoryOwner to false or program will crash when this test is complete.

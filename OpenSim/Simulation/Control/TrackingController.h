@@ -56,22 +56,6 @@ class OSIMSIMULATION_API TrackingController : public Controller
 {
 
 //=============================================================================
-// DATA
-//=============================================================================
-
-protected:
-	/**
-	 *   storage object containing the desired trajectory
-     */
-	const Storage* _desiredStatesStorage;
-
-	/*
-	 * Tracking tasks define the relative weighting and gains on the
-	 * tracking errors in computing the controls.
-	 */
-	Array<double> *_trackingTasks;
-
-//=============================================================================
 // METHODS
 //=============================================================================
 	//--------------------------------------------------------------------------
@@ -84,66 +68,13 @@ public:
 	TrackingController();
 
 	/**
-	 * Copy constructor. 
-	 *
-	 * @param TrackingController The controller to be copied.
-	 */
-	TrackingController(const TrackingController &TrackingController);
-
-	/**
-	 * Destructor.  This method should be a member of any subclass of the
-	 * Controller class.  It will be called automatically whenever an
-	 * instance of the subclass is deleted from memory.
+	 * Destructor.  
 	 */
 	virtual ~TrackingController();
-
-private:
-	// A "private" method is one that can be called only by this class,
-	// and not even by subclasses of this class.
-
-	/**
-	 * This method sets all member variables to default (e.g., NULL) values.
-	 */
-	void setNull();
-
-protected:
-
-	/**
-	 * Connect properties to local pointers.  
-	 */
-	virtual void setupProperties();
-
-	/**
-	 * Copy the member variables of the specified controller.  This method is
-	 * called by the copy constructor of the Controller class.
-	 *
-	 * @param aController The controller whose data is to be copied.
-	 */
-	void copyData(const TrackingController &aController);
-
-
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
-public:
-
-#ifndef SWIG
-
-	/**
-	 * Assignment operator.  
-	 *
-	 * @param TrackingController The controller to be copied.
-	 * @return Reference to the altered object.
-	 */
-	TrackingController& operator=(const TrackingController &TrackingController);
-
-#endif
 
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-
-	
 	/**
 	 * Set this class's pointer to the storage object containing
 	 * desired model states to point to the storage object passed into
@@ -166,7 +97,30 @@ public:
 	/**
 	 * Controller interface
 	 */
-	virtual void computeControls(const SimTK::State& s, SimTK::Vector& controls) const =0;
+	//void computeControls(const SimTK::State& s, SimTK::Vector& controls) const =0;
+
+private:
+	// A "private" method is one that can be called only by this class,
+	// and not even by subclasses of this class.
+
+	/**
+	 * This method sets all member variables to default (e.g., NULL) values.
+	 */
+	void setNull();
+
+
+
+
+//=============================================================================
+// DATA
+//=============================================================================
+
+private:
+	/**
+	 *   storage object containing the desired trajectory
+     */
+	mutable SimTK::ReferencePtr<const Storage> _desiredStatesStorage;
+
 
 	friend class ControllerSet;
 

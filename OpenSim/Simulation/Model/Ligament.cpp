@@ -97,7 +97,7 @@ void Ligament::connectToModel(Model& aModel)
     // to subcomponents. Subsequent addToSystem() will also be automatically
 	// propagated to subcomponents.
     // TODO: this is awkward; subcomponent API needs to be revisited (sherm)
-	includeAsSubComponent(&path);
+	addComponent(&path);
 
     //TODO: can't call this at start of override; this is an API bug.
 	Super::connectToModel(aModel);

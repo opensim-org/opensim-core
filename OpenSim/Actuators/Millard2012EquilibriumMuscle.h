@@ -324,14 +324,6 @@ public:
     @returns The time derivative of activation. */
     double getActivationDerivative(const SimTK::State& s) const;
 
-    /** @returns A string array of the state variable names. */
-    Array<std::string> getStateVariableNames() const FINAL_11;
-
-    /** @param stateVariableName The name of the state varaible in question.
-        @returns The system index of the state variable in question. */
-    SimTK::SystemYIndex getStateVariableSystemIndex(
-        const std::string &stateVariableName) const FINAL_11;
-
 //==============================================================================
 // SET METHODS
 //==============================================================================
@@ -526,8 +518,7 @@ protected:
     void setPropertiesFromState(const SimTK::State& s) OVERRIDE_11;
 
     /** Computes state variable derivatives */
-    SimTK::Vector computeStateVariableDerivatives(
-        const SimTK::State& s) const OVERRIDE_11;
+    void computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11;
 
 private:
     // The name used to access the activation state.

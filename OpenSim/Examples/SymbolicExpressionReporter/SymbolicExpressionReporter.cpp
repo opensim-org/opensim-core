@@ -223,8 +223,7 @@ record(const SimTK::State& s)
     _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity );
 	// Get state variable names and values in same order and use that to update map
 	Array<std::string> stateNames = _model->getStateVariableNames();
-	Array<double> rStateValues;
-	_model->getStateValues(s, rStateValues);
+	SimTK::Vector rStateValues = _model->getStateVariableValues(s);
 
 	// update map between names and values, then pass it to expression evaluator
 	for(int i=0; i<stateNames.getSize(); i++){

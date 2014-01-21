@@ -55,7 +55,7 @@ int main() {
 		cout << "\nPendulum with external load test PASSED " << endl; }
 	catch (const std::exception& e)
 		{ cout << e.what() <<endl; failures.push_back("testPendulumExternalLoad"); }
-
+	
 	// test application of external loads
     try { testPendulumExternalLoadWithPointInGround(); 
 		cout << "\nPendulum with external load and point in ground PASSED " << endl; }
@@ -73,7 +73,7 @@ int main() {
 		cout << "\ngait2354 test PASSED " << endl; }
 	catch (const std::exception& e)
 		{ cout << e.what() <<endl; failures.push_back("testGait2354"); }		
-		
+	
 	// finally include a controller
     try { testGait2354WithController(); 
 		cout << "\ngait2354 with correction controller test PASSED " << endl; }
@@ -203,61 +203,41 @@ void testGait2354()
 	ForwardTool forward("subject01_Setup_Forward.xml");
 	forward.run();
 	Storage results("Results/subject01_states.sto");
+
+	//Storage standard("std_subject01_walk1_states.sto");
 	Storage* standard = new Storage();
     string statesFileName("std_subject01_walk1_states.sto");
     forward.loadStatesStorage( statesFileName, standard );
+	
+	int nstates = forward.getModel().getNumStateVariables();
+	int nq = forward.getModel().getNumCoordinates();
+	Array<double> rms_tols(0.001, 2*nstates); //activations and fiber-lengths
 
-	Array<double> data;
-	StateVector* state = results.getStateVector(0);
-	double time = state->getTime();
-	data.setSize(state->getSize());
-	standard->getDataAtTime(time, state->getSize(), data);
-
-	// At initial time all states should be identical except for locked joints may vary slightly due to 
-	// differences in OpenSim's integrator and SimTK's
-	int nc = forward.getModel().getNumCoordinates();
-	for (int j = 0; j < state->getSize(); ++j) {
-		stringstream message;
-		message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j];
-        ASSERT_EQUAL(data[j], state->getData()[j], 1e-4, __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
-		cout << "ASSERT_EQUAL PASSED " << message.str() << endl;;
+	for(int i=0; i<nq; ++i){
+		rms_tols[2*i] = 0.035; // coordinates at less than 2degrees
+		rms_tols[2*i+1] = 2.5; // speeds can deviate by a lot due to open-loop test
 	}
-
-	int i = results.getSize()-1;
-	state = results.getStateVector(i);
-	time = state->getTime();
-	standard->getDataAtTime(time, state->getSize(), data);
-
-	// NOTE: Gait model is running forward open-loop. We cannot expect all the states to
-	// be "bang on" and we expect a gradual drift in the coordinates.  Check to see that
-	// coordinates haven't drifted too far off.
-	for (int j = 0; j < nc; ++j) {
-	    stringstream message;
-		message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j];
-        ASSERT_EQUAL(data[j], state->getData()[j], 4e-2, __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
-		cout << "ASSERT_EQUAL PASSED " << message.str() << endl;
-	}
+	
+	CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testGait2354 failed");
 }
 
 void testGait2354WithController() {
     ForwardTool forward("subject01_Setup_Forward_Controller.xml");
 	forward.run();
 	Storage results("ResultsCorrectionController/subject01_states.sto");
+	//Storage standard("std_subject01_walk1_states.sto");
 	Storage* standard = new Storage();
     string statesFileName("std_subject01_walk1_states.sto");
     forward.loadStatesStorage( statesFileName, standard );
 
-	Array<double> data;
-	int i = results.getSize() - 1;
-	StateVector* state = results.getStateVector(i);
-	double time = state->getTime();
-	data.setSize(state->getSize());
-	standard->getDataAtTime(time, state->getSize(), data);
-	int nc = forward.getModel().getNumCoordinates();
-	for (int j = 0; j < nc; ++j) {      
-	    stringstream message;
-		message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j];
-        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2, __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
-		cout << "ASSERT_EQUAL PASSED " << message.str() << endl;
+	int nstates = forward.getModel().getNumStateVariables();
+	int nq = forward.getModel().getNumCoordinates();
+	Array<double> rms_tols(0.001, 2*nstates); //activations and fiber-lengths
+
+	for(int i=0; i<nq; ++i){
+		rms_tols[2*i] = 0.01; // coordinates at less than 0.6 degree
+		rms_tols[2*i+1] = 0.1; // speeds should deviate less with feedback controller
 	}
+	
+	CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testGait2354WithController failed");
 }

@@ -563,13 +563,16 @@ begin(SimTK::State& s )
 		sWorkingCopy.setZ(s.getZ());
 		_modelWorkingCopy->getMultibodySystem().realize(s,SimTK::Stage::Velocity);
 		_modelWorkingCopy->equilibrateMuscles(sWorkingCopy);
-		// Gather indices into speed set corresponding to the unconstrained degrees of freedom (for which we will set acceleration constraints)
+		// Gather indices into speed set corresponding to the unconstrained degrees of freedom 
+		// (for which we will set acceleration constraints)
 		_accelerationIndices.setSize(0);
 		const CoordinateSet& coordSet = _model->getCoordinateSet();
 		for(int i=0; i<coordSet.getSize(); i++) {
 			const Coordinate& coord = coordSet.get(i);
 			if(!coord.isConstrained(sWorkingCopy)) {
-				_accelerationIndices.append(i);
+				Array<int> inds = _statesStore->
+					getColumnIndicesForIdentifier(coord.getName()) ;
+				_accelerationIndices.append(inds[0]);
 			}
 		}
 
@@ -577,7 +580,8 @@ begin(SimTK::State& s )
 		int nacc = _accelerationIndices.getSize();
 
 		if(na < nacc) 
-			throw(Exception("StaticOptimization: ERROR- overconstrained system -- need at least as many forces as there are degrees of freedom.\n"));
+			throw(Exception("StaticOptimization: ERROR- overconstrained "
+	            "system -- need at least as many forces as there are degrees of freedom.\n") );
 
 		_parameters.resize(na);
 		_parameters = 0;

@@ -24,14 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <cstdio>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Set.h>
 #include "TrackingController.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
-#include "SimTKsimbody.h"
+
 
 
 //=============================================================================
@@ -55,17 +49,6 @@ TrackingController::TrackingController() : Controller()
 	setNull();
 }
 
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- */
-TrackingController::TrackingController(const TrackingController &aTrackingController) :
-	Controller(aTrackingController)
-{
-	setNull();
-	copyData(aTrackingController);
-}
 //_____________________________________________________________________________
 /**
  * Destructor.
@@ -86,47 +69,6 @@ TrackingController::~TrackingController()
 void TrackingController::setNull()
 {
 	setAuthors("Ajay Seth");
-	setupProperties();
-	_desiredStatesStorage = NULL;
-	_trackingTasks = NULL;
-}
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void TrackingController::setupProperties()
-{
-
-}
-//_____________________________________________________________________________
-/**
- * Copy the member variables of the specified controller.
- */
-void TrackingController::copyData(const TrackingController &aController)
-{
-	_desiredStatesStorage = aController._desiredStatesStorage;
-}
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//-----------------------------------------------------------------------------
-// ASSIGNMENT
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- */
-TrackingController& TrackingController::operator=(const TrackingController &aController)
-{
-	// BASE CLASS
-	Controller::operator=(aController);
-
-	// DATA
-	copyData(aController);
-
-	return(*this);
 }
 
 

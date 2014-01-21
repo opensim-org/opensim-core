@@ -111,10 +111,6 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
 	addStateVariable(STATE_ACTIVATION_NAME);
 	addStateVariable(STATE_FIBER_LENGTH_NAME);
 
-	double value = 0.0;
-	addCacheVariable(STATE_ACTIVATION_NAME+"_deriv", value, SimTK::Stage::Dynamics);
-	addCacheVariable(STATE_FIBER_LENGTH_NAME+"_deriv", value, SimTK::Stage::Dynamics);
-	
 	// Cache the computed active and passive muscle force
 	// note the total muscle force is the tendon force and is already a cached variable of the actuator
 	addCacheVariable<double>("activeForce", 0.0, SimTK::Stage::Velocity);
@@ -150,22 +146,6 @@ void ActivationFiberLengthMuscle_Deprecated::setDefaultFiberLength(double length
     _defaultFiberLength = length;
 }
 
-//_____________________________________________________________________________
-/**
- * Get the name of a state variable, given its index.
- *
- * @param aIndex The index of the state variable to get.
- * @return The name of the state variable.
- */
-Array<std::string> ActivationFiberLengthMuscle_Deprecated::getStateVariableNames() const
-{
-	Array<std::string> stateVariableNames = ModelComponent::getStateVariableNames();
-	// Make state variable names unique to this muscle
-	for(int i=0; i<stateVariableNames.getSize(); ++i){
-		stateVariableNames[i] = getName()+"."+stateVariableNames[i];
-	}
-	return stateVariableNames;
-}
 
 // STATES
 //_____________________________________________________________________________
@@ -200,17 +180,19 @@ double ActivationFiberLengthMuscle_Deprecated::getStateVariableDeriv(const SimTK
  *
  * @param s  system state
  */
-SimTK::Vector ActivationFiberLengthMuscle_Deprecated::
-computeStateVariableDerivatives(const SimTK::State &s) const
+void ActivationFiberLengthMuscle_Deprecated::
+	computeStateVariableDerivatives(const SimTK::State &s) const
 {
-	SimTK::Vector derivs(getNumStateVariables(), 0.);
+	double adot = 0;
+	double ldot = 0;
     if (!isDisabled(s)) {
-	    derivs[0] = getActivationDeriv(s);
-	    derivs[1] = getFiberLengthDeriv(s);
+	    adot = getActivationDeriv(s);
+	    ldot = getFiberVelocity(s);
     }
-	return derivs;
-}
 
+	setStateVariableDerivative(s, STATE_ACTIVATION_NAME, adot);
+	setStateVariableDerivative(s, STATE_FIBER_LENGTH_NAME, ldot);
+}
 
 //==============================================================================
 // GET
@@ -423,7 +405,6 @@ void ActivationFiberLengthMuscle_Deprecated::computeForce(const SimTK::State& s,
 		int numStateVariables = getNumStateVariables();
 		Array<std::string> stateVariableNames = getStateVariableNames();
 		for (int i = 0; i < numStateVariables; ++i) {
-			stateVariableNames[i] = stateVariableNames[i].substr(stateVariableNames[i].find('.') + 1);
 			setStateVariableDeriv(s, stateVariableNames[i], 0.0);
 		}
     } 
@@ -458,19 +439,6 @@ double ActivationFiberLengthMuscle_Deprecated::
 	double normalizedForceVelocity = evaluateForceLengthVelocityCurve(1.0,1.0,normalizedVelocity);
 
 	return isometricForce * normalizedForceVelocity;
-}
-
-SimTK::SystemYIndex ActivationFiberLengthMuscle_Deprecated::getStateVariableSystemIndex(const string &stateVariableName) const
-{
-	unsigned start = (unsigned)stateVariableName.find(".");
-	unsigned end = (unsigned)stateVariableName.length();
-	
-	if(start == end)
-		return ModelComponent::getStateVariableSystemIndex(stateVariableName);
-	else{
-		string localName = stateVariableName.substr(++start, end-start);
-		return ModelComponent::getStateVariableSystemIndex(localName);
-	}
 }
 
 //==============================================================================

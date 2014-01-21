@@ -154,7 +154,6 @@ CMC::CMC(Model *aModel,CMC_TaskSet *aTaskSet) :
 
 void CMC::copyData( const CMC &aCmc ) 
 {
-   TrackingController::copyData( aCmc );
    _dt                    = aCmc._dt;
    _tf                    = aCmc._tf;
    _lastDT                = aCmc._lastDT;

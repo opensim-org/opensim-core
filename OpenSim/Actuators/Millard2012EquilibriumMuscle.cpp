@@ -275,30 +275,6 @@ getActivationDerivative(const SimTK::State& s) const
     return activationDerivative;
 }
 
-Array<std::string> Millard2012EquilibriumMuscle::getStateVariableNames() const
-{
-    Array<std::string> stateVariableNames =
-        ModelComponent::getStateVariableNames();
-
-    for(int i=0; i<stateVariableNames.getSize(); ++i) {
-        stateVariableNames[i] = getName()+"."+stateVariableNames[i];
-    }
-    return stateVariableNames;
-}
-
-SimTK::SystemYIndex Millard2012EquilibriumMuscle::
-getStateVariableSystemIndex(const std::string &stateVariableName) const
-{
-    unsigned start = (unsigned)stateVariableName.find(".");
-    unsigned end   = (unsigned)stateVariableName.length();
-
-    if(start==end) {
-        return ModelComponent::getStateVariableSystemIndex(stateVariableName);
-    } else {
-        string localName = stateVariableName.substr(++start, end-start);
-        return ModelComponent::getStateVariableSystemIndex(localName);
-    }
-}
 
 //==============================================================================
 // SET METHODS
@@ -702,22 +678,6 @@ calcActivationDerivative(double activation, double excitation) const
         da = (clampedExcitation - clampedActivation) / tau;
     }
     return da;
-}
-
-double Millard2012EquilibriumMuscle::
-getStateVariableDeriv(const SimTK::State& s,
-                      const std::string &aStateName) const
-{
-    return getCacheVariable<double>(s, aStateName + "_deriv");
-}
-
-void Millard2012EquilibriumMuscle::
-setStateVariableDeriv(const SimTK::State& s,
-                      const std::string &aStateName, double aValue) const
-{
-    double& cacheVariable = updCacheVariable<double>(s, aStateName + "_deriv");
-    cacheVariable = aValue;
-    markCacheVariableValid(s, aStateName + "_deriv");
 }
 
 //==============================================================================
@@ -1157,13 +1117,9 @@ addToSystem(SimTK::MultibodySystem& system) const
     double dummyValue = 0.0;
     if(!get_ignore_activation_dynamics()) {
         addStateVariable(STATE_ACTIVATION_NAME);
-        addCacheVariable(STATE_ACTIVATION_NAME+"_deriv", dummyValue,
-                         SimTK::Stage::Dynamics);
     }
     if(!get_ignore_tendon_compliance()) {
         addStateVariable(STATE_FIBER_LENGTH_NAME);
-        addCacheVariable(STATE_FIBER_LENGTH_NAME+"_deriv", dummyValue,
-                         SimTK::Stage::Dynamics);
     }
 }
 
@@ -1194,26 +1150,28 @@ setPropertiesFromState(const SimTK::State& s)
     ensureMuscleUpToDate();
 }
 
-SimTK::Vector Millard2012EquilibriumMuscle::
-computeStateVariableDerivatives(const SimTK::State& s) const
+void Millard2012EquilibriumMuscle::
+	computeStateVariableDerivatives(const SimTK::State& s) const
 {
-    SimTK::Vector derivs(getNumStateVariables(), 0.0);
-    int idx = 0;
-
-    if (!isDisabled(s) && !isForceOverriden(s)) {
-        // Activation is the first state (if it is a state at all)
-        if(!get_ignore_activation_dynamics() &&
-           idx+1 <= getNumStateVariables()) {
-               derivs[idx] = getActivationDerivative(s);
-               idx++;
-        }
-
-        // Fiber length is the next state (if it is a state at all)
-        if(!get_ignore_tendon_compliance() && idx+1 <= getNumStateVariables()) {
-            derivs[idx] = getFiberVelocity(s);
-        }
+    // Activation dynamics if not ignored
+    if(!get_ignore_activation_dynamics()) {
+		double adot = 0;
+		// if not disabled or overriden then compute its derivative
+		if (!isDisabled(s) && !isForceOverriden(s)) {
+			adot =getActivationDerivative(s);
+		}
+		setStateVariableDerivative(s, STATE_ACTIVATION_NAME, adot);
     }
-    return derivs;
+
+    // Fiber length is the next state (if it is a state at all)
+    if(!get_ignore_tendon_compliance()) {
+		double ldot = 0;
+		// if not disabled or overriden then compute its derivative
+		if (!isDisabled(s) && !isForceOverriden(s)) {
+			ldot = getFiberVelocity(s);
+		}
+		setStateVariableDerivative(s, STATE_FIBER_LENGTH_NAME, ldot);
+    }
 }
 
 //==============================================================================

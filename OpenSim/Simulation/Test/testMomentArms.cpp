@@ -21,10 +21,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//==========================================================================================================
-//	testMomentArms builds various OpenSim models using the OpenSim API and compares moment arm
-//  results from these models to the definition r*f = Tau , where r is the moment-arm about a coordinate,
-//  f is the scaler maginitude of the Force and Tau is the resulting generalized force. 
+//=============================================================================
+// testMomentArms loads various OpenSim models to compute and test moment arms
+// results from these models to the definition r*f = Tau , where r is the 
+// moment-arm about a coordinate, f is the scaler maginitude of the Force and 
+// Tau is the resulting generalized force. 
 //
 //	Tests Include:
 //      1. ECU muscle from Tutorial 2
@@ -32,22 +33,22 @@
 //		
 //     Add more test cases to address specific problems with moment-arms
 //
-//==========================================================================================================
+//=============================================================================
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
 
-//==========================================================================================================
+//=============================================================================
 // Common Parameters for the simulations are just global.
 const static double integ_accuracy = 1.0e-3;
-const static double duration = 1.2;
-const static SimTK::Vec3 gravity_vec(0, -9.8065, 0);
 
-void testMomentArmDefinitionForModel(const string &filename, const string &coordName = "", 
-									const string &muscleName = "", SimTK::Vec2 rom = SimTK::Vec2(-SimTK::Pi/2,0),
-									double mass = -1.0, string errorMessage = "");
+void testMomentArmDefinitionForModel(const string &filename, 
+									 const string &coordName = "", 
+									 const string &muscleName = "",
+									 SimTK::Vec2 rom = SimTK::Vec2(-SimTK::Pi/2,0),
+									 double mass = -1.0, string errorMessage = "");
 
 int main()
 {
@@ -56,10 +57,14 @@ int main()
 
 	try {
 
-		testMomentArmDefinitionForModel("BothLegs22.osim", "r_knee_angle", "VASINT", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), 0.0, "VASINT of BothLegs with no mass: FAILED");
+		testMomentArmDefinitionForModel("BothLegs22.osim", "r_knee_angle", "VASINT", 
+			SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), 0.0, 
+			"VASINT of BothLegs with no mass: FAILED");
 		cout << "VASINT of BothLegs with no mass: PASSED\n" << endl;
 
-		testMomentArmDefinitionForModel("testMomentArmsConstraintB.osim", "hip_flexion_r", "rect_fem_r", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3), -1.0, "Rectus Femoris at hip with muscle attachment on patella defined w.r.t Femur: FAILED");
+		testMomentArmDefinitionForModel("testMomentArmsConstraintB.osim", 
+			"hip_flexion_r", "rect_fem_r", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3),
+			-1.0, "Rectus Femoris at hip with muscle attachment on patella defined w.r.t Femur: FAILED");
 		cout << "Rectus Femoris at hip with muscle attachment on patella defined w.r.t Femur: PASSED\n" << endl;
 
 		testMomentArmDefinitionForModel("testMomentArmsConstraintB.osim", "knee_angle_r", "rect_fem_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Rectus Femoris with muscle attachment on patella defined w.r.t Femur: FAILED");
@@ -76,7 +81,7 @@ int main()
 
 		testMomentArmDefinitionForModel("gait2354_simbody.osim", "knee_angle_r", "vas_int_r", SimTK::Vec2(-119*SimTK::Pi/180, 9*SimTK::Pi/180), -1.0, "Knee with moving muscle point (no patella): FAILED");
 		cout << "Knee with moving muscle point (no patella): PASSED\n" << endl;
-
+		
 		//massless should not break moment-arm solver
 		testMomentArmDefinitionForModel("wrist_mass.osim", "flexion", "ECU_post-surgery", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3), 0.0, "WRIST ECU TEST with MASSLESS BODIES: FAILED");
 		cout << "WRIST ECU TEST with MASSLESS BODIES: PASSED\n" << endl;
@@ -119,7 +124,7 @@ int main()
         return 1;
     }
     cout << "Done" << endl;
-	cout << "GeometryPath MA compute time: " << 1.0e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms" << endl;
+	cout << "Moment-arm test time: " << 1.0e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms" << endl;
 
     return 0;
 }
@@ -322,6 +327,8 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 
 		// Verify that the moment-arm calculated is dynamically consistent with moment generated
 		if (mass!=0 ) {
+			muscle.overrideForce(s, true);
+			muscle.setOverrideForce(s, 10);
 			osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
 
 			double force = muscle.getForce(s);

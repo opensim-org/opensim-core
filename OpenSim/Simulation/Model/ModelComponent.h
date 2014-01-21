@@ -43,14 +43,13 @@
 
 // INCLUDES
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "OpenSim/Common/Object.h"
+#include <OpenSim/Common/Component.h>
 #include "Simbody.h"
 
 namespace OpenSim {
 
 class Model;
 class ModelDisplayHints;
-class ModelComponent;
 
 
 //==============================================================================
@@ -171,8 +170,8 @@ class ModelComponent;
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API ModelComponent : public Object {
-OpenSim_DECLARE_ABSTRACT_OBJECT(ModelComponent, Object);
+class OSIMSIMULATION_API ModelComponent : public Component {
+OpenSim_DECLARE_ABSTRACT_OBJECT(ModelComponent, Component);
 
 //==============================================================================
 // METHODS
@@ -213,264 +212,7 @@ public:
      */
     virtual void updateDisplayer(const SimTK::State& s) const {};
 
-    /**
-     * Get the number of "Continuous" state variables maintained by the ModelComponent
-     * and its specified subcomponents
-     */
-    virtual int getNumStateVariables() const;
 
-    /**
-     * Get the names of "continuous" state variables maintained by the ModelComponent
-     * and its subcomponents
-     */
-    virtual Array<std::string> getStateVariableNames() const;
-
-   /**
-     * Get the System Index of a state variable allocated by this ModelComponent.  
-     * Returns an InvalidIndex if no state variable with the name provided is found.
-     * @param stateVariableName   the name of the state variable 
-     */
-    virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string& stateVariableName) const;
-
-   /** @name ModelComponent State Access methods
-     * Get and set modeling option, state, discrete and/or cache variables in the State
-     */ 
-    //@{
-    
-    /**
-     * Get a ModelingOption flag for this ModelComponent by name.
-     * The flag is an integer corresponding to the index of modelingOptionNames used 
-     * add the modeling option to the component. @see addModelingOption
-     *
-     * @param state  the State in which to set the modeling option
-     * @param name   the name (string) of the modeling option of interest
-     * @return flag  integer value for modeling option
-     */
-    int getModelingOption(const SimTK::State& state, const std::string& name) const;
-
-    /**
-     * Set the value of a ModelingOption flag for this ModelComponent.
-     * if the integer value exceeds the number of option names used to
-     * define the options, an exception is thrown. The SimTK::State 
-     * Stage will be reverted back to Stage::Instance.
-     *
-     * @param state  the State in which to set the flag
-     * @param name   the name (string) of the modeling option of interest
-     * @param flag   the desired flag (integer) value specifying the modeling option
-     */
-    void setModelingOption(SimTK::State& state, const std::string& name, int flag) const;
-
-    /**
-     * Get the value of a state variable allocated by this ModelComponent.
-     *
-     * @param state   the State for which to get the value
-     * @param name    the name (string) of the state variable of interest
-     */
-    double getStateVariable(const SimTK::State& state, const std::string& name) const;
-
-    /**
-     * Set the value of a state variable allocated by this ModelComponent by name.
-     *
-     * @param state  the State for which to set the value
-     * @param name   the name of the state variable
-     * @param value  the value to set
-     */
-    void setStateVariable(SimTK::State& state, const std::string& name, double value) const;
-
-    /**
-     * Get the value of a discrete variable allocated by this ModelComponent by name.
-     *
-     * @param state   the State for which to set the value
-     * @param name    the name of the state variable
-     * @return value  the discrete variable value
-     */
-    double getDiscreteVariable(const SimTK::State& state, const std::string& name) const;
-
-    /**
-     * Set the value of a discrete variable allocated by this ModelComponent by name.
-     *
-     * @param state  the State for which to set the value
-     * @param name   the name of the dsicrete variable
-     * @param value  the value to set
-     */
-    void setDiscreteVariable(SimTK::State& state, const std::string& name, double value) const;
-
-    /**
-     * Get the value of a cache variable allocated by this ModelComponent by name.
-     *
-     * @param state  the State for which to set the value
-     * @param name   the name of the cache variable
-     * @return T	 const reference to the cache variable's value
-     */
-    template<typename T> const T& 
-    getCacheVariable(const SimTK::State& state, const std::string& name) const
-    {
-        std::map<std::string, CacheInfo>::const_iterator it;
-        it = _namedCacheVariableInfo.find(name);
-
-        if(it != _namedCacheVariableInfo.end()) {
-            SimTK::CacheEntryIndex ceIndex = it->second.index;
-            return SimTK::Value<T>::downcast(
-                getDefaultSubsystem().getCacheEntry(state, ceIndex)).get();
-        } else {
-            std::stringstream msg;
-            msg << "ModelComponent::getCacheVariable: ERR- name not found.\n "
-                << "for component '"<< getName() << "' of type " 
-                << getConcreteClassName();
-            throw Exception(msg.str(),__FILE__,__LINE__);
-        }
-    }
-    /**
-     * Obtain a writable cache variable value allocated by this ModelComponent by name.
-     * Do not forget to mark the cache value as valid after updating, otherwise it will
-     * force a reevaluation if the evaluation method is monitoring the validity of the
-     * cache value.
-     *
-     * @param state  the State for which to set the value
-     * @param name   the name of the state variable
-     * @return value modifiable reference to the cache variable's value
-     */
-    template<typename T> T& 
-    updCacheVariable(const SimTK::State& state, const std::string& name) const
-    {
-        std::map<std::string, CacheInfo>::const_iterator it;
-        it = _namedCacheVariableInfo.find(name);
-
-        if(it != _namedCacheVariableInfo.end()) {
-            SimTK::CacheEntryIndex ceIndex = it->second.index;
-            return SimTK::Value<T>::downcast(
-                getDefaultSubsystem().updCacheEntry(state, ceIndex)).upd();
-        }
-        else{
-            std::stringstream msg;
-            msg << "ModelComponent::updCacheVariable: ERR- '" << name 
-                << "' name not found.\n "
-                << "for component '"<< getName() << "' of type " 
-                << getConcreteClassName();
-            throw Exception(msg.str(),__FILE__,__LINE__);
-        }
-    }
-
-    /**
-     * After updating a cache variable value allocated by this ModelComponent, you can
-     * mark its value as valid, which will not change until the realization stage falls
-     * below the minimum set at the time the cache variable was created. If not marked
-     * as valid, the evaluation method monitoring this flag will force a re-evaluation
-     * rather that just reading the value from the cache.
-     *
-     * @param state  the State containing the cache variable
-     * @param name   the name of the cache variable
-     */
-    void markCacheVariableValid(const SimTK::State& state, const std::string& name) const
-    {
-        std::map<std::string, CacheInfo>::const_iterator it;
-        it = _namedCacheVariableInfo.find(name);
-
-        if(it != _namedCacheVariableInfo.end()) {
-            SimTK::CacheEntryIndex ceIndex = it->second.index;
-            getDefaultSubsystem().markCacheValueRealized(state, ceIndex);
-        }
-        else{
-            std::stringstream msg;
-            msg << "ModelComponent::markCacheVariableValid: ERR- name not found.\n "
-                << "for component '"<< getName() << "' of type " 
-                << getConcreteClassName();
-            throw Exception(msg.str(),__FILE__,__LINE__);
-        }
-    }
-
-    /**
-     * Mark a cache variable value allocated by this ModelComponent as invalid.
-     * When the system realization drops to below the lowest valid stage, cache 
-     * variables are automatically marked as invalid. There are instances when
-     * component added state variables require invalidating a cache at a lower stage.
-     * For example, a component may have a length state variable which should 
-     * invalidate calculations involving it and other positions when the state
-     * variable is set. Changing the component state variable automatically
-     * invalidates Dynamics and higher realizations, but to force realizations
-     * at Position and Velocity requires setting the lowest valid stage to 
-     * Position and marking the cache variable as invalid whenver the length
-     * state variable value is set/changed.
-     *
-     * @param state  the State containing the cache variable
-     * @param name   the name of the cache variable
-     */
-    void markCacheVariableInvalid(const SimTK::State& state, const std::string& name) const
-    {
-        std::map<std::string, CacheInfo>::const_iterator it;
-        it = _namedCacheVariableInfo.find(name);
-
-        if(it != _namedCacheVariableInfo.end()) {
-            SimTK::CacheEntryIndex ceIndex = it->second.index;
-            getDefaultSubsystem().markCacheValueNotRealized(state, ceIndex);
-        }
-        else{
-            std::stringstream msg;
-            msg << "ModelComponent::markCacheVariableInvalid: ERR- name not found.\n "
-                << "for component '"<< getName() << "' of type " 
-                << getConcreteClassName();
-            throw Exception(msg.str(),__FILE__,__LINE__);
-        }
-    }
-
-    /**
-     * Enables the to monitor the validity of the cache variable value using the
-     * returned flag. For components performing a costly evaluation, use this method to 
-     * force a re-evaluation cache variable value only when necessary (returns false).
-     *
-     * @param state  the State in which the cache value resides
-     * @param name   the name of the cache variable
-     * @return bool  whether the cache variable value is valid or not
-     */
-    bool isCacheVariableValid(const SimTK::State& state, const std::string& name) const
-    {
-        std::map<std::string, CacheInfo>::const_iterator it;
-        it = _namedCacheVariableInfo.find(name);
-
-        if(it != _namedCacheVariableInfo.end()) {
-            SimTK::CacheEntryIndex ceIndex = it->second.index;
-            return getDefaultSubsystem().isCacheValueRealized(state, ceIndex);
-        }
-        else{
-            std::stringstream msg;
-            msg << "ModelComponent::isCacheVariableValid: ERR- name not found.\n "
-                << "for component '"<< getName() << "' of type " 
-                << getConcreteClassName();
-            throw Exception(msg.str(),__FILE__,__LINE__);
-        }
-    }
-
-    /**
-     *  Set cache variable value allocated by this ModelComponent by name.
-     *  All cache entries are lazily evaluated (on a need basis) so a set
-     *  also marks the cache as valid.
-     *
-     * @param state  the State in which to store the new value
-     * @param name   the name of the cache variable
-     * @param value  the new value for this cache variable
-     */
-    template<typename T> void 
-    setCacheVariable(const SimTK::State& state, const std::string& name, 
-                     const T& value) const
-    {
-        std::map<std::string, CacheInfo>::const_iterator it;
-        it = _namedCacheVariableInfo.find(name);
-
-        if(it != _namedCacheVariableInfo.end()) {
-            SimTK::CacheEntryIndex ceIndex = it->second.index;
-            SimTK::Value<T>::downcast(
-                getDefaultSubsystem().updCacheEntry( state, ceIndex)).upd() 
-                = value;
-            getDefaultSubsystem().markCacheValueRealized(state, ceIndex);
-        }
-        else{
-            std::stringstream msg;
-            msg << "ModelComponent::setCacheVariable: ERR- name not found.\n "
-                << "for component '"<< getName() << "' of type " 
-                << getConcreteClassName();
-            throw Exception(msg.str(),__FILE__,__LINE__);
-        }	
-    }
     // End of Model Component State Accessors.
     //@} 
 
@@ -535,103 +277,7 @@ template <class T> friend class ModelComponentMeasure;
                             %ModelComponent should be connected. **/
     virtual void connectToModel(Model& model);
 
-    /** Add appropriate Simbody elements (if needed) to the System 
-    corresponding to this component and specify needed state resources. 
-    addToSystem() is called when the Simbody System is being created to 
-    represent a completed Model for computation. That is, connectToModel()
-    will already have been invoked on all components before any addToSystem()
-    call is made. Helper methods for adding modeling options, state variables 
-    and their derivatives, discrete variables, and cache entries are available 
-    and can be called within addToSystem() only.
 
-    Note that this method is const; you must not modify your model component
-    or the containing model during this call. Any modifications you need should
-    instead be performed in connectToModel(), which is non-const. One exception
-    is that you may need to record access information for resources you
-    create in the \a system, such as an index number. You should declare those
-    data members mutable so that you can set them here.
-   
-    If you override this method, be sure to invoke the base class method first, 
-    using code like this:
-    @code
-    void MyComponent::addToSystem(SimTK::MultibodySystem& system) const {
-        Super::addToSystem(system); // invoke parent class method
-        // ... your code goes here
-    }
-    @endcode
-
-    @param[in,out] system   The System being created.
-
-    @see addModelingOption(), addStateVariable(), addDiscreteVariables(), 
-         addCacheVariable() **/
-    virtual void addToSystem(SimTK::MultibodySystem& system) const;
-
-    /** Transfer property values or other state-independent initial values
-    into this component's state variables in the passed-in \a state argument.
-    This is called after a SimTK::System and State have been created for the 
-    Model (that is, after addToSystem() has been called on all components). 
-    You should override this method if your component has properties
-    (serializable values) that can affect initial values for your state
-    variables. You can also perform any other state-independent calculations
-    here that result in state initial conditions.
-   
-    If you override this method, be sure to invoke the base class method first, 
-    using code like this:
-    @code
-    void MyComponent::initStateFromProperties(SimTK::State& state) const {
-        Super::initStateFromProperties(state); // invoke parent class method
-        // ... your code goes here
-    }
-    @endcode
-
-    @param      state
-        The state that will receive the new initial conditions.
-
-    @see setPropertiesFromState() **/
-    virtual void initStateFromProperties(SimTK::State& state) const;
-
-    /** Update this component's property values to match the specified State,
-    if the component has created any state variable that is intended to
-    correspond to a property. Thus, state variable values can persist as part 
-    of the model component and be serialized as a property.
-   
-    If you override this method, be sure to invoke the base class method first, 
-    using code like this:
-    @code
-    void MyComponent::setPropertiesFromState(const SimTK::State& state) {
-        Super::setPropertiesFromState(state); // invoke parent class method
-        // ... your code goes here
-    }
-    @endcode
-
-    @param      state    
-        The State from which values may be extracted to set persistent
-        property values.
-
-    @see initStateFromProperties() **/
-    virtual void setPropertiesFromState(const SimTK::State& state);
-
-    /** If a model component has allocated any continuous state variables
-    using the addStateVariable() method, then %computeStateVariableDerivatives()
-    must be implemented to provide time derivatives for those states.
-    Override to return a Vector of the same size as the number of state 
-    variables defined and in order added to the system (also @see addToSystem()).
-	Default returns empty (no derivatives are defined). Implement like this:
-    @code
-    SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const {
-        // Collect derivatives from parent class and above first.
-        SimTK::Vector derivs = Super::computeStateVariableDerivatives(s);
-        const int n = derivs.size();
-        derivs.resizeKeep(n + myNumStateVariables); // grow
-        for (int i=0; i < myNumStateVariables; ++i)
-            derivs[n+i] = ...; // i'th state variable derivative
-        return derivs;
-    }
-    @endcode
-    This method is invoked from the base class realizeAcceleration() method.
-    **/
-    virtual SimTK::Vector 
-    computeStateVariableDerivatives(const SimTK::State& s) const;
 
     /** Optional method for generating arbitrary display geometry that reflects
     this %ModelComponent at the specified \a state. This will be called once to 
@@ -687,62 +333,6 @@ template <class T> friend class ModelComponentMeasure;
     // End of Model Component Basic Interface (protected virtuals).
     //@} 
 
-    /** @name           ModelComponent Advanced Interface
-    You probably won't need to override methods in this section. These provide
-    a way for you to perform computations ("realizations") that must be 
-    scheduled in carefully-ordered stages as described in the class description
-    above. The typical operation will be that the given SimTK::State provides
-    you with the inputs you need for your computation, which you will then 
-    write into some element of the state cache, where later computations can
-    pick it up.
-
-    @note Once again it is crucial that, if you override a method here,
-    you invoke the superclass method as the <em>first line</em> in your
-    implementation, via a call like "Super::realizePosition(state);". This 
-    will ensure that all necessary base class computations are performed, and
-    that subcomponents are handled properly.
-
-    @warning Currently the realize() methods here are invoked early in the
-    sequence of realizations at a given stage, meaning that you will not be
-    able to access other computations at that same stage.
-    @bug Should defer calls to these until at least kinematic realizations
-    at the same stage have been performed.
-
-    @see Simbody documentation for more information about realization.
-    **/
-    //@{
-    /** Obtain state resources that are needed unconditionally, and perform
-    computations that depend only on the system topology. **/
-    virtual void realizeTopology(SimTK::State& state) const;
-    /** Obtain state resources that may be needed, depending on modeling
-    options, and perform computations that depend only on topology and 
-    selected modeling options. **/
-    virtual void realizeModel(SimTK::State& state) const;
-    /** Perform computations that depend only on instance variables, like
-    lengths and masses. **/
-    virtual void realizeInstance(const SimTK::State& state) const;
-    /** Perform computations that depend only on time and earlier stages. **/
-    virtual void realizeTime(const SimTK::State& state) const;
-    /** Perform computations that depend only on position-level state
-    variables and computations performed in earlier stages (including time). **/
-    virtual void realizePosition(const SimTK::State& state) const;
-    /** Perform computations that depend only on velocity-level state 
-    variables and computations performed in earlier stages (including position, 
-    and time). **/
-    virtual void realizeVelocity(const SimTK::State& state) const;
-    /** Perform computations (typically forces) that may depend on 
-    dynamics-stage state variables, and on computations performed in earlier
-    stages (including velocity, position, and time), but not on other forces,
-    accelerations, constraint multipliers, or reaction forces. **/
-    virtual void realizeDynamics(const SimTK::State& state) const;
-    /** Perform computations that may depend on applied forces. **/
-    virtual void realizeAcceleration(const SimTK::State& state) const;
-    /** Perform computations that may depend on anything but are only used
-    for reporting and cannot affect subsequent simulation behavior. **/
-    virtual void realizeReport(const SimTK::State& state) const;
-    //@}
-
-
     /** @name     ModelComponent System Creation and Access Methods
      * These methods support implementing concrete ModelComponents. Add methods
      * can only be called inside of addToSystem() and are useful for creating
@@ -753,137 +343,26 @@ template <class T> friend class ModelComponentMeasure;
 
     //@{
 
-    /**
-     * Include another ModelComponent as a Subcomponent of this ModelComponent.
-     * ModelComponent methods (e.g. addToSystem(), initStateFromProperties(), ...) are therefore
-     * invoked on Subcomponents when called on the parent. Realization is also
-     * performed automatically on subcomponents. This ModelComponent does not
-     * take ownership of the subcomponent.
-     */
-    void includeAsSubComponent(ModelComponent *aComponent);
 
-    /** Add a modeling option (integer flag stored in the State) for use by 
-    this ModelComponent. Each modeling option is identified by its own 
-    \a optionName, specified here. Modeling options enable the model
-    component to be configured differently in order to represent different 
-    operating modes. For example, if two modes of operation are necessary (mode
-    off and mode on) then specify optionName, "mode" with maxFlagValue = 1. 
-    Subsequent gets will return 0 or 1 and set will only accept 0 and 1 as 
-    acceptable values. Changing the value of a model option invalidates 
-    Stage::Instance and above in the State, meaning all calculations involving
-    time, positions, velocity, and forces are invalidated. **/
-    void addModelingOption(const std::string&  optionName, 
-                           int                 maxFlagValue) const;
-
-
-    /** Add a continuous system state variable belonging to this ModelComponent,
-    and assign a name by which to refer to it. Changing the value of this state 
-    variable will automatically invalidate everything at and above its
-    \a invalidatesStage, which is normally Stage::Dynamics meaning that there
-    are forces that depend on this variable. If you define one or more
-    of these variables you must also override computeStateVariableDerivatives()
-    to provide time derivatives for them. **/
-    void addStateVariable
-       (const std::string&  stateVariableName,
-        SimTK::Stage        invalidatesStage=SimTK::Stage::Dynamics) const;
-
-
-    /** Add a system discrete variable belonging to this ModelComponent, give
-    it a name by which it can be referenced, and declare the lowest Stage that
-    should be invalidated if this variable's value is changed. **/
-    void addDiscreteVariable(const std::string& discreteVariableName,
-                             SimTK::Stage       invalidatesStage) const;
-
-    /** Add a state cache entry belonging to this ModelComponent to hold
-    calculated values that must be automatically invalidated when certain 
-    state values change. Cache entries contain values whose computations depend
-    on state variables and provide convenience and/or efficiency by holding on 
-    to them in memory (cache) to avoid recomputation. Once the state changes, 
-    the cache values automatically become invalid and has to be
-    recomputed based on the current state before it can be referenced again.
-    Any attempt to reference an invalid cache entry results in an exception
-    being thrown.
-
-    Cache entry validity is managed by computation Stage, rather than by 
-    dependence on individual state variables. Changing a variables whose
-    "invalidates" stage is the same or lower as the one specified as the
-    "depends on" stage here cause the cache entry to be invalidated. For 
-    example, a body's momementum, which is dependent on position and velocity 
-    states, should have Stage::Velocity as its \a dependsOnStage. Then if a
-    Velocity stage variable or lower (e.g. Position stage) changes, then the 
-    cache is invalidated. But, if a Dynamics stage variable (or above) is 
-    changed, the velocity remains valid so the cache entry does not have to be 
-    recomputed.
-
-    @param[in]      cacheVariableName
-        The name you are assigning to this cache entry. Must be unique within
-        this model component.
-    @param[in]      variablePrototype	
-        An object defining the type of value, and a default value of that type,
-        to be held in this cache entry. Can be a simple int or an elaborate
-        class, as long as it has deep copy semantics.
-    @param[in]      dependsOnStage		
-        This is the highest computational stage on which this cache entry's
-        value computation depends. State changes at this level or lower will
-        invalidate the cache entry. **/ 
-    template <class T> void 
-    addCacheVariable(const std::string&     cacheVariableName,
-                     const T&               variablePrototype, 
-                     SimTK::Stage           dependsOnStage) const
-    {
-        // Note, cache index is invalid until the actual allocation occurs 
-        // during realizeTopology.
-        _namedCacheVariableInfo[cacheVariableName] = 
-            CacheInfo(new SimTK::Value<T>(variablePrototype), dependsOnStage);
-    }
-
-    /** Get the index of a ModelComponent's continuous state variable in the Subsystem for
-        allocations. This method is intended for derived ModelComponents that may need direct
-        access to its underlying Subsystem.*/
-    const int getStateIndex(const std::string& name) const;
-
-    /** Get the index of a ModelComponent's discrete variable in the Subsystem for allocations.
-        This method is intended for derived ModelComponents that may need direct access
-        to its underlying Subsystem.*/
-    const SimTK::DiscreteVariableIndex 
-    getDiscreteVariableIndex(const std::string& name) const;
-
-    /** Get the index of a ModelComponent's cache variable in the Subsystem for allocations.
-        This method is intended for derived ModelComponents that may need direct access
-        to its underlying Subsystem.*/
-    const SimTK::CacheEntryIndex 
-    getCacheVariableIndex(const std::string& name) const;
 
     // End of System Creation and Access Methods.
     //@} 
 
 private:
-    // Get the number of continuous states that the ModelComponent added to 
-    // the underlying computational system. It does not include the number of 
-    // states already built-in by the SimTK::System level component. Should 
-    // query it and add to this to obtain the total number of states managed by 
-    // this ModelComponent.
-    int getNumStateVariablesAddedByModelComponent() const 
-    {   return (int)_namedStateVariableInfo.size(); }
-    Array<std::string> getStateVariablesNamesAddedByModelComponent() const;
+
+	// Satisfy the general Component interface, but this is not part of the
+	// ModelComponent interface. connectToModel() ensures that any connect()
+	// operations on the parent component are invoked.
+	void ModelComponent::connect() OVERRIDE_11;
 
     const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;
     const SimTK::DefaultSystemSubsystem& updDefaultSubsystem();
 
-    void clearStateAllocations() {
-        _namedModelingOptionInfo.clear();
-        _namedStateVariableInfo.clear();
-        _namedDiscreteVariableInfo.clear();
-        _namedCacheVariableInfo.clear();
-    }
 
     // Clear out all the data fields in the base class. There should be one
     // line here for each data member below.
     void setNull() {
         _model = NULL;
-        _subComponents.clear();
-        _simTKcomponentIndex.invalidate();
-        clearStateAllocations();
     }
     
 protected:
@@ -892,85 +371,6 @@ protected:
     // and updModel() to get access. This is just a reference; don't delete!
     Model* _model;
 
-private:
-    // Maintain pointers to subcomponents so we can invoke them automatically.
-    // These are just references, don't delete them!
-    // TODO: this feature is not completely implemented; should it 
-    // exist at all? (sherm)
-    SimTK::Array_<ModelComponent *>     _subComponents;
-
-    // Underlying SimTK custom measure ModelComponentMeasure, which implements
-    // the realizations in the subsystem by calling private concrete methods on
-    // the ModelComponent. Every model component has one of these, allocated
-    // in its addToSystem() method, and placed in the System's default subsystem.
-    SimTK::MeasureIndex                 _simTKcomponentIndex;
-
-    // Structure to hold modeling option information. Modeling options are
-    // integers 0..maxOptionValue. At run time we keep them in a Simbody
-    // discrete state variable that invalidates Model stage if changed.
-    struct ModelingOptionInfo {
-        ModelingOptionInfo() : maxOptionValue(-1) {}
-        explicit ModelingOptionInfo(int maxOptVal) 
-        :   maxOptionValue(maxOptVal) {}
-        // Model
-        int                             maxOptionValue;
-        // System
-        SimTK::DiscreteVariableIndex    index;
-    };
-
-    // Structure to hold related info about state variables 
-    struct StateVariableInfo {
-        StateVariableInfo() : index(SimTK::InvalidIndex), order(SimTK::InvalidIndex){}
-        explicit StateVariableInfo(SimTK::Stage invalidates, int order) 
-        :   invalidatesStage(invalidates), index(SimTK::InvalidIndex), order(order) {}
-        // Model
-        SimTK::Stage    invalidatesStage;
-        // System (can be QIndex, UIndex, or Zindex type)
-        int  index;
-		// Order of creation is order of the state variable derivatives
-		int  order;
-    };
-
-    // Structure to hold related info about discrete variables 
-    struct DiscreteVariableInfo {
-        DiscreteVariableInfo() {}
-        explicit DiscreteVariableInfo(SimTK::Stage invalidates)
-        :   invalidatesStage(invalidates) {}
-        // Model
-        SimTK::Stage                    invalidatesStage;
-        // System
-        SimTK::DiscreteVariableIndex    index;
-    };
-
-    // Structure to hold related info about cache variables 
-    struct CacheInfo {
-        CacheInfo() {}
-        CacheInfo(SimTK::AbstractValue* proto,
-                  SimTK::Stage          dependsOn)
-        :   prototype(proto), dependsOnStage(dependsOn) {}
-        // Model
-        SimTK::ClonePtr<SimTK::AbstractValue>   prototype;
-        SimTK::Stage                            dependsOnStage;
-        // System
-        SimTK::CacheEntryIndex                  index;
-    };
-
-
-    // Map names of modeling options for the ModelComponent to their underlying
-    // SimTK indices.
-    // TODO: these are mutable here so they can be modified in addToSystem()
-    // but that is an API bug -- these are just part of the Model and should
-    // be added much earlier (like constructProperties()?).
-    mutable std::map<std::string, ModelingOptionInfo>   _namedModelingOptionInfo;
-    // Map names of continuous state variables of the ModelComponent to their 
-    // underlying SimTK indices.
-    mutable std::map<std::string, StateVariableInfo>    _namedStateVariableInfo;
-    // Map names of discrete variables of the ModelComponent to their underlying
-    // SimTK indices.
-    mutable std::map<std::string, DiscreteVariableInfo> _namedDiscreteVariableInfo;
-    // Map names of cache entries of the ModelComponent to their individual 
-    // cache information.
-    mutable std::map<std::string, CacheInfo>            _namedCacheVariableInfo;
 
 //==============================================================================
 };	// END of class ModelComponent

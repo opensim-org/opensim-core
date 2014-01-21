@@ -32,8 +32,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
-#include "SimTKsimbody.h"
-
 
 //=============================================================================
 // STATICS
@@ -121,10 +119,10 @@ void Controller::connectToModel(Model& model)
 		else{
 			Set<Actuator> actuatorsByName;
 			for(int i =0; i <  getProperty_actuator_list().size(); i++){
-				if(model.getActuators().contains(get_actuator_list(i)))
+				if(model.updActuators().contains(get_actuator_list(i)))
 					actuatorsByName.adoptAndAppend(&model.updActuators().get(get_actuator_list(i)));
 				else
-					cerr << "WARN: Controller::setup : Actuator " << get_actuator_list(i) << " was not found and will be ignored." << endl;
+					cerr << "WARN: Controller::connectToModel : Actuator " << get_actuator_list(i) << " was not found and will be ignored." << endl;
 			}
 			actuatorsByName.setMemoryOwner(false);
 			setActuators(actuatorsByName);

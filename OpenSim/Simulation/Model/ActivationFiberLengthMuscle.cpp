@@ -89,17 +89,11 @@ void ActivationFiberLengthMuscle::constructProperties()
 	// also wipe out the muscle path, which we do not want to 
 	// reevaluate over and over.
 	addStateVariable(STATE_FIBER_LENGTH_NAME);//, SimTK::Stage::Velocity);
-
-	double value = 0.0;
-	addCacheVariable(STATE_ACTIVATION_NAME+"_deriv", value, SimTK::Stage::Dynamics);
-	addCacheVariable(STATE_FIBER_LENGTH_NAME+"_deriv", value, SimTK::Stage::Dynamics);
  }
 
  void ActivationFiberLengthMuscle::initStateFromProperties( SimTK::State& s) const
 {
     Super::initStateFromProperties(s);   // invoke superclass implementation
-
-	ActivationFiberLengthMuscle* mutableThis = const_cast<ActivationFiberLengthMuscle *>(this);
 
 	setActivation(s, getDefaultActivation());
 	setFiberLength(s, getDefaultFiberLength());
@@ -131,71 +125,25 @@ void ActivationFiberLengthMuscle::setDefaultFiberLength(double length) {
     set_default_fiber_length(length);
 }
 
-//_____________________________________________________________________________
-/**
- * Get the name of a state variable, given its index.
- *
- * @param aIndex The index of the state variable to get.
- * @return The name of the state variable.
- */
-Array<std::string> ActivationFiberLengthMuscle::getStateVariableNames() const
-{
-	Array<std::string> stateVariableNames = ModelComponent::getStateVariableNames();
-	// Make state variable names unique to this muscle
-	for(int i=0; i<stateVariableNames.getSize(); ++i){
-		stateVariableNames[i] = getName()+"."+stateVariableNames[i];
-	}
-	return stateVariableNames;
-}
-
-// STATES
-//_____________________________________________________________________________
-/**
- * Set the derivative of an actuator state, specified by name
- *
- * @param aStateName The name of the state to set.
- * @param aValue The value to set the state to.
- */
-void ActivationFiberLengthMuscle::
-setStateVariableDeriv(const SimTK::State& s, const std::string &aStateName, 
-                      double aValue) const
-{
-	double& cacheVariable = updCacheVariable<double>(s, aStateName + "_deriv");
-	cacheVariable = aValue;
-	markCacheVariableValid(s, aStateName + "_deriv");
-}
-
-//_____________________________________________________________________________
-/**
- * Get the derivative of an actuator state, by index.
- *
- * @param aStateName the name of the state to get.
- * @return The value of the state.
- */
-double ActivationFiberLengthMuscle::
-getStateVariableDeriv(const SimTK::State& s, const std::string &aStateName) const
-{
-	return getCacheVariable<double>(s, aStateName + "_deriv");
-}
-
-//_____________________________________________________________________________
 /**
  * Compute the derivatives of the muscle states.
  *
  * @param s  system state
  */
-SimTK::Vector ActivationFiberLengthMuscle::
-computeStateVariableDerivatives(const SimTK::State &s) const
+void ActivationFiberLengthMuscle::
+	computeStateVariableDerivatives(const SimTK::State &s) const
 {
-	SimTK::Vector derivs(getNumStateVariables(), 0.);
-    if (!isDisabled(s)) {
-	    derivs[0] = getActivationRate(s);
-	    derivs[1] = getFiberVelocity(s);
-    }
-	return derivs;
+	double adot = 0;
+	double ldot = 0;
+
+    if (!isDisabled(s) && !isForceOverriden(s)) {
+		adot = getActivationRate(s);
+		ldot = getFiberVelocity(s);
+	}
+
+	setStateVariableDerivative(s, STATE_ACTIVATION_NAME, adot);
+    setStateVariableDerivative(s, STATE_FIBER_LENGTH_NAME, ldot);
 }
-
-
 //==============================================================================
 // GET
 //==============================================================================
@@ -218,7 +166,6 @@ void ActivationFiberLengthMuscle::setFiberLength(SimTK::State& s, double fiberLe
 	markCacheVariableInvalid(s,"lengthInfo");
     markCacheVariableInvalid(s,"velInfo");
     markCacheVariableInvalid(s,"dynamicsInfo");
-    
 }
 
 double ActivationFiberLengthMuscle::getActivationRate(const SimTK::State& s) const
@@ -297,26 +244,8 @@ void ActivationFiberLengthMuscle::computeForce(const SimTK::State& s,
 		int numStateVariables = getNumStateVariables();
 		Array<std::string> stateVariableNames = getStateVariableNames();
 		for (int i = 0; i < numStateVariables; ++i) {
-			stateVariableNames[i] = stateVariableNames[i].substr(stateVariableNames[i].find('.') + 1);
-			setStateVariableDeriv(s, stateVariableNames[i], 0.0);
+			setStateVariableDerivative(s, stateVariableNames[i], 0.0);
 		}
     } 
 
-}
-
-
-
-
-SimTK::SystemYIndex ActivationFiberLengthMuscle::
-getStateVariableSystemIndex(const string &stateVariableName) const
-{
-	unsigned int start = (int)stateVariableName.find(".");
-	unsigned int end = (int)stateVariableName.length();
-	
-	if(start == end)
-		return ModelComponent::getStateVariableSystemIndex(stateVariableName);
-	else{
-		string localName = stateVariableName.substr(++start, end-start);
-		return ModelComponent::getStateVariableSystemIndex(localName);
-	}
 }

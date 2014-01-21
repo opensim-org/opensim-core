@@ -773,10 +773,9 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
         if(_performAnalyses)_model->updAnalysisSet().step(s, step);
         tReal = s.getTime();
         if( _writeToStorage ) {
-			OpenSim::Array<double> stateValues;
-			_model->getStateValues(s, stateValues);
+			SimTK::Vector stateValues = _model->getStateVariableValues(s);
 			StateVector vec;
-			vec.setStates(tReal, stateValues.getSize(), &stateValues[0]);
+			vec.setStates(tReal, stateValues.size(), &stateValues[0]);
             getStateStorage().append(vec);
 			if(_model->isControlled())
 				_controllerSet->storeControls(s,step);
@@ -805,10 +804,9 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
             if(_performAnalyses)_model->updAnalysisSet().step(s,step);
             tReal = s.getTime();
             if( _writeToStorage) {
-				OpenSim::Array<double> stateValues;
-				_model->getStateValues(s, stateValues);
+				SimTK::Vector stateValues = _model->getStateVariableValues(s);
 				StateVector vec;
-				vec.setStates(tReal, stateValues.getSize(), &stateValues[0]);
+				vec.setStates(tReal, stateValues.size(), &stateValues[0]);
 				getStateStorage().append(vec);
 				if(_model->isControlled())
 					_controllerSet->storeControls(s, step);
@@ -868,13 +866,10 @@ void Manager::initialize(SimTK::State& s, double dt )
     	if(hasStateStorage()) {
     		// ONLY IF NO STATES WERE PREVIOUSLY STORED
     		if(getStateStorage().getSize()==0) {
-                OpenSim::Array<double> stateValues;
-			    _model->getStateValues(s, stateValues);
-                getStateStorage().store(0,tReal,stateValues.getSize(),
-                                        &stateValues[0]);
+				SimTK::Vector stateValues = _model->getStateVariableValues(s);
+	            getStateStorage().store(0,tReal,stateValues.size(), &stateValues[0]);
     		}
     	}
-
 
     	// ANALYSES 
     	AnalysisSet& analysisSet = _model->updAnalysisSet();

@@ -208,7 +208,6 @@ Model::Model(const Model &aModel) :
 	setNull();
 	setupProperties();
 	copyData(aModel);
-
 	setup();
 }
 //_____________________________________________________________________________
@@ -224,8 +223,6 @@ Model::~Model()
 	delete _forceSubsystem;
 	delete _matter;
 	delete _system;
-
-	delete &_defaultControls;
 }
 //_____________________________________________________________________________
 /**
@@ -328,8 +325,6 @@ void Model::setNull()
 	_assemblySolver = NULL;
 
 	_validationLog="";
-
-	_modelComponents.setMemoryOwner(false);
 }
 //_____________________________________________________________________________
 /**
@@ -405,7 +400,7 @@ void Model::buildSystem() {
 		cout << "The following Errors/Warnings were encountered while building the model. " <<
 		getValidationLog() << endl;
 	
-	_modelComponents.setSize(0);	// Make sure we start on a clean slate
+	_components.clear();	// Make sure we start on a clean slate
 	_stateVariableNames.setSize(0);
 	_stateVariableSystemIndices.setSize(0);
 
@@ -438,7 +433,7 @@ SimTK::State& Model::initializeState() {
 
     // Set the model's operating state (internal member variable) to the 
     // default state that is stored inside the System.
-    copyDefaultStateIntoWorkingState();
+    _workingState = getMultibodySystem().getDefaultState();
 
     // Set the Simbody modeling option that tells any joints that use 
     // quaternions to use Euler angles instead.
@@ -494,11 +489,6 @@ const SimTK::State& Model::getWorkingState() const
         throw Exception("Model::getWorkingState(): call initializeState() first.");
 
     return _workingState;
-}
-
-void Model::copyDefaultStateIntoWorkingState()
-{
-    _workingState = getMultibodySystem().getDefaultState();
 }
 
 
@@ -625,9 +615,6 @@ void Model::createMultibodySystem()
 // creating components in its system.
 void Model::addToSystem(SimTK::MultibodySystem& system) const
 {
-    // TODO: can't invoke ModelComponent::addToSystem(); this is
-    // an API bug.
-
 	Model *mutableThis = const_cast<Model *>(this);
 
 	// Reset the vector of all controls' defaults
@@ -644,10 +631,14 @@ void Model::addToSystem(SimTK::MultibodySystem& system) const
 	mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
 
     // Let all the ModelComponents add their parts to the System.
+	Super::addToSystem(system);
+
+	/*
     static_cast<const ModelComponentSet<Body>&>(getBodySet()).invokeAddToSystem(*_system);
 	if (getDebugLevel()>=2) cout << "Finished addToSystem for Bodies." << endl;
 	static_cast<const ModelComponentSet<Joint>&>(getJointSet()).invokeAddToSystem(*_system);
 	if (getDebugLevel()>=2) cout << "Finished addToSystem for Joints." << endl;
+	*/
 	for(int i=0;i<getBodySet().getSize();i++) {
 		OpenSim::Body& body = getBodySet().get(i);
 		MobilizedBodyIndex idx(body.getIndex());
@@ -655,6 +646,7 @@ void Model::addToSystem(SimTK::MultibodySystem& system) const
 			throw Exception("Body: "+body.getName()+" has no Joint... Model initialization aborted.");
 	}
 
+	/*
 	// Constraints add their parts to the System.
     static_cast<const ModelComponentSet<Constraint>&>(getConstraintSet()).invokeAddToSystem(*_system);
 	if (getDebugLevel()>=2) cout << "Finished addToSystem for Constraints." << endl;
@@ -682,28 +674,22 @@ void Model::addToSystem(SimTK::MultibodySystem& system) const
     // Probes add their parts to the System.
 	static_cast<const ModelComponentSet<Probe>&>(getProbeSet()).invokeAddToSystem(*_system);
 	if (getDebugLevel()>=2) cout << "Finished addToSystem for Probes." << endl;
+	*/
 
 }
 
-/**
- * Get the system index of any state variable belonging to the Model (and any of its ModelComponents).
- */
-SimTK::SystemYIndex Model::getStateVariableSystemIndex(const string &stateVariableName) const
-{
-	int i = _stateVariableNames.findIndex(stateVariableName);
-	if(i < 0)
-		throw Exception("Model::getStateVariableSystemIndex : state variable "+stateVariableName+" not found.");
-	return _stateVariableSystemIndices[i];
-}
 
 //_____________________________________________________________________________
 /**
  * Add any Component derived from ModelComponent to the Model.
  */
-void Model::addComponent(ModelComponent* aComponent) {
-    _componentSetProp.setValueIsDefault(false);
-	_componentSet.adoptAndAppend(aComponent);
-	_componentSet.invokeConnectToModel(*this);
+void Model::addModelComponent(ModelComponent* aComponent)
+{
+	if(aComponent){
+		_componentSetProp.setValueIsDefault(false);
+		addComponent(aComponent);
+		_componentSet.adoptAndAppend(aComponent);
+	}
 }
 
 //_____________________________________________________________________________
@@ -712,11 +698,13 @@ void Model::addComponent(ModelComponent* aComponent) {
  */
 void Model::addBody(OpenSim::Body *aBody)
 {
-	updBodySet().adoptAndAppend(aBody);
-    _bodySetProp.setValueIsDefault(false);
-	updBodySet().invokeConnectToModel(*this);
-	updJointSet().populate(*this);
-	updCoordinateSet().populate(*this);
+	if(aBody){
+		updBodySet().adoptAndAppend(aBody);
+		_bodySetProp.setValueIsDefault(false);
+		addComponent(aBody);
+		updJointSet().populate(*this);
+		updCoordinateSet().populate(*this);
+	}
 }
 
 //_____________________________________________________________________________
@@ -725,9 +713,11 @@ void Model::addBody(OpenSim::Body *aBody)
  */
 void Model::addConstraint(OpenSim::Constraint *aConstraint)
 {
-    _constraintSetProp.setValueIsDefault(false);
-	updConstraintSet().adoptAndAppend(aConstraint);
-	updConstraintSet().invokeConnectToModel(*this);
+	if(aConstraint){
+		_constraintSetProp.setValueIsDefault(false);
+		addComponent(aConstraint);
+		updConstraintSet().adoptAndAppend(aConstraint);
+	}
 }
 
 //_____________________________________________________________________________
@@ -736,9 +726,11 @@ void Model::addConstraint(OpenSim::Constraint *aConstraint)
  */
 void Model::addForce(OpenSim::Force *aForce)
 {
-    _forceSetProp.setValueIsDefault(false);
-	updForceSet().append(aForce);
-	updForceSet().invokeConnectToModel(*this);
+	if(aForce){
+		_forceSetProp.setValueIsDefault(false);
+		addComponent(aForce);
+		updForceSet().adoptAndAppend(aForce);
+	}
 }
 
 //_____________________________________________________________________________
@@ -747,9 +739,11 @@ void Model::addForce(OpenSim::Force *aForce)
  */
 void Model::addProbe(OpenSim::Probe *aProbe)
 {
-    _probeSetProp.setValueIsDefault(false);
-	updProbeSet().adoptAndAppend(aProbe);
-	updProbeSet().invokeConnectToModel(*this);
+	if(aProbe){
+		_probeSetProp.setValueIsDefault(false);
+		addComponent(aProbe);
+		updProbeSet().adoptAndAppend(aProbe);
+	}
 }
 
 //_____________________________________________________________________________
@@ -759,7 +753,6 @@ void Model::addProbe(OpenSim::Probe *aProbe)
 void Model::removeProbe(OpenSim::Probe *aProbe)
 {
 	updProbeSet().remove(aProbe);
-	updProbeSet().invokeConnectToModel(*this);
 }
 
 //_____________________________________________________________________________
@@ -769,8 +762,8 @@ void Model::removeProbe(OpenSim::Probe *aProbe)
 void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)
 {
     _contactGeometrySetProp.setValueIsDefault(false);
+	addComponent(aContactGeometry);
 	updContactGeometrySet().adoptAndAppend(aContactGeometry);
-	updContactGeometrySet().invokeConnectToModel(*this);
 }
 
 //_____________________________________________________________________________
@@ -779,10 +772,10 @@ void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)
  */
 void Model::addController(Controller *aController)
 {
-	if (aController ) {
-       _controllerSetProp.setValueIsDefault(false);
-	   updControllerSet().adoptAndAppend(aController);
-	   updControllerSet().invokeConnectToModel(*this);
+	if (aController) {
+		_controllerSetProp.setValueIsDefault(false);
+		addComponent(aController);
+		updControllerSet().adoptAndAppend(aController);
     }
 }
 //_____________________________________________________________________________
@@ -794,11 +787,18 @@ void Model::addController(Controller *aController)
  */
 void Model::setup()
 {
+	_model = this;
+	_components.clear();
 	createGroundBodyIfNecessary();
 
 	// Update model components, not that Joints and Coordinates
 	// belong to Bodies, alough model lists are assembled for convenience
-	updBodySet().invokeConnectToModel(*this);
+	//updBodySet().invokeConnectToModel(*this);
+	BodySet &bs = updBodySet();
+	int nb = bs.getSize();
+	for(int i=0; i<nb; ++i){
+		addComponent(&bs[i]);
+	}
 
     // Populate lists of model joints and coordinates according to the Bodies
 	// setup here who own the Joints which in turn own the model's Coordinates
@@ -806,18 +806,46 @@ void Model::setup()
 	updJointSet().populate(*this);
     updCoordinateSet().populate(*this);
 
-    updConstraintSet().invokeConnectToModel(*this);
+    //updConstraintSet().invokeConnectToModel(*this);
+	ConstraintSet &cs = updConstraintSet();
+	int nc = cs.getSize();
+	for(int i=0; i<nc; ++i){
+		addComponent(&cs[i]);
+	}
+
     updMarkerSet().connectMarkersToModel(*this);
     updContactGeometrySet().invokeConnectToModel(*this);
-	updForceSet().invokeConnectToModel(*this);
-	updControllerSet().invokeConnectToModel(*this);
+
+	//updForceSet().invokeConnectToModel(*this);
+	ForceSet &fs = updForceSet();
+	int nf = fs.getSize();
+	for(int i=0; i<nf; ++i){
+		addComponent(&fs[i]);
+	}
+	fs.invokeConnectToModel(*this);
+
+	//updControllerSet().invokeConnectToModel(*this);
+	ControllerSet &clrs = updControllerSet();
+	int nclr = clrs.getSize();
+	for(int i=0; i<nclr; ++i){
+		addComponent(&clrs[i]);
+	}
 	_componentSet.invokeConnectToModel(*this);
-    updProbeSet().invokeConnectToModel(*this);
+
+    //updProbeSet().invokeConnectToModel(*this);
+	ProbeSet &ps = updProbeSet();
+	int np = ps.getSize();
+	for(int i=0; i<np; ++i){
+		addComponent(&ps[i]);
+	}
 
 	// TODO: Get rid of the SimbodyEngine
 	updSimbodyEngine().connectSimbodyEngineToModel(*this);
 
 	updAnalysisSet().setModel(*this);
+
+	// propogate connect to all subcomponents
+	Super::connectToModel(*this);
 }
 
 /**
@@ -841,7 +869,7 @@ void Model::createGroundBodyIfNecessary()
 
 	if(ground==NULL) {
 		ground = new Body();
-		_bodySet.adoptAndAppend(ground);
+		addBody(ground);
 	}
 	// Set member variables
 	ground->setName(SimbodyGroundName);
@@ -891,12 +919,14 @@ void Model::setDefaultProperties()
 
 void Model::initStateFromProperties(SimTK::State& state) const
 {
+	Super::initStateFromProperties(state);
 	// Allocate the size and default values for controls
 	// Actuators will have a const view into the cache
 	Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
 	controlsCache.updValue(state).resize(_defaultControls.size());
 	controlsCache.updValue(state) = _defaultControls;
 
+	/*
     _bodySet.invokeInitStateFromProperties(state);
     _constraintSet.invokeInitStateFromProperties(state);
     _contactGeometrySet.invokeInitStateFromProperties(state);
@@ -905,57 +935,14 @@ void Model::initStateFromProperties(SimTK::State& state) const
 	_controllerSet.invokeInitStateFromProperties(state);
 	_componentSet.invokeInitStateFromProperties(state);
     _probeSet.invokeInitStateFromProperties(state);
-
-	// All model components have allocated their state variables so we can speed up access
-	// through model if we build a flat list of available state variables by name an their
-	// corresponding system index in the underlying SimTK::System
-    Array<std::string> stateVarNames;
-    Array<SimTK::SystemYIndex> stateVarSysInd;
-
-	// underlying system can have more states than defined by model components
-	// model components may also have more underlying states than they expose
-	int nssv = state.getNY(); // the total number of state variables in the underlying system
-
-	// initially size arrays to handle all state variables even hidden ones
-    stateVarNames.setSize(nssv);
-    stateVarSysInd.setSize(nssv);
-
-	for(int i=0; i< _modelComponents.getSize(); i++){
-		const ModelComponent* comp=_modelComponents.get(i);
-		int ncsv = comp->getNumStateVariables();				//number of state vars for component
-		Array<string> names = comp->getStateVariableNames();
-
-		assert(names.getSize() == ncsv);
-
-		for(int j=0; j < ncsv; j++){
-			SimTK::SystemYIndex iy = comp->getStateVariableSystemIndex(names[j]);
-            stateVarNames[iy] = names[j];
-            stateVarSysInd[iy] = iy;
-		}
-	}
-    
-	// now prune out all unnamed state variables that were intended to be hidden
-	for(int i=0; i< nssv; i++){
-		if(stateVarNames[i] == ""){
-            stateVarNames.remove(i);
-            stateVarSysInd.remove(i);
-			nssv--; i--; // decrement the size and count by one
-		}
-	}
-	assert(nssv == getNumStateVariables());
-
-    // Now allocate the internal Arrays, stateVarNames, stateVarSysInd
-    // to the model using a const_cast. This should be the only write to
-    // the "Model" done during initializeState(), but can be done over
-    // and over without affecting simulation results.
-    Model *mutableThis = const_cast<Model *>(this);
-    mutableThis->_stateVariableNames = stateVarNames;
-    mutableThis->_stateVariableSystemIndices = stateVarSysInd;
+	*/
 }
 
 void Model::setPropertiesFromState(const SimTK::State& state)
 {
-    _bodySet.invokeSetPropertiesFromState(state);
+	Super::setPropertiesFromState(state);
+    /*
+	_bodySet.invokeSetPropertiesFromState(state);
     _constraintSet.invokeSetPropertiesFromState(state);
     _contactGeometrySet.invokeSetPropertiesFromState(state);
     _jointSet.invokeSetPropertiesFromState(state);
@@ -963,6 +950,7 @@ void Model::setPropertiesFromState(const SimTK::State& state)
 	_controllerSet.invokeSetPropertiesFromState(state);
 	_componentSet.invokeSetPropertiesFromState(state);
     _probeSet.invokeSetPropertiesFromState(state);
+	*/
 }
 
 void Model::generateDecorations
@@ -1245,60 +1233,9 @@ int Model::getNumAnalyses() const
 // STATES
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Get the names of the states.
- *
- */
-Array<std::string> Model::getStateVariableNames() const
-{
-	return _stateVariableNames;
-}
 
-double Model::getStateVariable(const SimTK::State& s, const std::string &name) const
-{
-	int found = _stateVariableNames.findIndex(name);
 
-	if(found >= 0){
-		return s.getY()[_stateVariableSystemIndices[found]];
-	}
-	else{
-		std::stringstream msg;
-		msg << "Model::getStateVariable: ERR- variable name '" 
-            << name << "' not found.\n " 
-			<< getName() << " of type " << getConcreteClassName() 
-            << " has " << getNumStateVariables() << " states.";
-		throw( Exception(msg.str(),__FILE__,__LINE__) );
-		return SimTK::NaN;
-	}
-}
 
-void Model::setStateVariable(SimTK::State& s, const std::string &name, double value) const
-{
-    s.updY()[getStateVariableSystemIndex(name)] = value;  
-}
-
-void Model::getStateValues(const SimTK::State& s, Array<double> &rStateValues) const
-{
-	rStateValues.setSize(getNumStateVariables());
-	for(int i=0; i< _stateVariableSystemIndices.getSize(); i++) 
-		rStateValues[i] = s.getY()[_stateVariableSystemIndices[i]];
-}
-
-SimTK::Vector Model::getStateValues(const SimTK::State& s) const
-{
-    Vector rStateValues(getNumStateVariables());
-	for(int i=0; i< _stateVariableSystemIndices.getSize(); i++) 
-		rStateValues[i] = s.getY()[_stateVariableSystemIndices[i]];
-    return rStateValues;
-}
-
-void Model::setStateValues(SimTK::State& s, const double* aStateValues) const
-{
-	const SimTK::Stage& currentStage=s.getSystemStage();
-	for(int i=0; i< _stateVariableSystemIndices.getSize(); i++) // initialize to NaN
-			s.updY()[_stateVariableSystemIndices[i]]=aStateValues[i]; 
-	 _system->realize(s, SimTK::Stage::Velocity );
-}
 
 
 //_____________________________________________________________________________
@@ -1886,9 +1823,10 @@ void Model::setAllControllersEnabled( bool enabled ) {
 }
 /**
  * Model::formStateStorage is intended to take any storage and populate stateStorage.
- * stateStorage is supposed to be a Storage with labels identical to those obtained by calling
- * Model::getStateNames(). Columns/entries found in the "originalStorage" are copied to the
- * output statesStorage. Entries not found are populated with 0s.
+ * stateStorage is supposed to be a Storage with labels identical to those obtained by 
+ * calling Model::getStateVariableNames(). Columns/entries found in the "originalStorage"
+ * are copied to the output statesStorage. Entries not found are populated with 
+ * 0s (should be default value).
  */
 void Model::formStateStorage(const Storage& originalStorage, Storage& statesStorage)
 {
@@ -1903,9 +1841,26 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
 	int* mapColumns = new int[rStateNames.getSize()];
 	for(int i=0; i< rStateNames.getSize(); i++){
 		// the index is -1 if not found, >=1 otherwise since time has index 0 by defn.
-		mapColumns[i] = originalStorage.getColumnLabels().findIndex(rStateNames[i]);
-		if (mapColumns[i]==-1)
+		int fix = originalStorage.getColumnLabels().findIndex(rStateNames[i]);
+		if (fix==-1){
+			// try removing the complete path name to identify the state_name in storage
+			string::size_type last = rStateNames[i].rfind("/");
+			string name = rStateNames[i].substr(last+1, rStateNames[i].length()-last);
+			fix = originalStorage.getColumnLabels().findIndex(name);
+			// still not found
+			if(fix == -1){
+				name = rStateNames[i];
+				// try replacing the '/' with '.' in the last connection
+				name.replace(last, 1, ".");
+				last = name.rfind("/");
+				name = name.substr(last+1, rStateNames[i].length()-last);
+				fix = originalStorage.getColumnLabels().findIndex(name);
+			}
+		}
+		mapColumns[i] = fix;
+		if (fix==-1){
 			cout << "Column "<< rStateNames[i] << " not found in formStateStorage, assuming 0." << endl;
+		}
 	}
 	// Now cycle thru and shuffle each
 
@@ -2036,15 +1991,6 @@ void Model::validateMassProperties(bool fixMassProperties)
 	}
 
 }
-int Model::getNumStateVariables() const
-{
-	// Cycle thru all ModelComponents under this model and add up their getNumStateVariables
-	int numStateVariables = 0;
-	for(int i=0; i< _modelComponents.getSize(); i++)
-		numStateVariables += _modelComponents.get(i)->getNumStateVariables();
-	
-	return numStateVariables;
-}
 
 const Object& Model::getObjectByTypeAndName(const std::string& typeString, const std::string& nameString) {
     if (typeString=="Body") 
@@ -2071,7 +2017,7 @@ const Object& Model::getObjectByTypeAndName(const std::string& typeString, const
 /**
  * Compute the derivatives of the generalized coordinates and speeds.
  */
-SimTK::Vector Model::computeStateVariableDerivatives(const SimTK::State &s) const
+void Model::computeStateVariableDerivatives(const SimTK::State &s) const
 {
 	int ny = _stateVariableSystemIndices.getSize();
 	Vector derivatives(ny);
@@ -2082,16 +2028,10 @@ SimTK::Vector Model::computeStateVariableDerivatives(const SimTK::State &s) cons
 	catch (const std::exception& e){
 		string exmsg = e.what();
 		throw Exception(
-			"Model::computeStateVariableDerivatives: faile. See: "+exmsg);
+			"Model::computeStateVariableDerivatives: failed. See: "+exmsg);
 	}
-	Vector yDot = s.getYDot();
-
-	for(int i=0; i<ny; ++i){
-		derivatives[i] = yDot[_stateVariableSystemIndices[i]];
-	}
-
-	return derivatives;
 }
+
 /**
  * Get the total mass of the model
  *

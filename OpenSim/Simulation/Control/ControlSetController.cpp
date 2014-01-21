@@ -212,7 +212,8 @@ double ControlSetController::getLastTime() const {
 void ControlSetController::connectToModel(Model& model)  
 {
 
-    SimTK_ASSERT( _controlsFileName!="" , "ControlSetController::setup controlsFileName is NULL");
+    SimTK_ASSERT( _controlsFileName!="" , 
+		"ControlSetController::connectToModel controlsFileName is NULL");
 
     if(_controlsFileName!="Unassigned") {
 //        std::cout<<"\n\nControlSetController::connectToModel(): Loading controls from file "<<_controlsFileName<<"."<<std::endl;

@@ -94,17 +94,11 @@ public:
 	void setActivation(SimTK::State& s, double activation) const;
 	void setFiberLength(SimTK::State& s, double fiberLength) const;
 
-	virtual Array<std::string> getStateVariableNames() const OVERRIDE_11;
-	virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const OVERRIDE_11;
-
 	//--------------------------------------------------------------------------
     // State Variable Derivative
     //--------------------------------------------------------------------------
 	double getActivationRate(const SimTK::State& s) const;
 	
-
-
-
 	//--------------------------------------------------------------------------
 	// SCALING
 	//--------------------------------------------------------------------------
@@ -126,15 +120,11 @@ protected:
     //virtual void computeInitialFiberEquilibrium(SimTK::State& s) const;
     
 	/** Model Component Interface */
-	virtual void addToSystem(SimTK::MultibodySystem& system) const;
-	virtual void initStateFromProperties(SimTK::State& s) const;
-    virtual void setPropertiesFromState(const SimTK::State& state);
-    virtual void connectToModel(Model& aModel) OVERRIDE_11;
-	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const;
-
-	/** State derivative access helper methods */
-	void setStateVariableDeriv(const SimTK::State& s, const std::string &aStateName, double aValue) const;
-	double getStateVariableDeriv(const SimTK::State& s, const std::string &aStateName) const;
+	void connectToModel(Model& aModel) OVERRIDE_11;
+	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
+    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
+	void computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11;
 
 	static const std::string STATE_ACTIVATION_NAME;
 	static const std::string STATE_FIBER_LENGTH_NAME;   

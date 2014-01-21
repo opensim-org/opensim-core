@@ -150,8 +150,7 @@ public:
     /** Calculates the time derivative of activation using a first-order dynamic
         model. Respects the lower bound on activation while preserving the
         expected steady-state value. **/
-    SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s)
-        const OVERRIDE_11;
+    void computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11;
 
     //@}
 

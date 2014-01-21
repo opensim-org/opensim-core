@@ -297,12 +297,10 @@ double ContDerivMuscle_Deprecated::getPassiveFiberForce(const SimTK::State& s) c
  * @param rDYDT the state derivatives are returned here.
  */
 
-SimTK::Vector ContDerivMuscle_Deprecated::computeStateVariableDerivatives(const SimTK::State &s) const
+void ContDerivMuscle_Deprecated::
+	computeStateVariableDerivatives(const SimTK::State &s) const
 {
-	SimTK::Vector derivs(getNumStateVariables(), 0.);
-    if (!isDisabled(s))
-	    derivs[0] = getActivationDeriv(s);
-	return derivs; 
+	Super::computeStateVariableDerivatives(s);
 }
 
 

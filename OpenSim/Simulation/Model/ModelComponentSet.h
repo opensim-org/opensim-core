@@ -39,6 +39,7 @@
 namespace OpenSim {
 
 class Model;
+class ModelDisplayHints;
 
 //=============================================================================
 //=============================================================================
@@ -107,6 +108,7 @@ public:
         return *this->_model;
     }
 #endif
+
     /**
      * Adding an object to the set causes its Model field to be set.
      */
@@ -139,9 +141,9 @@ public:
     virtual void invokeConnectToModel(Model& model)
     {
         _model = &model;
-        for (int i = 0; i < Set<T>::getSize(); i++)
+        for (int i = 0; i < Set<T>::getSize(); i++){
             static_cast<ModelComponent&>(Set<T>::get(i)).connectToModel(model);
-		
+		}
 		Set<T>::setupGroups(); // make sure group members are populated
     }
 

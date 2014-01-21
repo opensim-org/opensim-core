@@ -21,7 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #ifndef CorrectionController_h__
 #define CorrectionController_h__
 
@@ -117,13 +116,10 @@ public:
 	double getKv() const;
 	void setKv(double aKv);
 
-
 	//--------------------------------------------------------------------------
 	// COMPUTATION
 	//--------------------------------------------------------------------------
-
-    virtual void computeControls(const SimTK::State& s, SimTK::Vector& controls) const;
-
+    void computeControls(const SimTK::State& s, SimTK::Vector& controls) const OVERRIDE_11;
 
 protected:
 	// for any post XML deseraialization intialization
@@ -134,8 +130,6 @@ protected:
 
 	// for any intialization requiring a state or the complete system 
 	void initStateFromProperties( SimTK::State& s) const OVERRIDE_11;
-
-
 
 //=============================================================================
 };	// END of class CorrectionController

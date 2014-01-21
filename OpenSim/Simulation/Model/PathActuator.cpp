@@ -231,7 +231,7 @@ void PathActuator::connectToModel(Model& aModel)
     // calls to subcomponents. Subsequent addToSystem() will also be 
     // automatically propagated.
     // TODO: this is awkward; subcomponent API needs to be revisited (sherm).
-	includeAsSubComponent(&path);
+	addComponent(&path);
 
 	// Set owner here in case errors happen later so we can put useful message about responsible party.
 	path.setOwner(this);

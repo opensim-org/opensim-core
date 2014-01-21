@@ -257,10 +257,6 @@ public:
     const SimTK::State& getWorkingState() const;
 	SimTK::State& updWorkingState();
 
-    /** Method to copy a model's default state into the space allocated for
-    its working state. This is so that the default state does not get corrupted. **/
-    void copyDefaultStateIntoWorkingState();
-
 	/**
 	 * This is called after the Model is fully created but before starting a simulation.
      * It ONLY initializes the computational system used to simulate the model and 
@@ -365,15 +361,13 @@ public:
 
     /**@}**/
 
-	virtual int getNumStateVariables() const;
-
 	//--------------------------------------------------------------------------
 	// CREATE THE MULTIBODY SYSTEM
 	//--------------------------------------------------------------------------
 	/**
 	 * Add ModelComponents to the Model. Model takes ownership of the objects.
 	 */
-	void addComponent(ModelComponent* aComponent);
+	void addModelComponent(ModelComponent* aModelComponent);
 	void addBody(Body *aBody);
 	void addConstraint(Constraint *aConstraint);
 	void addForce(Force *aForce);
@@ -639,7 +633,7 @@ public:
 	//--------------------------------------------------------------------------
 	// Subsystem computations
 	//--------------------------------------------------------------------------
-	SimTK::Vector computeStateVariableDerivatives(const SimTK::State &s) const;
+	void computeStateVariableDerivatives(const SimTK::State &s) const OVERRIDE_11;
 	double getTotalMass(const SimTK::State &s) const;
 	SimTK::Inertia getInertiaAboutMassCenter(const SimTK::State &s) const;
 	SimTK::Vec3 calcMassCenterPosition(const SimTK::State &s) const;
@@ -649,29 +643,6 @@ public:
 	//--------------------------------------------------------------------------
 	// STATES
 	//--------------------------------------------------------------------------
-
-	/**
-	 * Get the values of state variables in the same ordering as returned by
-     * getStateVariableNames(). Values are dug out from the passed-in \a state
-     * based on Y-indices that are associated with the named state variables.
-	 *
-	 * @param[in]  state        State from which values are to be obtained.
-	 * @param[out] stateValues  Array used to collect the reordered state values.
-	 */
-	void getStateValues(const SimTK::State& state, Array<double>& stateValues) const;
-    SimTK::Vector getStateValues(const SimTK::State& s) const;
-
-	/**
-	 * Set the values of state variables which are passed in the same ordering
-     * as returned by getStateVariableNames(). Values are set in the passed in 
-     * \a state object based on Y-indices that are associated with the named 
-     * state variables.
-	 *
-	 * @param[out] state        State to be modified.
-	 * @param[in]  stateValues  Pointer to an array of values corresponding to
-     *                          each of the named state variables.
-	 */	
-	void setStateValues(SimTK::State& state, const double* stateValues) const;
 
     int getNumMuscleStates() const;
     int getNumProbeStates() const;
@@ -851,34 +822,7 @@ public:
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const 
                                                                 OVERRIDE_11;
-
-    //TODO: Why are the rest of these part of ModelComponent interface?
-
-	/** Get the names of the states. These are the continuous states introduced
-    by OpenSim ModelComponents and exposed thru the ModelComponent API. **/
-	/*virtual*/ Array<std::string> getStateVariableNames() const;
-
-    const Array<SimTK::SystemYIndex>& getStateVariableSystemIndices() const
-    { return _stateVariableSystemIndices;}
-
-    /** Get the value of a state variable of this Model.
-    @param s   the State for which to get the value
-    @param name    the name (string) of the state variable of interest **/
-	/*virtual*/ double getStateVariable(const SimTK::State& s, 
-                                        const std::string& name) const;
-
-    /** Set the value of a state variable of this Model.
-    @param s   the State for which to get the value
-    @param name    the name (string) of the state variable of interest 
-    @param value   the value of the state **/
-	/*virtual*/ void setStateVariable(SimTK::State& s, 
-                                        const std::string& name,
-                                        double value) const;
 	
-    /** Get the Y index of a state variable by name.
-    @param stateVariableName    the name (string) of the state variable of interest **/
-	/*virtual*/ SimTK::SystemYIndex getStateVariableSystemIndex
-       (const std::string &stateVariableName) const;
     /**@}**/
     //--------------------------------------------------------------------------
 
@@ -907,7 +851,7 @@ private:
 	void createAssemblySolver(const SimTK::State& s);
 
     // To provide access to private _modelComponents member.
-	friend class ModelComponent; 
+	friend class Component; 
 
 //==============================================================================
 // DATA MEMBERS
@@ -1001,9 +945,6 @@ private:
     // to an existing Body and should not be destructed.
 	Body*           _groundBody;
 
-	// A flat list of ModelComponents contained by the model.
-	ArrayPtrs<const ModelComponent> _modelComponents;
-
     // This object just provides an alternate interface to the computational
     // SimTK::MultibodySystem. It is constructed just knowing the Model and
     // then forwards requests through the Model at runtime.
@@ -1046,11 +987,9 @@ private:
 	AssemblySolver*     _assemblySolver;
 
 	// Model controls as a shared pool (Vector) of individual Actuator controls
-	SimTK::MeasureIndex _modelControlsIndex;
+	SimTK::MeasureIndex   _modelControlsIndex;
 	// Default values pooled from Actuators upon system creation.
-    // CAUTION: although this appears to be a reference it is a heap allocated
-    // object owned by the Model and must be destructed!
-	SimTK::Vector&      _defaultControls;
+	mutable SimTK::Vector _defaultControls;
 
 	// Members for fast access of state variables in the underlying 
     // SimTK::System.
