@@ -47,7 +47,7 @@ ExpressionBasedCoordinateForce::ExpressionBasedCoordinateForce(
     constructProperties();
 
     // Set properties to the passed-in values.
-	setCoordinate(coordinate);
+	setCoordinateName(coordinate);
 	setExpression(expression);
 }
 

@@ -132,7 +132,7 @@ int main()
         return 1;
     }
 
-	cout << "Done" << endl;
+	cout << "Done. All cases passed." << endl;
 
     return 0;
 }
@@ -232,7 +232,7 @@ void testExpressionBasedCoordinateForce()
 						)  
 						+ dh;
 
-		ASSERT_EQUAL(height, pos(1), 1e-5);
+		ASSERT_EQUAL(height, pos(1), 1e-6);
 
 		manager.setInitialTime(dt*i);
 	}
@@ -242,6 +242,8 @@ void testExpressionBasedCoordinateForce()
 	ExpressionBasedCoordinateForce *copyOfSpring = spring.clone();
 
 	ASSERT(*copyOfSpring == spring);
+
+	osimModel->print("ExpressionBasedCoordinateForceModel.osim");
 }
 
 void testExpressionBasedPointToPointForce()

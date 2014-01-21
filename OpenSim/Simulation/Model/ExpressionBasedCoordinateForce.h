@@ -1,5 +1,5 @@
-#ifndef OPENSIM_EXPRESSION_FORCE_H_
-#define OPENSIM_EXPRESSION_FORCE_H_
+#ifndef OPENSIM_EXPRESSION_BASED_COORDINATE_FORCE_H_
+#define OPENSIM_EXPRESSION_BASED_COORDINATE_FORCE_H_
 /* -------------------------------------------------------------------------- *
  *                OpenSim:  ExpressionBasedCoordinateForce.h                  *
  * -------------------------------------------------------------------------- *
@@ -63,9 +63,9 @@ public:
 	/**
 	* Coordinate
 	*/
-	void setCoordinate(const std::string& coord) 
+	void setCoordinateName(const std::string& coord) 
     {   set_coordinate(coord); }
-	const std::string& getCoordinate() const {return get_coordinate();}
+	const std::string& getCoordinateName() const {return get_coordinate();}
 
 	/**
 	* Set the mathematical expression that defines the force magnitude of this
@@ -95,7 +95,7 @@ public:
 //==============================================================================
 	/** Compute the coordinate force based on the user-defined expression 
 	    and apply it to the model */
-	 void computeForce(const SimTK::State& state, 
+    void computeForce(const SimTK::State& state, 
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForces) const OVERRIDE_11;
 
@@ -142,4 +142,4 @@ private:
 
 }; // namespace OpenSim
 
-#endif // OPENSIM_EXPRESSION_FORCE_H_
+#endif // OPENSIM_EXPRESSION_BASED_COORDINATE_FORCE_H_
