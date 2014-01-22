@@ -62,6 +62,7 @@ void testHuntCrossleyForce();
 void testCoordinateLimitForce();
 void testCoordinateLimitForceRotational();
 void testExpressionBasedPointToPointForce();
+void testExpressionBasedCoordinateForce();
 
 int main()
 {
@@ -120,12 +121,18 @@ int main()
 		failures.push_back("testExpressionBasedPointToPointForce");
 	}
 
+	try { testExpressionBasedCoordinateForce(); }
+    catch (const std::exception& e){
+		cout << e.what() <<endl; 
+		failures.push_back("testExpressionBasedCoordinateForce");
+	}
+
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
 
-	cout << "Done" << endl;
+	cout << "Done. All cases passed." << endl;
 
     return 0;
 }
@@ -134,6 +141,110 @@ int main()
 // Test Cases
 //==============================================================================
 
+void testExpressionBasedCoordinateForce()
+{
+	using namespace SimTK;
+
+	double mass = 1;
+	double stiffness = 10;
+	double damp_coeff = 5;
+	double h0 = 0;
+	double start_h = 0.5;
+	double start_v = 0;
+	double ball_radius = 0.25;
+
+	double omega = sqrt(stiffness/mass);
+	// note: test case designed for 0 <= zeta < 1 (under damped system) 
+	double zeta = damp_coeff / (2*sqrt(mass*stiffness));
+	double damp_freq = omega*sqrt(1-pow(zeta, 2));
+
+	double dh = mass*gravity_vec(1)/stiffness;
+
+	// Setup OpenSim model
+	Model *osimModel = new Model;
+	osimModel->setName("SpringMass");
+	//OpenSim bodies
+    OpenSim::Body& ground = osimModel->getGroundBody();
+	OpenSim::Body ball("ball", mass ,Vec3(0),  mass*SimTK::Inertia::sphere(0.1));
+	ball.addDisplayGeometry("sphere.vtp");
+	ball.scale(Vec3(ball_radius), false);
+
+	// Add joints
+	SliderJoint slider("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+
+	double positionRange[2] = {-10, 10};
+	// Rename coordinates for a slider joint
+	CoordinateSet &slider_coords = slider.upd_CoordinateSet();
+	slider_coords[0].setName("ball_h");
+	slider_coords[0].setRange(positionRange);
+	slider_coords[0].setMotionType(Coordinate::Translational);
+
+	osimModel->addBody(&ball);
+
+	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
+	osimModel->updBodySet().setMemoryOwner(false);
+
+	osimModel->setGravity(gravity_vec);
+
+	// ode for basic mass-spring-dampener system
+	ExpressionBasedCoordinateForce spring("ball_h", "-10*q-5*qdot");
+
+	osimModel->addForce(&spring);
+
+	// Create the force reporter
+	ForceReporter* reporter = new ForceReporter(osimModel);
+	osimModel->addAnalysis(reporter);
+
+	SimTK::State& osim_state = osimModel->initSystem();
+
+	// move ball to initial conditions
+	slider_coords[0].setValue(osim_state, start_h);
+    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
+
+	//==========================================================================
+	// Compute the force at the specified times.
+	
+	double final_t = 2.0;
+	double nsteps = 10;
+	double dt = final_t/nsteps;
+
+    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
+	integrator.setAccuracy(1e-7);
+    Manager manager(*osimModel,  integrator);
+    manager.setInitialTime(0.0);
+
+	for(int i = 1; i <=nsteps; i++){
+		manager.setFinalTime(dt*i);
+		manager.integrate(osim_state);
+		osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
+        Vec3 pos;
+        osimModel->updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+		
+		double height = exp(-1*zeta*omega*osim_state.getTime()) *
+						(
+							(start_h-dh)*cos(damp_freq*osim_state.getTime())
+							+
+							(
+								(1/damp_freq)*(zeta*omega*(start_h-dh)+start_v)
+								*
+								sin(damp_freq*osim_state.getTime())
+							)
+						)  
+						+ dh;
+
+		ASSERT_EQUAL(height, pos(1), 1e-6);
+
+		manager.setInitialTime(dt*i);
+	}
+
+	
+	// Test copying
+	ExpressionBasedCoordinateForce *copyOfSpring = spring.clone();
+
+	ASSERT(*copyOfSpring == spring);
+
+	osimModel->print("ExpressionBasedCoordinateForceModel.osim");
+}
 
 void testExpressionBasedPointToPointForce()
 {

@@ -177,6 +177,7 @@
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 #include <OpenSim/Simulation/Model/ExpressionBasedPointToPointForce.h>
+#include <OpenSim/Simulation/Model/ExpressionBasedCoordinateForce.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
 #include <OpenSim/Simulation/Model/PathSpring.h>
 #include <OpenSim/Simulation/Model/BushingForce.h>
@@ -935,6 +936,8 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 %include <OpenSim/Simulation/Model/PointToPointSpring.h>
 %include <OpenSim/Simulation/Model/ExpressionBasedPointToPointForce.h>
+%include <OpenSim/Simulation/Model/ExpressionBasedCoordinateForce.h>
+
 %include <OpenSim/Simulation/Model/PathSpring.h>
 %include <OpenSim/Simulation/Model/BushingForce.h>
 %include <OpenSim/Simulation/Model/FunctionBasedBushingForce.h>
