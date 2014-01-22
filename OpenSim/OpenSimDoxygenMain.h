@@ -28,7 +28,7 @@ Mainpage, the first page that a user sees when entering the Doxygen-
 generated API documentation. This is not actually included as part of the
 OpenSim source and it is not installed with OpenSim. **/
 
-/** @mainpage  OpenSim 3.1 Documentation
+/** @mainpage  OpenSim 3.2 Documentation
 
 \htmlonly
 <!-- ImageReady Slices -->
@@ -64,7 +64,7 @@ For example, you can click on the "Model Component" block to see a list of model
 		<td rowspan="2">
 			<img src="images/DoxygenFrontPage_small_07.gif" width="3" height="101" alt=""></td>
 		<td colspan="3">
-			<a href="https://simtk.org/api_docs/simbody/api_docs30/Simbody/html/classSimTK_1_1Optimizer.html"
+			<a href="https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1Optimizer.html"
 				onmouseover="window.status='SimTK::Optimizer';  return true;"
 				onmouseout="window.status='';  return true;">
 				<img src="images/Optimizer.gif" width="259" height="97" border="0" alt="SimTK::Optimizer"></a></td>
@@ -132,7 +132,7 @@ For example, you can click on the "Model Component" block to see a list of model
 	</tr>
 	<tr>
 		<td colspan="10">
-			<a href="https://simtk.org/api_docs/simbody/api_docs30/Simbody/html/"
+			<a href="https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/"
 				onmouseover="window.status='SimTK::System';  return true;"
 				onmouseout="window.status='';  return true;"
 				target = "_blank">
@@ -189,14 +189,14 @@ For example, you can click on the "Model Component" block to see a list of model
 <a href = "classOpenSim_1_1Mtx.html">OpenSim::Mtx</a> <br/>
 <a href = "classOpenSim_1_1Muscle.html">OpenSim::Muscle</a> <br/>
 <br/>
-<a href = "https://simtk.org/api_docs/simbody/api_docs30/Simbody/html/classSimTK_1_1Matrix__.html">SimTK::Matrix</a> <br/>
-<a href = "https://simtk.org/api_docs/simbody/api_docs30/Simbody/html/classSimTK_1_1Vector__.html">SimTK::Vector</a> <br/>
-<a href = "https://simtk.org/api_docs/simbody/api_docs30/Simbody/html/classSimTK_1_1Vec.html">SimTK::Vec</a> <br/>
-<a href = "https://simtk.org/api_docs/simbody/api_docs30/Simbody/html/classSimTK_1_1UnitVec.html">SimTK::UnitVec</a> <br/>
-<a href = "https://simtk.org/api_docs/simbody/api_docs30/Simbody/html/classSimTK_1_1Rotation__.html">SimTK::Rotation</a> <br/>
-<a href = "https://simtk.org/api_docs/simbody/api_docs30/Simbody/html/classSimTK_1_1MobilizedBody.html">SimTK::MobilizedBody</a> <br/>
-<a href = "https://simtk.org/api_docs/simbody/api_docs30/Simbody/html/classSimTK_1_1SimbodyMatterSubsystem.html">SimTK::SimbodyMatterSubsystem</a> <br/>
-<a href = "https://simtk.org/api_docs/simbody/api_docs30/Simbody/html/classSimTK_1_1State.html">SimTK::State</a> <br/>
+<a href = "https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1Matrix__.html">SimTK::Matrix</a> <br/>
+<a href = "https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1Vector__.html">SimTK::Vector</a> <br/>
+<a href = "https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1Vec.html">SimTK::Vec</a> <br/>
+<a href = "https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1UnitVec.html">SimTK::UnitVec</a> <br/>
+<a href = "https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1Rotation__.html">SimTK::Rotation</a> <br/>
+<a href = "https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1MobilizedBody.html">SimTK::MobilizedBody</a> <br/>
+<a href = "https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1SimbodyMatterSubsystem.html">SimTK::SimbodyMatterSubsystem</a> <br/>
+<a href = "https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1State.html">SimTK::State</a> <br/>
 
 \endhtmlonly
 **/
