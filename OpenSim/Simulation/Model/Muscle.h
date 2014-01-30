@@ -253,7 +253,7 @@ public:
 	 */ 
 	//@{
 	/** Find and set the equilibrium state of the muscle (if any) */
-	void equilibrate(SimTK::State& s) const {return computeInitialFiberEquilibrium(s); }
+	void equilibrate(SimTK::State& s) const { return computeFiberEquilibriumAtZeroVelocity(s); }
 	// End of Muscle's State Dependent Accessors.
     //@} 
 
