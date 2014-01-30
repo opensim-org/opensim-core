@@ -273,7 +273,8 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 	
 	int index = 0;
 	for(int i=0; i< _ikTaskSet.getSize(); i++){
-		if(IKCoordinateTask *coordTask = dynamic_cast<IKCoordinateTask *>(&_ikTaskSet[i])){
+		IKCoordinateTask *coordTask = dynamic_cast<IKCoordinateTask *>(&_ikTaskSet[i]);
+		if (coordTask && coordTask->getApply()){
 			CoordinateReference *coordRef = NULL;
 			if(coordTask->getValueType() == IKCoordinateTask::FromFile){
 				index = coordFunctions->getIndex(coordTask->getName(), index);
@@ -292,7 +293,7 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 			}
 
 			if(coordRef == NULL)
-				throw Exception("InverseKinematicsTool: value for coordinate "+coordTask->getName()+" not found.");
+				throw Exception("MarkerPlacer: value for coordinate "+coordTask->getName()+" not found.");
 
 			// We have a valid coordinate reference so now set its weight according to the task
 			coordRef->setWeight(coordTask->getWeight());
