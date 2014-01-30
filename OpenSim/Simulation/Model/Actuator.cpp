@@ -201,6 +201,7 @@ double Actuator::getOptimalForce() const
 
 double Actuator::getForce(const State &s) const
 {
+    if (isDisabled(s)) return 0.0;
     return getCacheVariable<double>(s, "force");
 }
 
