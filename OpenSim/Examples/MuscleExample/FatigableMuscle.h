@@ -147,14 +147,16 @@ protected:
 	//-------------------------------------------------------------------------
 	/** Determine the initial state values based on initial fiber equilibrium.
 		For the FatigableMuscle, the active and fatigued motor units
-		states are set to 1.0 and 0.0 respectively, which translates to 
-		no fatigue as the initial state. */
+		states are set to their defaults, which translates to 
+		no fatigue as the initial state. The current activation is set to the
+		target activation.*/
 	void computeInitialFiberEquilibrium(SimTK::State& s) const OVERRIDE_11;
+	void computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
+		OVERRIDE_11;
 	
 	/** Compute the derivatives for state variables added by this muscle */
 	SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) 
 		const OVERRIDE_11;
-
 private:
 	/** construct the new properties and set their default values */
 	void constructProperties();

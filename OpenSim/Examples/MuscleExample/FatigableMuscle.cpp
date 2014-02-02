@@ -71,7 +71,7 @@ void FatigableMuscle::constructProperties()
 	setAuthors("Ajay Seth");
     constructProperty_fatigue_factor(0.0);
     constructProperty_recovery_factor(0.0);
-	constructProperty_default_active_motor_units(0.0);
+	constructProperty_default_active_motor_units(1.0);
     constructProperty_default_fatigued_motor_units(0.0);
 }
 
@@ -246,11 +246,17 @@ void FatigableMuscle::computeInitialFiberEquilibrium(SimTK::State& s) const
 {
 	// initialize th target activation to be the actual.
 	setTargetActivation(s, getActivation(s));
-	// assume that all motor units can be activated initially and there is
-	// no appreciable fatigue
-	setActiveMotorUnits(s, 1.0);
-	setFatiguedMotorUnits(s, 0.0);
 
 	// Compute the fiber & tendon lengths according to the parent Muscle 
 	Super::computeInitialFiberEquilibrium(s);
+}
+
+/* Determine the initial state values based on initial fiber equlibrium. */
+void FatigableMuscle::computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
+{
+	// initialize th target activation to be the actual.
+	setTargetActivation(s, getActivation(s));
+
+	// Compute the fiber & tendon lengths according to the parent Muscle 
+	Super::computeFiberEquilibriumAtZeroVelocity(s);
 }
