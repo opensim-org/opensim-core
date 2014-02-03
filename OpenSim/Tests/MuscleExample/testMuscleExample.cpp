@@ -42,7 +42,7 @@ int main()
 
 		Storage result2("tugOfWar_fatigue_forces.mot"), standard2("std_tugOfWar_forces.mot");
 		ncols = result2.getColumnLabels().getSize();
-		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(1.0, ncols), __FILE__, __LINE__, "tugOfWar forces failed");
+		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(20.0, ncols), __FILE__, __LINE__, "tugOfWar forces failed");
 		cout << "tugOfWar forces passed\n";
 	}
 	catch (const Exception& e) {
