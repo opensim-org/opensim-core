@@ -67,10 +67,12 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
-    OpenSim_DECLARE_PROPERTY(fatigue_factor, double, 
+	OpenSim_DECLARE_PROPERTY(fatigue_factor, double, 
         "percentage of active motor units that fatigue in unit time");
     OpenSim_DECLARE_PROPERTY(recovery_factor, double, 
         "percentage of fatigued motor units that recover in unit time");
+	OpenSim_DECLARE_PROPERTY(default_target_activation, double,
+		"default state value used to initialize the muscle's target activation");
 	OpenSim_DECLARE_PROPERTY(default_active_motor_units, double, 
         "default state value for the fraction of motor units that are active");
     OpenSim_DECLARE_PROPERTY(default_fatigued_motor_units, double, 
@@ -101,9 +103,16 @@ public:
 	void setFatigueFactor(double aFatigueFactor);
 	double getRecoveryFactor() const { return get_recovery_factor(); }
 	void setRecoveryFactor(double aRecoveryFactor);
+
 	/** default values for states */
+	double getDefaultTargetActivation() const {
+		return get_default_target_activation();
+	}
+	void setDefaultTargetActivation(double targetActivation);
+	
 	double getDefaultActiveMotorUnits() const;
 	void setDefaultActiveMotorUnits(double activeMotorUnits);
+	
 	double getDefaultFatiguedMotorUnits() const;
 	void setDefaultFatiguedMotorUnits(double fatiguedMotorUnits);
 
@@ -145,15 +154,6 @@ protected:
 	//-------------------------------------------------------------------------
 	// COMPUTATIONS
 	//-------------------------------------------------------------------------
-	/** Determine the initial state values based on initial fiber equilibrium.
-		For the FatigableMuscle, the active and fatigued motor units
-		states are set to their defaults, which translates to 
-		no fatigue as the initial state. The current activation is set to the
-		target activation.*/
-	void computeInitialFiberEquilibrium(SimTK::State& s) const OVERRIDE_11;
-	void computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
-		OVERRIDE_11;
-	
 	/** Compute the derivatives for state variables added by this muscle */
 	SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) 
 		const OVERRIDE_11;
