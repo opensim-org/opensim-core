@@ -217,8 +217,7 @@ def test_addMetabolicProbes():
         # name, slow-twitch ratio, and muscle mass. Note that the muscle mass
         # is ignored unless we set useProvidedMass to True.
         wholeBodyProbe.addMuscle(thisMuscle.getName(),
-                                 slowTwitchRatio,
-                                 -1)
+                                 slowTwitchRatio)
 
     name = 'gait10dof18musc_probed.osim'
     fcn.printToXML(name)
