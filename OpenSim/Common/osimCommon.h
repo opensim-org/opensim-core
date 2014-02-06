@@ -40,6 +40,7 @@
 #include "LinearFunction.h"
 #include "PiecewiseLinearFunction.h"
 #include "MultiplierFunction.h"
+#include "PolynomialFunction.h"
 
 #include "VisibleObject.h"
 #include "ObjectGroup.h"

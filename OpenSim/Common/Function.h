@@ -127,6 +127,10 @@ public:
      * Get the maximum derivative order this Function object can calculate.
      */
     virtual int getMaxDerivativeOrder() const;
+	/**
+	 * Return a SimTK::Function that can be used natively by the
+	 * underlying SimTK::System and its elements.
+	 */
     virtual SimTK::Function* createSimTKFunction() const = 0;
 
 protected:
