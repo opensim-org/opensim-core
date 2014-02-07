@@ -1,0 +1,3 @@
+#! /usr/bin/env bash
+
+curl -X POST --header 'Content-Type: application/logplex-1' --data-binary @$1 http://localhost:3000/logs

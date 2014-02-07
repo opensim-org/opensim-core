@@ -30,23 +30,16 @@ ELSE(DOXYGEN_EXECUTABLE-NOTFOUND)
 
     # There is an "images" directory containing the pictures needed by
     # the main page Copy all the files into html/images.
-    FILE(GLOB ALL_IMAGES 
-         "${CMAKE_CURRENT_SOURCE_DIR}/OpenSim/doc/images/*.gif"
-         "${CMAKE_CURRENT_SOURCE_DIR}/OpenSim/doc/images/*.png")
-
-    FOREACH(image_pathname ${ALL_IMAGES})
-        # Retrieve just the filename (with extension).
-        GET_FILENAME_COMPONENT(image_name ${image_pathname} NAME)
-        FILE(TO_NATIVE_PATH "${image_pathname}" 
-            image_file_src)
-        FILE(TO_NATIVE_PATH "${PROJECT_BINARY_DIR}/html/images/${image_name}"
-            image_file_dest)
-        ADD_CUSTOM_COMMAND(TARGET doxygen POST_BUILD
-           COMMAND ${NATIVE_COPY_CMD} "${image_file_src}" "${image_file_dest}"
-           COMMENT "Copy ${image_file_src} -> ${image_file_dest}."
-           VERBATIM)
-    ENDFOREACH()
-
+    FILE(COPY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSim/doc/extra_html/"
+         DESTINATION "${PROJECT_BINARY_DIR}/html/")
+    FILE(COPY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSim/doc/opensim.css"
+         DESTINATION "${PROJECT_BINARY_DIR}/")
+    FILE(COPY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSim/doc/header.html"
+         DESTINATION "${PROJECT_BINARY_DIR}/")
+    FILE(COPY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSim/doc/footer.html"
+         DESTINATION "${PROJECT_BINARY_DIR}/")
+    FILE(COPY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSim/doc/images/"
+         DESTINATION "${PROJECT_BINARY_DIR}/html/images/")
     ################
     # INSTALLATION #
     ################

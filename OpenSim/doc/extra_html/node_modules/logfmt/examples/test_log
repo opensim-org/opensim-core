@@ -1,0 +1,12 @@
+#! /usr/bin/env node
+
+var logfmt   = require('../logfmt');
+
+logfmt.log({
+  'foo' : 'bar',
+  a: 14,
+  baz: 'hello kitty',
+  'cool%story' : 'bro',
+  'f' : true,
+  '%^asdf': true
+})

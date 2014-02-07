@@ -1,0 +1,29 @@
+#! /usr/bin/env node
+
+var logfmt = require('../logfmt')
+var split = require('split')
+var through = require('through')
+process.stdin.setEncoding('utf8');
+
+var argv = process.argv.slice(2);
+var data = '';
+var last = null;
+var println;
+
+if(argv[0] == '-r'){
+  //reverse -- convert json to logfmt logs
+  println = function(line) {
+    if(!line) return;
+    logfmt.log(JSON.parse(line.trim()))
+  }
+} else {
+  //convert logfmt logs to json
+  println = function(line) {
+    if(!line) return;
+    console.log(JSON.stringify(logfmt.parse(line.trim())))
+  }
+}
+
+process.stdin
+  .pipe(split())
+  .pipe(through(println))
