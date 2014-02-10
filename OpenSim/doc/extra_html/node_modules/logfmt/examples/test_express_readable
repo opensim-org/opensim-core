@@ -1,4 +1,0 @@
-#! /usr/bin/env node
-
-require('./express_readable')
-require('./post_to_express')

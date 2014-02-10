@@ -1,2 +1,0 @@
-foo=bar a=14 baz="hello kitty" cool%story=bro f %^asdf
-at=error code=H12 desc="Request timeout" method=GET path=/users/user38948@heroku.com/usage/2013-05-01T00:00:00Z/2013-05-01T00:00:00Z?exclude=platform%3Adyno%3Aphysical host=vault-usage-read.herokuapp.com fwd="50.17.15.69" dyno=web.21 connect=17ms service=30000ms status=503 bytes=0

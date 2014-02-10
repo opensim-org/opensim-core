@@ -1,1 +1,0 @@
-curl -X POST --data-binary @examples/file http://localhost:3000/logs
