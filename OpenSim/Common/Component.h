@@ -1090,15 +1090,18 @@ private:
 		// Need empty copy constructor because default compiler generated
 		// will fail since it cannot copy a unique_ptr!
 		StateVariableInfo(const StateVariableInfo&) {}
-		// Now handle assignment by moving ownership of the pointer
-		StateVariableInfo& operator=(StateVariableInfo &svi) {
+		// Now handle assignment by moving ownership of the unique pointer
+		StateVariableInfo& operator=(const StateVariableInfo& svi) {
 			if(this != &svi){
-				stateVariable.swap(svi.stateVariable);
+				//assignment has to be const but cannot swap const
+				//want to keep unique pointer to guarantee no multiple reference
+				//so use const_cast to swap under the covers
+				StateVariableInfo* mutableSvi = const_cast<StateVariableInfo *>(&svi);
+				stateVariable.swap(mutableSvi->stateVariable);
 			}
 			order = svi.order;
 			return *this;
 		}
-
 
 		// State variable
 		std::unique_ptr<Component::StateVariable> stateVariable;
