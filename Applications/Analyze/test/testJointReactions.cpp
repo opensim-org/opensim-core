@@ -41,7 +41,7 @@ int main()
 	try {
 		AnalyzeTool analyze("SinglePin_Setup_JointReaction.xml");
 		analyze.getModel();
-		//analyze.run();
+		analyze.run();
 		Storage result1("SinglePin_JointReaction_ReactionLoads.sto"), standard1("std_SinglePin_JointReaction_ReactionLoads.sto");
 		CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(1e-5, 24), __FILE__, __LINE__, "SinglePin failed");
 		cout << "SinglePin passed" << endl;
