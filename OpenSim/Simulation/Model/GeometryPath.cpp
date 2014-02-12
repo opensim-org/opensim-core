@@ -311,7 +311,19 @@ getPointForceDirections(const SimTK::State& s,
             engine.getPosition(s, end->getBody(), end->getLocation(), posEnd);
 
             // Form a vector from start to end, in the inertial frame.
-            direction = (posEnd - posStart).normalize();
+            direction = (posEnd - posStart);
+
+			// Check that the two points are not coincident.
+			// This can happen due to infeasible wrapping of the path,
+			// when the origin or insertion enters the wrapping surface.
+			// This is a temporary fix, since the wrap algorithm should
+			// return NaN for the points and/or throw an Exception- aseth
+			if (direction.norm() < SimTK::SignificantReal){
+				direction = direction*SimTK::NaN;
+			}
+			else{
+				direction = direction.normalize();
+			}
 
             // Get resultant direction at each point 
             rPFDs->get(i)->addToDirection(direction);
@@ -357,8 +369,20 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
             pf = bf->findStationLocationInGround(s, end->getLocation());
 
             // Form a vector from start to end, in the inertial frame.
-            dir = (pf - po).normalize();
+			dir = (pf - po);
 
+			// Check that the two points are not coincident.
+			// This can happen due to infeasible wrapping of the path,
+			// when the origin or insertion enters the wrapping surface.
+			// This is a temporary fix, since the wrap algorithm should
+			// return NaN for the points and/or throw an Exception- aseth
+			if (dir.norm() < SimTK::SignificantReal){
+				dir = dir*SimTK::NaN;
+			}
+			else{
+				dir = dir.normalize();
+			}
+		
 			force = tension*dir;
 
             // add in the tension point forces to body forces
