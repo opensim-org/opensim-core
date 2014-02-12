@@ -1101,6 +1101,10 @@ Set<Actuator> CMCTool::
 	getActuatorsForCMC(const Array<std::string> &actuatorsByNameOrGroup)
 {	
 	Set<Actuator> actuatorsForCMC = _model->getActuators();
+    for (int i=actuatorsForCMC.getSize()-1; i>0; i--){
+        if (actuatorsForCMC.get(i).get_isDisabled())
+            actuatorsForCMC.remove(i);
+    }
 	Array<string> groupNames;
 	actuatorsForCMC.getGroupNames(groupNames);
 
