@@ -28,8 +28,8 @@ def test_markAdopted():
     except:
         pass
     a.addAnalysis(osim.MuscleAnalysis())
-    #a.addForce(osim.BushingForce())
-    #a.addForce(osim.CoordinateActuator())
+    # TODO a.addForce(osim.BushingForce())
+    # TODO a.addForce(osim.CoordinateActuator())
     a.addController(osim.PrescribedController())
 
     # Set's.
