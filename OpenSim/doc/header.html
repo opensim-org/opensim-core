@@ -8,21 +8,27 @@
 <link href="$relpath$opensim.css" rel="stylesheet" type="text/css" />
 <link href="lightbox.css" rel="stylesheet" type="text/css" />
 <link href="bootstrap3/css/bootstrap.min.css" rel="stylesheet">
-<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+<script src="jquery-2.1.0.min.js"></script>
 <script src="bootstrap3/js/bootstrap.min.js"></script>
 <script src="lightbox.js"></script>
 <script type="text/javascript" src="typeahead.min.js"></script>
-<script src="http://twitter.github.com/hogan.js/builds/2.0.0/hogan-2.0.0.js"></script>
+<script src="hogan-2.0.0.js"></script>
 <script type="text/javascript">
+
+
+  window.onhashchange = function() {
+  if (window.location.hash)
+      window.scrollBy(0, -50);
+  }
+  if (window.location.hash)
+  {
+    window.scrollBy(0, -50);
+  }
+
 $( document ).ready(function() {
 
   $("#MSearchBox").hide();
 
-  $.ajax({url : "/ping", type: "GET", error : function() {
-
-    $(".twitter-typeahead").replaceWith($("#MSearchBox").show());
-
-  }});
 
   $("div.headertitle").addClass("page-header");
   $("div.title").addClass("h1");
@@ -105,7 +111,17 @@ $("#search").typeahead([
 
     $('.typeahead.input-sm').siblings('input.tt-hint').addClass('hint-small');
     $('.typeahead.input-lg').siblings('input.tt-hint').addClass('hint-large');
+
+
+  $.ajax({url : "/ping", type: "GET", error : function() {
+    var prt = $("#MSearchBox").parent();
+    $(".twitter-typeahead").replaceWith($("#MSearchBox").show());
+    prt.remove();
+
+  }});
 });
+
+var initNavTree = function(a,b) { } 
 
 function toggleVisibility(linkObj)
 {
@@ -215,10 +231,6 @@ $(".dyncontent img").each(function () {
 });
 </script>
 <style type="text/css">
-	#MSearchResultsWindow
-	{
-	top: 50px !important;
-	}
   body
   {
     width: 800px;
