@@ -149,13 +149,7 @@ Actuation& Actuation::operator=(const Actuation &aActuation)
 
 	// CHECK MODEL
 	if(_model!=NULL) {
-        const Set<Actuator>& actuators =  _model->getActuators();
-		_na = actuators.getSize();
-        int numEnabled = _na;
-        for(int i=0; i< _na; i++)
-            if (actuators[i].get_isDisabled()) numEnabled--;
-
-        _na = numEnabled;
+        _na = getNumEnabledActuators();
 		_fsp = new double[_na];
 		constructColumnLabels();
 	}
@@ -172,8 +166,9 @@ void Actuation::setModel(Model& aModel)
 	Analysis::setModel(aModel);
 
 	// NUMBER OF ACTUATORS
-	if (_model)
-		_na = _model->getActuators().getSize();
+	if (_model){
+        _na = getNumEnabledActuators();
+    }
 	else
 		_na = 0;
 
@@ -549,5 +544,23 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 
 	return(0);
 }
+//_____________________________________________________________________________
+/**
+ * Utility to get number of "Enabled" actuators in model where Enabled is based 
+ * on the "Property" rather than the live/state value.
+ * 
+ *
+ * @return number of Actuators which are enabled
+ */
+int Actuation::
+getNumEnabledActuators()
+{
 
+        const Set<Actuator>& actuators =  _model->getActuators();
+		int numActuators = actuators.getSize();
+        int numEnabled = numActuators;
+        for(int i=0; i< numActuators; i++)
+            if (actuators[i].get_isDisabled()) numEnabled--;
 
+        return numEnabled;
+}

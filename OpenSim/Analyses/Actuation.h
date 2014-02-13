@@ -85,6 +85,7 @@ private:
 	void allocateStorage();
 	void deleteStorage();
 
+    int getNumEnabledActuators();
 public:
 	//--------------------------------------------------------------------------
 	// OPERATORS
