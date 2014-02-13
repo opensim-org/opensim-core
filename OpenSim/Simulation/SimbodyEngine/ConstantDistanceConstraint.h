@@ -52,16 +52,23 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ConstantDistanceConstraint, Constraint);
 // DATA
 //=============================================================================
 public:
-	/** Properties */
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
 	OpenSim_DECLARE_PROPERTY(body_1, std::string,
 		"Specify first of two bodies connected together by the constraint.");
 	OpenSim_DECLARE_PROPERTY(body_2, std::string,
 		"Specify second of two bodies connected together by the constraint.");
 	OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
-		"Location of the point in first body specified in body1 reference frame.")
+        "Location of the point in first body specified in body1 "
+        "reference frame.");
 	OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
-		"Location of the point in second body specified in body2 reference frame.")
-	OpenSim_DECLARE_PROPERTY(constant_distance, double, "constant distance to be rigidly maintained between the two points fixed on each body.");
+        "Location of the point in second body specified in body2 "
+        "reference frame.");
+	OpenSim_DECLARE_PROPERTY(constant_distance, double, "constant distance "
+        "to be rigidly maintained between the two points "
+        "fixed on each body.");
+    /**@}**/
 
 protected:
 	/** First body point constraint joins. */
