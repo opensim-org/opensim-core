@@ -30,7 +30,8 @@ ADD_CUSTOM_COMMAND(
     	-o ${swig_output_cxx_file_fullname}
         -outdir ${CMAKE_CURRENT_BINARY_DIR}
         ${swig_interface_file_fullname}
-    DEPENDS osimCommon osimSimulation osimAnalyses osimTools)
+    DEPENDS osimCommon osimSimulation osimAnalyses osimTools osimActuators
+        ${swig_interface_file_fullname})
 
 ADD_CUSTOM_TARGET(PyWrap
     DEPENDS ${swig_output_cxx_file_fullname}
@@ -48,7 +49,7 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools
+LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools osimActuators
     ${PYTHON_LIBRARIES})
 
 ADD_LIBRARY(_${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})

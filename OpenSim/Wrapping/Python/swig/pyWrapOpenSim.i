@@ -1,6 +1,13 @@
 %module(directors="1") opensim
 %module opensim
 #pragma SWIG nowarn=822,451,503,516,325
+
+/*
+For consistency with the rest of the API, we use camel-case for variable names.
+This breaks Python PEP 8 convention, but allows us to be consistent within our
+own project.
+*/
+
 %{
 #define SWIG_FILE_WITH_INIT
 
@@ -1003,4 +1010,161 @@ namespace SimTK {
 %include <OpenSim/Tools/InverseKinematicsTool.h>
 
 %include <OpenSim/Wrapping/Python/OpenSimContext.h>
+
+// Memory management
+// =================
+/*
+This facility will help us avoid segfaults that occur when two different
+objects believe they own a pointer, and so they both try to delete it. We can
+instead notify the object that something else has adopted it, and will take
+care of deleting it.
+*/
+%extend OpenSim::Object {
+%pythoncode %{
+    def _markAdopted(self):
+        if self.this and self.thisown:
+            self.thisown = False
+%}
+};
+
+/*
+A macro to facilitate adding adoptAndAppend methods to these sets. For NAME ==
+Geometry, the macro expands to:
+
+%extend OpenSim::GeometrySet {
+%pythoncode %{
+    def adoptAndAppend(self, aGeometry):
+        aGeometry._markAdopted()
+        return super(GeometrySet, self).adoptAndAppend(aGeometry)
+%}
+};
+
+note: ## is a "glue" operator: `a ## b` --> `ab`.
+*/
+%define SET_ADOPT_HELPER(NAME)
+%extend OpenSim:: ## NAME ## Set {
+%pythoncode %{
+    def adoptAndAppend(self, a ## NAME):
+        a ## NAME._markAdopted()
+        return super(NAME ## Set, self).adoptAndAppend(a ## NAME)
+%}
+};
+%enddef
+
+SET_ADOPT_HELPER(Geometry);
+// TODO prev declSET_ADOPT_HEPLER(Function);
+SET_ADOPT_HELPER(Scale);
+SET_ADOPT_HELPER(Force);
+SET_ADOPT_HELPER(Controller);
+SET_ADOPT_HELPER(ContactGeometry);
+SET_ADOPT_HELPER(Analysis);
+SET_ADOPT_HELPER(Control);
+SET_ADOPT_HELPER(Marker);
+SET_ADOPT_HELPER(Body);
+SET_ADOPT_HELPER(BodyScale);
+SET_ADOPT_HELPER(Coordinate);
+SET_ADOPT_HELPER(Joint);
+SET_ADOPT_HELPER(Constraint);
+//TODO SET_ADPOT_HELPER(Probe);
+SET_ADOPT_HELPER(PathPoint);
+SET_ADOPT_HELPER(IKTask);
+SET_ADOPT_HELPER(MarkerPair);
+SET_ADOPT_HELPER(Measurement);
+
+
+/*
+// TODO doesnt exist SET_ADOPT_HELPER(ModelComponent);
+// TODO doesn't exist SET_ADOPT_HELPER(Muscle);
+//SET_ADOPT_HELPER(ExternalForce);
+//SET_ADOPT_HELPER(Actuator);
+// TODO not used? SET_ADOPT_HELPER(ControlLinearNode);
+// TODO SET_ADOPT_HELPER(PathWrap);
+// TODO not used? SET_ADOPT_HELPER(MarkerWeight);
+#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Common/FunctionSet.h>
+#include <OpenSim/Simulation/Model/ModelComponentSet.h>
+#include <OpenSim/Simulation/Model/ComponentSet.h>
+#include <OpenSim/Simulation/Model/ContactGeometrySet.h>
+#include <OpenSim/Simulation/Model/ProbeSet.h>
+#include <OpenSim/Simulation/Control/ControlSet.h>
+#include <OpenSim/Simulation/Model/AnalysisSet.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
+#include <OpenSim/Simulation/Model/ControllerSet.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+#include <OpenSim/Simulation/Wrap/PathWrapSet.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/BodyScaleSet.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/JointSet.h>
+#include <OpenSim/Simulation/Model/PathPointSet.h>
+#include <OpenSim/Simulation/Model/ConstraintSet.h>
+#include <OpenSim/Tools/IKTaskSet.h>
+#include <OpenSim/Tools/MarkerPairSet.h>
+#include <OpenSim/Tools/MeasurementSet.h>
+
+   DID NOT WORK:
+%pythonprepend OpenSim::SetGeometry::adoptAndAppend %{
+    args[0]._markAdopted()
+%}
+%template(SetGeometry) OpenSim::Set<OpenSim::DisplayGeometry>;
+%template(SetFunctions) OpenSim::Set<OpenSim::Function>;
+%template(SetScales) OpenSim::Set<OpenSim::Scale>;
+%template(SetModelComponents) OpenSim::Set<OpenSim::ModelComponent>;
+%template(SetMuscles) OpenSim::Set<OpenSim::Muscle>;
+%template(SetForces) OpenSim::Set<OpenSim::Force>;
+%template(SetExternalForces) OpenSim::Set<OpenSim::ExternalForce>;
+%template(SetControllers) OpenSim::Set<OpenSim::Controller>;
+%template(SetContactGeometry) OpenSim::Set<OpenSim::ContactGeometry>;
+%template(SetActuators) OpenSim::Set<OpenSim::Actuator>;
+%template(SetAnalysis) OpenSim::Set<OpenSim::Analysis>;
+%template(SetControls) OpenSim::Set<OpenSim::Control>;
+%template(SetControlNodes) OpenSim::ArrayPtrs<OpenSim::ControlLinearNode>;
+%template(SetMarkers) OpenSim::Set<OpenSim::Marker>;
+%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
+%template(SetPathWrap) OpenSim::Set<OpenSim::PathWrap>;
+%template(SetBodies) OpenSim::Set<OpenSim::Body>;
+%template(SetBodyScales) OpenSim::Set<OpenSim::BodyScale>;
+%template(SetCoordinates) OpenSim::Set<OpenSim::Coordinate>;
+%template(SetJoints) OpenSim::Set<OpenSim::Joint>;
+%template(SetConstraints) OpenSim::Set<OpenSim::Constraint>;
+%template(SetProbes) OpenSim::Set<OpenSim::Probe>;
+%template(SetPathPoint) OpenSim::Set<OpenSim::PathPoint>;
+%template(SetIKTasks) OpenSim::Set<OpenSim::IKTask>;
+%template(SetMarkerWeights) OpenSim::Set<MarkerWeight>;
+%template(SetMarkerPairs) OpenSim::Set<OpenSim::MarkerPair>;
+%template(SetMeasurements) OpenSim::Set<OpenSim::Measurement>;
+*/
+
+/*
+The added component is not responsible for its own memory management anymore
+once added to the Model.
+*/
+%pythonprepend OpenSim::Model::addComponent %{
+    args[0]._markAdopted()
+%}
+
+%pythonprepend OpenSim::Model::addProbe %{
+    args[0]._markAdopted()
+%}
+
+%pythonprepend OpenSim::Model::addConstraint %{
+    args[0]._markAdopted()
+%}
+
+%pythonprepend OpenSim::Model::addContactGeometry %{
+    args[0]._markAdopted()
+%}
+
+%pythonprepend OpenSim::Model::addAnalysis %{
+    args[0]._markAdopted()
+%}
+
+%pythonprepend OpenSim::Model::addForce %{
+    args[0]._markAdopted()
+%}
+
+%pythonprepend OpenSim::Model::addController %{
+    args[0]._markAdopted()
+%}
 

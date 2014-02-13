@@ -2,10 +2,6 @@
 consistent with each other. The initial tests here come from
 pre-existing Jython scripting code.
 
-For consistency with the rest of the API, we use camel-case for variable names.
-This breaks Python PEP 8 convention, but allows us to be consistent within our
-own project.
-
 """
 
 import inspect
@@ -220,8 +216,8 @@ def test_addMetabolicProbes():
                                  slowTwitchRatio)
 
     name = 'gait10dof18musc_probed.osim'
-    fcn.printToXML(name)
+    model.printToXML(name)
 
-    assert (open(fcnName).readlines() ==
-            open(fcnName.replace('.osim', '_desired.osim')).readlines())
+    assert (open(name).readlines() ==
+            open(name.replace('.osim', '_desired.osim')).readlines())
 
