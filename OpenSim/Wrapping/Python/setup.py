@@ -5,7 +5,7 @@ import os
 from setuptools import setup
 
 setup(name='opensim',
-      version='3.1',
+      version='3.2',
       description='OpenSim Simulation Framework',
       author='OpenSim Team',
       author_email='ahabib@stanford.edu',
