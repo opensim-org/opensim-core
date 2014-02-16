@@ -290,7 +290,16 @@ SET(USE_LIBRARIES_FROM_REPOSITORY OFF)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 
 SET(BUILD_USING_NAMESPACE "OpenSim")
-find_package(Simbody)
+# To accommodate a change in Simbody install organization with Simbody 3.4.
+IF(WIN32)
+    # Use the FindSimbody.cmake file in this directory, as the
+    # install organization hasn't changed on Windows.
+    FIND_PACKAGE(Simbody REQUIRED)
+ELSE()
+    # Use the SimbodyConfig.cmake file within a Simbody installation.
+    FIND_PACKAGE(Simbody REQUIRED NO_MODULE)
+ENDIF()
+
 include_directories(${Simbody_INCLUDE_DIR})
 link_directories(${Simbody_LIB_DIR})
 
