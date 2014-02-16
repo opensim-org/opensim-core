@@ -180,7 +180,7 @@ void Bhargava2004MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
              setDisabled(true);
             //throw (Exception(errorMessage.c_str()));
         }
-        else if (isnan(mm.get_provided_muscle_mass())) {
+        else if (isNaN(mm.get_provided_muscle_mass())) {
             errorMessage << "ERROR: No <provided_muscle_mass> specified for " 
                 << mm.getName() 
                 << ". <provided_muscle_mass> must be a positive number (kg)." << endl;
@@ -868,7 +868,7 @@ Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter(
 	setName(muscleName);
 	set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
 
-    if (isnan(muscle_mass)) {
+    if (isNaN(muscle_mass)) {
 	    set_use_provided_muscle_mass(false);
     }
     else {
@@ -898,7 +898,7 @@ Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter(
     set_maintenance_constant_slow_twitch(maintenance_constant_slow_twitch);
     set_maintenance_constant_fast_twitch(maintenance_constant_fast_twitch);
 
-    if (isnan(muscle_mass)) {
+    if (isNaN(muscle_mass)) {
 	    set_use_provided_muscle_mass(false);
     }
     else {

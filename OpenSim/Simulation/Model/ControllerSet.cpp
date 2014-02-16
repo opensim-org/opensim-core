@@ -38,7 +38,9 @@ using namespace std;
 using namespace OpenSim;
 
 #ifndef SWIG
+namespace OpenSim {
 template class OSIMSIMULATION_API ModelComponentSet<Controller>;
+}
 #endif
 
 

@@ -562,10 +562,10 @@ int main(int argc, char* argv[])
             DpenAngDfibLen(i) = fibKin.calc_DPennationAngle_DfiberLength(
                                                             fibLen(i));
 
-            //The isnan check needs to be in place because the numerical 
+            //The isNaN check needs to be in place because the numerical 
             //derivative might be NAN - the denominator of the numerical
             //difference can and does go to zero.
-            if(abs(DpenAngDfibLen(i)) > bigTol && !isnan(DpenAngDfibLenNUM(i))){
+            if(abs(DpenAngDfibLen(i)) > bigTol && !isNaN(DpenAngDfibLenNUM(i))){
                 DpenAngDfibLenERR(i) = abs( (DpenAngDfibLenNUM(i)-
                                              DpenAngDfibLen(i))
                                              /DpenAngDfibLen(i));                
@@ -603,10 +603,10 @@ int main(int argc, char* argv[])
             DtdnLenDfibLen(i) = fibKin.calc_DTendonLength_DfiberLength(
                 fibLen(i), sin(penAng(i)), cos(penAng(i)), 
                 DpenAngDfibLen(i));
-            //The isnan check needs to be in place because the numerical 
+            //The isNaN check needs to be in place because the numerical 
             //derivative might be NAN - the denominator of the numerical
             //difference can and does go to zero.
-            if(abs(DtdnLenDfibLen(i)) > bigTol && !isnan(DtdnLenDfibLenNUM(i))){
+            if(abs(DtdnLenDfibLen(i)) > bigTol && !isNaN(DtdnLenDfibLenNUM(i))){
                 DtdnLenDfibLenERR(i) = abs( (DtdnLenDfibLenNUM(i)-
                                              DtdnLenDfibLen(i))
                                              /DtdnLenDfibLen(i) );

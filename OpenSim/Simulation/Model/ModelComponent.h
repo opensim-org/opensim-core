@@ -350,10 +350,10 @@ template <class T> friend class ModelComponentMeasure;
 
 private:
 
-	// Satisfy the general Component interface, but this is not part of the
-	// ModelComponent interface. connectToModel() ensures that any connect()
-	// operations on the parent component are invoked.
-	void ModelComponent::connect() OVERRIDE_11;
+    // Satisfy the general Component interface, but this is not part of the
+    // ModelComponent interface. connectToModel() ensures that any connect()
+    // operations on the parent component are invoked.
+    void connect() OVERRIDE_11;
 
     const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;
     const SimTK::DefaultSystemSubsystem& updDefaultSubsystem();

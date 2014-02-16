@@ -276,6 +276,14 @@ ELSE(WIN32)
 	ENDIF (APPLE)
 ENDIF(WIN32)
 
+IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    IF(APPLE)
+        # Using C++11 on OSX requires using libc++ instead of libstd++.
+        # libc++ is an implementation of the C++ standard library for OSX.
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    ENDIF()
+ENDIF()
 
 # Disable Build using the simtk headers and libraries checked in the repository. 
 SET(USE_LIBRARIES_FROM_REPOSITORY OFF)
@@ -562,3 +570,4 @@ ELSE(OPENSIM_INSTALL_PACKAGE_BUILD)
 	SUBDIRS(Vendors OpenSim Applications Models)
 ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
 ENDIF(BUILD_API_ONLY)
+

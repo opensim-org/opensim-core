@@ -110,9 +110,9 @@ void MuscleFixedWidthPennationModel::ensureModelUpToDate()
 
 void MuscleFixedWidthPennationModel::ensurePropertiesSet() const
 {
-    SimTK_ERRCHK1_ALWAYS(!isnan(getOptimalFiberLength())
-                         && !isnan(getOptimalPennationAngle())
-                         && !isnan(getMaximumPennationAngle()),
+    SimTK_ERRCHK1_ALWAYS(!isNaN(getOptimalFiberLength())
+                         && !isNaN(getOptimalPennationAngle())
+                         && !isNaN(getMaximumPennationAngle()),
                          "MuscleFixedWidthPennationModel",
                          "%s: Properties have not been set.",
                          getName().c_str());

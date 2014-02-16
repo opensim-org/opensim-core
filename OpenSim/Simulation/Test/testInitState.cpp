@@ -176,11 +176,11 @@ void testMemoryUsage(const string& modelFile)
 	// new footprint after MAX_N_TRIES
 	size_t mem2 = getCurrentRSS( );
 	// change
-	LONG64 delta = mem2-mem1;
-	LONG64 leak = delta/MAX_N_TRIES;
+	int64_t delta = mem2-mem1;
+	int64_t leak = delta/MAX_N_TRIES;
 	long double leak_percent = 100.0 * leak/model_size;
 
-	long double dT = long double((clock()-startTime)) / CLOCKS_PER_SEC;
+	long double dT = (long double)(clock()-startTime) / CLOCKS_PER_SEC;
 	long double meanT = 1.0e3 * dT/MAX_N_TRIES; // in ms
 	
 	cout << "*********************** testMemoryUsage ***********************" << endl;

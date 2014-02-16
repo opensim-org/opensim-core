@@ -493,7 +493,7 @@ double ActivationFiberLengthMuscle_Deprecated::calcPennation( double aFiberLengt
 
    double value = aOptimalFiberLength * sin(aInitialPennationAngle) / aFiberLength;
 
-   if ( isnan(value)  ) 
+   if ( SimTK::isNaN(value)  ) 
        return 0.0;
    else if (value <= 0.0 )
       return 0.0;

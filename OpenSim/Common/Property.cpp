@@ -94,8 +94,9 @@ isEqual(const SimTK::Transform& a, const SimTK::Transform& b) {
 //=============================================================================
 
 // Try a few instantiations so we catch bugs now.
-
+namespace OpenSim {
 template class SimpleProperty<int>;
 template class SimpleProperty<double>;
 template class SimpleProperty<std::string>;
 template class ObjectProperty<Object>;
+}

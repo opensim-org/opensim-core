@@ -82,7 +82,7 @@ void testCopyModel(string fileName)
 	delete newModel;
 
 	size_t mem2 = getCurrentRSS( );
-	LONG64 delta = mem2-mem1;
+	int64_t delta = mem2-mem1;
 
 	cout << "Memory change AFTER copy and init:  " << delta/1024 << "KB." << endl;
 }

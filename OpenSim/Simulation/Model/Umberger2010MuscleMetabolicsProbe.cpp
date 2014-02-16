@@ -167,7 +167,7 @@ void Umberger2010MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
             std::cout << "WARNING: " << errorMessage.str() << "Probe will be disabled." << std::endl;
             setDisabled(true);
         }
-        else if (isnan(mm.get_provided_muscle_mass())) {
+        else if (isNaN(mm.get_provided_muscle_mass())) {
             errorMessage << "ERROR: No <provided_muscle_mass> specified for " 
                 << mm.getName() 
                 << ". <provided_muscle_mass> must be a positive number (kg)." << endl;
@@ -770,7 +770,7 @@ Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter(
 	constructProperties();
 	setName(muscleName);
 	set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
-    if (isnan(muscle_mass)) {
+    if (isNaN(muscle_mass)) {
 	    set_use_provided_muscle_mass(false);
     }
     else {
