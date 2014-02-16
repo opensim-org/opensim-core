@@ -276,6 +276,8 @@ ELSE(WIN32)
 	ENDIF (APPLE)
 ENDIF(WIN32)
 
+# C++11: In revision 8629, we started using std::unique_ptr, which requires
+# C++11 features to be enabled when using GCC or Clang.
 IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     IF(APPLE)
@@ -297,7 +299,7 @@ IF(WIN32)
     FIND_PACKAGE(Simbody REQUIRED)
 ELSE()
     # Use the SimbodyConfig.cmake file within a Simbody installation.
-    FIND_PACKAGE(Simbody REQUIRED NO_MODULE)
+    FIND_PACKAGE(Simbody REQUIRED PATHS "${SimTK_INSTALL_DIR}" NO_MODULE)
 ENDIF()
 
 include_directories(${Simbody_INCLUDE_DIR})
@@ -355,12 +357,18 @@ ELSE()
 ENDIF()
 # Copy libraries from ${SIMTK_BIN_DIR} to ${BUILD_BINARY_DIR}
 
-FILE(GLOB LIB_FILES "${Simbody_LIB_DIR}/*.a"
-					"${Simbody_LIB_DIR}/*.so"
-					"${Simbody_LIB_DIR}/*.so.*"
-				    "${Simbody_LIB_DIR}/*.dylib"
-					 "${Simbody_BIN_DIR}/*.dll"
-S					"${Simbody_BIN_DIR}/*") # .dll, .exe, no suffix executable
+IF(WIN32)
+    FILE(GLOB LIB_FILES
+        "${Simbody_BIN_DIR}/*.dll"
+        "${Simbody_BIN_DIR}/*") # .dll, .exe, no suffix executable
+ELSE()
+    FILE(GLOB LIB_FILES
+        "${Simbody_LIB_DIR}/*SimTK*.a"
+        "${Simbody_LIB_DIR}/*SimTK*.so"
+        "${Simbody_LIB_DIR}/*SimTK*.so.*"
+        "${Simbody_LIB_DIR}/*SimTK*.dylib"
+        )
+ENDIF()
 
 # This is where we're going to put these binaries.
 SET(COPIED_LIB_FILES)
@@ -469,13 +477,15 @@ IF(WIN32)
 					${Simbody_LIB_DIR}/${VCVERSION}/*.lib)
 ELSE(WIN32)
 	FILE(GLOB THIRDPARTY_BIN_FILES 
-					${Simbody_BIN_DIR}/*) # executables only (e.g. Visualizer)
+        ${Simbody_BIN_DIR}/*) # executables only (e.g. visualizer)
+    # If the LIB_DIR is some common place for libraries (e.g., /usr/lib),
+    # we only want to copy over the libraries that have SimTK in the name.
 	FILE(GLOB THIRDPARTY_LIB_FILES 
-					${Simbody_LIB_DIR}/*.so
-					${Simbody_LIB_DIR}/*.so.*
-					${Simbody_LIB_DIR}/*.dylib)
+        ${Simbody_LIB_DIR}/*SimTK*.so
+        ${Simbody_LIB_DIR}/*SimTK*.so.*
+        ${Simbody_LIB_DIR}/*SimTK*.dylib)
 	FILE(GLOB THIRDPARTY_SDKLIB_FILES 
-					${Simbody_LIB_DIR}/*.a)
+        ${Simbody_LIB_DIR}/*SimTK*.a)
 ENDIF(WIN32)
 
 # Specify "PROGRAMS" rather than "FILES" so the execute bit gets set.
