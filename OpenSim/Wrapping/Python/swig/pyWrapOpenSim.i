@@ -514,6 +514,63 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 };
 */
 
+// Memory management
+// =================
+/*
+This facility will help us avoid segfaults that occur when two different
+objects believe they own a pointer, and so they both try to delete it. We can
+instead notify the object that something else has adopted it, and will take
+care of deleting it.
+*/
+%extend OpenSim::Object {
+%pythoncode %{
+    def _markAdopted(self):
+        if self.this and self.thisown:
+            self.thisown = False
+%}
+};
+
+/*
+The added component is not responsible for its own memory management anymore
+once added to the Model.  These lines must go at this point in this .i file. I
+originally had them at the bottom, and then they didn't work!
+
+note: ## is a "glue" operator: `a ## b` --> `ab`.
+*/
+%define MODEL_ADOPT_HELPER(NAME)
+%pythonappend OpenSim::Model::add ## NAME %{
+    args[0]._markAdopted()
+%}
+%enddef
+
+MODEL_ADOPT_HELPER(Component);
+MODEL_ADOPT_HELPER(Body);
+MODEL_ADOPT_HELPER(Probe);
+MODEL_ADOPT_HELPER(Constraint);
+MODEL_ADOPT_HELPER(ContactGeometry);
+MODEL_ADOPT_HELPER(Analysis);
+MODEL_ADOPT_HELPER(Force);
+MODEL_ADOPT_HELPER(Controller);
+
+// Would prefer to modify the Joint abstract class constructor,
+// but the proxy classes don't even call it.
+%define JOINT_ADOPT_HELPER(NAME)
+%pythonappend OpenSim::Joint:: ## NAME %{
+    self._markAdopted()
+%}
+%enddef
+
+JOINT_ADOPT_HELPER(FreeJoint);
+JOINT_ADOPT_HELPER(CustomJoint);
+JOINT_ADOPT_HELPER(EllipsoidJoint);
+JOINT_ADOPT_HELPER(BallJoint);
+JOINT_ADOPT_HELPER(PinJoint);
+JOINT_ADOPT_HELPER(SliderJoint);
+JOINT_ADOPT_HELPER(WeldJoint);
+JOINT_ADOPT_HELPER(GimbalJoint);
+JOINT_ADOPT_HELPER(UniversalJoint);
+JOINT_ADOPT_HELPER(PlanarJoint);
+
 %extend OpenSim::Array<double> {
 	void appendVec3(SimTK::Vec3 vec3) {
 		for(int i=0; i<3; i++)
@@ -976,19 +1033,6 @@ namespace SimTK {
 
 // Memory management
 // =================
-/*
-This facility will help us avoid segfaults that occur when two different
-objects believe they own a pointer, and so they both try to delete it. We can
-instead notify the object that something else has adopted it, and will take
-care of deleting it.
-*/
-%extend OpenSim::Object {
-%pythoncode %{
-    def _markAdopted(self):
-        if self.this and self.thisown:
-            self.thisown = False
-%}
-};
 
 /*
 A macro to facilitate adding adoptAndAppend methods to these sets. For NAME ==
@@ -1015,7 +1059,6 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
 %enddef
 
 SET_ADOPT_HELPER(Geometry);
-// TODO SET_ADOPT_HEPLER(Function);
 SET_ADOPT_HELPER(Scale);
 SET_ADOPT_HELPER(Force);
 SET_ADOPT_HELPER(Controller);
@@ -1028,42 +1071,25 @@ SET_ADOPT_HELPER(BodyScale);
 SET_ADOPT_HELPER(Coordinate);
 SET_ADOPT_HELPER(Joint);
 SET_ADOPT_HELPER(Constraint);
-//TODO SET_ADPOT_HELPER(Probe);
 SET_ADOPT_HELPER(PathPoint);
 SET_ADOPT_HELPER(IKTask);
 SET_ADOPT_HELPER(MarkerPair);
 SET_ADOPT_HELPER(Measurement);
 
-
-/*
-The added component is not responsible for its own memory management anymore
-once added to the Model.
-*/
-%pythonprepend OpenSim::Model::addComponent %{
-    args[0]._markAdopted()
+// These didn't work with the macro for some reason. I got complaints about
+// multiple definitions of, e.g.,  Function in the target language.
+%extend OpenSim::FunctionSet {
+%pythoncode %{
+    def adoptAndAppend(self, aFunction):
+        aFunction._markAdopted()
+        return super(FunctionSet, self).adoptAndAppend(aFunction)
 %}
+};
 
-%pythonprepend OpenSim::Model::addProbe %{
-    args[0]._markAdopted()
+%extend OpenSim::ProbeSet {
+%pythoncode %{
+    def adoptAndAppend(self, aProbe):
+        aProbe._markAdopted()
+        return super(ProbeSet, self).adoptAndAppend(aProbe)
 %}
-
-%pythonprepend OpenSim::Model::addConstraint %{
-    args[0]._markAdopted()
-%}
-
-%pythonprepend OpenSim::Model::addContactGeometry %{
-    args[0]._markAdopted()
-%}
-
-%pythonprepend OpenSim::Model::addAnalysis %{
-    args[0]._markAdopted()
-%}
-
-%pythonprepend OpenSim::Model::addForce %{
-    args[0]._markAdopted()
-%}
-
-%pythonprepend OpenSim::Model::addController %{
-    args[0]._markAdopted()
-%}
-
+};

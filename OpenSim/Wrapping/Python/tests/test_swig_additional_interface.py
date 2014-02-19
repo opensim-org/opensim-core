@@ -16,92 +16,260 @@ def test_markAdopted():
     assert a.this
     assert not a.thisown
 
+def test_markAdopted():
+    a = osim.Model()
+
     # We just need the following not to not cause a segfault.
 
     # Model add*
     a.addComponent(osim.PathActuator())
     a.addProbe(osim.Umberger2010MuscleMetabolicsProbe())
-    try:
-        # It's okay if throws an exception (it does); we just need
-        # to avoid the segfault.
-        a.addConstraint(osim.ConstantDistanceConstraint())
-    except:
-        pass
     a.addAnalysis(osim.MuscleAnalysis())
-    # TODO a.addForce(osim.BushingForce())
-    # TODO a.addForce(osim.CoordinateActuator())
+    # TODO NOT a markAdopted issue ... a.addForce(osim.BushingForce())
+    # TODO NOT a markAdopted issue ... a.addForce(osim.CoordinateActuator())
     a.addController(osim.PrescribedController())
+    
+    body = osim.Body('body',
+            1.0,
+            osim.Vec3(0, 0, 0),
+            osim.Inertia(0, 0, 0)
+            )
+
+    loc_in_parent = osim.Vec3(0, -0, 0)
+    orient_in_parent = osim.Vec3(0, 0, 0)
+    loc_in_body = osim.Vec3(0, 0, 0)
+    orient_in_body = osim.Vec3(0, 0, 0)
+    joint = osim.WeldJoint("weld_joint",
+            a.getGroundBody(),
+            loc_in_parent, orient_in_parent,
+            body,
+            loc_in_body, orient_in_parent)
+
+    a.addBody(body)
+
+    constr = osim.ConstantDistanceConstraint()
+    constr.setBody1ByName("ground")
+    constr.setBody1PointLocation(osim.Vec3(0, 0, 0))
+    constr.setBody2ByName("body")
+    constr.setBody2PointLocation(osim.Vec3(1, 0, 0))
+    constr.setConstantDistance(1)
+    a.addConstraint(constr)
+
+def test_Joint():
+    a = osim.Model()
+    
+    body = osim.Body('body',
+            1.0,
+            osim.Vec3(0, 0, 0),
+            osim.Inertia(0, 0, 0)
+            )
+
+    loc_in_parent = osim.Vec3(0, -0, 0)
+    orient_in_parent = osim.Vec3(0, 0, 0)
+    loc_in_body = osim.Vec3(0, 0, 0)
+    orient_in_body = osim.Vec3(0, 0, 0)
+
+    joint = osim.FreeJoint("joint",
+            a.getGroundBody(),
+            loc_in_parent, orient_in_parent,
+            body,
+            loc_in_body, orient_in_parent)
+    del joint
+    joint = osim.CustomJoint("joint",
+            a.getGroundBody(),
+            loc_in_parent, orient_in_parent,
+            body,
+            loc_in_body, orient_in_parent)
+    del joint
+    joint = osim.EllipsoidJoint("joint",
+            a.getGroundBody(),
+            loc_in_parent, orient_in_parent,
+            body,
+            loc_in_body, orient_in_parent, osim.Vec3(1, 1, 1))
+    del joint
+    joint = osim.BallJoint("joint",
+            a.getGroundBody(),
+            loc_in_parent, orient_in_parent,
+            body,
+            loc_in_body, orient_in_parent)
+    del joint
+    joint = osim.PinJoint("joint",
+            a.getGroundBody(),
+            loc_in_parent, orient_in_parent,
+            body,
+            loc_in_body, orient_in_parent)
+    del joint
+    joint = osim.SliderJoint("joint",
+            a.getGroundBody(),
+            loc_in_parent, orient_in_parent,
+            body,
+            loc_in_body, orient_in_parent)
+    del joint
+    joint = osim.WeldJoint("joint",
+            a.getGroundBody(),
+            loc_in_parent, orient_in_parent,
+            body,
+            loc_in_body, orient_in_parent)
+    del joint
+    joint = osim.GimbalJoint("joint",
+            a.getGroundBody(),
+            loc_in_parent, orient_in_parent,
+            body,
+            loc_in_body, orient_in_parent)
+    del joint
+    joint = osim.UniversalJoint("joint",
+            a.getGroundBody(),
+            loc_in_parent, orient_in_parent,
+            body,
+            loc_in_body, orient_in_parent)
+    del joint
+    joint = osim.PlanarJoint("joint",
+            a.getGroundBody(),
+            loc_in_parent, orient_in_parent,
+            body,
+            loc_in_body, orient_in_parent)
+    del joint
+
+
+def test_markAdoptedSets():
 
     # Set's.
-    #fus = osim.FunctionSet()
-    #fu1 = osim.Constant()
-    #fus.adoptAndAppend(fu1)
+    fus = osim.FunctionSet()
+    fu1 = osim.Constant()
+    fus.adoptAndAppend(fu1)
+    del fus
+    del fu1
 
     gs = osim.GeometrySet()
     dg = osim.DisplayGeometry()
     gs.adoptAndAppend(dg)
+    del gs
+    del dg
 
     s = osim.ScaleSet()
     o = osim.Scale()
     s.adoptAndAppend(o)
+    del s
+    del o
 
     s = osim.ForceSet()
     o = osim.BushingForce()
     s.adoptAndAppend(o)
+    del s
+    del o
 
     cs = osim.ControllerSet()
     csc = osim.PrescribedController()
     cs.adoptAndAppend(csc)
+    del cs
+    del csc
 
     s = osim.ContactGeometrySet()
     o = osim.ContactHalfSpace()
     s.adoptAndAppend(o)
+    del s
+    del o
 
     s = osim.AnalysisSet()
     o = osim.MuscleAnalysis()
     s.adoptAndAppend(o)
+    del s
+    del o
 
     s = osim.ControlSet()
     o = osim.ControlLinear()
     s.adoptAndAppend(o)
+    del s
+    del o
 
     s = osim.MarkerSet()
     o = osim.Marker()
     s.adoptAndAppend(o)
+    del s
+    del o
 
     s = osim.BodySet()
     o = osim.Body()
     s.adoptAndAppend(o)
+    del s
+    del o
 
     s = osim.BodyScaleSet()
     o = osim.BodyScale()
     s.adoptAndAppend(o)
+    del s
+    del o
 
     s = osim.CoordinateSet()
     o = osim.Coordinate()
     s.adoptAndAppend(o)
+    del s
+    del o
 
     s = osim.JointSet()
     o = osim.BallJoint()
     s.adoptAndAppend(o)
-
-    s = osim.ConstraintSet()
-    o = osim.ConstantDistanceConstraint()
-    s.adoptAndAppend(o)
+    del s
+    del o
 
     s = osim.PathPointSet()
     o = osim.PathPoint()
     s.adoptAndAppend(o)
+    del s
+    del o
 
     s = osim.IKTaskSet()
     o = osim.IKMarkerTask()
     s.adoptAndAppend(o)
+    del s
+    del o
 
     s = osim.MarkerPairSet()
     o = osim.MarkerPair()
     s.adoptAndAppend(o)
+    del s
+    del o
 
     s = osim.MeasurementSet()
     o = osim.Measurement()
     s.adoptAndAppend(o)
+    del s
+    del o
+
+    # TODO 
+    # s = osim.ProbeSet()
+    # o = osim.Umberger2010MuscleMetabolicsProbe()
+    # s.adoptAndAppend(o)
+    # del s
+    # del o
+
+
+    s = osim.ConstraintSet()
+    a = osim.Model()
+    body = osim.Body('body',
+            1.0,
+            osim.Vec3(0, 0, 0),
+            osim.Inertia(0, 0, 0)
+            )
+
+    loc_in_parent = osim.Vec3(0, -0, 0)
+    orient_in_parent = osim.Vec3(0, 0, 0)
+    loc_in_body = osim.Vec3(0, 0, 0)
+    orient_in_body = osim.Vec3(0, 0, 0)
+    joint = osim.WeldJoint("weld_joint",
+            a.getGroundBody(),
+            loc_in_parent, orient_in_parent,
+            body,
+            loc_in_body, orient_in_parent)
+    a.addBody(body)
+
+
+    constr = osim.ConstantDistanceConstraint()
+    constr.setBody1ByName("ground")
+    constr.setBody1PointLocation(osim.Vec3(0, 0, 0))
+    constr.setBody2ByName("body")
+    constr.setBody2PointLocation(osim.Vec3(1, 0, 0))
+    constr.setConstantDistance(1)
+
+    s.adoptAndAppend(constr)
 
