@@ -170,6 +170,20 @@ public:
 	//-------------------------------------------------------------------------
 	virtual void setModel(Model& aModel);
 
+    // Property accessors
+    /** Public accessors for the forcesFileName property */
+    const std::string& getForcesFileName() { return _forcesFileName; }
+    void setForcesFileName(const std::string newForcesFile) { _forcesFileName = newForcesFile; }
+    /** Public accessors for the JointNames property */
+    const Array<std::string>& getJointNames() const { return _jointNames; }
+    void setJointNames( Array<std::string>& jointNames) { _jointNames = jointNames; }
+     /** Public accessors for the onBody property */
+    const Array<std::string>& getOnBody() const { return _onBody; }
+    void setOnBody( Array<std::string>& onBody) { _onBody = onBody; }
+     /** Public accessors for the inFrame property */
+    const Array<std::string>& getInFrame() const { return _inFrame; }
+    void setInFrame( Array<std::string>& inFrame) { _inFrame = inFrame; }
+
 	//-------------------------------------------------------------------------
 	// INTEGRATION
 	//----------------------------------------------------------------------
