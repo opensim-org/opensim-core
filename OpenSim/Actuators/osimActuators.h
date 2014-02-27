@@ -38,6 +38,8 @@
 #include "Millard2012EquilibriumMuscle.h"
 #include "Millard2012AccelerationMuscle.h"
 
+#include "McKibbenActuator.h"
+
 #include "RegisterTypes_osimActuators.h"	// to expose RegisterTypes_osimActuators
 
 #endif // _osimActuators_h_

@@ -47,11 +47,17 @@ const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 
 void testTorqueActuator();
 void testClutchedPathSpring();
+void testMcKibbenActuator();
 
 int main()
 {
 	SimTK::Array_<std::string> failures;
 
+	try { testMcKibbenActuator(); }
+	catch (const std::exception& e){
+		cout << e.what() << endl; failures.push_back("testMcKibbenActuator");
+	}
+	
 	try {testTorqueActuator();}
     catch (const std::exception& e){
 		cout << e.what() <<endl; failures.push_back("testTorqueActuator");
@@ -60,12 +66,93 @@ int main()
     catch (const std::exception& e){
 		cout << e.what() <<endl; failures.push_back("testClutchedPathSpring");
 	}
-
+	
     if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
+		cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
 	cout << "Done, testActuators passed." << endl;
+
+}
+
+void testMcKibbenActuator()
+{
+
+	double pressure = 5 * 10e5; // 5 bars
+	double num_turns = 1.5;		// 1.5 turns
+	double B = 277.1 * 10e-4;  // 277.1 mm
+
+	using namespace SimTK;
+	std::clock_t startTime = std::clock();
+
+	double mass = 1;
+	double ball_radius = 10e-6;
+
+	Model *model = new Model;
+	model->setGravity(Vec3(0));
+
+    OpenSim::Body& ground = model->getGroundBody();
+
+	McKibbenActuator *actuator = new McKibbenActuator("mckibben", num_turns, B);
+	
+	OpenSim::Body* ball = new OpenSim::Body("ball", mass ,Vec3(0),  mass*SimTK::Inertia::sphere(0.1));
+	ball->scale(Vec3(ball_radius), false);
+
+	actuator->addNewPathPoint("mck_ground", ground, Vec3(0));
+	actuator->addNewPathPoint("mck_ball", *ball, Vec3(ball_radius));
+
+	Vec3 locationInParent(0, ball_radius, 0), orientationInParent(0), locationInBody(0), orientationInBody(0);
+	SliderJoint *ballToGround = new SliderJoint("ballToGround", ground, locationInParent, orientationInParent, *ball, locationInBody, orientationInBody);
+
+	auto& coords = ballToGround->upd_CoordinateSet();
+	coords[0].setName("ball_d");
+	coords[0].setPrescribedFunction(LinearFunction(20 * 10e-4, 0.5 * 264.1 * 10e-4));
+	coords[0].set_prescribed(true);
+
+	model->addBody(ball);
+	model->addForce(actuator);
+
+	PrescribedController* controller = 	new PrescribedController();
+	controller->addActuator(*actuator);
+	controller->prescribeControlForActuator("mckibben", new Constant(pressure));
+
+	model->addController(controller);
+
+	ForceReporter* reporter = new ForceReporter(model);
+	model->addAnalysis(reporter);
+	
+	SimTK::State& si = model->initSystem();
+
+	model->getMultibodySystem().realize(si, Stage::Position);
+
+	double final_t = 10.0;
+	double nsteps = 10;
+	double dt = final_t / nsteps;
+
+	RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
+	integrator.setAccuracy(1e-7);
+	Manager manager(*model, integrator);
+	manager.setInitialTime(0.0);
+
+	for (int i = 1; i <= nsteps; i++){
+		manager.setFinalTime(dt*i);
+		manager.integrate(si);
+		model->getMultibodySystem().realize(si, Stage::Velocity);
+		Vec3 pos;
+		model->updSimbodyEngine().getPosition(si, *ball, Vec3(0), pos);
+
+		double applied = actuator->computeActuation(si);;
+
+		double theoretical = (pressure / (4* pow(num_turns,2) * SimTK::Pi)) * (3*pow(pos(0), 2) - pow(B, 2));
+
+		ASSERT_EQUAL(applied, theoretical, 10.0);
+
+		manager.setInitialTime(dt*i);
+	}
+
+
+	std::cout << "Test McKibbenActuator time = " <<
+		1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;
 }
 
 //==============================================================================
