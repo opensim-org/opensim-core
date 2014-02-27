@@ -9,6 +9,7 @@
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
  * Author(s): Tim Dorn                                                        *
+ * Contributor(s): Thomas Uchida                                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -32,6 +33,22 @@
 using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
+
+// If we draw a control volume around the fiber, the first law of thermodynamics
+// suggests that negative mechanical work should be included in Wdot. As such,
+// we have reverted back to the model described in Umberger et al. (2003). This
+// flag sets the lengthening heat coefficient to alpha_L = 4.0*alpha_S(ST)
+// rather than 0.3*alpha_S(ST) and includes negative mechanical work in Wdot.
+const bool includeNegativeMechanicalWork = true;
+
+// During eccentric contraction, the magnitude of the (negative) mechanical work
+// rate can exceed that of the total (positive) heat rate, resulting in a flow
+// of energy into the fiber. Experiments indicate that the chemical processes
+// involved in fiber contraction cannot be reversed, and most of the energy that
+// is absorbed during eccentric contraction (in increased cross-bridge
+// potentials, for example) is eventually converted into heat. Thus, we increase
+// Sdot (if necessary) to ensure Edot > 0 for each muscle.
+const bool forbidNegativeTotalPower = true;
 
 
 //=============================================================================
@@ -105,6 +122,7 @@ void Bhargava2004MuscleMetabolicsProbe::constructProperties()
     constructProperty_use_force_dependent_shortening_prop_constant(false);
     constructProperty_basal_coefficient(1.2);  // default value for standing (Umberger, 2003, p105)
     constructProperty_basal_exponent(1.0);
+    constructProperty_muscle_effort_scaling_factor(1.0);
     constructProperty_report_total_metabolics_only(true);
     constructProperty_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet
        (Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet());
@@ -258,7 +276,7 @@ computeProbeInputs(const State& s) const
     if (get_basal_rate_on()) {
         Bdot = get_basal_coefficient() 
             * pow(_model->getMatterSubsystem().calcSystemMass(s), get_basal_exponent());
-        if (Bdot == NaN)
+        if (isNaN(Bdot))
             cout << "WARNING::" << getName() << ": Bdot = NaN!" << endl;
     }
     EdotOutput(0) += Bdot;       // TOTAL metabolic power storage
@@ -282,11 +300,15 @@ computeProbeInputs(const State& s) const
         // Get important muscle values at the current time state
         const double max_isometric_force = m->getMaxIsometricForce();
         const double max_shortening_velocity = m->getMaxContractionVelocity();
-        const double activation = m->getActivation(s);
-        const double excitation = m->getControl(s);
+        const double activation = get_muscle_effort_scaling_factor()
+                                  * m->getActivation(s);
+        const double excitation = get_muscle_effort_scaling_factor()
+                                  * m->getControl(s);
         const double fiber_force_passive = m->getPassiveFiberForce(s);
-        const double fiber_force_active = m->getActiveFiberForce(s);
-        const double fiber_force_total = m->getFiberForce(s);
+        const double fiber_force_active = get_muscle_effort_scaling_factor()
+                                          * m->getActiveFiberForce(s);
+        const double fiber_force_total = fiber_force_active     // Scaled.
+                                         + fiber_force_passive;
         const double fiber_length_normalized = m->getNormalizedFiberLength(s);
         const double fiber_velocity = m->getFiberVelocity(s);
         const double fiber_velocity_normalized = m->getNormalizedFiberVelocity(s);
@@ -296,7 +318,7 @@ computeProbeInputs(const State& s) const
 
         // Get the unnormalized total active force, F_iso that 'would' be developed at the current activation
         // and fiber length under isometric conditions (i.e. Vm=0)
-        const double F_iso = m->getActivation(s) * m->getActiveForceLengthMultiplier(s) * max_isometric_force;
+        const double F_iso = activation * m->getActiveForceLengthMultiplier(s) * max_isometric_force;
 
         // Warnings
         if (fiber_length_normalized < 0)
@@ -308,7 +330,7 @@ computeProbeInputs(const State& s) const
 
         // ACTIVATION HEAT RATE for muscle i (W)
         // ------------------------------------------
-        if (get_activation_rate_on())
+        if (forbidNegativeTotalPower || get_activation_rate_on())
         {
             const double decay_function_value = 1.0;    // This value is set to 1.0, as used by Anderson & Pandy (1999), however, in
                                                         // Bhargava et al., (2004) they assume a function here. We will ignore this
@@ -321,7 +343,7 @@ computeProbeInputs(const State& s) const
 
         // MAINTENANCE HEAT RATE for muscle i (W)
         // ------------------------------------------
-        if (get_maintenance_rate_on())
+        if (forbidNegativeTotalPower || get_maintenance_rate_on())
         {
             Vector tmp(1, fiber_length_normalized);
             fiber_length_dependence = get_normalized_fiber_length_dependence_on_maintenance_rate().calcValue(tmp);
@@ -335,7 +357,7 @@ computeProbeInputs(const State& s) const
         // SHORTENING HEAT RATE for muscle i (W)
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
         // -----------------------------------------------------------------------
-        if (get_shortening_rate_on())
+        if (forbidNegativeTotalPower || get_shortening_rate_on())
         {
             if (get_use_force_dependent_shortening_prop_constant())
             {
@@ -359,25 +381,34 @@ computeProbeInputs(const State& s) const
         // MECHANICAL WORK RATE for the contractile element of muscle i (W).
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening.
         // -------------------------------------------------------------------
-        if (get_mechanical_work_rate_on())
+        if (forbidNegativeTotalPower || get_mechanical_work_rate_on())
         {
-            if (fiber_velocity <= 0)    // concentric contraction, Vm<0
+            if (includeNegativeMechanicalWork || fiber_velocity <= 0)
                 Wdot = -fiber_force_active*fiber_velocity;
-            else						// eccentric contraction, Vm>0
+            else
                 Wdot = 0;
         }
 
 
         // NAN CHECKING
         // ------------------------------------------
-        if (Adot == NaN)
+        if (isNaN(Adot))
             cout << "WARNING::" << getName() << ": Adot (" << m->getName() << ") = NaN!" << endl;
-        if (Mdot == NaN)
+        if (isNaN(Mdot))
             cout << "WARNING::" << getName() << ": Mdot (" << m->getName() << ") = NaN!" << endl;
-        if (Sdot == NaN)
+        if (isNaN(Sdot))
             cout << "WARNING::" << getName() << ": Sdot (" << m->getName() << ") = NaN!" << endl;
-        if (Wdot == NaN)
+        if (isNaN(Wdot))
             cout << "WARNING::" << getName() << ": Wdot (" << m->getName() << ") = NaN!" << endl;
+
+
+        // If necessary, increase the shortening heat rate so that the total
+        // power is non-negative.
+        if (forbidNegativeTotalPower) {
+            const double Edot_W_beforeClamp = Adot + Mdot + Sdot + Wdot;
+            if (Edot_W_beforeClamp < 0)
+                Sdot -= Edot_W_beforeClamp;
+        }
 
 
         // This check is adapted from Umberger(2003), page 104: the total heat rate 
@@ -399,7 +430,23 @@ computeProbeInputs(const State& s) const
 
         // TOTAL METABOLIC ENERGY RATE for muscle i (W)
         // ------------------------------------------
-        const double Edot = totalHeatRate + Wdot;
+        double Edot = 0;
+
+        if (get_activation_rate_on() && get_maintenance_rate_on()
+            && get_shortening_rate_on())
+        {
+            Edot += totalHeatRate;      // May have been clamped to 1.0 W/kg.
+        } else {
+            if (get_activation_rate_on())
+                Edot += Adot;
+            if (get_maintenance_rate_on())
+                Edot += Mdot;
+            if (get_shortening_rate_on())
+                Edot += Sdot;
+        }
+        if (get_mechanical_work_rate_on())
+            Edot += Wdot;
+
         EdotOutput(0) += Edot;       // Add to TOTAL metabolic power storage
         if (!get_report_total_metabolics_only()) {
             // Metabolic power storage for muscle i

@@ -1193,8 +1193,8 @@ void testProbesUsingMillardMuscleSimulation()
         fibVelData.setSize(numFibVelOutputs);
         fibVelStorage->getDataAtTime(t, numFibVelOutputs, fibVelData);
 
-        const double powerExpected = max(0.0, -forceData[idx_force_muscle1]
-                                              * fibVelData[idx_fibVel_muscle1]);
+        const double powerExpected = -forceData[idx_force_muscle1]
+                                     * fibVelData[idx_fibVel_muscle1];
         ASSERT_EQUAL(probeData[probeCol["umbMechWork_rate_m1"]], powerExpected,
                      1.0e-2, __FILE__, __LINE__,
             "Umberger2010: mechanical power disagrees with muscle analysis.");

@@ -11,6 +11,7 @@
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
  * Author(s): Tim Dorn                                                        *
+ * Contributor(s): Thomas Uchida                                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -63,7 +64,7 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * negative muscle velocity to indicate shortening (concentric contraction).</I>
  *
  *
- * Muscle metabolic power (or rate of metabolic energy consumption) is equal to
+ * %Muscle metabolic power (or rate of metabolic energy consumption) is equal to
  * the rate at which heat is liberated plus the rate at which work is done:\n
  * <B>Edot = Bdot + sumOfAllMuscles(Adot + Mdot + Sdot + Wdot).</B>
  *
@@ -78,7 +79,17 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * The full set of all MetabolicMuscles (MetabolicMuscleSet) is a property of this probe:
  * 
  * - m = The mass of the muscle (kg).
- * - r = Ratio of slow twitch fibers in the muscle (between 0 and 1).
+ * - r = Ratio of slow-twitch fibers in the muscle (between 0 and 1).
+ *
+ * The recruitment model described by Bhargava et al. (2004) is used to set the
+ * slow-twitch fiber ratio used in the calculations below. The ratio specified
+ * by the user indicates the composition of the muscle; this value is used only
+ * at full excitation (i.e., when all fibers are recruited). As excitation
+ * decreases from 1 to 0, the proportion of recruited fibers that are
+ * slow-twitch fibers increases from r to 1. See
+ * <a href="http://www.ncbi.nlm.nih.gov/pubmed/14672571">Bhargava, L.J., Pandy,
+ * M.G., Anderson, F.C. (2004) A phenomenological model for estimating metabolic
+ * energy consumption in muscle contraction. J Biomech 37:81-88</a>.
  *
  *
  *
@@ -118,7 +129,7 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  *
  *     - <B>alphaS_fast = 153 / v_CE_max          </B>
  *     - <B>alphaS_slow = 100 / (v_CE_max / 2.5)  </B>
- *     - <B>alphaL = 0.3 * alphaS_slow </B>
+ *     - <B>alphaL = 4.0 * alphaS_slow </B>
  *
  *     - m = The mass of the muscle (kg).
  *     - l_CE = muscle fiber length at the current time.
@@ -133,10 +144,20 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  *
  * <H2><B> MECHANICAL WORK RATE (W) </B></H2>
  * If <I>mechanical_work_rate_on</I> is set to true, then Wdot is calculated as follows:\n
- * <B>Wdot = -(F_CE * v_CE)           </B>,   <I>v_CE >= 0 (concentric / isometric contraction)</I>\n
- * <B>Wdot = 0                        </B>,   <I>v_CE <  0 (eccentric contraction)</I>
+ * <B>Wdot = -(F_CE * v_CE)           </B>
  *     - v_CE = muscle fiber velocity at the current time.
  *     - F_CE = force developed by the contractile element of muscle at the current time.\n
+ *
+ * During eccentric contraction, the magnitude of the (negative) mechanical work
+ * rate can exceed that of the total (positive) heat rate, resulting in a flow
+ * of energy into the fiber. Experiments indicate that the chemical processes
+ * involved in fiber contraction cannot be reversed, and most of the energy that
+ * is absorbed during eccentric contraction (in increased cross-bridge
+ * potentials, for example) is eventually converted into heat. Thus, we increase
+ * Sdot (if necessary) to ensure Edot > 0 for each muscle. See
+ * <a href="http://www.ncbi.nlm.nih.gov/pubmed/9409483">Constable, J.K.,
+ * Barclay, C.J., Gibbs, C.L. (1997) Energetics of lengthening in mouse and toad
+ * skeletal muscles. J Physiol 505:205-215</a>.
  *
  *
  * Note that if enforce_minimum_heat_rate_per_muscle == true AND 
@@ -226,6 +247,13 @@ public:
     OpenSim_DECLARE_PROPERTY(basal_exponent, 
         double,
         "Basal metabolic exponent.");
+
+    /** Default value = 1.0. **/
+    OpenSim_DECLARE_PROPERTY(muscle_effort_scaling_factor,
+        double,
+        "Scale the excitation and activation values used by the probe to "
+        "compensate for solutions with excessive coactivation (e.g., when a "
+        "suboptimal tracking strategy is used).");
 
     /** Default value = true **/
     OpenSim_DECLARE_PROPERTY(report_total_metabolics_only, 
