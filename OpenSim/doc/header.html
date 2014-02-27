@@ -118,7 +118,12 @@ $("#search").typeahead([
     $(".twitter-typeahead").replaceWith($("#MSearchBox").show());
     prt.remove();
 
-  }});
+  }, success: function() {
+
+    $("#MSearchBox").parent().remove();
+    $(".nav>li").css("width", "266.667px");
+
+  }   });
 });
 
 var initNavTree = function(a,b) { } 
@@ -227,6 +232,21 @@ $(".dyncontent img").each(function () {
   $(".dyncontent a").click(function(e) { e.preventDefault(); $(this).ekkoLightbox();  });
 } );
 
+  diag = $("map").parent().children("a").children("img");
+  if (diag != 'undefined')
+  {
+      diag.clone().load(function() { 
+      ratio = diag.width() / this.width;
+      $("area").each(function () {
+          cr = $(this).attr("coords").split(",");
+          for(l=0; l < cr.length; l++) {
+            cr[l] = parseInt(cr[l]) * ratio;
+          }
+          $(this).attr("coords", cr.join(','));
+      })
+      console.log(ratio); 
+    });
+  }
 
 });
 </script>
