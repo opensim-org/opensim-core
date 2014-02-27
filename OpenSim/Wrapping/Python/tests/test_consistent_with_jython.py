@@ -11,7 +11,12 @@ this_file_dir = os.path.dirname(
                 os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 import opensim as osim
-#import org.opensim.modeling as osim
+
+def test_check_env_var():
+    if 'OPENSIM_HOME' not in os.environ:
+        raise Exception("To run tests, must set environment "
+                "variable OPENSIM_HOME "
+                "to an OpenSim installation.")
 
 def test_makeUlnaHeavy():
 
@@ -40,7 +45,7 @@ def test_makeUlnaHeavy():
     fullPathName = oldModel.getInputFileName()
 
     # Change the name of the modified model
-    newName = 'Arm26_makeUlnaHeavy.osim'
+    newName = os.path.join(this_file_dir, 'Arm26_makeUlnaHeavy.osim')
     myModel.printToXML(newName)
 
     # Ensure the files are the same.
@@ -48,6 +53,8 @@ def test_makeUlnaHeavy():
             open(newName.replace('.osim', '_desired.osim')).readlines())
     # The *_desired.osim file was created via running this same method through
     # Jython, with minor modifications (e.g., printToXML was changed to print).
+
+    os.remove(newName)
 
 
 def test_alterTendonSlackLength():
@@ -79,12 +86,14 @@ def test_alterTendonSlackLength():
     fullPathName = oldModel.getInputFileName()
 
     #Change pathname to output file name
-    newName = 'Arm26_alterTendonSlackLength.osim'
+    newName = os.path.join(this_file_dir, 'Arm26_alterTendonSlackLength.osim')
     myModel.printToXML(newName)
 
     # Ensure the files are the same.
     assert (open(newName).readlines() ==
             open(newName.replace('.osim', '_desired.osim')).readlines())
+
+    os.remove(newName)
 
 
 def test_strengthenModel():
@@ -112,12 +121,14 @@ def test_strengthenModel():
                 * scaleFactor)
 
     # Save resulting model
-    newName = 'Arm26_strengthenModel.osim'
+    newName = os.path.join(this_file_dir, 'Arm26_strengthenModel.osim')
     myModel.printToXML(newName)
 
     # Ensure the files are the same.
     assert (open(newName).readlines() ==
             open(newName.replace('.osim', '_desired.osim')).readlines())
+
+    os.remove(newName)
 
 def test_StorageToPieceWiseLinearFunction():
 
@@ -140,15 +151,17 @@ def test_StorageToPieceWiseLinearFunction():
     ordinate = osim.ArrayDouble()
     sto.getDataColumn(state_index, ordinate)
 
-    fcn = osim.PiecewiseLinearFunction(time.getSize(), time.get(),
-            ordinate.get())
+    fcn = osim.PiecewiseLinearFunction()
+    for idx in range(time.getSize()):
+        fcn.addPoint(time.get(idx), ordinate.get(idx))
 
-    fcnName = 'piecewiseLinearFunction.xml'
+    fcnName = os.path.join(this_file_dir, 'piecewiseLinearFunction.xml')
     fcn.printToXML(fcnName)
 
     assert (open(fcnName).readlines() ==
             open(fcnName.replace('.xml', '_desired.xml')).readlines())
 
+    os.remove(fcnName)
 
 def test_addMetabolicProbes():
 
@@ -215,9 +228,10 @@ def test_addMetabolicProbes():
         wholeBodyProbe.addMuscle(thisMuscle.getName(),
                                  slowTwitchRatio)
 
-    name = 'gait10dof18musc_probed.osim'
+    name = os.path.join(this_file_dir, 'gait10dof18musc_probed.osim')
     model.printToXML(name)
 
     assert (open(name).readlines() ==
             open(name.replace('.osim', '_desired.osim')).readlines())
 
+    os.remove(name)

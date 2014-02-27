@@ -2,8 +2,15 @@
 make to the C++ API, via the SWIG interface (*.i) file.
 
 """
+import os
 
 import opensim as osim
+
+def test_check_env_var():
+    if 'OPENSIM_HOME' not in os.environ:
+        raise Exception("To run tests, must set environment "
+                "variable OPENSIM_HOME "
+                "to an OpenSim installation.")
 
 def test_markAdopted():
     """Ensures that we can tell an object that some other object is managing
@@ -25,8 +32,6 @@ def test_markAdopted():
     a.addComponent(osim.PathActuator())
     a.addProbe(osim.Umberger2010MuscleMetabolicsProbe())
     a.addAnalysis(osim.MuscleAnalysis())
-    # TODO NOT a markAdopted issue ... a.addForce(osim.BushingForce())
-    # TODO NOT a markAdopted issue ... a.addForce(osim.CoordinateActuator())
     a.addController(osim.PrescribedController())
     
     body = osim.Body('body',
@@ -54,6 +59,17 @@ def test_markAdopted():
     constr.setBody2PointLocation(osim.Vec3(1, 0, 0))
     constr.setConstantDistance(1)
     a.addConstraint(constr)
+
+    # Force requires body names. If not provided, you get a segfault.
+    f = osim.BushingForce()
+    f.setBody1ByName("ground")
+    f.setBody2ByName("body")
+    a.addForce(f)
+
+    model = osim.Model(os.environ['OPENSIM_HOME'] +
+            "/Models/Arm26/arm26.osim")
+    g = osim.CoordinateActuator('r_shoulder_elev')
+    model.addForce(g)
 
 def test_Joint():
     a = osim.Model()
