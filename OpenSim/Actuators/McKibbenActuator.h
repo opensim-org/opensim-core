@@ -40,9 +40,9 @@ namespace OpenSim
 * (1998) (3 pages); doi:10.1115/1.482478.
 *
 * Pressure is used as a control signal. There is an optional 'cord'
-* attached to the actuator which allows for the length of the actuator
-* to be shorter than the total distance spanned by the points the
-* actuator is connected to. By default it's length is zero. Please
+* attached to the actuator which allows for the path length of the actuator
+* to be shorter than the total distance spanned by the points to which the
+* actuator is connected. By default its length is zero. Please
 * refer to the above paper for details regarding the rest of the
 * properties.
 *
