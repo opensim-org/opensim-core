@@ -350,6 +350,12 @@ using namespace SimTK;
   }
 %}
 
+%typemap(javacode) OpenSim::SetMarkerWeights %{
+  public boolean adoptAndAppend(MarkerWeight aObject) {
+	aObject.markAdopted();
+    return super.adoptAndAppend(aObject);
+  }
+%}
 %typemap(javacode) OpenSim::Model %{
   private String originalModelPath = null;
   // Important that we only refer to originalModelPath if the model's getInputFileName() is not set
