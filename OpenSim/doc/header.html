@@ -87,7 +87,7 @@ $("#search").typeahead([
     {
       name: 'opensim-search',
       valueKey: 'title',
-      remote: { url: '/query?q=%QUERY&teaser=body&pagesize=1000',
+      remote: { url: 'query?q=%QUERY&teaser=body&pagesize=1000',
       filter: function(p) {
         dat = [];
         for(i=0; i < p.hits.length; i++)
@@ -113,7 +113,7 @@ $("#search").typeahead([
     $('.typeahead.input-lg').siblings('input.tt-hint').addClass('hint-large');
 
 
-  $.ajax({url : "/ping", type: "GET", error : function() {
+  $.ajax({url : "ping", type: "GET", error : function() {
     var prt = $("#MSearchBox").parent();
     $(".twitter-typeahead").replaceWith($("#MSearchBox").show());
     prt.remove();
