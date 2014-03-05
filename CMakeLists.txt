@@ -80,6 +80,9 @@ IF(WIN32)
 		SET(VCVERSION VC9)
 	ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 9")
 	IF(CMAKE_GENERATOR MATCHES  "Visual Studio 10")
+		#NOTE: VC12 (VS2013) does not require explicit link line to Psapi library
+		#Specifying here so it will link for VC10
+		link_libraries(Psapi)
 		SET(VCVERSION VC10)
 	ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 10")
 	SET(Platform "Windows")
