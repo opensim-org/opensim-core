@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <iostream>
+#include <stdint.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
