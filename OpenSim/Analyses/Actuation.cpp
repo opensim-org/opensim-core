@@ -149,7 +149,7 @@ Actuation& Actuation::operator=(const Actuation &aActuation)
 
 	// CHECK MODEL
 	if(_model!=NULL) {
-		_na = _model->getActuators().getSize();
+        _na = getNumEnabledActuators();
 		_fsp = new double[_na];
 		constructColumnLabels();
 	}
@@ -166,8 +166,9 @@ void Actuation::setModel(Model& aModel)
 	Analysis::setModel(aModel);
 
 	// NUMBER OF ACTUATORS
-	if (_model)
-		_na = _model->getActuators().getSize();
+	if (_model){
+        _na = getNumEnabledActuators();
+    }
 	else
 		_na = 0;
 
@@ -270,7 +271,7 @@ constructColumnLabels()
 		labels.append("time");
 		const Set<Actuator>& ai = _model->getActuators();
 		for (int i=0; i < ai.getSize(); i++) 
-            labels.append(ai.get(i).getName());
+            if (!ai.get(i).get_isDisabled()) labels.append(ai.get(i).getName());
 		setColumnLabels(labels);
 	}
 	_forceStore->setColumnLabels(getColumnLabels());
@@ -371,7 +372,7 @@ record(const SimTK::State& s)
 
 	// MAKE SURE ALL ACTUATION QUANTITIES ARE VALID
     _model->getMultibodySystem().realize(s, SimTK::Stage::Dynamics );
-
+    /* if needed should go into begin 
 	// NUMBER OF ACTUATORS
 	int na = _model->getActuators().getSize();
 	if(na!=_na) {
@@ -382,7 +383,7 @@ record(const SimTK::State& s)
 		// REALLOCATE WORK ARRAY
 		if(_fsp!=NULL) delete[] _fsp;
 		_fsp = new double[_na]; 
-    }
+    }*/
 
 	// TIME NORMALIZATION
 	double tReal = s.getTime();
@@ -390,21 +391,24 @@ record(const SimTK::State& s)
 	// FORCE
 	const Set<OpenSim::Actuator>& fs = _model->getActuators();
 	for(int i=0, iact=0; i<fs.getSize(); i++) {
+		   if(!fs.get(i).get_isDisabled())
 		    _fsp[iact++] = fs.get(i).getForce(s);
     }
-    _forceStore->append(tReal,na,_fsp);
+    _forceStore->append(tReal,_na,_fsp);
 
 	// SPEED
 	for(int i=0, iact=0; i<fs.getSize(); i++) {
+		   if(!fs.get(i).get_isDisabled())
 		    _fsp[iact++] = fs.get(i).getSpeed(s);
     }
-	_speedStore->append(tReal,na,_fsp);
+	_speedStore->append(tReal,_na,_fsp);
 
 	// POWER
 	for(int i=0, iact=0; i<fs.getSize(); i++) {
+		   if(!fs.get(i).get_isDisabled())
 		    _fsp[iact++] = fs.get(i).getPower(s);
     }
-	_powerStore->append(tReal,na,_fsp);
+	_powerStore->append(tReal,_na,_fsp);
 
 
 	return(0);
@@ -540,5 +544,23 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 
 	return(0);
 }
+//_____________________________________________________________________________
+/**
+ * Utility to get number of "Enabled" actuators in model where Enabled is based 
+ * on the "Property" rather than the live/state value.
+ * 
+ *
+ * @return number of Actuators which are enabled
+ */
+int Actuation::
+getNumEnabledActuators()
+{
 
+        const Set<Actuator>& actuators =  _model->getActuators();
+		int numActuators = actuators.getSize();
+        int numEnabled = numActuators;
+        for(int i=0; i< numActuators; i++)
+            if (actuators[i].get_isDisabled()) numEnabled--;
 
+        return numEnabled;
+}

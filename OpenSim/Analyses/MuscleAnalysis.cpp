@@ -578,7 +578,7 @@ int MuscleAnalysis::record(const SimTK::State& s)
 	// Cannot compute system dynamics without mass
 	if(hasMass){
 		// state derivatives (activation rate and fiber velocity) evaluated at dynamics
-		//_model->getMultibodySystem().realize(s,SimTK::Stage::Dynamics);
+		_model->getMultibodySystem().realize(s,SimTK::Stage::Dynamics);
 
 		for(int i=0; i<nm; ++i) {
 			try{

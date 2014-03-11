@@ -182,15 +182,16 @@ public:
     {   set_max_control(aMaxControl); }
 	double getMaxControl() const { return get_max_control(); }
 
-    ///--------------------------------------------------------------------------
-    /// Overriding forces
-    ///--------------------------------------------------------------------------
-    /// The force normally produced by an Actuator can be overriden and 
-    /// When the Actuator's force is overriden, the Actuator will by defualt
-    /// produce a constant force which can be set with setOverrideForce().  
+    //--------------------------------------------------------------------------
+    // Overriding forces
+    //--------------------------------------------------------------------------
     /**
-    * enable/disable an Actuator's override force
-    *  
+    * Enable/disable an Actuator's override force.
+    *
+    * The force normally produced by an Actuator can be overriden and
+    * When the Actuator's force is overriden, the Actuator will by defualt
+    * produce a constant force which can be set with setOverrideForce().
+    *
     * @param s    current state
     * @param flag true = override Actuator's output force
     *             false = use Actuator's computed forc (normal operation)

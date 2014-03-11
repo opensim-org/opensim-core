@@ -979,7 +979,7 @@ void Model::equilibrateMuscles(SimTK::State& state)
     for (int i = 0; i < _forceSet.getSize(); i++)
     {
         Muscle* muscle = dynamic_cast<Muscle*>(&_forceSet.get(i));
-        if (muscle != NULL){
+        if (muscle != NULL && !muscle->isDisabled(state)){
 			try{
 				muscle->equilibrate(state);
 			}
