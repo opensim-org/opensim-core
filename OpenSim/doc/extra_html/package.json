@@ -1,0 +1,19 @@
+{
+  "name": "sim-docs",
+  "version": "0.0.0",
+  "description": "OpenSim Docs Prototype",
+  "main": "server.js",
+  "scripts": {
+    "test": "exit 1",
+    "start": "node server.js"
+  },
+  "author": "Nabeel Allana",
+  "license": "ISC",
+  "dependencies": {
+    "xml2js": "~0.4.1",
+    "express": "~3.4.8",
+    "logfmt": "~0.20.0",
+    "search-index": "~0.2.23",
+    "colors": "~0.6.2"
+  }
+}
