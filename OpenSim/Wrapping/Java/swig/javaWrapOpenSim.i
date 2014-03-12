@@ -34,6 +34,7 @@
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/MultiplierFunction.h>
+#include <OpenSim/Common/PolynomialFunction.h>
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/Sine.h>
 #include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
@@ -177,6 +178,7 @@
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 #include <OpenSim/Simulation/Model/ExpressionBasedPointToPointForce.h>
+#include <OpenSim/Simulation/Model/ExpressionBasedCoordinateForce.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
 #include <OpenSim/Simulation/Model/PathSpring.h>
 #include <OpenSim/Simulation/Model/BushingForce.h>
@@ -348,6 +350,12 @@ using namespace SimTK;
   }
 %}
 
+%typemap(javacode) OpenSim::SetMarkerWeights %{
+  public boolean adoptAndAppend(MarkerWeight aObject) {
+	aObject.markAdopted();
+    return super.adoptAndAppend(aObject);
+  }
+%}
 %typemap(javacode) OpenSim::Model %{
   private String originalModelPath = null;
   // Important that we only refer to originalModelPath if the model's getInputFileName() is not set
@@ -760,6 +768,7 @@ namespace SimTK {
 %include <OpenSim/Common/MultiplierFunction.h>
 %include <OpenSim/Common/GCVSpline.h>
 %include <OpenSim/Common/Sine.h>
+%include <OpenSim/Common/PolynomialFunction.h>
 
 %include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 %include <OpenSim/Common/SmoothSegmentedFunction.h>
@@ -935,6 +944,8 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 %include <OpenSim/Simulation/Model/PointToPointSpring.h>
 %include <OpenSim/Simulation/Model/ExpressionBasedPointToPointForce.h>
+%include <OpenSim/Simulation/Model/ExpressionBasedCoordinateForce.h>
+
 %include <OpenSim/Simulation/Model/PathSpring.h>
 %include <OpenSim/Simulation/Model/BushingForce.h>
 %include <OpenSim/Simulation/Model/FunctionBasedBushingForce.h>

@@ -1,6 +1,13 @@
 %module(directors="1") opensim
 %module opensim
 #pragma SWIG nowarn=822,451,503,516,325
+
+/*
+For consistency with the rest of the API, we use camel-case for variable names.
+This breaks Python PEP 8 convention, but allows us to be consistent within our
+own project.
+*/
+
 %{
 #define SWIG_FILE_WITH_INIT
 
@@ -38,6 +45,7 @@
 #include <OpenSim/Common/MultiplierFunction.h>
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/Sine.h>
+#include <OpenSim/Common/PolynomialFunction.h>
 #include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 #include <OpenSim/Common/SmoothSegmentedFunction.h>
 #include <OpenSim/Common/XYFunctionInterface.h>
@@ -275,12 +283,6 @@ using namespace SimTK;
     return( cacheId );
   }
 
-  public void markAdopted() {
-    if (swigCPtr != 0) {
-      if (swigCMemOwn) swigCMemOwn = false;
-    }
-  }  
-
 %}
 
 %typemap(javacode) OpenSim::MarkerData %{
@@ -353,45 +355,14 @@ using namespace SimTK;
     else return "";
   }
 
-  public void addComponent(ModelComponent aComponent) {
-	aComponent.markAdopted();
-    private_addComponent(aComponent);
-  }
-
-  public void addBody(Body aBody) {
-	aBody.markAdopted();
-    private_addBody(aBody);
-	aBody.getJoint().markAdopted();
-  }
-
-  public void addConstraint(Constraint aConstraint) {
-	aConstraint.markAdopted();
-    private_addConstraint(aConstraint);
-  }
-
   public void addProbe(Probe aProbe) {
 	aProbe.markAdopted();
     private_addProbe(aProbe);
   }  
-  
-  public void addContactGeometry(ContactGeometry aContactGeometry) {
-	aContactGeometry.markAdopted();
-    private_addContactGeometry(aContactGeometry);
-  }
-
-  public void addAnalysis(Analysis aAnalysis) {
-	aAnalysis.markAdopted();
-	private_addAnalysis(aAnalysis);
-  }
 
   public void addForce(Force aForce) {
 	aForce.markAdopted();
 	private_addForce(aForce);
-  }
-
-  public void addController(Controller aController) {
-	aController.markAdopted();
-	private_addController(aController);
   }
 %}
 
@@ -542,6 +513,63 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 	}
 };
 */
+
+// Memory management
+// =================
+/*
+This facility will help us avoid segfaults that occur when two different
+objects believe they own a pointer, and so they both try to delete it. We can
+instead notify the object that something else has adopted it, and will take
+care of deleting it.
+*/
+%extend OpenSim::Object {
+%pythoncode %{
+    def _markAdopted(self):
+        if self.this and self.thisown:
+            self.thisown = False
+%}
+};
+
+/*
+The added component is not responsible for its own memory management anymore
+once added to the Model.  These lines must go at this point in this .i file. I
+originally had them at the bottom, and then they didn't work!
+
+note: ## is a "glue" operator: `a ## b` --> `ab`.
+*/
+%define MODEL_ADOPT_HELPER(NAME)
+%pythonappend OpenSim::Model::add ## NAME %{
+    args[0]._markAdopted()
+%}
+%enddef
+
+MODEL_ADOPT_HELPER(Component);
+MODEL_ADOPT_HELPER(Body);
+MODEL_ADOPT_HELPER(Probe);
+MODEL_ADOPT_HELPER(Constraint);
+MODEL_ADOPT_HELPER(ContactGeometry);
+MODEL_ADOPT_HELPER(Analysis);
+MODEL_ADOPT_HELPER(Force);
+MODEL_ADOPT_HELPER(Controller);
+
+// Would prefer to modify the Joint abstract class constructor,
+// but the proxy classes don't even call it.
+%define JOINT_ADOPT_HELPER(NAME)
+%pythonappend OpenSim::Joint:: ## NAME %{
+    self._markAdopted()
+%}
+%enddef
+
+JOINT_ADOPT_HELPER(FreeJoint);
+JOINT_ADOPT_HELPER(CustomJoint);
+JOINT_ADOPT_HELPER(EllipsoidJoint);
+JOINT_ADOPT_HELPER(BallJoint);
+JOINT_ADOPT_HELPER(PinJoint);
+JOINT_ADOPT_HELPER(SliderJoint);
+JOINT_ADOPT_HELPER(WeldJoint);
+JOINT_ADOPT_HELPER(GimbalJoint);
+JOINT_ADOPT_HELPER(UniversalJoint);
+JOINT_ADOPT_HELPER(PlanarJoint);
 
 %extend OpenSim::Array<double> {
 	void appendVec3(SimTK::Vec3 vec3) {
@@ -749,6 +777,7 @@ namespace SimTK {
 %include <OpenSim/Common/MultiplierFunction.h>
 %include <OpenSim/Common/GCVSpline.h>
 %include <OpenSim/Common/Sine.h>
+%include <OpenSim/Common/PolynomialFunction.h>
 %include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 %include <OpenSim/Common/SmoothSegmentedFunction.h>
 
@@ -1002,3 +1031,65 @@ namespace SimTK {
 
 %include <OpenSim/Wrapping/Python/OpenSimContext.h>
 
+// Memory management
+// =================
+
+/*
+A macro to facilitate adding adoptAndAppend methods to these sets. For NAME ==
+Geometry, the macro expands to:
+
+%extend OpenSim::GeometrySet {
+%pythoncode %{
+    def adoptAndAppend(self, aGeometry):
+        aGeometry._markAdopted()
+        return super(GeometrySet, self).adoptAndAppend(aGeometry)
+%}
+};
+
+note: ## is a "glue" operator: `a ## b` --> `ab`.
+*/
+%define SET_ADOPT_HELPER(NAME)
+%extend OpenSim:: ## NAME ## Set {
+%pythoncode %{
+    def adoptAndAppend(self, a ## NAME):
+        a ## NAME._markAdopted()
+        return super(NAME ## Set, self).adoptAndAppend(a ## NAME)
+%}
+};
+%enddef
+
+SET_ADOPT_HELPER(Geometry);
+SET_ADOPT_HELPER(Scale);
+SET_ADOPT_HELPER(Force);
+SET_ADOPT_HELPER(Controller);
+SET_ADOPT_HELPER(ContactGeometry);
+SET_ADOPT_HELPER(Analysis);
+SET_ADOPT_HELPER(Control);
+SET_ADOPT_HELPER(Marker);
+SET_ADOPT_HELPER(Body);
+SET_ADOPT_HELPER(BodyScale);
+SET_ADOPT_HELPER(Coordinate);
+SET_ADOPT_HELPER(Joint);
+SET_ADOPT_HELPER(Constraint);
+SET_ADOPT_HELPER(PathPoint);
+SET_ADOPT_HELPER(IKTask);
+SET_ADOPT_HELPER(MarkerPair);
+SET_ADOPT_HELPER(Measurement);
+
+// These didn't work with the macro for some reason. I got complaints about
+// multiple definitions of, e.g.,  Function in the target language.
+%extend OpenSim::FunctionSet {
+%pythoncode %{
+    def adoptAndAppend(self, aFunction):
+        aFunction._markAdopted()
+        return super(FunctionSet, self).adoptAndAppend(aFunction)
+%}
+};
+
+%extend OpenSim::ProbeSet {
+%pythoncode %{
+    def adoptAndAppend(self, aProbe):
+        aProbe._markAdopted()
+        return super(ProbeSet, self).adoptAndAppend(aProbe)
+%}
+};
