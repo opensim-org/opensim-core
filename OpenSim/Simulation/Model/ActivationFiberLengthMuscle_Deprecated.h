@@ -158,7 +158,10 @@ protected:
 	virtual void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const;
 	virtual void calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const;
 	virtual void calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const;
-
+	/** calculate muscle's fiber and tendon potential energy */
+	void calcMusclePotentialEnergyInfo(const SimTK::State& s, 
+		MusclePotentialEnergyInfo& mpei) const;
+	
 	virtual double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const
 	{
 		throw Exception("ERROR- "+getConcreteClassName()+"::calcActiveForce() NOT IMPLEMENTED.");

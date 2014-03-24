@@ -583,3 +583,16 @@ void ActivationFiberLengthMuscle_Deprecated::calcMuscleDynamicsInfo(const SimTK:
 
 	mdi.activeFiberForce =  tendonForce/mli.cosPennationAngle - mdi.passiveFiberForce;
 }
+
+void ActivationFiberLengthMuscle_Deprecated::
+	calcMusclePotentialEnergyInfo(const SimTK::State& s, 
+	                              MusclePotentialEnergyInfo& mpei) const
+{
+	cout << getConcreteClassName() << ":" << endl;
+	cout << " Does NOT implement a Potential Energy calculation." << endl;
+	cout << " WARNING - PE of 0.0J is provided so that total system energy " << endl;
+	cout << " may still be evaluated NEGLECTING " << getName() << "'s contribution." << endl;
+	mpei.fiberPotentialEnergy = 0;
+	mpei.tendonPotentialEnergy = 0;
+	mpei.musclePotentialEnergy = 0;
+}
