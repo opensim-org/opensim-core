@@ -164,7 +164,8 @@ void AssemblySolver::updateCoordinateReference(const std::string &coordName, dou
 	for(p = _coordinateReferencesp->begin(); 
         p != _coordinateReferencesp->end(); p++) {
 		if(p->getName() == coordName){
-			p->setValueFunction(*new Constant(value));
+            Constant valueFunc(value);
+			p->setValueFunction(valueFunc); // valueFunc gets cloned inside call and then goes out of scope here
 			p->setWeight(weight);
 			return;
 		}
@@ -180,7 +181,7 @@ void AssemblySolver::updateGoals(const SimTK::State &s)
 	for(unsigned int i=0; i<nqrefs; i++){
 		//update goal values from reference.
 		_coordinateAssemblyConditions[i]->setValue
-           ((*_coordinateReferencesp)[i].getValue(s));
+           (_coordinateReferencesp->getElt(i).getValue(s));
 		//_assembler->setAssemblyConditionWeight(_coordinateAssemblyConditions[i]->
 	}
 }

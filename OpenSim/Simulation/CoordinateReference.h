@@ -110,6 +110,7 @@ public:
 	/** Set the coordinate value as a function of time. */
 	void setValueFunction(const OpenSim::Function& function)
 	{
+        delete _coordinateValueFunction; // delete before reassigning the pointer
 		_coordinateValueFunction = function.clone();
 	}
 private:
