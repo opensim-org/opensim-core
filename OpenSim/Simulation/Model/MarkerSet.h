@@ -75,6 +75,10 @@ public:
 	/** Add a prefix to marker names for all markers in the set**/
 	void addNamePrefix(const std::string& prefix);
 	Marker* addMarker( const std::string& aName, const double aOffset[3], OpenSim::Body& aBody);
+    virtual void invokeGenerateDecorations(bool fixed, 
+                                            const ModelDisplayHints&                    hints,
+                                            const SimTK::State&                         state,
+                                            SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const;
 //=============================================================================
 };	// END of class MarkerSet
 //=============================================================================

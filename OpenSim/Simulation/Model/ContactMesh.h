@@ -97,6 +97,12 @@ public:
 	 * Set the name of the file to load the mesh from.
 	 */
     void setFilename(const std::string& filename);
+
+protected:
+    // VISUALIZATION
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints, 
+        const SimTK::State& s, 
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const {};
 private:
     // INITIALIZATION
 	void setNull();

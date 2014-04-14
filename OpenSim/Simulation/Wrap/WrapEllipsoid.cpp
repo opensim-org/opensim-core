@@ -31,6 +31,8 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 //=============================================================================
 // STATICS
@@ -38,6 +40,7 @@
 using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
+using SimTK::DecorativeEllipsoid;
 
 static const char* wrapTypeName = "ellipsoid";
 #define ELLIPSOID_TOLERANCE_1 1e-4     // tolerance for pt_to_ellipsoid() special case detection
@@ -1296,4 +1299,15 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
 	dy = *y - v;
 
 	return sqrt(dx*dx + dy*dy);
+}
+
+void WrapEllipsoid::generateDecorations(const Model& model, const ModelDisplayHints& hints,
+                             const SimTK::State& state,
+                             SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
+{
+    Transform X_GW = getTransform();
+    geometry.push_back(
+        DecorativeEllipsoid(getRadii()).setBodyId(_body->getIndex()).setTransform(X_GW).setUserRef(const_cast<WrapEllipsoid*>(this)));
+        //setResolution(_dispWrapResolution)
+        //.setColor(color).setOpacity(_dispWrapOpacity));
 }

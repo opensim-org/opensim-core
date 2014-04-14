@@ -32,7 +32,7 @@
 namespace OpenSim {
 
 class ScaleSet;
-
+class ModelDisplayHints;
 /**
  * This class represents the physical shape of an object for use in contact modeling.
  * It is an abstract class, with subclasses for particular geometric representations.
@@ -134,7 +134,7 @@ public:
     /**
 	 * Get the display_preference of this geometry.
 	 */
-    const int getDisplayPreference();
+    const int getDisplayPreference() const;
     /**
 	 * Set the display_preference of this geometry.
 	 */
@@ -165,6 +165,10 @@ public:
 protected:
 	// ModelComponent interface
 	void connectToModel(Model& aModel) OVERRIDE_11;
+    virtual void generateDecorations(bool fixed, 
+                                     const ModelDisplayHints& hints,
+                                     const SimTK::State& state,
+                                     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {};
 
 private:
     // INITIALIZATION

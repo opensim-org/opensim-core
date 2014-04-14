@@ -979,6 +979,7 @@ void Model::generateDecorations
 	_controllerSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
 	_componentSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
     _probeSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
+    _markerSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
 }
 
 void Model::equilibrateMuscles(SimTK::State& state)

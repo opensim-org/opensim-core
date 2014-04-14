@@ -94,15 +94,17 @@ public:
 	 * Set the radius of the sphere.
 	 */
 	void setRadius(double radius);
+protected:
+    // VISUALIZATION
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints, 
+        const SimTK::State& s, 
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const;
+
 private:
     // INITIALIZATION
 	void setNull();
 	void setupProperties();
 
-    // VISUALIZATION
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints, 
-        const SimTK::State& s, 
-        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const OVERRIDE_11;
 
 //=============================================================================
 };	// END of class ContactSphere

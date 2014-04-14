@@ -41,6 +41,7 @@ class Model;
 class PathPoint;
 class PathWrap;
 class WrapResult;
+class ModelDisplayHints;
 
 //=============================================================================
 //=============================================================================
@@ -93,6 +94,9 @@ public:
 	virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 		const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
 #endif
+    virtual void generateDecorations(const Model& model, const ModelDisplayHints& hints,
+                             const SimTK::State& state,
+                             SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const;
 protected:
 	void setupProperties();
 

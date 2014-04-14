@@ -37,7 +37,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Mat33;
 using SimTK::Vec3;
-
+using SimTK::DecorativeGeometry;
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -282,6 +282,131 @@ void Body::addToSystem(SimTK::MultibodySystem& system) const
 		Body * mutableThis = const_cast<Body *>(this);
 		mutableThis->_index = SimTK::GroundIndex;
 	}
+
+}
+
+void Body::generateDecorations(bool fixed, 
+                               const ModelDisplayHints& hints,
+                               const SimTK::State& state,
+                               SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
+{
+    const SimTK::SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
+    // Display wrap objects.
+    if (hints.getShowWrapGeometry() && fixed) { // Wrap Geometry is Fixed
+        /*const Vec3 color(SimTK::Cyan);
+        Transform ztoy;
+        ztoy.updR().setRotationFromAngleAboutX(SimTK_PI/2);
+        const Transform& X_GB = 
+            matter.getMobilizedBody(getIndex()).getBodyTransform(state);*/
+        const WrapObjectSet& wrapObjects = getWrapObjectSet();
+        for (int j = 0; j < wrapObjects.getSize(); j++) {
+            wrapObjects[j].generateDecorations(getModel(), hints, state, geometry);
+            /*
+            const string type = wrapObjects[j].getConcreteClassName();
+            if (type == "WrapCylinder") {
+                const WrapCylinder* cylinder = 
+                    dynamic_cast<const WrapCylinder*>(&wrapObjects[j]);
+                if (cylinder != NULL) {
+                    Transform X_GW = X_GB*cylinder->getTransform()*ztoy;
+                    geometry.push_back(
+                        DecorativeCylinder(cylinder->getRadius(), 
+                        cylinder->getLength()/2)
+                        .setTransform(X_GW).setResolution(_dispWrapResolution)
+                        .setColor(color).setOpacity(_dispWrapOpacity));
+                }
+            }
+            else if (type == "WrapEllipsoid") {
+                const WrapEllipsoid* ellipsoid = 
+                    dynamic_cast<const WrapEllipsoid*>(&wrapObjects[j]);
+                if (ellipsoid != NULL) {
+                    Transform X_GW = X_GB*ellipsoid->getTransform();
+                    geometry.push_back(
+                        DecorativeEllipsoid(ellipsoid->getRadii())
+                        .setTransform(X_GW).setResolution(_dispWrapResolution)
+                        .setColor(color).setOpacity(_dispWrapOpacity));
+                }
+            }
+            else if (type == "WrapSphere") {
+                const WrapSphere* sphere = 
+                    dynamic_cast<const WrapSphere*>(&wrapObjects[j]);
+                if (sphere != NULL) {
+                    Transform X_GW = X_GB*sphere->getTransform();
+                    geometry.push_back(
+                        DecorativeSphere(sphere->getRadius())
+                        .setTransform(X_GW).setResolution(_dispWrapResolution)
+                        .setColor(color).setOpacity(_dispWrapOpacity));
+                }
+            }*/
+        }
+    }
+
+
+    /*
+    // Display contact geometry objects.
+    if (hints.getShowContactGeometry()) {
+        const Vec3 color(SimTK::Green);
+        Transform ztoy;
+        ztoy.updR().setRotationFromAngleAboutX(SimTK_PI/2);
+        const ContactGeometrySet& contactGeometries = _model.getContactGeometrySet();
+
+        for (int i = 0; i < contactGeometries.getSize(); i++) {
+            const OpenSim::Body& body = contactGeometries.get(i).getBody();
+            const Transform& X_GB = 
+                matter.getMobilizedBody(body.getIndex()).getBodyTransform(state);
+            const string type = contactGeometries.get(i).getConcreteClassName();
+            const int displayPref = contactGeometries.get(i).getDisplayPreference();
+            //cout << type << ": " << contactGeometries.get(i).getName() << ": disp pref = " << displayPref << endl;
+
+            if (type == "ContactSphere" && displayPref == 4) {
+                ContactSphere* sphere = 
+                    dynamic_cast<ContactSphere*>(&contactGeometries.get(i));
+                if (sphere != NULL) {
+                    Transform X_GW = X_GB*sphere->getTransform();
+                    geometry.push_back(
+                        DecorativeSphere(sphere->getRadius())
+                        .setTransform(X_GW).setResolution(_dispContactResolution)
+                        .setColor(color).setOpacity(_dispContactOpacity));
+                }
+            }
+        }
+    } */
+    // Now the meshes
+        if (fixed){
+            Vec3 scale; 
+            _displayer.getScaleFactors(scale);
+            const Transform X_BV = _displayer.getTransform();
+            const OpenSim::GeometrySet& geom = _displayer.getGeometrySet();
+            for (int i = 0; i < geom.getSize(); i++){
+                DisplayGeometry& dGeom = geom.get(i);
+                const DisplayGeometry::DisplayPreference pref = dGeom.getDisplayPreference();
+                DecorativeGeometry::Representation rep;
+                switch(pref) {
+                    case DisplayGeometry::None: 
+                        continue; // don't bother with this one (TODO: is that right)
+                    case DisplayGeometry::WireFrame: 
+                        rep=DecorativeGeometry::DrawWireframe; 
+                        break;
+                    case DisplayGeometry::SolidFill:
+                    case DisplayGeometry::FlatShaded:
+                    case DisplayGeometry::GouraudShaded:
+                        rep = DecorativeGeometry::DrawSurface;
+                        break;
+                    default: assert(!"bad DisplayPreference");
+                };
+                Transform bodyToMesh = dGeom.getTransform();
+                SimTK::DecorativeMeshFile mesh(dGeom.getGeometryFile());
+                mesh.setBodyId(getIndex());
+                const Vec3 netScale = dGeom.getScaleFactors()
+                                        .elementwiseMultiply(scale);
+                mesh.setScaleFactors(netScale);
+                mesh.setTransform(bodyToMesh);
+                mesh.setColor(dGeom.getColor());
+                mesh.setOpacity(dGeom.getOpacity());
+                mesh.setUserRef(&geom.get(i));
+                mesh.setRepresentation(rep);
+                geometry.push_back(mesh);
+            }
+        }
 
 }
 

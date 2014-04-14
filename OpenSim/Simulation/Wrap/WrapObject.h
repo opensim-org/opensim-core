@@ -50,6 +50,7 @@ class PathPoint;
 class PathWrap;
 class WrapResult;
 class Model;
+class ModelDisplayHints;
 
 //=============================================================================
 //=============================================================================
@@ -160,7 +161,11 @@ public:
 	// Visible Object Support
 	virtual VisibleObject* getDisplayer() const { return &_displayer; };
 	virtual void updateGeometry() {};
-
+    // Visualization support. 
+    // When WrapObject becomes a model component the signature will change to match base class signature (also make protected)
+    virtual void generateDecorations(const Model& model, const ModelDisplayHints& hints,
+                             const SimTK::State& state,
+                             SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {};
 protected:
 	void setupProperties();
 	void setupQuadrant();

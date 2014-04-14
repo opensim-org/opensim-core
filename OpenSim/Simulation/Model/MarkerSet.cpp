@@ -25,6 +25,9 @@
 #include "Marker.h"
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
+#include <OpenSim/Simulation/Model/ModelDisplayHints.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -191,4 +194,33 @@ Marker* MarkerSet::addMarker(const string& aName, const double aOffset[3], OpenS
 	adoptAndAppend(m);
 
 	return m;
+}
+
+void MarkerSet::invokeGenerateDecorations
+    (bool                                        fixed, 
+    const ModelDisplayHints&                    hints,
+    const SimTK::State&                         state,
+    SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
+{
+        // Display markers.
+    if (hints.getShowMarkers()) {
+        const Vec3 pink(1,.6,.8);
+        if (getSize() >=1){
+            const Model& model = get(0).getBody().getModel();
+            const MarkerSet& markers = model.getMarkerSet();
+            for (int i=0; i < markers.getSize(); ++i) {
+                const Marker& marker = markers[i];
+                const OpenSim::Body& body = model.getBodySet().get(marker.getBodyName());
+                const Vec3& p_BM = marker.getOffset();
+                 appendToThis.push_back(
+                    SimTK::DecorativeSphere(0.005).setBodyId(body.getIndex())
+                    .setColor(pink).setOpacity(0.5)
+                    .setTransform(marker.getOffset())
+                    .setUserRef((void *)&marker)
+                    );
+            }
+        }
+    }
+
+
 }

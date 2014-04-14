@@ -136,7 +136,7 @@ void ContactGeometry::setBodyName(const std::string& name)
     _body = NULL;
 }
 
-const int ContactGeometry::getDisplayPreference()
+const int ContactGeometry::getDisplayPreference() const
 {
     return get_display_preference();
 }

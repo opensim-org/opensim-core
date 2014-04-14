@@ -32,6 +32,8 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 //=============================================================================
 // STATICS
@@ -39,6 +41,7 @@
 using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
+using SimTK::DecorativeSphere;
 
 static const char* wrapTypeName = "sphere";
 //=============================================================================
@@ -592,4 +595,15 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
 	aWrapResult.wrap_pts.append(aWrapResult.r2);
 
    return return_code;
+}
+
+void WrapSphere::generateDecorations(const Model& model, const ModelDisplayHints& hints,
+                             const SimTK::State& state,
+                             SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
+{
+    Transform X_GW = getTransform();
+    geometry.push_back(
+        DecorativeSphere(getRadius()).setBodyId(_body->getIndex()).setTransform(X_GW).setUserRef(const_cast<WrapSphere*>(this)));
+        //setResolution(_dispWrapResolution)
+        //.setColor(color).setOpacity(_dispWrapOpacity));
 }

@@ -32,6 +32,8 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 //=============================================================================
 // STATICS
@@ -39,6 +41,7 @@
 using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
+using SimTK::DecorativeCylinder;
 
 static const char* wrapTypeName = "cylinder";
 static Vec3 p0(0.0, 0.0, -1.0);
@@ -870,4 +873,15 @@ bool WrapCylinder::_adjust_tangent_point(SimTK::Vec3& pt1,
 	}
 
 	return did_adust;
+}
+
+void WrapCylinder::generateDecorations(const Model& model, const ModelDisplayHints& hints,
+                             const SimTK::State& state,
+                             SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
+{
+    Transform X_GW = getTransform();
+    geometry.push_back(
+        DecorativeCylinder(getRadius()).setBodyId(_body->getIndex()).setTransform(X_GW).setUserRef(const_cast<WrapCylinder*>(this)));
+        //setResolution(_dispWrapResolution)
+        //.setColor(color).setOpacity(_dispWrapOpacity));
 }

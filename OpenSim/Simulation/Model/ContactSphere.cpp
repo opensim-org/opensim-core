@@ -95,17 +95,18 @@ SimTK::ContactGeometry ContactSphere::createSimTKContactGeometry()
 void ContactSphere::generateDecorations(bool fixed, const ModelDisplayHints& hints, 
     const SimTK::State& s, SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
 {
-    Super::generateDecorations(fixed, hints, s, geometry); 
+    //Super::generateDecorations(fixed, hints, s, geometry); 
 
     // There is no fixed geometry to generate here.
-    if (fixed) { return; }
+    if (!fixed) { return; }
 
     geometry.push_back(SimTK::DecorativeSphere(getRadius())
                            .setTransform(Transform(getLocation()))
-                           //.setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+                           .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
                            .setBodyId(getBody().getIndex())
                            .setColor(SimTK::Vec3(0,1,0))
-                           .setOpacity(0.5));
+                           .setOpacity(0.5)
+                           .setUserRef(const_cast<ContactSphere*>(this)));
 }
 
 } // end of namespace OpenSim

@@ -69,6 +69,12 @@ public:
 	ContactHalfSpace(const ContactHalfSpace& geom);
 
     SimTK::ContactGeometry createSimTKContactGeometry();
+
+protected:
+    // VISUALIZATION
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints, 
+        const SimTK::State& s, 
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const {};
 private:
     // INITIALIZATION
 	void setNull();

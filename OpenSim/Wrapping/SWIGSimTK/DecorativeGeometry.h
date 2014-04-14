@@ -578,7 +578,7 @@ private:
 
 
 /** This defines a displayable mesh by referencing a file name containing the mesh. If format is not supported
-  by visualizer it will be ignored. 
+  by visualizer it will be ignored. */
 class SimTK_SimTKCOMMON_EXPORT DecorativeMeshFile : public DecorativeGeometry {
 public:
     explicit DecorativeMeshFile(const std::string& meshFileName);
@@ -603,7 +603,7 @@ private:
     class DecorativeMeshFileRep& updRep();
     const DecorativeMeshFileRep& getRep() const;
 };
-*/
+
 
 /** This defines a single DecorativeGeometry object that is composed of a
 collection of other DecorativeGeometry objects. Parameters set for the
@@ -670,7 +670,7 @@ public:
     virtual void implementFrameGeometry(    const DecorativeFrame&)    = 0;
     virtual void implementTextGeometry(     const DecorativeText&)     = 0;
     virtual void implementMeshGeometry(     const DecorativeMesh&)     = 0;
-    //virtual void implementMeshFileGeometry(     const DecorativeMeshFile&)     = 0;
+    virtual void implementMeshFileGeometry(     const DecorativeMeshFile&)     = 0;
 };
 
 } // namespace SimTK

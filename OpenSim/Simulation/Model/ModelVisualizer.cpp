@@ -134,7 +134,9 @@ void DefaultGeometry::generateDecorations
 {
     const SimbodyMatterSubsystem& matter = _model.getMatterSubsystem();
     const ModelDisplayHints&      hints  = _model.getDisplayHints();
-
+    //_model.generateDecorations(true, _model.getDisplayHints(),
+    //                           state, geometry);
+    
     // Display markers.
     if (hints.getShowMarkers()) {
         const Vec3 pink(1,.6,.8);
@@ -231,7 +233,7 @@ void DefaultGeometry::generateDecorations
             }
         }
     }
-
+    
 
     // Ask all the ModelComponents to generate dynamic geometry.
     _model.generateDecorations(false, _model.getDisplayHints(),
@@ -381,6 +383,7 @@ void ModelVisualizer::createVisualizer() {
 void ModelVisualizer::collectFixedGeometry(const State& state) const {
     // Run through all the bodies and try to open the meshes associated
     // with them.
+    /*
     const BodySet& bodies = _model.getBodySet();
     for (int i=0; i < bodies.getSize(); ++i) {
         const Body& body = bodies[i];
@@ -460,7 +463,7 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
             _viz->addDecoration(bx, X_BV*geo.getTransform(), dmesh);
         }
     }
-
+    */
     // Collect any fixed geometry from the ModelComponents.
     Array_<DecorativeGeometry> fixedGeometry;
     _model.generateDecorations
