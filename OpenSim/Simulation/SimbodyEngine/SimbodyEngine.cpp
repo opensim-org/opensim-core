@@ -918,25 +918,40 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
 void SimbodyEngine::scaleRotationalDofColumns(Storage &rStorage, double factor) const
 {
 	const Array<std::string>& columnLabels = rStorage.getColumnLabels();
-
-	if(columnLabels.getSize() == 0)
+	int ncols = columnLabels.getSize();
+	if(ncols == 0)
 		throw Exception("SimbodyEngine.scaleRotationalDofColumns: ERROR- storage has no labels, can't determine coordinate types for deg<->rad conversion",
 							 __FILE__,__LINE__);
 
 	// Loop through the coordinates in the model. For each one that is rotational,
 	// see if it has a corresponding column of data. If it does, multiply that
 	// column by the given scaling factor.
+	std::string shortName = "";
+	int index = -1;
 	const CoordinateSet& coordinateSet = _model->getCoordinateSet();
-	for (int i = 0; i < coordinateSet.getSize(); i++) {
-		if (coordinateSet.get(i).getMotionType() == Coordinate::Rotational) {
-			std::string name = coordinateSet.get(i).getName();
-			for(int j=1; j<columnLabels.getSize(); j++) // skip time column (and adjust for time column when calling multiplyColumn)
-				if(columnLabels[j] == name) rStorage.multiplyColumn(j-1, factor);
-
-			// Now do speeds
-			std::string spdName = coordinateSet.get(i).getSpeedName();
-			for(int j=1; j<columnLabels.getSize(); j++) // skip time column (and adjust for time column when calling multiplyColumn)
-				if(columnLabels[j] == spdName) rStorage.multiplyColumn(j-1, factor);
+	
+	// first column is time, so skip
+	for (int i = 1; i < ncols; i++) {
+		const std::string& name = columnLabels[i];
+		index = coordinateSet.getIndex(name);
+		if (index < 0){
+			std::string::size_type back = name.rfind("/");
+			shortName = name.substr(back+1, name.length()-back);
+			index = coordinateSet.getIndex(shortName);
+			// This is a necessary hack to use new component naming,
+			// but SimbodyEngine will be deprecated and so will this code- aseth
+			if (index < 0){ // could be a speed then trim off _u
+				std::string::size_type ext = shortName.rfind("_u");
+				shortName = shortName.substr(0, shortName.length() - ext);
+				index = coordinateSet.getIndex(shortName);
+			}
+		}
+		if (index >= 0){
+			const Coordinate& coord = coordinateSet.get(index);
+			if (coord.getMotionType() == Coordinate::Rotational) {
+				// assumes first data colum is 0 whereas labels has time as 0
+				rStorage.multiplyColumn(i-1, factor);
+			}
 		}
 	}
 }

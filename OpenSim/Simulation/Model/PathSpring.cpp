@@ -68,6 +68,10 @@ void PathSpring::constructProperties()
 	constructProperty_resting_length(SimTK::NaN);
 	constructProperty_stiffness(SimTK::NaN);
 	constructProperty_dissipation(SimTK::NaN);
+
+	constructOutput<double>("stretch", 
+	       std::bind(&PathSpring::getStretch, this, std::placeholders::_1),
+				      SimTK::Stage::Position);
 }
 
 //_____________________________________________________________________________

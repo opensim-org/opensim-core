@@ -47,12 +47,13 @@ int main()
 		CHECK_STORAGE_AGAINST_STANDARD(result, standard, Array<double>(0.01, 16), __FILE__, __LINE__, "Arm26 no activation states failed");
 		cout << "Arm26 no activation states passed\n";
 
-		// Check the optimization result acheived at least a velocity of 5.43 m/s, and that the control values are within either 20% of the reference values or 0.05 in absolute value.
+		// Check the optimization result acheived at least a velocity of 5.43 m/s, and that the control values are within either 20% 
+		// of the reference values or 0.05 in absolute value.
 		ifstream resFile; 
 		resFile.open("Arm26_optimization_result"); 
 		ASSERT(resFile.is_open(), __FILE__, __LINE__, "Can't open optimization result file" );
 
-		vector<double> resVec;
+		SimTK::Array_<double> resVec;
 		for ( ; ; ) {
 			double tmp;
 			resFile >> tmp;   
@@ -60,7 +61,7 @@ int main()
 				break; 
 			resVec.push_back(tmp); 
 		}
-		
+	
 		ASSERT(resVec.size() == ARM26_DESIGN_SPACE_DIM+1, __FILE__, __LINE__, "Optimization result size mismatch" );
 		
 		// We don't enforce the optimizer to find precisedly the same local minimum for now.   	

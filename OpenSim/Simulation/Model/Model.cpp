@@ -394,18 +394,19 @@ void Model::setupProperties()
 // Perform some final checks on the Model, wire up all its components, and then
 // build a computational System for it.
 void Model::buildSystem() {
+	// clear convenience lists which will be rebuilt
+	_stateVariableNames.setSize(0);
+	_stateVariableSystemIndices.setSize(0);
+
+	// Finish connecting up the Model.
+	setup();
+
 	// Some validation
 	validateMassProperties();
 	if (getValidationLog().size()>0)
 		cout << "The following Errors/Warnings were encountered while building the model. " <<
 		getValidationLog() << endl;
-	
-	_components.clear();	// Make sure we start on a clean slate
-	_stateVariableNames.setSize(0);
-	_stateVariableSystemIndices.setSize(0);
 
-    // Finish building the Model.
-	setup();
     updControllerSet().setActuators(updActuators());
 
     // Create the computational System representing this Model.
@@ -752,6 +753,7 @@ void Model::addProbe(OpenSim::Probe *aProbe)
  */
 void Model::removeProbe(OpenSim::Probe *aProbe)
 {
+	disconnect();
 	updProbeSet().remove(aProbe);
 }
 
@@ -788,7 +790,10 @@ void Model::addController(Controller *aController)
 void Model::setup()
 {
 	_model = this;
-	_components.clear();
+	// clear existing interconnections, subcomponent designation and
+	// all state allocations
+	disconnect();
+
 	createGroundBodyIfNecessary();
 
 	// Update model components, not that Joints and Coordinates
@@ -822,7 +827,9 @@ void Model::setup()
 	for(int i=0; i<nf; ++i){
 		addComponent(&fs[i]);
 	}
-	fs.invokeConnectToModel(*this);
+	// Update internal subsets of the ForceSet
+	fs.updActuators();
+	fs.updMuscles();
 
 	//updControllerSet().invokeConnectToModel(*this);
 	ControllerSet &clrs = updControllerSet();
@@ -830,7 +837,7 @@ void Model::setup()
 	for(int i=0; i<nclr; ++i){
 		addComponent(&clrs[i]);
 	}
-	_componentSet.invokeConnectToModel(*this);
+	//_componentSet.invokeConnectToModel(*this);
 
     //updProbeSet().invokeConnectToModel(*this);
 	ProbeSet &ps = updProbeSet();
@@ -844,8 +851,8 @@ void Model::setup()
 
 	updAnalysisSet().setModel(*this);
 
-	// propogate connect to all subcomponents
-	Super::connectToModel(*this);
+	//now connect the Model and all its subcomponents all up
+	connect(*this);
 }
 
 /**
@@ -887,6 +894,7 @@ void Model::createGroundBodyIfNecessary()
  */
 void Model::cleanup()
 {
+	disconnect();
 	_forceSet.setSize(0);
 }
 

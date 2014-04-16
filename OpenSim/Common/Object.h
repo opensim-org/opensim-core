@@ -1103,9 +1103,9 @@ static const std::string& getClassName()                                        
 // name by assembling the pieces.
 #define OpenSim_OBJECT_TEMPLATE_DEFS(ConcreteClass, TArg, SuperClass)          \
 static const std::string& getClassName()                                             \
-{   static std::string name = #ConcreteClass "<"                               \
+{   static std::string name = #ConcreteClass "_"                               \
                               + Object_GetClassName<TArg>::name()              \
-                              + ">";                                           \
+                              + "_";                                           \
     return name; }
 
 // This provides definitions for the two Object pure virtuals clone() and

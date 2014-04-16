@@ -138,7 +138,7 @@ public:
 	const SimTK::Vector& solve(const SimTK::State& state,
 		const SimTK::Vector& appliedMobilityForces, 
 		const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces,
-		SimTK::Vector_<SimTK::SpatialVec>* constraintReactions=0);
+		SimTK::Vector_<SimTK::SpatialVec>* constraintReactions=nullptr);
 
 	/** Solve for the induced (generalized) accelerations (udot) resulting
 		from any model force identified by name
@@ -185,6 +185,7 @@ protected:
 	    Stage::Acceleration. If the state differes from the input state OR
 		the state is not at the acceleration stage, an exception is thrown. */
 	const SimTK::State& getSolvedState(const SimTK::State& s) const;
+
 	Array<bool> applyContactConstraintAccordingToExternalForces(SimTK::State &s);
 
 private:

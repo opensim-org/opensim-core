@@ -168,7 +168,7 @@ class ModelDisplayHints;
  *
  * Public methods enable access to component variables via their names.
  *
- * @author Ajay Seth
+ * @author Ajay Seth, Michael Sherman
  */
 class OSIMSIMULATION_API ModelComponent : public Component {
 OpenSim_DECLARE_ABSTRACT_OBJECT(ModelComponent, Component);
@@ -343,21 +343,18 @@ template <class T> friend class ModelComponentMeasure;
 
     //@{
 
-
-
     // End of System Creation and Access Methods.
     //@} 
 
-private:
+	/** Satisfy the general Component interface, but this is not part of the
+	 * ModelComponent interface. ModelComponent::connect() ensures that 
+	 * connectToModel() on ModelComponent subcomponents are invoked. **/
+	void connect(Component& root) FINAL_11;
 
-    // Satisfy the general Component interface, but this is not part of the
-    // ModelComponent interface. connectToModel() ensures that any connect()
-    // operations on the parent component are invoked.
-    void connect() OVERRIDE_11;
+private:
 
     const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;
     const SimTK::DefaultSystemSubsystem& updDefaultSubsystem();
-
 
     // Clear out all the data fields in the base class. There should be one
     // line here for each data member below.

@@ -111,7 +111,9 @@ int main()
         const Set<SerializableObject>& baseSet = objSet;
 
         SimTK_TEST(objSet.getClassName() == "ObjSet");
-        SimTK_TEST(baseSet.getClassName() == "Set<SerializableObject>");
+		// Cannot serialize name containing "<T>" into valid XML code
+		// template <T> have been replaced by "_T_" as serialized name 
+        SimTK_TEST(baseSet.getClassName() == "Set_SerializableObject_");
         SimTK_TEST(baseSet.getConcreteClassName() == "ObjSet");
 
 		// OBJECT 1

@@ -234,6 +234,7 @@ void FatigableMuscle::computeStateVariableDerivatives(const SimTK::State& s) con
 							getActiveMotorUnits(s)*targetActivationRate;
 
 	// cache the results for fast access by reporting, etc...
+	Super::setStateVariableDerivative(s, "activation", activationRate);
 	setTargetActivationDeriv(s, targetActivationRate);
 	setActiveMotorUnitsDeriv(s, activeMotorUnitsDeriv);
 	setFatiguedMotorUnitsDeriv(s, fatigueMotorUnitsDeriv);

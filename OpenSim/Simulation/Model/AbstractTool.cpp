@@ -418,7 +418,13 @@ updateModelForces(Model& model, const string &aToolSetupFileName, ForceSet *rOri
 		if(rOriginalForceSet) *rOriginalForceSet = model.getForceSet();
 
 		// If replacing force set read in from model file, clear it here
-		if(_replaceForceSet) model.updForceSet().setSize(0);
+		if (_replaceForceSet){
+			// Can no longer just remove the model's forces.
+			// If the model is connected, then the model will
+			// maintain a list of subcomponents that refer to garbage.
+			model.cleanup();
+			model.updForceSet().setSize(0);
+		}
 
 		// Load force set(s)
 		for(int i=0;i<_forceSetFiles.getSize();i++) {

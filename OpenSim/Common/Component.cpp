@@ -23,6 +23,7 @@
 
 // INCLUDES
 #include "OpenSim/Common/Component.h"
+//#include "OpenSim/Common/ComponentOutput.h"
 
 using namespace SimTK;
 
@@ -101,61 +102,74 @@ private:
 //==============================================================================
 Component::Component() : Object()
 {
-	setNull();
+	constructComponentProperties();
+	clear();
 }
-
 
 Component::Component(const std::string& fileName, bool updFromXMLNode)
 :   Object(fileName, updFromXMLNode)
 {
-	setNull();
+	constructComponentProperties();
+	clear();
 }
 
 Component::Component(SimTK::Xml::Element& element) 
 :   Object(element)
 {
-	setNull();
+	constructComponentProperties();
+	clear();
 }
 
-// Don't copy any of the base class data members; they all get set later.
-Component::Component(const Component& source) 
-:   Object(source), _system(NULL)
+Component::Component(const Component& source) : Object(source)
 {
-	setNull();
-}
-
-// Don't copy any of the base class data members; clear them instead.
-Component& Component::operator=(const Component& source)
-{
-    if (&source != this) { 
-        Object::operator=(source);
-        setNull();
-    }
-    return *this;
+	//Object copy will handle properties which includes connectors
+	//clear everything else;
+	clear();
 }
 
 // Base class implementation of virtual method.
 // Call connect on all components and find unconnected Connectors a
-void Component::connect()
+void Component::connect(Component &root)
 {
     clearStateAllocations();
 
 	// First give the subcomponents the opportunity to connect themselves
     for(unsigned int i=0; i<_components.size(); i++){
-		_components[i]->connect();
+		_components[i]->connect(root);
 	}
 
-	//Now find unresolved connections
-	std::map<std::string, ConnectionInfo>::const_iterator it;
-	for(it = _connectionsTable.begin(); it != _connectionsTable.end(); ++it){
-		const ConnectionInfo& ci = it->second;
-		if(!ci.isConnected){
-			throw Exception("Component::connect: Could not resolve connector '" +
-				ci.connector->getName()+".");
+	//Now find and resolve connections
+	std::map<std::string, AbstractConnector*>::const_iterator it;
+	for (it = _connectorsTable.begin(); it != _connectorsTable.end(); ++it){
+		AbstractConnector* ci = it->second;
+		
+		// nothing to do if the connector was already connected, otherwise
+		// find the component to satisfy the connection.
+		if (!(ci->isConnected())){
+			const Component* connectTo = root.findComponent(ci->get_connected_to_name());
+			if (connectTo){
+				ci->connect(*connectTo);
+			}
+			else{
+				throw Exception(getConcreteClassName() + "::connect() Could not find component '"
+					+ ci->get_connected_to_name() + "' to satisfy Connector<" +
+					ci->getConnectedToTypeName() + "> '" + ci->getName() + "'.");
+			}
 		}
+		//should be connected or an exception was thrown
 	}
 }
 
+void Component::disconnect()
+{
+	// First give the subcomponents the opportunity to disconnect themselves
+	for (unsigned int i = 0; i<_components.size(); i++){
+		_components[i]->disconnect();
+	}
+
+	//now clear all the connection and system information from this component
+	clear();
+}
 
 // Base class implementation of virtual method.
 // Every Component owns an underlying SimTK::Measure 
@@ -223,8 +237,8 @@ void Component::computeStateVariableDerivatives(const SimTK::State& s) const
 void Component::
 addModelingOption(const std::string& optionName, int maxFlagValue) const 
 {
-    // don't add modeling option there is another state with the same name for 
-    // this component
+    // don't add modeling option if there is another state with the same  
+    // name for this component
     std::map<std::string, ModelingOptionInfo>::const_iterator it;
     it = _namedModelingOptionInfo.find(optionName);
     if(it != _namedModelingOptionInfo.end())
@@ -439,6 +453,45 @@ const Component* Component::findComponent(const std::string& name,
 	return found;
 }
 
+const Component::StateVariable* Component::
+	findStateVariable(const std::string& name) const
+{
+	// first assume that the state variable named belongs to this
+	// top level component
+	std::string::size_type back = name.rfind("/");
+	std::string prefix = name.substr(0, back);
+	std::string varName = name.substr(back + 1, name.length() - back);
+
+	std::map<std::string, StateVariableInfo>::const_iterator it;
+	it = _namedStateVariableInfo.find(varName);
+
+	if (it != _namedStateVariableInfo.end()) {
+		return it->second.stateVariable.get();
+	}
+
+	const StateVariable* found = nullptr;
+	const Component* comp = findComponent(name, &found);
+
+	if (comp){
+		found = comp->findStateVariable(varName);
+	}
+
+	// Path not given or could not find it along given path name
+	// Now try complete search.
+	if (!found) {
+		for (unsigned int i = 0; i < _components.size(); ++i){
+			comp = _components[i]->findComponent(prefix, &found);
+			if (found) {
+				return found;
+			}
+			if (comp) {
+				return comp->findStateVariable(varName);
+			}
+		}
+	}
+
+	return found;
+}
 
 
 /*
@@ -473,24 +526,12 @@ Array<std::string> Component::getStateVariableNames() const
 double Component::
 	getStateVariable(const SimTK::State& s, const std::string& name) const
 {
-    // first assume that the state variable named belongs to this
-	// component 
-	std::map<std::string, StateVariableInfo>::const_iterator it;
-    it = _namedStateVariableInfo.find(name);
-
-    if(it != _namedStateVariableInfo.end()) {
-        return it->second.stateVariable->getValue(s);
-    }
-	else{
-		// otherwise find the component that variable belongs to
-		const StateVariable* rsv = NULL;
-		const Component* found = findComponent(name, &rsv);
-
-		if(found && rsv){
-			return rsv->getValue(s);
-		}
-    }
-
+	// find the state variable with this component or its subcomponents
+	const StateVariable* rsv = findStateVariable(name);
+	if (rsv) {
+		return rsv->getValue(s);
+	}
+    
 	std::stringstream msg;
 	msg << "Component::getStateVariable: ERR- state named '" << name 
 		<< "' not found in " << getName() << " of type " << getConcreteClassName();
@@ -516,6 +557,13 @@ double Component::
     if(it != _namedStateVariableInfo.end()) {
         return it->second.stateVariable->getDerivative(state);
     } 
+	else{
+		// otherwise find the component that variable belongs to
+		const StateVariable* rsv = findStateVariable(name);
+		if (rsv) {
+			return rsv->getDerivative(state);
+		}
+	}
 
     std::stringstream msg;
     msg << "Component::getStateVariableDerivative: ERR- variable name '" << name 
@@ -535,28 +583,13 @@ double Component::
 void Component::
 	setStateVariable(State& s, const std::string& name, double value) const
 {
-    // first assume that the state variable named belongs to this
-	// component 
-	std::map<std::string, StateVariableInfo>::const_iterator it;
-    it = _namedStateVariableInfo.find(name);
+	// find the state variable
+	const StateVariable* rsv = findStateVariable(name);
 
-    if(it != _namedStateVariableInfo.end()) {
-        return it->second.stateVariable->setValue(s, value);
-    }
-	else{
-		// otherwise find the sub-component that the variable belongs to
-		const StateVariable* rsv = NULL;
-		const Component* found = findComponent(name, &rsv);
-
-		if(rsv){ // find required rummaging through the state variable names
+	if(rsv){ // find required rummaging through the state variable names
 			return rsv->setValue(s, value);
-		}
-		else if(found){ // possible to find a component name with the same name
-			            // as one of its state variables
-			return found->setStateVariable(s, name, value);
-		}
-    }
-
+	}
+    
 	std::stringstream msg;
 	msg << "Component::setStateVariable: ERR- state named '" << name 
 		<< "' not found in " << getName() << " of type " 
@@ -693,25 +726,38 @@ setDiscreteVariable(SimTK::State& s, const std::string& name, double value) cons
     }
 }
 
+/*
+* Specifiy a member function of the state implemented by this component to
+* be an an Output.
+
+template <typename T>
+void Component::addOutput(const std::string& name,
+	                const std::function<T(const SimTK::State&)> outputFunction,
+	                const SimTK::Stage& dependsOn)
+*/
+
 /* Include another Component as a subcomponent of this one. 
    If already a subcomponent it is not added to the list again. */
 void Component::addComponent(Component *aComponent)
 {
-    // Only add if the Component is not already a part of the model
-    SimTK::Array_<Component *>::iterator 
-		it = std::find(_components.begin(), _components.end(), aComponent);
-    if(it == _components.end()){
-        _components.push_back(aComponent);
+	// Only add if the Component is not already a part of the model
+	// So, add if empty
+	if ( _components.empty() ){
+		_components.push_back(aComponent);
 	}
-/*	else{
-		std::stringstream msg;
-        msg << "Component::addComponent: WARNING - `'" 
-			<< aComponent->getConcreteClassName() << "::" 
-			<< aComponent->getName() << "' already a component of '" 
-            << getConcreteClassName()<<"::"<<getName()<< "' and not added.";
-		std::cerr << msg.str() << std::endl;
+	else{ //otherwise check that it isn't apart of the component already		
+		SimTK::Array_<Component *>::iterator it =
+			std::find(_components.begin(), _components.end(), aComponent);
+		if ( it == _components.end() ){
+			_components.push_back(aComponent);
+		}
+		else{
+			std::string msg = "ERROR- " +getConcreteClassName()+"::addComponent() '"
+				+ getName() + "' already has '" + aComponent->getName() +
+				    "' as a subcomponent.";
+			throw Exception(msg, __FILE__, __LINE__);
+		}
 	}
-*/
 }
 
 const int Component::getStateIndex(const std::string& name) const

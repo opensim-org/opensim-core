@@ -371,8 +371,8 @@ void testPathSpring()
 	pulleyBody.addWrapObject(pulley);
 
 	// Add joints
-	WeldJoint weld("", ground, Vec3(0, 1.0, 0), Vec3(0), pulleyBody, Vec3(0), Vec3(0));
-	SliderJoint slider("", ground, Vec3(0), Vec3(0,0,Pi/2), block, Vec3(0), Vec3(0,0,Pi/2));
+	WeldJoint weld("pulley", ground, Vec3(0, 1.0, 0), Vec3(0), pulleyBody, Vec3(0), Vec3(0));
+	SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), block, Vec3(0), Vec3(0,0,Pi/2));
 
 	double positionRange[2] = {-10, 10};
 	// Rename coordinates for a slider joint
@@ -974,15 +974,22 @@ void testCoordinateLimitForce()
 	osimModel->print("CoordinateLimitForceTest.osim");
 
 	// Check serialization and deserilaization
-	delete osimModel;
-	osimModel = new Model("CoordinateLimitForceTest.osim");
+	Model* loadedModel = new Model("CoordinateLimitForceTest.osim");
+
+	ASSERT(*loadedModel == *osimModel,
+		"Deserialized CoordinateLimitForceTest failed to be equivalent to original.");
 
 	// check copy
-	Model *copyModel = osimModel->clone();
+	Model *copyModel = loadedModel->clone();
+
+	ASSERT(*copyModel == *loadedModel,
+		"Clone of CoordinateLimitForceTest failed to be equivalent to original.");
+
+	copyModel->print("cloneCoordinateLimitForceTest.osim");
 	delete osimModel;
 
 	osimModel = copyModel;
-
+	
 	// Create the force reporter
 	ForceReporter* reporter = new ForceReporter(osimModel);
 	osimModel->addAnalysis(reporter);

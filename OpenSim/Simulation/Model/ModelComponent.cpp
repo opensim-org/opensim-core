@@ -56,7 +56,7 @@ ModelComponent::ModelComponent(const ModelComponent& source)
 ModelComponent& ModelComponent::operator=(const ModelComponent& source)
 {
     if (&source != this) { 
-        Object::operator=(source);
+        Super::operator=(source);
         setNull();
     }
     return *this;
@@ -79,9 +79,16 @@ Model& ModelComponent::updModel()
 }
 
 
-void ModelComponent::connect()
+void ModelComponent::connect(Component &root)
 {
-	Super::connect();
+	Model* model = dynamic_cast<Model*>(&root);
+	// Allow (model) component to include its own subcomponents
+	// before calling the base method which automatically invokes
+	// connect all the subcomponents.
+	if (model)
+		connectToModel(*model);
+
+	Super::connect(root);
 }
 
 
@@ -89,12 +96,13 @@ void ModelComponent::connect()
 void ModelComponent::connectToModel(Model& model)
 {
     _model = &model;
-    connect();
 
+	/*
     for(unsigned int i=0; i<_components.size(); i++){
 		ModelComponent *mc = dynamic_cast<ModelComponent*>(_components[i]);
         mc->connectToModel(model);
 	}
+	*/
 }
 
 // Base class implementation of virtual method.

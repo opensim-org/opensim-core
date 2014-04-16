@@ -37,7 +37,6 @@
 #include "SimmIO.h"
 #include "SimmMacros.h"
 #include "SimTKcommon.h"
-//#include "OpenSim/Auxiliary/auxiliaryTestFunctions.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -3222,8 +3221,22 @@ double Storage::compareColumnRMS(Storage& aOtherStorage, const std::string& aCol
 	int thisColumnIndex=_columnLabels.findIndex(aColumnName)-1;
 	int otherColumnIndex = aOtherStorage._columnLabels.findIndex(aColumnName)-1;
 
-	if ((thisColumnIndex==-2)||(otherColumnIndex==-2))// not found is now -2 since we subtracted 1 already
-		return SimTK::NaN;
+	if ((thisColumnIndex < 0) || (otherColumnIndex < 0)) {
+		//Assume new component state variable labeling so redo find with the just the
+		//ending substring instead of its full path name
+		std::string::size_type back = aColumnName.rfind("/");
+		std::string prefix = aColumnName.substr(0, back);
+		std::string shortName = aColumnName.substr(back+1, aColumnName.length()-back);
+		
+		if (thisColumnIndex < 0)
+			thisColumnIndex = _columnLabels.findIndex(shortName) - 1;
+
+		if (otherColumnIndex < 0)
+			otherColumnIndex = aOtherStorage._columnLabels.findIndex(shortName) - 1;
+
+		if ((thisColumnIndex < 0) || (otherColumnIndex < 0))
+			return SimTK::NaN;
+	}
 
 	// Now we have two columnNumbers. get the data and compare
 	Array<double> thisData, otherData;

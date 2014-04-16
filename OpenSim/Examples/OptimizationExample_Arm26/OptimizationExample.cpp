@@ -163,9 +163,9 @@ int main()
 		//Optimizer opt(sys, InteriorPoint);
 
 		// Specify settings for the optimizer
-		opt.setConvergenceTolerance(0.01);
-		opt.useNumericalGradient(true);
-		opt.setMaxIterations(1000);
+		opt.setConvergenceTolerance(0.1);
+		opt.useNumericalGradient(true, 1e-5);
+		opt.setMaxIterations(100);
 		opt.setLimitedMemoryHistory(500);
 			
 		// Optimize it!
@@ -180,7 +180,7 @@ int main()
 
 		cout << "\nMaximum hand velocity = " << -f << "m/s" << endl;
 
-        cout << "OpenSim example completed successfully.\n";
+        cout << "OpenSim example completed successfully." << endl;
 		
 		// Dump out optimization results to a text file for testing
 		ofstream ofile; 

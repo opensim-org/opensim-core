@@ -806,7 +806,7 @@ public:
     model elements that are not ModelComponents) as subcomponents whose 
     corresponding methods need to be called. **/
     /**@{**/
-	void connectToModel(Model& model)  OVERRIDE_11 {setup();};
+	//void connectToModel(Model& model)  OVERRIDE_11 {};
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11; 
     void initStateFromProperties(SimTK::State& state) const OVERRIDE_11;
 

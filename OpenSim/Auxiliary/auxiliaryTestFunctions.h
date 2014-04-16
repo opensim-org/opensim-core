@@ -45,11 +45,11 @@ void CHECK_STORAGE_AGAINST_STANDARD(OpenSim::Storage& result, OpenSim::Storage& 
 	OpenSim::Array<double> comparisons;
 	result.compareWithStandard(standard, columnsUsed, comparisons);
 
-	int columns = columnsUsed.getSize();
+	int ncolumns = columnsUsed.getSize();
 
-	ASSERT(columns > 0, testFile, testFileLine, errorMessage + "- no common columns to compare!");
+	ASSERT(ncolumns > 0, testFile, testFileLine, errorMessage + "- no common columns to compare!");
 
-	for (int i = 0; i < columns; ++i) {
+	for (int i = 0; i < ncolumns; ++i) {
 		std::cout << "column:    " << columnsUsed[i] << std::endl;
 		std::cout << "RMS error: " << comparisons[i] << std::endl;
 		std::cout << "tolerance: " << tolerances[i] << std::endl << std::endl;

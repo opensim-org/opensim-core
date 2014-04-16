@@ -621,7 +621,7 @@ void Umberger2010MuscleMetabolicsProbe::
     // Step 1: Remove the reference to this MetabolicMuscleParameter
     // from the muscle map.
     // -----------------------------------------------------------------
-    _muscleMap.erase(muscleName);
+	_muscleMap.erase(muscleName);
 
 
     // Step 2: Remove the MetabolicMuscleParameter object from
@@ -633,6 +633,7 @@ void Umberger2010MuscleMetabolicsProbe::
             << muscleName << "' specified. No metabolic muscles removed." << endl;
         return;
     }
+	disconnect();
     upd_Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet().remove(k);
 }
 

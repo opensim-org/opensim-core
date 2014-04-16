@@ -23,6 +23,7 @@
 
 
 #include "Object.h"
+#include "Component.h"
 #include "VisibleObject.h"
 #include "RegisterTypes_osimCommon.h"
 #include "FunctionSet.h"
@@ -62,6 +63,8 @@ using namespace std;
 OSIMCOMMON_API void RegisterTypes_osimCommon()
 {
   try {
+
+	Object::registerType(Connector<double>());
 
 	//SimTK::Xml::setXmlCondenseWhiteSpace(false);
 	Object::registerType( FunctionSet() );
