@@ -147,7 +147,7 @@ public:
      * Get a Transform representing the position and orientation of the geometry
      * within the Body it is attached to.
      */
-    SimTK::Transform getTransform();
+    SimTK::Transform getTransform() const;
 
 	/**
 	* Scale a ContactGeometry based on XYZ scale factors for the bodies.

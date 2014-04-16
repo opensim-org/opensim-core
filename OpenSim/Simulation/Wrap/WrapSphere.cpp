@@ -603,7 +603,7 @@ void WrapSphere::generateDecorations(const Model& model, const ModelDisplayHints
 {
     Transform X_GW = getTransform();
     geometry.push_back(
-        DecorativeSphere(getRadius()).setBodyId(_body->getIndex()).setTransform(X_GW).setUserRef(const_cast<WrapSphere*>(this)));
+        DecorativeSphere(getRadius()).setBodyId(_body->getIndex()).setTransform(X_GW).setColor(SimTK::Cyan).setUserRef(const_cast<WrapSphere*>(this)));
         //setResolution(_dispWrapResolution)
         //.setColor(color).setOpacity(_dispWrapOpacity));
 }

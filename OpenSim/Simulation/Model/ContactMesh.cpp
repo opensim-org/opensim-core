@@ -144,4 +144,22 @@ SimTK::ContactGeometry ContactMesh::createSimTKContactGeometry()
     return *_geometry;
 }
 
+//=============================================================================
+// VISUALIZER GEOMETRY
+//=============================================================================
+void ContactMesh::generateDecorations(bool fixed, const ModelDisplayHints& hints, 
+    const SimTK::State& s, SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
+{
+   // There is no fixed geometry to generate here.
+    if (!fixed) { return; }
+
+    geometry.push_back(SimTK::DecorativeMeshFile(_filename)
+                           .setTransform(getTransform())
+                           .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+                           .setBodyId(getBody().getIndex())
+                           .setColor(SimTK::Vec3(0,1,0))
+                           .setOpacity(0.5)
+                           .setUserRef(const_cast<ContactMesh*>(this)));
+}
+
 } // end of namespace OpenSim

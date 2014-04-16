@@ -67,12 +67,6 @@ public:
 	//--------------------------------------------------------------------------
 	void scale(const ScaleSet& aScaleSet);
 
-    virtual void invokeGenerateDecorations
-       (bool                                        fixed, 
-        const ModelDisplayHints&                    hints,
-        const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
-    {}
 //=============================================================================
 };	// END of class ContactGeometrySet
 //=============================================================================

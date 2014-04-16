@@ -101,7 +101,7 @@ void ContactGeometry::setOrientation(const Vec3& orientation)
     set_orientation(orientation);
 }
 
-SimTK::Transform ContactGeometry::getTransform()
+SimTK::Transform ContactGeometry::getTransform() const
 {
     return SimTK::Transform(Rotation(SimTK::BodyRotationSequence,
         get_orientation()[0], SimTK::XAxis,

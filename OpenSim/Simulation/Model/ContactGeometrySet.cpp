@@ -23,7 +23,7 @@
 
 #include "ContactGeometrySet.h"
 #include <OpenSim/Common/ScaleSet.h>
-
+#include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 using namespace std;
 using namespace OpenSim;
 
