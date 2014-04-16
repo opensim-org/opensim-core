@@ -100,7 +100,7 @@ namespace OpenSim {
  * input from the user (via a joystick, key press, etc..). The throttle controls
  * the motor torque output and therefore the behavior of the model. The input by
  * the user to the throttle the motor (the controls) is necessary to specify the
- * model dynamics at any instant and therefore are considered part of the State
+ * model dynamics at any instant and therefore are considered part of the State.
  * In OpenSim they are simply referred to as DiscreteVariables. The Component
  * provides services to enable developers of components to define and access its
  * DiscreteVariables.
@@ -702,7 +702,7 @@ template <class T> friend class ComponentMeasure;
   /** Single call to construct the underlying infastructure of a Component, which
 	 include: 1) its properties, 2) its structural connectors (to other components),
 	 3) its Inputs (slots) for expected Output(s) of other components and, 4) its 
-	 own Outputs (wires) that it provides for othe components to access its values.
+	 own Outputs (wires) that it provides for other components to access its values.
 	 Override the corresponding private virtual method to customize any of them. */ 
 	void constructInfrastructure() {
 		constructProperties();
@@ -860,7 +860,7 @@ template <class T> friend class ComponentMeasure;
     using the addStateVariable() method, then %computeStateVariableDerivatives()
     must be implemented to provide time derivatives for those states.
     Override to set the derivatives of state variables added to the system 
-	by this component. (also @see addToSystem()). If the component adds states
+	by this component. (also see addToSystem()). If the component adds states
 	and computeStateVariableDerivatives is not implemented by the component,
 	an exception is thrown when the system tries to evaluate its derivates.
 
@@ -1005,7 +1005,7 @@ template <class T> friend class ComponentMeasure;
 	/**
 	* Construct an Output (wire) for the Component as function of the State.
 	* Specifiy a (member) function of the state implemented by this component to
-	* be an an Output and include the Stage that output is dependent on. If no
+	* be an Output and include the Stage that output is dependent on. If no
 	* Stage is specified it defaults to Acceleration.
 	*/
 	template <typename T>
