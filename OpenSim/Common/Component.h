@@ -50,6 +50,9 @@
 #include <functional>
 #include <memory>
 
+using std::cout;
+using std::endl;
+
 namespace OpenSim {
 
 //==============================================================================
@@ -329,7 +332,7 @@ public:
 	template<typename T> const T&
 		getConnectee(const std::string& name) const	{
 			// get the Connector and check if it is connected.
-			const AbstractConnector& connector = getConnector(name);
+			const AbstractConnector& connector = getConnector<T>(name);
 			if (connector.isConnected()){
 				return (Connector<T>::downcast(connector)).getConectee();
 			}
