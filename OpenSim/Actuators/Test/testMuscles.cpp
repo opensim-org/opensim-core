@@ -166,7 +166,7 @@ void testMuscle(const Muscle& muscleModel)
 
 	// Simulate with the position of the ball free to move according to
 	// applied muscl force
-	simulateMuscle(muscleModel, x0, act0, nullptr, &control,
+	simulateMuscle(muscleModel, x0, act0, NULL, &control,
 		IntegrationAccuracy, TestTolerance, false);
 
 	// Simulate with the position of the ball prescribed as a sinusoid
