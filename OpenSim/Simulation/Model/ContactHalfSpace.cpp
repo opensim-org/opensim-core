@@ -65,4 +65,22 @@ SimTK::ContactGeometry ContactHalfSpace::createSimTKContactGeometry()
 	return SimTK::ContactGeometry::HalfSpace();
 }
 
+//=============================================================================
+// VISUALIZER GEOMETRY
+//=============================================================================
+void ContactHalfSpace::generateDecorations(bool fixed, const ModelDisplayHints& hints, 
+    const SimTK::State& s, SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
+{
+   // There is no fixed geometry to generate here.
+    if (!fixed) { return; }
+
+    geometry.push_back(SimTK::DecorativeMeshFile("unit_plane.obj")
+                           .setTransform(getTransform())
+                           .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+                           .setBodyId(getBody().getIndex())
+                           .setColor(SimTK::Vec3(0,1,0))
+                           .setOpacity(0.5)
+                           .setUserRef(const_cast<ContactHalfSpace*>(this)));
+}
+
 } // end of namespace OpenSim
