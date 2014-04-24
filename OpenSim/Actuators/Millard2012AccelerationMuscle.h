@@ -256,7 +256,7 @@ pennation angle (\f$\phi_{OPT}\f$)
 
 <B> References </B>
 
-Hunt,K., and Crossley,F. Coecient of restitution interpreted as damping in 
+Hunt,K., and Crossley,F. Coefficient of restitution interpreted as damping in 
 v
 ibroimpact. Transactions of the ASME Journal of Applied Mechanics, 
 42(E):440445, 1975.
