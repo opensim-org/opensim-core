@@ -76,6 +76,19 @@ public:
 	Force& operator=(const Force &aForce);
 #endif
 
+	/**
+	* Tell SimBody to parallelize this force. Should be 
+	* set to true for any forces that will take time to 
+	* complete thier calcForce method. Note that all forces
+	* that set this flag to false will be put in series on a
+	* thread that is running in parallel with other forces
+	* that marked this flag as true.
+	*/
+	virtual bool shouldBeParallelized() const
+	{
+		return false;
+	}
+
 	/** Return if the Force is disabled or not. */
 	bool isDisabled(const SimTK::State& s) const;
 	/** Set the Force as disabled (true) or not (false). */
