@@ -199,6 +199,7 @@ protected:
 	void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
+public:
 	// Visual support GeometryPath drawing in SimTK visualizer.
 	void generateDecorations(
 			bool 									    fixed,

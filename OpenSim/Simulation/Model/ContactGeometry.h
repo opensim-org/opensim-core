@@ -165,7 +165,8 @@ public:
 protected:
 	// ModelComponent interface
 	void connectToModel(Model& aModel) OVERRIDE_11;
-    virtual void generateDecorations(bool fixed, 
+public:
+     virtual void generateDecorations(bool fixed, 
                                      const ModelDisplayHints& hints,
                                      const SimTK::State& state,
                                      SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {};

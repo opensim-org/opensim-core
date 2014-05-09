@@ -98,7 +98,7 @@ public:
 	 */
     void setFilename(const std::string& filename);
 
-protected:
+public:
     // VISUALIZATION
     void generateDecorations(bool fixed, const ModelDisplayHints& hints, 
         const SimTK::State& s, 

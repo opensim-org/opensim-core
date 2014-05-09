@@ -83,7 +83,7 @@ protected:
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
     void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
     void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
-
+public:
     // Visual support in SimTK visualizer
 	void generateDecorations(
         bool fixed, 

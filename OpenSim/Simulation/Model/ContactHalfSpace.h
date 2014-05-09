@@ -70,7 +70,7 @@ public:
 
     SimTK::ContactGeometry createSimTKContactGeometry();
 
-protected:
+public:
     // VISUALIZATION
     void generateDecorations(bool fixed, const ModelDisplayHints& hints, 
         const SimTK::State& s, 

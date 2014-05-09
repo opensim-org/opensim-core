@@ -155,6 +155,7 @@ protected:
     // Model component interface.
 	void connectToModel(Model& aModel) OVERRIDE_11;
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;	
+public:
     virtual void generateDecorations(bool fixed, 
                                      const ModelDisplayHints& hints,
                                      const SimTK::State& state,

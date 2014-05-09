@@ -94,7 +94,7 @@ public:
 	 * Set the radius of the sphere.
 	 */
 	void setRadius(double radius);
-protected:
+public:
     // VISUALIZATION
     void generateDecorations(bool fixed, const ModelDisplayHints& hints, 
         const SimTK::State& s, 

@@ -207,7 +207,7 @@ public:
 	*/
 	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
 
-protected:
+public:
     //--------------------------------------------------------------------------
     // Visual support in SimTK visualizer
     // -------------------------------------------------------------------------
@@ -216,6 +216,7 @@ protected:
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const;
+protected:
     void ComputeForcesAtBushing(const SimTK::State& state, 
                                 SimTK::SpatialVec& forces_on_M_in_ground, 
                                 SimTK::SpatialVec& forces_on_F_in_ground) const;

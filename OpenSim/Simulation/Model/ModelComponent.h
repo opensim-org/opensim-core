@@ -678,12 +678,13 @@ template <class T> friend class ModelComponentMeasure;
     through Position stage; if you need anything higher than that (reaction 
     forces, for example) you should make sure the \a state is realized through 
     Acceleration stage. **/
+public:
     virtual void generateDecorations
        (bool                                        fixed, 
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const;
-
+protected:
     // End of Model Component Basic Interface (protected virtuals).
     //@} 
 
