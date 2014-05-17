@@ -54,8 +54,7 @@ void checkCOM(string resultsFile, string body, const SimTK::Vec3 &standardCOM, c
 	Model adjusted_model(resultsFile);
 	const BodySet& bodies = adjusted_model.getBodySet();
 	const Body& torso = bodies.get(bodies.getIndex(body));
-	SimTK::Vec3 com;
-	torso.getMassCenter(com);
+	SimTK::Vec3 com = torso.getMassCenter();
 	cout << "body:           " << body << endl;
 	cout << "center of mass: (" << com[0] << ", " << com[1] << ", " << com[2] << ")\n";
 	cout << "standard COM:   (" << standardCOM[0] << ", " << standardCOM[1] << ", " << standardCOM[2] << ")\n";

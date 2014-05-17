@@ -70,8 +70,6 @@ public:
 protected:
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
-private:
-    void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
 //=============================================================================
 };	// END of class UniversalJoint
 //=============================================================================

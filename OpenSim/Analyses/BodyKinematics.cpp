@@ -458,8 +458,7 @@ record(const SimTK::State& s)
 
 	for(int i=0;i<_bodyIndices.getSize();i++) {
 		Body& body = bs.get(_bodyIndices[i]);
-		SimTK::Vec3 com;
-		body.getMassCenter(com);
+		const SimTK::Vec3& com = body.get_mass_center();
 		// GET POSITIONS AND EULER ANGLES
 		_model->getSimbodyEngine().getPosition(s, body,com,vec);
 		_model->getSimbodyEngine().getDirectionCosines(s, body,dirCos);
@@ -483,14 +482,13 @@ record(const SimTK::State& s)
 		double rP[3] = { 0.0, 0.0, 0.0 };
 		for(int i=0;i<bs.getSize();i++) {
 			Body& body = bs.get(i);
-			SimTK::Vec3 com;
-			body.getMassCenter(com);
+			const SimTK::Vec3& com = body.get_mass_center();
 			_model->getSimbodyEngine().getPosition(s, body,com,vec);
 			// ADD TO WHOLE BODY MASS
-			Mass += body.getMass();
-			rP[0] += body.getMass() * vec[0];
-			rP[1] += body.getMass() * vec[1];
-			rP[2] += body.getMass() * vec[2];
+			Mass += body.get_mass();
+			rP[0] += body.get_mass() * vec[0];
+			rP[1] += body.get_mass() * vec[1];
+			rP[2] += body.get_mass() * vec[2];
 		}
 
 		//COMPUTE COM OF WHOLE BODY AND ADD TO ARRAY
@@ -506,8 +504,7 @@ record(const SimTK::State& s)
 	// VELOCITY
 	for(int i=0;i<_bodyIndices.getSize();i++) {
 		Body& body = bs.get(_bodyIndices[i]);
-		SimTK::Vec3 com;
-		body.getMassCenter(com);
+		const SimTK::Vec3& com = body.get_mass_center();
 		// GET VELOCITIES AND ANGULAR VELOCITIES
 		_model->getSimbodyEngine().getVelocity(s, body,com,vec);
 		if(_expressInLocalFrame) {
@@ -534,12 +531,11 @@ record(const SimTK::State& s)
 		double rV[3] = { 0.0, 0.0, 0.0 };
 		for(int i=0;i<bs.getSize();i++) {
 			Body& body = bs.get(i);
-			SimTK::Vec3 com;
-			body.getMassCenter(com);
+			const SimTK::Vec3& com = body.get_mass_center();
 			_model->getSimbodyEngine().getVelocity(s, body,com,vec);
-			rV[0] += body.getMass() * vec[0];
-			rV[1] += body.getMass() * vec[1];
-			rV[2] += body.getMass() * vec[2];
+			rV[0] += body.get_mass() * vec[0];
+			rV[1] += body.get_mass() * vec[1];
+			rV[2] += body.get_mass() * vec[2];
 		}
 
 		//COMPUTE VELOCITY OF COM OF WHOLE BODY AND ADD TO ARRAY
@@ -555,8 +551,7 @@ record(const SimTK::State& s)
 	// ACCELERATIONS
 	for(int i=0;i<_bodyIndices.getSize();i++) {
 		Body& body = bs.get(_bodyIndices[i]);
-		SimTK::Vec3 com;
-		body.getMassCenter(com);
+		const SimTK::Vec3& com = body.get_mass_center();
 
 		// GET ACCELERATIONS AND ANGULAR ACCELERATIONS
 		_model->getSimbodyEngine().getAcceleration(s, body,com,vec);
@@ -584,12 +579,11 @@ record(const SimTK::State& s)
 		double rA[3] = { 0.0, 0.0, 0.0 };
 		for(int i=0;i<bs.getSize();i++) {
 			Body& body = bs.get(i);
-			SimTK::Vec3 com;
-			body.getMassCenter(com);
+			const SimTK::Vec3& com = body.get_mass_center();
 			_model->getSimbodyEngine().getAcceleration(s, body,com,vec);
-			rA[0] += body.getMass() * vec[0];
-			rA[1] += body.getMass() * vec[1];
-			rA[2] += body.getMass() * vec[2];
+			rA[0] += body.get_mass() * vec[0];
+			rA[1] += body.get_mass() * vec[1];
+			rA[2] += body.get_mass() * vec[2];
 		}
 
 		//COMPUTE ACCELERATION OF COM OF WHOLE BODY AND ADD TO ARRAY

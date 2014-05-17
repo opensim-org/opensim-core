@@ -26,9 +26,7 @@
 // INCLUDES
 //==============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include "SpringGeneralizedForce.h"
 
 using namespace OpenSim;

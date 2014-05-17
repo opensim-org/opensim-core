@@ -134,12 +134,12 @@ updateWorkVariables(const SimTK::State& s)
 		_model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
 		if(_wrtBodyName == "center_of_mass") {
-			SimTK::Vec3 pVec,vVec,com;
+			SimTK::Vec3 pVec,vVec;
 			double Mass = 0.0;
 			double rP[3] = { 0.0, 0.0, 0.0 };
 			for(int i=0;i<bs.getSize();i++) {
 				Body& body = bs.get(i);
-				body.getMassCenter(com);
+				const SimTK::Vec3& com = body.get_mass_center();
 				_model->getSimbodyEngine().getPosition(s, body,com,pVec);
 				if(pVec[0] != pVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
 											+ "' references invalid acceleration components",__FILE__,__LINE__);
@@ -147,9 +147,9 @@ updateWorkVariables(const SimTK::State& s)
 				if(vVec[0] != vVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
 											+ "' references invalid acceleration components",__FILE__,__LINE__);
 				// ADD TO WHOLE BODY MASS
-				Mass += body.getMass();
-				_p += body.getMass() * pVec;
-				_v += body.getMass() * vVec;
+				Mass += body.get_mass();
+				_p += body.get_mass() * pVec;
+				_v += body.get_mass() * vVec;
 			}
 
 			//COMPUTE COM OF WHOLE BODY
@@ -439,13 +439,13 @@ computeAccelerations(const SimTK::State& s )
 		double Mass = 0.0;
 		for(int i=0;i<bs.getSize();i++) {
 			Body& body = bs.get(i);
-			body.getMassCenter(com);
+			com = body.get_mass_center();
 			_model->getSimbodyEngine().getAcceleration(s, body,com,aVec);
 			if(aVec[0] != aVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
 											+ "' references invalid acceleration components",__FILE__,__LINE__);
 			// ADD TO WHOLE BODY MASS
-			Mass += body.getMass();
-			_a += body.getMass() * aVec;
+			Mass += body.get_mass();
+			_a += body.get_mass() * aVec;
 		}
 
 		//COMPUTE COM ACCELERATION OF WHOLE BODY

@@ -46,7 +46,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-CustomJoint::CustomJoint()
+CustomJoint::CustomJoint() : Super()
 {
 	constructProperties();
 }
@@ -54,19 +54,17 @@ CustomJoint::CustomJoint()
 /**
  * Constructor with specified SpatialTransform.
  */
-CustomJoint::CustomJoint(const std::string &name, OpenSim::Body& parent, 
-                         SimTK::Vec3 locationInParent, 
-                         SimTK::Vec3 orientationInParent,
-					     OpenSim::Body& body, SimTK::Vec3 locationInBody, 
-                         SimTK::Vec3 orientationInBody,
-					     SpatialTransform& aSpatialTransform, bool reverse) 
-:	Super(name, parent, locationInParent,orientationInParent,
-			body, locationInBody, orientationInBody,reverse)
+CustomJoint::CustomJoint(const std::string &name, const OpenSim::Body &parent,
+	const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+	const OpenSim::Body& child,
+	const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
+    SpatialTransform& aSpatialTransform, bool reverse) :
+		Super(name, parent, locationInParent, orientationInParent,
+				child, locationInchild, orientationInChild, reverse)
 {
 	constructProperties();
 	set_SpatialTransform(aSpatialTransform);
 
-	updBody().setJoint(*this);
 	constructCoordinates();
 	updSpatialTransform().connectToJoint(*this);
 }
@@ -75,17 +73,16 @@ CustomJoint::CustomJoint(const std::string &name, OpenSim::Body& parent,
 /**
  * Convenience Constructor; use default SpatialTransform.
  */
-CustomJoint::CustomJoint(const std::string &name, OpenSim::Body& parent, 
-                         SimTK::Vec3 locationInParent, 
-                         SimTK::Vec3 orientationInParent,
-					     OpenSim::Body& body, SimTK::Vec3 locationInBody, 
-                         SimTK::Vec3 orientationInBody, bool reverse) 
-:	Super(name, parent, locationInParent,orientationInParent,
-		  body, locationInBody, orientationInBody, reverse)
+CustomJoint::CustomJoint(const std::string &name, const OpenSim::Body &parent,
+	const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+	const OpenSim::Body& child,
+	const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
+	bool reverse) :	
+		Super(name, parent, locationInParent,orientationInParent,
+			child, locationInchild, orientationInChild, reverse)
 {
 	constructProperties();
 
-	updBody().setJoint(*this);
 	constructCoordinates();
 	updSpatialTransform().connectToJoint(*this);
 }
@@ -218,50 +215,43 @@ void CustomJoint::constructCoordinates()
 //_____________________________________________________________________________
 void CustomJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	const SimTK::Vec3& orientation = getProperty_orientation().getValue();
-	const SimTK::Vec3& location = getProperty_location().getValue();
-
-    // CHILD TRANSFORM
-	Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
-	SimTK::Transform childTransform(rotation, location);
-
-	const SimTK::Vec3& orientationInParent = getProperty_orientation_in_parent().getValue();
-	const SimTK::Vec3& locationInParent = getProperty_location_in_parent().getValue();
-
-	// PARENT TRANSFORM
-	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
-	SimTK::Transform parentTransform(parentRotation, locationInParent);
-
-	const CoordinateSet& coordinateSet = get_CoordinateSet();
+	const CoordinateSet& coords = get_CoordinateSet();
 	// Some initializations
-	int numMobilities = coordinateSet.getSize();  // Note- should check that all coordinates are used.
+	int numMobilities = coords.getSize();  // Note- should check that all coordinates are used.
 	std::vector<std::vector<int> > coordinateIndices = 
         getSpatialTransform().getCoordinateIndices();
 	std::vector<const SimTK::Function*> functions = 
         getSpatialTransform().getFunctions();
 	std::vector<Vec3> axes = getSpatialTransform().getAxes();
 
-	// Workaround for new API with const functions
-	CustomJoint* mutableThis = const_cast<CustomJoint*>(this);
-
-	SimTK::MobilizedBodyIndex parentIndex = getMobilizedBodyIndex(&(mutableThis->updParentBody()));
-	if (!parentIndex.isValid())
-		throw(Exception("CustomJoint " + getName() + " has invalid parent body "
-                        +mutableThis->updParentBody().getName()));
-	int nu = numMobilities;
-	assert(nu > 0);
-    assert(nu <= 6);
+	SimTK_ASSERT1(numMobilities > 0, 
+		"%s must have 1 or more mobilities (dofs).",
+		getConcreteClassName());
+	SimTK_ASSERT1(numMobilities <= 6,
+		"%s cannot exceed 6 mobilities (dofs).",
+		getConcreteClassName());
     assert(functions.size() == 6);
+	SimTK_ASSERT2(numMobilities <= 6,
+		"%s::%s must specify functions for complete spatial (6 axes) motion.",
+		getConcreteClassName(), getSpatialTransform().getConcreteClassName());
     assert(coordinateIndices.size() == 6);
-    assert(axes.size() == 6);
+	SimTK_ASSERT2(axes.size() == 6,
+		"%s::%s must specify 6 independent axes to span spatial motion.",
+		getConcreteClassName(), getSpatialTransform().getConcreteClassName());
+
 	// CREATE MOBILIZED BODY
 	MobilizedBody::FunctionBased
-		simtkBody(system.updMatterSubsystem().updMobilizedBody(parentIndex),
-			parentTransform,SimTK::Body::Rigid(mutableThis->updBody().getMassProperties()),
-			childTransform,numMobilities,functions,coordinateIndices,axes, 
+		simtkBody(system.updMatterSubsystem().updMobilizedBody(getParentBody().getIndex()),
+		getParentTransform(), SimTK::Body::Rigid(getChildBody().getMassProperties()),
+		getChildTransform(), numMobilities, functions, coordinateIndices, axes, 
             (getReverse() ? MobilizedBody::Reverse : MobilizedBody::Forward));
-	setMobilizedBodyIndex(&mutableThis->updBody(), simtkBody.getMobilizedBodyIndex());
 
+	for (int iq = 0; iq < numMobilities; ++iq){
+		setCoordinateMobilizerQIndex(&coords[iq], SimTK::MobilizerQIndex(iq));
+		setCoordinateMobilizedBodyIndex(&coords[iq], simtkBody.getMobilizedBodyIndex());
+	}
+
+	setChildMobilizedBodyIndex(simtkBody.getMobilizedBodyIndex());
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);
 }

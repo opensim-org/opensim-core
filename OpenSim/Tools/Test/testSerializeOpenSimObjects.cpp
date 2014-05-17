@@ -85,11 +85,14 @@ static OpenSim::Object* randomize(OpenSim::Object* obj)
             for (int i=0; i< ap.getMaxListSize(); ++i)
                 ap.updValue<double>(i) = (double) rand();
         }
-        else if (ap.isObjectProperty() && !ap.isListProperty())
-            randomize(&ap.updValueAsObject(0));
-        //else
-        //    std::cout <<"Unrecognized Property" << std::endl;
-       // std::cout << ap.toString() << std::endl;
+		else if (ap.isObjectProperty() && !ap.isListProperty()){
+			randomize(&ap.updValueAsObject(0));
+			ap.setValueIsDefault(false);
+		}
+		else{
+			cerr << "Unrecognized Property" << std::endl;
+			cerr << ap.getName() << ": " << ap.toString() << std::endl;
+		}
      }
      return obj;
 }
@@ -104,42 +107,57 @@ int main()
         for (int i=0; i< availableBodyTypes.getSize(); i++){
             Object* clone = availableBodyTypes[i]->clone();
             Object* randClone = randomize(clone);
-            testModel.updBodySet().cloneAndAppend(*Body::safeDownCast(randClone));
+            testModel.addBody(Body::safeDownCast(randClone));
+			const Body& inModel = testModel.getBodySet().get(randClone->getName());
+			ASSERT(inModel == *randClone);
+			randClone->print("bodyTestPrint.xml");
         }
+
+		ArrayPtrs<OpenSim::Joint> availablJointTypes;
+		Object::getRegisteredObjectsOfGivenType<OpenSim::Joint>(availablJointTypes);
+		for (int i = 0; i< availablJointTypes.getSize(); i++){
+			Object* clone = availablJointTypes[i]->clone();
+			Object* randClone = randomize(clone);
+			testModel.addJoint(Joint::safeDownCast(randClone));
+		}
+
+		ArrayPtrs<OpenSim::Constraint> availableConstraintTypes;
+		Object::getRegisteredObjectsOfGivenType<OpenSim::Constraint>(availableConstraintTypes);
+		for (int i = 0; i< availableConstraintTypes.getSize(); i++){
+			Object* clone = availableConstraintTypes[i]->clone();
+			Object* randClone = randomize(clone);
+			testModel.addConstraint(Constraint::safeDownCast(randClone));
+		}
+
         ArrayPtrs<OpenSim::Force> availableForceTypes;
         Object::getRegisteredObjectsOfGivenType<OpenSim::Force>(availableForceTypes);
         for (int i=0; i< availableForceTypes.getSize(); i++){
             Object* clone = availableForceTypes[i]->clone();
             Object* randClone = randomize(clone);
-            testModel.updForceSet().cloneAndAppend(*Force::safeDownCast(randClone));
+            testModel.addForce(Force::safeDownCast(randClone));
         }
-        ArrayPtrs<OpenSim::Constraint> availableConstraintTypes;
-        Object::getRegisteredObjectsOfGivenType<OpenSim::Constraint>(availableConstraintTypes);
-        for (int i=0; i< availableConstraintTypes.getSize(); i++){
-            Object* clone = availableConstraintTypes[i]->clone();
-            Object* randClone = randomize(clone);
-            testModel.updConstraintSet().cloneAndAppend(*Constraint::safeDownCast(randClone));
-        }
-        /*
+
         ArrayPtrs<OpenSim::Controller> availableControllerTypes;
         Object::getRegisteredObjectsOfGivenType<OpenSim::Controller>(availableControllerTypes);
         for (int i=0; i< availableControllerTypes.getSize(); i++){
             Object* clone = availableControllerTypes[i]->clone();
             Object* randClone = randomize(clone);
-            testModel.updControllerSet().cloneAndAppend(*Controller::safeDownCast(randClone));
-        }*/
+            testModel.addController(Controller::safeDownCast(randClone));
+        }
+
         ArrayPtrs<OpenSim::Probe> availableProbeTypes;
         Object::getRegisteredObjectsOfGivenType<OpenSim::Probe>(availableProbeTypes);
         for (int i=0; i< availableProbeTypes.getSize(); i++){
             Object* clone = availableProbeTypes[i]->clone();
             Object* randClone = randomize(clone);
-            testModel.updProbeSet().cloneAndAppend(*Probe::safeDownCast(randClone));
+            testModel.addProbe(Probe::safeDownCast(randClone));
         }
-        
+
         testModel.print("allComponents.osim");
+
         Model deserializedModel("allComponents.osim", false);
-        ASSERT(testModel==deserializedModel);
-        
+		ASSERT(testModel == deserializedModel,  
+			"deserializedModel FAILED to match original model.");       
 	}
 	catch (const Exception& e) {
         e.print(cerr);

@@ -128,7 +128,7 @@ void PathWrap::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
 	_path = &aPath;
 
 	for (i = 0; i < bodySet.getSize(); i++) {
-		WrapObject* wo = bodySet.get(i).getWrapObject(getWrapObjectName());
+		const WrapObject* wo = bodySet.get(i).getWrapObject(getWrapObjectName());
 		if (wo) {
 			_wrapObject = wo;
 			_wrapPoints[0].setBody(bodySet.get(i));

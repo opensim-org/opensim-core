@@ -108,6 +108,8 @@ void testSingleRigidTendonMuscle() {
 
 	Model model("block_hanging_RigidTendonMuscle.osim");
 	Model* modelCopy = model.clone();
+	modelCopy->setup();
+	ASSERT(model == *modelCopy);
 
 	ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
 	forward.setModel(model);
@@ -135,21 +137,19 @@ void testSingleMillardRigidTendonMuscle() {
 	cout << "*               testSingleMillardRigidTendonMuscle               *" << endl;
 	cout << "******************************************************************\n" << endl;
 	ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
-    Model fwdModel = forward.getModel();
+    Model& fwdModel = forward.getModel();
     fwdModel.getMuscles()[0].set_ignore_tendon_compliance(true); //make tendon rigid
-    forward.setModel(fwdModel);
 	forward.run();
 
 	CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
-    Model cmcModel = cmc.getModel();
+    Model& cmcModel = cmc.getModel();
     cmcModel.getMuscles()[0].set_ignore_tendon_compliance(true); //make tendon rigid
-    cmc.setModel(cmcModel);
 	cmc.run();
 
 	Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
 	Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
 
-	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.001, 3), __FILE__, __LINE__, "testSingleMillardRigidTendonMuscle failed");
+	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.002, 3), __FILE__, __LINE__, "testSingleMillardRigidTendonMuscle failed");
 
 	cout << "testSingleMillardRigidTendonMuscle passed\n" << endl;
 }

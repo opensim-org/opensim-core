@@ -24,10 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <math.h>
 #include "PinJoint.h"
-#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
@@ -65,18 +63,19 @@ PinJoint::PinJoint() :
 /**
  * Convenience Constructor.
  */
-	PinJoint::PinJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, bool reverse) :
-	Joint(name, parent, locationInParent,orientationInParent,
-			body, locationInBody, orientationInBody, reverse)
+PinJoint::PinJoint(const std::string &name, const OpenSim::Body &parent,
+	const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+	const OpenSim::Body& child,
+	const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
+	bool reverse) : 
+		Super(name, parent, locationInParent, orientationInParent,
+			child, locationInchild, orientationInChild, reverse)
 {
 	setAuthors("Ajay Seth");
 	constructCoordinates();
 
 	const CoordinateSet& coordinateSet = get_CoordinateSet();
 	coordinateSet[0].setMotionType(Coordinate::Rotational);
-
-	updBody().setJoint(*this);
 }
 
 //=============================================================================
@@ -85,35 +84,9 @@ PinJoint::PinJoint() :
 //_____________________________________________________________________________
 void PinJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	const SimTK::Vec3& orientation = getProperty_orientation().getValue();
-	const SimTK::Vec3& location = getProperty_location().getValue();
-
-	// CHILD TRANSFORM
-	Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
-	SimTK::Transform childTransform(rotation, location);
-
-	const SimTK::Vec3& orientationInParent = getProperty_orientation_in_parent().getValue();
-	const SimTK::Vec3& locationInParent = getProperty_location_in_parent().getValue();
-
-	// PARENT TRANSFORM
-	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
-	SimTK::Transform parentTransform(parentRotation, locationInParent);
-
-	PinJoint* mutableThis = const_cast<PinJoint*>(this);
-	mutableThis->createMobilizedBody(parentTransform, childTransform);
+	createMobilizedBody<MobilizedBody::Pin>(getParentTransform(), 
+		                                    getChildTransform());
 
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);
-}
-
-void PinJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform) {
-
-	// CREATE MOBILIZED BODY
-	MobilizedBody::Pin
-		simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(&updParentBody())),
-			parentTransform,SimTK::Body::Rigid(updBody().getMassProperties()),
-			childTransform);
-
-	setMobilizedBodyIndex(&updBody(), simtkBody.getMobilizedBodyIndex());
-
 }

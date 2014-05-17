@@ -70,11 +70,7 @@ public:
 
 protected:
 	/** Model component interface */
-	void connectToModel(Model& aModel) OVERRIDE_11;
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-
-private:
-	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
 
 //=============================================================================
 };	// END of class PlanarJoint

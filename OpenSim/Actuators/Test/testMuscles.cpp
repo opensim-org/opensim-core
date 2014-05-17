@@ -257,7 +257,7 @@ void simulateMuscle(
 	// ball connected  to ground via a slider along X
 	double xSinG = optimalFiberLength*cos(pennationAngle)+tendonSlackLength;
 
-	SliderJoint slider( "slider", 
+	SliderJoint* slider = new SliderJoint( "slider", 
                         ground, 
                         Vec3(anchorWidth/2+xSinG, 0, 0), 
                         Vec3(0), 
@@ -265,7 +265,7 @@ void simulateMuscle(
                         Vec3(0), 
                         Vec3(0));
 
-	CoordinateSet& jointCoordinateSet = slider.upd_CoordinateSet();
+	CoordinateSet& jointCoordinateSet = slider->upd_CoordinateSet();
 	    jointCoordinateSet[0].setName("tx");
 	    jointCoordinateSet[0].setDefaultValue(1.0);
 	    jointCoordinateSet[0].setRangeMin(0); 
@@ -277,7 +277,7 @@ void simulateMuscle(
 	}
 	// add ball to model
 	model.addBody(ball);
-
+	model.addJoint(slider);
 
 //==========================================================================
 // 1. SIMULATION SETUP: Add the muscle

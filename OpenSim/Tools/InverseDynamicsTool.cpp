@@ -351,7 +351,7 @@ bool InverseDynamicsTool::run()
 		string XYZ = "XYZ";
 		for(int i=0; i<nj; i++){
 			string joint_body_label = jointsForEquivalentBodyForces[i].getName()+"_";
-			joint_body_label += jointsForEquivalentBodyForces[i].getBody().getName();
+			joint_body_label += jointsForEquivalentBodyForces[i].getChildBody().getName();
 			for(int k=0; k<3; ++k){
 				body_force_labels[6*i+k+1] =  joint_body_label+"_F"+XYZ[k]; //first label is time
 				body_force_labels[6*i+k+3+1] =  joint_body_label+"_M"+XYZ[k];

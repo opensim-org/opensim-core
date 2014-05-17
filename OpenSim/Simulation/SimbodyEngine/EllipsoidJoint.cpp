@@ -69,7 +69,6 @@ EllipsoidJoint::EllipsoidJoint(const std::string &name, OpenSim::Body& parent, S
 	constructProperties();
 
 	set_radii_x_y_z(ellipsoidRadii);
-	updBody().setJoint(*this);
 }
 
 //=============================================================================
@@ -97,15 +96,9 @@ void EllipsoidJoint::constructProperties()
  *
  * @param Vec3 of radii: X, Y, Z in the parent frame.
  */
-void EllipsoidJoint::setEllipsoidRadii(Vec3 radii)
+void EllipsoidJoint::setEllipsoidRadii(const Vec3& radii)
 {
 	set_radii_x_y_z(radii);
-
-	// if the mobilized body index is valid, then attempt to change underlying MobilizedBody::Ellipsoid	
-	if(MobilizedBodyIndex::isValid(getMobilizedBodyIndex(&updBody()))){
-		MobilizedBody::Ellipsoid &simtkBody = (MobilizedBody::Ellipsoid &)_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(&updBody()));
-		simtkBody.setDefaultRadii(get_radii_x_y_z());
-	}
 }
 
 //=============================================================================
@@ -150,11 +143,11 @@ void EllipsoidJoint::scale(const ScaleSet& aScaleSet)
 //_____________________________________________________________________________
 void EllipsoidJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-
-
 	// CREATE MOBILIZED BODY
-	EllipsoidJoint* mutableThis = const_cast<EllipsoidJoint*>(this);
-	mutableThis->createMobilizedBody(_jointFrameInParent, _jointFrameInBody);
+	MobilizedBody::Ellipsoid mobod =
+		createMobilizedBody<MobilizedBody::Ellipsoid>(getParentTransform(),
+		                                              getChildTransform());
+	mobod.setDefaultRadii(get_radii_x_y_z());
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);
 }
@@ -163,20 +156,20 @@ void EllipsoidJoint::initStateFromProperties(SimTK::State& s) const
 {
     Super::initStateFromProperties(s);
 
-    const MultibodySystem& system = _model->getMultibodySystem();
-    const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
-    if (matter.getUseEulerAngles(s))
-        return;
-
-	const CoordinateSet& coordinateSet = get_CoordinateSet();
-
-    double xangle = coordinateSet[0].getDefaultValue();
-    double yangle = coordinateSet[1].getDefaultValue();
-    double zangle = coordinateSet[2].getDefaultValue();
-    Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
+	const SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
 	
-	EllipsoidJoint* mutableThis = const_cast<EllipsoidJoint*>(this);
-    matter.getMobilizedBody(MobilizedBodyIndex(mutableThis->updBody().getIndex())).setQToFitRotation(s, r);
+	if (!matter.getUseEulerAngles(s)){
+		const CoordinateSet& coordinateSet = get_CoordinateSet();
+
+		double xangle = coordinateSet[0].getDefaultValue();
+		double yangle = coordinateSet[1].getDefaultValue();
+		double zangle = coordinateSet[2].getDefaultValue();
+		Rotation r(BodyRotationSequence, xangle, XAxis, 
+			                             yangle, YAxis, zangle, ZAxis);
+
+		EllipsoidJoint* mutableThis = const_cast<EllipsoidJoint*>(this);
+		matter.getMobilizedBody(getChildBody().getIndex()).setQToFitRotation(s, r);
+	}
 }
 
 void EllipsoidJoint::setPropertiesFromState(const SimTK::State& state)
@@ -184,10 +177,10 @@ void EllipsoidJoint::setPropertiesFromState(const SimTK::State& state)
 	Super::setPropertiesFromState(state);
 
     // Override default in case of quaternions.
-    const MultibodySystem& system = _model->getMultibodySystem();
-    const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
+    const SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-        Rotation r = matter.getMobilizedBody(MobilizedBodyIndex(updBody().getIndex())).getBodyRotation(state);
+        Rotation r = matter.getMobilizedBody(getChildBody().getIndex())
+			.getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
 
 		const CoordinateSet& coordinateSet = get_CoordinateSet();
@@ -196,17 +189,6 @@ void EllipsoidJoint::setPropertiesFromState(const SimTK::State& state)
         coordinateSet[1].setDefaultValue(angles[1]);
         coordinateSet[2].setDefaultValue(angles[2]);
     }
-}
-
-void EllipsoidJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform)
-{
-	// CREATE MOBILIZED BODY
-	MobilizedBody::Ellipsoid
-		simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(&updParentBody())),
-			parentTransform,SimTK::Body::Rigid(updBody().getMassProperties()),
-			childTransform, get_radii_x_y_z());
-
-	setMobilizedBodyIndex(&updBody(), simtkBody.getMobilizedBodyIndex());
 }
 
 void EllipsoidJoint::generateDecorations
@@ -228,25 +210,25 @@ void EllipsoidJoint::generateDecorations
 
 		double dimension = get_radii_x_y_z().norm()/2;
         // create frames to be fixed on body 1 and body 2
-        SimTK::DecorativeFrame bodyFrame(dimension);
+        SimTK::DecorativeFrame childFrame(dimension);
         SimTK::DecorativeFrame parentFrame(dimension);
 
         // attach frame to body, translate and rotate it to the location of the joint
-        bodyFrame.setBodyId( getBody().getIndex() );
-        bodyFrame.setTransform(_jointFrameInBody);
-        bodyFrame.setColor(frame1color);
+		childFrame.setBodyId(getChildBody().getIndex());
+		childFrame.setTransform(getChildTransform());
+		childFrame.setColor(frame1color);
 
         // attach frame to parent, translate and rotate it to the location of the joint
         parentFrame.setBodyId( getParentBody().getIndex() );
-        parentFrame.setTransform(_jointFrameInParent);
+		parentFrame.setTransform(getParentTransform());
         parentFrame.setColor(frame2color);
 
 		// Construct the visible Ellipsoid
 		SimTK::DecorativeEllipsoid ellipsoid(get_radii_x_y_z());
-		ellipsoid.setTransform(_jointFrameInParent);
+		ellipsoid.setTransform(getParentTransform());
 		ellipsoid.setColor(Vec3(0.0, 1.0, 1.0));
 
-        geometryArray.push_back(bodyFrame);
+		geometryArray.push_back(childFrame);
         geometryArray.push_back(parentFrame);
 		geometryArray.push_back(ellipsoid);
 

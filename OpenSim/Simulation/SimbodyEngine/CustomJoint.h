@@ -64,17 +64,18 @@ public:
 	CustomJoint();
 	
 	/** Construct joint with supplied coordinates and transform axes */
-	CustomJoint(const std::string& name, Body& parent, 
-                SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-			    Body& body, SimTK::Vec3 locationInBody, 
-                SimTK::Vec3 orientationInBody,
-			    SpatialTransform& aSpatialTransform, bool reverse=false);
+	CustomJoint(const std::string &name, const Body& parent,
+			const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+			const Body& child,
+			const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
+			SpatialTransform& aSpatialTransform, bool reverse=false);
 
 	// Construct joint with default (empty) coordinates and axes
-	CustomJoint(const std::string& name, Body& parent, 
-                SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-			    Body& body, SimTK::Vec3 locationInBody, 
-                SimTK::Vec3 orientationInBody, bool reverse=false);
+	CustomJoint(const std::string &name, const Body& parent,
+			const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+			const Body& child,
+			const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
+			bool reverse = false);
 	
     // default destructor, copy constructor, copy assignment
 

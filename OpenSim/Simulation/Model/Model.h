@@ -34,6 +34,8 @@
 #include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/Units.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
@@ -100,6 +102,18 @@ method, in which case it will allocate an maintain a ModelVisualizer.
 
 class OSIMSIMULATION_API Model  : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(Model, ModelComponent);
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+	/** @name Property declarations
+	These are the serializable properties associated with a Connector. **/
+	/**@{**/
+	OpenSim_DECLARE_UNNAMED_PROPERTY(BodySet,
+	    "List of bodies that make up this model.");
+
+	OpenSim_DECLARE_UNNAMED_PROPERTY(JointSet,
+		"List of joints that interconnect the above bodies.");
+	/**@}**/
 
 //=============================================================================
 // METHODS
@@ -368,13 +382,14 @@ public:
 	 * Add ModelComponents to the Model. Model takes ownership of the objects.
 	 */
 	void addModelComponent(ModelComponent* aModelComponent);
-	void addBody(Body *aBody);
-	void addConstraint(Constraint *aConstraint);
-	void addForce(Force *aForce);
-	void addProbe(Probe *aProbe);
-	void addContactGeometry(ContactGeometry *aContactGeometry);
+	void addBody(Body *body);
+	void addJoint(Joint *joint);
+	void addConstraint(Constraint *constraint);
+	void addForce(Force *force);
+	void addProbe(Probe *probe);
+	void addContactGeometry(ContactGeometry *contactGeometry);
 	/** remove passed in Probe from model **/
-    void removeProbe(Probe *aProbe);
+    void removeProbe(Probe *probe);
 	//--------------------------------------------------------------------------
 	// FILE NAME
 	//--------------------------------------------------------------------------
@@ -661,8 +676,8 @@ public:
 	   return _coordinateSet; 
     }
 
-    BodySet& updBodySet() { return _bodySet; }
-    const BodySet& getBodySet() const { return _bodySet; }
+    BodySet& updBodySet() { return upd_BodySet(); }
+    const BodySet& getBodySet() const { return get_BodySet(); }
 
     JointSet& updJointSet(); 
     const JointSet& getJointSet() const;
@@ -793,8 +808,8 @@ public:
 	~Model();
 
 	/** Override of the default implementation to account for versioning. */
-	/*virtual*/ void updateFromXMLNode(SimTK::Xml::Element& aNode, 
-                                       int versionNumber=-1);
+	void updateFromXMLNode(SimTK::Xml::Element& aNode, 
+		                   int versionNumber = -1) OVERRIDE_11;
     /**@}**/
 
     //--------------------------------------------------------------------------
@@ -840,6 +855,7 @@ private:
 
 	// Connect properties to local pointers.
 	void setupProperties();
+	void constructProperties();
 
 	// Internal method to check that specified mass properties for the bodies 
     // are physically possible that is, satisfy the triangular inequality 
@@ -905,10 +921,6 @@ private:
 	PropertyObj _probeSetProp;
 	ProbeSet& _probeSet;
 
-    // Set containing the bodies in this model.
-    PropertyObj _bodySetProp;
-    BodySet& _bodySet;
-
     // Set containing the constraints in this model.
     PropertyObj _constraintSetProp;
     ConstraintSet& _constraintSet;
@@ -934,9 +946,6 @@ private:
 
 	// Set containing the analyses in this model.
 	AnalysisSet     _analysisSet;
-
-	// Set containing the joints in this model.
-	JointSet        _jointSet;
 
 	// Set containing the generalized coordinates in this model.
 	CoordinateSet   _coordinateSet;

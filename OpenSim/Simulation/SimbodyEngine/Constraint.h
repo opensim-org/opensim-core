@@ -48,7 +48,10 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(Constraint, ModelComponent);
 //=============================================================================
 public:
 
-	OpenSim_DECLARE_PROPERTY(isDisabled, bool, "Flag indicating whether the constraint is disabled or not. Disabled means that the constraint is not active in subsequent dynamics realization");
+	OpenSim_DECLARE_PROPERTY(isDisabled, bool, 
+		"Flag indicating whether the constraint is disabled or not."
+		"Disabled means that the constraint is not active in subsequent "
+		"dynamics realizations.");
 
 //=============================================================================
 // METHODS

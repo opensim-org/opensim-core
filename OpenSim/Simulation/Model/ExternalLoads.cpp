@@ -373,7 +373,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 
 	_storages.append(newDataSource);
 
-	//newDataSource->print("NewDataSource_TransformedP.sto");
+	newDataSource->print("NewDataSource_TransformedP.sto");
 
 	return exF_transformedPoint;
 }

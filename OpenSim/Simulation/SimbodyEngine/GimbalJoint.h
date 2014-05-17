@@ -69,8 +69,6 @@ protected:
     void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
     void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
 
-private:
-	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
 //=============================================================================
 };	// END of class GimbalJoint
 //=============================================================================

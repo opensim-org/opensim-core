@@ -1,5 +1,5 @@
-#ifndef __BallJoint_h__
-#define __BallJoint_h__
+#ifndef OPENSIM_BALL_JOINT_H_ 
+#define OPENSIM_BALL_JOINT_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  BallJoint.h                            *
  * -------------------------------------------------------------------------- *
@@ -61,8 +61,10 @@ public:
 	// CONSTRUCTION
 	BallJoint();
 	// convenience constructor
-	BallJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-				OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
+	BallJoint(const std::string &name, const OpenSim::Body& parent, 
+		const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+		const OpenSim::Body& body, 
+		const SimTK::Vec3& locationInBody, const SimTK::Vec3& orientationInBody,
 				/*bool useEulerAngles=true,*/ bool reverse=false);
 
 	virtual ~BallJoint();
@@ -75,8 +77,6 @@ protected:
     void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
     void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
 
-private:
-	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
 //=============================================================================
 };	// END of class BallJoint
 //=============================================================================
@@ -84,6 +84,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __BallJoint_h__
+#endif // OPENSIM_BALL_JOINT_H_
 
 

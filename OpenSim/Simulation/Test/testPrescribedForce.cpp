@@ -108,7 +108,7 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
 	ball.setName("ball");
 
 	// Add joints
-	FreeJoint free("", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0), false);
+	FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0), false);
 
 	// Rename coordinates for a free joint
 	CoordinateSet free_coords = free.getCoordinateSet();
@@ -120,6 +120,7 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
 	}
 
 	osimModel->addBody(&ball);
+	osimModel->addJoint(&free);
 
 	// Add a PrescribedForce.
 	PrescribedForce force(&ball);

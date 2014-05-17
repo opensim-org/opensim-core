@@ -377,11 +377,12 @@ void generateUmbergerMuscleData(const std::string& muscleName,
                                              blockInertia);
 
     // Create slider joint between ground and block.
-    OpenSim::SliderJoint prismatic("prismatic", ground, Vec3(0), Vec3(0),
+    SliderJoint* prismatic = new SliderJoint("prismatic", ground, Vec3(0), Vec3(0),
                                                 *block, Vec3(0), Vec3(0));
-    CoordinateSet& prisCoordSet = prismatic.upd_CoordinateSet();
+    CoordinateSet& prisCoordSet = prismatic->upd_CoordinateSet();
     prisCoordSet[0].setName("xTranslation");
     model.addBody(block);
+	model.addJoint(prismatic);
 
     // Create muscle attached to ground and block.
     UmbergerMuscle *muscle = new UmbergerMuscle(muscleName, maxIsometricForce,
@@ -669,9 +670,9 @@ void testProbesUsingMillardMuscleSimulation()
     block->addDisplayGeometry("block.vtp");
 
     // Create slider joint between ground and block.
-    OpenSim::SliderJoint prismatic("prismatic", ground, Vec3(0), Vec3(0),
+    SliderJoint* prismatic = new SliderJoint("prismatic", ground, Vec3(0), Vec3(0),
                                                 *block, Vec3(0), Vec3(0));
-    CoordinateSet& prisCoordSet = prismatic.upd_CoordinateSet();
+    CoordinateSet& prisCoordSet = prismatic->upd_CoordinateSet();
     prisCoordSet[0].setName("xTranslation");
     prisCoordSet[0].setRangeMin(-1);
     prisCoordSet[0].setRangeMax(1);
@@ -681,6 +682,7 @@ void testProbesUsingMillardMuscleSimulation()
     prisCoordSet[0].setPrescribedFunction(motion);
     prisCoordSet[0].setDefaultIsPrescribed(true);
     model.addBody(block);
+	model.addJoint(prismatic);
 
     // Create muscles attached to ground and block.
     //                    _______

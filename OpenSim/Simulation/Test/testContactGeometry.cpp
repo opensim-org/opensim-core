@@ -106,15 +106,14 @@ int testBouncingBall(bool useMesh)
     OpenSim::Body& ground = osimModel->getGroundBody();
 	OpenSim::Body ball;
 	ball.setName("ball");
-	ball.setMass(mass);
-	ball.setMassCenter(Vec3(0));
+	ball.set_mass(mass);
+	ball.set_mass_center(Vec3(0));
 	ball.setInertia(Inertia(1.0));
 
 	// Add joints
 	FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0));
 	osimModel->addBody(&ball);
-	// BAD: have to set memoryOwner to false or model will try to delete
-	osimModel->updBodySet().setMemoryOwner(false);
+	osimModel->addJoint(&free);
 
     // Create ContactGeometry.
     ContactHalfSpace *floor = new ContactHalfSpace(Vec3(0), Vec3(0, 0, -0.5*SimTK_PI), ground, "ground");
@@ -204,6 +203,7 @@ int testBouncingBall(bool useMesh)
 	std::string prefix = useMesh?"Kinematics_Mesh":"Kinematics_NoMesh";
 	kin->printResults(prefix);
 
+	osimModel->disownAllComponents();
 	// model takes ownership of components unless container set is told otherwise
 	delete osimModel;
 
@@ -230,8 +230,7 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
 	FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0));
 
 	osimModel->addBody(&ball);
-	// BAD: have to set memoryOwner to false or model will try to delete
-	osimModel->updBodySet().setMemoryOwner(false);
+	osimModel->addJoint(&free);
 
     // Create ContactGeometry.
     OpenSim::ContactGeometry *ball1, *ball2;
@@ -313,6 +312,7 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
 	kin->printResults(prefix);
 	reporter->printResults(prefix);
 
+	osimModel->disownAllComponents();
 	// model takes ownership of components unless container set is told otherwise
 	delete osimModel;
 

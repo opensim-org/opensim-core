@@ -22,15 +22,8 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <string>
-#include <iostream>
-#include <OpenSim/version.h>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
-#include <OpenSim/Analyses/StaticOptimization.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
@@ -40,6 +33,7 @@ int main()
 {
 	try {
 		AnalyzeTool analyze1("PlotterTool.xml");
+		analyze1.getModel().print("testAnalyzeTutorialOne.osim");
  		analyze1.run();
         /* Once this runs to completion we'll make the test more meaningful by comparing output 
          * to a validated standard. Let's make sure we don't crash during run first! -Ayman 5/29/12 */
@@ -58,7 +52,7 @@ int main()
 		cout << "testAnalyzeTutorialOne passed" << endl;
 	}
 	catch (const exception& e) {
-		cout << "\ntestAnalyzeTutorialOne Failed: " << e.what() << endl;
+		cout << "testAnalyzeTutorialOne Failed: " << e.what() << endl;
         return 1;
     }
     cout << "Done" << endl;

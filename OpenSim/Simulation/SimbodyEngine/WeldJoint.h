@@ -1,5 +1,5 @@
-#ifndef __WeldJoint_h__
-#define __WeldJoint_h__
+#ifndef OPENSIM_WELD_JOINT_H_
+#define OPENSIM_WELD_JOINT_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  WeldJoint.h                            *
  * -------------------------------------------------------------------------- *
@@ -23,11 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/ScaleSet.h>
 #include "Joint.h"
 
 namespace OpenSim {
@@ -35,8 +32,9 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing an Weld joint.  The underlying implementation 
- * in Simbody is a MobilizedBody::Weld.
+ * A class implementing a Weld joint. There is no relative motion of bodies
+ * joined by a WeldJoint. 
+ * The underlying implementation in Simbody is a MobilizedBody::Weld.
  *
  * @author Ajay Seth
  * @version 1.0
@@ -49,10 +47,8 @@ private:
 //=============================================================================
 // DATA
 //=============================================================================
-protected:
 
 	/** Weld has no properties*/
-
 
 //=============================================================================
 // METHODS
@@ -61,17 +57,17 @@ public:
 	// CONSTRUCTION
 	WeldJoint();
 	// Convenience constructor
-	WeldJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, bool reverse=false);
+	WeldJoint(const std::string &name, const Body& parent,
+		const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+		const Body& child,
+		const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
+		bool reverse = false);
 	virtual ~WeldJoint();
 
 	int numCoordinates() const OVERRIDE_11 {return _numMobilities;};
 
 protected:
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-
-public:
-	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
 
 //=============================================================================
 };	// END of class WeldJoint
@@ -80,6 +76,6 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // __WeldJoint_h__
+#endif // OPENSIM_WELD_JOINT_H_
 
 

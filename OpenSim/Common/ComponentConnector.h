@@ -121,26 +121,15 @@ public:
 	/** get the type of object this connector connects to*/
 	virtual std::string getConnectedToTypeName() const = 0;
 
-	/** Connect this Connector to the provided conectee object */
-	void connect(const Object& conectee) {
-		if (conectee.getConcreteClassName() == getConnectedToTypeName()){
-			connectee = conectee;
-			set_connected_to_name(conectee.getName());
-		}
-		else{
-			std::stringstream msg;
-			msg << "Connector::connect(Object): ERR- Cannot connect '" << conectee.getName()
-				<< "' of type " << conectee.getConcreteClassName() << ". Connecter requires "
-				<< getConnectedToTypeName() << ".";
-			throw Exception(msg.str(), __FILE__, __LINE__);
-		}	
-	}
+	/** Connect this Connector to the provided connectee object */
+	virtual void connect(const Object& conectee) = 0;
+
+	/** Disconnect this Connector from the connectee object */
+	virtual void disconnect() = 0;
 
 private:
 	void constructProperties() { constructProperty_connected_to_name(""); }
 	SimTK::Stage connectAtStage;
-	mutable SimTK::ReferencePtr<const Object> connectee;
-
 //=============================================================================
 };	// END class AbstractConnector
 
@@ -174,18 +163,32 @@ public:
 		For example, Input should short circuit to its Output's getValue()
 		once it is connected.
 	Return a const reference to the object connected to this Connector */
-	const T& getConectee() const { return connectee.getRef(); }
+	const T& getConnectee() const { return connectee.getRef(); }
 
 	/** Connect this Connector to the provided conectee object */
-	void connect(const T& conectee)  {
-		Super::connect(conectee);
-		connectee = conectee;
+	void connect(const Object& object) OVERRIDE_11{
+		const T* objT = dynamic_cast<const T*>(&object);
+		if (objT) {
+			connectee = *objT;
+			set_connected_to_name(object.getName());
+		}
+		else {
+			std::stringstream msg;
+			msg << "Connector::connect(): ERR- Cannot connect '" << object.getName()
+			    << "' of type " << object.getConcreteClassName() << ". Connector requires "
+			    << getConnectedToTypeName() << ".";
+			throw Exception(msg.str(), __FILE__, __LINE__);
+		}
+	}
+
+	void disconnect() OVERRIDE_11 {
+		connectee.clear();
 	}
 	
 	/** Derived classes must satisfy this Interface */
 	/** get the type of object this connector connects to*/
 	std::string getConnectedToTypeName() const OVERRIDE_11
-	{ return SimTK::NiceTypeName<T>::name();; }
+	{ return SimTK::NiceTypeName<T>::name(); }
 
 	SimTK_DOWNCAST(Connector, AbstractConnector);
 
@@ -213,13 +216,25 @@ public:
 
 	virtual ~AbstractInput() {}
 
-	/** Specific Input Connect */
-	/** Connect this AbstractInput to the provided (Abstract)Output */
+	// Connector interface
+	void connect(const Object& object) OVERRIDE_11{
+		std::stringstream msg;
+		msg << "Input::connect(): ERR- Cannot connect '" << object.getName()
+			<< "' of type " << object.getConcreteClassName() <<
+			". Input can only connect to an Output.";
+		throw Exception(msg.str(), __FILE__, __LINE__);
+	}
+
+	/** Input Specific Connect */
 	virtual void connect(const AbstractOutput& output) const {
 		connectee = output;
-		std::cout << getConcreteClassName() << "::connected to '";
-		std::cout << output.getName() << "<" << output.getTypeName();
-		std::cout << ">." << std::endl;
+		//std::cout << getConcreteClassName() << "::connected to '";
+		//std::cout << output.getName() << "'<" << output.getTypeName();
+		//std::cout << ">." << std::endl;
+	}
+
+	void disconnect() OVERRIDE_11 {
+		connectee.clear();
 	}
 
 	/** Is the Input connected to an Output? */

@@ -170,8 +170,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( PointConstraint() );
     Object::registerType( ConstantDistanceConstraint() );
     Object::registerType( CoordinateCouplerConstraint() );
-    Object::registerType( CustomJoint() );
-    Object::registerType( WeldJoint() );
+	Object::registerType( WeldJoint());
+	Object::registerType( CustomJoint());
     Object::registerType( EllipsoidJoint() );
     Object::registerType( FreeJoint() );
     Object::registerType( BallJoint() );
@@ -223,6 +223,9 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( Bhargava2004MuscleMetabolicsProbe() );
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet() );
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter() );
+
+	// Register commonly used Connectors for de/serialization
+	Object::registerType(Connector<OpenSim::Body>());
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.

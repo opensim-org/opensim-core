@@ -67,7 +67,6 @@ GimbalJoint::GimbalJoint(const std::string &name, OpenSim::Body& parent,
 {
 	setAuthors("Tim Dorn");
 	constructCoordinates();
-	updBody().setJoint(*this);
 }
 
 //=============================================================================
@@ -76,32 +75,8 @@ GimbalJoint::GimbalJoint(const std::string &name, OpenSim::Body& parent,
 //_____________________________________________________________________________
 void GimbalJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	const SimTK::Vec3& orientation = get_orientation();
-	const SimTK::Vec3& location = get_location();
-
-	// CHILD TRANSFORM
-	Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
-	SimTK::Transform childTransform(rotation,location);
-
-	const SimTK::Vec3& orientationInParent = get_orientation_in_parent();
-	const SimTK::Vec3& locationInParent = get_location_in_parent();
-
-	// PARENT TRANSFORM
-	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
-	SimTK::Transform parentTransform(parentRotation, locationInParent);
-
-	// CREATE MOBILIZED BODY
-	/*if(_useEulerAngles){
-		MobilizedBody::Gimbal
-			simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(_parentBody)),
-				parentTransform,SimTK::Body::Rigid(_body->getMassProperties()),
-				childTransform);
-		setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
-	}
-	else{*/
-	GimbalJoint* mutableThis = const_cast<GimbalJoint*>(this);
-	mutableThis->createMobilizedBody(parentTransform, childTransform);
-	//}
+	createMobilizedBody<MobilizedBody::Gimbal>(getParentTransform(),
+		                                       getChildTransform());
 
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);
@@ -124,7 +99,7 @@ void GimbalJoint::initStateFromProperties(SimTK::State& s) const
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
 	
 	GimbalJoint* mutableThis = const_cast<GimbalJoint*>(this);
-    matter.getMobilizedBody(MobilizedBodyIndex(mutableThis->updBody().getIndex())).setQToFitRotation(s, r);
+    matter.getMobilizedBody(getChildBody().getIndex()).setQToFitRotation(s, r);
 }
 
 void GimbalJoint::setPropertiesFromState(const SimTK::State& state)
@@ -135,7 +110,7 @@ void GimbalJoint::setPropertiesFromState(const SimTK::State& state)
     const MultibodySystem&        system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-        Rotation r = matter.getMobilizedBody(MobilizedBodyIndex(updBody().getIndex())).getBodyRotation(state);
+        Rotation r = matter.getMobilizedBody(getChildBody().getIndex()).getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
 	
 		const CoordinateSet& coordinateSet = get_CoordinateSet();
@@ -144,15 +119,4 @@ void GimbalJoint::setPropertiesFromState(const SimTK::State& state)
         coordinateSet[1].setDefaultValue(angles[1]);
         coordinateSet[2].setDefaultValue(angles[2]);
     }
-}
-
-void GimbalJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform) {
-
-	// CREATE MOBILIZED BODY
-	MobilizedBody::Gimbal
-		simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(&updParentBody())),
-			parentTransform,SimTK::Body::Rigid(updBody().getMassProperties()),
-			childTransform);
-
-	setMobilizedBodyIndex(&updBody(), simtkBody.getMobilizedBodyIndex());
 }

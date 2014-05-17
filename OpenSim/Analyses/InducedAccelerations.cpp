@@ -663,7 +663,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 			_model->getMultibodySystem().realize(s_analysis, SimTK::Stage::Velocity);
 		}
 		else{ //The rest are actuators		
-			// Set gravity ON
+			// Set gravity OFF
 			_model->updForceSubsystem().setForceIsDisabled(s_analysis, _model->getGravityForce().getForceIndex(), true);
 
 			// zero actuator forces
@@ -739,9 +739,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 		for(int i=0;i<_bodySet.getSize();i++) {
 			Body &body = _bodySet.get(i);
 			// cout << "Body Name: "<< body->getName() << endl;
-			SimTK::Vec3 com(0);
-			// Get the center of mass location for this body
-			body.getMassCenter(com);
+			const SimTK::Vec3& com = body.get_mass_center();
 			
 			// Get the body acceleration
 			_model->getSimbodyEngine().getAcceleration(s_analysis, body, com, vec);
@@ -813,7 +811,7 @@ void InducedAccelerations::initialize(const SimTK::State& s)
 
 	_externalForces.setSize(0);
 
-	//Only add constraint set if constraint type for the analysis is Roll
+	//add constraint to set 
 	for(int i=0; i<_constraintSet.getSize(); i++){
 		Constraint* contactConstraint = &_constraintSet.get(i);
 		if(contactConstraint)

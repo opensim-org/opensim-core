@@ -1,5 +1,5 @@
-#ifndef __Body_h__
-#define __Body_h__
+#ifndef OPENSIM_BODY_H_
+#define OPENSIM_BODY_H_
 /* -------------------------------------------------------------------------- *
  *                              OpenSim:  Body.h                              *
  * -------------------------------------------------------------------------- *
@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Frank C. Anderson, Ajay Seth                                    *
+ * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Author(s): Ajay Seth, Ayman Habib                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,21 +23,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <math.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Common/VisibleObject.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/PropertyObjPtr.h>
-#include <SimTKsimbody.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 
 namespace OpenSim {
@@ -48,107 +37,94 @@ class WrapObjectSet;
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Simbody rigid body.
+ * An OpenSim rigid body component. An OpenSim::Body is essentially a reference
+ * frame with inertial properties specified by its mass, center-of-mass located
+ * in the body frame and the moment of inertia tensor about the center-of-mass.  
  *
- * @author Frank C. Anderson, Ajay Seth
- * @version 1.0
+ * Ajay Seth
  */
 class OSIMSIMULATION_API Body : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(Body, ModelComponent);
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations 
+    These are the serializable properties associated with a Body. **/
+    /**@{**/
+	OpenSim_DECLARE_PROPERTY(mass, double, 
+		"The mass of the body (kg)");
 
-//=============================================================================
-// DATA
-//=============================================================================
+	OpenSim_DECLARE_PROPERTY(mass_center, SimTK::Vec3, 
+		"The location (Vec3) of the mass center in the body frame.");
+
+	OpenSim_DECLARE_PROPERTY(inertia, SimTK::Vec6, 
+		"The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.");
+
+	OpenSim_DECLARE_UNNAMED_PROPERTY(WrapObjectSet,
+		"Set of wrap objects fixed to this body that GeometryPaths can wrap over.");
+	/**@}**/
 protected:
-	/** Mass of the body. */
-	PropertyDbl _massProp;
-	double &_mass;
-
-	/** Mass center of body. */
-	PropertyDblVec3 _massCenterProp;
-	SimTK::Vec3 &_massCenter;
-
-	// Inertia tensor of the body about its center of mass.
-	/** Moment of inertia Ixx computed with respect to the body's center of mass. */
-	PropertyDbl _inertiaXXProp;
-	double &_inertiaXX;
-	/** Moment of inertia Iyy computed with respect to the body's center of mass. */
-	PropertyDbl _inertiaYYProp;
-	double &_inertiaYY;
-	/** Moment of inertia Izz computed with respect to the body's center of mass. */
-	PropertyDbl _inertiaZZProp;
-	double &_inertiaZZ;
-	/** Product of inertia Ixy computed with respect to the body's center of mass. */
-	PropertyDbl _inertiaXYProp;
-	double &_inertiaXY;
-	/** Product of inertia Ixz computed with respect to the body's center of mass. */
-	PropertyDbl _inertiaXZProp;
-	double &_inertiaXZ;
-	/** Product of inertia Iyz computed with respect to the body's center of mass. */
-	PropertyDbl _inertiaYZProp;
-	double &_inertiaYZ;
-
-	/** Joint connecting this body with the parent body. */
-	PropertyObjPtr<Joint> _jointProp;
-	Joint* &_joint;
 
 	/** For display of the body. */
-	PropertyObj _displayerProp;
-	VisibleObject &_displayer;
-
-	/** Set containing the wrap objects attached to this body. */
-	PropertyObj _wrapObjectSetProp;
-	WrapObjectSet &_wrapObjectSet;
-
-	/** ID for the body in Simbody. */
-	SimTK::MobilizedBodyIndex _index;
+	VisibleObject _displayer;
 
 //=============================================================================
-// METHODS
+// PUBLIC METHODS
 //=============================================================================
+
+public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-public:
+	/** default contructor*/
 	Body();
-	Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,const SimTK::Inertia& aInertia);
-	Body(const Body &aBody);
-	virtual ~Body();
 
-#ifndef SWIG
-	Body& operator=(const Body &aBody);
-#endif
-	void copyData(const Body &aBody);
+	/** Convenience constructor */	
+	Body(const std::string &aName, double aMass, const SimTK::Vec3& aMassCenter,
+		const SimTK::Inertia& aInertia);
+
+	// use compiler generated destructor, copy constructor and assignment operator
+
+	/** Access Properties of the Body */
+	/** The mass of the body in kg */
+	const double& getMass() const { return get_mass(); }
+	void setMass(const double& mass) { set_mass(mass); }
+
+	/** The body center of mass location (Vec3) in the Body frame. */
+	const SimTK::Vec3& getMassCenter() const { return get_mass_center(); }
+	void setMassCenter(const SimTK::Vec3& com) { return set_mass_center(com); }
+
+	/** The body's inertia about the center of mass location. */
+	const SimTK::Inertia& getInertia() const;
+	void setInertia(const SimTK::Inertia& aInertia);
+
+	/** Assemble body interial properties: mass, center of mass location, moment 
+	    of inertia about the origin of the body and return as SimTK::MassProperties */
+	SimTK::MassProperties getMassProperties() const;
+
+	void scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass = false);
+	void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true);
+	void scaleMass(double aScaleFactor);
+	void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
 
 	virtual void addDisplayGeometry(const std::string &aGeometryFileName);
-	virtual double getMass() const;
-	virtual bool setMass(double aMass);
-	virtual void getMassCenter(SimTK::Vec3& rVec) const;
-	virtual bool setMassCenter(const SimTK::Vec3& aVec);
-	virtual void getInertia(SimTK::Mat33& rInertia) const;
-	virtual bool setInertia(const SimTK::Inertia& aInertia);
-    virtual bool hasJoint() const { return _joint != NULL; }
-	virtual Joint& getJoint() const;
-	virtual void setJoint(Joint& aJoint);
-	virtual void scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass = false);
-	virtual void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true);
-	virtual void scaleMass(double aScaleFactor);
 
-	virtual const VisibleObject* getDisplayer() const { return &_displayer; }
-	virtual VisibleObject*	updDisplayer() { return &_displayer; };
+	const VisibleObject* getDisplayer() const { return &_displayer; }
+	VisibleObject*	updDisplayer() { return &_displayer; };
 
-	virtual const SimTK::MobilizedBodyIndex getIndex() const {return _index;};
-	void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
+	const SimTK::MobilizedBodyIndex getIndex() const {return _index;};
+	
+	/**
+	* Get the named wrap object, if it exists.
+	*
+	* @param aName Name of the wrap object.
+	* @return const Pointer to the wrap object. */
+	const WrapObject* getWrapObject(const std::string& aName) const;
+	const WrapObjectSet& getWrapObjectSet() const { return get_WrapObjectSet(); }
 
 	/** add a wrap object to the body. Note that the body takes ownership of the WrapObject */
 	void addWrapObject(WrapObject* wrapObject);
-	WrapObject* getWrapObject(const std::string& aName) const;
-	const WrapObjectSet& getWrapObjectSet() const { return _wrapObjectSet; }
-	
-
-	/** Assemble body interial properties: mass, center of mass location, moment of inertia
-	    about the origin of the body and return as a SimTK::MassProperties */
-	SimTK::MassProperties getMassProperties();
 
 protected:
     // Model component interface.
@@ -156,8 +132,21 @@ protected:
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;	
 
 private:
+	/** Override of the default implementation to account for versioning. */
+	void updateFromXMLNode(SimTK::Xml::Element& aNode,
+		int versionNumber = -1) OVERRIDE_11;
+
 	void setNull();
-	void setupProperties();
+	void constructProperties();
+
+	// mutable because fist get constructs tensor from properties
+	mutable SimTK::Inertia _inertia;
+
+	/* ID for the underlying mobilized body in Simbody system.
+	    Only Joint can set, since it defines the mobilized body type and
+		the connection to the parent body in the multibody tree. */
+	mutable SimTK::MobilizedBodyIndex _index;
+
 	friend class Joint;
 
 //=============================================================================
@@ -167,6 +156,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __Body_h__
+#endif // OPENSIM_BODY_H_
 
 

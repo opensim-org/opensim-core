@@ -768,20 +768,6 @@ bool SimbodyEngine::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFi
 }
 
 //=============================================================================
-// BODY INFORMATION
-//=============================================================================
-WrapObject* SimbodyEngine::getWrapObject(const string& aName) const
-{
-	for (int i = 0; i < _model->getBodySet().getSize(); i++) {
-		WrapObject* wrap = _model->getBodySet().get(i).getWrapObject(aName);
-		if (wrap != NULL)
-			return wrap;
-	}
-
-	return NULL;
-}
-
-//=============================================================================
 // CONFIGURATION
 //=============================================================================
 /**
@@ -825,9 +811,7 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
 		int fix = aQIn.getStateIndex(qName);
 		if (fix==-1){
 			// try the complete path name to identify the state_name in storage
-			string name = coord.getJoint().getBody().getName()+"/"
-							+ coord.getJoint().getName()+"/"+coord.getName()+"/"
-							+ qName;
+			string name = coord.getJoint().getName()+"/"+coord.getName()+"/"+qName;
 			fix = aQIn.getStateIndex(name);
 		}
 		index[i] = fix;

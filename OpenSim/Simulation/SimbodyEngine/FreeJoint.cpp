@@ -68,8 +68,6 @@ FreeJoint::FreeJoint() :
 	//_useEulerAngles(_useEulerAnglesProp.getValueBool())
 {
 	setNull();
-	//_useEulerAngles = useEulerAngles;
-	updBody().setJoint(*this);
 	setName(name);
 }
 
@@ -119,25 +117,8 @@ void FreeJoint::setNull()
 //_____________________________________________________________________________
 void FreeJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	const SimTK::Vec3& orientation = get_orientation();
-	const SimTK::Vec3& location = get_location();
-
-	// CHILD TRANSFORM
-	Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
-	SimTK::Transform childTransform(rotation, location);
-
-	const SimTK::Vec3& orientationInParent = get_orientation_in_parent();
-	const SimTK::Vec3& locationInParent = get_location_in_parent();
-
-	// PARENT TRANSFORM
-	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
-	SimTK::Transform parentTransform(parentRotation, locationInParent);
-
-	SimTK::Transform noTransform(Rotation(), Vec3(0));
-
-	// CREATE MOBILIZED BODY
-	FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
-	mutableThis->createMobilizedBody(parentTransform, childTransform);
+	createMobilizedBody<MobilizedBody::Free>(getParentTransform(),
+		                                     getChildTransform());
 
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);
@@ -145,26 +126,27 @@ void FreeJoint::addToSystem(SimTK::MultibodySystem& system) const
 
 void FreeJoint::initStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+	Super::initStateFromProperties(s);
 
-    const MultibodySystem& system = _model->getMultibodySystem();
-    const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
-    if (matter.getUseEulerAngles(s))
-        return;
-	int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
-   
-	const CoordinateSet& coordinateSet = get_CoordinateSet();
+	const MultibodySystem& system = _model->getMultibodySystem();
+	const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
+	if (!matter.getUseEulerAngles(s)){
+		int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
 
-	double xangle = coordinateSet.get(zero).getDefaultValue();
-    double yangle = coordinateSet.get(1).getDefaultValue();
-    double zangle = coordinateSet.get(2).getDefaultValue();
-    Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
-	Vec3 t( coordinateSet.get(3).getDefaultValue(), 
-			coordinateSet.get(4).getDefaultValue(), 
+		const CoordinateSet& coordinateSet = get_CoordinateSet();
+
+		double xangle = coordinateSet.get(zero).getDefaultValue();
+		double yangle = coordinateSet.get(1).getDefaultValue();
+		double zangle = coordinateSet.get(2).getDefaultValue();
+		Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
+		Vec3 t(coordinateSet.get(3).getDefaultValue(),
+			coordinateSet.get(4).getDefaultValue(),
 			coordinateSet.get(5).getDefaultValue());
-	
-	FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
-    matter.getMobilizedBody(MobilizedBodyIndex(mutableThis->updBody().getIndex())).setQToFitTransform(s, Transform(r, t));
+
+		FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
+		matter.getMobilizedBody(getChildBody().getIndex()).setQToFitTransform(s, Transform(r, t));
+
+	}
 }
 
 void FreeJoint::setPropertiesFromState(const SimTK::State& state)
@@ -175,8 +157,8 @@ void FreeJoint::setPropertiesFromState(const SimTK::State& state)
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-        Rotation r = matter.getMobilizedBody(MobilizedBodyIndex(updBody().getIndex())).getMobilizerTransform(state).R();
-		Vec3 t = matter.getMobilizedBody(MobilizedBodyIndex(updBody().getIndex())).getMobilizerTransform(state).p();
+		Rotation r = matter.getMobilizedBody(getChildBody().getIndex()).getMobilizerTransform(state).R();
+		Vec3 t = matter.getMobilizedBody(getChildBody().getIndex()).getMobilizerTransform(state).p();
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
         int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
 		
@@ -189,14 +171,4 @@ void FreeJoint::setPropertiesFromState(const SimTK::State& state)
 		coordinateSet.get(4).setDefaultValue(t[1]); 
 		coordinateSet.get(5).setDefaultValue(t[2]);
     }
-}
-
-void FreeJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform) {
-
-	// CREATE MOBILIZED BODY
-	MobilizedBody::Free
-		simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(&updParentBody())),
-		parentTransform, SimTK::Body::Rigid(updBody().getMassProperties()), childTransform);
-
-	setMobilizedBodyIndex(&updBody(), simtkBody.getMobilizedBodyIndex());
 }

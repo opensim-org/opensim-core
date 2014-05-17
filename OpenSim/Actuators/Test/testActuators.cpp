@@ -23,7 +23,9 @@
 //========================  Actuators Tested ==================================
 //
 //	Tests Include:
-//      1. ClutchedPathSpring
+//      1.  testTorqueActuator()
+//		2.	testClutchedPathSpring()
+//		3.	testMcKibbenActuator()
 //		
 //     Add tests here as Actuators are added to OpenSim
 //
@@ -53,11 +55,6 @@ int main()
 {
 	SimTK::Array_<std::string> failures;
 
-	try { testMcKibbenActuator(); }
-	catch (const std::exception& e){
-		cout << e.what() << endl; failures.push_back("testMcKibbenActuator");
-	}
-	
 	try {testTorqueActuator();}
     catch (const std::exception& e){
 		cout << e.what() <<endl; failures.push_back("testTorqueActuator");
@@ -66,7 +63,10 @@ int main()
     catch (const std::exception& e){
 		cout << e.what() <<endl; failures.push_back("testClutchedPathSpring");
 	}
-	
+	try { testMcKibbenActuator(); }
+	catch (const std::exception& e){
+		cout << e.what() << endl; failures.push_back("testMcKibbenActuator");
+	}
     if (!failures.empty()) {
 		cout << "Done, with failure(s): " << failures << endl;
         return 1;
@@ -110,6 +110,7 @@ void testMcKibbenActuator()
 	coords[0].set_prescribed(true);
 
 	model->addBody(ball);
+	model->addJoint(ballToGround);
 	model->addForce(actuator);
 
 	PrescribedController* controller = 	new PrescribedController();
@@ -187,15 +188,18 @@ void testTorqueActuator()
 		= new OpenSim::Body("B", m2, Vec3(0), j2);
 
 	// connect bodyA to ground with 6dofs
-	FreeJoint base("base", ground, Vec3(0), Vec3(0), *bodyA, Vec3(0), Vec3(0));
+	FreeJoint* base = 
+		new FreeJoint("base", ground, Vec3(0), Vec3(0), *bodyA, Vec3(0), Vec3(0));
 
 	model->addBody(bodyA);
+	model->addJoint(base);
 
 	// connect bodyA to bodyB by a Ball joint
-	BallJoint bInA("bInA", *bodyA, Vec3(0,-h/2, 0), Vec3(0), 
+	BallJoint* bInA = new BallJoint("bInA", *bodyA, Vec3(0,-h/2, 0), Vec3(0), 
 		                   *bodyB, Vec3(0, h/2, 0), Vec3(0));
 
 	model->addBody(bodyB);
+	model->addJoint(bInA);
 
 	// specify magnitude and direction of applied torque
 	double torqueMag = 2.1234567890;
@@ -308,7 +312,8 @@ void testTorqueActuator()
 	
 	// Check that de/serialization works
 	Model modelFromFile("TestTorqueActuatorModel.osim");
-	ASSERT(modelFromFile == *model);
+	ASSERT(modelFromFile == *model, __FILE__, __LINE__,
+		"Model from file FAILED to match model in memory.");
 
 	std::cout << "Test TorqueActuator time = " << 
 		1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
@@ -329,7 +334,6 @@ void testClutchedPathSpring()
 	double ball_radius = 0.25;
 
 	double omega = sqrt(stiffness/mass);
-
 
 	// Setup OpenSim model
 	Model* model = new Model;
@@ -359,18 +363,24 @@ void testClutchedPathSpring()
 	pulleyBody->addWrapObject(pulley);
 
 	// Add joints
-	WeldJoint weld("", *ground, Vec3(0, 1.0, 0), Vec3(0), *pulleyBody, Vec3(0), Vec3(0));
-	SliderJoint slider("", *ground, Vec3(0), Vec3(0,0,Pi/2),*block, Vec3(0), Vec3(0,0,Pi/2));
+	WeldJoint* weld = 
+		new WeldJoint("weld", *ground, Vec3(0, 1.0, 0), Vec3(0), *pulleyBody, Vec3(0), Vec3(0));
+	
+	SliderJoint* slider =
+		new SliderJoint("slider", *ground, Vec3(0), Vec3(0,0,Pi/2),*block, Vec3(0), Vec3(0,0,Pi/2));
 
 	double positionRange[2] = {-10, 10};
 	// Rename coordinates for a slider joint
-	CoordinateSet &slider_coords = slider.upd_CoordinateSet();
+	CoordinateSet &slider_coords = slider->upd_CoordinateSet();
 	slider_coords[0].setName("block_h");
 	slider_coords[0].setRange(positionRange);
 	slider_coords[0].setMotionType(Coordinate::Translational);
 
-	model->addBody(block);
 	model->addBody(pulleyBody);
+	model->addJoint(weld);
+
+	model->addBody(block);
+	model->addJoint(slider);
 
 	ClutchedPathSpring* spring = 
 		new ClutchedPathSpring("clutch_spring", stiffness, dissipation, 0.01);
@@ -398,12 +408,17 @@ void testClutchedPathSpring()
 	double     timePts[4] = {0.0,  5.0, 6.0, 10.0};
 	double clutchOnPts[4] = {1.5, -2.0, 0.5,  0.5};
 
-	PiecewiseConstantFunction controlfunc(4, timePts, clutchOnPts);
+	PiecewiseConstantFunction* controlfunc = 
+		new PiecewiseConstantFunction(4, timePts, clutchOnPts);
 
-	controller->prescribeControlForActuator("clutch_spring", &controlfunc);
+	controller->prescribeControlForActuator("clutch_spring", controlfunc);
 	model->addController(controller);
 
 	model->print("ClutchedPathSpringModel.osim");
+
+	//Test deserialization
+	delete model;
+	model = new Model("ClutchedPathSpringModel.osim");
 
 	// Create the force reporter
 	ForceReporter* reporter = new ForceReporter(model);
@@ -412,7 +427,8 @@ void testClutchedPathSpring()
 	//model->setUseVisualizer(true);
 	SimTK::State& state = model->initSystem();
 
-	slider_coords[0].setValue(state, start_h);
+	CoordinateSet& coords = model->updCoordinateSet();
+	coords[0].setValue(state, start_h);
     model->getMultibodySystem().realize(state, Stage::Position );
 
 	//==========================================================================
@@ -433,6 +449,8 @@ void testClutchedPathSpring()
 	// tension is dynamics dependent because controls must be computed
 	model->getMultibodySystem().realize(state, Stage::Dynamics);
 
+	spring = dynamic_cast<ClutchedPathSpring*>(
+				&model->updForceSet().get("clutch_spring"));
 	// Now check that the force reported by spring
 	double model_force = spring->getTension(state);
 	double stretch0 = spring->getStretch(state);
@@ -490,14 +508,8 @@ void testClutchedPathSpring()
 	// Save the forces
 	reporter->getForceStorage().print("clutched_path_spring_forces.mot"); 
 
-	// Before exiting lets see if copying the spring works
-	ClutchedPathSpring* copyOfSpring = spring->clone();
-	ASSERT(*copyOfSpring == *spring);
-	
-	// Check that de/serialization works
-	Model modelFromFile("ClutchedPathSpringModel.osim");
-	ASSERT(modelFromFile == *model);
+	model->disownAllComponents();
 
-	std::cout << "Test clutched spring time = " << 
+	cout << "Test clutched spring time = " << 
 		1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
 }

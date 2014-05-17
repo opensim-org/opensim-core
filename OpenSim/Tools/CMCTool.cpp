@@ -34,7 +34,6 @@
 #include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/Kinematics.h>
-#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include "ForwardTool.h"
 #include <OpenSim/Common/DebugUtilities.h>
 #include "CMC.h" 

@@ -73,7 +73,7 @@ public:
 	int numCoordinates() const OVERRIDE_11 { return _numMobilities; }
 
 	//Set properties
-	void setEllipsoidRadii(SimTK::Vec3 radii);
+	void setEllipsoidRadii(const SimTK::Vec3& radii);
 
 	// SCALE
 	void scale(const ScaleSet& aScaleSet) OVERRIDE_11;
@@ -93,7 +93,6 @@ protected:
 
 private:
 	void constructProperties();
-	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
 
 //=============================================================================
 };	// END of class EllipsoidJoint

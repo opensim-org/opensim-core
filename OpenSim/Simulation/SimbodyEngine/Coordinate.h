@@ -297,7 +297,7 @@ private:
 	/** Motion type (translational, rotational or combination). */
 	MotionType _motionType;
 
-	/** Simbody joint that owns this coordinate. */
+	/** The OpenSim::Joint that owns this coordinate. */
 	SimTK::ReferencePtr<const Joint> _joint;
 
 	/** SimTK function used to lock the joint at a fixed value */

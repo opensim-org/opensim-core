@@ -368,7 +368,8 @@ void testPointConstraint()
 	FreeJoint footJoint("", ground, Vec3(0), Vec3(0), osim_foot, Vec3(0), Vec3(0));
 	
 	// Add the thigh body which now also contains the hip joint to the model
-	osimModel->updBodySet().adoptAndAppend(&osim_foot);
+	osimModel->addBody(&osim_foot);
+	osimModel->addJoint(&footJoint);
 
 	// add a point constraint
 	PointConstraint ballConstraint(ground, pointOnGround, osim_foot, pointOnFoot);
@@ -447,7 +448,8 @@ void testConstantDistanceConstraint()
 	FreeJoint footJoint("", ground, Vec3(0), Vec3(0), osim_foot, Vec3(0), Vec3(0));
 	
 	// Add the thigh body which now also contains the hip joint to the model
-	osimModel->updBodySet().adoptAndAppend(&osim_foot);
+	osimModel->addBody(&osim_foot);
+	osimModel->addJoint(&footJoint);
 
 	// add a constant distance constraint
 	ConstantDistanceConstraint rodConstraint(ground, pointOnGround, osim_foot, pointOnFoot,rodLength);
@@ -491,8 +493,9 @@ void testCoordinateLocking()
 	// Rename hip coordinates for a pin joint
 	hip.getCoordinateSet()[0].setName("hip_flex");
 	
-	// Add the thigh body which now also contains the hip joint to the model
+	// Add the thigh body 
 	osimModel->addBody(&osim_thigh);
+	osimModel->addJoint(&hip);
 
 	// Add OpenSim shank via a knee joint
 	OpenSim::Body osim_shank("shank", tibiaMass.getMass(), tibiaMass.getMassCenter(), tibiaMass.getInertia());
@@ -501,11 +504,12 @@ void testCoordinateLocking()
 	PinJoint knee("", osim_thigh, kneeInFemur, Vec3(0), osim_shank, Vec3(0), Vec3(0));
 	knee.getCoordinateSet()[0].setName("knee_q");
 
-	// Add the shank body which now also contains the knee joint to the model
+	// Add the shank body and knee joint
 	osimModel->addBody(&osim_shank);
+	osimModel->addJoint(&knee);
 
 	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
-	osimModel->updBodySet().setMemoryOwner(false);
+	osimModel->disownAllComponents();
 
 	osimModel->setGravity(gravity_vec);
 
@@ -609,7 +613,8 @@ void testWeldConstraint()
 	PinJoint hip("hip", ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
 
 	// Add the thigh body which now also contains the hip joint to the model
-	osimModel->updBodySet().adoptAndAppend(&osim_thigh);
+	osimModel->addBody(&osim_thigh);
+	osimModel->addJoint(&hip);
 
 	//OpenSim shank
 	OpenSim::Body osim_shank("shank", tibiaMass.getMass(), tibiaMass.getMassCenter(), tibiaMass.getInertia());
@@ -618,7 +623,8 @@ void testWeldConstraint()
 	PinJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0), osim_shank, kneeInTibia, Vec3(0));
 
 	// Add the thigh body which now also contains the hip joint to the model
-	osimModel->updBodySet().adoptAndAppend(&osim_shank);
+	osimModel->addBody(&osim_shank);
+	osimModel->addJoint(&knee);
 
 	//OpenSim foot
 	OpenSim::Body osim_foot("foot", footMass.getMass(), footMass.getMassCenter(), footMass.getInertia());
@@ -627,15 +633,15 @@ void testWeldConstraint()
 	PinJoint ankle("ankle", osim_shank, ankleInTibia, Vec3(0), osim_foot, ankleInFoot, Vec3(0));
 
 	// Add the foot body which now also contains the hip joint to the model
-	osimModel->updBodySet().adoptAndAppend(&osim_foot);
-
+	osimModel->addBody(&osim_foot);
+	osimModel->addJoint(&ankle);
 
 	// add a point on line constraint
 	WeldConstraint footConstraint("footConstraint", ground, SimTK::Transform(weldInGround), osim_foot, SimTK::Transform(weldInFoot));
 	osimModel->updConstraintSet().adoptAndAppend(&footConstraint);
 
-	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
-	osimModel->updBodySet().setMemoryOwner(false);
+	// BAD: but if model maintains ownership, it will attemtp to delete stack allocated objects
+	osimModel->disownAllComponents();
 
 	osimModel->setGravity(gravity_vec);
 
@@ -700,14 +706,15 @@ void testPointOnLineConstraint()
 	FreeJoint footJoint("", ground, Vec3(0), Vec3(0), osim_foot, Vec3(0), Vec3(0));
 	
 	// Add the thigh body which now also contains the hip joint to the model
-	osimModel->updBodySet().adoptAndAppend(&osim_foot);
+	osimModel->addBody(&osim_foot);
+	osimModel->addJoint(&footJoint);
 
 	// add a point on line constraint
 	PointOnLineConstraint lineConstraint(ground, normLineDirection, pointOnLine, osim_foot, pointOnFollower);
 	osimModel->updConstraintSet().adoptAndAppend(&lineConstraint);
 
 	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
-	osimModel->updBodySet().setMemoryOwner(false);
+	osimModel->disownAllComponents();
 
 	osimModel->setGravity(gravity_vec);
 
@@ -821,6 +828,7 @@ void testCoordinateCouplerConstraint()
 	
 	// Add the thigh body which now also contains the hip joint to the model
 	osimModel->addBody(&osim_thigh);
+	osimModel->addJoint(&hip);
 
 	// Add another body via a knee joint
 	OpenSim::Body osim_shank("shank", tibiaMass.getMass(), tibiaMass.getMassCenter(), tibiaMass.getInertia());
@@ -848,6 +856,7 @@ void testCoordinateCouplerConstraint()
 
 	// Add the shank body which now also contains the knee joint to the model
 	osimModel->addBody(&osim_shank);
+	osimModel->addJoint(&knee);
 
 	// Constrain the knee translations to follow the desired manifold
 	CoordinateCouplerConstraint knee_tx_constraint;

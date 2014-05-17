@@ -111,7 +111,7 @@ class ObstacleInfo {
 public:
     String bodyName;
     Transform X_BS; // X_BS.p used for via point location
-    WrapObject* wrapObjectPtr;
+    const WrapObject* wrapObjectPtr;
     Vec3 P_S;
     Vec3 Q_S;
     bool isVia;
@@ -500,7 +500,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         // add surfaces to cableInfo
         for (int j = 0; j < wrapSet.getSize(); j++) {
             const PathWrap& wrap = wrapSet[j];
-            WrapObject* wrapObj = wrap.getWrapObject();
+            const WrapObject* wrapObj = wrap.getWrapObject();
             ObstacleInfo obs;
             obs.wrapObjectPtr = wrapObj;
             obs.bodyName = wrapObj->getBody().getName();
@@ -678,7 +678,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
                 CableObstacle::ViaPoint via(path, mobBody, oi.X_BS.p());
             }
             else {
-                WrapSphere* wrapSphere = dynamic_cast<WrapSphere*>(oi.wrapObjectPtr);
+                const WrapSphere* wrapSphere = dynamic_cast<const WrapSphere*>(oi.wrapObjectPtr);
                 if (wrapSphere != 0) {
                     CableObstacle::Surface surf(path, mobBody,
                         oi.X_BS, SimTK::ContactGeometry::Sphere(wrapSphere->getRadius())); // along y
@@ -689,7 +689,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
                     continue;
                 }
 
-                WrapCylinder* wrapCyl = dynamic_cast<WrapCylinder*>(oi.wrapObjectPtr);
+                const WrapCylinder* wrapCyl = dynamic_cast<const WrapCylinder*>(oi.wrapObjectPtr);
                 if (wrapCyl != 0) {
                     CableObstacle::Surface surf(path, mobBody,
                         oi.X_BS, SimTK::ContactGeometry::Cylinder(wrapCyl->getRadius())); // along y
@@ -700,7 +700,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
                     continue;
                 }
 
-                WrapEllipsoid* wrapEllip = dynamic_cast<WrapEllipsoid*>(oi.wrapObjectPtr);
+                const WrapEllipsoid* wrapEllip = dynamic_cast<const WrapEllipsoid*>(oi.wrapObjectPtr);
                 if (wrapEllip != 0) {
                     CableObstacle::Surface surf(path, mobBody,
                         oi.X_BS, SimTK::ContactGeometry::Ellipsoid(wrapEllip->getRadii())); // along y
@@ -711,7 +711,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
                     continue;
                 }
 
-                WrapTorus* wrapTorus = dynamic_cast<WrapTorus*>(oi.wrapObjectPtr);
+                const WrapTorus* wrapTorus = dynamic_cast<const WrapTorus*>(oi.wrapObjectPtr);
                 if (wrapTorus != 0) {
                     Real tubeRadius = (wrapTorus->getOuterRadius()-wrapTorus->getInnerRadius())/2.0;
                     Real torusRadius = wrapTorus->getOuterRadius()-tubeRadius;

@@ -177,10 +177,6 @@ void Actuation::setModel(Model& aModel)
 		return;
 	}
 
-	// WORK ARRAY
-	if(_fsp!=NULL) delete[] _fsp;
-	_fsp = new double[_na];
-
     // STORAGE
     deleteStorage();
     allocateStorage();
@@ -372,19 +368,7 @@ record(const SimTK::State& s)
 
 	// MAKE SURE ALL ACTUATION QUANTITIES ARE VALID
     _model->getMultibodySystem().realize(s, SimTK::Stage::Dynamics );
-    /* if needed should go into begin 
-	// NUMBER OF ACTUATORS
-	int na = _model->getActuators().getSize();
-	if(na!=_na) {
-		printf("Actuation.record: WARN- number of actuators has changed!\n");
-		_na = na;
-		if(_na<=0) return(-1);
-
-		// REALLOCATE WORK ARRAY
-		if(_fsp!=NULL) delete[] _fsp;
-		_fsp = new double[_na]; 
-    }*/
-
+    
 	// TIME NORMALIZATION
 	double tReal = s.getTime();
 
@@ -434,6 +418,13 @@ int Actuation::
 begin(SimTK::State& s)
 {
 	if(!proceed()) return(0);
+
+	// NUMBER OF ACTUATORS
+	int na = _model->getActuators().getSize();
+	_na = na;
+	// WORK ARRAY
+	if (_fsp != NULL) delete[] _fsp;
+	_fsp = new double[_na];
 
 	// RESET STORAGE
 	if(_forceStore == NULL)

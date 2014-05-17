@@ -75,7 +75,6 @@ protected:
 private:
 	SimTK::MobilizedBodyIndex _masslessBodyIndex;
 	void setNull();
-	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
 //=============================================================================
 };	// END of class FreeJoint
 //=============================================================================

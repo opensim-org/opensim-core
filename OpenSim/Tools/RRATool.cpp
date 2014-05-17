@@ -1100,7 +1100,7 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
 
 	// COMPUTE SEGMENT WEIGHT
 	Body *body = &_model->updBodySet().get(_adjustedCOMBody);
-	double bodyMass = body->getMass();
+	double bodyMass = body->get_mass();
 	double bodyWeight = fabs(g[1])*bodyMass;
 	if(bodyWeight<SimTK::Zero) {
 		cout<<"\nRRATool.adjustCOMToReduceResiduals: ERR- ";
@@ -1122,8 +1122,7 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
 	//cout<<"dx="<<dx<<", dz="<<dz<<endl;
 
 	// GET EXISTING COM
-	Vec3 com;
-	body->getMassCenter(com);
+	SimTK::Vec3 com = body->get_mass_center();
 
 	// COMPUTE ALTERED COM
 	com[0] -= dx;
@@ -1131,7 +1130,7 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
 
 
 	// ALTER THE MODEL
-	body->setMassCenter(com);
+	body->set_mass_center(com);
 
 	//---- MASS CHANGE ----
 	// Get recommended mass change.
@@ -1145,7 +1144,7 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
 	const BodySet & bodySet = _model->getBodySet();
 	nb = bodySet.getSize();
 	for(i=0;i<nb;i++) {
-		mass[i] = bodySet[i].getMass();
+		mass[i] = bodySet[i].get_mass();
 		massTotal += mass[i];
 	}
 

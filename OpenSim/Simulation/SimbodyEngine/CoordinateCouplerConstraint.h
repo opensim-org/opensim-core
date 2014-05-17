@@ -1,5 +1,5 @@
-#ifndef __CoordinateCouplerConstraint_h__
-#define __CoordinateCouplerConstraint_h__
+#ifndef OPENSIM_COORDINATE_COUPLER_CONSTRAINT_H_
+#define OPENSIM_COORDINATE_COUPLER_CONSTRAINT_H_
 /* -------------------------------------------------------------------------- *
  *                  OpenSim:  CoordinateCouplerConstraint.h                   *
  * -------------------------------------------------------------------------- *
@@ -23,16 +23,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyStrArray.h>
-#include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/Function.h>
 #include "Constraint.h"
-#include "Body.h"
 
 namespace OpenSim {
 
@@ -43,10 +37,14 @@ class Model;
  /** @file
  * A class implementing a CoordinateCoupler Constraint.  The underlying SimTK
  * Constraint is a Constraint::CoordinateCoupler in Simbody, which relates 
- * coordinates of the same or different body(ies) to one another at the 
- * position level (i.e. holonomic).
+ * coordinates to one another at the position level (i.e. holonomic).
  * Relationship between coordinates is a specified by a function that equates 
- * to zero only when the coordinates satisfy the function (constraint).
+ * to zero only when the coordinates satisfy the constraint function.
+ *
+ * OpenSim::CoordinateCouplerConstraint assumes that there is one coordinate
+ * (dependent) whose value is coupled to the value(s) of other (independent)
+ * coordinate(s). In reality all coordinates are coupled and at assembly all
+ * can be varied to satsify the constraint function.
  *
  * @author Ajay Seth
  * @version 1.0
@@ -59,13 +57,23 @@ OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateCouplerConstraint, Constraint);
 //=============================================================================
 protected:
 
-	OpenSim_DECLARE_OPTIONAL_PROPERTY(coupled_coordinates_function, Function, "Constraint function of generalized coordinates (to be specified) used to evaluate the constraint errors and their derivatives, and must valid to at least 2nd order. Constraint function must evaluate to zero when coordinates satisfy constraint");
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(coupled_coordinates_function, Function,
+		"Constraint function of generalized coordinates (to be specified) used "
+		"to evaluate the constraint errors and their derivatives, and must valid "
+		"to at least 2nd order. Constraint function must evaluate to zero when "
+		"coordinates satisfy the constraint.");
 
-	OpenSim_DECLARE_LIST_PROPERTY(independent_coordinate_names, std::string, "List of names of the independent coordinates (restricted to 1 for now).");
+	OpenSim_DECLARE_LIST_PROPERTY(independent_coordinate_names, std::string, 
+		"List of names of the right hand side (independent) coordinates. "
+		"Note the conatraint function above, must be able to handle multiple "
+		"coordinate values if more than one coordinate name is provided.");
 
-	OpenSim_DECLARE_PROPERTY(dependent_coordinate_name, std::string, "Name of the dependent coordinate.");
+	OpenSim_DECLARE_PROPERTY(dependent_coordinate_name, std::string, 
+		"Name of the left-hand side (dependent) coordinate of the constraint "
+		"coupling function.");
 	
-	OpenSim_DECLARE_PROPERTY(scale_factor, double, "Scale factor for the function.");
+	OpenSim_DECLARE_PROPERTY(scale_factor, double, 
+		"Scale factor for the coupling function.");
 
 //=============================================================================
 // METHODS
@@ -76,7 +84,11 @@ public:
 	virtual ~CoordinateCouplerConstraint();
 
 	// GET AND SET
-	void setIndependentCoordinateNames(const Array<std::string> &aCoordNames) { set_independent_coordinate_names(aCoordNames); }
+	/** Access the list of names of the right hand side (independent) coordinates. 
+		Note the conatraint function, must be able to handle multiple 
+		coordinate values if more than one coordinate name is provided. */
+	void setIndependentCoordinateNames(const Array<std::string> &aCoordNames) 
+		{ set_independent_coordinate_names(aCoordNames); }
 	const Array<std::string> getIndependentCoordinateNames() const { 
 		Array<std::string> coords;
 		for(int i = 0; i < getProperty_independent_coordinate_names().size(); i++) {
@@ -84,8 +96,12 @@ public:
 		}
 		return coords; 
 	}
-	void setDependentCoordinateName(const std::string &aCoordName) { set_dependent_coordinate_name(aCoordName); }
+	
+	void setDependentCoordinateName(const std::string &aCoordName)
+		{ set_dependent_coordinate_name(aCoordName); }
+	
 	const std::string& getDependentCoordinateName() const { return get_dependent_coordinate_name(); }
+	
 	const Function& getFunction() const {
 		const Property<Function>& function = getProperty_coupled_coordinates_function();
 		if(function.empty()) {
@@ -93,8 +109,10 @@ public:
 		}
 		return function.getValue(); 
 	}
-	void setFunction(const Function &aFunction) { set_coupled_coordinates_function(*aFunction.clone());}
-	void setFunction(Function *aFunction)  { set_coupled_coordinates_function(*aFunction); }
+	void setFunction(const Function &aFunction)
+		{ set_coupled_coordinates_function(*aFunction.clone());}
+	void setFunction(Function *aFunction)
+		{ set_coupled_coordinates_function(*aFunction); }
 
 	// SCALE
 	virtual void scale(const ScaleSet& aScaleSet);
@@ -118,6 +136,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __CoordinateCouplerConstraint_h__
+#endif // OPENSIM_COORDINATE_COUPLER_CONSTRAINT_H_
 
 

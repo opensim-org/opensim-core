@@ -343,7 +343,7 @@ bool RollingOnSurfaceConstraint::isDisabled(const SimTK::State &state) const
 /**
  * Set whether or not the RollingOnSurfaceConstraint is disabled.
  * Since the constraint is composed of multiple constraints, this method can  
- * diable the constraints, but enabling is not guaranteed. For example, if
+ * disable the constraints, but enabling is not guaranteed. For example, if
  * the unilateral conditions are violated the constraint will be disabled.
  *
  * @param isDisabled If true the constraint is disabled; if false the constraint is enabled.

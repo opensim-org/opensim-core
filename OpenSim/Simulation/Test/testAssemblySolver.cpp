@@ -40,7 +40,7 @@ int main()
 {
 	try {
 		LoadOpenSimLibrary("osimActuators");
-		testAssemblySatisfiesConstraints("knee_patella_ligament.osim");
+		//testAssemblySatisfiesConstraints("knee_patella_ligament.osim");
 		testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");
 		testAssembleModelWithConstraints("PushUpToesOnGroundLessPreciseConstraints.osim");
 		testAssembleModelWithConstraints("PushUpToesOnGroundWithMuscles.osim");
@@ -66,7 +66,12 @@ void testAssembleModelWithConstraints(string modelFile)
 
 	//==========================================================================================================
 	// Setup OpenSim model
-	Model model(modelFile);
+	Model oldmodel(modelFile);
+	string newModelFile = "clone_" + modelFile;
+	oldmodel.print(newModelFile);
+
+	Model model(newModelFile);
+
 	const CoordinateSet &coords = model.getCoordinateSet();
 	
 	cout << "*********** Coordinates before initSystem ******************** " << endl;
@@ -74,6 +79,8 @@ void testAssembleModelWithConstraints(string modelFile)
 		cout << "Coordinate " << coords[i].getName() << " default value = " << coords[i].getDefaultValue() << endl;
 	}
 
+	//model.setUseVisualizer(true);
+	
     State state = model.initSystem();
 	model.equilibrateMuscles(state);
 
@@ -82,30 +89,64 @@ void testAssembleModelWithConstraints(string modelFile)
 		cout << "Coordinate " << coords[i].getName() << " get value = " << coords[i].getValue(state) << endl;
 	}
 
+	//For debugging the assembled pose
+	if (model.hasVisualizer()){
+		SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
+		const JointSet& js = model.getJointSet();
+		for (int i = 0; i < js.getSize(); ++i){
+			const Joint& j = js[i];
+			viz.addDecoration(j.getParentBody().getIndex(),
+				j.getParentTransform(),
+				SimTK::DecorativeFrame(0.05));
+			viz.addDecoration(j.getChildBody().getIndex(),
+				j.getChildTransform(),
+				SimTK::DecorativeFrame(0.033));
+			viz.addDecoration(j.getChildBody().getIndex(),
+				Transform(),
+				SimTK::DecorativeSphere(0.033));
+			if (j.getChildBody().getName() == "pelvis"){
+				SimTK::DecorativeBrick geom(Vec3(0.10, 0.05, 0.20));
+				geom.setColor(Vec3(0.1, 1.0, 0.1));
+				viz.addDecoration(j.getChildBody().getIndex(),
+					Transform(), geom);
+			}
+		}
+
+		model.getVisualizer().show(state);
+	}
+
 	// Verify that the reaction forces at the constraints are not rediculously large
 	// They should sum to body-weight (more or less)
 	model.getMultibodySystem().realize(state, Stage::Acceleration);
+
+	Vec3 comVel = model.calcMassCenterVelocity(state);
+	Vec3 comAcc = model.calcMassCenterAcceleration(state);
+	SpatialVec momentum = model.getMatterSubsystem().calcSystemCentralMomentum(state);
 
 	const ConstraintSet &constraints = model.getConstraintSet();
 
 	Vector_<SpatialVec> constraintBodyForces(constraints.getSize());
 	Vector mobilityForces(0);
-
 	double totalYforce = 0;
 	
 	for(int i=0; i< constraints.getSize(); i++) {
 		constraints[i].calcConstraintForces(state, constraintBodyForces, mobilityForces);
 		cout << "Constraint " << i << ":  " << constraints[i].getName();
 		cout << " Force = " << constraintBodyForces(1)(1)(1) << endl;
-		//constraintBodyForces.dump("Consrtaint Body Forces");
+		//constraintBodyForces.dump("Constraint Body Forces");
 		totalYforce += constraintBodyForces(1)(1)(1);
 	}
 	
 	cout << "Total Vertical Constraint Force:" << totalYforce << " N " << endl;
 
-	double bw = -model.getTotalMass(state)*(model.getGravity()[1]);
+	double mass = model.getTotalMass(state);
+	double bw = -mass*(model.getGravity()[1]);
 
-	ASSERT_EQUAL(totalYforce/bw, 1.0, 0.02);
+	double inertial = mass*comAcc[1];
+
+	ASSERT_EQUAL((totalYforce - bw - inertial) / bw, 0.0, SimTK::SqrtEps,
+		__FILE__, __LINE__,
+		"Contraint force does not match body-weight plus inertial force (mg+ma).");
 
 	//const CoordinateSet &coords = model.getCoordinateSet();
 	double q_error = 0;
@@ -119,29 +160,50 @@ void testAssembleModelWithConstraints(string modelFile)
 	// Integrate forward and init the state and update defaults to make sure
 	// assembler is not effecting anything more than the pose.
     RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
+	integrator.setAccuracy(1.0e-8);
     Manager manager(model, integrator);
     manager.setInitialTime(0.0);
     manager.setFinalTime(0.01);
 
-	model.equilibrateMuscles(state);
+	// Configuration at the inital state
 	Vector y1 = state.getY();
  
-	// defaults should capture an accurate snapshot of the model
+	// set default (properties) which capture an accurate snapshot of the model
 	model.setPropertiesFromState(state);
+
+	// Simulate forward in time
     manager.integrate(state);
+
+	// get the configuration at the end of the simulaton
     Vector y2 = state.getY();
 
-	// recreate system with states from defaults
+	// recreate system with states from initial defaults
     State state2 = model.initSystem();
+	// get the configuration after getting a new state from initial defaults
     Vector y3 = state2.getY();
 
+	// set properties to  capture model state after the simulation
 	model.setPropertiesFromState(state);
+	model.print("test_" + modelFile + "_post.osim");
+	model.assemble(state);
+	model.setPropertiesFromState(state);
+	model.print("test_"+modelFile+"_post_reassemble.osim");
+
+	// recreate system with states from post simulation defaults
     state2 = model.initSystem();
+	// get the configuration from post simulation defaults (properties)
     Vector y4 = state2.getY();
-    for (int i = 0; i < y1.size(); i++) 
-    {
-        ASSERT_EQUAL(y1[i], y3[i], 1e-4, __FILE__, __LINE__, "Initial state changed after 2nd call to initSystem");
-        ASSERT_EQUAL(y2[i], y4[i], 1e-4, __FILE__, __LINE__, "State differed after 2nd simulation from same init state.");
+	
+	//cout << "******************* Init System Inital State *******************" << endl;
+	for (int i = 0; i < y1.size(); i++) {
+		//cout << "Pre-simulation:" << i << " y1 = " << y1[i] << ", y3 = " << y3[i] << endl;
+		ASSERT_EQUAL(y1[i], y3[i], 1e-4, __FILE__, __LINE__, "Initial state changed after 2nd call to initSystem");
+	}
+
+	cout << "******************* Init System Final State *******************" << endl;
+	for (int i = 0; i < y1.size(); i++) {
+		cout << "Post-simulation:"<<i<< " y2 = " << y2[i] << ", y4 = " << y4[i] << endl;
+		ASSERT_EQUAL(y2[i], y4[i], 1e-4, __FILE__, __LINE__, "State differed after a simulation from same init state.");
     }
     ASSERT(max(abs(y1-y2)) > 1e-3, __FILE__, __LINE__, "Check that state changed after simulation FAILED");
 }

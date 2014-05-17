@@ -130,8 +130,7 @@ void testExternalLoad()
 	// Simulate the same system without gravity but with an equivalent external load
 	OpenSim::Body &pendulum = model.getBodySet().get(model.getNumBodies()-1);
 	string pendBodyName = pendulum.getName();
-	Vec3 comInB;
-	pendulum.getMassCenter(comInB);
+	Vec3 comInB = pendulum.getMassCenter();
 
 	Storage forceStore;
 	addLoadToStorage(forceStore,  pendulum.getMass()*model.getGravity(),  comInB, Vec3(0, 0, 0));

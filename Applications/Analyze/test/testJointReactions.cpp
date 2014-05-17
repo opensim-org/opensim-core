@@ -22,15 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <string>
-#include <iostream>
-#include <OpenSim/version.h>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Tools/AnalyzeTool.h>
-#include <OpenSim/Analyses/JointReaction.h>
+#include <OpenSim/OpenSim.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
@@ -40,14 +32,12 @@ int main()
 {
 	try {
 		AnalyzeTool analyze("SinglePin_Setup_JointReaction.xml");
-		analyze.getModel();
 		analyze.run();
 		Storage result1("SinglePin_JointReaction_ReactionLoads.sto"), standard1("std_SinglePin_JointReaction_ReactionLoads.sto");
 		CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(1e-5, 24), __FILE__, __LINE__, "SinglePin failed");
 		cout << "SinglePin passed" << endl;
 
 		AnalyzeTool analyze2("DoublePendulum3D_Setup_JointReaction.xml");
-		analyze2.getModel();
 		analyze2.run();
 		Storage result2("DoublePendulum3D_JointReaction_ReactionLoads.sto"), standard2("std_DoublePendulum3D_JointReaction_ReactionLoads.sto");
 		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(1e-5, 24), __FILE__, __LINE__, "DoublePendulum3D failed");

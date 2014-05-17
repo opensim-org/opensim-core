@@ -92,8 +92,6 @@ Model::Model() :
 	_probeSetProp(PropertyObj("", ProbeSet())),
 	_probeSet((ProbeSet&)_probeSetProp.getValueObj()),
     _gravity(_gravityProp.getValueDblVec()),
-    _bodySetProp(PropertyObj("", BodySet())),
-    _bodySet((BodySet&)_bodySetProp.getValueObj()),
     _constraintSetProp(PropertyObj("", ConstraintSet())),
     _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
 	_componentSetProp(PropertyObj("MiscComponents", ComponentSet())),
@@ -102,7 +100,6 @@ Model::Model() :
     _markerSet((MarkerSet&)_markerSetProp.getValueObj()),
     _contactGeometrySetProp(PropertyObj("", ContactGeometrySet())),
     _contactGeometrySet((ContactGeometrySet&)_contactGeometrySetProp.getValueObj()),
-    _jointSet(JointSet()),
     _analysisSet(AnalysisSet()),
     _coordinateSet(CoordinateSet()),
     _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
@@ -115,6 +112,7 @@ Model::Model() :
 {
 	setNull();
 	setupProperties();
+	constructProperties();
     _analysisSet.setMemoryOwner(false);
 	createGroundBodyIfNecessary();
 }
@@ -134,8 +132,6 @@ Model::Model(const string &aFileName, const bool connectModel) :
 	_probeSetProp(PropertyObj("", ProbeSet())),
 	_probeSet((ProbeSet&)_probeSetProp.getValueObj()),
     _gravity(_gravityProp.getValueDblVec()),
-    _bodySetProp(PropertyObj("", BodySet())),
-    _bodySet((BodySet&)_bodySetProp.getValueObj()),
     _constraintSetProp(PropertyObj("", ConstraintSet())),
     _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
 	_componentSetProp(PropertyObj("MiscComponents", ComponentSet())),
@@ -144,7 +140,6 @@ Model::Model(const string &aFileName, const bool connectModel) :
     _markerSet((MarkerSet&)_markerSetProp.getValueObj()),
     _contactGeometrySetProp(PropertyObj("", ContactGeometrySet())),
     _contactGeometrySet((ContactGeometrySet&)_contactGeometrySetProp.getValueObj()),
-    _jointSet(JointSet()),
     _analysisSet(AnalysisSet()),
     _coordinateSet(CoordinateSet()),
     _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
@@ -157,6 +152,7 @@ Model::Model(const string &aFileName, const bool connectModel) :
 {
 	setNull();
 	setupProperties();
+	constructProperties();
 	updateFromXMLDocument();
 	_fileName = aFileName;
     _analysisSet.setMemoryOwner(false);
@@ -182,8 +178,6 @@ Model::Model(const Model &aModel) :
 	_probeSetProp(PropertyObj("", ProbeSet())),
 	_probeSet((ProbeSet&)_probeSetProp.getValueObj()),
     _gravity(_gravityProp.getValueDblVec()),
-    _bodySetProp(PropertyObj("", BodySet())),
-    _bodySet((BodySet&)_bodySetProp.getValueObj()),
     _constraintSetProp(PropertyObj("", ConstraintSet())),
     _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
 	_componentSetProp(PropertyObj("MiscComponents", ComponentSet())),
@@ -194,7 +188,6 @@ Model::Model(const Model &aModel) :
     _contactGeometrySet((ContactGeometrySet&)_contactGeometrySetProp.getValueObj()),
     _useVisualizer(false),
     _allControllersEnabled(true),
-    _jointSet(JointSet()),
     _analysisSet(AnalysisSet()),
     _coordinateSet(CoordinateSet()),
     _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
@@ -208,7 +201,7 @@ Model::Model(const Model &aModel) :
 	setNull();
 	setupProperties();
 	copyData(aModel);
-	setup();
+	//setup();
 }
 //_____________________________________________________________________________
 /**
@@ -256,6 +249,39 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 			XMLDocument::renameChildNode(aNode, "ActuatorSet", "ForceSet");
 				}
 			}
+            if (versionNumber < 30500) {
+                // Create JointSet node after BodySet under <OpenSimDocument>/<Model>
+                String test;
+                aNode.writeToString(test);
+                SimTK::Xml::Element jointSetElement("JointSet");
+                SimTK::Xml::Element jointObjects("objects");
+                jointSetElement.insertNodeBefore(jointSetElement.element_begin(), jointObjects);
+                SimTK::Xml::element_iterator bodySetNode = aNode.element_begin("BodySet");
+                aNode.insertNodeAfter(bodySetNode, jointSetElement);
+                // Now cycle thru Bodies and move their Joint nodes under JointSet
+                SimTK::Xml::element_iterator  objects_node = bodySetNode->element_begin("objects");
+                SimTK::Xml::element_iterator bodyIter= objects_node->element_begin("Body"); 
+                for (; bodyIter != objects_node->element_end(); ++bodyIter) {
+                    bodyIter->writeToString(test);
+                    std::string body_name = bodyIter->getOptionalAttributeValue("name");
+                    //cout << "Processing body " <<  body_name << std::endl;
+                    SimTK::Xml::element_iterator  joint_node =  bodyIter->element_begin("Joint");
+                    if (joint_node->element_begin()!= joint_node->element_end()){
+                        SimTK::Xml::Element detach_joint_node = joint_node->clone();
+                        SimTK::Xml::element_iterator concreteJointNode = detach_joint_node.element_begin();
+                        detach_joint_node.removeNode(concreteJointNode);
+                        SimTK::Xml::element_iterator parentBodyElement = concreteJointNode->element_begin("parent_body");
+                        SimTK::String parent_name="ground";
+                        parentBodyElement->getValueAs<SimTK::String>(parent_name);
+                        //cout << "Processing Joint " << concreteJointNode->getElementTag() << "Parent body " << parent_name << std::endl;
+                        XMLDocument::addConnector(*concreteJointNode, "Connector_Body_", "parent_body", parent_name);
+                        XMLDocument::addConnector(*concreteJointNode, "Connector_Body_", "child_body", body_name);
+                        concreteJointNode->removeNode(parentBodyElement);
+                        jointObjects.insertNodeAfter(jointObjects.node_end(), *concreteJointNode);
+                    }
+                    bodyIter->removeNode(joint_node);
+				}
+            }
 	// Call base class now assuming _node has been corrected for current version
 	Object::updateFromXMLNode(aNode, versionNumber);
 
@@ -285,7 +311,6 @@ void Model::copyData(const Model &aModel)
     _gravity = aModel._gravity;
     _forceSet = aModel._forceSet;
     _probeSet = aModel._probeSet;
-    _bodySet=aModel._bodySet;
     _constraintSet=aModel._constraintSet;
     _markerSet = aModel._markerSet;
     _contactGeometrySet = aModel._contactGeometrySet;
@@ -295,6 +320,10 @@ void Model::copyData(const Model &aModel)
     _analysisSet=aModel._analysisSet;
     _useVisualizer = aModel._useVisualizer;
     _allControllersEnabled = aModel._allControllersEnabled;
+
+	//Handle properties
+	copyProperty_BodySet(aModel);
+	copyProperty_JointSet(aModel);
 
     // Note: SimTK systems are not copied, they will be
     // initialized during the call to buildSystem().
@@ -326,10 +355,20 @@ void Model::setNull()
 
 	_validationLog="";
 }
+
+void Model::constructProperties()
+{
+	BodySet bodies;
+	bodies.setName("Bodies");
+	constructProperty_BodySet(bodies);
+
+	JointSet joints;
+	joints.setName("Joints");
+	constructProperty_JointSet(joints);
+}
 //_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- *
+/*
+ * Connect old style properties to local references.
  */
 void Model::setupProperties()
 {
@@ -352,12 +391,6 @@ void Model::setupProperties()
     _gravityProp.setName("gravity");
     _gravityProp.setValue(defaultGravity);
     _propertySet.append(&_gravityProp);
-
-    // Note: PropertyObj tag names come from the object's type (e.g. _bodySetProp below will automatically be associated with <BodySet> tag)
-    // don't need to call _bodySetProp.setName()...
-	_bodySetProp.setName("BodySet");
-    _bodySetProp.setComment("Bodies in the model.");
-    _propertySet.append(&_bodySetProp);
 
 	_constraintSetProp.setName("ConstraintSet");
     _constraintSetProp.setComment("Constraints in the model.");
@@ -633,50 +666,6 @@ void Model::addToSystem(SimTK::MultibodySystem& system) const
 
     // Let all the ModelComponents add their parts to the System.
 	Super::addToSystem(system);
-
-	/*
-    static_cast<const ModelComponentSet<Body>&>(getBodySet()).invokeAddToSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished addToSystem for Bodies." << endl;
-	static_cast<const ModelComponentSet<Joint>&>(getJointSet()).invokeAddToSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished addToSystem for Joints." << endl;
-	*/
-	for(int i=0;i<getBodySet().getSize();i++) {
-		OpenSim::Body& body = getBodySet().get(i);
-		MobilizedBodyIndex idx(body.getIndex());
-        if (!idx.isValid() && body.getName()!= "ground")
-			throw Exception("Body: "+body.getName()+" has no Joint... Model initialization aborted.");
-	}
-
-	/*
-	// Constraints add their parts to the System.
-    static_cast<const ModelComponentSet<Constraint>&>(getConstraintSet()).invokeAddToSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished addToSystem for Constraints." << endl;
-
-	// Contact Geometries add their parts to the System.
-	static_cast<const ModelComponentSet<ContactGeometry>&>(getContactGeometrySet()).invokeAddToSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished addToSystem for Contact Geometry." << endl;
-
-    // Coordinates add their parts to the System.
-	static_cast<const ModelComponentSet<Coordinate>&>(getCoordinateSet()).invokeAddToSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished adding constraints for Coordinates." << endl;
-
-	// Forces add their parts to the System.
-    static_cast<const ModelComponentSet<Force>&>(getForceSet()).invokeAddToSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished addToSystem for Forces." << endl;
-
-	// Controllers add their parts to the System.
-    static_cast<const ModelComponentSet<Controller>&>(getControllerSet()).invokeAddToSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished addToSystem for Controllers." << endl;
-
-	// Misc ModelComponents add their parts to the System.
-	_componentSet.invokeAddToSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished addToSystem for user added Components." << endl;
-
-    // Probes add their parts to the System.
-	static_cast<const ModelComponentSet<Probe>&>(getProbeSet()).invokeAddToSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished addToSystem for Probes." << endl;
-	*/
-
 }
 
 
@@ -694,16 +683,26 @@ void Model::addModelComponent(ModelComponent* aComponent)
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Add a body to the Model.
  */
 void Model::addBody(OpenSim::Body *aBody)
 {
 	if(aBody){
 		updBodySet().adoptAndAppend(aBody);
-		_bodySetProp.setValueIsDefault(false);
 		addComponent(aBody);
-		updJointSet().populate(*this);
+	}
+}
+
+//_____________________________________________________________________________
+/*
+* Add a joint to the Model.
+*/
+void Model::addJoint(Joint *joint)
+{
+	if (joint){
+		updJointSet().adoptAndAppend(joint);
+		addComponent(joint);
 		updCoordinateSet().populate(*this);
 	}
 }
@@ -808,7 +807,11 @@ void Model::setup()
     // Populate lists of model joints and coordinates according to the Bodies
 	// setup here who own the Joints which in turn own the model's Coordinates
 	// this list of Coordinates is now available for setting up constraints and forces
-	updJointSet().populate(*this);
+	JointSet &js = updJointSet();
+	int nj = js.getSize();
+	for (int i = 0; i<nj; ++i){
+		addComponent(&js[i]);
+	}
     updCoordinateSet().populate(*this);
 
     //updConstraintSet().invokeConnectToModel(*this);
@@ -837,7 +840,11 @@ void Model::setup()
 	for(int i=0; i<nclr; ++i){
 		addComponent(&clrs[i]);
 	}
-	//_componentSet.invokeConnectToModel(*this);
+	
+	nc = _componentSet.getSize();
+	for (int i = 0; i<nc; ++i){
+		addComponent(&_componentSet[i]);
+	}
 
     //updProbeSet().invokeConnectToModel(*this);
 	ProbeSet &ps = updProbeSet();
@@ -849,10 +856,12 @@ void Model::setup()
 	// TODO: Get rid of the SimbodyEngine
 	updSimbodyEngine().connectSimbodyEngineToModel(*this);
 
-	updAnalysisSet().setModel(*this);
-
 	//now connect the Model and all its subcomponents all up
 	connect(*this);
+
+	//Analyses are not Components so add them after legit 
+	//Components have been wired-up correctly.
+	updAnalysisSet().setModel(*this);
 }
 
 /**
@@ -880,8 +889,8 @@ void Model::createGroundBodyIfNecessary()
 	}
 	// Set member variables
 	ground->setName(SimbodyGroundName);
-    ground->setMass(0.0);
-	ground->setMassCenter(Vec3(0.0));
+    ground->set_mass(0.0);
+	ground->set_mass_center(Vec3(0.0));
 	_groundBody = ground;
 }
 
@@ -949,16 +958,6 @@ void Model::initStateFromProperties(SimTK::State& state) const
 void Model::setPropertiesFromState(const SimTK::State& state)
 {
 	Super::setPropertiesFromState(state);
-    /*
-	_bodySet.invokeSetPropertiesFromState(state);
-    _constraintSet.invokeSetPropertiesFromState(state);
-    _contactGeometrySet.invokeSetPropertiesFromState(state);
-    _jointSet.invokeSetPropertiesFromState(state);
-    _forceSet.invokeSetPropertiesFromState(state);
-	_controllerSet.invokeSetPropertiesFromState(state);
-	_componentSet.invokeSetPropertiesFromState(state);
-    _probeSet.invokeSetPropertiesFromState(state);
-	*/
 }
 
 void Model::generateDecorations
@@ -967,10 +966,10 @@ void Model::generateDecorations
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
 {
-    _bodySet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
+    getBodySet().invokeGenerateDecorations(fixed,hints,state,appendToThis);
+	getJointSet().invokeGenerateDecorations(fixed, hints, state, appendToThis);
     _constraintSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
     _contactGeometrySet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
-    _jointSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
     _forceSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
 	_controllerSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
 	_componentSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
@@ -1034,8 +1033,6 @@ Model& Model::operator=(const Model &aModel)
 	Object::operator=(aModel);
 
 	// Class Members
-
-
 	copyData(aModel);
 
 	setup();
@@ -1145,7 +1142,7 @@ int Model::getNumProbeStates() const {
  */
 int Model::getNumBodies() const
 {
-	return  _bodySet.getSize();
+	return  getBodySet().getSize();
 }
 //_____________________________________________________________________________
 /**
@@ -1155,7 +1152,7 @@ int Model::getNumBodies() const
  */
 int Model::getNumJoints() const
 {
-	return  _jointSet.getSize();
+	return  getJointSet().getSize();
 }
 //_____________________________________________________________________________
 /**
@@ -1424,12 +1421,10 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
 	for(int i=0; i < bodySet.getSize(); i++) {
 		const OpenSim::Body& body = bodySet.get(i);
 		aOStream << "body[" << i << "] = " << body.getName();
-		aOStream << " (mass: "<<body.getMass()<<")";
-		Mat33 inertia;
-		body.getInertia(inertia);
-		aOStream << " (inertia:";
-		for(int j=0; j<3; j++) for(int k=0; k<3; k++) aOStream<<" "<<inertia[j][k];
-		aOStream << ")"<<endl;
+		aOStream << " (mass: "<<body.get_mass()<<")";
+		const SimTK::Inertia& inertia = body.getInertia();
+		aOStream << " (inertia: [" << inertia.getMoments() << "  ";
+		aOStream << inertia.getProducts() << "])" << endl;
 	}
 
     int j = 0;
@@ -1532,7 +1527,7 @@ void Model::createAssemblySolver(const SimTK::State& s)
     // of coordsToTrack
 	_assemblySolver = new AssemblySolver(*this, *coordsToTrack);
 	_assemblySolver->setConstraintWeight(SimTK::Infinity);
-    _assemblySolver->setAccuracy(1e-8);
+    _assemblySolver->setAccuracy(1e-10);
 }
 
 void Model::updateAssemblyConditions(SimTK::State& s)
@@ -1688,12 +1683,12 @@ int Model::deleteUnusedMarkers(const OpenSim::Array<string>& aMarkerNames)
  **/
 JointSet& Model::updJointSet()
 {
-    return _jointSet;
+    return upd_JointSet();
 }
 
 const JointSet& Model::getJointSet() const
 {
-    return _jointSet;
+    return get_JointSet();
 }
 
 /**
@@ -1937,6 +1932,7 @@ void Model::disownAllComponents()
 {
 	updMiscModelComponentSet().setMemoryOwner(false);
 	updBodySet().setMemoryOwner(false);
+	updJointSet().setMemoryOwner(false);
 	updConstraintSet().setMemoryOwner(false);
 	updForceSet().setMemoryOwner(false);
 	updContactGeometrySet().setMemoryOwner(false);
@@ -1966,43 +1962,34 @@ void Model::overrideAllActuators( SimTK::State& s, bool flag) {
 
 void Model::validateMassProperties(bool fixMassProperties)
 {
-	for (int i=0; i < _bodySet.getSize(); i++){
-		bool valid = true;
-		Body& b = _bodySet.get(i);
+	String msg = "";
+	bool invalid = false;
+
+	for (int i=0; i < getBodySet().getSize(); i++){
+		Body& b = updBodySet()[i];
 		if (b == getGroundBody()) continue;	// Ground's mass properties are unused
-		SimTK::Mat33 inertiaMat;
-		String msg = "";
+
+		const Vec6& inertiaVec = b.get_inertia();
+		
 		try {
-			b.getInertia(inertiaMat);
-			SimTK::Inertia_<SimTK::Real>(inertiaMat[0][0], inertiaMat[1][1], inertiaMat[2][2],
-				inertiaMat[0][1], inertiaMat[1][2], inertiaMat[0][2]);
+			// Attempt to form a valid inertia matrix
+			//SimTK::Inertia(inertiaVec.getSubVec<3>(0), inertiaVec.getSubVec<3>(3));
 		}
-		catch(const SimTK::Exception::Base& ex){
-			valid = false;
-			msg = "Body: "+b.getName()+" has non-physical mass properties.";
+		catch(const SimTK::Exception::Base& ex){	
+			invalid = true;
+			msg += "Body: "+b.getName()+" has non-physical mass properties.";
 			msg += ex.getMessage();
 		}
-		if (!valid){
-			if (!fixMassProperties)
-				throw Exception(msg);
-			else{
-
-				inertiaMat[0][0] = fabs(inertiaMat[0][0]);
-				inertiaMat[1][1] = inertiaMat[2][2] = inertiaMat[0][0];
-				inertiaMat[0][1] = inertiaMat[0][2] = inertiaMat[1][2] = 0.0;
-				inertiaMat[1][0] = inertiaMat[2][0] = inertiaMat[2][1] = 0.0;
-				b.setInertia(SimTK::Inertia_<Real>(inertiaMat));
-				_validationLog += msg;
-				_validationLog += "Inertia vector for body "+b.getName()+" has been reset\n";
-			}
-		}
 	}
-
+	if (invalid)
+		throw Exception(msg);
 }
 
 const Object& Model::getObjectByTypeAndName(const std::string& typeString, const std::string& nameString) {
     if (typeString=="Body") 
         return getBodySet().get(nameString);
+	else if (typeString == "Joint")
+		return getJointSet().get(nameString);
     else if (typeString=="Force") 
         return getForceSet().get(nameString);
     else if (typeString=="Constraint")
@@ -2013,8 +2000,6 @@ const Object& Model::getObjectByTypeAndName(const std::string& typeString, const
         return getMarkerSet().get(nameString);
 	else if (typeString=="Controller") 
         return getControllerSet().get(nameString);
-	else if (typeString=="Joint") 
-        return getJointSet().get(nameString);
     else if (typeString=="Probe") 
         return getProbeSet().get(nameString);
 	throw Exception("Model::getObjectByTypeAndName: no object of type "+typeString+

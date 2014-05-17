@@ -89,15 +89,17 @@ void testControlSetControllerOnBlock()
 	//Create a free joint with 6 degrees-of-freedom
 	SimTK::Vec3 noRotation(0);
 	SliderJoint blockToGround("",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
-	// Create 6 coordinates (degrees-of-freedom) between the ground and block
+	
+	// Create coordinates (degrees-of-freedom) between the ground and block
 	CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
 	double posRange[2] = {-1, 1};
 	jointCoordinateSet[0].setName("xTranslation");
 	jointCoordinateSet[0].setMotionType(Coordinate::Translational);
 	jointCoordinateSet[0].setRange(posRange);
 
-	// Add the block body to the model
+	// Add the block and joint to the model
 	osimModel.addBody(&block);
+	osimModel.addJoint(&blockToGround);
 
 	// Define a single coordinate actuator.
 	CoordinateActuator actuator(jointCoordinateSet[0].getName());
@@ -192,6 +194,7 @@ void testPrescribedControllerOnBlock(bool disabled)
 
 	// Add the block body to the model
 	osimModel.addBody(&block);
+	osimModel.addJoint(&blockToGround);
 
 	// Define a single coordinate actuator.
 	CoordinateActuator actuator(jointCoordinateSet[0].getName());
@@ -277,7 +280,7 @@ void testCorrectionControllerOnBlock()
 	//Create a free joint with 6 degrees-of-freedom
 	SimTK::Vec3 noRotation(0);
 	SliderJoint blockToGround("",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
-	// Create 6 coordinates (degrees-of-freedom) between the ground and block
+	// Create coordinates (degrees-of-freedom) between the ground and block
 	CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
 	double posRange[2] = {-1, 1};
 	jointCoordinateSet[0].setName("xTranslation");
@@ -286,6 +289,7 @@ void testCorrectionControllerOnBlock()
 
 	// Add the block body to the model
 	osimModel.addBody(&block);
+	osimModel.addJoint(&blockToGround);
 
 	// Generate tracking data
 	Storage *desiredXTranslation = new Storage();

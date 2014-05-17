@@ -184,17 +184,11 @@ public:
                    bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
     /** Construct ModelComponent from a specific node in an XML document. **/
     explicit ModelComponent(SimTK::Xml::Element& aNode);
-    /** Construct ModelComponent with its contents copied from another 
-    ModelComponent; this is a deep copy so nothing is shared with the 
-    source after the copy. **/
-    ModelComponent(const ModelComponent& source);
+
+	// compiler default copy costructor and assignment operator
+
     /** Destructor is virtual to allow concrete model component cleanup. **/
     virtual ~ModelComponent() {}
-
-#ifndef SWIG
-    /** Assignment operator to copy contents of an existing component */
-    ModelComponent& operator=(const ModelComponent &aModelComponent);
-#endif
 
     /**
      * Get a const reference to the Model this component is part of.
@@ -366,7 +360,7 @@ protected:
     /** The model this component belongs to. */
     // TODO: this should be private; all components should use getModel()
     // and updModel() to get access. This is just a reference; don't delete!
-    Model* _model;
+    SimTK::ReferencePtr<Model> _model;
 
 
 //==============================================================================

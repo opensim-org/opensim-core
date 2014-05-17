@@ -28,12 +28,7 @@
  */
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
-
-#include "Simbody.h"
 
 namespace OpenSim { 
 
@@ -151,11 +146,6 @@ private:
 	// Setup method initializes Body reference pointers to match the names.
 	void connectToModel(Model& aModel) OVERRIDE_11;
 
-	//--------------------------------------------------------------------------
-	// Implement Object interface.
-	//--------------------------------------------------------------------------
-	void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1)
-        OVERRIDE_11;
 //=============================================================================
 // DATA
 //=============================================================================
@@ -172,6 +162,6 @@ private:
 //=============================================================================
 //=============================================================================
 
-#endif // __PointToPointActuator_h__
+#endif // OPENSIM_POINT_TO_POINT_ACTUATOR_H_
 
 

@@ -24,10 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
 #include "Body.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Common/SimmMacros.h>
 
 //=============================================================================
 // STATICS
@@ -39,39 +37,15 @@ using SimTK::Mat33;
 using SimTK::Vec3;
 
 //=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
+// CONSTRUCTOR(S)
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-Body::~Body()
-{
-}
-
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-Body::Body() :
-    ModelComponent(),
-	_mass(_massProp.getValueDbl()),
-	_massCenter(_massCenterProp.getValueDblVec()),
-	_inertiaXX(_inertiaXXProp.getValueDbl()),
-	_inertiaYY(_inertiaYYProp.getValueDbl()),
-	_inertiaZZ(_inertiaZZProp.getValueDbl()),
-	_inertiaXY(_inertiaXYProp.getValueDbl()),
-	_inertiaXZ(_inertiaXZProp.getValueDbl()),
-	_inertiaYZ(_inertiaYZProp.getValueDbl()),
-	_joint(_jointProp.getValueObjPtrRef()),
-	_displayerProp(PropertyObj("", VisibleObject())),
-	_displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_wrapObjectSetProp(PropertyObj("", WrapObjectSet())),
-	_wrapObjectSet((WrapObjectSet&)_wrapObjectSetProp.getValueObj())
+Body::Body() : ModelComponent()
 {
-	setNull();
-	setupProperties();
-	//cout<<_mass<<endl;
+	constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -79,181 +53,25 @@ Body::Body() :
  * Constructor.
  */
 Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,const SimTK::Inertia& aInertia) :
-   ModelComponent(),
-	_mass(_massProp.getValueDbl()),
-	_massCenter(_massCenterProp.getValueDblVec()),
-	_inertiaXX(_inertiaXXProp.getValueDbl()),
-	_inertiaYY(_inertiaYYProp.getValueDbl()),
-	_inertiaZZ(_inertiaZZProp.getValueDbl()),
-	_inertiaXY(_inertiaXYProp.getValueDbl()),
-	_inertiaXZ(_inertiaXZProp.getValueDbl()),
-	_inertiaYZ(_inertiaYZProp.getValueDbl()),
-	_joint(_jointProp.getValueObjPtrRef()),
-	_displayerProp(PropertyObj("", VisibleObject())),
-	_displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_wrapObjectSetProp(PropertyObj("", WrapObjectSet())),
-	_wrapObjectSet((WrapObjectSet&)_wrapObjectSetProp.getValueObj())
+   ModelComponent()
 {
-	setNull();
-	setupProperties();
+	constructProperties();
 	setName(aName);
-	setMass(aMass);
-	setMassCenter(aMassCenter);
+	set_mass(aMass);
+	set_mass_center(aMassCenter);
 	setInertia(aInertia);
-	//cout<<_mass<<endl;
-}
-
-   
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aBody Body to be copied.
- */
-Body::Body(const Body &aBody) :
-   ModelComponent(aBody),
-	_mass(_massProp.getValueDbl()),
-	_massCenter(_massCenterProp.getValueDblVec()),
-	_inertiaXX(_inertiaXXProp.getValueDbl()),
-	_inertiaYY(_inertiaYYProp.getValueDbl()),
-	_inertiaZZ(_inertiaZZProp.getValueDbl()),
-	_inertiaXY(_inertiaXYProp.getValueDbl()),
-	_inertiaXZ(_inertiaXZProp.getValueDbl()),
-	_inertiaYZ(_inertiaYZProp.getValueDbl()),
-	_joint(_jointProp.getValueObjPtrRef()),
-	_displayerProp(PropertyObj("", VisibleObject())),
-	_displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_wrapObjectSetProp(PropertyObj("", WrapObjectSet())),
-	_wrapObjectSet((WrapObjectSet&)_wrapObjectSetProp.getValueObj())
-{
-	setNull();
-	setupProperties();
-	copyData(aBody);
-	//cout<<_mass<<endl;
-}
-
-
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy data members from one Body to another.
- *
- * @param aBody Body to be copied.
- */
-void Body::copyData(const Body &aBody)
-{
-	_mass = aBody._mass;
-	_massCenter = aBody._massCenter;
-	_inertiaXX = aBody._inertiaXX;
-	_inertiaYY = aBody._inertiaYY;
-	_inertiaZZ = aBody._inertiaZZ;
-	_inertiaXY = aBody._inertiaXY;
-	_inertiaXZ = aBody._inertiaXZ;
-	_inertiaYZ = aBody._inertiaYZ;
-	_displayer = aBody._displayer;
-	//_index = aBody._index;
-	_joint = dynamic_cast<Joint*>(Object::SafeCopy(aBody._joint));
-	//bool check = (_joint==NULL && aBody._joint==NULL) || (*_joint == *(aBody._joint));
-	if (_joint) _joint->setBody(*this);
-	_model = NULL;
-	_wrapObjectSet = aBody._wrapObjectSet;
-}
-
-//_____________________________________________________________________________
-/**
- * Copy data members from an AbstractBody to an Body.
- *
- * @param aBody AbstractBody to be copied.
- *
-void Body::copyData(const AbstractBody &aBody)
-{
-	// Mass
-	_mass = aBody.getMass();
-
-	// Mass center
-	aBody.getMassCenter(_massCenter);
-
-	// Inertia tensor
-	SimTK::Mat33 inertia;
-	aBody.getInertia(inertia);
-	setInertia(inertia);
-
-	// Joint
-	//_joint = aBody._joint;  Problem? Abstract bodies do not have a joint?
-
-	// Displayer
-	_displayer = *aBody.getDisplayer();
-}
-*/
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this Body to their null values.
- */
-void Body::setNull()
-{
-	setAuthors("Frank C. Anderson, Ajay Seth");
 }
 
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void Body::setupProperties()
+void Body::constructProperties()
 {
-	double mass = 1.0;
-	_massProp.setName("mass");
-	_massProp.setValue(mass);
-	_propertySet.append(&_massProp);
-
-	const SimTK::Vec3 defaultMC(0.0, 0.0, 0.0);
-	_massCenterProp.setName("mass_center");
-	_massCenterProp.setValue(defaultMC);
-	//_massCenterProp.setAllowableListSize(3);
-	_propertySet.append(&_massCenterProp);
-
-	// Ixx
-	_inertiaXXProp.setName("inertia_xx");
-	_inertiaXXProp.setValue(1.0);
-	_propertySet.append(&_inertiaXXProp);
-
-	// Iyy
-	_inertiaYYProp.setName("inertia_yy");
-	_inertiaYYProp.setValue(1.0);
-	_propertySet.append(&_inertiaYYProp);
-
-	// Izz
-	_inertiaZZProp.setName("inertia_zz");
-	_inertiaZZProp.setValue(1.0);
-	_propertySet.append(&_inertiaZZProp);
-
-	// Ixy
-	_inertiaXYProp.setName("inertia_xy");
-	_inertiaXYProp.setValue(0.0);
-	_propertySet.append(&_inertiaXYProp);
-
-	// Ixz
-	_inertiaXZProp.setName("inertia_xz");
-	_inertiaXZProp.setValue(0.0);
-	_propertySet.append(&_inertiaXZProp);
-
-	// Iyz
-	_inertiaYZProp.setName("inertia_yz");
-	_inertiaYZProp.setValue(0.0);
-	_propertySet.append(&_inertiaYZProp);
-
-	// Joint
-	_jointProp.setComment("Joint that connects this body with the parent body.");
-	_jointProp.setName("Joint");
-	_propertySet.append(&_jointProp);
-
-	_displayerProp.setName("Displayer");
-	_propertySet.append(&_displayerProp);
-
-	_wrapObjectSetProp.setName("WrapObjectSet");
-	_propertySet.append(&_wrapObjectSetProp);
+	constructProperty_mass(SimTK::NaN);
+	constructProperty_mass_center(SimTK::Vec3(0));
+	constructProperty_inertia(SimTK::Vec6(0));
+	constructProperty_WrapObjectSet(WrapObjectSet());
 }
 
 //_____________________________________________________________________________
@@ -265,11 +83,9 @@ void Body::setupProperties()
  */
 void Body::connectToModel(Model& aModel)
 {
-	if(_joint)
-		addComponent(_joint);
 
-	for(int i=0; i<_wrapObjectSet.getSize(); i++)
-		_wrapObjectSet.get(i).connectToModelAndBody(aModel, *this);
+	for(int i=0; i< get_WrapObjectSet().getSize(); i++)
+		get_WrapObjectSet().get(i).connectToModelAndBody(aModel, *this);
 
 	Super::connectToModel(aModel);
 }
@@ -283,27 +99,8 @@ void Body::addToSystem(SimTK::MultibodySystem& system) const
 
 	// Add subcomponents of the Body (namely its Joint)
 	Super::addToSystem(system);
-
 }
 
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-Body& Body::operator=(const Body &aBody)
-{
-	// BASE CLASS
-	Object::operator=(aBody);
-
-	copyData(aBody);
-
-	return(*this);
-}
 
 //=============================================================================
 // GET AND SET
@@ -318,118 +115,41 @@ void Body::addDisplayGeometry(const std::string &aGeometryFileName)
 {
 	updDisplayer()->setGeometryFileName(updDisplayer()->getNumGeometryFiles(), aGeometryFileName);
 }
-//_____________________________________________________________________________
-/**
- * Get the mass of the body.
- *
- * @return Mass of body from Simbody code.
- */
-double Body::getMass() const
-{
-	return _mass;
-}
-//_____________________________________________________________________________
-/**
- * Set the mass of the body.
- *
- * @param aMass mass of body.
- * @return Whether mass was successfully changed.
- */
-bool Body::setMass(double aMass)
-{
-	if(aMass<0.0) {
-		cerr<<"Body.setMass(): ERROR- zero or negative mass not allowed.\n";
-		return false;
-	}
-	_mass = aMass;
-    if (_model != NULL)
-        _model->invalidateSystem();
-	return true;
-}
 
-//done_____________________________________________________________________________
-/**
- * Get the mass center of the body.
- *
- * @param rVec XYZ coordinates of mass center are returned here.
- */
-void Body::getMassCenter(SimTK::Vec3& rVec) const
-{
-	rVec=_massCenter;
-}
-//_____________________________________________________________________________
-/**
- * Set the mass center of the body.
- *
- * @param aVec XYZ coordinates of mass center.
- * @return Whether mass center was successfully changed.
- */
-bool Body::setMassCenter(const SimTK::Vec3& aVec)
-{
-	_massCenter=aVec;
-    if (_model != NULL)
-        _model->invalidateSystem();
-	return true;
-}
 
 //_____________________________________________________________________________
 /**
  * Get the inertia matrix of the body.
  *
- * @param 3x3 inertia matrix.
+ * @return 3x3 inertia matrix.
  */
-void Body::getInertia(SimTK::Mat33 &rInertia) const
+const SimTK::Inertia& Body::getInertia() const
 {
-	rInertia[0][0] = _inertiaXX;
-	rInertia[0][1] = _inertiaXY;
-	rInertia[0][2] = _inertiaXZ;
-	rInertia[1][0] = _inertiaXY;
-	rInertia[1][1] = _inertiaYY;
-	rInertia[1][2] = _inertiaYZ;
-	rInertia[2][0] = _inertiaXZ;
-	rInertia[2][1] = _inertiaYZ;
-	rInertia[2][2] = _inertiaZZ;
+	// Has not been set programmatically
+	if (_inertia.isNaN()){
+		// initialize from properties
+		const SimTK::Vec6& Ivec = get_inertia();
+		_inertia = SimTK::Inertia(Ivec.getSubVec<3>(0), Ivec.getSubVec<3>(3));
+	}
+	return _inertia;
 }
 //_____________________________________________________________________________
 /**
  * Set the inertia matrix of the body.
  *
  * @param aInertia 9-element inertia matrix.
- * @return Whether inertia matrix was successfully changed.
  */
-bool Body::setInertia(const SimTK::Inertia& aInertia)
+void Body::setInertia(const SimTK::Inertia& inertia)
 {
-	Mat33 inertiaMat = aInertia.toMat33();
-	_inertiaXX = inertiaMat[0][0];
-	_inertiaXY = inertiaMat[0][1];
-	_inertiaXZ = inertiaMat[0][2];
-	_inertiaYY = inertiaMat[1][1];
-	_inertiaYZ = inertiaMat[1][2];
-	_inertiaZZ = inertiaMat[2][2];
-    if (_model != NULL)
-        _model->invalidateSystem();
-	return true;
+	_inertia = inertia;
+	const SimTK::SymMat33& I = _inertia.asSymMat33();
+	upd_inertia()[0] = I[0][0];
+	upd_inertia()[1] = I[1][1];
+	upd_inertia()[2] = I[2][2];
+	upd_inertia()[3] = I[0][1];
+	upd_inertia()[4] = I[0][2];
+	upd_inertia()[5] = I[1][2];
 }
-
-//_____________________________________________________________________________
-/**
- * Set the joint for this body.
- *
- * @param aJoint Joint connecting this body to the parent body.
- */
-void Body::
-setJoint(Joint& aJoint)
-{
-	_joint = &aJoint;
-}
-
-Joint& Body::getJoint() const {
-    if (_joint == NULL)
-        throw Exception("Body::getJoint(): This Body does not have a Joint");
-    return *_joint;
-}
-
-
 
 //=============================================================================
 // SCALING
@@ -444,14 +164,14 @@ Joint& Body::getJoint() const {
 void Body::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
 {
    // Base class, to scale wrap objects
-	for (int i=0; i<_wrapObjectSet.getSize(); i++)
-		_wrapObjectSet.get(i).scale(aScaleFactors);
+	for (int i=0; i< get_WrapObjectSet().getSize(); i++)
+		upd_WrapObjectSet().get(i).scale(aScaleFactors);
 
 	SimTK::Vec3 oldScaleFactors;
 	getDisplayer()->getScaleFactors(oldScaleFactors);
 
 	for(int i=0; i<3; i++) {
-		_massCenter[i] *= aScaleFactors[i];
+		upd_mass_center()[i] *= aScaleFactors[i];
 		oldScaleFactors[i] *= aScaleFactors[i];
 	}
 	// Update scale factors for displayer
@@ -471,18 +191,16 @@ void Body::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
 void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
 {
 	// Save the unscaled mass for possible use later.
-	double unscaledMass = _mass;
+	double unscaledMass = get_mass();
 
 	// Calculate and store the product of the scale factors.
 	double massScaleFactor = fabs(aScaleFactors[0] * aScaleFactors[1] * aScaleFactors[2]);
 
 	// Scale the mass.
 	if (aScaleMass)
-		_mass *= massScaleFactor;
+		upd_mass() *= massScaleFactor;
 
-	// Scale the inertia tensor.
-	SimTK::Mat33 inertia;
-	getInertia(inertia);
+	SimTK::SymMat33 inertia = _inertia.asSymMat33();
 
 	// If the mass is zero, then make the inertia tensor zero as well.
 	// If the X, Y, Z scale factors are equal, then you can scale the
@@ -491,24 +209,18 @@ void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScale
 	// is proportional to the square of one or more dimensional
 	// measurements. For determining if the scale factors are equal,
 	// ignore reflections-- look only at the absolute value of the factors.
-	if (_mass <= ROUNDOFF_ERROR) {
-		for (int i = 0; i < 3; i++)
-			for (int j = 0; j < 3; j++)
-				inertia[i][j]=0.0;
-
-	} else if (EQUAL_WITHIN_ERROR(DABS(aScaleFactors[0]), DABS(aScaleFactors[1])) &&
-		        EQUAL_WITHIN_ERROR(DABS(aScaleFactors[1]), DABS(aScaleFactors[2]))) {
+	if (get_mass() <= SimTK::Eps) {
+		inertia *= 0.0;
+	}
+	else if (SimTK::isNumericallyEqual(aScaleFactors[0], aScaleFactors[1])
+			 && SimTK::isNumericallyEqual(aScaleFactors[1], aScaleFactors[2])) {
 		// If the mass is also being scaled, scale the inertia terms by massScaleFactor.
 		if (aScaleMass) {
-			for (int i = 0; i < 3; i++)
-				for (int j = 0; j < 3; j++)
-					inertia[i][j] *= massScaleFactor;
+			inertia *= massScaleFactor;
 		}
 
 		// Now scale by the length-squared component.
-		for (int i = 0; i < 3; i++)
-			for (int j = 0; j < 3; j++)
-				inertia[i][j] *= (aScaleFactors[0] * aScaleFactors[0]);
+		inertia *= (aScaleFactors[0] * aScaleFactors[0]);
 
 	} else {
 		// If the scale factors are not equal, then assume that the segment
@@ -554,36 +266,36 @@ void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScale
 			length = sqrt(term);
 
 		// 4. Scale the radius and length, and recalculate the diagonal inertia terms.
-		length *= DABS(aScaleFactors[axis]);
+		length *= aScaleFactors[axis];
 
 		if (axis == 0) {
-			rad_sqr = radius * DABS(aScaleFactors[1]) * radius * DABS(aScaleFactors[2]);
-			inertia[0][0] = 0.5 * _mass * rad_sqr;
-			inertia[1][1] = _mass * ((length * length / 12.0) + 0.25 * rad_sqr);
-			inertia[2][2] = _mass * ((length * length / 12.0) + 0.25 * rad_sqr);
+			rad_sqr = radius * (aScaleFactors[1]) * radius * (aScaleFactors[2]);
+			inertia[0][0] = 0.5 * get_mass() * rad_sqr;
+			inertia[1][1] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
+			inertia[2][2] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
 
 		} else if (axis == 1) {
-			rad_sqr = radius * DABS(aScaleFactors[0]) * radius * DABS(aScaleFactors[2]);
-			inertia[0][0] = _mass * ((length * length / 12.0) + 0.25 * rad_sqr);
-			inertia[1][1] = 0.5 * _mass * rad_sqr;
-			inertia[2][2] = _mass * ((length * length / 12.0) + 0.25 * rad_sqr);
+			rad_sqr = radius * (aScaleFactors[0]) * radius * (aScaleFactors[2]);
+			inertia[0][0] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
+			inertia[1][1] = 0.5 * get_mass() * rad_sqr;
+			inertia[2][2] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
 
 		} else {
-			rad_sqr = radius * DABS(aScaleFactors[0]) * radius * DABS(aScaleFactors[1]);
-			inertia[0][0] = _mass * ((length * length / 12.0) + 0.25 * rad_sqr);
-			inertia[1][1] = _mass * ((length * length / 12.0) + 0.25 * rad_sqr);
-			inertia[2][2] = 0.5 * _mass * rad_sqr;
+			rad_sqr = radius * (aScaleFactors[0]) * radius * (aScaleFactors[1]);
+			inertia[0][0] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
+			inertia[1][1] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
+			inertia[2][2] = 0.5 * get_mass() * rad_sqr;
 		}
 
 		// 5. Scale the inertia products, in case some are non-zero. These are scaled by
 		//    two scale factors for the length term (which two depend on the inertia term
 		//    being scaled), and, if the mass is also scaled, by massScaleFactor.
-		inertia[0][1] *= DABS((aScaleFactors[0] * aScaleFactors[1]));
-		inertia[0][2] *= DABS((aScaleFactors[0] * aScaleFactors[2]));
-		inertia[1][0] *= DABS((aScaleFactors[1] * aScaleFactors[0]));
-		inertia[1][2] *= DABS((aScaleFactors[1] * aScaleFactors[2]));
-		inertia[2][0] *= DABS((aScaleFactors[2] * aScaleFactors[0]));
-		inertia[2][1] *= DABS((aScaleFactors[2] * aScaleFactors[1]));
+		inertia[0][1] *= ((aScaleFactors[0] * aScaleFactors[1]));
+		inertia[0][2] *= ((aScaleFactors[0] * aScaleFactors[2]));
+		inertia[1][0] *= ((aScaleFactors[1] * aScaleFactors[0]));
+		inertia[1][2] *= ((aScaleFactors[1] * aScaleFactors[2]));
+		inertia[2][0] *= ((aScaleFactors[2] * aScaleFactors[0]));
+		inertia[2][1] *= ((aScaleFactors[2] * aScaleFactors[1]));
 
 		if (aScaleMass) {
 			inertia[0][1] *= massScaleFactor;
@@ -610,26 +322,21 @@ void Body::scaleMass(double aScaleFactor)
 	if (_index==0)	// The following throws an exception if applied to ground.
 		return;
 
-	_mass *= aScaleFactor;
-	_inertiaXX *= aScaleFactor;
-	_inertiaYY *= aScaleFactor;
-	_inertiaZZ *= aScaleFactor;
-	_inertiaXY *= aScaleFactor;
-	_inertiaXZ *= aScaleFactor;
-	_inertiaYZ *= aScaleFactor;
-    if (_model != NULL)
-        _model->invalidateSystem();
+	upd_mass() *= aScaleFactor;
+	_inertia *= aScaleFactor;
+	upd_inertia() *= aScaleFactor;
 }
 
 //=============================================================================
 // UTILITY
 //=============================================================================
-SimTK::MassProperties Body::getMassProperties()
+SimTK::MassProperties Body::getMassProperties() const
 {
-	SimTK::Inertia inertiaAboutCOM = SimTK::Inertia(_inertiaXX, _inertiaYY, _inertiaZZ,
-													_inertiaXY, _inertiaXZ, _inertiaYZ);
-	SimTK::Inertia inertiaAboutOrigin = inertiaAboutCOM.shiftFromMassCenter(_massCenter, _mass);
-	return SimTK::MassProperties(_mass, _massCenter, inertiaAboutOrigin);
+	const double& m = get_mass();
+	const Vec3& com = get_mass_center();
+	const SimTK::Inertia& Icom = getInertia();
+
+	return SimTK::MassProperties(m, com, Icom.shiftFromMassCenter(com, m));
 }
 
 //_____________________________________________________________________________
@@ -639,20 +346,19 @@ SimTK::MassProperties Body::getMassProperties()
  * @param aName Name of the wrap object.
  * @return Pointer to the wrap object.
  */
-WrapObject* Body::getWrapObject(const string& aName) const
+const WrapObject* Body::getWrapObject(const string& aName) const
 {
 	int i;
 
-	for (i = 0; i < _wrapObjectSet.getSize(); i++) {
-		if (aName == _wrapObjectSet.get(i).getName())
-			return &_wrapObjectSet.get(i);
+	for (i = 0; i < get_WrapObjectSet().getSize(); i++) {
+		if (aName == get_WrapObjectSet()[i].getName())
+			return &get_WrapObjectSet()[i];
 	}
-
-	return NULL;
+	return nullptr;
 }
 
 void Body::addWrapObject(WrapObject* wrap) {
-	_wrapObjectSet.adoptAndAppend(wrap);
+	upd_WrapObjectSet().adoptAndAppend(wrap);
 }
 
 //=============================================================================
@@ -666,4 +372,30 @@ void Body::getScaleFactors(SimTK::Vec3& scales) const
 
 	scales = scaleFactors;
 
+}
+
+void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+{
+	if (versionNumber < XMLDocument::getLatestVersion()){
+		if (versionNumber < 30500) {
+			SimTK::Vec6 newInertia(1.0, 1.0, 1.0, 0., 0., 0.);
+			std::string inertiaComponents[] = { "inertia_xx", "inertia_yy", "inertia_zz", "inertia_xy", "inertia_xz", "inertia_yz" };
+			for (int i = 0; i<6; ++i){
+				SimTK::Xml::element_iterator iIter = aNode.element_begin(inertiaComponents[i]);
+				if (iIter != aNode.element_end()){
+					newInertia[i] = iIter->getValueAs<double>();
+					aNode.removeNode(iIter);
+				}
+			}
+			std::ostringstream strs;
+			for (int i = 0; i < 6; ++i){
+				strs << newInertia[i];
+				if (i < 5) strs << " ";
+			}
+			std::string strInertia = strs.str();
+			SimTK::Xml::Element inertiaNode("inertia", strInertia);
+			aNode.insertNodeAfter(aNode.element_end(), inertiaNode);
+		}
+	}
+	Super::updateFromXMLNode(aNode, versionNumber);
 }

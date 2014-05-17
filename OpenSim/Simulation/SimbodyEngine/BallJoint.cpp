@@ -58,16 +58,16 @@ BallJoint::BallJoint() : Joint()
 /**
  * Convenience Constructor.
  */
-BallJoint::BallJoint(const std::string &name, OpenSim::Body& parent, 
-					 Vec3 locationInParent, Vec3 orientationInParent,
-					 OpenSim::Body& body, Vec3 locationInBody, Vec3 orientationInBody, 
+BallJoint::BallJoint(const std::string &name, const OpenSim::Body& parent, 
+					 const Vec3& locationInParent, const Vec3& orientationInParent,
+					 const OpenSim::Body& body,
+					 const Vec3& locationInBody, const Vec3& orientationInBody, 
 					 bool reverse) :
 			Joint(name, parent, locationInParent,orientationInParent,
 					body, locationInBody, orientationInBody, reverse)
 {
 	setAuthors("Ajay Seth");
 	constructCoordinates();
-	updBody().setJoint(*this);
 }
 
 
@@ -77,32 +77,8 @@ BallJoint::BallJoint(const std::string &name, OpenSim::Body& parent,
 //_____________________________________________________________________________
 void BallJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	const SimTK::Vec3& orientation = get_orientation();
-	const SimTK::Vec3& location = get_location();
-
-	// CHILD TRANSFORM
-	Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
-	SimTK::Transform childTransform(rotation,location);
-
-	const SimTK::Vec3& orientationInParent = get_orientation_in_parent();
-	const SimTK::Vec3& locationInParent = get_location_in_parent();
-
-	// PARENT TRANSFORM
-	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
-	SimTK::Transform parentTransform(parentRotation, locationInParent);
-
-	// CREATE MOBILIZED BODY
-	/*if(_useEulerAngles){
-		MobilizedBody::Gimbal
-			simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(_parentBody)),
-				parentTransform,SimTK::Body::Rigid(_body->getMassProperties()),
-				childTransform);
-		setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
-	}
-	else{*/
-	BallJoint* mutableThis = const_cast<BallJoint*>(this);
-	mutableThis->createMobilizedBody(parentTransform, childTransform);
-	//}
+	createMobilizedBody<MobilizedBody::Ball>(getParentTransform(),
+		                                     getChildTransform());
 
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);
@@ -125,7 +101,7 @@ void BallJoint::initStateFromProperties(SimTK::State& s) const
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
 	
 	BallJoint* mutableThis = const_cast<BallJoint*>(this);
-    matter.getMobilizedBody(MobilizedBodyIndex(mutableThis->updBody().getIndex())).setQToFitRotation(s, r);
+    matter.getMobilizedBody(getChildBody().getIndex()).setQToFitRotation(s, r);
 }
 
 void BallJoint::setPropertiesFromState(const SimTK::State& state)
@@ -136,7 +112,7 @@ void BallJoint::setPropertiesFromState(const SimTK::State& state)
     const MultibodySystem&        system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-        Rotation r = matter.getMobilizedBody(MobilizedBodyIndex(updBody().getIndex())).getBodyRotation(state);
+        Rotation r = matter.getMobilizedBody(MobilizedBodyIndex(getChildBody().getIndex())).getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
 	
 		const CoordinateSet& coordinateSet = get_CoordinateSet();
@@ -147,13 +123,3 @@ void BallJoint::setPropertiesFromState(const SimTK::State& state)
     }
 }
 
-void BallJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform) {
-
-	// CREATE MOBILIZED BODY
-	MobilizedBody::Ball
-		simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(&updParentBody())),
-			parentTransform,SimTK::Body::Rigid(updBody().getMassProperties()),
-			childTransform);
-
-	setMobilizedBodyIndex(&updBody(), simtkBody.getMobilizedBodyIndex());
-}

@@ -180,9 +180,7 @@ void testExpressionBasedCoordinateForce()
 	slider_coords[0].setMotionType(Coordinate::Translational);
 
 	osimModel->addBody(&ball);
-
-	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
-	osimModel->updBodySet().setMemoryOwner(false);
+	osimModel->addJoint(&slider);
 
 	osimModel->setGravity(gravity_vec);
 
@@ -236,7 +234,6 @@ void testExpressionBasedCoordinateForce()
 
 		manager.setInitialTime(dt*i);
 	}
-
 	
 	// Test copying
 	ExpressionBasedCoordinateForce *copyOfSpring = spring.clone();
@@ -244,6 +241,8 @@ void testExpressionBasedCoordinateForce()
 	ASSERT(*copyOfSpring == spring);
 
 	osimModel->print("ExpressionBasedCoordinateForceModel.osim");
+
+	osimModel->disownAllComponents();
 }
 
 void testExpressionBasedPointToPointForce()
@@ -264,14 +263,15 @@ void testExpressionBasedPointToPointForce()
 	model->setName("ExpressionBasedPointToPointForce");
 	//OpenSim bodies
     OpenSim::Body& ground = model->getGroundBody();
-	OpenSim::Body ball("ball", mass ,Vec3(0),  mass*SimTK::Inertia::sphere(0.1));
+	OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(ball_radius));
 	ball.addDisplayGeometry("sphere.vtp");
 	ball.scale(Vec3(ball_radius), false);
 
 	// define body's joint
-	FreeJoint free("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+	FreeJoint free("free", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
 	
 	model->addBody(&ball);
+	model->addJoint(&free);
 
 	string expression("2/(d^2)-3.0*(d-0.2)*(1+0.0123456789*ddot)");
 
@@ -287,6 +287,8 @@ void testExpressionBasedPointToPointForce()
 
 	//model->setUseVisualizer(true);
 	SimTK::State& state = model->initSystem();
+
+	model->print("ExpressionBasedPointToPointForceModel.osim");
 
 	Vector& q = state.updQ();
 	Vector& u = state.updU();
@@ -308,6 +310,8 @@ void testExpressionBasedPointToPointForce()
 
 	manager.setFinalTime(final_t);
 	manager.integrate(state);
+
+	//manager.getStateStorage().print("testExpressionBasedPointToPointForce.sto");
 
 	// force is only velocity dependent but is only compute in Dynamics
 	model->getMultibodySystem().realize(state, Stage::Dynamics);
@@ -333,8 +337,8 @@ void testExpressionBasedPointToPointForce()
 	// Before exiting lets see if copying the P2P force works
 	ExpressionBasedPointToPointForce *copyOfP2pForce = p2pForce->clone();
 	ASSERT(*copyOfP2pForce == *p2pForce);
-	
-	model->print("ExpressionBasedPointToPointForceModel.osim");
+
+	model->disownAllComponents();
 }
 
 void testPathSpring()
@@ -382,10 +386,10 @@ void testPathSpring()
 	slider_coords[0].setMotionType(Coordinate::Translational);
 
 	osimModel->addBody(&block);
-	osimModel->addBody(&pulleyBody);
+	osimModel->addJoint(&weld);
 
-	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
-	osimModel->updBodySet().setMemoryOwner(false);
+	osimModel->addBody(&pulleyBody);
+	osimModel->addJoint(&slider);
 
 	osimModel->setGravity(gravity_vec);
 
@@ -406,8 +410,6 @@ void testPathSpring()
 	// connected to the model before the wrap can be added
 	osimModel->addForce(&spring);
 
-	//osimModel->print("PathSpringModel.osim");
-
 	// Create the force reporter
 	ForceReporter* reporter = new ForceReporter(osimModel);
 	osimModel->addAnalysis(reporter);
@@ -420,7 +422,6 @@ void testPathSpring()
 
 	//==========================================================================
 	// Compute the force and torque at the specified times.
-
     RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
 	integrator.setAccuracy(1e-6);
     Manager manager(*osimModel,  integrator);
@@ -454,7 +455,7 @@ void testPathSpring()
 	PathSpring *copyOfSpring = spring.clone();
 	ASSERT(*copyOfSpring == spring);
 	
-	//Model modelFromFile("PathSpringModel.osim");
+	osimModel->disownAllComponents();
 }
 
 void testSpringMass()
@@ -492,9 +493,7 @@ void testSpringMass()
 	slider_coords[0].setMotionType(Coordinate::Translational);
 
 	osimModel->addBody(&ball);
-
-	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
-	osimModel->updBodySet().setMemoryOwner(false);
+	osimModel->addJoint(&slider);
 
 	osimModel->setGravity(gravity_vec);
 
@@ -552,7 +551,7 @@ void testSpringMass()
 	}
 
 	// Save the forces
-	//reporter->getForceStorage().print("spring_mass_forces.mot");  
+	osimModel->disownAllComponents();
 
 	// Before exiting lets see if copying the spring works
 	PointToPointSpring *copyOfSpring = spring.clone();
@@ -595,9 +594,7 @@ void testBushingForce()
 	slider_coords[0].setMotionType(Coordinate::Translational);
 
 	osimModel->addBody(&ball);
-
-	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
-	osimModel->updBodySet().setMemoryOwner(false);
+	osimModel->addJoint(&slider);
 
 	Vec3 rotStiffness(0);
 	Vec3 transStiffness(stiffness);
@@ -663,6 +660,8 @@ void testBushingForce()
 	BushingForce *copyOfSpring = spring.clone();
 
 	ASSERT(*copyOfSpring == spring);
+
+	osimModel->disownAllComponents();
 }
 
 void testFunctionBasedBushingForce()
@@ -700,9 +699,7 @@ void testFunctionBasedBushingForce()
 	slider_coords[0].setMotionType(Coordinate::Translational);
 
 	osimModel->addBody(&ball);
-
-	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
-	osimModel->updBodySet().setMemoryOwner(false);
+	osimModel->addJoint(&slider);
 
 	Vec3 rotStiffness(0);
 	Vec3 transStiffness(stiffness);
@@ -729,7 +726,6 @@ void testFunctionBasedBushingForce()
 
 	//==========================================================================
 	// Compute the force and torque at the specified times.
-
     RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
 	integrator.setAccuracy(1e-6);
     Manager manager(*osimModel,  integrator);
@@ -759,6 +755,8 @@ void testFunctionBasedBushingForce()
 
 		manager.setInitialTime(dt*i);
 	}
+
+	osimModel->disownAllComponents();
 
 	manager.getStateStorage().print("function_based_bushing_model_states.sto");
 
@@ -955,6 +953,7 @@ void testCoordinateLimitForce()
 	slider_coords[0].setMotionType(Coordinate::Translational);
 
 	osimModel->addBody(&ball);
+	osimModel->addJoint(&slider);
 
 	osimModel->setGravity(gravity_vec);
 
@@ -968,7 +967,7 @@ void testCoordinateLimitForce()
 
 	osimModel->addForce(&limitForce);
 
-		// BAD: have to set memoryOwner to false or program will crash when this test is complete.
+	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
 	osimModel->disownAllComponents();
 
 	osimModel->print("CoordinateLimitForceTest.osim");
@@ -980,7 +979,7 @@ void testCoordinateLimitForce()
 		"Deserialized CoordinateLimitForceTest failed to be equivalent to original.");
 
 	// check copy
-	Model *copyModel = loadedModel->clone();
+	Model *copyModel = osimModel->clone();
 
 	ASSERT(*copyModel == *loadedModel,
 		"Clone of CoordinateLimitForceTest failed to be equivalent to original.");
@@ -1020,7 +1019,6 @@ void testCoordinateLimitForce()
 
 	//==========================================================================
 	// Compute the force and torque at the specified times.
-
     RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
 	integrator.setAccuracy(1e-6);
     Manager manager(*osimModel,  integrator);
@@ -1104,6 +1102,7 @@ void testCoordinateLimitForceRotational()
 	pin_coords[0].setMotionType(Coordinate::Rotational);
 
 	osimModel->addBody(&block);
+	osimModel->addJoint(&pin);
 
 	osimModel->setGravity(Vec3(0));
 
@@ -1236,6 +1235,7 @@ void testExternalForce()
 
 	// add the tower body to the model
 	model.addBody(&tower);
+	model.addJoint(&freeJoint);
 
 	// Force is 10N in Y, Torque is 2Nm about Z and Point is 0.1m in X
 	Vec3 force(0,10,0), torque(0, 0, 2), point(0.1, 0, 0);
@@ -1365,9 +1365,11 @@ void testExternalForce()
 	sensor.scale(Vec3(0.02, 0.1, 0.01));
 
 	// locate joint at 0.3m above tower COM
-	WeldJoint WeldJoint("sensorWeld", ground, Vec3(0, 0.8, 0), Vec3(0), sensor, Vec3(0), Vec3(0, 0, Pi/2));
+	WeldJoint weldJoint("sensorWeld", ground, Vec3(0, 0.8, 0), Vec3(0), sensor, Vec3(0), Vec3(0, 0, Pi/2));
+	
 	// add the sensor body to the model
 	model.addBody(&sensor);
+	model.addJoint(&weldJoint);
 
 	// Apply force with both force and point in sensor body 
 	ExternalForce xf5(forces, "force", "point", "", "tower", "sensor", "sensor");

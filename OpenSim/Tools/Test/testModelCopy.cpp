@@ -59,18 +59,17 @@ void testCopyModel(string fileName)
 	size_t mem1 = getCurrentRSS( );
 	cout << "Memory use BEFORE load, copy and init: " << mem1 << "Bytes." << endl;
 
-	Model *model = new Model(fileName);
+	Model* model = new Model(fileName);
 	SimTK::State defaultState = model->initSystem();
-	Model *modelCopy = new Model(*model);
+	Model* modelCopy = new Model(*model);
 	// At this point properties should all match. assert that
 	ASSERT(*model==*modelCopy);
 	delete model;
+
 	SimTK::State& defaultStateOfCopy = modelCopy->initSystem();
 	// Compare state
 	defaultState.getY().dump("defaultState:Y");
 	ASSERT ((defaultState.getY()-defaultStateOfCopy.getY()).norm() < 1e-7);
-	defaultState.getZ().dump("defaultState:Z");
-	ASSERT ((defaultState.getZ()-defaultStateOfCopy.getZ()).norm() < 1e-7);
 
 	//  Now delete original model and make sure copy can stand
 	Model *newModel = modelCopy->clone();

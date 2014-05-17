@@ -92,6 +92,7 @@ int main()
 
 		// Add the block body to the model
 		osimModel.addBody(block);
+		osimModel.addJoint(blockToGround);
 
 		///////////////////////////////////////////////
 		// DEFINE THE SIMULATION START AND END TIMES //

@@ -83,7 +83,7 @@ protected:
     PropertyIntArray _rangeProp;
     Array<int> &_range;
 
-	WrapObject* _wrapObject;
+	const WrapObject* _wrapObject;
 	GeometryPath* _path;
 
 	WrapResult _previousWrap;  // results from previous wrapping
@@ -111,7 +111,7 @@ public:
 	int getStartPoint() const { return _range[0]; }
 	int getEndPoint() const { return _range[1]; }
 	const std::string& getWrapObjectName() const { return _wrapObjectName; }
-	WrapObject* getWrapObject() const { return _wrapObject; }
+	const WrapObject* getWrapObject() const { return _wrapObject; }
 	void setWrapObject(WrapObject& aWrapObject);
 	PathWrapPoint& getWrapPoint(int aIndex);
 	WrapMethod getMethod() const { return _method; }

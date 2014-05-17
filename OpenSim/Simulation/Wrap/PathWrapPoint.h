@@ -60,9 +60,9 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PathWrapPoint, PathPoint);
 //=============================================================================
 private:
 	Array<SimTK::Vec3> _wrapPath; // points defining muscle path on surface of wrap object
-   double _wrapPathLength; // length of _wrapPath
+    double _wrapPathLength; // length of _wrapPath
 
-	WrapObject* _wrapObject; // the wrap object this point is on
+	const WrapObject* _wrapObject; // the wrap object this point is on
 
 protected:
 
@@ -86,8 +86,8 @@ public:
 	Array<SimTK::Vec3>& getWrapPath() { return _wrapPath; }
 	double getWrapLength() const { return _wrapPathLength; }
 	void setWrapLength(double aLength) { _wrapPathLength = aLength; }
-	virtual WrapObject* getWrapObject() const { return _wrapObject; }
-	void setWrapObject(WrapObject* aWrapObject) { _wrapObject = aWrapObject; }
+	const WrapObject* getWrapObject() const { return _wrapObject; }
+	void setWrapObject(const WrapObject* aWrapObject) { _wrapObject = aWrapObject; }
 
 private:
 	void setNull();

@@ -1,164 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="30000">
 	<Model name="PushUpToesOnGround">
-		<defaults>
-			<ControlLinear name="default">
-				<is_model_control>true</is_model_control>
-				<extrapolate>true</extrapolate>
-				<default_min>-1</default_min>
-				<default_max>1</default_max>
-				<filter_on>false</filter_on>
-				<use_steps>false</use_steps>
-				<x_nodes />
-				<min_nodes />
-				<max_nodes />
-				<kp>100</kp>
-				<kv>20</kv>
-			</ControlLinear>
-			<CoordinateActuator name="default">
-				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<isDisabled>false</isDisabled>
-				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-				<min_control>-Inf</min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-				<max_control>Inf</max_control>
-				<!--Name of the generalized coordinate to which the actuator applies.-->
-				<coordinate></coordinate>
-				<!--The maximum generalized force produced by this actuator.-->
-				<optimal_force>300</optimal_force>
-			</CoordinateActuator>
-			<PointActuator name="default">
-				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<isDisabled>false</isDisabled>
-				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-				<min_control>-Inf</min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-				<max_control>Inf</max_control>
-				<!--Name of Body to which this actuator is applied.-->
-				<body></body>
-				<!--Location of application point; in body frame unless point_is_global=true-->
-				<point>0 0 0</point>
-				<!--Interpret point in Ground frame if true; otherwise, body frame.-->
-				<point_is_global>false</point_is_global>
-				<!--Force application direction; in body frame unless force_is_global=true.-->
-				<direction>-1 -0 -0</direction>
-				<!--Interpret direction in Ground frame if true; otherwise, body frame.-->
-				<force_is_global>true</force_is_global>
-				<!--The maximum force produced by this actuator when fully activated.-->
-				<optimal_force>1000</optimal_force>
-			</PointActuator>
-			<TorqueActuator name="default">
-				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<isDisabled>false</isDisabled>
-				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-				<min_control>-Inf</min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-				<max_control>Inf</max_control>
-				<!--Name of Body to which the torque actuator is applied.-->
-				<bodyA></bodyA>
-				<!--Name of Body to which the equal and opposite torque is applied.-->
-				<bodyB></bodyB>
-				<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
-				<torque_is_global>true</torque_is_global>
-				<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
-				<axis>-1 -0 -0</axis>
-				<!--The maximum torque produced by this actuator when fully activated.-->
-				<optimal_force>300</optimal_force>
-			</TorqueActuator>
-			<Thelen2003Muscle name="default">
-				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<isDisabled>false</isDisabled>
-				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-				<min_control>0</min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-				<max_control>1</max_control>
-				<!--The set of points defining the path of the muscle.-->
-				<GeometryPath>
-					<PathPointSet>
-						<objects />
-						<groups />
-					</PathPointSet>
-					<VisibleObject>
-						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
-						<GeometrySet>
-							<objects />
-							<groups />
-						</GeometrySet>
-						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-						<scale_factors> 1 1 1</scale_factors>
-						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
-						<transform> -0 0 -0 0 0 0</transform>
-						<!--Whether to show a coordinate frame-->
-						<show_axes>false</show_axes>
-						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-						<display_preference>4</display_preference>
-					</VisibleObject>
-					<PathWrapSet>
-						<objects />
-						<groups />
-					</PathWrapSet>
-				</GeometryPath>
-				<!--The maximum force this actuator can produce.-->
-				<optimal_force>1</optimal_force>
-				<!--Maximum isometric force that the fibers can generate-->
-				<max_isometric_force>546</max_isometric_force>
-				<!--Optimal length of the muscle fibers-->
-				<optimal_fiber_length>0.0535</optimal_fiber_length>
-				<!--Resting length of the tendon-->
-				<tendon_slack_length>0.078</tendon_slack_length>
-				<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
-				<pennation_angle_at_optimal>0.13962634</pennation_angle_at_optimal>
-				<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
-				<max_contraction_velocity>10</max_contraction_velocity>
-				<!--time constant for ramping up muscle activation-->
-				<activation_time_constant>0.01</activation_time_constant>
-				<!--time constant for ramping down of muscle activation-->
-				<deactivation_time_constant>0.04</deactivation_time_constant>
-				<!--tendon strain at maximum isometric muscle force-->
-				<FmaxTendonStrain>0.033</FmaxTendonStrain>
-				<!--passive muscle strain at maximum isometric muscle force-->
-				<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-				<!--shape factor for Gaussian active muscle force-length relationship-->
-				<KshapeActive>0.5</KshapeActive>
-				<!--exponential shape factor for passive force-length relationship-->
-				<KshapePassive>4</KshapePassive>
-				<!--force-velocity shape factor-->
-				<Af>0.3</Af>
-				<!--maximum normalized lengthening force-->
-				<Flen>1.8</Flen>
-			</Thelen2003Muscle>
-			<CMC_Joint name="default">
-				<!--Flag (true or false) indicating whether or not a task is enabled.-->
-				<on>false</on>
-				<!--Weight with which a task is tracked relative to other tasks. To track a task more tightly, make the weight larger.-->
-				<weight> 1 1 1</weight>
-				<!--Name of body frame with respect to which a tracking objective is specified. The special name 'center_of_mass' refers to the system center of mass. This property is not used for tracking joint angles.-->
-				<wrt_body>-1</wrt_body>
-				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
-				<express_body>-1</express_body>
-				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> 0 0 0</active>
-				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
-				<kp> 1 1 1</kp>
-				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
-				<kv> 1 1 1</kv>
-				<!--Feedforward acceleration gain.  This is normally set to 1.0, so no gain.-->
-				<ka> 1 1 1</ka>
-				<!--Direction vector[3] for component 0 of a task. Joint tasks do not use this propery.-->
-				<r0> 0 0 0</r0>
-				<!--Direction vector[3] for component 1 of a task. Joint tasks do not use this property.-->
-				<r1> 0 0 0</r1>
-				<!--Direction vector[3] for component 2 of a task. Joint tasks do not use this property.-->
-				<r2> 0 0 0</r2>
-				<!--Name of the coordinate to be tracked.-->
-				<coordinate />
-				<!--Error limit on the tracking accuracy for this coordinate. If the tracking errors approach this limit, the weighting for this coordinate is increased. -->
-				<limit>0</limit>
-			</CMC_Joint>
-		</defaults>
-		<!--See the credits section below for information about this model's authors, data sources, intended uses, and more.
-		See the publications section for the paper(s) you should cite when using this model. Do not remove either section if you modify or add to this model.
-		If you are this model's author(s), add or update the credits and publications sections before distributing your model.-->
 		<credits>Menegolo Andrea</credits>
 		<publications>Delp, S.L., Loan, J.P., Hoy, M.G., Zajac, F.E., Topp E.L., Rosen, J.M.: An interactive graphics-based model of the lower extremity to study orthopaedic surgical procedures, IEEE Transactions on Biomedical Engineering, vol. 37, pp. 757-767, 1990. Yamaguchi G.T., Zajac F.E.: A planar model of the knee joint to characterize the knee extensor mechanism." J . Biomecl7. vol. 21. pp. 1-10. 1989. Anderson F.C., Pandy M.G.: A dynamic optimization solution for vertical jumping in three dimensions. Computer Methods in Biomechanics and Biomedical Engineering 2:201-231, 1999. Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Biomechanical Engineering 123:381-390, 2001. Delp SL, Anderson FC, Arnold AS, Loan P, Habib A, John CT, Guendelman E, Thelen DG (in press). OpenSim: Open-source Software to Create and Analyze Dynamic Simulations of Movement. IEEE Transactions on Biomedical Engineering. (2007) Holzbaur KR, Murray WM, Delp SL.: A model of the upper extremity for simulating musculoskeletal surgery and analyzing neuromuscular control., Ann Biomed Eng. 2005 Jun;33(6):829-40. (2005) NOTE: This model has been developed on the base of the 3DGaitModel2354.osim model (developed by Delp S.L. et all) and the Stanford VA Upper Limb Model.osim model (developed by Holzbaur KR et all). Not additional informations are present in this model that cannot be found in the original ones. This model has been built by the author aiming only to provide a starting model for a full body model.</publications>
 		<length_units>meters</length_units>
@@ -245,11 +87,11 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>-1.32441915</default_value>
+										<default_value>-1.34612687098713</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-										<range>-1.57079633 1.57079633</range>
+										<range>-2.0943951023932 2.0943951023932</range>
 										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
 										<clamped>true</clamped>
 										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
@@ -263,7 +105,7 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>translational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>0.75</default_value>
+										<default_value>0.741798214151969</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -276,12 +118,14 @@
 										<prescribed_function />
 										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
 										<prescribed>false</prescribed>
+                    <!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints. When true, the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which have this flag set to false, to dictate the value of unimportant coordinates if they are linked via constraints.-->
+                    <is_free_to_satisfy_constraints>true</is_free_to_satisfy_constraints>
 									</Coordinate>
 									<Coordinate name="pelvis_ty">
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>translational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>0.35501672</default_value>
+										<default_value>0.334790388624433</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -294,6 +138,8 @@
 										<prescribed_function />
 										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
 										<prescribed>false</prescribed>
+                    <!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints. When true, the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which have this flag set to false, to dictate the value of unimportant coordinates if they are linked via constraints.-->
+                    <is_free_to_satisfy_constraints>true</is_free_to_satisfy_constraints>
 									</Coordinate>
 								</objects>
 								<groups />
@@ -477,15 +323,15 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>0</default_value>
+										<default_value>0.0151319576527938</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-										<range>-1.57079633 1.57079633</range>
+										<range>-2.0943951023932 2.0943951023932</range>
 										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
 										<clamped>true</clamped>
 										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
-										<locked>true</locked>
+										<locked>false</locked>
 										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
 										<prescribed_function />
 										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
@@ -612,7 +458,7 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>0</default_value>
+										<default_value>-0.0159131992496238</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -620,7 +466,7 @@
 										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
 										<clamped>true</clamped>
 										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
-										<locked>true</locked>
+										<locked>false</locked>
 										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
 										<prescribed_function />
 										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
@@ -699,7 +545,7 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>0</default_value>
+										<default_value>-0.0155964797470458</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -707,7 +553,7 @@
 										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
 										<clamped>true</clamped>
 										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
-										<locked>true</locked>
+										<locked>false</locked>
 										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
 										<prescribed_function />
 										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
@@ -786,7 +632,7 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>0</default_value>
+										<default_value>-0.0232395466116166</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -794,7 +640,7 @@
 										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
 										<clamped>true</clamped>
 										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
-										<locked>true</locked>
+										<locked>false</locked>
 										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
 										<prescribed_function />
 										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
@@ -889,7 +735,7 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>0</default_value>
+										<default_value>-0.0226255420552437</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -897,7 +743,7 @@
 										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
 										<clamped>true</clamped>
 										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
-										<locked>true</locked>
+										<locked>false</locked>
 										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
 										<prescribed_function />
 										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
@@ -992,11 +838,11 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>0.24637717</default_value>
+										<default_value>0.174260016678597</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-										<range>-0.26179939 0.78539816</range>
+										<range>-0.78539816 0.78539816</range>
 										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
 										<clamped>true</clamped>
 										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
@@ -1215,11 +1061,11 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>0.24637717</default_value>
+										<default_value>0.173947781704786</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-										<range>-0.26179939 0.78539816</range>
+										<range>-0.78539816 0.78539816</range>
 										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
 										<clamped>true</clamped>
 										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
@@ -1710,7 +1556,7 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>1.32441915</default_value>
+										<default_value>1.35827694977733</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -1728,7 +1574,7 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>0</default_value>
+										<default_value>-0.543480912374438</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -1736,7 +1582,7 @@
 										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
 										<clamped>true</clamped>
 										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
-										<locked>true</locked>
+										<locked>false</locked>
 										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
 										<prescribed_function />
 										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
@@ -1874,7 +1720,7 @@
 					<inertia_yz>0</inertia_yz>
 					<!--Joint that connects this body with the parent body.-->
 					<Joint>
-						<CustomJoint name="shoulder_r">
+						<CustomJoint name="shoulder_l">
 							<!--Name of the parent body to which this joint connects its owner body.-->
 							<parent_body>scapula_l</parent_body>
 							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
@@ -1892,7 +1738,7 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>1.32441915</default_value>
+										<default_value>1.35829448996766</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -1910,7 +1756,7 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>0</default_value>
+										<default_value>-0.54375301630111</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -1918,7 +1764,7 @@
 										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
 										<clamped>true</clamped>
 										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
-										<locked>true</locked>
+										<locked>false</locked>
 										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
 										<prescribed_function />
 										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
@@ -2082,7 +1928,7 @@
 										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
 										<clamped>true</clamped>
 										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
-										<locked>true</locked>
+										<locked>false</locked>
 										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
 										<prescribed_function />
 										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
@@ -2161,7 +2007,7 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>0</default_value>
+										<default_value>1.68907625857132e-020</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -2169,7 +2015,7 @@
 										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
 										<clamped>true</clamped>
 										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
-										<locked>true</locked>
+										<locked>false</locked>
 										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
 										<prescribed_function />
 										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
@@ -2248,15 +2094,15 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>1.57079633</default_value>
+										<default_value>1.45264422411968</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-										<range>-1.57079633 1.57079633</range>
+										<range>-2.0943951023932 2.0943951023932</range>
 										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
 										<clamped>false</clamped>
 										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
-										<locked>true</locked>
+										<locked>false</locked>
 										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
 										<prescribed_function />
 										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
@@ -2412,15 +2258,15 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>1.57079633</default_value>
+										<default_value>1.45286975134862</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-										<range>-1.57079633 1.57079633</range>
+										<range>-2.0943951023932 2.0943951023932</range>
 										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
 										<clamped>false</clamped>
 										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
-										<locked>true</locked>
+										<locked>false</locked>
 										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
 										<prescribed_function />
 										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
@@ -2564,11 +2410,11 @@
 							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
 							<location_in_parent>0.018 -0.242 0.025</location_in_parent>
 							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
-							<orientation_in_parent>0 1.57079633 0</orientation_in_parent>
+							<orientation_in_parent>0 2.0943951023932 0</orientation_in_parent>
 							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
 							<location>0 0 0</location>
 							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
-							<orientation>0 1.57079633 0</orientation>
+							<orientation>0 2.0943951023932 0</orientation>
 							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
 							<CoordinateSet>
 								<objects>
@@ -2576,11 +2422,11 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>-1.57079633</default_value>
+										<default_value>-2.04101022672291</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-										<range>-1.57079633 1.57079633</range>
+										<range>-2.0943951023932 2.0943951023932</range>
 										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
 										<clamped>true</clamped>
 										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
@@ -4419,11 +4265,11 @@
 							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
 							<location_in_parent>0.018 -0.242 -0.025</location_in_parent>
 							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
-							<orientation_in_parent>0 -1.57079633 0</orientation_in_parent>
+							<orientation_in_parent>0 -2.0943951023932 0</orientation_in_parent>
 							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
 							<location>0 0 0</location>
 							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
-							<orientation>0 -1.57079633 0</orientation>
+							<orientation>0 -2.0943951023932 0</orientation>
 							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
 							<CoordinateSet>
 								<objects>
@@ -4431,11 +4277,11 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>-1.57079633</default_value>
+										<default_value>-2.04101958482464</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-										<range>-1.57079633 1.57079633</range>
+										<range>-2.0943951023932 2.0943951023932</range>
 										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
 										<clamped>true</clamped>
 										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
@@ -6468,32 +6314,52 @@
 		<ConstraintSet>
 			<objects>
 				<PointConstraint name="rightToeOnGround">
+					<!--Flag indicating whether the constraint is disabled or not. Disabled means that the constraint is not active in subsequent dynamics realization-->
 					<isDisabled>false</isDisabled>
+					<!--Specify first of two bodies connected together by the constraint.-->
 					<body_1>ForcePlateRightToe</body_1>
+					<!--Specify second of two bodies connected together by the constraint.-->
 					<body_2>ground</body_2>
-					<location_body_1> 0 0 0</location_body_1>
-					<location_body_2> -0.180233 0 0.0775</location_body_2>
+					<!--Location of the point in first body specified in body1 reference frame.-->
+					<location_body_1>0 0 0</location_body_1>
+					<!--Location of the point in second body specified in body2 reference frame.-->
+					<location_body_2>-0.180233 0 0.0775</location_body_2>
 				</PointConstraint>
 				<PointConstraint name="leftToeOnGround">
+					<!--Flag indicating whether the constraint is disabled or not. Disabled means that the constraint is not active in subsequent dynamics realization-->
 					<isDisabled>false</isDisabled>
+					<!--Specify first of two bodies connected together by the constraint.-->
 					<body_1>ForcePlateLeftToe</body_1>
+					<!--Specify second of two bodies connected together by the constraint.-->
 					<body_2>ground</body_2>
-					<location_body_1> 0 0 0</location_body_1>
-					<location_body_2> -0.180233 0 -0.0775</location_body_2>
+					<!--Location of the point in first body specified in body1 reference frame.-->
+					<location_body_1>0 0 0</location_body_1>
+					<!--Location of the point in second body specified in body2 reference frame.-->
+					<location_body_2>-0.180233 0 -0.0775</location_body_2>
 				</PointConstraint>
 				<PointConstraint name="rightHandOnGround">
+					<!--Flag indicating whether the constraint is disabled or not. Disabled means that the constraint is not active in subsequent dynamics realization-->
 					<isDisabled>false</isDisabled>
+					<!--Specify first of two bodies connected together by the constraint.-->
 					<body_1>ForcePlateRightHand</body_1>
+					<!--Specify second of two bodies connected together by the constraint.-->
 					<body_2>ground</body_2>
-					<location_body_1> 0 0 0</location_body_1>
-					<location_body_2> 1.22072 0 0.195202</location_body_2>
+					<!--Location of the point in first body specified in body1 reference frame.-->
+					<location_body_1>0 0 0</location_body_1>
+					<!--Location of the point in second body specified in body2 reference frame.-->
+					<location_body_2>1.22072 0 0.195202</location_body_2>
 				</PointConstraint>
 				<PointConstraint name="leftHandOnGround">
+					<!--Flag indicating whether the constraint is disabled or not. Disabled means that the constraint is not active in subsequent dynamics realization-->
 					<isDisabled>false</isDisabled>
+					<!--Specify first of two bodies connected together by the constraint.-->
 					<body_1>ForcePlateLeftHand</body_1>
+					<!--Specify second of two bodies connected together by the constraint.-->
 					<body_2>ground</body_2>
-					<location_body_1> 0 0 0</location_body_1>
-					<location_body_2> 1.22072 0 -0.195202</location_body_2>
+					<!--Location of the point in first body specified in body1 reference frame.-->
+					<location_body_1>0 0 0</location_body_1>
+					<!--Location of the point in second body specified in body2 reference frame.-->
+					<location_body_2>1.22072 0 -0.195202</location_body_2>
 				</PointConstraint>
 			</objects>
 			<groups />

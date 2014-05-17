@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Frank C. Anderson, Peter Loan, Ajay Seth                        *
+ * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Author(s): Ajay Seth, Frank C. Anderson                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -26,8 +26,10 @@
 //=============================================================================
 #include "Joint.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Common/ScaleSet.h>
+#include "SimTKsimbody.h"
 
 //=============================================================================
 // STATICS
@@ -45,42 +47,40 @@ using namespace OpenSim;
  */
 Joint::~Joint()
 {
-	if(!_body.empty())
-		_body->_joint = NULL;
 }
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-Joint::Joint() :
-	ModelComponent()
+Joint::Joint() : Super()
 {
 	setNull();
-	constructProperties();
+	constructInfrastructure();
 }
 
 /**
  * API constructor.
  */
 Joint::Joint(const std::string &name, 
-	OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-	OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
-	bool reverse) :	ModelComponent()
+	const OpenSim::Body& parent, 
+	const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+	const OpenSim::Body& child, 
+	const SimTK::Vec3& locationInChild, const SimTK::Vec3& orientationInChild, 
+	bool reverse) : Super()
 {
 	setNull();
-	constructProperties();
+	constructInfrastructure();
 
-	setBody(body);
-	setParentBody(parent);
-
-	set_parent_body(parent.getName());
 	set_location_in_parent(locationInParent);
 	set_orientation_in_parent(orientationInParent);
-	set_location(locationInBody);
-	set_orientation(orientationInBody);
+	set_location_in_child(locationInChild);
+	set_orientation_in_child(orientationInChild);
 	set_reverse(reverse);
 
-	Object::setName(name);
+	updConnector<Body>("parent_body").set_connected_to_name(parent.getName());
+	updConnector<Body>("child_body").set_connected_to_name(child.getName());
+
+	setName(name);
 }
 
 //=============================================================================
@@ -93,20 +93,15 @@ Joint::Joint(const std::string &name,
  */
 void Joint::setNull()
 {
-	setAuthors("Frank C. Anderson, Peter Loan, Ajay Seth");
-	_parentBody = NULL;
-	_body = NULL;
+	setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________
 /**
- * Connect properties to local pointers.
+ * Construct properties and initialize their default values.
  */
-void Joint::constructProperties(void)
+void Joint::constructProperties()
 {
-	// Parent body name
-	constructProperty_parent_body("");
-
 	// Location in parent
 	SimTK::Vec3 origin(0.0, 0.0, 0.0);
 	constructProperty_location_in_parent(origin);
@@ -115,10 +110,10 @@ void Joint::constructProperties(void)
 	constructProperty_orientation_in_parent(origin);
 
 	// Location in child
-	constructProperty_location(origin);
+	constructProperty_location_in_child(origin);
 
 	// Orientation in child
-	constructProperty_orientation(origin);
+	constructProperty_orientation_in_child(origin);
 
 	// Generalized coordinates
 	constructProperty_CoordinateSet(CoordinateSet());
@@ -126,6 +121,31 @@ void Joint::constructProperties(void)
 	// Transform direction (parent->child or child->parent)
 	constructProperty_reverse(false);
 }
+
+void Joint::constructStructuralConnectors()
+{
+	constructStructuralConnector<Body>("parent_body");
+	constructStructuralConnector<Body>("child_body");
+}
+
+void Joint::setParentBodyName(const std::string& name)
+{
+	updConnector<Body>("parent_body").set_connected_to_name(name);
+}
+const std::string& Joint::getParentBodyName() const
+{
+	return getConnector<Body>("parent_body").get_connected_to_name();
+}
+
+void Joint::setChildBodyName(const std::string& name)
+{
+	updConnector<Body>("child_body").set_connected_to_name(name);
+}
+const std::string& Joint::getChildBodyName() const
+{
+	return getConnector<Body>("child_body").get_connected_to_name();
+}
+
 
 //_____________________________________________________________________________
 
@@ -140,28 +160,27 @@ void Joint::connectToModel(Model& aModel)
 
 	string errorMessage;
 
-	const std::string& parentName = get_parent_body();
-
-	// Look up the parent and child bodies by name in the
-	if (!aModel.updBodySet().contains(parentName)) {
-		errorMessage += "Invalid parent body (" + parentName + ") specified in joint " + getName();
-		throw (Exception(errorMessage.c_str()));
-	}
-	setParentBody(aModel.updBodySet().get(parentName));
-
-	const SimTK::Vec3& orientation = get_orientation();
-	const SimTK::Vec3& location = get_location();
+	const SimTK::Vec3& orientation = get_orientation_in_child();
+	const SimTK::Vec3& location = get_location_in_child();
 
 	// CHILD TRANSFORM
-	Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
+	Rotation rotation(BodyRotationSequence, 
+		              orientation[0], XAxis, 
+					  orientation[1], YAxis, 
+					  orientation[2], ZAxis);
+
 	SimTK::Transform childTransform(rotation, location);
-	_jointFrameInBody = childTransform;
+	_jointFrameInChild = childTransform;
 
 	const SimTK::Vec3& orientationInParent = get_orientation_in_parent();
 	const SimTK::Vec3& locationInParent = get_location_in_parent();
 
 	// PARENT TRANSFORM
-	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
+	Rotation parentRotation(BodyRotationSequence, 
+		                    orientationInParent[0], XAxis,
+							orientationInParent[1], YAxis,
+							orientationInParent[2], ZAxis);
+
 	SimTK::Transform parentTransform(parentRotation, locationInParent);
 	_jointFrameInParent = parentTransform;
 
@@ -173,186 +192,103 @@ void Joint::connectToModel(Model& aModel)
 // GET AND SET
 //=============================================================================
 //-----------------------------------------------------------------------------
-// BODY
+// CHILD BODY
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 
-void Joint::setBody(OpenSim::Body& aBody)
+void Joint::setChildBody(OpenSim::Body& body)
 {
-	_body = (Body*) &aBody;
+	updConnector<Body>("child_body").connect(body);
 }
 
-const OpenSim::Body& Joint::getBody() const
+const OpenSim::Body& Joint::getChildBody() const
 {
-	return *_body;
-}
-
-OpenSim::Body& Joint::updBody() {
-	if(!_body) { throw OpenSim::Exception("Joint::updBody : Body is null"); }
-	return *_body;
+	return getConnector<Body>("child_body").getConnectee();
 }
 
 //-----------------------------------------------------------------------------
-// LOCATION
+// CHILD LOCATION
 //-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the location of this joint in its body.
- *
- * @param aLocation New location expressed in the local body frame.
- */
-void Joint::setLocation(const SimTK::Vec3& aLocation)
+void Joint::setLocationInChild(const SimTK::Vec3& location)
 {
-	if (_model != NULL)
+	if (_model)
 		_model->invalidateSystem();
 
-    set_location(aLocation);
+	set_location_in_child(location);
 }
-//_____________________________________________________________________________
-/**
- * Get the location of this joint in its child body.
- *
- * @param rLocation Current location expressed in the local body frame.
- */
-void Joint::getLocation(SimTK::Vec3& rLocation) const
+
+const SimTK::Vec3& Joint::getLocationInChild() const
 {
-	// TODO: Return a reference instead of void.
-	rLocation = get_location();
+	return get_location_in_child();
 }
 
 //-----------------------------------------------------------------------------
-// ORIENTATION
+// CHILD ORIENTATION
 //-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the orientation of this joint in its body.
- *
- * @param aOrientation New orientation expressed in the local body frame in
- * body-fixed X-Y-Z Euler angles.
- */
-void Joint::setOrientation(const SimTK::Vec3& aOrientation)
+void Joint::setOrientationInChild(const SimTK::Vec3& aOrientation)
 {
-	if (_model != NULL)
-		_model->invalidateSystem();
+	if (_model)
+		updModel().invalidateSystem();
 
-    set_orientation(aOrientation);
+    set_orientation_in_child(aOrientation);
 }
-//_____________________________________________________________________________
-/**
- * Get the orientation of this joint in its body.
- *
- * @param rOrientation Current orientation of the joint expressed in the local
- * body frame in body-fixed X-Y-Z Euler angles.
- */
-void Joint::getOrientation(SimTK::Vec3 &rOrientation) const
+
+const SimTK::Vec3& Joint::getOrientationInChild() const
 {
-	// TODO: Return a reference instead of void.
-	rOrientation = get_orientation();
+	return get_orientation_in_child();
 }
 
 //-----------------------------------------------------------------------------
 // PARENT BODY
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set the name of the joint's parent body.
- *
- * @param Name of the parent body.
- */
-void Joint::setParentName(const string& aName)
-{
-	set_parent_body(aName);
-}
-//_____________________________________________________________________________
-/**
- * Get the name of the joint's parent body.
- *
- * @return Name of the parent body.
- */
-string Joint::getParentName() const
-{
-	return get_parent_body();
-}
 //_____________________________________________________________________________
 /**
  * Set the parent body to which this joint attaches.
  *
  * @param aParentBody Parent body to which this joint attaches.
  */
-void Joint::setParentBody(OpenSim::Body& aBody)
+void Joint::setParentBody(OpenSim::Body& body)
 {
-	_parentBody = (Body*) &aBody;
+	updConnector<Body>("parent_body").connect(body);
 }
 //_____________________________________________________________________________
 
 const OpenSim::Body& Joint::getParentBody() const
 {
-    if (_parentBody.empty())
-        throw Exception("Joint::getParentBody() : Joint has not been initialized");
-	return *_parentBody;
-}
-
-OpenSim::Body& Joint::updParentBody() {
-
-	if (!_parentBody)
-        throw Exception("Joint::getParentBody() : Joint has not been initialized");
-	return *_parentBody;
+	return getConnector<Body>("parent_body").getConnectee();
 }
 
 //-----------------------------------------------------------------------------
 // LOCATION IN PARENT
 //-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the location of this joint in its parent body.
- *
- * @param aLocation New location expressed in the parent body frame.
- */
 void Joint::setLocationInParent(const SimTK::Vec3& aLocation)
 {
-	if (_model != NULL)
-		_model->invalidateSystem();
+	if (_model)
+		updModel().invalidateSystem();
 
     set_location_in_parent(aLocation);
 }
-//_____________________________________________________________________________
-/**
- * Get the location of this joint in its parent body.
- *
- * @param rLocation Currnt location expressed in the parent body frame.
- */
-void Joint::getLocationInParent(SimTK::Vec3& rLocation) const
+
+const SimTK::Vec3& Joint::getLocationInParent() const
 {
-	rLocation=get_location_in_parent();
+	return get_location_in_parent();
 }
 
 //-----------------------------------------------------------------------------
 // ORIENTATION IN PARENT
 //-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the orientation of this joint in its parent body.
- *
- * @param aOrientation New orientation expressed in the parent body frame in
- * body-fixed X-Y-Z Euler angles.
- */
 void Joint::setOrientationInParent(const SimTK::Vec3& aOrientation)
 {
-	if (_model != NULL)
+	if (_model)
 		_model->invalidateSystem();
 
     set_orientation_in_parent(aOrientation);
 }
-//_____________________________________________________________________________
-/**
- * Get the orientation of this joint in its parent body.
- *
- * @param rOrientation Current orientation expressed in the parent body frame
- * in body-fixed X-Y-Z Euler angles.
- */
-void Joint::getOrientationInParent(SimTK::Vec3& rOrientation) const
+
+const SimTK::Vec3& Joint::getOrientationInParent() const
 {
-	rOrientation = get_orientation_in_parent();
+	return get_orientation_in_parent();
 }
 //_____________________________________________________________________________
 /**
@@ -361,7 +297,7 @@ void Joint::getOrientationInParent(SimTK::Vec3& rOrientation) const
  * @param aCoordinate Coordinate to look for in joint.
  * @return True if the coordinate is used.
  */
-bool Joint::isCoordinateUsed(Coordinate& aCoordinate) const
+bool Joint::isCoordinateUsed(const Coordinate& aCoordinate) const
 {
 	const CoordinateSet& coordinateSet = get_CoordinateSet();
 	int i, size = coordinateSet.getSize();
@@ -386,7 +322,7 @@ void Joint::scale(const ScaleSet& scaleSet)
 	// Joint kinematics are scaled by the scale factors for the
 	// parent body, so get those body's factors
 	const string& parentName = getParentBody().getName();
-	const string& bodyName = getBody().getName();
+	const string& bodyName = getChildBody().getName();
 	// Get scale factors
 	bool found_p = false;
 	bool found_b = false; 
@@ -404,7 +340,7 @@ void Joint::scale(const ScaleSet& scaleSet)
 			break;
 	}
 
-	SimTK::Vec3& location = upd_location();
+	SimTK::Vec3& location = upd_location_in_child();
 	SimTK::Vec3& locationInParent = upd_location_in_parent();
 
 	for(int i=0; i<3; i++){
@@ -415,22 +351,12 @@ void Joint::scale(const ScaleSet& scaleSet)
         _model->invalidateSystem();
 }
 
-//=============================================================================
-// Simbody Model building.
-//=============================================================================
-//_____________________________________________________________________________
-/** Verify that parent for this Joint is valid */
-void Joint::checkParentBody()
-{
-	if(!(_parentBody) || !SimTK::MobilizedBodyIndex::isValid(getMobilizedBodyIndex(_parentBody))){
-		throw(Exception("Joint :: Attempted to connect to a parent body that was itself not connected."));
-	}
-}
-
 /** Construct coordinates according to the mobilities of the Joint */
 void Joint::constructCoordinates()
 {
 	CoordinateSet& coordinateSet = upd_CoordinateSet();
+	// When this Joint is destroyed so should all its coordinates.
+	coordinateSet.setMemoryOwner(true);
 
 	// Check how many coordinates are already defined if any
 	int ncoords = coordinateSet.getSize();
@@ -444,16 +370,15 @@ void Joint::constructCoordinates()
 	}
 }
 
-SimTK::MobilizedBodyIndex Joint::
-	getMobilizedBodyIndex(OpenSim::Body *aBody) const
+const SimTK::MobilizedBodyIndex Joint::
+	getMobilizedBodyIndex(const OpenSim::Body& body) const
 {
-	return aBody->_index;
+		return body._index;
 } 
 
-void Joint::setMobilizedBodyIndex(OpenSim::Body *aBody, 
-									SimTK::MobilizedBodyIndex index) const
+void Joint::setChildMobilizedBodyIndex(const SimTK::MobilizedBodyIndex index) const
 { 
-	aBody->_index = index;
+	getChildBody()._index = index;
 }
 
 
@@ -461,23 +386,12 @@ void Joint::setMobilizedBodyIndex(OpenSim::Body *aBody,
 // *after* it creates its mobilized body; that is an API bug.
 void Joint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	// Each coordinate needs to know it's body index and mobility index.
-	const CoordinateSet& coordinateSet = get_CoordinateSet();
-
-	int nq = coordinateSet.getSize();
-
-	for(int iq=0;iq<nq;iq++) {
-		// Coordinate
-		Coordinate &q = (Coordinate&)coordinateSet.get(iq);
-		q._bodyIndex = getMobilizedBodyIndex(_body);
-		// The mobility index is the same as the order in which the coordinate appears in the coordinate set.
-		// The functions (and their dependencies) determine how the coordinates gets used when constructing
-		// the transform from parent to child.
-		q._mobilizerQIndex = SimTK::MobilizerQIndex(iq);
-	}
-
-	// add sub components (e.g. Coordnates) once we have necessary system indices
+	// add sub components (e.g. Coordinates) once we have necessary system indices
 	Super::addToSystem(system);
+
+	cout << getConcreteClassName() << ":'" << getName() << "' connects parent '";
+	cout << getParentBodyName() << "'[" << getParentBody().getIndex() << "] and child '";
+	cout << getChildBodyName() << "'[" << getChildBody().getIndex() << "]" << endl;
 }
 
 void Joint::initStateFromProperties(SimTK::State& s) const
@@ -513,36 +427,46 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s, const
 		throw Exception("Joint::calcEquivalentSpatialForce(): input mobilityForces does not match model's mobilities");
 	}
 
-	const SimTK::MobilizedBodyIndex &mbx = _body->getIndex();
-	SimTK::Array_<SimTK::MobilizedBodyIndex> mbds;
+	const SimTK::MobilizedBodyIndex &mbx = getChildBody().getIndex();
+	// build a unique list of underlying MobilizedBodies that are involved
+	// with this Joint in addition to and not including that of the child body
+
+	std::set<SimTK::MobilizedBodyIndex> mbds;
 
 	const CoordinateSet& coordinateSet = get_CoordinateSet();
 
 	for(int i=0; i<coordinateSet.getSize(); ++i){
-		if(coordinateSet[i].getBodyIndex() != mbx){
-			if(mbds.size()){
-				if(coordinateSet[i].getBodyIndex() > *mbds.end())
-					mbds.push_back(coordinateSet[i].getBodyIndex());
-			}
+		const MobilizedBodyIndex& coordsMbx = coordinateSet[i].getBodyIndex();
+		if (coordsMbx != mbx){
+			mbds.insert(coordsMbx);
 		}
 	}
-
+	
 	SimTK::SpatialVec FB_G = calcEquivalentSpatialForceForMobilizedBody(s, mbx, mobilityForces);
 	SimTK::SpatialVec FBx_G;
 
-	for(unsigned int i=0; i<mbds.size(); ++i){
-		FBx_G = calcEquivalentSpatialForceForMobilizedBody(s, mbds[i], mobilityForces);
-		const SimTK::MobilizedBody &B = _model->updMatterSubsystem().getMobilizedBody(mbx);
-		const SimTK::MobilizedBody &b = _model->updMatterSubsystem().getMobilizedBody(mbds[i]);
-		const SimTK::MobilizedBody &G = _model->getMatterSubsystem().getGround();
+	std::set<SimTK::MobilizedBodyIndex>::const_iterator it = mbds.begin();
 
-		SimTK::Vec3 r_BG = B.expressVectorInAnotherBodyFrame(s, B.getOutboardFrame(s).p(), G);
-		SimTK::Vec3 r_bG = b.expressVectorInAnotherBodyFrame(s, b.getOutboardFrame(s).p(), G);
+	const SimTK::MobilizedBody &G = getModel().getMatterSubsystem().getGround();
+	const SimTK::MobilizedBody &B = getModel().getMatterSubsystem().getMobilizedBody(mbx);
+	SimTK::Vec3 r_BG =
+		B.expressVectorInAnotherBodyFrame(s, B.getOutboardFrame(s).p(), G);
+
+	while(it != mbds.end()){
+		FBx_G = calcEquivalentSpatialForceForMobilizedBody(s, *it, mobilityForces);
+
+		const SimTK::MobilizedBody &b = 
+			getModel().getMatterSubsystem().getMobilizedBody(*it);
+
+		
+		SimTK::Vec3 r_bG = 
+			b.expressVectorInAnotherBodyFrame(s, b.getOutboardFrame(s).p(), G);
 
 		// Torques add and include term due to offset in forces
-		FB_G += shiftForceFromTo(FBx_G, r_bG, r_BG);
+		FB_G += FBx_G; // shiftForceFromTo(FBx_G, r_bG, r_BG);
+		++it;
 	}
-
+	
 	return FB_G;
 }
 
@@ -572,14 +496,17 @@ double Joint::calcPower(const SimTK::State &s) const
 //=============================================================================
 // Helper
 //=============================================================================
-/* Calculate the equivalent spatial force, FB_G, acting on a mobilized body specified by index 
-   acting at its mobilizer frame B, expressed in ground.  */
-SimTK::SpatialVec Joint::calcEquivalentSpatialForceForMobilizedBody(const SimTK::State &s, const SimTK::MobilizedBodyIndex mbx, const SimTK::Vector &mobilityForces) const
+/* Calculate the equivalent spatial force, FB_G, acting on a mobilized body specified 
+   by index acting at its mobilizer frame B, expressed in ground.  */
+SimTK::SpatialVec Joint::calcEquivalentSpatialForceForMobilizedBody(const SimTK::State &s, 
+	const SimTK::MobilizedBodyIndex mbx, const SimTK::Vector &mobilityForces) const
 {
 	// Get the mobilized body
-	const SimTK::MobilizedBody mbd    = _model->updMatterSubsystem().getMobilizedBody(mbx);
+	const SimTK::MobilizedBody mbd    = getModel().getMatterSubsystem().getMobilizedBody(mbx);
 	const SimTK::UIndex        ustart = mbd.getFirstUIndex(s);
 	const int                  nu     = mbd.getNumU(s);
+
+	const SimTK::MobilizedBody ground = getModel().getMatterSubsystem().getGround();
 
     if (nu == 0) // No mobility forces (weld joint?).
         return SimTK::SpatialVec(SimTK::Vec3(0), SimTK::Vec3(0));
@@ -649,20 +576,39 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForceForMobilizedBody(const SimTK:
 		assert(f.norm() < SimTK::SignificantReal);
 	}
 
-	// Transform from parent joint frame, P in the parent body, Po
+	// The spatial forces above are expresseded in the joint frame of the parent
+	// Transform from parent joint frame, P into the parent body frame, Po
 	const SimTK::Rotation R_PPo = (mbd.getInboardFrame(s).R());
 
-	// Re-express forces in ground, first by describing force in the parent, Po, frame instead of joint frame
+	// Re-express forces in ground, first by describing force in the parent, Po, 
+	// frame instead of joint frame
 	SimTK::Vec3 vecFw = R_PPo*SimTK::Vec3::getAs(&Fw[0]);
 	SimTK::Vec3 vecFv = R_PPo*SimTK::Vec3::getAs(&Fv[0]);
 
+	//Force Acting on joint frame, B,  in child body expressed in Parent body, Po
+	SimTK::SpatialVec FB_Po(vecFw, vecFv);
+
+	const MobilizedBody parent = mbd.getParentMobilizedBody();
 	// to apply spatial forces on bodies they must be expressed in ground
-	vecFw = mbd.getParentMobilizedBody().expressVectorInAnotherBodyFrame(s, vecFw, _model->getMatterSubsystem().getGround());
-	vecFv = mbd.getParentMobilizedBody().expressVectorInAnotherBodyFrame(s, vecFv, _model->getMatterSubsystem().getGround());
+	vecFw = parent.expressVectorInAnotherBodyFrame(s, FB_Po[0], ground);
+	vecFv = parent.expressVectorInAnotherBodyFrame(s, FB_Po[1], ground);
 
 	// Package resulting torque and force as a spatial vec
 	SimTK::SpatialVec FB_G(vecFw, vecFv);
 
 	return FB_G;
+}
 
+void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+{
+	int documentVersion = versionNumber;
+	bool converting = false;
+	if (documentVersion < XMLDocument::getLatestVersion()){
+		if (documentVersion<30500){
+			// This used to be called "Force" back then
+			XMLDocument::renameChildNode(aNode, "location", "location_in_child"); // body_B -> body
+			XMLDocument::renameChildNode(aNode, "orientation", "orientation_in_child"); // direction_A -> direction
+		}
+	}
+	Super::updateFromXMLNode(aNode, versionNumber);
 }

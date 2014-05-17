@@ -1,5 +1,5 @@
-#ifndef __SliderJoint_h__
-#define __SliderJoint_h__
+#ifndef OPENSIM_SLIDER_JOINT_H_
+#define OPENSIM_SLIDER_JOINT_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  SliderJoint.h                           *
  * -------------------------------------------------------------------------- *
@@ -23,10 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/ScaleSet.h>
 #include "Joint.h"
 
 namespace OpenSim {
@@ -34,8 +32,8 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing an Slider joint.  The underlying implementation 
- * in Simbody is a MobilizedBody::Slider. Slider provides one DoF along the 
+ * A class implementing a Slider joint.  The underlying implementation 
+ * in Simbody is a MobilizedBody::Slider. Slider provides one DOF along the 
  * common X-axis of the joint frames (not body) in the parent and body.
  *
  * @author Ajay Seth
@@ -53,7 +51,6 @@ protected:
 
 	/** Slider has no additional properties*/
 
-
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -62,18 +59,16 @@ public:
 	SliderJoint();
 
 	// Convenience constructor
-	SliderJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
-				    bool reverse=false);
+	SliderJoint(const std::string &name, const Body& parent,
+		const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+		const Body& child,
+		const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
+		bool reverse = false);
 
 	int numCoordinates() const { return _numMobilities; }
 
 protected:
-	void connectToModel(Model& aModel) OVERRIDE_11;
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-
-private:
-	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
 
 //=============================================================================
 };	// END of class SliderJoint
@@ -82,6 +77,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __SliderJoint_h__
+#endif // OPENSIM_SLIDER_JOINT_H_
 
 

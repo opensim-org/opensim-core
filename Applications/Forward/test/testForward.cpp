@@ -73,7 +73,7 @@ int main() {
 		cout << "\ngait2354 test PASSED " << endl; }
 	catch (const std::exception& e)
 		{ cout << e.what() <<endl; failures.push_back("testGait2354"); }		
-	
+
 	// finally include a controller
     try { testGait2354WithController(); 
 		cout << "\ngait2354 with correction controller test PASSED " << endl; }

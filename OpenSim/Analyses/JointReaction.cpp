@@ -294,9 +294,9 @@ void JointReaction::setupReactionList()
 				validJointFlag++;
 				listNotEmptyFlag++;
 				currentJoint.jointName = joint.getName();
-				std::string childName = joint.getBody().getName();
+				const std::string& childName = joint.getChildBody().getName();
 				int childIndex = bodySet.getIndex(childName, 0);
-				std::string parentName = joint.getParentBody().getName();
+				const std::string& parentName = joint.getParentBody().getName();
 				int parentIndex = bodySet.getIndex(parentName, 0);
 
 				/* set index that correponds to the appropriate index of the 
@@ -613,11 +613,10 @@ record(const SimTK::State& s)
 		Vec3 moment = allMomentsVec[currentKey.reactionIndex];
 		Body& expressedInBody = bodySet.get(currentKey.inFrameIndex);
 		// find the point of application of the joint load on the child
-		Vec3 childLocation(0,0,0);
-		joint.getLocation(childLocation);
+		Vec3 childLocation = joint.getLocationInChild();
 		// and find it's current location in the ground reference frame
 		Vec3 childLocationInGlobal(0,0,0);
-		_model->getSimbodyEngine().getPosition(s_analysis, joint.getBody(), childLocation,childLocationInGlobal);
+		_model->getSimbodyEngine().getPosition(s_analysis, joint.getChildBody(), childLocation,childLocationInGlobal);
 		// set the point of application to the joint location in the child body
 		Vec3 pointOfApplication(0,0,0);
 		
@@ -629,7 +628,7 @@ record(const SimTK::State& s)
 			moment = -moment;
 			Vec3 parentLocation(0,0,0);
 			
-			joint.getLocationInParent(parentLocation);
+			parentLocation = joint.getLocationInParent();
 			Vec3 parentLocationInGlobal(0,0,0);
 			//_model->getSimbodyEngine().getPosition(s_analysis, joint.getBody(), childLocation,childLocationInGlobal);
 			_model->getSimbodyEngine().getPosition(s_analysis,joint.getParentBody(), parentLocation, parentLocationInGlobal);

@@ -171,10 +171,9 @@ void CoordinateCouplerConstraint::connectToModel(Model& aModel)
 	for(int i = 0; i < getProperty_independent_coordinate_names().size(); i++) {
 		independentCoordNames.append(get_independent_coordinate_names(i));
 	}
-	
 
 	for(int i=0; i<independentCoordNames.getSize(); i++){
-		if (!_model->updCoordinateSet().contains(independentCoordNames[i])) {
+		if (!getModel().getCoordinateSet().contains(independentCoordNames[i])) {
 			errorMessage = "Coordinate coupler: unknown independent coordinate " ;
 			errorMessage += independentCoordNames[i];
 			throw (Exception(errorMessage));
@@ -182,7 +181,7 @@ void CoordinateCouplerConstraint::connectToModel(Model& aModel)
 	}
 
 	// Last coordinate in the coupler is the dependent coordinate
-	if (!_model->updCoordinateSet().contains(get_dependent_coordinate_name())) {
+	if (!getModel().getCoordinateSet().contains(get_dependent_coordinate_name())) {
 		errorMessage = "Coordinate coupler: unknown dependent coordinate " ;
 		errorMessage += get_dependent_coordinate_name();
 		throw (Exception(errorMessage));
@@ -211,13 +210,13 @@ void CoordinateCouplerConstraint::addToSystem(SimTK::MultibodySystem& system) co
 
 	for(int i=0; i<independentCoordNames.getSize(); i++){
 		// Error checking was handled in connectToModel()
-	    Coordinate& aCoordinate = _model->updCoordinateSet().get(independentCoordNames[i]);
+	    const Coordinate& aCoordinate = getModel().getCoordinateSet().get(independentCoordNames[i]);
 		mob_bodies.push_back(aCoordinate._bodyIndex);
 		mob_qs.push_back(SimTK::MobilizerQIndex(aCoordinate._mobilizerQIndex));
 	}
 
 	// Last coordinate in the coupler is the dependent coordinate
-	Coordinate& aCoordinate = _model->updCoordinateSet().get(get_dependent_coordinate_name());
+	const Coordinate& aCoordinate = getModel().getCoordinateSet().get(get_dependent_coordinate_name());
 	mob_bodies.push_back(aCoordinate._bodyIndex);
 	mob_qs.push_back(SimTK::MobilizerQIndex(aCoordinate._mobilizerQIndex));
 
@@ -232,9 +231,9 @@ void CoordinateCouplerConstraint::addToSystem(SimTK::MultibodySystem& system) co
 
 
 	// Now create a Simbody Constraint::CoordinateCoupler
-	SimTK::Constraint::CoordinateCoupler simtkCoordinateCoupler( _model->updMatterSubsystem() ,
-																 simtkCouplerFunction, 
-																 mob_bodies, mob_qs);
+	SimTK::Constraint::CoordinateCoupler simtkCoordinateCoupler(system.updMatterSubsystem() ,
+																simtkCouplerFunction, 
+																mob_bodies, mob_qs);
 
 	// Beyond the const Component get the index so we can access the SimTK::Constraint later
 	CoordinateCouplerConstraint* mutableThis = const_cast<CoordinateCouplerConstraint *>(this);
@@ -262,7 +261,7 @@ void CoordinateCouplerConstraint::scale(const ScaleSet& aScaleSet)
 		double scaleFactor = 1.0;
 		// Get appropriate scale factors from parent body
 		Vec3 bodyScaleFactors(1.0); 
-		const string& parentName = depCoordinate._joint->getParentName();
+		const string& parentName = depCoordinate._joint->getParentBodyName();
 
 		// Cycle through the scale set to get the appropriate factors
 		for (int i=0; i<aScaleSet.getSize(); i++) {
@@ -283,8 +282,7 @@ void CoordinateCouplerConstraint::scale(const ScaleSet& aScaleSet)
 		if(joint) {
 			if (bodyScaleFactors[0] != bodyScaleFactors[1] ||  bodyScaleFactors[0] != bodyScaleFactors[2] ) {
 				// Get the coordinate axis defined on the parent body
-				Vec3 xyzEuler;
-				joint->getOrientationInParent(xyzEuler);
+				const Vec3& xyzEuler = joint->getOrientationInParent();
 				Rotation orientInParent(BodyRotationSequence,xyzEuler[0],XAxis,xyzEuler[1],YAxis,xyzEuler[2],ZAxis);
 
 				Vec3 axis;

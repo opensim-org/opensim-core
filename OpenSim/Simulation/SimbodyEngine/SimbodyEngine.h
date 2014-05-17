@@ -128,7 +128,6 @@ public:
 	// BODY INFORMATION
 	//--------------------------------------------------------------------------
 	virtual Body& getGroundBody() const;
-    virtual WrapObject* getWrapObject(const std::string& aName) const;
 
 	//--------------------------------------------------------------------------
 	// KINEMATICS

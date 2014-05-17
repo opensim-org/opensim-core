@@ -121,6 +121,10 @@ int main()
 		osimModel.addBody(linkage2);
 		osimModel.addBody(block);
 
+		// Add the joints to the model
+		osimModel.addJoint(ankle);
+		osimModel.addJoint(knee);
+		osimModel.addJoint(hip);
 		// Define contraints on the model
 		//  Add a point on line constraint to limit the block to vertical motion
 
@@ -231,6 +235,6 @@ int main()
         return 1;
     }
 
-	std::cout << "Exiting" << std::endl;
+	std::cout << "Done." << std::endl;
 	return 0;
 }

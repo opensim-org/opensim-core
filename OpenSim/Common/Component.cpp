@@ -122,8 +122,9 @@ Component::Component(SimTK::Xml::Element& element)
 
 Component::Component(const Component& source) : Object(source)
 {
-	//Object copy will handle properties which includes connectors
-	//clear everything else;
+	//Object copy will handle pthe propeties table.
+	//But need to copy Component specific property inidices.
+	copyProperty_connectors(source);
 	clear();
 }
 
@@ -138,25 +139,31 @@ void Component::connect(Component &root)
 		_components[i]->connect(root);
 	}
 
-	//Now find and resolve connections
+	//Avoid any possibility of duplication/collisions by rebuilding connectors table
+	_connectorsTable.clear();
+
+	for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
+		upd_connectors(ix).disconnect();
+		_connectorsTable[get_connectors(ix).getName()] = &upd_connectors(ix);
+	}
+
+	// Now find components to resolve connectors
 	std::map<std::string, AbstractConnector*>::const_iterator it;
 	for (it = _connectorsTable.begin(); it != _connectorsTable.end(); ++it){
-		AbstractConnector* ci = it->second;
+		AbstractConnector* ci = it->second;	
 		
-		// nothing to do if the connector was already connected, otherwise
-		// find the component to satisfy the connection.
-		if (!(ci->isConnected())){
-			const Component* connectTo = root.findComponent(ci->get_connected_to_name());
-			if (connectTo){
-				ci->connect(*connectTo);
-			}
-			else{
-				throw Exception(getConcreteClassName() + "::connect() Could not find component '"
-					+ ci->get_connected_to_name() + "' to satisfy Connector<" +
-					ci->getConnectedToTypeName() + "> '" + ci->getName() + "'.");
-			}
+		const Component* connectTo = root.findComponent(ci->get_connected_to_name());
+		if (connectTo){
+			ci->connect(*connectTo);
+			//cout << getConcreteClassName() << " '" << getName();
+			//cout << "' connected to: " << ci->get_connected_to_name() << endl;
 		}
-		//should be connected or an exception was thrown
+		else{
+			throw Exception(getConcreteClassName() + "::connect() Could not find component '"
+				+ ci->get_connected_to_name() + "' to satisfy Connector<" +
+				ci->getConnectedToTypeName() + "> '" + ci->getName() + "'.");
+		}
+	//is connected or an exception was thrown
 	}
 }
 
@@ -167,7 +174,13 @@ void Component::disconnect()
 		_components[i]->disconnect();
 	}
 
-	//now clear all the connection and system information from this component
+	//Now cycle through disconnect all connectors for this component
+	std::map<std::string, AbstractConnector*>::const_iterator it;
+	for (it = _connectorsTable.begin(); it != _connectorsTable.end(); ++it){
+		it->second->disconnect();
+	}
+
+	//now clear all the stored system idnices from this component
 	clear();
 }
 
@@ -420,14 +433,16 @@ const Component* Component::findComponent(const std::string& name,
 
 	for(unsigned int i=0; i<_components.size(); ++i){
 		if(_components[i]->getName()==subname){
-			// found a component along the path
-			found = _components[i];
 			// if not the end of the path keep drilling
-			if(found && remainder.length()){			 
+			if(remainder.length()){			 
 				// keep traversing the components till we find the component
 				found = _components[i]->findComponent(remainder, rsv);
+				if(found)
+					return found;
 			}
-			return found;
+			else{
+				return _components[i];
+			}
 		}
 	}
 
@@ -470,7 +485,7 @@ const Component::StateVariable* Component::
 	}
 
 	const StateVariable* found = nullptr;
-	const Component* comp = findComponent(name, &found);
+	const Component* comp = findComponent(prefix, &found);
 
 	if (comp){
 		found = comp->findStateVariable(varName);

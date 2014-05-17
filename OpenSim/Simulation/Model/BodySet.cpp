@@ -23,7 +23,6 @@
 
 #include "BodySet.h"
 #include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 
 using namespace std;
 using namespace OpenSim;

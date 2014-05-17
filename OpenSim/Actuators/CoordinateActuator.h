@@ -120,9 +120,6 @@ private:
 	//--------------------------------------------------------------------------
 	// Implement Object interface.
 	//--------------------------------------------------------------------------
-	void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1)
-        OVERRIDE_11;
-
 	void setNull();
 	void constructProperties();
 

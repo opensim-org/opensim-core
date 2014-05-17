@@ -93,6 +93,7 @@ public:
 	Xml::Element getRootDataElement();
 	bool isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoubles=1e-6, 
 		bool compareDefaults=false, bool compareVersionNumbers=false);
+    static void addConnector(SimTK::Xml::Element& element, const std::string& connectorTag, const std::string& connectorName, const std::string& connectorValue);
 private:
 	static bool isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element& elt2, double toleranceForDoubles);
 	void updateDocumentVersion();

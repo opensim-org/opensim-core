@@ -82,9 +82,8 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 		*  forearm/hand mass center, so to maximize, compute velocity 
 		*  and multiply it by -1.
 		*/
-		Vec3 massCenter;
+		Vec3 massCenter = osimModel.getBodySet().get("r_ulna_radius_hand").getMassCenter();
 		Vec3 velocity;
-		osimModel.getBodySet().get("r_ulna_radius_hand").getMassCenter(massCenter);
 		osimModel.getMultibodySystem().realize(s, Stage::Velocity);
 		osimModel.getSimbodyEngine().getVelocity(s, osimModel.getBodySet().get("r_ulna_radius_hand"), massCenter, velocity);
 		

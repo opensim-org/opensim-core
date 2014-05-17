@@ -35,6 +35,9 @@ using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
 
+//=============================================================================
+// CONSTRUCTION
+//=============================================================================
 //_____________________________________________________________________________
 /**
  * Default constructor.
@@ -63,37 +66,9 @@ PlanarJoint::PlanarJoint() :
 
 	const CoordinateSet& coordinateSet = get_CoordinateSet();
 	coordinateSet[0].setMotionType(Coordinate::Translational);
-	
-	updBody().setJoint(*this);
 }
 
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
 
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel OpenSim  model containing this PlanarJoint.
- */
-void PlanarJoint::connectToModel(Model& aModel)
-{
-	string errorMessage;
-
-	// Base class
-	Super::connectToModel(aModel);
-
-	const std::string& parentName = get_parent_body();
-
-	// Look up the parent and child bodies by name in the
-	if (!aModel.updBodySet().contains(parentName)) {
-		errorMessage += "Invalid parent body (" + parentName + ") specified in joint " + getName();
-		throw (Exception(errorMessage.c_str()));
-	}
-	setParentBody(aModel.updBodySet().get(parentName));
-}
 
 //=============================================================================
 // Simbody Model building.
@@ -101,41 +76,9 @@ void PlanarJoint::connectToModel(Model& aModel)
 //_____________________________________________________________________________
 void PlanarJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	const SimTK::Vec3& orientation = get_orientation();
-	const SimTK::Vec3& location = get_location();
-
-	// CHILD TRANSFORM
-	Rotation rotation(BodyRotationSequence, orientation[0],XAxis, orientation[1],YAxis, orientation[2],ZAxis);
-	SimTK::Transform childTransform(rotation, location);
-
-	const SimTK::Vec3& orientationInParent = get_orientation_in_parent();
-	const SimTK::Vec3& locationInParent = get_location_in_parent();
-
-	// PARENT TRANSFORM
-	Rotation parentRotation(BodyRotationSequence, orientationInParent[0],XAxis, orientationInParent[1],YAxis, orientationInParent[2],ZAxis);
-	SimTK::Transform parentTransform(parentRotation, locationInParent);
-
-	PlanarJoint* mutableThis = const_cast<PlanarJoint*>(this);
-
-	mutableThis->createMobilizedBody(parentTransform, childTransform);
+	createMobilizedBody<MobilizedBody::Planar>(getParentTransform(),
+		                                       getChildTransform());
 
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);
-}
-
-void PlanarJoint::createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform)
-{
-	// CREATE MOBILIZED BODY
-    SimTK::MobilizedBodyIndex parentIndex = getMobilizedBodyIndex(&updParentBody());
-    if (!parentIndex.isValid()){
-        string errorMessage;
-        errorMessage += "Invalid parent body (" + get_parent_body() + ") specified in joint " + getName();
-		throw (Exception(errorMessage.c_str()));
-    }
-	MobilizedBody::Planar
-		simtkBody(_model->updMatterSubsystem().updMobilizedBody(parentIndex),
-			parentTransform,SimTK::Body::Rigid(updBody().getMassProperties()),
-			childTransform);
-
-	setMobilizedBodyIndex(&updBody(), simtkBody.getMobilizedBodyIndex());
 }

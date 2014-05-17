@@ -23,8 +23,7 @@
 
 #include "JointSet.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Simulation/Model/ComponentSet.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -83,11 +82,11 @@ void JointSet::setNull()
 void JointSet::invokeAddToSystem(SimTK::MultibodySystem& system) const
 {
     vector<bool> hasProcessed(getSize(), false);
-    map<Body*, int> bodyMap;
+    map<const Body*, int> bodyMap;
     for (int i = 0; i < getSize(); i++)
     {
         Joint& joint = get(i);
-        bodyMap[&joint.updBody()] = i;
+        bodyMap[&joint.getChildBody()] = i;
     }
 	for (int i = 0; i < getSize(); i++){
 		if (getDebugLevel()>=2) cout << "Calling addToSystem for Joint " << get(i).getName() << " ..." << endl;
@@ -96,7 +95,7 @@ void JointSet::invokeAddToSystem(SimTK::MultibodySystem& system) const
 	}
 }
 
-void JointSet::addToSystemForOneJoint(SimTK::MultibodySystem& system, int jointIndex, const map<Body*, int>& bodyMap, vector<bool>& hasProcessed) const
+void JointSet::addToSystemForOneJoint(SimTK::MultibodySystem& system, int jointIndex, const map<const Body*, int>& bodyMap, vector<bool>& hasProcessed) const
 {
     if (hasProcessed[jointIndex])
         return;
@@ -105,7 +104,7 @@ void JointSet::addToSystemForOneJoint(SimTK::MultibodySystem& system, int jointI
 
     // Make sure the parent joint is processed first.
 
-    map<Body*, int>::const_iterator parent = bodyMap.find(&joint.updParentBody());
+    map<const Body*, int>::const_iterator parent = bodyMap.find(&joint.getParentBody());
     if (parent != bodyMap.end())
     {
         int parentIndex = parent->second;
@@ -117,20 +116,21 @@ void JointSet::addToSystemForOneJoint(SimTK::MultibodySystem& system, int jointI
 }
 
 /**
- * Populate the a flat list of Joints given a Model that has been setup
+ * Populate a flat list of Joints given a Model that has been setup
  */
-void JointSet::populate(Model& aModel)
+void JointSet::populate(Model& model)
 {
     setMemoryOwner(false);
     setSize(0);
 
-    for(int i=0; i< aModel.getNumBodies(); i++){
-        if (aModel.getBodySet().get(i).hasJoint()) { // Ground body doesn't have a jnt
-            Joint& nextJoint = aModel.getBodySet().get(i).getJoint();
-			nextJoint.setBody(aModel.getBodySet().get(i));
-            adoptAndAppend(&nextJoint);
-        }
-    }
+	ComponentSet& cs = model.updMiscModelComponentSet();
+
+	for (int i = 0; i< cs.getSize(); i++){
+		Joint* joint = dynamic_cast<Joint *>(&cs[i]);
+		if (joint) { // Ground body doesn't have a jnt
+			adoptAndAppend(joint);
+		}
+	}
 }
 
 //=============================================================================

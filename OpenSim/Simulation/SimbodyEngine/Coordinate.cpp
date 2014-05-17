@@ -161,10 +161,14 @@ void Coordinate::connectToModel(Model& aModel)
 			throw Exception(prefix+"Maximum coordinate range less than minimum.");
 		}
 		double dv = get_default_value();
-		if (dv < (get_range(0)-SimTK::SqrtEps))
-			throw Exception(prefix+"Default coordinate value is less than range minimum.");
-		else if (dv > (get_range(1)+SimTK::SqrtEps))
-			throw Exception(prefix+"Default coordinate value is greater than range maximum.");
+		if (dv < (get_range(0) - SimTK::SqrtEps)){
+			cerr << prefix + "Default coordinate value is less than range minimum." << endl;
+			cerr << "Default value = " << dv << "  < min = " << get_range(0) << endl;
+		}
+		else if (dv >(get_range(1) + SimTK::SqrtEps)){
+			cerr << prefix + "Default coordinate value is greater than range maximum." << endl;
+			cerr << "Default value = " << dv << "  > max = " << get_range(1) << endl;
+		}		
 	}
 	// Define the locked value for the constraint as a function
 	_lockFunction = new ModifiableConstant(get_default_value(), 1); 

@@ -111,6 +111,7 @@ int main()
 
 		// Add the block body to the model
 		osimModel.addBody(block);
+		osimModel.addJoint(blockToGround);
 
 		///////////////////////////////////////
 		// DEFINE FORCES ACTING ON THE MODEL //

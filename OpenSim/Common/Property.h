@@ -642,6 +642,16 @@ template<> struct Property<SimTK::Vec3>::TypeHelper  {
     OSIMCOMMON_API static bool isEqual(const SimTK::Vec3& a, 
                                        const SimTK::Vec3& b);
 };
+/** TypeHelper specialization for SimTK::Vec6; see double specialization
+for information on floating point comparison. **/
+template<> struct Property<SimTK::Vec6>::TypeHelper  {
+	static const bool IsObjectType = false;
+	static SimpleProperty<SimTK::Vec6>*
+		create(const std::string& name, bool isOne);
+	static std::string getTypeName() { return "Vec6"; }
+	OSIMCOMMON_API static bool isEqual(const SimTK::Vec6& a,
+		const SimTK::Vec6& b);
+};
 /** TypeHelper specialization for SimTK::Vector; see double specialization
 for information on floating point comparison. **/
 template<> struct Property<SimTK::Vector>::TypeHelper  {
@@ -652,6 +662,7 @@ template<> struct Property<SimTK::Vector>::TypeHelper  {
     OSIMCOMMON_API static bool isEqual(const SimTK::Vector& a, 
                                        const SimTK::Vector& b);
 };
+
 /** TypeHelper specialization for SimTK::Transform; see double specialization
 for information on floating point comparison. **/
 template<> struct Property<SimTK::Transform>::TypeHelper  {
@@ -1034,6 +1045,12 @@ TypeHelper::create(const std::string& name, bool isOne)
 inline SimpleProperty<SimTK::Vec3>* Property<SimTK::Vec3>::
 TypeHelper::create(const std::string& name, bool isOne) 
 {   return new SimpleProperty<SimTK::Vec3>(name, isOne); }
+
+inline SimpleProperty<SimTK::Vec6>* Property<SimTK::Vec6>::
+TypeHelper::create(const std::string& name, bool isOne)
+{
+	return new SimpleProperty<SimTK::Vec6>(name, isOne);
+}
 
 inline SimpleProperty<SimTK::Vector>* Property<SimTK::Vector>::
 TypeHelper::create(const std::string& name, bool isOne) 

@@ -48,17 +48,19 @@ public:
 		: Component(fileName, updFromXMLNode) {
 		constructInfrastructure();
 		updateFromXMLDocument();
+		for (int i = 0; i < getProperty_components().size(); ++i){
+			addComponent(&upd_components(i));
+		}
 	}
 
-	explicit TheWorld(SimTK::Xml::Element& element) : Component(element) {
-		constructInfrastructure();
-	}
-
-	void add(Component* comp) { 
+	void add(Component* comp) {
+		//disconnect();
 		addComponent(comp);
 		updProperty_components().adoptAndAppendValue(comp);
 	}
-	void connect() { connect(*this); }
+
+	// Top level connection method for all encompassing Component
+	void connect() { Super::connect(*this); }
 	void buildUpSystem(MultibodySystem& system) { addToSystem(system); }
 
 	const SimbodyMatterSubsystem& getMatterSubsystem() const { return *matter; }
@@ -68,10 +70,13 @@ public:
 	GeneralForceSubsystem& updForceSubsystem() const { return *forces; }
 
 protected:
-	void connect(Component& root) OVERRIDE_11 {
-		Super::connect(root);
-	}
-
+	// Component implementation interface
+	/*void connect(Component& root) OVERRIDE_11 {
+		for (int i = 0; i < getProperty_components().size(); ++i){
+			addComponent(&upd_components(i));
+		}
+	}*/
+	
 	void addToSystem(MultibodySystem& system) const OVERRIDE_11 {
 		if (system.hasMatterSubsystem()){
 			matter = system.updMatterSubsystem();
@@ -123,14 +128,6 @@ public:
 		"inertia {Ixx, Iyy, Izz, Ixy, Ixz, Iyz}");
 
 	Foo() : Component() {  constructInfrastructure(); }
-
-	Foo(const std::string& fileName, bool updFromXMLNode = true)
-		: Component(fileName, updFromXMLNode) {
-		constructInfrastructure();
-	}
-
-	explicit Foo(SimTK::Xml::Element& element) : Component(element) 
-	{ constructInfrastructure(); }
 
 	double getSomething(const SimTK::State& state){
 		return state.getTime();
@@ -220,14 +217,6 @@ class Bar : public Component {
 public:
 	Bar() : Component() { constructInfrastructure(); }
 
-	Bar(const std::string& fileName, bool updFromXMLNode = true)
-		: Component(fileName, updFromXMLNode) {
-		constructInfrastructure();
-	}
-
-	explicit Bar(SimTK::Xml::Element& element) : Component(element) 
-	{ constructInfrastructure(); }
-
 	double getPotentialEnergy(const SimTK::State& state) const {
 		const GeneralForceSubsystem& forces = world->getForceSubsystem();
 		const Force& force = forces.getForce(fix);
@@ -244,8 +233,8 @@ protected:
 		// do any internal wiring
 		world = dynamic_cast<TheWorld*>(&root);
 		// perform custom checking
-		if (updConnector<Foo>("parentFoo").getConectee()
-				== updConnector<Foo>("childFoo").getConectee()){
+		if (updConnector<Foo>("parentFoo").getConnectee()
+				== updConnector<Foo>("childFoo").getConnectee()){
 			string msg = "ERROR - Bar::connect()\n";
 			msg += " parentFoo and childFoo cannot be the same component.";
 			throw OpenSim::Exception(msg);
@@ -296,8 +285,6 @@ int main() {
 	Object::registerType(Connector<Foo>());
 	Object::registerType(Connector<Bar>());
 
-	Object::setDebugLevel(5);
-
     try {
 		// Define the Simbody system
 		MultibodySystem system;
@@ -311,14 +298,16 @@ int main() {
 		theWorld.add(&foo);
 		foo.set_mass(2.0);
 
+		Foo* footTest = foo.clone();
+
 		Bar& bar = *new Bar();
 		bar.setName("Bar");
 		theWorld.add(&bar);
 
 		//Configure the connector to look for its dependency by this name
 		//Will get resolved and connected automatically at Component connect
-		bar.updConnector<Foo>("parentFoo").connect(foo);
-		bar.updConnector<Foo>("childFoo").connect(foo);
+		bar.updConnector<Foo>("parentFoo").set_connected_to_name("Foo");
+		bar.updConnector<Foo>("childFoo").set_connected_to_name("Foo");
 		
 		// add a subcomponent
 		// connect internals
@@ -337,8 +326,7 @@ int main() {
 
 		theWorld.add(&foo2);
 
-		//bar.updConnector<Foo>("childFoo").set_connected_to_name("Foo2");
-		bar.updConnector<Foo>("childFoo").connect(foo2);
+		bar.updConnector<Foo>("childFoo").set_connected_to_name("Foo2");
 		string connectorName = bar.updConnector<Foo>("childFoo").getConcreteClassName();
 
 		// Bar should connect now
@@ -355,10 +343,12 @@ int main() {
 		// Simbody model state setup
 		State s = system.realizeTopology();
 
+		int nu = system.getMatterSubsystem().getNumMobilities();
+
 		//SimTK::Visualizer viz(system);
 		//viz.drawFrameNow(s);
-		Vector q = Vector(s.getNQ(), SimTK::Pi/2);
-		Vector u = Vector(s.getNU(), 1.0);
+		const Vector q = Vector(s.getNQ(), SimTK::Pi/2);
+		const Vector u = Vector(s.getNU(), 1.0);
 		
 		for (int i = 0; i < 10; ++i){
 			s.updTime() = i*0.01234;
@@ -386,28 +376,36 @@ int main() {
 			cout << "foo.input1 = " << foo.getInputValue<double>(s, "input1") << endl;
 		}
 
+		MultibodySystem system2;
 		TheWorld *world2 = new TheWorld(modelFile);
+
 		ASSERT(theWorld == *world2, "Model serialization->deserialization FAILED");
+
+		world2->setName("InternalWorld");
+		world2->connect();
+		world2->buildUpSystem(system2);
+		s = system2.realizeTopology();
+	
 		world2->print("clone_" + modelFile);
 
 		// Add second world as the internal model of the first
-		world2->setName("InternalWorld");
 		theWorld.add(world2);
 		theWorld.connect();
 
-		MultibodySystem system2;
-		theWorld.buildUpSystem(system2);
+		MultibodySystem system3;
+		theWorld.buildUpSystem(system3);
 		//SimTK::Visualizer viz2(system2);
-		
-		s = system2.realizeTopology();
+
+		s = system3.realizeTopology();
+		int nu3 = system3.getMatterSubsystem().getNumMobilities();
 
 		// realize simbody system to velocity stage
-		system2.realize(s, Stage::Velocity);
+		system3.realize(s, Stage::Velocity);
 
-		RungeKuttaFeldbergIntegrator integ(system2);
+		RungeKuttaFeldbergIntegrator integ(system3);
 		integ.setAccuracy(1.0e-3);
 
-		TimeStepper ts(system2, integ);
+		TimeStepper ts(system3, integ);
 		ts.initialize(s);
 		ts.stepTo(1.0);
 		s = ts.getState();

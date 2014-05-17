@@ -46,22 +46,6 @@ ModelComponent::ModelComponent(SimTK::Xml::Element& element)
 {
 }
 
-// Don't copy any of the base class data members; they all get set later.
-ModelComponent::ModelComponent(const ModelComponent& source) 
-:   Component(source), _model(NULL)
-{
-}
-
-// Don't copy any of the base class data members; clear them instead.
-ModelComponent& ModelComponent::operator=(const ModelComponent& source)
-{
-    if (&source != this) { 
-        Super::operator=(source);
-        setNull();
-    }
-    return *this;
-}
-
 const Model& ModelComponent::getModel() const
 {
     if(_model==NULL)
@@ -96,13 +80,6 @@ void ModelComponent::connect(Component &root)
 void ModelComponent::connectToModel(Model& model)
 {
     _model = &model;
-
-	/*
-    for(unsigned int i=0; i<_components.size(); i++){
-		ModelComponent *mc = dynamic_cast<ModelComponent*>(_components[i]);
-        mc->connectToModel(model);
-	}
-	*/
 }
 
 // Base class implementation of virtual method.

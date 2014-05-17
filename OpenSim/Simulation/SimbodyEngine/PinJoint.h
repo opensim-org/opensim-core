@@ -1,5 +1,5 @@
-#ifndef __PinJoint_h__
-#define __PinJoint_h__
+#ifndef OPENSIM_PIN_JOINT_H_
+#define OPENSIM_PIN_JOINT_H_
 /* -------------------------------------------------------------------------- *
  *                            OpenSim:  PinJoint.h                            *
  * -------------------------------------------------------------------------- *
@@ -23,10 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/ScaleSet.h>
 #include "Joint.h"
 
 namespace OpenSim {
@@ -35,8 +33,8 @@ namespace OpenSim {
 //=============================================================================
 /**
  * A class implementing an Pin joint.  The underlying implementation 
- * in Simbody is a MobilizedBody::Pin. Pin provides one DoF about the common
- * z-axis of the joint (not body) frames in the parent and body.
+ * in Simbody is a MobilizedBody::Pin. Pin provides one DOF about the common
+ * Z-axis of the joint (not body) frames in the parent and child body.
  *
  * @author Ajay Seth
  * @version 1.0
@@ -53,7 +51,6 @@ protected:
 
 	/** Pin has no additional properties*/
 
-
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -61,19 +58,18 @@ public:
 	// CONSTRUCTION
 	PinJoint();
 	// Convenience constructor
-	PinJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
-					bool reverse=false);
+	PinJoint(const std::string &name,  const Body& parent,
+			 const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+		     const Body& child, 
+			 const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
+			 bool reverse = false);
 	virtual ~PinJoint();
 
-	virtual int numCoordinates() const OVERRIDE_11 {return _numMobilities;};
-
+	int numCoordinates() const OVERRIDE_11 {return _numMobilities;};
 
 protected:
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
-private:
-	void createMobilizedBody(SimTK::Transform parentTransform, SimTK::Transform childTransform);
 //=============================================================================
 };	// END of class PinJoint
 //=============================================================================
@@ -81,6 +77,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __PinJoint_h__
+#endif // OPENSIM_PIN_JOINT_H_
 
 

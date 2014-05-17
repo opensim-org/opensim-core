@@ -46,7 +46,7 @@ using namespace std;
 
 // up version to 20301 for separation of RRATool, CMCTool
 // up version to 20302 for Muscle's pennation_angle -> pennation_angle_at_optimal
-const int XMLDocument::LatestVersion = 30000;	
+const int XMLDocument::LatestVersion = 30500;	
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
@@ -157,7 +157,6 @@ getFileName() const
 bool XMLDocument::
 print(const string &aFileName)
 {
-
 	// Standard Out
 	if(aFileName.empty()) {
 		cout << *this;
@@ -166,7 +165,7 @@ print(const string &aFileName)
 	} else {
 		setIndentString("\t");
 		writeToFile(aFileName);
-		}
+	}
 	return true;
 }
 //_____________________________________________________________________________
@@ -392,4 +391,28 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
 	}
 
 	return equal;
+}
+
+/*
+ * Helper function to add connector to the xmlElement passed in
+ */
+void XMLDocument::addConnector(SimTK::Xml::Element& element, const std::string& connectorTag, const std::string& connectorName, const std::string& connectorValue)
+{
+    SimTK::Xml::element_iterator  connectors_node =  element.element_begin("connectors");
+    SimTK::String debug;
+    if (connectors_node == element.element_end()){
+        SimTK::Xml::Element connectorsElement("connectors");
+        element.insertNodeBefore(element.element_begin(), connectorsElement);
+        connectors_node =  element.element_begin("connectors");
+    }
+    // Here we're guaranteed connectors node exist, add indivdual connector
+    SimTK::Xml::Element newConnectorElement(connectorTag);
+    newConnectorElement.setAttributeValue("name", connectorName);
+    newConnectorElement.writeToString(debug);
+    SimTK::Xml::Element connectedToElement("connected_to_name");
+    connectedToElement.insertNodeAfter(connectedToElement.element_end(), SimTK::Xml::Text(connectorValue));
+    // Insert text under newConnectorElement
+    newConnectorElement.insertNodeAfter(newConnectorElement.element_end(), connectedToElement);
+    connectors_node->insertNodeAfter(connectors_node->element_end(), newConnectorElement);
+    connectors_node->writeToString(debug);
 }

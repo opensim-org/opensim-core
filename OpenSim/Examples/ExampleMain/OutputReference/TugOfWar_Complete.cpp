@@ -130,8 +130,9 @@ int main()
 		double h_start = blockMass*gravity[1]/(stiffness*blockSideLength*blockSideLength);
 		jointCoordinateSet[4].setDefaultValue(h_start); // set y-translation which is height
 
-		// Add the block body to the model
+		// Add the block and joint to the model
 		osimModel.addBody(block);
+		osimModel.addJoint(blockToGround);
 
 		///////////////////////////////////////////////
 		// DEFINE THE SIMULATION START AND END TIMES //

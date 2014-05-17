@@ -198,17 +198,17 @@ public:
 //==============================================================================
     /** Default constructor **/
     Component();
-    /** Construct Component from an XML file. **/
-    Component(const std::string& aFileName, 
-                   bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
-    /** Construct Component from a specific node in an XML document. **/
-    explicit Component(SimTK::Xml::Element& aNode);
 
-	/** Construct Component with its contents copied from another.
-	This is a deep copy of the Component's properties and connectors.
-	Nothing is shared with the source after the copy.
-	All connections and local resources allocated by the source Component
-	are cleared. The component copy has to be connected to function. **/
+	/** Construct Component from an XML file. **/
+	Component(const std::string& aFileName,
+		bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
+
+	/** Construct Component from a specific node in an XML document. **/
+	explicit Component(SimTK::Xml::Element& aNode);
+
+	/** Copy Constructor. Required to perform custom handling of 
+	    internal references to subcomonents and system indices.
+		The component copy has to be connected to function. */
 	Component(const Component& source);
 	
     /** Destructor is virtual to allow concrete Component to cleanup. **/
@@ -227,12 +227,12 @@ public:
     //const ComponentIterator&  getComponentsIterator();
 
 	/**
-     * Get a sub component of this Component by its name. 
+     * Get a subcomponent of this Component by its name. 
 	 * Note using a component's full "path" name is faster and will provide a
-	 * unique result. Otherwise, the first component to satify the name match 
+	 * unique result. Otherwise, the first component to satisfy the name match 
 	 * will be returned.
-	 * For example forearm/elbow/elbow_flexion will return and Coordinate 
-	 * Component of that is a member of the forearm body's elbow joint Component.
+	 * For example right_elbow/elbow_flexion will return a Coordinate 
+	 * Component that is a member of the model's right elbow joint Component.
 	 *
      * @param name		 the name (string) of the Component of interest
      * @return Component the component of interest
@@ -288,7 +288,7 @@ public:
 	* @return const reference to the (Abstract)Connector
 	*/
 	template<typename T> Connector<T>& 
-		updConnector(const std::string& name)
+		updConnector(const std::string& name) const
 	{
 		std::map<std::string, AbstractConnector*>::const_iterator it;
 		it = _connectorsTable.find(name);
@@ -770,7 +770,7 @@ template <class T> friend class ComponentMeasure;
 	If you override this method, be sure to invoke the base class method first,
 		using code like this :
 		@code
-		void MyComponent::dicconnect(Component& root) {
+		void MyComponent::disconnect(Component& root) {
 			// disconnect your subcomponents first
 			Super::disconnect(); 
 			//your code to wipeout your connection related information
@@ -981,10 +981,10 @@ template <class T> friend class ComponentMeasure;
 	*/
 	template <typename T>
 	void constructStructuralConnector(const std::string& name) {
-		int ix = updProperty_connectors().adoptAndAppendValue(new Connector<T>(name, SimTK::Stage::Topology));
+		int ix = updProperty_connectors().adoptAndAppendValue(
+			new Connector<T>(name, SimTK::Stage::Topology));
+		//add pointer to connectorsTable so we can access connectors easily by name
 		_connectorsTable[name] = &upd_connectors(ix);
-		cout << getConcreteClassName() << ":: constructed connector '" << name;
-		cout << "' for component '" << getName() << "'." << endl;
 	}
 
 	/**
@@ -997,10 +997,7 @@ template <class T> friend class ComponentMeasure;
 	void constructInput(const std::string& name,
 		const SimTK::Stage& connectAtStage = SimTK::Stage::Instance) {
 		_inputsTable[name] = new Input<T>(name, connectAtStage);
-		cout << getConcreteClassName() << ":: constructed input '" << name;
-		cout << "' for component '" << getName() << "'." << endl;
 	}
-
 
 	/**
 	* Construct an Output (wire) for the Component as function of the State.
@@ -1013,8 +1010,6 @@ template <class T> friend class ComponentMeasure;
 		const std::function<T(const SimTK::State&)> outputFunction, 
 		const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
 		_outputsTable[name] = new Output<T>(name, outputFunction, dependsOn);
-		//cout << getConcreteClassName() << ":: constructed output '" << name;
-		//cout << "' for component '" << getName() << "'." << endl;
 	}
     
 	/**
@@ -1320,24 +1315,6 @@ private:
 
 	// Table of Component's Outputs indexed by name.
 	std::map<std::string, const AbstractOutput*> _outputsTable;
-
-
-	// Structure to hold related info about this component's connections 
-	struct ConnectionInfo {
-		ConnectionInfo() {}
-		ConnectionInfo(SimTK::ReferencePtr<AbstractConnector> connector,
-			SimTK::ReferencePtr<Component> source,
-			bool isConnected)
-			: connector(connector), source(source), isConnected(isConnected) {}
-		// Model
-		SimTK::ReferencePtr<AbstractConnector> connector;
-		SimTK::ReferencePtr<Component> source;
-		bool isConnected;
-	};
-
-	// Connections table for this component indexed by connection name
-	std::map<std::string, ConnectionInfo> _connectionsTable;
-
 
     // Underlying SimTK custom measure ComponentMeasure, which implements
     // the realizations in the subsystem by calling private concrete methods on

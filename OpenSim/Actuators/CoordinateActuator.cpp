@@ -253,22 +253,4 @@ bool CoordinateActuator::isCoordinateValid() const
 	return true;
 }
 
-//==============================================================================
-// XML
-//==============================================================================
-//-----------------------------------------------------------------------------
-// UPDATE FROM XML NODE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Update this object based on its XML node.
- *
- * This method simply calls Object::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) and then calls
- * a few methods in this class to ensure that variable members have been
- * set in a consistent manner.
- */
-void CoordinateActuator::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
-{
-	Super::updateFromXMLNode(aNode, versionNumber);
-}	
 

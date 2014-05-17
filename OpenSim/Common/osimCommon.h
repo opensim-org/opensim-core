@@ -49,5 +49,4 @@
 #include "RegisterTypes_osimCommon.h"	// to expose RegisterTypes_osimCommon
 #include "SmoothSegmentedFunctionFactory.h"
 
-#include "Data.h"
 #endif // _osimCommon_h_

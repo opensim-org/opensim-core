@@ -63,6 +63,13 @@ isEqual(const SimTK::Vec3& a, const SimTK::Vec3& b) {
     return true;
 }
 
+bool Property<SimTK::Vec6>::TypeHelper::
+isEqual(const SimTK::Vec6& a, const SimTK::Vec6& b) {
+	for (int i = 0; i < 6; ++i)
+		if (!Property<double>::TypeHelper::isEqual(a[i], b[i]))
+			return false;
+	return true;
+}
 
 // SimTK::Vector
 bool Property<SimTK::Vector>::TypeHelper::
