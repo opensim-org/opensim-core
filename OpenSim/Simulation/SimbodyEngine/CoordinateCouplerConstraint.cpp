@@ -24,12 +24,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <math.h>
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include "CoordinateCouplerConstraint.h"
-
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 // Helper class to construct functions when user's specify a dependency as qd = f(qi)
 // this function casts as C(q) = 0 = f(qi) - qd;
@@ -261,7 +259,7 @@ void CoordinateCouplerConstraint::scale(const ScaleSet& aScaleSet)
 		double scaleFactor = 1.0;
 		// Get appropriate scale factors from parent body
 		Vec3 bodyScaleFactors(1.0); 
-		const string& parentName = depCoordinate._joint->getParentBodyName();
+		const string& parentName = depCoordinate.getJoint().getParentBodyName();
 
 		// Cycle through the scale set to get the appropriate factors
 		for (int i=0; i<aScaleSet.getSize(); i++) {

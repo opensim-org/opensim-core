@@ -75,63 +75,6 @@ void JointSet::setNull()
 {
 }
 
-/**
- * This ModelComponentSet method is overridden to ensure that joints are 
- * processed from ground outward.
- */
-void JointSet::invokeAddToSystem(SimTK::MultibodySystem& system) const
-{
-    vector<bool> hasProcessed(getSize(), false);
-    map<const Body*, int> bodyMap;
-    for (int i = 0; i < getSize(); i++)
-    {
-        Joint& joint = get(i);
-        bodyMap[&joint.getChildBody()] = i;
-    }
-	for (int i = 0; i < getSize(); i++){
-		if (getDebugLevel()>=2) cout << "Calling addToSystem for Joint " << get(i).getName() << " ..." << endl;
-        addToSystemForOneJoint(system, i, bodyMap, hasProcessed);
-
-	}
-}
-
-void JointSet::addToSystemForOneJoint(SimTK::MultibodySystem& system, int jointIndex, const map<const Body*, int>& bodyMap, vector<bool>& hasProcessed) const
-{
-    if (hasProcessed[jointIndex])
-        return;
-    hasProcessed[jointIndex] = true;
-    Joint& joint = get(jointIndex);
-
-    // Make sure the parent joint is processed first.
-
-    map<const Body*, int>::const_iterator parent = bodyMap.find(&joint.getParentBody());
-    if (parent != bodyMap.end())
-    {
-        int parentIndex = parent->second;
-        if (!hasProcessed[parentIndex])
-            addToSystemForOneJoint(system, parentIndex, bodyMap, hasProcessed);
-    }
-
-    static_cast<const Joint&>(get(jointIndex)).addToSystem(system);
-}
-
-/**
- * Populate a flat list of Joints given a Model that has been setup
- */
-void JointSet::populate(Model& model)
-{
-    setMemoryOwner(false);
-    setSize(0);
-
-	ComponentSet& cs = model.updMiscModelComponentSet();
-
-	for (int i = 0; i< cs.getSize(); i++){
-		Joint* joint = dynamic_cast<Joint *>(&cs[i]);
-		if (joint) { // Ground body doesn't have a jnt
-			adoptAndAppend(joint);
-		}
-	}
-}
 
 //=============================================================================
 // OPERATORS

@@ -83,8 +83,9 @@ WeldJoint::WeldJoint(const std::string &name, const OpenSim::Body &parent,
 //_____________________________________________________________________________
 void WeldJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Weld>(getParentTransform(),
-		                                    getChildTransform());
+	createMobilizedBody<MobilizedBody::Weld>(system,
+		                                     getParentTransform(),
+		                                     getChildTransform());
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);
 }

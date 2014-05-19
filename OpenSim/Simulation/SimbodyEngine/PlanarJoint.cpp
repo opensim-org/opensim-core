@@ -76,7 +76,8 @@ PlanarJoint::PlanarJoint() :
 //_____________________________________________________________________________
 void PlanarJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Planar>(getParentTransform(),
+	createMobilizedBody<MobilizedBody::Planar>(system,
+		                                       getParentTransform(),
 		                                       getChildTransform());
 
     // TODO: Joints require super class to be called last.

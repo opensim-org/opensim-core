@@ -191,7 +191,7 @@ protected:
 
 		// CREATE MOBILIZED BODY for body rotation about body Z
 		MobilizedBody simtkMasslessBody1 = createMobilizedBody<MobilizedBody::Pin>(
-			_model->updMatterSubsystem().updMobilizedBody(getParentBody().getIndex()),
+			system.updMatterSubsystem().updMobilizedBody(getParentBody().getIndex()),
 			parentTransform,
 			massless,
 			childTransform0,

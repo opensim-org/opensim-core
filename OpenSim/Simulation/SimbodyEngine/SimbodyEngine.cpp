@@ -30,17 +30,11 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-#include <Simbody.h>
 
 #include "SimbodyEngine.h"
+#include "Joint.h"
 #include "Coordinate.h"
 
-#include <iostream>
-#include <string>
-#include <cmath>
-#include <cfloat>
-#include <ctime>
-#include <cassert>
 
 //=============================================================================
 // STATICS

@@ -259,10 +259,12 @@ protected:
 		createMobilizedBody(MobilizedBody& parent, const SimTK::Transform& parentTransform,
 		Body& child, const SimTK::Transform& childTransform).*/
 	template <typename T>
-	T createMobilizedBody(const SimTK::Transform& parentTransform,
-		const SimTK::Transform& childTransform) const {
+	T createMobilizedBody(SimTK::MultibodySystem& mbs, 
+			const SimTK::Transform& parentTransform,
+			const SimTK::Transform& childTransform) const
+	{
 		SimTK::MobilizedBody& parent = 
-			_model->updMatterSubsystem().updMobilizedBody(getParentBody().getIndex());
+			mbs.updMatterSubsystem().updMobilizedBody(getParentBody().getIndex());
 		SimTK::Body child = SimTK::Body::Rigid(getChildBody().getMassProperties());
 
 		int beginAtIndex = 0;

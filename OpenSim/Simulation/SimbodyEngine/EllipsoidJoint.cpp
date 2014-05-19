@@ -145,7 +145,8 @@ void EllipsoidJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
 	// CREATE MOBILIZED BODY
 	MobilizedBody::Ellipsoid mobod =
-		createMobilizedBody<MobilizedBody::Ellipsoid>(getParentTransform(),
+		createMobilizedBody<MobilizedBody::Ellipsoid>(system,
+		                                              getParentTransform(),
 		                                              getChildTransform());
 	mobod.setDefaultRadii(get_radii_x_y_z());
     // TODO: Joints require super class to be called last.

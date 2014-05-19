@@ -966,14 +966,7 @@ void Model::generateDecorations
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
 {
-    getBodySet().invokeGenerateDecorations(fixed,hints,state,appendToThis);
-	getJointSet().invokeGenerateDecorations(fixed, hints, state, appendToThis);
-    _constraintSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
-    _contactGeometrySet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
-    _forceSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
-	_controllerSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
-	_componentSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
-    _probeSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
+    Super::generateDecorations(fixed,hints,state,appendToThis);
 }
 
 void Model::equilibrateMuscles(SimTK::State& state)

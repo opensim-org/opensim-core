@@ -1,5 +1,5 @@
-#ifndef __JointSet_h__
-#define __JointSet_h__
+#ifndef OPENSIM_JOINT_SET_H_
+#define OPENSIM_JOINT_SET_H_
 /* -------------------------------------------------------------------------- *
  *                            OpenSim:  JointSet.h                            *
  * -------------------------------------------------------------------------- *
@@ -23,12 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
-#include <map>
-#include <vector>
 
 namespace OpenSim {
 
@@ -46,22 +42,11 @@ class Model;
 class OSIMSIMULATION_API JointSet :	public ModelComponentSet<Joint> {
 OpenSim_DECLARE_CONCRETE_OBJECT(JointSet, ModelComponentSet<Joint>);
 
-private:
-	void setNull();
-    void addToSystemForOneJoint(SimTK::MultibodySystem& system, int jointIndex, 
-                                 const std::map<const Body*, int>& bodyMap, 
-                                 std::vector<bool>& hasProcessed) const;
-    // This overrides the ModelComponentSet method to enforce ordering.
-    void invokeAddToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 public:
 	JointSet();
 	JointSet(Model& model);
 	JointSet(const JointSet& aJointSet);
-	~JointSet(void);
-	/**
-	* Populate this flat list of Joints given a Model that has been setup
-	*/
-	void populate(Model& aModel);
+	~JointSet();
 
 	// Somehow the following function is not exported from base template
     JointSet(Model& model, const std::string &aFileName, 
@@ -78,6 +63,10 @@ public:
 	// UTILITIES
 	//--------------------------------------------------------------------------
 	void scale(const ScaleSet& aScaleSet);
+
+private:
+	void setNull();
+
 //=============================================================================
 };	// END of class JointSet
 //=============================================================================
@@ -85,4 +74,4 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // __JointSet_h__
+#endif // OPENSIM_JOINT_SET_H_

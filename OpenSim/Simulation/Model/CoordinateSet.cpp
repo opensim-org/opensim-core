@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "CoordinateSet.h"
+#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/Model/Model.h>
 

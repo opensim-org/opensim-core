@@ -77,7 +77,8 @@ BallJoint::BallJoint(const std::string &name, const OpenSim::Body& parent,
 //_____________________________________________________________________________
 void BallJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Ball>(getParentTransform(),
+	createMobilizedBody<MobilizedBody::Ball>(system,
+		                                     getParentTransform(),
 		                                     getChildTransform());
 
     // TODO: Joints require super class to be called last.
