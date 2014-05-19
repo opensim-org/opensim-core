@@ -661,6 +661,9 @@ void ExpressionBasedBushingForce::generateDecorations
         body2Frame.setTransform(_inb2);
         body2Frame.setColor(frame2color);
 
+        body1Frame.setUserRef((void *)this);
+        body2Frame.setUserRef((void *)this);
+
         geometryArray.push_back(body1Frame);
         geometryArray.push_back(body2Frame);
 

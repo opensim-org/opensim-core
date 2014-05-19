@@ -125,7 +125,7 @@ void DefaultGeometry::drawPathPoint(const MobilizedBodyIndex&             body,
                 .setTransform(pt_B)
                 .setBodyId(body)
                 .setColor(color)
-                .setOpacity(0.8));
+                .setOpacity(0.8).setIndexOnBody(geometry.size()));
 }
 
 void DefaultGeometry::generateDecorations

@@ -1307,7 +1307,7 @@ void WrapEllipsoid::generateDecorations(const Model& model, const ModelDisplayHi
 {
     Transform X_GW = getTransform();
     geometry.push_back(
-        DecorativeEllipsoid(getRadii()).setBodyId(_body->getIndex()).setTransform(X_GW).setUserRef(const_cast<WrapEllipsoid*>(this)));
-        //setResolution(_dispWrapResolution)
-        //.setColor(color).setOpacity(_dispWrapOpacity));
+        DecorativeEllipsoid(getRadii()).setBodyId(_body->getIndex()).setTransform(X_GW).setUserRef(const_cast<WrapEllipsoid*>(this)).
+        setColor(SimTK::Cyan)
+        );
 }

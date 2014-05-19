@@ -212,7 +212,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
         appendToThis.push_back(DecorativeLine(lastPos, pos)
                                .setLineThickness(4)
-                               .setColor(getColor(state)));
+                               .setColor(getColor(state)).setUserRef((void *)this).setIndexOnBody(appendToThis.size()));
 
         lastPos = pos;
     }
