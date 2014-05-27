@@ -882,7 +882,7 @@ void WrapCylinder::generateDecorations(const Model& model, const ModelDisplayHin
     Transform X_GW = getTransform();
     geometry.push_back(
         DecorativeCylinder(getRadius()).setHalfHeight(getLength()/2).setBodyId(_body->getIndex()).
-        setTransform(X_GW).setColor(SimTK::Cyan).setUserRef(const_cast<WrapCylinder*>(this)));
+        setTransform(X_GW).setColor(SimTK::Cyan).setUserRef(const_cast<WrapCylinder*>(this)).setIndexOnBody(geometry.size()));
         //setResolution(_dispWrapResolution)
         //.setColor(color).setOpacity(_dispWrapOpacity));
 }

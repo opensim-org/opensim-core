@@ -217,6 +217,8 @@ void MarkerSet::invokeGenerateDecorations
                     .setColor(pink).setOpacity(0.5)
                     .setTransform(marker.getOffset())
                     .setUserRef((void *)&marker)
+                    .setBodyId(body.getIndex())
+                    .setIndexOnBody(appendToThis.size())
                     );
             }
         }
