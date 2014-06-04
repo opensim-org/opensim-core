@@ -36,6 +36,92 @@ protected:
     bool swig_override[11];
 };
 
+class SwigDirector_ModelComponent : public OpenSim::ModelComponent, public Swig::Director {
+
+public:
+    void swig_connect_director(JNIEnv *jenv, jobject jself, jclass jcls, bool swig_mem_own, bool weak_global);
+    SwigDirector_ModelComponent(JNIEnv *jenv);
+    SwigDirector_ModelComponent(JNIEnv *jenv, std::string const &aFileName, bool aUpdateFromXMLNode = true);
+    SwigDirector_ModelComponent(JNIEnv *jenv, SimTK::Xml::Element &aNode);
+    SwigDirector_ModelComponent(JNIEnv *jenv, OpenSim::ModelComponent const &source);
+    virtual ~SwigDirector_ModelComponent();
+    virtual OpenSim::ModelComponent *clone() const;
+    virtual std::string const &getConcreteClassName() const;
+    virtual OpenSim::VisibleObject const *getDisplayer() const;
+    virtual OpenSim::VisibleObject *updDisplayer();
+    virtual void updateFromXMLNode(SimTK::Xml::Element &objectElement, int versionNumber);
+    virtual void updateXMLNode(SimTK::Xml::Element &parent);
+    virtual bool isA(char const *type) const;
+    virtual void assign(OpenSim::Object &aObject);
+    virtual void updateDisplayer(SimTK::State const &s) const;
+    virtual int getNumStateVariables() const;
+    virtual OpenSim::Array< std::string > getStateVariableNames() const;
+    virtual SimTK::SystemYIndex getStateVariableSystemIndex(std::string const &stateVariableName) const;
+    virtual void connectToModel(OpenSim::Model &model);
+    virtual void connectToModelSwigPublic(OpenSim::Model &model) {
+      OpenSim::ModelComponent::connectToModel(model);
+    }
+    virtual void addToSystem(SimTK::MultibodySystem &system) const;
+    virtual void addToSystemSwigPublic(SimTK::MultibodySystem &system) const {
+      OpenSim::ModelComponent::addToSystem(system);
+    }
+    virtual void initStateFromProperties(SimTK::State &state) const;
+    virtual void initStateFromPropertiesSwigPublic(SimTK::State &state) const {
+      OpenSim::ModelComponent::initStateFromProperties(state);
+    }
+    virtual void setPropertiesFromState(SimTK::State const &state);
+    virtual void setPropertiesFromStateSwigPublic(SimTK::State const &state) {
+      OpenSim::ModelComponent::setPropertiesFromState(state);
+    }
+    virtual SimTK::Vector computeStateVariableDerivatives(SimTK::State const &s) const;
+    virtual SimTK::Vector computeStateVariableDerivativesSwigPublic(SimTK::State const &s) const {
+      return OpenSim::ModelComponent::computeStateVariableDerivatives(s);
+    }
+    virtual void generateDecorations(bool fixed, OpenSim::ModelDisplayHints const &hints, SimTK::State const &state, SimTK::Array_< SimTK::DecorativeGeometry,unsigned int > &appendToThis) const;
+    virtual void realizeTopology(SimTK::State &state) const;
+    virtual void realizeTopologySwigPublic(SimTK::State &state) const {
+      OpenSim::ModelComponent::realizeTopology(state);
+    }
+    virtual void realizeModel(SimTK::State &state) const;
+    virtual void realizeModelSwigPublic(SimTK::State &state) const {
+      OpenSim::ModelComponent::realizeModel(state);
+    }
+    virtual void realizeInstance(SimTK::State const &state) const;
+    virtual void realizeInstanceSwigPublic(SimTK::State const &state) const {
+      OpenSim::ModelComponent::realizeInstance(state);
+    }
+    virtual void realizeTime(SimTK::State const &state) const;
+    virtual void realizeTimeSwigPublic(SimTK::State const &state) const {
+      OpenSim::ModelComponent::realizeTime(state);
+    }
+    virtual void realizePosition(SimTK::State const &state) const;
+    virtual void realizePositionSwigPublic(SimTK::State const &state) const {
+      OpenSim::ModelComponent::realizePosition(state);
+    }
+    virtual void realizeVelocity(SimTK::State const &state) const;
+    virtual void realizeVelocitySwigPublic(SimTK::State const &state) const {
+      OpenSim::ModelComponent::realizeVelocity(state);
+    }
+    virtual void realizeDynamics(SimTK::State const &state) const;
+    virtual void realizeDynamicsSwigPublic(SimTK::State const &state) const {
+      OpenSim::ModelComponent::realizeDynamics(state);
+    }
+    virtual void realizeAcceleration(SimTK::State const &state) const;
+    virtual void realizeAccelerationSwigPublic(SimTK::State const &state) const {
+      OpenSim::ModelComponent::realizeAcceleration(state);
+    }
+    virtual void realizeReport(SimTK::State const &state) const;
+    virtual void realizeReportSwigPublic(SimTK::State const &state) const {
+      OpenSim::ModelComponent::realizeReport(state);
+    }
+public:
+    bool swig_overrides(int n) {
+      return (n < 27 ? swig_override[n] : false);
+    }
+protected:
+    bool swig_override[27];
+};
+
 class SwigDirector_AnalysisWrapper : public OpenSim::AnalysisWrapper, public Swig::Director {
 
 public:

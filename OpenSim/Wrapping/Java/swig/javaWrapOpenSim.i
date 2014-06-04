@@ -239,6 +239,7 @@ using namespace SimTK;
 %feature("director") OpenSim::AnalysisWrapper;
 %feature("director") OpenSim::SimtkLogCallback;
 %feature("director") SimTK::DecorativeGeometryImplementation;
+%feature("director") OpenSim::ModelComponent;
 %feature("notabstract") ControlLinear;
 
 %rename(OpenSimObject) OpenSim::Object;
