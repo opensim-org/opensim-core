@@ -49,33 +49,29 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 
 	   /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
 	   ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
-             numControls(numParameters), OptimizerSystem(numParameters), si(s), osimModel(aModel){}
+             numControls(numParameters), OptimizerSystem(numParameters), si(s), osimModel(aModel)
+	   {
+		   // Create the integrator for the simulation.
+		   p_integrator = new RungeKuttaMersonIntegrator(osimModel.getMultibodySystem());
+		   p_integrator->setAccuracy(1.0e-7);
+		   p_manager = new Manager(osimModel, *p_integrator);
+	   }
 			 	
 	int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const {
 
-        // make a copy of out initial states
+        // make a copy of the initial states
         State s = si;
 
         // Update the control values
-		//newControls.dump("New Controls In:");
 		osimModel.updDefaultControls() = newControls;
-
-		// Create the integrator for the simulation.
-		RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-		integrator.setAccuracy(1.0e-6);
-
-		// Create a manager to run the simulation
-		Manager manager(osimModel, integrator);
-
+				
 		// Integrate from initial time to final time
-		manager.setInitialTime(initialTime);
-		manager.setFinalTime(finalTime);
+		p_manager->setInitialTime(initialTime);
+		p_manager->setFinalTime(finalTime);
 
 		osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
 
-		//osimModel.getControls(s).dump("Model Controls:");
-
-		manager.integrate(s);
+		p_manager->integrate(s);
 
 		/* Calculate the scalar quantity we want to minimize or maximize. 
 		*  In this case, we’re maximizing forward velocity of the 
@@ -92,12 +88,11 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 		
 		// Store and print the  results of the first step.
 		if( stepCount == 1){ 
-			manager.getStateStorage().print("Arm26_noActivation_states.sto");
+			p_manager->getStateStorage().print("Arm26_noActivation_states.sto");
 		}
 		// Use an if statement to only store and print the results of an 
 		//  optimization step if it is better than a previous result.
 		else if( f < bestSoFar){
-			manager.getStateStorage().print("Arm26_bestSoFar_states.sto");
 			bestSoFar = f;
 			cout << "\nobjective evaluation #: " << stepCount << "  controls = " << newControls <<  " bestSoFar = " << f << std::endl;
 		}		    
@@ -110,6 +105,9 @@ private:
     int numControls;
 	State& si;
 	Model& osimModel;
+	SimTK::ReferencePtr<Manager> p_manager;
+	SimTK::ReferencePtr<RungeKuttaMersonIntegrator> p_integrator;
+
  };
 
 //______________________________________________________________________________
