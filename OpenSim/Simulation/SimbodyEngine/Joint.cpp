@@ -26,7 +26,6 @@
 //=============================================================================
 #include "Joint.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include "SimTKsimbody.h"
@@ -147,19 +146,30 @@ const std::string& Joint::getChildBodyName() const
 }
 
 
-//_____________________________________________________________________________
-
-void Joint::connectToModel(Model& aModel)
+void Joint::finalizeFromProperties()
 {
 	CoordinateSet& coordinateSet = upd_CoordinateSet();
 
-	for(int i = 0; i< coordinateSet.getSize(); ++i){
+	//start from a clear slate
+	clearComponents();
+	// add all coordinates listed under this joint as 
+	// subcomponents as long as the number of coordinates
+	// does not exceed the number of dofs.
+	SimTK_ASSERT1(numCoordinates() == coordinateSet.getSize(), 
+		"%s list of coordinates does not match Joint degrees-of-freedom.",
+		getConcreteClassName());
+	for (int i = 0; i< coordinateSet.getSize(); ++i){
 		coordinateSet[i].setJoint(*this);
 		addComponent(&coordinateSet[i]);
 	}
 
-	string errorMessage;
+	Super::finalizeFromProperties();
+}
 
+//_____________________________________________________________________________
+
+void Joint::connectToModel(Model& aModel)
+{
 	const SimTK::Vec3& orientation = get_orientation_in_child();
 	const SimTK::Vec3& location = get_location_in_child();
 
@@ -211,9 +221,6 @@ const OpenSim::Body& Joint::getChildBody() const
 //-----------------------------------------------------------------------------
 void Joint::setLocationInChild(const SimTK::Vec3& location)
 {
-	if (_model)
-		_model->invalidateSystem();
-
 	set_location_in_child(location);
 }
 
@@ -227,9 +234,6 @@ const SimTK::Vec3& Joint::getLocationInChild() const
 //-----------------------------------------------------------------------------
 void Joint::setOrientationInChild(const SimTK::Vec3& aOrientation)
 {
-	if (_model)
-		updModel().invalidateSystem();
-
     set_orientation_in_child(aOrientation);
 }
 
@@ -264,9 +268,6 @@ const OpenSim::Body& Joint::getParentBody() const
 //-----------------------------------------------------------------------------
 void Joint::setLocationInParent(const SimTK::Vec3& aLocation)
 {
-	if (_model)
-		updModel().invalidateSystem();
-
     set_location_in_parent(aLocation);
 }
 
@@ -280,8 +281,6 @@ const SimTK::Vec3& Joint::getLocationInParent() const
 //-----------------------------------------------------------------------------
 void Joint::setOrientationInParent(const SimTK::Vec3& aOrientation)
 {
-	if (_model)
-		_model->invalidateSystem();
 
     set_orientation_in_parent(aOrientation);
 }
@@ -347,8 +346,6 @@ void Joint::scale(const ScaleSet& scaleSet)
 		locationInParent[i]*= parentFactors[i];
 		location[i]*= bodyFactors[i];
 	}
-    if (_model != NULL)
-        _model->invalidateSystem();
 }
 
 /** Construct coordinates according to the mobilities of the Joint */
@@ -611,4 +608,57 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 		}
 	}
 	Super::updateFromXMLNode(aNode, versionNumber);
+}
+
+int Joint::assignSystemIndicesToBodyAndCoordinates(
+	const SimTK::MobilizedBody& mobod,
+	const OpenSim::Body* mobilized,
+	const int& numMobilities,
+	const int& startingCoordinateIndex) const
+{
+	// If not OpenSim body provided as the one being mobilized assume it is 
+	// and intermedidate body and ignore.
+	if (mobilized){
+		// Index can only be assigned to a parent or child body connected by this
+		// Joint
+		SimTK_ASSERT3((mobilized == &getParentBody()) || (mobilized == &getChildBody()),
+			"%s::'%s' - Cannot assign underlying system index to a Body '%s', "
+			"which is not a parent or child Body of this Joint.",
+			getConcreteClassName(), getName(), mobilized->getName());
+
+		// ONLY the base Joint can do this assignment
+		mobilized->_index = mobod.getMobilizedBodyIndex();
+	}
+	int nc = numCoordinates();
+	SimTK_ASSERT3(numMobilities <= (nc - startingCoordinateIndex),
+		"%s attempted to create an underlying SimTK::MobilizedBody that "
+		"supplies %d mobilities but only %d required.",
+		getConcreteClassName(), numMobilities, nc - startingCoordinateIndex);
+
+	const CoordinateSet& coords = get_CoordinateSet();
+
+	int j = startingCoordinateIndex;
+	for (int iq = 0; iq < numMobilities; ++iq){
+		if (j < nc){ // assign
+			coords[j]._mobilizerQIndex = SimTK::MobilizerQIndex(iq);
+			coords[j]._bodyIndex = mobod.getMobilizedBodyIndex();
+			j++;
+		}
+		else{
+			std::string msg = getConcreteClassName() +
+				" creating MobilizedBody with more mobilities than declared Coordinates.";
+			throw Exception(msg);
+		}
+	}
+	return j;
+}
+
+/* Return the equivalent (internal) SimTK::Rigid::Body for a given parent OR
+child OpenSim::Body. Not guaranteed to be valid until after addToSystem on
+Body has be called  */
+const SimTK::Body::Rigid& Joint::getParentInternalRigidBody() const {
+	return getParentBody().getInternalRigidBody();
+}
+const SimTK::Body::Rigid& Joint::getChildInternalRigidBody() const {
+	return getChildBody().getInternalRigidBody();
 }

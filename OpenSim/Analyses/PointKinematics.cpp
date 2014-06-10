@@ -324,7 +324,6 @@ setModel(Model& aModel)
 	// DESCRIPTION AND LABELS
 	constructDescription();
 	constructColumnLabels();
-
 }
 //-----------------------------------------------------------------------------
 // BODY
@@ -367,17 +366,6 @@ setBody(Body* aBody)
 	_body = aBody;
 	_bodyName = _body->getName();
 	cout<<"PointKinematics.setBody: set body to "<<_bodyName<<endl;
-
-	// RESET STORAGE
-	if(_aStore!=NULL) {
-		constructDescription();
-		_aStore->reset();
-		_vStore->reset();
-		_pStore->reset();
-		_aStore->setDescription(getDescription());
-		_vStore->setDescription(getDescription());
-		_pStore->setDescription(getDescription());
-	}
 }
 void PointKinematics::
 setRelativeToBody(Body* aBody)
@@ -393,17 +381,6 @@ setRelativeToBody(Body* aBody)
 	_relativeToBody = aBody;
 	_relativeToBodyName = aBody->getName();
 	cout<<"PointKinematics.setRelativeToBody: set relative-to body to "<<_bodyName<<endl;
-
-		// RESET STORAGE
-	if(_aStore!=NULL) {
-		constructDescription();
-		_aStore->reset();
-		_vStore->reset();
-		_pStore->reset();
-		_aStore->setDescription(getDescription());
-		_vStore->setDescription(getDescription());
-		_pStore->setDescription(getDescription());
-	}
 }
 
 //_____________________________________________________________________________
@@ -435,17 +412,6 @@ void PointKinematics::
 setPoint(const SimTK::Vec3& aPoint)
 {
 	_point = aPoint;
-
-	// RESET STORAGE
-	if(_aStore!=NULL) {
-		constructDescription();
-		_aStore->reset();
-		_vStore->reset();
-		_pStore->reset();
-		_aStore->setDescription(getDescription());
-		_vStore->setDescription(getDescription());
-		_pStore->setDescription(getDescription());
-	}
 }
 //_____________________________________________________________________________
 /**
@@ -561,14 +527,15 @@ record(const SimTK::State& s)
 	// VARIABLES
 	SimTK::Vec3 vec;
 
+	const double& time = s.getTime();
+
 	// POSITION
 	de.getPosition(s, *_body,_point,vec);
 	if(_relativeToBody){
-
 		de.transformPosition(s, de.getGroundBody(), vec, *_relativeToBody, vec);
 	}
 
-	_pStore->append(s.getTime(),vec);
+	_pStore->append(time, vec);
 
 	// VELOCITY
 	de.getVelocity(s, *_body,_point,vec);
@@ -576,7 +543,7 @@ record(const SimTK::State& s)
 		de.transform(s, de.getGroundBody(), vec, *_relativeToBody, vec);
 	}
 
-	_vStore->append(s.getTime(),vec);
+	_vStore->append(time, vec);
 
 	// ACCELERATIONS
 	_model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
@@ -585,7 +552,7 @@ record(const SimTK::State& s)
 		de.transform(s, de.getGroundBody(), vec, *_relativeToBody, vec);
 	}
 
-	_aStore->append(s.getTime(),vec);
+	_aStore->append(time, vec);
 
 	return(0);
 }

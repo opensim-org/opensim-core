@@ -24,22 +24,16 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <cstdio>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Set.h>
 #include "Controller.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Common/IO.h>
 
 //=============================================================================
 // STATICS
 //=============================================================================
 
-// This command indicates that any identifier (class, variable, method, etc.)
-// defined within the OpenSim namespace can be used in this file without the
-// "OpenSim::" prefix.
 using namespace OpenSim;
 using namespace std;
 
@@ -89,7 +83,7 @@ void Controller::constructProperties()
  */
 bool Controller::isDisabled() const
 {
-    if( _model->getAllControllersEnabled() ) {
+    if( getModel().getAllControllersEnabled() ) {
 	   return( get_isDisabled() );
     } else {
        return( true );

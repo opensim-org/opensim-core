@@ -343,7 +343,7 @@ void Kinematics::setModel(Model& aModel)
 void Kinematics::
 setStorageCapacityIncrements(int aIncrement)
 {
-	_aStore->setCapacityIncrement(aIncrement);
+	if (_aStore) _aStore->setCapacityIncrement(aIncrement);
 	_vStore->setCapacityIncrement(aIncrement);
 	_pStore->setCapacityIncrement(aIncrement);
 }
@@ -418,7 +418,7 @@ begin( SimTK::State& s )
 	// RESET STORAGE
 	_pStore->reset(time);
 	_vStore->reset(time);
-	_aStore->reset(time);
+	if (_aStore) _aStore->reset(time);
 
 	// RECORD
 	int status = 0;

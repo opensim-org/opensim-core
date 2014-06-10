@@ -62,8 +62,10 @@ PointConstraint::PointConstraint() :
 	constructProperties();
 }
 
-PointConstraint::PointConstraint(OpenSim::Body& body1, SimTK::Vec3& locationBody1, OpenSim::Body& body2, SimTK::Vec3& locationBody2) :
-	Constraint()
+PointConstraint::PointConstraint(const OpenSim::Body& body1, 
+	                             const SimTK::Vec3& locationBody1,
+								 const OpenSim::Body& body2, 
+								 const SimTK::Vec3& locationBody2) : Constraint()
 {
 	setNull();
 	constructProperties();
@@ -71,7 +73,6 @@ PointConstraint::PointConstraint(OpenSim::Body& body1, SimTK::Vec3& locationBody
 	set_location_body_1(locationBody1);
 	set_body_2(body2.getName());
 	set_location_body_2(locationBody2);
-
 }
 //=============================================================================
 // CONSTRUCTION

@@ -788,8 +788,8 @@ private:
     void buildMuscle();
 
     /*Checks to make sure that none of the muscle model's properties have
-    changed. If they have changed, then the muscle is rebuilt.*/
-    void ensureMuscleUpToDate();
+    changed, and if any have changed then rebuild muscle model.*/
+	void finalizeFromProperties();
 
     /*       
     @param ami A struct that holds all of the necessary quantities to compute

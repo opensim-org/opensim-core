@@ -276,9 +276,10 @@ bool InverseKinematicsTool::run()
 		IO::chDir(directoryOfSetupFile);
 
 		// Define reporter for output
-		Kinematics kinematicsReporter(_model);
+		Kinematics kinematicsReporter;
 		kinematicsReporter.setRecordAccelerations(false);
 		kinematicsReporter.setInDegrees(true);
+		_model->addAnalysis(&kinematicsReporter);
 
 		cout<<"Running tool "<<getName()<<".\n";
 

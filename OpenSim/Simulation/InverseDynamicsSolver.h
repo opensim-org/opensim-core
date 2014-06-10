@@ -84,17 +84,19 @@ public:
 		const SimTK::Vector& appliedMobilityForces, 
 		const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces);
 	
-	/** Solve the inverse dynamics system of equations for generalized coordinate forces, Tau. 
-	    Now the state is updated from known coordinates, q, as functions of time.
-		Coordinate functions must be twice differentiable and are used to supply the 
-		NOTE: forces with internal states should be removed/disabled prior to solving if default state
-		      is inappropriate */
+	/** Solve the inverse dynamics system of equations for generalized coordinate 
+	    forces, Tau. Now the state is updated from known coordinates, q, as 
+		functions of time. Coordinate functions must be twice differentiable and 
+		are used to supply the coordinate speed and acceleration
+		NOTE: forces with internal states should be removed/disabled prior to  
+		      solving if default state is inappropriate */
 	virtual SimTK::Vector solve(SimTK::State& s, const FunctionSet& Qs, double time);
 #ifndef SWIG
-    /** Same as above but for a given time series populate an Array (trajectory) of generalized-coordinate
-	    forces (Vectors) */
-	virtual void solve(SimTK::State& s, const FunctionSet& Qs, const SimTK::Array_<double>& times, 
-		SimTK::Array_<SimTK::Vector> &genForceTrajectory);
+    /** Same as above but for a given time series populate an Array (trajectory) of
+	    generalized-coordinate forces (Vector) */
+	virtual void solve(SimTK::State& s, const FunctionSet& Qs, 
+		         const SimTK::Array_<double>&  times,
+				 SimTK::Array_<SimTK::Vector>& genForceTrajectory);
 #endif
 //=============================================================================
 };	// END of class InverseDynamicsSolver

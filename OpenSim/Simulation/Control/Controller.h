@@ -28,13 +28,14 @@
 //============================================================================
 // These files contain declarations and definitions of variables and methods
 // that will be used by the Controller class.
-#include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Common/Set.h>
 
 namespace OpenSim { 
 
 // Forward declarations of classes that are used by the controller implementation
 class Model;
+class Actuator;
 
 /**
  * Controller is an abstract ModelComponent that defines the interface for   

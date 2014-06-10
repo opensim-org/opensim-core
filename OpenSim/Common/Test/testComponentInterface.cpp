@@ -41,21 +41,23 @@ public:
 		"List of internal components");
 
 	TheWorld() : Component() {
+		// Constructing own properties, connectors, inputs or connectors? Must invoke!
 		constructInfrastructure();
 	}
 
 	TheWorld(const std::string& fileName, bool updFromXMLNode = false)
 		: Component(fileName, updFromXMLNode) {
+		// have to construct this Component's properties so that deserialization from
+		// XML has a place to go.
 		constructInfrastructure();
+		// Propogate XML file values to properties 
 		updateFromXMLDocument();
-		for (int i = 0; i < getProperty_components().size(); ++i){
-			addComponent(&upd_components(i));
-		}
+		// add components listed as properties as sub components.
+		finalizeFromProperties();
 	}
 
 	void add(Component* comp) {
-		//disconnect();
-		addComponent(comp);
+		// add it the property list of components that owns and serializes them
 		updProperty_components().adoptAndAppendValue(comp);
 	}
 
@@ -70,12 +72,16 @@ public:
 	GeneralForceSubsystem& updForceSubsystem() const { return *forces; }
 
 protected:
-	// Component implementation interface
-	/*void connect(Component& root) OVERRIDE_11 {
+	// Component interface implementation
+	void finalizeFromProperties() OVERRIDE_11 {
+		clearComponents();
+		// Mark components listed in properties as subcomponents
 		for (int i = 0; i < getProperty_components().size(); ++i){
 			addComponent(&upd_components(i));
 		}
-	}*/
+
+		Super::finalizeFromProperties();
+	}
 	
 	void addToSystem(MultibodySystem& system) const OVERRIDE_11 {
 		if (system.hasMatterSubsystem()){
@@ -103,8 +109,6 @@ private:
 	void constructProperties() OVERRIDE_11 {
 		constructProperty_components();
 	}
-	void constructStructuralConnectors() OVERRIDE_11 {
-	}
 
 private:
 	// Keep track of pointers to the underlying computational subsystems. 
@@ -127,7 +131,9 @@ public:
 	OpenSim_DECLARE_LIST_PROPERTY_SIZE(inertia, double, 6,
 		"inertia {Ixx, Iyy, Izz, Ixy, Ixz, Iyz}");
 
-	Foo() : Component() {  constructInfrastructure(); }
+	Foo() : Component() {
+		constructInfrastructure();
+	}
 
 	double getSomething(const SimTK::State& state){
 		return state.getTime();
@@ -174,7 +180,7 @@ protected:
 	}
 
 private:
-	void constructProperties() OVERRIDE_11{
+	void constructProperties() OVERRIDE_11 {
 		constructProperty_mass(1.0);
 		Array<double> inertia(0.001, 6);
 		inertia[0] = inertia[1] = inertia[2] = 0.1;
@@ -272,6 +278,64 @@ private:
 	ReferencePtr<TheWorld> world;
 
 }; // End of class Bar
+
+// Create 2nd level derived class to verify that Component interface
+// hold up.
+class CompoundFoo : public Foo {
+	OpenSim_DECLARE_CONCRETE_OBJECT(CompoundFoo, Foo);
+public:
+	//=============================================================================
+	// PROPERTIES
+	//=============================================================================
+	OpenSim_DECLARE_PROPERTY(Foo1, Foo, "1st Foo of CompoundFoo");
+	OpenSim_DECLARE_PROPERTY(Foo2, Foo, "2nd Foo of CompoundFoo");
+	OpenSim_DECLARE_PROPERTY(scale1, double, "Scale factor for 1st Foo");
+	OpenSim_DECLARE_PROPERTY(scale2, double, "Scale factor for 2nd Foo");
+
+	CompoundFoo() : Foo() {
+		constructInfrastructure();
+	}
+
+	// API calls can change the component properties and underlying components
+	// before proceding to do any calculations make sure those changes are
+	// finalized.
+	void finalizeChanges() { finalizeFromProperties(); }
+
+protected:
+	// Component implementation interface
+	void finalizeFromProperties() OVERRIDE_11{
+		// Mark components listed in properties as subcomponents
+		Foo& foo1 = upd_Foo1();
+		Foo& foo2 = upd_Foo2();
+		
+		// clear sub component designation of any previous components
+		clearComponents();
+		//now add them
+		addComponent(&foo1);
+		addComponent(&foo2);
+
+		// update CompoundFoo's properties based on it sub Foos
+		double orig_mass = get_mass();
+		upd_mass() = get_scale1()*foo1.get_mass() + get_scale2()*foo2.get_mass();
+
+		double inertiaScale = (get_mass() / orig_mass);
+
+		for (int i = 0; i < updProperty_inertia().size(); ++i) {
+			upd_inertia(i) = inertiaScale*get_inertia(i);
+		}
+
+		// enable newly added subcompenents a chance to finalize
+		Super::finalizeFromProperties();
+	}
+
+private:
+	void constructProperties() OVERRIDE_11 {
+		constructProperty_Foo1(Foo());
+		constructProperty_Foo2(Foo());
+		constructProperty_scale1(1.0);
+		constructProperty_scale2(2.0);
+	}	
+}; // End of Class CompoundFoo
 
 SimTK_NICETYPENAME_LITERAL(Foo);
 SimTK_NICETYPENAME_LITERAL(Bar);
@@ -378,19 +442,52 @@ int main() {
 
 		MultibodySystem system2;
 		TheWorld *world2 = new TheWorld(modelFile);
+		
+		world2->updComponent("Bar").getConnector<Foo>("childFoo");
 
-		ASSERT(theWorld == *world2, "Model serialization->deserialization FAILED");
+		ASSERT(theWorld == *world2, __FILE__, __LINE__,
+			"Model serialization->deserialization FAILED");
 
 		world2->setName("InternalWorld");
 		world2->connect();
+
+		world2->updComponent("Bar").getConnector<Foo>("childFoo");
+
 		world2->buildUpSystem(system2);
 		s = system2.realizeTopology();
 	
 		world2->print("clone_" + modelFile);
 
+		// Test copy assignment
+		TheWorld world3;
+		world3= *world2;
+		world3.getComponent("Bar").getConnector<Foo>("parentFoo");
+		ASSERT(world3 == (*world2), __FILE__, __LINE__, 
+			"Model copy assignment FAILED");
+
 		// Add second world as the internal model of the first
 		theWorld.add(world2);
 		theWorld.connect();
+
+		Bar& bar2 = *new Bar();
+		bar.setName("bar2");
+		CompoundFoo& compFoo = *new CompoundFoo();
+		compFoo.setName("BigFoo");
+
+		compFoo.set_Foo1(foo);
+		compFoo.set_Foo2(foo2);
+		compFoo.finalizeChanges();
+	
+		world3.add(&compFoo);
+		world3.add(&bar2);
+
+		//Configure the connector to look for its dependency by this name
+		//Will get resolved and connected automatically at Component connect
+		bar2.updConnector<Foo>("parentFoo").set_connected_to_name("BigFoo");
+		bar2.updConnector<Foo>("childFoo").set_connected_to_name("Foo");
+
+		world3.connect();
+		world3.print("Compound_" + modelFile);
 
 		MultibodySystem system3;
 		theWorld.buildUpSystem(system3);

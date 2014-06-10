@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
@@ -41,7 +40,7 @@ class WrapObjectSet;
  * frame with inertial properties specified by its mass, center-of-mass located
  * in the body frame and the moment of inertia tensor about the center-of-mass.  
  *
- * Ajay Seth
+ * @author Ajay Seth
  */
 class OSIMSIMULATION_API Body : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(Body, ModelComponent);
@@ -128,10 +127,22 @@ public:
 
 protected:
     // Model component interface.
-	void connectToModel(Model& aModel) OVERRIDE_11;
+	void finalizeFromProperties() OVERRIDE_11;
+	void connectToModel(Model& model) OVERRIDE_11;
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;	
 
+	// Underlying multibody tree building operations. Should only be called
+	// by the connecting Joint
+	Body* addSlave();
+
 private:
+
+	/** Return the equivalent (internal) SimTK::Rigid::Body for this body.
+	    Not valid until after addToSystem on Body has be called.*/
+	const SimTK::Body::Rigid& getInternalRigidBody() const {
+		return _internalRigidBody;
+	}
+
 	/** Override of the default implementation to account for versioning. */
 	void updateFromXMLNode(SimTK::Xml::Element& aNode,
 		int versionNumber = -1) OVERRIDE_11;
@@ -147,7 +158,26 @@ private:
 		the connection to the parent body in the multibody tree. */
 	mutable SimTK::MobilizedBodyIndex _index;
 
+	SimTK::Array_<Body*> _slaves;
+
+	// Internal use for a Master body. Differs from its public MassProperties
+	// which is the "effective" mass of the Body including internal slave
+	// Bodies. This is just the Rigid::Body of an individual master/ slave body,
+	// which will differ ONLY if there are slaves of a composite (master) Body 
+	// used to break loops.
+	SimTK::Body::Rigid _internalRigidBody;
+
+	// Model is a friend because it creates the underlying mobilized body(ies)
+	// that implement a Joint and is the only component that can assign
+	// the MobilizedBodyIndex for this Body so it can communicate with its 
+	// counter-part in the underlying system
 	friend class Joint;
+	// Have to be at the Model level to build the system topology. This
+	// involves splitting bodies to satsify loop constraints. Only the Model,
+	// therefore, can tell a Body if it must add slaves to implement a valid
+	// Multibody tree.
+
+	friend class Model;
 
 //=============================================================================
 };	// END of class Body

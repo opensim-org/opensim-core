@@ -40,7 +40,7 @@ int main()
 {
 	try {
 		LoadOpenSimLibrary("osimActuators");
-		//testAssemblySatisfiesConstraints("knee_patella_ligament.osim");
+		testAssemblySatisfiesConstraints("knee_patella_ligament.osim");
 		testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");
 		testAssembleModelWithConstraints("PushUpToesOnGroundLessPreciseConstraints.osim");
 		testAssembleModelWithConstraints("PushUpToesOnGroundWithMuscles.osim");
@@ -197,13 +197,13 @@ void testAssembleModelWithConstraints(string modelFile)
 	//cout << "******************* Init System Inital State *******************" << endl;
 	for (int i = 0; i < y1.size(); i++) {
 		//cout << "Pre-simulation:" << i << " y1 = " << y1[i] << ", y3 = " << y3[i] << endl;
-		ASSERT_EQUAL(y1[i], y3[i], 1e-4, __FILE__, __LINE__, "Initial state changed after 2nd call to initSystem");
+		ASSERT_EQUAL(y1[i], y3[i], 2e-4, __FILE__, __LINE__, "Initial state changed after 2nd call to initSystem");
 	}
 
 	cout << "******************* Init System Final State *******************" << endl;
 	for (int i = 0; i < y1.size(); i++) {
 		cout << "Post-simulation:"<<i<< " y2 = " << y2[i] << ", y4 = " << y4[i] << endl;
-		ASSERT_EQUAL(y2[i], y4[i], 1e-4, __FILE__, __LINE__, "State differed after a simulation from same init state.");
+		ASSERT_EQUAL(y2[i], y4[i], 2e-4, __FILE__, __LINE__, "State differed after a simulation from same init state.");
     }
     ASSERT(max(abs(y1-y2)) > 1e-3, __FILE__, __LINE__, "Check that state changed after simulation FAILED");
 }

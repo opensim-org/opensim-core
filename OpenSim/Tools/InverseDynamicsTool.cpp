@@ -251,6 +251,8 @@ bool InverseDynamicsTool::run()
 
 		cout<<"Running tool " << getName() <<".\n"<<endl;
 
+		_model->setup();
+
 		// Do the maneuver to change then restore working directory 
 		// so that the parsing code behaves properly if called from a different directory.
 		string saveWorkingDirectory = IO::getCwd();
@@ -284,7 +286,9 @@ bool InverseDynamicsTool::run()
 				}
 				else{
 					coordFunctions->insert(i,new Constant(coords[i].getDefaultValue()));
-					std::cout << "InverseDynamicsTool: coordinate file does not contain coordinate " << coords[i].getName() << " assuming default value" << std::endl;
+					std::cout << "InverseDynamicsTool: coordinate file does not contain coordinate "
+						<< coords[i].getName() << " assuming default value" 
+						<< std::endl;
 				}
 			}
 			if(coordFunctions->getSize() > nq){
@@ -328,8 +332,8 @@ bool InverseDynamicsTool::run()
 		// Preallocate results
 		Array_<Vector> genForceTraj(nt, Vector(nq, 0.0));
 
-		// solve for the trajectory of generlized forces that correspond to the coordinate
-		// trajectories provided
+		// solve for the trajectory of generalized forces that correspond to the 
+		// coordinate trajectories provided
 		ivdSolver.solve(s, *coordFunctions, times, genForceTraj);
 
 

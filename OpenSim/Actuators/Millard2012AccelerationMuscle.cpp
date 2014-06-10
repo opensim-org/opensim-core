@@ -213,12 +213,10 @@ void Millard2012AccelerationMuscle::buildMuscle()
 
 }
 
-void Millard2012AccelerationMuscle::ensureMuscleUpToDate()
+void Millard2012AccelerationMuscle::finalizeFromProperties()
 {
-    if(isObjectUpToDateWithProperties() == false)
-    {
-        buildMuscle(); 
-    }
+	buildMuscle();
+	Super::finalizeFromProperties();
 }
 
 
@@ -230,7 +228,7 @@ Millard2012AccelerationMuscle::Millard2012AccelerationMuscle()
 {    
     setNull();
     constructProperties();
-    ensureMuscleUpToDate();
+	finalizeFromProperties();
 }
 
 Millard2012AccelerationMuscle::
@@ -247,7 +245,7 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
     setTendonSlackLength(aTendonSlackLength);
     setPennationAngleAtOptimalFiberLength(aPennationAngle);
 
-    ensureMuscleUpToDate();
+	finalizeFromProperties();
 }
 
 //=============================================================================
@@ -256,7 +254,7 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
  void Millard2012AccelerationMuscle::connectToModel(Model& model)
  {
     Super::connectToModel(model);
-    ensureMuscleUpToDate();
+	finalizeFromProperties();
  }
 
  void Millard2012AccelerationMuscle::
@@ -290,8 +288,6 @@ void Millard2012AccelerationMuscle::
     setDefaultActivation(getStateVariable(s,STATE_ACTIVATION_NAME));
     setDefaultFiberLength(getStateVariable(s,STATE_FIBER_LENGTH_NAME));
     setDefaultFiberVelocity(getStateVariable(s,STATE_FIBER_VELOCITY_NAME));
-
-    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::
@@ -362,20 +358,17 @@ double Millard2012AccelerationMuscle::
 void Millard2012AccelerationMuscle::setDefaultActivation(double activation)
 {
     set_default_activation(activation);
-    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::setDefaultFiberLength(double fiberLength)
 {
     set_default_fiber_length(fiberLength);
-    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::
     setDefaultFiberVelocity(double fiberVelocity)
 {
     set_default_fiber_velocity(fiberVelocity);
-    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::
@@ -513,34 +506,29 @@ void Millard2012AccelerationMuscle::setActivationModel(
         MuscleFirstOrderActivationDynamicModel& aActivationMdl)
 {
     set_MuscleFirstOrderActivationDynamicModel(aActivationMdl);
-    ensureMuscleUpToDate();
 }
 void Millard2012AccelerationMuscle::setActiveForceLengthCurve(
         ActiveForceLengthCurve& aActiveForceLengthCurve)
 {
     set_ActiveForceLengthCurve(aActiveForceLengthCurve);
-    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::setForceVelocityCurve(
         ForceVelocityCurve& aForceVelocityCurve)
 {   
     set_ForceVelocityCurve(aForceVelocityCurve);
-    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::setFiberForceLengthCurve(
         FiberForceLengthCurve& aFiberForceLengthCurve)
 {
     set_FiberForceLengthCurve(aFiberForceLengthCurve);
-    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::setTendonForceLengthCurve(
         TendonForceLengthCurve& aTendonForceLengthCurve)
 {
     set_TendonForceLengthCurve(aTendonForceLengthCurve);
-    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::setFiberCompressiveForceLengthCurve(
@@ -548,7 +536,6 @@ void Millard2012AccelerationMuscle::setFiberCompressiveForceLengthCurve(
 {
     set_FiberCompressiveForceLengthCurve(
         aFiberCompressiveForceLengthCurve);
-    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::setFiberCompressiveForceCosPennationCurve(
@@ -557,7 +544,6 @@ void Millard2012AccelerationMuscle::setFiberCompressiveForceCosPennationCurve(
 {
     set_FiberCompressiveForceCosPennationCurve(
         aFiberCompressiveForceCosPennationCurve);
-    ensureMuscleUpToDate();
 }
 
 void Millard2012AccelerationMuscle::setMass(double mass) 
@@ -567,7 +553,6 @@ void Millard2012AccelerationMuscle::setMass(double mass)
         "%s: The mass is set too small!",getName().c_str());
 
     set_mass(mass);
-    ensureMuscleUpToDate();
 }
 
 

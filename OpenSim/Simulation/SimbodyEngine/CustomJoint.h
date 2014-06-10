@@ -101,10 +101,27 @@ private:
 	void constructProperties();
     void constructCoordinates();
 
+	template <typename T>
+	T createMobilizedBody(SimTK::MobilizedBody& inboard,
+		const SimTK::Transform& inboardTransform,
+		const SimTK::Body& outboard,
+		const SimTK::Transform& outboardTransform,
+		int& startingCoorinateIndex) const {};
+
 //==============================================================================
 };	// END of class CustomJoint
 //==============================================================================
 //==============================================================================
+template <> 
+SimTK::MobilizedBody::FunctionBased
+	CustomJoint::createMobilizedBody<SimTK::MobilizedBody::FunctionBased>(
+							SimTK::MobilizedBody& inboard,
+							const SimTK::Transform& inboardTransform,
+							const SimTK::Body& outboard,
+							const SimTK::Transform& outboardTransform,
+							int& startingCoorinateIndex) const;
+
+
 
 } // end of namespace OpenSim
 

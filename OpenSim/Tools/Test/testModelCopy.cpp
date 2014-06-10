@@ -21,17 +21,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <iostream>
-#include <stdint.h>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Exception.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include "SimTKsimbody.h"
-#include "SimTKmath.h"
-
 
 using namespace OpenSim;
 using namespace std;
@@ -43,7 +35,6 @@ int main()
 	try {
 		LoadOpenSimLibrary("osimActuators");
 		testCopyModel("arm26.osim");
-		//testCopyModel("snowboard.osim");
 		testCopyModel("Neck3dof_point_constraint.osim");
 	}
 	catch (const Exception& e) {
@@ -59,7 +50,9 @@ void testCopyModel(string fileName)
 	size_t mem1 = getCurrentRSS( );
 	cout << "Memory use BEFORE load, copy and init: " << mem1 << "Bytes." << endl;
 
-	Model* model = new Model(fileName);
+	Model* model = new Model(fileName, false);
+	model->print("clone_" + fileName);
+
 	SimTK::State defaultState = model->initSystem();
 	Model* modelCopy = new Model(*model);
 	// At this point properties should all match. assert that

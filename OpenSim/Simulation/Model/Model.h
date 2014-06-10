@@ -131,10 +131,10 @@ public:
 	@param filename     Name of a file containing an OpenSim model in XML
                         format; suffix is typically ".osim". 
                         
-    @param connectToModel  whether to call connectToModel to create a valid OpenSim Model or not on exit, 
-                        defaults to true. If set to false only deserialization is performed.
+    @param finalize  whether to finalizeFromProperties to create a valid OpenSim Model or not on exit, 
+                     defaults to true. If set to false only deserialization is performed.
     **/
-	explicit Model(const std::string& filename, bool connectToModel=true) SWIG_DECLARE_EXCEPTION;
+	explicit Model(const std::string& filename, bool finalize=true) SWIG_DECLARE_EXCEPTION;
 
 	/** Copy constructor copies model components but does not copy any run-time 
     objects.
@@ -508,10 +508,16 @@ public:
 	int getNumCoordinates() const;
 
 	/**
-	 * Get the total number of speeds in the model.
-	 * @return Number of speeds.
-	 */
+	* Get the total number of speeds in the model.
+	* @return Number of speeds.
+	*/
 	int getNumSpeeds() const;
+
+	/**
+	* Get the total number of constraints in the model.
+	* @return Number of constraints.
+	*/
+	int getNumConstraints() const;
 
 	/**
 	 * Get the total number of probes in the model.
@@ -821,7 +827,9 @@ public:
     model elements that are not ModelComponents) as subcomponents whose 
     corresponding methods need to be called. **/
     /**@{**/
-	//void connectToModel(Model& model)  OVERRIDE_11 {};
+	void finalizeFromProperties() OVERRIDE_11;
+
+	void connectToModel(Model& model)  OVERRIDE_11;
 	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11; 
     void initStateFromProperties(SimTK::State& state) const OVERRIDE_11;
 
@@ -954,6 +962,8 @@ private:
     // to an existing Body and should not be destructed.
 	Body*           _groundBody;
 
+	SimTK::MultibodyGraphMaker _multibodyTree;
+
     // This object just provides an alternate interface to the computational
     // SimTK::MultibodySystem. It is constructed just knowing the Model and
     // then forwards requests through the Model at runtime.
@@ -1000,13 +1010,8 @@ private:
 	// Default values pooled from Actuators upon system creation.
 	mutable SimTK::Vector _defaultControls;
 
-	// Members for fast access of state variables in the underlying 
-    // SimTK::System.
-	OpenSim::Array<std::string>	        _stateVariableNames;
-	OpenSim::Array<SimTK::SystemYIndex>	_stateVariableSystemIndices;
 
     //                          VISUALIZATION
-
     // Anyone generating display geometry from this Model should consult this
     // object to pick up user preferences. Its contents may be modified by the
     // current user interface (GUI or ModelVisualizer) or programmatically.

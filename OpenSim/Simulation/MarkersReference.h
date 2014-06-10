@@ -108,7 +108,7 @@ private:
 	// Implementation details
 
 	// Use a specialized data structure for holding the marker data
-	MarkerData *_markerData;
+	SimTK::ReferencePtr<MarkerData> _markerData;
 	// marker names inside the marker data
 	SimTK::Array_<std::string> _markerNames;
 	// corresponding list of weights guaranteed to be in the same order as names above
@@ -130,7 +130,7 @@ public:
 
 	MarkersReference& operator=(const MarkersReference &aRef) {Reference_<SimTK::Vec3>::operator=(aRef); copyData(aRef); return(*this); };
     
-    virtual ~MarkersReference() {}
+	virtual ~MarkersReference() {}
 
 	void copyData(const MarkersReference &aRef) {
 		_markersFile = aRef._markersFile;

@@ -99,11 +99,7 @@ public:
 		setName(name);
 	}
 
-	// copy assignment
-	AbstractConnector& operator=(const AbstractConnector& source) {
-		if (&source != this)  Super::operator=(source);
-		return *this;
-	}
+	// default copy assignment
 
 	/** get the system Stage when the connection should be made */
 	SimTK::Stage getConnectAtStage() const {

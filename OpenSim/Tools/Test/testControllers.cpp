@@ -222,8 +222,8 @@ void testPrescribedControllerOnBlock(bool disabled)
 	osimModel.print("blockWithPrescribedController.osim");
 	Model modelfileFromFile("blockWithPrescribedController.osim");
 
-	// Verify that serialization and then deserialization of the disable flag is correct
-	ASSERT(modelfileFromFile.getControllerSet().get("testPrescribedController").isDisabled() == disabled);
+	// Verify that serialization and then deserialization is correct
+	ASSERT(osimModel == modelfileFromFile);
 
 	// Initialize the system and get the state representing the state system
 	SimTK::State& si = osimModel.initSystem();

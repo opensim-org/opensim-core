@@ -294,9 +294,9 @@ void JointReaction::setupReactionList()
 				validJointFlag++;
 				listNotEmptyFlag++;
 				currentJoint.jointName = joint.getName();
-				const std::string& childName = joint.getChildBody().getName();
+				const std::string& childName = joint.getChildBodyName();
 				int childIndex = bodySet.getIndex(childName, 0);
-				const std::string& parentName = joint.getParentBody().getName();
+				const std::string& parentName = joint.getParentBodyName();
 				int parentIndex = bodySet.getIndex(parentName, 0);
 
 				/* set index that correponds to the appropriate index of the 
@@ -528,8 +528,7 @@ setModel(Model& aModel)
 	setupReactionList();
 	constructDescription();
 	constructColumnLabels();
-	//setupStorage();
-	_dydt.setSize(_model->getNumStateVariables());
+
 	int numJoints = _reactionList.getSize();
 	// set size of working array of loads.  Each load has 3 components each
 	// for force, moment, and point of application

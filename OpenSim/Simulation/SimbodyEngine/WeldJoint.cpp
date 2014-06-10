@@ -83,10 +83,34 @@ WeldJoint::WeldJoint(const std::string &name, const OpenSim::Body &parent,
 //_____________________________________________________________________________
 void WeldJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Weld>(system,
-		                                     getParentTransform(),
-		                                     getChildTransform());
+	createMobilizedBody<SimTK::MobilizedBody::Weld>(system,
+		                                           getParentTransform(),
+		                                           getChildTransform());
+
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);
 }
 
+/* Specialize Template method for the Weld mobilizer creation*/
+template <> SimTK::MobilizedBody::Weld Joint::createMobilizedBody<SimTK::MobilizedBody::Weld>(
+    SimTK::MobilizedBody& inboard,
+	const SimTK::Transform& inboardTransform,
+	const SimTK::Body& outboard,
+	const SimTK::Transform& outboardTransform,
+	int& startingCoorinateIndex) const
+{
+	// CREATE MOBILIZED BODY
+	SimTK::MobilizedBody::Direction dir =
+		SimTK::MobilizedBody::Direction(get_reverse());
+
+	SimTK::MobilizedBody::Weld simtkBody(inboard, inboardTransform, outboard, outboardTransform);
+
+	const OpenSim::Body* mobilized = get_reverse() ? &getParentBody() : &getChildBody();
+
+	startingCoorinateIndex = assignSystemIndicesToBodyAndCoordinates(simtkBody,
+		mobilized,
+		0,
+		startingCoorinateIndex);
+
+	return simtkBody;
+}

@@ -31,7 +31,10 @@
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Control/Controller.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+#include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlLinearNode.h>
@@ -113,14 +116,13 @@ Model::Model() :
 	setNull();
 	setupProperties();
 	constructProperties();
-    _analysisSet.setMemoryOwner(false);
 	createGroundBodyIfNecessary();
 }
 //_____________________________________________________________________________
 /**
  * Constructor from an XML file
  */
-Model::Model(const string &aFileName, const bool connectModel) :
+Model::Model(const string &aFileName, const bool finalize) :
 	ModelComponent(aFileName, false),
 	_fileName("Unassigned"),
 	_creditsStr(_creditsStrProp.getValueStr()),
@@ -154,10 +156,12 @@ Model::Model(const string &aFileName, const bool connectModel) :
 	setupProperties();
 	constructProperties();
 	updateFromXMLDocument();
-	_fileName = aFileName;
-    _analysisSet.setMemoryOwner(false);
+	
+	if (finalize) {
+		finalizeFromProperties();
+	}
 
-	if (connectModel) setup();
+	_fileName = aFileName;
 	cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
 }
 //_____________________________________________________________________________
@@ -201,7 +205,6 @@ Model::Model(const Model &aModel) :
 	setNull();
 	setupProperties();
 	copyData(aModel);
-	//setup();
 }
 //_____________________________________________________________________________
 /**
@@ -354,6 +357,8 @@ void Model::setNull()
 	_assemblySolver = NULL;
 
 	_validationLog="";
+
+	_analysisSet.setMemoryOwner(false);
 }
 
 void Model::constructProperties()
@@ -427,20 +432,8 @@ void Model::setupProperties()
 // Perform some final checks on the Model, wire up all its components, and then
 // build a computational System for it.
 void Model::buildSystem() {
-	// clear convenience lists which will be rebuilt
-	_stateVariableNames.setSize(0);
-	_stateVariableSystemIndices.setSize(0);
-
 	// Finish connecting up the Model.
 	setup();
-
-	// Some validation
-	validateMassProperties();
-	if (getValidationLog().size()>0)
-		cout << "The following Errors/Warnings were encountered while building the model. " <<
-		getValidationLog() << endl;
-
-    updControllerSet().setActuators(updActuators());
 
     // Create the computational System representing this Model.
 	createMultibodySystem();
@@ -449,7 +442,6 @@ void Model::buildSystem() {
     // necessary elements to the System. Doesn't initialize geometry yet.
     if (getUseVisualizer())
         _modelViz = new ModelVisualizer(*this);
-
 }
 
 
@@ -620,7 +612,7 @@ bool Model::isValidSystem() const
  */
 void Model::createMultibodySystem()
 {
-    if (_system != NULL)
+    if(_system) // if system was built previously start fresh
     {
         // Delete the old system.
         delete _modelViz;
@@ -642,8 +634,281 @@ void Model::createMultibodySystem()
 	SimTK::UnitVec3 direction = magnitude==0 ? SimTK::UnitVec3(0,-1,0) : SimTK::UnitVec3(_gravity/magnitude);
 	_gravityForce = new SimTK::Force::Gravity(*_forceSubsystem, *_matter, direction, magnitude);
 
+	/*
+	cout << "**************** Graph of the Multibody Tree ****************" << endl;
+	_multibodyTree.dumpGraph(cout);
+	cout << "****************** End of the Multibody Tree ****************" << endl;
+	*/
 	addToSystem(*_system);
 }
+
+
+void Model::finalizeFromProperties()
+{
+	// building the system for the first time, need to tell
+	// multibodyTree builder what joints are available
+	_multibodyTree.clearGraph();
+	_multibodyTree.setWeldJointTypeName("WeldJoint");
+	_multibodyTree.setFreeJointTypeName("FreeJoint");
+
+	ArrayPtrs<OpenSim::Joint> availablJointTypes;
+	Object::getRegisteredObjectsOfGivenType<OpenSim::Joint>(availablJointTypes);
+	for (int i = 0; i< availablJointTypes.getSize(); i++){
+		OpenSim::Joint* jt = availablJointTypes[i];
+		if ((jt->getConcreteClassName() == "WeldJoint") ||
+			(jt->getConcreteClassName() == "FreeJoint")) {
+			continue;
+		}
+		else{
+			_multibodyTree.addJointType(
+				availablJointTypes[i]->getConcreteClassName(),
+				availablJointTypes[i]->numCoordinates(),
+				(availablJointTypes[i]->getConcreteClassName() == "BallJoint"));
+		}
+	}
+
+	//Adds ground
+	createGroundBodyIfNecessary();
+
+	// clear all subcomponent designations since they will be specified here.
+	// Note addBody and addJoint call addComponent.
+	clearComponents();
+
+	// Update model components, not that Joints and Coordinates
+	// belong to Bodies, alough model lists are assembled for convenience
+
+	BodySet &bs = updBodySet();
+	int nb = bs.getSize();
+	for (int i = 0; i<nb; ++i){
+		addComponent(&bs[i]);
+		_multibodyTree.addBody(bs[i].getName(), 
+			                   bs[i].getMass(), 
+							   false, 
+							   &bs[i]);
+		
+	}
+
+	// Populate lists of model joints and coordinates according to the Bodies
+	// setup here who own the Joints which in turn own the model's Coordinates
+	// this list of Coordinates is now available for setting up constraints and forces
+	JointSet &js = updJointSet();
+	int nj = js.getSize();
+	for (int i = 0; i<nj; ++i){
+		std::string name = js[i].getName();
+		IO::TrimWhitespace(name);
+
+		if ((name.empty()) || (name == "")){
+			name = js[i].getParentBodyName() + "_to_" + js[i].getChildBodyName();
+		}
+
+		addComponent(&js[i]);
+		// Use joints to define the underlying multibody tree
+		_multibodyTree.addJoint(name,
+			js[i].getConcreteClassName(),
+			js[i].getParentBodyName(),
+			js[i].getChildBodyName(),
+			false,
+			&js[i]);
+	}
+	updCoordinateSet().populate(*this);
+
+	ConstraintSet &cs = updConstraintSet();
+	int nc = cs.getSize();
+	for (int i = 0; i<nc; ++i){
+		addComponent(&cs[i]);
+	}
+
+	ForceSet &fs = updForceSet();
+	int nf = fs.getSize();
+	for (int i = 0; i<nf; ++i){
+		addComponent(&fs[i]);
+	}
+	// Update internal subsets of the ForceSet
+	fs.updActuators();
+	fs.updMuscles();
+
+	ControllerSet &clrs = updControllerSet();
+	int nclr = clrs.getSize();
+	for (int i = 0; i<nclr; ++i){
+		addComponent(&clrs[i]);
+	}
+
+	nc = _componentSet.getSize();
+	for (int i = 0; i<nc; ++i){
+		addComponent(&_componentSet[i]);
+	}
+
+	ProbeSet &ps = updProbeSet();
+	int np = ps.getSize();
+	for (int i = 0; i<np; ++i){
+		addComponent(&ps[i]);
+	}
+
+
+	// Some validation - TODO Remove and put in Body
+	validateMassProperties();
+	if (getValidationLog().size() > 0) {
+		cout << "The following Errors/Warnings were encountered while building the model. " <<
+			getValidationLog() << endl;
+	}
+
+	Super::finalizeFromProperties();
+}
+
+void Model::connectToModel(Model &model)
+{
+	Super::connectToModel(model);
+
+	if (&model != this){
+		cout << "Model::" << getName() <<
+			" is being connected to model " <<
+			model.getName() << "." << endl;
+	}
+
+	// Model is connected so build the Multibody tree to represent it
+	_multibodyTree.generateGraph();
+	_multibodyTree.dumpGraph(cout);
+	cout << endl;
+
+	SimTK::Array_<Component *>::iterator it = nullptr;
+	JointSet& joints = upd_JointSet();
+	BodySet& bodies = upd_BodySet();
+	int nb = bodies.getSize();
+
+	bool isMemoryOwner = joints.getMemoryOwner();
+	//Temporarily set owner ship to false so we 
+	//can swap to rearrange order of the joints
+	joints.setMemoryOwner(false);
+
+	// Run through all the mobilizers in the multibody tree, adding
+	// a joint in the correct sequence. Also add massless bodies, 
+	// loop closure constraints, etc... to form the valid tree.
+	for (int m = 0; m < _multibodyTree.getNumMobilizers(); ++m) {
+		// Get a mobilizer from the tree, then extract its corresponding
+		// joint and bodies. Note that these should have equivalents in OpenSim.
+		const MultibodyGraphMaker::Mobilizer& mob 
+			= _multibodyTree.getMobilizer(m);
+
+		if (mob.isSlaveMobilizer()){
+			// add the slave body and joint
+			Body* outbMaster = static_cast<Body*>(mob.getOutboardMasterBodyRef());
+			Body* inb = static_cast<Body*>(mob.getInboardBodyRef());
+			Joint* useJoint = static_cast<Joint*>(mob.getJointRef());
+			Body* outb = static_cast<Body*>(mob.getOutboardBodyRef());
+
+			if (!outb) {
+				outb = outbMaster->addSlave();
+				useJoint->setChildBody(*outb);
+				SimTK::Transform o(SimTK::Vec3(0));
+				//Now add the constraints that weld the slave to the master at the 
+				// body origin
+				WeldConstraint* weld = new WeldConstraint(outb->getName()+"_weld",
+														  *outbMaster, o, *outb, o);
+
+				// Add to list of subcomponents but not serialize ConstraintSet
+				updModel().addComponent(weld);
+			}
+		}
+
+		if (mob.isAddedBaseMobilizer()){
+			// create and add the base joint to enable these dofs
+			Body* child = static_cast<Body*>(mob.getOutboardBodyRef());
+			cout << "Body '" << child->getName() << "' not connected by a Joint "
+				<< "a FreeJoint will be added to connect it to ground." << endl;
+			Body* ground = static_cast<Body*>(mob.getInboardBodyRef());
+
+			// Verify that this is an orphan and it was assigned to ground
+			assert(ground == &getGroundBody());
+
+			std::string jname = "free_" + child->getName();
+			SimTK::Vec3 zeroVec(0.0);
+			Joint* free = new FreeJoint(jname,
+				               *ground, zeroVec, zeroVec, *child, zeroVec, zeroVec);
+			addJoint(free);
+		}
+		else{
+			Component* compToMoveOut = _components.at(m+nb);
+			// reorder the joint components in the order of the multibody tree
+			Joint* jointToSwap = static_cast<Joint*>(mob.getJointRef());
+			it = std::find(_components.begin(), _components.end(), jointToSwap);
+			if (it != _components.end()){
+				// Only if the joint is not in the correct sequence the swap
+				if (compToMoveOut != jointToSwap){
+					_components[m + nb] = jointToSwap;
+					*it = compToMoveOut;
+				}
+			}
+			//(static_cast<Component*>(jointToSwap));
+			int jx = joints.getIndex(jointToSwap, m);
+			//if in the set but not already in the right order
+			if ((jx >= 0) && (jx != m)){
+				// perform a move to put the joint in correct order
+				jointToSwap = &joints.get(jx);
+				joints.set(jx, &joints.get(m));
+				joints.set(m, jointToSwap);
+			}
+		}
+		// Update the directionality of the joint to tree's preferential direction
+		joints[m].upd_reverse() = mob.isReversedFromJoint();
+	
+	}
+	joints.setMemoryOwner(isMemoryOwner);
+
+
+	// Add the loop joints if any.
+	for (int lcx = 0; lcx < _multibodyTree.getNumLoopConstraints(); ++lcx) {
+		const MultibodyGraphMaker::LoopConstraint& loop =
+			_multibodyTree.getLoopConstraint(lcx);
+
+		Joint& joint = *(Joint*)loop.getJointRef();
+		Body&  parent = *(Body*)loop.getParentBodyRef();
+		Body&  child = *(Body*)loop.getChildBodyRef();
+
+		if (joint.getConcreteClassName() == "WeldJoint") {
+			WeldConstraint* weld = new WeldConstraint( joint.getName()+"_Loop",
+				parent, joint.getParentTransform(),
+				child, joint.getChildTransform());
+			addConstraint(weld);
+
+		}
+		else if (joint.getConcreteClassName() == "BallJoint") {
+			PointConstraint* point = new PointConstraint(
+				parent, joint.getParentTransform().p(),
+				child,  joint.getChildTransform().p()   );
+			point->setName(joint.getName() + "_Loop");
+			addConstraint(point);
+		}
+		else if (joint.getConcreteClassName() == "FreeJoint") {
+			// A "free" loop constraint is no constraint at all so we can
+			// just ignore it. It might be more convenient if there were
+			// a 0-constraint Constraint::Free, just as there is a 0-mobility
+			// MobilizedBody::Weld.
+		}
+		else
+			throw std::runtime_error(
+			"Unrecognized loop constraint type '" + joint.getConcreteClassName() + "'.");
+	}
+
+
+	// Reorder coordinates in order of the underlying mobilities
+	updCoordinateSet().populate(*this);
+
+	updMarkerSet().connectMarkersToModel(*this);
+	updContactGeometrySet().invokeConnectToModel(*this);
+
+	updControllerSet().setActuators(updActuators());
+
+	// TODO: Get rid of the SimbodyEngine
+	updSimbodyEngine().connectSimbodyEngineToModel(*this);
+
+	//Analyses are not Components so add them after legit 
+	//Components have been wired-up correctly.
+	updAnalysisSet().setModel(*this);
+
+	// Connections are properties so we need to mark these changes as final.
+	setObjectIsUpToDateWithProperties();
+}
+
 
 // ModelComponent interface enables this model to be treated as a subcomponent of another model by 
 // creating components in its system.
@@ -686,11 +951,11 @@ void Model::addModelComponent(ModelComponent* aComponent)
 /*
  * Add a body to the Model.
  */
-void Model::addBody(OpenSim::Body *aBody)
+void Model::addBody(OpenSim::Body* body)
 {
-	if(aBody){
-		updBodySet().adoptAndAppend(aBody);
-		addComponent(aBody);
+	if (body){
+		updBodySet().adoptAndAppend(body);
+		addComponent(body);
 	}
 }
 
@@ -698,7 +963,7 @@ void Model::addBody(OpenSim::Body *aBody)
 /*
 * Add a joint to the Model.
 */
-void Model::addJoint(Joint *joint)
+void Model::addJoint(Joint* joint)
 {
 	if (joint){
 		updJointSet().adoptAndAppend(joint);
@@ -753,6 +1018,7 @@ void Model::addProbe(OpenSim::Probe *aProbe)
 void Model::removeProbe(OpenSim::Probe *aProbe)
 {
 	disconnect();
+	clearComponents();
 	updProbeSet().remove(aProbe);
 }
 
@@ -788,80 +1054,13 @@ void Model::addController(Controller *aController)
  */
 void Model::setup()
 {
-	_model = this;
-	// clear existing interconnections, subcomponent designation and
-	// all state allocations
-	disconnect();
-
-	createGroundBodyIfNecessary();
-
-	// Update model components, not that Joints and Coordinates
-	// belong to Bodies, alough model lists are assembled for convenience
-	//updBodySet().invokeConnectToModel(*this);
-	BodySet &bs = updBodySet();
-	int nb = bs.getSize();
-	for(int i=0; i<nb; ++i){
-		addComponent(&bs[i]);
-	}
-
-    // Populate lists of model joints and coordinates according to the Bodies
-	// setup here who own the Joints which in turn own the model's Coordinates
-	// this list of Coordinates is now available for setting up constraints and forces
-	JointSet &js = updJointSet();
-	int nj = js.getSize();
-	for (int i = 0; i<nj; ++i){
-		addComponent(&js[i]);
-	}
-    updCoordinateSet().populate(*this);
-
-    //updConstraintSet().invokeConnectToModel(*this);
-	ConstraintSet &cs = updConstraintSet();
-	int nc = cs.getSize();
-	for(int i=0; i<nc; ++i){
-		addComponent(&cs[i]);
-	}
-
-    updMarkerSet().connectMarkersToModel(*this);
-    updContactGeometrySet().invokeConnectToModel(*this);
-
-	//updForceSet().invokeConnectToModel(*this);
-	ForceSet &fs = updForceSet();
-	int nf = fs.getSize();
-	for(int i=0; i<nf; ++i){
-		addComponent(&fs[i]);
-	}
-	// Update internal subsets of the ForceSet
-	fs.updActuators();
-	fs.updMuscles();
-
-	//updControllerSet().invokeConnectToModel(*this);
-	ControllerSet &clrs = updControllerSet();
-	int nclr = clrs.getSize();
-	for(int i=0; i<nclr; ++i){
-		addComponent(&clrs[i]);
-	}
+	finalizeFromProperties();
 	
-	nc = _componentSet.getSize();
-	for (int i = 0; i<nc; ++i){
-		addComponent(&_componentSet[i]);
-	}
-
-    //updProbeSet().invokeConnectToModel(*this);
-	ProbeSet &ps = updProbeSet();
-	int np = ps.getSize();
-	for(int i=0; i<np; ++i){
-		addComponent(&ps[i]);
-	}
-
-	// TODO: Get rid of the SimbodyEngine
-	updSimbodyEngine().connectSimbodyEngineToModel(*this);
+	// clear existing interconnections and all state allocations
+	disconnect();
 
 	//now connect the Model and all its subcomponents all up
 	connect(*this);
-
-	//Analyses are not Components so add them after legit 
-	//Components have been wired-up correctly.
-	updAnalysisSet().setModel(*this);
 }
 
 /**
@@ -1028,7 +1227,7 @@ Model& Model::operator=(const Model &aModel)
 	// Class Members
 	copyData(aModel);
 
-	setup();
+	finalizeFromProperties();
 
 	return(*this);
 }
@@ -1167,6 +1366,16 @@ int Model::getNumSpeeds() const
 {
 	return _coordinateSet.getSize();
 }
+
+/**
+* Get the total number of constraints in the model.
+* @return Number of constraints.
+*/
+int Model::getNumConstraints() const
+{
+	return _constraintSet.getSize();
+}
+
 
 /**
  * Get the total number of probes in the model.
@@ -1520,7 +1729,7 @@ void Model::createAssemblySolver(const SimTK::State& s)
     // of coordsToTrack
 	_assemblySolver = new AssemblySolver(*this, *coordsToTrack);
 	_assemblySolver->setConstraintWeight(SimTK::Infinity);
-    _assemblySolver->setAccuracy(1e-10);
+    _assemblySolver->setAccuracy(1e-9);
 }
 
 void Model::updateAssemblyConditions(SimTK::State& s)
@@ -2005,9 +2214,6 @@ const Object& Model::getObjectByTypeAndName(const std::string& typeString, const
  */
 void Model::computeStateVariableDerivatives(const SimTK::State &s) const
 {
-	int ny = _stateVariableSystemIndices.getSize();
-	Vector derivatives(ny);
-
 	try {
 		getMultibodySystem().realize(s, Stage::Acceleration);
 	}

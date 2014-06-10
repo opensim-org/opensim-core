@@ -215,43 +215,70 @@ void CustomJoint::constructCoordinates()
 //_____________________________________________________________________________
 void CustomJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
+	SimTK::MobilizedBody inb;
+	SimTK::Body outb;
+	const SimTK::Transform* inbX = &getParentTransform();
+	const SimTK::Transform* outbX = &getChildTransform();
+	const OpenSim::Body* mobilized = &getChildBody();
+	// if the joint is reversed then flip the underlying tree representation
+	// of inboard and outboard bodies, although the joint direction will be 
+	// preserved, the inboard must exist first.
+	if (get_reverse()){
+		inb = system.updMatterSubsystem().updMobilizedBody(
+			getChildBody().getIndex());
+		inbX = &getChildTransform();
+
+		outb = getParentInternalRigidBody();
+		outbX = &getParentTransform();
+
+		mobilized = &getParentBody();
+	}
+	else{
+		inb = system.updMatterSubsystem().updMobilizedBody(
+			getParentBody().getIndex());
+		outb = getChildInternalRigidBody();
+	}
+
 	const CoordinateSet& coords = get_CoordinateSet();
 	// Some initializations
 	int numMobilities = coords.getSize();  // Note- should check that all coordinates are used.
-	std::vector<std::vector<int> > coordinateIndices = 
-        getSpatialTransform().getCoordinateIndices();
-	std::vector<const SimTK::Function*> functions = 
-        getSpatialTransform().getFunctions();
+	std::vector<std::vector<int> > coordinateIndices =
+		getSpatialTransform().getCoordinateIndices();
+	std::vector<const SimTK::Function*> functions =
+		getSpatialTransform().getFunctions();
 	std::vector<Vec3> axes = getSpatialTransform().getAxes();
 
-	SimTK_ASSERT1(numMobilities > 0, 
+	SimTK_ASSERT1(numMobilities > 0,
 		"%s must have 1 or more mobilities (dofs).",
 		getConcreteClassName());
 	SimTK_ASSERT1(numMobilities <= 6,
 		"%s cannot exceed 6 mobilities (dofs).",
 		getConcreteClassName());
-    assert(functions.size() == 6);
+	assert(functions.size() == 6);
 	SimTK_ASSERT2(numMobilities <= 6,
 		"%s::%s must specify functions for complete spatial (6 axes) motion.",
 		getConcreteClassName(), getSpatialTransform().getConcreteClassName());
-    assert(coordinateIndices.size() == 6);
+	assert(coordinateIndices.size() == 6);
 	SimTK_ASSERT2(axes.size() == 6,
 		"%s::%s must specify 6 independent axes to span spatial motion.",
 		getConcreteClassName(), getSpatialTransform().getConcreteClassName());
 
-	// CREATE MOBILIZED BODY
-	MobilizedBody::FunctionBased
-		simtkBody(system.updMatterSubsystem().updMobilizedBody(getParentBody().getIndex()),
-		getParentTransform(), SimTK::Body::Rigid(getChildBody().getMassProperties()),
-		getChildTransform(), numMobilities, functions, coordinateIndices, axes, 
-            (getReverse() ? MobilizedBody::Reverse : MobilizedBody::Forward));
+	SimTK::MobilizedBody::Direction dir =
+		SimTK::MobilizedBody::Direction(get_reverse());
 
-	for (int iq = 0; iq < numMobilities; ++iq){
-		setCoordinateMobilizerQIndex(&coords[iq], SimTK::MobilizerQIndex(iq));
-		setCoordinateMobilizedBodyIndex(&coords[iq], simtkBody.getMobilizedBodyIndex());
-	}
+	SimTK::MobilizedBody::FunctionBased
+		simtkBody(inb, *inbX, 
+		          outb, *outbX, 
+				  numMobilities, functions,
+				  coordinateIndices, axes, dir);
 
-	setChildMobilizedBodyIndex(simtkBody.getMobilizedBodyIndex());
+	int nc = numCoordinates();
+
+	SimTK_ASSERT1(nc == numMobilities, "%s list of coordinates does not match number of mobilities.",
+		getConcreteClassName());
+
+	assignSystemIndicesToBodyAndCoordinates(simtkBody, mobilized, nc, 0);
+	
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);
 }

@@ -44,6 +44,7 @@ PathActuator::PathActuator()
 {
 	setNull();
     constructProperties();
+	finalizeFromProperties();
 }
 
 //=============================================================================
@@ -222,23 +223,17 @@ double PathActuator::computeMomentArm(const SimTK::State& s, Coordinate& aCoord)
  *
  * @param aModel OpenSim model containing this PathActuator.
  */
-void PathActuator::connectToModel(Model& aModel)
+void PathActuator::finalizeFromProperties()
 {
 	GeometryPath &path = updGeometryPath();
 
-	// Specify underlying ModelComponents prior to calling 
-    // Super::connectToModel() to automatically propagate connectToModel()
-    // calls to subcomponents. Subsequent addToSystem() will also be 
-    // automatically propagated.
-    // TODO: this is awkward; subcomponent API needs to be revisited (sherm).
+	clearComponents();
 	addComponent(&path);
 
 	// Set owner here in case errors happen later so we can put useful message about responsible party.
 	path.setOwner(this);
-	//TODO: can't call this at start of override; this is an API bug.
-	Super::connectToModel(aModel);
 
-
+	Super::finalizeFromProperties();
 }
 
 //------------------------------------------------------------------------------

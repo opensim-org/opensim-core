@@ -25,10 +25,6 @@
 
 
 // INCLUDE
-#include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec.h>
 #include "Constraint.h"
 #include "Body.h"
 
@@ -73,7 +69,8 @@ protected:
 public:
 	// CONSTRUCTION
 	PointConstraint();
-	PointConstraint(OpenSim::Body& body1, SimTK::Vec3& locationBody1, OpenSim::Body& body2, SimTK::Vec3& locationBody2);
+	PointConstraint(const OpenSim::Body& body1, const SimTK::Vec3& locationBody1,
+		            const OpenSim::Body& body2, const SimTK::Vec3& locationBody2);
 	virtual ~PointConstraint();
 
 	//SET 

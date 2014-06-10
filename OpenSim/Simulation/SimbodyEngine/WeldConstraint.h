@@ -1,5 +1,5 @@
-#ifndef __WeldConstraint_h__
-#define __WeldConstraint_h__
+#ifndef OPENSIM_WELD_CONSTRAINT_H_
+#define OPENSIM_WELD_CONSTRAINT_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  WeldConstraint.h                         *
  * -------------------------------------------------------------------------- *
@@ -25,10 +25,6 @@
 
 
 // INCLUDE
-#include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec.h>
 #include "Constraint.h"
 #include "Body.h"
 
@@ -67,13 +63,6 @@ public:
 		"Orientation of the weld axes on body2 specified in body2's reference frame."
 		"Euler XYZ body-fixed rotation angles are used to express the orientation.");
 
-protected:
-	/** First body weld constraint joins. */
-	Body *_body1;
-
-	/** Second body weld constraint joins. */
-	Body *_body2;
-
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -109,6 +98,13 @@ private:
 	void constructProperties();
 	friend class SimbodyEngine;
 
+private:
+	/** First body weld constraint joins. */
+	SimTK::ReferencePtr<Body> _body1;
+
+	/** Second body weld constraint joins. */
+	SimTK::ReferencePtr<Body> _body2;
+
 //=============================================================================
 };	// END of class WeldConstraint
 //=============================================================================
@@ -116,6 +112,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __WeldConstraint_h__
+#endif // OPENSIM_WELD_CONSTRAINT_H_
 
 

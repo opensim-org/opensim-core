@@ -67,6 +67,8 @@ WeldConstraint::WeldConstraint(const std::string &name, OpenSim::Body& body1, Si
 {
 	constructProperties();
 	setName(name);
+	_body1 = &body1;
+	_body2 = &body2;
 	set_body_1(body1.getName());
 	set_body_2(body2.getName());
 	set_location_body_1(locationInBody1);
@@ -80,6 +82,8 @@ WeldConstraint::WeldConstraint(const std::string &name, OpenSim::Body& body1, Si
 {
 	constructProperties();
 	setName(name);
+	_body1 = &body1;
+	_body2 = &body2;
 	set_body_1(body1.getName());
 	set_body_2(body2.getName());
 	set_location_body_1(transformInBody1.p());
@@ -142,6 +146,10 @@ void WeldConstraint::connectToModel(Model& aModel)
 	Super::connectToModel(aModel);
     
     string errorMessage;
+
+	if (_body1 && _body2){
+		return;
+	}
 
 	// Look up the two bodies being welded together by name in the
 	// model and might as well keep a pointer to them

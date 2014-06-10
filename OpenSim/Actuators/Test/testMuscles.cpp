@@ -127,19 +127,11 @@ int main()
         );
 
     /*
-    try { testPathActuator();
-		cout << "PathActuator Test passed" << endl; }
-    catch (const Exception& e)
-		{ e.print(cerr); failures.push_back("testPathActuator"); }
-    */
-    /*
     try { testThelen2003Muscle_Deprecated();
 		cout << "Thelen2003Muscle_Deprecated Test passed" << endl; }
     catch (const Exception& e)
 		{ e.print(cerr); failures.push_back("testThelen2003Muscle_Deprecated");}
-    */
 		
-	/*
 	try { testSchutte1993Muscle();
 		cout << "Schutte1993Muscle_Deprecated Test passed" << endl; }
     catch (const Exception& e)
@@ -149,14 +141,12 @@ int main()
 		cout << "Delp1990Muscle_Deprecated Test passed" << endl; }
     catch (const Exception& e)
 		{ e.print(cerr); failures.push_back("testDelp1990Muscle"); }
-	*/
-
-    
+*/    
     try { testRigidTendonMuscle();
 		cout << "RigidTendonMuscle Test passed" << endl; }
     catch (const Exception& e)
 		{ e.print(cerr); failures.push_back("testRigidTendonMuscle"); }
-    
+	
     try { testThelen2003Muscle();
 		cout << "Thelen2003Muscle Test passed" << endl; }
     catch (const Exception& e)
@@ -174,7 +164,6 @@ int main()
         e.print(cerr);
         failures.push_back("testMillard2012AccelerationMuscle");
     }
-
 
     printf("\n\n");
     cout <<"************************************************************"<<endl;
@@ -240,6 +229,7 @@ void simulateMuscle(
 
 	// Use a copy of the muscle model passed in to add path points later
 	PathActuator *aMuscle = aMuscModel.clone();
+	*aMuscle = aMuscModel;
 
 	// Get a reference to the model's ground body
 	Body& ground = model.getGroundBody();

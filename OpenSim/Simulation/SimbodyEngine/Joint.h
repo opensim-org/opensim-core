@@ -223,7 +223,8 @@ public:
 	void connectToModel(Model& aModel) OVERRIDE_11;
 
 protected:
-    // TODO: child overrides must invoke Joint::addToSystem()
+	void finalizeFromProperties() OVERRIDE_11;
+	// TODO: child overrides must invoke Joint::addToSystem()
     // *after* they create the MobilizedBody. This is an API bug
     // since we want to have children invoke parent first.
     void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
@@ -250,48 +251,78 @@ protected:
 	   acting at its mobilizer frame B, expressed in ground.  */
 	SimTK::SpatialVec calcEquivalentSpatialForceForMobilizedBody(const SimTK::State &s, const SimTK::MobilizedBodyIndex mbx, const SimTK::Vector &mobilityForces) const;
 
+	/** Return the equivalent (internal) SimTK::Rigid::Body for the parent/child
+	    OpenSim::Body. Not valid until after addToSystem on the Body has been called.*/
+	const SimTK::Body::Rigid& getParentInternalRigidBody() const; 
+	const SimTK::Body::Rigid& getChildInternalRigidBody() const;
+
+
 	/** Utility method for creating the underlying MobilizedBody of the desired 
 	    type of the concrete Joint. It is templatized by the MobilizedBody type. 
 		Concrete class cannot override this method but can customize addToSystem()
 		instead of using this service. It assumes that the MobilizedBody is the child
 		body and the parent body correspond to those of the Joint. For more
 		granularity as to which bodies are being interconnected internally, use
-		createMobilizedBody(MobilizedBody& parent, const SimTK::Transform& parentTransform,
-		Body& child, const SimTK::Transform& childTransform).*/
+		@see createMobilizedBody(MobilizedBody& parent, 
+		                         const SimTK::Transform& parentTransform,
+		                         Body& child, 
+								 const SimTK::Transform& childTransform).*/
 	template <typename T>
 	T createMobilizedBody(SimTK::MultibodySystem& mbs, 
 			const SimTK::Transform& parentTransform,
 			const SimTK::Transform& childTransform) const
 	{
-		SimTK::MobilizedBody& parent = 
-			mbs.updMatterSubsystem().updMobilizedBody(getParentBody().getIndex());
-		SimTK::Body child = SimTK::Body::Rigid(getChildBody().getMassProperties());
+		SimTK::MobilizedBody inb;
+		const SimTK::Body* outb = &getChildInternalRigidBody();
+		const SimTK::Transform* inbX = &parentTransform;
+		const SimTK::Transform* outbX = &childTransform;
+		// if the joint is reversed then flip the underlying tree representation
+		// of inboard and outboard bodies, although the joint direction will be 
+		// preserved, the inboard must exist first.
+		if (get_reverse()){
+			inb = mbs.updMatterSubsystem().updMobilizedBody(
+				         getChildBody().getIndex());
+			inbX = &childTransform;
 
-		int beginAtIndex = 0;
-		return createMobilizedBody<T>(parent, parentTransform, 
-			                           child, childTransform, beginAtIndex);
+			outb = &getParentInternalRigidBody();
+			outbX = &parentTransform;
+		}
+		else{
+			inb = mbs.updMatterSubsystem().updMobilizedBody(
+				         getParentBody().getIndex());
+		}	
+
+		int startingCoordinateIndex = 0;
+		T simtkBody = createMobilizedBody<T>(inb, *inbX, 
+			                                 *outb, *outbX, 
+											 startingCoordinateIndex);
+
+		return simtkBody;
 	}
+
 	/** Utility method for creating an underlying MobilizedBody of the desired
 	type. Method is templatized by the MobilizedBody. Unlike the previous method, 
-	the parent and child of the mobilized body are not assumed to be those of the
-	Joint. This enables Joint component makers to introduce intermediate MobilizedBodies
-	for the purpose of creating more complex Joints. If more than one MobilizedBody
-	is being created, it is up to the caller to supply the corresponding 
-	coordinateIndex for the puprose of automatically assigning the sysetm and allocation
-	indices necessary for the Coordinates of this Joint to access coordinate and 
-	speed values. As a convenience the startingCoorinateIndex is updated so 
-	that sequential calls will increment correctly.
-	*/
+	the inboard and outboard of the mobilized body are not assumed to be parent
+	and child of the joint. This enables Joint component makers to introduce 
+	intermediate MobilizedBodies for the purpose of creating more complex Joints.
+	If more than one MobilizedBody is being created, it is up to the caller to
+	supply the corresponding coordinateIndex for the purpose of automatically
+	assigning indices necessary for the Coordinates of this Joint to access 
+	the coordinates and speed values from the state of the MultibodySystem.
+	As a convenience the startingCoorinateIndex is updated so 
+	that sequential calls will increment correctly based on the number of mobilties
+	the concrete MobilizedBody enables. */
 	template <typename T>
-	T createMobilizedBody(SimTK::MobilizedBody& parent, 
-		                const SimTK::Transform& parentTransform,
-		                const SimTK::Body& child, 
-						const SimTK::Transform& childTransform, 
-						int& startingCoorinateIndex) const {
+	T createMobilizedBody(SimTK::MobilizedBody& inboard, 
+		                  const SimTK::Transform& inboardTransform,
+		                  const SimTK::Body& outboard, 
+						  const SimTK::Transform& outboardTransform,
+						  int& startingCoorinateIndex) const {
 		// CREATE MOBILIZED BODY
-		T simtkBody(parent,	parentTransform, child,	childTransform);
+		SimTK::MobilizedBody::Direction dir = 
+			SimTK::MobilizedBody::Direction(get_reverse());
 
-		SimTK::MobilizedBodyIndex mbix = simtkBody.getMobilizedBodyIndex();
+		T simtkBody(inboard, inboardTransform, outboard, outboardTransform, dir);
 		
 		const CoordinateSet& coords = get_CoordinateSet();
 		int nc = numCoordinates();
@@ -299,30 +330,30 @@ protected:
 		SimTK_ASSERT1(nc == coords.getSize(), "%s list of coordinates does not match number of mobilities.",
 			getConcreteClassName());
 
-		// Assumes nq = nu for the MobilizedBody
-		// TODO: generalize so that we handle nq >= nu
-		int nq = getNumMobilities<T>(simtkBody);
+		const OpenSim::Body* mobilized = get_reverse() ? &getParentBody() : &getChildBody();
 
-		int j = startingCoorinateIndex;
-		for (int iq = 0; iq < nq; ++iq){
-			if (j < nc){ // assign
-				coords[j]._mobilizerQIndex = SimTK::MobilizerQIndex(iq);
-				coords[j]._bodyIndex = simtkBody.getMobilizedBodyIndex();
-				j++;
-			}
-			else{
-				string msg = getConcreteClassName() +
-					" creating MobilizedBody with more mobilities than declared Coordinates.";
-				throw Exception(msg);
-			}
-		}
-		//update the startingCoorinateIndex
-		startingCoorinateIndex = j;
+		startingCoorinateIndex = assignSystemIndicesToBodyAndCoordinates(simtkBody,
+			mobilized,
+			getNumMobilities<T>(simtkBody),
+			startingCoorinateIndex);
 
-		setChildMobilizedBodyIndex(mbix);
-		
 		return simtkBody;
 	}
+
+	/** Utility method to assign body and coordinate indices from the underlying
+	    MultibodySystem from a newly created MobilizedBody. Assign its mobilities
+		to OpenSim::Coordinates that belong to this Joint and the body index
+		to the Body being mobilized by this Joint. If the Body is NULL then we
+		assume that we are constructing intermediate MobilizedBodies and indices
+		are assigned to corresponding coordinates, but not to a Body. If a Body
+		is provided we assume that Joint creator has provided the correct child 
+		(or parent, if reversed) body that has been mobilized. This method throws
+		an exception if the mobilized Body is neither the Joint's parent or child.*/
+	int assignSystemIndicesToBodyAndCoordinates(
+		const SimTK::MobilizedBody& mobod,
+		const OpenSim::Body* mobilized,
+		const int& numMobilities,
+		const int& startingCoordinateIndex) const;
 
 private:
 	void setNull();

@@ -172,11 +172,10 @@ void Millard2012EquilibriumMuscle::buildMuscle()
     setObjectIsUpToDateWithProperties();
 }
 
-void Millard2012EquilibriumMuscle::ensureMuscleUpToDate()
+void Millard2012EquilibriumMuscle::finalizeFromProperties()
 {
-    if(!isObjectUpToDateWithProperties()) {
-        buildMuscle();
-    }
+       buildMuscle();
+	   Super::finalizeFromProperties();
 }
 
 //==============================================================================
@@ -186,7 +185,7 @@ Millard2012EquilibriumMuscle::Millard2012EquilibriumMuscle()
 {
     setNull();
     constructProperties();
-    ensureMuscleUpToDate();
+	finalizeFromProperties();
 }
 
 Millard2012EquilibriumMuscle::Millard2012EquilibriumMuscle(
@@ -202,7 +201,7 @@ double aTendonSlackLength, double aPennationAngle)
     setTendonSlackLength(aTendonSlackLength);
     setPennationAngleAtOptimalFiberLength(aPennationAngle);
 
-    ensureMuscleUpToDate();
+	finalizeFromProperties();
 }
 
 //==============================================================================
@@ -287,7 +286,7 @@ setMuscleConfiguration(bool ignoreTendonCompliance,
     set_ignore_tendon_compliance(ignoreTendonCompliance);
     set_ignore_activation_dynamics(ignoreActivationDynamics);
     setFiberDamping(dampingCoefficient);
-    ensureMuscleUpToDate();
+	finalizeFromProperties();
 }
 
 void Millard2012EquilibriumMuscle::setFiberDamping(double dampingCoefficient)
@@ -299,13 +298,11 @@ void Millard2012EquilibriumMuscle::setFiberDamping(double dampingCoefficient)
         set_fiber_damping(dampingCoefficient);
         use_fiber_damping = true;
     }
-    ensureMuscleUpToDate();
 }
 
 void Millard2012EquilibriumMuscle::setDefaultActivation(double activation)
 {
     set_default_activation(clampActivation(activation));
-    ensureMuscleUpToDate();
 }
 
 void Millard2012EquilibriumMuscle::
@@ -325,56 +322,48 @@ setActivation(SimTK::State& s, double activation) const
 void Millard2012EquilibriumMuscle::setDefaultFiberLength(double fiberLength)
 {
     set_default_fiber_length(clampFiberLength(fiberLength));
-    ensureMuscleUpToDate();
 }
 
 void Millard2012EquilibriumMuscle::
 setActivationTimeConstant(double activationTimeConstant)
 {
     set_activation_time_constant(max(0.0, activationTimeConstant));
-    ensureMuscleUpToDate();
 }
 
 void Millard2012EquilibriumMuscle::
 setDeactivationTimeConstant(double deactivationTimeConstant)
 {
     set_deactivation_time_constant(max(0.0, deactivationTimeConstant));
-    ensureMuscleUpToDate();
 }
 
 void Millard2012EquilibriumMuscle::
 setMinimumActivation(double minimumActivation)
 {
     set_minimum_activation(min(1.0, max(0.0, minimumActivation)));
-    ensureMuscleUpToDate();
 }
 
 void Millard2012EquilibriumMuscle::setActiveForceLengthCurve(
 ActiveForceLengthCurve& aActiveForceLengthCurve)
 {
     set_ActiveForceLengthCurve(aActiveForceLengthCurve);
-    ensureMuscleUpToDate();
 }
 
 void Millard2012EquilibriumMuscle::setForceVelocityCurve(
 ForceVelocityCurve& aForceVelocityCurve)
 {
     set_ForceVelocityCurve(aForceVelocityCurve);
-    ensureMuscleUpToDate();
 }
 
 void Millard2012EquilibriumMuscle::setFiberForceLengthCurve(
 FiberForceLengthCurve& aFiberForceLengthCurve)
 {
     set_FiberForceLengthCurve(aFiberForceLengthCurve);
-    ensureMuscleUpToDate();
 }
 
 void Millard2012EquilibriumMuscle::setTendonForceLengthCurve(
 TendonForceLengthCurve& aTendonForceLengthCurve)
 {
     set_TendonForceLengthCurve(aTendonForceLengthCurve);
-    ensureMuscleUpToDate();
 }
 
 void Millard2012EquilibriumMuscle::
@@ -649,7 +638,6 @@ postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
         upd_optimal_fiber_length() *= scaleFactor;
         upd_tendon_slack_length() *= scaleFactor;
         path.setPreScaleLength(s, 0.0);
-        ensureMuscleUpToDate();
     }
 }
 
@@ -1103,7 +1091,6 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
 void Millard2012EquilibriumMuscle::connectToModel(Model& model)
 {
     Super::connectToModel(model);
-    ensureMuscleUpToDate();
 }
 
 void Millard2012EquilibriumMuscle::
@@ -1147,7 +1134,6 @@ setPropertiesFromState(const SimTK::State& s)
     if(!get_ignore_tendon_compliance()) {
         setDefaultFiberLength(getStateVariable(s,STATE_FIBER_LENGTH_NAME));
     }
-    ensureMuscleUpToDate();
 }
 
 void Millard2012EquilibriumMuscle::

@@ -150,20 +150,20 @@ void testExternalLoad()
 		model.addForce(&(*extLoads)[i]);
 
 	// Create the force reporter
-	ForceReporter* reporter = new ForceReporter(&model);
+	ForceReporter* reporter = new ForceReporter();
 	model.addAnalysis(reporter);
 
-	Kinematics* kin = new Kinematics(&model);
+	Kinematics* kin = new Kinematics();
 	kin->setInDegrees(false);
 	model.addAnalysis(kin);
 
-	PointKinematics* pKin = new PointKinematics(&model);
+	PointKinematics* pKin = new PointKinematics();
 	pKin->setBody(&pendulum);
 	pKin->setPoint(comInB);
 	pKin->setPointName(pendulum.getName()+"_com_p");
 	model.addAnalysis(pKin);
 	
-	SimTK::State &s2 = model.initSystem();
+	SimTK::State& s2 = model.initSystem();
 
 	// Turn-off gravity in the model
 	model.updGravityForce().disable(s2);

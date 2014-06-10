@@ -25,6 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "Body.h"
+#include "WeldConstraint.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
@@ -74,6 +75,15 @@ void Body::constructProperties()
 	constructProperty_WrapObjectSet(WrapObjectSet());
 }
 
+
+void Body::finalizeFromProperties()
+{
+	const SimTK::MassProperties& massProps = getMassProperties();
+	_internalRigidBody = SimTK::Body::Rigid(massProps);
+	
+	_index.invalidate();
+}
+
 //_____________________________________________________________________________
 /**
  * Perform some set up functions that happen after the
@@ -83,11 +93,28 @@ void Body::constructProperties()
  */
 void Body::connectToModel(Model& aModel)
 {
+	Super::connectToModel(aModel);
 
 	for(int i=0; i< get_WrapObjectSet().getSize(); i++)
 		get_WrapObjectSet().get(i).connectToModelAndBody(aModel, *this);
+	
+	int nslaves = (int)_slaves.size();
 
-	Super::connectToModel(aModel);
+	if (nslaves){
+		int nbods = nslaves + 1; // include the master
+		const SimTK::MassProperties& massProps = getMassProperties();
+		SimTK::MassProperties slaveMassProps(massProps.getMass() / nbods,
+			massProps.getMassCenter(), massProps.getUnitInertia());
+
+		// update the portion taken on by the master
+		_internalRigidBody = SimTK::Body::Rigid(slaveMassProps);
+
+		// and the slaves
+		for (int i = 0; i < nslaves; ++i){
+			_slaves[i]->_internalRigidBody = SimTK::Body::Rigid(slaveMassProps);
+		}
+	}
+
 }
 
 void Body::addToSystem(SimTK::MultibodySystem& system) const
@@ -398,4 +425,22 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 		}
 	}
 	Super::updateFromXMLNode(aNode, versionNumber);
+}
+
+Body* Body::addSlave()
+{
+	Body* slave = new Body();
+	int count = (int)_slaves.size();
+
+	stringstream name;
+	name << getName() << "_slave_" << count;
+	slave->setName(name.str());
+
+	//add to internal list as memory owner
+	_slaves.push_back(slave);
+
+	//add to list of subcomponents to autotically add to system and initialize
+	addComponent(slave);
+
+	return slave;
 }

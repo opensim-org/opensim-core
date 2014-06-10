@@ -102,22 +102,22 @@ private:
 //==============================================================================
 Component::Component() : Object()
 {
-	constructComponentProperties();
-	clear();
+	constructProperty_connectors();
+	finalizeFromProperties();
 }
 
 Component::Component(const std::string& fileName, bool updFromXMLNode)
 :   Object(fileName, updFromXMLNode)
 {
-	constructComponentProperties();
-	clear();
+	constructProperty_connectors();
+	finalizeFromProperties();
 }
 
 Component::Component(SimTK::Xml::Element& element) 
 :   Object(element)
 {
-	constructComponentProperties();
-	clear();
+	constructProperty_connectors();
+	finalizeFromProperties();
 }
 
 Component::Component(const Component& source) : Object(source)
@@ -125,46 +125,69 @@ Component::Component(const Component& source) : Object(source)
 	//Object copy will handle pthe propeties table.
 	//But need to copy Component specific property inidices.
 	copyProperty_connectors(source);
-	clear();
+	finalizeFromProperties();
+}
+
+Component& Component::operator=(const Component &component)
+{
+	// Object handles assignment of all properties
+	Super::operator=(component);
+	finalizeFromProperties();
+	return *this;
+}
+
+// Base class implementation of virtual method.
+// Call finalizeFromProperties on all components
+void Component::finalizeFromProperties()
+{
+	reset();
+	for (unsigned int i = 0; i<_components.size(); i++){
+		_components[i]->finalizeFromProperties();
+	}
+	setObjectIsUpToDateWithProperties();
 }
 
 // Base class implementation of virtual method.
 // Call connect on all components and find unconnected Connectors a
 void Component::connect(Component &root)
 {
-    clearStateAllocations();
+	if (!isObjectUpToDateWithProperties()){
+		// if edits occur between construction and connect() this is
+		// the last chance to finalize before addToSystm.
+		finalizeFromProperties();
+	}
+	
+	//clear all state indice maps for finding state variables, modeling
+	//options and cache variables. Also the map of connectors is reset.
+    reset();
 
 	// First give the subcomponents the opportunity to connect themselves
     for(unsigned int i=0; i<_components.size(); i++){
 		_components[i]->connect(root);
 	}
 
-	//Avoid any possibility of duplication/collisions by rebuilding connectors table
-	_connectorsTable.clear();
-
+	// rebuilding the connectors table, which was emptied by clearStateAllocations
 	for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
-		upd_connectors(ix).disconnect();
-		_connectorsTable[get_connectors(ix).getName()] = &upd_connectors(ix);
-	}
+		AbstractConnector& connector = upd_connectors(ix);
+		connector.disconnect();
 
-	// Now find components to resolve connectors
-	std::map<std::string, AbstractConnector*>::const_iterator it;
-	for (it = _connectorsTable.begin(); it != _connectorsTable.end(); ++it){
-		AbstractConnector* ci = it->second;	
-		
-		const Component* connectTo = root.findComponent(ci->get_connected_to_name());
+		const Component* connectTo = root.findComponent(connector.get_connected_to_name());
 		if (connectTo){
-			ci->connect(*connectTo);
+			connector.connect(*connectTo);
 			//cout << getConcreteClassName() << " '" << getName();
 			//cout << "' connected to: " << ci->get_connected_to_name() << endl;
 		}
 		else{
 			throw Exception(getConcreteClassName() + "::connect() Could not find component '"
-				+ ci->get_connected_to_name() + "' to satisfy Connector<" +
-				ci->getConnectedToTypeName() + "> '" + ci->getName() + "'.");
+				+ connector.get_connected_to_name() + "' to satisfy Connector<" +
+				connector.getConnectedToTypeName() + "> '" + connector.getName() + "'.");
 		}
 	//is connected or an exception was thrown
 	}
+	
+	// Forming connections changes the Connector which is a property
+	// Remark as upToDate.
+	setObjectIsUpToDateWithProperties();
 }
 
 void Component::disconnect()
@@ -174,14 +197,14 @@ void Component::disconnect()
 		_components[i]->disconnect();
 	}
 
-	//Now cycle through disconnect all connectors for this component
-	std::map<std::string, AbstractConnector*>::const_iterator it;
+	//Now cycle through and disconnect all connectors for this component
+	std::map<std::string, int>::const_iterator it;
 	for (it = _connectorsTable.begin(); it != _connectorsTable.end(); ++it){
-		it->second->disconnect();
+		upd_connectors(it->second).disconnect();
 	}
 
-	//now clear all the stored system idnices from this component
-	clear();
+	//now clear all the stored system indices from this component
+	reset();
 }
 
 // Base class implementation of virtual method.
@@ -191,7 +214,14 @@ void Component::disconnect()
 // methods being called; its value is not used.
 void Component::addToSystem(SimTK::MultibodySystem& system) const
 {
-    // Briefly get write access to the Component to record some
+	if (!isObjectUpToDateWithProperties()) {
+		std::string msg = "Component " + getConcreteClassName() + "::" + getName();
+		msg += " cannot addToSystem until it is up-to-date with its properties.";
+
+		throw Exception(msg);
+	}
+	
+	// Briefly get write access to the Component to record some
     // information associated with the System; that info is const after this.
     Component* mutableThis = const_cast<Component *>(this);
 	mutableThis->_system = system;
@@ -264,7 +294,7 @@ addModelingOption(const std::string& optionName, int maxFlagValue) const
 }
 
 void Component::addStateVariable(const std::string&  stateVariableName,
-								 const SimTK::Stage& invalidatesStage ) const
+								 const SimTK::Stage& invalidatesStage) const
 {
 	if( (invalidatesStage < Stage::Position) ||
 	    (invalidatesStage > Stage::Dynamics)) {
@@ -279,8 +309,7 @@ void Component::addStateVariable(const std::string&  stateVariableName,
 }
 
 
-void Component::
-	addStateVariable(Component::StateVariable*  stateVariable) const
+void Component::addStateVariable(Component::StateVariable*  stateVariable) const
 {
 	const std::string& stateVariableName = stateVariable->getName();
     // don't add state if there is another state variable with the same name 
@@ -418,7 +447,7 @@ Component& Component::updComponent(const std::string& name) const
 
 
 const Component* Component::findComponent(const std::string& name,
-										  const StateVariable** rsv) const
+	const StateVariable** rsv) const
 {
 	const Component* found = NULL;
 	std::string::size_type front = name.find("/");
@@ -426,18 +455,18 @@ const Component* Component::findComponent(const std::string& name,
 	std::string remainder = "";
 
 	// Follow the provided path
-	if(front < name.length()){
-		 subname = name.substr(0,front);
-		 remainder = name.substr(front+1, name.length()-front);
+	if (front < name.length()){
+		subname = name.substr(0, front);
+		remainder = name.substr(front + 1, name.length() - front);
 	}
 
-	for(unsigned int i=0; i<_components.size(); ++i){
-		if(_components[i]->getName()==subname){
+	for (unsigned int i = 0; i < _components.size(); ++i){
+		if (_components[i]->getName() == subname){
 			// if not the end of the path keep drilling
-			if(remainder.length()){			 
+			if (remainder.length()){
 				// keep traversing the components till we find the component
 				found = _components[i]->findComponent(remainder, rsv);
-				if(found)
+				if (found)
 					return found;
 			}
 			else{
@@ -447,9 +476,9 @@ const Component* Component::findComponent(const std::string& name,
 	}
 
 	std::map<std::string, StateVariableInfo>::const_iterator it;
-    it = _namedStateVariableInfo.find(name);
-	if(it != _namedStateVariableInfo.end()){
-		if(rsv){
+	it = _namedStateVariableInfo.find(name);
+	if (it != _namedStateVariableInfo.end()){
+		if (rsv){
 			*rsv = it->second.stateVariable.get();
 		}
 		return this;
@@ -458,15 +487,38 @@ const Component* Component::findComponent(const std::string& name,
 	// Path not given or could not find it along given path name
 	// Now try complete search.
 	if (!found) {
-		for(unsigned int i=0; i<_components.size(); ++i){
+		for (unsigned int i = 0; i < _components.size(); ++i){
 			found = _components[i]->findComponent(name, rsv);
-			if(found)
+			if (found)
 				return found;
 		}
 	}
 
 	return found;
 }
+
+const AbstractConnector* Component::findConnector(const std::string& name) const
+{
+	const AbstractConnector* found = nullptr;
+
+	std::map<std::string, int>::const_iterator it;
+	it = _connectorsTable.find(name);
+
+	if (it != _connectorsTable.end()) {
+		const AbstractConnector& absConnector = get_connectors(it->second);
+		found = &absConnector;
+	}
+	else {
+		std::string::size_type back = name.rfind("/");
+		std::string prefix = name.substr(0, back);
+		std::string conName = name.substr(back + 1, name.length() - back);
+
+		const Component* component = findComponent(prefix);
+		found = component->findConnector(conName);
+	}
+	return found;
+}
+
 
 const Component::StateVariable* Component::
 	findStateVariable(const std::string& name) const

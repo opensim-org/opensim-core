@@ -56,115 +56,24 @@ class ModelDisplayHints;
 //                            MODEL COMPONENT
 //==============================================================================
 /**
- * This defines the abstract ModelComponent class, which is used to add computational
- * components to the underlying SimTK::System (MultibodySystem). It specifies
- * the interface that components must satisfy in order to be part of the system
- * and provides a series of helper methods for adding variables (state, discrete,
- * cache, ...) to the underlying system. As such, ModelComponent handles all of
- * the bookkeeping of system indices and provides convenience access to variable 
- * values via their names as strings. 
+ * This defines the abstract ModelComponent class, which is used to specify 
+ * components of a musculoskeletal model and the elements they add to the 
+ * underlying computational SimTK::System (MultibodySystem). A ModelComponent is 
+ * an OpenSim::Component and therefore has the capabilities to add nececessry
+ * system resources to the System and to manage access to those resources (@see
+ * Component)
  *
- * The MultibodySystem and its State are defined by Simbody (ref ...). Briefly,
- * a System can be thought of the equations that define the mathematical behavior
- * of a model. The State is a collection of all the variables that uniquely
- * define the unknowns in the system equations. These would be joint coordinates,
- * their speeds, accelerations as well other variables that govern system dynamics 
- * (e.g. muscle activation and fiber-length variables that dictate muscle force). 
- * These variables are called continuous state variables in Simbody, but  are more
- * simply referred to as <em>StateVariables</em> in OpenSim.  ModelComponent provides 
- * services to define and access its StateVariables and specify their dynamics
- * (derivatives with respect to time) that are automatically and simultaneously
- * integrated with the MultibodySystem dynamics.
- *
- * There are other types of "State" variables such as a flag (or option) that 
- * enables a component to be disabled or for a muscle force to be overridden and 
- * and these are identified as <em>ModelingOptions</em> since they fundamentally 
- * change the modeled dynamics of the component. ModelComponent provides services
- * that enable developers of components to define additional ModelingOptions.
- *
- * Often a component requires input from an outside source (precomputed data from 
- * a file, another program, or interaction from a user) in which case these
- * variables do not have dynamics (differential eqns.) known to the component, but 
- * are necessary to describe the dynamical "state" of the system. An example, is
- * a throttle component (a "controller" that provides an actuator (e.g. a motor) with
- * a control signal (a voltage or current)) which it gets direct input from the user 
- * (via a joystick, key press, etc..). The throttle controls the motor torque output 
- * and therefore the behavior of the model. The input by the user to the throttle
- * the motor (the controls) is necessary to specify the model dynamics at any instant
- * and therefore are considered part of the State in Simbody as Discrete State Variables.  
- * In OpenSim they are simplify referred to as \e DiscreteVariables. The ModelComponent 
- * provides services to enable developers of components to define and access its 
- * DiscreteVariables.
- *
- * Fast and efficient simulations also require computationally expensive calculations
- * to be performed only when necessary. Often the result of a expensive calculation can
- * be reused many times over, while the variables it is dependent on remain fixed. The
- * concept of holding onto these values is called caching and the variables that hold
- * these values are call <em>CacheVariables</em>. It is important to note, that cache 
- * variables are not state variables. Cache variables can always be recomputed excactly
- * from the State. OpenSim uses the Simbody infrastructure to manage cache variables and
- * their validity. ModelComponent provides a simplified interface to define and 
- * access CacheVariables.
- *
- * Many modeling and simulation codes put the onus on users and component creators to
- * manage the validity of cache variables, which is likely to lead to undetectable 
- * errors where cache values are stale (calculated based on past state variable values).
- * Simbody, on the other hand, provides a more strict infrastructure to make it easy to
- * exploit the efficiencies of caching while reducing the risks of validity errors. 
- * To do this, Simbody employs the concept of computational stages. To "realize" a model's
- * system to a particular stage is to perform all the computations necessary to evaluate the 
- * cached quantities up to and including the stage specified. Simbody utilizes 
- * nine realization stages (<tt>SimTK::Stage::</tt>)
- *
- * -# \c Topology       finalize System with "slots" for most variables (above)
- * -# \c %Model         specify modeling choices
- * -# \c Instance       specify modifiable model parameters
- * -# \c Time           compute time dependent quantities
- * -# \c Position       compute position dependent quantities	
- * -# \c Velocity       compute velocity dependent quantities
- * -# \c Dynamics       compute system applied forces and dependent quantities	
- * -# \c Acceleration   compute system accelerations and all other derivatives
- * -# \c Report         compute quantities for reporting/output
- *  
- * The ModelComponent interface is automatically invoked by the System and its realizations.
- * Component users and most developers need not concern themselves with
- * \c Topology, \c %Model or \c Instance stages. That interaction is managed by ModelComponent 
- * when component creators implement addToSystem() and use the services provided ModelComponent.
- * Component creators do need to determine and specify stage dependencies for Discrete  
- * and CacheVariables that they add to their components. For example, the throttle 
- * controller reads its value from user input and it is valid for all calculations as
- * long as time does not change. If the simulation (via numerical integration) steps
- * forward (or backward for a trial step) and updates the state, the control from
- * a previous state (time) should be invalid and an error generated for trying to access
- * the DiscreteVariable for the control value. To do this one specifies the "invalidates" stage
- * (e.g. <tt>SimTK::Stage::Time</tt>) for a DiscreteVariable when the variable is added to
- * the ModelComponent. A subsequent change to that variable will invalidate all
- * state cache entries at that stage or higher. For example, if a DiscreteVariable is
- * declared to invalidate <tt>Stage::Position</tt> then changing it will 
- * invalidate cache entries that depend on positions, velocities, forces, and
- * accelerations.
- *
- * Similar principles apply to CacheVariables, which requires a "dependsOn" stage to 
- * be specified when a CacheVariable is added to the component. In this case, the cache
- * variable "shadows" the State (unlike a DiscreteVariable, which is a part
- * of the State) holding already-computed state-dependent values so that they
- * do not need to be recomputed until the state changes.
- * Accessing the CacheVariable in a State whose current stage is lower than 
- * that CacheVariable's specified dependsOn stage will trigger
- * an exception. It is up to the component to update the value of the cache variable.
- * ModelComponent provides methods to check if the cache is valid, update its value and 
- * mark as valid. 
-
- * All components: Bodies, Joints, Coordinates, Constraints, Forces, Controllers, 
- * and even Model itself, are ModelComponents. Each component is "connected" to a
- * SimTK::Subsystem and by default this is the System's DefaultSubsystem.
+ * Bodies, Joints, Coordinates, Constraints, Forces, Actuators, Controllers, 
+ * and even Model itself, are ModelComponents. Each component is "connected" to
+ * a model and an underlying SimTK::Subsystem, which by default is the 
+ * System's DefaultSubsystem.
  *
  * The primary responsibility of a ModelComponent is to add its computational 
- * representation(s) to the underlying SimTK::System by implementing
- * addToSystem().
+ * representation(s) of physical musculoskeletal structures to the underlying
+ * SimTK::System by implementing addToSystem().
  *
  * Additional methods provide support for adding modeling options, state and
- * cache variables.
+ * cache variables (@see Component).
  *
  * Public methods enable access to component variables via their names.
  *
@@ -212,8 +121,6 @@ public:
 
 protected:
 template <class T> friend class ModelComponentSet;
-// Give the ModelComponentMeasure access to the realize() methods.
-template <class T> friend class ModelComponentMeasure;
 
     /** @name           ModelComponent Basic Interface
     The interface ensures that deserialization, resolution of inter-connections,
@@ -270,8 +177,6 @@ template <class T> friend class ModelComponentMeasure;
     @param[in,out]  model   The Model currently being constructed to which this
                             %ModelComponent should be connected. **/
     virtual void connectToModel(Model& model);
-
-
 
     /** Optional method for generating arbitrary display geometry that reflects
     this %ModelComponent at the specified \a state. This will be called once to 
@@ -340,14 +245,13 @@ template <class T> friend class ModelComponentMeasure;
     // End of System Creation and Access Methods.
     //@} 
 
-	/** Satisfy the general Component interface, but this is not part of the
-	 * ModelComponent interface. ModelComponent::connect() ensures that 
-	 * connectToModel() on ModelComponent subcomponents are invoked. **/
+    /** Satisfy the general Component interface, but this is not part of the
+	  * ModelComponent interface. ModelComponent::connect() ensures that
+	  * connectToModel() on ModelComponent subcomponents are invoked. **/
 	void connect(Component& root) FINAL_11;
 
 private:
-
-    const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;
+	const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;
     const SimTK::DefaultSystemSubsystem& updDefaultSubsystem();
 
     // Clear out all the data fields in the base class. There should be one
