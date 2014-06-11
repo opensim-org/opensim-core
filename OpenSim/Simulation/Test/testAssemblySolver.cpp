@@ -239,9 +239,7 @@ void testAssemblySatisfiesConstraints(string modelFile)
 			<< coords[i].getValue(state) << endl;
 	}
 
-	//model.getVisualizer().show(state);
-	double cerr = calcLigamentLengthError(state, model);
-
+	double cerr = SimTK::Infinity;
 	double kneeAngle = -Pi/3; 
 
 	int N = 100;
@@ -258,9 +256,9 @@ void testAssemblySatisfiesConstraints(string modelFile)
 		qerr = coords[0].getValue(state)-kneeAngle;
 		//cout << "Assembly errors:: cerr = " << cerr << " m,  qerr = " 
 		//	<< convertRadiansToDegrees(qerr) << " degrees" << endl;
-		ASSERT_EQUAL(cerr, 0.0, 1e-4, __FILE__, __LINE__, "Constraint NOT satisfied to within assembly accuracy");
+		ASSERT_EQUAL(cerr, 0.0, model.get_assembly_accuracy(),
+			__FILE__, __LINE__, "Constraints NOT satisfied to within assembly accuracy");
 	}
-
 }
 
 double calcLigamentLengthError(const SimTK::State &s, const Model &model)

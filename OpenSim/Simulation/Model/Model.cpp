@@ -324,7 +324,8 @@ void Model::copyData(const Model &aModel)
     _useVisualizer = aModel._useVisualizer;
     _allControllersEnabled = aModel._allControllersEnabled;
 
-	//Handle properties
+	//Handle new style properties
+	copyProperty_assembly_accuracy(aModel);
 	copyProperty_BodySet(aModel);
 	copyProperty_JointSet(aModel);
 
@@ -363,6 +364,8 @@ void Model::setNull()
 
 void Model::constructProperties()
 {
+	constructProperty_assembly_accuracy(1e-9);
+
 	BodySet bodies;
 	bodies.setName("Bodies");
 	constructProperty_BodySet(bodies);
@@ -1729,7 +1732,7 @@ void Model::createAssemblySolver(const SimTK::State& s)
     // of coordsToTrack
 	_assemblySolver = new AssemblySolver(*this, *coordsToTrack);
 	_assemblySolver->setConstraintWeight(SimTK::Infinity);
-    _assemblySolver->setAccuracy(1e-9);
+    _assemblySolver->setAccuracy(get_assembly_accuracy());
 }
 
 void Model::updateAssemblyConditions(SimTK::State& s)
