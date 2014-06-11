@@ -92,6 +92,7 @@ void WeldJoint::addToSystem(SimTK::MultibodySystem& system) const
 }
 
 /* Specialize Template method for the Weld mobilizer creation*/
+namespace OpenSim {
 template <> SimTK::MobilizedBody::Weld Joint::createMobilizedBody<SimTK::MobilizedBody::Weld>(
     SimTK::MobilizedBody& inboard,
 	const SimTK::Transform& inboardTransform,
@@ -114,3 +115,4 @@ template <> SimTK::MobilizedBody::Weld Joint::createMobilizedBody<SimTK::Mobiliz
 
 	return simtkBody;
 }
+} // namespace OpenSim
