@@ -117,9 +117,9 @@ public:
 	// GET & SET
 
 	void setChildBodyName(const std::string& name);
-	const std::string& Joint::getChildBodyName() const;
+    const std::string& getChildBodyName() const;
 
-	/**
+    /**
 	 * Set the child body that this joint connects.
 	 *
 	 * @param child Body reference.
@@ -281,7 +281,7 @@ protected:
 		// preserved, the inboard must exist first.
 		if (get_reverse()){
 			inb = mbs.updMatterSubsystem().updMobilizedBody(
-				         getChildBody().getIndex());
+                         getMobilizedBodyIndex(getChildBody()));
 			inbX = &childTransform;
 
 			outb = &getParentInternalRigidBody();
@@ -289,7 +289,7 @@ protected:
 		}
 		else{
 			inb = mbs.updMatterSubsystem().updMobilizedBody(
-				         getParentBody().getIndex());
+                         getMobilizedBodyIndex(getParentBody()));
 		}	
 
 		int startingCoordinateIndex = 0;

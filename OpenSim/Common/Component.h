@@ -1182,7 +1182,7 @@ template <class T> friend class ComponentMeasure;
 								   const StateVariable** rsv = nullptr) const;
 	
 	/** Similarly find a Connector of this Component (also amongst its subcomponents) */
-	const AbstractConnector* Component::findConnector(const std::string& name) const;
+    const AbstractConnector* findConnector(const std::string& name) const;
 
 	const StateVariable* findStateVariable(const std::string& name) const;
 
