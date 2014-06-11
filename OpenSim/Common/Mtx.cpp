@@ -366,12 +366,12 @@ Multiply(int aNR1,int aNCR,int aNC2,const double *aM1,const double *aM2,
 	EnsureWorkSpaceCapacity(aNR1*aNC2);
 
 	// SET POINTER INTO WORKSPACE
-	register double *m = _WSpace;
+	double *m = _WSpace;
 
 	// MULTIPLY
-	register const double *ij1=NULL,*ij2=NULL;
-	register double result,*ij=NULL;
-	register int r1,cr,c2;
+	const double *ij1=NULL,*ij2=NULL;
+	double result,*ij=NULL;
+	int r1,cr,c2;
 	for(r1=0,ij=m;r1<aNR1;r1++) {
 
 		for(c2=0;c2<aNC2;c2++,ij++) {
@@ -411,8 +411,8 @@ Invert(int aN,const double *aM,double *rMInv)
 	if(rMInv==NULL) return(-1);
 
 	// VARIABLE DECLARATIONS
-	register double *M,**Mp,**Mr,**Ip,**Ir,*Mrj,*Irj,*Mij,*Iij,d;
-	register int r,i,j,n;
+	double *M,**Mp,**Mr,**Ip,**Ir,*Mrj,*Irj,*Mij,*Iij,d;
+	int r,i,j,n;
 
 	// ENSURE WORKSPACE CAPACITY
 	EnsureWorkSpaceCapacity(aN*aN);
@@ -502,14 +502,14 @@ Transpose(int aNR,const int aNC,const double *aM,double *rMT)
 	if(rMT==NULL) return(-1);
 
 	// ENSURE WORKSPACE CAPACITY
-	register int n = aNR*aNC;
+	int n = aNR*aNC;
 	EnsureWorkSpaceCapacity(n);
 
 	// SET UP COUNTERS AND POINTERS
-	register int r,c;
-	register const double *Mrc;
-	register double *Mcr;
-	register double *MT = _WSpace;
+	int r,c;
+	const double *Mrc;
+	double *Mcr;
+	double *MT = _WSpace;
 
 	// TRANSPOSE
 	for(r=0,Mrc=aM;r<aNR;r++) {

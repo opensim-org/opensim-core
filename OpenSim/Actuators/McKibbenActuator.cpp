@@ -80,7 +80,7 @@ void McKibbenActuator::constructProperties()
 
 double McKibbenActuator::computeActuation( const SimTK::State& s ) const
 {
-	if(_model==NULL) return 0;
+	if(!_model) return 0;
 
 	double length = getLength(s) - getCordLength();
 	double pressure = getControl(s);

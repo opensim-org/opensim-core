@@ -124,7 +124,7 @@ void PathSpring::connectToModel(Model& aModel)
 	Super::connectToModel(aModel);
 
 	// _model will be NULL when objects are being registered.
-	if (_model == NULL)
+	if (!_model)
 		return;
 
 	// Resting length must be greater than 0.0.

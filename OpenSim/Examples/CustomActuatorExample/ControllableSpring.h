@@ -106,7 +106,7 @@ void computeForce(const SimTK::State& s,
 							  SimTK::Vector& generalizedForces) const
 {
 	// make sure the model and bodies are instantiated
-	if (_model==NULL) return;
+	if (!_model) return;
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
 	
 	if(_bodyA ==NULL || _bodyB ==NULL)

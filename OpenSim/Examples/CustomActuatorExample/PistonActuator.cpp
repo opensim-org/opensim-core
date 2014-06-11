@@ -202,7 +202,7 @@ double PistonActuator::getStress( const SimTK::State& s) const
 
 double PistonActuator::computeActuation( const SimTK::State& s ) const
 {
-	if(_model==NULL) return 0;
+	if(!_model) return 0;
 
 	// FORCE
 	return ( getControl(s) * getOptimalForce() );
@@ -223,7 +223,7 @@ void PistonActuator::computeForce(const SimTK::State& s,
 									SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
 									SimTK::Vector& generalizedForces) const
 {
-	if(_model==NULL) return;
+	if(!_model) return;
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
 	
 	if(_bodyA ==NULL || _bodyB ==NULL)

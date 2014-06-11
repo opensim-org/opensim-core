@@ -219,7 +219,7 @@ void Delp1990Muscle_Deprecated::connectToModel(Model& aModel)
 	Super::connectToModel(aModel);
 
 	// aModel will be NULL when objects are being registered.
-	if (_model == NULL)
+	if (!_model)
 		return;
 
 	if(!getActiveForceLengthCurve()) 

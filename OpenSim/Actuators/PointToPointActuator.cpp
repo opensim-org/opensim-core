@@ -128,7 +128,7 @@ double PointToPointActuator::getStress( const SimTK::State& s) const
 
 double PointToPointActuator::computeActuation( const SimTK::State& s ) const
 {
-	if(_model==NULL) return 0;
+	if(!_model) return 0;
 
 	// FORCE
 	return getControl(s) * getOptimalForce();
@@ -153,7 +153,7 @@ void PointToPointActuator::computeForce(const SimTK::State& s,
 	const SimTK::Vec3& pointA = getPointA();
 	const SimTK::Vec3& pointB = getPointB();
 
-	if(_model==NULL) return;
+	if(!_model) return;
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
 	
 	if( !_bodyA || !_bodyB )

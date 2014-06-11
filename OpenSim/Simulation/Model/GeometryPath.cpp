@@ -1366,7 +1366,7 @@ calcLengthAfterPathComputation(const SimTK::State& s,
 double GeometryPath::
 computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const
 {
-	if(_maSolver == NULL)
+	if(!_maSolver)
 		_maSolver = new MomentArmSolver(*_model);
 
     return  _maSolver->solve(s, aCoord,  *this);

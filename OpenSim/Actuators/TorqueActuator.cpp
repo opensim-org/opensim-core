@@ -125,7 +125,7 @@ double TorqueActuator::getStress(const State& s) const
  */
 double TorqueActuator::computeActuation(const State& s) const
 {
-	if(_model==NULL) return 0;
+	if(!_model) return 0;
 
 	// FORCE
 	return getControl(s) * getOptimalForce();
@@ -144,7 +144,7 @@ void TorqueActuator::computeForce(const State& s,
 							      Vector_<SpatialVec>& bodyForces, 
 							      Vector& generalizedForces) const
 {
-	if(_model==NULL) return;
+	if(!_model) return;
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
 
 	const bool torqueIsGlobal = getTorqueIsGlobal();

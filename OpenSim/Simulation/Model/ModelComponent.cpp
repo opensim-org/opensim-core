@@ -48,7 +48,7 @@ ModelComponent::ModelComponent(SimTK::Xml::Element& element)
 
 const Model& ModelComponent::getModel() const
 {
-    if(_model==NULL)
+    if(!_model)
         throw Exception("ModelComponent::getModel(): component does not "
                         "belong to a model."); 
     return *_model;
@@ -56,7 +56,7 @@ const Model& ModelComponent::getModel() const
 
 Model& ModelComponent::updModel()
 {
-    if(_model==NULL)
+    if(!_model)
         throw Exception("ModelComponent::updModel(): component does not "
                         "belong to a model."); 
     return *_model;

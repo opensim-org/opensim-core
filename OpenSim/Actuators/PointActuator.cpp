@@ -142,7 +142,7 @@ double PointActuator::getStress( const SimTK::State& s) const
  */
 double PointActuator::computeActuation( const SimTK::State& s ) const
 {
-	if(_model==NULL) return 0;
+	if(!_model) return 0;
 
 	// FORCE
 	return getControl(s) * getOptimalForce();

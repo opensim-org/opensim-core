@@ -408,8 +408,8 @@ static int load_Rxyz(double q[3],double Rxyz[9]) {
 static int quick_solve_linear(int N,double A[],double X[],double B[]) {
 	static double *MTX=NULL,**Mtx=NULL;
 	static int mtxsize=0;
-	register double **Mr,*Mrj,*Mij,*Xr,*Br,d;
-	register int r,i,j,n;
+	double **Mr,*Mrj,*Mij,*Xr,*Br,d;
+	int r,i,j,n;
 
 	/*====================================================================*/
 	/*======= ALLOCATE STORAGE FOR DUPLICATE OF A AND ROW POINTERS =======*/
@@ -597,7 +597,7 @@ getVcylToUcylRotationMatrix(const SimTK::State& s, double VcylObstToUcylObst[9])
 /*==== DETERMINE WHETHER 2D PATH FROM P TO S WOULD COME WITHIN R OF ORIGIN ===*/
 /*============================================================================*/
 static int path_inside_radius(double P[2],double S[2],double R) {
-	register double a,b,c;
+	double a,b,c;
 	a=S[1]-P[1];	b=P[0]-S[0];	c=a*P[0]+b*P[1];
 	return( (c*c/(a*a+b*b)) <= R*R );
 }

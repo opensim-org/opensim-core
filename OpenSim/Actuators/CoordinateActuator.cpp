@@ -141,7 +141,7 @@ double CoordinateActuator::getStress( const SimTK::State& s) const
  */
 double CoordinateActuator::computeActuation( const SimTK::State& s ) const
 {
-	if(_model==NULL)
+	if(!_model)
 		return 0.0;
 
 	// FORCE
@@ -185,7 +185,7 @@ void CoordinateActuator::computeForce( const SimTK::State& s,
 							   SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							   SimTK::Vector& mobilityForces) const
 {
-	if(_model==NULL) return;
+	if(!_model) return;
 
    double force;
     if( isForceOverriden(s) ) {

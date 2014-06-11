@@ -115,7 +115,7 @@ void Schutte1993Muscle_Deprecated::connectToModel(Model& aModel)
 	Super::connectToModel(aModel);
 
 	// _model will be NULL when objects are being registered.
-	if (_model == NULL)
+	if (!_model)
 		return;
 }
 

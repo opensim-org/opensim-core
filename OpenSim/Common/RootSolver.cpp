@@ -151,7 +151,7 @@ solve(const SimTK::State& s, const Array<double> &ax,const Array<double> &bx,
 
 			// Interpolate if prev_step was large enough and in true direction
 			if( fabs(prev_step[i])>=tol_act[i] && fabs(fa[i])>fabs(fb[i]) ) {
-				register double t1,cb,t2;
+				double t1,cb,t2;
 				cb = c[i]-b[i];
 
 				// Only two distinct roots, must use linear interpolation.
