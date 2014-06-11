@@ -157,7 +157,7 @@ void Joint::finalizeFromProperties()
 	// does not exceed the number of dofs.
 	SimTK_ASSERT1(numCoordinates() == coordinateSet.getSize(), 
 		"%s list of coordinates does not match Joint degrees-of-freedom.",
-		getConcreteClassName());
+                  getConcreteClassName().c_str());
 	for (int i = 0; i< coordinateSet.getSize(); ++i){
 		coordinateSet[i].setJoint(*this);
 		addComponent(&coordinateSet[i]);
@@ -624,7 +624,8 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
 		SimTK_ASSERT3((mobilized == &getParentBody()) || (mobilized == &getChildBody()),
 			"%s::'%s' - Cannot assign underlying system index to a Body '%s', "
 			"which is not a parent or child Body of this Joint.",
-			getConcreteClassName(), getName(), mobilized->getName());
+                      getConcreteClassName().c_str(),
+                      getName().c_str(), mobilized->getName().c_str());
 
 		// ONLY the base Joint can do this assignment
 		mobilized->_index = mobod.getMobilizedBodyIndex();
@@ -633,7 +634,8 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
 	SimTK_ASSERT3(numMobilities <= (nc - startingCoordinateIndex),
 		"%s attempted to create an underlying SimTK::MobilizedBody that "
 		"supplies %d mobilities but only %d required.",
-		getConcreteClassName(), numMobilities, nc - startingCoordinateIndex);
+                  getConcreteClassName().c_str(),
+                  numMobilities, nc - startingCoordinateIndex);
 
 	const CoordinateSet& coords = get_CoordinateSet();
 

@@ -250,18 +250,19 @@ void CustomJoint::addToSystem(SimTK::MultibodySystem& system) const
 
 	SimTK_ASSERT1(numMobilities > 0,
 		"%s must have 1 or more mobilities (dofs).",
-		getConcreteClassName());
+                  getConcreteClassName().c_str());
 	SimTK_ASSERT1(numMobilities <= 6,
 		"%s cannot exceed 6 mobilities (dofs).",
-		getConcreteClassName());
+        getConcreteClassName().c_str());
 	assert(functions.size() == 6);
 	SimTK_ASSERT2(numMobilities <= 6,
 		"%s::%s must specify functions for complete spatial (6 axes) motion.",
-		getConcreteClassName(), getSpatialTransform().getConcreteClassName());
+        getConcreteClassName().c_str(),
+                  getSpatialTransform().getConcreteClassName().c_str());
 	assert(coordinateIndices.size() == 6);
 	SimTK_ASSERT2(axes.size() == 6,
 		"%s::%s must specify 6 independent axes to span spatial motion.",
-		getConcreteClassName(), getSpatialTransform().getConcreteClassName());
+        getConcreteClassName().c_str(), getSpatialTransform().getConcreteClassName().c_str());
 
 	SimTK::MobilizedBody::Direction dir =
 		SimTK::MobilizedBody::Direction(get_reverse());
@@ -275,7 +276,7 @@ void CustomJoint::addToSystem(SimTK::MultibodySystem& system) const
 	int nc = numCoordinates();
 
 	SimTK_ASSERT1(nc == numMobilities, "%s list of coordinates does not match number of mobilities.",
-		getConcreteClassName());
+        getConcreteClassName().c_str());
 
 	assignSystemIndicesToBodyAndCoordinates(simtkBody, mobilized, nc, 0);
 	

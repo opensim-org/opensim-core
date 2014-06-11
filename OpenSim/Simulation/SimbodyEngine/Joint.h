@@ -328,7 +328,7 @@ protected:
 		int nc = numCoordinates();
 
 		SimTK_ASSERT1(nc == coords.getSize(), "%s list of coordinates does not match number of mobilities.",
-			getConcreteClassName());
+                      getConcreteClassName().c_str());
 
 		const OpenSim::Body* mobilized = get_reverse() ? &getParentBody() : &getChildBody();
 
