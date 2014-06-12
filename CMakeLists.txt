@@ -381,13 +381,6 @@ ENDFOREACH()
 INSTALL(DIRECTORY ${Simbody_INCLUDE_DIR} DESTINATION sdk/include/SimTK 
 			PATTERN ".svn" EXCLUDE)
 			
-SET(OPENSIM_INSTALL_PACKAGE_BUILD OFF CACHE BOOL "Build an installer (to post on simtk.org)")
-MARK_AS_ADVANCED(OPENSIM_INSTALL_PACKAGE_BUILD)
-IF(OPENSIM_INSTALL_PACKAGE_BUILD)
-IF(WIN32)
-	SET(VTK_LIB_DIR ${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/${PLATFORM_ABI}/ CACHE PATH "Prebuilt VTK-shared libraries")	
-ENDIF(WIN32)
-ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
 
 IF(NOT LIBRARY_OUTPUT_PATH)
   SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/${VCVERSION} CACHE INTERNAL "Single output directory for building all libraries.")
@@ -467,18 +460,6 @@ INSTALL(PROGRAMS ${THIRDPARTY_BIN_FILES}
 INSTALL(FILES ${THIRDPARTY_LIB_FILES}    DESTINATION lib)
 INSTALL(FILES ${THIRDPARTY_SDKLIB_FILES} DESTINATION sdk/lib)
 
-## These INSTALL commands should go into proper subdirectories
-IF(WIN32)
-	IF(OPENSIM_INSTALL_PACKAGE_BUILD)
-		# Install windows runtime libraries to support prebuilt libraries
-        # and redistributable
-		INSTALL_FILES(/bin/ FILES 
-			${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcr71.dll
-		    ${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcp71.dll)
-		
-	ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
-ENDIF(WIN32)
-
 
 ## The following are required to uses Dart and the Cdash dashboard per Jesse
 ENABLE_TESTING()
@@ -519,46 +500,17 @@ FILE(APPEND  ${VERSION_FILE_PATH} "Platform=${Platform}-${PLATFORM_ABI}")
 FILE(APPEND  ${VERSION_FILE_PATH} "\n")
 INSTALL(FILES ${VERSION_FILE_PATH} DESTINATION sdk)
 
-IF(OPENSIM_INSTALL_PACKAGE_BUILD)
-IF(WIN32 AND NOT UNIX)
-   # There is a bug in NSI that does not handle full unix paths properly. Make
-   # sure there is at least one set of four (4) backlasshes.
-   SET(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\Installer\\\\OpenSimInstallerIcon.bmp")
-   # SET(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\OpenSim.exe")
-   SET(CPACK_NSIS_DISPLAY_NAME  "${CPACK_PACKAGE_INSTALL_DIRECTORY} ")
-   SET(CPACK_CREATE_DESKTOP_LINKS "${CPACK_PACKAGE_INSTALL_DIRECTORY}\\\\bin\\\\OpenSim.exe")
-   SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\www.simtk.org/home/opensim")
-   SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.simtk.org/home/opensim")
-   SET(CPACK_NSIS_CONTACT "aymanh@simtk.org")
-   SET(CPACK_NSIS_MODIFY_PATH ON)
-   SET (CPACK_NSIS_EXTRA_INSTALL_COMMANDS
-     "ExecWait '\\\"$INSTDIR\\\\bin\\\\vcredist_x86.exe\\\"'"
-   )
-ELSE(WIN32 AND NOT UNIX)
-   SET(CPACK_STRIP_FILES "bin/OpenSim")
-   SET(CPACK_SOURCE_STRIP_FILES "")
-ENDIF(WIN32 AND NOT UNIX)
-SET(CPACK_PACKAGE_EXECUTABLES "OpenSim" "OpenSim")
-
-INCLUDE (CPack)
-
-ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
-
 #
 # Build the documentation
 #
 
 #-----------------------------------------------------------------------------
-SET(BUILD_API_ONLY OFF CACHE BOOL "Build API only (headers and libs, no GUI or Applications")
+SET(BUILD_API_ONLY OFF CACHE BOOL "Build/install only headers, libraries,
+    wrapping, tests; not applications (ik, rra, etc.).")
 MARK_AS_ADVANCED( BUILD_API_ONLY )
 
 IF(BUILD_API_ONLY)
 	SUBDIRS(Vendors OpenSim)
-	SET(OPENSIM_INSTALL_PACKAGE_BUILD OFF)
 ELSE(BUILD_API_ONLY)
-IF(OPENSIM_INSTALL_PACKAGE_BUILD)
-	SUBDIRS(Vendors OpenSim Applications Models Gui)
-ELSE(OPENSIM_INSTALL_PACKAGE_BUILD)
-	SUBDIRS(Vendors OpenSim Applications Models)
-ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
+	SUBDIRS(Vendors OpenSim Applications)
 ENDIF(BUILD_API_ONLY)

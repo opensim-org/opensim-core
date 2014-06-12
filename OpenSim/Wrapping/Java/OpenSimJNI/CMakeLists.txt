@@ -9,17 +9,39 @@ INCLUDE(${CMAKE_ROOT}/Modules/FindJNI.cmake)
 IF(JAVA_INCLUDE_PATH)
 
 # Run command to generate OpenSimJNI_wrap.cxx
-SET(swig_generated_file_fullname ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/OpenSimJNI_wrap.cxx)
-SET(swig_interface_file_fullname ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/Java/swig/javaWrapOpenSim.i)
-SET(SWIG_OUTPUT_DIR ${OpenSim_SOURCE_DIR}/Gui/opensim/modeling/src
-	CACHE PATH
-	"Directory, under which to generate .java files")
+SET(swig_generated_file_fullname
+    ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI_wrap.cxx)
+SET(swig_interface_file_fullname
+    ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/Java/swig/javaWrapOpenSim.i)
+SET(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling"
+    CACHE STRING
+    "The wrapping is built as the Java package specified in this variable.")
 
-SET(SimTK_INCLUDE_PATH ${SIMTK_INCLUDE_DIR})		
+# Syntax for find-replace:
+# STRING(REGEX REPLACE <pattern> <replacement string>
+#                      <target variable> <source string>)
+STRING(REGEX REPLACE "\\." "/"
+       SWIG_JAVA_PACKAGE_PATH ${OPENSIM_JAVA_WRAPPING_PACKAGE})
 
-ADD_CUSTOM_TARGET(JavaWrap ${SWIG_EXECUTABLE} -v -c++ -java -package org.opensim.modeling -I${OpenSim_SOURCE_DIR} -I${Simbody_INCLUDE_DIR} -I${OpenSim_SOURCE_DIR}/OpenSim/Wrapping
-	-o ${swig_generated_file_fullname} -outdir ${SWIG_OUTPUT_DIR}/org/opensim/modeling ${swig_interface_file_fullname})
-SET_TARGET_PROPERTIES(JavaWrap PROPERTIES PROJECT_LABEL "Java Bindings - Generate")
+SET(SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR
+    ${CMAKE_CURRENT_BINARY_DIR}/src/${SWIG_JAVA_PACKAGE_PATH})
+
+# We place the .java files in this folder.
+EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E make_directory
+    ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR})
+
+SET(SimTK_INCLUDE_PATH ${SIMTK_INCLUDE_DIR})
+
+ADD_CUSTOM_TARGET(JavaWrap ${SWIG_EXECUTABLE} -v -c++ -java
+    -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
+    -I${OpenSim_SOURCE_DIR}
+    -I${Simbody_INCLUDE_DIR}
+    -I${OpenSim_SOURCE_DIR}/OpenSim/Wrapping
+	-o ${swig_generated_file_fullname}
+    -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
+    ${swig_interface_file_fullname})
+SET_TARGET_PROPERTIES(JavaWrap PROPERTIES
+    PROJECT_LABEL "Java Bindings - Generate")
 
 
 FILE(GLOB SOURCE_FILES OpenSimContext.cpp)
@@ -59,6 +81,9 @@ ELSE()
             LIBRARY DESTINATION lib
             ARCHIVE DESTINATION sdk/lib)
 ENDIF()
+
+INSTALL(DIRECTORY ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}/
+    DESTINATION sdk/Java/${SWIG_JAVA_PACKAGE_PATH})
 
 IF(BUILD_TESTING)
 	SUBDIRS(Test)
