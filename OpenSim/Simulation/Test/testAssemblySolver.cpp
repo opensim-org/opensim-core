@@ -262,7 +262,7 @@ void testAssemblySatisfiesConstraints(string modelFile)
 		qerr = coords[0].getValue(state)-kneeAngle;
 		//cout << "Assembly errors:: cerr = " << cerr << " m,  qerr = " 
 		//	<< convertRadiansToDegrees(qerr) << " degrees" << endl;
-		ASSERT_EQUAL(cerr, 0.0, model.get_assembly_accuracy(),
+		ASSERT_EQUAL(0.0, cerr, model.get_assembly_accuracy(),
 			__FILE__, __LINE__, "Constraints NOT satisfied to within assembly accuracy");
 	}
 }
