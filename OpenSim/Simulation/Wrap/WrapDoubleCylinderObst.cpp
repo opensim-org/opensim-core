@@ -422,7 +422,7 @@ static int quick_solve_linear(int N,double A[],double X[],double B[]) {
 	/*====================================================================*/
 
 	/*====================================================================*/
-	/*== COPY A INTO MTX(NxN), B INT MTX(N+1), AND LOAD POINTER VECTOR ===*/
+	/*== COPY A INTO MTX(NxN), B INTO MTX(N+1), AND LOAD POINTER VECTOR ==*/
 	/*====================================================================*/
 	for(r=0,Mrj=MTX,Mij=A,Br=B;r<N;r++) {
 		for(j=0;j<N;j++) *(Mrj++) = *(Mij++);	*(Mrj++) = *(Br++); }
@@ -451,7 +451,15 @@ static int quick_solve_linear(int N,double A[],double X[],double B[]) {
 	/*====================================================================*/
 	/*========= BACK PROPAGATE SOLUTION THROUGH TRIANGULAR MATRIX ========*/
 	/*====================================================================*/
-	n=N-1;	Xr=X+n;	*Xr = *((Mrj=Mtx[n])+N) / *(Mrj+n);
+	n=N-1;	Xr=X+n;
+    // The next two lines used to be combined in 1 line:
+    //      *Xr = *((Mrj=Mtx[n])+N) / *(Mrj+n);
+    // which gave a Wunsequenced warning using Clang, due to the assignment to
+    // Mrj.
+    // These lines are doing the first step in the back propagation: the last
+    // entry of X is the last entry of B divided by the (N, N) element of A.
+    Mrj = Mtx[n];
+    *Xr = *(Mrj+N) / *(Mrj+n);
 	for(r=n-1,Xr--,Mr=Mtx+r;r>=0;r--,Mr--) {
 		d = *(*Mr+N);
 		for(j=r+1,Mrj= *Mr+j;j<N;j++) d -= *(Mrj++)*X[j];
