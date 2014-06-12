@@ -219,6 +219,12 @@ void testAssemblySatisfiesConstraints(string modelFile)
 	//==========================================================================================================
 	// Setup OpenSim model
 	Model model(modelFile);
+    // In Simbody 3.4, rod constraints are handled differently than in Simbody
+    // 3.4. This leads to a decrease in the accuracy that the assembly solver
+    // achieves, even though the constraints are achieved to the same extent.
+    // Therefore, it is reasonable to reduce the accuracy (increase the value
+    // of assembly_accuracy) for assembly.
+    model.set_assembly_accuracy(1e-8);
 
 	const CoordinateSet &modelcoords = model.getCoordinateSet();
 	cout << "*********** Coordinate defaults (before initSystem) ******************** " << endl;
