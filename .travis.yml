@@ -28,8 +28,11 @@ install:
   - make -j8 install
   ## Set up OpenSim. Travis already cloned it for us by this point.
   - cd ../
+  # Configure OpenSim.
   # TODO BUILD_API_EXAMPLES?
   - cmake . -DCMAKE_PREFIX_PATH=simbody-install -DCMAKE_CXX_FLAGS=-Werror
+  # Build OpenSim.
   - make -j8
 script:
+  # Install OpenSim.
   - ctest -j8 
