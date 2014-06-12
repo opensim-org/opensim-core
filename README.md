@@ -47,5 +47,5 @@ To build the API examples please follow the developer's guide steps, use CMake (
                                           The OpenSim Project
   
 
-
+[travisci]: https://magnum.travis-ci.com/opensim-org/opensim-core
 [buildstatus_image]: https://travis-ci.org/opensim-org/opensim-core.png?branch=master
