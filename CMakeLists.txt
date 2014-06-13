@@ -160,8 +160,13 @@ endif()
 ## Release flags, overriding CMake's defaults.
 ## Watch out for optimizer bugs in particular gcc versions!
 
-IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
-    string(TOLOWER ${BUILD_INST_SET} GCC_INST_SET)
+IF(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
+        ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+    if (inst_set_to_use)
+        string(TOLOWER ${inst_set_to_use} GCC_INST_SET)
+    else()
+        set(GCC_INST_SET)
+    endif()
 
     # Get the gcc version number in major.minor.build format
     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
