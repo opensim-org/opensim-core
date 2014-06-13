@@ -331,14 +331,17 @@ ENDIF()
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 
 SET(BUILD_USING_NAMESPACE "OpenSim")
-# To accommodate a change in Simbody install organization with Simbody 3.4.
-IF(WIN32)
-    # Use the FindSimbody.cmake file in this directory, as the
-    # install organization hasn't changed on Windows.
-    FIND_PACKAGE(Simbody REQUIRED)
-ELSE()
-    # Use the SimbodyConfig.cmake file within a Simbody installation.
-    FIND_PACKAGE(Simbody REQUIRED PATHS "${SimTK_INSTALL_DIR}" NO_MODULE)
+# As of Simbody 3.4, Simbody has a SimbodyConfig.cmake file, which is a
+# preferred way to find Simbody over the previous FindSimbody.cmake script.
+# NO_MODULE means we will not allow the use of a FindSimbody.cmake script.
+SET(SIMBODY_VERSION_TO_USE 3.5)
+FIND_PACKAGE(Simbody QUIET ${SIMBODY_VERSION_TO_USE}
+    PATHS "${SimTK_INSTALL_DIR}" NO_MODULE)
+# If Simbody is not found, Simbody_FOUND is false.
+IF(NOT SIMBODY_FOUND)
+    MESSAGE(FATAL_ERROR "
+        Simbody ${SIMBODY_VERSION_TO_USE} not found. Install Simbody and set
+        SimTK_INSTALL_DIR to the installation directory of Simbody.")
 ENDIF()
 
 include_directories(${Simbody_INCLUDE_DIR})
