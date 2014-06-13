@@ -134,10 +134,26 @@ ENDIF (UNIX AND NOT CMAKE_BUILD_TYPE)
 ## abandoning machines that can't handle those instructions. SSE3 might
 ## also be reasonable by now (April 2009) so this default should be
 ## revisited soon. This can be set to a different value by the person
-## running CMake.
-SET(BUILD_INST_SET "sse2"  # use SSE2 instruction set by default
-    CACHE STRING "CPU instruction level compiler is permitted to use.")
+## running CMake. On 64 bit MSVC, the default is sse2 and the argument
+## isn't recognized so we won't specify it.
+
+if (CMAKE_CL_64)
+    set(default_build_inst_set)
+else()
+    set(default_build_inst_set "sse2")
+endif()
+
+## This can be set to a different value by the person running CMake.
+SET(BUILD_INST_SET ""
+    CACHE STRING 
+    "CPU instruction level compiler is permitted to use (default is sse2).")
 MARK_AS_ADVANCED( BUILD_INST_SET )
+
+if (BUILD_INST_SET)
+    set(inst_set_to_use ${BUILD_INST_SET})
+else()
+    set(inst_set_to_use ${default_build_inst_set})
+endif()
 
 ## When building in any of the Release modes, tell gcc to use full optimization and
 ## to generate SSE2 floating point instructions. Here we are specifying *all* of the
@@ -195,7 +211,13 @@ ENDIF()
 ## (i.e. sqrt instruction rather than sqrt subroutine) with flag /Oi.
 
 IF(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
-    STRING(TOUPPER ${BUILD_INST_SET} CL_INST_SET)
+    if (inst_set_to_use)
+        string(TOUPPER ${inst_set_to_use} CL_INST_SET)
+        set(CL_INST_SET "/arch:${CL_INST_SET}")
+    else()
+        set(CL_INST_SET)
+    endif()
+	
     set(BUILD_LIMIT_PARALLEL_COMPILES "" CACHE STRING
         "Set a maximum number of simultaneous compilations.")
     mark_as_advanced(BUILD_LIMIT_PARALLEL_COMPILES)
@@ -203,30 +225,30 @@ IF(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
 
     ## C++
     SET(CMAKE_CXX_FLAGS_DEBUG        
-	"/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /bigobj /GS- /arch:${CL_INST_SET}" 
+	"/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /bigobj /GS- ${CL_INST_SET}" 
         CACHE STRING "VC++ Debug build compile flags" FORCE)
     SET(CMAKE_CXX_FLAGS_RELEASE        
-	"/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /bigobj /GS- /arch:${CL_INST_SET}" 
+	"/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /bigobj /GS- ${CL_INST_SET}" 
         CACHE STRING "VC++ Release build compile flags" FORCE)
     SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO 
-	"/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /bigobj /GS- /arch:${CL_INST_SET}" 
+	"/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /bigobj /GS- ${CL_INST_SET}" 
         CACHE STRING "VC++ RelWithDebInfo build compile flags" FORCE)
     SET(CMAKE_CXX_FLAGS_MINSIZEREL 
-	"/MP${mxcpu} /D NDEBUG /MD  /O1 /Ob1 /Oi /bigobj /GS- /arch:${CL_INST_SET}" 
+	"/MP${mxcpu} /D NDEBUG /MD  /O1 /Ob1 /Oi /bigobj /GS- ${CL_INST_SET}" 
         CACHE STRING "VC++ MinSizeRel build compile flags" FORCE)
 
     ## C
     SET(CMAKE_C_FLAGS_DEBUG        
-	"/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /GS- /arch:${CL_INST_SET}" 
+	"/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /GS- ${CL_INST_SET}" 
         CACHE STRING "VC++ Debug build compile flags" FORCE)
     SET(CMAKE_C_FLAGS_RELEASE        
-	"/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /GS- /arch:${CL_INST_SET}" 
+	"/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /GS- ${CL_INST_SET}" 
         CACHE STRING "VC++ Release build compile flags" FORCE)
     SET(CMAKE_C_FLAGS_RELWITHDEBINFO 
-	"/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /GS- /arch:${CL_INST_SET}" 
+	"/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /GS- ${CL_INST_SET}" 
         CACHE STRING "VC++ RelWithDebInfo build compile flags" FORCE)
     SET(CMAKE_C_FLAGS_MINSIZEREL 
-	"/MP${mxcpu} /D NDEBUG /MD  /O1 /Ob1 /Oi /GS- /arch:${CL_INST_SET}" 
+	"/MP${mxcpu} /D NDEBUG /MD  /O1 /Ob1 /Oi /GS- ${CL_INST_SET}" 
         CACHE STRING "VC++ MinSizeRel build compile flags" FORCE)
 
 ENDIF()
