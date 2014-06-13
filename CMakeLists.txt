@@ -155,10 +155,10 @@ else()
     set(inst_set_to_use ${default_build_inst_set})
 endif()
 
-## When building in any of the Release modes, tell gcc to use full optimization and
-## to generate SSE2 floating point instructions. Here we are specifying *all* of the
-## Release flags, overriding CMake's defaults.
-## Watch out for optimizer bugs in particular gcc versions!
+## When building in any of the Release modes, tell gcc to use not-quite most
+## aggressive optimization and to generate SSE2 floating point instructions.
+## Here we are specifying *all* of the Release flags, overriding CMake's
+## defaults.  Watch out for optimizer bugs in particular gcc versions!
 
 IF(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
         ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
@@ -190,10 +190,10 @@ IF(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     SET(CMAKE_CXX_FLAGS_DEBUG          "-g -m${GCC_INST_SET}" 
       CACHE STRING "g++ Debug build compile flags" FORCE)
     SET(CMAKE_CXX_FLAGS_RELEASE        
-      "-DNDEBUG -O3 ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} -m${GCC_INST_SET}" 
+      "-DNDEBUG -O2 ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} -m${GCC_INST_SET}" 
       CACHE STRING "g++ Release build compile flags" FORCE)
     SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO 
-      "-DNDEBUG -O3 -g ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} -m${GCC_INST_SET}" 
+      "-DNDEBUG -O2 -g ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} -m${GCC_INST_SET}" 
       CACHE STRING "g++ RelWithDebInfo build compile flags" FORCE)
     SET(CMAKE_CXX_FLAGS_MINSIZEREL     "-DNDEBUG -Os -m${GCC_INST_SET}" 
       CACHE STRING "g++ MinSizeRel build compile flags" FORCE)
@@ -202,10 +202,10 @@ IF(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     SET(CMAKE_C_FLAGS_DEBUG            "-g -m${GCC_INST_SET}" 
       CACHE STRING "gcc Debug build compile flags" FORCE)
     SET(CMAKE_C_FLAGS_RELEASE          
-      "-DNDEBUG -O3 ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} -m${GCC_INST_SET}" 
+      "-DNDEBUG -O2 ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} -m${GCC_INST_SET}" 
       CACHE STRING "gcc Release build compile flags" FORCE)
     SET(CMAKE_C_FLAGS_RELWITHDEBINFO   
-      "-DNDEBUG -O3 -g ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} -m${GCC_INST_SET}" 
+      "-DNDEBUG -O2 -g ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} -m${GCC_INST_SET}" 
       CACHE STRING "gcc RelWithDebInfo build compile flags" FORCE)
     SET(CMAKE_C_FLAGS_MINSIZEREL       "-DNDEBUG -Os -m${GCC_INST_SET}" 
       CACHE STRING "gcc MinSizeRel build compile flags" FORCE)
