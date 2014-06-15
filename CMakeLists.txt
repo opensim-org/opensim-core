@@ -130,23 +130,23 @@ IF(UNIX AND NOT CMAKE_BUILD_TYPE)
 ENDIF (UNIX AND NOT CMAKE_BUILD_TYPE)
 
 ## Choose the maximum level of x86 instruction set that the compiler is 
-## allowed to use. SSE2 is ubiquitous enough now that we don't mind
-## abandoning machines that can't handle those instructions. SSE3 might
-## also be reasonable by now (April 2009) so this default should be
-## revisited soon. This can be set to a different value by the person
-## running CMake. On 64 bit MSVC, the default is sse2 and the argument
+## allowed to use. Was using sse2 but changed to let the compilers choose. Most
+## will probably use sse2 or later by default.
+## On 64 bit MSVC, the default is sse2 and the argument
 ## isn't recognized so we won't specify it.
 
 if (CMAKE_CL_64)
     set(default_build_inst_set)
 else()
-    set(default_build_inst_set "sse2")
+    # Here's where we used to set sse2. Leaving this line in
+    # case we decide to specify a default value again.
+    set(default_build_inst_set)
 endif()
 
 ## This can be set to a different value by the person running CMake.
 SET(BUILD_INST_SET ""
     CACHE STRING 
-    "CPU instruction level compiler is permitted to use (default is sse2).")
+    "CPU instruction level compiler is permitted to use (default: let compiler decide).")
 MARK_AS_ADVANCED( BUILD_INST_SET )
 
 if (BUILD_INST_SET)
@@ -164,6 +164,7 @@ IF(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
         ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     if (inst_set_to_use)
         string(TOLOWER ${inst_set_to_use} GCC_INST_SET)
+        set(GCC_INST_SET "-m${GCC_INST_SET}")
     else()
         set(GCC_INST_SET)
     endif()
@@ -187,27 +188,27 @@ IF(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     endif()
 
     # C++
-    SET(CMAKE_CXX_FLAGS_DEBUG          "-g -m${GCC_INST_SET}" 
+    SET(CMAKE_CXX_FLAGS_DEBUG          "-g ${GCC_INST_SET}" 
       CACHE STRING "g++ Debug build compile flags" FORCE)
     SET(CMAKE_CXX_FLAGS_RELEASE        
-      "-DNDEBUG -O2 ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} -m${GCC_INST_SET}" 
+      "-DNDEBUG -O2 ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}" 
       CACHE STRING "g++ Release build compile flags" FORCE)
     SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO 
-      "-DNDEBUG -O2 -g ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} -m${GCC_INST_SET}" 
+      "-DNDEBUG -O2 -g ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}" 
       CACHE STRING "g++ RelWithDebInfo build compile flags" FORCE)
-    SET(CMAKE_CXX_FLAGS_MINSIZEREL     "-DNDEBUG -Os -m${GCC_INST_SET}" 
+    SET(CMAKE_CXX_FLAGS_MINSIZEREL     "-DNDEBUG -Os ${GCC_INST_SET}" 
       CACHE STRING "g++ MinSizeRel build compile flags" FORCE)
 
     # C
-    SET(CMAKE_C_FLAGS_DEBUG            "-g -m${GCC_INST_SET}" 
+    SET(CMAKE_C_FLAGS_DEBUG            "-g ${GCC_INST_SET}" 
       CACHE STRING "gcc Debug build compile flags" FORCE)
     SET(CMAKE_C_FLAGS_RELEASE          
-      "-DNDEBUG -O2 ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} -m${GCC_INST_SET}" 
+      "-DNDEBUG -O2 ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}" 
       CACHE STRING "gcc Release build compile flags" FORCE)
     SET(CMAKE_C_FLAGS_RELWITHDEBINFO   
-      "-DNDEBUG -O2 -g ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} -m${GCC_INST_SET}" 
+      "-DNDEBUG -O2 -g ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}" 
       CACHE STRING "gcc RelWithDebInfo build compile flags" FORCE)
-    SET(CMAKE_C_FLAGS_MINSIZEREL       "-DNDEBUG -Os -m${GCC_INST_SET}" 
+    SET(CMAKE_C_FLAGS_MINSIZEREL       "-DNDEBUG -Os ${GCC_INST_SET}" 
       CACHE STRING "gcc MinSizeRel build compile flags" FORCE)
 
 ENDIF()
