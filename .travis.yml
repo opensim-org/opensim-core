@@ -1,18 +1,22 @@
 # To learn about this file, go to http://docs.travis-ci.com/user/languages/c/
 language: cpp
+
 compiler:
   - gcc
   - clang
-install:
+  
+before_install:
   ## Get Simbody.
   - sudo apt-get update
   - sudo apt-get install liblapack-dev liblas-dev
-  # Must get a newer gcc so we can compile with C++11.
+  # Must get a newer gcc so we can compile with C++11, 
+  # when using gcc OR Clang.
   # from https://github.com/travis-ci/travis-ci/issues/979.
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get update -qq
-  # If compiling with gcc, make sure to use gcc 4.8.
-  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+  - sudo apt-get install -qq g++-4.8
+  # Only if compiling with gcc, update environment variables
+  # to use the new gcc.
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
   # Clone Simbody into the Simbody directory. Don't need its history, and
   # only need the master branch.
@@ -28,11 +32,14 @@ install:
   - make -j8 install
   ## Set up OpenSim. Travis already cloned it for us by this point.
   - cd ../
+  
+install:
   # Configure OpenSim.
   # TODO BUILD_API_EXAMPLES?
   - cmake . -DCMAKE_PREFIX_PATH=simbody-install -DCMAKE_CXX_FLAGS=-Werror
   # Build OpenSim.
   - make -j8
+  
 script:
   # Install OpenSim.
   - ctest -j8 
