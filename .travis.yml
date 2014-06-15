@@ -6,9 +6,9 @@ compiler:
   - clang
   
 before_install:
-  ## Get Simbody.
+  ## Get Simbody and its dependencies.
   - sudo apt-get update
-  - sudo apt-get install liblapack-dev liblas-dev
+  - sudo apt-get install liblapack-dev
   # Must get a newer gcc so we can compile with C++11, 
   # when using gcc OR Clang.
   # from https://github.com/travis-ci/travis-ci/issues/979.
@@ -23,7 +23,7 @@ before_install:
   - git clone https://github.com/simbody/simbody.git simbody-source --depth 1 --branch master
   - cd simbody-source
   # Configure Simbody.
-  - cmake . -DBUILD_EXAMPLES=on -DBUILD_VISUALIZER=off -DSIMBODY_STANDARD_11=on -DCMAKE_INSTALL_PREFIX=../simbody-install
+  - cmake . -DBUILD_VISUALIZER=off -DSIMBODY_STANDARD_11=on -DCMAKE_INSTALL_PREFIX=../simbody-install
   # Build Simbody.
   - make -j8
   # Test Simbody. TODO potentially unnecessary and confusing?
