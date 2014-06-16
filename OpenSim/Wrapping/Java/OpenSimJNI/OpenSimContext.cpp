@@ -50,28 +50,7 @@ OpenSimContext::OpenSimContext( SimTK::State* s, Model* model ) :
     _configState(s),
   _model(model) {}
 
-// States
-void OpenSimContext::setStates( Array<double>&  states) {
-    _model->setStateValues(*_configState, &states[0]);
-}
-void OpenSimContext::setStates( double* statesBuffer) {
-  _model->setStateValues(*_configState, statesBuffer);
- }
 
-void OpenSimContext::computeConstrainedCoordinates( double* statesBuffer) {
-//        _model->getSimbodyEngine().computeConstrainedCoordinates(*_configState, statesBuffer );
-}
-
-void OpenSimContext::getStates( double* statesBuffer) {
-        Array<double> rStateValues;
-    _model->getStateValues(*_configState, rStateValues);
-    //string statedump= _configState->toString();
-        for(int i=0;i<_model->getNumStateVariables();i++ ) *(statesBuffer+i) = rStateValues[i];
-}
-
-void OpenSimContext::getStates( Array<double>&  rStates) {
-    _model->getStateValues(*_configState, rStates);
-}
 // Transforms
 void OpenSimContext::transformPosition(const Body& body, double* offset, double* gOffset) {
   _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);

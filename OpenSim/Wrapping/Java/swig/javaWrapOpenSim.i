@@ -1,6 +1,6 @@
 %module(directors="1") opensimModel
 %module opensimModel
-#pragma SWIG nowarn=822,451,503,516,325
+#pragma SWIG nowarn=822,451,503,516,325,401
 %{
 #include <OpenSim/version.h>
 #include <SimTKsimbody.h>
