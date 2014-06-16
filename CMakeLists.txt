@@ -41,7 +41,7 @@ MARK_AS_ADVANCED(PROCESSOR_COUNT)
 # This will be initialized to the environment variable of the same name
 # if it is set, otherwise it will be empty.
 SET(SimTK_INSTALL_DIR $ENV{SimTK_INSTALL_DIR} CACHE
-  PATH "Where to look for the Simbody libraries; you can change this.")
+    PATH "Where to look for the Simbody libraries; you can change this. Set as empty to let CMake search for Simbody automatically.")
 
 #
 # These are the names of all the libraries we depend on. These are
@@ -295,14 +295,36 @@ SET(USE_LIBRARIES_FROM_REPOSITORY OFF)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 
 SET(BUILD_USING_NAMESPACE "OpenSim")
+
+## Find Simbody.
+
 # As of Simbody 3.4, Simbody has a SimbodyConfig.cmake file, which is a
 # preferred way to find Simbody over the previous FindSimbody.cmake script.
 # NO_MODULE means we will not allow the use of a FindSimbody.cmake script.
 SET(SIMBODY_VERSION_TO_USE 3.5)
-FIND_PACKAGE(Simbody QUIET ${SIMBODY_VERSION_TO_USE}
-    PATHS "${SimTK_INSTALL_DIR}" NO_MODULE)
+
+# Find Simbody freshly; don't consider where we've found
+# Simbody in previous times that the user has configured.
+UNSET(Simbody_DIR CACHE)
+IF("${SimTK_INSTALL_DIR}" STREQUAL "")
+    # We assume the only case in which the user
+    # wants us to search for Simbody is if they left SimTK_INSTALL_DIR empty.
+    # If the user specifies an invalid SimTK_INSTALL_DIR by accident,
+    # we shouldn't let that fail silently and still search for 
+    # Simbody elsewhere; they may never realize
+    # we are not using their requested installation of Simbody.
+    FIND_PACKAGE(Simbody ${SIMBODY_VERSION_TO_USE} QUIET
+        NO_MODULE)
+ELSE()
+    # First, try to find the package using the user-specified path.
+    # NO_DEFAULT_PATH will cause find_package to only 
+    # look in the provided PATHS.
+    FIND_PACKAGE(Simbody ${SIMBODY_VERSION_TO_USE} QUIET
+        PATHS "${SimTK_INSTALL_DIR}" NO_MODULE NO_DEFAULT_PATH)
+ENDIF()
+
 # If Simbody is not found, Simbody_FOUND is false.
-IF(NOT SIMBODY_FOUND)
+IF(NOT Simbody_FOUND)
     MESSAGE(FATAL_ERROR "
         Simbody ${SIMBODY_VERSION_TO_USE} not found. Install Simbody and set
         SimTK_INSTALL_DIR to the installation directory of Simbody.")
