@@ -1,6 +1,6 @@
+OpenSim Core [![Build Status][buildstatus_image]][travisci]
+============ 
 
-                                OPENSIM
- 
 
 What is it? 
 ----------- 
@@ -29,7 +29,7 @@ http://simtk-confluence.stanford.edu:8080/display/OpenSim/Building+OpenSim+from+
 
 
 Cross-platform Instructions
----------------------------------------------
+---------------------------
 The release of OpenSim on Linux and MAC is only in the form of API/Libraries and headers, for GUI use we recommend
 using a Virtual Machine that runs windows.
 
@@ -46,3 +46,6 @@ To build the API examples please follow the developer's guide steps, use CMake (
   
                                           The OpenSim Project
   
+
+[travisci]: https://magnum.travis-ci.com/opensim-org/opensim-core
+[buildstatus_image]: https://travis-ci.org/opensim-org/opensim-core.png?branch=master
