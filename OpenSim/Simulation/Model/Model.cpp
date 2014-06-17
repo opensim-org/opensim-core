@@ -898,7 +898,7 @@ void Model::connectToModel(Model &model)
 
 	updMarkerSet().connectMarkersToModel(*this);
 	updContactGeometrySet().invokeConnectToModel(*this);
-
+	updForceSet().setupGroups();
 	updControllerSet().setActuators(updActuators());
 
 	// TODO: Get rid of the SimbodyEngine

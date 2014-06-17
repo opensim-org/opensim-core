@@ -90,12 +90,6 @@ public:
     void setState( SimTK::State* s) { _configState = s; }
     void setModel( Model* m) { _model = m; }
 
-	// States
-	void setStates( Array<double>& states);
-	void setStates( double statesBuffer[]);
-	void computeConstrainedCoordinates( double statesBuffer[]);
-	void getStates( double statesBuffer[]);
-	void getStates( Array<double>&  rStates);
 	/** Get reference to the single instance of SimTK::State maintained by the Context object **/
     const SimTK::State& getCurrentStateRef() const { return (*_configState); };
 	/** Return a "clone" of  the single instance of SimTK::State maintained by the Context object **/

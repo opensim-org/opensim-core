@@ -543,12 +543,8 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 };
 
 %extend OpenSim::Body {
-	void getCenterOfMass(double dCom[3]) {
-		self->getMassCenter(SimTK::Vec3::updAs(dCom));
-	};
 	void getInertia(Array<double>& rInertia) {
-		SimTK::Mat33 inertia;
-		self->getInertia(inertia);
+		SimTK::Mat33 inertia= self->getInertia().toMat33();
 		rInertia[0]=inertia[0][0];
 		rInertia[1]=inertia[1][1];
 		rInertia[2]=inertia[2][2];
