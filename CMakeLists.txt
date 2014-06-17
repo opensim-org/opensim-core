@@ -174,12 +174,9 @@ IF(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
                     OUTPUT_VARIABLE GCC_VERSION)
 
 
-    # Unrolling fixed-count loops was a useful optimization for Simmatrix
-    # in earlier gcc versions.
-    # Doesn't have a big effect for current compiler crop and may be 
-    # pushing our luck with optimizer bugs. So let the compilers decide
-    # how to handle loops instead.
-    ##SET(GCC_OPT_ENABLE "-funroll-loops")
+    # Testing with Clang 3.3 on Ubuntu 14.04 shows a 5% decrease
+    # in the runtime of the tests when we enable loop unrolling.
+    SET(GCC_OPT_ENABLE "-funroll-loops")
 
     # If you know of optimization bugs that affect SimTK in particular
     # gcc versions, this is the place to turn off those optimizations.
