@@ -6,7 +6,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org.               *
  *                                                                            *
- * Portions copyright (c) 2009 Stanford University and the Authors.           *
+ * Portions copyright (c) 2009-2013 Stanford University and the Authors.      *
  * Authors: Peter Eastman                                                     *
  * Contributors:                                                              *
  *                                                                            *
@@ -71,13 +71,13 @@ ExpressionProgram& ExpressionProgram::operator=(const ExpressionProgram& program
 }
 
 void ExpressionProgram::buildProgram(const ExpressionTreeNode& node) {
-    for (int i = (int)node.getChildren().size()-1; i >= 0; i--)
+    for (int i = node.getChildren().size()-1; i >= 0; i--)
         buildProgram(node.getChildren()[i]);
     operations.push_back(node.getOperation().clone());
 }
 
 int ExpressionProgram::getNumOperations() const {
-    return (int)operations.size();
+    return operations.size();
 }
 
 const Operation& ExpressionProgram::getOperation(int index) const {
@@ -93,14 +93,13 @@ double ExpressionProgram::evaluate() const {
 }
 
 double ExpressionProgram::evaluate(const std::map<std::string, double>& variables) const {
-    vector<double> args(max(maxArgs, 1));
-    vector<double> stack(stackSize);
-    int stackPointer = 0;
+    vector<double> stack(stackSize+1);
+    int stackPointer = stackSize;
     for (int i = 0; i < (int) operations.size(); i++) {
         int numArgs = operations[i]->getNumArguments();
-        for (int j = 0; j < numArgs; j++)
-            args[j] = stack[--stackPointer];
-        stack[stackPointer++] = operations[i]->evaluate(&args[0], variables);
+        double result = operations[i]->evaluate(&stack[stackPointer], variables);
+        stackPointer += numArgs-1;
+        stack[stackPointer] = result;
     }
-    return stack[0];
+    return stack[stackSize-1];
 }
