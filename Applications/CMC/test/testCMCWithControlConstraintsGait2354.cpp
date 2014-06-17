@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  testCMCWithControlConstraints.cpp                            *
+ *           OpenSim:  testCMCWithControlConstraintsGait2354.cpp              *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -31,7 +31,6 @@ using namespace OpenSim;
 using namespace std;
 
 void testGait2354();
-void testRunningModel();
 
 int main() {
 	Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
@@ -42,10 +41,6 @@ int main() {
     try {testGait2354();}
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testGait2354"); }
-
-    try {testRunningModel();}
-    catch (const std::exception& e)
-		{  cout << e.what() <<endl; failures.push_back("testRunningModel"); }
 
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
@@ -93,43 +88,4 @@ void testGait2354() {
 	CHECK_STORAGE_AGAINST_STANDARD(results2, standard2, rms_tols2, __FILE__, __LINE__, "testGait2354 states failed");
 
 	cout << "\n testGait2354 passed\n" << endl;
-}
-
-
-void testRunningModel()
-{
-	cout<<"\n******************************************************************" << endl;
-	cout << "*                     testRunningModel                     *" << endl;
-	cout << "******************************************************************\n" << endl;
-	CMCTool cmc("runningModel_Setup_CMC_test.xml");
-	cmc.run();
-
-	Storage results("runningModel_CMC_Results/runningModel_CMC_test_Kinematics_q.sto");
-	Storage standard("runningModel_Kinematics_q.sto");
-
-	int nq = results.getColumnLabels().getSize()-1;
-
-	// Tracking kinematics angles in degrees should be within 3 degrees (see standard versus input)
-	Array<double> rms_tols(3.00, nq);
-	rms_tols[3] = 0.0025; // pelvis translations in m should be with 2.5mm
-	rms_tols[4] = 0.0025;
-	rms_tols[5] = 0.0025;
-
-	CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testRunningModel tracking failed");
-
-	Storage results_states("runningModel_CMC_Results/runningModel_CMC_test_states.sto");
-	Storage standard_states("std_runningModel_CMC_states.sto");
-
-	int nc = results_states.getColumnLabels().getSize()-1;
-
-	// already passed tracking kinematics so focus on muscle states
-	Array<double> rms_states_tols(0.6, nc);
-	for(int i = nq; i< 2*nq; ++i)
-	{
-		rms_states_tols[i] = 0.2; // velocities
-	}
-
-	CHECK_STORAGE_AGAINST_STANDARD(results_states, standard_states, rms_states_tols, __FILE__, __LINE__, "testRunningModel activations failed");
-
-	cout << "\n testRunningModel passed\n" << endl;
 }
