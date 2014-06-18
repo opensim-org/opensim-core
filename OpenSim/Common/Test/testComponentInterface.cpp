@@ -190,6 +190,9 @@ private:
 	void constructInputs() OVERRIDE_11 {
 		constructInput<double>("input1", SimTK::Stage::Model);
 		constructInput<Vector>("AnglesIn", SimTK::Stage::Model);
+
+        constructInput<double>("fiberLength", SimTK::Stage::Model);
+        constructInput<double>("activation", SimTK::Stage::Model);
 	}
 
 	void constructOutputs() OVERRIDE_11 {
@@ -246,7 +249,43 @@ protected:
 			throw OpenSim::Exception(msg);
 		}
 	}
+
+	// Copied here from Component for testing purposes.
+	class AddedStateVariable : public StateVariable {
+		public:
+		// Constructors
+		AddedStateVariable() : StateVariable(),
+			invalidatesStage(SimTK::Stage::Empty)  {}
+
+        /** Convience constructor for defining a Component added state variable */ 
+		explicit AddedStateVariable(const std::string& name, //state var name
+						const Component& owner,		  //owning component
+						SimTK::Stage invalidatesStage,//stage this variable invalidates
+						bool hide=false) : 
+					StateVariable(name, owner,
+							SimTK::SubsystemIndex(SimTK::InvalidIndex),
+							SimTK::InvalidIndex, hide), 
+						invalidatesStage(SimTK::Stage::Empty) {}
+
+		//override virtual methods
+		double getValue(const SimTK::State& state) const OVERRIDE_11;
+		void setValue(SimTK::State& state, double value) const OVERRIDE_11;
+
+		double getDerivative(const SimTK::State& state) const OVERRIDE_11;
+		void setDerivative(const SimTK::State& state, double deriv) const OVERRIDE_11;
+
+        SimTK::Stage getInvalidatesStage() const;
+
+		private: // DATA
+		// Changes in state variables trigger recalculation of appropriate cache 
+		// variables by automatically invalidating the realization stage specified
+		// upon allocation of the state variable.
+        SimTK::Stage    invalidatesStage;
+	};
+
 	void addToSystem(MultibodySystem& system) const OVERRIDE_11{
+        Super::addToSystem(system);
+
 		GeneralForceSubsystem& forces = world->updForceSubsystem();
 		SimbodyMatterSubsystem& matter = world->updMatterSubsystem();
 
@@ -259,7 +298,24 @@ protected:
 				spring(forces, b1, Vec3(0.5,0,0), b2, Vec3(0.5,0,0), 10.0, 0.1);
 			fix = spring.getForceIndex();
 		}
+
+        // We use these to test the Output's that are generated when we
+        // add a StateVariable.
+        addStateVariable("fiberLength", SimTK::Stage::Velocity);
+        addStateVariable("activation", SimTK::Stage::Dynamics);
+
+        // Create a hidden state variable, so we can ensure that hidden state
+        // variables do not have a corresponding Output.
+        AddedStateVariable* asv =
+            new AddedStateVariable("hiddenStateVar", *this, SimTK::Stage::Dynamics);
+        asv->hide();
+        addStateVariable(asv);
 	}
+
+    void computeStateVariableDerivatives(const SimTK::State& state) const override {
+        setStateVariableDerivative(state, "fiberLength", 2.0);
+        setStateVariableDerivative(state, "activation", 3.0 * state.getTime());
+    }
 
 private:
 	void constructStructuralConnectors() OVERRIDE_11{
@@ -493,7 +549,20 @@ int main() {
 		theWorld.buildUpSystem(system3);
 		//SimTK::Visualizer viz2(system2);
 
+        // Connect our state variables.
+        foo.getInput("fiberLength").connect(bar.getOutput("fiberLength"));
+        foo.getInput("activation").connect(bar.getOutput("activation"));
+        // Since hiddenStateVar is a hidden state variable, it has no
+        // corresponding output.
+        ASSERT_THROW(OpenSim::Exception,
+            const AbstractOutput& out = bar.getOutput("hiddenStateVar");
+        );
+
 		s = system3.realizeTopology();
+
+        bar.setStateVariable(s, "fiberLength", 1.5);
+        bar.setStateVariable(s, "activation", 0);
+
 		int nu3 = system3.getMatterSubsystem().getNumMobilities();
 
 		// realize simbody system to velocity stage
@@ -507,6 +576,14 @@ int main() {
 		ts.stepTo(1.0);
 		s = ts.getState();
 
+        // Check the result of the integration on our state variables.
+        ASSERT_EQUAL(3.5, bar.getOutputValue<double>(s, "fiberLength"), 1e-10);
+        ASSERT_EQUAL(1.5, bar.getOutputValue<double>(s, "activation"), 1e-10);
+
+        // Ensure the connection works.
+        ASSERT_EQUAL(3.5, foo.getInputValue<double>(s, "fiberLength"), 1e-10);
+        ASSERT_EQUAL(1.5, foo.getInputValue<double>(s, "activation"), 1e-10);
+
 		theWorld.print("Doubled" + modelFile);
 	}
     catch (const std::exception& e) {
@@ -515,4 +592,55 @@ int main() {
     }
     cout << "Done" << endl;
     return 0;
+}
+
+//override virtual methods
+double Bar::AddedStateVariable::getValue(const SimTK::State& state) const
+{
+	ZIndex zix(getVarIndex());
+	if(getSubsysIndex().isValid() && zix.isValid()){
+		const SimTK::Vector& z = getOwner().getSystem().getDefaultSubsystem().getZ(state);
+		return z[ZIndex(zix)];
+	}
+
+    std::stringstream msg;
+    msg << "Bar::AddedStateVariable::getValue: ERR- variable '" 
+		<< getName() << "' is invalid for component " << getOwner().getName() 
+		<< " of type " << getOwner().getConcreteClassName() <<".";
+    throw OpenSim::Exception(msg.str(),__FILE__,__LINE__);
+    return SimTK::NaN;
+}
+
+void Bar::AddedStateVariable::setValue(SimTK::State& state, double value) const
+{
+	ZIndex zix(getVarIndex());
+	if(getSubsysIndex().isValid() && zix.isValid()){
+		SimTK::Vector& z = getOwner().getSystem().getDefaultSubsystem().updZ(state);
+		z[ZIndex(zix)] = value;
+		return;
+	}
+
+    std::stringstream msg;
+    msg << "Bar::AddedStateVariable::setValue: ERR- variable '" 
+		<< getName() << "' is invalid for component " << getOwner().getName() 
+		<< " of type " << getOwner().getConcreteClassName() <<".";
+    throw OpenSim::Exception(msg.str(),__FILE__,__LINE__);
+}
+
+double Bar::AddedStateVariable::
+	getDerivative(const SimTK::State& state) const
+{
+	return getOwner().getCacheVariable<double>(state, getName()+"_deriv");
+}
+
+void Bar::AddedStateVariable::
+	setDerivative(const SimTK::State& state, double deriv) const
+{
+	return getOwner().setCacheVariable<double>(state, getName()+"_deriv", deriv);
+}
+
+SimTK::Stage Bar::AddedStateVariable::
+    getInvalidatesStage() const
+{
+    return invalidatesStage;
 }

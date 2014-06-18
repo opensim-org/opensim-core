@@ -57,4 +57,24 @@ void CHECK_STORAGE_AGAINST_STANDARD(OpenSim::Storage& result, OpenSim::Storage& 
 	}
 }
 
+// Informed by googletest.
+#define ASSERT_THROW(EXPECTED_EXCEPTION, STATEMENT) \
+{ \
+    bool caughtExpectedException = false; \
+    try { \
+        STATEMENT; \
+    } \
+    catch (EXPECTED_EXCEPTION const&) { \
+        caughtExpectedException = true; \
+    } \
+    catch (...) { \
+        throw OpenSim::Exception("TESTING: Expected exception " \
+            #EXPECTED_EXCEPTION " but caught different exception."); \
+    } \
+    if (!caughtExpectedException) { \
+        throw OpenSim::Exception("TESTING: Expected exception " \
+            #EXPECTED_EXCEPTION " but no exception thrown."); \
+    } \
+} \
+
 #endif // __auxiliaryTestFunctions_h__
