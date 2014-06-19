@@ -7,7 +7,13 @@ INCLUDE(${CMAKE_ROOT}/Modules/FindPythonLibs.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/FindPythonInterp.cmake)
 
 
-IF(PYTHONLIBS_FOUND)
+IF(NOT PYTHONLIBS_FOUND)
+    MESSAGE(FATAL_ERROR "Cannot build Python wrapping because "
+    	"Python libraries were not found. Either turn "
+    	"BUILD_PYTHON_WRAPPING off or install Python "
+    	"libraries (on Ubuntu, apt-get install python2.7-dev).");
+ENDIF()
+
 
 # Run command to generate OpenSimJNI_wrap.cxx
 SET(swig_output_cxx_file_fullname
@@ -39,8 +45,8 @@ ADD_CUSTOM_TARGET(PyWrap
 
 SET_TARGET_PROPERTIES(PyWrap PROPERTIES PROJECT_LABEL "Python Bindings - Generate")
 
-FILE(GLOB SOURCE_FILES OpenSimContext.cpp ${CMAKE_CURRENT_BINARY_DIR}/*.cxx)
-FILE(GLOB INCLUDE_FILES ${CMAKE_CURRENT_BINARY_DIR}/*.h OpenSimContext.h)
+SET(SOURCE_FILES OpenSimContext.cpp "${swig_output_cxx_file_fullname}")
+SET(INCLUDE_FILES OpenSimContext.h "${swig_output_header_file_fullname}")
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 					${OpenSim_SOURCE_DIR}/Vendors 
@@ -61,13 +67,15 @@ SET_TARGET_PROPERTIES(_${KIT} PROPERTIES
    PREFIX ""
 )
 IF(WIN32)
-	SET_TARGET_PROPERTIES(_${KIT}
+    SET_TARGET_PROPERTIES(_${KIT}
     PROPERTIES
     SUFFIX ".pyd")
+ELSEIF(APPLE)
+    # Defaults to .dylib; change to .so.
+    SET_TARGET_PROPERTIES(_${KIT}
+    PROPERTIES
+    SUFFIX ".so")
 ENDIF()
-
-ADD_DEPENDENCIES(_${KIT} osimTools)
-ADD_DEPENDENCIES(_${KIT} PyWrap)
 
 # Shared libraries are needed at runtime for applications, so we put them
 # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
@@ -85,6 +93,4 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/opensim.py
 INSTALL(FILES __init__.py DESTINATION sdk/python/opensim)
 INSTALL(DIRECTORY tests DESTINATION sdk/python/opensim)
 
-
-ENDIF(PYTHONLIBS_FOUND)
 ENDIF(BUILD_PYTHON_WRAPPING)
