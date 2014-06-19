@@ -65,7 +65,7 @@ GimbalJoint::GimbalJoint(const std::string &name, OpenSim::Body& parent,
 			Joint(name, parent, locationInParent,orientationInParent,
 					body, locationInBody, orientationInBody, reverse)
 {
-	setAuthors("Tim Dorn");
+	setAuthors("Tim Dorn, Ajay Steh");
 	constructCoordinates();
 }
 
@@ -75,9 +75,7 @@ GimbalJoint::GimbalJoint(const std::string &name, OpenSim::Body& parent,
 //_____________________________________________________________________________
 void GimbalJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Gimbal>(system,
-		                                       getParentTransform(),
-		                                       getChildTransform());
+	createMobilizedBody<MobilizedBody::Gimbal>(system);
 
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);

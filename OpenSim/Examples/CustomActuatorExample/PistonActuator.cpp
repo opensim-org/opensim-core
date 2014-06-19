@@ -26,11 +26,6 @@
 //=============================================================================
 #include "PistonActuator.h"
 #include <OpenSim/OpenSim.h>
-/*
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-*/
 
 using namespace OpenSim;
 using namespace std;

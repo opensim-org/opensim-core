@@ -117,9 +117,7 @@ void FreeJoint::setNull()
 //_____________________________________________________________________________
 void FreeJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Free>(system,
-		                                     getParentTransform(),
-		                                     getChildTransform());
+	createMobilizedBody<MobilizedBody::Free>(system);
 
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);

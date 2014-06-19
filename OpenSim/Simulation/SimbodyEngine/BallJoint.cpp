@@ -25,8 +25,8 @@
 // INCLUDES
 //=============================================================================
 #include "BallJoint.h"
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
 
 //=============================================================================
 // STATICS
@@ -77,9 +77,7 @@ BallJoint::BallJoint(const std::string &name, const OpenSim::Body& parent,
 //_____________________________________________________________________________
 void BallJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Ball>(system,
-		                                     getParentTransform(),
-		                                     getChildTransform());
+	createMobilizedBody<MobilizedBody::Ball>(system);
 
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);
@@ -89,7 +87,7 @@ void BallJoint::initStateFromProperties(SimTK::State& s) const
 {
     Super::initStateFromProperties(s);
 
-    const MultibodySystem& system = _model->getMultibodySystem();
+    const MultibodySystem& system = getModel().getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (matter.getUseEulerAngles(s))
         return;
