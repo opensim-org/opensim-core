@@ -27,7 +27,7 @@ before_install:
   # Build Simbody.
   - make -j8
   # Test Simbody.
-  - ctest -j8
+  - ctest -j8 --output-on-failure
   # Install Simbody.
   - make -j8 install
   # Go back to the directory containing OpenSim.
@@ -50,4 +50,4 @@ install:
 
 script:
   # Install OpenSim.
-  - ctest -j8
+  - ctest -j8 --output-on-failure
