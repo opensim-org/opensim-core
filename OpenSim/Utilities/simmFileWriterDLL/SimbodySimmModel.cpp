@@ -174,10 +174,15 @@ void SimbodySimmModel::connectSimbodySimmModel(const Model* aModel)
    for (int i = 0; i < bodySet.getSize(); i++) {
       if (bodySet.get(i).getConcreteClassName()=="Body") {
          const Body& sb = bodySet.get(i);
-         convertBody(sb, &_model->getMarkerSet());
+         convertBody(sb);
       }
    }
 
+   const JointSet& jointSet = _model->getJointSet();
+   for (int i = 0; i < jointSet.getSize(); i++) {
+		   const Joint& sj = jointSet.get(i);
+		   convertJoint(sj);
+   }
 	// Create gencoords from the coordinates
 	const CoordinateSet& coordinates = _model->getCoordinateSet();
 	for (int i=0; i<coordinates.getSize(); i++) {
@@ -420,15 +425,17 @@ const OpenSim::Function* SimbodySimmModel::isDependent(const Coordinate* aCoordi
  *      the position and orientation in the parent body.
  *
  * @param aBody The body to convert.
- * @param aMarkerSet The marker set for the model.
  */
-void SimbodySimmModel::convertBody(const OpenSim::Body& aBody, const MarkerSet* aMarkerSet)
+void SimbodySimmModel::convertBody(const OpenSim::Body& aBody)
 {
-   addBody(aBody);
-
-   if (!aBody.hasJoint())
-		return;
-   const Joint& joint = aBody.getJoint();
+	addBody(aBody);
+}
+/**
+ * Convert an OpenSim Joint into the equivalent SIMM joint, only subset of joint types are supported
+ * 
+*/
+void SimbodySimmModel::convertJoint(const Joint& joint)
+{
 
    string parentName;
    string childName;
@@ -443,8 +450,8 @@ void SimbodySimmModel::convertBody(const OpenSim::Body& aBody, const MarkerSet* 
 		int rotationsSoFar = 0;
 		SimTK::Vec3 location;
 		SimTK::Vec3 orientation;
-		joint.getLocationInParent(location);
-		joint.getOrientationInParent(orientation);
+		location = joint.getLocationInParent();
+		orientation = joint.getOrientationInParent();
 		if (NOT_EQUAL_WITHIN_ERROR(location[0], 0.0))
 			ssj->addConstantDof("tx", NULL, location[0]);
 		if (NOT_EQUAL_WITHIN_ERROR(location[1], 0.0))
@@ -486,7 +493,7 @@ void SimbodySimmModel::convertBody(const OpenSim::Body& aBody, const MarkerSet* 
 		ssj->addFunctionDof(zaxis, joint.getCoordinateSet().get(index).getName(), 0, Coordinate::Rotational);
 	} else if (joint.getConcreteClassName()==("CustomJoint")) {
 		const CustomJoint* cj = (CustomJoint*)(&joint);
-		const CoordinateSet& coordinates = aBody.getModel().getCoordinateSet();
+		const CoordinateSet& coordinates = cj->getCoordinateSet();
 
 		// Add the joint's transform axes to the SimbodySimmJoint.
 		const SpatialTransform& dofs = cj->getSpatialTransform();
@@ -536,8 +543,8 @@ bool SimbodySimmModel::isChildJointNeeded(const OpenSim::Joint& aJoint)
 	SimTK::Vec3 location;
 	SimTK::Vec3 orientation;
 
-	aJoint.getLocation(location);
-	aJoint.getOrientation(orientation);
+	location = aJoint.getLocationInChild();
+	orientation= aJoint.getOrientationInChild();
 
 	double sum = location.scalarNormSqr();
    if (NOT_EQUAL_WITHIN_ERROR(sum, 0.0))
@@ -569,8 +576,8 @@ bool SimbodySimmModel::isParentJointNeeded(const OpenSim::Joint& aJoint)
 	SimTK::Vec3 location;
 	SimTK::Vec3 orientation;
 
-	aJoint.getLocationInParent(location);
-	aJoint.getOrientationInParent(orientation);
+	location = aJoint.getLocationInParent();
+	orientation = aJoint.getOrientationInParent();
 
 	bool translationsUsed[] = {false, false, false}, translationsDone = false;
 	int numTranslations = 0, numRotations = 0;
@@ -703,30 +710,30 @@ bool SimbodySimmModel::addExtraJoints(const OpenSim::Joint& aJoint, string& rPar
 	bool parentJointAdded = false;
 
    if (isParentJointNeeded(aJoint)) {
-		aJoint.getLocationInParent(location);
-		aJoint.getOrientationInParent(orientation);
-      string bodyName = aJoint.getBody().getName() + "_pjc";
+	   location = aJoint.getLocationInParent();
+	   orientation = aJoint.getOrientationInParent();
+      string bodyName = aJoint.getChildBodyName() + "_pjc";
       SimbodySimmBody* b = new SimbodySimmBody(NULL, bodyName);
       _simmBody.append(b);
-      makeSimmJoint(aJoint.getName() + "_pjc", aJoint.getParentName(), bodyName, location, orientation);
+      makeSimmJoint(aJoint.getName() + "_pjc", aJoint.getParentBodyName(), bodyName, location, orientation);
       rParentName = bodyName;
 		parentJointAdded = true;
    } else {
-      rParentName = aJoint.getParentName();
+      rParentName = aJoint.getParentBodyName();
 		parentJointAdded = false;
    }
 
    if (isChildJointNeeded(aJoint)) {
-		aJoint.getLocation(location);
-		aJoint.getOrientation(orientation);
-		string bodyName = aJoint.getBody().getName() + "_jcc";
+	   location = aJoint.getLocationInChild();
+	   orientation = aJoint.getOrientationInChild();
+	   string bodyName = aJoint.getChildBodyName() + "_jcc";
       SimbodySimmBody* b = new SimbodySimmBody(NULL, bodyName);
       _simmBody.append(b);
       // This joint is specified in the reverse direction.
-      makeSimmJoint(aJoint.getName() + "_jcc", aJoint.getBody().getName(), bodyName, location, orientation);
+      makeSimmJoint(aJoint.getName() + "_jcc", aJoint.getChildBodyName(), bodyName, location, orientation);
       rChildName = bodyName;
    } else {
-      rChildName = aJoint.getBody().getName();
+	   rChildName = aJoint.getChildBodyName();
    }
 
 	return parentJointAdded;

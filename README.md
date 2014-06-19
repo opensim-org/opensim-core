@@ -1,6 +1,6 @@
+OpenSim Core [![Build Status][buildstatus_image]][travisci]
+============ 
 
-                                OPENSIM
- 
 
 What is it? 
 ----------- 
@@ -29,12 +29,14 @@ http://simtk-confluence.stanford.edu:8080/display/OpenSim/Building+OpenSim+from+
 
 
 Cross-platform Instructions
----------------------------------------------
-The release of OpenSim on Linux and MAC is only in the form of API/Libraries and headers, for GUI use we recommend using a Virtual Machine that runs windows.
+---------------------------
+The release of OpenSim on Linux and MAC is only in the form of API/Libraries and headers, for GUI use we recommend
+using a Virtual Machine that runs windows.
 
 To use the command line utilities on these systems you need to 
 1. Add the directory bin (under the directory where you untar the distribution) to your path (environment variable PATH)
-2. Add the same directory to the dynamic libraries path (this is env. var LD_LIBRARY_PATH on Linux, DYLD_LIBRARY_PATH on Mac).
+2. Add the same directory to the dynamic libraries path (this is env. var LD_LIBRARY_PATH on Linux, 
+   DYLD_LIBRARY_PATH on Mac).
 
 The libraries are built with gcc 4.6.3 64 bit (Linux Ubuntu 12.04, Mac OSX 10.6) . 
 
@@ -44,3 +46,6 @@ To build the API examples please follow the developer's guide steps, use CMake (
   
                                           The OpenSim Project
   
+
+[travisci]: https://magnum.travis-ci.com/opensim-org/opensim-core
+[buildstatus_image]: https://travis-ci.org/opensim-org/opensim-core.png?branch=master

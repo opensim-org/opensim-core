@@ -90,12 +90,10 @@ void SimbodySimmBody::write(ofstream& aStream)
    if (_body != NULL) {
       aStream << "mass " << _body->getMass() << endl;
 
-      SimTK::Vec3 massCenter;
-      _body->getMassCenter(massCenter);
+      SimTK::Vec3 massCenter = _body->getMassCenter();
       aStream << "masscenter " << massCenter[0] << " " << massCenter[1] << " " << massCenter[2] << endl;
 
-      Mat33 inertia;
-      _body->getInertia(inertia);
+      Mat33 inertia = _body->getInertia().toMat33();
       aStream << "inertia " << inertia[0][0] << " " << inertia[0][1] << " " << inertia[0][2] << endl;
       aStream << "        " << inertia[1][0] << " " << inertia[1][1] << " " << inertia[1][2] << endl;
       aStream << "        " << inertia[2][0] << " " << inertia[2][1] << " " << inertia[2][2] << endl;
