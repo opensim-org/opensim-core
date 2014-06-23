@@ -281,7 +281,7 @@ public:
 	SimTK_DOWNCAST(Input, AbstractInput);
 
 private:
-	mutable SimTK::ReferencePtr<const Output<T>> connectee;
+	mutable SimTK::ReferencePtr< const Output<T>  > connectee;
 }; // END class Input<Y>
 
 
