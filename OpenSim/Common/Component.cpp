@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                            OpenSim: Component.cpp                        *
+ *                            OpenSim: Component.cpp                          *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -327,15 +327,31 @@ void Component::addStateVariable(Component::StateVariable*  stateVariable) const
     // state variable index will be invalid by default
     // upon allocation during realizeTopology the index will be set
 	_namedStateVariableInfo[stateVariableName] = StateVariableInfo(stateVariable, order);
+
+    // If the StateVariable is not hidden, create an Output for this
+    // StateVariable's value. We do this with an AddedStateVariable since
+    // only AddedStateVariable's have a stage.
+    if(!stateVariable->isHidden()){
+        // StateVariable values are of type double. Also, StateVariable's
+        // always have a value after they've been created, and they don't
+        // depend on anything. So, their dependsOn Stage is Model.
+        const_cast<Component*>(this)->constructOutput<double>(
+                stateVariableName,
+                std::bind(&Component::StateVariable::getValue,
+                    stateVariable,
+                    std::placeholders::_1),
+                Stage::Model);
+    }
 				
 	const AddedStateVariable* asv =
 		dynamic_cast<const Component::AddedStateVariable *>(stateVariable);
-	// Now automatically add a cache variable to hold the derivative
-	// to enable a similar interface for setting and geting the derivatives
-	// based on the creator specified state name
+    // Now automatically add a cache variable to hold the derivative
+    // to enable a similar interface for setting and getting the derivatives
+    // based on the creator specified state name
 	if(asv){
 		addCacheVariable(stateVariableName+"_deriv", 0.0, Stage::Dynamics);
 	}
+
 }
 
 

@@ -443,6 +443,13 @@ public:
 	/**
      * Get the value of a state variable allocated by this Component.
      *
+     * To connect this StateVariable as an input to another component (such as
+     * a Reporter), use getOutput(name); each state variable has a
+     * corresponding Output:
+     *  @code
+     *  foo.getInput("input1").connect(bar.getOutput(name));
+	 *  @endcode
+     *
      * @param state   the State for which to get the value
      * @param name    the name (string) of the state variable of interest
      */
@@ -1071,10 +1078,14 @@ template <class T> friend class ComponentMeasure;
 
 	/** The above method provides a convenient interface to this method, which
 	automatically creates an 'AddedStateVariable' and allocates resources in the
-	SimTK::State for thsi variable.  This interface allows the creator to add/expose
-	state variables that are allocated by underlying Simbody components and 
-	specifying how the state variable value is accessed by implementing a 
-	concrete StateVariable and adding it to the component using this method.*/
+    SimTK::State for this variable.  This interface allows the creator to
+    add/expose state variables that are allocated by underlying Simbody
+    components and specifying how the state variable value is accessed by
+    implementing a concrete StateVariable and adding it to the component using
+    this method. If the StateVariable is NOT hidden, this also creates an
+    Output in this Component with the same name as the StateVariable. Reporters
+    should use this Output to get the StateVariable's value (instead of using
+    getStateVariable()). */
 	void addStateVariable(Component::StateVariable*  stateVariable) const;
 
     /** Add a system discrete variable belonging to this Component, give
