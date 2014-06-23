@@ -554,9 +554,8 @@ int main() {
         foo.getInput("activation").connect(bar.getOutput("activation"));
         // Since hiddenStateVar is a hidden state variable, it has no
         // corresponding output.
-        ASSERT_THROW(OpenSim::Exception,
-            const AbstractOutput& out = bar.getOutput("hiddenStateVar");
-        );
+        ASSERT_THROW( OpenSim::Exception,
+            const AbstractOutput& out = bar.getOutput("hiddenStateVar") );
 
 		s = system3.realizeTopology();
 

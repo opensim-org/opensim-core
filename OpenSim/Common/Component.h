@@ -415,8 +415,11 @@ public:
 			std::string outName = name.substr(back+1, name.length()-back);
 
 			const Component* found = findComponent(prefix);
-			if(found)
+			// if found is this component again, no point trying to find
+			// output again, otherwise we would not have reached here 
+			if (found && (found != this)) { 
 				return found->getOutput(outName);
+			}
 		}
 
 		std::stringstream msg;
