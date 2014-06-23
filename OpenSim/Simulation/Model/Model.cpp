@@ -637,11 +637,6 @@ void Model::createMultibodySystem()
 	SimTK::UnitVec3 direction = magnitude==0 ? SimTK::UnitVec3(0,-1,0) : SimTK::UnitVec3(_gravity/magnitude);
 	_gravityForce = new SimTK::Force::Gravity(*_forceSubsystem, *_matter, direction, magnitude);
 
-	/*
-	cout << "**************** Graph of the Multibody Tree ****************" << endl;
-	_multibodyTree.dumpGraph(cout);
-	cout << "****************** End of the Multibody Tree ****************" << endl;
-	*/
 	addToSystem(*_system);
 }
 
@@ -770,8 +765,8 @@ void Model::connectToModel(Model &model)
 
 	// Model is connected so build the Multibody tree to represent it
 	_multibodyTree.generateGraph();
-	_multibodyTree.dumpGraph(cout);
-	cout << endl;
+	//_multibodyTree.dumpGraph(cout);
+	//cout << endl;
 
 	SimTK::Array_<Component *>::iterator it = nullptr;
 	JointSet& joints = upd_JointSet();
@@ -1737,8 +1732,7 @@ void Model::createAssemblySolver(const SimTK::State& s)
 
 void Model::updateAssemblyConditions(SimTK::State& s)
 {
-	createAssemblySolver(s);
-	
+	createAssemblySolver(s);	
 }
 //--------------------------------------------------------------------------
 // MARKERS
