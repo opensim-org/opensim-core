@@ -12,27 +12,24 @@ IF ( JAVA_COMPILE )
   # MESSAGE ( STATUS "  Java" )
   # MESSAGE ( STATUS " ===========================================" )
   ## 
-  EXECUTE_PROCESS ( COMMAND ${JAVA_COMPILE} -version
-                    OUTPUT_VARIABLE JAVA_OUTPUT
-                    ERROR_VARIABLE  JAVA_ERROR_OUTPUT
-                    RESULT_VARIABLE JAVA_RETURN_VALUE )
-  IF ( NOT JAVA_RETURN_VALUE )
-    STRING ( REGEX MATCH [0-9._]+ JAVA_VERSION ${JAVA_ERROR_OUTPUT} )
-  ENDIF ( NOT JAVA_RETURN_VALUE )
 
   GET_FILENAME_COMPONENT (JAVA_BIN_PATH "${JAVA_COMPILE}" PATH)
   FIND_PROGRAM ( JAVA_JAVA_H javah PATHS ${JAVA_BIN_PATH} )
-  
-  FILE(GLOB JAR_SRCS RELATIVE ${OpenSim_SOURCE_DIR}/Gui/opensim/modeling/src/org/opensim/modeling/ ${OpenSim_SOURCE_DIR}/Gui/opensim/modeling/src/org/opensim/modeling/*.java)
-	ADD_CUSTOM_TARGET ( Javajar.classes
-     COMMAND ${JAVA_COMPILE} -d ${OpenSim_SOURCE_DIR}/OpenSim/Java/build
-     ${JAR_SRCS} 
-     WORKING_DIRECTORY ${OpenSim_SOURCE_DIR}/Gui/opensim/modeling/src/org/opensim/modeling/)
+
+  # MESSAGE ( "JAVA_COMPILE=" ${JAVA_COMPILE} )
+  # MESSAGE ( "JAVA_SRC=" ${CMAKE_BINARY_DIR}"/OpenSim/Wrapping/Java/OpenSimJNI/src/org/opensim/modeling/*.java" )
+  # MESSAGE ( "WD=" ${CMAKE_BINARY_DIR}"/OpenSim/Wrapping/Java/OpenSimJNI/src/" )
+
+  ADD_CUSTOM_TARGET ( JavaCompile
+     COMMAND ${JAVA_COMPILE} 
+     ${CMAKE_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/src/org/opensim/modeling/*.java 
+     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/src/)
      
-  ADD_CUSTOM_COMMAND(TARGET Javajar.classes
+  ADD_CUSTOM_COMMAND(TARGET JavaCompile
                    POST_BUILD
-                   COMMAND ${JAVA_ARCHIVE} cvf ${OpenSim_SOURCE_DIR}/OpenSim/Java/opensim.jar ${OpenSim_SOURCE_DIR}/OpenSim/Java/src/org
-  )
+                   COMMAND ${JAVA_ARCHIVE} -cvf ${CMAKE_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/src/org-opensim-modeling.jar 
+				   ${CMAKE_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/src/org/opensim/modeling/*.class
+   )
 ENDIF ( JAVA_COMPILE )
 ENDIF(BUILD_JAVA_WRAPPING)
 
