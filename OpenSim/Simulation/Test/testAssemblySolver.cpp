@@ -58,6 +58,7 @@ int main()
 //==========================================================================================================
 void testAssembleModelWithConstraints(string modelFile)
 {
+	double accuracy = 1e-6;
 	using namespace SimTK;
 
 	cout << "\n****************************************************************************" << endl;
@@ -80,6 +81,7 @@ void testAssembleModelWithConstraints(string modelFile)
 	}
 
 	//model.setUseVisualizer(true);
+	model.set_assembly_accuracy(accuracy);
 	
     State state = model.initSystem();
 	model.equilibrateMuscles(state);
@@ -88,6 +90,22 @@ void testAssembleModelWithConstraints(string modelFile)
 	for(int i=0; i< coords.getSize(); i++) {
 		cout << "Coordinate " << coords[i].getName() << " get value = " << coords[i].getValue(state) << endl;
 	}
+
+	// Initial coordinates after initial assembly
+	Vector q0 = state.getQ();
+
+	// do assembly again- 
+	model.assemble(state);
+
+	Vector q0_1 = state.getQ();
+
+
+	// verify the coordinates do not change within the desired accuracy
+	// test the "do-no-harm" rule for assembly
+	double qErr0 = (q0_1 - q0).norm();
+
+	cout << "Norm change in q after initial assembly 0: " << qErr0 << endl;
+	ASSERT_EQUAL(0.0, qErr0/q0.norm(), accuracy);
 
 	//For debugging the assembled pose
 	if (model.hasVisualizer()){
@@ -156,56 +174,74 @@ void testAssembleModelWithConstraints(string modelFile)
 
 	cout << "Average Change in  Default Configuration:" << q_error/coords.getSize() << endl;
 
+	model.equilibrateMuscles(state);
+
 	//==========================================================================================================
 	// Integrate forward and init the state and update defaults to make sure
 	// assembler is not effecting anything more than the pose.
     RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-	integrator.setAccuracy(1.0e-8);
+	integrator.setAccuracy(accuracy);
     Manager manager(model, integrator);
     manager.setInitialTime(0.0);
-    manager.setFinalTime(0.01);
+    manager.setFinalTime(0.1);
 
-	// Configuration at the inital state
-	Vector y1 = state.getY();
- 
 	// set default (properties) which capture an accurate snapshot of the model
+	// prior to simulation.
 	model.setPropertiesFromState(state);
 
 	// Simulate forward in time
     manager.integrate(state);
+	model.getMultibodySystem().realize(state, SimTK::Stage::Velocity);
+
+	Vector positionErr = state.getQErr();
+	int nPerr = positionErr.size();
+	double pErrMag = positionErr.norm();
 
 	// get the configuration at the end of the simulaton
-    Vector y2 = state.getY();
+	Vector q1 = state.getQ();
+
+	model.updateAssemblyConditions(state);
+	// Assemble after the simulation to see how much the assembly changes things
+	model.assemble(state);
+	Vector q1_1 = state.getQ();
+	Vector q1ErrVec = (q1_1 - q1);
+	//q1ErrVec.dump("Post simulation: q1_assembled - q1_sim");
+	double q1Err = q1ErrVec.norm();
+	
+	cout << "Norm change in q after simulation assembly: " << q1Err << endl;
+	ASSERT_EQUAL(0.0, q1Err/q1.norm(), accuracy);
 
 	// recreate system with states from initial defaults
-    State state2 = model.initSystem();
-	// get the configuration after getting a new state from initial defaults
-    Vector y3 = state2.getY();
+	State state0 = model.initSystem();
 
-	// set properties to  capture model state after the simulation
+	// get the configuration after getting a new state from initial defaults
+	// to verify that running a simulation doesn't wreck defaults
+    Vector q0_2 = state0.getQ();
+
+	// set default (properties) which capture an accurate snapshot of the model
+	// post simulation.
 	model.setPropertiesFromState(state);
-	model.print("test_" + modelFile + "_post.osim");
-	model.assemble(state);
-	model.setPropertiesFromState(state);
-	model.print("test_"+modelFile+"_post_reassemble.osim");
 
 	// recreate system with states from post simulation defaults
-    state2 = model.initSystem();
+    const State& state1 = model.initSystem();
 	// get the configuration from post simulation defaults (properties)
-    Vector y4 = state2.getY();
-	
+    Vector q1_2 = state1.getQ();
+
+	double q0Err = (q0_2 - q0_1).norm();
+	double q1Err_1 = (q1_2 - q1_1).norm();
+
 	//cout << "******************* Init System Inital State *******************" << endl;
-	for (int i = 0; i < y1.size(); i++) {
-		//cout << "Pre-simulation:" << i << " y1 = " << y1[i] << ", y3 = " << y3[i] << endl;
-		ASSERT_EQUAL(y1[i], y3[i], 2e-4, __FILE__, __LINE__, "Initial state changed after 2nd call to initSystem");
+	for (int i = 0; i < q0_1.size(); i++) {
+		cout << "Pre-simulation:" << i << " q0_1 = " << q0_1[i] << ", q0_2 = " << q0_2[i] << endl;
+		ASSERT_EQUAL(q0_1[i], q0_2[i], 10*accuracy, __FILE__, __LINE__, "Initial state changed after 2nd call to initSystem");
 	}
 
 	cout << "******************* Init System Final State *******************" << endl;
-	for (int i = 0; i < y1.size(); i++) {
-		cout << "Post-simulation:"<<i<< " y2 = " << y2[i] << ", y4 = " << y4[i] << endl;
-		ASSERT_EQUAL(y2[i], y4[i], 2e-4, __FILE__, __LINE__, "State differed after a simulation from same init state.");
+	for (int i = 0; i < q1_1.size(); i++) {
+		cout << "Post-simulation:" << i << " q1_1 = " << q1_1[i] << ", q1_2 = " << q1_2[i] << endl;
+		ASSERT_EQUAL(q1_1[i], q1_2[i], 10 * accuracy, __FILE__, __LINE__, "State differed after a simulation from same init state.");
     }
-    ASSERT(max(abs(y1-y2)) > 1e-3, __FILE__, __LINE__, "Check that state changed after simulation FAILED");
+	ASSERT(max(abs(q1_1 - q0_1)) > 1e-2, __FILE__, __LINE__, "Check that state changed after simulation FAILED");
 }
 
 

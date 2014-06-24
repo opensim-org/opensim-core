@@ -385,11 +385,11 @@ void Joint::addToSystem(SimTK::MultibodySystem& system) const
 	// add sub components (e.g. Coordinates) once we have necessary system indices
 	Super::addToSystem(system);
 
-	stringstream msg;
-	msg << getConcreteClassName() << ":'" << getName() << "' connects parent '";
-	msg << getParentBodyName() << "'[" << getParentBody().getIndex() << "] and child '";
-	msg << getChildBodyName() << "'[" << getChildBody().getIndex() << "]";
-	//cout << msg << endl;
+	/* TODO: Useful to include through debug message/log in the future
+	cout << getConcreteClassName() << ":'" << getName() << "' connects parent '";
+	cout << getParentBodyName() << "'[" << getParentBody().getIndex() << "] and child '";
+	cout << getChildBodyName() << "'[" << getChildBody().getIndex() << "]" << endl;
+     */
 }
 
 void Joint::initStateFromProperties(SimTK::State& s) const

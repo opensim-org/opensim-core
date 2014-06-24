@@ -1,6 +1,6 @@
 %module(directors="1") opensimModel
 %module opensimModel
-#pragma SWIG nowarn=822,451,503,516,325
+#pragma SWIG nowarn=822,451,503,516,325,401
 %{
 #include <OpenSim/version.h>
 #include <SimTKsimbody.h>
@@ -43,7 +43,7 @@
 #include <OpenSim/Common/FunctionSet.h>
 
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
-
+#include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
 #include <OpenSim/Simulation/Model/ComponentSet.h>
@@ -324,7 +324,7 @@ using namespace SimTK;
 	}
 }
 */
-%javamethodmodifiers OpenSim::Model::addComponent "private";
+%javamethodmodifiers OpenSim::Model::addModelComponent "private";
 %javamethodmodifiers OpenSim::Model::addBody "private";
 %javamethodmodifiers OpenSim::Model::addConstraint "private";
 %javamethodmodifiers OpenSim::Model::addForce "private";
@@ -333,7 +333,7 @@ using namespace SimTK;
 %javamethodmodifiers OpenSim::Model::addController "private";
 %javamethodmodifiers OpenSim::Model::addAnalysis "private";
 
-%rename OpenSim::Model::addComponent private_addComponent;
+%rename OpenSim::Model::addModelComponent private_addModelComponent;
 %rename OpenSim::Model::addBody private_addBody;
 %rename OpenSim::Model::addConstraint private_addConstraint;
 %rename OpenSim::Model::addForce private_addForce;
@@ -374,15 +374,14 @@ using namespace SimTK;
     else return "";
   }
 
-  public void addComponent(ModelComponent aComponent) {
+  public void addModelComponent(ModelComponent aComponent) {
 	aComponent.markAdopted();
-    private_addComponent(aComponent);
+    private_addModelComponent(aComponent);
   }
 
   public void addBody(Body aBody) {
 	aBody.markAdopted();
     private_addBody(aBody);
-	aBody.getJoint().markAdopted();
   }
 
   public void addConstraint(Constraint aConstraint) {
@@ -543,12 +542,8 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 };
 
 %extend OpenSim::Body {
-	void getCenterOfMass(double dCom[3]) {
-		self->getMassCenter(SimTK::Vec3::updAs(dCom));
-	};
 	void getInertia(Array<double>& rInertia) {
-		SimTK::Mat33 inertia;
-		self->getInertia(inertia);
+		SimTK::Mat33 inertia= self->getInertia().toMat33();
 		rInertia[0]=inertia[0][0];
 		rInertia[1]=inertia[1][1];
 		rInertia[2]=inertia[2][2];
@@ -782,6 +777,9 @@ namespace SimTK {
 %template(ArrayObjPtr) OpenSim::Array<OpenSim::Object*>;
 %template(ArrayPtrsObj) OpenSim::ArrayPtrs<OpenSim::Object>;
 
+%include <OpenSim/Common/ComponentOutput.h>
+%include <OpenSim/Common/ComponentConnector.h>
+%include <OpenSim/Common/Component.h>
 %include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
 %include <OpenSim/Common/ScaleSet.h>

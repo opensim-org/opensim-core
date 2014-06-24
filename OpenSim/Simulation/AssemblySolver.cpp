@@ -193,9 +193,10 @@ void AssemblySolver::updateGoals(const SimTK::State &s)
  */
 void AssemblySolver::assemble(SimTK::State &state)
 {
-	// Make a working copy of the state that will be used to set the internal state of the solver
-	// This is necessary because we may wish to disable redundant constraints, but do not want this
-	// to effect the state of constraints the user expects
+	// Make a working copy of the state that will be used to set the internal 
+	// state of the solver. This is necessary because we may wish to disable 
+	// redundant constraints, but do not want this  to effect the state of 
+	// constraints the user expects
 	SimTK::State s = state;
 	
 	// Make sure goals are up-to-date.
@@ -203,13 +204,15 @@ void AssemblySolver::assemble(SimTK::State &state)
 
 	// Let assembler perform some internal setup
 	_assembler->initialize(s);
-
-	/*
-	printf("UNASSEMBLED CONFIGURATION (err=%g, cost=%g, qerr=%g)\n",
-        _assembler->calcCurrentErrorNorm(), _assembler->calcCurrentGoal(), max(abs(_assembler->getInternalState().getQErr())));
-	cout << "Model numQs: " << _assembler->getInternalState().getNQ() << " Assembler num freeQs: " << _assembler->getNumFreeQs() << endl;
-	*/
-
+	
+	/* TODO: Useful to include through debug message/log in the future
+	printf("UNASSEMBLED CONFIGURATION (normerr=%g, maxerr=%g, cost=%g)\n",
+        _assembler->calcCurrentErrorNorm(),
+		max(abs(_assembler->getInternalState().getQErr())),
+		_assembler->calcCurrentGoal());
+	cout << "Model numQs: " << _assembler->getInternalState().getNQ() 
+		<< " Assembler num freeQs: " << _assembler->getNumFreeQs() << endl;
+    */
 	try{
 		// Now do the assembly and return the updated state.
 		_assembler->assemble();
@@ -226,12 +229,11 @@ void AssemblySolver::assemble(SimTK::State &state)
 			if(isLocked)
 				modelCoordSet[i].setLocked(state, isLocked);
 		}
-
-		/*
-		printf("ASSEMBLED CONFIGURATION (acc=%g tol=%g err=%g, cost=%g, qerr=%g)\n",
+		/* TODO: Useful to include through debug message/log in the future
+		printf("ASSEMBLED CONFIGURATION (acc=%g tol=%g normerr=%g, maxerr=%g, cost=%g)\n",
 			_assembler->getAccuracyInUse(), _assembler->getErrorToleranceInUse(), 
-			_assembler->calcCurrentErrorNorm(), _assembler->calcCurrentGoal(),
-			max(abs(_assembler->getInternalState().getQErr())));
+			_assembler->calcCurrentErrorNorm(), max(abs(_assembler->getInternalState().getQErr())),
+			_assembler->calcCurrentGoal());
 		printf("# initializations=%d\n", _assembler->getNumInitializations());
 		printf("# assembly steps: %d\n", _assembler->getNumAssemblySteps());
 		printf(" evals: goal=%d grad=%d error=%d jac=%d\n",
@@ -263,8 +265,18 @@ void AssemblySolver::track(SimTK::State &s)
 		updateGoals(s);
 	}
 	else{
-		throw Exception("AssemblySolver::track() failed: assemble() must be called first.");
+		throw Exception(
+			"AssemblySolver::track() failed: assemble() must be called first.");
 	}
+
+	/* TODO: Useful to include through debug message/log in the future
+	printf("UNASSEMBLED(track) CONFIGURATION (normerr=%g, maxerr=%g, cost=%g)\n",
+		_assembler->calcCurrentErrorNorm(), 
+		max(abs(_assembler->getInternalState().getQErr())), 
+		_assembler->calcCurrentGoal() );
+	cout << "Model numQs: " << _assembler->getInternalState().getNQ() 
+		<< " Assembler num freeQs: " << _assembler->getNumFreeQs() << endl;
+    */
 
 	try{
 		// Now do the assembly and return the updated state.
@@ -272,12 +284,13 @@ void AssemblySolver::track(SimTK::State &s)
 
 		// update the state from the result of the assembler 
 		_assembler->updateFromInternalState(s);
-
-		/*
-		printf("Tracking: t= %f (acc=%g tol=%g err=%g, cost=%g, qerr=%g)\n", s.getTime(),
+		
+		/* TODO: Useful to include through debug message/log in the future
+		printf("Tracking: t= %f (acc=%g tol=%g normerr=%g, maxerr=%g, cost=%g)\n", 
+			s.getTime(),
 			_assembler->getAccuracyInUse(), _assembler->getErrorToleranceInUse(), 
-			_assembler->calcCurrentErrorNorm(), _assembler->calcCurrentGoal(),
-			max(abs(_assembler->getInternalState().getQErr())));
+			_assembler->calcCurrentErrorNorm(), max(abs(_assembler->getInternalState().getQErr())),
+			_assembler->calcCurrentGoal());	
 		*/
 	}
 	catch (const std::exception& ex)

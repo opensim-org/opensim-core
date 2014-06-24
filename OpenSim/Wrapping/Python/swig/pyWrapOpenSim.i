@@ -53,9 +53,9 @@ own project.
 
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 
-#include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Simulation/Model/ModelComponentSet.h>
-#include <OpenSim/Simulation/Model/ComponentSet.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ModelSet.h>
+#include <OpenSim/Simulation/Model/Set.h>
 
 #include <OpenSim/Simulation/Solver.h>
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
@@ -311,7 +311,7 @@ using namespace SimTK;
 	}
 %}
 
-%javamethodmodifiers OpenSim::Model::addComponent "private";
+%javamethodmodifiers OpenSim::Model::add "private";
 %javamethodmodifiers OpenSim::Model::addBody "private";
 %javamethodmodifiers OpenSim::Model::addConstraint "private";
 %javamethodmodifiers OpenSim::Model::addForce "private";
@@ -320,7 +320,7 @@ using namespace SimTK;
 %javamethodmodifiers OpenSim::Model::addController "private";
 %javamethodmodifiers OpenSim::Model::addAnalysis "private";
 
-%rename OpenSim::Model::addComponent private_addComponent;
+%rename OpenSim::Model::add private_add;
 %rename OpenSim::Model::addBody private_addBody;
 %rename OpenSim::Model::addConstraint private_addConstraint;
 %rename OpenSim::Model::addForce private_addForce;
@@ -531,7 +531,7 @@ care of deleting it.
 };
 
 /*
-The added component is not responsible for its own memory management anymore
+The added  is not responsible for its own memory management anymore
 once added to the Model.  These lines must go at this point in this .i file. I
 originally had them at the bottom, and then they didn't work!
 
@@ -543,7 +543,7 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
 %}
 %enddef
 
-MODEL_ADOPT_HELPER(Component);
+MODEL_ADOPT_HELPER();
 MODEL_ADOPT_HELPER(Body);
 MODEL_ADOPT_HELPER(Probe);
 MODEL_ADOPT_HELPER(Constraint);
@@ -789,7 +789,9 @@ namespace SimTK {
 %template(ArrayStr) OpenSim::Array<std::string>;
 %template(ArrayObjPtr) OpenSim::Array<OpenSim::Object*>;
 %template(ArrayPtrsObj) OpenSim::ArrayPtrs<OpenSim::Object>;
-
+%include <OpenSim/Common/Output.h>
+%include <OpenSim/Common/Connector.h>
+%include <OpenSim/Common/.h>
 %include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
 %include <OpenSim/Common/ScaleSet.h>
@@ -797,11 +799,11 @@ namespace SimTK {
 
 // osimSimulation
 %include <OpenSim/Simulation/osimSimulationDLL.h>
-%include <OpenSim/Simulation/Model/ModelComponent.h>
-%template(SetModelComponents) OpenSim::Set<OpenSim::ModelComponent>;
-%include <OpenSim/Simulation/Model/ModelComponentSet.h>
-%template(ModelComponentSetModelComponent) OpenSim::ModelComponentSet<OpenSim::ModelComponent>;
-%include <OpenSim/Simulation/Model/ComponentSet.h>
+%include <OpenSim/Simulation/Model/Model.h>
+%template(SetModels) OpenSim::Set<OpenSim::Model>;
+%include <OpenSim/Simulation/Model/ModelSet.h>
+%template(ModelSetModel) OpenSim::ModelSet<OpenSim::Model>;
+%include <OpenSim/Simulation/Model/Set.h>
 
 %template(SetMuscles) OpenSim::Set<OpenSim::Muscle>;
 
@@ -811,24 +813,24 @@ namespace SimTK {
 
 %include <OpenSim/Simulation/Model/Force.h>
 %template(SetForces) OpenSim::Set<OpenSim::Force>;
-%template(ModelComponentSetForces) OpenSim::ModelComponentSet<OpenSim::Force>;
+%template(ModelSetForces) OpenSim::ModelSet<OpenSim::Force>;
 %include <OpenSim/Simulation/Model/ForceSet.h>
 %include <OpenSim/Simulation/Model/ExternalForce.h>
 %template(SetExternalForces) OpenSim::Set<OpenSim::ExternalForce>;
 
 %include <OpenSim/Simulation/Control/Controller.h>
 %template(SetControllers) OpenSim::Set<OpenSim::Controller>;
-%template(ModelComponentSetControllers) OpenSim::ModelComponentSet<OpenSim::Controller>;
+%template(ModelSetControllers) OpenSim::ModelSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ControllerSet.h>
 
-%template(ModelComponentSetExternalForces) OpenSim::ModelComponentSet<OpenSim::ExternalForce>;
+%template(ModelSetExternalForces) OpenSim::ModelSet<OpenSim::ExternalForce>;
 %include <OpenSim/Simulation/Model/ExternalLoads.h>
 %include <OpenSim/Simulation/Model/PrescribedForce.h>
 %include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
 
 %include <OpenSim/Simulation/Model/ContactGeometry.h>
 %template(SetContactGeometry) OpenSim::Set<OpenSim::ContactGeometry>;
-%template(ModelComponentSetContactGeometry) OpenSim::ModelComponentSet<OpenSim::ContactGeometry>;
+%template(ModelSetContactGeometry) OpenSim::ModelSet<OpenSim::ContactGeometry>;
 %include <OpenSim/Simulation/Model/ContactGeometrySet.h>
 %include <OpenSim/Simulation/Model/ContactHalfSpace.h>
 %include <OpenSim/Simulation/Model/ContactMesh.h>
@@ -875,7 +877,7 @@ namespace SimTK {
 
 %include <OpenSim/Simulation/SimbodyEngine/Body.h>
 %template(SetBodies) OpenSim::Set<OpenSim::Body>;
-%template(ModelComponentSetBodies) OpenSim::ModelComponentSet<OpenSim::Body>;
+%template(ModelSetBodies) OpenSim::ModelSet<OpenSim::Body>;
 %include <OpenSim/Simulation/Model/BodySet.h>
 
 %include <OpenSim/Simulation/Model/BodyScale.h>
@@ -887,7 +889,7 @@ namespace SimTK {
 %include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 %include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 %template(SetCoordinates) OpenSim::Set<OpenSim::Coordinate>;
-%template(ModelComponentSetCoordinates) OpenSim::ModelComponentSet<OpenSim::Coordinate>;
+%template(ModelSetCoordinates) OpenSim::ModelSet<OpenSim::Coordinate>;
 %include <OpenSim/Simulation/Model/CoordinateSet.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/Joint.h>
@@ -903,13 +905,13 @@ namespace SimTK {
 %include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 
 %template(SetJoints) OpenSim::Set<OpenSim::Joint>;
-%template(ModelComponentSetJoints) OpenSim::ModelComponentSet<OpenSim::Joint>;
+%template(ModelSetJoints) OpenSim::ModelSet<OpenSim::Joint>;
 %include <OpenSim/Simulation/Model/JointSet.h>
 
 
 %include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 %template(SetConstraints) OpenSim::Set<OpenSim::Constraint>;
-%template(ModelComponentSetConstraints) OpenSim::ModelComponentSet<OpenSim::Constraint>;
+%template(ModelSetConstraints) OpenSim::ModelSet<OpenSim::Constraint>;
 %include <OpenSim/Simulation/Model/ConstraintSet.h>
 %include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 %include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
@@ -919,7 +921,7 @@ namespace SimTK {
 
 %include <OpenSim/Simulation/Model/Probe.h>
 %template(SetProbes) OpenSim::Set<OpenSim::Probe>;
-%template(ModelComponentSetProbes) OpenSim::ModelComponentSet<OpenSim::Probe>;
+%template(ModelSetProbes) OpenSim::ModelSet<OpenSim::Probe>;
 %include <OpenSim/Simulation/Model/ProbeSet.h>
 %include <OpenSim/Simulation/Model/SystemEnergyProbe.h>
 %include <OpenSim/Simulation/Model/JointInternalPowerProbe.h>
