@@ -312,7 +312,8 @@ protected:
 		// of inboard and outboard bodies, although the joint direction will be 
 		// preserved, the inboard must exist first.
 		if (get_reverse()){
-			inb = mbs.updMatterSubsystem().updMobilizedBody(getChildBody().getIndex());
+			inb = mbs.updMatterSubsystem().updMobilizedBody(
+                                               getMobilizedBodyIndex(getChildBody()) );
 			const SimTK::Transform* swap = inbX;
 			inbX = outbX;
 			outbX = swap;
@@ -322,7 +323,8 @@ protected:
 				                                     &getParentBody();
 		}
 		else{
-			inb = mbs.updMatterSubsystem().updMobilizedBody(getParentBody().getIndex());
+			inb = mbs.updMatterSubsystem().updMobilizedBody(
+				                               getMobilizedBodyIndex(getParentBody()) );
 
 			associatedBody = (_slaveBodyForChild) ? _slaveBodyForChild :
 				&getChildBody();
