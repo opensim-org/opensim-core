@@ -1,5 +1,5 @@
-#ifndef OPENSIM_GIMBAL_JOINT_H__
-#define OPENSIM_GIMBAL_JOINT_H__
+#ifndef OPENSIM_GIMBAL_JOINT_H_
+#define OPENSIM_GIMBAL_JOINT_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  GimbalJoint.h                            *
  * -------------------------------------------------------------------------- *
@@ -35,7 +35,7 @@ namespace OpenSim {
  * in Simbody is a MobilizedBody::Gimbal.
  *
  * @author Tim Dorn
- * @version 1.0
+ * @author Ajay Seth
  */
 class OSIMSIMULATION_API GimbalJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(GimbalJoint, Joint);
@@ -76,6 +76,6 @@ protected:
 
 } // end of namespace OpenSim
 
-#endif // __GimbalJoint_h__
+#endif // OPENSIM_GIMBAL_JOINT_H_
 
 
