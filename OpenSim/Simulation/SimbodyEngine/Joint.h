@@ -75,8 +75,8 @@ public:
 
 	OpenSim_DECLARE_PROPERTY(orientation_in_parent, SimTK::Vec3, 
 		"Orientation of the joint in the parent body specified in the parent "
-		"reference frame. Euler XYZ body-fixed rotation angles are used to "
-		"express the orientation. Default is (0,0,0).");
+		"reference frame. Euler XYZ body-fixed rotation angles (in radians) "
+		"are used to express the orientation. Default is (0,0,0).");
 
 	OpenSim_DECLARE_PROPERTY(location_in_child, SimTK::Vec3, 
 		"Location of the joint in the child body specified in the child "
@@ -84,15 +84,17 @@ public:
 
 	OpenSim_DECLARE_PROPERTY(orientation_in_child, SimTK::Vec3, 
 		"Orientation of the joint in the child body specified in the child body "
-		"reference frame.  Euler XYZ body-fixed rotation angles are used to "
-		"express the orientation. Default is (0,0,0)" );
+		"reference frame. Euler XYZ body-fixed rotation angles (in radians) "
+		"are used to express the orientation. Default is (0,0,0)" );
 
 	OpenSim_DECLARE_UNNAMED_PROPERTY(CoordinateSet, 
 		"Set holding the generalized coordinates (q's) that parmeterize this joint." );
 
     OpenSim_DECLARE_PROPERTY(reverse, bool, 
-		"Advanced option. Specify if the joint transform defines parent->child "
-		 "(forward, reverse == false) or child->parent (reverse == true)."); 
+		"Advanced option. Specify the direction of the joint in the multibody tree: "
+		"parent->child (forward, reverse == false) or child->parent (reverse == true) "
+		"NOTE: the Joint transform and its coordinates maintain a parent->child "
+		"sense, even if the Joint is reversed."); 
     /**@}**/
 
 //=============================================================================
@@ -115,7 +117,7 @@ public:
 		maintaining the convention of the knee, for example, of the relative
 		motion of the tibia (child) w.r.t. the femur (parent).
 
-		@param[in] name     the name associated with ths joint (should be 
+		@param[in] name     the name associated with this joint (should be 
 		                    unique from other joints in the same model)
 		@param[in] parent   the parent Body that joint connects to
 		@param[in] locationInParent    Vec3 of the location of the joint in the
@@ -129,14 +131,16 @@ public:
 		@param[in] orientationInChild  Vec3 of the XYZ body-fixed Euler angles of
 		                               the joint frame orientation in the child
 		                               body frame.
-		@param[optional] reverse  Advanced flag (bool) specifying to reverse the
+		@param[in] reverse  Advanced optional flag (bool) specifying the direction
+		                    of the Joint in the multibody tree. Default is false 
+		                    (e.g. forward)
 		*/
 	Joint(const std::string &name, 
 		  const Body &parent, 
 		  const SimTK::Vec3& locationInParent, 
 		  const SimTK::Vec3& orientationInParent,
 		  const OpenSim::Body& child,
-		  const SimTK::Vec3& locationInchild, 
+		  const SimTK::Vec3& locationInChild, 
 		  const SimTK::Vec3& orientationInChild, 
 		  bool reverse = false);
 
@@ -354,12 +358,12 @@ protected:
 	                             multibody tree 
 	@param[in] outboardTransform  the transform locating the joint (mobilizer)
 	                              frame on the outboard body
-    @param[in/out] startingCoorinateIndex
+    @param[in/out] startingCoordinateIndex
 	                             the starting index of mobilities
 	                             enabled by the created MobilizedBody and used
 								 to assign mobility indices to the Joint's
 								 coordinates. It is incremented by the number of
-								 mobilities of the MobilizedBody
+								 mobilities of the MobilizedBody created
 	@param[optional] associatedBody  the Body associated with the MobilizeBody.
 	                                 The MobilizedBody index is assigned to the
 									 associated Body.
@@ -369,7 +373,7 @@ protected:
 		                  const SimTK::Transform& inboardTransform,
 		                  const SimTK::Body& outboard, 
 						  const SimTK::Transform& outboardTransform,
-						  int& startingCoorinateIndex,
+						  int& startingCoordinateIndex,
 						  const OpenSim::Body* associatedBody=nullptr) const {
 		// CREATE MOBILIZED BODY
 		SimTK::MobilizedBody::Direction dir = 
@@ -383,10 +387,10 @@ protected:
 		SimTK_ASSERT1(nc == coords.getSize(), "%s list of coordinates does not match number of mobilities.",
                       getConcreteClassName().c_str());
 
-		startingCoorinateIndex = assignSystemIndicesToBodyAndCoordinates(simtkBody,
+		startingCoordinateIndex = assignSystemIndicesToBodyAndCoordinates(simtkBody,
 			associatedBody,
 			getNumMobilities<T>(simtkBody),
-			startingCoorinateIndex);
+			startingCoordinateIndex);
 
 		return simtkBody;
 	}
