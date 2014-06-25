@@ -294,7 +294,8 @@ addModelingOption(const std::string& optionName, int maxFlagValue) const
 }
 
 void Component::addStateVariable(const std::string&  stateVariableName,
-								 const SimTK::Stage& invalidatesStage) const
+								 const SimTK::Stage& invalidatesStage,
+								 bool isHidden) const
 {
 	if( (invalidatesStage < Stage::Position) ||
 	    (invalidatesStage > Stage::Dynamics)) {
@@ -303,7 +304,7 @@ void Component::addStateVariable(const std::string&  stateVariableName,
     }
 	// Allocate space for a new state variable
 	AddedStateVariable* asv =
-		new AddedStateVariable(stateVariableName, *this, invalidatesStage);
+		new AddedStateVariable(stateVariableName, *this, invalidatesStage, isHidden);
 	// Add it to the Component and let it take ownership
 	addStateVariable(asv);
 }

@@ -1075,15 +1075,25 @@ template <class T> friend class ComponentMeasure;
     are forces that depend on this variable. If you define one or more
     of these variables you must also override computeStateVariableDerivatives()
     to provide time derivatives for them. Note, all corresponding system
-	indices are automatically determined using this interface. **/
+	indices are automatically determined using this interface. As an advanced
+	option you may choose to hide the state variable from being accessed outside
+	of this component, in which case it is considered to be "hidden". 
+	@param[in] stateVariableName     string value to access variable by name
+	@param[in] invalidatesStage      the system realization stage that is
+	                                 invalidated when variable value is changed
+	@param[in] isHidden				 flag (bool) to optionally hide this state
+	                                 variable from being accessed outside this
+									 component as an Output
+	*/
 	void addStateVariable(const std::string&  stateVariableName,
-		 const SimTK::Stage& invalidatesStage=SimTK::Stage::Dynamics) const;
+		 const SimTK::Stage& invalidatesStage=SimTK::Stage::Dynamics,
+		 bool isHidden = false) const;
 
 	/** The above method provides a convenient interface to this method, which
 	automatically creates an 'AddedStateVariable' and allocates resources in the
     SimTK::State for this variable.  This interface allows the creator to
     add/expose state variables that are allocated by underlying Simbody
-    components and specifying how the state variable value is accessed by
+    components and specify how the state variable value is accessed by
     implementing a concrete StateVariable and adding it to the component using
     this method. If the StateVariable is NOT hidden, this also creates an
     Output in this Component with the same name as the StateVariable. Reporters

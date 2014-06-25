@@ -251,37 +251,7 @@ protected:
 	}
 
 	// Copied here from Component for testing purposes.
-	class AddedStateVariable : public StateVariable {
-		public:
-		// Constructors
-		AddedStateVariable() : StateVariable(),
-			invalidatesStage(SimTK::Stage::Empty)  {}
 
-        /** Convience constructor for defining a Component added state variable */ 
-		explicit AddedStateVariable(const std::string& name, //state var name
-						const Component& owner,		  //owning component
-						SimTK::Stage invalidatesStage,//stage this variable invalidates
-						bool hide=false) : 
-					StateVariable(name, owner,
-							SimTK::SubsystemIndex(SimTK::InvalidIndex),
-							SimTK::InvalidIndex, hide), 
-						invalidatesStage(SimTK::Stage::Empty) {}
-
-		//override virtual methods
-		double getValue(const SimTK::State& state) const OVERRIDE_11;
-		void setValue(SimTK::State& state, double value) const OVERRIDE_11;
-
-		double getDerivative(const SimTK::State& state) const OVERRIDE_11;
-		void setDerivative(const SimTK::State& state, double deriv) const OVERRIDE_11;
-
-        SimTK::Stage getInvalidatesStage() const;
-
-		private: // DATA
-		// Changes in state variables trigger recalculation of appropriate cache 
-		// variables by automatically invalidating the realization stage specified
-		// upon allocation of the state variable.
-        SimTK::Stage    invalidatesStage;
-	};
 
 	void addToSystem(MultibodySystem& system) const OVERRIDE_11{
         Super::addToSystem(system);
@@ -306,15 +276,15 @@ protected:
 
         // Create a hidden state variable, so we can ensure that hidden state
         // variables do not have a corresponding Output.
-        AddedStateVariable* asv =
-            new AddedStateVariable("hiddenStateVar", *this, SimTK::Stage::Dynamics);
-        asv->hide();
-        addStateVariable(asv);
+		bool hidden = true;
+		addStateVariable("hiddenStateVar", SimTK::Stage::Dynamics, hidden);
 	}
 
     void computeStateVariableDerivatives(const SimTK::State& state) const override {
         setStateVariableDerivative(state, "fiberLength", 2.0);
         setStateVariableDerivative(state, "activation", 3.0 * state.getTime());
+		setStateVariableDerivative(state, "hiddenStateVar", 
+			                              exp(-0.5 * state.getTime()));
     }
 
 private:
@@ -591,55 +561,4 @@ int main() {
     }
     cout << "Done" << endl;
     return 0;
-}
-
-//override virtual methods
-double Bar::AddedStateVariable::getValue(const SimTK::State& state) const
-{
-	ZIndex zix(getVarIndex());
-	if(getSubsysIndex().isValid() && zix.isValid()){
-		const SimTK::Vector& z = getOwner().getSystem().getDefaultSubsystem().getZ(state);
-		return z[ZIndex(zix)];
-	}
-
-    std::stringstream msg;
-    msg << "Bar::AddedStateVariable::getValue: ERR- variable '" 
-		<< getName() << "' is invalid for component " << getOwner().getName() 
-		<< " of type " << getOwner().getConcreteClassName() <<".";
-    throw OpenSim::Exception(msg.str(),__FILE__,__LINE__);
-    return SimTK::NaN;
-}
-
-void Bar::AddedStateVariable::setValue(SimTK::State& state, double value) const
-{
-	ZIndex zix(getVarIndex());
-	if(getSubsysIndex().isValid() && zix.isValid()){
-		SimTK::Vector& z = getOwner().getSystem().getDefaultSubsystem().updZ(state);
-		z[ZIndex(zix)] = value;
-		return;
-	}
-
-    std::stringstream msg;
-    msg << "Bar::AddedStateVariable::setValue: ERR- variable '" 
-		<< getName() << "' is invalid for component " << getOwner().getName() 
-		<< " of type " << getOwner().getConcreteClassName() <<".";
-    throw OpenSim::Exception(msg.str(),__FILE__,__LINE__);
-}
-
-double Bar::AddedStateVariable::
-	getDerivative(const SimTK::State& state) const
-{
-	return getOwner().getCacheVariable<double>(state, getName()+"_deriv");
-}
-
-void Bar::AddedStateVariable::
-	setDerivative(const SimTK::State& state, double deriv) const
-{
-	return getOwner().setCacheVariable<double>(state, getName()+"_deriv", deriv);
-}
-
-SimTK::Stage Bar::AddedStateVariable::
-    getInvalidatesStage() const
-{
-    return invalidatesStage;
 }
