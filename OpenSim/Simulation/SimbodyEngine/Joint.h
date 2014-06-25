@@ -29,6 +29,7 @@
 
 namespace OpenSim {
 
+class Model;
 class Body;
 class ScaleSet;
 
@@ -37,7 +38,7 @@ class ScaleSet;
 /**
  * An OpenSim Joint is an OpenSim::ModelComponent which connects two Bodies 
  * together and speficies their relative permissible motion as described in  
- * internal coordinates. The base Joint specifies the two frames (one each body),
+ * internal coordinates. The base Joint specifies the two frames (on each body),
  * which the joint spans. The relative motion (including the # of coordinates)
  * are defined by concrete Joints, which specify the permissible kinematics of
  * a child joint frame (on a child body) with respect to a parent joint frame
@@ -50,7 +51,10 @@ class ScaleSet;
  * coincident Z-axis in the parent frame.
  *
  * Concrete Joints can specify relative translations and even coupled 
- * rotations and translations (@see EllipsoidJoint and CustomJoint).
+ * rotations and translations (@see EllipsoidJoint and CustomJoint). For more
+ * details on how the underlying formulation supports coupled curvilinear
+ * joints, see "Minimal formulation of joint motion for biomechanisms", 2010
+ * A Seth, M Sherman, P Eastman, S Delp; Nonlinear dynamics 62 (1), 291-303
  *
  * @author Ajay Seth
  */
@@ -71,24 +75,26 @@ public:
 
 	OpenSim_DECLARE_PROPERTY(orientation_in_parent, SimTK::Vec3, 
 		"Orientation of the joint in the parent body specified in the parent "
-		"reference frame. Euler XYZ body-fixed rotation angles are used to "
-		"express the orientation. Default is (0,0,0).");
+		"reference frame. Euler XYZ body-fixed rotation angles (in radians) "
+		"are used to express the orientation. Default is (0,0,0).");
 
 	OpenSim_DECLARE_PROPERTY(location_in_child, SimTK::Vec3, 
 		"Location of the joint in the child body specified in the child "
-		"reference frame. For SIMM models, this vector is always the zero "
-		"vector (i.e., the body reference frame coincides with the joint). ");
+		"reference frame. Default is (0,0,0).");
 
 	OpenSim_DECLARE_PROPERTY(orientation_in_child, SimTK::Vec3, 
 		"Orientation of the joint in the child body specified in the child body "
-		"reference frame.  Euler XYZ body-fixed rotation angles are used to "
-		"express the orientation. " );
+		"reference frame. Euler XYZ body-fixed rotation angles (in radians) "
+		"are used to express the orientation. Default is (0,0,0)" );
 
 	OpenSim_DECLARE_UNNAMED_PROPERTY(CoordinateSet, 
 		"Set holding the generalized coordinates (q's) that parmeterize this joint." );
 
     OpenSim_DECLARE_PROPERTY(reverse, bool, 
-		"Whether the joint transform defines parent->child or child->parent."); 
+		"Advanced option. Specify the direction of the joint in the multibody tree: "
+		"parent->child (forward, reverse == false) or child->parent (reverse == true) "
+		"NOTE: the Joint transform and its coordinates maintain a parent->child "
+		"sense, even if the Joint is reversed."); 
     /**@}**/
 
 //=============================================================================
@@ -102,14 +108,40 @@ public:
 	Joint();
 
 	/** Convenience Constructor */
-	/** Create a Joint where the parenet and body are specified as well as the
+	/** Create a Joint where the parent and body are specified as well as the
 	    joint frames in the child and parent bodies in terms of their location
-		and oriendtation in the respective bodies. 
-		TODO remove reverse option and determine direction from tree structure.*/
-	Joint(const std::string &name, const Body &parent, 
-		  const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+		and orientation in their respective bodies. Also an advanced option to
+		specify a tree structure to be constructed in the reverse direction, 
+		that is child to parent, but the coordinates remain as if defined parent
+		to child. This can be useful for defining models from the ground up, yet
+		maintaining the convention of the knee, for example, of the relative
+		motion of the tibia (child) w.r.t. the femur (parent).
+
+		@param[in] name     the name associated with this joint (should be 
+		                    unique from other joints in the same model)
+		@param[in] parent   the parent Body that joint connects to
+		@param[in] locationInParent    Vec3 of the location of the joint in the
+		                               parent body frame.
+		@param[in] orientationInParent Vec3 of the XYZ body-fixed Euler angles of
+		                               the joint frame orientation in the parent
+									   body frame.
+		@param[in] child    the child Body that joint connects to
+		@param[in] locationInChild     Vec3 of the location of the joint in the
+		                               child body frame.
+		@param[in] orientationInChild  Vec3 of the XYZ body-fixed Euler angles of
+		                               the joint frame orientation in the child
+		                               body frame.
+		@param[in] reverse  Advanced optional flag (bool) specifying the direction
+		                    of the Joint in the multibody tree. Default is false 
+		                    (e.g. forward)
+		*/
+	Joint(const std::string &name, 
+		  const Body &parent, 
+		  const SimTK::Vec3& locationInParent, 
+		  const SimTK::Vec3& orientationInParent,
 		  const OpenSim::Body& child,
-		  const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild, 
+		  const SimTK::Vec3& locationInChild, 
+		  const SimTK::Vec3& orientationInChild, 
 		  bool reverse = false);
 
 	virtual ~Joint();
@@ -234,8 +266,8 @@ protected:
 	/** Construct coordinates according to the mobilities of the Joint */
 	void constructCoordinates();
 
-	// Methods that allow access for Joint subclasses to data members of objects that
-	// Joint befriends like Body, Coordinate and SimbodyEngine
+	// Methods that allow access for Joint subclasses to data members of 
+	// Body and Coordinate , which Joint befriends
 	const SimTK::MobilizedBodyIndex getMobilizedBodyIndex(const Body& body) const; 
 
 	void setChildMobilizedBodyIndex(SimTK::MobilizedBodyIndex index) const;
@@ -260,42 +292,49 @@ protected:
 	/** Utility method for creating the underlying MobilizedBody of the desired 
 	    type of the concrete Joint. It is templatized by the MobilizedBody type. 
 		Concrete class cannot override this method but can customize addToSystem()
-		instead of using this service. It assumes that the MobilizedBody is the child
-		body and the parent body correspond to those of the Joint. For more
-		granularity as to which bodies are being interconnected internally, use
-		@see createMobilizedBody(MobilizedBody& parent, 
-		                         const SimTK::Transform& parentTransform,
-		                         Body& child, 
-								 const SimTK::Transform& childTransform).*/
+		instead of using this service. It assumes that the MobilizedBody is 
+		associated with the child body, unless the Joint is specified as 
+		reversed in which case the parent is the Body that is "mobilized".
+		For more granularity as to which bodies are being interconnected 
+		internally, and to specify their joint (mobilizer) transforms use:
+		@see createMobilizedBody(MobilizedBody& inboard, 
+		                const SimTK::Transform& inboardTransform,
+							...).  following this method. */
 	template <typename T>
-	T createMobilizedBody(SimTK::MultibodySystem& mbs, 
-			const SimTK::Transform& parentTransform,
-			const SimTK::Transform& childTransform) const
+	T createMobilizedBody(SimTK::MultibodySystem& mbs) const
 	{
 		SimTK::MobilizedBody inb;
 		const SimTK::Body* outb = &getChildInternalRigidBody();
-		const SimTK::Transform* inbX = &parentTransform;
-		const SimTK::Transform* outbX = &childTransform;
+		const SimTK::Transform* inbX = &getParentTransform();
+		const SimTK::Transform* outbX = &getChildTransform();
+		const Body* associatedBody = nullptr;
 		// if the joint is reversed then flip the underlying tree representation
 		// of inboard and outboard bodies, although the joint direction will be 
 		// preserved, the inboard must exist first.
 		if (get_reverse()){
 			inb = mbs.updMatterSubsystem().updMobilizedBody(
-                         getMobilizedBodyIndex(getChildBody()));
-			inbX = &childTransform;
+                                               getMobilizedBodyIndex(getChildBody()) );
+			const SimTK::Transform* swap = inbX;
+			inbX = outbX;
+			outbX = swap;
 
 			outb = &getParentInternalRigidBody();
-			outbX = &parentTransform;
+			associatedBody = (_slaveBodyForParent) ? _slaveBodyForParent :
+				                                     &getParentBody();
 		}
 		else{
 			inb = mbs.updMatterSubsystem().updMobilizedBody(
-                         getMobilizedBodyIndex(getParentBody()));
+				                               getMobilizedBodyIndex(getParentBody()) );
+
+			associatedBody = (_slaveBodyForChild) ? _slaveBodyForChild :
+				&getChildBody();
 		}	
 
 		int startingCoordinateIndex = 0;
 		T simtkBody = createMobilizedBody<T>(inb, *inbX, 
 			                                 *outb, *outbX, 
-											 startingCoordinateIndex);
+											 startingCoordinateIndex,
+											 associatedBody);
 
 		return simtkBody;
 	}
@@ -310,14 +349,34 @@ protected:
 	assigning indices necessary for the Coordinates of this Joint to access 
 	the coordinates and speed values from the state of the MultibodySystem.
 	As a convenience the startingCoorinateIndex is updated so 
-	that sequential calls will increment correctly based on the number of mobilties
-	the concrete MobilizedBody enables. */
+	that sequential calls will increment correctly based on the number of 
+	mobilties the concrete MobilizedBody enables.
+	
+	@param[in] inboard           an existing SimTK::MobilizedBody in the 
+	                             multibody tree 
+	@param[in] inboardTransform  the transform locating the joint (mobilizer)
+	                             frame on the inboard body
+	@param[in] outboard          a SimTK::Rigid::Body to be added to the
+	                             multibody tree 
+	@param[in] outboardTransform  the transform locating the joint (mobilizer)
+	                              frame on the outboard body
+    @param[in/out] startingCoordinateIndex
+	                             the starting index of mobilities
+	                             enabled by the created MobilizedBody and used
+								 to assign mobility indices to the Joint's
+								 coordinates. It is incremented by the number of
+								 mobilities of the MobilizedBody created
+	@param[optional] associatedBody  the Body associated with the MobilizeBody.
+	                                 The MobilizedBody index is assigned to the
+									 associated Body.
+	*/
 	template <typename T>
 	T createMobilizedBody(SimTK::MobilizedBody& inboard, 
 		                  const SimTK::Transform& inboardTransform,
 		                  const SimTK::Body& outboard, 
 						  const SimTK::Transform& outboardTransform,
-						  int& startingCoorinateIndex) const {
+						  int& startingCoordinateIndex,
+						  const OpenSim::Body* associatedBody=nullptr) const {
 		// CREATE MOBILIZED BODY
 		SimTK::MobilizedBody::Direction dir = 
 			SimTK::MobilizedBody::Direction(get_reverse());
@@ -330,12 +389,10 @@ protected:
 		SimTK_ASSERT1(nc == coords.getSize(), "%s list of coordinates does not match number of mobilities.",
                       getConcreteClassName().c_str());
 
-		const OpenSim::Body* mobilized = get_reverse() ? &getParentBody() : &getChildBody();
-
-		startingCoorinateIndex = assignSystemIndicesToBodyAndCoordinates(simtkBody,
-			mobilized,
+		startingCoordinateIndex = assignSystemIndicesToBodyAndCoordinates(simtkBody,
+			associatedBody,
 			getNumMobilities<T>(simtkBody),
-			startingCoorinateIndex);
+			startingCoordinateIndex);
 
 		return simtkBody;
 	}
@@ -366,13 +423,6 @@ private:
 		These will be the parent and child bodies of the Joint.*/
 	void constructStructuralConnectors() OVERRIDE_11;
 
-	//=========================================================================
-	// DATA
-	//=========================================================================
-	// Hold complete transforms for the joint frame's in connected bodies
-	SimTK::Transform _jointFrameInChild;
-	SimTK::Transform _jointFrameInParent;
-
 	/** Utility method for accessing the number of mobilities provided by 
 	    an underlying MobilizedBody */
 	template <typename T>
@@ -380,6 +430,29 @@ private:
 	{
 		return mobod.getDefaultQ().size();
 	}
+
+	// Only Model's connectToModel can access private
+	// members of the Joint to set Joint connected to a slave body
+	// of a master body. 
+	friend Model; // void Model::connectToModel(Model &model);
+
+	void setSlaveBodyForParent(Body& slaveForParent){
+		_slaveBodyForParent = slaveForParent;
+	}
+
+	void setSlaveBodyForChild(Body& slaveForChild){
+		_slaveBodyForChild = slaveForChild;
+	}
+
+	//=========================================================================
+	// DATA
+	//=========================================================================
+	// Hold complete transforms for the joint frame's in connected bodies
+	SimTK::Transform _jointFrameInChild;
+	SimTK::Transform _jointFrameInParent;
+
+	SimTK::ReferencePtr<Body> _slaveBodyForParent;
+	SimTK::ReferencePtr<Body> _slaveBodyForChild;
 
     friend class JointSet;
 

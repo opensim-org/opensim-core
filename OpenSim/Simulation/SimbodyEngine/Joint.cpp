@@ -26,9 +26,8 @@
 //=============================================================================
 #include "Joint.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Common/ScaleSet.h>
-#include "SimTKsimbody.h"
 
 //=============================================================================
 // STATICS
@@ -623,7 +622,11 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
 	if (mobilized){
 		// Index can only be assigned to a parent or child body connected by this
 		// Joint
-		SimTK_ASSERT3((mobilized == &getParentBody()) || (mobilized == &getChildBody()),
+
+		SimTK_ASSERT3( ( (mobilized == &getParentBody()) || 
+					     (mobilized == &getChildBody()) ||
+					     (mobilized == _slaveBodyForParent) ||
+					     (mobilized == _slaveBodyForChild) ),
 			"%s::'%s' - Cannot assign underlying system index to a Body '%s', "
 			"which is not a parent or child Body of this Joint.",
                       getConcreteClassName().c_str(),
@@ -660,9 +663,17 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
 /* Return the equivalent (internal) SimTK::Rigid::Body for a given parent OR
 child OpenSim::Body. Not guaranteed to be valid until after addToSystem on
 Body has be called  */
-const SimTK::Body::Rigid& Joint::getParentInternalRigidBody() const {
+const SimTK::Body::Rigid& Joint::getParentInternalRigidBody() const
+{
+	if (_slaveBodyForParent){
+		return _slaveBodyForParent->getInternalRigidBody();
+	}
 	return getParentBody().getInternalRigidBody();
 }
-const SimTK::Body::Rigid& Joint::getChildInternalRigidBody() const {
+const SimTK::Body::Rigid& Joint::getChildInternalRigidBody() const
+{
+	if (_slaveBodyForChild){
+		return _slaveBodyForChild->getInternalRigidBody();
+	}
 	return getChildBody().getInternalRigidBody();
 }

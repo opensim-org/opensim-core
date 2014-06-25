@@ -36,9 +36,9 @@
 				<Body name="ground">
 					<mass>       0.00000000 </mass>
 					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
-					<inertia_xx>       1.00000000 </inertia_xx>
-					<inertia_yy>       1.00000000 </inertia_yy>
-					<inertia_zz>       1.00000000 </inertia_zz>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
 					<inertia_xy>       0.00000000 </inertia_xy>
 					<inertia_xz>       0.00000000 </inertia_xz>
 					<inertia_yz>       0.00000000 </inertia_yz>

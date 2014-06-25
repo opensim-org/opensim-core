@@ -796,7 +796,7 @@ void Model::connectToModel(Model &model)
 
 			if (!outb) {
 				outb = outbMaster->addSlave();
-				useJoint->setChildBody(*outb);
+				useJoint->setSlaveBodyForChild(*outb);
 				SimTK::Transform o(SimTK::Vec3(0));
 				//Now add the constraints that weld the slave to the master at the 
 				// body origin

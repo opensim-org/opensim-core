@@ -24,11 +24,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <math.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/Constant.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include "WeldConstraint.h"

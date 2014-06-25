@@ -223,7 +223,7 @@ protected:
 			parentTransform2,
 			SimTK::Body::Rigid(getChildBody().getMassProperties()),
 			childTransform2,
-			coordinateIndexForMobility);
+			coordinateIndexForMobility, &getChildBody());
 
         // TODO: Joints require super class to be called last.
         Super::addToSystem(system);
@@ -1948,7 +1948,7 @@ void testAutomaticLoopJointBreaker()
 	std::string file("testModelWithLoopJoint.osim");
 	model.print(file);
 
-	/*
+	
 	Model loadedModel(file);
 
 	SimTK::State &s2 = loadedModel.initSystem();
@@ -1958,5 +1958,5 @@ void testAutomaticLoopJointBreaker()
 	SimTK::Vec3 acc2 = model.calcMassCenterAcceleration(s2);
 
 	ASSERT_EQUAL(acc2, acc, SimTK::Vec3(SimTK::Eps));
-	*/
+	
 }
