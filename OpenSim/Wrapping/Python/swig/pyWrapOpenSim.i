@@ -311,7 +311,7 @@ using namespace SimTK;
 	}
 %}
 
-%javamethodmodifiers OpenSim::Model::addComponent "private";
+%javamethodmodifiers OpenSim::Model::addModelComponent "private";
 %javamethodmodifiers OpenSim::Model::addBody "private";
 %javamethodmodifiers OpenSim::Model::addConstraint "private";
 %javamethodmodifiers OpenSim::Model::addForce "private";
@@ -320,7 +320,7 @@ using namespace SimTK;
 %javamethodmodifiers OpenSim::Model::addController "private";
 %javamethodmodifiers OpenSim::Model::addAnalysis "private";
 
-%rename OpenSim::Model::addComponent private_addComponent;
+%rename OpenSim::Model::addModelComponent private_addModelComponent;
 %rename OpenSim::Model::addBody private_addBody;
 %rename OpenSim::Model::addConstraint private_addConstraint;
 %rename OpenSim::Model::addForce private_addForce;
@@ -543,7 +543,7 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
 %}
 %enddef
 
-MODEL_ADOPT_HELPER(Component);
+MODEL_ADOPT_HELPER(ModelComponent);
 MODEL_ADOPT_HELPER(Body);
 MODEL_ADOPT_HELPER(Probe);
 MODEL_ADOPT_HELPER(Constraint);
@@ -789,7 +789,9 @@ namespace SimTK {
 %template(ArrayStr) OpenSim::Array<std::string>;
 %template(ArrayObjPtr) OpenSim::Array<OpenSim::Object*>;
 %template(ArrayPtrsObj) OpenSim::ArrayPtrs<OpenSim::Object>;
-
+%include <OpenSim/Common/ComponentOutput.h>
+%include <OpenSim/Common/ComponentConnector.h>
+%include <OpenSim/Common/Component.h>
 %include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
 %include <OpenSim/Common/ScaleSet.h>

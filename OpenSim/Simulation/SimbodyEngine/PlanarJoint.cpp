@@ -25,7 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "PlanarJoint.h"
-#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
@@ -76,9 +76,7 @@ PlanarJoint::PlanarJoint() :
 //_____________________________________________________________________________
 void PlanarJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Planar>(system,
-		                                       getParentTransform(),
-		                                       getChildTransform());
+	createMobilizedBody<MobilizedBody::Planar>(system);
 
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);

@@ -25,7 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "UniversalJoint.h"
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 //=============================================================================
@@ -82,9 +81,7 @@ UniversalJoint::UniversalJoint() : Joint()
 //_____________________________________________________________________________
 void UniversalJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Universal>(system,
-		                                          getParentTransform(),
-		                                          getChildTransform());
+	createMobilizedBody<MobilizedBody::Universal>(system);
 
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);

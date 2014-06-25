@@ -50,9 +50,6 @@
 #include <functional>
 #include <memory>
 
-using std::cout;
-using std::endl;
-
 namespace OpenSim {
 
 //==============================================================================

@@ -48,11 +48,7 @@ private:
 //=============================================================================
 // DATA
 //=============================================================================
-protected:
 
-	/** Flag to use Euler angles to parameterize rotation of the body  */
-	//PropertyBool _useEulerAnglesProp;
-	//bool &_useEulerAngles;
 
 //=============================================================================
 // METHODS

@@ -90,12 +90,6 @@ public:
     void setState( SimTK::State* s) { _configState = s; }
     void setModel( Model* m) { _model = m; }
 
-	// States
-	void setStates( Array<double>& states);
-	void setStates( double statesBuffer[]);
-	void computeConstrainedCoordinates( double statesBuffer[]);
-	void getStates( double statesBuffer[]);
-	void getStates( Array<double>&  rStates);
 	/** Get reference to the single instance of SimTK::State maintained by the Context object **/
     const SimTK::State& getCurrentStateRef() const { return (*_configState); };
 	/** Return a "clone" of  the single instance of SimTK::State maintained by the Context object **/
@@ -262,29 +256,13 @@ in Java data types
 
 class AnalysisWrapper : public Analysis {
 OpenSim_DECLARE_CONCRETE_OBJECT(AnalysisWrapper, Analysis);
-	double* statesCache;
-	int		statesCacheSize;
 	double  simulationTime;
 public:
 	AnalysisWrapper(Model *aModel=0):
-	  Analysis(aModel),
-	  statesCacheSize(aModel->getNumStateVariables()){
-		statesCache = new double[statesCacheSize];
+	  Analysis(aModel){
 		simulationTime = -1.0;
 	}
-	virtual int step( const SimTK::State& s, int stepNumber) {
-        Array<double> rStateValues;
-		//std::string statedump= s.toString();
-		_model->getStateValues(s, rStateValues);
-        for(int i=0;i<statesCacheSize;i++ ) 
-			*(statesCache+i) = rStateValues[i];
-		simulationTime = s.getTime();
-		return 0;
-	}
-	void getStates( double statesBuffer[]){
-		for(int i=0;i<statesCacheSize;i++ ) 
-			*(statesBuffer+i) = statesCache[i];
-	}
+
 	double getSimulationTime() {
 		return simulationTime;
 	}
