@@ -412,8 +412,11 @@ public:
 			std::string outName = name.substr(back+1, name.length()-back);
 
 			const Component* found = findComponent(prefix);
-			if(found)
+			// if found is this component again, no point trying to find
+			// output again, otherwise we would not have reached here 
+			if (found && (found != this)) { 
 				return found->getOutput(outName);
+			}
 		}
 
 		std::stringstream msg;
@@ -439,6 +442,13 @@ public:
 	
 	/**
      * Get the value of a state variable allocated by this Component.
+     *
+     * To connect this StateVariable as an input to another component (such as
+     * a Reporter), use getOutput(name); each state variable has a
+     * corresponding Output:
+     *  @code
+     *  foo.getInput("input1").connect(bar.getOutput(name));
+	 *  @endcode
      *
      * @param state   the State for which to get the value
      * @param name    the name (string) of the state variable of interest
@@ -1062,16 +1072,30 @@ template <class T> friend class ComponentMeasure;
     are forces that depend on this variable. If you define one or more
     of these variables you must also override computeStateVariableDerivatives()
     to provide time derivatives for them. Note, all corresponding system
-	indices are automatically determined using this interface. **/
+	indices are automatically determined using this interface. As an advanced
+	option you may choose to hide the state variable from being accessed outside
+	of this component, in which case it is considered to be "hidden". 
+	@param[in] stateVariableName     string value to access variable by name
+	@param[in] invalidatesStage      the system realization stage that is
+	                                 invalidated when variable value is changed
+	@param[in] isHidden				 flag (bool) to optionally hide this state
+	                                 variable from being accessed outside this
+									 component as an Output
+	*/
 	void addStateVariable(const std::string&  stateVariableName,
-		 const SimTK::Stage& invalidatesStage=SimTK::Stage::Dynamics) const;
+		 const SimTK::Stage& invalidatesStage=SimTK::Stage::Dynamics,
+		 bool isHidden = false) const;
 
 	/** The above method provides a convenient interface to this method, which
 	automatically creates an 'AddedStateVariable' and allocates resources in the
-	SimTK::State for thsi variable.  This interface allows the creator to add/expose
-	state variables that are allocated by underlying Simbody components and 
-	specifying how the state variable value is accessed by implementing a 
-	concrete StateVariable and adding it to the component using this method.*/
+    SimTK::State for this variable.  This interface allows the creator to
+    add/expose state variables that are allocated by underlying Simbody
+    components and specify how the state variable value is accessed by
+    implementing a concrete StateVariable and adding it to the component using
+    this method. If the StateVariable is NOT hidden, this also creates an
+    Output in this Component with the same name as the StateVariable. Reporters
+    should use this Output to get the StateVariable's value (instead of using
+    getStateVariable()). */
 	void addStateVariable(Component::StateVariable*  stateVariable) const;
 
     /** Add a system discrete variable belonging to this Component, give

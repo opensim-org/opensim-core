@@ -190,6 +190,9 @@ private:
 	void constructInputs() OVERRIDE_11 {
 		constructInput<double>("input1", SimTK::Stage::Model);
 		constructInput<Vector>("AnglesIn", SimTK::Stage::Model);
+
+        constructInput<double>("fiberLength", SimTK::Stage::Model);
+        constructInput<double>("activation", SimTK::Stage::Model);
 	}
 
 	void constructOutputs() OVERRIDE_11 {
@@ -246,7 +249,13 @@ protected:
 			throw OpenSim::Exception(msg);
 		}
 	}
+
+	// Copied here from Component for testing purposes.
+
+
 	void addToSystem(MultibodySystem& system) const OVERRIDE_11{
+        Super::addToSystem(system);
+
 		GeneralForceSubsystem& forces = world->updForceSubsystem();
 		SimbodyMatterSubsystem& matter = world->updMatterSubsystem();
 
@@ -259,7 +268,24 @@ protected:
 				spring(forces, b1, Vec3(0.5,0,0), b2, Vec3(0.5,0,0), 10.0, 0.1);
 			fix = spring.getForceIndex();
 		}
+
+        // We use these to test the Output's that are generated when we
+        // add a StateVariable.
+        addStateVariable("fiberLength", SimTK::Stage::Velocity);
+        addStateVariable("activation", SimTK::Stage::Dynamics);
+
+        // Create a hidden state variable, so we can ensure that hidden state
+        // variables do not have a corresponding Output.
+		bool hidden = true;
+		addStateVariable("hiddenStateVar", SimTK::Stage::Dynamics, hidden);
 	}
+
+    void computeStateVariableDerivatives(const SimTK::State& state) const override {
+        setStateVariableDerivative(state, "fiberLength", 2.0);
+        setStateVariableDerivative(state, "activation", 3.0 * state.getTime());
+		setStateVariableDerivative(state, "hiddenStateVar", 
+			                              exp(-0.5 * state.getTime()));
+    }
 
 private:
 	void constructStructuralConnectors() OVERRIDE_11{
@@ -493,7 +519,19 @@ int main() {
 		theWorld.buildUpSystem(system3);
 		//SimTK::Visualizer viz2(system2);
 
+        // Connect our state variables.
+        foo.getInput("fiberLength").connect(bar.getOutput("fiberLength"));
+        foo.getInput("activation").connect(bar.getOutput("activation"));
+        // Since hiddenStateVar is a hidden state variable, it has no
+        // corresponding output.
+        ASSERT_THROW( OpenSim::Exception,
+            const AbstractOutput& out = bar.getOutput("hiddenStateVar") );
+
 		s = system3.realizeTopology();
+
+        bar.setStateVariable(s, "fiberLength", 1.5);
+        bar.setStateVariable(s, "activation", 0);
+
 		int nu3 = system3.getMatterSubsystem().getNumMobilities();
 
 		// realize simbody system to velocity stage
@@ -506,6 +544,14 @@ int main() {
 		ts.initialize(s);
 		ts.stepTo(1.0);
 		s = ts.getState();
+
+        // Check the result of the integration on our state variables.
+        ASSERT_EQUAL(3.5, bar.getOutputValue<double>(s, "fiberLength"), 1e-10);
+        ASSERT_EQUAL(1.5, bar.getOutputValue<double>(s, "activation"), 1e-10);
+
+        // Ensure the connection works.
+        ASSERT_EQUAL(3.5, foo.getInputValue<double>(s, "fiberLength"), 1e-10);
+        ASSERT_EQUAL(1.5, foo.getInputValue<double>(s, "activation"), 1e-10);
 
 		theWorld.print("Doubled" + modelFile);
 	}
