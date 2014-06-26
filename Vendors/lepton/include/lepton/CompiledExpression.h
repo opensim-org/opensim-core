@@ -1,5 +1,5 @@
-#ifndef LEPTON_EXPRESSION_PROGRAM_H_
-#define LEPTON_EXPRESSION_PROGRAM_H_
+#ifndef LEPTON_COMPILED_EXPRESSION_H_
+#define LEPTON_COMPILED_EXPRESSION_H_
 
 /* -------------------------------------------------------------------------- *
  *                                   Lepton                                   *
@@ -9,7 +9,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org.               *
  *                                                                            *
- * Portions copyright (c) 2009 Stanford University and the Authors.           *
+ * Portions copyright (c) 2013 Stanford University and the Authors.           *
  * Authors: Peter Eastman                                                     *
  * Contributors:                                                              *
  *                                                                            *
@@ -35,61 +35,60 @@
 #include "ExpressionTreeNode.h"
 #include "windowsIncludes.h"
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
 namespace Lepton {
 
+class Operation;
 class ParsedExpression;
 
 /**
- * An ExpressionProgram is a linear sequence of Operations for evaluating an expression.  The evaluation
- * is done with a stack.  The arguments to each Operation are first taken off the stack in order, then it is
- * evaluated and the result is pushed back onto the stack.  At the end, the stack contains a single value,
- * which is the value of the expression.
- *
- * An ExpressionProgram is created by calling createProgram() on a ParsedExpression.
+ * A CompiledExpression is a highly optimized representation of an expression for cases when you want to evaluate
+ * it many times as quickly as possible.  You should treat it as an opaque object; none of the internal representation
+ * is visible.
+ * 
+ * A CompiledExpression is created by calling createCompiledExpression() on a ParsedExpression.
+ * 
+ * WARNING: CompiledExpression is NOT thread safe.  You should never access a CompiledExpression from two threads at
+ * the same time.
  */
 
-class LEPTON_EXPORT ExpressionProgram {
+class LEPTON_EXPORT CompiledExpression {
 public:
-    ExpressionProgram();
-    ExpressionProgram(const ExpressionProgram& program);
-    ~ExpressionProgram();
-    ExpressionProgram& operator=(const ExpressionProgram& program);
+    CompiledExpression();
+    CompiledExpression(const CompiledExpression& expression);
+    ~CompiledExpression();
+    CompiledExpression& operator=(const CompiledExpression& expression);
     /**
-     * Get the number of Operations that make up this program.
+     * Get the names of all variables used by this expression.
      */
-    int getNumOperations() const;
+    const std::set<std::string>& getVariables() const;
     /**
-     * Get an Operation in this program.
+     * Get a reference to the memory location where the value of a particular variable is stored.  This can be used
+     * to set the value of the variable before calling evaluate().
      */
-    const Operation& getOperation(int index) const;
+    double& getVariableReference(const std::string& name);
     /**
-     * Get the size of the stack needed to execute this program.  This is the largest number of elements present
-     * on the stack at any point during evaluation.
-     */
-    int getStackSize() const;
-    /**
-     * Evaluate the expression.  If the expression involves any variables, this method will throw an exception.
+     * Evaluate the expression.  The values of all variables should have been set before calling this.
      */
     double evaluate() const;
-    /**
-     * Evaluate the expression.
-     *
-     * @param variables    a map specifying the values of all variables that appear in the expression.  If any
-     *                     variable appears in the expression but is not included in this map, an exception
-     *                     will be thrown.
-     */
-    double evaluate(const std::map<std::string, double>& variables) const;
 private:
     friend class ParsedExpression;
-    ExpressionProgram(const ParsedExpression& expression);
-    void buildProgram(const ExpressionTreeNode& node);
-    std::vector<Operation*> operations;
-    int maxArgs, stackSize;
+    CompiledExpression(const ParsedExpression& expression);
+    void compileExpression(const ExpressionTreeNode& node, std::vector<std::pair<ExpressionTreeNode, int> >& temps);
+    int findTempIndex(const ExpressionTreeNode& node, std::vector<std::pair<ExpressionTreeNode, int> >& temps);
+    std::vector<std::vector<int> > arguments;
+    std::vector<int> target;
+    std::vector<Operation*> operation;
+    std::map<std::string, int> variableIndices;
+    std::set<std::string> variableNames;
+    mutable std::vector<double> workspace;
+    mutable std::vector<double> argValues;
+    std::map<std::string, double> dummyVariables;
 };
 
 } // namespace Lepton
 
-#endif /*LEPTON_EXPRESSION_PROGRAM_H_*/
+#endif /*LEPTON_COMPILED_EXPRESSION_H_*/

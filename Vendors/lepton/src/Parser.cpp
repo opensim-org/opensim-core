@@ -6,7 +6,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org.               *
  *                                                                            *
- * Portions copyright (c) 2009-2011 Stanford University and the Authors.      *
+ * Portions copyright (c) 2009-2013 Stanford University and the Authors.      *
  * Authors: Peter Eastman                                                     *
  * Contributors:                                                              *
  *                                                                            *
@@ -68,9 +68,9 @@ string Parser::trim(const string& expression) {
     // Remove leading and trailing spaces.
     
     int start, end;
-    for (start = 0; start < (int)expression.size() && isspace(expression[start]); start++)
+    for (start = 0; start < (int) expression.size() && isspace(expression[start]); start++)
         ;
-    for (end = (int)expression.size()-1; end > start && isspace(expression[end]); end--)
+    for (end = expression.size()-1; end > start && isspace(expression[end]); end--)
         ;
     if (start == end && isspace(expression[end]))
         return "";
@@ -112,7 +112,7 @@ ParseToken Parser::getNextToken(const string& expression, int start) {
             }
             if ((c == 'e' || c == 'E') && !foundExp) {
                 foundExp = true;
-                if (pos < (int) expression.size()-1 && expression[pos+1] == '-')
+                if (pos < (int) expression.size()-1 && (expression[pos+1] == '-' || expression[pos+1] == '+'))
                     pos++;
                 continue;
             }
@@ -136,11 +136,11 @@ ParseToken Parser::getNextToken(const string& expression, int start) {
 vector<ParseToken> Parser::tokenize(const string& expression) {
     vector<ParseToken> tokens;
     int pos = 0;
-    while (pos < (int)expression.size()) {
+    while (pos < (int) expression.size()) {
         ParseToken token = getNextToken(expression, pos);
         if (token.getType() != ParseToken::Whitespace)
             tokens.push_back(token);
-        pos += (int)token.getText().size();
+        pos += token.getText().size();
     }
     return tokens;
 }
@@ -257,7 +257,7 @@ ExpressionTreeNode Parser::parsePrecedence(const vector<ParseToken>& tokens, int
 
     while (pos < (int) tokens.size() && tokens[pos].getType() == ParseToken::Operator) {
         token = tokens[pos];
-        int opIndex = (int)Operators.find(token.getText());
+        int opIndex = Operators.find(token.getText());
         int opPrecedence = Precedence[opIndex];
         if (opPrecedence < precedence)
             return result;

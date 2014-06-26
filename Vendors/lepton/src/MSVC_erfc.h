@@ -19,6 +19,7 @@
 ***************************/
 
 #include <cmath>
+
 static const double rel_error= 1E-12;        //calculate 12 significant figures
 //you can adjust rel_error to trade off between accuracy and speed
 //but don't ask for > 15 figures (assuming usual 52 bit mantissa in a double)
