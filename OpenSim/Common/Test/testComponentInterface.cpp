@@ -196,13 +196,11 @@ private:
 	}
 
 	void constructOutputs() OVERRIDE_11 {
-		constructOutput<double>("Output1",
-		std::bind(&Foo::getSomething, this, std::placeholders::_1),
-			SimTK::Stage::Time);
+		constructOutput<double>("Output1", &Foo::getSomething,
+                SimTK::Stage::Time);
 
-		constructOutput<SimTK::Vec3>("Output2",
-			std::bind(&Foo::calcSomething, this, std::placeholders::_1),
-			SimTK::Stage::Time);
+		constructOutput<SimTK::Vec3>("Output2", &Foo::calcSomething,
+                SimTK::Stage::Time);
 
 		double a = 10;
 		constructOutput<Vector>("Qs",
@@ -496,7 +494,7 @@ int main() {
 		theWorld.connect();
 
 		Bar& bar2 = *new Bar();
-		bar.setName("bar2");
+		bar2.setName("bar2");
 		CompoundFoo& compFoo = *new CompoundFoo();
 		compFoo.setName("BigFoo");
 

@@ -632,7 +632,7 @@ public:
     }
 
     /**
-     * Enables the to monitor the validity of the cache variable value using the
+     * Enables the user to monitor the validity of the cache variable value using the
      * returned flag. For components performing a costly evaluation, use this 
 	 * method to force a re-evaluation cache variable value only when necessary 
 	 * (returns false).
@@ -815,8 +815,8 @@ template <class T> friend class ComponentMeasure;
 	For common Components, OpenSim base classes either provide convenience methods
 	or handle indices automatically. 
    
-    If you override this method, be sure to invoke the base class method first, 
-    using code like this:
+    If you override this method, be sure to invoke the base class method at the
+    end, using code like this:
     @code
     void MyComponent::addToSystem(SimTK::MultibodySystem& system) const {
 		// ... your code goes here
@@ -899,7 +899,6 @@ template <class T> friend class ComponentMeasure;
 
 		// Then set the derivative value by state variable name
 		setStateVariableDerivative(state, "<state_variable_name>", deriv);
-		;
     }
     @endcode
 
@@ -1023,11 +1022,43 @@ template <class T> friend class ComponentMeasure;
 		_inputsTable[name] = new Input<T>(name, requiredAtStage);
 	}
 
+    /**
+     * A convenient way to construct an Output.  Here, we assume the following
+     * about componentMemberFunction, the function that returns the output:
+     *
+     *  1. It is a member function of \a this Component.
+     *  2. It takes only one input, which is const SimTK::State&
+     *
+     * If these are not true for your case, then use the more general method
+     * Component::constructOutput(const std::string&, const std::function<T(const SimTK::State&)>, const SimTK::Stage&).
+     *
+     * Here's an example. Say your Component has a method calcForce:
+     *  @code
+     *  constructOutput<SimTK::Vec3>("force", &MyComponent::calcForce,
+     *          SimTK::Stage::Velocity);
+     *  @endcode
+     */
+    template <typename T, typename Class>
+    void constructOutput(const std::string& name,
+            T(Class::*componentMemberFunction)(const SimTK::State&),
+            const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
+        constructOutput<T>(name, std::bind(componentMemberFunction,
+                    static_cast<Class*>(this),
+                    std::placeholders::_1), dependsOn);
+    }
+
 	/**
 	* Construct an Output (wire) for the Component as function of the State.
 	* Specifiy a (member) function of the state implemented by this component to
 	* be an Output and include the Stage that output is dependent on. If no
-	* Stage is specified it defaults to Acceleration.
+    * Stage is specified it defaults to Acceleration. Here's an example. Say you have a class Markers that manages markers, you have an instance of this class as a member variable in your Component, and Markers has a method `Vec3 Markers\:\:calcMarkerPos(const SimTK\:\:State& s, std\:\:string marker);` to compute
+    * motion capture marker positions, given the name of a marker.
+     *  @code
+     *  constructOutput<SimTK::Vec3>("ankleMarkerPos",
+     *          std::bind(&Markers::calcMarkerPos, _markers,
+     *          std::placeholders::_1, "ankle"),
+     *          SimTK::Stage::Position);
+	 *  @endcode
 	*/
 	template <typename T>
 	void constructOutput(const std::string& name, 
@@ -1190,13 +1221,13 @@ template <class T> friend class ComponentMeasure;
 		Coordinate component of the elbow joint that connects the forearm body in 
 		linear time (linear search for name at each component level. Whereas
 		supplying "elbow_flexion" requires a tree search.
-		returns NULL if Component of that specified name cannot be found. 
+		Returns NULL if Component of that specified name cannot be found. 
 		If the name provided is a component's state variable name and a pointer to
-		a StateVariable pointer in provided, the pointer will be set to the 
+		a StateVariable pointer is provided, the pointer will be set to the 
 		StateVariable object that was found. This facilitates the getting and setting
 		of StateVariables by name. 
 		
-		NOTE: If the a component name or the state variable name is ambiguous, the 
+		NOTE: If the component name or the state variable name is ambiguous, the 
 		 first instance found is returned. To disambiguate use the full name provided
 		 by owning component(s). */
 	const Component* findComponent(const std::string& name, 
@@ -1280,7 +1311,7 @@ protected:
 	//implement the virtual methods below. Otherwise, if the Component is adding its
 	//own state variables using the addStateVariable() helper, then an 
 	//AddedStateVariable implements the interface and automatically handles state
-	//varaible access.
+	//variable access.
 	class StateVariable {
 		friend void Component::addStateVariable(StateVariable* sv) const;
 	public:

@@ -108,8 +108,8 @@ public:
 	Output() : AbstractOutput(), _outputFcn(nullptr) {}   
 	/** Convenience constructor
 	Create a Component::Output bound to a specific method of the Component and 
-	valid at a givent realization Stage.
-	@param outputMethod		The output function to be invoked (returns Output T)
+	valid at a given realization Stage.
+	@param outputFunction	The output function to be invoked (returns Output T)
 	@param dependsOnStage	Stage at which Output can be evaluated. */
 	explicit Output(const std::string& name,
 		const std::function<T(const SimTK::State&)> outputFunction,
