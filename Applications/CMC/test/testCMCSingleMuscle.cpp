@@ -30,28 +30,18 @@
 using namespace OpenSim;
 using namespace std;
 
-void testSingleRigidTendonMuscle();
-void testSingleMillardRigidTendonMuscle();
 void testSingleMuscle();
 
 int main() {
 
     SimTK::Array_<std::string> failures;
 
-	try {testSingleRigidTendonMuscle();}
-    catch (const std::exception& e)
-		{  cout << e.what() <<endl; failures.push_back("testSingleRigidTendonMuscle"); }
     try {testSingleMuscle();}
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testSingleMuscle"); }
 
 	// redo with the Millard2012EquilibriumMuscle 
 	Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
-
-    try {testSingleMillardRigidTendonMuscle();}
-    catch (const std::exception& e)
-		{	cout << e.what() <<endl;
-			failures.push_back("testSingleMillardRigidTendonMuscle"); }
 
     try {testSingleMuscle();}
     catch (const std::exception& e)
@@ -67,60 +57,6 @@ int main() {
 
     return 0;
 }
-
-void testSingleRigidTendonMuscle() {
-	cout << "\n******************************************************************" << endl;
-	cout << "*                   testSingleRigidTendonMuscle                  *" << endl;
-	cout << "******************************************************************\n" << endl;
-
-	Model model("block_hanging_RigidTendonMuscle.osim");
-	Model* modelCopy = model.clone();
-	modelCopy->setup();
-	ASSERT(model == *modelCopy);
-
-	ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
-	forward.setModel(model);
-	forward.run();
-
-	// Use copy of the model because forward adds a ControlSetController to the model and the controls from CMC
-	// are added in with those "feedforward" controls. Instead we want to verify that CMC can compute these 
-	// samecontrols
-	CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
-	cmc.setModel(*modelCopy);
-	cmc.run();
-
-	Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
-	Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
-
-	// Tolerance of 2mm or position error and 2mm/s translational velocity of the block
-	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.0025, 4), __FILE__, __LINE__, "testSingleRigidTendonMuscle failed");
-	
-	cout << "testSingleRigidTendonMuscle passed\n" << endl;
-}
-
-
-void testSingleMillardRigidTendonMuscle() {
-	cout<<"\n******************************************************************" << endl;
-	cout << "*               testSingleMillardRigidTendonMuscle               *" << endl;
-	cout << "******************************************************************\n" << endl;
-	ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
-    Model& fwdModel = forward.getModel();
-    fwdModel.getMuscles()[0].set_ignore_tendon_compliance(true); //make tendon rigid
-	forward.run();
-
-	CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
-    Model& cmcModel = cmc.getModel();
-    cmcModel.getMuscles()[0].set_ignore_tendon_compliance(true); //make tendon rigid
-	cmc.run();
-
-	Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
-	Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
-
-	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.002, 3), __FILE__, __LINE__, "testSingleMillardRigidTendonMuscle failed");
-
-	cout << "testSingleMillardRigidTendonMuscle passed\n" << endl;
-}
-
 
 void testSingleMuscle() {
 	cout<<"\n******************************************************************" << endl;
