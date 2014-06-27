@@ -50,6 +50,9 @@ class Storage;
  * A class implementing a set of parameters describing how to place markers
  * on a model (presumably after it has been scaled to fit a subject).
  *
+ * MarkerPlacer() is bundeled with ModelScaler() and GenericModelMaker() to 
+ * in ScaleTool()
+ *
  * @author Peter Loan
  * @version 1.0
  */
