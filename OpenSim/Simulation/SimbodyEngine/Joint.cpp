@@ -162,21 +162,14 @@ void Joint::finalizeFromProperties()
 		addComponent(&coordinateSet[i]);
 	}
 
-	Super::finalizeFromProperties();
-}
-
-//_____________________________________________________________________________
-
-void Joint::connectToModel(Model& aModel)
-{
 	const SimTK::Vec3& orientation = get_orientation_in_child();
 	const SimTK::Vec3& location = get_location_in_child();
 
 	// CHILD TRANSFORM
-	Rotation rotation(BodyRotationSequence, 
-		              orientation[0], XAxis, 
-					  orientation[1], YAxis, 
-					  orientation[2], ZAxis);
+	Rotation rotation(BodyRotationSequence,
+		orientation[0], XAxis,
+		orientation[1], YAxis,
+		orientation[2], ZAxis);
 
 	SimTK::Transform childTransform(rotation, location);
 	_jointFrameInChild = childTransform;
@@ -185,16 +178,16 @@ void Joint::connectToModel(Model& aModel)
 	const SimTK::Vec3& locationInParent = get_location_in_parent();
 
 	// PARENT TRANSFORM
-	Rotation parentRotation(BodyRotationSequence, 
-		                    orientationInParent[0], XAxis,
-							orientationInParent[1], YAxis,
-							orientationInParent[2], ZAxis);
+	Rotation parentRotation(BodyRotationSequence,
+		orientationInParent[0], XAxis,
+		orientationInParent[1], YAxis,
+		orientationInParent[2], ZAxis);
 
 	SimTK::Transform parentTransform(parentRotation, locationInParent);
 	_jointFrameInParent = parentTransform;
 
-	//connect Coordinates as subcomponents of this Joint
-	Super::connectToModel(aModel);
+	// now let base invoke on subcomponents
+	Super::finalizeFromProperties();
 }
 
 //=============================================================================

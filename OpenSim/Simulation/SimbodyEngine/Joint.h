@@ -244,17 +244,10 @@ public:
 	* @param aScaleSet Set of XYZ scale factors for the bodies.
 	*/
 	virtual void scale(const ScaleSet& aScaleSet);
-    // ModelComponent interface.
 	
-	/**
-	* Perform some set up functions that happen after the
-	* object has been deserialized or copied.
-	*
-	* @param aModel OpenSim model containing this Joint.
-	*/
-	void connectToModel(Model& aModel) OVERRIDE_11;
 
 protected:
+	// build Joint transforms from properties
 	void finalizeFromProperties() OVERRIDE_11;
 	// TODO: child overrides must invoke Joint::addToSystem()
     // *after* they create the MobilizedBody. This is an API bug
