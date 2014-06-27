@@ -36,7 +36,7 @@ namespace OpenSim {
  *
  * f(x) = a*x^n + b*x^(n-1) + ... + c
  *
- * Order of the coeficients corresponds to decreasing powers.
+ * Order of the coefficients corresponds to decreasing powers.
  *
  * @author Carmichael Ong
  */
