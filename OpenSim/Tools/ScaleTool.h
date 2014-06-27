@@ -80,7 +80,7 @@ protected:
 
 	/** All files in workflow are specified relative to
 	 * where the subject file is. Need to keep track of that in case absolute
-	 * path is needed later
+	 * path is needed later.
 	 */
 	std::string	 _pathToSubject;	
 
@@ -135,7 +135,7 @@ public:
 	/**
 	 * Accessor methods to set and get path to Subject. This is needed
 	 * since all file names referred to in the subject file are relative
-	 * to subject file
+	 * to the subject file.
 	 */
 	const std::string& getPathToSubject()
 	{
