@@ -23,12 +23,15 @@ IF ( JAVA_COMPILE )
   ADD_CUSTOM_TARGET ( JavaCompile
      COMMAND ${JAVA_COMPILE} 
      ${CMAKE_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/src/org/opensim/modeling/*.java 
+     -source 1.6 -target 1.6
      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/src/)
      
   ADD_CUSTOM_COMMAND(TARGET JavaCompile
                    POST_BUILD
-                   COMMAND ${JAVA_ARCHIVE} -cvf ${CMAKE_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/src/org-opensim-modeling.jar 
-				   ${CMAKE_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/src/org/opensim/modeling/*.class
+                   COMMAND ${JAVA_ARCHIVE} -cvf org-opensim-modeling.jar
+                   org/opensim/modeling/*.class
+                   WORKING_DIRECTORY
+                   ${CMAKE_BINARY_DIR}/OpenSim/Wrapping/Java/OpenSimJNI/src/
    )
 ENDIF ( JAVA_COMPILE )
 ENDIF(BUILD_JAVA_WRAPPING)
