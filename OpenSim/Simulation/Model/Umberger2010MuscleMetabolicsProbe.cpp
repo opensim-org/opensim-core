@@ -34,30 +34,6 @@ using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
 
-// If we draw a control volume around the fiber, the first law of thermodynamics
-// suggests that negative mechanical work should be included in Wdot. As such,
-// we have reverted back to the model described in Umberger et al. (2003). This
-// flag sets the lengthening heat coefficient to alpha_L = 4.0*alpha_S(ST)
-// rather than 0.3*alpha_S(ST) and includes negative mechanical work in Wdot.
-const bool includeNegativeMechanicalWork = true;
-
-// During eccentric contraction, the magnitude of the (negative) mechanical work
-// rate can exceed that of the total (positive) heat rate, resulting in a flow
-// of energy into the fiber. Experiments indicate that the chemical processes
-// involved in fiber contraction cannot be reversed, and most of the energy that
-// is absorbed during eccentric contraction (in increased cross-bridge
-// potentials, for example) is eventually converted into heat. Thus, we increase
-// Sdot (if necessary) to ensure Edot > 0 for each muscle.
-const bool forbidNegativeTotalPower = true;
-
-// The recruitment model described by Bhargava et al. (2004) is used to set the
-// slow-twitch fiber ratio used in the calculations below. The ratio specified
-// by the user indicates the composition of the muscle; this value is used only
-// at full excitation (i.e., when all fibers are recruited). As excitation
-// decreases from 1 to 0, the proportion of recruited fibers that are slow-
-// twitch fibers increases from r to 1.
-const bool useBhargavaRecruitmentModel = true;
-
 
 //=============================================================================
 // CONSTRUCTOR(S) AND SETUP
@@ -121,6 +97,9 @@ void Umberger2010MuscleMetabolicsProbe::constructProperties()
     constructProperty_basal_coefficient(1.2);   // default value for standing (Umberger, 2003, p105)
     constructProperty_basal_exponent(1.0);
     constructProperty_muscle_effort_scaling_factor(1.0);
+    constructProperty_use_Bhargava_recruitment_model(true);
+    constructProperty_include_negative_mechanical_work(true);
+    constructProperty_forbid_negative_total_power(true);
     constructProperty_report_total_metabolics_only(true);
     constructProperty_Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet
        (Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet());
@@ -338,14 +317,15 @@ SimTK::Vector Umberger2010MuscleMetabolicsProbe::computeProbeInputs(const State&
         // --> depends on the normalized fiber length of the contractile element
         // -----------------------------------------------------------------------
         double slowTwitchRatio = mm.get_ratio_slow_twitch_fibers();
-        if (useBhargavaRecruitmentModel) {
+        if (get_use_Bhargava_recruitment_model()) {
             const double uSlow = slowTwitchRatio * sin(0.5*Pi * excitation);
             const double uFast = (1 - slowTwitchRatio)
                                  * (1 - cos(0.5*Pi * excitation));
             slowTwitchRatio = (excitation == 0) ? 1.0 : uSlow / (uSlow + uFast);
         }
 
-        if (forbidNegativeTotalPower || get_activation_maintenance_rate_on())
+        if (get_forbid_negative_total_power() ||
+            get_activation_maintenance_rate_on())
         {
             const double unscaledAMdot = 128*(1 - slowTwitchRatio) + 25;
 
@@ -361,7 +341,7 @@ SimTK::Vector Umberger2010MuscleMetabolicsProbe::computeProbeInputs(const State&
         // --> depends on the normalized fiber length of the contractile element
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
         // -----------------------------------------------------------------------
-        if (forbidNegativeTotalPower || get_shortening_rate_on())
+        if (get_forbid_negative_total_power() || get_shortening_rate_on())
         {
             const double Vmax_fasttwitch = max_shortening_velocity;
             const double Vmax_slowtwitch = max_shortening_velocity / 2.5;
@@ -390,8 +370,9 @@ SimTK::Vector Umberger2010MuscleMetabolicsProbe::computeProbeInputs(const State&
 
             else	// eccentric contraction, Vm>0
             {
-                unscaledSdot = (includeNegativeMechanicalWork ? 4.0 : 0.3)
-                               * alpha_shortening_slowtwitch * fiber_velocity_normalized;  // unscaled shortening heat rate: muscle lengthening
+                unscaledSdot =
+                    (get_include_negative_mechanical_work() ? 4.0 : 0.3)
+                    * alpha_shortening_slowtwitch * fiber_velocity_normalized;  // unscaled shortening heat rate: muscle lengthening
                 Sdot = get_aerobic_factor() * A * unscaledSdot;                                // scaled shortening heat rate: muscle lengthening
             }
 
@@ -414,9 +395,9 @@ SimTK::Vector Umberger2010MuscleMetabolicsProbe::computeProbeInputs(const State&
         // MECHANICAL WORK RATE for the contractile element of muscle i (W/kg).
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening.
         // -------------------------------------------------------------------
-        if (forbidNegativeTotalPower || get_mechanical_work_rate_on())
+        if (get_forbid_negative_total_power() || get_mechanical_work_rate_on())
         {
-            if (includeNegativeMechanicalWork || fiber_velocity <= 0)
+            if (get_include_negative_mechanical_work() || fiber_velocity <= 0)
                 Wdot = -fiber_force_active*fiber_velocity;
             else
                 Wdot = 0;
@@ -427,7 +408,7 @@ SimTK::Vector Umberger2010MuscleMetabolicsProbe::computeProbeInputs(const State&
 
         // If necessary, increase the shortening heat rate so that the total
         // power is non-negative.
-        if (forbidNegativeTotalPower) {
+        if (get_forbid_negative_total_power()) {
             const double Edot_Wkg_beforeClamp = AMdot + Sdot + Wdot;
             if (Edot_Wkg_beforeClamp < 0)
                 Sdot -= Edot_Wkg_beforeClamp;

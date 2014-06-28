@@ -34,22 +34,6 @@ using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
 
-// If we draw a control volume around the fiber, the first law of thermodynamics
-// suggests that negative mechanical work should be included in Wdot. As such,
-// we have reverted back to the model described in Umberger et al. (2003). This
-// flag sets the lengthening heat coefficient to alpha_L = 4.0*alpha_S(ST)
-// rather than 0.3*alpha_S(ST) and includes negative mechanical work in Wdot.
-const bool includeNegativeMechanicalWork = true;
-
-// During eccentric contraction, the magnitude of the (negative) mechanical work
-// rate can exceed that of the total (positive) heat rate, resulting in a flow
-// of energy into the fiber. Experiments indicate that the chemical processes
-// involved in fiber contraction cannot be reversed, and most of the energy that
-// is absorbed during eccentric contraction (in increased cross-bridge
-// potentials, for example) is eventually converted into heat. Thus, we increase
-// Sdot (if necessary) to ensure Edot > 0 for each muscle.
-const bool forbidNegativeTotalPower = true;
-
 
 //=============================================================================
 // CONSTRUCTOR(S) AND SETUP
@@ -123,6 +107,8 @@ void Bhargava2004MuscleMetabolicsProbe::constructProperties()
     constructProperty_basal_coefficient(1.2);  // default value for standing (Umberger, 2003, p105)
     constructProperty_basal_exponent(1.0);
     constructProperty_muscle_effort_scaling_factor(1.0);
+    constructProperty_include_negative_mechanical_work(true);
+    constructProperty_forbid_negative_total_power(true);
     constructProperty_report_total_metabolics_only(true);
     constructProperty_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet
        (Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet());
@@ -330,7 +316,7 @@ computeProbeInputs(const State& s) const
 
         // ACTIVATION HEAT RATE for muscle i (W)
         // ------------------------------------------
-        if (forbidNegativeTotalPower || get_activation_rate_on())
+        if (get_forbid_negative_total_power() || get_activation_rate_on())
         {
             const double decay_function_value = 1.0;    // This value is set to 1.0, as used by Anderson & Pandy (1999), however, in
                                                         // Bhargava et al., (2004) they assume a function here. We will ignore this
@@ -343,7 +329,7 @@ computeProbeInputs(const State& s) const
 
         // MAINTENANCE HEAT RATE for muscle i (W)
         // ------------------------------------------
-        if (forbidNegativeTotalPower || get_maintenance_rate_on())
+        if (get_forbid_negative_total_power() || get_maintenance_rate_on())
         {
             Vector tmp(1, fiber_length_normalized);
             fiber_length_dependence = get_normalized_fiber_length_dependence_on_maintenance_rate().calcValue(tmp);
@@ -357,7 +343,7 @@ computeProbeInputs(const State& s) const
         // SHORTENING HEAT RATE for muscle i (W)
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
         // -----------------------------------------------------------------------
-        if (forbidNegativeTotalPower || get_shortening_rate_on())
+        if (get_forbid_negative_total_power() || get_shortening_rate_on())
         {
             if (get_use_force_dependent_shortening_prop_constant())
             {
@@ -381,9 +367,9 @@ computeProbeInputs(const State& s) const
         // MECHANICAL WORK RATE for the contractile element of muscle i (W).
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening.
         // -------------------------------------------------------------------
-        if (forbidNegativeTotalPower || get_mechanical_work_rate_on())
+        if (get_forbid_negative_total_power() || get_mechanical_work_rate_on())
         {
-            if (includeNegativeMechanicalWork || fiber_velocity <= 0)
+            if (get_include_negative_mechanical_work() || fiber_velocity <= 0)
                 Wdot = -fiber_force_active*fiber_velocity;
             else
                 Wdot = 0;
@@ -404,7 +390,7 @@ computeProbeInputs(const State& s) const
 
         // If necessary, increase the shortening heat rate so that the total
         // power is non-negative.
-        if (forbidNegativeTotalPower) {
+        if (get_forbid_negative_total_power()) {
             const double Edot_W_beforeClamp = Adot + Mdot + Sdot + Wdot;
             if (Edot_W_beforeClamp < 0)
                 Sdot -= Edot_W_beforeClamp;

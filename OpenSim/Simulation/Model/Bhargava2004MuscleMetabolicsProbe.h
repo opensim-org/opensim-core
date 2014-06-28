@@ -128,6 +128,12 @@ class Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  *     - v_CE = muscle fiber velocity at the current time.
  *     - F_CE = force developed by the contractile element of muscle at the current time.\n
  *
+ * If we draw a control volume around the fiber, the first law of thermodynamics
+ * suggests that negative mechanical work should be included in Wdot. As such,
+ * we include negative mechanical work in Wdot by default. To exclude negative
+ * mechanical work from Wdot, set the 'include_negative_mechanical_work'
+ * property to false.
+ *
  * During eccentric contraction, the magnitude of the (negative) mechanical work
  * rate can exceed that of the total (positive) heat rate, resulting in a flow
  * of energy into the fiber. Experiments indicate that the chemical processes
@@ -137,7 +143,8 @@ class Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * Sdot (if necessary) to ensure Edot > 0 for each muscle. See
  * <a href="http://www.ncbi.nlm.nih.gov/pubmed/9409483">Constable, J.K.,
  * Barclay, C.J., Gibbs, C.L. (1997) Energetics of lengthening in mouse and toad
- * skeletal muscles. J Physiol 505:205-215</a>.
+ * skeletal muscles. J Physiol 505:205-215</a>. To allow muscles to have
+ * negative total power, set the 'forbid_negative_total_power' property to false.
  *
  *
  * Note that if enforce_minimum_heat_rate_per_muscle == true AND 
@@ -249,6 +256,18 @@ public:
         "Scale the excitation and activation values used by the probe to "
         "compensate for solutions with excessive coactivation (e.g., when a "
         "suboptimal tracking strategy is used).");
+
+    /** Enabled by default. **/
+    OpenSim_DECLARE_PROPERTY(include_negative_mechanical_work,
+        bool,
+        "Specify whether negative mechanical work will be included in Wdot "
+        "(true/false).");
+
+    /** Enabled by default. **/
+    OpenSim_DECLARE_PROPERTY(forbid_negative_total_power,
+        bool,
+        "Specify whether the total power for each muscle must remain positive "
+        "(true/false).");
 
     /** Default value = true **/
     OpenSim_DECLARE_PROPERTY(report_total_metabolics_only, 
