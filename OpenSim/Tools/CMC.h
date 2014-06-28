@@ -52,21 +52,21 @@ class CMC_TaskSet;
  * Computed Muscle Control (CMC) is an optimization-based control technique
  * designed specifically for controlling dynamic models that are actuated
  * by redundant sets of actuators whose force-generating properties may
- * be nonlinear and goverened by differential equaitions (as so have delays
+ * be nonlinear and governed by differential equations (and so have delays
  * in force production).  The cannonical example of such a dynamic system
  * is the musculoskeletal system (human or animal), hence the name
  * Computed Muscle Control.
  *
  * For a complete description of the CMC algorithm consult the following
- * references:\n\n
+ * references:
  *
  * Anderson FC (2004).  Method and system for dynamically filtering the
  * motion of articulated bodies. Realistic Dynamics, Inc.,
- * US Patent No. 6,750,866 (Issue date: June 15, 2004).\n
+ * US Patent No. 6,750,866 (Issue date: June 15, 2004).
  *
  * Thelen DG, Anderson FC (2006). Using computed muscle control to
  * generate forward dynamic simulations of human walking from experimental
- * data. J Biomech 39: 1107-15.\n
+ * data. J Biomech 39: 1107-15.
  *
  * Thelen DG, Anderson FC, Delp SL (2003). Generating forward dynamic
  * simulations of movement using computed muscle control. J Biomech 36: 321-8.
