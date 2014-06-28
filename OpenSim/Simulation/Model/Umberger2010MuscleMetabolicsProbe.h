@@ -89,7 +89,9 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * slow-twitch fibers increases from r to 1. See
  * <a href="http://www.ncbi.nlm.nih.gov/pubmed/14672571">Bhargava, L.J., Pandy,
  * M.G., Anderson, F.C. (2004) A phenomenological model for estimating metabolic
- * energy consumption in muscle contraction. J Biomech 37:81-88</a>.
+ * energy consumption in muscle contraction. J Biomech 37:81-88</a>. To assume a
+ * constant ratio of slow- and fast-twitch fiber recruitment, set the
+ * 'use_Bhargava_recruitment_model' property to false.
  *
  *
  *
@@ -148,6 +150,13 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  *     - v_CE = muscle fiber velocity at the current time.
  *     - F_CE = force developed by the contractile element of muscle at the current time.\n
  *
+ * If we draw a control volume around the fiber, the first law of thermodynamics
+ * suggests that negative mechanical work should be included in Wdot. As such,
+ * we revert back to the model described in Umberger et al. (2003) by default.
+ * To exclude negative mechanical work from Wdot and use a coefficient of 0.3
+ * (rather than 4.0) to calculate alpha_L, set the
+ * 'include_negative_mechanical_work' property to false.
+ *
  * During eccentric contraction, the magnitude of the (negative) mechanical work
  * rate can exceed that of the total (positive) heat rate, resulting in a flow
  * of energy into the fiber. Experiments indicate that the chemical processes
@@ -157,7 +166,8 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * Sdot (if necessary) to ensure Edot > 0 for each muscle. See
  * <a href="http://www.ncbi.nlm.nih.gov/pubmed/9409483">Constable, J.K.,
  * Barclay, C.J., Gibbs, C.L. (1997) Energetics of lengthening in mouse and toad
- * skeletal muscles. J Physiol 505:205-215</a>.
+ * skeletal muscles. J Physiol 505:205-215</a>. To allow muscles to have
+ * negative total power, set the 'forbid_negative_total_power' property to false.
  *
  *
  * Note that if enforce_minimum_heat_rate_per_muscle == true AND 
@@ -254,6 +264,28 @@ public:
         "Scale the excitation and activation values used by the probe to "
         "compensate for solutions with excessive coactivation (e.g., when a "
         "suboptimal tracking strategy is used).");
+
+    /** Enabled by default. **/
+    OpenSim_DECLARE_PROPERTY(use_Bhargava_recruitment_model,
+        bool,
+        "Specify whether the recruitment model described by Bhargava et al. "
+        "(2004) will used to determine the slow-twitch fiber ratio "
+        "(true/false). Disable to use the model as published in Umberger "
+        "(2010).");
+
+    /** Enabled by default. **/
+    OpenSim_DECLARE_PROPERTY(include_negative_mechanical_work,
+        bool,
+        "Specify whether negative mechanical work will be included in Wdot and "
+        "a coefficient of 4.0 will be used to calculate alpha_L (true/false). "
+        "Disable to use the model as published in Umberger (2010).");
+
+    /** Enabled by default. **/
+    OpenSim_DECLARE_PROPERTY(forbid_negative_total_power,
+        bool,
+        "Specify whether the total power for each muscle must remain positive "
+        "(true/false). Disable to use the model as published in Umberger "
+        "(2010).");
 
     /** Default value = true **/
     OpenSim_DECLARE_PROPERTY(report_total_metabolics_only, 
