@@ -51,7 +51,7 @@ class Storage;
  * on a model (presumably after it has been scaled to fit a subject).
  *
  * MarkerPlacer() is bundeled with ModelScaler() and GenericModelMaker() to 
- * in ScaleTool()
+ * form the ScaleTool()
  *
  * @author Peter Loan
  * @version 1.0
