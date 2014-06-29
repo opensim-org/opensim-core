@@ -391,6 +391,35 @@ public:
 		}
 	}
 
+    /** An iterator for the map of Outputs of this component, pointing at the
+     * beginning of the map. This can be used in a loop as such:
+     *
+     *  @code
+     *  std::map<std::string, const AbstractOutput*>::const_iterator it;
+     *  for (it = myComp.getOutputsBegin(); it != myComp.getOutputsEnd(); it++)
+     *  { ... }
+	 *  @endcode
+     *
+     * @see getOutputsEnd()
+     */
+    std::map<std::string, const AbstractOutput*>::const_iterator
+        getOutputsBegin() const
+    {
+        return _outputsTable.begin();
+    }
+
+    /** An iterator for the map of Outputs of this component, pointing at the
+     * end of the map. This can be used in a loop as such:
+     *
+     * @see getOutputsBegin()
+     */
+    std::map<std::string, const AbstractOutput*>::const_iterator
+        getOutputsEnd() const
+    {
+        return _outputsTable.end();
+    }
+
+
 	/**
 	* Get the Output provided by this Component by name.
 	*
