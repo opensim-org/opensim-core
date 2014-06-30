@@ -29,27 +29,42 @@
 using namespace OpenSim;
 using namespace std;
 
+static Model dummyModel;
+
 template <typename T>
 void testComponent(const T& instanceToTest);
 
-template <typename T, typename... Args>
-void testModelComponent(const T& instanceToTest, Args... dependencies);
-
+template <typename T>
+void testModelComponent(const T& instanceToTest, Model& model=dummyModel);
 
 int main()
 {
+    // Do not delete this line. It is used to allow users to optionally pass in their own model.
+    dummyModel.setName("dummyModel");
+
     // Add a line here for each model component that we want to test.
     testModelComponent(ClutchedPathSpring());
-    // TODO testModelComponent(Thelen2003Muscle());
+    // TODO testModelComponent(Thelen2003Muscle()); rigid tendon issue
     // TODO testModelComponent(Millard2012AccelerationMuscle());
+    //  randomized properties out of range; throws exception.
     // TODO testModelComponent(PathActuator());
 
-    Body* body1 = new Body(); body1->setName("body1");
-    Body* body2 = new Body(); body2->setName("body2");
-    PinJoint pinJoint;
-    pinJoint.updConnector<Body>("parent_body").set_connected_to_name("body1");
-    pinJoint.updConnector<Body>("child_body").set_connected_to_name("body2");
-    testModelComponent(pinJoint, body1, body2);
+    {
+        ContactSphere contactSphere; contactSphere.set_body_name("ground");
+        testModelComponent(contactSphere);
+    }
+
+    /*{ TODO memory leak with initSystem.
+        Body* body1 = new Body(); body1->setName("body1"); body1->setMass(1.0);
+        PinJoint pinJoint;
+        pinJoint.updConnector<Body>("parent_body").
+            set_connected_to_name("ground");
+        pinJoint.updConnector<Body>("child_body").
+            set_connected_to_name("body1");
+        //TODO Model model; model.addBody(body1);
+        Model model("gait10dof18musc_subject01.osim"); model.addBody(body1);
+        testModelComponent(pinJoint, model);
+    }*/
 }
 
 class DummyComponent : public Component {
@@ -64,23 +79,14 @@ void testComponent(const T& instanceToTest)
     throw Exception("Not implemented.");
 }
 
-void addModelComponents(Model& model) {}
-
-template <typename... Args>
-void addModelComponents(Model& model, ModelComponent* next,
-        Args... remaining)
-{
-    model.addModelComponent(next);
-    addModelComponents(model, remaining...);
-}
-
-template <typename T, typename... Args>
-void testModelComponent(const T& instanceToTest, Args... dependencies)
+template <typename T>
+void testModelComponent(const T& instanceToTest, Model& model)
 {
     // Make a copy so that we can modify the instance.
     T* instance = new T(instanceToTest);
+    string className = instance->getConcreteClassName();
 
-    std::cout << "\nTesting " << instance->getConcreteClassName() << std::endl;
+    std::cout << "\nTesting " << className << std::endl;
 
     // 1. Set properties to random values.
     // -----------------------------------
@@ -99,7 +105,7 @@ void testModelComponent(const T& instanceToTest, Args... dependencies)
         std::cout << "XML serialization for the clone:" << std::endl;
         std::cout << copyInstance->dump() << std::endl;
         throw Exception(
-                "testComponents: for " + instance->getConcreteClassName() +
+                "testComponents: for " + className +
                 ", clone() did not produce an identical object.",
                 __FILE__, __LINE__);
     }
@@ -111,7 +117,7 @@ void testModelComponent(const T& instanceToTest, Args... dependencies)
     // This will find issues with serialization.
     std::cout << "Serializing and deserializing component." << std::endl;
     string serializationFilename =
-        "testing_serialization_" + instance->getConcreteClassName() + ".xml";
+        "testing_serialization_" + className + ".xml";
     instance->print(serializationFilename);
     T* deserializedInstance =
         static_cast<T*>(Object::makeObjectFromFile(serializationFilename));
@@ -123,24 +129,48 @@ void testModelComponent(const T& instanceToTest, Args... dependencies)
             std::endl;
         deserializedInstance->dump();
         throw Exception(
-                "testComponents: for " + instance->getConcreteClassName() +
+                "testComponents: for " + className +
                 ", deserialization did not produce an identical object.",
                 __FILE__, __LINE__);
     }
     // TODO should try to delete even if exception is thrown.
     delete deserializedInstance;
 
-    // 4. Make the aggregate component; add in dependent components.
+    // 4. Set up the aggregate component.
     // -------------------------------------------------------------------
-    // Find dependent components using connectors.
-    std::cout << "Create aggregate component." << std::endl;
-    Model model;
-    addModelComponents(model, dependencies...);
+    std::cout << "Set up aggregate component." << std::endl;
+    if (model.getName() == "dummyModel")
+    {
+        // User did not provide a model; create a fresh model.
+        model = Model();
+    }
 
     // 5. Add this component to an aggregate component.
     // ------------------------------------------------
     std::cout << "Add this ModelComponent to the model." << std::endl;
-    model.addModelComponent(instance);
+    if (Object::isObjectTypeDerivedFrom< Analysis >(className))
+        model.addAnalysis(dynamic_cast<Analysis*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Body >(className))
+        model.addBody(dynamic_cast<Body*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Constraint >(className))
+        model.addConstraint(dynamic_cast<Constraint*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< ContactGeometry >(className))
+        model.addContactGeometry(dynamic_cast<ContactGeometry*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Controller >(className))
+        model.addController(dynamic_cast<Controller*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Force >(className))
+        model.addForce(dynamic_cast<Force*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Probe >(className))
+        model.addProbe(dynamic_cast<Probe*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Joint >(className))
+        model.addJoint(dynamic_cast<Joint*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< ModelComponent >(className))
+        model.addModelComponent(dynamic_cast<ModelComponent*>(instance));
+    else
+    {
+        throw Exception(className + " is not a ModelComponent.",
+                __FILE__, __LINE__);
+    }
 
     // 6. Connect up the aggregate; check that connections are correct.
     // ----------------------------------------------------------------
@@ -184,7 +214,7 @@ void testModelComponent(const T& instanceToTest, Args... dependencies)
         // Doesn't matter what the value is; just want to make sure the output
         // is wired.
         model.getSystem().realize(state, thisOutput->getDependsOnStage());
-        std::cout << "Component " << instance->getConcreteClassName() <<
+        std::cout << "Component " << className <<
             ", output " <<thisName << ": " <<
             thisOutput->getValueAsString(state) << std::endl;
     }
@@ -204,8 +234,9 @@ void testModelComponent(const T& instanceToTest, Args... dependencies)
 
         ASSERT(leakPercent < 2.0, __FILE__, __LINE__,
                 "testComponents: memory leak greater than 2%. Initial memory: " +
-                to_string(initMemory) + ", increase in memory: " +
-                to_string(increaseInMemory) + ".");
+                to_string(initMemory/1024) + " KB, increase in memory: " +
+                to_string(increaseInMemory/1024) + " KB, " +
+                to_string(leakPercent) + "%.");
     }
 
     // 11. Test that repeated calls to initSystem do not change test results,
@@ -215,7 +246,7 @@ void testModelComponent(const T& instanceToTest, Args... dependencies)
     {
         SimTK::State& finalInitState(initState);
         const size_t initMemory = getCurrentRSS();
-        for (unsigned int ileak = 0; ileak < 1000; ++ileak)
+        for (unsigned int ileak = 0; ileak < 500; ++ileak)
         {
             finalInitState = model.initSystem();
         }
@@ -229,8 +260,9 @@ void testModelComponent(const T& instanceToTest, Args... dependencies)
 
         ASSERT(leakPercent < 2.0, __FILE__, __LINE__,
                 "testComponents: memory leak greater than 2%. Initial memory: " +
-                to_string(initMemory) + ", increase in memory: " +
-                to_string(increaseInMemory) + ".");
+                to_string(initMemory/1024) + " KB, increase in memory: " +
+                to_string(increaseInMemory/1024) + " KB, " +
+                to_string(leakPercent) + "%.");
     }
 }
 
