@@ -68,6 +68,9 @@ int main()
         Model model("gait10dof18musc_subject01.osim"); model.addBody(body1);
         testModelComponent(pinJoint, true, model);
     }*/
+
+    testModelComponent(Bhargava2004MuscleMetabolicsProbe());
+    testModelComponent(Umberger2010MuscleMetabolicsProbe());
 }
 
 class DummyComponent : public Component {

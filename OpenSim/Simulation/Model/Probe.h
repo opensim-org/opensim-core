@@ -217,6 +217,7 @@ protected:
 private:
     void setNull();
     void constructProperties();
+    void constructOutputs() override;
 
 
 //=============================================================================
