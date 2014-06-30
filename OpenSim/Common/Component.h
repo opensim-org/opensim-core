@@ -1068,6 +1068,7 @@ template <class T> friend class ComponentMeasure;
      *          SimTK::Stage::Velocity);
      *  @endcode
      */
+#ifndef SWIG // SWIG can't parse the const at the end of the second argument.
     template <typename T, typename Class>
     void constructOutput(const std::string& name,
             T(Class::*componentMemberFunction)(const SimTK::State&) const,
@@ -1076,6 +1077,7 @@ template <class T> friend class ComponentMeasure;
                     static_cast<Class*>(this),
                     std::placeholders::_1), dependsOn);
     }
+#endif
 
 	/**
 	* Construct an Output (wire) for the Component as function of the State.
