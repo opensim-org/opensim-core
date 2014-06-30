@@ -34,8 +34,11 @@ static Model dummyModel;
 template <typename T>
 void testComponent(const T& instanceToTest);
 
+// NOTE: disabling randomizePropertyValues weakens the test substantially.
 template <typename T>
-void testModelComponent(const T& instanceToTest, Model& model=dummyModel);
+void testModelComponent(const T& instanceToTest,
+        bool randomizePropertyValues=true,
+        Model& model=dummyModel);
 
 int main()
 {
@@ -45,8 +48,8 @@ int main()
     // Add a line here for each model component that we want to test.
     testModelComponent(ClutchedPathSpring());
     // TODO testModelComponent(Thelen2003Muscle()); rigid tendon issue
-    // TODO testModelComponent(Millard2012AccelerationMuscle());
-    //  randomized properties out of range; throws exception.
+    testModelComponent(Millard2012AccelerationMuscle(), false);
+    // TODO randomized properties out of range; throws exception.
     // TODO testModelComponent(PathActuator());
 
     {
@@ -63,7 +66,7 @@ int main()
             set_connected_to_name("body1");
         //TODO Model model; model.addBody(body1);
         Model model("gait10dof18musc_subject01.osim"); model.addBody(body1);
-        testModelComponent(pinJoint, model);
+        testModelComponent(pinJoint, true, model);
     }*/
 }
 
@@ -80,7 +83,8 @@ void testComponent(const T& instanceToTest)
 }
 
 template <typename T>
-void testModelComponent(const T& instanceToTest, Model& model)
+void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
+        Model& model)
 {
     // Make a copy so that we can modify the instance.
     T* instance = new T(instanceToTest);
@@ -90,8 +94,11 @@ void testModelComponent(const T& instanceToTest, Model& model)
 
     // 1. Set properties to random values.
     // -----------------------------------
-    std::cout << "Randomizing the component's properties." << std::endl;
-    randomize(instance); 
+    if (randomizePropertyValues)
+    {
+        std::cout << "Randomizing the component's properties." << std::endl;
+        randomize(instance); 
+    }
 
     // 2. Ensure that cloning produces an exact copy.
     // ----------------------------------------------
