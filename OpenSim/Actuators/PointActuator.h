@@ -83,7 +83,7 @@ public:
 //==============================================================================
     /** Default constructor or construct with body name given. An empty 
     name ("") is treated as though it were unspecified. **/
-	PointActuator(const std::string& bodyName="");
+	explicit PointActuator(const std::string& bodyName="");
 
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
