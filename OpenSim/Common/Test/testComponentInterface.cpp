@@ -135,16 +135,16 @@ public:
 		constructInfrastructure();
 	}
 
-	double getSomething(const SimTK::State& state){
+	double getSomething(const SimTK::State& state) const {
 		return state.getTime();
 	}
 
-	SimTK::Vec3 calcSomething(const SimTK::State& state){
+	SimTK::Vec3 calcSomething(const SimTK::State& state) const {
 		double t = state.getTime();
 		return SimTK::Vec3(t, t*t, sqrt(t));
 	}
 
-	SimTK::SpatialVec calcSpatialAcc(const SimTK::State& state){
+	SimTK::SpatialVec calcSpatialAcc(const SimTK::State& state) const {
 		return getSystem().getMatterSubsystem().getMobilizedBody(bindex)
 			.getBodyAcceleration(state);
 	}
