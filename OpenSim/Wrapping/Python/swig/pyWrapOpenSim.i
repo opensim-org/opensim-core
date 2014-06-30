@@ -11,6 +11,7 @@ own project.
 %{
 #define SWIG_FILE_WITH_INIT
 
+
 #include <OpenSim/version.h>
 #include <SimTKsimbody.h>
 #include <OpenSim/Common/osimCommonDLL.h>
@@ -90,6 +91,8 @@ own project.
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/BodyFrame.h>
+
 #include <OpenSim/Simulation/Control/Control.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Control/ControlConstant.h>
@@ -953,6 +956,7 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/BushingForce.h>
 %include <OpenSim/Simulation/Model/FunctionBasedBushingForce.h>
 %include <OpenSim/Simulation/Model/ExpressionBasedBushingForce.h>
+%include <OpenSim/Simulation/Model/BodyFrame.h>
 
 //osimAnalyses
 %include <OpenSim/Analyses/osimAnalysesDLL.h>

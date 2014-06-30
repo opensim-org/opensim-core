@@ -44,20 +44,25 @@ int main()
 {
     // Do not delete this line. It is used to allow users to optionally pass in their own model.
     dummyModel.setName("dummyModel");
+	Model groundModel;
+	BodyFrame bFrame;
+	bFrame.updConnector<Body>("body").set_connected_to_name("ground");
 
+	testModelComponent(bFrame, false, groundModel);
     // Add a line here for each model component that we want to test.
     testModelComponent(ClutchedPathSpring());
     // TODO testModelComponent(Thelen2003Muscle()); rigid tendon issue
     testModelComponent(Millard2012AccelerationMuscle(), false);
     // TODO randomized properties out of range; throws exception.
     // TODO testModelComponent(PathActuator());
+	
 
     {
         ContactSphere contactSphere; contactSphere.set_body_name("ground");
         testModelComponent(contactSphere);
     }
 
-    /*{ TODO memory leak with initSystem.
+    //TODO memory leak with initSystem.
         Body* body1 = new Body(); body1->setName("body1"); body1->setMass(1.0);
         PinJoint pinJoint;
         pinJoint.updConnector<Body>("parent_body").
@@ -66,8 +71,9 @@ int main()
             set_connected_to_name("body1");
         //TODO Model model; model.addBody(body1);
         Model model("gait10dof18musc_subject01.osim"); model.addBody(body1);
+		
         testModelComponent(pinJoint, true, model);
-    }*/
+    
 }
 
 class DummyComponent : public Component {

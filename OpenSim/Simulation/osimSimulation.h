@@ -63,6 +63,8 @@
 #include "Model/ActuatorPowerProbe.h"
 #include "Model/JointInternalPowerProbe.h"
 #include "Model/MuscleActiveFiberPowerProbe.h"
+#include "Model/Frame.h"
+#include "Model/BodyFrame.h"
 
 #include "Manager/Manager.h"
 
