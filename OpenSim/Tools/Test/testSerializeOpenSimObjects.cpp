@@ -59,43 +59,6 @@ static void dumpObj(const Object& obj, int nSpaces) {
     }
 }
 
-static OpenSim::Object* randomize(OpenSim::Object* obj)
-{
-    if (obj==0) return 0; // maybe empty tag
-    std::stringstream stream;
-    stream << rand();
-    obj->setName(obj->getConcreteClassName()+stream.str());
-    // Cycle thru properties and based on type, populate with a random valid value
-     for (int p=0; p < obj->getNumProperties(); ++p) {
-        AbstractProperty& ap = obj->updPropertyByIndex(p); 
-        //cout << ap.getName() << "=" << ap.toString() << endl;
-        // Check return values from Property API for debugging purposes
-        bool t1 = ap.isListProperty();
-        bool t2 = ap.isObjectProperty();
-        bool t3 = ap.isOneObjectProperty();
-        bool t4 = ap.isOneValueProperty();
-        string ts = ap.getTypeName();
-        cout << ts << endl;
-        if (ap.isOptionalProperty()) 
-            continue;
-        if (ts == "bool"&& !ap.isListProperty()) ap.updValue<bool>()= !ap.getValue<bool>();
-        else if (ts == "integer"&& !ap.isListProperty()) ap.updValue<int>()=rand();
-        else if (ts == "double" && !ap.isListProperty()) ap.updValue<double>()=(double) rand();
-        else if (ts == "double" && ap.isListProperty() && ap.getMaxListSize() < 20){
-            for (int i=0; i< ap.getMaxListSize(); ++i)
-                ap.updValue<double>(i) = (double) rand();
-        }
-		else if (ap.isObjectProperty() && !ap.isListProperty()){
-			randomize(&ap.updValueAsObject(0));
-			ap.setValueIsDefault(false);
-		}
-		else{
-			cerr << "Unrecognized Property" << std::endl;
-			cerr << ap.getName() << ": " << ap.toString() << std::endl;
-		}
-     }
-     return obj;
-}
 int main()
 {
 	try {

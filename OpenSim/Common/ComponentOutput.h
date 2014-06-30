@@ -135,9 +135,12 @@ public:
 		Exception. */
 	const T& getValue(const SimTK::State& state) const {
 		_result = SimTK::NaN;
-		SimTK_ERRCHK2_ALWAYS(state.getSystemStage() >= getDependsOnStage(),
-			"Output::getValue(state)", "System stage too low at %s expected %s.", 
-			state.getSystemStage(), getDependsOnStage());
+        if (state.getSystemStage() < getDependsOnStage())
+        {
+            throw SimTK::Exception::StageTooLow(__FILE__, __LINE__,
+                    state.getSystemStage(), getDependsOnStage(),
+                    "Output::getValue(state)");
+        }
 		_result = _outputFcn(state); 
 		return _result;
 	}
