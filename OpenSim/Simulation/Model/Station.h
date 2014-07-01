@@ -69,8 +69,8 @@ public:
 	//virtual void changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody );
 private:
 	void setNull();
-	void constructProperties();
-	void constructStructuralConnectors();
+	void constructProperties() OVERRIDE_11;
+	void constructStructuralConnectors() OVERRIDE_11;
 
 //=============================================================================
 };	// END of class Station
