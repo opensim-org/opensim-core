@@ -25,6 +25,7 @@
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Auxiliary/getRSS.h>
+#include <OpenSim/Simulation/Model/Station.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -45,6 +46,7 @@ int main()
     // Do not delete this line. It is used to allow users to optionally pass in their own model.
     dummyModel.setName("dummyModel");
 
+	testModelComponent(Station());
     // Add a line here for each model component that we want to test.
     testModelComponent(ClutchedPathSpring());
     // TODO testModelComponent(Thelen2003Muscle()); rigid tendon issue

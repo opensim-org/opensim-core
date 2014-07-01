@@ -44,6 +44,7 @@
 #include "Model/Ligament.h"
 #include "Model/JointSet.h"
 #include "Model/Marker.h"
+#include "Model/Station.h"
 #include "Model/MarkerSet.h"
 #include "Model/PathPoint.h"
 #include "Model/PathPointSet.h"
@@ -140,6 +141,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     Object::registerType( JointSet() );
     Object::registerType( Marker() );
+    Object::registerType( Station() );
     Object::registerType( MarkerSet() );
     Object::registerType( PathPoint() );
     Object::registerType( PathPointSet() );

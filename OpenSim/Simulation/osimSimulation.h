@@ -43,6 +43,7 @@
 #include "Model/Ligament.h"
 #include "Model/JointSet.h"
 #include "Model/Marker.h"
+#include "Model/Station.h"
 #include "Model/MarkerSet.h"
 #include "Model/PathPoint.h"
 #include "Model/PathPointSet.h"
