@@ -373,7 +373,8 @@ protected:
 
 private:
 	void setNull();
-	void constructProperties();
+	void constructProperties() OVERRIDE_11;
+    void constructOutputs() OVERRIDE_11;
 	void copyData(const Muscle &aMuscle);
 
 	//--------------------------------------------------------------------------
