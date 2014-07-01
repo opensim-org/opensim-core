@@ -1,7 +1,7 @@
-#ifndef __Station_h__
-#define __Station_h__
+#ifndef OPENSIM_FRAME_H_
+#define OPENSIM_FRAME_H_
 /* -------------------------------------------------------------------------- *
- *                             OpenSim:  Station.h                             *
+ *                              OpenSim:  Frame.h                             *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                         *
+ * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Author(s): Ajay Seth, Ayman Habib                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,61 +23,82 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "OpenSim/Simulation/Model/ModelComponent.h"
-#include "OpenSim/Simulation/Model/Frame.h"
+#include <OpenSim/Simulation/Model/ModelComponent.h>
+
 
 namespace OpenSim {
 
-class Body;
+class Model;
+
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Fixed Station on a Body.
+ * To do  
  *
- * @author Ayman Habib
- * @version 1.0
+ * @author Matt DeMers
  */
-class OSIMSIMULATION_API Station : public ModelComponent {
-OpenSim_DECLARE_CONCRETE_OBJECT(Station, ModelComponent);
+class OSIMSIMULATION_API Frame : public ModelComponent {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Frame, ModelComponent);
 public:
-	//==============================================================================
-	// PROPERTIES
-	//==============================================================================
-	/** @name Property declarations
-	These are the serializable properties associated with a Station. **/
-	/**@{**/
-	OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
-		"The location (Vec3) of the station in some refernce frame. Frame will be specified as Connector.");
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations 
+    These are the serializable properties associated with a Body. **/
+    /**@{**/
+	
+
 	/**@}**/
+protected:
+
+	
 
 //=============================================================================
-// Model Component Interface
+// PUBLIC METHODS
 //=============================================================================
-	void connectToModel(Model& model);
+
 public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-	Station();
-	virtual ~Station();
-	const OpenSim::Frame& getReferenceFrame() const;
-	//void setReferenceFrame( const OpenSim::Frame& aFrame );
-	//Station reexpressInFrame(const SimTK::State& s, OpenSim::Frame& aFrame) const;
+	/** default contructor*/
+	Frame();
+	// use compiler generated destructor, copy constructor and assignment operator
+
+	/** Access Properties of the Body */
+
+	/** Spatial Operations for Frames*/
+	virtual const SimTK::Transform& getTransform() const = 0;
+	virtual const SimTK::Transform calcTransformFromGround(const SimTK::State &state) const = 0;
+	const SimTK::Transform calcTranformFromOtherFrame(const SimTK::State &state, Frame &frame) const;
+	const SimTK::Vec3& expressVectorFromAnotherFrame(const SimTK::State &state, SimTK::Vec3 &vec, Frame &frame) const;
+	const SimTK::Vec3& expressPointFromAnotherFrame(const SimTK::State &state, SimTK::Vec3 &point, Frame &frame) const;
+	// expressStationFromAnotherFrame()
+
+
+protected:
+    // Model component interface.
+	
+
+	
+
+
 private:
+
+
 	void setNull();
-	void constructProperties() OVERRIDE_11;
-	void constructStructuralConnectors() OVERRIDE_11;
+	
+
 
 //=============================================================================
-};	// END of class Station
+};	// END of class Body
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __Station_h__
+#endif // OPENSIM_FRAME_H_
 
 

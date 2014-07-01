@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  Station.cpp                            *
+ *                             OpenSim:  BodyFrame.cpp                             *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                      *
+ * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -24,24 +24,26 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "Station.h"
-#include "Model.h"
+#include "BodyFrame.h"
+#include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
 // STATICS
 //=============================================================================
 using namespace std;
+//using namespace SimTK;
 using namespace OpenSim;
+using SimTK::Mat33;
 using SimTK::Vec3;
+
 //=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
+// CONSTRUCTOR(S)
 //=============================================================================
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-Station::Station() :
-   ModelComponent()
+BodyFrame::BodyFrame() : Frame()
 {
 	setNull();
 	constructInfrastructure();
@@ -49,53 +51,77 @@ Station::Station() :
 
 //_____________________________________________________________________________
 /**
- * Destructor.
+ * Constructor.
  */
-Station::~Station()
+BodyFrame::BodyFrame(Body& body) :
+   Frame()
 {
+	setNull();
+	constructInfrastructure();
+	
 }
-
 //_____________________________________________________________________________
 /**
-* Set the data members of this Station to their null values.
+* Set a null frame as Identity rotation, 0 translation
 */
-void Station::setNull()
+void BodyFrame::setNull()
 {
-	setAuthors("Ayman Habib");
+	setAuthors("Matt DeMers");
 }
 
+
+void BodyFrame::constructStructuralConnectors()
+{
+	constructStructuralConnector<Body>("body");
+}
+
+
+//=============================================================================
+// FRAME COMPUTATIONS
+//=============================================================================
 //_____________________________________________________________________________
-/**
-* Connect properties to local pointers.
-*/
-void Station::constructProperties()
+const SimTK::Transform& BodyFrame::getTransform() const
 {
-	//Default location
-	SimTK::Vec3 origin(0.0, 0.0, 0.0);
-	// Location in Body 
-	constructProperty_location(origin);
+	SimTK::Transform xform;
+	xform.setToZero();
+	return xform; // This is a problem since xform is out of scope!
 }
-
-
-void Station::constructStructuralConnectors()
+const SimTK::Transform BodyFrame::calcTransformFromGround(const SimTK::State &state) const
 {
-	constructStructuralConnector<Frame>("reference_frame");
-}
+	const Body& myBody = getConnector<Body>("body").getConnectee();
+	const SimTK::MobilizedBodyIndex mbi = myBody.getIndex();
 
+	const SimTK::MobilizedBody &G = getModel().getMatterSubsystem().getGround();
+	const SimTK::MobilizedBody &B = getModel().getMatterSubsystem().getMobilizedBody(mbi);
+	const SimTK::Transform& ground_X_B = B.getBodyTransform(state);
+	
+	return ~ground_X_B;
+}
+//=============================================================================
+// GET AND SET
+//=============================================================================
 //_____________________________________________________________________________
-/**
-* Perform some set up functions that happen after the
-* object has been deserialized or copied.
-*
-* @param aModel OpenSim model containing this Station.
-*/
-void Station::connectToModel(Model& aModel)
-{
-	Super::connectToModel(aModel);
 
-}
 
-const Frame& Station::getReferenceFrame() const
-{
-	return getConnector<Frame>("reference_frame").getConnectee();
-}
+
+
+
+//=============================================================================
+// SCALING
+//=============================================================================
+//_____________________________________________________________________________
+
+
+
+//=============================================================================
+// UTILITY
+//=============================================================================
+
+
+
+//=============================================================================
+// I/O
+//=============================================================================
+
+
+
