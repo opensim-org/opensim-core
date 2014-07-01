@@ -26,7 +26,7 @@
 //=============================================================================
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 #include "SpatialActuator.h"
 
@@ -70,6 +70,10 @@ void SpatialActuator::setNull()
 // Allocate and initialize properties.
 void SpatialActuator::constructProperties()
 {
+}
+
+void SpatialActuator::constructStructuralConnectors() {
+	constructStructuralConnector<Body>("body");
 }
 
 //=============================================================================

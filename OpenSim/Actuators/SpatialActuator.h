@@ -84,9 +84,7 @@ private:
 	//--------------------------------------------------------------------------
 	// Implement Component interface
 	//--------------------------------------------------------------------------
-	void constructStructuralConnectors() override {
-		constructStructuralConnector<Body>("body");
-	}
+	void constructStructuralConnectors() override;
 
 	//--------------------------------------------------------------------------
 	// Implement Force interface
