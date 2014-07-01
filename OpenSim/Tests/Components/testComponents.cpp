@@ -48,9 +48,13 @@ int main()
 	Model groundModel;
 	BodyFrame bFrame;
 	bFrame.updConnector<Body>("body").set_connected_to_name("ground");
+	bFrame.setName("MattsFrame");
+	//testModelComponent(bFrame, false, groundModel);
+	Station myStation;
+	myStation.set_location(SimTK::Vec3(1., 2., 3.));
+	myStation.updConnector<Frame>("reference_frame").set_connected_to_name("MattsFrame");
+	testModelComponent(myStation);
 
-	testModelComponent(Station());
-	testModelComponent(bFrame, false, groundModel);
     // Add a line here for each model component that we want to test.
     testModelComponent(ClutchedPathSpring());
     // TODO testModelComponent(Thelen2003Muscle()); rigid tendon issue
@@ -63,7 +67,7 @@ int main()
         ContactSphere contactSphere; contactSphere.set_body_name("ground");
         testModelComponent(contactSphere);
     }
-
+    /*
     //TODO memory leak with initSystem.
         Body* body1 = new Body(); body1->setName("body1"); body1->setMass(1.0);
         PinJoint pinJoint;
@@ -75,7 +79,7 @@ int main()
         Model model("gait10dof18musc_subject01.osim"); model.addBody(body1);
 		
         testModelComponent(pinJoint, true, model);
-    
+    */
 }
 
 class DummyComponent : public Component {
