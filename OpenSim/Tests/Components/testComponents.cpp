@@ -228,7 +228,7 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
 
     // 10. Test for memory leaks by copying and deleting.
     // --------------------------------------------------
-    std::cout << "Memory leaks from copying." << std::endl;
+    std::cout << "Testing for memory leaks from copying." << std::endl;
     {
         const size_t initMemory = getCurrentRSS();
         for (unsigned int ileak = 0; ileak < 1000; ++ileak)
@@ -249,7 +249,7 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
     // 11. Test that repeated calls to initSystem do not change test results,
     // and that memory does not leak.
     // ------------------------------------------------------------------------
-    std::cout << "Memory leaks from initSystem." << std::endl;
+    std::cout << "Testing for memory leaks from initSystem." << std::endl;
     {
         SimTK::State& finalInitState(initState);
         const size_t initMemory = getCurrentRSS();
