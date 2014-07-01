@@ -2,8 +2,8 @@
 language: cpp
 
 compiler:
-  - gcc
   - clang
+  - gcc
 
 before_install:
   ## Get Simbody and its dependencies.
