@@ -94,8 +94,25 @@ void Station::connectToModel(Model& aModel)
 	Super::connectToModel(aModel);
 
 }
-
+/**
+ * Return the reference frame with respect to which this station is defined
+ *
+*/
 const Frame& Station::getReferenceFrame() const
 {
 	return getConnector<Frame>("reference_frame").getConnectee();
 }
+/**
+ * setReferenceFrame sets the "reference_frame" connection
+ *
+ * @param aFrame a frame to be used as reference. 
+ * 
+ */
+// TODO: Connection is based on name so it may make more sense to pass in name instead
+// TODO: Not clear what to do when connection is re-established or who would trigger it
+
+void Station::setReferenceFrame(const OpenSim::Frame& aFrame)
+{
+	updConnector<Frame>("reference_frame").set_connected_to_name(aFrame.getName());
+}
+
