@@ -93,8 +93,8 @@ private:
 
 
 	void setNull();
-	
-
+public:
+	static const SimTK::Transform identityTransform;
 
 //=============================================================================
 };	// END of class Body

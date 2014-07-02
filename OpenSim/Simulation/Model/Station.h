@@ -64,7 +64,7 @@ public:
 	Station();
 	virtual ~Station();
 	const OpenSim::Frame& getReferenceFrame() const;
-	//void setReferenceFrame( const OpenSim::Frame& aFrame );
+	void setReferenceFrame( const OpenSim::Frame& aFrame );
 	//Station reexpressInFrame(const SimTK::State& s, OpenSim::Frame& aFrame) const;
 private:
 	void setNull();

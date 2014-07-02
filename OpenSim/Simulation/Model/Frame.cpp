@@ -36,6 +36,7 @@ using namespace OpenSim;
 using SimTK::Mat33;
 using SimTK::Vec3;
 
+const SimTK::Transform OpenSim::Frame::identityTransform;
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
