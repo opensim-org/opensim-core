@@ -92,6 +92,7 @@ own project.
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodyFrame.h>
+#include <OpenSim/Simulation/Model/FixedFrame.h>
 
 #include <OpenSim/Simulation/Control/Control.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
@@ -957,6 +958,7 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/FunctionBasedBushingForce.h>
 %include <OpenSim/Simulation/Model/ExpressionBasedBushingForce.h>
 %include <OpenSim/Simulation/Model/BodyFrame.h>
+%include <OpenSim/Simulation/Model/FixedFrame.h>
 
 //osimAnalyses
 %include <OpenSim/Analyses/osimAnalysesDLL.h>

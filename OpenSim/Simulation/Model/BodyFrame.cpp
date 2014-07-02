@@ -58,6 +58,7 @@ BodyFrame::BodyFrame(Body& body) :
 {
 	setNull();
 	constructInfrastructure();
+	setBody(body);
 	
 }
 //_____________________________________________________________________________
@@ -86,7 +87,7 @@ const SimTK::Transform& BodyFrame::getTransform() const
 	xform.setToZero();
 	return xform; // This is a problem since xform is out of scope!
 }
-const SimTK::Transform BodyFrame::calcTransformFromGround(const SimTK::State &state) const
+const SimTK::Transform BodyFrame::calcTransformToGround(const SimTK::State &state) const
 {
 	const Body& myBody = getConnector<Body>("body").getConnectee();
 	const SimTK::MobilizedBodyIndex mbi = myBody.getIndex();
@@ -95,13 +96,22 @@ const SimTK::Transform BodyFrame::calcTransformFromGround(const SimTK::State &st
 	const SimTK::MobilizedBody &B = getModel().getMatterSubsystem().getMobilizedBody(mbi);
 	const SimTK::Transform& ground_X_B = B.getBodyTransform(state);
 	
-	return ~ground_X_B;
+	return ground_X_B;
+}
+
+const SimTK::Transform BodyFrame::calcTransformFromGround(const SimTK::State &state) const
+{
+	return ~calcTransformToGround(state);
 }
 //=============================================================================
 // GET AND SET
 //=============================================================================
 //_____________________________________________________________________________
-
+void BodyFrame::setBody(Body& body) 
+{ 
+	updConnector<Body>("body").connect(body); 
+}
+const Body& BodyFrame::getBody() { return getConnector<Body>("body").getConnectee(); }
 
 
 

@@ -47,14 +47,21 @@ int main()
     dummyModel.setName("dummyModel");
 	Model groundModel;
 	BodyFrame bFrame;
-	bFrame.updConnector<Body>("body").set_connected_to_name("ground");
-	bFrame.setName("MattsFrame");
-	//testModelComponent(bFrame, false, groundModel);
+	bFrame.setName("ground_frame");
+	bFrame.setBody(groundModel.getGroundBody());
+	//bFrame.updConnector<Body>("body").set_connected_to_name("ground");
+	groundModel.print("body_frame_model.xml");
+	testModelComponent(bFrame, false, groundModel);
+	FixedFrame fFrame;
+	fFrame.setName("fixed_frame");
+	fFrame.setParentFrame(bFrame);
+	groundModel.print("fixed_frame_model.xml");
+	testModelComponent(fFrame, false, groundModel);
+
 	Station myStation;
 	myStation.set_location(SimTK::Vec3(1., 2., 3.));
-	myStation.updConnector<Frame>("reference_frame").set_connected_to_name("MattsFrame");
+	myStation.updConnector<Frame>("reference_frame").set_connected_to_name("ground_frame");
 	testModelComponent(myStation);
-
     // Add a line here for each model component that we want to test.
     testModelComponent(ClutchedPathSpring());
     // TODO testModelComponent(Thelen2003Muscle()); rigid tendon issue

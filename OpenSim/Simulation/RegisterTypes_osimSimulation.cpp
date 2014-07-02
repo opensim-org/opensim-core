@@ -70,6 +70,7 @@
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
 #include "Model/Frame.h"
 #include "Model/BodyFrame.h"
+#include "Model/FixedFrame.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -171,6 +172,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( SimbodyEngine() );
     Object::registerType( OpenSim::Body() );
 	Object::registerType(OpenSim::BodyFrame());
+	Object::registerType(OpenSim::FixedFrame());
     Object::registerType( WeldConstraint() );
     Object::registerType( PointConstraint() );
     Object::registerType( ConstantDistanceConstraint() );

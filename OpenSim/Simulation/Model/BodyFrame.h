@@ -76,8 +76,10 @@ public:
 
 	/** Spatial Operations for Frames*/
 	virtual const SimTK::Transform& getTransform() const;
+	virtual const SimTK::Transform calcTransformToGround(const SimTK::State &state) const;
 	virtual const SimTK::Transform calcTransformFromGround(const SimTK::State &state) const;
-
+	void setBody(Body& body);
+	const Body& getBody();
 
 protected:
     // Model component interface.

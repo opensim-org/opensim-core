@@ -66,6 +66,7 @@
 #include "Model/MuscleActiveFiberPowerProbe.h"
 #include "Model/Frame.h"
 #include "Model/BodyFrame.h"
+#include "Model/FixedFrame.h"
 
 #include "Manager/Manager.h"
 

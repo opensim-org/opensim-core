@@ -46,9 +46,9 @@ public:
 // PROPERTIES
 //==============================================================================
     /** @name Property declarations 
-    These are the serializable properties associated with a Body. **/
+    These are the serializable properties associated with a Frame. **/
     /**@{**/
-	
+	//OpenSim_DECLARE_PROPERTY(last_name, std::string, "You know.  Family name?");
 
 	/**@}**/
 protected:
@@ -71,15 +71,19 @@ public:
 
 	/** Spatial Operations for Frames*/
 	virtual const SimTK::Transform& getTransform() const = 0;
+	virtual const SimTK::Transform calcTransformToGround(const SimTK::State &state) const = 0;
 	virtual const SimTK::Transform calcTransformFromGround(const SimTK::State &state) const = 0;
-	const SimTK::Transform calcTranformFromOtherFrame(const SimTK::State &state, Frame &frame) const;
+	const SimTK::Transform calcTransformFromOtherFrame(const SimTK::State &state, Frame &frame) const;
+	const SimTK::Transform calcTransformToOtherFrame(const SimTK::State &state, Frame &frame) const;
 	const SimTK::Vec3& expressVectorFromAnotherFrame(const SimTK::State &state, SimTK::Vec3 &vec, Frame &frame) const;
 	const SimTK::Vec3& expressPointFromAnotherFrame(const SimTK::State &state, SimTK::Vec3 &point, Frame &frame) const;
+	const SimTK::Vec3& expressVectorInAnotherFrame(const SimTK::State &state, SimTK::Vec3 &vec, Frame &frame) const;
+	const SimTK::Vec3& expressPointInAnotherFrame(const SimTK::State &state, SimTK::Vec3 &point, Frame &frame) const;
 	// expressStationFromAnotherFrame()
 
 
 protected:
-    // Model component interface.
+	void constructProperties() OVERRIDE_11;
 	
 
 	
