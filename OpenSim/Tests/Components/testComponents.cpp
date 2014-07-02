@@ -49,7 +49,7 @@ int main()
     testModelComponent(ClutchedPathSpring());
     testModelComponent(Thelen2003Muscle(), false);
     testModelComponent(Millard2012EquilibriumMuscle(), false);
-    testModelComponent(Millard2012AccelerationMuscle(), false);
+    //testModelComponent(Millard2012AccelerationMuscle(), false);
     // TODO randomized properties out of range; throws exception.
     // TODO testModelComponent(PathActuator());
 
