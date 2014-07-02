@@ -119,8 +119,8 @@ SET(BUILD_PLATFORM "${PLATFORM_NAME}:${PLATFORM_ABI}" CACHE STRING
 # Allow build of binaries on Leopard that work on Tiger
 # Plus, -m32 is required for building on Snow Leopard, until we have a 64-bit Mac Lapack
 IF( APPLE )
-   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.4 -m32" )
-   SET( CMAKE_C_FLAGS "-mmacosx-version-min=10.4 -m32" )
+   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.8 -m32" )
+   SET( CMAKE_C_FLAGS "-mmacosx-version-min=10.8 -m32" )
    SET( LIB64  )
    SET(ARCH64 OFF) 
 ENDIF( APPLE )
@@ -295,9 +295,9 @@ ELSE(WIN32)
 	SET(NameSpace "")	## No renamed SimTK libraries except on Windows
 	IF(APPLE)
 	   IF(ARCH64) 
-		   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.4" )
+		   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.8" )
 	   ELSE (ARCH64)
-		   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.4 -m32" )
+		   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.8 -m32" )
 	   ENDIF (ARCH64)
 	ELSE (APPLE)
 	   IF(ARCH64) 
@@ -312,11 +312,18 @@ ENDIF(WIN32)
 # C++11: In revision 8629, we started using std::unique_ptr, which requires
 # C++11 features to be enabled when using GCC or Clang.
 IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    # Using C++11 on OSX requires using libc++ instead of libstd++.
+    # libc++ is an implementation of the C++ standard library for OSX.
     IF(APPLE)
-        # Using C++11 on OSX requires using libc++ instead of libstd++.
-        # libc++ is an implementation of the C++ standard library for OSX.
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+        IF(XCODE)
+            SET(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
+            SET(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+        ELSE()
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+        ENDIF()
+    ELSE() # not APPLE
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     ENDIF()
 ENDIF()
 
