@@ -82,9 +82,7 @@ void BodyFrame::constructStructuralConnectors()
 //_____________________________________________________________________________
 const SimTK::Transform& BodyFrame::getTransform() const
 {
-	SimTK::Transform xform;
-	xform.setToZero();
-	return xform; // This is a problem since xform is out of scope!
+	return identityTransform; 
 }
 const SimTK::Transform BodyFrame::calcTransformFromGround(const SimTK::State &state) const
 {
