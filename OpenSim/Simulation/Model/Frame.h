@@ -90,7 +90,7 @@ private:
 
 
 	void setNull();
-public:
+protected:
 	static const SimTK::Transform identityTransform;
 
 //=============================================================================
