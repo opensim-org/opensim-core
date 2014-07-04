@@ -54,8 +54,8 @@ class Model;
  *
  * @author Soha Pouya, Michael Sherman
  */
-class OSIMACTUATORS_API SpatialActuator : public Actuator_ {
-OpenSim_DECLARE_CONCRETE_OBJECT(SpatialActuator, Actuator_);
+class OSIMACTUATORS_API SpatialActuator : public Actuator {
+OpenSim_DECLARE_CONCRETE_OBJECT(SpatialActuator, Actuator);
 public:
 //==============================================================================
 // PROPERTIES
@@ -94,12 +94,12 @@ private:
 					  SimTK::Vector& mobilityForces) const override;
 
 	//--------------------------------------------------------------------------
-	// Implement Actuator_ interface.
+	// Implement Actuator interface.
 	//--------------------------------------------------------------------------
     int numControls() const override { return 6; }
-	//double computeActuation( const SimTK::State& s) const override {
-    //    return SimTK::NaN;
-    //}
+	virtual double computeActuation( const SimTK::State& s) const override {
+        return SimTK::NaN;
+    }
 
     //--------------------------------------------------------------------------
 	// Implement ModelComponent interface
