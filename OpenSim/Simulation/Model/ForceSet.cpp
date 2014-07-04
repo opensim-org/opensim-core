@@ -190,7 +190,7 @@ append(Force *aForce)
 {
 	bool success = ModelComponentSet<Force>::adoptAndAppend(aForce);
 
-	if((success)&&(_model!=NULL)) {
+	if((success)&&(&updModel()!=NULL)) {
 		updateActuators();
 		updateMuscles();
 	}
@@ -214,7 +214,7 @@ append(Force &aForce)
     bool success = ModelComponentSet<Force>::cloneAndAppend(aForce);
 
 
-	if((success)&&(_model!=NULL)) {
+	if ((success) && (&getModel() != NULL)) {
 		updateActuators();
 	    updateMuscles();
 	}
@@ -301,12 +301,12 @@ bool ForceSet::insert(int aIndex, Force *aForce)
 /**
  * Get the list of Actuators.
  */
-const Set<Actuator>& ForceSet::getActuators() const
+const Set<Actuator_>& ForceSet::getActuators() const
 {
 	return _actuators;
 }
 
-Set<Actuator>& ForceSet::updActuators() 
+Set<Actuator_>& ForceSet::updActuators() 
 {
 	updateActuators();
     return _actuators;

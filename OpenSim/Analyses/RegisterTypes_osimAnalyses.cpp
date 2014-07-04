@@ -43,7 +43,6 @@ OSIMANALYSES_API void RegisterTypes_osimAnalyses()
   try {
 
 	Object::registerType( Kinematics() );
-	Object::registerType( Actuation() );
 	Object::registerType( PointKinematics() );
 	Object::registerType( BodyKinematics() );
 	Object::registerType( MuscleAnalysis() );

@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "Kinematics.h"
-#include "Actuation.h"
 #include "ForceReporter.h"
 #include "PointKinematics.h"
 #include "BodyKinematics.h"

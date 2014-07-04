@@ -101,14 +101,14 @@ ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController):
 
 	// COMPUTE ACTUATOR AREAS
 	Array<double> f(1.0,na);
-	const Set<Actuator>& fSet = _controller->getActuatorSet();
+	const Set<Actuator_>& fSet = _controller->getActuatorSet();
 	for(int i=0,j=0;i<fSet.getSize();i++) {
-        Actuator& act = fSet.get(i);
-		Muscle* musc = dynamic_cast<Muscle *>(&act);
+		Actuator* act = dynamic_cast<Actuator*>(&fSet[i]);
+		Muscle* musc = dynamic_cast<Muscle *>(act);
 		if(musc)
 			_recipAreaSquared[j] = f[j]/musc->getMaxIsometricForce();
 		else
-			_recipAreaSquared[j] = f[j]/act.getOptimalForce();
+			_recipAreaSquared[j] = f[j]/act->getOptimalForce();
 	    
 	    _recipAreaSquared[j] *= _recipAreaSquared[j];
         j++;
@@ -154,16 +154,16 @@ prepareToOptimize(SimTK::State& s, double *x)
 	getController()->getModel().getMultibodySystem().realize( tempState, SimTK::Stage::Dynamics );
 
 	// COMPUTE MAX ISOMETRIC FORCE
-	const Set<Actuator>& fSet = _controller->getActuatorSet();
+	const Set<Actuator_>& fSet = _controller->getActuatorSet();
 	
 	double fOpt = SimTK::NaN;
 
 	getController()->getModel().getMultibodySystem().realize(tempState, SimTK::Stage::Dynamics );
 	for(int i=0 ; i<fSet.getSize(); ++i) {
-        Actuator& act = fSet.get(i);
-	    Muscle* mus = dynamic_cast<Muscle*>(&act);
+        Actuator* act = dynamic_cast<Actuator*>(&fSet[i]);
+	    Muscle* mus = dynamic_cast<Muscle*>(act);
 		if(mus==NULL) {
-			fOpt = act.getOptimalForce();
+			fOpt = act->getOptimalForce();
 		}
 		else{	
 			fOpt = mus->calcInextensibleTendonActiveFiberForce(tempState,
@@ -202,12 +202,12 @@ prepareToOptimize(SimTK::State& s, double *x)
 int ActuatorForceTargetFast::
 objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 {
-	const Set<Actuator>& fSet = _controller->getActuatorSet();
+	const Set<Actuator_>& fSet = _controller->getActuatorSet();
 	double p = 0.0;
 	const CMC_TaskSet& tset=_controller->getTaskSet();
 	for(int i=0,j=0;i<fSet.getSize();i++) {
-        Actuator& act = fSet.get(i);
-	    Muscle* mus = dynamic_cast<Muscle*>(&act);
+		Actuator* act = dynamic_cast<Actuator*>(&fSet[i]);
+	    Muscle* mus = dynamic_cast<Muscle*>(act);
 	    if(mus) {
 		    p +=  aF[j] * aF[j] * _recipOptForceSquared[j];
 	    } else {
@@ -243,11 +243,11 @@ objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 int ActuatorForceTargetFast::
 gradientFunc(const Vector &x, const bool new_coefficients, Vector &gradient) const
 {
-    const Set<Actuator>& fSet = _controller->getActuatorSet();
+    const Set<Actuator_>& fSet = _controller->getActuatorSet();
     double p = 0.0;
     for(int i=0,index=0;i<fSet.getSize();i++) {
-        Actuator& act = fSet.get(i);
-        Muscle* mus = dynamic_cast<Muscle*>(&act);
+		Actuator* act = dynamic_cast<Actuator*>(&fSet[i]);
+        Muscle* mus = dynamic_cast<Muscle*>(act);
         if(mus) {
 		    gradient[index] =  2.0 * x[index] * _recipOptForceSquared[index];
         } else {
@@ -305,7 +305,7 @@ void ActuatorForceTargetFast::
 computeConstraintVector(SimTK::State& s, const Vector &x,Vector &c) const
 {
 	CMC_TaskSet&  taskSet = _controller->updTaskSet();
-	const Set<Actuator>& fSet = _controller->getActuatorSet();
+	const Set<Actuator_>& fSet = _controller->getActuatorSet();
 
 	int nf = fSet.getSize();
 
@@ -313,9 +313,9 @@ computeConstraintVector(SimTK::State& s, const Vector &x,Vector &c) const
 	// (from static optimization) but also include the passive force
 	// contribution of muscles when applying forces to the model
 	for(int i=0;i<nf;i++) {
-        Actuator& act = fSet.get(i);
-		act.overrideForce(s,true);
-        act.setOverrideForce(s, x[i]);        
+		Actuator* act = dynamic_cast<Actuator*>(&fSet[i]);
+		act->overrideForce(s,true);
+        act->setOverrideForce(s, x[i]);        
 	}
 	_controller->getModel().getMultibodySystem().realize(s, SimTK::Stage::Acceleration );
 

@@ -76,7 +76,7 @@ void CoordinateSet::setNull()
   */
 void CoordinateSet::populate(Model& model)
 {
-	_model = &model;
+	setModel(model);
 	// Append Coordinate from Joint's cordrinate set to the model's set as pointers
 	setMemoryOwner(false);
     setSize(0);

@@ -60,8 +60,6 @@
 #include "Model/CoordinateLimitForce.h"
 #include "Model/ExternalLoads.h"
 #include "Model/PathActuator.h"
-#include "Model/ActuatorPowerProbe.h"
-#include "Model/JointInternalPowerProbe.h"
 #include "Model/MuscleActiveFiberPowerProbe.h"
 
 #include "Manager/Manager.h"

@@ -327,7 +327,7 @@ record(const SimTK::State& s)
 	_modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy, SimTK::Stage::Velocity);
 	//_modelWorkingCopy->equilibrateMuscles(sWorkingCopy);
 
-    const Set<Actuator>& fs = _modelWorkingCopy->getActuators();
+    const Set<Actuator_>& fs = _modelWorkingCopy->getActuators();
 
 	int na = fs.getSize();
 	int nacc = _accelerationIndices.getSize();
@@ -374,7 +374,7 @@ record(const SimTK::State& s)
 	// Parameter bounds
 	SimTK::Vector lowerBounds(na), upperBounds(na);
 	for(int i=0,j=0;i<fs.getSize();i++) {
-		Actuator& act = fs.get(i);
+		Actuator& act = *dynamic_cast<Actuator*>(&fs.get(i));
 		lowerBounds(j) = act.getMinControl();
 	    upperBounds(j) = act.getMaxControl();
         j++;
@@ -481,7 +481,7 @@ record(const SimTK::State& s)
 
 	//update defaults for use in the next step
 
-	const Set<Actuator>& actuators = _modelWorkingCopy->getActuators();
+	const Set<Actuator_>& actuators = _modelWorkingCopy->getActuators();
 	for(int k=0; k < actuators.getSize(); ++k){
 		ActivationFiberLengthMuscle *mus = dynamic_cast<ActivationFiberLengthMuscle*>(&actuators[k]);
 		if(mus){
@@ -604,10 +604,19 @@ begin(SimTK::State& s )
 	int status = 0;
 	if(_activationStorage->getSize()<=0 && _forceStorage->getSize()<=0) {
 		status = record(s);
-		const Set<Actuator>& fs = _modelWorkingCopy->getActuators();
+		const Set<Actuator_>& fs = _modelWorkingCopy->getActuators();
 		for(int k=0;k<fs.getSize();k++) {
-			Actuator& act = fs.get(k);
-			cout << "Bounds for " << act.getName() << ": " << act.getMinControl()<< " to "<< act.getMaxControl() << endl;
+			Actuator* act = dynamic_cast<Actuator *>(&fs[k]);
+			if (act){
+				cout << "Bounds for " << act->getName() << ": "
+					<< act->getMinControl() << " to "
+					<< act->getMaxControl() << endl;
+			}
+			else{
+				std::string msg = getConcreteClassName();
+				msg += "::can only process scalar Actuaor types.";
+				throw Exception(msg);
+			}
 		}
 	}
 

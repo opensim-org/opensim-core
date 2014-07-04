@@ -58,7 +58,7 @@ class ProbeSet;
 class MarkerSet;
 class Muscle;
 class ContactGeometry;
-class Actuator;
+class Actuator_;
 class ContactGeometrySet;
 class Storage;
 class ScaleSet;
@@ -541,8 +541,8 @@ public:
      * Get the subset of Forces in the model which are actuators
      * @return The set of Actuators
      */
-    const Set<Actuator>& getActuators() const;
-    Set<Actuator>& updActuators();
+    const Set<Actuator_>& getActuators() const;
+    Set<Actuator_>& updActuators();
 
     /**
      * Get the subset of Forces in the model which are muscles

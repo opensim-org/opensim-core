@@ -257,7 +257,7 @@ void InducedAccelerations:: assembleContributors()
 	if (!_computePotentialsOnly)
 		contribs.append("total");
 
-	const Set<Actuator> &actuatorSet = _model->getActuators();
+	const Set<Actuator_> &actuatorSet = _model->getActuators();
 
 	//Do the analysis on the bodies that are in the indices list
 	for(int i=0; i< actuatorSet.getSize(); i++) {
@@ -684,7 +684,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 			if(ai<0)
 				throw Exception("InducedAcceleration: ERR- Could not find actuator '"+_contributors[c],__FILE__,__LINE__);
 			
-			Actuator &actuator = _model->getActuators().get(ai);
+			Actuator_ &actuator = _model->getActuators().get(ai);
 			actuator.setDisabled(s_analysis, false);
 			actuator.overrideForce(s_analysis, false);
 			Muscle *muscle = dynamic_cast<Muscle *>(&actuator);
