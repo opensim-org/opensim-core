@@ -1391,11 +1391,11 @@ int Model::getNumProbes() const
  *
  * @return The set of Actuators
  */
-const Set<Actuator>& Model::getActuators() const
+const Set<Actuator_>& Model::getActuators() const
 {
 	return _forceSet.getActuators();
 }
-Set<Actuator>& Model::updActuators()
+Set<Actuator_>& Model::updActuators()
 {
 	return _forceSet.updActuators();
 }
@@ -2142,7 +2142,7 @@ void Model::disownAllComponents()
 }
 
 void Model::overrideAllActuators( SimTK::State& s, bool flag) {
-     Set<Actuator>& as = updActuators();
+     Set<Actuator_>& as = updActuators();
 
      for(int i=0;i<as.getSize();i++) {
          as[i].overrideForce(s, flag );

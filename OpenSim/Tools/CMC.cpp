@@ -1083,11 +1083,6 @@ void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
 	double *val = &controls[0];
 }
 
-void CMC::setActuators( const Set<Actuator>& actSet ) 
-{
-	Super::setActuators(actSet);
-}
-
 // for any post XML deserialization intialization
 void CMC::connectToModel(Model& model)   {
 

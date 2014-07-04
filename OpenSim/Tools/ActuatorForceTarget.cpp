@@ -233,15 +233,14 @@ prepareToOptimize(SimTK::State& s, double *x)
 void ActuatorForceTarget::
 computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerformanceVector, Vector &rForcePerformanceVector)
 {
-	const Set<Actuator> &fSet = _controller->getActuatorSet();
+	const Set<Actuator_> &fSet = _controller->getActuatorSet();
 
 	for(int i=0;i<fSet.getSize();i++) {
-        Actuator& act = fSet.get(i);
-        act.setOverrideForce(s, aF[i]);
-        act.overrideForce(s,true);
-
-        
+		Actuator* act = dynamic_cast<Actuator*>(&fSet[i]);
+        act->setOverrideForce(s, aF[i]);
+        act->overrideForce(s,true);      
 	}
+
     _controller->getModel().getMultibodySystem().realize(s, SimTK::Stage::Acceleration );
 
 	CMC_TaskSet& taskSet = _controller->updTaskSet();

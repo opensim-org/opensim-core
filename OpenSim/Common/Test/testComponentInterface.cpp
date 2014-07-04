@@ -133,18 +133,29 @@ public:
 
 	Foo() : Component() {
 		constructInfrastructure();
+        m_ctr = 0;
+        m_mutableCtr = 0;
 	}
 
-	double getSomething(const SimTK::State& state){
+	double getSomething(const SimTK::State& state) const {
+        const_cast<Foo *>(this)->m_ctr++;
+        m_mutableCtr++;
+
 		return state.getTime();
 	}
 
-	SimTK::Vec3 calcSomething(const SimTK::State& state){
+	SimTK::Vec3 calcSomething(const SimTK::State& state) const {
+        const_cast<Foo *>(this)->m_ctr++;
+        m_mutableCtr++;
+
 		double t = state.getTime();
 		return SimTK::Vec3(t, t*t, sqrt(t));
 	}
 
-	SimTK::SpatialVec calcSpatialAcc(const SimTK::State& state){
+	SimTK::SpatialVec calcSpatialAcc(const SimTK::State& state) const {
+        const_cast<Foo *>(this)->m_ctr++;
+        m_mutableCtr++;
+
 		return getSystem().getMatterSubsystem().getMobilizedBody(bindex)
 			.getBodyAcceleration(state);
 	}
@@ -180,6 +191,9 @@ protected:
 	}
 
 private:
+    int m_ctr;
+    mutable int m_mutableCtr;
+
 	void constructProperties() OVERRIDE_11 {
 		constructProperty_mass(1.0);
 		Array<double> inertia(0.001, 6);

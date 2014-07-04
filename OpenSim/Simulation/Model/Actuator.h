@@ -110,9 +110,10 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual double computeActuation( const SimTK::State& s) const = 0;
+	virtual double getPower(const SimTK::State& s) const = 0;
 	virtual void computeEquilibrium(SimTK::State& s) const { }
 
+	virtual void overrideForce(SimTK::State& s, bool flag) const = 0;
 
 //=============================================================================
 };	// END of class Actuator_
@@ -218,6 +219,10 @@ public:
 
 
 protected:
+
+	// Actuator interface
+	virtual double computeActuation(const SimTK::State& s) const = 0;
+
 	// ModelComponent Interface
 	virtual void addToSystem(SimTK::MultibodySystem& system) const;
 
