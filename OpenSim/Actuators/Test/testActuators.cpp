@@ -519,7 +519,7 @@ void testClutchedPathSpring()
 
 
 
-/*void testSpatialActuator()
+void testSpatialActuator()
 {
 	using namespace SimTK;
 	// start timing
@@ -614,13 +614,14 @@ void testClutchedPathSpring()
 
 	model->addController(controller);
 
-	ActuatorPowerProbe* powerProbe = new ActuatorPowerProbe(Array<string>("torque", 1), false, 1);
+	/*ActuatorPowerProbe* powerProbe = new ActuatorPowerProbe(Array<string>("torque", 1), false, 1);
 	powerProbe->setOperation("integrate");
 	powerProbe->setInitialConditions(Vector(1, 0.0));
 
-	model->addProbe(powerProbe);
+	model->addProbe(powerProbe);*/
 
 	model->print("TestSpatialActuatorModel.osim");
+	model->setUseVisualizer(true);
 
 	// get a new system and state to reflect additions to the model
 	state = model->initSystem();
@@ -644,7 +645,7 @@ void testClutchedPathSpring()
 
 	manager.setInitialTime(0.0);
 
-	double final_t = 1.00;
+	double final_t = 10.00;
 
 	manager.setFinalTime(final_t);
 	manager.integrate(state);
@@ -653,10 +654,11 @@ void testClutchedPathSpring()
 
 	double fKE = model->getMatterSubsystem().calcKineticEnergy(state);
 
+	/*
 	// Change in system kinetic energy can only be attributable to actuator work
 	double actuatorWork = (powerProbe->getProbeOutputs(state))[0];
 	// test that this is true
-	ASSERT_EQUAL(actuatorWork, fKE - iKE, integ_accuracy);
+	ASSERT_EQUAL(actuatorWork, fKE - iKE, integ_accuracy);*/
 
 	// Before exiting lets see if copying the spring works
 	SpatialActuator* copyOfActuator = actuator->clone();
@@ -669,4 +671,4 @@ void testClutchedPathSpring()
 
 	std::cout << "Test SpatialActuator time = " <<
 		1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;
-}*/
+}
