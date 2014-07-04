@@ -519,7 +519,7 @@ void testClutchedPathSpring()
 
 
 
-void testSpatialActuator()
+/*void testSpatialActuator()
 {
 	using namespace SimTK;
 	// start timing
@@ -602,8 +602,7 @@ void testSpatialActuator()
 	//torque as applied directly to the multibody system (above)
 
 	// Create and add the torque actuator to the model
-	SpatialActuator* actuator =
-		new SpatialActuator("bodyA");
+	SpatialActuator* actuator = new SpatialActuator("bodyA");
 	actuator->setName("spatialAct");
 	model->addForce(actuator);
 
@@ -670,4 +669,4 @@ void testSpatialActuator()
 
 	std::cout << "Test SpatialActuator time = " <<
 		1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;
-}
+}*/
