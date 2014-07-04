@@ -513,3 +513,158 @@ void testClutchedPathSpring()
 	cout << "Test clutched spring time = " << 
 		1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
 }
+
+
+
+void testSpatialActuator()
+{
+	using namespace SimTK;
+	// start timing
+	std::clock_t startTime = std::clock();
+
+	// Setup OpenSim model
+	Model *model = new Model;
+
+	// turn off gravity
+	model->setGravity(Vec3(0));
+
+	//OpenSim bodies
+	OpenSim::Body& ground = model->getGroundBody();
+
+	//Cylindrical bodies
+	double r = 0.25, h = 1.0;
+	double m1 = 1.0, m2 = 2.0;
+	Inertia j1 = m1*Inertia::cylinderAlongY(r, h);
+	Inertia j2 = m2*Inertia::cylinderAlongY(r, h);
+
+	//OpenSim bodies
+	OpenSim::Body* bodyA
+		= new OpenSim::Body("bodyA", m1, Vec3(0), j1);
+
+	// connect bodyA to ground with 6dofs
+	FreeJoint* base =
+		new FreeJoint("base", ground, Vec3(0), Vec3(0), *bodyA, Vec3(0), Vec3(0));
+
+	model->addBody(bodyA);
+	model->addJoint(base);
+
+	// specify magnitude and direction of applied force and torque
+	double forceMag = 1.0;
+	Vec3 forceAxis(1, 1, 1);
+	Vec3 forceInG = forceMag * forceAxis;
+
+	double torqueMag = 2.1234567890;
+	Vec3 torqueAxis(1 / sqrt(2.0), 0, 1 / sqrt(2.0));
+	Vec3 torqueInG = torqueMag*torqueAxis;
+
+	State state = model->initSystem();
+
+	model->getMultibodySystem().realize(state, Stage::Dynamics);
+	Vector_<SpatialVec>& bodyForces =
+		model->getMultibodySystem().updRigidBodyForces(state, Stage::Dynamics);
+	bodyForces.dump("Body Forces before applying torque");
+
+	model->getMatterSubsystem().addInBodyTorque(state, bodyA->getIndex(),
+		torqueMag*torqueAxis, bodyForces);
+	bodyForces.dump("Body Forces after applying spatial force to bodyA");
+
+	model->getMultibodySystem().realize(state, Stage::Acceleration);
+	const Vector& udotBody = state.getUDot();
+	udotBody.dump("Accelerations due to body forces");
+
+	// clear body forces
+	bodyForces *= 0;
+
+	// update mobility forces
+	Vector& mobilityForces = model->getMultibodySystem()
+		.updMobilityForces(state, Stage::Dynamics);
+
+	// Apply torques as mobility forces of the ball joint
+	for (int i = 0; i<3; ++i){
+		mobilityForces[6 + i] = torqueInG[i];
+	}
+
+	model->getMultibodySystem().realize(state, Stage::Acceleration);
+	const Vector& udotMobility = state.getUDot();
+	udotMobility.dump("Accelerations due to mobility forces");
+
+	for (int i = 0; i<udotMobility.size(); ++i){
+		ASSERT_EQUAL(udotMobility[i], udotBody[i], 1.0e-12);
+	}
+
+	// clear the mobility forces
+	mobilityForces = 0;
+
+	//Now add the actuator to the model and control it to generate the same
+	//torque as applied directly to the multibody system (above)
+
+	// Create and add the torque actuator to the model
+	SpatialActuator* actuator =
+		new SpatialActuator("bodyA");
+	actuator->setName("spatialAct");
+	model->addForce(actuator);
+
+	// Create and add a controller to control the actuator
+	PrescribedController* controller = new PrescribedController();
+	controller->addActuator(*actuator);
+	// Apply torque about torqueAxis
+	controller->prescribeControlForActuator("torque", new Constant(torqueMag));
+
+	model->addController(controller);
+
+	ActuatorPowerProbe* powerProbe = new ActuatorPowerProbe(Array<string>("torque", 1), false, 1);
+	powerProbe->setOperation("integrate");
+	powerProbe->setInitialConditions(Vector(1, 0.0));
+
+	model->addProbe(powerProbe);
+
+	model->print("TestSpatialActuatorModel.osim");
+
+	// get a new system and state to reflect additions to the model
+	state = model->initSystem();
+
+	model->computeStateVariableDerivatives(state);
+
+	const Vector &udotSpatialActuator = state.getUDot();
+
+	// Verify that the TorqueActuator also generates the same acceleration
+	// as the equivalent applied mobility force
+	for (int i = 0; i<udotMobility.size(); ++i){
+		ASSERT_EQUAL(udotMobility[i], udotSpatialActuator[i], 1.0e-12);
+	}
+
+	// determine the initial kinetic energy of the system
+	double iKE = model->getMatterSubsystem().calcKineticEnergy(state);
+
+	RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
+	integrator.setAccuracy(integ_accuracy);
+	Manager manager(*model, integrator);
+
+	manager.setInitialTime(0.0);
+
+	double final_t = 1.00;
+
+	manager.setFinalTime(final_t);
+	manager.integrate(state);
+
+	model->computeStateVariableDerivatives(state);
+
+	double fKE = model->getMatterSubsystem().calcKineticEnergy(state);
+
+	// Change in system kinetic energy can only be attributable to actuator work
+	double actuatorWork = (powerProbe->getProbeOutputs(state))[0];
+	// test that this is true
+	ASSERT_EQUAL(actuatorWork, fKE - iKE, integ_accuracy);
+
+	// Before exiting lets see if copying the spring works
+	SpatialActuator* copyOfActuator = actuator->clone();
+	ASSERT(*copyOfActuator == *actuator);
+
+	// Check that de/serialization works
+	Model modelFromFile("TestTorqueActuatorModel.osim");
+	ASSERT(modelFromFile == *model, __FILE__, __LINE__,
+		"Model from file FAILED to match model in memory.");
+
+	std::cout << "Test SpatialActuator time = " <<
+		1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;
+}
