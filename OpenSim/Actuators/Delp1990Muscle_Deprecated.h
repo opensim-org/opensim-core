@@ -148,9 +148,9 @@ public:
 
 protected:
 	// Model Component Interface
-	void connectToModel(Model& aModel) OVERRIDE_11;
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-	void computeStateVariableDerivatives(const SimTK::State &s) const OVERRIDE_11; 
+	void connectToModel(Model& aModel) override;
+	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void computeStateVariableDerivatives(const SimTK::State &s) const override; 
 
 private:
 	void setNull();

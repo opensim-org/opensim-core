@@ -64,13 +64,13 @@ public:
 
 	virtual ~FreeJoint();
 
-	int numCoordinates() const OVERRIDE_11  { return _numMobilities; }
+	int numCoordinates() const override  { return _numMobilities; }
 
 protected:
 	// ModelComponent interface.
-    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-    void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
-    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
+    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void initStateFromProperties(SimTK::State& s) const override;
+    void setPropertiesFromState(const SimTK::State& state) override;
 
 private:
 	SimTK::MobilizedBodyIndex _masslessBodyIndex;

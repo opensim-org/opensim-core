@@ -1572,7 +1572,7 @@ INCLUDE_FILE_PATTERNS  =
 # instead of the = operator.
 
 # Expand Simbody's C++11 macros to the standard keywords.
-PREDEFINED             = FINAL_11=final OVERRIDE_11=override
+PREDEFINED             = FINAL_11=final
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 

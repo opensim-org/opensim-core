@@ -94,9 +94,9 @@ public:
 
 protected:
     // ModelComponent interface.
-	void connectToModel(Model& aModel) OVERRIDE_11;
-	void initStateFromProperties(SimTK::State& state) const OVERRIDE_11;
-    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
+	void connectToModel(Model& aModel) override;
+	void initStateFromProperties(SimTK::State& state) const override;
+    void setPropertiesFromState(const SimTK::State& state) override;
 
 	/** ID for the constraint in Simbody. */
 	SimTK::ConstraintIndex _index;

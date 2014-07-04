@@ -243,12 +243,12 @@ public:
 
 protected:
 	/** ModelComponent interface. **/ 
-	void connectToModel(Model& model) OVERRIDE_11;
+	void connectToModel(Model& model) override;
 	/** Force interface. **/
 	virtual void computeForce
        (const SimTK::State&                state, 
 	    SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-        SimTK::Vector&                     generalizedForces) const OVERRIDE_11;
+        SimTK::Vector&                     generalizedForces) const override;
 
 //==============================================================================
 // DATA

@@ -28,8 +28,8 @@
 #include "Exception.h"
 
 #ifdef SWIG
-#undef OVERRIDE_11
-#define OVERRIDE_11
+#undef override
+#define override
 #undef FINAL_11
 #define FINAL_11
 #endif
@@ -338,7 +338,7 @@ public:
     /** Make a new, deep copy (clone) of this concrete property and return
     a pointer to the heap space. Caller must delete the returned object when
     done with it. **/
-    Property* clone() const OVERRIDE_11 = 0;
+    Property* clone() const override = 0;
 
     /** Use TypeHelper's getTypeName() to satisfy this pure virtual. **/
     // See below for implementation.
