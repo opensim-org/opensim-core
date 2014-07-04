@@ -75,35 +75,27 @@ void Frame::setNull()
 const SimTK::Transform Frame::calcTransformToOtherFrame(const SimTK::State &state, Frame &frame) const
 {
 	SimTK::Transform ground_X_me = calcTransformToGround(state);
-	SimTK::Transform other_X_ground = frame.calcTransformFromGround(state);
-	return other_X_ground*ground_X_me;
+	SimTK::Transform ground_X_other = frame.calcTransformToGround(state);
+	return ~ground_X_other*ground_X_me;
 }
-const SimTK::Transform Frame::calcTransformFromOtherFrame(const SimTK::State &state, Frame &frame) const
-{
 
-	SimTK::Transform other_X_me = calcTransformToOtherFrame(state, frame);
-	return ~other_X_me;
-}
 const SimTK::Vec3& Frame::expressVectorInAnotherFrame(const SimTK::State &state, SimTK::Vec3 &vec, Frame &frame) const
 {
 	SimTK::Transform other_X_me = calcTransformToOtherFrame(state, frame);
 	return other_X_me.R()*vec;
 }
-const SimTK::Vec3& Frame::expressVectorFromAnotherFrame(const SimTK::State &state, SimTK::Vec3 &vec, Frame &frame) const
-{
-	SimTK::Transform me_X_other = calcTransformFromOtherFrame(state, frame);
-	return me_X_other.R()*vec;
-}
+
 const SimTK::Vec3& Frame::expressPointInAnotherFrame(const SimTK::State &state, SimTK::Vec3 &point, Frame &frame) const
 {
 	SimTK::Transform other_X_me = calcTransformToOtherFrame(state, frame);
 	return other_X_me*point;
 }
-const SimTK::Vec3& Frame::expressPointFromAnotherFrame(const SimTK::State &state, SimTK::Vec3 &point, Frame &frame) const
+/*
+const Station& Frame::expressStationInAnotherFrame(const SimTK::State &state, Station &station, Frame &frame) const
 {
-	SimTK::Transform me_X_other = calcTransformFromOtherFrame(state, frame);
-	return me_X_other*point;
-}
+	SimTK::Transform other_X_me = calcTransformToOtherFrame(state, frame);
+	return station.reexpressInFrame(state, frame);
+}*/
 //=============================================================================
 // GET AND SET
 //=============================================================================

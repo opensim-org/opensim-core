@@ -43,6 +43,7 @@ void testModelComponent(const T& instanceToTest,
 
 int main()
 {
+	
     // Do not delete this line. It is used to allow users to optionally pass in their own model.
     dummyModel.setName("dummyModel");
 	Model groundModel;
@@ -61,7 +62,7 @@ int main()
 	Station myStation;
 	myStation.set_location(SimTK::Vec3(1., 2., 3.));
 	myStation.updConnector<Frame>("reference_frame").set_connected_to_name("ground_frame");
-	testModelComponent(myStation);
+	testModelComponent(myStation, false, groundModel);
     // Add a line here for each model component that we want to test.
     testModelComponent(ClutchedPathSpring());
     // TODO testModelComponent(Thelen2003Muscle()); rigid tendon issue

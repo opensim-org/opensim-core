@@ -28,6 +28,7 @@
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 
 
+
 namespace OpenSim {
 
 class Model;
@@ -72,18 +73,14 @@ public:
 	/** Spatial Operations for Frames*/
 	virtual const SimTK::Transform& getTransform() const = 0;
 	virtual const SimTK::Transform calcTransformToGround(const SimTK::State &state) const = 0;
-	virtual const SimTK::Transform calcTransformFromGround(const SimTK::State &state) const = 0;
-	const SimTK::Transform calcTransformFromOtherFrame(const SimTK::State &state, Frame &frame) const;
 	const SimTK::Transform calcTransformToOtherFrame(const SimTK::State &state, Frame &frame) const;
-	const SimTK::Vec3& expressVectorFromAnotherFrame(const SimTK::State &state, SimTK::Vec3 &vec, Frame &frame) const;
-	const SimTK::Vec3& expressPointFromAnotherFrame(const SimTK::State &state, SimTK::Vec3 &point, Frame &frame) const;
 	const SimTK::Vec3& expressVectorInAnotherFrame(const SimTK::State &state, SimTK::Vec3 &vec, Frame &frame) const;
 	const SimTK::Vec3& expressPointInAnotherFrame(const SimTK::State &state, SimTK::Vec3 &point, Frame &frame) const;
-	// expressStationFromAnotherFrame()
+	//const Station& expressStationInAnotherFrame(const SimTK::State &state, Station &station, Frame &frame) const;
 
 
 protected:
-	void constructProperties() OVERRIDE_11;
+	void constructProperties() override;
 	
 
 	

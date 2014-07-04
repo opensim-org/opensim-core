@@ -233,6 +233,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
 	// Register commonly used Connectors for de/serialization
 	Object::registerType(Connector<OpenSim::Body>());
+	Object::registerType(Connector<Frame>());
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.

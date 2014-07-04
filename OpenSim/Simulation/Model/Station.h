@@ -65,11 +65,11 @@ public:
 	virtual ~Station();
 	const OpenSim::Frame& getReferenceFrame() const;
 	void setReferenceFrame( const OpenSim::Frame& aFrame );
-	//Station reexpressInFrame(const SimTK::State& s, OpenSim::Frame& aFrame) const;
+	Station reexpressInFrame(const SimTK::State& s, OpenSim::Frame& aFrame) const;
 private:
 	void setNull();
-	void constructProperties() OVERRIDE_11;
-	void constructStructuralConnectors() OVERRIDE_11;
+	void constructProperties() override;
+	void constructStructuralConnectors() override;
 
 //=============================================================================
 };	// END of class Station

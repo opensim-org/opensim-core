@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  Station.cpp                            *
+ *                            OpenSim:  Station.cpp                           *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                      *
+ * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -113,6 +113,19 @@ const Frame& Station::getReferenceFrame() const
 
 void Station::setReferenceFrame(const OpenSim::Frame& aFrame)
 {
-	updConnector<Frame>("reference_frame").set_connected_to_name(aFrame.getName());
+	updConnector<Frame>("reference_frame").connect(aFrame);
 }
 
+Station Station::reexpressInFrame(const SimTK::State& s, OpenSim::Frame& aFrame) const
+{
+	// Create a new Station, the location of which we will compute
+	Station transformed;
+	transformed.setReferenceFrame(aFrame);
+	// Get the transform from the station's frame to the other frame
+	SimTK::Transform new_X_old = getReferenceFrame().calcTransformToOtherFrame(s, aFrame);
+	// Get the location of the station as a Vec3 expressed in the station's reference frame
+	SimTK::Vec3 point = get_location();
+	// compute and set the point vec3 transformed to the other frame
+	transformed.set_location( new_X_old*point );
+	return transformed;
+}
