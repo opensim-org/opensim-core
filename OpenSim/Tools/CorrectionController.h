@@ -119,17 +119,17 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATION
 	//--------------------------------------------------------------------------
-    void computeControls(const SimTK::State& s, SimTK::Vector& controls) const OVERRIDE_11;
+    void computeControls(const SimTK::State& s, SimTK::Vector& controls) const override;
 
 protected:
 	// for any post XML deseraialization intialization
-	void connectToModel(Model& model) OVERRIDE_11;
+	void connectToModel(Model& model) override;
 
 	// controller creation once the setup is complete 
-	void addToSystem( SimTK::MultibodySystem& system) const OVERRIDE_11;   
+	void addToSystem( SimTK::MultibodySystem& system) const override;   
 
 	// for any intialization requiring a state or the complete system 
-	void initStateFromProperties( SimTK::State& s) const OVERRIDE_11;
+	void initStateFromProperties( SimTK::State& s) const override;
 
 //=============================================================================
 };	// END of class CorrectionController

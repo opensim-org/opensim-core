@@ -69,15 +69,15 @@ public:
     //@{
 
     /** Allocates a cache variable for storing the current activation. **/
-    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void addToSystem(SimTK::MultibodySystem& system) const override;
 
     /** Initializes the activation cache variable to \c default_activation and
         marks it valid. **/
-    void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
+    void initStateFromProperties(SimTK::State& s) const override;
 
     /** Sets \c default_activation to the current value of the activation cache
         variable. **/
-    void setPropertiesFromState(const SimTK::State& s) OVERRIDE_11;
+    void setPropertiesFromState(const SimTK::State& s) override;
 
     //@}
 
@@ -85,10 +85,10 @@ public:
     // STATE-DEPENDENT METHODS
     //--------------------------------------------------------------------------
     /** Get the current activation from the cache. **/
-    double getActivation(const SimTK::State& s) const OVERRIDE_11;
+    double getActivation(const SimTK::State& s) const override;
 
     /** %Set activation cache variable to the value provided. **/
-    void setActivation(SimTK::State& s, double activation) const OVERRIDE_11;
+    void setActivation(SimTK::State& s, double activation) const override;
 
 //==============================================================================
 // PRIVATE METHODS

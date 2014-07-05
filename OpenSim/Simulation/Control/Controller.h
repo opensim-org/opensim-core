@@ -116,12 +116,12 @@ protected:
 
 	/** Model component interface that permits the controller to be "wired" up
 	   to its actuators. Subclasses can override to perform additional setup. */
-	void connectToModel(Model& model) OVERRIDE_11;  
+	void connectToModel(Model& model) override;  
 
 	/** Model component interface that creates underlying computational components
 	    in the SimTK::MultibodySystem. This includes adding states, creating 
 		measures, etc... required by the controller. */
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void addToSystem(SimTK::MultibodySystem& system) const override;
 
 	/** Only a Controller can set its number of controls based on its actuators */
 	void setNumControls(int numControls) {_numControls = numControls; }

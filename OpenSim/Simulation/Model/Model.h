@@ -666,7 +666,7 @@ public:
 	//--------------------------------------------------------------------------
 	// Subsystem computations
 	//--------------------------------------------------------------------------
-	void computeStateVariableDerivatives(const SimTK::State &s) const OVERRIDE_11;
+	void computeStateVariableDerivatives(const SimTK::State &s) const override;
 	double getTotalMass(const SimTK::State &s) const;
 	SimTK::Inertia getInertiaAboutMassCenter(const SimTK::State &s) const;
 	SimTK::Vec3 calcMassCenterPosition(const SimTK::State &s) const;
@@ -827,7 +827,7 @@ public:
 
 	/** Override of the default implementation to account for versioning. */
 	void updateFromXMLNode(SimTK::Xml::Element& aNode, 
-		                   int versionNumber = -1) OVERRIDE_11;
+		                   int versionNumber = -1) override;
     /**@}**/
 
     //--------------------------------------------------------------------------
@@ -839,24 +839,24 @@ public:
     model elements that are not ModelComponents) as subcomponents whose 
     corresponding methods need to be called. **/
     /**@{**/
-	void finalizeFromProperties() OVERRIDE_11;
+	void finalizeFromProperties() override;
 
-	void connectToModel(Model& model)  OVERRIDE_11;
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11; 
-    void initStateFromProperties(SimTK::State& state) const OVERRIDE_11;
+	void connectToModel(Model& model)  override;
+	void addToSystem(SimTK::MultibodySystem& system) const override; 
+    void initStateFromProperties(SimTK::State& state) const override;
 
 	/**
      * Given a State, set all default values for this Model to match those 
      * found in the State.
      */
-    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
+    void setPropertiesFromState(const SimTK::State& state) override;
 
     void generateDecorations
        (bool                                        fixed, 
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const 
-                                                                OVERRIDE_11;
+                                                                override;
 	
     /**@}**/
     //--------------------------------------------------------------------------

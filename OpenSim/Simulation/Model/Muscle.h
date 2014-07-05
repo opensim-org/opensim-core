@@ -349,20 +349,20 @@ protected:
 	    applied muscle tension is not negative. */
 	void computeForce(const SimTK::State& state, 
 					  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-					  SimTK::Vector& generalizedForce) const OVERRIDE_11;
+					  SimTK::Vector& generalizedForce) const override;
 
 	/** Potential energy stored by the muscle */
-	double computePotentialEnergy(const SimTK::State& state) const OVERRIDE_11;
+	double computePotentialEnergy(const SimTK::State& state) const override;
 
     /** Override PathActuator virtual to calculate a preferred color for the 
     muscle path based on activation. **/
-    SimTK::Vec3 computePathColor(const SimTK::State& state) const OVERRIDE_11;
+    SimTK::Vec3 computePathColor(const SimTK::State& state) const override;
 	
 	/** Model Component creation interface */
-	void connectToModel(Model& aModel) OVERRIDE_11;
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-	void setPropertiesFromState(const SimTK::State &s) OVERRIDE_11;
-	void initStateFromProperties(SimTK::State& state) const OVERRIDE_11;
+	void connectToModel(Model& aModel) override;
+	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void setPropertiesFromState(const SimTK::State &s) override;
+	void initStateFromProperties(SimTK::State& state) const override;
 	
 	// Update the geometry attached to the muscle (location of muscle points and connecting segments
 	//  all in global/interial frame)

@@ -174,11 +174,11 @@ public:
 	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
 
 protected:
-	void connectToModel(Model& aModel) OVERRIDE_11;
+	void connectToModel(Model& aModel) override;
 	/**
 	 * Create a SimTK::Force which implements this CoupledBushingForce as part of the SimTK::MultibodySystem.
 	 */
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void addToSystem(SimTK::MultibodySystem& system) const override;
 
 
 private:

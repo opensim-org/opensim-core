@@ -214,16 +214,16 @@ protected:
     //--------------------------------------------------------------------------
     /** Setup this CoordinateLimitForce as part of the model.
         This were the existence of the coordinate to limit is checked. */ 
-    void connectToModel(Model& aModel) OVERRIDE_11;
+    void connectToModel(Model& aModel) override;
     /** Create the underlying Force that is part of the multibodysystem. */
-    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void addToSystem(SimTK::MultibodySystem& system) const override;
 
     //--------------------------------------------------------------------------
     // Force Interface
     //--------------------------------------------------------------------------
     void computeForce(const SimTK::State& s, 
                       SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                      SimTK::Vector& mobilityForces) const OVERRIDE_11;
+                      SimTK::Vector& mobilityForces) const override;
 
 private:
     // Object helpers
@@ -231,7 +231,7 @@ private:
     void constructProperties();
 
     // Model Component Interface when computing energy
-    void computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11;
+    void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
     // Smooth step functions for continuous transition from no stiffness and 
     // damping to constant values beyond the limits. These are heap allocated

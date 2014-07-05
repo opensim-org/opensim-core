@@ -64,11 +64,11 @@ public:
                     bool reverse=false);
     virtual ~UniversalJoint();
 
-    int numCoordinates() const OVERRIDE_11 { return _numMobilities; }
+    int numCoordinates() const override { return _numMobilities; }
 
 
 protected:
-    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void addToSystem(SimTK::MultibodySystem& system) const override;
 
 //=============================================================================
 };	// END of class UniversalJoint

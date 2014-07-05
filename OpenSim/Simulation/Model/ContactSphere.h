@@ -102,7 +102,7 @@ private:
     // VISUALIZATION
     void generateDecorations(bool fixed, const ModelDisplayHints& hints, 
         const SimTK::State& s, 
-        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const OVERRIDE_11;
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
 
 //=============================================================================
 };	// END of class ContactSphere

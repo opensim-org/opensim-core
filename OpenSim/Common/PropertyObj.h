@@ -67,17 +67,17 @@ public:
 	PropertyObj(const std::string &aName,const Object &aValue);
 	PropertyObj(const PropertyObj &aProperty);
 
-	PropertyObj* clone() const OVERRIDE_11;
+	PropertyObj* clone() const override;
 	virtual ~PropertyObj();
 
-    virtual bool isObjectProperty() const OVERRIDE_11 {return true;}
+    virtual bool isObjectProperty() const override {return true;}
     virtual bool isAcceptableObjectTag
-        (const std::string& objectTypeTag) const OVERRIDE_11 {return true;}
-    virtual const Object& getValueAsObject(int index=-1) const OVERRIDE_11
+        (const std::string& objectTypeTag) const override {return true;}
+    virtual const Object& getValueAsObject(int index=-1) const override
     {   assert(index <= 0); return getValueObj(); }
-    virtual Object& updValueAsObject(int index=-1) OVERRIDE_11
+    virtual Object& updValueAsObject(int index=-1) override
     {   assert(index <= 0); return getValueObj(); }
-    virtual void setValueAsObject(const Object& obj, int index=-1) OVERRIDE_11
+    virtual void setValueAsObject(const Object& obj, int index=-1) override
     {   assert(index <= 0); delete _value; _value=obj.clone(); }
 
 	//--------------------------------------------------------------------------
@@ -92,7 +92,7 @@ public:
 public:
 	virtual bool isValidObject(const Object *obj) const { return true; } // TODO: make this class templated and do type checking
 	// TYPE
-	virtual std::string getTypeName() const OVERRIDE_11 
+	virtual std::string getTypeName() const override 
     {   return "Object"; }
 	// VALUE
 	// Got rid of setValue(Obj) since it would be dangerous to do so given that users of

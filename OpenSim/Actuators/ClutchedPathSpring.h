@@ -125,7 +125,7 @@ protected:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	double computeActuation( const SimTK::State& s) const OVERRIDE_11;
+	double computeActuation( const SimTK::State& s) const override;
 
     /** Override PathActuator method to calculate a color for use when
     the %ClutchedPathSpring's path is displayed in the visualizer. 
@@ -136,13 +136,13 @@ protected:
         The desired color for the path as an RGB vector with each
         component ranging from 0 to 1, or NaN to indicate that the color
         should not be changed. **/
-    SimTK::Vec3 computePathColor(const SimTK::State& state) const OVERRIDE_11;
+    SimTK::Vec3 computePathColor(const SimTK::State& state) const override;
 
     /** Implement ModelComponent interface. */
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-	void initStateFromProperties(SimTK::State& state) const OVERRIDE_11;
-	void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
-	void computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11;
+	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void initStateFromProperties(SimTK::State& state) const override;
+	void setPropertiesFromState(const SimTK::State& state) override;
+	void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
 private:
 	void setNull();

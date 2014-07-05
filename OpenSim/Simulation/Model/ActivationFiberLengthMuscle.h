@@ -120,11 +120,11 @@ protected:
     //virtual void computeInitialFiberEquilibrium(SimTK::State& s) const;
     
 	/** Model Component Interface */
-	void connectToModel(Model& aModel) OVERRIDE_11;
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-	void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
-    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
-	void computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11;
+	void connectToModel(Model& aModel) override;
+	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void initStateFromProperties(SimTK::State& s) const override;
+    void setPropertiesFromState(const SimTK::State& state) override;
+	void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
 	static const std::string STATE_ACTIVATION_NAME;
 	static const std::string STATE_FIBER_LENGTH_NAME;   
