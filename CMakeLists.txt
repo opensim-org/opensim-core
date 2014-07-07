@@ -352,7 +352,7 @@ IF("${SimTK_INSTALL_DIR}" STREQUAL "")
     FIND_PACKAGE(Simbody ${SIMBODY_VERSION_TO_USE} QUIET
         NO_MODULE)
 ELSE()
-    # First, try to find the package using the user-specified path.
+    # Find the package using the user-specified path.
     # NO_DEFAULT_PATH will cause find_package to only 
     # look in the provided PATHS.
     FIND_PACKAGE(Simbody ${SIMBODY_VERSION_TO_USE} QUIET
