@@ -11,7 +11,7 @@ IF(NOT PYTHONLIBS_FOUND)
     MESSAGE(FATAL_ERROR "Cannot build Python wrapping because "
     	"Python libraries were not found. Either turn "
     	"BUILD_PYTHON_WRAPPING off or install Python "
-    	"libraries (on Ubuntu, apt-get install python2.7-dev).");
+    	"libraries (on Ubuntu, apt-get install python2.7-dev).")
 ENDIF()
 
 
@@ -67,14 +67,10 @@ SET_TARGET_PROPERTIES(_${KIT} PROPERTIES
    PREFIX ""
 )
 IF(WIN32)
-    SET_TARGET_PROPERTIES(_${KIT}
-    PROPERTIES
-    SUFFIX ".pyd")
+    SET_TARGET_PROPERTIES(_${KIT} PROPERTIES SUFFIX ".pyd")
 ELSEIF(APPLE)
     # Defaults to .dylib; change to .so.
-    SET_TARGET_PROPERTIES(_${KIT}
-    PROPERTIES
-    SUFFIX ".so")
+    SET_TARGET_PROPERTIES(_${KIT} PROPERTIES SUFFIX ".so")
 ENDIF()
 
 # Shared libraries are needed at runtime for applications, so we put them

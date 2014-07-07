@@ -48,7 +48,8 @@ ADD_CUSTOM_COMMAND(
         "${swig_interface_file_fullname}")
     
 # This target actually depends on a lot more (all the produced .java files); 
-# but we will just use this one file as a proxy for all of those.
+# but we will just use these two files as a proxy for all of those. All we need
+# is for this target to depend on outputs of the command above.
 ADD_CUSTOM_TARGET(JavaWrap
     DEPENDS "${swig_generated_file_fullname}"
             "${swig_generated_header_fullname}")
@@ -68,7 +69,8 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools osimSimmFileWriter)
+LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools
+    osimSimmFileWriter)
 
 ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
