@@ -374,11 +374,7 @@ void Component::addDiscreteVariable(const std::string&  discreteVariableName,
         DiscreteVariableInfo(invalidatesStage);
 }
 
-/*  Get the value of a ModelingOption flag for this Component. 
- *
- * @param state  the State for which to set the value
- * @return  flag  integer value for modeling option
- */
+// Get the value of a ModelingOption flag for this Component.
 int Component::
 getModelingOption(const SimTK::State& s, const std::string& name) const
 {
@@ -399,10 +395,8 @@ getModelingOption(const SimTK::State& s, const std::string& name) const
         return -1;
     }
 }
-/* Set the value of a discrete variable allocated by this Component by name. 
- *
- * @param state  the State in which to set the flag
- */
+
+// Set the value of a discrete variable allocated by this Component by name.
 void Component::
 setModelingOption(SimTK::State& s, const std::string& name, int flag) const
 {
@@ -577,11 +571,8 @@ const Component::StateVariable* Component::
 	return found;
 }
 
-
-/*
- * Get the names of "continuous" state variables maintained by the Component
- * and its subcomponents
- */
+// Get the names of "continuous" state variables maintained by the Component and
+// its subcomponents.
 Array<std::string> Component::getStateVariableNames() const
 {
     Array<std::string> names = getStateVariablesNamesAddedByComponent();
@@ -603,10 +594,7 @@ Array<std::string> Component::getStateVariableNames() const
     return names;
 }
 
-/* Get the value of a state variable allocated by this Component.  
- *
- * param state   the State for which to get the value
- * param name    the name of the state variable  */
+// Get the value of a state variable allocated by this Component.
 double Component::
 	getStateVariable(const SimTK::State& s, const std::string& name) const
 {
@@ -624,11 +612,7 @@ double Component::
     return SimTK::NaN;
 }
 
-/* Get the value of a state variable derivative computed by this Component.
-*
-* param state   the State for which to get the derivative value
-* param name    the name (string) of the state variable of interest
-*/
+// Get the value of a state variable derivative computed by this Component.
 double Component::
 	getStateVariableDerivative(const SimTK::State& state, 
 								const std::string& name) const
@@ -658,12 +642,8 @@ double Component::
     return SimTK::NaN;
 }
 
-/* Set the value of a state variable allocated by this Component given its
- * index for this component.
- *
- * param state   the State for which to set the value
- * param name    name of the state variable 
- * param value   the value to set */
+// Set the value of a state variable allocated by this Component given its index
+// for this component.
 void Component::
 	setStateVariable(State& s, const std::string& name, double value) const
 {
@@ -681,14 +661,8 @@ void Component::
 	throw Exception(msg.str(),__FILE__,__LINE__);
 }
 
-/*
-    * Get all values of the state variables allocated by this Component.
-	* Includes state variables allocated by its subcomponents.
-    *
-    * param state   the State for which to get the value
-    * return Vector of state variable values of length getNumStateVariables()
-	*                in the order returned by getStateVariableNames()
-    */
+// Get all values of the state variables allocated by this Component. Includes
+// state variables allocated by its subcomponents.
 SimTK::Vector Component::
 	getStateVariableValues(const SimTK::State& state) const
 {
@@ -703,14 +677,8 @@ SimTK::Vector Component::
 	return stateVariableValues;
 }
 
-/**
-    * Set all values of the state variables allocated by this Component.
-	* Includes state variables allocated by its subcomponents.
-    *
-    * param state   the State for which to get the value
-    * param values  Vector of state variable values of length getNumStateVariables()
-	*                in the order returned by getStateVariableNames()
-    */
+// Set all values of the state variables allocated by this Component. Includes
+// state variables allocated by its subcomponents.
 void Component::
 	setStateVariableValues(SimTK::State& state, const SimTK::Vector& values)
 {
@@ -725,15 +693,7 @@ void Component::
 	}
 }
 
-
-
-/*
-* Set the derivative of a state variable computed by this Component by name.
-*
-* param state  the State for which to set the value
-* param name   the name of the state variable
-* param deiv   the derivative value to set
-*/
+// Set the derivative of a state variable computed by this Component by name.
 void Component::
 	setStateVariableDerivative(const State& state, 
 							   const std::string& name, double value) const
@@ -755,14 +715,7 @@ void Component::
     }
 }
 
-
-
-// Get/Set for Discrete Variables
-
-/* Get the value of a discrete variable allocated by this Component by name. 
- *
- * param state  the State from which to get the value
- * param name   the name of the state variable */
+// Get the value of a discrete variable allocated by this Component by name.
 double Component::
 getDiscreteVariable(const SimTK::State& s, const std::string& name) const
 {
@@ -784,11 +737,7 @@ getDiscreteVariable(const SimTK::State& s, const std::string& name) const
     }
 }
 
-/* Set the value of a discrete variable allocated by this Component by name. 
- *
- * @param state  the State for which to set the value
- * @param name   the name of the state variable 
- * @param value  the value to set  */
+// Set the value of a discrete variable allocated by this Component by name.
 void Component::
 setDiscreteVariable(SimTK::State& s, const std::string& name, double value) const
 {
@@ -810,17 +759,16 @@ setDiscreteVariable(SimTK::State& s, const std::string& name, double value) cons
 }
 
 /*
-* Specifiy a member function of the state implemented by this component to
-* be an an Output.
-
+// Specifiy a member function of the state implemented by this component to be
+// an Output.
 template <typename T>
 void Component::addOutput(const std::string& name,
 	                const std::function<T(const SimTK::State&)> outputFunction,
 	                const SimTK::Stage& dependsOn)
 */
 
-/* Include another Component as a subcomponent of this one. 
-   If already a subcomponent it is not added to the list again. */
+// Include another Component as a subcomponent of this one. If already a
+// subcomponent, it is not added to the list again.
 void Component::addComponent(Component *aComponent)
 {
 	// Only add if the Component is not already a part of the model
