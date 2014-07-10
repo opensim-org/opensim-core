@@ -48,6 +48,9 @@ void MultiCoordinateActuator::computeForce( const SimTK::State& s,
 {
     if(!_model) return;
 
+    mobilityForces = getControls(s);
+
+    /* TODO
     SimTK::VectorView_<double> actuatorControls = getControls(s);
     const CoordinateSet& coordSet = getModel().getCoordinateSet();
     for (unsigned int iCoord = 0; iCoord < coordSet.getSize(); iCoord++)
@@ -56,6 +59,7 @@ void MultiCoordinateActuator::computeForce( const SimTK::State& s,
                 actuatorControls[coordSet[iCoord].getMobilizerQIndex()],
                 mobilityForces);
     }
+    */
 }
 
 int MultiCoordinateActuator::numControls() const 

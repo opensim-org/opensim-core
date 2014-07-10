@@ -26,6 +26,7 @@
 //      1.  testTorqueActuator()
 //		2.	testClutchedPathSpring()
 //		3.	testMcKibbenActuator()
+//		4.  testMultiCoordinateActuator()
 //		
 //     Add tests here as Actuators are added to OpenSim
 //
@@ -50,6 +51,7 @@ const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 void testTorqueActuator();
 void testClutchedPathSpring();
 void testMcKibbenActuator();
+void testMultiCoordinateActuator();
 
 int main()
 {
@@ -67,6 +69,10 @@ int main()
 	catch (const std::exception& e){
 		cout << e.what() << endl; failures.push_back("testMcKibbenActuator");
 	}
+    try { testMultiCoordinateActuator(); }
+    catch (const std::exception& e){
+        cout << e.what() << endl; failures.push_back("testMultiCoordinateActuator");
+    }
     if (!failures.empty()) {
 		cout << "Done, with failure(s): " << failures << endl;
         return 1;
@@ -512,4 +518,33 @@ void testClutchedPathSpring()
 
 	cout << "Test clutched spring time = " << 
 		1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
+}
+
+class MultiCoordinateController : public Controller
+{
+    OpenSim_DECLARE_CONCRETE_OBJECT(MultiCoordinateController, Controller);
+    void computeControls(const SimTK::State& s, SimTK::Vector& controls) const
+        override
+    {
+        const SimTK::SimbodyMatterSubsystem& smss = _model->getMatterSubsystem();
+        SimTK::Vector A =  - 100 * s.getQ();
+        SimTK::Vector MA;
+        smss.multiplyByM(s, A, MA);
+        controls = MA;
+    }
+};
+
+void testMultiCoordinateActuator()
+{
+    Model model("gait10dof18musc_subject01.osim");
+    MultiCoordinateActuator* multiact = new MultiCoordinateActuator();
+    MultiCoordinateController* multicon = new MultiCoordinateController();
+    multicon->addActuator(*multiact);    
+    model.addForce(multiact);
+    model.addController(multicon);
+    SimTK::State& state = model.initSystem();
+    SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
+    Manager manager(model, integrator);
+    manager.setInitialTime(0); manager.setFinalTime(10.0);
+    manager.integrate(state);
 }
