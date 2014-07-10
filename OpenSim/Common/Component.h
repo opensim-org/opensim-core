@@ -1470,11 +1470,11 @@ private:
 						invalidatesStage(SimTK::Stage::Empty) {}
 
 		//override virtual methods
-		double getValue(const SimTK::State& state) const OVERRIDE_11;
-		void setValue(SimTK::State& state, double value) const OVERRIDE_11;
+		double getValue(const SimTK::State& state) const override;
+		void setValue(SimTK::State& state, double value) const override;
 
-		double getDerivative(const SimTK::State& state) const OVERRIDE_11;
-		void setDerivative(const SimTK::State& state, double deriv) const OVERRIDE_11;
+		double getDerivative(const SimTK::State& state) const override;
+		void setDerivative(const SimTK::State& state, double deriv) const override;
 
 		private: // DATA
 		// Changes in state variables trigger recalculation of appropriate cache 

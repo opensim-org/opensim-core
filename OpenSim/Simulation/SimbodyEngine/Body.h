@@ -127,9 +127,9 @@ public:
 
 protected:
     // Model component interface.
-	void finalizeFromProperties() OVERRIDE_11;
-	void connectToModel(Model& model) OVERRIDE_11;
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;	
+	void finalizeFromProperties() override;
+	void connectToModel(Model& model) override;
+	void addToSystem(SimTK::MultibodySystem& system) const override;	
 
 	// Underlying multibody tree building operations. Should only be called
 	// by the connecting Joint
@@ -145,7 +145,7 @@ private:
 
 	/** Override of the default implementation to account for versioning. */
 	void updateFromXMLNode(SimTK::Xml::Element& aNode,
-		int versionNumber = -1) OVERRIDE_11;
+		int versionNumber = -1) override;
 
 	void setNull();
 	void constructProperties();

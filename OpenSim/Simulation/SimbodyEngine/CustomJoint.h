@@ -79,7 +79,7 @@ public:
 	
     // default destructor, copy constructor, copy assignment
 
-	int numCoordinates() const OVERRIDE_11 {return get_CoordinateSet().getSize();};
+	int numCoordinates() const override {return get_CoordinateSet().getSize();};
 
 	// Get and Set Transforms
 	const SpatialTransform& getSpatialTransform() const
@@ -88,15 +88,15 @@ public:
     {   return upd_SpatialTransform(); }
 
 	// SCALE
-	void scale(const ScaleSet& aScaleSet) OVERRIDE_11;
+	void scale(const ScaleSet& aScaleSet) override;
 
 	/** Override of the default implementation to account for versioning. */
 	void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1)
-        OVERRIDE_11;
+        override;
 
 private:
-	void connectToModel(Model& aModel) OVERRIDE_11;
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void connectToModel(Model& aModel) override;
+	void addToSystem(SimTK::MultibodySystem& system) const override;
 
 	void constructProperties();
     void constructCoordinates();

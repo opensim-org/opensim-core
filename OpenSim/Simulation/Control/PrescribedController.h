@@ -97,7 +97,7 @@ public:
 	 * @param controls      model controls  
 	 */
 	void computeControls(const SimTK::State& s, 
-						 SimTK::Vector& controls) const OVERRIDE_11;
+						 SimTK::Vector& controls) const override;
 
 	/**
 	 *	Assign a prescribe control function for the desired actuator identified 
@@ -118,7 +118,7 @@ public:
 
 protected:
 	/** Model component interface */
-	void connectToModel(Model& model) OVERRIDE_11;
+	void connectToModel(Model& model) override;
 private:
 	// construct and initialize properties
 	void constructProperties();

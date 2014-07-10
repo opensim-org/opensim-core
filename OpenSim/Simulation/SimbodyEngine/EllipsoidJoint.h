@@ -70,19 +70,19 @@ public:
 
 	virtual ~EllipsoidJoint();
 
-	int numCoordinates() const OVERRIDE_11 { return _numMobilities; }
+	int numCoordinates() const override { return _numMobilities; }
 
 	//Set properties
 	void setEllipsoidRadii(const SimTK::Vec3& radii);
 
 	// SCALE
-	void scale(const ScaleSet& aScaleSet) OVERRIDE_11;
+	void scale(const ScaleSet& aScaleSet) override;
 
 protected:
     // ModelComponent interface.
-    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-    void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
-    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
+    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void initStateFromProperties(SimTK::State& s) const override;
+    void setPropertiesFromState(const SimTK::State& state) override;
 
     // Visual support in SimTK visualizer
 	void generateDecorations(

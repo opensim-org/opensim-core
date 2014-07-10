@@ -248,13 +248,13 @@ public:
 
 protected:
 	// build Joint transforms from properties
-	void finalizeFromProperties() OVERRIDE_11;
+	void finalizeFromProperties() override;
 	// TODO: child overrides must invoke Joint::addToSystem()
     // *after* they create the MobilizedBody. This is an API bug
     // since we want to have children invoke parent first.
-    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-    void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
-    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
+    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void initStateFromProperties(SimTK::State& s) const override;
+    void setPropertiesFromState(const SimTK::State& state) override;
 
 	/** Construct coordinates according to the mobilities of the Joint */
 	void constructCoordinates();
@@ -410,11 +410,11 @@ private:
 
 	/** Construct the infrastructure of the Joint component.
 	    Begin with its properties. */
-	void constructProperties() OVERRIDE_11;
+	void constructProperties() override;
 
 	/** Next define its structural dependencies on other components.
 		These will be the parent and child bodies of the Joint.*/
-	void constructStructuralConnectors() OVERRIDE_11;
+	void constructStructuralConnectors() override;
 
 	/** Utility method for accessing the number of mobilities provided by 
 	    an underlying MobilizedBody */

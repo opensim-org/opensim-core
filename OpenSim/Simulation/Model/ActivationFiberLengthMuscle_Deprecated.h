@@ -146,7 +146,7 @@ protected:
 	virtual void setStateVariableDeriv(const SimTK::State& s, const std::string &aStateName, double aValue) const;
 	virtual double getStateVariableDeriv(const SimTK::State& s, const std::string &aStateName) const;
 
-	void computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11;
+	void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
 	// Muscle interface
 	virtual void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const;
