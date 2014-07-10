@@ -120,9 +120,9 @@ void PrescribedController::connectToModel(Model& model)
 		controls.getTimeColumn(time);
 
 		FunctionSet& controlFuncs = upd_ControlFunctions();
-		const Set<Actuator_>& modelActuators = getModel().getActuators();
+		const Set<Actuator>& modelActuators = getModel().getActuators();
 
-		Set<Actuator_>& controllerActuators = updActuators();
+		Set<Actuator>& controllerActuators = updActuators();
 
 		for(int i=0; i<ncols; ++i){
 			if(i == tcol) continue;

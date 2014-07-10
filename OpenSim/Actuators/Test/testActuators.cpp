@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2013 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                                       *
+ * Author(s): Ajay Seth, Soha Pouya                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -250,7 +250,7 @@ void testTorqueActuator()
 	//torque as applied directly to the multibody system (above)
 
 	// Create and add the torque actuator to the model
-	TorqueActuator* actuator = 
+	TorqueActuator* actuator =
 		new TorqueActuator(*bodyA, *bodyB, torqueAxis, true);
 	actuator->setName("torque");
 	model->addForce(actuator);
@@ -295,7 +295,7 @@ void testTorqueActuator()
 
 	manager.setInitialTime(0.0);
 
-	double final_t = 1.00;
+	double final_t = 10.00;
 
 	manager.setFinalTime(final_t);
 	manager.integrate(state);

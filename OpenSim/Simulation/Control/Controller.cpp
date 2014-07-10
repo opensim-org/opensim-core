@@ -111,7 +111,7 @@ void Controller::connectToModel(Model& model)
 			return;
 		}
 		else{
-			Set<Actuator_> actuatorsByName;
+			Set<Actuator> actuatorsByName;
 			for(int i =0; i <  getProperty_actuator_list().size(); i++){
 				if(model.updActuators().contains(get_actuator_list(i)))
 					actuatorsByName.adoptAndAppend(&model.updActuators().get(get_actuator_list(i)));
@@ -133,7 +133,7 @@ void Controller::addToSystem(SimTK::MultibodySystem& system) const
 }
 
 // makes a request for which actuators a controller will control
-void Controller::setActuators(const Set<Actuator_>& actuators )
+void Controller::setActuators(const Set<Actuator>& actuators )
 {
 	//Rebuild consistent set of actuator lists
 	_actuatorSet.setSize(0);
@@ -145,13 +145,13 @@ void Controller::setActuators(const Set<Actuator_>& actuators )
 	_actuatorSet.setMemoryOwner(false);
 }
 
-void Controller::addActuator(const Actuator_& actuator)
+void Controller::addActuator(const Actuator& actuator)
 {
 	// want to keep a reference not make a clone
 	// but set interface does not take const pointer
 	// just const ref that forces a copy
 	// const_cast only to add to the private set of actuators
-	Actuator_* mutable_act = const_cast<Actuator_ *>(&actuator);
+	Actuator* mutable_act = const_cast<Actuator *>(&actuator);
 	_actuatorSet.adoptAndAppend(mutable_act);
 
 	int found = updProperty_actuator_list().findIndex(actuator.getName());
@@ -159,6 +159,6 @@ void Controller::addActuator(const Actuator_& actuator)
 		updProperty_actuator_list().appendValue(actuator.getName());
 }
 
-Set<Actuator_>& Controller::updActuators() { return _actuatorSet; }
+Set<Actuator>& Controller::updActuators() { return _actuatorSet; }
 
-const Set<Actuator_>& Controller::getActuatorSet() const { return _actuatorSet; }
+const Set<Actuator>& Controller::getActuatorSet() const { return _actuatorSet; }

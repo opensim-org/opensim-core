@@ -97,9 +97,11 @@ private:
 	// Implement Actuator interface.
 	//--------------------------------------------------------------------------
     int numControls() const override { return 6; }
-	virtual double computeActuation( const SimTK::State& s) const override {
-        return SimTK::NaN;
-    }
+	//virtual double computeActuation( const SimTK::State& s) const override {
+    //    return SimTK::NaN;
+    //}
+	double getPower(const SimTK::State& s) const { return 0; }
+	void overrideForce(SimTK::State& s, bool flag) const {}
 
     //--------------------------------------------------------------------------
 	// Implement ModelComponent interface

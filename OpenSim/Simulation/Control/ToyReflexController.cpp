@@ -67,7 +67,7 @@ void ToyReflexController::connectToModel(Model &model)
 	Super::connectToModel(model);
 
 	// get the list of actuators assigned to the reflex controller
-	Set<Actuator_>& actuators = updActuators();
+	Set<Actuator>& actuators = updActuators();
 
 	int cnt=0;
  
@@ -99,7 +99,7 @@ void ToyReflexController::computeControls(const State& s, Vector &controls) cons
 	double time = s.getTime();
 
 	// get the list of actuators assigned to the reflex controller
-	const Set<Actuator_>& actuators = getActuatorSet();
+	const Set<Actuator>& actuators = getActuatorSet();
 
 	// muscle lengthening speed
 	double speed = 0;

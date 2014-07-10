@@ -282,11 +282,11 @@ evaluate( const SimTK::State& s, double *aX, double *rF)
 	// Integration
     manager.integrate(actSysState, 0.000001);
 
-    const Set<Actuator_>& forceSet = controller.getActuatorSet();
+    const Set<Actuator>& forceSet = controller.getActuatorSet();
 	// Vector function values
 	int j = 0;
 	for(i=0;i<N;i++) {
-		Actuator* act = dynamic_cast<Actuator*>(&forceSet[i]);
+		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&forceSet[i]);
 	    rF[j] = act->getForce(getCMCActSubsys()->getCompleteState()) - _f[j];
         j++;
 	}

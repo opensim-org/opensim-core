@@ -102,7 +102,7 @@ public:
 	 * is the number of _controller->getModel().getActuators()
 	 */
 	virtual SimTK::Vector getTaskErrorGradient(const SimTK::State& s) {
-		const Set<Actuator_>& fSet = _model->getActuators();
+		const Set<Actuator>& fSet = _model->getActuators();
 		SimTK::Vector g = SimTK::Vector(fSet.getSize());
 		g = 0.;
 		double taskGradient = -2 * getTaskError(s)* getWeight(0);

@@ -32,7 +32,7 @@
 namespace OpenSim {
 
 class Model;
-class Actuator;
+class ScalarActuator;
 class Muscle;
 
 //=============================================================================
@@ -55,7 +55,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ForceSet, ModelComponentSet<Force>);
 protected:
 
    /** The subset of Forces that are Actuators. */
-    Set<Actuator_> _actuators;
+    Set<Actuator> _actuators;
 
 	/** The subset of Forces that are Muscles. */
 	Set<Muscle> _muscles;
@@ -104,8 +104,8 @@ public:
     bool insert(int aIndex, Force *aObject);
 
     // subsets 
-    const Set<Actuator_>& getActuators() const;
-    Set<Actuator_>& updActuators();
+    const Set<Actuator>& getActuators() const;
+    Set<Actuator>& updActuators();
 	const Set<Muscle>& getMuscles() const;
     Set<Muscle>& updMuscles();
 

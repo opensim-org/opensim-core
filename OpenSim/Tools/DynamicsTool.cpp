@@ -176,7 +176,7 @@ void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array
 			return;
 		}
 		if(IO::Uppercase(forcesByNameOrGroup[i]) == "ACTUATORS"){
-			Set<Actuator_> &acts = model.updActuators();
+			Set<Actuator> &acts = model.updActuators();
 			for(int i=0; i<acts.getSize(); i++){
 				acts[i].setDisabled(s, true);
 			}

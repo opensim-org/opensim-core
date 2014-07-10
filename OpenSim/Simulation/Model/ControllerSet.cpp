@@ -234,7 +234,7 @@ void ControllerSet::printControlStorage( const string& fileName)  const
    _controlStore->print(fileName);
 }
 
-void ControllerSet::setActuators( Set<Actuator_>& as) 
+void ControllerSet::setActuators( Set<Actuator>& as) 
 {
     _actuatorSet = &as;
     constructStorage();
@@ -265,7 +265,7 @@ void ControllerSet::printInfo() const
               i+1, (unsigned long long)&c, c.getName().c_str(), 
               (unsigned long long)&c.getModel() );
 
-          const Set<Actuator_>& actSet = c.getActuatorSet();
+          const Set<Actuator>& actSet = c.getActuatorSet();
           if( actSet.getSize() > 0 ) {
                std::cout << "Actuators" << std::endl;
                for(int j=0;j<get(i).getActuatorSet().getSize(); j++ ) {

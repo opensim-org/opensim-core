@@ -74,7 +74,7 @@ private:
     /**
      *   set of actuators controlled by the set of controllers 
      */
-     Set<Actuator_>* _actuatorSet;
+     Set<Actuator>* _actuatorSet;
 
 
 	//--------------------------------------------------------------------------
@@ -96,7 +96,7 @@ public:
     void constructStorage();
     void storeControls( const SimTK::State& s, int step );
     void printControlStorage( const std::string& fileName) const;
-    void setActuators(Set<Actuator_>& actuators);
+    void setActuators(Set<Actuator>& actuators);
 
     void setDesiredStates( Storage* yStore); 
 

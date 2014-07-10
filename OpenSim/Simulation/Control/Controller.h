@@ -35,7 +35,7 @@ namespace OpenSim {
 
 // Forward declarations of classes that are used by the controller implementation
 class Model;
-class Actuator_;
+class Actuator;
 
 /**
  * Controller is an abstract ModelComponent that defines the interface for   
@@ -92,13 +92,13 @@ public:
 	void setDisabled(bool disableFlag);
 
 	/** replace the current set of actuators with the provided set */
-    void setActuators(const Set<Actuator_>& actuators );
+    void setActuators(const Set<Actuator>& actuators );
 	/** add to the current set of actuators */
-	void addActuator(const Actuator_& actuator);
+	void addActuator(const Actuator& actuator);
 	/** get a const reference to the current set of actuators */
-	const Set<Actuator_>& getActuatorSet() const;
+	const Set<Actuator>& getActuatorSet() const;
 	/** get a writable reference to the set of actuators for this controller */
-	Set<Actuator_>& updActuators();
+	Set<Actuator>& updActuators();
 
 	/** Compute the control for actuator
 	 *  This method defines the behavior for any concrete controller 
@@ -131,7 +131,7 @@ private:
     int _numControls;
 
 	// the (sub)set of Model actuators that this controller controls */ 
-	Set<Actuator_> _actuatorSet;
+	Set<Actuator> _actuatorSet;
 
 	// construct and initialize properties
 	void constructProperties();

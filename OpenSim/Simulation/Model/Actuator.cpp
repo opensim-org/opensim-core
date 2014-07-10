@@ -38,9 +38,10 @@ using namespace SimTK;
 //_____________________________________________________________________________
 /**
  * Construct an actuator of controls.
+ * This is the base class which generates a vector of actuator controls.
  *
  */
-Actuator_::Actuator_()
+Actuator::Actuator()
 {
 	setNull();
 }
@@ -53,7 +54,7 @@ Actuator_::Actuator_()
 /**
  * Set the data members of this Actuator to their null values.
  */
-void Actuator_::setNull()
+void Actuator::setNull()
 {
 	setAuthors("Ajay Seth");
     _controlIndex = -1;
@@ -61,12 +62,12 @@ void Actuator_::setNull()
 
 // Create the underlying computational system component(s) that support the
 // Actuator model component
-void Actuator_::addToSystem(SimTK::MultibodySystem& system) const
+void Actuator::addToSystem(SimTK::MultibodySystem& system) const
 {
 	Super::addToSystem(system);
 
     // Beyond the const Component get the index so we can access the SimTK::Force later
-	Actuator_* mutableThis = const_cast<Actuator_ *>(this);
+	Actuator* mutableThis = const_cast<Actuator *>(this);
 
 	// Model is in charge of creating the shared cache for all all actuator controls
 	// but it does so based on the size and order in its _defaultControls
@@ -84,7 +85,7 @@ void Actuator_::addToSystem(SimTK::MultibodySystem& system) const
  * The resulting geometry is maintained at the VisibleObject layer
  * 
  */
-void Actuator_::updateGeometry()
+void Actuator::updateGeometry()
 {
 }
 
@@ -96,39 +97,39 @@ void Actuator_::updateGeometry()
  * @param the current state
  * @return The value of the controls.
  */
-const VectorView_<Real> Actuator_::getControls( const SimTK::State& s ) const
+const VectorView_<Real> Actuator::getControls( const SimTK::State& s ) const
 {
 	const Vector &controlsCache = _model->getControls(s);
 	return  controlsCache(_controlIndex, numControls());
 }
 
-void Actuator_::getControls(const Vector& modelControls, Vector& actuatorControls) const
+void Actuator::getControls(const Vector& modelControls, Vector& actuatorControls) const
 {
 	SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
-		"Actuator_::getControls, input modelControls size does not match model.getNumControls().\n");
+		"Actuator::getControls, input modelControls size does not match model.getNumControls().\n");
 	SimTK_ASSERT(actuatorControls.size() == numControls(), 
-		"Actuator_::getControls, output actuatorControls incompatible with actuator's numControls().\n");
+		"Actuator::getControls, output actuatorControls incompatible with actuator's numControls().\n");
 	actuatorControls = modelControls(_controlIndex, numControls());
 }
 
-void Actuator_::setControls(const Vector& actuatorControls, Vector& modelControls) const
+void Actuator::setControls(const Vector& actuatorControls, Vector& modelControls) const
 {
 	SimTK_ASSERT(actuatorControls.size() == numControls(), 
-		"Actuator_::setControls, input actuatorControls incompatible with actuator's numControls().\n");
+		"Actuator::setControls, input actuatorControls incompatible with actuator's numControls().\n");
 
 	SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
-	"Actuator_::setControls, output modelControls size does not match model.getNumControls()\n");
+	"Actuator::setControls, output modelControls size does not match model.getNumControls()\n");
 
 	modelControls(_controlIndex, numControls()) = actuatorControls;
 }
 
-void Actuator_::addInControls(const Vector& actuatorControls, Vector& modelControls) const
+void Actuator::addInControls(const Vector& actuatorControls, Vector& modelControls) const
 {
 	SimTK_ASSERT(actuatorControls.size() == numControls(), 
-		"Actuator_::addInControls, input actuatorControls incompatible with actuator's numControls()\n");
+		"Actuator::addInControls, input actuatorControls incompatible with actuator's numControls()\n");
 
 	SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
-	"Actuator_::addInControls, output modelControls size does not match model.getNumControls().\n");
+	"Actuator::addInControls, output modelControls size does not match model.getNumControls().\n");
 
 	modelControls(_controlIndex, numControls()) += actuatorControls;
 }
@@ -142,7 +143,7 @@ void Actuator_::addInControls(const Vector& actuatorControls, Vector& modelContr
 //_____________________________________________________________________________
 
 /** Default constructor */
-Actuator::Actuator()
+ScalarActuator::ScalarActuator()
 {
 	constructProperties();
 }
@@ -152,7 +153,7 @@ Actuator::Actuator()
  * Set up the serializable member variables. This involves constructing and
  * initializing properties.
  */
-void Actuator::constructProperties()
+void ScalarActuator::constructProperties()
 {
 	constructProperty_min_control(-Infinity);
 	constructProperty_max_control( Infinity);
@@ -161,7 +162,7 @@ void Actuator::constructProperties()
 
 // Create the underlying computational system component(s) that support the
 // Actuator model component
-void Actuator::addToSystem(SimTK::MultibodySystem& system) const
+void ScalarActuator::addToSystem(SimTK::MultibodySystem& system) const
 {
 	Super::addToSystem(system);
 
@@ -177,7 +178,7 @@ void Actuator::addToSystem(SimTK::MultibodySystem& system) const
 	addDiscreteVariable("override_force", Stage::Time);
 }
 
-double Actuator::getControl(const SimTK::State& s ) const
+double ScalarActuator::getControl(const SimTK::State& s) const
 {
 	return getControls(s)[0];
 }
@@ -186,7 +187,7 @@ double Actuator::getControl(const SimTK::State& s ) const
 /**
  * getStress needs to be overridden by derived classes to be usable
  */
-double Actuator::getStress(const SimTK::State& s ) const
+double ScalarActuator::getStress(const SimTK::State& s) const
 {
 	OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
 }
@@ -194,28 +195,28 @@ double Actuator::getStress(const SimTK::State& s ) const
 /**
  * getOptimalForce needs to be overridden by derived classes to be usable
  */
-double Actuator::getOptimalForce() const
+double ScalarActuator::getOptimalForce() const
 {
 	OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
 }
 
-double Actuator::getForce(const State &s) const
+double ScalarActuator::getForce(const State &s) const
 {
     if (isDisabled(s)) return 0.0;
     return getCacheVariable<double>(s, "force");
 }
 
-void Actuator::setForce(const State& s, double aForce) const
+void ScalarActuator::setForce(const State& s, double aForce) const
 {
     setCacheVariable<double>(s, "force", aForce);
 }
 
-double Actuator::getSpeed(const State& s) const
+double ScalarActuator::getSpeed(const State& s) const
 {
     return getCacheVariable<double>(s, "speed");
 }
 
-void Actuator::setSpeed(const State &s, double speed) const
+void ScalarActuator::setSpeed(const State &s, double speed) const
 {
     setCacheVariable<double>(s, "speed", speed);
 }
@@ -226,12 +227,12 @@ void Actuator::setSpeed(const State &s, double speed) const
  * overrideForce sets flag to indicate actuator's force compuation is being
  * overridden
  */
-void Actuator::overrideForce(SimTK::State& s, bool flag ) const 
+void ScalarActuator::overrideForce(SimTK::State& s, bool flag) const
 {
     setModelingOption(s, "override_force", int(flag));
 }
 
-bool Actuator::isForceOverriden(const SimTK::State& s ) const 
+bool ScalarActuator::isForceOverriden(const SimTK::State& s) const
 {
     return (getModelingOption(s, "override_force") > 0);
 }
@@ -239,16 +240,16 @@ bool Actuator::isForceOverriden(const SimTK::State& s ) const
 //_____________________________________________________________________________
 /** set the value used when an actuator's force compuation is overridden
  */
-void Actuator::setOverrideForce(SimTK::State& s, double force ) const
+void ScalarActuator::setOverrideForce(SimTK::State& s, double force) const
 {
      setDiscreteVariable(s, "override_force", force);;
 }
 
-double Actuator::getOverrideForce(const SimTK::State& s ) const
+double ScalarActuator::getOverrideForce(const SimTK::State& s) const
 {
     return getDiscreteVariable(s, "override_force");
 }
-double Actuator::computeOverrideForce( const SimTK::State& s ) const 
+double ScalarActuator::computeOverrideForce(const SimTK::State& s) const
 {
 	double appliedForce = getOverrideForce(s);
 	setForce(s, appliedForce);

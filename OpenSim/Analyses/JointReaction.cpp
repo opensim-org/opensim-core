@@ -562,7 +562,7 @@ record(const SimTK::State& s)
 	_model->updMultibodySystem().realize(s_analysis, s.getSystemStage());
 	if(_useForceStorage){
 
-		const Set<Actuator_> *actuatorSet = &_model->getActuators();
+		const Set<Actuator> *actuatorSet = &_model->getActuators();
 		int nA = actuatorSet->getSize();
 		Array<double> forces(0,nA);
 		_storeActuation->getDataAtTime(s.getTime(),nA,forces);
@@ -576,7 +576,7 @@ record(const SimTK::State& s)
 				cout << "The actuator, " << actuatorName << ", was not found in the forces file." << endl;
 				break;
 			}
-			const Actuator* act = dynamic_cast<const Actuator*>(&actuatorSet[actuatorIndex]);
+			const ScalarActuator* act = dynamic_cast<const ScalarActuator*>(&actuatorSet[actuatorIndex]);
 			if (act){
 				act->overrideForce(s_analysis, true);
 				act->setOverrideForce(s_analysis, forces[storageIndex]);
