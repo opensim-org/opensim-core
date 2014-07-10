@@ -526,7 +526,7 @@ public:
     /**
      * Get the value of a discrete variable allocated by this Component by name.
      *
-     * @param state   the State for which to set the value
+     * @param state   the State from which to get the value
      * @param name    the name of the state variable
      * @return value  the discrete variable value
      */
@@ -544,7 +544,7 @@ public:
     /**
      * Get the value of a cache variable allocated by this Component by name.
      *
-     * @param state  the State for which to set the value
+     * @param state  the State from which to get the value
      * @param name   the name of the cache variable
      * @return T	 const reference to the cache variable's value
      */
