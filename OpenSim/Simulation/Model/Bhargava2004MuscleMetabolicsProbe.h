@@ -269,6 +269,13 @@ public:
         "Specify whether the total power for each muscle must remain positive "
         "(true/false).");
 
+    /** Enabled by default. **/
+    OpenSim_DECLARE_PROPERTY(use_Bhargava_decay_function,
+        bool,
+        "Specify whether the decay function described by Bhargava et al. "
+        "(2004) should be used (true/false). If set to false, a value of 1.0 "
+        "is used, as in Anderson and Pandy (1999).");
+
     /** Default value = true **/
     OpenSim_DECLARE_PROPERTY(report_total_metabolics_only, 
         bool,
@@ -440,6 +447,7 @@ private:
     // Data
     //--------------------------------------------------------------------------
     MuscleMap _muscleMap;
+    static const std::string stimStateNamePrefix;
 
 
     //--------------------------------------------------------------------------
@@ -448,6 +456,8 @@ private:
     void connectToModel(Model& aModel) override;
     void connectIndividualMetabolicMuscle(Model& aModel, 
         Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter& mm);
+    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void initStateFromProperties(SimTK::State& s) const override;
 
     void setNull();
     void constructProperties();
