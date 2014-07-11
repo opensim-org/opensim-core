@@ -1,7 +1,7 @@
-#ifndef OPENSIM_SPATIAL_ACTUATOR_H_
-#define OPENSIM_SPATIAL_ACTUATOR_H_
+#ifndef OPENSIM_BODY_ACTUATOR_H_
+#define OPENSIM_BODY_ACTUATOR_H_
 /* -------------------------------------------------------------------------- *
- *                         OpenSim:  SpatialActuator.h                          *
+ *                         OpenSim:  BodyActuator.h                          *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -54,8 +54,8 @@ class Model;
  *
  * @author Soha Pouya, Michael Sherman
  */
-class OSIMACTUATORS_API SpatialActuator : public Actuator {
-OpenSim_DECLARE_CONCRETE_OBJECT(SpatialActuator, Actuator);
+class OSIMACTUATORS_API BodyActuator : public Actuator {
+OpenSim_DECLARE_CONCRETE_OBJECT(BodyActuator, Actuator);
 public:
 //==============================================================================
 // PROPERTIES
@@ -72,7 +72,7 @@ public:
 //==============================================================================
     /** Default constructor or construct with body name given. An empty 
     name ("") is treated as though it were unspecified. **/
-	explicit SpatialActuator(const std::string& bodyName="");
+	explicit BodyActuator();
 
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
@@ -110,12 +110,12 @@ private:
 	void connectToModel(Model& model) override;
     
 //=============================================================================
-};	// END of class SpatialActuator
+};	// END of class BodyActuator
 
 }; //namespace
 //=============================================================================
 //=============================================================================
 
-#endif // OPENSIM_SPATIAL_ACTUATOR_H_
+#endif // OPENSIM_BODY_ACTUATOR_H_
 
 

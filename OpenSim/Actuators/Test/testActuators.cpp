@@ -49,21 +49,26 @@ const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 
 
 void testTorqueActuator();
-void testClutchedPathSpring();
+void testBodyActuator();
+//void testClutchedPathSpring();
 void testMcKibbenActuator();
 
 int main()
 {
 	SimTK::Array_<std::string> failures;
 
-	try {testTorqueActuator();}
-    catch (const std::exception& e){
-		cout << e.what() <<endl; failures.push_back("testTorqueActuator");
+	//try {testTorqueActuator();}
+   // catch (const std::exception& e){
+	//	cout << e.what() <<endl; failures.push_back("testTorqueActuator");
+	//}
+	try {testBodyActuator();}
+	catch (const std::exception& e){
+		cout << e.what() <<endl; failures.push_back("testBodyActuator");
 	}
-	try {testClutchedPathSpring();}
-    catch (const std::exception& e){
-		cout << e.what() <<endl; failures.push_back("testClutchedPathSpring");
-	}
+	//try {testClutchedPathSpring();}
+    //catch (const std::exception& e){
+	//	cout << e.what() <<endl; failures.push_back("testClutchedPathSpring");
+	//}
 	try { testMcKibbenActuator(); }
 	catch (const std::exception& e){
 		cout << e.what() << endl; failures.push_back("testMcKibbenActuator");
@@ -153,7 +158,7 @@ void testMcKibbenActuator()
 	}
 
 
-	std::cout << "Test McKibbenActuator time = " <<
+	std::cout << " ******** Test McKibbenActuator time = ********" <<
 		1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;
 }
 
@@ -318,11 +323,12 @@ void testTorqueActuator()
 	ASSERT(modelFromFile == *model, __FILE__, __LINE__,
 		"Model from file FAILED to match model in memory.");
 
-	std::cout << "Test TorqueActuator time = " << 
+	std::cout << " ********** Test TorqueActuator time =  ********** " << 
 		1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
 }
 
 
+/*
 void testClutchedPathSpring()
 {
 	using namespace SimTK;
@@ -513,13 +519,13 @@ void testClutchedPathSpring()
 
 	model->disownAllComponents();
 
-	cout << "Test clutched spring time = " << 
+	cout << " ********** Test clutched spring time = ********** " << 
 		1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
 }
+*/
 
 
-
-void testSpatialActuator()
+void testBodyActuator()
 {
 	using namespace SimTK;
 	// start timing
@@ -602,15 +608,16 @@ void testSpatialActuator()
 	//torque as applied directly to the multibody system (above)
 
 	// Create and add the torque actuator to the model
-	SpatialActuator* actuator = new SpatialActuator("bodyA");
-	actuator->setName("spatialAct");
+	BodyActuator* actuator = new BodyActuator();
+	actuator->updConnector<OpenSim::Body>("body").set_connected_to_name("bodyA");
+	actuator->setName("BodyAct");
 	model->addForce(actuator);
 
 	// Create and add a controller to control the actuator
 	PrescribedController* controller = new PrescribedController();
 	controller->addActuator(*actuator);
 	// Apply torque about torqueAxis
-	controller->prescribeControlForActuator("torque", new Constant(torqueMag));
+	controller->prescribeControlForActuator("BodyAct", new Constant(torqueMag));
 
 	model->addController(controller);
 
@@ -620,20 +627,23 @@ void testSpatialActuator()
 
 	model->addProbe(powerProbe);*/
 
-	model->print("TestSpatialActuatorModel.osim");
-	model->setUseVisualizer(true);
+	model->print("TestBodyActuatorModel.osim");
+	//model->setUseVisualizer(true);
 
 	// get a new system and state to reflect additions to the model
+	cout << "DEBUG0 " << model->updActuators().contains("BodyAct") << endl;
 	state = model->initSystem();
+	cout << "DEBUG2" << endl;
+	cout << "DEBUG1 " << model->updActuators().contains("BodyAct") << endl;
 
 	model->computeStateVariableDerivatives(state);
 
-	const Vector &udotSpatialActuator = state.getUDot();
+	const Vector &udotBodyActuator = state.getUDot();
 
 	// Verify that the TorqueActuator also generates the same acceleration
 	// as the equivalent applied mobility force
 	for (int i = 0; i<udotMobility.size(); ++i){
-		ASSERT_EQUAL(udotMobility[i], udotSpatialActuator[i], 1.0e-12);
+		ASSERT_EQUAL(udotMobility[i], udotBodyActuator[i], 1.0e-12);
 	}
 
 	// determine the initial kinetic energy of the system
@@ -661,7 +671,7 @@ void testSpatialActuator()
 	ASSERT_EQUAL(actuatorWork, fKE - iKE, integ_accuracy);*/
 
 	// Before exiting lets see if copying the spring works
-	SpatialActuator* copyOfActuator = actuator->clone();
+	BodyActuator* copyOfActuator = actuator->clone();
 	ASSERT(*copyOfActuator == *actuator);
 
 	// Check that de/serialization works
@@ -669,6 +679,6 @@ void testSpatialActuator()
 	ASSERT(modelFromFile == *model, __FILE__, __LINE__,
 		"Model from file FAILED to match model in memory.");
 
-	std::cout << "Test SpatialActuator time = " <<
+	std::cout << " ********** Test BodyActuator time = ********** " <<
 		1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;
 }

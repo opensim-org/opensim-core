@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                       OpenSim:  SpatialActuator.cpp                        *
+ *                       OpenSim:  BodyActuator.cpp                        *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -28,7 +28,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
-#include "SpatialActuator.h"
+#include "BodyActuator.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -50,10 +50,10 @@ using SimTK::Vec3;
 /**
  * Also serves as default constructor.
  */
-SpatialActuator::SpatialActuator(const string& bodyName)
+BodyActuator::BodyActuator()
 {
 	setNull();
-    constructProperties();
+    constructInfrastructure();
 }
 
 //=============================================================================
@@ -61,18 +61,18 @@ SpatialActuator::SpatialActuator(const string& bodyName)
 //=============================================================================
 //_____________________________________________________________________________
 // Set the data members of this actuator to their null values.
-void SpatialActuator::setNull()
+void BodyActuator::setNull()
 {
 	setAuthors("Soha Pouya, Michael Sherman");
 }
 
 //_____________________________________________________________________________
 // Allocate and initialize properties.
-void SpatialActuator::constructProperties()
+void BodyActuator::constructProperties()
 {
 }
 
-void SpatialActuator::constructStructuralConnectors() {
+void BodyActuator::constructStructuralConnectors() {
 	constructStructuralConnector<Body>("body");
 }
 
@@ -93,7 +93,7 @@ void SpatialActuator::constructStructuralConnectors() {
 /**
  * Apply the actuator force to BodyA and BodyB.
  */
-void SpatialActuator::computeForce(const SimTK::State& s, 
+void BodyActuator::computeForce(const SimTK::State& s, 
 							     SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							     SimTK::Vector& generalizedForces) const
 {
@@ -102,7 +102,7 @@ void SpatialActuator::computeForce(const SimTK::State& s,
     //if (!getConnector<Body>("body").isConnected())
      //   printf("OH SHIT!!\n");
 
-    const Body& body = getConnector<Body>("body").getConnectee();
+	const Body& body = getConnector<Body>("body").getConnectee();
 
     const SimTK::Vector& spatial = getControls(s);
     const Vec3 torqueVec_B(spatial[0],spatial[1],spatial[2]);
@@ -122,7 +122,7 @@ void SpatialActuator::computeForce(const SimTK::State& s,
 /**
  * Sets the actual Body reference _body
  */
-void SpatialActuator::connectToModel(Model& model)
+void BodyActuator::connectToModel(Model& model)
 {
 	Super::connectToModel(model);
 }
