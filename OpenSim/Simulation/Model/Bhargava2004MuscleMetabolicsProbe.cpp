@@ -111,7 +111,7 @@ void Bhargava2004MuscleMetabolicsProbe::constructProperties()
     constructProperty_muscle_effort_scaling_factor(1.0);
     constructProperty_include_negative_mechanical_work(true);
     constructProperty_forbid_negative_total_power(true);
-    constructProperty_use_Bhargava_decay_function(true);
+    constructProperty_use_Bhargava_decay_function(false);
     constructProperty_report_total_metabolics_only(true);
     constructProperty_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet
        (Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet());

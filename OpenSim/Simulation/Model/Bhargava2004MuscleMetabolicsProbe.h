@@ -269,7 +269,7 @@ public:
         "Specify whether the total power for each muscle must remain positive "
         "(true/false).");
 
-    /** Enabled by default. **/
+    /** Disabled by default. **/
     OpenSim_DECLARE_PROPERTY(use_Bhargava_decay_function,
         bool,
         "Specify whether the decay function described by Bhargava et al. "
