@@ -272,9 +272,12 @@ public:
     /** Disabled by default. **/
     OpenSim_DECLARE_PROPERTY(use_Bhargava_decay_function,
         bool,
-        "Specify whether the decay function described by Bhargava et al. "
-        "(2004) should be used (true/false). If set to false, a value of 1.0 "
-        "is used, as in Anderson and Pandy (1999).");
+        "[Experimental] Specify whether the decay function described by "
+        "Bhargava et al. (2004) should be used (true/false). If set to false, "
+        "a value of 1.0 is used, as in Anderson and Pandy (1999). Since the "
+        "decay function is handled entirely by the probe, the resolution of "
+        "0.1-crossing detection (and, therefore, the probe output) depends on "
+        "the frequency with which the reporter is called.");
 
     /** Default value = true **/
     OpenSim_DECLARE_PROPERTY(report_total_metabolics_only, 
