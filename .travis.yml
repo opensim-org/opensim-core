@@ -6,6 +6,8 @@ compiler:
   - gcc
 
 before_install:
+  - pwd
+  - echo $TRAVIS_BUILD_DIR
   ## Get Simbody and its dependencies.
   - sudo apt-get update
   - sudo apt-get install liblapack-dev
