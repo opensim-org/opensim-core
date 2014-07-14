@@ -44,7 +44,7 @@ before_install:
 
 install:
   # Configure OpenSim.
-    - cmake . -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DCMAKE_PREFIX_PATH=simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=opensim-install
+  - cmake . -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DCMAKE_PREFIX_PATH=simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=opensim-install
   # Build OpenSim.
   - make -j8
 
