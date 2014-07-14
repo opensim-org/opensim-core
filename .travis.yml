@@ -44,10 +44,21 @@ before_install:
 
 install:
   # Configure OpenSim.
-  - cmake . -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DCMAKE_PREFIX_PATH=simbody-install -DCMAKE_CXX_FLAGS=-Werror
+    - cmake . -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DCMAKE_PREFIX_PATH=simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=opensim-install
   # Build OpenSim.
   - make -j8
 
 script:
-  # Install OpenSim.
+  # Test OpenSim.
   - ctest -j8 --output-on-failure
+  ## Test python wrapping.
+  # Install OpenSim.
+  - make -j8 install
+  # Go to the python wrapping package directory.
+  - cd opensim-install/sdk/python
+  # Get a python package with which to run the tests.
+  - sudo apt-get install python-pip
+  - sudo pip install nosetests
+  # Run the python tests.
+  - nosetests
+
