@@ -57,8 +57,7 @@ script:
   # Go to the python wrapping package directory.
   - cd opensim-install/sdk/python
   # Get a python package with which to run the tests.
-  - sudo apt-get install python-pip
-  - sudo pip install nosetests
+  - sudo apt-get install python-nose
   # Run the python tests.
   - nosetests
 
