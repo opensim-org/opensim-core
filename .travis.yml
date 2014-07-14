@@ -6,8 +6,6 @@ compiler:
   - gcc
 
 before_install:
-  - pwd
-  - echo $TRAVIS_BUILD_DIR
   ## Get Simbody and its dependencies.
   - sudo apt-get update
   - sudo apt-get install liblapack-dev
@@ -59,6 +57,9 @@ script:
   # Go to the python wrapping package directory.
   - cd opensim-install/sdk/python
   - export LD_LIBRRAY_PATH=$TRAVIS_BUILD_DIR/opensim-install/lib
+  - echo $LD_LIBRARY_PATH
+  - pwd
+  - ls $TRAVIS_BUILD_DIR/opensim-install/lib
   # Get a python package with which to run the tests.
   - sudo apt-get install python-nose
   # Run the python tests.
