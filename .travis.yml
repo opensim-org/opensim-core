@@ -56,6 +56,7 @@ script:
   - make -j8 install
   # Go to the python wrapping package directory.
   - cd opensim-install/sdk/python
+  - export LD_LIBRRAY_PATH=${TRAVIS_BUILD_DIR}/opensim-install/lib
   # Get a python package with which to run the tests.
   - sudo apt-get install python-nose
   # Run the python tests.
