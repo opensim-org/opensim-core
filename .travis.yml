@@ -56,6 +56,8 @@ script:
   - make -j8 install
   # Go to the python wrapping package directory.
   - cd opensim-install/sdk/python
+  - echo "$TRAVIS_BUILD_DIR/opensim-install/lib" | sudo tee /etc/ld.so.conf.d/opensim.conf
+  - sudo ldconfig
   - export LD_LIBRRAY_PATH=$TRAVIS_BUILD_DIR/opensim-install/lib
   - echo $LD_LIBRARY_PATH
   - pwd
