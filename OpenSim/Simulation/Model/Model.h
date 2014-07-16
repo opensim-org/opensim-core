@@ -36,11 +36,19 @@
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
+#include <OpenSim/Simulation/Model/ControllerSet.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Simulation/Model/ContactGeometrySet.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
+#include <OpenSim/Simulation/Model/ComponentSet.h>
+#include <OpenSim/Simulation/Model/ProbeSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 #include "Simbody.h"
+
+
 
 namespace OpenSim {
 
@@ -119,6 +127,54 @@ public:
 	"indicates inconsistency in the constraints. For example, the feet are welded " 
 	"at locations measured to five significant digits while the model lacks dofs "
 	"to change stance width, in which case it cannot achieve 1e-9 accuracy." );
+
+	// Array containg the acceleration due to gravity.
+	OpenSim_DECLARE_PROPERTY(gravity,SimTK::Vec3,
+		"Acceleration due to gravity.");
+
+	// Model credits info.
+	OpenSim_DECLARE_PROPERTY(credits,std::string,
+		"credits (e.g., model author names) associated with the model.");
+
+	// Publications and References.
+	OpenSim_DECLARE_PROPERTY(publications,std::string,
+		"publications associated with the model.");
+
+	// Units for all lengths
+	OpenSim_DECLARE_PROPERTY(length_units,std::string,
+		"Units for all lengths");
+
+	// Units for all forces
+	OpenSim_DECLARE_PROPERTY(force_units,std::string,
+		"Units for all forces");
+
+	// Set containing the Model controllers
+	OpenSim_DECLARE_UNNAMED_PROPERTY(ControllerSet, 
+		"Controllers in the model.");	
+
+    // Set containing the constraints in this model.
+	OpenSim_DECLARE_UNNAMED_PROPERTY(ConstraintSet,
+		"Constraints in the model.");
+
+	// Forces.
+	OpenSim_DECLARE_UNNAMED_PROPERTY(ForceSet,
+		"Forces in the model.");
+
+    // Set of markers for this model.
+	OpenSim_DECLARE_UNNAMED_PROPERTY(MarkerSet,
+		"Markers in the model.");
+
+    // Set of ContactGeometry objects for this model.
+	OpenSim_DECLARE_UNNAMED_PROPERTY(ContactGeometrySet,
+		"ContactGeometries  in the model.");
+
+	// Set containing the user defined components in this model.
+	OpenSim_DECLARE_UNNAMED_PROPERTY(ComponentSet,
+		"Additional components in the model.");
+
+	// Probes.
+	OpenSim_DECLARE_UNNAMED_PROPERTY(ProbeSet,
+		"Probes in the model.");
 
 	OpenSim_DECLARE_UNNAMED_PROPERTY(BodySet,
 	    "List of bodies that make up this model.");
@@ -428,28 +484,28 @@ public:
 	 *
  	 * @return Credits string.
 	 */
-	const std::string& getCredits() const { return _creditsStr; }
+	const std::string& getCredits() const { return get_credits(); }
 
 	/** 
 	 * Set the credits (e.g., model author names) associated with the model.
 	 *
 	 * @param aCredits The string of credits.
 	 */
-	void setAuthors(const std::string& aCredits) { _creditsStr = aCredits; }
+	void setAuthors(const std::string& aCredits) { upd_credits() = aCredits; }
 
 	/** 
 	 * Get the publications associated with the model. 
 	 *
 	 * @return Publications string.
 	 */
-	const std::string& getPublications() const { return _publicationsStr; }
+	const std::string& getPublications() const { return get_publications(); }
 	
 	/** 
 	 * Set the publications associated with the model. 
 	 *
 	 * @param aPublications The string of publications.
 	 */
-	void setPublications(const std::string& aPublications) { _publicationsStr = aPublications; }
+	void setPublications(const std::string& aPublications) { upd_publications() = aPublications; }
 
 	//--------------------------------------------------------------------------
 	// UNITS
@@ -551,24 +607,24 @@ public:
     const Set<Muscle>& getMuscles() const;
     Set<Muscle>& updMuscles();
 
-    const ForceSet& getForceSet() const { return _forceSet; };
-    ForceSet& updForceSet() { return _forceSet; };
+    const ForceSet& getForceSet() const { return get_ForceSet(); };
+    ForceSet& updForceSet() { return upd_ForceSet(); };
 
 	/**
      * Get the subset of Probes in the model
      * @return The set of Probes
      */
-	const ProbeSet& getProbeSet() const { return _probeSet; };
-    ProbeSet& updProbeSet() { return _probeSet; };
+	const ProbeSet& getProbeSet() const { return get_ProbeSet(); };
+    ProbeSet& updProbeSet() { return upd_ProbeSet(); };
 
 	/**
      * Get the subset of misc ModelComponents in the model
      * @return The set of misc ModelComponents
      */
 	const ComponentSet& getMiscModelComponentSet() const 
-    {   return _componentSet; };
+    {   return get_ComponentSet(); };
 	ComponentSet& updMiscModelComponentSet() 
-    {   return _componentSet; };
+    {   return upd_ComponentSet(); };
 
 	/**
 	 * Get the number of analyses in the model.
@@ -703,8 +759,8 @@ public:
     AnalysisSet& updAnalysisSet() {return _analysisSet; }
     const AnalysisSet& getAnalysisSet() const {return _analysisSet; }
 
-    ContactGeometrySet& updContactGeometrySet() { return _contactGeometrySet; }
-    const ContactGeometrySet& getContactGeometrySet() const { return _contactGeometrySet; }
+    ContactGeometrySet& updContactGeometrySet() { return upd_ContactGeometrySet(); }
+    const ContactGeometrySet& getContactGeometrySet() const { return get_ContactGeometrySet(); }
 
    	Body& getGroundBody() const;
 
@@ -712,16 +768,16 @@ public:
     //--------------------------------------------------------------------------
     // CONSTRAINTS
     //--------------------------------------------------------------------------
-    ConstraintSet& updConstraintSet() { return _constraintSet; }
-    const ConstraintSet& getConstraintSet() const { return _constraintSet; }
+    ConstraintSet& updConstraintSet() { return upd_ConstraintSet(); }
+    const ConstraintSet& getConstraintSet() const { return get_ConstraintSet(); }
 
     //--------------------------------------------------------------------------
     // MARKERS
     //--------------------------------------------------------------------------
-    MarkerSet& updMarkerSet() { return _markerSet; }
-    const MarkerSet& getMarkerSet() const { return _markerSet; }
+    MarkerSet& updMarkerSet() { return upd_MarkerSet(); }
+    const MarkerSet& getMarkerSet() const { return get_MarkerSet(); }
     int replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet);
-    void writeMarkerFile(const std::string& aFileName) const;
+    void writeMarkerFile(const std::string& aFileName);
     void updateMarkerSet(MarkerSet& aMarkerSet);
     int deleteUnusedMarkers(const Array<std::string>& aMarkerNames);
  
@@ -861,7 +917,6 @@ public:
     /**@}**/
     //--------------------------------------------------------------------------
 
-
 private:
 	// Set the values of all data members to an appropriate "null" value.
 	void setNull();
@@ -876,6 +931,9 @@ private:
 	// Connect properties to local pointers.
 	void setupProperties();
 	void constructProperties();
+
+	// construct outputs
+	void constructOutputs() override;
 
 	// Internal method to check that specified mass properties for the bodies 
     // are physically possible that is, satisfy the triangular inequality 
@@ -907,60 +965,12 @@ private:
     // needed later.
 	std::string _validationLog;
 
-    // PROPERTIES
-    // These aspects of a Model can be serialized to/from an OpenSim model
-    // file (.osim file).
 
-	// Model credits info.
-	PropertyStr _creditsStrProp;
-	std::string& _creditsStr;
-
-	// Publications and References.
-	PropertyStr _publicationsStrProp;
-	std::string& _publicationsStr;
-
-	// Units for all length.
-	PropertyStr _lengthUnitsStrProp;
-	std::string& _lengthUnitsStr;
+	//Units for length
 	Units _lengthUnits;
-
-	// Units for all forces.
-	PropertyStr _forceUnitsStrProp;
-	std::string& _forceUnitsStr;
+	//Units for forces
 	Units _forceUnits;
-
-    // Array containg the acceleration due to gravity.
-    PropertyDblVec3 _gravityProp;
-    SimTK::Vec3& _gravity;
-
-	// Forces.
-	PropertyObj _forceSetProp;
-	ForceSet& _forceSet;
-
-	// Probes.
-	PropertyObj _probeSetProp;
-	ProbeSet& _probeSet;
-
-    // Set containing the constraints in this model.
-    PropertyObj _constraintSetProp;
-    ConstraintSet& _constraintSet;
-
-    // Set of markers for this model.
-    PropertyObj _markerSetProp;
-    MarkerSet& _markerSet;
-
-    // Set of ContactGeometry objects for this model.
-    PropertyObj _contactGeometrySetProp;
-    ContactGeometrySet& _contactGeometrySet;
-
-	// Set containing the Model controllers
-    PropertyObj _controllerSetProp;
-    ControllerSet& _controllerSet;
-
-	// Set containing the user defined components in this model.
-    PropertyObj _componentSetProp;
-    ComponentSet& _componentSet;
-
+   
     // Other Model data structures that are derived from the properties
     // or added programmatically.
 
@@ -1003,13 +1013,13 @@ private:
 	// The model owns the MultibodySystem, but the
     // subsystems and force elements are owned by the MultibodySystem so 
     // should not be deleted in the destructor.
-	SimTK::MultibodySystem*         _system; // owned by Model; must destruct
+	SimTK::ReferencePtr<SimTK::MultibodySystem>  _system; // owned by Model; must destruct
 
     // These are just references pointing into _system; don't destruct.
-	SimTK::SimbodyMatterSubsystem*  _matter;     
-	SimTK::Force::Gravity*          _gravityForce;
-	SimTK::GeneralForceSubsystem*   _forceSubsystem;
-	SimTK::GeneralContactSubsystem* _contactSubsystem;
+	SimTK::ReferencePtr<SimTK::SimbodyMatterSubsystem>  _matter;     
+	SimTK::ReferencePtr<SimTK::Force::Gravity>          _gravityForce;
+	SimTK::ReferencePtr<SimTK::GeneralForceSubsystem>   _forceSubsystem;
+	SimTK::ReferencePtr<SimTK::GeneralContactSubsystem> _contactSubsystem;
 
     // System-dependent objects.
 

@@ -143,6 +143,7 @@ public:
 
 	// Integrator
 	SimTK::Integrator& getIntegrator() const;
+	/** you are responsible for deleting the integrator pointer you passed in if you call this function*/
     void setIntegrator( SimTK::Integrator*);
 	// Initial and final times
 	void setInitialTime(double aTI);

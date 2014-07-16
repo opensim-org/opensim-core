@@ -214,7 +214,7 @@ public:
 	Component& operator=(const Component &component);
 	
     /** Destructor is virtual to allow concrete Component to cleanup. **/
-	virtual ~Component() {}
+	virtual ~Component();
 
 	/**
      * Get the underlying MultibodySystem that this component is connected to.

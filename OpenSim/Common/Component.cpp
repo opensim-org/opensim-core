@@ -136,6 +136,22 @@ Component& Component::operator=(const Component &component)
 	return *this;
 }
 
+Component::~Component()
+{
+	std::map<std::string, const AbstractInput*>::iterator it_input;
+	for(it_input = _inputsTable.begin();it_input!=_inputsTable.end();it_input++)
+	{
+		delete it_input->second;
+	}
+
+
+	std::map<std::string, const AbstractOutput*>::iterator it_output;
+	for(it_output = _outputsTable.begin();it_output!=_outputsTable.end();it_output++)
+	{
+		delete it_output->second;
+	}
+}
+
 // Base class implementation of virtual method.
 // Call finalizeFromProperties on all components
 void Component::finalizeFromProperties()

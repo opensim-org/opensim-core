@@ -899,7 +899,21 @@ writeSimplePropertyToStream(std::ostream& o) const
     SimTK::writeUnformatted(o, rotTrans);
 }
 
-
+// We have to provide specializations for string because we want to ignore white space
+// if the propety allows only one value
+template<> inline bool SimpleProperty<std::string>::
+readSimplePropertyFromStream(std::istream& in)
+{
+	if(this->getMaxListSize()==1)
+	{
+		std::istringstream& instream = (std::istringstream&)(in);
+		values.clear();
+		values.push_back(instream.str());
+		return true;
+   }
+   else
+	   return SimTK::readUnformatted(in, values);
+}
 
 
 //==============================================================================

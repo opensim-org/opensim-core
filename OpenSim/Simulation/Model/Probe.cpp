@@ -126,9 +126,6 @@ void Probe::constructProperties(void)
 void Probe::connectToModel(Model& model)
 {
     Super::connectToModel(model);
-
-    if (getName() == "")
-        setName("UnnamedProbe");
 }
 
 //_____________________________________________________________________________

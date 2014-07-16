@@ -97,9 +97,10 @@ Manager::Manager(Model& model, SimTK::Integrator& integ):
  * @param aModel model to integrate.
  */
 Manager::Manager(Model& aModel) {	   
-	new(this) Manager(aModel, *(new SimTK::RungeKuttaMersonIntegrator(aModel.getMultibodySystem())));
+    new(this) Manager(aModel, *(new SimTK::RungeKuttaMersonIntegrator(aModel.getMultibodySystem())));
 	_ownsIntegrator = true;
 }
+
 //_____________________________________________________________________________
 /**
  * Construct a simulation manager.
@@ -558,8 +559,18 @@ getIntegrator() const
  */
 void Manager::
 setIntegrator(SimTK::Integrator* integrator) 
-{
+{	
+	if (_integ == integrator)
+		return;
+
+
+	if (_ownsIntegrator && _integ != NULL)
+	{
+		delete _integ;
+	}	
+
 	_integ = integrator;
+	_ownsIntegrator = false;
 }
 
 

@@ -91,7 +91,6 @@ ControllerSet::ControllerSet(Model& model, const std::string &aFileName, bool aU
 ControllerSet::ControllerSet(const ControllerSet &aControllerSet) :
 	ModelComponentSet<Controller>(aControllerSet)
 {
-	setNull();
 
 	// Class Members
 	copyData(aControllerSet);
@@ -106,17 +105,6 @@ ControllerSet::ControllerSet(const ControllerSet &aControllerSet) :
  */
 void ControllerSet::setNull()
 {
-	// TYPE
-    _actuatorSet = NULL;
-    _controlStore = NULL;
-
-   // PROPERTIES
-   setupSerializedMembers();
-   
-   // NAME
-   setName("ControllerSet");
-
-
 }
 
 //_____________________________________________________________________________

@@ -69,12 +69,12 @@ private:
     /**
      *   storage object containing the storage object
      */
-     Storage* _controlStore;
+     SimTK::ReferencePtr<Storage> _controlStore;
 
     /**
      *   set of actuators controlled by the set of controllers 
      */
-     Set<Actuator>* _actuatorSet;
+     SimTK::ReferencePtr<Set<Actuator> > _actuatorSet;
 
 
 	//--------------------------------------------------------------------------

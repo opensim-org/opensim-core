@@ -623,11 +623,14 @@ void compareUmbergerProbeToPublishedResults()
 //   - total energy at final time equals integral of total rate
 //   - multiple muscles are correctly handled
 //   - less energy is liberated with lower activation
-void simulateModel(Model& model, Manager& manager, double t0, double t1)
+Storage simulateModel(Model& model,double t0, double t1)
 {
     // Initialize model and state.
     cout << "- initializing" << endl;
     SimTK::State& state = model.initSystem();
+
+	
+
     for (int i=0; i<model.getMuscles().getSize(); ++i)
         model.getMuscles().get(i).setIgnoreActivationDynamics(state, true);
     model.getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
@@ -637,7 +640,9 @@ void simulateModel(Model& model, Manager& manager, double t0, double t1)
     const double integrationAccuracy = 1.0e-8;
     SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
     integrator.setAccuracy(integrationAccuracy);
-    manager.setIntegrator(&integrator);
+
+	Manager manager(model,integrator);
+
     manager.setInitialTime(t0);
     manager.setFinalTime(t1);
 
@@ -650,6 +655,8 @@ void simulateModel(Model& model, Manager& manager, double t0, double t1)
 
     // Release integrator from manager.
     manager.setIntegrator(0);
+
+	return manager.getStateStorage();
 }
 
 void testProbesUsingMillardMuscleSimulation()
@@ -1045,7 +1052,7 @@ void testProbesUsingMillardMuscleSimulation()
     const double t0 = 0.0;
     const double t1 = 2.0;
     Manager manager(model);
-    simulateModel(model, manager, t0, t1);
+    simulateModel(model, t0, t1);
 
     // Output results files.
     if (OUTPUT_FILES) {
@@ -1325,12 +1332,10 @@ void testProbesUsingMillardMuscleSimulation()
 
     // Simulate.
 	model.setup();
-    Manager manager2(model);
-    simulateModel(model, manager2, t0, t1);
+    Storage stateStorage2 = simulateModel(model, t0, t1);
 
     if (OUTPUT_FILES) {
         std::string fname = baseFilename + "_states2.sto";
-        Storage stateStorage2(manager2.getStateStorage());
         stateStorage2.print(fname);
         cout << "+ saved state storage file: " << fname << endl;
 

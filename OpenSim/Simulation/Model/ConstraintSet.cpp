@@ -60,7 +60,6 @@ ConstraintSet::ConstraintSet(Model& model) : Super(model)
 ConstraintSet::ConstraintSet(const ConstraintSet& aAbsConstraintSet)
 :   Super(aAbsConstraintSet)
 {
-	setNull();
 	*this = aAbsConstraintSet;
 }
 
@@ -87,7 +86,7 @@ void ConstraintSet::setNull()
 #ifndef SWIG
 ConstraintSet& ConstraintSet::operator=(const ConstraintSet &aConstraintSet)
 {
-	Set<Constraint>::operator=(aConstraintSet);
+	Super::operator=(aConstraintSet);
 
 	return *this;
 }
