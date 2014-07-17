@@ -189,6 +189,7 @@ protected:
 
 private:
 	void constructProperties();
+    void constructOutputs() override;
 
 //=============================================================================
 };	// END of class PathSpring
