@@ -125,81 +125,81 @@ void Muscle::constructProperties()
 
 void Muscle::constructOutputs()
 {
-    constructOutput<double>("Excitation", &Muscle::getExcitation,
+    constructOutput<double>("excitation", &Muscle::getExcitation,
                             SimTK::Stage::Dynamics);
-    constructOutput<double>("Activation", &Muscle::getActivation,
+    constructOutput<double>("activation", &Muscle::getActivation,
                             SimTK::Stage::Dynamics);
-    constructOutput<double>("FiberLength", &Muscle::getFiberLength,
+    constructOutput<double>("fiber_length", &Muscle::getFiberLength,
                             SimTK::Stage::Position);
-    constructOutput<double>("PennationAngle", &Muscle::getPennationAngle,
+    constructOutput<double>("pennation_angle", &Muscle::getPennationAngle,
                             SimTK::Stage::Position);
-    constructOutput<double>("CosPennationAngle", &Muscle::getCosPennationAngle,
+    constructOutput<double>("cos_pennation_angle", &Muscle::getCosPennationAngle,
                             SimTK::Stage::Position);
-    constructOutput<double>("TendonLength", &Muscle::getTendonLength,
+    constructOutput<double>("tendon_length", &Muscle::getTendonLength,
                             SimTK::Stage::Position);
-    constructOutput<double>("NormalizedFiberLength",
+    constructOutput<double>("normalized_fiber_length",
                             &Muscle::getNormalizedFiberLength,
                             SimTK::Stage::Position);
-    constructOutput<double>("FiberLengthAlongTendon",
+    constructOutput<double>("fiber_length_along_tendon",
                             &Muscle::getFiberLengthAlongTendon,
                             SimTK::Stage::Position);
-    constructOutput<double>("TendonStrain", &Muscle::getTendonStrain,
+    constructOutput<double>("tendon_strain", &Muscle::getTendonStrain,
                             SimTK::Stage::Position);
-    constructOutput<double>("PassiveForceMultiplier",
+    constructOutput<double>("passive_force_multiplier",
                             &Muscle::getPassiveForceMultiplier,
                             SimTK::Stage::Position);
-    constructOutput<double>("ActiveForceLengthMultiplier",
+    constructOutput<double>("active_force_length_multiplier",
                             &Muscle::getActiveForceLengthMultiplier,
                             SimTK::Stage::Position);
-    constructOutput<double>("FiberVelocity", &Muscle::getFiberVelocity,
+    constructOutput<double>("fiber_velocity", &Muscle::getFiberVelocity,
                             SimTK::Stage::Velocity);
-    constructOutput<double>("NormalizedFiberVelocity",
+    constructOutput<double>("normalized_fiber_velocity",
                             &Muscle::getNormalizedFiberVelocity,
                             SimTK::Stage::Velocity);
-    constructOutput<double>("FiberVelocityAlongTendon",
+    constructOutput<double>("fiber_velocity_along_tendon",
                             &Muscle::getFiberVelocityAlongTendon,
                             SimTK::Stage::Velocity);
-    constructOutput<double>("TendonVelocity", &Muscle::getTendonVelocity,
+    constructOutput<double>("tendon_velocity", &Muscle::getTendonVelocity,
                             SimTK::Stage::Velocity);
-    constructOutput<double>("ForceVelocityMultiplier",
+    constructOutput<double>("force_velocity_multiplier",
                             &Muscle::getForceVelocityMultiplier,
                             SimTK::Stage::Velocity);
-    constructOutput<double>("PennationAngularVelocity",
+    constructOutput<double>("pennation_angular_velocity",
                             &Muscle::getPennationAngularVelocity,
                             SimTK::Stage::Velocity);
-    constructOutput<double>("FiberForce", &Muscle::getFiberForce,
+    constructOutput<double>("fiber_force", &Muscle::getFiberForce,
                             SimTK::Stage::Dynamics);
-    constructOutput<double>("FiberForceAlongTendon",
+    constructOutput<double>("fiber_force_along_tendon",
                             &Muscle::getFiberForceAlongTendon,
                             SimTK::Stage::Dynamics);
-    constructOutput<double>("ActiveFiberForce", &Muscle::getActiveFiberForce,
+    constructOutput<double>("active_fiber_force", &Muscle::getActiveFiberForce,
                             SimTK::Stage::Dynamics);
-    constructOutput<double>("PassiveFiberForce", &Muscle::getPassiveFiberForce,
+    constructOutput<double>("passive_fiber_force", &Muscle::getPassiveFiberForce,
                             SimTK::Stage::Dynamics);
-    constructOutput<double>("ActiveFiberForceAlongTendon",
+    constructOutput<double>("active_fiber_force_along_tendon",
                             &Muscle::getActiveFiberForceAlongTendon,
                             SimTK::Stage::Dynamics);
-    constructOutput<double>("PassiveFiberForceAlongTendon",
+    constructOutput<double>("passive_fiber_force_along_tendon",
                             &Muscle::getPassiveFiberForceAlongTendon,
                             SimTK::Stage::Dynamics);
-    constructOutput<double>("TendonForce", &Muscle::getTendonForce,
+    constructOutput<double>("tendon_force", &Muscle::getTendonForce,
                             SimTK::Stage::Dynamics);
-    constructOutput<double>("FiberStiffness", &Muscle::getFiberStiffness,
+    constructOutput<double>("fiber_stiffness", &Muscle::getFiberStiffness,
                             SimTK::Stage::Dynamics);
-    constructOutput<double>("FiberStiffnessAlongTendon",
+    constructOutput<double>("fiber_stiffness_along_tendon",
                             &Muscle::getFiberStiffnessAlongTendon,
                             SimTK::Stage::Dynamics);
-    constructOutput<double>("TendonStiffness", &Muscle::getTendonStiffness,
+    constructOutput<double>("tendon_stiffness", &Muscle::getTendonStiffness,
                             SimTK::Stage::Dynamics);
-    constructOutput<double>("MuscleStiffness", &Muscle::getMuscleStiffness,
+    constructOutput<double>("muscle_stiffness", &Muscle::getMuscleStiffness,
                             SimTK::Stage::Dynamics);
-    constructOutput<double>("FiberActivePower", &Muscle::getFiberActivePower,
+    constructOutput<double>("fiber_active_power", &Muscle::getFiberActivePower,
                             SimTK::Stage::Dynamics);
-    constructOutput<double>("FiberPassivePower", &Muscle::getFiberPassivePower,
+    constructOutput<double>("fiber_passive_power", &Muscle::getFiberPassivePower,
                             SimTK::Stage::Dynamics);
-    constructOutput<double>("TendonPower", &Muscle::getTendonPower,
+    constructOutput<double>("tendon_power", &Muscle::getTendonPower,
                             SimTK::Stage::Dynamics);
-    constructOutput<double>("MusclePower", &Muscle::getMusclePower,
+    constructOutput<double>("muscle_power", &Muscle::getMusclePower,
                             SimTK::Stage::Dynamics);
 }
 
