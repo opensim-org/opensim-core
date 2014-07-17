@@ -900,7 +900,7 @@ writeSimplePropertyToStream(std::ostream& o) const
 }
 
 // We have to provide specializations for string because we want to ignore white space
-// if the propety allows only one value
+// if the property allows only one value
 template<> inline bool SimpleProperty<std::string>::
 readSimplePropertyFromStream(std::istream& in)
 {
