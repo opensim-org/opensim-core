@@ -128,51 +128,39 @@ public:
 	"at locations measured to five significant digits while the model lacks dofs "
 	"to change stance width, in which case it cannot achieve 1e-9 accuracy." );
 
-	// Array containg the acceleration due to gravity.
 	OpenSim_DECLARE_PROPERTY(gravity,SimTK::Vec3,
-		"Acceleration due to gravity.");
+		"Acceleration due to gravity, expressed in ground.");
 
-	// Model credits info.
 	OpenSim_DECLARE_PROPERTY(credits,std::string,
-		"credits (e.g., model author names) associated with the model.");
+		"Credits (e.g., model author names) associated with the model.");
 
-	// Publications and References.
 	OpenSim_DECLARE_PROPERTY(publications,std::string,
-		"publications associated with the model.");
+		"Publications and references associated with the model.");
 
-	// Units for all lengths
 	OpenSim_DECLARE_PROPERTY(length_units,std::string,
-		"Units for all lengths");
+		"Units for all lengths.");
 
-	// Units for all forces
 	OpenSim_DECLARE_PROPERTY(force_units,std::string,
-		"Units for all forces");
+		"Units for all forces.");
 
-	// Set containing the Model controllers
 	OpenSim_DECLARE_UNNAMED_PROPERTY(ControllerSet, 
-		"Controllers in the model.");	
+		"Controllers that provide the control inputs for Actuators.");	
 
-    // Set containing the constraints in this model.
 	OpenSim_DECLARE_UNNAMED_PROPERTY(ConstraintSet,
 		"Constraints in the model.");
 
-	// Forces.
 	OpenSim_DECLARE_UNNAMED_PROPERTY(ForceSet,
-		"Forces in the model.");
+		"Forces in the model (includes Actuators).");
 
-    // Set of markers for this model.
 	OpenSim_DECLARE_UNNAMED_PROPERTY(MarkerSet,
 		"Markers in the model.");
 
-    // Set of ContactGeometry objects for this model.
 	OpenSim_DECLARE_UNNAMED_PROPERTY(ContactGeometrySet,
-		"ContactGeometries  in the model.");
+		"Geometry to be used in contact forces.");
 
-	// Set containing the user defined components in this model.
 	OpenSim_DECLARE_UNNAMED_PROPERTY(ComponentSet,
 		"Additional components in the model.");
 
-	// Probes.
 	OpenSim_DECLARE_UNNAMED_PROPERTY(ProbeSet,
 		"Probes in the model.");
 
@@ -180,7 +168,7 @@ public:
 	    "List of bodies that make up this model.");
 
 	OpenSim_DECLARE_UNNAMED_PROPERTY(JointSet,
-		"List of joints that interconnect the above bodies.");
+		"List of joints that connec the bodies.");
 	/**@}**/
 
 //=============================================================================
