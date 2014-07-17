@@ -168,7 +168,7 @@ public:
 	    "List of bodies that make up this model.");
 
 	OpenSim_DECLARE_UNNAMED_PROPERTY(JointSet,
-		"List of joints that connec the bodies.");
+		"List of joints that connect the bodies.");
 	/**@}**/
 
 //=============================================================================
