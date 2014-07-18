@@ -121,7 +121,7 @@ void Probe::constructProperties(void)
 
 void Probe::constructOutputs()
 {
-    constructOutput<SimTK::Vector>("probeOutputs", &Probe::getProbeOutputs,
+    constructOutput<SimTK::Vector>("probe_outputs", &Probe::getProbeOutputs,
             Stage::Report);
 }
 
