@@ -57,7 +57,7 @@ Manager::~Manager()
 {
 	// DESTRUCTORS
 	delete _stateStore;
-	if (_ownsIntegrator){ delete _integ; _integ=0; }
+    _integ = NULL;
 }
 
 
@@ -68,12 +68,11 @@ Manager::~Manager()
 /**
  * Construct a simulation manager.
  *
- * @param sys MultibodySustem for the simulation.
  * @param model pointer to model for the simulation.
  */
-Manager::Manager(Model& model, SimTK::Integrator& integ):
+Manager::Manager(Model& model):
        _model(&model),
-	   _integ(&integ),	           
+	   _integ(NULL),	           
        _controllerSet(&model.updControllerSet() ),
        _stateStore(NULL),
        _performAnalyses(true),
@@ -95,10 +94,11 @@ Manager::Manager(Model& model, SimTK::Integrator& integ):
  * Construct a simulation manager.
  *
  * @param aModel model to integrate.
+ * @param integ integrator used to do the integration
  */
-Manager::Manager(Model& aModel) {	   
-    new(this) Manager(aModel, *(new SimTK::RungeKuttaMersonIntegrator(aModel.getMultibodySystem())));
-	_ownsIntegrator = true;
+Manager::Manager(Model& aModel, SimTK::Integrator& integ) {	   
+    new(this) Manager(aModel);
+    setIntegrator(integ);
 }
 
 //_____________________________________________________________________________
@@ -139,7 +139,6 @@ setNull()
 	_tArray.setSize(0);
     _system = 0;
 	_dtArray.setSize(0);
-	_ownsIntegrator = false;
 }
 //_____________________________________________________________________________
 /**
@@ -558,19 +557,9 @@ getIntegrator() const
  * Set the integrator.
  */
 void Manager::
-setIntegrator(SimTK::Integrator* integrator) 
+setIntegrator(SimTK::Integrator& integrator) 
 {	
-	if (_integ == integrator)
-		return;
-
-
-	if (_ownsIntegrator && _integ != NULL)
-	{
-		delete _integ;
-	}	
-
-	_integ = integrator;
-	_ownsIntegrator = false;
+    _integ = &integrator;
 }
 
 

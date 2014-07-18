@@ -95,7 +95,6 @@ Model::Model() :
 {
 	constructProperties();
 	setNull();	
-	setupProperties();
 	createGroundBodyIfNecessary();
 }
 //_____________________________________________________________________________
@@ -114,7 +113,6 @@ Model::Model(const string &aFileName, const bool finalize) :
 {	
 	constructProperties();
 	setNull();
-	setupProperties();
 	updateFromXMLDocument();
 
 	if (finalize) {
@@ -124,26 +122,7 @@ Model::Model(const string &aFileName, const bool finalize) :
 	_fileName = aFileName;
 	cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
 }
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aModel Model to be copied.
- */
 
-Model::Model(const Model &aModel) :
-   ModelComponent(aModel),
-    _useVisualizer(false),
-    _allControllersEnabled(true),
-    _analysisSet(AnalysisSet()),
-    _coordinateSet(CoordinateSet()),
-    _workingState()
-{
-	//cout << "Construct copied model " <<  endl;
-	// Throw exception if something wrong happened and we don't have a dynamics engine.
-	setNull();
-	copyData(aModel);
-}
 //_____________________________________________________________________________
 /**
  * Destructor.
@@ -235,49 +214,6 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Copy the member variables of the model.
- *
- * @param aModel model to be copied
- */
-void Model::copyData(const Model &aModel)
-{
-	_fileName = aModel._fileName;
-    _validationLog = aModel._validationLog;
-
-    _analysisSet=aModel._analysisSet;
-    _useVisualizer = aModel._useVisualizer;
-    _allControllersEnabled = aModel._allControllersEnabled;
-
-	_lengthUnits = aModel._lengthUnits;
-	_forceUnits = aModel._forceUnits;
-
-	//Handle new style properties
-	copyProperty_assembly_accuracy(aModel);
-	copyProperty_gravity(aModel);
-	copyProperty_credits(aModel);
-	copyProperty_publications(aModel);
-	copyProperty_length_units(aModel);
-	copyProperty_force_units(aModel);
-
-
-	copyProperty_BodySet(aModel);
-	copyProperty_JointSet(aModel);
-	copyProperty_ForceSet(aModel);
-	copyProperty_ProbeSet(aModel);
-	copyProperty_ConstraintSet(aModel);
-	copyProperty_MarkerSet(aModel);
-	copyProperty_ContactGeometrySet(aModel);
-	copyProperty_ControllerSet(aModel);
-	copyProperty_ComponentSet(aModel);
-	
-    // Note: SimTK systems are not copied, they will be
-    // initialized during the call to buildSystem().
-    // TODO: convert to new properties, it's a little confusing as to what
-    // should be copied and what shouldn't.
-}
-
-//_____________________________________________________________________________
-/**
  * Set the values of all data members to an appropriate "null" value.
  */
 void Model::setNull()
@@ -346,13 +282,6 @@ void Model::constructProperties()
 	ProbeSet probeSet;
 	constructProperty_ProbeSet(probeSet);
 
-}
-//_____________________________________________________________________________
-/*
- * Connect old style properties to local references.
- */
-void Model::setupProperties()
-{
 }
 
 //------------------------------------------------------------------------------
@@ -1133,29 +1062,6 @@ void Model::registerTypes()
 	// now handled by RegisterTypes_osimSimulation()
 }
  */
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-Model& Model::operator=(const Model &aModel)
-{
-	// BASE CLASS
-	Object::operator=(aModel);
-
-	// Class Members
-	copyData(aModel);
-
-	finalizeFromProperties();
-
-	return(*this);
-}
 
 
 //=============================================================================

@@ -192,18 +192,13 @@ public:
     **/
 	explicit Model(const std::string& filename, bool finalize=true) SWIG_DECLARE_EXCEPTION;
 
-	/** Copy constructor copies model components but does not copy any run-time 
-    objects.
-	@param source   The %Model to be copied. **/
-	Model(const Model& source);
-
-    #ifndef SWIG
+//    #ifndef SWIG
 	/** Copy assignment copies model components but does not copy any run-time 
     objects.
 	@param source   The %Model to be copied.
 	@returns        Reference to this object. **/
-	Model& operator=(const Model& source);
-    #endif
+//	Model& operator=(const Model& source);
+//    #endif
 
 	/**
 	 * Perform some set up functions that happen after the
@@ -914,10 +909,9 @@ private:
 	void createMultibodySystem();
 
 	// Copy only the model-defining data members from source.
-	void copyData(const Model& source);
+//	void copyData(const Model& source);
 
 	// Connect properties to local pointers.
-	void setupProperties();
 	void constructProperties();
 
 	// construct outputs
@@ -1013,7 +1007,8 @@ private:
 
 	// Assembly solver used for satisfying constraints and other configuration
     // goals. This object is owned by the Model and must be destructed.
-	AssemblySolver*     _assemblySolver;
+	//AssemblySolver*     _assemblySolver;
+    SimTK::ReferencePtr<AssemblySolver> _assemblySolver;
 
 	// Model controls as a shared pool (Vector) of individual Actuator controls
 	SimTK::MeasureIndex   _modelControlsIndex;
@@ -1029,7 +1024,8 @@ private:
 
     // If visualization has been requested at the API level, we'll allocate 
     // a ModelVisualizer. The Model owns this object.
-    ModelVisualizer*    _modelViz; // owned by Model; must destruct
+    //ModelVisualizer*    _modelViz; // owned by Model; must destruct
+    SimTK::ReferencePtr<ModelVisualizer> _modelViz;
 
 //==============================================================================
 };	// END of class Model
