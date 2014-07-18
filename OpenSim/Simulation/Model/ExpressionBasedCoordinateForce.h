@@ -97,7 +97,7 @@ public:
 	    and apply it to the model */
     void computeForce(const SimTK::State& state, 
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							  SimTK::Vector& generalizedForces) const OVERRIDE_11;
+							  SimTK::Vector& generalizedForces) const override;
 
     //--------------------------------------------------------------------------
     // COMPUTATIONS
@@ -111,11 +111,11 @@ public:
 	/** 
 	 * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
 	 */
-	OpenSim::Array<std::string> getRecordLabels() const OVERRIDE_11;
+	OpenSim::Array<std::string> getRecordLabels() const override;
 	/**
 	*  Provide the value(s) to be reported that correspond to the labels
 	*/
-	OpenSim::Array<double> getRecordValues(const SimTK::State& state) const OVERRIDE_11;
+	OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
 	
 
@@ -123,8 +123,8 @@ protected:
 //==============================================================================
 // ModelComponent interface
 //==============================================================================
-	void connectToModel(Model& model) OVERRIDE_11;
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void connectToModel(Model& model) override;
+	void addToSystem(SimTK::MultibodySystem& system) const override;
 
 
 private:

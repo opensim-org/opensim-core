@@ -526,7 +526,7 @@ public:
     /**
      * Get the value of a discrete variable allocated by this Component by name.
      *
-     * @param state   the State for which to set the value
+     * @param state   the State from which to get the value
      * @param name    the name of the state variable
      * @return value  the discrete variable value
      */
@@ -544,7 +544,7 @@ public:
     /**
      * Get the value of a cache variable allocated by this Component by name.
      *
-     * @param state  the State for which to set the value
+     * @param state  the State from which to get the value
      * @param name   the name of the cache variable
      * @return T	 const reference to the cache variable's value
      */
@@ -1056,7 +1056,8 @@ template <class T> friend class ComponentMeasure;
      * about componentMemberFunction, the function that returns the output:
      *
      *  1. It is a member function of \a this Component.
-     *  2. It takes only one input, which is const SimTK::State&
+     *  2. The member function is const.
+     *  3. It takes only one input, which is const SimTK::State&
      *
      * If these are not true for your case, then use the more general method
      * Component::constructOutput(const std::string&, const std::function<T(const SimTK::State&)>, const SimTK::Stage&).
@@ -1067,14 +1068,16 @@ template <class T> friend class ComponentMeasure;
      *          SimTK::Stage::Velocity);
      *  @endcode
      */
+#ifndef SWIG // SWIG can't parse the const at the end of the second argument.
     template <typename T, typename Class>
     void constructOutput(const std::string& name,
-            T(Class::*componentMemberFunction)(const SimTK::State&),
+            T(Class::*componentMemberFunction)(const SimTK::State&) const,
             const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
         constructOutput<T>(name, std::bind(componentMemberFunction,
                     static_cast<Class*>(this),
                     std::placeholders::_1), dependsOn);
     }
+#endif
 
 	/**
 	* Construct an Output (wire) for the Component as function of the State.
@@ -1467,11 +1470,11 @@ private:
 						invalidatesStage(SimTK::Stage::Empty) {}
 
 		//override virtual methods
-		double getValue(const SimTK::State& state) const OVERRIDE_11;
-		void setValue(SimTK::State& state, double value) const OVERRIDE_11;
+		double getValue(const SimTK::State& state) const override;
+		void setValue(SimTK::State& state, double value) const override;
 
-		double getDerivative(const SimTK::State& state) const OVERRIDE_11;
-		void setDerivative(const SimTK::State& state, double deriv) const OVERRIDE_11;
+		double getDerivative(const SimTK::State& state) const override;
+		void setDerivative(const SimTK::State& state, double deriv) const override;
 
 		private: // DATA
 		// Changes in state variables trigger recalculation of appropriate cache 

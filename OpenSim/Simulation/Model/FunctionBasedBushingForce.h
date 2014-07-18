@@ -224,9 +224,9 @@ private:
 	//--------------------------------------------------------------------------
 	// Implement ModelComponent interface.
 	//--------------------------------------------------------------------------
-	void connectToModel(Model& aModel) OVERRIDE_11;
+	void connectToModel(Model& aModel) override;
 	// Create a SimTK::Force::LinarBushing which implements this FunctionBasedBushingForce.
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void addToSystem(SimTK::MultibodySystem& system) const override;
     //--------------------------------------------------------------------------
 	// Visible Object Support for Java Gui
 	//--------------------------------------------------------------------------

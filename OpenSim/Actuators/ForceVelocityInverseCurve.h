@@ -270,7 +270,7 @@ public:
     void setEccentricCurviness(double aEccentricCurviness);
 
 	/** Implement the generic OpenSim::Function interface **/
-    double calcValue(const SimTK::Vector& x) const OVERRIDE_11
+    double calcValue(const SimTK::Vector& x) const override
     {
         return calcValue(x[0]);
     }
@@ -339,7 +339,7 @@ private:
     // OpenSim::Function Interface
     // Create the underlying SimTK::Function that implements the calculations
     // necessary for this curve.
-    SimTK::Function* createSimTKFunction() const OVERRIDE_11;
+    SimTK::Function* createSimTKFunction() const override;
 
     void setNull();
     void constructProperties();

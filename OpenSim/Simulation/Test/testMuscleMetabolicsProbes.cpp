@@ -82,7 +82,7 @@ class MyExcitationGetter : public MuscleActivationDynamics::ExcitationGetter {
 public:
     MyExcitationGetter(Muscle& muscle) : _muscle(muscle) {}
 
-    double getExcitation(const SimTK::State& s) const OVERRIDE_11
+    double getExcitation(const SimTK::State& s) const override
     { return _muscle.getControl(s); }
 
 private:
@@ -160,7 +160,7 @@ public:
     //--------------------------------------------------------------------------
     // MODELCOMPONENT INTERFACE
     //--------------------------------------------------------------------------
-    void connectToModel(Model& model) OVERRIDE_11
+    void connectToModel(Model& model) override
     {
         #ifdef USE_ACTIVATION_DYNAMICS_MODEL
         ZerothOrderMuscleActivationDynamics &zomad =
@@ -171,26 +171,26 @@ public:
         Super::connectToModel(model);
     }
 
-    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11
+    void addToSystem(SimTK::MultibodySystem& system) const override
     {
         Super::addToSystem(system);
         addStateVariable(stateName_fiberLength);
         addStateVariable(stateName_fiberVelocity);
     }
 
-    void initStateFromProperties(SimTK::State& s) const OVERRIDE_11
+    void initStateFromProperties(SimTK::State& s) const override
     {
         Super::initStateFromProperties(s);
         setFiberLength(s, getOptimalFiberLength());
     }
 
-    void setPropertiesFromState(const SimTK::State& s) OVERRIDE_11
+    void setPropertiesFromState(const SimTK::State& s) override
     {
         Super::setPropertiesFromState(s);
         setOptimalFiberLength(getFiberLength(s));
     }
 
-    void computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11
+    void computeStateVariableDerivatives(const SimTK::State& s) const override
     {
         // This implementation is not intended for use in dynamic simulations.
         const int n = getNumStateVariables();
@@ -201,9 +201,9 @@ public:
     //--------------------------------------------------------------------------
     // MUSCLE INTERFACE
     //--------------------------------------------------------------------------
-    void computeInitialFiberEquilibrium(SimTK::State& s) const OVERRIDE_11 {}
+    void computeInitialFiberEquilibrium(SimTK::State& s) const override {}
 
-    void setActivation(SimTK::State& s, double activation) const OVERRIDE_11
+    void setActivation(SimTK::State& s, double activation) const override
     {
         #ifdef USE_ACTIVATION_DYNAMICS_MODEL
         get_ZerothOrderMuscleActivationDynamics().setActivation(s, activation);
@@ -212,7 +212,7 @@ public:
         #endif
     }
 
-    double computeActuation(const SimTK::State& s) const OVERRIDE_11
+    double computeActuation(const SimTK::State& s) const override
     {
         const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
         setForce(s, mdi.tendonForce);
@@ -221,7 +221,7 @@ public:
 
     // Calculate position-level variables.
     void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli)
-        const OVERRIDE_11
+        const override
     {
         mli.fiberLength            = getStateVariable(s, stateName_fiberLength);
         mli.fiberLengthAlongTendon = mli.fiberLength;
@@ -249,7 +249,7 @@ public:
 
     // Calculate velocity-level variables.
     void calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi)
-        const OVERRIDE_11
+        const override
     {
         fvi.fiberVelocity = getStateVariable(s, stateName_fiberVelocity);
         fvi.fiberVelocityAlongTendon = fvi.fiberVelocity;
@@ -264,7 +264,7 @@ public:
 
     // Calculate dynamics-level variables.
     void calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi)
-        const OVERRIDE_11
+        const override
     {
         #ifdef USE_ACTIVATION_DYNAMICS_MODEL
         mdi.activation =
@@ -329,7 +329,7 @@ public:
     ConstantExcitationMuscleController(double u) : _u(u) {}
 
     void computeControls(const SimTK::State& s, SimTK::Vector &controls) const
-        OVERRIDE_11
+        override
     {
         for (int i=0; i<_model->getMuscles().getSize(); ++i)
             controls[i] = _u;

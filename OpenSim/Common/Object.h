@@ -61,10 +61,10 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Object>;
 		#undef OSIMCOMMON_API
 	#endif
 	#define OSIMCOMMON_API
-	#ifdef OVERRIDE_11
-		#undef OVERRIDE_11
+	#ifdef override
+		#undef override
 	#endif
-	#define OVERRIDE_11
+	#define override
 	#ifdef FINAL_11
 		#undef FINAL_11
 	#endif
@@ -1111,8 +1111,8 @@ static const std::string& getClassName()                                        
 // This provides definitions for the two Object pure virtuals clone() and
 // getConcreteClassName().
 #define OpenSim_OBJECT_CONCRETE_DEFS(ConcreteClass)                            \
-ConcreteClass* clone() const OVERRIDE_11 {return new ConcreteClass(*this);}    \
-const std::string& getConcreteClassName() const OVERRIDE_11                    \
+ConcreteClass* clone() const override {return new ConcreteClass(*this);}    \
+const std::string& getConcreteClassName() const override                    \
 {   return getClassName(); }                                                   \
 private:
 
@@ -1121,8 +1121,8 @@ private:
 // which allows it to be invoked ConcreteClass::clone() and return the correct
 // pointer type.
 #define OpenSim_OBJECT_ABSTRACT_DEFS(ConcreteClass)                            \
-ConcreteClass* clone() const OVERRIDE_11 = 0;                                  \
-const std::string& getConcreteClassName() const OVERRIDE_11 = 0;               \
+ConcreteClass* clone() const override = 0;                                  \
+const std::string& getConcreteClassName() const override = 0;               \
 private:
 
 // Add public static method declaration in class to assist in downcasting arbitrary objects 

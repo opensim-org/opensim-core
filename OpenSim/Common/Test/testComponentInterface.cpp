@@ -73,7 +73,7 @@ public:
 
 protected:
 	// Component interface implementation
-	void finalizeFromProperties() OVERRIDE_11 {
+	void finalizeFromProperties() override {
 		clearComponents();
 		// Mark components listed in properties as subcomponents
 		for (int i = 0; i < getProperty_components().size(); ++i){
@@ -83,7 +83,7 @@ protected:
 		Super::finalizeFromProperties();
 	}
 	
-	void addToSystem(MultibodySystem& system) const OVERRIDE_11 {
+	void addToSystem(MultibodySystem& system) const override {
 		if (system.hasMatterSubsystem()){
 			matter = system.updMatterSubsystem();
 		}
@@ -106,7 +106,7 @@ protected:
 	}
 
 private:
-	void constructProperties() OVERRIDE_11 {
+	void constructProperties() override {
 		constructProperty_components();
 	}
 
@@ -133,31 +133,42 @@ public:
 
 	Foo() : Component() {
 		constructInfrastructure();
+        m_ctr = 0;
+        m_mutableCtr = 0;
 	}
 
-	double getSomething(const SimTK::State& state){
+	double getSomething(const SimTK::State& state) const {
+        const_cast<Foo *>(this)->m_ctr++;
+        m_mutableCtr++;
+
 		return state.getTime();
 	}
 
-	SimTK::Vec3 calcSomething(const SimTK::State& state){
+	SimTK::Vec3 calcSomething(const SimTK::State& state) const {
+        const_cast<Foo *>(this)->m_ctr++;
+        m_mutableCtr++;
+
 		double t = state.getTime();
 		return SimTK::Vec3(t, t*t, sqrt(t));
 	}
 
-	SimTK::SpatialVec calcSpatialAcc(const SimTK::State& state){
+	SimTK::SpatialVec calcSpatialAcc(const SimTK::State& state) const {
+        const_cast<Foo *>(this)->m_ctr++;
+        m_mutableCtr++;
+
 		return getSystem().getMatterSubsystem().getMobilizedBody(bindex)
 			.getBodyAcceleration(state);
 	}
 
 protected:
 	/** Component Interface */
-	void connect(Component& root) OVERRIDE_11 {
+	void connect(Component& root) override {
 		Super::connect(root);
 		// do any internal wiring
 		world = dynamic_cast<TheWorld*>(&root);
 	}
 
-	void addToSystem(MultibodySystem &system) const OVERRIDE_11 {
+	void addToSystem(MultibodySystem &system) const override {
 		Super::addToSystem(system);
 
 		SimbodyMatterSubsystem& matter = system.updMatterSubsystem();
@@ -180,14 +191,17 @@ protected:
 	}
 
 private:
-	void constructProperties() OVERRIDE_11 {
+    int m_ctr;
+    mutable int m_mutableCtr;
+
+	void constructProperties() override {
 		constructProperty_mass(1.0);
 		Array<double> inertia(0.001, 6);
 		inertia[0] = inertia[1] = inertia[2] = 0.1;
 		constructProperty_inertia(inertia);
 	}
 
-	void constructInputs() OVERRIDE_11 {
+	void constructInputs() override {
 		constructInput<double>("input1", SimTK::Stage::Model);
 		constructInput<Vector>("AnglesIn", SimTK::Stage::Model);
 
@@ -195,7 +209,7 @@ private:
         constructInput<double>("activation", SimTK::Stage::Model);
 	}
 
-	void constructOutputs() OVERRIDE_11 {
+	void constructOutputs() override {
 		constructOutput<double>("Output1", &Foo::getSomething,
                 SimTK::Stage::Time);
 
@@ -235,7 +249,7 @@ public:
 
 protected:
 	/** Component Interface */
-	void connect(Component& root) OVERRIDE_11{
+	void connect(Component& root) override{
 		Super::connect(root);
 		// do any internal wiring
 		world = dynamic_cast<TheWorld*>(&root);
@@ -251,7 +265,7 @@ protected:
 	// Copied here from Component for testing purposes.
 
 
-	void addToSystem(MultibodySystem& system) const OVERRIDE_11{
+	void addToSystem(MultibodySystem& system) const override{
         Super::addToSystem(system);
 
 		GeneralForceSubsystem& forces = world->updForceSubsystem();
@@ -286,12 +300,12 @@ protected:
     }
 
 private:
-	void constructStructuralConnectors() OVERRIDE_11{
+	void constructStructuralConnectors() override{
 		constructStructuralConnector<Foo>("parentFoo");
 		constructStructuralConnector<Foo>("childFoo");
 	}
 
-	void constructOutputs() OVERRIDE_11 {
+	void constructOutputs() override {
 		constructOutput<double>("PotentialEnergy",
 		std::bind(&Bar::getPotentialEnergy, this, std::placeholders::_1),
 		SimTK::Stage::Velocity);
@@ -327,7 +341,7 @@ public:
 
 protected:
 	// Component implementation interface
-	void finalizeFromProperties() OVERRIDE_11{
+	void finalizeFromProperties() override{
 		// Mark components listed in properties as subcomponents
 		Foo& foo1 = upd_Foo1();
 		Foo& foo2 = upd_Foo2();
@@ -353,7 +367,7 @@ protected:
 	}
 
 private:
-	void constructProperties() OVERRIDE_11 {
+	void constructProperties() override {
 		constructProperty_Foo1(Foo());
 		constructProperty_Foo2(Foo());
 		constructProperty_scale1(1.0);

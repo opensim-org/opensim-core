@@ -133,16 +133,16 @@ protected:
 
 	/** Subclass should override; be sure to invoke Force::initStateFromProperties() at the
     beginning of the overriding method. **/
-	void initStateFromProperties(SimTK::State& state) const OVERRIDE_11;
+	void initStateFromProperties(SimTK::State& state) const override;
 
 	/** Default is to create a ForceAdapter which is a SimTK::Force::Custom
 	as the underlying computational component. Subclasses override to employ 
     other SimTK::Forces; be sure to invoke Force::addToSystem() at the
     beginning of the overriding method. **/
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void addToSystem(SimTK::MultibodySystem& system) const override;
 	/** Subclass should override; be sure to invoke 
     Force::setPropertiesFromState() at the beginning of the overriding method. **/
-    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
+    void setPropertiesFromState(const SimTK::State& state) override;
     
     //--------------------------------------------------------------------------
     // Force interface.

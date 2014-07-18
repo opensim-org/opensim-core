@@ -138,19 +138,19 @@ public:
     //@{
 
     /** Adds activation to the state. **/
-    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void addToSystem(SimTK::MultibodySystem& system) const override;
 
     /** Initializes the activation state variable to \c default_activation. **/
-    void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
+    void initStateFromProperties(SimTK::State& s) const override;
 
     /** Sets \c default_activation to the current value of the activation state
         variable. **/
-    void setPropertiesFromState(const SimTK::State& s) OVERRIDE_11;
+    void setPropertiesFromState(const SimTK::State& s) override;
 
     /** Calculates the time derivative of activation using a first-order dynamic
         model. Respects the lower bound on activation while preserving the
         expected steady-state value. **/
-    void computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11;
+    void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
     //@}
 
@@ -158,10 +158,10 @@ public:
     // STATE-DEPENDENT METHODS
     //--------------------------------------------------------------------------
     /** Get the current activation from the state. **/
-    double getActivation(const SimTK::State& s) const OVERRIDE_11;
+    double getActivation(const SimTK::State& s) const override;
 
     /** %Set activation state variable to the value provided. **/
-    void setActivation(SimTK::State& s, double activation) const OVERRIDE_11;
+    void setActivation(SimTK::State& s, double activation) const override;
 
 //==============================================================================
 // PRIVATE METHODS
