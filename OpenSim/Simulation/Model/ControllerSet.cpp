@@ -59,13 +59,9 @@ ControllerSet::~ControllerSet()
 /**
  * Default constructor.
  */
-ControllerSet::ControllerSet()
-{
-	setNull();
-}
+
 ControllerSet::ControllerSet(Model& model) : ModelComponentSet<Controller>(model)
 {
-   setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -77,7 +73,6 @@ ControllerSet::ControllerSet(Model& model) : ModelComponentSet<Controller>(model
 ControllerSet::ControllerSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode) :
      ModelComponentSet<Controller>(model, aFileName, false)
 {
-    setNull();
     if(aUpdateFromXMLNode) updateFromXMLDocument();
 }
 
@@ -99,14 +94,6 @@ ControllerSet::ControllerSet(const ControllerSet &aControllerSet) :
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Set the data members of this ControllerSet to their null values.
- */
-void ControllerSet::setNull()
-{
-}
-
 //_____________________________________________________________________________
 /**
  * Copy the member variables of the ControllerSet.
@@ -294,11 +281,3 @@ void ControllerSet::computeControls(const SimTK::State& s, SimTK::Vector &contro
 			get(i).computeControls(s, controls);
 	}
 }
-
-//_____________________________________________________________________________
-/**
- * Set up the serialized member variables.
- */
-void ControllerSet::setupSerializedMembers()
-  {
-  }

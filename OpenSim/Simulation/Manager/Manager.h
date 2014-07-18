@@ -128,7 +128,6 @@ private:
 	void setNull();
 	bool constructStates();
 	bool constructStorage();
-	bool _ownsIntegrator;
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
@@ -143,8 +142,8 @@ public:
 
 	// Integrator
 	SimTK::Integrator& getIntegrator() const;
-	/** you are responsible for deleting the integrator pointer you passed in if you call this function*/
-    void setIntegrator( SimTK::Integrator*);
+	/** Set the integrator*/
+    void setIntegrator( SimTK::Integrator&);
 	// Initial and final times
 	void setInitialTime(double aTI);
 	double getInitialTime() const;

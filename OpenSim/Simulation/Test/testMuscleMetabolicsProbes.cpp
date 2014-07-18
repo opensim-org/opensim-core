@@ -653,9 +653,6 @@ Storage simulateModel(Model& model,double t0, double t1)
     cout << "- simulation complete (" << (double)(clock()-tStart)/CLOCKS_PER_SEC
          << " seconds elapsed)" << endl;
 
-    // Release integrator from manager.
-    manager.setIntegrator(0);
-
 	return manager.getStateStorage();
 }
 
