@@ -31,7 +31,7 @@ using namespace std;
 
 static Model dummyModel;
 const double acceptableMemoryLeakPercent = 2.0;
-const bool displayMemoryInfo = true;
+const bool reportAllMemoryLeaks = true;
 
 template <typename T>
 void testComponent(const T& instanceToTest);
@@ -242,12 +242,13 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
         const long double leakPercent = 100.0 * increaseInMemory / initMemory;
 
         ASSERT(leakPercent < acceptableMemoryLeakPercent, __FILE__, __LINE__,
-                "testComponents: memory leak greater than 2%. Initial memory: " +
+                "testComponents: memory leak greater than " +
+                to_string(acceptableMemoryLeakPercent) + "%. Initial memory: " +
                 to_string(initMemory/1024) + " KB, increase in memory: " +
                 to_string(increaseInMemory/1024) + " KB, " +
                 to_string(leakPercent) + "%.");
 
-        if (displayMemoryInfo && leakPercent>0)
+        if (reportAllMemoryLeaks && increaseInMemory>0)
             std::cout << "\t--> memory increased by "
                       << setprecision(3) << leakPercent << "%" << std::endl;
     }
@@ -272,12 +273,13 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
                     "differs after repeated calls to initSystem().");
 
         ASSERT(leakPercent < acceptableMemoryLeakPercent, __FILE__, __LINE__,
-                "testComponents: memory leak greater than 2%. Initial memory: " +
+                "testComponents: memory leak greater than " +
+                to_string(acceptableMemoryLeakPercent) + "%. Initial memory: " +
                 to_string(initMemory/1024) + " KB, increase in memory: " +
                 to_string(increaseInMemory/1024) + " KB, " +
                 to_string(leakPercent) + "%.");
 
-        if (displayMemoryInfo && leakPercent>0)
+        if (reportAllMemoryLeaks && increaseInMemory>0)
             std::cout << "\t-->memory increased by "
                       << setprecision(3) << leakPercent << "%" << std::endl;
     }
