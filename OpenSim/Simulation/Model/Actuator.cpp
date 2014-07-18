@@ -144,7 +144,7 @@ void Actuator_::addInControls(const Vector& actuatorControls, Vector& modelContr
 /** Default constructor */
 Actuator::Actuator()
 {
-	constructProperties();
+	constructInfrastructure();
 }
 
 
