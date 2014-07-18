@@ -246,6 +246,7 @@ protected:
 
 private:
 	void constructProperties();
+	void constructOutputs() OVERRIDE_11;
 
 //=============================================================================
 };	// END of class Actuator
