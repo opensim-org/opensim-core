@@ -308,7 +308,7 @@ void Model::buildSystem() {
 //------------------------------------------------------------------------------
 // Requires that buildSystem() has already been called.
 SimTK::State& Model::initializeState() {
-    if (_system == NULL) 
+    if (!_system) 
         throw Exception("Model::initializeState(): call buildSystem() first.");
 
     // This tells Simbody to finalize the System.
@@ -403,7 +403,7 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
 		return;
 	}
 
-	if (_assemblySolver == NULL){
+	if (!_assemblySolver){
 		createAssemblySolver(s);
 	}
 	const Array_<CoordinateReference>& coordRefs = _assemblySolver->getCoordinateReferences();
@@ -450,13 +450,13 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
 
 void Model::invalidateSystem()
 {
-    if (_system != NULL)
+    if (_system)
         _system->getSystemGuts().invalidateSystemTopologyCache();
 }
 
 bool Model::isValidSystem() const
 {
-    if (_system != NULL)
+    if (_system)
         return _system->systemTopologyHasBeenRealized();
 	else
 		return false;
@@ -1740,7 +1740,7 @@ OpenSim::Body& Model::getGroundBody() const
  * Throws an exception if called before Model::initSystem()	 */
 int Model::getNumControls() const
 {
-	if(_system == NULL){
+	if(!_system){
 		throw Exception("Model::getNumControls() requires an initialized Model./n" 
 			"Prior Model::initSystem() required.");
 	}
@@ -1752,7 +1752,7 @@ int Model::getNumControls() const
  * Throws an exception if called before Model::initSystem() */
 Vector& Model::updControls(const SimTK::State &s) const
 {
-	if( (_system == NULL) || (!_modelControlsIndex.isValid()) ){
+	if( (!_system) || (!_modelControlsIndex.isValid()) ){
 		throw Exception("Model::updControls() requires an initialized Model./n" 
 			"Prior call to Model::initSystem() is required.");
 	}
@@ -1766,7 +1766,7 @@ Vector& Model::updControls(const SimTK::State &s) const
 
 void Model::markControlsAsValid(const SimTK::State& s) const
 {
-	if( (_system == NULL) || (!_modelControlsIndex.isValid()) ){
+	if( (!_system) || (!_modelControlsIndex.isValid()) ){
 		throw Exception("Model::markControlsAsValid() requires an initialized Model./n" 
 			"Prior call to Model::initSystem() is required.");
 	}
@@ -1779,7 +1779,7 @@ void Model::markControlsAsValid(const SimTK::State& s) const
 
 void Model::setControls(const SimTK::State& s, const SimTK::Vector& controls) const
 {	
-	if( (_system == NULL) || (!_modelControlsIndex.isValid()) ){
+	if( (!_system) || (!_modelControlsIndex.isValid()) ){
 		throw Exception("Model::setControls() requires an initialized Model./n" 
 			"Prior call to Model::initSystem() is required.");
 	}
@@ -1799,7 +1799,7 @@ void Model::setControls(const SimTK::State& s, const SimTK::Vector& controls) co
 /** Const access to controls does not invalidate dynamics */
 const Vector& Model::getControls(const SimTK::State &s) const
 {
-	if( (_system == NULL) || (!_modelControlsIndex.isValid()) ){
+	if( (!_system) || (!_modelControlsIndex.isValid()) ){
 		throw Exception("Model::getControls() requires an initialized Model./n" 
 			"Prior call to Model::initSystem() is required.");
 	}
