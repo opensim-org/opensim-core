@@ -214,7 +214,7 @@ public:
 	Component& operator=(const Component &component);
 	
     /** Destructor is virtual to allow concrete Component to cleanup. **/
-	virtual ~Component();
+	virtual ~Component() {}
 
 	/**
      * Get the underlying MultibodySystem that this component is connected to.
@@ -344,8 +344,7 @@ public:
 	*/
 	const AbstractInput& getInput(const std::string& name) const
 	{
-		std::map<std::string, const AbstractInput*>::const_iterator it;
-		it = _inputsTable.find(name);
+		auto it = _inputsTable.find(name);
 
 		if (it != _inputsTable.end()) {
 			return *it->second;
@@ -402,7 +401,8 @@ public:
      *
      * @see getOutputsEnd()
      */
-    std::map<std::string, const AbstractOutput*>::const_iterator
+    std::map<std::string, std::unique_ptr<const AbstractOutput>
+        >::const_iterator
         getOutputsBegin() const
     {
         return _outputsTable.begin();
@@ -413,7 +413,8 @@ public:
      *
      * @see getOutputsBegin()
      */
-    std::map<std::string, const AbstractOutput*>::const_iterator
+    std::map<std::string, std::unique_ptr<const AbstractOutput>
+        >::const_iterator
         getOutputsEnd() const
     {
         return _outputsTable.end();
@@ -429,8 +430,7 @@ public:
 	*/
 	const AbstractOutput& getOutput(const std::string& name) const
 	{
-		std::map<std::string, const AbstractOutput*>::const_iterator it;
-		it = _outputsTable.find(name);
+		auto it = _outputsTable.find(name);
 
 		if (it != _outputsTable.end()) {
 			return *it->second;
@@ -1048,7 +1048,7 @@ template <class T> friend class ComponentMeasure;
 	template <typename T>
 	void constructInput(const std::string& name,
 		const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance) {
-		_inputsTable[name] = new Input<T>(name, requiredAtStage);
+		_inputsTable[name] = std::unique_ptr<AbstractInput>(new Input<T>(name, requiredAtStage));
 	}
 
     /**
@@ -1096,7 +1096,8 @@ template <class T> friend class ComponentMeasure;
 	void constructOutput(const std::string& name, 
 		const std::function<T(const SimTK::State&)> outputFunction, 
 		const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
-		_outputsTable[name] = new Output<T>(name, outputFunction, dependsOn);
+        _outputsTable[name] = std::unique_ptr<const AbstractOutput>(new
+                Output<T>(name, outputFunction, dependsOn));
 	}
     
 	/**
@@ -1428,10 +1429,11 @@ private:
 	std::map<std::string, int> _connectorsTable;
 
 	// Table of Component's Inputs indexed by name.
-	std::map<std::string, const AbstractInput*> _inputsTable;
+    std::map<std::string, std::unique_ptr<const AbstractInput> > _inputsTable;
 
 	// Table of Component's Outputs indexed by name.
-	std::map<std::string, const AbstractOutput*> _outputsTable;
+    std::map<std::string, std::unique_ptr<const AbstractOutput> >
+        _outputsTable;
 
     // Underlying SimTK custom measure ComponentMeasure, which implements
     // the realizations in the subsystem by calling private concrete methods on
