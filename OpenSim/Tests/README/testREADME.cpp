@@ -22,10 +22,11 @@
  * -------------------------------------------------------------------------- */
 
 /* Whenever you change this test:
- * 1. Copy the new code over to the README.md, removing getchar().
+ * 1. Copy the new code over to the README.md, making the necessary changes
+ *    related to the `TESTING` definition.
  *
  * If your changes would cause the gif to change substantially:
- * 1. Uncomment getchar(), and run the test.
+ * 1. Uncomment the `TESTING` defininition.
  * 2. When the visualizer pops up, click View -> Save Movie.
  * 3. cd into testREADME_1 and run the following commands (on Linux):
  *      $ convert 'Frame*.png[400x470+200+100]' \( +clone -set delay 100 \)
@@ -35,11 +36,16 @@
  *          opensim_double_pendulum_muscle.gif
  */
 
+#define TESTING
+
 #include <OpenSim/OpenSim.h>
 using namespace SimTK;
 using namespace OpenSim; using OpenSim::Body;
 int main() {
-    Model model; model.setUseVisualizer(true);
+    Model model;
+#ifndef TESTING
+    model.setUseVisualizer(true);
+#endif
     // Two links, with mass of 1 kg, center of mass at the
     // origin of the body's frame, and moments/products of inertia of zero.
     OpenSim::Body* link1 = new OpenSim::Body("humerus", 1, Vec3(0), Inertia(0));
@@ -81,6 +87,7 @@ int main() {
     model.equilibrateMuscles(state);
 
     // Add display geometry.
+#ifndef TESTING
     model.updMatterSubsystem().setShowDefaultGeometry(true);
     Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
     viz.setBackgroundColor(Vec3(1, 1, 1));
@@ -88,11 +95,14 @@ int main() {
     DecorativeEllipsoid geom(Vec3(0.1, 0.5, 0.1)); Vec3 center(0, 0.5, 0);
     viz.addDecoration(link1->getIndex(), Transform(center), geom);
     viz.addDecoration(link2->getIndex(), Transform(center), geom);
+#endif
 
     // Simulate.
     RungeKuttaMersonIntegrator integrator(model.getSystem());
     Manager manager(model, integrator);
     manager.setInitialTime(0); manager.setFinalTime(10.0);
-    // TODO getchar();
+#ifndef TESTING
+    getchar();
+#endif
     manager.integrate(state);
 };
