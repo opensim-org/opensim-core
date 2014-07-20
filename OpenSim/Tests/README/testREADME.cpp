@@ -22,11 +22,10 @@
  * -------------------------------------------------------------------------- */
 
 /* Whenever you change this test:
- * 1. Copy the new code over to the README.md, uncommenting setUseVisualizer
- * and removing getchar().
+ * 1. Copy the new code over to the README.md, removing getchar().
  *
  * If your changes would cause the gif to change substantially:
- * 1. Uncomment setUseVisualizer and getchar(), and run the test.
+ * 1. Uncomment getchar(), and run the test.
  * 2. When the visualizer pops up, click View -> Save Movie.
  * 3. cd into testREADME_1 and run the following commands (on Linux):
  *      $ convert 'Frame*.png[400x470+200+100]' \( +clone -set delay 100 \)
@@ -40,7 +39,7 @@
 using namespace SimTK;
 using namespace OpenSim; using OpenSim::Body;
 int main() {
-    Model model; // TODO model.setUseVisualizer(true);
+    Model model; model.setUseVisualizer(true);
     // Two links, with mass of 1 kg, center of mass at the
     // origin of the body's frame, and moments/products of inertia of zero.
     OpenSim::Body* link1 = new OpenSim::Body("humerus", 1, Vec3(0), Inertia(0));
