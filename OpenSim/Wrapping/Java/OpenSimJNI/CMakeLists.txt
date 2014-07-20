@@ -19,6 +19,7 @@ SET(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling"
     CACHE STRING
     "The wrapping is built as the Java package specified in this variable.")
 
+# Replace periods with slashes (to make a path).
 # Syntax for find-replace:
 # STRING(REGEX REPLACE <pattern> <replacement string>
 #                      <target variable> <source string>)
