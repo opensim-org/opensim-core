@@ -1071,8 +1071,12 @@ template <class T> friend class ComponentMeasure;
 #ifndef SWIG // SWIG can't parse the const at the end of the second argument.
     template <typename T, typename Class>
     void constructOutput(const std::string& name,
-            T(Class::*componentMemberFunction)(const SimTK::State&) const,
+            T(Class::*const componentMemberFunction)(const SimTK::State&) const,
             const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
+        // The `const` in `Class::*const componentMemberFunction` means this
+        // function can't assign componentMemberFunction to some other function
+        // pointer. This is unlikely, since that function would have to match
+        // the same template parameters (T and Class).
         constructOutput<T>(name, std::bind(componentMemberFunction,
                     static_cast<Class*>(this),
                     std::placeholders::_1), dependsOn);
@@ -1086,7 +1090,7 @@ template <class T> friend class ComponentMeasure;
     * Stage is specified it defaults to Acceleration. Here's an example. Say you have a class Markers that manages markers, you have an instance of this class as a member variable in your Component, and Markers has a method `Vec3 Markers\:\:calcMarkerPos(const SimTK\:\:State& s, std\:\:string marker);` to compute
     * motion capture marker positions, given the name of a marker.
      *  @code
-     *  constructOutput<SimTK::Vec3>("ankleMarkerPos",
+     *  constructOutput<SimTK::Vec3>("ankle_marker_pos",
      *          std::bind(&Markers::calcMarkerPos, _markers,
      *          std::placeholders::_1, "ankle"),
      *          SimTK::Stage::Position);
