@@ -623,6 +623,7 @@ void compareUmbergerProbeToPublishedResults()
 //   - total energy at final time equals integral of total rate
 //   - multiple muscles are correctly handled
 //   - less energy is liberated with lower activation
+//   - basic testing of Bhargava's decay function
 void simulateModel(Model& model, Manager& manager, double t0, double t1)
 {
     // Initialize model and state.
@@ -1024,6 +1025,18 @@ void testProbesUsingMillardMuscleSimulation()
          << "total energy liberation (both muscles, all components)" << endl;
     extraColumns += 3;
 
+    // Add Bhargava2004 probe to test Bhargava's decay function.
+    Bhargava2004MuscleMetabolicsProbe* bhargavaDecayFunction = new
+        Bhargava2004MuscleMetabolicsProbe(true, false, false, false, false);
+    model.addProbe(bhargavaDecayFunction);
+    bhargavaDecayFunction->setName("bhargavaDecayFunction");
+    bhargavaDecayFunction->setOperation("value");
+    bhargavaDecayFunction->set_use_Bhargava_decay_function(true);
+    bhargavaDecayFunction->addMuscle(muscle1->getName(), 0.5, 40, 133, 74, 111);
+    cout << setw(w) << ++probeCounter << ") Added Bhargava2004 probe: "
+         << "activation heat rate (muscle 1) with Bhargava's decay function"
+         << endl;
+
     // Attach reporters.
     ProbeReporter* probeReporter = new ProbeReporter(&model);
     model.addAnalysis(probeReporter);
@@ -1125,6 +1138,8 @@ void testProbesUsingMillardMuscleSimulation()
       .getColumnIndicesForIdentifier("bhargavaTotalAllPieces_both_muscle1")[0]-1;
     probeCol["bhaTotalAllPieces_both_muscle2"] = probeStorage
       .getColumnIndicesForIdentifier("bhargavaTotalAllPieces_both_muscle2")[0]-1;
+    probeCol["bhargavaDecayFunction"] = probeStorage
+      .getColumnIndicesForIdentifier("bhargavaDecayFunction")[0]-1;
 
     Storage* forceStorage = muscleAnalysis->getActiveFiberForceStorage();
     const int numForceOutputs = forceStorage->getColumnLabels().getSize()-1;
@@ -1290,6 +1305,15 @@ void testProbesUsingMillardMuscleSimulation()
                  - probeDataInt[probeCol["bhaBasal_rate_m1"]],
                  1.0e-2, __FILE__, __LINE__,
         "Bhargava2004: error in reporting data for multiple muscles.");
+
+    // Check Bhargava's decay function. With activation held at 1.0, the decay
+    // function will start at 1.06 and drop well below the value of 1.0 used if
+    // use_Bhargava_decay_function is false. Thus, the average activation heat
+    // rate reported by bhargavaDecayFunction should be less than that reported
+    // by bhargavaAct_rate_m1 (provided the simulation is sufficiently long).
+    ASSERT(probeDataInt[probeCol["bhargavaDecayFunction"]] <
+           probeDataInt[probeCol["bhargavaAct_rate_m1"]], __FILE__, __LINE__,
+      "Bhargava2004: Bhargava's decay function should reduce activation heat.");
 
     //--------------------------------------------------------------------------
     // Run simulation with lower activation and ensure less energy is liberated.

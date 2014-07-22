@@ -34,6 +34,8 @@ using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
 
+const std::string Bhargava2004MuscleMetabolicsProbe::
+                  stimStateNamePrefix = "Bhargava2004_stimStartTime_";
 
 //=============================================================================
 // CONSTRUCTOR(S) AND SETUP
@@ -109,6 +111,7 @@ void Bhargava2004MuscleMetabolicsProbe::constructProperties()
     constructProperty_muscle_effort_scaling_factor(1.0);
     constructProperty_include_negative_mechanical_work(true);
     constructProperty_forbid_negative_total_power(true);
+    constructProperty_use_Bhargava_decay_function(false);
     constructProperty_report_total_metabolics_only(true);
     constructProperty_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet
        (Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet());
@@ -234,6 +237,46 @@ void Bhargava2004MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
 }
 
 
+void Bhargava2004MuscleMetabolicsProbe::
+addToSystem(SimTK::MultibodySystem& system) const
+{
+    Super::addToSystem(system);
+
+    // Add a discrete variable for each muscle in this probe for keeping track
+    // of the amount of time that has elapsed since the muscle's excitation
+    // exceeded 0.1 (required to calculate the decay function described in
+    // Bhargava et al. (2004)).
+    if (get_use_Bhargava_decay_function())
+    {
+        const Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet
+            muscleParameterSet =
+            get_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet();
+
+        for (int i=0; i<muscleParameterSet.getSize(); ++i)
+            addDiscreteVariable(stimStateNamePrefix +
+                                muscleParameterSet[i].getMuscle()->getName(),
+                                Stage::Report);
+    }
+}
+
+
+void Bhargava2004MuscleMetabolicsProbe::
+initStateFromProperties(SimTK::State& s) const
+{
+    Super::initStateFromProperties(s);
+
+    if (get_use_Bhargava_decay_function())
+    {
+        const Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet
+            muscleParameterSet =
+            get_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet();
+
+        for (int i=0; i<muscleParameterSet.getSize(); ++i)
+            setDiscreteVariable(s, stimStateNamePrefix +
+                                muscleParameterSet[i].getMuscle()->getName(),
+                                SimTK::NaN);
+    }
+}
 
 
 //=============================================================================
@@ -318,9 +361,42 @@ computeProbeInputs(const State& s) const
         // ------------------------------------------
         if (get_forbid_negative_total_power() || get_activation_rate_on())
         {
-            const double decay_function_value = 1.0;    // This value is set to 1.0, as used by Anderson & Pandy (1999), however, in
-                                                        // Bhargava et al., (2004) they assume a function here. We will ignore this
-                                                        // function and use 1.0 for now.
+            double decay_function_value = 1.0;
+
+            if (get_use_Bhargava_decay_function())
+            {
+                // Discrete variables are used to keep track of the most recent
+                // instant at which each muscle excitation began exceeding 0.1.
+                const std::string stimStateName = stimStateNamePrefix
+                                                  + m->getName();
+                SimTK::State& mutableState = const_cast<State&>(s);
+                double stimStartTime = getDiscreteVariable(s, stimStateName);
+                double stimDuration  = 0;
+
+                if (excitation > 0.1) {
+                    if (isNaN(stimStartTime)) {
+                        // Excitation just exceeded 0.1; store current time.
+                        setDiscreteVariable(mutableState, stimStateName,
+                                            s.getTime());
+                    } else {
+                        // Excitation exceeded 0.1 some time in the past and has
+                        // remained above 0.1 since then.
+                        stimDuration = s.getTime() - stimStartTime;
+                    }
+
+                } else {
+                    // Excitation is below 0.1; clear state variable (if not
+                    // already cleared).
+                    if (!isNaN(stimStartTime))
+                        setDiscreteVariable(mutableState, stimStateName,
+                                            SimTK::NaN);
+                }
+
+                const double decay_time_constant = 0.045;
+                decay_function_value = 0.06 + exp(-stimDuration * excitation
+                                                  / decay_time_constant);
+            }
+
             Adot = mm.getMuscleMass() * decay_function_value * 
                 ( (mm.get_activation_constant_slow_twitch() * slow_twitch_excitation) + (mm.get_activation_constant_fast_twitch() * fast_twitch_excitation) );
         }
