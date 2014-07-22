@@ -95,7 +95,7 @@ namespace OpenSim {
 Probe::Probe()
 {
     setNull();
-    constructProperties();
+    constructInfrastructure();
 }
 
 //_____________________________________________________________________________
@@ -117,6 +117,12 @@ void Probe::constructProperties(void)
     constructProperty_probe_operation("value");  // means "pass the value through".
     constructProperty_initial_conditions_for_integration();
     constructProperty_gain(1.0);
+}
+
+void Probe::constructOutputs()
+{
+    constructOutput<SimTK::Vector>("probe_outputs", &Probe::getProbeOutputs,
+            Stage::Report);
 }
 
 //_____________________________________________________________________________
