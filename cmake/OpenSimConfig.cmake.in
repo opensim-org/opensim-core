@@ -1,0 +1,42 @@
+# For an example of how to make your own CMake project that uses OpenSim,
+# see SampleCMakeLists.txt.
+#
+# Adapted from SimbodyConfig.cmake
+#
+# This config file defines the following variables:
+#   @CMAKE_PROJECT_NAME@_FOUND               True if search for libraries and headers
+#                               succeeds.
+#   @CMAKE_PROJECT_NAME@_ROOT_DIR            The installation directory.
+#   @CMAKE_PROJECT_NAME@_LIB_DIR             The directory containing libraries.
+#   @CMAKE_PROJECT_NAME@_INCLUDE_DIRS        Suitable for link_directories().
+#   @CMAKE_PROJECT_NAME@Simbody_INCLUDE_DIRS Suitable for link_directories(). Includes
+#                               the Simbody include directories.
+#   @CMAKE_PROJECT_NAME@_LIBRARIES           Suitable for target_link_libraries(). Includes
+#                               both optimized and debug libraries if both are
+#                               available.
+
+list(APPEND @CMAKE_PROJECT_NAME@_ROOT_DIR "@CMAKE_INSTALL_PREFIX@")
+
+list(APPEND @CMAKE_PROJECT_NAME@_LIB_DIR "@CMAKE_INSTALL_PREFIX@/lib")
+
+list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
+    "@CMAKE_INSTALL_PREFIX@/sdk/include"
+    "@CMAKE_INSTALL_PREFIX@/sdk/include/Vendors"
+    )
+
+if(WIN32)
+    set(_SIMBODY_INCLUDE_RELPATH "include")
+else()
+    set(_SIMBODY_INCLUDE_RELPATH "simbody")
+endif()
+
+list(APPEND @CMAKE_PROJECT_NAME@Simbody_INCLUDE_DIRS
+    "${@CMAKE_PROJECT_NAME@_INCLUDE_DIRS}"
+    "@CMAKE_INSTALL_PREFIX@/sdk/include/SimTK/${_SIMBODY_INCLUDE_RELPATH}"
+    )
+
+include("@CMAKE_INSTALL_PREFIX@/@OPENSIM_INSTALL_CMAKE_DIR@/@CMAKE_PROJECT_NAME@Targets.cmake")
+
+# The osimTools target uses all the other targets.
+# TODO Does this handle both release and debug libraries?
+list(APPEND @CMAKE_PROJECT_NAME@_LIBRARIES osimTools)
