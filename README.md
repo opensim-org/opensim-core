@@ -165,7 +165,7 @@ On Windows using Visual Studio
    changing the `CMAKE_INSTALL_PREFIX` variable. We'll assume you set it to
    `C:/opensim-core`. If you choose a different installation location, make
    sure to use *yours* where we use `C:/opensim-core` below.
-6. Tell CMake where you installed Simbody by setting the `SimTK_INSTALL_DIR`
+6. Tell CMake where you installed Simbody by setting the `SIMBODY_HOME`
    variable to where you installed Simbody (e.g., `C:/Simbody`).
 7. Set the remaining configuration options.
     * `BUILD_EXAMPLES` to compile C++ API examples.
@@ -274,7 +274,7 @@ On Mac using Xcode
    `~/opensim-core`. If you choose a different installation location, make
    sure to use *yours* where we use `~/opensim-core` below. You should *not*
    use `/usr/`, `/usr/local/`, or any typical system paths.
-6. Tell CMake where you installed Simbody by setting the `SimTK_INSTALL_DIR`
+6. Tell CMake where you installed Simbody by setting the `SIMBODY_HOME`
    variable to where you installed Simbody (e.g., `~/simbody`). If you
    installed Simbody using `brew`, then CMake will find Simbody automatically.
 7. Set the remaining configuration options.
@@ -402,7 +402,7 @@ And you could get all the optional dependencies via:
    `~/opensim-core`. If you choose a different installation location, make
    sure to use *yours* where we use `~/opensim-core` below. You should *not*
    use `/usr/`, `/usr/local/`, or any typical system path.
-6. Tell CMake where you installed Simbody by setting the `SimTK_INSTALL_DIR`
+6. Tell CMake where you installed Simbody by setting the `SIMBODY_HOME`
    variable to where you installed Simbody (e.g., `~/simbody`). If you
    installed Simbody using `brew`, then CMake will find Simbody automatically.
 7. Choose your build type by setting `CMAKE_BUILD_TYPE` to one of the following:
