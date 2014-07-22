@@ -373,7 +373,7 @@ For example, you could get the required dependencies (except Simbody) via:
 
 And you could get all the optional dependencies via:
 
-    $ sudo apt-get install doxygen git openjdk-7-jdk python-dev
+    $ sudo apt-get install doxygen git swig openjdk-7-jdk python-dev
 
 #### Download the OpenSim-Core source code
 
