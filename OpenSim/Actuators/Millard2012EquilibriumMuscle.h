@@ -537,7 +537,7 @@ private:
     void buildMuscle();
 
     // Rebuilds muscle model if any of its properties have changed.
-	void finalizeFromProperties() OVERRIDE_11;
+    void finalizeFromProperties() OVERRIDE_11;
 
     /* Calculates the fiber velocity that satisfies the equilibrium equation
     given a fixed fiber length.
