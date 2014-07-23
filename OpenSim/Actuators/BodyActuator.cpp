@@ -99,15 +99,11 @@ void BodyActuator::computeForce(const SimTK::State& s,
 {
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
 
-    //if (!getConnector<Body>("body").isConnected())
-     //   printf("OH SHIT!!\n");
-
 	const Body& body = getConnector<Body>("body").getConnectee();
 
-    const SimTK::Vector spatial = getControls(s);
-	//spatial.dump("internal actuator controls.");
-    const Vec3 torqueVec_B(spatial[0],spatial[1],spatial[2]);
-    const Vec3 forceVec_B(spatial[3],spatial[4],spatial[5]);
+    const SimTK::Vector bodyForceVals = getControls(s);
+	const Vec3 torqueVec_B(bodyForceVals[0], bodyForceVals[1], bodyForceVals[2]);
+	const Vec3 forceVec_B(bodyForceVals[3], bodyForceVals[4], bodyForceVals[5]);
 
     Vec3 torqueVec_G, forceVec_G;
     engine.transform(s, body, torqueVec_B, 
