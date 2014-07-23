@@ -54,7 +54,7 @@ PistonActuator::~PistonActuator()
  *
  */
 PistonActuator::PistonActuator( string aBodyNameA, string aBodyNameB) :
-	Actuator(),
+	ScalarActuator(),
 	_bodyA(NULL),
 	_bodyB(NULL)
 {
