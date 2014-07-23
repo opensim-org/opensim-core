@@ -278,6 +278,7 @@ void testTorqueActuator()
 
 	model->print("TestTorqueActuatorModel.osim");
 	model->setUseVisualizer(false);
+
 	// get a new system and state to reflect additions to the model
 	state = model->initSystem();
 
