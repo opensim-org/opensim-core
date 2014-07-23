@@ -320,7 +320,7 @@ void ForceSet::updateActuators()
     _actuators.setSize(0);
     for (int i = 0; i < getSize(); ++i)
     {
-		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&get(i));
+		Actuator* act = dynamic_cast<Actuator*>(&get(i));
         if (act != NULL)  _actuators.adoptAndAppend(act);
     }
 }
