@@ -197,12 +197,11 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
     // Outputs.
     // --------
     std::cout << "Testing Output's." << std::endl;
-    std::map<std::string, const AbstractOutput*>::const_iterator it;
-    for (it = instance->getOutputsBegin();
+    for (auto it = instance->getOutputsBegin();
             it != instance->getOutputsEnd(); ++it)
     {
         const std::string thisName = it->first;
-        const AbstractOutput* thisOutput = it->second;
+        const AbstractOutput* thisOutput = it->second.get();
 
         std::cout << "Testing Output " << thisName << ", dependent on " <<
             thisOutput->getDependsOnStage().getName() << std::endl;
