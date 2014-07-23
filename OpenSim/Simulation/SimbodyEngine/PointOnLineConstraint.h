@@ -85,11 +85,11 @@ public:
 	void setPointOnFollower(SimTK::Vec3 point);
 
 protected:
-	void connectToModel(Model& aModel) OVERRIDE_11;
+	void connectToModel(Model& aModel) override;
 	/**
 	 * Create a SimTK::Constraint::PointOnLine which implements this constraint.
 	 */
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void addToSystem(SimTK::MultibodySystem& system) const override;
 
 
 private:

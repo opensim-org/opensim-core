@@ -106,7 +106,7 @@ public:
 
 	// Connect all ExternalForces inside this ExternalLoads collection to
     // their Model. Overrides ModelComponentSet method.
-	void invokeConnectToModel(Model& aModel) OVERRIDE_11;
+	void invokeConnectToModel(Model& aModel) override;
 
 	const Model& getModel() const	// get around wrapping issue where exposing the method in ModelComponentSet is problematic
     {

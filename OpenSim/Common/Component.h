@@ -344,8 +344,7 @@ public:
 	*/
 	const AbstractInput& getInput(const std::string& name) const
 	{
-		std::map<std::string, const AbstractInput*>::const_iterator it;
-		it = _inputsTable.find(name);
+		auto it = _inputsTable.find(name);
 
 		if (it != _inputsTable.end()) {
 			return *it->second;
@@ -402,7 +401,8 @@ public:
      *
      * @see getOutputsEnd()
      */
-    std::map<std::string, const AbstractOutput*>::const_iterator
+    std::map<std::string, std::unique_ptr<const AbstractOutput>
+        >::const_iterator
         getOutputsBegin() const
     {
         return _outputsTable.begin();
@@ -413,7 +413,8 @@ public:
      *
      * @see getOutputsBegin()
      */
-    std::map<std::string, const AbstractOutput*>::const_iterator
+    std::map<std::string, std::unique_ptr<const AbstractOutput>
+        >::const_iterator
         getOutputsEnd() const
     {
         return _outputsTable.end();
@@ -423,14 +424,12 @@ public:
 	/**
 	* Get the Output provided by this Component by name.
 	*
-	* @param state		the State for which to set the value
-	* @param name		the name of the cache variable
-	* @return output	const reference to the AbstractOutput
+	* @param name   the name of the cache variable
+	* @return       const reference to the AbstractOutput
 	*/
 	const AbstractOutput& getOutput(const std::string& name) const
 	{
-		std::map<std::string, const AbstractOutput*>::const_iterator it;
-		it = _outputsTable.find(name);
+		auto it = _outputsTable.find(name);
 
 		if (it != _outputsTable.end()) {
 			return *it->second;
@@ -526,7 +525,7 @@ public:
     /**
      * Get the value of a discrete variable allocated by this Component by name.
      *
-     * @param state   the State for which to set the value
+     * @param state   the State from which to get the value
      * @param name    the name of the state variable
      * @return value  the discrete variable value
      */
@@ -544,7 +543,7 @@ public:
     /**
      * Get the value of a cache variable allocated by this Component by name.
      *
-     * @param state  the State for which to set the value
+     * @param state  the State from which to get the value
      * @param name   the name of the cache variable
      * @return T	 const reference to the cache variable's value
      */
@@ -1048,7 +1047,7 @@ template <class T> friend class ComponentMeasure;
 	template <typename T>
 	void constructInput(const std::string& name,
 		const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance) {
-		_inputsTable[name] = new Input<T>(name, requiredAtStage);
+		_inputsTable[name] = std::unique_ptr<AbstractInput>(new Input<T>(name, requiredAtStage));
 	}
 
     /**
@@ -1096,7 +1095,8 @@ template <class T> friend class ComponentMeasure;
 	void constructOutput(const std::string& name, 
 		const std::function<T(const SimTK::State&)> outputFunction, 
 		const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
-		_outputsTable[name] = new Output<T>(name, outputFunction, dependsOn);
+        _outputsTable[name] = std::unique_ptr<const AbstractOutput>(new
+                Output<T>(name, outputFunction, dependsOn));
 	}
     
 	/**
@@ -1428,10 +1428,11 @@ private:
 	std::map<std::string, int> _connectorsTable;
 
 	// Table of Component's Inputs indexed by name.
-	std::map<std::string, const AbstractInput*> _inputsTable;
+    std::map<std::string, std::unique_ptr<const AbstractInput> > _inputsTable;
 
 	// Table of Component's Outputs indexed by name.
-	std::map<std::string, const AbstractOutput*> _outputsTable;
+    std::map<std::string, std::unique_ptr<const AbstractOutput> >
+        _outputsTable;
 
     // Underlying SimTK custom measure ComponentMeasure, which implements
     // the realizations in the subsystem by calling private concrete methods on
@@ -1470,11 +1471,11 @@ private:
 						invalidatesStage(SimTK::Stage::Empty) {}
 
 		//override virtual methods
-		double getValue(const SimTK::State& state) const OVERRIDE_11;
-		void setValue(SimTK::State& state, double value) const OVERRIDE_11;
+		double getValue(const SimTK::State& state) const override;
+		void setValue(SimTK::State& state, double value) const override;
 
-		double getDerivative(const SimTK::State& state) const OVERRIDE_11;
-		void setDerivative(const SimTK::State& state, double deriv) const OVERRIDE_11;
+		double getDerivative(const SimTK::State& state) const override;
+		void setDerivative(const SimTK::State& state, double deriv) const override;
 
 		private: // DATA
 		// Changes in state variables trigger recalculation of appropriate cache 

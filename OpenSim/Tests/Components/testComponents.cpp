@@ -30,6 +30,8 @@ using namespace OpenSim;
 using namespace std;
 
 static Model dummyModel;
+const double acceptableMemoryLeakPercent = 2.0;
+const bool reportAllMemoryLeaks = true;
 
 template <typename T>
 void testComponent(const T& instanceToTest);
@@ -69,6 +71,9 @@ int main()
         Model model("gait10dof18musc_subject01.osim"); model.addBody(body1);
         testModelComponent(pinJoint, true, model);
     }*/
+
+    testModelComponent(Bhargava2004MuscleMetabolicsProbe());
+    testModelComponent(Umberger2010MuscleMetabolicsProbe());
 }
 
 class DummyComponent : public Component {
@@ -193,12 +198,11 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
     // Outputs.
     // --------
     std::cout << "Testing Output's." << std::endl;
-    std::map<std::string, const AbstractOutput*>::const_iterator it;
-    for (it = instance->getOutputsBegin();
+    for (auto it = instance->getOutputsBegin();
             it != instance->getOutputsEnd(); ++it)
     {
         const std::string thisName = it->first;
-        const AbstractOutput* thisOutput = it->second;
+        const AbstractOutput* thisOutput = it->second.get();
 
         std::cout << "Testing Output " << thisName << ", dependent on " <<
             thisOutput->getDependsOnStage().getName() << std::endl;
@@ -240,11 +244,16 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
         const int64_t increaseInMemory = getCurrentRSS() - initMemory;
         const long double leakPercent = 100.0 * increaseInMemory / initMemory;
 
-        ASSERT(leakPercent < 2.0, __FILE__, __LINE__,
-                "testComponents: memory leak greater than 2%. Initial memory: " +
+        ASSERT(leakPercent < acceptableMemoryLeakPercent, __FILE__, __LINE__,
+                "testComponents: memory leak greater than " +
+                to_string(acceptableMemoryLeakPercent) + "%. Initial memory: " +
                 to_string(initMemory/1024) + " KB, increase in memory: " +
                 to_string(increaseInMemory/1024) + " KB, " +
                 to_string(leakPercent) + "%.");
+
+        if (reportAllMemoryLeaks && increaseInMemory>0)
+            std::cout << "\t--> memory increased by "
+                      << setprecision(3) << leakPercent << "%" << std::endl;
     }
 
     // 11. Test that repeated calls to initSystem do not change test results,
@@ -266,17 +275,15 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
                 1e-7, __FILE__, __LINE__, "testComponents: initial state "
                     "differs after repeated calls to initSystem().");
 
-        ASSERT(leakPercent < 2.0, __FILE__, __LINE__,
-                "testComponents: memory leak greater than 2%. Initial memory: " +
+        ASSERT(leakPercent < acceptableMemoryLeakPercent, __FILE__, __LINE__,
+                "testComponents: memory leak greater than " +
+                to_string(acceptableMemoryLeakPercent) + "%. Initial memory: " +
                 to_string(initMemory/1024) + " KB, increase in memory: " +
                 to_string(increaseInMemory/1024) + " KB, " +
                 to_string(leakPercent) + "%.");
+
+        if (reportAllMemoryLeaks && increaseInMemory>0)
+            std::cout << "\t-->memory increased by "
+                      << setprecision(3) << leakPercent << "%" << std::endl;
     }
 }
-
-
-
-
-
-
-

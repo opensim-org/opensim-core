@@ -648,9 +648,6 @@ void SmoothSegmentedFunction::printMuscleCurveToCSVFile(
 }
 /*
 This function will print cvs file of the column vector col0 and the matrix data
-
-@params data: A matrix of data
-@params filename: The name of the file to print
 */
 void SmoothSegmentedFunction::
     printMatrixToFile(SimTK::Matrix& data, SimTK::Array_<std::string>& colNames,

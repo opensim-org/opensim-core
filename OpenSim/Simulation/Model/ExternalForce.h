@@ -214,7 +214,7 @@ public:
 protected:
 
 	/**  ModelComponent interface */ 
-	void connectToModel(Model& model) OVERRIDE_11;
+	void connectToModel(Model& model) override;
 
 	/**
 	 * Compute the force.

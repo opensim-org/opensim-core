@@ -238,7 +238,7 @@ public:
 // Public Computations
 //==============================================================================
     //Ajay: this is old. Can I stop calling it?
-    virtual double computeActuation(const SimTK::State& s) const OVERRIDE_11;
+    virtual double computeActuation(const SimTK::State& s) const override;
 
 
     /** Compute initial fiber length (velocity) such that muscle fiber and 
@@ -246,7 +246,7 @@ public:
         
         Part of the Muscle.h interface
     */
-    void computeInitialFiberEquilibrium(SimTK::State& s) const OVERRIDE_11;
+    void computeInitialFiberEquilibrium(SimTK::State& s) const override;
        
     ///@cond TO BE DEPRECATED. 
     /*  Once the ignore_tendon_compliance flag is implemented correctly get rid 
@@ -276,25 +276,25 @@ protected:
     /**calculate muscle's position related values such fiber and tendon lengths,
     normalized lengths, pennation angle, etc... */
     void calcMuscleLengthInfo(const SimTK::State& s, 
-                              MuscleLengthInfo& mli) const OVERRIDE_11;
+                              MuscleLengthInfo& mli) const override;
 
 
     /** calculate muscle's velocity related values such fiber and tendon 
         velocities,normalized velocities, pennation angular velocity, etc... */
     void  calcFiberVelocityInfo(const SimTK::State& s, 
-                                      FiberVelocityInfo& fvi) const OVERRIDE_11; 
+                                      FiberVelocityInfo& fvi) const override; 
 
     /** calculate muscle's active and passive force-length, force-velocity, 
         tendon force, relationships and their related values */
     void  calcMuscleDynamicsInfo(const SimTK::State& s, 
-                                    MuscleDynamicsInfo& mdi) const OVERRIDE_11;
+                                    MuscleDynamicsInfo& mdi) const override;
 
 	/** calculate muscle's fiber and tendon potential energy */
 	void calcMusclePotentialEnergyInfo(const SimTK::State& s,
 		MusclePotentialEnergyInfo& mpei) const;
 
     /** Calculate activation rate */
-    double calcActivationRate(const SimTK::State& s) const OVERRIDE_11; 
+    double calcActivationRate(const SimTK::State& s) const override; 
 
     virtual void addToSystem(SimTK::MultibodySystem& system) const;
 	virtual void initStateFromProperties(SimTK::State& s) const;

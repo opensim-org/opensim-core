@@ -86,36 +86,15 @@ using namespace SimTK;
  */
 Model::Model() :
 	_fileName("Unassigned"),
-	_creditsStr(_creditsStrProp.getValueStr()),
-	_publicationsStr(_publicationsStrProp.getValueStr()),
-	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
-	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-	_forceSetProp(PropertyObj("", ForceSet())),
-	_forceSet((ForceSet&)_forceSetProp.getValueObj()),
-	_probeSetProp(PropertyObj("", ProbeSet())),
-	_probeSet((ProbeSet&)_probeSetProp.getValueObj()),
-    _gravity(_gravityProp.getValueDblVec()),
-    _constraintSetProp(PropertyObj("", ConstraintSet())),
-    _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
-	_componentSetProp(PropertyObj("MiscComponents", ComponentSet())),
-    _componentSet((ComponentSet&)_componentSetProp.getValueObj()),
-    _markerSetProp(PropertyObj("", MarkerSet())),
-    _markerSet((MarkerSet&)_markerSetProp.getValueObj()),
-    _contactGeometrySetProp(PropertyObj("", ContactGeometrySet())),
-    _contactGeometrySet((ContactGeometrySet&)_contactGeometrySetProp.getValueObj()),
     _analysisSet(AnalysisSet()),
     _coordinateSet(CoordinateSet()),
-    _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
-    _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
     _useVisualizer(false),
     _allControllersEnabled(true),
     _system(NULL),
-	_defaultControls(*new Vector()),
     _workingState()
 {
-	setNull();
-	setupProperties();
 	constructProperties();
+	setNull();	
 	createGroundBodyIfNecessary();
 }
 //_____________________________________________________________________________
@@ -125,38 +104,17 @@ Model::Model() :
 Model::Model(const string &aFileName, const bool finalize) :
 	ModelComponent(aFileName, false),
 	_fileName("Unassigned"),
-	_creditsStr(_creditsStrProp.getValueStr()),
-	_publicationsStr(_publicationsStrProp.getValueStr()),
-	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
-	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-	_forceSetProp(PropertyObj("", ForceSet())),
-	_forceSet((ForceSet&)_forceSetProp.getValueObj()),
-	_probeSetProp(PropertyObj("", ProbeSet())),
-	_probeSet((ProbeSet&)_probeSetProp.getValueObj()),
-    _gravity(_gravityProp.getValueDblVec()),
-    _constraintSetProp(PropertyObj("", ConstraintSet())),
-    _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
-	_componentSetProp(PropertyObj("MiscComponents", ComponentSet())),
-    _componentSet((ComponentSet&)_componentSetProp.getValueObj()),
-    _markerSetProp(PropertyObj("", MarkerSet())),
-    _markerSet((MarkerSet&)_markerSetProp.getValueObj()),
-    _contactGeometrySetProp(PropertyObj("", ContactGeometrySet())),
-    _contactGeometrySet((ContactGeometrySet&)_contactGeometrySetProp.getValueObj()),
     _analysisSet(AnalysisSet()),
     _coordinateSet(CoordinateSet()),
-    _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
-    _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
     _useVisualizer(false),
     _allControllersEnabled(true),
     _system(NULL),
-	_defaultControls(*new Vector()),
     _workingState()
-{
-	setNull();
-	setupProperties();
+{	
 	constructProperties();
+	setNull();
 	updateFromXMLDocument();
-	
+
 	if (finalize) {
 		finalizeFromProperties();
 	}
@@ -164,48 +122,7 @@ Model::Model(const string &aFileName, const bool finalize) :
 	_fileName = aFileName;
 	cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
 }
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aModel Model to be copied.
- */
 
-Model::Model(const Model &aModel) :
-   ModelComponent(aModel),
-	_creditsStr(_creditsStrProp.getValueStr()),
-	_publicationsStr(_publicationsStrProp.getValueStr()),
-	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
-	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-	_forceSetProp(PropertyObj("", ForceSet())),
-	_forceSet((ForceSet&)_forceSetProp.getValueObj()),
-	_probeSetProp(PropertyObj("", ProbeSet())),
-	_probeSet((ProbeSet&)_probeSetProp.getValueObj()),
-    _gravity(_gravityProp.getValueDblVec()),
-    _constraintSetProp(PropertyObj("", ConstraintSet())),
-    _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
-	_componentSetProp(PropertyObj("MiscComponents", ComponentSet())),
-    _componentSet((ComponentSet&)_componentSetProp.getValueObj()),
-    _markerSetProp(PropertyObj("", MarkerSet())),
-    _markerSet((MarkerSet&)_markerSetProp.getValueObj()),
-    _contactGeometrySetProp(PropertyObj("", ContactGeometrySet())),
-    _contactGeometrySet((ContactGeometrySet&)_contactGeometrySetProp.getValueObj()),
-    _useVisualizer(false),
-    _allControllersEnabled(true),
-    _analysisSet(AnalysisSet()),
-    _coordinateSet(CoordinateSet()),
-    _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
-    _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
-    _system(NULL),
-	_defaultControls(*new Vector()),
-    _workingState()
-{
-	//cout << "Construct copied model " <<  endl;
-	// Throw exception if something wrong happened and we don't have a dynamics engine.
-	setNull();
-	setupProperties();
-	copyData(aModel);
-}
 //_____________________________________________________________________________
 /**
  * Destructor.
@@ -218,7 +135,7 @@ Model::~Model()
 	delete _gravityForce;
 	delete _forceSubsystem;
 	delete _matter;
-	delete _system;
+	delete _system;	
 }
 //_____________________________________________________________________________
 /**
@@ -297,51 +214,11 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Copy the member variables of the model.
- *
- * @param aModel model to be copied
- */
-void Model::copyData(const Model &aModel)
-{
-	_fileName = aModel._fileName;
-    _validationLog = aModel._validationLog;
-	_creditsStr = aModel._creditsStr;
-	_publicationsStr = aModel._publicationsStr;
-    _lengthUnitsStr = aModel._lengthUnitsStr;
-    _lengthUnits = aModel._lengthUnits;
-	_forceUnitsStr = aModel._forceUnitsStr;
-	_forceUnits = aModel._forceUnits;
-    _gravity = aModel._gravity;
-    _forceSet = aModel._forceSet;
-    _probeSet = aModel._probeSet;
-    _constraintSet=aModel._constraintSet;
-    _markerSet = aModel._markerSet;
-    _contactGeometrySet = aModel._contactGeometrySet;
-    _controllerSet=aModel._controllerSet;
-    _componentSet=aModel._componentSet;
-
-    _analysisSet=aModel._analysisSet;
-    _useVisualizer = aModel._useVisualizer;
-    _allControllersEnabled = aModel._allControllersEnabled;
-
-	//Handle new style properties
-	copyProperty_assembly_accuracy(aModel);
-	copyProperty_BodySet(aModel);
-	copyProperty_JointSet(aModel);
-
-    // Note: SimTK systems are not copied, they will be
-    // initialized during the call to buildSystem().
-    // TODO: convert to new properties, it's a little confusing as to what
-    // should be copied and what shouldn't.
-}
-
-//_____________________________________________________________________________
-/**
  * Set the values of all data members to an appropriate "null" value.
  */
 void Model::setNull()
 {
-	setAuthors("Frank Anderson, Peter Loan, Ayman Habib, Ajay Seth, Michael Sherman");
+	
     _useVisualizer = false;
     _displayHints.clear();
     _allControllersEnabled = true;
@@ -366,67 +243,45 @@ void Model::constructProperties()
 {
 	constructProperty_assembly_accuracy(1e-9);
 
+	constructProperty_gravity(SimTK::Vec3(0.0, -9.80665, 0.0));
+
+	constructProperty_credits("Frank Anderson, Peter Loan, Ayman Habib, Ajay Seth, Michael Sherman");
+
+	constructProperty_publications("List of publications related to model...");
+	
+	constructProperty_length_units("meters");
+	_lengthUnits = Units::Meters;
+
+	constructProperty_force_units("N");
+	_forceUnits = Units::Newtons;
+
 	BodySet bodies;
-	bodies.setName("Bodies");
 	constructProperty_BodySet(bodies);
 
 	JointSet joints;
-	joints.setName("Joints");
 	constructProperty_JointSet(joints);
-}
-//_____________________________________________________________________________
-/*
- * Connect old style properties to local references.
- */
-void Model::setupProperties()
-{
-	_creditsStrProp.setName("credits");
-	_propertySet.append(&_creditsStrProp);
 
-	_publicationsStrProp.setName("publications");
-	_propertySet.append(&_publicationsStrProp);
+	ControllerSet controllerSet;
+	constructProperty_ControllerSet(controllerSet);
 
-	_lengthUnitsStrProp.setName("length_units");
-	_lengthUnitsStrProp.setValue("meters");
-	_propertySet.append(&_lengthUnitsStrProp);
+	ConstraintSet constraintSet;
+	constructProperty_ConstraintSet(constraintSet);
 
-	_forceUnitsStrProp.setName("force_units");
-	_forceUnitsStrProp.setValue("N");
-	_propertySet.append(&_forceUnitsStrProp);
+	ForceSet forceSet;
+	constructProperty_ForceSet(forceSet);
 
-   const SimTK::Vec3 defaultGravity(0.0, -9.80665, 0.0);
-    _gravityProp.setComment("Acceleration due to gravity.");
-    _gravityProp.setName("gravity");
-    _gravityProp.setValue(defaultGravity);
-    _propertySet.append(&_gravityProp);
+	MarkerSet markerSet;
+	constructProperty_MarkerSet(markerSet);
 
-	_constraintSetProp.setName("ConstraintSet");
-    _constraintSetProp.setComment("Constraints in the model.");
-    _propertySet.append(&_constraintSetProp);
+	ContactGeometrySet contactGeometrySet;
+	constructProperty_ContactGeometrySet(contactGeometrySet);
 
-	_forceSetProp.setName("ForceSet");
-	_forceSetProp.setComment("Forces in the model.");
-	_propertySet.append(&_forceSetProp);
+	ComponentSet componentSet;
+	constructProperty_ComponentSet(componentSet);
 
-	_markerSetProp.setName("MarkerSet");
-    _markerSetProp.setComment("Markers in the model.");
-    _propertySet.append(&_markerSetProp);
+	ProbeSet probeSet;
+	constructProperty_ProbeSet(probeSet);
 
-	_contactGeometrySetProp.setName("ContactGeometrySet");
-    _contactGeometrySetProp.setComment("ContactGeometries  in the model.");
-    _propertySet.append(&_contactGeometrySetProp);
-
-	_controllerSetProp.setName("ControllerSet");
-    _controllerSetProp.setComment("Controllers in the model.");
-    _propertySet.append(&_controllerSetProp);
-
-	_componentSetProp.setName("ComponentSet");
-	_componentSetProp.setComment("Additional components in the model.");
-    _propertySet.append(&_componentSetProp);
-
-    _probeSetProp.setName("ProbeSet");
-	_probeSetProp.setComment("Probes in the model.");
-    _propertySet.append(&_probeSetProp);
 }
 
 //------------------------------------------------------------------------------
@@ -453,7 +308,7 @@ void Model::buildSystem() {
 //------------------------------------------------------------------------------
 // Requires that buildSystem() has already been called.
 SimTK::State& Model::initializeState() {
-    if (_system == NULL) 
+    if (!_system) 
         throw Exception("Model::initializeState(): call buildSystem() first.");
 
     // This tells Simbody to finalize the System.
@@ -493,7 +348,7 @@ SimTK::State& Model::initializeState() {
         getProbeSet().get(i).reset(_workingState);
 
     // Reset the controller's storage
-    _controllerSet.constructStorage();
+	upd_ControllerSet().constructStorage();
     
 	// Do the assembly
     createAssemblySolver(_workingState);
@@ -531,7 +386,7 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
 	}
 
 	// Don't bother assembling if the model has no constraints
-	if(_constraintSet.getSize()< 1){
+	if(get_ConstraintSet().getSize()< 1){
 		// just realize the current state to position
 		getMultibodySystem().realize(s, Stage::Position);
 
@@ -548,7 +403,7 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
 		return;
 	}
 
-	if (_assemblySolver == NULL){
+	if (!_assemblySolver){
 		createAssemblySolver(s);
 	}
 	const Array_<CoordinateReference>& coordRefs = _assemblySolver->getCoordinateReferences();
@@ -595,13 +450,13 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
 
 void Model::invalidateSystem()
 {
-    if (_system != NULL)
+    if (_system)
         _system->getSystemGuts().invalidateSystemTopologyCache();
 }
 
 bool Model::isValidSystem() const
 {
-    if (_system != NULL)
+    if (_system)
         return _system->systemTopologyHasBeenRealized();
 	else
 		return false;
@@ -626,15 +481,15 @@ void Model::createMultibodySystem()
         delete _system;
     }
 
-    // create system
+    // create system	
     _system = new SimTK::MultibodySystem;
     _matter = new SimTK::SimbodyMatterSubsystem(*_system);
     _forceSubsystem = new SimTK::GeneralForceSubsystem(*_system);
     _contactSubsystem = new SimTK::GeneralContactSubsystem(*_system);
 
 	// create gravity force, a direction is needed even if magnitude=0 for PotentialEnergy purposes.
-	double magnitude = _gravity.norm();
-	SimTK::UnitVec3 direction = magnitude==0 ? SimTK::UnitVec3(0,-1,0) : SimTK::UnitVec3(_gravity/magnitude);
+	double magnitude = get_gravity().norm();
+	SimTK::UnitVec3 direction = magnitude==0 ? SimTK::UnitVec3(0,-1,0) : SimTK::UnitVec3(get_gravity()/magnitude);
 	_gravityForce = new SimTK::Force::Gravity(*_forceSubsystem, *_matter, direction, magnitude);
 
 	addToSystem(*_system);
@@ -643,6 +498,7 @@ void Model::createMultibodySystem()
 
 void Model::finalizeFromProperties()
 {
+
 	// building the system for the first time, need to tell
 	// multibodyTree builder what joints are available
 	_multibodyTree.clearGraph();
@@ -674,72 +530,96 @@ void Model::finalizeFromProperties()
 
 	// Update model components, not that Joints and Coordinates
 	// belong to Bodies, alough model lists are assembled for convenience
-
-	BodySet &bs = updBodySet();
-	int nb = bs.getSize();
-	for (int i = 0; i<nb; ++i){
-		addComponent(&bs[i]);
-		_multibodyTree.addBody(bs[i].getName(), 
-			                   bs[i].getMass(), 
-							   false, 
-							   &bs[i]);
+	if(getBodySet().getSize()>0)
+	{
+		BodySet &bs = updBodySet();
+		int nb = bs.getSize();
+		for (int i = 0; i<nb; ++i){
+			addComponent(&bs[i]);
+			_multibodyTree.addBody(bs[i].getName(), 
+								   bs[i].getMass(), 
+								   false, 
+								   &bs[i]);
 		
+		}
 	}
 
 	// Populate lists of model joints and coordinates according to the Bodies
 	// setup here who own the Joints which in turn own the model's Coordinates
 	// this list of Coordinates is now available for setting up constraints and forces
-	JointSet &js = updJointSet();
-	int nj = js.getSize();
-	for (int i = 0; i<nj; ++i){
-		std::string name = js[i].getName();
-		IO::TrimWhitespace(name);
 
-		if ((name.empty()) || (name == "")){
-			name = js[i].getParentBodyName() + "_to_" + js[i].getChildBodyName();
+	if(getJointSet().getSize()>0)
+	{
+
+		JointSet &js = updJointSet();
+		int nj = js.getSize();
+		for (int i = 0; i<nj; ++i){
+			std::string name = js[i].getName();
+			IO::TrimWhitespace(name);
+
+			if ((name.empty()) || (name == "")){
+				name = js[i].getParentBodyName() + "_to_" + js[i].getChildBodyName();
+			}
+
+			addComponent(&js[i]);
+			// Use joints to define the underlying multibody tree
+			_multibodyTree.addJoint(name,
+				js[i].getConcreteClassName(),
+				js[i].getParentBodyName(),
+				js[i].getChildBodyName(),
+				false,
+				&js[i]);
 		}
-
-		addComponent(&js[i]);
-		// Use joints to define the underlying multibody tree
-		_multibodyTree.addJoint(name,
-			js[i].getConcreteClassName(),
-			js[i].getParentBodyName(),
-			js[i].getChildBodyName(),
-			false,
-			&js[i]);
 	}
+
 	updCoordinateSet().populate(*this);
+		
+	if(getConstraintSet().getSize()>0)
+	{
 
-	ConstraintSet &cs = updConstraintSet();
-	int nc = cs.getSize();
-	for (int i = 0; i<nc; ++i){
-		addComponent(&cs[i]);
+		ConstraintSet &cs = updConstraintSet();
+		int nc = cs.getSize();
+		for (int i = 0; i<nc; ++i){
+			addComponent(&cs[i]);
+		}
 	}
 
-	ForceSet &fs = updForceSet();
-	int nf = fs.getSize();
-	for (int i = 0; i<nf; ++i){
-		addComponent(&fs[i]);
-	}
-	// Update internal subsets of the ForceSet
-	fs.updActuators();
-	fs.updMuscles();
-
-	ControllerSet &clrs = updControllerSet();
-	int nclr = clrs.getSize();
-	for (int i = 0; i<nclr; ++i){
-		addComponent(&clrs[i]);
+	if(getForceSet().getSize()>0)
+	{
+		ForceSet &fs = updForceSet();
+		int nf = fs.getSize();
+		for (int i = 0; i<nf; ++i){
+			addComponent(&fs[i]);
+		}
+		// Update internal subsets of the ForceSet
+		fs.updActuators();
+		fs.updMuscles();
 	}
 
-	nc = _componentSet.getSize();
-	for (int i = 0; i<nc; ++i){
-		addComponent(&_componentSet[i]);
+	if(getControllerSet().getSize()>0)
+	{
+		ControllerSet &clrs = updControllerSet();
+		int nclr = clrs.getSize();
+		for (int i = 0; i<nclr; ++i){
+			addComponent(&clrs[i]);
+		}
 	}
 
-	ProbeSet &ps = updProbeSet();
-	int np = ps.getSize();
-	for (int i = 0; i<np; ++i){
-		addComponent(&ps[i]);
+	if(get_ComponentSet().getSize()>0)
+	{
+		int nc = get_ComponentSet().getSize();
+		for (int i = 0; i<nc; ++i){
+			addComponent(&get_ComponentSet()[i]);
+		}
+	}
+
+	if(getProbeSet().getSize()>0)
+	{
+		ProbeSet &ps = updProbeSet();
+		int np = ps.getSize();
+		for (int i = 0; i<np; ++i){
+			addComponent(&ps[i]);
+		}
 	}
 
 
@@ -939,9 +819,8 @@ void Model::addToSystem(SimTK::MultibodySystem& system) const
 void Model::addModelComponent(ModelComponent* aComponent)
 {
 	if(aComponent){
-		_componentSetProp.setValueIsDefault(false);
 		addComponent(aComponent);
-		_componentSet.adoptAndAppend(aComponent);
+		upd_ComponentSet().adoptAndAppend(aComponent);
 	}
 }
 
@@ -977,7 +856,6 @@ void Model::addJoint(Joint* joint)
 void Model::addConstraint(OpenSim::Constraint *aConstraint)
 {
 	if(aConstraint){
-		_constraintSetProp.setValueIsDefault(false);
 		addComponent(aConstraint);
 		updConstraintSet().adoptAndAppend(aConstraint);
 	}
@@ -990,7 +868,6 @@ void Model::addConstraint(OpenSim::Constraint *aConstraint)
 void Model::addForce(OpenSim::Force *aForce)
 {
 	if(aForce){
-		_forceSetProp.setValueIsDefault(false);
 		addComponent(aForce);
 		updForceSet().adoptAndAppend(aForce);
 	}
@@ -1003,7 +880,6 @@ void Model::addForce(OpenSim::Force *aForce)
 void Model::addProbe(OpenSim::Probe *aProbe)
 {
 	if(aProbe){
-		_probeSetProp.setValueIsDefault(false);
 		addComponent(aProbe);
 		updProbeSet().adoptAndAppend(aProbe);
 	}
@@ -1026,7 +902,6 @@ void Model::removeProbe(OpenSim::Probe *aProbe)
  */
 void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)
 {
-    _contactGeometrySetProp.setValueIsDefault(false);
 	addComponent(aContactGeometry);
 	updContactGeometrySet().adoptAndAppend(aContactGeometry);
 }
@@ -1038,7 +913,6 @@ void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)
 void Model::addController(Controller *aController)
 {
 	if (aController) {
-		_controllerSetProp.setValueIsDefault(false);
 		addComponent(aController);
 		updControllerSet().adoptAndAppend(aController);
     }
@@ -1101,34 +975,16 @@ void Model::createGroundBodyIfNecessary()
 void Model::cleanup()
 {
 	disconnect();
-	_forceSet.setSize(0);
+	upd_ForceSet().setSize(0);
 }
 
 void Model::setDefaultProperties()
 {
-	if (_creditsStrProp.getValueIsDefault()){
-		_creditsStr = "Model authors names..";
-	}
-	if (_publicationsStrProp.getValueIsDefault()){
-		_publicationsStr = "List of publications related to model...";
-	}
 
 	// Initialize the length and force units from the strings specified in the model file.
 	// If they were not specified, use meters and Newtons.
-
-    if (_lengthUnitsStrProp.getValueIsDefault()){
-		_lengthUnits = Units(Units::Meters);
-		_lengthUnitsStr = _lengthUnits.getLabel();
-	}
-	else
-		_lengthUnits = Units(_lengthUnitsStr);
-
-	if (_forceUnitsStrProp.getValueIsDefault()){
-		_forceUnits = Units(Units::Newtons);
-		_forceUnitsStr = _forceUnits.getLabel();
-	}
-	else
-		_forceUnits = Units(_forceUnitsStr);
+	_lengthUnits = Units(get_length_units());
+	_forceUnits = Units(get_force_units());
 }
 
 void Model::initStateFromProperties(SimTK::State& state) const
@@ -1173,9 +1029,9 @@ void Model::equilibrateMuscles(SimTK::State& state)
 	bool failed = false;
 	string errorMsg = "";
 
-    for (int i = 0; i < _forceSet.getSize(); i++)
+    for (int i = 0; i < get_ForceSet().getSize(); i++)
     {
-        Muscle* muscle = dynamic_cast<Muscle*>(&_forceSet.get(i));
+        Muscle* muscle = dynamic_cast<Muscle*>(&get_ForceSet().get(i));
         if (muscle != NULL && !muscle->isDisabled(state)){
 			try{
 				muscle->equilibrate(state);
@@ -1209,29 +1065,6 @@ void Model::registerTypes()
 
 
 //=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-Model& Model::operator=(const Model &aModel)
-{
-	// BASE CLASS
-	Object::operator=(aModel);
-
-	// Class Members
-	copyData(aModel);
-
-	finalizeFromProperties();
-
-	return(*this);
-}
-
-
-//=============================================================================
 // GRAVITY
 //=============================================================================
 //_____________________________________________________________________________
@@ -1243,9 +1076,9 @@ Model& Model::operator=(const Model &aModel)
 SimTK::Vec3 Model::getGravity() const
 {
 	if(_gravityForce)
-		_gravity = _gravityForce->getDefaultGravityVector();
+		return _gravityForce->getDefaultGravityVector();
 
-	return _gravity;
+	return get_gravity();
 }
 //_____________________________________________________________________________
 /**
@@ -1256,7 +1089,7 @@ SimTK::Vec3 Model::getGravity() const
  */
 bool Model::setGravity(const SimTK::Vec3& aGrav)
 {
-	_gravity = aGrav;
+	upd_gravity() = aGrav;
 
 	if(_gravityForce)
 		_gravityForce->setDefaultGravityVector(aGrav);
@@ -1276,7 +1109,7 @@ bool Model::setGravity(const SimTK::Vec3& aGrav)
  */
 int Model::getNumMarkers() const
 {
-    return _markerSet.getSize();
+    return get_MarkerSet().getSize();
 }
 /**
  * Get the number of ContactGeometry objects in the model.
@@ -1285,7 +1118,7 @@ int Model::getNumMarkers() const
  */
 int Model::getNumContactGeometries() const
 {
-	return _contactGeometrySet.getSize();
+	return get_ContactGeometrySet().getSize();
 }
 
 /**
@@ -1297,8 +1130,8 @@ int Model::getNumContactGeometries() const
 int Model::getNumMuscleStates() const {
 
 	int n = 0;
-	for(int i=0;i<_forceSet.getSize();i++){
-        Muscle *mus = dynamic_cast<Muscle*>( &_forceSet.get(i) );
+	for(int i=0;i<get_ForceSet().getSize();i++){
+        Muscle *mus = dynamic_cast<Muscle*>( &get_ForceSet().get(i) );
 		if(mus!=NULL) {
 			n += mus->getNumStateVariables();
 		}
@@ -1315,8 +1148,8 @@ int Model::getNumMuscleStates() const {
 int Model::getNumProbeStates() const {
 
 	int n = 0;
-	for(int i=0;i<_probeSet.getSize();i++){
-        Probe *p = dynamic_cast<Probe*>( &_probeSet.get(i) );
+	for(int i=0;i<get_ProbeSet().getSize();i++){
+        Probe *p = dynamic_cast<Probe*>( &get_ProbeSet().get(i) );
 		if(p!=NULL) {
 			n += p->getNumInternalMeasureStates();
 		}
@@ -1371,7 +1204,7 @@ int Model::getNumSpeeds() const
 */
 int Model::getNumConstraints() const
 {
-	return _constraintSet.getSize();
+	return get_ConstraintSet().getSize();
 }
 
 
@@ -1382,7 +1215,7 @@ int Model::getNumConstraints() const
  */
 int Model::getNumProbes() const
 {
-	return _probeSet.getSize();
+	return get_ProbeSet().getSize();
 }
 
 //_____________________________________________________________________________
@@ -1393,11 +1226,11 @@ int Model::getNumProbes() const
  */
 const Set<Actuator>& Model::getActuators() const
 {
-	return _forceSet.getActuators();
+	return get_ForceSet().getActuators();
 }
 Set<Actuator>& Model::updActuators()
 {
-	return _forceSet.updActuators();
+	return upd_ForceSet().updActuators();
 }
 
 //_____________________________________________________________________________
@@ -1408,11 +1241,11 @@ Set<Actuator>& Model::updActuators()
  */
 const Set<Muscle>& Model::getMuscles() const
 {
-	return _forceSet.getMuscles();
+	return get_ForceSet().getMuscles();
 }
 Set<Muscle>& Model::updMuscles()
 {
-	return _forceSet.updMuscles();
+	return upd_ForceSet().updMuscles();
 }
 
 //_____________________________________________________________________________
@@ -1495,7 +1328,7 @@ void Model::removeController(Controller *aController)
 		cout << "Model.removeController:  ERROR- NULL controller.\n" << endl;
 	}
 
-	_controllerSet.remove(aController);
+	upd_ControllerSet().remove(aController);
 }
 
 
@@ -1530,9 +1363,9 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
 	//    current position, and then call its scale method to
 	//    scale all of the muscle properties except tendon and
 	//    fiber length.
-	for (i = 0; i < _forceSet.getSize(); i++)
+	for (i = 0; i < get_ForceSet().getSize(); i++)
 	{
-        PathActuator* act = dynamic_cast<PathActuator*>(&_forceSet.get(i));
+        PathActuator* act = dynamic_cast<PathActuator*>(&get_ForceSet().get(i));
         if( act ) {
  		    act->preScale(s, aScaleSet);
 		    act->scale(s, aScaleSet);
@@ -1556,8 +1389,8 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
         SimTK::State& newState = updWorkingState();
         getMultibodySystem().realize( newState, SimTK::Stage::Velocity);
 
-		for (i = 0; i < _forceSet.getSize(); i++) {
-            PathActuator* act = dynamic_cast<PathActuator*>(&_forceSet.get(i));
+		for (i = 0; i < get_ForceSet().getSize(); i++) {
+            PathActuator* act = dynamic_cast<PathActuator*>(&get_ForceSet().get(i));
             if( act ) {
 	 		    act->postScale(newState, aScaleSet);
             }
@@ -1743,9 +1576,9 @@ void Model::updateAssemblyConditions(SimTK::State& s)
  *
  * @param aFileName the name of the file to create
  */
-void Model::writeMarkerFile(const string& aFileName) const
+void Model::writeMarkerFile(const string& aFileName)
 {
-	_markerSet.print(aFileName);
+	upd_MarkerSet().print(aFileName);
 }
 
 //_____________________________________________________________________________
@@ -1760,8 +1593,7 @@ int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
 	int i, numAdded = 0;
 
 	// First remove all existing markers from the model.
-	_markerSet.clearAndDestroy();
-	_markerSetProp.setValueIsDefault(false);
+	upd_MarkerSet().clearAndDestroy();
 
 	// Now add the markers from aMarkerSet whose body names match bodies in the engine.
 	for (i = 0; i < aMarkerSet.getSize(); i++)
@@ -1773,7 +1605,7 @@ int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
 		{
     		OpenSim::Body& body = updBodySet().get(bodyName);
 			marker->changeBody(body);
-			_markerSet.adoptAndAppend(marker);
+			upd_MarkerSet().adoptAndAppend(marker);
 			numAdded++;
 		}
 	}
@@ -1792,7 +1624,6 @@ int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
  */
 void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 {
-	_markerSetProp.setValueIsDefault(false);
 	for (int i = 0; i < aMarkerSet.getSize(); i++)
 	{
 		Marker& updatingMarker = aMarkerSet.get(i);
@@ -1811,9 +1642,9 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 			 */
 			if (modelMarker.getBody().getName() != updatingBodyName)
 			{
-				_markerSet.remove(&modelMarker);
+				upd_MarkerSet().remove(&modelMarker);
 				// Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
-				_markerSet.adoptAndAppend(updatingMarker.clone());
+				upd_MarkerSet().adoptAndAppend(updatingMarker.clone());
 			}
 			else
 			{
@@ -1827,7 +1658,7 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 			 */
 			// Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
 			if (getBodySet().contains(updatingBodyName))
-				_markerSet.adoptAndAppend(updatingMarker.clone());
+				upd_MarkerSet().adoptAndAppend(updatingMarker.clone());
 		}
 	}
 
@@ -1835,8 +1666,8 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
     // _body pointers are up to date; but note that we've already called 
     // it before so we need to make sure the connectMarkerToModel() function
 	// supports getting called multiple times.
-	for (int i = 0; i < _markerSet.getSize(); i++)
-		_markerSet.get(i).connectMarkerToModel(*this);
+	for (int i = 0; i < get_MarkerSet().getSize(); i++)
+		get_MarkerSet().get(i).connectMarkerToModel(*this);
 
 	cout << "Updated markers in model " << getName() << endl;
 }
@@ -1854,15 +1685,15 @@ int Model::deleteUnusedMarkers(const OpenSim::Array<string>& aMarkerNames)
 {
 	int i, numDeleted = 0;
 
-	for (i = 0; i < _markerSet.getSize(); )
+	for (i = 0; i < get_MarkerSet().getSize(); )
 	{
-		int index = aMarkerNames.findIndex(_markerSet.get(i).getName());
+		int index = aMarkerNames.findIndex(get_MarkerSet().get(i).getName());
 		if (index < 0)
 		{
 			// Delete the marker, but don't increment i or else you'll
 			// skip over the marker right after the deleted one.
-			_markerSet.get(i).removeSelfFromDisplay();
-			_markerSet.remove(i);
+			upd_MarkerSet().get(i).removeSelfFromDisplay();
+			upd_MarkerSet().remove(i);
 			numDeleted++;
 		}
 		else
@@ -1909,7 +1740,7 @@ OpenSim::Body& Model::getGroundBody() const
  * Throws an exception if called before Model::initSystem()	 */
 int Model::getNumControls() const
 {
-	if(_system == NULL){
+	if(!_system){
 		throw Exception("Model::getNumControls() requires an initialized Model./n" 
 			"Prior Model::initSystem() required.");
 	}
@@ -1921,7 +1752,7 @@ int Model::getNumControls() const
  * Throws an exception if called before Model::initSystem() */
 Vector& Model::updControls(const SimTK::State &s) const
 {
-	if( (_system == NULL) || (!_modelControlsIndex.isValid()) ){
+	if( (!_system) || (!_modelControlsIndex.isValid()) ){
 		throw Exception("Model::updControls() requires an initialized Model./n" 
 			"Prior call to Model::initSystem() is required.");
 	}
@@ -1935,7 +1766,7 @@ Vector& Model::updControls(const SimTK::State &s) const
 
 void Model::markControlsAsValid(const SimTK::State& s) const
 {
-	if( (_system == NULL) || (!_modelControlsIndex.isValid()) ){
+	if( (!_system) || (!_modelControlsIndex.isValid()) ){
 		throw Exception("Model::markControlsAsValid() requires an initialized Model./n" 
 			"Prior call to Model::initSystem() is required.");
 	}
@@ -1948,7 +1779,7 @@ void Model::markControlsAsValid(const SimTK::State& s) const
 
 void Model::setControls(const SimTK::State& s, const SimTK::Vector& controls) const
 {	
-	if( (_system == NULL) || (!_modelControlsIndex.isValid()) ){
+	if( (!_system) || (!_modelControlsIndex.isValid()) ){
 		throw Exception("Model::setControls() requires an initialized Model./n" 
 			"Prior call to Model::initSystem() is required.");
 	}
@@ -1968,7 +1799,7 @@ void Model::setControls(const SimTK::State& s, const SimTK::Vector& controls) co
 /** Const access to controls does not invalidate dynamics */
 const Vector& Model::getControls(const SimTK::State &s) const
 {
-	if( (_system == NULL) || (!_modelControlsIndex.isValid()) ){
+	if( (!_system) || (!_modelControlsIndex.isValid()) ){
 		throw Exception("Model::getControls() requires an initialized Model./n" 
 			"Prior call to Model::initSystem() is required.");
 	}
@@ -2005,17 +1836,17 @@ bool Model::isControlled() const
 }
 
 const ControllerSet& Model::getControllerSet() const{
-    return(_controllerSet);
+    return(get_ControllerSet());
 }
 ControllerSet& Model::updControllerSet() {
-    return(_controllerSet);
+    return(upd_ControllerSet());
 }
 void Model::storeControls( const SimTK::State& s, int step ) {
-    _controllerSet.storeControls(s, step);
+    upd_ControllerSet().storeControls(s, step);
     return;
 }
 void Model::printControlStorage(const string& fileName ) const {
-    _controllerSet.printControlStorage(fileName);
+    get_ControllerSet().printControlStorage(fileName);
 }
 bool Model::getAllControllersEnabled() const{
   return( _allControllersEnabled );
@@ -2266,4 +2097,23 @@ SimTK::Vec3 Model::calcMassCenterAcceleration(const SimTK::State &s) const
 {
 	getMultibodySystem().realize(s, Stage::Acceleration);
 	return getMatterSubsystem().calcSystemMassCenterAccelerationInGround(s);	
+}
+
+/**
+* Construct outputs
+*
+**/
+
+void Model::constructOutputs()
+{
+    //return the position of the center of mass
+   constructOutput<SimTK::Vec3>("com_position",
+       std::bind(&Model::calcMassCenterPosition,this,std::placeholders::_1), SimTK::Stage::Position);
+   //return the velocity of the center of mass 
+   constructOutput<SimTK::Vec3>("com_velocity",
+       std::bind(&Model::calcMassCenterVelocity,this,std::placeholders::_1), SimTK::Stage::Velocity);
+   //return the accleration of the center of mass
+   constructOutput<SimTK::Vec3>("com_acceleration",
+       std::bind(&Model::calcMassCenterAcceleration,this,std::placeholders::_1), SimTK::Stage::Acceleration);
+	
 }

@@ -153,12 +153,12 @@ protected:
 	/** Implementation of Force component virtual method */
 	void computeForce(const SimTK::State& s, 
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							  SimTK::Vector& generalizedForces) const OVERRIDE_11; 
+							  SimTK::Vector& generalizedForces) const override; 
 
     /** Implement ModelComponent interface. */
-	void connectToModel(Model& aModel) OVERRIDE_11;
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-	void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
+	void connectToModel(Model& aModel) override;
+	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void initStateFromProperties(SimTK::State& s) const override;
 
 	//Force reporting
 	/** 
@@ -184,8 +184,8 @@ protected:
 	//--------------------------------------------------------------------------
 	// Display
 	//--------------------------------------------------------------------------
-	const VisibleObject* getDisplayer() const OVERRIDE_11;
-	void updateDisplayer(const SimTK::State& s) const OVERRIDE_11;
+	const VisibleObject* getDisplayer() const override;
+	void updateDisplayer(const SimTK::State& s) const override;
 
 private:
 	void constructProperties();

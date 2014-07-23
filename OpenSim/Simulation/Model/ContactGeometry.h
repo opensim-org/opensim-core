@@ -164,7 +164,7 @@ public:
 
 protected:
 	// ModelComponent interface
-	void connectToModel(Model& aModel) OVERRIDE_11;
+	void connectToModel(Model& aModel) override;
 
 private:
     // INITIALIZATION

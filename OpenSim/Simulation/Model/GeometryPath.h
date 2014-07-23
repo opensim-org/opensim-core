@@ -187,7 +187,7 @@ public:
 		return &get_display(); 
 	}
 	
-	void updateDisplayer(const SimTK::State& s) const OVERRIDE_11;
+	void updateDisplayer(const SimTK::State& s) const override;
 
     // Update the geometry attached to the path (location of path points and connecting segments
 	//  all in global/interial frame)
@@ -195,9 +195,9 @@ public:
 
 protected:
     // ModelComponent interface.
-	void connectToModel(Model& aModel) OVERRIDE_11;
-	void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void connectToModel(Model& aModel) override;
+	void initStateFromProperties(SimTK::State& s) const override;
+	void addToSystem(SimTK::MultibodySystem& system) const override;
 
 	// Visual support GeometryPath drawing in SimTK visualizer.
 	void generateDecorations(
@@ -205,7 +205,7 @@ protected:
 			const ModelDisplayHints&				    hints,
 			const SimTK::State&						    state,
 			SimTK::Array_<SimTK::DecorativeGeometry>&	appendToThis) const
-            OVERRIDE_11;
+            override;
 
 private:
 
