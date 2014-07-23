@@ -781,7 +781,7 @@ private:
     void setNull();
 
     //constructs all of the properties required to use this calss
-    void constructProperties() OVERRIDE_11;
+    void constructProperties() override;
     
     /*Builds all of the components that are necessary to use this 
     muscle model in simulation*/

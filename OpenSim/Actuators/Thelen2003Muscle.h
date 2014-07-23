@@ -304,7 +304,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties() OVERRIDE_11;
+    void constructProperties() override;
     void buildMuscle();
     void ensureMuscleUpToDate();
     //=====================================================================

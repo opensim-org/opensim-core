@@ -531,7 +531,7 @@ private:
     bool use_fiber_damping;
 
     void setNull();
-    void constructProperties() OVERRIDE_11;
+    void constructProperties() override;
 
     // Builds the components that are necessary to simulate using this muscle.
     void buildMuscle();
