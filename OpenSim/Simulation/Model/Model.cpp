@@ -2104,12 +2104,16 @@ SimTK::Vec3 Model::calcMassCenterAcceleration(const SimTK::State &s) const
 *
 **/
 
-void Model::constructOutputs() {
-	//return the position of the center of mass
-	constructOutput<SimTK::Vec3>("comPos",std::bind(&Model::calcMassCenterPosition,this,std::placeholders::_1),SimTK::Stage::Position);
-	//return the velocity of the center of mass 
-	constructOutput<SimTK::Vec3>("comVel",std::bind(&Model::calcMassCenterVelocity,this,std::placeholders::_1),SimTK::Stage::Velocity);
-	//return the accleration of the center of mass
-	constructOutput<SimTK::Vec3>("comAcc",std::bind(&Model::calcMassCenterAcceleration,this,std::placeholders::_1),SimTK::Stage::Acceleration);
+void Model::constructOutputs()
+{
+    //return the position of the center of mass
+   constructOutput<SimTK::Vec3>("com_position",
+       std::bind(&Model::calcMassCenterPosition,this,std::placeholders::_1), SimTK::Stage::Position);
+   //return the velocity of the center of mass 
+   constructOutput<SimTK::Vec3>("com_velocity",
+       std::bind(&Model::calcMassCenterVelocity,this,std::placeholders::_1), SimTK::Stage::Velocity);
+   //return the accleration of the center of mass
+   constructOutput<SimTK::Vec3>("com_acceleration",
+       std::bind(&Model::calcMassCenterAcceleration,this,std::placeholders::_1), SimTK::Stage::Acceleration);
 	
 }
