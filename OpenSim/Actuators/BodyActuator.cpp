@@ -104,7 +104,8 @@ void BodyActuator::computeForce(const SimTK::State& s,
 
 	const Body& body = getConnector<Body>("body").getConnectee();
 
-    const SimTK::Vector& spatial = getControls(s);
+    const SimTK::Vector spatial = getControls(s);
+	//spatial.dump("internal actuator controls.");
     const Vec3 torqueVec_B(spatial[0],spatial[1],spatial[2]);
     const Vec3 forceVec_B(spatial[3],spatial[4],spatial[5]);
 
