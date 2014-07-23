@@ -330,9 +330,9 @@ void simulateMuscle(
 
 	// Add a JointInternalPowerProbe to measure the work done by the joint
 	// will be 0 unless joint has prescribed motion
-    JointInternalPowerProbe * jointWorkProbe = new JointInternalPowerProbe(jointNames, true, 1);
+    /*JointInternalPowerProbe * jointWorkProbe = new JointInternalPowerProbe(jointNames, true, 1);
 	jointWorkProbe->setOperation("integrate");
-	model.addProbe(jointWorkProbe);
+	model.addProbe(jointWorkProbe);*/
 
 	/* Since all components are allocated on the stack don't have model 
        own them (and try to free)*/
@@ -499,8 +499,8 @@ void simulateMuscle(
 	    double xSpeed = modelCoordinateSet[0].getSpeedValue(si);
 	    double KEsysCheck =  0.5*ballMass*xSpeed*xSpeed;
 	    double PEsys =  model.getMultibodySystem().calcPotentialEnergy(si);
-        double jointWork = jointWorkProbe->computeProbeInputs(si)(0);
-	    /*double ESysMinusWork = Esys 
+        /*double jointWork = jointWorkProbe->computeProbeInputs(si)(0);
+	    double ESysMinusWork = Esys 
                                 - muscWorkProbe->computeProbeInputs(si)(0)
                                 - jointWork; 
 

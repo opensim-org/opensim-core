@@ -103,8 +103,8 @@ void Controller::connectToModel(Model& model)
 {
 	Super::connectToModel(model);
 
-	if(getProperty_actuator_list().size() > 0){
-		if(IO::Uppercase(get_actuator_list(0)) == "ALL"){
+	if (getProperty_actuator_list().size() > 0){
+		if (IO::Uppercase(get_actuator_list(0)) == "ALL"){
 			setActuators(model.getActuators());
 			// setup actuators to ensure actuators added by controllers are also setup properly
 			// TODO: Adopt the controls (discrete state variables) of the Actuator
@@ -112,8 +112,8 @@ void Controller::connectToModel(Model& model)
 		}
 		else{
 			Set<Actuator> actuatorsByName;
-			for(int i =0; i <  getProperty_actuator_list().size(); i++){
-				if(model.updActuators().contains(get_actuator_list(i)))
+			for (int i = 0; i < getProperty_actuator_list().size(); i++){
+				if (model.updActuators().contains(get_actuator_list(i)))
 					actuatorsByName.adoptAndAppend(&model.updActuators().get(get_actuator_list(i)));
 				else
 					cerr << "WARN: Controller::connectToModel : Actuator " << get_actuator_list(i) << " was not found and will be ignored." << endl;
@@ -133,13 +133,16 @@ void Controller::addToSystem(SimTK::MultibodySystem& system) const
 }
 
 // makes a request for which actuators a controller will control
-void Controller::setActuators(const Set<Actuator>& actuators )
+void Controller::setActuators(const Set<Actuator>& actuators)
 {
 	//Rebuild consistent set of actuator lists
 	_actuatorSet.setSize(0);
 	updProperty_actuator_list().clear();
-	for(int i=0; i< actuators.getSize(); i++){
-		addActuator(actuators[i]);
+	const Set<Actuator>& fSet = _model->getActuators();
+	for (int i = 0, iact = 0; i<fSet.getSize(); i++) {
+		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+	//for(int i=0; i< actuators.getSize(); i++){
+		addActuator(act[i]);
 	}
 	// make sure controller does not take ownership
 	_actuatorSet.setMemoryOwner(false);
@@ -155,7 +158,7 @@ void Controller::addActuator(const Actuator& actuator)
 	_actuatorSet.adoptAndAppend(mutable_act);
 
 	int found = updProperty_actuator_list().findIndex(actuator.getName());
-	if(found < 0) //add if the actuator isn't already in the list
+	if (found < 0) //add if the actuator isn't already in the list
 		updProperty_actuator_list().appendValue(actuator.getName());
 }
 
