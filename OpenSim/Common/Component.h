@@ -424,9 +424,8 @@ public:
 	/**
 	* Get the Output provided by this Component by name.
 	*
-	* @param state		the State for which to set the value
-	* @param name		the name of the cache variable
-	* @return output	const reference to the AbstractOutput
+	* @param name   the name of the cache variable
+	* @return       const reference to the AbstractOutput
 	*/
 	const AbstractOutput& getOutput(const std::string& name) const
 	{

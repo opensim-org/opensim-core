@@ -192,14 +192,6 @@ public:
     **/
 	explicit Model(const std::string& filename, bool finalize=true) SWIG_DECLARE_EXCEPTION;
 
-//    #ifndef SWIG
-	/** Copy assignment copies model components but does not copy any run-time 
-    objects.
-	@param source   The %Model to be copied.
-	@returns        Reference to this object. **/
-//	Model& operator=(const Model& source);
-//    #endif
-
 	/**
 	 * Perform some set up functions that happen after the
 	 * object has been deserialized. TODO: this method is

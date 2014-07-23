@@ -38,26 +38,6 @@
 #include <string>
 
 namespace OpenSim { 
-
-class Object;
-
-#ifdef SWIG
-	#ifdef OSIMCOMMON_API
-		#undef OSIMCOMMON_API
-	#endif
-    #define OSIMCOMMON_API
-	#ifdef override
-		#undef override
-	#endif
-    #define override
-	#ifdef FINAL_11
-		#undef FINAL_11
-	#endif
-    #define FINAL_11 
-#endif
-
-//=============================================================================
-//=============================================================================
 /**
  * A property consists of a type, name, and a value or an array of values.
  *
@@ -87,6 +67,24 @@ class Object;
  * @version 1.0
  * @author Frank C. Anderson
  */
+
+class Object;
+
+#ifdef SWIG
+	#ifdef OSIMCOMMON_API
+		#undef OSIMCOMMON_API
+	#endif
+    #define OSIMCOMMON_API
+	#ifdef override
+		#undef override
+	#endif
+    #define override
+	#ifdef FINAL_11
+		#undef FINAL_11
+	#endif
+    #define FINAL_11 
+#endif
+
 #ifdef WIN32
 #pragma warning( disable : 4290 )	// VC++ non-ANSI Exception handling
 #pragma warning( disable : 4251 )	// VC2010 no-dll export of std::string
