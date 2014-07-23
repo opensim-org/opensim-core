@@ -51,7 +51,7 @@ int main()
     testModelComponent(Millard2012AccelerationMuscle(), false);
     // TODO randomized properties out of range; throws exception.
     // TODO testModelComponent(PathActuator());
-    testModelComponent(SpatialActuator());
+    testModelComponent(BodyActuator());
 
     {
         ContactSphere contactSphere; contactSphere.set_body_name("ground");
