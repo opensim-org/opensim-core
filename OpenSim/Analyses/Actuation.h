@@ -35,8 +35,8 @@
 
 #ifdef SWIG
 #ifdef OSIMANALYSES_API
-#undef OSIMANALYSES_API
-#define OSIMANALYSES_API
+   #undef OSIMANALYSES_API
+   #define OSIMANALYSES_API
 #endif
 #endif
 //=============================================================================

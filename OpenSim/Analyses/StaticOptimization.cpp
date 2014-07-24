@@ -614,7 +614,7 @@ begin(SimTK::State& s )
 			}
 			else{
 				std::string msg = getConcreteClassName();
-				msg += "::can only process scalar Actuaor types.";
+				msg += "::can only process scalar Actuator types.";
 				throw Exception(msg);
 			}
 		}
