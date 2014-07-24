@@ -545,15 +545,9 @@ void testBodyActuator()
 	double blockMass = 20.0, blockSideLength = 0.1;
 	Vec3 blockMassCenter(0);
 	Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
-<<<<<<< HEAD
 
 	OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
 
-=======
-
-	OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
-
->>>>>>> 8e53482e91935993dc251a98c6e072101043172c
 	// Add display geometry to the block to visualize in the GUI
 	block->addDisplayGeometry("block.vtp");
 
