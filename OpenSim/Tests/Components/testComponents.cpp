@@ -252,7 +252,8 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
                 to_string(leakPercent) + "%.");
 
         if (reportAllMemoryLeaks && increaseInMemory>0)
-            std::cout << "\t--> memory increased by "
+            std::cout << "\t[" << className
+                      << "] copying increased memory use by "
                       << setprecision(3) << leakPercent << "%" << std::endl;
     }
 
@@ -283,7 +284,8 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
                 to_string(leakPercent) + "%.");
 
         if (reportAllMemoryLeaks && increaseInMemory>0)
-            std::cout << "\t-->memory increased by "
+            std::cout << "\t[" << className
+                      << "] initSystem increased memory use by "
                       << setprecision(3) << leakPercent << "%" << std::endl;
     }
 }
