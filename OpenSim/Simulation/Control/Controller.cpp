@@ -138,15 +138,13 @@ void Controller::setActuators(const Set<Actuator>& actuators)
 	//Rebuild consistent set of actuator lists
 	_actuatorSet.setSize(0);
 	updProperty_actuator_list().clear();
-	const Set<Actuator>& fSet = _model->getActuators();
-	for (int i = 0, iact = 0; i<fSet.getSize(); i++) {
-		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
-	//for(int i=0; i< actuators.getSize(); i++){
-		addActuator(act[i]);
+	for (int i = 0; i< actuators.getSize(); i++){
+		addActuator(actuators[i]);
 	}
 	// make sure controller does not take ownership
 	_actuatorSet.setMemoryOwner(false);
 }
+
 
 void Controller::addActuator(const Actuator& actuator)
 {
