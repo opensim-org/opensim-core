@@ -542,20 +542,21 @@ void testBodyActuator()
 
 	//Cylindrical bodies
 	double r = 0.25,  h = 1.0;
-	double m1 = 1.0;
-	Inertia j1 = m1*Inertia::cylinderAlongY(r, h);
+	double blockMass = 20.0, blockSideLength = 0.1;
+	Vec3 blockMassCenter(0);
+	Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
 
-	//OpenSim bodies
-	OpenSim::Body* bodyA
-		= new OpenSim::Body("bodyA", m1, Vec3(0), j1);
+	OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
 
-	// connect bodyA to ground with 6dofs
-	BallJoint* base =
-		new BallJoint("base", ground, Vec3(0, -h / 2, 0), Vec3(0), *bodyA, Vec3(0, h/2, 0), Vec3(0));
+	// Add display geometry to the block to visualize in the GUI
+	block->addDisplayGeometry("block.vtp");
 
-	model->addBody(bodyA);
-	model->addJoint(base);
-
+	Vec3 locationInParent(0, blockSideLength / 2, 0), orientationInParent(0), locationInBody(0), orientationInBody(0);
+	FreeJoint *blockToGroundFree = new FreeJoint("blockToGroundBall", ground, locationInParent, orientationInParent, *block, locationInBody, orientationInBody);
+	
+	model->addBody(block);
+	model->addJoint(blockToGroundFree);
+	
 	// specify magnitude and direction of applied force and torque
 	double forceMag = 1.0;
 	Vec3 forceAxis(1, 1, 1);
@@ -573,12 +574,12 @@ void testBodyActuator()
 		model->getMultibodySystem().updRigidBodyForces(state, Stage::Dynamics);
 	bodyForces.dump("Body Forces before applying 6D spatial force:");
 
-	model->getMatterSubsystem().addInBodyTorque(state, bodyA->getIndex(),
+	model->getMatterSubsystem().addInBodyTorque(state, block->getIndex(),
 		torqueInG, bodyForces);
-	model->getMatterSubsystem().addInStationForce(state, bodyA->getIndex(),
+	model->getMatterSubsystem().addInStationForce(state, block->getIndex(),
 		Vec3(0), forceInG, bodyForces);
 
-	bodyForces.dump("Body Forces after applying 6D spatial force to bodyA");
+	bodyForces.dump("Body Forces after applying 6D spatial force to the block");
 
 	model->getMultibodySystem().realize(state, Stage::Acceleration);
 	const Vector& udotBody = state.getUDot();
@@ -594,9 +595,9 @@ void testBodyActuator()
 	// Apply torques as mobility forces of the ball joint
 	for (int i = 0; i<3; ++i){
 		mobilityForces[i] = torqueInG[i];
+		mobilityForces[i+3] = forceInG[i];
 	}
-
-	mobilityForces.dump("Mobility Forces after applying 6D spatial force to bodyA");
+	mobilityForces.dump("Mobility Forces after applying 6D spatial force to the block");
 
 
 	model->getMultibodySystem().realize(state, Stage::Acceleration);
@@ -615,16 +616,20 @@ void testBodyActuator()
 
 	// Create and add the torque actuator to the model
 	BodyActuator* actuator = new BodyActuator();
-	actuator->updConnector<OpenSim::Body>("body").set_connected_to_name("bodyA");
+	actuator->updConnector<OpenSim::Body>("body").set_connected_to_name("block");
 	actuator->setName("BodyAct");
 	model->addForce(actuator);
 
-
 	model->print("TestBodyActuatorModel.osim");
-	//model->setUseVisualizer(true);
+	model->setUseVisualizer(false);
+
 	// get a new system and state to reflect additions to the model
-	//cout << "DEBUG0 " << model->updActuators().contains("BodyAct") << endl;
 	State& state1 = model->initSystem();
+
+	// set the visualizer background
+	model->getVisualizer().getSimbodyVisualizer().setBackgroundColor(SimTK::Vec3(1));
+	//model->getVisualizer().getSimbodyVisualizer().setBackgroundType(SimTK::Visualizer::BackgroundType::GroundAndSky);
+
 
 	// Get the default control vector of the model
 	Vector modelControls = model->getDefaultControls();
@@ -645,47 +650,32 @@ void testBodyActuator()
 	model->computeStateVariableDerivatives(state1);
 
 	const Vector &udotBodyActuator = state1.getUDot();
-	udotMobility.dump("Accelerations due to body actuator");
-	
+	udotBodyActuator.dump("Accelerations due to body actuator");
+
 	// Verify that the TorqueActuator also generates the same acceleration
 	// as the equivalent applied mobility force
-	for (int i = 0; i<udotMobility.size(); ++i){
+	for (int i = 0; i<udotBodyActuator.size(); ++i){
 		ASSERT_EQUAL(udotMobility[i], udotBodyActuator[i], 1.0e-12);
 	}
 
-	// determine the initial kinetic energy of the system
-	double iKE = model->getMatterSubsystem().calcKineticEnergy(state1);
-	std::cout << "iKE" << iKE << std::endl;
-
+	// Setup integrator and manager
 	RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
 	integrator.setAccuracy(integ_accuracy);
 	Manager manager(*model, integrator);
 
 	manager.setInitialTime(0.0);
-
 	double final_t = 10.00;
-
 	manager.setFinalTime(final_t);
 	manager.integrate(state1);
 
-	model->computeStateVariableDerivatives(state1);
-
-	double fKE = model->getMatterSubsystem().calcKineticEnergy(state1);
-	std::cout << "fKE" << fKE << std::endl;
-	/*
-	// Change in system kinetic energy can only be attributable to actuator work
-	double actuatorWork = (powerProbe->getProbeOutputs(state))[0];
-	// test that this is true
-	ASSERT_EQUAL(actuatorWork, fKE - iKE, integ_accuracy);*/
-
 	// Before exiting lets see if copying the spring works
-	/*BodyActuator* copyOfActuator = actuator->clone();
+	BodyActuator* copyOfActuator = actuator->clone();
 	ASSERT(*copyOfActuator == *actuator);
 
 	// Check that de/serialization works
 	Model modelFromFile("TestBodyActuatorModel.osim");
 	ASSERT(modelFromFile == *model, __FILE__, __LINE__,
-		"Model from file FAILED to match model in memory.");*/
+		"Model from file FAILED to match model in memory.");
 
 	std::cout << " ********** Test BodyActuator time = ********** " <<
 		1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;
