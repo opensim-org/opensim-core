@@ -192,6 +192,7 @@ own project.
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/PointActuator.h>
 #include <OpenSim/Actuators/TorqueActuator.h>
+#include <OpenSim/Actuators/BodyActuator.h>
 #include <OpenSim/Actuators/PointToPointActuator.h>
 #include <OpenSim/Actuators/ClutchedPathSpring.h>
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
@@ -970,6 +971,7 @@ namespace SimTK {
 %include <OpenSim/Actuators/CoordinateActuator.h>
 %include <OpenSim/Actuators/PointActuator.h>
 %include <OpenSim/Actuators/TorqueActuator.h>
+%include <OpenSim/Actuators/BodyActuator.h>
 %include <OpenSim/Actuators/PointToPointActuator.h>
 %include <OpenSim/Actuators/ClutchedPathSpring.h>
 %include <OpenSim/Actuators/SpringGeneralizedForce.h>
