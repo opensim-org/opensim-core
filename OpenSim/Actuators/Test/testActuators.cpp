@@ -627,7 +627,7 @@ void testBodyActuator()
 	model->addForce(actuator);
 
 	model->print("TestBodyActuatorModel.osim");
-	model->setUseVisualizer(true);
+	model->setUseVisualizer(false);
 
 	// get a new system and state to reflect additions to the model
 	State& state1 = model->initSystem();
