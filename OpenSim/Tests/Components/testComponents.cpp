@@ -49,8 +49,9 @@ int main()
 
     // Add a line here for each model component that we want to test.
     testModelComponent(ClutchedPathSpring());
-    // TODO testModelComponent(Thelen2003Muscle()); rigid tendon issue
-    testModelComponent(Millard2012AccelerationMuscle(), false);
+    testModelComponent(Thelen2003Muscle(), false);
+    testModelComponent(Millard2012EquilibriumMuscle(), false);
+    //testModelComponent(Millard2012AccelerationMuscle(), false);
     // TODO randomized properties out of range; throws exception.
     // TODO testModelComponent(PathActuator());
 
