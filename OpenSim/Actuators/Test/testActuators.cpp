@@ -626,11 +626,6 @@ void testBodyActuator()
 	// get a new system and state to reflect additions to the model
 	State& state1 = model->initSystem();
 
-	// set the visualizer background
-	model->getVisualizer().getSimbodyVisualizer().setBackgroundColor(SimTK::Vec3(1));
-	//model->getVisualizer().getSimbodyVisualizer().setBackgroundType(SimTK::Visualizer::BackgroundType::GroundAndSky);
-
-
 	// Get the default control vector of the model
 	Vector modelControls = model->getDefaultControls();
 	
