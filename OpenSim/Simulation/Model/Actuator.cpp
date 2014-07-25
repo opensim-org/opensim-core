@@ -159,10 +159,10 @@ void ScalarActuator::constructProperties()
 	constructProperty_max_control( Infinity);
 }
 
-void Actuator::constructOutputs() 
+void ScalarActuator::constructOutputs() 
 {
-	constructOutput<double>("force", &Actuator::getForce, SimTK::Stage::Velocity);
-	constructOutput<double>("speed", &Actuator::getSpeed, SimTK::Stage::Velocity);	
+	constructOutput<double>("force", &ScalarActuator::getForce, SimTK::Stage::Velocity);
+	constructOutput<double>("speed", &ScalarActuator::getSpeed, SimTK::Stage::Velocity);
 }
 
 // Create the underlying computational system component(s) that support the
