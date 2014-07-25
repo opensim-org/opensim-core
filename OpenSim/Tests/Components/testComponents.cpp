@@ -54,7 +54,6 @@ int main()
     //testModelComponent(Millard2012AccelerationMuscle(), false);
     // TODO randomized properties out of range; throws exception.
     // TODO testModelComponent(PathActuator());
-    testModelComponent(BodyActuator());
 
     {
         ContactSphere contactSphere; contactSphere.set_body_name("ground");
@@ -72,6 +71,15 @@ int main()
         Model model("gait10dof18musc_subject01.osim"); model.addBody(body1);
         testModelComponent(pinJoint, true, model);
     }*/
+
+	{
+		Model model;
+		Body* body1 = new Body(); body1->setName("body1"); body1->setMass(1.0);
+		model.addBody(body1);
+		BodyActuator bodyAct;
+		bodyAct.updConnector<Body>("body").set_connected_to_name("ground");
+		testModelComponent(bodyAct, true, model);
+	}
 
     testModelComponent(Bhargava2004MuscleMetabolicsProbe());
     testModelComponent(Umberger2010MuscleMetabolicsProbe());
