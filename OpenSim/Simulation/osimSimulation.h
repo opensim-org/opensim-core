@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "Model/AnalysisSet.h"
+#include "Model/Bhargava2004MuscleMetabolicsProbe.h"
 #include "Model/Model.h"
 #include "Model/ModelDisplayHints.h"
 #include "Model/ModelVisualizer.h"
@@ -61,6 +62,7 @@
 #include "Model/ExternalLoads.h"
 #include "Model/PathActuator.h"
 #include "Model/MuscleActiveFiberPowerProbe.h"
+#include "Model/Umberger2010MuscleMetabolicsProbe.h"
 
 #include "Manager/Manager.h"
 

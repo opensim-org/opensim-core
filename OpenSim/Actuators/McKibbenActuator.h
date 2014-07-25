@@ -110,14 +110,14 @@ private:
 	//--------------------------------------------------------------------------
 	void computeForce(const SimTK::State& state, 
 					  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-					  SimTK::Vector& mobilityForces) const OVERRIDE_11;
+					  SimTK::Vector& mobilityForces) const override;
 
 
 	//--------------------------------------------------------------------------
 	// Implement ModelComponent interface
 	//--------------------------------------------------------------------------
 	// Setup method initializes Body reference pointers to match the names.
-	void connectToModel(Model& aModel) OVERRIDE_11;
+	void connectToModel(Model& aModel) override;
 
 	//--------------------------------------------------------------------------
 	// Visualization interface

@@ -4,6 +4,20 @@ IF(DOXYGEN_EXECUTABLE-NOTFOUND)
 ELSE(DOXYGEN_EXECUTABLE-NOTFOUND)
     SET(DOXY_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile")
 
+    # Configure linking to Simbody documentation.
+    # Some of these variables are used in Doxyfile.in.
+    # This variable must be a STRING; a PATH variable resolves //'s as a single
+    # /, but we need to use double slashes for URL's.
+    SET(OPENSIM_SIMBODY_DOXYGEN_LOCATION "${Simbody_DOXYGEN_DIR}"
+        CACHE STRING
+        "The location of Simbody's doxygen documentation. By default, OpenSim's
+        Doxygen will link to the user's *local* Simbody documentation. However,
+        when the OpenSim documentation is put online, there is no local Simbody
+        Doxygen documentation. In this case, this variable can be set to a URL
+        where one can find Simbody Doxygen documentation online. Delete from
+        CMakeCache.txt to reset to default.")
+    MARK_AS_ADVANCED(OPENSIM_SIMBODY_DOXYGEN_LOCATION)
+
     CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in 
           ${DOXY_CONFIG}
           @ONLY )
@@ -40,6 +54,7 @@ ELSE(DOXYGEN_EXECUTABLE-NOTFOUND)
          DESTINATION "${PROJECT_BINARY_DIR}/")
     FILE(COPY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSim/doc/images/"
          DESTINATION "${PROJECT_BINARY_DIR}/html/images/")
+
     ################
     # INSTALLATION #
     ################

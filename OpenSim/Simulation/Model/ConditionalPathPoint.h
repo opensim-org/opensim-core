@@ -100,9 +100,9 @@ public:
 	void setRangeMax( const SimTK::State& s, double aMax);
 
     // Override PathPoint methods.
-	bool isActive(const SimTK::State& s) const OVERRIDE_11;
+	bool isActive(const SimTK::State& s) const override;
 	void connectToModelAndPath(const Model& aModel, GeometryPath& aPath) 
-                                                                OVERRIDE_11;
+                                                                override;
 #endif
 private:
 	void setNull();

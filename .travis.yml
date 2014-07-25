@@ -2,8 +2,8 @@
 language: cpp
 
 compiler:
-  - gcc
   - clang
+  - gcc
 
 before_install:
   ## Get Simbody and its dependencies.
@@ -23,7 +23,7 @@ before_install:
   - git clone https://github.com/simbody/simbody.git simbody-source --depth 1 --branch master
   - cd simbody-source
   # Configure Simbody.
-  - cmake . -DBUILD_VISUALIZER=off -DSIMBODY_STANDARD_11=on -DCMAKE_INSTALL_PREFIX=../simbody-install
+  - cmake . -DBUILD_VISUALIZER=off -DBUILD_EXAMPLES=off -DSIMBODY_STANDARD_11=on -DCMAKE_INSTALL_PREFIX=../simbody-install
   # Build Simbody.
   - make -j8
   # Test Simbody.
@@ -44,7 +44,7 @@ before_install:
 
 install:
   # Configure OpenSim.
-  - cmake . -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DCMAKE_PREFIX_PATH=simbody-install -DCMAKE_CXX_FLAGS=-Werror
+  - cmake . -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DSIMBODY_HOME=simbody-install -DCMAKE_CXX_FLAGS=-Werror
   # Build OpenSim.
   - make -j8
 

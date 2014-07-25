@@ -55,7 +55,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ControllerSet, ModelComponentSet<Controller>);
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	ControllerSet();
+	ControllerSet() {}
 	ControllerSet(Model& model);
 	ControllerSet(const ControllerSet &aControllerSet);
 	ControllerSet(Model& model, const std::string &aFileName,  bool aUpdateFromXMLNode = true);
@@ -63,18 +63,16 @@ public:
 
 	void copyData(const ControllerSet &aAbsControllerSet);
 private:
-	void setNull();
-    void setupSerializedMembers();
 
     /**
      *   storage object containing the storage object
      */
-     Storage* _controlStore;
+     SimTK::ReferencePtr<Storage> _controlStore;
 
     /**
      *   set of actuators controlled by the set of controllers 
      */
-     Set<Actuator>* _actuatorSet;
+     SimTK::ReferencePtr<Set<Actuator> > _actuatorSet;
 
 
 	//--------------------------------------------------------------------------

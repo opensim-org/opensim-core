@@ -170,7 +170,7 @@ public:
 	virtual int numCoordinates() const {return _numMobilities;};
 
 protected:
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11
+	void addToSystem(SimTK::MultibodySystem& system) const override
 	{
 		using namespace SimTK;
 

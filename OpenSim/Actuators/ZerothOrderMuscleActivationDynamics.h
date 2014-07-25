@@ -65,10 +65,10 @@ public:
     // STATE-DEPENDENT METHODS
     //--------------------------------------------------------------------------
     /** Get the current activation, which is simply the excitation. **/
-    double getActivation(const SimTK::State& s) const OVERRIDE_11;
+    double getActivation(const SimTK::State& s) const override;
 
     /** Displays a warning, since there is no activation variable to set. **/
-    void setActivation(SimTK::State& s, double activation) const OVERRIDE_11;
+    void setActivation(SimTK::State& s, double activation) const override;
 
 //==============================================================================
 // PRIVATE METHODS
