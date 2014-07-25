@@ -78,7 +78,7 @@ public:
 	 * @param s			system state 
 	 * @param controls	writable model controls
 	 */
-	void computeControls(const SimTK::State& s, SimTK::Vector &controls) const OVERRIDE_11;
+	void computeControls(const SimTK::State& s, SimTK::Vector &controls) const override;
 
 
 private:

@@ -109,6 +109,7 @@ public:
 	/** Convenience constructor
 	Create a Component::Output bound to a specific method of the Component and 
 	valid at a given realization Stage.
+    @param name             The name of the output.
 	@param outputFunction	The output function to be invoked (returns Output T)
 	@param dependsOnStage	Stage at which Output can be evaluated. */
 	explicit Output(const std::string& name,
@@ -119,8 +120,8 @@ public:
 	
 	virtual ~Output() {}
 
-	bool isCompatible(const AbstractOutput& o) const OVERRIDE_11 { return isA(o); }
-		void compatibleAssign(const AbstractOutput& o) OVERRIDE_11 {
+	bool isCompatible(const AbstractOutput& o) const override { return isA(o); }
+		void compatibleAssign(const AbstractOutput& o) override {
 		if (!isA(o)) 
 			SimTK_THROW2(SimTK::Exception::IncompatibleValues, o.getTypeName(), getTypeName());
 		*this = downcast(o);
@@ -146,10 +147,10 @@ public:
 	}
 	
 	/** determine the value type for this Output*/
-    std::string getTypeName() const OVERRIDE_11 
+    std::string getTypeName() const override 
 		{ return SimTK::NiceTypeName<T>::name(); }
 
-	std::string	getValueAsString(const SimTK::State& state) const OVERRIDE_11
+	std::string	getValueAsString(const SimTK::State& state) const override
 	{
 		unsigned int ns = getNumberOfSignificantDigits();
 		std::stringstream s;
@@ -157,7 +158,7 @@ public:
 		return s.str();
 	}
 
-	AbstractOutput* clone() const OVERRIDE_11 { return new Output(*this); }
+	AbstractOutput* clone() const override { return new Output(*this); }
 	SimTK_DOWNCAST(Output, AbstractOutput);
 
 private:

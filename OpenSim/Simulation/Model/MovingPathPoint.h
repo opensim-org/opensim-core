@@ -121,13 +121,13 @@ public:
 	void setZCoordinate( const SimTK::State& s, Coordinate& aCoordinate);
 
     // Override methods from PathPoint.
-	bool isActive(const SimTK::State& s) const OVERRIDE_11 { return true; }
+	bool isActive(const SimTK::State& s) const override { return true; }
 	void connectToModelAndPath(const Model& aModel, GeometryPath& aPath) 
-                                                                OVERRIDE_11;
-	void update(const SimTK::State& s) OVERRIDE_11;
-	void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity) OVERRIDE_11;
+                                                                override;
+	void update(const SimTK::State& s) override;
+	void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity) override;
 #endif
-	SimTK::Vec3 getdPointdQ(const SimTK::State& s) const OVERRIDE_11; 
+	SimTK::Vec3 getdPointdQ(const SimTK::State& s) const override; 
 
 	const std::string& getXCoordinateName() const { return _xCoordinateName; }
 	const std::string& getYCoordinateName() const { return _yCoordinateName; }

@@ -38,26 +38,6 @@
 #include <string>
 
 namespace OpenSim { 
-
-class Object;
-
-#ifdef SWIG
-	#ifdef OSIMCOMMON_API
-		#undef OSIMCOMMON_API
-	#endif
-    #define OSIMCOMMON_API
-	#ifdef OVERRIDE_11
-		#undef OVERRIDE_11
-	#endif
-    #define OVERRIDE_11
-	#ifdef FINAL_11
-		#undef FINAL_11
-	#endif
-    #define FINAL_11 
-#endif
-
-//=============================================================================
-//=============================================================================
 /**
  * A property consists of a type, name, and a value or an array of values.
  *
@@ -87,6 +67,24 @@ class Object;
  * @version 1.0
  * @author Frank C. Anderson
  */
+
+class Object;
+
+#ifdef SWIG
+	#ifdef OSIMCOMMON_API
+		#undef OSIMCOMMON_API
+	#endif
+    #define OSIMCOMMON_API
+	#ifdef override
+		#undef override
+	#endif
+    #define override
+	#ifdef FINAL_11
+		#undef FINAL_11
+	#endif
+    #define FINAL_11 
+#endif
+
 #ifdef WIN32
 #pragma warning( disable : 4290 )	// VC++ non-ANSI Exception handling
 #pragma warning( disable : 4251 )	// VC2010 no-dll export of std::string
@@ -146,36 +144,36 @@ public:
 	//--------------------------------------------------------------------------
     // Implement the AbstractProperty interface.
 
-    bool isEqualTo(const AbstractProperty& other) const OVERRIDE_11 {
+    bool isEqualTo(const AbstractProperty& other) const override {
         return operator==(dynamic_cast<const Property_Deprecated&>(other));
     }
 
     // Property_Deprecated does not implement AbstractProperty::clone(); that 
     // is left to concrete Property_Deprecated objects like PropertyInt.
-	Property_Deprecated* clone() const OVERRIDE_11 = 0;
+	Property_Deprecated* clone() const override = 0;
 
     virtual void readFromXMLElement
        (SimTK::Xml::Element& propertyElement,
-        int                  versionNumber) OVERRIDE_11
+        int                  versionNumber) override
     {assert(!"Property_Deprecated::readFromXMLElement not implemented");}
 
     virtual void writeToXMLElement
-       (SimTK::Xml::Element& propertyElement) const OVERRIDE_11
+       (SimTK::Xml::Element& propertyElement) const override
     {assert(!"Property_Deprecated::writeToXMLElement not implemented");}
 
     // Override for array types.
-    virtual int getNumValues() const OVERRIDE_11 {return 1;}
-    virtual void clearValues() OVERRIDE_11 {assert(!"implemented");}
+    virtual int getNumValues() const override {return 1;}
+    virtual void clearValues() override {assert(!"implemented");}
 
-    virtual bool isUnnamedProperty() const OVERRIDE_11 {return false;}
-    virtual bool isObjectProperty() const OVERRIDE_11 {return false;}
+    virtual bool isUnnamedProperty() const override {return false;}
+    virtual bool isObjectProperty() const override {return false;}
     virtual bool isAcceptableObjectTag
-        (const std::string& objectTypeTag) const OVERRIDE_11 {return false;}
-    virtual const Object& getValueAsObject(int index=-1) const OVERRIDE_11
+        (const std::string& objectTypeTag) const override {return false;}
+    virtual const Object& getValueAsObject(int index=-1) const override
     {   Property_PROPERTY_TYPE_MISMATCH(); }
-    virtual Object& updValueAsObject(int index=-1) OVERRIDE_11
+    virtual Object& updValueAsObject(int index=-1) override
     {   Property_PROPERTY_TYPE_MISMATCH(); }
-    virtual void setValueAsObject(const Object& obj, int index=-1) OVERRIDE_11
+    virtual void setValueAsObject(const Object& obj, int index=-1) override
     {   Property_PROPERTY_TYPE_MISMATCH(); }
 
 	//--------------------------------------------------------------------------
@@ -203,11 +201,11 @@ public:
 	// TYPE
 	void setType(PropertyType aType);
 	PropertyType getType() const;
-	virtual std::string getTypeName() const OVERRIDE_11 =0;
+	virtual std::string getTypeName() const override =0;
 
 	// VALUE
 	// Textual representation
-	virtual std::string toString() const OVERRIDE_11 =0;
+	virtual std::string toString() const override =0;
 
 	// These methods have been given default implementations, rather than being made pure virtual
 	// so that all classes derived from Property will not have to implement each method.

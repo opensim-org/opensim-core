@@ -95,7 +95,7 @@ namespace OpenSim {
 Probe::Probe()
 {
     setNull();
-    constructProperties();
+    constructInfrastructure();
 }
 
 //_____________________________________________________________________________
@@ -119,6 +119,12 @@ void Probe::constructProperties(void)
     constructProperty_gain(1.0);
 }
 
+void Probe::constructOutputs()
+{
+    constructOutput<SimTK::Vector>("probe_outputs", &Probe::getProbeOutputs,
+            Stage::Report);
+}
+
 //_____________________________________________________________________________
 /**
  * Create an underlying OpenSim::Probe
@@ -126,9 +132,6 @@ void Probe::constructProperties(void)
 void Probe::connectToModel(Model& model)
 {
     Super::connectToModel(model);
-
-    if (getName() == "")
-        setName("UnnamedProbe");
 }
 
 //_____________________________________________________________________________

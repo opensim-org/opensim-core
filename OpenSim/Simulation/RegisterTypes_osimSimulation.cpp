@@ -131,6 +131,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( BodyScale() );
     Object::registerType( BodyScaleSet() );
     Object::registerType( BodySet() );
+	Object::registerType( ComponentSet() );
+	Object::registerType( ControllerSet() );
     Object::registerType( ConstraintSet() );
     Object::registerType( CoordinateSet() );
     Object::registerType( ForceSet() );

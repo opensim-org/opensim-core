@@ -72,11 +72,11 @@ public:
 		int aSize,const double aArray[]);
 	PropertyDblArray(const PropertyDblArray &aProperty);
 
-    bool isArrayProperty() const OVERRIDE_11 {return true;}
+    bool isArrayProperty() const override {return true;}
 
-	PropertyDblArray* clone() const OVERRIDE_11;
+	PropertyDblArray* clone() const override;
 
-    int getNumValues() const OVERRIDE_11 {return getArraySize();}
+    int getNumValues() const override {return getArraySize();}
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -90,7 +90,7 @@ public:
 	//--------------------------------------------------------------------------
 public:
 	// TYPE
-	virtual std::string getTypeName() const OVERRIDE_11;
+	virtual std::string getTypeName() const override;
 	// VALUE
 	virtual void setValue(const Array<double> &aArray);
 	virtual void setValue(int aSize,const double aArray[]);
@@ -103,7 +103,7 @@ public:
 	virtual std::string toString() const;
 	// SIZE
 	virtual int getArraySize() const { return _array.getSize(); }
-    virtual void clearValues() OVERRIDE_11 {
+    virtual void clearValues() override {
         _array.setSize(0);
     }
 

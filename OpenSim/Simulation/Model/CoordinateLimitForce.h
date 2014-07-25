@@ -34,23 +34,23 @@
 //=============================================================================
 /**
  * Generate a force that acts to limit the range of motion of a coordinate.
- * Force is experienced at upper and lower limits of the coordinate value 
- * according to a constant siffneses K_upper and K_lower, with a C2 continuous
- * transition from 0 to K. The transition parameter defines how far beyond the 
+ * Force is experienced at upper and lower limits of the coordinate value
+ * according to a constant stiffnesses K_upper and K_lower, with a C2 continuous
+ * transition from 0 to K. The transition parameter defines how far beyond the
  * limit the stiffness becomes constant. The integrator will like smoother
  * (i.e. larger transition regions).
  *
- * Damping factor is also phased in through the transiton region from 0 to the
+ * Damping factor is also phased in through the transition region from 0 to the
  * value provided.
  *
  * Limiting force is guaranteed to be zero within the upper and lower limits.
  *
  * The potential energy stored in the spring component of the force is
- * accessible as well as the power (nd optionally energy) dissipated. 
+ * accessible as well as the power (nd optionally energy) dissipated.
  *
  * @author Ajay Seth
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 class OSIMSIMULATION_API CoordinateLimitForce : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateLimitForce, Force);
@@ -95,28 +95,28 @@ public:
     /** Default constructor */
     CoordinateLimitForce();
 
-    /** Convenience constructor. 
+    /** Convenience constructor.
     Generate a force that acts to limit the range of motion of a coordinate
-    Force experienced at upper and lower limits of the coordinate (q) value 
-    is according to a linear siffneses K_upper and K_lower, with a C2 continuos
-    transition from 0 to K. The transition parameter (dq) defines how far 
-    beyond the limit the stiffness becomes purely linear. The integrator will 
-    like smoother (i.e. larger transition regions). 
-    @param[in]	coordName   Coordinate whose range is to be limited.   
-    @param[in]	q_upper	    Coordinate's upper limit value.   
-    @param[in]	q_lower	    Coordinate's lower limit value.   
+    Force experienced at upper and lower limits of the coordinate (q) value
+    is according to a linear stiffnesses K_upper and K_lower, with a C2 continuous
+    transition from 0 to K. The transition parameter (dq) defines how far
+    beyond the limit the stiffness becomes purely linear. The integrator will
+    like smoother (i.e. larger transition regions).
+    @param[in]	coordName   Coordinate whose range is to be limited.
+    @param[in]	q_upper	    Coordinate's upper limit value.
+    @param[in]	q_lower	    Coordinate's lower limit value.
     @param[in]	K_upper	    Upper limit stiffness when coordinate > q_upper
     @param[in]	K_lower	    Lower limit stiffness when coordinate < q_lower
     @param[in]	damping	    Damping factor when coordinate is beyond the limits
-    @param[in]	dq		    Transition region (displacement) for force to be 
+    @param[in]	dq		    Transition region (displacement) for force to be
                             engaged.
     @param[in]	computeDissipationEnergy  
                             Whether to compute dissipated energy (false).
     **/
-    CoordinateLimitForce(const std::string& coordName, double q_upper, 
-        double K_upper, double q_lower, double K_lower, double damping, 
-        double dq, bool computeDissipationEnergy=false); 
-    
+    CoordinateLimitForce(const std::string& coordName, double q_upper,
+        double K_upper, double q_lower, double K_lower, double damping,
+        double dq, bool computeDissipationEnergy=false);
+
     //use compiler default copy constructor and assignment operator
 
 	/** Destructor */
@@ -214,16 +214,16 @@ protected:
     //--------------------------------------------------------------------------
     /** Setup this CoordinateLimitForce as part of the model.
         This were the existence of the coordinate to limit is checked. */ 
-    void connectToModel(Model& aModel) OVERRIDE_11;
+    void connectToModel(Model& aModel) override;
     /** Create the underlying Force that is part of the multibodysystem. */
-    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void addToSystem(SimTK::MultibodySystem& system) const override;
 
     //--------------------------------------------------------------------------
     // Force Interface
     //--------------------------------------------------------------------------
     void computeForce(const SimTK::State& s, 
                       SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                      SimTK::Vector& mobilityForces) const OVERRIDE_11;
+                      SimTK::Vector& mobilityForces) const override;
 
 private:
     // Object helpers
@@ -231,7 +231,7 @@ private:
     void constructProperties();
 
     // Model Component Interface when computing energy
-    void computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11;
+    void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
     // Smooth step functions for continuous transition from no stiffness and 
     // damping to constant values beyond the limits. These are heap allocated

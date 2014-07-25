@@ -141,7 +141,7 @@ public:
 
 #endif
 	// Setup method to initialize Body reference
-	void connectToModel(Model& aModel) OVERRIDE_11;
+	void connectToModel(Model& aModel) override;
 
 	//--------------------------------------------------------------------------
 	// XML
