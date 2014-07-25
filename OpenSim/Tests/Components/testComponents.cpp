@@ -73,12 +73,9 @@ int main()
     }*/
 
 	{
-		Model model;
-		Body* body1 = new Body(); body1->setName("body1"); body1->setMass(1.0);
-		model.addBody(body1);
 		BodyActuator bodyAct;
 		bodyAct.updConnector<Body>("body").set_connected_to_name("ground");
-		testModelComponent(bodyAct, true, model);
+		testModelComponent(bodyAct);
 	}
 
     testModelComponent(Bhargava2004MuscleMetabolicsProbe());
