@@ -1074,7 +1074,6 @@ inline SimpleProperty<SimTK::Transform>* Property<SimTK::Transform>::
 TypeHelper::create(const std::string& name, bool isOne) 
 {   return new SimpleProperty<SimTK::Transform>(name, isOne); }
 
-/** @cond **/ // Hide from Doxygen.
 // Create a self-initializing integer index for fast access to properties
 // within an Object's property table.
 #ifndef SWIG
@@ -1132,7 +1131,6 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
     template <template <class> class Container>                             \
     void set_##name(const Container<T>& value)                              \
     {   updProperty_##name().setValue(value); }
-/** @endcond **/
 
 /** Declare a required, single-value property of the given \a name and 
 type \a T, with an associated \a comment. The value list for this property will
@@ -1153,15 +1151,20 @@ A data member is also created but is intended for internal use only:
 
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_PROPERTY(name, T, comment)                          \
+    /** @cond **/                                                           \
     OpenSim_DECLARE_PROPERTY_HELPER(name,T)                                 \
     void constructProperty_##name(const T& initValue)                       \
     {   PropertyIndex_##name = addProperty<T>(#name,comment,initValue); }   \
+    /** @endcond **/                                                        \
+    /** @{ */                                                               \
+    /** comment */                                                          \
     const T& get_##name() const                                             \
     {   return getProperty_##name().getValue(); }                           \
     T& upd_##name()                                                         \
     {   return updProperty_##name().updValue(); }                           \
     void set_##name(const T& value)                                         \
-    {   updProperty_##name().setValue(value); }
+    {   updProperty_##name().setValue(value); }                             \
+    /** @} */
 
 /** Declare a required, unnamed property holding exactly one object of type
 T derived from %OpenSim's Object class and identified by that object's class 
@@ -1169,15 +1172,20 @@ name rather than a property name. At construction, this property must be
 initialized with an object of type T.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_UNNAMED_PROPERTY(T, comment)                        \
+    /** @cond **/                                                           \
     OpenSim_DECLARE_PROPERTY_HELPER(T,T)                                    \
     void constructProperty_##T(const T& initValue)                          \
     {   PropertyIndex_##T = addProperty<T>("", comment, initValue); }       \
+    /** @endcond **/                                                        \
+    /** @{ */                                                               \
+    /** comment */                                                          \
     const T& get_##T() const                                                \
     {   return getProperty_##T().getValue(); }                              \
     T& upd_##T()                                                            \
     {   return updProperty_##T().updValue(); }                              \
     void set_##T(const T& value)                                            \
-    {   updProperty_##T().setValue(value); }
+    {   updProperty_##T().setValue(value); }                                \
+    /** @} */
 
 /** Declare a property of the given \a name containing an optional value of
 the given type T (that is, the value list can be of length 0 or 1 only).
@@ -1185,18 +1193,23 @@ The property may be constructed as empty, or with initialization to a single
 value of type T.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_OPTIONAL_PROPERTY(name, T, comment)                 \
+    /** @cond **/                                                           \
     OpenSim_DECLARE_PROPERTY_HELPER(name,T)                                 \
     void constructProperty_##name()                                         \
     {   PropertyIndex_##name = addOptionalProperty<T>(#name, comment); }    \
     void constructProperty_##name(const T& initValue)                       \
     {   PropertyIndex_##name = addOptionalProperty<T>(#name, comment,       \
                                                       initValue); }         \
+    /** @endcond **/                                                        \
+    /** @{ */                                                               \
+    /** comment */                                                          \
     const T& get_##name() const                                             \
     {   return getProperty_##name().getValue(); }                           \
     T& upd_##name()                                                         \
     {   return updProperty_##name().updValue(); }                           \
     void set_##name(const T& value)                                         \
-    {   updProperty_##name().setValue(value); }
+    {   updProperty_##name().setValue(value); }                             \
+    /** @} */
 
 /** Declare a property of the given \a name containing a variable-length
 list of values of the given type T. The property may be constructed as empty, 
