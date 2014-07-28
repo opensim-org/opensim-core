@@ -36,8 +36,7 @@ ADD_CUSTOM_COMMAND(
     	-o ${swig_output_cxx_file_fullname}
         -outdir ${CMAKE_CURRENT_BINARY_DIR}
         ${swig_interface_file_fullname}
-    DEPENDS osimCommon osimSimulation osimAnalyses osimTools osimActuators
-        ${swig_interface_file_fullname})
+    DEPENDS ${swig_interface_file_fullname})
 
 ADD_CUSTOM_TARGET(PyWrap
     DEPENDS ${swig_output_cxx_file_fullname}
