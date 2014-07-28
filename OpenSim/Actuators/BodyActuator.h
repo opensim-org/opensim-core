@@ -32,14 +32,14 @@ class Body;
 class Model;
 
 //==============================================================================
-//                             SPATIAL ACTUATOR
+//                              BODY ACTUATOR
 //==============================================================================
 /**
  * Apply a spatial force (that is, force and torque) on the origin of the given 
  * body. That is, the force is applied at the origin; torques don't have 
  * associated points. This actuator has no states; the control is simply the 
  * force/torque to be applied to the model and is passed through directly.
- * The associated Controller is expected to generate forces/torques in body 
+ * The associated Controller is expected to generate forces/torques in the body 
  * frame.
  *
  * @author Soha Pouya, Michael Sherman
