@@ -23,11 +23,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*
- * Author: Ajay Seth
- */
-
-
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 
@@ -74,11 +69,11 @@ public:
 
 private:
 	void setNull();
-	void constructProperties();
-
+	
 	//--------------------------------------------------------------------------
 	// Implement Component interface
 	//--------------------------------------------------------------------------
+	void constructProperties() override;
 	void constructStructuralConnectors() override;
 
 	//--------------------------------------------------------------------------
@@ -91,14 +86,12 @@ private:
 	//--------------------------------------------------------------------------
 	// Implement Actuator interface.
 	//--------------------------------------------------------------------------
-    int numControls() const override { return 6; }
-	//virtual double computeActuation( const SimTK::State& s) const override {
-    //    return SimTK::NaN;
-    //}
+	int numControls() const override { return 6; }
+
 	double getPower(const SimTK::State& s) const { return 0; }
 	void overrideForce(SimTK::State& s, bool flag) const {}
 
-    //--------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// Implement ModelComponent interface
 	//--------------------------------------------------------------------------
 	// Setup method to initialize Body reference
