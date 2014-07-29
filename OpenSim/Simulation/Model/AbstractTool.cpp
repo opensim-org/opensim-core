@@ -818,7 +818,7 @@ void AbstractTool::setControlsFileName(const std::string& controlsFilename)
 /**
  * A Convenience method to verify that ColumnLabels are unique
  */
-bool AbstractTool::verifyUniqueComulnLabels(const Storage& aStore) const
+bool AbstractTool::verifyUniqueColumnLabels(const Storage& aStore) const
 {
 	const Array<string> lbls = aStore.getColumnLabels();
 	bool isUnique = true;
