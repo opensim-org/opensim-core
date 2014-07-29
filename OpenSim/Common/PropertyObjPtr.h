@@ -74,7 +74,7 @@ public:
 		_value = aProperty._value ? aProperty._value->clone() : 0;
 	}
 
-	PropertyObjPtr* clone() const OVERRIDE_11
+	PropertyObjPtr* clone() const override
 	{
 		return new PropertyObjPtr<T>(*this);
 	}
@@ -84,15 +84,15 @@ public:
 		delete _value; 
 	}
 
-    virtual int getNumValues() const OVERRIDE_11 {return _value?1:0;}
-    virtual bool isObjectProperty() const OVERRIDE_11 {return true;}
+    virtual int getNumValues() const override {return _value?1:0;}
+    virtual bool isObjectProperty() const override {return true;}
     virtual bool isAcceptableObjectTag
-        (const std::string& objectTypeTag) const OVERRIDE_11 {return true;}
-    virtual const Object& getValueAsObject(int index=-1) const OVERRIDE_11
+        (const std::string& objectTypeTag) const override {return true;}
+    virtual const Object& getValueAsObject(int index=-1) const override
     {   assert(index <= 0); return *_value; }
-    virtual Object& updValueAsObject(int index=-1) OVERRIDE_11
+    virtual Object& updValueAsObject(int index=-1) override
     {   assert(index <= 0); return *_value; }
-    virtual void setValueAsObject(const Object& obj, int index=-1) OVERRIDE_11
+    virtual void setValueAsObject(const Object& obj, int index=-1) override
     {   assert(index <= 0); setValue(obj.clone()); }
 
 	//--------------------------------------------------------------------------
@@ -120,7 +120,7 @@ public:
 	//--------------------------------------------------------------------------
 public:
 	// TYPE
-	virtual std::string getTypeName() const OVERRIDE_11
+	virtual std::string getTypeName() const override
     {   return T::getClassName(); }
 	// VALUE
 	virtual bool isValidObject(const Object *aValue) const { return dynamic_cast<const T*>(aValue)!=0; }

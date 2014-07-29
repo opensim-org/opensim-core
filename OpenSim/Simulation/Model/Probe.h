@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include "Model.h"
 #include "ModelComponent.h"
 
 namespace OpenSim {
@@ -207,16 +206,17 @@ protected:
     // ModelComponent interface.
     /** Concrete probes may override; be sure to invoke Super::connectToModel()
     at the beginning of the overriding method. **/
-    void connectToModel(Model& model) OVERRIDE_11;
+    void connectToModel(Model& model) override;
 
     /** Concrete probes may override; be sure to invoke Super::addToSystem()
     at the beginning of the overriding method. **/
-    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void addToSystem(SimTK::MultibodySystem& system) const override;
 
 
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
+    void constructOutputs() override;
 
 
 //=============================================================================

@@ -150,7 +150,7 @@ public:
 	virtual ~Connector() {}
 
 	/** Is the Connector connected to object of type T? */
-	bool isConnected() const OVERRIDE_11 {
+	bool isConnected() const override {
 		return !connectee.empty();
 	}
 
@@ -162,7 +162,7 @@ public:
 	const T& getConnectee() const { return connectee.getRef(); }
 
 	/** Connect this Connector to the provided conectee object */
-	void connect(const Object& object) OVERRIDE_11{
+	void connect(const Object& object) override{
 		const T* objT = dynamic_cast<const T*>(&object);
 		if (objT) {
 			connectee = *objT;
@@ -177,13 +177,13 @@ public:
 		}
 	}
 
-	void disconnect() OVERRIDE_11 {
+	void disconnect() override {
 		connectee.clear();
 	}
 	
 	/** Derived classes must satisfy this Interface */
 	/** get the type of object this connector connects to*/
-	std::string getConnectedToTypeName() const OVERRIDE_11
+	std::string getConnectedToTypeName() const override
 	{ return SimTK::NiceTypeName<T>::name(); }
 
 	SimTK_DOWNCAST(Connector, AbstractConnector);
@@ -213,7 +213,7 @@ public:
 	virtual ~AbstractInput() {}
 
 	// Connector interface
-	void connect(const Object& object) OVERRIDE_11{
+	void connect(const Object& object) override{
 		std::stringstream msg;
 		msg << "Input::connect(): ERR- Cannot connect '" << object.getName()
 			<< "' of type " << object.getConcreteClassName() <<
@@ -229,18 +229,18 @@ public:
 		//std::cout << ">." << std::endl;
 	}
 
-	void disconnect() OVERRIDE_11 {
+	void disconnect() override {
 		connectee.clear();
 	}
 
 	/** Is the Input connected to an Output? */
-	bool isConnected() const OVERRIDE_11 {
+	bool isConnected() const override {
 		return !connectee.empty();
 	}
 
 	/** Derived classes must satisfy this Interface */
 	/** get the type of object this connector connects to*/
-	std::string getConnectedToTypeName() const OVERRIDE_11
+	std::string getConnectedToTypeName() const override
 	{ return SimTK::NiceTypeName<AbstractOutput>::name(); }
 
 private:
@@ -265,7 +265,7 @@ public:
 		AbstractInput(name, connectAtStage) {}
 
 	/** Connect this Input the from provided (Abstract)Output */
-	void connect(const AbstractOutput& output) const OVERRIDE_11{
+	void connect(const AbstractOutput& output) const override{
 		// enable interaction through AbstractInterface
 		Super::connect(output);
 		// and value specific interface

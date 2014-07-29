@@ -112,17 +112,17 @@ public:
     // Computation
     //-----------------------------------------------------------------------------
     /** Compute the Force */
-    virtual SimTK::Vector computeProbeInputs(const SimTK::State& state) const OVERRIDE_11;
+    virtual SimTK::Vector computeProbeInputs(const SimTK::State& state) const override;
 
     /** Returns the number of probe inputs in the vector returned by computeProbeInputs(). */
-    int getNumProbeInputs() const OVERRIDE_11;
+    int getNumProbeInputs() const override;
 
     /** Returns the column labels of the probe values for reporting. 
         Currently uses the Probe name as the column label, so be sure
         to name your probe appropiately! */
-    virtual OpenSim::Array<std::string> getProbeOutputLabels() const OVERRIDE_11;
+    virtual OpenSim::Array<std::string> getProbeOutputLabels() const override;
 
-    void connectToModel(Model& model) OVERRIDE_11 FINAL_11;
+    void connectToModel(Model& model) override FINAL_11;
 //==============================================================================
 // PRIVATE
 //==============================================================================

@@ -84,7 +84,7 @@ public:
     // default destructor, copy constructor, copy assignment
 
 	/* Return a copy of this property */
-	PropertyDblVec_* clone() const OVERRIDE_11 {
+	PropertyDblVec_* clone() const override {
 		PropertyDblVec_* prop = new PropertyDblVec_<M>(*this);
 		return prop;
 	}
@@ -96,7 +96,7 @@ public:
 	//--------------------------------------------------------------------------
 public:
 	/** Get the type of this property as a string. */
-	std::string getTypeName() const OVERRIDE_11 {
+	std::string getTypeName() const override {
 		return "double";
 	}
 
@@ -106,7 +106,7 @@ public:
 		SimTK::Vec<M>::updAs(&_dblvec[0])=aVec; 
 	}
 	/** set value of this property from an array of doubles of equal or greater length */
-	void setValue(const Array<double> &anArray) OVERRIDE_11 {
+	void setValue(const Array<double> &anArray) override {
 		assert(anArray.getSize() >= M);
 		for(int i=0;i<M; i++)
 			_dblvec[i] = anArray[i];
@@ -116,19 +116,19 @@ public:
 	/** get const (read-only) reference to the value */
 	const SimTK::Vec<M>& getValueDblVec() const {return SimTK::Vec<M>::getAs(&_dblvec[0]); };
 	/** set value from double array */ // to be used by the serialization code
-	void setValue(int aSize, const double aArray[]) OVERRIDE_11 { 
+	void setValue(int aSize, const double aArray[]) override { 
 		assert(aSize == M);
 		setValue(SimTK::Vec<M>::getAs(aArray));
 	};
 #ifndef SWIG
 	/** get value as double array */
-    const Array<double>& getValueDblArray() const OVERRIDE_11 {return _dblvec;}
+    const Array<double>& getValueDblArray() const override {return _dblvec;}
 #endif
 	/** Nonconst version of accessor for use by GUI. */
-    Array<double>& getValueDblArray() OVERRIDE_11 {return _dblvec;}
+    Array<double>& getValueDblArray() override {return _dblvec;}
 
 	/** Get a constant String represeting the value of this property. */
-	std::string toString()  const OVERRIDE_11 {
+	std::string toString()  const override {
 		std::string str = "(";
 		char dbl[256];
 			for(int i=0; i < M; i++){
@@ -139,11 +139,11 @@ public:
 		return str;
 	};
 	// SIZE
-	int getArraySize() const OVERRIDE_11 { return M; }
+	int getArraySize() const override { return M; }
 
-    bool isArrayProperty() const OVERRIDE_11 {return true;}
+    bool isArrayProperty() const override {return true;}
 
-    int getNumValues() const OVERRIDE_11 {return M;}
+    int getNumValues() const override {return M;}
 //=============================================================================
 };	// END of class PropertyDblVec_
 

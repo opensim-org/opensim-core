@@ -143,19 +143,19 @@ protected:
 	// Model Component Interface
 	/** add new dynamical states to the multibody system corresponding
 	    to this muscle */
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void addToSystem(SimTK::MultibodySystem& system) const override;
 	/** initialize muscle state variables from properties. For example, any 
 	    properties that contain default state values */
-	void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
+	void initStateFromProperties(SimTK::State& s) const override;
 	/** use the current values in the state to update any properties such as 
 	    default values for state variables */
-	void setPropertiesFromState(const SimTK::State& s) OVERRIDE_11;
+	void setPropertiesFromState(const SimTK::State& s) override;
 
 	//-------------------------------------------------------------------------
 	// COMPUTATIONS
 	//-------------------------------------------------------------------------
 	/** Compute the derivatives for state variables added by this muscle */
-	void computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11;
+	void computeStateVariableDerivatives(const SimTK::State& s) const override;
 private:
 	/** construct the new properties and set their default values */
 	void constructProperties();
