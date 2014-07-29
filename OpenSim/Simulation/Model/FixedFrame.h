@@ -91,7 +91,7 @@ public:
 
 protected:
     // Model component interface.
-	void constructStructuralConnectors() OVERRIDE_11;
+	void constructStructuralConnectors() override;
 
 	
 

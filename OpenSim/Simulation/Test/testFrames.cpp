@@ -1263,7 +1263,7 @@ void testExternalForce()
     RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem());
 	integrator2.setAccuracy(accuracy);
 
-    manager.setIntegrator(&integrator2);
+    manager.setIntegrator(integrator2);
 	manager.integrate(s2);
 
 	// all dofs should remain constant
@@ -1300,7 +1300,7 @@ void testExternalForce()
     RungeKuttaMersonIntegrator integrator3(model.getMultibodySystem());
 	integrator3.setAccuracy(accuracy);
 
-    manager.setIntegrator(&integrator3);
+    manager.setIntegrator(integrator3);
 	manager.integrate(s3);
 
 	// all dofs should remain constant except Y
@@ -1348,7 +1348,7 @@ void testExternalForce()
     RungeKuttaMersonIntegrator integrator4(model.getMultibodySystem());
 	integrator4.setAccuracy(accuracy);
 
-    manager.setIntegrator(&integrator4);
+    manager.setIntegrator(integrator4);
 	manager.integrate(s4);
 
 	// all dofs should remain constant except X-translation

@@ -49,7 +49,8 @@ public:
     /** @name Property declarations 
     These are the serializable properties associated with a Frame. **/
     /**@{**/
-	//OpenSim_DECLARE_PROPERTY(last_name, std::string, "You know.  Family name?");
+	OpenSim_DECLARE_PROPERTY(translation, SimTK::Vec3,
+	"Point of application on each body.");//OpenSim_DECLARE_PROPERTY(last_name, std::string, "You know.  Family name?");
 
 	/**@}**/
 protected:
