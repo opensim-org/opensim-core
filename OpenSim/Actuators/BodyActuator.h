@@ -78,7 +78,6 @@ public:
     // assignment operator.
 
 private:
-	void setNull();
 	void constructProperties();
 
 	//--------------------------------------------------------------------------

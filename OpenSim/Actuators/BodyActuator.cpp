@@ -52,18 +52,8 @@ using SimTK::Vec3;
  */
 BodyActuator::BodyActuator()
 {
-	setNull();
-    constructInfrastructure();
-}
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
-//_____________________________________________________________________________
-// Set the data members of this actuator to their null values.
-void BodyActuator::setNull()
-{
 	setAuthors("Soha Pouya, Michael Sherman");
+	constructInfrastructure();
 }
 
 //_____________________________________________________________________________
