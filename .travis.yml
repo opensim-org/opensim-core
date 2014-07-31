@@ -14,10 +14,10 @@ before_install:
   # from https://github.com/travis-ci/travis-ci/issues/979.
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get update -qq
-  - sudo apt-get install -qq g++-4.8
+  - sudo apt-get install -qq g++-4.9
   # Only if compiling with gcc, update environment variables
   # to use the new gcc.
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
   # Clone Simbody into the Simbody directory. Don't need its history, and
   # only need the master branch.
   - git clone https://github.com/simbody/simbody.git simbody-source --depth 1 --branch master
