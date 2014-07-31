@@ -38,6 +38,9 @@ SET(SimTK_INCLUDE_PATH ${SIMTK_INCLUDE_DIR})
 ADD_CUSTOM_COMMAND(
     OUTPUT "${swig_generated_file_fullname}" "${swig_generated_header_fullname}"
     COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
+        # This command line option will remove the 
+        # generation of superfluous virtual method wrappers.
+        -fvirtual
         -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
         -I${OpenSim_SOURCE_DIR}
         -I${Simbody_INCLUDE_DIR}
