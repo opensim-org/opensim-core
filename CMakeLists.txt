@@ -119,8 +119,8 @@ SET(BUILD_PLATFORM "${PLATFORM_NAME}:${PLATFORM_ABI}" CACHE STRING
 # Allow build of binaries on Leopard that work on Tiger
 # Plus, -m32 is required for building on Snow Leopard, until we have a 64-bit Mac Lapack
 IF( APPLE )
-   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.8 -m32" )
-   SET( CMAKE_C_FLAGS "-mmacosx-version-min=10.8 -m32" )
+    SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.8 -m32" )
+    SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.8 -m32" )
    SET( LIB64  )
    SET(ARCH64 OFF) 
 ENDIF( APPLE )
@@ -295,16 +295,17 @@ ELSE(WIN32)
 	SET(NameSpace "")	## No renamed SimTK libraries except on Windows
 	IF(APPLE)
 	   IF(ARCH64) 
-		   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.8" )
+           SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.8" )
 	   ELSE (ARCH64)
-		   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.8 -m32" )
+           SET( CMAKE_CXX_FLAGS
+               "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.8 -m32" )
 	   ENDIF (ARCH64)
 	ELSE (APPLE)
 	   IF(ARCH64) 
-		  SET( CMAKE_CXX_FLAGS "-m64" )
+           SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64" )
 	   ELSE (ARCH64)
 		  # I don't believe setting the CXX flags is working in cmake.
-		  SET( CMAKE_CXX_FLAGS "-m32" )
+          SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32" )
 	   ENDIF(ARCH64)
 	ENDIF (APPLE)
 ENDIF(WIN32)
