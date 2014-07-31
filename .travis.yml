@@ -44,7 +44,7 @@ before_install:
 
 install:
   # Configure OpenSim.
-  - cmake . -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DCMAKE_PREFIX_PATH=simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=opensim-install
+  - cmake . -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DSIMBODY_HOME=simbody-install -DCMAKE_CXX_FLAGS=-Werror
   # Build OpenSim.
   - make -j8
 
@@ -53,9 +53,9 @@ script:
   - ctest -j8 --output-on-failure
   ## Test python wrapping.
   # Install OpenSim.
-  - make -j8 install
+  - sudo make -j8 install
   # Go to the python wrapping package directory.
-  - cd opensim-install/sdk/python
+  - cd /usr/local/sdk/python
   # Get a python package with which to run the tests.
   - sudo apt-get install python-pip
   - sudo pip install nosetests

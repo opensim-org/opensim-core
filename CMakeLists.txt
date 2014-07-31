@@ -40,8 +40,8 @@ MARK_AS_ADVANCED(PROCESSOR_COUNT)
 
 # This will be initialized to the environment variable of the same name
 # if it is set, otherwise it will be empty.
-SET(SimTK_INSTALL_DIR $ENV{SimTK_INSTALL_DIR} CACHE
-  PATH "Where to look for the Simbody libraries; you can change this.")
+SET(SIMBODY_HOME $ENV{SIMBODY_HOME} CACHE
+    PATH "The location of the Simbody installation to use; you can change this. Set as empty to let CMake search for Simbody automatically.")
 
 #
 # These are the names of all the libraries we depend on. These are
@@ -119,8 +119,8 @@ SET(BUILD_PLATFORM "${PLATFORM_NAME}:${PLATFORM_ABI}" CACHE STRING
 # Allow build of binaries on Leopard that work on Tiger
 # Plus, -m32 is required for building on Snow Leopard, until we have a 64-bit Mac Lapack
 IF( APPLE )
-   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.4 -m32" )
-   SET( CMAKE_C_FLAGS "-mmacosx-version-min=10.4 -m32" )
+   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.8 -m32" )
+   SET( CMAKE_C_FLAGS "-mmacosx-version-min=10.8 -m32" )
    SET( LIB64  )
    SET(ARCH64 OFF) 
 ENDIF( APPLE )
@@ -295,9 +295,9 @@ ELSE(WIN32)
 	SET(NameSpace "")	## No renamed SimTK libraries except on Windows
 	IF(APPLE)
 	   IF(ARCH64) 
-		   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.4" )
+		   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.8" )
 	   ELSE (ARCH64)
-		   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.4 -m32" )
+		   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.8 -m32" )
 	   ENDIF (ARCH64)
 	ELSE (APPLE)
 	   IF(ARCH64) 
@@ -312,11 +312,18 @@ ENDIF(WIN32)
 # C++11: In revision 8629, we started using std::unique_ptr, which requires
 # C++11 features to be enabled when using GCC or Clang.
 IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    # Using C++11 on OSX requires using libc++ instead of libstd++.
+    # libc++ is an implementation of the C++ standard library for OSX.
     IF(APPLE)
-        # Using C++11 on OSX requires using libc++ instead of libstd++.
-        # libc++ is an implementation of the C++ standard library for OSX.
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+        IF(XCODE)
+            SET(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
+            SET(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+        ELSE()
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+        ENDIF()
+    ELSE() # not APPLE
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     ENDIF()
 ENDIF()
 
@@ -324,14 +331,41 @@ ENDIF()
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 
 SET(BUILD_USING_NAMESPACE "OpenSim")
-# To accommodate a change in Simbody install organization with Simbody 3.4.
-IF(WIN32)
-    # Use the FindSimbody.cmake file in this directory, as the
-    # install organization hasn't changed on Windows.
-    FIND_PACKAGE(Simbody REQUIRED)
+
+## Find Simbody.
+
+# As of Simbody 3.4, Simbody has a SimbodyConfig.cmake file, which is a
+# preferred way to find Simbody over the previous FindSimbody.cmake script.
+# NO_MODULE means we will not allow the use of a FindSimbody.cmake script.
+SET(SIMBODY_VERSION_TO_USE 3.5)
+
+# Find Simbody freshly by unsetting this CMake-generated variable.
+UNSET(Simbody_DIR CACHE)
+IF("${SIMBODY_HOME}" STREQUAL "")
+    # We assume the only case in which the user
+    # wants us to search for Simbody is if they left SIMBODY_HOME empty.
+    # If the user specifies an invalid SIMBODY_HOME by accident,
+    # we shouldn't let that fail silently and still search for 
+    # Simbody elsewhere; they may never realize
+    # we are not using their requested installation of Simbody.
+    FIND_PACKAGE(Simbody ${SIMBODY_VERSION_TO_USE} QUIET
+        NO_MODULE)
 ELSE()
-    # Use the SimbodyConfig.cmake file within a Simbody installation.
-    FIND_PACKAGE(Simbody REQUIRED PATHS "${SimTK_INSTALL_DIR}" NO_MODULE)
+    # Find the package using the user-specified path.
+    # NO_DEFAULT_PATH will cause find_package to only 
+    # look in the provided PATHS.
+    FIND_PACKAGE(Simbody ${SIMBODY_VERSION_TO_USE} QUIET
+        PATHS "${SIMBODY_HOME}" NO_MODULE NO_DEFAULT_PATH)
+ENDIF()
+# This variable appears in the CMake GUI and could confuse users,
+# since this variable can't be changed manually.
+MARK_AS_ADVANCED(Simbody_DIR)
+
+# If Simbody is not found, Simbody_FOUND is false.
+IF(NOT Simbody_FOUND)
+    MESSAGE(FATAL_ERROR "
+        Simbody ${SIMBODY_VERSION_TO_USE} not found. Install Simbody and set
+        SIMBODY_HOME to the installation directory of Simbody.")
 ENDIF()
 
 include_directories(${Simbody_INCLUDE_DIR})

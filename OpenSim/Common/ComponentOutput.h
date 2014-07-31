@@ -109,6 +109,7 @@ public:
 	/** Convenience constructor
 	Create a Component::Output bound to a specific method of the Component and 
 	valid at a given realization Stage.
+    @param name             The name of the output.
 	@param outputFunction	The output function to be invoked (returns Output T)
 	@param dependsOnStage	Stage at which Output can be evaluated. */
 	explicit Output(const std::string& name,

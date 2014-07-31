@@ -11,12 +11,15 @@ IF(JAVA_INCLUDE_PATH)
 # Run command to generate OpenSimJNI_wrap.cxx
 SET(swig_generated_file_fullname
     ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI_wrap.cxx)
+SET(swig_generated_header_fullname
+    ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI_wrap.h)
 SET(swig_interface_file_fullname
     ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/Java/swig/javaWrapOpenSim.i)
 SET(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling"
     CACHE STRING
     "The wrapping is built as the Java package specified in this variable.")
 
+# Replace periods with slashes (to make a path).
 # Syntax for find-replace:
 # STRING(REGEX REPLACE <pattern> <replacement string>
 #                      <target variable> <source string>)
@@ -32,20 +35,31 @@ EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E make_directory
 
 SET(SimTK_INCLUDE_PATH ${SIMTK_INCLUDE_DIR})
 
-ADD_CUSTOM_TARGET(JavaWrap ${SWIG_EXECUTABLE} -v -c++ -java
-    -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
-    -I${OpenSim_SOURCE_DIR}
-    -I${Simbody_INCLUDE_DIR}
-    -I${OpenSim_SOURCE_DIR}/OpenSim/Wrapping
-	-o ${swig_generated_file_fullname}
-    -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
-    ${swig_interface_file_fullname})
+ADD_CUSTOM_COMMAND(
+    OUTPUT "${swig_generated_file_fullname}" "${swig_generated_header_fullname}"
+    COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
+        -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
+        -I${OpenSim_SOURCE_DIR}
+        -I${Simbody_INCLUDE_DIR}
+        -I${OpenSim_SOURCE_DIR}/OpenSim/Wrapping
+    	-o ${swig_generated_file_fullname}
+        -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
+        ${swig_interface_file_fullname}
+    DEPENDS "${swig_interface_file_fullname}")
+    
+# This target actually depends on a lot more (all the produced .java files); 
+# but we will just use these two files as a proxy for all of those. All we need
+# is for this target to depend on outputs of the command above.
+ADD_CUSTOM_TARGET(JavaWrap
+    DEPENDS "${swig_generated_file_fullname}"
+            "${swig_generated_header_fullname}")
+
 SET_TARGET_PROPERTIES(JavaWrap PROPERTIES
     PROJECT_LABEL "Java Bindings - Generate")
 
 
-FILE(GLOB SOURCE_FILES OpenSimContext.cpp)
-FILE(GLOB INCLUDE_FILES ${swig_generated_file_fullname} OpenSimContext.h)
+SET(SOURCE_FILES "${swig_generated_file_fullname}" OpenSimContext.cpp)
+SET(INCLUDE_FILES "${swig_generated_header_fullname}" OpenSimContext.h)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 					${OpenSim_SOURCE_DIR}/Vendors 
@@ -55,7 +69,8 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools osimSimmFileWriter)
+LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools
+    osimSimmFileWriter)
 
 ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
@@ -64,8 +79,8 @@ SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
    PROJECT_LABEL "Java Bindings - osim${KIT}"
 )
 
-ADD_DEPENDENCIES(osim${KIT} osimTools)
 ADD_DEPENDENCIES(osim${KIT} JavaWrap)
+
 # Shared libraries are needed at runtime for applications, so we put them
 # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
 # or OpemSim/lib/*.dylib (Mac). Windows .lib files, and Linux/Mac .a static
