@@ -52,14 +52,6 @@ Frame::Frame() : ModelComponent()
 
 //_____________________________________________________________________________
 /**
- * Construct properties.
- */
-void Frame::constructProperties(){
-
-	//constructProperty_last_name("Snow");
-}
-//_____________________________________________________________________________
-/**
 * Set a null frame as Identity rotation, 0 translation
 */
 void Frame::setNull()

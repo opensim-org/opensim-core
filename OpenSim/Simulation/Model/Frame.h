@@ -49,9 +49,6 @@ public:
     /** @name Property declarations 
     These are the serializable properties associated with a Frame. **/
     /**@{**/
-	OpenSim_DECLARE_PROPERTY(translation, SimTK::Vec3,
-	"Point of application on each body.");//OpenSim_DECLARE_PROPERTY(last_name, std::string, "You know.  Family name?");
-
 	/**@}**/
 protected:
 
@@ -79,18 +76,10 @@ public:
 	const SimTK::Vec3& expressPointInAnotherFrame(const SimTK::State &state, SimTK::Vec3 &point, Frame &frame) const;
 	//const Station& expressStationInAnotherFrame(const SimTK::State &state, Station &station, Frame &frame) const;
 
-
-protected:
-	void constructProperties() override;
 	
-
-	
-
-
 private:
-
-
 	void setNull();
+
 protected:
 	static const SimTK::Transform identityTransform;
 

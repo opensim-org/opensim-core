@@ -48,12 +48,8 @@ public:
     /** @name Property declarations 
     These are the serializable properties associated with a Body. **/
     /**@{**/
-	
-
 	/**@}**/
 protected:
-
-	
 
 //=============================================================================
 // PUBLIC METHODS
