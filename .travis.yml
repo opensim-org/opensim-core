@@ -14,10 +14,10 @@ before_install:
   # from https://github.com/travis-ci/travis-ci/issues/979.
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get update -qq
-  - sudo apt-get install -qq g++-4.9
+  - sudo apt-get install -qq g++-4.8
   # Only if compiling with gcc, update environment variables
   # to use the new gcc.
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
   # Clone Simbody into the Simbody directory. Don't need its history, and
   # only need the master branch.
   - git clone https://github.com/simbody/simbody.git simbody-source --depth 1 --branch master
@@ -34,10 +34,10 @@ before_install:
   - cd ../
 
   ## Install SWIG to build Java/python wrapping.
-  - wget http://sourceforge.net/projects/swig/files/swig/swig-2.0.12/swig-2.0.12.tar.gz/download
-  - mv download swig-2.0.12.tar.gz
-  - tar xzf swig-2.0.12.tar.gz
-  - cd swig-2.0.12
+  - wget http://sourceforge.net/projects/swig/files/swig/swig-2.0.10/swig-2.0.10.tar.gz/download
+  - mv download swig.tar.gz
+  - tar xzf swig.tar.gz
+  - cd swig
   - ./configure && make && sudo make -j8 install
   # Go back to the directory containing OpenSim.
   - cd ../
