@@ -35,9 +35,9 @@ before_install:
 
   ## Install SWIG to build Java/python wrapping.
   - wget http://sourceforge.net/projects/swig/files/swig/swig-2.0.10/swig-2.0.10.tar.gz/download
-  - mv download swig.tar.gz
-  - tar xzf swig.tar.gz
-  - cd swig
+  - mv download swig-2.0.10.tar.gz
+  - tar xzf swig-2.0.10.tar.gz
+  - cd swig-2.0.10
   - ./configure && make && sudo make -j8 install
   # Go back to the directory containing OpenSim.
   - cd ../
