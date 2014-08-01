@@ -820,7 +820,7 @@ void AbstractTool::setControlsFileName(const std::string& controlsFilename)
  */
 bool AbstractTool::verifyUniqueColumnLabels(const Storage& aStore) const
 {
-	const Array<string> lbls = aStore.getColumnLabels();
+	const Array<string>& lbls = aStore.getColumnLabels();
 	bool isUnique = true;
 	for(int i=0; i< lbls.getSize() && isUnique; i++){
 		isUnique= (lbls.findIndex(lbls[i])==i);
