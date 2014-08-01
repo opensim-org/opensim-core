@@ -46,7 +46,7 @@ install:
   # Configure OpenSim.
   - cmake . -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DSIMBODY_HOME=simbody-install -DCMAKE_CXX_FLAGS=-Werror
   # Build OpenSim.
-  - make
+  - make -j8 osimJavaJNI
 
 script:
   # Install OpenSim.
