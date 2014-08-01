@@ -48,7 +48,7 @@ install:
   # Build OpenSim.
   # gcc is crashing when building osimJavaJNI with other targets (_opensim?).
   # gcc does not crash if we build _opensim separately.
-  - if [ "$CXX" = "g++-4.8" ]; then make -j8 osimJavaJNI PyWrap; fi
+  - if [ "$CXX" = "g++-4.8" ]; then make -j8 osimJavaJNI; fi
   - make -j8 # This'll build _opensim and the tests.
 
 script:
