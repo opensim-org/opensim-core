@@ -60,6 +60,6 @@ script:
   - sudo ldconfig
   # Get a python package with which to run the tests.
   - sudo apt-get install python-nose
-  # Run the python tests.
-  - nosetests --verbosity=3
+  # Run the python tests, verbosely.
+  - nosetests -v
 
