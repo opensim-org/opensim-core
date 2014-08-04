@@ -92,7 +92,7 @@
 				</Body>
 				<Body name="rod1">
 					<mass>       1.00000000 </mass>
-					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<mass_center>       0.00000000       0.2       0.00000000 </mass_center>
 					<inertia_xx>       0.00000000 </inertia_xx>
 					<inertia_yy>       0.00000000 </inertia_yy>
 					<inertia_zz>       0.00000000 </inertia_zz>

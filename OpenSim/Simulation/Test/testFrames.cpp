@@ -40,6 +40,7 @@ using namespace std;
 
 void testBodyFrame();
 void testFixedFrameOnBodyFrame();
+void testStationOnFrame();
 
 int main()
 {
@@ -53,6 +54,11 @@ int main()
 	try { testFixedFrameOnBodyFrame(); }
     catch (const std::exception& e){
 		cout << e.what() <<endl; failures.push_back("testFixedFrameOnBodyFrame");
+	}
+
+	try { testStationOnFrame(); }
+	catch (const std::exception& e){
+		cout << e.what() << endl; failures.push_back("testFixedFrameOnBodyFrame");
 	}
 
     if (!failures.empty()) {
@@ -115,5 +121,36 @@ void testFixedFrameOnBodyFrame()
 	return;
 }
 
-
+void testStationOnFrame()
+{
+	Model dPendulum("double_pendulum.osim");
+	// Create "named" ground frame 
+	BodyFrame gndFrame(dPendulum.getGroundBody()); 
+	gndFrame.setName("gnd_frame");
+	dPendulum.addModelComponent(&gndFrame);	
+	// Create "rod1" frame
+	const OpenSim::Body& rod1 = dPendulum.getBodySet().get("rod1");
+	BodyFrame rod1Frame(rod1); // Frame at end of first link
+	rod1Frame.setName("rod1_frame");
+	dPendulum.addModelComponent(&rod1Frame);
+	const SimTK::Vec3& com = rod1.get_mass_center();
+	// Create station aligned with rod1 com in rod1_frame
+	Station myStation;
+	myStation.set_location(com);
+	myStation.updConnector<Frame>("reference_frame").set_connected_to_name("rod1_frame");
+	dPendulum.addModelComponent(&myStation);
+	// myStation should coinicde with com location of rod1 in ground
+	SimTK::State& st = dPendulum.initSystem();
+	for (double ang = 0; ang <= 90.0; ang += 10.){
+		double radAngle = SimTK::convertDegreesToRadians(ang);
+		const Coordinate& coord = dPendulum.getCoordinateSet().get("q1");
+		coord.setValue(st, radAngle);
+		SimTK::Vec3 comInGround = myStation.reexpressLocationInFrame(st, gndFrame);
+		SimTK::Vec3 comBySimbody(0.);
+		dPendulum.getSimbodyEngine().getPosition(st, rod1, com, comBySimbody);
+		assert((comInGround - comBySimbody).norm() < 1e-6);
+	}
+	dPendulum.disownAllComponents(); // BAD but avoids crash on Model going out of scope since rod1Frame is on stack!
+	return;
+}
 

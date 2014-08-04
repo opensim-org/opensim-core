@@ -82,18 +82,6 @@ void Station::constructStructuralConnectors()
 	constructStructuralConnector<Frame>("reference_frame");
 }
 
-//_____________________________________________________________________________
-/**
-* Perform some set up functions that happen after the
-* object has been deserialized or copied.
-*
-* @param aModel OpenSim model containing this Station.
-*/
-void Station::connectToModel(Model& aModel)
-{
-	Super::connectToModel(aModel);
-
-}
 /**
  * Return the reference frame with respect to which this station is defined
  *
@@ -116,16 +104,9 @@ void Station::setReferenceFrame(const OpenSim::Frame& aFrame)
 	updConnector<Frame>("reference_frame").connect(aFrame);
 }
 
-Station Station::reexpressInFrame(const SimTK::State& s, OpenSim::Frame& aFrame) const
+SimTK::Vec3 Station::reexpressLocationInFrame(const SimTK::State& s, OpenSim::Frame& aFrame) const
 {
-	// Create a new Station, the location of which we will compute
-	Station transformed;
-	transformed.setReferenceFrame(aFrame);
 	// Get the transform from the station's frame to the other frame
-	SimTK::Transform new_X_old = getReferenceFrame().calcTransformToOtherFrame(s, aFrame);
-	// Get the location of the station as a Vec3 expressed in the station's reference frame
-	SimTK::Vec3 point = get_location();
-	// compute and set the point vec3 transformed to the other frame
-	transformed.set_location( new_X_old*point );
-	return transformed;
+	SimTK::Vec3 cuurentLocation = get_location();
+	return getReferenceFrame().expressPointInAnotherFrame(s, cuurentLocation, aFrame);
 }

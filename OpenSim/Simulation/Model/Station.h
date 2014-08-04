@@ -50,13 +50,9 @@ public:
 	These are the serializable properties associated with a Station. **/
 	/**@{**/
 	OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
-		"The location (Vec3) of the station in some refernce frame. Frame will be specified as Connector.");
+		"The location (Vec3) of the station in some refernce frame. Frame is specified as Connector.");
 	/**@}**/
 
-//=============================================================================
-// Model Component Interface
-//=============================================================================
-	void connectToModel(Model& model);
 public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
@@ -65,7 +61,7 @@ public:
 	virtual ~Station();
 	const OpenSim::Frame& getReferenceFrame() const;
 	void setReferenceFrame( const OpenSim::Frame& aFrame );
-	Station reexpressInFrame(const SimTK::State& s, OpenSim::Frame& aFrame) const;
+	SimTK::Vec3 reexpressLocationInFrame(const SimTK::State& s, OpenSim::Frame& aFrame) const;
 private:
 	void setNull();
 	void constructProperties() override;
