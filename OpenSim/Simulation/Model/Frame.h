@@ -72,8 +72,8 @@ public:
 	virtual const SimTK::Transform& getTransform() const = 0;
 	virtual const SimTK::Transform calcTransformToGround(const SimTK::State &state) const = 0;
 	const SimTK::Transform calcTransformToOtherFrame(const SimTK::State &state, Frame &frame) const;
-	const SimTK::Vec3& expressVectorInAnotherFrame(const SimTK::State &state, SimTK::Vec3 &vec, Frame &frame) const;
-	const SimTK::Vec3& expressPointInAnotherFrame(const SimTK::State &state, SimTK::Vec3 &point, Frame &frame) const;
+	const SimTK::Vec3 expressVectorInAnotherFrame(const SimTK::State &state, SimTK::Vec3 &vec, Frame &frame) const;
+	const SimTK::Vec3 expressPointInAnotherFrame(const SimTK::State &state, SimTK::Vec3 &point, Frame &frame) const;
 	//const Station& expressStationInAnotherFrame(const SimTK::State &state, Station &station, Frame &frame) const;
 
 	
