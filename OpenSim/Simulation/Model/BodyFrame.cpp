@@ -53,7 +53,7 @@ BodyFrame::BodyFrame() : Frame()
 /**
  * Constructor.
  */
-BodyFrame::BodyFrame(Body& body) :
+BodyFrame::BodyFrame(const Body& body) :
    Frame()
 {
 	setNull();
@@ -105,7 +105,7 @@ const SimTK::Transform BodyFrame::calcTransformFromGround(const SimTK::State &st
 // GET AND SET
 //=============================================================================
 //_____________________________________________________________________________
-void BodyFrame::setBody(Body& body) 
+void BodyFrame::setBody(const Body& body) 
 { 
 	updConnector<Body>("body").connect(body); 
 }

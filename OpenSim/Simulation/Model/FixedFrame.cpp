@@ -53,7 +53,7 @@ FixedFrame::FixedFrame() : Frame()
 /**
  * Constructor.
  */
-FixedFrame::FixedFrame(Frame& parent_frame) : Frame()
+FixedFrame::FixedFrame(const Frame& parent_frame) : Frame()
 {
 	setNull();
 	constructInfrastructure();
@@ -79,6 +79,7 @@ void FixedFrame::constructProperties()
 	SimTK::Vec3 zero(0.0, 0.0, 0.0);
 	constructProperty_translation(zero);
 	constructProperty_orientation(zero);
+	// transform at default
 }
 
 void FixedFrame::constructStructuralConnectors()
@@ -93,17 +94,25 @@ void FixedFrame::constructStructuralConnectors()
 //_____________________________________________________________________________
 const SimTK::Transform& FixedFrame::getTransform() const
 {
+	// If properties have been updated, then update the cached transform object to be in sync.
+	if (!isObjectUpToDateWithProperties()){
+		transform.updP() = get_translation();
+		transform.updR().setRotationToBodyFixedXYZ(get_orientation());
+	}
 	return transform;
 }
-void FixedFrame::setTransform(SimTK::Transform& xform)
+void FixedFrame::setTransform(const SimTK::Transform& xform)
 {
 	transform = xform;
+// Make sure properties are updated in case we either call gettters or serialize after this call
+	set_translation(xform.p());
+	set_orientation(xform.R().convertRotationToBodyFixedXYZ());
 }
 const SimTK::Transform FixedFrame::calcTransformToGround(const SimTK::State &state) const
 {
 
 
-	return transform*getParentFrame().calcTransformToGround(state);
+	return getTransform()*getParentFrame().calcTransformToGround(state);
 
 }
 const SimTK::Transform FixedFrame::calcTransformFromGround(const SimTK::State &state) const
@@ -114,7 +123,7 @@ const SimTK::Transform FixedFrame::calcTransformFromGround(const SimTK::State &s
 // GET AND SET
 //=============================================================================
 //_____________________________________________________________________________
-void FixedFrame::setParentFrame(Frame& parent_frame) 
+void FixedFrame::setParentFrame(const Frame& parent_frame) 
 { 
 	updConnector<Frame>("parent_frame").connect(parent_frame); 
 }

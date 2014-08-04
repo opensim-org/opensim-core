@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20302">
+	<Model name="double_pendulum">
+		<defaults/>
+    <credits> Ajay Seth </credits>
+		<publications> For testing </publications>
+		<ForceSet name="">
+      <objects>
+        <CoordinateActuator name="Torq1">
+          <isDisabled> false </isDisabled>
+          <!--Minimum allowed value for control signal. Used primarily when solving
+					    for control values-->
+          <min_control> -infinity </min_control>
+          <!--Maximum allowed value for control signal. Used primarily when solving
+					    for control values-->
+          <max_control> infinity </max_control>
+          <coordinate> q1 </coordinate>
+          <optimal_force>       1.00000000 </optimal_force>
+        </CoordinateActuator>
+        <CoordinateActuator name="Torq2">
+          <isDisabled> false </isDisabled>
+          <!--Minimum allowed value for control signal. Used primarily when solving
+					    for control values-->
+          <min_control> -infinity </min_control>
+          <!--Maximum allowed value for control signal. Used primarily when solving
+					    for control values-->
+          <max_control> infinity </max_control>
+          <coordinate> q2 </coordinate>
+          <optimal_force>       1.00000000 </optimal_force>
+        </CoordinateActuator>
+      </objects>
+			<groups/>
+		</ForceSet>
+		<length_units> meters </length_units>
+		<force_units> N </force_units>
+		<!--Acceleration due to gravity.-->
+		<gravity>       0.00000000      -9.80665000       0.00000000 </gravity>
+		<!--Bodies in the model.-->
+		<BodySet name="">
+			<objects>
+				<Body name="ground">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint/>
+					<VisibleObject name="">
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> Unassigned </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes> true </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+						<display_preference> 4 </display_preference>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="rod1">
+					<mass>       1.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="pin1">
+							<parent_body> ground </parent_body>
+							<location_in_parent>       0.00000000       0.00000000       0.00000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.50000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="q1">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>      -0.78539816 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<range>      -1.57079633       1.57079633 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject name="">
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> cylinder.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>       0.00000000       0.00000000       0.00000000       0.00000000       0.25000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       0.02000000       0.50000000       0.02000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+                <DisplayGeometry name="">
+                  <!--Name of geometry file .vtp, .stl, .obj-->
+                  <geometry_file> sphere.vtp </geometry_file>
+                  <!--Color used to display the geometry when visible-->
+                  <color>       1.00000000       1.00000000       1.00000000 </color>
+                  <!--Name of texture file .jpg, .bmp-->
+                  <texture_file>  </texture_file>
+                  <!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+                  <transform>       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+                  <!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+                  <scale_factors>       0.10000000       0.10000000       0.10000000 </scale_factors>
+                  <!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+                  <display_preference> 4 </display_preference>
+                  <!--Display opacity between 0.0 and 1.0-->
+                  <opacity>       1.00000000 </opacity>
+                </DisplayGeometry>
+							</objects>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes> true </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+						<display_preference> 4 </display_preference>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+        <Body name="rod2">
+          <mass>       1.00000000 </mass>
+          <mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+          <inertia_xx>       0.00000000 </inertia_xx>
+          <inertia_yy>       0.00000000 </inertia_yy>
+          <inertia_zz>       0.00000000 </inertia_zz>
+          <inertia_xy>       0.00000000 </inertia_xy>
+          <inertia_xz>       0.00000000 </inertia_xz>
+          <inertia_yz>       0.00000000 </inertia_yz>
+          <!--Joint that connects this body with the parent body.-->
+          <Joint>
+            <PinJoint name="pin2">
+              <parent_body> rod1 </parent_body>
+              <location_in_parent>       0.00000000       0.00000000       0.00000000 </location_in_parent>
+              <orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+              <location>       0.00000000       0.50000000       0.00000000 </location>
+              <orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+              <!--Generalized coordinates parameterizing this joint.-->
+              <CoordinateSet name="">
+                <objects>
+                  <Coordinate name="q2">
+                    <!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+                    <motion_type> rotational </motion_type>
+                    <default_value>      -1.04719755 </default_value>
+                    <default_speed_value>       0.00000000 </default_speed_value>
+                    <range>      -1.57079633       1.57079633 </range>
+                    <clamped> false </clamped>
+                    <locked> false </locked>
+                    <prescribed_function/>
+                  </Coordinate>
+                </objects>
+                <groups/>
+              </CoordinateSet>
+              <reverse> false </reverse>
+            </PinJoint>
+          </Joint>
+          <VisibleObject name="">
+            <!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+            <GeometrySet name="">
+              <objects>
+                <DisplayGeometry name="">
+                  <!--Name of geometry file .vtp, .stl, .obj-->
+                  <geometry_file> cylinder.vtp </geometry_file>
+                  <!--Color used to display the geometry when visible-->
+                  <color>       1.00000000       1.00000000       1.00000000 </color>
+                  <!--Name of texture file .jpg, .bmp-->
+                  <texture_file>  </texture_file>
+                  <!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+                  <transform>       0.00000000       0.00000000       0.00000000       0.00000000       0.25000000       0.00000000 </transform>
+                  <!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+                  <scale_factors>       0.02000000       0.50000000       0.02000000 </scale_factors>
+                  <!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+                  <display_preference> 4 </display_preference>
+                  <!--Display opacity between 0.0 and 1.0-->
+                  <opacity>       1.00000000 </opacity>
+                </DisplayGeometry>
+                <DisplayGeometry name="">
+                  <!--Name of geometry file .vtp, .stl, .obj-->
+                  <geometry_file> sphere.vtp </geometry_file>
+                  <!--Color used to display the geometry when visible-->
+                  <color>       1.00000000       1.00000000       1.00000000 </color>
+                  <!--Name of texture file .jpg, .bmp-->
+                  <texture_file>  </texture_file>
+                  <!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+                  <transform>       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+                  <!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+                  <scale_factors>       0.10000000       0.10000000       0.10000000 </scale_factors>
+                  <!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+                  <display_preference> 4 </display_preference>
+                  <!--Display opacity between 0.0 and 1.0-->
+                  <opacity>       1.00000000 </opacity>
+                </DisplayGeometry>
+              </objects>
+              <groups/>
+            </GeometrySet>
+            <!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+            <scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+            <!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+            <transform>       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+            <!--Whether to show a coordinate frame-->
+            <show_axes> true </show_axes>
+            <!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+            <display_preference> 4 </display_preference>
+          </VisibleObject>
+          <WrapObjectSet name="">
+            <objects/>
+            <groups/>
+          </WrapObjectSet>
+        </Body>
+      </objects>
+      <groups/>
+    </BodySet>
+    <!--Constraints in the model.-->
+    <ConstraintSet name="">
+      <objects/>
+      <groups/>
+    </ConstraintSet>
+    <!--Markers in the model.-->
+    <MarkerSet name="">
+      <objects/>
+      <groups/>
+    </MarkerSet>
+    <!--ContactGeometry objects in the model.-->
+    <ContactGeometrySet name="">
+      <objects/>
+      <groups/>
+    </ContactGeometrySet>
+    <!--Controller objects in the model.-->
+    <ControllerSet name="Controllers">
+      <objects/>
+      <groups/>
+    </ControllerSet>
+  </Model>
+</OpenSimDocument>
+

@@ -35,7 +35,7 @@ class Body;
 //=============================================================================
 //=============================================================================
 /**
- * To do  
+ *  FixedFrame a Frame based off another Frame that could be either a FixedFrame or BodyFrame
  *
  * @author Matt DeMers
  */
@@ -73,7 +73,7 @@ public:
 	FixedFrame();
 
 	/** Convenience constructor */	
-	FixedFrame(Frame& parent_frame);
+	FixedFrame(const Frame& parent_frame);
 	
 
 	// use compiler generated destructor, copy constructor and assignment operator
@@ -82,11 +82,11 @@ public:
 
 	/** Spatial Operations for Frames*/
 	virtual const SimTK::Transform& getTransform() const;
-	void setTransform(SimTK::Transform& xform);
+	void setTransform(const SimTK::Transform& xform);
 	virtual const SimTK::Transform calcTransformToGround(const SimTK::State &state) const;
 	virtual const SimTK::Transform calcTransformFromGround(const SimTK::State &state) const;
 	/** Get and set the parent reference frame*/
-	void setParentFrame(Frame& frame);
+	void setParentFrame(const Frame& frame);
 	const Frame& getParentFrame() const;
 
 protected:
@@ -100,7 +100,7 @@ private:
 
 	void setNull();
 	void constructProperties() override;
-	SimTK::Transform transform;
+	mutable SimTK::Transform transform; // made mutable since it's used only for caching, public const methods can still modify it.
 
 
 //=============================================================================

@@ -63,7 +63,7 @@ public:
 	BodyFrame();
 
 	/** Convenience constructor */	
-	BodyFrame(Body& body);
+	BodyFrame(const Body& body);
 	
 
 	// use compiler generated destructor, copy constructor and assignment operator
@@ -74,7 +74,7 @@ public:
 	virtual const SimTK::Transform& getTransform() const;
 	virtual const SimTK::Transform calcTransformToGround(const SimTK::State &state) const;
 	virtual const SimTK::Transform calcTransformFromGround(const SimTK::State &state) const;
-	void setBody(Body& body);
+	void setBody(const Body& body);
 	const Body& getBody();
 
 protected:
