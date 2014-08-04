@@ -62,6 +62,10 @@ own project.
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
 #include <OpenSim/Simulation/MomentArmSolver.h>
 
+#include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/BodyFrame.h>
+#include <OpenSim/Simulation/Model/FixedFrame.h>
+
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
 #include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
@@ -815,6 +819,10 @@ namespace SimTK {
 %include <OpenSim/Simulation/InverseDynamicsSolver.h>
 %include <OpenSim/Simulation/MomentArmSolver.h>
 
+%include <OpenSim/Simulation/Model/Frame.h>
+%include <OpenSim/Simulation/Model/BodyFrame.h>
+%include <OpenSim/Simulation/Model/FixedFrame.h>
+
 %include <OpenSim/Simulation/Model/Force.h>
 %template(SetForces) OpenSim::Set<OpenSim::Force>;
 %template(ModelComponentSetForces) OpenSim::ModelComponentSet<OpenSim::Force>;
@@ -957,8 +965,6 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/BushingForce.h>
 %include <OpenSim/Simulation/Model/FunctionBasedBushingForce.h>
 %include <OpenSim/Simulation/Model/ExpressionBasedBushingForce.h>
-%include <OpenSim/Simulation/Model/BodyFrame.h>
-%include <OpenSim/Simulation/Model/FixedFrame.h>
 
 //osimAnalyses
 %include <OpenSim/Analyses/osimAnalysesDLL.h>
