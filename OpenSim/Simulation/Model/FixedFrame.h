@@ -35,7 +35,9 @@ class Body;
 //=============================================================================
 //=============================================================================
 /**
- *  FixedFrame a Frame based off another Frame that could be either a FixedFrame or BodyFrame
+ *  FixedFrame a Frame based off another Frame (parent frame) that could be either 
+ * another FixedFrame or a BodyFrame.
+ * 
  *
  * @author Matt DeMers
  */

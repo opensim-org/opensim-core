@@ -35,7 +35,8 @@ class Body;
 //=============================================================================
 //=============================================================================
 /**
- * To do  
+ * A frame attached to the geometric origin of a Body. The Body is specified through 
+ * the Connector mechanism.
  *
  * @author Matt DeMers
  */
