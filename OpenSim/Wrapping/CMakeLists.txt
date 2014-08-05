@@ -1,6 +1,6 @@
 
 IF(BUILD_PYTHON_WRAPPING OR BUILD_JAVA_WRAPPING)
-    INCLUDE(${CMAKE_ROOT}/Modules/FindSWIG.cmake)
+    find_package(SWIG 2.0.9 REQUIRED)
 ENDIF()
 
 SUBDIRS(Java Python)

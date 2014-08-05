@@ -73,6 +73,7 @@ void Body::constructProperties()
 	constructProperty_mass_center(SimTK::Vec3(0));
 	constructProperty_inertia(SimTK::Vec6(0));
 	constructProperty_WrapObjectSet(WrapObjectSet());
+    constructProperty_VisibleObject(VisibleObject());
 }
 
 
@@ -395,7 +396,7 @@ void Body::getScaleFactors(SimTK::Vec3& scales) const
 {
 
 	SimTK::Vec3 scaleFactors;
-	_displayer.getScaleFactors(scaleFactors);
+	get_VisibleObject().getScaleFactors(scaleFactors);
 
 	scales = scaleFactors;
 

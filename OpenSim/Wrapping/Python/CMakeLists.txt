@@ -47,6 +47,14 @@ SET_TARGET_PROPERTIES(PyWrap PROPERTIES PROJECT_LABEL "Python Bindings - Generat
 SET(SOURCE_FILES OpenSimContext.cpp "${swig_output_cxx_file_fullname}")
 SET(INCLUDE_FILES OpenSimContext.h "${swig_output_header_file_fullname}")
 
+# swig 2.0.10 uses the c++ register keyword, which Clang tells us is
+# deprecated. While still using swig 2.0.10, we suppress this warning.
+# In some versions of Clang, this warning is Wdeprecated-register.
+IF (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+    SET_SOURCE_FILES_PROPERTIES("${swig_output_cxx_file_fullname}"
+        PROPERTIES COMPILE_FLAGS "-Wno-deprecated")
+ENDIF()
+
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 					${OpenSim_SOURCE_DIR}/Vendors 
 					${PYTHON_INCLUDE_PATH}
