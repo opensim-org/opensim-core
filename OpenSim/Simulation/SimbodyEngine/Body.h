@@ -139,6 +139,9 @@ protected:
 
 private:
 
+	/** Component Interface */
+	void constructProperties();
+
 	/** Return the equivalent (internal) SimTK::Rigid::Body for this body.
 	    Not valid until after addToSystem on Body has be called.*/
 	const SimTK::Body::Rigid& getInternalRigidBody() const {
@@ -148,9 +151,6 @@ private:
 	/** Override of the default implementation to account for versioning. */
 	void updateFromXMLNode(SimTK::Xml::Element& aNode,
 		int versionNumber = -1) override;
-
-	void setNull();
-	void constructProperties();
 
 	// mutable because fist get constructs tensor from properties
 	mutable SimTK::Inertia _inertia;
