@@ -23,18 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*
- * Author: Ajay Seth
- */
-
-
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
-#include "Simbody.h"
-
 
 namespace OpenSim { 
 
@@ -42,14 +32,14 @@ class Body;
 class Model;
 
 //==============================================================================
-//                             SPATIAL ACTUATOR
+//                              BODY ACTUATOR
 //==============================================================================
 /**
  * Apply a spatial force (that is, force and torque) on the origin of the given 
  * body. That is, the force is applied at the origin; torques don't have 
  * associated points. This actuator has no states; the control is simply the 
  * force/torque to be applied to the model and is passed through directly.
- * The associated Controller is expected to generate forces/torques in body 
+ * The associated Controller is expected to generate forces/torques in the body 
  * frame.
  *
  * @author Soha Pouya, Michael Sherman
@@ -94,14 +84,12 @@ private:
 	//--------------------------------------------------------------------------
 	// Implement Actuator interface.
 	//--------------------------------------------------------------------------
-    int numControls() const override { return 6; }
-	//virtual double computeActuation( const SimTK::State& s) const override {
-    //    return SimTK::NaN;
-    //}
+	int numControls() const override { return 6; }
+
 	double getPower(const SimTK::State& s) const { return 0; }
 	void overrideForce(SimTK::State& s, bool flag) const {}
 
-    //--------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// Implement ModelComponent interface
 	//--------------------------------------------------------------------------
 	// Setup method to initialize Body reference
