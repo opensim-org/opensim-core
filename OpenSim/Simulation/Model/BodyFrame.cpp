@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                             OpenSim:  BodyFrame.cpp                             *
+ *                             OpenSim:  BodyFrame.cpp                        *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Frank C. Anderson, Ajay Seth                                    *
+ * Author(s): Matt DeMers, Ajay Seth, Ayman Habib                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -90,7 +90,6 @@ const SimTK::Transform BodyFrame::calcTransformToGround(const SimTK::State &stat
 	const Body& myBody = getConnector<Body>("body").getConnectee();
 	const SimTK::MobilizedBodyIndex mbi = myBody.getIndex();
 
-	const SimTK::MobilizedBody &G = getModel().getMatterSubsystem().getGround();
 	const SimTK::MobilizedBody &B = getModel().getMatterSubsystem().getMobilizedBody(mbi);
 	const SimTK::Transform& ground_X_B = B.getBodyTransform(state);
 	

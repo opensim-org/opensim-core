@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2013 Stanford University and the Authors                *
- * Author(s): Ajay Seth, Ayman Habib                                          *
+ * Author(s): Matt DeMers Ajay Seth, Ayman Habib                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -35,7 +35,7 @@ class Body;
 //=============================================================================
 //=============================================================================
 /**
- *  FixedFrame a Frame based off another Frame (parent frame) that could be either 
+ * A FixedFrame is a Frame based off another Frame (parent frame) that could be either 
  * another FixedFrame or a BodyFrame.
  * 
  *
@@ -48,14 +48,14 @@ public:
 // PROPERTIES
 //==============================================================================
     /** @name Property declarations 
-    These are the serializable properties associated with a Body. **/
+    These are the serializable properties associated with a FixedFrame. **/
     /**@{**/
 	
 	OpenSim_DECLARE_PROPERTY(translation, SimTK::Vec3, 
-		"Translation from the parent frame's origin to this frame's origin," 
+		"Translation from the parent frame's origin to this frame's origin, " 
 		"expressed in the parent frame.");
 	OpenSim_DECLARE_PROPERTY(orientation, SimTK::Vec3,
-		"orientation of this frame in it's parent frame, expressed as a "
+		"orientation of this frame in its parent frame, expressed as a "
 		"body-fixed x-y-z rotation sequence.");
 	
 	/**@}**/
@@ -76,19 +76,16 @@ public:
 
 	/** Convenience constructor */	
 	FixedFrame(const Frame& parent_frame);
-	
-
-	// use compiler generated destructor, copy constructor and assignment operator
-
-	/** Access Properties of the Body */
 
 	/** Spatial Operations for Frames*/
 	virtual const SimTK::Transform& getTransform() const;
 	void setTransform(const SimTK::Transform& xform);
 	virtual const SimTK::Transform calcTransformToGround(const SimTK::State &state) const;
 	virtual const SimTK::Transform calcTransformFromGround(const SimTK::State &state) const;
-	/** Get and set the parent reference frame*/
+
+	/** Set the parent reference frame*/
 	void setParentFrame(const Frame& frame);
+	/** Get the parent reference frame*/
 	const Frame& getParentFrame() const;
 
 protected:

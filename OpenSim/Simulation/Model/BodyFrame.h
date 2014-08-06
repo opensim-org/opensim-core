@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
- * Author(s): Ajay Seth, Ayman Habib                                          *
+ * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Author(s): Matt DeMers, Ajay Seth, Ayman Habib                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -72,8 +72,8 @@ public:
 	/** Access Properties of the Body */
 
 	/** Spatial Operations for Frames*/
-	virtual const SimTK::Transform& getTransform() const;
-	virtual const SimTK::Transform calcTransformToGround(const SimTK::State &state) const;
+	const SimTK::Transform& getTransform() const override;
+	const SimTK::Transform calcTransformToGround(const SimTK::State &state) const override;
 	virtual const SimTK::Transform calcTransformFromGround(const SimTK::State &state) const;
 	void setBody(const Body& body);
 	const Body& getBody();

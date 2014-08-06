@@ -37,7 +37,7 @@ class Model;
 //=============================================================================
 /**
  * A Frame is a modeling abstraction that defines a Righthanded CoordinateSystem
- * to be used for attachng and/or expressing model quantities/objects in. 
+ * to be used for attaching and/or expressing model quantities/objects in. 
  *
  * @author Matt DeMers
  */
@@ -71,10 +71,10 @@ public:
 
 	/** Spatial Operations for Frames*/
 	virtual const SimTK::Transform& getTransform() const = 0;
-	virtual const SimTK::Transform calcTransformToGround(const SimTK::State &state) const = 0;
-	const SimTK::Transform calcTransformToOtherFrame(const SimTK::State &state, Frame &frame) const;
-	const SimTK::Vec3 expressVectorInAnotherFrame(const SimTK::State &state, const SimTK::Vec3& vec, Frame &frame) const;
-	const SimTK::Vec3 expressPointInAnotherFrame(const SimTK::State &state, const SimTK::Vec3& point, Frame &frame) const;
+	virtual const SimTK::Transform calcTransformToGround(const SimTK::State& state) const = 0;
+	const SimTK::Transform calcTransformToOtherFrame(const SimTK::State& state, const Frame& frame) const;
+	const SimTK::Vec3 expressVectorInAnotherFrame(const SimTK::State& state, const SimTK::Vec3& vec, const Frame& frame) const;
+	const SimTK::Vec3 expressPointInAnotherFrame(const SimTK::State& state, const SimTK::Vec3& point, const Frame& frame) const;
 
 	
 private:
