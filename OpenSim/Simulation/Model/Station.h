@@ -1,7 +1,7 @@
-#ifndef __Station_h__
-#define __Station_h__
+#ifndef OPENSIM_STATION_H_
+#define OPENSIM_STATION_H_
 /* -------------------------------------------------------------------------- *
- *                             OpenSim:  Station.h                             *
+ *                            OpenSim:  Station.h                             *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2014 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                         *
+ * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -35,9 +35,9 @@ class Body;
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Fixed Station (point) based off some Frame (referenceFrame), 
- * the Frame could be a BodyFrame (fixed to a Body directly) or a Frame based off another 
- * Frame.
+ * A class implementing a Station. A Station is a fixed point defined with 
+ * respect to a reference Frame. The reference Frame can be a BodyFrame (fixed 
+ * to a Body), a FixedFrame (affixed to another Frame) or any other Frame.
  *
  * @author Ayman Habib
  * @version 1.0
@@ -52,7 +52,8 @@ public:
 	These are the serializable properties associated with a Station. **/
 	/**@{**/
 	OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
-		"The location (Vec3) of the station in some refernce frame. Frame is specified as Connector.");
+		"The location (Vec3) of the station in a reference frame. "
+		"Frame is specified as Connector.");
 	/**@}**/
 
 public:
@@ -79,6 +80,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __Station_h__
+#endif // OPENSIM_STATION_H_
 
 
