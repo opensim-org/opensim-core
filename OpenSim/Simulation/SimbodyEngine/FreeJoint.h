@@ -31,50 +31,52 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Free joint.  The underlying implementation 
+ * A class implementing a Free joint.  The underlying implementation
  * in Simbody is a MobilizedBody::Free.
  *
  * @author Ajay Seth
  * @version 1.0
  */
 class OSIMSIMULATION_API FreeJoint : public Joint {
-OpenSim_DECLARE_CONCRETE_OBJECT(FreeJoint, Joint);
+    OpenSim_DECLARE_CONCRETE_OBJECT(FreeJoint, Joint);
 
 private:
-	static const int _numMobilities = 6;
+    static const int _numMobilities = 6;
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
 
-	/** Flag to use Euler angles to parameterize rotation of the body  */
-	//PropertyBool _useEulerAnglesProp;
-	//bool &_useEulerAngles;
+    /** Flag to use Euler angles to parameterize rotation of the body  */
+    //PropertyBool _useEulerAnglesProp;
+    //bool &_useEulerAngles;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	FreeJoint();
-	// Convenience Constructor
-	FreeJoint(const std::string &name, Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-		  Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
-		  /*bool useEulerAngles=true,*/ bool reverse=false);
+    // CONSTRUCTION
+    FreeJoint();
+    // Convenience Constructor
+    FreeJoint(const std::string &name, Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
+              Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
+              /*bool useEulerAngles=true,*/ bool reverse=false);
 
-	virtual ~FreeJoint();
+    virtual ~FreeJoint();
 
-	int numCoordinates() const override  { return _numMobilities; }
+    int numCoordinates() const override  {
+        return _numMobilities;
+    }
 
 protected:
-	// ModelComponent interface.
+    // ModelComponent interface.
     void addToSystem(SimTK::MultibodySystem& system) const override;
     void initStateFromProperties(SimTK::State& s) const override;
     void setPropertiesFromState(const SimTK::State& state) override;
 
 private:
-	SimTK::MobilizedBodyIndex _masslessBodyIndex;
-	void setNull();
+    SimTK::MobilizedBodyIndex _masslessBodyIndex;
+    void setNull();
 //=============================================================================
 };	// END of class FreeJoint
 //=============================================================================

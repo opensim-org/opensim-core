@@ -35,12 +35,12 @@ class Model;
 //                         HUNT CROSSLEY FORCE
 //==============================================================================
 /** This force subclass implements a Hunt-Crossley contact model. It uses Hertz
-contact theory to model the interactions between a set of ContactSpheres and 
+contact theory to model the interactions between a set of ContactSpheres and
 ContactHalfSpaces.
 
 @author Peter Eastman **/
 class OSIMSIMULATION_API HuntCrossleyForce : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(HuntCrossleyForce, Force);
+    OpenSim_DECLARE_CONCRETE_OBJECT(HuntCrossleyForce, Force);
 public:
     class ContactParameters;
     class ContactParametersSet;
@@ -52,11 +52,11 @@ public:
     These are the serializable properties associated with this class. Others
     are inherited from the superclass. **/
     /**@{**/
-	OpenSim_DECLARE_PROPERTY(contact_parameters, 
-        HuntCrossleyForce::ContactParametersSet,
-		"Material properties.");
-	OpenSim_DECLARE_PROPERTY(transition_velocity, double,
-		"Slip velocity (creep) at which peak static friction occurs.");
+    OpenSim_DECLARE_PROPERTY(contact_parameters,
+                             HuntCrossleyForce::ContactParametersSet,
+                             "Material properties.");
+    OpenSim_DECLARE_PROPERTY(transition_velocity, double,
+                             "Slip velocity (creep) at which peak static friction occurs.");
     /**@}**/
 
 //==============================================================================
@@ -79,7 +79,7 @@ public:
      * Set the transition velocity for switching between static and dynamic friction.
      */
     void setTransitionVelocity(double velocity);
-    
+
     /**
      * Access to ContactParameters. Methods assume size 1 of ContactParametersSet and add one ContactParameter if needed
      */
@@ -96,29 +96,29 @@ public:
     void addGeometry(const std::string& name);
 
 
-	//-----------------------------------------------------------------------------
-	// Reporting
-	//-----------------------------------------------------------------------------
-	/** 
-	 * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
-	 */
-	virtual OpenSim::Array<std::string> getRecordLabels() const ;
-	/**
-	*  Provide the value(s) to be reported that correspond to the labels
-	*/
-	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
+    //-----------------------------------------------------------------------------
+    // Reporting
+    //-----------------------------------------------------------------------------
+    /**
+     * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
+     */
+    virtual OpenSim::Array<std::string> getRecordLabels() const ;
+    /**
+    *  Provide the value(s) to be reported that correspond to the labels
+    */
+    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
 
 protected:
 
-	/**
-	 * Create a SimTK::Force which implements this Force.
-	 */
-	void addToSystem(SimTK::MultibodySystem& system) const;
+    /**
+     * Create a SimTK::Force which implements this Force.
+     */
+    void addToSystem(SimTK::MultibodySystem& system) const;
 
 
 private:
     // INITIALIZATION
-	void constructProperties();
+    void constructProperties();
 
 //==============================================================================
 };	// END of class HuntCrossleyForce
@@ -129,7 +129,7 @@ private:
 //                 HUNT CROSSLEY FORCE :: CONTACT PARAMETERS
 //==============================================================================
 class OSIMSIMULATION_API HuntCrossleyForce::ContactParameters : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(HuntCrossleyForce::ContactParameters, Object);
+    OpenSim_DECLARE_CONCRETE_OBJECT(HuntCrossleyForce::ContactParameters, Object);
 public:
 //==============================================================================
 // PROPERTIES
@@ -138,26 +138,26 @@ public:
     These are the serializable properties associated with this class. Others
     are inherited from the superclass. **/
     /**@{**/
-	OpenSim_DECLARE_LIST_PROPERTY(geometry, std::string,
-		"Names of geometry objects affected by these parameters.");
-	OpenSim_DECLARE_PROPERTY(stiffness, double,
-		"");
-	OpenSim_DECLARE_PROPERTY(dissipation, double,
-		"");
-	OpenSim_DECLARE_PROPERTY(static_friction, double,
-		"");
-	OpenSim_DECLARE_PROPERTY(dynamic_friction, double,
-		"");
-	OpenSim_DECLARE_PROPERTY(viscous_friction, double,
-		"");
+    OpenSim_DECLARE_LIST_PROPERTY(geometry, std::string,
+                                  "Names of geometry objects affected by these parameters.");
+    OpenSim_DECLARE_PROPERTY(stiffness, double,
+                             "");
+    OpenSim_DECLARE_PROPERTY(dissipation, double,
+                             "");
+    OpenSim_DECLARE_PROPERTY(static_friction, double,
+                             "");
+    OpenSim_DECLARE_PROPERTY(dynamic_friction, double,
+                             "");
+    OpenSim_DECLARE_PROPERTY(viscous_friction, double,
+                             "");
     /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
     ContactParameters();
-    ContactParameters(double stiffness, double dissipation, 
-                      double staticFriction, double dynamicFriction, 
+    ContactParameters(double stiffness, double dissipation,
+                      double staticFriction, double dynamicFriction,
                       double viscousFriction);
 
     const Property<std::string>& getGeometry() const;
@@ -182,16 +182,16 @@ private:
 //==============================================================================
 //                 HUNT CROSSLEY FORCE :: CONTACT PARAMETERS SET
 //==============================================================================
-class OSIMSIMULATION_API HuntCrossleyForce::ContactParametersSet 
-:   public Set<HuntCrossleyForce::ContactParameters> {
-OpenSim_DECLARE_CONCRETE_OBJECT(HuntCrossleyForce::ContactParametersSet, 
-                                Set<HuntCrossleyForce::ContactParameters>);
+class OSIMSIMULATION_API HuntCrossleyForce::ContactParametersSet
+        :   public Set<HuntCrossleyForce::ContactParameters> {
+    OpenSim_DECLARE_CONCRETE_OBJECT(HuntCrossleyForce::ContactParametersSet,
+                                    Set<HuntCrossleyForce::ContactParameters>);
 
 public:
-	ContactParametersSet();
+    ContactParametersSet();
 
 private:
-	void setNull();
+    void setNull();
 };
 
 #endif

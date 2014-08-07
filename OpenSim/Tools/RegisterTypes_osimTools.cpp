@@ -70,59 +70,59 @@ static osimToolsInstantiator instantiator;
  */
 OSIMTOOLS_API void RegisterTypes_osimTools()
 {
-  try {
+    try {
 
-	Object::registerType( ScaleTool() );
-	//Object::registerType( IKTool() );
-	Object::registerType( CMCTool() );
-	Object::registerType( RRATool() );
-	Object::registerType( ForwardTool() );
-	Object::registerType( AnalyzeTool() );
+        Object::registerType( ScaleTool() );
+        //Object::registerType( IKTool() );
+        Object::registerType( CMCTool() );
+        Object::registerType( RRATool() );
+        Object::registerType( ForwardTool() );
+        Object::registerType( AnalyzeTool() );
 
-	Object::registerType( GenericModelMaker() );
-	Object::registerType( IKCoordinateTask() );
-	Object::registerType( IKMarkerTask() );
-	Object::registerType( IKTaskSet() );
-	//Object::registerType( IKTrial() );
-	//Object::registerType( IKTrialSet() );
-	Object::registerType( MarkerPair() );
-	Object::registerType( MarkerPairSet() );
-	Object::registerType( MarkerPlacer() );
-	Object::registerType( Measurement() );
-	Object::registerType( MeasurementSet() );
-	Object::registerType( ModelScaler() );
+        Object::registerType( GenericModelMaker() );
+        Object::registerType( IKCoordinateTask() );
+        Object::registerType( IKMarkerTask() );
+        Object::registerType( IKTaskSet() );
+        //Object::registerType( IKTrial() );
+        //Object::registerType( IKTrialSet() );
+        Object::registerType( MarkerPair() );
+        Object::registerType( MarkerPairSet() );
+        Object::registerType( MarkerPlacer() );
+        Object::registerType( Measurement() );
+        Object::registerType( MeasurementSet() );
+        Object::registerType( ModelScaler() );
 
-	Object::registerType( CorrectionController() );
-	Object::registerType( CMC() );
-	Object::registerType( CMC_Joint() );
-	Object::registerType( CMC_Point() );
-	Object::registerType( MuscleStateTrackingTask() );
-	Object::registerType( CMC_TaskSet() );
+        Object::registerType( CorrectionController() );
+        Object::registerType( CMC() );
+        Object::registerType( CMC_Joint() );
+        Object::registerType( CMC_Point() );
+        Object::registerType( MuscleStateTrackingTask() );
+        Object::registerType( CMC_TaskSet() );
 
-	Object::registerType( SMC_Joint() );
-	Object::registerType( InverseKinematicsTool() );
-	Object::registerType( InverseDynamicsTool() );
-	// Old versions
-	Object::RenameType("rdCMC_Joint",   "CMC_Joint");
-	Object::RenameType("rdCMC_Point",   "CMC_Point");
-	Object::RenameType("rdCMC_TaskSet", "CMC_TaskSet");
+        Object::registerType( SMC_Joint() );
+        Object::registerType( InverseKinematicsTool() );
+        Object::registerType( InverseDynamicsTool() );
+        // Old versions
+        Object::RenameType("rdCMC_Joint",   "CMC_Joint");
+        Object::RenameType("rdCMC_Point",   "CMC_Point");
+        Object::RenameType("rdCMC_TaskSet", "CMC_TaskSet");
 
-	Object::RenameType("IKTool", "InverseKinematicsTool");
+        Object::RenameType("IKTool", "InverseKinematicsTool");
 
-  } catch (const std::exception& e) {
-    std::cerr 
-        << "ERROR during osimTools Object registration:\n"
-        << e.what() << "\n";
-  }
+    } catch (const std::exception& e) {
+        std::cerr
+                << "ERROR during osimTools Object registration:\n"
+                << e.what() << "\n";
+    }
 }
 
 
 osimToolsInstantiator::osimToolsInstantiator()
 {
-       registerDllClasses();
+    registerDllClasses();
 }
 
 void osimToolsInstantiator::registerDllClasses()
 {
-       RegisterTypes_osimTools();
+    RegisterTypes_osimTools();
 }

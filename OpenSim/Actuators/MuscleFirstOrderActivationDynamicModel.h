@@ -85,8 +85,8 @@ namespace OpenSim {
 
     @author Matt Millard
 */
-class OSIMACTUATORS_API MuscleFirstOrderActivationDynamicModel : public Object{
-OpenSim_DECLARE_CONCRETE_OBJECT(MuscleFirstOrderActivationDynamicModel, Object);
+class OSIMACTUATORS_API MuscleFirstOrderActivationDynamicModel : public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MuscleFirstOrderActivationDynamicModel, Object);
 public:
 
 //==============================================================================
@@ -96,11 +96,11 @@ public:
         These are the serializable properties associated with this class. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
-        "Activation time constant in seconds");
+                             "Activation time constant in seconds");
     OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
-        "Deactivation time constant in seconds");
+                             "Deactivation time constant in seconds");
     OpenSim_DECLARE_PROPERTY(minimum_activation, double,
-        "Lower bound on activation");
+                             "Lower bound on activation");
     /**@}**/
 
 //==============================================================================
@@ -141,7 +141,7 @@ public:
     @returns A boolean indicating whether the value was set.
     */
     bool setDeactivationTimeConstant(double deactivationTimeConstant);
-        
+
     /**
     @param minimumActivation The lower bound on activation.
     @returns A boolean indicating whether the value was set.

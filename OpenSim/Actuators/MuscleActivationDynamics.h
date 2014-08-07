@@ -54,7 +54,7 @@ namespace OpenSim {
 **/
 
 class OSIMACTUATORS_API MuscleActivationDynamics : public ModelComponent {
-OpenSim_DECLARE_ABSTRACT_OBJECT(MuscleActivationDynamics, ModelComponent);
+    OpenSim_DECLARE_ABSTRACT_OBJECT(MuscleActivationDynamics, ModelComponent);
 public:
     /** The %ExcitationGetter abstract class defines a standard interface for
         supplying muscle excitation to activation models. Each muscle must
@@ -73,11 +73,11 @@ public:
         These are the serializable properties associated with this class. **/
     //@{
     OpenSim_DECLARE_PROPERTY(minimum_activation, double,
-        "Smallest permitted activation value");
+                             "Smallest permitted activation value");
     OpenSim_DECLARE_PROPERTY(maximum_activation, double,
-        "Largest permitted activation value");
+                             "Largest permitted activation value");
     OpenSim_DECLARE_PROPERTY(default_activation, double,
-        "Default activation value");
+                             "Default activation value");
     //@}
 
 //==============================================================================

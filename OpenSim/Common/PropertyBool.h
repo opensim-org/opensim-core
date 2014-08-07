@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -43,7 +43,7 @@
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 class OSIMCOMMON_API PropertyBool : public Property_Deprecated
 {
@@ -52,39 +52,39 @@ class OSIMCOMMON_API PropertyBool : public Property_Deprecated
 // DATA
 //=============================================================================
 private:
-	/** Value. */
-	bool _value;
+    /** Value. */
+    bool _value;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	PropertyBool();
-	PropertyBool(const std::string &aName,bool aValue);
-	PropertyBool(const PropertyBool &aProperty);
-	/*virtual*/ PropertyBool* clone() const;
+    PropertyBool();
+    PropertyBool(const std::string &aName,bool aValue);
+    PropertyBool(const PropertyBool &aProperty);
+    /*virtual*/ PropertyBool* clone() const;
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
-	PropertyBool& operator=(const PropertyBool &aProperty);
+    PropertyBool& operator=(const PropertyBool &aProperty);
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 public:
-	// TYPE
-	virtual std::string getTypeName() const override;
-	// VALUE
-	virtual void setValue(bool aValue);
-	virtual bool& getValueBool();
-	virtual const bool& getValueBool() const;
-	// VALUE as String
-	virtual std::string toString() const;
+    // TYPE
+    virtual std::string getTypeName() const override;
+    // VALUE
+    virtual void setValue(bool aValue);
+    virtual bool& getValueBool();
+    virtual const bool& getValueBool() const;
+    // VALUE as String
+    virtual std::string toString() const;
 //=============================================================================
 };	// END of class PropertyBool
 

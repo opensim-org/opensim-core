@@ -46,27 +46,27 @@ class Function;
  * FunctionThresholdCondition is a concrete implementation of a Condition.
  * A FunctionThresholdCondition returns true if its associate function is above
  * a certain threshold and false otherwise.
- * 
- * Specific FunctionThresholdConditions should be derived from this class. 
+ *
+ * Specific FunctionThresholdConditions should be derived from this class.
  *
  * @author Ajay Seth
  * @version 1.0
  */
 class OSIMSIMULATION_API FunctionThresholdCondition : public Condition {
-OpenSim_DECLARE_CONCRETE_OBJECT(FunctionThresholdCondition, Condition);
+    OpenSim_DECLARE_CONCRETE_OBJECT(FunctionThresholdCondition, Condition);
 
 //=============================================================================
 // DATA
 //=============================================================================
 
 protected:
-	/** Function that Condition evaluates */
-	PropertyObjPtr<Function> _functionProp;
-	Function *&_function;
+    /** Function that Condition evaluates */
+    PropertyObjPtr<Function> _functionProp;
+    Function *&_function;
 
-	/** Function that Condition evaluates */
-	PropertyDbl _thresholdProp;
-	double &_threshold;
+    /** Function that Condition evaluates */
+    PropertyDbl _thresholdProp;
+    double &_threshold;
 
 //=============================================================================
 // METHODS
@@ -75,23 +75,23 @@ protected:
 // CONSTRUCTION
 //--------------------------------------------------------------------------
 public:
-	FunctionThresholdCondition();
-	FunctionThresholdCondition(const FunctionThresholdCondition &aFunctionThresholdCondition);
-	virtual ~FunctionThresholdCondition();
+    FunctionThresholdCondition();
+    FunctionThresholdCondition(const FunctionThresholdCondition &aFunctionThresholdCondition);
+    virtual ~FunctionThresholdCondition();
 
-	FunctionThresholdCondition& operator=(const FunctionThresholdCondition &aFunctionThresholdCondition);
-	void copyData(const FunctionThresholdCondition &aFunctionThresholdCondition);
+    FunctionThresholdCondition& operator=(const FunctionThresholdCondition &aFunctionThresholdCondition);
+    void copyData(const FunctionThresholdCondition &aFunctionThresholdCondition);
 
-	// Implement Condition interface. 
+    // Implement Condition interface.
 
-	/**
-	 *  The defining FunctionThresholdCondition method  
-	 */
-	bool calcCondition(const SimTK::State& s) const override;
+    /**
+     *  The defining FunctionThresholdCondition method
+     */
+    bool calcCondition(const SimTK::State& s) const override;
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 
 //=============================================================================
 };	// END of class FunctionThresholdCondition

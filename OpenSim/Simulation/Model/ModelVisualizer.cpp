@@ -40,7 +40,10 @@
 #include <string>
 using std::string;
 #include <iostream>
-using std::cout; using std::cerr; using std::clog; using std::endl;
+using std::cout;
+using std::cerr;
+using std::clog;
+using std::endl;
 #include <fstream>
 
 using namespace OpenSim;
@@ -50,7 +53,7 @@ using namespace SimTK;
 //                       OPENSIM INPUT LISTENER
 //==============================================================================
 
-// These constants are used to identify the OpenSim display menu in the 
+// These constants are used to identify the OpenSim display menu in the
 // Visualizer window and particular selections from it.
 static const int ShowMenuId = 1;
 static const int ToggleWrapGeometry = 0;
@@ -62,7 +65,7 @@ static const int ToggleFrames = 5;
 static const int ToggleDefaultGeometry = 6;
 
 /* This class gets first crack at user input coming in through the Visualizer
-window. We use it to intercept anything we want to handle as part of the 
+window. We use it to intercept anything we want to handle as part of the
 standard OpenSim-provided interface, such as turning on and off display of wrap
 objects. Anything we don't handle here will just get passed on to the
 Visualizer's InputSilo where it will remain until the user's program goes
@@ -75,8 +78,8 @@ public:
     to override only the menu-pick method and ignore anything we don't
     recognize. Caution: this is being called from the Visualizer's input thread,
     *not* the main execution thread. Synchronization is required to do anything
-    complicated; here we're just setting/clearing visualization flags so no 
-    synchronization is required. Note that the Visualizer's InputSilo class 
+    complicated; here we're just setting/clearing visualization flags so no
+    synchronization is required. Note that the Visualizer's InputSilo class
     handles synchronization automatically but this one does not. */
     /*virtual*/ bool menuSelected(int menu, int item) {
         if (menu != ShowMenuId) return false; // some other menu
@@ -98,11 +101,11 @@ public:
             hints.setShowMarkers(!hints.getShowMarkers());
             return true;
         case ToggleDefaultGeometry: {
-            SimbodyMatterSubsystem& matter = 
+            SimbodyMatterSubsystem& matter =
                 _model.updMatterSubsystem();
             matter.setShowDefaultGeometry(!matter.getShowDefaultGeometry());
             return true;
-            }
+        }
         };
         return false; // let someone else deal with this input
     }
@@ -117,20 +120,20 @@ private:
 // Draw a path point with a small body-axis-aligned cross centered on
 // the point.
 void DefaultGeometry::drawPathPoint(const MobilizedBodyIndex&             body,
-                          const Vec3&                           pt_B,
-                          const Vec3&                           color,
-                          Array_<SimTK::DecorativeGeometry>&    geometry)
+                                    const Vec3&                           pt_B,
+                                    const Vec3&                           color,
+                                    Array_<SimTK::DecorativeGeometry>&    geometry)
 {
     geometry.push_back(DecorativeSphere(0.005)
-                .setTransform(pt_B)
-                .setBodyId(body)
-                .setColor(color)
-                .setOpacity(0.8));
+                       .setTransform(pt_B)
+                       .setBodyId(body)
+                       .setColor(color)
+                       .setOpacity(0.8));
 }
 
 void DefaultGeometry::generateDecorations
-   (const State&                         state, 
-    Array_<SimTK::DecorativeGeometry>&   geometry) 
+(const State&                         state,
+ Array_<SimTK::DecorativeGeometry>&   geometry)
 {
     const SimbodyMatterSubsystem& matter = _model.getMatterSubsystem();
     const ModelDisplayHints&      hints  = _model.getDisplayHints();
@@ -159,43 +162,43 @@ void DefaultGeometry::generateDecorations
         const BodySet& bodies = _model.getBodySet();
         for (int i = 0; i < bodies.getSize(); i++) {
             const OpenSim::Body& body = bodies[i];
-            const Transform& X_GB = 
+            const Transform& X_GB =
                 matter.getMobilizedBody(body.getIndex()).getBodyTransform(state);
             const WrapObjectSet& wrapObjects = body.getWrapObjectSet();
             for (int j = 0; j < wrapObjects.getSize(); j++) {
                 const string type = wrapObjects[j].getConcreteClassName();
                 if (type == "WrapCylinder") {
-                    const WrapCylinder* cylinder = 
+                    const WrapCylinder* cylinder =
                         dynamic_cast<const WrapCylinder*>(&wrapObjects[j]);
                     if (cylinder != NULL) {
                         Transform X_GW = X_GB*cylinder->getTransform()*ztoy;
                         geometry.push_back(
-                            DecorativeCylinder(cylinder->getRadius(), 
+                            DecorativeCylinder(cylinder->getRadius(),
                                                cylinder->getLength()/2)
-                                .setTransform(X_GW).setResolution(_dispWrapResolution)
-                                .setColor(color).setOpacity(_dispWrapOpacity));
+                            .setTransform(X_GW).setResolution(_dispWrapResolution)
+                            .setColor(color).setOpacity(_dispWrapOpacity));
                     }
                 }
                 else if (type == "WrapEllipsoid") {
-                    const WrapEllipsoid* ellipsoid = 
+                    const WrapEllipsoid* ellipsoid =
                         dynamic_cast<const WrapEllipsoid*>(&wrapObjects[j]);
                     if (ellipsoid != NULL) {
                         Transform X_GW = X_GB*ellipsoid->getTransform();
                         geometry.push_back(
                             DecorativeEllipsoid(ellipsoid->getRadii())
-                                .setTransform(X_GW).setResolution(_dispWrapResolution)
-                                .setColor(color).setOpacity(_dispWrapOpacity));
+                            .setTransform(X_GW).setResolution(_dispWrapResolution)
+                            .setColor(color).setOpacity(_dispWrapOpacity));
                     }
                 }
                 else if (type == "WrapSphere") {
-                    const WrapSphere* sphere = 
+                    const WrapSphere* sphere =
                         dynamic_cast<const WrapSphere*>(&wrapObjects[j]);
                     if (sphere != NULL) {
                         Transform X_GW = X_GB*sphere->getTransform();
                         geometry.push_back(
                             DecorativeSphere(sphere->getRadius())
-                                .setTransform(X_GW).setResolution(_dispWrapResolution)
-                                .setColor(color).setOpacity(_dispWrapOpacity));
+                            .setTransform(X_GW).setResolution(_dispWrapResolution)
+                            .setColor(color).setOpacity(_dispWrapOpacity));
                     }
                 }
             }
@@ -212,21 +215,21 @@ void DefaultGeometry::generateDecorations
 
         for (int i = 0; i < contactGeometries.getSize(); i++) {
             const OpenSim::Body& body = contactGeometries.get(i).getBody();
-            const Transform& X_GB = 
+            const Transform& X_GB =
                 matter.getMobilizedBody(body.getIndex()).getBodyTransform(state);
             const string type = contactGeometries.get(i).getConcreteClassName();
             const int displayPref = contactGeometries.get(i).getDisplayPreference();
             //cout << type << ": " << contactGeometries.get(i).getName() << ": disp pref = " << displayPref << endl;
 
             if (type == "ContactSphere" && displayPref == 4) {
-                ContactSphere* sphere = 
+                ContactSphere* sphere =
                     dynamic_cast<ContactSphere*>(&contactGeometries.get(i));
                 if (sphere != NULL) {
                     Transform X_GW = X_GB*sphere->getTransform();
                     geometry.push_back(
                         DecorativeSphere(sphere->getRadius())
-                            .setTransform(X_GW).setResolution(_dispContactResolution)
-                            .setColor(color).setOpacity(_dispContactOpacity));
+                        .setTransform(X_GW).setResolution(_dispContactResolution)
+                        .setColor(color).setOpacity(_dispContactOpacity));
                 }
             }
         }
@@ -250,7 +253,7 @@ void ModelVisualizer::show(const SimTK::State& state) const {
 
 // See if we can find the given file. The rules are
 //  - if it is an absolute pathname, we only get one shot, else:
-//  - define "modelDir" to be the absolute pathname of the 
+//  - define "modelDir" to be the absolute pathname of the
 //      directory from which we read in the .osim model, if we did,
 //      otherwise modelDir="." (current directory).
 //  - look for the geometry file in modelDir
@@ -262,39 +265,40 @@ findGeometryFile(const std::string&          geoFile,
                  SimTK::Array_<std::string>& attempts) const
 {
     attempts.clear();
-    std::string geoDirectory, geoFileName, geoExtension; 
-    SimTK::Pathname::deconstructPathname(geoFile, 
-        geoFileIsAbsolute, geoDirectory, geoFileName, geoExtension);
+    std::string geoDirectory, geoFileName, geoExtension;
+    SimTK::Pathname::deconstructPathname(geoFile,
+                                         geoFileIsAbsolute, geoDirectory, geoFileName, geoExtension);
 
     bool foundIt = false;
     if (geoFileIsAbsolute) {
         attempts.push_back(geoFile);
         foundIt = Pathname::fileExists(attempts.back());
-    } else {  
+    } else {
         const string geoDir = "Geometry" + Pathname::getPathSeparator();
         string modelDir;
-        if (_model.getInputFileName() == "Unassigned") 
+        if (_model.getInputFileName() == "Unassigned")
             modelDir = Pathname::getCurrentWorkingDirectory();
         else {
-            bool isAbsolutePath; string directory, fileName, extension; 
+            bool isAbsolutePath;
+            string directory, fileName, extension;
             SimTK::Pathname::deconstructPathname(
-                _model.getInputFileName(), 
+                _model.getInputFileName(),
                 isAbsolutePath, directory, fileName, extension);
-            modelDir = isAbsolutePath 
-                ? directory
-                : Pathname::getCurrentWorkingDirectory() + directory;
+            modelDir = isAbsolutePath
+                       ? directory
+                       : Pathname::getCurrentWorkingDirectory() + directory;
         }
 
         attempts.push_back(modelDir + geoFile);
         foundIt = Pathname::fileExists(attempts.back());
 
         if (!foundIt) {
-            attempts.push_back(modelDir + geoDir + geoFile); 
+            attempts.push_back(modelDir + geoDir + geoFile);
             foundIt = Pathname::fileExists(attempts.back());
         }
 
         if (!foundIt) {
-            const string installDir = 
+            const string installDir =
                 Pathname::getInstallDir("OPENSIM_HOME", "OpenSim");
             attempts.push_back(installDir + geoDir + geoFile);
             foundIt = Pathname::fileExists(attempts.back());
@@ -314,20 +318,20 @@ void ModelVisualizer::createVisualizer() {
 
     // Allocate a Simbody Visualizer. If environment variable
     // OPENSIM_HOME is set, add its bin subdirectory to the search path
-    // for the SimbodyVisualizer executable. The search will go as 
+    // for the SimbodyVisualizer executable. The search will go as
     // follows: first look in the same directory as the currently-
-    // executing executable; then look in the $OPENSIM_HOME/bin 
+    // executing executable; then look in the $OPENSIM_HOME/bin
     // directory, then look in various default Simbody places.
     Array_<String> searchPath;
     if (SimTK::Pathname::environmentVariableExists("OPENSIM_HOME")) {
-        searchPath.push_back( 
+        searchPath.push_back(
             SimTK::Pathname::getEnvironmentVariable("OPENSIM_HOME")
             + "/bin");
     }
     _viz = new SimTK::Visualizer(_model.getMultibodySystem(),
                                  searchPath);
 
-    // Make the Simbody Visualizer (that is, the display window) kill itself 
+    // Make the Simbody Visualizer (that is, the display window) kill itself
     // when the API-side connection is lost (because the Visualizer object gets
     // destructed). Otherwise it will hang around afterwards.
     _viz->setShutdownWhenDestructed(true);
@@ -337,12 +341,13 @@ void ModelVisualizer::createVisualizer() {
     _viz->setBackgroundType(SimTK::Visualizer::SolidColor);
 
     // Give it an OpenSim-friendly window heading.
-    bool isAbsolutePath; string directory, fileName, extension; 
+    bool isAbsolutePath;
+    string directory, fileName, extension;
     SimTK::Pathname::deconstructPathname(
-        SimTK::Pathname::getThisExecutablePath(), 
+        SimTK::Pathname::getThisExecutablePath(),
         isAbsolutePath, directory, fileName, extension);
-    _viz->setWindowTitle("OpenSim " + OpenSim::GetVersion() 
-                            + ": " + fileName + " (" + _model.getName() + ")");
+    _viz->setWindowTitle("OpenSim " + OpenSim::GetVersion()
+                         + ": " + fileName + " (" + _model.getName() + ")");
 
     // Create a menu for choosing what to display.
     SimTK::Array_< std::pair<SimTK::String, int> > selections;
@@ -373,7 +378,7 @@ void ModelVisualizer::createVisualizer() {
     // This is used for regular output of frames during forward dynamics.
     // TODO: allow user control of timing.
     _model.updMultibodySystem().addEventReporter
-        (new SimTK::Visualizer::Reporter(*_viz, 1./30));
+    (new SimTK::Visualizer::Reporter(*_viz, 1./30));
 }
 
 // We also rummage through the model to find fixed geometry that should be part
@@ -386,7 +391,8 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
         const Body& body = bodies[i];
         const MobilizedBodyIndex bx = body.getIndex();
         const VisibleObject& visible = *body.getDisplayer();
-        Vec3 scale; visible.getScaleFactors(scale);
+        Vec3 scale;
+        visible.getScaleFactors(scale);
         const Transform X_BV = visible.getTransform();
         const GeometrySet&   geomSet = visible.getGeometrySet();
         for (int g=0; g < geomSet.getSize(); ++g) {
@@ -394,27 +400,29 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
             const DisplayGeometry::DisplayPreference pref = geo.getDisplayPreference();
             DecorativeGeometry::Representation rep;
             switch(pref) {
-                case DisplayGeometry::None: 
-                    continue; // don't bother with this one (TODO: is that right)
-                case DisplayGeometry::WireFrame: 
-                    rep=DecorativeGeometry::DrawWireframe; 
-                    break;
-                case DisplayGeometry::SolidFill:
-                case DisplayGeometry::FlatShaded:
-                case DisplayGeometry::GouraudShaded:
-                    rep = DecorativeGeometry::DrawSurface;
-                    break;
-                default: assert(!"bad DisplayPreference");
+            case DisplayGeometry::None:
+                continue; // don't bother with this one (TODO: is that right)
+            case DisplayGeometry::WireFrame:
+                rep=DecorativeGeometry::DrawWireframe;
+                break;
+            case DisplayGeometry::SolidFill:
+            case DisplayGeometry::FlatShaded:
+            case DisplayGeometry::GouraudShaded:
+                rep = DecorativeGeometry::DrawSurface;
+                break;
+            default:
+                assert(!"bad DisplayPreference");
             };
 
             const std::string& file = geo.getGeometryFile();
-            bool isAbsolutePath; string directory, fileName, extension; 
+            bool isAbsolutePath;
+            string directory, fileName, extension;
             SimTK::Pathname::deconstructPathname(file,
-                isAbsolutePath, directory, fileName, extension);
+                                                 isAbsolutePath, directory, fileName, extension);
             const string lowerExtension = SimTK::String::toLower(extension);
             if (lowerExtension != ".vtp" && lowerExtension != ".obj") {
                 std::clog << "ModelVisualizer ignoring '" << file
-                    << "'; only .vtp and .obj files currently supported.\n";
+                          << "'; only .vtp and .obj files currently supported.\n";
                 continue;
             }
 
@@ -424,11 +432,11 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
 
             if (!foundIt) {
                 std::clog << "ModelVisualizer couldn't find file '" << file
-                    << "'; tried\n";
+                          << "'; tried\n";
                 for (unsigned i=0; i < attempts.size(); ++i)
                     std::clog << "  " << attempts[i] << "\n";
-                if (!isAbsolutePath && 
-                    !Pathname::environmentVariableExists("OPENSIM_HOME"))
+                if (!isAbsolutePath &&
+                        !Pathname::environmentVariableExists("OPENSIM_HOME"))
                     std::clog << "Set environment variable OPENSIM_HOME "
                               << "to search $OPENSIM_HOME/Geometry.\n";
                 continue;
@@ -445,9 +453,9 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
                     // objFile closes when destructed
                 }
             } catch(const std::exception& e) {
-                std::clog << "ModelVisualizer couldn't read " 
-                            << attempts.back() << " because:\n"
-                            << e.what() << "\n";
+                std::clog << "ModelVisualizer couldn't read "
+                          << attempts.back() << " because:\n"
+                          << e.what() << "\n";
                 continue;
             }
 
@@ -455,8 +463,8 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
             dmesh.setColor(geo.getColor());
             dmesh.setOpacity(geo.getOpacity());
             const Vec3 netScale = geo.getScaleFactors()
-                                        .elementwiseMultiply(scale);
-            dmesh.setScaleFactors(netScale); 
+                                  .elementwiseMultiply(scale);
+            dmesh.setScaleFactors(netScale);
             _viz->addDecoration(bx, X_BV*geo.getTransform(), dmesh);
         }
     }
@@ -464,11 +472,11 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
     // Collect any fixed geometry from the ModelComponents.
     Array_<DecorativeGeometry> fixedGeometry;
     _model.generateDecorations
-       (true, _model.getDisplayHints(), state, fixedGeometry);
+    (true, _model.getDisplayHints(), state, fixedGeometry);
 
     for (unsigned i=0; i < fixedGeometry.size(); ++i) {
         const DecorativeGeometry& dgeo = fixedGeometry[i];
-        _viz->addDecoration(MobilizedBodyIndex(dgeo.getBodyId()), 
+        _viz->addDecoration(MobilizedBodyIndex(dgeo.getBodyId()),
                             Transform(), dgeo);
     }
 }

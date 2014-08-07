@@ -36,7 +36,7 @@
 namespace SimTK {
 
 /** This class is basically a glorified enumerated type, type-safe and range
-checked but permitting convenient (if limited) arithmetic. Constants look like 
+checked but permitting convenient (if limited) arithmetic. Constants look like
 Stage::Position, and loops can be written like
 @code
     for(Stage s = Stage::LowestValid; s <= Stage::HighestValid; ++s) {
@@ -46,7 +46,7 @@ Stage::Position, and loops can be written like
 Stage constants (of type Stage::Level) are implicitly converted to type
 Stage when necessary.
 
-Default construction gives Stage::Empty which really means "invalid". **/	
+Default construction gives Stage::Empty which really means "invalid". **/
 class Stage  {
 public:
     enum Level {
@@ -72,7 +72,7 @@ public:
         NValid = HighestValid-LowestValid+1,
         NRuntime = HighestRuntime-LowestRuntime+1
     };
-	
+
     /** Default construction gives Stage::Empty. **/
     Stage() : level(Stage::Empty) {}
     /** This is an implicit conversion from Stage::Level to Stage. **/
@@ -89,59 +89,130 @@ public:
     }
 #ifndef SWIG
     /** Stage will implicitly convert to int so you can use it as an index. **/
-    operator int() const {return level;}
+    operator int() const {
+        return level;
+    }
 
-    bool operator==(Level other) const {return level==other;}
-    bool operator!=(Level other) const {return level!=other;}
-    bool operator<(Level other) const {return level<other;}
-    bool operator<=(Level other) const {return level<=other;}
-    bool operator>(Level other) const {return level>other;}
-    bool operator>=(Level other) const {return level>=other;}
-    bool operator==(Stage other) const {return level==other.level;}
-    bool operator!=(Stage other) const {return level!=other.level;}
-    bool operator<(Stage other) const {return level<other.level;}
-    bool operator<=(Stage other) const {return level<=other.level;}
-    bool operator>(Stage other) const {return level>other.level;}
-    bool operator>=(Stage other) const {return level>=other.level;}
+    bool operator==(Level other) const {
+        return level==other;
+    }
+    bool operator!=(Level other) const {
+        return level!=other;
+    }
+    bool operator<(Level other) const {
+        return level<other;
+    }
+    bool operator<=(Level other) const {
+        return level<=other;
+    }
+    bool operator>(Level other) const {
+        return level>other;
+    }
+    bool operator>=(Level other) const {
+        return level>=other;
+    }
+    bool operator==(Stage other) const {
+        return level==other.level;
+    }
+    bool operator!=(Stage other) const {
+        return level!=other.level;
+    }
+    bool operator<(Stage other) const {
+        return level<other.level;
+    }
+    bool operator<=(Stage other) const {
+        return level<=other.level;
+    }
+    bool operator>(Stage other) const {
+        return level>other.level;
+    }
+    bool operator>=(Stage other) const {
+        return level>=other.level;
+    }
 
     // Prefix operators
     const Stage& operator++()
-    {   assert(level<HighestValid); level=Level(level+1); return *this; }
-    const Stage& operator--() 
-    {   assert(level>LowestValid);  level=Level(level-1); return *this;}
+    {
+        assert(level<HighestValid);
+        level=Level(level+1);
+        return *this;
+    }
+    const Stage& operator--()
+    {
+        assert(level>LowestValid);
+        level=Level(level-1);
+        return *this;
+    }
     // Postfix operators
-    Stage operator++(int)     
-    {   assert(level<HighestValid); level=Level(level+1); return prev(); }
-    Stage operator--(int)     
-    {   assert(level>LowestValid);  level=Level(level-1); return next(); }
+    Stage operator++(int)
+    {
+        assert(level<HighestValid);
+        level=Level(level+1);
+        return prev();
+    }
+    Stage operator--(int)
+    {
+        assert(level>LowestValid);
+        level=Level(level-1);
+        return next();
+    }
 #endif
     /** Return the Stage following this one, with Stage::Infinity returned
     if this Stage is already at its highest value, Stage::Report. An exception
     is thrown if this Stage is already Stage::Infinity. **/
-    Stage next() const 
-    {   assert(level<HighestValid); return Stage(Level(level+1)); }
+    Stage next() const
+    {
+        assert(level<HighestValid);
+        return Stage(Level(level+1));
+    }
     /** Return the Stage before this one, with Stage::Empty returned
     if this Stage is already at its lowest value, Stage::Topology. An exception
     is thrown if this Stage is already Stage::Empty. **/
-    Stage prev() const 
-    {   assert(level>LowestValid); return Stage(Level(level-1)); }
+    Stage prev() const
+    {
+        assert(level>LowestValid);
+        return Stage(Level(level-1));
+    }
 
     /** Return a printable name corresponding to the stage level currently
     stored in this Stage. **/
     String getName() const {
         switch (level) {
-        case Empty:         return "Empty";    break;
-        case Topology:      return "Topology"; break;
-        case Model:         return "Model";    break;
-        case Instance:      return "Instance"; break;
-        case Time:          return "Time";     break;
-        case Position:      return "Position"; break;
-        case Velocity:      return "Velocity"; break;
-        case Dynamics:      return "Dynamics"; break;
-        case Acceleration:  return "Acceleration"; break;
-        case Report:        return "Report";   break;
-        case Infinity:      return "Infinity"; break;
-        default: assert(!"Stage::getName(): illegal level");
+        case Empty:
+            return "Empty";
+            break;
+        case Topology:
+            return "Topology";
+            break;
+        case Model:
+            return "Model";
+            break;
+        case Instance:
+            return "Instance";
+            break;
+        case Time:
+            return "Time";
+            break;
+        case Position:
+            return "Position";
+            break;
+        case Velocity:
+            return "Velocity";
+            break;
+        case Dynamics:
+            return "Dynamics";
+            break;
+        case Acceleration:
+            return "Acceleration";
+            break;
+        case Report:
+            return "Report";
+            break;
+        case Infinity:
+            return "Infinity";
+            break;
+        default:
+            assert(!"Stage::getName(): illegal level");
         }
         return String("INVALID STAGE LEVEL ") + String(level);
     }
@@ -155,9 +226,10 @@ public:
     /** Return true if this Stage has one of the meaningful values between
     Stage::Topology and Stage::Report, rather than one of the end markers
     Stage::Empty or Stage::Infinity. **/
-    bool isInRuntimeRange() const 
-    {   return    Stage::LowestRuntime <= level 
-               && level <= Stage::HighestRuntime; }
+    bool isInRuntimeRange() const
+    {   return    Stage::LowestRuntime <= level
+                  && level <= Stage::HighestRuntime;
+    }
 
 private:
     Level level;
@@ -171,12 +243,12 @@ namespace Exception {
 class RealizeTopologyMustBeCalledFirst : public Base {
 public:
     RealizeTopologyMustBeCalledFirst(const char* fn, int ln,
-       const char* objectType, // e.g., "System", "Subsystem"
-       const char* objectName, const char* methodName) : Base(fn,ln)
+                                     const char* objectType, // e.g., "System", "Subsystem"
+                                     const char* objectName, const char* methodName) : Base(fn,ln)
     {
         setMessage(String(methodName) + ": " + String(objectType) + " " + String(objectName)
-           + " topology has not been realized since the last topological change"
-             " -- you must call realizeTopology() first.");
+                   + " topology has not been realized since the last topological change"
+                   " -- you must call realizeTopology() first.");
     }
     virtual ~RealizeTopologyMustBeCalledFirst() throw() { }
 };
@@ -184,21 +256,21 @@ public:
 class StateAndSystemTopologyVersionsMustMatch : public Base {
 public:
     StateAndSystemTopologyVersionsMustMatch(const char* fn, int ln,
-       const char* objectType, // e.g., "System", "Subsystem"
-       const char* objectName, const char* methodName,
-       int sysTopoVersion,
-       int stateTopoVersion) : Base(fn,ln)
+                                            const char* objectType, // e.g., "System", "Subsystem"
+                                            const char* objectName, const char* methodName,
+                                            int sysTopoVersion,
+                                            int stateTopoVersion) : Base(fn,ln)
     {
-        setMessage(String(methodName) 
-        + ": The given State's Topology stage version number (" 
-        + String(stateTopoVersion)
-        + ") doesn't match the current topology cache version number (" 
-        + String(sysTopoVersion)
-        + ") of " + String(objectType) + " " + String(objectName) + "."
-        + " That means there has been a topology change to this System since this"
-          " State was created so they are no longer compatible. You should create"
-          " a new State from the System's default State."
-          " (Loopholes exist for advanced users.)");
+        setMessage(String(methodName)
+                   + ": The given State's Topology stage version number ("
+                   + String(stateTopoVersion)
+                   + ") doesn't match the current topology cache version number ("
+                   + String(sysTopoVersion)
+                   + ") of " + String(objectType) + " " + String(objectName) + "."
+                   + " That means there has been a topology change to this System since this"
+                   " State was created so they are no longer compatible. You should create"
+                   " a new State from the System's default State."
+                   " (Loopholes exist for advanced users.)");
     }
     virtual ~StateAndSystemTopologyVersionsMustMatch() throw() { }
 };
@@ -208,10 +280,10 @@ public:
 class StageTooLow : public Base {
 public:
     StageTooLow(const char* fn, int ln,
-        Stage currentStage, Stage targetStage, const char* where) : Base(fn,ln)
+                Stage currentStage, Stage targetStage, const char* where) : Base(fn,ln)
     {
         setMessage("Expected stage to be at least " + targetStage.getName() + " in " + String(where)
-           + " but current stage was " + currentStage.getName());
+                   + " but current stage was " + currentStage.getName());
     }
     virtual ~StageTooLow() throw() { }
 };
@@ -219,10 +291,10 @@ public:
 class StageIsWrong : public Base {
 public:
     StageIsWrong(const char* fn, int ln,
-        Stage currentStage, Stage targetStage, const char* where) : Base(fn,ln)
+                 Stage currentStage, Stage targetStage, const char* where) : Base(fn,ln)
     {
         setMessage("Expected stage to be " + targetStage.getName() + " in " + String(where)
-           + " but current stage was " + currentStage.getName());
+                   + " but current stage was " + currentStage.getName());
     }
     virtual ~StageIsWrong() throw() { }
 };
@@ -230,10 +302,10 @@ public:
 class StageTooHigh : public Base {
 public:
     StageTooHigh(const char* fn, int ln,
-        Stage currentStage, Stage targetStage, const char* where) : Base(fn,ln)
+                 Stage currentStage, Stage targetStage, const char* where) : Base(fn,ln)
     {
         setMessage("Expected stage to be less than " + targetStage.getName() + " in " + String(where)
-           + " but current stage was " + currentStage.getName());
+                   + " but current stage was " + currentStage.getName());
     }
     virtual ~StageTooHigh() throw() { }
 };
@@ -241,10 +313,10 @@ public:
 class StageOutOfRange : public Base {
 public:
     StageOutOfRange(const char* fn, int ln,
-        Stage lower, Stage currentStage, Stage upper, const char* where) : Base(fn,ln)
+                    Stage lower, Stage currentStage, Stage upper, const char* where) : Base(fn,ln)
     {
         setMessage("Expected (" + lower.getName() + " <= stage <= " + upper.getName() + ") in " + String(where)
-           + " but stage was " + currentStage.getName());
+                   + " but stage was " + currentStage.getName());
     }
     virtual ~StageOutOfRange() throw() { }
 };
@@ -252,13 +324,13 @@ public:
 class CacheEntryOutOfDate : public Base {
 public:
     CacheEntryOutOfDate(const char* fn, int ln,
-        Stage currentStage, Stage dependsOn, int dependsOnVersion, int lastCalculatedVersion) 
-    :   Base(fn,ln)
+                        Stage currentStage, Stage dependsOn, int dependsOnVersion, int lastCalculatedVersion)
+        :   Base(fn,ln)
     {
-        setMessage("State Cache entry was out of date at Stage " + currentStage.getName() 
-           + ". This entry depends on version " + String(dependsOnVersion) 
-           + " of Stage " + dependsOn.getName() 
-           + " but was last updated at version " + String(lastCalculatedVersion) + ".");
+        setMessage("State Cache entry was out of date at Stage " + currentStage.getName()
+                   + ". This entry depends on version " + String(dependsOnVersion)
+                   + " of Stage " + dependsOn.getName()
+                   + " but was last updated at version " + String(lastCalculatedVersion) + ".");
     }
     virtual ~CacheEntryOutOfDate() throw() { }
 };
@@ -266,7 +338,7 @@ public:
 // An attempt to realize a particular subsystem to a particular stage failed.
 class RealizeCheckFailed : public Base {
 public:
-    RealizeCheckFailed(const char* fn, int ln, Stage g, 
+    RealizeCheckFailed(const char* fn, int ln, Stage g,
                        int subsystemId, const char* subsystemName,
                        const char* fmt ...) : Base(fn,ln)
     {
@@ -286,14 +358,17 @@ public:
 } // namespace Exception
 
 #endif
-inline std::ostream& operator<<(std::ostream& o, Stage g) 
-{   o << g.getName(); return o; }	
+inline std::ostream& operator<<(std::ostream& o, Stage g)
+{
+    o << g.getName();
+    return o;
+}
 
 
 } // namespace SimTK
 
-    // REALIZECHECKs: these should be used to catch and report problems that
-    // occur when realizing a subsystem.
+// REALIZECHECKs: these should be used to catch and report problems that
+// occur when realizing a subsystem.
 
 #define SimTK_REALIZECHECK_ALWAYS(cond,stage,subsysIx,subsysName,msg)       \
     do{if(!(cond))SimTK_THROW4(SimTK::Exception::RealizeCheckFailed,        \
@@ -320,5 +395,5 @@ inline std::ostream& operator<<(std::ostream& o, Stage g)
                     (stage),(subsysIx),(subsysName),(msg),(a1),(a2),(a3),(a4),(a5));    \
     }while(false)
 
-    
+
 #endif // SimTK_SimTKCOMMON_STAGE_H_

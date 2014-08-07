@@ -36,53 +36,63 @@ int main() {
 
     SimTK::Array_<std::string> failures;
 
-    try {testArm26();}
+    try {
+        testArm26();
+    }
     catch (const std::exception& e)
-		{  cout << e.what() <<endl; failures.push_back("testArm26"); }
+    {
+        cout << e.what() <<endl;
+        failures.push_back("testArm26");
+    }
 
-	// redo with the Millard2012EquilibriumMuscle 
-	Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
-    
-    try {testArm26();}
+    // redo with the Millard2012EquilibriumMuscle
+    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
+
+    try {
+        testArm26();
+    }
     catch (const std::exception& e)
-		{  cout << e.what() <<endl; failures.push_back("testArm26_Millard"); }
+    {
+        cout << e.what() <<endl;
+        failures.push_back("testArm26_Millard");
+    }
 
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
 
-	cout << "Done" << endl;
+    cout << "Done" << endl;
 
     return 0;
 }
 
 void testArm26() {
-	cout<<"\n******************************************************************" << endl;
-	cout << "*                             testArm26                          *" << endl;
-	cout << "******************************************************************\n" << endl;
-	CMCTool cmc("arm26_Setup_CMC.xml");
-	cmc.run();
+    cout<<"\n******************************************************************" << endl;
+    cout << "*                             testArm26                          *" << endl;
+    cout << "******************************************************************\n" << endl;
+    CMCTool cmc("arm26_Setup_CMC.xml");
+    cmc.run();
 
-	Storage results("Results_Arm26/arm26_states.sto"), temp("std_arm26_states.sto");
-	Storage *standard = new Storage();
-	cmc.getModel().formStateStorage(temp, *standard);
+    Storage results("Results_Arm26/arm26_states.sto"), temp("std_arm26_states.sto");
+    Storage *standard = new Storage();
+    cmc.getModel().formStateStorage(temp, *standard);
 
-	Array<double> rms_tols(0.02, 2*2+2*6); // activations within 2%, angles within .6 degrees
-	const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-	string base = "testArm26 "+ muscleType;
+    Array<double> rms_tols(0.02, 2*2+2*6); // activations within 2%, angles within .6 degrees
+    const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
+    string base = "testArm26 "+ muscleType;
 
-	if(muscleType != "Thelen2003Muscle"){
-		rms_tols[6] = 0.05;
-		rms_tols[8] = 0.05;
-		rms_tols[10] = 0.05;
-		rms_tols[12] = 0.05;
-		rms_tols[14] = 0.05;
-	}
+    if(muscleType != "Thelen2003Muscle") {
+        rms_tols[6] = 0.05;
+        rms_tols[8] = 0.05;
+        rms_tols[10] = 0.05;
+        rms_tols[12] = 0.05;
+        rms_tols[14] = 0.05;
+    }
 
-	CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, 
-		base+" failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__,
+                                   base+" failed");
 
-	
-	cout << "\n" << base <<" passed\n" << endl;
+
+    cout << "\n" << base <<" passed\n" << endl;
 }

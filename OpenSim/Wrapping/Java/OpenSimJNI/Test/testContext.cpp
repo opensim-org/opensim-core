@@ -55,131 +55,131 @@ if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
 
 int main()
 {
-  try {
-    int  status = 0;
+    try {
+        int  status = 0;
 
-	// To Retrace the steps taken by the GUI this test case follows the same call sequence:
-	// new Model(file)
-	// new OpenSimContext(model.initSystem(), model);
-	// context.updateDisplayer(muscle)	// to display muscles
-	// context.getCurrentPath(muscle)
-	// context.getTransform(body)
-	// context.transformPosition(body, loc, global)  // to display markers
-	// context.getLocked(Coordinate)
-	// context.getValue(cooridnate)
-	LoadOpenSimLibrary("osimActuators");
-	LoadOpenSimLibrary("osimSimulation");
-	LoadOpenSimLibrary("osimJavaJNI");
+        // To Retrace the steps taken by the GUI this test case follows the same call sequence:
+        // new Model(file)
+        // new OpenSimContext(model.initSystem(), model);
+        // context.updateDisplayer(muscle)	// to display muscles
+        // context.getCurrentPath(muscle)
+        // context.getTransform(body)
+        // context.transformPosition(body, loc, global)  // to display markers
+        // context.getLocked(Coordinate)
+        // context.getValue(cooridnate)
+        LoadOpenSimLibrary("osimActuators");
+        LoadOpenSimLibrary("osimSimulation");
+        LoadOpenSimLibrary("osimJavaJNI");
 
-	Model *model = new Model("wrist.osim");
-	OpenSimContext* context = new OpenSimContext(&model->initSystem(), model);
-	const ForceSet& fs = model->getForceSet();
-	int n1 = fs.getNumGroups();
-	const ObjectGroup* grp = fs.getGroup("wrist");
-	assert(grp);
-	const Array<Object*>& members = grp->getMembers();
-	int sz = members.getSize();
-	ASSERT_EQUAL(sz,5,0);
-	assert(members.get(0)->getName()=="ECRB");
-	delete model;
-	delete context;
-	model = new Model("arm26_20.osim");
-	context = new OpenSimContext(&model->initSystem(), model);
-    // Make a copy of state contained in context ad make sure content match 
-    SimTK::State stateCopy = context->getCurrentStateCopy();
-    assert(context->getCurrentStateRef().toString()==stateCopy.toString());
+        Model *model = new Model("wrist.osim");
+        OpenSimContext* context = new OpenSimContext(&model->initSystem(), model);
+        const ForceSet& fs = model->getForceSet();
+        int n1 = fs.getNumGroups();
+        const ObjectGroup* grp = fs.getGroup("wrist");
+        assert(grp);
+        const Array<Object*>& members = grp->getMembers();
+        int sz = members.getSize();
+        ASSERT_EQUAL(sz,5,0);
+        assert(members.get(0)->getName()=="ECRB");
+        delete model;
+        delete context;
+        model = new Model("arm26_20.osim");
+        context = new OpenSimContext(&model->initSystem(), model);
+        // Make a copy of state contained in context ad make sure content match
+        SimTK::State stateCopy = context->getCurrentStateCopy();
+        assert(context->getCurrentStateRef().toString()==stateCopy.toString());
 
-	Array<std::string> stateNames = model->getStateVariableNames();
-	OpenSim::Force* dForce=&(model->updForceSet().get("TRIlong"));
-	Muscle* dTRIlong = dynamic_cast<Muscle*>(dForce);
-	assert(dTRIlong);
-    context->setPropertiesFromState();
-    OpenSim::Thelen2003Muscle* thelenMsl = dynamic_cast<Thelen2003Muscle*>(dTRIlong);
-    AbstractProperty& dProp = thelenMsl->updPropertyByName("ignore_tendon_compliance");
-    
-	PropertyHelper::setValueBool(true, dProp);
-    cout << "Prop after is " << dProp.toString() << endl;
+        Array<std::string> stateNames = model->getStateVariableNames();
+        OpenSim::Force* dForce=&(model->updForceSet().get("TRIlong"));
+        Muscle* dTRIlong = dynamic_cast<Muscle*>(dForce);
+        assert(dTRIlong);
+        context->setPropertiesFromState();
+        OpenSim::Thelen2003Muscle* thelenMsl = dynamic_cast<Thelen2003Muscle*>(dTRIlong);
+        AbstractProperty& dProp = thelenMsl->updPropertyByName("ignore_tendon_compliance");
 
-	bool exceptionThrown = false;
-	try{// adding to the system should cause Muscle that do not handle
-		// ignore_tendon_compliance to throw an exception
-		context->recreateSystemKeepStage();
-	}	
-	catch (const std::exception& e) {
-		cout << e.what() << endl;
-		exceptionThrown = true;
-		PropertyHelper::setValueBool(false, dProp);
-		cout << "Prop reset to " << dProp.toString() << endl;
-		// recreate the system so test can continue
-		context->recreateSystemKeepStage();
-	}
+        PropertyHelper::setValueBool(true, dProp);
+        cout << "Prop after is " << dProp.toString() << endl;
 
-	SimTK_ASSERT_ALWAYS(exceptionThrown, "Setting ignore_tendon_compliance must throw an exception.");
+        bool exceptionThrown = false;
+        try { // adding to the system should cause Muscle that do not handle
+            // ignore_tendon_compliance to throw an exception
+            context->recreateSystemKeepStage();
+        }
+        catch (const std::exception& e) {
+            cout << e.what() << endl;
+            exceptionThrown = true;
+            PropertyHelper::setValueBool(false, dProp);
+            cout << "Prop reset to " << dProp.toString() << endl;
+            // recreate the system so test can continue
+            context->recreateSystemKeepStage();
+        }
+
+        SimTK_ASSERT_ALWAYS(exceptionThrown, "Setting ignore_tendon_compliance must throw an exception.");
 
 
-    AbstractProperty& dProp2 = thelenMsl->updPropertyByName("ignore_tendon_compliance");
-    cout << "Prop after create system is " << dProp2.toString() << endl;
-    bool after = PropertyHelper::getValueBool(dProp);
-    SimTK_ASSERT_ALWAYS(!after, "Property has wrong value!!");
-	context->updateDisplayer(*dTRIlong);
-	const OpenSim::Array<PathPoint*>& path = context->getCurrentPath(*dTRIlong);
-	cout << "Muscle Path" << endl;
-	cout << path.getSize() << endl;
-	for(int i=0; i< path.getSize(); i++)
-		cout << path.get(i)->getBodyName() << path.get(i)->getLocation() << endl;
-	// Compare to known path 
-	const OpenSim::Body& dBody = model->getBodySet().get("r_ulna_radius_hand");
-	Transform xform = context->getTransform(dBody);
-	cout << xform << endl;
-	double flat[16];
-	context->getTransformAsDouble16(xform, flat);
-	// Compare to known xform
-	double markerPosition[] = {.005000000000, -0.290400000000, 0.030000000000};
-	double markerPositionInGround[3];
-	context->transformPosition(dBody, markerPosition, markerPositionInGround);  // to display markers
-	cout << "Global frame position = " << markerPositionInGround[0] <<  
-		markerPositionInGround[1] << markerPositionInGround[2]<< endl;
-	// Check xformed point against known position
-	const Coordinate& dr_elbow_flex = model->getCoordinateSet().get("r_elbow_flex");
-	bool isLocked = context->getLocked(dr_elbow_flex);
-	assert(!isLocked);
-	double startValue = context->getValue(dr_elbow_flex);
-	cout << "Coordinate start value = " << startValue << endl;
-	double length1 = context->getMuscleLength(*dTRIlong);
-	cout << length1 << endl;
-	ASSERT_EQUAL(.277609, length1, 1e-5);
-	// Coordinate Slider
-	context->setValue(dr_elbow_flex, 100*SimTK_PI/180.);
-	// Get body transform, marker position and muscle path (tests wrapping as well)
-	xform = context->getTransform(dBody);
-	cout << "After setting coordinate to 100 deg." << endl;
-	cout << xform << endl;
-	// Compare to known xform
-	context->updateDisplayer(*dTRIlong);
-	const OpenSim::Array<PathPoint*>& newPath = context->getCurrentPath(*dTRIlong);
-	// Compare to known path 
-	cout << "New Muscle Path" << endl;
-	cout << path.getSize() << endl;
-	for(int i=0; i< path.getSize(); i++)
-		cout << path.get(i)->getBodyName() << path.get(i)->getLocation() << endl;
-	double length2 = context->getMuscleLength(*dTRIlong);
-	cout << length2 << endl;
-	ASSERT_EQUAL(.315748, length2, 1e-5);
-    // Test that we can lock coordinates to specific value and make this persistant.
-    Coordinate& dr_elbow_flex_mod = model->updCoordinateSet().get("r_elbow_flex");
-    //dr_elbow_flex_mod.setDefaultValue(0.5);
- 	dr_elbow_flex_mod.setDefaultLocked(true);
-    context->setValue(dr_elbow_flex_mod, 0.5);
-    //model->print("wrist_locked_elbow.osim");
-    context->recreateSystemKeepStage();
-	const Coordinate& dr_elbow_flexNew = model->getCoordinateSet().get("r_elbow_flex");
-	assert(context->getLocked(dr_elbow_flexNew));
-	ASSERT_EQUAL(0.5, context->getValue(dr_elbow_flexNew), 0.000001);
+        AbstractProperty& dProp2 = thelenMsl->updPropertyByName("ignore_tendon_compliance");
+        cout << "Prop after create system is " << dProp2.toString() << endl;
+        bool after = PropertyHelper::getValueBool(dProp);
+        SimTK_ASSERT_ALWAYS(!after, "Property has wrong value!!");
+        context->updateDisplayer(*dTRIlong);
+        const OpenSim::Array<PathPoint*>& path = context->getCurrentPath(*dTRIlong);
+        cout << "Muscle Path" << endl;
+        cout << path.getSize() << endl;
+        for(int i=0; i< path.getSize(); i++)
+            cout << path.get(i)->getBodyName() << path.get(i)->getLocation() << endl;
+        // Compare to known path
+        const OpenSim::Body& dBody = model->getBodySet().get("r_ulna_radius_hand");
+        Transform xform = context->getTransform(dBody);
+        cout << xform << endl;
+        double flat[16];
+        context->getTransformAsDouble16(xform, flat);
+        // Compare to known xform
+        double markerPosition[] = {.005000000000, -0.290400000000, 0.030000000000};
+        double markerPositionInGround[3];
+        context->transformPosition(dBody, markerPosition, markerPositionInGround);  // to display markers
+        cout << "Global frame position = " << markerPositionInGround[0] <<
+             markerPositionInGround[1] << markerPositionInGround[2]<< endl;
+        // Check xformed point against known position
+        const Coordinate& dr_elbow_flex = model->getCoordinateSet().get("r_elbow_flex");
+        bool isLocked = context->getLocked(dr_elbow_flex);
+        assert(!isLocked);
+        double startValue = context->getValue(dr_elbow_flex);
+        cout << "Coordinate start value = " << startValue << endl;
+        double length1 = context->getMuscleLength(*dTRIlong);
+        cout << length1 << endl;
+        ASSERT_EQUAL(.277609, length1, 1e-5);
+        // Coordinate Slider
+        context->setValue(dr_elbow_flex, 100*SimTK_PI/180.);
+        // Get body transform, marker position and muscle path (tests wrapping as well)
+        xform = context->getTransform(dBody);
+        cout << "After setting coordinate to 100 deg." << endl;
+        cout << xform << endl;
+        // Compare to known xform
+        context->updateDisplayer(*dTRIlong);
+        const OpenSim::Array<PathPoint*>& newPath = context->getCurrentPath(*dTRIlong);
+        // Compare to known path
+        cout << "New Muscle Path" << endl;
+        cout << path.getSize() << endl;
+        for(int i=0; i< path.getSize(); i++)
+            cout << path.get(i)->getBodyName() << path.get(i)->getLocation() << endl;
+        double length2 = context->getMuscleLength(*dTRIlong);
+        cout << length2 << endl;
+        ASSERT_EQUAL(.315748, length2, 1e-5);
+        // Test that we can lock coordinates to specific value and make this persistant.
+        Coordinate& dr_elbow_flex_mod = model->updCoordinateSet().get("r_elbow_flex");
+        //dr_elbow_flex_mod.setDefaultValue(0.5);
+        dr_elbow_flex_mod.setDefaultLocked(true);
+        context->setValue(dr_elbow_flex_mod, 0.5);
+        //model->print("wrist_locked_elbow.osim");
+        context->recreateSystemKeepStage();
+        const Coordinate& dr_elbow_flexNew = model->getCoordinateSet().get("r_elbow_flex");
+        assert(context->getLocked(dr_elbow_flexNew));
+        ASSERT_EQUAL(0.5, context->getValue(dr_elbow_flexNew), 0.000001);
 
-	return status;
-  } catch (const std::exception& e) {
-      cout << "Exception: " << e.what() << endl;
-      return 1;
-  }
+        return status;
+    } catch (const std::exception& e) {
+        cout << "Exception: " << e.what() << endl;
+        return 1;
+    }
 }
 

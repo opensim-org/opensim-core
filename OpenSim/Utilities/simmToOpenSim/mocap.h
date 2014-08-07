@@ -47,23 +47,23 @@ public const char* get_realtime_hz();
 #define REALTIME_MOTION_NAME "realtime"
 
 enum {                       /* htr & htr2 column identifiers */
-   _TX, _TY, _TZ,
-   _RX, _RY, _RZ,
-   _BONE_SCALE,
-   HTR_FRAME_NUM_COLS,
-   
-   _HTR2_BONE_LEN = _BONE_SCALE
+    _TX, _TY, _TZ,
+    _RX, _RY, _RZ,
+    _BONE_SCALE,
+    HTR_FRAME_NUM_COLS,
+
+    _HTR2_BONE_LEN = _BONE_SCALE
 };
 
 STRUCT {                     /* ---- mocap model segment record: */
-   char    name[128];              /* mocap segment name */
-   char    parentName[128];        /* mocap parent segment name */
-   int     parentIndex;            /* mocap parent segment index */
-   dpCoord3D offset;                 /* base position: starting translation */
-   dpCoord3D rotation;               /* base position: starting rotation */
-   DMatrix base_transform;         /* base position: as a transform matrix */
-   double  boneLength;             /* mocap segment length */
-   double  htr2TranslationParam;   /* htr2 translation parameter */
+    char    name[128];              /* mocap segment name */
+    char    parentName[128];        /* mocap parent segment name */
+    int     parentIndex;            /* mocap parent segment index */
+    dpCoord3D offset;                 /* base position: starting translation */
+    dpCoord3D rotation;               /* base position: starting rotation */
+    DMatrix base_transform;         /* base position: as a transform matrix */
+    double  boneLength;             /* mocap segment length */
+    double  htr2TranslationParam;   /* htr2 translation parameter */
 } MocapSeg;
 
 enum { XYZ, ZYX };           /* eulerRotationOrder */
@@ -73,21 +73,21 @@ enum { MM };                 /* calibrationUnits */
 enum { DEGREES, RADIANS };   /* rotationUnits */
 
 STRUCT {                     /* ---- mocap file info record: */
-   int       fileVersion;         /* mocap file version number */
-   int       numSegments;         /* number of body segments */
-   int       numFrames;           /* number of mocap frames to follow */
-   int       dataFrameRate;       /* mocap frames per second */
-   int       eulerRotationOrder;  /* XYZ, or ZYX */
-   int       calibrationUnits;    /* MM */
-   int       rotationUnits;       /* DEGREES or RADIANS */
-   int       globalAxisOfGravity; /* up direction (XX, YY, or ZZ) */
-   int       boneLengthAxis;      /* local long axis for mocap segments */
-   int       analogSyncFrameIndex;/* index to sync motion & analog data */
-   double    scaleFactor;         /* ?? */
-   MocapSeg* segments;            /* array of mocap body segments */
-   int       rootSegment;         /* index of root mocap segment */
-   long      byteOffsetToFrames;  /* offset to beginning of motion frame data */
-   ModelStruct* model;            /* SIMM model that is created from this mocap data */
+    int       fileVersion;         /* mocap file version number */
+    int       numSegments;         /* number of body segments */
+    int       numFrames;           /* number of mocap frames to follow */
+    int       dataFrameRate;       /* mocap frames per second */
+    int       eulerRotationOrder;  /* XYZ, or ZYX */
+    int       calibrationUnits;    /* MM */
+    int       rotationUnits;       /* DEGREES or RADIANS */
+    int       globalAxisOfGravity; /* up direction (XX, YY, or ZZ) */
+    int       boneLengthAxis;      /* local long axis for mocap segments */
+    int       analogSyncFrameIndex;/* index to sync motion & analog data */
+    double    scaleFactor;         /* ?? */
+    MocapSeg* segments;            /* array of mocap body segments */
+    int       rootSegment;         /* index of root mocap segment */
+    long      byteOffsetToFrames;  /* offset to beginning of motion frame data */
+    ModelStruct* model;            /* SIMM model that is created from this mocap data */
 } MocapInfo;
 
 
@@ -98,75 +98,75 @@ enum { FX, FY, FZ, MX, MY, MZ, NUM_AMTI_BERTEC_CHANNELS };
 enum { FX12, FX34, FY14, FY23, FZ1, FZ2, FZ3, FZ4, NUM_KISTLER_CHANNELS };
 
 enum {                       /* ---- analog channel type */
-   UNSPECIFIED_ANALOG_CHANNEL,
-   ELAPSED_TIME,
-   FORCE_PLATE_FORCE,
-   FORCE_PLATE_MOMENT,
-   FORCE_LOCATION,
-   EMG,
-   OTHER_DATA
+    UNSPECIFIED_ANALOG_CHANNEL,
+    ELAPSED_TIME,
+    FORCE_PLATE_FORCE,
+    FORCE_PLATE_MOMENT,
+    FORCE_LOCATION,
+    EMG,
+    OTHER_DATA
 };
-   
+
 STRUCT {                     /* ---- forceplate channel info: */
-   int index;                     /* forceplate index (zero based) */
-   int component;                 /* forceplate channel componant (see enums above) */
-   double baseline;
+    int index;                     /* forceplate index (zero based) */
+    int component;                 /* forceplate channel componant (see enums above) */
+    double baseline;
 } FPChannel;
 
 STRUCT {                     /* ---- emg channel info: */
-   int    numMuscles;
-   char** muscleNames;            /* array of SIMM muscle names */
-   int*   muscleIndices;          /* array of SIMM muscle indices */
-   double maxVoluntaryContraction;/* user-specified value for scaling this emg channel */
-   double maxSample;              /* observed maximum value for this channel */
+    int    numMuscles;
+    char** muscleNames;            /* array of SIMM muscle names */
+    int*   muscleIndices;          /* array of SIMM muscle indices */
+    double maxVoluntaryContraction;/* user-specified value for scaling this emg channel */
+    double maxSample;              /* observed maximum value for this channel */
 } EMGMuscles;
 
 STRUCT {                     /* ---- other data channel info: */
-   char*  name;                   /* name to use for SIMM motion column title */
+    char*  name;                   /* name to use for SIMM motion column title */
 } OtherData;
 
 STRUCT {                     /* ---- import variable info: */
-   char*  name;                   /* imported variable name */
-   int    type;                   /* force plate, emg, or other data */
-   int    frequency;              /* sample rate, Hz */
-   int    range;                  /* channel range (ie. maximum?) */
-   int    numMotionColumns;       /* number of motion data columns channel maps to */
-   int*   motionColumn;           /* columns of motion data that this channel maps to */
-   union {
-      FPChannel  forcePlate;
-      EMGMuscles emg;
-      OtherData  otherData;
-   }     u;
+    char*  name;                   /* imported variable name */
+    int    type;                   /* force plate, emg, or other data */
+    int    frequency;              /* sample rate, Hz */
+    int    range;                  /* channel range (ie. maximum?) */
+    int    numMotionColumns;       /* number of motion data columns channel maps to */
+    int*   motionColumn;           /* columns of motion data that this channel maps to */
+    union {
+        FPChannel  forcePlate;
+        EMGMuscles emg;
+        OtherData  otherData;
+    }     u;
 } AnalogChannel;
 
 typedef struct {             /* ---- gait events (read from OrthoTrak XLS file) */
-   char   name[32];               /* event name */
-   double time;                   /* event frame number */
+    char   name[32];               /* event name */
+    double time;                   /* event frame number */
 } GaitEvent;
 
 STRUCT {                     /* ---- analog data record */
-   int            numChannels;
-   int            numRows;
-   AnalogChannel* channels;
-   double*        data;
-   int            numGaitEvents;
-   GaitEvent*     gaitEvents;
+    int            numChannels;
+    int            numRows;
+    AnalogChannel* channels;
+    double*        data;
+    int            numGaitEvents;
+    GaitEvent*     gaitEvents;
 } AnalogData;
 
 STRUCT {                          /* ---- forceplate record: */
-   SBoolean inited;                    /* has this record been initialized? */
-   int      manufacturer;              /* manufacturer id (see enum above) */
-   double   scaleFactor;               /* overall channel scale factor? */
-   double   length;                    /* forceplate length (optional) */
-   double   width;                     /* forceplate width (optional) */
-   double   calibrationMatrix[64];     /* forceplate calibration matrix */
-   DMatrix  localToWorldXform;         /* forceplate placement matrix */
-   
-   struct {                            /* -- Kistler forceplate parameters: */
-     double   a, b, az0;                 /* transducer placement: a, b, az0 */
-     double   p[6];                      /* COP correction coefficients (optional) */
-     SBoolean hasCOPCorrectionValues;    /* are COP correction coefficients inited? */
-   }        kistler;
+    SBoolean inited;                    /* has this record been initialized? */
+    int      manufacturer;              /* manufacturer id (see enum above) */
+    double   scaleFactor;               /* overall channel scale factor? */
+    double   length;                    /* forceplate length (optional) */
+    double   width;                     /* forceplate width (optional) */
+    double   calibrationMatrix[64];     /* forceplate calibration matrix */
+    DMatrix  localToWorldXform;         /* forceplate placement matrix */
+
+    struct {                            /* -- Kistler forceplate parameters: */
+        double   a, b, az0;                 /* transducer placement: a, b, az0 */
+        double   p[6];                      /* COP correction coefficients (optional) */
+        SBoolean hasCOPCorrectionValues;    /* are COP correction coefficients inited? */
+    }        kistler;
 } ForcePlateSpec;
 
 #endif

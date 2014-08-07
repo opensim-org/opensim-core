@@ -38,37 +38,45 @@ namespace OpenSim {
  */
 
 class OSIMTOOLS_API IKCoordinateTask : public IKTask {
-OpenSim_DECLARE_CONCRETE_OBJECT(IKCoordinateTask, IKTask);
+    OpenSim_DECLARE_CONCRETE_OBJECT(IKCoordinateTask, IKTask);
 
 public:
-	enum ValueType { DefaultValue, ManualValue, FromFile };
+    enum ValueType { DefaultValue, ManualValue, FromFile };
 
 protected:
-	PropertyStr _valueTypeProp;
-	std::string &_valueType;
+    PropertyStr _valueTypeProp;
+    std::string &_valueType;
 
-	PropertyDbl _valueProp;
-	double &_value;
+    PropertyDbl _valueProp;
+    double &_value;
 
 public:
-	IKCoordinateTask();
-	IKCoordinateTask(const IKCoordinateTask &aIKCoordinateTask);
+    IKCoordinateTask();
+    IKCoordinateTask(const IKCoordinateTask &aIKCoordinateTask);
 
 #ifndef SWIG
-	IKCoordinateTask& operator=(const IKCoordinateTask &aIKCoordinateTask);
+    IKCoordinateTask& operator=(const IKCoordinateTask &aIKCoordinateTask);
 #endif
 
-	void setValueType(ValueType type) { _valueType = ValueTypeToString(type); }
-	ValueType getValueType() const { return StringToValueType(_valueType); }
+    void setValueType(ValueType type) {
+        _valueType = ValueTypeToString(type);
+    }
+    ValueType getValueType() const {
+        return StringToValueType(_valueType);
+    }
 
-	double getValue() const { return _value; }
-	void setValue(double value) { _value = value; }
+    double getValue() const {
+        return _value;
+    }
+    void setValue(double value) {
+        _value = value;
+    }
 
-	static std::string ValueTypeToString(ValueType type);
-	static ValueType StringToValueType(const std::string &str);
+    static std::string ValueTypeToString(ValueType type);
+    static ValueType StringToValueType(const std::string &str);
 
 private:
-	void setupProperties();
+    void setupProperties();
 //=============================================================================
 };	// END of class IKCoordinateTask
 //=============================================================================

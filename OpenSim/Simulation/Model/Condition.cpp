@@ -42,12 +42,12 @@ using namespace OpenSim;
  * Default constructor.
  */
 Condition::Condition() : Object(),
-	_isDisabled(_isDisabledProp.getValueBool()),
-	_model(NULL)
+    _isDisabled(_isDisabledProp.getValueBool()),
+    _model(NULL)
 {
-	setNull();
-	setupProperties();
-	_isDisabled = false;
+    setNull();
+    setupProperties();
+    _isDisabled = false;
 }
 
 //_____________________________________________________________________________
@@ -65,13 +65,13 @@ Condition::~Condition()
  * @param aCondition Condition to be copied.
  */
 Condition::Condition(const Condition &aCondition) :
-   Object(aCondition),
-	_isDisabled(_isDisabledProp.getValueBool()),
-	_model(NULL)
+    Object(aCondition),
+    _isDisabled(_isDisabledProp.getValueBool()),
+    _model(NULL)
 {
-	setNull();
-	setupProperties();
-	copyData(aCondition);
+    setNull();
+    setupProperties();
+    copyData(aCondition);
 }
 
 
@@ -86,8 +86,8 @@ Condition::Condition(const Condition &aCondition) :
  */
 void Condition::copyData(const Condition &aCondition)
 {
-	_isDisabled = aCondition._isDisabled;
-	_model = aCondition._model;
+    _isDisabled = aCondition._isDisabled;
+    _model = aCondition._model;
 }
 
 
@@ -105,9 +105,9 @@ void Condition::setNull(void)
  */
 void Condition::setupProperties(void)
 {
-	_isDisabledProp.setName("isDisabled");
-	_isDisabledProp.setValue(false);
-	_propertySet.append(&_isDisabledProp);
+    _isDisabledProp.setName("isDisabled");
+    _isDisabledProp.setValue(false);
+    _propertySet.append(&_isDisabledProp);
 }
 
 //_____________________________________________________________________________
@@ -134,12 +134,12 @@ void Condition::connectConditionToModel(Model& aModel)
  */
 Condition& Condition::operator=(const Condition &aCondition)
 {
-	// BASE CLASS
-	Object::operator=(aCondition);
+    // BASE CLASS
+    Object::operator=(aCondition);
 
-	copyData(aCondition);
+    copyData(aCondition);
 
-	return(*this);
+    return(*this);
 }
 
 //=============================================================================

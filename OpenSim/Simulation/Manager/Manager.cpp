@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 #include <cstdio>
 #include "Manager.h"
@@ -55,8 +55,8 @@ std::string Manager::_displayName = "Simulator";
  */
 Manager::~Manager()
 {
-	// DESTRUCTORS
-	delete _stateStore;
+    // DESTRUCTORS
+    delete _stateStore;
     _integ = NULL;
 }
 
@@ -71,23 +71,23 @@ Manager::~Manager()
  * @param model pointer to model for the simulation.
  */
 Manager::Manager(Model& model):
-       _model(&model),
-	   _integ(NULL),	           
-       _controllerSet(&model.updControllerSet() ),
-       _stateStore(NULL),
-       _performAnalyses(true),
-       _writeToStorage(true)
+    _model(&model),
+    _integ(NULL),
+    _controllerSet(&model.updControllerSet() ),
+    _stateStore(NULL),
+    _performAnalyses(true),
+    _writeToStorage(true)
 {
-	setNull();
+    setNull();
 
-	// STATES
-	constructStates();
+    // STATES
+    constructStates();
 
-	// STORAGE
-	constructStorage();
+    // STORAGE
+    constructStorage();
 
-	// SESSION NAME
-	setSessionName(_model->getName());
+    // SESSION NAME
+    setSessionName(_model->getName());
 }
 //_____________________________________________________________________________
 /**
@@ -96,7 +96,7 @@ Manager::Manager(Model& model):
  * @param aModel model to integrate.
  * @param integ integrator used to do the integration
  */
-Manager::Manager(Model& aModel, SimTK::Integrator& integ) {	   
+Manager::Manager(Model& aModel, SimTK::Integrator& integ) {
     new(this) Manager(aModel);
     setIntegrator(integ);
 }
@@ -108,7 +108,7 @@ Manager::Manager(Model& aModel, SimTK::Integrator& integ) {
  */
 Manager::Manager()
 {
-	setNull();
+    setNull();
 }
 
 //=============================================================================
@@ -121,24 +121,24 @@ Manager::Manager()
 void Manager::
 setNull()
 {
-	_sessionName = "";
-	_ti = 0.0;
-	_tf = 1.0;
-	_firstDT = 1.0e-8;
-	_steps = 0;
-	_trys = 0;
-	_maxSteps = 10000;
-	_halt = false;
-	_dtMax = 1.0;
-	_dtMin = 1.0e-8;
-	_specifiedDT = false;
-	_constantDT = false;
-	_dt = 1.0e-4;
+    _sessionName = "";
+    _ti = 0.0;
+    _tf = 1.0;
+    _firstDT = 1.0e-8;
+    _steps = 0;
+    _trys = 0;
+    _maxSteps = 10000;
+    _halt = false;
+    _dtMax = 1.0;
+    _dtMin = 1.0e-8;
+    _specifiedDT = false;
+    _constantDT = false;
+    _dt = 1.0e-4;
     _performAnalyses=true;
     _writeToStorage=true;
-	_tArray.setSize(0);
+    _tArray.setSize(0);
     _system = 0;
-	_dtArray.setSize(0);
+    _dtArray.setSize(0);
 }
 //_____________________________________________________________________________
 /**
@@ -147,7 +147,7 @@ setNull()
 bool Manager::
 constructStates()
 {
-	return(true);
+    return(true);
 }
 
 //_____________________________________________________________________________
@@ -158,18 +158,18 @@ bool Manager::
 constructStorage()
 {
 
-	Array<string> columnLabels;
+    Array<string> columnLabels;
 
-	// STATES
-	Array<string> stateNames = _model->getStateVariableNames();
-	int ny = stateNames.getSize();
-	_stateStore = new Storage(512,"states");
-	columnLabels.setSize(0);
-	columnLabels.append("time");
-	for(int i=0;i<ny;i++) columnLabels.append(stateNames[i]);
-	_stateStore->setColumnLabels(columnLabels);
+    // STATES
+    Array<string> stateNames = _model->getStateVariableNames();
+    int ny = stateNames.getSize();
+    _stateStore = new Storage(512,"states");
+    columnLabels.setSize(0);
+    columnLabels.append("time");
+    for(int i=0; i<ny; i++) columnLabels.append(stateNames[i]);
+    _stateStore->setColumnLabels(columnLabels);
 
-	return(true);
+    return(true);
 }
 
 
@@ -186,15 +186,15 @@ constructStorage()
 void Manager::
 setSessionName(const string &aSessionName)
 {
-	_sessionName = aSessionName;
-	if(_integ==NULL) return;
+    _sessionName = aSessionName;
+    if(_integ==NULL) return;
 
-	// STORAGE NAMES
-	string name;
-	if(hasStateStorage()) {
-		name = _sessionName + "_states";
-		getStateStorage().setName(name);
-	}
+    // STORAGE NAMES
+    string name;
+    if(hasStateStorage()) {
+        name = _sessionName + "_states";
+        getStateStorage().setName(name);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -203,7 +203,7 @@ setSessionName(const string &aSessionName)
 const string& Manager::
 getSessionName() const
 {
-	return(_sessionName);
+    return(_sessionName);
 }
 
 //_____________________________________________________________________________
@@ -214,7 +214,7 @@ getSessionName() const
 const std::string& Manager::
 toString() const
 {
-	return(_displayName);
+    return(_displayName);
 }
 //-----------------------------------------------------------------------------
 // SPECIFIED DT
@@ -240,8 +240,8 @@ toString() const
 void Manager::
 setUseSpecifiedDT(bool aTrueFalse)
 {
-	_specifiedDT = aTrueFalse;
-	if(_specifiedDT==true) _constantDT = false;
+    _specifiedDT = aTrueFalse;
+    if(_specifiedDT==true) _constantDT = false;
 }
 //_____________________________________________________________________________
 /**
@@ -264,7 +264,7 @@ setUseSpecifiedDT(bool aTrueFalse)
 bool Manager::
 getUseSpecifiedDT() const
 {
-	return(_specifiedDT);
+    return(_specifiedDT);
 }
 
 //-----------------------------------------------------------------------------
@@ -288,8 +288,8 @@ getUseSpecifiedDT() const
 void Manager::
 setUseConstantDT(bool aTrueFalse)
 {
-	_constantDT = aTrueFalse;
-	if(_constantDT==true) _specifiedDT = false;
+    _constantDT = aTrueFalse;
+    if(_constantDT==true) _specifiedDT = false;
 }
 //_____________________________________________________________________________
 /**
@@ -305,7 +305,7 @@ setUseConstantDT(bool aTrueFalse)
 bool Manager::
 getUseConstantDT() const
 {
-	return(_constantDT);
+    return(_constantDT);
 }
 //-----------------------------------------------------------------------------
 // DT ARRAY
@@ -319,7 +319,7 @@ getUseConstantDT() const
 const OpenSim::Array<double>& Manager::
 getDTArray()
 {
-	return(_dtArray);
+    return(_dtArray);
 }
 //_____________________________________________________________________________
 /**
@@ -340,18 +340,18 @@ getDTArray()
 void Manager::
 setDTArray(int aN,const double aDT[],double aTI)
 {
-	if(aN<=0) return;
-	if(aDT==NULL) return;
+    if(aN<=0) return;
+    if(aDT==NULL) return;
 
-	_dtArray.setSize(0);
-	_dtArray.ensureCapacity(aN);
-	_tArray.setSize(0);
-	_tArray.ensureCapacity(aN+1);
-	int i;
-	for(_tArray.append(aTI),i=0;i<aN;i++) {
-		_dtArray.append(aDT[i]);
-		_tArray.append(_tArray.getLast()+aDT[i]);
-	}
+    _dtArray.setSize(0);
+    _dtArray.ensureCapacity(aN);
+    _tArray.setSize(0);
+    _tArray.ensureCapacity(aN+1);
+    int i;
+    for(_tArray.append(aTI),i=0; i<aN; i++) {
+        _dtArray.append(aDT[i]);
+        _tArray.append(_tArray.getLast()+aDT[i]);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -365,12 +365,12 @@ setDTArray(int aN,const double aDT[],double aTI)
 double Manager::
 getDTArrayDT(int aStep)
 {
-	if((aStep<0) || (aStep>=_dtArray.getSize())) {
-		printf("Manager.getDTArrayDT: ERR- invalid step.\n");
-		return(SimTK::NaN);
-	}
+    if((aStep<0) || (aStep>=_dtArray.getSize())) {
+        printf("Manager.getDTArrayDT: ERR- invalid step.\n");
+        return(SimTK::NaN);
+    }
 
-	return(_dtArray[aStep]);
+    return(_dtArray[aStep]);
 }
 //_____________________________________________________________________________
 /**
@@ -379,31 +379,31 @@ getDTArrayDT(int aStep)
 void Manager::
 printDTArray(const char *aFileName)
 {
-	// OPEN FILE
-	FILE *fp;
-	if(aFileName==NULL) {
-		fp = stdout;
-	} else {
-		fp = fopen(aFileName,"w");
-		if(fp==NULL) {
-			printf("Manager.printDTArray: unable to print to file %s.\n",
-				aFileName);
-			fp = stdout;
-		}
-	}
+    // OPEN FILE
+    FILE *fp;
+    if(aFileName==NULL) {
+        fp = stdout;
+    } else {
+        fp = fopen(aFileName,"w");
+        if(fp==NULL) {
+            printf("Manager.printDTArray: unable to print to file %s.\n",
+                   aFileName);
+            fp = stdout;
+        }
+    }
 
-	// PRINT
-	int i;
-	fprintf(fp,"\n\ndt vector =\n");
-	for(i=0;i<_dtArray.getSize();i++) {
-		fprintf(fp,"%.16lf",_dtArray[i]);
-		if(fp!=stdout) fprintf(fp,"\n");
-		else fprintf(fp," ");
-	}
-	fprintf(fp,"\n");
+    // PRINT
+    int i;
+    fprintf(fp,"\n\ndt vector =\n");
+    for(i=0; i<_dtArray.getSize(); i++) {
+        fprintf(fp,"%.16lf",_dtArray[i]);
+        if(fp!=stdout) fprintf(fp,"\n");
+        else fprintf(fp," ");
+    }
+    fprintf(fp,"\n");
 
-	// CLOSE
-	if(fp!=stdout) fclose(fp);
+    // CLOSE
+    if(fp!=stdout) fclose(fp);
 }
 
 //-----------------------------------------------------------------------------
@@ -416,11 +416,11 @@ printDTArray(const char *aFileName)
 const OpenSim::Array<double>& Manager::
 getTimeArray()
 {
-	return(_tArray);
+    return(_tArray);
 }
 //_____________________________________________________________________________
 /**
- * Get the integration step (index) that occured prior to or at 
+ * Get the integration step (index) that occured prior to or at
  * a specified time.
  *
  * @param aTime Time of the integration step.
@@ -430,8 +430,8 @@ getTimeArray()
 int Manager::
 getTimeArrayStep(double aTime)
 {
-	int step = _tArray.searchBinary(aTime);
-	return(step);
+    int step = _tArray.searchBinary(aTime);
+    return(step);
 }
 //_____________________________________________________________________________
 /**
@@ -443,7 +443,7 @@ getTimeArrayStep(double aTime)
 double Manager::
 getNextTimeArrayTime(double aTime)
 {
-	return(getTimeArrayTime( _tArray.searchBinary(aTime)+1));
+    return(getTimeArrayTime( _tArray.searchBinary(aTime)+1));
 }
 //_____________________________________________________________________________
 //
@@ -456,12 +456,12 @@ getNextTimeArrayTime(double aTime)
 double Manager::
 getTimeArrayTime(int aStep)
 {
-	if((aStep<0) || (aStep>=_tArray.getSize())) {
-		printf("Manager.getTimeArrayTime: ERR- invalid step.\n");
-		return(SimTK::NaN);
-	}
+    if((aStep<0) || (aStep>=_tArray.getSize())) {
+        printf("Manager.getTimeArrayTime: ERR- invalid step.\n");
+        return(SimTK::NaN);
+    }
 
-	return(_tArray[aStep]);
+    return(_tArray[aStep]);
 }
 //_____________________________________________________________________________
 /**
@@ -474,31 +474,31 @@ getTimeArrayTime(int aStep)
 void Manager::
 printTimeArray(const char *aFileName)
 {
-	// OPEN FILE
-	FILE *fp;
-	if(aFileName==NULL) {
-		fp = stdout;
-	} else {
-		fp = fopen(aFileName,"w");
-		if(fp==NULL) {
-			printf("Manager.printTimeArray: unable to print to file %s.\n",
-				aFileName);
-			fp = stdout;
-		}
-	}
+    // OPEN FILE
+    FILE *fp;
+    if(aFileName==NULL) {
+        fp = stdout;
+    } else {
+        fp = fopen(aFileName,"w");
+        if(fp==NULL) {
+            printf("Manager.printTimeArray: unable to print to file %s.\n",
+                   aFileName);
+            fp = stdout;
+        }
+    }
 
-	// PRINT
-	int i;
-	fprintf(fp,"\n\ntime vector =\n");
-	for(i=0;i<_tArray.getSize();i++) {
-		fprintf(fp,"%.16lf",_tArray[i]);
-		if(fp!=stdout) fprintf(fp,"\n");
-		else fprintf(fp," ");
-	}
-	fprintf(fp,"\n");
+    // PRINT
+    int i;
+    fprintf(fp,"\n\ntime vector =\n");
+    for(i=0; i<_tArray.getSize(); i++) {
+        fprintf(fp,"%.16lf",_tArray[i]);
+        if(fp!=stdout) fprintf(fp,"\n");
+        else fprintf(fp," ");
+    }
+    fprintf(fp,"\n");
 
-	// CLOSE
-	if(fp!=stdout) fclose(fp);
+    // CLOSE
+    if(fp!=stdout) fclose(fp);
 }
 //_____________________________________________________________________________
 /**
@@ -511,9 +511,9 @@ printTimeArray(const char *aFileName)
 void Manager::
 resetTimeAndDTArrays(double aTime)
 {
-	int size = getTimeArrayStep(aTime);
-	_tArray.setSize(size+1);
-	_dtArray.setSize(size);
+    int size = getTimeArrayStep(aTime);
+    _tArray.setSize(size+1);
+    _dtArray.setSize(size);
 }
 
 //-----------------------------------------------------------------------------
@@ -526,19 +526,19 @@ resetTimeAndDTArrays(double aTime)
 void Manager::
 setModel(Model& aModel)
 {
-	if(_model!=NULL){
-		// May need to issue a warning here that model was already set to avoid a leak.
-	}
-	_model = &aModel;
-    
-	// STATES
-	constructStates();
+    if(_model!=NULL) {
+        // May need to issue a warning here that model was already set to avoid a leak.
+    }
+    _model = &aModel;
 
-	// STORAGE
-	constructStorage();
+    // STATES
+    constructStates();
 
-	// SESSION NAME
-	setSessionName(_model->getName());
+    // STORAGE
+    constructStorage();
+
+    // SESSION NAME
+    setSessionName(_model->getName());
 }
 
 //-----------------------------------------------------------------------------
@@ -551,14 +551,14 @@ setModel(Model& aModel)
 SimTK::Integrator& Manager::
 getIntegrator() const
 {
-	return(*_integ);
+    return(*_integ);
 }
 /**
  * Set the integrator.
  */
 void Manager::
-setIntegrator(SimTK::Integrator& integrator) 
-{	
+setIntegrator(SimTK::Integrator& integrator)
+{
     _integ = &integrator;
 }
 
@@ -575,7 +575,7 @@ setIntegrator(SimTK::Integrator& integrator)
 void Manager::
 setInitialTime(double aTI)
 {
-	_ti = aTI;
+    _ti = aTI;
 }
 //_____________________________________________________________________________
 /**
@@ -586,7 +586,7 @@ setInitialTime(double aTI)
 double Manager::
 getInitialTime() const
 {
-	return(_ti);
+    return(_ti);
 }
 //_____________________________________________________________________________
 /**
@@ -597,7 +597,7 @@ getInitialTime() const
 void Manager::
 setFinalTime(double aTF)
 {
-	_tf = aTF;
+    _tf = aTF;
 }
 //_____________________________________________________________________________
 /**
@@ -608,7 +608,7 @@ setFinalTime(double aTF)
 double Manager::
 getFinalTime() const
 {
-	return(_tf);
+    return(_tf);
 }
 
 //-----------------------------------------------------------------------------
@@ -623,8 +623,8 @@ getFinalTime() const
 void Manager::
 setFirstDT(double aDT)
 {
-	_firstDT = aDT;
-	if(_firstDT<1.0e-8) _firstDT = 1.0e-8;
+    _firstDT = aDT;
+    if(_firstDT<1.0e-8) _firstDT = 1.0e-8;
 }
 //_____________________________________________________________________________
 /**
@@ -635,7 +635,7 @@ setFirstDT(double aDT)
 double Manager::
 getFirstDT() const
 {
-	return(_firstDT);
+    return(_firstDT);
 }
 
 
@@ -653,18 +653,18 @@ getFirstDT() const
 void Manager::
 setStateStorage(Storage& aStorage)
 {
-	_stateStore = &aStorage;
+    _stateStore = &aStorage;
 }
 //_____________________________________________________________________________
 /**
  * Get the storage buffer for the integration states.
  */
 Storage& Manager::
-getStateStorage() const 
+getStateStorage() const
 {
     if( _stateStore  == NULL )
         throw Exception("Manager::getStateStorage(): Storage is not set");
- 	return(*_stateStore);
+    return(*_stateStore);
 }
 //_____________________________________________________________________________
 /**
@@ -689,7 +689,7 @@ hasStateStorage() const
 bool Manager::
 integrate( SimTK::State& s, double dtFirst )
 {
-	
+
 
     int step = 0;
 
@@ -702,83 +702,83 @@ integrate( SimTK::State& s, double dtFirst )
 
 bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
 
-	// CLEAR ANY INTERRUPT
-	// Halts must arrive during an integration.
+    // CLEAR ANY INTERRUPT
+    // Halts must arrive during an integration.
     clearHalt();
 
-	double dt,dtPrev,tReal;
-	double time =_ti;
-	dt=dtFirst;
-	if(dt>_dtMax) dt = _dtMax;
-	dtPrev=dt;
+    double dt,dtPrev,tReal;
+    double time =_ti;
+    dt=dtFirst;
+    if(dt>_dtMax) dt = _dtMax;
+    dtPrev=dt;
 
-	// CHECK SPECIFIED DT STEPPING
-	
-	if(_specifiedDT) {
-		if(_tArray.getSize()<=0) {
-			string msg="IntegRKF.integrate: ERR- specified dt stepping not";
-			msg += "possible-- empty time array.";
-			throw( Exception(msg) );
-		}
-		double first = _tArray[0];
-		double last = _tArray.getLast();
-		if((getTimeArrayStep(_ti)<0) || (_ti<first) || (_tf>last)) {
-			string msg="IntegRKF.integrate: ERR- specified dt stepping not";
-			msg +="possible-- time array does not cover the requested";
-			msg +=" integration interval.";
-			throw(Exception(msg));
-		}
-	}
+    // CHECK SPECIFIED DT STEPPING
 
-	// RECORD FIRST TIME STEP
-	if(!_specifiedDT) {
-		resetTimeAndDTArrays(time);
-		if(_tArray.getSize()<=0) {
-			_tArray.append(time);
-		}
-	}
-	bool fixedStep = false;
+    if(_specifiedDT) {
+        if(_tArray.getSize()<=0) {
+            string msg="IntegRKF.integrate: ERR- specified dt stepping not";
+            msg += "possible-- empty time array.";
+            throw( Exception(msg) );
+        }
+        double first = _tArray[0];
+        double last = _tArray.getLast();
+        if((getTimeArrayStep(_ti)<0) || (_ti<first) || (_tf>last)) {
+            string msg="IntegRKF.integrate: ERR- specified dt stepping not";
+            msg +="possible-- time array does not cover the requested";
+            msg +=" integration interval.";
+            throw(Exception(msg));
+        }
+    }
+
+    // RECORD FIRST TIME STEP
+    if(!_specifiedDT) {
+        resetTimeAndDTArrays(time);
+        if(_tArray.getSize()<=0) {
+            _tArray.append(time);
+        }
+    }
+    bool fixedStep = false;
     double fixedStepSize;
-	if( _constantDT || _specifiedDT) fixedStep = true;
+    if( _constantDT || _specifiedDT) fixedStep = true;
 
     // If _system is has been set we should be integrating a CMC system
     // not the model's system.
-    const SimTK::System& sys = _system ? *_system 
-                                       : _model->getMultibodySystem();
+    const SimTK::System& sys = _system ? *_system
+                               : _model->getMultibodySystem();
     SimTK::TimeStepper ts(sys, *_integ);
 
     ts.initialize(s);
     ts.setReportAllSignificantStates(true);
-	SimTK::Integrator::SuccessfulStepStatus status;
+    SimTK::Integrator::SuccessfulStepStatus status;
 
     if( fixedStep ) {
         dt = getFixedStepSize(getTimeArrayStep(_ti));
     } else {
-        _integ->setReturnEveryInternalStep(true); 
+        _integ->setReturnEveryInternalStep(true);
     }
 
     if( s.getTime()+dt >= _tf ) dt = _tf - s.getTime();
-   
-	// We need to be at a valid stage to initialize the controls, but only when 
-    // we are integrating the complete model system, not the CMC system. This 
-    // is very ugly and a cleaner solution is required- aseth
-	if(_system == NULL)
-		sys.realize(s, SimTK::Stage::Velocity); // this is multibody system 
-    initialize(s, dt);  
 
-	if( fixedStep){
+    // We need to be at a valid stage to initialize the controls, but only when
+    // we are integrating the complete model system, not the CMC system. This
+    // is very ugly and a cleaner solution is required- aseth
+    if(_system == NULL)
+        sys.realize(s, SimTK::Stage::Velocity); // this is multibody system
+    initialize(s, dt);
+
+    if( fixedStep) {
         s.updTime() = time;
         sys.realize(s, SimTK::Stage::Acceleration);
 
         if(_performAnalyses)_model->updAnalysisSet().step(s, step);
         tReal = s.getTime();
         if( _writeToStorage ) {
-			SimTK::Vector stateValues = _model->getStateVariableValues(s);
-			StateVector vec;
-			vec.setStates(tReal, stateValues.size(), &stateValues[0]);
+            SimTK::Vector stateValues = _model->getStateVariableValues(s);
+            StateVector vec;
+            vec.setStates(tReal, stateValues.size(), &stateValues[0]);
             getStateStorage().append(vec);
-			if(_model->isControlled())
-				_controllerSet->storeControls(s,step);
+            if(_model->isControlled())
+                _controllerSet->storeControls(s,step);
         }
     }
 
@@ -786,11 +786,11 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
 
     // LOOP
     while( time  < _tf ) {
-		if( fixedStep ){
-              fixedStepSize = getNextTimeArrayTime( time ) - time;
-             if( fixedStepSize + time  >= _tf )  fixedStepSize = _tf - time;
-             _integ->setFixedStepSize( fixedStepSize );
-             stepToTime = time + fixedStepSize; 
+        if( fixedStep ) {
+            fixedStepSize = getNextTimeArrayTime( time ) - time;
+            if( fixedStepSize + time  >= _tf )  fixedStepSize = _tf - time;
+            _integ->setFixedStepSize( fixedStepSize );
+            stepToTime = time + fixedStepSize;
         }
 
         // stepTo() does not return if it fails. However, the final step
@@ -804,18 +804,18 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
             if(_performAnalyses)_model->updAnalysisSet().step(s,step);
             tReal = s.getTime();
             if( _writeToStorage) {
-				SimTK::Vector stateValues = _model->getStateVariableValues(s);
-				StateVector vec;
-				vec.setStates(tReal, stateValues.size(), &stateValues[0]);
-				getStateStorage().append(vec);
-				if(_model->isControlled())
-					_controllerSet->storeControls(s, step);
+                SimTK::Vector stateValues = _model->getStateVariableValues(s);
+                StateVector vec;
+                vec.setStates(tReal, stateValues.size(), &stateValues[0]);
+                getStateStorage().append(vec);
+                if(_model->isControlled())
+                    _controllerSet->storeControls(s, step);
             }
             step++;
         }
         else
             halt();
-        
+
         time = _integ->getState().getTime();
         // CHECK FOR INTERRUPT
         if(checkHalt()) break;
@@ -832,67 +832,67 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
 /**
  * return the step size when the integrator is taking fixed
  * step sizes
- * 
+ *
  * @param tArrayStep Step number
  */
 double Manager::getFixedStepSize(int tArrayStep) const {
-	if( _constantDT ) 
-		return( _dt );
-	else { 
-        if( tArrayStep >= _dtArray.getSize() ) 
-             return( _dtArray[ _dtArray.getSize()-1 ] );
-        else 
-		    return(_dtArray[tArrayStep]);
+    if( _constantDT )
+        return( _dt );
+    else {
+        if( tArrayStep >= _dtArray.getSize() )
+            return( _dtArray[ _dtArray.getSize()-1 ] );
+        else
+            return(_dtArray[tArrayStep]);
     }
 }
 //_____________________________________________________________________________
 /**
- * initialize storages and analyses 
- * 
+ * initialize storages and analyses
+ *
  * @param s system state before integration
  */
 void Manager::initialize(SimTK::State& s, double dt )
 {
-	// skip initailizations for CMC's actutator system
-	if( _writeToStorage && _performAnalyses ) { 
+    // skip initailizations for CMC's actutator system
+    if( _writeToStorage && _performAnalyses ) {
 
         double tReal = s.getTime();
-	
-    	// STORE STARTING CONTROLS
-		if(_model->isControlled())
-			_controllerSet->storeControls(s, 0);
 
-    	// STORE STARTING STATES
-    	if(hasStateStorage()) {
-    		// ONLY IF NO STATES WERE PREVIOUSLY STORED
-    		if(getStateStorage().getSize()==0) {
-				SimTK::Vector stateValues = _model->getStateVariableValues(s);
-	            getStateStorage().store(0,tReal,stateValues.size(), &stateValues[0]);
-    		}
-    	}
+        // STORE STARTING CONTROLS
+        if(_model->isControlled())
+            _controllerSet->storeControls(s, 0);
 
-    	// ANALYSES 
-    	AnalysisSet& analysisSet = _model->updAnalysisSet();
-    	analysisSet.begin(s);
+        // STORE STARTING STATES
+        if(hasStateStorage()) {
+            // ONLY IF NO STATES WERE PREVIOUSLY STORED
+            if(getStateStorage().getSize()==0) {
+                SimTK::Vector stateValues = _model->getStateVariableValues(s);
+                getStateStorage().store(0,tReal,stateValues.size(), &stateValues[0]);
+            }
+        }
+
+        // ANALYSES
+        AnalysisSet& analysisSet = _model->updAnalysisSet();
+        analysisSet.begin(s);
     }
 
-	return;
+    return;
 }
 //_____________________________________________________________________________
 /**
  * finalize storages and analyses
- * 
+ *
  * @param s system state before integration
  */
 void Manager::finalize(SimTK::State& s )
 {
-    	// ANALYSES 
-	if(  _performAnalyses ) { 
-     	AnalysisSet& analysisSet = _model->updAnalysisSet();
-     	analysisSet.end(s);
+    // ANALYSES
+    if(  _performAnalyses ) {
+        AnalysisSet& analysisSet = _model->updAnalysisSet();
+        analysisSet.end(s);
     }
 
-	return;
+    return;
 }
 //=============================================================================
 // INTERRUPT
@@ -906,7 +906,7 @@ void Manager::finalize(SimTK::State& s )
  */
 void Manager::halt()
 {
-		_halt = true;
+    _halt = true;
 }
 //_____________________________________________________________________________
 /**
@@ -916,7 +916,7 @@ void Manager::halt()
  */
 void Manager::clearHalt()
 {
-	_halt = false;
+    _halt = false;
 }
 //_____________________________________________________________________________
 /**
@@ -926,7 +926,7 @@ void Manager::clearHalt()
  */
 bool Manager::checkHalt()
 {
-	return(_halt);
+    return(_halt);
 }
 
 

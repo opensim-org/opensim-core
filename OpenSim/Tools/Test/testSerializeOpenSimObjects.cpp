@@ -36,11 +36,11 @@ static void indent(int nSpaces) {
 // Recursively dump out contents of an object and its properties.
 static void dumpObj(const Object& obj, int nSpaces) {
     indent(nSpaces);
-    cout << obj.getConcreteClassName() << " Object " 
+    cout << obj.getConcreteClassName() << " Object "
          << (obj.getName().empty()?"NONAME":obj.getName())
          << endl;
     for (int p=0; p < obj.getNumProperties(); ++p) {
-        const AbstractProperty& ap = obj.getPropertyByIndex(p); 
+        const AbstractProperty& ap = obj.getPropertyByIndex(p);
         indent(nSpaces+2);
         cout << ap.getName() << "=" << ap.toString() << endl;
         // Check return values from Property API for debugging purposes
@@ -51,7 +51,7 @@ static void dumpObj(const Object& obj, int nSpaces) {
         string ts = ap.getTypeName();
         indent(nSpaces+2);
         cout << "isList, isObject, isOneObject, isOneValue, typeName = " <<
-            t1 <<", "<< t2 <<", "<< t3 <<", "<< t4 <<", "<< ts << endl;
+             t1 <<", "<< t2 <<", "<< t3 <<", "<< t4 <<", "<< ts << endl;
         if (ap.isObjectProperty()) {
             for (int i=0; i < ap.size(); ++i)
                 dumpObj(ap.getValueAsObject(i), nSpaces+4);
@@ -61,40 +61,40 @@ static void dumpObj(const Object& obj, int nSpaces) {
 
 int main()
 {
-	try {
-		Model testModel;
+    try {
+        Model testModel;
         srand((unsigned)time(0));
         // for Body, Joint, Constraint, Force, Marker, ContactGeometry, Controller and Probe
         ArrayPtrs<OpenSim::Body> availableBodyTypes;
         Object::getRegisteredObjectsOfGivenType<OpenSim::Body>(availableBodyTypes);
-        for (int i=0; i< availableBodyTypes.getSize(); i++){
+        for (int i=0; i< availableBodyTypes.getSize(); i++) {
             Object* clone = availableBodyTypes[i]->clone();
             Object* randClone = randomize(clone);
             testModel.addBody(Body::safeDownCast(randClone));
-			const Body& inModel = testModel.getBodySet().get(randClone->getName());
-			ASSERT(inModel == *randClone);
-			randClone->print("bodyTestPrint.xml");
+            const Body& inModel = testModel.getBodySet().get(randClone->getName());
+            ASSERT(inModel == *randClone);
+            randClone->print("bodyTestPrint.xml");
         }
 
-		ArrayPtrs<OpenSim::Joint> availablJointTypes;
-		Object::getRegisteredObjectsOfGivenType<OpenSim::Joint>(availablJointTypes);
-		for (int i = 0; i< availablJointTypes.getSize(); i++){
-			Object* clone = availablJointTypes[i]->clone();
-			Object* randClone = randomize(clone);
-			testModel.addJoint(Joint::safeDownCast(randClone));
-		}
+        ArrayPtrs<OpenSim::Joint> availablJointTypes;
+        Object::getRegisteredObjectsOfGivenType<OpenSim::Joint>(availablJointTypes);
+        for (int i = 0; i< availablJointTypes.getSize(); i++) {
+            Object* clone = availablJointTypes[i]->clone();
+            Object* randClone = randomize(clone);
+            testModel.addJoint(Joint::safeDownCast(randClone));
+        }
 
-		ArrayPtrs<OpenSim::Constraint> availableConstraintTypes;
-		Object::getRegisteredObjectsOfGivenType<OpenSim::Constraint>(availableConstraintTypes);
-		for (int i = 0; i< availableConstraintTypes.getSize(); i++){
-			Object* clone = availableConstraintTypes[i]->clone();
-			Object* randClone = randomize(clone);
-			testModel.addConstraint(Constraint::safeDownCast(randClone));
-		}
+        ArrayPtrs<OpenSim::Constraint> availableConstraintTypes;
+        Object::getRegisteredObjectsOfGivenType<OpenSim::Constraint>(availableConstraintTypes);
+        for (int i = 0; i< availableConstraintTypes.getSize(); i++) {
+            Object* clone = availableConstraintTypes[i]->clone();
+            Object* randClone = randomize(clone);
+            testModel.addConstraint(Constraint::safeDownCast(randClone));
+        }
 
         ArrayPtrs<OpenSim::Force> availableForceTypes;
         Object::getRegisteredObjectsOfGivenType<OpenSim::Force>(availableForceTypes);
-        for (int i=0; i< availableForceTypes.getSize(); i++){
+        for (int i=0; i< availableForceTypes.getSize(); i++) {
             Object* clone = availableForceTypes[i]->clone();
             Object* randClone = randomize(clone);
             testModel.addForce(Force::safeDownCast(randClone));
@@ -102,7 +102,7 @@ int main()
 
         ArrayPtrs<OpenSim::Controller> availableControllerTypes;
         Object::getRegisteredObjectsOfGivenType<OpenSim::Controller>(availableControllerTypes);
-        for (int i=0; i< availableControllerTypes.getSize(); i++){
+        for (int i=0; i< availableControllerTypes.getSize(); i++) {
             Object* clone = availableControllerTypes[i]->clone();
             Object* randClone = randomize(clone);
             testModel.addController(Controller::safeDownCast(randClone));
@@ -110,7 +110,7 @@ int main()
 
         ArrayPtrs<OpenSim::Probe> availableProbeTypes;
         Object::getRegisteredObjectsOfGivenType<OpenSim::Probe>(availableProbeTypes);
-        for (int i=0; i< availableProbeTypes.getSize(); i++){
+        for (int i=0; i< availableProbeTypes.getSize(); i++) {
             Object* clone = availableProbeTypes[i]->clone();
             Object* randClone = randomize(clone);
             testModel.addProbe(Probe::safeDownCast(randClone));
@@ -119,18 +119,18 @@ int main()
         testModel.print("allComponents.osim");
 
         Model deserializedModel("allComponents.osim", false);
-		ASSERT(testModel == deserializedModel,  
-			"deserializedModel FAILED to match original model.");       
-	}
-	catch (const Exception& e) {
+        ASSERT(testModel == deserializedModel,
+               "deserializedModel FAILED to match original model.");
+    }
+    catch (const Exception& e) {
         e.print(cerr);
         return 1;
     }
     cout << "Done" << endl;
-	return 0;
+    return 0;
 }
 
 void testPropertiesDump(const Object& aObject)
 {
-	dumpObj(aObject, 4);
+    dumpObj(aObject, 4);
 }

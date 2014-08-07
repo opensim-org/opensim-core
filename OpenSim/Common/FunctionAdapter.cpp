@@ -51,9 +51,9 @@ double FunctionAdapter::calcDerivative(const std::vector<int>& derivComponents, 
     return _function.calcDerivative(derivComponents, x);
 }
 
-double FunctionAdapter::calcDerivative(const SimTK::Array_<int>& derivComponents, const SimTK::Vector& x) const{
-	std::vector<int> dcs(derivComponents.begin(), derivComponents.end());
-	return _function.calcDerivative(dcs, x);
+double FunctionAdapter::calcDerivative(const SimTK::Array_<int>& derivComponents, const SimTK::Vector& x) const {
+    std::vector<int> dcs(derivComponents.begin(), derivComponents.end());
+    return _function.calcDerivative(dcs, x);
 }
 
 int FunctionAdapter::getArgumentSize() const {

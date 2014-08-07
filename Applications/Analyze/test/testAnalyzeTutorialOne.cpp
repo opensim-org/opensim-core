@@ -31,28 +31,28 @@ using namespace std;
 
 int main()
 {
-	try {
-		AnalyzeTool analyze1("PlotterTool.xml");
-		analyze1.getModel().print("testAnalyzeTutorialOne.osim");
- 		analyze1.run();
-        /* Once this runs to completion we'll make the test more meaningful by comparing output 
+    try {
+        AnalyzeTool analyze1("PlotterTool.xml");
+        analyze1.getModel().print("testAnalyzeTutorialOne.osim");
+        analyze1.run();
+        /* Once this runs to completion we'll make the test more meaningful by comparing output
          * to a validated standard. Let's make sure we don't crash during run first! -Ayman 5/29/12 */
-		Storage resultFiberLength("testPlotterTool/BothLegs__FiberLength.sto");
+        Storage resultFiberLength("testPlotterTool/BothLegs__FiberLength.sto");
         Storage standardFiberLength("std_BothLegs_fiberLength.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(resultFiberLength, standardFiberLength, Array<double>(0.0001, 100), __FILE__, __LINE__, "testAnalyzeTutorialOne failed");
+        CHECK_STORAGE_AGAINST_STANDARD(resultFiberLength, standardFiberLength, Array<double>(0.0001, 100), __FILE__, __LINE__, "testAnalyzeTutorialOne failed");
         const Model& mdl = analyze1.getModel();
         //mdl.updMultibodySystem()
         analyze1.setStatesFileName("plotterGeneratedStatesHip45.sto");
         //analyze1.setModel(mdl);
         analyze1.setName("BothLegsHip45");
         analyze1.run();
-		Storage resultFiberLengthHip45("testPlotterTool/BothLegsHip45__FiberLength.sto");
+        Storage resultFiberLengthHip45("testPlotterTool/BothLegsHip45__FiberLength.sto");
         Storage standardFiberLength45("std_BothLegsHip45__FiberLength.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(resultFiberLengthHip45, standardFiberLength45, Array<double>(0.0001, 100), __FILE__, __LINE__, "testAnalyzeTutorialOne at Hip45 failed");        
-		cout << "testAnalyzeTutorialOne passed" << endl;
-	}
-	catch (const exception& e) {
-		cout << "testAnalyzeTutorialOne Failed: " << e.what() << endl;
+        CHECK_STORAGE_AGAINST_STANDARD(resultFiberLengthHip45, standardFiberLength45, Array<double>(0.0001, 100), __FILE__, __LINE__, "testAnalyzeTutorialOne at Hip45 failed");
+        cout << "testAnalyzeTutorialOne passed" << endl;
+    }
+    catch (const exception& e) {
+        cout << "testAnalyzeTutorialOne Failed: " << e.what() << endl;
         return 1;
     }
     cout << "Done" << endl;

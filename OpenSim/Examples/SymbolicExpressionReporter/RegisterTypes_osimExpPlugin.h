@@ -28,18 +28,18 @@
 
 extern "C" {
 
-OSIMEXPPLUGIN_API void RegisterTypes_osimExpPlugin(); 
+    OSIMEXPPLUGIN_API void RegisterTypes_osimExpPlugin();
 
 }
 // Excluding this from Doxygen until it has better documentation! -Sam Hamner
-    /// @cond
-class dllPluginObjectInstantiator 
-{ 
-public: 
-        dllPluginObjectInstantiator(); 
-private: 
-        void registerDllClasses(); 
-}; 
+/// @cond
+class dllPluginObjectInstantiator
+{
+public:
+    dllPluginObjectInstantiator();
+private:
+    void registerDllClasses();
+};
 /// @endcond
 #endif // __RegisterTypes_osimExpPlugin_h__
 

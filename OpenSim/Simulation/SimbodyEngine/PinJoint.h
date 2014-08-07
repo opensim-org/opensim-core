@@ -32,7 +32,7 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing an Pin joint.  The underlying implementation 
+ * A class implementing an Pin joint.  The underlying implementation
  * in Simbody is a MobilizedBody::Pin. Pin provides one DOF about the common
  * Z-axis of the joint (not body) frames in the parent and child body.
  *
@@ -40,32 +40,34 @@ namespace OpenSim {
  * @version 1.0
  */
 class OSIMSIMULATION_API PinJoint : public Joint {
-OpenSim_DECLARE_CONCRETE_OBJECT(PinJoint, Joint);
+    OpenSim_DECLARE_CONCRETE_OBJECT(PinJoint, Joint);
 
 private:
-	static const int _numMobilities = 1;
+    static const int _numMobilities = 1;
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
 
-	/** Pin has no additional properties*/
+    /** Pin has no additional properties*/
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	PinJoint();
-	// Convenience constructor
-	PinJoint(const std::string &name,  const Body& parent,
-			 const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-		     const Body& child, 
-			 const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-			 bool reverse = false);
-	virtual ~PinJoint();
+    // CONSTRUCTION
+    PinJoint();
+    // Convenience constructor
+    PinJoint(const std::string &name,  const Body& parent,
+             const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+             const Body& child,
+             const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
+             bool reverse = false);
+    virtual ~PinJoint();
 
-	int numCoordinates() const override {return _numMobilities;};
+    int numCoordinates() const override {
+        return _numMobilities;
+    };
 
 protected:
     void addToSystem(SimTK::MultibodySystem& system) const override;

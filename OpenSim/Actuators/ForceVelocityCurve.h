@@ -31,10 +31,10 @@
 #include <OpenSim/Common/SmoothSegmentedFunction.h>
 
 #ifdef SWIG
-    #ifdef OSIMACTUATORS_API
-        #undef OSIMACTUATORS_API
-        #define OSIMACTUATORS_API
-    #endif
+#ifdef OSIMACTUATORS_API
+#undef OSIMACTUATORS_API
+#define OSIMACTUATORS_API
+#endif
 #endif
 
 namespace OpenSim {
@@ -139,7 +139,7 @@ namespace OpenSim {
     @author Matt Millard
 */
 class OSIMACTUATORS_API ForceVelocityCurve : public Function {
-OpenSim_DECLARE_CONCRETE_OBJECT(ForceVelocityCurve, Function);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ForceVelocityCurve, Function);
 public:
 //==============================================================================
 // PROPERTIES
@@ -148,21 +148,21 @@ public:
         These are the serializable properties associated with this class. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(concentric_slope_at_vmax, double,
-        "Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)");
+                             "Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)");
     OpenSim_DECLARE_PROPERTY(concentric_slope_near_vmax, double,
-        "Curve slope just before reaching concentric_slope_at_vmax");
+                             "Curve slope just before reaching concentric_slope_at_vmax");
     OpenSim_DECLARE_PROPERTY(isometric_slope, double,
-        "Curve slope at isometric (normalized velocity of 0)");
+                             "Curve slope at isometric (normalized velocity of 0)");
     OpenSim_DECLARE_PROPERTY(eccentric_slope_at_vmax, double,
-        "Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)");
+                             "Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)");
     OpenSim_DECLARE_PROPERTY(eccentric_slope_near_vmax, double,
-        "Curve slope just before reaching eccentric_slope_at_vmax");
+                             "Curve slope just before reaching eccentric_slope_at_vmax");
     OpenSim_DECLARE_PROPERTY(max_eccentric_velocity_force_multiplier, double,
-        "Curve value at the maximum normalized eccentric contraction velocity");
+                             "Curve value at the maximum normalized eccentric contraction velocity");
     OpenSim_DECLARE_PROPERTY(concentric_curviness, double,
-        "Concentric curve shape, from linear (0) to maximal curve (1)");
+                             "Concentric curve shape, from linear (0) to maximal curve (1)");
     OpenSim_DECLARE_PROPERTY(eccentric_curviness, double,
-        "Eccentric curve shape, from linear (0) to maximal curve (1)");
+                             "Eccentric curve shape, from linear (0) to maximal curve (1)");
     /**@}**/
 
 //==============================================================================
@@ -301,7 +301,7 @@ public:
     */
     void setEccentricCurviness(double aEccentricCurviness);
 
-	/** Implement the generic OpenSim::Function interface **/
+    /** Implement the generic OpenSim::Function interface **/
     double calcValue(const SimTK::Vector& x) const override
     {
         return calcValue(x[0]);

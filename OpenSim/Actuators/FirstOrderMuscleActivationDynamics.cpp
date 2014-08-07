@@ -28,13 +28,13 @@ using namespace OpenSim;
 using namespace SimTK;
 
 const std::string FirstOrderMuscleActivationDynamics::
-                  STATE_NAME_ACTIVATION = "activation";
+STATE_NAME_ACTIVATION = "activation";
 
 //==============================================================================
 // CONSTRUCTORS
 //==============================================================================
 FirstOrderMuscleActivationDynamics::FirstOrderMuscleActivationDynamics() :
-MuscleActivationDynamics()
+    MuscleActivationDynamics()
 {
     setNull();
     constructProperties();
@@ -44,7 +44,7 @@ MuscleActivationDynamics()
 FirstOrderMuscleActivationDynamics::
 FirstOrderMuscleActivationDynamics(const std::string& name,
                                    ExcitationGetter* getter) :
-MuscleActivationDynamics(name, getter)
+    MuscleActivationDynamics(name, getter)
 {
     setNull();
     constructProperties();
@@ -54,9 +54,13 @@ MuscleActivationDynamics(name, getter)
 // ACCESSORS AND MUTATORS
 //==============================================================================
 double FirstOrderMuscleActivationDynamics::getActivationTimeConstant() const
-{   return get_activation_time_constant(); }
+{
+    return get_activation_time_constant();
+}
 double FirstOrderMuscleActivationDynamics::getDeactivationTimeConstant() const
-{   return get_deactivation_time_constant(); }
+{
+    return get_deactivation_time_constant();
+}
 
 void FirstOrderMuscleActivationDynamics::
 setActivationTimeConstant(double activationTimeConstant)
@@ -99,10 +103,10 @@ setPropertiesFromState(const SimTK::State& s)
 void FirstOrderMuscleActivationDynamics::
 computeStateVariableDerivatives(const SimTK::State& s) const
 {
-     double adot = 
-		 calcActivationDerivative(getExcitation(s), getActivation(s));
+    double adot =
+        calcActivationDerivative(getExcitation(s), getActivation(s));
 
-	 setStateVariableDerivative(s, STATE_NAME_ACTIVATION, adot);
+    setStateVariableDerivative(s, STATE_NAME_ACTIVATION, adot);
 }
 
 //==============================================================================
@@ -115,7 +119,7 @@ getActivation(const SimTK::State& s) const
 }
 
 void FirstOrderMuscleActivationDynamics::setActivation(SimTK::State& s,
-                                                       double activation) const
+        double activation) const
 {
     setStateVariable(s, STATE_NAME_ACTIVATION,
                      clampToValidInterval(activation));

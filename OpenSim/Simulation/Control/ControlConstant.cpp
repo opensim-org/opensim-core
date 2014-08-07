@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Property_Deprecated.h>
@@ -46,12 +46,12 @@ ControlConstant::~ControlConstant()
 }
 //_____________________________________________________________________________
 ControlConstant::ControlConstant(double aX,const char *aName) :
-	_x(_propX.getValueDbl())
+    _x(_propX.getValueDbl())
 {
-	setNull();
-	setIsModelControl(false);
-	_x = aX;
-	setName(aName);
+    setNull();
+    setIsModelControl(false);
+    _x = aX;
+    setName(aName);
 }
 //_____________________________________________________________________________
 /**
@@ -60,11 +60,11 @@ ControlConstant::ControlConstant(double aX,const char *aName) :
  * @param aControl Control to copy.
  */
 ControlConstant::ControlConstant(const ControlConstant &aControl) :
-	Control(aControl),
-	_x(_propX.getValueDbl())
+    Control(aControl),
+    _x(_propX.getValueDbl())
 {
-	setNull();
-	copyData(aControl);
+    setNull();
+    copyData(aControl);
 }
 
 
@@ -78,8 +78,8 @@ ControlConstant::ControlConstant(const ControlConstant &aControl) :
 void ControlConstant::
 setNull()
 {
-	setupProperties();
-	_x = 0.0;
+    setupProperties();
+    _x = 0.0;
 }
 //_____________________________________________________________________________
 /**
@@ -88,9 +88,9 @@ setNull()
 void ControlConstant::
 setupProperties()
 {
-	_propX.setName("value");
-	_propX.setValue(0.0);
-	_propertySet.append( &_propX );
+    _propX.setName("value");
+    _propX.setValue(0.0);
+    _propertySet.append( &_propX );
 }
 //_____________________________________________________________________________
 /**
@@ -99,7 +99,7 @@ setupProperties()
 void ControlConstant::
 copyData(const ControlConstant &aControl)
 {
-	_x = aControl.getParameterValue(0);
+    _x = aControl.getParameterValue(0);
 }
 
 
@@ -118,13 +118,13 @@ copyData(const ControlConstant &aControl)
 ControlConstant& ControlConstant::
 operator=(const ControlConstant &aControl)
 {
-	// BASE CLASS
-	Control::operator=(aControl);
+    // BASE CLASS
+    Control::operator=(aControl);
 
-	// DATA
-	copyData(aControl);
+    // DATA
+    copyData(aControl);
 
-	return(*this);
+    return(*this);
 }
 
 
@@ -143,7 +143,7 @@ operator=(const ControlConstant &aControl)
 int ControlConstant::
 getNumParameters() const
 {
-	return(1);
+    return(1);
 }
 
 //-----------------------------------------------------------------------------
@@ -159,7 +159,7 @@ getNumParameters() const
 void ControlConstant::
 setParameterMin(int aI,double aMin)
 {
-	setDefaultParameterMin(aMin);
+    setDefaultParameterMin(aMin);
 }
 //_____________________________________________________________________________
 /**
@@ -171,7 +171,7 @@ setParameterMin(int aI,double aMin)
 double ControlConstant::
 getParameterMin(int aI) const
 {
-	return(getDefaultParameterMin());
+    return(getDefaultParameterMin());
 }
 
 //-----------------------------------------------------------------------------
@@ -187,7 +187,7 @@ getParameterMin(int aI) const
 void ControlConstant::
 setParameterMax(int aI,double aMax)
 {
-	setDefaultParameterMax(aMax);
+    setDefaultParameterMax(aMax);
 }
 //_____________________________________________________________________________
 /**
@@ -199,7 +199,7 @@ setParameterMax(int aI,double aMax)
 double ControlConstant::
 getParameterMax(int aI) const
 {
-	return(getDefaultParameterMax());
+    return(getDefaultParameterMax());
 }
 
 //-----------------------------------------------------------------------------
@@ -209,7 +209,7 @@ getParameterMax(int aI) const
 double ControlConstant::
 getParameterTime(int aI) const
 {
-	return(SimTK::NaN);
+    return(SimTK::NaN);
 }
 
 //-----------------------------------------------------------------------------
@@ -219,8 +219,8 @@ getParameterTime(int aI) const
 void ControlConstant::
 getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const
 {
-	rTLower = -SimTK::Infinity;
-	rTUpper =  SimTK::Infinity;
+    rTLower = -SimTK::Infinity;
+    rTUpper =  SimTK::Infinity;
 }
 
 //-----------------------------------------------------------------------------
@@ -230,16 +230,16 @@ getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const
 int ControlConstant::
 getParameterList(double aT,Array<int> &rList)
 {
-	rList.setSize(0);
-	rList.append(0);
-	return(rList.getSize());
+    rList.setSize(0);
+    rList.append(0);
+    return(rList.getSize());
 }
 //_____________________________________________________________________________
 int ControlConstant::
 getParameterList(double aTLower,double aTUpper,Array<int> &rList)
 {
-	rList.setSize(0);
-	return(rList.getSize());
+    rList.setSize(0);
+    return(rList.getSize());
 }
 
 //-----------------------------------------------------------------------------
@@ -249,13 +249,13 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList)
 void ControlConstant::
 setParameterValue(int aI,double aX)
 {
-	_x = aX;
+    _x = aX;
 }
 //_____________________________________________________________________________
 double ControlConstant::
 getParameterValue(int aI) const
 {
-	return(_x);
+    return(_x);
 }
 
 //-----------------------------------------------------------------------------
@@ -265,13 +265,13 @@ getParameterValue(int aI) const
 void ControlConstant::
 setControlValue(double aT,double aX)
 {
-	_x = aX;
+    _x = aX;
 }
 //_____________________________________________________________________________
 double ControlConstant::
 getControlValue(double aT)
 {
-	return(_x);
+    return(_x);
 }
 
 //-----------------------------------------------------------------------------
@@ -281,13 +281,13 @@ getControlValue(double aT)
 void ControlConstant::
 setControlValueMin(double aT,double aMin)
 {
-	setDefaultParameterMin(aMin);
+    setDefaultParameterMin(aMin);
 }
 //_____________________________________________________________________________
 double ControlConstant::
 getControlValueMin(double aT)
 {
-	return( getDefaultParameterMin() );
+    return( getDefaultParameterMin() );
 }
 
 //-----------------------------------------------------------------------------
@@ -297,13 +297,13 @@ getControlValueMin(double aT)
 void ControlConstant::
 setControlValueMax(double aT,double aMax)
 {
-	setDefaultParameterMax(aMax);
+    setDefaultParameterMax(aMax);
 }
 //_____________________________________________________________________________
 double ControlConstant::
 getControlValueMax(double aT)
 {
-	return( getDefaultParameterMax() );
+    return( getDefaultParameterMax() );
 }
 
 

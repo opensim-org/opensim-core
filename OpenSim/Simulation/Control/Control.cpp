@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Property_Deprecated.h>
@@ -53,14 +53,14 @@ Control::~Control()
  * Default constructor.
  */
 Control::Control(const char *aName) :
-	_isModelControl( _propIsModelControl.getValueBool() ),
-	_extrapolate( _propExtrapolate.getValueBool() ),
-	_defaultMin( _propDefaultMin.getValueDbl() ),
-	_defaultMax( _propDefaultMax.getValueDbl() ),
-	_filterOn( _propFilterOn.getValueBool() )
+    _isModelControl( _propIsModelControl.getValueBool() ),
+    _extrapolate( _propExtrapolate.getValueBool() ),
+    _defaultMin( _propDefaultMin.getValueDbl() ),
+    _defaultMax( _propDefaultMax.getValueDbl() ),
+    _filterOn( _propFilterOn.getValueBool() )
 {
-	setNull();
-	setName(aName);
+    setNull();
+    setName(aName);
 }
 //_____________________________________________________________________________
 /**
@@ -69,15 +69,15 @@ Control::Control(const char *aName) :
  * @param aControl Control to copy.
  */
 Control::Control(const Control &aControl) :
-	Object(aControl),
-	_isModelControl( _propIsModelControl.getValueBool() ),
-	_extrapolate( _propExtrapolate.getValueBool() ),
-	_defaultMin( _propDefaultMin.getValueDbl() ),
-	_defaultMax( _propDefaultMax.getValueDbl() ),
-	_filterOn( _propFilterOn.getValueBool() )
+    Object(aControl),
+    _isModelControl( _propIsModelControl.getValueBool() ),
+    _extrapolate( _propExtrapolate.getValueBool() ),
+    _defaultMin( _propDefaultMin.getValueDbl() ),
+    _defaultMax( _propDefaultMax.getValueDbl() ),
+    _filterOn( _propFilterOn.getValueBool() )
 {
-	setNull();
-	copyData(aControl);
+    setNull();
+    copyData(aControl);
 }
 
 
@@ -91,8 +91,8 @@ Control::Control(const Control &aControl) :
 void Control::
 setNull()
 {
-	//generateProperties();
-	setupProperties();
+    //generateProperties();
+    setupProperties();
 }
 //_____________________________________________________________________________
 /**
@@ -101,35 +101,35 @@ setNull()
 void Control::
 setupProperties()
 {
-	_propIsModelControl.setName("is_model_control");
-	_propIsModelControl.setValue(true);
-	_propertySet.append(&_propIsModelControl);
+    _propIsModelControl.setName("is_model_control");
+    _propIsModelControl.setValue(true);
+    _propertySet.append(&_propIsModelControl);
 
-	_propExtrapolate.setName("extrapolate");
-	_propExtrapolate.setValue(true);
-	_propertySet.append(&_propExtrapolate);
+    _propExtrapolate.setName("extrapolate");
+    _propExtrapolate.setValue(true);
+    _propertySet.append(&_propExtrapolate);
 
-	_propDefaultMin.setName("default_min");
-	_propDefaultMin.setValue(0.02);
-	_propertySet.append(&_propDefaultMin);
+    _propDefaultMin.setName("default_min");
+    _propDefaultMin.setValue(0.02);
+    _propertySet.append(&_propDefaultMin);
 
-	_propDefaultMax.setName("default_max");
-	_propDefaultMax.setValue(1.0);
-	_propertySet.append(&_propDefaultMax);
+    _propDefaultMax.setName("default_max");
+    _propDefaultMax.setValue(1.0);
+    _propertySet.append(&_propDefaultMax);
 
-	_propFilterOn.setName("filter_on");
-	_propFilterOn.setValue(false);
-	_propertySet.append( &_propFilterOn );
+    _propFilterOn.setName("filter_on");
+    _propFilterOn.setValue(false);
+    _propertySet.append( &_propFilterOn );
 }
 //_____________________________________________________________________________
 void Control::
 copyData(const Control &aControl)
 {
-	_isModelControl = aControl._isModelControl;
-	_extrapolate = aControl._extrapolate;
-	_defaultMin = aControl._defaultMin;
-	_defaultMax = aControl._defaultMax;
-	_filterOn = aControl.getFilterOn();
+    _isModelControl = aControl._isModelControl;
+    _extrapolate = aControl._extrapolate;
+    _defaultMin = aControl._defaultMin;
+    _defaultMax = aControl._defaultMax;
+    _filterOn = aControl.getFilterOn();
 }
 
 
@@ -148,13 +148,13 @@ copyData(const Control &aControl)
 Control& Control::
 operator=(const Control &aControl)
 {
-	// BASE CLASS
-	Object::operator=(aControl);
+    // BASE CLASS
+    Object::operator=(aControl);
 
-	// DATA
-	copyData(aControl);
+    // DATA
+    copyData(aControl);
 
-	return(*this);
+    return(*this);
 }
 
 
@@ -168,13 +168,13 @@ operator=(const Control &aControl)
 void Control::
 setIsModelControl(bool aTrueFalse)
 {
-	_isModelControl = aTrueFalse;
+    _isModelControl = aTrueFalse;
 }
 //_____________________________________________________________________________
 bool Control::
 getIsModelControl() const
 {
-	return(_isModelControl);
+    return(_isModelControl);
 }
 
 //-----------------------------------------------------------------------------
@@ -184,13 +184,13 @@ getIsModelControl() const
 void Control::
 setExtrapolate(bool aTrueFalse)
 {
-	_extrapolate = aTrueFalse;
+    _extrapolate = aTrueFalse;
 }
 //_____________________________________________________________________________
 bool Control::
 getExtrapolate() const
 {
-	return(_extrapolate);
+    return(_extrapolate);
 }
 
 //-----------------------------------------------------------------------------
@@ -200,18 +200,18 @@ getExtrapolate() const
 void Control::
 setDefaultParameterMin(double aMin)
 {
-	_defaultMin = aMin;
-	if(_defaultMax < _defaultMin) {
-		printf("Control.setDefaultParameterMin: ");
-		printf("WARN- minimum is greater than maxium, setting max = min.\n");
-		_defaultMax = _defaultMin;
-	}
+    _defaultMin = aMin;
+    if(_defaultMax < _defaultMin) {
+        printf("Control.setDefaultParameterMin: ");
+        printf("WARN- minimum is greater than maxium, setting max = min.\n");
+        _defaultMax = _defaultMin;
+    }
 }
 //_____________________________________________________________________________
 double Control::
 getDefaultParameterMin() const
 {
-	return(_defaultMin);
+    return(_defaultMin);
 }
 
 //-----------------------------------------------------------------------------
@@ -221,18 +221,18 @@ getDefaultParameterMin() const
 void Control::
 setDefaultParameterMax(double aMax)
 {
-	_defaultMax = aMax;
-	if(_defaultMin > _defaultMax) {
-		printf("Control.setDefaultParameterMin: ");
-		printf("WARN- maximum is less than minimum, setting min = max.\n");
-		_defaultMin = _defaultMax;
-	}
+    _defaultMax = aMax;
+    if(_defaultMin > _defaultMax) {
+        printf("Control.setDefaultParameterMin: ");
+        printf("WARN- maximum is less than minimum, setting min = max.\n");
+        _defaultMin = _defaultMax;
+    }
 }
 //_____________________________________________________________________________
 double Control::
 getDefaultParameterMax() const
 {
-	return(_defaultMax);
+    return(_defaultMax);
 }
 
 //-----------------------------------------------------------------------------
@@ -242,29 +242,29 @@ getDefaultParameterMax() const
 void Control::
 setFilterOn(bool aTrueFalse)
 {
-	_filterOn = aTrueFalse;
+    _filterOn = aTrueFalse;
 }
 //_____________________________________________________________________________
 bool Control::
 getFilterOn() const
 {
-	return(_filterOn);
+    return(_filterOn);
 }
 
 // Convenience methods
 //_____________________________________________________________________________
 const double Control::getFirstTime() const
 {
-	string msg = "Control.getFirstTime: This method must be overriden.";
-	throw(Exception(msg,__FILE__,__LINE__));
-	return 0;
+    string msg = "Control.getFirstTime: This method must be overriden.";
+    throw(Exception(msg,__FILE__,__LINE__));
+    return 0;
 }
 //_____________________________________________________________________________
 const double Control::getLastTime() const
 {
-	string msg = "Control.getLastTime: This method must be overriden.";
-	throw(Exception(msg,__FILE__,__LINE__));
-	return 1; 
+    string msg = "Control.getLastTime: This method must be overriden.";
+    throw(Exception(msg,__FILE__,__LINE__));
+    return 1;
 }
 
 
@@ -275,8 +275,8 @@ const double Control::getLastTime() const
 void Control::
 simplify(const PropertySet &aProperties)
 {
-	string msg = "Control.simplify: This method must be overriden.";
-	throw(Exception(msg,__FILE__,__LINE__));
+    string msg = "Control.simplify: This method must be overriden.";
+    throw(Exception(msg,__FILE__,__LINE__));
 }
 
 

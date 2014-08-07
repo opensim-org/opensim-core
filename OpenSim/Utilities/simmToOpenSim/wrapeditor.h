@@ -46,7 +46,7 @@
 /* NOTE: the radio-button enum above *must* match the dpWrapObjectType
  *  enum in modelplot.h!!
  */
- 
+
 #define WE_X_QUADRANT 0
 #define WE_Y_QUADRANT 1
 #define WE_Z_QUADRANT 2
@@ -78,57 +78,57 @@
 enum { WE_LOCAL_FRAME, WE_PARENT_FRAME };
 
 STRUCT {
-   int segment;                     /* parent segment of current wrapping object */
-   dpWrapObject* wrap_object;       /* index of current wrapping object */
-   dpCoord3D translate;
-   dpCoord3D rotate;
-   int xform_frame;
-   SBoolean trackball_rotation;
-   MuscleMenu mgroup[GROUPBUFFER];  /* list of muscle groups */
-   int menucolumns[COLUMNBUFFER];   /* used for placing menus in the window */
-   int* musc;                       /* list of muscle numbers */
-   int nummuscles;                  /* number of muscles currently selected */
+    int segment;                     /* parent segment of current wrapping object */
+    dpWrapObject* wrap_object;       /* index of current wrapping object */
+    dpCoord3D translate;
+    dpCoord3D rotate;
+    int xform_frame;
+    SBoolean trackball_rotation;
+    MuscleMenu mgroup[GROUPBUFFER];  /* list of muscle groups */
+    int menucolumns[COLUMNBUFFER];   /* used for placing menus in the window */
+    int* musc;                       /* list of muscle numbers */
+    int nummuscles;                  /* number of muscles currently selected */
 } WEModelOptions;                   /* user-selectable plotting options */
 
 ENUM {
-   WE_TOP_LEVEL,                       /*  */
-   WE_ENTER_VALUE                      /*  */
+    WE_TOP_LEVEL,                       /*  */
+    WE_ENTER_VALUE                      /*  */
 } WEMODE;                              /*  */
 
 STRUCT {
-   ModelStruct*  model;                /*  */
-   PlotStruct*   plot;                 /*  */
-   WEMODE        current_mode;         /*  */
-   int           selected_item;        /*  */
-   Menu          optionsmenu;          /*  */
-   Form          optionsform;          /*  */
-   CheckBoxPanel wrap_type_radiopanel;
-   CheckBoxPanel wrap_method_radiopanel;
-   CheckBoxPanel quadrant_radiopanel;
-   CheckBoxPanel quadrant_checkpanel;
-   CheckBoxPanel active_visible_checkpanel;
-   CheckBoxPanel transform_radiopanel;
-   WEModelOptions weop[MODELBUFFER];   /*  */
-   HelpStruct    help;                 /*  */
-   int           reference_number;     /*  */
-   Slider        win_slider;           /*  */
-   int           canvas_height;        /*  */
-   int           wrap_object_menu;
-   int           numdevs;              /* number of device numbers in devs[] */
-   int           devs[WE_MAX_DEVS];    /* button numbers to move bone vertices */
+    ModelStruct*  model;                /*  */
+    PlotStruct*   plot;                 /*  */
+    WEMODE        current_mode;         /*  */
+    int           selected_item;        /*  */
+    Menu          optionsmenu;          /*  */
+    Form          optionsform;          /*  */
+    CheckBoxPanel wrap_type_radiopanel;
+    CheckBoxPanel wrap_method_radiopanel;
+    CheckBoxPanel quadrant_radiopanel;
+    CheckBoxPanel quadrant_checkpanel;
+    CheckBoxPanel active_visible_checkpanel;
+    CheckBoxPanel transform_radiopanel;
+    WEModelOptions weop[MODELBUFFER];   /*  */
+    HelpStruct    help;                 /*  */
+    int           reference_number;     /*  */
+    Slider        win_slider;           /*  */
+    int           canvas_height;        /*  */
+    int           wrap_object_menu;
+    int           numdevs;              /* number of device numbers in devs[] */
+    int           devs[WE_MAX_DEVS];    /* button numbers to move bone vertices */
 } WrapEditorStruct;                    /*  */
 
 STRUCT {
-   Scene* scene;
-   ModelStruct* model;
-   double       wx_old, wy_old, wz_old;
-   int          mx_old, my_old;
-   double       bpan_wx_old, bpan_wy_old, bpan_wz_old;
-   int          bpan_mx_old, bpan_my_old;
-   double       span_wx_old, span_wy_old, span_wz_old;
-   int          span_mx_old, span_my_old;
-   int          zoom_mx_old, zoom_my_old;
-   dpCoord3D      zoom_vec;
+    Scene* scene;
+    ModelStruct* model;
+    double       wx_old, wy_old, wz_old;
+    int          mx_old, my_old;
+    double       bpan_wx_old, bpan_wy_old, bpan_wz_old;
+    int          bpan_mx_old, bpan_my_old;
+    double       span_wx_old, span_wy_old, span_wz_old;
+    int          span_mx_old, span_my_old;
+    int          zoom_mx_old, zoom_my_old;
+    dpCoord3D      zoom_vec;
 } WrapEditorTracker;
 
 #endif /*WRAPEDITOR_H*/

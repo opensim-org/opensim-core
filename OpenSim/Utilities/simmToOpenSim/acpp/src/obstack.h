@@ -123,22 +123,22 @@ Summary:
 
 struct _obstack_chunk		/* Lives at front of each chunk. */
 {
-  char  *limit;			/* 1 past end of this chunk */
-  struct _obstack_chunk *prev;	/* address of prior chunk or NULL */
-  char	contents[4];		/* objects begin here */
+    char  *limit;			/* 1 past end of this chunk */
+    struct _obstack_chunk *prev;	/* address of prior chunk or NULL */
+    char	contents[4];		/* objects begin here */
 };
 
 struct obstack		/* control current object in current chunk */
 {
-  long	chunk_size;		/* preferred size to allocate chunks in */
-  struct _obstack_chunk* chunk;	/* address of current struct obstack_chunk */
-  char	*object_base;		/* address of object we are building */
-  char	*next_free;		/* where to add next char to current object */
-  char	*chunk_limit;		/* address of char after current chunk */
-  int	temp;			/* Temporary for some macros.  */
-  int   alignment_mask;		/* Mask of alignment for each object. */
-  struct _obstack_chunk *(*chunkfun) (); /* User's fcn to allocate a chunk.  */
-  void (*freefun) ();		/* User's function to free a chunk.  */
+    long	chunk_size;		/* preferred size to allocate chunks in */
+    struct _obstack_chunk* chunk;	/* address of current struct obstack_chunk */
+    char	*object_base;		/* address of object we are building */
+    char	*next_free;		/* where to add next char to current object */
+    char	*chunk_limit;		/* address of char after current chunk */
+    int	temp;			/* Temporary for some macros.  */
+    int   alignment_mask;		/* Mask of alignment for each object. */
+    struct _obstack_chunk *(*chunkfun) (); /* User's fcn to allocate a chunk.  */
+    void (*freefun) ();		/* User's function to free a chunk.  */
 };
 
 #ifdef __STDC__
@@ -256,7 +256,7 @@ int obstack_chunk_size (struct obstack *obstack);
 /* These assume that the obstack alignment is good enough for pointers or ints,
    and that the data added so far to the current object
    shares that much alignment.  */
-   
+
 #define obstack_ptr_grow(OBSTACK,datum)					\
 ({ struct obstack *__o = (OBSTACK);					\
    ((__o->next_free + sizeof (void *) > __o->chunk_limit)		\

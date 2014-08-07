@@ -27,18 +27,18 @@
 
 extern "C" {
 
-OSIMPLUGIN_API void RegisterTypes_osimPlugin(); 
+    OSIMPLUGIN_API void RegisterTypes_osimPlugin();
 
 }
 
-class dllObjectInstantiator 
-{ 
-public: 
-        dllObjectInstantiator(); 
-private: 
-        void registerDllClasses(); 
-}; 
-    
+class dllObjectInstantiator
+{
+public:
+    dllObjectInstantiator();
+private:
+    void registerDllClasses();
+};
+
 
 #endif // _RegisterTypes_OsimPlugin_h_
 

@@ -45,12 +45,12 @@ ConstraintSet::~ConstraintSet(void)
  */
 ConstraintSet::ConstraintSet()
 {
-	setNull();
+    setNull();
 }
 
 ConstraintSet::ConstraintSet(Model& model) : Super(model)
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -58,9 +58,9 @@ ConstraintSet::ConstraintSet(Model& model) : Super(model)
  * Copy constructor of a ConstraintSet.
  */
 ConstraintSet::ConstraintSet(const ConstraintSet& aAbsConstraintSet)
-:   Super(aAbsConstraintSet)
+    :   Super(aAbsConstraintSet)
 {
-	*this = aAbsConstraintSet;
+    *this = aAbsConstraintSet;
 }
 
 //=============================================================================
@@ -71,7 +71,7 @@ ConstraintSet::ConstraintSet(const ConstraintSet& aAbsConstraintSet)
  */
 void ConstraintSet::setNull()
 {
-	setAuthors("Ajay Seth");
+    setAuthors("Ajay Seth");
 }
 
 //=============================================================================
@@ -87,5 +87,5 @@ void ConstraintSet::setNull()
  */
 void ConstraintSet::scale(const ScaleSet& aScaleSet)
 {
-	for(int i=0; i<getSize(); i++) get(i).scale(aScaleSet);
+    for(int i=0; i<getSize(); i++) get(i).scale(aScaleSet);
 }

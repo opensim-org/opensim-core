@@ -22,8 +22,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
- * Author:  
+/*
+ * Author:
  */
 
 #include "osimCommonDLL.h"
@@ -31,29 +31,29 @@
 #include "DisplayGeometry.h"
 #include "Set.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
 class OSIMCOMMON_API GeometrySet :	public Set<DisplayGeometry> {
-OpenSim_DECLARE_CONCRETE_OBJECT(GeometrySet, Set<DisplayGeometry>);
+    OpenSim_DECLARE_CONCRETE_OBJECT(GeometrySet, Set<DisplayGeometry>);
 
 public:
-	GeometrySet() {}
-	virtual ~GeometrySet() {}
+    GeometrySet() {}
+    virtual ~GeometrySet() {}
 
 #ifndef SWIG
-	GeometrySet& operator=(const GeometrySet& aGeometrySet) { 
-		Set<DisplayGeometry>::operator=(aGeometrySet);
-		return (*this);
-	};
+    GeometrySet& operator=(const GeometrySet& aGeometrySet) {
+        Set<DisplayGeometry>::operator=(aGeometrySet);
+        return (*this);
+    };
 
-	bool operator==(const GeometrySet& aGeometrySet) { 
-		bool sizeMatch = (getSize()==aGeometrySet.getSize()); 
-		if (!sizeMatch) return false;
-		bool match=true;
-		for(int i=0; i< getSize() && match; i++)
-			match = (get(i)==aGeometrySet[i]);
-		return match;
-	};
+    bool operator==(const GeometrySet& aGeometrySet) {
+        bool sizeMatch = (getSize()==aGeometrySet.getSize());
+        if (!sizeMatch) return false;
+        bool match=true;
+        for(int i=0; i< getSize() && match; i++)
+            match = (get(i)==aGeometrySet[i]);
+        return match;
+    };
 #endif
 };
 

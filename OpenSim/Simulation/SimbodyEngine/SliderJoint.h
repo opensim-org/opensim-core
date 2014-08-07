@@ -32,40 +32,42 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Slider joint.  The underlying implementation 
- * in Simbody is a MobilizedBody::Slider. Slider provides one DOF along the 
+ * A class implementing a Slider joint.  The underlying implementation
+ * in Simbody is a MobilizedBody::Slider. Slider provides one DOF along the
  * common X-axis of the joint frames (not body) in the parent and body.
  *
  * @author Ajay Seth
  * @version 1.0
  */
 class OSIMSIMULATION_API SliderJoint : public Joint {
-OpenSim_DECLARE_CONCRETE_OBJECT(SliderJoint, Joint);
+    OpenSim_DECLARE_CONCRETE_OBJECT(SliderJoint, Joint);
 
 private:
-	static const int _numMobilities = 1;
+    static const int _numMobilities = 1;
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
 
-	/** Slider has no additional properties*/
+    /** Slider has no additional properties*/
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	SliderJoint();
+    // CONSTRUCTION
+    SliderJoint();
 
-	// Convenience constructor
-	SliderJoint(const std::string &name, const Body& parent,
-		const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-		const Body& child,
-		const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-		bool reverse = false);
+    // Convenience constructor
+    SliderJoint(const std::string &name, const Body& parent,
+                const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+                const Body& child,
+                const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
+                bool reverse = false);
 
-	int numCoordinates() const { return _numMobilities; }
+    int numCoordinates() const {
+        return _numMobilities;
+    }
 
 protected:
     void addToSystem(SimTK::MultibodySystem& system) const override;

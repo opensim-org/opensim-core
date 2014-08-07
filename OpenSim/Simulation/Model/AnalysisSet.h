@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -43,24 +43,24 @@
  * @author Frank C. Anderson
  * @version 1.0
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 class Model;
 
 class OSIMSIMULATION_API AnalysisSet : public Set<Analysis> {
-OpenSim_DECLARE_CONCRETE_OBJECT(AnalysisSet, Set<Analysis>);
+    OpenSim_DECLARE_CONCRETE_OBJECT(AnalysisSet, Set<Analysis>);
 
 //=============================================================================
 // DATA
 //=============================================================================
 public:
 #ifndef SWIG
-   AnalysisSet&
-        operator=(const AnalysisSet &aAnalysisSet);
+    AnalysisSet&
+    operator=(const AnalysisSet &aAnalysisSet);
 #endif
 protected:
-	/** Model on which the callbacks have been set. */
-	Model *_model;
+    /** Model on which the callbacks have been set. */
+    Model *_model;
 
     // testing for memory free error
     OpenSim::PropertyBool _enableProp;
@@ -69,51 +69,51 @@ protected:
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	AnalysisSet();
-	AnalysisSet(Model *aModel);
-	AnalysisSet(const std::string &aFileName);
-	AnalysisSet(const AnalysisSet &aSet);
-	virtual ~AnalysisSet();
+    AnalysisSet();
+    AnalysisSet(Model *aModel);
+    AnalysisSet(const std::string &aFileName);
+    AnalysisSet(const AnalysisSet &aSet);
+    virtual ~AnalysisSet();
 
 private:
-	void setNull();
+    void setNull();
     void setupProperties();
 public:
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	void setModel(Model& aModel);
-	Model& getModel();
-	void setOn(bool aTrueFalse);
-	void setOn(const Array<bool> &aOn);
-	Array<bool> getOn() const;
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    void setModel(Model& aModel);
+    Model& getModel();
+    void setOn(bool aTrueFalse);
+    void setOn(const Array<bool> &aOn);
+    Array<bool> getOn() const;
 
-	//--------------------------------------------------------------------------
-	// CALLBACKS
-	//--------------------------------------------------------------------------
-	virtual void
-		begin(SimTK::State& s );
-	virtual void
-		step(const SimTK::State& s, int stepNumber );
-	virtual void
-		end(SimTK::State& s );
+    //--------------------------------------------------------------------------
+    // CALLBACKS
+    //--------------------------------------------------------------------------
+    virtual void
+    begin(SimTK::State& s );
+    virtual void
+    step(const SimTK::State& s, int stepNumber );
+    virtual void
+    end(SimTK::State& s );
 
-	//--------------------------------------------------------------------------
-	// RESULTS
-	//--------------------------------------------------------------------------
-	virtual void
-		printResults(const std::string &aBaseName,const std::string &aPath="",
-		double aDT=-1.0,const std::string &aExtension=".sto");
+    //--------------------------------------------------------------------------
+    // RESULTS
+    //--------------------------------------------------------------------------
+    virtual void
+    printResults(const std::string &aBaseName,const std::string &aPath="",
+                 double aDT=-1.0,const std::string &aExtension=".sto");
 
-	//--------------------------------------------------------------------------
-	// UTILITY
-	//--------------------------------------------------------------------------
-	static void getAvailableAnalyses(AnalysisSet& as);
+    //--------------------------------------------------------------------------
+    // UTILITY
+    //--------------------------------------------------------------------------
+    static void getAvailableAnalyses(AnalysisSet& as);
 
 //=============================================================================
 };	// END of class AnalysisSet

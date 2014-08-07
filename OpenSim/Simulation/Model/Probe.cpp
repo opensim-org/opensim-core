@@ -32,37 +32,43 @@ template <class T>
 class ProbeMeasure : public SimTK::Measure_<T> {
 public:
     SimTK_MEASURE_HANDLE_PREAMBLE(ProbeMeasure, Measure_<T>);
- 
+
     ProbeMeasure(Subsystem& sub, const OpenSim::Probe& probe, int index)
-    :   SimTK::Measure_<T>(sub, new Implementation(probe, index), AbstractMeasure::SetHandle()) {}
+        :   SimTK::Measure_<T>(sub, new Implementation(probe, index), AbstractMeasure::SetHandle()) {}
     SimTK_MEASURE_HANDLE_POSTSCRIPT(ProbeMeasure, Measure_<T>);
 };
- 
- 
+
+
 template <class T>
 class ProbeMeasure<T>::Implementation : public SimTK::Measure_<T>::Implementation {
 public:
     Implementation(const OpenSim::Probe& probe, int index)
-    :   SimTK::Measure_<T>::Implementation(1), m_probe(probe), i(index) {}
- 
+        :   SimTK::Measure_<T>::Implementation(1), m_probe(probe), i(index) {}
+
     // Default copy constructor, destructor, copy assignment are fine.
- 
+
     // Implementations of virtual methods.
-    Implementation* cloneVirtual() const {return new Implementation(*this);}
-    int getNumTimeDerivativesVirtual() const {return 0;}
+    Implementation* cloneVirtual() const {
+        return new Implementation(*this);
+    }
+    int getNumTimeDerivativesVirtual() const {
+        return 0;
+    }
     Stage getDependsOnStageVirtual(int order) const
-    {   return Stage::Acceleration; }
- 
+    {
+        return Stage::Acceleration;
+    }
+
     void calcCachedValueVirtual(const State& s, int derivOrder, T& value) const
     {
         SimTK_ASSERT1_ALWAYS(derivOrder==0,
-            "ProbeMeasure::Implementation::calcCachedValueVirtual():"
-            " derivOrder %d seen but only 0 allowed.", derivOrder);
- 
+                             "ProbeMeasure::Implementation::calcCachedValueVirtual():"
+                             " derivOrder %d seen but only 0 allowed.", derivOrder);
+
         value = m_probe.computeProbeInputs(s);
     }
 
-    
+
 private:
     const OpenSim::Probe& m_probe;
     int i;
@@ -73,9 +79,9 @@ template <>
 void ProbeMeasure<double>::Implementation::calcCachedValueVirtual(const State& s, int derivOrder, double& value) const
 {
     SimTK_ASSERT1_ALWAYS(derivOrder==0,
-        "ProbeMeasure::Implementation::calcCachedValueVirtual():"
-        " derivOrder %d seen but only 0 allowed.", derivOrder);
- 
+                         "ProbeMeasure::Implementation::calcCachedValueVirtual():"
+                         " derivOrder %d seen but only 0 allowed.", derivOrder);
+
     value = m_probe.computeProbeInputs(s)(i);
 }
 
@@ -85,7 +91,7 @@ namespace OpenSim {
 //=============================================================================
 // CONSTRUCTOR
 //=============================================================================
-// Uses default (compiler-generated) destructor, copy constructor, copy 
+// Uses default (compiler-generated) destructor, copy constructor, copy
 // assignment operator.
 
 //_____________________________________________________________________________
@@ -122,7 +128,7 @@ void Probe::constructProperties(void)
 void Probe::constructOutputs()
 {
     constructOutput<SimTK::Vector>("probe_outputs", &Probe::getProbeOutputs,
-            Stage::Report);
+                                   Stage::Report);
 }
 
 //_____________________________________________________________________________
@@ -145,7 +151,7 @@ void Probe::addToSystem(MultibodySystem& system) const
     if (isDisabled())
         return;
 
-    // Make writable briefly so we can finalize the Probe to include 
+    // Make writable briefly so we can finalize the Probe to include
     // references to the allocated System resources.
     Probe* mutableThis = const_cast<Probe*>(this);
 
@@ -157,12 +163,12 @@ void Probe::addToSystem(MultibodySystem& system) const
     // save for when we can directly operate on Vector SimTK::Measures
     //ProbeMeasure<SimTK::Vector> beforeOperationValueVector(system, *this);
 
-	int npi = getNumProbeInputs();
+    int npi = getNumProbeInputs();
     SimTK::Array_<ProbeMeasure<double> > beforeOperationValues;
     mutableThis->afterOperationValues.resize(npi);
 
     for (int i=0; i<npi; ++i) {
-        ProbeMeasure<double> tmpPM(system, *this, i); 
+        ProbeMeasure<double> tmpPM(system, *this, i);
         beforeOperationValues.push_back(tmpPM);
     }
 
@@ -176,7 +182,7 @@ void Probe::addToSystem(MultibodySystem& system) const
     // ---------------------------------------------------------------------
     if (getOperation() == "value") {
         for (int i=0; i<npi; ++i) {
-            mutableThis->afterOperationValues[i] = beforeOperationValues[i];   
+            mutableThis->afterOperationValues[i] = beforeOperationValues[i];
         }
     }
 
@@ -189,13 +195,13 @@ void Probe::addToSystem(MultibodySystem& system) const
         // is the same size as the data being integrated.
         if (getInitialConditions().size() != getProbeOutputLabels().getSize())  {
             stringstream errorMessage;
-            errorMessage << getConcreteClassName() << "(" + getName() << 
-                "): Mismatch between the size of the data labels corresponding to the "
-                "size of the data vector being integrated (" 
-                <<  getProbeOutputLabels().getSize() 
-                << ") and size of initial conditions vector (" 
-                << getInitialConditions().size() << ").\nAssuming an initial condition vector of " 
-                << getProbeOutputLabels().getSize() << " zeros." << endl;
+            errorMessage << getConcreteClassName() << "(" + getName() <<
+                         "): Mismatch between the size of the data labels corresponding to the "
+                         "size of the data vector being integrated ("
+                         <<  getProbeOutputLabels().getSize()
+                         << ") and size of initial conditions vector ("
+                         << getInitialConditions().size() << ").\nAssuming an initial condition vector of "
+                         << getProbeOutputLabels().getSize() << " zeros." << endl;
             cout << errorMessage.str() << endl;
 
             SimTK::Vector newInitCond(getProbeOutputLabels().getSize());
@@ -210,7 +216,7 @@ void Probe::addToSystem(MultibodySystem& system) const
             //Measure::Constant initCond(system, getInitialConditions()(i));  // init cond is handled as a special case in getProbeOutputs()
             Measure::Constant initCond(system, 0.0);
             mutableThis->afterOperationValues[i] = Measure::Integrate(
-                system, beforeOperationValues[i], initCond);
+                    system, beforeOperationValues[i], initCond);
         }
     }
 
@@ -221,7 +227,7 @@ void Probe::addToSystem(MultibodySystem& system) const
     else if (getOperation() == "differentiate") {
         for (int i=0; i<getNumProbeInputs(); ++i) {
             mutableThis->afterOperationValues[i] = Measure::Differentiate(
-                system, beforeOperationValues[i]);
+                    system, beforeOperationValues[i]);
         }
     }
 
@@ -232,7 +238,7 @@ void Probe::addToSystem(MultibodySystem& system) const
     else if (getOperation() == "minimum") {
         for (int i=0; i<getNumProbeInputs(); ++i) {
             mutableThis->afterOperationValues[i] = Measure::Minimum(
-                system, beforeOperationValues[i]);
+                    system, beforeOperationValues[i]);
         }
     }
 
@@ -243,10 +249,10 @@ void Probe::addToSystem(MultibodySystem& system) const
     else if (getOperation() == "minabs") {
         for (int i=0; i<getNumProbeInputs(); ++i) {
             mutableThis->afterOperationValues[i] = Measure::MinAbs(
-                system, beforeOperationValues[i]);
+                    system, beforeOperationValues[i]);
         }
     }
-    	
+
 
     // ---------------------------------------------------------------------
     // Get the maximum of the probe value
@@ -254,7 +260,7 @@ void Probe::addToSystem(MultibodySystem& system) const
     else if (getOperation() == "maximum") {
         for (int i=0; i<getNumProbeInputs(); ++i) {
             mutableThis->afterOperationValues[i] = Measure::Maximum(
-                system, beforeOperationValues[i]);
+                    system, beforeOperationValues[i]);
         }
     }
 
@@ -265,7 +271,7 @@ void Probe::addToSystem(MultibodySystem& system) const
     else if (getOperation() == "maxabs") {
         for (int i=0; i<getNumProbeInputs(); ++i) {
             mutableThis->afterOperationValues[i] = Measure::MaxAbs(
-                system, beforeOperationValues[i]);
+                    system, beforeOperationValues[i]);
         }
     }
 
@@ -275,10 +281,10 @@ void Probe::addToSystem(MultibodySystem& system) const
     // ---------------------------------------------------------------------
     else {
         stringstream errorMessage;
-        errorMessage << getConcreteClassName() << ": Invalid probe operation: " 
-            << getOperation() 
-            << ". Currently supports 'value', 'integrate', 'differentiate', "
-            "'minimum', 'minabs', 'maximum', 'maxabs'." << endl;
+        errorMessage << getConcreteClassName() << ": Invalid probe operation: "
+                     << getOperation()
+                     << ". Currently supports 'value', 'integrate', 'differentiate', "
+                     "'minimum', 'minabs', 'maximum', 'maxabs'." << endl;
         throw (Exception(errorMessage.str()));
     }
 
@@ -288,13 +294,13 @@ void Probe::addToSystem(MultibodySystem& system) const
 //_____________________________________________________________________________
 /**
  * Reset (initialize) the underlying Probe SimTK::Measure.
- * Only can do this for integrate, minimum, minabs, maximum, 
+ * Only can do this for integrate, minimum, minabs, maximum,
  * maxabs SimTK::Measures. Else, do no resetting.
  */
 void Probe::reset(SimTK::State& s)
 {
     const double resetValue = 0.0;
-    
+
     for (int i=0; i<getNumProbeInputs(); ++i) {
         if (!isDisabled()) {
             //cout << "Resetting probe " << getName() << ",  (" << i << " / " << getNumProbeInputs() << ")." << endl;
@@ -353,12 +359,12 @@ string Probe::getOperation() const
  */
 Vector Probe::getInitialConditions() const
 {
-	int size = getProperty_initial_conditions_for_integration().size();
-	Vector v(size);
-	for(int i = 0; i < size ; i++)
-	{
-		v[i] = get_initial_conditions_for_integration(i);
-	}
+    int size = getProperty_initial_conditions_for_integration().size();
+    Vector v(size);
+    for(int i = 0; i < size ; i++)
+    {
+        v[i] = get_initial_conditions_for_integration(i);
+    }
     return v;
 }
 
@@ -378,7 +384,7 @@ double Probe::getGain() const
  * Sets whether the Probe is disabled or not.
  *
  */
-void Probe::setDisabled(bool isDisabled) 
+void Probe::setDisabled(bool isDisabled)
 {
     set_isDisabled(isDisabled);
 }
@@ -388,7 +394,7 @@ void Probe::setDisabled(bool isDisabled)
  * Sets the operation being performed on the Probe value.
  *
  */
-void Probe::setOperation(string probe_operation) 
+void Probe::setOperation(string probe_operation)
 {
     set_probe_operation(probe_operation);
 }
@@ -399,7 +405,7 @@ void Probe::setOperation(string probe_operation)
  * Sets the initial_conditions_for_integration.
  *
  */
-void Probe::setInitialConditions(Vector initial_conditions_for_integration) 
+void Probe::setInitialConditions(Vector initial_conditions_for_integration)
 {
     set_initial_conditions_for_integration(initial_conditions_for_integration);
 }
@@ -409,7 +415,7 @@ void Probe::setInitialConditions(Vector initial_conditions_for_integration)
  * Sets the scaling_factor.
  *
  */
-void Probe::setGain(double gain) 
+void Probe::setGain(double gain)
 {
     set_gain(gain);
 }
@@ -422,13 +428,13 @@ void Probe::setGain(double gain)
 /**
  * Provide the probe values to be reported that correspond to the probe labels.
  */
-SimTK::Vector Probe::getProbeOutputs(const State& s) const 
+SimTK::Vector Probe::getProbeOutputs(const State& s) const
 {
     if (isDisabled()) {
         stringstream errorMessage;
-        errorMessage << getConcreteClassName() 
-            << ": Cannot get the output from Probe '" 
-            << getName() << "' because it has been disabled." << endl;
+        errorMessage << getConcreteClassName()
+                     << ": Cannot get the output from Probe '"
+                     << getName() << "' because it has been disabled." << endl;
         throw (Exception(errorMessage.str()));
     }
 
@@ -443,7 +449,7 @@ SimTK::Vector Probe::getProbeOutputs(const State& s) const
         else
             output[i] = getGain() * afterOperationValues[i].getValue(s);
     }
-    
+
     return output;
 
     //return afterOperationValueVector.getValue(s);         // save for when we can directly operate on Vector SimTK::Measures

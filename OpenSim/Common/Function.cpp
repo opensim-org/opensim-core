@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -58,9 +58,9 @@ Function::~Function()
  * Default constructor.
  */
 Function::Function() :
-	_function(NULL)
+    _function(NULL)
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -69,8 +69,8 @@ Function::Function() :
  * @param aFunction Function to copy.
  */
 Function::Function(const Function &aFunction) :
-	Object(aFunction),
-	_function(NULL)
+    Object(aFunction),
+    _function(NULL)
 {
 }
 
@@ -99,10 +99,10 @@ setNull()
 Function& Function::
 operator=(const Function &aFunction)
 {
-	// BASE CLASS
-	Object::operator=(aFunction);
+    // BASE CLASS
+    Object::operator=(aFunction);
 
-	return(*this);
+    return(*this);
 }
 
 
@@ -111,19 +111,19 @@ operator=(const Function &aFunction)
 //=============================================================================
 Function* Function::makeFunctionOfType(Function* aFunction, const string& aNewTypeName)
 {
-	Function* newFunction = NULL;
+    Function* newFunction = NULL;
 
-	if (aFunction != NULL) {
-		Object* newObject = Object::newInstanceOfType(aNewTypeName);
-		if (newObject) {
-			newFunction = dynamic_cast<Function*>(newObject);
-			if (newFunction) {
-				newFunction->init(aFunction);
-			}
-		}
-	}
+    if (aFunction != NULL) {
+        Object* newObject = Object::newInstanceOfType(aNewTypeName);
+        if (newObject) {
+            newFunction = dynamic_cast<Function*>(newObject);
+            if (newFunction) {
+                newFunction->init(aFunction);
+            }
+        }
+    }
 
-	return newFunction;
+    return newFunction;
 }
 
 //=============================================================================

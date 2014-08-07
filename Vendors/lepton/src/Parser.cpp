@@ -66,7 +66,7 @@ private:
 
 string Parser::trim(const string& expression) {
     // Remove leading and trailing spaces.
-    
+
     int start, end;
     for (start = 0; start < (int) expression.size() && isspace(expression[start]); start++)
         ;
@@ -192,7 +192,7 @@ ParsedExpression Parser::parse(const string& expression, const map<string, Custo
 }
 
 ExpressionTreeNode Parser::parsePrecedence(const vector<ParseToken>& tokens, int& pos, const map<string, CustomFunction*>& customFunctions,
-            const map<string, ExpressionTreeNode>& subexpressionDefs, int precedence) {
+        const map<string, ExpressionTreeNode>& subexpressionDefs, int precedence) {
     if (pos == tokens.size())
         throw Exception("Parse error: unexpected end of expression");
 
@@ -277,18 +277,18 @@ ExpressionTreeNode Parser::parsePrecedence(const vector<ParseToken>& tokens, int
 
 Operation* Parser::getOperatorOperation(const std::string& name) {
     switch (OperationId[Operators.find(name)]) {
-        case Operation::ADD:
-            return new Operation::Add();
-        case Operation::SUBTRACT:
-            return new Operation::Subtract();
-        case Operation::MULTIPLY:
-            return new Operation::Multiply();
-        case Operation::DIVIDE:
-            return new Operation::Divide();
-        case Operation::POWER:
-            return new Operation::Power();
-        default:
-            throw Exception("Parse error: unknown operator");
+    case Operation::ADD:
+        return new Operation::Add();
+    case Operation::SUBTRACT:
+        return new Operation::Subtract();
+    case Operation::MULTIPLY:
+        return new Operation::Multiply();
+    case Operation::DIVIDE:
+        return new Operation::Divide();
+    case Operation::POWER:
+        return new Operation::Power();
+    default:
+        throw Exception("Parse error: unknown operator");
     }
 }
 
@@ -336,57 +336,57 @@ Operation* Parser::getFunctionOperation(const std::string& name, const map<strin
     if (iter == opMap.end())
         throw Exception("Parse error: unknown function: "+trimmed);
     switch (iter->second) {
-        case Operation::SQRT:
-            return new Operation::Sqrt();
-        case Operation::EXP:
-            return new Operation::Exp();
-        case Operation::LOG:
-            return new Operation::Log();
-        case Operation::SIN:
-            return new Operation::Sin();
-        case Operation::COS:
-            return new Operation::Cos();
-        case Operation::SEC:
-            return new Operation::Sec();
-        case Operation::CSC:
-            return new Operation::Csc();
-        case Operation::TAN:
-            return new Operation::Tan();
-        case Operation::COT:
-            return new Operation::Cot();
-        case Operation::ASIN:
-            return new Operation::Asin();
-        case Operation::ACOS:
-            return new Operation::Acos();
-        case Operation::ATAN:
-            return new Operation::Atan();
-        case Operation::SINH:
-            return new Operation::Sinh();
-        case Operation::COSH:
-            return new Operation::Cosh();
-        case Operation::TANH:
-            return new Operation::Tanh();
-        case Operation::ERF:
-            return new Operation::Erf();
-        case Operation::ERFC:
-            return new Operation::Erfc();
-        case Operation::STEP:
-            return new Operation::Step();
-        case Operation::DELTA:
-            return new Operation::Delta();
-        case Operation::SQUARE:
-            return new Operation::Square();
-        case Operation::CUBE:
-            return new Operation::Cube();
-        case Operation::RECIPROCAL:
-            return new Operation::Reciprocal();
-        case Operation::MIN:
-            return new Operation::Min();
-        case Operation::MAX:
-            return new Operation::Max();
-        case Operation::ABS:
-            return new Operation::Abs();
-        default:
-            throw Exception("Parse error: unknown function");
+    case Operation::SQRT:
+        return new Operation::Sqrt();
+    case Operation::EXP:
+        return new Operation::Exp();
+    case Operation::LOG:
+        return new Operation::Log();
+    case Operation::SIN:
+        return new Operation::Sin();
+    case Operation::COS:
+        return new Operation::Cos();
+    case Operation::SEC:
+        return new Operation::Sec();
+    case Operation::CSC:
+        return new Operation::Csc();
+    case Operation::TAN:
+        return new Operation::Tan();
+    case Operation::COT:
+        return new Operation::Cot();
+    case Operation::ASIN:
+        return new Operation::Asin();
+    case Operation::ACOS:
+        return new Operation::Acos();
+    case Operation::ATAN:
+        return new Operation::Atan();
+    case Operation::SINH:
+        return new Operation::Sinh();
+    case Operation::COSH:
+        return new Operation::Cosh();
+    case Operation::TANH:
+        return new Operation::Tanh();
+    case Operation::ERF:
+        return new Operation::Erf();
+    case Operation::ERFC:
+        return new Operation::Erfc();
+    case Operation::STEP:
+        return new Operation::Step();
+    case Operation::DELTA:
+        return new Operation::Delta();
+    case Operation::SQUARE:
+        return new Operation::Square();
+    case Operation::CUBE:
+        return new Operation::Cube();
+    case Operation::RECIPROCAL:
+        return new Operation::Reciprocal();
+    case Operation::MIN:
+        return new Operation::Min();
+    case Operation::MAX:
+        return new Operation::Max();
+    case Operation::ABS:
+        return new Operation::Abs();
+    default:
+        throw Exception("Parse error: unknown function");
     }
 }

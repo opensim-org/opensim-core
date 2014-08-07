@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -46,9 +46,9 @@ using namespace std;
  */
 PropertyStr::
 PropertyStr(const string &aName,const string &aValue) :
-	Property_Deprecated(Property_Deprecated::Str,aName)
+    Property_Deprecated(Property_Deprecated::Str,aName)
 {
-	_value = aValue;
+    _value = aValue;
     setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
@@ -57,9 +57,9 @@ PropertyStr(const string &aName,const string &aValue) :
  */
 PropertyStr::
 PropertyStr() :
-	Property_Deprecated(Property_Deprecated::Str,"StringPropertyName")
+    Property_Deprecated(Property_Deprecated::Str,"StringPropertyName")
 {
-	_value = PropertyStr::getDefaultStr();
+    _value = PropertyStr::getDefaultStr();
     setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
@@ -69,9 +69,9 @@ PropertyStr() :
  * @param aProperty Property_Deprecated to be copied.
  */
 PropertyStr::PropertyStr(const PropertyStr &aProperty) :
-	Property_Deprecated(aProperty)
+    Property_Deprecated(aProperty)
 {
-	_value = aProperty.getValueStr();
+    _value = aProperty.getValueStr();
 }
 //_____________________________________________________________________________
 /**
@@ -83,8 +83,8 @@ PropertyStr::PropertyStr(const PropertyStr &aProperty) :
  */
 PropertyStr* PropertyStr::clone() const
 {
-	PropertyStr *property = new PropertyStr(*this);
-	return(property);
+    PropertyStr *property = new PropertyStr(*this);
+    return(property);
 }
 
 
@@ -104,9 +104,9 @@ PropertyStr* PropertyStr::clone() const
 PropertyStr& PropertyStr::
 operator=(const PropertyStr &aProperty)
 {
-	Property_Deprecated::operator =(aProperty);
-	_value = aProperty.getValueStr();
-	return(*this);
+    Property_Deprecated::operator =(aProperty);
+    _value = aProperty.getValueStr();
+    return(*this);
 }
 
 
@@ -125,7 +125,7 @@ operator=(const PropertyStr &aProperty)
 std::string PropertyStr::
 getTypeName() const
 {
-	return "string";
+    return "string";
 }
 
 //-----------------------------------------------------------------------------
@@ -140,7 +140,7 @@ getTypeName() const
 void PropertyStr::
 setValue(const string &aValue)
 {
-	_value = aValue;
+    _value = aValue;
 }
 //_____________________________________________________________________________
 /**
@@ -152,7 +152,7 @@ setValue(const string &aValue)
 string& PropertyStr::
 getValueStr()
 {
-	return(_value);
+    return(_value);
 }
 //_____________________________________________________________________________
 /**
@@ -163,7 +163,7 @@ getValueStr()
 const string& PropertyStr::
 getValueStr() const
 {
-	return(_value);
+    return(_value);
 }
 //_____________________________________________________________________________
 /**
@@ -174,7 +174,7 @@ getValueStr() const
 string PropertyStr::
 toString() const
 {
-	return _value;
+    return _value;
 }
 const std::string& PropertyStr::getDefaultStr() {
     static const std::string defaultValue = "Unassigned";

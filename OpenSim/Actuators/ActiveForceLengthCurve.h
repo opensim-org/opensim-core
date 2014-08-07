@@ -31,10 +31,10 @@
 #include <Simbody.h>
 
 #ifdef SWIG
-    #ifdef OSIMACTUATORS_API
-        #undef OSIMACTUATORS_API
-        #define OSIMACTUATORS_API
-    #endif
+#ifdef OSIMACTUATORS_API
+#undef OSIMACTUATORS_API
+#define OSIMACTUATORS_API
+#endif
 #endif
 
 namespace OpenSim {
@@ -114,7 +114,7 @@ namespace OpenSim {
     @author Matt Millard
 */
 class OSIMACTUATORS_API ActiveForceLengthCurve : public Function {
-OpenSim_DECLARE_CONCRETE_OBJECT(ActiveForceLengthCurve, Function);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ActiveForceLengthCurve, Function);
 public:
 //==============================================================================
 // PROPERTIES
@@ -123,15 +123,15 @@ public:
         These are the serializable properties associated with this class. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(min_norm_active_fiber_length, double,
-        "Normalized fiber length where the steep ascending limb starts");
+                             "Normalized fiber length where the steep ascending limb starts");
     OpenSim_DECLARE_PROPERTY(transition_norm_fiber_length, double,
-        "Normalized fiber length where the steep ascending limb transitions to the shallow ascending limb");
+                             "Normalized fiber length where the steep ascending limb transitions to the shallow ascending limb");
     OpenSim_DECLARE_PROPERTY(max_norm_active_fiber_length, double,
-        "Normalized fiber length where the descending limb ends");
+                             "Normalized fiber length where the descending limb ends");
     OpenSim_DECLARE_PROPERTY(shallow_ascending_slope, double,
-        "Slope of the shallow ascending limb");
+                             "Slope of the shallow ascending limb");
     OpenSim_DECLARE_PROPERTY(minimum_value, double,
-        "Minimum value of the active-force-length curve");
+                             "Minimum value of the active-force-length curve");
     /**@}**/
 
 //==============================================================================
@@ -205,7 +205,7 @@ public:
     */
     void setMinValue(double minimumValue);
 
-	/** Implement the generic OpenSim::Function interface **/
+    /** Implement the generic OpenSim::Function interface **/
     double calcValue(const SimTK::Vector& x) const override
     {
         return calcValue(x[0]);

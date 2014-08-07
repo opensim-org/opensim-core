@@ -43,7 +43,7 @@ using namespace OpenSim;
  */
 PathWrapPoint::PathWrapPoint()
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -61,10 +61,10 @@ PathWrapPoint::~PathWrapPoint()
  * @param aPoint PathWrapPoint to be copied.
  */
 PathWrapPoint::PathWrapPoint(const PathWrapPoint &aPoint) :
-   PathPoint(aPoint)
+    PathPoint(aPoint)
 {
-	setNull();
-	copyData(aPoint);
+    setNull();
+    copyData(aPoint);
 }
 
 
@@ -79,9 +79,9 @@ PathWrapPoint::PathWrapPoint(const PathWrapPoint &aPoint) :
  */
 void PathWrapPoint::copyData(const PathWrapPoint &aPoint)
 {
-	_wrapPath = aPoint._wrapPath;
-	_wrapPathLength = aPoint._wrapPathLength;
-	_wrapObject = aPoint._wrapObject;
+    _wrapPath = aPoint._wrapPath;
+    _wrapPathLength = aPoint._wrapPathLength;
+    _wrapObject = aPoint._wrapObject;
 }
 
 //_____________________________________________________________________________
@@ -90,8 +90,8 @@ void PathWrapPoint::copyData(const PathWrapPoint &aPoint)
  */
 void PathWrapPoint::setNull()
 {
-	_wrapPath.setSize(0);
-	_wrapPathLength = 0.0;
+    _wrapPath.setSize(0);
+    _wrapPathLength = 0.0;
 }
 
 
@@ -106,10 +106,10 @@ void PathWrapPoint::setNull()
  */
 PathWrapPoint& PathWrapPoint::operator=(const PathWrapPoint &aPoint)
 {
-	// BASE CLASS
-	PathPoint::operator=(aPoint);
+    // BASE CLASS
+    PathPoint::operator=(aPoint);
 
-	copyData(aPoint);
+    copyData(aPoint);
 
-	return(*this);
+    return(*this);
 }

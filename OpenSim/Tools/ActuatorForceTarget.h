@@ -38,7 +38,7 @@ namespace OpenSim {
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /**
- * A Computed Muscle Control (CMC) optimization target for controlling 
+ * A Computed Muscle Control (CMC) optimization target for controlling
  * dynamic systems whose actuators may be themselves governed by differential
  * equations, meaning there may be non-linear behavior and delays in force
  * production.
@@ -58,7 +58,7 @@ namespace OpenSim {
  * Although this target is fairly robust (meaning the optimizer should not
  * fail to find a solution), it is a bit slower and less accurate than
  * the "fast" target @see ActuatorForceTargetFast.
- * 
+ *
  * @version 1.0
  * @author Frank C. Anderson
  */
@@ -69,55 +69,55 @@ class OSIMTOOLS_API ActuatorForceTarget : public OptimizationTarget
 // DATA
 //==============================================================================
 private:
-	/** Parent controller. */
-	CMC *_controller;
-	/** Work array of the states. */
-	Array<double> _y;
-	/** Work array of the derivatives of the states. */
-	Array<double> _dydt;
-	/** Array of the derivatives of the generalized coordinates. */
-	Array<double> _dqdt;
-	/** Array of the derivatives of the generalized speeds. */
-	Array<double> _dudt;
-	/** Weight used to scale the stress term of objective function. **/
-	double _stressTermWeight;
+    /** Parent controller. */
+    CMC *_controller;
+    /** Work array of the states. */
+    Array<double> _y;
+    /** Work array of the derivatives of the states. */
+    Array<double> _dydt;
+    /** Array of the derivatives of the generalized coordinates. */
+    Array<double> _dqdt;
+    /** Array of the derivatives of the generalized speeds. */
+    Array<double> _dudt;
+    /** Weight used to scale the stress term of objective function. **/
+    double _stressTermWeight;
 
-	SimTK::Matrix _performanceGradientMatrix;
-	SimTK::Vector _performanceGradientVector;
-	SimTK::Matrix _accelPerformanceMatrix, _forcePerformanceMatrix;
-	SimTK::Vector _accelPerformanceVector, _forcePerformanceVector;
+    SimTK::Matrix _performanceGradientMatrix;
+    SimTK::Vector _performanceGradientVector;
+    SimTK::Matrix _accelPerformanceMatrix, _forcePerformanceMatrix;
+    SimTK::Vector _accelPerformanceVector, _forcePerformanceVector;
 
-	double *_lapackA;
-	double *_lapackB;
-	double *_lapackSingularValues;
-	int _lapackLWork;
-	double *_lapackWork;
+    double *_lapackA;
+    double *_lapackB;
+    double *_lapackSingularValues;
+    int _lapackLWork;
+    double *_lapackWork;
 
-	// Save a (copy) of the state for state tracking purposes
-	SimTK::State	_saveState;
+    // Save a (copy) of the state for state tracking purposes
+    SimTK::State	_saveState;
 
 //==============================================================================
 // METHODS
 //==============================================================================
 public:
-	//---------------------------------------------------------------------------
-	// CONSTRUCTION
-	//---------------------------------------------------------------------------
-	virtual ~ActuatorForceTarget();
-	ActuatorForceTarget(int aNX,CMC *aController);
+    //---------------------------------------------------------------------------
+    // CONSTRUCTION
+    //---------------------------------------------------------------------------
+    virtual ~ActuatorForceTarget();
+    ActuatorForceTarget(int aNX,CMC *aController);
 
 public:
-	void setStressTermWeight(double aWeight);
-	bool prepareToOptimize(SimTK::State& s, double *x);
+    void setStressTermWeight(double aWeight);
+    bool prepareToOptimize(SimTK::State& s, double *x);
 
-	//--------------------------------------------------------------------------
-	// REQUIRED OPTIMIZATION TARGET METHODS
-	//--------------------------------------------------------------------------
-   int objectiveFunc(const SimTK::Vector &aF, bool new_coefficients, SimTK::Real& rP) const;
-   int gradientFunc(const SimTK::Vector &x, bool new_coefficients, SimTK::Vector &gradient ) const;
+    //--------------------------------------------------------------------------
+    // REQUIRED OPTIMIZATION TARGET METHODS
+    //--------------------------------------------------------------------------
+    int objectiveFunc(const SimTK::Vector &aF, bool new_coefficients, SimTK::Real& rP) const;
+    int gradientFunc(const SimTK::Vector &x, bool new_coefficients, SimTK::Vector &gradient ) const;
 
 private:
-	void computePerformanceVectors(SimTK::State& s, const SimTK::Vector &aF, SimTK::Vector &rAccelPerformanceVector, SimTK::Vector &rForcePerformanceVector);
+    void computePerformanceVectors(SimTK::State& s, const SimTK::Vector &aF, SimTK::Vector &rAccelPerformanceVector, SimTK::Vector &rForcePerformanceVector);
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 };	// END class ActuatorForceTarget

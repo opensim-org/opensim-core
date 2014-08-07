@@ -23,16 +23,16 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Factory to create Storage like objects, objects created depend on the extension 
+/* Factory to create Storage like objects, objects created depend on the extension
  * passed to the createStorage method. Initially this is as follows
  *
  * ".sto", ".mot" -> Storage
  * ".trc" -> Storage
- * 
- * There's support for users plugging in their own classes and having them handle arbitrary 
+ *
+ * There's support for users plugging in their own classes and having them handle arbitrary
  * extensions for example ".c3d", ".trb" files
  *
- * Author: Ayman Habib 
+ * Author: Ayman Habib
  */
 
 #include "osimCommonDLL.h"
@@ -43,45 +43,45 @@
  * @version 1.0
  * @author Ayman Habib
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 abstract class StorageCreator {
-	virtual StorageInterface* createStorage(std::string& fileNameWithExtension)=0;
-	virtual ~StorageCreator() {}
+    virtual StorageInterface* createStorage(std::string& fileNameWithExtension)=0;
+    virtual ~StorageCreator() {}
 };
 typedef std::map<std::string, OpenSim::StorageCreator*, std::less<std::string> > mapExtensionsToCreators;
 
-// StorageCreator is a class that 
+// StorageCreator is a class that
 class OSIMCOMMON_API StorageFactory
 {
 //=============================================================================
 // METHODS
 //=============================================================================
 private:
-	mapExtensionsToCreators _mapExtensionsToCreators;
+    mapExtensionsToCreators _mapExtensionsToCreators;
 public:
-	// make this constructor explicit so you don't get implicit casting of int to StorageFactory
-	StorageFactory() {};
+    // make this constructor explicit so you don't get implicit casting of int to StorageFactory
+    StorageFactory() {};
 
-	~StorageFactory(){};
+    ~StorageFactory() {};
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	// SIZE
-	virtual StorageInterface* createStorage(std::string& fileNameWithExtension){
-		std::string extension = fileNameWithExtension.substr(fileNameWithExtension. find_last_of("."));
-		mapExtensionsToCreators::const_iterator find_Iter = _mapExtensionsToCreators.find(extension);
-		Object* newObj=0;
-		if (find_Iter != _mapExtensionsToCreators.end()){
-			StorageCreator* defaultCreator = find_Iter->second;
-			return defaultCreator->createStorage(fileNameWithExtension);
-		}
-		throw Exception("Don't know how to handle extension "+extension+" in StorageFactory");
-	}
-	static void registerStorageCreator(std::string& ext, StorageCreator* newCreator) {
-		_mapExtensionsToCreators[ext]= newCreator;
-	};  
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    // SIZE
+    virtual StorageInterface* createStorage(std::string& fileNameWithExtension) {
+        std::string extension = fileNameWithExtension.substr(fileNameWithExtension. find_last_of("."));
+        mapExtensionsToCreators::const_iterator find_Iter = _mapExtensionsToCreators.find(extension);
+        Object* newObj=0;
+        if (find_Iter != _mapExtensionsToCreators.end()) {
+            StorageCreator* defaultCreator = find_Iter->second;
+            return defaultCreator->createStorage(fileNameWithExtension);
+        }
+        throw Exception("Don't know how to handle extension "+extension+" in StorageFactory");
+    }
+    static void registerStorageCreator(std::string& ext, StorageCreator* newCreator) {
+        _mapExtensionsToCreators[ext]= newCreator;
+    };
 //=============================================================================
 };	// END of class StorageFactory
 

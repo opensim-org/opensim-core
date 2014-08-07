@@ -52,11 +52,11 @@ ActuatorForceProbe::ActuatorForceProbe()
 }
 
 //_____________________________________________________________________________
-/** 
+/**
  * Convenience constructor
  */
-ActuatorForceProbe::ActuatorForceProbe(const Array<string>& actuator_names, 
-    const bool sum_forces_together, const double exponent)
+ActuatorForceProbe::ActuatorForceProbe(const Array<string>& actuator_names,
+                                       const bool sum_forces_together, const double exponent)
 {
     setNull();
     constructProperties();
@@ -71,7 +71,7 @@ ActuatorForceProbe::ActuatorForceProbe(const Array<string>& actuator_names,
 // Set the data members of this ActuatorForceProbe to their null values.
 void ActuatorForceProbe::setNull()
 {
-   	setAuthors("Tim Dorn");
+    setAuthors("Tim Dorn");
     _actuatorIndex.clear();
 }
 
@@ -163,16 +163,16 @@ void ActuatorForceProbe::connectToModel(Model& model)
     Super::connectToModel(model);
 
     // Check to see if 'all' actuators are selected for probing.
-	if(getProperty_actuator_names().size() > 0)
-	{
-		if(IO::Uppercase(get_actuator_names(0)) == "ALL")
-		{
-			Array<string> allActNames;
-			_model->getActuators().getNames(allActNames);
-			set_actuator_names(allActNames);
-			//cout << "Set to all actuators: " << allActNames << endl;
-		}
-	}
+    if(getProperty_actuator_names().size() > 0)
+    {
+        if(IO::Uppercase(get_actuator_names(0)) == "ALL")
+        {
+            Array<string> allActNames;
+            _model->getActuators().getNames(allActNames);
+            set_actuator_names(allActNames);
+            //cout << "Set to all actuators: " << allActNames << endl;
+        }
+    }
 
     // check that each Actuator in the actuator_names array exists in the model.
     _actuatorIndex.clear();
@@ -228,7 +228,7 @@ SimTK::Vector ActuatorForceProbe::computeProbeInputs(const State& s) const
 
 
 //_____________________________________________________________________________
-/** 
+/**
  * Returns the number of probe inputs in the vector returned by computeProbeInputs().
  */
 int ActuatorForceProbe::getNumProbeInputs() const
@@ -241,10 +241,10 @@ int ActuatorForceProbe::getNumProbeInputs() const
 
 
 //_____________________________________________________________________________
-/** 
+/**
  * Provide labels for the probe values being reported.
  */
-Array<string> ActuatorForceProbe::getProbeOutputLabels() const 
+Array<string> ActuatorForceProbe::getProbeOutputLabels() const
 {
     Array<string> labels;
 

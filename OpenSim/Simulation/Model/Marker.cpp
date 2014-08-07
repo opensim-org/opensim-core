@@ -45,14 +45,14 @@ Geometry *Marker::_defaultGeometry = AnalyticSphere::createSphere(0.01);
  * Default constructor.
  */
 Marker::Marker() :
-   Object(),
-   _offset(_offsetProp.getValueDblVec()),
-	_fixed(_fixedProp.getValueBool()),
-	_bodyName(_bodyNameProp.getValueStr())
+    Object(),
+    _offset(_offsetProp.getValueDblVec()),
+    _fixed(_fixedProp.getValueBool()),
+    _bodyName(_bodyNameProp.getValueStr())
 {
-	setNull();
-	setupProperties();
-	_displayer.setOwner(this);
+    setNull();
+    setupProperties();
+    _displayer.setOwner(this);
 }
 
 //_____________________________________________________________________________
@@ -70,15 +70,15 @@ Marker::~Marker()
  * @param aMarker Marker to be copied.
  */
 Marker::Marker(const Marker &aMarker) :
-   Object(aMarker),
-   _offset(_offsetProp.getValueDblVec()),
-	_fixed(_fixedProp.getValueBool()),
-	_bodyName(_bodyNameProp.getValueStr())
+    Object(aMarker),
+    _offset(_offsetProp.getValueDblVec()),
+    _fixed(_fixedProp.getValueBool()),
+    _bodyName(_bodyNameProp.getValueStr())
 {
-	setNull();
-	setupProperties();
-	copyData(aMarker);
-	_displayer.setOwner(this);
+    setNull();
+    setupProperties();
+    copyData(aMarker);
+    _displayer.setOwner(this);
 }
 
 //=============================================================================
@@ -92,12 +92,12 @@ Marker::Marker(const Marker &aMarker) :
  */
 void Marker::copyData(const Marker &aMarker)
 {
-	_offset = aMarker._offset;
-	_fixed = aMarker._fixed;
-	_bodyName = aMarker._bodyName;
-	_body = NULL;
-	_displayer = aMarker._displayer;
-	_virtual = aMarker._virtual;
+    _offset = aMarker._offset;
+    _fixed = aMarker._fixed;
+    _bodyName = aMarker._bodyName;
+    _body = NULL;
+    _displayer = aMarker._displayer;
+    _virtual = aMarker._virtual;
 }
 
 //_____________________________________________________________________________
@@ -106,8 +106,8 @@ void Marker::copyData(const Marker &aMarker)
  */
 void Marker::setNull()
 {
-	setVirtual(true);
-	_body = 0;
+    setVirtual(true);
+    _body = 0;
 }
 
 //_____________________________________________________________________________
@@ -116,22 +116,22 @@ void Marker::setNull()
  */
 void Marker::setupProperties()
 {
-	_bodyNameProp.setComment("Body segment in the model on which the marker resides.");
-	_bodyNameProp.setName("body");
-	_propertySet.append(&_bodyNameProp);
+    _bodyNameProp.setComment("Body segment in the model on which the marker resides.");
+    _bodyNameProp.setName("body");
+    _propertySet.append(&_bodyNameProp);
 
-	_offsetProp.setComment("Location of a marker on the body segment.");
-	const SimTK::Vec3 defaultAttachment(0.0);
-	_offsetProp.setName("location");
-	_offsetProp.setValue(defaultAttachment);
-	//_offsetProp.setAllowableListSize(3);
-	_propertySet.append(&_offsetProp);
+    _offsetProp.setComment("Location of a marker on the body segment.");
+    const SimTK::Vec3 defaultAttachment(0.0);
+    _offsetProp.setName("location");
+    _offsetProp.setValue(defaultAttachment);
+    //_offsetProp.setAllowableListSize(3);
+    _propertySet.append(&_offsetProp);
 
-	_fixedProp.setComment("Flag (true or false) specifying whether or not a marker "
-		"should be kept fixed in the marker placement step.  i.e. If false, the marker is allowed to move.");
-	_fixedProp.setName("fixed");
-	_fixedProp.setValue(false);
-	_propertySet.append(&_fixedProp);
+    _fixedProp.setComment("Flag (true or false) specifying whether or not a marker "
+                          "should be kept fixed in the marker placement step.  i.e. If false, the marker is allowed to move.");
+    _fixedProp.setName("fixed");
+    _fixedProp.setValue(false);
+    _propertySet.append(&_fixedProp);
 }
 
 //_____________________________________________________________________________
@@ -146,42 +146,42 @@ void Marker::connectMarkerToModel(const Model& aModel)
 
     _model = &aModel;
 
-	if (_bodyName != "")
-	{
-		OpenSim::Body *oldBody = _body;
+    if (_bodyName != "")
+    {
+        OpenSim::Body *oldBody = _body;
         try {
-    		_body = &const_cast<Model*>(&aModel)->updBodySet().get(_bodyName);
+            _body = &const_cast<Model*>(&aModel)->updBodySet().get(_bodyName);
         }
-		catch (const Exception&) {
-			string errorMessage = "Error: Body " + _bodyName + " referenced in marker " + getName() +
-				" does not exist in model " +	aModel.getName();
-			throw Exception(errorMessage);
-		}
-		// If marker jumped between bodies we need to fix display stuff
-		if (oldBody && oldBody->getName() != _body->getName()){
-			oldBody->updDisplayer()->removeDependent(&_displayer);
-		}
-		// Todo_AYMAN: make code below safe to call multiple times (since this 
-        // method may be called multiple times for a marker). Should also try 
-        // to handle case where a marker is deleted (e.g. in 
+        catch (const Exception&) {
+            string errorMessage = "Error: Body " + _bodyName + " referenced in marker " + getName() +
+                                  " does not exist in model " +	aModel.getName();
+            throw Exception(errorMessage);
+        }
+        // If marker jumped between bodies we need to fix display stuff
+        if (oldBody && oldBody->getName() != _body->getName()) {
+            oldBody->updDisplayer()->removeDependent(&_displayer);
+        }
+        // Todo_AYMAN: make code below safe to call multiple times (since this
+        // method may be called multiple times for a marker). Should also try
+        // to handle case where a marker is deleted (e.g. in
         // SimbodyEngine::updateMarkerSet) because then may end up with
-		// stale pointers.
-		VisibleObject* ownerBodyDisplayer;
-		if (_body && (ownerBodyDisplayer = _body->updDisplayer())){
-			if(! ownerBodyDisplayer->hasDependent(&_displayer)){	// Only if first time to be encountered 
-				ownerBodyDisplayer->addDependent(&_displayer);
-			}
-		}
-		_displayer.setOwner(this);
-		updateGeometry();
-			
-	}
-	else
-	{
-		string errorMessage = "Error: No body name specified for marker " + getName() + " in model " +
-			aModel.getName();
-		throw Exception(errorMessage);
-	}
+        // stale pointers.
+        VisibleObject* ownerBodyDisplayer;
+        if (_body && (ownerBodyDisplayer = _body->updDisplayer())) {
+            if(! ownerBodyDisplayer->hasDependent(&_displayer)) {	// Only if first time to be encountered
+                ownerBodyDisplayer->addDependent(&_displayer);
+            }
+        }
+        _displayer.setOwner(this);
+        updateGeometry();
+
+    }
+    else
+    {
+        string errorMessage = "Error: No body name specified for marker " + getName() + " in model " +
+                              aModel.getName();
+        throw Exception(errorMessage);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -189,12 +189,12 @@ void Marker::connectMarkerToModel(const Model& aModel)
  */
 void Marker::removeSelfFromDisplay()
 {
-		VisibleObject* ownerBodyDisplayer;
-		if (_body && (ownerBodyDisplayer = _body->updDisplayer())){
-			if (ownerBodyDisplayer->hasDependent(&_displayer)){
-				ownerBodyDisplayer->removeDependent(&_displayer);
-			}
-		}
+    VisibleObject* ownerBodyDisplayer;
+    if (_body && (ownerBodyDisplayer = _body->updDisplayer())) {
+        if (ownerBodyDisplayer->hasDependent(&_displayer)) {
+            ownerBodyDisplayer->removeDependent(&_displayer);
+        }
+    }
 }
 //=============================================================================
 // OPERATORS
@@ -207,12 +207,12 @@ void Marker::removeSelfFromDisplay()
  */
 Marker& Marker::operator=(const Marker &aMarker)
 {
-	// BASE CLASS
-	Object::operator=(aMarker);
+    // BASE CLASS
+    Object::operator=(aMarker);
 
-	copyData(aMarker);
+    copyData(aMarker);
 
-	return(*this);
+    return(*this);
 }
 
 //=============================================================================
@@ -228,24 +228,24 @@ Marker& Marker::operator=(const Marker &aMarker)
  */
 void Marker::updateFromMarker(const Marker &aMarker)
 {
-	if (!aMarker.getOffsetUseDefault())
-	{
-		const Vec3& off = aMarker.getOffset();
-		setOffset(off);
-		_offsetProp.setValueIsDefault(false);
-	}
+    if (!aMarker.getOffsetUseDefault())
+    {
+        const Vec3& off = aMarker.getOffset();
+        setOffset(off);
+        _offsetProp.setValueIsDefault(false);
+    }
 
-	if (!aMarker.getFixedUseDefault())
-	{
-		_fixed = aMarker.getFixed();
-		_fixedProp.setValueIsDefault(false);
-	}
+    if (!aMarker.getFixedUseDefault())
+    {
+        _fixed = aMarker.getFixed();
+        _fixedProp.setValueIsDefault(false);
+    }
 
-	if (!aMarker.getBodyNameUseDefault())
-	{	
-		_bodyName = aMarker.getBodyName();
-		_bodyNameProp.setValueIsDefault(false);
-	}
+    if (!aMarker.getBodyNameUseDefault())
+    {
+        _bodyName = aMarker.getBodyName();
+        _bodyNameProp.setValueIsDefault(false);
+    }
 }
 
 //=============================================================================
@@ -259,7 +259,7 @@ void Marker::updateFromMarker(const Marker &aMarker)
  */
 void Marker::getOffset(SimTK::Vec3& rOffset) const
 {
-	rOffset = _offset;
+    rOffset = _offset;
 }
 
 //_____________________________________________________________________________
@@ -270,9 +270,9 @@ void Marker::getOffset(SimTK::Vec3& rOffset) const
  */
 void Marker::getOffset(double rOffset[]) const
 {
-	rOffset[0] = _offset[0];
-	rOffset[1] = _offset[1];
-	rOffset[2] = _offset[2];
+    rOffset[0] = _offset[0];
+    rOffset[1] = _offset[1];
+    rOffset[2] = _offset[2];
 }
 
 //_____________________________________________________________________________
@@ -284,10 +284,10 @@ void Marker::getOffset(double rOffset[]) const
  */
 bool Marker::setOffset(const SimTK::Vec3& aOffset)
 {
-	_offset = aOffset;
+    _offset = aOffset;
 
-	updateGeometry();
-	return true;
+    updateGeometry();
+    return true;
 }
 
 //_____________________________________________________________________________
@@ -299,10 +299,10 @@ bool Marker::setOffset(const SimTK::Vec3& aOffset)
  */
 bool Marker::setOffset(const double aOffset[3])
 {
-	_offset = aOffset;
+    _offset = aOffset;
 
-	updateGeometry();
-	return true;
+    updateGeometry();
+    return true;
 }
 
 //_____________________________________________________________________________
@@ -314,8 +314,8 @@ bool Marker::setOffset(const double aOffset[3])
  */
 bool Marker::setFixed(bool aFixed)
 {
-	_fixed = aFixed;
-	return true;
+    _fixed = aFixed;
+    return true;
 }
 
 //_____________________________________________________________________________
@@ -328,9 +328,9 @@ bool Marker::setFixed(bool aFixed)
  */
 bool Marker::setBodyName(const string& aName)
 {
-	_bodyName = aName;
+    _bodyName = aName;
 
-	return true;
+    return true;
 }
 
 //_____________________________________________________________________________
@@ -342,10 +342,10 @@ bool Marker::setBodyName(const string& aName)
  */
 const string& Marker::getBodyName() const
 {
-	//if (_bodyNameProp.getValueIsDefault())
-	//	return NULL;
+    //if (_bodyNameProp.getValueIsDefault())
+    //	return NULL;
 
-	return _bodyName;
+    return _bodyName;
 }
 
 //_____________________________________________________________________________
@@ -356,15 +356,15 @@ const string& Marker::getBodyName() const
  */
 bool Marker::setBodyNameUseDefault(bool aValue)
 {
-	_bodyNameProp.setValueIsDefault(aValue);
+    _bodyNameProp.setValueIsDefault(aValue);
 
-	return true;
+    return true;
 }
 
 //_____________________________________________________________________________
 /**
  * Change the body that this marker is attached to. It assumes that the body is
- * already set, so that connectMarkerToModel() needs to be called to update 
+ * already set, so that connectMarkerToModel() needs to be called to update
  * dependent information.
  *
  * @param aBody Reference to the body.
@@ -372,17 +372,17 @@ bool Marker::setBodyNameUseDefault(bool aValue)
 void Marker::changeBody( OpenSim::Body& aBody)
 {
 
-	if (&aBody == _body)
-		return;
+    if (&aBody == _body)
+        return;
 
-	setBodyName(aBody.getName());
-	connectMarkerToModel(aBody.getModel());
+    setBodyName(aBody.getName());
+    connectMarkerToModel(aBody.getModel());
 }
 
 //_____________________________________________________________________________
 /**
  * Change the body that this marker is attached to. It assumes that the body is
- * already set, so that connectMarkerToModel() needs to be called to update 
+ * already set, so that connectMarkerToModel() needs to be called to update
  * dependent information.
  *
  * @param s State.
@@ -391,15 +391,15 @@ void Marker::changeBody( OpenSim::Body& aBody)
 void Marker::changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody)
 {
 
-	if (&aBody == _body || !_body)
-		return;
+    if (&aBody == _body || !_body)
+        return;
 
-	// Preserve location means to switch bodies without changing
-	// the location of the marker in the inertial reference frame.
+    // Preserve location means to switch bodies without changing
+    // the location of the marker in the inertial reference frame.
     aBody.getModel().getSimbodyEngine().transformPosition(s, *_body, _offset, aBody, _offset);
 
-	setBodyName(aBody.getName());
-	connectMarkerToModel(aBody.getModel());
+    setBodyName(aBody.getName());
+    connectMarkerToModel(aBody.getModel());
 }
 
 //=============================================================================
@@ -413,8 +413,8 @@ void Marker::changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aB
  */
 void Marker::scale(const SimTK::Vec3& aScaleFactors)
 {
-	for (int i = 0; i < 3; i++)
-		_offset[i] *= aScaleFactors[i];
+    for (int i = 0; i < 3; i++)
+        _offset[i] *= aScaleFactors[i];
 }
 
 //_____________________________________________________________________________
@@ -423,8 +423,8 @@ void Marker::scale(const SimTK::Vec3& aScaleFactors)
  */
 void Marker::updateGeometry()
 {
-	Transform position;
-	position.setP(getOffset());
-	updDisplayer()->setTransform(position);
+    Transform position;
+    position.setP(getOffset());
+    updDisplayer()->setTransform(position);
 
 }

@@ -51,112 +51,130 @@ namespace OpenSim {
  * @version 1.0
  */
 class OSIMTOOLS_API ScaleTool : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(ScaleTool, Object);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ScaleTool, Object);
 
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
-	PropertyDbl _massProp;
-	double &_mass;
+    PropertyDbl _massProp;
+    double &_mass;
 
-	PropertyDbl _heightProp;
-	double &_height;
+    PropertyDbl _heightProp;
+    double &_height;
 
-	PropertyDbl _ageProp;
-	double &_age;
+    PropertyDbl _ageProp;
+    double &_age;
 
-	PropertyStr _notesProp;
-	std::string &_notes;
+    PropertyStr _notesProp;
+    std::string &_notes;
 
-	PropertyObj _genericModelMakerProp;
-	GenericModelMaker &_genericModelMaker;
+    PropertyObj _genericModelMakerProp;
+    GenericModelMaker &_genericModelMaker;
 
-	PropertyObj _modelScalerProp;
-	ModelScaler &_modelScaler;
+    PropertyObj _modelScalerProp;
+    ModelScaler &_modelScaler;
 
-	PropertyObj _markerPlacerProp;
-	MarkerPlacer &_markerPlacer;
+    PropertyObj _markerPlacerProp;
+    MarkerPlacer &_markerPlacer;
 
-	/** All files in workflow are specified relative to
-	 * where the subject file is. Need to keep track of that in case absolute
-	 * path is needed later.
-	 */
-	std::string	 _pathToSubject;	
+    /** All files in workflow are specified relative to
+     * where the subject file is. Need to keep track of that in case absolute
+     * path is needed later.
+     */
+    std::string	 _pathToSubject;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	ScaleTool();
-	ScaleTool(const std::string &aFileName) SWIG_DECLARE_EXCEPTION;
-	ScaleTool(const ScaleTool &aSubject);
-	virtual ~ScaleTool();
+    ScaleTool();
+    ScaleTool(const std::string &aFileName) SWIG_DECLARE_EXCEPTION;
+    ScaleTool(const ScaleTool &aSubject);
+    virtual ~ScaleTool();
 
 #ifndef SWIG
-	ScaleTool& operator=(const ScaleTool &aSubject);
+    ScaleTool& operator=(const ScaleTool &aSubject);
 #endif
-	void copyData(const ScaleTool &aSubject);
+    void copyData(const ScaleTool &aSubject);
 
-	Model* createModel();
-	/* Query the subject for different parameters */
-	GenericModelMaker& getGenericModelMaker()
-	{
-		return _genericModelMaker;
-	}
+    Model* createModel();
+    /* Query the subject for different parameters */
+    GenericModelMaker& getGenericModelMaker()
+    {
+        return _genericModelMaker;
+    }
 
-	ModelScaler& getModelScaler()
-	{
-		return _modelScaler;
-	}
+    ModelScaler& getModelScaler()
+    {
+        return _modelScaler;
+    }
 
-	MarkerPlacer& getMarkerPlacer()
-	{
-		return _markerPlacer;
-	}
+    MarkerPlacer& getMarkerPlacer()
+    {
+        return _markerPlacer;
+    }
 
-	bool isDefaultGenericModelMaker() { return _genericModelMakerProp.getValueIsDefault(); }
-	bool isDefaultModelScaler() { return _modelScalerProp.getValueIsDefault(); }
-	bool isDefaultMarkerPlacer() { return _markerPlacerProp.getValueIsDefault(); }
+    bool isDefaultGenericModelMaker() {
+        return _genericModelMakerProp.getValueIsDefault();
+    }
+    bool isDefaultModelScaler() {
+        return _modelScalerProp.getValueIsDefault();
+    }
+    bool isDefaultMarkerPlacer() {
+        return _markerPlacerProp.getValueIsDefault();
+    }
 
-	/* Register types to be used when reading a ScaleTool object from xml file. */
-	static void registerTypes();
+    /* Register types to be used when reading a ScaleTool object from xml file. */
+    static void registerTypes();
 
-	/** Accessor methods to obtain model attributes */
-	double getSubjectMass() { return _mass; }
-	double getSubjectAge() { return _age; }
-	double getSubjectHeight() { return _height; }
-	void setSubjectMass(double mass) { _mass = mass; }
-	void setSubjectAge(double age) { _age = age; }
-	void setSubjectHeight(double height) { _height = height; }
-	/**
-	 * Accessor methods to set and get path to Subject. This is needed
-	 * since all file names referred to in the subject file are relative
-	 * to the subject file.
-	 */
-	const std::string& getPathToSubject()
-	{
-		return _pathToSubject;
-	}
-	void setPathToSubject(const std::string& aPath)
-	{
-		_pathToSubject=aPath;
-	}
-	//std::string getParentDirectory(const std::string& fileName);
-	
-	void setPrintResultFiles(bool aToWrite) { 
-		_modelScaler.setPrintResultFiles(aToWrite);
-		_markerPlacer.setPrintResultFiles(aToWrite);
-	}
+    /** Accessor methods to obtain model attributes */
+    double getSubjectMass() {
+        return _mass;
+    }
+    double getSubjectAge() {
+        return _age;
+    }
+    double getSubjectHeight() {
+        return _height;
+    }
+    void setSubjectMass(double mass) {
+        _mass = mass;
+    }
+    void setSubjectAge(double age) {
+        _age = age;
+    }
+    void setSubjectHeight(double height) {
+        _height = height;
+    }
+    /**
+     * Accessor methods to set and get path to Subject. This is needed
+     * since all file names referred to in the subject file are relative
+     * to the subject file.
+     */
+    const std::string& getPathToSubject()
+    {
+        return _pathToSubject;
+    }
+    void setPathToSubject(const std::string& aPath)
+    {
+        _pathToSubject=aPath;
+    }
+    //std::string getParentDirectory(const std::string& fileName);
+
+    void setPrintResultFiles(bool aToWrite) {
+        _modelScaler.setPrintResultFiles(aToWrite);
+        _markerPlacer.setPrintResultFiles(aToWrite);
+    }
 
 protected:
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 //=============================================================================
 };	// END of class ScaleTool
 //=============================================================================

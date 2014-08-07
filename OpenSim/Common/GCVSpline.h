@@ -23,9 +23,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
+/*
  * Author:  Frank C. Anderson
- 
+
  */
 
 
@@ -72,105 +72,109 @@
  *
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 class OSIMCOMMON_API GCVSpline : public Function {
-OpenSim_DECLARE_CONCRETE_OBJECT(GCVSpline, Function);
+    OpenSim_DECLARE_CONCRETE_OBJECT(GCVSpline, Function);
 
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
 protected:
-	// PROPERTIES
-	/** Half order of the spline (degree+1)/2. */
-	PropertyInt _propHalfOrder;
-	/** Error variance for the data and spline fit.  The smoothing factor
-	p is computed based on the error variance. */
-	PropertyDbl _propErrorVariance;
-	/** Array of values for the independent variables (i.e., the spline knot
-	sequence).  This array must be monotonically increasing. */
-	PropertyDblArray _propX;
-	/** Array of weight values, one for each data point. */
-	PropertyDblArray _propWeights;
-	/** Spline coefficients. */
-	PropertyDblArray _propCoefficients;
-	/** Spline Y values. */
-	PropertyDblArray _propY;
+    // PROPERTIES
+    /** Half order of the spline (degree+1)/2. */
+    PropertyInt _propHalfOrder;
+    /** Error variance for the data and spline fit.  The smoothing factor
+    p is computed based on the error variance. */
+    PropertyDbl _propErrorVariance;
+    /** Array of values for the independent variables (i.e., the spline knot
+    sequence).  This array must be monotonically increasing. */
+    PropertyDblArray _propX;
+    /** Array of weight values, one for each data point. */
+    PropertyDblArray _propWeights;
+    /** Spline coefficients. */
+    PropertyDblArray _propCoefficients;
+    /** Spline Y values. */
+    PropertyDblArray _propY;
 
-	// REFERENCES
-	/** Reference to the value of the HalfOrder property. */
-	int &_halfOrder;
-	/** Reference to the value of the ErrorVariance property. */
-	double &_errorVariance;
-	/** Reference to the value of the X property. */
-	Array<double> &_x;
-	/** Reference to the value of the Weights property. */
-	Array<double> &_weights;
-	/** Reference to the value of the Coefficients property. */
-	Array<double> &_coefficients;
+    // REFERENCES
+    /** Reference to the value of the HalfOrder property. */
+    int &_halfOrder;
+    /** Reference to the value of the ErrorVariance property. */
+    double &_errorVariance;
+    /** Reference to the value of the X property. */
+    Array<double> &_x;
+    /** Reference to the value of the Weights property. */
+    Array<double> &_weights;
+    /** Reference to the value of the Coefficients property. */
+    Array<double> &_coefficients;
 
-	/** Y (dependent) values of the function. These are called aF in the
-	constructor and are stored here so that the function can be scaled
-	later on. */
-	Array<double> &_y;
-	/** A workspace used when calculating derivatives of the spline. */
-	mutable std::vector<int> _workDeriv;
+    /** Y (dependent) values of the function. These are called aF in the
+    constructor and are stored here so that the function can be scaled
+    later on. */
+    Array<double> &_y;
+    /** A workspace used when calculating derivatives of the spline. */
+    mutable std::vector<int> _workDeriv;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	GCVSpline();
-	GCVSpline(int aDegree,int aN,const double *aTimes,const double *aValues,
-		const std::string &aName="",double aErrorVariance=0.0);
-	GCVSpline(const GCVSpline &aSpline);
-	virtual ~GCVSpline();
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    GCVSpline();
+    GCVSpline(int aDegree,int aN,const double *aTimes,const double *aValues,
+              const std::string &aName="",double aErrorVariance=0.0);
+    GCVSpline(const GCVSpline &aSpline);
+    virtual ~GCVSpline();
 
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 private:
-	void setNull();
-	void setupProperties();
-	void setEqual(const GCVSpline &aSpline);
-	virtual void init(Function* aFunction);
+    void setNull();
+    void setupProperties();
+    void setEqual(const GCVSpline &aSpline);
+    virtual void init(Function* aFunction);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
-	GCVSpline& operator=(const GCVSpline &aSpline);
+    GCVSpline& operator=(const GCVSpline &aSpline);
 
-	//--------------------------------------------------------------------------
-	// SET AND GET
-	//--------------------------------------------------------------------------
-	void setDegree(int aDegree);
+    //--------------------------------------------------------------------------
+    // SET AND GET
+    //--------------------------------------------------------------------------
+    void setDegree(int aDegree);
 public:
-	int getDegree() const;
-	int getOrder() const;
-	int getHalfOrder() const;
-	int getSize() const;
-	const Array<double>& getX() const;
-	virtual const double* getXValues() const;
-	virtual const double* getYValues() const;
-	const Array<double>& getCoefficients() const;
-	virtual int getNumberOfPoints() const { return _x.getSize(); }
-	virtual double getX(int aIndex) const;
-	virtual double getY(int aIndex) const;
-	virtual double getZ(int aIndex) const { return 0.0; }
-	virtual void setX(int aIndex, double aValue);
-	virtual void setY(int aIndex, double aValue);
-	virtual double getMinX() const;
-	virtual double getMaxX() const;
-	virtual bool deletePoint(int aIndex);
-	virtual bool deletePoints(const Array<int>& indices);
-	virtual int addPoint(double aX, double aY);
-	SimTK::Function* createSimTKFunction() const;
+    int getDegree() const;
+    int getOrder() const;
+    int getHalfOrder() const;
+    int getSize() const;
+    const Array<double>& getX() const;
+    virtual const double* getXValues() const;
+    virtual const double* getYValues() const;
+    const Array<double>& getCoefficients() const;
+    virtual int getNumberOfPoints() const {
+        return _x.getSize();
+    }
+    virtual double getX(int aIndex) const;
+    virtual double getY(int aIndex) const;
+    virtual double getZ(int aIndex) const {
+        return 0.0;
+    }
+    virtual void setX(int aIndex, double aValue);
+    virtual void setY(int aIndex, double aValue);
+    virtual double getMinX() const;
+    virtual double getMaxX() const;
+    virtual bool deletePoint(int aIndex);
+    virtual bool deletePoints(const Array<int>& indices);
+    virtual int addPoint(double aX, double aY);
+    SimTK::Function* createSimTKFunction() const;
 
-	//--------------------------------------------------------------------------
-	// EVALUATION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // EVALUATION
+    //--------------------------------------------------------------------------
 
 //=============================================================================
 };	// END class GCVSpline

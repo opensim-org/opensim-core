@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
- * Author: Frank C. Anderson 
+/*
+ * Author: Frank C. Anderson
  */
 
 #include <OpenSim/Common/Array.h>
@@ -36,7 +36,7 @@
 /**
  * An abstract class for representing a vector function.
  *
- * A vector function is a relation between some number of independent variables 
+ * A vector function is a relation between some number of independent variables
  * and some number of dependent values such that for any particular set of
  * independent variables the correct number of dependent variables is returned.
  * Values of the function and its derivatives
@@ -48,28 +48,28 @@
  *
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 class VectorFunctionForActuators : public VectorFunctionUncoupledNxN {
-OpenSim_DECLARE_CONCRETE_OBJECT(VectorFunctionForActuators, 
-                                VectorFunctionUncoupledNxN);
+    OpenSim_DECLARE_CONCRETE_OBJECT(VectorFunctionForActuators,
+                                    VectorFunctionUncoupledNxN);
 
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
-	/** Initial time for the integration. */
-	double _ti;
-	/** Final time for the integration. */
-	double _tf;
-	/** Target actuator forces. */
-	Array<double> _f;
-	/** Actuator System  */
-	SimTK::System* _CMCActuatorSystem;
-	/** Actuator SubSystem  */
-	CMCActuatorSubsystem* _CMCActuatorSubsystem;
-	/** Integrator. */
-	SimTK::Integrator* _integrator;
+    /** Initial time for the integration. */
+    double _ti;
+    /** Final time for the integration. */
+    double _tf;
+    /** Target actuator forces. */
+    Array<double> _f;
+    /** Actuator System  */
+    SimTK::System* _CMCActuatorSystem;
+    /** Actuator SubSystem  */
+    CMCActuatorSubsystem* _CMCActuatorSubsystem;
+    /** Integrator. */
+    SimTK::Integrator* _integrator;
     /** Model */
     Model* _model;
 
@@ -78,64 +78,64 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	VectorFunctionForActuators(SimTK::System *aActuatorSystem, Model *model, CMCActuatorSubsystem* actSubsys);
-	VectorFunctionForActuators(const VectorFunctionForActuators &aFunction);
-	VectorFunctionForActuators();
-	virtual ~VectorFunctionForActuators();
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    VectorFunctionForActuators(SimTK::System *aActuatorSystem, Model *model, CMCActuatorSubsystem* actSubsys);
+    VectorFunctionForActuators(const VectorFunctionForActuators &aFunction);
+    VectorFunctionForActuators();
+    virtual ~VectorFunctionForActuators();
 
 private:
-	void setNull();
-	void setEqual(const VectorFunctionForActuators &aVectorFunction);
+    void setNull();
+    void setEqual(const VectorFunctionForActuators &aVectorFunction);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
-	VectorFunctionForActuators&
-		operator=(const VectorFunctionForActuators &aFunction);
+    VectorFunctionForActuators&
+    operator=(const VectorFunctionForActuators &aFunction);
 
-	//--------------------------------------------------------------------------
-	// SET AND GET
-	//--------------------------------------------------------------------------
-	void setInitialTime(double aTI);
-	double getInitialTime() const;
-	void setFinalTime(double aTF);
-	double getFinalTime() const;
-	void setTargetForces(const double *aF);
-	void getTargetForces(double *rF) const;
-	CMCActuatorSubsystem* getCMCActSubsys();
+    //--------------------------------------------------------------------------
+    // SET AND GET
+    //--------------------------------------------------------------------------
+    void setInitialTime(double aTI);
+    double getInitialTime() const;
+    void setFinalTime(double aTF);
+    double getFinalTime() const;
+    void setTargetForces(const double *aF);
+    void getTargetForces(double *rF) const;
+    CMCActuatorSubsystem* getCMCActSubsys();
 
-	
-	//--------------------------------------------------------------------------
-	// EVALUATE
-	//--------------------------------------------------------------------------
 
-	virtual void calcValue( const double *aX, double *rF, int aSize) {
-		std::cout << "Unimplemented evaluate method" << std::endl; 
+    //--------------------------------------------------------------------------
+    // EVALUATE
+    //--------------------------------------------------------------------------
+
+    virtual void calcValue( const double *aX, double *rF, int aSize) {
+        std::cout << "Unimplemented evaluate method" << std::endl;
 //		exit(0);
-	}
-	virtual void calcValue( const Array<double> &aX, Array<double> &rF) {
-		std::cout << "Unimplemented evaluate method" << std::endl; 
+    }
+    virtual void calcValue( const Array<double> &aX, Array<double> &rF) {
+        std::cout << "Unimplemented evaluate method" << std::endl;
 //		exit(0);
-	}
-	virtual void calcValue( const Array<double> &aX, Array<double> &rF, const Array<int> &aDerivWRT) {
-		std::cout << "Unimplemented evaluate method" << std::endl; 
+    }
+    virtual void calcValue( const Array<double> &aX, Array<double> &rF, const Array<int> &aDerivWRT) {
+        std::cout << "Unimplemented evaluate method" << std::endl;
 //		exit(0);
-	}
-	virtual void calcDerivative(const Array<double> &aX,Array<double> &rY,
-		const Array<int> &aDerivWRT) {
-		std::cout << "Unimplemented calcDerivative method" << std::endl; 
-	}
+    }
+    virtual void calcDerivative(const Array<double> &aX,Array<double> &rY,
+                                const Array<int> &aDerivWRT) {
+        std::cout << "Unimplemented calcDerivative method" << std::endl;
+    }
 
-	virtual void evaluate( const SimTK::State& s,  double *aX, double *rF);
-	virtual void evaluate( const SimTK::State& s,  const OpenSim::Array<double> &aX, Array<double> &rF);
-	virtual void evaluate( const SimTK::State& s,  Array<double> &rF, const Array<int> &aDerivWRT);
-    virtual void evaluate(const double *rY){}
-    virtual void evaluate(const Array<double> &rY){}
-    virtual void evaluate(Array<double> &rY, const Array<int> &aDerivWRT){}
+    virtual void evaluate( const SimTK::State& s,  double *aX, double *rF);
+    virtual void evaluate( const SimTK::State& s,  const OpenSim::Array<double> &aX, Array<double> &rF);
+    virtual void evaluate( const SimTK::State& s,  Array<double> &rF, const Array<int> &aDerivWRT);
+    virtual void evaluate(const double *rY) {}
+    virtual void evaluate(const Array<double> &rY) {}
+    virtual void evaluate(Array<double> &rY, const Array<int> &aDerivWRT) {}
 
 
 //=============================================================================

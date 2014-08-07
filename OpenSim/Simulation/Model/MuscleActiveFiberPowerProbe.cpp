@@ -36,7 +36,7 @@ using namespace OpenSim;
 //=============================================================================
 //_____________________________________________________________________________
 // Default constructor.
-MuscleActiveFiberPowerProbe::MuscleActiveFiberPowerProbe() 
+MuscleActiveFiberPowerProbe::MuscleActiveFiberPowerProbe()
 {
     setNull();
     constructProperties();
@@ -57,7 +57,7 @@ MuscleActiveFiberPowerProbe(const Array<string> muscle_names)
 // Set the data members of this MuscleActiveFiberPowerProbe to their null values.
 void MuscleActiveFiberPowerProbe::setNull(void)
 {
-	setAuthors("Matthew Millard");
+    setAuthors("Matthew Millard");
 }
 
 //_____________________________________________________________________________
@@ -133,7 +133,7 @@ SimTK::Vector MuscleActiveFiberPowerProbe::computeProbeInputs(const State& s) co
 {
     int nA = getMuscleNames().size();
     SimTK::Vector TotalP(1, 0.0);       // Initialize at zero
- 
+
     // Loop through each muscle in the list of actuator_names
     for (int i=0; i<nA; i++)
     {
@@ -142,7 +142,7 @@ SimTK::Vector MuscleActiveFiberPowerProbe::computeProbeInputs(const State& s) co
 
         // Get the fiber power from the Actuator object
         double fiberPower = _model->getMuscles().get(k).getFiberActivePower(s);
-        
+
         // Append to total "Actuator" power
         TotalP(0) += fiberPower;
     }
@@ -152,7 +152,7 @@ SimTK::Vector MuscleActiveFiberPowerProbe::computeProbeInputs(const State& s) co
 
 
 //_____________________________________________________________________________
-/** 
+/**
  * Returns the number of probe inputs in the vector returned by computeProbeInputs().
  */
 int MuscleActiveFiberPowerProbe::getNumProbeInputs() const
@@ -162,10 +162,10 @@ int MuscleActiveFiberPowerProbe::getNumProbeInputs() const
 
 
 //_____________________________________________________________________________
-/** 
+/**
  * Provide labels for the probe values being reported.
  */
-Array<string> MuscleActiveFiberPowerProbe::getProbeOutputLabels() const 
+Array<string> MuscleActiveFiberPowerProbe::getProbeOutputLabels() const
 {
     Array<string> labels;
     labels.append(getName());

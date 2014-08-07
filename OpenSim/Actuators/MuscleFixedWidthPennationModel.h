@@ -91,8 +91,8 @@ namespace OpenSim {
 
     @author Matt Millard
 */
-class OSIMACTUATORS_API MuscleFixedWidthPennationModel: public Object{
-OpenSim_DECLARE_CONCRETE_OBJECT(MuscleFixedWidthPennationModel, Object);
+class OSIMACTUATORS_API MuscleFixedWidthPennationModel: public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MuscleFixedWidthPennationModel, Object);
 
 public:
 //==============================================================================
@@ -102,11 +102,11 @@ public:
         These are the serializable properties associated with this class. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,
-        "Optimal length of the muscle fibers (meters)");
+                             "Optimal length of the muscle fibers (meters)");
     OpenSim_DECLARE_PROPERTY(optimal_pennation_angle, double,
-        "Angle between tendon and fibers at optimal fiber length (radians)");
+                             "Angle between tendon and fibers at optimal fiber length (radians)");
     OpenSim_DECLARE_PROPERTY(maximum_pennation_angle, double,
-        "Maximum pennation angle (radians)");
+                             "Maximum pennation angle (radians)");
     /**@}**/
 
 //==============================================================================
@@ -218,11 +218,11 @@ public:
         tendon (m/s).
     */
     double calcFiberVelocityAlongTendon(
-                                    double fiberLength,
-                                    double fiberVelocity,
-                                    double sinPennationAngle,
-                                    double cosPennationAngle,
-                                    double pennationAngularVelocity) const;
+        double fiberLength,
+        double fiberVelocity,
+        double sinPennationAngle,
+        double cosPennationAngle,
+        double pennationAngularVelocity) const;
 
     /**
     @param fiberLength
@@ -241,12 +241,12 @@ public:
         The angular acceleration of the parallelogram (rad/s^2).
     */
     double calcPennationAngularAcceleration(
-                                    double fiberLength,
-                                    double fiberVelocity,
-                                    double fiberAcceleration,
-                                    double sinPennationAngle,
-                                    double cosPennationAngle,
-                                    double pennationAngularVelocity) const;
+        double fiberLength,
+        double fiberVelocity,
+        double fiberAcceleration,
+        double sinPennationAngle,
+        double cosPennationAngle,
+        double pennationAngularVelocity) const;
 
     /**
     @param fiberLength
@@ -268,42 +268,42 @@ public:
         (m/s^2).
     */
     double calcFiberAccelerationAlongTendon(
-                                    double fiberLength,
-                                    double fiberVelocity,
-                                    double fiberAcceleration,
-                                    double sinPennationAngle,
-                                    double cosPennationAngle,
-                                    double pennationAngularVelocity,
-                                    double pennationAngularAcceleration) const;
+        double fiberLength,
+        double fiberVelocity,
+        double fiberAcceleration,
+        double sinPennationAngle,
+        double cosPennationAngle,
+        double pennationAngularVelocity,
+        double pennationAngularAcceleration) const;
 
     /** Calculates the partial derivative of the fiber length along the tendon
     with respect to the fiber length. */
     double calc_DFiberLengthAlongTendon_DfiberLength(
-                                    double fiberLength,
-                                    double sinPennationAngle,
-                                    double cosPennationAngle,
-                                    double DpennationAngle_DfiberLength) const;
+        double fiberLength,
+        double sinPennationAngle,
+        double cosPennationAngle,
+        double DpennationAngle_DfiberLength) const;
 
     /** Calculates the partial derivative of the pennation angular velocity with
     respect to the fiber length. */
     double calc_DPennationAngularVelocity_DfiberLength(
-                                    double fiberLength,
-                                    double fiberVelocity,
-                                    double sinPennationAngle,
-                                    double cosPennationAngle,
-                                    double pennationAngularVelocity,
-                                    double DpennationAngle_DfiberLength) const;
+        double fiberLength,
+        double fiberVelocity,
+        double sinPennationAngle,
+        double cosPennationAngle,
+        double pennationAngularVelocity,
+        double DpennationAngle_DfiberLength) const;
 
     /** Calculates the partial derivative of the fiber velocity along the tendon
     with respect to the fiber length. */
     double calc_DFiberVelocityAlongTendon_DfiberLength(
-                        double fiberLength,
-                        double fiberVelocity,
-                        double sinPennationAngle,
-                        double cosPennationAngle,
-                        double pennationAngularVelocity,
-                        double DpennationAngle_DfiberLength,
-                        double DpennationAngularVelocity_DfiberLength) const;
+        double fiberLength,
+        double fiberVelocity,
+        double sinPennationAngle,
+        double cosPennationAngle,
+        double pennationAngularVelocity,
+        double DpennationAngle_DfiberLength,
+        double DpennationAngularVelocity_DfiberLength) const;
 
     /** Calculates the partial derivative of the pennation angle with respect to
     the fiber length. */
@@ -315,7 +315,7 @@ public:
                                            double sinPennationAngle,
                                            double cosPennationAngle,
                                            double DpennationAngle_DfiberLength)
-                                           const;
+    const;
 
     /**
     @param muscleLength

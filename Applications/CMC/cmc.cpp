@@ -41,101 +41,101 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
  */
 int main(int argc,char **argv)
 {
-	//----------------------
-	// Surrounding try block
-	//----------------------
-	try {
-	//----------------------
-	
-	//LoadOpenSimLibrary("osimSdfastEngine");
-	//LoadOpenSimLibrary("osimSimbodyEngine");
+    //----------------------
+    // Surrounding try block
+    //----------------------
+    try {
+        //----------------------
 
-	// PARSE COMMAND LINE
-	int i;
-	string option = "";
-	string setupFileName = "";
-	if(argc<2) {
-		PrintUsage(argv[0], cout);
-		return(-1);
-	}
-	// Load libraries first
-	LoadOpenSimLibraries(argc,argv);
-	// Parse other command-line options
-	for(i=1;i<argc;i++) {
-		option = argv[i];
+        //LoadOpenSimLibrary("osimSdfastEngine");
+        //LoadOpenSimLibrary("osimSimbodyEngine");
 
-		// PRINT THE USAGE OPTIONS
-		if((option=="-help")||(option=="-h")||(option=="-Help")||(option=="-H")||
-		(option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
-			PrintUsage(argv[0], cout);
-			return(0);
- 
-		// PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
-		} else if((option=="-PrintSetup")||(option=="-PS")) {
-			CMCTool *investigation = new CMCTool();
-			investigation->setName("default");
-			Object::setSerializeAllDefaults(true);
-			investigation->print("default_Setup_CMC.xml");
-			Object::setSerializeAllDefaults(false);
-			cout << "Created file default_Setup_CMC.xml with default setup" << endl;
-			return(0);
+        // PARSE COMMAND LINE
+        int i;
+        string option = "";
+        string setupFileName = "";
+        if(argc<2) {
+            PrintUsage(argv[0], cout);
+            return(-1);
+        }
+        // Load libraries first
+        LoadOpenSimLibraries(argc,argv);
+        // Parse other command-line options
+        for(i=1; i<argc; i++) {
+            option = argv[i];
 
-		// IDENTIFY SETUP FILE
-		} else if((option=="-Setup")||(option=="-S")) {
-			if((i+1)<argc) setupFileName = argv[i+1];
-			break;
+            // PRINT THE USAGE OPTIONS
+            if((option=="-help")||(option=="-h")||(option=="-Help")||(option=="-H")||
+                    (option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
+                PrintUsage(argv[0], cout);
+                return(0);
 
-		// PRINT PROPERTY INFO
-		} else if((option=="-PropertyInfo")||(option=="-PI")) {
-			if((i+1)>=argc) {
-				Object::PrintPropertyInfo(cout,"");
+                // PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
+            } else if((option=="-PrintSetup")||(option=="-PS")) {
+                CMCTool *investigation = new CMCTool();
+                investigation->setName("default");
+                Object::setSerializeAllDefaults(true);
+                investigation->print("default_Setup_CMC.xml");
+                Object::setSerializeAllDefaults(false);
+                cout << "Created file default_Setup_CMC.xml with default setup" << endl;
+                return(0);
 
-			} else {
-				char *compoundName = argv[i+1];
-				if(compoundName[0]=='-') {
-					Object::PrintPropertyInfo(cout,"");
-				} else {
-					Object::PrintPropertyInfo(cout,compoundName);
-				}
-			}
-			return(0);
-		}
-	}
+                // IDENTIFY SETUP FILE
+            } else if((option=="-Setup")||(option=="-S")) {
+                if((i+1)<argc) setupFileName = argv[i+1];
+                break;
 
-	// ERROR CHECK
-	if(setupFileName=="") {
-		cout<<"\n\n"<<argv[0]<<": ERROR- A setup file must be specified.\n";
-		PrintUsage(argv[0], cout);
-		return(-1);
-	}
+                // PRINT PROPERTY INFO
+            } else if((option=="-PropertyInfo")||(option=="-PI")) {
+                if((i+1)>=argc) {
+                    Object::PrintPropertyInfo(cout,"");
 
-	// CONSTRUCT
-	cout<<"Constructing investigation from setup file "<<setupFileName<<".\n"<<endl;
-	CMCTool cmcgait(setupFileName);
+                } else {
+                    char *compoundName = argv[i+1];
+                    if(compoundName[0]=='-') {
+                        Object::PrintPropertyInfo(cout,"");
+                    } else {
+                        Object::PrintPropertyInfo(cout,compoundName);
+                    }
+                }
+                return(0);
+            }
+        }
 
-	// PRINT MODEL INFORMATION
-	Model& model = cmcgait.getModel();
-	cout<<"-----------------------------------------------------------------------\n";
-	cout<<"Loaded library\n";
-	cout<<"-----------------------------------------------------------------------\n";
-	model.printBasicInfo(cout);
-	cout<<"-----------------------------------------------------------------------\n\n";
+        // ERROR CHECK
+        if(setupFileName=="") {
+            cout<<"\n\n"<<argv[0]<<": ERROR- A setup file must be specified.\n";
+            PrintUsage(argv[0], cout);
+            return(-1);
+        }
 
+        // CONSTRUCT
+        cout<<"Constructing investigation from setup file "<<setupFileName<<".\n"<<endl;
+        CMCTool cmcgait(setupFileName);
 
-	// RUN
-	cmcgait.run();
+        // PRINT MODEL INFORMATION
+        Model& model = cmcgait.getModel();
+        cout<<"-----------------------------------------------------------------------\n";
+        cout<<"Loaded library\n";
+        cout<<"-----------------------------------------------------------------------\n";
+        model.printBasicInfo(cout);
+        cout<<"-----------------------------------------------------------------------\n\n";
 
 
-	//----------------------------
-	// Catch any thrown exceptions
-	//----------------------------
-	} catch(const std::exception& x) {
+        // RUN
+        cmcgait.run();
+
+
+        //----------------------------
+        // Catch any thrown exceptions
+        //----------------------------
+    } catch(const std::exception& x) {
         cout << "Exception in CMC: " << x.what() << endl;
-		return -1;
-	}
-	//----------------------------
+        return -1;
+    }
+    //----------------------------
 
-	return(0);
+    return(0);
 }
 
 
@@ -145,16 +145,16 @@ int main(int argc,char **argv)
  */
 void PrintUsage(const char *aProgName, ostream &aOStream)
 {
-	string progName=IO::GetFileNameFromURI(aProgName);
-	aOStream<<"\n\n"<<progName<<":\n"<<GetVersionAndDate()<<"\n\n";
-	aOStream<<"Option              Argument         Action / Notes\n";
-	aOStream<<"------              --------         --------------\n";
-	aOStream<<"-Help, -H                            Print the command-line options for "<<progName<<".\n";
-	aOStream<<"-PrintSetup, -PS                     Print a default setup file for cmc.exe (setup_cmc_default.xml).\n";
-	aOStream<<"-Setup, -S          SetupFileName    Specify the name of the XML setup file for the CMC investigation.\n";
-	aOStream<<"-PropertyInfo, -PI                   Print help information for properties in setup files.\n";
-	aOStream<<"-Library, -L        LibraryName      Specifiy a library to load. Do not include the extension (e.g., .lib or .dll).\n";
-	aOStream<<"                                     To load more than one library, repeat the -Library command-line option.\n\n";
+    string progName=IO::GetFileNameFromURI(aProgName);
+    aOStream<<"\n\n"<<progName<<":\n"<<GetVersionAndDate()<<"\n\n";
+    aOStream<<"Option              Argument         Action / Notes\n";
+    aOStream<<"------              --------         --------------\n";
+    aOStream<<"-Help, -H                            Print the command-line options for "<<progName<<".\n";
+    aOStream<<"-PrintSetup, -PS                     Print a default setup file for cmc.exe (setup_cmc_default.xml).\n";
+    aOStream<<"-Setup, -S          SetupFileName    Specify the name of the XML setup file for the CMC investigation.\n";
+    aOStream<<"-PropertyInfo, -PI                   Print help information for properties in setup files.\n";
+    aOStream<<"-Library, -L        LibraryName      Specifiy a library to load. Do not include the extension (e.g., .lib or .dll).\n";
+    aOStream<<"                                     To load more than one library, repeat the -Library command-line option.\n\n";
 
 }
 

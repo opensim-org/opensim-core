@@ -45,9 +45,9 @@ CoordinateSet::~CoordinateSet(void)
  * Default constructor of a CoordinateSet.
  */
 CoordinateSet::CoordinateSet() :
-	ModelComponentSet<Coordinate>()
+    ModelComponentSet<Coordinate>()
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -55,10 +55,10 @@ CoordinateSet::CoordinateSet() :
  * Copy constructor of a CoordinateSet.
  */
 CoordinateSet::CoordinateSet(const CoordinateSet& aCoordinateSet):
-	ModelComponentSet<Coordinate>(aCoordinateSet)
+    ModelComponentSet<Coordinate>(aCoordinateSet)
 {
-	setNull();
-	*this = aCoordinateSet;
+    setNull();
+    *this = aCoordinateSet;
 }
 
 //=============================================================================
@@ -70,24 +70,24 @@ CoordinateSet::CoordinateSet(const CoordinateSet& aCoordinateSet):
 void CoordinateSet::setNull()
 {
 }
-	
+
 /**
   * Populate this flat list of Coordinates given a Model that has been set up
   */
 void CoordinateSet::populate(Model& model)
 {
-	_model = &model;
-	// Append Coordinate from Joint's cordrinate set to the model's set as pointers
-	setMemoryOwner(false);
+    _model = &model;
+    // Append Coordinate from Joint's cordrinate set to the model's set as pointers
+    setMemoryOwner(false);
     setSize(0);
 
-	for(int i=0; i< model.getJointSet().getSize(); i++){
-		Joint& nextJoint = model.getJointSet().get(i);
-		for(int j=0; j< nextJoint.numCoordinates(); j++){
-			// Append a pointer (address) otherwise the model will get a copy that will not be updated properly
-			adoptAndAppend(&(nextJoint.getCoordinateSet()[j]));
-		}
-	}
+    for(int i=0; i< model.getJointSet().getSize(); i++) {
+        Joint& nextJoint = model.getJointSet().get(i);
+        for(int j=0; j< nextJoint.numCoordinates(); j++) {
+            // Append a pointer (address) otherwise the model will get a copy that will not be updated properly
+            adoptAndAppend(&(nextJoint.getCoordinateSet()[j]));
+        }
+    }
 }
 
 
@@ -103,7 +103,7 @@ void CoordinateSet::populate(Model& model)
 #ifndef SWIG
 CoordinateSet& CoordinateSet::operator=(const CoordinateSet &aCoordinateSet)
 {
-	Set<Coordinate>::operator=(aCoordinateSet);
-	return (*this);
+    Set<Coordinate>::operator=(aCoordinateSet);
+    return (*this);
 }
 #endif

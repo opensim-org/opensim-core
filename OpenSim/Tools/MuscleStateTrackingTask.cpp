@@ -52,7 +52,7 @@ MuscleStateTrackingTask::~MuscleStateTrackingTask()
  */
 MuscleStateTrackingTask::MuscleStateTrackingTask()
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -61,10 +61,10 @@ MuscleStateTrackingTask::MuscleStateTrackingTask()
  * @param aTask Task object to be copied.
  */
 MuscleStateTrackingTask::MuscleStateTrackingTask(const MuscleStateTrackingTask& aTask) :
-	StateTrackingTask(aTask)
+    StateTrackingTask(aTask)
 {
-	setNull();
-	copyData(aTask);
+    setNull();
+    copyData(aTask);
 }
 
 
@@ -78,9 +78,9 @@ MuscleStateTrackingTask::MuscleStateTrackingTask(const MuscleStateTrackingTask& 
 void MuscleStateTrackingTask::
 setNull()
 {
-	setName(DEFAULT_NAME);
-	setupProperties();
-	_nTrk = 1;
+    setName(DEFAULT_NAME);
+    setupProperties();
+    _nTrk = 1;
 }
 //_____________________________________________________________________________
 /**
@@ -100,7 +100,7 @@ setupProperties()
 void MuscleStateTrackingTask::
 copyData(const MuscleStateTrackingTask &aTask)
 {
-	
+
 }
 
 
@@ -119,11 +119,11 @@ copyData(const MuscleStateTrackingTask &aTask)
 MuscleStateTrackingTask& MuscleStateTrackingTask::
 operator=(const MuscleStateTrackingTask &aTask)
 {
-	// BASE CLASS
-	StateTrackingTask::operator =(aTask);
+    // BASE CLASS
+    StateTrackingTask::operator =(aTask);
 
-	// DATA
-	copyData(aTask);
+    // DATA
+    copyData(aTask);
 
-	return(*this);
+    return(*this);
 }

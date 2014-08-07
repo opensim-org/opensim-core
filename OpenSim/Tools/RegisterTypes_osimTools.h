@@ -32,17 +32,17 @@
 
 extern "C" {
 
-OSIMTOOLS_API void RegisterTypes_osimTools(); 
+    OSIMTOOLS_API void RegisterTypes_osimTools();
 
 }
 // Excluding this from Doxygen until it has better documentation! -Sam Hamner
-    /// @cond 
+/// @cond
 class osimToolsInstantiator
 {
 public:
-       osimToolsInstantiator();
+    osimToolsInstantiator();
 private:
-       void registerDllClasses();
+    void registerDllClasses();
 };
 /// @endcond
 

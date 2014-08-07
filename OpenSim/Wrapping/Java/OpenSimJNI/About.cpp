@@ -58,54 +58,54 @@
     MAKE_STRING(OPENSIM_RDSDFAST_TYPE)
 
 #ifndef NDEBUG
-    #define GET_DEBUG_STRING "debug"
+#define GET_DEBUG_STRING "debug"
 #else
-    #define GET_DEBUG_STRING "release"
+#define GET_DEBUG_STRING "release"
 #endif
 
 extern "C" {
 
-void opensim_version_SDFast(int* major, int* minor, int* build) {
-    static const char* l = "OPENSIM library="   GET_LIBRARY_STRING;
-    static const char* t = "OPENSIM type="      GET_TYPE_STRING;
-    static const char* d = "OPENSIM debug="     GET_DEBUG_STRING;
-    static const char* v = "OPENSIM version="   GET_VERSION_STRING;
-    static const char* c = "OPENSIM copyright=" GET_COPYRIGHT_STRING;
+    void opensim_version_SDFast(int* major, int* minor, int* build) {
+        static const char* l = "OPENSIM library="   GET_LIBRARY_STRING;
+        static const char* t = "OPENSIM type="      GET_TYPE_STRING;
+        static const char* d = "OPENSIM debug="     GET_DEBUG_STRING;
+        static const char* v = "OPENSIM version="   GET_VERSION_STRING;
+        static const char* c = "OPENSIM copyright=" GET_COPYRIGHT_STRING;
 
-    if (major) *major = OPENSIM_RDSDFAST_MAJOR_VERSION;
-    if (minor) *minor = OPENSIM_RDSDFAST_MINOR_VERSION;
-    if (build) *build = OPENSIM_RDSDFAST_BUILD_VERSION;
+        if (major) *major = OPENSIM_RDSDFAST_MAJOR_VERSION;
+        if (minor) *minor = OPENSIM_RDSDFAST_MINOR_VERSION;
+        if (build) *build = OPENSIM_RDSDFAST_BUILD_VERSION;
 
-    // Force statics to be present in the binary (Release mode otherwise 
-    // optimizes them away).
-    volatile int i=0;
-    if (i) { // never true, but compiler doesn't know ...
-        *major = *l + *t + *d + *v + *c;
+        // Force statics to be present in the binary (Release mode otherwise
+        // optimizes them away).
+        volatile int i=0;
+        if (i) { // never true, but compiler doesn't know ...
+            *major = *l + *t + *d + *v + *c;
+        }
     }
-}
 
-void opensim_about_SDFast(const char* key, int maxlen, char* value) {
-    if (maxlen <= 0 || value==0) return;
-    value[0] = '\0'; // in case we don't find a match
-    if (key==0) return;
+    void opensim_about_SDFast(const char* key, int maxlen, char* value) {
+        if (maxlen <= 0 || value==0) return;
+        value[0] = '\0'; // in case we don't find a match
+        if (key==0) return;
 
-    // downshift the key
-    std::string skey(key);
-    for (size_t i=0; i<skey.size(); ++i)
-        skey[i] = std::tolower(skey[i]);
+        // downshift the key
+        std::string skey(key);
+        for (size_t i=0; i<skey.size(); ++i)
+            skey[i] = std::tolower(skey[i]);
 
-    char* v = 0;
-    if      (skey == "version")   v = GET_VERSION_STRING;
-    else if (skey == "library")   v = GET_LIBRARY_STRING;
-    else if (skey == "type")      v = GET_TYPE_STRING;
-    else if (skey == "copyright") v = GET_COPYRIGHT_STRING;
-    else if (skey == "authors")   v = GET_AUTHORS_STRING;
-    else if (skey == "debug")     v = GET_DEBUG_STRING;
+        char* v = 0;
+        if      (skey == "version")   v = GET_VERSION_STRING;
+        else if (skey == "library")   v = GET_LIBRARY_STRING;
+        else if (skey == "type")      v = GET_TYPE_STRING;
+        else if (skey == "copyright") v = GET_COPYRIGHT_STRING;
+        else if (skey == "authors")   v = GET_AUTHORS_STRING;
+        else if (skey == "debug")     v = GET_DEBUG_STRING;
 
-    if (v) {
-        std::strncpy(value,v,maxlen-1);
-        value[maxlen-1] = '\0'; // in case we ran out of room
+        if (v) {
+            std::strncpy(value,v,maxlen-1);
+            value[maxlen-1] = '\0'; // in case we ran out of room
+        }
     }
-}
 
 }

@@ -46,10 +46,10 @@ FiberForceLengthCurve::FiberForceLengthCurve()
 }
 
 FiberForceLengthCurve::FiberForceLengthCurve(double strainAtZeroForce,
-                                             double strainAtOneNormForce,
-                                             double stiffnessAtLowForce,
-                                             double stiffnessAtOneNormForce,
-                                             double curviness)
+        double strainAtOneNormForce,
+        double stiffnessAtLowForce,
+        double stiffnessAtOneNormForce,
+        double curviness)
 {
     setNull();
     constructProperties();
@@ -81,14 +81,14 @@ void FiberForceLengthCurve::constructProperties()
 void FiberForceLengthCurve::buildCurve(bool computeIntegral)
 {
     SmoothSegmentedFunction* f = SmoothSegmentedFunctionFactory::
-        createFiberForceLengthCurve(
-            get_strain_at_zero_force(),
-            get_strain_at_one_norm_force(),
-            m_stiffnessAtLowForceInUse,
-            m_stiffnessAtOneNormForceInUse,
-            m_curvinessInUse,
-            computeIntegral,
-            getName());
+                                 createFiberForceLengthCurve(
+                                     get_strain_at_zero_force(),
+                                     get_strain_at_one_norm_force(),
+                                     m_stiffnessAtLowForceInUse,
+                                     m_stiffnessAtOneNormForceInUse,
+                                     m_curvinessInUse,
+                                     computeIntegral,
+                                     getName());
 
     m_curve = *f;
     delete f;
@@ -103,8 +103,8 @@ void FiberForceLengthCurve::ensureCurveUpToDate()
     }
 
     if(!getProperty_stiffness_at_low_force().empty()
-        && !getProperty_stiffness_at_one_norm_force().empty()
-        && !getProperty_curviness().empty()) {
+            && !getProperty_stiffness_at_one_norm_force().empty()
+            && !getProperty_curviness().empty()) {
 
         m_stiffnessAtOneNormForceInUse = get_stiffness_at_one_norm_force();
         m_stiffnessAtLowForceInUse     = get_stiffness_at_low_force();
@@ -112,8 +112,8 @@ void FiberForceLengthCurve::ensureCurveUpToDate()
         m_fittedCurveBeingUsed         = false;
 
     } else if(getProperty_stiffness_at_low_force().empty()
-        && getProperty_stiffness_at_one_norm_force().empty()
-        && getProperty_curviness().empty()) {
+              && getProperty_stiffness_at_one_norm_force().empty()
+              && getProperty_curviness().empty()) {
 
         // Compute optional properties if they haven't been provided.
         double e0 = get_strain_at_zero_force(); //properties of reference curve
@@ -149,10 +149,10 @@ void FiberForceLengthCurve::ensureCurveUpToDate()
         // reference curve.
 
         SimTK_ERRCHK1_ALWAYS(false,
-            "FiberForceLengthCurve::ensureCurveUpToDate()",
-            "%s: Optional parameters stiffnessAtLowForce, "
-            "stiffnessAtOneNormForce, and curviness must either all be set or "
-            "all be empty.", getName().c_str());
+                             "FiberForceLengthCurve::ensureCurveUpToDate()",
+                             "%s: Optional parameters stiffnessAtLowForce, "
+                             "stiffnessAtOneNormForce, and curviness must either all be set or "
+                             "all be empty.", getName().c_str());
     }
 
     buildCurve();
@@ -165,33 +165,45 @@ SimTK::Function* FiberForceLengthCurve::createSimTKFunction() const
 {
     // Back the OpenSim::Function with this SimTK::Function.
     return SmoothSegmentedFunctionFactory::createFiberForceLengthCurve(
-                get_strain_at_zero_force(),
-                get_strain_at_one_norm_force(),
-                m_stiffnessAtLowForceInUse,
-                m_stiffnessAtOneNormForceInUse,
-                m_curvinessInUse,
-                false,
-                getName());
+               get_strain_at_zero_force(),
+               get_strain_at_one_norm_force(),
+               m_stiffnessAtLowForceInUse,
+               m_stiffnessAtOneNormForceInUse,
+               m_curvinessInUse,
+               false,
+               getName());
 }
 
 //==============================================================================
 // GET AND SET METHODS
 //==============================================================================
 double FiberForceLengthCurve::getStrainAtZeroForce() const
-{   return get_strain_at_zero_force(); }
+{
+    return get_strain_at_zero_force();
+}
 double FiberForceLengthCurve::getStrainAtOneNormForce() const
-{   return get_strain_at_one_norm_force(); }
+{
+    return get_strain_at_one_norm_force();
+}
 double FiberForceLengthCurve::getStiffnessAtLowForceInUse() const
-{   return m_stiffnessAtLowForceInUse; }
+{
+    return m_stiffnessAtLowForceInUse;
+}
 double FiberForceLengthCurve::getStiffnessAtOneNormForceInUse() const
-{   return m_stiffnessAtOneNormForceInUse; }
+{
+    return m_stiffnessAtOneNormForceInUse;
+}
 double FiberForceLengthCurve::getCurvinessInUse() const
-{   return m_curvinessInUse; }
+{
+    return m_curvinessInUse;
+}
 bool FiberForceLengthCurve::isFittedCurveBeingUsed() const
-{   return m_fittedCurveBeingUsed; }
+{
+    return m_fittedCurveBeingUsed;
+}
 
 void FiberForceLengthCurve::setCurveStrains(double aStrainAtZeroForce,
-                                            double aStrainAtOneNormForce)
+        double aStrainAtOneNormForce)
 {
     set_strain_at_zero_force(aStrainAtZeroForce);
     set_strain_at_one_norm_force(aStrainAtOneNormForce);
@@ -199,8 +211,8 @@ void FiberForceLengthCurve::setCurveStrains(double aStrainAtZeroForce,
 }
 
 void FiberForceLengthCurve::setOptionalProperties(double aStiffnessAtLowForce,
-                                              double aStiffnessAtOneNormForce,
-                                              double aCurviness)
+        double aStiffnessAtOneNormForce,
+        double aCurviness)
 {
     set_stiffness_at_low_force(aStiffnessAtLowForce);
     set_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
@@ -214,18 +226,18 @@ void FiberForceLengthCurve::setOptionalProperties(double aStiffnessAtLowForce,
 double FiberForceLengthCurve::calcValue(double normFiberLength) const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties(),
-        "FiberForceLengthCurve: Curve is not up-to-date with its properties");
+                 "FiberForceLengthCurve: Curve is not up-to-date with its properties");
     return m_curve.calcValue(normFiberLength);
 }
 
 double FiberForceLengthCurve::calcDerivative(double normFiberLength,
-                                             int order) const
+        int order) const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties(),
-        "FiberForceLengthCurve: Curve is not up-to-date with its properties");
+                 "FiberForceLengthCurve: Curve is not up-to-date with its properties");
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2,
-        "FiberForceLengthCurve::calcDerivative",
-        "order must be 0, 1, or 2, but %i was entered", order);
+                         "FiberForceLengthCurve::calcDerivative",
+                         "order must be 0, 1, or 2, but %i was entered", order);
 
     return m_curve.calcDerivative(normFiberLength,order);
 }
@@ -233,7 +245,7 @@ double FiberForceLengthCurve::calcDerivative(double normFiberLength,
 double FiberForceLengthCurve::calcIntegral(double normFiberLength) const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties(),
-        "FiberForceLengthCurve: Curve is not up-to-date with its properties");
+                 "FiberForceLengthCurve: Curve is not up-to-date with its properties");
 
     if(!m_curve.isIntegralAvailable()) {
         FiberForceLengthCurve* mutableThis =
@@ -247,7 +259,7 @@ double FiberForceLengthCurve::calcIntegral(double normFiberLength) const
 SimTK::Vec2 FiberForceLengthCurve::getCurveDomain() const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties(),
-        "FiberForceLengthCurve: Curve is not up-to-date with its properties");
+                 "FiberForceLengthCurve: Curve is not up-to-date with its properties");
     return m_curve.getCurveDomain();
 }
 
@@ -271,8 +283,8 @@ void FiberForceLengthCurve::printMuscleCurveToCSVFile(const std::string& path)
 // machine). This computational expense adds up to some very noticable delays
 // when used in a model that has 10-100 muscles.
 double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0,   double e1,
-                                                     double k,    double ftoe,
-                                                     double area, double relTol)
+        double k,    double ftoe,
+        double area, double relTol)
 {
     std::string name = getName();
     double c     = 0.5;
@@ -280,7 +292,7 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0,   double e1,
     double step  = 0.25;
 
     SmoothSegmentedFunction* tmp = SmoothSegmentedFunctionFactory::
-        createFiberForceLengthCurve(e0, e1, k, ftoe, c, true, name);
+                                   createFiberForceLengthCurve(e0, e1, k, ftoe, c, true, name);
 
     double val = tmp->calcIntegral(1+e1);
     delete tmp;
@@ -306,8 +318,8 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0,   double e1,
         // Bisection method.
         while(!flag_improvement && localIter < 2 && !flag_Newton) {
             tmp = SmoothSegmentedFunctionFactory::
-                createFiberForceLengthCurve(e0, e1, k, ftoe,
-                                            c+step, true, name);
+                  createFiberForceLengthCurve(e0, e1, k, ftoe,
+                                              c+step, true, name);
             val = tmp->calcIntegral(1+e1);
             delete tmp;
 
@@ -349,8 +361,8 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0,   double e1,
 
             if(abs(deltaC) < abs(step)) {
                 tmp = SmoothSegmentedFunctionFactory::
-                    createFiberForceLengthCurve(e0, e1, k, ftoe,
-                                                cNewton, true, name);
+                      createFiberForceLengthCurve(e0, e1, k, ftoe,
+                                                  cNewton, true, name);
                 val = tmp->calcIntegral(1+e1);
                 delete tmp;
 
@@ -390,9 +402,9 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0,   double e1,
 
     SimTK_ERRCHK1_ALWAYS(abs(err) < abs(relTol)
                          && abs(errStart) > abs(relTol+abs(step)),
-        "FiberForceLengthCurve::calcCurvinessOfBestFit()",
-        "%s: Not able to fit a fiber curve to the reference fiber curve",
-        getName().c_str());
+                         "FiberForceLengthCurve::calcCurvinessOfBestFit()",
+                         "%s: Not able to fit a fiber curve to the reference fiber curve",
+                         getName().c_str());
 
     return c;
 }

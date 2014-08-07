@@ -40,23 +40,26 @@ namespace OpenSim {
  */
 
 class OSIMTOOLS_API IKTaskSet : public Set<IKTask> {
-OpenSim_DECLARE_CONCRETE_OBJECT(IKTaskSet, Set<IKTask>);
+    OpenSim_DECLARE_CONCRETE_OBJECT(IKTaskSet, Set<IKTask>);
 
 public:
-	IKTaskSet() {}
-	IKTaskSet(const IKTaskSet &aIKTaskSet) : Set<IKTask>(aIKTaskSet) { }
-	IKTaskSet(const std::string &aFileName) : Set<IKTask>(aFileName) { }
-	void createMarkerWeightSet(Set<MarkerWeight>& aWeights){
-		for(int i=0; i< getSize(); i++){
-			if(IKMarkerTask *nextTask = dynamic_cast<IKMarkerTask *>(&get(i))){
-				if(nextTask->getApply()){
-					aWeights.cloneAndAppend(*(new MarkerWeight(nextTask->getName(), nextTask->getWeight())));
-				}
-			}
-		}
-	};
+    IKTaskSet() {}
+    IKTaskSet(const IKTaskSet &aIKTaskSet) : Set<IKTask>(aIKTaskSet) { }
+    IKTaskSet(const std::string &aFileName) : Set<IKTask>(aFileName) { }
+    void createMarkerWeightSet(Set<MarkerWeight>& aWeights) {
+        for(int i=0; i< getSize(); i++) {
+            if(IKMarkerTask *nextTask = dynamic_cast<IKMarkerTask *>(&get(i))) {
+                if(nextTask->getApply()) {
+                    aWeights.cloneAndAppend(*(new MarkerWeight(nextTask->getName(), nextTask->getWeight())));
+                }
+            }
+        }
+    };
 #ifndef SWIG
-	IKTaskSet& operator=(const IKTaskSet &aIKTaskSet) { Set<IKTask>::operator=(aIKTaskSet); return *this; }
+    IKTaskSet& operator=(const IKTaskSet &aIKTaskSet) {
+        Set<IKTask>::operator=(aIKTaskSet);
+        return *this;
+    }
 #endif
 //=============================================================================
 };	// END of class IKTaskSet

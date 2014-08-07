@@ -28,10 +28,10 @@
 #include "PathWrap.h"
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+#ifdef OSIMSIMULATION_API
+#undef OSIMSIMULATION_API
+#define OSIMSIMULATION_API
+#endif
 #endif
 
 namespace OpenSim {
@@ -46,19 +46,19 @@ namespace OpenSim {
  */
 
 class OSIMSIMULATION_API PathWrapSet : public Set<PathWrap> {
-OpenSim_DECLARE_CONCRETE_OBJECT(PathWrapSet, Set<PathWrap>);
+    OpenSim_DECLARE_CONCRETE_OBJECT(PathWrapSet, Set<PathWrap>);
 
 private:
-	void setNull();
+    void setNull();
 public:
-	PathWrapSet();
-	PathWrapSet(const PathWrapSet& aPathWrapSet);
-	~PathWrapSet(void);
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    PathWrapSet();
+    PathWrapSet(const PathWrapSet& aPathWrapSet);
+    ~PathWrapSet(void);
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	PathWrapSet& operator=(const PathWrapSet &aPathWrapSet);
+    PathWrapSet& operator=(const PathWrapSet &aPathWrapSet);
 #endif
 //=============================================================================
 };	// END of class PathWrapSet

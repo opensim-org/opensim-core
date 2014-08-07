@@ -24,13 +24,13 @@
  * -------------------------------------------------------------------------- */
 
 /** @file
- * This file defines the Connector class, which formalizes the dependency of 
- * of a Component on another Object/Component in order to operate, BUT it does 
- * not own it. While Components can be composites (of multiple components) 
+ * This file defines the Connector class, which formalizes the dependency of
+ * of a Component on another Object/Component in order to operate, BUT it does
+ * not own it. While Components can be composites (of multiple components)
  * they often depend on unrelated objects/components that are define elsewhere.
  * For example a Joint connects two bodies together, neither or at best the
  * child body can own the joint. It must have a "Connector" to a parent body
- * that already exists. The maintenance of the dependency and the run-time 
+ * that already exists. The maintenance of the dependency and the run-time
  * verification of the existance of the parent is the task of the Connector.
  */
 
@@ -46,17 +46,17 @@ namespace OpenSim {
 /**
  * A Connector formalizes the need for a connection between a Component and a
  * dependent object, without owning the object it is connected to. The purpose
- * of a Connector is to specify: 1) the object type that the Component is 
+ * of a Connector is to specify: 1) the object type that the Component is
  * dependent on, 2) by when (what stage) the connector must be connected in
  * order for the component to function, 3) the name of object to connect to and
  * 4) whether it is connected or not. The specific instance that satisfies the
  * connector's requirement is maintained by the Component's list of Connections.
  *
  * For example, a Joint has one Connector for the parent Body that it joins
- * its owning Body to. The type for the connector is Body and any attempt to 
+ * its owning Body to. The type for the connector is Body and any attempt to
  * connect to a non-Body object will throw an exception.
- * The connectAt Stage is Topology. That is the Joint's connection to a Body 
- * must be performed at the Topology system stage, and any attempt to change 
+ * The connectAt Stage is Topology. That is the Joint's connection to a Body
+ * must be performed at the Topology system stage, and any attempt to change
  * the connection status will invalidate that Stage and above.
  *
  * Other Components like a Marker or a Probe that do not change the system
@@ -67,184 +67,192 @@ namespace OpenSim {
  */
 
 class OSIMCOMMON_API AbstractConnector : public Object {
-	OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractConnector, Object);
+    OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractConnector, Object);
 public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-	/** @name Property declarations
-	These are the serializable properties associated with a Connector. **/
-	/**@{**/
-	OpenSim_DECLARE_PROPERTY(connected_to_name, std::string,
-		"Name of the component this Connector should be connected to.");
-	/**@}**/
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	/** Default constructor */
-	AbstractConnector() : Object(), connectAtStage(SimTK::Stage::Topology) {
-		constructProperties();
-	}
+    /** @name Property declarations
+    These are the serializable properties associated with a Connector. **/
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(connected_to_name, std::string,
+                             "Name of the component this Connector should be connected to.");
+    /**@}**/
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    /** Default constructor */
+    AbstractConnector() : Object(), connectAtStage(SimTK::Stage::Topology) {
+        constructProperties();
+    }
 
-	// default destructor, copy constructor
+    // default destructor, copy constructor
 
-	/** Convenience constructor 
-	    Create a Connector with specified name and stage at which it
-		should be connected.
-	@param name				name of the connector, usually desribes its dependency. 
-	@param connectAtStage	Stage at which Connector should be connected. */
-	AbstractConnector(const std::string& name, const SimTK::Stage& connectAtStage) :
-		connectAtStage(connectAtStage) {
-		constructProperties();
-		setName(name);
-	}
+    /** Convenience constructor
+        Create a Connector with specified name and stage at which it
+    	should be connected.
+    @param name				name of the connector, usually desribes its dependency.
+    @param connectAtStage	Stage at which Connector should be connected. */
+    AbstractConnector(const std::string& name, const SimTK::Stage& connectAtStage) :
+        connectAtStage(connectAtStage) {
+        constructProperties();
+        setName(name);
+    }
 
-	// default copy assignment
+    // default copy assignment
 
-	/** get the system Stage when the connection should be made */
-	SimTK::Stage getConnectAtStage() const {
-		return connectAtStage;
-	}
+    /** get the system Stage when the connection should be made */
+    SimTK::Stage getConnectAtStage() const {
+        return connectAtStage;
+    }
 
-	virtual ~AbstractConnector() {};
+    virtual ~AbstractConnector() {};
 
-	//--------------------------------------------------------------------------
-	/** Derived classes must satisfy this Interface */
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    /** Derived classes must satisfy this Interface */
+    //--------------------------------------------------------------------------
     /** Is the Connector connected to anything? */
-	virtual bool isConnected() const = 0;
+    virtual bool isConnected() const = 0;
 
-	/** get the type of object this connector connects to*/
-	virtual std::string getConnectedToTypeName() const = 0;
+    /** get the type of object this connector connects to*/
+    virtual std::string getConnectedToTypeName() const = 0;
 
-	/** Connect this Connector to the provided connectee object */
-	virtual void connect(const Object& conectee) = 0;
+    /** Connect this Connector to the provided connectee object */
+    virtual void connect(const Object& conectee) = 0;
 
-	/** Disconnect this Connector from the connectee object */
-	virtual void disconnect() = 0;
+    /** Disconnect this Connector from the connectee object */
+    virtual void disconnect() = 0;
 
 private:
-	void constructProperties() { constructProperty_connected_to_name(""); }
-	SimTK::Stage connectAtStage;
+    void constructProperties() {
+        constructProperty_connected_to_name("");
+    }
+    SimTK::Stage connectAtStage;
 //=============================================================================
 };	// END class AbstractConnector
 
 
 template<class T>
 class  Connector : public AbstractConnector {
-	OpenSim_DECLARE_CONCRETE_OBJECT_T(Connector, T, AbstractConnector);
+    OpenSim_DECLARE_CONCRETE_OBJECT_T(Connector, T, AbstractConnector);
 public:
-	/** Default constructor */
-	Connector() : connectee(nullptr) {}
+    /** Default constructor */
+    Connector() : connectee(nullptr) {}
 
-	// default destructor, copy constructor
+    // default destructor, copy constructor
 
-	/** Convenience constructor
-	Create a Connector that can only connect to Object of type T with specified 
-	name and stage at which it should be connected.
-	@param name				name of the connector used to describe its dependency.
-	@param connectAtStage	Stage at which Connector should be connected. */
-	Connector(const std::string& name, const SimTK::Stage& connectAtStage) : 
-		AbstractConnector(name, connectAtStage), connectee(nullptr) {}
+    /** Convenience constructor
+    Create a Connector that can only connect to Object of type T with specified
+    name and stage at which it should be connected.
+    @param name				name of the connector used to describe its dependency.
+    @param connectAtStage	Stage at which Connector should be connected. */
+    Connector(const std::string& name, const SimTK::Stage& connectAtStage) :
+        AbstractConnector(name, connectAtStage), connectee(nullptr) {}
 
-	virtual ~Connector() {}
+    virtual ~Connector() {}
 
-	/** Is the Connector connected to object of type T? */
-	bool isConnected() const override {
-		return !connectee.empty();
-	}
+    /** Is the Connector connected to object of type T? */
+    bool isConnected() const override {
+        return !connectee.empty();
+    }
 
-	/** Temporary access to the conectee for testing purposes. Real useage
-	    will be through the Connector (and Input) interfaces. 
-		For example, Input should short circuit to its Output's getValue()
-		once it is connected.
-	Return a const reference to the object connected to this Connector */
-	const T& getConnectee() const { return connectee.getRef(); }
+    /** Temporary access to the conectee for testing purposes. Real useage
+        will be through the Connector (and Input) interfaces.
+    	For example, Input should short circuit to its Output's getValue()
+    	once it is connected.
+    Return a const reference to the object connected to this Connector */
+    const T& getConnectee() const {
+        return connectee.getRef();
+    }
 
-	/** Connect this Connector to the provided conectee object */
-	void connect(const Object& object) override{
-		const T* objT = dynamic_cast<const T*>(&object);
-		if (objT) {
-			connectee = *objT;
-			set_connected_to_name(object.getName());
-		}
-		else {
-			std::stringstream msg;
-			msg << "Connector::connect(): ERR- Cannot connect '" << object.getName()
-			    << "' of type " << object.getConcreteClassName() << ". Connector requires "
-			    << getConnectedToTypeName() << ".";
-			throw Exception(msg.str(), __FILE__, __LINE__);
-		}
-	}
+    /** Connect this Connector to the provided conectee object */
+    void connect(const Object& object) override {
+        const T* objT = dynamic_cast<const T*>(&object);
+        if (objT) {
+            connectee = *objT;
+            set_connected_to_name(object.getName());
+        }
+        else {
+            std::stringstream msg;
+            msg << "Connector::connect(): ERR- Cannot connect '" << object.getName()
+                << "' of type " << object.getConcreteClassName() << ". Connector requires "
+                << getConnectedToTypeName() << ".";
+            throw Exception(msg.str(), __FILE__, __LINE__);
+        }
+    }
 
-	void disconnect() override {
-		connectee.clear();
-	}
-	
-	/** Derived classes must satisfy this Interface */
-	/** get the type of object this connector connects to*/
-	std::string getConnectedToTypeName() const override
-	{ return SimTK::NiceTypeName<T>::name(); }
+    void disconnect() override {
+        connectee.clear();
+    }
 
-	SimTK_DOWNCAST(Connector, AbstractConnector);
+    /** Derived classes must satisfy this Interface */
+    /** get the type of object this connector connects to*/
+    std::string getConnectedToTypeName() const override
+    {
+        return SimTK::NiceTypeName<T>::name();
+    }
+
+    SimTK_DOWNCAST(Connector, AbstractConnector);
 
 private:
-	mutable SimTK::ReferencePtr<const T> connectee;
+    mutable SimTK::ReferencePtr<const T> connectee;
 }; // END class Connector<T>
 
 
 /** A specialized Connector that connects to an Output signal is an Input.
-    An AbstractInput enables maintenance of a list of unconnected Inputs. 
+    An AbstractInput enables maintenance of a list of unconnected Inputs.
 */
 
-class OSIMCOMMON_API AbstractInput : public AbstractConnector{
-	OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractInput, AbstractConnector);
+class OSIMCOMMON_API AbstractInput : public AbstractConnector {
+    OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractInput, AbstractConnector);
 public:
-	/** Default constructor */
-	AbstractInput() : AbstractConnector(), connectee(nullptr) {}
-	/** Convenience constructor
-	Create an AbstractInput (Connector) that connects only to an AbstractOutput
-	specified by name and stage at which it should be connected.
-	@param name				name of the dependent (Abstract)Output.
-	@param connectAtStage	Stage at which Input should be connected. */
-	AbstractInput(const std::string& name, const SimTK::Stage& connectAtStage) :
-		AbstractConnector(name, connectAtStage), connectee(nullptr) {}
+    /** Default constructor */
+    AbstractInput() : AbstractConnector(), connectee(nullptr) {}
+    /** Convenience constructor
+    Create an AbstractInput (Connector) that connects only to an AbstractOutput
+    specified by name and stage at which it should be connected.
+    @param name				name of the dependent (Abstract)Output.
+    @param connectAtStage	Stage at which Input should be connected. */
+    AbstractInput(const std::string& name, const SimTK::Stage& connectAtStage) :
+        AbstractConnector(name, connectAtStage), connectee(nullptr) {}
 
-	virtual ~AbstractInput() {}
+    virtual ~AbstractInput() {}
 
-	// Connector interface
-	void connect(const Object& object) override{
-		std::stringstream msg;
-		msg << "Input::connect(): ERR- Cannot connect '" << object.getName()
-			<< "' of type " << object.getConcreteClassName() <<
-			". Input can only connect to an Output.";
-		throw Exception(msg.str(), __FILE__, __LINE__);
-	}
+    // Connector interface
+    void connect(const Object& object) override {
+        std::stringstream msg;
+        msg << "Input::connect(): ERR- Cannot connect '" << object.getName()
+            << "' of type " << object.getConcreteClassName() <<
+            ". Input can only connect to an Output.";
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
 
-	/** Input Specific Connect */
-	virtual void connect(const AbstractOutput& output) const {
-		connectee = output;
-		//std::cout << getConcreteClassName() << "::connected to '";
-		//std::cout << output.getName() << "'<" << output.getTypeName();
-		//std::cout << ">." << std::endl;
-	}
+    /** Input Specific Connect */
+    virtual void connect(const AbstractOutput& output) const {
+        connectee = output;
+        //std::cout << getConcreteClassName() << "::connected to '";
+        //std::cout << output.getName() << "'<" << output.getTypeName();
+        //std::cout << ">." << std::endl;
+    }
 
-	void disconnect() override {
-		connectee.clear();
-	}
+    void disconnect() override {
+        connectee.clear();
+    }
 
-	/** Is the Input connected to an Output? */
-	bool isConnected() const override {
-		return !connectee.empty();
-	}
+    /** Is the Input connected to an Output? */
+    bool isConnected() const override {
+        return !connectee.empty();
+    }
 
-	/** Derived classes must satisfy this Interface */
-	/** get the type of object this connector connects to*/
-	std::string getConnectedToTypeName() const override
-	{ return SimTK::NiceTypeName<AbstractOutput>::name(); }
+    /** Derived classes must satisfy this Interface */
+    /** get the type of object this connector connects to*/
+    std::string getConnectedToTypeName() const override
+    {
+        return SimTK::NiceTypeName<AbstractOutput>::name();
+    }
 
 private:
-	mutable SimTK::ReferencePtr<const AbstractOutput> connectee;
+    mutable SimTK::ReferencePtr<const AbstractOutput> connectee;
 //=============================================================================
 };	// END class AbstractInput
 
@@ -252,36 +260,36 @@ private:
 /** An Input<Y> must be connected by an Output<Y> */
 template<class T>
 class  Input : public AbstractInput {
-	OpenSim_DECLARE_CONCRETE_OBJECT(Input, AbstractInput);
+    OpenSim_DECLARE_CONCRETE_OBJECT(Input, AbstractInput);
 public:
-	/** Default constructor */
-	Input() : AbstractInput() {}
-	/** Convenience constructor
-	Create an Input<T> (Connector) that can only connect to an Output<T>
-	name and stage at which it should be connected.
-	@param name				name of the Output dependency.
-	@param connectAtStage	Stage at which Input should be connected. */
-	Input(const std::string& name, const SimTK::Stage& connectAtStage) :
-		AbstractInput(name, connectAtStage) {}
+    /** Default constructor */
+    Input() : AbstractInput() {}
+    /** Convenience constructor
+    Create an Input<T> (Connector) that can only connect to an Output<T>
+    name and stage at which it should be connected.
+    @param name				name of the Output dependency.
+    @param connectAtStage	Stage at which Input should be connected. */
+    Input(const std::string& name, const SimTK::Stage& connectAtStage) :
+        AbstractInput(name, connectAtStage) {}
 
-	/** Connect this Input the from provided (Abstract)Output */
-	void connect(const AbstractOutput& output) const override{
-		// enable interaction through AbstractInterface
-		Super::connect(output);
-		// and value specific interface
-		connectee = Output<T>::downcast(output);
-	}
+    /** Connect this Input the from provided (Abstract)Output */
+    void connect(const AbstractOutput& output) const override {
+        // enable interaction through AbstractInterface
+        Super::connect(output);
+        // and value specific interface
+        connectee = Output<T>::downcast(output);
+    }
 
-	/**Get the value of this Input when it is connected. Redirects to connected
-	   Output<T>'s getValue() with minimal overhead. */
-	const T& getValue(const SimTK::State &state) const {
-		return connectee.getRef().getValue(state);
-	}
+    /**Get the value of this Input when it is connected. Redirects to connected
+       Output<T>'s getValue() with minimal overhead. */
+    const T& getValue(const SimTK::State &state) const {
+        return connectee.getRef().getValue(state);
+    }
 
-	SimTK_DOWNCAST(Input, AbstractInput);
+    SimTK_DOWNCAST(Input, AbstractInput);
 
 private:
-	mutable SimTK::ReferencePtr< const Output<T>  > connectee;
+    mutable SimTK::ReferencePtr< const Output<T>  > connectee;
 }; // END class Input<Y>
 
 

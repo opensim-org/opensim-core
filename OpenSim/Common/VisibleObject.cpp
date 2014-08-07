@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
- * Author:  
+/*
+ * Author:
  */
 
 
@@ -60,9 +60,9 @@ using OpenSim::GeometrySet;
  */
 VisibleObject::~VisibleObject()
 {
-	freeGeometry();
-	_owner = NULL;
-	_dependents.setSize(0);
+    freeGeometry();
+    _owner = NULL;
+    _dependents.setSize(0);
 };
 
 //_____________________________________________________________________________
@@ -70,22 +70,22 @@ VisibleObject::~VisibleObject()
  * Default constructor.
  */
 VisibleObject::VisibleObject():
-Object(),
-_propGeometrySet(PropertyObj("", GeometrySet())),
-_geometrySet((GeometrySet&)_propGeometrySet.getValueObj()),
-_scaleFactors(_propScaleFactors.getValueDblVec()),
-_transformProp(PropertyTransform("transform", SimTK::Transform())),
-_transform(_transformProp.getValueTransform()),
-_showAxes(_propShowAxes.getValueBool()),
-_displayPreference((DisplayGeometry::DisplayPreference&)_propDisplayPreference.getValueInt()),
-_allGeometry(0),
-_dependents(0)
+    Object(),
+    _propGeometrySet(PropertyObj("", GeometrySet())),
+    _geometrySet((GeometrySet&)_propGeometrySet.getValueObj()),
+    _scaleFactors(_propScaleFactors.getValueDblVec()),
+    _transformProp(PropertyTransform("transform", SimTK::Transform())),
+    _transform(_transformProp.getValueTransform()),
+    _showAxes(_propShowAxes.getValueBool()),
+    _displayPreference((DisplayGeometry::DisplayPreference&)_propDisplayPreference.getValueInt()),
+    _allGeometry(0),
+    _dependents(0)
 {
-	// NULL STATES
-	setNull();
+    // NULL STATES
+    setNull();
 
-	// MEMBER VARIABLES
-	setName("");
+    // MEMBER VARIABLES
+    setName("");
 }
 
 //_____________________________________________________________________________
@@ -98,22 +98,22 @@ _dependents(0)
  * @param aFileName File name of the document.
  */
 VisibleObject::VisibleObject(const string &aFileName):
-Object(aFileName, false),
-_propGeometrySet(PropertyObj("", GeometrySet())),
-_geometrySet((GeometrySet&)_propGeometrySet.getValueObj()),
-_scaleFactors(_propScaleFactors.getValueDblVec()),
-_transformProp(PropertyTransform("transform", SimTK::Transform())),
-_transform(_transformProp.getValueTransform()),
-_showAxes(_propShowAxes.getValueBool()),
-_displayPreference((DisplayGeometry::DisplayPreference&)_propDisplayPreference.getValueInt()),
-_allGeometry(0),
-_dependents(0)
+    Object(aFileName, false),
+    _propGeometrySet(PropertyObj("", GeometrySet())),
+    _geometrySet((GeometrySet&)_propGeometrySet.getValueObj()),
+    _scaleFactors(_propScaleFactors.getValueDblVec()),
+    _transformProp(PropertyTransform("transform", SimTK::Transform())),
+    _transform(_transformProp.getValueTransform()),
+    _showAxes(_propShowAxes.getValueBool()),
+    _displayPreference((DisplayGeometry::DisplayPreference&)_propDisplayPreference.getValueInt()),
+    _allGeometry(0),
+    _dependents(0)
 {
-	// NULL STATES
-	setNull();
+    // NULL STATES
+    setNull();
 
-	SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
-	updateFromXMLNode(e);
+    SimTK::Xml::Element e = updDocument()->getRootDataElement();
+    updateFromXMLNode(e);
 }
 //_____________________________________________________________________________
 /**
@@ -152,22 +152,22 @@ _dependents(0)
  * @see generateXMLDocument()
  */
 VisibleObject::VisibleObject(const VisibleObject &aObject):
-Object(aObject),
-_propGeometrySet(PropertyObj("", GeometrySet())),
-_geometrySet((GeometrySet&)_propGeometrySet.getValueObj()),
-_scaleFactors(_propScaleFactors.getValueDblVec()),
-_transformProp(PropertyTransform("transform", SimTK::Transform())),
-_transform(_transformProp.getValueTransform()),
-_showAxes(_propShowAxes.getValueBool()),
-_displayPreference((DisplayGeometry::DisplayPreference&)_propDisplayPreference.getValueInt()),
-_allGeometry(0),
-_dependents(0)
+    Object(aObject),
+    _propGeometrySet(PropertyObj("", GeometrySet())),
+    _geometrySet((GeometrySet&)_propGeometrySet.getValueObj()),
+    _scaleFactors(_propScaleFactors.getValueDblVec()),
+    _transformProp(PropertyTransform("transform", SimTK::Transform())),
+    _transform(_transformProp.getValueTransform()),
+    _showAxes(_propShowAxes.getValueBool()),
+    _displayPreference((DisplayGeometry::DisplayPreference&)_propDisplayPreference.getValueInt()),
+    _allGeometry(0),
+    _dependents(0)
 {
-	// NULL MEMBER VARIABLES
-	setNull();
+    // NULL MEMBER VARIABLES
+    setNull();
 
-	// COPY TYPE AND NAME
-	*this = aObject;
+    // COPY TYPE AND NAME
+    *this = aObject;
 }
 
 
@@ -180,14 +180,14 @@ _dependents(0)
  */
 void VisibleObject::setNull()
 {
-	setupProperties();
+    setupProperties();
 
-	_scaleFactors = 1.0;
-	_transform = SimTK::Transform();
-	_owner = 0;
-	_dependents.setMemoryOwner(false);
-	_showAxes=false;
-	_displayPreference=DisplayGeometry::GouraudShaded;
+    _scaleFactors = 1.0;
+    _transform = SimTK::Transform();
+    _owner = 0;
+    _dependents.setMemoryOwner(false);
+    _showAxes=false;
+    _displayPreference=DisplayGeometry::GouraudShaded;
 
 
 }
@@ -199,26 +199,26 @@ void VisibleObject::setNull()
 void VisibleObject::setupProperties()
 {
 
-	_propGeometrySet.setName("GeometrySet");
-	_propGeometrySet.setComment("Set of geometry files and associated attributes, allow .vtp, .stl, .obj");
+    _propGeometrySet.setName("GeometrySet");
+    _propGeometrySet.setComment("Set of geometry files and associated attributes, allow .vtp, .stl, .obj");
 
-	_propertySet.append(&_propGeometrySet);
+    _propertySet.append(&_propGeometrySet);
 
-	_propScaleFactors.setName("scale_factors");
-	_propScaleFactors.setComment("Three scale factors for display purposes: scaleX scaleY scaleZ");
-	_propertySet.append(&_propScaleFactors);
+    _propScaleFactors.setName("scale_factors");
+    _propScaleFactors.setComment("Three scale factors for display purposes: scaleX scaleY scaleZ");
+    _propertySet.append(&_propScaleFactors);
 
-	_transformProp.setName("transform");
-	_transformProp.setComment("transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz");
-	_propertySet.append(&_transformProp);
+    _transformProp.setName("transform");
+    _transformProp.setComment("transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz");
+    _propertySet.append(&_transformProp);
 
-	_propShowAxes.setName("show_axes");
-	_propShowAxes.setComment("Whether to show a coordinate frame");
-	_propertySet.append(&_propShowAxes);
+    _propShowAxes.setName("show_axes");
+    _propShowAxes.setComment("Whether to show a coordinate frame");
+    _propertySet.append(&_propShowAxes);
 
-	_propDisplayPreference.setName("display_preference");
-	_propDisplayPreference.setComment("Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries");
-	_propertySet.append(&_propDisplayPreference);
+    _propDisplayPreference.setName("display_preference");
+    _propDisplayPreference.setComment("Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries");
+    _propertySet.append(&_propDisplayPreference);
 
 }
 
@@ -236,15 +236,15 @@ void VisibleObject::setupProperties()
  */
 VisibleObject& VisibleObject::operator=(const VisibleObject &aObject)
 {
-	// BASE CLASS
-	Object::operator=(aObject);
+    // BASE CLASS
+    Object::operator=(aObject);
 
-	_geometrySet = aObject._geometrySet;
-	_scaleFactors = aObject._scaleFactors;
-	_transform = aObject._transform;
-	_showAxes = aObject._showAxes;
-	_displayPreference = aObject._displayPreference;
-	return(*this);
+    _geometrySet = aObject._geometrySet;
+    _scaleFactors = aObject._scaleFactors;
+    _transform = aObject._transform;
+    _showAxes = aObject._showAxes;
+    _displayPreference = aObject._displayPreference;
+    return(*this);
 }
 
 //-----------------------------------------------------------------------------
@@ -258,7 +258,7 @@ VisibleObject& VisibleObject::operator=(const VisibleObject &aObject)
  */
 bool VisibleObject::operator==(const VisibleObject &aObject) const
 {
-	return(Object::operator==(aObject));
+    return(Object::operator==(aObject));
 }
 
 
@@ -272,8 +272,8 @@ bool VisibleObject::operator==(const VisibleObject &aObject) const
  */
 void VisibleObject::setScaleFactors(const SimTK::Vec3& aScaleFactors)
 {
-	_propScaleFactors.setValueIsDefault(false);
-	_scaleFactors=aScaleFactors;
+    _propScaleFactors.setValueIsDefault(false);
+    _scaleFactors=aScaleFactors;
 }
 //_____________________________________________________________________________
 /**
@@ -282,80 +282,80 @@ void VisibleObject::setScaleFactors(const SimTK::Vec3& aScaleFactors)
  */
 void VisibleObject::getScaleFactors(SimTK::Vec3& aScaleFactors) const
 {
-	aScaleFactors = _scaleFactors;
+    aScaleFactors = _scaleFactors;
 }
 
 void VisibleObject::getRotationsAndTranslationsAsArray6(double aArray[]) const
 {
-	_transformProp.getRotationsAndTranslationsAsArray6(aArray);
+    _transformProp.getRotationsAndTranslationsAsArray6(aArray);
 }
 
 
 void VisibleObject::setGeometryFileName(int i, const std::string &aGeometryFileName)
 {
     _propGeometrySet.setValueIsDefault(false);
-	_geometrySet.adoptAndAppend(new DisplayGeometry(aGeometryFileName));
+    _geometrySet.adoptAndAppend(new DisplayGeometry(aGeometryFileName));
 }
 
 const int VisibleObject::getNumGeometryFiles() const
 {
-	return _geometrySet.getSize();
+    return _geometrySet.getSize();
 }
 void VisibleObject::setNumGeometryFiles(int n)
 {
-	_geometrySet.setSize(n);
+    _geometrySet.setSize(n);
 }
-const std::string& VisibleObject::getGeometryFileName(int idx) const 
+const std::string& VisibleObject::getGeometryFileName(int idx) const
 {
-	if (idx > _geometrySet.getSize()-1)
-		throw ( Exception("getGeometryFileName: no geometry corresponding to index") );
-	return _geometrySet[idx].getGeometryFile();
+    if (idx > _geometrySet.getSize()-1)
+        throw ( Exception("getGeometryFileName: no geometry corresponding to index") );
+    return _geometrySet[idx].getGeometryFile();
 }
 
 // DisplayPreference
 DisplayGeometry::DisplayPreference VisibleObject::getDisplayPreference() const
 {
-	return _displayPreference;
+    return _displayPreference;
 }
 void VisibleObject::setDisplayPreference(const DisplayGeometry::DisplayPreference& aPreference)
 {
-	_displayPreference = aPreference;
-	// Push preference down to pieces
-	for(int i=0; i<_geometrySet.getSize(); i++)
-		_geometrySet[i].setDisplayPreference(aPreference);
+    _displayPreference = aPreference;
+    // Push preference down to pieces
+    for(int i=0; i<_geometrySet.getSize(); i++)
+        _geometrySet[i].setDisplayPreference(aPreference);
 }
 // Handle conversion from older format
 void VisibleObject::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
-{ 
+{
     SimTK::Array_<SimTK::String> oldGeometryFiles;
-	if ( versionNumber < XMLDocument::getLatestVersion()){
-		if (versionNumber<20101){
-			SimTK::Xml::element_iterator visPropIter = aNode.element_begin("VisibleProperties");
-			// Get geometry files and Preferences if any and set them into 
-			if (visPropIter!=aNode.element_end()){
-				// Move display_prference, and show_axes nodes up to VisibleObject
-				SimTK::Xml::element_iterator  prefIter = visPropIter->element_begin("display_preference");
-				if (prefIter!= visPropIter->element_end()){
-					SimTK::Xml::Node moveNode = visPropIter->removeNode(prefIter);
-					aNode.insertNodeAfter(aNode.element_end(), moveNode);
-				}
-				SimTK::Xml::element_iterator  showAxesIter = visPropIter->element_begin("show_axes");
-				if (showAxesIter!=aNode.element_end()){
-					SimTK::Xml::Node moveNode = visPropIter->removeNode(showAxesIter);
-					aNode.insertNodeAfter(aNode.element_end(), moveNode);
-				}
-			}
-			SimTK::Xml::element_iterator geometryIter = aNode.element_begin("geometry_files");
-			string propValue="";
-			bool hasPieces=false;
-			if (geometryIter!= aNode.element_end()){
-				geometryIter->getValueAs(oldGeometryFiles);
-			}
+    if ( versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber<20101) {
+            SimTK::Xml::element_iterator visPropIter = aNode.element_begin("VisibleProperties");
+            // Get geometry files and Preferences if any and set them into
+            if (visPropIter!=aNode.element_end()) {
+                // Move display_prference, and show_axes nodes up to VisibleObject
+                SimTK::Xml::element_iterator  prefIter = visPropIter->element_begin("display_preference");
+                if (prefIter!= visPropIter->element_end()) {
+                    SimTK::Xml::Node moveNode = visPropIter->removeNode(prefIter);
+                    aNode.insertNodeAfter(aNode.element_end(), moveNode);
+                }
+                SimTK::Xml::element_iterator  showAxesIter = visPropIter->element_begin("show_axes");
+                if (showAxesIter!=aNode.element_end()) {
+                    SimTK::Xml::Node moveNode = visPropIter->removeNode(showAxesIter);
+                    aNode.insertNodeAfter(aNode.element_end(), moveNode);
+                }
+            }
+            SimTK::Xml::element_iterator geometryIter = aNode.element_begin("geometry_files");
+            string propValue="";
+            bool hasPieces=false;
+            if (geometryIter!= aNode.element_end()) {
+                geometryIter->getValueAs(oldGeometryFiles);
+            }
         }
     }
-	Object::updateFromXMLNode(aNode, versionNumber);
-    if (oldGeometryFiles.size()>0){
-        for(unsigned i=0; i< oldGeometryFiles.size(); i++) 
+    Object::updateFromXMLNode(aNode, versionNumber);
+    if (oldGeometryFiles.size()>0) {
+        for(unsigned i=0; i< oldGeometryFiles.size(); i++)
             setGeometryFileName(i, oldGeometryFiles[i]);
     }
 }

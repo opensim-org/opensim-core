@@ -27,13 +27,13 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * The ClutchedPathSpring is an actuator that has passive path spring behavior
- * only when the clutch is engaged. The clutch is engaged by a control signal 
- * of 1 and is off for a control signal of 0. Off means the spring is not 
- * engaged and the path is free to change length with the motion of the bodies 
+ * only when the clutch is engaged. The clutch is engaged by a control signal
+ * of 1 and is off for a control signal of 0. Off means the spring is not
+ * engaged and the path is free to change length with the motion of the bodies
  * it is connected to. The tension produced by the spring is proportional
  * to the stretch (z) from the instant that the clutch is engaged.
  *
@@ -57,7 +57,7 @@ namespace OpenSim {
  * @author Ajay Seth
  */
 class OSIMACTUATORS_API ClutchedPathSpring : public PathActuator {
-OpenSim_DECLARE_CONCRETE_OBJECT(ClutchedPathSpring, PathActuator);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ClutchedPathSpring, PathActuator);
 public:
 //=============================================================================
 // PROPERTIES
@@ -65,88 +65,94 @@ public:
     /** @name Property declarations
     These are the serializable properties of the %ClutchedPathSpring class.  */
     /**@{**/
-	OpenSim_DECLARE_PROPERTY(stiffness, double,
-		"The linear stiffness (N/m) of the ClutchedPathSpring");
-	OpenSim_DECLARE_PROPERTY(dissipation, double,
-		"The dissipation factor (s/m) of the ClutchedPathSpring");
-	OpenSim_DECLARE_PROPERTY(relaxation_time_constant, double,
-		"The time constant (s) for the spring to relax (go slack) after the clutch "
-		"is disengaged (i.e. control == 0).  If the clutch is re-engaged within the " 
-		"relaxation period there will be residual tension in the spring.");
-	OpenSim_DECLARE_PROPERTY(initial_stretch, double,
-		"The initial stretch (m) of the spring element. Note if the clucth is "
-		"not engaged, the actuator will 'slip' until there is no stretch according "
-		"to the relaxation_time_constant.");
+    OpenSim_DECLARE_PROPERTY(stiffness, double,
+                             "The linear stiffness (N/m) of the ClutchedPathSpring");
+    OpenSim_DECLARE_PROPERTY(dissipation, double,
+                             "The dissipation factor (s/m) of the ClutchedPathSpring");
+    OpenSim_DECLARE_PROPERTY(relaxation_time_constant, double,
+                             "The time constant (s) for the spring to relax (go slack) after the clutch "
+                             "is disengaged (i.e. control == 0).  If the clutch is re-engaged within the "
+                             "relaxation period there will be residual tension in the spring.");
+    OpenSim_DECLARE_PROPERTY(initial_stretch, double,
+                             "The initial stretch (m) of the spring element. Note if the clucth is "
+                             "not engaged, the actuator will 'slip' until there is no stretch according "
+                             "to the relaxation_time_constant.");
     /**@}**/
 
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
-	ClutchedPathSpring();
-	
-	/** Convenience constructor with ClutchedPathSpring parameters
+    ClutchedPathSpring();
+
+    /** Convenience constructor with ClutchedPathSpring parameters
      * @param name          the name of a %ClutchedPathSpring instance
-	 * @param stiffness		the spring stiffness (K) in N/m
-	 * @param dissipation	the dissipation factor (D) in s/m 
-	 * @param relaxationTau	the spring relaxation time constant (Tau) in s 
-	 * @param stretch0      the initial stretch of the spring in m */
-	ClutchedPathSpring(const std::string& name, double stiffness,
-		 double dissipation, double relaxationTau, double stretch0=0.0);
+     * @param stiffness		the spring stiffness (K) in N/m
+     * @param dissipation	the dissipation factor (D) in s/m
+     * @param relaxationTau	the spring relaxation time constant (Tau) in s
+     * @param stretch0      the initial stretch of the spring in m */
+    ClutchedPathSpring(const std::string& name, double stiffness,
+                       double dissipation, double relaxationTau, double stretch0=0.0);
 
     // default destructor, copy constructor, copy assignment
 
-	//--------------------------------------------------------------------------
-	//  <B> Get and set ClutchedPathSpring properties </B>
-	//--------------------------------------------------------------------------
-	/** Spring stiffness in N/m when clutch is engaged. */
-	double getStiffness() const   {   return get_stiffness(); }
-	void setStiffness(double stiffness);
-	/** Spring dissipation factor in s/m when clutch is engaged. */
-	double getDissipation() const {   return get_dissipation(); }
-	void setDissipation(double dissipation);
-	/** Initial spring stretch in m. */
-	double getInitialStretch() {return get_initial_stretch(); }
-	void setInitialStretch(double stretch0);
+    //--------------------------------------------------------------------------
+    //  <B> Get and set ClutchedPathSpring properties </B>
+    //--------------------------------------------------------------------------
+    /** Spring stiffness in N/m when clutch is engaged. */
+    double getStiffness() const   {
+        return get_stiffness();
+    }
+    void setStiffness(double stiffness);
+    /** Spring dissipation factor in s/m when clutch is engaged. */
+    double getDissipation() const {
+        return get_dissipation();
+    }
+    void setDissipation(double dissipation);
+    /** Initial spring stretch in m. */
+    double getInitialStretch() {
+        return get_initial_stretch();
+    }
+    void setInitialStretch(double stretch0);
 
-	//--------------------------------------------------------------------------
-	//  <B> State dependent values </B>
-	//--------------------------------------------------------------------------
-    /** The stretch in the PathSpring. The value of the stretch 
+    //--------------------------------------------------------------------------
+    //  <B> State dependent values </B>
+    //--------------------------------------------------------------------------
+    /** The stretch in the PathSpring. The value of the stretch
         can only be obtained after the system has been realized to
         Stage::Position*/
-	double getStretch(const SimTK::State& s) const;
-    /** The tension generated by the PathSpring. The value of the tension 
+    double getStretch(const SimTK::State& s) const;
+    /** The tension generated by the PathSpring. The value of the tension
         can only be obtained after the system has been realized to
         Stage::Dynamics
         */
-	double getTension(const SimTK::State& s) const;
+    double getTension(const SimTK::State& s) const;
 
 protected:
-	//--------------------------------------------------------------------------
-	// COMPUTATIONS
-	//--------------------------------------------------------------------------
-	double computeActuation( const SimTK::State& s) const override;
+    //--------------------------------------------------------------------------
+    // COMPUTATIONS
+    //--------------------------------------------------------------------------
+    double computeActuation( const SimTK::State& s) const override;
 
     /** Override PathActuator method to calculate a color for use when
-    the %ClutchedPathSpring's path is displayed in the visualizer. 
-    @param[in] state    
-        A SimTK::State already realized through Stage::Velocity. Do not 
+    the %ClutchedPathSpring's path is displayed in the visualizer.
+    @param[in] state
+        A SimTK::State already realized through Stage::Velocity. Do not
         attempt to realize it any further.
-    @returns 
+    @returns
         The desired color for the path as an RGB vector with each
         component ranging from 0 to 1, or NaN to indicate that the color
         should not be changed. **/
     SimTK::Vec3 computePathColor(const SimTK::State& state) const override;
 
     /** Implement ModelComponent interface. */
-	void addToSystem(SimTK::MultibodySystem& system) const override;
-	void initStateFromProperties(SimTK::State& state) const override;
-	void setPropertiesFromState(const SimTK::State& state) override;
-	void computeStateVariableDerivatives(const SimTK::State& s) const override;
+    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void initStateFromProperties(SimTK::State& state) const override;
+    void setPropertiesFromState(const SimTK::State& state) override;
+    void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
 private:
-	void setNull();
-	void constructProperties();
+    void setNull();
+    void constructProperties();
 
 //=============================================================================
 };	// END of class ClutchedPathSpring

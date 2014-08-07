@@ -35,7 +35,7 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * A class for recording the kinematics of the generalized coordinates
@@ -45,7 +45,7 @@ namespace OpenSim {
  * @version 1.0
  */
 class OSIMANALYSES_API Kinematics : public Analysis {
-OpenSim_DECLARE_CONCRETE_OBJECT(Kinematics, Analysis);
+    OpenSim_DECLARE_CONCRETE_OBJECT(Kinematics, Analysis);
 
 //=============================================================================
 // DATA
@@ -54,69 +54,71 @@ private:
 
 protected:
 
-	OpenSim_DECLARE_LIST_PROPERTY(coordinates, std::string, "Names of generalized coordinates whose kinematics are to be recorded.");
+    OpenSim_DECLARE_LIST_PROPERTY(coordinates, std::string, "Names of generalized coordinates whose kinematics are to be recorded.");
 
-	Array<int> _coordinateIndices;
-	Array<double> _values;
+    Array<int> _coordinateIndices;
+    Array<double> _values;
 
-	Storage *_pStore;
-	Storage *_vStore;
-	Storage *_aStore;
+    Storage *_pStore;
+    Storage *_vStore;
+    Storage *_aStore;
 
-	// Make recording accelerations optional since it is more computationally intensive (invokes dynamics engine calls)
-	bool _recordAccelerations;
+    // Make recording accelerations optional since it is more computationally intensive (invokes dynamics engine calls)
+    bool _recordAccelerations;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	Kinematics(Model *aModel=0);
-	Kinematics(const std::string &aFileName);
-	virtual ~Kinematics();
+    Kinematics(Model *aModel=0);
+    Kinematics(const std::string &aFileName);
+    virtual ~Kinematics();
 
 private:
-	void setNull();
-	void constructProperties();
-	void constructDescription();
-	void constructColumnLabels();
-	void allocateStorage();
-	void deleteStorage();
-	void updateCoordinatesToRecord();
+    void setNull();
+    void constructProperties();
+    void constructDescription();
+    void constructColumnLabels();
+    void allocateStorage();
+    void deleteStorage();
+    void updateCoordinatesToRecord();
 
 public:
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	// STORAGE
-	void setStorageCapacityIncrements(int aIncrement);
-	Storage* getAccelerationStorage();
-	Storage* getVelocityStorage();
-	Storage* getPositionStorage();
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    // STORAGE
+    void setStorageCapacityIncrements(int aIncrement);
+    Storage* getAccelerationStorage();
+    Storage* getVelocityStorage();
+    Storage* getPositionStorage();
 
-	// MODEL
-	virtual void setModel(Model& aModel);
+    // MODEL
+    virtual void setModel(Model& aModel);
 
-	void setRecordAccelerations(bool aRecordAccelerations) { _recordAccelerations = aRecordAccelerations; } // TODO: re-allocate storage or delete storage
+    void setRecordAccelerations(bool aRecordAccelerations) {
+        _recordAccelerations = aRecordAccelerations;    // TODO: re-allocate storage or delete storage
+    }
 
-	//--------------------------------------------------------------------------
-	// ANALYSIS
-	//--------------------------------------------------------------------------
-	virtual int
-        begin(SimTK::State& s );
+    //--------------------------------------------------------------------------
+    // ANALYSIS
+    //--------------------------------------------------------------------------
     virtual int
-        step(const SimTK::State& s, int setNumber );
+    begin(SimTK::State& s );
     virtual int
-        end(SimTK::State& s );
+    step(const SimTK::State& s, int setNumber );
+    virtual int
+    end(SimTK::State& s );
 protected:
     virtual int
-        record(const SimTK::State& s );
-	//--------------------------------------------------------------------------
-	// IO
-	//--------------------------------------------------------------------------
+    record(const SimTK::State& s );
+    //--------------------------------------------------------------------------
+    // IO
+    //--------------------------------------------------------------------------
 public:
-	virtual int
-		printResults(const std::string &aBaseName,const std::string &aDir="",
-		double aDT=-1.0,const std::string &aExtension=".sto");
+    virtual int
+    printResults(const std::string &aBaseName,const std::string &aDir="",
+                 double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
 };	// END of class Kinematics

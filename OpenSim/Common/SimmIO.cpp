@@ -46,34 +46,34 @@ using namespace OpenSim;
  */
 bool OpenSim::readNonCommentStringFromStream(istream &aStream, string &rBuffer)
 {
-   size_t start, end;
+    size_t start, end;
 
-	rBuffer = "\0";
-	while (1)
-	{
-		if (rBuffer.empty())
-			if (!readStringFromStream(aStream, rBuffer))
-				return false;
+    rBuffer = "\0";
+    while (1)
+    {
+        if (rBuffer.empty())
+            if (!readStringFromStream(aStream, rBuffer))
+                return false;
 
-		start = rBuffer.find("/*");
-		if (start != rBuffer.npos)
-		{
-			while (1)
-			{
-				end = rBuffer.find("*/");
-				if (end == rBuffer.npos) // if end was not found
-					readStringFromStream(aStream, rBuffer);
-				else
-				{
-					rBuffer.erase(start, end+2);
-					break;
-				}
-			}
-		}
-		else
-			break;
-	}
-	return true;
+        start = rBuffer.find("/*");
+        if (start != rBuffer.npos)
+        {
+            while (1)
+            {
+                end = rBuffer.find("*/");
+                if (end == rBuffer.npos) // if end was not found
+                    readStringFromStream(aStream, rBuffer);
+                else
+                {
+                    rBuffer.erase(start, end+2);
+                    break;
+                }
+            }
+        }
+        else
+            break;
+    }
+    return true;
 }
 
 //_____________________________________________________________________________
@@ -86,14 +86,14 @@ bool OpenSim::readNonCommentStringFromStream(istream &aStream, string &rBuffer)
  */
 bool OpenSim::readStringFromStream(istream &aStream, string &rBuffer)
 {
-   while (1)
-   {
-      aStream >> rBuffer;
-      if (aStream.eof())
-         return false;
-      if (!rBuffer.empty())
-         return true;
-   }
+    while (1)
+    {
+        aStream >> rBuffer;
+        if (aStream.eof())
+            return false;
+        if (!rBuffer.empty())
+            return true;
+    }
 }
 
 //_____________________________________________________________________________
@@ -107,43 +107,43 @@ bool OpenSim::readStringFromStream(istream &aStream, string &rBuffer)
  */
 bool OpenSim::readStringFromString(string &aString, string &rBuffer)
 {
-   int i;
+    int i;
 
-   if (aString.empty())
-      return false;
+    if (aString.empty())
+        return false;
 
-   /* remove any initial whitespace */
-   i = findFirstNonWhiteSpace(aString);
-   if (i > 0)
-      aString.erase(0, i);
+    /* remove any initial whitespace */
+    i = findFirstNonWhiteSpace(aString);
+    if (i > 0)
+        aString.erase(0, i);
 
-   if (aString.empty())
-      return false;
-   /* find first whitespace */
-   i = findFirstWhiteSpace(aString);
+    if (aString.empty())
+        return false;
+    /* find first whitespace */
+    i = findFirstWhiteSpace(aString);
 
-   /* only one string found */
-   if (i == -1)
-   {
-      i = (int)aString.length();
-      rBuffer = aString;
-      aString.erase(0, i);
-   }
-   else if (i >= 0)
-   {
-      rBuffer.assign(aString, 0, i);
-      aString.erase(0, i + 1); //remove string and whitespace
-   }
-   /* remove any whitespace after the string*/
-   i = findFirstNonWhiteSpace(aString);
-   if (i > 0)
-      aString.erase(0, i);
-   else if (i != 0)
-      aString.erase(0, aString.length());
+    /* only one string found */
+    if (i == -1)
+    {
+        i = (int)aString.length();
+        rBuffer = aString;
+        aString.erase(0, i);
+    }
+    else if (i >= 0)
+    {
+        rBuffer.assign(aString, 0, i);
+        aString.erase(0, i + 1); //remove string and whitespace
+    }
+    /* remove any whitespace after the string*/
+    i = findFirstNonWhiteSpace(aString);
+    if (i > 0)
+        aString.erase(0, i);
+    else if (i != 0)
+        aString.erase(0, aString.length());
 
-   if (rBuffer.empty())
-      return false;
-   return true;
+    if (rBuffer.empty())
+        return false;
+    return true;
 }
 
 //_____________________________________________________________________________
@@ -159,45 +159,45 @@ bool OpenSim::readStringFromString(string &aString, string &rBuffer)
  */
 bool OpenSim::readTabDelimitedStringFromString(string &aString, string &rBuffer)
 {
-   int i;
+    int i;
 
-   if (aString.empty())
-      return false;
+    if (aString.empty())
+        return false;
 
-   /* remove any initial whitespace */
-   i = findFirstNonWhiteSpace(aString);
-   if (i > 0)
-      aString.erase(0, i);
+    /* remove any initial whitespace */
+    i = findFirstNonWhiteSpace(aString);
+    if (i > 0)
+        aString.erase(0, i);
 
-   if (aString.empty())
-      return false;
+    if (aString.empty())
+        return false;
 
-   /* find first tab, line feed, or carriage return */
-   i = (int)aString.find_first_of("\t\r\n", 0);
+    /* find first tab, line feed, or carriage return */
+    i = (int)aString.find_first_of("\t\r\n", 0);
 
-   /* no tab, whole input string is one string */
-   if (i == -1)
-   {
-      i = (int)aString.length();
-      rBuffer = aString;
-      aString.erase(0, i);
-   }
-   else if (i >= 0)
-   {
-      rBuffer.assign(aString, 0, i);
-      aString.erase(0, i + 1); //remove string and whitespace
-   }
-   /* remove any whitespace after the string */
-   i = findFirstNonWhiteSpace(aString);
-   if (i > 0)
-      aString.erase(0, i);
-   else if (i != 0)
-      aString.erase(0, aString.length());
+    /* no tab, whole input string is one string */
+    if (i == -1)
+    {
+        i = (int)aString.length();
+        rBuffer = aString;
+        aString.erase(0, i);
+    }
+    else if (i >= 0)
+    {
+        rBuffer.assign(aString, 0, i);
+        aString.erase(0, i + 1); //remove string and whitespace
+    }
+    /* remove any whitespace after the string */
+    i = findFirstNonWhiteSpace(aString);
+    if (i > 0)
+        aString.erase(0, i);
+    else if (i != 0)
+        aString.erase(0, aString.length());
 
-   if (rBuffer.empty())
-      return false;
+    if (rBuffer.empty())
+        return false;
 
-   return true;
+    return true;
 }
 
 //_____________________________________________________________________________
@@ -211,40 +211,40 @@ bool OpenSim::readTabDelimitedStringFromString(string &aString, string &rBuffer)
  */
 bool OpenSim::readIntegerFromString(string &aString, int *rNumber)
 {
-   size_t i, end;
-   string buffer;
+    size_t i, end;
+    string buffer;
 
-   if (aString.empty())
-      return false;
+    if (aString.empty())
+        return false;
 
-   /* remove any characters before the number */
-   i = aString.find_first_of("0123456789-", 0);
-   if (i != 0)
-      aString.erase(0, i);
+    /* remove any characters before the number */
+    i = aString.find_first_of("0123456789-", 0);
+    if (i != 0)
+        aString.erase(0, i);
 
-   /* remove number from string, copy number to buffer */
-   i = aString.find_first_not_of("0123456789-eE", 0);
-   end = aString.length();
-   if (i != aString.npos)
-   {
-      buffer.assign(aString, 0, i);
-      aString.erase(0, i);
-   }
-   else
-   {
-      buffer.assign(aString);
-      aString.erase(0, end);
-   }
+    /* remove number from string, copy number to buffer */
+    i = aString.find_first_not_of("0123456789-eE", 0);
+    end = aString.length();
+    if (i != aString.npos)
+    {
+        buffer.assign(aString, 0, i);
+        aString.erase(0, i);
+    }
+    else
+    {
+        buffer.assign(aString);
+        aString.erase(0, end);
+    }
 
-   /* remove any whitespace after the string*/
-   i = findFirstNonWhiteSpace(aString);
-   if (i > 0)
-      aString.erase(0, i);
-   
-   if (buffer.empty())
-      return false;
-   *rNumber = atoi(buffer.c_str());
-   return true;
+    /* remove any whitespace after the string*/
+    i = findFirstNonWhiteSpace(aString);
+    if (i > 0)
+        aString.erase(0, i);
+
+    if (buffer.empty())
+        return false;
+    *rNumber = atoi(buffer.c_str());
+    return true;
 }
 
 
@@ -259,51 +259,51 @@ bool OpenSim::readIntegerFromString(string &aString, int *rNumber)
  */
 bool OpenSim::readDoubleFromString(string &aString, double *rNumber, bool allowNaNs)
 {
-   size_t i, end;
-   string buffer;
+    size_t i, end;
+    string buffer;
 
-   if (aString.empty())
-      return false;
-   // Remove leading spaces
-	while(aString[0]==' ') aString.erase(0, 1);
-   /* remove any characters before the number */
-   i = aString.find_first_of("0123456789-.", 0);
-   if (i != 0){
-	   if (allowNaNs){
-		   std::string NaNString = "NAN";
-		   std::string prefix = aString.substr(0, 3);
-		   std::transform(prefix.begin(), prefix.end(),prefix.begin(), ::toupper);
-		   if (prefix==NaNString){
-				aString.erase(0, 3);
-				*rNumber = SimTK::NaN;
-				return true;
-		   }
-	   }
-      aString.erase(0, i);
-   }
-   /* remove number from string, copy number to buffer */
-   i = aString.find_first_not_of("0123456789-+.eE", 0);
-   end = aString.length();
-   if (i != aString.npos)
-   {
-      buffer.assign(aString, 0, i);
-      aString.erase(0, i);
-   }
-   //if number is at end of string
-   else
-   {
-      buffer.assign(aString);
-      aString.erase(0, end);
-   }
-   /* remove any whitespace after the string, but don't remove any tabs */
-   i = findFirstNonWhiteSpace(aString);
-   if (i != aString.npos && (i > 0) && (aString[i-1] != '\t'))
-      aString.erase(0, i);
+    if (aString.empty())
+        return false;
+    // Remove leading spaces
+    while(aString[0]==' ') aString.erase(0, 1);
+    /* remove any characters before the number */
+    i = aString.find_first_of("0123456789-.", 0);
+    if (i != 0) {
+        if (allowNaNs) {
+            std::string NaNString = "NAN";
+            std::string prefix = aString.substr(0, 3);
+            std::transform(prefix.begin(), prefix.end(),prefix.begin(), ::toupper);
+            if (prefix==NaNString) {
+                aString.erase(0, 3);
+                *rNumber = SimTK::NaN;
+                return true;
+            }
+        }
+        aString.erase(0, i);
+    }
+    /* remove number from string, copy number to buffer */
+    i = aString.find_first_not_of("0123456789-+.eE", 0);
+    end = aString.length();
+    if (i != aString.npos)
+    {
+        buffer.assign(aString, 0, i);
+        aString.erase(0, i);
+    }
+    //if number is at end of string
+    else
+    {
+        buffer.assign(aString);
+        aString.erase(0, end);
+    }
+    /* remove any whitespace after the string, but don't remove any tabs */
+    i = findFirstNonWhiteSpace(aString);
+    if (i != aString.npos && (i > 0) && (aString[i-1] != '\t'))
+        aString.erase(0, i);
 
-   if (buffer.empty())
-      return false;
-   *rNumber = atof(buffer.c_str());
-   return true;
+    if (buffer.empty())
+        return false;
+    *rNumber = atof(buffer.c_str());
+    return true;
 }
 
 //_____________________________________________________________________________
@@ -317,13 +317,13 @@ bool OpenSim::readDoubleFromString(string &aString, double *rNumber, bool allowN
  */
 bool OpenSim::readVectorFromString(string &aString, SimTK::Vec3 &rVec)
 {
-	bool ok = true;
+    bool ok = true;
 
-	SimTK::Vec3& vecPtr = rVec;
-	ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[0]);
-	ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[1]);
-	ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[2]);
-	return ok;
+    SimTK::Vec3& vecPtr = rVec;
+    ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[0]);
+    ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[1]);
+    ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[2]);
+    return ok;
 }
 
 //_____________________________________________________________________________
@@ -339,12 +339,12 @@ bool OpenSim::readVectorFromString(string &aString, SimTK::Vec3 &rVec)
  */
 bool OpenSim::readVectorFromString(string &aString, double *rVX, double *rVY, double *rVZ)
 {
-   bool ok = true;
+    bool ok = true;
 
-   ok = ok && OpenSim::readDoubleFromString(aString, rVX);
-   ok = ok && OpenSim::readDoubleFromString(aString, rVY);
-   ok = ok && OpenSim::readDoubleFromString(aString, rVZ);
-   return ok;
+    ok = ok && OpenSim::readDoubleFromString(aString, rVX);
+    ok = ok && OpenSim::readDoubleFromString(aString, rVY);
+    ok = ok && OpenSim::readDoubleFromString(aString, rVZ);
+    return ok;
 }
 
 //_____________________________________________________________________________
@@ -360,41 +360,41 @@ bool OpenSim::readVectorFromString(string &aString, double *rVX, double *rVY, do
  */
 bool OpenSim::readCoordinatesFromString(string &aString, double rVec[3], bool allowNaNs)
 {
-   int numTabs = 0, numCoords = 0;
-   double value;
+    int numTabs = 0, numCoords = 0;
+    double value;
 
-   while (!aString.empty())
-   {
-      if (aString[0] == '\t')
-      {
-         numTabs++;
-         aString.erase(0, 1);
-      }
-      else
-      {
-         if (!OpenSim::readDoubleFromString(aString, &value, allowNaNs))
-         {
-            return false;
-         }
-         else
-         {
-            rVec[numCoords++] = value;
-            numTabs = 0;
-         }         
-      }
-      /* if you have 3 TABS in a row, coordinate data is missing */
-      if (numTabs == 3)
-      {
-			rVec[0] = rVec[1] = rVec[2] = SimTK::NaN;
-         numCoords = 3;
-      }
-      if (numCoords == 3)
-         break;
-   }
-   if (numCoords == 3)
-      return true;
-   else
-      return false;
+    while (!aString.empty())
+    {
+        if (aString[0] == '\t')
+        {
+            numTabs++;
+            aString.erase(0, 1);
+        }
+        else
+        {
+            if (!OpenSim::readDoubleFromString(aString, &value, allowNaNs))
+            {
+                return false;
+            }
+            else
+            {
+                rVec[numCoords++] = value;
+                numTabs = 0;
+            }
+        }
+        /* if you have 3 TABS in a row, coordinate data is missing */
+        if (numTabs == 3)
+        {
+            rVec[0] = rVec[1] = rVec[2] = SimTK::NaN;
+            numCoords = 3;
+        }
+        if (numCoords == 3)
+            break;
+    }
+    if (numCoords == 3)
+        return true;
+    else
+        return false;
 }
 
 //_____________________________________________________________________________
@@ -406,7 +406,7 @@ bool OpenSim::readCoordinatesFromString(string &aString, double rVec[3], bool al
  */
 int OpenSim::findFirstNonWhiteSpace(string &aString)
 {
-   return (int)aString.find_first_not_of(" \t\r\n", 0);
+    return (int)aString.find_first_not_of(" \t\r\n", 0);
 }
 
 //_____________________________________________________________________________
@@ -418,7 +418,7 @@ int OpenSim::findFirstNonWhiteSpace(string &aString)
  */
 int OpenSim::findFirstWhiteSpace(string &aString)
 {
-   return (int)aString.find_first_of(" \t\r\n", 0);
+    return (int)aString.find_first_of(" \t\r\n", 0);
 }
 
 //_____________________________________________________________________________
@@ -431,28 +431,28 @@ int OpenSim::findFirstWhiteSpace(string &aString)
  */
 void OpenSim::convertString(string& aString, bool aPrependUnderscore)
 {
-   for (unsigned int i = 0; i < aString.size(); i++)
-   {
-      if (aString[i] >= 'a' && aString[i] <= 'z')
-         continue;
-      if (aString[i] >= 'A' && aString[i] <= 'Z')
-         continue;
-      if (aString[i] >= '0' && aString[i] <= '9')
-         continue;
-      aString[i] = '_';
-   }
+    for (unsigned int i = 0; i < aString.size(); i++)
+    {
+        if (aString[i] >= 'a' && aString[i] <= 'z')
+            continue;
+        if (aString[i] >= 'A' && aString[i] <= 'Z')
+            continue;
+        if (aString[i] >= '0' && aString[i] <= '9')
+            continue;
+        aString[i] = '_';
+    }
 
-   /* If the first character is a number, prepend an underscore. */
-   if (aPrependUnderscore && aString[0] >= '0' && aString[0] <= '9')
-		aString.insert(0, "_");
+    /* If the first character is a number, prepend an underscore. */
+    if (aPrependUnderscore && aString[0] >= '0' && aString[0] <= '9')
+        aString.insert(0, "_");
 }
 
 string OpenSim::getCurrentTimeString()
 {
-   time_t t = time(NULL);
+    time_t t = time(NULL);
 
-	char buf[100];
-   strftime(buf, 100, "%m/%d/%Y %I:%M:%S %p", localtime(&t));
+    char buf[100];
+    strftime(buf, 100, "%m/%d/%Y %I:%M:%S %p", localtime(&t));
 
-	return string(buf);
+    return string(buf);
 }

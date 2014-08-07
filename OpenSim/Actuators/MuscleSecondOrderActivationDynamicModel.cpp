@@ -33,7 +33,7 @@ using namespace SimTK;
 // Code
 //=============================================================================
 MuscleSecondOrderActivationDynamicModel::
-    MuscleSecondOrderActivationDynamicModel()
+MuscleSecondOrderActivationDynamicModel()
 {
     setName("default_MuscleSecondOrderActivationDynamicModel");
     setNull();
@@ -43,14 +43,14 @@ MuscleSecondOrderActivationDynamicModel::
 
 void MuscleSecondOrderActivationDynamicModel::ensureModelUpToDate()
 {
-    if(isObjectUpToDateWithProperties()==false){
+    if(isObjectUpToDateWithProperties()==false) {
         buildModel();
     }
 
 }
 
 void MuscleSecondOrderActivationDynamicModel::buildModel()
-{         
+{
     setObjectIsUpToDateWithProperties();
 }
 
@@ -61,9 +61,9 @@ Detailed Computational Cost
 
 */
 MuscleSecondOrderActivationDynamicModel::
-        MuscleSecondOrderActivationDynamicModel(double twitchTimeConstant, 
-                                                double minActivation, 
-                                                const std::string& muscleName)
+MuscleSecondOrderActivationDynamicModel(double twitchTimeConstant,
+                                        double minActivation,
+                                        const std::string& muscleName)
 {
     setNull();
     constructProperties();
@@ -72,43 +72,43 @@ MuscleSecondOrderActivationDynamicModel::
     name.append("_activation");
     setName(name);
 
-   
-    SimTK_ERRCHK1_ALWAYS( twitchTimeConstant>SimTK::SignificantReal ,
-        "MuscleSecondOrderActivationDynamicModel::"
-        "MuscleSecondOrderActivationDynamicModel",
-        "%s: twitch time constants must be > 0", name.c_str());
 
-    SimTK_ERRCHK1_ALWAYS( minActivation >= 0 
-                            && minActivation < 1-SimTK::SignificantReal,
-        "MuscleSecondOrderActivationDynamicModel::"
-        "MuscleSecondOrderActivationDynamicModel",
-        "%s: Minimum activation must be greater than 0 and less than 1",
-        name.c_str());
+    SimTK_ERRCHK1_ALWAYS( twitchTimeConstant>SimTK::SignificantReal ,
+                          "MuscleSecondOrderActivationDynamicModel::"
+                          "MuscleSecondOrderActivationDynamicModel",
+                          "%s: twitch time constants must be > 0", name.c_str());
+
+    SimTK_ERRCHK1_ALWAYS( minActivation >= 0
+                          && minActivation < 1-SimTK::SignificantReal,
+                          "MuscleSecondOrderActivationDynamicModel::"
+                          "MuscleSecondOrderActivationDynamicModel",
+                          "%s: Minimum activation must be greater than 0 and less than 1",
+                          name.c_str());
 
     set_twitch_time_constant(twitchTimeConstant);
     set_minimum_activation(minActivation);
-    buildModel();    
+    buildModel();
 }
-        
+
 void MuscleSecondOrderActivationDynamicModel::setNull()
 {
-	setAuthors("Matthew Millard");    
+    setAuthors("Matthew Millard");
 }
 
 void MuscleSecondOrderActivationDynamicModel::constructProperties()
 {
     constructProperty_twitch_time_constant(0.050);
-    constructProperty_minimum_activation(0.01);    
+    constructProperty_minimum_activation(0.01);
 }
 
 double MuscleSecondOrderActivationDynamicModel::
-    calcDerivative( double dactivation_dt,
-                    double activation,  
-                    double excitation) const
+calcDerivative( double dactivation_dt,
+                double activation,
+                double excitation) const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-        "MuscleSecondOrderActivationDynamicModel: object is not"
-        " to date with properties");
+                 "MuscleSecondOrderActivationDynamicModel: object is not"
+                 " to date with properties");
 
     SimTK::Array_<int> dx(2);
     dx[0] = 0;
@@ -125,11 +125,11 @@ double MuscleSecondOrderActivationDynamicModel::
 
 
 double MuscleSecondOrderActivationDynamicModel::
-    getTwitchTimeConstant() const
+getTwitchTimeConstant() const
 {
     return get_twitch_time_constant();
 }
-        
+
 
 
 double MuscleSecondOrderActivationDynamicModel::getMinimumActivation() const
@@ -143,11 +143,11 @@ double MuscleSecondOrderActivationDynamicModel::getMaximumActivation() const
 }
 
 double MuscleSecondOrderActivationDynamicModel::
-    clampActivation(double activation) const
+clampActivation(double activation) const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-        "MuscleSecondOrderActivationDynamicModel: object is not"
-        " to date with properties");
+                 "MuscleSecondOrderActivationDynamicModel: object is not"
+                 " to date with properties");
 
     //Clamp the lower bound
     double clampedActivation = max(get_minimum_activation(), activation);
@@ -157,42 +157,42 @@ double MuscleSecondOrderActivationDynamicModel::
 }
 
 bool MuscleSecondOrderActivationDynamicModel::
-    setTwitchTimeConstant(double activationTimeConstant) 
+setTwitchTimeConstant(double activationTimeConstant)
 {
 
-    if(activationTimeConstant > SimTK::SignificantReal){
+    if(activationTimeConstant > SimTK::SignificantReal) {
         set_twitch_time_constant(activationTimeConstant);
         buildModel();
         return true;
-    }else{
+    } else {
         return false;
     }
 }
-        
+
 bool MuscleSecondOrderActivationDynamicModel::
-    setMinimumActivation(double minimumActivation)
+setMinimumActivation(double minimumActivation)
 {
 
-    if(minimumActivation >= 0.0){
+    if(minimumActivation >= 0.0) {
         set_minimum_activation(minimumActivation);
         buildModel();
         return true;
-    }else{
+    } else {
         return false;
     }
 }
 
 double MuscleSecondOrderActivationDynamicModel::
-    calcValue(const SimTK::Vector& x) const
+calcValue(const SimTK::Vector& x) const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-        "MuscleSecondOrderActivationDynamicModel: object is not"
-        " to date with properties");
+                 "MuscleSecondOrderActivationDynamicModel: object is not"
+                 " to date with properties");
 
     SimTK_ERRCHK1_ALWAYS(x.size() == 3,
-        "MuscleSecondOrderActivationDynamicModel::calcDerivative",
-        "%s: Two arguments are required: excitation and activation", 
-        getName().c_str());
+                         "MuscleSecondOrderActivationDynamicModel::calcDerivative",
+                         "%s: Two arguments are required: excitation and activation",
+                         getName().c_str());
 
     double dactivation_dt   = x(0);
     double activation       = x(1);
@@ -202,81 +202,81 @@ double MuscleSecondOrderActivationDynamicModel::
 }
 
 /*
-Detailed Computational Cost     
+Detailed Computational Cost
         Comparison  Div.    Mult.   Add.    Assign
         9           2       2       4       5
 */
 double MuscleSecondOrderActivationDynamicModel::
-    calcDerivative(const SimTK::Array_<int>& derivComponents, 
-                    const SimTK::Vector& x) const
+calcDerivative(const SimTK::Array_<int>& derivComponents,
+               const SimTK::Vector& x) const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-        "MuscleSecondOrderActivationDynamicModel: object is not"
-        " to date with properties");
+                 "MuscleSecondOrderActivationDynamicModel: object is not"
+                 " to date with properties");
 
     SimTK_ERRCHK1_ALWAYS(x.size() == 3,
-        "MuscleSecondOrderActivationDynamicModel::calcDerivative",
-        "%s: Three arguments are required: "
-        "dactivation_dt, activation, excitation", 
-        getName().c_str());
+                         "MuscleSecondOrderActivationDynamicModel::calcDerivative",
+                         "%s: Three arguments are required: "
+                         "dactivation_dt, activation, excitation",
+                         getName().c_str());
 
     double nDa = 0; //Nth derivative of a
 
-    switch (derivComponents.size()){
-        case 0:
-            {
-                nDa = x(1); //return activation
+    switch (derivComponents.size()) {
+    case 0:
+    {
+        nDa = x(1); //return activation
+    }
+    break;
+    case 1:
+    {
+        nDa = x(0); //return dactivation_dt
+    }
+    break;
+    case 2:
+    {
+        if(derivComponents[0] == 0 && derivComponents[1] == 0) {
+            double da_dt  = x(0);
+            double a      = x(1);
+            double u      = x(2);
+
+            double cu = max(0.0, u);
+            cu        = min(1.0, cu);
+
+            double minAct   = get_minimum_activation();
+            double omega    = 1/get_twitch_time_constant();
+
+            if(da_dt < 0) {
+                omega = omega*2.0;
             }
-            break;
-        case 1: 
-            {
-                nDa = x(0); //return dactivation_dt
-            }
-            break;
-        case 2:
-            {
-                if(derivComponents[0] == 0 && derivComponents[1] == 0){
-                    double da_dt  = x(0);
-                    double a      = x(1);
-                    double u      = x(2);      
 
-                    double cu = max(0.0, u);
-                    cu        = min(1.0, cu);
+            double omega2   = omega*omega;
+            double ca       = clampActivation(a);
 
-                    double minAct   = get_minimum_activation();                    
-                    double omega    = 1/get_twitch_time_constant();
+            double aS       = ca/(1-minAct);
+            double minAS    = minAct/(1-minAct);
 
-                    if(da_dt < 0){
-                        omega = omega*2.0;
-                    }
+            double zeta = 1.0; //Critically damped system
 
-                    double omega2   = omega*omega;
-                    double ca       = clampActivation(a);
+            nDa = cu*omega2
+                  - (2*zeta*omega*da_dt
+                     + (aS-minAS)*omega2);
 
-                    double aS       = ca/(1-minAct);
-                    double minAS    = minAct/(1-minAct);
-                    
-                    double zeta = 1.0; //Critically damped system
-
-                    nDa = cu*omega2 
-                        - (2*zeta*omega*da_dt 
-                            + (aS-minAS)*omega2);                                       
-
-                }else{
-                   SimTK_ERRCHK1_ALWAYS(false,
-                    "MuscleSecondOrderActivationDynamicModel::calcDerivative",
-                    "%s: calcDerivative is only valid for the 0th partial", 
-                    getName().c_str());
-                }
-            }
-            break;
-        default:
+        } else {
             SimTK_ERRCHK1_ALWAYS(false,
-            "MuscleSecondOrderActivationDynamicModel::calcDerivative",
-            "%s: calcDerivative is only valid for the 0th, 1st, and "
-            "2nd derivative", 
-            getName().c_str());
-            
+                                 "MuscleSecondOrderActivationDynamicModel::calcDerivative",
+                                 "%s: calcDerivative is only valid for the 0th partial",
+                                 getName().c_str());
+        }
+    }
+    break;
+    default:
+        SimTK_ERRCHK1_ALWAYS(false,
+                             "MuscleSecondOrderActivationDynamicModel::calcDerivative",
+                             "%s: calcDerivative is only valid for the 0th, 1st, and "
+                             "2nd derivative",
+                             getName().c_str());
+
     }
 
     return nDa;
@@ -288,7 +288,7 @@ int MuscleSecondOrderActivationDynamicModel::getArgumentSize() const
 }
 
 int MuscleSecondOrderActivationDynamicModel::
-    getMaxDerivativeOrder() const
+getMaxDerivativeOrder() const
 {
     return 2;
 }

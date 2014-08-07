@@ -39,14 +39,14 @@
 
 
 #ifdef SWIG
-    #ifdef OSIMANALYSES_API
-        #undef OSIMANALYSES_API
-        #define OSIMANALYSES_API
-    #endif
+#ifdef OSIMANALYSES_API
+#undef OSIMANALYSES_API
+#define OSIMANALYSES_API
+#endif
 #endif
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * A class for reporting the outputs of all model-connected Probes to file during
@@ -59,7 +59,7 @@ namespace OpenSim {
  * (diagram below assumes a single probe, but ProbeReporter will cycle through every
  * Probe in the Model):
    \verbatim
-                                
+
                                 DEVELOPER NEEDS TO IMPLEMENT
                                 THIS INSIDE THE CHILD PROBE
                                 ============================
@@ -78,11 +78,11 @@ namespace OpenSim {
                                 THIS INSIDE THE CHILD PROBE
 
   \endverbatim
- * 
+ *
  *
  * @author Tim Dorn
  */
-class OSIMANALYSES_API ProbeReporter : public Analysis 
+class OSIMANALYSES_API ProbeReporter : public Analysis
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(ProbeReporter, Analysis);
 //=============================================================================
@@ -102,10 +102,10 @@ public:
     //--------------------------------------------------------------------------
     ProbeReporter(Model *aModel=0);
     ProbeReporter(const std::string &aFileName);
-    // Copy constrctor and virtual copy 
+    // Copy constrctor and virtual copy
     ProbeReporter(const ProbeReporter &aObject);
     virtual ~ProbeReporter();
-    
+
 private:
     void setNull();
     void constructDescription();
@@ -143,14 +143,14 @@ public:
     //--------------------------------------------------------------------------
 
     virtual int
-        begin(SimTK::State& s );
+    begin(SimTK::State& s );
     virtual int
-        step(const SimTK::State& s, int setNumber );
+    step(const SimTK::State& s, int setNumber );
     virtual int
-        end(SimTK::State& s );
+    end(SimTK::State& s );
 protected:
     virtual int
-        record(const SimTK::State& s );
+    record(const SimTK::State& s );
 public:
     void disableIntegrationOnlyProbes() {
         ProbeSet& probes = _model->updProbeSet();
@@ -158,7 +158,7 @@ public:
 
         for(int i=0 ; i<nP ; i++) {
             Probe& nextProbe = (Probe&)probes[i];
-            if (nextProbe.getOperation()=="integrate" || nextProbe.getOperation()=="min" || nextProbe.getOperation()=="max"){
+            if (nextProbe.getOperation()=="integrate" || nextProbe.getOperation()=="min" || nextProbe.getOperation()=="max") {
                 nextProbe.setDisabled(true);
                 std::cout << "Disabling probe " << nextProbe.getName() << " as invalid for non-integration context." << std::endl;
 
@@ -169,8 +169,8 @@ public:
     // IO
     //--------------------------------------------------------------------------
     virtual int
-        printResults(const std::string &aBaseName,const std::string &aDir="",
-        double aDT=-1.0,const std::string &aExtension=".sto");
+    printResults(const std::string &aBaseName,const std::string &aDir="",
+                 double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
 };	// END of class ProbeReporter

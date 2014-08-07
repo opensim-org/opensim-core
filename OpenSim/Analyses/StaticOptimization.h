@@ -40,122 +40,142 @@
 //=============================================================================
 /**
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 class Model;
 class ForceSet;
 
 /**
- * This class implements static optimization to compute Muscle Forces and 
- * activations. 
+ * This class implements static optimization to compute Muscle Forces and
+ * activations.
  *
  * @author Jeff Reinbolt
  */
 class OSIMANALYSES_API StaticOptimization : public Analysis {
-OpenSim_DECLARE_CONCRETE_OBJECT(StaticOptimization, Analysis);
+    OpenSim_DECLARE_CONCRETE_OBJECT(StaticOptimization, Analysis);
 
 //=============================================================================
 // DATA
 //=============================================================================
 private:
-	int _numCoordinateActuators;
+    int _numCoordinateActuators;
 protected:
-	/** Use force set from model. */
-	PropertyBool _useModelForceSetProp;
-	bool &_useModelForceSet;
+    /** Use force set from model. */
+    PropertyBool _useModelForceSetProp;
+    bool &_useModelForceSet;
 
-	PropertyDbl _activationExponentProp;
-	double &_activationExponent;
+    PropertyDbl _activationExponentProp;
+    double &_activationExponent;
 
-	PropertyBool _useMusclePhysiologyProp;
-	bool	&_useMusclePhysiology;
+    PropertyBool _useMusclePhysiologyProp;
+    bool	&_useMusclePhysiology;
 
-	PropertyDbl _convergenceCriterionProp;
-	double &_convergenceCriterion;
+    PropertyDbl _convergenceCriterionProp;
+    double &_convergenceCriterion;
 
-	PropertyInt _maximumIterationsProp;
-	int &_maximumIterations;
+    PropertyInt _maximumIterationsProp;
+    int &_maximumIterations;
 
-	Storage *_activationStorage;
-	Storage *_forceStorage;
-	GCVSplineSet _statesSplineSet;
+    Storage *_activationStorage;
+    Storage *_forceStorage;
+    GCVSplineSet _statesSplineSet;
 
-	Array<int> _accelerationIndices;
+    Array<int> _accelerationIndices;
 
-	SimTK::Vector _parameters;
+    SimTK::Vector _parameters;
 
-	bool _ownsForceSet;
-	ForceSet* _forceSet;
+    bool _ownsForceSet;
+    ForceSet* _forceSet;
 
-	double _numericalDerivativeStepSize;
-	std::string _optimizerAlgorithm;
-	int _printLevel;
-	//double _optimizationConvergenceTolerance;
-	//int _maxIterations;
+    double _numericalDerivativeStepSize;
+    std::string _optimizerAlgorithm;
+    int _printLevel;
+    //double _optimizationConvergenceTolerance;
+    //int _maxIterations;
 
-	Model *_modelWorkingCopy;
+    Model *_modelWorkingCopy;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	StaticOptimization(Model *aModel=0);
-	StaticOptimization(const StaticOptimization &aObject);
-	virtual ~StaticOptimization();
+    StaticOptimization(Model *aModel=0);
+    StaticOptimization(const StaticOptimization &aObject);
+    virtual ~StaticOptimization();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	StaticOptimization& operator=(const StaticOptimization &aStaticOptimization);
+    StaticOptimization& operator=(const StaticOptimization &aStaticOptimization);
 #endif
 private:
-	void setNull();
-	void setupProperties();
-	void constructDescription();
-	void constructColumnLabels();
-	void allocateStorage();
-	void deleteStorage();
+    void setNull();
+    void setupProperties();
+    void constructDescription();
+    void constructColumnLabels();
+    void allocateStorage();
+    void deleteStorage();
 
 public:
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	void setStorageCapacityIncrements(int aIncrement);
-	Storage* getActivationStorage();
-	Storage* getForceStorage();
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    void setStorageCapacityIncrements(int aIncrement);
+    Storage* getActivationStorage();
+    Storage* getForceStorage();
 
-	bool getUseModelForceSet() { return _useModelForceSet; }
-	void setUseModelForceSet(bool aUseModelActuatorSet) { _useModelForceSet = aUseModelActuatorSet; }
+    bool getUseModelForceSet() {
+        return _useModelForceSet;
+    }
+    void setUseModelForceSet(bool aUseModelActuatorSet) {
+        _useModelForceSet = aUseModelActuatorSet;
+    }
 
-	virtual void setModel(Model& aModel);
-	void setActivationExponent(const double aExponent) { _activationExponent=aExponent; }
-	double getActivationExponent() const { return _activationExponent; }
-	void setUseMusclePhysiology(const bool useIt) { _useMusclePhysiology=useIt; }
-	bool getUseMusclePhysiology() const { return _useMusclePhysiology; }
-	void setConvergenceCriterion(const double tolerance) { _convergenceCriterion = tolerance; }
-	double getConvergenceCriterion() { return _convergenceCriterion; }
-	void setMaxIterations( const int maxIt) { _maximumIterations = maxIt; }
-	int getMaxIterations() {return _maximumIterations; }
-	//--------------------------------------------------------------------------
-	// ANALYSIS
-	//--------------------------------------------------------------------------
-	virtual int
-        begin(SimTK::State& s );
+    virtual void setModel(Model& aModel);
+    void setActivationExponent(const double aExponent) {
+        _activationExponent=aExponent;
+    }
+    double getActivationExponent() const {
+        return _activationExponent;
+    }
+    void setUseMusclePhysiology(const bool useIt) {
+        _useMusclePhysiology=useIt;
+    }
+    bool getUseMusclePhysiology() const {
+        return _useMusclePhysiology;
+    }
+    void setConvergenceCriterion(const double tolerance) {
+        _convergenceCriterion = tolerance;
+    }
+    double getConvergenceCriterion() {
+        return _convergenceCriterion;
+    }
+    void setMaxIterations( const int maxIt) {
+        _maximumIterations = maxIt;
+    }
+    int getMaxIterations() {
+        return _maximumIterations;
+    }
+    //--------------------------------------------------------------------------
+    // ANALYSIS
+    //--------------------------------------------------------------------------
     virtual int
-        step(const SimTK::State& s, int setNumber );
+    begin(SimTK::State& s );
     virtual int
-        end(SimTK::State& s );
+    step(const SimTK::State& s, int setNumber );
+    virtual int
+    end(SimTK::State& s );
 protected:
     virtual int
-        record(const SimTK::State& s );
-	//--------------------------------------------------------------------------
-	// IO
-	//--------------------------------------------------------------------------
+    record(const SimTK::State& s );
+    //--------------------------------------------------------------------------
+    // IO
+    //--------------------------------------------------------------------------
 public:
-	virtual int
-		printResults(const std::string &aBaseName,const std::string &aDir="",
-		double aDT=-1.0,const std::string &aExtension=".sto");
+    virtual int
+    printResults(const std::string &aBaseName,const std::string &aDir="",
+                 double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
 };	// END of class StaticOptimization

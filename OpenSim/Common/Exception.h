@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -47,13 +47,13 @@
  * @author Frank C. Anderson
  */
 #ifdef SWIG
-	#ifdef OSIMCOMMON_API
-		#undef OSIMCOMMON_API
-		#define OSIMCOMMON_API
-	#endif
+#ifdef OSIMCOMMON_API
+#undef OSIMCOMMON_API
+#define OSIMCOMMON_API
+#endif
 #endif
 
-namespace OpenSim { 
+namespace OpenSim {
 
 class OSIMCOMMON_API Exception  : public std::exception {
 
@@ -61,34 +61,36 @@ class OSIMCOMMON_API Exception  : public std::exception {
 // DATA
 //=============================================================================
 protected:
-	/** A user set message for the exception. */
-	std::string _msg;
-	/** File in which the error occurred. */
-	std::string _file;
-	/** Line number at which the error occurred. */
-	int _line;
+    /** A user set message for the exception. */
+    std::string _msg;
+    /** File in which the error occurred. */
+    std::string _file;
+    /** Line number at which the error occurred. */
+    int _line;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTORS
-	Exception(const std::string &aMsg="",const std::string &aFile="",int aLine=-1);
-	virtual ~Exception() throw() {}
+    // CONSTRUCTORS
+    Exception(const std::string &aMsg="",const std::string &aFile="",int aLine=-1);
+    virtual ~Exception() throw() {}
 private:
-	void setNull();
+    void setNull();
 
 public:
-	// SET AND GET
-	void setMessage(const std::string &aMsg);
-	const char* getMessage() const;
+    // SET AND GET
+    void setMessage(const std::string &aMsg);
+    const char* getMessage() const;
 
 #ifndef SWIG
-	// PRINT
-	virtual void print(std::ostream &aOut) const;
+    // PRINT
+    virtual void print(std::ostream &aOut) const;
 #endif
     // override virtual function from std::exception
-    const char* what() const throw() {return getMessage();}
+    const char* what() const throw() {
+        return getMessage();
+    }
 
 //=============================================================================
 };	// END CLASS Exception

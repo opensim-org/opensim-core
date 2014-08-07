@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
- * Author: Frank C. Anderson 
+/*
+ * Author: Frank C. Anderson
  */
 
 
@@ -58,8 +58,8 @@ RootSolver::~RootSolver()
 RootSolver::
 RootSolver(VectorFunctionUncoupledNxN *aFunc)
 {
-	setNull();
-	_function = aFunc;
+    setNull();
+    _function = aFunc;
 }
 
 //-----------------------------------------------------------------------------
@@ -72,7 +72,7 @@ RootSolver(VectorFunctionUncoupledNxN *aFunc)
 void RootSolver::
 setNull()
 {
-	_function = NULL;
+    _function = NULL;
 }
 
 
@@ -83,143 +83,150 @@ setNull()
 /**
  * Solve for the roots.
  *
- * 
+ *
  */
 Array<double> RootSolver::
 solve(const SimTK::State& s, const Array<double> &ax,const Array<double> &bx,
-		const Array<double> &tol)
+      const Array<double> &tol)
 {
-	int i;
-	int N = _function->getNX();
+    int i;
+    int N = _function->getNX();
 
-	Array<double> a(0.0,N),b(0.0,N),c(0.0,N);
-	Array<double> fa(0.0,N),fb(0.0,N),fc(0.0,N);
-	Array<double> prev_step(0.0,N);
-	Array<double> tol_act(0.0,N);
-	Array<double> p(0.0,N);
-	Array<double> q(0.0,N);
-	Array<double> new_step(0.0,N);
+    Array<double> a(0.0,N),b(0.0,N),c(0.0,N);
+    Array<double> fa(0.0,N),fb(0.0,N),fc(0.0,N);
+    Array<double> prev_step(0.0,N);
+    Array<double> tol_act(0.0,N);
+    Array<double> p(0.0,N);
+    Array<double> q(0.0,N);
+    Array<double> new_step(0.0,N);
 
-	bool finished = false;
-	Array<int>   converged(0,N);
-
-
-	// INITIALIZATIONS
-	a = ax;
-	b = bx;
-	_function->evaluate(s,a,fa);
-	_function->evaluate(s,b,fb);
-	c = a;
-	fc = fa;
+    bool finished = false;
+    Array<int>   converged(0,N);
 
 
-	// ITERATION LOOP
-	int iter;
-	for(iter=0;!finished;iter++) {
+    // INITIALIZATIONS
+    a = ax;
+    b = bx;
+    _function->evaluate(s,a,fa);
+    _function->evaluate(s,b,fb);
+    c = a;
+    fc = fa;
 
-		// ABSCISSAE MANIPULATION LOOP
-		for(i=0;i<N;i++) {
 
-			// Continue?
-			// If a function is already converged no need to do any manipulation.
-			if(converged[i]) continue;
-   
-			// Make c on opposite side of b.
-			// (was down at very bottom)
-			 if( (fb[i]>0.0 && fc[i]>0.0) || (fb[i]<0.0 && fc[i]<0.0) ) {
-				c[i] = a[i];
-				fc[i] = fa[i];
-			 }
+    // ITERATION LOOP
+    int iter;
+    for(iter=0; !finished; iter++) {
 
-			// Record previous step
-			prev_step[i] = b[i] - a[i];
+        // ABSCISSAE MANIPULATION LOOP
+        for(i=0; i<N; i++) {
 
-			// Swap data for b to be the best approximation.
-			if( fabs(fc[i]) < fabs(fb[i]) ) {
-				a[i] = b[i];  b[i] = c[i];  c[i] = a[i];
-				fa[i]= fb[i]; fb[i]= fc[i]; fc[i]= fa[i];
-			}
-			tol_act[i] = 2.0*DBL_EPSILON*fabs(b[i]) + 0.5*tol[i];
-			new_step[i] = 0.5 * (c[i]-b[i]);
+            // Continue?
+            // If a function is already converged no need to do any manipulation.
+            if(converged[i]) continue;
 
-			// Converged?
-			// Original convergence test:
-			if(fabs(new_step[i])<=tol_act[i] || fb[i]==(double)0.0 ) {
-				converged[i] = iter;
-				continue;
-			}
+            // Make c on opposite side of b.
+            // (was down at very bottom)
+            if( (fb[i]>0.0 && fc[i]>0.0) || (fb[i]<0.0 && fc[i]<0.0) ) {
+                c[i] = a[i];
+                fc[i] = fa[i];
+            }
 
-			// Interpolate if prev_step was large enough and in true direction
-			if( fabs(prev_step[i])>=tol_act[i] && fabs(fa[i])>fabs(fb[i]) ) {
-				double t1,cb,t2;
-				cb = c[i]-b[i];
+            // Record previous step
+            prev_step[i] = b[i] - a[i];
 
-				// Only two distinct roots, must use linear interpolation.
-				if(a[i]==c[i]) {
-					t1 = fb[i]/fa[i];
-					p[i] = cb*t1;
-					q[i] = 1.0 - t1;
+            // Swap data for b to be the best approximation.
+            if( fabs(fc[i]) < fabs(fb[i]) ) {
+                a[i] = b[i];
+                b[i] = c[i];
+                c[i] = a[i];
+                fa[i]= fb[i];
+                fb[i]= fc[i];
+                fc[i]= fa[i];
+            }
+            tol_act[i] = 2.0*DBL_EPSILON*fabs(b[i]) + 0.5*tol[i];
+            new_step[i] = 0.5 * (c[i]-b[i]);
 
-				// Quadratic interpolation
-				} else {
-					q[i] = fa[i]/fc[i];  t1 = fb[i]/fc[i];  t2 = fb[i]/fa[i];
-					p[i] = t2 * ( cb*q[i]*(q[i]-t1) - (b[i]-a[i])*(t1-1.0) );
-					q[i] = (q[i]-1.0) * (t1-1.0) * (t2-1.0);
-				}
+            // Converged?
+            // Original convergence test:
+            if(fabs(new_step[i])<=tol_act[i] || fb[i]==(double)0.0 ) {
+                converged[i] = iter;
+                continue;
+            }
 
-				// Change sign of q or p?
-				if( p[i]>(double)0.0 ) {
-					q[i] = -q[i];
-				} else {
-					p[i] = -p[i];
-				}
+            // Interpolate if prev_step was large enough and in true direction
+            if( fabs(prev_step[i])>=tol_act[i] && fabs(fa[i])>fabs(fb[i]) ) {
+                double t1,cb,t2;
+                cb = c[i]-b[i];
 
-				// If the interpolate is bad, use bissection.
-				if( p[i]<(0.75*cb*q[i] - 0.5*fabs(tol_act[i]*q[i]))	&& p[i]<fabs(0.5*prev_step[i]*q[i]) )
-					new_step[i] = p[i]/q[i];
-			}
+                // Only two distinct roots, must use linear interpolation.
+                if(a[i]==c[i]) {
+                    t1 = fb[i]/fa[i];
+                    p[i] = cb*t1;
+                    q[i] = 1.0 - t1;
 
-			// Adjust step to be not less than tolerance.
-			if( fabs(new_step[i]) < tol_act[i] ) {
-				if( new_step[i] > (double)0.0 ) {
-					new_step[i] = tol_act[i];
+                    // Quadratic interpolation
+                } else {
+                    q[i] = fa[i]/fc[i];
+                    t1 = fb[i]/fc[i];
+                    t2 = fb[i]/fa[i];
+                    p[i] = t2 * ( cb*q[i]*(q[i]-t1) - (b[i]-a[i])*(t1-1.0) );
+                    q[i] = (q[i]-1.0) * (t1-1.0) * (t2-1.0);
                 }
-				else {
-					new_step[i] = -tol_act[i];
+
+                // Change sign of q or p?
+                if( p[i]>(double)0.0 ) {
+                    q[i] = -q[i];
+                } else {
+                    p[i] = -p[i];
+                }
+
+                // If the interpolate is bad, use bissection.
+                if( p[i]<(0.75*cb*q[i] - 0.5*fabs(tol_act[i]*q[i]))	&& p[i]<fabs(0.5*prev_step[i]*q[i]) )
+                    new_step[i] = p[i]/q[i];
+            }
+
+            // Adjust step to be not less than tolerance.
+            if( fabs(new_step[i]) < tol_act[i] ) {
+                if( new_step[i] > (double)0.0 ) {
+                    new_step[i] = tol_act[i];
+                }
+                else {
+                    new_step[i] = -tol_act[i];
                 }
             }
 
-			// Save previous approximation.
-			a[i] = b[i];  fa[i] = fb[i];
+            // Save previous approximation.
+            a[i] = b[i];
+            fa[i] = fb[i];
 
 
-			b[i] += new_step[i];
-			 
-		} // END ABSCISSAE LOOP
-	 
+            b[i] += new_step[i];
 
-		// NEW FUNCTION EVALUATION
-		_function->evaluate(s, b,fb);
+        } // END ABSCISSAE LOOP
 
 
-		// FINISHED?
-		for(i=0;i<N;i++) {
-			finished = true;
-			if(!converged[i]) {
-				finished = false;
-				break;
-			}
-		}
-	}
+        // NEW FUNCTION EVALUATION
+        _function->evaluate(s, b,fb);
 
-	// PRINT
-	//cout<<"\n\nRootSolver:  found solution in "<<iter<<" iterations.\n";
-	//cout<<"converged array:\n";
-	//cout<<converged<<endl<<endl;
-	//cout<<"roots:\n";
-	//cout<<b<<endl<<endl;
-	//cout<<"errors:\n";
-	//cout<<fb<<endl;
-	
-	return(b);
+
+        // FINISHED?
+        for(i=0; i<N; i++) {
+            finished = true;
+            if(!converged[i]) {
+                finished = false;
+                break;
+            }
+        }
+    }
+
+    // PRINT
+    //cout<<"\n\nRootSolver:  found solution in "<<iter<<" iterations.\n";
+    //cout<<"converged array:\n";
+    //cout<<converged<<endl<<endl;
+    //cout<<"roots:\n";
+    //cout<<b<<endl<<endl;
+    //cout<<"errors:\n";
+    //cout<<fb<<endl;
+
+    return(b);
 }

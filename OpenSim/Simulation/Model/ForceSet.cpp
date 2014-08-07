@@ -58,13 +58,13 @@ ForceSet::~ForceSet()
  */
 ForceSet::ForceSet()
 {
-	setNull();
+    setNull();
 }
 
-ForceSet::ForceSet(Model& model) : 
-ModelComponentSet<Force>(model)
+ForceSet::ForceSet(Model& model) :
+    ModelComponentSet<Force>(model)
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -74,12 +74,12 @@ ModelComponentSet<Force>(model)
  * @param aFileName Name of the file.
  */
 ForceSet::ForceSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode) :
-	ModelComponentSet<Force>(model, aFileName, false)
+    ModelComponentSet<Force>(model, aFileName, false)
 {
-	setNull();
+    setNull();
 
-	if(aUpdateFromXMLNode)
-		updateFromXMLDocument();
+    if(aUpdateFromXMLNode)
+        updateFromXMLDocument();
 }
 
 
@@ -90,9 +90,9 @@ ForceSet::ForceSet(Model& model, const std::string &aFileName, bool aUpdateFromX
  * @param aForceSet ForceSet to be copied.
  */
 ForceSet::ForceSet(const ForceSet &aForceSet) :
-	ModelComponentSet<Force>(aForceSet)
+    ModelComponentSet<Force>(aForceSet)
 {
-	setNull();
+    setNull();
 
 }
 
@@ -105,14 +105,14 @@ ForceSet::ForceSet(const ForceSet &aForceSet) :
  */
 void ForceSet::setNull()
 {
-	setAuthors("Ajay Seth, Jack Middleton");
+    setAuthors("Ajay Seth, Jack Middleton");
 
-	// PROPERTIES
-	setupSerializedMembers();
+    // PROPERTIES
+    setupSerializedMembers();
 
-	_actuators.setMemoryOwner(false);
+    _actuators.setMemoryOwner(false);
 
-	_muscles.setMemoryOwner(false);
+    _muscles.setMemoryOwner(false);
 }
 
 //_____________________________________________________________________________
@@ -125,11 +125,11 @@ void ForceSet::setupSerializedMembers()
 
 void ForceSet::invokeConnectToModel(Model& aModel)
 {
-	// BASE CLASS
-	Super::invokeConnectToModel(aModel);
+    // BASE CLASS
+    Super::invokeConnectToModel(aModel);
 
-	updateActuators();
-	updateMuscles();
+    updateActuators();
+    updateMuscles();
 }
 
 //=============================================================================
@@ -143,10 +143,10 @@ void ForceSet::invokeConnectToModel(Model& aModel)
  */
 ForceSet& ForceSet::operator=(const ForceSet &aAbsForceSet)
 {
-	// BASE CLASS
-	Set<Force>::operator=(aAbsForceSet);
+    // BASE CLASS
+    Set<Force>::operator=(aAbsForceSet);
 
-	return(*this);
+    return(*this);
 }
 
 
@@ -166,12 +166,12 @@ ForceSet& ForceSet::operator=(const ForceSet &aAbsForceSet)
  */
 bool ForceSet::remove(int aIndex)
 {
-	bool success = Set<Force>::remove(aIndex);
+    bool success = Set<Force>::remove(aIndex);
 
-	updateActuators();
-	updateMuscles();
+    updateActuators();
+    updateMuscles();
 
-	return(success);
+    return(success);
 }
 
 //_____________________________________________________________________________
@@ -188,14 +188,14 @@ bool ForceSet::remove(int aIndex)
 bool ForceSet::
 append(Force *aForce)
 {
-	bool success = ModelComponentSet<Force>::adoptAndAppend(aForce);
+    bool success = ModelComponentSet<Force>::adoptAndAppend(aForce);
 
-	if((success)&&(_model!=NULL)) {
-		updateActuators();
-		updateMuscles();
-	}
+    if((success)&&(_model!=NULL)) {
+        updateActuators();
+        updateMuscles();
+    }
 
-	return(success);
+    return(success);
 }
 //_____________________________________________________________________________
 /**
@@ -214,12 +214,12 @@ append(Force &aForce)
     bool success = ModelComponentSet<Force>::cloneAndAppend(aForce);
 
 
-	if((success)&&(_model!=NULL)) {
-		updateActuators();
-	    updateMuscles();
-	}
+    if((success)&&(_model!=NULL)) {
+        updateActuators();
+        updateMuscles();
+    }
 
-	return(success);
+    return(success);
 }
 //_____________________________________________________________________________
 /**
@@ -235,30 +235,30 @@ append(Force &aForce)
  */
 bool ForceSet::append(ForceSet &aForceSet, bool aAllowDuplicateNames)
 {
-	bool success = true;
-	for(int i=0;i<aForceSet.getSize() && success;i++) {
-		bool nameExists = false;
-		if(!aAllowDuplicateNames) {
-			std::string name = aForceSet.get(i).getName();
-			for(int j=0;j<getSize();j++) {
-				if(get(j).getName() == name) {
-					nameExists = true;
-					break;
-				}
-			}
-		}
-		if(!nameExists) {
-			if(!ModelComponentSet<Force>::adoptAndAppend(&aForceSet.get(i))) 
-				success = false;
-		}
-	}
+    bool success = true;
+    for(int i=0; i<aForceSet.getSize() && success; i++) {
+        bool nameExists = false;
+        if(!aAllowDuplicateNames) {
+            std::string name = aForceSet.get(i).getName();
+            for(int j=0; j<getSize(); j++) {
+                if(get(j).getName() == name) {
+                    nameExists = true;
+                    break;
+                }
+            }
+        }
+        if(!nameExists) {
+            if(!ModelComponentSet<Force>::adoptAndAppend(&aForceSet.get(i)))
+                success = false;
+        }
+    }
 
-	if(success) {
-		updateActuators();
-		updateMuscles();
-	}
+    if(success) {
+        updateActuators();
+        updateMuscles();
+    }
 
-	return(success);
+    return(success);
 }
 //_____________________________________________________________________________
 /**
@@ -275,26 +275,26 @@ bool ForceSet::append(ForceSet &aForceSet, bool aAllowDuplicateNames)
  */
 bool ForceSet::set(int aIndex,Force *aActuator)
 {
-	bool success = ModelComponentSet<Force>::set(aIndex,aActuator);
+    bool success = ModelComponentSet<Force>::set(aIndex,aActuator);
 
-	if(success) {
-		updateActuators();
-		updateMuscles();
-	}
+    if(success) {
+        updateActuators();
+        updateMuscles();
+    }
 
-	return(success);
+    return(success);
 }
 
 bool ForceSet::insert(int aIndex, Force *aForce)
 {
-	bool success = ModelComponentSet<Force>::insert(aIndex, aForce);
+    bool success = ModelComponentSet<Force>::insert(aIndex, aForce);
 
-	if(success) {
-		updateActuators();
-		updateMuscles();
-	}
+    if(success) {
+        updateActuators();
+        updateMuscles();
+    }
 
-	return(success);
+    return(success);
 }
 
 //_____________________________________________________________________________
@@ -303,12 +303,12 @@ bool ForceSet::insert(int aIndex, Force *aForce)
  */
 const Set<Actuator>& ForceSet::getActuators() const
 {
-	return _actuators;
+    return _actuators;
 }
 
-Set<Actuator>& ForceSet::updActuators() 
+Set<Actuator>& ForceSet::updActuators()
 {
-	updateActuators();
+    updateActuators();
     return _actuators;
 }
 //_____________________________________________________________________________
@@ -334,9 +334,9 @@ const Set<Muscle>& ForceSet::getMuscles() const
 {
     return _muscles;
 }
-Set<Muscle>& ForceSet::updMuscles() 
+Set<Muscle>& ForceSet::updMuscles()
 {
-	updateMuscles();
+    updateMuscles();
     return _muscles;
 }
 //_____________________________________________________________________________
@@ -368,13 +368,13 @@ void ForceSet::updateMuscles()
 void ForceSet::
 getStateVariableNames(OpenSim::Array<std::string> &rNames) const
 {
-	for(int i=0;i<getSize();i++) {
-		Actuator *act = dynamic_cast<Actuator*>(&get(i)); 
-       
-		if(act) {
+    for(int i=0; i<getSize(); i++) {
+        Actuator *act = dynamic_cast<Actuator*>(&get(i));
+
+        if(act) {
             rNames.append(act->getStateVariableNames());
         }
-	}
+    }
 }
 
 
@@ -388,15 +388,15 @@ getStateVariableNames(OpenSim::Array<std::string> &rNames) const
 bool ForceSet::
 check() const
 {
-	bool status=true;
+    bool status=true;
 
-	// LOOP THROUGH ACTUATORS
-	Actuator *act;
-	int size = getSize();
-	for(int i=0;i<size;i++) {
-		act = dynamic_cast<Actuator *>(&get(i));
-		if(!act) continue;
-	}
+    // LOOP THROUGH ACTUATORS
+    Actuator *act;
+    int size = getSize();
+    for(int i=0; i<size; i++) {
+        act = dynamic_cast<Actuator *>(&get(i));
+        if(!act) continue;
+    }
 
-	return(status);
+    return(status);
 }

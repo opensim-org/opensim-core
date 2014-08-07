@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -53,21 +53,21 @@ VectorFunction::~VectorFunction()
  * Default constructor.
  */
 VectorFunction::VectorFunction() :
-	_minX(0.0), _maxX(0.0)
+    _minX(0.0), _maxX(0.0)
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
 VectorFunction::VectorFunction(int aNX, int aNY) :
-	_minX(-std::numeric_limits<SimTK::Real>::infinity() ),
-	_maxX( std::numeric_limits<SimTK::Real>::infinity() )
+    _minX(-std::numeric_limits<SimTK::Real>::infinity() ),
+    _maxX( std::numeric_limits<SimTK::Real>::infinity() )
 {
-	setNull();
-	setNX(aNX);
-	setNY(aNY);
+    setNull();
+    setNX(aNX);
+    setNY(aNY);
 }
 //_____________________________________________________________________________
 /**
@@ -76,14 +76,14 @@ VectorFunction::VectorFunction(int aNX, int aNY) :
  * @param aVectorFunction Function to copy.
  */
 VectorFunction::VectorFunction(const VectorFunction &aVectorFunction) :
-	Object(aVectorFunction),
+    Object(aVectorFunction),
     _minX(-std::numeric_limits<SimTK::Real>::infinity() ),
     _maxX( std::numeric_limits<SimTK::Real>::infinity() )
 {
-	setNull();
+    setNull();
 
-	// ASSIGN
-	setEqual(aVectorFunction);
+    // ASSIGN
+    setEqual(aVectorFunction);
 }
 
 
@@ -97,8 +97,8 @@ VectorFunction::VectorFunction(const VectorFunction &aVectorFunction) :
 void VectorFunction::
 setNull()
 {
-	_nX = 0;
-	_nY = 0;
+    _nX = 0;
+    _nY = 0;
 }
 
 //_____________________________________________________________________________
@@ -111,10 +111,10 @@ setNull()
 void VectorFunction::
 setEqual(const VectorFunction &aVectorFunction)
 {
-	setNX(aVectorFunction.getNX());
-	setNY(aVectorFunction.getNY());
-	setMinX(aVectorFunction.getMinX());
-	setMaxX(aVectorFunction.getMaxX());
+    setNX(aVectorFunction.getNX());
+    setNY(aVectorFunction.getNY());
+    setMinX(aVectorFunction.getMinX());
+    setMaxX(aVectorFunction.getMaxX());
 }
 
 //=============================================================================
@@ -129,13 +129,13 @@ setEqual(const VectorFunction &aVectorFunction)
 VectorFunction& VectorFunction::
 operator=(const VectorFunction &aVectorFunction)
 {
-	// BASE CLASS
-	Object::operator=(aVectorFunction);
+    // BASE CLASS
+    Object::operator=(aVectorFunction);
 
-	// DATA
-	setEqual(aVectorFunction);
+    // DATA
+    setEqual(aVectorFunction);
 
-	return(*this);
+    return(*this);
 }
 
 
@@ -154,7 +154,7 @@ operator=(const VectorFunction &aVectorFunction)
 void VectorFunction::
 setNX(int aNX)
 {
-	_nX = aNX;
+    _nX = aNX;
 }
 //_____________________________________________________________________________
 /**
@@ -165,7 +165,7 @@ setNX(int aNX)
 int VectorFunction::
 getNX() const
 {
-	return(_nX);
+    return(_nX);
 }
 //_____________________________________________________________________________
 /**
@@ -176,7 +176,7 @@ getNX() const
 void VectorFunction::
 setNY(int aNY)
 {
-	_nY = aNY;
+    _nY = aNY;
 }
 //_____________________________________________________________________________
 /**
@@ -187,7 +187,7 @@ setNY(int aNY)
 int VectorFunction::
 getNY() const
 {
-	return(_nY);
+    return(_nY);
 }
 //-----------------------------------------------------------------------------
 // MIN AND MAX INDPEPENDENT VARIABLES
@@ -201,12 +201,12 @@ getNY() const
 void VectorFunction::
 setMinX(const Array<double> &aMinX)
 {
-	if(aMinX.getSize()!=_nX) {
-		string msg = "VectorFunction.setMinX: ERR- ";
-		msg += "Array size does not match number of variables.";
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
-	_minX = aMinX;
+    if(aMinX.getSize()!=_nX) {
+        string msg = "VectorFunction.setMinX: ERR- ";
+        msg += "Array size does not match number of variables.";
+        throw( Exception(msg,__FILE__,__LINE__) );
+    }
+    _minX = aMinX;
 }
 //_____________________________________________________________________________
 /**
@@ -217,7 +217,7 @@ setMinX(const Array<double> &aMinX)
 const Array<double>& VectorFunction::
 getMinX() const
 {
-	return(_minX);
+    return(_minX);
 }
 //_____________________________________________________________________________
 /**
@@ -229,19 +229,19 @@ getMinX() const
 void VectorFunction::
 setMinX(int aXIndex, double aMinX)
 {
-	_minX.set(aXIndex, aMinX);
+    _minX.set(aXIndex, aMinX);
 }
 //_____________________________________________________________________________
 /**
  * Get the minimum values of the independent variables.
- * 
+ *
  * @param aXIndex Index of the independent variable value to be set.
  * @return Array of minimum values of the independent variables.
  */
 double VectorFunction::
 getMinX(int aXIndex) const
 {
-	return(_minX.get(aXIndex));
+    return(_minX.get(aXIndex));
 }
 //_____________________________________________________________________________
 /**
@@ -252,13 +252,14 @@ getMinX(int aXIndex) const
 void VectorFunction::
 setMaxX(const Array<double> &aMaxX)
 {
-	if(aMaxX.getSize()!=_nX) {
-		string msg = "VectorFunction.setMaxX: ERR- ";
-		msg += "Array size does not.match number of variables.";
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
+    if(aMaxX.getSize()!=_nX) {
+        string msg = "VectorFunction.setMaxX: ERR- ";
+        msg += "Array size does not.match number of variables.";
+        throw( Exception(msg,__FILE__,__LINE__) );
+    }
 
-	_maxX = aMaxX;}
+    _maxX = aMaxX;
+}
 //_____________________________________________________________________________
 /**
  * Get the maximum values of the independent variables.
@@ -268,7 +269,7 @@ setMaxX(const Array<double> &aMaxX)
 const Array<double>& VectorFunction::
 getMaxX() const
 {
-	return(_maxX);
+    return(_maxX);
 }
 //_____________________________________________________________________________
 /**
@@ -280,7 +281,7 @@ getMaxX() const
 void VectorFunction::
 setMaxX(int aXIndex, double aMaxX)
 {
-	_maxX.set(aXIndex, aMaxX);
+    _maxX.set(aXIndex, aMaxX);
 }
 //_____________________________________________________________________________
 /**
@@ -292,7 +293,7 @@ setMaxX(int aXIndex, double aMaxX)
 double VectorFunction::
 getMaxX(int aXIndex) const
 {
-	return(_maxX.get(aXIndex));
+    return(_maxX.get(aXIndex));
 }
 
 

@@ -44,12 +44,12 @@ ContactGeometrySet::~ContactGeometrySet(void)
  */
 ContactGeometrySet::ContactGeometrySet()
 {
-	setNull();
+    setNull();
 }
 
 ContactGeometrySet::ContactGeometrySet(Model& model) : Super(model)
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -61,12 +61,12 @@ ContactGeometrySet::ContactGeometrySet(Model& model) : Super(model)
  * @param aUpdateFromXMLNode a flag indicating if UpdateFromXMLNode needs to be called.
  */
 ContactGeometrySet::ContactGeometrySet
-   (Model& model, const std::string &aFileName, bool aUpdateFromXMLNode)
-:   Super(model, aFileName, false)
+(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode)
+    :   Super(model, aFileName, false)
 {
-	setNull();
+    setNull();
 
-	if(aUpdateFromXMLNode) updateFromXMLDocument();
+    if(aUpdateFromXMLNode) updateFromXMLDocument();
 }
 
 //_____________________________________________________________________________
@@ -74,11 +74,11 @@ ContactGeometrySet::ContactGeometrySet
  * Copy constructor of a ContactGeometrySet.
  */
 ContactGeometrySet::ContactGeometrySet
-   (const ContactGeometrySet& aContactGeometrySet)
-:   Super(aContactGeometrySet)
+(const ContactGeometrySet& aContactGeometrySet)
+    :   Super(aContactGeometrySet)
 {
-	setNull();
-	*this = aContactGeometrySet;
+    setNull();
+    *this = aContactGeometrySet;
 }
 
 //=============================================================================
@@ -89,7 +89,7 @@ ContactGeometrySet::ContactGeometrySet
  */
 void ContactGeometrySet::setNull()
 {
-	setAuthors("Peter Eastman");
+    setAuthors("Peter Eastman");
 }
 
 
@@ -105,8 +105,8 @@ void ContactGeometrySet::setNull()
 #ifndef SWIG
 ContactGeometrySet& ContactGeometrySet::operator=(const ContactGeometrySet &aContactGeometrySet)
 {
-	Set<ContactGeometry>::operator=(aContactGeometrySet);
-	return (*this);
+    Set<ContactGeometry>::operator=(aContactGeometrySet);
+    return (*this);
 }
 #endif
 
@@ -119,5 +119,5 @@ ContactGeometrySet& ContactGeometrySet::operator=(const ContactGeometrySet &aCon
  */
 void ContactGeometrySet::scale(const ScaleSet& aScaleSet)
 {
-	for(int i=0; i<getSize(); i++) get(i).scale(aScaleSet);
+    for(int i=0; i<getSize(); i++) get(i).scale(aScaleSet);
 }

@@ -56,14 +56,14 @@ public:
 
     // CALC FORCES (Called by Simbody)
     void calcForce(const SimTK::State& state,
-	    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,SimTK::Vector_<SimTK::Vec3>& particleForces,
-	    SimTK::Vector& mobilityForces) const;   
+                   SimTK::Vector_<SimTK::SpatialVec>& bodyForces,SimTK::Vector_<SimTK::Vec3>& particleForces,
+                   SimTK::Vector& mobilityForces) const;
 
     // CALC POTENTIAL ENERGY (Called by Simbody)
-    SimTK::Real calcPotentialEnergy(const SimTK::State& state) const;   
+    SimTK::Real calcPotentialEnergy(const SimTK::State& state) const;
 
-	// SIMBODY PARALLELISM FLAG 
-	bool shouldBeParallelized() const;
+    // SIMBODY PARALLELISM FLAG
+    bool shouldBeParallelized() const;
 
     // No need to override realize() methods; we don't provide that service
     // to OpenSim Force elements.

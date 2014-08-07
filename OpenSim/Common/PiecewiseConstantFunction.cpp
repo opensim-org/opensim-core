@@ -55,44 +55,44 @@ PiecewiseConstantFunction::~PiecewiseConstantFunction()
  * Default constructor.
  */
 PiecewiseConstantFunction::PiecewiseConstantFunction() :
-       _x(_propX.getValueDblArray()),
-       _y(_propY.getValueDblArray())
+    _x(_propX.getValueDblArray()),
+    _y(_propY.getValueDblArray())
 {
-       setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
  */
 PiecewiseConstantFunction::PiecewiseConstantFunction(int aN,const double *aX,const double *aY,
-       const string &aName) :
-       _x(_propX.getValueDblArray()),
-       _y(_propY.getValueDblArray())
+        const string &aName) :
+    _x(_propX.getValueDblArray()),
+    _y(_propY.getValueDblArray())
 {
-       setNull();
+    setNull();
 
-       // OBJECT TYPE AND NAME
-       setName(aName);
+    // OBJECT TYPE AND NAME
+    setName(aName);
 
-       // NUMBER OF DATA POINTS
-       if(aN < 2)
-       {
-             printf("PiecewiseConstantFunction: ERROR- there must be 2 or more data points.\n");
-             return;
-       }
+    // NUMBER OF DATA POINTS
+    if(aN < 2)
+    {
+        printf("PiecewiseConstantFunction: ERROR- there must be 2 or more data points.\n");
+        return;
+    }
 
-       // CHECK DATA
-       if((aX==NULL)||(aY==NULL))
-       {
-             printf("PiecewiseConstantFunction: ERROR- NULL arrays for data points encountered.\n");
-             return;
-       }
+    // CHECK DATA
+    if((aX==NULL)||(aY==NULL))
+    {
+        printf("PiecewiseConstantFunction: ERROR- NULL arrays for data points encountered.\n");
+        return;
+    }
 
-       // INDEPENDENT VALUES (KNOT SEQUENCE)
-       _x.setSize(0);
-       _x.append(aN,aX);
+    // INDEPENDENT VALUES (KNOT SEQUENCE)
+    _x.setSize(0);
+    _x.append(aN,aX);
 
-       _y.setSize(0);
-       _y.append(aN,aY);
+    _y.setSize(0);
+    _y.append(aN,aY);
 }
 //_____________________________________________________________________________
 /**
@@ -102,11 +102,11 @@ PiecewiseConstantFunction::PiecewiseConstantFunction(int aN,const double *aX,con
  * @param aFunction PiecewiseConstantFunction object to be copied.
  */
 PiecewiseConstantFunction::PiecewiseConstantFunction(const PiecewiseConstantFunction &aFunction) :
-       Function(aFunction),
-       _x(_propX.getValueDblArray()),
-       _y(_propY.getValueDblArray())
+    Function(aFunction),
+    _x(_propX.getValueDblArray()),
+    _y(_propY.getValueDblArray())
 {
-       setEqual(aFunction);
+    setEqual(aFunction);
 }
 
 
@@ -119,7 +119,7 @@ PiecewiseConstantFunction::PiecewiseConstantFunction(const PiecewiseConstantFunc
  */
 void PiecewiseConstantFunction::setNull()
 {
-       setupProperties();
+    setupProperties();
 }
 //_____________________________________________________________________________
 /**
@@ -129,17 +129,17 @@ void PiecewiseConstantFunction::setNull()
  */
 void PiecewiseConstantFunction::setupProperties()
 {
-       // X- INDEPENDENT VARIABLES
-       _propX.setName("x");
-       Array<double> x(0.0);
-       _propX.setValue(x);
-       _propertySet.append( &_propX );
+    // X- INDEPENDENT VARIABLES
+    _propX.setName("x");
+    Array<double> x(0.0);
+    _propX.setValue(x);
+    _propertySet.append( &_propX );
 
-       // Y- DEPENDENT VARIABLES
-       _propY.setName("y");
-       Array<double> y(0.0);
-       _propY.setValue(y);
-       _propertySet.append( &_propY );
+    // Y- DEPENDENT VARIABLES
+    _propY.setName("y");
+    Array<double> y(0.0);
+    _propY.setValue(y);
+    _propertySet.append( &_propY );
 }
 //_____________________________________________________________________________
 /**
@@ -150,14 +150,14 @@ void PiecewiseConstantFunction::setupProperties()
  */
 void PiecewiseConstantFunction::setEqual(const PiecewiseConstantFunction &aFunction)
 {
-       setNull();
+    setNull();
 
-       // CHECK ARRAY SIZES
-       if(aFunction.getSize()<=0) return;
+    // CHECK ARRAY SIZES
+    if(aFunction.getSize()<=0) return;
 
-       // ALLOCATE ARRAYS
-       _x = aFunction._x;
-       _y = aFunction._y;
+    // ALLOCATE ARRAYS
+    _x = aFunction._x;
+    _y = aFunction._y;
 }
 //_____________________________________________________________________________
 /**
@@ -169,37 +169,37 @@ void PiecewiseConstantFunction::setEqual(const PiecewiseConstantFunction &aFunct
  */
 void PiecewiseConstantFunction::init(Function* aFunction)
 {
-       if (aFunction == NULL)
-             return;
+    if (aFunction == NULL)
+        return;
 
-       PiecewiseConstantFunction* sf = dynamic_cast<PiecewiseConstantFunction*>(aFunction);
-       if (sf != NULL) {
-             setEqual(*sf);
-       } else {
-             XYFunctionInterface xyFunc(aFunction);
-             if (xyFunc.getNumberOfPoints() == 0) {
-                  // A PiecewiseConstantFunction must have at least 2 data points.
-                  // If aFunction is a Constant, use its Y value for both data points.
-                  // If it is not, make up two data points.
-                  double x[2] = {0.0, 1.0}, y[2];
-                  Constant* cons = dynamic_cast<Constant*>(aFunction);
-                  if (cons != NULL) {
-                      y[0] = y[1] = cons->calcValue(SimTK::Vector(1, 0.));
-                  } else {
-                      y[0] = y[1] = 1.0;
-                  }
-                  *this = PiecewiseConstantFunction(2, x, y);
-             } else if (xyFunc.getNumberOfPoints() == 1) {
-                  double x[2], y[2];
-                  x[0] = xyFunc.getXValues()[0];
-                  x[1] = x[0] + 1.0;
-                  y[0] = y[1] = xyFunc.getYValues()[0];
-                  *this = PiecewiseConstantFunction(2, x, y);
-             } else {
-                  *this = PiecewiseConstantFunction(xyFunc.getNumberOfPoints(),
-                      xyFunc.getXValues(), xyFunc.getYValues());
-             }
-       }
+    PiecewiseConstantFunction* sf = dynamic_cast<PiecewiseConstantFunction*>(aFunction);
+    if (sf != NULL) {
+        setEqual(*sf);
+    } else {
+        XYFunctionInterface xyFunc(aFunction);
+        if (xyFunc.getNumberOfPoints() == 0) {
+            // A PiecewiseConstantFunction must have at least 2 data points.
+            // If aFunction is a Constant, use its Y value for both data points.
+            // If it is not, make up two data points.
+            double x[2] = {0.0, 1.0}, y[2];
+            Constant* cons = dynamic_cast<Constant*>(aFunction);
+            if (cons != NULL) {
+                y[0] = y[1] = cons->calcValue(SimTK::Vector(1, 0.));
+            } else {
+                y[0] = y[1] = 1.0;
+            }
+            *this = PiecewiseConstantFunction(2, x, y);
+        } else if (xyFunc.getNumberOfPoints() == 1) {
+            double x[2], y[2];
+            x[0] = xyFunc.getXValues()[0];
+            x[1] = x[0] + 1.0;
+            y[0] = y[1] = xyFunc.getYValues()[0];
+            *this = PiecewiseConstantFunction(2, x, y);
+        } else {
+            *this = PiecewiseConstantFunction(xyFunc.getNumberOfPoints(),
+                                              xyFunc.getXValues(), xyFunc.getYValues());
+        }
+    }
 }
 
 //=============================================================================
@@ -214,13 +214,13 @@ void PiecewiseConstantFunction::init(Function* aFunction)
  */
 PiecewiseConstantFunction& PiecewiseConstantFunction::operator=(const PiecewiseConstantFunction &aFunction)
 {
-       // BASE CLASS
-       Function::operator=(aFunction);
+    // BASE CLASS
+    Function::operator=(aFunction);
 
-       // DATA
-       setEqual(aFunction);
+    // DATA
+    setEqual(aFunction);
 
-       return(*this);
+    return(*this);
 }
 
 
@@ -239,7 +239,7 @@ PiecewiseConstantFunction& PiecewiseConstantFunction::operator=(const PiecewiseC
  */
 int PiecewiseConstantFunction::getSize() const
 {
-       return(_x.getSize());
+    return(_x.getSize());
 }
 
 //-----------------------------------------------------------------------------
@@ -255,7 +255,7 @@ int PiecewiseConstantFunction::getSize() const
  */
 const Array<double>& PiecewiseConstantFunction::getX() const
 {
-       return(_x);
+    return(_x);
 }
 //_____________________________________________________________________________
 /**
@@ -267,7 +267,7 @@ const Array<double>& PiecewiseConstantFunction::getX() const
  */
 const Array<double>& PiecewiseConstantFunction::getY() const
 {
-       return(_y);
+    return(_y);
 }
 //_____________________________________________________________________________
 /**
@@ -279,7 +279,7 @@ const Array<double>& PiecewiseConstantFunction::getY() const
  */
 const double* PiecewiseConstantFunction::getXValues() const
 {
-       return(&_x[0]);
+    return(&_x[0]);
 }
 //_____________________________________________________________________________
 /**
@@ -289,7 +289,7 @@ const double* PiecewiseConstantFunction::getXValues() const
  */
 const double* PiecewiseConstantFunction::getYValues() const
 {
-       return(&_y[0]);
+    return(&_y[0]);
 }
 
 
@@ -304,7 +304,7 @@ const double* PiecewiseConstantFunction::getYValues() const
 double PiecewiseConstantFunction::
 evaluateTotalFirstDerivative(double aX,double aDxdt) const
 {
-       return 0.0;
+    return 0.0;
 }
 
 /**
@@ -313,90 +313,90 @@ evaluateTotalFirstDerivative(double aX,double aDxdt) const
 double PiecewiseConstantFunction::
 evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2) const
 {
-       return 0.0;
+    return 0.0;
 }
 
 double PiecewiseConstantFunction::getX(int aIndex) const
 {
-       if (aIndex >= 0 && aIndex < _x.getSize())
-             return _x.get(aIndex);
-       else {
-             throw Exception("PiecewiseConstantFunction::getX(): index out of bounds.");
-             return 0.0;
-       }
+    if (aIndex >= 0 && aIndex < _x.getSize())
+        return _x.get(aIndex);
+    else {
+        throw Exception("PiecewiseConstantFunction::getX(): index out of bounds.");
+        return 0.0;
+    }
 }
 
 double PiecewiseConstantFunction::getY(int aIndex) const
 {
-       if (aIndex >= 0 && aIndex < _y.getSize())
-             return _y.get(aIndex);
-       else {
-             throw Exception("PiecewiseConstantFunction::getY(): index out of bounds.");
-             return 0.0;
-       }
+    if (aIndex >= 0 && aIndex < _y.getSize())
+        return _y.get(aIndex);
+    else {
+        throw Exception("PiecewiseConstantFunction::getY(): index out of bounds.");
+        return 0.0;
+    }
 }
 
 void PiecewiseConstantFunction::setX(int aIndex, double aValue)
 {
-       if (aIndex >= 0 && aIndex < _x.getSize()) {
-             _x[aIndex] = aValue;
-       } else {
-             throw Exception("PiecewiseConstantFunction::setX(): index out of bounds.");
-       }
+    if (aIndex >= 0 && aIndex < _x.getSize()) {
+        _x[aIndex] = aValue;
+    } else {
+        throw Exception("PiecewiseConstantFunction::setX(): index out of bounds.");
+    }
 }
 
 void PiecewiseConstantFunction::setY(int aIndex, double aValue)
 {
-       if (aIndex >= 0 && aIndex < _y.getSize()) {
-             _y[aIndex] = aValue;
-       } else {
-             throw Exception("PiecewiseConstantFunction::setY(): index out of bounds.");
-       }
+    if (aIndex >= 0 && aIndex < _y.getSize()) {
+        _y[aIndex] = aValue;
+    } else {
+        throw Exception("PiecewiseConstantFunction::setY(): index out of bounds.");
+    }
 }
 
 bool PiecewiseConstantFunction::deletePoint(int aIndex)
 {
-       if (_x.getSize() > 1 && _y.getSize() > 1 &&
-              aIndex < _x.getSize() && aIndex < _y.getSize()) {
-          _x.remove(aIndex);
-          _y.remove(aIndex);
-             return true;
-       }
+    if (_x.getSize() > 1 && _y.getSize() > 1 &&
+            aIndex < _x.getSize() && aIndex < _y.getSize()) {
+        _x.remove(aIndex);
+        _y.remove(aIndex);
+        return true;
+    }
 
-       return false;
+    return false;
 }
 
 bool PiecewiseConstantFunction::deletePoints(const Array<int>& indices)
 {
-       bool pointsDeleted = false;
-       int numPointsLeft = _x.getSize() - indices.getSize();
+    bool pointsDeleted = false;
+    int numPointsLeft = _x.getSize() - indices.getSize();
 
-       if (numPointsLeft >= 1) {
-             // Assume the indices are sorted highest to lowest
-             for (int i=0; i<indices.getSize(); i++) {
-                  int index = indices.get(i);
-                  if (index >= 0 && index < _x.getSize()) {
+    if (numPointsLeft >= 1) {
+        // Assume the indices are sorted highest to lowest
+        for (int i=0; i<indices.getSize(); i++) {
+            int index = indices.get(i);
+            if (index >= 0 && index < _x.getSize()) {
                 _x.remove(index);
                 _y.remove(index);
-                      pointsDeleted = true;
-                  }
-             }
-       }
+                pointsDeleted = true;
+            }
+        }
+    }
 
-   return pointsDeleted;
+    return pointsDeleted;
 }
 
 int PiecewiseConstantFunction::addPoint(double aX, double aY)
 {
-       int i=0;
-       for (i=0; i<_x.getSize(); i++)
-             if (_x[i] > aX)
-                  break;
+    int i=0;
+    for (i=0; i<_x.getSize(); i++)
+        if (_x[i] > aX)
+            break;
 
-       _x.insert(i, aX);
-       _y.insert(i, aY);
+    _x.insert(i, aX);
+    _y.insert(i, aY);
 
-       return i;
+    return i;
 }
 
 double PiecewiseConstantFunction::calcValue(const Vector& x) const
@@ -409,7 +409,7 @@ double PiecewiseConstantFunction::calcValue(const Vector& x) const
     if (aX > _x[n-1] || EQUAL_WITHIN_ERROR(aX,_x[n-1]))
         return _y[n-1];
 
-   // Do a binary search to find which two points the abscissa is between.
+    // Do a binary search to find which two points the abscissa is between.
     int k, i = 0;
     int j = n;
     while (1)

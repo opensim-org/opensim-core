@@ -34,14 +34,14 @@ class CustomJoint;
 //                           SPATIAL TRANSFORM
 //==============================================================================
 /**
- * A class encapsulating the spatial transformation between two bodies that 
+ * A class encapsulating the spatial transformation between two bodies that
  * defines the behaviour of a custom joint.
  *
  * @authors Ajay Seth
  */
 
 class OSIMSIMULATION_API SpatialTransform :	public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(SpatialTransform, Object);
+    OpenSim_DECLARE_CONCRETE_OBJECT(SpatialTransform, Object);
 public:
 //==============================================================================
 // PROPERTIES
@@ -49,20 +49,20 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
-	/** Define the individual transform axes (6) that specify the spatial 
+    /** Define the individual transform axes (6) that specify the spatial
     transform; each is a TransformAxis object. **/
     OpenSim_DECLARE_PROPERTY(rotation1, TransformAxis,
-		"3 Axes for rotations are listed first.");
-	OpenSim_DECLARE_PROPERTY(rotation2, TransformAxis,
-		"");
-	OpenSim_DECLARE_PROPERTY(rotation3, TransformAxis,
-		"");
-	OpenSim_DECLARE_PROPERTY(translation1, TransformAxis,
-		"3 Axes for translations are listed next.");
-	OpenSim_DECLARE_PROPERTY(translation2, TransformAxis,
-		"");
-	OpenSim_DECLARE_PROPERTY(translation3, TransformAxis,
-		"");
+                             "3 Axes for rotations are listed first.");
+    OpenSim_DECLARE_PROPERTY(rotation2, TransformAxis,
+                             "");
+    OpenSim_DECLARE_PROPERTY(rotation3, TransformAxis,
+                             "");
+    OpenSim_DECLARE_PROPERTY(translation1, TransformAxis,
+                             "3 Axes for translations are listed next.");
+    OpenSim_DECLARE_PROPERTY(translation2, TransformAxis,
+                             "");
+    OpenSim_DECLARE_PROPERTY(translation3, TransformAxis,
+                             "");
     /**@}**/
 
 //==============================================================================
@@ -72,50 +72,54 @@ public:
 
     // default destructor, copy constructor, copy assignment
 
-	/** This tells the SpatialTransform the CustomJoint to which it belongs;
+    /** This tells the SpatialTransform the CustomJoint to which it belongs;
     this is not copied on copy construction or assignment. **/
-	void connectToJoint(CustomJoint& owningJoint);
+    void connectToJoint(CustomJoint& owningJoint);
 
-	/** Make sure axes are not parallel. **/
-	void constructIndependentAxes(int nAxes, int startIndex);
+    /** Make sure axes are not parallel. **/
+    void constructIndependentAxes(int nAxes, int startIndex);
 
-	// Spatial Transform specific methods
+    // Spatial Transform specific methods
 
     /** Construct a list of all unique coordinate names used by any of the
     contained TransformAxis objects. **/
-	OpenSim::Array<std::string> getCoordinateNames() const;
+    OpenSim::Array<std::string> getCoordinateNames() const;
     /** For each axis, construct a list of the coordinate indices that dictate
     motion along that axis. **/
 #ifndef SWIG
-	std::vector<std::vector<int> > getCoordinateIndices() const;
+    std::vector<std::vector<int> > getCoordinateIndices() const;
 #endif
     /** Create a new SimTK::Function corresponding to each axis; these are
     heap allocated and it is up to the caller to delete them. **/
-	std::vector<const SimTK::Function*> getFunctions() const;
+    std::vector<const SimTK::Function*> getFunctions() const;
     /** Get the axis direction associated with each TransformAxis. **/
-	std::vector<SimTK::Vec3> getAxes() const;
+    std::vector<SimTK::Vec3> getAxes() const;
 
-	// SCALE
-	void scale(const SimTK::Vec3 scaleFactors);
+    // SCALE
+    void scale(const SimTK::Vec3 scaleFactors);
 
     /** Select one of the 6 axis, numbered 0-5 with rotation first, then
     translation. **/
-	const TransformAxis& getTransformAxis(int whichAxis) const;
+    const TransformAxis& getTransformAxis(int whichAxis) const;
     /** Same, but returns a writable reference to the TransformAxis. **/
-	TransformAxis& updTransformAxis(int whichAxis);
+    TransformAxis& updTransformAxis(int whichAxis);
 
-    #ifndef SWIG
+#ifndef SWIG
     /** Same as getTransformAxis(). **/
-	const TransformAxis& operator[](int whichAxis) const
-    {   return getTransformAxis(whichAxis); }
+    const TransformAxis& operator[](int whichAxis) const
+    {
+        return getTransformAxis(whichAxis);
+    }
     /** Same as updTransformAxis(). **/
-	TransformAxis& operator[](int whichAxis) 
-    {   return updTransformAxis(whichAxis); }
-    #endif
+    TransformAxis& operator[](int whichAxis)
+    {
+        return updTransformAxis(whichAxis);
+    }
+#endif
 
 private:
-	void setNull();
-	void constructProperties();
+    void setNull();
+    void constructProperties();
 
     static const int NumTransformAxes = 6;
 

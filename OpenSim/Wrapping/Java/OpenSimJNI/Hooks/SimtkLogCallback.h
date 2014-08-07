@@ -32,17 +32,17 @@ class SimtkLogCallback : public LogCallback
 {
 public:
     virtual ~SimtkLogCallback() {}
-	virtual void log(const std::string &str) { }
+    virtual void log(const std::string &str) { }
 
-	void addToLogManager() {
-		LogManager::getInstance()->getOutBuffer()->addLogCallback(this);
-		LogManager::getInstance()->getErrBuffer()->addLogCallback(this);
-	}
+    void addToLogManager() {
+        LogManager::getInstance()->getOutBuffer()->addLogCallback(this);
+        LogManager::getInstance()->getErrBuffer()->addLogCallback(this);
+    }
 
-	void removeFromLogManager() {
-		LogManager::getInstance()->getOutBuffer()->removeLogCallback(this);
-		LogManager::getInstance()->getErrBuffer()->removeLogCallback(this);
-	}
+    void removeFromLogManager() {
+        LogManager::getInstance()->getOutBuffer()->removeLogCallback(this);
+        LogManager::getInstance()->getErrBuffer()->removeLogCallback(this);
+    }
 
 };
 

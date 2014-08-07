@@ -36,10 +36,10 @@
 #include <OpenSim/Simulation/Model/PathPoint.h>
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+#ifdef OSIMSIMULATION_API
+#undef OSIMSIMULATION_API
+#define OSIMSIMULATION_API
+#endif
 #endif
 
 namespace OpenSim {
@@ -59,7 +59,7 @@ class SimbodyEngine;
  * @version 1.0
  */
 class OSIMSIMULATION_API ConditionalPathPoint : public PathPoint {
-OpenSim_DECLARE_CONCRETE_OBJECT(ConditionalPathPoint, PathPoint);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ConditionalPathPoint, PathPoint);
 
 //=============================================================================
 // DATA
@@ -71,42 +71,48 @@ protected:
     PropertyStr _coordinateNameProp;
     std::string &_coordinateName;
 
-	const Coordinate* _coordinate;
+    const Coordinate* _coordinate;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	ConditionalPathPoint();
-	ConditionalPathPoint(const ConditionalPathPoint &aPoint);
-	virtual ~ConditionalPathPoint();
+    ConditionalPathPoint();
+    ConditionalPathPoint(const ConditionalPathPoint &aPoint);
+    virtual ~ConditionalPathPoint();
 
 #ifndef SWIG
-	ConditionalPathPoint& operator=(const ConditionalPathPoint &aPoint);
+    ConditionalPathPoint& operator=(const ConditionalPathPoint &aPoint);
 #endif
     void copyData(const ConditionalPathPoint &aPoint);
-	virtual void init(const PathPoint& aPoint);
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    virtual void init(const PathPoint& aPoint);
+    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
-	Array<double>& getRange() const { return _range; }
-	const Coordinate* getCoordinate() const { return _coordinate; }
-	const std::string& getCoordinateName() const { return _coordinateName; }
+    Array<double>& getRange() const {
+        return _range;
+    }
+    const Coordinate* getCoordinate() const {
+        return _coordinate;
+    }
+    const std::string& getCoordinateName() const {
+        return _coordinateName;
+    }
 #ifndef SWIG
-	void setCoordinate(const SimTK::State& s, Coordinate& aCoordinate);
-	void setRangeMin( const SimTK::State& s, double aMin);
-	void setRangeMax( const SimTK::State& s, double aMax);
+    void setCoordinate(const SimTK::State& s, Coordinate& aCoordinate);
+    void setRangeMin( const SimTK::State& s, double aMin);
+    void setRangeMax( const SimTK::State& s, double aMax);
 
     // Override PathPoint methods.
-	bool isActive(const SimTK::State& s) const override;
-	void connectToModelAndPath(const Model& aModel, GeometryPath& aPath) 
-                                                                override;
+    bool isActive(const SimTK::State& s) const override;
+    void connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
+    override;
 #endif
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 //=============================================================================
 };	// END of class ConditionalPathPoint
 //=============================================================================

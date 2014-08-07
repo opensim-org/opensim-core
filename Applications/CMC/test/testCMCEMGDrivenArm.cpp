@@ -36,47 +36,57 @@ int main() {
 
     SimTK::Array_<std::string> failures;
 
-	try {testEMGDrivenArm();}
+    try {
+        testEMGDrivenArm();
+    }
     catch (const std::exception& e)
-		{  cout << e.what() <<endl; failures.push_back("testEMGDrivenArm"); }
+    {
+        cout << e.what() <<endl;
+        failures.push_back("testEMGDrivenArm");
+    }
 
-	// redo with the Millard2012EquilibriumMuscle 
-	Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
+    // redo with the Millard2012EquilibriumMuscle
+    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
 
-	try {testEMGDrivenArm();}
+    try {
+        testEMGDrivenArm();
+    }
     catch (const std::exception& e)
-		{  cout << e.what() <<endl; failures.push_back("testEMGDrivenArm_Millard"); }
+    {
+        cout << e.what() <<endl;
+        failures.push_back("testEMGDrivenArm_Millard");
+    }
 
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
 
-	cout << "Done" << endl;
+    cout << "Done" << endl;
 
     return 0;
 }
 
 void testEMGDrivenArm() {
-	cout<<"\n******************************************************************" << endl;
-	cout << "*                         testEMGDrivenArm                       *" << endl;
-	cout << "******************************************************************\n" << endl;
-	CMCTool cmc("arm26_Setup_ComputedMuscleControl_EMG.xml");
-	cmc.run();
+    cout<<"\n******************************************************************" << endl;
+    cout << "*                         testEMGDrivenArm                       *" << endl;
+    cout << "******************************************************************\n" << endl;
+    CMCTool cmc("arm26_Setup_ComputedMuscleControl_EMG.xml");
+    cmc.run();
 
-	Storage results("Results_Arm26_EMG/arm26_states.sto"), temp("std_arm26_states.sto");
-	Storage *standard = new Storage();
-	cmc.getModel().formStateStorage(temp, *standard);
+    Storage results("Results_Arm26_EMG/arm26_states.sto"), temp("std_arm26_states.sto");
+    Storage *standard = new Storage();
+    cmc.getModel().formStateStorage(temp, *standard);
 
-	Array<double> rms_tols(0.02, 2*2+2*6);
-	rms_tols[4] = 0.10;  // trilong
-	rms_tols[6] = 0.25;  // trilat normally off but because of bicep long EMG tracking it turns on
-	rms_tols[8] = 0.25;  // trimed normally off but because of bicep long EMG tracking it turns on
-	rms_tols[10] = 0.50;  // biceps long normally low but because of EMG tracking should be on more
-	rms_tols[12] = 0.50;  // biceps short normally on but because of EMG tracking should be lower
+    Array<double> rms_tols(0.02, 2*2+2*6);
+    rms_tols[4] = 0.10;  // trilong
+    rms_tols[6] = 0.25;  // trilat normally off but because of bicep long EMG tracking it turns on
+    rms_tols[8] = 0.25;  // trimed normally off but because of bicep long EMG tracking it turns on
+    rms_tols[10] = 0.50;  // biceps long normally low but because of EMG tracking should be on more
+    rms_tols[12] = 0.50;  // biceps short normally on but because of EMG tracking should be lower
 
-	CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testEMGDrivenArm failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testEMGDrivenArm failed");
 
-	const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-	cout << "\ntestEMGDrivenArm "+muscleType+ " passed\n" << endl;
+    const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
+    cout << "\ntestEMGDrivenArm "+muscleType+ " passed\n" << endl;
 }

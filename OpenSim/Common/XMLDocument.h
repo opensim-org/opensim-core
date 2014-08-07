@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -38,7 +38,7 @@
 
 
 
-namespace OpenSim { 
+namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
@@ -47,7 +47,7 @@ namespace OpenSim {
  * XML source or 2) created locally in memory.
  *
  * @version 1.0
- * @author Ayman Habib, Frank C. Anderson, 
+ * @author Ayman Habib, Frank C. Anderson,
  */
 #ifdef WIN32
 #pragma warning( disable : 4251 )	// VC2010 no-dll export of std::string
@@ -62,54 +62,60 @@ class OSIMCOMMON_API XMLDocument  : public SimTK::Xml::Document {
 // DATA
 //=============================================================================
 public:
-	/** Latest version of the code encoded as an int xxyyzz where x: major release, y: minor, z: patch */
-	static const int LatestVersion;
+    /** Latest version of the code encoded as an int xxyyzz where x: major release, y: minor, z: patch */
+    static const int LatestVersion;
 private:
-	/** Name of the XML Document */
-	std::string _fileName;
-	/** Document Version as written to the file */
-	int _documentVersion;
-	OpenSim::Array<Object*> _defaultObjects;
+    /** Name of the XML Document */
+    std::string _fileName;
+    /** Document Version as written to the file */
+    int _documentVersion;
+    OpenSim::Array<Object*> _defaultObjects;
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION AND DESTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION AND DESTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	virtual ~XMLDocument();
-	XMLDocument();
-	XMLDocument(const std::string &aFileName);
-	XMLDocument(const XMLDocument &aDocument);
-	void copyDefaultObjects(const XMLDocument &aDocument);
-	void writeDefaultObjects(SimTK::Xml::Element& elmt);
-	//--------------------------------------------------------------------------
-	// VERSIONING /BACKWARD COMPATIBILITY SUPPORT
-	//--------------------------------------------------------------------------	
-	static const int& getLatestVersion() { return LatestVersion; };
-	static void renameChildNode(SimTK::Xml::Element& aNode, std::string oldElementName, std::string newElementName);
-	const int& getDocumentVersion() const { return _documentVersion; };
-	static void getVersionAsString(const int aVersion, std::string& aString); 
-	Xml::Element getRootDataElement();
-	bool isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoubles=1e-6, 
-		bool compareDefaults=false, bool compareVersionNumbers=false);
+    virtual ~XMLDocument();
+    XMLDocument();
+    XMLDocument(const std::string &aFileName);
+    XMLDocument(const XMLDocument &aDocument);
+    void copyDefaultObjects(const XMLDocument &aDocument);
+    void writeDefaultObjects(SimTK::Xml::Element& elmt);
+    //--------------------------------------------------------------------------
+    // VERSIONING /BACKWARD COMPATIBILITY SUPPORT
+    //--------------------------------------------------------------------------
+    static const int& getLatestVersion() {
+        return LatestVersion;
+    };
+    static void renameChildNode(SimTK::Xml::Element& aNode, std::string oldElementName, std::string newElementName);
+    const int& getDocumentVersion() const {
+        return _documentVersion;
+    };
+    static void getVersionAsString(const int aVersion, std::string& aString);
+    Xml::Element getRootDataElement();
+    bool isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoubles=1e-6,
+                   bool compareDefaults=false, bool compareVersionNumbers=false);
     static void addConnector(SimTK::Xml::Element& element, const std::string& connectorTag, const std::string& connectorName, const std::string& connectorValue);
 private:
-	static bool isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element& elt2, double toleranceForDoubles);
-	void updateDocumentVersion();
+    static bool isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element& elt2, double toleranceForDoubles);
+    void updateDocumentVersion();
 
 public:
-	//--------------------------------------------------------------------------
-	// SET AND GET
-	//--------------------------------------------------------------------------
-	void setFileName(const std::string &aFileName);
-	const std::string &getFileName() const;
-	void addDefaultObject(OpenSim::Object* aDefaultObject);
-	bool hasDefaultObjects() const { return (_defaultObjects.getSize()>0); };
-	//--------------------------------------------------------------------------
-	// IO
-	//--------------------------------------------------------------------------
-	bool print(const std::string &aFileName=NULL);
+    //--------------------------------------------------------------------------
+    // SET AND GET
+    //--------------------------------------------------------------------------
+    void setFileName(const std::string &aFileName);
+    const std::string &getFileName() const;
+    void addDefaultObject(OpenSim::Object* aDefaultObject);
+    bool hasDefaultObjects() const {
+        return (_defaultObjects.getSize()>0);
+    };
+    //--------------------------------------------------------------------------
+    // IO
+    //--------------------------------------------------------------------------
+    bool print(const std::string &aFileName=NULL);
 
 //=============================================================================
 };	// END CLASS XMLDocument

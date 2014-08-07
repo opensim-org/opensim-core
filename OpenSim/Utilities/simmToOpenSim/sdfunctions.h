@@ -21,8 +21,8 @@
 ReturnCode make_sdfast_model(ModelStruct* ms, char filename[], SBoolean write_file,
                              int addQuestionMarks);
 void make_sdfast_joint(ModelStruct* ms, FILE* fp, JointSDF* jntsdf, int jointnum, int sdnum,
-			              SegmentSDF segs[], int* dofcount,
-			              int* constrainedcount, SBoolean write_file, int addQuestionMarks);
+                       SegmentSDF segs[], int* dofcount,
+                       int* constrainedcount, SBoolean write_file, int addQuestionMarks);
 char* make_sdfast_seg_name(char seg_name[], int times_split);
 SBoolean valid_sdfast_model(ModelStruct* ms);
 void write_dllparams(char filename[], ModelStruct* model);
@@ -32,7 +32,7 @@ void write_invparams(char filename[], ModelStruct* model);
 /* defined in sdftools.c */
 dpJointType identify_joint_type(ModelStruct* ms, int jointnum);
 void find_sdfast_joint_order(ModelStruct* ms, JointSDF jnts[],
-				                 SegmentSDF segs[], int joint_order[], int ground_name_index);
+                             SegmentSDF segs[], int joint_order[], int ground_name_index);
 int find_nth_rotation(JointStruct* jnt, int n);
 int find_rotation_axis(JointStruct* jnt, double axis[]);
 int find_translation_axis(JointStruct* jnt, double axis[], DofType type, int num);
@@ -49,7 +49,7 @@ void freeDPModelStruct(dpModelStruct* dp);
 void freeDP420ModelStruct(dp420ModelStruct* dp);
 void freeDPPolyhedron(dpPolyhedronStruct* ph);
 void copyPolyhedronToDPPolyhedron(PolyhedronStruct* from, dpPolyhedronStruct** to,
-											 int SimmSegNum, int SDSegNum, ModelStruct* ms);
+                                  int SimmSegNum, int SDSegNum, ModelStruct* ms);
 
 /* defined in sdcode.c */
 ReturnCode write_sdheader_file(ModelStruct* ms, char filename[]);

@@ -37,13 +37,13 @@
 #include "osimToolsDLL.h"
 
 #ifdef SWIG
-	#ifdef OSIMTOOLS_API
-		#undef OSIMTOOLS_API
-		#define OSIMTOOLS_API
-	#endif
+#ifdef OSIMTOOLS_API
+#undef OSIMTOOLS_API
+#define OSIMTOOLS_API
+#endif
 #endif
 
-namespace OpenSim { 
+namespace OpenSim {
 
 class Body;
 class PrescribedForce;
@@ -59,96 +59,108 @@ class ControlSet;
  * @version 1.0
  */
 class OSIMTOOLS_API ForwardTool: public AbstractTool {
-OpenSim_DECLARE_CONCRETE_OBJECT(ForwardTool, AbstractTool);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ForwardTool, AbstractTool);
 
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
 protected:
-	// BASIC INPUT
+    // BASIC INPUT
 
-	/** Name of the states file.  The states file must at a minimum contain the
-	initial states for a simulation.  If a complete set of states is available,
-	the time stamps can be used to specify the integration steps and corrective
-	springs, which allow perturbations, can be added to the simulation. */
-	PropertyStr _statesFileNameProp;
-	std::string &_statesFileName;
+    /** Name of the states file.  The states file must at a minimum contain the
+    initial states for a simulation.  If a complete set of states is available,
+    the time stamps can be used to specify the integration steps and corrective
+    springs, which allow perturbations, can be added to the simulation. */
+    PropertyStr _statesFileNameProp;
+    std::string &_statesFileName;
 
-	/** If true, the time steps from the states file are used during
-	current integration. */
-	OpenSim::PropertyBool _useSpecifiedDtProp;
-	bool &_useSpecifiedDt;
+    /** If true, the time steps from the states file are used during
+    current integration. */
+    OpenSim::PropertyBool _useSpecifiedDtProp;
+    bool &_useSpecifiedDt;
 
-	/** Storage for the input states. */
-	Storage *_yStore;
-	/** Flag indicating whether or not to write to the results (GUI will set this to false). */
-	bool _printResultFiles;
+    /** Storage for the input states. */
+    Storage *_yStore;
+    /** Flag indicating whether or not to write to the results (GUI will set this to false). */
+    bool _printResultFiles;
 
     /** pointer to the simulation Manager */
     Manager* _manager;
 
-	/*** Private place to save some deserializtion info in case needed later */
-	std::string _parsingLog;
+    /*** Private place to save some deserializtion info in case needed later */
+    std::string _parsingLog;
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	virtual ~ForwardTool();
-	ForwardTool();
-	ForwardTool(const std::string &aFileName,bool aUpdateFromXMLNode=true,bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
-	ForwardTool(const ForwardTool &aObject);
+    virtual ~ForwardTool();
+    ForwardTool();
+    ForwardTool(const std::string &aFileName,bool aUpdateFromXMLNode=true,bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
+    ForwardTool(const ForwardTool &aObject);
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	ForwardTool&
-		operator=(const ForwardTool &aForwardTool);
+    ForwardTool&
+    operator=(const ForwardTool &aForwardTool);
 #endif
 
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 
     void setManager( Manager& m );
-    const Manager& getManager() const; 
+    const Manager& getManager() const;
 
-	const std::string &getStatesFileName() const { return _statesFileName; }
-	void setStatesFileName(const std::string &aFileName) { _statesFileName = aFileName; }
+    const std::string &getStatesFileName() const {
+        return _statesFileName;
+    }
+    void setStatesFileName(const std::string &aFileName) {
+        _statesFileName = aFileName;
+    }
 
-	bool getUseSpecifiedDt() const { return _useSpecifiedDt; }
-	void setUseSpecifiedDt(bool aUseSpecifiedDt) { _useSpecifiedDt = aUseSpecifiedDt; }
+    bool getUseSpecifiedDt() const {
+        return _useSpecifiedDt;
+    }
+    void setUseSpecifiedDt(bool aUseSpecifiedDt) {
+        _useSpecifiedDt = aUseSpecifiedDt;
+    }
 
-	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
+    void setPrintResultFiles(bool aToWrite) {
+        _printResultFiles = aToWrite;
+    }
 
-	//--------------------------------------------------------------------------
-	// INTERFACE
-	//--------------------------------------------------------------------------
-	virtual bool run() SWIG_DECLARE_EXCEPTION;
-	void printResults();
+    //--------------------------------------------------------------------------
+    // INTERFACE
+    //--------------------------------------------------------------------------
+    virtual bool run() SWIG_DECLARE_EXCEPTION;
+    void printResults();
 
-	//--------------------------------------------------------------------------
-	// UTILITY
-	//--------------------------------------------------------------------------
-	static double Step(double t, double t0, double t1); 
+    //--------------------------------------------------------------------------
+    // UTILITY
+    //--------------------------------------------------------------------------
+    static double Step(double t, double t0, double t1);
     static double SigmaUp(double tau,double to,double t);
     static double SigmaDn(double tau,double to,double t);
 
-	void loadStatesStorage (std::string& statesFileName, Storage*& rYStore) const; 
-	const std::string& getParsingLog() { return _parsingLog; };
+    void loadStatesStorage (std::string& statesFileName, Storage*& rYStore) const;
+    const std::string& getParsingLog() {
+        return _parsingLog;
+    };
 protected:
-	void setDesiredStatesForControllers(Storage& rYStore);
-	int determineInitialTimeFromStatesStorage(double &rTI);
-	void InitializeSpecifiedTimeStepping(Storage *aYStore, Manager& aManager);
+    void setDesiredStatesForControllers(Storage& rYStore);
+    int determineInitialTimeFromStatesStorage(double &rTI);
+    void InitializeSpecifiedTimeStepping(Storage *aYStore, Manager& aManager);
 private:
 
 //=============================================================================

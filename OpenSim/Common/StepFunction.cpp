@@ -49,33 +49,33 @@ StepFunction::~StepFunction()
  * Default constructor.
  */
 StepFunction::StepFunction() :
-	_startTime(_startTimeProp.getValueDbl()), 
-	_endTime(_endTimeProp.getValueDbl()),
-	_startValue(_startValueProp.getValueDbl()),
-	_endValue(_endValueProp.getValueDbl())
+    _startTime(_startTimeProp.getValueDbl()),
+    _endTime(_endTimeProp.getValueDbl()),
+    _startValue(_startValueProp.getValueDbl()),
+    _endValue(_endValueProp.getValueDbl())
 
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
 /**
  */
 StepFunction::StepFunction(double startTime, double endTime, double startValue, double endValue) :
-	_startTime(_startTimeProp.getValueDbl()), 
-	_endTime(_endTimeProp.getValueDbl()),
-	_startValue(_startValueProp.getValueDbl()),
-	_endValue(_endValueProp.getValueDbl())
+    _startTime(_startTimeProp.getValueDbl()),
+    _endTime(_endTimeProp.getValueDbl()),
+    _startValue(_startValueProp.getValueDbl()),
+    _endValue(_endValueProp.getValueDbl())
 
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
 
-	setStartTime(startTime);
-	setEndTime(endTime);
-	setStartValue(startValue);
-	setEndValue(endValue);
+    setStartTime(startTime);
+    setEndTime(endTime);
+    setStartValue(startValue);
+    setEndValue(endValue);
 }
 
 //_____________________________________________________________________________
@@ -86,15 +86,15 @@ StepFunction::StepFunction(double startTime, double endTime, double startValue, 
  * @param aStepFunction StepFunction object to be copied.
  */
 StepFunction::StepFunction(const StepFunction &aStepFunction) :
-	_startTime(_startTimeProp.getValueDbl()), 
-	_endTime(_endTimeProp.getValueDbl()),
-	_startValue(_startValueProp.getValueDbl()),
-	_endValue(_endValueProp.getValueDbl())
+    _startTime(_startTimeProp.getValueDbl()),
+    _endTime(_endTimeProp.getValueDbl()),
+    _startValue(_startValueProp.getValueDbl()),
+    _endValue(_endValueProp.getValueDbl())
 
 {
-	setNull();
-	setupProperties();
-	copyData(aStepFunction);
+    setNull();
+    setupProperties();
+    copyData(aStepFunction);
 }
 
 //=============================================================================
@@ -106,7 +106,7 @@ StepFunction::StepFunction(const StepFunction &aStepFunction) :
  */
 void StepFunction::setNull()
 {
-	setAuthors("Ajay Seth");
+    setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________
@@ -117,21 +117,21 @@ void StepFunction::setNull()
  */
 void StepFunction::setupProperties()
 {
-	_startTimeProp.setName("transition_start_time");
-	_startTimeProp.setValue(0.99);
-	_propertySet.append(&_startTimeProp);
+    _startTimeProp.setName("transition_start_time");
+    _startTimeProp.setValue(0.99);
+    _propertySet.append(&_startTimeProp);
 
-	_endTimeProp.setName("transition_end_time");
-	_endTimeProp.setValue(1.01);
-	_propertySet.append(&_endTimeProp);
+    _endTimeProp.setName("transition_end_time");
+    _endTimeProp.setValue(1.01);
+    _propertySet.append(&_endTimeProp);
 
-	_startValueProp.setName("start_value");
-	_startValueProp.setValue(0.0);
-	_propertySet.append(&_startValueProp);
+    _startValueProp.setName("start_value");
+    _startValueProp.setValue(0.0);
+    _propertySet.append(&_startValueProp);
 
-	_endValueProp.setName("end_value");
-	_endValueProp.setValue(1.0);
-	_propertySet.append(&_endValueProp);
+    _endValueProp.setName("end_value");
+    _endValueProp.setValue(1.0);
+    _propertySet.append(&_endValueProp);
 
 }
 
@@ -146,10 +146,10 @@ void StepFunction::setupProperties()
  */
 void StepFunction::copyData(const StepFunction &aStepFunction)
 {
-	setStartTime(aStepFunction._startTime);
-	setEndTime(aStepFunction._endTime);
-	setStartValue(aStepFunction._startValue);
-	setEndValue(aStepFunction._endValue);
+    setStartTime(aStepFunction._startTime);
+    setEndTime(aStepFunction._endTime);
+    setStartValue(aStepFunction._startValue);
+    setEndValue(aStepFunction._endValue);
     resetFunction();
 }
 
@@ -166,20 +166,20 @@ void StepFunction::copyData(const StepFunction &aStepFunction)
  */
 StepFunction& StepFunction::operator=(const StepFunction &aStepFunction)
 {
-	// BASE CLASS
-	Function::operator=(aStepFunction);
+    // BASE CLASS
+    Function::operator=(aStepFunction);
 
-	// DATA
-	copyData(aStepFunction);
+    // DATA
+    copyData(aStepFunction);
 
-	return(*this);
+    return(*this);
 }
 
 
 //=============================================================================
 // UTILITY
 //=============================================================================
-SimTK::Function* StepFunction::createSimTKFunction() const 
+SimTK::Function* StepFunction::createSimTKFunction() const
 {
-	return new SimTK::Function::Step(_startValue, _endValue, _startTime, _endTime);
+    return new SimTK::Function::Step(_startValue, _endValue, _startTime, _endTime);
 }

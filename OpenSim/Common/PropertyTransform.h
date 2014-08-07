@@ -42,7 +42,7 @@
  * @version 1.0
  * @author Ayman HAbib
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 class OSIMCOMMON_API PropertyTransform : public PropertyDblArray
 {
@@ -51,51 +51,51 @@ class OSIMCOMMON_API PropertyTransform : public PropertyDblArray
 // DATA
 //=============================================================================
 private:
-	/** Transform. */
-	SimTK::Transform _transform;
+    /** Transform. */
+    SimTK::Transform _transform;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	PropertyTransform();
-	PropertyTransform(const std::string &aName,
-		const SimTK::Transform& aTransform);
-	PropertyTransform(const std::string &aName,
-		const Array<double> &aArray);
-	PropertyTransform(const PropertyTransform &aProperty);
-	/*virtual*/ PropertyTransform* clone() const;
+    PropertyTransform();
+    PropertyTransform(const std::string &aName,
+                      const SimTK::Transform& aTransform);
+    PropertyTransform(const std::string &aName,
+                      const Array<double> &aArray);
+    PropertyTransform(const PropertyTransform &aProperty);
+    /*virtual*/ PropertyTransform* clone() const;
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	PropertyTransform& operator=(const PropertyTransform &aProperty);
+    PropertyTransform& operator=(const PropertyTransform &aProperty);
 #endif
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 public:
-	// TYPE
-	virtual std::string getTypeName() const override;
-	// VALUE
-	virtual void setValue(const SimTK::Transform &aTransform);
-	virtual SimTK::Transform& getValueTransform();
+    // TYPE
+    virtual std::string getTypeName() const override;
+    // VALUE
+    virtual void setValue(const SimTK::Transform &aTransform);
+    virtual SimTK::Transform& getValueTransform();
 #ifndef SWIG
-	virtual const SimTK::Transform& getValueTransform() const;
+    virtual const SimTK::Transform& getValueTransform() const;
 #endif
-	virtual void setValue(int aSize,const double aArray[]);
-	void getRotationsAndTranslationsAsArray6(double aArray[]) const;
+    virtual void setValue(int aSize,const double aArray[]);
+    void getRotationsAndTranslationsAsArray6(double aArray[]) const;
 
-	virtual void setValue(const Array<double> &aArray){
-		setValue(6, &aArray[0]);
-	};
-	// VALUE as String
-	virtual std::string toString() const;
+    virtual void setValue(const Array<double> &aArray) {
+        setValue(6, &aArray[0]);
+    };
+    // VALUE as String
+    virtual std::string toString() const;
 
 
 //=============================================================================

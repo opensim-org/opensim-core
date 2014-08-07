@@ -74,63 +74,63 @@ static osimActuatorsInstantiator instantiator;
  */
 OSIMACTUATORS_API void RegisterTypes_osimActuators()
 {
-  try {
+    try {
 
-	Object::registerType( CoordinateActuator() );
-	Object::registerType( PointActuator() );
-	Object::registerType( TorqueActuator() );
-	Object::registerType( PointToPointActuator() );
-	Object::registerType( ClutchedPathSpring() );
+        Object::registerType( CoordinateActuator() );
+        Object::registerType( PointActuator() );
+        Object::registerType( TorqueActuator() );
+        Object::registerType( PointToPointActuator() );
+        Object::registerType( ClutchedPathSpring() );
 
-	Object::registerType( Thelen2003Muscle() );
-	Object::registerType( Thelen2003Muscle_Deprecated() );
-	Object::registerType( Schutte1993Muscle_Deprecated() );
-	Object::registerType( Delp1990Muscle_Deprecated() );
-	Object::registerType( SpringGeneralizedForce() );
-	Object::registerType( RigidTendonMuscle() );
+        Object::registerType( Thelen2003Muscle() );
+        Object::registerType( Thelen2003Muscle_Deprecated() );
+        Object::registerType( Schutte1993Muscle_Deprecated() );
+        Object::registerType( Delp1990Muscle_Deprecated() );
+        Object::registerType( SpringGeneralizedForce() );
+        Object::registerType( RigidTendonMuscle() );
 
-    Object::RegisterType( ActiveForceLengthCurve() );
-    Object::RegisterType( ForceVelocityCurve() );
-    Object::RegisterType( ForceVelocityInverseCurve() );
-    Object::RegisterType( TendonForceLengthCurve() );
-    Object::RegisterType( FiberForceLengthCurve() );
-    Object::RegisterType( FiberCompressiveForceLengthCurve() );
-    Object::RegisterType( FiberCompressiveForceCosPennationCurve() );
+        Object::RegisterType( ActiveForceLengthCurve() );
+        Object::RegisterType( ForceVelocityCurve() );
+        Object::RegisterType( ForceVelocityInverseCurve() );
+        Object::RegisterType( TendonForceLengthCurve() );
+        Object::RegisterType( FiberForceLengthCurve() );
+        Object::RegisterType( FiberCompressiveForceLengthCurve() );
+        Object::RegisterType( FiberCompressiveForceCosPennationCurve() );
 
-    Object::RegisterType(MuscleFirstOrderActivationDynamicModel());
-    Object::RegisterType(MuscleFixedWidthPennationModel());
+        Object::RegisterType(MuscleFirstOrderActivationDynamicModel());
+        Object::RegisterType(MuscleFixedWidthPennationModel());
 
-    Object::RegisterType(Millard2012EquilibriumMuscle());
-    Object::RegisterType(Millard2012AccelerationMuscle());
+        Object::RegisterType(Millard2012EquilibriumMuscle());
+        Object::RegisterType(Millard2012AccelerationMuscle());
 
-    //Object::RegisterType( ConstantMuscleActivation() );
-    //Object::RegisterType( ZerothOrderMuscleActivationDynamics() );
-    //Object::RegisterType( FirstOrderMuscleActivationDynamics() );
+        //Object::RegisterType( ConstantMuscleActivation() );
+        //Object::RegisterType( ZerothOrderMuscleActivationDynamics() );
+        //Object::RegisterType( FirstOrderMuscleActivationDynamics() );
 
-	// OLD Versions
-	//Associate an instance with old name to help deserialization
-	// This has to be done after the new Type is registered
-	Object::renameType("GeneralizedForce", "CoordinateActuator");
-	Object::renameType("Force", "PointActuator");
-	Object::renameType("Torque", "TorqueActuator");
-	Object::renameType("Schutte1993Muscle", "Schutte1993Muscle_Deprecated");
-	Object::renameType("Delp1990Muscle", "Delp1990Muscle_Deprecated");
+        // OLD Versions
+        //Associate an instance with old name to help deserialization
+        // This has to be done after the new Type is registered
+        Object::renameType("GeneralizedForce", "CoordinateActuator");
+        Object::renameType("Force", "PointActuator");
+        Object::renameType("Torque", "TorqueActuator");
+        Object::renameType("Schutte1993Muscle", "Schutte1993Muscle_Deprecated");
+        Object::renameType("Delp1990Muscle", "Delp1990Muscle_Deprecated");
 
-	//Object::RenameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
+        //Object::RenameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 
-  } catch (const std::exception& e) {
-    std::cerr 
-        << "ERROR during osimActuators Object registration:\n"
-        << e.what() << "\n";
-  }
+    } catch (const std::exception& e) {
+        std::cerr
+                << "ERROR during osimActuators Object registration:\n"
+                << e.what() << "\n";
+    }
 }
 
 osimActuatorsInstantiator::osimActuatorsInstantiator()
 {
-       registerDllClasses();
+    registerDllClasses();
 }
 
 void osimActuatorsInstantiator::registerDllClasses()
 {
-       RegisterTypes_osimActuators();
+    RegisterTypes_osimActuators();
 }

@@ -43,7 +43,7 @@ using namespace OpenSim;
  * Default constructor.
  */
 Units::Units() :
-	_type(UnknownUnits)
+    _type(UnknownUnits)
 {
 }
 
@@ -55,7 +55,7 @@ Units::Units() :
  */
 Units::Units(const Units& aUnits)
 {
-	_type = aUnits._type;
+    _type = aUnits._type;
 }
 
 //_____________________________________________________________________________
@@ -65,24 +65,24 @@ Units::Units(const Units& aUnits)
  * @param aString string containing the units text label
  */
 Units::Units(const string aString) :
-	_type(UnknownUnits)
+    _type(UnknownUnits)
 {
-   if (aString == "RADIANS" || aString == "RAD" || aString == "radians" || aString == "rad")
-      _type = Radians;
-   if (aString == "DEGREES" || aString == "DEG" || aString == "degrees" || aString == "deg")
-      _type = Degrees;
-   if (aString == "MM" || aString == "MILLIMETERS" || aString == "mm" || aString == "millimeters")
-      _type = Millimeters;
-   if (aString == "CM" || aString == "CENTIMETERS" || aString == "cm" || aString == "centimeters")
-      _type = Centimeters;
-   if (aString == "M" || aString == "METERS" || aString == "m" || aString == "meters")
-      _type = Meters;
-   if (aString == "SEC" || aString == "SECONDS" || aString == "sec" || aString == "seconds")
-      _type = Seconds;
-   if (aString == "MSEC" || aString == "MILLISECONDS" || aString == "msec" || aString == "milliseconds")
-      _type = Milliseconds;
-	if (aString == "N" || aString == "NEWTONS" || aString == "Newtons")
-		_type = Newtons;
+    if (aString == "RADIANS" || aString == "RAD" || aString == "radians" || aString == "rad")
+        _type = Radians;
+    if (aString == "DEGREES" || aString == "DEG" || aString == "degrees" || aString == "deg")
+        _type = Degrees;
+    if (aString == "MM" || aString == "MILLIMETERS" || aString == "mm" || aString == "millimeters")
+        _type = Millimeters;
+    if (aString == "CM" || aString == "CENTIMETERS" || aString == "cm" || aString == "centimeters")
+        _type = Centimeters;
+    if (aString == "M" || aString == "METERS" || aString == "m" || aString == "meters")
+        _type = Meters;
+    if (aString == "SEC" || aString == "SECONDS" || aString == "sec" || aString == "seconds")
+        _type = Seconds;
+    if (aString == "MSEC" || aString == "MILLISECONDS" || aString == "msec" || aString == "milliseconds")
+        _type = Milliseconds;
+    if (aString == "N" || aString == "NEWTONS" || aString == "Newtons")
+        _type = Newtons;
 }
 
 //_____________________________________________________________________________
@@ -93,7 +93,7 @@ Units::Units(const string aString) :
  */
 Units::Units(UnitType aType)
 {
-	_type = aType;
+    _type = aType;
 }
 
 //_____________________________________________________________________________
@@ -118,7 +118,7 @@ Units::~Units()
  */
 double Units::convertTo(UnitType aType, double aValue) const
 {
-	return aValue * convertTo(aType);
+    return aValue * convertTo(aType);
 }
 
 //_____________________________________________________________________________
@@ -131,7 +131,7 @@ double Units::convertTo(UnitType aType, double aValue) const
  */
 double Units::convertTo(const Units& aUnit) const
 {
-	return convertTo(aUnit._type);
+    return convertTo(aUnit._type);
 }
 
 //_____________________________________________________________________________
@@ -144,66 +144,66 @@ double Units::convertTo(const Units& aUnit) const
  */
 double Units::convertTo(UnitType aType) const
 {
-	if (_type == aType)
-		return 1.0;
+    if (_type == aType)
+        return 1.0;
 
-	if (_type == Radians)
-	{
-		if (aType == Degrees)
-			return SimTK_RADIAN_TO_DEGREE;
-		else
-			return SimTK::NaN;
-	}
-	else if (_type == Degrees)
-	{
-		if (aType == Radians)
-			return SimTK_DEGREE_TO_RADIAN;
-		else
-			return SimTK::NaN;
-	}
-	else if (_type == Millimeters)
-	{
-		if (aType == Centimeters)
-			return 0.1;
-		else if (aType == Meters)
-			return 0.001;
-		else
-			return SimTK::NaN;
-	}
-	else if (_type == Centimeters)
-	{
-		if (aType == Millimeters)
-			return 10.0;
-		else if (aType == Meters)
-			return 0.01;
-		else
-			return SimTK::NaN;
-	}
-	else if (_type == Meters)
-	{
-		if (aType == Millimeters)
-			return 1000.0;
-		else if (aType == Centimeters)
-			return 100.0;
-		else
-			return SimTK::NaN;
-	}
-	else if (_type == Seconds)
-	{
-		if (aType == Milliseconds)
-			return 1000.0;
-		else
-			return SimTK::NaN;
-	}
-	else if (_type == Milliseconds)
-	{
-		if (aType == Seconds)
-			return 0.001;
-		else
-			return SimTK::NaN;
-	}
+    if (_type == Radians)
+    {
+        if (aType == Degrees)
+            return SimTK_RADIAN_TO_DEGREE;
+        else
+            return SimTK::NaN;
+    }
+    else if (_type == Degrees)
+    {
+        if (aType == Radians)
+            return SimTK_DEGREE_TO_RADIAN;
+        else
+            return SimTK::NaN;
+    }
+    else if (_type == Millimeters)
+    {
+        if (aType == Centimeters)
+            return 0.1;
+        else if (aType == Meters)
+            return 0.001;
+        else
+            return SimTK::NaN;
+    }
+    else if (_type == Centimeters)
+    {
+        if (aType == Millimeters)
+            return 10.0;
+        else if (aType == Meters)
+            return 0.01;
+        else
+            return SimTK::NaN;
+    }
+    else if (_type == Meters)
+    {
+        if (aType == Millimeters)
+            return 1000.0;
+        else if (aType == Centimeters)
+            return 100.0;
+        else
+            return SimTK::NaN;
+    }
+    else if (_type == Seconds)
+    {
+        if (aType == Milliseconds)
+            return 1000.0;
+        else
+            return SimTK::NaN;
+    }
+    else if (_type == Milliseconds)
+    {
+        if (aType == Seconds)
+            return 0.001;
+        else
+            return SimTK::NaN;
+    }
 
-	return SimTK::NaN;
+    return SimTK::NaN;
 }
 
 //_____________________________________________________________________________
@@ -214,28 +214,28 @@ double Units::convertTo(UnitType aType) const
  */
 string Units::getLabel() const
 {
-	switch(_type)
-	{
-	   case Radians:
-		   return "radians";
-	   case Degrees:
-		   return "degrees";
-	   case Millimeters:
-		   return "millimeters";
-	   case Centimeters:
-		   return "centimeters";
-	   case Meters:
-		   return "meters";
-		case Seconds:
-			return "seconds";
-		case Milliseconds:
-			return "milliseconds";
-		case Newtons:
-			return "N";
-		case UnknownUnits:
-		default:
-			return "unknown";
-	}
+    switch(_type)
+    {
+    case Radians:
+        return "radians";
+    case Degrees:
+        return "degrees";
+    case Millimeters:
+        return "millimeters";
+    case Centimeters:
+        return "centimeters";
+    case Meters:
+        return "meters";
+    case Seconds:
+        return "seconds";
+    case Milliseconds:
+        return "milliseconds";
+    case Newtons:
+        return "N";
+    case UnknownUnits:
+    default:
+        return "unknown";
+    }
 }
 /**
  * Get the text label for the units.
@@ -244,26 +244,26 @@ string Units::getLabel() const
  */
 string Units::getAbbreviation() const
 {
-	switch(_type)
-	{
-	   case Radians:
-		   return "rad";
-	   case Degrees:
-		   return "deg";
-	   case Millimeters:
-		   return "mm";
-	   case Centimeters:
-		   return "cm";
-	   case Meters:
-		   return "m";
-		case Seconds:
-			return "s";
-		case Milliseconds:
-			return "ms";
-		case Newtons:
-			return "N";
-		case UnknownUnits:
-		default:
-			return "unknown";
-	}
+    switch(_type)
+    {
+    case Radians:
+        return "rad";
+    case Degrees:
+        return "deg";
+    case Millimeters:
+        return "mm";
+    case Centimeters:
+        return "cm";
+    case Meters:
+        return "m";
+    case Seconds:
+        return "s";
+    case Milliseconds:
+        return "ms";
+    case Newtons:
+        return "N";
+    case UnknownUnits:
+    default:
+        return "unknown";
+    }
 }

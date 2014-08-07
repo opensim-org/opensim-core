@@ -30,12 +30,12 @@ using namespace SimTK;
 namespace OpenSim {
 
 CoordinateReference::CoordinateReference() : Reference_<double>(),
-	_coordinateValueFunction(_coordinateValueFunctionProp.getValueObjPtrRef()),
-	_defaultWeight(_defaultWeightProp.getValueDbl())
+    _coordinateValueFunction(_coordinateValueFunctionProp.getValueObjPtrRef()),
+    _defaultWeight(_defaultWeightProp.getValueDbl())
 {
-	setAuthors("Ajay Seth");
-	_names.resize(getNumRefs());
-	_names[0] = getName();
+    setAuthors("Ajay Seth");
+    _names.resize(getNumRefs());
+    _names[0] = getName();
 }
 
 //______________________________________________________________________________
@@ -46,20 +46,20 @@ CoordinateReference::CoordinateReference() : Reference_<double>(),
  * @param referenceFunction is its its function returning its value
  */
 CoordinateReference::CoordinateReference(const std::string name, Function &referenceFunction) : Reference_<double>(name),
-	_coordinateValueFunction(_coordinateValueFunctionProp.getValueObjPtrRef()),
-	_defaultWeight(_defaultWeightProp.getValueDbl())
+    _coordinateValueFunction(_coordinateValueFunctionProp.getValueObjPtrRef()),
+    _defaultWeight(_defaultWeightProp.getValueDbl())
 {
-	setAuthors("Ajay Seth");
-	setValueFunction(referenceFunction);
-	_names.resize(getNumRefs());
-	_names[0] = getName();
+    setAuthors("Ajay Seth");
+    setValueFunction(referenceFunction);
+    _names.resize(getNumRefs());
+    _names[0] = getName();
 }
 
 // Copy constructor
 CoordinateReference::CoordinateReference(const CoordinateReference& source)
-:   Super(source), 
-    _coordinateValueFunction(_coordinateValueFunctionProp.getValueObjPtrRef()),
-	_defaultWeight(_defaultWeightProp.getValueDbl()) 
+    :   Super(source),
+        _coordinateValueFunction(_coordinateValueFunctionProp.getValueObjPtrRef()),
+        _defaultWeight(_defaultWeightProp.getValueDbl())
 {
     copyData(source);
 }
@@ -68,76 +68,76 @@ CoordinateReference::CoordinateReference(const CoordinateReference& source)
 CoordinateReference& CoordinateReference::operator=(const CoordinateReference& source)
 {
     if (&source != this) {
-	    Super::operator=(source);
+        Super::operator=(source);
         copyData(source);
     }
-	return *this;
+    return *this;
 }
 
 void CoordinateReference::copyData(const CoordinateReference& source)
 {
-	_coordinateValueFunction = source._coordinateValueFunction->clone();
-	_defaultWeight = source._defaultWeight;
+    _coordinateValueFunction = source._coordinateValueFunction->clone();
+    _defaultWeight = source._defaultWeight;
 }
 
 
 /** get the names of the referettes */
 const SimTK::Array_<std::string>& CoordinateReference::getNames() const
 {
-	return _names;
+    return _names;
 }
 
 
 /** get the values of the CoordinateReference */
 void CoordinateReference::getValues(const SimTK::State &s, SimTK::Array_<double> &values) const
 {
-	SimTK::Vector t(1, s.getTime());
-	values.resize(getNumRefs());
-	values[0] = _coordinateValueFunction->calcValue(t);
+    SimTK::Vector t(1, s.getTime());
+    values.resize(getNumRefs());
+    values[0] = _coordinateValueFunction->calcValue(t);
 }
 
 
 /** get the weighting (importance) of meeting this Reference */
 void CoordinateReference::getWeights(const SimTK::State &s, SimTK::Array_<double> &weights) const
 {
-	weights.resize(getNumRefs());
-	weights[0] = _defaultWeight;
+    weights.resize(getNumRefs());
+    weights[0] = _defaultWeight;
 }
 
 
 /** get the value of the CoordinateReference */
 double CoordinateReference::getValue(const SimTK::State &s) const
 {
-	SimTK::Vector t(1, s.getTime());
-	return _coordinateValueFunction->calcValue(t);
+    SimTK::Vector t(1, s.getTime());
+    return _coordinateValueFunction->calcValue(t);
 }
 
 /** get the speed value of the CoordinateReference */
 double CoordinateReference::getSpeedValue(const SimTK::State &s) const
 {
-	SimTK::Vector t(1, s.getTime());
-	std::vector<int> order(1, 0);
-	return _coordinateValueFunction->calcDerivative(order, t);
+    SimTK::Vector t(1, s.getTime());
+    std::vector<int> order(1, 0);
+    return _coordinateValueFunction->calcDerivative(order, t);
 }
 
 /** get the acceleration value of the CoordinateReference */
 double CoordinateReference::getAccelerationValue(const SimTK::State &s) const
 {
-	SimTK::Vector t(1, s.getTime());
-	std::vector<int> order(2, 0);
-	return _coordinateValueFunction->calcDerivative(order, t);
+    SimTK::Vector t(1, s.getTime());
+    std::vector<int> order(2, 0);
+    return _coordinateValueFunction->calcDerivative(order, t);
 }
 
 /** get the weight of the CoordinateReference */
 double CoordinateReference::getWeight(const SimTK::State &s) const
 {
-	return Reference_<double>::getWeights(s)[0];
+    return Reference_<double>::getWeights(s)[0];
 }
 
 /** set the weight of the CoordinateReference */
 void CoordinateReference::setWeight(double weight)
 {
-	_defaultWeight = weight;
+    _defaultWeight = weight;
 }
 
 } // end of namespace OpenSim

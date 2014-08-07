@@ -38,7 +38,7 @@
 //=============================================================================
 /**
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 class Model;
 class ForceSet;
@@ -52,90 +52,94 @@ class ForceSet;
  * @author Eran
  */
 class OSIMANALYSES_API InverseDynamics : public Analysis {
-OpenSim_DECLARE_CONCRETE_OBJECT(InverseDynamics, Analysis);
+    OpenSim_DECLARE_CONCRETE_OBJECT(InverseDynamics, Analysis);
 
 //=============================================================================
 // DATA
 //=============================================================================
 private:
-	int _numCoordinateActuators;
+    int _numCoordinateActuators;
 protected:
-	/** Use force set from model. */
-	PropertyBool _useModelForceSetProp;
-	bool &_useModelForceSet;
+    /** Use force set from model. */
+    PropertyBool _useModelForceSetProp;
+    bool &_useModelForceSet;
 
-	Storage *_storage;
-	GCVSplineSet _statesSplineSet;
+    Storage *_storage;
+    GCVSplineSet _statesSplineSet;
 
-	Array<double> _dydt;
-	Array<int> _accelerationIndices;
+    Array<double> _dydt;
+    Array<int> _accelerationIndices;
 
-	bool _ownsForceSet;
-	ForceSet *_forceSet;
+    bool _ownsForceSet;
+    ForceSet *_forceSet;
 
-	SimTK::Matrix _performanceMatrix;
-	SimTK::Vector _performanceVector;
-	SimTK::Matrix _constraintMatrix;
-	SimTK::Vector _constraintVector;
-	SimTK::Vector _lapackWork;
+    SimTK::Matrix _performanceMatrix;
+    SimTK::Vector _performanceVector;
+    SimTK::Matrix _constraintMatrix;
+    SimTK::Vector _constraintVector;
+    SimTK::Vector _lapackWork;
 
-	Model *_modelWorkingCopy;
+    Model *_modelWorkingCopy;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	InverseDynamics(Model *aModel=0);
-	InverseDynamics(const InverseDynamics &aObject);
-	virtual ~InverseDynamics();
+    InverseDynamics(Model *aModel=0);
+    InverseDynamics(const InverseDynamics &aObject);
+    virtual ~InverseDynamics();
 
     //--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	InverseDynamics& operator=(const InverseDynamics &aInverseDynamics);
+    InverseDynamics& operator=(const InverseDynamics &aInverseDynamics);
 #endif
 private:
-	void setNull();
-	void setupProperties();
-	void constructDescription();
-	void constructColumnLabels();
-	void allocateStorage();
-	void deleteStorage();
-	void computeAcceleration(SimTK::State& s, double *aF,double *rAccel) const;
+    void setNull();
+    void setupProperties();
+    void constructDescription();
+    void constructColumnLabels();
+    void allocateStorage();
+    void deleteStorage();
+    void computeAcceleration(SimTK::State& s, double *aF,double *rAccel) const;
 
 public:
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	void setStorageCapacityIncrements(int aIncrement);
-	Storage* getStorage();
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    void setStorageCapacityIncrements(int aIncrement);
+    Storage* getStorage();
 
-	bool getUseModelForceSet() { return _useModelForceSet; }
-	void setUseModelForceSet(bool aUseModelForceSet) { _useModelForceSet = aUseModelForceSet; }
+    bool getUseModelForceSet() {
+        return _useModelForceSet;
+    }
+    void setUseModelForceSet(bool aUseModelForceSet) {
+        _useModelForceSet = aUseModelForceSet;
+    }
 
-	virtual void setModel(Model& aModel);
-	//--------------------------------------------------------------------------
-	// ANALYSIS
-	//--------------------------------------------------------------------------
+    virtual void setModel(Model& aModel);
+    //--------------------------------------------------------------------------
+    // ANALYSIS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	virtual int
-        begin(SimTK::State& s );
     virtual int
-        step(const SimTK::State& s, int setNumber );
+    begin(SimTK::State& s );
     virtual int
-        end(SimTK::State& s );
+    step(const SimTK::State& s, int setNumber );
+    virtual int
+    end(SimTK::State& s );
 protected:
     virtual int
-        record(const SimTK::State& s );
-#endif	
-	//--------------------------------------------------------------------------
-	// IO
-	//--------------------------------------------------------------------------
+    record(const SimTK::State& s );
+#endif
+    //--------------------------------------------------------------------------
+    // IO
+    //--------------------------------------------------------------------------
 public:
-	virtual int
-		printResults(const std::string &aBaseName,const std::string &aDir="",
-		double aDT=-1.0,const std::string &aExtension=".sto");
+    virtual int
+    printResults(const std::string &aBaseName,const std::string &aDir="",
+                 double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
 };	// END of class InverseDynamics

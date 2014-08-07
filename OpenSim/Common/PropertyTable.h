@@ -39,8 +39,8 @@ namespace OpenSim {
 //==============================================================================
 /**
  * A property table is the container that an OpenSim Object uses to hold its
- * properties (each derived from base class AbstractProperty). It provides 
- * methods to add properties to the table, and preserves the order with which 
+ * properties (each derived from base class AbstractProperty). It provides
+ * methods to add properties to the table, and preserves the order with which
  * they are defined. Methods for retrieving properties by name or by ordinal
  * are provided. The table is the owner of the individual property objects and
  * those are deleted when the table is deleted.
@@ -64,13 +64,13 @@ public:
     PropertyTable() {}
     /** The destructor deletes all the property object in this table; any
     existing references to them or to their values become invalid. **/
-	~PropertyTable();
+    ~PropertyTable();
     /** Copy constructor performs a deep copy; that is, this table contains
     new property objects initialized from those in the source. **/
-	PropertyTable(const PropertyTable& source);
+    PropertyTable(const PropertyTable& source);
     /** Copy assignment performs a deep copy; this table will be as though
     it had been copy constructed from the source. **/
-	PropertyTable& operator=(const PropertyTable& source);
+    PropertyTable& operator=(const PropertyTable& source);
 
     /** Delete all the properties currently in this table, restoring the
     table to its default-constructed state. **/
@@ -81,64 +81,70 @@ public:
     tests equal to the one with the same index. **/
     bool equals(const PropertyTable& other) const;
 
-    #ifndef SWIG
+#ifndef SWIG
     /** See equals() for the meaning of this operator. **/
-    bool operator==(const PropertyTable& other) const {return equals(other);}
-    #endif
+    bool operator==(const PropertyTable& other) const {
+        return equals(other);
+    }
+#endif
 
     /** Add a new property to this table, taking over ownership of the
-    supplied heap-allocated property. Throws an exception if there is already 
-    a property with the same name in the table. Returns an index (ordinal) 
-    that can be used to retrieve this property quickly. **/ 
+    supplied heap-allocated property. Throws an exception if there is already
+    a property with the same name in the table. Returns an index (ordinal)
+    that can be used to retrieve this property quickly. **/
     int adoptProperty(AbstractProperty* prop);
 
-    /** Return a const reference to a property of known type T from the 
+    /** Return a const reference to a property of known type T from the
     table by name. This will throw an exception if no property with this name
     is present, or if the property is present but not of type T. **/
-	template <class T> const Property<T>& 
+    template <class T> const Property<T>&
     getProperty(const std::string& name) const;
 
-    /** Return a const reference to a property of known type T from the 
+    /** Return a const reference to a property of known type T from the
     table by its index (numbered in order of addition to the table). This will
-    throw an exception if the index is out of range, or if the property is 
-    present but not of type T. **/
-	template <class T> const Property<T>& getProperty(int index) const;
-
-    /** Return a writable reference to a property of known type T from the 
-    table by name. This will throw an exception if no property with this name
-    is present, or if the property is present but not of type T. **/
-	template <class T> Property<T>& updProperty(const std::string& name);
-
-    /** Return a writable reference to a property of known type T from the 
-    table by its index (numbered in order of addition to the table). This will 
     throw an exception if the index is out of range, or if the property is
     present but not of type T. **/
-	template <class T> Property<T>& updProperty(int index);
+    template <class T> const Property<T>& getProperty(int index) const;
 
-    /** Return true if there is a property with the given name currently 
+    /** Return a writable reference to a property of known type T from the
+    table by name. This will throw an exception if no property with this name
+    is present, or if the property is present but not of type T. **/
+    template <class T> Property<T>& updProperty(const std::string& name);
+
+    /** Return a writable reference to a property of known type T from the
+    table by its index (numbered in order of addition to the table). This will
+    throw an exception if the index is out of range, or if the property is
+    present but not of type T. **/
+    template <class T> Property<T>& updProperty(int index);
+
+    /** Return true if there is a property with the given name currently
     stored in this table. **/
     bool hasProperty(const std::string& name) const
-    {   return findPropertyIndex(name) >= 0; }
+    {
+        return findPropertyIndex(name) >= 0;
+    }
 
     /** Look up a property by name and return a pointer providing const access
     to the stored AbstractProperty object if present, otherwise null. **/
-	const AbstractProperty* getPropertyPtr(const std::string& name) const {
+    const AbstractProperty* getPropertyPtr(const std::string& name) const {
         const int ix = findPropertyIndex(name);
-        return ix < 0 ? NULL : &getAbstractPropertyByIndex(ix); 
+        return ix < 0 ? NULL : &getAbstractPropertyByIndex(ix);
     }
     /** Look up a property by name and return a pointer providing writable
     access to the stored AbstractProperty object if present, otherwise null. **/
-	AbstractProperty* updPropertyPtr(const std::string& name) {
+    AbstractProperty* updPropertyPtr(const std::string& name) {
         const int ix = findPropertyIndex(name);
-        return ix < 0 ? NULL : &updAbstractPropertyByIndex(ix); 
+        return ix < 0 ? NULL : &updAbstractPropertyByIndex(ix);
     }
 
     /** Return the number of properties currently in this table. If this
     returns n, the properties are indexed 0 to n-1, in the order they were
     added to the table. **/
-    int getNumProperties() const {return (int)properties.size();}
+    int getNumProperties() const {
+        return (int)properties.size();
+    }
 
-    /** Retrieve a property by its index, which must be in the range 
+    /** Retrieve a property by its index, which must be in the range
     0..getNumProperties()-1. The property index is assigned in the order that
     the properties were added to this table. **/
     const AbstractProperty& getAbstractPropertyByIndex(int index) const;
@@ -148,21 +154,21 @@ public:
     order that the properties were added to this table. **/
     AbstractProperty& updAbstractPropertyByIndex(int index);
 
-    /** Retrieve a property by name if it exists, otherwise throw an 
+    /** Retrieve a property by name if it exists, otherwise throw an
     exception. The property is returned as an AbstractProperty; see
     getProperty<T>() if you know the property type. **/
-    const AbstractProperty& 
+    const AbstractProperty&
     getAbstractPropertyByName(const std::string& name) const;
 
-    /** Retrieve a writable reference to a property by name if it exists, 
-    otherwise throw an exception. The property is returned as an 
+    /** Retrieve a writable reference to a property by name if it exists,
+    otherwise throw an exception. The property is returned as an
     AbstractProperty; see updProperty<T>() if you know the property type. **/
     AbstractProperty& updAbstractPropertyByName(const std::string& name);
 
     /** Return the property's index if it is present, else -1. **/
     int findPropertyIndex(const std::string& name) const;
 
- 
+
 //==============================================================================
 // DATA
 //==============================================================================
@@ -173,10 +179,10 @@ private:
     // Delete all properties and clear the index map.
     void deleteProperties();
 
-	// The properties, in the order they were added.
+    // The properties, in the order they were added.
     SimTK::Array_<AbstractProperty*>    properties;
     // A mapping from property name to its index in the properties array.
-	std::map<std::string, int>          propertyIndex;
+    std::map<std::string, int>          propertyIndex;
 
 //==============================================================================
 };	// END of class PropertyTable

@@ -43,7 +43,7 @@ class Coordinate;
  *         Michael Sherman
  */
 class OSIMSIMULATION_API TransformAxis : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(TransformAxis, Object);
+    OpenSim_DECLARE_CONCRETE_OBJECT(TransformAxis, Object);
 public:
 //==============================================================================
 // PROPERTIES
@@ -55,29 +55,29 @@ public:
     generalized coordinate names that serve as the independent variables of
     the transform function. **/
     OpenSim_DECLARE_LIST_PROPERTY(coordinates, std::string,
-        "Names of the coordinates that serve as the independent variables \
+                                  "Names of the coordinates that serve as the independent variables \
         of the transform function.");
 
-    /** The "axis" property holds the axis direction of the rotation or 
+    /** The "axis" property holds the axis direction of the rotation or
     translation axis of the transform as a Vec3. **/
     OpenSim_DECLARE_PROPERTY(axis, SimTK::Vec3,
-       "Rotation or translation axis for the transform.");
+                             "Rotation or translation axis for the transform.");
 
-    /** The optional "function" property holds the transform function of the 
-    generalized coordinates used to represent the amount of transformation 
+    /** The optional "function" property holds the transform function of the
+    generalized coordinates used to represent the amount of transformation
     along the specified axis. **/
     OpenSim_DECLARE_OPTIONAL_PROPERTY(function, Function,
-       "Transform function of the generalized coordinates used to \
+                                      "Transform function of the generalized coordinates used to \
        represent the amount of transformation along a specified axis.");
     /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-	TransformAxis();
-	TransformAxis(const Array<std::string>& coordNames, 
+    TransformAxis();
+    TransformAxis(const Array<std::string>& coordNames,
                   const SimTK::Vec3&        axis);
-	explicit TransformAxis(SimTK::Xml::Element& node);
+    explicit TransformAxis(SimTK::Xml::Element& node);
 
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.
@@ -85,15 +85,19 @@ public:
     /** %Set the names of the generalized coordinates that affect the motion
     along the axis controlled by this %TransformAxis object.
     @param coordNames   Names of the generalized coordinates. **/
-	void setCoordinateNames(const Array<std::string>& coordNames) 
-    {   set_coordinates(coordNames); }
-	
+    void setCoordinateNames(const Array<std::string>& coordNames)
+    {
+        set_coordinates(coordNames);
+    }
+
     /** Get the generalized coordinate names associated with this object.
     The returned value is a references to the Property\<string> that contains
     the list of coordinate names.
     @see get_coordinates() **/
-    const Property<std::string>& getCoordinateNames() const 
-    {   return getProperty_coordinates(); }
+    const Property<std::string>& getCoordinateNames() const
+    {
+        return getProperty_coordinates();
+    }
 
     /** Copy the coordinate names into an OpenSim::Array for convenience. **/
     // The GUI uses this.
@@ -105,80 +109,95 @@ public:
     }
 
     /** %Set the value of the "axis" property. **/
-	void setAxis(const SimTK::Vec3& axis) 
-    {   set_axis(axis); }
+    void setAxis(const SimTK::Vec3& axis)
+    {
+        set_axis(axis);
+    }
 
     /** Return the current value of the "axis" property. **/
-	const SimTK::Vec3& getAxis() const
-    {   return get_axis(); }
+    const SimTK::Vec3& getAxis() const
+    {
+        return get_axis();
+    }
 
     /** Alternate signature that writes the axis value to its argument. **/
-    void getAxis(SimTK::Vec3& axis) const {axis = getAxis();}
+    void getAxis(SimTK::Vec3& axis) const {
+        axis = getAxis();
+    }
     /** Alternate signature that writes the axis value to its argument as
     an ordinary C array. **/
-	void getAxis(double rAxis[]) const {SimTK::Vec3::updAs(rAxis)= getAxis();}
+    void getAxis(double rAxis[]) const {
+        SimTK::Vec3::updAs(rAxis)= getAxis();
+    }
     /** Get one component (0,1, or 2) of the axis vector. **/
-	double getAxis(int which) const 
-    {   assert(0<=which && which<=2); return getAxis()[which]; }
+    double getAxis(int which) const
+    {
+        assert(0<=which && which<=2);
+        return getAxis()[which];
+    }
 
-    /** Determine whether a custom function has been specified to map between 
-    the generalized coordinate and the amount of transformation along the 
+    /** Determine whether a custom function has been specified to map between
+    the generalized coordinate and the amount of transformation along the
     specified axis. **/
-    bool hasFunction() const 
-    {   return !getProperty_function().empty();}
+    bool hasFunction() const
+    {
+        return !getProperty_function().empty();
+    }
 
-    /** Get the custom function that maps between the generalized coordinates 
-    and the amount of transformation along the specified axis. If no function 
+    /** Get the custom function that maps between the generalized coordinates
+    and the amount of transformation along the specified axis. If no function
     has been specified, this throws an exception; check first with hasFunction()
     if you aren't sure. **/
     const Function& getFunction() const;
     /** Get writable access to the transform function. **/
     Function& updFunction();
 
-    /** %Set the custom function that maps between the generalized coordinates 
-    and the amount of transformation along the specified axis. This object 
+    /** %Set the custom function that maps between the generalized coordinates
+    and the amount of transformation along the specified axis. This object
     adopts ownership of the Function object, don't delete it yourself! It will
     be deleted when this %TransformAxis object is deleted. **/
     void setFunction(Function* function);
 
     /** %Set the custom function that maps between the generalized coordinates
-    and the amount of transformation along the specified axis. This method 
+    and the amount of transformation along the specified axis. This method
     creates a \e copy of the supplied Function object, which is unaffected.
-    Use the other signature if you want this %TransformAxis to take over 
+    Use the other signature if you want this %TransformAxis to take over
     ownership of the Function object. **/
-	void setFunction(const Function& function);
+    void setFunction(const Function& function);
 
-    /** Return a reference to the Joint to which this %TransformAxis 
+    /** Return a reference to the Joint to which this %TransformAxis
     applies. **/
-    const Joint& getJoint() const { return *_joint; }
+    const Joint& getJoint() const {
+        return *_joint;
+    }
 
-	double getValue(const SimTK::State& s );
+    double getValue(const SimTK::State& s );
 
 
-	/** Connect the %TransformAxis to its owning Joint after the model has
+    /** Connect the %TransformAxis to its owning Joint after the model has
     been deserialized or copied. **/
     void connectToJoint(const Joint& owningJoint);
 
 private:
     // Override virtual method from Object to give us a chance to replace the
-    // deprecated property name "coordinate" (if it appears in \a node) with 
+    // deprecated property name "coordinate" (if it appears in \a node) with
     // the current property name "coordinates". Then we'll invoke the base
     // class implementation.
-	void updateFromXMLNode(SimTK::Xml::Element& node, 
+    void updateFromXMLNode(SimTK::Xml::Element& node,
                            int                  versionNumber=-1) override;
 
-	void setNull();
-	void constructProperties();
+    void setNull();
+    void constructProperties();
 
 
 //==============================================================================
 // DATA
 //==============================================================================
 private:
-	// Pointer to the joint to which the coordinates belong. This is just a
-    // reference -- don't delete it! ReferencePtr means it is zeroed on 
+    // Pointer to the joint to which the coordinates belong. This is just a
+    // reference -- don't delete it! ReferencePtr means it is zeroed on
     // construction, copy construction, and copy assignment.
-	SimTK::ReferencePtr<const Joint> _joint;
+    SimTK::ReferencePtr<const Joint> _joint;
 
 
 //==============================================================================

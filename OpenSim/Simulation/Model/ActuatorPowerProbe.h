@@ -36,7 +36,7 @@ namespace OpenSim {
 //                         ACTUATOR POWER PROBE
 //===============================================================================
 /**
- * ActuatorPowerProbe is a ModelComponent Probe for computing an operation on a 
+ * ActuatorPowerProbe is a ModelComponent Probe for computing an operation on a
  * actuator power or sum of actuator powers in the model during a simulation.
  * E.g. Actuator work is the integral of actuator power with respect to time, so by using the
  * ActuatorPowerProbe with the 'integrate' operation, Actuator work may be computed.
@@ -44,7 +44,7 @@ namespace OpenSim {
  * @author Tim Dorn
  */
 class OSIMSIMULATION_API ActuatorPowerProbe : public Probe {
-OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorPowerProbe, Probe);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorPowerProbe, Probe);
 
 public:
 //==============================================================================
@@ -55,20 +55,20 @@ public:
     /**@{**/
     /** List of Actuators to probe.  **/
     OpenSim_DECLARE_LIST_PROPERTY(actuator_names, std::string,
-        "Specify a list of model Actuators whose power should be calculated."
-        "Use 'all' to probe all actuators.");
+                                  "Specify a list of model Actuators whose power should be calculated."
+                                  "Use 'all' to probe all actuators.");
 
     /** Flag to specify whether to report the sum of all powers,
         or report each power value separately.  **/
     OpenSim_DECLARE_PROPERTY(sum_powers_together, bool,
-        "Flag to specify whether to report the sum of all actuator powers, "
-        "or report each actuator power value separately.");
+                             "Flag to specify whether to report the sum of all actuator powers, "
+                             "or report each actuator power value separately.");
 
-    /** Element-wise power exponent to apply to each actuator power prior to the Probe operation. 
+    /** Element-wise power exponent to apply to each actuator power prior to the Probe operation.
     For example, if two actuators A1 and A2 are given in actuator_names, then the
     Probe value will be equal to Power_A1^exponent + Power_A2^exponent.  **/
     OpenSim_DECLARE_PROPERTY(exponent, double,
-        "Element-wise power exponent to apply to each actuator power prior to the Probe operation.");
+                             "Element-wise power exponent to apply to each actuator power prior to the Probe operation.");
     /**@}**/
 
 //==============================================================================
@@ -80,8 +80,8 @@ public:
     /** Default constructor */
     ActuatorPowerProbe();
     /** Convenience constructor */
-    ActuatorPowerProbe(const Array<std::string> actuator_names, 
-        const bool sum_powers_together, const double exponent);
+    ActuatorPowerProbe(const Array<std::string> actuator_names,
+                       const bool sum_powers_together, const double exponent);
 
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.
@@ -119,13 +119,13 @@ public:
     /** Returns the number of probe inputs in the vector returned by computeProbeInputs(). */
     int getNumProbeInputs() const override;
 
-    /** Returns the column labels of the probe values for reporting. 
+    /** Returns the column labels of the probe values for reporting.
         Currently uses the Probe name as the column label, so be sure
         to name your probe appropiately! */
     virtual OpenSim::Array<std::string> getProbeOutputLabels() const override;
 
-	// connectToModel is protected for Java wrapping purpose
-	void connectToModel(Model& aModel) override FINAL_11;
+    // connectToModel is protected for Java wrapping purpose
+    void connectToModel(Model& aModel) override FINAL_11;
 
 //==============================================================================
 // PRIVATE

@@ -31,10 +31,10 @@
 #include <simbody/internal/common.h>
 
 #ifdef SWIG
-    #ifdef OSIMACTUATORS_API
-        #undef OSIMACTUATORS_API
-        #define OSIMACTUATORS_API
-    #endif
+#ifdef OSIMACTUATORS_API
+#undef OSIMACTUATORS_API
+#define OSIMACTUATORS_API
+#endif
 #endif
 
 namespace OpenSim {
@@ -104,7 +104,7 @@ namespace OpenSim {
     but not the others will throw an exception when the curve is built. The
     optional parameters can be used to vary the shape of the curve from a close
     approximation of a line to a sharply-bent curve.
-    
+
     The advantage of this curve over the typical exponential curve used in the
     literature is that it is continuous to the second derivative; the usual
     linearly-extrapolated exponential curve is only C0-continuous. The improved
@@ -159,7 +159,7 @@ namespace OpenSim {
     @author Matt Millard
 */
 class OSIMACTUATORS_API FiberForceLengthCurve : public Function {
-OpenSim_DECLARE_CONCRETE_OBJECT(FiberForceLengthCurve, Function);
+    OpenSim_DECLARE_CONCRETE_OBJECT(FiberForceLengthCurve, Function);
 public:
 //==============================================================================
 // PROPERTIES
@@ -168,15 +168,15 @@ public:
         These are the serializable properties associated with this class. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(strain_at_zero_force, double,
-        "Fiber strain at zero force");
+                             "Fiber strain at zero force");
     OpenSim_DECLARE_PROPERTY(strain_at_one_norm_force, double,
-        "Fiber strain at a tension of 1 normalized force");
+                             "Fiber strain at a tension of 1 normalized force");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(stiffness_at_low_force, double,
-        "Fiber stiffness at the end of the low-force region");
+                                      "Fiber stiffness at the end of the low-force region");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(stiffness_at_one_norm_force, double,
-        "Fiber stiffness at a tension of 1 normalized force");
+                                      "Fiber stiffness at a tension of 1 normalized force");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(curviness, double,
-        "Fiber curve bend, from linear (0) to maximum bend (1)");
+                                      "Fiber curve bend, from linear (0) to maximum bend (1)");
     /**@}**/
 
 //==============================================================================
@@ -188,7 +188,7 @@ public:
 
     /** Constructs a fiber-force-length curve using the provided parameters and
     assigns a default name. See class documentation for the meaning of these
-	parameters, each of which corresponds to a property. */
+    parameters, each of which corresponds to a property. */
     FiberForceLengthCurve(double strainAtZeroForce,
                           double strainAtOneNormForce,
                           double stiffnessAtLowForce,
@@ -275,7 +275,7 @@ public:
                                double stiffnessAtOneNormForce,
                                double curviness);
 
-	/** Implement the generic OpenSim::Function interface **/
+    /** Implement the generic OpenSim::Function interface **/
     double calcValue(const SimTK::Vector& x) const override
     {
         return calcValue(x[0]);

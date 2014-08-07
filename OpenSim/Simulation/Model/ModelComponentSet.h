@@ -30,10 +30,10 @@
 #include "ModelComponent.h"
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+#ifdef OSIMSIMULATION_API
+#undef OSIMSIMULATION_API
+#define OSIMSIMULATION_API
+#endif
 #endif
 
 namespace OpenSim {
@@ -53,7 +53,7 @@ class ModelDisplayHints;
 
 template <class T>
 class ModelComponentSet : public Set<T> {
-OpenSim_DECLARE_CONCRETE_OBJECT_T(ModelComponentSet, T, Set<T>);
+    OpenSim_DECLARE_CONCRETE_OBJECT_T(ModelComponentSet, T, Set<T>);
 
 protected:
     Model* _model;
@@ -75,12 +75,12 @@ public:
      *
      * @param[in]   model       The Model to which this set is associated.
      * @param[in]   fileName    Name of the file.
-     * @param[in]   aUpdateFromXMLNode  
+     * @param[in]   aUpdateFromXMLNode
      *                          (Advanced) Used to avoid duplicate XML parsing.
      */
-    ModelComponentSet(Model& model, const std::string& fileName, 
-                      bool aUpdateFromXMLNode = true) 
-    :   Set<T>(fileName, aUpdateFromXMLNode), _model(&model)
+    ModelComponentSet(Model& model, const std::string& fileName,
+                      bool aUpdateFromXMLNode = true)
+        :   Set<T>(fileName, aUpdateFromXMLNode), _model(&model)
     {
     }
     /**
@@ -134,17 +134,17 @@ public:
 
     /**
      * Set the Model this object is part of and allow each contained
-     * ModelComponent to connect itself to the Model by invoking its 
+     * ModelComponent to connect itself to the Model by invoking its
      * connectToModel() method.
      * @see ModelComponent::connectToModel()
      */
     virtual void invokeConnectToModel(Model& model)
     {
         _model = &model;
-        for (int i = 0; i < Set<T>::getSize(); i++){
+        for (int i = 0; i < Set<T>::getSize(); i++) {
             static_cast<ModelComponent&>(Set<T>::get(i)).connectToModel(model);
-		}
-		Set<T>::setupGroups(); // make sure group members are populated
+        }
+        Set<T>::setupGroups(); // make sure group members are populated
     }
 
     /**
@@ -177,20 +177,20 @@ public:
             static_cast<ModelComponent&>(Set<T>::get(i)).setPropertiesFromState(state);
     }
 
-    /** 
-     * Invoke generateDecorations() on each of the contained 
-     * ModelComponent objects. 
+    /**
+     * Invoke generateDecorations() on each of the contained
+     * ModelComponent objects.
      * @see ModelComponent::generateDecorations()
      */
     virtual void invokeGenerateDecorations
-       (bool                                        fixed, 
-        const ModelDisplayHints&                    hints,
-        const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
+    (bool                                        fixed,
+     const ModelDisplayHints&                    hints,
+     const SimTK::State&                         state,
+     SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
     {
         for (int i = 0; i < Set<T>::getSize(); i++)
             static_cast<const ModelComponent&>(Set<T>::get(i))
-                    .generateDecorations(fixed,hints,state,appendToThis);
+            .generateDecorations(fixed,hints,state,appendToThis);
     }
 
 

@@ -30,7 +30,7 @@
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 
-namespace OpenSim { 
+namespace OpenSim {
 
 class Coordinate;
 class ForceSet;
@@ -48,7 +48,7 @@ class Model;
  * @author Frank C. Anderson
  */
 class OSIMACTUATORS_API CoordinateActuator : public Actuator {
-OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateActuator, Actuator);
+    OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateActuator, Actuator);
 public:
 //==============================================================================
 // PROPERTIES
@@ -56,10 +56,10 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
-	OpenSim_DECLARE_OPTIONAL_PROPERTY(coordinate, std::string,
-		"Name of the generalized coordinate to which the actuator applies.");
-	OpenSim_DECLARE_PROPERTY(optimal_force, double,
-		"The maximum generalized force produced by this actuator.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(coordinate, std::string,
+                                      "Name of the generalized coordinate to which the actuator applies.");
+    OpenSim_DECLARE_PROPERTY(optimal_force, double,
+                             "The maximum generalized force produced by this actuator.");
     /**@}**/
 
 //==============================================================================
@@ -67,67 +67,67 @@ public:
 //==============================================================================
     /** Default constructor leaves coordinate name unspecified, or you can
     provide it. **/
-	explicit CoordinateActuator(const std::string& coordinateName="");
+    explicit CoordinateActuator(const std::string& coordinateName="");
 
-    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // Uses default (compiler-generated) destructor, copy constructor, copy
     // assignment operator.
 
-	/** Set the 'optimal_force' property. **/
-	void setOptimalForce(double optimalForce);
+    /** Set the 'optimal_force' property. **/
+    void setOptimalForce(double optimalForce);
     /** Get the current setting of the 'optimal_force' property. **/
-	double getOptimalForce() const override; // part of Actuator interface
+    double getOptimalForce() const override; // part of Actuator interface
 
-	//--------------------------------------------------------------------------
-	// UTILITY
-	//--------------------------------------------------------------------------
-	static ForceSet* CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel,double aOptimalForce = 1,bool aIncludeLockedAndConstrainedCoordinates = true);
+    //--------------------------------------------------------------------------
+    // UTILITY
+    //--------------------------------------------------------------------------
+    static ForceSet* CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel,double aOptimalForce = 1,bool aIncludeLockedAndConstrainedCoordinates = true);
 
-	bool isCoordinateValid() const;
-	double getSpeed( const SimTK::State& s) const;
+    bool isCoordinateValid() const;
+    double getSpeed( const SimTK::State& s) const;
 
     /** Set the reference pointer to point to the given Coordinate and set
     the 'coordinate' name property also. **/
     void setCoordinate(Coordinate* aCoordinate);
     /** Get a pointer to the Coordinate to which this actuator refers. **/
-	Coordinate* getCoordinate() const;
+    Coordinate* getCoordinate() const;
 
 //==============================================================================
 // PRIVATE
 //==============================================================================
 private:
-	//--------------------------------------------------------------------------
-	// Implement Force interface
-	//--------------------------------------------------------------------------
-	void computeForce(const SimTK::State& state, 
-					  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-					  SimTK::Vector& mobilityForces) const override;
+    //--------------------------------------------------------------------------
+    // Implement Force interface
+    //--------------------------------------------------------------------------
+    void computeForce(const SimTK::State& state,
+                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+                      SimTK::Vector& mobilityForces) const override;
 
 
-	//--------------------------------------------------------------------------
-	// Implement Actuator interface (also see getOptimalForce() above)
-	//--------------------------------------------------------------------------
-	double  computeActuation( const SimTK::State& s) const override;
-	// Return the stress, defined as abs(force/optimal_force).
-	double getStress( const SimTK::State& s ) const override;
+    //--------------------------------------------------------------------------
+    // Implement Actuator interface (also see getOptimalForce() above)
+    //--------------------------------------------------------------------------
+    double  computeActuation( const SimTK::State& s) const override;
+    // Return the stress, defined as abs(force/optimal_force).
+    double getStress( const SimTK::State& s ) const override;
 
 
-	//--------------------------------------------------------------------------
-	// Implement ModelComponent interface
-	//--------------------------------------------------------------------------
-	void connectToModel(Model& aModel) override;
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+    //--------------------------------------------------------------------------
+    // Implement ModelComponent interface
+    //--------------------------------------------------------------------------
+    void connectToModel(Model& aModel) override;
+    void addToSystem(SimTK::MultibodySystem& system) const override;
 
-	//--------------------------------------------------------------------------
-	// Implement Object interface.
-	//--------------------------------------------------------------------------
-	void setNull();
-	void constructProperties();
+    //--------------------------------------------------------------------------
+    // Implement Object interface.
+    //--------------------------------------------------------------------------
+    void setNull();
+    void constructProperties();
 
 
-    // Note: reference pointers are automatically set to null on construction 
+    // Note: reference pointers are automatically set to null on construction
     // and also on copy construction and copy assignment.
 
-	// Corresponding generalized coordinate to which the coordinate actuator
+    // Corresponding generalized coordinate to which the coordinate actuator
     // is applied.
     SimTK::ReferencePtr<Coordinate> _coord;
 //==============================================================================

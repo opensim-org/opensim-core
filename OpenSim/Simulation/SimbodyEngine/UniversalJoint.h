@@ -31,16 +31,16 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Universal joint.  The underlying implementation 
+ * A class implementing a Universal joint.  The underlying implementation
  * in Simbody is a MobilizedBody::Universal. Universal provides two DoF:
- * rotation about the x axis of the joint frames, followed by a rotation 
+ * rotation about the x axis of the joint frames, followed by a rotation
  * about the new y axis.
  *
  * @author Tim Dorn
  * @version 1.0
  */
 class OSIMSIMULATION_API UniversalJoint : public Joint {
-OpenSim_DECLARE_CONCRETE_OBJECT(UniversalJoint, Joint);
+    OpenSim_DECLARE_CONCRETE_OBJECT(UniversalJoint, Joint);
 
 private:
     static const int _numMobilities = 2;
@@ -60,11 +60,13 @@ public:
     UniversalJoint();
     // Convenience constructor
     UniversalJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-                    OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
-                    bool reverse=false);
+                   OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
+                   bool reverse=false);
     virtual ~UniversalJoint();
 
-    int numCoordinates() const override { return _numMobilities; }
+    int numCoordinates() const override {
+        return _numMobilities;
+    }
 
 
 protected:

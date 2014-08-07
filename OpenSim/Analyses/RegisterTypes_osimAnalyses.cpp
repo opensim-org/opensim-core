@@ -31,8 +31,8 @@
 using namespace OpenSim;
 using namespace std;
 
-static osimAnalysesInstantiator instantiator; 
-     
+static osimAnalysesInstantiator instantiator;
+
 //_____________________________________________________________________________
 /**
  * The purpose of this routine is to register all class types exported by
@@ -40,33 +40,33 @@ static osimAnalysesInstantiator instantiator;
  */
 OSIMANALYSES_API void RegisterTypes_osimAnalyses()
 {
-  try {
+    try {
 
-	Object::registerType( Kinematics() );
-	Object::registerType( Actuation() );
-	Object::registerType( PointKinematics() );
-	Object::registerType( BodyKinematics() );
-	Object::registerType( MuscleAnalysis() );
+        Object::registerType( Kinematics() );
+        Object::registerType( Actuation() );
+        Object::registerType( PointKinematics() );
+        Object::registerType( BodyKinematics() );
+        Object::registerType( MuscleAnalysis() );
 
-	Object::registerType( JointReaction() );
-	Object::registerType( StaticOptimization() );
-	Object::registerType( ForceReporter() );
-	Object::registerType( StatesReporter() );
-	Object::registerType( InducedAccelerations() );
-	Object::RegisterType( ProbeReporter() );
+        Object::registerType( JointReaction() );
+        Object::registerType( StaticOptimization() );
+        Object::registerType( ForceReporter() );
+        Object::registerType( StatesReporter() );
+        Object::registerType( InducedAccelerations() );
+        Object::RegisterType( ProbeReporter() );
 
-  } catch (const std::exception& e) {
-    std::cerr 
-        << "ERROR during osimAnalyses Object registration:\n"
-        << e.what() << "\n";
-  }
+    } catch (const std::exception& e) {
+        std::cerr
+                << "ERROR during osimAnalyses Object registration:\n"
+                << e.what() << "\n";
+    }
 }
 
-osimAnalysesInstantiator::osimAnalysesInstantiator() 
-{ 
-        registerDllClasses(); 
-} 
-void osimAnalysesInstantiator::registerDllClasses() 
-{ 
-        RegisterTypes_osimAnalyses(); 
-} 
+osimAnalysesInstantiator::osimAnalysesInstantiator()
+{
+    registerDllClasses();
+}
+void osimAnalysesInstantiator::registerDllClasses()
+{
+    RegisterTypes_osimAnalyses();
+}

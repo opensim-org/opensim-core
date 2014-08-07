@@ -34,10 +34,10 @@
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 
 #ifdef SWIG
-	#ifdef OSIMTOOLS_API
-		#undef OSIMTOOLS_API
-		#define OSIMTOOLS_API
-	#endif
+#ifdef OSIMTOOLS_API
+#undef OSIMTOOLS_API
+#define OSIMTOOLS_API
+#endif
 #endif
 
 namespace OpenSim {
@@ -54,7 +54,7 @@ class Model;
  * @version 1.0
  */
 class OSIMTOOLS_API GenericModelMaker : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(GenericModelMaker, Object);
+    OpenSim_DECLARE_CONCRETE_OBJECT(GenericModelMaker, Object);
 
 //=============================================================================
 // DATA
@@ -62,62 +62,62 @@ OpenSim_DECLARE_CONCRETE_OBJECT(GenericModelMaker, Object);
 private:
 
 protected:
-	PropertyStr _fileNameProp;
-	std::string &_fileName;
+    PropertyStr _fileNameProp;
+    std::string &_fileName;
 
-	PropertyStr _markerSetFileNameProp;
-	std::string &_markerSetFileName;
+    PropertyStr _markerSetFileNameProp;
+    std::string &_markerSetFileName;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	GenericModelMaker();
-	GenericModelMaker(const GenericModelMaker &aGenericModelMaker);
-	virtual ~GenericModelMaker();
+    GenericModelMaker();
+    GenericModelMaker(const GenericModelMaker &aGenericModelMaker);
+    virtual ~GenericModelMaker();
 
 #ifndef SWIG
-	GenericModelMaker& operator=(const GenericModelMaker &aGenericModelMaker);
+    GenericModelMaker& operator=(const GenericModelMaker &aGenericModelMaker);
 #endif
-	void copyData(const GenericModelMaker &aGenericModelMaker);
+    void copyData(const GenericModelMaker &aGenericModelMaker);
 
-	Model* processModel(const std::string& aPathToSubject="");
+    Model* processModel(const std::string& aPathToSubject="");
 
-	/* Register types to be used when reading a GenericModelMaker object from xml file. */
-	static void registerTypes();
+    /* Register types to be used when reading a GenericModelMaker object from xml file. */
+    static void registerTypes();
 
-	/**
-	 * Get file name for generic model
-	 */
-	const std::string& getModelFileName() const
-	{
-		return _fileName;
-	}
+    /**
+     * Get file name for generic model
+     */
+    const std::string& getModelFileName() const
+    {
+        return _fileName;
+    }
 
-	// Set model file name
-	void setModelFileName(const std::string& aFileName)
-	{
-		_fileName = aFileName;
-		_fileNameProp.setValueIsDefault(false);
-	}
+    // Set model file name
+    void setModelFileName(const std::string& aFileName)
+    {
+        _fileName = aFileName;
+        _fileNameProp.setValueIsDefault(false);
+    }
 
-	const std::string& getMarkerSetFileName() const
-	{
-		return _markerSetFileName;
-	}
+    const std::string& getMarkerSetFileName() const
+    {
+        return _markerSetFileName;
+    }
 
-	void setMarkerSetFileName(const std::string& aFileName)
-	{
-		_markerSetFileName = aFileName;
-		_markerSetFileNameProp.setValueIsDefault(false);
-	}
+    void setMarkerSetFileName(const std::string& aFileName)
+    {
+        _markerSetFileName = aFileName;
+        _markerSetFileNameProp.setValueIsDefault(false);
+    }
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 //=============================================================================
 };	// END of class GenericModelMaker
 //=============================================================================
