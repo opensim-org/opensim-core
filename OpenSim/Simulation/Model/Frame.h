@@ -65,9 +65,6 @@ public:
 	//--------------------------------------------------------------------------
 	/** default contructor*/
 	Frame();
-	// use compiler generated destructor, copy constructor and assignment operator
-
-	/** Access Properties of the Body */
 
 	/** Spatial Operations for Frames*/
 	virtual const SimTK::Transform& getTransform() const = 0;
