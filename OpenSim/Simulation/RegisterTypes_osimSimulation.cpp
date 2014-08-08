@@ -61,6 +61,8 @@
 #include "Model/ExternalLoads.h"
 #include "Model/PathActuator.h"
 #include "Model/ProbeSet.h"
+#include "Model/ActuatorPowerProbe.h"
+#include "Model/ActuatorForceProbe.h"
 #include "Model/JointInternalPowerProbe.h"
 #include "Model/SystemEnergyProbe.h"
 #include "Model/Umberger2010MuscleMetabolicsProbe.h"
