@@ -32,10 +32,10 @@
 #include "DynamicsTool.h"
 
 #ifdef SWIG
-	#ifdef OSIMTOOLS_API
-		#undef OSIMTOOLS_API
-		#define OSIMTOOLS_API
-	#endif
+    #ifdef OSIMTOOLS_API
+        #undef OSIMTOOLS_API
+        #define OSIMTOOLS_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -69,92 +69,92 @@ OpenSim_DECLARE_CONCRETE_OBJECT(InverseDynamicsTool, DynamicsTool);
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
-	Storage* _coordinateValues;
+    Storage* _coordinateValues;
 protected:
-	
-	/** name of storage file that contains coordinate values for inverse dynamics solving */
-	PropertyStr _coordinatesFileNameProp;
-	std::string &_coordinatesFileName;
+    
+    /** name of storage file that contains coordinate values for inverse dynamics solving */
+    PropertyStr _coordinatesFileNameProp;
+    std::string &_coordinatesFileName;
 
-	/** Low-pass cut-off frequency for filtering the coordinates (does not apply to states). */
-	PropertyDbl _lowpassCutoffFrequencyProp;
-	double &_lowpassCutoffFrequency;
+    /** Low-pass cut-off frequency for filtering the coordinates (does not apply to states). */
+    PropertyDbl _lowpassCutoffFrequencyProp;
+    double &_lowpassCutoffFrequency;
 
-	/** name of storage file containing generalized forces from innverse dynamics */
-	PropertyStr _outputGenForceFileNameProp;
-	std::string &_outputGenForceFileName;
+    /** name of storage file containing generalized forces from innverse dynamics */
+    PropertyStr _outputGenForceFileNameProp;
+    std::string &_outputGenForceFileName;
 
-	/** Idenitify the list of joints for which equivalent body forces acting 
-	    at the joint frames should be reported */
-	PropertyStrArray _jointsForReportingBodyForcesProp;
-	Array<std::string> &_jointsForReportingBodyForces;
+    /** Idenitify the list of joints for which equivalent body forces acting 
+        at the joint frames should be reported */
+    PropertyStrArray _jointsForReportingBodyForcesProp;
+    Array<std::string> &_jointsForReportingBodyForces;
 
-	/** name of storage file containing equivalent body forces from inverse dynamics */
-	PropertyStr _outputBodyForcesAtJointsFileNameProp;
-	std::string &_outputBodyForcesAtJointsFileName;
+    /** name of storage file containing equivalent body forces from inverse dynamics */
+    PropertyStr _outputBodyForcesAtJointsFileNameProp;
+    std::string &_outputBodyForcesAtJointsFileName;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	virtual ~InverseDynamicsTool();
-	InverseDynamicsTool();
-	InverseDynamicsTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
-	InverseDynamicsTool(const InverseDynamicsTool &aObject);
+    virtual ~InverseDynamicsTool();
+    InverseDynamicsTool();
+    InverseDynamicsTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
+    InverseDynamicsTool(const InverseDynamicsTool &aObject);
 
-	/* Register types to be used when reading an InverseDynamicsTool object from xml file. */
-	static void registerTypes();
-	/* Handle reading older formats/Versioning */
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    /* Register types to be used when reading an InverseDynamicsTool object from xml file. */
+    static void registerTypes();
+    /* Handle reading older formats/Versioning */
+    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 protected:
-	/** helper method to get a list of model joints by name */
-	void getJointsByName(Model &model, const Array<std::string> &jointNames, JointSet &joints) const;
+    /** helper method to get a list of model joints by name */
+    void getJointsByName(Model &model, const Array<std::string> &jointNames, JointSet &joints) const;
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	InverseDynamicsTool& operator=(const InverseDynamicsTool &aInverseDynamicsTool);
+    InverseDynamicsTool& operator=(const InverseDynamicsTool &aInverseDynamicsTool);
 #endif
 
-	//--------------------------------------------------------------------------	
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	void setCoordinateValues(const OpenSim::Storage& aStorage);
-	bool hasCoordinateValues();
+    //--------------------------------------------------------------------------	
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    void setCoordinateValues(const OpenSim::Storage& aStorage);
+    bool hasCoordinateValues();
     /**
      * get/set the name of the file to be used as ouput from the tool
      */
-	std::string getOutputGenForceFileName() const { return _outputGenForceFileName;}
+    std::string getOutputGenForceFileName() const { return _outputGenForceFileName;}
     void setOutputGenForceFileName(const std::string& desiredOutputFileName) {
         _outputGenForceFileName = desiredOutputFileName;
     }
     /**
      * get/set the name of the file containing coordinates
      */
-	const std::string& getCoordinatesFileName() const { return _coordinatesFileName;};
-	void setCoordinatesFileName(const std::string& aCoordinateFile)  { 
-		_coordinatesFileName=aCoordinateFile;
-	};
-	const double getLowpassCutoffFrequency() const {
-		return _lowpassCutoffFrequency;
-	};
-	void setLowpassCutoffFrequency(double aFrequency) {
-		_lowpassCutoffFrequency = aFrequency;
-	}
-	//--------------------------------------------------------------------------
-	// INTERFACE
-	//--------------------------------------------------------------------------
-	virtual bool run() SWIG_DECLARE_EXCEPTION;
+    const std::string& getCoordinatesFileName() const { return _coordinatesFileName;};
+    void setCoordinatesFileName(const std::string& aCoordinateFile)  { 
+        _coordinatesFileName=aCoordinateFile;
+    };
+    const double getLowpassCutoffFrequency() const {
+        return _lowpassCutoffFrequency;
+    };
+    void setLowpassCutoffFrequency(double aFrequency) {
+        _lowpassCutoffFrequency = aFrequency;
+    }
+    //--------------------------------------------------------------------------
+    // INTERFACE
+    //--------------------------------------------------------------------------
+    virtual bool run() SWIG_DECLARE_EXCEPTION;
 
 
 //=============================================================================

@@ -41,39 +41,39 @@ double bestSoFar = Infinity;
 class ExampleOptimizationSystem : public OptimizerSystem {
    public:
 
-	   /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
-	   ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
+       /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
+       ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
              numKnobs(numParameters), OptimizerSystem(numParameters), si(s), osimModel(aModel){}
-			 	
-	int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const {
+                
+    int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const {
 
         // make a copy of out initial states
         State s = si;
 
         // Update the coordinate value of r_elbow_flex
-		OpenSim::Coordinate& elbowFlexCoord = osimModel.updCoordinateSet().get("r_elbow_flex");
-		elbowFlexCoord.setValue(s, newControls[0]);
+        OpenSim::Coordinate& elbowFlexCoord = osimModel.updCoordinateSet().get("r_elbow_flex");
+        elbowFlexCoord.setValue(s, newControls[0]);
         // Now equilibriate muscles at this configuration
         const Set<Muscle> &muscleSet = osimModel.getMuscles();
         // Make sure other muscle states are initialized the same with 1.0 activation, 0.1 fiberLength followed by equilibrium computation
-     	for(int i=0; i< muscleSet.getSize(); i++ ){
-			muscleSet[i].setActivation(s, 1.0);
-			const ActivationFiberLengthMuscle* afl = ActivationFiberLengthMuscle::safeDownCast(&muscleSet[i]);
+        for(int i=0; i< muscleSet.getSize(); i++ ){
+            muscleSet[i].setActivation(s, 1.0);
+            const ActivationFiberLengthMuscle* afl = ActivationFiberLengthMuscle::safeDownCast(&muscleSet[i]);
             if (afl) afl->setFiberLength(s, .1);
-		}
-		// Make sure the muscles states are in equilibrium
-		osimModel.equilibrateMuscles(s);
+        }
+        // Make sure the muscles states are in equilibrium
+        osimModel.equilibrateMuscles(s);
 
-		const OpenSim::Muscle& bicShort = osimModel.getMuscles().get("BICshort");
+        const OpenSim::Muscle& bicShort = osimModel.getMuscles().get("BICshort");
         // Compute moment arm of BICshort, flip sign since the optimizer tries to minimize rather than maximize
         f = -bicShort.computeMomentArm(s, elbowFlexCoord);
 
-		stepCount++;
-		
+        stepCount++;
+        
         if( f < bestSoFar){
-			bestSoFar = f;
-			cout << "\nobjective evaluation #: " << stepCount << " elbow flexion angle = " << newControls[0]*SimTK_RADIAN_TO_DEGREE <<  " BICshort moment arm  = " << -f << std::endl;
-		}		    
+            bestSoFar = f;
+            cout << "\nobjective evaluation #: " << stepCount << " elbow flexion angle = " << newControls[0]*SimTK_RADIAN_TO_DEGREE <<  " BICshort moment arm  = " << -f << std::endl;
+        }		    
 
       return(0);
 
@@ -81,8 +81,8 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 
 private:
     int numKnobs;
-	State& si;
-	Model& osimModel;
+    State& si;
+    Model& osimModel;
  };
 
 //______________________________________________________________________________
@@ -92,69 +92,69 @@ private:
  */
 int main()
 {
-	try {
-		std::clock_t startTime = std::clock();	
-	
-		// Create a new OpenSim model
-		// Similar to arm26 model but without wrapping surfaces for better performance
-		Model osimModel("Arm26_Optimize.osim");
-		
-		// Initialize the system and get the state representing the state system
-		State& si = osimModel.initSystem();
+    try {
+        std::clock_t startTime = std::clock();	
+    
+        // Create a new OpenSim model
+        // Similar to arm26 model but without wrapping surfaces for better performance
+        Model osimModel("Arm26_Optimize.osim");
+        
+        // Initialize the system and get the state representing the state system
+        State& si = osimModel.initSystem();
 
-		// initialize the starting shoulder angle
-		const CoordinateSet& coords = osimModel.getCoordinateSet();
-		coords.get("r_shoulder_elev").setValue(si, 0.0);
+        // initialize the starting shoulder angle
+        const CoordinateSet& coords = osimModel.getCoordinateSet();
+        coords.get("r_shoulder_elev").setValue(si, 0.0);
 
-		// Set the initial muscle activations 
-		const Set<Muscle> &muscleSet = osimModel.getMuscles();
-     	for(int i=0; i< muscleSet.getSize(); i++ ){
-			muscleSet[i].setActivation(si, 1.0);
-			const ActivationFiberLengthMuscle* afl = ActivationFiberLengthMuscle::safeDownCast(&muscleSet[i]);
+        // Set the initial muscle activations 
+        const Set<Muscle> &muscleSet = osimModel.getMuscles();
+        for(int i=0; i< muscleSet.getSize(); i++ ){
+            muscleSet[i].setActivation(si, 1.0);
+            const ActivationFiberLengthMuscle* afl = ActivationFiberLengthMuscle::safeDownCast(&muscleSet[i]);
             afl->setFiberLength(si, .1);
-		}
-		OpenSim::Coordinate& elbowFlexCoord = osimModel.updCoordinateSet().get("r_elbow_flex");
-		elbowFlexCoord.setValue(si, 1.0);
-	    //osimModel.getMultibodySystem().realize(si, Stage::Velocity);
-		// Make sure the muscles states are in equilibrium
-		osimModel.equilibrateMuscles(si);
-		
-		// Initialize the optimizer system we've defined.
-		ExampleOptimizationSystem sys(1, si, osimModel);
-		Real f = NaN;
-		
-		/* Define initial values and bounds for the controls to optimize */
+        }
+        OpenSim::Coordinate& elbowFlexCoord = osimModel.updCoordinateSet().get("r_elbow_flex");
+        elbowFlexCoord.setValue(si, 1.0);
+        //osimModel.getMultibodySystem().realize(si, Stage::Velocity);
+        // Make sure the muscles states are in equilibrium
+        osimModel.equilibrateMuscles(si);
+        
+        // Initialize the optimizer system we've defined.
+        ExampleOptimizationSystem sys(1, si, osimModel);
+        Real f = NaN;
+        
+        /* Define initial values and bounds for the controls to optimize */
 
         Vector controls(1, 1.0); // 1 radian for default value
-		Vector lower_bounds(1, elbowFlexCoord.getRangeMin());
-		Vector upper_bounds(1, elbowFlexCoord.getRangeMax());
+        Vector lower_bounds(1, elbowFlexCoord.getRangeMin());
+        Vector upper_bounds(1, elbowFlexCoord.getRangeMax());
 
-		sys.setParameterLimits( lower_bounds, upper_bounds );
-		
-		// Create an optimizer. Pass in our OptimizerSystem
-		// and the name of the optimization algorithm.
-		Optimizer opt(sys, SimTK::LBFGSB);
+        sys.setParameterLimits( lower_bounds, upper_bounds );
+        
+        // Create an optimizer. Pass in our OptimizerSystem
+        // and the name of the optimization algorithm.
+        Optimizer opt(sys, SimTK::LBFGSB);
 
-		// Specify settings for the optimizer
-		opt.setConvergenceTolerance(0.000001);
-		opt.useNumericalGradient(true);
-		opt.setMaxIterations(1000);
-		opt.setLimitedMemoryHistory(500);
-			
-		// Optimize it!
-		f = opt.optimize(controls);
-			
-		cout << "Elapsed time = " << (std::clock()-startTime)/CLOCKS_PER_SEC << "s" << endl;
-		
+        // Specify settings for the optimizer
+        opt.setConvergenceTolerance(0.000001);
+        opt.useNumericalGradient(true);
+        opt.setMaxIterations(1000);
+        opt.setLimitedMemoryHistory(500);
+            
+        // Optimize it!
+        f = opt.optimize(controls);
+            
+        cout << "Elapsed time = " << (std::clock()-startTime)/CLOCKS_PER_SEC << "s" << endl;
+        
         ASSERT_EQUAL(f, -0.049390, 1e-5);
         cout << "OpenSim example completed successfully.\n";
-	}
+    }
     catch (const std::exception& ex)
     {
         std::cout << ex.what() << std::endl;
         return 1;
     }
-	
-	// End of main() routine.
-	return 0;
+    
+    // End of main() routine.
+    return 0;
 }

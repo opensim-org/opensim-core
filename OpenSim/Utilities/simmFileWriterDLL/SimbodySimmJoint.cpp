@@ -83,10 +83,10 @@ SimbodySimmJoint::SimbodySimmJoint(const string& aName, const string& aParentBod
  */
 void SimbodySimmJoint::setNull()
 {
-	_name = "undefined";
+    _name = "undefined";
    _order = "";
-	for (int i=0; i<6; i++)
-		_dofUsed[i] = false;
+    for (int i=0; i<6; i++)
+        _dofUsed[i] = false;
    _rotationsUsed = 0;
    _parentBodyName = "";
    _childBodyName = "";
@@ -94,7 +94,7 @@ void SimbodySimmJoint::setNull()
 
 void SimbodySimmJoint::setName(const std::string& aName)
 {
-	_name = aName;
+    _name = aName;
 }
 
 //_____________________________________________________________________________
@@ -107,12 +107,12 @@ void SimbodySimmJoint::setName(const std::string& aName)
  * @return Whether or not the DOF was added to the joint.
  */
 bool SimbodySimmJoint::addFunctionDof(const SimTK::Vec3& aAxis, const string& aCoordinateName,
-												  int aFunctionNumber, Coordinate::MotionType aMotionType)
+                                                  int aFunctionNumber, Coordinate::MotionType aMotionType)
 {
-	double axis[3];
-	axis[0] = aAxis[0]; axis[1] = aAxis[1]; axis[2] = aAxis[2];
+    double axis[3];
+    axis[0] = aAxis[0]; axis[1] = aAxis[1]; axis[2] = aAxis[2];
 
-	if (aMotionType == Coordinate::Translational) {
+    if (aMotionType == Coordinate::Translational) {
       int component = -1;
       if (EQUAL_WITHIN_ERROR(axis[0], 1.0))
          component = 0;
@@ -127,12 +127,12 @@ bool SimbodySimmJoint::addFunctionDof(const SimTK::Vec3& aAxis, const string& aC
       updateOrder(_translationNames[component]);
       _dofUsed[component+3] = true;
    } else {
-		if (_rotationsUsed == 3)
-			return false;
-		_dof[_rotationsUsed].setFunction(_rotationNames[_rotationsUsed], aMotionType, aFunctionNumber, aCoordinateName, axis);
-		updateOrder(_rotationNames[_rotationsUsed]);
-		_dofUsed[_rotationsUsed] = true;
-		_rotationsUsed++;
+        if (_rotationsUsed == 3)
+            return false;
+        _dof[_rotationsUsed].setFunction(_rotationNames[_rotationsUsed], aMotionType, aFunctionNumber, aCoordinateName, axis);
+        updateOrder(_rotationNames[_rotationsUsed]);
+        _dofUsed[_rotationsUsed] = true;
+        _rotationsUsed++;
    }
 
    return true;
@@ -153,7 +153,7 @@ bool SimbodySimmJoint::addConstantDof(const string& aName, const double* aAxis, 
       if (aName == _translationNames[i]) {
          _dof[i+3].setConstant(aName, Coordinate::Translational, NULL, aValue);
          updateOrder(aName);
-			_dofUsed[i+3] = true;
+            _dofUsed[i+3] = true;
          return true;
       }
    }
@@ -163,8 +163,8 @@ bool SimbodySimmJoint::addConstantDof(const string& aName, const double* aAxis, 
       if (aName == _rotationNames[i]) {
          _dof[i].setConstant(aName, Coordinate::Rotational, aAxis, aValue);
          updateOrder(aName);
-			_dofUsed[i] = true;
-			_rotationsUsed++;
+            _dofUsed[i] = true;
+            _rotationsUsed++;
       }
    }
 
@@ -191,34 +191,34 @@ void SimbodySimmJoint::updateOrder(const string& aDofName)
 
 void SimbodySimmJoint::makeUniqueAxis(int aDofIndex, double rAxis[]) const
 {
-	// If this is the first axis being added to the joint, just use the X axis.
-	// If this is the second axis being added, use the Y axis unless the first
-	// axis is Y (in which case use X). If this is the third axis, cross the first
-	// two to get the third.
-	if (aDofIndex == 0) {
-		rAxis[0] = defaultAxes[0][0];
-		rAxis[1] = defaultAxes[0][1];
-		rAxis[2] = defaultAxes[0][2];
-	} else if (aDofIndex == 1) {
-		double firstAxis[3];
-		_dof[0].getAxis(firstAxis);
-		if (EQUAL_WITHIN_TOLERANCE(firstAxis[1], 1.0, 0.1)) {
-			rAxis[0] = 1.0;
-			rAxis[1] = 0.0;
-			rAxis[2] = 0.0;
-		} else {
-			rAxis[0] = 0.0;
-			rAxis[1] = 1.0;
-			rAxis[2] = 0.0;
-		}
-	} else {
-		double firstAxis[3], secondAxis[3];
-		_dof[0].getAxis(firstAxis);
-		_dof[1].getAxis(secondAxis);
-		rAxis[0] = firstAxis[1]*secondAxis[2] - firstAxis[2]*secondAxis[1];
-		rAxis[1] = firstAxis[2]*secondAxis[0] - firstAxis[0]*secondAxis[2];
-		rAxis[2] = firstAxis[0]*secondAxis[1] - firstAxis[1]*secondAxis[0];
-	}
+    // If this is the first axis being added to the joint, just use the X axis.
+    // If this is the second axis being added, use the Y axis unless the first
+    // axis is Y (in which case use X). If this is the third axis, cross the first
+    // two to get the third.
+    if (aDofIndex == 0) {
+        rAxis[0] = defaultAxes[0][0];
+        rAxis[1] = defaultAxes[0][1];
+        rAxis[2] = defaultAxes[0][2];
+    } else if (aDofIndex == 1) {
+        double firstAxis[3];
+        _dof[0].getAxis(firstAxis);
+        if (EQUAL_WITHIN_TOLERANCE(firstAxis[1], 1.0, 0.1)) {
+            rAxis[0] = 1.0;
+            rAxis[1] = 0.0;
+            rAxis[2] = 0.0;
+        } else {
+            rAxis[0] = 0.0;
+            rAxis[1] = 1.0;
+            rAxis[2] = 0.0;
+        }
+    } else {
+        double firstAxis[3], secondAxis[3];
+        _dof[0].getAxis(firstAxis);
+        _dof[1].getAxis(secondAxis);
+        rAxis[0] = firstAxis[1]*secondAxis[2] - firstAxis[2]*secondAxis[1];
+        rAxis[1] = firstAxis[2]*secondAxis[0] - firstAxis[0]*secondAxis[2];
+        rAxis[2] = firstAxis[0]*secondAxis[1] - firstAxis[1]*secondAxis[0];
+    }
 }
 
 //_____________________________________________________________________________
@@ -228,25 +228,25 @@ void SimbodySimmJoint::makeUniqueAxis(int aDofIndex, double rAxis[]) const
 void SimbodySimmJoint::finalize()
 {
    // Initialize the rotations that are not used. The axes do not matter to SIMM because
-	// the DOFs are unused, but if you import the SIMM model back into OpenSim it is a
-	// problem to have collinear axes. So as you add [the unused 0.0] DOFs, make sure the
-	// axes are unique.
+    // the DOFs are unused, but if you import the SIMM model back into OpenSim it is a
+    // problem to have collinear axes. So as you add [the unused 0.0] DOFs, make sure the
+    // axes are unique.
    for (int i=0; i<3; i++) {
-		if (!_dofUsed[i]) {
-			double axis[3];
-			makeUniqueAxis(i, axis);
-			_dof[i].setConstant(_rotationNames[i], Coordinate::Rotational, axis, 0.0);
-			updateOrder(_dof[i].getName());
-		}
+        if (!_dofUsed[i]) {
+            double axis[3];
+            makeUniqueAxis(i, axis);
+            _dof[i].setConstant(_rotationNames[i], Coordinate::Rotational, axis, 0.0);
+            updateOrder(_dof[i].getName());
+        }
    }
 
    // Initialize the translations that are not used.
    for (int i=0; i<3; i++) {
-		if (!_dofUsed[i+3]) {
-			_dof[i+3].setConstant(_translationNames[i], Coordinate::Translational, NULL, 0.0);
-			updateOrder(_dof[i+3].getName());
-			_dofUsed[i+3] = true; // not ideal, but needed for updateOrder
-		}
+        if (!_dofUsed[i+3]) {
+            _dof[i+3].setConstant(_translationNames[i], Coordinate::Translational, NULL, 0.0);
+            updateOrder(_dof[i+3].getName());
+            _dofUsed[i+3] = true; // not ideal, but needed for updateOrder
+        }
    }
 }
 

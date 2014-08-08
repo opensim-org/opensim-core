@@ -901,7 +901,7 @@ typedef struct {
    smBoolean leftArmOnly;
    smBoolean pelvisPresent;
    smBoolean headPresent;
-	smBoolean torsoPresent;
+    smBoolean torsoPresent;
    smBoolean armsUp;
    int rightFingerMarkers[NumFingerMarkers];
    int leftFingerMarkers[NumFingerMarkers];

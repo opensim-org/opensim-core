@@ -75,18 +75,18 @@ void testTorque();
 
 int main()
 {
-	try {
-		testNoForce();
-		testForceAtOrigin();
-		testForceAtPoint();
-		testTorque();
-	}
-	catch (const Exception& e) {
+    try {
+        testNoForce();
+        testForceAtOrigin();
+        testForceAtPoint();
+        testTorque();
+    }
+    catch (const Exception& e) {
         e.print(cerr);
         return 1;
     }
     cout << "Done" << endl;
-	return 0;
+    return 0;
 }
 
 //==========================================================================================================
@@ -97,33 +97,33 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
                  OpenSim::Function* torqueX, OpenSim::Function* torqueY, OpenSim::Function* torqueZ,
                  vector<SimTK::Real>& times, vector<SimTK::Vec3>& accelerations, vector<SimTK::Vec3>& angularAccelerations)
 {
-	using namespace SimTK;
+    using namespace SimTK;
 
-	//==========================================================================================================
-	// Setup OpenSim model
-	Model *osimModel = new Model;
-	//OpenSim bodies
+    //==========================================================================================================
+    // Setup OpenSim model
+    Model *osimModel = new Model;
+    //OpenSim bodies
     OpenSim::Body& ground = osimModel->getGroundBody();
-	OpenSim::Body ball;
-	ball.setName("ball");
+    OpenSim::Body ball;
+    ball.setName("ball");
 
-	// Add joints
-	FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0), false);
+    // Add joints
+    FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0), false);
 
-	// Rename coordinates for a free joint
-	CoordinateSet free_coords = free.getCoordinateSet();
-	for(int i=0; i<free_coords.getSize(); i++){
-		std::stringstream coord_name;
-		coord_name << "free_q" << i;
-		free_coords.get(i).setName(coord_name.str());
-		free_coords.get(i).setMotionType(i > 2 ? Coordinate::Translational : Coordinate::Rotational);
-	}
+    // Rename coordinates for a free joint
+    CoordinateSet free_coords = free.getCoordinateSet();
+    for(int i=0; i<free_coords.getSize(); i++){
+        std::stringstream coord_name;
+        coord_name << "free_q" << i;
+        free_coords.get(i).setName(coord_name.str());
+        free_coords.get(i).setMotionType(i > 2 ? Coordinate::Translational : Coordinate::Rotational);
+    }
 
-	osimModel->addBody(&ball);
-	osimModel->addJoint(&free);
+    osimModel->addBody(&ball);
+    osimModel->addJoint(&free);
 
-	// Add a PrescribedForce.
-	PrescribedForce force(&ball);
+    // Add a PrescribedForce.
+    PrescribedForce force(&ball);
     if (forceX != NULL)
         force.setForceFunctions(forceX, forceY, forceZ);
     if (pointX != NULL)
@@ -131,30 +131,30 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     if (torqueX != NULL)
         force.setTorqueFunctions(torqueX, torqueY, torqueZ);
 
-	counter++;
-	osimModel->updForceSet().append(&force);
+    counter++;
+    osimModel->updForceSet().append(&force);
 
-	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
-	osimModel->disownAllComponents();
+    // BAD: have to set memoryOwner to false or program will crash when this test is complete.
+    osimModel->disownAllComponents();
 
     //Set mass
-	ball.setMass(ballMass.getMass());
-	ball.setMassCenter(ballMass.getMassCenter());
-	ball.setInertia(ballMass.getInertia());
+    ball.setMass(ballMass.getMass());
+    ball.setMassCenter(ballMass.getMassCenter());
+    ball.setInertia(ballMass.getInertia());
 
-	osimModel->setGravity(gravity_vec);
-	osimModel->print("TestPrescribedForceModel.osim");
+    osimModel->setGravity(gravity_vec);
+    osimModel->print("TestPrescribedForceModel.osim");
 
-	delete osimModel;
-	// Check that serialization/deserialization is working correctly as well
-	osimModel = new Model("TestPrescribedForceModel.osim");
+    delete osimModel;
+    // Check that serialization/deserialization is working correctly as well
+    osimModel = new Model("TestPrescribedForceModel.osim");
     SimTK::State& osim_state = osimModel->initSystem();
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
 
-	//==========================================================================================================
-	// Compute the force and torque at the specified times.
+    //==========================================================================================================
+    // Compute the force and torque at the specified times.
 
-	const OpenSim::Body& body = osimModel->getBodySet().get("ball");
+    const OpenSim::Body& body = osimModel->getBodySet().get("ball");
 
     RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
     Manager manager(*osimModel,  integrator);
@@ -178,7 +178,7 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
 
 void testNoForce()
 {
-	using namespace SimTK;
+    using namespace SimTK;
 
     vector<Real> times;
     vector<Vec3> accel;
@@ -197,7 +197,7 @@ void testNoForce()
 
 void testForceAtOrigin()
 {
-	using namespace SimTK;
+    using namespace SimTK;
 
     vector<Real> times;
     vector<Vec3> accel;
@@ -222,7 +222,7 @@ void testForceAtOrigin()
 
 void testForceAtPoint()
 {
-	using namespace SimTK;
+    using namespace SimTK;
 
     Mat33 invInertia = ballMass.getInertia().toMat33().invert();
     vector<Real> times;
@@ -244,7 +244,7 @@ void testForceAtPoint()
 
 void testTorque()
 {
-	using namespace SimTK;
+    using namespace SimTK;
 
     Mat33 invInertia = ballMass.getInertia().toMat33().invert();
     vector<Real> times;

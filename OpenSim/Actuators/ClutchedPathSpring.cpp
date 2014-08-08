@@ -43,18 +43,18 @@ static const Vec3 DefaultClutchedPathSpringColor(.9,.9,.9); // mostly white
 // Default constructor.
 ClutchedPathSpring::ClutchedPathSpring()
 {
-	constructProperties();
+    constructProperties();
 }
 
 ClutchedPathSpring::ClutchedPathSpring(const string& name, double stiffness,
-					double dissipation, double relaxationTau, double stretch0)
+                    double dissipation, double relaxationTau, double stretch0)
 {
-	constructProperties();
-	setName(name);
-	set_stiffness(stiffness);
-	set_dissipation(dissipation);
-	set_relaxation_time_constant(relaxationTau);
-	set_initial_stretch(stretch0);
+    constructProperties();
+    setName(name);
+    set_stiffness(stiffness);
+    set_dissipation(dissipation);
+    set_relaxation_time_constant(relaxationTau);
+    set_initial_stretch(stretch0);
 }
 
 //_____________________________________________________________________________
@@ -63,15 +63,15 @@ ClutchedPathSpring::ClutchedPathSpring(const string& name, double stiffness,
  */
 void ClutchedPathSpring::constructProperties()
 {
-	setAuthors("Ajay Seth");
-	constructProperty_stiffness(SimTK::NaN);
-	constructProperty_dissipation(SimTK::NaN);
-	constructProperty_relaxation_time_constant(0.001); //1ms
-	constructProperty_initial_stretch(0.0);
-	setMinControl(0.0);
-	setMaxControl(1.0);
+    setAuthors("Ajay Seth");
+    constructProperty_stiffness(SimTK::NaN);
+    constructProperty_dissipation(SimTK::NaN);
+    constructProperty_relaxation_time_constant(0.001); //1ms
+    constructProperty_initial_stretch(0.0);
+    setMinControl(0.0);
+    setMaxControl(1.0);
 
-	setOptimalForce(1.0);
+    setOptimalForce(1.0);
 }
 
 //_____________________________________________________________________________
@@ -80,7 +80,7 @@ void ClutchedPathSpring::constructProperties()
  */
 void ClutchedPathSpring::setStiffness(double stiffness)
 {
-	set_stiffness(stiffness);
+    set_stiffness(stiffness);
 }
 //_____________________________________________________________________________
 /*
@@ -88,7 +88,7 @@ void ClutchedPathSpring::setStiffness(double stiffness)
  */
 void ClutchedPathSpring::setDissipation(double dissipation)
 {
-	set_dissipation(dissipation);
+    set_dissipation(dissipation);
 }
 
 //_____________________________________________________________________________
@@ -97,7 +97,7 @@ void ClutchedPathSpring::setDissipation(double dissipation)
  */
 void ClutchedPathSpring::setInitialStretch(double stretch0)
 {
-	set_initial_stretch(stretch0);
+    set_initial_stretch(stretch0);
 }
 
 //_____________________________________________________________________________
@@ -106,20 +106,20 @@ void ClutchedPathSpring::setInitialStretch(double stretch0)
  */
  void ClutchedPathSpring::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);
-	// The spring force is dependent of stretch so only invalidate dynamics
-	// if the stretch state changes
-	addStateVariable("stretch");
+    Super::addToSystem(system);
+    // The spring force is dependent of stretch so only invalidate dynamics
+    // if the stretch state changes
+    addStateVariable("stretch");
 }
 
  void ClutchedPathSpring::initStateFromProperties(SimTK::State& state) const
  {
-	 setStateVariable(state, "stretch", get_initial_stretch());
+     setStateVariable(state, "stretch", get_initial_stretch());
  }
 
  void ClutchedPathSpring::setPropertiesFromState(const SimTK::State& state)
  {
-	 set_initial_stretch(getStretch(state));
+     set_initial_stretch(getStretch(state));
  }
  
 
@@ -134,17 +134,17 @@ void ClutchedPathSpring::setInitialStretch(double stretch0)
 
 double ClutchedPathSpring::getStretch(const SimTK::State& s) const
 {
-	return getStateVariable(s, "stretch");
+    return getStateVariable(s, "stretch");
 }
 
 
 double ClutchedPathSpring::getTension(const SimTK::State& s) const
 {
-	// evaluate tension in the spring
-	// note tension is positive and produces shortening
-	// damping opposes lengthening, which is positive lengthening speed
-	// there for stretch and lengthening speed increase tension
-	return getForce(s); 
+    // evaluate tension in the spring
+    // note tension is positive and produces shortening
+    // damping opposes lengthening, which is positive lengthening speed
+    // there for stretch and lengthening speed increase tension
+    return getForce(s); 
 }
 
 
@@ -153,29 +153,29 @@ double ClutchedPathSpring::getTension(const SimTK::State& s) const
 //-----------------------------------------------------------------------------
 double ClutchedPathSpring::computeActuation(const SimTK::State& s) const
 {
-	// clamp or cap the control input to [0, 1]
-	double control = SimTK::clamp(0.0, getControl(s), 1.0); 
-	double tension = control *
-				(getStiffness()*getStretch(s) *					//elastic force
-				(1+getDissipation()*getLengtheningSpeed(s)));   //dissipation 
-	
-	setForce(s, tension);
-	return tension;
+    // clamp or cap the control input to [0, 1]
+    double control = SimTK::clamp(0.0, getControl(s), 1.0); 
+    double tension = control *
+                (getStiffness()*getStretch(s) *					//elastic force
+                (1+getDissipation()*getLengtheningSpeed(s)));   //dissipation 
+    
+    setForce(s, tension);
+    return tension;
 }
 
 void ClutchedPathSpring::
-	computeStateVariableDerivatives(const SimTK::State& s) const
+    computeStateVariableDerivatives(const SimTK::State& s) const
 {
-	double zdot = getControl(s) > SimTK::SignificantReal ? // non-zero control
-					getLengtheningSpeed(s) : // clutch is engaged
-					-getStretch(s)/get_relaxation_time_constant();
+    double zdot = getControl(s) > SimTK::SignificantReal ? // non-zero control
+                    getLengtheningSpeed(s) : // clutch is engaged
+                    -getStretch(s)/get_relaxation_time_constant();
 
-	setStateVariableDerivative(s, "stretch", zdot);
+    setStateVariableDerivative(s, "stretch", zdot);
 }
 
 SimTK::Vec3 ClutchedPathSpring::computePathColor(const SimTK::State& state) const 
 {
-	double shade = SimTK::clamp(0.1, getControl(state), 1.0);
+    double shade = SimTK::clamp(0.1, getControl(state), 1.0);
     const SimTK::Vec3 color(shade, 0.9, 0.1); // green to yellow
     return color;
 }

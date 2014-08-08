@@ -49,9 +49,9 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PolynomialFunction, Function);
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
-	OpenSim_DECLARE_PROPERTY(coefficients, SimTK::Vector,
-		"Coefficients of a polynomial function, from highest to lowest order."
-		"Polynomial order is n-1, where n is the number of coefficients.");
+    OpenSim_DECLARE_PROPERTY(coefficients, SimTK::Vector,
+        "Coefficients of a polynomial function, from highest to lowest order."
+        "Polynomial order is n-1, where n is the number of coefficients.");
     /**@}**/
 
 
@@ -60,60 +60,60 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PolynomialFunction, Function);
 //=============================================================================
 public:
 
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	/** Construct a polynomial with default coefficients of {1}
-	 */
-	PolynomialFunction(){	constructProperties();	}
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    /** Construct a polynomial with default coefficients of {1}
+     */
+    PolynomialFunction(){	constructProperties();	}
 
-	/** Construct a polynomial with provided Vector of coefficients 
-	 * {a, b, ..., c} where the polynomial order, n = size-1
-	*/
-	PolynomialFunction(SimTK::Vector coefficients){
-		constructProperties();
-		set_coefficients(coefficients);
-	}
+    /** Construct a polynomial with provided Vector of coefficients 
+     * {a, b, ..., c} where the polynomial order, n = size-1
+    */
+    PolynomialFunction(SimTK::Vector coefficients){
+        constructProperties();
+        set_coefficients(coefficients);
+    }
 
-	virtual ~PolynomialFunction() {};
+    virtual ~PolynomialFunction() {};
 
-	//--------------------------------------------------------------------------
-	// SET AND GET Coefficients
-	//--------------------------------------------------------------------------
-	/** Set coefficients for the polynomial f of variable x:
-	 * f(x) = a*x^n + b*x^(n-1) + ... + c 
-	 * The size of the coffecient vector determines the order of the polynomial.
-	 * n = size-1;
-	 * @param[in] coefficients      Vector of polynomial coefficients
-	 */
-	void setCoefficients(SimTK::Vector coefficients)
-	{ set_coefficients(coefficients); }
-	/** Get the polynomial function coefficients */
-	const SimTK::Vector getCoefficients() const
-	{ return get_coefficients(); }
+    //--------------------------------------------------------------------------
+    // SET AND GET Coefficients
+    //--------------------------------------------------------------------------
+    /** Set coefficients for the polynomial f of variable x:
+     * f(x) = a*x^n + b*x^(n-1) + ... + c 
+     * The size of the coffecient vector determines the order of the polynomial.
+     * n = size-1;
+     * @param[in] coefficients      Vector of polynomial coefficients
+     */
+    void setCoefficients(SimTK::Vector coefficients)
+    { set_coefficients(coefficients); }
+    /** Get the polynomial function coefficients */
+    const SimTK::Vector getCoefficients() const
+    { return get_coefficients(); }
     
 
-	//--------------------------------------------------------------------------
-	// EVALUATION
-	//--------------------------------------------------------------------------
-	/** Return the underlying SimTK::Function::Polynomial for direct use
-	 *   at the SimTK::System level 
-	 * @return   Pointer to the underlying SimTK::Function
-	 */
-	virtual SimTK::Function* createSimTKFunction() const
-	{
-		return new SimTK::Function::Polynomial(get_coefficients());
-	}
+    //--------------------------------------------------------------------------
+    // EVALUATION
+    //--------------------------------------------------------------------------
+    /** Return the underlying SimTK::Function::Polynomial for direct use
+     *   at the SimTK::System level 
+     * @return   Pointer to the underlying SimTK::Function
+     */
+    virtual SimTK::Function* createSimTKFunction() const
+    {
+        return new SimTK::Function::Polynomial(get_coefficients());
+    }
 
 private:
-	/**
-	* Construct the serializiable property member variables and
-	* assign their defualt values
-	*/
-	void constructProperties(){
-		setAuthors("Carmichael Ong");
-		constructProperty_coefficients(SimTK::Vector(1, 1));
-	}
+    /**
+    * Construct the serializiable property member variables and
+    * assign their defualt values
+    */
+    void constructProperties(){
+        setAuthors("Carmichael Ong");
+        constructProperty_coefficients(SimTK::Vector(1, 1));
+    }
 
 //=============================================================================
 };	// END class PolynomialFunction

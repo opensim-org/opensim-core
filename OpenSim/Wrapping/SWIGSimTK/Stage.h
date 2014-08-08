@@ -72,7 +72,7 @@ public:
         NValid = HighestValid-LowestValid+1,
         NRuntime = HighestRuntime-LowestRuntime+1
     };
-	
+    
     /** Default construction gives Stage::Empty. **/
     Stage() : level(Stage::Empty) {}
     /** This is an implicit conversion from Stage::Level to Stage. **/

@@ -30,10 +30,10 @@
 #include "ModelComponent.h"
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+    #ifdef OSIMSIMULATION_API
+        #undef OSIMSIMULATION_API
+        #define OSIMSIMULATION_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -143,8 +143,8 @@ public:
         _model = &model;
         for (int i = 0; i < Set<T>::getSize(); i++){
             static_cast<ModelComponent&>(Set<T>::get(i)).connectToModel(model);
-		}
-		Set<T>::setupGroups(); // make sure group members are populated
+        }
+        Set<T>::setupGroups(); // make sure group members are populated
     }
 
     /**

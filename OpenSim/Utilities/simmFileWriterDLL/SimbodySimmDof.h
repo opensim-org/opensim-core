@@ -68,12 +68,12 @@ protected:
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION AND DESTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION AND DESTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	virtual ~SimbodySimmDof();
-	SimbodySimmDof();
+    virtual ~SimbodySimmDof();
+    SimbodySimmDof();
    const std::string& getName() const { return _name; }
    void setConstant(const std::string& aName, Coordinate::MotionType aType,
                     const double* aAxis, double aValue);
@@ -81,7 +81,7 @@ public:
                     const std::string& aCoordinateName, const double* aAxis);
    void setNull();
    void write(std::ofstream& aStream);
-	void getAxis(double rAxis[]) const;
+    void getAxis(double rAxis[]) const;
 
 //=============================================================================
 };	// END of class SimbodySimmDof

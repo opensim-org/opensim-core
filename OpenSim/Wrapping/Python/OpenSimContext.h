@@ -90,9 +90,9 @@ public:
     void setState( SimTK::State* s) { _configState = s; }
     void setModel( Model* m) { _model = m; }
 
-	/** Get reference to the single instance of SimTK::State maintained by the Context object **/
+    /** Get reference to the single instance of SimTK::State maintained by the Context object **/
     const SimTK::State& getCurrentStateRef() const { return (*_configState); };
-	/** Return a "clone" of  the single instance of SimTK::State maintained by the Context object **/
+    /** Return a "clone" of  the single instance of SimTK::State maintained by the Context object **/
     SimTK::State getCurrentStateCopy() const { return SimTK::State(*_configState); };
         void recreateSystemAfterSystemExistsKeepStage(); 
         void recreateSystemAfterSystemExists(); 
@@ -102,46 +102,46 @@ public:
              setState( newState );
             _model->getMultibodySystem().realize( *_configState, stageBeforeRecreatingSystem );
         }
-	// Transforms
+    // Transforms
     void transformPosition(const Body& body, double offset[], double gOffset[]);
     Transform getTransform(const Body& body);
-	void transform(const Body& ground, double d[], Body& body, double dragVectorBody[]);
-	// Coordinates
+    void transform(const Body& ground, double d[], Body& body, double dragVectorBody[]);
+    // Coordinates
     double getValue(const Coordinate& coord);
-	bool getLocked(const Coordinate& coord);
-	void setValue(const Coordinate& coord, double d, bool enforceConstraints=true);
-	void setClamped(Coordinate& coord, bool newValue);
-	bool getClamped(const Coordinate& coord);
-	void setLocked(Coordinate& coord, bool newValue);
-	bool isPrescribed(const Coordinate& coord) const;
-	bool isConstrained(const Coordinate& coord) const;
-	// Constraints
-	bool isDisabled(const Constraint& constraint) const {
-		return  constraint.isDisabled(*_configState);
-	}
-	void setDisabled(Constraint& constraint, bool disable) {
-		constraint.setDisabled(*_configState, disable);
-		_model->assemble(*_configState);
-	}
-	// Forces
-	bool isDisabled(const Force& force) const {
-		return  force.isDisabled(*_configState);
-	}
-	void setDisabled(Force& force, bool disable) const {
-		force.setDisabled(*_configState, disable);
-		_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
-	}
-	// Muscles
-	double getActivation(Muscle& act);
-	double getMuscleLength(Muscle& act);
-	const Array<PathPoint*>& getCurrentPath(Muscle& act);
-	const Array<PathPoint*>& getCurrentDisplayPath(GeometryPath& path);
-	void updateDisplayer(Force& f);
+    bool getLocked(const Coordinate& coord);
+    void setValue(const Coordinate& coord, double d, bool enforceConstraints=true);
+    void setClamped(Coordinate& coord, bool newValue);
+    bool getClamped(const Coordinate& coord);
+    void setLocked(Coordinate& coord, bool newValue);
+    bool isPrescribed(const Coordinate& coord) const;
+    bool isConstrained(const Coordinate& coord) const;
+    // Constraints
+    bool isDisabled(const Constraint& constraint) const {
+        return  constraint.isDisabled(*_configState);
+    }
+    void setDisabled(Constraint& constraint, bool disable) {
+        constraint.setDisabled(*_configState, disable);
+        _model->assemble(*_configState);
+    }
+    // Forces
+    bool isDisabled(const Force& force) const {
+        return  force.isDisabled(*_configState);
+    }
+    void setDisabled(Force& force, bool disable) const {
+        force.setDisabled(*_configState, disable);
+        _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+    }
+    // Muscles
+    double getActivation(Muscle& act);
+    double getMuscleLength(Muscle& act);
+    const Array<PathPoint*>& getCurrentPath(Muscle& act);
+    const Array<PathPoint*>& getCurrentDisplayPath(GeometryPath& path);
+    void updateDisplayer(Force& f);
     void copyMuscle(Muscle& from, Muscle& to);
-	void replacePropertyFunction(OpenSim::Object& obj, OpenSim::Function* aOldFunction, OpenSim::Function* aNewFunction);
+    void replacePropertyFunction(OpenSim::Object& obj, OpenSim::Function* aOldFunction, OpenSim::Function* aNewFunction);
 
-	// Muscle Points
-	void setXFunction(MovingPathPoint& mmp, Function& newFunction);
+    // Muscle Points
+    void setXFunction(MovingPathPoint& mmp, Function& newFunction);
     void setYFunction(MovingPathPoint& mmp, Function& newFunction);
     void setZFunction(MovingPathPoint& mmp, Function& newFunction);
     void setXCoordinate(MovingPathPoint& mmp, Coordinate& newCoord);
@@ -154,54 +154,54 @@ public:
     bool replacePathPoint(GeometryPath& p, PathPoint& mp, PathPoint& newPoint);
     void setLocation(PathPoint& mp, int i, double d);
     void setEndPoint(PathWrap& mw, int newEndPt);
-	void addPathPoint(GeometryPath& p, int menuChoice, Body& body);
-	bool deletePathPoint(GeometryPath& p, int menuChoice);
-	bool isActivePathPoint(PathPoint& mp) ; 
-	// Muscle Wrapping
-	void setStartPoint(PathWrap& mw, int newStartPt);
-	void addPathWrap(GeometryPath& p, WrapObject& awo);
+    void addPathPoint(GeometryPath& p, int menuChoice, Body& body);
+    bool deletePathPoint(GeometryPath& p, int menuChoice);
+    bool isActivePathPoint(PathPoint& mp) ; 
+    // Muscle Wrapping
+    void setStartPoint(PathWrap& mw, int newStartPt);
+    void addPathWrap(GeometryPath& p, WrapObject& awo);
     void moveUpPathWrap(GeometryPath& p, int num);
     void moveDownPathWrap(GeometryPath& p, int num);
     void deletePathWrap(GeometryPath& p, int num);
-	// Markers
-	void setBody(Marker& currentMarker, Body& newBody, bool  b);
-	int replaceMarkerSet(Model& model, MarkerSet& aMarkerSet);
+    // Markers
+    void setBody(Marker& currentMarker, Body& newBody, bool  b);
+    int replaceMarkerSet(Model& model, MarkerSet& aMarkerSet);
 
-	void getCenterOfMassInGround(double com[3]) const {
-		SimTK::Vec3 comV = _model->getMatterSubsystem().calcSystemMassCenterLocationInGround(*_configState);
-		for(int i=0; i<3; i++) com[i] = comV[i];
-	}
-	// Analyses
-	int step(Analysis& analysis);
-	// Tools
-	bool solveInverseKinematics( InverseKinematicsTool& ikTool);
-	void setStatesFromMotion(AnalyzeTool& analyzeTool, const Storage &aMotion, bool aInDegrees);
-	void loadStatesFromFile(AnalyzeTool& analyzeTool);
-	bool processModelScale(ModelScaler& modelScaler, 
-		Model* aModel, const std::string& aPathToSubject="", double aFinalMass = -1.0);
-	bool processModelMarkerPlacer( MarkerPlacer& markerPlacer, 
-		Model* aModel, const std::string& aPathToSubject="");
-	double computeMeasurementScaleFactor(ModelScaler& modelScaler, 
-		const Model& aModel, const MarkerData& aMarkerData, const Measurement& aMeasurement) const;
+    void getCenterOfMassInGround(double com[3]) const {
+        SimTK::Vec3 comV = _model->getMatterSubsystem().calcSystemMassCenterLocationInGround(*_configState);
+        for(int i=0; i<3; i++) com[i] = comV[i];
+    }
+    // Analyses
+    int step(Analysis& analysis);
+    // Tools
+    bool solveInverseKinematics( InverseKinematicsTool& ikTool);
+    void setStatesFromMotion(AnalyzeTool& analyzeTool, const Storage &aMotion, bool aInDegrees);
+    void loadStatesFromFile(AnalyzeTool& analyzeTool);
+    bool processModelScale(ModelScaler& modelScaler, 
+        Model* aModel, const std::string& aPathToSubject="", double aFinalMass = -1.0);
+    bool processModelMarkerPlacer( MarkerPlacer& markerPlacer, 
+        Model* aModel, const std::string& aPathToSubject="");
+    double computeMeasurementScaleFactor(ModelScaler& modelScaler, 
+        const Model& aModel, const MarkerData& aMarkerData, const Measurement& aMeasurement) const;
    void replaceTransformAxisFunction(TransformAxis& aDof, OpenSim::Function& aFunction);
 
-	// Utilities
+    // Utilities
     static bool isNaN( double v ) { return (SimTK::isNaN(v)); }
 
-	double getTime() { 
-		assert(_configState); 
-		return (_configState->getTime()); 
-	}
+    double getTime() { 
+        assert(_configState); 
+        return (_configState->getTime()); 
+    }
     // Convert SimTK::Transform into a double[] array of 16 doubles
-	static void getTransformAsDouble16(const SimTK::Transform& aTransform, double flattened[]){
-		 double* matStart = &aTransform.toMat44()[0][0];
-		 for (int i=0; i<16; i++) flattened[i]=matStart[i];
-	}
+    static void getTransformAsDouble16(const SimTK::Transform& aTransform, double flattened[]){
+         double* matStart = &aTransform.toMat44()[0][0];
+         for (int i=0; i<16; i++) flattened[i]=matStart[i];
+    }
     // Sets the property values in the model from the current state if there
     // are state variables that correspond to properties.
-	void setPropertiesFromState() {	
-		_model->setPropertiesFromState(*_configState);
-	}
+    void setPropertiesFromState() {	
+        _model->setPropertiesFromState(*_configState);
+    }
     /**
      * Create a new System under the model then realize it to the same stage it had
      */
@@ -213,9 +213,9 @@ public:
         setState( newState );
         _model->getMultibodySystem().realize( *_configState, stageBeforeRecreatingSystem );
     }
-	// Force re-realization
-	void realizePosition();
-	void realizeVelocity();
+    // Force re-realization
+    void realizePosition();
+    void realizeVelocity();
 //=============================================================================
 // DATA
 //=============================================================================
@@ -250,16 +250,16 @@ in Java data types
 
 class AnalysisWrapper : public Analysis {
 OpenSim_DECLARE_CONCRETE_OBJECT(AnalysisWrapper, Analysis);
-	double  simulationTime;
+    double  simulationTime;
 public:
-	AnalysisWrapper(Model *aModel=0):
-	  Analysis(aModel){
-		simulationTime = -1.0;
-	}
+    AnalysisWrapper(Model *aModel=0):
+      Analysis(aModel){
+        simulationTime = -1.0;
+    }
 
-	double getSimulationTime() {
-		return simulationTime;
-	}
+    double getSimulationTime() {
+        return simulationTime;
+    }
 
 }; // Class AnalysisWrapper
 
@@ -275,21 +275,21 @@ is thrown.
 **/
 // Class to handle interrupts
 class InterruptCallback : public AnalysisWrapper {
-	bool _throwException;
+    bool _throwException;
 public:
-	InterruptCallback(Model *aModel=0):
-	  AnalysisWrapper(aModel),
-	  _throwException(false){};
+    InterruptCallback(Model *aModel=0):
+      AnalysisWrapper(aModel),
+      _throwException(false){};
 
-	void interrupt() {
-		_throwException=true;
-	}
-	virtual int step( const SimTK::State& s, int stepNumber) {
-		if (_throwException)
-			throw Exception("Operation Aborted");
-		return 0;
-	}
-	
+    void interrupt() {
+        _throwException=true;
+    }
+    virtual int step( const SimTK::State& s, int stepNumber) {
+        if (_throwException)
+            throw Exception("Operation Aborted");
+        return 0;
+    }
+    
 };
 
 //==============================================================================

@@ -49,48 +49,48 @@ OpenSim_DECLARE_CONCRETE_OBJECT(Constant, Function);
 // MEMBER VARIABLES
 //=============================================================================
 protected:
-	PropertyDbl _valueProp;
-	double &_value;
+    PropertyDbl _valueProp;
+    double &_value;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	Constant();
-	Constant(double value);
-	Constant(const Constant &aSpline);
-	virtual ~Constant();
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    Constant();
+    Constant(double value);
+    Constant(const Constant &aSpline);
+    virtual ~Constant();
 
 private:
-	void setNull();
-	void setupProperties();
-	void copyData(const Constant &aConstant);
+    void setNull();
+    void setupProperties();
+    void copyData(const Constant &aConstant);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	Constant& operator=(const Constant &aConstant);
+    Constant& operator=(const Constant &aConstant);
 #endif
 
-	//--------------------------------------------------------------------------
-	// SET AND GET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // SET AND GET
+    //--------------------------------------------------------------------------
 public:
-	void setValue(double aValue);
+    void setValue(double aValue);
 
-	//--------------------------------------------------------------------------
-	// EVALUATION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // EVALUATION
+    //--------------------------------------------------------------------------
     virtual double calcValue(const SimTK::Vector& xUnused) const
-	{
-		return _value;
-	}
-	const double getValue() const { return _value; }
+    {
+        return _value;
+    }
+    const double getValue() const { return _value; }
     SimTK::Function* createSimTKFunction() const;
 //=============================================================================
 };	// END class Constant

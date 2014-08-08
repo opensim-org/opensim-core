@@ -29,10 +29,10 @@ using namespace SimTK;
 using namespace std;
 
 void CMCActuatorSubsystemRep::setCompleteState(const SimTK::State& state) {
-	_completeState = state;
+    _completeState = state;
 }
 const SimTK::State& CMCActuatorSubsystemRep::getCompleteState() const{
-	return(_completeState);
+    return(_completeState);
 }
 FunctionSet* CMCActuatorSubsystemRep::getCoordinateTrajectories() const {
    return( _qSet);
@@ -59,41 +59,41 @@ void CMCActuatorSubsystemRep::setSpeedCorrections(const double* aCorrections) {
 }
   
 void CMCActuatorSubsystemRep::setCoordinateTrajectories(FunctionSet *aSet) {
-	// ERROR CHECKING
-	if(aSet == NULL) {
-		string msg = "CMCActuatorSubsystemRep.setCoordinateTrajectories:";
-		msg += " ERR- NULL function set.\n";
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
-	if(aSet->getSize() != _model->getNumCoordinates()) {
-		string msg = "CMCActuatorSubsystemRep.setCoordinateTrajectories:";
-		msg += " ERR- incorrect number of trajectories.\n";
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
+    // ERROR CHECKING
+    if(aSet == NULL) {
+        string msg = "CMCActuatorSubsystemRep.setCoordinateTrajectories:";
+        msg += " ERR- NULL function set.\n";
+        throw( Exception(msg,__FILE__,__LINE__) );
+    }
+    if(aSet->getSize() != _model->getNumCoordinates()) {
+        string msg = "CMCActuatorSubsystemRep.setCoordinateTrajectories:";
+        msg += " ERR- incorrect number of trajectories.\n";
+        throw( Exception(msg,__FILE__,__LINE__) );
+    }
 
-	_qSet = aSet;
+    _qSet = aSet;
 }
 void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
-	// ERROR CHECKING
-	if(aSet == NULL) {
-		string msg = "CMCActuatorSubsystemRep.setSpeedTrajectories:";
-		msg += " ERR- NULL function set.\n";
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
-	if(aSet->getSize() != _model->getNumSpeeds()) {
-		string msg = "CMCActuatorSubsystemRep.setSpeedTrajectories:";
-		msg += " ERR- incorrect number of trajectories.\n";
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
+    // ERROR CHECKING
+    if(aSet == NULL) {
+        string msg = "CMCActuatorSubsystemRep.setSpeedTrajectories:";
+        msg += " ERR- NULL function set.\n";
+        throw( Exception(msg,__FILE__,__LINE__) );
+    }
+    if(aSet->getSize() != _model->getNumSpeeds()) {
+        string msg = "CMCActuatorSubsystemRep.setSpeedTrajectories:";
+        msg += " ERR- incorrect number of trajectories.\n";
+        throw( Exception(msg,__FILE__,__LINE__) );
+    }
 
-	_uSet = aSet;
+    _uSet = aSet;
 }
    CMCActuatorSubsystemRep::CMCActuatorSubsystemRep(Model* model) 
        : SimTK::Subsystem::Guts( "CMCActuatorSubsystem", "2.0"),
        _holdCoordinatesConstant(false),
        _holdTime(0.0),
-	   _qSet(NULL),
-	   _uSet(NULL),
+       _qSet(NULL),
+       _uSet(NULL),
        _model(model) {
 
        _qCorrections.setSize(_model->getNumCoordinates() );
@@ -155,7 +155,7 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
      /* copy  muscle states computed from the actuator system to the muscle states
         for the complete system  then compute forces*/
      const_cast<SimTK::State&>(_completeState).updZ() = s.getZ();
-	 const_cast<SimTK::State&>(_completeState).updTime() = t;
+     const_cast<SimTK::State&>(_completeState).updTime() = t;
 
      _model->getMultibodySystem().realize(_completeState, SimTK::Stage::Acceleration);
 
@@ -163,12 +163,12 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
      s.updZDot() = _completeState.getZDot();
 
 /*
-	cout << "_qWork=" << _qWork << endl;
+    cout << "_qWork=" << _qWork << endl;
     cout << "_uWork=" << _uWork << endl;
-	cout << "q=" << q << endl;
+    cout << "q=" << q << endl;
     cout << "u=" << u << endl;
-	cout << "actuatorStates=" << s.getZ() << endl;
-	cout << " CMCrealize:Dynamics  time=" <<  s.getTime(); 
+    cout << "actuatorStates=" << s.getZ() << endl;
+    cout << " CMCrealize:Dynamics  time=" <<  s.getTime(); 
     cout << " Actuator dydt=" << _completeState.getZDot() << endl;
   
 */

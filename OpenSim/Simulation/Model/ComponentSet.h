@@ -45,9 +45,9 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ComponentSet,
 public:
     ComponentSet() : Super() {}
 
-	explicit ComponentSet(Model& model) : Super(model) {}
+    explicit ComponentSet(Model& model) : Super(model) {}
 
-	ComponentSet(Model& model, const std::string &aFileName, 
+    ComponentSet(Model& model, const std::string &aFileName, 
                  bool aUpdateFromXMLNode=true)
     :   Super(model, aFileName, aUpdateFromXMLNode) {}
 

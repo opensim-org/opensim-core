@@ -49,50 +49,50 @@ class OSIMCOMMON_API Signal
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	//Signal();
-	//virtual ~Signal();
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    //Signal();
+    //virtual ~Signal();
 
-	//--------------------------------------------------------------------------
-	// FILTERS
-	//--------------------------------------------------------------------------
-	static int
-		SmoothSpline(int aDegree,double aDeltaT,double aCutOffFrequency,
-		int aN,double *aTimes,double *aSignal,double *rFilteredSignal);
-	static int
-		LowpassIIR(double aDeltaT,double aCutOffFrequency,
-		int aN,double *aSignal,double *rFilteredSignal);
-	static int
-		LowpassFIR(int aOrder,double aDeltaT,double aCutoffFrequency,
-		int aN,double *aSignal,double *rFilteredSignal);
-	static int
-		BandpassFIR(int aOrder,double aDeltaT,
-		double aLowFrequency,double aHighFrequency,
-		int aN,double *aSignal,double *aFilteredSignal);
+    //--------------------------------------------------------------------------
+    // FILTERS
+    //--------------------------------------------------------------------------
+    static int
+        SmoothSpline(int aDegree,double aDeltaT,double aCutOffFrequency,
+        int aN,double *aTimes,double *aSignal,double *rFilteredSignal);
+    static int
+        LowpassIIR(double aDeltaT,double aCutOffFrequency,
+        int aN,double *aSignal,double *rFilteredSignal);
+    static int
+        LowpassFIR(int aOrder,double aDeltaT,double aCutoffFrequency,
+        int aN,double *aSignal,double *rFilteredSignal);
+    static int
+        BandpassFIR(int aOrder,double aDeltaT,
+        double aLowFrequency,double aHighFrequency,
+        int aN,double *aSignal,double *aFilteredSignal);
 
-	//--------------------------------------------------------------------------
-	// PADDING
-	//--------------------------------------------------------------------------
-	static double*
-		Pad(int aPad,int aN,const double aSignal[]);
-	static void
-		Pad(int aPad,OpenSim::Array<double> &aSignal);
+    //--------------------------------------------------------------------------
+    // PADDING
+    //--------------------------------------------------------------------------
+    static double*
+        Pad(int aPad,int aN,const double aSignal[]);
+    static void
+        Pad(int aPad,OpenSim::Array<double> &aSignal);
 
-	//--------------------------------------------------------------------------
-	// POINT REDUCTION
-	//--------------------------------------------------------------------------
-	static int
-		ReduceNumberOfPoints(double aDistance,
-		Array<double> &rTime,Array<double> &rSignal);
+    //--------------------------------------------------------------------------
+    // POINT REDUCTION
+    //--------------------------------------------------------------------------
+    static int
+        ReduceNumberOfPoints(double aDistance,
+        Array<double> &rTime,Array<double> &rSignal);
 
 
-	//--------------------------------------------------------------------------
-	// CORE MATH
-	//--------------------------------------------------------------------------
-	static double sinc(double x);
-	static double hamming(int k,int M);
+    //--------------------------------------------------------------------------
+    // CORE MATH
+    //--------------------------------------------------------------------------
+    static double sinc(double x);
+    static double hamming(int k,int M);
 
 //=============================================================================
 };	// END class Signal

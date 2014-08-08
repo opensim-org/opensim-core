@@ -71,9 +71,9 @@ SimbodySimmDof::SimbodySimmDof()
  */
 void SimbodySimmDof::setNull()
 {
-	_name = "undefined";
+    _name = "undefined";
    _type = Coordinate::Translational;
-	_userFunctionNumber = -1;
+    _userFunctionNumber = -1;
    _coordinateName = "";
    _axis[0] = _axis[1] = _axis[2] = 0.0;
 }
@@ -150,7 +150,7 @@ void SimbodySimmDof::write(ofstream& aStream)
  */
 void SimbodySimmDof::getAxis(double rAxis[]) const
 {
-	rAxis[0] = _axis[0];
-	rAxis[1] = _axis[1];
-	rAxis[2] = _axis[2];
+    rAxis[0] = _axis[0];
+    rAxis[1] = _axis[1];
+    rAxis[2] = _axis[2];
 }

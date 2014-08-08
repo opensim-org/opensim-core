@@ -53,7 +53,7 @@ SWITCHES:
           Value is ( (i=G0 + 2 G1 + 4 G2) , (i < 6) ? ( 1<<i) :(1 <<(i+3)))
           Same value should be passed to as + ld using -G.
 
-	  Default = -mG1 -mG0 (Value = 8).
+      Default = -mG1 -mG0 (Value = 8).
 
     -G32  Implies -G 32 -mG2 -mnG1 -mG0.
 
@@ -127,10 +127,10 @@ WARNING:
 
 #ifdef DECSTATION
 #define TARGET_VERSION printf (" (AL-MIPS 1.10) <DECStation>\n");
-				/* Depends on MIPS ASM. */
+                /* Depends on MIPS ASM. */
 #else
 #define TARGET_VERSION printf (" (AL-MIPS 1.10) <MIPS>\n");
-				/* Depends on MIPS ASM. */
+                /* Depends on MIPS ASM. */
 #endif
 #define TARGET_VERSNUM "1 10"
 
@@ -146,17 +146,17 @@ extern int target_flags;
 
 /* Nonzero if compiling code that Unix assembler can assemble.  */
 #define TARGET_UNIX_ASM (target_flags & 1)
-				/* Debug Mode */
+                /* Debug Mode */
 #define TARGET_DEBUG_MODE (target_flags & 2)
 #define TARGET_DEBUGA_MODE (target_flags & 4)
 #define TARGET_DEBUGB_MODE (target_flags & 16)
 #define TARGET_DEBUGC_MODE (target_flags & 32)
 #define TARGET_DEBUGD_MODE (target_flags & 64)
-				/* Register Naming in .s ($21 vs. $a0) */
+                /* Register Naming in .s ($21 vs. $a0) */
 #define TARGET_NAME_REGS (target_flags & 8)
-				/* Use addu / subbu or get FIXED_OVFL TRAPS */
+                /* Use addu / subbu or get FIXED_OVFL TRAPS */
 #define TARGET_NOFIXED_OVFL (target_flags & 128)
-				/* Optimize for Sdata/Sbss */
+                /* Optimize for Sdata/Sbss */
 #define TARGET_GP_OPT (target_flags & 4096)
 #define TARGET_GVALUE ((target_flags >> 8 ) & 0xf)
 
@@ -185,8 +185,8 @@ extern int target_flags;
     {"nornames", -8 },  	/* Output register numbers like $21 */	\
     {"nofixed-ovfl",128},       /* use addu and subu                */	\
     {"fixed-ovfl", -128},       /* use add and sub                */	\
-				/* Following used to support the data/sdata */\
-				/* feature */				\
+                /* Following used to support the data/sdata */\
+                /* feature */				\
     {"G0",256},								\
     {"nG0",-256},							\
     {"G1",512},								\
@@ -203,8 +203,8 @@ extern int target_flags;
 
 /* Default GVALUE  (data item size threshold for selection of Sdata/data)
    is computed : GVALUE ==  ( ((i=G0+2*G1+4*G2) < 6)
-				        ? 1<<i
-					: 1<< (i+6))
+                        ? 1<<i
+                    : 1<< (i+6))
 */
 #define MIPS_GVALUE_DEFAULT 8
 
@@ -284,9 +284,9 @@ extern int target_flags;
    account.
 */
 #define FIXED_REGISTERS {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\
-		         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1,\
-		         1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,\
-		         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	\
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1,\
+                 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,\
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	\
 }
 
 
@@ -297,9 +297,9 @@ extern int target_flags;
    and the register where structure-value addresses are passed.
    Aside from that, you can include as many other registers as you like.  */
 #define CALL_USED_REGISTERS {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,\
-		             0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1,\
-		             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,\
-		             1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+                     0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1,\
+                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,\
+                     1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
 }
 
 
@@ -322,7 +322,7 @@ extern int target_flags;
 #define HARD_REGNO_MODE_OK(REGNO, MODE)					\
    ((REGNO) < 32 ? (int) (((MODE) != SFmode) && ((MODE) != DFmode))	\
     : (int) (((MODE) == SFmode || (MODE) == DFmode)			\
-	     && ((REGNO) & 1) == 0))
+         && ((REGNO) & 1) == 0))
 
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
@@ -404,7 +404,7 @@ enum reg_class  { NO_REGS, GR_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES } ;
 #define REG_CLASS_CONTENTS {{0x00000000, 0x00000000},			\
                             {0xffffffff, 0x00000000},			\
                             {0x00000000, 0xffffffff},			\
-			    {0xffffffff, 0xffffffff}}
+                {0xffffffff, 0xffffffff}}
 
 
 /* The same information, inverted:
@@ -469,18 +469,18 @@ enum reg_class  { NO_REGS, GR_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES } ;
 #define BASE_REG_CLASS  GR_REGS
 
 
-				/* REGISTER AND CONSTANT CLASSES
-				 */
+                /* REGISTER AND CONSTANT CLASSES
+                 */
 
 /* Get reg_class from a letter such as appears in the machine
 description.  */
-				/* DEFINED REGISTER CLASSES:
-				**
-				** 'f'     : Floating point registers
-				** 'y'     : General register when used to
-				**           transfer chunks of Floating point
-				**           with mfc1 mtc1 insn
-				 */
+                /* DEFINED REGISTER CLASSES:
+                **
+                ** 'f'     : Floating point registers
+                ** 'y'     : General register when used to
+                **           transfer chunks of Floating point
+                **           with mfc1 mtc1 insn
+                 */
 
 #define REG_CLASS_FROM_LETTER(C)					\
    ((C) == 'f' ? FP_REGS:						\
@@ -495,7 +495,7 @@ description.  */
 /*   For MIPS, `I' is used for the range of constants an insn
                    can actually contain (16 bits signed integers).
                `J' is used for the range which is just zero (since that is
-	           available as $R0).
+               available as $R0).
 */
 
 #define SMALL_INT(X) ((unsigned) (INTVAL (X) + 0x10000) < 0x20000)
@@ -508,10 +508,10 @@ description.  */
 /* Similar, but for floating constants, and defining letters G and H.
    Here VALUE is the CONST_DOUBLE rtx itself.  */
 
-				/* DEFINED FLOATING CONSTANT CLASSES:
-				**
-				** 'G'     : Floating point 0
-				 */
+                /* DEFINED FLOATING CONSTANT CLASSES:
+                **
+                ** 'G'     : Floating point 0
+                 */
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)				\
   ((C) == 'G' && XINT (VALUE, 0) == 0 && XINT (VALUE, 1) == 0)
 
@@ -674,27 +674,27 @@ printf:
    and about the args processed so far, enough to enable macros
    such as FUNCTION_ARG to determine where the next arg should go.
 */
-				/* On MIPS the following automaton decides */
-				/* where to put things. */
-				/* If you dont believe it, look at Gerry Kane*/
-				/* 's book page D-22 */
+                /* On MIPS the following automaton decides */
+                /* where to put things. */
+                /* If you dont believe it, look at Gerry Kane*/
+                /* 's book page D-22 */
 
 #define CUMULATIVE_ARGS struct    { enum arg_state arg_rec_state;int restype,arg_num;}
 
 enum arg_state     { ARG_STA_INIT =0,
-		     ARG_STA_F    =1, /* $f12 */
-		     ARG_STA_FF   =2, /* $f12 $f14 */
-		     ARG_STA_FG   =3, /* $f12 $6   */
-		     ARG_STA_FGG  =4, /* $f12 $6 $7 */
-		     ARG_STA_FGF  =5, /* $f12 $6 STACK */
-		     ARG_STA_G    =6, /* $4 */
-		     ARG_STA_GF   =7, /* $4  ($6,$7) */
-		     ARG_STA_GG   =8, /* $4 $5 */
-		     ARG_STA_GGF  =9, /* $4 $5 ($6,$7) */
-		     ARG_STA_GGG  =10,/* $4 $5 $6 */
-		     ARG_STA_GGGF =11,/* $4 $5 $6 STACK */
-		     ARG_STA_GGGG =12 /* $4 $5 $6 $7 */
-		     };
+             ARG_STA_F    =1, /* $f12 */
+             ARG_STA_FF   =2, /* $f12 $f14 */
+             ARG_STA_FG   =3, /* $f12 $6   */
+             ARG_STA_FGG  =4, /* $f12 $6 $7 */
+             ARG_STA_FGF  =5, /* $f12 $6 STACK */
+             ARG_STA_G    =6, /* $4 */
+             ARG_STA_GF   =7, /* $4  ($6,$7) */
+             ARG_STA_GG   =8, /* $4 $5 */
+             ARG_STA_GGF  =9, /* $4 $5 ($6,$7) */
+             ARG_STA_GGG  =10,/* $4 $5 $6 */
+             ARG_STA_GGGF =11,/* $4 $5 $6 STACK */
+             ARG_STA_GGGG =12 /* $4 $5 $6 $7 */
+             };
 #define ARG_STA_AUTOMA							\
 {									\
   {ARG_STA_F,ARG_STA_G,44,4        },   /* ARG_STA_INIT */		\
@@ -726,7 +726,7 @@ enum arg_state     { ARG_STA_INIT =0,
    (TYPE is null for libcalls where that information may not be available.)  */
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-			    ( function_arg_advance(&CUM,MODE,TYPE));
+                ( function_arg_advance(&CUM,MODE,TYPE));
 
 extern  enum arg_state function_arg_advance();
 
@@ -777,12 +777,12 @@ extern  enum arg_state function_arg_advance();
    The current implementation:
       a/ tries to figure out if the current routines uses varargs.(It becomes
          ``suspect''.) This is currently done by looking for a special
-	 static character string constant.
+     static character string constant.
 
       b/when a function is suspected of using varags,  a larger reg
         save_area is allocated which will hold regs f12 and f14. The varargs
-	macros then have to find where is the argument they are looking for.
-	This is made easier by a modification in stack frame layout for
+    macros then have to find where is the argument they are looking for.
+    This is made easier by a modification in stack frame layout for
         these functions:the  stack frame-size is accessible on stack at
         location 4($30).
 
@@ -823,7 +823,7 @@ extern int  this_varargs_suspect ;
     : reg_numchar[STACK_POINTER_REGNUM];				\
   for (regno = 0; regno < 32; regno++)					\
     if (  MUST_SAVE_REG_LOGUES						\
-	|| (regs_ever_live[regno] && !dont_save_regs[regno]))		\
+    || (regs_ever_live[regno] && !dont_save_regs[regno]))		\
       {tsize += 4; mask |= 1 << regno;}					\
   for (regno = 32; regno < FIRST_PSEUDO_REGISTER; regno += 2)		\
     if (regs_ever_live[regno] && !dont_save_regs[regno])		\
@@ -832,80 +832,80 @@ extern int  this_varargs_suspect ;
   fprintf (FILE," #PROLOGUE\n");					\
   regno = STACK_POINTER_REGNUM;						\
   tsize = AL_ADJUST_ALIGN (tsize);					\
-									\
+                                    \
   if (!frame_pointer_needed)						\
     fprintf (FILE,"#define __0__gcc  %d\n",				\
-	     (!( regs_ever_live[29] || regs_ever_live[30]		\
-		|| fmask || mask					\
-		|| (SIZE > 0)))						\
-	     ? 0:tsize);						\
-									\
+         (!( regs_ever_live[29] || regs_ever_live[30]		\
+        || fmask || mask					\
+        || (SIZE > 0)))						\
+         ? 0:tsize);						\
+                                    \
   push_loc = 0; current_function_total_framesize = tsize;		\
   fprintf (FILE, " #\t.mask\t0x%x\n", mask);				\
   if (frame_pointer_needed || regs_ever_live[29] || regs_ever_live[30]	\
       || fmask || mask							\
       || (SIZE > 0))							\
     fprintf (FILE,"\tsubu\t%s,%d\t#temp=%5d,saveregs=%5d, sfo=%5d\n",	\
-	     TARGET_NAME_REGS ? reg_names[29]				\
-	     :reg_numchar[29],tsize,SIZE,tsize-SIZE,			\
-	     STARTING_FRAME_OFFSET);					\
+         TARGET_NAME_REGS ? reg_names[29]				\
+         :reg_numchar[29],tsize,SIZE,tsize-SIZE,			\
+         STARTING_FRAME_OFFSET);					\
   else fprintf (FILE," #NO STACK PUSH:\tSP %sused, FP %sused, FP %sneeded\n",\
-		regs_ever_live[29]? "":"un",				\
-		regs_ever_live[30]? "":"un",				\
-	       frame_pointer_needed ?"" : "not ");			\
+        regs_ever_live[29]? "":"un",				\
+        regs_ever_live[30]? "":"un",				\
+           frame_pointer_needed ?"" : "not ");			\
   for  (regno = 31; regno >= 30; regno--)				\
     {									\
       if (MUST_SAVE_REG_LOGUES						\
-	  || (regs_ever_live[regno] && !dont_save_regs[regno]))		\
-	{								\
-	  push_loc += 4;						\
-	  fprintf (FILE,"\tsw\t%s,%d(%s)\n",				\
-		   TARGET_NAME_REGS ? reg_names[regno]			\
-		   : reg_numchar[regno],push_loc,fp_str);		\
-	}								\
+      || (regs_ever_live[regno] && !dont_save_regs[regno]))		\
+    {								\
+      push_loc += 4;						\
+      fprintf (FILE,"\tsw\t%s,%d(%s)\n",				\
+           TARGET_NAME_REGS ? reg_names[regno]			\
+           : reg_numchar[regno],push_loc,fp_str);		\
+    }								\
     }									\
   if (THIS_VARARGS_SUSPECTED)						\
     { int fregno;							\
       fprintf (FILE,"\taddi\t%s,$0,%d\t#Varargs suspicion\n",		\
-	       TARGET_NAME_REGS ? reg_names[9]				\
-	       : reg_numchar[9],tsize);					\
+           TARGET_NAME_REGS ? reg_names[9]				\
+           : reg_numchar[9],tsize);					\
       fprintf (FILE,"\tsw\t%s,-4(%s)\t#Varargs suspicion\n",		\
-	       TARGET_NAME_REGS ? reg_names[9]				\
-	       : reg_numchar[9],					\
+           TARGET_NAME_REGS ? reg_names[9]				\
+           : reg_numchar[9],					\
              TARGET_NAME_REGS ? reg_names[29]				\
-	       : reg_numchar[29]);					\
+           : reg_numchar[29]);					\
       for (fregno = 44; fregno< 48; fregno += 2)			\
-	{push_loc += 8;							\
-	 fprintf (FILE,"\ts.d\t%s,%d(%s)\t#Varargs Suspicion\n",	\
-		  ( (TARGET_NAME_REGS)					\
-		   ?reg_names[fregno]: reg_numchar[fregno]),		\
-		  push_loc,fp_str);}					\
+    {push_loc += 8;							\
+     fprintf (FILE,"\ts.d\t%s,%d(%s)\t#Varargs Suspicion\n",	\
+          ( (TARGET_NAME_REGS)					\
+           ?reg_names[fregno]: reg_numchar[fregno]),		\
+          push_loc,fp_str);}					\
     }									\
   for  (regno = 29; regno >= 0; regno--)				\
     {									\
       if (   MUST_SAVE_REG_LOGUES					\
-	  || (regs_ever_live[regno] && !dont_save_regs[regno]))		\
-	{								\
-	  push_loc += 4;						\
-	  fprintf (FILE, "\tsw\t%s,%d(%s)\n",				\
-		   TARGET_NAME_REGS ? reg_names[regno]			\
-		   : reg_numchar[regno],push_loc,fp_str);		\
-	}								\
+      || (regs_ever_live[regno] && !dont_save_regs[regno]))		\
+    {								\
+      push_loc += 4;						\
+      fprintf (FILE, "\tsw\t%s,%d(%s)\n",				\
+           TARGET_NAME_REGS ? reg_names[regno]			\
+           : reg_numchar[regno],push_loc,fp_str);		\
+    }								\
     }									\
   fprintf (FILE, " #\t.fmask\t0x%x\n", fmask);				\
   for  (regno = 32; regno < FIRST_PSEUDO_REGISTER; regno += 2)		\
     if (regs_ever_live[regno] && !dont_save_regs[regno])		\
       {push_loc += 8;							\
        fprintf (FILE,"\ts.d\t%s,%d(%s)\n",				\
-		( (TARGET_NAME_REGS) ? reg_names[regno]			\
-		 : reg_numchar[regno]),push_loc,fp_str);		\
+        ( (TARGET_NAME_REGS) ? reg_names[regno]			\
+         : reg_numchar[regno]),push_loc,fp_str);		\
      }									\
   if (frame_pointer_needed)						\
     fprintf (FILE,"\taddiu\t%s,%s,%d\t#Establish FramePTR\n",		\
-	     (TARGET_NAME_REGS ? reg_names[FRAME_POINTER_REGNUM]  :	\
-	      reg_numchar[FRAME_POINTER_REGNUM]),			\
-	     (TARGET_NAME_REGS ? reg_names[29]  : reg_numchar[29]),	\
-	     tsize);							\
+         (TARGET_NAME_REGS ? reg_names[FRAME_POINTER_REGNUM]  :	\
+          reg_numchar[FRAME_POINTER_REGNUM]),			\
+         (TARGET_NAME_REGS ? reg_names[29]  : reg_numchar[29]),	\
+         tsize);							\
   fprintf (FILE," #END PROLOGUE\n");					\
 }
 
@@ -971,28 +971,28 @@ extern char *current_function_name;
     fprintf (FILE,"#undef __0__gcc\n");					\
   else									\
     fprintf (FILE,"\taddu\t%s,$0,%s\t# sp not trusted  here \n",	\
-	     fp_str,							\
-	     TARGET_NAME_REGS ? reg_names[FRAME_POINTER_REGNUM]		\
-	     :reg_numchar[FRAME_POINTER_REGNUM]				\
-	     );								\
+         fp_str,							\
+         TARGET_NAME_REGS ? reg_names[FRAME_POINTER_REGNUM]		\
+         :reg_numchar[FRAME_POINTER_REGNUM]				\
+         );								\
   for  (regno = 0; regno < 32; regno++)					\
     if  ( MUST_SAVE_REG_LOGUES						\
-	 || (regs_ever_live[regno] && !dont_save_regs[regno]))		\
+     || (regs_ever_live[regno] && !dont_save_regs[regno]))		\
       mask |= 1 << regno;						\
   fprintf  (FILE, " #\t.mask\t0x%x\n", mask);				\
   for  (regno = 31; regno >= 0; regno--)				\
     { if  ( MUST_SAVE_REG_LOGUES					\
-	   || (regs_ever_live[regno] && !dont_save_regs[regno]))	\
-	{								\
-	  push_loc += 4;						\
-	  fprintf (FILE,"\tlw\t%s,%d(%s)\n",				\
-		   TARGET_NAME_REGS ? reg_names[regno]			\
-		   : reg_numchar[regno],				\
-		   (frame_pointer_needed ?				\
-		    push_loc - current_function_total_framesize:	\
-		    push_loc),						\
-		   (frame_pointer_needed ? fp_str :sp_str));		\
-	}								\
+       || (regs_ever_live[regno] && !dont_save_regs[regno]))	\
+    {								\
+      push_loc += 4;						\
+      fprintf (FILE,"\tlw\t%s,%d(%s)\n",				\
+           TARGET_NAME_REGS ? reg_names[regno]			\
+           : reg_numchar[regno],				\
+           (frame_pointer_needed ?				\
+            push_loc - current_function_total_framesize:	\
+            push_loc),						\
+           (frame_pointer_needed ? fp_str :sp_str));		\
+    }								\
       if ( THIS_VARARGS_SUSPECTED &&  (regno == 30)) push_loc += 16;	\
     }									\
   for  (regno = 32; regno < FIRST_PSEUDO_REGISTER; regno += 2)		\
@@ -1002,30 +1002,30 @@ extern char *current_function_name;
     for  (regno = 32; regno < FIRST_PSEUDO_REGISTER; regno += 2)	\
     {									\
       if  (regs_ever_live[regno] && !dont_save_regs[regno])		\
-	{								\
-	  push_loc += 8;						\
-	  fprintf (FILE,"\tl.d\t%s,%d(%s)\n",				\
-		   ( ( TARGET_NAME_REGS) ? reg_names[regno]		\
-		    : reg_numchar[regno]),				\
-		   (frame_pointer_needed ?				\
-		    push_loc - current_function_total_framesize		\
-		    : push_loc),					\
-		   (frame_pointer_needed ? fp_str :sp_str));		\
-	}								\
+    {								\
+      push_loc += 8;						\
+      fprintf (FILE,"\tl.d\t%s,%d(%s)\n",				\
+           ( ( TARGET_NAME_REGS) ? reg_names[regno]		\
+            : reg_numchar[regno]),				\
+           (frame_pointer_needed ?				\
+            push_loc - current_function_total_framesize		\
+            : push_loc),					\
+           (frame_pointer_needed ? fp_str :sp_str));		\
+    }								\
     }									\
   if (frame_pointer_needed)						\
     fprintf (FILE,"\taddu\t%s,$0,%s\t# sp not trusted  here \n",	\
-	     TARGET_NAME_REGS ? reg_names[STACK_POINTER_REGNUM]		\
-	     :reg_numchar[STACK_POINTER_REGNUM],			\
-	     TARGET_NAME_REGS ? reg_names[8]				\
-	     :reg_numchar[8]						\
-	     );								\
+         TARGET_NAME_REGS ? reg_names[STACK_POINTER_REGNUM]		\
+         :reg_numchar[STACK_POINTER_REGNUM],			\
+         TARGET_NAME_REGS ? reg_names[8]				\
+         :reg_numchar[8]						\
+         );								\
   else									\
     if (regs_ever_live[29]|| regs_ever_live[30]				\
-	|| fmask || mask						\
-	||  (SIZE > 0))			\
+    || fmask || mask						\
+    ||  (SIZE > 0))			\
       fprintf (FILE,"\taddu\t%s,%d\t\n",TARGET_NAME_REGS ? reg_names[29]\
-	       :reg_numchar[29],current_function_total_framesize);	\
+           :reg_numchar[29],current_function_total_framesize);	\
   fprintf (FILE,"\tj\t$31\n");						\
   fprintf (FILE," #END EPILOGUE\n");					\
   fprintf (FILE," \t.end\t%s\n",current_function_name);			\
@@ -1046,18 +1046,18 @@ extern char *current_function_name;
       if (GET_CODE(ADDR) == PLUS)					\
           if(XEXP(ADDR,0) == frame_pointer_rtx)				\
              if(GET_CODE(XEXP(ADDR,1)) == CONST_INT)			\
-	       frame_offset = INTVAL(XEXP(ADDR,1));			\
+           frame_offset = INTVAL(XEXP(ADDR,1));			\
              else abort_with_insn(ADDR,"Unable to FIX");		\
           else if (XEXP(ADDR,1) == frame_pointer_rtx)			\
              if(GET_CODE(XEXP(ADDR,0)) == CONST_INT)			\
-	       frame_offset = INTVAL(XEXP(ADDR,0));			\
+           frame_offset = INTVAL(XEXP(ADDR,0));			\
              else abort_with_insn(ADDR,"Unable to FIX");		\
-	  else;								\
+      else;								\
    if (frame_offset >= 0)						\
     { newaddr=gen_rtx(PLUS,Pmode,stack_pointer_rtx,			\
                       gen_rtx(PLUS,Pmode,				\
                           gen_rtx(CONST_INT,VOIDmode,frame_offset+(DEPTH)),\
-			      gen_rtx(SYMBOL_REF,SImode,"__0__gcc")));	\
+                  gen_rtx(SYMBOL_REF,SImode,"__0__gcc")));	\
       ADDR = newaddr;							\
     }									\
   }
@@ -1206,7 +1206,7 @@ extern char *current_function_name;
    has an effect that depends on the machine mode it is used for.
 */
 
-				/* See if this is of any use here */
+                /* See if this is of any use here */
 
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)			\
 { }
@@ -1348,7 +1348,7 @@ extern char *current_function_name;
 
 #define  ASM_OUTPUT_MIPS_SECTIONS
 #define  OUTPUT_MIPS_SECTION_THRESHOLD  ((mips_section_threshold >= 0 )?\
-					mips_section_threshold : mips_section_get())
+                    mips_section_threshold : mips_section_get())
 
 /* Output before writable  short data.  */
 
@@ -1394,16 +1394,16 @@ extern char *current_function_name;
 #define TARGET_FF 014
 #define TARGET_CR 015
 
-				/*  LIST OF PRINT OPERAND CODES
+                /*  LIST OF PRINT OPERAND CODES
 
 
-				** 'x'  X is CONST_INT, prints 16 bits in
-				**      Hexadecimal format = "0x%4x",
-				** 'd'  output integer constant in decimal,
-				** 'u'  Prints an 'u' if flag -mnofixed-ovfl
-				**      has been set, thus selecting addu
-				**      instruction instead of add.
-				*/
+                ** 'x'  X is CONST_INT, prints 16 bits in
+                **      Hexadecimal format = "0x%4x",
+                ** 'd'  output integer constant in decimal,
+                ** 'u'  Prints an 'u' if flag -mnofixed-ovfl
+                **      has been set, thus selecting addu
+                **      instruction instead of add.
+                */
 
 
 /* Print an instruction operand X on file FILE.
@@ -1411,16 +1411,16 @@ extern char *current_function_name;
    if `%z3' was used to print operand 3, then CODE is 'z'.
    CODE is used as follows:
 
-				    LIST OF PRINT OPERAND CODES
+                    LIST OF PRINT OPERAND CODES
 
 
-				   'x'  X is CONST_INT, prints 16 bits in
-				**      Hexadecimal format = "0x%4x",
-				** 'd'  output integer constant in decimal,
-				** ':'  Prints an 'u' if flag -mnofixed-ovfl
-				**      has been set, thus selecting addu
-				**      instruction instead of add.
-				*/
+                   'x'  X is CONST_INT, prints 16 bits in
+                **      Hexadecimal format = "0x%4x",
+                ** 'd'  output integer constant in decimal,
+                ** ':'  Prints an 'u' if flag -mnofixed-ovfl
+                **      has been set, thus selecting addu
+                **      instruction instead of add.
+                */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
   ((CODE) == ':')
@@ -1431,31 +1431,31 @@ extern char *current_function_name;
   else if (GET_CODE (X) == REG)						\
     { extern char *reg_numchar[];					\
       fprintf (FILE, "%s", TARGET_NAME_REGS ?reg_names[REGNO (X)]	\
-	       :reg_numchar[REGNO (X) ]);				\
+           :reg_numchar[REGNO (X) ]);				\
     }									\
   else									\
     {									\
       if (GET_CODE (X) == MEM)						\
-	output_address (XEXP (X, 0));					\
+    output_address (XEXP (X, 0));					\
       else if (GET_CODE (X) == CONST_DOUBLE)				\
-	{ union { double d; int i[2]; } u;				\
-	  union { float f; int i; } u1;					\
-	  u.i[0] = CONST_DOUBLE_LOW (X);				\
-	  u.i[1] = CONST_DOUBLE_HIGH (X);				\
-	  u1.f = u.d;							\
-	  if (GET_MODE (X) == SFmode)					\
-	    u.d = u1.f;							\
-	  fprintf (FILE, "%.20e", u.d); }				\
+    { union { double d; int i[2]; } u;				\
+      union { float f; int i; } u1;					\
+      u.i[0] = CONST_DOUBLE_LOW (X);				\
+      u.i[1] = CONST_DOUBLE_HIGH (X);				\
+      u1.f = u.d;							\
+      if (GET_MODE (X) == SFmode)					\
+        u.d = u1.f;							\
+      fprintf (FILE, "%.20e", u.d); }				\
       else								\
-	{ if ((CODE == 'x') && (GET_CODE(X) == CONST_INT))		\
-	    fprintf(FILE,"0x%x",0xffff & (INTVAL(X)));			\
-	  else { if ((CODE == 'd') && (GET_CODE(X) == CONST_INT))	\
-		   fprintf(FILE,"%d",(INTVAL(X)));			\
-	         else							\
-		   {							\
-		      if ((CODE) == 'd') abort();			\
-		      else output_addr_const (FILE, X);}		\
-		}}}}
+    { if ((CODE == 'x') && (GET_CODE(X) == CONST_INT))		\
+        fprintf(FILE,"0x%x",0xffff & (INTVAL(X)));			\
+      else { if ((CODE == 'd') && (GET_CODE(X) == CONST_INT))	\
+           fprintf(FILE,"%d",(INTVAL(X)));			\
+             else							\
+           {							\
+              if ((CODE) == 'd') abort();			\
+              else output_addr_const (FILE, X);}		\
+        }}}}
 
 /* Print a memory operand whose address is X, on file FILE.  */
 
@@ -1470,7 +1470,7 @@ extern char *current_function_name;
     {									\
     case REG:								\
       fprintf (FILE, "0(%s)", TARGET_NAME_REGS ? reg_names [REGNO (addr)]\
-	       : reg_numchar[REGNO(addr)]);				\
+           : reg_numchar[REGNO(addr)]);				\
       break;								\
     case MEM:								\
     case PRE_DEC:							\
@@ -1482,74 +1482,74 @@ extern char *current_function_name;
          && (GET_CODE (XEXP(addr,1)) == PLUS)				\
          && (GET_CODE (XEXP(XEXP(addr,1),1)) == SYMBOL_REF)		\
          && (GET_CODE (XEXP(XEXP(addr,1),0)) == CONST_INT))		\
-	{output_address(XEXP(XEXP(addr,1),0));				\
+    {output_address(XEXP(XEXP(addr,1),0));				\
          fprintf(FILE,"+");						\
          output_address(XEXP(XEXP(addr,1),1));				\
          breg = XEXP(addr,0);						\
-	 fprintf(FILE,"(%s)", TARGET_NAME_REGS ?			\
-		   reg_names[REGNO (breg)]: reg_numchar[REGNO(breg)]);	\
-	 break;								\
+     fprintf(FILE,"(%s)", TARGET_NAME_REGS ?			\
+           reg_names[REGNO (breg)]: reg_numchar[REGNO(breg)]);	\
+     break;								\
         }								\
-									\
+                                    \
       reg1 = 0;	reg2 = 0;						\
       ireg = 0;	breg = 0;						\
       offset = 0;							\
         /*fprintf(stderr,"PRINT_OPERAND_ADDRESS"); */			\
       if (CONSTANT_ADDRESS_P (XEXP (addr, 0))				\
-	  || GET_CODE (XEXP (addr, 0)) == MEM)				\
-	{								\
-	  offset = XEXP (addr, 0);					\
-	  addr = XEXP (addr, 1);					\
-	}								\
+      || GET_CODE (XEXP (addr, 0)) == MEM)				\
+    {								\
+      offset = XEXP (addr, 0);					\
+      addr = XEXP (addr, 1);					\
+    }								\
       else if (CONSTANT_ADDRESS_P (XEXP (addr, 1))			\
-	       || GET_CODE (XEXP (addr, 1)) == MEM)			\
-	{								\
-	  offset = XEXP (addr, 1);					\
-	  addr = XEXP (addr, 0);					\
-	}								\
+           || GET_CODE (XEXP (addr, 1)) == MEM)			\
+    {								\
+      offset = XEXP (addr, 1);					\
+      addr = XEXP (addr, 0);					\
+    }								\
       if (GET_CODE (addr) != PLUS) ;					\
       else if (GET_CODE (XEXP (addr, 0)) == MULT)			\
-	{								\
-	  reg1 = XEXP (addr, 0);					\
-	  addr = XEXP (addr, 1);					\
-	}								\
+    {								\
+      reg1 = XEXP (addr, 0);					\
+      addr = XEXP (addr, 1);					\
+    }								\
       else if (GET_CODE (XEXP (addr, 1)) == MULT)			\
-	{								\
-	  reg1 = XEXP (addr, 1);					\
-	  addr = XEXP (addr, 0);					\
-	}								\
+    {								\
+      reg1 = XEXP (addr, 1);					\
+      addr = XEXP (addr, 0);					\
+    }								\
       else if (GET_CODE (XEXP (addr, 0)) == REG)			\
-	{								\
-	  reg1 = XEXP (addr, 0);					\
-	  addr = XEXP (addr, 1);					\
-	}								\
+    {								\
+      reg1 = XEXP (addr, 0);					\
+      addr = XEXP (addr, 1);					\
+    }								\
       else if (GET_CODE (XEXP (addr, 1)) == REG)			\
-	{								\
-	  reg1 = XEXP (addr, 1);					\
-	  addr = XEXP (addr, 0);					\
-	}								\
+    {								\
+      reg1 = XEXP (addr, 1);					\
+      addr = XEXP (addr, 0);					\
+    }								\
       if (GET_CODE (addr) == REG || GET_CODE (addr) == MULT)		\
-	{ if (reg1 == 0) reg1 = addr; else reg2 = addr; addr = 0; }	\
+    { if (reg1 == 0) reg1 = addr; else reg2 = addr; addr = 0; }	\
       if (offset != 0) { if (addr != 0) abort (); addr = offset; }	\
       if (reg1 != 0 && GET_CODE (reg1) == MULT)				\
-	{ breg = reg2; ireg = reg1; }					\
+    { breg = reg2; ireg = reg1; }					\
       else if (reg2 != 0 && GET_CODE (reg2) == MULT)			\
-	{ breg = reg1; ireg = reg2; }					\
+    { breg = reg1; ireg = reg2; }					\
       else if (reg2 != 0 || GET_CODE (addr) == MEM)			\
-	{ breg = reg2; ireg = reg1; }					\
+    { breg = reg2; ireg = reg1; }					\
       else								\
-	{ breg = reg1; ireg = reg2; }					\
+    { breg = reg1; ireg = reg2; }					\
       if (addr != 0)							\
-	output_address (offset);					\
+    output_address (offset);					\
       if (breg != 0)							\
-	{ if (GET_CODE (breg) != REG) abort ();				\
-	  fprintf (FILE, "(%s)", TARGET_NAME_REGS ?			\
-		   reg_names[REGNO (breg)]: reg_numchar[REGNO(breg)]); }\
+    { if (GET_CODE (breg) != REG) abort ();				\
+      fprintf (FILE, "(%s)", TARGET_NAME_REGS ?			\
+           reg_names[REGNO (breg)]: reg_numchar[REGNO(breg)]); }\
       if (ireg != 0)							\
-	{ if (GET_CODE (ireg) == MULT) ireg = XEXP (ireg, 0);		\
-	  if (GET_CODE (ireg) != REG) abort ();				\
-	  fprintf (FILE, "[%s]",  TARGET_NAME_REGS ?			\
-		   reg_names[REGNO (ireg)]: reg_numchar[REGNO(ireg)]); }\
+    { if (GET_CODE (ireg) == MULT) ireg = XEXP (ireg, 0);		\
+      if (GET_CODE (ireg) != REG) abort ();				\
+      fprintf (FILE, "[%s]",  TARGET_NAME_REGS ?			\
+           reg_names[REGNO (ireg)]: reg_numchar[REGNO(ireg)]); }\
       break;								\
     default:								\
       output_addr_const (FILE, addr);					\
@@ -1564,7 +1564,7 @@ extern char *current_function_name;
 #define ASM_OUTPUT_SOURCE_LINE(file, line)				\
   { static int sym_lineno = 1;						\
     fprintf (file, " #.stabn 68,0,%d,LM%d\nLM%d:\n",			\
-	     line, sym_lineno, sym_lineno);				\
+         line, sym_lineno, sym_lineno);				\
     sym_lineno += 1; }
 
 /* This is how to output the definition of a user-level label named NAME,
@@ -1670,25 +1670,25 @@ extern char *current_function_name;
    of the SDATA/SBSS sections supported by the MIPS ASSEMBLER and LOADER
    However some problems have to be solved
         a/  externs should be included ONCE
-	b/  the same external cannot appear both on an extern and .comm stmt
-	    in the same assembly
-	c/  for the whole scheme to bring some benefit, .comm should appear
-	    in front of the source asm -- whereas GCC put them at the end
+    b/  the same external cannot appear both on an extern and .comm stmt
+        in the same assembly
+    c/  for the whole scheme to bring some benefit, .comm should appear
+        in front of the source asm -- whereas GCC put them at the end
 */
 
 
-				/* ALL THESE PROBLEMS ARE PRESENTLY SOLVED   */
-				/* USING CONDITIONAL ASSEMBLY + FILE RESCAN  */
+                /* ALL THESE PROBLEMS ARE PRESENTLY SOLVED   */
+                /* USING CONDITIONAL ASSEMBLY + FILE RESCAN  */
 
 #define EXTRA_SECTIONS in_sdata
 
 /* Define the additional functions to select our additional sections.  */
 
        /* on the MIPS it is not a good idea to put constants  in the
-	  text section, since this defeats the sdata/data mechanism. This
-	  is especially true when -O2 is used. In this case an effort is
-	  made to address with faster (gp) register relative addressing,
-	  which can only get at sdata and sbss items (there is no stext !!)
+      text section, since this defeats the sdata/data mechanism. This
+      is especially true when -O2 is used. In this case an effort is
+      made to address with faster (gp) register relative addressing,
+      which can only get at sdata and sbss items (there is no stext !!)
        */
 #define EXTRA_SECTION_FUNCTIONS						\
 void									\
@@ -1705,26 +1705,26 @@ sdata_section ()							\
    and select that section.  */
 
        /* following takes  care of constants  emitted from
-	  the hash table entries (see above comment)
+      the hash table entries (see above comment)
        */
 #define SELECT_SECTION_MODE(MODE,RTX)					\
 {									\
   extern int mips_section_threshold;					\
   if (( GET_MODE_SIZE(MODE)/ BITS_PER_UNIT)				\
-	      <= OUTPUT_MIPS_SECTION_THRESHOLD)				\
-	    sdata_section();						\
-	  else								\
-	    data_section ();						\
+          <= OUTPUT_MIPS_SECTION_THRESHOLD)				\
+        sdata_section();						\
+      else								\
+        data_section ();						\
 }									\
 
 #define SELECT_SECTION(DECL)						\
 {									\
   extern int mips_section_threshold;					\
-	  if (int_size_in_bytes (TREE_TYPE (DECL))			\
-	      <= OUTPUT_MIPS_SECTION_THRESHOLD)				\
-	    sdata_section ();						\
-	  else								\
-	    data_section ();						\
+      if (int_size_in_bytes (TREE_TYPE (DECL))			\
+          <= OUTPUT_MIPS_SECTION_THRESHOLD)				\
+        sdata_section ();						\
+      else								\
+        data_section ();						\
 }
 
 /* This says how to output an assembler line
@@ -1737,7 +1737,7 @@ sdata_section ()							\
  assemble_name ((FILE), (NAME)),					\
  fprintf ((FILE), ",%d\n", (ROUNDED)),					\
  (TARGET_GP_OPT ? (fputs("\n#define _gccx__",(FILE)),			\
-		   assemble_name((FILE),NAME),0):0),			\
+           assemble_name((FILE),NAME),0):0),			\
  ((TARGET_GP_OPT)?							\
   fprintf((FILE),"\n#endif\n#ifdef %sRESCAN_GCC","__x_"),0 :0)		\
 )
@@ -1777,35 +1777,35 @@ sdata_section ()							\
 #define ASM_OUTPUT_REG_PUSH(FILE,REGNO)					\
   (fprintf (FILE,"ERROR: ASM_OUTPUT_REG_PUSH\n"))
 
-				/*  The following macro is taken from the    */
-				/*  C-text of varasm.c. It has been modified */
-				/*  to handle the VARARG_SUSPECTED hack      */
+                /*  The following macro is taken from the    */
+                /*  C-text of varasm.c. It has been modified */
+                /*  to handle the VARARG_SUSPECTED hack      */
 #define  ASM_OUTPUT_ASCII(FILE, P , SIZE)				\
 {  int i;								\
-	  fprintf ((FILE), "\t.ascii \"");				\
+      fprintf ((FILE), "\t.ascii \"");				\
           VARARGS_SUSPECT( 0 == strncmp((P),"__%%VARARGS",11));		\
-	  for (i = 0; i < (SIZE); i++)					\
-	    {								\
-	      register int c = (P)[i];					\
-	      if (i != 0 && (i / 200) * 200 == i)			\
-		fprintf ((FILE), "\"\n\t.ascii \"");			\
-	      if (c == '\"' || c == '\\')				\
-		putc ('\\', (FILE));					\
-	      if (c >= ' ' && c < 0177)					\
-		putc (c, (FILE));					\
-	      else							\
-		{							\
-		  fprintf ((FILE), "\\%o", c);				\
-		  /* After an octal-escape, if a digit follows,		\
-		     terminate one string constant and start another.	\
-		     The Vax assembler fails to stop reading the escape	\
-		     after three digits, so this is the only way we	\
-		     can get it to parse the data properly.  */		\
-		  if (i < (SIZE) - 1 && (P)[i + 1] >= '0' && (P)[i + 1] <= '9')\
-		    fprintf ((FILE), "\"\n\t.ascii \"");		\
-		}							\
-	    }								\
-	  fprintf ((FILE), "\"\n");					\
+      for (i = 0; i < (SIZE); i++)					\
+        {								\
+          register int c = (P)[i];					\
+          if (i != 0 && (i / 200) * 200 == i)			\
+        fprintf ((FILE), "\"\n\t.ascii \"");			\
+          if (c == '\"' || c == '\\')				\
+        putc ('\\', (FILE));					\
+          if (c >= ' ' && c < 0177)					\
+        putc (c, (FILE));					\
+          else							\
+        {							\
+          fprintf ((FILE), "\\%o", c);				\
+          /* After an octal-escape, if a digit follows,		\
+             terminate one string constant and start another.	\
+             The Vax assembler fails to stop reading the escape	\
+             after three digits, so this is the only way we	\
+             can get it to parse the data properly.  */		\
+          if (i < (SIZE) - 1 && (P)[i + 1] >= '0' && (P)[i + 1] <= '9')\
+            fprintf ((FILE), "\"\n\t.ascii \"");		\
+        }							\
+        }								\
+      fprintf ((FILE), "\"\n");					\
  }
 
 

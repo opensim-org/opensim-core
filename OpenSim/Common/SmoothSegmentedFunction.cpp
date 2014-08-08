@@ -153,12 +153,12 @@ _x0(x0),_x1(x1),_y0(y0),_y1(y1),_dydx0(dydx0),_dydx1(dydx1),
                 fitForSmoothingParameter(3,yInt(0),yInt(1),0).getSpline();
     }
     
-	_mXVec.resize(_numBezierSections);
-	_mYVec.resize(_numBezierSections);
+    _mXVec.resize(_numBezierSections);
+    _mYVec.resize(_numBezierSections);
     for(int s=0; s < _numBezierSections; s++){
-		_mXVec[s] = mX(s); 
-		_mYVec[s] = mY(s); 
-	}
+        _mXVec[s] = mX(s); 
+        _mYVec[s] = mY(s); 
+    }
 }
 
  SmoothSegmentedFunction::SmoothSegmentedFunction():
@@ -167,8 +167,8 @@ _x0(x0),_x1(x1),_y0(y0),_y1(y1),_dydx0(dydx0),_dydx1(dydx1),
      _computeIntegral(false),_intx0x1(false),_name("NOT_YET_SET")
  {
         _arraySplineUX.resize(0);        
-		_mXVec.resize(0);
-		_mYVec.resize(0);
+        _mXVec.resize(0);
+        _mYVec.resize(0);
         _splineYintX = SimTK::Spline();
         _numBezierSections = (int)SimTK::NaN;
        
@@ -225,7 +225,7 @@ double SmoothSegmentedFunction::calcValue(const SimTK::Vector& ax) const
         "designed only for 1D functions, but a function with %i elements was"
         "entered",_name.c_str(),ax.nelt());
 
-	return calcValue(ax(0)); 
+    return calcValue(ax(0)); 
 }
 
 /*Detailed Computational Costs
@@ -268,7 +268,7 @@ double SmoothSegmentedFunction::calcDerivative(double x, int order) const
                 yVal = calcValue(x);
     }else{
             if(x >= _x0 && x <= _x1){        
-        		int idx  = SegmentedQuinticBezierToolkit::calcIndex(x,_mXVec);
+                int idx  = SegmentedQuinticBezierToolkit::calcIndex(x,_mXVec);
                 double u = SegmentedQuinticBezierToolkit::
                                 calcU(x,_mXVec[idx], _arraySplineUX[idx], 
                                 UTOL,MAXITER);
@@ -276,8 +276,8 @@ double SmoothSegmentedFunction::calcDerivative(double x, int order) const
                             calcQuinticBezierCurveDerivDYDX(u, _mXVec[idx], 
                             _mYVec[idx], order);
 /*
-							std::cout << _mX(3, idx) << std::endl;
-							std::cout << _mX(idx) << std::endl;*/
+                            std::cout << _mX(3, idx) << std::endl;
+                            std::cout << _mX(idx) << std::endl;*/
             }else{
                     if(order == 1){
                         if(x < _x0){
@@ -419,13 +419,13 @@ void SmoothSegmentedFunction::setName(std::string &name)
 SimTK::Vec2 SmoothSegmentedFunction::getCurveDomain() const
 {
     SimTK::Vec2 xrange;
-	
-	xrange(0) = 0; 
-	xrange(1) = 0; 
-	if (!_mXVec.empty()) {
-		xrange(0) = _mXVec[0](0); 
-		xrange(1) = _mXVec[_mXVec.size()-1](_mXVec[0].size()-1); 
-	}
+    
+    xrange(0) = 0; 
+    xrange(1) = 0; 
+    if (!_mXVec.empty()) {
+        xrange(0) = _mXVec[0](0); 
+        xrange(1) = _mXVec[_mXVec.size()-1](_mXVec[0].size()-1); 
+    }
     return xrange;
 }
 
@@ -653,7 +653,7 @@ void SmoothSegmentedFunction::
     printMatrixToFile(SimTK::Matrix& data, SimTK::Array_<std::string>& colNames,
     const std::string& path, const std::string& filename) const
 {
-	
+    
     ofstream datafile;
     std::string fullpath = path;
     
@@ -662,7 +662,7 @@ void SmoothSegmentedFunction::
     
     fullpath.append(filename);
 
-	datafile.open(fullpath.c_str(),std::ios::out);
+    datafile.open(fullpath.c_str(),std::ios::out);
 
     if(!datafile){
         datafile.close();
@@ -679,15 +679,15 @@ void SmoothSegmentedFunction::
             datafile << colNames[i] << "\n";
     }
 
-	for(int i = 0; i < data.nrow(); i++){		
-		for(int j = 0; j < data.ncol(); j++){
-			if(j<data.ncol()-1)
-				datafile << data(i,j) << ",";
-			else
-				datafile << data(i,j) << "\n";
-		}	
-	}
-	datafile.close();
+    for(int i = 0; i < data.nrow(); i++){		
+        for(int j = 0; j < data.ncol(); j++){
+            if(j<data.ncol()-1)
+                datafile << data(i,j) << ",";
+            else
+                datafile << data(i,j) << "\n";
+        }	
+    }
+    datafile.close();
 } 
 
 

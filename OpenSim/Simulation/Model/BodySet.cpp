@@ -45,12 +45,12 @@ BodySet::~BodySet(void)
  */
 BodySet::BodySet()
 {
-	setNull();
+    setNull();
 }
 
 BodySet::BodySet(Model& model) : Super(model)
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -59,8 +59,8 @@ BodySet::BodySet(Model& model) : Super(model)
  */
 BodySet::BodySet(const BodySet& aAbsBodySet) : Super(aAbsBodySet)
 {
-	setNull();
-	*this = aAbsBodySet;
+    setNull();
+    *this = aAbsBodySet;
 }
 
 //=============================================================================
@@ -86,8 +86,8 @@ void BodySet::setNull()
 #ifndef SWIG
 BodySet& BodySet::operator=(const BodySet &aAbsBodySet)
 {
-	Set<Body>::operator=(aAbsBodySet);
-	return (*this);
+    Set<Body>::operator=(aAbsBodySet);
+    return (*this);
 }
 #endif
 //=============================================================================
@@ -99,14 +99,14 @@ BodySet& BodySet::operator=(const BodySet &aAbsBodySet)
  */
 void BodySet::scale(const ScaleSet& aScaleSet, bool aScaleMass)
 {
-	for(int i=0; i<getSize(); i++) {
-		for(int j=0; j<aScaleSet.getSize(); j++) {
-			Scale& scale = aScaleSet.get(j);
-			if (get(i).getName() == scale.getSegmentName()) {
-				Vec3 scaleFactors(1.0);
-				scale.getScaleFactors(scaleFactors);
-				get(i).scale(scaleFactors, aScaleMass);
-			}
-		}
-	}
+    for(int i=0; i<getSize(); i++) {
+        for(int j=0; j<aScaleSet.getSize(); j++) {
+            Scale& scale = aScaleSet.get(j);
+            if (get(i).getName() == scale.getSegmentName()) {
+                Vec3 scaleFactors(1.0);
+                scale.getScaleFactors(scaleFactors);
+                get(i).scale(scaleFactors, aScaleMass);
+            }
+        }
+    }
 }

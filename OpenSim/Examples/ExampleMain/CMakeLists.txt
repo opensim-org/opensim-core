@@ -10,7 +10,7 @@ PROJECT (OpenSimTugOfWar)
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors)
 
 SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME} 
-		CACHE PATH "Top-level directory of OpenSim install")
+        CACHE PATH "Top-level directory of OpenSim install")
 
 # Change name of build target
 SET(TARGET exampleMain CACHE TYPE STRING)
@@ -38,25 +38,25 @@ MARK_AS_ADVANCED(NameSpace)
 ADD_EXECUTABLE(${TARGET} ${SOURCE})
 
 TARGET_LINK_LIBRARIES(${TARGET}
-	debug osimSimulation_d	optimized osimSimulation
-	debug osimActuators_d	optimized osimActuators
-	debug osimCommon_d		optimized osimCommon
-	debug osimAnalyses_d	optimized osimAnalyses
-	debug osimTools_d		optimized osimTools
-	debug ${NameSpace}SimTKcommon_d optimized ${NameSpace}SimTKcommon
-	debug ${NameSpace}SimTKmath_d optimized  ${NameSpace}SimTKmath
-	debug ${NameSpace}SimTKsimbody_d optimized ${NameSpace}SimTKsimbody
-	${PLATFORM_LIBS}
+    debug osimSimulation_d	optimized osimSimulation
+    debug osimActuators_d	optimized osimActuators
+    debug osimCommon_d		optimized osimCommon
+    debug osimAnalyses_d	optimized osimAnalyses
+    debug osimTools_d		optimized osimTools
+    debug ${NameSpace}SimTKcommon_d optimized ${NameSpace}SimTKcommon
+    debug ${NameSpace}SimTKmath_d optimized  ${NameSpace}SimTKmath
+    debug ${NameSpace}SimTKsimbody_d optimized ${NameSpace}SimTKsimbody
+    ${PLATFORM_LIBS}
 )
 
 IF(WIN32)
-	SET(PLATFORM_LIBS  pthreadVC2)
+    SET(PLATFORM_LIBS  pthreadVC2)
 ELSE (WIN32)
   SET(NameSpace "")
   IF(APPLE)
-	SET(PLATFORM_LIBS  SimTKAtlas)
+    SET(PLATFORM_LIBS  SimTKAtlas)
   ELSE(APPLE)
-	SET(PLTAFORM_LIBS SimTKAtlas_Lin_generic)
+    SET(PLTAFORM_LIBS SimTKAtlas_Lin_generic)
   ENDIF(APPLE)
 ENDIF (WIN32)
 

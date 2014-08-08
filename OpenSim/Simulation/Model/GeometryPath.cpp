@@ -76,7 +76,7 @@ GeometryPath::~GeometryPath()
         disp->freeGeometry();
     }
 
-	delete _maSolver;
+    delete _maSolver;
 }
 
 
@@ -87,7 +87,7 @@ GeometryPath::~GeometryPath()
 void GeometryPath::setNull()
 {
     setAuthors("Peter Loan");
-	_maSolver = NULL;
+    _maSolver = NULL;
 }
 
 //_____________________________________________________________________________
@@ -313,17 +313,17 @@ getPointForceDirections(const SimTK::State& s,
             // Form a vector from start to end, in the inertial frame.
             direction = (posEnd - posStart);
 
-			// Check that the two points are not coincident.
-			// This can happen due to infeasible wrapping of the path,
-			// when the origin or insertion enters the wrapping surface.
-			// This is a temporary fix, since the wrap algorithm should
-			// return NaN for the points and/or throw an Exception- aseth
-			if (direction.norm() < SimTK::SignificantReal){
-				direction = direction*SimTK::NaN;
-			}
-			else{
-				direction = direction.normalize();
-			}
+            // Check that the two points are not coincident.
+            // This can happen due to infeasible wrapping of the path,
+            // when the origin or insertion enters the wrapping surface.
+            // This is a temporary fix, since the wrap algorithm should
+            // return NaN for the points and/or throw an Exception- aseth
+            if (direction.norm() < SimTK::SignificantReal){
+                direction = direction*SimTK::NaN;
+            }
+            else{
+                direction = direction.normalize();
+            }
 
             // Get resultant direction at each point 
             rPFDs->get(i)->addToDirection(direction);
@@ -336,8 +336,8 @@ getPointForceDirections(const SimTK::State& s,
     along the GeometryPath to a set of bodyForces */
 void GeometryPath::addInEquivalentForces(const SimTK::State& s,
     const double& tension, 
-	SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-	SimTK::Vector& mobilityForces) const
+    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+    SimTK::Vector& mobilityForces) const
 {
     PathPoint* start = NULL;
     PathPoint* end = NULL;
@@ -351,11 +351,11 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
 
     // start point, end point,  direction, and force vectors in ground
     Vec3 po(0), pf(0), dir(0), force(0);
-	// partial velocity of point in body expressed in ground 
-	Vec3 dPodq_G(0), dPfdq_G(0);
+    // partial velocity of point in body expressed in ground 
+    Vec3 dPodq_G(0), dPfdq_G(0);
 
-	// gen force (torque) due to moving point under tension
-	double fo, ff;
+    // gen force (torque) due to moving point under tension
+    double fo, ff;
 
     for (int i = 0; i < np-1; ++i) {
         start = currentPath[i];
@@ -369,64 +369,64 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
             pf = bf->findStationLocationInGround(s, end->getLocation());
 
             // Form a vector from start to end, in the inertial frame.
-			dir = (pf - po);
+            dir = (pf - po);
 
-			// Check that the two points are not coincident.
-			// This can happen due to infeasible wrapping of the path,
-			// when the origin or insertion enters the wrapping surface.
-			// This is a temporary fix, since the wrap algorithm should
-			// return NaN for the points and/or throw an Exception- aseth
-			if (dir.norm() < SimTK::SignificantReal){
-				dir = dir*SimTK::NaN;
-			}
-			else{
-				dir = dir.normalize();
-			}
-		
-			force = tension*dir;
+            // Check that the two points are not coincident.
+            // This can happen due to infeasible wrapping of the path,
+            // when the origin or insertion enters the wrapping surface.
+            // This is a temporary fix, since the wrap algorithm should
+            // return NaN for the points and/or throw an Exception- aseth
+            if (dir.norm() < SimTK::SignificantReal){
+                dir = dir*SimTK::NaN;
+            }
+            else{
+                dir = dir.normalize();
+            }
+        
+            force = tension*dir;
 
             // add in the tension point forces to body forces
-			bo->applyForceToBodyPoint(s, start->getLocation(), force, 
-				bodyForces);
-			bf->applyForceToBodyPoint(s, end->getLocation(), -force,
-				bodyForces);
+            bo->applyForceToBodyPoint(s, start->getLocation(), force, 
+                bodyForces);
+            bf->applyForceToBodyPoint(s, end->getLocation(), -force,
+                bodyForces);
 
-			const MovingPathPoint* mppo = 
-					dynamic_cast<MovingPathPoint *>(start);
+            const MovingPathPoint* mppo = 
+                    dynamic_cast<MovingPathPoint *>(start);
 
-			if(mppo){
-				// torque (genforce) contribution due to relative movement 
-				// of a via point w.r.t. the body it is connected to.
-				dPodq_G = bo->expressVectorInGroundFrame(s, start->getdPointdQ(s));
-				fo = ~dPodq_G*force;			
+            if(mppo){
+                // torque (genforce) contribution due to relative movement 
+                // of a via point w.r.t. the body it is connected to.
+                dPodq_G = bo->expressVectorInGroundFrame(s, start->getdPointdQ(s));
+                fo = ~dPodq_G*force;			
 
-				// get the mobilized body the coordinate is couple to.
-				const SimTK::MobilizedBody& mpbod =
-					matter.getMobilizedBody(mppo->getXCoordinate()->getBodyIndex());
+                // get the mobilized body the coordinate is couple to.
+                const SimTK::MobilizedBody& mpbod =
+                    matter.getMobilizedBody(mppo->getXCoordinate()->getBodyIndex());
 
-				// apply the generalized (mobility) force to the coordinate's body
-				mpbod.applyOneMobilityForce(s, 
-					mppo->getXCoordinate()->getMobilizerQIndex(), 
-					fo, mobilityForces);
-			}
+                // apply the generalized (mobility) force to the coordinate's body
+                mpbod.applyOneMobilityForce(s, 
+                    mppo->getXCoordinate()->getMobilizerQIndex(), 
+                    fo, mobilityForces);
+            }
 
-			// do the same for the end point of this segment of the path
-			const MovingPathPoint* mppf = 
-					dynamic_cast<MovingPathPoint *>(end);
+            // do the same for the end point of this segment of the path
+            const MovingPathPoint* mppf = 
+                    dynamic_cast<MovingPathPoint *>(end);
 
-			if(mppf){
-				dPfdq_G = bf->expressVectorInGroundFrame(s, end->getdPointdQ(s));
-				ff = ~dPfdq_G*(-force);
+            if(mppf){
+                dPfdq_G = bf->expressVectorInGroundFrame(s, end->getdPointdQ(s));
+                ff = ~dPfdq_G*(-force);
 
-				// get the mobilized body the coordinate is couple to.
-				const SimTK::MobilizedBody& mpbod =
-					matter.getMobilizedBody(mppf->getXCoordinate()->getBodyIndex());
+                // get the mobilized body the coordinate is couple to.
+                const SimTK::MobilizedBody& mpbod =
+                    matter.getMobilizedBody(mppf->getXCoordinate()->getBodyIndex());
 
-				mpbod.applyOneMobilityForce(s, 
-					mppf->getXCoordinate()->getMobilizerQIndex(), 
-					ff, mobilityForces);
-			}
-			
+                mpbod.applyOneMobilityForce(s, 
+                    mppf->getXCoordinate()->getMobilizerQIndex(), 
+                    ff, mobilityForces);
+            }
+            
         }		
     }
 }
@@ -1366,8 +1366,8 @@ calcLengthAfterPathComputation(const SimTK::State& s,
 double GeometryPath::
 computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const
 {
-	if(!_maSolver)
-		_maSolver = new MomentArmSolver(*_model);
+    if(!_maSolver)
+        _maSolver = new MomentArmSolver(*_model);
 
     return  _maSolver->solve(s, aCoord,  *this);
 }

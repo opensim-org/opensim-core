@@ -77,46 +77,46 @@ namespace OpenSim {
 class OSIMCOMMON_API Geometry
 {
 public:
-	// Basically subtypes so that we can do dynamic casting safely on GUI side, based on type
-	enum GeometryType{
-		None, Sphere,  Cylinder, Cone, Ellipsoid, Torus, Line, Arrow	
-	};
+    // Basically subtypes so that we can do dynamic casting safely on GUI side, based on type
+    enum GeometryType{
+        None, Sphere,  Cylinder, Cone, Ellipsoid, Torus, Line, Arrow	
+    };
 private:
-	bool			_fixed; /** to indicate if the geometry is fixed vs deformable */
+    bool			_fixed; /** to indicate if the geometry is fixed vs deformable */
 protected:
-	GeometryType	_analyticType;
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    GeometryType	_analyticType;
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	Geometry():
-	_fixed(true),
-	_analyticType(None)
-	{}
-	virtual ~Geometry() {}
-	//=============================================================================
-	// METHODS
-	//=============================================================================
-	// Retrieve analytic type
-	const GeometryType getShape() const
-	{
-		return _analyticType;
-	}
-	// Check if the geometry corresponds to an analytic geometry
-	virtual bool isAnalytic() const
-	{
-		return _analyticType!=None;
-	}
-	// Mark geometry as Fixed (so that vtk resources are allocated once,
-	// potentially use the same vtkGeometry more than once.)
-	virtual void setFixed(bool aFixed)
-	{
-		_fixed = aFixed;
-	}
-	virtual bool getFixed() const
-	{
-		return _fixed;
-	}
+    Geometry():
+    _fixed(true),
+    _analyticType(None)
+    {}
+    virtual ~Geometry() {}
+    //=============================================================================
+    // METHODS
+    //=============================================================================
+    // Retrieve analytic type
+    const GeometryType getShape() const
+    {
+        return _analyticType;
+    }
+    // Check if the geometry corresponds to an analytic geometry
+    virtual bool isAnalytic() const
+    {
+        return _analyticType!=None;
+    }
+    // Mark geometry as Fixed (so that vtk resources are allocated once,
+    // potentially use the same vtkGeometry more than once.)
+    virtual void setFixed(bool aFixed)
+    {
+        _fixed = aFixed;
+    }
+    virtual bool getFixed() const
+    {
+        return _fixed;
+    }
 
 //=============================================================================
 };	// END of class Geometry
@@ -129,54 +129,54 @@ public:
 class OSIMCOMMON_API LineGeometry : public Geometry
 {	
 protected:
-	SimTK::Vec3 _point1;
-	SimTK::Vec3 _point2;
+    SimTK::Vec3 _point1;
+    SimTK::Vec3 _point2;
 public:
-	LineGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2):
-	  Geometry()
-	{
-		_analyticType=Line;
-		_point1 = aPoint1;
-		_point2 = aPoint2;
-	}
-	LineGeometry():
-	  Geometry(),
-	  _point1(0.0),
-	  _point2(0.0)
-	{
-		_analyticType=Line;
-	}
-	virtual ~LineGeometry() {}
-	// Get & Set end points
-	void getPoints(SimTK::Vec3& rPoint1, SimTK::Vec3& rPoint2) const 
-	{
-		rPoint1 = _point1;
-		rPoint2 = _point2;
-	}
-	void getPoints(double rPoint1[], double rPoint2[]) const // A variant that uses basic types for use by GUI
-	{
-		getPoints(SimTK::Vec3::updAs(rPoint1), SimTK::Vec3::updAs(rPoint2));
-	}
-	void setPoints(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2)
-	{
-		_point1 = aPoint1;
-		_point2 = aPoint2;
-	}
-	void setPoints(double aPoint1[], double aPoint2[])	// A variant that uses basic types for use by GUI
-	{
-		setPoints(SimTK::Vec3::updAs(aPoint1), SimTK::Vec3::updAs(aPoint2));
-	}
+    LineGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2):
+      Geometry()
+    {
+        _analyticType=Line;
+        _point1 = aPoint1;
+        _point2 = aPoint2;
+    }
+    LineGeometry():
+      Geometry(),
+      _point1(0.0),
+      _point2(0.0)
+    {
+        _analyticType=Line;
+    }
+    virtual ~LineGeometry() {}
+    // Get & Set end points
+    void getPoints(SimTK::Vec3& rPoint1, SimTK::Vec3& rPoint2) const 
+    {
+        rPoint1 = _point1;
+        rPoint2 = _point2;
+    }
+    void getPoints(double rPoint1[], double rPoint2[]) const // A variant that uses basic types for use by GUI
+    {
+        getPoints(SimTK::Vec3::updAs(rPoint1), SimTK::Vec3::updAs(rPoint2));
+    }
+    void setPoints(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2)
+    {
+        _point1 = aPoint1;
+        _point2 = aPoint2;
+    }
+    void setPoints(double aPoint1[], double aPoint2[])	// A variant that uses basic types for use by GUI
+    {
+        setPoints(SimTK::Vec3::updAs(aPoint1), SimTK::Vec3::updAs(aPoint2));
+    }
 };
 
 class OSIMCOMMON_API ArrowGeometry : public LineGeometry
 {	
 public:
-	ArrowGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aUnitDirTo, double aLength):
-	  LineGeometry(aPoint1, /* aPoint1+aLength* */aUnitDirTo)
-	{
-		_analyticType = Arrow;
-	}
-	virtual ~ArrowGeometry() {}
+    ArrowGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aUnitDirTo, double aLength):
+      LineGeometry(aPoint1, /* aPoint1+aLength* */aUnitDirTo)
+    {
+        _analyticType = Arrow;
+    }
+    virtual ~ArrowGeometry() {}
 };
 
 
@@ -189,166 +189,166 @@ public:
 class OSIMCOMMON_API AnalyticGeometry : public Geometry
 {	 
 
-	// Common array of attributes for analytic geometry we can represent
-	// Meaning depends on _analyticType as follows.
-	// Amended with a quadrants array to support pieces of analytic geometry (for wrapping)
-	// Sphere	[Radius, unused, unused, unused, unused, unused]
-	// Cylinder  [Radius, Height, unused, ...]
-	// Cone		 [BaseRadius, TopRadius, Height, unused, ..]
-	// Ellipsoid [AxisLength1, AxisLength2, AxisLength3, unused, ..]
+    // Common array of attributes for analytic geometry we can represent
+    // Meaning depends on _analyticType as follows.
+    // Amended with a quadrants array to support pieces of analytic geometry (for wrapping)
+    // Sphere	[Radius, unused, unused, unused, unused, unused]
+    // Cylinder  [Radius, Height, unused, ...]
+    // Cone		 [BaseRadius, TopRadius, Height, unused, ..]
+    // Ellipsoid [AxisLength1, AxisLength2, AxisLength3, unused, ..]
 private:
-	bool					_bounds[6];		//-X, +X, -Y, +Y, -Z, +Z
-	bool					_piece;
+    bool					_bounds[6];		//-X, +X, -Y, +Y, -Z, +Z
+    bool					_piece;
 public:
-	AnalyticGeometry(GeometryType aGeometricType):
-		_piece(false)
-	{
-		_analyticType=aGeometricType;
-		for(int i=0; i<6; i++) _bounds[i]=true;
-	}
-	virtual ~AnalyticGeometry() {}
-	void setQuadrants(const bool quadrants[6])
-	{
-		_piece=false;
-		for(int i=0; i<6; i++){
-			_bounds[i]=quadrants[i];
-			_piece = _piece || (!quadrants[i]);
-		}
-	}
-	void getQuadrants(bool quadrants[6])
-	{
-		for(int i=0; i<6; i++){
-			quadrants[i]=_bounds[i];
-		}
-	}
-	const bool isPiece() const
-	{
-		return _piece;
-	}
+    AnalyticGeometry(GeometryType aGeometricType):
+        _piece(false)
+    {
+        _analyticType=aGeometricType;
+        for(int i=0; i<6; i++) _bounds[i]=true;
+    }
+    virtual ~AnalyticGeometry() {}
+    void setQuadrants(const bool quadrants[6])
+    {
+        _piece=false;
+        for(int i=0; i<6; i++){
+            _bounds[i]=quadrants[i];
+            _piece = _piece || (!quadrants[i]);
+        }
+    }
+    void getQuadrants(bool quadrants[6])
+    {
+        for(int i=0; i<6; i++){
+            quadrants[i]=_bounds[i];
+        }
+    }
+    const bool isPiece() const
+    {
+        return _piece;
+    }
 };
 
 class OSIMCOMMON_API AnalyticSphere : public AnalyticGeometry
 {
 protected:
-	double				_attributes[1];
+    double				_attributes[1];
 public:
-	AnalyticSphere():
-		AnalyticGeometry(Sphere)
-		{}
-	AnalyticSphere(double radius):
-		AnalyticGeometry(Sphere)
-		{
-			_attributes[0] = radius;
-		}
-	virtual ~AnalyticSphere() {}
-	const double& getRadius() const
-	{
-		//assert(_analyticType==Sphere);
-		return _attributes[0];
-	}
-	void setSphereRadius(double radius)
-	{
-		//assert(_analyticType==Sphere);
-			_attributes[0] = radius;		
-	}
-	static AnalyticGeometry* createSphere(double radius)
-	{
-		AnalyticSphere* sphere = new AnalyticSphere();
-		sphere->setSphereRadius(radius);
-		return sphere;
-	}
+    AnalyticSphere():
+        AnalyticGeometry(Sphere)
+        {}
+    AnalyticSphere(double radius):
+        AnalyticGeometry(Sphere)
+        {
+            _attributes[0] = radius;
+        }
+    virtual ~AnalyticSphere() {}
+    const double& getRadius() const
+    {
+        //assert(_analyticType==Sphere);
+        return _attributes[0];
+    }
+    void setSphereRadius(double radius)
+    {
+        //assert(_analyticType==Sphere);
+            _attributes[0] = radius;		
+    }
+    static AnalyticGeometry* createSphere(double radius)
+    {
+        AnalyticSphere* sphere = new AnalyticSphere();
+        sphere->setSphereRadius(radius);
+        return sphere;
+    }
 };	// AnalyticSphere
 
 class OSIMCOMMON_API AnalyticEllipsoid : public AnalyticGeometry
 {
 protected:
-	double				_attributes[3];
+    double				_attributes[3];
 public:
-	AnalyticEllipsoid():
-		AnalyticGeometry(Ellipsoid)
-		{}
-	AnalyticEllipsoid(double radius1, double radius2, double radius3):
-		AnalyticGeometry(Ellipsoid){
-			_attributes[0] = radius1;
-			_attributes[1] = radius2;
-			_attributes[2] = radius3;
-	}
-	virtual ~AnalyticEllipsoid() {}
-	void setEllipsoidParams(double radius1, double radius2, double radius3)
-	{
-		//assert(_analyticType==Sphere);
-		_attributes[0] = radius1;
-		_attributes[1] = radius2;
-		_attributes[2] = radius3;
-	}
-	void getEllipsoidParams(double params[])
-	{
-		//assert(_analyticType==Ellipsoid);
-		for(int i=0;i<3; i++)
-			params[i] = _attributes[i];
-	}
+    AnalyticEllipsoid():
+        AnalyticGeometry(Ellipsoid)
+        {}
+    AnalyticEllipsoid(double radius1, double radius2, double radius3):
+        AnalyticGeometry(Ellipsoid){
+            _attributes[0] = radius1;
+            _attributes[1] = radius2;
+            _attributes[2] = radius3;
+    }
+    virtual ~AnalyticEllipsoid() {}
+    void setEllipsoidParams(double radius1, double radius2, double radius3)
+    {
+        //assert(_analyticType==Sphere);
+        _attributes[0] = radius1;
+        _attributes[1] = radius2;
+        _attributes[2] = radius3;
+    }
+    void getEllipsoidParams(double params[])
+    {
+        //assert(_analyticType==Ellipsoid);
+        for(int i=0;i<3; i++)
+            params[i] = _attributes[i];
+    }
 };
 
 class OSIMCOMMON_API AnalyticCylinder : public AnalyticGeometry
 {
 protected:
-	double				_attributes[2];
+    double				_attributes[2];
 public:
-	AnalyticCylinder():
-		AnalyticGeometry(Cylinder)
-		{}
-	AnalyticCylinder(const double radius, const double height):
-		AnalyticGeometry(Cylinder)
-		{
-			_attributes[0]=radius;
-			_attributes[1]=height;
-		}
-	virtual ~AnalyticCylinder() {}
-	void getCylinderParams(double params[]) const
-	{
-		//assert(_analyticType==Cylinder);
-		params[0] = _attributes[0];
-		params[1] = _attributes[1];
-	}
+    AnalyticCylinder():
+        AnalyticGeometry(Cylinder)
+        {}
+    AnalyticCylinder(const double radius, const double height):
+        AnalyticGeometry(Cylinder)
+        {
+            _attributes[0]=radius;
+            _attributes[1]=height;
+        }
+    virtual ~AnalyticCylinder() {}
+    void getCylinderParams(double params[]) const
+    {
+        //assert(_analyticType==Cylinder);
+        params[0] = _attributes[0];
+        params[1] = _attributes[1];
+    }
 };
 
 class OSIMCOMMON_API AnalyticTorus : public AnalyticGeometry
 {
 protected:
-	double				_attributes[2];
+    double				_attributes[2];
 public:
-	AnalyticTorus():
-		AnalyticGeometry(Torus)
-		{}
-	AnalyticTorus(const double ringRadius, const double crossSectionRadius):
-		AnalyticGeometry(Torus)
-		{
-			_attributes[0]=ringRadius;
-			_attributes[1]=crossSectionRadius;
-		}
-	virtual ~AnalyticTorus() {}
-	void getTorusParams(double params[]) const
-	{
-		//assert(_analyticType==Torus);
-		params[0] = _attributes[0];
-		params[1] = _attributes[1];
-	}
+    AnalyticTorus():
+        AnalyticGeometry(Torus)
+        {}
+    AnalyticTorus(const double ringRadius, const double crossSectionRadius):
+        AnalyticGeometry(Torus)
+        {
+            _attributes[0]=ringRadius;
+            _attributes[1]=crossSectionRadius;
+        }
+    virtual ~AnalyticTorus() {}
+    void getTorusParams(double params[]) const
+    {
+        //assert(_analyticType==Torus);
+        params[0] = _attributes[0];
+        params[1] = _attributes[1];
+    }
 };
 
 class OSIMCOMMON_API PolyhedralGeometry : public Geometry
 {
 protected:
-	std::string _geometryFile;
+    std::string _geometryFile;
 public:
-	PolyhedralGeometry(const std::string& geomFile):
-		Geometry()
-		{
-			_geometryFile = geomFile;
-		}
-	const std::string&  getGeometryFilename() const
-	{
-		return _geometryFile;
-	};
+    PolyhedralGeometry(const std::string& geomFile):
+        Geometry()
+        {
+            _geometryFile = geomFile;
+        }
+    const std::string&  getGeometryFilename() const
+    {
+        return _geometryFile;
+    };
 
 };
 

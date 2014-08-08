@@ -100,9 +100,9 @@ void FirstOrderMuscleActivationDynamics::
 computeStateVariableDerivatives(const SimTK::State& s) const
 {
      double adot = 
-		 calcActivationDerivative(getExcitation(s), getActivation(s));
+         calcActivationDerivative(getExcitation(s), getActivation(s));
 
-	 setStateVariableDerivative(s, STATE_NAME_ACTIVATION, adot);
+     setStateVariableDerivative(s, STATE_NAME_ACTIVATION, adot);
 }
 
 //==============================================================================

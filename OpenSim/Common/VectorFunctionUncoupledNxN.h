@@ -69,41 +69,41 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	VectorFunctionUncoupledNxN();
-	VectorFunctionUncoupledNxN(int aN);
-	VectorFunctionUncoupledNxN(const VectorFunctionUncoupledNxN &aFunction);
-	virtual ~VectorFunctionUncoupledNxN();
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    VectorFunctionUncoupledNxN();
+    VectorFunctionUncoupledNxN(int aN);
+    VectorFunctionUncoupledNxN(const VectorFunctionUncoupledNxN &aFunction);
+    virtual ~VectorFunctionUncoupledNxN();
 
 private:
-	void setNull();
-	void setEqual(const VectorFunctionUncoupledNxN &aVectorFunction);
+    void setNull();
+    void setEqual(const VectorFunctionUncoupledNxN &aVectorFunction);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
-	VectorFunctionUncoupledNxN&
-		operator=(const VectorFunctionUncoupledNxN &aFunction);
+    VectorFunctionUncoupledNxN&
+        operator=(const VectorFunctionUncoupledNxN &aFunction);
 
-	//--------------------------------------------------------------------------
-	// SET AND GET
-	//--------------------------------------------------------------------------
-	
-	//--------------------------------------------------------------------------
-	// EVALUATE
-	//--------------------------------------------------------------------------
-	virtual void evaluate( const SimTK::State& s, const double *aX, double *rF) { 
-		std::cout << "VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( const SimTK::State&, const double*, double*)" << std::endl;
-	}
-	virtual void evaluate( const SimTK::State& s, const Array<double> &aX, Array<double> &rF){
-		std::cout << "VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( const SimTK::State&, const Array<double>, Array<double>)" << std::endl;
-	}
-	virtual void evaluate( const SimTK::State& s, const Array<double> &aX, Array<double> &rF, const Array<int> &aDerivWRT){
-		std::cout << "VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( const SimTK::State&, const Array<double>&a, Array<double>&, const Array<int>&)" << std::endl;
-	}
+    //--------------------------------------------------------------------------
+    // SET AND GET
+    //--------------------------------------------------------------------------
+    
+    //--------------------------------------------------------------------------
+    // EVALUATE
+    //--------------------------------------------------------------------------
+    virtual void evaluate( const SimTK::State& s, const double *aX, double *rF) { 
+        std::cout << "VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( const SimTK::State&, const double*, double*)" << std::endl;
+    }
+    virtual void evaluate( const SimTK::State& s, const Array<double> &aX, Array<double> &rF){
+        std::cout << "VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( const SimTK::State&, const Array<double>, Array<double>)" << std::endl;
+    }
+    virtual void evaluate( const SimTK::State& s, const Array<double> &aX, Array<double> &rF, const Array<int> &aDerivWRT){
+        std::cout << "VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( const SimTK::State&, const Array<double>&a, Array<double>&, const Array<int>&)" << std::endl;
+    }
 
 //=============================================================================
 };	// END class VectorFunctionUncoupledNxN

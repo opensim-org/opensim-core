@@ -53,78 +53,78 @@ OpenSim_DECLARE_CONCRETE_OBJECT(StepFunction, Function);
 // MEMBER VARIABLES
 //=============================================================================
 protected:
-	PropertyDbl _startTimeProp;
-	double &_startTime;
+    PropertyDbl _startTimeProp;
+    double &_startTime;
 
-	PropertyDbl _endTimeProp;
-	double &_endTime;
+    PropertyDbl _endTimeProp;
+    double &_endTime;
 
-	PropertyDbl _startValueProp;
-	double &_startValue;
+    PropertyDbl _startValueProp;
+    double &_startValue;
 
-	PropertyDbl _endValueProp;
-	double &_endValue;
+    PropertyDbl _endValueProp;
+    double &_endValue;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	StepFunction();
-	StepFunction(double startTime, double endTime, double startValue=0.0, double endValue=1.0);
-	StepFunction(const StepFunction &aSpline);
-	virtual ~StepFunction();
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    StepFunction();
+    StepFunction(double startTime, double endTime, double startValue=0.0, double endValue=1.0);
+    StepFunction(const StepFunction &aSpline);
+    virtual ~StepFunction();
 
 private:
-	void setNull();
-	void setupProperties();
-	void copyData(const StepFunction &aStepFunction);
+    void setNull();
+    void setupProperties();
+    void copyData(const StepFunction &aStepFunction);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	StepFunction& operator=(const StepFunction &aStepFunction);
+    StepFunction& operator=(const StepFunction &aStepFunction);
 #endif
 
-	//--------------------------------------------------------------------------
-	// SET AND GET Coefficients
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // SET AND GET Coefficients
+    //--------------------------------------------------------------------------
 public:
-	/** Set step transition start time */
-	void setStartTime(double time)
-		{ _startTime = time; };
-	/** Get step transition time */
-	double getStartTime() const
-		{ return _startTime; };
+    /** Set step transition start time */
+    void setStartTime(double time)
+        { _startTime = time; };
+    /** Get step transition time */
+    double getStartTime() const
+        { return _startTime; };
 
-	/** Set step transition end time */
-	void setEndTime(double time)
-		{ _endTime = time; };
-	/** Get step transition time */
-	double getEndTime() const
-		{ return _endTime; };
+    /** Set step transition end time */
+    void setEndTime(double time)
+        { _endTime = time; };
+    /** Get step transition time */
+    double getEndTime() const
+        { return _endTime; };
 
-	/** Set start value before step */
-	void setStartValue(double start)
-		{ _startValue = start; };
-	/** Get start value before step */
-	double getStartValue() const
-		{ return _startValue; };
+    /** Set start value before step */
+    void setStartValue(double start)
+        { _startValue = start; };
+    /** Get start value before step */
+    double getStartValue() const
+        { return _startValue; };
 
-	/** Set end value before step */
-	void setEndValue(double end)
-		{ _endValue = end; };
-	/** Get end value before step */
-	double getEndValue() const
-		{ return _endValue; };
+    /** Set end value before step */
+    void setEndValue(double end)
+        { _endValue = end; };
+    /** Get end value before step */
+    double getEndValue() const
+        { return _endValue; };
 
-	//--------------------------------------------------------------------------
-	// EVALUATION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // EVALUATION
+    //--------------------------------------------------------------------------
     virtual SimTK::Function* createSimTKFunction() const;
 
 //=============================================================================

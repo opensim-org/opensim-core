@@ -51,110 +51,110 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
  */
 int main(int argc,char **argv)
 {
-	//----------------------
-	// Surrounding try block
-	//----------------------
-	try {
-	//----------------------
+    //----------------------
+    // Surrounding try block
+    //----------------------
+    try {
+    //----------------------
 
-	// REGISTER TYPES
-	InverseKinematicsTool::registerTypes();
+    // REGISTER TYPES
+    InverseKinematicsTool::registerTypes();
 
-	// PARSE COMMAND LINE
-	string option = "";
-	string setupFileName;
-	if (argc < 2)
-	{
-		PrintUsage(argv[0], cout);
-		exit(-1);
-	}
-	else {		// Don't know maybe user needs help or have special needs
-		// Load libraries first
-		LoadOpenSimLibraries(argc,argv);
+    // PARSE COMMAND LINE
+    string option = "";
+    string setupFileName;
+    if (argc < 2)
+    {
+        PrintUsage(argv[0], cout);
+        exit(-1);
+    }
+    else {		// Don't know maybe user needs help or have special needs
+        // Load libraries first
+        LoadOpenSimLibraries(argc,argv);
 
-		int i;
-		for(i=1;i<=(argc-1);i++) {
-			option = argv[i];
+        int i;
+        for(i=1;i<=(argc-1);i++) {
+            option = argv[i];
 
-			// PRINT THE USAGE OPTIONS
-			if((option=="-help")||(option=="-h")||(option=="-Help")||(option=="-H")||
-				(option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
-					PrintUsage(argv[0], cout);
-					return(0);
+            // PRINT THE USAGE OPTIONS
+            if((option=="-help")||(option=="-h")||(option=="-Help")||(option=="-H")||
+                (option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
+                    PrintUsage(argv[0], cout);
+                    return(0);
 
-			// IDENTIFY SETUP FILE
-			} else if((option=="-Setup")||(option=="-S")) {
-				setupFileName = argv[i+1];
-				break;
+            // IDENTIFY SETUP FILE
+            } else if((option=="-Setup")||(option=="-S")) {
+                setupFileName = argv[i+1];
+                break;
 
-			} else if((option=="-PrintSetup")||(option=="-PS")) {
-				InverseKinematicsTool *tool = new InverseKinematicsTool();
-				tool->setName("default");
-				Object::setSerializeAllDefaults(true);
-				tool->print("default_Setup_IK.xml");
-				Object::setSerializeAllDefaults(false);
-				cout << "Created file default_Setup_IK.xml with default setup" << endl;
-				return 0;
+            } else if((option=="-PrintSetup")||(option=="-PS")) {
+                InverseKinematicsTool *tool = new InverseKinematicsTool();
+                tool->setName("default");
+                Object::setSerializeAllDefaults(true);
+                tool->print("default_Setup_IK.xml");
+                Object::setSerializeAllDefaults(false);
+                cout << "Created file default_Setup_IK.xml with default setup" << endl;
+                return 0;
 
-			// PRINT PROPERTY INFO
-			} else if((option=="-PropertyInfo")||(option=="-PI")) {
-				if((i+1)>=argc) {
-					Object::PrintPropertyInfo(cout,"");
+            // PRINT PROPERTY INFO
+            } else if((option=="-PropertyInfo")||(option=="-PI")) {
+                if((i+1)>=argc) {
+                    Object::PrintPropertyInfo(cout,"");
 
-				} else {
-					char *compoundName = argv[i+1];
-					if(compoundName[0]=='-') {
-						Object::PrintPropertyInfo(cout,"");
-					} else {
-						Object::PrintPropertyInfo(cout,compoundName);
-					}
-				}
-				return(0);
+                } else {
+                    char *compoundName = argv[i+1];
+                    if(compoundName[0]=='-') {
+                        Object::PrintPropertyInfo(cout,"");
+                    } else {
+                        Object::PrintPropertyInfo(cout,compoundName);
+                    }
+                }
+                return(0);
 
-			// UNRECOGNIZED
-			} else {
-				cout << "Unrecognized option" << option << "on command line... Ignored" << endl;
-				PrintUsage(argv[0], cout);
-				return(0);
-			}
-		}
-	}
+            // UNRECOGNIZED
+            } else {
+                cout << "Unrecognized option" << option << "on command line... Ignored" << endl;
+                PrintUsage(argv[0], cout);
+                return(0);
+            }
+        }
+    }
 
-	// ERROR CHECK
-	if(setupFileName=="") {
-		cout<<"\n\nik.exe: ERROR- A setup file must be specified.\n";
-		PrintUsage(argv[0], cout);
-		return(-1);
-	}
+    // ERROR CHECK
+    if(setupFileName=="") {
+        cout<<"\n\nik.exe: ERROR- A setup file must be specified.\n";
+        PrintUsage(argv[0], cout);
+        return(-1);
+    }
 
-	// CONSTRUCT
-	cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
-	InverseKinematicsTool ik(setupFileName);
-	//ik.print("ik_setup_check.xml");
+    // CONSTRUCT
+    cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
+    InverseKinematicsTool ik(setupFileName);
+    //ik.print("ik_setup_check.xml");
 
-	// PRINT MODEL INFORMATION
-	//Model& model = ik.getModel();
-	//model.printBasicInfo(cout);
+    // PRINT MODEL INFORMATION
+    //Model& model = ik.getModel();
+    //model.printBasicInfo(cout);
 
-	// start timing
-	std::clock_t startTime = std::clock();
+    // start timing
+    std::clock_t startTime = std::clock();
 
-	// RUN
-	ik.run();
+    // RUN
+    ik.run();
 
-	std::cout << "IK compute time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n";
+    std::cout << "IK compute time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n";
 
 
-	//----------------------------
-	// Catch any thrown exceptions
-	//----------------------------
-	} catch(const std::exception& x) {
+    //----------------------------
+    // Catch any thrown exceptions
+    //----------------------------
+    } catch(const std::exception& x) {
         cout << "Exception in IK: " << x.what() << endl;
-		return -1;
-	}
-	//----------------------------
+        return -1;
+    }
+    //----------------------------
 
-	return(0);
+    return(0);
 }
 
 //_____________________________________________________________________________
@@ -163,13 +163,13 @@ int main(int argc,char **argv)
  */
 void PrintUsage(const char *aProgName, ostream &aOStream)
 {
-	string progName=IO::GetFileNameFromURI(aProgName);
-	aOStream<<"\n\n"<<progName<<":\n"<<GetVersionAndDate()<<"\n\n";
-	aOStream<<"Option             Argument         Action / Notes\n";
-	aOStream<<"------             --------         --------------\n";
-	aOStream<<"-Help, -H                           Print the command-line options for "<<progName<<".\n";
-	aOStream<<"-PrintSetup, -PS                    Generates a template Setup file to customize the scaling\n";
-	aOStream<<"-Setup, -S         SetupFileName    Specify an xml setup file for solving an inverse kinematics problem.\n";
-	aOStream<<"-PropertyInfo, -PI                  Print help information for properties in setup files.\n";
+    string progName=IO::GetFileNameFromURI(aProgName);
+    aOStream<<"\n\n"<<progName<<":\n"<<GetVersionAndDate()<<"\n\n";
+    aOStream<<"Option             Argument         Action / Notes\n";
+    aOStream<<"------             --------         --------------\n";
+    aOStream<<"-Help, -H                           Print the command-line options for "<<progName<<".\n";
+    aOStream<<"-PrintSetup, -PS                    Generates a template Setup file to customize the scaling\n";
+    aOStream<<"-Setup, -S         SetupFileName    Specify an xml setup file for solving an inverse kinematics problem.\n";
+    aOStream<<"-PropertyInfo, -PI                  Print help information for properties in setup files.\n";
 }
-	
+    

@@ -33,10 +33,10 @@
 
 
 #ifdef SWIG
-	#ifdef OSIMEXPPLUGIN_API
-		#undef OSIMEXPPLUGIN_API
-		#define OSIMEXPPLUGIN_API
-	#endif
+    #ifdef OSIMEXPPLUGIN_API
+        #undef OSIMEXPPLUGIN_API
+        #define OSIMEXPPLUGIN_API
+    #endif
 #endif
 //=============================================================================
 //=============================================================================
@@ -56,58 +56,58 @@ OpenSim_DECLARE_CONCRETE_OBJECT(SymbolicExpressionReporter, Analysis);
 // DATA
 //=============================================================================
 private:
-	std::map<std::string, double> _variables;
+    std::map<std::string, double> _variables;
 
 
 protected:
-	/** Expression that's a function of state variables and primitive model properties. */
-	PropertyStr _expressionStrProp;
-	std::string& _expressionStr;
+    /** Expression that's a function of state variables and primitive model properties. */
+    PropertyStr _expressionStrProp;
+    std::string& _expressionStr;
 
-	/** States storage. */
-	Storage _resultStore;
+    /** States storage. */
+    Storage _resultStore;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	SymbolicExpressionReporter(Model *aModel=0);
-	SymbolicExpressionReporter(const std::string &aFileName);
-	// Copy constrctor and virtual copy 
-	SymbolicExpressionReporter(const SymbolicExpressionReporter &aObject);
+    SymbolicExpressionReporter(Model *aModel=0);
+    SymbolicExpressionReporter(const std::string &aFileName);
+    // Copy constrctor and virtual copy 
+    SymbolicExpressionReporter(const SymbolicExpressionReporter &aObject);
 
-	virtual ~SymbolicExpressionReporter();
+    virtual ~SymbolicExpressionReporter();
 private:
-	void setNull();
-	void constructDescription();
-	void constructColumnLabels();
-	void setupStorage();
-	void setupProperties();
+    void setNull();
+    void constructDescription();
+    void constructColumnLabels();
+    void setupStorage();
+    void setupProperties();
 
 public:
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	SymbolicExpressionReporter& operator=(const SymbolicExpressionReporter &aRporter);
+    SymbolicExpressionReporter& operator=(const SymbolicExpressionReporter &aRporter);
 #endif
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	// STORAGE
-	const Storage& getResultStorage() const
-	{
-		return _resultStore;
-	};
-	Storage& updResultStorage()
-	{
-		return _resultStore;
-	}
-	//--------------------------------------------------------------------------
-	// ANALYSIS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    // STORAGE
+    const Storage& getResultStorage() const
+    {
+        return _resultStore;
+    };
+    Storage& updResultStorage()
+    {
+        return _resultStore;
+    }
+    //--------------------------------------------------------------------------
+    // ANALYSIS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	virtual int
+    virtual int
         begin(SimTK::State& s );
     virtual int
         step(const SimTK::State& s, int setNumber );
@@ -117,13 +117,13 @@ protected:
     virtual int
         record(const SimTK::State& s );
 #endif
-	//--------------------------------------------------------------------------
-	// IO
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // IO
+    //--------------------------------------------------------------------------
 public:
-	virtual int
-		printResults(const std::string &aBaseName,const std::string &aDir="",
-		double aDT=-1.0,const std::string &aExtension=".sto");
+    virtual int
+        printResults(const std::string &aBaseName,const std::string &aDir="",
+        double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
 };	// END of class SymbolicExpressionReporter

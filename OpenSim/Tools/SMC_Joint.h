@@ -51,40 +51,40 @@ OpenSim_DECLARE_CONCRETE_OBJECT(SMC_Joint, CMC_Joint);
 // DATA
 //=============================================================================
 protected:
-	/** Parameter specifying the boundary of the error surface. */
-	PropertyDbl _propS;
-	double &_s;
+    /** Parameter specifying the boundary of the error surface. */
+    PropertyDbl _propS;
+    double &_s;
 
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	SMC_Joint(const std::string &aCoordinateName = "");
-	SMC_Joint(const SMC_Joint &aTask);
-	virtual ~SMC_Joint();
+    SMC_Joint(const std::string &aCoordinateName = "");
+    SMC_Joint(const SMC_Joint &aTask);
+    virtual ~SMC_Joint();
 
 private:
-	void setNull();
-	void setupProperties();
-	void copyData(const SMC_Joint &aTask);
-	void updateWorkVariables();
+    void setNull();
+    void setupProperties();
+    void copyData(const SMC_Joint &aTask);
+    void updateWorkVariables();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	SMC_Joint& operator=(const SMC_Joint &aTask);
+    SMC_Joint& operator=(const SMC_Joint &aTask);
 #endif
 
-	//--------------------------------------------------------------------------
-	// COMPUTATIONS
-	//--------------------------------------------------------------------------
-	virtual void computeDesiredAccelerations(const SimTK::State& s, double aT);
+    //--------------------------------------------------------------------------
+    // COMPUTATIONS
+    //--------------------------------------------------------------------------
+    virtual void computeDesiredAccelerations(const SimTK::State& s, double aT);
 
 
 //=============================================================================

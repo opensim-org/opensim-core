@@ -73,8 +73,8 @@ while ((a)>(c)) (a)-=((c)-(b));
                                  BOOL_APX_EQ(Pt1[2], Pt2[2]))
 
 #define PTS_ARE_EQUAL3(Pt1, Pt2) (BOOL_APX_EQ3(Pt1[0], Pt2[0]) && \
-				  BOOL_APX_EQ3(Pt1[1], Pt2[1]) && \
-				  BOOL_APX_EQ3(Pt1[2], Pt2[2]))
+                  BOOL_APX_EQ3(Pt1[1], Pt2[1]) && \
+                  BOOL_APX_EQ3(Pt1[2], Pt2[2]))
 
 #define READ4(ptr,fp) {\
 *(((char*)(ptr))  )=getc(fp);\

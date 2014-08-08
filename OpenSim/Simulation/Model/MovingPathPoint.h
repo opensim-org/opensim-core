@@ -39,10 +39,10 @@
 #include "SimTKsimbody.h"
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+    #ifdef OSIMSIMULATION_API
+        #undef OSIMSIMULATION_API
+        #define OSIMSIMULATION_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -70,81 +70,81 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MovingPathPoint, PathPoint);
 private:
 
 protected:
-	PropertyObjPtr<Function> _xLocationProp;
-	Function* &_xLocation;
+    PropertyObjPtr<Function> _xLocationProp;
+    Function* &_xLocation;
 
-	PropertyStr _xCoordinateNameProp;
+    PropertyStr _xCoordinateNameProp;
     std::string &_xCoordinateName;
 
-	const Coordinate* _xCoordinate;
+    const Coordinate* _xCoordinate;
 
-	PropertyObjPtr<Function> _yLocationProp;
-	Function* &_yLocation;
+    PropertyObjPtr<Function> _yLocationProp;
+    Function* &_yLocation;
 
-	PropertyStr _yCoordinateNameProp;
+    PropertyStr _yCoordinateNameProp;
     std::string &_yCoordinateName;
 
-	const Coordinate* _yCoordinate;
+    const Coordinate* _yCoordinate;
 
-	PropertyObjPtr<Function> _zLocationProp;
-	Function* &_zLocation;
+    PropertyObjPtr<Function> _zLocationProp;
+    Function* &_zLocation;
 
-	PropertyStr _zCoordinateNameProp;
+    PropertyStr _zCoordinateNameProp;
     std::string &_zCoordinateName;
 
-	const Coordinate* _zCoordinate;
+    const Coordinate* _zCoordinate;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	MovingPathPoint();
-	MovingPathPoint(const MovingPathPoint &aPoint);
-	virtual ~MovingPathPoint();
+    MovingPathPoint();
+    MovingPathPoint(const MovingPathPoint &aPoint);
+    virtual ~MovingPathPoint();
 
 #ifndef SWIG
-	MovingPathPoint& operator=(const MovingPathPoint &aPoint);
+    MovingPathPoint& operator=(const MovingPathPoint &aPoint);
 #endif
    void copyData(const MovingPathPoint &aPoint);
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
-	virtual void init(const PathPoint& aPoint);
+    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
+    virtual void init(const PathPoint& aPoint);
 
-	const Coordinate* getXCoordinate() const { return _xCoordinate; }
-	const Coordinate* getYCoordinate() const { return _yCoordinate; }
-	const Coordinate* getZCoordinate() const { return _zCoordinate; }
+    const Coordinate* getXCoordinate() const { return _xCoordinate; }
+    const Coordinate* getYCoordinate() const { return _yCoordinate; }
+    const Coordinate* getZCoordinate() const { return _zCoordinate; }
 #ifndef SWIG
-	void setXCoordinate( const SimTK::State& s, Coordinate& aCoordinate);
-	void setYCoordinate( const SimTK::State& s, Coordinate& aCoordinate);
-	void setZCoordinate( const SimTK::State& s, Coordinate& aCoordinate);
+    void setXCoordinate( const SimTK::State& s, Coordinate& aCoordinate);
+    void setYCoordinate( const SimTK::State& s, Coordinate& aCoordinate);
+    void setZCoordinate( const SimTK::State& s, Coordinate& aCoordinate);
 
     // Override methods from PathPoint.
-	bool isActive(const SimTK::State& s) const override { return true; }
-	void connectToModelAndPath(const Model& aModel, GeometryPath& aPath) 
+    bool isActive(const SimTK::State& s) const override { return true; }
+    void connectToModelAndPath(const Model& aModel, GeometryPath& aPath) 
                                                                 override;
-	void update(const SimTK::State& s) override;
-	void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity) override;
+    void update(const SimTK::State& s) override;
+    void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity) override;
 #endif
-	SimTK::Vec3 getdPointdQ(const SimTK::State& s) const override; 
+    SimTK::Vec3 getdPointdQ(const SimTK::State& s) const override; 
 
-	const std::string& getXCoordinateName() const { return _xCoordinateName; }
-	const std::string& getYCoordinateName() const { return _yCoordinateName; }
-	const std::string& getZCoordinateName() const { return _zCoordinateName; }
-	virtual Function* getXFunction() const { return _xLocation; }
-	virtual Function* getYFunction() const { return _yLocation; }
-	virtual Function* getZFunction() const { return _zLocation; }
+    const std::string& getXCoordinateName() const { return _xCoordinateName; }
+    const std::string& getYCoordinateName() const { return _yCoordinateName; }
+    const std::string& getZCoordinateName() const { return _zCoordinateName; }
+    virtual Function* getXFunction() const { return _xLocation; }
+    virtual Function* getYFunction() const { return _yLocation; }
+    virtual Function* getZFunction() const { return _zLocation; }
 #ifndef SWIG
-	void setXFunction( const SimTK::State& s, Function& aFunction);
-	void setYFunction( const SimTK::State& s, Function& aFunction);
-	void setZFunction( const SimTK::State& s, Function& aFunction);
+    void setXFunction( const SimTK::State& s, Function& aFunction);
+    void setYFunction( const SimTK::State& s, Function& aFunction);
+    void setZFunction( const SimTK::State& s, Function& aFunction);
 #endif
    virtual void scale(const SimTK::State& s, const SimTK::Vec3& aScaleFactors);
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 //=============================================================================
 };	// END of class MovingPathPoint
 //=============================================================================

@@ -76,19 +76,19 @@ void FiberCompressiveForceLengthCurve::constructProperties()
 
 void FiberCompressiveForceLengthCurve::buildCurve( bool computeIntegral )
 {        
-	SmoothSegmentedFunction* f = SmoothSegmentedFunctionFactory::
-		createFiberCompressiveForceLengthCurve( 
-				get_norm_length_at_zero_force(), 
-				m_stiffnessAtZeroLengthInUse,  
-				m_curvinessInUse,
-				computeIntegral,
-				getName());            
-	
-	m_curve = *f;  
+    SmoothSegmentedFunction* f = SmoothSegmentedFunctionFactory::
+        createFiberCompressiveForceLengthCurve( 
+                get_norm_length_at_zero_force(), 
+                m_stiffnessAtZeroLengthInUse,  
+                m_curvinessInUse,
+                computeIntegral,
+                getName());            
+    
+    m_curve = *f;  
 
-	delete f; 
+    delete f; 
 
-	setObjectIsUpToDateWithProperties();
+    setObjectIsUpToDateWithProperties();
 }
 
 
@@ -158,15 +158,15 @@ void FiberCompressiveForceLengthCurve::ensureCurveUpToDate()
 
 SimTK::Function* FiberCompressiveForceLengthCurve::createSimTKFunction() const
 {
-	// back the OpenSim::Function with this SimTK::Function 
+    // back the OpenSim::Function with this SimTK::Function 
 
-	return SmoothSegmentedFunctionFactory::
-		createFiberCompressiveForceLengthCurve( 
-				get_norm_length_at_zero_force(), 
-				m_stiffnessAtZeroLengthInUse,  
-				m_curvinessInUse,
-				false,
-				getName());            
+    return SmoothSegmentedFunctionFactory::
+        createFiberCompressiveForceLengthCurve( 
+                get_norm_length_at_zero_force(), 
+                m_stiffnessAtZeroLengthInUse,  
+                m_curvinessInUse,
+                false,
+                getName());            
 }
 
 
@@ -228,12 +228,12 @@ double FiberCompressiveForceLengthCurve::calcIntegral(double aNormLength) const
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
         "FiberCompressiveForceLengthCurve: Curve is not"
         " to date with its properties");
-	
-	if (!m_curve.isIntegralAvailable()) {
-		FiberCompressiveForceLengthCurve* mutableThis = 
-			const_cast<FiberCompressiveForceLengthCurve*>(this); 
-		mutableThis->buildCurve(true); 
-	}
+    
+    if (!m_curve.isIntegralAvailable()) {
+        FiberCompressiveForceLengthCurve* mutableThis = 
+            const_cast<FiberCompressiveForceLengthCurve*>(this); 
+        mutableThis->buildCurve(true); 
+    }
 
     return m_curve.calcIntegral(aNormLength);
 }

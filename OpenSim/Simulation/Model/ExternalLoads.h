@@ -66,75 +66,75 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ExternalLoads,
 // DATA
 //=============================================================================
 protected:
-	/** Data source for all forces in this ExternalLoads, where individual 
-	 *  external forces identify which subsets of the data they will acceess.*/
-	PropertyStr _dataFileNameProp;
-	std::string &_dataFileName;
-	/** Name of the file containing the model kinematics corresponding to the
-	external loads. */
-	PropertyStr _externalLoadsModelKinematicsFileNameProp;
-	std::string &_externalLoadsModelKinematicsFileName;
-	/** Low-pass cut-off frequency for filtering the model kinematics corresponding
-	to the external loads. A negative value results in no filtering.
-	The default value is -1.0, so no filtering. */
-	PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
-	double &_lowpassCutoffFrequencyForLoadKinematics;
+    /** Data source for all forces in this ExternalLoads, where individual 
+     *  external forces identify which subsets of the data they will acceess.*/
+    PropertyStr _dataFileNameProp;
+    std::string &_dataFileName;
+    /** Name of the file containing the model kinematics corresponding to the
+    external loads. */
+    PropertyStr _externalLoadsModelKinematicsFileNameProp;
+    std::string &_externalLoadsModelKinematicsFileName;
+    /** Low-pass cut-off frequency for filtering the model kinematics corresponding
+    to the external loads. A negative value results in no filtering.
+    The default value is -1.0, so no filtering. */
+    PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
+    double &_lowpassCutoffFrequencyForLoadKinematics;
 
 private:
-	/* If point of applications for external forces must be re-expressed
-	   then build new storages to be assigned to the individual ExternalForces
-	   with the transformed point data. Hang-on to them so we can delete them. */
-	ArrayPtrs<Storage> _storages;
+    /* If point of applications for external forces must be re-expressed
+       then build new storages to be assigned to the individual ExternalForces
+       with the transformed point data. Hang-on to them so we can delete them. */
+    ArrayPtrs<Storage> _storages;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	ExternalLoads();
-	ExternalLoads(Model& model);
-	ExternalLoads(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true)  SWIG_DECLARE_EXCEPTION;
-	ExternalLoads(const ExternalLoads &aExternalLoads);
-	virtual ~ExternalLoads();
+    ExternalLoads();
+    ExternalLoads(Model& model);
+    ExternalLoads(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true)  SWIG_DECLARE_EXCEPTION;
+    ExternalLoads(const ExternalLoads &aExternalLoads);
+    virtual ~ExternalLoads();
 
-	void copyData(const ExternalLoads &otherExternalLoads);
+    void copyData(const ExternalLoads &otherExternalLoads);
 
-	/** Override of the default implementation to account for versioning. */
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    /** Override of the default implementation to account for versioning. */
+    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
-	// Connect all ExternalForces inside this ExternalLoads collection to
+    // Connect all ExternalForces inside this ExternalLoads collection to
     // their Model. Overrides ModelComponentSet method.
-	void invokeConnectToModel(Model& aModel) override;
+    void invokeConnectToModel(Model& aModel) override;
 
-	const Model& getModel() const	// get around wrapping issue where exposing the method in ModelComponentSet is problematic
+    const Model& getModel() const	// get around wrapping issue where exposing the method in ModelComponentSet is problematic
     {
         return	*_model;
     }
 
-	const std::string& getDataFileName() const { return _dataFileName;};
-	void setDataFileName(const std::string& aNewFile) { _dataFileName = aNewFile; };
+    const std::string& getDataFileName() const { return _dataFileName;};
+    void setDataFileName(const std::string& aNewFile) { _dataFileName = aNewFile; };
 
-	const std::string &getExternalLoadsModelKinematicsFileName() const { return _externalLoadsModelKinematicsFileName; }
-	void setExternalLoadsModelKinematicsFileName(const std::string &aFileName) { _externalLoadsModelKinematicsFileName = aFileName; }
-	double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
-	void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
+    const std::string &getExternalLoadsModelKinematicsFileName() const { return _externalLoadsModelKinematicsFileName; }
+    void setExternalLoadsModelKinematicsFileName(const std::string &aFileName) { _externalLoadsModelKinematicsFileName = aFileName; }
+    double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
+    void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
 
-	void transformPointsExpressedInGroundToAppliedBodies(const Storage &kinematics, double startTime = -SimTK::Infinity, double endTime = SimTK::Infinity);
-	ExternalForce* transformPointExpressedInGroundToAppliedBody(const ExternalForce &exForce, const Storage &kinematics, double startTime, double endTime);
+    void transformPointsExpressedInGroundToAppliedBodies(const Storage &kinematics, double startTime = -SimTK::Infinity, double endTime = SimTK::Infinity);
+    ExternalForce* transformPointExpressedInGroundToAppliedBody(const ExternalForce &exForce, const Storage &kinematics, double startTime, double endTime);
 
 private:
-	void setNull();
-	void setupSerializedMembers();
-	std::string createIdentifier(OpenSim::Array<std::string>&oldFunctionNames, const Array<std::string>& labels);
+    void setNull();
+    void setupSerializedMembers();
+    std::string createIdentifier(OpenSim::Array<std::string>&oldFunctionNames, const Array<std::string>& labels);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	ExternalLoads& operator=(const ExternalLoads &otherExternalLoads);
+    ExternalLoads& operator=(const ExternalLoads &otherExternalLoads);
 #endif
 
 

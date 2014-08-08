@@ -48,63 +48,63 @@ OpenSim_DECLARE_ABSTRACT_OBJECT_T(Reference_, T, Object);
 // MEMBER VARIABLES
 //=============================================================================
 protected:
-	// DO NOT CACHE THE Reference VALUE AS A MEMBER VARIABLE
-	// In general the Reference is a function of the state, therefore it must be 
-	// evaluated.
-	//
-	// Concrete References can use Functions or Measures to supply values.
+    // DO NOT CACHE THE Reference VALUE AS A MEMBER VARIABLE
+    // In general the Reference is a function of the state, therefore it must be 
+    // evaluated.
+    //
+    // Concrete References can use Functions or Measures to supply values.
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	virtual ~Reference_() {}
-	
-	Reference_() {}
-	Reference_(std::string name) { setName(name); }
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    virtual ~Reference_() {}
+    
+    Reference_() {}
+    Reference_(std::string name) { setName(name); }
 
-	Reference_& operator=(const Reference_& source) {
+    Reference_& operator=(const Reference_& source) {
         if (&source != this)
             Super::operator=(source); 
         return *this;
     }
 
-	//--------------------------------------------------------------------------
-	// Reference Interface
-	//--------------------------------------------------------------------------
-	/** get the number of referettes (individual signals) in this Reference. All
-	    return arrays are gauranteed to be this length */
-	virtual int getNumRefs() const = 0;
-	/** get the time range for which the Reference is valid, which can and will be finite
-	    if reference encapsulates experimental data. By defualt they are infinite */
-	virtual SimTK::Vec2 getValidTimeRange() const { return SimTK::Vec2(-SimTK::Infinity, SimTK::Infinity); }
-	/** get the name(s) of the reference or its referettes */
-	virtual const SimTK::Array_<std::string>& getNames() const = 0;
-	/** get the value of the Reference as a funcion of the state */
-	virtual void getValues(const SimTK::State &s, SimTK::Array_<T> &values) const = 0;
-	/** get the weighting (importance) of meeting this Reference */
-	virtual void getWeights(const SimTK::State &s, SimTK::Array_<double>& weights) const = 0;
+    //--------------------------------------------------------------------------
+    // Reference Interface
+    //--------------------------------------------------------------------------
+    /** get the number of referettes (individual signals) in this Reference. All
+        return arrays are gauranteed to be this length */
+    virtual int getNumRefs() const = 0;
+    /** get the time range for which the Reference is valid, which can and will be finite
+        if reference encapsulates experimental data. By defualt they are infinite */
+    virtual SimTK::Vec2 getValidTimeRange() const { return SimTK::Vec2(-SimTK::Infinity, SimTK::Infinity); }
+    /** get the name(s) of the reference or its referettes */
+    virtual const SimTK::Array_<std::string>& getNames() const = 0;
+    /** get the value of the Reference as a funcion of the state */
+    virtual void getValues(const SimTK::State &s, SimTK::Array_<T> &values) const = 0;
+    /** get the weighting (importance) of meeting this Reference */
+    virtual void getWeights(const SimTK::State &s, SimTK::Array_<double>& weights) const = 0;
 
 
-	//--------------------------------------------------------------------------
-	// Convenience Interface
-	//--------------------------------------------------------------------------
-	/* getValues as above, but a copy is returned, which may be costly */
-	virtual SimTK::Array_<T> getValues(const SimTK::State &s) const {
-		SimTK::Array_<T> values(getNumRefs());
-		getValues(s, values);
-		return values;
-	}
-	/* getWeights as above, but a copy is returned, which may be costly */
-	virtual SimTK::Array_<double> getWeights(const SimTK::State &s) const {
-		SimTK::Array_<double> weights(getNumRefs());
-		getWeights(s, weights);
-		return weights;
-	}
-	
+    //--------------------------------------------------------------------------
+    // Convenience Interface
+    //--------------------------------------------------------------------------
+    /* getValues as above, but a copy is returned, which may be costly */
+    virtual SimTK::Array_<T> getValues(const SimTK::State &s) const {
+        SimTK::Array_<T> values(getNumRefs());
+        getValues(s, values);
+        return values;
+    }
+    /* getWeights as above, but a copy is returned, which may be costly */
+    virtual SimTK::Array_<double> getWeights(const SimTK::State &s) const {
+        SimTK::Array_<double> weights(getNumRefs());
+        getWeights(s, weights);
+        return weights;
+    }
+    
 //=============================================================================
 };	// END of class templatized Reference_<T>
 //=============================================================================

@@ -42,9 +42,9 @@ using namespace std;
  */
 PathActuator::PathActuator()
 {
-	setNull();
+    setNull();
     constructProperties();
-	finalizeFromProperties();
+    finalizeFromProperties();
 }
 
 //=============================================================================
@@ -56,7 +56,7 @@ PathActuator::PathActuator()
  */
 void PathActuator::setNull()
 {
-	setAuthors("Ajay Seth");
+    setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________
@@ -65,8 +65,8 @@ void PathActuator::setNull()
  */
 void PathActuator::constructProperties()
 {
-	constructProperty_GeometryPath(GeometryPath());
-	constructProperty_optimal_force(1.0);
+    constructProperty_GeometryPath(GeometryPath());
+    constructProperty_optimal_force(1.0);
 }
 
 
@@ -84,7 +84,7 @@ void PathActuator::constructProperties()
  */
 void PathActuator::setOptimalForce(double aOptimalForce)
 {
-	set_optimal_force(aOptimalForce);
+    set_optimal_force(aOptimalForce);
 }
 
 //_____________________________________________________________________________
@@ -95,7 +95,7 @@ void PathActuator::setOptimalForce(double aOptimalForce)
  */
 double PathActuator::getOptimalForce() const
 {
-	return get_optimal_force();
+    return get_optimal_force();
 }
 
 //-----------------------------------------------------------------------------
@@ -110,7 +110,7 @@ double PathActuator::getOptimalForce() const
  */
 double PathActuator::getLength(const SimTK::State& s) const
 {
-	return getGeometryPath().getLength(s);
+    return getGeometryPath().getLength(s);
 }
 //_____________________________________________________________________________
 /**
@@ -120,7 +120,7 @@ double PathActuator::getLength(const SimTK::State& s) const
  */
 double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
 {
-	return getGeometryPath().getLengtheningSpeed(s);
+    return getGeometryPath().getLengtheningSpeed(s);
 }
 //_____________________________________________________________________________
 /**
@@ -130,7 +130,7 @@ double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
  */
 double PathActuator::getStress( const SimTK::State& s) const
 {
-	return fabs(getForce(s)/get_optimal_force()); 
+    return fabs(getForce(s)/get_optimal_force()); 
 }
 
 
@@ -141,16 +141,16 @@ double PathActuator::getStress( const SimTK::State& s) const
  *
  */
 void PathActuator::addNewPathPoint(
-		 const std::string& proposedName, 
-		 OpenSim::Body& aBody, 
-		 const SimTK::Vec3& aPositionOnBody) {
-	// Create new PathPoint
-	PathPoint* newPathPoint = updGeometryPath()
+         const std::string& proposedName, 
+         OpenSim::Body& aBody, 
+         const SimTK::Vec3& aPositionOnBody) {
+    // Create new PathPoint
+    PathPoint* newPathPoint = updGeometryPath()
         .appendNewPathPoint(proposedName, aBody, aPositionOnBody);
-	// Set offset/position on owner body
-	newPathPoint->setName(proposedName);
-	for (int i=0; i<3; i++)	// Use interface that does not depend on state
-		newPathPoint->setLocationCoord(i, aPositionOnBody[i]);
+    // Set offset/position on owner body
+    newPathPoint->setName(proposedName);
+    for (int i=0; i<3; i++)	// Use interface that does not depend on state
+        newPathPoint->setLocationCoord(i, aPositionOnBody[i]);
 }
 
 //=============================================================================
@@ -163,11 +163,11 @@ void PathActuator::addNewPathPoint(
  */
 double PathActuator::computeActuation( const SimTK::State& s ) const
 {
-	if(!_model)
-		return 0.0;
+    if(!_model)
+        return 0.0;
 
-	// FORCE
-	return( getControl(s) * get_optimal_force() );
+    // FORCE
+    return( getControl(s) * get_optimal_force() );
 }
 
 
@@ -179,31 +179,31 @@ double PathActuator::computeActuation( const SimTK::State& s ) const
  * Apply the actuator force along path wrapping over and connecting rigid bodies
  */
 void PathActuator::computeForce( const SimTK::State& s, 
-							   SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							   SimTK::Vector& mobilityForces) const
+                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+                               SimTK::Vector& mobilityForces) const
 {
-	if(!_model) return;
+    if(!_model) return;
 
-	const GeometryPath &path = getGeometryPath();
+    const GeometryPath &path = getGeometryPath();
 
-	// compute path's lengthening speed if necessary
-	double speed = path.getLengtheningSpeed(s);
+    // compute path's lengthening speed if necessary
+    double speed = path.getLengtheningSpeed(s);
 
-	// the lengthening speed of this actutor is the "speed" of the actuator 
+    // the lengthening speed of this actutor is the "speed" of the actuator 
     // used to compute power
-	setSpeed(s, speed);
+    setSpeed(s, speed);
 
-	double force =0;
-	if( isForceOverriden(s) ) {
-		force = computeOverrideForce(s);
-	} else {
-		force = computeActuation(s);
-	}
+    double force =0;
+    if( isForceOverriden(s) ) {
+        force = computeOverrideForce(s);
+    } else {
+        force = computeActuation(s);
+    }
 
-	// the force of this actuator used to compute power
+    // the force of this actuator used to compute power
     setForce(s,  force );
 
-	path.addInEquivalentForces(s, force, bodyForces, mobilityForces);
+    path.addInEquivalentForces(s, force, bodyForces, mobilityForces);
 }
 
 /**
@@ -211,7 +211,7 @@ void PathActuator::computeForce( const SimTK::State& s,
  */
 double PathActuator::computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const
 {
-	return getGeometryPath().computeMomentArm(s, aCoord);
+    return getGeometryPath().computeMomentArm(s, aCoord);
 }
 
 //------------------------------------------------------------------------------
@@ -225,15 +225,15 @@ double PathActuator::computeMomentArm(const SimTK::State& s, Coordinate& aCoord)
  */
 void PathActuator::finalizeFromProperties()
 {
-	GeometryPath &path = updGeometryPath();
+    GeometryPath &path = updGeometryPath();
 
-	clearComponents();
-	addComponent(&path);
+    clearComponents();
+    addComponent(&path);
 
-	// Set owner here in case errors happen later so we can put useful message about responsible party.
-	path.setOwner(this);
+    // Set owner here in case errors happen later so we can put useful message about responsible party.
+    path.setOwner(this);
 
-	Super::finalizeFromProperties();
+    Super::finalizeFromProperties();
 }
 
 //------------------------------------------------------------------------------
@@ -243,13 +243,13 @@ void PathActuator::finalizeFromProperties()
 void PathActuator::realizeDynamics(const SimTK::State& state) const {
     Super::realizeDynamics(state); // Mandatory first line
 
-	// if this force is disabled OR it is being overidden (not computing dynamics)
-	// then don't compute the color of the path.
-	if(!isDisabled(state) && !isForceOverriden(state)){
-		const SimTK::Vec3 color = computePathColor(state);
-		if (!color.isNaN())
-			getGeometryPath().setColor(state, color);
-	}
+    // if this force is disabled OR it is being overidden (not computing dynamics)
+    // then don't compute the color of the path.
+    if(!isDisabled(state) && !isForceOverriden(state)){
+        const SimTK::Vec3 color = computePathColor(state);
+        if (!color.isNaN())
+            getGeometryPath().setColor(state, color);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -282,8 +282,8 @@ SimTK::Vec3 PathActuator::computePathColor(const SimTK::State& state) const {
  */
 void PathActuator::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	updGeometryPath().setOwner(this);
-	Super::updateFromXMLNode(aNode, versionNumber);
+    updGeometryPath().setOwner(this);
+    Super::updateFromXMLNode(aNode, versionNumber);
 }	
 
 //_____________________________________________________________________________
@@ -292,7 +292,7 @@ void PathActuator::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumb
  */
 const VisibleObject* PathActuator::getDisplayer() const
 { 
-	return getGeometryPath().getDisplayer(); 
+    return getGeometryPath().getDisplayer(); 
 }
 
 //_____________________________________________________________________________
@@ -301,7 +301,7 @@ const VisibleObject* PathActuator::getDisplayer() const
  */
 void PathActuator::updateDisplayer(const SimTK::State& s) const
 {
-	getGeometryPath().updateDisplayer(s);
+    getGeometryPath().updateDisplayer(s);
 }
 
 //=============================================================================
@@ -317,7 +317,7 @@ void PathActuator::updateDisplayer(const SimTK::State& s) const
  */
 void PathActuator::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	updGeometryPath().preScale(s, aScaleSet);
+    updGeometryPath().preScale(s, aScaleSet);
 }
 
 //_____________________________________________________________________________
@@ -329,7 +329,7 @@ void PathActuator::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 void PathActuator::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	updGeometryPath().scale(s, aScaleSet);
+    updGeometryPath().scale(s, aScaleSet);
 }
 
 //_____________________________________________________________________________
@@ -343,5 +343,5 @@ void PathActuator::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 void PathActuator::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	updGeometryPath().postScale(s, aScaleSet);
+    updGeometryPath().postScale(s, aScaleSet);
 }

@@ -38,10 +38,10 @@
 #include <OpenSim/Common/Array.h>
 
 #ifdef SWIG
-	#ifdef OSIMSIMMFILEWRITER_API
-		#undef OSIMSIMMFILEWRITER_API
-	#endif
-	#define OSIMSIMMFILEWRITER_API
+    #ifdef OSIMSIMMFILEWRITER_API
+        #undef OSIMSIMMFILEWRITER_API
+    #endif
+    #define OSIMSIMMFILEWRITER_API
 #endif
 
 namespace OpenSim {
@@ -67,20 +67,20 @@ class OSIMSIMMFILEWRITER_API SimmFileWriter
 // DATA
 //=============================================================================
 protected:
-	const Model* _model;
+    const Model* _model;
 
-	SimbodySimmModel* _simbodySimmModel;
+    SimbodySimmModel* _simbodySimmModel;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	SimmFileWriter();
-	SimmFileWriter(const Model& aModel);
-	virtual ~SimmFileWriter();
+    SimmFileWriter();
+    SimmFileWriter(const Model& aModel);
+    virtual ~SimmFileWriter();
 
    bool writeMuscleFile(const std::string& aFileName);
    bool writeJointFile(const std::string& aFileName);

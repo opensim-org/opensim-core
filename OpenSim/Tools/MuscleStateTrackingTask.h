@@ -52,31 +52,31 @@ protected:
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	MuscleStateTrackingTask();
-	MuscleStateTrackingTask(const MuscleStateTrackingTask &aTaskObject);
-	virtual ~MuscleStateTrackingTask();
+    MuscleStateTrackingTask();
+    MuscleStateTrackingTask(const MuscleStateTrackingTask &aTaskObject);
+    virtual ~MuscleStateTrackingTask();
 
 private:
-	void setNull();
-	void copyData(const MuscleStateTrackingTask &aTaskObject);
-	void setupProperties();
+    void setNull();
+    void copyData(const MuscleStateTrackingTask &aTaskObject);
+    void setupProperties();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 
 #ifndef SWIG
-	MuscleStateTrackingTask& operator=(const MuscleStateTrackingTask &aTaskObject) ;
+    MuscleStateTrackingTask& operator=(const MuscleStateTrackingTask &aTaskObject) ;
 #endif
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 
 //=============================================================================
 };	// END of class MuscleStateTrackingTask

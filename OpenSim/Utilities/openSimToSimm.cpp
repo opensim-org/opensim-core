@@ -51,51 +51,51 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
  */
 int main(int argc,char **argv)
 {
-	std::cout << "openSimToSimm, " << OpenSim::GetVersionAndDate() << std::endl;
+    std::cout << "openSimToSimm, " << OpenSim::GetVersionAndDate() << std::endl;
 
    Object::RegisterType(SimbodyEngine());
-	SimbodyEngine::registerTypes();
+    SimbodyEngine::registerTypes();
    Object::RegisterType(SimmKinematicsEngine());
-	SimmKinematicsEngine::registerTypes();
-	Object::RegisterType(Schutte1993Muscle());
-	Object::RegisterType(Thelen2003Muscle());
-	Object::RegisterType(Delp1990Muscle());
+    SimmKinematicsEngine::registerTypes();
+    Object::RegisterType(Schutte1993Muscle());
+    Object::RegisterType(Thelen2003Muscle());
+    Object::RegisterType(Delp1990Muscle());
 
-	// PARSE COMMAND LINE
-	string inName = "";
-	string jntName = "";
-	string mslName = "";
+    // PARSE COMMAND LINE
+    string inName = "";
+    string jntName = "";
+    string mslName = "";
 
-	for(int i=1; i<argc; i++) {
-		string option = argv[i];
+    for(int i=1; i<argc; i++) {
+        string option = argv[i];
 
-		// PRINT THE USAGE OPTIONS
-		if((option=="-help")||(option=="-h")||(option=="-Help")||(option=="-H")||
-			(option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
-			PrintUsage(argv[0], cout);
-			return(0);
-		}
-		else if(option=="-x" || option=="-X") inName = argv[++i];
-		else if(option=="-j" || option=="-J") jntName = argv[++i];
-		else if(option=="-m" || option=="-M") mslName = argv[++i];
-	}
+        // PRINT THE USAGE OPTIONS
+        if((option=="-help")||(option=="-h")||(option=="-Help")||(option=="-H")||
+            (option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
+            PrintUsage(argv[0], cout);
+            return(0);
+        }
+        else if(option=="-x" || option=="-X") inName = argv[++i];
+        else if(option=="-j" || option=="-J") jntName = argv[++i];
+        else if(option=="-m" || option=="-M") mslName = argv[++i];
+    }
 
-	if(inName=="" || jntName == "") {
-		PrintUsage(argv[0], cout);
-		return(-1);
-	}
+    if(inName=="" || jntName == "") {
+        PrintUsage(argv[0], cout);
+        return(-1);
+    }
 
-	try {
-		Model model(inName);
-		model.setup();
+    try {
+        Model model(inName);
+        model.setup();
 
-		SimmFileWriter sfw(&model);
-		if(jntName!="") sfw.writeJointFile(jntName);
-		if(mslName!="") sfw.writeMuscleFile(mslName);
-	}
-	catch(Exception &x) {
-		x.print(cout);
-	}
+        SimmFileWriter sfw(&model);
+        if(jntName!="") sfw.writeJointFile(jntName);
+        if(mslName!="") sfw.writeMuscleFile(mslName);
+    }
+    catch(Exception &x) {
+        x.print(cout);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -103,6 +103,6 @@ int main(int argc,char **argv)
  */
 void PrintUsage(const char *aProgName, ostream &aOStream)
 {
-	string progName=IO::GetFileNameFromURI(aProgName);
-	aOStream << "Usage: " << progName << " -x xml_in -j joints_out [ -m muscles_out ]" << std::endl;
+    string progName=IO::GetFileNameFromURI(aProgName);
+    aOStream << "Usage: " << progName << " -x xml_in -j joints_out [ -m muscles_out ]" << std::endl;
 }

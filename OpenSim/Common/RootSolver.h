@@ -67,28 +67,28 @@ class OSIMCOMMON_API RootSolver
 // MEMBER VARIABLES
 //=============================================================================
 private:
-	
-	VectorFunctionUncoupledNxN *_function;
+    
+    VectorFunctionUncoupledNxN *_function;
 
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	RootSolver(VectorFunctionUncoupledNxN *aFunc);
-	virtual ~RootSolver();
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    RootSolver(VectorFunctionUncoupledNxN *aFunc);
+    virtual ~RootSolver();
 private:
-	void setNull();
+    void setNull();
 
-	//--------------------------------------------------------------------------
-	// SOLVE
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // SOLVE
+    //--------------------------------------------------------------------------
 public:
-	Array<double> solve(const SimTK::State& s, const Array<double> &ax,const Array<double> &bx,
-		const Array<double> &tol);
+    Array<double> solve(const SimTK::State& s, const Array<double> &ax,const Array<double> &bx,
+        const Array<double> &tol);
 
 //=============================================================================
 };	// END class RootSolver

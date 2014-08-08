@@ -54,50 +54,50 @@ private:
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	explicit MomentArmSolver(const Model& model);
-	virtual ~MomentArmSolver() {}
+    explicit MomentArmSolver(const Model& model);
+    virtual ~MomentArmSolver() {}
 
-	/** Solve for the effective moment-arm about the all coordinates (q) based 
+    /** Solve for the effective moment-arm about the all coordinates (q) based 
         on the geometric distribution of forces described by a GeometryPath. 
-	@param  state			    current state of the model
-	@param  coordinate			Coordinate about which we want the moment-arm
-	@param  path	            GeometryPath for which to calculate a moment-arm
-	@return ma					resulting moment-arm as a double
-	*/
-	double solve(const SimTK::State& state, const Coordinate &coordinate,
-		const GeometryPath &path) const;
+    @param  state			    current state of the model
+    @param  coordinate			Coordinate about which we want the moment-arm
+    @param  path	            GeometryPath for which to calculate a moment-arm
+    @return ma					resulting moment-arm as a double
+    */
+    double solve(const SimTK::State& state, const Coordinate &coordinate,
+        const GeometryPath &path) const;
 
-	/** Solve for the effective moment-arm about the specified coordinate based 
-		on the geometric distribution of forces described by the list of 
-		PointForceDirections. 
-	@param  state				current state of the model
-	@param  coordinate			Coordinate about which we want the moment-arm
-	@param  pfds	            PointForceDirections applied to the model
-	@return ma					resulting moment-arm as a double
-	*/
-	double solve(const SimTK::State& state, const Coordinate &coordinate, 
-		const Array<PointForceDirection *> &pfds) const;
+    /** Solve for the effective moment-arm about the specified coordinate based 
+        on the geometric distribution of forces described by the list of 
+        PointForceDirections. 
+    @param  state				current state of the model
+    @param  coordinate			Coordinate about which we want the moment-arm
+    @param  pfds	            PointForceDirections applied to the model
+    @return ma					resulting moment-arm as a double
+    */
+    double solve(const SimTK::State& state, const Coordinate &coordinate, 
+        const Array<PointForceDirection *> &pfds) const;
 
 private:
-	// Internal state of the solver initialized as a copy of the default state
-	mutable SimTK::State _stateCopy;
+    // Internal state of the solver initialized as a copy of the default state
+    mutable SimTK::State _stateCopy;
 
-	// Keep preallocated vector of the generalized forces
-	mutable SimTK::Vector _generalizedForces;
+    // Keep preallocated vector of the generalized forces
+    mutable SimTK::Vector _generalizedForces;
 
-	// Keep preallocated vector of the Body_Forces
-	mutable SimTK::Vector_<SimTK::SpatialVec> _bodyForces;
+    // Keep preallocated vector of the Body_Forces
+    mutable SimTK::Vector_<SimTK::SpatialVec> _bodyForces;
 
-	// Keep preallocated vector of the coupling constraint factors
-	mutable SimTK::Vector _coupling;
+    // Keep preallocated vector of the coupling constraint factors
+    mutable SimTK::Vector _coupling;
 
-	// compute vector of constraint coupling factors
-	SimTK::Vector computeCouplingVector(SimTK::State &state, 
-		const Coordinate &coordinate) const;
+    // compute vector of constraint coupling factors
+    SimTK::Vector computeCouplingVector(SimTK::State &state, 
+        const Coordinate &coordinate) const;
 //=============================================================================
 };	// END of class MomentArmSolver
 //=============================================================================

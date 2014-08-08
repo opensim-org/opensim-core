@@ -54,16 +54,16 @@ PistonActuator::~PistonActuator()
  *
  */
 PistonActuator::PistonActuator( string aBodyNameA, string aBodyNameB) :
-	Actuator(),
-	_bodyA(NULL),
-	_bodyB(NULL)
+    Actuator(),
+    _bodyA(NULL),
+    _bodyB(NULL)
 {
-	constructProperties();
+    constructProperties();
 
-	if (_model) {
-		_bodyA = &_model->updBodySet().get(get_bodyA());
-		_bodyB = &_model->updBodySet().get(get_bodyB());
-	} 
+    if (_model) {
+        _bodyA = &_model->updBodySet().get(get_bodyA());
+        _bodyB = &_model->updBodySet().get(get_bodyB());
+    } 
 }
 
 //=============================================================================
@@ -83,16 +83,16 @@ void PistonActuator::setNull()
  */
 void PistonActuator::constructProperties()
 {
-	setAuthors("Matt S. DeMers");
-	SimTK::Vec3 x(0.0, 0.0, 0.0);
+    setAuthors("Matt S. DeMers");
+    SimTK::Vec3 x(0.0, 0.0, 0.0);
 
-	constructProperty_bodyA("");
-	constructProperty_bodyB("");
+    constructProperty_bodyA("");
+    constructProperty_bodyB("");
 
-	constructProperty_points_are_global(false);
-	constructProperty_pointA(x);
-	constructProperty_pointB(x);
-	constructProperty_optimal_force(1.0);
+    constructProperty_points_are_global(false);
+    constructProperty_pointA(x);
+    constructProperty_pointB(x);
+    constructProperty_optimal_force(1.0);
 }
 
 //=============================================================================
@@ -109,9 +109,9 @@ void PistonActuator::constructProperties()
  */
 void PistonActuator::setBodyA(Body* aBody)
 {
-	_bodyA = aBody;
-	if(aBody)
-		set_bodyA(aBody->getName());
+    _bodyA = aBody;
+    if(aBody)
+        set_bodyA(aBody->getName());
 }
 //_____________________________________________________________________________
 /**
@@ -122,9 +122,9 @@ void PistonActuator::setBodyA(Body* aBody)
  */
 void PistonActuator::setBodyB(Body* aBody)
 {
-	_bodyB = aBody;
-	if(aBody)
-		set_bodyB(aBody->getName());
+    _bodyB = aBody;
+    if(aBody)
+        set_bodyB(aBody->getName());
 }
 //_____________________________________________________________________________
 /**
@@ -135,7 +135,7 @@ void PistonActuator::setBodyB(Body* aBody)
  */
 Body* PistonActuator::getBodyA() const
 {
-	return(_bodyA);
+    return(_bodyA);
 }
 //_____________________________________________________________________________
 /**
@@ -146,7 +146,7 @@ Body* PistonActuator::getBodyA() const
  */
 Body* PistonActuator::getBodyB() const
 {
-	return(_bodyB);
+    return(_bodyB);
 }
 
 //-----------------------------------------------------------------------------
@@ -160,7 +160,7 @@ Body* PistonActuator::getBodyB() const
  */
 void PistonActuator::setOptimalForce(double aOptimalForce)
 {
-	set_optimal_force(aOptimalForce);
+    set_optimal_force(aOptimalForce);
 }
 //_____________________________________________________________________________
 /**
@@ -170,7 +170,7 @@ void PistonActuator::setOptimalForce(double aOptimalForce)
  */
 double PistonActuator::getOptimalForce() const
 {
-	return(get_optimal_force());
+    return(get_optimal_force());
 }
 //_____________________________________________________________________________
 /**
@@ -180,7 +180,7 @@ double PistonActuator::getOptimalForce() const
  */
 double PistonActuator::getStress( const SimTK::State& s) const
 {
-	return fabs(getForce(s)/get_optimal_force()); 
+    return fabs(getForce(s)/get_optimal_force()); 
 }
 
 
@@ -197,10 +197,10 @@ double PistonActuator::getStress( const SimTK::State& s) const
 
 double PistonActuator::computeActuation( const SimTK::State& s ) const
 {
-	if(!_model) return 0;
+    if(!_model) return 0;
 
-	// FORCE
-	return ( getControl(s) * getOptimalForce() );
+    // FORCE
+    return ( getControl(s) * getOptimalForce() );
 }
 
 
@@ -215,49 +215,49 @@ double PistonActuator::computeActuation( const SimTK::State& s ) const
  * @param s current SimTK::State
  */
 void PistonActuator::computeForce(const SimTK::State& s, 
-									SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-									SimTK::Vector& generalizedForces) const
+                                    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+                                    SimTK::Vector& generalizedForces) const
 {
-	if(!_model) return;
-	const SimbodyEngine& engine = getModel().getSimbodyEngine();
-	
-	if(_bodyA ==NULL || _bodyB ==NULL)
-		return;
-	
-	/* store _pointA and _pointB positions in the global frame.  If not
-	** alread in the body frame, transform _pointA and _pointB into their
-	** respective body frames. */
+    if(!_model) return;
+    const SimbodyEngine& engine = getModel().getSimbodyEngine();
+    
+    if(_bodyA ==NULL || _bodyB ==NULL)
+        return;
+    
+    /* store _pointA and _pointB positions in the global frame.  If not
+    ** alread in the body frame, transform _pointA and _pointB into their
+    ** respective body frames. */
 
-	SimTK::Vec3 pointA_inGround, pointB_inGround;
+    SimTK::Vec3 pointA_inGround, pointB_inGround;
 
-	SimTK::Vec3 _pointA = get_pointA();
-	SimTK::Vec3 _pointB = get_pointB();
-	if (get_points_are_global())
-	{
-		pointA_inGround = _pointA;
-		pointB_inGround = _pointB;
-		engine.transformPosition(s, engine.getGroundBody(), _pointA, *_bodyA, _pointA);
-		engine.transformPosition(s, engine.getGroundBody(), _pointB, *_bodyB, _pointB);
-	}
-	else
-	{
-		engine.transformPosition(s, *_bodyA, _pointA, engine.getGroundBody(), pointA_inGround);
-		engine.transformPosition(s, *_bodyB, _pointB, engine.getGroundBody(), pointB_inGround);
-	}
+    SimTK::Vec3 _pointA = get_pointA();
+    SimTK::Vec3 _pointB = get_pointB();
+    if (get_points_are_global())
+    {
+        pointA_inGround = _pointA;
+        pointB_inGround = _pointB;
+        engine.transformPosition(s, engine.getGroundBody(), _pointA, *_bodyA, _pointA);
+        engine.transformPosition(s, engine.getGroundBody(), _pointB, *_bodyB, _pointB);
+    }
+    else
+    {
+        engine.transformPosition(s, *_bodyA, _pointA, engine.getGroundBody(), pointA_inGround);
+        engine.transformPosition(s, *_bodyB, _pointB, engine.getGroundBody(), pointB_inGround);
+    }
 
-	// find the dirrection along which the actuator applies its force
-	SimTK::Vec3 r = pointA_inGround - pointB_inGround;
+    // find the dirrection along which the actuator applies its force
+    SimTK::Vec3 r = pointA_inGround - pointB_inGround;
 
-	SimTK::UnitVec3 direction(r);
+    SimTK::UnitVec3 direction(r);
 
-	// find the force magnitude and set it. then form the force vector
-	double forceMagnitude = computeActuation(s);
-	setForce(s,  forceMagnitude );
-	SimTK::Vec3 force = forceMagnitude*direction;
+    // find the force magnitude and set it. then form the force vector
+    double forceMagnitude = computeActuation(s);
+    setForce(s,  forceMagnitude );
+    SimTK::Vec3 force = forceMagnitude*direction;
 
-	// appy equal and opposite forces to the bodies
-	applyForceToPoint(s, *_bodyA, _pointA, force, bodyForces);
-	applyForceToPoint(s, *_bodyB, _pointB, -force, bodyForces);
+    // appy equal and opposite forces to the bodies
+    applyForceToPoint(s, *_bodyA, _pointA, force, bodyForces);
+    applyForceToPoint(s, *_bodyB, _pointB, -force, bodyForces);
 }
 //_____________________________________________________________________________
 /**
@@ -266,12 +266,12 @@ void PistonActuator::computeForce(const SimTK::State& s,
 void PistonActuator::
 connectToModel(Model& aModel)
 {
-	Super::connectToModel( aModel);
+    Super::connectToModel( aModel);
 
-	if (_model) {
-		_bodyA = &_model->updBodySet().get(upd_bodyA());
-		_bodyB = &_model->updBodySet().get(upd_bodyB());
-	}
+    if (_model) {
+        _bodyA = &_model->updBodySet().get(upd_bodyA());
+        _bodyB = &_model->updBodySet().get(upd_bodyB());
+    }
 }
 
 //=============================================================================
@@ -291,8 +291,8 @@ connectToModel(Model& aModel)
 void PistonActuator::
 updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	Actuator::updateFromXMLNode(aNode, versionNumber);
-	setBodyA(_bodyA);
-	setBodyB(_bodyB);
-	setOptimalForce(upd_optimal_force());
+    Actuator::updateFromXMLNode(aNode, versionNumber);
+    setBodyA(_bodyA);
+    setBodyB(_bodyB);
+    setOptimalForce(upd_optimal_force());
 }	

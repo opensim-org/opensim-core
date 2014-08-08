@@ -36,19 +36,19 @@ LINK_DIRECTORIES(${OPENSIM_LIBS_DIR})
 
 # SimmKinematicsEngine library only needed for SimmFileWriter...
 LINK_LIBRARIES(
-	debug osimCommon_d optimized osimCommon
-	debug osimSimulation_d optimized osimSimulation
-	debug osimAnalyses_d optimized osimAnalyses
-	debug osimActuators_d optimized osimActuators
-	debug  ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} optimized   ${NameSpace}SimTKcommon
-	debug  ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKmath
-	debug ${NameSpace}SimTKsimbody${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKsimbody
+    debug osimCommon_d optimized osimCommon
+    debug osimSimulation_d optimized osimSimulation
+    debug osimAnalyses_d optimized osimAnalyses
+    debug osimActuators_d optimized osimActuators
+    debug  ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} optimized   ${NameSpace}SimTKcommon
+    debug  ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKmath
+    debug ${NameSpace}SimTKsimbody${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKsimbody
 )
 
 ADD_LIBRARY(${PLUGIN_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	SET(CMAKE_INSTALL_PREFIX ${OPENSIM_INSTALL_DIR}/ CACHE PATH "Install path prefix." FORCE)
+    SET(CMAKE_INSTALL_PREFIX ${OPENSIM_INSTALL_DIR}/ CACHE PATH "Install path prefix." FORCE)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 ## MARK_AS_ADVANCED(CMAKE_INSTALL_PREFIX)
@@ -56,8 +56,8 @@ MARK_AS_ADVANCED(EXECUTABLE_OUTPUT_PATH)
 MARK_AS_ADVANCED(LIBRARY_OUTPUT_PATH)
 
 SET_TARGET_PROPERTIES(
-	${PLUGIN_NAME} PROPERTIES
-	DEFINE_SYMBOL ${EXPORT_MACRO}
-	PROJECT_LABEL "Libraries - ${PLUGIN_NAME}")
+    ${PLUGIN_NAME} PROPERTIES
+    DEFINE_SYMBOL ${EXPORT_MACRO}
+    PROJECT_LABEL "Libraries - ${PLUGIN_NAME}")
 
 INSTALL_TARGETS(/plugins RUNTIME_DIRECTORY /plugins  ${PLUGIN_NAME})

@@ -36,60 +36,60 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
  */
 int main(int argc,char **argv)
 {
-	//----------------------
-	// Surrounding try block
-	//----------------------
-	try {
+    //----------------------
+    // Surrounding try block
+    //----------------------
+    try {
 
-	// PARSE COMMAND LINE
-	string option = "";
-	string inputFileName = "";
-	string outputFileName = "";
-	if(argc<2) {
-		PrintUsage(argv[0], cout);
-		return(-1);
-	}
-	inputFileName = string(argv[1]);
-	outputFileName = (argc == 2)?(outputFileName=inputFileName): string(argv[2]);
-	// ERROR CHECK
-	if(inputFileName=="") {
-		cout<<"\n\versionUpdate.exe: ERROR- An input file must be specified.\n";
-		PrintUsage(argv[0], cout);
-		return(-1);
-	}
-	
-	string::size_type extSep = inputFileName.rfind(".");
+    // PARSE COMMAND LINE
+    string option = "";
+    string inputFileName = "";
+    string outputFileName = "";
+    if(argc<2) {
+        PrintUsage(argv[0], cout);
+        return(-1);
+    }
+    inputFileName = string(argv[1]);
+    outputFileName = (argc == 2)?(outputFileName=inputFileName): string(argv[2]);
+    // ERROR CHECK
+    if(inputFileName=="") {
+        cout<<"\n\versionUpdate.exe: ERROR- An input file must be specified.\n";
+        PrintUsage(argv[0], cout);
+        return(-1);
+    }
+    
+    string::size_type extSep = inputFileName.rfind(".");
 
-	if (extSep == string::npos) {
-		cout<<"\n\versionUpdate.exe: ERROR- Unknown file type encontered. File extension must be specified.\n";
-		PrintUsage(argv[0], cout);
-		return 1;// if '_fileName' contains path information...
-	}
-	std::string extension  = inputFileName.substr(extSep);
-	if (extension == ".sto"){
-		Storage stg(inputFileName);
-		stg.print(outputFileName);
-		return (0);
-	}
-	if (extension != ".xml" && extension != ".osim") {
-		cout<<"\n\versionUpdate.exe: ERROR- Unknown file type encontered. Only .xml, .osim and .sto files are supported.\n";
-		PrintUsage(argv[0], cout);
-		return 1;// if '_fileName' contains path information...
-	}
+    if (extSep == string::npos) {
+        cout<<"\n\versionUpdate.exe: ERROR- Unknown file type encontered. File extension must be specified.\n";
+        PrintUsage(argv[0], cout);
+        return 1;// if '_fileName' contains path information...
+    }
+    std::string extension  = inputFileName.substr(extSep);
+    if (extension == ".sto"){
+        Storage stg(inputFileName);
+        stg.print(outputFileName);
+        return (0);
+    }
+    if (extension != ".xml" && extension != ".osim") {
+        cout<<"\n\versionUpdate.exe: ERROR- Unknown file type encontered. Only .xml, .osim and .sto files are supported.\n";
+        PrintUsage(argv[0], cout);
+        return 1;// if '_fileName' contains path information...
+    }
 
-	Object* newObject = Object::makeObjectFromFile(inputFileName);
+    Object* newObject = Object::makeObjectFromFile(inputFileName);
 
-	newObject->print(outputFileName);
+    newObject->print(outputFileName);
 
-	//----------------------------
-	// Catch any thrown exceptions
-	//----------------------------
-	} catch(const Exception& x) {
-		x.print(cout);
-		return(-1);
-	}
-	//----------------------------
-	return(0);
+    //----------------------------
+    // Catch any thrown exceptions
+    //----------------------------
+    } catch(const Exception& x) {
+        x.print(cout);
+        return(-1);
+    }
+    //----------------------------
+    return(0);
 }
 
 
@@ -99,11 +99,11 @@ int main(int argc,char **argv)
  */
 void PrintUsage(const char *aProgName, ostream &aOStream)
 {
-	string progName=IO::GetFileNameFromURI(aProgName);
-	aOStream<<"\n\n"<<progName<<":\n"<<GetVersionAndDate()<<" inputFile outputFile\n\n";
-	aOStream<<"Option              Argument         Action / Notes\n";
-	aOStream<<"------              --------         --------------\n";
-	aOStream<<"inputFileName		Specify the name of the OpenSim xml file (.xml, .osim) to perform versionUpdate on.\n";
-	aOStream<<"outputFileName		Specify the name of the output file.\n";
+    string progName=IO::GetFileNameFromURI(aProgName);
+    aOStream<<"\n\n"<<progName<<":\n"<<GetVersionAndDate()<<" inputFile outputFile\n\n";
+    aOStream<<"Option              Argument         Action / Notes\n";
+    aOStream<<"------              --------         --------------\n";
+    aOStream<<"inputFileName		Specify the name of the OpenSim xml file (.xml, .osim) to perform versionUpdate on.\n";
+    aOStream<<"outputFileName		Specify the name of the output file.\n";
 }
 

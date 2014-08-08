@@ -49,20 +49,20 @@ void SegmentedQuinticBezierToolkit::
     printMatrixToFile(const SimTK::Vector& col0, 
     const SimTK::Matrix& data, std::string& filename)
 {
-	
+    
     ofstream datafile;
-	datafile.open(filename.c_str());
+    datafile.open(filename.c_str());
 
-	for(int i = 0; i < data.nrow(); i++){
-		datafile << col0(i) << ",";
-		for(int j = 0; j < data.ncol(); j++){
-			if(j<data.ncol()-1)
-				datafile << data(i,j) << ",";
-			else
-				datafile << data(i,j) << "\n";
-		}	
-	}
-	datafile.close();
+    for(int i = 0; i < data.nrow(); i++){
+        datafile << col0(i) << ",";
+        for(int j = 0; j < data.ncol(); j++){
+            if(j<data.ncol()-1)
+                datafile << data(i,j) << ",";
+            else
+                datafile << data(i,j) << "\n";
+        }	
+    }
+    datafile.close();
 } 
 
 void SegmentedQuinticBezierToolkit::
@@ -884,12 +884,12 @@ int SegmentedQuinticBezierToolkit::calcIndex(double x,
     int idx = 0;
     bool flag_found = false;
 
-	int n = bezierPtsX.size(); 
+    int n = bezierPtsX.size(); 
     for(int i=0; i<n; i++){
         if( x >= bezierPtsX[i](0) && x < bezierPtsX[i](5) ){
             idx = i;
             flag_found = true;
-			break; 
+            break; 
         }
     }
 

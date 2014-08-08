@@ -53,9 +53,9 @@ VectorFunctionUncoupledNxN::~VectorFunctionUncoupledNxN()
  */
 VectorFunctionUncoupledNxN::
 VectorFunctionUncoupledNxN() :
-	VectorFunction(0,0)
+    VectorFunction(0,0)
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -63,9 +63,9 @@ VectorFunctionUncoupledNxN() :
  */
 VectorFunctionUncoupledNxN::
 VectorFunctionUncoupledNxN(int aN) :
-	VectorFunction(aN,aN)
+    VectorFunction(aN,aN)
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -75,12 +75,12 @@ VectorFunctionUncoupledNxN(int aN) :
  */
 VectorFunctionUncoupledNxN::
 VectorFunctionUncoupledNxN(const VectorFunctionUncoupledNxN &aVectorFunction) :
-	VectorFunction(aVectorFunction)
+    VectorFunction(aVectorFunction)
 {
-	setNull();
+    setNull();
 
-	// ASSIGN
-	setEqual(aVectorFunction);
+    // ASSIGN
+    setEqual(aVectorFunction);
 }
 
 
@@ -120,13 +120,13 @@ setEqual(const VectorFunctionUncoupledNxN &aVectorFunction)
 VectorFunctionUncoupledNxN& VectorFunctionUncoupledNxN::
 operator=(const VectorFunctionUncoupledNxN &aVectorFunction)
 {
-	// BASE CLASS
-	VectorFunction::operator=(aVectorFunction);
+    // BASE CLASS
+    VectorFunction::operator=(aVectorFunction);
 
-	// DATA
-	setEqual(aVectorFunction);
+    // DATA
+    setEqual(aVectorFunction);
 
-	return(*this);
+    return(*this);
 }
 
 

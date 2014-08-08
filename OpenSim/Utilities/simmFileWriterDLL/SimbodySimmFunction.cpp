@@ -96,56 +96,56 @@ SimbodySimmFunction::SimbodySimmFunction(const OpenSim::Function* aFunction, int
  */
 void SimbodySimmFunction::write(ofstream& aStream)
 {
-	XYFunctionInterface xyFunc((OpenSim::Function*)_function);
+    XYFunctionInterface xyFunc((OpenSim::Function*)_function);
 
-	if (xyFunc.getFunctionType() == XYFunctionInterface::typeGCVSpline) {
-		aStream << "begingcvspline f" << _userNumber << endl;
-		for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
-			double x = xyFunc.getX(i);
-			if (_XType == Coordinate::Rotational)
-				x *= 180.0 / SimTK::Pi;
-			double y = xyFunc.getY(i);
-			if (_YType == Coordinate::Rotational)
-				y *= 180.0 / SimTK::Pi;
-			aStream << "(" << x << "," << y << ")" << endl;
-		}
-		aStream << "endgcvspline" << endl << endl;
-	} else if (xyFunc.getFunctionType() == XYFunctionInterface::typeNatCubicSpline) {
-		aStream << "beginnaturalcubicspline f" << _userNumber << endl;
-		for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
-			double x = xyFunc.getX(i);
-			if (_XType == Coordinate::Rotational)
-				x *= 180.0 / SimTK::Pi;
-			double y = xyFunc.getY(i);
-			if (_YType == Coordinate::Rotational)
-				y *= 180.0 / SimTK::Pi;
-			aStream << "(" << x << "," << y << ")" << endl;
-		}
-		aStream << "endnaturalcubicspline" << endl << endl;
-	} else if (xyFunc.getFunctionType() == XYFunctionInterface::typePiecewiseLinearFunction ||
-		        xyFunc.getFunctionType() == XYFunctionInterface::typeLinearFunction) {
-		aStream << "beginlinearfunction f" << _userNumber << endl;
-		for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
-			double x = xyFunc.getX(i);
-			if (_XType == Coordinate::Rotational)
-				x *= 180.0 / SimTK::Pi;
-			double y = xyFunc.getY(i);
-			if (_YType == Coordinate::Rotational)
-				y *= 180.0 / SimTK::Pi;
-			aStream << "(" << x << "," << y << ")" << endl;
-		}
-		aStream << "endlinearfunction" << endl << endl;
-	} else if (xyFunc.getFunctionType() == XYFunctionInterface::typeStepFunction) {
-		aStream << "beginstepfunction f" << _userNumber << endl;
-		for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
-			double x = xyFunc.getX(i);
-			if (_XType == Coordinate::Rotational)
-				x *= 180.0 / SimTK::Pi;
-			double y = xyFunc.getY(i);
-			if (_YType == Coordinate::Rotational)
-				y *= 180.0 / SimTK::Pi;
-			aStream << "(" << x << "," << y << ")" << endl;
-		}
-		aStream << "endstepfunction" << endl << endl;
-	}
+    if (xyFunc.getFunctionType() == XYFunctionInterface::typeGCVSpline) {
+        aStream << "begingcvspline f" << _userNumber << endl;
+        for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
+            double x = xyFunc.getX(i);
+            if (_XType == Coordinate::Rotational)
+                x *= 180.0 / SimTK::Pi;
+            double y = xyFunc.getY(i);
+            if (_YType == Coordinate::Rotational)
+                y *= 180.0 / SimTK::Pi;
+            aStream << "(" << x << "," << y << ")" << endl;
+        }
+        aStream << "endgcvspline" << endl << endl;
+    } else if (xyFunc.getFunctionType() == XYFunctionInterface::typeNatCubicSpline) {
+        aStream << "beginnaturalcubicspline f" << _userNumber << endl;
+        for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
+            double x = xyFunc.getX(i);
+            if (_XType == Coordinate::Rotational)
+                x *= 180.0 / SimTK::Pi;
+            double y = xyFunc.getY(i);
+            if (_YType == Coordinate::Rotational)
+                y *= 180.0 / SimTK::Pi;
+            aStream << "(" << x << "," << y << ")" << endl;
+        }
+        aStream << "endnaturalcubicspline" << endl << endl;
+    } else if (xyFunc.getFunctionType() == XYFunctionInterface::typePiecewiseLinearFunction ||
+                xyFunc.getFunctionType() == XYFunctionInterface::typeLinearFunction) {
+        aStream << "beginlinearfunction f" << _userNumber << endl;
+        for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
+            double x = xyFunc.getX(i);
+            if (_XType == Coordinate::Rotational)
+                x *= 180.0 / SimTK::Pi;
+            double y = xyFunc.getY(i);
+            if (_YType == Coordinate::Rotational)
+                y *= 180.0 / SimTK::Pi;
+            aStream << "(" << x << "," << y << ")" << endl;
+        }
+        aStream << "endlinearfunction" << endl << endl;
+    } else if (xyFunc.getFunctionType() == XYFunctionInterface::typeStepFunction) {
+        aStream << "beginstepfunction f" << _userNumber << endl;
+        for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
+            double x = xyFunc.getX(i);
+            if (_XType == Coordinate::Rotational)
+                x *= 180.0 / SimTK::Pi;
+            double y = xyFunc.getY(i);
+            if (_YType == Coordinate::Rotational)
+                y *= 180.0 / SimTK::Pi;
+            aStream << "(" << x << "," << y << ")" << endl;
+        }
+        aStream << "endstepfunction" << endl << endl;
+    }
 }

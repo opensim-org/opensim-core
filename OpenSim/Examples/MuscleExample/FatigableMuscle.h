@@ -59,7 +59,7 @@ namespace OpenSim {
  */
 class FatigableMuscle : public Millard2012EquilibriumMuscle {
 OpenSim_DECLARE_CONCRETE_OBJECT(FatigableMuscle, 
-								Millard2012EquilibriumMuscle);
+                                Millard2012EquilibriumMuscle);
 public:
 //=============================================================================
 // PROPERTIES
@@ -71,9 +71,9 @@ public:
         "percentage of active motor units that fatigue in unit time");
     OpenSim_DECLARE_PROPERTY(recovery_factor, double, 
         "percentage of fatigued motor units that recover in unit time");
-	OpenSim_DECLARE_PROPERTY(default_target_activation, double,
-		"default state value used to initialize the muscle's target activation");
-	OpenSim_DECLARE_PROPERTY(default_active_motor_units, double, 
+    OpenSim_DECLARE_PROPERTY(default_target_activation, double,
+        "default state value used to initialize the muscle's target activation");
+    OpenSim_DECLARE_PROPERTY(default_active_motor_units, double, 
         "default state value for the fraction of motor units that are active");
     OpenSim_DECLARE_PROPERTY(default_fatigued_motor_units, double, 
         "default state value for the fraction of motor units that are fatigued");
@@ -83,82 +83,82 @@ public:
 //=============================================================================
 // METHODS
 //=============================================================================
-	//-------------------------------------------------------------------------
-	// CONSTRUCTION
-	//-------------------------------------------------------------------------
-	FatigableMuscle();
-	FatigableMuscle(const std::string &name, double maxIsometricForce, 
-					double optimalFiberLength, double tendonSlackLength,
-					double pennationAngle, double fatigueFactor, 
-					double recoveryFactor);
+    //-------------------------------------------------------------------------
+    // CONSTRUCTION
+    //-------------------------------------------------------------------------
+    FatigableMuscle();
+    FatigableMuscle(const std::string &name, double maxIsometricForce, 
+                    double optimalFiberLength, double tendonSlackLength,
+                    double pennationAngle, double fatigueFactor, 
+                    double recoveryFactor);
 
     // employs the default destructor, copy constructor and copy assignment 
-	// that are automatically supplied by the compiler if none are defined
+    // that are automatically supplied by the compiler if none are defined
 
-	//-------------------------------------------------------------------------
-	// GET & SET Properties
-	//-------------------------------------------------------------------------
-	/** Fatigue and recovery factors are properties of this muscle */
-	double getFatigueFactor() const { return get_fatigue_factor(); }
-	void setFatigueFactor(double aFatigueFactor);
-	double getRecoveryFactor() const { return get_recovery_factor(); }
-	void setRecoveryFactor(double aRecoveryFactor);
+    //-------------------------------------------------------------------------
+    // GET & SET Properties
+    //-------------------------------------------------------------------------
+    /** Fatigue and recovery factors are properties of this muscle */
+    double getFatigueFactor() const { return get_fatigue_factor(); }
+    void setFatigueFactor(double aFatigueFactor);
+    double getRecoveryFactor() const { return get_recovery_factor(); }
+    void setRecoveryFactor(double aRecoveryFactor);
 
-	/** default values for states */
-	double getDefaultTargetActivation() const {
-		return get_default_target_activation();
-	}
-	void setDefaultTargetActivation(double targetActivation);
-	
-	double getDefaultActiveMotorUnits() const;
-	void setDefaultActiveMotorUnits(double activeMotorUnits);
-	
-	double getDefaultFatiguedMotorUnits() const;
-	void setDefaultFatiguedMotorUnits(double fatiguedMotorUnits);
+    /** default values for states */
+    double getDefaultTargetActivation() const {
+        return get_default_target_activation();
+    }
+    void setDefaultTargetActivation(double targetActivation);
+    
+    double getDefaultActiveMotorUnits() const;
+    void setDefaultActiveMotorUnits(double activeMotorUnits);
+    
+    double getDefaultFatiguedMotorUnits() const;
+    void setDefaultFatiguedMotorUnits(double fatiguedMotorUnits);
 
-	//-------------------------------------------------------------------------
-	// GET & SET States and their derivatives
-	//-------------------------------------------------------------------------
-	/** Fatigued activation state and time derivative accessors */
-	double getTargetActivation(const SimTK::State& s) const;
-	void setTargetActivation(SimTK::State& s, double fatiguedAct) const;
-	double getTargetActivationDeriv(const SimTK::State& s) const;
-	void setTargetActivationDeriv(const SimTK::State& s,
-									double fatiguedActDeriv) const;
-	/** Active motor units state and time derivative accessors */
-	double getActiveMotorUnits(const SimTK::State& s) const;
-	void setActiveMotorUnits(SimTK::State& s, double activeMotorUnits) const;
-	double getActiveMotorUnitsDeriv(const SimTK::State& s) const;
-	void setActiveMotorUnitsDeriv(const SimTK::State& s,
-								  double activeMotorUnitsDeriv) const;
-	/** Fatigued motor units state accessors */
-	double getFatiguedMotorUnits(const SimTK::State& s) const;
-	void setFatiguedMotorUnits(SimTK::State& s, 
-							   double fatiguedMotorUnits) const;
-	double getFatiguedMotorUnitsDeriv(const SimTK::State& s) const;
-	void setFatiguedMotorUnitsDeriv(const SimTK::State& s, 
-									double fatiguedMotorUnitsDeriv) const;
+    //-------------------------------------------------------------------------
+    // GET & SET States and their derivatives
+    //-------------------------------------------------------------------------
+    /** Fatigued activation state and time derivative accessors */
+    double getTargetActivation(const SimTK::State& s) const;
+    void setTargetActivation(SimTK::State& s, double fatiguedAct) const;
+    double getTargetActivationDeriv(const SimTK::State& s) const;
+    void setTargetActivationDeriv(const SimTK::State& s,
+                                    double fatiguedActDeriv) const;
+    /** Active motor units state and time derivative accessors */
+    double getActiveMotorUnits(const SimTK::State& s) const;
+    void setActiveMotorUnits(SimTK::State& s, double activeMotorUnits) const;
+    double getActiveMotorUnitsDeriv(const SimTK::State& s) const;
+    void setActiveMotorUnitsDeriv(const SimTK::State& s,
+                                  double activeMotorUnitsDeriv) const;
+    /** Fatigued motor units state accessors */
+    double getFatiguedMotorUnits(const SimTK::State& s) const;
+    void setFatiguedMotorUnits(SimTK::State& s, 
+                               double fatiguedMotorUnits) const;
+    double getFatiguedMotorUnitsDeriv(const SimTK::State& s) const;
+    void setFatiguedMotorUnitsDeriv(const SimTK::State& s, 
+                                    double fatiguedMotorUnitsDeriv) const;
 
 protected:
-	// Model Component Interface
-	/** add new dynamical states to the multibody system corresponding
-	    to this muscle */
-	void addToSystem(SimTK::MultibodySystem& system) const override;
-	/** initialize muscle state variables from properties. For example, any 
-	    properties that contain default state values */
-	void initStateFromProperties(SimTK::State& s) const override;
-	/** use the current values in the state to update any properties such as 
-	    default values for state variables */
-	void setPropertiesFromState(const SimTK::State& s) override;
+    // Model Component Interface
+    /** add new dynamical states to the multibody system corresponding
+        to this muscle */
+    void addToSystem(SimTK::MultibodySystem& system) const override;
+    /** initialize muscle state variables from properties. For example, any 
+        properties that contain default state values */
+    void initStateFromProperties(SimTK::State& s) const override;
+    /** use the current values in the state to update any properties such as 
+        default values for state variables */
+    void setPropertiesFromState(const SimTK::State& s) override;
 
-	//-------------------------------------------------------------------------
-	// COMPUTATIONS
-	//-------------------------------------------------------------------------
-	/** Compute the derivatives for state variables added by this muscle */
-	void computeStateVariableDerivatives(const SimTK::State& s) const override;
+    //-------------------------------------------------------------------------
+    // COMPUTATIONS
+    //-------------------------------------------------------------------------
+    /** Compute the derivatives for state variables added by this muscle */
+    void computeStateVariableDerivatives(const SimTK::State& s) const override;
 private:
-	/** construct the new properties and set their default values */
-	void constructProperties();
+    /** construct the new properties and set their default values */
+    void constructProperties();
 
 //=============================================================================
 };	// END of class FatigableMuscle

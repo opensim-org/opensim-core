@@ -45,129 +45,129 @@ namespace OpenSim {
 class SerializableObject2 : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(SerializableObject2, Object);
 
-	//=============================================================================
-	// MEMBER DATA
-	//=============================================================================
+    //=============================================================================
+    // MEMBER DATA
+    //=============================================================================
 
-	//=============================================================================
-	// METHODS
-	//=============================================================================
+    //=============================================================================
+    // METHODS
+    //=============================================================================
 public:
-	SerializableObject2(){
-		setNull();
-		setupSerializedMembers();
-	}
-	SerializableObject2(const std::string &aFileName) :
-	Object(aFileName,false)
-	{
-		setNull();
-		setupSerializedMembers();
-		updateFromXMLDocument();
-	}
-	//SerializableObject2(const SerializableObject2 &aObject){
-	//	setNull();
-	//	setupSerializedMembers();
-	//	*this = aObject;
-	//}
+    SerializableObject2(){
+        setNull();
+        setupSerializedMembers();
+    }
+    SerializableObject2(const std::string &aFileName) :
+    Object(aFileName,false)
+    {
+        setNull();
+        setupSerializedMembers();
+        updateFromXMLDocument();
+    }
+    //SerializableObject2(const SerializableObject2 &aObject){
+    //	setNull();
+    //	setupSerializedMembers();
+    //	*this = aObject;
+    //}
 
     OpenSim_DECLARE_PROPERTY(Test_Bool2, bool, "obj2's bool prop");
     OpenSim_DECLARE_LIST_PROPERTY(Test_DblArray2, double, 
         "obj2's double array prop");
 
 private:
-	void setNull(){
-	};
-	void setupSerializedMembers(){
-		// Bool
-		//PropertyBool pBool("Test_Bool2",false);
-		//_propertySet.append(pBool.clone());
+    void setNull(){
+    };
+    void setupSerializedMembers(){
+        // Bool
+        //PropertyBool pBool("Test_Bool2",false);
+        //_propertySet.append(pBool.clone());
         constructProperty_Test_Bool2(false);
 
-		// DblArray
-		Array<double> dblArray(0.1);
-		dblArray.setSize(3);
-		//PropertyDblArray pDblArray("Test_DblArray2",dblArray);
-		//_propertySet.append(pDblArray.clone());
+        // DblArray
+        Array<double> dblArray(0.1);
+        dblArray.setSize(3);
+        //PropertyDblArray pDblArray("Test_DblArray2",dblArray);
+        //_propertySet.append(pDblArray.clone());
         constructProperty_Test_DblArray2(dblArray);
-	};
+    };
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
-	//SerializableObject2& operator=(const SerializableObject2 &aObject){
-	//	Object::operator=(aObject);
+    //SerializableObject2& operator=(const SerializableObject2 &aObject){
+    //	Object::operator=(aObject);
  //       updPropertyByIndex(0).updValue<bool>()=
  //           aObject.getPropertyByIndex(0).getValue<bool>();
  //       AbstractProperty& prop = updPropertyByIndex(1);
  //       for (int i=0; i < prop.size(); ++i)
  //           prop.updValue<double>(i)= 
  //               aObject.getPropertyByIndex(1).getValue<double>(i);
-	//	return(*this);
-	//}
+    //	return(*this);
+    //}
 
-	//=============================================================================
+    //=============================================================================
 };
 
 class SerializableObject3 : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(SerializableObject3, Object);
 
-	//=============================================================================
-	// MEMBER DATA
-	//=============================================================================
+    //=============================================================================
+    // MEMBER DATA
+    //=============================================================================
 
-	//=============================================================================
-	// METHODS
-	//=============================================================================
+    //=============================================================================
+    // METHODS
+    //=============================================================================
 public:
-	SerializableObject3(){
-		setNull();
-		setupSerializedMembers();
-	}
-	SerializableObject3(const std::string &aFileName) :
-	Object(aFileName,false)
-	{
-		setNull();
-		setupSerializedMembers();
-		updateFromXMLDocument();
-	}
-	SerializableObject3(const SerializableObject3 &aObject){
-		setNull();
-		setupSerializedMembers();
-		*this = aObject;
-	}
+    SerializableObject3(){
+        setNull();
+        setupSerializedMembers();
+    }
+    SerializableObject3(const std::string &aFileName) :
+    Object(aFileName,false)
+    {
+        setNull();
+        setupSerializedMembers();
+        updateFromXMLDocument();
+    }
+    SerializableObject3(const SerializableObject3 &aObject){
+        setNull();
+        setupSerializedMembers();
+        *this = aObject;
+    }
 
 private:
-	void setNull(){
-	}
-	void setupSerializedMembers(){
-		// Bool
-		PropertyBool pBool("Test_Bool2",false);
-		_propertySet.append(pBool.clone());
+    void setNull(){
+    }
+    void setupSerializedMembers(){
+        // Bool
+        PropertyBool pBool("Test_Bool2",false);
+        _propertySet.append(pBool.clone());
 
-		// DblArray
-		Array<double> dblArray(0.1);
-		dblArray.setSize(3);
-		PropertyDblArray pDblArray("Test_DblArray2",dblArray);
-		_propertySet.append(pDblArray.clone());
-	}
+        // DblArray
+        Array<double> dblArray(0.1);
+        dblArray.setSize(3);
+        PropertyDblArray pDblArray("Test_DblArray2",dblArray);
+        _propertySet.append(pDblArray.clone());
+    }
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
-	SerializableObject3& operator=(const SerializableObject3 &aObject){
-		Object::operator=(aObject);
+    SerializableObject3& operator=(const SerializableObject3 &aObject){
+        Object::operator=(aObject);
         updPropertyByIndex(0).updValue<bool>()=
             aObject.getPropertyByIndex(0).getValue<bool>();
         AbstractProperty& prop = updPropertyByIndex(1);
         for (int i=0; i < prop.size(); ++i)
             prop.updValue<double>(i)= 
                 aObject.getPropertyByIndex(1).getValue<double>(i);
-		return(*this);
-	}
+        return(*this);
+    }
 
-	//=============================================================================
+    //=============================================================================
 };
 
 } //namespace

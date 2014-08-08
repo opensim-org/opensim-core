@@ -180,23 +180,23 @@ or any other Index type to an argument expecting a certain Index type. **/
     #else
         #define SimTK_SimTKCOMMON_EXPORT __declspec(dllimport) /*i.e., a client of a shared library*/
     #endif
-	/* VC++ tries to be secure by leaving bounds checking on for STL containers
-	 * even in Release mode. This macro exists to disable that feature and can
-	 * result in a considerable speedup.
-	 * CAUTION: every linked-together compilation unit must have this set the same
-	 * way. Everyone who properly includes this file first is fine; but as of this
-	 * writing Simmath's IpOpt doesn't do so.
+    /* VC++ tries to be secure by leaving bounds checking on for STL containers
+     * even in Release mode. This macro exists to disable that feature and can
+     * result in a considerable speedup.
+     * CAUTION: every linked-together compilation unit must have this set the same
+     * way. Everyone who properly includes this file first is fine; but as of this
+     * writing Simmath's IpOpt doesn't do so.
      * NOTE: Microsoft corrected this problem with VC10 -- the feature is 
      * disabled by default in that compiler and later.
      */
-	/* (sherm 081204 disabling for now: doesn't work on VC++ 8 and is 
-	 * tricky on VC++ 9 because all libraries, including 3rd party, must
-	 * be built the same way). Better to use the SimTK::Array_<T> class in
+    /* (sherm 081204 disabling for now: doesn't work on VC++ 8 and is 
+     * tricky on VC++ 9 because all libraries, including 3rd party, must
+     * be built the same way). Better to use the SimTK::Array_<T> class in
      * place of the std::vector<T> class to get better performance.
-	 #ifdef NDEBUG
-	 	#undef _SECURE_SCL
-	 	#define _SECURE_SCL 0
-	 #endif
+     #ifdef NDEBUG
+        #undef _SECURE_SCL
+        #define _SECURE_SCL 0
+     #endif
      */
 #else
     #define SimTK_SimTKCOMMON_EXPORT // Linux, Mac
@@ -529,7 +529,7 @@ type. **/
         { return SimTK_DYNAMIC_CAST_DEBUG<const Derived&>(p); } \
     static Derived& updDowncast(Parent& p)                      \
         { return SimTK_DYNAMIC_CAST_DEBUG<Derived&>(p); }	    \
-	static Derived& downcast(Parent& p)                         \
+    static Derived& downcast(Parent& p)                         \
         { return SimTK_DYNAMIC_CAST_DEBUG<Derived&>(p); }
 
 /** This is like SimTK_DOWNCAST except it allows for an intermediate "helper" 
@@ -541,7 +541,7 @@ class between Derived and Parent. **/
         { return static_cast<const Derived&>(Helper::downcast(p)); }    \
     static Derived& updDowncast(Parent& p)							    \
         { return static_cast<Derived&>(Helper::downcast(p)); }		    \
-	static Derived& downcast(Parent& p)                                 \
+    static Derived& downcast(Parent& p)                                 \
         { return static_cast<Derived&>(Helper::downcast(p)); }
 
 

@@ -90,17 +90,17 @@ growing object.  This allows the use of register variables, which
 break the ordinary 'growth' macro.
 
 Summary:
-	We allocate large chunks.
-	We carve out one object at a time from the current chunk.
-	Once carved, an object never moves.
-	We are free to append data of any size to the currently
-	  growing object.
-	Exactly one object is growing in an obstack at any one time.
-	You can run one obstack per control block.
-	You may have as many control blocks as you dare.
-	Because of the way we do it, you can `unwind' a obstack
-	  back to a previous state. (You may remove objects much
-	  as you would with a stack.)
+    We allocate large chunks.
+    We carve out one object at a time from the current chunk.
+    Once carved, an object never moves.
+    We are free to append data of any size to the currently
+      growing object.
+    Exactly one object is growing in an obstack at any one time.
+    You can run one obstack per control block.
+    You may have as many control blocks as you dare.
+    Because of the way we do it, you can `unwind' a obstack
+      back to a previous state. (You may remove objects much
+      as you would with a stack.)
 */
 
 
@@ -302,7 +302,7 @@ int obstack_chunk_size (struct obstack *obstack);
    void *value = (void *) __o->object_base;				\
    __o->next_free							\
      = __INT_TO_PTR ((__PTR_TO_INT (__o->next_free)+__o->alignment_mask)\
-		     & ~ (__o->alignment_mask));			\
+             & ~ (__o->alignment_mask));			\
    ((__o->next_free - (char *)__o->chunk				\
      > __o->chunk_limit - (char *)__o->chunk)				\
     ? (__o->next_free = __o->chunk_limit) : 0);				\
@@ -381,7 +381,7 @@ extern struct obstack *_obstack;
 ( (h)->temp = __PTR_TO_INT ((h)->object_base),				\
   (h)->next_free							\
     = __INT_TO_PTR ((__PTR_TO_INT ((h)->next_free)+(h)->alignment_mask)	\
-		    & ~ ((h)->alignment_mask)),				\
+            & ~ ((h)->alignment_mask)),				\
   (((h)->next_free - (char *)(h)->chunk					\
     > (h)->chunk_limit - (char *)(h)->chunk)				\
    ? ((h)->next_free = (h)->chunk_limit) : 0),				\
@@ -393,14 +393,14 @@ extern struct obstack *_obstack;
 ( (h)->temp = (char *)(obj) - (char *) (h)->chunk,			\
   (((h)->temp >= 0 && (h)->temp < (h)->chunk_limit - (char *) (h)->chunk)\
    ? (int) ((h)->next_free = (h)->object_base				\
-	    = (h)->temp + (char *) (h)->chunk)				\
+        = (h)->temp + (char *) (h)->chunk)				\
    : ((obstack_free) ((h), (h)->temp + (char *) (h)->chunk), 0)))
 #else
 #define obstack_free(h,obj)						\
 ( (h)->temp = (char *)(obj) - (char *) (h)->chunk,			\
   (((h)->temp >= 0 && (h)->temp < (h)->chunk_limit - (char *) (h)->chunk)\
    ? (int) ((h)->next_free = (h)->object_base				\
-	    = (h)->temp + (char *) (h)->chunk)				\
+        = (h)->temp + (char *) (h)->chunk)				\
    : (int) _obstack_free ((h), (h)->temp + (char *) (h)->chunk)))
 #endif
 

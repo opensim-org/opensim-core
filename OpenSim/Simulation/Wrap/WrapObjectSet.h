@@ -28,10 +28,10 @@
 #include "WrapObject.h"
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+    #ifdef OSIMSIMULATION_API
+        #undef OSIMSIMULATION_API
+        #define OSIMSIMULATION_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -49,16 +49,16 @@ class OSIMSIMULATION_API WrapObjectSet : public Set<WrapObject> {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapObjectSet, Set<WrapObject>);
 
 private:
-	void setNull();
+    void setNull();
 public:
-	WrapObjectSet();
-	WrapObjectSet(const WrapObjectSet& aWrapObjectSet);
-	~WrapObjectSet(void);
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    WrapObjectSet();
+    WrapObjectSet(const WrapObjectSet& aWrapObjectSet);
+    ~WrapObjectSet(void);
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	WrapObjectSet& operator=(const WrapObjectSet &aWrapObjectSet);
+    WrapObjectSet& operator=(const WrapObjectSet &aWrapObjectSet);
 #endif
 //=============================================================================
 };	// END of class WrapObjectSet

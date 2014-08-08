@@ -42,16 +42,16 @@ class OSIMTOOLS_API MarkerPairSet :	public Set<MarkerPair> {
 OpenSim_DECLARE_CONCRETE_OBJECT(MarkerPairSet, Set<MarkerPair>);
 
 private:
-	void setNull();
+    void setNull();
 public:
-	MarkerPairSet();
-	MarkerPairSet(const MarkerPairSet& aSimmMarkerPairSet);
-	~MarkerPairSet(void);
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    MarkerPairSet();
+    MarkerPairSet(const MarkerPairSet& aSimmMarkerPairSet);
+    ~MarkerPairSet(void);
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	MarkerPairSet& operator=(const MarkerPairSet &aSimmMarkerPairSet);
+    MarkerPairSet& operator=(const MarkerPairSet &aSimmMarkerPairSet);
 #endif
 //=============================================================================
 };	// END of class MarkerPairSet

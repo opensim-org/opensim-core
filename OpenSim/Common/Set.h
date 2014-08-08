@@ -87,11 +87,11 @@ virtual ~Set()
  * Default constructor.
  */
 Set() :
-	Object(),
-	_objects((ArrayPtrs<T>&)_propObjects.getValueObjArray()),
-	_objectGroups((ArrayPtrs<ObjectGroup>&)_propObjectGroups.getValueObjArray())
+    Object(),
+    _objects((ArrayPtrs<T>&)_propObjects.getValueObjArray()),
+    _objectGroups((ArrayPtrs<ObjectGroup>&)_propObjectGroups.getValueObjArray())
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -101,12 +101,12 @@ Set() :
  * @param aUpdateFromXMLNode    Whether to update from XML.
  */
 Set(const std::string &aFileName, bool aUpdateFromXMLNode = true) :
-	Object(aFileName),
-	_objects((ArrayPtrs<T>&)_propObjects.getValueObjArray()),
-	_objectGroups((ArrayPtrs<ObjectGroup>&)_propObjectGroups.getValueObjArray())
+    Object(aFileName),
+    _objects((ArrayPtrs<T>&)_propObjects.getValueObjArray()),
+    _objectGroups((ArrayPtrs<ObjectGroup>&)_propObjectGroups.getValueObjArray())
 {
-	setNull();
-	if(aUpdateFromXMLNode) updateFromXMLDocument();
+    setNull();
+    if(aUpdateFromXMLNode) updateFromXMLDocument();
 }
 //_____________________________________________________________________________
 /**
@@ -115,13 +115,13 @@ Set(const std::string &aFileName, bool aUpdateFromXMLNode = true) :
  * @param aSet Set to be copied.
  */
 Set(const Set<T> &aSet) :
-	Object(aSet),
-	_objects((ArrayPtrs<T>&)_propObjects.getValueObjArray()),
-	_objectGroups((ArrayPtrs<ObjectGroup>&)_propObjectGroups.getValueObjArray())
+    Object(aSet),
+    _objects((ArrayPtrs<T>&)_propObjects.getValueObjArray()),
+    _objectGroups((ArrayPtrs<ObjectGroup>&)_propObjectGroups.getValueObjArray())
 {
-	setNull();
-	_objects = aSet._objects;
-	_objectGroups = aSet._objectGroups;
+    setNull();
+    _objects = aSet._objects;
+    _objectGroups = aSet._objectGroups;
 }
 
 
@@ -136,9 +136,9 @@ private:
 void
 setNull()
 {
-	setupProperties();
-	_objects.setSize(0);
-	_objectGroups.setSize(0);
+    setupProperties();
+    _objects.setSize(0);
+    _objectGroups.setSize(0);
 }
 //_____________________________________________________________________________
 /**
@@ -147,11 +147,11 @@ setNull()
 void
 setupProperties()
 {
-	_propObjects.setName("objects");
-	_propertySet.append(	&_propObjects );
+    _propObjects.setName("objects");
+    _propertySet.append(	&_propObjects );
 
-	_propObjectGroups.setName("groups");
-	_propertySet.append(	&_propObjectGroups );
+    _propObjectGroups.setName("groups");
+    _propertySet.append(	&_propObjectGroups );
 }
 
 public:
@@ -162,10 +162,10 @@ public:
 void
 setupGroups()
 {
-	int i;
-	for (i=0; i<_objectGroups.getSize(); i++) {
-		_objectGroups.get(i)->setupGroup((ArrayPtrs<Object>&)_objects);
-	}
+    int i;
+    for (i=0; i<_objectGroups.getSize(); i++) {
+        _objectGroups.get(i)->setupGroup((ArrayPtrs<Object>&)_objects);
+    }
 }
 
 //=============================================================================
@@ -190,11 +190,11 @@ public:
 #ifndef SWIG
 Set<T>& operator=(const Set<T> &aSet)
 {	
-	Super::operator=(aSet);
-	_objects = aSet._objects;
-	_objectGroups = aSet._objectGroups;
+    Super::operator=(aSet);
+    _objects = aSet._objects;
+    _objectGroups = aSet._objectGroups;
 
-	return(*this);
+    return(*this);
 }
 
 //-----------------------------------------------------------------------------
@@ -216,7 +216,7 @@ Set<T>& operator=(const Set<T> &aSet)
  */
 T& operator[](int aIndex) const
 {
-	return( *_objects[aIndex] );
+    return( *_objects[aIndex] );
 }
 
 //-----------------------------------------------------------------------------
@@ -235,13 +235,13 @@ T& operator[](int aIndex) const
  */
 friend std::ostream& operator<<(std::ostream &aOut,const Set<T> &aSet)
 {
-	aOut << "Set[" << aSet.getSize() <<"] =";
+    aOut << "Set[" << aSet.getSize() <<"] =";
 
-	for(int i=0;i<aSet.getSize();i++)  {
-		aOut << " " << aSet[i];
-	}
+    for(int i=0;i<aSet.getSize();i++)  {
+        aOut << " " << aSet[i];
+    }
 
-	return(aOut);
+    return(aOut);
 }
 
 #endif
@@ -260,7 +260,7 @@ friend std::ostream& operator<<(std::ostream &aOut,const Set<T> &aSet)
  */
 void setMemoryOwner(bool aTrueFalse)
 {
-	_objects.setMemoryOwner(aTrueFalse);
+    _objects.setMemoryOwner(aTrueFalse);
 }
 
 #ifndef SWIG
@@ -277,7 +277,7 @@ void setMemoryOwner(bool aTrueFalse)
  */
 bool getMemoryOwner() const
 {
-	return(_objects.getMemoryOwner());
+    return(_objects.getMemoryOwner());
 }
 
 
@@ -308,7 +308,7 @@ bool getMemoryOwner() const
  */
 bool computeNewCapacity(int aMinCapacity,int &rNewCapacity)
 {
-	return( _objects.computeNewCapacity(aMinCapacity,rNewCapacity) );
+    return( _objects.computeNewCapacity(aMinCapacity,rNewCapacity) );
 }
 //_____________________________________________________________________________
 /**
@@ -320,7 +320,7 @@ bool computeNewCapacity(int aMinCapacity,int &rNewCapacity)
  */
 bool ensureCapacity(int aCapacity)
 {
-	return( _objects.ensureCapacity(aCapacity) );
+    return( _objects.ensureCapacity(aCapacity) );
 }
 //_____________________________________________________________________________
 /**
@@ -332,7 +332,7 @@ bool ensureCapacity(int aCapacity)
  */
 void trim()
 {
-	_objects.trim();
+    _objects.trim();
 }
 //_____________________________________________________________________________
 /**
@@ -340,7 +340,7 @@ void trim()
  */
 int getCapacity() const
 {
-	return( _objects.getCapacity() );
+    return( _objects.getCapacity() );
 }
 
 //-----------------------------------------------------------------------------
@@ -358,7 +358,7 @@ int getCapacity() const
  */
 void setCapacityIncrement(int aIncrement)
 {
-	_objects.setCapacityIncrement(aIncrement);
+    _objects.setCapacityIncrement(aIncrement);
 }
 //_____________________________________________________________________________
 /**
@@ -366,7 +366,7 @@ void setCapacityIncrement(int aIncrement)
  */
 int getCapacityIncrement() const
 {
-	return( _objects.getCapacityIncrement() );
+    return( _objects.getCapacityIncrement() );
 }
 #endif // SWIG
 //=============================================================================
@@ -395,7 +395,7 @@ int getCapacityIncrement() const
  */
 virtual bool setSize(int aSize)
 {
-	return( _objects.setSize(aSize) );
+    return( _objects.setSize(aSize) );
 }
 //_____________________________________________________________________________
 /**
@@ -405,7 +405,7 @@ virtual bool setSize(int aSize)
  */
 int getSize() const
 {
-	return( _objects.getSize() );
+    return( _objects.getSize() );
 }
 
 //-----------------------------------------------------------------------------
@@ -424,7 +424,7 @@ int getSize() const
  */
 virtual int getIndex(const T *aObject,int aStartIndex=0) const
 {
-	return( _objects.getIndex(aObject,aStartIndex) );
+    return( _objects.getIndex(aObject,aStartIndex) );
 }
 //_____________________________________________________________________________
 /**
@@ -439,7 +439,7 @@ virtual int getIndex(const T *aObject,int aStartIndex=0) const
  */
 virtual int getIndex(const std::string &aName,int aStartIndex=0) const
 {
-	return( _objects.getIndex(aName,aStartIndex) );
+    return( _objects.getIndex(aName,aStartIndex) );
 }
 //_____________________________________________________________________________
 /**
@@ -447,10 +447,10 @@ virtual int getIndex(const std::string &aName,int aStartIndex=0) const
  */
 void getGroupNamesContaining(const std::string &aObjectName, Array<std::string> &rGroupNames) const
 {
-	rGroupNames.setSize(0);
-	for(int i=0; i<_objectGroups.getSize(); i++)
-		if(_objectGroups[i]->contains(aObjectName))
-			rGroupNames.append(_objectGroups[i]->getName());
+    rGroupNames.setSize(0);
+    for(int i=0; i<_objectGroups.getSize(); i++)
+        if(_objectGroups[i]->contains(aObjectName))
+            rGroupNames.append(_objectGroups[i]->getName());
 }
 //-----------------------------------------------------------------------------
 // APPEND
@@ -466,7 +466,7 @@ void getGroupNamesContaining(const std::string &aObjectName, Array<std::string> 
  */
 virtual bool adoptAndAppend(T *aObject)
 {
-	return( _objects.append(aObject) );
+    return( _objects.append(aObject) );
 }
 
 //_____________________________________________________________________________
@@ -480,7 +480,7 @@ virtual bool adoptAndAppend(T *aObject)
  */
 virtual bool cloneAndAppend(const T& aObject)
 {
-	return adoptAndAppend(aObject.clone());
+    return adoptAndAppend(aObject.clone());
 }
 //-----------------------------------------------------------------------------
 // INSERT
@@ -504,7 +504,7 @@ virtual bool cloneAndAppend(const T& aObject)
  */
 virtual bool insert(int aIndex,T *aObject)
 {
-	return( _objects.insert(aIndex,aObject) );
+    return( _objects.insert(aIndex,aObject) );
 }
 #ifndef SWIG
 //_____________________________________________________________________________
@@ -525,7 +525,7 @@ virtual bool insert(int aIndex,T *aObject)
  */
 virtual bool insert(int aIndex, const T& aObject)
 {
-	return insert(aIndex, aObject.clone());
+    return insert(aIndex, aObject.clone());
 }
 #endif
 //-----------------------------------------------------------------------------
@@ -548,12 +548,12 @@ virtual bool insert(int aIndex, const T& aObject)
  */
 virtual bool remove(int aIndex)
 {
-	// remove the object from all of the groups
-	int i;
-	for (i=0; i<_objectGroups.getSize(); i++)
-		_objectGroups.get(i)->remove(_objects.get(aIndex));
+    // remove the object from all of the groups
+    int i;
+    for (i=0; i<_objectGroups.getSize(); i++)
+        _objectGroups.get(i)->remove(_objects.get(aIndex));
 
-	return( _objects.remove(aIndex) );
+    return( _objects.remove(aIndex) );
 }
 //_____________________________________________________________________________
 /**
@@ -569,18 +569,18 @@ virtual bool remove(int aIndex)
  */
 virtual bool remove(const T* aObject)
 {
-	// remove the object from all of the groups
-	int i;
-	for (i=0; i<_objectGroups.getSize(); i++)
-		_objectGroups.get(i)->remove(aObject);
+    // remove the object from all of the groups
+    int i;
+    for (i=0; i<_objectGroups.getSize(); i++)
+        _objectGroups.get(i)->remove(aObject);
 
-	return( _objects.remove(aObject) );
+    return( _objects.remove(aObject) );
 }
 
 virtual void clearAndDestroy()
 {
-	_objects.clearAndDestroy();
-	_objectGroups.clearAndDestroy();
+    _objects.clearAndDestroy();
+    _objectGroups.clearAndDestroy();
 }
 
 //-----------------------------------------------------------------------------
@@ -604,15 +604,15 @@ virtual void clearAndDestroy()
 virtual bool set(int aIndex, T *aObject, bool preserveGroups = false)
 {
     if (!preserveGroups)
-    	return( _objects.set(aIndex,aObject) );
-	if (aObject != NULL && aIndex >= 0 && aIndex < _objects.getSize())
-	{
-		for (int i = 0; i < _objectGroups.getSize(); i++)
-			_objectGroups.get(i)->replace(_objects.get(aIndex), aObject);
-		_objects.remove(aIndex);
-		return _objects.insert(aIndex, aObject);
-	}
-	return false;
+        return( _objects.set(aIndex,aObject) );
+    if (aObject != NULL && aIndex >= 0 && aIndex < _objects.getSize())
+    {
+        for (int i = 0; i < _objectGroups.getSize(); i++)
+            _objectGroups.get(i)->replace(_objects.get(aIndex), aObject);
+        _objects.remove(aIndex);
+        return _objects.insert(aIndex, aObject);
+    }
+    return false;
 }
 #ifndef SWIG
 //_____________________________________________________________________________
@@ -652,7 +652,7 @@ virtual bool set(int aIndex, const T& aObject, bool preserveGroups = false)
  */
 virtual T& get(int aIndex) const
 {
-	return( *_objects.get(aIndex) );
+    return( *_objects.get(aIndex) );
 }
 //_____________________________________________________________________________
 /**
@@ -668,12 +668,12 @@ virtual T& get(int aIndex) const
  */
 T& get(const std::string &aName)
 {
-	return( *_objects.get(aName) );
+    return( *_objects.get(aName) );
 }
 #ifndef SWIG
 const T& get(const std::string &aName) const
 {
-	return( *_objects.get(aName) );
+    return( *_objects.get(aName) );
 }
 #endif
 //_____________________________________________________________________________
@@ -685,7 +685,7 @@ const T& get(const std::string &aName) const
  */
 bool contains(const std::string &aName) const
 {
-	return( _objects.getIndex(aName) != -1 );
+    return( _objects.getIndex(aName) != -1 );
 }//_____________________________________________________________________________
 /**
  * Get names of objects in the set.
@@ -696,14 +696,14 @@ bool contains(const std::string &aName) const
  */
 virtual void getNames(OpenSim::Array<std::string> &rNames ) const
 {
-	for(int i=0;i<_objects.getSize();i++) {
-		T *obj = _objects[i];
-		if(obj==NULL) {
-			rNames.append("NULL");
-		} else {
-			rNames.append(obj->getName());
-		}
-	}
+    for(int i=0;i<_objects.getSize();i++) {
+        T *obj = _objects[i];
+        if(obj==NULL) {
+            rNames.append("NULL");
+        } else {
+            rNames.append(obj->getName());
+        }
+    }
 }
 #ifndef SWIG
 //_____________________________________________________________________________
@@ -715,7 +715,7 @@ virtual void getNames(OpenSim::Array<std::string> &rNames ) const
  */
 virtual T* getLast() const
 {
-	return( _objects.getLast() );
+    return( _objects.getLast() );
 }
 
 //=============================================================================
@@ -754,9 +754,9 @@ virtual T* getLast() const
  * to aValue, -1 is returned.
  */
 int searchBinary(const T &aObject,bool aFindFirst=false,
-					  int aLo=-1,int aHi=-1) const
+                      int aLo=-1,int aHi=-1) const
 {
-	return( _objects.searchBinary(aObject,aFindFirst,aLo,aHi) );
+    return( _objects.searchBinary(aObject,aFindFirst,aLo,aHi) );
 }
 #endif
 //=============================================================================
@@ -768,7 +768,7 @@ int searchBinary(const T &aObject,bool aFindFirst=false,
  */
 int getNumGroups() const
 {
-	return _objectGroups.getSize();
+    return _objectGroups.getSize();
 }
 
 //_____________________________________________________________________________
@@ -777,7 +777,7 @@ int getNumGroups() const
  */
 void addGroup(const std::string& aGroupName)
 {
-	_objectGroups.append(new ObjectGroup(aGroupName));
+    _objectGroups.append(new ObjectGroup(aGroupName));
 }
 
 //_____________________________________________________________________________
@@ -786,7 +786,7 @@ void addGroup(const std::string& aGroupName)
  */
 void removeGroup(const std::string& aGroupName)
 {
-	_objectGroups.remove(_objectGroups.get(aGroupName));
+    _objectGroups.remove(_objectGroups.get(aGroupName));
 }
 
 //_____________________________________________________________________________
@@ -796,9 +796,9 @@ void removeGroup(const std::string& aGroupName)
  */
 void renameGroup(const std::string& oldGroupName, const std::string& newGroupName)
 {
-	ObjectGroup* grp=_objectGroups.get(oldGroupName);
-	//TODO This should check for duplicates and throw an exception if duplicate
-	grp->setName(newGroupName);
+    ObjectGroup* grp=_objectGroups.get(oldGroupName);
+    //TODO This should check for duplicates and throw an exception if duplicate
+    grp->setName(newGroupName);
 }
 
 //_____________________________________________________________________________
@@ -807,10 +807,10 @@ void renameGroup(const std::string& oldGroupName, const std::string& newGroupNam
  */
 void addObjectToGroup(const std::string& aGroupName, const std::string& aObjectName)
 {
-	ObjectGroup* group = _objectGroups.get(aGroupName);
-	Object* object = _objects.get(aObjectName);
-	if (group && object)
-		group->add(object);
+    ObjectGroup* group = _objectGroups.get(aGroupName);
+    Object* object = _objects.get(aObjectName);
+    if (group && object)
+        group->add(object);
 }
 
 //_____________________________________________________________________________
@@ -819,9 +819,9 @@ void addObjectToGroup(const std::string& aGroupName, const std::string& aObjectN
  */
 void getGroupNames(Array<std::string> &rGroupNames) const
 {
-	rGroupNames.setSize(0);
-	for(int i=0; i<_objectGroups.getSize(); i++)
-		rGroupNames.append(_objectGroups[i]->getName());
+    rGroupNames.setSize(0);
+    for(int i=0; i<_objectGroups.getSize(); i++)
+        rGroupNames.append(_objectGroups[i]->getName());
 }
 
 //_____________________________________________________________________________
@@ -830,7 +830,7 @@ void getGroupNames(Array<std::string> &rGroupNames) const
  */
 const ObjectGroup* getGroup(const std::string& aGroupName) const
 {
-	return _objectGroups.get(aGroupName);
+    return _objectGroups.get(aGroupName);
 }
 //_____________________________________________________________________________
 /**
@@ -838,7 +838,7 @@ const ObjectGroup* getGroup(const std::string& aGroupName) const
  */
 const ObjectGroup* getGroup(int aIndex) const
 {
-	return _objectGroups.get(aIndex);
+    return _objectGroups.get(aIndex);
 }
 
 //=============================================================================

@@ -58,7 +58,7 @@ INSTALL(FILES ${INCLUDE_FILES}
 # Also need to grab all header files from sub dir /Vendors/lepton/include/lepton/		
 FILE(GLOB MORE_HEADERS include/lepton/*.h) 
 INSTALL(FILES ${MORE_HEADERS}
-	DESTINATION sdk/include/Vendors/lepton/include/lepton)
+    DESTINATION sdk/include/Vendors/lepton/include/lepton)
 
 
 ENABLE_TESTING()
