@@ -529,7 +529,6 @@ void testClutchedPathSpring()
 		1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
 }
 
-
 class MultiCoordinateController : public Controller
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(MultiCoordinateController, Controller);

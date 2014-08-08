@@ -33,7 +33,7 @@
 using namespace OpenSim;
 using namespace std;
 
-MultiCoordinateActuator::MultiCoordinateActuator() : Actuator_()
+MultiCoordinateActuator::MultiCoordinateActuator() : Actuator()
 {
     constructInfrastructure();
 }

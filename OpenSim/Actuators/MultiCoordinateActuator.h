@@ -41,8 +41,8 @@ namespace OpenSim {
  * Actuator_ is particularly useful for controllers that apply generalized
  * forces to all/most coordinates.
  */
-class OSIMACTUATORS_API MultiCoordinateActuator : public Actuator_ {
-OpenSim_DECLARE_CONCRETE_OBJECT(MultiCoordinateActuator, Actuator_);
+class OSIMACTUATORS_API MultiCoordinateActuator : public Actuator {
+OpenSim_DECLARE_CONCRETE_OBJECT(MultiCoordinateActuator, Actuator);
 public:
 //==============================================================================
 // PROPERTIES
@@ -72,13 +72,17 @@ private:
 	// Implement Actuator_ interface (also see getOptimalForce() above)
 	//--------------------------------------------------------------------------
     int numControls() const override;
-	double computeActuation(const SimTK::State& s) const override
+
+	double getPower(const SimTK::State& s) const { return 0; }
+	void overrideForce(SimTK::State& s, bool flag) const {}
+
+	/*double computeActuation(const SimTK::State& s) const override
     {
         throw Exception(
                 "MultiCoordinateActuator actuates multiple degrees of freedom; "
                 "this method returns a scalar and is meaningless for this "
                 "Actuator_.", __FILE__, __LINE__);
-    }
+    }*/
 
 	//--------------------------------------------------------------------------
 	// Implement ModelComponent interface
