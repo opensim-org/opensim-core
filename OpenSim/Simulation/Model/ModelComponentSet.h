@@ -55,8 +55,8 @@ template <class T>
 class ModelComponentSet : public Set<T> {
 OpenSim_DECLARE_CONCRETE_OBJECT_T(ModelComponentSet, T, Set<T>);
 
-protected:
-    Model* _model;
+private:
+    SimTK::ReferencePtr<Model> _model;
 
 //=============================================================================
 // METHODS
@@ -98,7 +98,14 @@ public:
      */
     const Model& getModel() const
     {
-        return *this->_model;
+		if (_model){
+			return *this->_model;
+		}
+		else{
+			std::string msg = getClassName();
+			msg += "::getModel() - has no associated Model (nullptr)";
+			throw Exception(msg);
+		}
     }
     /**
      * Get a modifiable reference to the Model this set is part of.
@@ -107,6 +114,9 @@ public:
     {
         return *this->_model;
     }
+
+	void setModel(Model& model) { _model = &model; }
+
 #endif
 
     /**

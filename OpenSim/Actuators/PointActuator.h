@@ -51,8 +51,8 @@ class Model;
  *
  * @author Ajay Seth
  */
-class OSIMACTUATORS_API PointActuator : public Actuator {
-OpenSim_DECLARE_CONCRETE_OBJECT(PointActuator, Actuator);
+class OSIMACTUATORS_API PointActuator : public ScalarActuator {
+	OpenSim_DECLARE_CONCRETE_OBJECT(PointActuator, ScalarActuator);
 public:
 //==============================================================================
 // PROPERTIES
@@ -83,7 +83,7 @@ public:
 //==============================================================================
     /** Default constructor or construct with body name given. An empty 
     name ("") is treated as though it were unspecified. **/
-	PointActuator(const std::string& bodyName="");
+	explicit PointActuator(const std::string& bodyName="");
 
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
@@ -91,7 +91,7 @@ public:
 	/** Set the 'optimal_force' property. **/
 	void setOptimalForce(double aOptimalForce);
     /** Get the current value of the 'optimal_force' property. **/
-	double getOptimalForce() const OVERRIDE_11; // Part of Actuator interface.
+	double getOptimalForce() const override; // Part of Actuator interface.
 
 private:
 	void setNull();
@@ -107,25 +107,25 @@ private:
 	//--------------------------------------------------------------------------
 	void computeForce(const SimTK::State& state, 
 					  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-					  SimTK::Vector& mobilityForces) const OVERRIDE_11;
+					  SimTK::Vector& mobilityForces) const override;
 
 	//--------------------------------------------------------------------------
 	// Implement Actuator interface (also see getOptimalForce() above)
 	//--------------------------------------------------------------------------
-	double computeActuation( const SimTK::State& s) const OVERRIDE_11;
-	double getStress( const SimTK::State& s ) const OVERRIDE_11;
+	double computeActuation( const SimTK::State& s) const override;
+	double getStress( const SimTK::State& s ) const override;
 
     //--------------------------------------------------------------------------
 	// Implement ModelComponent interface
 	//--------------------------------------------------------------------------
 	// Setup method to initialize Body reference
-	void connectToModel(Model& model) OVERRIDE_11;
+	void connectToModel(Model& model) override;
     
     //--------------------------------------------------------------------------
 	// Implement Object interface.
 	//--------------------------------------------------------------------------
 	void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber=-1)
-        OVERRIDE_11;
+        override;
 
 	// Corresponding Body to which the point actuator is applied.
     SimTK::ReferencePtr<Body> _body;

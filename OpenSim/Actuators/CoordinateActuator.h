@@ -47,8 +47,8 @@ class Model;
  * @author Ajay Seth
  * @author Frank C. Anderson
  */
-class OSIMACTUATORS_API CoordinateActuator : public Actuator {
-OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateActuator, Actuator);
+class OSIMACTUATORS_API CoordinateActuator : public ScalarActuator {
+OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateActuator, ScalarActuator);
 public:
 //==============================================================================
 // PROPERTIES
@@ -75,7 +75,7 @@ public:
 	/** Set the 'optimal_force' property. **/
 	void setOptimalForce(double optimalForce);
     /** Get the current setting of the 'optimal_force' property. **/
-	double getOptimalForce() const OVERRIDE_11; // part of Actuator interface
+	double getOptimalForce() const override; // part of Actuator interface
 
 	//--------------------------------------------------------------------------
 	// UTILITY
@@ -100,22 +100,22 @@ private:
 	//--------------------------------------------------------------------------
 	void computeForce(const SimTK::State& state, 
 					  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-					  SimTK::Vector& mobilityForces) const OVERRIDE_11;
+					  SimTK::Vector& mobilityForces) const override;
 
 
 	//--------------------------------------------------------------------------
 	// Implement Actuator interface (also see getOptimalForce() above)
 	//--------------------------------------------------------------------------
-	double  computeActuation( const SimTK::State& s) const OVERRIDE_11;
+	double  computeActuation( const SimTK::State& s) const override;
 	// Return the stress, defined as abs(force/optimal_force).
-	double getStress( const SimTK::State& s ) const OVERRIDE_11;
+	double getStress( const SimTK::State& s ) const override;
 
 
 	//--------------------------------------------------------------------------
 	// Implement ModelComponent interface
 	//--------------------------------------------------------------------------
-	void connectToModel(Model& aModel) OVERRIDE_11;
-	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void connectToModel(Model& aModel) override;
+	void addToSystem(SimTK::MultibodySystem& system) const override;
 
 	//--------------------------------------------------------------------------
 	// Implement Object interface.

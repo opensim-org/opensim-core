@@ -32,7 +32,7 @@
 namespace OpenSim {
 
 class Model;
-class Actuator;
+class ScalarActuator;
 class Muscle;
 
 //=============================================================================
@@ -91,7 +91,7 @@ public:
 	//--------------------------------------------------------------------------
 public:
     // Override ModelComponentSet method.
-	void invokeConnectToModel(Model& aModel) OVERRIDE_11;
+	void invokeConnectToModel(Model& aModel) override;
 
 	// FORCE
 	bool remove(int aIndex);

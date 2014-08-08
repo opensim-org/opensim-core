@@ -46,8 +46,8 @@ class Model;
  *
  * @author Matt DeMers
  */
-class OSIMACTUATORS_API PointToPointActuator : public Actuator {
-OpenSim_DECLARE_CONCRETE_OBJECT(PointToPointActuator, Actuator);
+class OSIMACTUATORS_API PointToPointActuator : public ScalarActuator {
+	OpenSim_DECLARE_CONCRETE_OBJECT(PointToPointActuator, ScalarActuator);
 public:
 //==============================================================================
 // PROPERTIES
@@ -111,7 +111,7 @@ public:
 	void setOptimalForce(double optimalForce)
     {   set_optimal_force(optimalForce); }
     /** Get the current value of the 'optimal_force' property. **/
-	double getOptimalForce() const OVERRIDE_11 // Part of Actuator interface.
+	double getOptimalForce() const override // Part of Actuator interface.
     {   return get_optimal_force(); }
 
     // default destructor, copy constructor, copy assignment
@@ -131,20 +131,20 @@ private:
 	//--------------------------------------------------------------------------
 	void computeForce(const SimTK::State& state, 
 					  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-					  SimTK::Vector& mobilityForces) const OVERRIDE_11;
+					  SimTK::Vector& mobilityForces) const override;
 
 	//--------------------------------------------------------------------------
 	// Implement Actuator interface (also see getOptimalForce() above)
 	//--------------------------------------------------------------------------	
-	double computeActuation( const SimTK::State& s) const OVERRIDE_11;
+	double computeActuation( const SimTK::State& s) const override;
 	// Return the stress, defined as abs(force/optimal_force).
-	double getStress( const SimTK::State& s ) const OVERRIDE_11;
+	double getStress( const SimTK::State& s ) const override;
 
 	//--------------------------------------------------------------------------
 	// Implement ModelComponent interface
 	//--------------------------------------------------------------------------
 	// Setup method initializes Body reference pointers to match the names.
-	void connectToModel(Model& aModel) OVERRIDE_11;
+	void connectToModel(Model& aModel) override;
 
 //=============================================================================
 // DATA

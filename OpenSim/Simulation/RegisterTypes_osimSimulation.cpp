@@ -133,6 +133,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( BodyScale() );
     Object::registerType( BodyScaleSet() );
     Object::registerType( BodySet() );
+	Object::registerType( ComponentSet() );
+	Object::registerType( ControllerSet() );
     Object::registerType( ConstraintSet() );
     Object::registerType( CoordinateSet() );
     Object::registerType( ForceSet() );
@@ -213,8 +215,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     Object::registerType( PathActuator() );
     Object::registerType( ProbeSet() );
-    Object::registerType( ActuatorPowerProbe() );
-    Object::registerType( ActuatorForceProbe() );
     Object::registerType( JointInternalPowerProbe() );
     Object::registerType( SystemEnergyProbe() );
     Object::registerType( Umberger2010MuscleMetabolicsProbe() );

@@ -59,13 +59,9 @@ ControllerSet::~ControllerSet()
 /**
  * Default constructor.
  */
-ControllerSet::ControllerSet()
-{
-	setNull();
-}
+
 ControllerSet::ControllerSet(Model& model) : ModelComponentSet<Controller>(model)
 {
-   setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -77,7 +73,6 @@ ControllerSet::ControllerSet(Model& model) : ModelComponentSet<Controller>(model
 ControllerSet::ControllerSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode) :
      ModelComponentSet<Controller>(model, aFileName, false)
 {
-    setNull();
     if(aUpdateFromXMLNode) updateFromXMLDocument();
 }
 
@@ -91,7 +86,6 @@ ControllerSet::ControllerSet(Model& model, const std::string &aFileName, bool aU
 ControllerSet::ControllerSet(const ControllerSet &aControllerSet) :
 	ModelComponentSet<Controller>(aControllerSet)
 {
-	setNull();
 
 	// Class Members
 	copyData(aControllerSet);
@@ -100,25 +94,6 @@ ControllerSet::ControllerSet(const ControllerSet &aControllerSet) :
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Set the data members of this ControllerSet to their null values.
- */
-void ControllerSet::setNull()
-{
-	// TYPE
-    _actuatorSet = NULL;
-    _controlStore = NULL;
-
-   // PROPERTIES
-   setupSerializedMembers();
-   
-   // NAME
-   setName("ControllerSet");
-
-
-}
-
 //_____________________________________________________________________________
 /**
  * Copy the member variables of the ControllerSet.
@@ -175,7 +150,7 @@ bool ControllerSet::addController(Controller *aController)
 	bool success = Set<Controller>::adoptAndAppend(aController);
 
 	if(success) {
-		aController->connectToModel(*_model);
+		aController->connectToModel(updModel());
 	}
 
 	return success;
@@ -200,19 +175,6 @@ bool ControllerSet::set(int aIndex,Controller *aController)
 	return(success);
 }
 
-//=============================================================================
-// CHECK
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Check that all actuators have a valid controller.
- */
-bool ControllerSet::check() const
-{
-	bool status=true;
-	return(status);
-
-}
 
 void ControllerSet::constructStorage() 
 {
@@ -236,13 +198,8 @@ void ControllerSet::storeControls( const SimTK::State& s, int step  )
     
 	if( size > 0 )
 	{
-		SimTK::Vector controls(_actuatorSet->getSize());
-	    
-		for (int i = 0; i < _actuatorSet->getSize(); i++) {
-			controls[i] = _actuatorSet->get(i).getControl(s);
-		} 
-
-		_controlStore->store( step, s.getTime(), _actuatorSet->getSize(), &controls[0] );
+		_controlStore->store( step, s.getTime(), getModel().getNumControls(), 
+			                  &(getModel().getControls(s)[0]) );
     }
 }
 
@@ -306,11 +263,3 @@ void ControllerSet::computeControls(const SimTK::State& s, SimTK::Vector &contro
 			get(i).computeControls(s, controls);
 	}
 }
-
-//_____________________________________________________________________________
-/**
- * Set up the serialized member variables.
- */
-void ControllerSet::setupSerializedMembers()
-  {
-  }

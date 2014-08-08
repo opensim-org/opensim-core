@@ -105,13 +105,13 @@ protected:
     // Force interface.
 	void computeForce(  const SimTK::State& state, 
 					    SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-					    SimTK::Vector& mobilityForces) const OVERRIDE_11;
+					    SimTK::Vector& mobilityForces) const override;
 	
     // ModelComponent interface.
-    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void addToSystem(SimTK::MultibodySystem& system) const override;
 
 	// Setup method to initialize coordinate reference
-	void connectToModel(Model& model) OVERRIDE_11;
+	void connectToModel(Model& model) override;
 
 private:
 	void setNull();

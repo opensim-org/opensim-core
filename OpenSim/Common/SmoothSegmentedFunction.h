@@ -412,6 +412,7 @@ namespace OpenSim {
         matrix data
        
         @param data A matrix of data
+        @param colnames Array of column headings
         @param path The desired path to the folder to write the file
         @param filename The name of the file to print
         @throws OpenSim::Exception

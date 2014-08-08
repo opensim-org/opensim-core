@@ -84,7 +84,7 @@ public:
 	 * f(x) = a*x^n + b*x^(n-1) + ... + c 
 	 * The size of the coffecient vector determines the order of the polynomial.
 	 * n = size-1;
-	 * @param[in]   Vector of polynomial coefficients
+	 * @param[in] coefficients      Vector of polynomial coefficients
 	 */
 	void setCoefficients(SimTK::Vector coefficients)
 	{ set_coefficients(coefficients); }

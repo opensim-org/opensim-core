@@ -87,7 +87,7 @@ public:
 	/**
 	 *  The defining FunctionThresholdCondition method  
 	 */
-	bool calcCondition(const SimTK::State& s) const OVERRIDE_11;
+	bool calcCondition(const SimTK::State& s) const override;
 
 private:
 	void setNull();

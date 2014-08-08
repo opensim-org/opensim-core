@@ -399,7 +399,7 @@ public:
     actuator between the fiber and tendon according to their relative
     stiffnesses.
         @param[in,out] s The state of the system. */
-    void computeInitialFiberEquilibrium(SimTK::State& s) const OVERRIDE_11;
+    void computeInitialFiberEquilibrium(SimTK::State& s) const override;
 
     /** Computes the fiber length such that the fiber and tendon are developing
     the same force, assuming velocities are zero. This is a static equilibrium
@@ -408,7 +408,7 @@ public:
     for fiber length.
         @param[in,out] s The state of the system. */
     void computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const 
-        OVERRIDE_11;
+        override;
 
 //==============================================================================
 // TO BE DEPRECATED
@@ -484,41 +484,41 @@ protected:
     /** Calculate the position-related values associated with the muscle state
     (fiber and tendon lengths, normalized lengths, pennation angle, etc.). */
     void calcMuscleLengthInfo(const SimTK::State& s,
-                              MuscleLengthInfo& mli) const OVERRIDE_11;
+                              MuscleLengthInfo& mli) const override;
 
     /** Calculate the velocity-related values associated with the muscle state
     (fiber and tendon velocities, normalized velocities, pennation angular
     velocity, etc.). */
     void calcFiberVelocityInfo(const SimTK::State& s,
-                               FiberVelocityInfo& fvi) const OVERRIDE_11;
+                               FiberVelocityInfo& fvi) const override;
 
     /** Calculate the dynamics-related values associated with the muscle state
     (from the active- and passive-force-length curves, the force-velocity curve,
     and the tendon-force-length curve). */
     void calcMuscleDynamicsInfo(const SimTK::State& s,
-                                MuscleDynamicsInfo& mdi) const OVERRIDE_11;
+                                MuscleDynamicsInfo& mdi) const override;
 
 	/** Calculate the potential energy values associated with the muscle */
 	void  calcMusclePotentialEnergyInfo(const SimTK::State& s, 
-		MusclePotentialEnergyInfo& mpei) const OVERRIDE_11;
+		MusclePotentialEnergyInfo& mpei) const override;
 
 //==============================================================================
 // MODELCOMPONENT INTERFACE REQUIREMENTS
 //==============================================================================
     /** Sets up the ModelComponent from the model, if necessary */
-    void connectToModel(Model& model) OVERRIDE_11;
+    void connectToModel(Model& model) override;
 
     /** Creates the ModelComponent so that it can be used in simulation */
-    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void addToSystem(SimTK::MultibodySystem& system) const override;
 
     /** Initializes the state of the ModelComponent */
-    void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
+    void initStateFromProperties(SimTK::State& s) const override;
 
     /** Sets the default state for the ModelComponent */
-    void setPropertiesFromState(const SimTK::State& s) OVERRIDE_11;
+    void setPropertiesFromState(const SimTK::State& s) override;
 
     /** Computes state variable derivatives */
-    void computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11;
+    void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
 private:
     // The name used to access the activation state.
@@ -531,13 +531,13 @@ private:
     bool use_fiber_damping;
 
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
     // Builds the components that are necessary to simulate using this muscle.
     void buildMuscle();
 
     // Rebuilds muscle model if any of its properties have changed.
-	void finalizeFromProperties() OVERRIDE_11;
+	void finalizeFromProperties() override;
 
     /* Calculates the fiber velocity that satisfies the equilibrium equation
     given a fixed fiber length.

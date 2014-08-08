@@ -631,6 +631,15 @@ void Coordinate::setClamped(SimTK::State& s, bool aLocked) const
 	setModelingOption(s, "is_clamped", (int)aLocked);
 }
 
+void Coordinate::constructOutputs()
+{
+	//return the coordinate value
+	constructOutput<double>("coord",std::bind(&Coordinate::getValue,this,std::placeholders::_1),SimTK::Stage::Position);
+	//return the speed value;
+	constructOutput<double>("speed",std::bind(&Coordinate::getSpeedValue,this,std::placeholders::_1),SimTK::Stage::Velocity);
+	//return the acceleration value;
+	constructOutput<double>("acc",std::bind(&Coordinate::getAccelerationValue,this,std::placeholders::_1),SimTK::Stage::Acceleration);
+}
 
 
 //-----------------------------------------------------------------------------

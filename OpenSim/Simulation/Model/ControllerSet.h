@@ -55,7 +55,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ControllerSet, ModelComponentSet<Controller>);
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	ControllerSet();
+	ControllerSet() {}
 	ControllerSet(Model& model);
 	ControllerSet(const ControllerSet &aControllerSet);
 	ControllerSet(Model& model, const std::string &aFileName,  bool aUpdateFromXMLNode = true);
@@ -63,18 +63,16 @@ public:
 
 	void copyData(const ControllerSet &aAbsControllerSet);
 private:
-	void setNull();
-    void setupSerializedMembers();
 
     /**
      *   storage object containing the storage object
      */
-     Storage* _controlStore;
+     SimTK::ReferencePtr<Storage> _controlStore;
 
     /**
      *   set of actuators controlled by the set of controllers 
      */
-     Set<Actuator>* _actuatorSet;
+     SimTK::ReferencePtr<Set<Actuator> > _actuatorSet;
 
 
 	//--------------------------------------------------------------------------
@@ -93,14 +91,12 @@ public:
     bool addController(Controller *aController);
 
 
-    virtual void constructStorage();
-    virtual void storeControls( const SimTK::State& s, int step );
-    virtual void printControlStorage( const std::string& fileName) const;
-    virtual void setActuators( Set<Actuator>& );
+    void constructStorage();
+    void storeControls( const SimTK::State& s, int step );
+    void printControlStorage( const std::string& fileName) const;
+    void setActuators(Set<Actuator>& actuators);
 
-    virtual bool check() const;
-
-    virtual void setDesiredStates( Storage* yStore); 
+    void setDesiredStates( Storage* yStore); 
 
 	// Controller interface
 	virtual void computeControls(const SimTK::State& s, SimTK::Vector &controls) const; 

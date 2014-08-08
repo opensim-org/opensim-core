@@ -70,20 +70,20 @@ public:
 	PropertyObjArray(const PropertyObjArray<T> &aProperty) 
     :   Property_Deprecated(aProperty) { _array = aProperty._array; }
 
-    bool isArrayProperty() const OVERRIDE_11 {return true;}
+    bool isArrayProperty() const override {return true;}
 
-	PropertyObjArray* clone() const OVERRIDE_11
+	PropertyObjArray* clone() const override
     {   return new PropertyObjArray<T>(*this); }
 
-    virtual int getNumValues() const OVERRIDE_11 {return getArraySize();}
-    virtual bool isObjectProperty() const OVERRIDE_11 {return true;}
+    virtual int getNumValues() const override {return getArraySize();}
+    virtual bool isObjectProperty() const override {return true;}
     virtual bool isAcceptableObjectTag
-        (const std::string& objectTypeTag) const OVERRIDE_11 {return true;}
-    virtual const Object& getValueAsObject(int index) const OVERRIDE_11
+        (const std::string& objectTypeTag) const override {return true;}
+    virtual const Object& getValueAsObject(int index) const override
     {  return *const_cast<PropertyObjArray*>(this)->getValueObjPtr(index); }
-    virtual Object& updValueAsObject(int index) OVERRIDE_11
+    virtual Object& updValueAsObject(int index) override
     {   return *getValueObjPtr(index); }
-    virtual void setValueAsObject(const Object& obj, int index) OVERRIDE_11
+    virtual void setValueAsObject(const Object& obj, int index) override
     {   _array.set(index, dynamic_cast<T*>(obj.clone())); }
 
 	//--------------------------------------------------------------------------
@@ -102,7 +102,7 @@ public:
 public:
 	virtual bool isValidObject(const Object *obj) const { return dynamic_cast<const T*>(obj)!=0; }
 	// TYPE
-	virtual std::string getTypeName() const OVERRIDE_11
+	virtual std::string getTypeName() const override
     {   return T::getClassName(); }
 	// VALUE as String
 	virtual std::string toString() const {return "(Array of objects)";}

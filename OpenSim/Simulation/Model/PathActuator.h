@@ -42,8 +42,8 @@ class Model;
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API PathActuator : public Actuator {
-OpenSim_DECLARE_CONCRETE_OBJECT(PathActuator, Actuator);
+class OSIMSIMULATION_API PathActuator : public ScalarActuator {
+	OpenSim_DECLARE_CONCRETE_OBJECT(PathActuator, ScalarActuator);
 public:
 //=============================================================================
 // PROPERTIES
@@ -150,9 +150,9 @@ protected:
     virtual SimTK::Vec3 computePathColor(const SimTK::State& state) const;
 
     /** Extension of parent class method; derived classes may extend further. **/
-	void finalizeFromProperties() OVERRIDE_11;
+	void finalizeFromProperties() override;
     /** Extension of parent class method; derived classes may extend further. **/
-    void realizeDynamics(const SimTK::State& state) const OVERRIDE_11;
+    void realizeDynamics(const SimTK::State& state) const override;
 
 private:
 	void setNull();

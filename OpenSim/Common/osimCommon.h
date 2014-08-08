@@ -38,7 +38,9 @@
 #include "Sine.h"
 #include "StepFunction.h"
 #include "LinearFunction.h"
+#include "PiecewiseConstantFunction.h"
 #include "PiecewiseLinearFunction.h"
+
 #include "MultiplierFunction.h"
 #include "PolynomialFunction.h"
 
