@@ -529,7 +529,7 @@ void testClutchedPathSpring()
 		1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
 }
 
-<<<<<<< HEAD
+
 class MultiCoordinateController : public Controller
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(MultiCoordinateController, Controller);
@@ -558,7 +558,6 @@ void testMultiCoordinateActuator()
     manager.setInitialTime(0); manager.setFinalTime(10.0);
     manager.integrate(state);
 }
-=======
 
 
 void testBodyActuator()
@@ -710,4 +709,3 @@ void testBodyActuator()
 	std::cout << " ********** Test BodyActuator time = ********** " <<
 		1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;
 }
->>>>>>> remotes/origin/createSpatialActuator-issue62
