@@ -42,7 +42,7 @@ using namespace SimTK;
  */
 Actuator_::Actuator_()
 {
-	setNull();
+    setNull();
 }
 
 
@@ -55,7 +55,7 @@ Actuator_::Actuator_()
  */
 void Actuator_::setNull()
 {
-	setAuthors("Ajay Seth");
+    setAuthors("Ajay Seth");
     _controlIndex = -1;
 }
 
@@ -63,18 +63,18 @@ void Actuator_::setNull()
 // Actuator model component
 void Actuator_::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);
+    Super::addToSystem(system);
 
     // Beyond the const Component get the index so we can access the SimTK::Force later
-	Actuator_* mutableThis = const_cast<Actuator_ *>(this);
+    Actuator_* mutableThis = const_cast<Actuator_ *>(this);
 
-	// Model is in charge of creating the shared cache for all all actuator controls
-	// but it does so based on the size and order in its _defaultControls
-	// Actuator has the opportunity here to add slots for its control and record
-	// the index into the shared cache Vector.
-	mutableThis->_controlIndex = _model->updDefaultControls().size();
-	_model->updDefaultControls().resizeKeep(_controlIndex + numControls());
-	_model->updDefaultControls()(_controlIndex, numControls()) = Vector(numControls(), 0.0);
+    // Model is in charge of creating the shared cache for all all actuator controls
+    // but it does so based on the size and order in its _defaultControls
+    // Actuator has the opportunity here to add slots for its control and record
+    // the index into the shared cache Vector.
+    mutableThis->_controlIndex = _model->updDefaultControls().size();
+    _model->updDefaultControls().resizeKeep(_controlIndex + numControls());
+    _model->updDefaultControls()(_controlIndex, numControls()) = Vector(numControls(), 0.0);
 }
 
 
@@ -98,39 +98,39 @@ void Actuator_::updateGeometry()
  */
 const VectorView_<Real> Actuator_::getControls( const SimTK::State& s ) const
 {
-	const Vector &controlsCache = _model->getControls(s);
-	return  controlsCache(_controlIndex, numControls());
+    const Vector &controlsCache = _model->getControls(s);
+    return  controlsCache(_controlIndex, numControls());
 }
 
 void Actuator_::getControls(const Vector& modelControls, Vector& actuatorControls) const
 {
-	SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
-		"Actuator_::getControls, input modelControls size does not match model.getNumControls().\n");
-	SimTK_ASSERT(actuatorControls.size() == numControls(), 
-		"Actuator_::getControls, output actuatorControls incompatible with actuator's numControls().\n");
-	actuatorControls = modelControls(_controlIndex, numControls());
+    SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
+        "Actuator_::getControls, input modelControls size does not match model.getNumControls().\n");
+    SimTK_ASSERT(actuatorControls.size() == numControls(), 
+        "Actuator_::getControls, output actuatorControls incompatible with actuator's numControls().\n");
+    actuatorControls = modelControls(_controlIndex, numControls());
 }
 
 void Actuator_::setControls(const Vector& actuatorControls, Vector& modelControls) const
 {
-	SimTK_ASSERT(actuatorControls.size() == numControls(), 
-		"Actuator_::setControls, input actuatorControls incompatible with actuator's numControls().\n");
+    SimTK_ASSERT(actuatorControls.size() == numControls(), 
+        "Actuator_::setControls, input actuatorControls incompatible with actuator's numControls().\n");
 
-	SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
-	"Actuator_::setControls, output modelControls size does not match model.getNumControls()\n");
+    SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
+    "Actuator_::setControls, output modelControls size does not match model.getNumControls()\n");
 
-	modelControls(_controlIndex, numControls()) = actuatorControls;
+    modelControls(_controlIndex, numControls()) = actuatorControls;
 }
 
 void Actuator_::addInControls(const Vector& actuatorControls, Vector& modelControls) const
 {
-	SimTK_ASSERT(actuatorControls.size() == numControls(), 
-		"Actuator_::addInControls, input actuatorControls incompatible with actuator's numControls()\n");
+    SimTK_ASSERT(actuatorControls.size() == numControls(), 
+        "Actuator_::addInControls, input actuatorControls incompatible with actuator's numControls()\n");
 
-	SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
-	"Actuator_::addInControls, output modelControls size does not match model.getNumControls().\n");
+    SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
+    "Actuator_::addInControls, output modelControls size does not match model.getNumControls().\n");
 
-	modelControls(_controlIndex, numControls()) += actuatorControls;
+    modelControls(_controlIndex, numControls()) += actuatorControls;
 }
 
 
@@ -144,7 +144,7 @@ void Actuator_::addInControls(const Vector& actuatorControls, Vector& modelContr
 /** Default constructor */
 Actuator::Actuator()
 {
-	constructInfrastructure();
+    constructInfrastructure();
 }
 
 
@@ -154,37 +154,37 @@ Actuator::Actuator()
  */
 void Actuator::constructProperties()
 {
-	constructProperty_min_control(-Infinity);
-	constructProperty_max_control( Infinity);
+    constructProperty_min_control(-Infinity);
+    constructProperty_max_control( Infinity);
 }
 
 void Actuator::constructOutputs() 
 {
-	constructOutput<double>("force", &Actuator::getForce, SimTK::Stage::Velocity);
-	constructOutput<double>("speed", &Actuator::getSpeed, SimTK::Stage::Velocity);	
+    constructOutput<double>("force", &Actuator::getForce, SimTK::Stage::Velocity);
+    constructOutput<double>("speed", &Actuator::getSpeed, SimTK::Stage::Velocity);	
 }
 
 // Create the underlying computational system component(s) that support the
 // Actuator model component
 void Actuator::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);
+    Super::addToSystem(system);
 
-	// Add modeling flag to compute actuation with dynamic or by-pass with 
+    // Add modeling flag to compute actuation with dynamic or by-pass with 
     // override force provided
-	addModelingOption("override_force", 1);
+    addModelingOption("override_force", 1);
 
-	// Cache the computed force and speed of the scalar valued actuator
-	addCacheVariable<double>("force", 0.0, Stage::Velocity);
-	addCacheVariable<double>("speed", 0.0, Stage::Velocity);
+    // Cache the computed force and speed of the scalar valued actuator
+    addCacheVariable<double>("force", 0.0, Stage::Velocity);
+    addCacheVariable<double>("speed", 0.0, Stage::Velocity);
 
-	// Discrete state variable is the override force value if in override mode
-	addDiscreteVariable("override_force", Stage::Time);
+    // Discrete state variable is the override force value if in override mode
+    addDiscreteVariable("override_force", Stage::Time);
 }
 
 double Actuator::getControl(const SimTK::State& s ) const
 {
-	return getControls(s)[0];
+    return getControls(s)[0];
 }
 
 //_____________________________________________________________________________
@@ -193,7 +193,7 @@ double Actuator::getControl(const SimTK::State& s ) const
  */
 double Actuator::getStress(const SimTK::State& s ) const
 {
-	OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
+    OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
 }
 //_____________________________________________________________________________
 /**
@@ -201,7 +201,7 @@ double Actuator::getStress(const SimTK::State& s ) const
  */
 double Actuator::getOptimalForce() const
 {
-	OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
+    OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
 }
 
 double Actuator::getForce(const State &s) const
@@ -255,7 +255,7 @@ double Actuator::getOverrideForce(const SimTK::State& s ) const
 }
 double Actuator::computeOverrideForce( const SimTK::State& s ) const 
 {
-	double appliedForce = getOverrideForce(s);
-	setForce(s, appliedForce);
-	return appliedForce;
+    double appliedForce = getOverrideForce(s);
+    setForce(s, appliedForce);
+    return appliedForce;
 }

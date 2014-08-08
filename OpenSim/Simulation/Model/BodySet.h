@@ -28,10 +28,10 @@
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+    #ifdef OSIMSIMULATION_API
+        #undef OSIMSIMULATION_API
+        #define OSIMSIMULATION_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -51,28 +51,28 @@ class OSIMSIMULATION_API BodySet :	public ModelComponentSet<Body> {
 OpenSim_DECLARE_CONCRETE_OBJECT(BodySet, ModelComponentSet<Body>);
 
 private:
-	void setNull();
+    void setNull();
 public:
-	BodySet();
-	BodySet(Model& model);
-	BodySet(const BodySet& aAbsBodySet);
-	~BodySet(void);
+    BodySet();
+    BodySet(Model& model);
+    BodySet(const BodySet& aAbsBodySet);
+    ~BodySet(void);
 
-	// Somehow the following function is not exported from base template
+    // Somehow the following function is not exported from base template
     BodySet(Model& model, const std::string &aFileName, 
             bool aUpdateFromXMLNode = true) 
     :   Super(model, aFileName, aUpdateFromXMLNode) {}
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	BodySet& operator=(const BodySet &aAbsBodySet);
+    BodySet& operator=(const BodySet &aAbsBodySet);
 #endif
-	//--------------------------------------------------------------------------
-	// UTILITIES
-	//--------------------------------------------------------------------------
-	void scale(const ScaleSet& aScaleSet, bool aScaleMass = false);
+    //--------------------------------------------------------------------------
+    // UTILITIES
+    //--------------------------------------------------------------------------
+    void scale(const ScaleSet& aScaleSet, bool aScaleMass = false);
 
 //=============================================================================
 };	// END of class BodySet

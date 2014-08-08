@@ -54,7 +54,7 @@ public:
 // PROPERTIES
 //=============================================================================
 /** @name Property declarations
-	These are the serializable properties associated with this class. **/
+    These are the serializable properties associated with this class. **/
 /**@{**/
 
     /** String property containing the name of the body names*/
@@ -98,51 +98,51 @@ public:
 // METHODS
 //=============================================================================
 public:
-	// Default Constructor
-	BodyDragForce();
+    // Default Constructor
+    BodyDragForce();
 
 
-	//--------------------------------------------------------------------------
-	// COMPUTATION
-	//--------------------------------------------------------------------------
-	/** Compute the bushing force contribution to the system and add in to appropriate
-	  * bodyForce and/or system generalizedForce. The bushing force is [K]*dq + [D]*dqdot
-	  * where, [K] is the spatial 6dof stiffness matrix between the two frames 
-	           dq is the deflection in body spatial coordinates with rotations in Euler angles
-	  *        [D] is the spatial 6dof damping matrix opposing the velocity between the frames
-	  *        dqdot is the relative spatial velocity of the two frames
-	  * BodyDragForce implementation based SimTK::Force::LinearBushing
-	  * developed and implemented by Michael Sherman.
-	  */
-	virtual void computeForce(const SimTK::State& s, 
-							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							  SimTK::Vector& generalizedForces) const;
+    //--------------------------------------------------------------------------
+    // COMPUTATION
+    //--------------------------------------------------------------------------
+    /** Compute the bushing force contribution to the system and add in to appropriate
+      * bodyForce and/or system generalizedForce. The bushing force is [K]*dq + [D]*dqdot
+      * where, [K] is the spatial 6dof stiffness matrix between the two frames 
+               dq is the deflection in body spatial coordinates with rotations in Euler angles
+      *        [D] is the spatial 6dof damping matrix opposing the velocity between the frames
+      *        dqdot is the relative spatial velocity of the two frames
+      * BodyDragForce implementation based SimTK::Force::LinearBushing
+      * developed and implemented by Michael Sherman.
+      */
+    virtual void computeForce(const SimTK::State& s, 
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+                              SimTK::Vector& generalizedForces) const;
 
     /** Potential energy is determined by the elastic energy storage of the bushing.
-	    In spatial terms, U = ~dq*[K]*dq, with K and dq defined above. */
-	virtual double computePotentialEnergy(const SimTK::State& s) const;
+        In spatial terms, U = ~dq*[K]*dq, with K and dq defined above. */
+    virtual double computePotentialEnergy(const SimTK::State& s) const;
 
-	//-----------------------------------------------------------------------------
-	// Reporting
-	//-----------------------------------------------------------------------------
-	/** 
-	 * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
-	 */
-	virtual OpenSim::Array<std::string> getRecordLabels() const ;
-	/**
-	*  Provide the value(s) to be reported that correspond to the labels
-	*/
-	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
+    //-----------------------------------------------------------------------------
+    // Reporting
+    //-----------------------------------------------------------------------------
+    /** 
+     * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
+     */
+    virtual OpenSim::Array<std::string> getRecordLabels() const ;
+    /**
+    *  Provide the value(s) to be reported that correspond to the labels
+    */
+    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
 
 protected:
-	virtual void connectToModel(Model& aModel);
+    virtual void connectToModel(Model& aModel);
 
 
 private:
-	void setNull();
-	void constructProperties();
+    void setNull();
+    void constructProperties();
 
-	
+    
 //=============================================================================
 };	// END of class BodyDragForce
 //=============================================================================

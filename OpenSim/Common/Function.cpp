@@ -58,9 +58,9 @@ Function::~Function()
  * Default constructor.
  */
 Function::Function() :
-	_function(NULL)
+    _function(NULL)
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -69,8 +69,8 @@ Function::Function() :
  * @param aFunction Function to copy.
  */
 Function::Function(const Function &aFunction) :
-	Object(aFunction),
-	_function(NULL)
+    Object(aFunction),
+    _function(NULL)
 {
 }
 
@@ -99,10 +99,10 @@ setNull()
 Function& Function::
 operator=(const Function &aFunction)
 {
-	// BASE CLASS
-	Object::operator=(aFunction);
+    // BASE CLASS
+    Object::operator=(aFunction);
 
-	return(*this);
+    return(*this);
 }
 
 
@@ -111,19 +111,19 @@ operator=(const Function &aFunction)
 //=============================================================================
 Function* Function::makeFunctionOfType(Function* aFunction, const string& aNewTypeName)
 {
-	Function* newFunction = NULL;
+    Function* newFunction = NULL;
 
-	if (aFunction != NULL) {
-		Object* newObject = Object::newInstanceOfType(aNewTypeName);
-		if (newObject) {
-			newFunction = dynamic_cast<Function*>(newObject);
-			if (newFunction) {
-				newFunction->init(aFunction);
-			}
-		}
-	}
+    if (aFunction != NULL) {
+        Object* newObject = Object::newInstanceOfType(aNewTypeName);
+        if (newObject) {
+            newFunction = dynamic_cast<Function*>(newObject);
+            if (newFunction) {
+                newFunction->init(aFunction);
+            }
+        }
+    }
 
-	return newFunction;
+    return newFunction;
 }
 
 //=============================================================================
@@ -132,12 +132,12 @@ Function* Function::makeFunctionOfType(Function* aFunction, const string& aNewTy
 /*
 double Function::evaluate(int aDerivOrder,double aX,double aY,double aZ) const
 {
-	SimTK::Vector workX(getArgumentSize(), aX);
-	if (aDerivOrder == 0)
-	    return calcValue(workX);
-	std::vector<int> workDeriv(aDerivOrder);
-	for (int i = 0; i < aDerivOrder; ++i)
-	    workDeriv[i] = 0;
+    SimTK::Vector workX(getArgumentSize(), aX);
+    if (aDerivOrder == 0)
+        return calcValue(workX);
+    std::vector<int> workDeriv(aDerivOrder);
+    for (int i = 0; i < aDerivOrder; ++i)
+        workDeriv[i] = 0;
     return calcDerivative(workDeriv, workX);
 }
 */
@@ -148,7 +148,7 @@ double Function::evaluate(int aDerivOrder,double aX,double aY,double aZ) const
 double Function::
 evaluateTotalFirstDerivative(double aX,double aDxdt)
 {
-	return evaluate(1,aX) * aDxdt;
+    return evaluate(1,aX) * aDxdt;
 }
 */
 /**
@@ -157,7 +157,7 @@ evaluateTotalFirstDerivative(double aX,double aDxdt)
 double Function::
 evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2)
 {
-	return evaluate(1,aX) * aD2xdt2 + evaluate(2,aX) * aDxdt * aDxdt;
+    return evaluate(1,aX) * aD2xdt2 + evaluate(2,aX) * aDxdt * aDxdt;
 }
 */
 double Function::calcValue(const Vector& x) const

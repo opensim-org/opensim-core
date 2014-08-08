@@ -52,60 +52,60 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MultiplierFunction, Function);
 // MEMBER VARIABLES
 //=============================================================================
 protected:
-	// PROPERTIES
-	/** The Function this object operates on. */
-	PropertyObjPtr<OpenSim::Function> _osFunctionProp;
-	Function *&_osFunction;
+    // PROPERTIES
+    /** The Function this object operates on. */
+    PropertyObjPtr<OpenSim::Function> _osFunctionProp;
+    Function *&_osFunction;
 
-	/** Scale factor */
-	PropertyDbl _scaleProp;
-	double &_scale;
+    /** Scale factor */
+    PropertyDbl _scaleProp;
+    double &_scale;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	MultiplierFunction();
-	MultiplierFunction(Function* aFunction);
-	MultiplierFunction(Function* aFunction, double aScaleFactor);
-	MultiplierFunction(const MultiplierFunction &aFunction);
-	virtual ~MultiplierFunction();
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    MultiplierFunction();
+    MultiplierFunction(Function* aFunction);
+    MultiplierFunction(Function* aFunction, double aScaleFactor);
+    MultiplierFunction(const MultiplierFunction &aFunction);
+    virtual ~MultiplierFunction();
 
-	virtual void init(Function* aFunction);
+    virtual void init(Function* aFunction);
 
 private:
-	void setNull();
-	void setupProperties();
-	void setEqual(const MultiplierFunction &aFunction);
+    void setNull();
+    void setupProperties();
+    void setEqual(const MultiplierFunction &aFunction);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	MultiplierFunction& operator=(const MultiplierFunction &aFunction);
+    MultiplierFunction& operator=(const MultiplierFunction &aFunction);
 #endif
 
 public:
-	//--------------------------------------------------------------------------
-	// SET AND GET
-	//--------------------------------------------------------------------------
-	void setFunction(Function* aFunction);
-	void setScale(double aScaleFactor);
-	Function* getFunction() const { return _osFunction; }
-	double getScale() const { return _scale; }
+    //--------------------------------------------------------------------------
+    // SET AND GET
+    //--------------------------------------------------------------------------
+    void setFunction(Function* aFunction);
+    void setScale(double aScaleFactor);
+    Function* getFunction() const { return _osFunction; }
+    double getScale() const { return _scale; }
 
-	//--------------------------------------------------------------------------
-	// EVALUATION
-	//--------------------------------------------------------------------------
-	double calcValue(const SimTK::Vector& x) const;
-	double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const;
-	int getArgumentSize() const;
-	int getMaxDerivativeOrder() const;
-	SimTK::Function* createSimTKFunction() const;
+    //--------------------------------------------------------------------------
+    // EVALUATION
+    //--------------------------------------------------------------------------
+    double calcValue(const SimTK::Vector& x) const;
+    double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const;
+    int getArgumentSize() const;
+    int getMaxDerivativeOrder() const;
+    SimTK::Function* createSimTKFunction() const;
 
 //=============================================================================
 };	// END class MultiplierFunction

@@ -49,17 +49,17 @@ using SimTK::Vec3;
  * Default constructor.
  */
 WrapObject::WrapObject() :
-	Object(),
+    Object(),
    _xyzBodyRotation(_xyzBodyRotationProp.getValueDblArray()),
    _translation(_translationProp.getValueDblVec()),
-	_active(_activeProp.getValueBool()),
-	_quadrantName(_quadrantNameProp.getValueStr()),
-	_displayerProp(PropertyObj("", VisibleObject())),
+    _active(_activeProp.getValueBool()),
+    _quadrantName(_quadrantNameProp.getValueStr()),
+    _displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj())
 
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
     constructProperties();
 }
 
@@ -78,18 +78,18 @@ WrapObject::~WrapObject()
  * @param aWrapObject WrapObject to be copied.
  */
 WrapObject::WrapObject(const WrapObject& aWrapObject) :
-	Object(aWrapObject),
+    Object(aWrapObject),
    _xyzBodyRotation(_xyzBodyRotationProp.getValueDblArray()),
    _translation(_translationProp.getValueDblVec()),
-	_active(_activeProp.getValueBool()),
-	_quadrantName(_quadrantNameProp.getValueStr()),
-	_displayerProp(PropertyObj("", VisibleObject())),
+    _active(_activeProp.getValueBool()),
+    _quadrantName(_quadrantNameProp.getValueStr()),
+    _displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj())
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
     //constructProperties();
-	copyData(aWrapObject);
+    copyData(aWrapObject);
 }
 
 //=============================================================================
@@ -101,7 +101,7 @@ WrapObject::WrapObject(const WrapObject& aWrapObject) :
  */
 void WrapObject::setNull()
 {
-	_quadrant = allQuadrants;
+    _quadrant = allQuadrants;
 }
 
 //_____________________________________________________________________________
@@ -110,27 +110,27 @@ void WrapObject::setNull()
  */
 void WrapObject::setupProperties()
 {
-	const double defaultRotations[] = {0.0, 0.0, 0.0};
-	_xyzBodyRotationProp.setName("xyz_body_rotation");
-	_xyzBodyRotationProp.setValue(3, defaultRotations);
-	_propertySet.append(&_xyzBodyRotationProp);
+    const double defaultRotations[] = {0.0, 0.0, 0.0};
+    _xyzBodyRotationProp.setName("xyz_body_rotation");
+    _xyzBodyRotationProp.setValue(3, defaultRotations);
+    _propertySet.append(&_xyzBodyRotationProp);
 
-	const SimTK::Vec3 defaultTranslations(0.0);
-	_translationProp.setName("translation");
-	_translationProp.setValue(defaultTranslations);
-	//_translationProp.setAllowableListSize(3);
-	_propertySet.append(&_translationProp);
+    const SimTK::Vec3 defaultTranslations(0.0);
+    _translationProp.setName("translation");
+    _translationProp.setValue(defaultTranslations);
+    //_translationProp.setAllowableListSize(3);
+    _propertySet.append(&_translationProp);
 
-	_activeProp.setName("active");
-	_activeProp.setValue(true);
-	_propertySet.append(&_activeProp);
+    _activeProp.setName("active");
+    _activeProp.setValue(true);
+    _propertySet.append(&_activeProp);
 
-	_quadrantNameProp.setName("quadrant");
-	_quadrantNameProp.setValue("Unassigned");
-	_propertySet.append(&_quadrantNameProp);
+    _quadrantNameProp.setName("quadrant");
+    _quadrantNameProp.setValue("Unassigned");
+    _propertySet.append(&_quadrantNameProp);
 
-	_displayerProp.setName("display");
-	_propertySet.append(&_displayerProp);
+    _displayerProp.setName("display");
+    _propertySet.append(&_displayerProp);
 
 }
 
@@ -138,7 +138,7 @@ void WrapObject::constructProperties()
 {
     constructProperty_display_preference(1);
     Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
-	defaultColor[0] = 0.0; 
+    defaultColor[0] = 0.0; 
 
     constructProperty_color(defaultColor);
 }
@@ -156,16 +156,16 @@ void WrapObject::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
    _body = &aBody;
    _model = &aModel;
 
-	setupQuadrant();
+    setupQuadrant();
 
-	SimTK::Rotation rot;
-	rot.setRotationToBodyFixedXYZ(Vec3(_xyzBodyRotation[0], _xyzBodyRotation[1], _xyzBodyRotation[2]));
-	_pose.set(rot, _translation);
+    SimTK::Rotation rot;
+    rot.setRotationToBodyFixedXYZ(Vec3(_xyzBodyRotation[0], _xyzBodyRotation[1], _xyzBodyRotation[2]));
+    _pose.set(rot, _translation);
 
-	// Object is visible (has displayer) and depends on body it's attached to.
-	_body->updDisplayer()->addDependent(getDisplayer());
-	_displayer.setTransform(_pose);
-	_displayer.setOwner(this);
+    // Object is visible (has displayer) and depends on body it's attached to.
+    _body->updDisplayer()->addDependent(getDisplayer());
+    _displayer.setTransform(_pose);
+    _displayer.setOwner(this);
 }
 
 //_____________________________________________________________________________
@@ -191,17 +191,17 @@ void WrapObject::scale(const SimTK::Vec3& aScaleFactors)
  */
 void WrapObject::setGeometryQuadrants(OpenSim::AnalyticGeometry *aGeometry) const
 {
-	// The following code should be moved to the base class WrapObject
-	bool	quads[] = {true, true, true, true, true, true};
+    // The following code should be moved to the base class WrapObject
+    bool	quads[] = {true, true, true, true, true, true};
 
-	if (_quadrant != allQuadrants){
-		// Turn off half wrap object
-		if (_wrapSign==1)
-			quads[2*_wrapAxis]=false;
-		else
-			quads[2*_wrapAxis+1]=false;
-	}
-	aGeometry->setQuadrants(quads);
+    if (_quadrant != allQuadrants){
+        // Turn off half wrap object
+        if (_wrapSign==1)
+            quads[2*_wrapAxis]=false;
+        else
+            quads[2*_wrapAxis+1]=false;
+    }
+    aGeometry->setQuadrants(quads);
 }
 //_____________________________________________________________________________
 /**
@@ -211,12 +211,12 @@ void WrapObject::setGeometryQuadrants(OpenSim::AnalyticGeometry *aGeometry) cons
  */
 void WrapObject::copyData(const WrapObject& aWrapObject)
 {
-	_xyzBodyRotation = aWrapObject._xyzBodyRotation;
-	_translation = aWrapObject._translation;
-	_active = aWrapObject._active;
-	_quadrantName = aWrapObject._quadrantName;
-	_quadrant = aWrapObject._quadrant;
-	_displayer = aWrapObject._displayer;
+    _xyzBodyRotation = aWrapObject._xyzBodyRotation;
+    _translation = aWrapObject._translation;
+    _active = aWrapObject._active;
+    _quadrantName = aWrapObject._quadrantName;
+    _quadrant = aWrapObject._quadrant;
+    _displayer = aWrapObject._displayer;
 }
 
 //_____________________________________________________________________________
@@ -228,9 +228,9 @@ void WrapObject::copyData(const WrapObject& aWrapObject)
  */
 void WrapObject::setQuadrantName(const string& aName)
 {
-	_quadrantName = aName;
+    _quadrantName = aName;
 
-	setupQuadrant();
+    setupQuadrant();
 }
 
 //_____________________________________________________________________________
@@ -241,41 +241,41 @@ void WrapObject::setQuadrantName(const string& aName)
  */
 void WrapObject::setupQuadrant()
 {
-	if (_quadrantName == "-x" || _quadrantName == "-X") {
-		_quadrant = negativeX;
-		_wrapAxis = 0;
-		_wrapSign = -1;
-	} else if (_quadrantName == "x" || _quadrantName == "+x" || _quadrantName == "X" || _quadrantName == "+X") {
-		_quadrant = positiveX;
-		_wrapAxis = 0;
-		_wrapSign = 1;
-	} else if (_quadrantName == "-y" || _quadrantName == "-Y") {
-		_quadrant = negativeY;
-		_wrapAxis = 1;
-		_wrapSign = -1;
-	} else if (_quadrantName == "y" || _quadrantName == "+y" || _quadrantName == "Y" || _quadrantName == "+Y") {
-		_quadrant = positiveY;
-		_wrapAxis = 1;
-		_wrapSign = 1;
-	} else if (_quadrantName == "-z" || _quadrantName == "-Z") {
-		_quadrant = negativeZ;
-		_wrapAxis = 2;
-		_wrapSign = -1;
-	} else if (_quadrantName == "z" || _quadrantName == "+z" || _quadrantName == "Z" || _quadrantName == "+Z") {
-		_quadrant = positiveZ;
-		_wrapAxis = 2;
-		_wrapSign = 1;
-	} else if (_quadrantName == "all" || _quadrantName == "ALL" || _quadrantName == "All") {
-		_quadrant = allQuadrants;
-		_wrapSign = 0;
-	} else if (_quadrantName == "Unassigned") {  // quadrant was not specified in wrap object definition; use default
-		_quadrant = allQuadrants;
-		_quadrantName = "all";
-		_wrapSign = 0;
-	} else {  // quadrant was specified incorrectly in wrap object definition; throw an exception
-		string errorMessage = "Error: quadrant for wrap object " + getName() + " was specified incorrectly.";
-		throw Exception(errorMessage);
-	}
+    if (_quadrantName == "-x" || _quadrantName == "-X") {
+        _quadrant = negativeX;
+        _wrapAxis = 0;
+        _wrapSign = -1;
+    } else if (_quadrantName == "x" || _quadrantName == "+x" || _quadrantName == "X" || _quadrantName == "+X") {
+        _quadrant = positiveX;
+        _wrapAxis = 0;
+        _wrapSign = 1;
+    } else if (_quadrantName == "-y" || _quadrantName == "-Y") {
+        _quadrant = negativeY;
+        _wrapAxis = 1;
+        _wrapSign = -1;
+    } else if (_quadrantName == "y" || _quadrantName == "+y" || _quadrantName == "Y" || _quadrantName == "+Y") {
+        _quadrant = positiveY;
+        _wrapAxis = 1;
+        _wrapSign = 1;
+    } else if (_quadrantName == "-z" || _quadrantName == "-Z") {
+        _quadrant = negativeZ;
+        _wrapAxis = 2;
+        _wrapSign = -1;
+    } else if (_quadrantName == "z" || _quadrantName == "+z" || _quadrantName == "Z" || _quadrantName == "+Z") {
+        _quadrant = positiveZ;
+        _wrapAxis = 2;
+        _wrapSign = 1;
+    } else if (_quadrantName == "all" || _quadrantName == "ALL" || _quadrantName == "All") {
+        _quadrant = allQuadrants;
+        _wrapSign = 0;
+    } else if (_quadrantName == "Unassigned") {  // quadrant was not specified in wrap object definition; use default
+        _quadrant = allQuadrants;
+        _quadrantName = "all";
+        _wrapSign = 0;
+    } else {  // quadrant was specified incorrectly in wrap object definition; throw an exception
+        string errorMessage = "Error: quadrant for wrap object " + getName() + " was specified incorrectly.";
+        throw Exception(errorMessage);
+    }
 }
 
 //=============================================================================
@@ -289,10 +289,10 @@ void WrapObject::setupQuadrant()
  */
 WrapObject& WrapObject::operator=(const WrapObject& aWrapObject)
 {
-	// BASE CLASS
-	Object::operator=(aWrapObject);
+    // BASE CLASS
+    Object::operator=(aWrapObject);
 
-	return(*this);
+    return(*this);
 }
 
 //=============================================================================
@@ -309,36 +309,36 @@ WrapObject& WrapObject::operator=(const WrapObject& aWrapObject)
  * @return The status, as a WrapAction enum
  */
 int WrapObject::wrapPathSegment(const SimTK::State& s, PathPoint& aPoint1, PathPoint& aPoint2,
-										  const PathWrap& aPathWrap, WrapResult& aWrapResult) const
+                                          const PathWrap& aPathWrap, WrapResult& aWrapResult) const
 {
    int return_code = noWrap;
-	bool p_flag;
-	Vec3 pt1(0.0);
-	Vec3 pt2(0.0);
+    bool p_flag;
+    Vec3 pt1(0.0);
+    Vec3 pt2(0.0);
 
-	// Convert the path points from the frames of the bodies they are attached
-	// to to the frame of the wrap object's body
-	_model->getSimbodyEngine().transformPosition(s, aPoint1.getBody(), aPoint1.getLocation(), getBody(), pt1);
+    // Convert the path points from the frames of the bodies they are attached
+    // to to the frame of the wrap object's body
+    _model->getSimbodyEngine().transformPosition(s, aPoint1.getBody(), aPoint1.getLocation(), getBody(), pt1);
 
-	_model->getSimbodyEngine().transformPosition(s, aPoint2.getBody(), aPoint2.getLocation(), getBody(), pt2);
+    _model->getSimbodyEngine().transformPosition(s, aPoint2.getBody(), aPoint2.getLocation(), getBody(), pt2);
 
-	// Convert the path points from the frame of the wrap object's body
-	// into the frame of the wrap object
-	pt1 = _pose.shiftBaseStationToFrame(pt1);
-	pt2 = _pose.shiftBaseStationToFrame(pt2);
+    // Convert the path points from the frame of the wrap object's body
+    // into the frame of the wrap object
+    pt1 = _pose.shiftBaseStationToFrame(pt1);
+    pt2 = _pose.shiftBaseStationToFrame(pt2);
 
-	return_code = wrapLine(s, pt1, pt2, aPathWrap, aWrapResult, p_flag);
+    return_code = wrapLine(s, pt1, pt2, aPathWrap, aWrapResult, p_flag);
 
    if (p_flag == true && return_code > 0) {
-		// Convert the tangent points from the frame of the wrap object to the
-		// frame of the wrap object's body
-		aWrapResult.r1 = _pose.shiftFrameStationToBase(aWrapResult.r1);
-		aWrapResult.r2 = _pose.shiftFrameStationToBase(aWrapResult.r2);
+        // Convert the tangent points from the frame of the wrap object to the
+        // frame of the wrap object's body
+        aWrapResult.r1 = _pose.shiftFrameStationToBase(aWrapResult.r1);
+        aWrapResult.r2 = _pose.shiftFrameStationToBase(aWrapResult.r2);
 
-		// Convert the surface points (between the tangent points) from the frame of
-		// the wrap object to the frame of the wrap object's body
-		for (int i = 0; i < aWrapResult.wrap_pts.getSize(); i++)
-			aWrapResult.wrap_pts.updElt(i) = _pose.shiftFrameStationToBase(aWrapResult.wrap_pts.get(i));
+        // Convert the surface points (between the tangent points) from the frame of
+        // the wrap object to the frame of the wrap object's body
+        for (int i = 0; i < aWrapResult.wrap_pts.getSize(); i++)
+            aWrapResult.wrap_pts.updElt(i) = _pose.shiftFrameStationToBase(aWrapResult.wrap_pts.get(i));
    }
 
    return return_code;

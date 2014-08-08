@@ -53,60 +53,60 @@ OpenSim_DECLARE_CONCRETE_OBJECT(CMC_Point, CMC_Task);
 // DATA
 //=============================================================================
 protected:
-	/** Location of the tracked point on the body expressed in the body-local
-	coordinate frame. */
-	PropertyDblVec3 _propPoint;
+    /** Location of the tracked point on the body expressed in the body-local
+    coordinate frame. */
+    PropertyDblVec3 _propPoint;
 
-	// REFERENCES
-	SimTK::Vec3 &_point;
+    // REFERENCES
+    SimTK::Vec3 &_point;
 
-	// Work Variables
-	SimTK::Vec3 _p,_v,_inertialPTrk,_inertialVTrk;
-	Body *_wrtBody,*_expressBody;
+    // Work Variables
+    SimTK::Vec3 _p,_v,_inertialPTrk,_inertialVTrk;
+    Body *_wrtBody,*_expressBody;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	CMC_Point(const SimTK::Vec3 &aPoint = SimTK::Vec3(0));
-	CMC_Point(const CMC_Point &aTask);
-	virtual ~CMC_Point();
+    CMC_Point(const SimTK::Vec3 &aPoint = SimTK::Vec3(0));
+    CMC_Point(const CMC_Point &aTask);
+    virtual ~CMC_Point();
 
 private:
-	void setNull();
-	void setupProperties();
-	void copyData(const CMC_Point &aTask);
-	void updateWorkVariables(const SimTK::State& s);
+    void setNull();
+    void setupProperties();
+    void copyData(const CMC_Point &aTask);
+    void updateWorkVariables(const SimTK::State& s);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	CMC_Point& operator=(const CMC_Point &aTask);
+    CMC_Point& operator=(const CMC_Point &aTask);
 #endif
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	virtual void setModel(Model& aModel);
-	void setPoint(const SimTK::Vec3 &aPoint);
-	SimTK::Vec3 getPoint() const;
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    virtual void setModel(Model& aModel);
+    void setPoint(const SimTK::Vec3 &aPoint);
+    SimTK::Vec3 getPoint() const;
 
-	//--------------------------------------------------------------------------
-	// COMPUTATIONS
-	//--------------------------------------------------------------------------
-	virtual void computeErrors(const SimTK::State& s, double aT);
-	virtual void computeDesiredAccelerations(const SimTK::State& s, double aT);
-	virtual void computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF);
-	virtual void computeAccelerations(const SimTK::State& s );
+    //--------------------------------------------------------------------------
+    // COMPUTATIONS
+    //--------------------------------------------------------------------------
+    virtual void computeErrors(const SimTK::State& s, double aT);
+    virtual void computeDesiredAccelerations(const SimTK::State& s, double aT);
+    virtual void computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF);
+    virtual void computeAccelerations(const SimTK::State& s );
 
-	//--------------------------------------------------------------------------
-	// XML
-	//--------------------------------------------------------------------------
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    //--------------------------------------------------------------------------
+    // XML
+    //--------------------------------------------------------------------------
+    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 //=============================================================================
 };	// END of class CMC_Point

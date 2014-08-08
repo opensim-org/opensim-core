@@ -58,10 +58,10 @@ OpenSim_DECLARE_CONCRETE_OBJECT(Condition, Object);
 //=============================================================================
 
 protected:
-	/** Flag indicating whether the Condition is disabled or not.  Disabled 
-	means that the Condition is not active when */
-	PropertyBool _isDisabledProp;
-	bool &_isDisabled;
+    /** Flag indicating whether the Condition is disabled or not.  Disabled 
+    means that the Condition is not active when */
+    PropertyBool _isDisabledProp;
+    bool &_isDisabled;
 
     Model* _model;
 
@@ -72,27 +72,27 @@ protected:
 // CONSTRUCTION
 //--------------------------------------------------------------------------
 public:
-	Condition();
-	Condition(const Condition &aCondition);
-	virtual ~Condition();
+    Condition();
+    Condition(const Condition &aCondition);
+    virtual ~Condition();
 
-	Condition& operator=(const Condition &aCondition);
-	void copyData(const Condition &aCondition);
+    Condition& operator=(const Condition &aCondition);
+    void copyData(const Condition &aCondition);
 
-	virtual void connectConditionToModel(Model& aModel);
+    virtual void connectConditionToModel(Model& aModel);
 
-	virtual bool isDisabled() const {return _isDisabled; } ;
+    virtual bool isDisabled() const {return _isDisabled; } ;
 
-	virtual void setDisabled(bool isDisabled) {_isDisabled = isDisabled; } ;
+    virtual void setDisabled(bool isDisabled) {_isDisabled = isDisabled; } ;
 
-	/**
-	 *  The defining condition method that subclasses must override 
-	 */
-	virtual bool calcCondition(const SimTK::State& s) const {return true; };
+    /**
+     *  The defining condition method that subclasses must override 
+     */
+    virtual bool calcCondition(const SimTK::State& s) const {return true; };
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 
 //=============================================================================
 };	// END of class Condition

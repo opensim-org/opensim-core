@@ -58,10 +58,10 @@ CMC_Point::~CMC_Point()
  *
  */
 CMC_Point::CMC_Point(const SimTK::Vec3 &aPoint) :
-	_point(_propPoint.getValueDblVec())
+    _point(_propPoint.getValueDblVec())
 {
-	setNull();
-	setPoint(aPoint);
+    setNull();
+    setPoint(aPoint);
 }
 
 //_____________________________________________________________________________
@@ -71,11 +71,11 @@ CMC_Point::CMC_Point(const SimTK::Vec3 &aPoint) :
  * @param aTask Point task to be copied.
  */
 CMC_Point::CMC_Point(const CMC_Point &aTask) :
-	CMC_Task(aTask),
-	_point(_propPoint.getValueDblVec())
+    CMC_Task(aTask),
+    _point(_propPoint.getValueDblVec())
 {
-	setNull();
-	copyData(aTask);
+    setNull();
+    copyData(aTask);
 }
 
 //=============================================================================
@@ -88,11 +88,11 @@ CMC_Point::CMC_Point(const CMC_Point &aTask) :
 void CMC_Point::
 setNull()
 {
-	setupProperties();
+    setupProperties();
 
-	_nTrk = 3;
-	_p = 0;
-	_v = 0;
+    _nTrk = 3;
+    _p = 0;
+    _v = 0;
 }
 //_____________________________________________________________________________
 /**
@@ -101,10 +101,10 @@ setNull()
 void CMC_Point::
 setupProperties()
 {
-	_propPoint.setComment("Point in body frame with respect to which an objective is tracked.");
-	_propPoint.setName("point");
-	_propPoint.setValue(SimTK::Vec3(0));
-	_propertySet.append(&_propPoint);
+    _propPoint.setComment("Point in body frame with respect to which an objective is tracked.");
+    _propPoint.setName("point");
+    _propPoint.setValue(SimTK::Vec3(0));
+    _propertySet.append(&_propPoint);
 }
 
 //_____________________________________________________________________________
@@ -114,7 +114,7 @@ setupProperties()
 void CMC_Point::
 copyData(const CMC_Point &aTask)
 {
-	setPoint(aTask.getPoint());
+    setPoint(aTask.getPoint());
 }
 
 
@@ -125,50 +125,50 @@ copyData(const CMC_Point &aTask)
 void CMC_Point::
 updateWorkVariables(const SimTK::State& s)
 {
-	_p = 0;
-	_v = 0;
-	if(_model) {
+    _p = 0;
+    _v = 0;
+    if(_model) {
 
-		BodySet& bs = _model->updBodySet();
-	
-		_model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
+        BodySet& bs = _model->updBodySet();
+    
+        _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
-		if(_wrtBodyName == "center_of_mass") {
-			SimTK::Vec3 pVec,vVec;
-			double Mass = 0.0;
-			double rP[3] = { 0.0, 0.0, 0.0 };
-			for(int i=0;i<bs.getSize();i++) {
-				Body& body = bs.get(i);
-				const SimTK::Vec3& com = body.get_mass_center();
-				_model->getSimbodyEngine().getPosition(s, body,com,pVec);
-				if(pVec[0] != pVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
-											+ "' references invalid acceleration components",__FILE__,__LINE__);
-				_model->getSimbodyEngine().getVelocity(s, body,com,vVec);
-				if(vVec[0] != vVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
-											+ "' references invalid acceleration components",__FILE__,__LINE__);
-				// ADD TO WHOLE BODY MASS
-				Mass += body.get_mass();
-				_p += body.get_mass() * pVec;
-				_v += body.get_mass() * vVec;
-			}
+        if(_wrtBodyName == "center_of_mass") {
+            SimTK::Vec3 pVec,vVec;
+            double Mass = 0.0;
+            double rP[3] = { 0.0, 0.0, 0.0 };
+            for(int i=0;i<bs.getSize();i++) {
+                Body& body = bs.get(i);
+                const SimTK::Vec3& com = body.get_mass_center();
+                _model->getSimbodyEngine().getPosition(s, body,com,pVec);
+                if(pVec[0] != pVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
+                                            + "' references invalid acceleration components",__FILE__,__LINE__);
+                _model->getSimbodyEngine().getVelocity(s, body,com,vVec);
+                if(vVec[0] != vVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
+                                            + "' references invalid acceleration components",__FILE__,__LINE__);
+                // ADD TO WHOLE BODY MASS
+                Mass += body.get_mass();
+                _p += body.get_mass() * pVec;
+                _v += body.get_mass() * vVec;
+            }
 
-			//COMPUTE COM OF WHOLE BODY
-			_p /= Mass;
-			_v /= Mass;
+            //COMPUTE COM OF WHOLE BODY
+            _p /= Mass;
+            _v /= Mass;
 
-		} else {
+        } else {
 
-			_wrtBody =  &bs.get(_wrtBodyName);
+            _wrtBody =  &bs.get(_wrtBodyName);
 
-			_model->getSimbodyEngine().getPosition(s, *_wrtBody,_point,_p);
-			if(_p[0] != _p[0]) throw Exception("CMC_Point.updateWorkVariables: ERROR- point task '" + getName() 
-												+ "' references invalid position components",__FILE__,__LINE__);
-			_model->getSimbodyEngine().getVelocity(s, *_wrtBody,_point,_v);
-			if(_v[0] != _v[0]) throw Exception("CMC_Point.updateWorkVariables: ERROR- point task '" + getName() 
-												+ "' references invalid velocity components",__FILE__,__LINE__);
+            _model->getSimbodyEngine().getPosition(s, *_wrtBody,_point,_p);
+            if(_p[0] != _p[0]) throw Exception("CMC_Point.updateWorkVariables: ERROR- point task '" + getName() 
+                                                + "' references invalid position components",__FILE__,__LINE__);
+            _model->getSimbodyEngine().getVelocity(s, *_wrtBody,_point,_v);
+            if(_v[0] != _v[0]) throw Exception("CMC_Point.updateWorkVariables: ERROR- point task '" + getName() 
+                                                + "' references invalid velocity components",__FILE__,__LINE__);
 
-		}
-	}
+        }
+    }
 }
 
 //=============================================================================
@@ -187,13 +187,13 @@ updateWorkVariables(const SimTK::State& s)
 CMC_Point& CMC_Point::
 operator=(const CMC_Point &aTask)
 {
-	// BASE CLASS
-	CMC_Task::operator =(aTask);
+    // BASE CLASS
+    CMC_Task::operator =(aTask);
 
-	// DATA
-	copyData(aTask);
+    // DATA
+    copyData(aTask);
 
-	return(*this);
+    return(*this);
 }
 
 
@@ -213,7 +213,7 @@ operator=(const CMC_Point &aTask)
 void CMC_Point::
 setModel(Model& aModel)
 {
-	CMC_Task::setModel(aModel);
+    CMC_Task::setModel(aModel);
 }
 //-----------------------------------------------------------------------------
 // Point
@@ -238,7 +238,7 @@ setPoint(const SimTK::Vec3 &aPoint)
 SimTK::Vec3 CMC_Point::
 getPoint() const
 {
-	return(_point);
+    return(_point);
 }
 
 //=============================================================================
@@ -256,74 +256,74 @@ getPoint() const
 void CMC_Point::
 computeErrors(const SimTK::State& s, double aT)
 {
-	updateWorkVariables(s);
-	// COMPUTE ERRORS
-	//std::cout<<getName()<<std::endl;
-	//std::cout<<"_pTrk[0]->evaluate(0,aT) = "<<_pTrk[0]->evaluate(0,aT)<<std::endl;
-	//std::cout<<"_pTrk[1]->evaluate(0,aT) = "<<_pTrk[1]->evaluate(0,aT)<<std::endl;
-	//std::cout<<"_pTrk[2]->evaluate(0,aT) = "<<_pTrk[2]->evaluate(0,aT)<<std::endl;
-	//std::cout<<"_inertialPTrk[0] = "<<_inertialPTrk[0]<<std::endl;
-	//std::cout<<"_inertialPTrk[1] = "<<_inertialPTrk[1]<<std::endl;
-	//std::cout<<"_inertialPTrk[2] = "<<_inertialPTrk[2]<<std::endl;
-	//std::cout<<"_p = "<<_p<<std::endl;
+    updateWorkVariables(s);
+    // COMPUTE ERRORS
+    //std::cout<<getName()<<std::endl;
+    //std::cout<<"_pTrk[0]->evaluate(0,aT) = "<<_pTrk[0]->evaluate(0,aT)<<std::endl;
+    //std::cout<<"_pTrk[1]->evaluate(0,aT) = "<<_pTrk[1]->evaluate(0,aT)<<std::endl;
+    //std::cout<<"_pTrk[2]->evaluate(0,aT) = "<<_pTrk[2]->evaluate(0,aT)<<std::endl;
+    //std::cout<<"_inertialPTrk[0] = "<<_inertialPTrk[0]<<std::endl;
+    //std::cout<<"_inertialPTrk[1] = "<<_inertialPTrk[1]<<std::endl;
+    //std::cout<<"_inertialPTrk[2] = "<<_inertialPTrk[2]<<std::endl;
+    //std::cout<<"_p = "<<_p<<std::endl;
 
-	BodySet& bs = _model->updBodySet();
+    BodySet& bs = _model->updBodySet();
 
-	_inertialPTrk = 0;
-	_inertialVTrk = 0;
-	if(_expressBodyName == "ground") {
+    _inertialPTrk = 0;
+    _inertialVTrk = 0;
+    if(_expressBodyName == "ground") {
 
-		for(int i=0;i<3;i++) {
-			_inertialPTrk[i] = _pTrk[i]->calcValue(SimTK::Vector(1,aT));
-			if(_vTrk[i]==NULL) {
-				std::vector<int> derivComponents(1);
-				derivComponents[0]=0;
-				_inertialVTrk[i] = _pTrk[i]->calcDerivative(derivComponents,SimTK::Vector(1,aT));
-			} else {
-				_inertialVTrk[i] = _vTrk[i]->calcValue(SimTK::Vector(1,aT));
-			}
-		}
+        for(int i=0;i<3;i++) {
+            _inertialPTrk[i] = _pTrk[i]->calcValue(SimTK::Vector(1,aT));
+            if(_vTrk[i]==NULL) {
+                std::vector<int> derivComponents(1);
+                derivComponents[0]=0;
+                _inertialVTrk[i] = _pTrk[i]->calcDerivative(derivComponents,SimTK::Vector(1,aT));
+            } else {
+                _inertialVTrk[i] = _vTrk[i]->calcValue(SimTK::Vector(1,aT));
+            }
+        }
 
-	} else {
+    } else {
 
-		_expressBody =  &bs.get(_expressBodyName);
+        _expressBody =  &bs.get(_expressBodyName);
 
-		SimTK::Vec3 pVec,vVec,origin;
+        SimTK::Vec3 pVec,vVec,origin;
 
-		for(int i=0;i<3;i++) {
-			pVec(i) = _pTrk[i]->calcValue(SimTK::Vector(1,aT));
-		}
-		_model->getSimbodyEngine().getPosition(s, *_expressBody,pVec,_inertialPTrk);
-		if(_vTrk[0]==NULL) {
-			_model->getSimbodyEngine().getVelocity(s, *_expressBody,pVec,_inertialVTrk);
-		} else {
-			for(int i=0;i<3;i++) {
-				vVec(i) = _vTrk[i]->calcValue(SimTK::Vector(1,aT));
-			}
-			_model->getSimbodyEngine().getVelocity(s, *_expressBody,origin,_inertialVTrk); // get velocity of _expressBody origin in inertial frame
-			_inertialVTrk += vVec; // _vTrk is velocity in _expressBody, so it is simply added to velocity of _expressBody origin in inertial frame
-		}
+        for(int i=0;i<3;i++) {
+            pVec(i) = _pTrk[i]->calcValue(SimTK::Vector(1,aT));
+        }
+        _model->getSimbodyEngine().getPosition(s, *_expressBody,pVec,_inertialPTrk);
+        if(_vTrk[0]==NULL) {
+            _model->getSimbodyEngine().getVelocity(s, *_expressBody,pVec,_inertialVTrk);
+        } else {
+            for(int i=0;i<3;i++) {
+                vVec(i) = _vTrk[i]->calcValue(SimTK::Vector(1,aT));
+            }
+            _model->getSimbodyEngine().getVelocity(s, *_expressBody,origin,_inertialVTrk); // get velocity of _expressBody origin in inertial frame
+            _inertialVTrk += vVec; // _vTrk is velocity in _expressBody, so it is simply added to velocity of _expressBody origin in inertial frame
+        }
 
-	}
+    }
 
-	_pErr[0] = 0.0;
-	_vErr[0] = 0.0;
-	for(int j=0; j<3; j++) {
-		_pErr[0] += _inertialPTrk[j]*_r0[j] - _p[j]*_r0[j];
-		_vErr[0] += _inertialVTrk[j]*_r0[j] - _v[j]*_r0[j];
-	}
-	_pErr[1] = 0.0;
-	_vErr[1] = 0.0;
-	for(int j=0; j<3; j++) {
-		_pErr[1] += _inertialPTrk[j]*_r1[j] - _p[j]*_r1[j];
-		_vErr[1] += _inertialVTrk[j]*_r1[j] - _v[j]*_r1[j];
-	}
-	_pErr[2] = 0.0;
-	_vErr[2] = 0.0;
-	for(int j=0; j<3; j++) {
-		_pErr[2] += _inertialPTrk[j]*_r2[j] - _p[j]*_r2[j];
-		_vErr[2] += _inertialVTrk[j]*_r2[j] - _v[j]*_r2[j];
-	}
+    _pErr[0] = 0.0;
+    _vErr[0] = 0.0;
+    for(int j=0; j<3; j++) {
+        _pErr[0] += _inertialPTrk[j]*_r0[j] - _p[j]*_r0[j];
+        _vErr[0] += _inertialVTrk[j]*_r0[j] - _v[j]*_r0[j];
+    }
+    _pErr[1] = 0.0;
+    _vErr[1] = 0.0;
+    for(int j=0; j<3; j++) {
+        _pErr[1] += _inertialPTrk[j]*_r1[j] - _p[j]*_r1[j];
+        _vErr[1] += _inertialVTrk[j]*_r1[j] - _v[j]*_r1[j];
+    }
+    _pErr[2] = 0.0;
+    _vErr[2] = 0.0;
+    for(int j=0; j<3; j++) {
+        _pErr[2] += _inertialPTrk[j]*_r2[j] - _p[j]*_r2[j];
+        _vErr[2] += _inertialVTrk[j]*_r2[j] - _v[j]*_r2[j];
+    }
 
 }
 //_____________________________________________________________________________
@@ -333,37 +333,37 @@ computeErrors(const SimTK::State& s, double aT)
 void CMC_Point::
 computeDesiredAccelerations(const SimTK::State& s, double aT)
 {
-	_aDes=SimTK::NaN;
+    _aDes=SimTK::NaN;
 
-	// CHECK
-	if(_model==NULL) return;
-	if(_pTrk[0]==NULL) return;
+    // CHECK
+    if(_model==NULL) return;
+    if(_pTrk[0]==NULL) return;
 
-	// COMPUTE ERRORS
-	computeErrors(s, aT);
+    // COMPUTE ERRORS
+    computeErrors(s, aT);
 
-	// DESIRED ACCELERATION
-	double p;
-	double v;
-	double a;
-	for(int i=0; i<3; i++) {
-		p = (_kp)[0]*_pErr[i];
-		v = (_kv)[0]*_vErr[i];
-		if(_aTrk[i]==NULL) {
-			std::vector<int> derivComponents(2);
-			derivComponents[0]=0;
-			derivComponents[1]=0;
-			a = (_ka)[0]*_pTrk[i]->calcDerivative(derivComponents,SimTK::Vector(1,aT));
-		} else {
-			a = (_ka)[0]*_aTrk[i]->calcValue(SimTK::Vector(1,aT));
-		}
-		_aDes[i] = a + v + p;
-	}
+    // DESIRED ACCELERATION
+    double p;
+    double v;
+    double a;
+    for(int i=0; i<3; i++) {
+        p = (_kp)[0]*_pErr[i];
+        v = (_kv)[0]*_vErr[i];
+        if(_aTrk[i]==NULL) {
+            std::vector<int> derivComponents(2);
+            derivComponents[0]=0;
+            derivComponents[1]=0;
+            a = (_ka)[0]*_pTrk[i]->calcDerivative(derivComponents,SimTK::Vector(1,aT));
+        } else {
+            a = (_ka)[0]*_aTrk[i]->calcValue(SimTK::Vector(1,aT));
+        }
+        _aDes[i] = a + v + p;
+    }
 
-	// PRINT
-	//printf("CMC_Point.computeDesiredAcceleration:\n");
-	//printf("%s:  t=%lf aDes=%lf a=%lf vErr=%lf pErr=%lf\n",getName(),t,_aDes[0],
-	//	_pTrk[0]->evaluate(2,t),_vErr[0],_pErr[0]);
+    // PRINT
+    //printf("CMC_Point.computeDesiredAcceleration:\n");
+    //printf("%s:  t=%lf aDes=%lf a=%lf vErr=%lf pErr=%lf\n",getName(),t,_aDes[0],
+    //	_pTrk[0]->evaluate(2,t),_vErr[0],_pErr[0]);
 }
 //_____________________________________________________________________________
 /**
@@ -378,37 +378,37 @@ computeDesiredAccelerations(const SimTK::State& s, double aT)
 void CMC_Point::
 computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF)
 {
-	_aDes=SimTK::NaN;
+    _aDes=SimTK::NaN;
 
-	// CHECK
-	if(_model==NULL) return;
-	if(_pTrk[0]==NULL) return;
+    // CHECK
+    if(_model==NULL) return;
+    if(_pTrk[0]==NULL) return;
 
-	// COMPUTE ERRORS
-	computeErrors(s, aTI);
+    // COMPUTE ERRORS
+    computeErrors(s, aTI);
 
-	// DESIRED ACCELERATION
-	double p;
-	double v;
-	double a;
-	for(int i=0; i<3; i++) {
-		p = (_kp)[0]*_pErr[i];
-		v = (_kv)[0]*_vErr[i];
-		if(_aTrk[i]==NULL) {
-			std::vector<int> derivComponents(2);
-			derivComponents[0]=0;
-			derivComponents[1]=0;
-			a = (_ka)[0]*_pTrk[i]->calcDerivative(derivComponents,SimTK::Vector(1,aTF));
-		} else {
-			a = (_ka)[0]*_aTrk[i]->calcValue(SimTK::Vector(1,aTF));
-		}
-		_aDes[i] = a + v + p;
-	}
+    // DESIRED ACCELERATION
+    double p;
+    double v;
+    double a;
+    for(int i=0; i<3; i++) {
+        p = (_kp)[0]*_pErr[i];
+        v = (_kv)[0]*_vErr[i];
+        if(_aTrk[i]==NULL) {
+            std::vector<int> derivComponents(2);
+            derivComponents[0]=0;
+            derivComponents[1]=0;
+            a = (_ka)[0]*_pTrk[i]->calcDerivative(derivComponents,SimTK::Vector(1,aTF));
+        } else {
+            a = (_ka)[0]*_aTrk[i]->calcValue(SimTK::Vector(1,aTF));
+        }
+        _aDes[i] = a + v + p;
+    }
 
-	// PRINT
-	//printf("CMC_Point.computeDesiredAcceleration:\n");
-	//printf("%s:  t=%lf aDes=%lf a=%lf vErr=%lf pErr=%lf\n",getName(),t,_aDes[0],
-	//	_pTrk[0]->evaluate(2,t),_vErr[0],_pErr[0]);
+    // PRINT
+    //printf("CMC_Point.computeDesiredAcceleration:\n");
+    //printf("%s:  t=%lf aDes=%lf a=%lf vErr=%lf pErr=%lf\n",getName(),t,_aDes[0],
+    //	_pTrk[0]->evaluate(2,t),_vErr[0],_pErr[0]);
 }
 
 //_____________________________________________________________________________
@@ -427,38 +427,38 @@ computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF)
 void CMC_Point::
 computeAccelerations(const SimTK::State& s )
 {
-	// CHECK
-	if(_model==NULL) return;
+    // CHECK
+    if(_model==NULL) return;
 
-	// ACCELERATION
-	_a = 0;
-	BodySet& bs = _model->updBodySet();
-	if(_wrtBodyName == "center_of_mass") {
+    // ACCELERATION
+    _a = 0;
+    BodySet& bs = _model->updBodySet();
+    if(_wrtBodyName == "center_of_mass") {
 
-		SimTK::Vec3 pVec,vVec,aVec,com;
-		double Mass = 0.0;
-		for(int i=0;i<bs.getSize();i++) {
-			Body& body = bs.get(i);
-			com = body.get_mass_center();
-			_model->getSimbodyEngine().getAcceleration(s, body,com,aVec);
-			if(aVec[0] != aVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
-											+ "' references invalid acceleration components",__FILE__,__LINE__);
-			// ADD TO WHOLE BODY MASS
-			Mass += body.get_mass();
-			_a += body.get_mass() * aVec;
-		}
+        SimTK::Vec3 pVec,vVec,aVec,com;
+        double Mass = 0.0;
+        for(int i=0;i<bs.getSize();i++) {
+            Body& body = bs.get(i);
+            com = body.get_mass_center();
+            _model->getSimbodyEngine().getAcceleration(s, body,com,aVec);
+            if(aVec[0] != aVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
+                                            + "' references invalid acceleration components",__FILE__,__LINE__);
+            // ADD TO WHOLE BODY MASS
+            Mass += body.get_mass();
+            _a += body.get_mass() * aVec;
+        }
 
-		//COMPUTE COM ACCELERATION OF WHOLE BODY
-		_a /= Mass;
+        //COMPUTE COM ACCELERATION OF WHOLE BODY
+        _a /= Mass;
 
-	} else {
+    } else {
 
-		_wrtBody =  &bs.get(_wrtBodyName);
+        _wrtBody =  &bs.get(_wrtBodyName);
 
-		_model->getSimbodyEngine().getAcceleration(s, *_wrtBody,_point,_a);
-		if(_a[0] != _a[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
-											+ "' references invalid acceleration components",__FILE__,__LINE__);
-	}
+        _model->getSimbodyEngine().getAcceleration(s, *_wrtBody,_point,_a);
+        if(_a[0] != _a[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
+                                            + "' references invalid acceleration components",__FILE__,__LINE__);
+    }
 }
 
 //=============================================================================
@@ -478,6 +478,6 @@ computeAccelerations(const SimTK::State& s )
 void CMC_Point::
 updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	CMC_Task::updateFromXMLNode(aNode);
-	setPoint(_point);
+    CMC_Task::updateFromXMLNode(aNode);
+    setPoint(_point);
 }

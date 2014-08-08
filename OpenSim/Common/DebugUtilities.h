@@ -31,10 +31,10 @@
 #endif
 
 #define OPENSIM_ERROR_IF_NOT_OVERRIDDEN() \
-	OpenSim::DebugUtilities::Fatal_Error("Function is not overridden", __FUNCTION__,__FILE__,__LINE__);
+    OpenSim::DebugUtilities::Fatal_Error("Function is not overridden", __FUNCTION__,__FILE__,__LINE__);
 
 #define OPENSIM_FUNCTION_NOT_IMPLEMENTED() \
-	OpenSim::DebugUtilities::Fatal_Error("Function is not (fully) implemented", __FUNCTION__,__FILE__,__LINE__);
+    OpenSim::DebugUtilities::Fatal_Error("Function is not (fully) implemented", __FUNCTION__,__FILE__,__LINE__);
 
 namespace OpenSim {
 namespace DebugUtilities {

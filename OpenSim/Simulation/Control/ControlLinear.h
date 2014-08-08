@@ -63,58 +63,58 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ControlLinear, Control);
 // MEMBER DATA
 //=============================================================================
 protected:
-	// PROPERTIES
-	/** Flag that indicates whether or not to linearly interpolate between
-	nodes or use step functions. */
-	PropertyBool _propUseSteps;
-	/** Array of control nodes. */
-	PropertyObjArray<ControlLinearNode> _propXNodes;
-	PropertyObjArray<ControlLinearNode> _propMinNodes;
-	PropertyObjArray<ControlLinearNode> _propMaxNodes;
-	/** Position gain for PD follower filter. */
-	PropertyDbl _propKp;
-	/** Velocity gain for PD follower filter. */
-	PropertyDbl _propKv;
+    // PROPERTIES
+    /** Flag that indicates whether or not to linearly interpolate between
+    nodes or use step functions. */
+    PropertyBool _propUseSteps;
+    /** Array of control nodes. */
+    PropertyObjArray<ControlLinearNode> _propXNodes;
+    PropertyObjArray<ControlLinearNode> _propMinNodes;
+    PropertyObjArray<ControlLinearNode> _propMaxNodes;
+    /** Position gain for PD follower filter. */
+    PropertyDbl _propKp;
+    /** Velocity gain for PD follower filter. */
+    PropertyDbl _propKv;
 
-	// REFERENCES
-	bool &_useSteps;
-	ArrayPtrs<ControlLinearNode> &_xNodes;
-	ArrayPtrs<ControlLinearNode> &_minNodes;
-	ArrayPtrs<ControlLinearNode> &_maxNodes;
-	double &_kp;
-	double &_kv;
+    // REFERENCES
+    bool &_useSteps;
+    ArrayPtrs<ControlLinearNode> &_xNodes;
+    ArrayPtrs<ControlLinearNode> &_minNodes;
+    ArrayPtrs<ControlLinearNode> &_maxNodes;
+    double &_kp;
+    double &_kv;
 
 
-	/** Utility node for speeding up searches for control values in
-	getControlValue() and elsewhere.  Without this node, a control node would
-	need to be contructed, but this is too expensive.  It is better to contruct
-	a node up front, and then just alter the time. */
-	ControlLinearNode _searchNode;
+    /** Utility node for speeding up searches for control values in
+    getControlValue() and elsewhere.  Without this node, a control node would
+    need to be contructed, but this is too expensive.  It is better to contruct
+    a node up front, and then just alter the time. */
+    ControlLinearNode _searchNode;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	ControlLinear();
-	ControlLinear(const ControlLinear &aControl);
-	virtual ~ControlLinear();
+    ControlLinear();
+    ControlLinear(const ControlLinear &aControl);
+    virtual ~ControlLinear();
 
     /**
      * Copy the member variables of the specified ControlLinear over
      * to this ControlLinear.
      */
-	void copyData(const ControlLinear &aControl);
+    void copyData(const ControlLinear &aControl);
 protected:
     /**
      * Connect properties to local pointers.
      */
-	virtual void setupProperties();
-	
+    virtual void setupProperties();
+    
 private:
     /**
      * Set the member data to their NULL values.
      */
-	void setNull();
+    void setNull();
     /**
      * Extrapolate the value of the control curve before the first node.
      *
@@ -176,18 +176,18 @@ private:
      */
     double extrapolateMaxAfter(double aT) const;
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	ControlLinear& operator=(const ControlLinear &aControl);
+    ControlLinear& operator=(const ControlLinear &aControl);
 #endif
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	// PROPERTIES
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    // PROPERTIES
     /**
      * Sets whether or not step functions are used between control nodes or
      * linear interpolation.  When step functions are used, the value of the
@@ -197,12 +197,12 @@ public:
      * @param aTrueFalse If true, step functions will be used to determine the
      * value between adjacent nodes.  If false, linear interpolation will be used.
      */
-	void setUseSteps(bool aTrueFalse);
+    void setUseSteps(bool aTrueFalse);
 
     /**
       * @see setUseSteps()
       */
-	bool getUseSteps() const;
+    bool getUseSteps() const;
 
     /**
      * Sets the position gain for PD follower filter.  This value is relevant
@@ -212,9 +212,9 @@ public:
      *
      * @param aKp Value of position gain for the PD follower filter.
      */
-	void setKp(double aKp);
+    void setKp(double aKp);
     /// @see setKp()
-	double getKp() const;
+    double getKp() const;
 
     /**
      * Sets the velocity gain for PD follower filter.  This value is relevant
@@ -224,16 +224,16 @@ public:
      *
      * @param aKv Value of velocity gain for the PD follower filter.
      */
-	void setKv(double aKv);
+    void setKv(double aKv);
     /// @see setKv()
-	double getKv() const;
-	// PARAMETERS
+    double getKv() const;
+    // PARAMETERS
     virtual int getNumParameters() const;
 
     virtual void setParameterMin(int aI,double aMin);
     virtual double getParameterMin(int aI) const;
 
-	virtual void setParameterMax(int aI,double aMax);
+    virtual void setParameterMax(int aI,double aMax);
     virtual double getParameterMax(int aI) const;
     /**
      * Get the time at which a parameter (control curve value) is specified.
@@ -247,7 +247,7 @@ public:
      */
     virtual double getParameterTime(int aI) const;
     /**
-	 * @param aI Index of the parameter.
+     * @param aI Index of the parameter.
      * @param rTLower The time of parameter aI-1 or of
      * aI if there is no parameter aI-1.  If there are no ControlLinearNode's
      * at all or if aI is invalid, rTLower is given the value SimTK::NaN.
@@ -258,7 +258,7 @@ public:
     virtual void getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const;
 
     /**
-	 * @param aT time
+     * @param aT time
      * @param rList If aT lies between two nodes, the indices of these
      * two nodes are returned; if aT equals the time at which a node occurs, the
      * index of that node is returned; if aT is less than the time of the first
@@ -278,7 +278,7 @@ public:
     /// @see setParameterValue()
     virtual double getParameterValue(int aI) const;
 
-	// CONTROL VALUE
+    // CONTROL VALUE
     /**
      * This method adds a set of control parameters at the specified time unless
      * the specified time equals the time of an existing ControlLinearNode,
@@ -293,39 +293,39 @@ public:
      * case the parameters of that control node are changed.
      */
     virtual void setControlValueMin(double aT,double aX);
-	virtual double getControlValueMax(double aT=0.0);
+    virtual double getControlValueMax(double aT=0.0);
     /**
      * This method adds a set of control parameters at the specified time unless
      * the specified time equals the time of an existing control node, in which
      * case the parameters of that control node are changed.
      */
     virtual void setControlValueMax(double aT,double aX);
-	
-	// NODE ARRAY
-	void clearControlNodes();
-	ArrayPtrs<ControlLinearNode>& getControlValues() {
-		return (_xNodes);
-	}
-	ArrayPtrs<ControlLinearNode>& getControlMinValues() {
-		return (_minNodes);
-	}
-	ArrayPtrs<ControlLinearNode>& getControlMaxValues() {
-		return (_maxNodes);
-	}
-	// Insert methods that allocate and insert a copy.
+    
+    // NODE ARRAY
+    void clearControlNodes();
+    ArrayPtrs<ControlLinearNode>& getControlValues() {
+        return (_xNodes);
+    }
+    ArrayPtrs<ControlLinearNode>& getControlMinValues() {
+        return (_minNodes);
+    }
+    ArrayPtrs<ControlLinearNode>& getControlMaxValues() {
+        return (_maxNodes);
+    }
+    // Insert methods that allocate and insert a copy.
     /// Called from GUI to work around early garbage collection.
-	void insertNewValueNode(int index, const ControlLinearNode& newNode) {
-		_xNodes.insert(index, newNode.clone());
-	}
+    void insertNewValueNode(int index, const ControlLinearNode& newNode) {
+        _xNodes.insert(index, newNode.clone());
+    }
     /// Called from GUI to work around early garbage collection.
     void insertNewMinNode(int index, const ControlLinearNode& newNode) {
-		_minNodes.insert(index, newNode.clone());
-	}
+        _minNodes.insert(index, newNode.clone());
+    }
     /// Called from GUI to work around early garbage collection.
     void insertNewMaxNode(int index, const ControlLinearNode& newNode) {
-		_maxNodes.insert(index, newNode.clone());
-	}
-	// Convenience methods
+        _maxNodes.insert(index, newNode.clone());
+    }
+    // Convenience methods
     /**
      * The time corresponding to the first ControlLinearNode.
      */
@@ -335,7 +335,7 @@ public:
      */
     virtual const double getLastTime() const;
 
-	// SIMPLIFY
+    // SIMPLIFY
     /**
      * The number of control nodes is reduced by first applying a lowpass filter
      * to the sequence of control nodes using a specified cutoff frequency and
@@ -368,7 +368,7 @@ public:
      *
      * @param aT Time at which to compute a new, filtered control value
      */
-	virtual void filter(double aT);
+    virtual void filter(double aT);
 
     /**
      * Linearly interpolate or extrapolate given two points.
@@ -383,10 +383,10 @@ public:
     static double Interpolate(double aX1,double aY1,double aX2,double aY2,double aX);
 
 private:
-	void setControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT,double aX);
-	double getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT);
-	double extrapolateBefore(const ArrayPtrs<ControlLinearNode> &aNodes,double aT) const;
-	double extrapolateAfter(ArrayPtrs<ControlLinearNode> &aNodes,double aT) const;
+    void setControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT,double aX);
+    double getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT);
+    double extrapolateBefore(const ArrayPtrs<ControlLinearNode> &aNodes,double aT) const;
+    double extrapolateAfter(ArrayPtrs<ControlLinearNode> &aNodes,double aT) const;
 
 //=============================================================================
 };	// END of class ControlLinear

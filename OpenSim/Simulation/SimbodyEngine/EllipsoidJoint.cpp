@@ -50,25 +50,25 @@ EllipsoidJoint::~EllipsoidJoint()
  * Default constructor.
  */
 EllipsoidJoint::EllipsoidJoint() :
-	Joint()
+    Joint()
 {
-	constructCoordinates();
-	constructProperties();
+    constructCoordinates();
+    constructProperties();
 }
 //_____________________________________________________________________________
 /**
  * Convenience Constructor.
  */
 EllipsoidJoint::EllipsoidJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-				OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
-				SimTK::Vec3 ellipsoidRadii, bool reverse) :
-	Joint(name, parent, locationInParent,orientationInParent,
-			body, locationInBody, orientationInBody, reverse)
+                OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
+                SimTK::Vec3 ellipsoidRadii, bool reverse) :
+    Joint(name, parent, locationInParent,orientationInParent,
+            body, locationInBody, orientationInBody, reverse)
 {
-	constructCoordinates();
-	constructProperties();
+    constructCoordinates();
+    constructProperties();
 
-	set_radii_x_y_z(ellipsoidRadii);
+    set_radii_x_y_z(ellipsoidRadii);
 }
 
 //=============================================================================
@@ -81,9 +81,9 @@ EllipsoidJoint::EllipsoidJoint(const std::string &name, OpenSim::Body& parent, S
  */
 void EllipsoidJoint::constructProperties()
 {
-	setAuthors("Ajay Seth");
-	SimTK::Vec3 radii(NaN);
-	constructProperty_radii_x_y_z(radii);
+    setAuthors("Ajay Seth");
+    SimTK::Vec3 radii(NaN);
+    constructProperty_radii_x_y_z(radii);
 }
 
 //=============================================================================
@@ -98,7 +98,7 @@ void EllipsoidJoint::constructProperties()
  */
 void EllipsoidJoint::setEllipsoidRadii(const Vec3& radii)
 {
-	set_radii_x_y_z(radii);
+    set_radii_x_y_z(radii);
 }
 
 //=============================================================================
@@ -113,28 +113,28 @@ void EllipsoidJoint::setEllipsoidRadii(const Vec3& radii)
  */
 void EllipsoidJoint::scale(const ScaleSet& aScaleSet)
 {
-	Vec3 scaleFactors(1.0);
+    Vec3 scaleFactors(1.0);
 
-	// Joint knows how to scale locations of the joint in parent and on the body
-	Super::scale(aScaleSet);
+    // Joint knows how to scale locations of the joint in parent and on the body
+    Super::scale(aScaleSet);
 
-	// SCALING TO DO WITH THE PARENT BODY -----
-	// Joint kinematics are scaled by the scale factors for the
-	// parent body, so get those body's factors
-	const string& parentName = getParentBody().getName();
-	for (int i=0; i<aScaleSet.getSize(); i++) {
-		Scale& scale = aScaleSet.get(i);
-		if (scale.getSegmentName()==parentName) {
-			scale.getScaleFactors(scaleFactors);
-			break;
-		}
-	}
+    // SCALING TO DO WITH THE PARENT BODY -----
+    // Joint kinematics are scaled by the scale factors for the
+    // parent body, so get those body's factors
+    const string& parentName = getParentBody().getName();
+    for (int i=0; i<aScaleSet.getSize(); i++) {
+        Scale& scale = aScaleSet.get(i);
+        if (scale.getSegmentName()==parentName) {
+            scale.getScaleFactors(scaleFactors);
+            break;
+        }
+    }
 
-	SimTK::Vec3& ellipsoidRadii = upd_radii_x_y_z();
-	for(int i=0; i<3; i++){ 
-		// Scale the size of the mobilizer
-		ellipsoidRadii[i] *= scaleFactors[i];
-	}
+    SimTK::Vec3& ellipsoidRadii = upd_radii_x_y_z();
+    for(int i=0; i<3; i++){ 
+        // Scale the size of the mobilizer
+        ellipsoidRadii[i] *= scaleFactors[i];
+    }
 }
 
 //=============================================================================
@@ -143,10 +143,10 @@ void EllipsoidJoint::scale(const ScaleSet& aScaleSet)
 //_____________________________________________________________________________
 void EllipsoidJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	// CREATE MOBILIZED BODY
-	MobilizedBody::Ellipsoid mobod =
-		createMobilizedBody<MobilizedBody::Ellipsoid>(system);
-	mobod.setDefaultRadii(get_radii_x_y_z());
+    // CREATE MOBILIZED BODY
+    MobilizedBody::Ellipsoid mobod =
+        createMobilizedBody<MobilizedBody::Ellipsoid>(system);
+    mobod.setDefaultRadii(get_radii_x_y_z());
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);
 }
@@ -155,34 +155,34 @@ void EllipsoidJoint::initStateFromProperties(SimTK::State& s) const
 {
     Super::initStateFromProperties(s);
 
-	const SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
-	
-	if (!matter.getUseEulerAngles(s)){
-		const CoordinateSet& coordinateSet = get_CoordinateSet();
+    const SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
+    
+    if (!matter.getUseEulerAngles(s)){
+        const CoordinateSet& coordinateSet = get_CoordinateSet();
 
-		double xangle = coordinateSet[0].getDefaultValue();
-		double yangle = coordinateSet[1].getDefaultValue();
-		double zangle = coordinateSet[2].getDefaultValue();
-		Rotation r(BodyRotationSequence, xangle, XAxis, 
-			                             yangle, YAxis, zangle, ZAxis);
+        double xangle = coordinateSet[0].getDefaultValue();
+        double yangle = coordinateSet[1].getDefaultValue();
+        double zangle = coordinateSet[2].getDefaultValue();
+        Rotation r(BodyRotationSequence, xangle, XAxis, 
+                                         yangle, YAxis, zangle, ZAxis);
 
-		EllipsoidJoint* mutableThis = const_cast<EllipsoidJoint*>(this);
-		matter.getMobilizedBody(getChildBody().getIndex()).setQToFitRotation(s, r);
-	}
+        EllipsoidJoint* mutableThis = const_cast<EllipsoidJoint*>(this);
+        matter.getMobilizedBody(getChildBody().getIndex()).setQToFitRotation(s, r);
+    }
 }
 
 void EllipsoidJoint::setPropertiesFromState(const SimTK::State& state)
 {
-	Super::setPropertiesFromState(state);
+    Super::setPropertiesFromState(state);
 
     // Override default in case of quaternions.
     const SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
         Rotation r = matter.getMobilizedBody(getChildBody().getIndex())
-			.getBodyRotation(state);
+            .getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
 
-		const CoordinateSet& coordinateSet = get_CoordinateSet();
+        const CoordinateSet& coordinateSet = get_CoordinateSet();
 
         coordinateSet[0].setDefaultValue(angles[0]);
         coordinateSet[1].setDefaultValue(angles[1]);
@@ -207,32 +207,32 @@ void EllipsoidJoint::generateDecorations
         // the force on body 2 will be green
         SimTK::Vec3 force2color(0.0,1.0,0.0);
 
-		double dimension = get_radii_x_y_z().norm()/2;
+        double dimension = get_radii_x_y_z().norm()/2;
         // create frames to be fixed on body 1 and body 2
         SimTK::DecorativeFrame childFrame(dimension);
         SimTK::DecorativeFrame parentFrame(dimension);
 
         // attach frame to body, translate and rotate it to the location of the joint
-		childFrame.setBodyId(getChildBody().getIndex());
-		childFrame.setTransform(getChildTransform());
-		childFrame.setColor(frame1color);
+        childFrame.setBodyId(getChildBody().getIndex());
+        childFrame.setTransform(getChildTransform());
+        childFrame.setColor(frame1color);
 
         // attach frame to parent, translate and rotate it to the location of the joint
         parentFrame.setBodyId( getParentBody().getIndex() );
-		parentFrame.setTransform(getParentTransform());
+        parentFrame.setTransform(getParentTransform());
         parentFrame.setColor(frame2color);
 
-		// Construct the visible Ellipsoid
-		SimTK::DecorativeEllipsoid ellipsoid(get_radii_x_y_z());
-		ellipsoid.setTransform(getParentTransform());
-		ellipsoid.setColor(Vec3(0.0, 1.0, 1.0));
+        // Construct the visible Ellipsoid
+        SimTK::DecorativeEllipsoid ellipsoid(get_radii_x_y_z());
+        ellipsoid.setTransform(getParentTransform());
+        ellipsoid.setColor(Vec3(0.0, 1.0, 1.0));
 
-		geometryArray.push_back(childFrame);
+        geometryArray.push_back(childFrame);
         geometryArray.push_back(parentFrame);
-		geometryArray.push_back(ellipsoid);
+        geometryArray.push_back(ellipsoid);
 
         // if the model is moving, calculate and draw motion.
         if(!fixed){
-		}
+        }
 
     }

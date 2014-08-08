@@ -55,54 +55,54 @@ class OSIMCOMMON_API PropertyDblArray : public Property_Deprecated
 // DATA
 //=============================================================================
 protected:
-	/** Array of doubles. */
-	Array<double> _array;
+    /** Array of doubles. */
+    Array<double> _array;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	PropertyDblArray();
-	PropertyDblArray(const std::string &aName,
-		const Array<double> &aArray);
-	PropertyDblArray(const std::string &aName,
-		int aSize,const double aArray[]);
-	PropertyDblArray(const PropertyDblArray &aProperty);
+    PropertyDblArray();
+    PropertyDblArray(const std::string &aName,
+        const Array<double> &aArray);
+    PropertyDblArray(const std::string &aName,
+        int aSize,const double aArray[]);
+    PropertyDblArray(const PropertyDblArray &aProperty);
 
     bool isArrayProperty() const override {return true;}
 
-	PropertyDblArray* clone() const override;
+    PropertyDblArray* clone() const override;
 
     int getNumValues() const override {return getArraySize();}
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	PropertyDblArray& operator=(const PropertyDblArray &aProperty);
+    PropertyDblArray& operator=(const PropertyDblArray &aProperty);
 #endif
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 public:
-	// TYPE
-	virtual std::string getTypeName() const override;
-	// VALUE
-	virtual void setValue(const Array<double> &aArray);
-	virtual void setValue(int aSize,const double aArray[]);
+    // TYPE
+    virtual std::string getTypeName() const override;
+    // VALUE
+    virtual void setValue(const Array<double> &aArray);
+    virtual void setValue(int aSize,const double aArray[]);
 
-	virtual Array<double>& getValueDblArray();
+    virtual Array<double>& getValueDblArray();
 #ifndef SWIG
-	virtual const Array<double>& getValueDblArray() const;
+    virtual const Array<double>& getValueDblArray() const;
 #endif
-	// VALUE as String
-	virtual std::string toString() const;
-	// SIZE
-	virtual int getArraySize() const { return _array.getSize(); }
+    // VALUE as String
+    virtual std::string toString() const;
+    // SIZE
+    virtual int getArraySize() const { return _array.getSize(); }
     virtual void clearValues() override {
         _array.setSize(0);
     }

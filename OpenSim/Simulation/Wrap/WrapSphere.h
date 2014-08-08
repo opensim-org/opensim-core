@@ -57,39 +57,39 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WrapSphere, WrapObject);
 // DATA
 //=============================================================================
 
-	PropertyDbl _radiusProp;
-	double& _radius;
+    PropertyDbl _radiusProp;
+    double& _radius;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	WrapSphere();
-	WrapSphere(const WrapSphere& aWrapSphere);
-	virtual ~WrapSphere();
+    WrapSphere();
+    WrapSphere(const WrapSphere& aWrapSphere);
+    virtual ~WrapSphere();
 
 #ifndef SWIG
-	WrapSphere& operator=(const WrapSphere& aWrapSphere);
+    WrapSphere& operator=(const WrapSphere& aWrapSphere);
 #endif
    void copyData(const WrapSphere& aWrapSphere);
-	virtual const char* getWrapTypeName() const;
-	virtual std::string getDimensionsString() const;
+    virtual const char* getWrapTypeName() const;
+    virtual std::string getDimensionsString() const;
         double getRadius() const;
 
-	virtual void scale(const SimTK::Vec3& aScaleFactors);
-	virtual void connectToModelAndBody(Model& aModel, OpenSim::Body& aBody);
+    virtual void scale(const SimTK::Vec3& aScaleFactors);
+    virtual void connectToModelAndBody(Model& aModel, OpenSim::Body& aBody);
 #ifndef SWIG
-	virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-		const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
+    virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
 #endif
 protected:
-	void setupProperties();
+    void setupProperties();
 
 private:
-	void setNull();
+    void setNull();
 
 //=============================================================================
 };	// END of class WrapSphere

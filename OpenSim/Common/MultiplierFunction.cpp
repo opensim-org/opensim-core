@@ -54,7 +54,7 @@ MultiplierFunction::MultiplierFunction() :
    _osFunction(_osFunctionProp.getValueObjPtrRef()),
    _scale(_scaleProp.getValueDbl())
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -63,8 +63,8 @@ MultiplierFunction::MultiplierFunction(Function* aFunction) :
    _osFunction(_osFunctionProp.getValueObjPtrRef()),
    _scale(_scaleProp.getValueDbl())
 {
-	setNull();
-	setFunction(aFunction);
+    setNull();
+    setFunction(aFunction);
 }
 //_____________________________________________________________________________
 /**
@@ -73,9 +73,9 @@ MultiplierFunction::MultiplierFunction(Function* aFunction, double aScaleFactor)
    _osFunction(_osFunctionProp.getValueObjPtrRef()),
    _scale(_scaleProp.getValueDbl())
 {
-	setNull();
-	setFunction(aFunction);
-	setScale(aScaleFactor);
+    setNull();
+    setFunction(aFunction);
+    setScale(aScaleFactor);
 }
 //_____________________________________________________________________________
 /**
@@ -85,11 +85,11 @@ MultiplierFunction::MultiplierFunction(Function* aFunction, double aScaleFactor)
  * @param aFunction MultiplierFunction object to be copied.
  */
 MultiplierFunction::MultiplierFunction(const MultiplierFunction &aFunction) :
-	Function(aFunction),
+    Function(aFunction),
    _osFunction(_osFunctionProp.getValueObjPtrRef()),
    _scale(_scaleProp.getValueDbl())
 {
-	setEqual(aFunction);
+    setEqual(aFunction);
 }
 
 
@@ -102,8 +102,8 @@ MultiplierFunction::MultiplierFunction(const MultiplierFunction &aFunction) :
  */
 void MultiplierFunction::setNull()
 {
-	setAuthors("Peter Loan");
-	setupProperties();
+    setAuthors("Peter Loan");
+    setupProperties();
 }
 //_____________________________________________________________________________
 /**
@@ -113,19 +113,19 @@ void MultiplierFunction::setNull()
  */
 void MultiplierFunction::setupProperties()
 {
-	_osFunctionProp.setName("function");
-	_propertySet.append(&_osFunctionProp);
+    _osFunctionProp.setName("function");
+    _propertySet.append(&_osFunctionProp);
 
-	_scaleProp.setName("scale");
-	_scaleProp.setValue(1.0);
-	_propertySet.append(&_scaleProp);
+    _scaleProp.setName("scale");
+    _scaleProp.setValue(1.0);
+    _propertySet.append(&_scaleProp);
 }
 
 void MultiplierFunction::setEqual(const MultiplierFunction& aFunction)
 {
-	setNull();
-	setFunction((Function*)(Object::SafeCopy(aFunction.getFunction())));
-	setScale(aFunction.getScale());
+    setNull();
+    setFunction((Function*)(Object::SafeCopy(aFunction.getFunction())));
+    setScale(aFunction.getScale());
 }
 
 //=============================================================================
@@ -140,13 +140,13 @@ void MultiplierFunction::setEqual(const MultiplierFunction& aFunction)
  */
 MultiplierFunction& MultiplierFunction::operator=(const MultiplierFunction &aFunction)
 {
-	// BASE CLASS
-	Function::operator=(aFunction);
+    // BASE CLASS
+    Function::operator=(aFunction);
 
-	// DATA
-	setEqual(aFunction);
+    // DATA
+    setEqual(aFunction);
 
-	return *this;
+    return *this;
 }
 
 //--------------------------------------------------------------------------
@@ -154,66 +154,66 @@ MultiplierFunction& MultiplierFunction::operator=(const MultiplierFunction &aFun
 //--------------------------------------------------------------------------
 void MultiplierFunction::setFunction(Function* aFunction)
 {
-	_osFunction = aFunction;
+    _osFunction = aFunction;
 }
 
 void MultiplierFunction::setScale(double aScaleFactor)
 {
-	_scale = aScaleFactor;
+    _scale = aScaleFactor;
 }
 
 double MultiplierFunction::calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const
 {
-	if (_osFunction)
-		return _osFunction->calcDerivative(derivComponents, x) * _scale;
-	else {
-		throw Exception("MultiplierFunction::calcDerivative(): _osFunction is NULL.");
-		return 0.0;
-	}
+    if (_osFunction)
+        return _osFunction->calcDerivative(derivComponents, x) * _scale;
+    else {
+        throw Exception("MultiplierFunction::calcDerivative(): _osFunction is NULL.");
+        return 0.0;
+    }
 }
 
 double MultiplierFunction::calcValue(const SimTK::Vector& x) const
 {
-	if (_osFunction)
-		return _osFunction->calcValue(x) * _scale;
-	else {
-		throw Exception("MultiplierFunction::calcValue(): _osFunction is NULL.");
-		return 0.0;
-	}
+    if (_osFunction)
+        return _osFunction->calcValue(x) * _scale;
+    else {
+        throw Exception("MultiplierFunction::calcValue(): _osFunction is NULL.");
+        return 0.0;
+    }
 }
 
 int MultiplierFunction::getArgumentSize() const
 {
-	if (_osFunction)
-		return _osFunction->getArgumentSize();
-	else {
-		throw Exception("MultiplierFunction::getArgumentSize(): _osFunction is NULL.");
-		return 0;
-	}
+    if (_osFunction)
+        return _osFunction->getArgumentSize();
+    else {
+        throw Exception("MultiplierFunction::getArgumentSize(): _osFunction is NULL.");
+        return 0;
+    }
 }
 
 int MultiplierFunction::getMaxDerivativeOrder() const
 {
-	if (_osFunction)
-		return _osFunction->getMaxDerivativeOrder();
-	else {
-		throw Exception("MultiplierFunction::getMaxDerivativeOrder(): _osFunction is NULL.");
-		return 0;
-	}
+    if (_osFunction)
+        return _osFunction->getMaxDerivativeOrder();
+    else {
+        throw Exception("MultiplierFunction::getMaxDerivativeOrder(): _osFunction is NULL.");
+        return 0;
+    }
 }
 
 SimTK::Function* MultiplierFunction::createSimTKFunction() const {
-	return new FunctionAdapter(*this);
+    return new FunctionAdapter(*this);
 }
 
 void MultiplierFunction::init(Function* aFunction)
 {
-	if (aFunction->getConcreteClassName()==("MultiplierFunction")) {
-		MultiplierFunction* mf = (MultiplierFunction*)aFunction;
-		setFunction(mf->getFunction());
-		setScale(mf->getScale());
-	} else {
-		setFunction(aFunction);
-		setScale(1.0);
-	}
+    if (aFunction->getConcreteClassName()==("MultiplierFunction")) {
+        MultiplierFunction* mf = (MultiplierFunction*)aFunction;
+        setFunction(mf->getFunction());
+        setScale(mf->getScale());
+    } else {
+        setFunction(aFunction);
+        setScale(1.0);
+    }
 }

@@ -40,10 +40,10 @@
 #include <SimTKsimbody.h>
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+    #ifdef OSIMSIMULATION_API
+        #undef OSIMSIMULATION_API
+        #define OSIMSIMULATION_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -78,104 +78,104 @@ public:
     Model* _model;
 
 protected:
-	/** Body used for ground, the inertial frame. */
-	Body *_groundBody;
+    /** Body used for ground, the inertial frame. */
+    Body *_groundBody;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION AND DESTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION AND DESTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	virtual ~SimbodyEngine();
-	SimbodyEngine();
-	SimbodyEngine(const std::string &aFileName);
-	SimbodyEngine(const SimbodyEngine& aEngine);
+    virtual ~SimbodyEngine();
+    SimbodyEngine();
+    SimbodyEngine(const std::string &aFileName);
+    SimbodyEngine(const SimbodyEngine& aEngine);
 
 #ifndef SWIG
-	SimbodyEngine& operator=(const SimbodyEngine &aEngine);
+    SimbodyEngine& operator=(const SimbodyEngine &aEngine);
 #endif
 
 private:
-	void setNull();
-	void copyData(const SimbodyEngine &aEngine);
-	
+    void setNull();
+    void copyData(const SimbodyEngine &aEngine);
+    
 public:
 
 #ifndef SWIG
     const Model& getModel() const { return *_model; }
 #endif
-	Model& getModel() { return *_model; }
+    Model& getModel() { return *_model; }
     void setModel(Model& aModel) { _model = &aModel; }
 
-	void connectSimbodyEngineToModel(Model& aModel);
-	//--------------------------------------------------------------------------
-	// COORDINATES
-	//--------------------------------------------------------------------------
+    void connectSimbodyEngineToModel(Model& aModel);
+    //--------------------------------------------------------------------------
+    // COORDINATES
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	virtual void getUnlockedCoordinates(const SimTK::State& s, CoordinateSet& rUnlockedCoordinates) const;
+    virtual void getUnlockedCoordinates(const SimTK::State& s, CoordinateSet& rUnlockedCoordinates) const;
 #endif
 
-	//--------------------------------------------------------------------------
-	// SCALING
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // SCALING
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	virtual bool  scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass = -1.0, bool aPreserveMassDist = false);
+    virtual bool  scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass = -1.0, bool aPreserveMassDist = false);
 #endif
 
-	//--------------------------------------------------------------------------
-	// BODY INFORMATION
-	//--------------------------------------------------------------------------
-	virtual Body& getGroundBody() const;
+    //--------------------------------------------------------------------------
+    // BODY INFORMATION
+    //--------------------------------------------------------------------------
+    virtual Body& getGroundBody() const;
 
-	//--------------------------------------------------------------------------
-	// KINEMATICS
-	//--------------------------------------------------------------------------
-	virtual void getPosition(const SimTK::State& s, const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rPos) const;
-	virtual void getVelocity(const SimTK::State& s, const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rVel) const;
-	virtual void getAcceleration(const SimTK::State& s, const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rAcc) const;
-	virtual void getDirectionCosines(const SimTK::State& s, const OpenSim::Body &aBody, double rDirCos[3][3]) const;
-	virtual void getDirectionCosines(const SimTK::State& s, const OpenSim::Body &aBody, double *rDirCos) const;
-	virtual void getAngularVelocity(const SimTK::State& s, const OpenSim::Body &aBody, SimTK::Vec3& rAngVel) const;
-	virtual void getAngularVelocityBodyLocal(const SimTK::State& s, const OpenSim::Body &aBody, SimTK::Vec3& rAngVel) const;
-	virtual void getAngularAcceleration(const SimTK::State& s, const OpenSim::Body &aBody, SimTK::Vec3& rAngAcc) const;
-	virtual void getAngularAccelerationBodyLocal(const SimTK::State& s, const OpenSim::Body &aBody, SimTK::Vec3& rAngAcc) const;
-	virtual SimTK::Transform getTransform(const SimTK::State& s, const OpenSim::Body &aBody) const;
+    //--------------------------------------------------------------------------
+    // KINEMATICS
+    //--------------------------------------------------------------------------
+    virtual void getPosition(const SimTK::State& s, const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rPos) const;
+    virtual void getVelocity(const SimTK::State& s, const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rVel) const;
+    virtual void getAcceleration(const SimTK::State& s, const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rAcc) const;
+    virtual void getDirectionCosines(const SimTK::State& s, const OpenSim::Body &aBody, double rDirCos[3][3]) const;
+    virtual void getDirectionCosines(const SimTK::State& s, const OpenSim::Body &aBody, double *rDirCos) const;
+    virtual void getAngularVelocity(const SimTK::State& s, const OpenSim::Body &aBody, SimTK::Vec3& rAngVel) const;
+    virtual void getAngularVelocityBodyLocal(const SimTK::State& s, const OpenSim::Body &aBody, SimTK::Vec3& rAngVel) const;
+    virtual void getAngularAcceleration(const SimTK::State& s, const OpenSim::Body &aBody, SimTK::Vec3& rAngAcc) const;
+    virtual void getAngularAccelerationBodyLocal(const SimTK::State& s, const OpenSim::Body &aBody, SimTK::Vec3& rAngAcc) const;
+    virtual SimTK::Transform getTransform(const SimTK::State& s, const OpenSim::Body &aBody) const;
 
-	//--------------------------------------------------------------------------
-	// LOAD ACCESS AND COMPUTATION
-	//--------------------------------------------------------------------------
-	virtual void computeReactions(const SimTK::State& s, SimTK::Vector_<SimTK::Vec3>& rForces, SimTK::Vector_<SimTK::Vec3>& rTorques) const;
+    //--------------------------------------------------------------------------
+    // LOAD ACCESS AND COMPUTATION
+    //--------------------------------------------------------------------------
+    virtual void computeReactions(const SimTK::State& s, SimTK::Vector_<SimTK::Vec3>& rForces, SimTK::Vector_<SimTK::Vec3>& rTorques) const;
 
-	//--------------------------------------------------------------------------
-	// CONSTRAINTS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRAINTS
+    //--------------------------------------------------------------------------
     virtual void formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
        OpenSim::Storage *&rQComplete,OpenSim::Storage *&rUComplete) const;
 
-	//--------------------------------------------------------------------------
-	// EQUATIONS OF MOTION
-	//--------------------------------------------------------------------------
-	virtual void formEulerTransform(const SimTK::State& s, const OpenSim::Body &aBody, double *rE) const;
+    //--------------------------------------------------------------------------
+    // EQUATIONS OF MOTION
+    //--------------------------------------------------------------------------
+    virtual void formEulerTransform(const SimTK::State& s, const OpenSim::Body &aBody, double *rE) const;
 
-	//unimplemented virtual void formMassMatrix(double *rI) {};
-	//unimplemented virtual void formJacobianTranslation(const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, double *rJ, const OpenSim::Body *aRefBody=NULL) const {};
-	//unimplemented virtual void formJacobianOrientation(const OpenSim::Body &aBody, double *rJ0, const OpenSim::Body *aRefBody=NULL) const {};
-	//unimplemented virtual void formJacobianEuler(const OpenSim::Body &aBody, double *rJE, const OpenSim::Body *aRefBody=NULL) const {};
+    //unimplemented virtual void formMassMatrix(double *rI) {};
+    //unimplemented virtual void formJacobianTranslation(const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, double *rJ, const OpenSim::Body *aRefBody=NULL) const {};
+    //unimplemented virtual void formJacobianOrientation(const OpenSim::Body &aBody, double *rJ0, const OpenSim::Body *aRefBody=NULL) const {};
+    //unimplemented virtual void formJacobianEuler(const OpenSim::Body &aBody, double *rJE, const OpenSim::Body *aRefBody=NULL) const {};
 
-	//--------------------------------------------------------------------------
-	// UTILITY
-	//--------------------------------------------------------------------------
-	virtual void transform(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const double aVec[3], const OpenSim::Body &aBodyTo, double rVec[3]) const;
-	virtual void transform(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const SimTK::Vec3& aVec, const OpenSim::Body &aBodyTo, SimTK::Vec3& rVec) const;
-	virtual void transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const double aPos[3], const OpenSim::Body &aBodyTo, double rPos[3]) const;
-	virtual void transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const SimTK::Vec3& aPos, const OpenSim::Body &aBodyTo, SimTK::Vec3& rPos) const;
-	virtual void transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const double aPos[3], double rPos[3]) const;
-	virtual void transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const SimTK::Vec3& aPos, SimTK::Vec3& rPos) const;
+    //--------------------------------------------------------------------------
+    // UTILITY
+    //--------------------------------------------------------------------------
+    virtual void transform(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const double aVec[3], const OpenSim::Body &aBodyTo, double rVec[3]) const;
+    virtual void transform(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const SimTK::Vec3& aVec, const OpenSim::Body &aBodyTo, SimTK::Vec3& rVec) const;
+    virtual void transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const double aPos[3], const OpenSim::Body &aBodyTo, double rPos[3]) const;
+    virtual void transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const SimTK::Vec3& aPos, const OpenSim::Body &aBodyTo, SimTK::Vec3& rPos) const;
+    virtual void transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const double aPos[3], double rPos[3]) const;
+    virtual void transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const SimTK::Vec3& aPos, SimTK::Vec3& rPos) const;
 
-	virtual double calcDistance(const SimTK::State& s, const OpenSim::Body &aBody1, const double aPoint1[3], const OpenSim::Body &aBody2, const double aPoint2[3]) const;
-	virtual double calcDistance(const SimTK::State& s, const OpenSim::Body &aBody1, const SimTK::Vec3& aPoint1, const OpenSim::Body &aBody2, const SimTK::Vec3& aPoint2) const;
+    virtual double calcDistance(const SimTK::State& s, const OpenSim::Body &aBody1, const double aPoint1[3], const OpenSim::Body &aBody2, const double aPoint2[3]) const;
+    virtual double calcDistance(const SimTK::State& s, const OpenSim::Body &aBody1, const SimTK::Vec3& aPoint1, const OpenSim::Body &aBody2, const SimTK::Vec3& aPoint2) const;
 
     void convertRadiansToDegrees(Storage &rStorage) const;
     void convertDegreesToRadians(Storage &rStorage) const;
@@ -183,31 +183,31 @@ public:
     void convertRadiansToDegrees(double *aQRad, double *rQDeg) const;
 
 
-	virtual void convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double rDirCos[3][3]) const;
-	virtual void convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double *rDirCos) const;
+    virtual void convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double rDirCos[3][3]) const;
+    virtual void convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double *rDirCos) const;
 
-	virtual void convertDirectionCosinesToAngles(double aDirCos[3][3], double *rE1, double *rE2, double *rE3) const;
-	virtual void convertDirectionCosinesToAngles(double *aDirCos, double *rE1, double *rE2, double *rE3) const;
+    virtual void convertDirectionCosinesToAngles(double aDirCos[3][3], double *rE1, double *rE2, double *rE3) const;
+    virtual void convertDirectionCosinesToAngles(double *aDirCos, double *rE1, double *rE2, double *rE3) const;
 
-	virtual void convertDirectionCosinesToQuaternions(double aDirCos[3][3],	double *rQ1, double *rQ2, double *rQ3, double *rQ4) const;
-	virtual void convertDirectionCosinesToQuaternions(double *aDirCos, double *rQ1, double *rQ2, double *rQ3, double *rQ4) const;
+    virtual void convertDirectionCosinesToQuaternions(double aDirCos[3][3],	double *rQ1, double *rQ2, double *rQ3, double *rQ4) const;
+    virtual void convertDirectionCosinesToQuaternions(double *aDirCos, double *rQ1, double *rQ2, double *rQ3, double *rQ4) const;
 
-	virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double rDirCos[3][3]) const;
-	virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double *rDirCos) const;
+    virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double rDirCos[3][3]) const;
+    virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double *rDirCos) const;
 
 private:
     void scaleRotationalDofColumns(Storage &rStorage, double factor) const;
 
 
 private:
-	friend class Body;
-	friend class Coordinate;
-	friend class Joint;
-	friend class Constraint;
-	friend class WeldConstraint;
-	friend class CoordinateCouplerConstraint;
-	void updateDynamics(SimTK::Stage desiredStage);
-	void updateSimbodyModel();
+    friend class Body;
+    friend class Coordinate;
+    friend class Joint;
+    friend class Constraint;
+    friend class WeldConstraint;
+    friend class CoordinateCouplerConstraint;
+    void updateDynamics(SimTK::Stage desiredStage);
+    void updateSimbodyModel();
 
 //=============================================================================
 };	// END of class SimbodyEngine

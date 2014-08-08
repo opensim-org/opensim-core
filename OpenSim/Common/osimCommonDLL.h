@@ -33,20 +33,20 @@
 // UNIX
 #ifndef WIN32
 
-	#define OSIMCOMMON_API
+    #define OSIMCOMMON_API
 
 
 // WINDOWS
 #else
 
-	#define WIN32_LEAN_AND_MEAN
-	#define NOMINMAX
-	#include <windows.h>
-	#ifdef OSIMCOMMON_EXPORTS
-		#define OSIMCOMMON_API __declspec(dllexport)
-	#else
-		#define OSIMCOMMON_API __declspec(dllimport)
-	#endif
+    #define WIN32_LEAN_AND_MEAN
+    #define NOMINMAX
+    #include <windows.h>
+    #ifdef OSIMCOMMON_EXPORTS
+        #define OSIMCOMMON_API __declspec(dllexport)
+    #else
+        #define OSIMCOMMON_API __declspec(dllimport)
+    #endif
 
 #endif
 

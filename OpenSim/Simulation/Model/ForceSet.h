@@ -57,66 +57,66 @@ protected:
    /** The subset of Forces that are Actuators. */
     Set<Actuator> _actuators;
 
-	/** The subset of Forces that are Muscles. */
-	Set<Muscle> _muscles;
+    /** The subset of Forces that are Muscles. */
+    Set<Muscle> _muscles;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	ForceSet();
-	ForceSet(Model& model);
-	ForceSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true);
-	ForceSet(const ForceSet &aForceSet);
-	virtual ~ForceSet();
+    ForceSet();
+    ForceSet(Model& model);
+    ForceSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true);
+    ForceSet(const ForceSet &aForceSet);
+    virtual ~ForceSet();
 
 private:
-	void setNull();
-	void setupSerializedMembers();
+    void setNull();
+    void setupSerializedMembers();
     void updateActuators();
-	void updateMuscles();
+    void updateMuscles();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	ForceSet& operator=(const ForceSet &aSet);
+    ForceSet& operator=(const ForceSet &aSet);
 #endif
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 public:
     // Override ModelComponentSet method.
-	void invokeConnectToModel(Model& aModel) override;
+    void invokeConnectToModel(Model& aModel) override;
 
-	// FORCE
-	bool remove(int aIndex);
-	bool append(Force *aForce);
+    // FORCE
+    bool remove(int aIndex);
+    bool append(Force *aForce);
 #ifndef SWIG
-	bool append(Force &aForce);
+    bool append(Force &aForce);
 #endif
-	bool append(ForceSet &aForceSet, bool aAllowDuplicateNames=false);
-	bool set(int aIndex, Force *aForce);
+    bool append(ForceSet &aForceSet, bool aAllowDuplicateNames=false);
+    bool set(int aIndex, Force *aForce);
     bool insert(int aIndex, Force *aObject);
 
     // subsets 
     const Set<Actuator>& getActuators() const;
     Set<Actuator>& updActuators();
-	const Set<Muscle>& getMuscles() const;
+    const Set<Muscle>& getMuscles() const;
     Set<Muscle>& updMuscles();
 
     // STATES
     void getStateVariableNames(Array<std::string> &rNames) const;
 
 
-	//--------------------------------------------------------------------------
-	// CHECK
-	//--------------------------------------------------------------------------
-	bool check() const;
+    //--------------------------------------------------------------------------
+    // CHECK
+    //--------------------------------------------------------------------------
+    bool check() const;
 
 //=============================================================================
 };	// END of class ForceSet

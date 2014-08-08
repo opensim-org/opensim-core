@@ -85,7 +85,7 @@ SimbodySimmBody::SimbodySimmBody(const OpenSim::Body* aBody, const string& aName
  */
 void SimbodySimmBody::write(ofstream& aStream)
 {
-	aStream << "beginsegment " << _name << endl;
+    aStream << "beginsegment " << _name << endl;
 
    if (_body != NULL) {
       aStream << "mass " << _body->getMass() << endl;
@@ -143,5 +143,5 @@ void SimbodySimmBody::write(ofstream& aStream)
       aStream << "inertia 0.0000001 0.0 0.0 0.0 0.0000001 0.0 0.0 0.0 0.0000001" << endl;
    }
 
-	aStream << "endsegment" << endl << endl;
+    aStream << "endsegment" << endl << endl;
 }

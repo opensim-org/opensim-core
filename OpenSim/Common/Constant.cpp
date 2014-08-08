@@ -49,21 +49,21 @@ Constant::~Constant()
  * Default constructor.
  */
 Constant::Constant() :
-	_value(_valueProp.getValueDbl())
+    _value(_valueProp.getValueDbl())
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
 /**
  */
 Constant::Constant(double value) :
-	_value(_valueProp.getValueDbl())
+    _value(_valueProp.getValueDbl())
 {
-	setNull();
-	setupProperties();
-	setValue(value);
+    setNull();
+    setupProperties();
+    setValue(value);
 }
 
 //_____________________________________________________________________________
@@ -74,12 +74,12 @@ Constant::Constant(double value) :
  * @param aConstant Constant object to be copied.
  */
 Constant::Constant(const Constant &aConstant) :
-	Function(aConstant),
-	_value(_valueProp.getValueDbl())
+    Function(aConstant),
+    _value(_valueProp.getValueDbl())
 {
-	setNull();
-	setupProperties();
-	copyData(aConstant);
+    setNull();
+    setupProperties();
+    copyData(aConstant);
 }
 
 //=============================================================================
@@ -91,7 +91,7 @@ Constant::Constant(const Constant &aConstant) :
  */
 void Constant::setNull()
 {
-	setAuthors("Peter Loan, Ajay Seth");
+    setAuthors("Peter Loan, Ajay Seth");
 }
 
 //_____________________________________________________________________________
@@ -102,9 +102,9 @@ void Constant::setNull()
  */
 void Constant::setupProperties()
 {
-	_valueProp.setName("value");
-	_valueProp.setValue(0);
-	_propertySet.append(&_valueProp);
+    _valueProp.setName("value");
+    _valueProp.setValue(0);
+    _propertySet.append(&_valueProp);
 }
 
 //_____________________________________________________________________________
@@ -118,7 +118,7 @@ void Constant::setupProperties()
  */
 void Constant::copyData(const Constant &aConstant)
 {
-	_value = aConstant._value;
+    _value = aConstant._value;
     resetFunction();
 }
 
@@ -143,13 +143,13 @@ void Constant::setValue(double aValue)
  */
 Constant& Constant::operator=(const Constant &aConstant)
 {
-	// BASE CLASS
-	Function::operator=(aConstant);
+    // BASE CLASS
+    Function::operator=(aConstant);
 
-	// DATA
-	copyData(aConstant);
+    // DATA
+    copyData(aConstant);
 
-	return(*this);
+    return(*this);
 }
 
 //=============================================================================

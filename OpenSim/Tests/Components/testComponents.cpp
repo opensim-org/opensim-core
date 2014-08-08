@@ -77,7 +77,7 @@ int main()
 }
 
 class DummyComponent : public Component {
-	OpenSim_DECLARE_CONCRETE_OBJECT(DummyComponent, Component);
+    OpenSim_DECLARE_CONCRETE_OBJECT(DummyComponent, Component);
 };
 
 

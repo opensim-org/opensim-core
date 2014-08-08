@@ -215,8 +215,8 @@ void Millard2012AccelerationMuscle::buildMuscle()
 
 void Millard2012AccelerationMuscle::finalizeFromProperties()
 {
-	buildMuscle();
-	Super::finalizeFromProperties();
+    buildMuscle();
+    Super::finalizeFromProperties();
 }
 
 
@@ -228,7 +228,7 @@ Millard2012AccelerationMuscle::Millard2012AccelerationMuscle()
 {    
     setNull();
     constructInfrastructure();
-	finalizeFromProperties();
+    finalizeFromProperties();
 }
 
 Millard2012AccelerationMuscle::
@@ -245,7 +245,7 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
     setTendonSlackLength(aTendonSlackLength);
     setPennationAngleAtOptimalFiberLength(aPennationAngle);
 
-	finalizeFromProperties();
+    finalizeFromProperties();
 }
 
 //=============================================================================
@@ -254,7 +254,7 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
  void Millard2012AccelerationMuscle::connectToModel(Model& model)
  {
     Super::connectToModel(model);
-	finalizeFromProperties();
+    finalizeFromProperties();
  }
 
  void Millard2012AccelerationMuscle::
@@ -293,15 +293,15 @@ void Millard2012AccelerationMuscle::
 void Millard2012AccelerationMuscle::
     computeStateVariableDerivatives(const SimTK::State& s) const 
 {
-	double adot=0, ldot=0, vdot=0;
+    double adot=0, ldot=0, vdot=0;
 
     if(!isDisabled(s)){
-		adot = getActivationRate(s);
+        adot = getActivationRate(s);
         ldot = getFiberVelocity(s);
         vdot = getFiberAcceleration(s);
     }
 
-	setStateVariableDerivative(s, STATE_ACTIVATION_NAME, adot);
+    setStateVariableDerivative(s, STATE_ACTIVATION_NAME, adot);
     setStateVariableDerivative(s, STATE_FIBER_LENGTH_NAME, ldot);
     setStateVariableDerivative(s, STATE_FIBER_VELOCITY_NAME, vdot);
 }
@@ -568,17 +568,17 @@ postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
         "Millard2012AccelerationMuscle: Muscle is not"
         " to date with properties");
 
-	GeometryPath& path = upd_GeometryPath();
+    GeometryPath& path = upd_GeometryPath();
 
-	path.postScale(s, aScaleSet);
+    path.postScale(s, aScaleSet);
 
-	if (path.getPreScaleLength(s) > 0.0)
-	{
-		double scaleFactor = getLength(s) / path.getPreScaleLength(s);
-		upd_optimal_fiber_length() *= scaleFactor;
-		upd_tendon_slack_length() *= scaleFactor;
-		path.setPreScaleLength(s, 0.0) ;
-	}
+    if (path.getPreScaleLength(s) > 0.0)
+    {
+        double scaleFactor = getLength(s) / path.getPreScaleLength(s);
+        upd_optimal_fiber_length() *= scaleFactor;
+        upd_tendon_slack_length() *= scaleFactor;
+        path.setPreScaleLength(s, 0.0) ;
+    }
 }
 
 
@@ -714,7 +714,7 @@ void Millard2012AccelerationMuscle::
         setFiberLength(s, getOptimalFiberLength());
         //Initialize the fiber velocity
         setFiberVelocity(s, getDefaultFiberVelocity());
-		//Initialize activation to the users desired setting
+        //Initialize activation to the users desired setting
         setActivation(s,getActivation(s));
 
         _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
@@ -745,12 +745,12 @@ void Millard2012AccelerationMuscle::
         double passiveForce   = soln[5];
         double tendonForce    = soln[6];
 
-	    switch(flag_status){
+        switch(flag_status){
 
             case 0: //converged, all is normal
             {
                 setForce(s,tendonForce);
-		        setFiberLength(s,fiberLength);
+                setFiberLength(s,fiberLength);
                 setFiberVelocity(s,fiberVelocity);
             }break;
 
@@ -833,7 +833,7 @@ void Millard2012AccelerationMuscle::
              << endl;
 
         setForce(s,0);
-		setFiberLength(s,getOptimalFiberLength());
+        setFiberLength(s,getOptimalFiberLength());
         setFiberVelocity(s,0.0);
     }
 }
@@ -858,7 +858,7 @@ void Millard2012AccelerationMuscle::
         std::string caller      = getName();
         caller.append(".calcMuscleLengthInfo");
 
-		//Get muscle model specific properties
+        //Get muscle model specific properties
         const TendonForceLengthCurve& fseCurve = get_TendonForceLengthCurve(); 
         const FiberForceLengthCurve& fpeCurve  = get_FiberForceLengthCurve(); 
         const ActiveForceLengthCurve& falCurve = get_ActiveForceLengthCurve(); 
@@ -911,19 +911,19 @@ void Millard2012AccelerationMuscle::
 
 
 void Millard2012AccelerationMuscle::calcMusclePotentialEnergyInfo(const SimTK::State& s,
-		MusclePotentialEnergyInfo& mpei) const
+        MusclePotentialEnergyInfo& mpei) const
 {
-	try {
-		//Get whole muscle properties
+    try {
+        //Get whole muscle properties
         double maxIsoForce      = getMaxIsometricForce();
         double optFiberLength   = getOptimalFiberLength();
         double mclLength        = getLength(s);
         double tendonSlackLen   = getTendonSlackLength();
 
-		// Get the quantities that we've already computed.
+        // Get the quantities that we've already computed.
         const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
 
-		//Get muscle model specific properties
+        //Get muscle model specific properties
         const TendonForceLengthCurve& fseCurve = get_TendonForceLengthCurve(); 
         const FiberForceLengthCurve& fpeCurve  = get_FiberForceLengthCurve(); 
         const ActiveForceLengthCurve& falCurve = get_ActiveForceLengthCurve(); 
@@ -951,8 +951,8 @@ void Millard2012AccelerationMuscle::calcMusclePotentialEnergyInfo(const SimTK::S
                                   + mpei.tendonPotentialEnergy
                                   + compForceLengthPE
                                   + compForceCosPennationPE;
-	}
-	catch(const std::exception &x){
+    }
+    catch(const std::exception &x){
         std::string msg = "Exception caught in Thelen2003Muscle::" 
                           "calcMusclePotentialEnergyInfo\n"                 
                            "of " + getName()  + "\n"                            

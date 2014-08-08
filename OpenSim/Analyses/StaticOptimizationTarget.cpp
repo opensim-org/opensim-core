@@ -67,27 +67,27 @@ StaticOptimizationTarget::
 StaticOptimizationTarget(const SimTK::State& s, Model *aModel,int aNP,int aNC, bool useMusclePhysiology)
 {
 
-	// ALLOCATE STATE ARRAYS
-	_recipAreaSquared.setSize(aNP);
-	_recipOptForceSquared.setSize(aNP);
-	_optimalForce.setSize(aNP);
-	_useMusclePhysiology=useMusclePhysiology;
+    // ALLOCATE STATE ARRAYS
+    _recipAreaSquared.setSize(aNP);
+    _recipOptForceSquared.setSize(aNP);
+    _optimalForce.setSize(aNP);
+    _useMusclePhysiology=useMusclePhysiology;
 
-	setModel(*aModel);
-	setNumParams(aNP);
-	setNumConstraints(aNC);
-	setActivationExponent(2.0);
-	computeActuatorAreas(s);
+    setModel(*aModel);
+    setNumParams(aNP);
+    setNumConstraints(aNC);
+    setActivationExponent(2.0);
+    computeActuatorAreas(s);
 
-	// Gather indices into speed set corresponding to the unconstrained degrees of freedom (for which we will set acceleration constraints)
-	_accelerationIndices.setSize(0);
-	const CoordinateSet& coordSet = _model->getCoordinateSet();
-	for(int i=0; i<coordSet.getSize(); i++) {
-		const Coordinate& coord = coordSet.get(i);
-		if(!coord.isConstrained(s)) {
-			_accelerationIndices.append(i);
-		}
-	}
+    // Gather indices into speed set corresponding to the unconstrained degrees of freedom (for which we will set acceleration constraints)
+    _accelerationIndices.setSize(0);
+    const CoordinateSet& coordSet = _model->getCoordinateSet();
+    for(int i=0; i<coordSet.getSize(); i++) {
+        const Coordinate& coord = coordSet.get(i);
+        if(!coord.isConstrained(s)) {
+            _accelerationIndices.append(i);
+        }
+    }
 
 }
 
@@ -98,54 +98,54 @@ StaticOptimizationTarget(const SimTK::State& s, Model *aModel,int aNP,int aNC, b
 bool StaticOptimizationTarget::
 prepareToOptimize(SimTK::State& s, double *x)
 {
-	// COMPUTE MAX ISOMETRIC FORCE
-	const ForceSet& fSet = _model->getForceSet();
+    // COMPUTE MAX ISOMETRIC FORCE
+    const ForceSet& fSet = _model->getForceSet();
     
-	for(int i=0, j=0;i<fSet.getSize();i++) {
- 		 Actuator* act = dynamic_cast<Actuator*>(&fSet.get(i));
+    for(int i=0, j=0;i<fSet.getSize();i++) {
+         Actuator* act = dynamic_cast<Actuator*>(&fSet.get(i));
          if( act ) {
              double fOpt;
              Muscle *mus = dynamic_cast<Muscle*>(&fSet.get(i));
              if( mus ) {
-				//ActivationFiberLengthMuscle *aflmus = dynamic_cast<ActivationFiberLengthMuscle*>(mus);
-				if(mus && _useMusclePhysiology) {
-					_model->setAllControllersEnabled(true);
-    				fOpt = mus->calcInextensibleTendonActiveFiberForce(s, 1.0);
-					_model->setAllControllersEnabled(false);
-    			} else {
-    				fOpt = mus->getMaxIsometricForce();
+                //ActivationFiberLengthMuscle *aflmus = dynamic_cast<ActivationFiberLengthMuscle*>(mus);
+                if(mus && _useMusclePhysiology) {
+                    _model->setAllControllersEnabled(true);
+                    fOpt = mus->calcInextensibleTendonActiveFiberForce(s, 1.0);
+                    _model->setAllControllersEnabled(false);
+                } else {
+                    fOpt = mus->getMaxIsometricForce();
                 }
              } else {
                   fOpt = act->getOptimalForce();
              }
-		    _optimalForce[j++] = fOpt;
-		 }
-	}
+            _optimalForce[j++] = fOpt;
+         }
+    }
 
 #ifdef USE_LINEAR_CONSTRAINT_MATRIX
-	//cout<<"Computing linear constraint matrix..."<<endl;
-	int np = getNumParameters();
-	int nc = getNumConstraints();
+    //cout<<"Computing linear constraint matrix..."<<endl;
+    int np = getNumParameters();
+    int nc = getNumConstraints();
 
-	_constraintMatrix.resize(nc,np);
-	_constraintVector.resize(nc);
+    _constraintMatrix.resize(nc,np);
+    _constraintVector.resize(nc);
 
-	Vector pVector(np), cVector(nc);
+    Vector pVector(np), cVector(nc);
 
-	// Build linear constraint matrix and constant constraint vector
-	pVector = 0;
-	computeConstraintVector(s, pVector,_constraintVector);
+    // Build linear constraint matrix and constant constraint vector
+    pVector = 0;
+    computeConstraintVector(s, pVector,_constraintVector);
 
-	for(int p=0; p<np; p++) {
-		pVector[p] = 1;
-		computeConstraintVector(s, pVector, cVector);
-		for(int c=0; c<nc; c++) _constraintMatrix(c,p) = (cVector[c] - _constraintVector[c]);
-		pVector[p] = 0;
-	}
+    for(int p=0; p<np; p++) {
+        pVector[p] = 1;
+        computeConstraintVector(s, pVector, cVector);
+        for(int c=0; c<nc; c++) _constraintMatrix(c,p) = (cVector[c] - _constraintVector[c]);
+        pVector[p] = 0;
+    }
 #endif
 
-	// return false to indicate that we still need to proceed with optimization
-	return false;
+    // return false to indicate that we still need to proceed with optimization
+    return false;
 }
 //==============================================================================
 // SET AND GET
@@ -162,7 +162,7 @@ prepareToOptimize(SimTK::State& s, double *x)
 void StaticOptimizationTarget::
 setModel(Model& aModel)
 {
-	_model = &aModel;
+    _model = &aModel;
 }
 //------------------------------------------------------------------------------
 // STATES STORAGE
@@ -176,7 +176,7 @@ setModel(Model& aModel)
 void StaticOptimizationTarget::
 setStatesStore(const Storage *aStatesStore)
 {
-	_statesStore = aStatesStore;
+    _statesStore = aStatesStore;
 }
 //------------------------------------------------------------------------------
 // STATES SPLINE SET
@@ -190,7 +190,7 @@ setStatesStore(const Storage *aStatesStore)
 void StaticOptimizationTarget::
 setStatesSplineSet(GCVSplineSet aStatesSplineSet)
 {
-	_statesSplineSet = aStatesSplineSet;
+    _statesSplineSet = aStatesSplineSet;
 }
 
 //------------------------------------------------------------------------------
@@ -210,8 +210,8 @@ setStatesSplineSet(GCVSplineSet aStatesSplineSet)
 void StaticOptimizationTarget::
 setNumParams(const int aNP)
 {
-	setNumParameters(aNP);
-	_dx.setSize(getNumParameters());
+    setNumParameters(aNP);
+    _dx.setSize(getNumParameters());
 }
 
 //------------------------------------------------------------------------------
@@ -226,9 +226,9 @@ setNumParams(const int aNP)
 void StaticOptimizationTarget::
 setNumConstraints(const int aNC)
 {
-	// There are only linear equality constraints.
-	setNumEqualityConstraints(aNC);
-	setNumLinearEqualityConstraints(aNC);
+    // There are only linear equality constraints.
+    setNumEqualityConstraints(aNC);
+    setNumLinearEqualityConstraints(aNC);
 }	
 
 //------------------------------------------------------------------------------
@@ -241,11 +241,11 @@ setNumConstraints(const int aNC)
 void StaticOptimizationTarget::
 setDX(int aIndex,double aValue)
 {
-	// VALIDATE VALUE
-	validatePerturbationSize(aValue);
+    // VALIDATE VALUE
+    validatePerturbationSize(aValue);
 
-	// SET VALUE (use get to do bounds checking)
-	_dx.updElt(aIndex) = aValue;
+    // SET VALUE (use get to do bounds checking)
+    _dx.updElt(aIndex) = aValue;
 }
 //______________________________________________________________________________
 /**
@@ -254,11 +254,11 @@ setDX(int aIndex,double aValue)
 void StaticOptimizationTarget::
 setDX(double aValue)
 {
-	// VALIDATE VALUE
-	validatePerturbationSize(aValue);
+    // VALIDATE VALUE
+    validatePerturbationSize(aValue);
 
-	// SET VALUE
-	for(int i=0;i<getNumParameters();i++) _dx.updElt(i) = aValue;
+    // SET VALUE
+    for(int i=0;i<getNumParameters();i++) _dx.updElt(i) = aValue;
 }
 //______________________________________________________________________________
 /**
@@ -267,7 +267,7 @@ setDX(double aValue)
 double StaticOptimizationTarget::
 getDX(int aIndex)
 {
-	return _dx.get(aIndex);
+    return _dx.get(aIndex);
 }
 //______________________________________________________________________________
 /**
@@ -276,7 +276,7 @@ getDX(int aIndex)
 double* StaticOptimizationTarget::
 getDXArray()
 {
-	return &_dx[0];
+    return &_dx[0];
 }
 
 //______________________________________________________________________________
@@ -286,14 +286,14 @@ getDXArray()
 void StaticOptimizationTarget::
 getActuation(SimTK::State& s, const SimTK::Vector &parameters, SimTK::Vector &forces)
 {
-	//return(_optimalForce[aIndex]);
-	const ForceSet& fs = _model->getForceSet();
-	SimTK::Vector tempAccel(getNumConstraints());
-	computeAcceleration(s, parameters, tempAccel);
-	for(int i=0,j=0;i<fs.getSize();i++) {
+    //return(_optimalForce[aIndex]);
+    const ForceSet& fs = _model->getForceSet();
+    SimTK::Vector tempAccel(getNumConstraints());
+    computeAcceleration(s, parameters, tempAccel);
+    for(int i=0,j=0;i<fs.getSize();i++) {
         Actuator* act = dynamic_cast<Actuator*>(&fs.get(i));
-		if( act )forces(j++) = act->getForce(s);
-	}
+        if( act )forces(j++) = act->getForce(s);
+    }
 }
 //==============================================================================
 // UTILITY
@@ -305,12 +305,12 @@ getActuation(SimTK::State& s, const SimTK::Vector &parameters, SimTK::Vector &fo
 void StaticOptimizationTarget::
 validatePerturbationSize(double &aSize)
 {
-	if(aSize<SMALLDX) {
-		printf("StaticOptimizationTarget.validatePerturbationSize: WARNING- ");
-		printf("dx size too small (%le).\n",aSize);
-		printf("\tResetting dx=%le.\n",SMALLDX);
-		aSize = SMALLDX;
-	}
+    if(aSize<SMALLDX) {
+        printf("StaticOptimizationTarget.validatePerturbationSize: WARNING- ");
+        printf("dx size too small (%le).\n",aSize);
+        printf("\tResetting dx=%le.\n",SMALLDX);
+        aSize = SMALLDX;
+    }
 }
 //______________________________________________________________________________
 /**
@@ -318,14 +318,14 @@ validatePerturbationSize(double &aSize)
 void StaticOptimizationTarget::
 printPerformance(const SimTK::State& s, double *parameters)
 {
-	double p;
-	setCurrentState( &s );
-	objectiveFunc(SimTK::Vector(getNumParameters(),parameters,true),true,p);
-	SimTK::Vector constraints(getNumConstraints());
-	constraintFunc(SimTK::Vector(getNumParameters(),parameters,true),true,constraints);
-	cout << endl;
-	cout << "time = " << s.getTime() <<" Performance =" << p << 
-	" Constraint violation = " << sqrt(~constraints*constraints) << endl;
+    double p;
+    setCurrentState( &s );
+    objectiveFunc(SimTK::Vector(getNumParameters(),parameters,true),true,p);
+    SimTK::Vector constraints(getNumConstraints());
+    constraintFunc(SimTK::Vector(getNumParameters(),parameters,true),true,constraints);
+    cout << endl;
+    cout << "time = " << s.getTime() <<" Performance =" << p << 
+    " Constraint violation = " << sqrt(~constraints*constraints) << endl;
 }
 
 //______________________________________________________________________________
@@ -334,17 +334,17 @@ printPerformance(const SimTK::State& s, double *parameters)
 void StaticOptimizationTarget::
 computeActuatorAreas(const SimTK::State& s )
 {
-	// COMPUTE ACTUATOR AREAS
-	ForceSet& forceSet = _model->updForceSet();
-	for(int i=0, j=0;i<forceSet.getSize();i++) {
+    // COMPUTE ACTUATOR AREAS
+    ForceSet& forceSet = _model->updForceSet();
+    for(int i=0, j=0;i<forceSet.getSize();i++) {
         Actuator *act = dynamic_cast<Actuator*>(&forceSet.get(i));
         if( act ) {
- 		     act->setForce(s, 1.0);
-    		 _recipAreaSquared[j] = act->getStress(s);
-    		 _recipAreaSquared[j] *= _recipAreaSquared[j];
+             act->setForce(s, 1.0);
+             _recipAreaSquared[j] = act->getStress(s);
+             _recipAreaSquared[j] *= _recipAreaSquared[j];
              j++;
         }
-	}
+    }
 }
 
 //=============================================================================
@@ -364,41 +364,41 @@ computeActuatorAreas(const SimTK::State& s )
  */
 int StaticOptimizationTarget::
 CentralDifferencesConstraint(const StaticOptimizationTarget *aTarget,
-	double *dx,const Vector &x,Matrix &jacobian)
+    double *dx,const Vector &x,Matrix &jacobian)
 {
-	if(aTarget==NULL) return(-1);
+    if(aTarget==NULL) return(-1);
 
-	// INITIALIZE CONTROLS
-	int nx = aTarget->getNumParameters(); if(nx<=0) return(-1);
-	int nc = aTarget->getNumConstraints(); if(nc<=0) return(-1);
-	Vector xp=x;
-	Vector cf(nc),cb(nc);
+    // INITIALIZE CONTROLS
+    int nx = aTarget->getNumParameters(); if(nx<=0) return(-1);
+    int nc = aTarget->getNumConstraints(); if(nc<=0) return(-1);
+    Vector xp=x;
+    Vector cf(nc),cb(nc);
 
-	// INITIALIZE STATUS
-	int status = -1;
+    // INITIALIZE STATUS
+    int status = -1;
 
-	// LOOP OVER CONTROLS
-	for(int i=0;i<nx;i++) {
+    // LOOP OVER CONTROLS
+    for(int i=0;i<nx;i++) {
 
-		// PERTURB FORWARD
-		xp[i] = x[i] + dx[i];
-		status = aTarget->constraintFunc(xp,true,cf);
-		if(status<0) return(status);
+        // PERTURB FORWARD
+        xp[i] = x[i] + dx[i];
+        status = aTarget->constraintFunc(xp,true,cf);
+        if(status<0) return(status);
 
-		// PERTURB BACKWARD
-		xp[i] = x[i] - dx[i];
-		status = aTarget->constraintFunc(xp,true,cb);
-		if(status<0) return(status);
+        // PERTURB BACKWARD
+        xp[i] = x[i] - dx[i];
+        status = aTarget->constraintFunc(xp,true,cb);
+        if(status<0) return(status);
 
-		// DERIVATIVES OF CONSTRAINTS
-		double rdx = 0.5 / dx[i];
-		for(int j=0;j<nc;j++) jacobian(j,i) = rdx*(cf[j]-cb[j]);
+        // DERIVATIVES OF CONSTRAINTS
+        double rdx = 0.5 / dx[i];
+        for(int j=0;j<nc;j++) jacobian(j,i) = rdx*(cf[j]-cb[j]);
 
-		// RESTORE CONTROLS
-		xp[i] = x[i];
-	}
+        // RESTORE CONTROLS
+        xp[i] = x[i];
+    }
 
-	return(status);
+    return(status);
 }
 //_____________________________________________________________________________
 /**
@@ -414,42 +414,42 @@ CentralDifferencesConstraint(const StaticOptimizationTarget *aTarget,
  */
 int StaticOptimizationTarget::
 CentralDifferences(const StaticOptimizationTarget *aTarget,
-	double *dx,const Vector &x,Vector &dpdx)
+    double *dx,const Vector &x,Vector &dpdx)
 {
-	if(aTarget==NULL) return(-1);
+    if(aTarget==NULL) return(-1);
 
-	// CONTROLS
-	int nx = aTarget->getNumParameters();  if(nx<=0) return(-1);
-	Vector xp=x;
+    // CONTROLS
+    int nx = aTarget->getNumParameters();  if(nx<=0) return(-1);
+    Vector xp=x;
 
-	// PERFORMANCE
-	double pf,pb;
+    // PERFORMANCE
+    double pf,pb;
 
-	// INITIALIZE STATUS
-	int status = -1;
+    // INITIALIZE STATUS
+    int status = -1;
 
-	// LOOP OVER CONTROLS
-	for(int i=0;i<nx;i++) {
+    // LOOP OVER CONTROLS
+    for(int i=0;i<nx;i++) {
 
-		// PERTURB FORWARD
-		xp[i] = x[i] + dx[i];
-		status = aTarget->objectiveFunc(xp,true,pf);
-		if(status<0) return(status);
+        // PERTURB FORWARD
+        xp[i] = x[i] + dx[i];
+        status = aTarget->objectiveFunc(xp,true,pf);
+        if(status<0) return(status);
 
-		// PERTURB BACKWARD
-		xp[i] = x[i] - dx[i];
-		status = aTarget->objectiveFunc(xp,true,pb);
-		if(status<0) return(status);
+        // PERTURB BACKWARD
+        xp[i] = x[i] - dx[i];
+        status = aTarget->objectiveFunc(xp,true,pb);
+        if(status<0) return(status);
 
-		// DERIVATIVES OF PERFORMANCE
-		double rdx = 0.5 / dx[i];
-		dpdx[i] = rdx*(pf-pb);
+        // DERIVATIVES OF PERFORMANCE
+        double rdx = 0.5 / dx[i];
+        dpdx[i] = rdx*(pf-pb);
 
-		// RESTORE CONTROLS
-		xp[i] = x[i];
-	}
+        // RESTORE CONTROLS
+        xp[i] = x[i];
+    }
 
-	return(status);
+    return(status);
 }
 
 //==============================================================================
@@ -469,30 +469,30 @@ CentralDifferences(const StaticOptimizationTarget *aTarget,
 int StaticOptimizationTarget::
 objectiveFunc(const Vector &parameters, const bool new_parameters, Real &performance) const
 {
-	//LARGE_INTEGER start;
-	//LARGE_INTEGER stop;
-	//LARGE_INTEGER frequency;
+    //LARGE_INTEGER start;
+    //LARGE_INTEGER stop;
+    //LARGE_INTEGER frequency;
 
-	//QueryPerformanceFrequency(&frequency);
-	//QueryPerformanceCounter(&start);
+    //QueryPerformanceFrequency(&frequency);
+    //QueryPerformanceCounter(&start);
 
-	int na = _model->getActuators().getSize();
-	double p = 0.0;
-	for(int i=0;i<na;i++) {
-		p +=  pow(fabs(parameters[i]),_activationExponent);
-	}
-	performance = p;
+    int na = _model->getActuators().getSize();
+    double p = 0.0;
+    for(int i=0;i<na;i++) {
+        p +=  pow(fabs(parameters[i]),_activationExponent);
+    }
+    performance = p;
 
-	// parameters.dump();
-	// std::cout<<p<<std::endl;
+    // parameters.dump();
+    // std::cout<<p<<std::endl;
 
-	//QueryPerformanceCounter(&stop);
-	//double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
-	//std::cout << "objectiveFunc time = " << (duration*1.0e3) << " milliseconds" << std::endl;
+    //QueryPerformanceCounter(&stop);
+    //double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
+    //std::cout << "objectiveFunc time = " << (duration*1.0e3) << " milliseconds" << std::endl;
 
-	// 0.03 ms
+    // 0.03 ms
 
-	return(0);
+    return(0);
 }
 //______________________________________________________________________________
 /**
@@ -505,29 +505,29 @@ objectiveFunc(const Vector &parameters, const bool new_parameters, Real &perform
 int StaticOptimizationTarget::
 gradientFunc(const Vector &parameters, const bool new_parameters, Vector &gradient) const
 {
-	//LARGE_INTEGER start;
-	//LARGE_INTEGER stop;
-	//LARGE_INTEGER frequency;
+    //LARGE_INTEGER start;
+    //LARGE_INTEGER stop;
+    //LARGE_INTEGER frequency;
 
-	//QueryPerformanceFrequency(&frequency);
-	//QueryPerformanceCounter(&start);
+    //QueryPerformanceFrequency(&frequency);
+    //QueryPerformanceCounter(&start);
 
-	int na = _model->getActuators().getSize();
-	for(int i=0;i<na;i++) {
-		if(parameters[i] < 0) {
-			gradient[i] =  -1.0 * _activationExponent * pow(fabs(parameters[i]),_activationExponent-1.0);
-		} else {
-			gradient[i] =  _activationExponent * pow(fabs(parameters[i]),_activationExponent-1.0);
-	}
-	}
+    int na = _model->getActuators().getSize();
+    for(int i=0;i<na;i++) {
+        if(parameters[i] < 0) {
+            gradient[i] =  -1.0 * _activationExponent * pow(fabs(parameters[i]),_activationExponent-1.0);
+        } else {
+            gradient[i] =  _activationExponent * pow(fabs(parameters[i]),_activationExponent-1.0);
+    }
+    }
 
-	//QueryPerformanceCounter(&stop);
-	//double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
-	//std::cout << "gradientFunc time = " << (duration*1.0e3) << " milliseconds" << std::endl;
+    //QueryPerformanceCounter(&stop);
+    //double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
+    //std::cout << "gradientFunc time = " << (duration*1.0e3) << " milliseconds" << std::endl;
 
-	// 0.02 ms
+    // 0.02 ms
 
-	return(0);
+    return(0);
 }
 
 //------------------------------------------------------------------------------
@@ -544,33 +544,33 @@ gradientFunc(const Vector &parameters, const bool new_parameters, Vector &gradie
 int StaticOptimizationTarget::
 constraintFunc(const SimTK::Vector &parameters, const bool new_parameters, SimTK::Vector &constraints) const
 {
-	//LARGE_INTEGER start;
-	//LARGE_INTEGER stop;
-	//LARGE_INTEGER frequency;
+    //LARGE_INTEGER start;
+    //LARGE_INTEGER stop;
+    //LARGE_INTEGER frequency;
 
-	//QueryPerformanceFrequency(&frequency);
-	//QueryPerformanceCounter(&start);
+    //QueryPerformanceFrequency(&frequency);
+    //QueryPerformanceCounter(&start);
 
 #ifndef USE_LINEAR_CONSTRAINT_MATRIX
 
-	// Evaluate constraint function for all constraints and pick the appropriate component
-	computeConstraintVector(parameters,constraints);
+    // Evaluate constraint function for all constraints and pick the appropriate component
+    computeConstraintVector(parameters,constraints);
 
 #else
 
-	// Use precomputed constraint matrix
-	//cout<<"Computing constraints assuming linear dependence..."<<endl;
-	constraints = _constraintMatrix * parameters + _constraintVector;
+    // Use precomputed constraint matrix
+    //cout<<"Computing constraints assuming linear dependence..."<<endl;
+    constraints = _constraintMatrix * parameters + _constraintVector;
 
 #endif
 
-	//QueryPerformanceCounter(&stop);
-	//double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
-	//std::cout << "constraintFunc time = " << (duration*1.0e3) << " milliseconds" << std::endl;
+    //QueryPerformanceCounter(&stop);
+    //double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
+    //std::cout << "constraintFunc time = " << (duration*1.0e3) << " milliseconds" << std::endl;
 
-	// 0.11 ms
+    // 0.11 ms
 
-	return(0);
+    return(0);
 }
 
 //______________________________________________________________________________
@@ -580,32 +580,32 @@ constraintFunc(const SimTK::Vector &parameters, const bool new_parameters, SimTK
 void StaticOptimizationTarget::
 computeConstraintVector(SimTK::State& s, const Vector &parameters,Vector &constraints) const
 {
-	//LARGE_INTEGER start;
-	//LARGE_INTEGER stop;
-	//LARGE_INTEGER frequency;
+    //LARGE_INTEGER start;
+    //LARGE_INTEGER stop;
+    //LARGE_INTEGER frequency;
 
-	//QueryPerformanceFrequency(&frequency);
-	//QueryPerformanceCounter(&start);
+    //QueryPerformanceFrequency(&frequency);
+    //QueryPerformanceCounter(&start);
 
-	// Compute actual accelerations
-	Vector actualAcceleration(getNumConstraints());
-	computeAcceleration(s, parameters, actualAcceleration);
+    // Compute actual accelerations
+    Vector actualAcceleration(getNumConstraints());
+    computeAcceleration(s, parameters, actualAcceleration);
 
-	// CONSTRAINTS
-	for(int i=0; i<getNumConstraints(); i++) {
-		Coordinate& coord = _model->getCoordinateSet().get(_accelerationIndices[i]);
-		Function& presribedFunc = _statesSplineSet.get(_statesStore->getStateIndex(coord.getSpeedName(),0));
-		std::vector<int> derivComponents(1,0); //take first derivative
-		double targetAcceleration = presribedFunc.calcDerivative(derivComponents,SimTK::Vector(1,s.getTime()));
-		//std::cout << "computeConstraintVector:" << targetAcceleration << " - " <<  actualAcceleration[i] << endl;
-		constraints[i] = targetAcceleration - actualAcceleration[i];
-	}
+    // CONSTRAINTS
+    for(int i=0; i<getNumConstraints(); i++) {
+        Coordinate& coord = _model->getCoordinateSet().get(_accelerationIndices[i]);
+        Function& presribedFunc = _statesSplineSet.get(_statesStore->getStateIndex(coord.getSpeedName(),0));
+        std::vector<int> derivComponents(1,0); //take first derivative
+        double targetAcceleration = presribedFunc.calcDerivative(derivComponents,SimTK::Vector(1,s.getTime()));
+        //std::cout << "computeConstraintVector:" << targetAcceleration << " - " <<  actualAcceleration[i] << endl;
+        constraints[i] = targetAcceleration - actualAcceleration[i];
+    }
 
-	//QueryPerformanceCounter(&stop);
-	//double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
-	//std::cout << "computeConstraintVector time = " << (duration*1.0e3) << " milliseconds" << std::endl;
+    //QueryPerformanceCounter(&stop);
+    //double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
+    //std::cout << "computeConstraintVector time = " << (duration*1.0e3) << " milliseconds" << std::endl;
 
-	// 1.5 ms
+    // 1.5 ms
 }
 //______________________________________________________________________________
 /**
@@ -618,33 +618,33 @@ computeConstraintVector(SimTK::State& s, const Vector &parameters,Vector &constr
 int StaticOptimizationTarget::
 constraintJacobian(const SimTK::Vector &parameters, const bool new_parameters, SimTK::Matrix &jac) const
 {
-	//LARGE_INTEGER start;
-	//LARGE_INTEGER stop;
-	//LARGE_INTEGER frequency;
+    //LARGE_INTEGER start;
+    //LARGE_INTEGER stop;
+    //LARGE_INTEGER frequency;
 
-	//QueryPerformanceFrequency(&frequency);
-	//QueryPerformanceCounter(&start);
+    //QueryPerformanceFrequency(&frequency);
+    //QueryPerformanceCounter(&start);
 
 #ifndef USE_LINEAR_CONSTRAINT_MATRIX
 
-	// Compute gradient 
-	StaticOptimizationTarget::CentralDifferencesConstraint(this,&_dx[0],parameters,jac);
+    // Compute gradient 
+    StaticOptimizationTarget::CentralDifferencesConstraint(this,&_dx[0],parameters,jac);
 
 #else
 
-	// Use precomputed constraint matrix (works if constraint is linear)
-	//cout<<"Computing constraint gradient assuming linear dependence..."<<endl;
-	jac = _constraintMatrix;
+    // Use precomputed constraint matrix (works if constraint is linear)
+    //cout<<"Computing constraint gradient assuming linear dependence..."<<endl;
+    jac = _constraintMatrix;
 
 #endif
 
-	//QueryPerformanceCounter(&stop);
-	//double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
-	//std::cout << "constraintJacobian time = " << (duration*1.0e3) << " milliseconds" << std::endl;
+    //QueryPerformanceCounter(&stop);
+    //double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
+    //std::cout << "constraintJacobian time = " << (duration*1.0e3) << " milliseconds" << std::endl;
 
-	// 0.01 ms
+    // 0.01 ms
 
-	return 0;
+    return 0;
 }
 //=============================================================================
 // ACCELERATION
@@ -653,37 +653,37 @@ constraintJacobian(const SimTK::Vector &parameters, const bool new_parameters, S
 void StaticOptimizationTarget::
 computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vector &rAccel) const
 {
-	//LARGE_INTEGER start;
-	//LARGE_INTEGER stop;
-	//LARGE_INTEGER frequency;
+    //LARGE_INTEGER start;
+    //LARGE_INTEGER stop;
+    //LARGE_INTEGER frequency;
 
-	//QueryPerformanceFrequency(&frequency);
-	//QueryPerformanceCounter(&start);
+    //QueryPerformanceFrequency(&frequency);
+    //QueryPerformanceCounter(&start);
 
-	// SimTK requires that time be >= 0 when setting Discreate variables (overrideForce)
-	// JACKM: Need to talk to sherm if this restriction can be removed
-	double time = s.getTime();
-	
+    // SimTK requires that time be >= 0 when setting Discreate variables (overrideForce)
+    // JACKM: Need to talk to sherm if this restriction can be removed
+    double time = s.getTime();
+    
 
-	const ForceSet& fs = _model->getForceSet();
-	for(int i=0,j=0;i<fs.getSize();i++)  {
+    const ForceSet& fs = _model->getForceSet();
+    for(int i=0,j=0;i<fs.getSize();i++)  {
          Actuator *act = dynamic_cast<Actuator*>(&fs.get(i));
-		 if( act ) {
+         if( act ) {
              act->setOverrideForce(s,parameters[j]*_optimalForce[j]);
-		 }
+         }
          j++;
     }
 
-	_model->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);
+    _model->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);
 
-	SimTK::Vector udot = _model->getMatterSubsystem().getUDot(s);
+    SimTK::Vector udot = _model->getMatterSubsystem().getUDot(s);
 
-	for(int i=0; i<_accelerationIndices.getSize(); i++) 
-		rAccel[i] = udot[_accelerationIndices[i]];
+    for(int i=0; i<_accelerationIndices.getSize(); i++) 
+        rAccel[i] = udot[_accelerationIndices[i]];
 
-	//QueryPerformanceCounter(&stop);
-	//double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
-	//std::cout << "computeAcceleration time = " << (duration*1.0e3) << " milliseconds" << std::endl;
+    //QueryPerformanceCounter(&stop);
+    //double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
+    //std::cout << "computeAcceleration time = " << (duration*1.0e3) << " milliseconds" << std::endl;
 
-	// 1.45 ms
+    // 1.45 ms
 }

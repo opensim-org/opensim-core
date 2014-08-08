@@ -54,19 +54,19 @@ class SimbodySimmGencoord
 // DATA
 //=============================================================================
 protected:
-	/** Pointer to the coordinate that this gencoord was created from. */
-	const Coordinate* _coordinate;
+    /** Pointer to the coordinate that this gencoord was created from. */
+    const Coordinate* _coordinate;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION AND DESTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION AND DESTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	virtual ~SimbodySimmGencoord();
-	SimbodySimmGencoord();
-	SimbodySimmGencoord(const Coordinate* aCoordinate);
+    virtual ~SimbodySimmGencoord();
+    SimbodySimmGencoord();
+    SimbodySimmGencoord(const Coordinate* aCoordinate);
    void write(std::ofstream& aStream);
 
 //=============================================================================

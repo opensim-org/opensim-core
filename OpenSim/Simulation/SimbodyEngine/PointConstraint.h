@@ -46,53 +46,53 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PointConstraint, Constraint);
 // DATA
 //=============================================================================
 public:
-	/** Properties */
-	OpenSim_DECLARE_PROPERTY(body_1, std::string,
-		"Specify first of two bodies connected together by the constraint.");
-	OpenSim_DECLARE_PROPERTY(body_2, std::string,
-		"Specify second of two bodies connected together by the constraint.");
-	OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
-		"Location of the point in first body specified in body1 reference frame.");
-	OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
-		"Location of the point in second body specified in body2 reference frame.");
+    /** Properties */
+    OpenSim_DECLARE_PROPERTY(body_1, std::string,
+        "Specify first of two bodies connected together by the constraint.");
+    OpenSim_DECLARE_PROPERTY(body_2, std::string,
+        "Specify second of two bodies connected together by the constraint.");
+    OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
+        "Location of the point in first body specified in body1 reference frame.");
+    OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
+        "Location of the point in second body specified in body2 reference frame.");
 
 protected:
-	/** First body point constraint joins. */
-	Body *_body1;
+    /** First body point constraint joins. */
+    Body *_body1;
 
-	/** Second body point constraint joins. */
-	Body *_body2;
+    /** Second body point constraint joins. */
+    Body *_body2;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	PointConstraint();
-	PointConstraint(const OpenSim::Body& body1, const SimTK::Vec3& locationBody1,
-		            const OpenSim::Body& body2, const SimTK::Vec3& locationBody2);
-	virtual ~PointConstraint();
+    // CONSTRUCTION
+    PointConstraint();
+    PointConstraint(const OpenSim::Body& body1, const SimTK::Vec3& locationBody1,
+                    const OpenSim::Body& body2, const SimTK::Vec3& locationBody2);
+    virtual ~PointConstraint();
 
-	//SET 
-	void setBody1ByName(std::string aBodyName);
-	void setBody1PointLocation(SimTK::Vec3 location);
-	void setBody2ByName(std::string aBodyName);
-	void setBody2PointLocation(SimTK::Vec3 location);
+    //SET 
+    void setBody1ByName(std::string aBodyName);
+    void setBody1PointLocation(SimTK::Vec3 location);
+    void setBody2ByName(std::string aBodyName);
+    void setBody2PointLocation(SimTK::Vec3 location);
 
-	/** Method to set point location of contact during an induced acceleration analysis */
-	virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point);
+    /** Method to set point location of contact during an induced acceleration analysis */
+    virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point);
 
 
 protected:
-	void connectToModel(Model& aModel) override;
-	/**
-	 * Create a SimTK::Constraint::Ball which implements this Point constraint.
-	 */
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+    void connectToModel(Model& aModel) override;
+    /**
+     * Create a SimTK::Constraint::Ball which implements this Point constraint.
+     */
+    void addToSystem(SimTK::MultibodySystem& system) const override;
 
 private:
-	void setNull();
-	void constructProperties();
+    void setNull();
+    void constructProperties();
 
 //=============================================================================
 };	// END of class PointConstraint

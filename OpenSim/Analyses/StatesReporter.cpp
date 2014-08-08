@@ -56,14 +56,14 @@ StatesReporter::~StatesReporter()
  * @param aModel Model for which the states are to be recorded.
  */
 StatesReporter::StatesReporter(Model *aModel) :
-	Analysis(aModel),
-	_statesStore(1000,"ModelStates")
+    Analysis(aModel),
+    _statesStore(1000,"ModelStates")
 {
-	// NULL
-	setNull();
+    // NULL
+    setNull();
 
-	// DESCRIPTION
-	constructDescription();
+    // DESCRIPTION
+    constructDescription();
 }
 //_____________________________________________________________________________
 /**
@@ -78,16 +78,16 @@ StatesReporter::StatesReporter(const std::string &aFileName):
 Analysis(aFileName, false),
 _statesStore(1000,"ModelStates")
 {
-	setNull();
+    setNull();
 
-	// Serialize from XML
-	updateFromXMLDocument();
+    // Serialize from XML
+    updateFromXMLDocument();
 
-	// DESCRIPTION
-	constructDescription();
+    // DESCRIPTION
+    constructDescription();
 
-	// STORAGE
-	setupStorage();
+    // STORAGE
+    setupStorage();
 }
 
 // Copy constrctor and virtual copy 
@@ -100,9 +100,9 @@ StatesReporter::StatesReporter(const StatesReporter &aStatesReporter):
 Analysis(aStatesReporter),
 _statesStore(aStatesReporter._statesStore)
 {
-	setNull();
-	// COPY TYPE AND NAME
-	*this = aStatesReporter;
+    setNull();
+    // COPY TYPE AND NAME
+    *this = aStatesReporter;
 }
 
 
@@ -116,21 +116,21 @@ _statesStore(aStatesReporter._statesStore)
 void StatesReporter::
 setNull()
 {
-	// NAME
-	setName("StatesReporter");
+    // NAME
+    setName("StatesReporter");
 }
 //--------------------------------------------------------------------------
 // OPERATORS
 //--------------------------------------------------------------------------
 StatesReporter& StatesReporter::operator=(const StatesReporter &aStatesReporter)
 {
-	// BASE CLASS
-	Analysis::operator=(aStatesReporter);
+    // BASE CLASS
+    Analysis::operator=(aStatesReporter);
 
-	// STORAGE
-	setupStorage();
+    // STORAGE
+    setupStorage();
 
-	return (*this);
+    return (*this);
 }
 //_____________________________________________________________________________
 /**
@@ -139,11 +139,11 @@ StatesReporter& StatesReporter::operator=(const StatesReporter &aStatesReporter)
 void StatesReporter::
 setupStorage()
 {
-	// ACCELERATIONS
-	_statesStore.setDescription(getDescription());
-	// Keep references o all storages in a list for uniform access from GUI
-	_storageList.append(&_statesStore);
-	_storageList.setMemoryOwner(false);
+    // ACCELERATIONS
+    _statesStore.setDescription(getDescription());
+    // Keep references o all storages in a list for uniform access from GUI
+    _storageList.append(&_statesStore);
+    _storageList.setMemoryOwner(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -156,19 +156,19 @@ setupStorage()
 void StatesReporter::
 constructDescription()
 {
-	char descrip[1024];
+    char descrip[1024];
 
-	strcpy(descrip,"\nThis file contains the states of a model ");
-	strcat(descrip,"during a simulation.\n");
-	strcat(descrip,"\nUnits are S.I. units (second, meters, Newtons, ...)");
-	if(getInDegrees()) {
-		strcat(descrip,"\nAngles are in degrees.");
-	} else {
-		strcat(descrip,"\nAngles are in radians.");
-	}
-	strcat(descrip,"\n\n");
+    strcpy(descrip,"\nThis file contains the states of a model ");
+    strcat(descrip,"during a simulation.\n");
+    strcat(descrip,"\nUnits are S.I. units (second, meters, Newtons, ...)");
+    if(getInDegrees()) {
+        strcat(descrip,"\nAngles are in degrees.");
+    } else {
+        strcat(descrip,"\nAngles are in radians.");
+    }
+    strcat(descrip,"\n\n");
 
-	setDescription(descrip);
+    setDescription(descrip);
 }
 
 //-----------------------------------------------------------------------------
@@ -181,13 +181,13 @@ constructDescription()
 void StatesReporter::
 constructColumnLabels()
 {
-	if (_model)
-	{
-		// ASSIGN
-		Array<string> columnLabels = _model->getStateVariableNames();
-		columnLabels.insert(0, "time");		
-		_statesStore.setColumnLabels(columnLabels);
-	}
+    if (_model)
+    {
+        // ASSIGN
+        Array<string> columnLabels = _model->getStateVariableNames();
+        columnLabels.insert(0, "time");		
+        _statesStore.setColumnLabels(columnLabels);
+    }
 }
 
 //=============================================================================
@@ -200,16 +200,16 @@ constructColumnLabels()
 int StatesReporter::
 record(const SimTK::State& s)
 {
-	if(_model==NULL) return(-1);
+    if(_model==NULL) return(-1);
 
-	// MAKE SURE ALL StatesReporter QUANTITIES ARE VALID
+    // MAKE SURE ALL StatesReporter QUANTITIES ARE VALID
     _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity );
 
-	SimTK::Vector stateValues = _model->getStateVariableValues(s);
-	StateVector nextRow(s.getTime(), stateValues.size(), &stateValues[0]);
-	_statesStore.append(nextRow);
+    SimTK::Vector stateValues = _model->getStateVariableValues(s);
+    StateVector nextRow(s.getTime(), stateValues.size(), &stateValues[0]);
+    _statesStore.append(nextRow);
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -229,19 +229,19 @@ record(const SimTK::State& s)
 int StatesReporter::
 begin( SimTK::State& s)
 {
-	if(!proceed()) return(0);
-	// LABELS
-	constructColumnLabels();
-	// RESET STORAGE
-	_statesStore.reset(s.getTime());
+    if(!proceed()) return(0);
+    // LABELS
+    constructColumnLabels();
+    // RESET STORAGE
+    _statesStore.reset(s.getTime());
 
-	// RECORD
-	int status = 0;
-	if(_statesStore.getSize()<=0) {
-		status = record(s);
-	}
+    // RECORD
+    int status = 0;
+    if(_statesStore.getSize()<=0) {
+        status = record(s);
+    }
 
-	return(status);
+    return(status);
 }
 //_____________________________________________________________________________
 /**
@@ -262,11 +262,11 @@ begin( SimTK::State& s)
 int StatesReporter::
 step(const SimTK::State& s, int stepNumber )
 {
-	if(!proceed(stepNumber)) return(0);
+    if(!proceed(stepNumber)) return(0);
 
-	record(s);
+    record(s);
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -285,11 +285,11 @@ step(const SimTK::State& s, int stepNumber )
 int StatesReporter::
 end( SimTK::State& s )
 {
-	if (!proceed()) return 0;
+    if (!proceed()) return 0;
 
-	record(s);
+    record(s);
 
-	return(0);
+    return(0);
 }
 
 
@@ -315,15 +315,15 @@ end( SimTK::State& s )
  */
 int StatesReporter::
 printResults(const string &aBaseName,const string &aDir,double aDT,
-				 const string &aExtension)
+                 const string &aExtension)
 {
-	if(!getOn()) {
-		printf("StatesReporter.printResults: Off- not printing.\n");
-		return(0);
-	}
+    if(!getOn()) {
+        printf("StatesReporter.printResults: Off- not printing.\n");
+        return(0);
+    }
 
-	std::string prefix=aBaseName+"_"+getName()+"_";
-	Storage::printResult(&_statesStore, prefix+"states", aDir, aDT, aExtension);
+    std::string prefix=aBaseName+"_"+getName()+"_";
+    Storage::printResult(&_statesStore, prefix+"states", aDir, aDT, aExtension);
 
-	return(0);
+    return(0);
 }

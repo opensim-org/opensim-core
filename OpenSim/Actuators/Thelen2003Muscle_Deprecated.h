@@ -29,10 +29,10 @@
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle_Deprecated.h>
 
 #ifdef SWIG
-	#ifdef OSIMACTUATORS_API
-		#undef OSIMACTUATORS_API
-		#define OSIMACTUATORS_API
-	#endif
+    #ifdef OSIMACTUATORS_API
+        #undef OSIMACTUATORS_API
+        #define OSIMACTUATORS_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -57,97 +57,97 @@ public:
     These are the serializable properties associated with this class. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
-		"time constant for ramping up of muscle activation");
-	OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
-		"time constant for ramping down of muscle activation");
-	OpenSim_DECLARE_PROPERTY(Vmax, double,
-		"maximum contraction velocity at full activation in fiber lengths/second");
-	OpenSim_DECLARE_PROPERTY(Vmax0, double,
-		"maximum contraction velocity at low activation in fiber lengths/second");
-	OpenSim_DECLARE_PROPERTY(FmaxTendonStrain, double,
-		"tendon strain due to maximum isometric muscle force");
-	OpenSim_DECLARE_PROPERTY(FmaxMuscleStrain, double,
-		"passive muscle strain due to maximum isometric muscle force");
-	OpenSim_DECLARE_PROPERTY(KshapeActive, double,
-		"shape factor for Gaussian active muscle force-length relationship");
-	OpenSim_DECLARE_PROPERTY(KshapePassive, double,
-		"exponential shape factor for passive force-length relationship");
-	OpenSim_DECLARE_PROPERTY(damping, double,
-		"passive damping in the force-velocity relationship");
-	OpenSim_DECLARE_PROPERTY(Af, double,
-		"force-velocity shape factor");
-	OpenSim_DECLARE_PROPERTY(Flen, double,
-		"maximum normalized lengthening force");
-	/**@}**/
+        "time constant for ramping up of muscle activation");
+    OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
+        "time constant for ramping down of muscle activation");
+    OpenSim_DECLARE_PROPERTY(Vmax, double,
+        "maximum contraction velocity at full activation in fiber lengths/second");
+    OpenSim_DECLARE_PROPERTY(Vmax0, double,
+        "maximum contraction velocity at low activation in fiber lengths/second");
+    OpenSim_DECLARE_PROPERTY(FmaxTendonStrain, double,
+        "tendon strain due to maximum isometric muscle force");
+    OpenSim_DECLARE_PROPERTY(FmaxMuscleStrain, double,
+        "passive muscle strain due to maximum isometric muscle force");
+    OpenSim_DECLARE_PROPERTY(KshapeActive, double,
+        "shape factor for Gaussian active muscle force-length relationship");
+    OpenSim_DECLARE_PROPERTY(KshapePassive, double,
+        "exponential shape factor for passive force-length relationship");
+    OpenSim_DECLARE_PROPERTY(damping, double,
+        "passive damping in the force-velocity relationship");
+    OpenSim_DECLARE_PROPERTY(Af, double,
+        "force-velocity shape factor");
+    OpenSim_DECLARE_PROPERTY(Flen, double,
+        "maximum normalized lengthening force");
+    /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	Thelen2003Muscle_Deprecated();
-	Thelen2003Muscle_Deprecated(const std::string&  name,
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    Thelen2003Muscle_Deprecated();
+    Thelen2003Muscle_Deprecated(const std::string&  name,
                                 double              maxIsometricForce,
                                 double              optimalFiberLength,
                                 double              tendonSlackLength,
                                 double              pennationAngle);
-	
-	// Properties
-	double getActivationTimeConstant() const 
+    
+    // Properties
+    double getActivationTimeConstant() const 
     {   return get_activation_time_constant(); }
-	double getDeactivationTimeConstant() const 
+    double getDeactivationTimeConstant() const 
     {   return get_deactivation_time_constant(); }
-	double getVmax() const {return get_Vmax();}
-	double getVmax0() const {return get_Vmax0();}
-	double getFmaxTendonStrain() const {return get_FmaxTendonStrain();}
-	double getFmaxMuscleStrain() const {return get_FmaxMuscleStrain();}
-	double getKshapeActive() const {return get_KshapeActive();}
-	double getKshapePassive() const {return get_KshapePassive();}
-	double getDamping() const {return get_damping();}
-	double getAf() const {return get_Af();}
-	double getFlen() const {return get_Flen();}
+    double getVmax() const {return get_Vmax();}
+    double getVmax0() const {return get_Vmax0();}
+    double getFmaxTendonStrain() const {return get_FmaxTendonStrain();}
+    double getFmaxMuscleStrain() const {return get_FmaxMuscleStrain();}
+    double getKshapeActive() const {return get_KshapeActive();}
+    double getKshapePassive() const {return get_KshapePassive();}
+    double getDamping() const {return get_damping();}
+    double getAf() const {return get_Af();}
+    double getFlen() const {return get_Flen();}
 
-	void setActivationTimeConstant(double aActivationTimeConstant)
+    void setActivationTimeConstant(double aActivationTimeConstant)
     {	set_activation_time_constant(aActivationTimeConstant); }
-	void setDeactivationTimeConstant(double aDeactivationTimeConstant)
+    void setDeactivationTimeConstant(double aDeactivationTimeConstant)
     {	set_deactivation_time_constant(aDeactivationTimeConstant); }
-	void setVmax(double aVmax)
+    void setVmax(double aVmax)
     {	set_Vmax(aVmax); }
-	void setVmax0(double aVmax0)
+    void setVmax0(double aVmax0)
     {	set_Vmax0(aVmax0); }
-	void setFmaxTendonStrain(double aFmaxTendonStrain)
+    void setFmaxTendonStrain(double aFmaxTendonStrain)
     {	set_FmaxTendonStrain(aFmaxTendonStrain); }
-	void setFmaxMuscleStrain(double aFmaxMuscleStrain)
+    void setFmaxMuscleStrain(double aFmaxMuscleStrain)
     {	set_FmaxMuscleStrain(aFmaxMuscleStrain); }
-	void setKshapeActive(double aKShapeActive)
+    void setKshapeActive(double aKShapeActive)
     {	set_KshapeActive(aKShapeActive); }
-	void setKshapePassive(double aKshapePassive)
+    void setKshapePassive(double aKshapePassive)
     {	set_KshapePassive(aKshapePassive); }
-	void setDamping(double aDamping)
+    void setDamping(double aDamping)
     {	set_damping(aDamping); }
-	void setAf(double aAf)
+    void setAf(double aAf)
     {	set_Af(aAf); }
-	void setFlen(double aFlen)
+    void setFlen(double aFlen)
     {	set_Flen(aFlen); }
 
-	// Computed quantities
-	//--------------------------------------------------------------------------
-	// FORCE-LENGTH-VELOCITY PROPERTIES
-	//--------------------------------------------------------------------------
+    // Computed quantities
+    //--------------------------------------------------------------------------
+    // FORCE-LENGTH-VELOCITY PROPERTIES
+    //--------------------------------------------------------------------------
 
-	//--------------------------------------------------------------------------
-	// COMPUTATIONS
-	//--------------------------------------------------------------------------
-	virtual double computeActuation(const SimTK::State& s) const;
-	double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
-	double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const;
-	double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;
-	double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
-	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
+    //--------------------------------------------------------------------------
+    // COMPUTATIONS
+    //--------------------------------------------------------------------------
+    virtual double computeActuation(const SimTK::State& s) const;
+    double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
+    double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const;
+    double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;
+    double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
+    virtual double computeIsometricForce(SimTK::State& s, double activation) const;
 
 private:
-	void constructProperties();
+    void constructProperties();
 //==============================================================================
 };	// END of class Thelen2003Muscle_Deprecated
 //==============================================================================

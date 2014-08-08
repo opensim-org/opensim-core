@@ -94,7 +94,7 @@ public:
     /** Construct ModelComponent from a specific node in an XML document. **/
     explicit ModelComponent(SimTK::Xml::Element& aNode);
 
-	// compiler default copy costructor and assignment operator
+    // compiler default copy costructor and assignment operator
 
     /** Destructor is virtual to allow concrete model component cleanup. **/
     virtual ~ModelComponent() {}
@@ -246,12 +246,12 @@ template <class T> friend class ModelComponentSet;
     //@} 
 
     /** Satisfy the general Component interface, but this is not part of the
-	  * ModelComponent interface. ModelComponent::connect() ensures that
-	  * connectToModel() on ModelComponent subcomponents are invoked. **/
-	void connect(Component& root) FINAL_11;
+      * ModelComponent interface. ModelComponent::connect() ensures that
+      * connectToModel() on ModelComponent subcomponents are invoked. **/
+    void connect(Component& root) FINAL_11;
 
 private:
-	const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;
+    const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;
     const SimTK::DefaultSystemSubsystem& updDefaultSubsystem();
 
     // Clear out all the data fields in the base class. There should be one

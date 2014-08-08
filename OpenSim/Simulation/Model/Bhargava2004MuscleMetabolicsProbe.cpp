@@ -77,10 +77,10 @@ Bhargava2004MuscleMetabolicsProbe::Bhargava2004MuscleMetabolicsProbe(
  */
 void Bhargava2004MuscleMetabolicsProbe::setNull()
 {
-	setAuthors("Tim Dorn");
-	setReferences("Bhargava, L. J., Pandy, M. G. and Anderson, F. C. (2004). " 
-		"A phenomenological model for estimating metabolic energy consumption "
-		"in muscle contraction. J Biomech 37, 81-8..");
+    setAuthors("Tim Dorn");
+    setReferences("Bhargava, L. J., Pandy, M. G. and Anderson, F. C. (2004). " 
+        "A phenomenological model for estimating metabolic energy consumption "
+        "in muscle contraction. J Biomech 37, 81-8..");
     _muscleMap.clear();
 }
 
@@ -468,7 +468,7 @@ computeProbeInputs(const State& s) const
         cout << "Bdot = " << Bdot << endl;
         cout << "Wdot = " << Wdot << endl;
         cout << "Edot = " << Edot << endl;
-		std::cin.get();
+        std::cin.get();
 #endif
     }
 
@@ -528,9 +528,9 @@ Array<string> Bhargava2004MuscleMetabolicsProbe::getProbeOutputLabels() const
 * Get the number of muscles being analysed in the metabolic analysis. 
 */
 const int Bhargava2004MuscleMetabolicsProbe::
-	getNumMetabolicMuscles() const  
+    getNumMetabolicMuscles() const  
 { 
-	return get_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet()
+    return get_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet()
         .getSize(); 
 }
 
@@ -541,7 +541,7 @@ const int Bhargava2004MuscleMetabolicsProbe::
  * metabolic analysis.
  */
 void Bhargava2004MuscleMetabolicsProbe::
-	addMuscle(const string& muscleName, 
+    addMuscle(const string& muscleName, 
     double ratio_slow_twitch_fibers, 
     double activation_constant_slow_twitch,
     double activation_constant_fast_twitch,
@@ -568,13 +568,13 @@ void Bhargava2004MuscleMetabolicsProbe::
  * metabolic analysis.
  */
 void Bhargava2004MuscleMetabolicsProbe::
-	addMuscle(const string& muscleName, 
+    addMuscle(const string& muscleName, 
     double ratio_slow_twitch_fibers, 
     double activation_constant_slow_twitch,
     double activation_constant_fast_twitch,
     double maintenance_constant_slow_twitch,
     double maintenance_constant_fast_twitch,
-	double muscle_mass)
+    double muscle_mass)
 {
     Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter* mm = 
         new Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter(
@@ -584,7 +584,7 @@ void Bhargava2004MuscleMetabolicsProbe::
             activation_constant_fast_twitch, 
             maintenance_constant_slow_twitch, 
             maintenance_constant_fast_twitch,
-			muscle_mass);
+            muscle_mass);
         
     upd_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet()
         .adoptAndAppend(mm);    // add to MetabolicMuscleParameterSet in the model
@@ -596,7 +596,7 @@ void Bhargava2004MuscleMetabolicsProbe::
  * Remove a muscle from the MetabolicMuscleParameterSet.
  */
 void Bhargava2004MuscleMetabolicsProbe::
-	removeMuscle(const string& muscleName)
+    removeMuscle(const string& muscleName)
 {
     // Step 1: Remove the reference to this MetabolicMuscleParameter
     // from the muscle map.
@@ -626,7 +626,7 @@ void Bhargava2004MuscleMetabolicsProbe::
  * to use an provided muscle mass.
  */
 void Bhargava2004MuscleMetabolicsProbe::
-	useProvidedMass(const string& muscleName, double providedMass)
+    useProvidedMass(const string& muscleName, double providedMass)
 {
     Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter* mm = 
         updMetabolicParameters(muscleName);
@@ -643,7 +643,7 @@ void Bhargava2004MuscleMetabolicsProbe::
  * to calculate its own mass.
  */
 void Bhargava2004MuscleMetabolicsProbe::
-	useCalculatedMass(const string& muscleName)
+    useCalculatedMass(const string& muscleName)
 {
     Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter* mm = 
         updMetabolicParameters(muscleName);
@@ -660,9 +660,9 @@ void Bhargava2004MuscleMetabolicsProbe::
  * False means that the muscle mass is being calculated from muscle properties. 
  */
 bool Bhargava2004MuscleMetabolicsProbe::
-	isUsingProvidedMass(const std::string& muscleName)
+    isUsingProvidedMass(const std::string& muscleName)
 { 
-	return getMetabolicParameters(muscleName)->get_use_provided_muscle_mass(); 
+    return getMetabolicParameters(muscleName)->get_use_provided_muscle_mass(); 
 }
 
 
@@ -671,9 +671,9 @@ bool Bhargava2004MuscleMetabolicsProbe::
  * Get the muscle mass used in the metabolic analysis. 
  */
 const double Bhargava2004MuscleMetabolicsProbe::
-	getMuscleMass(const std::string& muscleName) const 
+    getMuscleMass(const std::string& muscleName) const 
 { 
-	return getMetabolicParameters(muscleName)->getMuscleMass();
+    return getMetabolicParameters(muscleName)->getMuscleMass();
 }
 
 
@@ -682,9 +682,9 @@ const double Bhargava2004MuscleMetabolicsProbe::
  * Get the ratio of slow twitch fibers for an existing muscle. 
  */
 const double Bhargava2004MuscleMetabolicsProbe::
-	getRatioSlowTwitchFibers(const std::string& muscleName) const 
+    getRatioSlowTwitchFibers(const std::string& muscleName) const 
 { 
-	return getMetabolicParameters(muscleName)->get_ratio_slow_twitch_fibers();
+    return getMetabolicParameters(muscleName)->get_ratio_slow_twitch_fibers();
 }
 
 
@@ -693,9 +693,9 @@ const double Bhargava2004MuscleMetabolicsProbe::
  * Set the ratio of slow twitch fibers for an existing muscle. 
  */
 void Bhargava2004MuscleMetabolicsProbe::
-	setRatioSlowTwitchFibers(const std::string& muscleName, const double& ratio) 
+    setRatioSlowTwitchFibers(const std::string& muscleName, const double& ratio) 
 { 
-	updMetabolicParameters(muscleName)->set_ratio_slow_twitch_fibers(ratio);
+    updMetabolicParameters(muscleName)->set_ratio_slow_twitch_fibers(ratio);
 }
 
 
@@ -704,9 +704,9 @@ void Bhargava2004MuscleMetabolicsProbe::
  * Get the density for an existing muscle (kg/m^3).. 
  */
 const double Bhargava2004MuscleMetabolicsProbe::
-	getDensity(const std::string& muscleName) const 
+    getDensity(const std::string& muscleName) const 
 { 
-	return getMetabolicParameters(muscleName)->get_density();
+    return getMetabolicParameters(muscleName)->get_density();
 }
 
 
@@ -715,9 +715,9 @@ const double Bhargava2004MuscleMetabolicsProbe::
  * Set the density for an existing muscle (kg/m^3). 
  */
 void Bhargava2004MuscleMetabolicsProbe::
-	setDensity(const std::string& muscleName, const double& density) 
+    setDensity(const std::string& muscleName, const double& density) 
 { 
-	updMetabolicParameters(muscleName)->set_density(density);
+    updMetabolicParameters(muscleName)->set_density(density);
 }
 
 
@@ -726,9 +726,9 @@ void Bhargava2004MuscleMetabolicsProbe::
  * Get the specific tension for an existing muscle (Pascals (N/m^2)). 
  */
 const double Bhargava2004MuscleMetabolicsProbe::
-	getSpecificTension(const std::string& muscleName) const 
+    getSpecificTension(const std::string& muscleName) const 
 { 
-	return getMetabolicParameters(muscleName)->get_specific_tension();
+    return getMetabolicParameters(muscleName)->get_specific_tension();
 }
 
 
@@ -737,9 +737,9 @@ const double Bhargava2004MuscleMetabolicsProbe::
  * Set the specific tension for an existing muscle (Pascals (N/m^2)). 
  */
 void Bhargava2004MuscleMetabolicsProbe::
-	setSpecificTension(const std::string& muscleName, const double& specificTension) 
+    setSpecificTension(const std::string& muscleName, const double& specificTension) 
 { 
-	updMetabolicParameters(muscleName)->set_specific_tension(specificTension);
+    updMetabolicParameters(muscleName)->set_specific_tension(specificTension);
 }
 
 
@@ -748,9 +748,9 @@ void Bhargava2004MuscleMetabolicsProbe::
  * Get the activation constant for slow twitch fibers for an existing muscle. 
  */
 const double Bhargava2004MuscleMetabolicsProbe::
-	getActivationConstantSlowTwitch(const std::string& muscleName) const
+    getActivationConstantSlowTwitch(const std::string& muscleName) const
 { 
-	return getMetabolicParameters(muscleName)->get_activation_constant_slow_twitch(); 
+    return getMetabolicParameters(muscleName)->get_activation_constant_slow_twitch(); 
 }
 
 
@@ -759,9 +759,9 @@ const double Bhargava2004MuscleMetabolicsProbe::
  * Set the activation constant for slow twitch fibers for an existing muscle. 
  */
 void Bhargava2004MuscleMetabolicsProbe::
-	setActivationConstantSlowTwitch(const std::string& muscleName, const double& c) 
+    setActivationConstantSlowTwitch(const std::string& muscleName, const double& c) 
 { 
-	updMetabolicParameters(muscleName)->set_activation_constant_slow_twitch(c); 
+    updMetabolicParameters(muscleName)->set_activation_constant_slow_twitch(c); 
 }
 
 
@@ -770,9 +770,9 @@ void Bhargava2004MuscleMetabolicsProbe::
  * Get the activation constant for fast twitch fibers for an existing muscle. 
  */
 const double Bhargava2004MuscleMetabolicsProbe::
-	getActivationConstantFastTwitch(const std::string& muscleName) const 
+    getActivationConstantFastTwitch(const std::string& muscleName) const 
 { 
-	return getMetabolicParameters(muscleName)->get_activation_constant_fast_twitch(); 
+    return getMetabolicParameters(muscleName)->get_activation_constant_fast_twitch(); 
 }
 
 
@@ -781,9 +781,9 @@ const double Bhargava2004MuscleMetabolicsProbe::
  * Set the activation constant for fast twitch fibers for an existing muscle. 
  */
 void Bhargava2004MuscleMetabolicsProbe::
-	setActivationConstantFastTwitch(const std::string& muscleName, const double& c) 
+    setActivationConstantFastTwitch(const std::string& muscleName, const double& c) 
 { 
-	updMetabolicParameters(muscleName)->set_activation_constant_fast_twitch(c); 
+    updMetabolicParameters(muscleName)->set_activation_constant_fast_twitch(c); 
 }
 
 
@@ -792,9 +792,9 @@ void Bhargava2004MuscleMetabolicsProbe::
  * Get the maintenance constant for slow twitch fibers for an existing muscle. 
  */
 const double Bhargava2004MuscleMetabolicsProbe::
-	getMaintenanceConstantSlowTwitch(const std::string& muscleName) const 
+    getMaintenanceConstantSlowTwitch(const std::string& muscleName) const 
 { 
-	return getMetabolicParameters(muscleName)->get_maintenance_constant_slow_twitch(); 
+    return getMetabolicParameters(muscleName)->get_maintenance_constant_slow_twitch(); 
 }
 
 
@@ -803,9 +803,9 @@ const double Bhargava2004MuscleMetabolicsProbe::
  * Set the maintenance constant for slow twitch fibers for an existing muscle. 
  */
 void Bhargava2004MuscleMetabolicsProbe::
-	setMaintenanceConstantSlowTwitch(const std::string& muscleName, const double& c) 
+    setMaintenanceConstantSlowTwitch(const std::string& muscleName, const double& c) 
 { 
-	updMetabolicParameters(muscleName)->set_maintenance_constant_slow_twitch(c); 
+    updMetabolicParameters(muscleName)->set_maintenance_constant_slow_twitch(c); 
 }
 
 
@@ -814,9 +814,9 @@ void Bhargava2004MuscleMetabolicsProbe::
  * Get the maintenance constant for fast twitch fibers for an existing muscle. 
  */
 const double Bhargava2004MuscleMetabolicsProbe::
-	getMaintenanceConstantFastTwitch(const std::string& muscleName) const 
+    getMaintenanceConstantFastTwitch(const std::string& muscleName) const 
 { 
-	return getMetabolicParameters(muscleName)->get_maintenance_constant_fast_twitch(); 
+    return getMetabolicParameters(muscleName)->get_maintenance_constant_fast_twitch(); 
 }
 
 
@@ -825,9 +825,9 @@ const double Bhargava2004MuscleMetabolicsProbe::
  * Set the maintenance constant for fast twitch fibers for an existing muscle. 
  */
 void Bhargava2004MuscleMetabolicsProbe::
-	setMaintenanceConstantFastTwitch(const std::string& muscleName, const double& c) 
+    setMaintenanceConstantFastTwitch(const std::string& muscleName, const double& c) 
 { 
-	updMetabolicParameters(muscleName)->set_maintenance_constant_fast_twitch(c);
+    updMetabolicParameters(muscleName)->set_maintenance_constant_fast_twitch(c);
 }
 
 
@@ -885,60 +885,60 @@ Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter*
 Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter::
 Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter() 
 {
-	setNull();
-	constructProperties(); 
+    setNull();
+    constructProperties(); 
 }
 
 
 Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter::
 Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter(
-	const std::string& muscleName,
-	double ratio_slow_twitch_fibers, 
-	double muscle_mass)
+    const std::string& muscleName,
+    double ratio_slow_twitch_fibers, 
+    double muscle_mass)
 {
-	setNull();
-	constructProperties();
-	setName(muscleName);
-	set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
+    setNull();
+    constructProperties();
+    setName(muscleName);
+    set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
 
     if (isNaN(muscle_mass)) {
-	    set_use_provided_muscle_mass(false);
+        set_use_provided_muscle_mass(false);
     }
     else {
         set_use_provided_muscle_mass(true);
         set_provided_muscle_mass(muscle_mass);
     }
-	
+    
 }
 
 
 Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter::
 Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter(
-	const std::string& muscleName,
-	double ratio_slow_twitch_fibers,
-	double activation_constant_slow_twitch,
+    const std::string& muscleName,
+    double ratio_slow_twitch_fibers,
+    double activation_constant_slow_twitch,
     double activation_constant_fast_twitch,
     double maintenance_constant_slow_twitch,
     double maintenance_constant_fast_twitch,
-	double muscle_mass)
+    double muscle_mass)
 {
-	setNull();
-	constructProperties();
-	setName(muscleName);
-	set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
-	set_activation_constant_slow_twitch(activation_constant_slow_twitch);
+    setNull();
+    constructProperties();
+    setName(muscleName);
+    set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
+    set_activation_constant_slow_twitch(activation_constant_slow_twitch);
     set_activation_constant_fast_twitch(activation_constant_fast_twitch);
     set_maintenance_constant_slow_twitch(maintenance_constant_slow_twitch);
     set_maintenance_constant_fast_twitch(maintenance_constant_fast_twitch);
 
     if (isNaN(muscle_mass)) {
-	    set_use_provided_muscle_mass(false);
+        set_use_provided_muscle_mass(false);
     }
     else {
         set_use_provided_muscle_mass(true);
         set_provided_muscle_mass(muscle_mass);
     }
-	
+    
 }
 
 
@@ -948,13 +948,13 @@ Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter(
 void Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter::
 setMuscleMass()    
 { 
-	if (get_use_provided_muscle_mass())
-		_muscMass = get_provided_muscle_mass();
-	else {
-		_muscMass = (_musc->getMaxIsometricForce() / get_specific_tension()) 
-					* get_density() 
-					* _musc->getOptimalFiberLength();
-		}
+    if (get_use_provided_muscle_mass())
+        _muscMass = get_provided_muscle_mass();
+    else {
+        _muscMass = (_musc->getMaxIsometricForce() / get_specific_tension()) 
+                    * get_density() 
+                    * _musc->getOptimalFiberLength();
+        }
 }
 
 
@@ -963,26 +963,26 @@ setMuscleMass()
 //--------------------------------------------------------------------------
 void Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter::setNull()
 {
-	setAuthors("Tim Dorn");
-	// Actual muscle mass used. If <use_provided_muscle_mass> == true, 
-	// this value will set to the property value <muscle_mass> provided by the 
-	// user. If <use_provided_muscle_mass> == false, then this value
-	// will be set (by the metabolic probes) to the calculated mass based on
-	// the muscle's Fmax, optimal fiber length, specific tension & muscle density. 
-	_muscMass = SimTK::NaN;
-	_musc = NULL;
+    setAuthors("Tim Dorn");
+    // Actual muscle mass used. If <use_provided_muscle_mass> == true, 
+    // this value will set to the property value <muscle_mass> provided by the 
+    // user. If <use_provided_muscle_mass> == false, then this value
+    // will be set (by the metabolic probes) to the calculated mass based on
+    // the muscle's Fmax, optimal fiber length, specific tension & muscle density. 
+    _muscMass = SimTK::NaN;
+    _musc = NULL;
 }
 
 void Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter::
 constructProperties()
 {
-	constructProperty_specific_tension(0.25e6);  // (Pascals (N/m^2)), specific tension of mammalian muscle.
-	constructProperty_density(1059.7);           // (kg/m^3), density of mammalian muscle.
-	constructProperty_ratio_slow_twitch_fibers(0.5);
-	constructProperty_use_provided_muscle_mass(false);
-	constructProperty_provided_muscle_mass(SimTK::NaN);
+    constructProperty_specific_tension(0.25e6);  // (Pascals (N/m^2)), specific tension of mammalian muscle.
+    constructProperty_density(1059.7);           // (kg/m^3), density of mammalian muscle.
+    constructProperty_ratio_slow_twitch_fibers(0.5);
+    constructProperty_use_provided_muscle_mass(false);
+    constructProperty_provided_muscle_mass(SimTK::NaN);
 
-	// defaults from Bhargava., et al (2004).
+    // defaults from Bhargava., et al (2004).
     constructProperty_activation_constant_slow_twitch(40.0);
     constructProperty_activation_constant_fast_twitch(133.0);
     constructProperty_maintenance_constant_slow_twitch(74.0);

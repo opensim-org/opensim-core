@@ -70,25 +70,25 @@ protected:
 
    SimbodySimmDof _dof[6];
 
-	bool _dofUsed[6];
+    bool _dofUsed[6];
    int _rotationsUsed;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION AND DESTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION AND DESTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	virtual ~SimbodySimmJoint();
+    virtual ~SimbodySimmJoint();
    SimbodySimmJoint(const std::string& aName, const std::string& aParentBodyName,
                     const std::string& aChildBodyName);
    void setNull();
    bool addFunctionDof(const SimTK::Vec3& aAxis, const std::string& aCoordinateName,
-		int aFunctionNumber, Coordinate::MotionType aMotionType);
+        int aFunctionNumber, Coordinate::MotionType aMotionType);
    bool addConstantDof(const std::string& aName, const double* aAxis, double aValue);
    void updateOrder(const std::string& aDofName);
-	void makeUniqueAxis(int aDofIndex, double rAxis[]) const;
+    void makeUniqueAxis(int aDofIndex, double rAxis[]) const;
    void finalize();
    void write(std::ofstream& aStream);
    const std::string& getName() const { return _name; }

@@ -48,11 +48,11 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(Solver, Object);
 // METHODS
 //=============================================================================
 public:
-	//-------------------------------------------------------------------------
-	// CONSTRUCTION
-	//-------------------------------------------------------------------------
-	virtual ~Solver() {}
-	explicit Solver(const Model &model) : _modelp(&model) {}
+    //-------------------------------------------------------------------------
+    // CONSTRUCTION
+    //-------------------------------------------------------------------------
+    virtual ~Solver() {}
+    explicit Solver(const Model &model) : _modelp(&model) {}
 
     // default copy constructor and copy assignment
 
@@ -64,8 +64,8 @@ protected:
 // MEMBER VARIABLES
 //=============================================================================
 private:
-	// The model handed to the solver to operate on; just a reference.
-	SimTK::ReferencePtr<const Model> _modelp;
+    // The model handed to the solver to operate on; just a reference.
+    SimTK::ReferencePtr<const Model> _modelp;
 
 //=============================================================================
 };	// END of class Solver

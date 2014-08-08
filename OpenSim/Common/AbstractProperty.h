@@ -55,24 +55,24 @@ public:
 
     /** Require that the number of values n in the value list of this property
     be in the range aMin <= n <= aMax. */
-	void setAllowableListSize(int aMin, int aMax) 
+    void setAllowableListSize(int aMin, int aMax) 
     {   assert(0 <= aMin && aMin <= aMax); 
        _minListSize = aMin; _maxListSize = aMax; }
 
     /** Require that the number of values n in the value list of this property
     be exactly n=aNum values. **/
-	void setAllowableListSize(int aNum) 
+    void setAllowableListSize(int aNum) 
     {   assert(aNum >= 1); _minListSize = _maxListSize = aNum; }
-	
+    
     // Default copy constructor and copy assignment operator.
 
-	/** Return all heap space used by this property. **/
+    /** Return all heap space used by this property. **/
     virtual ~AbstractProperty() {}
 
     /** Return a new instance of this concrete property object, containing
     new copies of this property's values. The new property object is
     allocated on the heap and it is up to the caller to delete it when done. **/
-	virtual AbstractProperty* clone() const = 0;
+    virtual AbstractProperty* clone() const = 0;
 
     /** For relatively simple types, return the current value of this property 
     in a string suitable for displaying to a user in the GUI. Objects just
@@ -214,25 +214,25 @@ public:
 
 
     /** %Set the property name. **/
-	void setName(const std::string& name){ _name = name; }
+    void setName(const std::string& name){ _name = name; }
 
-	/** %Set a user-friendly comment to be associated with property. This will
+    /** %Set a user-friendly comment to be associated with property. This will
     be displayed in XML and in "help" output for %OpenSim Objects. **/
-	void setComment(const std::string& aComment){ _comment = aComment; }
+    void setComment(const std::string& aComment){ _comment = aComment; }
 
-	/** %Set flag indicating whether the value of this property was simply
+    /** %Set flag indicating whether the value of this property was simply
     taken from a default object and thus should not be written out when
     serializing. **/
-	void setValueIsDefault(bool isDefault) { _valueIsDefault = isDefault; }
+    void setValueIsDefault(bool isDefault) { _valueIsDefault = isDefault; }
 
     /** Get the property name. **/
-	const std::string& getName() const { return _name; }
+    const std::string& getName() const { return _name; }
     /** Get the comment associated with this property. **/
-	const std::string& getComment() const { return _comment; }
+    const std::string& getComment() const { return _comment; }
     /** Get the flag indicating whether the current value is just the default
     value for this property (in which case it doesn't need to be written
     out). **/
-	bool getValueIsDefault() const { return _valueIsDefault; }
+    bool getValueIsDefault() const { return _valueIsDefault; }
 
     /** Get the minimum number of values allowed in this property's value
     list. Will be zero for optional properties, zero for list properties 
@@ -241,7 +241,7 @@ public:
     /** Get the maximum number of values allowed in this property's value
     list. Will be unlimited for list properties (unless explicitly changed), 
     and one for optional and one-value properties. **/
-	int getMaxListSize() const { return _maxListSize; }
+    int getMaxListSize() const { return _maxListSize; }
 
     /** This is an "optional" property if its value list can contain at most
     one value. This is the kind of property created by the
@@ -271,8 +271,8 @@ public:
 
 
 protected:
-	AbstractProperty();
-	AbstractProperty(const std::string& name, 
+    AbstractProperty();
+    AbstractProperty(const std::string& name, 
                      const std::string& comment);
 
     // This is the remainder of the interface that a concrete Property class
@@ -282,7 +282,7 @@ protected:
     prior to calling this method, including verifying that both values are 
     non-default and that the value lists are the same size; the concrete 
     property need only compare the values.**/
-	virtual bool isEqualTo(const AbstractProperty& other) const = 0;
+    virtual bool isEqualTo(const AbstractProperty& other) const = 0;
 
     /** Read in a new value for this property from the XML element 
     \a propertyElement. The element is expected to have the form
@@ -349,14 +349,14 @@ protected:
     //--------------------------------------------------------------------------
 
 private:
-	void setNull();
+    void setNull();
 
-	std::string _name;
-	std::string _comment;
-	bool        _valueIsDefault;    // current value is just the default
+    std::string _name;
+    std::string _comment;
+    bool        _valueIsDefault;    // current value is just the default
 
-	int         _minListSize;       // minimum # values for property
-	int         _maxListSize;       // maximum # value for property
+    int         _minListSize;       // minimum # values for property
+    int         _maxListSize;       // maximum # value for property
 };
 
 

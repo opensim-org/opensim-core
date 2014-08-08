@@ -48,8 +48,8 @@ using SimTK::Vec3;
  * Default constructor.
  */
 SimmFileWriter::SimmFileWriter() :
-	_model(NULL),
-	_simbodySimmModel(NULL)
+    _model(NULL),
+    _simbodySimmModel(NULL)
 {
 }
 
@@ -58,10 +58,10 @@ SimmFileWriter::SimmFileWriter() :
  * Constructor taking a model pointer
  */
 SimmFileWriter::SimmFileWriter(const Model& aModel) :
-	_model(NULL),
-	_simbodySimmModel(NULL)
+    _model(NULL),
+    _simbodySimmModel(NULL)
 {
-	_model = &aModel;
+    _model = &aModel;
 }
 
 //_____________________________________________________________________________
@@ -84,13 +84,13 @@ SimmFileWriter::~SimmFileWriter()
  */
 bool SimmFileWriter::writeJointFile(const string& aFileName)
 {
-	if (!_model)
-		return false;
+    if (!_model)
+        return false;
 
-	if (!_simbodySimmModel)
-		_simbodySimmModel = new SimbodySimmModel(_model);
+    if (!_simbodySimmModel)
+        _simbodySimmModel = new SimbodySimmModel(_model);
 
-	return _simbodySimmModel->writeJointFile(aFileName);
+    return _simbodySimmModel->writeJointFile(aFileName);
 }
 
 //_____________________________________________________________________________
@@ -102,11 +102,11 @@ bool SimmFileWriter::writeJointFile(const string& aFileName)
  */
 bool SimmFileWriter::writeMuscleFile(const string& aFileName)
 {
-	if (!_model)
-		return false;
+    if (!_model)
+        return false;
 
-	if (!_simbodySimmModel)
-		_simbodySimmModel = new SimbodySimmModel(_model);
+    if (!_simbodySimmModel)
+        _simbodySimmModel = new SimbodySimmModel(_model);
 
-	return _simbodySimmModel->writeMuscleFile(aFileName);
+    return _simbodySimmModel->writeMuscleFile(aFileName);
 }

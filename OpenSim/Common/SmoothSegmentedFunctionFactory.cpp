@@ -167,8 +167,8 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
         //std::string curveName = muscleName;
         //curveName.append("_fiberActiveForceLengthCurve");
         SmoothSegmentedFunction* mclCrvFcn = 
-			new SmoothSegmentedFunction(
-				mX,mY,x0,x3,ylow,ylow,0,0,computeIntegral,
+            new SmoothSegmentedFunction(
+                mX,mY,x0,x3,ylow,ylow,0,0,computeIntegral,
             true, curveName);    
         return mclCrvFcn;
 }
@@ -264,7 +264,7 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     //std::string curveName = muscleName;
     //curveName.append("_fiberForceVelocityCurve");
     SmoothSegmentedFunction* mclCrvFcn = 
-		new SmoothSegmentedFunction(mX,mY,xC,xE,yC,yE,dydxC,dydxE,
+        new SmoothSegmentedFunction(mX,mY,xC,xE,yC,yE,dydxC,dydxE,
                                         computeIntegral, true, curveName);    
     return mclCrvFcn;
 }
@@ -358,8 +358,8 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     mY(3) = eccPts2(1);
     
     SmoothSegmentedFunction* mclCrvFcn = new 
-		SmoothSegmentedFunction(mY,mX,yC,yE,xC,xE,1/dydxC,1/dydxE,
-        	computeIntegral,true, curveName);    
+        SmoothSegmentedFunction(mY,mX,yC,yE,xC,xE,1/dydxC,1/dydxE,
+            computeIntegral,true, curveName);    
     return mclCrvFcn;
 
 }
@@ -404,7 +404,7 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     //std::string curveName = muscleName;
     //curveName.append("_fiberCompressiveForcePennationCurve");
     SmoothSegmentedFunction* mclCrvFcn = 
-		new SmoothSegmentedFunction(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
+        new SmoothSegmentedFunction(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
                                                                 true,curveName);
 
     //If in debug, print the function
@@ -451,7 +451,7 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     //std::string curveName = muscleName;
     //curveName.append("_fiberCompressiveForceCosPennationCurve");
     SmoothSegmentedFunction* mclCrvFcn = 
-		new SmoothSegmentedFunction(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
+        new SmoothSegmentedFunction(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
                                                               false,curveName);
 
     //If in debug, print the function
@@ -499,7 +499,7 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     // curveName = muscleName;
     //curveName.append("_fiberCompressiveForceLengthCurve");
     SmoothSegmentedFunction* mclCrvFcn = 
-		new SmoothSegmentedFunction(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
+        new SmoothSegmentedFunction(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
                                                                false,curveName);
 
     return mclCrvFcn;
@@ -590,7 +590,7 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     //curveName.append("_tendonForceLengthCurve");
     //Instantiate a muscle curve object
    SmoothSegmentedFunction* mclCrvFcn = 
-   	new SmoothSegmentedFunction(  mX,    mY,
+    new SmoothSegmentedFunction(  mX,    mY,
                                        xZero,    xIso,
                                        yZero,    yIso,
                                          0.0,    kIso,
@@ -688,7 +688,7 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     //curveName.append("_tendonForceLengthCurve");
     //Instantiate a muscle curve object
    SmoothSegmentedFunction* mclCrvFcn = 
-		 new SmoothSegmentedFunction(  mX,    mY,
+         new SmoothSegmentedFunction(  mX,    mY,
                                        x0,    xToe,
                                        y0,    yToe,
                                        dydx0, dydxIso,

@@ -28,10 +28,10 @@
 #include "Muscle.h"
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+    #ifdef OSIMSIMULATION_API
+        #undef OSIMSIMULATION_API
+        #define OSIMSIMULATION_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -61,20 +61,20 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
-	OpenSim_DECLARE_PROPERTY(default_activation, double,
-		"Assumed activation level if none is assigned.");
-	OpenSim_DECLARE_PROPERTY(default_fiber_length, double,
-		"Assumed fiber length, unless otherwise assigned.");
+    OpenSim_DECLARE_PROPERTY(default_activation, double,
+        "Assumed activation level if none is assigned.");
+    OpenSim_DECLARE_PROPERTY(default_fiber_length, double,
+        "Assumed fiber length, unless otherwise assigned.");
     /**@}**/
 
 
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	ActivationFiberLengthMuscle();
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    ActivationFiberLengthMuscle();
 
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.
@@ -88,49 +88,49 @@ public:
     double getDefaultFiberLength() const;
     void setDefaultFiberLength(double length);
 
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // State Variables
     //--------------------------------------------------------------------------
-	void setActivation(SimTK::State& s, double activation) const;
-	void setFiberLength(SimTK::State& s, double fiberLength) const;
+    void setActivation(SimTK::State& s, double activation) const;
+    void setFiberLength(SimTK::State& s, double fiberLength) const;
 
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // State Variable Derivative
     //--------------------------------------------------------------------------
-	double getActivationRate(const SimTK::State& s) const;
-	
-	//--------------------------------------------------------------------------
-	// SCALING
-	//--------------------------------------------------------------------------
+    double getActivationRate(const SimTK::State& s) const;
+    
+    //--------------------------------------------------------------------------
+    // SCALING
+    //--------------------------------------------------------------------------
 protected:
-	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+    virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 
-	//--------------------------------------------------------------------------
-	// FORCE APPLICATION
-	//--------------------------------------------------------------------------
-	virtual void computeForce(const SimTK::State& state, 
-							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							  SimTK::Vector& generalizedForce) const;
+    //--------------------------------------------------------------------------
+    // FORCE APPLICATION
+    //--------------------------------------------------------------------------
+    virtual void computeForce(const SimTK::State& state, 
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+                              SimTK::Vector& generalizedForce) const;
 
-	/** Calculate activation rate */
-	virtual double calcActivationRate(const SimTK::State& s) const = 0;
+    /** Calculate activation rate */
+    virtual double calcActivationRate(const SimTK::State& s) const = 0;
 
-	/* compute initial fiber length (velocity) such that muscle fiber and tendon are 
-	    in static equilibrium and update the state */
+    /* compute initial fiber length (velocity) such that muscle fiber and tendon are 
+        in static equilibrium and update the state */
     //virtual void computeInitialFiberEquilibrium(SimTK::State& s) const;
     
-	/** Model Component Interface */
-	void connectToModel(Model& aModel) override;
-	void addToSystem(SimTK::MultibodySystem& system) const override;
-	void initStateFromProperties(SimTK::State& s) const override;
+    /** Model Component Interface */
+    void connectToModel(Model& aModel) override;
+    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void initStateFromProperties(SimTK::State& s) const override;
     void setPropertiesFromState(const SimTK::State& state) override;
-	void computeStateVariableDerivatives(const SimTK::State& s) const override;
+    void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
-	static const std::string STATE_ACTIVATION_NAME;
-	static const std::string STATE_FIBER_LENGTH_NAME;   
+    static const std::string STATE_ACTIVATION_NAME;
+    static const std::string STATE_FIBER_LENGTH_NAME;   
 
 private:
-	void constructProperties();
+    void constructProperties();
 
 //==============================================================================
 };	// END of class ActivationFiberLengthMuscle

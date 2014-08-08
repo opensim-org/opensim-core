@@ -55,24 +55,24 @@ class PropertyObjArray : public Property_Deprecated
 // DATA
 //=============================================================================
 private:
-	/** Array of objects. */
-	ArrayPtrs<T> _array;
+    /** Array of objects. */
+    ArrayPtrs<T> _array;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	PropertyObjArray(const std::string &aName = "",const ArrayPtrs<T> &aArray = ArrayPtrs<T>()) 
-	:   Property_Deprecated(ObjArray, aName), _array(aArray) {}
-	PropertyObjArray(const PropertyObjArray<T> &aProperty) 
+    PropertyObjArray(const std::string &aName = "",const ArrayPtrs<T> &aArray = ArrayPtrs<T>()) 
+    :   Property_Deprecated(ObjArray, aName), _array(aArray) {}
+    PropertyObjArray(const PropertyObjArray<T> &aProperty) 
     :   Property_Deprecated(aProperty) { _array = aProperty._array; }
 
     bool isArrayProperty() const override {return true;}
 
-	PropertyObjArray* clone() const override
+    PropertyObjArray* clone() const override
     {   return new PropertyObjArray<T>(*this); }
 
     virtual int getNumValues() const override {return getArraySize();}
@@ -86,63 +86,63 @@ public:
     virtual void setValueAsObject(const Object& obj, int index) override
     {   _array.set(index, dynamic_cast<T*>(obj.clone())); }
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
-	PropertyObjArray& operator=(const PropertyObjArray &aProperty) {
-		Property_Deprecated::operator=(aProperty);
-		_array = aProperty._array;
-		return (*this);
-	}
+    PropertyObjArray& operator=(const PropertyObjArray &aProperty) {
+        Property_Deprecated::operator=(aProperty);
+        _array = aProperty._array;
+        return (*this);
+    }
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 public:
-	virtual bool isValidObject(const Object *obj) const { return dynamic_cast<const T*>(obj)!=0; }
-	// TYPE
-	virtual std::string getTypeName() const override
+    virtual bool isValidObject(const Object *obj) const { return dynamic_cast<const T*>(obj)!=0; }
+    // TYPE
+    virtual std::string getTypeName() const override
     {   return T::getClassName(); }
-	// VALUE as String
-	virtual std::string toString() const {return "(Array of objects)";}
-	// SIZE
-	virtual int getArraySize() const { return _array.getSize(); }
-	// VALUE
-	virtual Object* getValueObjPtr(int index) { return (Object*)_array.get(index); }
-	virtual void appendValue(Object *obj) { 
-		if(!isValidObject(obj)) 
+    // VALUE as String
+    virtual std::string toString() const {return "(Array of objects)";}
+    // SIZE
+    virtual int getArraySize() const { return _array.getSize(); }
+    // VALUE
+    virtual Object* getValueObjPtr(int index) { return (Object*)_array.get(index); }
+    virtual void appendValue(Object *obj) { 
+        if(!isValidObject(obj)) 
             throw Exception("PropertyObjArray: ERR- Attempting to append invalid object of type "
             + obj->getConcreteClassName(), __FILE__,__LINE__);
-		_array.append(static_cast<T*>(obj));
-	}
-	virtual void clearObjArray() { _array.setSize(0); }
+        _array.append(static_cast<T*>(obj));
+    }
+    virtual void clearObjArray() { _array.setSize(0); }
 
-	// Other members (not in Property base class)
-	void setValue(const ArrayPtrs<T> &aArray) { _array = aArray; }
-	ArrayPtrs<T>& getValueObjArray() { return _array; }
+    // Other members (not in Property base class)
+    void setValue(const ArrayPtrs<T> &aArray) { _array = aArray; }
+    ArrayPtrs<T>& getValueObjArray() { return _array; }
 #ifndef SWIG
-	const ArrayPtrs<T>& getValueObjArray() const { return _array; }
-	virtual bool operator==(const Property_Deprecated& aProperty) const {
-		// base class
-		bool equal=(Property_Deprecated::operator==(aProperty));
-		if (equal) {
-			PropertyObjArray& other = ((PropertyObjArray&)aProperty);
-			if (_array.getSize()>0 && other._array.getSize()>0){	
-				if (_array.getSize()==other._array.getSize()){
-					for(int i=0; i<_array.getSize() && equal; i++){
-						equal = (*(_array.get(i)))==(*(other._array.get(i)));
-					}
-					return equal;
-				}
-				else
-					return false;
-			}
-			else 
-				return ((_array.getSize()==0) && (other._array.getSize()==0));
-		}
-		return equal;
-	}
+    const ArrayPtrs<T>& getValueObjArray() const { return _array; }
+    virtual bool operator==(const Property_Deprecated& aProperty) const {
+        // base class
+        bool equal=(Property_Deprecated::operator==(aProperty));
+        if (equal) {
+            PropertyObjArray& other = ((PropertyObjArray&)aProperty);
+            if (_array.getSize()>0 && other._array.getSize()>0){	
+                if (_array.getSize()==other._array.getSize()){
+                    for(int i=0; i<_array.getSize() && equal; i++){
+                        equal = (*(_array.get(i)))==(*(other._array.get(i)));
+                    }
+                    return equal;
+                }
+                else
+                    return false;
+            }
+            else 
+                return ((_array.getSize()==0) && (other._array.getSize()==0));
+        }
+        return equal;
+    }
 #endif
 
 //=============================================================================

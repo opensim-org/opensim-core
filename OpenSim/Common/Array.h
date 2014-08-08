@@ -55,17 +55,17 @@ template<class T> class Array
 // DATA
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 protected:
-	/** Size of the array.  Also the index of the first empty array element. */
-	int _size;
-	/** Current capacity of the array. */
-	int _capacity;
-	/** Increment by which the current capacity is increased when the capacity
-	of this storage instance is reached.  If negative, capacity doubles. */
-	int _capacityIncrement;
-	/** Default value of elements. */
-	T _defaultValue;
-	/** Array of values. */
-	T *_array;
+    /** Size of the array.  Also the index of the first empty array element. */
+    int _size;
+    /** Current capacity of the array. */
+    int _capacity;
+    /** Increment by which the current capacity is increased when the capacity
+    of this storage instance is reached.  If negative, capacity doubles. */
+    int _capacityIncrement;
+    /** Default value of elements. */
+    T _defaultValue;
+    /** Array of values. */
+    T *_array;
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // METHODS
@@ -83,7 +83,7 @@ public:
  */
 virtual ~Array()
 {
-	if(_array!=NULL) { delete[] _array;  _array = NULL; }
+    if(_array!=NULL) { delete[] _array;  _array = NULL; }
 }
 //_____________________________________________________________________________
 /**
@@ -99,21 +99,21 @@ virtual ~Array()
  */
 Array(const T &aDefaultValue=T(),int aSize=0,int aCapacity=Array_CAPMIN)
 {
-	setNull();
+    setNull();
 
-	// DEFAULT VALUE
-	_defaultValue = aDefaultValue;
+    // DEFAULT VALUE
+    _defaultValue = aDefaultValue;
 
-	// CAPACITY
-	int newCapacity;
-	int min = aSize + 1;
-	if(min < aCapacity) min = aCapacity;
-	computeNewCapacity(min,newCapacity);
-	ensureCapacity(newCapacity);
+    // CAPACITY
+    int newCapacity;
+    int min = aSize + 1;
+    if(min < aCapacity) min = aCapacity;
+    computeNewCapacity(min,newCapacity);
+    ensureCapacity(newCapacity);
 
-	// SIZE
-	_size = aSize;
-	if(_size<0) _size=0;
+    // SIZE
+    _size = aSize;
+    if(_size<0) _size=0;
 }
 //_____________________________________________________________________________
 /**
@@ -123,8 +123,8 @@ Array(const T &aDefaultValue=T(),int aSize=0,int aCapacity=Array_CAPMIN)
  */
 Array(const Array<T> &aArray)
 {
-	setNull();
-	*this = aArray;
+    setNull();
+    *this = aArray;
 }
 
 private:
@@ -134,10 +134,10 @@ private:
  */
 void setNull()
 {
-	_size = 0;
-	_capacityIncrement = -1;
-	_capacity = 0;
-	_array = NULL;
+    _size = 0;
+    _capacityIncrement = -1;
+    _capacity = 0;
+    _array = NULL;
 }
 
 
@@ -150,7 +150,7 @@ public:
 // java, but didn't seem to work...  - Eran
 bool arrayEquals(const Array<T> &aArray) const
 {
-	return *this == aArray;
+    return *this == aArray;
 }
 #ifndef SWIG
 //-----------------------------------------------------------------------------
@@ -177,7 +177,7 @@ bool arrayEquals(const Array<T> &aArray) const
  */
 T& operator[](int aIndex) const
 {
-	return(_array[aIndex]);
+    return(_array[aIndex]);
 }
 
 //-----------------------------------------------------------------------------
@@ -194,17 +194,17 @@ T& operator[](int aIndex) const
  */
 Array<T>& operator=(const Array<T> &aArray)
 {
-	_size = aArray._size;
-	_capacity = aArray._capacity;
-	_capacityIncrement = aArray._capacityIncrement;
-	_defaultValue = aArray._defaultValue;
+    _size = aArray._size;
+    _capacity = aArray._capacity;
+    _capacityIncrement = aArray._capacityIncrement;
+    _defaultValue = aArray._defaultValue;
 
-	// ARRAY
-	if(_array!=NULL) delete[] _array;
-	_array = new T[_capacity];
-	for(int i=0;i<_capacity;i++) _array[i] = aArray._array[i];
+    // ARRAY
+    if(_array!=NULL) delete[] _array;
+    _array = new T[_capacity];
+    for(int i=0;i<_capacity;i++) _array[i] = aArray._array[i];
 
-	return(*this);
+    return(*this);
 }
 
 //-----------------------------------------------------------------------------
@@ -223,14 +223,14 @@ Array<T>& operator=(const Array<T> &aArray)
  */
 bool operator==(const Array<T> &aArray) const
 {
-	if(_size != aArray._size) return(false);
+    if(_size != aArray._size) return(false);
 
-	int i;
-	for(i=0;i<_size;i++) {
-		if( !(_array[i]==aArray._array[i]) ) return(false);
-	}
+    int i;
+    for(i=0;i<_size;i++) {
+        if( !(_array[i]==aArray._array[i]) ) return(false);
+    }
 
-	return(true);
+    return(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -249,31 +249,31 @@ bool operator==(const Array<T> &aArray) const
  */
 friend std::ostream& operator<<(std::ostream &aOut,const Array<T> &aArray)
 {
-	//removed since this is used for serialization now aOut << "Array["<<aArray.getSize()<<"]=";
+    //removed since this is used for serialization now aOut << "Array["<<aArray.getSize()<<"]=";
 
-	int i;
-	for(i=0;i<aArray.getSize();i++)  {
-		aOut << " ";
-		aOut << aArray[i];
-	}
+    int i;
+    for(i=0;i<aArray.getSize();i++)  {
+        aOut << " ";
+        aOut << aArray[i];
+    }
 
-	return(aOut);
+    return(aOut);
 }
 
 friend
 std::istream& operator>>(std::istream& in, Array<T>& out) 
 {   
-	//return readArrayFromStream<T>(in, out); 
-	return in;
+    //return readArrayFromStream<T>(in, out); 
+    return in;
 }
 /*
 template <class T> inline std::istream& readArrayFromStream<T>(std::istream& in, Array<T>& out)
 {
-	SimTK::Array_<T> simtkArray;
-	readArrayFromStream(in, simtkArray);
-	out.setSize(simtkArray.getSize());
-	for(int i=0; i<simtkArray.getSize(); i++)
-		out[i] = simtkArray[i];
+    SimTK::Array_<T> simtkArray;
+    readArrayFromStream(in, simtkArray);
+    out.setSize(simtkArray.getSize());
+    for(int i=0; i<simtkArray.getSize(); i++)
+        out[i] = simtkArray[i];
 }*/
 
 //=============================================================================
@@ -303,26 +303,26 @@ template <class T> inline std::istream& readArrayFromStream<T>(std::istream& in,
  */
 bool computeNewCapacity(int aMinCapacity,int &rNewCapacity)
 {
-	rNewCapacity = _capacity;
-	if(rNewCapacity < Array_CAPMIN) rNewCapacity = Array_CAPMIN;
+    rNewCapacity = _capacity;
+    if(rNewCapacity < Array_CAPMIN) rNewCapacity = Array_CAPMIN;
 
-	// CHECK FOR ZERO INCREMENT
-	if(_capacityIncrement == 0) {
-		std::cout << "Array.computeNewCapacity: WARN- capacity is set";
-		std::cout << " not to increase (i.e., _capacityIncrement==0).\n";
-		return(false);
-	}
+    // CHECK FOR ZERO INCREMENT
+    if(_capacityIncrement == 0) {
+        std::cout << "Array.computeNewCapacity: WARN- capacity is set";
+        std::cout << " not to increase (i.e., _capacityIncrement==0).\n";
+        return(false);
+    }
 
-	// INCREMENT UNTIL LARGER THAN THE MINIMUM SIZE
-	while(rNewCapacity < aMinCapacity) {
-		if(_capacityIncrement < 0) {
-			rNewCapacity = 2 * rNewCapacity;
-		} else {
-			rNewCapacity = rNewCapacity + _capacityIncrement;
-		}
-	}
+    // INCREMENT UNTIL LARGER THAN THE MINIMUM SIZE
+    while(rNewCapacity < aMinCapacity) {
+        if(_capacityIncrement < 0) {
+            rNewCapacity = 2 * rNewCapacity;
+        } else {
+            rNewCapacity = rNewCapacity + _capacityIncrement;
+        }
+    }
 
-	return(true);
+    return(true);
 }
 //_____________________________________________________________________________
 /**
@@ -334,32 +334,32 @@ bool computeNewCapacity(int aMinCapacity,int &rNewCapacity)
  */
 bool ensureCapacity(int aCapacity)
 {
-	// CHECK REQUESTED CAPACITY
-	if(aCapacity < Array_CAPMIN) aCapacity = Array_CAPMIN;
-	if(_capacity>=aCapacity) return(true);
+    // CHECK REQUESTED CAPACITY
+    if(aCapacity < Array_CAPMIN) aCapacity = Array_CAPMIN;
+    if(_capacity>=aCapacity) return(true);
 
-	// ALLOCATE THE NEW ARRAY
-	int i;
-	T *newArray = new T[aCapacity];
-	if(newArray==NULL) {
-		std::cout << "Array.ensureCapacity: ERR- failed to increase capacity.\n";
-		return(false);
-	}
+    // ALLOCATE THE NEW ARRAY
+    int i;
+    T *newArray = new T[aCapacity];
+    if(newArray==NULL) {
+        std::cout << "Array.ensureCapacity: ERR- failed to increase capacity.\n";
+        return(false);
+    }
 
-	// COPY CURRENT ARRAY
-	if(_array!=NULL) {
-		for(i=0;i<_size;i++) newArray[i] = _array[i];
-		for(i=_size;i<aCapacity;i++) newArray[i] = _defaultValue;
-		delete []_array;  _array=NULL;
-	} else {
-		for(i=0;i<aCapacity;i++) newArray[i] = _defaultValue;
-	}
-	
-	// REASSIGN
-	_capacity = aCapacity;
-	_array = newArray;
+    // COPY CURRENT ARRAY
+    if(_array!=NULL) {
+        for(i=0;i<_size;i++) newArray[i] = _array[i];
+        for(i=_size;i<aCapacity;i++) newArray[i] = _defaultValue;
+        delete []_array;  _array=NULL;
+    } else {
+        for(i=0;i<aCapacity;i++) newArray[i] = _defaultValue;
+    }
+    
+    // REASSIGN
+    _capacity = aCapacity;
+    _array = newArray;
 
-	return(true);
+    return(true);
 }
 #endif
 //_____________________________________________________________________________
@@ -372,30 +372,30 @@ bool ensureCapacity(int aCapacity)
  */
 void trim()
 {
-	// COMPUTE NEW CAPACITY
-	int newCapacity = _size + 1;
-	if(newCapacity>=_capacity) return;
-	if(newCapacity<Array_CAPMIN) newCapacity = Array_CAPMIN;
+    // COMPUTE NEW CAPACITY
+    int newCapacity = _size + 1;
+    if(newCapacity>=_capacity) return;
+    if(newCapacity<Array_CAPMIN) newCapacity = Array_CAPMIN;
 
-	// ALLOCATE TEMPORARY ARRAY
-	int i;
-	T *array = new T[newCapacity];
-	if(array==NULL) {
-		std::cout << "Array.trim: ERR- unable to allocate temporary array.\n";
-		return;
-	}
+    // ALLOCATE TEMPORARY ARRAY
+    int i;
+    T *array = new T[newCapacity];
+    if(array==NULL) {
+        std::cout << "Array.trim: ERR- unable to allocate temporary array.\n";
+        return;
+    }
 
-	// COPY CURRENT ARRAY
-	for(i=0;i<_size;i++) array[i] = _array[i];
+    // COPY CURRENT ARRAY
+    for(i=0;i<_size;i++) array[i] = _array[i];
 
-	// DELETE OLD ARRAY
-	delete[] _array;
+    // DELETE OLD ARRAY
+    delete[] _array;
 
-	// REASSIGN ARRAY POINTER
-	_array = array;
+    // REASSIGN ARRAY POINTER
+    _array = array;
 
-	// SET CORRECT CAPACITY
-	_capacity = newCapacity;
+    // SET CORRECT CAPACITY
+    _capacity = newCapacity;
 }
 #ifndef SWIG
 //_____________________________________________________________________________
@@ -405,7 +405,7 @@ void trim()
 int getCapacity() const
 {
 
-	return(_capacity);
+    return(_capacity);
 }
 
 //-----------------------------------------------------------------------------
@@ -422,7 +422,7 @@ int getCapacity() const
  */
 void setCapacityIncrement(int aIncrement)
 {
-	_capacityIncrement = aIncrement;
+    _capacityIncrement = aIncrement;
 }
 //_____________________________________________________________________________
 /**
@@ -430,7 +430,7 @@ void setCapacityIncrement(int aIncrement)
  */
 int getCapacityIncrement() const
 {
-	return(_capacityIncrement);
+    return(_capacityIncrement);
 }
 #endif
 //=============================================================================
@@ -456,24 +456,24 @@ int getCapacityIncrement() const
  */
 bool setSize(int aSize)
 {
-	if(aSize==_size) return(true);
-	if(aSize<0) aSize = 0;
-	bool success = true;
-	if(aSize<_size) {
-		int i;
-		for(i=(_size-1);i>=aSize;i--) _array[i] = _defaultValue;
-		_size = aSize;
-	} else if(aSize<=_capacity) {
-		_size = aSize;
-	} else {
-		int newCapacity;
-		success = computeNewCapacity(aSize+1,newCapacity);
-		if(!success) return(false);
-		success = ensureCapacity(newCapacity);
-		if(success) _size = aSize;
-	}
+    if(aSize==_size) return(true);
+    if(aSize<0) aSize = 0;
+    bool success = true;
+    if(aSize<_size) {
+        int i;
+        for(i=(_size-1);i>=aSize;i--) _array[i] = _defaultValue;
+        _size = aSize;
+    } else if(aSize<=_capacity) {
+        _size = aSize;
+    } else {
+        int newCapacity;
+        success = computeNewCapacity(aSize+1,newCapacity);
+        if(!success) return(false);
+        success = ensureCapacity(newCapacity);
+        if(success) _size = aSize;
+    }
 
-	return(success);
+    return(success);
 }
 //_____________________________________________________________________________
 /**
@@ -483,7 +483,7 @@ bool setSize(int aSize)
  */
 int getSize() const
 {
-	return(_size);
+    return(_size);
 }
 
 /** Alternate name for getSize(). **/
@@ -502,21 +502,21 @@ int size() const {return getSize();}
  */
 int append(const T &aValue)
 {
-	// ENSURE CAPACITY
-	if((_size+1)>=_capacity) {
-		int newCapacity;
-		bool success;
-		success = computeNewCapacity(_size+1,newCapacity);
-		if(!success) return(_size);
-		success = ensureCapacity(newCapacity);
-		if(!success) return(_size);
-	}
+    // ENSURE CAPACITY
+    if((_size+1)>=_capacity) {
+        int newCapacity;
+        bool success;
+        success = computeNewCapacity(_size+1,newCapacity);
+        if(!success) return(_size);
+        success = ensureCapacity(newCapacity);
+        if(!success) return(_size);
+    }
 
-	// SET
-	_array[_size] = aValue;
-	_size++;
+    // SET
+    _array[_size] = aValue;
+    _size++;
 
-	return(_size);
+    return(_size);
 }
 //_____________________________________________________________________________
 /**
@@ -528,13 +528,13 @@ int append(const T &aValue)
  */
 int append(const Array<T> &aArray)
 {
-	// LOOP THROUGH THE ELEMENTS
-	int i,n=aArray.getSize();
-	for(i=0;i<n;i++) {
-		append(aArray[i]);
-	}
+    // LOOP THROUGH THE ELEMENTS
+    int i,n=aArray.getSize();
+    for(i=0;i<n;i++) {
+        append(aArray[i]);
+    }
 
-	return(_size);
+    return(_size);
 }
 #ifndef SWIG
 //_____________________________________________________________________________
@@ -548,16 +548,16 @@ int append(const Array<T> &aArray)
  */
 int append(int aSize,const T *aArray)
 {
-	if(aSize<0) return(_size);
-	if(aArray==NULL) return(_size);
+    if(aSize<0) return(_size);
+    if(aArray==NULL) return(_size);
 
-	// LOOP THROUGH THE ELEMENTS
-	int i;
-	for(i=0;i<aSize;i++) {
-		append(aArray[i]);
-	}
+    // LOOP THROUGH THE ELEMENTS
+    int i;
+    for(i=0;i<aSize;i++) {
+        append(aArray[i]);
+    }
 
-	return(_size);
+    return(_size);
 }
 #endif
 //-----------------------------------------------------------------------------
@@ -581,40 +581,40 @@ int append(int aSize,const T *aArray)
  */
 int insert(int aIndex,const T &aValue)
 {
-	// NEGATIVE INDEX
-	if(aIndex<0) {
-		std::cout << "Array.insert: ERR- aIndex was less than 0.\n";
-		return(_size);
-	}
+    // NEGATIVE INDEX
+    if(aIndex<0) {
+        std::cout << "Array.insert: ERR- aIndex was less than 0.\n";
+        return(_size);
+    }
 
-	// INDEX PAST END OF ARRAY
-	if(aIndex>=_size) {
-		setSize(aIndex+1);
-		_array[aIndex] = aValue;
-		return(_size);
-	}
+    // INDEX PAST END OF ARRAY
+    if(aIndex>=_size) {
+        setSize(aIndex+1);
+        _array[aIndex] = aValue;
+        return(_size);
+    }
 
-	// ENSURE CAPACITY
-	if((_size+1)>=_capacity) {
-		int newCapacity;
-		bool success;
-		success = computeNewCapacity(_size+1,newCapacity);
-		if(!success) return(_size);
-		success = ensureCapacity(newCapacity);
-		if(!success) return(_size);
-	}
+    // ENSURE CAPACITY
+    if((_size+1)>=_capacity) {
+        int newCapacity;
+        bool success;
+        success = computeNewCapacity(_size+1,newCapacity);
+        if(!success) return(_size);
+        success = ensureCapacity(newCapacity);
+        if(!success) return(_size);
+    }
 
-	// SHIFT ARRAY
-	int i;
-	for(i=_size;i>aIndex;i--) {
-		_array[i] = _array[i-1];
-	}
+    // SHIFT ARRAY
+    int i;
+    for(i=_size;i>aIndex;i--) {
+        _array[i] = _array[i-1];
+    }
 
-	// SET
-	_array[aIndex] = aValue;
-	_size++;
+    // SET
+    _array[aIndex] = aValue;
+    _size++;
 
-	return(_size);
+    return(_size);
 }
 
 //-----------------------------------------------------------------------------
@@ -635,25 +635,25 @@ int insert(int aIndex,const T &aValue)
  */
 int remove(int aIndex)
 {
-	if(aIndex<0) {
-		std::cout << "Array.remove: ERR- aIndex was less than 0.\n";
-		return(_size);
-	}
-	if(aIndex>=_size) {
-		std::cout << "Array.remove: ERR- aIndex was greater than or equal the ";
-		std::cout << "size of the array.\n";
-		return(_size);
-	}
+    if(aIndex<0) {
+        std::cout << "Array.remove: ERR- aIndex was less than 0.\n";
+        return(_size);
+    }
+    if(aIndex>=_size) {
+        std::cout << "Array.remove: ERR- aIndex was greater than or equal the ";
+        std::cout << "size of the array.\n";
+        return(_size);
+    }
 
-	// SHIFT ARRAY
-	int i;
-	_size--;
-	for(i=aIndex;i<_size;i++) {
-		_array[i] = _array[i+1];
-	}
-	_array[_size] = _defaultValue;
+    // SHIFT ARRAY
+    int i;
+    _size--;
+    for(i=aIndex;i<_size;i++) {
+        _array[i] = _array[i+1];
+    }
+    _array[_size] = _defaultValue;
 
-	return(_size);
+    return(_size);
 }
 
 //-----------------------------------------------------------------------------
@@ -671,23 +671,23 @@ int remove(int aIndex)
  */
 void set(int aIndex,const T &aValue)
 {
-	if(aIndex<0) return;
+    if(aIndex<0) return;
 
-	// ENSURE CAPACITY
-	bool success = false;
-	if((aIndex+2)>=_capacity) {
-		int newCapacity;
-		success = computeNewCapacity(aIndex+2,newCapacity);
-		if(!success) return;
-		success = ensureCapacity(newCapacity);
-		if(!success) return;
-	}
+    // ENSURE CAPACITY
+    bool success = false;
+    if((aIndex+2)>=_capacity) {
+        int newCapacity;
+        success = computeNewCapacity(aIndex+2,newCapacity);
+        if(!success) return;
+        success = ensureCapacity(newCapacity);
+        if(!success) return;
+    }
 
-	// SET
-	_array[aIndex] = aValue;
+    // SET
+    _array[aIndex] = aValue;
 
-	// FIRST EMPTY
-	if(aIndex>=_size)  _size = aIndex+1;
+    // FIRST EMPTY
+    if(aIndex>=_size)  _size = aIndex+1;
 }
 #ifndef SWIG
 //_____________________________________________________________________________
@@ -698,7 +698,7 @@ void set(int aIndex,const T &aValue)
  */
 T* get()
 {
-	return(_array);
+    return(_array);
 }
 //_____________________________________________________________________________
 /**
@@ -709,7 +709,7 @@ T* get()
 
 const T* get() const
 {
-	return(_array);
+    return(_array);
 }
 #endif
 //_____________________________________________________________________________
@@ -729,10 +729,10 @@ const T* get() const
  */
 const T& get(int aIndex) const
 {
-	if((aIndex<0)||(aIndex>=_size)) {
-		throw(Exception("Array index out of bounds."));
-	}
-	return(_array[aIndex]);
+    if((aIndex<0)||(aIndex>=_size)) {
+        throw(Exception("Array index out of bounds."));
+    }
+    return(_array[aIndex]);
 }
 
 #ifndef SWIG
@@ -753,10 +753,10 @@ const T& get(int aIndex) const
  */
 T& updElt(int aIndex) const
 {
-	if((aIndex<0)||(aIndex>=_size)) {
-		throw(Exception("Array index out of bounds."));
-	}
-	return(_array[aIndex]);
+    if((aIndex<0)||(aIndex>=_size)) {
+        throw(Exception("Array index out of bounds."));
+    }
+    return(_array[aIndex]);
 }
 #endif
 
@@ -779,10 +779,10 @@ T& updElt(int aIndex) const
  */
 const T& getLast() const
 {
-	if(_size<=0) {
-		throw(Exception("Array is empty."));
-	}
-	return(_array[_size-1]);
+    if(_size<=0) {
+        throw(Exception("Array is empty."));
+    }
+    return(_array[_size-1]);
 }
 #ifndef SWIG
 //_____________________________________________________________________________
@@ -794,10 +794,10 @@ const T& getLast() const
  */
 T& updLast() const
 {
-	if(_size<=0) {
-		throw(Exception("Array is empty."));
-	}
-	return(_array[_size-1]);
+    if(_size<=0) {
+        throw(Exception("Array is empty."));
+    }
+    return(_array[_size-1]);
 }
 #endif
 //=============================================================================
@@ -814,8 +814,8 @@ T& updLast() const
  */
 int findIndex(const T &aValue) const
 {
-	for(int i=0;i<_size;i++) if(_array[i]==aValue) return i;
-	return -1;
+    for(int i=0;i<_size;i++) if(_array[i]==aValue) return i;
+    return -1;
 }
 //_____________________________________________________________________________
 /**
@@ -828,8 +828,8 @@ int findIndex(const T &aValue) const
  */
 int rfindIndex(const T &aValue) const
 {
-	for(int i=_size-1;i>=0;i--) if(_array[i]==aValue) return i;
-	return -1;
+    for(int i=_size-1;i>=0;i--) if(_array[i]==aValue) return i;
+    return -1;
 }
 //_____________________________________________________________________________
 /**
@@ -863,56 +863,56 @@ int rfindIndex(const T &aValue) const
  * to aValue, -1 is returned.
  */
 int searchBinary(const T &aValue,bool aFindFirst=false,
-					  int aLo=-1,int aHi=-1) const
+                      int aLo=-1,int aHi=-1) const
 {
-	if(_size<=0) return(-1);
-	int lo = aLo;  if(lo<0) lo = 0;
-	int hi = aHi;  if((hi<0)||(hi>=_size)) hi = _size - 1;
-	int mid = -1;
+    if(_size<=0) return(-1);
+    int lo = aLo;  if(lo<0) lo = 0;
+    int hi = aHi;  if((hi<0)||(hi>=_size)) hi = _size - 1;
+    int mid = -1;
 
-	// CHECK lo AND hi
-	if(lo>hi) return(-1);
+    // CHECK lo AND hi
+    if(lo>hi) return(-1);
 
-	// SEARCH
-	while(lo <= hi) {
-		mid = (lo + hi) / 2;
-		if(aValue < _array[mid]) {
-			hi = mid - 1;
-		} else if(_array[mid] < aValue) {
-			lo = mid + 1;
-		} else {
-			break;
-		}
-	}
+    // SEARCH
+    while(lo <= hi) {
+        mid = (lo + hi) / 2;
+        if(aValue < _array[mid]) {
+            hi = mid - 1;
+        } else if(_array[mid] < aValue) {
+            lo = mid + 1;
+        } else {
+            break;
+        }
+    }
 
-	// MAKE SURE LESS THAN
-	if(aValue < _array[mid]) mid--;
-	if(mid<=0) {
-		return(mid);
-	}
+    // MAKE SURE LESS THAN
+    if(aValue < _array[mid]) mid--;
+    if(mid<=0) {
+        return(mid);
+    }
 
-	// FIND FIRST
-	if(aFindFirst) {
-		if(_array[mid-1]<_array[mid]) {
-			return(mid);
-		}
-		lo = aLo;  if(lo<0) lo = 0;
-		hi = mid;
-		int mid2 = mid;
-		T value2 = _array[mid];
-		while(lo <= hi) {
-			mid2 = (lo + hi) / 2;
-			if(_array[mid2] == value2) {
-				hi = mid2 - 1;
-			} else if(_array[mid2] < value2) {
-				lo = mid2 + 1;
-			}
-		}
-		if(_array[mid2]<value2) mid2++;
-		if(mid2<mid) mid = mid2;
-	}
+    // FIND FIRST
+    if(aFindFirst) {
+        if(_array[mid-1]<_array[mid]) {
+            return(mid);
+        }
+        lo = aLo;  if(lo<0) lo = 0;
+        hi = mid;
+        int mid2 = mid;
+        T value2 = _array[mid];
+        while(lo <= hi) {
+            mid2 = (lo + hi) / 2;
+            if(_array[mid2] == value2) {
+                hi = mid2 - 1;
+            } else if(_array[mid2] < value2) {
+                lo = mid2 + 1;
+            }
+        }
+        if(_array[mid2]<value2) mid2++;
+        if(mid2<mid) mid = mid2;
+    }
 
-	return(mid);
+    return(mid);
 }
 
 

@@ -55,18 +55,18 @@ class SimbodySimmBody
 //=============================================================================
 protected:
    std::string _name;
-	/** Pointer to the Body that this object was created from (can be NULL). */
-	const Body* _body;
+    /** Pointer to the Body that this object was created from (can be NULL). */
+    const Body* _body;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION AND DESTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION AND DESTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	virtual ~SimbodySimmBody();
-	SimbodySimmBody();
+    virtual ~SimbodySimmBody();
+    SimbodySimmBody();
    SimbodySimmBody(const Body* aBody, const std::string& aName);
    void write(std::ofstream& aStream);
 

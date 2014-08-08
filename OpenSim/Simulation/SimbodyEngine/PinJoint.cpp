@@ -50,13 +50,13 @@ PinJoint::~PinJoint()
  * Default constructor.
  */
 PinJoint::PinJoint() :
-	Joint()
+    Joint()
 {
-	setAuthors("Ajay Seth");
-	constructCoordinates();
+    setAuthors("Ajay Seth");
+    constructCoordinates();
 
-	const CoordinateSet& coordinateSet = get_CoordinateSet();
-	coordinateSet[0].setMotionType(Coordinate::Rotational);
+    const CoordinateSet& coordinateSet = get_CoordinateSet();
+    coordinateSet[0].setMotionType(Coordinate::Rotational);
 }
 
 //_____________________________________________________________________________
@@ -64,18 +64,18 @@ PinJoint::PinJoint() :
  * Convenience Constructor.
  */
 PinJoint::PinJoint(const std::string &name, const OpenSim::Body &parent,
-	const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-	const OpenSim::Body& child,
-	const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-	bool reverse) : 
-		Super(name, parent, locationInParent, orientationInParent,
-			child, locationInchild, orientationInChild, reverse)
+    const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+    const OpenSim::Body& child,
+    const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
+    bool reverse) : 
+        Super(name, parent, locationInParent, orientationInParent,
+            child, locationInchild, orientationInChild, reverse)
 {
-	setAuthors("Ajay Seth");
-	constructCoordinates();
+    setAuthors("Ajay Seth");
+    constructCoordinates();
 
-	const CoordinateSet& coordinateSet = get_CoordinateSet();
-	coordinateSet[0].setMotionType(Coordinate::Rotational);
+    const CoordinateSet& coordinateSet = get_CoordinateSet();
+    coordinateSet[0].setMotionType(Coordinate::Rotational);
 }
 
 //=============================================================================
@@ -84,7 +84,7 @@ PinJoint::PinJoint(const std::string &name, const OpenSim::Body &parent,
 //_____________________________________________________________________________
 void PinJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Pin>(system);
+    createMobilizedBody<MobilizedBody::Pin>(system);
 
     // TODO: Joints require super class to be called last.
     Super::addToSystem(system);

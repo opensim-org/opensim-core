@@ -51,8 +51,8 @@ class SimbodySimmFunction
 // DATA
 //=============================================================================
 protected:
-	/** Pointer to the Function that this object was created from. */
-	const OpenSim::Function* _function;
+    /** Pointer to the Function that this object was created from. */
+    const OpenSim::Function* _function;
 
    int _userNumber;  // user-defined number of the function
 
@@ -62,13 +62,13 @@ protected:
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION AND DESTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION AND DESTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	virtual ~SimbodySimmFunction();
-	SimbodySimmFunction();
-	SimbodySimmFunction(const Function* aFunction, int aUserNumber,
+    virtual ~SimbodySimmFunction();
+    SimbodySimmFunction();
+    SimbodySimmFunction(const Function* aFunction, int aUserNumber,
                        Coordinate::MotionType aXType,
                        Coordinate::MotionType aYType);
    const Function* getFunction() const { return _function; }

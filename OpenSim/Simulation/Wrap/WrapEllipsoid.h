@@ -35,10 +35,10 @@
 #include "WrapObject.h"
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+    #ifdef OSIMSIMULATION_API
+        #undef OSIMSIMULATION_API
+        #define OSIMSIMULATION_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -65,51 +65,51 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WrapEllipsoid, WrapObject);
 //=============================================================================
 protected:
 
-	PropertyDblArray _dimensionsProp;
-	Array<double>& _dimensions;
+    PropertyDblArray _dimensionsProp;
+    Array<double>& _dimensions;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	WrapEllipsoid();
-	WrapEllipsoid(const WrapEllipsoid& aWrapEllipsoid);
-	virtual ~WrapEllipsoid();
+    WrapEllipsoid();
+    WrapEllipsoid(const WrapEllipsoid& aWrapEllipsoid);
+    virtual ~WrapEllipsoid();
 
 #ifndef SWIG
-	WrapEllipsoid& operator=(const WrapEllipsoid& aWrapEllipsoid);
+    WrapEllipsoid& operator=(const WrapEllipsoid& aWrapEllipsoid);
 #endif
    void copyData(const WrapEllipsoid& aWrapEllipsoid);
-	virtual const char* getWrapTypeName() const;
-	virtual std::string getDimensionsString() const;
+    virtual const char* getWrapTypeName() const;
+    virtual std::string getDimensionsString() const;
         SimTK::Vec3 getRadii() const;
 
-	virtual void scale(const SimTK::Vec3& aScaleFactors);
-	virtual void connectToModelAndBody(Model& aModel, OpenSim::Body& aBody);
+    virtual void scale(const SimTK::Vec3& aScaleFactors);
+    virtual void connectToModelAndBody(Model& aModel, OpenSim::Body& aBody);
 #ifndef SWIG
-	virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-		const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
+    virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
 #endif
 
 protected:
-	void setupProperties();
+    void setupProperties();
 
 private:
-	void setNull();
-	int calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1, SimTK::Vec3& m,
-												SimTK::Vec3& a, SimTK::Vec3& vs, double vs4) const;
-	void CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, SimTK::Vec3& m, SimTK::Vec3& a, 
-														  SimTK::Vec3& vs, double vs4, bool far_side_wrap,
-														  WrapResult& aWrapResult) const;
-	double findClosestPoint(double a, double b, double c,
-		double u, double v, double w,
-		double* x, double* y, double* z,
-		int specialCaseAxis = -1) const;
-	double closestPointToEllipse(double a, double b, double u,
-		double v, double* x, double* y) const;
+    void setNull();
+    int calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1, SimTK::Vec3& m,
+                                                SimTK::Vec3& a, SimTK::Vec3& vs, double vs4) const;
+    void CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, SimTK::Vec3& m, SimTK::Vec3& a, 
+                                                          SimTK::Vec3& vs, double vs4, bool far_side_wrap,
+                                                          WrapResult& aWrapResult) const;
+    double findClosestPoint(double a, double b, double c,
+        double u, double v, double w,
+        double* x, double* y, double* z,
+        int specialCaseAxis = -1) const;
+    double closestPointToEllipse(double a, double b, double u,
+        double v, double* x, double* y) const;
 //=============================================================================
 };	// END of class WrapEllipsoid
 //=============================================================================

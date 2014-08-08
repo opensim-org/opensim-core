@@ -42,18 +42,18 @@ OSIMANALYSES_API void RegisterTypes_osimAnalyses()
 {
   try {
 
-	Object::registerType( Kinematics() );
-	Object::registerType( Actuation() );
-	Object::registerType( PointKinematics() );
-	Object::registerType( BodyKinematics() );
-	Object::registerType( MuscleAnalysis() );
+    Object::registerType( Kinematics() );
+    Object::registerType( Actuation() );
+    Object::registerType( PointKinematics() );
+    Object::registerType( BodyKinematics() );
+    Object::registerType( MuscleAnalysis() );
 
-	Object::registerType( JointReaction() );
-	Object::registerType( StaticOptimization() );
-	Object::registerType( ForceReporter() );
-	Object::registerType( StatesReporter() );
-	Object::registerType( InducedAccelerations() );
-	Object::RegisterType( ProbeReporter() );
+    Object::registerType( JointReaction() );
+    Object::registerType( StaticOptimization() );
+    Object::registerType( ForceReporter() );
+    Object::registerType( StatesReporter() );
+    Object::registerType( InducedAccelerations() );
+    Object::RegisterType( ProbeReporter() );
 
   } catch (const std::exception& e) {
     std::cerr 

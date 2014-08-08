@@ -40,10 +40,10 @@
 #include <OpenSim/Simulation/Control/ControlSet.h>
 
 #ifdef SWIG
-	#ifdef OSIMTOOLS_API
-		#undef OSIMTOOLS_API
-		#define OSIMTOOLS_API
-	#endif
+    #ifdef OSIMTOOLS_API
+        #undef OSIMTOOLS_API
+        #define OSIMTOOLS_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -65,14 +65,14 @@ OpenSim_DECLARE_CONCRETE_OBJECT(CMCTool, AbstractTool);
 //=============================================================================
 private:
 
-	/** Idenitify the list of forces to be ignored for computing dynamics */
-	PropertyStrArray _excludedActuatorsProp;
-	Array<std::string> &_excludedActuators;
+    /** Idenitify the list of forces to be ignored for computing dynamics */
+    PropertyStrArray _excludedActuatorsProp;
+    Array<std::string> &_excludedActuators;
 
-	/** Name of the file containing the desired kinematic
-	trajectories. */
-	PropertyStr _desiredPointsFileNameProp;
-	std::string &_desiredPointsFileName;
+    /** Name of the file containing the desired kinematic
+    trajectories. */
+    PropertyStr _desiredPointsFileNameProp;
+    std::string &_desiredPointsFileName;
 
     /** Name of the file containing the desired kinematic trajectories. */ 		 
     PropertyStr _desiredKinematicsFileNameProp; 		 
@@ -83,16 +83,16 @@ private:
     std::string &_taskSetFileName; 		 
 
       /** Name of the file containing the constraints on the controls. */
-	PropertyStr _constraintsFileNameProp;
-	std::string &_constraintsFileName;
+    PropertyStr _constraintsFileNameProp;
+    std::string &_constraintsFileName;
 
-	/** Name of the file containing the actuator controls output by rra. */
-	PropertyStr _rraControlsFileNameProp;
-	std::string &_rraControlsFileName;
-	/** Low-pass cut-off frequency for filtering the desired kinematics. A negative
-	value results in no filtering.  The default value is -1.0, so no filtering. */
-	PropertyDbl _lowpassCutoffFrequencyProp;
-	double &_lowpassCutoffFrequency;
+    /** Name of the file containing the actuator controls output by rra. */
+    PropertyStr _rraControlsFileNameProp;
+    std::string &_rraControlsFileName;
+    /** Low-pass cut-off frequency for filtering the desired kinematics. A negative
+    value results in no filtering.  The default value is -1.0, so no filtering. */
+    PropertyDbl _lowpassCutoffFrequencyProp;
+    double &_lowpassCutoffFrequency;
 
     /** Time window over which the desired actuator forces are achieved */
     PropertyDbl _targetDTProp;  	 	   
@@ -108,112 +108,112 @@ private:
     PropertyBool _useFastTargetProp; 		 
     bool &_useFastTarget;
 
-	/** Preferred optimizer algorithm. */
-	PropertyStr _optimizerAlgorithmProp;
-	std::string &_optimizerAlgorithm;
-	/** Perturbation size used by the optimizer to compute numerical derivatives. */
-	PropertyDbl _numericalDerivativeStepSizeProp;
-	double &_numericalDerivativeStepSize;
-	/** Convergence criterion for the optimizer. */
-	PropertyDbl _optimizationConvergenceToleranceProp;
-	double &_optimizationConvergenceTolerance;
-	/** Maximum number of iterations for the optimizer. */
-	PropertyInt _maxIterationsProp;
-	int &_maxIterations;
-	/** Print level for the optimizer, 0 - 3.
-	0 = no printing, ..., 3 = detailed printing. */
-	PropertyInt _printLevelProp;
-	int &_printLevel;
-	/** Flag for turning on and off verbose printing. */
-	PropertyBool _verboseProp;
-	bool &_verbose;
+    /** Preferred optimizer algorithm. */
+    PropertyStr _optimizerAlgorithmProp;
+    std::string &_optimizerAlgorithm;
+    /** Perturbation size used by the optimizer to compute numerical derivatives. */
+    PropertyDbl _numericalDerivativeStepSizeProp;
+    double &_numericalDerivativeStepSize;
+    /** Convergence criterion for the optimizer. */
+    PropertyDbl _optimizationConvergenceToleranceProp;
+    double &_optimizationConvergenceTolerance;
+    /** Maximum number of iterations for the optimizer. */
+    PropertyInt _maxIterationsProp;
+    int &_maxIterations;
+    /** Print level for the optimizer, 0 - 3.
+    0 = no printing, ..., 3 = detailed printing. */
+    PropertyInt _printLevelProp;
+    int &_printLevel;
+    /** Flag for turning on and off verbose printing. */
+    PropertyBool _verboseProp;
+    bool &_verbose;
 
-	ForceSet _originalForceSet;
+    ForceSet _originalForceSet;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	virtual ~CMCTool();
-	CMCTool();
-	CMCTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
-	CMCTool(const CMCTool &aObject);
+    virtual ~CMCTool();
+    CMCTool();
+    CMCTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
+    CMCTool(const CMCTool &aObject);
 
 private:
-	void setNull();
-	void setupProperties();
-	/* Get the Set of model actuators for CMC that exclude user specified Actuators */
-	Set<Actuator> getActuatorsForCMC(const Array<std::string> &actuatorsByNameOrGroup);
+    void setNull();
+    void setupProperties();
+    /* Get the Set of model actuators for CMC that exclude user specified Actuators */
+    Set<Actuator> getActuatorsForCMC(const Array<std::string> &actuatorsByNameOrGroup);
 
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	CMCTool&
-		operator=(const CMCTool &aCMCTool);
+    CMCTool&
+        operator=(const CMCTool &aCMCTool);
 #endif
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	const Array<std::string>& getExcludedActuators() const {
-		return _excludedActuators;
-	}
-	void setExcludedActuators(const Array<std::string> &excludedActs) {
-		_excludedActuators = excludedActs;
-	}
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    const Array<std::string>& getExcludedActuators() const {
+        return _excludedActuators;
+    }
+    void setExcludedActuators(const Array<std::string> &excludedActs) {
+        _excludedActuators = excludedActs;
+    }
 
-	const std::string &getDesiredPointsFileName() { return _desiredPointsFileName; }
-	void setDesiredPointsFileName(const std::string &aFileName) { _desiredPointsFileName = aFileName; }
+    const std::string &getDesiredPointsFileName() { return _desiredPointsFileName; }
+    void setDesiredPointsFileName(const std::string &aFileName) { _desiredPointsFileName = aFileName; }
 
-	const std::string &getDesiredKinematicsFileName() { return _desiredKinematicsFileName; }
-	void setDesiredKinematicsFileName(const std::string &aFileName) { _desiredKinematicsFileName = aFileName; }
+    const std::string &getDesiredKinematicsFileName() { return _desiredKinematicsFileName; }
+    void setDesiredKinematicsFileName(const std::string &aFileName) { _desiredKinematicsFileName = aFileName; }
 
     const std::string &getConstraintsFileName() { return _constraintsFileName; }  	 	 
     void setConstraintsFileName(const std::string &aFileName) { _constraintsFileName = aFileName; } 		 
-  		 
+         
     const std::string &getTaskSetFileName() { return _taskSetFileName; } 		 
     void setTaskSetFileName(const std::string &aFileName) { _taskSetFileName = aFileName; }
 
-	const std::string &getRRAControlsFileName() { return _rraControlsFileName; }
-	void setRRAControlsFileName(const std::string &aFileName) { _rraControlsFileName = aFileName; }
+    const std::string &getRRAControlsFileName() { return _rraControlsFileName; }
+    void setRRAControlsFileName(const std::string &aFileName) { _rraControlsFileName = aFileName; }
 
-	double getLowpassCutoffFrequency() const { return _lowpassCutoffFrequency; }
-	void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) { _lowpassCutoffFrequency = aLowpassCutoffFrequency; }
+    double getLowpassCutoffFrequency() const { return _lowpassCutoffFrequency; }
+    void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) { _lowpassCutoffFrequency = aLowpassCutoffFrequency; }
 
     double getTimeWindow() const { return _targetDT; }  	 	 
     void setTimeWindow(double aTargetDT) { _targetDT = aTargetDT; } 		 
 
-	// External loads get/set
-	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
-	void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
+    // External loads get/set
+    const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
+    void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
 
     // Target selection
     bool getUseFastTarget() const { return _useFastTarget;};  	 	 
     void setUseFastTarget(bool useFastTarget) const {  _useFastTarget=useFastTarget; };
 
 
-	//--------------------------------------------------------------------------
-	// INTERFACE
-	//--------------------------------------------------------------------------
-	virtual bool run() SWIG_DECLARE_EXCEPTION;
+    //--------------------------------------------------------------------------
+    // INTERFACE
+    //--------------------------------------------------------------------------
+    virtual bool run() SWIG_DECLARE_EXCEPTION;
 
-	//--------------------------------------------------------------------------
-	// UTILITY
-	//--------------------------------------------------------------------------
-	Storage &getForceStorage();
+    //--------------------------------------------------------------------------
+    // UTILITY
+    //--------------------------------------------------------------------------
+    Storage &getForceStorage();
 
-	void setOriginalForceSet(const ForceSet &aForceSet);
+    void setOriginalForceSet(const ForceSet &aForceSet);
 
 #ifndef SWIG
-	ControlSet* constructRRAControlSet(ControlSet *aControlConstraints);
-	void initializeControlSetUsingConstraints(const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints, ControlSet& rControlSet );
-	void addNecessaryAnalyses();
+    ControlSet* constructRRAControlSet(ControlSet *aControlConstraints);
+    void initializeControlSetUsingConstraints(const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints, ControlSet& rControlSet );
+    void addNecessaryAnalyses();
 
 #endif
 //=============================================================================

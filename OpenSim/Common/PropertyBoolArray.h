@@ -54,50 +54,50 @@ class OSIMCOMMON_API PropertyBoolArray : public Property_Deprecated
 // DATA
 //=============================================================================
 private:
-	/** Array of booleans. */
-	Array<bool> _array;
+    /** Array of booleans. */
+    Array<bool> _array;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	PropertyBoolArray();
-	PropertyBoolArray(const std::string &aName,
-		const Array<bool> &aArray);
-	PropertyBoolArray(const std::string &aName,
-		int aSize,const bool aArray[]);
-	PropertyBoolArray(const PropertyBoolArray &aProperty);
-	
+    PropertyBoolArray();
+    PropertyBoolArray(const std::string &aName,
+        const Array<bool> &aArray);
+    PropertyBoolArray(const std::string &aName,
+        int aSize,const bool aArray[]);
+    PropertyBoolArray(const PropertyBoolArray &aProperty);
+    
     bool isArrayProperty() const override {return true;}
     
     PropertyBoolArray* clone() const override ;
 
     int getNumValues() const override {return getArraySize();}
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
-	PropertyBoolArray& operator=(const PropertyBoolArray &aProperty);
+    PropertyBoolArray& operator=(const PropertyBoolArray &aProperty);
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 public:
-	// TYPE
-	virtual std::string getTypeName() const override;
-	// VALUE
-	virtual void setValue(const Array<bool> &aArray);
-	virtual void setValue(int aSize,const bool aArray[]);
-	virtual Array<bool>& getValueBoolArray();
-	virtual const Array<bool>& getValueBoolArray() const;
-	// SIZE
-	virtual int getArraySize() const { return _array.getSize(); }
-	// VALUE as String
-	virtual std::string toString() const;
+    // TYPE
+    virtual std::string getTypeName() const override;
+    // VALUE
+    virtual void setValue(const Array<bool> &aArray);
+    virtual void setValue(int aSize,const bool aArray[]);
+    virtual Array<bool>& getValueBoolArray();
+    virtual const Array<bool>& getValueBoolArray() const;
+    // SIZE
+    virtual int getArraySize() const { return _array.getSize(); }
+    // VALUE as String
+    virtual std::string toString() const;
    virtual void clearValues() override { _array.setSize(0); }
 
 //=============================================================================

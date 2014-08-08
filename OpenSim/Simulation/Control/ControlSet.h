@@ -55,88 +55,88 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ControlSet, Set<Control>);
 // DATA
 //=============================================================================
 protected:
-	/** Map from parameters to controls. */
-	Array<int> _ptcMap;
-	/** Map from set parameters to control parameters. */
-	Array<int> _ptpMap;
+    /** Map from parameters to controls. */
+    Array<int> _ptcMap;
+    /** Map from set parameters to control parameters. */
+    Array<int> _ptpMap;
 
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	ControlSet();
-	ControlSet(const std::string &aFileName);
-	ControlSet(const ControlSet &aSet);
-	virtual ~ControlSet();
+    ControlSet();
+    ControlSet(const std::string &aFileName);
+    ControlSet(const ControlSet &aSet);
+    virtual ~ControlSet();
 
-	// Constructor from a storage, useful for connecting result files to 
-	// analyses that expect ControlSets. Default arguments 
-	ControlSet(const Storage& aStorage, int nControlsToConvert=0, int aStartIndex=0);
+    // Constructor from a storage, useful for connecting result files to 
+    // analyses that expect ControlSets. Default arguments 
+    ControlSet(const Storage& aStorage, int nControlsToConvert=0, int aStartIndex=0);
 private:
-	void setNull();
-	void setupProperties();
-	OpenSim::ControlLinear* ExtractControl(const Storage& storage,int index);
+    void setNull();
+    void setupProperties();
+    OpenSim::ControlLinear* ExtractControl(const Storage& storage,int index);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	ControlSet& operator=(const ControlSet &aSet);
+    ControlSet& operator=(const ControlSet &aSet);
 #endif
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	// SIZE
-	int getSize(bool aForModelControls=true) const;
-	// CONTROL LIST
-	//int getControlIndex(const char *aName) const;
-	void getControlList(const char *aType,Array<int> &rList,
-		bool aForModelControls=true) const;
-	// CONTROL VALUES
-	void getControlValues(double aT,double rX[],
-			bool aForModelControls=true) const;
-	void getControlValues(double aT,Array<double> &rX,
-			bool aForModelControls=true) const;
-	void setControlValues(double aT,const double aX[],
-			bool aForModelControls=true);
-	void setControlValues(double aT,const Array<double> &aX,
-			bool aForModelControls=true);
-	// PARAMETERS
-	int getNumParameters(bool aForModelControls=true) const;
-	void getParameterList(Array<int> &rList,
-			bool aForModelControls=true) const;
-	void getParameterList(double aT,Array<int> &rList,
-			bool aForModelControls=true) const;
-	void getParameterList(double aTLower,double aTUpper,Array<int> &rList,
-			bool aForModelControls=true) const;
-	void getParameterMins(Array<double> &rMins,
-			const Array<int> *aList=NULL) const;
-	void getParameterMaxs(Array<double> &rMaxs,
-			const Array<int> *aList=NULL) const;
-	void getParameterValues(double rP[],
-			const Array<int> *aList=NULL) const;
-	void getParameterValues(Array<double> &rP,
-			const Array<int> *aList=NULL) const;
-	void setParameterValues(const double aP[],
-			const Array<int> *aList=NULL);
-	void setParameterValues(const Array<double> &aP,
-			const Array<int> *aList=NULL);
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    // SIZE
+    int getSize(bool aForModelControls=true) const;
+    // CONTROL LIST
+    //int getControlIndex(const char *aName) const;
+    void getControlList(const char *aType,Array<int> &rList,
+        bool aForModelControls=true) const;
+    // CONTROL VALUES
+    void getControlValues(double aT,double rX[],
+            bool aForModelControls=true) const;
+    void getControlValues(double aT,Array<double> &rX,
+            bool aForModelControls=true) const;
+    void setControlValues(double aT,const double aX[],
+            bool aForModelControls=true);
+    void setControlValues(double aT,const Array<double> &aX,
+            bool aForModelControls=true);
+    // PARAMETERS
+    int getNumParameters(bool aForModelControls=true) const;
+    void getParameterList(Array<int> &rList,
+            bool aForModelControls=true) const;
+    void getParameterList(double aT,Array<int> &rList,
+            bool aForModelControls=true) const;
+    void getParameterList(double aTLower,double aTUpper,Array<int> &rList,
+            bool aForModelControls=true) const;
+    void getParameterMins(Array<double> &rMins,
+            const Array<int> *aList=NULL) const;
+    void getParameterMaxs(Array<double> &rMaxs,
+            const Array<int> *aList=NULL) const;
+    void getParameterValues(double rP[],
+            const Array<int> *aList=NULL) const;
+    void getParameterValues(Array<double> &rP,
+            const Array<int> *aList=NULL) const;
+    void setParameterValues(const double aP[],
+            const Array<int> *aList=NULL);
+    void setParameterValues(const Array<double> &aP,
+            const Array<int> *aList=NULL);
 
-	//--------------------------------------------------------------------------
-	// UTILITY
-	//--------------------------------------------------------------------------
-	void simplify(const PropertySet &aProperties);
-	void filter(double aT);
-	Storage*
-		constructStorage(int aN,double aT1,double aT2,bool aForModelControls);
-	int mapParameterToControl(int aIndex) const;
-	int mapParameterToParameter(int aIndex) const;
-	void generateParameterMaps();
+    //--------------------------------------------------------------------------
+    // UTILITY
+    //--------------------------------------------------------------------------
+    void simplify(const PropertySet &aProperties);
+    void filter(double aT);
+    Storage*
+        constructStorage(int aN,double aT1,double aT2,bool aForModelControls);
+    int mapParameterToControl(int aIndex) const;
+    int mapParameterToParameter(int aIndex) const;
+    void generateParameterMaps();
 
 //=============================================================================
 };	// END of class ControlSet

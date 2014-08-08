@@ -124,8 +124,8 @@ public:
         to name your probe appropiately! */
     virtual OpenSim::Array<std::string> getProbeOutputLabels() const override;
 
-	// connectToModel is protected for Java wrapping purpose
-	void connectToModel(Model& aModel) override FINAL_11;
+    // connectToModel is protected for Java wrapping purpose
+    void connectToModel(Model& aModel) override FINAL_11;
 
 //==============================================================================
 // PRIVATE

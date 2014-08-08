@@ -43,8 +43,8 @@ ScaleSet::~ScaleSet(void)
 ScaleSet::ScaleSet(const string& scalesFileName):
 Set<Scale>(scalesFileName, false)
 {
-	setNull();
-	updateFromXMLDocument();
+    setNull();
+    updateFromXMLDocument();
 }
 
 //_____________________________________________________________________________
@@ -54,12 +54,12 @@ Set<Scale>(scalesFileName, false)
 ScaleSet::ScaleSet():
 Set<Scale>()
 {
-	setNull();
+    setNull();
 }
 
 void ScaleSet::setNull()
 {
-	setName("ScaleSet");
+    setName("ScaleSet");
 }
 
 //=============================================================================
@@ -78,6 +78,6 @@ void ScaleSet::setNull()
 ScaleSet& ScaleSet::
 operator=(const ScaleSet &aScaleSet)
 {
-	Set<Scale>::operator=(aScaleSet);
-	return(*this);
+    Set<Scale>::operator=(aScaleSet);
+    return(*this);
 }

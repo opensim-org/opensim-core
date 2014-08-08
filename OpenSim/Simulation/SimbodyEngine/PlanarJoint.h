@@ -45,31 +45,31 @@ class OSIMSIMULATION_API PlanarJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PlanarJoint, Joint);
 
 private:
-	static const int _numMobilities = 3;
+    static const int _numMobilities = 3;
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
 
-	/** Slider has no additional properties*/
+    /** Slider has no additional properties*/
 
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	PlanarJoint();
+    // CONSTRUCTION
+    PlanarJoint();
 
-	// Convenience constructor
-	PlanarJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
-				    bool reverse=false);
+    // Convenience constructor
+    PlanarJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
+                    OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
+                    bool reverse=false);
 
-	int numCoordinates() const { return _numMobilities; }
+    int numCoordinates() const { return _numMobilities; }
 
 protected:
-	/** Model component interface */
+    /** Model component interface */
     void addToSystem(SimTK::MultibodySystem& system) const override;
 
 //=============================================================================

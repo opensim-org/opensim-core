@@ -33,8 +33,8 @@ class Body;
 //=============================================================================
 /** Convenience class for a generic representation of geometery of a complex
     Force (or any other object) with multiple points of contact through
-	which forces are applied to bodies. This represents one such point and an
-	array of these objects defines a complete Force distrbitution (ie. path).
+    which forces are applied to bodies. This represents one such point and an
+    array of these objects defines a complete Force distrbitution (ie. path).
  *
  * @author Ajay Seth
  * @version 1.0
@@ -47,40 +47,40 @@ class OSIMSIMULATION_API PointForceDirection
 // MEMBER VARIABLES
 //=============================================================================
 private:
-	/** Point of "contact" with a body, defined in the body frame */
-	SimTK::Vec3 _point;
-	/** The body in which the point is defined */
-	const Body &_body;
-	/** Direction of the force at the point, defined in ground */
-	SimTK::Vec3 _direction;
-	/** Optional parameter to scale the force that results from a scalar 
-	    (tension) multiplies the direction */
-	double _scale;
+    /** Point of "contact" with a body, defined in the body frame */
+    SimTK::Vec3 _point;
+    /** The body in which the point is defined */
+    const Body &_body;
+    /** Direction of the force at the point, defined in ground */
+    SimTK::Vec3 _direction;
+    /** Optional parameter to scale the force that results from a scalar 
+        (tension) multiplies the direction */
+    double _scale;
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	virtual ~PointForceDirection() {};
-	/** Default constructor takes the point, body, direction and scale
-	    as arguments */
-	PointForceDirection(SimTK::Vec3 point, Body &body, SimTK::Vec3 direction, double scale=1):
-		_point(point), _direction(direction), _body(body), _scale(scale) 
-	{};
+    virtual ~PointForceDirection() {};
+    /** Default constructor takes the point, body, direction and scale
+        as arguments */
+    PointForceDirection(SimTK::Vec3 point, Body &body, SimTK::Vec3 direction, double scale=1):
+        _point(point), _direction(direction), _body(body), _scale(scale) 
+    {};
 
-	/** get point of "conact" with on a body defined in the body frame */
-	SimTK::Vec3 point() {return _point; };
-	/** get the body in which the point is defined */
-	const Body& body() {return _body; };
-	/** get direction of the force at the point defined in ground */
-	SimTK::Vec3 direction() {return _direction; };
-	/** get the scale factor on the force */
-	double scale() {return _scale; };
+    /** get point of "conact" with on a body defined in the body frame */
+    SimTK::Vec3 point() {return _point; };
+    /** get the body in which the point is defined */
+    const Body& body() {return _body; };
+    /** get direction of the force at the point defined in ground */
+    SimTK::Vec3 direction() {return _direction; };
+    /** get the scale factor on the force */
+    double scale() {return _scale; };
 
-	/** replace the current direction with the resultant with a new direction */
-	void addToDirection(SimTK::Vec3 newDirection) {_direction+=newDirection;}
+    /** replace the current direction with the resultant with a new direction */
+    void addToDirection(SimTK::Vec3 newDirection) {_direction+=newDirection;}
 
 //=============================================================================
 };	// END of class PointForceDirection

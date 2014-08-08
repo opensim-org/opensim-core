@@ -53,68 +53,68 @@ OpenSim_DECLARE_CONCRETE_OBJECT(BodyKinematics, Analysis);
 private:
 
 protected:
-	/** Names of bodies whose kinematics are to be recorded. */
-	PropertyStrArray _bodiesProp;
-	Array<std::string> &_bodies;
+    /** Names of bodies whose kinematics are to be recorded. */
+    PropertyStrArray _bodiesProp;
+    Array<std::string> &_bodies;
 
-	/** Flag indicating whether or not to express the results
-	in the global or body-local frame. */
-	PropertyBool _expressInLocalFrameProp;
-	bool &_expressInLocalFrame;
+    /** Flag indicating whether or not to express the results
+    in the global or body-local frame. */
+    PropertyBool _expressInLocalFrameProp;
+    bool &_expressInLocalFrame;
 
-	Array<int> _bodyIndices;
-	bool _recordCenterOfMass;
-	Array<double> _kin;
+    Array<int> _bodyIndices;
+    bool _recordCenterOfMass;
+    Array<double> _kin;
 
-	Storage *_pStore;
-	Storage *_vStore;
-	Storage *_aStore;
+    Storage *_pStore;
+    Storage *_vStore;
+    Storage *_aStore;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	BodyKinematics(Model *aModel=0, bool aInDegrees=true);
-	BodyKinematics(const std::string &aFileName);
-	// Copy constrctor and virtual copy 
-	BodyKinematics(const BodyKinematics &aObject);
-	virtual ~BodyKinematics();
+    BodyKinematics(Model *aModel=0, bool aInDegrees=true);
+    BodyKinematics(const std::string &aFileName);
+    // Copy constrctor and virtual copy 
+    BodyKinematics(const BodyKinematics &aObject);
+    virtual ~BodyKinematics();
 
     //--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	BodyKinematics& operator=(const BodyKinematics &aBodyKinematics);
+    BodyKinematics& operator=(const BodyKinematics &aBodyKinematics);
 #endif
 private:
-	void setNull();
-	void setupProperties();
-	void constructDescription();
-	void constructColumnLabels();
-	void allocateStorage();
-	void deleteStorage();
-	void updateBodiesToRecord();
+    void setNull();
+    void setupProperties();
+    void constructDescription();
+    void constructColumnLabels();
+    void allocateStorage();
+    void deleteStorage();
+    void updateBodiesToRecord();
 
 public:
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	// STORAGE
-	void setStorageCapacityIncrements(int aIncrement);
-	Storage* getAccelerationStorage();
-	Storage* getVelocityStorage();
-	Storage* getPositionStorage();
-	void setExpressResultsInLocalFrame(bool aTrueFalse);
-	bool getExpressResultsInLocalFrame();
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    // STORAGE
+    void setStorageCapacityIncrements(int aIncrement);
+    Storage* getAccelerationStorage();
+    Storage* getVelocityStorage();
+    Storage* getPositionStorage();
+    void setExpressResultsInLocalFrame(bool aTrueFalse);
+    bool getExpressResultsInLocalFrame();
 
-	void setRecordCenterOfMass(bool aTrueFalse) {_recordCenterOfMass = aTrueFalse;}
-	void setBodiesToRecord(Array<std::string> &listOfBodies) {_bodies = listOfBodies;}
+    void setRecordCenterOfMass(bool aTrueFalse) {_recordCenterOfMass = aTrueFalse;}
+    void setBodiesToRecord(Array<std::string> &listOfBodies) {_bodies = listOfBodies;}
 
 
-	virtual void setModel(Model& aModel);
-	//--------------------------------------------------------------------------
-	// ANALYSIS
-	//--------------------------------------------------------------------------
+    virtual void setModel(Model& aModel);
+    //--------------------------------------------------------------------------
+    // ANALYSIS
+    //--------------------------------------------------------------------------
     virtual int
         begin(SimTK::State& s );
     virtual int
@@ -125,13 +125,13 @@ protected:
     virtual int
         record(const SimTK::State& s );
 
-	//--------------------------------------------------------------------------
-	// IO
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // IO
+    //--------------------------------------------------------------------------
 public:
-	virtual int
-		printResults(const std::string &aBaseName,const std::string &aDir="",
-		double aDT=-1.0,const std::string &aExtension=".sto");
+    virtual int
+        printResults(const std::string &aBaseName,const std::string &aDir="",
+        double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
 };	// END of class BodyKinematics

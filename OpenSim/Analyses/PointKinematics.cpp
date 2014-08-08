@@ -51,8 +51,8 @@ const int PointKinematics::BUFFER_LENGTH = PointKinematicsBUFFER_LENGTH;
  */
 PointKinematics::~PointKinematics()
 {
-	if(_dy!=NULL) { delete[] _dy;  _dy=NULL; }
-	deleteStorage();
+    if(_dy!=NULL) { delete[] _dy;  _dy=NULL; }
+    deleteStorage();
 }
 //_____________________________________________________________________________
 /**
@@ -70,14 +70,14 @@ _relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec()),
 _pointName(_pointNameProp.getValueStr())
 {
-	// NULL
-	setNull();
+    // NULL
+    setNull();
 
-	// STORAGE
-	allocateStorage();
+    // STORAGE
+    allocateStorage();
 
-	if (aModel==0)
-		return;
+    if (aModel==0)
+        return;
 
 }
 
@@ -106,19 +106,19 @@ _relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec()),
 _pointName(_pointNameProp.getValueStr())
 {
-	setNull();
+    setNull();
 
-	// Serialize from XML
-	updateFromXMLDocument();
+    // Serialize from XML
+    updateFromXMLDocument();
 
-	/* The rest will be done by setModel().
-	// CONSTRUCT DESCRIPTION AND LABELS
-	constructDescription();
-	constructColumnLabels();
+    /* The rest will be done by setModel().
+    // CONSTRUCT DESCRIPTION AND LABELS
+    constructDescription();
+    constructColumnLabels();
 
-	// STORAGE
-	allocateStorage();
-	*/
+    // STORAGE
+    allocateStorage();
+    */
 }
 
 // Copy constrctor and virtual copy 
@@ -136,10 +136,10 @@ _relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec()),
 _pointName(_pointNameProp.getValueStr())
 {
-	setNull();
+    setNull();
 
-	// COPY TYPE AND NAME
-	*this = aPointKinematics;
+    // COPY TYPE AND NAME
+    *this = aPointKinematics;
 }
 
 //_____________________________________________________________________________
@@ -149,36 +149,36 @@ _pointName(_pointNameProp.getValueStr())
 void PointKinematics::
 setNull()
 {
-	// POINTERS
-	_dy = NULL;
-	_kin = NULL;
-	_pStore = NULL;
-	_vStore = NULL;
-	_aStore = NULL;
+    // POINTERS
+    _dy = NULL;
+    _kin = NULL;
+    _pStore = NULL;
+    _vStore = NULL;
+    _aStore = NULL;
 
-	// OTHER VARIABLES
+    // OTHER VARIABLES
 
-	//?_body
-	setName("PointKinematics");
+    //?_body
+    setName("PointKinematics");
 
-	// POINT INFORMATION
-	//_point.setSize(3);
-	Vec3 zero3(0.0);	
-	_bodyNameProp.setName("body_name");
-	_bodyNameProp.setValue("ground");
-	_propertySet.append( &_bodyNameProp );
+    // POINT INFORMATION
+    //_point.setSize(3);
+    Vec3 zero3(0.0);	
+    _bodyNameProp.setName("body_name");
+    _bodyNameProp.setValue("ground");
+    _propertySet.append( &_bodyNameProp );
 
-	_relativeToBodyNameProp.setName("relative_to_body_name");
-	_relativeToBodyNameProp.setValue("none");
-	_propertySet.append( &_relativeToBodyNameProp );
+    _relativeToBodyNameProp.setName("relative_to_body_name");
+    _relativeToBodyNameProp.setValue("none");
+    _propertySet.append( &_relativeToBodyNameProp );
 
-	_pointNameProp.setName("point_name");
-	_pointNameProp.setValue("NONAME");
-	_propertySet.append( &_pointNameProp );
+    _pointNameProp.setName("point_name");
+    _pointNameProp.setValue("NONAME");
+    _propertySet.append( &_pointNameProp );
 
-	_pointProp.setName("point");
-	_pointProp.setValue(zero3);
-	_propertySet.append( &_pointProp );
+    _pointProp.setName("point");
+    _pointProp.setValue(zero3);
+    _propertySet.append( &_pointProp );
 }
 
 
@@ -197,20 +197,20 @@ setNull()
 PointKinematics& PointKinematics::
 operator=(const PointKinematics &aPointKinematics)
 {
-	// BASE CLASS
-	Analysis::operator=(aPointKinematics);
-	_body = aPointKinematics._body;
-	_relativeToBody = aPointKinematics._relativeToBody;
-	_point = aPointKinematics._point;
-	_pointName = aPointKinematics._pointName;
-	_bodyName = aPointKinematics._bodyName;
-	_relativeToBodyName = aPointKinematics._relativeToBodyName;
+    // BASE CLASS
+    Analysis::operator=(aPointKinematics);
+    _body = aPointKinematics._body;
+    _relativeToBody = aPointKinematics._relativeToBody;
+    _point = aPointKinematics._point;
+    _pointName = aPointKinematics._pointName;
+    _bodyName = aPointKinematics._bodyName;
+    _relativeToBodyName = aPointKinematics._relativeToBodyName;
 
-	// STORAGE
-	deleteStorage();
-	allocateStorage();
+    // STORAGE
+    deleteStorage();
+    allocateStorage();
 
-	return(*this);
+    return(*this);
 }
 //_____________________________________________________________________________
 /**
@@ -219,26 +219,26 @@ operator=(const PointKinematics &aPointKinematics)
 void PointKinematics::
 constructDescription()
 {
-	char descrip[BUFFER_LENGTH];
-	char tmp[BUFFER_LENGTH];
+    char descrip[BUFFER_LENGTH];
+    char tmp[BUFFER_LENGTH];
 
-	strcpy(descrip,"\nThis file contains the kinematics ");
-	strcat(descrip,"(position, velocity, or acceleration) of\n");
-	
-	if(_relativeToBody){
-		sprintf(tmp,"point (%lf, %lf, %lf) on body %s relative to body %s of model %s.\n",
-			_point[0],_point[1],_point[2],_body->getName().c_str(),
-			_relativeToBody->getName().c_str(), _model->getName().c_str());
-	}
-	else{
-		sprintf(tmp,"point (%lf, %lf, %lf) on the %s of model %s.\n",
-			_point[0],_point[1],_point[2],_body->getName().c_str(),
-			_model->getName().c_str());
-	}
-	strcat(descrip,tmp);
-	strcat(descrip,"\nUnits are S.I. units (seconds, meters, Newtons,...)\n\n");
+    strcpy(descrip,"\nThis file contains the kinematics ");
+    strcat(descrip,"(position, velocity, or acceleration) of\n");
+    
+    if(_relativeToBody){
+        sprintf(tmp,"point (%lf, %lf, %lf) on body %s relative to body %s of model %s.\n",
+            _point[0],_point[1],_point[2],_body->getName().c_str(),
+            _relativeToBody->getName().c_str(), _model->getName().c_str());
+    }
+    else{
+        sprintf(tmp,"point (%lf, %lf, %lf) on the %s of model %s.\n",
+            _point[0],_point[1],_point[2],_body->getName().c_str(),
+            _model->getName().c_str());
+    }
+    strcat(descrip,tmp);
+    strcat(descrip,"\nUnits are S.I. units (seconds, meters, Newtons,...)\n\n");
 
-	setDescription(descrip);
+    setDescription(descrip);
 }
 
 //_____________________________________________________________________________
@@ -248,12 +248,12 @@ constructDescription()
 void PointKinematics::
 constructColumnLabels()
 {
-	Array<string> labels;
-	labels.append("time");
-	labels.append(getPointName() + "_X");
-	labels.append(getPointName() + "_Y");
-	labels.append(getPointName() + "_Z");
-	setColumnLabels(labels);
+    Array<string> labels;
+    labels.append("time");
+    labels.append(getPointName() + "_X");
+    labels.append(getPointName() + "_Y");
+    labels.append(getPointName() + "_Z");
+    setColumnLabels(labels);
 }
 
 //_____________________________________________________________________________
@@ -263,20 +263,20 @@ constructColumnLabels()
 void PointKinematics::
 allocateStorage()
 {
-	// ACCELERATIONS
-	_aStore = new Storage(1000,"PointAcceleration");
-	_aStore->setDescription(getDescription());
-	_aStore->setColumnLabels(getColumnLabels());
+    // ACCELERATIONS
+    _aStore = new Storage(1000,"PointAcceleration");
+    _aStore->setDescription(getDescription());
+    _aStore->setColumnLabels(getColumnLabels());
 
-	// VELOCITIES
-	_vStore = new Storage(1000,"PointVelocity");
-	_vStore->setDescription(getDescription());
-	_vStore->setColumnLabels(getColumnLabels());
+    // VELOCITIES
+    _vStore = new Storage(1000,"PointVelocity");
+    _vStore->setDescription(getDescription());
+    _vStore->setColumnLabels(getColumnLabels());
 
-	// POSITIONS
-	_pStore = new Storage(1000,"PointPosition");
-	_pStore->setDescription(getDescription());
-	_pStore->setColumnLabels(getColumnLabels());
+    // POSITIONS
+    _pStore = new Storage(1000,"PointPosition");
+    _pStore->setDescription(getDescription());
+    _pStore->setColumnLabels(getColumnLabels());
 }
 
 
@@ -290,9 +290,9 @@ allocateStorage()
 void PointKinematics::
 deleteStorage()
 {
-	if(_aStore!=NULL) { delete _aStore;  _aStore=NULL; }
-	if(_vStore!=NULL) { delete _vStore;  _vStore=NULL; }
-	if(_pStore!=NULL) { delete _pStore;  _pStore=NULL; }
+    if(_aStore!=NULL) { delete _aStore;  _aStore=NULL; }
+    if(_vStore!=NULL) { delete _vStore;  _vStore=NULL; }
+    if(_pStore!=NULL) { delete _pStore;  _pStore=NULL; }
 }
 
 
@@ -308,22 +308,22 @@ deleteStorage()
 void PointKinematics::
 setModel(Model& aModel)
 {
-	Analysis::setModel(aModel);
+    Analysis::setModel(aModel);
 
-	// Map name to index
-	_body = &aModel.updBodySet().get(_bodyName);
+    // Map name to index
+    _body = &aModel.updBodySet().get(_bodyName);
     if (aModel.updBodySet().contains(_relativeToBodyName))
-    	_relativeToBody = &aModel.updBodySet().get(_relativeToBodyName);
+        _relativeToBody = &aModel.updBodySet().get(_relativeToBodyName);
 
-	// ALLOCATIONS
-	if (_dy != 0)
-		delete[] _dy;
+    // ALLOCATIONS
+    if (_dy != 0)
+        delete[] _dy;
 
-	_dy = new double[_model->getNumStateVariables()];
+    _dy = new double[_model->getNumStateVariables()];
 
-	// DESCRIPTION AND LABELS
-	constructDescription();
-	constructColumnLabels();
+    // DESCRIPTION AND LABELS
+    constructDescription();
+    constructColumnLabels();
 }
 //-----------------------------------------------------------------------------
 // BODY
@@ -340,10 +340,10 @@ setModel(Model& aModel)
 void PointKinematics::
 setBodyPoint(const std::string& aBody, const SimTK::Vec3& aPoint)
 {
-	if (_model == 0)
-		return;
-	setBody(&_model->updBodySet().get(aBody));
-	setPoint(aPoint);
+    if (_model == 0)
+        return;
+    setBody(&_model->updBodySet().get(aBody));
+    setPoint(aPoint);
 
 }
 //_____________________________________________________________________________
@@ -355,32 +355,32 @@ setBodyPoint(const std::string& aBody, const SimTK::Vec3& aPoint)
 void PointKinematics::
 setBody(Body* aBody)
 {
-	// CHECK
-	if (aBody==NULL) {
-		printf("PointKinematics.setBody:  WARN- invalid body pointer %p.\n", aBody);
-		_body = NULL;
-		return;
-	}
+    // CHECK
+    if (aBody==NULL) {
+        printf("PointKinematics.setBody:  WARN- invalid body pointer %p.\n", aBody);
+        _body = NULL;
+        return;
+    }
 
-	// SET
-	_body = aBody;
-	_bodyName = _body->getName();
-	cout<<"PointKinematics.setBody: set body to "<<_bodyName<<endl;
+    // SET
+    _body = aBody;
+    _bodyName = _body->getName();
+    cout<<"PointKinematics.setBody: set body to "<<_bodyName<<endl;
 }
 void PointKinematics::
 setRelativeToBody(Body* aBody)
 {
-	// CHECK
-	if (aBody==NULL) {
-		printf("PointKinematics.setRelativeToBody:  WARN- invalid body pointer %p.\n", aBody);
-		_body = NULL;
-		return;
-	}
+    // CHECK
+    if (aBody==NULL) {
+        printf("PointKinematics.setRelativeToBody:  WARN- invalid body pointer %p.\n", aBody);
+        _body = NULL;
+        return;
+    }
 
-	// SET
-	_relativeToBody = aBody;
-	_relativeToBodyName = aBody->getName();
-	cout<<"PointKinematics.setRelativeToBody: set relative-to body to "<<_bodyName<<endl;
+    // SET
+    _relativeToBody = aBody;
+    _relativeToBodyName = aBody->getName();
+    cout<<"PointKinematics.setRelativeToBody: set relative-to body to "<<_bodyName<<endl;
 }
 
 //_____________________________________________________________________________
@@ -391,12 +391,12 @@ setRelativeToBody(Body* aBody)
  */
 Body* PointKinematics::getBody()
 {
-	return(_body);
+    return(_body);
 }
 
 Body* PointKinematics::getRelativeToBody()
 {
-	return(_relativeToBody);
+    return(_relativeToBody);
 }
 
 //-----------------------------------------------------------------------------
@@ -411,7 +411,7 @@ Body* PointKinematics::getRelativeToBody()
 void PointKinematics::
 setPoint(const SimTK::Vec3& aPoint)
 {
-	_point = aPoint;
+    _point = aPoint;
 }
 //_____________________________________________________________________________
 /**
@@ -422,7 +422,7 @@ setPoint(const SimTK::Vec3& aPoint)
 void PointKinematics::
 getPoint(SimTK::Vec3& rPoint)
 {
-	rPoint = _point;
+    rPoint = _point;
 }
 
 //-----------------------------------------------------------------------------
@@ -437,11 +437,11 @@ getPoint(SimTK::Vec3& rPoint)
 void PointKinematics::
 setPointName(const string &aName)
 {
-	_pointName = aName;
-	constructColumnLabels();
-	if(_aStore!=NULL) _aStore->setColumnLabels(getColumnLabels());
-	if(_vStore!=NULL) _vStore->setColumnLabels(getColumnLabels());
-	if(_pStore!=NULL) _pStore->setColumnLabels(getColumnLabels());
+    _pointName = aName;
+    constructColumnLabels();
+    if(_aStore!=NULL) _aStore->setColumnLabels(getColumnLabels());
+    if(_vStore!=NULL) _vStore->setColumnLabels(getColumnLabels());
+    if(_pStore!=NULL) _pStore->setColumnLabels(getColumnLabels());
 }
 //_____________________________________________________________________________
 /**
@@ -452,7 +452,7 @@ setPointName(const string &aName)
 const std::string &PointKinematics::
 getPointName()
 {
-	return(_pointName);
+    return(_pointName);
 }
 
 //-----------------------------------------------------------------------------
@@ -467,7 +467,7 @@ getPointName()
 Storage* PointKinematics::
 getAccelerationStorage()
 {
-	return(_aStore);
+    return(_aStore);
 }
 //_____________________________________________________________________________
 /**
@@ -478,7 +478,7 @@ getAccelerationStorage()
 Storage* PointKinematics::
 getVelocityStorage()
 {
-	return(_vStore);
+    return(_vStore);
 }
 //_____________________________________________________________________________
 /**
@@ -489,7 +489,7 @@ getVelocityStorage()
 Storage* PointKinematics::
 getPositionStorage()
 {
-	return(_pStore);
+    return(_pStore);
 }
 
 //-----------------------------------------------------------------------------
@@ -505,9 +505,9 @@ getPositionStorage()
 void PointKinematics::
 setStorageCapacityIncrements(int aIncrement)
 {
-	_aStore->setCapacityIncrement(aIncrement);
-	_vStore->setCapacityIncrement(aIncrement);
-	_pStore->setCapacityIncrement(aIncrement);
+    _aStore->setCapacityIncrement(aIncrement);
+    _vStore->setCapacityIncrement(aIncrement);
+    _pStore->setCapacityIncrement(aIncrement);
 }
 
 
@@ -522,39 +522,39 @@ setStorageCapacityIncrements(int aIncrement)
 int PointKinematics::
 record(const SimTK::State& s)
 {
-	const SimbodyEngine& de = _model->getSimbodyEngine();
+    const SimbodyEngine& de = _model->getSimbodyEngine();
 
-	// VARIABLES
-	SimTK::Vec3 vec;
+    // VARIABLES
+    SimTK::Vec3 vec;
 
-	const double& time = s.getTime();
+    const double& time = s.getTime();
 
-	// POSITION
-	de.getPosition(s, *_body,_point,vec);
-	if(_relativeToBody){
-		de.transformPosition(s, de.getGroundBody(), vec, *_relativeToBody, vec);
-	}
+    // POSITION
+    de.getPosition(s, *_body,_point,vec);
+    if(_relativeToBody){
+        de.transformPosition(s, de.getGroundBody(), vec, *_relativeToBody, vec);
+    }
 
-	_pStore->append(time, vec);
+    _pStore->append(time, vec);
 
-	// VELOCITY
-	de.getVelocity(s, *_body,_point,vec);
-	if(_relativeToBody){
-		de.transform(s, de.getGroundBody(), vec, *_relativeToBody, vec);
-	}
+    // VELOCITY
+    de.getVelocity(s, *_body,_point,vec);
+    if(_relativeToBody){
+        de.transform(s, de.getGroundBody(), vec, *_relativeToBody, vec);
+    }
 
-	_vStore->append(time, vec);
+    _vStore->append(time, vec);
 
-	// ACCELERATIONS
-	_model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
-	de.getAcceleration(s, *_body,_point,vec);
-	if(_relativeToBody){
-		de.transform(s, de.getGroundBody(), vec, *_relativeToBody, vec);
-	}
+    // ACCELERATIONS
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
+    de.getAcceleration(s, *_body,_point,vec);
+    if(_relativeToBody){
+        de.transform(s, de.getGroundBody(), vec, *_relativeToBody, vec);
+    }
 
-	_aStore->append(time, vec);
+    _aStore->append(time, vec);
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -575,16 +575,16 @@ record(const SimTK::State& s)
 int PointKinematics::
 begin( SimTK::State& s)
 {
-	if(!proceed()) return(0);
+    if(!proceed()) return(0);
 
-	// RESET STORAGE
-	_pStore->reset(s.getTime());
-	_vStore->reset(s.getTime());
-	_aStore->reset(s.getTime());
+    // RESET STORAGE
+    _pStore->reset(s.getTime());
+    _vStore->reset(s.getTime());
+    _aStore->reset(s.getTime());
 
-	int status = record(s);
+    int status = record(s);
 
-	return(status);
+    return(status);
 }
 //_____________________________________________________________________________
 /**
@@ -606,11 +606,11 @@ begin( SimTK::State& s)
 int PointKinematics::
 step(const SimTK::State& s, int stepNumber)
 {
-	if(!proceed(stepNumber)) return(0);
+    if(!proceed(stepNumber)) return(0);
 
-	record(s);
+    record(s);
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -631,10 +631,10 @@ step(const SimTK::State& s, int stepNumber)
 int PointKinematics::
 end( SimTK::State& s)
 {
-	if(!proceed()) return(0);
-	record(s);
-	cout<<"PointKinematics.end: Finalizing analysis "<<getName()<<".\n";
-	return(0);
+    if(!proceed()) return(0);
+    record(s);
+    cout<<"PointKinematics.end: Finalizing analysis "<<getName()<<".\n";
+    return(0);
 }
 
 
@@ -660,18 +660,18 @@ end( SimTK::State& s)
  */
 int PointKinematics::
 printResults(const string &aBaseName,const string &aDir,double aDT,
-				 const string &aExtension)
+                 const string &aExtension)
 {
-	// ACCELERATIONS
-	Storage::printResult(_aStore,aBaseName+"_"+getName()+"_"+getPointName()+"_acc",aDir,aDT,aExtension);
+    // ACCELERATIONS
+    Storage::printResult(_aStore,aBaseName+"_"+getName()+"_"+getPointName()+"_acc",aDir,aDT,aExtension);
 
-	// VELOCITIES
-	Storage::printResult(_vStore,aBaseName+"_"+getName()+"_"+getPointName()+"_vel",aDir,aDT,aExtension);
+    // VELOCITIES
+    Storage::printResult(_vStore,aBaseName+"_"+getName()+"_"+getPointName()+"_vel",aDir,aDT,aExtension);
 
-	// POSITIONS
-	Storage::printResult(_pStore,aBaseName+"_"+getName()+"_"+getPointName()+"_pos",aDir,aDT,aExtension);
+    // POSITIONS
+    Storage::printResult(_pStore,aBaseName+"_"+getName()+"_"+getPointName()+"_pos",aDir,aDT,aExtension);
 
-	return(0);
+    return(0);
 }
 
 

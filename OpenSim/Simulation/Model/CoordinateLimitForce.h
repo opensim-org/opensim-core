@@ -119,7 +119,7 @@ public:
 
     //use compiler default copy constructor and assignment operator
 
-	/** Destructor */
+    /** Destructor */
     ~CoordinateLimitForce();
 
 

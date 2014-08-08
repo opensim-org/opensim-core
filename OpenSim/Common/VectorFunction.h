@@ -61,67 +61,67 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(VectorFunction, Object);
 // DATA
 //=============================================================================
 protected:
-	/** Number of independent variables */
-	int _nX;
-	/** Number of dependant variables */
-	int _nY;
-	/** Array containing minimum allowed values of the independent variables. */
-	Array<double> _minX;
-	/** Array containing maximum allowed values of the independent variables. */
-	Array<double> _maxX;
+    /** Number of independent variables */
+    int _nX;
+    /** Number of dependant variables */
+    int _nY;
+    /** Array containing minimum allowed values of the independent variables. */
+    Array<double> _minX;
+    /** Array containing maximum allowed values of the independent variables. */
+    Array<double> _maxX;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	VectorFunction();
-	VectorFunction(int aNX, int aNY);
-	VectorFunction(const VectorFunction &aVectorFunction);
-	virtual ~VectorFunction();
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    VectorFunction();
+    VectorFunction(int aNX, int aNY);
+    VectorFunction(const VectorFunction &aVectorFunction);
+    virtual ~VectorFunction();
 
 private:
-	void setNull();
-	void setEqual(const VectorFunction &aVectorFunction);
+    void setNull();
+    void setEqual(const VectorFunction &aVectorFunction);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
-	VectorFunction& operator=(const VectorFunction &aVectorFunction);
+    VectorFunction& operator=(const VectorFunction &aVectorFunction);
 
-	//--------------------------------------------------------------------------
-	// SET AND GET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // SET AND GET
+    //--------------------------------------------------------------------------
 private:
-	void setNX(int aNX);
-	void setNY(int aNY);
+    void setNX(int aNX);
+    void setNY(int aNY);
 
 public:
-	int getNX() const;
+    int getNX() const;
 
-	int getNY() const;
+    int getNY() const;
 
-	void setMinX(const Array<double> &aMinX);
-	const Array<double>& getMinX() const;
-	void setMinX(int aXIndex, double aMinX);
-	double getMinX(int aXIndex) const;
+    void setMinX(const Array<double> &aMinX);
+    const Array<double>& getMinX() const;
+    void setMinX(int aXIndex, double aMinX);
+    double getMinX(int aXIndex) const;
 
-	void setMaxX(const Array<double> &aMaxX);
-	const Array<double>& getMaxX() const;
-	void setMaxX(int aXIndex, double aMaxX);
-	double getMaxX(int aXIndex) const;
-	
-	//--------------------------------------------------------------------------
-	// EVALUATE
-	//--------------------------------------------------------------------------
-	virtual void updateBoundingBox();
-	virtual void calcValue(const double *aX,double *rY, int aSize)=0;
-	virtual void calcValue(const Array<double> &aX,Array<double> &rY)=0;
-	virtual void calcDerivative(const Array<double> &aX,Array<double> &rY,
-		const Array<int> &aDerivWRT)=0;
+    void setMaxX(const Array<double> &aMaxX);
+    const Array<double>& getMaxX() const;
+    void setMaxX(int aXIndex, double aMaxX);
+    double getMaxX(int aXIndex) const;
+    
+    //--------------------------------------------------------------------------
+    // EVALUATE
+    //--------------------------------------------------------------------------
+    virtual void updateBoundingBox();
+    virtual void calcValue(const double *aX,double *rY, int aSize)=0;
+    virtual void calcValue(const Array<double> &aX,Array<double> &rY)=0;
+    virtual void calcDerivative(const Array<double> &aX,Array<double> &rY,
+        const Array<int> &aDerivWRT)=0;
 
 //=============================================================================
 };	// END class VectorFunction

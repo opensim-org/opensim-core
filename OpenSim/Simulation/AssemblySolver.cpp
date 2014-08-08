@@ -39,51 +39,51 @@ namespace OpenSim {
  */
 AssemblySolver::AssemblySolver
    (const Model &model, SimTK::Array_<CoordinateReference> &coordinateReferences,
-	double constraintWeight) : Solver(model),
+    double constraintWeight) : Solver(model),
     _coordinateReferencesp(&coordinateReferences)
 {
-	setAuthors("Ajay Seth");
-	_assembler = NULL;
-	
-	_constraintWeight = constraintWeight;
+    setAuthors("Ajay Seth");
+    _assembler = NULL;
+    
+    _constraintWeight = constraintWeight;
 
-	// default accuracy
-	_accuracy = 1e-4;
+    // default accuracy
+    _accuracy = 1e-4;
 
-	// Get model coordinates
-	const CoordinateSet &modelCoordSet = getModel().getCoordinateSet();
+    // Get model coordinates
+    const CoordinateSet &modelCoordSet = getModel().getCoordinateSet();
 
-	SimTK::Array_<CoordinateReference>::iterator p;
+    SimTK::Array_<CoordinateReference>::iterator p;
 
-	// Cycle through coordinate references
-	for(p = _coordinateReferencesp->begin(); 
+    // Cycle through coordinate references
+    for(p = _coordinateReferencesp->begin(); 
         p != _coordinateReferencesp->end(); p++) 
     {
-		if(p){
-			//Find if any references that are empty and throw them away
-			if(p->getName() == "" || p->getName() == "unknown"){
-				//Get rid of the corresponding reference too
-				p = _coordinateReferencesp->erase(p);
-			}
-			// Otherwise an error if the coordinate does not exist for this model
-			else if ( !modelCoordSet.contains(p->getName())){
-				throw(Exception("AssemblySolver: Model does not contain coordinate "+p->getName()+"."));
-			}
-		}
-	}
+        if(p){
+            //Find if any references that are empty and throw them away
+            if(p->getName() == "" || p->getName() == "unknown"){
+                //Get rid of the corresponding reference too
+                p = _coordinateReferencesp->erase(p);
+            }
+            // Otherwise an error if the coordinate does not exist for this model
+            else if ( !modelCoordSet.contains(p->getName())){
+                throw(Exception("AssemblySolver: Model does not contain coordinate "+p->getName()+"."));
+            }
+        }
+    }
 }
 
 AssemblySolver::~AssemblySolver()
 {
-	SimTK::Array_<CoordinateReference>::iterator p;
-	for(p = _coordinateReferencesp->begin(); 
+    SimTK::Array_<CoordinateReference>::iterator p;
+    for(p = _coordinateReferencesp->begin(); 
         p != _coordinateReferencesp->end(); p++)
-	{ 
-		p = _coordinateReferencesp->erase(p);
-		--p;
-	}
+    { 
+        p = _coordinateReferencesp->erase(p);
+        --p;
+    }
 
-	delete _assembler;
+    delete _assembler;
 }
 
 /* Internal method to convert the CoordinateReferences into goals of the 
@@ -92,97 +92,97 @@ AssemblySolver::~AssemblySolver()
    automatically called by assemble. */
 void AssemblySolver::setupGoals(SimTK::State &s)
 {
-	// wipe-out the previous SimTK::Assembler
-	delete _assembler;
-	_assembler = new SimTK::Assembler(getModel().getMultibodySystem());
-	_assembler->setAccuracy(_accuracy);
+    // wipe-out the previous SimTK::Assembler
+    delete _assembler;
+    _assembler = new SimTK::Assembler(getModel().getMultibodySystem());
+    _assembler->setAccuracy(_accuracy);
 
-	// Define weights on constraints. Note can be spefified SimTK::Infinity to strictly enforce constraint
-	// otherwise the weighted constraint error becomes a goal.
-	_assembler->setSystemConstraintsWeight(_constraintWeight);
+    // Define weights on constraints. Note can be spefified SimTK::Infinity to strictly enforce constraint
+    // otherwise the weighted constraint error becomes a goal.
+    _assembler->setSystemConstraintsWeight(_constraintWeight);
 
-	// clear any old coordinate goals
-	_coordinateAssemblyConditions.clear();
+    // clear any old coordinate goals
+    _coordinateAssemblyConditions.clear();
 
-	// Get model coordinates
-	const CoordinateSet &modelCoordSet = getModel().getCoordinateSet();
+    // Get model coordinates
+    const CoordinateSet &modelCoordSet = getModel().getCoordinateSet();
 
-	// Restrict solution to set range of any of the coordinates that are clamped
-	for(int i=0; i<modelCoordSet.getSize(); ++i){
-		const Coordinate& coord = modelCoordSet[i];
-		if(coord.getClamped(s)){
-			_assembler->restrictQ(coord.getBodyIndex(), 
-				MobilizerQIndex(coord.getMobilizerQIndex()),
-				coord.getRangeMin(), coord.getRangeMax());
-		}
-	}
+    // Restrict solution to set range of any of the coordinates that are clamped
+    for(int i=0; i<modelCoordSet.getSize(); ++i){
+        const Coordinate& coord = modelCoordSet[i];
+        if(coord.getClamped(s)){
+            _assembler->restrictQ(coord.getBodyIndex(), 
+                MobilizerQIndex(coord.getMobilizerQIndex()),
+                coord.getRangeMin(), coord.getRangeMax());
+        }
+    }
 
-	SimTK::Array_<CoordinateReference>::iterator p;
+    SimTK::Array_<CoordinateReference>::iterator p;
 
-	// Cycle through coordinate references
-	for(p = _coordinateReferencesp->begin(); 
+    // Cycle through coordinate references
+    for(p = _coordinateReferencesp->begin(); 
         p != _coordinateReferencesp->end(); p++) {
-		if(p){
-			CoordinateReference *coordRef = p;
-			const Coordinate &coord = modelCoordSet.get(coordRef->getName());
-			if(coord.getLocked(s)){
-				//cout << "AssemblySolver: coordinate " << coord.getName() << " is locked/prescribed and will be excluded." << endl;
-				_assembler->lockQ(coord.getBodyIndex(), SimTK::MobilizerQIndex(coord.getMobilizerQIndex()));
-				//No longer need the lock on
-				coord.setLocked(s, false);
-				
-				//Get rid of the corresponding reference too
-				_coordinateReferencesp->erase(p);
-				p--; //decrement since erase automatically points to next in the list
-			}
-			else if(!(coord.get_is_free_to_satisfy_constraints())) {
-				// Make this reference and its current value a goal of the Assembler
-				SimTK::QValue *coordGoal = new SimTK::QValue(coord.getBodyIndex(), SimTK::MobilizerQIndex(coord.getMobilizerQIndex()),
-														 coordRef->getValue(s) );
-				// keep a handle to the goal so we can update
-				_coordinateAssemblyConditions.push_back(coordGoal);
-				// Add coordinate matching goal to the ik objective
-				SimTK::AssemblyConditionIndex acIx = _assembler->adoptAssemblyGoal(coordGoal, coordRef->getWeight(s));
-			}
-		}
-	}
+        if(p){
+            CoordinateReference *coordRef = p;
+            const Coordinate &coord = modelCoordSet.get(coordRef->getName());
+            if(coord.getLocked(s)){
+                //cout << "AssemblySolver: coordinate " << coord.getName() << " is locked/prescribed and will be excluded." << endl;
+                _assembler->lockQ(coord.getBodyIndex(), SimTK::MobilizerQIndex(coord.getMobilizerQIndex()));
+                //No longer need the lock on
+                coord.setLocked(s, false);
+                
+                //Get rid of the corresponding reference too
+                _coordinateReferencesp->erase(p);
+                p--; //decrement since erase automatically points to next in the list
+            }
+            else if(!(coord.get_is_free_to_satisfy_constraints())) {
+                // Make this reference and its current value a goal of the Assembler
+                SimTK::QValue *coordGoal = new SimTK::QValue(coord.getBodyIndex(), SimTK::MobilizerQIndex(coord.getMobilizerQIndex()),
+                                                         coordRef->getValue(s) );
+                // keep a handle to the goal so we can update
+                _coordinateAssemblyConditions.push_back(coordGoal);
+                // Add coordinate matching goal to the ik objective
+                SimTK::AssemblyConditionIndex acIx = _assembler->adoptAssemblyGoal(coordGoal, coordRef->getWeight(s));
+            }
+        }
+    }
 
-	unsigned int nqrefs  = _coordinateReferencesp->size(), 
+    unsigned int nqrefs  = _coordinateReferencesp->size(), 
                  nqgoals = _coordinateAssemblyConditions.size();
-	//Should have a one-to-one matched arrays
-	if(nqrefs != nqgoals)
-		throw Exception("AsemblySolver::setupGoals() has a mismatch between number of references and goals.");
+    //Should have a one-to-one matched arrays
+    if(nqrefs != nqgoals)
+        throw Exception("AsemblySolver::setupGoals() has a mismatch between number of references and goals.");
 }
 
 /** Once a set of coordinates has been specified its target value can
     be updated directly */
 void AssemblySolver::updateCoordinateReference(const std::string &coordName, double value, double weight)
 {
-	SimTK::Array_<CoordinateReference>::iterator p;
+    SimTK::Array_<CoordinateReference>::iterator p;
 
-	// Cycle through coordinate references
-	for(p = _coordinateReferencesp->begin(); 
+    // Cycle through coordinate references
+    for(p = _coordinateReferencesp->begin(); 
         p != _coordinateReferencesp->end(); p++) {
-		if(p->getName() == coordName){
-			p->setValueFunction(*new Constant(value));
-			p->setWeight(weight);
-			return;
-		}
-	}		
+        if(p->getName() == coordName){
+            p->setValueFunction(*new Constant(value));
+            p->setWeight(weight);
+            return;
+        }
+    }		
 }
 
 
 /** Internal method to update the time, reference values and/or their 
-		weights that define the goals, based on the passed in state. */
+        weights that define the goals, based on the passed in state. */
 void AssemblySolver::updateGoals(const SimTK::State &s)
 {
-	unsigned int nqrefs = _coordinateReferencesp->size();
-	for(unsigned int i=0; i<nqrefs; i++){
-		//update goal values from reference.
-		_coordinateAssemblyConditions[i]->setValue
+    unsigned int nqrefs = _coordinateReferencesp->size();
+    for(unsigned int i=0; i<nqrefs; i++){
+        //update goal values from reference.
+        _coordinateAssemblyConditions[i]->setValue
            ((*_coordinateReferencesp)[i].getValue(s));
-		//_assembler->setAssemblyConditionWeight(_coordinateAssemblyConditions[i]->
-	}
+        //_assembler->setAssemblyConditionWeight(_coordinateAssemblyConditions[i]->
+    }
 }
 
 //______________________________________________________________________________
@@ -193,110 +193,110 @@ void AssemblySolver::updateGoals(const SimTK::State &s)
  */
 void AssemblySolver::assemble(SimTK::State &state)
 {
-	// Make a working copy of the state that will be used to set the internal 
-	// state of the solver. This is necessary because we may wish to disable 
-	// redundant constraints, but do not want this  to effect the state of 
-	// constraints the user expects
-	SimTK::State s = state;
-	
-	// Make sure goals are up-to-date.
-	setupGoals(s);
+    // Make a working copy of the state that will be used to set the internal 
+    // state of the solver. This is necessary because we may wish to disable 
+    // redundant constraints, but do not want this  to effect the state of 
+    // constraints the user expects
+    SimTK::State s = state;
+    
+    // Make sure goals are up-to-date.
+    setupGoals(s);
 
-	// Let assembler perform some internal setup
-	_assembler->initialize(s);
-	
-	/* TODO: Useful to include through debug message/log in the future
-	printf("UNASSEMBLED CONFIGURATION (normerr=%g, maxerr=%g, cost=%g)\n",
+    // Let assembler perform some internal setup
+    _assembler->initialize(s);
+    
+    /* TODO: Useful to include through debug message/log in the future
+    printf("UNASSEMBLED CONFIGURATION (normerr=%g, maxerr=%g, cost=%g)\n",
         _assembler->calcCurrentErrorNorm(),
-		max(abs(_assembler->getInternalState().getQErr())),
-		_assembler->calcCurrentGoal());
-	cout << "Model numQs: " << _assembler->getInternalState().getNQ() 
-		<< " Assembler num freeQs: " << _assembler->getNumFreeQs() << endl;
+        max(abs(_assembler->getInternalState().getQErr())),
+        _assembler->calcCurrentGoal());
+    cout << "Model numQs: " << _assembler->getInternalState().getNQ() 
+        << " Assembler num freeQs: " << _assembler->getNumFreeQs() << endl;
     */
-	try{
-		// Now do the assembly and return the updated state.
-		_assembler->assemble();
-		// Update the q's in the state passed in
-		_assembler->updateFromInternalState(s);
-		state.updQ() = s.getQ();
-		state.updU() = s.getU();
+    try{
+        // Now do the assembly and return the updated state.
+        _assembler->assemble();
+        // Update the q's in the state passed in
+        _assembler->updateFromInternalState(s);
+        state.updQ() = s.getQ();
+        state.updU() = s.getU();
 
-		// Get model coordinates
-		const CoordinateSet &modelCoordSet = getModel().getCoordinateSet();
-		// Make sure the locks in orignal state are restored
-		for(int i=0; i< modelCoordSet.getSize(); ++i){
-			bool isLocked = modelCoordSet[i].getLocked(state);
-			if(isLocked)
-				modelCoordSet[i].setLocked(state, isLocked);
-		}
-		/* TODO: Useful to include through debug message/log in the future
-		printf("ASSEMBLED CONFIGURATION (acc=%g tol=%g normerr=%g, maxerr=%g, cost=%g)\n",
-			_assembler->getAccuracyInUse(), _assembler->getErrorToleranceInUse(), 
-			_assembler->calcCurrentErrorNorm(), max(abs(_assembler->getInternalState().getQErr())),
-			_assembler->calcCurrentGoal());
-		printf("# initializations=%d\n", _assembler->getNumInitializations());
-		printf("# assembly steps: %d\n", _assembler->getNumAssemblySteps());
-		printf(" evals: goal=%d grad=%d error=%d jac=%d\n",
-			_assembler->getNumGoalEvals(), _assembler->getNumGoalGradientEvals(),
-			_assembler->getNumErrorEvals(), _assembler->getNumErrorJacobianEvals());
-		*/
-	}
-	catch (const std::exception& ex)
+        // Get model coordinates
+        const CoordinateSet &modelCoordSet = getModel().getCoordinateSet();
+        // Make sure the locks in orignal state are restored
+        for(int i=0; i< modelCoordSet.getSize(); ++i){
+            bool isLocked = modelCoordSet[i].getLocked(state);
+            if(isLocked)
+                modelCoordSet[i].setLocked(state, isLocked);
+        }
+        /* TODO: Useful to include through debug message/log in the future
+        printf("ASSEMBLED CONFIGURATION (acc=%g tol=%g normerr=%g, maxerr=%g, cost=%g)\n",
+            _assembler->getAccuracyInUse(), _assembler->getErrorToleranceInUse(), 
+            _assembler->calcCurrentErrorNorm(), max(abs(_assembler->getInternalState().getQErr())),
+            _assembler->calcCurrentGoal());
+        printf("# initializations=%d\n", _assembler->getNumInitializations());
+        printf("# assembly steps: %d\n", _assembler->getNumAssemblySteps());
+        printf(" evals: goal=%d grad=%d error=%d jac=%d\n",
+            _assembler->getNumGoalEvals(), _assembler->getNumGoalGradientEvals(),
+            _assembler->getNumErrorEvals(), _assembler->getNumErrorJacobianEvals());
+        */
+    }
+    catch (const std::exception& ex)
     {
-		std::string msg = "AssemblySolver::assemble() Failed: ";
-		msg += ex.what();
-		throw Exception(msg);
+        std::string msg = "AssemblySolver::assemble() Failed: ";
+        msg += ex.what();
+        throw Exception(msg);
     }
 }
 
 /** Obtain a model configuration that meets the assembly conditions  
     (desired values and constraints) given a state that satisfies or
-	is close to satisfying the constraints. Note there can be no change
-	in the number of constrainst or desired coordinates. Desired
-	coordinate values can and should be updated between repeated calls
-	to track a desired trajectory of coordinate values. */
+    is close to satisfying the constraints. Note there can be no change
+    in the number of constrainst or desired coordinates. Desired
+    coordinate values can and should be updated between repeated calls
+    to track a desired trajectory of coordinate values. */
 void AssemblySolver::track(SimTK::State &s)
 {
 
-	// move the target locations or angles, etc... just do not change number of goals
-	// and their type (constrained vs. weighted)
+    // move the target locations or angles, etc... just do not change number of goals
+    // and their type (constrained vs. weighted)
 
-	if(_assembler && _assembler->isInitialized()){
-		updateGoals(s);
-	}
-	else{
-		throw Exception(
-			"AssemblySolver::track() failed: assemble() must be called first.");
-	}
+    if(_assembler && _assembler->isInitialized()){
+        updateGoals(s);
+    }
+    else{
+        throw Exception(
+            "AssemblySolver::track() failed: assemble() must be called first.");
+    }
 
-	/* TODO: Useful to include through debug message/log in the future
-	printf("UNASSEMBLED(track) CONFIGURATION (normerr=%g, maxerr=%g, cost=%g)\n",
-		_assembler->calcCurrentErrorNorm(), 
-		max(abs(_assembler->getInternalState().getQErr())), 
-		_assembler->calcCurrentGoal() );
-	cout << "Model numQs: " << _assembler->getInternalState().getNQ() 
-		<< " Assembler num freeQs: " << _assembler->getNumFreeQs() << endl;
+    /* TODO: Useful to include through debug message/log in the future
+    printf("UNASSEMBLED(track) CONFIGURATION (normerr=%g, maxerr=%g, cost=%g)\n",
+        _assembler->calcCurrentErrorNorm(), 
+        max(abs(_assembler->getInternalState().getQErr())), 
+        _assembler->calcCurrentGoal() );
+    cout << "Model numQs: " << _assembler->getInternalState().getNQ() 
+        << " Assembler num freeQs: " << _assembler->getNumFreeQs() << endl;
     */
 
-	try{
-		// Now do the assembly and return the updated state.
-		_assembler->track(s.getTime());
+    try{
+        // Now do the assembly and return the updated state.
+        _assembler->track(s.getTime());
 
-		// update the state from the result of the assembler 
-		_assembler->updateFromInternalState(s);
-		
-		/* TODO: Useful to include through debug message/log in the future
-		printf("Tracking: t= %f (acc=%g tol=%g normerr=%g, maxerr=%g, cost=%g)\n", 
-			s.getTime(),
-			_assembler->getAccuracyInUse(), _assembler->getErrorToleranceInUse(), 
-			_assembler->calcCurrentErrorNorm(), max(abs(_assembler->getInternalState().getQErr())),
-			_assembler->calcCurrentGoal());	
-		*/
-	}
-	catch (const std::exception& ex)
+        // update the state from the result of the assembler 
+        _assembler->updateFromInternalState(s);
+        
+        /* TODO: Useful to include through debug message/log in the future
+        printf("Tracking: t= %f (acc=%g tol=%g normerr=%g, maxerr=%g, cost=%g)\n", 
+            s.getTime(),
+            _assembler->getAccuracyInUse(), _assembler->getErrorToleranceInUse(), 
+            _assembler->calcCurrentErrorNorm(), max(abs(_assembler->getInternalState().getQErr())),
+            _assembler->calcCurrentGoal());	
+        */
+    }
+    catch (const std::exception& ex)
     {
-		std::cout << "AssemblySolver::track() attempt Failed: " << ex.what() << std::endl;
-		throw Exception("AssemblySolver::track() attempt failed.");
+        std::cout << "AssemblySolver::track() attempt Failed: " << ex.what() << std::endl;
+        throw Exception("AssemblySolver::track() attempt failed.");
     }
 }
 

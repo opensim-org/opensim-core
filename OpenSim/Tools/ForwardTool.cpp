@@ -52,7 +52,7 @@ using namespace OpenSim;
 ForwardTool::~ForwardTool()
 {
 
-	if(_yStore!=NULL) delete _yStore;
+    if(_yStore!=NULL) delete _yStore;
 
 }
 //_____________________________________________________________________________
@@ -60,11 +60,11 @@ ForwardTool::~ForwardTool()
  * Default constructor.
  */
 ForwardTool::ForwardTool() :
-	AbstractTool(),
-	_statesFileName(_statesFileNameProp.getValueStr()),
-	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
+    AbstractTool(),
+    _statesFileName(_statesFileNameProp.getValueStr()),
+    _useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -76,20 +76,20 @@ ForwardTool::ForwardTool() :
  * @param aFileName File name of the document.
  */
 ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aLoadModel) :
-	AbstractTool(aFileName, false),
-	_statesFileName(_statesFileNameProp.getValueStr()),
-	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
+    AbstractTool(aFileName, false),
+    _statesFileName(_statesFileNameProp.getValueStr()),
+    _useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
-	setNull();
+    setNull();
 
-	if(aUpdateFromXMLNode) updateFromXMLDocument();
-	if(aLoadModel) { 
-		loadModel(aFileName); 
-		// Append to or replace model forces with those (i.e. actuators) specified by the analysis
-		updateModelForces(*_model, aFileName);
-		setModel(*_model);	
-		setToolOwnsModel(true); 
-	}
+    if(aUpdateFromXMLNode) updateFromXMLDocument();
+    if(aLoadModel) { 
+        loadModel(aFileName); 
+        // Append to or replace model forces with those (i.e. actuators) specified by the analysis
+        updateModelForces(*_model, aFileName);
+        setModel(*_model);	
+        setToolOwnsModel(true); 
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -129,12 +129,12 @@ ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aL
  */
 ForwardTool::
 ForwardTool(const ForwardTool &aTool) :
-	AbstractTool(aTool),
-	_statesFileName(_statesFileNameProp.getValueStr()),
-	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
+    AbstractTool(aTool),
+    _statesFileName(_statesFileNameProp.getValueStr()),
+    _useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
-	setNull();
-	*this = aTool;
+    setNull();
+    *this = aTool;
 }
 
 //_____________________________________________________________________________
@@ -143,20 +143,20 @@ ForwardTool(const ForwardTool &aTool) :
  */
 void ForwardTool::setNull()
 {
-	setupProperties();
+    setupProperties();
 
-	// BASIC
-	_statesFileName = "";
-	_useSpecifiedDt = false;
-	_printResultFiles = true;
+    // BASIC
+    _statesFileName = "";
+    _useSpecifiedDt = false;
+    _printResultFiles = true;
 
-	_replaceForceSet = false;	// default should be false for Forward.
+    _replaceForceSet = false;	// default should be false for Forward.
 
-	// INTERNAL WORK VARIABLES
-	_yStore = NULL;
+    // INTERNAL WORK VARIABLES
+    _yStore = NULL;
 
-	// Start parsing log as empty. 
-	_parsingLog="";
+    // Start parsing log as empty. 
+    _parsingLog="";
 }
 //_____________________________________________________________________________
 /**
@@ -164,34 +164,34 @@ void ForwardTool::setNull()
  */
 void ForwardTool::setupProperties()
 {
-	string comment;
+    string comment;
 
-	// BASIC
+    // BASIC
 
-	comment = "Storage file (.sto) containing the initial states for the forward simulation. "
-				 "This file often contains multiple rows of data, each row being a time-stamped array of states. "
-				 "The first column contains the time.  The rest of the columns contain the states in the order "
-				 "appropriate for the model. In a storage file, unlike a motion file (.mot), non-uniform time spacing "
-				 "is allowed.  If the user-specified initial time for a simulation does not correspond exactly to "
-				 "one of the time stamps in this file, inerpolation is NOT used because it is usually necessary to "
-				 "being a simulation from an exact set of states.  Instead, the closest earlier set of states is used. "
-				 "Having a states file that contains the entire trajectory of a simulations allows for corrective "
-				 "springs for perturbation analysis to be added.";
-	_statesFileNameProp.setComment(comment);
-	_statesFileNameProp.setName("states_file");
-	_propertySet.append( &_statesFileNameProp );
+    comment = "Storage file (.sto) containing the initial states for the forward simulation. "
+                 "This file often contains multiple rows of data, each row being a time-stamped array of states. "
+                 "The first column contains the time.  The rest of the columns contain the states in the order "
+                 "appropriate for the model. In a storage file, unlike a motion file (.mot), non-uniform time spacing "
+                 "is allowed.  If the user-specified initial time for a simulation does not correspond exactly to "
+                 "one of the time stamps in this file, inerpolation is NOT used because it is usually necessary to "
+                 "being a simulation from an exact set of states.  Instead, the closest earlier set of states is used. "
+                 "Having a states file that contains the entire trajectory of a simulations allows for corrective "
+                 "springs for perturbation analysis to be added.";
+    _statesFileNameProp.setComment(comment);
+    _statesFileNameProp.setName("states_file");
+    _propertySet.append( &_statesFileNameProp );
 
-	comment = "Flag (true or false) indicating whether or not the integrator should "
-				 "use a particular time stepping.  If true, the time stepping is extracted "
-				 "from the initial states file.  In this situation, therefore, the initial "
-				 "states file must contain all the time steps in a simulation and be written out "
-				 "to high precision (usually 20 decimal places).  Setting this flag to true can "
-				 "be useful when reproducing a previous forward simulation with as little drift "
-				 "as possible.  If this flag is false, the integrator is left to determine its own "
-				 "time stepping.";
-	_useSpecifiedDtProp.setComment(comment);
-	_useSpecifiedDtProp.setName("use_specified_dt");
-	_propertySet.append( &_useSpecifiedDtProp );
+    comment = "Flag (true or false) indicating whether or not the integrator should "
+                 "use a particular time stepping.  If true, the time stepping is extracted "
+                 "from the initial states file.  In this situation, therefore, the initial "
+                 "states file must contain all the time steps in a simulation and be written out "
+                 "to high precision (usually 20 decimal places).  Setting this flag to true can "
+                 "be useful when reproducing a previous forward simulation with as little drift "
+                 "as possible.  If this flag is false, the integrator is left to determine its own "
+                 "time stepping.";
+    _useSpecifiedDtProp.setComment(comment);
+    _useSpecifiedDtProp.setName("use_specified_dt");
+    _propertySet.append( &_useSpecifiedDtProp );
 
 
 }
@@ -209,15 +209,15 @@ ForwardTool& ForwardTool::
 operator=(const ForwardTool &aTool)
 {
    
-	// BASE CLASS
-	AbstractTool::operator=(aTool);
+    // BASE CLASS
+    AbstractTool::operator=(aTool);
 
-	// MEMEBER VARIABLES
-	// BASIC INPUT
-	_statesFileName = aTool._statesFileName;
-	_useSpecifiedDt = aTool._useSpecifiedDt;
+    // MEMEBER VARIABLES
+    // BASIC INPUT
+    _statesFileName = aTool._statesFileName;
+    _useSpecifiedDt = aTool._useSpecifiedDt;
 
-	return(*this);
+    return(*this);
 }
 
 //=============================================================================
@@ -234,22 +234,22 @@ operator=(const ForwardTool &aTool)
  */
 bool ForwardTool::run()
 {
-	cout<<"Running tool "<<getName()<<"."<<endl;
-	// CHECK FOR A MODEL
-	if(_model==NULL) {
-		string msg = "ERROR- A model has not been set.";
-		cout<<endl<<msg<<endl;
-		throw(Exception(msg,__FILE__,__LINE__));
-	}
+    cout<<"Running tool "<<getName()<<"."<<endl;
+    // CHECK FOR A MODEL
+    if(_model==NULL) {
+        string msg = "ERROR- A model has not been set.";
+        cout<<endl<<msg<<endl;
+        throw(Exception(msg,__FILE__,__LINE__));
+    }
 
-	// SET OUTPUT PRECISION
-	IO::SetPrecision(_outputPrecision);
+    // SET OUTPUT PRECISION
+    IO::SetPrecision(_outputPrecision);
 
-	// Do the maneuver to change then restore working directory 
-	// so that the parsing code behaves properly if called from a different directory.
-	string saveWorkingDirectory = IO::getCwd();
-	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
-	IO::chDir(directoryOfSetupFile);
+    // Do the maneuver to change then restore working directory 
+    // so that the parsing code behaves properly if called from a different directory.
+    string saveWorkingDirectory = IO::getCwd();
+    string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
+    IO::chDir(directoryOfSetupFile);
 
     bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
 
@@ -258,84 +258,84 @@ bool ForwardTool::run()
     SimTK::State& s = _model->initSystem();
     _model->getMultibodySystem().realize(s, Stage::Position );
 
-	loadStatesStorage(_statesFileName, _yStore);
+    loadStatesStorage(_statesFileName, _yStore);
 
     // set the desired states for controllers  
     _model->updControllerSet().setDesiredStates( _yStore );
 
-	// INITIAL AND FINAL TIMES AND STATES INDEX
-	int startIndexForYStore = determineInitialTimeFromStatesStorage(_ti);
+    // INITIAL AND FINAL TIMES AND STATES INDEX
+    int startIndexForYStore = determineInitialTimeFromStatesStorage(_ti);
 
-	// SETUP SIMULATION
-	// Manager (now allocated on the heap so that getManager doesn't return stale pointer on stack
+    // SETUP SIMULATION
+    // Manager (now allocated on the heap so that getManager doesn't return stale pointer on stack
     RungeKuttaMersonIntegrator integrator(_model->getMultibodySystem());
     Manager manager(*_model, integrator);
     setManager( manager );
-	manager.setSessionName(getName());
-	manager.setInitialTime(_ti);
-	manager.setFinalTime(_tf);
+    manager.setSessionName(getName());
+    manager.setInitialTime(_ti);
+    manager.setFinalTime(_tf);
     if (!_printResultFiles){
         manager.setWriteToStorage(false);
     }
-	// Initialize integrator
-	integrator.setInternalStepLimit(_maxSteps);
-	integrator.setMaximumStepSize(_maxDT);
-	integrator.setAccuracy(_errorTolerance);
+    // Initialize integrator
+    integrator.setInternalStepLimit(_maxSteps);
+    integrator.setMaximumStepSize(_maxDT);
+    integrator.setAccuracy(_errorTolerance);
 
 
-	// integ->setFineTolerance(_fineTolerance); No equivalent in SimTK
-	if(_useSpecifiedDt) InitializeSpecifiedTimeStepping(_yStore, manager);
+    // integ->setFineTolerance(_fineTolerance); No equivalent in SimTK
+    if(_useSpecifiedDt) InitializeSpecifiedTimeStepping(_yStore, manager);
 
-	// SET INITIAL AND FINAL TIME
-	manager.setInitialTime(_ti);
-	manager.setFinalTime(_tf);
+    // SET INITIAL AND FINAL TIME
+    manager.setInitialTime(_ti);
+    manager.setFinalTime(_tf);
 
     // get values for state variables in rawData then assign by name to model
     int numStateVariables = _model->getNumStateVariables();
     Array<double> rawData = Array<double>(0.0, numStateVariables);
-	// SET THE INITIAL STATES
-	if(_yStore!=NULL) _yStore->getData(startIndexForYStore,numStateVariables,&rawData[0]);
-	if(startIndexForYStore >= 0) {
-		_yStore->getData(startIndexForYStore,numStateVariables,&rawData[0]);
-	}
+    // SET THE INITIAL STATES
+    if(_yStore!=NULL) _yStore->getData(startIndexForYStore,numStateVariables,&rawData[0]);
+    if(startIndexForYStore >= 0) {
+        _yStore->getData(startIndexForYStore,numStateVariables,&rawData[0]);
+    }
     if (_yStore!=NULL || startIndexForYStore >= 0){
         Array<std::string> stateNames = _model->getStateVariableNames();
         for (int i=0; i<numStateVariables; i++)
             _model->setStateVariable(s, stateNames[i], rawData[i]);
     }
-	// SOLVE FOR EQUILIBRIUM FOR AUXILIARY STATES (E.G., MUSCLE FIBER LENGTHS)
-	if(_solveForEquilibriumForAuxiliaryStates) {
-		_model->equilibrateMuscles(s);  
-	}
+    // SOLVE FOR EQUILIBRIUM FOR AUXILIARY STATES (E.G., MUSCLE FIBER LENGTHS)
+    if(_solveForEquilibriumForAuxiliaryStates) {
+        _model->equilibrateMuscles(s);  
+    }
 
 
-	bool completed = true;
+    bool completed = true;
 
-	try {
-		// INTEGRATE
+    try {
+        // INTEGRATE
         _model->printDetailedInfo(s, std::cout );
 
-		cout<<"\n\nIntegrating from "<<_ti<<" to "<<_tf<<endl;
+        cout<<"\n\nIntegrating from "<<_ti<<" to "<<_tf<<endl;
         manager.integrate(s);
-	} catch(const std::exception& x) {
+    } catch(const std::exception& x) {
         cout << "ForwardTool::run() caught exception \n";
         cout << x.what() << endl;
-		completed = false;
-		IO::chDir(saveWorkingDirectory);
-	}
-	catch (...) { // e.g. may get InterruptedException
+        completed = false;
+        IO::chDir(saveWorkingDirectory);
+    }
+    catch (...) { // e.g. may get InterruptedException
         printf("ForwardTool::run() caught exception \n"  );
-		completed = false;
-		IO::chDir(saveWorkingDirectory);
-	}
-	// PRINT RESULTS
-	string fileName;
-	if(_printResultFiles) printResults();
+        completed = false;
+        IO::chDir(saveWorkingDirectory);
+    }
+    // PRINT RESULTS
+    string fileName;
+    if(_printResultFiles) printResults();
 
-	IO::chDir(saveWorkingDirectory);
+    IO::chDir(saveWorkingDirectory);
 
-	removeAnalysisSetFromModel();
-	return completed;
+    removeAnalysisSetFromModel();
+    return completed;
 }
 //=============================================================================
 // PRINT RESULTS. 
@@ -344,13 +344,13 @@ bool ForwardTool::run()
 //=============================================================================
 void ForwardTool::printResults() 
 {
-	// Do the maneuver to change then restore working directory 
-	// so that the parsing code behaves properly if called from a different directory.
-	string saveWorkingDirectory = IO::getCwd();
-	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
-	IO::chDir(directoryOfSetupFile);
+    // Do the maneuver to change then restore working directory 
+    // so that the parsing code behaves properly if called from a different directory.
+    string saveWorkingDirectory = IO::getCwd();
+    string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
+    IO::chDir(directoryOfSetupFile);
 
-	AbstractTool::printResults(getName(),getResultsDir()); // this will create results directory if necessary
+    AbstractTool::printResults(getName(),getResultsDir()); // this will create results directory if necessary
     if(_model) {
         _model->printControlStorage(getResultsDir() + "/" + getName() + "_controls.sto");
         getManager().getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
@@ -362,8 +362,8 @@ void ForwardTool::printResults()
     }
 
 
-	
-	IO::chDir(saveWorkingDirectory);
+    
+    IO::chDir(saveWorkingDirectory);
 }
 
 
@@ -373,41 +373,41 @@ void ForwardTool::printResults()
 //=============================================================================
 int ForwardTool::determineInitialTimeFromStatesStorage(double &rTI)
 {
-	int index = -1;
-	double ti;
-	if(_yStore!=NULL) {
-		index = _yStore->findIndex(rTI);
-		if(index<0) {
-			rTI = _yStore->getFirstTime();
-			cout<<"\n\nWARN- The initial time set for the investigation precedes the first time\n";
-			cout<<"in the initial states file.  Setting the investigation to run at the first time\n";
-			cout<<"in the initial states file (ti = "<<rTI<<").\n\n";
-			index = 0;
-		} else {
-			_yStore->getTime(index,ti);
-			if(rTI!=ti) {
-				rTI = ti;
-				cout<<"\n"<<getName()<<": The initial time for the investigation has been set to "<<rTI<<endl;
-				cout<<"to agree exactly with the time stamp of the closest initial states in file ";
-				cout<<_statesFileName<<".\n\n";
-			}
-		}
-	}
-	return(index);
+    int index = -1;
+    double ti;
+    if(_yStore!=NULL) {
+        index = _yStore->findIndex(rTI);
+        if(index<0) {
+            rTI = _yStore->getFirstTime();
+            cout<<"\n\nWARN- The initial time set for the investigation precedes the first time\n";
+            cout<<"in the initial states file.  Setting the investigation to run at the first time\n";
+            cout<<"in the initial states file (ti = "<<rTI<<").\n\n";
+            index = 0;
+        } else {
+            _yStore->getTime(index,ti);
+            if(rTI!=ti) {
+                rTI = ti;
+                cout<<"\n"<<getName()<<": The initial time for the investigation has been set to "<<rTI<<endl;
+                cout<<"to agree exactly with the time stamp of the closest initial states in file ";
+                cout<<_statesFileName<<".\n\n";
+            }
+        }
+    }
+    return(index);
 }
 
 void ForwardTool::loadStatesStorage (std::string& statesFileName, Storage*& rYStore) const {
-	// Initial states
-	rYStore = NULL;
-	if(_statesFileName!="") {
-		cout<<"\nLoading states from file "<<_statesFileName<<"."<<endl;
-		Storage temp(statesFileName);
-		rYStore = new Storage();
-		_model->formStateStorage(temp, *rYStore);
+    // Initial states
+    rYStore = NULL;
+    if(_statesFileName!="") {
+        cout<<"\nLoading states from file "<<_statesFileName<<"."<<endl;
+        Storage temp(statesFileName);
+        rYStore = new Storage();
+        _model->formStateStorage(temp, *rYStore);
 
-		cout<<"Found "<<rYStore->getSize()<<" state vectors with time stamps ranging"<<endl;
-		cout<<"from "<<rYStore->getFirstTime()<<" to "<<rYStore->getLastTime()<<"."<<endl;
-	}
+        cout<<"Found "<<rYStore->getSize()<<" state vectors with time stamps ranging"<<endl;
+        cout<<"from "<<rYStore->getFirstTime()<<" to "<<rYStore->getLastTime()<<"."<<endl;
+    }
 }
 
 //_____________________________________________________________________________
@@ -417,22 +417,22 @@ void ForwardTool::loadStatesStorage (std::string& statesFileName, Storage*& rYSt
  */
 void ForwardTool::InitializeSpecifiedTimeStepping(Storage *aYStore, Manager& aManager)
 {
-	// USE INITIAL STATES FILE FOR TIME STEPS
+    // USE INITIAL STATES FILE FOR TIME STEPS
 
-	if(aYStore) {
-		std::cout << "\nUsing dt specified from storage "<< aYStore->getName()<< std::endl;
-		Array<double> tArray(0.0,aYStore->getSize());
-		Array<double> dtArray(0.0,aYStore->getSize());
-		aYStore->getTimeColumn(tArray);
-		for(int i=0;i<aYStore->getSize()-1;i++) dtArray[i]=tArray[i+1]-tArray[i];
-		aManager.setUseSpecifiedDT(true);
-		aManager.setDTArray(aYStore->getSize()-1,&dtArray[0],tArray[0]);
-		//std::cout << "ForwardTool.InitializeSpecifiedTimeStepping: " << tArray << endl;
+    if(aYStore) {
+        std::cout << "\nUsing dt specified from storage "<< aYStore->getName()<< std::endl;
+        Array<double> tArray(0.0,aYStore->getSize());
+        Array<double> dtArray(0.0,aYStore->getSize());
+        aYStore->getTimeColumn(tArray);
+        for(int i=0;i<aYStore->getSize()-1;i++) dtArray[i]=tArray[i+1]-tArray[i];
+        aManager.setUseSpecifiedDT(true);
+        aManager.setDTArray(aYStore->getSize()-1,&dtArray[0],tArray[0]);
+        //std::cout << "ForwardTool.InitializeSpecifiedTimeStepping: " << tArray << endl;
 
-	// NO AVAILABLE STATES FILE
-	} else {
-		std::cout << "WARNING: Ignoring 'use_specified_dt' property because no initial states file is specified" << std::endl;
-	}
+    // NO AVAILABLE STATES FILE
+    } else {
+        std::cout << "WARNING: Ignoring 'use_specified_dt' property because no initial states file is specified" << std::endl;
+    }
 }
 
 
@@ -451,10 +451,10 @@ void ForwardTool::InitializeSpecifiedTimeStepping(Storage *aYStore, Manager& aMa
 double ForwardTool::
 Step(double t, double t0, double t1)
 {
-	double tn=(t-t0)/(t1-t0);
-	if(tn<0) return 0;
-	else if(tn>1) return 1;
-	else return pow(tn,2)*(3-2*tn);
+    double tn=(t-t0)/(t1-t0);
+    if(tn<0) return 0;
+    else if(tn>1) return 1;
+    else return pow(tn,2)*(3-2*tn);
 }
 //=============================================================================
 // EXPONENTIALS
@@ -470,7 +470,7 @@ Step(double t, double t0, double t1)
 double ForwardTool::
 SigmaUp(double tau,double to,double t)
 {
-	return(  1.0 / (1.0 + exp(-(t-to)/tau)) );
+    return(  1.0 / (1.0 + exp(-(t-to)/tau)) );
 }
 //_____________________________________________________________________________
 /**
@@ -510,43 +510,43 @@ const Manager& ForwardTool::getManager() const {
  */
 /*virtual*/ void ForwardTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	int documentVersion = versionNumber;
-	bool neededSprings=false;
-	std::string savedCwd;
-	if(getDocument()) {
-		savedCwd = IO::getCwd();
-		IO::chDir(IO::getParentDirectory(getDocument()->getFileName()));
-	}	
-	if ( documentVersion < XMLDocument::getLatestVersion()){
-			// Now check if we need to create a correction controller to replace springs
-		if (documentVersion<10904){
-			std::string propNames[]={
-				"body1_linear_corrective_spring_active",
-				"body1_torsional_corrective_spring_active",
-				"body2_linear_corrective_spring_active",
-				"body2_torsional_corrective_spring_active"
-			};
-			int i=0;
-			while (!neededSprings && i<4){
-				neededSprings = (aNode.element_begin(propNames[i++])!=aNode.element_end());
-			}
-			AbstractTool::updateFromXMLNode(aNode, versionNumber);
-			if (neededSprings){
-				CorrectionController* cc = new CorrectionController();
-				cc->setKp(16.0);
-				cc->setKv(8.0);
-				_controllerSet.adoptAndAppend(cc);
-				_parsingLog+= "This setup file contains corrective springs.\n";
-				_parsingLog+= "Corrective springs are deprecated in OpenSim 2.0\n";
-				_parsingLog+= "Instead, a Corrective Controller has been created.\n";
+    int documentVersion = versionNumber;
+    bool neededSprings=false;
+    std::string savedCwd;
+    if(getDocument()) {
+        savedCwd = IO::getCwd();
+        IO::chDir(IO::getParentDirectory(getDocument()->getFileName()));
+    }	
+    if ( documentVersion < XMLDocument::getLatestVersion()){
+            // Now check if we need to create a correction controller to replace springs
+        if (documentVersion<10904){
+            std::string propNames[]={
+                "body1_linear_corrective_spring_active",
+                "body1_torsional_corrective_spring_active",
+                "body2_linear_corrective_spring_active",
+                "body2_torsional_corrective_spring_active"
+            };
+            int i=0;
+            while (!neededSprings && i<4){
+                neededSprings = (aNode.element_begin(propNames[i++])!=aNode.element_end());
+            }
+            AbstractTool::updateFromXMLNode(aNode, versionNumber);
+            if (neededSprings){
+                CorrectionController* cc = new CorrectionController();
+                cc->setKp(16.0);
+                cc->setKv(8.0);
+                _controllerSet.adoptAndAppend(cc);
+                _parsingLog+= "This setup file contains corrective springs.\n";
+                _parsingLog+= "Corrective springs are deprecated in OpenSim 2.0\n";
+                _parsingLog+= "Instead, a Corrective Controller has been created.\n";
 
-			}
-		}
-		else
-			AbstractTool::updateFromXMLNode(aNode, versionNumber);
-	}
-	else
-		AbstractTool::updateFromXMLNode(aNode, versionNumber);
-	if(getDocument()) IO::chDir(savedCwd);
-	//Object::updateFromXMLNode(aNode, versionNumber);
+            }
+        }
+        else
+            AbstractTool::updateFromXMLNode(aNode, versionNumber);
+    }
+    else
+        AbstractTool::updateFromXMLNode(aNode, versionNumber);
+    if(getDocument()) IO::chDir(savedCwd);
+    //Object::updateFromXMLNode(aNode, versionNumber);
 }

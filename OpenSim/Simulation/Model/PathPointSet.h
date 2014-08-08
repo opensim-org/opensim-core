@@ -43,17 +43,17 @@ class OSIMSIMULATION_API PathPointSet :	public Set<PathPoint> {
 OpenSim_DECLARE_CONCRETE_OBJECT(PathPointSet, Set<PathPoint>);
 
 private:
-	void setNull();
+    void setNull();
 public:
-	PathPointSet();
-	PathPointSet(const PathPointSet& aPathPointSet);
-	~PathPointSet(void);
+    PathPointSet();
+    PathPointSet(const PathPointSet& aPathPointSet);
+    ~PathPointSet(void);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	PathPointSet& operator=(const PathPointSet &aPathPointSet);
+    PathPointSet& operator=(const PathPointSet &aPathPointSet);
 #endif
 
 //=============================================================================

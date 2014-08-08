@@ -93,7 +93,7 @@ void SimbodySimmGencoord::write(ofstream& aStream)
    aStream << "range " << _coordinate->getRangeMin() * conversion << " "
       << _coordinate->getRangeMax() * conversion << endl;
    aStream << "default_value " << _coordinate->getDefaultValue() * conversion << endl;
-	aStream << "clamped " << (_coordinate->getDefaultClamped() ? "yes" : "no") << endl;
+    aStream << "clamped " << (_coordinate->getDefaultClamped() ? "yes" : "no") << endl;
 // JACKM NEEDS STATE	aStream << "locked " << (_coordinate->getLocked() ? "yes" : "no") << endl;
    aStream << "endgencoord" << endl << endl;
 }
