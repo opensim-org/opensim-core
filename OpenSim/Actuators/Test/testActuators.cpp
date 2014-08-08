@@ -615,9 +615,8 @@ void testBodyActuator()
 	//torque as applied directly to the multibody system (above)
 
 	// Create and add the torque actuator to the model
-	BodyActuator* actuator = new BodyActuator();
+	BodyActuator* actuator = new BodyActuator("BodyAct");
 	actuator->updConnector<OpenSim::Body>("body").set_connected_to_name("block");
-	actuator->setName("BodyAct");
 	model->addForce(actuator);
 
 	model->print("TestBodyActuatorModel.osim");
