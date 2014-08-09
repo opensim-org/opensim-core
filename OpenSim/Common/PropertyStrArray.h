@@ -55,57 +55,57 @@ class OSIMCOMMON_API PropertyStrArray : public Property_Deprecated
 // DATA
 //=============================================================================
 private:
-	/** Array of integers. */
-	Array<std::string> _array;
+    /** Array of integers. */
+    Array<std::string> _array;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	PropertyStrArray();
-	PropertyStrArray(const std::string &aName,
-		const Array<std::string> &aArray);
-	PropertyStrArray(const std::string &aName,
-		int aSize,const std::string aArray[]);
-	PropertyStrArray(const PropertyStrArray &aProperty);
+    PropertyStrArray();
+    PropertyStrArray(const std::string &aName,
+        const Array<std::string> &aArray);
+    PropertyStrArray(const std::string &aName,
+        int aSize,const std::string aArray[]);
+    PropertyStrArray(const PropertyStrArray &aProperty);
 
     bool isArrayProperty() const override {return true;}
 
-	PropertyStrArray* clone() const override;
+    PropertyStrArray* clone() const override;
 
     int getNumValues() const override {return getArraySize();}
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
-	PropertyStrArray& operator=(const PropertyStrArray &aProperty);
+    PropertyStrArray& operator=(const PropertyStrArray &aProperty);
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 public:
-	// TYPE
-	virtual std::string getTypeName() const override;
-	// VALUE
-	virtual void setValue(const Array<std::string> &aArray);
-	virtual void setValue(int aSize,const std::string aArray[]);
-	virtual Array<std::string>& getValueStrArray();
-	virtual const Array<std::string>& getValueStrArray() const;
+    // TYPE
+    virtual std::string getTypeName() const override;
+    // VALUE
+    virtual void setValue(const Array<std::string> &aArray);
+    virtual void setValue(int aSize,const std::string aArray[]);
+    virtual Array<std::string>& getValueStrArray();
+    virtual const Array<std::string>& getValueStrArray() const;
 
-	// SIZE
-	virtual int getArraySize() const { return _array.getSize(); }
-	// VALUE as String
-	virtual std::string toString() const;
+    // SIZE
+    virtual int getArraySize() const { return _array.getSize(); }
+    // VALUE as String
+    virtual std::string toString() const;
     virtual void clearValues() override {
         _array.setSize(0);
     }
 
 //=============================================================================
-};	// END of class PropertyStrArray
+};  // END of class PropertyStrArray
 
 }; //namespace
 //=============================================================================

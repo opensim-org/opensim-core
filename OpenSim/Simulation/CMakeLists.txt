@@ -41,7 +41,7 @@ FOREACH(dir ${SIMULATION_SUBDIRS})
 ENDFOREACH()
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-		    ${OpenSim_SOURCE_DIR}/Vendors)
+            ${OpenSim_SOURCE_DIR}/Vendors)
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
@@ -50,14 +50,14 @@ ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 IF(WIN32)
 TARGET_LINK_LIBRARIES(osim${KIT} 
                debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
-			   debug osimLepton${CMAKE_DEBUG_POSTFIX} optimized osimLepton
-		       ${SIMTK_ALL_LIBS})
+               debug osimLepton${CMAKE_DEBUG_POSTFIX} optimized osimLepton
+               ${SIMTK_ALL_LIBS})
 ELSE(WIN32)
 TARGET_LINK_LIBRARIES(osim${KIT} 
                debug osimCommon${CMAKE_DEBUG_POSTFIX}     optimized osimCommon
-			   debug osimLepton${CMAKE_DEBUG_POSTFIX}	  optimized osimLepton
-		       ${SIMTK_ALL_LIBS}
-		dl)
+               debug osimLepton${CMAKE_DEBUG_POSTFIX}     optimized osimLepton
+               ${SIMTK_ALL_LIBS}
+        dl)
 ENDIF(WIN32)
 
 
@@ -83,12 +83,12 @@ ELSE()
 ENDIF()
 
 FOREACH(dir ${SIMULATION_SUBDIRS})
-   FILE(GLOB HEADERS ${dir}/*.h)	# returns full pathnames
+   FILE(GLOB HEADERS ${dir}/*.h)    # returns full pathnames
    INSTALL(FILES ${HEADERS}
         DESTINATION sdk/include/OpenSim/${KIT}/${dir})
 ENDFOREACH(dir)
 
 IF(BUILD_TESTING)
     # SimbodyEngine has a Test subdirectory also
-	SUBDIRS(SimbodyEngine Test)
+    SUBDIRS(SimbodyEngine Test)
 ENDIF()

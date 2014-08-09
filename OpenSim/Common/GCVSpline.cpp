@@ -66,15 +66,15 @@ GCVSpline::~GCVSpline()
  */
 GCVSpline::
 GCVSpline() :
-	_halfOrder(_propHalfOrder.getValueInt()),
-	_errorVariance(_propErrorVariance.getValueDbl()),
-	_x(_propX.getValueDblArray()),
-	_weights(_propWeights.getValueDblArray()),
-	_coefficients(_propCoefficients.getValueDblArray()),
-	_y(_propY.getValueDblArray()),
-	_workDeriv(1)
+    _halfOrder(_propHalfOrder.getValueInt()),
+    _errorVariance(_propErrorVariance.getValueDbl()),
+    _x(_propX.getValueDblArray()),
+    _weights(_propWeights.getValueDblArray()),
+    _coefficients(_propCoefficients.getValueDblArray()),
+    _y(_propY.getValueDblArray()),
+    _workDeriv(1)
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -96,56 +96,56 @@ GCVSpline() :
  */
 GCVSpline::
 GCVSpline(int aDegree,int aN,const double *aX,const double *aF,
-	const string &aName,double aErrorVariance) :
-	_halfOrder(_propHalfOrder.getValueInt()),
-	_errorVariance(_propErrorVariance.getValueDbl()),
-	_x(_propX.getValueDblArray()),
-	_weights(_propWeights.getValueDblArray()),
-	_coefficients(_propCoefficients.getValueDblArray()),
-	_y(_propY.getValueDblArray()),
+    const string &aName,double aErrorVariance) :
+    _halfOrder(_propHalfOrder.getValueInt()),
+    _errorVariance(_propErrorVariance.getValueDbl()),
+    _x(_propX.getValueDblArray()),
+    _weights(_propWeights.getValueDblArray()),
+    _coefficients(_propCoefficients.getValueDblArray()),
+    _y(_propY.getValueDblArray()),
     _workDeriv(1)
 
 {
-	setNull();
+    setNull();
 
-	// OBJECT TYPE AND NAME
-	setName(aName);
+    // OBJECT TYPE AND NAME
+    setName(aName);
 
-	// DEGREE
-	setDegree(aDegree);
+    // DEGREE
+    setDegree(aDegree);
 
-	// NUMBER OF DATA POINTS
-	if(aN < getOrder()) {
-		printf("GCVSpline: ERROR- there must be %d or more data points.\n",
-			getOrder());
-		return;
-	}
+    // NUMBER OF DATA POINTS
+    if(aN < getOrder()) {
+        printf("GCVSpline: ERROR- there must be %d or more data points.\n",
+            getOrder());
+        return;
+    }
 
-	// CHECK DATA
-	if((aX==NULL)||(aF==NULL)) {
-		printf("GCVSpline: ERROR- NULL arrays for data points encountered.\n");
-		return;
-	}
+    // CHECK DATA
+    if((aX==NULL)||(aF==NULL)) {
+        printf("GCVSpline: ERROR- NULL arrays for data points encountered.\n");
+        return;
+    }
 
-	// INDEPENDENT VALUES (KNOT SEQUENCE)
-	_x.setSize(0);
-	_x.append(aN,aX);
+    // INDEPENDENT VALUES (KNOT SEQUENCE)
+    _x.setSize(0);
+    _x.append(aN,aX);
 
-	// DEPENDENT VALUES
-	_y.setSize(0);
-	_y.append(aN,aF);
+    // DEPENDENT VALUES
+    _y.setSize(0);
+    _y.append(aN,aF);
 
-	// WEIGHTS
-	int i;
-	_weights.setSize(_x.getSize()); 
-	int sz = _weights.getSize();
-	for(i=0;i<sz;i++) _weights[i] = 1.0;
+    // WEIGHTS
+    int i;
+    _weights.setSize(_x.getSize()); 
+    int sz = _weights.getSize();
+    for(i=0;i<sz;i++) _weights[i] = 1.0;
 
-	// ALLOCATE COEFFICIENTS
-	_coefficients.setSize(_x.getSize());
+    // ALLOCATE COEFFICIENTS
+    _coefficients.setSize(_x.getSize());
 
-	// FIT THE SPLINE
-	_errorVariance = aErrorVariance;
+    // FIT THE SPLINE
+    _errorVariance = aErrorVariance;
 }
 //_____________________________________________________________________________
 /**
@@ -156,17 +156,17 @@ GCVSpline(int aDegree,int aN,const double *aX,const double *aF,
  */
 GCVSpline::
 GCVSpline(const GCVSpline &aSpline) :
-	Function(aSpline),
-	_halfOrder(_propHalfOrder.getValueInt()),
-	_errorVariance(_propErrorVariance.getValueDbl()),
-	_x(_propX.getValueDblArray()),
-	_weights(_propWeights.getValueDblArray()),
-	_coefficients(_propCoefficients.getValueDblArray()),
-	_y(_propY.getValueDblArray()),
+    Function(aSpline),
+    _halfOrder(_propHalfOrder.getValueInt()),
+    _errorVariance(_propErrorVariance.getValueDbl()),
+    _x(_propX.getValueDblArray()),
+    _weights(_propWeights.getValueDblArray()),
+    _coefficients(_propCoefficients.getValueDblArray()),
+    _y(_propY.getValueDblArray()),
     _workDeriv(1)
 
 {
-	setEqual(aSpline);
+    setEqual(aSpline);
 }
 
 
@@ -180,7 +180,7 @@ GCVSpline(const GCVSpline &aSpline) :
 void GCVSpline::
 setNull()
 {
-	setupProperties();
+    setupProperties();
 }
 //_____________________________________________________________________________
 /**
@@ -191,39 +191,39 @@ setNull()
 void GCVSpline::
 setupProperties()
 {
-	// HALF ORDER
-	_propHalfOrder.setName("half_order");
-	_propHalfOrder.setValue(0);
-	_propertySet.append( &_propHalfOrder );
+    // HALF ORDER
+    _propHalfOrder.setName("half_order");
+    _propHalfOrder.setValue(0);
+    _propertySet.append( &_propHalfOrder );
 
-	// ERROR VARIANCE
-	_propErrorVariance.setName("error_variance");
-	_propErrorVariance.setValue(0.0);
-	_propertySet.append( &_propErrorVariance );
+    // ERROR VARIANCE
+    _propErrorVariance.setName("error_variance");
+    _propErrorVariance.setValue(0.0);
+    _propertySet.append( &_propErrorVariance );
 
-	// X- INDEPENDENT VARIABLES
-	_propX.setName("x");
-	Array<double> x(0.0);
-	_propX.setValue(x);
-	_propertySet.append( &_propX );
+    // X- INDEPENDENT VARIABLES
+    _propX.setName("x");
+    Array<double> x(0.0);
+    _propX.setValue(x);
+    _propertySet.append( &_propX );
 
-	// Y- DEPENDENT VARIABLES
-	_propY.setName("y");
-	Array<double> y(0.0);
-	_propY.setValue(y);
-	_propertySet.append( &_propY );
+    // Y- DEPENDENT VARIABLES
+    _propY.setName("y");
+    Array<double> y(0.0);
+    _propY.setValue(y);
+    _propertySet.append( &_propY );
 
-	// WEIGHTS
-	_propWeights.setName("weights");
-	Array<double> weights(1.0);
-	_propWeights.setValue(weights);
-	_propertySet.append( &_propWeights );
+    // WEIGHTS
+    _propWeights.setName("weights");
+    Array<double> weights(1.0);
+    _propWeights.setValue(weights);
+    _propertySet.append( &_propWeights );
 
-	// COEFFICIENTS
-	_propCoefficients.setName("coefficients");
-	Array<double> coefs(0.0);
-	_propCoefficients.setValue(coefs);
-	_propertySet.append( &_propCoefficients );
+    // COEFFICIENTS
+    _propCoefficients.setName("coefficients");
+    Array<double> coefs(0.0);
+    _propCoefficients.setValue(coefs);
+    _propertySet.append( &_propCoefficients );
 }
 //_____________________________________________________________________________
 /**
@@ -235,21 +235,21 @@ setupProperties()
 void GCVSpline::
 setEqual(const GCVSpline &aSpline)
 {
-	setNull();
+    setNull();
 
-	// VALUES
-	_halfOrder = aSpline._halfOrder;
-	_errorVariance = aSpline._errorVariance;
+    // VALUES
+    _halfOrder = aSpline._halfOrder;
+    _errorVariance = aSpline._errorVariance;
 
-	// CHECK ARRAY SIZES
-	if(aSpline.getSize()<=0) return;
-	if(_halfOrder<=0) return;
+    // CHECK ARRAY SIZES
+    if(aSpline.getSize()<=0) return;
+    if(_halfOrder<=0) return;
 
-	// ALLOCATE ARRAYS
-	_x = aSpline._x;
-	_y = aSpline._y;
-	_weights = aSpline._weights;
-	_coefficients = aSpline._coefficients;
+    // ALLOCATE ARRAYS
+    _x = aSpline._x;
+    _y = aSpline._y;
+    _weights = aSpline._weights;
+    _coefficients = aSpline._coefficients;
 }
 
 //-----------------------------------------------------------------------------
@@ -261,21 +261,21 @@ setEqual(const GCVSpline &aSpline)
  */
 void GCVSpline::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	// Base class
-	Function::updateFromXMLNode(aNode, versionNumber);
+    // Base class
+    Function::updateFromXMLNode(aNode, versionNumber);
 
-	// Weights may not have been specified in the XML file.
-	int wSize = _weights.getSize();
-	if (wSize < _x.getSize()) {
-		_weights.setSize(_x.getSize()); 
-		for (int i=wSize; i<_x.getSize(); i++)
-			_weights[i] = 1.0;
-	}
+    // Weights may not have been specified in the XML file.
+    int wSize = _weights.getSize();
+    if (wSize < _x.getSize()) {
+        _weights.setSize(_x.getSize()); 
+        for (int i=wSize; i<_x.getSize(); i++)
+            _weights[i] = 1.0;
+    }
 
-	// Coefficients may not have been specified in the XML file.
-	if (_coefficients.getSize() < _x.getSize())
-		_coefficients.setSize(_x.getSize());
-}	
+    // Coefficients may not have been specified in the XML file.
+    if (_coefficients.getSize() < _x.getSize())
+        _coefficients.setSize(_x.getSize());
+}   
 
 //_____________________________________________________________________________
 /**
@@ -288,62 +288,62 @@ void GCVSpline::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 void GCVSpline::
 init(Function* aFunction)
 {
-	if (aFunction == NULL)
-		return;
+    if (aFunction == NULL)
+        return;
 
-	int degree = 5;
-	int order = degree + 1;
-	GCVSpline* gcv = dynamic_cast<GCVSpline*>(aFunction);
-	if (gcv != NULL) {
-		setEqual(*gcv);
-	} else {
-		XYFunctionInterface xyFunc(aFunction);
-		if (xyFunc.getNumberOfPoints() == 0) {
-			// A GCVSpline must have at least getOrder() data points.
-			// If aFunction is a Constant, use its Y value for all data points.
-			// If it is not, make up the data points.
-			double* x = new double[order];
-			double* y = new double[order];
-			for (int i=0; i<order; i++)
-				x[i] = i;
-			Constant* cons = dynamic_cast<Constant*>(aFunction);
-			if (cons != NULL) {
-				for (int i=0; i<order; i++)
-					y[i] = cons->calcValue(SimTK::Vector(0));
-			} else {
-				for (int i=0; i<order; i++)
-					y[i] = 1.0;
-			}
-			*this = GCVSpline(degree, order, x, y);
-			delete x;
-			delete y;
-		} else if (xyFunc.getNumberOfPoints() < order) {
-			// A GCVSpline must have at least getOrder() data points.
-			// Use as many data points as aFunction has, and then fill
-			// in the rest by copying the last Y value, and incrementing
-			// the X value by the step between the last two real data points.
-			double* x = new double[order];
-			double* y = new double[order];
-			double step = 1.0;
-			if (xyFunc.getNumberOfPoints() >= 2)
-				step = xyFunc.getXValues()[xyFunc.getNumberOfPoints()-1] -
-				xyFunc.getXValues()[xyFunc.getNumberOfPoints()-2];
-			for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
-				x[i] = xyFunc.getXValues()[i];
-				y[i] = xyFunc.getYValues()[i];
-			}
-			for (int i=xyFunc.getNumberOfPoints(); i<order; i++) {
-				x[i] = x[i-1] + step;
-				y[i] = y[i-1];
-			}
-			*this = GCVSpline(degree, order, x, y);
-			delete x;
-			delete y;
-		} else {
-			*this = GCVSpline(degree, xyFunc.getNumberOfPoints(),
-				xyFunc.getXValues(), xyFunc.getYValues());
-		}
-	}
+    int degree = 5;
+    int order = degree + 1;
+    GCVSpline* gcv = dynamic_cast<GCVSpline*>(aFunction);
+    if (gcv != NULL) {
+        setEqual(*gcv);
+    } else {
+        XYFunctionInterface xyFunc(aFunction);
+        if (xyFunc.getNumberOfPoints() == 0) {
+            // A GCVSpline must have at least getOrder() data points.
+            // If aFunction is a Constant, use its Y value for all data points.
+            // If it is not, make up the data points.
+            double* x = new double[order];
+            double* y = new double[order];
+            for (int i=0; i<order; i++)
+                x[i] = i;
+            Constant* cons = dynamic_cast<Constant*>(aFunction);
+            if (cons != NULL) {
+                for (int i=0; i<order; i++)
+                    y[i] = cons->calcValue(SimTK::Vector(0));
+            } else {
+                for (int i=0; i<order; i++)
+                    y[i] = 1.0;
+            }
+            *this = GCVSpline(degree, order, x, y);
+            delete x;
+            delete y;
+        } else if (xyFunc.getNumberOfPoints() < order) {
+            // A GCVSpline must have at least getOrder() data points.
+            // Use as many data points as aFunction has, and then fill
+            // in the rest by copying the last Y value, and incrementing
+            // the X value by the step between the last two real data points.
+            double* x = new double[order];
+            double* y = new double[order];
+            double step = 1.0;
+            if (xyFunc.getNumberOfPoints() >= 2)
+                step = xyFunc.getXValues()[xyFunc.getNumberOfPoints()-1] -
+                xyFunc.getXValues()[xyFunc.getNumberOfPoints()-2];
+            for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
+                x[i] = xyFunc.getXValues()[i];
+                y[i] = xyFunc.getYValues()[i];
+            }
+            for (int i=xyFunc.getNumberOfPoints(); i<order; i++) {
+                x[i] = x[i-1] + step;
+                y[i] = y[i-1];
+            }
+            *this = GCVSpline(degree, order, x, y);
+            delete x;
+            delete y;
+        } else {
+            *this = GCVSpline(degree, xyFunc.getNumberOfPoints(),
+                xyFunc.getXValues(), xyFunc.getYValues());
+        }
+    }
 }
 
 //=============================================================================
@@ -359,13 +359,13 @@ init(Function* aFunction)
 GCVSpline& GCVSpline::
 operator=(const GCVSpline &aSpline)
 {
-	// BASE CLASS
-	Function::operator=(aSpline);
+    // BASE CLASS
+    Function::operator=(aSpline);
 
-	// DATA
-	setEqual(aSpline);
+    // DATA
+    setEqual(aSpline);
 
-	return(*this);
+    return(*this);
 }
 
 
@@ -385,23 +385,23 @@ operator=(const GCVSpline &aSpline)
 void GCVSpline::
 setDegree(int aDegree)
 {
-	_halfOrder = (aDegree + 1) / 2;
+    _halfOrder = (aDegree + 1) / 2;
 
-	// TOO SMALL
-	if(_halfOrder<1) {
-		printf("GCVSpline.setDegree: WARN- invalid half order %d.\n",
-			_halfOrder);
-		printf("\tSetting degree = 1 (linear spline.)\n");
-		_halfOrder = 1;
-	}
+    // TOO SMALL
+    if(_halfOrder<1) {
+        printf("GCVSpline.setDegree: WARN- invalid half order %d.\n",
+            _halfOrder);
+        printf("\tSetting degree = 1 (linear spline.)\n");
+        _halfOrder = 1;
+    }
 
-	// TOO LARGE
-	if(_halfOrder>4) {
-		printf("GCVSpline.setDegree: WARN- invalid half order %d.\n",
-			_halfOrder);
-		printf("\tSetting degree = 7 (heptic spline.)\n");
-		_halfOrder = 4;
-	}
+    // TOO LARGE
+    if(_halfOrder>4) {
+        printf("GCVSpline.setDegree: WARN- invalid half order %d.\n",
+            _halfOrder);
+        printf("\tSetting degree = 7 (heptic spline.)\n");
+        _halfOrder = 4;
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -412,8 +412,8 @@ setDegree(int aDegree)
 int GCVSpline::
 getDegree() const
 {
-	int degree = 2*_halfOrder - 1;
-	return(degree);
+    int degree = 2*_halfOrder - 1;
+    return(degree);
 }
 
 //-----------------------------------------------------------------------------
@@ -428,8 +428,8 @@ getDegree() const
 int GCVSpline::
 getOrder() const
 {
-	int order = 2*_halfOrder;
-	return(order);
+    int order = 2*_halfOrder;
+    return(order);
 }
 
 //-----------------------------------------------------------------------------
@@ -444,7 +444,7 @@ getOrder() const
 int GCVSpline::
 getHalfOrder() const
 {
-	return(_halfOrder);
+    return(_halfOrder);
 }
 
 //-----------------------------------------------------------------------------
@@ -460,7 +460,7 @@ getHalfOrder() const
 int GCVSpline::
 getSize() const
 {
-	return(_x.getSize());
+    return(_x.getSize());
 }
 
 //-----------------------------------------------------------------------------
@@ -477,7 +477,7 @@ getSize() const
 const Array<double>& GCVSpline::
 getX() const
 {
-	return(_x);
+    return(_x);
 }
 //_____________________________________________________________________________
 /**
@@ -490,7 +490,7 @@ getX() const
 const double* GCVSpline::
 getXValues() const
 {
-	return(&_x[0]);
+    return(&_x[0]);
 }
 //_____________________________________________________________________________
 /**
@@ -501,7 +501,7 @@ getXValues() const
 const double* GCVSpline::
 getYValues() const
 {
-	return(&_y[0]);
+    return(&_y[0]);
 }
 //_____________________________________________________________________________
 /**
@@ -514,7 +514,7 @@ getYValues() const
 const Array<double>& GCVSpline::
 getCoefficients() const
 {
-	return(_coefficients);
+    return(_coefficients);
 }
 
 
@@ -525,45 +525,45 @@ getCoefficients() const
 double GCVSpline::
 getX(int aIndex) const
 {
-	if (aIndex >= 0 && aIndex < _x.getSize())
-		return _x.get(aIndex);
-	else {
-		throw Exception("GCVSpline::getX(): index out of bounds.");
-		return 0.0;
-	}
+    if (aIndex >= 0 && aIndex < _x.getSize())
+        return _x.get(aIndex);
+    else {
+        throw Exception("GCVSpline::getX(): index out of bounds.");
+        return 0.0;
+    }
 }
 
 double GCVSpline::
 getY(int aIndex) const
 {
-	if (aIndex >= 0 && aIndex < _y.getSize())
-		return _y.get(aIndex);
-	else {
-		throw Exception("GCVSpline::getY(): index out of bounds.");
-		return 0.0;
-	}
+    if (aIndex >= 0 && aIndex < _y.getSize())
+        return _y.get(aIndex);
+    else {
+        throw Exception("GCVSpline::getY(): index out of bounds.");
+        return 0.0;
+    }
 }
 
 void GCVSpline::
 setX(int aIndex, double aValue)
 {
-	if (aIndex >= 0 && aIndex < _x.getSize()) {
-		_x[aIndex] = aValue;
+    if (aIndex >= 0 && aIndex < _x.getSize()) {
+        _x[aIndex] = aValue;
         resetFunction();
-	} else {
-		throw Exception("GCVSpline::setX(): index out of bounds.");
-	}
+    } else {
+        throw Exception("GCVSpline::setX(): index out of bounds.");
+    }
 }
 
 void GCVSpline::
 setY(int aIndex, double aValue)
 {
-	if (aIndex >= 0 && aIndex < _y.getSize()) {
-		_y[aIndex] = aValue;
+    if (aIndex >= 0 && aIndex < _y.getSize()) {
+        _y[aIndex] = aValue;
         resetFunction();
-	} else {
-		throw Exception("GCVSpline::setY(): index out of bounds.");
-	}
+    } else {
+        throw Exception("GCVSpline::setY(): index out of bounds.");
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -578,8 +578,8 @@ setY(int aIndex, double aValue)
 double GCVSpline::
 getMinX() const
 {
-	if(getSize()<=0) return(SimTK::NaN);
-	return(_x.get(0));
+    if(getSize()<=0) return(SimTK::NaN);
+    return(_x.get(0));
 }
 //_____________________________________________________________________________
 /**
@@ -590,23 +590,23 @@ getMinX() const
 double GCVSpline::
 getMaxX() const
 {
-	if(getSize()<=0) return(SimTK::NaN);
-	return(_x.getLast());
+    if(getSize()<=0) return(SimTK::NaN);
+    return(_x.getLast());
 }
 
 bool GCVSpline::
 deletePoint(int aIndex)
 {
-	int minNumPoints = getOrder();
+    int minNumPoints = getOrder();
 
-	if (_x.getSize() > minNumPoints && _y.getSize() > minNumPoints &&
-		 _weights.getSize() > minNumPoints && _coefficients.getSize() > minNumPoints &&
-		 aIndex < _x.getSize() && aIndex < _y.getSize() &&
-		 aIndex < _weights.getSize() && aIndex < _coefficients.getSize()) {
+    if (_x.getSize() > minNumPoints && _y.getSize() > minNumPoints &&
+         _weights.getSize() > minNumPoints && _coefficients.getSize() > minNumPoints &&
+         aIndex < _x.getSize() && aIndex < _y.getSize() &&
+         aIndex < _weights.getSize() && aIndex < _coefficients.getSize()) {
       _x.remove(aIndex);
-	   _y.remove(aIndex);
-	   _weights.remove(aIndex);
-	   _coefficients.remove(aIndex);
+       _y.remove(aIndex);
+       _weights.remove(aIndex);
+       _coefficients.remove(aIndex);
        resetFunction();
        return true;
    }
@@ -617,28 +617,28 @@ deletePoint(int aIndex)
 bool GCVSpline::
 deletePoints(const Array<int>& indices)
 {
-	bool pointsDeleted = false;
-	int minNumPoints = getOrder();
-	int numPointsLeft = _x.getSize() - indices.getSize();
+    bool pointsDeleted = false;
+    int minNumPoints = getOrder();
+    int numPointsLeft = _x.getSize() - indices.getSize();
 
-	if (numPointsLeft >= minNumPoints) {
-		// Assume the indices are sorted highest to lowest
-		for (int i=0; i<indices.getSize(); i++) {
-			int index = indices.get(i);
-			if (index >= 0 && index < _x.getSize()) {
-	         _x.remove(index);
-	         _y.remove(index);
-				_weights.remove(index);
-				_coefficients.remove(index);
-				pointsDeleted = true;
-			}
-		}
+    if (numPointsLeft >= minNumPoints) {
+        // Assume the indices are sorted highest to lowest
+        for (int i=0; i<indices.getSize(); i++) {
+            int index = indices.get(i);
+            if (index >= 0 && index < _x.getSize()) {
+             _x.remove(index);
+             _y.remove(index);
+                _weights.remove(index);
+                _coefficients.remove(index);
+                pointsDeleted = true;
+            }
+        }
 
-		if (pointsDeleted) {
+        if (pointsDeleted) {
             // Recalculate the coefficients
             resetFunction();
-		}
-	}
+        }
+    }
 
    return pointsDeleted;
 }
@@ -646,25 +646,25 @@ deletePoints(const Array<int>& indices)
 int GCVSpline::
 addPoint(double aX, double aY)
 {
-	int i=0;
-	for (i=0; i<_x.getSize(); i++)
-		if (_x[i] > aX)
-			break;
+    int i=0;
+    for (i=0; i<_x.getSize(); i++)
+        if (_x[i] > aX)
+            break;
 
-	_x.insert(i, aX);
-	_y.insert(i, aY);
-	if (i == _x.getSize()) {
-	   _weights.insert(i, _weights[i-1]);
-	   _coefficients.insert(i, _coefficients[i-1]);
-	} else {
-	   _weights.insert(i, _weights[i]);
-	   _coefficients.insert(i, _coefficients[i]);
-	}
+    _x.insert(i, aX);
+    _y.insert(i, aY);
+    if (i == _x.getSize()) {
+       _weights.insert(i, _weights[i-1]);
+       _coefficients.insert(i, _coefficients[i-1]);
+    } else {
+       _weights.insert(i, _weights[i]);
+       _coefficients.insert(i, _coefficients[i]);
+    }
 
-	// Recalculate the coefficients
+    // Recalculate the coefficients
     resetFunction();
 
-	return i;
+    return i;
 }
 
 SimTK::Function* GCVSpline::createSimTKFunction() const {
@@ -681,9 +681,9 @@ SimTK::Function* GCVSpline::createSimTKFunction() const {
     else
         spline = new SimTK::Spline(SimTK::SplineFitter<double>::fitFromErrorVariance(degree, x, y, _errorVariance).getSpline());
 
-	 int sz = _coefficients.getSize();
+     int sz = _coefficients.getSize();
     for (int i = 0; i < sz; ++i)
         _coefficients[i] = spline->getControlPointValues()[i];
-	return spline;
+    return spline;
 }
 

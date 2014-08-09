@@ -44,7 +44,7 @@ class OSIMSIMULATION_API BallJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
 
 private:
-	static const int _numMobilities = 3;
+    static const int _numMobilities = 3;
 //=============================================================================
 // DATA
 //=============================================================================
@@ -54,18 +54,18 @@ private:
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	BallJoint();
-	// convenience constructor
-	BallJoint(const std::string &name, const OpenSim::Body& parent, 
-		const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-		const OpenSim::Body& body, 
-		const SimTK::Vec3& locationInBody, const SimTK::Vec3& orientationInBody,
-				/*bool useEulerAngles=true,*/ bool reverse=false);
+    // CONSTRUCTION
+    BallJoint();
+    // convenience constructor
+    BallJoint(const std::string &name, const OpenSim::Body& parent, 
+        const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+        const OpenSim::Body& body, 
+        const SimTK::Vec3& locationInBody, const SimTK::Vec3& orientationInBody,
+                /*bool useEulerAngles=true,*/ bool reverse=false);
 
-	virtual ~BallJoint();
+    virtual ~BallJoint();
 
-	int numCoordinates() const override {return _numMobilities;} ;
+    int numCoordinates() const override {return _numMobilities;} ;
 
 protected:
     // ModelComponent interface.
@@ -74,7 +74,7 @@ protected:
     void setPropertiesFromState(const SimTK::State& state) override;
 
 //=============================================================================
-};	// END of class BallJoint
+};  // END of class BallJoint
 //=============================================================================
 //=============================================================================
 

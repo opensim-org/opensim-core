@@ -57,66 +57,66 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WrapCylinder, WrapObject);
 // DATA
 //=============================================================================
 
-	PropertyDbl _radiusProp;
-	double& _radius;
+    PropertyDbl _radiusProp;
+    double& _radius;
 
-	PropertyDbl _lengthProp;
-	double& _length;
+    PropertyDbl _lengthProp;
+    double& _length;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	WrapCylinder();
-	WrapCylinder(const WrapCylinder& aWrapCylinder);
-	virtual ~WrapCylinder();
+    WrapCylinder();
+    WrapCylinder(const WrapCylinder& aWrapCylinder);
+    virtual ~WrapCylinder();
 
 #ifndef SWIG
-	WrapCylinder& operator=(const WrapCylinder& aWrapCylinder);
+    WrapCylinder& operator=(const WrapCylinder& aWrapCylinder);
 #endif
    void copyData(const WrapCylinder& aWrapCylinder);
 
-	double getRadius() const { return _radius; }
-	void setRadius(double aRadius) { _radius = aRadius; }
-	double getLength() const { return _length; }
-	void setLength(double aLength) { _length = aLength; }
+    double getRadius() const { return _radius; }
+    void setRadius(double aRadius) { _radius = aRadius; }
+    double getLength() const { return _length; }
+    void setLength(double aLength) { _length = aLength; }
 
-	virtual const char* getWrapTypeName() const;
-	virtual std::string getDimensionsString() const;
-	virtual void scale(const SimTK::Vec3& aScaleFactors);
+    virtual const char* getWrapTypeName() const;
+    virtual std::string getDimensionsString() const;
+    virtual void scale(const SimTK::Vec3& aScaleFactors);
 
-	virtual void connectToModelAndBody(Model& aModel, OpenSim::Body& aBody);
+    virtual void connectToModelAndBody(Model& aModel, OpenSim::Body& aBody);
 #ifndef SWIG
-	virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-		const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
+    virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
 #endif
 protected:
-	void setupProperties();
+    void setupProperties();
 
 private:
-	void setNull();
-	void _make_spiral_path(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-												 bool far_side_wrap,WrapResult& aWrapResult) const;
-	void _calc_spiral_wrap_point(const SimTK::Vec3& r1a,
-														 const SimTK::Vec3& axial_vec,
-														 double m[4][4],
-														 const SimTK::Vec3& axis,
-														 double sense,
-														 double t,
-														 double theta,
-														 SimTK::Vec3& wrap_pt) const;
+    void setNull();
+    void _make_spiral_path(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+                                                 bool far_side_wrap,WrapResult& aWrapResult) const;
+    void _calc_spiral_wrap_point(const SimTK::Vec3& r1a,
+                                                         const SimTK::Vec3& axial_vec,
+                                                         double m[4][4],
+                                                         const SimTK::Vec3& axis,
+                                                         double sense,
+                                                         double t,
+                                                         double theta,
+                                                         SimTK::Vec3& wrap_pt) const;
 
 
-	bool _adjust_tangent_point(SimTK::Vec3& pt1,
-													  SimTK::Vec3& dn,
-													  SimTK::Vec3& r1,
-													  SimTK::Vec3& w1) const;
+    bool _adjust_tangent_point(SimTK::Vec3& pt1,
+                                                      SimTK::Vec3& dn,
+                                                      SimTK::Vec3& r1,
+                                                      SimTK::Vec3& w1) const;
 
 //=============================================================================
-};	// END of class WrapCylinder
+};  // END of class WrapCylinder
 //=============================================================================
 //=============================================================================
 

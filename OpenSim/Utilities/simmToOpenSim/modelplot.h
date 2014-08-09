@@ -234,7 +234,7 @@ ENUM {
    old_ascii,
    new_ascii,
    binary,
-	wavefront,
+    wavefront,
    stl_ascii,
    stl_binary,
    unknown,
@@ -727,7 +727,7 @@ STRUCT {
    SBoolean used_in_loop;            /* is the gencoord used in a loop? */
    SBoolean used_in_constraint;      /* is the gencoord used in a constraint? */
    SBoolean slider_visible;          /* is slider visible in the Model Viewer? */
-	double pd_stiffness;              /* stiffness of gc for inverse simulation */
+    double pd_stiffness;              /* stiffness of gc for inverse simulation */
 } GeneralizedCoord;                  /* properties of a generalized coordinate*/
 
 
@@ -879,8 +879,8 @@ ENUM {
    UnknownMotionObject = 0,
    MarkerMotionObject,
    ForceMotionObject,
-	FootPrintObject,
-	ForcePlateObject
+    FootPrintObject,
+    ForcePlateObject
 } MotionObjectType;
 
 STRUCT {                             /* ---- motion object animation channel record: */
@@ -928,7 +928,7 @@ STRUCT {
    SBoolean show_forces;             /*  */
    SBoolean show_force_trails;       /*  */
    SBoolean show_foot_prints;        /*  */
-	SBoolean show_force_plates;
+    SBoolean show_force_plates;
 } MotionModelOptions;                /*  */
 
 
@@ -1603,10 +1603,10 @@ STRUCT {
    Scene* scene;
    ModelStruct* model;
    int pan_mx_old;
-	int pan_my_old;
+    int pan_my_old;
    double pan_wx_old;
-	double pan_wy_old;
-	double pan_wz_old;
+    double pan_wy_old;
+    double pan_wz_old;
 } MoveObjectTracker;
 
 STRUCT {

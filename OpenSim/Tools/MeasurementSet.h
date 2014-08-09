@@ -28,10 +28,10 @@
 #include "Measurement.h"
 
 #ifdef SWIG
-	#ifdef OSIMTOOLS_API
-		#undef OSIMTOOLS_API
-		#define OSIMTOOLS_API
-	#endif
+    #ifdef OSIMTOOLS_API
+        #undef OSIMTOOLS_API
+        #define OSIMTOOLS_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -49,19 +49,19 @@ class OSIMTOOLS_API MeasurementSet : public Set<Measurement> {
 OpenSim_DECLARE_CONCRETE_OBJECT(MeasurementSet, Set<Measurement>);
 
 private:
-	void setNull();
+    void setNull();
 public:
-	MeasurementSet();
-	MeasurementSet(const MeasurementSet& aSimmMeasurementSet);
-	~MeasurementSet(void);
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    MeasurementSet();
+    MeasurementSet(const MeasurementSet& aSimmMeasurementSet);
+    ~MeasurementSet(void);
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	MeasurementSet& operator=(const MeasurementSet &aSimmMeasurementSet);
+    MeasurementSet& operator=(const MeasurementSet &aSimmMeasurementSet);
 #endif
 //=============================================================================
-};	// END of class MeasurementSet
+};  // END of class MeasurementSet
 //=============================================================================
 //=============================================================================
 

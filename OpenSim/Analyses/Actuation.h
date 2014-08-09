@@ -34,10 +34,10 @@
 
 
 #ifdef SWIG
-	#ifdef OSIMANALYSES_API
-		#undef OSIMANALYSES_API
-		#define OSIMANALYSES_API
-	#endif
+    #ifdef OSIMANALYSES_API
+        #undef OSIMANALYSES_API
+        #define OSIMANALYSES_API
+    #endif
 #endif
 //=============================================================================
 //=============================================================================
@@ -58,57 +58,57 @@ OpenSim_DECLARE_CONCRETE_OBJECT(Actuation, Analysis);
 private:
 
 protected:
-	/** Number of actuators. */
-	int _na;
-	/** Work array for storing forces, speeds, or powers. */
-	double *_fsp;
-	/** Force storage. */
-	Storage *_forceStore;
-	/** Speed storage. */
-	Storage *_speedStore;
-	/** Power storage. */
-	Storage *_powerStore;
+    /** Number of actuators. */
+    int _na;
+    /** Work array for storing forces, speeds, or powers. */
+    double *_fsp;
+    /** Force storage. */
+    Storage *_forceStore;
+    /** Speed storage. */
+    Storage *_speedStore;
+    /** Power storage. */
+    Storage *_powerStore;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	Actuation(Model *aModel=0);
-	Actuation(const std::string &aFileName);
-	Actuation(const Actuation &aObject);
-	virtual ~Actuation();
+    Actuation(Model *aModel=0);
+    Actuation(const std::string &aFileName);
+    Actuation(const Actuation &aObject);
+    virtual ~Actuation();
 
 private:
-	void setNull();
-	void constructDescription();
-	void constructColumnLabels();
-	void allocateStorage();
-	void deleteStorage();
+    void setNull();
+    void constructDescription();
+    void constructColumnLabels();
+    void allocateStorage();
+    void deleteStorage();
 
     int getNumEnabledActuators();
 public:
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	Actuation& operator=(const Actuation &aActuation);
+    Actuation& operator=(const Actuation &aActuation);
 #endif
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	// STORAGE
-	void setStorageCapacityIncrements(int aIncrement);
-	Storage* getForceStorage() const;
-	Storage* getSpeedStorage() const;
-	Storage* getPowerStorage() const;
-	// MODEL
-	virtual void setModel(Model& aModel);
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    // STORAGE
+    void setStorageCapacityIncrements(int aIncrement);
+    Storage* getForceStorage() const;
+    Storage* getSpeedStorage() const;
+    Storage* getPowerStorage() const;
+    // MODEL
+    virtual void setModel(Model& aModel);
 
-	//--------------------------------------------------------------------------
-	// ANALYSIS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // ANALYSIS
+    //--------------------------------------------------------------------------
 
-	virtual int
+    virtual int
         begin(SimTK::State& s );
     virtual int
         step(const SimTK::State& s, int setNumber );
@@ -118,16 +118,16 @@ protected:
     virtual int
         record(const SimTK::State& s );
 
-	//--------------------------------------------------------------------------
-	// IO
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // IO
+    //--------------------------------------------------------------------------
 public:
-	virtual int
-		printResults(const std::string &aBaseName,const std::string &aDir="",
-		double aDT=-1.0,const std::string &aExtension=".sto");
+    virtual int
+        printResults(const std::string &aBaseName,const std::string &aDir="",
+        double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
-};	// END of class Actuation
+};  // END of class Actuation
 
 }; //namespace
 //=============================================================================

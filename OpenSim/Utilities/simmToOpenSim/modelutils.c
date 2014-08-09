@@ -268,11 +268,11 @@ double check_gencoord_wrapping(GeneralizedCoord* gc, double change)
    if (gc->wrap == no)
    {
       if (new_value < gc->range.start)
-	 return (gc->range.start);
+     return (gc->range.start);
       else if (new_value > gc->range.end)
-	 return (gc->range.end);
+     return (gc->range.end);
       else
-	 return (new_value);
+     return (new_value);
    }
 
    range = gc->range.end - gc->range.start;
@@ -346,9 +346,9 @@ ReturnCode makegencform(ModelStruct* ms)
       check->checkbox[i].active = yes;
       check->checkbox[i].visible = yes;
       if (ms->gencoord[i]->clamped == no)
-	 check->checkbox[i].state = off;
+     check->checkbox[i].state = off;
       else
-	 check->checkbox[i].state = on;
+     check->checkbox[i].state = on;
       check->checkbox[i].name = NULL;
       check->checkbox[i].box.x1 = form->option[i].box.x1;
       check->checkbox[i].box.x2 = check->checkbox[i].box.x1 + CHECKBOX_XSIZE*2/3;
@@ -372,9 +372,9 @@ ReturnCode makegencform(ModelStruct* ms)
       check->checkbox[i].active = yes;
       check->checkbox[i].visible = yes;
       if (ms->gencoord[i]->locked == no)
-	      check->checkbox[i].state = off;
+          check->checkbox[i].state = off;
       else
-	      check->checkbox[i].state = on;
+          check->checkbox[i].state = on;
       check->checkbox[i].name = NULL;
       check->checkbox[i].box.x1 = form->option[i].box.x1;
       check->checkbox[i].box.x2 = check->checkbox[i].box.x1 + CHECKBOX_XSIZE*2/3;
@@ -431,9 +431,9 @@ ReturnCode make_dynparams_form(ModelStruct* ms)
       }
       name_len = glueGetStringWidth(root.gfont.defaultfont, form->option[i].name);
       if (name_len > ms->longest_dynparam_name)
-	      ms->longest_dynparam_name = name_len;
+          ms->longest_dynparam_name = name_len;
       SET_BOX1221(form->option[i].box, 0, 90,-FORM_FIELD_YSPACING*i,
-		  form->option[i].box.y2-FORM_FIELD_HEIGHT);
+          form->option[i].box.y2-FORM_FIELD_HEIGHT);
       ms->dynparamsSize = form->option[i].box.y2 - FORM_FIELD_HEIGHT;
    }
 

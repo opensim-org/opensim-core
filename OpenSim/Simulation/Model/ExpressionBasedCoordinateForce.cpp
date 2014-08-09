@@ -35,26 +35,26 @@ using namespace std;
 //Default constructor.
 ExpressionBasedCoordinateForce::ExpressionBasedCoordinateForce()
 {
-	setNull();
+    setNull();
     constructProperties();
 }
 //_____________________________________________________________________________
 // Convenience constructor for API users.
 ExpressionBasedCoordinateForce::ExpressionBasedCoordinateForce(
-				const string& coordinate, const string& expression)
+                const string& coordinate, const string& expression)
 {
-	setNull();
+    setNull();
     constructProperties();
 
     // Set properties to the passed-in values.
-	setCoordinateName(coordinate);
-	setExpression(expression);
+    setCoordinateName(coordinate);
+    setExpression(expression);
 }
 
 // Set the expression for the force function and create it's lepton program 
 void ExpressionBasedCoordinateForce::setExpression(const string& expression) 
 {
-	set_expression(expression);
+    set_expression(expression);
 }
 
 //=============================================================================
@@ -66,7 +66,7 @@ void ExpressionBasedCoordinateForce::setExpression(const string& expression)
  */
 void ExpressionBasedCoordinateForce::setNull()
 {
-	setAuthors("Nabeel Allana"); 
+    setAuthors("Nabeel Allana"); 
 }
 
 //_____________________________________________________________________________
@@ -75,8 +75,8 @@ void ExpressionBasedCoordinateForce::setNull()
  */
 void ExpressionBasedCoordinateForce::constructProperties()
 {
-	constructProperty_coordinate("UNASSIGNED");
-	std::string zero = "0.0";
+    constructProperty_coordinate("UNASSIGNED");
+    std::string zero = "0.0";
     constructProperty_expression( zero );
 }
 
@@ -85,37 +85,37 @@ void ExpressionBasedCoordinateForce::constructProperties()
 //=============================================================================
 void ExpressionBasedCoordinateForce::connectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel);
+    Super::connectToModel(aModel);
 
     string errorMessage;
-	const string& coordName = get_coordinate();
+    const string& coordName = get_coordinate();
 
-	string& expression = upd_expression();
-	expression.erase(
-			remove_if(expression.begin(), expression.end(), ::isspace), 
-					  expression.end() );
-	
-	_forceProg = Lepton::Parser::parse(expression).optimize().createProgram();
+    string& expression = upd_expression();
+    expression.erase(
+            remove_if(expression.begin(), expression.end(), ::isspace), 
+                      expression.end() );
+    
+    _forceProg = Lepton::Parser::parse(expression).optimize().createProgram();
 
-	// Look up the coordinate
-	if (!_model->updCoordinateSet().contains(coordName)) {
-		errorMessage = "ExpressionBasedCoordinateForce: Invalid coordinate (" + coordName + ") specified in " + getName();
-		throw (Exception(errorMessage.c_str()));
-	}
-	_coord = &_model->updCoordinateSet().get(coordName);
-	
-	if(getName() == "")
-		setName("expressionCoordForce_"+coordName);
+    // Look up the coordinate
+    if (!_model->updCoordinateSet().contains(coordName)) {
+        errorMessage = "ExpressionBasedCoordinateForce: Invalid coordinate (" + coordName + ") specified in " + getName();
+        throw (Exception(errorMessage.c_str()));
+    }
+    _coord = &_model->updCoordinateSet().get(coordName);
+    
+    if(getName() == "")
+        setName("expressionCoordForce_"+coordName);
 }
 
 //=============================================================================
 // Create the underlying system component(s)
 //=============================================================================
 void ExpressionBasedCoordinateForce::
-	addToSystem(SimTK::MultibodySystem& system) const
+    addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);    // Base class first.
-	addCacheVariable<double>("force_magnitude", 0.0, SimTK::Stage::Velocity);
+    Super::addToSystem(system);    // Base class first.
+    addCacheVariable<double>("force_magnitude", 0.0, SimTK::Stage::Velocity);
 }
 
 //=============================================================================
@@ -123,31 +123,31 @@ void ExpressionBasedCoordinateForce::
 //=============================================================================
 // Compute and apply the force
 void ExpressionBasedCoordinateForce::computeForce(const SimTK::State& s, 
-							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							  SimTK::Vector& generalizedForces) const
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+                              SimTK::Vector& generalizedForces) const
 {
-	applyGeneralizedForce(s, *_coord, calcExpressionForce(s), generalizedForces);
+    applyGeneralizedForce(s, *_coord, calcExpressionForce(s), generalizedForces);
 }
 
 // Compute the force
 double ExpressionBasedCoordinateForce::calcExpressionForce(const SimTK::State& s ) const
 {
-	using namespace SimTK;
-	double q = _coord->getValue(s);
-	double qdot = _coord->getSpeedValue(s);
-   	std::map<std::string, double> forceVars;
-	forceVars["q"] = q;
-	forceVars["qdot"] = qdot;
-	double forceMag = _forceProg.evaluate(forceVars);
-	setCacheVariable<double>(s, "force_magnitude", forceMag);
-	return forceMag;
+    using namespace SimTK;
+    double q = _coord->getValue(s);
+    double qdot = _coord->getSpeedValue(s);
+    std::map<std::string, double> forceVars;
+    forceVars["q"] = q;
+    forceVars["qdot"] = qdot;
+    double forceMag = _forceProg.evaluate(forceVars);
+    setCacheVariable<double>(s, "force_magnitude", forceMag);
+    return forceMag;
 }
 
 // get the force magnitude that has already been computed
 const double& ExpressionBasedCoordinateForce::
-	getForceMagnitude(const SimTK::State& s)
+    getForceMagnitude(const SimTK::State& s)
 {
-	return getCacheVariable<double>(s, "force_magnitude");
+    return getCacheVariable<double>(s, "force_magnitude");
 }
 
 
@@ -157,13 +157,13 @@ const double& ExpressionBasedCoordinateForce::
 // Provide names of the quantities (column labels) of the force value(s) 
 // reported.
 Array<std::string> ExpressionBasedCoordinateForce::getRecordLabels() const {
-	OpenSim::Array<std::string> labels("");
-	labels.append(getName());
-	return labels;
+    OpenSim::Array<std::string> labels("");
+    labels.append(getName());
+    return labels;
 }
 // Provide the value(s) to be reported that correspond to the labels.
 Array<double> ExpressionBasedCoordinateForce::getRecordValues(const SimTK::State& state) const {
-	OpenSim::Array<double> values(0.0, 0, 1);
-	values.append(calcExpressionForce(state));
-	return values;
+    OpenSim::Array<double> values(0.0, 0, 1);
+    values.append(calcExpressionForce(state));
+    return values;
 }

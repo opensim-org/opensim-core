@@ -60,22 +60,22 @@ public:
     /** @name Property declarations 
     These are the serializable properties associated with this class. **/
     /**@{**/
-	OpenSim_DECLARE_OPTIONAL_PROPERTY(body, std::string, 
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(body, std::string, 
         "Name of Body to which this actuator is applied.");
-	OpenSim_DECLARE_PROPERTY(point, SimTK::Vec3,
-		"Location of application point; in body frame unless "
+    OpenSim_DECLARE_PROPERTY(point, SimTK::Vec3,
+        "Location of application point; in body frame unless "
         "point_is_global=true");
     /** The default is point_is_global=false. **/
-	OpenSim_DECLARE_PROPERTY(point_is_global, bool,
-		"Interpret point in Ground frame if true; otherwise, body frame.");
-	OpenSim_DECLARE_PROPERTY(direction, SimTK::Vec3,
-		"Force application direction; in body frame unless "
+    OpenSim_DECLARE_PROPERTY(point_is_global, bool,
+        "Interpret point in Ground frame if true; otherwise, body frame.");
+    OpenSim_DECLARE_PROPERTY(direction, SimTK::Vec3,
+        "Force application direction; in body frame unless "
         "force_is_global=true.");
     /** The default is force_is_global=false. **/
-	OpenSim_DECLARE_PROPERTY(force_is_global, bool,
-		"Interpret direction in Ground frame if true; otherwise, body frame.");
-	OpenSim_DECLARE_PROPERTY(optimal_force, double,
-		"The maximum force produced by this actuator when fully activated.");
+    OpenSim_DECLARE_PROPERTY(force_is_global, bool,
+        "Interpret direction in Ground frame if true; otherwise, body frame.");
+    OpenSim_DECLARE_PROPERTY(optimal_force, double,
+        "The maximum force produced by this actuator when fully activated.");
     /**@}**/
 
 //==============================================================================
@@ -83,55 +83,55 @@ public:
 //==============================================================================
     /** Default constructor or construct with body name given. An empty 
     name ("") is treated as though it were unspecified. **/
-	explicit PointActuator(const std::string& bodyName="");
+    explicit PointActuator(const std::string& bodyName="");
 
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
 
-	/** Set the 'optimal_force' property. **/
-	void setOptimalForce(double aOptimalForce);
+    /** Set the 'optimal_force' property. **/
+    void setOptimalForce(double aOptimalForce);
     /** Get the current value of the 'optimal_force' property. **/
-	double getOptimalForce() const override; // Part of Actuator interface.
+    double getOptimalForce() const override; // Part of Actuator interface.
 
 private:
-	void setNull();
-	void constructProperties();
+    void setNull();
+    void constructProperties();
 
-	// Set the body to which this actuator applies; setting this pointer
+    // Set the body to which this actuator applies; setting this pointer
     // also sets the corresponding body name property.
-	void setBody(Body* aBody);
-	Body* getBody() const;
-
-	//--------------------------------------------------------------------------
-	// Implement Force interface
-	//--------------------------------------------------------------------------
-	void computeForce(const SimTK::State& state, 
-					  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-					  SimTK::Vector& mobilityForces) const override;
-
-	//--------------------------------------------------------------------------
-	// Implement Actuator interface (also see getOptimalForce() above)
-	//--------------------------------------------------------------------------
-	double computeActuation( const SimTK::State& s) const override;
-	double getStress( const SimTK::State& s ) const override;
+    void setBody(Body* aBody);
+    Body* getBody() const;
 
     //--------------------------------------------------------------------------
-	// Implement ModelComponent interface
-	//--------------------------------------------------------------------------
-	// Setup method to initialize Body reference
-	void connectToModel(Model& model) override;
+    // Implement Force interface
+    //--------------------------------------------------------------------------
+    void computeForce(const SimTK::State& state, 
+                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+                      SimTK::Vector& mobilityForces) const override;
+
+    //--------------------------------------------------------------------------
+    // Implement Actuator interface (also see getOptimalForce() above)
+    //--------------------------------------------------------------------------
+    double computeActuation( const SimTK::State& s) const override;
+    double getStress( const SimTK::State& s ) const override;
+
+    //--------------------------------------------------------------------------
+    // Implement ModelComponent interface
+    //--------------------------------------------------------------------------
+    // Setup method to initialize Body reference
+    void connectToModel(Model& model) override;
     
     //--------------------------------------------------------------------------
-	// Implement Object interface.
-	//--------------------------------------------------------------------------
-	void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber=-1)
+    // Implement Object interface.
+    //--------------------------------------------------------------------------
+    void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber=-1)
         override;
 
-	// Corresponding Body to which the point actuator is applied.
+    // Corresponding Body to which the point actuator is applied.
     SimTK::ReferencePtr<Body> _body;
 
 //=============================================================================
-};	// END of class PointActuator
+};  // END of class PointActuator
 
 }; //namespace
 //=============================================================================

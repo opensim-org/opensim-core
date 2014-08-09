@@ -52,61 +52,61 @@ OpenSim_DECLARE_CONCRETE_OBJECT(Scale, Object);
 // DATA
 //=============================================================================
 protected:
-	// PROPERTIES
-	/** A list of 3 scale factors */
-	PropertyDblVec3	_propScaleFactors;
-	/** Name of object to scale */
-	PropertyStr		_propSegmentName;
-	/** Whether or not to apply this scale */
-	PropertyBool		_propApply;
+    // PROPERTIES
+    /** A list of 3 scale factors */
+    PropertyDblVec3 _propScaleFactors;
+    /** Name of object to scale */
+    PropertyStr     _propSegmentName;
+    /** Whether or not to apply this scale */
+    PropertyBool        _propApply;
 
-	// REFERENCES
-	SimTK::Vec3&	_scaleFactors;
-	std::string&		_segmentName;
-	bool&					_apply;
+    // REFERENCES
+    SimTK::Vec3&    _scaleFactors;
+    std::string&        _segmentName;
+    bool&                   _apply;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	Scale();
-	Scale(const Scale &aMarker);
-	Scale( const std::string& scaleFileName);
-	virtual ~Scale(void);
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    Scale();
+    Scale(const Scale &aMarker);
+    Scale( const std::string& scaleFileName);
+    virtual ~Scale(void);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	Scale& operator=(const Scale &aMarker);
-#endif	
+    Scale& operator=(const Scale &aMarker);
+#endif  
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 
 public:
-	//--------------------------------------------------------------------------
-	// SET AND GET
-	//--------------------------------------------------------------------------
-	const std::string& getSegmentName() const;
-	void setSegmentName(const std::string& aSegmentName);
+    //--------------------------------------------------------------------------
+    // SET AND GET
+    //--------------------------------------------------------------------------
+    const std::string& getSegmentName() const;
+    void setSegmentName(const std::string& aSegmentName);
 
-	void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
-	SimTK::Vec3& getScaleFactors() { return _scaleFactors; }
-	void getScaleFactors(double rScaleFactors[]){	// A variant that uses basic types for use by GUI
-		getScaleFactors(SimTK::Vec3::updAs(rScaleFactors));
-	}
+    void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
+    SimTK::Vec3& getScaleFactors() { return _scaleFactors; }
+    void getScaleFactors(double rScaleFactors[]){   // A variant that uses basic types for use by GUI
+        getScaleFactors(SimTK::Vec3::updAs(rScaleFactors));
+    }
 
-	void setScaleFactors(const SimTK::Vec3& aScaleFactors);
-	void setScaleFactors(const double aScaleFactors[]){	// A variant that uses basic types for use by GUI
-		setScaleFactors(SimTK::Vec3::getAs(aScaleFactors));
-	}
+    void setScaleFactors(const SimTK::Vec3& aScaleFactors);
+    void setScaleFactors(const double aScaleFactors[]){ // A variant that uses basic types for use by GUI
+        setScaleFactors(SimTK::Vec3::getAs(aScaleFactors));
+    }
 
-	bool getApply(void) const { return _apply; }
-	void setApply(bool state) { _apply = state; }
+    bool getApply(void) const { return _apply; }
+    void setApply(bool state) { _apply = state; }
 };
 
 }; //namespace

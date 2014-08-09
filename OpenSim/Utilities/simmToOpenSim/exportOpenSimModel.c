@@ -7,8 +7,8 @@
    Date: November 10, 2006
 
    Description:
-	Reads in SIMM joint and muscle files and writes an OpenSim model file.
-	
+    Reads in SIMM joint and muscle files and writes an OpenSim model file.
+    
    Routines:
 
 *******************************************************************************/
@@ -28,7 +28,7 @@
 typedef struct {
    int jointnum;
    int dofnum;
-	SBoolean constrained;
+    SBoolean constrained;
 } GencoordInfo;
 
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
@@ -84,7 +84,7 @@ static SBoolean joint_is_fixed(JointStruct* joint);
 ReturnCode write_opensim_model(ModelStruct* ms, char filename[], char geometryDirectory[], const char* markerSetOut, int angleUnits)
 {
    int i;
-	FILE* fp;
+    FILE* fp;
    ReturnCode rc = code_fine;
 
    // First see if all of the joints can be converted to OpenSim joints.
@@ -113,24 +113,24 @@ ReturnCode write_opensim_model(ModelStruct* ms, char filename[], char geometryDi
       mstrcpy(&ms->segment[ms->ground_segment].name, GROUND_NAME);
    }
 
-	// Make sure names are legal: meeting the following criteria Alphanumeric with _ or - or . allowed
-	make_names_xml_safe(ms);
+    // Make sure names are legal: meeting the following criteria Alphanumeric with _ or - or . allowed
+    make_names_xml_safe(ms);
 
-	fp = fopen(filename, "w");
-	fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-	fprintf(fp, "<OpenSimDocument Version=\"10902\">\n");
-	fprintf(fp, "<Model name=\"%s\">\n", ms->name);
-	write_xml_defaults(fp, ms, angleUnits);
-	//if (angleUnits == DEGREES)
-	//	fprintf(fp, "\t<angle_units> degrees </angle_units>\n");
-	//else
-	//	fprintf(fp, "\t<angle_units> radians </angle_units>\n");
-	write_xml_units(fp, ms);
-	write_xml_muscles(fp, ms, angleUnits);
+    fp = fopen(filename, "w");
+    fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+    fprintf(fp, "<OpenSimDocument Version=\"10902\">\n");
+    fprintf(fp, "<Model name=\"%s\">\n", ms->name);
+    write_xml_defaults(fp, ms, angleUnits);
+    //if (angleUnits == DEGREES)
+    //  fprintf(fp, "\t<angle_units> degrees </angle_units>\n");
+    //else
+    //  fprintf(fp, "\t<angle_units> radians </angle_units>\n");
+    write_xml_units(fp, ms);
+    write_xml_muscles(fp, ms, angleUnits);
    rc = write_simbody_engine(fp, ms, geometryDirectory, markerSetOut, angleUnits);
-	fprintf(fp, "</Model>\n");
-	fprintf(fp, "</OpenSimDocument>\n");
-	fclose(fp);
+    fprintf(fp, "</Model>\n");
+    fprintf(fp, "</OpenSimDocument>\n");
+    fclose(fp);
 
    if (rc == code_bad)
       remove(filename);
@@ -148,8 +148,8 @@ void convert_string(char str[], SBoolean prependUnderscore)
 
    for (i = 0; i < len; i++)
    {
-	   if (str[i]=='>' || str[i]=='<' || str[i]=='&')
-	 	   str[i]='_';
+       if (str[i]=='>' || str[i]=='<' || str[i]=='&')
+           str[i]='_';
    }
 }
 
@@ -158,113 +158,113 @@ void convert_string(char str[], SBoolean prependUnderscore)
 // Fix names in the model to take out XML meta characters that cause parsing problems (bug 505). -Ayman
 static void make_names_xml_safe(ModelStruct* ms)
 {
-	int i, j;
+    int i, j;
 
    for (i = 0; i < ms->numsegments; i++)
    {
       SegmentStruct* seg = &ms->segment[i];
       char* name = ms->segment[i].name;
-		convert_string(name, yes);
+        convert_string(name, yes);
       for (j=0; j<ms->segment[i].numMarkers; j++)
       {
          char* markerName = ms->segment[i].marker[j]->name;
-			convert_string(markerName, yes);
+            convert_string(markerName, yes);
       }
    }
 
-	for (i = 0; i < ms->numgencoords; i++)
-	{
-		char* name = ms->gencoord[i]->name;
-		convert_string(name, yes);
-	}
+    for (i = 0; i < ms->numgencoords; i++)
+    {
+        char* name = ms->gencoord[i]->name;
+        convert_string(name, yes);
+    }
 
-	for (i = 0; i < ms->numjoints; i++)
-	{
-		char* name = ms->joint[i].name;
-		convert_string(name, yes);
-	}
+    for (i = 0; i < ms->numjoints; i++)
+    {
+        char* name = ms->joint[i].name;
+        convert_string(name, yes);
+    }
 
-	for (i = 0; i < ms->nummuscles; i++)
-	{
-		char* name = ms->muscle[i]->name;
-		convert_string(name, yes);
-	}
+    for (i = 0; i < ms->nummuscles; i++)
+    {
+        char* name = ms->muscle[i]->name;
+        convert_string(name, yes);
+    }
 
-	for (i = 0; i < ms->numgroups; i++)
-	{
-		char* name = ms->muscgroup[i].name;
-		convert_string(name, yes);
-	}
+    for (i = 0; i < ms->numgroups; i++)
+    {
+        char* name = ms->muscgroup[i].name;
+        convert_string(name, yes);
+    }
 
-	for (i = 0; i < ms->num_wrap_objects; i++)
-	{
-		char* name = ms->wrapobj[i]->name;
-		convert_string(name, yes);
-	}
+    for (i = 0; i < ms->num_wrap_objects; i++)
+    {
+        char* name = ms->wrapobj[i]->name;
+        convert_string(name, yes);
+    }
 }
 
 
 static void write_xml_gravity(FILE* fp, ModelStruct* ms)
 {
-	if (ms->gravity == smX)
-		fprintf(fp, "\t\t\t<gravity>9.80665 0.0 0.0</gravity>\n");
-	else if (ms->gravity == smNegX)
-		fprintf(fp, "\t\t\t<gravity>-9.80665 0.0 0.0</gravity>\n");
-	else if (ms->gravity == smY)
-		fprintf(fp, "\t\t\t<gravity>0.0 9.80665 0.0</gravity>\n");
-	else if (ms->gravity == smNegY)
-		fprintf(fp, "\t\t\t<gravity>0.0 -9.80665 0.0</gravity>\n");
-	else if (ms->gravity == smZ)
-		fprintf(fp, "\t\t\t<gravity>0.0 0.0 9.80665</gravity>\n");
-	else if (ms->gravity == smNegZ)
-		fprintf(fp, "\t\t\t<gravity>0.0 0.0 -9.80665</gravity>\n");
-	else if (ms->gravity == smNoAlign)
-		fprintf(fp, "\t\t\t<gravity>0.0 0.0 0.0</gravity>\n");
-	else // -Y is the default
-		fprintf(fp, "\t\t\t<gravity>0.0 -9.80665 0.0</gravity>\n");
+    if (ms->gravity == smX)
+        fprintf(fp, "\t\t\t<gravity>9.80665 0.0 0.0</gravity>\n");
+    else if (ms->gravity == smNegX)
+        fprintf(fp, "\t\t\t<gravity>-9.80665 0.0 0.0</gravity>\n");
+    else if (ms->gravity == smY)
+        fprintf(fp, "\t\t\t<gravity>0.0 9.80665 0.0</gravity>\n");
+    else if (ms->gravity == smNegY)
+        fprintf(fp, "\t\t\t<gravity>0.0 -9.80665 0.0</gravity>\n");
+    else if (ms->gravity == smZ)
+        fprintf(fp, "\t\t\t<gravity>0.0 0.0 9.80665</gravity>\n");
+    else if (ms->gravity == smNegZ)
+        fprintf(fp, "\t\t\t<gravity>0.0 0.0 -9.80665</gravity>\n");
+    else if (ms->gravity == smNoAlign)
+        fprintf(fp, "\t\t\t<gravity>0.0 0.0 0.0</gravity>\n");
+    else // -Y is the default
+        fprintf(fp, "\t\t\t<gravity>0.0 -9.80665 0.0</gravity>\n");
 }
 
 
 static void write_xml_muscle_groups(FILE* fp, ModelStruct* ms)
 {
-	int i, j;
+    int i, j;
 
-	fprintf(fp, "\t<groups>\n");
-	for (i = 0; i < ms->numgroups; i++)
-	{
-		fprintf(fp, "\t\t<ObjectGroup name=\"%s\">\n", ms->muscgroup[i].name);
-		fprintf(fp, "\t\t\t<members>");
-		for (j = 0; j < ms->muscgroup[i].num_muscles; j++)
-			fprintf(fp, "%s ", ms->muscle[ms->muscgroup[i].muscle_index[j]]->name);
-		fprintf(fp, "</members>\n");
-		fprintf(fp, "\t\t</ObjectGroup>\n");
-	}
-	fprintf(fp, "\t</groups>\n");
+    fprintf(fp, "\t<groups>\n");
+    for (i = 0; i < ms->numgroups; i++)
+    {
+        fprintf(fp, "\t\t<ObjectGroup name=\"%s\">\n", ms->muscgroup[i].name);
+        fprintf(fp, "\t\t\t<members>");
+        for (j = 0; j < ms->muscgroup[i].num_muscles; j++)
+            fprintf(fp, "%s ", ms->muscle[ms->muscgroup[i].muscle_index[j]]->name);
+        fprintf(fp, "</members>\n");
+        fprintf(fp, "\t\t</ObjectGroup>\n");
+    }
+    fprintf(fp, "\t</groups>\n");
 }
 
 
 #define NEED_TO_WRITE_MUSCLE_VALUE(field) \
-	m->field && (writingDefault || m->field != ms->default_muscle->field)
+    m->field && (writingDefault || m->field != ms->default_muscle->field)
 
 static void write_xml_muscle(FILE* fp, ModelStruct* ms, dpMuscleStruct* m, const char* muscleClassName, int writingDefault, int angleUnits)
 {
-	int j;
+    int j;
    double ind_conv = 1.0;
 
-	fprintf(fp, "\t\t<%s name=\"%s\">\n", muscleClassName, m->name);
+    fprintf(fp, "\t\t<%s name=\"%s\">\n", muscleClassName, m->name);
 
-	/* Attachment points. */
-	if (m->path && m->path->num_orig_points > 0) {
-		fprintf(fp, "\t\t\t<GeometryPath>\n");
-		fprintf(fp, "\t\t\t<PathPointSet>\n");
-		fprintf(fp, "\t\t\t<objects>\n");
-		for (j = 0; j < m->path->num_orig_points; j++)
-		{
-			dpMusclePoint* mp = &m->path->mp_orig[j];
-			if (mp->isMovingPoint)
-			{
-				fprintf(fp, "\t\t\t\t<MovingPathPoint>\n");
-				fprintf(fp, "\t\t\t\t\t<body> %s </body>\n", ms->segment[getMusclePointSegment(m,j)].name);
+    /* Attachment points. */
+    if (m->path && m->path->num_orig_points > 0) {
+        fprintf(fp, "\t\t\t<GeometryPath>\n");
+        fprintf(fp, "\t\t\t<PathPointSet>\n");
+        fprintf(fp, "\t\t\t<objects>\n");
+        for (j = 0; j < m->path->num_orig_points; j++)
+        {
+            dpMusclePoint* mp = &m->path->mp_orig[j];
+            if (mp->isMovingPoint)
+            {
+                fprintf(fp, "\t\t\t\t<MovingPathPoint>\n");
+                fprintf(fp, "\t\t\t\t\t<body> %s </body>\n", ms->segment[getMusclePointSegment(m,j)].name);
             if (mp->function[0])
             {
                GeneralizedCoord* gencoord = (GeneralizedCoord*)mp->gencoord[0];
@@ -328,356 +328,356 @@ static void write_xml_muscle(FILE* fp, ModelStruct* ms, dpMuscleStruct* m, const
             // Check if OpenSim can handle one of the attachment coordinates being a constant.
             // If it can't then you have to make up a gencoord name and use it in the natural
             // cubic spline (2 points, constant value).
-				fprintf(fp, "\t\t\t\t</MovingPathPoint>\n");
-			}
-			else if (mp->isVia)
-			{
-				// If the gencoord used for this via point range is [primarily] translational, then do
-				// not convert the range values. If it's rotational, then use DEG_TO_RAD (if angleUnits
+                fprintf(fp, "\t\t\t\t</MovingPathPoint>\n");
+            }
+            else if (mp->isVia)
+            {
+                // If the gencoord used for this via point range is [primarily] translational, then do
+                // not convert the range values. If it's rotational, then use DEG_TO_RAD (if angleUnits
             // is RADIANS, which means the user wants radians in the output file).
-				double conversion;
+                double conversion;
             GeneralizedCoord* gencoord = (GeneralizedCoord*)mp->viaRange.gencoord;
-				if (gencoord->type == rotation_gencoord && angleUnits == RADIANS)
-					conversion = DEG_TO_RAD;
-				else
-					conversion = 1.0;
+                if (gencoord->type == rotation_gencoord && angleUnits == RADIANS)
+                    conversion = DEG_TO_RAD;
+                else
+                    conversion = 1.0;
 
-				fprintf(fp, "\t\t\t\t<ConditionalPathPoint>\n");
-				fprintf(fp, "\t\t\t\t\t<location> %.12lf %.12lf %.12lf </location>\n", mp->point[0],
+                fprintf(fp, "\t\t\t\t<ConditionalPathPoint>\n");
+                fprintf(fp, "\t\t\t\t\t<location> %.12lf %.12lf %.12lf </location>\n", mp->point[0],
                mp->point[1], mp->point[2]);
-				fprintf(fp, "\t\t\t\t\t<body> %s </body>\n", ms->segment[getMusclePointSegment(m,j)].name);
-				fprintf(fp, "\t\t\t\t\t<coordinate> %s </coordinate>\n", gencoord->name);
-				fprintf(fp, "\t\t\t\t\t<range> %.12lf %.12lf </range>\n", mp->viaRange.start * conversion,
+                fprintf(fp, "\t\t\t\t\t<body> %s </body>\n", ms->segment[getMusclePointSegment(m,j)].name);
+                fprintf(fp, "\t\t\t\t\t<coordinate> %s </coordinate>\n", gencoord->name);
+                fprintf(fp, "\t\t\t\t\t<range> %.12lf %.12lf </range>\n", mp->viaRange.start * conversion,
                mp->viaRange.end * conversion);
-				fprintf(fp, "\t\t\t\t</ConditionalPathPoint>\n");
-			}
-			else // regular muscle point
-			{
-				fprintf(fp, "\t\t\t\t<PathPoint>\n");
-				fprintf(fp, "\t\t\t\t\t<location> %.12lf %.12lf %.12lf </location>\n", mp->point[0],
+                fprintf(fp, "\t\t\t\t</ConditionalPathPoint>\n");
+            }
+            else // regular muscle point
+            {
+                fprintf(fp, "\t\t\t\t<PathPoint>\n");
+                fprintf(fp, "\t\t\t\t\t<location> %.12lf %.12lf %.12lf </location>\n", mp->point[0],
                mp->point[1], mp->point[2]);
-				fprintf(fp, "\t\t\t\t\t<body> %s </body>\n", ms->segment[getMusclePointSegment(m,j)].name);
-				fprintf(fp, "\t\t\t\t</PathPoint>\n");
-			}
-		}
-		fprintf(fp, "\t\t\t</objects>\n");
-		fprintf(fp, "\t\t\t</PathPointSet>\n");
+                fprintf(fp, "\t\t\t\t\t<body> %s </body>\n", ms->segment[getMusclePointSegment(m,j)].name);
+                fprintf(fp, "\t\t\t\t</PathPoint>\n");
+            }
+        }
+        fprintf(fp, "\t\t\t</objects>\n");
+        fprintf(fp, "\t\t\t</PathPointSet>\n");
 
-		if (m->numWrapStructs > 0)
-		{
-			fprintf(fp, "\t\t\t<PathWrapSet>\n");
-			fprintf(fp, "\t\t\t<objects>\n");
-			for (j = 0; j < m->numWrapStructs; j++)
-			{
-				dpWrapObject* wo = m->wrapStruct[j]->wrap_object;
-				fprintf(fp, "\t\t\t\t<PathWrap>\n");
-				fprintf(fp, "\t\t\t\t\t<wrap_object> %s </wrap_object>\n", wo->name);
-				if (wo->wrap_type == dpWrapEllipsoid)
-					fprintf(fp, "\t\t\t\t\t<method> %s </method>\n", get_wrap_algorithm_name(m->wrapStruct[j]->wrap_algorithm));
-				if (m->wrapStruct[j]->startPoint > 0 || m->wrapStruct[j]->endPoint > 0)
-					fprintf(fp,"\t\t\t\t\t<range> %d %d </range>\n", m->wrapStruct[j]->startPoint, m->wrapStruct[j]->endPoint);
-				fprintf(fp, "\t\t\t\t</PathWrap>\n");
-			}
-			fprintf(fp, "\t\t\t</objects>\n");
-			fprintf(fp, "\t\t\t</PathWrapSet>\n");
-		}
+        if (m->numWrapStructs > 0)
+        {
+            fprintf(fp, "\t\t\t<PathWrapSet>\n");
+            fprintf(fp, "\t\t\t<objects>\n");
+            for (j = 0; j < m->numWrapStructs; j++)
+            {
+                dpWrapObject* wo = m->wrapStruct[j]->wrap_object;
+                fprintf(fp, "\t\t\t\t<PathWrap>\n");
+                fprintf(fp, "\t\t\t\t\t<wrap_object> %s </wrap_object>\n", wo->name);
+                if (wo->wrap_type == dpWrapEllipsoid)
+                    fprintf(fp, "\t\t\t\t\t<method> %s </method>\n", get_wrap_algorithm_name(m->wrapStruct[j]->wrap_algorithm));
+                if (m->wrapStruct[j]->startPoint > 0 || m->wrapStruct[j]->endPoint > 0)
+                    fprintf(fp,"\t\t\t\t\t<range> %d %d </range>\n", m->wrapStruct[j]->startPoint, m->wrapStruct[j]->endPoint);
+                fprintf(fp, "\t\t\t\t</PathWrap>\n");
+            }
+            fprintf(fp, "\t\t\t</objects>\n");
+            fprintf(fp, "\t\t\t</PathWrapSet>\n");
+        }
 
-		fprintf(fp, "\t\t\t</GeometryPath>\n");
-	}
+        fprintf(fp, "\t\t\t</GeometryPath>\n");
+    }
 
-	/* Simple (double) parameters. */
-	if (NEED_TO_WRITE_MUSCLE_VALUE(max_isometric_force))
-		fprintf(fp, "\t\t\t<max_isometric_force> %.12lf </max_isometric_force>\n", *m->max_isometric_force);
-	if (NEED_TO_WRITE_MUSCLE_VALUE(optimal_fiber_length))
-		fprintf(fp, "\t\t\t<optimal_fiber_length> %.12lf </optimal_fiber_length>\n", *m->optimal_fiber_length);
-	if (NEED_TO_WRITE_MUSCLE_VALUE(resting_tendon_length))
-		fprintf(fp, "\t\t\t<tendon_slack_length> %.12lf </tendon_slack_length>\n", *m->resting_tendon_length);
-	if (NEED_TO_WRITE_MUSCLE_VALUE(pennation_angle))
+    /* Simple (double) parameters. */
+    if (NEED_TO_WRITE_MUSCLE_VALUE(max_isometric_force))
+        fprintf(fp, "\t\t\t<max_isometric_force> %.12lf </max_isometric_force>\n", *m->max_isometric_force);
+    if (NEED_TO_WRITE_MUSCLE_VALUE(optimal_fiber_length))
+        fprintf(fp, "\t\t\t<optimal_fiber_length> %.12lf </optimal_fiber_length>\n", *m->optimal_fiber_length);
+    if (NEED_TO_WRITE_MUSCLE_VALUE(resting_tendon_length))
+        fprintf(fp, "\t\t\t<tendon_slack_length> %.12lf </tendon_slack_length>\n", *m->resting_tendon_length);
+    if (NEED_TO_WRITE_MUSCLE_VALUE(pennation_angle))
    {
       if (angleUnits == RADIANS)
-		   fprintf(fp, "\t\t\t<pennation_angle> %.12lf </pennation_angle>\n", *m->pennation_angle * DEG_TO_RAD);
+           fprintf(fp, "\t\t\t<pennation_angle> %.12lf </pennation_angle>\n", *m->pennation_angle * DEG_TO_RAD);
       else
-		   fprintf(fp, "\t\t\t<pennation_angle> %.12lf </pennation_angle>\n", *m->pennation_angle);
+           fprintf(fp, "\t\t\t<pennation_angle> %.12lf </pennation_angle>\n", *m->pennation_angle);
    }
-	if (NEED_TO_WRITE_MUSCLE_VALUE(max_contraction_vel))
-		fprintf(fp, "\t\t\t<max_contraction_velocity> %.12lf </max_contraction_velocity>\n", *m->max_contraction_vel);
+    if (NEED_TO_WRITE_MUSCLE_VALUE(max_contraction_vel))
+        fprintf(fp, "\t\t\t<max_contraction_velocity> %.12lf </max_contraction_velocity>\n", *m->max_contraction_vel);
 
-	/* muscle model. */
-	//if (m->muscle_model_index)	// Conservative fix in case muscle model is not specified. Ayman 1/07
-	//	fprintf(fp, "\t\t\t<muscle_model> %d </muscle_model>\n", *m->muscle_model_index);
+    /* muscle model. */
+    //if (m->muscle_model_index)    // Conservative fix in case muscle model is not specified. Ayman 1/07
+    //  fprintf(fp, "\t\t\t<muscle_model> %d </muscle_model>\n", *m->muscle_model_index);
 
-	/* Dynamic parameters. */
-	for (j = 0; j < m->num_dynamic_params; j++)
-	{
-		// map dynamic parameter "timescale" to "time_scale" property name
-		if (NEED_TO_WRITE_MUSCLE_VALUE(dynamic_params[j]))
-		{
-			if(!strcmp(m->dynamic_param_names[j],"timescale"))
-				fprintf(fp, "\t\t\t<time_scale> %.12lf </time_scale>\n", *m->dynamic_params[j]);
-			else
-				fprintf(fp, "\t\t\t<%s> %.12lf </%s>\n", m->dynamic_param_names[j], *m->dynamic_params[j], m->dynamic_param_names[j]);
-		}
-	}
+    /* Dynamic parameters. */
+    for (j = 0; j < m->num_dynamic_params; j++)
+    {
+        // map dynamic parameter "timescale" to "time_scale" property name
+        if (NEED_TO_WRITE_MUSCLE_VALUE(dynamic_params[j]))
+        {
+            if(!strcmp(m->dynamic_param_names[j],"timescale"))
+                fprintf(fp, "\t\t\t<time_scale> %.12lf </time_scale>\n", *m->dynamic_params[j]);
+            else
+                fprintf(fp, "\t\t\t<%s> %.12lf </%s>\n", m->dynamic_param_names[j], *m->dynamic_params[j], m->dynamic_param_names[j]);
+        }
+    }
 
-	/* Tendon force-length curve -- only write if non-default value. */
-	if (NEED_TO_WRITE_MUSCLE_VALUE(tendon_force_len_func))
-	{
-		fprintf(fp, "\t\t\t<tendon_force_length_curve>\n");
-		write_opensim_function(fp, *m->tendon_force_len_func, 1.0, 1.0, 5);
-		fprintf(fp, "\t\t\t</tendon_force_length_curve>\n");
-	}
+    /* Tendon force-length curve -- only write if non-default value. */
+    if (NEED_TO_WRITE_MUSCLE_VALUE(tendon_force_len_func))
+    {
+        fprintf(fp, "\t\t\t<tendon_force_length_curve>\n");
+        write_opensim_function(fp, *m->tendon_force_len_func, 1.0, 1.0, 5);
+        fprintf(fp, "\t\t\t</tendon_force_length_curve>\n");
+    }
 
-	/* Active force-length curve -- only write if non-default value. */
-	if (NEED_TO_WRITE_MUSCLE_VALUE(active_force_len_func))
-	{
-		fprintf(fp, "\t\t\t<active_force_length_curve>\n");
-		write_opensim_function(fp, *m->active_force_len_func, 1.0, 1.0, 5);
-		fprintf(fp, "\t\t\t</active_force_length_curve>\n");
-	}
+    /* Active force-length curve -- only write if non-default value. */
+    if (NEED_TO_WRITE_MUSCLE_VALUE(active_force_len_func))
+    {
+        fprintf(fp, "\t\t\t<active_force_length_curve>\n");
+        write_opensim_function(fp, *m->active_force_len_func, 1.0, 1.0, 5);
+        fprintf(fp, "\t\t\t</active_force_length_curve>\n");
+    }
 
-	/* Passive force-length curve -- only write if non-default. */
-	if (NEED_TO_WRITE_MUSCLE_VALUE(passive_force_len_func))
-	{
-		fprintf(fp, "\t\t\t<passive_force_length_curve>\n");
-		write_opensim_function(fp, *m->passive_force_len_func, 1.0, 1.0, 5);
-		fprintf(fp, "\t\t\t</passive_force_length_curve>\n");
-	}
+    /* Passive force-length curve -- only write if non-default. */
+    if (NEED_TO_WRITE_MUSCLE_VALUE(passive_force_len_func))
+    {
+        fprintf(fp, "\t\t\t<passive_force_length_curve>\n");
+        write_opensim_function(fp, *m->passive_force_len_func, 1.0, 1.0, 5);
+        fprintf(fp, "\t\t\t</passive_force_length_curve>\n");
+    }
 
-	/* Force-velocity curve -- only write if non-default. */
-	if (NEED_TO_WRITE_MUSCLE_VALUE(force_vel_func))
-	{
-		fprintf(fp, "\t\t\t<force_velocity_curve>\n");
-		write_opensim_function(fp, *m->force_vel_func, 1.0, 1.0, 5);
-		fprintf(fp, "\t\t\t</force_velocity_curve>\n");
-	}
+    /* Force-velocity curve -- only write if non-default. */
+    if (NEED_TO_WRITE_MUSCLE_VALUE(force_vel_func))
+    {
+        fprintf(fp, "\t\t\t<force_velocity_curve>\n");
+        write_opensim_function(fp, *m->force_vel_func, 1.0, 1.0, 5);
+        fprintf(fp, "\t\t\t</force_velocity_curve>\n");
+    }
 
-	fprintf(fp, "\t\t</%s>\n", muscleClassName);
+    fprintf(fp, "\t\t</%s>\n", muscleClassName);
 
 }
 
 static void write_xml_muscles(FILE* fp, ModelStruct* ms, int angleUnits)
 {
-	int i;
-	char muscleClassName[64];
+    int i;
+    char muscleClassName[64];
 
-	fprintf(fp, "\t<ForceSet>\n");
-	write_xml_muscle_groups(fp, ms);
-	fprintf(fp, "\t<objects>\n");
-	for (i = 0; i < ms->nummuscles; i++)
-	{
-		dpMuscleStruct* m = ms->muscle[i];
+    fprintf(fp, "\t<ForceSet>\n");
+    write_xml_muscle_groups(fp, ms);
+    fprintf(fp, "\t<objects>\n");
+    for (i = 0; i < ms->nummuscles; i++)
+    {
+        dpMuscleStruct* m = ms->muscle[i];
 
-		// For now, model = 9 and map to Thelen2003Muscle.
-		// All other values map to Schutte1993Muscle. Eventually, each model
-		// index should map to a distinct muscle class in OpenSim,
-		// especially model = 7, which is a ligament model.
-		if (m->muscle_model_index == NULL || *m->muscle_model_index == 4)
-			strcpy(muscleClassName, "Schutte1993Muscle");
-		else if (*m->muscle_model_index == 9)
-			strcpy(muscleClassName, "Thelen2003Muscle");
-		else if (*m->muscle_model_index == 1 || *m->muscle_model_index == 2)
-			strcpy(muscleClassName, "Delp1990Muscle");
-		else{	// Warn about unsupported but use Schutte1993Muscle
-			strcpy(muscleClassName, "Schutte1993Muscle");
-		    printf("Warning: muscle %s has unsupported muscle model %d.\n", m->name, *m->muscle_model_index);
-		}
-		write_xml_muscle(fp, ms, m, muscleClassName, 0, angleUnits);
-	}
-	fprintf(fp, "\t</objects>\n");
-	fprintf(fp, "\t</ForceSet>\n");
+        // For now, model = 9 and map to Thelen2003Muscle.
+        // All other values map to Schutte1993Muscle. Eventually, each model
+        // index should map to a distinct muscle class in OpenSim,
+        // especially model = 7, which is a ligament model.
+        if (m->muscle_model_index == NULL || *m->muscle_model_index == 4)
+            strcpy(muscleClassName, "Schutte1993Muscle");
+        else if (*m->muscle_model_index == 9)
+            strcpy(muscleClassName, "Thelen2003Muscle");
+        else if (*m->muscle_model_index == 1 || *m->muscle_model_index == 2)
+            strcpy(muscleClassName, "Delp1990Muscle");
+        else{   // Warn about unsupported but use Schutte1993Muscle
+            strcpy(muscleClassName, "Schutte1993Muscle");
+            printf("Warning: muscle %s has unsupported muscle model %d.\n", m->name, *m->muscle_model_index);
+        }
+        write_xml_muscle(fp, ms, m, muscleClassName, 0, angleUnits);
+    }
+    fprintf(fp, "\t</objects>\n");
+    fprintf(fp, "\t</ForceSet>\n");
 }
 
 
 static void write_xml_markers(FILE* fp, ModelStruct* ms, const char* markerSetOut)
 {
-	int i, j;
-	char tabs[5];
+    int i, j;
+    char tabs[5];
 
-	if (markerSetOut) {
-		fp = fopen(markerSetOut, "w");
-		fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-		strcpy(tabs, "");
-	} else {
-		strcpy(tabs, "\t\t\t");
-	}
+    if (markerSetOut) {
+        fp = fopen(markerSetOut, "w");
+        fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        strcpy(tabs, "");
+    } else {
+        strcpy(tabs, "\t\t\t");
+    }
 
-	fprintf(fp, "%s<MarkerSet>\n", tabs);
-	fprintf(fp, "%s\t<objects>\n", tabs);
+    fprintf(fp, "%s<MarkerSet>\n", tabs);
+    fprintf(fp, "%s\t<objects>\n", tabs);
 
-	for (i = 0; i < ms->numsegments; i++)
-	{
-		SegmentStruct* ss = &ms->segment[i];
-		for (j = 0; j < ms->segment[i].numMarkers; j++)
-		{
-			fprintf(fp, "%s\t\t<Marker name=\"%s\">\n", tabs, ss->marker[j]->name);
-			fprintf(fp, "%s\t\t\t<body> %s </body>\n", tabs, ss->name);
-			fprintf(fp, "%s\t\t\t<location> %.12lf %.12lf %.12lf </location>\n", tabs, ss->marker[j]->offset[0], ss->marker[j]->offset[1], ss->marker[j]->offset[2]);
-			//fprintf(fp, "%s\t\t\t<weight> %.12lf </weight>\n", tabs, ss->marker[j]->weight);
-			fprintf(fp, "%s\t\t\t<fixed> %s </fixed>\n", tabs, (ss->marker[j]->fixed == yes) ? ("true") : ("false"));
-			fprintf(fp, "%s\t\t</Marker>\n", tabs);
-		}
-	}
+    for (i = 0; i < ms->numsegments; i++)
+    {
+        SegmentStruct* ss = &ms->segment[i];
+        for (j = 0; j < ms->segment[i].numMarkers; j++)
+        {
+            fprintf(fp, "%s\t\t<Marker name=\"%s\">\n", tabs, ss->marker[j]->name);
+            fprintf(fp, "%s\t\t\t<body> %s </body>\n", tabs, ss->name);
+            fprintf(fp, "%s\t\t\t<location> %.12lf %.12lf %.12lf </location>\n", tabs, ss->marker[j]->offset[0], ss->marker[j]->offset[1], ss->marker[j]->offset[2]);
+            //fprintf(fp, "%s\t\t\t<weight> %.12lf </weight>\n", tabs, ss->marker[j]->weight);
+            fprintf(fp, "%s\t\t\t<fixed> %s </fixed>\n", tabs, (ss->marker[j]->fixed == yes) ? ("true") : ("false"));
+            fprintf(fp, "%s\t\t</Marker>\n", tabs);
+        }
+    }
 
-	fprintf(fp, "%s\t</objects>\n", tabs);
-	fprintf(fp, "%s</MarkerSet>\n", tabs);
+    fprintf(fp, "%s\t</objects>\n", tabs);
+    fprintf(fp, "%s</MarkerSet>\n", tabs);
 
-	if(markerSetOut) {
-		fclose(fp);
-		printf("Wrote MarkerSet file %s\n", markerSetOut);
-	}
+    if(markerSetOut) {
+        fclose(fp);
+        printf("Wrote MarkerSet file %s\n", markerSetOut);
+    }
 }
 
 
 static void write_vtk_bone(PolyhedronStruct* bone, char geometryDirectory[], char filename[])
 {
-	int i, j, count;
-	char path[4096];
-	FILE* fp;
+    int i, j, count;
+    char path[4096];
+    FILE* fp;
 
-	build_full_path(geometryDirectory, filename, path);
-	fp = fopen(path, "w");
-	if (fp == NULL)
-		return;
+    build_full_path(geometryDirectory, filename, path);
+    fp = fopen(path, "w");
+    if (fp == NULL)
+        return;
 
-	fprintf(fp, "<?xml version=\"1.0\"?>\n");
-	fprintf(fp, "<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"LittleEndian\" compressor=\"vtkZLibDataCompressor\">\n");
-	fprintf(fp, "\t<PolyData>\n");
-	fprintf(fp, "\t\t<Piece NumberOfPoints=\"%d\" NumberOfVerts=\"0\" NumberOfLines=\"0\" NumberOfStrips=\"0\" NumberOfPolys=\"%d\">\n",
-		bone->num_vertices, bone->num_polygons);
-	fprintf(fp, "\t\t<PointData Normals=\"Normals\">\n");
-	fprintf(fp, "\t\t<DataArray type=\"Float32\" Name=\"Normals\" NumberOfComponents=\"3\" format=\"ascii\">\n");
-	for (i = 0; i < bone->num_vertices; i++)
-		fprintf(fp, "\t\t\t%9.6lf %9.6lf %9.6lf\n", bone->vertex[i].normal[0], bone->vertex[i].normal[1], bone->vertex[i].normal[2]);
-	fprintf(fp, "\t\t</DataArray>\n");
-	fprintf(fp, "\t</PointData>\n");
-	fprintf(fp, "\t<Points>\n");
-	fprintf(fp, "\t\t<DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">\n");
-	for (i = 0; i < bone->num_vertices; i++)
-		fprintf(fp, "\t\t\t%9.6lf %9.6lf %9.6lf\n", bone->vertex[i].coord[0], bone->vertex[i].coord[1], bone->vertex[i].coord[2]);
-	fprintf(fp, "\t\t</DataArray>\n");
-	fprintf(fp, "\t</Points>\n");
-	fprintf(fp, "\t\t\t<Polys>\n");
-	fprintf(fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
-	for (i = 0; i < bone->num_polygons; i++)
-	{
-		fprintf(fp, "\t\t\t\t\t");
-		for (j = 0; j < bone->polygon[i].num_vertices; j++)
-			fprintf(fp, "%d ", bone->polygon[i].vertex_index[j]);
-		fprintf(fp, "\n");
-	}
-	fprintf(fp, "\t\t\t\t</DataArray>\n");
-	fprintf(fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n");
-	fprintf(fp, "\t\t\t\t\t");
-	for (i = 0, count = 0; i < bone->num_polygons; i++)
-	{
-		count += bone->polygon[i].num_vertices;
-		fprintf(fp, "%d ", count);
-	}
-	fprintf(fp, "\n");
-	fprintf(fp, "\t\t\t\t</DataArray>\n");
-	fprintf(fp, "\t\t\t</Polys>\n");
-	fprintf(fp, "\t\t</Piece>\n");
-	fprintf(fp, "\t</PolyData>\n");
-	fprintf(fp, "</VTKFile>\n");
+    fprintf(fp, "<?xml version=\"1.0\"?>\n");
+    fprintf(fp, "<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"LittleEndian\" compressor=\"vtkZLibDataCompressor\">\n");
+    fprintf(fp, "\t<PolyData>\n");
+    fprintf(fp, "\t\t<Piece NumberOfPoints=\"%d\" NumberOfVerts=\"0\" NumberOfLines=\"0\" NumberOfStrips=\"0\" NumberOfPolys=\"%d\">\n",
+        bone->num_vertices, bone->num_polygons);
+    fprintf(fp, "\t\t<PointData Normals=\"Normals\">\n");
+    fprintf(fp, "\t\t<DataArray type=\"Float32\" Name=\"Normals\" NumberOfComponents=\"3\" format=\"ascii\">\n");
+    for (i = 0; i < bone->num_vertices; i++)
+        fprintf(fp, "\t\t\t%9.6lf %9.6lf %9.6lf\n", bone->vertex[i].normal[0], bone->vertex[i].normal[1], bone->vertex[i].normal[2]);
+    fprintf(fp, "\t\t</DataArray>\n");
+    fprintf(fp, "\t</PointData>\n");
+    fprintf(fp, "\t<Points>\n");
+    fprintf(fp, "\t\t<DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">\n");
+    for (i = 0; i < bone->num_vertices; i++)
+        fprintf(fp, "\t\t\t%9.6lf %9.6lf %9.6lf\n", bone->vertex[i].coord[0], bone->vertex[i].coord[1], bone->vertex[i].coord[2]);
+    fprintf(fp, "\t\t</DataArray>\n");
+    fprintf(fp, "\t</Points>\n");
+    fprintf(fp, "\t\t\t<Polys>\n");
+    fprintf(fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
+    for (i = 0; i < bone->num_polygons; i++)
+    {
+        fprintf(fp, "\t\t\t\t\t");
+        for (j = 0; j < bone->polygon[i].num_vertices; j++)
+            fprintf(fp, "%d ", bone->polygon[i].vertex_index[j]);
+        fprintf(fp, "\n");
+    }
+    fprintf(fp, "\t\t\t\t</DataArray>\n");
+    fprintf(fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n");
+    fprintf(fp, "\t\t\t\t\t");
+    for (i = 0, count = 0; i < bone->num_polygons; i++)
+    {
+        count += bone->polygon[i].num_vertices;
+        fprintf(fp, "%d ", count);
+    }
+    fprintf(fp, "\n");
+    fprintf(fp, "\t\t\t\t</DataArray>\n");
+    fprintf(fp, "\t\t\t</Polys>\n");
+    fprintf(fp, "\t\t</Piece>\n");
+    fprintf(fp, "\t</PolyData>\n");
+    fprintf(fp, "</VTKFile>\n");
 
-	fclose(fp);
+    fclose(fp);
 }
 
 static int segment_has_wrap_objects(ModelStruct* ms, SegmentStruct* seg)
 {
-	int i;
+    int i;
 
-	for (i = 0; i < ms->num_wrap_objects; i++)
-		if (&ms->segment[ms->wrapobj[i]->segment] == seg)
-			return 1;
+    for (i = 0; i < ms->num_wrap_objects; i++)
+        if (&ms->segment[ms->wrapobj[i]->segment] == seg)
+            return 1;
 
-	return 0;
+    return 0;
 }
 
 static void write_xml_wrap_object(FILE* fp, dpWrapObject* wo, int angleUnits)
 {
-	double xyz[3];
-	const char *wrap_quadrant;
-	double conversion;
+    double xyz[3];
+    const char *wrap_quadrant;
+    double conversion;
 
-	// The angles output by extract_xyz_rot_bodyfixed are in radians,
-	// so this conversion factor is different than in the other functions.
-	if (angleUnits == DEGREES)
-		conversion = RAD_TO_DEG;
-	else
-		conversion = 1.0;
+    // The angles output by extract_xyz_rot_bodyfixed are in radians,
+    // so this conversion factor is different than in the other functions.
+    if (angleUnits == DEGREES)
+        conversion = RAD_TO_DEG;
+    else
+        conversion = 1.0;
 
-	switch (wo->wrap_type)
-	{
-	   case dpWrapSphere:
-		   fprintf(fp, "\t\t\t\t\t\t<WrapSphere name=\"%s\">\n", wo->name);
-			fprintf(fp, "\t\t\t\t\t\t\t<radius> %.8lf </radius>\n", wo->radius[0]);
-			break;
-		case dpWrapCylinder:
-			fprintf(fp, "\t\t\t\t\t\t<WrapCylinder name=\"%s\">\n", wo->name);
-			fprintf(fp, "\t\t\t\t\t\t\t<radius> %.8lf </radius>\n", wo->radius[0]);
-			fprintf(fp, "\t\t\t\t\t\t\t<length> %.8lf </length>\n", wo->height);
-			break;
-		case dpWrapEllipsoid:
-			fprintf(fp, "\t\t\t\t\t\t<WrapEllipsoid name=\"%s\">\n", wo->name);
-			fprintf(fp, "\t\t\t\t\t\t\t<dimensions> %.8lf %.8lf %.8lf </dimensions>\n",
-				wo->radius[0], wo->radius[1], wo->radius[2]);
-			break;
-		case dpWrapTorus:
-			fprintf(fp, "\t\t\t\t\t\t<WrapTorus name=\"%s\">\n", wo->name);
-			fprintf(fp, "\t\t\t\t\t\t\t<inner_radius> %.8lf </inner_radius>\n", wo->radius[0]);
-			fprintf(fp, "\t\t\t\t\t\t\t<outer_radius> %.8lf </outer_radius>\n", wo->radius[1]);
-			break;
-	}
+    switch (wo->wrap_type)
+    {
+       case dpWrapSphere:
+           fprintf(fp, "\t\t\t\t\t\t<WrapSphere name=\"%s\">\n", wo->name);
+            fprintf(fp, "\t\t\t\t\t\t\t<radius> %.8lf </radius>\n", wo->radius[0]);
+            break;
+        case dpWrapCylinder:
+            fprintf(fp, "\t\t\t\t\t\t<WrapCylinder name=\"%s\">\n", wo->name);
+            fprintf(fp, "\t\t\t\t\t\t\t<radius> %.8lf </radius>\n", wo->radius[0]);
+            fprintf(fp, "\t\t\t\t\t\t\t<length> %.8lf </length>\n", wo->height);
+            break;
+        case dpWrapEllipsoid:
+            fprintf(fp, "\t\t\t\t\t\t<WrapEllipsoid name=\"%s\">\n", wo->name);
+            fprintf(fp, "\t\t\t\t\t\t\t<dimensions> %.8lf %.8lf %.8lf </dimensions>\n",
+                wo->radius[0], wo->radius[1], wo->radius[2]);
+            break;
+        case dpWrapTorus:
+            fprintf(fp, "\t\t\t\t\t\t<WrapTorus name=\"%s\">\n", wo->name);
+            fprintf(fp, "\t\t\t\t\t\t\t<inner_radius> %.8lf </inner_radius>\n", wo->radius[0]);
+            fprintf(fp, "\t\t\t\t\t\t\t<outer_radius> %.8lf </outer_radius>\n", wo->radius[1]);
+            break;
+    }
 
-	fprintf(fp,"\t\t\t\t\t\t\t<active> %s </active>\n", wo->active ? "true" : "false");
+    fprintf(fp,"\t\t\t\t\t\t\t<active> %s </active>\n", wo->active ? "true" : "false");
 
-	recalc_xforms(wo);
-	extract_xyz_rot_bodyfixed(wo->from_local_xform, xyz);
+    recalc_xforms(wo);
+    extract_xyz_rot_bodyfixed(wo->from_local_xform, xyz);
 
-	fprintf(fp, "\t\t\t\t\t\t\t<xyz_body_rotation> %.8lf %.8lf %.8lf </xyz_body_rotation>\n",
-		xyz[0] * conversion, xyz[1] * conversion, xyz[2] * conversion);
+    fprintf(fp, "\t\t\t\t\t\t\t<xyz_body_rotation> %.8lf %.8lf %.8lf </xyz_body_rotation>\n",
+        xyz[0] * conversion, xyz[1] * conversion, xyz[2] * conversion);
 
-	fprintf(fp,"\t\t\t\t\t\t\t<translation> %.8lf %.8lf %.8lf </translation>\n",
-		wo->translation.xyz[0], wo->translation.xyz[1], wo->translation.xyz[2]);
+    fprintf(fp,"\t\t\t\t\t\t\t<translation> %.8lf %.8lf %.8lf </translation>\n",
+        wo->translation.xyz[0], wo->translation.xyz[1], wo->translation.xyz[2]);
 
-	if (wo->wrap_sign != 0)
-	{
-		switch ((wo->wrap_axis + 1) * wo->wrap_sign)
-		{
-		   default:
-				break;
-			case  1: wrap_quadrant =  "x";
-				break;
-			case -1: wrap_quadrant = "-x";
-				break;
-			case  2: wrap_quadrant =  "y";
-				break;
-			case -2: wrap_quadrant = "-y";
-				break;
-			case  3: wrap_quadrant =  "z";
-				break;
-			case -3: wrap_quadrant = "-z";
-				break;
-		}
-		fprintf(fp,"\t\t\t\t\t\t\t<quadrant> %s </quadrant>\n", wrap_quadrant);
-	}
+    if (wo->wrap_sign != 0)
+    {
+        switch ((wo->wrap_axis + 1) * wo->wrap_sign)
+        {
+           default:
+                break;
+            case  1: wrap_quadrant =  "x";
+                break;
+            case -1: wrap_quadrant = "-x";
+                break;
+            case  2: wrap_quadrant =  "y";
+                break;
+            case -2: wrap_quadrant = "-y";
+                break;
+            case  3: wrap_quadrant =  "z";
+                break;
+            case -3: wrap_quadrant = "-z";
+                break;
+        }
+        fprintf(fp,"\t\t\t\t\t\t\t<quadrant> %s </quadrant>\n", wrap_quadrant);
+    }
 
-	switch (wo->wrap_type)
-	{
-	   case dpWrapSphere:
-		   fprintf(fp, "\t\t\t\t\t\t</WrapSphere>\n");
-			break;
-		case dpWrapCylinder:
-			fprintf(fp, "\t\t\t\t\t\t</WrapCylinder>\n");
-			break;
-		case dpWrapEllipsoid:
-			fprintf(fp, "\t\t\t\t\t\t</WrapEllipsoid>\n");
-			break;
-		case dpWrapTorus:
-			fprintf(fp, "\t\t\t\t\t\t</WrapTorus>\n");
-			break;
-	}
+    switch (wo->wrap_type)
+    {
+       case dpWrapSphere:
+           fprintf(fp, "\t\t\t\t\t\t</WrapSphere>\n");
+            break;
+        case dpWrapCylinder:
+            fprintf(fp, "\t\t\t\t\t\t</WrapCylinder>\n");
+            break;
+        case dpWrapEllipsoid:
+            fprintf(fp, "\t\t\t\t\t\t</WrapEllipsoid>\n");
+            break;
+        case dpWrapTorus:
+            fprintf(fp, "\t\t\t\t\t\t</WrapTorus>\n");
+            break;
+    }
 }
 
 static void write_xml_units(FILE* fp, ModelStruct* ms)
@@ -691,16 +691,16 @@ static void write_xml_units(FILE* fp, ModelStruct* ms)
 
 static void write_xml_defaults(FILE* fp, ModelStruct* ms, int angleUnits)
 {
-	fprintf(fp, "\t<defaults>\n");
-	if (ms && ms->default_muscle)
-	{
-		// We need to write a default muscle for all supported types of muscles (since
-		// the default mechanism works by matching class names)
-		write_xml_muscle(fp, ms, ms->default_muscle, "Schutte1993Muscle", 1, angleUnits);
-		write_xml_muscle(fp, ms, ms->default_muscle, "Thelen2003Muscle", 1, angleUnits);
-		write_xml_muscle(fp, ms, ms->default_muscle, "Delp1990Muscle", 1, angleUnits);
-	}
-	fprintf(fp, "\t</defaults>\n");
+    fprintf(fp, "\t<defaults>\n");
+    if (ms && ms->default_muscle)
+    {
+        // We need to write a default muscle for all supported types of muscles (since
+        // the default mechanism works by matching class names)
+        write_xml_muscle(fp, ms, ms->default_muscle, "Schutte1993Muscle", 1, angleUnits);
+        write_xml_muscle(fp, ms, ms->default_muscle, "Thelen2003Muscle", 1, angleUnits);
+        write_xml_muscle(fp, ms, ms->default_muscle, "Delp1990Muscle", 1, angleUnits);
+    }
+    fprintf(fp, "\t</defaults>\n");
 }
 
 // This function deals with the constant translations and rotations that are in a joint.
@@ -820,14 +820,14 @@ static void extract_joint_locations_and_orientations(ModelStruct* ms,
 static ReturnCode write_simbody_engine(FILE* fp, ModelStruct* ms, char geometryDirectory[], const char* markerSetOut, int angleUnits)
 {
    // Gravity
-	write_xml_gravity(fp, ms);
+    write_xml_gravity(fp, ms);
 
    // Bodies (with joints, wrap objects), constraints
    if (make_simbody_model(fp, ms, geometryDirectory, angleUnits) == code_bad)
       return code_bad;
 
    // Markers
-	write_xml_markers(fp, ms, markerSetOut);
+    write_xml_markers(fp, ms, markerSetOut);
 
    return code_fine;
 }
@@ -858,20 +858,20 @@ static void write_opensim_function(FILE* fp, dpFunction* function, double ind_co
    else if (function->type == dpLinearFunction)
       fprintf(fp, "%s<PiecewiseLinearFunction>\n", tabs);
    else if (function->type == dpGCVSpline)
-	{
+    {
       fprintf(fp, "%s<GCVSpline>\n", tabs);
       fprintf(fp, "%s\t<half_order> 3 </half_order>\n", tabs);
-	}
+    }
 
    fprintf(fp, "%s\t<x> ", tabs);
    for (i=0; i<function->numpoints; i++)
       fprintf(fp, "%.12lf ", function->x[i] * ind_conv);
    fprintf(fp, "</x>\n");
 
-	fprintf(fp, "%s\t<y> ", tabs);
-	for (i=0; i<function->numpoints; i++)
-		fprintf(fp, "%.12lf ", function->y[i] * dep_conv);
-	fprintf(fp, "</y>\n");
+    fprintf(fp, "%s\t<y> ", tabs);
+    for (i=0; i<function->numpoints; i++)
+        fprintf(fp, "%.12lf ", function->y[i] * dep_conv);
+    fprintf(fp, "</y>\n");
 
    if (function->type == dpNaturalCubicSpline || function->type == dpFunctionTypeUndefined)
       fprintf(fp, "%s</NaturalCubicSpline>\n", tabs);
@@ -974,7 +974,7 @@ static ReturnCode make_simbody_model(FILE* fp, ModelStruct* ms, char geometryDir
    {
       if (ms->gencoord[i]->used_in_model == yes)
       {
-			if (!mark_unconstrained_dof(ms, ms->gencoord[i], &gcInfo[i].jointnum, &gcInfo[i].dofnum, &gcInfo[i].constrained))
+            if (!mark_unconstrained_dof(ms, ms->gencoord[i], &gcInfo[i].jointnum, &gcInfo[i].dofnum, &gcInfo[i].constrained))
          {
 #if 0
             sprintf(errorbuffer, "At least one DOF must be a \"simple\" function of gencoord %s (2 points, slope=1, passes thru zero).",
@@ -1172,56 +1172,56 @@ static void make_simbody_joint(ModelStruct* ms, FILE* fp, JointSDF* jntsdf, int 
       dof_order[joint->order[ROT3]+2] = R3;
 
    if (jntsdf->dir == INVERSE)
-	{
-		int rev_dof_order[6];
+    {
+        int rev_dof_order[6];
 
-		for (i=0; i<6; i++)
-			rev_dof_order[i] = dof_order[5-i];
-		extract_joint_locations_and_orientations(ms, joint, rev_dof_order, locationInParent, orientationInParent,
-			locationInChild, orientationInChild);
-	}
-	else
-	{
-		extract_joint_locations_and_orientations(ms, joint, dof_order, locationInParent, orientationInParent,
-			locationInChild, orientationInChild);
-	}
+        for (i=0; i<6; i++)
+            rev_dof_order[i] = dof_order[5-i];
+        extract_joint_locations_and_orientations(ms, joint, rev_dof_order, locationInParent, orientationInParent,
+            locationInChild, orientationInChild);
+    }
+    else
+    {
+        extract_joint_locations_and_orientations(ms, joint, dof_order, locationInParent, orientationInParent,
+            locationInChild, orientationInChild);
+    }
 
    fprintf(fp, "\t\t\t\t\t<Joint>\n");
 
-	if (joint_is_fixed(joint))
-	{
-		fprintf(fp, "\t\t\t\t\t\t<WeldJoint name=\"%s\">\n", joint->name);
-		fprintf(fp, "\t\t\t\t\t\t\t<parent_body> %s </parent_body>\n", jntsdf->inbname);
-		fprintf(fp, "\t\t\t\t\t\t\t<location_in_parent> %.12lf %.12lf %.12lf </location_in_parent>\n",
-			locationInParent[0], locationInParent[1], locationInParent[2]);
-		fprintf(fp, "\t\t\t\t\t\t\t<orientation_in_parent> %.12lf %.12lf %.12lf </orientation_in_parent>\n",
-			orientationInParent[0], orientationInParent[1], orientationInParent[2]);
-		fprintf(fp, "\t\t\t\t\t\t\t<location> %.12lf %.12lf %.12lf </location>\n",
-			locationInChild[0], locationInChild[1], locationInChild[2]);
-		fprintf(fp, "\t\t\t\t\t\t\t<orientation> %.12lf %.12lf %.12lf </orientation>\n",
-			orientationInChild[0], orientationInChild[1], orientationInChild[2]);
-		fprintf(fp, "\t\t\t\t\t\t</WeldJoint>\n");
-	} else {
-		fprintf(fp, "\t\t\t\t<CustomJoint name=\"%s\">\n", joint->name);
-		fprintf(fp, "\t\t\t\t\t<reverse> %s </reverse>\n", jntsdf->dir == FORWARD ? "false" : "true");
-		fprintf(fp, "\t\t\t\t\t<parent_body> %s </parent_body>\n", jntsdf->inbname);
-		fprintf(fp, "\t\t\t\t\t<location_in_parent> %.12lf %.12lf %.12lf </location_in_parent>\n",
-			locationInParent[0], locationInParent[1], locationInParent[2]);
-		fprintf(fp, "\t\t\t\t\t<orientation_in_parent> %.12lf %.12lf %.12lf </orientation_in_parent>\n",
-			orientationInParent[0], orientationInParent[1], orientationInParent[2]);
-		fprintf(fp, "\t\t\t\t\t<location> %.12lf %.12lf %.12lf </location>\n",
-			locationInChild[0], locationInChild[1], locationInChild[2]);
-		fprintf(fp, "\t\t\t\t\t<orientation> %.12lf %.12lf %.12lf </orientation>\n",
-			orientationInChild[0], orientationInChild[1], orientationInChild[2]);
+    if (joint_is_fixed(joint))
+    {
+        fprintf(fp, "\t\t\t\t\t\t<WeldJoint name=\"%s\">\n", joint->name);
+        fprintf(fp, "\t\t\t\t\t\t\t<parent_body> %s </parent_body>\n", jntsdf->inbname);
+        fprintf(fp, "\t\t\t\t\t\t\t<location_in_parent> %.12lf %.12lf %.12lf </location_in_parent>\n",
+            locationInParent[0], locationInParent[1], locationInParent[2]);
+        fprintf(fp, "\t\t\t\t\t\t\t<orientation_in_parent> %.12lf %.12lf %.12lf </orientation_in_parent>\n",
+            orientationInParent[0], orientationInParent[1], orientationInParent[2]);
+        fprintf(fp, "\t\t\t\t\t\t\t<location> %.12lf %.12lf %.12lf </location>\n",
+            locationInChild[0], locationInChild[1], locationInChild[2]);
+        fprintf(fp, "\t\t\t\t\t\t\t<orientation> %.12lf %.12lf %.12lf </orientation>\n",
+            orientationInChild[0], orientationInChild[1], orientationInChild[2]);
+        fprintf(fp, "\t\t\t\t\t\t</WeldJoint>\n");
+    } else {
+        fprintf(fp, "\t\t\t\t<CustomJoint name=\"%s\">\n", joint->name);
+        fprintf(fp, "\t\t\t\t\t<reverse> %s </reverse>\n", jntsdf->dir == FORWARD ? "false" : "true");
+        fprintf(fp, "\t\t\t\t\t<parent_body> %s </parent_body>\n", jntsdf->inbname);
+        fprintf(fp, "\t\t\t\t\t<location_in_parent> %.12lf %.12lf %.12lf </location_in_parent>\n",
+            locationInParent[0], locationInParent[1], locationInParent[2]);
+        fprintf(fp, "\t\t\t\t\t<orientation_in_parent> %.12lf %.12lf %.12lf </orientation_in_parent>\n",
+            orientationInParent[0], orientationInParent[1], orientationInParent[2]);
+        fprintf(fp, "\t\t\t\t\t<location> %.12lf %.12lf %.12lf </location>\n",
+            locationInChild[0], locationInChild[1], locationInChild[2]);
+        fprintf(fp, "\t\t\t\t\t<orientation> %.12lf %.12lf %.12lf </orientation>\n",
+            orientationInChild[0], orientationInChild[1], orientationInChild[2]);
 
-		fprintf(fp, "\t\t\t\t\t<!--Generalized coordinates parameterizing this joint.-->\n");
+        fprintf(fp, "\t\t\t\t\t<!--Generalized coordinates parameterizing this joint.-->\n");
 
-		fprintf(fp, "\t\t\t\t\t<CoordinateSet>\n");
-		fprintf(fp, "\t\t\t\t\t<objects>\n");
+        fprintf(fp, "\t\t\t\t\t<CoordinateSet>\n");
+        fprintf(fp, "\t\t\t\t\t<objects>\n");
       // The coordinates must be listed in the same order that they are referenced in the transform axis list.
       // First do the rotations.
-		for (i=0; i<6; i++)
-		{
+        for (i=0; i<6; i++)
+        {
          if (dof_order[i] < 3)
          {
             DofStruct* dof = &joint->dofs[dof_order[i]];
@@ -1236,10 +1236,10 @@ static void make_simbody_joint(ModelStruct* ms, FILE* fp, JointSDF* jntsdf, int 
                   write_opensim_coordinate(fp, ms, joint, dof_order[i], angleUnits);
             }
          }
-		}
+        }
       // Now do the translations.
-		for (i=0; i<6; i++)
-		{
+        for (i=0; i<6; i++)
+        {
          if (dof_order[i] >= 3)
          {
             DofStruct* dof = &joint->dofs[dof_order[i]];
@@ -1254,18 +1254,18 @@ static void make_simbody_joint(ModelStruct* ms, FILE* fp, JointSDF* jntsdf, int 
                   write_opensim_coordinate(fp, ms, joint, dof_order[i], angleUnits);
             }
          }
-		}
-		fprintf(fp, "\t\t\t\t\t</objects>\n");
-		fprintf(fp, "\t\t\t\t\t</CoordinateSet>\n");
+        }
+        fprintf(fp, "\t\t\t\t\t</objects>\n");
+        fprintf(fp, "\t\t\t\t\t</CoordinateSet>\n");
 
       // In an OpenSim CustomJoint, the SpatialTransform always
       // has 6 transform axes (3 rotation, 3 translation). The
       // 3 rotations are always specified first, and the 3 translations
       // are all w.r.t. the parent reference frame.
-		fprintf(fp, "\t\t\t\t\t\t\t<SpatialTransform>\n");
+        fprintf(fp, "\t\t\t\t\t\t\t<SpatialTransform>\n");
       // First output the rotations.
-		for (i=0; i<6; i++)
-		{
+        for (i=0; i<6; i++)
+        {
          if (dof_order[i] < 3)
          {
             DofStruct* dof = &joint->dofs[dof_order[i]];
@@ -1292,10 +1292,10 @@ static void make_simbody_joint(ModelStruct* ms, FILE* fp, JointSDF* jntsdf, int 
                dof->value = saved_value;
             }
          }
-		}
+        }
       // Now output the translations.
-		for (i=0; i<6; i++)
-		{
+        for (i=0; i<6; i++)
+        {
          if (dof_order[i] >= 3)
          {
             DofStruct* dof = &joint->dofs[dof_order[i]];
@@ -1322,11 +1322,11 @@ static void make_simbody_joint(ModelStruct* ms, FILE* fp, JointSDF* jntsdf, int 
                dof->value = saved_value;
             }
          }
-		}
-		fprintf(fp, "\t\t\t\t\t\t\t</SpatialTransform>\n");
-		fprintf(fp, "\t\t\t\t\t\t</CustomJoint>\n");
-	}
-	fprintf(fp, "\t\t\t\t\t</Joint>\n");
+        }
+        fprintf(fp, "\t\t\t\t\t\t\t</SpatialTransform>\n");
+        fprintf(fp, "\t\t\t\t\t\t</CustomJoint>\n");
+    }
+    fprintf(fp, "\t\t\t\t\t</Joint>\n");
 
    num_SD_segs++;
 
@@ -1389,8 +1389,8 @@ static void make_simbody_joint(ModelStruct* ms, FILE* fp, JointSDF* jntsdf, int 
 
 static void write_opensim_ground_body(FILE* fp, ModelStruct* ms, SegmentStruct* seg, char geometryDirectory[], int angleUnits)
 {
-	int j;
-	SBoolean madeDir = no;
+    int j;
+    SBoolean madeDir = no;
 
    fprintf(fp, "\t\t\t\t<Body name=\"%s\">\n", seg->name);
    fprintf(fp, "\t\t\t\t\t<mass> %.12lf </mass>\n", seg->mass);
@@ -1465,7 +1465,7 @@ static void write_opensim_coordinate(FILE* fp, ModelStruct* ms, JointStruct* joi
    if (dof->sd.constrained == no)
    {
       // If the gencoord is [primarily] translational, then do not convert its
-	   // range, default_value, etc. If it's rotational, then use DEG_TO_RAD.
+       // range, default_value, etc. If it's rotational, then use DEG_TO_RAD.
       if (gc->type == rotation_gencoord && angleUnits == RADIANS)
          conversion = DEG_TO_RAD;
 
@@ -1483,8 +1483,8 @@ static void write_opensim_coordinate(FILE* fp, ModelStruct* ms, JointStruct* joi
             fprintf(fp, "%s ", get_simmkey_name((int)gc->keys[1]));
          fprintf(fp,"</keys>\n");
       }
-		fprintf(fp, "\t\t\t\t\t\t\t\t\t<clamped> %s </clamped>\n", (gc->clamped == yes) ? ("true") : ("false"));
-		fprintf(fp, "\t\t\t\t\t\t\t\t\t<locked> %s </locked>\n", (gc->locked == yes) ? ("true") : ("false"));
+        fprintf(fp, "\t\t\t\t\t\t\t\t\t<clamped> %s </clamped>\n", (gc->clamped == yes) ? ("true") : ("false"));
+        fprintf(fp, "\t\t\t\t\t\t\t\t\t<locked> %s </locked>\n", (gc->locked == yes) ? ("true") : ("false"));
    } else { // dof->sd.constrained = yes
       if (angleUnits == RADIANS)
       {
@@ -1495,8 +1495,8 @@ static void write_opensim_coordinate(FILE* fp, ModelStruct* ms, JointStruct* joi
       fprintf(fp, "\t\t\t\t\t\t\t\t\t<default_value> %.12lf </default_value>\n", dof->value * conversion);
       fprintf(fp, "\t\t\t\t\t\t\t\t\t<initial_value> %.12lf </initial_value>\n", dof->value * conversion);
       fprintf(fp, "\t\t\t\t\t\t\t\t\t<range> -99999.9 99999.9 </range>\n"); //TODO20: maybe not specify, so default is used?
-		fprintf(fp, "\t\t\t\t\t\t\t\t\t<clamped> false </clamped>\n");
-		fprintf(fp, "\t\t\t\t\t\t\t\t\t<locked> false </locked>\n");
+        fprintf(fp, "\t\t\t\t\t\t\t\t\t<clamped> false </clamped>\n");
+        fprintf(fp, "\t\t\t\t\t\t\t\t\t<locked> false </locked>\n");
    }
    fprintf(fp, "\t\t\t\t\t\t\t\t</Coordinate>\n");
 }
@@ -1507,10 +1507,10 @@ static void write_opensim_transformAxis(FILE* fp, ModelStruct* ms, JointStruct* 
    DofStruct* dof = &joint->dofs[dofIndex];
    GeneralizedCoord* gc = dof->gencoord;
 
-	if (current_dof >= 0 && current_dof <= 2)
-		fprintf(fp, "\t\t\t\t\t\t\t\t<TransformAxis name=\"rotation%d\">\n", current_dof+1);
-	else
-		fprintf(fp, "\t\t\t\t\t\t\t\t<TransformAxis name=\"translation%d\">\n", current_dof-2);
+    if (current_dof >= 0 && current_dof <= 2)
+        fprintf(fp, "\t\t\t\t\t\t\t\t<TransformAxis name=\"rotation%d\">\n", current_dof+1);
+    else
+        fprintf(fp, "\t\t\t\t\t\t\t\t<TransformAxis name=\"translation%d\">\n", current_dof-2);
    //fprintf(fp, "\t\t\t\t\t\t\t\t\t<is_rotation> %s </is_rotation>\n", (dofIndex > 2) ? ("false") : ("true"));
    if (dir == FORWARD)
    {

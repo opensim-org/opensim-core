@@ -25,15 +25,15 @@ FILE(GLOB SOURCE_FILES *.cpp)
 FILE(GLOB INCLUDE_FILES *.h)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-		    ${OpenSim_SOURCE_DIR}/Vendors 
-		    ${OpenSim_SOURCE_DIR}/Tools)
+            ${OpenSim_SOURCE_DIR}/Vendors 
+            ${OpenSim_SOURCE_DIR}/Tools)
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
 LINK_LIBRARIES( debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
-		debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
-		debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators
-				${SIMTK_ALL_LIBS})
+        debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
+        debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators
+                ${SIMTK_ALL_LIBS})
 
 ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 

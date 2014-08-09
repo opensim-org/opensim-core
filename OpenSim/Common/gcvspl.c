@@ -28,7 +28,7 @@
  ******************
 
  void gcvspl(double *x, double *y, double *w, int m, int n,
-	          double *c, double var, double *wk, int ier)
+              double *c, double var, double *wk, int ier)
 
 
  Meaning of parameters: (I) = input, (O) = output
@@ -184,189 +184,189 @@
 */
 
 void gcvspl(double *x, double *y, double *w, int m, int n,
-	         double *c, double var, double *wk, int ier)
+             double *c, double var, double *wk, int ier)
 {
-	int		i, m2, nm2m1, iwe, ib, cont, nm2p1 ;
-	double	bl, el, r1, r2, r3, r4, gf1, gf2, gf3, gf4, alpha, err ;
+    int     i, m2, nm2m1, iwe, ib, cont, nm2p1 ;
+    double  bl, el, r1, r2, r3, r4, gf1, gf2, gf3, gf4, alpha, err ;
 
-	double ratio = 2.0 ;
-	double tau   = 1.618033983 ;
-	int ibwe		 = 7 ;
-	double eps   = 1E-15 ;
-	double tol   = 1E-6 ;
+    double ratio = 2.0 ;
+    double tau   = 1.618033983 ;
+    int ibwe         = 7 ;
+    double eps   = 1E-15 ;
+    double tol   = 1E-6 ;
 
    /*
       Parameter check and work array initialization
    */
-	ier = 0 ;
-	m2  = 2*m ;
+    ier = 0 ;
+    m2  = 2*m ;
 
    /*
       check on m and n
    */
-	if ((m <= 0) || (n < m2))
-	{
-		ier = 1 ;
-	}
-	else
-	{
+    if ((m <= 0) || (n < m2))
+    {
+        ier = 1 ;
+    }
+    else
+    {
       /*
          Check on knot sequence and weights
       */
-		if (w[0] <= zero)
-		{
-			ier = 2 ;
-		}
-		else
-		{
-			for (i=2; i<=n; i++)
-			{
-				if ( (w[i-1] <= zero) || (x[i-2] >= x[i-1]) )
-				{
-					ier = 2 ;
-					break ;
-				}
-			}
-		}
-	}
+        if (w[0] <= zero)
+        {
+            ier = 2 ;
+        }
+        else
+        {
+            for (i=2; i<=n; i++)
+            {
+                if ( (w[i-1] <= zero) || (x[i-2] >= x[i-1]) )
+                {
+                    ier = 2 ;
+                    break ;
+                }
+            }
+        }
+    }
 
-	if (ier != 0)
-	{
-		return ;
-	}
+    if (ier != 0)
+    {
+        return ;
+    }
 
    /*
       set work array parameters
    */
-	nm2p1 = n*(m2+1) ;
-	nm2m1 = n*(m2-1) ;
-	ib    = ibwe + nm2p1 ;
-	iwe   = ib + nm2m1 ;
+    nm2p1 = n*(m2+1) ;
+    nm2m1 = n*(m2-1) ;
+    ib    = ibwe + nm2p1 ;
+    iwe   = ib + nm2m1 ;
 
 /*
    Compute the design matrices B and WE, their L1-norms,
    and check for zero variance
 */
-	basis(m, n, x, wk+ib-1, &bl, wk+ibwe-1) ;	
-	prep(m, n, x, w, wk+iwe-1, &el) ;			
-	el /= bl ;
+    basis(m, n, x, wk+ib-1, &bl, wk+ibwe-1) ;   
+    prep(m, n, x, w, wk+iwe-1, &el) ;           
+    el /= bl ;
 
-	if (var == zero)
-	{
+    if (var == zero)
+    {
       /*
          Calculate final spline coefficients 
       */
- 		r1 = zero ;
-		gf1 = splc(m, n, y, w, var, r1, eps, c,
-					  wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
-	}
-	else
-	{
-		cont = TRUE ;
-		r1 = one / el ;
-		r2 = r1 * ratio ;
-		gf2 = splc(m, n, y, w, var, r2, eps, c,
-					  wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
-		gf1 = splc(m, n, y, w, var, r1, eps, c,
-					  wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
-		while ((gf1 <= gf2) && (cont))
-		{
-			if (wk[3] <= zero) /* interpolation */
-			{
-				cont = FALSE ;
-			}
-			else
-			{
-				r2  = r1 ;
-				gf2 = gf1 ;
-				r1 /= ratio ;
-				gf1 = splc(m, n, y, w, var, r1, eps, c,
-							  wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
-			}
-		}
-		if (cont)
-		{
-			r3 = r2 * ratio ;
-			gf3 = splc(m, n, y, w, var, r3, eps, c,
-						  wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
-			while ((gf3 <= gf2) && (cont))
-			{
-				if (wk[3] >= one)
-				{
-					cont = FALSE ;
-				}
-				else
-				{
-					r2  = r3 ;
-					gf2 = gf3 ;
-					r3 *= ratio ;
-					gf3 = splc(m, n, y, w, var, r3, eps, c,
-								  wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
+        r1 = zero ;
+        gf1 = splc(m, n, y, w, var, r1, eps, c,
+                      wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
+    }
+    else
+    {
+        cont = TRUE ;
+        r1 = one / el ;
+        r2 = r1 * ratio ;
+        gf2 = splc(m, n, y, w, var, r2, eps, c,
+                      wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
+        gf1 = splc(m, n, y, w, var, r1, eps, c,
+                      wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
+        while ((gf1 <= gf2) && (cont))
+        {
+            if (wk[3] <= zero) /* interpolation */
+            {
+                cont = FALSE ;
+            }
+            else
+            {
+                r2  = r1 ;
+                gf2 = gf1 ;
+                r1 /= ratio ;
+                gf1 = splc(m, n, y, w, var, r1, eps, c,
+                              wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
+            }
+        }
+        if (cont)
+        {
+            r3 = r2 * ratio ;
+            gf3 = splc(m, n, y, w, var, r3, eps, c,
+                          wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
+            while ((gf3 <= gf2) && (cont))
+            {
+                if (wk[3] >= one)
+                {
+                    cont = FALSE ;
+                }
+                else
+                {
+                    r2  = r3 ;
+                    gf2 = gf3 ;
+                    r3 *= ratio ;
+                    gf3 = splc(m, n, y, w, var, r3, eps, c,
+                                  wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
 
-				}
-			}
-			if (cont)
-			{
-				r2 = r3 ;
-				gf2 = gf3 ;
-				alpha = (r2-r1)/tau ;
-				r4 = r1 + alpha ;
-				r3 = r2 - alpha ;
-				gf3 = splc(m, n, y, w, var, r3, eps, c,
-							  wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
-				gf4 = splc(m, n, y, w, var, r4, eps, c,
-							  wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
-				while (cont)
-				{
-					if (gf3 <= gf4)
-					{
-						r2  = r4 ;
-						gf2 = gf4 ;
-						err = (r2-r1)/(r1+r2) ;
-						if (((err*err+one) == one) || (err <= tol))
-						{
-							cont = FALSE ;
-						}
-						else
-						{
-							r4 = r3 ;
-							gf4 = gf3 ;
-							alpha = alpha/tau ;
-							r3 = r2-alpha ;
-							gf3 = splc(m, n, y, w, var, r3, eps, c,
-										  wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
-						}
-					}
-					else
-					{
-						r1 = r3 ;
-						gf1 = gf3 ;
-						err = (r2-r1)/(r2+r1) ;
-						if (((err*err+one) == one) || (err <= tol))
-						{
-							cont = FALSE ;
-						}
-						else
-						{
-							r3 = r4 ;
-							gf3 = gf4 ;
-							alpha /= tau ;
-							r4 = r1 + alpha ;
-							gf4 = splc(m, n, y, w, var, r4, eps, c,
-										  wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
-						}
-					}
-				}
-				r1  = half*(r1+r2) ;
-				gf1 = splc(m, n, y, w, var, r1, eps, c,
-								wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
-			}
-		}
-		if (var < zero)
-		{
-			var = wk[5] ;
-		}
-	}
+                }
+            }
+            if (cont)
+            {
+                r2 = r3 ;
+                gf2 = gf3 ;
+                alpha = (r2-r1)/tau ;
+                r4 = r1 + alpha ;
+                r3 = r2 - alpha ;
+                gf3 = splc(m, n, y, w, var, r3, eps, c,
+                              wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
+                gf4 = splc(m, n, y, w, var, r4, eps, c,
+                              wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
+                while (cont)
+                {
+                    if (gf3 <= gf4)
+                    {
+                        r2  = r4 ;
+                        gf2 = gf4 ;
+                        err = (r2-r1)/(r1+r2) ;
+                        if (((err*err+one) == one) || (err <= tol))
+                        {
+                            cont = FALSE ;
+                        }
+                        else
+                        {
+                            r4 = r3 ;
+                            gf4 = gf3 ;
+                            alpha = alpha/tau ;
+                            r3 = r2-alpha ;
+                            gf3 = splc(m, n, y, w, var, r3, eps, c,
+                                          wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
+                        }
+                    }
+                    else
+                    {
+                        r1 = r3 ;
+                        gf1 = gf3 ;
+                        err = (r2-r1)/(r2+r1) ;
+                        if (((err*err+one) == one) || (err <= tol))
+                        {
+                            cont = FALSE ;
+                        }
+                        else
+                        {
+                            r3 = r4 ;
+                            gf3 = gf4 ;
+                            alpha /= tau ;
+                            r4 = r1 + alpha ;
+                            gf4 = splc(m, n, y, w, var, r4, eps, c,
+                                          wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
+                        }
+                    }
+                }
+                r1  = half*(r1+r2) ;
+                gf1 = splc(m, n, y, w, var, r1, eps, c,
+                                wk, wk+ib-1, wk+iwe-1, el, wk+ibwe-1) ;
+            }
+        }
+        if (var < zero)
+        {
+            var = wk[5] ;
+        }
+    }
    /*
       ready
    */
@@ -425,150 +425,150 @@ void gcvspl(double *x, double *y, double *w, int m, int n,
 
 void basis(int m, int n, double *x, double *b, double *bl, double *q)
 {
-	int	 i, j, k, l, mm1, mp1, m2, ir, j1, j2, nmip1, m2m1 ;
-	double arg, u, v, y ;
+    int  i, j, k, l, mm1, mp1, m2, ir, j1, j2, nmip1, m2m1 ;
+    double arg, u, v, y ;
 
-	m2m1 = 2*m-1 ;
-	if (m == 1)
-	{
-		/*
-		   Lineair Splines
-		*/
-		for (i=0; i<=n; i++)
-		{
-				b[(i-1)*m2m1+m-1] = one ;
-		}
-		*bl = one ;
-		return ;
-	}
+    m2m1 = 2*m-1 ;
+    if (m == 1)
+    {
+        /*
+           Lineair Splines
+        */
+        for (i=0; i<=n; i++)
+        {
+                b[(i-1)*m2m1+m-1] = one ;
+        }
+        *bl = one ;
+        return ;
+    }
 
-	/*
-	   General Splines
-	*/
-	mm1 = m-1 ;
-	mp1 = m+1 ;
-	m2  = 2*m ;
-	for (l=1; l<=n; l++)
-	{
-		/*
-		   First Row
-		*/
-		for (j=-mm1; j<=m; j++)
-		{
-				q[j+m-1] = zero ;
-		}
-		q[mm1+m-1] = one ;
+    /*
+       General Splines
+    */
+    mm1 = m-1 ;
+    mp1 = m+1 ;
+    m2  = 2*m ;
+    for (l=1; l<=n; l++)
+    {
+        /*
+           First Row
+        */
+        for (j=-mm1; j<=m; j++)
+        {
+                q[j+m-1] = zero ;
+        }
+        q[mm1+m-1] = one ;
 
-		if ((l != 1) && (l != n))
-		{
-			q[mm1+m-1] = one / (x[l] - x[l-2]) ;
-		}
+        if ((l != 1) && (l != n))
+        {
+            q[mm1+m-1] = one / (x[l] - x[l-2]) ;
+        }
 
-		/*
-		   Successive Rows
-		*/
-		arg = x[l-1] ;
-		for (i=3; i<=m2; i++)
-		{
-			ir = mp1-i ;
-			v  = q[ir+m-1] ;
-			if (l < i)
-			{
-				/*
-				   Left hand B Splines
-				*/
-				for (j=l+1; j<=i; j++)
-				{
-					u = v ;
-					v = q[ir+m] ;
-					q[ir+m-1] = u + (x[j-1]-arg)*v ;
-					ir++ ;
-				}
-			}
+        /*
+           Successive Rows
+        */
+        arg = x[l-1] ;
+        for (i=3; i<=m2; i++)
+        {
+            ir = mp1-i ;
+            v  = q[ir+m-1] ;
+            if (l < i)
+            {
+                /*
+                   Left hand B Splines
+                */
+                for (j=l+1; j<=i; j++)
+                {
+                    u = v ;
+                    v = q[ir+m] ;
+                    q[ir+m-1] = u + (x[j-1]-arg)*v ;
+                    ir++ ;
+                }
+            }
 
-			/*
+            /*
             max
          */
-			j1 = ((l-i+1) > 1) ? l-i+1 : 1 ;
-			/*
+            j1 = ((l-i+1) > 1) ? l-i+1 : 1 ;
+            /*
             min
          */
-			j2 = ((l-1) < (n-i)) ? l-1 : n-i ;
+            j2 = ((l-1) < (n-i)) ? l-1 : n-i ;
 
-			if (j1 <= j2)
-			{
-				/*
-				   Ordinary B Splines
-				*/
-				if (i < m2)
-				{
-				  for (j=j1; j<=j2; j++)
-				  {
-					  y = x[i+j-1] ;
-					  u = v ;
-					  v = q[ir+m] ;
-					  q[ir+m-1] = u + (v-u)*(y-arg)/(y-x[j-1]) ;
-					  ir++ ;
-				  }
-				}
-				else
-				{
-				  for (j=j1; j<=j2; j++)
-				  {
-					  u = v ;
-					  v = q[ir+m] ;
-					  q[ir+m-1] = (arg-x[j-1])*u+(x[i+j-1]-arg)*v ;
-					  ir++ ;
-				  }
-				}
-			}
-			nmip1 = n-i+1 ;
-			if (nmip1 < l)
-			{
-			  /*
-			      Right hand B-Splines
-			  */
-			  for (j=nmip1; j<=l-1; j++)
-			  {
-				  u = v ;
-				  v = q[ir+m] ;
-				  q[ir+m-1] = (arg-x[j-1])*u+v ;
-				  ir++ ;
-			  }
-			}
-		}
-		for (j=-mm1; j<=mm1; j++)
-		{
-				b[(l-1)*m2m1+j+m-1] = q[j+m-1] ;
-		}
-	}
+            if (j1 <= j2)
+            {
+                /*
+                   Ordinary B Splines
+                */
+                if (i < m2)
+                {
+                  for (j=j1; j<=j2; j++)
+                  {
+                      y = x[i+j-1] ;
+                      u = v ;
+                      v = q[ir+m] ;
+                      q[ir+m-1] = u + (v-u)*(y-arg)/(y-x[j-1]) ;
+                      ir++ ;
+                  }
+                }
+                else
+                {
+                  for (j=j1; j<=j2; j++)
+                  {
+                      u = v ;
+                      v = q[ir+m] ;
+                      q[ir+m-1] = (arg-x[j-1])*u+(x[i+j-1]-arg)*v ;
+                      ir++ ;
+                  }
+                }
+            }
+            nmip1 = n-i+1 ;
+            if (nmip1 < l)
+            {
+              /*
+                  Right hand B-Splines
+              */
+              for (j=nmip1; j<=l-1; j++)
+              {
+                  u = v ;
+                  v = q[ir+m] ;
+                  q[ir+m-1] = (arg-x[j-1])*u+v ;
+                  ir++ ;
+              }
+            }
+        }
+        for (j=-mm1; j<=mm1; j++)
+        {
+                b[(l-1)*m2m1+j+m-1] = q[j+m-1] ;
+        }
+    }
 
-	/*
-	   Zero unused parts of B
-	*/
-	for (i=1; i<=mm1; i++)
-	{
-		for (k=i; k<=mm1; k++)
-		{
-				b[(i-1)*m2m1-k+m-1] = zero ;
-				b[(n-i)*m2m1+k+m-1] = zero ;
-		}
-	}
+    /*
+       Zero unused parts of B
+    */
+    for (i=1; i<=mm1; i++)
+    {
+        for (k=i; k<=mm1; k++)
+        {
+                b[(i-1)*m2m1-k+m-1] = zero ;
+                b[(n-i)*m2m1+k+m-1] = zero ;
+        }
+    }
 
-	/*
-	   Access L1-norm of B
-	*/
-	*bl = 0.0 ;
-	for (i=1; i<=n; i++)
-	{
-		for (k=-mm1; k<=mm1; k++)
-		{
-				*bl += fabs(b[(i-1)*m2m1+k+m-1]) ;
-		}
-	}
-	*bl /= n ;
+    /*
+       Access L1-norm of B
+    */
+    *bl = 0.0 ;
+    for (i=1; i<=n; i++)
+    {
+        for (k=-mm1; k<=mm1; k++)
+        {
+                *bl += fabs(b[(i-1)*m2m1+k+m-1]) ;
+        }
+    }
+    *bl /= n ;
 
-	/*
+    /*
       ready
    */
 }
@@ -634,142 +634,142 @@ void basis(int m, int n, double *x, double *b, double *bl, double *q)
 
 void prep(int m, int n, double *x, double *w, double *we, double *el)
 {
-	int    i, j, k, l, m2, mp1, m2m1, m2p1, nm, i1, i2, jj, jm, i1p1, i2m1,
-		    kl, n2m, ku, inc ;
-	double f, f1, ff, y, wi ;
+    int    i, j, k, l, m2, mp1, m2m1, m2p1, nm, i1, i2, jj, jm, i1p1, i2m1,
+            kl, n2m, ku, inc ;
+    double f, f1, ff, y, wi ;
 
    /*
       calculate the factor F1
    */
-	m2   = 2*m ;
-	mp1  = m+1 ;
-	m2m1 = m2-1 ;
-	m2p1 = m2+1 ;
-	nm   = n-m ;
-	f1   = -one ;
+    m2   = 2*m ;
+    mp1  = m+1 ;
+    m2m1 = m2-1 ;
+    m2p1 = m2+1 ;
+    nm   = n-m ;
+    f1   = -one ;
 
-	if (m != 1)
-	{
-		for (i=2; i<=m; i++)
-		{
-			f1 *= -i ;
-		}
-		for (i=mp1; i<=m2m1; i++)
-		{
-			f1 *= i ;
-		}
-	}
+    if (m != 1)
+    {
+        for (i=2; i<=m; i++)
+        {
+            f1 *= -i ;
+        }
+        for (i=mp1; i<=m2m1; i++)
+        {
+            f1 *= i ;
+        }
+    }
 
-	/*
-	   columnwise evaluation of the unweighted design matrix E
-	*/
-	i1 = 1 ;
-	i2 = m ;
-	jm = mp1 ;
-	for (j=1; j<=n; j++)
-	{
-		inc = m2p1 ;
-		if (j > nm)
-		{
-			f1 = -f1 ;
-			f  = f1 ;
-		}
-		else
-		{
-			if (j < mp1)
-			{
-				inc = 1 ;
-				f   = f1 ;
-			}
-			else
-			{
-				f = f1*(x[j+m-1]-x[j-m-1]) ;
-			}
-		}
-		if (j > mp1)
-		{
-			i1++ ;
-		}
-		if (i2 < n)
-		{
-			i2++ ;
-		}
-		jj = jm ;
+    /*
+       columnwise evaluation of the unweighted design matrix E
+    */
+    i1 = 1 ;
+    i2 = m ;
+    jm = mp1 ;
+    for (j=1; j<=n; j++)
+    {
+        inc = m2p1 ;
+        if (j > nm)
+        {
+            f1 = -f1 ;
+            f  = f1 ;
+        }
+        else
+        {
+            if (j < mp1)
+            {
+                inc = 1 ;
+                f   = f1 ;
+            }
+            else
+            {
+                f = f1*(x[j+m-1]-x[j-m-1]) ;
+            }
+        }
+        if (j > mp1)
+        {
+            i1++ ;
+        }
+        if (i2 < n)
+        {
+            i2++ ;
+        }
+        jj = jm ;
 
-		/*
-		   loop for divided difference coefficients
-		*/
-		ff = f ;
-		y  = x[i1-1] ;
-		i1p1 = i1+1 ;
-		for (i=i1p1; i<=i2; i++)
-		{
-			ff = ff/(y-x[i-1]) ;
-		}
-		we[jj-1] = ff ;
-		jj += m2 ;
-		i2m1 = i2-1 ;
-		if (i1p1 <= i2m1)
-		{
-			for (l=i1p1; l<=i2m1; l++)
-			{
-				ff = f ;
-				y = x[l-1] ;
-				for (i=i1; i<=l-1; i++)
-				{
-					ff = ff/(y-x[i-1]) ;
-				}
-				for (i=l+1; i<=i2; i++)
-				{
-					ff = ff/(y-x[i-1]) ;
-				}
-				we[jj-1] = ff ;
-				jj += m2 ;
-			}
-		}
-		ff = f ;
-		y = x[i2-1] ;
-		for (i=i1; i<=i2m1; i++)
-		{
-			ff = ff/(y-x[i-1]) ;
-		}
-		we[jj-1] = ff ;
-		jj += m2 ;
-		jm += inc ;
-	}
+        /*
+           loop for divided difference coefficients
+        */
+        ff = f ;
+        y  = x[i1-1] ;
+        i1p1 = i1+1 ;
+        for (i=i1p1; i<=i2; i++)
+        {
+            ff = ff/(y-x[i-1]) ;
+        }
+        we[jj-1] = ff ;
+        jj += m2 ;
+        i2m1 = i2-1 ;
+        if (i1p1 <= i2m1)
+        {
+            for (l=i1p1; l<=i2m1; l++)
+            {
+                ff = f ;
+                y = x[l-1] ;
+                for (i=i1; i<=l-1; i++)
+                {
+                    ff = ff/(y-x[i-1]) ;
+                }
+                for (i=l+1; i<=i2; i++)
+                {
+                    ff = ff/(y-x[i-1]) ;
+                }
+                we[jj-1] = ff ;
+                jj += m2 ;
+            }
+        }
+        ff = f ;
+        y = x[i2-1] ;
+        for (i=i1; i<=i2m1; i++)
+        {
+            ff = ff/(y-x[i-1]) ;
+        }
+        we[jj-1] = ff ;
+        jj += m2 ;
+        jm += inc ;
+    }
 
-	/*
-	   zero the upper left and lower right corners of E
-	*/
-	kl = 1 ;
-	n2m = m2p1*n + 1 ;
-	for (i=1; i<=m; i++)
-	{
-		ku = kl+m-i ;
-		for (k=kl; k<=ku; k++)
-		{
-			we[k-1] = zero ;
-			we[n2m-k-1] = zero ;
-		}
-		kl += m2p1 ;
-	}
+    /*
+       zero the upper left and lower right corners of E
+    */
+    kl = 1 ;
+    n2m = m2p1*n + 1 ;
+    for (i=1; i<=m; i++)
+    {
+        ku = kl+m-i ;
+        for (k=kl; k<=ku; k++)
+        {
+            we[k-1] = zero ;
+            we[n2m-k-1] = zero ;
+        }
+        kl += m2p1 ;
+    }
 
-	/*
-	   weighted matrix WE = W**-1*E and its L1 norm
-	*/
-	jj = 0 ;
-	*el = 0.0 ;
-	for (i=1; i<=n; i++)
-	{
-		wi=w[i-1] ;
-		for (j=1; j<=m2p1; j++)
-		{
-			jj++ ;
-			we[jj-1] /= wi ;
-			*el += fabs(we[jj-1]) ;
-		}
-	}
-	*el /= n ;
+    /*
+       weighted matrix WE = W**-1*E and its L1 norm
+    */
+    jj = 0 ;
+    *el = 0.0 ;
+    for (i=1; i<=n; i++)
+    {
+        wi=w[i-1] ;
+        for (j=1; j<=m2p1; j++)
+        {
+            jj++ ;
+            we[jj-1] /= wi ;
+            *el += fabs(we[jj-1]) ;
+        }
+    }
+    *el /= n ;
 
    /*
       ready
@@ -793,18 +793,18 @@ void prep(int m, int n, double *x, double *w, double *we, double *el)
  ******************
 
  double splc(int m, int n, double *y, double *w,
-				double var, double p, double eps,
-				double *c, double *stat, double *b, double *we,
-				double el, double *bwe)
+                double var, double p, double eps,
+                double *c, double *stat, double *b, double *we,
+                double el, double *bwe)
 
  Meaning of parameters:
  *********************
 
-  SPLC	 ( O ) GCV function value if (VAR.lt.0.0),
+  SPLC   ( O ) GCV function value if (VAR.lt.0.0),
                 EMSE value if (VAR.ge.0.0).
   M       ( I ) Half order of the B-spline (degree 2*M-1),
                 with M > 0.
-  N		 ( I ) Number of observations, with N >= 2*M,
+  N      ( I ) Number of observations, with N >= 2*M,
   Y(N)    ( I ) Observed measurements.
   W(N)    ( I ) Weight factors, corresponding to the relative
                 inverse variance of each measurement, with
@@ -854,126 +854,126 @@ void prep(int m, int n, double *x, double *w, double *we, double *el)
 */
 
 double splc(int m, int n, double *y, double *w,
-				double var, double p, double eps,
-				double *c, double *stat, double *b, double *we,
-				double el, double *bwe)
+                double var, double p, double eps,
+                double *c, double *stat, double *b, double *we,
+                double el, double *bwe)
 {
-	int i,k, km, kp, m2p1, m2m1 ;
-	double dp, dt, esn, pel, trn, splcr ;
+    int i,k, km, kp, m2p1, m2m1 ;
+    double dp, dt, esn, pel, trn, splcr ;
 
-	m2p1 = 2*m+1 ;
-	m2m1 = 2*m-1 ;
+    m2p1 = 2*m+1 ;
+    m2m1 = 2*m-1 ;
 
-	/*
-	 check p-value
-	*/
-	dp = p ;
-	stat[3] = p/(one+p) ;
-	pel = p*el ;
+    /*
+     check p-value
+    */
+    dp = p ;
+    stat[3] = p/(one+p) ;
+    pel = p*el ;
 
-	/*
-	   Pseudo least squares polynomial if p is too large
-	*/
-	if ( (pel*eps) > one)
-	{
-		stat[3] = one ;
-		dp = one/(eps*el) ;
-	}
+    /*
+       Pseudo least squares polynomial if p is too large
+    */
+    if ( (pel*eps) > one)
+    {
+        stat[3] = one ;
+        dp = one/(eps*el) ;
+    }
 
-	/*
-	   Pseudo interpolation ifp is too small
-	*/
-	if (pel < eps)
-	{
-		dp = eps/el ;
-		stat[3] = 0 ;
-	}
+    /*
+       Pseudo interpolation ifp is too small
+    */
+    if (pel < eps)
+    {
+        dp = eps/el ;
+        stat[3] = 0 ;
+    }
 
-	/*
-	   Calculate BWE = B + P*W**-1*E
-	*/
-	for (i=1; i<=n; i++)
-	{
-		/*
+    /*
+       Calculate BWE = B + P*W**-1*E
+    */
+    for (i=1; i<=n; i++)
+    {
+        /*
           min
       */
-		km = (m < (i-1)) ? -m : 1-i ;
-		/*
+        km = (m < (i-1)) ? -m : 1-i ;
+        /*
           min
       */
-		kp = (m < (n-i)) ? m : n-i ;
+        kp = (m < (n-i)) ? m : n-i ;
 
-		for (k=km; k<=kp; k++)
-		{
-			if (abs(k) == m)
-			{
-				bwe[(i-1)*m2p1+k+m] = dp*we[(i-1)*m2p1+k+m] ;
-			}
-			else
-			{
-				bwe[(i-1)*m2p1+k+m] = b[(i-1)*m2m1+k+m-1]+
-											 dp*we[(i-1)*m2p1+k+m] ;
-			}
-		}
-	}
+        for (k=km; k<=kp; k++)
+        {
+            if (abs(k) == m)
+            {
+                bwe[(i-1)*m2p1+k+m] = dp*we[(i-1)*m2p1+k+m] ;
+            }
+            else
+            {
+                bwe[(i-1)*m2p1+k+m] = b[(i-1)*m2m1+k+m-1]+
+                                             dp*we[(i-1)*m2p1+k+m] ;
+            }
+        }
+    }
 
-	/*
-	   Solve BWE*C = Y, and assess TRACE[B*BWE**-1]
-	*/
-	bandet(bwe, m, n) ;
-	bansol(bwe, y, c, m, n) ;
-	stat[2] = trinv(we, bwe, m, n)*dp ;
-	trn = stat[2]/n ;
+    /*
+       Solve BWE*C = Y, and assess TRACE[B*BWE**-1]
+    */
+    bandet(bwe, m, n) ;
+    bansol(bwe, y, c, m, n) ;
+    stat[2] = trinv(we, bwe, m, n)*dp ;
+    trn = stat[2]/n ;
 
-	/*
-	   Compute mean squared weighted residual
-	*/
-	esn = zero ;
-	for (i=1; i<=n; i++)
-	{
-		dt = -y[i-1] ;
+    /*
+       Compute mean squared weighted residual
+    */
+    esn = zero ;
+    for (i=1; i<=n; i++)
+    {
+        dt = -y[i-1] ;
 
-		/*
+        /*
          min
       */
-		km = ((m-1) < (i-1)) ? 1-m : 1-i ;
-		/*
+        km = ((m-1) < (i-1)) ? 1-m : 1-i ;
+        /*
          min
       */
-		kp = ((m-1) < (n-i)) ? m-1 : n-i ;
+        kp = ((m-1) < (n-i)) ? m-1 : n-i ;
 
-		for (k=km; k<=kp; k++)
-		{
-		   dt += b[(i-1)*m2m1+k+m-1]*c[i+k-1] ;
-		}
-		esn += dt*dt*w[i-1] ;
-	}
-	esn /= n ;
+        for (k=km; k<=kp; k++)
+        {
+           dt += b[(i-1)*m2m1+k+m-1]*c[i+k-1] ;
+        }
+        esn += dt*dt*w[i-1] ;
+    }
+    esn /= n ;
 
-	/*
+    /*
       Calculate statistics and function value
-	*/
-	stat[5] = esn/trn ;     /* estimated variance */
-	stat[0] = stat[5]/trn ; /* GCV function value */
-	stat[1] = esn ;         /* mean squared residual */
+    */
+    stat[5] = esn/trn ;     /* estimated variance */
+    stat[0] = stat[5]/trn ; /* GCV function value */
+    stat[1] = esn ;         /* mean squared residual */
 
-	if (var < zero)
-	{
-		/*
-		   Unknown variance : GCV
-		*/
-		stat[4] = stat[5] - esn ;
-		splcr = stat[0] ;
-	}
-	else
-	{
-		/*
-		   Known variance : estimated mean squared error
-		*/
-		stat[4] = esn-var*(two*trn-one) ;
-		splcr = stat[4] ;
-	}
-	return(splcr) ;
+    if (var < zero)
+    {
+        /*
+           Unknown variance : GCV
+        */
+        stat[4] = stat[5] - esn ;
+        splcr = stat[0] ;
+    }
+    else
+    {
+        /*
+           Known variance : estimated mean squared error
+        */
+        stat[4] = esn-var*(two*trn-one) ;
+        splcr = stat[4] ;
+    }
+    return(splcr) ;
 }
 
 /*
@@ -1013,63 +1013,63 @@ double splc(int m, int n, double *y, double *w,
 */
 void bandet(double *e, int m, int n)
 {
-	int i, k, l, mi, lm, km, m2p1 ;
-	double di, du, dl ;
+    int i, k, l, mi, lm, km, m2p1 ;
+    double di, du, dl ;
 
-	m2p1 = 2*m+1 ;
-	if (m <= 0)
-	{
+    m2p1 = 2*m+1 ;
+    if (m <= 0)
+    {
         return ;
-	}
+    }
 
-	for (i=1; i<=n; i++)
-	{
-		di = e[(i-1)*m2p1+m] ;
+    for (i=1; i<=n; i++)
+    {
+        di = e[(i-1)*m2p1+m] ;
 
-		/*
+        /*
          min
       */
-		mi = (m < (i-1)) ? m : i-1 ;
+        mi = (m < (i-1)) ? m : i-1 ;
 
-		if (mi >= 1)
-		{
-			for (k=1; k<=mi; k++)
-			{
-				di -= e[(i-1)*m2p1-k+m]*e[(i-k-1)*m2p1+k+m] ;
-			}
-			e[(i-1)*m2p1+m] = di ;
-		}
+        if (mi >= 1)
+        {
+            for (k=1; k<=mi; k++)
+            {
+                di -= e[(i-1)*m2p1-k+m]*e[(i-k-1)*m2p1+k+m] ;
+            }
+            e[(i-1)*m2p1+m] = di ;
+        }
 
-		/*
+        /*
          min
       */
-		lm = (m < (n-i)) ? m : n-i ;
+        lm = (m < (n-i)) ? m : n-i ;
 
-		if (lm >= 1)
-		{
-			for (l=1; l<=lm; l++)
-			{
-				dl = e[(i+l-1)*m2p1-l+m] ;
+        if (lm >= 1)
+        {
+            for (l=1; l<=lm; l++)
+            {
+                dl = e[(i+l-1)*m2p1-l+m] ;
 
-				/*
-					min
-				*/
-				km = ((m-l) < (i-1)) ? m-l : i-1 ;
+                /*
+                    min
+                */
+                km = ((m-l) < (i-1)) ? m-l : i-1 ;
 
-				if (km >= 1)
-				{
-					du = e[(i-1)*m2p1+l+m] ;
-					for (k=1; k<=km; k++)
-					{
-						du -= e[(i-1)*m2p1-k+m]*e[(i-k-1)*m2p1+l+k+m] ;
-						dl -= e[(l+i-1)*m2p1-l-k+m]*e[(i-k-1)*m2p1+k+m] ;
-					}
-					e[(i-1)*m2p1+l+m] = du ;
-				}
-				e[(i+l-1)*m2p1-l+m] = dl/di ;
-			}
-		}
-	}
+                if (km >= 1)
+                {
+                    du = e[(i-1)*m2p1+l+m] ;
+                    for (k=1; k<=km; k++)
+                    {
+                        du -= e[(i-1)*m2p1-k+m]*e[(i-k-1)*m2p1+l+k+m] ;
+                        dl -= e[(l+i-1)*m2p1-l-k+m]*e[(i-k-1)*m2p1+k+m] ;
+                    }
+                    e[(i-1)*m2p1+l+m] = du ;
+                }
+                e[(i+l-1)*m2p1-l+m] = dl/di ;
+            }
+        }
+    }
    /*
       ready
    */
@@ -1124,72 +1124,72 @@ void bandet(double *e, int m, int n)
 */
 void bansol(double *e, double *y, double *c, int m, int n)
 {
-	int i, k, nm1, mi, m2p1 ;
-	double d ;
+    int i, k, nm1, mi, m2p1 ;
+    double d ;
 
-	m2p1 = 2*m+1 ;
+    m2p1 = 2*m+1 ;
 
-	/*
-	   Check special cases : m=0, m=1, m>1
-	*/
-	nm1 = n-1 ;
-	if (m == 0)
-	{
-		for (i=1; i<=n; i++)
-		{
-			c[i-1] = y[i-1]/e[(i-1)*m2p1+m] ;
-		}
-	}
-	else
-	{
-		if (m == 1)
-		{
-			c[0] = y[0] ;        /* m=1; tridiagonal system */
-			for (i=2; i<=n; i++)
-			{
-				c[i-1] = y[i-1] - e[(i-1)*m2p1-1+m]*c[i-2] ;
-			}
-			c[n-1] = c[n-1]/e[(n-1)*m2p1+m] ;
-			for (i=nm1; i>=1; i--)
-			{
-				c[i-1] = (c[i-1]-e[(i-1)*m2p1+1+m]*c[i])/e[(i-1)*m2p1+m] ;
-			}
-		}
-		else
-		{
-			c[0] = y[0] ;
-			for (i=2; i<=n; i++)    /* forward sweep */
-			{
+    /*
+       Check special cases : m=0, m=1, m>1
+    */
+    nm1 = n-1 ;
+    if (m == 0)
+    {
+        for (i=1; i<=n; i++)
+        {
+            c[i-1] = y[i-1]/e[(i-1)*m2p1+m] ;
+        }
+    }
+    else
+    {
+        if (m == 1)
+        {
+            c[0] = y[0] ;        /* m=1; tridiagonal system */
+            for (i=2; i<=n; i++)
+            {
+                c[i-1] = y[i-1] - e[(i-1)*m2p1-1+m]*c[i-2] ;
+            }
+            c[n-1] = c[n-1]/e[(n-1)*m2p1+m] ;
+            for (i=nm1; i>=1; i--)
+            {
+                c[i-1] = (c[i-1]-e[(i-1)*m2p1+1+m]*c[i])/e[(i-1)*m2p1+m] ;
+            }
+        }
+        else
+        {
+            c[0] = y[0] ;
+            for (i=2; i<=n; i++)    /* forward sweep */
+            {
 
-				/*
+                /*
                min
             */
-				mi = (m < (i-1)) ? m : i-1 ;
+                mi = (m < (i-1)) ? m : i-1 ;
 
-				d = y[i-1] ;
-				for (k=1; k<=mi; k++)
-				{
-					d -= e[(i-1)*m2p1-k+m]*c[i-k-1] ;
-				}
-				c[i-1] = d ;
-			}
-			c[n-1] /= e[(n-1)*m2p1+m] ;   /* backward sweep */
-			for (i=nm1; i>=1; i--)
-			{
-				/*
+                d = y[i-1] ;
+                for (k=1; k<=mi; k++)
+                {
+                    d -= e[(i-1)*m2p1-k+m]*c[i-k-1] ;
+                }
+                c[i-1] = d ;
+            }
+            c[n-1] /= e[(n-1)*m2p1+m] ;   /* backward sweep */
+            for (i=nm1; i>=1; i--)
+            {
+                /*
                min
             */
-				mi = (m < (n-i)) ? m : n-i ;
+                mi = (m < (n-i)) ? m : n-i ;
 
-				d = c[i-1] ;
-				for (k=1; k<=mi; k++)
-				{
-					d -= e[(i-1)*m2p1+k+m]*c[i+k-1] ;
-				}
-				c[i-1] = d/e[(i-1)*m2p1+m] ;
-			}
-		}
-	}
+                d = c[i-1] ;
+                for (k=1; k<=mi; k++)
+                {
+                    d -= e[(i-1)*m2p1+k+m]*c[i+k-1] ;
+                }
+                c[i-1] = d/e[(i-1)*m2p1+m] ;
+            }
+        }
+    }
    /*
       ready
    */
@@ -1242,77 +1242,77 @@ void bansol(double *e, double *y, double *c, int m, int n)
 */
 double trinv(double *b, double *e, int m, int n)
 {
-	int i, j, k, mi, mn, mp, m2p1 ;
-	double dd, du, dl ;
+    int i, j, k, mi, mn, mp, m2p1 ;
+    double dd, du, dl ;
 
-	m2p1 = 2*m+1;
-	/*
-	   Assess central 2*m+1 bands of E**-1 and store in array E
-	*/
-	e[(n-1)*m2p1+m] = one/e[(n-1)*m2p1+m] ;   /* n-th pivot */
-	for (i=n-1; i>=1; i--)
-	{
-		/*
+    m2p1 = 2*m+1;
+    /*
+       Assess central 2*m+1 bands of E**-1 and store in array E
+    */
+    e[(n-1)*m2p1+m] = one/e[(n-1)*m2p1+m] ;   /* n-th pivot */
+    for (i=n-1; i>=1; i--)
+    {
+        /*
          min ;
       */
-		mi = (m < (n-i)) ? m : n-i ;
+        mi = (m < (n-i)) ? m : n-i ;
 
-		dd = one/e[(i-1)*m2p1+m] ;    /* i-th pivot */
+        dd = one/e[(i-1)*m2p1+m] ;    /* i-th pivot */
 
-		/*
-		   Save I-th column of L and Ith row of U, and normalize U row
-		*/
-		for (k=1; k<=mi; k++)
-		{
-			e[(n-1)*m2p1+k+m] = e[(i-1)*m2p1+k+m]*dd ;   /* I-th row of U normalized */
-			e[m-k]            = e[(k+i-1)*m2p1-k+m] ;		/* I-th column of L */
-		}
-		dd += dd ;
-		/*
-		   Invert around the I-th pivot
-		*/
-		for (j=mi; j>=1; j--)
-		{
-			du = zero ;
-			dl = zero ;
-			for (k=1; k<=mi; k++)
-			{
-				du -= e[(n-1)*m2p1+k+m]*e[(i+k-1)*m2p1+j-k+m] ;
-				dl -= e[(0)*m2p1-k+m]*e[(i+j-1)*m2p1+k-j+m] ;
-			}
-			e[(i-1)*m2p1+j+m] = du ;
-			e[(j+i-1)*m2p1-j+m] = dl ;
-			dd -= (e[(n-1)*m2p1+j+m]*dl + e[(0)*m2p1-j+m]*du) ;
-		}
-		e[(i-1)*m2p1+m] = dd/2 ;
-	}
+        /*
+           Save I-th column of L and Ith row of U, and normalize U row
+        */
+        for (k=1; k<=mi; k++)
+        {
+            e[(n-1)*m2p1+k+m] = e[(i-1)*m2p1+k+m]*dd ;   /* I-th row of U normalized */
+            e[m-k]            = e[(k+i-1)*m2p1-k+m] ;       /* I-th column of L */
+        }
+        dd += dd ;
+        /*
+           Invert around the I-th pivot
+        */
+        for (j=mi; j>=1; j--)
+        {
+            du = zero ;
+            dl = zero ;
+            for (k=1; k<=mi; k++)
+            {
+                du -= e[(n-1)*m2p1+k+m]*e[(i+k-1)*m2p1+j-k+m] ;
+                dl -= e[(0)*m2p1-k+m]*e[(i+j-1)*m2p1+k-j+m] ;
+            }
+            e[(i-1)*m2p1+j+m] = du ;
+            e[(j+i-1)*m2p1-j+m] = dl ;
+            dd -= (e[(n-1)*m2p1+j+m]*dl + e[(0)*m2p1-j+m]*du) ;
+        }
+        e[(i-1)*m2p1+m] = dd/2 ;
+    }
 
-	/*
-	   Access trace [B*E**-1] and clear working space
-	*/
-	dd = zero ;
-	for (i=1; i<=n; i++)
-	{
-		/*
+    /*
+       Access trace [B*E**-1] and clear working space
+    */
+    dd = zero ;
+    for (i=1; i<=n; i++)
+    {
+        /*
          min
       */
-		mn = (m < (i-1)) ? -m : 1-i ;
-		/*
+        mn = (m < (i-1)) ? -m : 1-i ;
+        /*
          min
       */
-		mp = (m < (n-i)) ? m : n-i ;
+        mp = (m < (n-i)) ? m : n-i ;
 
-		for (k=mn; k<=mp; k++)
-		{
-			dd += b[(i-1)*m2p1+k+m]*e[(k+i-1)*m2p1-k+m] ;
-		}
-	}
-	for (k=1; k<=m; k++)
-	{
-		e[(n-1)*m2p1+k+m] = zero ;
-		e[m-k]            = zero ;
-	}
-	return(dd) ;
+        for (k=mn; k<=mp; k++)
+        {
+            dd += b[(i-1)*m2p1+k+m]*e[(k+i-1)*m2p1-k+m] ;
+        }
+    }
+    for (k=1; k<=m; k++)
+    {
+        e[(n-1)*m2p1+k+m] = zero ;
+        e[m-k]            = zero ;
+    }
+    return(dd) ;
 
    /*
       ready
@@ -1338,7 +1338,7 @@ double trinv(double *b, double *e, int m, int n)
  ******************
 
  double splder(int ider, int m, int n, double t, double *x,
-       		   double *c, int *l, double *q)
+               double *c, int *l, double *q)
 
  Meaning of parameters:
  *********************
@@ -1384,199 +1384,199 @@ double trinv(double *b, double *e, int m, int n)
  ***********************************************************************
 */
 double splder(int ider, int m, int n, double t, double *x,
-				  double *c, int *l, double *q)
+                  double *c, int *l, double *q)
 {
-	int i, ii, ir, i1,
+    int i, ii, ir, i1,
        j, jl, jj, ju, jm, j1, j2, jin,
-		 k, ki, k1,
-		 lk, lk1, lk1i, lk1i1,
-		 ml, mi, m2, mp1, m2m1,
-		 nk, npm, nki, nki1 ;
-	double tt, z, xjki ;
+         k, ki, k1,
+         lk, lk1, lk1i, lk1i1,
+         ml, mi, m2, mp1, m2m1,
+         nk, npm, nki, nki1 ;
+    double tt, z, xjki ;
 
-	/*
-	   Derivatives of IDER.ge.2*m ar always zeo
-	*/
-	m2 = 2*m ;
-	k  = m2-ider ;
-	if (k < 1)
-	{
-		return(zero) ;
-	}
+    /*
+       Derivatives of IDER.ge.2*m ar always zeo
+    */
+    m2 = 2*m ;
+    k  = m2-ider ;
+    if (k < 1)
+    {
+        return(zero) ;
+    }
 
-	/*
-	   Search for the interval value L
-	*/
-	search(n, x, t, l) ;
-	
-	/*
-	   Initialize parameters and the first row of the B-Spline
-	   coefficients tableau
-	*/
-	tt   = t ;
-	mp1  = m+1 ;
-	npm  = n+m ;
-	m2m1 = m2-1 ;
-	k1   = k-1;
-	nk   = n-k ;
-	lk   = *l-k ;
-	lk1  = lk+1 ;
-	jl   = *l+1 ;
-	ju   = *l+m2 ;
-	ii   = n-m2 ;
-	ml   = -(*l) ;
+    /*
+       Search for the interval value L
+    */
+    search(n, x, t, l) ;
+    
+    /*
+       Initialize parameters and the first row of the B-Spline
+       coefficients tableau
+    */
+    tt   = t ;
+    mp1  = m+1 ;
+    npm  = n+m ;
+    m2m1 = m2-1 ;
+    k1   = k-1;
+    nk   = n-k ;
+    lk   = *l-k ;
+    lk1  = lk+1 ;
+    jl   = *l+1 ;
+    ju   = *l+m2 ;
+    ii   = n-m2 ;
+    ml   = -(*l) ;
 
-	for(j=jl; j<=ju; j++)
-	{
-		if ((j >= mp1) && (j <= npm))
-		{
-			q[j+ml-1] = c[j-m-1] ;
-		}
-		else
-		{
-			q[j+ml-1] = zero ;
-		}
-	}
+    for(j=jl; j<=ju; j++)
+    {
+        if ((j >= mp1) && (j <= npm))
+        {
+            q[j+ml-1] = c[j-m-1] ;
+        }
+        else
+        {
+            q[j+ml-1] = zero ;
+        }
+    }
 
-	/*
-	   The following loop computes differences of the B-spline
-	   coefficients. If the value of the spline is required,
-	   differencing is not necessary.
-	*/
-	if (ider > 0)
-	{
-		jl -= m2 ;
-		ml += m2 ;
-		for (i=1; i<=ider; i++)
-		{
-			jl++ ;
-			ii++ ;
+    /*
+       The following loop computes differences of the B-spline
+       coefficients. If the value of the spline is required,
+       differencing is not necessary.
+    */
+    if (ider > 0)
+    {
+        jl -= m2 ;
+        ml += m2 ;
+        for (i=1; i<=ider; i++)
+        {
+            jl++ ;
+            ii++ ;
 
-			/*
+            /*
             max
          */
-			j1 = (1 > jl) ? j1 = 1 : jl ;
-			/*
+            j1 = (1 > jl) ? j1 = 1 : jl ;
+            /*
             min
          */
-			j2 = (*l < ii) ? j2 = *l : ii ;
+            j2 = (*l < ii) ? j2 = *l : ii ;
 
-			mi = m2 -i ;
-			j  = j2 + 1 ;
-			if (j1 <= j2)
-			{
-				for (jin=j1; jin<=j2; jin++)
-				{
-					j-- ;
-					jm = ml +j ;
-					q[jm-1] = (q[jm-1]-q[jm-2])/(x[j+mi-1]-x[j-1]) ;
-				}
-			}
-			if (jl < 1)
-			{
-				i1 = i+1 ;
-				j  = ml+1 ;
-				if (i1 <= ml)
-				{
-					for (jin=i1; jin<=ml; jin++)
-					{
-						j-- ;
-						q[j-1] = -q[j-2] ;
-					}
-				}
-			}
-		}
-		for (j=1; j<=k; j++)
-		{
-			q[j-1] = q[j+ider-1] ;
-		}
-	}
+            mi = m2 -i ;
+            j  = j2 + 1 ;
+            if (j1 <= j2)
+            {
+                for (jin=j1; jin<=j2; jin++)
+                {
+                    j-- ;
+                    jm = ml +j ;
+                    q[jm-1] = (q[jm-1]-q[jm-2])/(x[j+mi-1]-x[j-1]) ;
+                }
+            }
+            if (jl < 1)
+            {
+                i1 = i+1 ;
+                j  = ml+1 ;
+                if (i1 <= ml)
+                {
+                    for (jin=i1; jin<=ml; jin++)
+                    {
+                        j-- ;
+                        q[j-1] = -q[j-2] ;
+                    }
+                }
+            }
+        }
+        for (j=1; j<=k; j++)
+        {
+            q[j-1] = q[j+ider-1] ;
+        }
+    }
 
-	/*
-	   Compute lower half of the evaluation tableau
-	*/
-	if (k1 >= 1)   /* tableau ready if IDER.eq.2*m-1 */
-	{
-		for (i=1; i<=k1; i++)
-		{
-			nki = nk+i  ;
-			ir = k ;
-			jj = *l ;
-			ki = k-i ;
-			nki1 = nki+1 ;
+    /*
+       Compute lower half of the evaluation tableau
+    */
+    if (k1 >= 1)   /* tableau ready if IDER.eq.2*m-1 */
+    {
+        for (i=1; i<=k1; i++)
+        {
+            nki = nk+i  ;
+            ir = k ;
+            jj = *l ;
+            ki = k-i ;
+            nki1 = nki+1 ;
 
-			/*
-			   Right hand splines
-			*/
-			if (*l >= nki1)
-			{
-				for (j=nki1; j<=*l; j++)
-				{
-					q[ir-1] = q[ir-2] + (tt-x[jj-1])*q[ir-1] ;
-					jj-- ;
-					ir-- ;
-				}
-			}
+            /*
+               Right hand splines
+            */
+            if (*l >= nki1)
+            {
+                for (j=nki1; j<=*l; j++)
+                {
+                    q[ir-1] = q[ir-2] + (tt-x[jj-1])*q[ir-1] ;
+                    jj-- ;
+                    ir-- ;
+                }
+            }
 
-			/*
-			   Middle B-splines
-			*/
-			lk1i = lk1+i ;
+            /*
+               Middle B-splines
+            */
+            lk1i = lk1+i ;
 
-			/*
+            /*
             max
          */
-			j1 = (1 > lk1i) ? 1 : lk1i ;
-			/*
+            j1 = (1 > lk1i) ? 1 : lk1i ;
+            /*
             min
          */
-			j2 = (*l < nki) ? *l : nki ;
-			if (j1 <= j2)
-			{
-				for (j=j1; j<=j2; j++)
-				{
-					xjki = x[jj+ki-1] ;
-					z = q[ir-1] ;
-					q[ir-1] = z+(xjki-tt)*(q[ir-2]-z)/(xjki-x[jj-1]) ;
-					ir-- ;
-					jj-- ;
-				}
-			}
+            j2 = (*l < nki) ? *l : nki ;
+            if (j1 <= j2)
+            {
+                for (j=j1; j<=j2; j++)
+                {
+                    xjki = x[jj+ki-1] ;
+                    z = q[ir-1] ;
+                    q[ir-1] = z+(xjki-tt)*(q[ir-2]-z)/(xjki-x[jj-1]) ;
+                    ir-- ;
+                    jj-- ;
+                }
+            }
 
-			/*
-			   Left hand B-Splines
-			*/
-			if (lk1i <= 0)
-			{
-				jj = ki ;
-				lk1i1 = 1- lk1i ;
-				for (j=1; j<=lk1i1; j++)
-				{
-					q[ir-1] = q[ir-1]+(x[jj-1]-tt)*q[ir-2] ;
-					jj-- ;
-					ir-- ;
-				}
-			}
-		}
-	}
+            /*
+               Left hand B-Splines
+            */
+            if (lk1i <= 0)
+            {
+                jj = ki ;
+                lk1i1 = 1- lk1i ;
+                for (j=1; j<=lk1i1; j++)
+                {
+                    q[ir-1] = q[ir-1]+(x[jj-1]-tt)*q[ir-2] ;
+                    jj-- ;
+                    ir-- ;
+                }
+            }
+        }
+    }
 
-	/*
-	   Compute the return value
-	*/
+    /*
+       Compute the return value
+    */
    z = q[k-1] ;
 
-	/*
-	   multiply with factorial of ider > 0
-	*/
-	if (ider>0)
-	{
-		for (j=k; j<=m2m1; j++)
-		{
-			z *= j ;
-		}
-	}
+    /*
+       multiply with factorial of ider > 0
+    */
+    if (ider>0)
+    {
+        for (j=k; j<=m2m1; j++)
+        {
+            z *= j ;
+        }
+    }
 
-	return(z) ;
+    return(z) ;
 
    /*
       ready
@@ -1635,85 +1635,85 @@ void search(int n, double *x, double t, int *l)
 {
     int il, iu ;
 
-	/*
-	   check against range
-	*/
-	if (t < x[0])     /* out of range to the left */
-	{
-		*l = 0 ;
-		return ;
-	}
-	if (t >= x[n-1])     /* out of range to the right */
-	{
-		*l = n ;
-		return ;
-	}
+    /*
+       check against range
+    */
+    if (t < x[0])     /* out of range to the left */
+    {
+        *l = 0 ;
+        return ;
+    }
+    if (t >= x[n-1])     /* out of range to the right */
+    {
+        *l = n ;
+        return ;
+    }
 
-	/*
-	   Validate input value of L
-	*/
+    /*
+       Validate input value of L
+    */
 
-	/*
+    /*
       max
    */
-	*l = (*l > 1) ? *l : 1 ;
+    *l = (*l > 1) ? *l : 1 ;
 
-	if (*l >= n)
-	{
-		*l = n-1 ;
-	}
+    if (*l >= n)
+    {
+        *l = n-1 ;
+    }
 
-	/*
-	   Often L will be in an interval adjoining the interval found in
-	   a previous call to search
-	*/
-	if (t >= x[*l-1])
-	{
-		if (t < x[*l])
-		{
-			return ;
-		}
-		else
-		{
-			(*l)++ ;
-			if (t < x[*l])
-			{
-				return ;
-			}
-			il = *l+1 ;
-			iu = n ;
-		}
-	}
-	else
-	{
-		(*l)-- ;
-		if (t >= x[*l-1])
-		{
-			return ;
-		}
-		else
-		{
-			il = 1 ;
-			iu = *l ;
-		}
-	}
+    /*
+       Often L will be in an interval adjoining the interval found in
+       a previous call to search
+    */
+    if (t >= x[*l-1])
+    {
+        if (t < x[*l])
+        {
+            return ;
+        }
+        else
+        {
+            (*l)++ ;
+            if (t < x[*l])
+            {
+                return ;
+            }
+            il = *l+1 ;
+            iu = n ;
+        }
+    }
+    else
+    {
+        (*l)-- ;
+        if (t >= x[*l-1])
+        {
+            return ;
+        }
+        else
+        {
+            il = 1 ;
+            iu = *l ;
+        }
+    }
 
-	while (1==1)
-	{
-		*l = (il+iu)/2 ;
-		if ((iu-il) <= 1)
-		{
-			return ;
-		}
-		  if (t < x[*l-1])
-		  {
-				iu = *l ;
-		  }
-		  else
-		  {
-				il = *l ;
-		  }
-	 }
+    while (1==1)
+    {
+        *l = (il+iu)/2 ;
+        if ((iu-il) <= 1)
+        {
+            return ;
+        }
+          if (t < x[*l-1])
+          {
+                iu = *l ;
+          }
+          else
+          {
+                il = *l ;
+          }
+     }
     /*
       ready
     */  

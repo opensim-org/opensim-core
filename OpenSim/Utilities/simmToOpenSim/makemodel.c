@@ -408,13 +408,13 @@ ReturnCode add_model(char jointfilename[], char musclefilename[],
    if (ms->wrap_object_array_size == 0)
        ms->wrap_object_array_size = 1;
    ms->wrapobj = (dpWrapObject**)simm_realloc(ms->wrapobj,
-					   ms->wrap_object_array_size*sizeof(dpWrapObject*),&rc);
+                       ms->wrap_object_array_size*sizeof(dpWrapObject*),&rc);
 
    ms->constraint_object_array_size = ms->num_constraint_objects;
    if (ms->constraint_object_array_size == 0)
        ms->constraint_object_array_size = CONSTRAINT_OBJECT_ARRAY_INCREMENT;
    ms->constraintobj = (ConstraintObject*)simm_realloc(ms->constraintobj,
-					   ms->constraint_object_array_size*sizeof(ConstraintObject),&rc);
+                       ms->constraint_object_array_size*sizeof(ConstraintObject),&rc);
 
    /* make a model window structure and register it with the window manager */
    if (scene->windowWidth > 0)
@@ -853,8 +853,8 @@ void make_gencoord_popup_menus(ModelStruct* model)
    }
 
    // Make the moment, moment arm, numerical moment arm, and moment@maxforce submenus.
-	// Each of these menus is a list of gencoords for which you can find a moment arm
-	// (y-var in the plotmaker). It is essentially the same menu as the model's
+    // Each of these menus is a list of gencoords for which you can find a moment arm
+    // (y-var in the plotmaker). It is essentially the same menu as the model's
    // "gencoordmenu" pop-up menu (without the "all on" and "all off" items),
    // but the selections must return different numbers, so you need to make
    // a whole new menu for each y-var
@@ -1042,7 +1042,7 @@ void make_function_menu(ModelStruct* ms)
    ms->functionMenu = glueCreateMenu("Functions");
    for (i=0; i<ms->func_array_size; i++)
    {
-	   if (ms->function[i] && ms->function[i]->used == dpYes)
+       if (ms->function[i] && ms->function[i]->used == dpYes)
       {
          if (ms->function[i]->source == dpMuscleFile)
             sprintf(buffer, "m%d", ms->function[i]->usernum);
@@ -1103,11 +1103,11 @@ void scene_input(WindowParams* win_parameters, WinUnion* win_struct, SimmEvent s
     */
 
    /* Hack to support right-clicking on a bone to change its drawmode */
-	//TODO5.0: figure out which object was clicked on, and send an event to
-	//the appropriate tool's simm event handler.
+    //TODO5.0: figure out which object was clicked on, and send an event to
+    //the appropriate tool's simm event handler.
    if (se.field1 == rightmouse_button && se.field2 == key_pressed)
    {
-		handle_right_click(win_struct->scene, se.mouse_x, se.mouse_y);
+        handle_right_click(win_struct->scene, se.mouse_x, se.mouse_y);
    }
    else if (se.field1 != leftmouse_button && se.field1 != middlemouse_button && se.field1 != rightmouse_button)
    {
@@ -1144,9 +1144,9 @@ static void handle_right_click(Scene* scene, int mouse_x, int mouse_y)
       get_object_type_and_number(object, &object_type, &obj_num);
 
       memset(&se, 0, sizeof(SimmEvent));
-		se.event_code = SCENE_RIGHT_CLICK_EVENT;
-		se.struct_ptr1 = (void*)scene;
-		se.struct_ptr2 = (void*)scene->model[0];
+        se.event_code = SCENE_RIGHT_CLICK_EVENT;
+        se.struct_ptr1 = (void*)scene;
+        se.struct_ptr2 = (void*)scene->model[0];
       se.model_index = scene->model[0]->modelnum;
       se.mouse_x = mouse_x;
       se.mouse_y = mouse_y;
@@ -1155,31 +1155,31 @@ static void handle_right_click(Scene* scene, int mouse_x, int mouse_y)
 
       if (object_type == BONE_OBJECT || object_type == WORLD_OBJECT)
       {
-			call_simm_event_handler("mv", se);
+            call_simm_event_handler("mv", se);
       }
       else if (object_type == MUSCLE_OBJECT)
       {
-			call_simm_event_handler("me", se);
+            call_simm_event_handler("me", se);
       }
       else if (object_type == MARKER_OBJECT)
       {
-			call_simm_event_handler("mk", se);
+            call_simm_event_handler("mk", se);
       }
    }
 }
 
 static void call_simm_event_handler(const char tool_id[], SimmEvent se)
 {
-	int i;
+    int i;
 
-	for (i=0; i<TOOLBUFFER; i++)
-	{
-		if (tool[i].used == yes && STRINGS_ARE_EQUAL(tool[i].name, tool_id))
-		{
-			(*tool[i].simm_event_handler)(se);
-			return;
-		}
-	}
+    for (i=0; i<TOOLBUFFER; i++)
+    {
+        if (tool[i].used == yes && STRINGS_ARE_EQUAL(tool[i].name, tool_id))
+        {
+            (*tool[i].simm_event_handler)(se);
+            return;
+        }
+    }
 }
 
 //TODO_SCENE: delete model or scene???
@@ -1211,22 +1211,22 @@ ReturnCode find_segment_drawing_order(ModelStruct* ms)
    /* The next 3 lines are a hack until the code at the bottom works better */
    for (i=0; i<ms->numsegments; i++)
       if (seg_used[i] == no)
-	 ms->segment_drawing_order[index++] = i;
+     ms->segment_drawing_order[index++] = i;
 
 /*
    for (i=ms->numjoints-1; i>=0; i--)
    {
       if (joint_uses_segment(ms,i,ms->ground_segment,&other_seg) == yes &&
-	  seg_used[other_seg] == no)
+      seg_used[other_seg] == no)
       {
-	 ms->segment_drawing_order[index++] = other_seg;
-	 seg_used[other_seg] = yes;
+     ms->segment_drawing_order[index++] = other_seg;
+     seg_used[other_seg] = yes;
       }
    }
 
    for (i=0; i<ms->numsegments; i++)
       if (seg_used[i] == no)
-	 ms->segment_drawing_order[index++] = i;
+     ms->segment_drawing_order[index++] = i;
 */
 
 /*
@@ -1244,7 +1244,7 @@ ReturnCode find_segment_drawing_order(ModelStruct* ms)
 
 
 static SBoolean joint_uses_segment(ModelStruct* ms, int jointnum, int segmentnum,
-				   int* other_segment)
+                   int* other_segment)
 {
 
    if (ms->joint[jointnum].from == segmentnum)
@@ -1819,7 +1819,7 @@ public ReturnCode open_motion_analysis_file(
    lowerstr(buffer);
 
    if (is_module_present(MOTION_REAL) == no)
-	  options.allowRealtimeImport = -1;
+      options.allowRealtimeImport = -1;
    else
       options.allowRealtimeImport = strstr(buffer, "realtime") ? 1 : 0;
    options.realtimeDuration = (double) htrInfo.numFrames / htrInfo.dataFrameRate;
@@ -2522,16 +2522,16 @@ void check_gencoord_usage(ModelStruct* ms, SBoolean change_visibility)
 
       for (j=0; j<ms->numjoints; j++)
       {
-	      for (k=0; k<6; k++)
+          for (k=0; k<6; k++)
          {
-	         if (ms->joint[j].dofs[k].type == constant_dof)
-	            continue;
-	         if (ms->joint[j].dofs[k].gencoord == ms->gencoord[i])
-	         {
-	            used_in_model = yes;
-	            break;
-	         }
-	      }
+             if (ms->joint[j].dofs[k].type == constant_dof)
+                continue;
+             if (ms->joint[j].dofs[k].gencoord == ms->gencoord[i])
+             {
+                used_in_model = yes;
+                break;
+             }
+          }
          if (used_in_model == yes)
          {
             /* If the gencoord was previously unused, turn its slider on */

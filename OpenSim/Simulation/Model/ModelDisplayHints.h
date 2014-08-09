@@ -29,10 +29,10 @@
 namespace OpenSim {
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+    #ifdef OSIMSIMULATION_API
+        #undef OSIMSIMULATION_API
+        #define OSIMSIMULATION_API
+    #endif
 #endif
 
 //==============================================================================

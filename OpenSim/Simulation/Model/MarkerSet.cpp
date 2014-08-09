@@ -46,11 +46,11 @@ MarkerSet::~MarkerSet(void)
  * Constructor of a markerSet from a file.
  */
 MarkerSet::MarkerSet(const string& aMarkersFileName) :
-	Set<Marker>(aMarkersFileName, false)
+    Set<Marker>(aMarkersFileName, false)
 {
-	setNull();
-	SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
-	updateFromXMLNode(e, getDocument()->getDocumentVersion());
+    setNull();
+    SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
+    updateFromXMLNode(e, getDocument()->getDocumentVersion());
 }
 
 //_____________________________________________________________________________
@@ -58,9 +58,9 @@ MarkerSet::MarkerSet(const string& aMarkersFileName) :
  * Default constructor of a markerSet.
  */
 MarkerSet::MarkerSet() :
-	Set<Marker>()
+    Set<Marker>()
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -70,8 +70,8 @@ MarkerSet::MarkerSet() :
 MarkerSet::MarkerSet(const MarkerSet& aMarkerSet):
 Set<Marker>(aMarkerSet)
 {
-	setNull();
-	*this = aMarkerSet;
+    setNull();
+    *this = aMarkerSet;
 }
 
 //=============================================================================
@@ -89,12 +89,12 @@ void MarkerSet::setNull()
  */
 void MarkerSet::connectMarkersToModel(Model& aModel)
 {
-	// Invoke base class method.
-	setupGroups();
+    // Invoke base class method.
+    setupGroups();
 
-	// Do members
-	for (int i = 0; i < getSize(); i++)
-		get(i).connectMarkerToModel(aModel);
+    // Do members
+    for (int i = 0; i < getSize(); i++)
+        get(i).connectMarkerToModel(aModel);
 
 }
 
@@ -110,8 +110,8 @@ void MarkerSet::connectMarkersToModel(Model& aModel)
 #ifndef SWIG
 MarkerSet& MarkerSet::operator=(const MarkerSet &aMarkerSet)
 {
-	Set<Marker>::operator=(aMarkerSet);
-	return (*this);
+    Set<Marker>::operator=(aMarkerSet);
+    return (*this);
 }
 #endif
 
@@ -124,11 +124,11 @@ MarkerSet& MarkerSet::operator=(const MarkerSet &aMarkerSet)
  */
 void MarkerSet::getMarkerNames(Array<string>& aMarkerNamesArray)
 {
-	for (int i = 0; i < getSize(); i++)
-	{
-		Marker& nextMarker = get(i);
-		aMarkerNamesArray.append(nextMarker.getName());
-	}
+    for (int i = 0; i < getSize(); i++)
+    {
+        Marker& nextMarker = get(i);
+        aMarkerNamesArray.append(nextMarker.getName());
+    }
 }
 
 //_____________________________________________________________________________
@@ -137,25 +137,25 @@ void MarkerSet::getMarkerNames(Array<string>& aMarkerNamesArray)
  */
 void MarkerSet::scale(const ScaleSet& scaleSet)
 {
-	Vec3	scaleFactors(1.0);
+    Vec3    scaleFactors(1.0);
 
-	for (int i = 0; i < getSize(); i++)
-	{
-		Marker& nextMarker = get(i);
-		const string& refBodyName = nextMarker.getBodyName();
-		//assert(refBodyName);
-		bool found = false;
-		for (int j = 0; j < scaleSet.getSize() && !found; j++)
-		{
-			Scale& nextScale = scaleSet.get(j);
-			if (nextScale.getSegmentName() == refBodyName)
-			{
-				found = true;
-				nextScale.getScaleFactors(scaleFactors);
-				nextMarker.scale(scaleFactors);
-			}
-		}
-	}
+    for (int i = 0; i < getSize(); i++)
+    {
+        Marker& nextMarker = get(i);
+        const string& refBodyName = nextMarker.getBodyName();
+        //assert(refBodyName);
+        bool found = false;
+        for (int j = 0; j < scaleSet.getSize() && !found; j++)
+        {
+            Scale& nextScale = scaleSet.get(j);
+            if (nextScale.getSegmentName() == refBodyName)
+            {
+                found = true;
+                nextScale.getScaleFactors(scaleFactors);
+                nextMarker.scale(scaleFactors);
+            }
+        }
+    }
 }
 
 //_____________________________________________________________________________
@@ -164,11 +164,11 @@ void MarkerSet::scale(const ScaleSet& scaleSet)
  */
 void MarkerSet::addNamePrefix(const string& prefix)
 {
-	int i;
+    int i;
 
-	// Cycle thru set and add prefix
-	for (i = 0; i < getSize(); i++)
-		get(i).setName(prefix + get(i).getName());
+    // Cycle thru set and add prefix
+    for (i = 0; i < getSize(); i++)
+        get(i).setName(prefix + get(i).getName());
 }
 
 //_____________________________________________________________________________
@@ -177,18 +177,18 @@ void MarkerSet::addNamePrefix(const string& prefix)
  */
 Marker* MarkerSet::addMarker(const string& aName, const double aOffset[3], OpenSim::Body& aBody)
 {
-	// If a marker by this name already exists, do nothing.
-	if (contains(aName))
-		return NULL;
+    // If a marker by this name already exists, do nothing.
+    if (contains(aName))
+        return NULL;
 
-	// Create a marker and add it to the set.
-	Marker* m = new Marker();
-	m->setName(aName);
-	m->setOffset(aOffset);
+    // Create a marker and add it to the set.
+    Marker* m = new Marker();
+    m->setName(aName);
+    m->setOffset(aOffset);
     // Body will be based on this name when marker is connected to Model.
-	m->setBodyName(aBody.getName()); 
-	m->connectMarkerToModel(aBody.getModel());
-	adoptAndAppend(m);
+    m->setBodyName(aBody.getName()); 
+    m->connectMarkerToModel(aBody.getModel());
+    adoptAndAppend(m);
 
-	return m;
+    return m;
 }

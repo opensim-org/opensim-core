@@ -59,9 +59,9 @@ SimTK::Matrix calcFunctionTimeIntegral(
                                         
 int main(int argc, char* argv[])
 {
-	
+    
 
-	try {
+    try {
             SimTK_START_TEST("Testing MuscleFirstOrderDynamicModel");
 
             /*
@@ -323,26 +323,26 @@ int main(int argc, char* argv[])
     catch (const OpenSim::Exception& ex)
     {
         cout << ex.getMessage() << endl;
-		cin.get();
+        cin.get();
         return 1;
     }
     catch (const std::exception& ex)
     {
         cout << ex.what() << endl;
-		cin.get();		
-		return 1;
+        cin.get();      
+        return 1;
     }
     catch (...)
     {
         cout << "UNRECOGNIZED EXCEPTION" << endl;
-		cin.get();
+        cin.get();
         return 1;
     }
 
-	
+    
 
     cout << "\ntestMuscleFirstOrderDynamicModel completed successfully .\n";
-	return 0;
+    return 0;
 }
 
 /**
@@ -355,17 +355,17 @@ This function will print cvs file of the matrix
 void printMatrixToFile( const SimTK::Matrix& data, const std::string& filename)
 {
     ofstream datafile;
-	datafile.open(filename.c_str());
+    datafile.open(filename.c_str());
 
-	for(int i = 0; i < data.nrow(); i++){
-		for(int j = 0; j < data.ncol(); j++){
-			if(j<data.ncol()-1)
-				datafile << data(i,j) << ",";
-			else
-				datafile << data(i,j) << "\n";
-		}	
-	}
-	datafile.close();
+    for(int i = 0; i < data.nrow(); i++){
+        for(int j = 0; j < data.ncol(); j++){
+            if(j<data.ncol()-1)
+                datafile << data(i,j) << ",";
+            else
+                datafile << data(i,j) << "\n";
+        }   
+    }
+    datafile.close();
 }
 
 /**
@@ -480,12 +480,12 @@ bool isFunctionContinuous(const SimTK::Vector& xV, const SimTK::Vector& yV,
 
  @param x domain vector
  @param y range vector
- @param extrap_endpoints: (false)	Endpoints of the returned vector will be 
+ @param extrap_endpoints: (false)   Endpoints of the returned vector will be 
                                     zero, because a central difference
-									is undefined at these endpoints
-							(true)	Endpoints are computed by linearly 
+                                    is undefined at these endpoints
+                            (true)  Endpoints are computed by linearly 
                                     extrapolating using a first difference from 
-									the neighboring 2 points
+                                    the neighboring 2 points
  @returns dy/dx computed using central differences
 */
 SimTK::Vector calcCentralDifference(const SimTK::Vector& x, 
@@ -493,28 +493,28 @@ SimTK::Vector calcCentralDifference(const SimTK::Vector& x,
                                     bool extrap_endpoints){
  
 
-	SimTK::Vector dy(x.size());
-	double dx1,dx2;
-	double dy1,dy2;
-	int size = x.size();
-	for(int i=1; i<x.size()-1; i++){
-		dx1 = x(i)-x(i-1);
-		dx2 = x(i+1)-x(i);
-		dy1 = y(i)-y(i-1);
-		dy2 = y(i+1)-y(i);
-		dy(i)= 0.5*dy1/dx1 + 0.5*dy2/dx2;
-	}
+    SimTK::Vector dy(x.size());
+    double dx1,dx2;
+    double dy1,dy2;
+    int size = x.size();
+    for(int i=1; i<x.size()-1; i++){
+        dx1 = x(i)-x(i-1);
+        dx2 = x(i+1)-x(i);
+        dy1 = y(i)-y(i-1);
+        dy2 = y(i+1)-y(i);
+        dy(i)= 0.5*dy1/dx1 + 0.5*dy2/dx2;
+    }
 
-	if(extrap_endpoints == true){
-		dy1 = dy(2)-dy(1);
-		dx1 = x(2)-x(1);
-		dy(0) = dy(1) + (dy1/dx1)*(x(0)-x(1));
+    if(extrap_endpoints == true){
+        dy1 = dy(2)-dy(1);
+        dx1 = x(2)-x(1);
+        dy(0) = dy(1) + (dy1/dx1)*(x(0)-x(1));
 
-		dy2 = dy(size-2)-dy(size-3);
-		dx2 = x(size-2)-x(size-3);
-		dy(size-1) = dy(size-2) + (dy2/dx2)*(x(size-1)-x(size-2));
-	}
-	return dy;
+        dy2 = dy(size-2)-dy(size-3);
+        dx2 = x(size-2)-x(size-3);
+        dy(size-1) = dy(size-2) + (dy2/dx2)*(x(size-1)-x(size-2));
+    }
+    return dy;
 }
 
 

@@ -50,24 +50,24 @@ Analysis::Analysis(Model *aModel):
     _startTime(_startTimeProp.getValueDbl()),
     _endTime(_endTimeProp.getValueDbl()),
     _stepInterval(_stepIntervalProp.getValueInt()),
-	_inDegrees(_inDegreesProp.getValueBool()),
-	_statesStore(NULL)
+    _inDegrees(_inDegreesProp.getValueBool()),
+    _statesStore(NULL)
 {
-	
+    
     _model = aModel;
-	setNull();
+    setNull();
 
-	// ON
-	setOn(true);
+    // ON
+    setOn(true);
 
-	// NAME
-	setName("Un-named analysis.");
+    // NAME
+    setName("Un-named analysis.");
 
-	// DESCRIPTION
-	setDescription("No description.");
+    // DESCRIPTION
+    setDescription("No description.");
 
-	// MODEL
-	_model = aModel;
+    // MODEL
+    _model = aModel;
 
 }
 //_____________________________________________________________________________
@@ -94,11 +94,11 @@ Analysis::Analysis(const string &aFileName, bool aUpdateFromXMLNode):
     _on(_onProp.getValueBool()),
     _startTime(_startTimeProp.getValueDbl()),
     _endTime(_endTimeProp.getValueDbl()),
-	_statesStore(NULL)
+    _statesStore(NULL)
 {
-	setNull();
-	SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
-	if(aUpdateFromXMLNode) updateFromXMLNode(e, getDocument()->getDocumentVersion());
+    setNull();
+    SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
+    if(aUpdateFromXMLNode) updateFromXMLNode(e, getDocument()->getDocumentVersion());
 }
 //_____________________________________________________________________________
 /**
@@ -145,8 +145,8 @@ Analysis::Analysis(const Analysis &aAnalysis):
    _inDegrees(_inDegreesProp.getValueBool()),
    _statesStore(NULL)
 {
-	setNull();
-	*this = aAnalysis;
+    setNull();
+    *this = aAnalysis;
 }
 
 //_____________________________________________________________________________
@@ -156,15 +156,15 @@ Analysis::Analysis(const Analysis &aAnalysis):
 void Analysis::
 setNull()
 {
-	setupProperties();
+    setupProperties();
     _stepInterval = 1;
     _on = true;
     _model = NULL;
     _startTime = -SimTK::Infinity;
     _endTime = SimTK::Infinity;
-	_inDegrees=true;
-	_storageList.setMemoryOwner(false);
-	_printResultFiles=true;
+    _inDegrees=true;
+    _storageList.setMemoryOwner(false);
+    _printResultFiles=true;
 }
 //_____________________________________________________________________________
 /**
@@ -191,10 +191,10 @@ void Analysis::setupProperties()
     _stepIntervalProp.setName("step_interval");
     _propertySet.append( &_stepIntervalProp );
 
-	_inDegreesProp.setComment("Flag (true or false) indicating whether the "
-		"results are in degrees or not.");
-	_inDegreesProp.setName("in_degrees");
-	_propertySet.append( &_inDegreesProp );
+    _inDegreesProp.setComment("Flag (true or false) indicating whether the "
+        "results are in degrees or not.");
+    _inDegreesProp.setName("in_degrees");
+    _propertySet.append( &_inDegreesProp );
 }
 
 
@@ -211,22 +211,22 @@ void Analysis::setupProperties()
 Analysis& Analysis::
 operator=(const Analysis &aAnalysis)
 {
-	// BASE CLASS
-	Object::operator=(aAnalysis);
+    // BASE CLASS
+    Object::operator=(aAnalysis);
 
-	// Data members
-	_model = aAnalysis._model;
+    // Data members
+    _model = aAnalysis._model;
     _on = aAnalysis._on;
     _startTime = aAnalysis._startTime;
     _endTime = aAnalysis._endTime;
 
-	_inDegrees = aAnalysis._inDegrees;
-	_printResultFiles = aAnalysis._printResultFiles;
+    _inDegrees = aAnalysis._inDegrees;
+    _printResultFiles = aAnalysis._printResultFiles;
 
     // Class Memebers
     setStepInterval(aAnalysis.getStepInterval());
 
-	return(*this);
+    return(*this);
 }
 //_____________________________________________________________________________
 /**
@@ -240,7 +240,7 @@ operator=(const Analysis &aAnalysis)
 bool Analysis::
 proceed(int aStep)
 {
-	return(getOn() && ((aStep%_stepInterval)==0));
+    return(getOn() && ((aStep%_stepInterval)==0));
 }
 
 //=============================================================================
@@ -261,7 +261,7 @@ proceed(int aStep)
 void Analysis::
 setInDegrees(bool aTrueFalse)
 {
-	_inDegrees = aTrueFalse;
+    _inDegrees = aTrueFalse;
 }
 //_____________________________________________________________________________
 /**
@@ -272,7 +272,7 @@ setInDegrees(bool aTrueFalse)
 bool Analysis::
 getInDegrees() const
 {
-	return(_inDegrees);
+    return(_inDegrees);
 }
 //_____________________________________________________________________________
 /**
@@ -282,8 +282,8 @@ getInDegrees() const
 void Analysis::
 setModel(Model& aModel)
 {
-	// BASE CLASS
-	_model = &aModel;
+    // BASE CLASS
+    _model = &aModel;
 
 }
 //_____________________________________________________________________________
@@ -294,8 +294,8 @@ setModel(Model& aModel)
 void Analysis::
 setStatesStore(const Storage& aStatesStore)
 {
-	// BASE CLASS
-	_statesStore = &aStatesStore;
+    // BASE CLASS
+    _statesStore = &aStatesStore;
 
 }
 //-----------------------------------------------------------------------------
@@ -309,7 +309,7 @@ setStatesStore(const Storage& aStatesStore)
 void Analysis::
 setColumnLabels(const OpenSim::Array<string> &aLabels)
 {
-	_labels = aLabels;
+    _labels = aLabels;
 }
 //_____________________________________________________________________________
 /**
@@ -320,7 +320,7 @@ setColumnLabels(const OpenSim::Array<string> &aLabels)
 const OpenSim::Array<string> &Analysis::
 getColumnLabels() const
 {
-	return _labels;
+    return _labels;
 }
 
 
@@ -340,16 +340,16 @@ getColumnLabels() const
  */
 int Analysis::
 printResults(const string &aBaseName,const string &aDir,double aDT,
-				 const string &aExtension)
+                 const string &aExtension)
 {
-	printf("Analysis.printResults: Printing results of analysis %s.\n",
-		getName().c_str());
-	return(0);
+    printf("Analysis.printResults: Printing results of analysis %s.\n",
+        getName().c_str());
+    return(0);
 }
 
 ArrayPtrs<Storage>& Analysis::getStorageList()
 {
-	return _storageList;
+    return _storageList;
 }
 
 // GET AND SET
@@ -369,8 +369,8 @@ ArrayPtrs<Storage>& Analysis::getStorageList()
 void Analysis::
 setStepInterval(int aStepInterval)
 {
-	_stepInterval = aStepInterval;
-	if(_stepInterval<1) _stepInterval= 1;
+    _stepInterval = aStepInterval;
+    if(_stepInterval<1) _stepInterval= 1;
 }
 //_____________________________________________________________________________
 /**
@@ -387,7 +387,7 @@ setStepInterval(int aStepInterval)
 int Analysis::
 getStepInterval() const
 {
-	return(_stepInterval);
+    return(_stepInterval);
 }
 //-----------------------------------------------------------------------------
 // ON/OFF
@@ -401,7 +401,7 @@ getStepInterval() const
 void Analysis::
 setOn(bool aTrueFalse)
 {
-	_on = aTrueFalse;
+    _on = aTrueFalse;
 }
 //_____________________________________________________________________________
 /**
@@ -412,7 +412,7 @@ setOn(bool aTrueFalse)
 bool Analysis::
 getOn() const
 {
-	return(_on);
+    return(_on);
 }
 
 //-----------------------------------------------------------------------------
@@ -428,7 +428,7 @@ getOn() const
 void Analysis::
 setStartTime(double aStartTime)
 {
-	_startTime = aStartTime;
+    _startTime = aStartTime;
 }
 //_____________________________________________________________________________
 /**
@@ -440,7 +440,7 @@ setStartTime(double aStartTime)
 double Analysis::
 getStartTime() const
 {
-	return(_startTime);
+    return(_startTime);
 }
 
 //-----------------------------------------------------------------------------
@@ -457,7 +457,7 @@ getStartTime() const
 void Analysis::
 setEndTime(double aEndTime)
 {
-	_endTime = aEndTime;
+    _endTime = aEndTime;
 }
 //_____________________________________________________________________________
 /**
@@ -469,7 +469,7 @@ setEndTime(double aEndTime)
 double Analysis::
 getEndTime() const
 {
-	return(_endTime);
+    return(_endTime);
 }
 
 //=============================================================================
@@ -487,8 +487,8 @@ getEndTime() const
 int Analysis::
 begin( SimTK::State& s )
 {
-	//printf("Analysis.begin: %s.\n",getName());
-	return (0);
+    //printf("Analysis.begin: %s.\n",getName());
+    return (0);
 }
 //_____________________________________________________________________________
 /**
@@ -504,8 +504,8 @@ begin( SimTK::State& s )
 int Analysis:: 
 step( const SimTK::State& s, int stepNumber )
 {
-	//printf("Analysis.step: %s.\n",getName());
-	return (0);
+    //printf("Analysis.step: %s.\n",getName());
+    return (0);
 }
 //_____________________________________________________________________________
 /**
@@ -521,6 +521,6 @@ step( const SimTK::State& s, int stepNumber )
 int Analysis::
 end( SimTK::State& s )
 {
-	//printf("Analysis.end: %s.\n",getName());
-	return(0);
+    //printf("Analysis.end: %s.\n",getName());
+    return(0);
 }

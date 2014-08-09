@@ -59,33 +59,33 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	GCVSplineSet();
-	GCVSplineSet(const char *aFileName);
-	GCVSplineSet(int aDegree,const Storage *aStore,double aErrorVariance=0.0);
-	virtual ~GCVSplineSet();
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    GCVSplineSet();
+    GCVSplineSet(const char *aFileName);
+    GCVSplineSet(int aDegree,const Storage *aStore,double aErrorVariance=0.0);
+    virtual ~GCVSplineSet();
 
 private:
-	void setNull();
-	void construct(int aDegree,const Storage *aStore,double aErrorVariance);
+    void setNull();
+    void construct(int aDegree,const Storage *aStore,double aErrorVariance);
 
-	//--------------------------------------------------------------------------
-	// SET AND GET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // SET AND GET
+    //--------------------------------------------------------------------------
 public:
-	GCVSpline* getGCVSpline(int aIndex) const;
-	double getMinX() const;
-	double getMaxX() const;
+    GCVSpline* getGCVSpline(int aIndex) const;
+    double getMinX() const;
+    double getMaxX() const;
 
-	//--------------------------------------------------------------------------
-	// UTILITY
-	//--------------------------------------------------------------------------
-	Storage* constructStorage(int aDerivOrder,double aDX=-1);
+    //--------------------------------------------------------------------------
+    // UTILITY
+    //--------------------------------------------------------------------------
+    Storage* constructStorage(int aDerivOrder,double aDX=-1);
 
 //=============================================================================
-};	// END class GCVSplineSet
+};  // END class GCVSplineSet
 
 }; //namespace
 //=============================================================================

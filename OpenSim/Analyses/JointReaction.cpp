@@ -64,13 +64,13 @@ JointReaction::~JointReaction()
  * @param aModel Model for which the analysis is to be run.
  */
 JointReaction::JointReaction(Model *aModel) :
-	Analysis(aModel),
-	_forcesFileName(_forcesFileNameProp.getValueStr()),
-	_jointNames(_jointNamesProp.getValueStrArray()),
-	_onBody(_onBodyProp.getValueStrArray()),
-	_inFrame(_inFrameProp.getValueStrArray())
+    Analysis(aModel),
+    _forcesFileName(_forcesFileNameProp.getValueStr()),
+    _jointNames(_jointNamesProp.getValueStrArray()),
+    _onBody(_onBodyProp.getValueStrArray()),
+    _inFrame(_inFrameProp.getValueStrArray())
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -82,26 +82,26 @@ JointReaction::JointReaction(Model *aModel) :
  * @param aFileName File name of the document.
  */
 JointReaction::JointReaction(const std::string &aFileName):
-	Analysis(aFileName, false),
-	_forcesFileName(_forcesFileNameProp.getValueStr()),
-	_jointNames(_jointNamesProp.getValueStrArray()),
-	_onBody(_onBodyProp.getValueStrArray()),
-	_inFrame(_inFrameProp.getValueStrArray())
+    Analysis(aFileName, false),
+    _forcesFileName(_forcesFileNameProp.getValueStr()),
+    _jointNames(_jointNamesProp.getValueStrArray()),
+    _onBody(_onBodyProp.getValueStrArray()),
+    _inFrame(_inFrameProp.getValueStrArray())
 {
-	setNull();
+    setNull();
 
-	// Serialize from XML
-	updateFromXMLDocument();
+    // Serialize from XML
+    updateFromXMLDocument();
 
-	/* The rest will be done by setModel().
-	// CONSTRUCT DESCRIPTION AND LABELS
-	constructDescription();
-	updateBodiesToRecord();
-	constructColumnLabels();
+    /* The rest will be done by setModel().
+    // CONSTRUCT DESCRIPTION AND LABELS
+    constructDescription();
+    updateBodiesToRecord();
+    constructColumnLabels();
 
-	// STORAGE
-	allocateStorage();
-	*/
+    // STORAGE
+    allocateStorage();
+    */
 }
 
 // Copy constrctor and virtual copy 
@@ -111,15 +111,15 @@ JointReaction::JointReaction(const std::string &aFileName):
  *
  */
 JointReaction::JointReaction(const JointReaction &aJointReaction):
-	Analysis(aJointReaction),
-	_forcesFileName(_forcesFileNameProp.getValueStr()),
-	_jointNames(_jointNamesProp.getValueStrArray()),
-	_onBody(_onBodyProp.getValueStrArray()),
-	_inFrame(_inFrameProp.getValueStrArray())
+    Analysis(aJointReaction),
+    _forcesFileName(_forcesFileNameProp.getValueStr()),
+    _jointNames(_jointNamesProp.getValueStrArray()),
+    _onBody(_onBodyProp.getValueStrArray()),
+    _inFrame(_inFrameProp.getValueStrArray())
 {
-	setNull();
-	// COPY TYPE AND NAME
-	*this = aJointReaction;
+    setNull();
+    // COPY TYPE AND NAME
+    *this = aJointReaction;
 }
 
 //=============================================================================
@@ -137,17 +137,17 @@ JointReaction::JointReaction(const JointReaction &aJointReaction):
 JointReaction& JointReaction::
 operator=(const JointReaction &aJointReaction)
 {
-	// Base Class
-	Analysis::operator=(aJointReaction);
+    // Base Class
+    Analysis::operator=(aJointReaction);
 
-	// Member Variables
-	_forcesFileName = aJointReaction._forcesFileName;
-	_jointNames = aJointReaction._jointNames;
-	_onBody = aJointReaction._onBody;
-	_inFrame = aJointReaction._inFrame;
-	_useForceStorage = aJointReaction._useForceStorage;
-	_storeActuation = NULL;
-	return(*this);
+    // Member Variables
+    _forcesFileName = aJointReaction._forcesFileName;
+    _jointNames = aJointReaction._jointNames;
+    _onBody = aJointReaction._onBody;
+    _inFrame = aJointReaction._inFrame;
+    _useForceStorage = aJointReaction._useForceStorage;
+    _storeActuation = NULL;
+    return(*this);
 }
 
 //_____________________________________________________________________________
@@ -157,21 +157,21 @@ operator=(const JointReaction &aJointReaction)
 void JointReaction::
 setNull()
 {
-	setAuthors("Matt S. DeMers, Ajay Seth");
-	setupProperties();
+    setAuthors("Matt S. DeMers, Ajay Seth");
+    setupProperties();
 
-	// Property Default Values that are set if the associated fields are
-	// omitted from the setup file.
-	_forcesFileName = "";
-	_useForceStorage = false;
-	_jointNames.setSize(1);
-	_jointNames[0] = "ALL";
-	_onBody.setSize(1);
-	_onBody[0]= "child";
-	_inFrame.setSize(1);
-	_inFrame[0] = "ground";
+    // Property Default Values that are set if the associated fields are
+    // omitted from the setup file.
+    _forcesFileName = "";
+    _useForceStorage = false;
+    _jointNames.setSize(1);
+    _jointNames[0] = "ALL";
+    _onBody.setSize(1);
+    _onBody[0]= "child";
+    _inFrame.setSize(1);
+    _inFrame[0] = "ground";
 
-	_storeActuation = NULL;
+    _storeActuation = NULL;
 
 }
 //_____________________________________________________________________________
@@ -189,29 +189,29 @@ void JointReaction::
 setupProperties()
 {
 
-	_forcesFileNameProp.setName("forces_file");
-	_forcesFileNameProp.setComment("The name of a file containing forces storage."
-		"If a file name is provided, the applied forces for all actuators will be constructed "
-		"from the forces_file instead of from the states.  This option should be used "
-		"to calculated joint loads from static optimization results.");
-	_propertySet.append(&_forcesFileNameProp);
+    _forcesFileNameProp.setName("forces_file");
+    _forcesFileNameProp.setComment("The name of a file containing forces storage."
+        "If a file name is provided, the applied forces for all actuators will be constructed "
+        "from the forces_file instead of from the states.  This option should be used "
+        "to calculated joint loads from static optimization results.");
+    _propertySet.append(&_forcesFileNameProp);
 
-	_jointNamesProp.setName("joint_names");
-	_jointNamesProp.setComment("Names of the joints on which to perform the analysis."
-		"The key word 'All' indicates that the analysis should be performed for all bodies.");
-	_propertySet.append(&_jointNamesProp);
+    _jointNamesProp.setName("joint_names");
+    _jointNamesProp.setComment("Names of the joints on which to perform the analysis."
+        "The key word 'All' indicates that the analysis should be performed for all bodies.");
+    _propertySet.append(&_jointNamesProp);
 
-	_onBodyProp.setName("apply_on_bodies");
-	_onBodyProp.setComment("Choice of body (parent or child) for which the reaction "
-		"loads are calculated.  Child body is default.  If the array has one entry only, "
-		"that selection is applied to all chosen joints.");
-	_propertySet.append(&_onBodyProp);
+    _onBodyProp.setName("apply_on_bodies");
+    _onBodyProp.setComment("Choice of body (parent or child) for which the reaction "
+        "loads are calculated.  Child body is default.  If the array has one entry only, "
+        "that selection is applied to all chosen joints.");
+    _propertySet.append(&_onBodyProp);
 
-	_inFrameProp.setName("express_in_frame");
-	_inFrameProp.setComment("Choice of frame (ground, parent, or child) in which the calculated "
-		"reactions are expressed.  ground body is default.  If the array has one entry only, "
-		"that selection is applied to all chosen joints.");
-	_propertySet.append(&_inFrameProp);
+    _inFrameProp.setName("express_in_frame");
+    _inFrameProp.setComment("Choice of frame (ground, parent, or child) in which the calculated "
+        "reactions are expressed.  ground body is default.  If the array has one entry only, "
+        "that selection is applied to all chosen joints.");
+    _propertySet.append(&_inFrameProp);
 }
 
 //=============================================================================
@@ -225,140 +225,140 @@ setupProperties()
  */
 void JointReaction::setupReactionList()
 {
-	/* check length of property arrays.  if one is empty, set it to default*/
-	if(_jointNames.getSize() == 0) {
-		cout << "\nNo joints are specified in joint_names.  Setting to ALL\n";
-		_jointNames.setSize(1);
-		_jointNames[0] = "ALL";}
-	if(_onBody.getSize() == 0) {
-		cout << "\nNo bodies are specified in apply_on_bodies.  Setting to child\n";
-		_onBody.setSize(1);
-		_onBody[0] = "child";}
-	if(_inFrame.getSize() == 0) {
-		cout << "\nNo bodies are specified in express_in_frame.  Setting to ground\n";
-		_inFrame.setSize(1);
-		_inFrame[0] = "ground";}
+    /* check length of property arrays.  if one is empty, set it to default*/
+    if(_jointNames.getSize() == 0) {
+        cout << "\nNo joints are specified in joint_names.  Setting to ALL\n";
+        _jointNames.setSize(1);
+        _jointNames[0] = "ALL";}
+    if(_onBody.getSize() == 0) {
+        cout << "\nNo bodies are specified in apply_on_bodies.  Setting to child\n";
+        _onBody.setSize(1);
+        _onBody[0] = "child";}
+    if(_inFrame.getSize() == 0) {
+        cout << "\nNo bodies are specified in express_in_frame.  Setting to ground\n";
+        _inFrame.setSize(1);
+        _inFrame[0] = "ground";}
 
-	/* get the joint set and  body set from the dynamics engine model*/
-	const JointSet& jointSet = _model->getJointSet();
-	const BodySet& bodySet = _model->getBodySet();
-	int numJoints = jointSet.getSize();
-	int numBodies = bodySet.getSize();
+    /* get the joint set and  body set from the dynamics engine model*/
+    const JointSet& jointSet = _model->getJointSet();
+    const BodySet& bodySet = _model->getBodySet();
+    int numJoints = jointSet.getSize();
+    int numBodies = bodySet.getSize();
 
-	/* get the ground body index in the body set*/
-	int groundIndex = bodySet.getIndex("ground", 0);
+    /* get the ground body index in the body set*/
+    int groundIndex = bodySet.getIndex("ground", 0);
 
-	/* check if jointNames is specified to "ALL".  if yes, setup to 
-	*  compute reactions loads for all joints*/
-	std::string firstNameEntry = _jointNames.get(0);
-	// convert to upper case
-	std::transform(firstNameEntry.begin(),firstNameEntry.end(),firstNameEntry.begin(), ::toupper);
-	if (firstNameEntry == "ALL") {
-		_jointNames.setSize(numJoints);
-		for(int i=0;i<numJoints;i++) {
-			Joint& joint = jointSet.get(i);
-			_jointNames.set(i, joint.getName());
-		}
-	}
-	int numJointNames = _jointNames.getSize();
-	/* check that the _onBody Array and _inFrame Array are either the same length as 
-	*  the _jointNames Array or are of lenght 1.  If not, set lengths to default of 1 and 
-	*  set the values so that all reactions will be reported on the child body, expressed  
-	*  in the ground frame.*/
-	if (_onBody.getSize() == 1);
-	else if (_onBody.getSize() != numJointNames) {
-		cout << "\n WARNING: apply_on_bodies list is not the same length as joint_names."
-			<<"\n All reaction loads will be reported on the child bodies.\n";
-		_onBody.setSize(1);
-		_onBody[0]= "child";}
+    /* check if jointNames is specified to "ALL".  if yes, setup to 
+    *  compute reactions loads for all joints*/
+    std::string firstNameEntry = _jointNames.get(0);
+    // convert to upper case
+    std::transform(firstNameEntry.begin(),firstNameEntry.end(),firstNameEntry.begin(), ::toupper);
+    if (firstNameEntry == "ALL") {
+        _jointNames.setSize(numJoints);
+        for(int i=0;i<numJoints;i++) {
+            Joint& joint = jointSet.get(i);
+            _jointNames.set(i, joint.getName());
+        }
+    }
+    int numJointNames = _jointNames.getSize();
+    /* check that the _onBody Array and _inFrame Array are either the same length as 
+    *  the _jointNames Array or are of lenght 1.  If not, set lengths to default of 1 and 
+    *  set the values so that all reactions will be reported on the child body, expressed  
+    *  in the ground frame.*/
+    if (_onBody.getSize() == 1);
+    else if (_onBody.getSize() != numJointNames) {
+        cout << "\n WARNING: apply_on_bodies list is not the same length as joint_names."
+            <<"\n All reaction loads will be reported on the child bodies.\n";
+        _onBody.setSize(1);
+        _onBody[0]= "child";}
 
-	if (_inFrame.getSize() == 1);
-	else if (_inFrame.getSize() != numJointNames) {
-		cout << "\n WARNING: express_in_frame list is not the same length as joint_names."
-			<<"\n All reaction loads will be reported in the child body frames.\n";
-		_inFrame.setSize(1);
-		_inFrame[0] = "ground";}
-	
+    if (_inFrame.getSize() == 1);
+    else if (_inFrame.getSize() != numJointNames) {
+        cout << "\n WARNING: express_in_frame list is not the same length as joint_names."
+            <<"\n All reaction loads will be reported in the child body frames.\n";
+        _inFrame.setSize(1);
+        _inFrame[0] = "ground";}
+    
 
-	/* setup the JointReactionKey and, for valid joint names, determine and set the 
-	*  reactionIndex, onBodyIndex, and inFrameIndex of each JointReactionKey */
+    /* setup the JointReactionKey and, for valid joint names, determine and set the 
+    *  reactionIndex, onBodyIndex, and inFrameIndex of each JointReactionKey */
 
-	_reactionList.setSize(0);
-	int listNotEmptyFlag = 0;
-	for (int i=0; i<_jointNames.getSize();i++) {
-		JointReactionKey currentJoint;
-		int validJointFlag = 0;
-		for (int j=0; j<numJoints; j++) {
-			Joint& joint = jointSet.get(j);
-			if (_jointNames.get(i) == joint.getName()) {
-				validJointFlag++;
-				listNotEmptyFlag++;
-				currentJoint.jointName = joint.getName();
-				const std::string& childName = joint.getChildBodyName();
-				int childIndex = bodySet.getIndex(childName, 0);
-				const std::string& parentName = joint.getParentBodyName();
-				int parentIndex = bodySet.getIndex(parentName, 0);
+    _reactionList.setSize(0);
+    int listNotEmptyFlag = 0;
+    for (int i=0; i<_jointNames.getSize();i++) {
+        JointReactionKey currentJoint;
+        int validJointFlag = 0;
+        for (int j=0; j<numJoints; j++) {
+            Joint& joint = jointSet.get(j);
+            if (_jointNames.get(i) == joint.getName()) {
+                validJointFlag++;
+                listNotEmptyFlag++;
+                currentJoint.jointName = joint.getName();
+                const std::string& childName = joint.getChildBodyName();
+                int childIndex = bodySet.getIndex(childName, 0);
+                const std::string& parentName = joint.getParentBodyName();
+                int parentIndex = bodySet.getIndex(parentName, 0);
 
-				/* set index that correponds to the appropriate index of the 
-				*  computeReactions arguements forcesVec and momentsVec.*/
-				currentJoint.reactionIndex = childIndex;
+                /* set index that correponds to the appropriate index of the 
+                *  computeReactions arguements forcesVec and momentsVec.*/
+                currentJoint.reactionIndex = childIndex;
 
-				/* set the onBodyIndex to either the parent or child body*/
-				std::string whichBody ="child";
-				if (_onBody.getSize() == 1) {
-					whichBody = _onBody[0];
-					}
-				else whichBody = _onBody[i];
-				
-				//convert whichBody to lower case
-				std::transform(whichBody.begin(),whichBody.end(),whichBody.begin(),::tolower);
+                /* set the onBodyIndex to either the parent or child body*/
+                std::string whichBody ="child";
+                if (_onBody.getSize() == 1) {
+                    whichBody = _onBody[0];
+                    }
+                else whichBody = _onBody[i];
+                
+                //convert whichBody to lower case
+                std::transform(whichBody.begin(),whichBody.end(),whichBody.begin(),::tolower);
 
-				if (whichBody == "parent") {
-					currentJoint.onBodyIndex = parentIndex;}
-				else if(whichBody == "child") {currentJoint.onBodyIndex = childIndex;}
-				else {
-					currentJoint.onBodyIndex = childIndex;
-					cout << "\nWARNING:  " << whichBody << " is not a valid choice for apply_on_body";
-					cout << "\nSetting to apply " << currentJoint.jointName << " load to the child body.\n";}
+                if (whichBody == "parent") {
+                    currentJoint.onBodyIndex = parentIndex;}
+                else if(whichBody == "child") {currentJoint.onBodyIndex = childIndex;}
+                else {
+                    currentJoint.onBodyIndex = childIndex;
+                    cout << "\nWARNING:  " << whichBody << " is not a valid choice for apply_on_body";
+                    cout << "\nSetting to apply " << currentJoint.jointName << " load to the child body.\n";}
 
-				/* set the inFrameIndex to either the ground, child, or parent*/
-				std::string whichFrame = "ground";
-				if (_inFrame.getSize() == 1) {
-					whichFrame = _inFrame[0];}
-				else whichFrame = _inFrame[i];
+                /* set the inFrameIndex to either the ground, child, or parent*/
+                std::string whichFrame = "ground";
+                if (_inFrame.getSize() == 1) {
+                    whichFrame = _inFrame[0];}
+                else whichFrame = _inFrame[i];
 
-				// convert to lower case
-				std::transform(whichFrame.begin(),whichFrame.end(),whichFrame.begin(),::tolower);
+                // convert to lower case
+                std::transform(whichFrame.begin(),whichFrame.end(),whichFrame.begin(),::tolower);
 
 
-				if (whichFrame == "child") {
-					currentJoint.inFrameIndex = childIndex;}
-				else if (whichFrame == "parent") {
-					currentJoint.inFrameIndex = parentIndex;}
-				else if (whichFrame == "ground") {currentJoint.inFrameIndex = groundIndex;}
-				else {
-					currentJoint.inFrameIndex = groundIndex;
-					cout << "\nWARNING:  " << whichFrame << " is not a valid choice for express_in_frame";
-					cout << "\nSetting to express " << currentJoint.jointName << " load in the ground frame.\n";}
+                if (whichFrame == "child") {
+                    currentJoint.inFrameIndex = childIndex;}
+                else if (whichFrame == "parent") {
+                    currentJoint.inFrameIndex = parentIndex;}
+                else if (whichFrame == "ground") {currentJoint.inFrameIndex = groundIndex;}
+                else {
+                    currentJoint.inFrameIndex = groundIndex;
+                    cout << "\nWARNING:  " << whichFrame << " is not a valid choice for express_in_frame";
+                    cout << "\nSetting to express " << currentJoint.jointName << " load in the ground frame.\n";}
 
-				_reactionList.append(currentJoint);
-				break;
-			}
-		}
-		if(validJointFlag == 0) {
-			cout << "\nWARNING: " << _jointNames.get(i) << " is not a valid joint.  Ignoring this entry.\n";
-		}
-		
-	}
-	if(listNotEmptyFlag ==0) {
-		cout << "\nWARNING: No valid joint names were found.\n"
-			<< "Setting up _reactionList to include all joints in the model.\n";
-		_jointNames.setSize(1);
-		_jointNames[0] = "ALL";
-		setupReactionList();
-	}
+                _reactionList.append(currentJoint);
+                break;
+            }
+        }
+        if(validJointFlag == 0) {
+            cout << "\nWARNING: " << _jointNames.get(i) << " is not a valid joint.  Ignoring this entry.\n";
+        }
+        
+    }
+    if(listNotEmptyFlag ==0) {
+        cout << "\nWARNING: No valid joint names were found.\n"
+            << "Setting up _reactionList to include all joints in the model.\n";
+        _jointNames.setSize(1);
+        _jointNames[0] = "ALL";
+        setupReactionList();
+    }
 }
-	
+    
 
 
 
@@ -369,15 +369,15 @@ void JointReaction::setupReactionList()
 void JointReaction::
 constructDescription()
 {
-	string descrip;
+    string descrip;
 
-	descrip = "\nThis file contains the reaction forces and moments\n";
-	descrip += "applied to the specified body of a joint pair and expressed  ";
-	descrip += "in the specified reference frame.\n";
-	descrip += "\nUnits are S.I. units (seconds, meters, Newtons, ...)";
+    descrip = "\nThis file contains the reaction forces and moments\n";
+    descrip += "applied to the specified body of a joint pair and expressed  ";
+    descrip += "in the specified reference frame.\n";
+    descrip += "\nUnits are S.I. units (seconds, meters, Newtons, ...)";
 
-	setDescription(descrip);
-	
+    setDescription(descrip);
+    
 }
 
 //_____________________________________________________________________________
@@ -394,33 +394,33 @@ constructDescription()
 void JointReaction::
 constructColumnLabels()
 {
-	if(_model==NULL) return;
+    if(_model==NULL) return;
 
-	Array<string> labels;
-	labels.append("time");
+    Array<string> labels;
+    labels.append("time");
 
-	const BodySet& bodySet = _model->getBodySet();
-	int numBodies = bodySet.getSize();
-	int numOutputJoints = _reactionList.getSize();
-	//  For each joint listed in _reactionList, append 3 column labels for forces
-	//  and 3 column labels for moments.
-	for(int i=0; i<numOutputJoints; i++) {
-		std::string jointName = _reactionList.get(i).jointName;
-		std::string onBodyName = bodySet.get(_reactionList.get(i).onBodyIndex).getName();
-		std::string inFrameName = bodySet.get(_reactionList.get(i).inFrameIndex).getName();
-		std::string labelRoot = jointName + "_on_" + onBodyName + "_in_" + inFrameName;
-		labels.append(labelRoot + "_fx");
-		labels.append(labelRoot + "_fy");
-		labels.append(labelRoot + "_fz");
-		labels.append(labelRoot + "_mx");
-		labels.append(labelRoot + "_my");
-		labels.append(labelRoot + "_mz");
-		labels.append(labelRoot + "_px");
-		labels.append(labelRoot + "_py");
-		labels.append(labelRoot + "_pz");
-	}
+    const BodySet& bodySet = _model->getBodySet();
+    int numBodies = bodySet.getSize();
+    int numOutputJoints = _reactionList.getSize();
+    //  For each joint listed in _reactionList, append 3 column labels for forces
+    //  and 3 column labels for moments.
+    for(int i=0; i<numOutputJoints; i++) {
+        std::string jointName = _reactionList.get(i).jointName;
+        std::string onBodyName = bodySet.get(_reactionList.get(i).onBodyIndex).getName();
+        std::string inFrameName = bodySet.get(_reactionList.get(i).inFrameIndex).getName();
+        std::string labelRoot = jointName + "_on_" + onBodyName + "_in_" + inFrameName;
+        labels.append(labelRoot + "_fx");
+        labels.append(labelRoot + "_fy");
+        labels.append(labelRoot + "_fz");
+        labels.append(labelRoot + "_mx");
+        labels.append(labelRoot + "_my");
+        labels.append(labelRoot + "_mz");
+        labels.append(labelRoot + "_px");
+        labels.append(labelRoot + "_py");
+        labels.append(labelRoot + "_pz");
+    }
 
-	setColumnLabels(labels);
+    setColumnLabels(labels);
 }
 
 //_____________________________________________________________________________
@@ -433,53 +433,53 @@ constructColumnLabels()
 void JointReaction::
 loadForcesFromFile()
 {
-	delete _storeActuation; _storeActuation = NULL;
-	// check if the forces storage file name is valid and, if so, load the file into storage
-	if(_forcesFileNameProp.isValidFileName()) {
-		
-		cout << "\nLoading actuator forces from file " << _forcesFileName << "." << endl;
-		_storeActuation = new Storage(_forcesFileName);
-		int storeSize = _storeActuation->getSmallestNumberOfStates();
-		
-		cout << "Found " << storeSize << " actuator forces with time stamps ranging from "
-			<< _storeActuation->getFirstTime() << " to " << _storeActuation->getLastTime() << "." << endl;
+    delete _storeActuation; _storeActuation = NULL;
+    // check if the forces storage file name is valid and, if so, load the file into storage
+    if(_forcesFileNameProp.isValidFileName()) {
+        
+        cout << "\nLoading actuator forces from file " << _forcesFileName << "." << endl;
+        _storeActuation = new Storage(_forcesFileName);
+        int storeSize = _storeActuation->getSmallestNumberOfStates();
+        
+        cout << "Found " << storeSize << " actuator forces with time stamps ranging from "
+            << _storeActuation->getFirstTime() << " to " << _storeActuation->getLastTime() << "." << endl;
 
-		// check if actuator set and forces file have the same actuators
-		bool _containsAllActuators = true;
-		int actuatorSetSize = _model->getActuators().getSize();
-		if(actuatorSetSize > storeSize){
-			cout << "The forces file does not contain enough actuators." << endl;
-			_containsAllActuators = false;
-		}
-		else {
-			for(int actuatorIndex=0;actuatorIndex<actuatorSetSize;actuatorIndex++)
-			{
-				std::string actuatorName = _model->getActuators().get(actuatorIndex).getName();
-				int storageIndex = _storeActuation->getStateIndex(actuatorName,0);
-				if(storageIndex == -1) {
-					cout << "\nThe actuator " << actuatorName << " was not found in the forces file." << endl;
-					_containsAllActuators = false;
-				}
-			}
-		}
+        // check if actuator set and forces file have the same actuators
+        bool _containsAllActuators = true;
+        int actuatorSetSize = _model->getActuators().getSize();
+        if(actuatorSetSize > storeSize){
+            cout << "The forces file does not contain enough actuators." << endl;
+            _containsAllActuators = false;
+        }
+        else {
+            for(int actuatorIndex=0;actuatorIndex<actuatorSetSize;actuatorIndex++)
+            {
+                std::string actuatorName = _model->getActuators().get(actuatorIndex).getName();
+                int storageIndex = _storeActuation->getStateIndex(actuatorName,0);
+                if(storageIndex == -1) {
+                    cout << "\nThe actuator " << actuatorName << " was not found in the forces file." << endl;
+                    _containsAllActuators = false;
+                }
+            }
+        }
 
-		if(_containsAllActuators) {
-			if(storeSize> actuatorSetSize) cout << "\nWARNING:  The forces file contains actuators that are not in the model's actuator set." << endl;
-			_useForceStorage = true;
-			cout << "WARNING:  Ignoring fiber lengths and activations from the states since " << _forcesFileNameProp.getName() << " is also set." << endl;
-			cout << "Actuator forces will be constructed from " << _forcesFileName << "." << endl;
-		}
-		else {
-			_useForceStorage = false;
-			cout << "Actuator forces will be constructed from the states." << endl;
-		}
-	}
+        if(_containsAllActuators) {
+            if(storeSize> actuatorSetSize) cout << "\nWARNING:  The forces file contains actuators that are not in the model's actuator set." << endl;
+            _useForceStorage = true;
+            cout << "WARNING:  Ignoring fiber lengths and activations from the states since " << _forcesFileNameProp.getName() << " is also set." << endl;
+            cout << "Actuator forces will be constructed from " << _forcesFileName << "." << endl;
+        }
+        else {
+            _useForceStorage = false;
+            cout << "Actuator forces will be constructed from the states." << endl;
+        }
+    }
 
-	else {
-		cout << "WARNING:  " << _forcesFileNameProp.getName() << " is not a valid file name." << endl;
-		cout << "Actuator forces will be constructed from the states." << endl;
-		_useForceStorage = false;
-	}
+    else {
+        cout << "WARNING:  " << _forcesFileNameProp.getName() << " is not a valid file name." << endl;
+        cout << "Actuator forces will be constructed from the states." << endl;
+        _useForceStorage = false;
+    }
 }
 
 //_____________________________________________________________________________
@@ -492,14 +492,14 @@ loadForcesFromFile()
 void JointReaction::
 setupStorage()
 {
-	// Reaction Loads
-	_storeReactionLoads.reset(0);
-	_storeReactionLoads.setName("Joint Reaction Loads");
-	_storeReactionLoads.setDescription(getDescription());
-	_storeReactionLoads.setColumnLabels(getColumnLabels());
+    // Reaction Loads
+    _storeReactionLoads.reset(0);
+    _storeReactionLoads.setName("Joint Reaction Loads");
+    _storeReactionLoads.setDescription(getDescription());
+    _storeReactionLoads.setColumnLabels(getColumnLabels());
 
-	// Actuator forces - if a forces file is specified, load the forces storage data to _storeActuation
-	if(!(_forcesFileName == "")) loadForcesFromFile();
+    // Actuator forces - if a forces file is specified, load the forces storage data to _storeActuation
+    if(!(_forcesFileName == "")) loadForcesFromFile();
 
 }
 
@@ -521,18 +521,18 @@ setupStorage()
 void JointReaction::
 setModel(Model& aModel)
 {
-	// SET THE MODEL IN THE BASE CLASS
-	Analysis::setModel(aModel);
+    // SET THE MODEL IN THE BASE CLASS
+    Analysis::setModel(aModel);
 
-	// UPDATE VARIABLES IN THIS CLASS
-	setupReactionList();
-	constructDescription();
-	constructColumnLabels();
+    // UPDATE VARIABLES IN THIS CLASS
+    setupReactionList();
+    constructDescription();
+    constructColumnLabels();
 
-	int numJoints = _reactionList.getSize();
-	// set size of working array of loads.  Each load has 3 components each
-	// for force, moment, and point of application
-	_Loads.setSize(9*numJoints);
+    int numJoints = _reactionList.getSize();
+    // set size of working array of loads.  Each load has 3 components each
+    // for force, moment, and point of application
+    _Loads.setSize(9*numJoints);
 }
 
 
@@ -555,120 +555,120 @@ setModel(Model& aModel)
 int JointReaction::
 record(const SimTK::State& s)
 {
-	/** if a forces file is specified replace the computed actuation with the 
-	    forces from storage.*/
-	SimTK::State s_analysis = s;
+    /** if a forces file is specified replace the computed actuation with the 
+        forces from storage.*/
+    SimTK::State s_analysis = s;
 
-	_model->updMultibodySystem().realize(s_analysis, s.getSystemStage());
-	if(_useForceStorage){
+    _model->updMultibodySystem().realize(s_analysis, s.getSystemStage());
+    if(_useForceStorage){
 
-		const Set<Actuator> *actuatorSet = &_model->getActuators();
-		int nA = actuatorSet->getSize();
-		Array<double> forces(0,nA);
-		_storeActuation->getDataAtTime(s.getTime(),nA,forces);
-		int storageIndex = -1;
-		for(int actuatorIndex=0;actuatorIndex<nA;actuatorIndex++)
-		{
-			//Actuator* act = dynamic_cast<Actuator*>(&_forceSet->get(actuatorIndex));
-			std::string actuatorName = actuatorSet->get(actuatorIndex).getName();
-			storageIndex = _storeActuation->getStateIndex(actuatorName, 0);
-			if(storageIndex == -1){
-				cout << "The actuator, " << actuatorName << ", was not found in the forces file." << endl;
-				break;
-			}
-			actuatorSet->get(actuatorIndex).overrideForce(s_analysis,true);
-			actuatorSet->get(actuatorIndex).setOverrideForce(s_analysis,forces[storageIndex]);
-		}
-	}
-	// VARIABLES
-	int numBodies = _model->getNumBodies();
+        const Set<Actuator> *actuatorSet = &_model->getActuators();
+        int nA = actuatorSet->getSize();
+        Array<double> forces(0,nA);
+        _storeActuation->getDataAtTime(s.getTime(),nA,forces);
+        int storageIndex = -1;
+        for(int actuatorIndex=0;actuatorIndex<nA;actuatorIndex++)
+        {
+            //Actuator* act = dynamic_cast<Actuator*>(&_forceSet->get(actuatorIndex));
+            std::string actuatorName = actuatorSet->get(actuatorIndex).getName();
+            storageIndex = _storeActuation->getStateIndex(actuatorName, 0);
+            if(storageIndex == -1){
+                cout << "The actuator, " << actuatorName << ", was not found in the forces file." << endl;
+                break;
+            }
+            actuatorSet->get(actuatorIndex).overrideForce(s_analysis,true);
+            actuatorSet->get(actuatorIndex).setOverrideForce(s_analysis,forces[storageIndex]);
+        }
+    }
+    // VARIABLES
+    int numBodies = _model->getNumBodies();
 
-	/** define 2 variable length vectors of Vec3 vectors to contain calculated  
-	*   forces and moments for all the bodies in the model */
-	Vector_<Vec3> allForcesVec(numBodies);
-	Vector_<Vec3> allMomentsVec(numBodies);
-	double Mass = 0.0;
+    /** define 2 variable length vectors of Vec3 vectors to contain calculated  
+    *   forces and moments for all the bodies in the model */
+    Vector_<Vec3> allForcesVec(numBodies);
+    Vector_<Vec3> allMomentsVec(numBodies);
+    double Mass = 0.0;
 
-	//// BodySet and JointSet and ground body index
-	const BodySet& bodySet = _model->getBodySet();
-	const JointSet& jointSet = _model->getJointSet();
-	Body &ground = _model->getSimbodyEngine().getGroundBody();
-	int groundIndex = bodySet.getIndex(ground.getName());
+    //// BodySet and JointSet and ground body index
+    const BodySet& bodySet = _model->getBodySet();
+    const JointSet& jointSet = _model->getJointSet();
+    Body &ground = _model->getSimbodyEngine().getGroundBody();
+    int groundIndex = bodySet.getIndex(ground.getName());
 
-	/* Calculate All joint reaction forces and moments.
-	*  Applied to child bodies, expressed in ground frame.  
-	*  computeReactions realizes to the acceleration stage internally
-	*  so you don't have to call realize in this analysis.*/ 
-	_model->getSimbodyEngine().computeReactions(s_analysis, allForcesVec, allMomentsVec);
+    /* Calculate All joint reaction forces and moments.
+    *  Applied to child bodies, expressed in ground frame.  
+    *  computeReactions realizes to the acceleration stage internally
+    *  so you don't have to call realize in this analysis.*/ 
+    _model->getSimbodyEngine().computeReactions(s_analysis, allForcesVec, allMomentsVec);
 
-	/* retrieved desired joint reactions, convert to desired bodies, and convert
-	*  to desired reference frames*/
-	int numOutputJoints = _reactionList.getSize();
-	Vector_<Vec3> forcesVec(numOutputJoints), momentsVec(numOutputJoints), pointsVec(numOutputJoints);
-	for(int i=0; i<numOutputJoints; i++) {
-		JointReactionKey currentKey = _reactionList[i];
-		const Joint& joint = jointSet.get(currentKey.jointName);
-		Vec3 force = allForcesVec[currentKey.reactionIndex];
-		Vec3 moment = allMomentsVec[currentKey.reactionIndex];
-		Body& expressedInBody = bodySet.get(currentKey.inFrameIndex);
-		// find the point of application of the joint load on the child
-		Vec3 childLocation = joint.getLocationInChild();
-		// and find it's current location in the ground reference frame
-		Vec3 childLocationInGlobal(0,0,0);
-		_model->getSimbodyEngine().getPosition(s_analysis, joint.getChildBody(), childLocation,childLocationInGlobal);
-		// set the point of application to the joint location in the child body
-		Vec3 pointOfApplication(0,0,0);
-		
-		// check if the load on the child needs to be converted to an equivalent
-		// load on the parent body.
-		if(currentKey.onBodyIndex != currentKey.reactionIndex){
-			/*Take reaction load from child and apply on parent*/
-			force = -force;
-			moment = -moment;
-			Vec3 parentLocation(0,0,0);
-			
-			parentLocation = joint.getLocationInParent();
-			Vec3 parentLocationInGlobal(0,0,0);
-			//_model->getSimbodyEngine().getPosition(s_analysis, joint.getBody(), childLocation,childLocationInGlobal);
-			_model->getSimbodyEngine().getPosition(s_analysis,joint.getParentBody(), parentLocation, parentLocationInGlobal);
+    /* retrieved desired joint reactions, convert to desired bodies, and convert
+    *  to desired reference frames*/
+    int numOutputJoints = _reactionList.getSize();
+    Vector_<Vec3> forcesVec(numOutputJoints), momentsVec(numOutputJoints), pointsVec(numOutputJoints);
+    for(int i=0; i<numOutputJoints; i++) {
+        JointReactionKey currentKey = _reactionList[i];
+        const Joint& joint = jointSet.get(currentKey.jointName);
+        Vec3 force = allForcesVec[currentKey.reactionIndex];
+        Vec3 moment = allMomentsVec[currentKey.reactionIndex];
+        Body& expressedInBody = bodySet.get(currentKey.inFrameIndex);
+        // find the point of application of the joint load on the child
+        Vec3 childLocation = joint.getLocationInChild();
+        // and find it's current location in the ground reference frame
+        Vec3 childLocationInGlobal(0,0,0);
+        _model->getSimbodyEngine().getPosition(s_analysis, joint.getChildBody(), childLocation,childLocationInGlobal);
+        // set the point of application to the joint location in the child body
+        Vec3 pointOfApplication(0,0,0);
+        
+        // check if the load on the child needs to be converted to an equivalent
+        // load on the parent body.
+        if(currentKey.onBodyIndex != currentKey.reactionIndex){
+            /*Take reaction load from child and apply on parent*/
+            force = -force;
+            moment = -moment;
+            Vec3 parentLocation(0,0,0);
+            
+            parentLocation = joint.getLocationInParent();
+            Vec3 parentLocationInGlobal(0,0,0);
+            //_model->getSimbodyEngine().getPosition(s_analysis, joint.getBody(), childLocation,childLocationInGlobal);
+            _model->getSimbodyEngine().getPosition(s_analysis,joint.getParentBody(), parentLocation, parentLocationInGlobal);
 
-			// define vector from the mobilizer location on the child to the location on the parent
-			Vec3 translation = parentLocationInGlobal - childLocationInGlobal;
-			// find equivalent moment if the load is shifted to the parent loaction
-			moment -= translation % force;
+            // define vector from the mobilizer location on the child to the location on the parent
+            Vec3 translation = parentLocationInGlobal - childLocationInGlobal;
+            // find equivalent moment if the load is shifted to the parent loaction
+            moment -= translation % force;
 
-			// reset the point of application to the joint location in the parent expressed in ground
-			pointOfApplication = parentLocationInGlobal;
-		}
-		else{
-			// set the point of application to the joint laction in the child expressed in ground
-			pointOfApplication = childLocationInGlobal;
-		}
-		/* express loads in the desired reference frame*/
-		_model->getSimbodyEngine().transform(s_analysis,ground,force,expressedInBody,force);
-		_model->getSimbodyEngine().transform(s_analysis,ground,moment,expressedInBody,moment);
-		_model->getSimbodyEngine().transformPosition(s_analysis,ground,pointOfApplication,expressedInBody,pointOfApplication);
+            // reset the point of application to the joint location in the parent expressed in ground
+            pointOfApplication = parentLocationInGlobal;
+        }
+        else{
+            // set the point of application to the joint laction in the child expressed in ground
+            pointOfApplication = childLocationInGlobal;
+        }
+        /* express loads in the desired reference frame*/
+        _model->getSimbodyEngine().transform(s_analysis,ground,force,expressedInBody,force);
+        _model->getSimbodyEngine().transform(s_analysis,ground,moment,expressedInBody,moment);
+        _model->getSimbodyEngine().transformPosition(s_analysis,ground,pointOfApplication,expressedInBody,pointOfApplication);
 
-		/* place results in the truncated loads vectors*/
-		forcesVec[i] = force;
-		momentsVec[i] = moment;
-		pointsVec[i] = pointOfApplication;
-	}
+        /* place results in the truncated loads vectors*/
+        forcesVec[i] = force;
+        momentsVec[i] = moment;
+        pointsVec[i] = pointOfApplication;
+    }
 
-	/* fill out row construction array*/
-	for(int i=0;i<numOutputJoints;i++) {
-		int I = 9*i;
-		for(int j=0;j<3;j++) {
-			_Loads[I+j] = forcesVec[i][j];
-			_Loads[I+j+3] = momentsVec[i][j];
-			_Loads[I+j+6] = pointsVec[i][j];
-		}
-	}
-	/* Write the reaction data to storage*/
-	_storeReactionLoads.append(s.getTime(),_Loads.getSize(),&_Loads[0]);
+    /* fill out row construction array*/
+    for(int i=0;i<numOutputJoints;i++) {
+        int I = 9*i;
+        for(int j=0;j<3;j++) {
+            _Loads[I+j] = forcesVec[i][j];
+            _Loads[I+j+3] = momentsVec[i][j];
+            _Loads[I+j+6] = pointsVec[i][j];
+        }
+    }
+    /* Write the reaction data to storage*/
+    _storeReactionLoads.append(s.getTime(),_Loads.getSize(),&_Loads[0]);
 
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -684,20 +684,20 @@ record(const SimTK::State& s)
 int JointReaction::
 begin(SimTK::State& s)
 {
-	if(!proceed()) return(0);
-	// Read forces file here rather than during initialization
-	setupStorage();
+    if(!proceed()) return(0);
+    // Read forces file here rather than during initialization
+    setupStorage();
 
-	// RESET STORAGE
-	_storeReactionLoads.reset(s.getTime());
+    // RESET STORAGE
+    _storeReactionLoads.reset(s.getTime());
 
-	// RECORD
-	int status = 0;
-	if(_storeReactionLoads.getSize()<=0) {
-		status = record(s);
-	}
+    // RECORD
+    int status = 0;
+    if(_storeReactionLoads.getSize()<=0) {
+        status = record(s);
+    }
 
-	return(status);
+    return(status);
 }
 //_____________________________________________________________________________
 /**
@@ -713,11 +713,11 @@ begin(SimTK::State& s)
 int JointReaction::
 step( const SimTK::State& s, int stepNumber)
 {
-	if(!proceed(stepNumber)) return(0);
+    if(!proceed(stepNumber)) return(0);
 
-	record(s);
+    record(s);
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -731,11 +731,11 @@ step( const SimTK::State& s, int stepNumber)
 int JointReaction::
 end(SimTK::State& s)
 {
-	if(!proceed()) return(0);
+    if(!proceed()) return(0);
 
-	record(s);
+    record(s);
 
-	return(0);
+    return(0);
 }
 
 
@@ -761,12 +761,12 @@ end(SimTK::State& s)
  */
 int JointReaction::
 printResults(const string &aBaseName,const string &aDir,double aDT,
-				 const string &aExtension)
+                 const string &aExtension)
 {
-	// Reaction Loads
-	Storage::printResult(&_storeReactionLoads,aBaseName+"_"+getName()+"_ReactionLoads",aDir,aDT,aExtension);
+    // Reaction Loads
+    Storage::printResult(&_storeReactionLoads,aBaseName+"_"+getName()+"_ReactionLoads",aDir,aDT,aExtension);
 
-	return(0);
+    return(0);
 }
 
 
