@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/Model/ModelComponent.h>
+#include <OpenSim/Simulation/Model/BodyFrame.h>
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 
@@ -42,8 +42,8 @@ class WrapObjectSet;
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API Body : public ModelComponent {
-OpenSim_DECLARE_CONCRETE_OBJECT(Body, ModelComponent);
+class OSIMSIMULATION_API Body : public Frame {
+	OpenSim_DECLARE_CONCRETE_OBJECT(Body, Frame);
 public:
 //==============================================================================
 // PROPERTIES
@@ -127,7 +127,15 @@ public:
      */
 	void addWrapObject(WrapObject* wrapObject);
 
-protected:
+    // Frame interface
+    /** Get transform in local Body frame */
+    const SimTK::Transform& getTransform() const override {
+        return Frame::identityTransform;
+    }
+    /** Get transform to Ground frame */
+    const SimTK::Transform calcTransformToGround(const SimTK::State& state) const override;
+
+ protected:
     // Model component interface.
 	void finalizeFromProperties() override;
 	void connectToModel(Model& model) override;
