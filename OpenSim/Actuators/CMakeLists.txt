@@ -25,8 +25,8 @@ FILE(GLOB SOURCE_FILES *.cpp)
 FILE(GLOB INCLUDE_FILES *.h)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-		    ${OpenSim_SOURCE_DIR}/Vendors 
-		    ${OpenSim_SOURCE_DIR}/Tools)
+            ${OpenSim_SOURCE_DIR}/Vendors 
+            ${OpenSim_SOURCE_DIR}/Tools)
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
@@ -60,5 +60,5 @@ INSTALL(FILES ${INCLUDE_FILES}
 
 
 IF(BUILD_TESTING)
-	SUBDIRS(Test)
+    SUBDIRS(Test)
 ENDIF(BUILD_TESTING)

@@ -40,6 +40,6 @@
 
 #include "McKibbenActuator.h"
 
-#include "RegisterTypes_osimActuators.h"	// to expose RegisterTypes_osimActuators
+#include "RegisterTypes_osimActuators.h"    // to expose RegisterTypes_osimActuators
 
 #endif // _osimActuators_h_

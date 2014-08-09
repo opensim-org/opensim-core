@@ -57,80 +57,80 @@ OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateCouplerConstraint, Constraint);
 //=============================================================================
 protected:
 
-	OpenSim_DECLARE_OPTIONAL_PROPERTY(coupled_coordinates_function, Function,
-		"Constraint function of generalized coordinates (to be specified) used "
-		"to evaluate the constraint errors and their derivatives, and must valid "
-		"to at least 2nd order. Constraint function must evaluate to zero when "
-		"coordinates satisfy the constraint.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(coupled_coordinates_function, Function,
+        "Constraint function of generalized coordinates (to be specified) used "
+        "to evaluate the constraint errors and their derivatives, and must valid "
+        "to at least 2nd order. Constraint function must evaluate to zero when "
+        "coordinates satisfy the constraint.");
 
-	OpenSim_DECLARE_LIST_PROPERTY(independent_coordinate_names, std::string, 
-		"List of names of the right hand side (independent) coordinates. "
-		"Note the conatraint function above, must be able to handle multiple "
-		"coordinate values if more than one coordinate name is provided.");
+    OpenSim_DECLARE_LIST_PROPERTY(independent_coordinate_names, std::string, 
+        "List of names of the right hand side (independent) coordinates. "
+        "Note the conatraint function above, must be able to handle multiple "
+        "coordinate values if more than one coordinate name is provided.");
 
-	OpenSim_DECLARE_PROPERTY(dependent_coordinate_name, std::string, 
-		"Name of the left-hand side (dependent) coordinate of the constraint "
-		"coupling function.");
-	
-	OpenSim_DECLARE_PROPERTY(scale_factor, double, 
-		"Scale factor for the coupling function.");
+    OpenSim_DECLARE_PROPERTY(dependent_coordinate_name, std::string, 
+        "Name of the left-hand side (dependent) coordinate of the constraint "
+        "coupling function.");
+    
+    OpenSim_DECLARE_PROPERTY(scale_factor, double, 
+        "Scale factor for the coupling function.");
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	CoordinateCouplerConstraint();
-	virtual ~CoordinateCouplerConstraint();
+    // CONSTRUCTION
+    CoordinateCouplerConstraint();
+    virtual ~CoordinateCouplerConstraint();
 
-	// GET AND SET
-	/** Access the list of names of the right hand side (independent) coordinates. 
-		Note the conatraint function, must be able to handle multiple 
-		coordinate values if more than one coordinate name is provided. */
-	void setIndependentCoordinateNames(const Array<std::string> &aCoordNames) 
-		{ set_independent_coordinate_names(aCoordNames); }
-	const Array<std::string> getIndependentCoordinateNames() const { 
-		Array<std::string> coords;
-		for(int i = 0; i < getProperty_independent_coordinate_names().size(); i++) {
-			coords.append(get_independent_coordinate_names(i));
-		}
-		return coords; 
-	}
-	
-	void setDependentCoordinateName(const std::string &aCoordName)
-		{ set_dependent_coordinate_name(aCoordName); }
-	
-	const std::string& getDependentCoordinateName() const { return get_dependent_coordinate_name(); }
-	
-	const Function& getFunction() const {
-		const Property<Function>& function = getProperty_coupled_coordinates_function();
-		if(function.empty()) {
-			throw Exception("CoordinateCouplerConstraint::getFunction(): no Function is defined");
-		}
-		return function.getValue(); 
-	}
-	void setFunction(const Function &aFunction)
-		{ set_coupled_coordinates_function(*aFunction.clone());}
-	void setFunction(Function *aFunction)
-		{ set_coupled_coordinates_function(*aFunction); }
+    // GET AND SET
+    /** Access the list of names of the right hand side (independent) coordinates. 
+        Note the conatraint function, must be able to handle multiple 
+        coordinate values if more than one coordinate name is provided. */
+    void setIndependentCoordinateNames(const Array<std::string> &aCoordNames) 
+        { set_independent_coordinate_names(aCoordNames); }
+    const Array<std::string> getIndependentCoordinateNames() const { 
+        Array<std::string> coords;
+        for(int i = 0; i < getProperty_independent_coordinate_names().size(); i++) {
+            coords.append(get_independent_coordinate_names(i));
+        }
+        return coords; 
+    }
+    
+    void setDependentCoordinateName(const std::string &aCoordName)
+        { set_dependent_coordinate_name(aCoordName); }
+    
+    const std::string& getDependentCoordinateName() const { return get_dependent_coordinate_name(); }
+    
+    const Function& getFunction() const {
+        const Property<Function>& function = getProperty_coupled_coordinates_function();
+        if(function.empty()) {
+            throw Exception("CoordinateCouplerConstraint::getFunction(): no Function is defined");
+        }
+        return function.getValue(); 
+    }
+    void setFunction(const Function &aFunction)
+        { set_coupled_coordinates_function(*aFunction.clone());}
+    void setFunction(Function *aFunction)
+        { set_coupled_coordinates_function(*aFunction); }
 
-	// SCALE
-	virtual void scale(const ScaleSet& aScaleSet);
+    // SCALE
+    virtual void scale(const ScaleSet& aScaleSet);
 
 protected:
-	void connectToModel(Model& aModel) override;
-	/**
-	 * Create a SimTK::Constraint::CoordinateCooupler which implements this constraint.
-	 */
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+    void connectToModel(Model& aModel) override;
+    /**
+     * Create a SimTK::Constraint::CoordinateCooupler which implements this constraint.
+     */
+    void addToSystem(SimTK::MultibodySystem& system) const override;
 
 private:
-	void setNull();
-	void constructProperties();
-	friend class SimbodyEngine;
+    void setNull();
+    void constructProperties();
+    friend class SimbodyEngine;
 
 //=============================================================================
-};	// END of class CoordinateCouplerConstraint
+};  // END of class CoordinateCouplerConstraint
 //=============================================================================
 //=============================================================================
 

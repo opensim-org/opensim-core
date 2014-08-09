@@ -78,9 +78,9 @@ def test_alterTendonSlackLength():
 
     # Change TendonSlackLength for all muscles in the model
     for i in range(myModel.getMuscles().getSize()):
-    	currentMuscle = myModel.getMuscles().get(i)
-    	oldSL = currentMuscle.getTendonSlackLength()
-    	currentMuscle.setTendonSlackLength(oldSL * tendonSlackLengthScale)
+        currentMuscle = myModel.getMuscles().get(i)
+        oldSL = currentMuscle.getTendonSlackLength()
+        currentMuscle.setTendonSlackLength(oldSL * tendonSlackLengthScale)
 
     #get full path name of original model
     fullPathName = oldModel.getInputFileName()
@@ -116,7 +116,7 @@ def test_strengthenModel():
 
     # Apply scale factor to MaxIsometricForce
     for i in range(myModel.getMuscles().getSize()):
-    	currentMuscle = myModel.getMuscles().get(i)
+        currentMuscle = myModel.getMuscles().get(i)
         currentMuscle.setMaxIsometricForce(currentMuscle.getMaxIsometricForce()
                 * scaleFactor)
 

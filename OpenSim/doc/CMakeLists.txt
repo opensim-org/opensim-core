@@ -1,5 +1,5 @@
 INSTALL_FILES(/sdk/doc FILES "BuildOpenSimPluginSteps.pdf")
 FILE(GLOB DOXYGEN_SUPPORT_FILES 
-					*.js)
+                    *.js)
 INSTALL(FILES ${DOXYGEN_SUPPORT_FILES} DESTINATION sdk/doc/html)
 INSTALL(DIRECTORY extra_html DESTINATION sdk/doc/html PATTERN ".svn" EXCLUDE)

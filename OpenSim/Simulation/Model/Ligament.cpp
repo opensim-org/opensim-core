@@ -45,7 +45,7 @@ static const Vec3 DefaultLigamentColor(.9,.9,.9); // mostly white
 // Default constructor.
 Ligament::Ligament()
 {
-	constructProperties();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -62,18 +62,18 @@ Ligament::Ligament()
  */
 void Ligament::constructProperties()
 {
-	setAuthors("Peter Loan");
-	constructProperty_GeometryPath(GeometryPath());
-	constructProperty_resting_length(0.0);
-	constructProperty_pcsa_force(0.0);
+    setAuthors("Peter Loan");
+    constructProperty_GeometryPath(GeometryPath());
+    constructProperty_resting_length(0.0);
+    constructProperty_pcsa_force(0.0);
 
-	int forceLengthCurvePoints = 13;
-	double forceLengthCurveX[] = {-5.00000000,  0.99800000,  0.99900000,  1.00000000,  1.10000000,  1.20000000,  1.30000000,  1.40000000,  1.50000000,  1.60000000,  1.60100000,  1.60200000,  5.00000000};
-	double forceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.03500000,  0.12000000,  0.26000000,  0.55000000,  1.17000000,  2.00000000,  2.00000000,  2.00000000,  2.00000000};
-	SimmSpline forceLengthCurve
+    int forceLengthCurvePoints = 13;
+    double forceLengthCurveX[] = {-5.00000000,  0.99800000,  0.99900000,  1.00000000,  1.10000000,  1.20000000,  1.30000000,  1.40000000,  1.50000000,  1.60000000,  1.60100000,  1.60200000,  5.00000000};
+    double forceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.03500000,  0.12000000,  0.26000000,  0.55000000,  1.17000000,  2.00000000,  2.00000000,  2.00000000,  2.00000000};
+    SimmSpline forceLengthCurve
        (forceLengthCurvePoints, forceLengthCurveX, forceLengthCurveY);
 
-	constructProperty_force_length_curve(forceLengthCurve);
+    constructProperty_force_length_curve(forceLengthCurve);
 }
 
 //------------------------------------------------------------------------------
@@ -87,29 +87,29 @@ void Ligament::constructProperties()
  */
 void Ligament::connectToModel(Model& aModel)
 {
-	GeometryPath& path = upd_GeometryPath();
-	const double& restingLength = get_resting_length();
+    GeometryPath& path = upd_GeometryPath();
+    const double& restingLength = get_resting_length();
 
     path.setDefaultColor(DefaultLigamentColor);
 
-	// Specify underlying ModelComponents prior to calling 
+    // Specify underlying ModelComponents prior to calling 
     // Super::connectToModel() to automatically propagate connectToModel()
     // to subcomponents. Subsequent addToSystem() will also be automatically
-	// propagated to subcomponents.
+    // propagated to subcomponents.
     // TODO: this is awkward; subcomponent API needs to be revisited (sherm)
-	addComponent(&path);
+    addComponent(&path);
 
     //TODO: can't call this at start of override; this is an API bug.
-	Super::connectToModel(aModel);
+    Super::connectToModel(aModel);
 
-	// _model will be NULL when objects are being registered.
-	if (!_model)
-		return;
+    // _model will be NULL when objects are being registered.
+    if (!_model)
+        return;
 
-	// Resting length must be greater than 0.0.
-	assert(restingLength > 0.0);
+    // Resting length must be greater than 0.0.
+    assert(restingLength > 0.0);
 
-	path.setOwner(this);
+    path.setOwner(this);
 }
 
 
@@ -120,11 +120,11 @@ void Ligament::connectToModel(Model& aModel)
 void Ligament::realizeDynamics(const SimTK::State& state) const {
     Super::realizeDynamics(state); // Mandatory first line
 
-	if(!isDisabled(state)){
-		const SimTK::Vec3 color = computePathColor(state);
-		if (!color.isNaN())
-			getGeometryPath().setColor(state, color);
-	}
+    if(!isDisabled(state)){
+        const SimTK::Vec3 color = computePathColor(state);
+        if (!color.isNaN())
+            getGeometryPath().setColor(state, color);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -146,10 +146,10 @@ SimTK::Vec3 Ligament::computePathColor(const SimTK::State& state) const {
  */
  void Ligament::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);
-	// Cache the computed tension and strain of the ligament
-	addCacheVariable<double>("tension", 0.0, SimTK::Stage::Velocity);
-	addCacheVariable<double>("strain", 0.0, SimTK::Stage::Velocity);
+    Super::addToSystem(system);
+    // Cache the computed tension and strain of the ligament
+    addCacheVariable<double>("tension", 0.0, SimTK::Stage::Velocity);
+    addCacheVariable<double>("strain", 0.0, SimTK::Stage::Velocity);
 }
 
 
@@ -168,7 +168,7 @@ SimTK::Vec3 Ligament::computePathColor(const SimTK::State& state) const {
  */
 double Ligament::getLength(const SimTK::State& s) const
 {
-	return getGeometryPath().getLength(s);
+    return getGeometryPath().getLength(s);
 }
 
 //_____________________________________________________________________________
@@ -180,8 +180,8 @@ double Ligament::getLength(const SimTK::State& s) const
  */
 bool Ligament::setRestingLength(double aRestingLength)
 {
-	set_resting_length(aRestingLength);
-	return true;
+    set_resting_length(aRestingLength);
+    return true;
 }
 
 //_____________________________________________________________________________
@@ -193,8 +193,8 @@ bool Ligament::setRestingLength(double aRestingLength)
  */
 bool Ligament::setMaxIsometricForce(double aMaxIsometricForce)
 {
-	set_pcsa_force(aMaxIsometricForce);
-	return true;
+    set_pcsa_force(aMaxIsometricForce);
+    return true;
 }
 
 //_____________________________________________________________________________
@@ -206,8 +206,8 @@ bool Ligament::setMaxIsometricForce(double aMaxIsometricForce)
  */
 bool Ligament::setForceLengthCurve(const Function& aForceLengthCurve)
 {
-	set_force_length_curve(aForceLengthCurve);
-	return true;
+    set_force_length_curve(aForceLengthCurve);
+    return true;
 }
 //=============================================================================
 // SCALING
@@ -222,7 +222,7 @@ bool Ligament::setForceLengthCurve(const Function& aForceLengthCurve)
  */
 void Ligament::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	updGeometryPath().preScale(s, aScaleSet);
+    updGeometryPath().preScale(s, aScaleSet);
 }
 
 //_____________________________________________________________________________
@@ -234,7 +234,7 @@ void Ligament::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 void Ligament::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	updGeometryPath().scale(s, aScaleSet);
+    updGeometryPath().scale(s, aScaleSet);
 }
 
 //_____________________________________________________________________________
@@ -247,26 +247,26 @@ void Ligament::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 void Ligament::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	GeometryPath& path          = updGeometryPath();
-	double&       restingLength = upd_resting_length();
+    GeometryPath& path          = updGeometryPath();
+    double&       restingLength = upd_resting_length();
 
-	path.postScale(s, aScaleSet);
+    path.postScale(s, aScaleSet);
 
-	if (path.getPreScaleLength(s) > 0.0)
-	{
-		double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
+    if (path.getPreScaleLength(s) > 0.0)
+    {
+        double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
 
-		// Scale resting length by the same amount as the change in
-		// total ligament length (in the current body position).
-		restingLength *= scaleFactor;
+        // Scale resting length by the same amount as the change in
+        // total ligament length (in the current body position).
+        restingLength *= scaleFactor;
 
-		path.setPreScaleLength(s, 0.0);
-	}
+        path.setPreScaleLength(s, 0.0);
+    }
 }
 
 const double& Ligament::getTension(const SimTK::State& s) const
 {
-	return getCacheVariable<double>(s, "tension"); 
+    return getCacheVariable<double>(s, "tension"); 
 }
 
 
@@ -278,40 +278,40 @@ const double& Ligament::getTension(const SimTK::State& s) const
  */
 double Ligament::computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const
 {
-	return getGeometryPath().computeMomentArm(s, aCoord);
+    return getGeometryPath().computeMomentArm(s, aCoord);
 }
 
 
 
 void Ligament::computeForce(const SimTK::State& s, 
-							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							  SimTK::Vector& generalizedForces) const
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+                              SimTK::Vector& generalizedForces) const
 {
-	const GeometryPath& path = getGeometryPath();
-	const double& restingLength = get_resting_length();
-	const double& pcsaForce = get_pcsa_force();
+    const GeometryPath& path = getGeometryPath();
+    const double& restingLength = get_resting_length();
+    const double& pcsaForce = get_pcsa_force();
 
-	double force = 0;
+    double force = 0;
 
-	if (path.getLength(s) <= restingLength){
-		setCacheVariable<double>(s, "tension", force);
-		return;
-	}
-	
-	// evaluate normalized tendon force length curve
-	force = getForceLengthCurve().calcValue(
-		SimTK::Vector(1, path.getLength(s)/restingLength))* pcsaForce;
-	setCacheVariable<double>(s, "tension", force);
+    if (path.getLength(s) <= restingLength){
+        setCacheVariable<double>(s, "tension", force);
+        return;
+    }
+    
+    // evaluate normalized tendon force length curve
+    force = getForceLengthCurve().calcValue(
+        SimTK::Vector(1, path.getLength(s)/restingLength))* pcsaForce;
+    setCacheVariable<double>(s, "tension", force);
 
-	OpenSim::Array<PointForceDirection*> PFDs;
-	path.getPointForceDirections(s, &PFDs);
+    OpenSim::Array<PointForceDirection*> PFDs;
+    path.getPointForceDirections(s, &PFDs);
 
-	for (int i=0; i < PFDs.getSize(); i++) {
-		applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), 
+    for (int i=0; i < PFDs.getSize(); i++) {
+        applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), 
                           force*PFDs[i]->direction(), bodyForces);
-	}
-	for(int i=0; i < PFDs.getSize(); i++)
-		delete PFDs[i];
+    }
+    for(int i=0; i < PFDs.getSize(); i++)
+        delete PFDs[i];
 }
 
 //_____________________________________________________________________________
@@ -320,7 +320,7 @@ void Ligament::computeForce(const SimTK::State& s,
  */
 const VisibleObject* Ligament::getDisplayer() const
 { 
-	return getGeometryPath().getDisplayer(); 
+    return getGeometryPath().getDisplayer(); 
 }
 
 //_____________________________________________________________________________
@@ -329,5 +329,5 @@ const VisibleObject* Ligament::getDisplayer() const
  */
 void Ligament::updateDisplayer(const SimTK::State& s) const
 {
-	getGeometryPath().updateDisplayer(s);
+    getGeometryPath().updateDisplayer(s);
 }

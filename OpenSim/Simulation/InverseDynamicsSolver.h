@@ -62,44 +62,44 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	/** Construct an InverseDynamics solver applied to the provided model */
-	InverseDynamicsSolver(const Model& model);
-	
-	/** Solve the inverse dynamics system of equations for generalized 
-	    coordinate forces, Tau. Applied loads are computed by the model  
-		according to the state.
-		@param[in] s    the system state spefyfing time, coordinates and speeds
-		@param[in] udot the vector of generalized accelerations in the order
-		*/
-	virtual SimTK::Vector solve(const SimTK::State& s, 
-		const SimTK::Vector& udot = SimTK::Vector(0));
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    /** Construct an InverseDynamics solver applied to the provided model */
+    InverseDynamicsSolver(const Model& model);
+    
+    /** Solve the inverse dynamics system of equations for generalized 
+        coordinate forces, Tau. Applied loads are computed by the model  
+        according to the state.
+        @param[in] s    the system state spefyfing time, coordinates and speeds
+        @param[in] udot the vector of generalized accelerations in the order
+        */
+    virtual SimTK::Vector solve(const SimTK::State& s, 
+        const SimTK::Vector& udot = SimTK::Vector(0));
 
-	/** Solve the inverse dynamics system of equations for generalized coordinate forces, Tau. 
-	    Applied loads are explicity provided as generalized coordinate forces (MobilityForces)
-		and/or a Vector of Spatial-body forces */
-	virtual SimTK::Vector solve(const SimTK::State& s, const SimTK::Vector& udot, 
-		const SimTK::Vector& appliedMobilityForces, 
-		const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces);
-	
-	/** Solve the inverse dynamics system of equations for generalized coordinate 
-	    forces, Tau. Now the state is updated from known coordinates, q, as 
-		functions of time. Coordinate functions must be twice differentiable and 
-		are used to supply the coordinate speed and acceleration
-		NOTE: forces with internal states should be removed/disabled prior to  
-		      solving if default state is inappropriate */
-	virtual SimTK::Vector solve(SimTK::State& s, const FunctionSet& Qs, double time);
+    /** Solve the inverse dynamics system of equations for generalized coordinate forces, Tau. 
+        Applied loads are explicity provided as generalized coordinate forces (MobilityForces)
+        and/or a Vector of Spatial-body forces */
+    virtual SimTK::Vector solve(const SimTK::State& s, const SimTK::Vector& udot, 
+        const SimTK::Vector& appliedMobilityForces, 
+        const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces);
+    
+    /** Solve the inverse dynamics system of equations for generalized coordinate 
+        forces, Tau. Now the state is updated from known coordinates, q, as 
+        functions of time. Coordinate functions must be twice differentiable and 
+        are used to supply the coordinate speed and acceleration
+        NOTE: forces with internal states should be removed/disabled prior to  
+              solving if default state is inappropriate */
+    virtual SimTK::Vector solve(SimTK::State& s, const FunctionSet& Qs, double time);
 #ifndef SWIG
     /** Same as above but for a given time series populate an Array (trajectory) of
-	    generalized-coordinate forces (Vector) */
-	virtual void solve(SimTK::State& s, const FunctionSet& Qs, 
-		         const SimTK::Array_<double>&  times,
-				 SimTK::Array_<SimTK::Vector>& genForceTrajectory);
+        generalized-coordinate forces (Vector) */
+    virtual void solve(SimTK::State& s, const FunctionSet& Qs, 
+                 const SimTK::Array_<double>&  times,
+                 SimTK::Array_<SimTK::Vector>& genForceTrajectory);
 #endif
 //=============================================================================
-};	// END of class InverseDynamicsSolver
+};  // END of class InverseDynamicsSolver
 //=============================================================================
 } // namespace
 

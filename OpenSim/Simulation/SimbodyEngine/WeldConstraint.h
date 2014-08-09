@@ -47,66 +47,66 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WeldConstraint, Constraint);
 //=============================================================================
 public:
 
-	/** Properties */
-	OpenSim_DECLARE_PROPERTY(body_1, std::string,
-		"Specify first of two bodies welded together by the constraint.");
-	OpenSim_DECLARE_PROPERTY(body_2, std::string,
-		"Specify second of two bodies welded together by the constraint.");
-	OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
-		"Location of the weld in first body specified in body1 reference frame.");
-	OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
-		"Location of the weld in second body specified in body2 reference frame.");
-	OpenSim_DECLARE_PROPERTY(orientation_body_1, SimTK::Vec3,
-		"Orientation of the weld axes on body1 specified in body1's reference frame."  
-		"Euler XYZ body-fixed rotation angles are used to express the orientation.");
-	OpenSim_DECLARE_PROPERTY(orientation_body_2, SimTK::Vec3,
-		"Orientation of the weld axes on body2 specified in body2's reference frame."
-		"Euler XYZ body-fixed rotation angles are used to express the orientation.");
+    /** Properties */
+    OpenSim_DECLARE_PROPERTY(body_1, std::string,
+        "Specify first of two bodies welded together by the constraint.");
+    OpenSim_DECLARE_PROPERTY(body_2, std::string,
+        "Specify second of two bodies welded together by the constraint.");
+    OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
+        "Location of the weld in first body specified in body1 reference frame.");
+    OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
+        "Location of the weld in second body specified in body2 reference frame.");
+    OpenSim_DECLARE_PROPERTY(orientation_body_1, SimTK::Vec3,
+        "Orientation of the weld axes on body1 specified in body1's reference frame."  
+        "Euler XYZ body-fixed rotation angles are used to express the orientation.");
+    OpenSim_DECLARE_PROPERTY(orientation_body_2, SimTK::Vec3,
+        "Orientation of the weld axes on body2 specified in body2's reference frame."
+        "Euler XYZ body-fixed rotation angles are used to express the orientation.");
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	WeldConstraint();
-	// Convenience constructors
-	WeldConstraint(const std::string &name, OpenSim::Body& body1, SimTK::Vec3 locationInBody1, SimTK::Vec3 orientationInBody1,
-					OpenSim::Body& body2, SimTK::Vec3 locationInBody2, SimTK::Vec3 orientationInBody2);
-	WeldConstraint(const std::string &name, OpenSim::Body& body1, SimTK::Transform transformInBody1, 
-											OpenSim::Body& body2, SimTK::Transform transformInBody2);
+    // CONSTRUCTION
+    WeldConstraint();
+    // Convenience constructors
+    WeldConstraint(const std::string &name, OpenSim::Body& body1, SimTK::Vec3 locationInBody1, SimTK::Vec3 orientationInBody1,
+                    OpenSim::Body& body2, SimTK::Vec3 locationInBody2, SimTK::Vec3 orientationInBody2);
+    WeldConstraint(const std::string &name, OpenSim::Body& body1, SimTK::Transform transformInBody1, 
+                                            OpenSim::Body& body2, SimTK::Transform transformInBody2);
 
-	virtual ~WeldConstraint();
+    virtual ~WeldConstraint();
 
-	//SET 
-	void setBody1ByName(std::string aBodyName);
-	void setBody1WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
-	void setBody2ByName(std::string aBodyName);
-	void setBody2WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
+    //SET 
+    void setBody1ByName(std::string aBodyName);
+    void setBody1WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
+    void setBody2ByName(std::string aBodyName);
+    void setBody2WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
 
-	// Method to set point locations for induced acceleration analysis
-	virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point);
+    // Method to set point locations for induced acceleration analysis
+    virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point);
 
 protected:
-	void connectToModel(Model& aModel) override;
-	/**
-	 * Create a SimTK::Constraint::Weld which implements this Weld.
-	 */
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+    void connectToModel(Model& aModel) override;
+    /**
+     * Create a SimTK::Constraint::Weld which implements this Weld.
+     */
+    void addToSystem(SimTK::MultibodySystem& system) const override;
 
 private:
-	void setNull();
-	void constructProperties();
-	friend class SimbodyEngine;
+    void setNull();
+    void constructProperties();
+    friend class SimbodyEngine;
 
 private:
-	/** First body weld constraint joins. */
-	SimTK::ReferencePtr<Body> _body1;
+    /** First body weld constraint joins. */
+    SimTK::ReferencePtr<Body> _body1;
 
-	/** Second body weld constraint joins. */
-	SimTK::ReferencePtr<Body> _body2;
+    /** Second body weld constraint joins. */
+    SimTK::ReferencePtr<Body> _body2;
 
 //=============================================================================
-};	// END of class WeldConstraint
+};  // END of class WeldConstraint
 //=============================================================================
 //=============================================================================
 

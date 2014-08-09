@@ -109,7 +109,7 @@ void Millard2012EquilibriumMuscle::buildMuscle()
         // A few parameters may need to be adjusted to avoid singularities
         // (e.g., if an elastic tendon is used with no fiber damping).
         if(!get_ignore_tendon_compliance() && !use_fiber_damping) {
-			set_minimum_activation(clamp(0.01, get_minimum_activation(), 1));
+            set_minimum_activation(clamp(0.01, get_minimum_activation(), 1));
 
             if(falCurve.getMinValue() < 0.1) {
                 falCurve.setMinValue(0.1);
@@ -124,7 +124,7 @@ void Millard2012EquilibriumMuscle::buildMuscle()
             }
 
         } else { //singularity-free model
-			set_minimum_activation(clamp(0, get_minimum_activation(), 1));
+            set_minimum_activation(clamp(0, get_minimum_activation(), 1));
             falCurve.setMinValue(0.0);
             fvCurve.setCurveShape(0.0, conSlopeNearVmax, isometricSlope,
                                   0.0, eccSlopeNearVmax, eccForceMax);
@@ -175,7 +175,7 @@ void Millard2012EquilibriumMuscle::buildMuscle()
 void Millard2012EquilibriumMuscle::finalizeFromProperties()
 {
        buildMuscle();
-	   Super::finalizeFromProperties();
+       Super::finalizeFromProperties();
 }
 
 //==============================================================================
@@ -185,7 +185,7 @@ Millard2012EquilibriumMuscle::Millard2012EquilibriumMuscle()
 {
     setNull();
     constructInfrastructure();
-	finalizeFromProperties();
+    finalizeFromProperties();
 }
 
 Millard2012EquilibriumMuscle::Millard2012EquilibriumMuscle(
@@ -201,7 +201,7 @@ double aTendonSlackLength, double aPennationAngle)
     setTendonSlackLength(aTendonSlackLength);
     setPennationAngleAtOptimalFiberLength(aPennationAngle);
 
-	finalizeFromProperties();
+    finalizeFromProperties();
 }
 
 //==============================================================================
@@ -286,7 +286,7 @@ setMuscleConfiguration(bool ignoreTendonCompliance,
     set_ignore_tendon_compliance(ignoreTendonCompliance);
     set_ignore_activation_dynamics(ignoreActivationDynamics);
     setFiberDamping(dampingCoefficient);
-	finalizeFromProperties();
+    finalizeFromProperties();
 }
 
 void Millard2012EquilibriumMuscle::setFiberDamping(double dampingCoefficient)
@@ -724,8 +724,8 @@ void Millard2012EquilibriumMuscle::calcMuscleLengthInfo(const SimTK::State& s,
 // MUSCLE INFERFACE REQUIREMENTS -- MUSCLE POTENTIAL ENERGY INFO
 //==============================================================================
 void Millard2012EquilibriumMuscle::
-	calcMusclePotentialEnergyInfo(const SimTK::State& s,
-		MusclePotentialEnergyInfo& mpei) const
+    calcMusclePotentialEnergyInfo(const SimTK::State& s,
+        MusclePotentialEnergyInfo& mpei) const
 {
     // Get musculotendon actuator properties.
     double maxIsoForce    = getMaxIsometricForce();
@@ -733,7 +733,7 @@ void Millard2012EquilibriumMuscle::
     double tendonSlackLen = getTendonSlackLength();
 
     try {
-		// Get the quantities that we've already computed.
+        // Get the quantities that we've already computed.
         const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
 
         // Get muscle-specific properties.
@@ -764,7 +764,7 @@ void Millard2012EquilibriumMuscle::
         }
 
         mpei.musclePotentialEnergy = mpei.fiberPotentialEnergy +
-									 mpei.tendonPotentialEnergy;
+                                     mpei.tendonPotentialEnergy;
 
     } catch(const std::exception &x) {
         std::string msg = "Exception caught in Millard2012EquilibriumMuscle::"
@@ -1080,7 +1080,7 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         std::string msg = "Exception caught in Millard2012EquilibriumMuscle::"
                           "calcMuscleDynamicsInfo from " + getName() + "\n"
                           + x.what();
-		cerr << msg << endl;
+        cerr << msg << endl;
         throw OpenSim::Exception(msg);
     }
 }
@@ -1137,26 +1137,26 @@ setPropertiesFromState(const SimTK::State& s)
 }
 
 void Millard2012EquilibriumMuscle::
-	computeStateVariableDerivatives(const SimTK::State& s) const
+    computeStateVariableDerivatives(const SimTK::State& s) const
 {
     // Activation dynamics if not ignored
     if(!get_ignore_activation_dynamics()) {
-		double adot = 0;
-		// if not disabled or overriden then compute its derivative
-		if (!isDisabled(s) && !isForceOverriden(s)) {
-			adot =getActivationDerivative(s);
-		}
-		setStateVariableDerivative(s, STATE_ACTIVATION_NAME, adot);
+        double adot = 0;
+        // if not disabled or overriden then compute its derivative
+        if (!isDisabled(s) && !isForceOverriden(s)) {
+            adot =getActivationDerivative(s);
+        }
+        setStateVariableDerivative(s, STATE_ACTIVATION_NAME, adot);
     }
 
     // Fiber length is the next state (if it is a state at all)
     if(!get_ignore_tendon_compliance()) {
-		double ldot = 0;
-		// if not disabled or overriden then compute its derivative
-		if (!isDisabled(s) && !isForceOverriden(s)) {
-			ldot = getFiberVelocity(s);
-		}
-		setStateVariableDerivative(s, STATE_FIBER_LENGTH_NAME, ldot);
+        double ldot = 0;
+        // if not disabled or overriden then compute its derivative
+        if (!isDisabled(s) && !isForceOverriden(s)) {
+            ldot = getFiberVelocity(s);
+        }
+        setStateVariableDerivative(s, STATE_FIBER_LENGTH_NAME, ldot);
     }
 }
 

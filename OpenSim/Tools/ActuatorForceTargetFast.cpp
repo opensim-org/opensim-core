@@ -68,51 +68,51 @@ ActuatorForceTargetFast::~ActuatorForceTargetFast()
  */
 ActuatorForceTargetFast::
 ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController):
-	OptimizationTarget(aNX), _controller(aController)
+    OptimizationTarget(aNX), _controller(aController)
 {
-	// NUMBER OF CONTROLS
-	if(getNumParameters()<=0) {
-		throw(Exception("ActuatorForceTargetFast: ERROR- no controls.\n"));
-	}
+    // NUMBER OF CONTROLS
+    if(getNumParameters()<=0) {
+        throw(Exception("ActuatorForceTargetFast: ERROR- no controls.\n"));
+    }
 
-	// ALLOCATE STATE ARRAYS
-	int ny = _controller->getModel().getNumStateVariables();
-	int nq = _controller->getModel().getNumCoordinates();
-	int nu = _controller->getModel().getNumSpeeds();
-	int na = _controller->getActuatorSet().getSize();
+    // ALLOCATE STATE ARRAYS
+    int ny = _controller->getModel().getNumStateVariables();
+    int nq = _controller->getModel().getNumCoordinates();
+    int nu = _controller->getModel().getNumSpeeds();
+    int na = _controller->getActuatorSet().getSize();
 
-	_y.setSize(ny);
-	_dydt.setSize(ny);
-	_dqdt.setSize(nq);
-	_dudt.setSize(nu);
-	_recipAreaSquared.setSize(na);
-	_recipOptForceSquared.setSize(na);
-	_recipAvgActForceRangeSquared.setSize(na);
-	
-	int nConstraints = _controller->getTaskSet().getNumActiveTaskFunctions();
+    _y.setSize(ny);
+    _dydt.setSize(ny);
+    _dqdt.setSize(nq);
+    _dudt.setSize(nu);
+    _recipAreaSquared.setSize(na);
+    _recipOptForceSquared.setSize(na);
+    _recipAvgActForceRangeSquared.setSize(na);
+    
+    int nConstraints = _controller->getTaskSet().getNumActiveTaskFunctions();
 
-	// NUMBERS OF CONSTRAINTS
-	// There are only linear equality constraints.
-	setNumEqualityConstraints(nConstraints);
-	setNumLinearEqualityConstraints(nConstraints);
+    // NUMBERS OF CONSTRAINTS
+    // There are only linear equality constraints.
+    setNumEqualityConstraints(nConstraints);
+    setNumLinearEqualityConstraints(nConstraints);
 
-	// DERIVATIVE PERTURBATION SIZES;
-	setDX(1.0e-6);
+    // DERIVATIVE PERTURBATION SIZES;
+    setDX(1.0e-6);
 
-	// COMPUTE ACTUATOR AREAS
-	Array<double> f(1.0,na);
-	const Set<Actuator>& fSet = _controller->getActuatorSet();
-	for(int i=0,j=0;i<fSet.getSize();i++) {
+    // COMPUTE ACTUATOR AREAS
+    Array<double> f(1.0,na);
+    const Set<Actuator>& fSet = _controller->getActuatorSet();
+    for(int i=0,j=0;i<fSet.getSize();i++) {
         Actuator& act = fSet.get(i);
-		Muscle* musc = dynamic_cast<Muscle *>(&act);
-		if(musc)
-			_recipAreaSquared[j] = f[j]/musc->getMaxIsometricForce();
-		else
-			_recipAreaSquared[j] = f[j]/act.getOptimalForce();
-	    
-	    _recipAreaSquared[j] *= _recipAreaSquared[j];
+        Muscle* musc = dynamic_cast<Muscle *>(&act);
+        if(musc)
+            _recipAreaSquared[j] = f[j]/musc->getMaxIsometricForce();
+        else
+            _recipAreaSquared[j] = f[j]/act.getOptimalForce();
+        
+        _recipAreaSquared[j] *= _recipAreaSquared[j];
         j++;
-	}
+    }
 }
 
 
@@ -122,62 +122,62 @@ ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController):
 bool ActuatorForceTargetFast::
 prepareToOptimize(SimTK::State& s, double *x)
 {
-	// Keep around a "copy" of the state so we can use it in objective function 
-	// in cases where we're tracking states
-	_saveState = s;
+    // Keep around a "copy" of the state so we can use it in objective function 
+    // in cases where we're tracking states
+    _saveState = s;
 #ifdef USE_LINEAR_CONSTRAINT_MATRIX
-	int nf = _controller->getActuatorSet().getSize();
-	int nc = getNumConstraints();
+    int nf = _controller->getActuatorSet().getSize();
+    int nc = getNumConstraints();
 
-	_constraintMatrix.resize(nc,nf);
-	_constraintVector.resize(nc);
+    _constraintMatrix.resize(nc,nf);
+    _constraintVector.resize(nc);
 
-	Vector f(nf), c(nc);
+    Vector f(nf), c(nc);
 
-	// Build linear constraint matrix and constant constraint vector
-	f = 0;
+    // Build linear constraint matrix and constant constraint vector
+    f = 0;
 
-	computeConstraintVector(s, f, _constraintVector);
+    computeConstraintVector(s, f, _constraintVector);
 
-	for(int j=0; j<nf; j++) {
-		f[j] = 1;
-		computeConstraintVector(s, f, c);
-		_constraintMatrix(j) = (c - _constraintVector);
-		f[j] = 0;
-	}
+    for(int j=0; j<nf; j++) {
+        f[j] = 1;
+        computeConstraintVector(s, f, c);
+        _constraintMatrix(j) = (c - _constraintVector);
+        f[j] = 0;
+    }
 #endif
 
-	// use tempory copy of state because computeIsokineticForceAssumingInfinitelyStiffTendon
-	// will change the muscle states. This is necessary ONLY in the case of deprecated muscles
-	SimTK::State tempState = s;
-	double activation = 1.0;
-	getController()->getModel().getMultibodySystem().realize( tempState, SimTK::Stage::Dynamics );
+    // use tempory copy of state because computeIsokineticForceAssumingInfinitelyStiffTendon
+    // will change the muscle states. This is necessary ONLY in the case of deprecated muscles
+    SimTK::State tempState = s;
+    double activation = 1.0;
+    getController()->getModel().getMultibodySystem().realize( tempState, SimTK::Stage::Dynamics );
 
-	// COMPUTE MAX ISOMETRIC FORCE
-	const Set<Actuator>& fSet = _controller->getActuatorSet();
-	
-	double fOpt = SimTK::NaN;
+    // COMPUTE MAX ISOMETRIC FORCE
+    const Set<Actuator>& fSet = _controller->getActuatorSet();
+    
+    double fOpt = SimTK::NaN;
 
-	getController()->getModel().getMultibodySystem().realize(tempState, SimTK::Stage::Dynamics );
-	for(int i=0 ; i<fSet.getSize(); ++i) {
+    getController()->getModel().getMultibodySystem().realize(tempState, SimTK::Stage::Dynamics );
+    for(int i=0 ; i<fSet.getSize(); ++i) {
         Actuator& act = fSet.get(i);
-	    Muscle* mus = dynamic_cast<Muscle*>(&act);
-		if(mus==NULL) {
-			fOpt = act.getOptimalForce();
-		}
-		else{	
-			fOpt = mus->calcInextensibleTendonActiveFiberForce(tempState,
+        Muscle* mus = dynamic_cast<Muscle*>(&act);
+        if(mus==NULL) {
+            fOpt = act.getOptimalForce();
+        }
+        else{   
+            fOpt = mus->calcInextensibleTendonActiveFiberForce(tempState,
                                                               activation);
-		}
-		
-		if( std::fabs(fOpt) < SimTK::TinyReal )
-			fOpt = SimTK::TinyReal;
+        }
+        
+        if( std::fabs(fOpt) < SimTK::TinyReal )
+            fOpt = SimTK::TinyReal;
 
-		_recipOptForceSquared[i] = 1.0 / (fOpt*fOpt);	
-	}
-	
-	// return false to indicate that we still need to proceed with optimization (did not do a lapack direct solve)
-	return false;
+        _recipOptForceSquared[i] = 1.0 / (fOpt*fOpt);   
+    }
+    
+    // return false to indicate that we still need to proceed with optimization (did not do a lapack direct solve)
+    return false;
 }
 
 //==============================================================================
@@ -202,35 +202,35 @@ prepareToOptimize(SimTK::State& s, double *x)
 int ActuatorForceTargetFast::
 objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 {
-	const Set<Actuator>& fSet = _controller->getActuatorSet();
-	double p = 0.0;
-	const CMC_TaskSet& tset=_controller->getTaskSet();
-	for(int i=0,j=0;i<fSet.getSize();i++) {
+    const Set<Actuator>& fSet = _controller->getActuatorSet();
+    double p = 0.0;
+    const CMC_TaskSet& tset=_controller->getTaskSet();
+    for(int i=0,j=0;i<fSet.getSize();i++) {
         Actuator& act = fSet.get(i);
-	    Muscle* mus = dynamic_cast<Muscle*>(&act);
-	    if(mus) {
-		    p +=  aF[j] * aF[j] * _recipOptForceSquared[j];
-	    } else {
-		    p +=  aF[j] * aF[j] *  _recipAreaSquared[j];
+        Muscle* mus = dynamic_cast<Muscle*>(&act);
+        if(mus) {
+            p +=  aF[j] * aF[j] * _recipOptForceSquared[j];
+        } else {
+            p +=  aF[j] * aF[j] *  _recipAreaSquared[j];
         }
         j++;
-	}
-	double pre = p;
-	// If tracking states, add in errors from them squared
-	for(int t=0; t<tset.getSize(); t++){
-		TrackingTask& ttask = tset.get(t);
-		StateTrackingTask* stateTask=NULL;
-		if ((stateTask=dynamic_cast<StateTrackingTask*>(&ttask))!= NULL){
-			double err = stateTask->getTaskError(_saveState);
-			//cout << "task error " << err << endl;
-			p+= (err * err * stateTask->getWeight(0));
+    }
+    double pre = p;
+    // If tracking states, add in errors from them squared
+    for(int t=0; t<tset.getSize(); t++){
+        TrackingTask& ttask = tset.get(t);
+        StateTrackingTask* stateTask=NULL;
+        if ((stateTask=dynamic_cast<StateTrackingTask*>(&ttask))!= NULL){
+            double err = stateTask->getTaskError(_saveState);
+            //cout << "task error " << err << endl;
+            p+= (err * err * stateTask->getWeight(0));
 
-		}
-	}
-	rP = p;
-	//cout << "Objective function" << rP << " vs. without emg " << pre << endl;
+        }
+    }
+    rP = p;
+    //cout << "Objective function" << rP << " vs. without emg " << pre << endl;
 
-	return(0);
+    return(0);
 }
 //______________________________________________________________________________
 /**
@@ -249,25 +249,25 @@ gradientFunc(const Vector &x, const bool new_coefficients, Vector &gradient) con
         Actuator& act = fSet.get(i);
         Muscle* mus = dynamic_cast<Muscle*>(&act);
         if(mus) {
-		    gradient[index] =  2.0 * x[index] * _recipOptForceSquared[index];
+            gradient[index] =  2.0 * x[index] * _recipOptForceSquared[index];
         } else {
-		    gradient[index] =  2.0 * x[index] * _recipAreaSquared[index];
+            gradient[index] =  2.0 * x[index] * _recipAreaSquared[index];
         }
         index++;
     }
 //std::cout << "rdActuatorForceTargetFast::gradentFuncgradient =" << gradient << std::endl;
-	// Add in the terms for the stateTracking
-	const CMC_TaskSet& tset=_controller->getTaskSet();
-	for(int t=0; t<tset.getSize(); t++){
-		TrackingTask& ttask = tset.get(t);
-		StateTrackingTask* stateTask=NULL;
-		if ((stateTask=dynamic_cast<StateTrackingTask*>(&ttask))!= NULL){
-			Vector errGradient = stateTask->getTaskErrorGradient(_saveState);
-			gradient += errGradient;
-		}
-	}
+    // Add in the terms for the stateTracking
+    const CMC_TaskSet& tset=_controller->getTaskSet();
+    for(int t=0; t<tset.getSize(); t++){
+        TrackingTask& ttask = tset.get(t);
+        StateTrackingTask* stateTask=NULL;
+        if ((stateTask=dynamic_cast<StateTrackingTask*>(&ttask))!= NULL){
+            Vector errGradient = stateTask->getTaskErrorGradient(_saveState);
+            gradient += errGradient;
+        }
+    }
 
-	return(0);
+    return(0);
 }
 
 //------------------------------------------------------------------------------
@@ -285,17 +285,17 @@ constraintFunc(const SimTK::Vector &x, const bool new_coefficients, SimTK::Vecto
 {
 #ifndef USE_LINEAR_CONSTRAINT_MATRIX
 
-	// Evaluate constraint function for all constraints and pick the appropriate component
-	computeConstraintVector(s, x,constraints);
+    // Evaluate constraint function for all constraints and pick the appropriate component
+    computeConstraintVector(s, x,constraints);
 
 #else
 
-	// Use precomputed constraint matrix
-	constraints = _constraintMatrix * x + _constraintVector;
-	//cout <<"x = " << x[0] <<" contraintEqn = " << constraints[0] << endl;
+    // Use precomputed constraint matrix
+    constraints = _constraintMatrix * x + _constraintVector;
+    //cout <<"x = " << x[0] <<" contraintEqn = " << constraints[0] << endl;
 
 #endif
-	return(0);
+    return(0);
 }
 //______________________________________________________________________________
 /**
@@ -304,34 +304,34 @@ constraintFunc(const SimTK::Vector &x, const bool new_coefficients, SimTK::Vecto
 void ActuatorForceTargetFast::
 computeConstraintVector(SimTK::State& s, const Vector &x,Vector &c) const
 {
-	CMC_TaskSet&  taskSet = _controller->updTaskSet();
-	const Set<Actuator>& fSet = _controller->getActuatorSet();
+    CMC_TaskSet&  taskSet = _controller->updTaskSet();
+    const Set<Actuator>& fSet = _controller->getActuatorSet();
 
-	int nf = fSet.getSize();
+    int nf = fSet.getSize();
 
-	// Now override the actuator forces with computed active force
-	// (from static optimization) but also include the passive force
-	// contribution of muscles when applying forces to the model
-	for(int i=0;i<nf;i++) {
+    // Now override the actuator forces with computed active force
+    // (from static optimization) but also include the passive force
+    // contribution of muscles when applying forces to the model
+    for(int i=0;i<nf;i++) {
         Actuator& act = fSet.get(i);
-		act.overrideForce(s,true);
+        act.overrideForce(s,true);
         act.setOverrideForce(s, x[i]);        
-	}
-	_controller->getModel().getMultibodySystem().realize(s, SimTK::Stage::Acceleration );
+    }
+    _controller->getModel().getMultibodySystem().realize(s, SimTK::Stage::Acceleration );
 
-	taskSet.computeAccelerations(s);
-	Array<double> &w = taskSet.getWeights();
-	Array<double> &aDes = taskSet.getDesiredAccelerations();
-	Array<double> &a = taskSet.getAccelerations();
+    taskSet.computeAccelerations(s);
+    Array<double> &w = taskSet.getWeights();
+    Array<double> &aDes = taskSet.getDesiredAccelerations();
+    Array<double> &a = taskSet.getAccelerations();
 
-	// CONSTRAINTS
-	for(int i=0; i<getNumConstraints(); i++)
-		c[i]=w[i]*(aDes[i]-a[i]);
+    // CONSTRAINTS
+    for(int i=0; i<getNumConstraints(); i++)
+        c[i]=w[i]*(aDes[i]-a[i]);
 
-	// reset the actuator control 
-	for(int i=0;i<fSet.getSize();i++) {
+    // reset the actuator control 
+    for(int i=0;i<fSet.getSize();i++) {
         fSet[i].overrideForce(s,false);
-	}
+    }
 
     _controller->getModel().getMultibodySystem().realizeModel(s);
 }
@@ -349,15 +349,15 @@ constraintJacobian(const SimTK::Vector &x, const bool new_coefficients, SimTK::M
 {
 #ifndef USE_LINEAR_CONSTRAINT_MATRIX
 
-	// Compute gradient using callbacks to constraintFunc
-	OptimizationTarget::CentralDifferencesConstraint(this,&_dx[0],x,jac);
+    // Compute gradient using callbacks to constraintFunc
+    OptimizationTarget::CentralDifferencesConstraint(this,&_dx[0],x,jac);
 
 #else
 
-	// Use precomputed constraint matrix (works if constraint is linear)
-	jac = _constraintMatrix;
+    // Use precomputed constraint matrix (works if constraint is linear)
+    jac = _constraintMatrix;
 
 #endif
 
-	return 0;
+    return 0;
 }

@@ -42,9 +42,9 @@ PathWrapSet::~PathWrapSet(void)
  * Default constructor of a PathWrapSet.
  */
 PathWrapSet::PathWrapSet() :
-	Set<PathWrap>()
+    Set<PathWrap>()
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -52,10 +52,10 @@ PathWrapSet::PathWrapSet() :
  * Copy constructor of a PathWrapSet.
  */
 PathWrapSet::PathWrapSet(const PathWrapSet& aPathWrapSet):
-	Set<PathWrap>(aPathWrapSet)
+    Set<PathWrap>(aPathWrapSet)
 {
-	setNull();
-	*this = aPathWrapSet;
+    setNull();
+    *this = aPathWrapSet;
 }
 
 //=============================================================================
@@ -80,7 +80,7 @@ void PathWrapSet::setNull()
 #ifndef SWIG
 PathWrapSet& PathWrapSet::operator=(const PathWrapSet &aPathWrapSet)
 {
-	Set<PathWrap>::operator=(aPathWrapSet);
-	return (*this);
+    Set<PathWrap>::operator=(aPathWrapSet);
+    return (*this);
 }
 #endif

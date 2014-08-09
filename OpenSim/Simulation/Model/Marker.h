@@ -67,83 +67,83 @@ private:
 protected:
     const Model* _model;
 
-	PropertyDblVec3 _offsetProp;
-	SimTK::Vec3 &_offset;
+    PropertyDblVec3 _offsetProp;
+    SimTK::Vec3 &_offset;
 
-	PropertyBool _fixedProp;
-	bool &_fixed;
+    PropertyBool _fixedProp;
+    bool &_fixed;
 
-	// The bodyName property is used only for markers that are part of a
-	// MarkerSet, not for ones that are part of a model.
-	PropertyStr _bodyNameProp;
-	std::string &_bodyName;
+    // The bodyName property is used only for markers that are part of a
+    // MarkerSet, not for ones that are part of a model.
+    PropertyStr _bodyNameProp;
+    std::string &_bodyName;
 
-	// Body that the marker is attached to
-	OpenSim::Body* _body;
+    // Body that the marker is attached to
+    OpenSim::Body* _body;
 
-	// Support for Display
-	VisibleObject _displayer;
+    // Support for Display
+    VisibleObject _displayer;
 
-	/** A temporary kluge until the default mechanism is working */
-	static Geometry *_defaultGeometry;
-	bool _virtual;
+    /** A temporary kluge until the default mechanism is working */
+    static Geometry *_defaultGeometry;
+    bool _virtual;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	Marker();
-	Marker(const Marker &aMarker);
-	virtual ~Marker();
+    Marker();
+    Marker(const Marker &aMarker);
+    virtual ~Marker();
 
     static void deleteMarker(Marker* aMarker) { if (aMarker) delete aMarker; }
 
 #ifndef SWIG
-	Marker& operator=(const Marker &aMarker);
+    Marker& operator=(const Marker &aMarker);
 #endif
-	void copyData(const Marker &aMarker);
+    void copyData(const Marker &aMarker);
 
-	virtual void updateFromMarker(const Marker &aMarker);
-	virtual void getOffset(SimTK::Vec3& rOffset) const;
-	virtual const SimTK::Vec3& getOffset() const { return _offset; }
-	virtual void getOffset(double rOffset[]) const;
-	virtual bool setOffset(const SimTK::Vec3& aOffset);
-	virtual bool setOffset(const double aOffset[3]);
-	virtual bool getOffsetUseDefault() const { return _offsetProp.getValueIsDefault(); }
-	virtual bool getFixed() const { return _fixed; }
-	virtual bool setFixed(bool aFixed);
-	virtual bool getFixedUseDefault() const { return _fixedProp.getValueIsDefault(); }
-	virtual const std::string& getBodyName() const;
-	virtual bool setBodyName(const std::string& aName);
-	virtual bool getBodyNameUseDefault() const { return _bodyNameProp.getValueIsDefault(); }
-	virtual bool setBodyNameUseDefault(bool aValue);
-	virtual OpenSim::Body& getBody() const { return *_body; }
-	virtual void changeBody( OpenSim::Body& aBody );
-	virtual void changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody );
-	virtual void scale(const SimTK::Vec3& aScaleFactors);
-	virtual void connectMarkerToModel(const Model& aModel);
-	virtual void updateGeometry();
+    virtual void updateFromMarker(const Marker &aMarker);
+    virtual void getOffset(SimTK::Vec3& rOffset) const;
+    virtual const SimTK::Vec3& getOffset() const { return _offset; }
+    virtual void getOffset(double rOffset[]) const;
+    virtual bool setOffset(const SimTK::Vec3& aOffset);
+    virtual bool setOffset(const double aOffset[3]);
+    virtual bool getOffsetUseDefault() const { return _offsetProp.getValueIsDefault(); }
+    virtual bool getFixed() const { return _fixed; }
+    virtual bool setFixed(bool aFixed);
+    virtual bool getFixedUseDefault() const { return _fixedProp.getValueIsDefault(); }
+    virtual const std::string& getBodyName() const;
+    virtual bool setBodyName(const std::string& aName);
+    virtual bool getBodyNameUseDefault() const { return _bodyNameProp.getValueIsDefault(); }
+    virtual bool setBodyNameUseDefault(bool aValue);
+    virtual OpenSim::Body& getBody() const { return *_body; }
+    virtual void changeBody( OpenSim::Body& aBody );
+    virtual void changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody );
+    virtual void scale(const SimTK::Vec3& aScaleFactors);
+    virtual void connectMarkerToModel(const Model& aModel);
+    virtual void updateGeometry();
 
-	virtual const VisibleObject* getDisplayer() const { return &_displayer; }
-	virtual VisibleObject*	updDisplayer() { return &_displayer; };
+    virtual const VisibleObject* getDisplayer() const { return &_displayer; }
+    virtual VisibleObject*  updDisplayer() { return &_displayer; };
 
-	virtual void removeSelfFromDisplay();
-	const bool isVirtual()
-	{
-		return _virtual;
-	}
-	void setVirtual(bool aTrueFalse)
-	{
-		_virtual=aTrueFalse;
-	}
+    virtual void removeSelfFromDisplay();
+    const bool isVirtual()
+    {
+        return _virtual;
+    }
+    void setVirtual(bool aTrueFalse)
+    {
+        _virtual=aTrueFalse;
+    }
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 //=============================================================================
-};	// END of class Marker
+};  // END of class Marker
 //=============================================================================
 //=============================================================================
 

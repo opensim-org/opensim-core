@@ -61,81 +61,81 @@ class OSIMCOMMON_API StateVector
 // DATA
 //=============================================================================
 private:
-	/** Time stamp of the statevector. */
-	double _t;
-	/** Array of states. */
-	Array<double> _data;
+    /** Time stamp of the statevector. */
+    double _t;
+    /** Array of states. */
+    Array<double> _data;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	StateVector(double aT=0.0,int aN=0,const double *aData=NULL);
-	StateVector(const StateVector &aVector);
-	virtual ~StateVector();
+    StateVector(double aT=0.0,int aN=0,const double *aData=NULL);
+    StateVector(const StateVector &aVector);
+    virtual ~StateVector();
 
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 private:
-	void setNull();
+    void setNull();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	StateVector& operator=(const StateVector &aStateVector);
-	bool operator==(const StateVector &aStateVector) const;
-	bool operator<(const StateVector &aStateVector) const;
-	friend std::ostream& operator<<(std::ostream &aOut,
-									const StateVector &aStateVector) {
-		aOut<<"StateVector: t="<<aStateVector._t<<", "<<aStateVector._data;
-		return(aOut);
-	};
+    StateVector& operator=(const StateVector &aStateVector);
+    bool operator==(const StateVector &aStateVector) const;
+    bool operator<(const StateVector &aStateVector) const;
+    friend std::ostream& operator<<(std::ostream &aOut,
+                                    const StateVector &aStateVector) {
+        aOut<<"StateVector: t="<<aStateVector._t<<", "<<aStateVector._data;
+        return(aOut);
+    };
 #endif
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 public:
-	void setStates(double aT,int aN,const double aY[]);
-	int getSize() const;
-	void setTime(double aT);
-	double  getTime() const;
-	int getDataValue(int aIndex,double &rValue);
-	void setDataValue(int aIndex,double &aValue);
-	Array<double>& getData();
+    void setStates(double aT,int aN,const double aY[]);
+    int getSize() const;
+    void setTime(double aT);
+    double  getTime() const;
+    int getDataValue(int aIndex,double &rValue);
+    void setDataValue(int aIndex,double &aValue);
+    Array<double>& getData();
 #ifndef SWIG
-	const Array<double>& getData() const;
+    const Array<double>& getData() const;
 #endif
-	//--------------------------------------------------------------------------
-	// OPERATIONS
-	//--------------------------------------------------------------------------
-	void shiftTime(double aValue);
-	void scaleTime(double aValue);
-	void add(double aValue);
-	void add(int aN,double aY[]);
-	void add(int aN,double aValue);
-	void add(StateVector *aStateVector);
-	void subtract(double aValue);
-	void subtract(int aN,double aY[]);
-	void subtract(StateVector *aStateVector);
-	void multiply(double aValue);
-	void multiply(int aN,double aY[]);
-	void multiply(StateVector *aStateVector);
-	void divide(double aValue);
-	void divide(int aN,double aY[]);
-	void divide(StateVector *aStateVector);
+    //--------------------------------------------------------------------------
+    // OPERATIONS
+    //--------------------------------------------------------------------------
+    void shiftTime(double aValue);
+    void scaleTime(double aValue);
+    void add(double aValue);
+    void add(int aN,double aY[]);
+    void add(int aN,double aValue);
+    void add(StateVector *aStateVector);
+    void subtract(double aValue);
+    void subtract(int aN,double aY[]);
+    void subtract(StateVector *aStateVector);
+    void multiply(double aValue);
+    void multiply(int aN,double aY[]);
+    void multiply(StateVector *aStateVector);
+    void divide(double aValue);
+    void divide(int aN,double aY[]);
+    void divide(StateVector *aStateVector);
 
-	//--------------------------------------------------------------------------
-	// IO
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // IO
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	int print(FILE *fp) const;
+    int print(FILE *fp) const;
 #endif
 
 //=============================================================================
-};	// END of class StateVector
+};  // END of class StateVector
 
 }; //namespace
 //=============================================================================

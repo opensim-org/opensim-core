@@ -59,7 +59,7 @@ BodyDragForce::BodyDragForce() : Force()
  */
 void BodyDragForce::setNull()
 {
-	// no internal data members to initialize.
+    // no internal data members to initialize.
 }
 
 //_____________________________________________________________________________
@@ -90,16 +90,16 @@ void BodyDragForce::constructProperties()
  */
 void BodyDragForce::connectToModel(Model& aModel)
 {
-	string errorMessage;
+    string errorMessage;
 
-	// Base class
-	Super::connectToModel(aModel);
+    // Base class
+    Super::connectToModel(aModel);
 
-	// Look up the body and report an error if it is not found 
-	if (!aModel.updBodySet().contains(get_body_name())) {
-		errorMessage = "Invalid bodyName (" + get_body_name() + ") specified in Force " + getName();
-		throw (Exception(errorMessage.c_str()));
-	}
+    // Look up the body and report an error if it is not found 
+    if (!aModel.updBodySet().contains(get_body_name())) {
+        errorMessage = "Invalid bodyName (" + get_body_name() + ") specified in Force " + getName();
+        throw (Exception(errorMessage.c_str()));
+    }
 }
 
 
@@ -108,65 +108,65 @@ void BodyDragForce::connectToModel(Model& aModel)
 //=============================================================================
 
 void BodyDragForce::computeForce(const SimTK::State& s, 
-							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							  SimTK::Vector& generalizedForces) const
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+                              SimTK::Vector& generalizedForces) const
 {
-	if(_model==NULL) return;		// some minor error checking
+    if(_model==NULL) return;        // some minor error checking
 
-	SimTK::Vec3 bodyCoMPosBody, bodyCoMPosGround, bodyCoMVelGround, bodyCoMVelGroundRaisedPower, dragForceGround, dragForceBody, oppVelSign;
-	BodySet &bs = _model->updBodySet();										// get body set
-	Body &ground = _model->getSimbodyEngine().getGroundBody();				// get ground body
-	Body &aBody = bs.get(get_body_name());										// get the body to apply the force to
+    SimTK::Vec3 bodyCoMPosBody, bodyCoMPosGround, bodyCoMVelGround, bodyCoMVelGroundRaisedPower, dragForceGround, dragForceBody, oppVelSign;
+    BodySet &bs = _model->updBodySet();                                     // get body set
+    Body &ground = _model->getSimbodyEngine().getGroundBody();              // get ground body
+    Body &aBody = bs.get(get_body_name());                                      // get the body to apply the force to
 
-	aBody.getMassCenter(bodyCoMPosBody);													// get CoM position of body in the BODY coordinate system
-	_model->getSimbodyEngine().getPosition(s, aBody, bodyCoMPosBody, bodyCoMPosGround);		// get CoM position of body in the GROUND coordinate system
-	_model->getSimbodyEngine().getVelocity(s, aBody, bodyCoMPosBody, bodyCoMVelGround);		// get CoM velocity of body in the GROUND coordinate system
+    aBody.getMassCenter(bodyCoMPosBody);                                                    // get CoM position of body in the BODY coordinate system
+    _model->getSimbodyEngine().getPosition(s, aBody, bodyCoMPosBody, bodyCoMPosGround);     // get CoM position of body in the GROUND coordinate system
+    _model->getSimbodyEngine().getVelocity(s, aBody, bodyCoMPosBody, bodyCoMVelGround);     // get CoM velocity of body in the GROUND coordinate system
 
-	for (int i=0; i<3;i++)
-	{
-		if (bodyCoMVelGround[i]>0) oppVelSign[i] = -1;										// get opposite sign of CoM velocity (GROUND coordinate system)
-		if (bodyCoMVelGround[i]<0) oppVelSign[i] = 1;
-		if (bodyCoMVelGround[i]==0) oppVelSign[i] = 0;
+    for (int i=0; i<3;i++)
+    {
+        if (bodyCoMVelGround[i]>0) oppVelSign[i] = -1;                                      // get opposite sign of CoM velocity (GROUND coordinate system)
+        if (bodyCoMVelGround[i]<0) oppVelSign[i] = 1;
+        if (bodyCoMVelGround[i]==0) oppVelSign[i] = 0;
 
-		dragForceGround[i] = oppVelSign[i] * get_coefficient() * std::pow(bodyCoMVelGround[i], get_exponent());	// calculate drag force in the GROUND coordinate system
-	}
+        dragForceGround[i] = oppVelSign[i] * get_coefficient() * std::pow(bodyCoMVelGround[i], get_exponent()); // calculate drag force in the GROUND coordinate system
+    }
 
-	_model->getSimbodyEngine().transform(s, ground, dragForceGround, aBody, dragForceBody);			// transform drag force into the BODY coordinate system
-
-
-	// Apply drag force to the body
-	// ------------------------------
-	// applyForceToPoint requires the force application point to be in the inertial (ground) frame
-	// and the force vector itself to be in the body frame
-	applyForceToPoint(s, aBody, bodyCoMPosGround, dragForceBody, bodyForces);
+    _model->getSimbodyEngine().transform(s, ground, dragForceGround, aBody, dragForceBody);         // transform drag force into the BODY coordinate system
 
 
+    // Apply drag force to the body
+    // ------------------------------
+    // applyForceToPoint requires the force application point to be in the inertial (ground) frame
+    // and the force vector itself to be in the body frame
+    applyForceToPoint(s, aBody, bodyCoMPosGround, dragForceBody, bodyForces);
 
 
-	// Debuging info
-	// --------------
-	int deb = 0;
-	if (deb)
-	{
-		cout << "Time = " << s.getTime() << endl;
-		cout << aBody.getName() << " CoM position (body frame) = " << bodyCoMPosBody << endl;
-		cout << aBody.getName() << " CoM position (ground frame) = " << bodyCoMPosGround << endl;
-		cout << aBody.getName() << " CoM velocity (ground frame) = " << bodyCoMVelGround << endl;
-		cout << aBody.getName() << " CoM velocity opposite sign (ground frame) = " << oppVelSign << endl;
-		cout << aBody.getName() << " CoM velocity^" << get_exponent() << " (ground frame) = " << bodyCoMVelGroundRaisedPower << endl;
-		cout << "Drag coefficient = " << get_coefficient() << "\tDrag exponent = " << get_exponent() << endl;
-		cout << "dragForce (ground) = " << dragForceGround << endl;
-		cout << "dragForce (body frame) = " << dragForceBody << endl;
-		system("pause");
-	}
 
-	return;
+
+    // Debuging info
+    // --------------
+    int deb = 0;
+    if (deb)
+    {
+        cout << "Time = " << s.getTime() << endl;
+        cout << aBody.getName() << " CoM position (body frame) = " << bodyCoMPosBody << endl;
+        cout << aBody.getName() << " CoM position (ground frame) = " << bodyCoMPosGround << endl;
+        cout << aBody.getName() << " CoM velocity (ground frame) = " << bodyCoMVelGround << endl;
+        cout << aBody.getName() << " CoM velocity opposite sign (ground frame) = " << oppVelSign << endl;
+        cout << aBody.getName() << " CoM velocity^" << get_exponent() << " (ground frame) = " << bodyCoMVelGroundRaisedPower << endl;
+        cout << "Drag coefficient = " << get_coefficient() << "\tDrag exponent = " << get_exponent() << endl;
+        cout << "dragForce (ground) = " << dragForceGround << endl;
+        cout << "dragForce (body frame) = " << dragForceBody << endl;
+        system("pause");
+    }
+
+    return;
 }
 
 /** Potential energy function */
 double BodyDragForce::computePotentialEnergy(const SimTK::State& s) const
 {
-	return 0;
+    return 0;
 }
 
 
@@ -179,37 +179,37 @@ double BodyDragForce::computePotentialEnergy(const SimTK::State& s) const
  */
 OpenSim::Array<std::string> BodyDragForce::getRecordLabels() const 
 {
-	OpenSim::Array<std::string> labels("");
-	labels.append(getName()+"."+get_body_name()+".force.X");
-	labels.append(getName()+"."+get_body_name()+".force.Y");
-	labels.append(getName()+"."+get_body_name()+".force.Z");
-	return labels;
+    OpenSim::Array<std::string> labels("");
+    labels.append(getName()+"."+get_body_name()+".force.X");
+    labels.append(getName()+"."+get_body_name()+".force.Y");
+    labels.append(getName()+"."+get_body_name()+".force.Z");
+    return labels;
 }
 /**
  * Provide the value(s) to be reported that correspond to the labels
  */
 OpenSim::Array<double> BodyDragForce::getRecordValues(const SimTK::State& s) const 
 {
-	OpenSim::Array<double> values(3);
+    OpenSim::Array<double> values(3);
 
-	SimTK::Vec3 bodyCoMPosBody, bodyCoMPosGround, bodyCoMVelGround, bodyCoMVelGroundRaisedPower, dragForceGround, dragForceBody, oppVelSign;
-	BodySet &bs = _model->updBodySet();										// get body set
-	Body &ground = _model->getSimbodyEngine().getGroundBody();				// get ground body
-	Body &aBody = bs.get(get_body_name());										// get the body to apply the force to
+    SimTK::Vec3 bodyCoMPosBody, bodyCoMPosGround, bodyCoMVelGround, bodyCoMVelGroundRaisedPower, dragForceGround, dragForceBody, oppVelSign;
+    BodySet &bs = _model->updBodySet();                                     // get body set
+    Body &ground = _model->getSimbodyEngine().getGroundBody();              // get ground body
+    Body &aBody = bs.get(get_body_name());                                      // get the body to apply the force to
 
-	aBody.getMassCenter(bodyCoMPosBody);													// get CoM position of body in the BODY coordinate system
-	_model->getSimbodyEngine().getPosition(s, aBody, bodyCoMPosBody, bodyCoMPosGround);		// get CoM position of body in the GROUND coordinate system
-	_model->getSimbodyEngine().getVelocity(s, aBody, bodyCoMPosBody, bodyCoMVelGround);		// get CoM velocity of body in the GROUND coordinate system
+    aBody.getMassCenter(bodyCoMPosBody);                                                    // get CoM position of body in the BODY coordinate system
+    _model->getSimbodyEngine().getPosition(s, aBody, bodyCoMPosBody, bodyCoMPosGround);     // get CoM position of body in the GROUND coordinate system
+    _model->getSimbodyEngine().getVelocity(s, aBody, bodyCoMPosBody, bodyCoMVelGround);     // get CoM velocity of body in the GROUND coordinate system
 
-	for (int i=0; i<3;i++)
-	{
-		if (bodyCoMVelGround[i]>0) oppVelSign[i] = -1;										// get opposite sign of CoM velocity (GROUND coordinate system)
-		if (bodyCoMVelGround[i]<0) oppVelSign[i] = 1;
-		if (bodyCoMVelGround[i]==0) oppVelSign[i] = 0;
+    for (int i=0; i<3;i++)
+    {
+        if (bodyCoMVelGround[i]>0) oppVelSign[i] = -1;                                      // get opposite sign of CoM velocity (GROUND coordinate system)
+        if (bodyCoMVelGround[i]<0) oppVelSign[i] = 1;
+        if (bodyCoMVelGround[i]==0) oppVelSign[i] = 0;
 
-		dragForceGround[i] = oppVelSign[i] * get_coefficient() * pow(bodyCoMVelGround[i], get_exponent());	// calculate drag force in the GROUND coordinate system
-		values.append(dragForceGround[i]);
-	}
+        dragForceGround[i] = oppVelSign[i] * get_coefficient() * pow(bodyCoMVelGround[i], get_exponent());  // calculate drag force in the GROUND coordinate system
+        values.append(dragForceGround[i]);
+    }
 
-	return values;
+    return values;
 }

@@ -60,8 +60,8 @@ WrapEllipsoid::WrapEllipsoid() :
    WrapObject(),
    _dimensions(_dimensionsProp.getValueDblArray())
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -82,9 +82,9 @@ WrapEllipsoid::WrapEllipsoid(const WrapEllipsoid& aWrapEllipsoid) :
    WrapObject(aWrapEllipsoid),
    _dimensions(_dimensionsProp.getValueDblArray())
 {
-	setNull();
-	setupProperties();
-	copyData(aWrapEllipsoid);
+    setNull();
+    setupProperties();
+    copyData(aWrapEllipsoid);
 }
 
 //=============================================================================
@@ -104,13 +104,13 @@ void WrapEllipsoid::setNull()
 */
 void WrapEllipsoid::setupProperties()
 {
-	// BASE CLASS
-	//WrapObject::setupProperties();
+    // BASE CLASS
+    //WrapObject::setupProperties();
 
-	const double defaultDimensions[] = {-1.0, -1.0, -1.0};
-	_dimensionsProp.setName("dimensions");
-	_dimensionsProp.setValue(3, defaultDimensions);
-	_propertySet.append(&_dimensionsProp);
+    const double defaultDimensions[] = {-1.0, -1.0, -1.0};
+    _dimensionsProp.setName("dimensions");
+    _dimensionsProp.setValue(3, defaultDimensions);
+    _propertySet.append(&_dimensionsProp);
 }
 
 //_____________________________________________________________________________
@@ -122,21 +122,21 @@ void WrapEllipsoid::setupProperties()
 */
 void WrapEllipsoid::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
 {
-	// Base class
-	WrapObject::connectToModelAndBody(aModel, aBody);
+    // Base class
+    WrapObject::connectToModelAndBody(aModel, aBody);
 
-	// maybe set a parent pointer, _body = aBody;
+    // maybe set a parent pointer, _body = aBody;
 
-	if (_dimensions[0] < 0.0 || _dimensions[1] < 0.0 || _dimensions[2] < 0.0)
-	{
-		string errorMessage = "Error: dimensions for WrapEllipsoid " + getName() + " were either not specified, or are negative.";
-		throw Exception(errorMessage);
-	}
+    if (_dimensions[0] < 0.0 || _dimensions[1] < 0.0 || _dimensions[2] < 0.0)
+    {
+        string errorMessage = "Error: dimensions for WrapEllipsoid " + getName() + " were either not specified, or are negative.";
+        throw Exception(errorMessage);
+    }
     _displayer.freeGeometry();
-	AnalyticEllipsoid* ellipsoid = new AnalyticEllipsoid();
-	ellipsoid->setEllipsoidParams(_dimensions[0], _dimensions[1], _dimensions[2]);
-	setGeometryQuadrants(ellipsoid);
-	_displayer.addGeometry(ellipsoid);
+    AnalyticEllipsoid* ellipsoid = new AnalyticEllipsoid();
+    ellipsoid->setEllipsoidParams(_dimensions[0], _dimensions[1], _dimensions[2]);
+    setGeometryQuadrants(ellipsoid);
+    _displayer.addGeometry(ellipsoid);
 }
 
 //_____________________________________________________________________________
@@ -151,19 +151,19 @@ void WrapEllipsoid::scale(const SimTK::Vec3& aScaleFactors)
    // Base class, to scale origin in body frame
    WrapObject::scale(aScaleFactors);
 
-	SimTK::Vec3 localScaleVector[3];
+    SimTK::Vec3 localScaleVector[3];
 
    // _pose.x() holds the ellipsoid's X axis expressed in the
    // body's reference frame. The magnitude of this-vector-multiplied-
    // by-the-XYZ-scale-factors gives the amount that you need to
    // scale the X dimension of the ellipsoid. Similarly for Y and Z...
-	for (int i=0; i<3; i++) {
-		localScaleVector[0][i] = _pose.x()[i] * aScaleFactors[i];
-		localScaleVector[1][i] = _pose.y()[i] * aScaleFactors[i];
-		localScaleVector[2][i] = _pose.z()[i] * aScaleFactors[i];
-	}
-	for (int i=0; i<3; i++)
-		_dimensions[i] *= localScaleVector[i].norm();
+    for (int i=0; i<3; i++) {
+        localScaleVector[0][i] = _pose.x()[i] * aScaleFactors[i];
+        localScaleVector[1][i] = _pose.y()[i] * aScaleFactors[i];
+        localScaleVector[2][i] = _pose.z()[i] * aScaleFactors[i];
+    }
+    for (int i=0; i<3; i++)
+        _dimensions[i] *= localScaleVector[i].norm();
 }
 
 //_____________________________________________________________________________
@@ -174,10 +174,10 @@ void WrapEllipsoid::scale(const SimTK::Vec3& aScaleFactors)
 */
 void WrapEllipsoid::copyData(const WrapEllipsoid& aWrapEllipsoid)
 {
-	// BASE CLASS
-	WrapObject::copyData(aWrapEllipsoid);
+    // BASE CLASS
+    WrapObject::copyData(aWrapEllipsoid);
 
-	_dimensions = aWrapEllipsoid._dimensions;
+    _dimensions = aWrapEllipsoid._dimensions;
 }
 
 //_____________________________________________________________________________
@@ -188,7 +188,7 @@ void WrapEllipsoid::copyData(const WrapEllipsoid& aWrapEllipsoid)
  */
 const char* WrapEllipsoid::getWrapTypeName() const
 {
-	return wrapTypeName;
+    return wrapTypeName;
 }
 
 //_____________________________________________________________________________
@@ -201,10 +201,10 @@ const char* WrapEllipsoid::getWrapTypeName() const
  */
 string WrapEllipsoid::getDimensionsString() const
 {
-	stringstream dimensions;
-	dimensions << "radius " << _dimensions[0] << " " << _dimensions[1] << " " << _dimensions[2];
+    stringstream dimensions;
+    dimensions << "radius " << _dimensions[0] << " " << _dimensions[1] << " " << _dimensions[2];
 
-	return dimensions.str();
+    return dimensions.str();
 }
 
 //_____________________________________________________________________________
@@ -215,7 +215,7 @@ string WrapEllipsoid::getDimensionsString() const
  */
 SimTK::Vec3 WrapEllipsoid::getRadii() const
 {
-	return SimTK::Vec3(_dimensions[0], _dimensions[1], _dimensions[2]);
+    return SimTK::Vec3(_dimensions[0], _dimensions[1], _dimensions[2]);
 }
 
 //=============================================================================
@@ -229,10 +229,10 @@ SimTK::Vec3 WrapEllipsoid::getRadii() const
 */
 WrapEllipsoid& WrapEllipsoid::operator=(const WrapEllipsoid& aWrapEllipsoid)
 {
-	// BASE CLASS
-	WrapObject::operator=(aWrapEllipsoid);
+    // BASE CLASS
+    WrapObject::operator=(aWrapEllipsoid);
 
-	return(*this);
+    return(*this);
 }
 
 //=============================================================================
@@ -250,412 +250,412 @@ WrapEllipsoid& WrapEllipsoid::operator=(const WrapEllipsoid& aWrapEllipsoid)
  * @return The status, as a WrapAction enum
  */
 int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-									 const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
+                                     const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
-	int i, j, bestMu;
-	SimTK::Vec3 p1, p2, m, a, p1p2, p1m, p2m, f1, f2, p1c1, r1r2, vs, t, mu;
-	double ppm, aa, bb, cc, disc, l1, l2,
-		p1e, p2e, vs4, dist, fanWeight = -SimTK::Infinity;
-	double t_sv[3][3], t_c1[3][3];
-	bool far_side_wrap = false;
+    int i, j, bestMu;
+    SimTK::Vec3 p1, p2, m, a, p1p2, p1m, p2m, f1, f2, p1c1, r1r2, vs, t, mu;
+    double ppm, aa, bb, cc, disc, l1, l2,
+        p1e, p2e, vs4, dist, fanWeight = -SimTK::Infinity;
+    double t_sv[3][3], t_c1[3][3];
+    bool far_side_wrap = false;
    static SimTK::Vec3 origin(0,0,0);
 
-	// In case you need any variables from the previous wrap, copy them from
-	// the PathWrap into the WrapResult, re-normalizing the ones that were
-	// un-normalized at the end of the previous wrap calculation.
-	const WrapResult& previousWrap = aPathWrap.getPreviousWrap();
-	aWrapResult.factor = previousWrap.factor;
-	for (i = 0; i < 3; i++)
-	{
-		aWrapResult.r1[i] = previousWrap.r1[i] * previousWrap.factor;
-		aWrapResult.r2[i] = previousWrap.r2[i] * previousWrap.factor;
-		aWrapResult.c1[i] = previousWrap.c1[i];
-		aWrapResult.sv[i] = previousWrap.sv[i];
-	}
-
-	aFlag = true;
-	aWrapResult.wrap_pts.setSize(0);
-
-	// This algorithm works best if the coordinates (aPoint1, aPoint2,
-	// origin, _dimensions) are all somewhat close to 1.0. So use
-	// the ellipsoid dimensions to calculate a multiplication factor that
-	// will be applied to all of the coordinates. You want to use just
-	// the ellipsoid dimensions because they do not change from one call to the
-	// next. You don't want the factor to change because the algorithm uses
-	// some vectors (r1, r2, c1) from the previous call.
-	aWrapResult.factor = 3.0 / (_dimensions[0] + _dimensions[1] + _dimensions[2]);
-
-	for (i = 0; i < 3; i++)
-	{
-		p1[i] = aPoint1[i] * aWrapResult.factor;
-		p2[i] = aPoint2[i] * aWrapResult.factor;
-		m[i]  = origin[i] * aWrapResult.factor;
-		a[i]  = _dimensions[i] * aWrapResult.factor;
-	}
-
-	p1e = -1.0;
-	p2e = -1.0;
-
-	for (i = 0; i < 3;i++)
-	{
-		p1e += SQR((p1[i] - m[i]) / a[i]);
-		p2e += SQR((p2[i] - m[i]) / a[i]);
-	}
-
-	// check if p1 and p2 are inside the ellipsoid
-	if (p1e < -0.0001 || p2e < -0.0001)
-	{
-		// p1 or p2 is inside the ellipsoid
-		aFlag = false;
-		aWrapResult.wrap_path_length = 0.0;
-
-		// transform back to starting coordinate system
-		for (i = 0; i < 3; i++)
-		{
-			aWrapResult.r1[i] /= aWrapResult.factor;
-			aWrapResult.r2[i] /= aWrapResult.factor;
-		}
-
-		return insideRadius;
-	}
-
-	MAKE_3DVECTOR21(p1, p2, p1p2);
-	MAKE_3DVECTOR21(p1, m, p1m);
-	Mtx::Normalize(3, p1m, p1m);
-	MAKE_3DVECTOR21(p2, m, p2m);
-	Mtx::Normalize(3, p2m, p2m);
-
-	ppm = Mtx::DotProduct(3, p1m, p2m) - 1.0;	// angle between p1->m and p2->m: -2.0 to 0.0
-
-	if (fabs(ppm) < 0.0001)
-	{
-		// vector p1m and p2m are colinear
-		aFlag = false;
-		aWrapResult.wrap_path_length = 0.0;
-
-		// transform back to starting coordinate system
-		for (i = 0; i < 3; i++)
-		{
-			aWrapResult.r1[i] /= aWrapResult.factor;
-			aWrapResult.r2[i] /= aWrapResult.factor;
-		}
-
-		return noWrap;
-	}
-
-	// check if the line through p1 and p2 intersects the ellipsoid
-	for (i = 0; i < 3;i++)
-	{
-		f1[i] = p1p2[i] / a[i];
-		f2[i] = (p2[i] - m[i]) / a[i];
-	}
-	aa = Mtx::DotProduct(3, f1, f1);
-	bb = 2.0 * Mtx::DotProduct(3, f1, f2);
-	cc = Mtx::DotProduct(3, f2, f2) - 1.0;
-	disc = SQR(bb) - 4.0 * aa * cc;
-
-	if (disc < 0.0)
-	{
-		// no intersection
-		aFlag = false;
-		aWrapResult.wrap_path_length = 0.0;
-
-		// transform back to starting coordinate system
-		for (i = 0; i < 3; i++)
-		{
-			aWrapResult.r1[i] /= aWrapResult.factor;
-			aWrapResult.r2[i] /= aWrapResult.factor;
-		}
-
-		return noWrap;
-	}
-
-	l1 = (-bb + sqrt(disc)) / (2.0 * aa);
-	l2 = (-bb - sqrt(disc)) / (2.0 * aa);
-
-	if ( ! (0.0 < l1 && l1 < 1.0) || ! (0.0 < l2 && l2 < 1.0) )
-	{
-		// no intersection
-		aFlag = false;
-		aWrapResult.wrap_path_length = 0.0;
-
-		// transform back to starting coordinate system
-		for (i = 0; i < 3; i++)
-		{
-			aWrapResult.r1[i] /= aWrapResult.factor;
-			aWrapResult.r2[i] /= aWrapResult.factor;
-		}
-
-		return noWrap;
-	}
-
-	// r1 & r2: intersection points of p1->p2 with the ellipsoid
-	for (i = 0; i < 3; i++)
-	{
-		aWrapResult.r1[i] = p2[i] + l1 * p1p2[i];
-		aWrapResult.r2[i] = p2[i] + l2 * p1p2[i];
-	}
-
-	// ==== COMPUTE WRAPPING PLANE (begin) ====
-
-	MAKE_3DVECTOR21(aWrapResult.r2, aWrapResult.r1, r1r2);
-
-	// (1) Frans technique: choose the most parallel coordinate axis, then set
-	// 'sv' to the point along the muscle line that crosses the plane where
-	// that major axis equals zero.  This takes advantage of the special-case
-	// handling in pt_to_ellipsoid() that reduces the 3d point-to-ellipsoid
-	// problem to a 2d point-to-ellipse problem.  The 2d case returns a nice
-	// c1 in situations where the "fan" has a sharp discontinuity.
-	Mtx::Normalize(3, p1p2, mu);
-
-	for (i = 0; i < 3; i++)
-	{
-		mu[i] = fabs(mu[i]);
-
-		t[i] = (m[i] - aWrapResult.r1[i]) / r1r2[i];
-
-		for (j = 0; j < 3; j++)
-			t_sv[i][j] = aWrapResult.r1[j] + t[i] * r1r2[j];
-
-		findClosestPoint(a[0], a[1], a[2], t_sv[i][0], t_sv[i][1], t_sv[i][2], &t_c1[i][0], &t_c1[i][1], &t_c1[i][2], i);
-	}
-
-	// pick most parallel major axis
-	for (bestMu = 0, i = 1; i < 3; i++)
-		if (mu[i] > mu[bestMu])
-			bestMu = i;
-
-	if (aPathWrap.getMethod() == PathWrap::hybrid ||
-		 aPathWrap.getMethod() == PathWrap::axial)
-	{
-		if (aPathWrap.getMethod() == PathWrap::hybrid && mu[bestMu] > MU_BLEND_MIN)
-		{
-			// If Frans' technique produces an sv that is not within the r1->r2
-			// line segment, then that means that sv will be outside the ellipsoid.
-			// This can create an sv->c1 vector that points roughly 180-degrees
-			// opposite to the fan solution's sv->c1 vector.  This creates problems
-			// when interpolating between the Frans and fan solutions because the
-			// interpolated c1 can become colinear to the muscle line during
-			// interpolation.  Therefore we detect Frans-solution sv points near
-			// the ends of r1->r2 here, and fade out the Frans result for them.
-
-			double s = 1.0;
-
-			if (t[bestMu] < 0.0 || t[bestMu] > 1.0)
-				s = 0.0;
-
-			else if (t[bestMu] < SV_BOUNDARY_BLEND)
-				s = t[bestMu] / SV_BOUNDARY_BLEND;
-
-			else if (t[bestMu] > (1.0 - SV_BOUNDARY_BLEND))
-				s = (1.0 - t[bestMu]) / SV_BOUNDARY_BLEND;
-
-			if (s < 1.0)
-				mu[bestMu] = MU_BLEND_MIN + s * (mu[bestMu] - MU_BLEND_MIN);
-		}
-
-		if (aPathWrap.getMethod() == PathWrap::axial || mu[bestMu] > MU_BLEND_MIN)
-		{
-			// if the Frans solution produced a strong result, copy it into
-			// sv and c1.
-			for (i = 0; i < 3; i++)
-			{
-				aWrapResult.c1[i] = t_c1[bestMu][i];
-				aWrapResult.sv[i] = t_sv[bestMu][i];
-			}
-		}
-
-		if (aPathWrap.getMethod() == PathWrap::hybrid && mu[bestMu] < MU_BLEND_MAX)
-		{
-			// (2) Fan technique: sample the fan at fixed intervals and average the
-			// fan "blade" vectors together to determine c1.  This only works when
-			// the fan is smoothly continuous.  The sharper the discontinuity, the
-			// more jumpy c1 becomes.
-			SimTK::Vec3 v_sum(0,0,0);
-
-			for (i = 0; i < 3; i++)
-				t_sv[2][i] = aWrapResult.r1[i] + 0.5 * r1r2[i];
-
-			for (i = 1; i < NUM_FAN_SAMPLES - 1; i++)
-			{
-				SimTK::Vec3 v;
-				double tt = (double) i / NUM_FAN_SAMPLES;
-
-				for (j = 0; j < 3; j++)
-					t_sv[0][j] = aWrapResult.r1[j] + tt * r1r2[j];
-
-				findClosestPoint(a[0], a[1], a[2], t_sv[0][0], t_sv[0][1], t_sv[0][2], &t_c1[0][0], &t_c1[0][1], &t_c1[0][2]);
-
-				MAKE_3DVECTOR21(t_c1[0], t_sv[0], v);
-
-				Mtx::Normalize(3, v, v);
-
-				// add sv->c1 "fan blade" vector to the running total
-				for (j = 0; j < 3; j++)
-					v_sum[j] += v[j];
-
-			}
-			// use vector sum to determine c1
-			Mtx::Normalize(3, v_sum, v_sum);
-
-			for (i = 0; i < 3; i++)
-				t_c1[0][i] = t_sv[2][i] + v_sum[i];
-
-			if (mu[bestMu] <= MU_BLEND_MIN)
-			{
-				findClosestPoint(a[0], a[1], a[2], t_c1[0][0], t_c1[0][1], t_c1[0][2], &aWrapResult.c1[0], &aWrapResult.c1[1], &aWrapResult.c1[2]);
-
-				for (i = 0; i < 3; i++)
-					aWrapResult.sv[i] = t_sv[2][i];
-
-				fanWeight = 1.0;
-			}
-			else
-			{
-				double tt = (mu[bestMu] - MU_BLEND_MIN) / (MU_BLEND_MAX - MU_BLEND_MIN);
-
-				double oneMinusT = 1.0 - tt;
-
-				findClosestPoint(a[0], a[1], a[2], t_c1[0][0], t_c1[0][1], t_c1[0][2], &t_c1[1][0], &t_c1[1][1], &t_c1[1][2]);
-
-				for (i = 0; i < 3; i++)
-				{
-					t_c1[2][i] = tt * aWrapResult.c1[i] + oneMinusT * t_c1[1][i];
-
-					aWrapResult.sv[i] = tt * aWrapResult.sv[i] + oneMinusT * t_sv[2][i];
-				}
-				findClosestPoint(a[0], a[1], a[2], t_c1[2][0], t_c1[2][1], t_c1[2][2], &aWrapResult.c1[0], &aWrapResult.c1[1], &aWrapResult.c1[2]);
-
-				fanWeight = oneMinusT;
-			}
-		}
-	}
-	else // method == midpoint
-	{
-		for (i = 0; i < 3; i++)
-			aWrapResult.sv[i] = aWrapResult.r1[i] + 0.5 * (aWrapResult.r2[i] - aWrapResult.r1[i]);
-
-		findClosestPoint(a[0], a[1], a[2], aWrapResult.sv[0], aWrapResult.sv[1], aWrapResult.sv[2], &aWrapResult.c1[0], &aWrapResult.c1[1], &aWrapResult.c1[2]);
-	}
-
-	// ==== COMPUTE WRAPPING PLANE (end) ====
-
-	// The old way of initializing r1 used the intersection point
-	// of p1p2 and the ellipsoid. This caused the muscle path to
-	// "jump" to the other side of the ellipsoid as sv[] came near
-	// a plane of the ellipsoid. It jumped to the other side while
-	// c1[] was still on the first side. The new way of initializing
-	// r1 sets it to c1 so that it will stay on c1's side of the
-	// ellipsoid.
-	{
-		bool use_c1_to_find_tangent_pts = true;
-
-		if (aPathWrap.getMethod() == PathWrap::axial)
-			use_c1_to_find_tangent_pts = (bool) (t[bestMu] > 0.0 && t[bestMu] < 1.0);
-
-		if (use_c1_to_find_tangent_pts)
-			for (i = 0; i < 3; i++)
-				aWrapResult.r1[i] = aWrapResult.r2[i] = aWrapResult.c1[i];
-	}
-
-	// if wrapping is constrained to one half of the ellipsoid,
-	// check to see if we need to flip c1 to the active side of
-	// the ellipsoid.
-	if (_wrapSign != 0)
-	{
-		dist = aWrapResult.c1[_wrapAxis] - m[_wrapAxis];
-
-		if (DSIGN(dist) != _wrapSign)
-		{
-			SimTK::Vec3 orig_c1=aWrapResult.c1;
-
-
-			aWrapResult.c1[_wrapAxis] = - aWrapResult.c1[_wrapAxis];
-
-			aWrapResult.r1 = aWrapResult.r2 = aWrapResult.c1;
-
-			if (EQUAL_WITHIN_ERROR(fanWeight, -SimTK::Infinity))
-				fanWeight = 1.0 - (mu[bestMu] - MU_BLEND_MIN) / (MU_BLEND_MAX - MU_BLEND_MIN);
-
-			if (fanWeight > 1.0)
-				fanWeight = 1.0;
-
-			if (fanWeight > 0.0)
-			{
-				SimTK::Vec3 tc1; 
-				double bisection = (orig_c1[_wrapAxis] + aWrapResult.c1[_wrapAxis]) / 2.0;
-
-				aWrapResult.c1[_wrapAxis] = aWrapResult.c1[_wrapAxis] + fanWeight * (bisection - aWrapResult.c1[_wrapAxis]);
-
-				tc1 = aWrapResult.c1;
-
-				findClosestPoint(a[0], a[1], a[2], tc1[0], tc1[1], tc1[2], &aWrapResult.c1[0], &aWrapResult.c1[1], &aWrapResult.c1[2]);
-			}
-		}
-	}
-
-	// use p1, p2, and c1 to create parameters for the wrapping plane
-	MAKE_3DVECTOR21(p1, aWrapResult.c1, p1c1);
-	Mtx::CrossProduct(p1p2, p1c1, vs);
-	Mtx::Normalize(3, vs, vs);
-
-	vs4 = - Mtx::DotProduct(3, vs, aWrapResult.c1);
-
-	// find r1 & r2 by starting at c1 moving toward p1 & p2
-	calcTangentPoint(p1e, aWrapResult.r1, p1, m, a, vs, vs4);
-	calcTangentPoint(p2e, aWrapResult.r2, p2, m, a, vs, vs4);
-
-	// create a series of line segments connecting r1 & r2 along the
-	// surface of the ellipsoid.
+    // In case you need any variables from the previous wrap, copy them from
+    // the PathWrap into the WrapResult, re-normalizing the ones that were
+    // un-normalized at the end of the previous wrap calculation.
+    const WrapResult& previousWrap = aPathWrap.getPreviousWrap();
+    aWrapResult.factor = previousWrap.factor;
+    for (i = 0; i < 3; i++)
+    {
+        aWrapResult.r1[i] = previousWrap.r1[i] * previousWrap.factor;
+        aWrapResult.r2[i] = previousWrap.r2[i] * previousWrap.factor;
+        aWrapResult.c1[i] = previousWrap.c1[i];
+        aWrapResult.sv[i] = previousWrap.sv[i];
+    }
+
+    aFlag = true;
+    aWrapResult.wrap_pts.setSize(0);
+
+    // This algorithm works best if the coordinates (aPoint1, aPoint2,
+    // origin, _dimensions) are all somewhat close to 1.0. So use
+    // the ellipsoid dimensions to calculate a multiplication factor that
+    // will be applied to all of the coordinates. You want to use just
+    // the ellipsoid dimensions because they do not change from one call to the
+    // next. You don't want the factor to change because the algorithm uses
+    // some vectors (r1, r2, c1) from the previous call.
+    aWrapResult.factor = 3.0 / (_dimensions[0] + _dimensions[1] + _dimensions[2]);
+
+    for (i = 0; i < 3; i++)
+    {
+        p1[i] = aPoint1[i] * aWrapResult.factor;
+        p2[i] = aPoint2[i] * aWrapResult.factor;
+        m[i]  = origin[i] * aWrapResult.factor;
+        a[i]  = _dimensions[i] * aWrapResult.factor;
+    }
+
+    p1e = -1.0;
+    p2e = -1.0;
+
+    for (i = 0; i < 3;i++)
+    {
+        p1e += SQR((p1[i] - m[i]) / a[i]);
+        p2e += SQR((p2[i] - m[i]) / a[i]);
+    }
+
+    // check if p1 and p2 are inside the ellipsoid
+    if (p1e < -0.0001 || p2e < -0.0001)
+    {
+        // p1 or p2 is inside the ellipsoid
+        aFlag = false;
+        aWrapResult.wrap_path_length = 0.0;
+
+        // transform back to starting coordinate system
+        for (i = 0; i < 3; i++)
+        {
+            aWrapResult.r1[i] /= aWrapResult.factor;
+            aWrapResult.r2[i] /= aWrapResult.factor;
+        }
+
+        return insideRadius;
+    }
+
+    MAKE_3DVECTOR21(p1, p2, p1p2);
+    MAKE_3DVECTOR21(p1, m, p1m);
+    Mtx::Normalize(3, p1m, p1m);
+    MAKE_3DVECTOR21(p2, m, p2m);
+    Mtx::Normalize(3, p2m, p2m);
+
+    ppm = Mtx::DotProduct(3, p1m, p2m) - 1.0;   // angle between p1->m and p2->m: -2.0 to 0.0
+
+    if (fabs(ppm) < 0.0001)
+    {
+        // vector p1m and p2m are colinear
+        aFlag = false;
+        aWrapResult.wrap_path_length = 0.0;
+
+        // transform back to starting coordinate system
+        for (i = 0; i < 3; i++)
+        {
+            aWrapResult.r1[i] /= aWrapResult.factor;
+            aWrapResult.r2[i] /= aWrapResult.factor;
+        }
+
+        return noWrap;
+    }
+
+    // check if the line through p1 and p2 intersects the ellipsoid
+    for (i = 0; i < 3;i++)
+    {
+        f1[i] = p1p2[i] / a[i];
+        f2[i] = (p2[i] - m[i]) / a[i];
+    }
+    aa = Mtx::DotProduct(3, f1, f1);
+    bb = 2.0 * Mtx::DotProduct(3, f1, f2);
+    cc = Mtx::DotProduct(3, f2, f2) - 1.0;
+    disc = SQR(bb) - 4.0 * aa * cc;
+
+    if (disc < 0.0)
+    {
+        // no intersection
+        aFlag = false;
+        aWrapResult.wrap_path_length = 0.0;
+
+        // transform back to starting coordinate system
+        for (i = 0; i < 3; i++)
+        {
+            aWrapResult.r1[i] /= aWrapResult.factor;
+            aWrapResult.r2[i] /= aWrapResult.factor;
+        }
+
+        return noWrap;
+    }
+
+    l1 = (-bb + sqrt(disc)) / (2.0 * aa);
+    l2 = (-bb - sqrt(disc)) / (2.0 * aa);
+
+    if ( ! (0.0 < l1 && l1 < 1.0) || ! (0.0 < l2 && l2 < 1.0) )
+    {
+        // no intersection
+        aFlag = false;
+        aWrapResult.wrap_path_length = 0.0;
+
+        // transform back to starting coordinate system
+        for (i = 0; i < 3; i++)
+        {
+            aWrapResult.r1[i] /= aWrapResult.factor;
+            aWrapResult.r2[i] /= aWrapResult.factor;
+        }
+
+        return noWrap;
+    }
+
+    // r1 & r2: intersection points of p1->p2 with the ellipsoid
+    for (i = 0; i < 3; i++)
+    {
+        aWrapResult.r1[i] = p2[i] + l1 * p1p2[i];
+        aWrapResult.r2[i] = p2[i] + l2 * p1p2[i];
+    }
+
+    // ==== COMPUTE WRAPPING PLANE (begin) ====
+
+    MAKE_3DVECTOR21(aWrapResult.r2, aWrapResult.r1, r1r2);
+
+    // (1) Frans technique: choose the most parallel coordinate axis, then set
+    // 'sv' to the point along the muscle line that crosses the plane where
+    // that major axis equals zero.  This takes advantage of the special-case
+    // handling in pt_to_ellipsoid() that reduces the 3d point-to-ellipsoid
+    // problem to a 2d point-to-ellipse problem.  The 2d case returns a nice
+    // c1 in situations where the "fan" has a sharp discontinuity.
+    Mtx::Normalize(3, p1p2, mu);
+
+    for (i = 0; i < 3; i++)
+    {
+        mu[i] = fabs(mu[i]);
+
+        t[i] = (m[i] - aWrapResult.r1[i]) / r1r2[i];
+
+        for (j = 0; j < 3; j++)
+            t_sv[i][j] = aWrapResult.r1[j] + t[i] * r1r2[j];
+
+        findClosestPoint(a[0], a[1], a[2], t_sv[i][0], t_sv[i][1], t_sv[i][2], &t_c1[i][0], &t_c1[i][1], &t_c1[i][2], i);
+    }
+
+    // pick most parallel major axis
+    for (bestMu = 0, i = 1; i < 3; i++)
+        if (mu[i] > mu[bestMu])
+            bestMu = i;
+
+    if (aPathWrap.getMethod() == PathWrap::hybrid ||
+         aPathWrap.getMethod() == PathWrap::axial)
+    {
+        if (aPathWrap.getMethod() == PathWrap::hybrid && mu[bestMu] > MU_BLEND_MIN)
+        {
+            // If Frans' technique produces an sv that is not within the r1->r2
+            // line segment, then that means that sv will be outside the ellipsoid.
+            // This can create an sv->c1 vector that points roughly 180-degrees
+            // opposite to the fan solution's sv->c1 vector.  This creates problems
+            // when interpolating between the Frans and fan solutions because the
+            // interpolated c1 can become colinear to the muscle line during
+            // interpolation.  Therefore we detect Frans-solution sv points near
+            // the ends of r1->r2 here, and fade out the Frans result for them.
+
+            double s = 1.0;
+
+            if (t[bestMu] < 0.0 || t[bestMu] > 1.0)
+                s = 0.0;
+
+            else if (t[bestMu] < SV_BOUNDARY_BLEND)
+                s = t[bestMu] / SV_BOUNDARY_BLEND;
+
+            else if (t[bestMu] > (1.0 - SV_BOUNDARY_BLEND))
+                s = (1.0 - t[bestMu]) / SV_BOUNDARY_BLEND;
+
+            if (s < 1.0)
+                mu[bestMu] = MU_BLEND_MIN + s * (mu[bestMu] - MU_BLEND_MIN);
+        }
+
+        if (aPathWrap.getMethod() == PathWrap::axial || mu[bestMu] > MU_BLEND_MIN)
+        {
+            // if the Frans solution produced a strong result, copy it into
+            // sv and c1.
+            for (i = 0; i < 3; i++)
+            {
+                aWrapResult.c1[i] = t_c1[bestMu][i];
+                aWrapResult.sv[i] = t_sv[bestMu][i];
+            }
+        }
+
+        if (aPathWrap.getMethod() == PathWrap::hybrid && mu[bestMu] < MU_BLEND_MAX)
+        {
+            // (2) Fan technique: sample the fan at fixed intervals and average the
+            // fan "blade" vectors together to determine c1.  This only works when
+            // the fan is smoothly continuous.  The sharper the discontinuity, the
+            // more jumpy c1 becomes.
+            SimTK::Vec3 v_sum(0,0,0);
+
+            for (i = 0; i < 3; i++)
+                t_sv[2][i] = aWrapResult.r1[i] + 0.5 * r1r2[i];
+
+            for (i = 1; i < NUM_FAN_SAMPLES - 1; i++)
+            {
+                SimTK::Vec3 v;
+                double tt = (double) i / NUM_FAN_SAMPLES;
+
+                for (j = 0; j < 3; j++)
+                    t_sv[0][j] = aWrapResult.r1[j] + tt * r1r2[j];
+
+                findClosestPoint(a[0], a[1], a[2], t_sv[0][0], t_sv[0][1], t_sv[0][2], &t_c1[0][0], &t_c1[0][1], &t_c1[0][2]);
+
+                MAKE_3DVECTOR21(t_c1[0], t_sv[0], v);
+
+                Mtx::Normalize(3, v, v);
+
+                // add sv->c1 "fan blade" vector to the running total
+                for (j = 0; j < 3; j++)
+                    v_sum[j] += v[j];
+
+            }
+            // use vector sum to determine c1
+            Mtx::Normalize(3, v_sum, v_sum);
+
+            for (i = 0; i < 3; i++)
+                t_c1[0][i] = t_sv[2][i] + v_sum[i];
+
+            if (mu[bestMu] <= MU_BLEND_MIN)
+            {
+                findClosestPoint(a[0], a[1], a[2], t_c1[0][0], t_c1[0][1], t_c1[0][2], &aWrapResult.c1[0], &aWrapResult.c1[1], &aWrapResult.c1[2]);
+
+                for (i = 0; i < 3; i++)
+                    aWrapResult.sv[i] = t_sv[2][i];
+
+                fanWeight = 1.0;
+            }
+            else
+            {
+                double tt = (mu[bestMu] - MU_BLEND_MIN) / (MU_BLEND_MAX - MU_BLEND_MIN);
+
+                double oneMinusT = 1.0 - tt;
+
+                findClosestPoint(a[0], a[1], a[2], t_c1[0][0], t_c1[0][1], t_c1[0][2], &t_c1[1][0], &t_c1[1][1], &t_c1[1][2]);
+
+                for (i = 0; i < 3; i++)
+                {
+                    t_c1[2][i] = tt * aWrapResult.c1[i] + oneMinusT * t_c1[1][i];
+
+                    aWrapResult.sv[i] = tt * aWrapResult.sv[i] + oneMinusT * t_sv[2][i];
+                }
+                findClosestPoint(a[0], a[1], a[2], t_c1[2][0], t_c1[2][1], t_c1[2][2], &aWrapResult.c1[0], &aWrapResult.c1[1], &aWrapResult.c1[2]);
+
+                fanWeight = oneMinusT;
+            }
+        }
+    }
+    else // method == midpoint
+    {
+        for (i = 0; i < 3; i++)
+            aWrapResult.sv[i] = aWrapResult.r1[i] + 0.5 * (aWrapResult.r2[i] - aWrapResult.r1[i]);
+
+        findClosestPoint(a[0], a[1], a[2], aWrapResult.sv[0], aWrapResult.sv[1], aWrapResult.sv[2], &aWrapResult.c1[0], &aWrapResult.c1[1], &aWrapResult.c1[2]);
+    }
+
+    // ==== COMPUTE WRAPPING PLANE (end) ====
+
+    // The old way of initializing r1 used the intersection point
+    // of p1p2 and the ellipsoid. This caused the muscle path to
+    // "jump" to the other side of the ellipsoid as sv[] came near
+    // a plane of the ellipsoid. It jumped to the other side while
+    // c1[] was still on the first side. The new way of initializing
+    // r1 sets it to c1 so that it will stay on c1's side of the
+    // ellipsoid.
+    {
+        bool use_c1_to_find_tangent_pts = true;
+
+        if (aPathWrap.getMethod() == PathWrap::axial)
+            use_c1_to_find_tangent_pts = (bool) (t[bestMu] > 0.0 && t[bestMu] < 1.0);
+
+        if (use_c1_to_find_tangent_pts)
+            for (i = 0; i < 3; i++)
+                aWrapResult.r1[i] = aWrapResult.r2[i] = aWrapResult.c1[i];
+    }
+
+    // if wrapping is constrained to one half of the ellipsoid,
+    // check to see if we need to flip c1 to the active side of
+    // the ellipsoid.
+    if (_wrapSign != 0)
+    {
+        dist = aWrapResult.c1[_wrapAxis] - m[_wrapAxis];
+
+        if (DSIGN(dist) != _wrapSign)
+        {
+            SimTK::Vec3 orig_c1=aWrapResult.c1;
+
+
+            aWrapResult.c1[_wrapAxis] = - aWrapResult.c1[_wrapAxis];
+
+            aWrapResult.r1 = aWrapResult.r2 = aWrapResult.c1;
+
+            if (EQUAL_WITHIN_ERROR(fanWeight, -SimTK::Infinity))
+                fanWeight = 1.0 - (mu[bestMu] - MU_BLEND_MIN) / (MU_BLEND_MAX - MU_BLEND_MIN);
+
+            if (fanWeight > 1.0)
+                fanWeight = 1.0;
+
+            if (fanWeight > 0.0)
+            {
+                SimTK::Vec3 tc1; 
+                double bisection = (orig_c1[_wrapAxis] + aWrapResult.c1[_wrapAxis]) / 2.0;
+
+                aWrapResult.c1[_wrapAxis] = aWrapResult.c1[_wrapAxis] + fanWeight * (bisection - aWrapResult.c1[_wrapAxis]);
+
+                tc1 = aWrapResult.c1;
+
+                findClosestPoint(a[0], a[1], a[2], tc1[0], tc1[1], tc1[2], &aWrapResult.c1[0], &aWrapResult.c1[1], &aWrapResult.c1[2]);
+            }
+        }
+    }
+
+    // use p1, p2, and c1 to create parameters for the wrapping plane
+    MAKE_3DVECTOR21(p1, aWrapResult.c1, p1c1);
+    Mtx::CrossProduct(p1p2, p1c1, vs);
+    Mtx::Normalize(3, vs, vs);
+
+    vs4 = - Mtx::DotProduct(3, vs, aWrapResult.c1);
+
+    // find r1 & r2 by starting at c1 moving toward p1 & p2
+    calcTangentPoint(p1e, aWrapResult.r1, p1, m, a, vs, vs4);
+    calcTangentPoint(p2e, aWrapResult.r2, p2, m, a, vs, vs4);
+
+    // create a series of line segments connecting r1 & r2 along the
+    // surface of the ellipsoid.
 
 calc_wrap_path:
-	CalcDistanceOnEllipsoid(aWrapResult.r1, aWrapResult.r2, m, a, vs, vs4, far_side_wrap, aWrapResult);
+    CalcDistanceOnEllipsoid(aWrapResult.r1, aWrapResult.r2, m, a, vs, vs4, far_side_wrap, aWrapResult);
 
-	if (_wrapSign != 0 && aWrapResult.wrap_pts.getSize() > 2 && ! far_side_wrap)
-	{
-		SimTK::Vec3 r1p1, r2p2, r1w1, r2w2;
+    if (_wrapSign != 0 && aWrapResult.wrap_pts.getSize() > 2 && ! far_side_wrap)
+    {
+        SimTK::Vec3 r1p1, r2p2, r1w1, r2w2;
 
-		SimTK::Vec3& w1 = aWrapResult.wrap_pts.updElt(1);
-		SimTK::Vec3& w2 = aWrapResult.wrap_pts.updElt(aWrapResult.wrap_pts.getSize() - 2);
+        SimTK::Vec3& w1 = aWrapResult.wrap_pts.updElt(1);
+        SimTK::Vec3& w2 = aWrapResult.wrap_pts.updElt(aWrapResult.wrap_pts.getSize() - 2);
 
-		// check for wrong-way wrap by testing angle of first and last
-		// wrap path segments:
-		MAKE_3DVECTOR(aWrapResult.r1, p1, r1p1);
-		MAKE_3DVECTOR(aWrapResult.r1, w1, r1w1);
-		MAKE_3DVECTOR(aWrapResult.r2, p2, r2p2);
-		MAKE_3DVECTOR(aWrapResult.r2, w2, r2w2);
+        // check for wrong-way wrap by testing angle of first and last
+        // wrap path segments:
+        MAKE_3DVECTOR(aWrapResult.r1, p1, r1p1);
+        MAKE_3DVECTOR(aWrapResult.r1, w1, r1w1);
+        MAKE_3DVECTOR(aWrapResult.r2, p2, r2p2);
+        MAKE_3DVECTOR(aWrapResult.r2, w2, r2w2);
 
-		Mtx::Normalize(3, r1p1, r1p1);
-		Mtx::Normalize(3, r1w1, r1w1);
-		Mtx::Normalize(3, r2p2, r2p2);
-		Mtx::Normalize(3, r2w2, r2w2);
+        Mtx::Normalize(3, r1p1, r1p1);
+        Mtx::Normalize(3, r1w1, r1w1);
+        Mtx::Normalize(3, r2p2, r2p2);
+        Mtx::Normalize(3, r2w2, r2w2);
 
-		if (Mtx::DotProduct(3, r1p1, r1w1) > 0.0 || Mtx::DotProduct(3, r2p2, r2w2) > 0.0)
-		{
-			// NOTE: I added the ability to call CalcDistanceOnEllipsoid() a 2nd time in this
-			//  situation to force a far-side wrap instead of aborting the
-			//  wrap.   -- KMS 9/3/99
-			far_side_wrap = true;
+        if (Mtx::DotProduct(3, r1p1, r1w1) > 0.0 || Mtx::DotProduct(3, r2p2, r2w2) > 0.0)
+        {
+            // NOTE: I added the ability to call CalcDistanceOnEllipsoid() a 2nd time in this
+            //  situation to force a far-side wrap instead of aborting the
+            //  wrap.   -- KMS 9/3/99
+            far_side_wrap = true;
 
-			goto calc_wrap_path;
-		}
-	}
+            goto calc_wrap_path;
+        }
+    }
 
-	// unfactor the output coordinates
-	aWrapResult.wrap_path_length /= aWrapResult.factor;
+    // unfactor the output coordinates
+    aWrapResult.wrap_path_length /= aWrapResult.factor;
 
-	for (i = 0; i < aWrapResult.wrap_pts.getSize(); i++)
-		aWrapResult.wrap_pts[i] *= (1.0 / aWrapResult.factor);
+    for (i = 0; i < aWrapResult.wrap_pts.getSize(); i++)
+        aWrapResult.wrap_pts[i] *= (1.0 / aWrapResult.factor);
 
-	// transform back to starting coordinate system
-	// Note: c1 and sv do not get transformed
-	for (i = 0; i < 3; i++)
-	{
-		aWrapResult.r1[i] /= aWrapResult.factor;
-		aWrapResult.r2[i] /= aWrapResult.factor;
-	}
+    // transform back to starting coordinate system
+    // Note: c1 and sv do not get transformed
+    for (i = 0; i < 3; i++)
+    {
+        aWrapResult.r1[i] /= aWrapResult.factor;
+        aWrapResult.r2[i] /= aWrapResult.factor;
+    }
 
-	return mandatoryWrap;
+    return mandatoryWrap;
 }
 
 //_____________________________________________________________________________
@@ -675,188 +675,188 @@ calc_wrap_path:
  * @return '1' if the point was adjusted, '0' otherwise
  */
 int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1, SimTK::Vec3& m,
-												SimTK::Vec3& a, SimTK::Vec3& vs, double vs4) const
+                                                SimTK::Vec3& a, SimTK::Vec3& vs, double vs4) const
 {
-	int i, j, k, nit, nit2, maxit=50, maxit2=1000;
-	Vec3 nr1, p1r1, p1m;
-	double d1, v[4], ee[4], ssqo, ssq, pcos, dedth[4][4];
-	double fakt, alpha=0.01, dedth2[4][4], diag[4], ddinv2[4][4], vt[4], dd;
+    int i, j, k, nit, nit2, maxit=50, maxit2=1000;
+    Vec3 nr1, p1r1, p1m;
+    double d1, v[4], ee[4], ssqo, ssq, pcos, dedth[4][4];
+    double fakt, alpha=0.01, dedth2[4][4], diag[4], ddinv2[4][4], vt[4], dd;
 
-	if (fabs(p1e) < 0.0001)
-	{
-		for (i = 0; i < 3; i++)
-			r1[i] = p1[i];
-	}
-	else
-	{
-		for (i = 0; i < 3; i++)
-			nr1[i] = 2.0 * (r1[i] - m[i])/(SQR(a[i]));
+    if (fabs(p1e) < 0.0001)
+    {
+        for (i = 0; i < 3; i++)
+            r1[i] = p1[i];
+    }
+    else
+    {
+        for (i = 0; i < 3; i++)
+            nr1[i] = 2.0 * (r1[i] - m[i])/(SQR(a[i]));
 
-		d1 = -Mtx::DotProduct(3, nr1, r1);
-		ee[0] = Mtx::DotProduct(3, vs, r1) + vs4;
-		ee[1] = -1.0;
+        d1 = -Mtx::DotProduct(3, nr1, r1);
+        ee[0] = Mtx::DotProduct(3, vs, r1) + vs4;
+        ee[1] = -1.0;
 
-		for (i = 0; i < 3; i++)
-			ee[1] += SQR((r1[i] - m[i]) / a[i]);
+        for (i = 0; i < 3; i++)
+            ee[1] += SQR((r1[i] - m[i]) / a[i]);
 
-		ee[2] = Mtx::DotProduct(3, nr1, r1) + d1;
-		ee[3] = Mtx::DotProduct(3, nr1, p1) + d1;
+        ee[2] = Mtx::DotProduct(3, nr1, r1) + d1;
+        ee[3] = Mtx::DotProduct(3, nr1, p1) + d1;
 
-		ssqo = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
-		ssq = ssqo;
+        ssqo = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
+        ssq = ssqo;
 
-		nit = 0;
+        nit = 0;
 
-		while ((ssq > ELLIPSOID_TINY) && (nit < maxit))
-		{
-			nit++;
+        while ((ssq > ELLIPSOID_TINY) && (nit < maxit))
+        {
+            nit++;
 
-			for (i = 0; i < 3; i++)
-			{
-				dedth[i][0] = vs[i];
-				dedth[i][1] = 2.0 * (r1[i] - m[i]) / SQR(a[i]);
-				dedth[i][2] = 2.0 * (2.0 * r1[i] - m[i]) / SQR(a[i]);
-				dedth[i][3] = 2.0 * p1[i] / SQR(a[i]);
-			}
+            for (i = 0; i < 3; i++)
+            {
+                dedth[i][0] = vs[i];
+                dedth[i][1] = 2.0 * (r1[i] - m[i]) / SQR(a[i]);
+                dedth[i][2] = 2.0 * (2.0 * r1[i] - m[i]) / SQR(a[i]);
+                dedth[i][3] = 2.0 * p1[i] / SQR(a[i]);
+            }
 
-			dedth[3][0] = 0.0;
-			dedth[3][1] = 0.0;
-			dedth[3][2] = 1.0;
-			dedth[3][3] = 1.0;
+            dedth[3][0] = 0.0;
+            dedth[3][1] = 0.0;
+            dedth[3][2] = 1.0;
+            dedth[3][3] = 1.0;
 
-			MAKE_3DVECTOR21(p1, r1, p1r1);
-			Mtx::Normalize(3, p1r1, p1r1);
+            MAKE_3DVECTOR21(p1, r1, p1r1);
+            Mtx::Normalize(3, p1r1, p1r1);
 
-			MAKE_3DVECTOR21(p1, m, p1m);
-			Mtx::Normalize(3, p1m, p1m);
+            MAKE_3DVECTOR21(p1, m, p1m);
+            Mtx::Normalize(3, p1m, p1m);
 
-			pcos = Mtx::DotProduct(3, p1r1, p1m);
+            pcos = Mtx::DotProduct(3, p1r1, p1m);
 
-			if (pcos > 0.1)
-				dd = 1.0 - pow(pcos, 100);
-			else
-				dd = 1.0;
+            if (pcos > 0.1)
+                dd = 1.0 - pow(pcos, 100);
+            else
+                dd = 1.0;
 
-			for (i = 0; i < 4; i++)
-			{
-				v[i] = 0.0;
+            for (i = 0; i < 4; i++)
+            {
+                v[i] = 0.0;
 
-				for (j = 0; j < 4; j++)
-					v[i] -= dedth[i][j] * ee[j];
-			}
+                for (j = 0; j < 4; j++)
+                    v[i] -= dedth[i][j] * ee[j];
+            }
 
-			for (i = 0; i < 4; i++)
-			{
-				for (j = 0; j < 4; j++)
-				{
-					dedth2[i][j] = 0.0;
+            for (i = 0; i < 4; i++)
+            {
+                for (j = 0; j < 4; j++)
+                {
+                    dedth2[i][j] = 0.0;
 
-					for (k = 0; k < 4; k++)
-						dedth2[i][j] += dedth[i][k] * dedth[j][k];
-				}
-			}
+                    for (k = 0; k < 4; k++)
+                        dedth2[i][j] += dedth[i][k] * dedth[j][k];
+                }
+            }
 
-			for (i = 0; i < 4; i++)
-				diag[i] = dedth2[i][i];
+            for (i = 0; i < 4; i++)
+                diag[i] = dedth2[i][i];
 
-			nit2 = 0;
+            nit2 = 0;
 
-			while ((ssq >= ssqo) && (nit2 < maxit2))
-			{
-				for (i = 0; i < 4; i++)
-					dedth2[i][i] = diag[i] * (1.0 + alpha);
+            while ((ssq >= ssqo) && (nit2 < maxit2))
+            {
+                for (i = 0; i < 4; i++)
+                    dedth2[i][i] = diag[i] * (1.0 + alpha);
 
-				Mtx::Invert(4, &dedth2[0][0], &ddinv2[0][0]);
+                Mtx::Invert(4, &dedth2[0][0], &ddinv2[0][0]);
 
-				for (i = 0; i < 4; i++)
-				{
-					vt[i] = 0.0;
+                for (i = 0; i < 4; i++)
+                {
+                    vt[i] = 0.0;
 
-					for (j = 0; j < 4; j++)
-						vt[i] += dd * ddinv2[i][j] * v[j] / 16.0;
-				}
+                    for (j = 0; j < 4; j++)
+                        vt[i] += dd * ddinv2[i][j] * v[j] / 16.0;
+                }
 
-				for (i = 0; i < 3; i++)
-					r1[i] += vt[i];
+                for (i = 0; i < 3; i++)
+                    r1[i] += vt[i];
 
-				d1 += vt[3];
+                d1 += vt[3];
 
-				for (i = 0; i < 3; i++)
-					nr1[i] = 2.0 * (r1[i] - m[i])/SQR(a[i]);
+                for (i = 0; i < 3; i++)
+                    nr1[i] = 2.0 * (r1[i] - m[i])/SQR(a[i]);
 
-				ee[0] = Mtx::DotProduct(3, vs, r1) + vs4;
-				ee[1] = -1.0;
+                ee[0] = Mtx::DotProduct(3, vs, r1) + vs4;
+                ee[1] = -1.0;
 
-				for (i = 0; i < 3; i++)
-					ee[1] += SQR((r1[i] - m[i])/a[i]);
+                for (i = 0; i < 3; i++)
+                    ee[1] += SQR((r1[i] - m[i])/a[i]);
 
-				ee[2] = Mtx::DotProduct(3, nr1, r1) + d1;
-				ee[3] = Mtx::DotProduct(3, nr1, p1) + d1;
+                ee[2] = Mtx::DotProduct(3, nr1, r1) + d1;
+                ee[3] = Mtx::DotProduct(3, nr1, p1) + d1;
 
-				ssqo = ssq;
+                ssqo = ssq;
 
-				ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
+                ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
 
-				alpha *= 4.0;
-				nit2++;
-			}
+                alpha *= 4.0;
+                nit2++;
+            }
 
-			alpha /= 8.0;
+            alpha /= 8.0;
 
-			fakt = 0.5;
+            fakt = 0.5;
 
-			nit2 = 0;
+            nit2 = 0;
 
-			while ((ssq <= ssqo) && (nit2 < maxit2))
-			{
-				fakt *= 2.0;
+            while ((ssq <= ssqo) && (nit2 < maxit2))
+            {
+                fakt *= 2.0;
 
-				for (i = 0; i < 3; i++)
-					r1[i] += vt[i] * fakt;
+                for (i = 0; i < 3; i++)
+                    r1[i] += vt[i] * fakt;
 
-				d1 += vt[3] * fakt;
+                d1 += vt[3] * fakt;
 
-				for (i = 0; i < 3; i++)
-					nr1[i] = 2.0 * (r1[i] - m[i]) / SQR(a[i]);
+                for (i = 0; i < 3; i++)
+                    nr1[i] = 2.0 * (r1[i] - m[i]) / SQR(a[i]);
 
-				ee[0] = Mtx::DotProduct(3, vs, r1) + vs4;
-				ee[1] = -1.0;
+                ee[0] = Mtx::DotProduct(3, vs, r1) + vs4;
+                ee[1] = -1.0;
 
-				for (i=0; i<3; i++)
-					ee[1] += SQR((r1[i] - m[i]) / a[i]);
+                for (i=0; i<3; i++)
+                    ee[1] += SQR((r1[i] - m[i]) / a[i]);
 
-				ee[2] = Mtx::DotProduct(3, nr1, r1) + d1;
-				ee[3] = Mtx::DotProduct(3, nr1, p1) + d1;
+                ee[2] = Mtx::DotProduct(3, nr1, r1) + d1;
+                ee[3] = Mtx::DotProduct(3, nr1, p1) + d1;
 
-				ssqo = ssq;	    
+                ssqo = ssq;     
 
-				ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
+                ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
 
-				nit2++;
-			}
+                nit2++;
+            }
 
-			for (i = 0; i < 3; i++)
-				r1[i] -= vt[i] * fakt;
+            for (i = 0; i < 3; i++)
+                r1[i] -= vt[i] * fakt;
 
-			d1 -= vt[3] * fakt;
+            d1 -= vt[3] * fakt;
 
-			for (i=0; i<3; i++)
-				nr1[i] = 2.0 * (r1[i] - m[i]) / SQR(a[i]);
+            for (i=0; i<3; i++)
+                nr1[i] = 2.0 * (r1[i] - m[i]) / SQR(a[i]);
 
-			ee[0] = Mtx::DotProduct(3, vs, r1) + vs4;
-			ee[1] = -1.0;
+            ee[0] = Mtx::DotProduct(3, vs, r1) + vs4;
+            ee[1] = -1.0;
 
-			for (i = 0; i < 3; i++)
-				ee[1] += SQR((r1[i] - m[i]) / a[i]);
+            for (i = 0; i < 3; i++)
+                ee[1] += SQR((r1[i] - m[i]) / a[i]);
 
-			ee[2] = Mtx::DotProduct(3, nr1, r1) + d1;
-			ee[3] = Mtx::DotProduct(3, nr1, p1) + d1;
+            ee[2] = Mtx::DotProduct(3, nr1, r1) + d1;
+            ee[3] = Mtx::DotProduct(3, nr1, p1) + d1;
 
-			ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
-			ssqo = ssq;	    
-		}
-	}   
-	return 1;
+            ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
+            ssqo = ssq;     
+        }
+    }   
+    return 1;
 
 }
 
@@ -875,160 +875,160 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
  * @param aWrapResult The wrapping results (tangent points, etc.)
  */
 void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, SimTK::Vec3& m, SimTK::Vec3& a, 
-														  SimTK::Vec3& vs, double vs4, bool far_side_wrap,
-														  WrapResult& aWrapResult) const
+                                                          SimTK::Vec3& vs, double vs4, bool far_side_wrap,
+                                                          WrapResult& aWrapResult) const
 {
-	int i, j, k, l, imax, numPathSegments;
-	SimTK::Vec3 u, ux, a0, ar1, ar2, vsy, vsz, t, r, f1, f2, dr, dv;
-	double phi, dphi, phi0, len, mu, aa, bb, cc, mu3, s[500][3], r0[3][3], rphi[3][3], desiredSegLength = 0.001;
+    int i, j, k, l, imax, numPathSegments;
+    SimTK::Vec3 u, ux, a0, ar1, ar2, vsy, vsz, t, r, f1, f2, dr, dv;
+    double phi, dphi, phi0, len, mu, aa, bb, cc, mu3, s[500][3], r0[3][3], rphi[3][3], desiredSegLength = 0.001;
 
-	MAKE_3DVECTOR21(r1, r2, dr);
-	len = Mtx::Magnitude(3, dr) / aWrapResult.factor;
+    MAKE_3DVECTOR21(r1, r2, dr);
+    len = Mtx::Magnitude(3, dr) / aWrapResult.factor;
 
-	if (len < desiredSegLength) {
-		// If the distance between r1 and r2 is very small, then don't bother
-		// calculating wrap points along the surface of the ellipsoid.
-		// Just use r1 and r2 as the surface points and return the distance
-		// between them as the distance along the ellipsoid.
-		aWrapResult.wrap_pts.setSize(0);
-		//SimmPoint p1(r1);
-		aWrapResult.wrap_pts.append(r1);
-		//SimmPoint p2(r2);
-		aWrapResult.wrap_pts.append(r2);
-		aWrapResult.wrap_path_length = len * aWrapResult.factor; // the length is unnormalized later
-		return;
-	} else {
-		// You don't know the wrap length until you divide it
-		// into N pieces and add up the lengths of each one.
-		// So calculate N based on the distance between r1 and r2.
-		// desiredSegLength should really depend on the units of
-		// the model, but for now assume it's in meters and use 0.001.
-		numPathSegments = (int) (len / desiredSegLength);
-		if (numPathSegments <= 0)
-		{
-			aWrapResult.wrap_path_length = len;
-			return;
-		}
-		else if (numPathSegments > 499)
-			numPathSegments = 499;
-	}
+    if (len < desiredSegLength) {
+        // If the distance between r1 and r2 is very small, then don't bother
+        // calculating wrap points along the surface of the ellipsoid.
+        // Just use r1 and r2 as the surface points and return the distance
+        // between them as the distance along the ellipsoid.
+        aWrapResult.wrap_pts.setSize(0);
+        //SimmPoint p1(r1);
+        aWrapResult.wrap_pts.append(r1);
+        //SimmPoint p2(r2);
+        aWrapResult.wrap_pts.append(r2);
+        aWrapResult.wrap_path_length = len * aWrapResult.factor; // the length is unnormalized later
+        return;
+    } else {
+        // You don't know the wrap length until you divide it
+        // into N pieces and add up the lengths of each one.
+        // So calculate N based on the distance between r1 and r2.
+        // desiredSegLength should really depend on the units of
+        // the model, but for now assume it's in meters and use 0.001.
+        numPathSegments = (int) (len / desiredSegLength);
+        if (numPathSegments <= 0)
+        {
+            aWrapResult.wrap_path_length = len;
+            return;
+        }
+        else if (numPathSegments > 499)
+            numPathSegments = 499;
+    }
 
-	int numPathPts = numPathSegments + 1;
-	int numInteriorPts = numPathPts - 2;
+    int numPathPts = numPathSegments + 1;
+    int numInteriorPts = numPathPts - 2;
 
-	ux[0] = 1.0;
-	ux[1] = 0.0;
-	ux[2] = 0.0;
+    ux[0] = 1.0;
+    ux[1] = 0.0;
+    ux[2] = 0.0;
 
-	imax = 0;
+    imax = 0;
 
-	for (i = 1; i < 3; i++)
-		if (fabs(vs[i]) > fabs(vs[imax]))
-			imax = i;
+    for (i = 1; i < 3; i++)
+        if (fabs(vs[i]) > fabs(vs[imax]))
+            imax = i;
 
-	u[0] = u[1] = u[2] = 0.0;
-	u[imax] = 1.0;
+    u[0] = u[1] = u[2] = 0.0;
+    u[imax] = 1.0;
 
-	mu = (-Mtx::DotProduct(3, vs, m) - vs4) / Mtx::DotProduct(3, vs, u);
+    mu = (-Mtx::DotProduct(3, vs, m) - vs4) / Mtx::DotProduct(3, vs, u);
 
-	for (i=0;i<3;i++)
-		a0[i] = m[i] + mu * u[i];
+    for (i=0;i<3;i++)
+        a0[i] = m[i] + mu * u[i];
 
-	MAKE_3DVECTOR21(r1, a0, ar1);
-	Mtx::Normalize(3, ar1, ar1);
-	MAKE_3DVECTOR21(r2, a0, ar2);
-	Mtx::Normalize(3, ar2, ar2);
+    MAKE_3DVECTOR21(r1, a0, ar1);
+    Mtx::Normalize(3, ar1, ar1);
+    MAKE_3DVECTOR21(r2, a0, ar2);
+    Mtx::Normalize(3, ar2, ar2);
 
-	phi0 = acos(Mtx::DotProduct(3, ar1, ar2));
+    phi0 = acos(Mtx::DotProduct(3, ar1, ar2));
 
-	if (far_side_wrap)
-		dphi = - (2 * SimTK_PI - phi0) / (double) numPathSegments;
-	else
-		dphi = phi0 / (double) numPathSegments;
+    if (far_side_wrap)
+        dphi = - (2 * SimTK_PI - phi0) / (double) numPathSegments;
+    else
+        dphi = phi0 / (double) numPathSegments;
 
-	Mtx::CrossProduct(ar1, ar2, vsz);
-	Mtx::Normalize(3, vsz, vsz);
-	Mtx::CrossProduct(vsz, ar1, vsy);
+    Mtx::CrossProduct(ar1, ar2, vsz);
+    Mtx::Normalize(3, vsz, vsz);
+    Mtx::CrossProduct(vsz, ar1, vsy);
 
-	for (i = 0; i < 3; i++)
-	{
-		for (j = 0; j < 3; j++)
-		{
-			rphi[i][j] = 0.0;
-			r0[i][j] = 0.0;
-		}
-	}
+    for (i = 0; i < 3; i++)
+    {
+        for (j = 0; j < 3; j++)
+        {
+            rphi[i][j] = 0.0;
+            r0[i][j] = 0.0;
+        }
+    }
 
-	for (i = 0; i < 3; i++)
-	{
-		r0[i][0] = ar1[i];
-		r0[i][1] = vsy[i];
-		r0[i][2] = vsz[i];
-	}
+    for (i = 0; i < 3; i++)
+    {
+        r0[i][0] = ar1[i];
+        r0[i][1] = vsy[i];
+        r0[i][2] = vsz[i];
+    }
 
-	rphi[2][2] = 1;
+    rphi[2][2] = 1;
 
-	for (i = 0; i < numInteriorPts; i++)
-	{
-		phi = (i + 1) * dphi;
-		rphi[0][0] = cos(phi);
-		rphi[0][1] = -sin(phi);
-		rphi[1][0] = sin(phi);
-		rphi[1][1] = cos(phi);
+    for (i = 0; i < numInteriorPts; i++)
+    {
+        phi = (i + 1) * dphi;
+        rphi[0][0] = cos(phi);
+        rphi[0][1] = -sin(phi);
+        rphi[1][0] = sin(phi);
+        rphi[1][1] = cos(phi);
 
-		for (j = 0; j < 3; j++)
-		{
-			r[j] = 0.0;
+        for (j = 0; j < 3; j++)
+        {
+            r[j] = 0.0;
 
-			for (k = 0; k < 3; k++)
-			{
-				t[k] = 0.0;
+            for (k = 0; k < 3; k++)
+            {
+                t[k] = 0.0;
 
-				for (l = 0; l < 3; l++)
-					t[k] += rphi[k][l] * ux[l];
+                for (l = 0; l < 3; l++)
+                    t[k] += rphi[k][l] * ux[l];
 
-				r[j] += r0[j][k] * t[k];
-			}
-		}
+                r[j] += r0[j][k] * t[k];
+            }
+        }
 
-		for (j = 0; j < 3; j++)
-		{
-			f1[j] = r[j]/a[j];
-			f2[j] = (a0[j] - m[j])/a[j];
-		}
+        for (j = 0; j < 3; j++)
+        {
+            f1[j] = r[j]/a[j];
+            f2[j] = (a0[j] - m[j])/a[j];
+        }
 
-		aa = Mtx::DotProduct(3, f1, f1);
-		bb = 2.0 * (Mtx::DotProduct(3, f1, f2));
-		cc = Mtx::DotProduct(3, f2, f2) - 1.0;
-		mu3 = (-bb + sqrt(SQR(bb) - 4.0 * aa * cc)) / (2.0 * aa);
+        aa = Mtx::DotProduct(3, f1, f1);
+        bb = 2.0 * (Mtx::DotProduct(3, f1, f2));
+        cc = Mtx::DotProduct(3, f2, f2) - 1.0;
+        mu3 = (-bb + sqrt(SQR(bb) - 4.0 * aa * cc)) / (2.0 * aa);
 
-		for (j = 0; j < 3; j++)
-			s[i][j] = a0[j] + mu3 * r[j];
-	}
+        for (j = 0; j < 3; j++)
+            s[i][j] = a0[j] + mu3 * r[j];
+    }
 
-	aWrapResult.wrap_pts.setSize(0);
-	//SimmPoint p1(r1);
-	aWrapResult.wrap_pts.append(r1);
+    aWrapResult.wrap_pts.setSize(0);
+    //SimmPoint p1(r1);
+    aWrapResult.wrap_pts.append(r1);
 
-	for (i = 0; i < numInteriorPts; i++)
-	{
-		Vec3 spt(Vec3::getAs(&s[i][0]));
-		aWrapResult.wrap_pts.append(spt);
-	}
+    for (i = 0; i < numInteriorPts; i++)
+    {
+        Vec3 spt(Vec3::getAs(&s[i][0]));
+        aWrapResult.wrap_pts.append(spt);
+    }
 
-	//SimmPoint p2(r2);
-	aWrapResult.wrap_pts.append(r2);
+    //SimmPoint p2(r2);
+    aWrapResult.wrap_pts.append(r2);
 
-	aWrapResult.wrap_path_length = 0.0;
+    aWrapResult.wrap_path_length = 0.0;
 
-	for (i = 0; i < numPathSegments; i++)
-	{
-		Vec3 p = aWrapResult.wrap_pts.get(i);
-		Vec3 q = aWrapResult.wrap_pts.get(i+1);
-		MAKE_3DVECTOR21(q, p, dv); 
+    for (i = 0; i < numPathSegments; i++)
+    {
+        Vec3 p = aWrapResult.wrap_pts.get(i);
+        Vec3 q = aWrapResult.wrap_pts.get(i+1);
+        MAKE_3DVECTOR21(q, p, dv); 
 
-		aWrapResult.wrap_path_length += dv.norm(); //Mtx::Magnitude(3, dv);
-	}
+        aWrapResult.wrap_path_length += dv.norm(); //Mtx::Magnitude(3, dv);
+    }
 }
 
 //_____________________________________________________________________________
@@ -1054,9 +1054,9 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
  * @return The distance between the ellipsoid and the point in space
  */
 double WrapEllipsoid::findClosestPoint(double a, double b, double c,
-													double u, double v, double w,
-													double* x, double* y, double* z,
-													int specialCaseAxis) const
+                                                    double u, double v, double w,
+                                                    double* x, double* y, double* z,
+                                                    int specialCaseAxis) const
 {
     // Graphics Gems IV algorithm for computing distance from point to
     // ellipsoid (x/a)^2 + (y/b)^2 +(z/c)^2 = 1.  The algorithm as stated
@@ -1071,7 +1071,7 @@ double WrapEllipsoid::findClosestPoint(double a, double b, double c,
     // elliptical cross-section with the narrowest radius.
     if (specialCaseAxis < 0)
     {
-		 double uvw[3], minEllipseRadiiSum = SimTK::Infinity;
+         double uvw[3], minEllipseRadiiSum = SimTK::Infinity;
        
        uvw[0] = u; uvw[1] = v; uvw[2] = w;
 
@@ -1188,112 +1188,112 @@ double WrapEllipsoid::findClosestPoint(double a, double b, double c,
  * @return Distance between uv point and ellipse
  */
 double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
-														  double v, double* x, double* y) const
+                                                          double v, double* x, double* y) const
 {
-	// Graphics Gems IV algorithm for computing distance from point to
-	// ellipse (x/a)^2 + (y/b)^2 = 1.  The algorithm as stated is not stable
-	// for points near the coordinate axes.  The first part of this code
-	// handles those points separately.
-	double a2 = a*a, b2 = b*b;
-	double u2 = u*u, v2 = v*v;
-	double a2u2 = a2*u2, b2v2 = b2*v2;
-	double dx, dy, xda, ydb;
-	int i, which;
-	double t, P, Q, P2, Q2, f, fp;
+    // Graphics Gems IV algorithm for computing distance from point to
+    // ellipse (x/a)^2 + (y/b)^2 = 1.  The algorithm as stated is not stable
+    // for points near the coordinate axes.  The first part of this code
+    // handles those points separately.
+    double a2 = a*a, b2 = b*b;
+    double u2 = u*u, v2 = v*v;
+    double a2u2 = a2*u2, b2v2 = b2*v2;
+    double dx, dy, xda, ydb;
+    int i, which;
+    double t, P, Q, P2, Q2, f, fp;
 
-	bool nearXOrigin = (bool) EQUAL_WITHIN_ERROR(0.0,u);
-	bool nearYOrigin = (bool) EQUAL_WITHIN_ERROR(0.0,v);
+    bool nearXOrigin = (bool) EQUAL_WITHIN_ERROR(0.0,u);
+    bool nearYOrigin = (bool) EQUAL_WITHIN_ERROR(0.0,v);
 
-	// handle points near the coordinate axes
-	if (nearXOrigin && nearYOrigin)
-	{
-		if (a < b)
-		{
-			*x = (u < 0.0 ? -a : a);
-			*y = v;
-			return a;
-		} else {
-			*x = u;
-			*y = (v < 0.0 ? -b : b);
-			return b;
-		}
-	}
+    // handle points near the coordinate axes
+    if (nearXOrigin && nearYOrigin)
+    {
+        if (a < b)
+        {
+            *x = (u < 0.0 ? -a : a);
+            *y = v;
+            return a;
+        } else {
+            *x = u;
+            *y = (v < 0.0 ? -b : b);
+            return b;
+        }
+    }
 
-	if (nearXOrigin)  // u == 0
-	{
-		if ( a >= b || fabs(v) >= b - a2/b )
-		{
-			*x = u;
-			*y = ( v >= 0 ? b : -b );
-			dy = *y - v;
-			return fabs(dy);
-		}
-		else
-		{
-			*y = b2 * v / (b2-a2);
-			dy = *y - v;
-			ydb = *y / b;
-			*x = a * sqrt(fabs(1 - ydb*ydb));
-			return sqrt(*x * *x + dy*dy);
-		}
-	}
+    if (nearXOrigin)  // u == 0
+    {
+        if ( a >= b || fabs(v) >= b - a2/b )
+        {
+            *x = u;
+            *y = ( v >= 0 ? b : -b );
+            dy = *y - v;
+            return fabs(dy);
+        }
+        else
+        {
+            *y = b2 * v / (b2-a2);
+            dy = *y - v;
+            ydb = *y / b;
+            *x = a * sqrt(fabs(1 - ydb*ydb));
+            return sqrt(*x * *x + dy*dy);
+        }
+    }
 
-	if (nearYOrigin)  // v == 0
-	{
-		if ( b >= a || fabs(u) >= a - b2/a )
-		{
-			*x = ( u >= 0 ? a : -a );
-			dx = *x - u;
-			*y = v;
-			return fabs(*x - u);
-		}
-		else
-		{
-			*x = a2 * u / (a2-b2);
-			dx = *x - u;
-			xda = *x / a;
-			*y = b * sqrt(fabs(1 - xda*xda));
-			return sqrt(dx*dx + *y * *y);
-		}
-	}
+    if (nearYOrigin)  // v == 0
+    {
+        if ( b >= a || fabs(u) >= a - b2/a )
+        {
+            *x = ( u >= 0 ? a : -a );
+            dx = *x - u;
+            *y = v;
+            return fabs(*x - u);
+        }
+        else
+        {
+            *x = a2 * u / (a2-b2);
+            dx = *x - u;
+            xda = *x / a;
+            *y = b * sqrt(fabs(1 - xda*xda));
+            return sqrt(dx*dx + *y * *y);
+        }
+    }
 
-	// initial guess
-	if ( (u/a)*(u/a) + (v/b)*(v/b) < 1.0 )
-	{
-		which = 0;
-		t = 0.0;
-	}
-	else
-	{
-		double max = a;
+    // initial guess
+    if ( (u/a)*(u/a) + (v/b)*(v/b) < 1.0 )
+    {
+        which = 0;
+        t = 0.0;
+    }
+    else
+    {
+        double max = a;
 
-		which = 1;
+        which = 1;
 
-		if ( b > max )
-			max = b;
+        if ( b > max )
+            max = b;
 
-		t = max * sqrt(u*u + v*v);
-	}
+        t = max * sqrt(u*u + v*v);
+    }
 
-	for (i = 0; i < 64; i++)
-	{
-		P = t+a2;
-		P2 = P*P;
-		Q = t+b2;
-		Q2 = Q*Q;
-		f = P2*Q2 - a2u2*Q2 - b2v2*P2;
+    for (i = 0; i < 64; i++)
+    {
+        P = t+a2;
+        P2 = P*P;
+        Q = t+b2;
+        Q2 = Q*Q;
+        f = P2*Q2 - a2u2*Q2 - b2v2*P2;
 
-		if ( fabs(f) < 1e-09 )
-			break;
+        if ( fabs(f) < 1e-09 )
+            break;
 
-		fp = 2.0 * (P*Q*(P+Q) - a2u2*Q - b2v2*P);
-		t -= f / fp;
-	}
+        fp = 2.0 * (P*Q*(P+Q) - a2u2*Q - b2v2*P);
+        t -= f / fp;
+    }
 
-	*x = a2 * u / P;
-	*y = b2 * v / Q;
-	dx = *x - u;
-	dy = *y - v;
+    *x = a2 * u / P;
+    *y = b2 * v / Q;
+    dx = *x - u;
+    dy = *y - v;
 
-	return sqrt(dx*dx + dy*dy);
+    return sqrt(dx*dx + dy*dy);
 }

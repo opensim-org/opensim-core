@@ -242,7 +242,7 @@ public:
     double calcValue(double aNormLength) const;
 
  
-	/** Implement the generic OpenSim::Function interface **/
+    /** Implement the generic OpenSim::Function interface **/
     double calcValue(const SimTK::Vector& x) const override
     {
         return calcValue(x[0]);
@@ -361,13 +361,13 @@ public:
 // PRIVATE
 //==============================================================================
 private:
-	/**
-	//--------------------------------------------------------------------------
-	<B> OpenSim::Function Interface </B>
-	//--------------------------------------------------------------------------
-	Create the underlying SimTK::Function that implements the calculations
-	necessary for this curve. */
-	SimTK::Function* createSimTKFunction() const override;
+    /**
+    //--------------------------------------------------------------------------
+    <B> OpenSim::Function Interface </B>
+    //--------------------------------------------------------------------------
+    Create the underlying SimTK::Function that implements the calculations
+    necessary for this curve. */
+    SimTK::Function* createSimTKFunction() const override;
     
     void setNull();
     void constructProperties();

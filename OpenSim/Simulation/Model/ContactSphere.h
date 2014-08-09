@@ -39,36 +39,36 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ContactSphere, ContactGeometry);
 // DATA
 //=============================================================================
 protected:
-	PropertyDbl _radiusProp;
-	double& _radius;
+    PropertyDbl _radiusProp;
+    double& _radius;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
+    // CONSTRUCTION
     /**
      * Construct an empty, uninitialized ContactSphere.
      */
     ContactSphere();
-	/**
-	 * Construct a ContactSphere.
-	 *
-	 * @param radius       the radius of the sphere
-	 * @param location     the location of the center of the sphere within the Body it is attached to
-	 * @param body         the Body this sphere is attached to
-	 */
-	ContactSphere(double radius, const SimTK::Vec3& location, Body& body);
-	/**
-	 * Construct a ContactSphere.
-	 *
-	 * @param radius       the radius of the sphere
-	 * @param location     the location of the center of the sphere within the Body it is attached to
-	 * @param body         the Body this sphere is attached to
+    /**
+     * Construct a ContactSphere.
+     *
+     * @param radius       the radius of the sphere
+     * @param location     the location of the center of the sphere within the Body it is attached to
+     * @param body         the Body this sphere is attached to
+     */
+    ContactSphere(double radius, const SimTK::Vec3& location, Body& body);
+    /**
+     * Construct a ContactSphere.
+     *
+     * @param radius       the radius of the sphere
+     * @param location     the location of the center of the sphere within the Body it is attached to
+     * @param body         the Body this sphere is attached to
      * @param name         the name of this object
-	 */
+     */
     ContactSphere(double radius, const SimTK::Vec3& location, Body& body, const std::string& name);
-	ContactSphere(const ContactSphere& geom);
+    ContactSphere(const ContactSphere& geom);
 
     #ifndef SWIG
     ContactSphere& operator=(const ContactSphere& source) {
@@ -85,19 +85,19 @@ public:
     }
     SimTK::ContactGeometry createSimTKContactGeometry();
 
-	// ACCESSORS
-	/**
-	 * Get the radius of the sphere.
-	 */
-	double getRadius() const;
-	/**
-	 * Set the radius of the sphere.
-	 */
-	void setRadius(double radius);
+    // ACCESSORS
+    /**
+     * Get the radius of the sphere.
+     */
+    double getRadius() const;
+    /**
+     * Set the radius of the sphere.
+     */
+    void setRadius(double radius);
 private:
     // INITIALIZATION
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 
     // VISUALIZATION
     void generateDecorations(bool fixed, const ModelDisplayHints& hints, 
@@ -105,7 +105,7 @@ private:
         SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
 
 //=============================================================================
-};	// END of class ContactSphere
+};  // END of class ContactSphere
 //=============================================================================
 //=============================================================================
 

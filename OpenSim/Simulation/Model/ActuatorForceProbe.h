@@ -138,7 +138,7 @@ private:
     void constructProperties();
 
 //==============================================================================
-};	// END of class ActuatorForceProbe
+};  // END of class ActuatorForceProbe
 
 }; //namespace
 //==============================================================================

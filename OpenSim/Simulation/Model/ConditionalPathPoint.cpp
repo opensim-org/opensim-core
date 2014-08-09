@@ -48,11 +48,11 @@ using namespace OpenSim;
  */
 ConditionalPathPoint::ConditionalPathPoint() :
    _range(_rangeProp.getValueDblArray()),
-	_coordinateName(_coordinateNameProp.getValueStr()),
-	_coordinate(NULL)
+    _coordinateName(_coordinateNameProp.getValueStr()),
+    _coordinate(NULL)
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -72,12 +72,12 @@ ConditionalPathPoint::~ConditionalPathPoint()
 ConditionalPathPoint::ConditionalPathPoint(const ConditionalPathPoint &aPoint) :
    PathPoint(aPoint),
    _range(_rangeProp.getValueDblArray()),
-	_coordinateName(_coordinateNameProp.getValueStr()),
-	_coordinate(NULL)
+    _coordinateName(_coordinateNameProp.getValueStr()),
+    _coordinate(NULL)
 {
-	setNull();
-	setupProperties();
-	copyData(aPoint);
+    setNull();
+    setupProperties();
+    copyData(aPoint);
 }
 
 //=============================================================================
@@ -91,9 +91,9 @@ ConditionalPathPoint::ConditionalPathPoint(const ConditionalPathPoint &aPoint) :
  */
 void ConditionalPathPoint::copyData(const ConditionalPathPoint &aPoint)
 {
-	_range = aPoint._range;
-	_coordinateName = aPoint._coordinateName;
-	_coordinate = aPoint._coordinate;
+    _range = aPoint._range;
+    _coordinateName = aPoint._coordinateName;
+    _coordinate = aPoint._coordinate;
 }
 
 //_____________________________________________________________________________
@@ -106,31 +106,31 @@ void ConditionalPathPoint::copyData(const ConditionalPathPoint &aPoint)
  */
 void ConditionalPathPoint::init(const PathPoint& aPoint)
 {
-	PathPoint::copyData(aPoint);
+    PathPoint::copyData(aPoint);
 
-	// If aPoint is a ConditionalPathPoint, then you can copy all of its members over.
-	// Otherwise, set the range and coordinate name to default values (using the first
-	// coordinate in the model, if there is one).
+    // If aPoint is a ConditionalPathPoint, then you can copy all of its members over.
+    // Otherwise, set the range and coordinate name to default values (using the first
+    // coordinate in the model, if there is one).
    const ConditionalPathPoint* mmp = dynamic_cast<const ConditionalPathPoint*>(&aPoint);
-	if (mmp) {
-		copyData(*mmp);
-	} else {
-		_range[0] = 0.0;
-		_range[1] = 0.0;
-		GeometryPath* path = aPoint.getPath();
-		if (path) {
-			ModelComponent* comp = dynamic_cast<ModelComponent*>(path->getOwner());
-			if (comp) {
-				CoordinateSet coords = comp->getModel().getCoordinateSet();
-				if (coords.getSize() > 0) {
-					int index = 0;
-					_coordinateName = coords.get(index).getName();
-					_range[0] = coords.get(index).getRangeMin();
-					_range[1] = coords.get(index).getRangeMax();
-				}
-			}
-		}
-	}
+    if (mmp) {
+        copyData(*mmp);
+    } else {
+        _range[0] = 0.0;
+        _range[1] = 0.0;
+        GeometryPath* path = aPoint.getPath();
+        if (path) {
+            ModelComponent* comp = dynamic_cast<ModelComponent*>(path->getOwner());
+            if (comp) {
+                CoordinateSet coords = comp->getModel().getCoordinateSet();
+                if (coords.getSize() > 0) {
+                    int index = 0;
+                    _coordinateName = coords.get(index).getName();
+                    _range[0] = coords.get(index).getRangeMin();
+                    _range[1] = coords.get(index).getRangeMax();
+                }
+            }
+        }
+    }
 }
 
 //_____________________________________________________________________________
@@ -148,13 +148,13 @@ void ConditionalPathPoint::setNull()
  */
 void ConditionalPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	if ( versionNumber < XMLDocument::getLatestVersion()){
-		if (versionNumber<=20001)
-		// Version has to be 1.6 or later, otherwise assert
-		XMLDocument::renameChildNode(aNode, "coordinates", "coordinate");
-		}
-	// Call base class now assuming _node has been corrected for current version
-	PathPoint::updateFromXMLNode(aNode, versionNumber);
+    if ( versionNumber < XMLDocument::getLatestVersion()){
+        if (versionNumber<=20001)
+        // Version has to be 1.6 or later, otherwise assert
+        XMLDocument::renameChildNode(aNode, "coordinates", "coordinate");
+        }
+    // Call base class now assuming _node has been corrected for current version
+    PathPoint::updateFromXMLNode(aNode, versionNumber);
 }
 
 //_____________________________________________________________________________
@@ -163,14 +163,14 @@ void ConditionalPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int ver
  */
 void ConditionalPathPoint::setupProperties()
 {
-	const double defaultRange[] = {0.0, 0.0};
-	_rangeProp.setName("range");
-	_rangeProp.setValue(2, defaultRange);
-	_rangeProp.setAllowableListSize(2);
-	_propertySet.append(&_rangeProp);
+    const double defaultRange[] = {0.0, 0.0};
+    _rangeProp.setName("range");
+    _rangeProp.setValue(2, defaultRange);
+    _rangeProp.setAllowableListSize(2);
+    _propertySet.append(&_rangeProp);
 
-	_coordinateNameProp.setName("coordinate");
-	_propertySet.append(&_coordinateNameProp);
+    _coordinateNameProp.setName("coordinate");
+    _propertySet.append(&_coordinateNameProp);
 }
 
 //_____________________________________________________________________________
@@ -181,11 +181,11 @@ void ConditionalPathPoint::setupProperties()
  */
 void ConditionalPathPoint::setCoordinate(const SimTK::State& s, Coordinate& aCoordinate)
 {
-	if (&aCoordinate != _coordinate)
-	{
-	   _coordinate = &aCoordinate;
-	   _coordinateName = _coordinate->getName();
-	}
+    if (&aCoordinate != _coordinate)
+    {
+       _coordinate = &aCoordinate;
+       _coordinateName = _coordinate->getName();
+    }
 }
 
 //_____________________________________________________________________________
@@ -196,10 +196,10 @@ void ConditionalPathPoint::setCoordinate(const SimTK::State& s, Coordinate& aCoo
  */
 void ConditionalPathPoint::setRangeMin(const SimTK::State& s, double aMin)
 {
-	if (aMin <= _range[1])
-	{
-		_range[0] = aMin;
-	}
+    if (aMin <= _range[1])
+    {
+        _range[0] = aMin;
+    }
 }
 
 //_____________________________________________________________________________
@@ -210,10 +210,10 @@ void ConditionalPathPoint::setRangeMin(const SimTK::State& s, double aMin)
  */
 void ConditionalPathPoint::setRangeMax( const SimTK::State& s, double aMax)
 {
-	if (aMax >= _range[0])
-	{
-		_range[1] = aMax;
-	}
+    if (aMax >= _range[0])
+    {
+        _range[1] = aMax;
+    }
 }
 
 //_____________________________________________________________________________
@@ -225,15 +225,15 @@ void ConditionalPathPoint::setRangeMax( const SimTK::State& s, double aMax)
  */
 bool ConditionalPathPoint::isActive(const SimTK::State& s) const
 {
-	if (_coordinate)
-	{
-		double value = _coordinate->getValue(s);
-		if (value >= _range[0] - 1e-5 &&
-			 value <= _range[1] + 1e-5)
-			return true;
-	}
+    if (_coordinate)
+    {
+        double value = _coordinate->getValue(s);
+        if (value >= _range[0] - 1e-5 &&
+             value <= _range[1] + 1e-5)
+            return true;
+    }
 
-	return false;
+    return false;
 }
 
 //_____________________________________________________________________________
@@ -245,21 +245,21 @@ bool ConditionalPathPoint::isActive(const SimTK::State& s) const
  */
 void ConditionalPathPoint::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
 {
-	// base class
-	Super::connectToModelAndPath(aModel, aPath);
+    // base class
+    Super::connectToModelAndPath(aModel, aPath);
 
-	// Setup() can be called before the model's coordinate set has been constructed, in which
-	// case you don't want to throw an exception if the coordinate is not found.
-	if (aModel.getCoordinateSet().getSize() > 0) {
-		// Look up the coordinate by name and store a pointer to it.
-		if (aModel.getCoordinateSet().contains(_coordinateName)) {
-			_coordinate = &aModel.getCoordinateSet().get(_coordinateName);
-		} else {
-			string errorMessage = "Error: Coordinate " + _coordinateName + " referenced in muscle " + aPath.getOwner()->getName() +
-				" does not exist in model " +	aModel.getName();
-			throw Exception(errorMessage);
-		}
-	}
+    // Setup() can be called before the model's coordinate set has been constructed, in which
+    // case you don't want to throw an exception if the coordinate is not found.
+    if (aModel.getCoordinateSet().getSize() > 0) {
+        // Look up the coordinate by name and store a pointer to it.
+        if (aModel.getCoordinateSet().contains(_coordinateName)) {
+            _coordinate = &aModel.getCoordinateSet().get(_coordinateName);
+        } else {
+            string errorMessage = "Error: Coordinate " + _coordinateName + " referenced in muscle " + aPath.getOwner()->getName() +
+                " does not exist in model " +   aModel.getName();
+            throw Exception(errorMessage);
+        }
+    }
 }
 
 //=============================================================================
@@ -273,10 +273,10 @@ void ConditionalPathPoint::connectToModelAndPath(const Model& aModel, GeometryPa
  */
 ConditionalPathPoint& ConditionalPathPoint::operator=(const ConditionalPathPoint &aPoint)
 {
-	// BASE CLASS
-	PathPoint::operator=(aPoint);
+    // BASE CLASS
+    PathPoint::operator=(aPoint);
 
-	copyData(aPoint);
+    copyData(aPoint);
 
-	return(*this);
+    return(*this);
 }
