@@ -127,10 +127,10 @@ WARNING:
 
 #ifdef DECSTATION
 #define TARGET_VERSION printf (" (AL-MIPS 1.10) <DECStation>\n");
-				/* Depends on MIPS ASM. */
+/* Depends on MIPS ASM. */
 #else
 #define TARGET_VERSION printf (" (AL-MIPS 1.10) <MIPS>\n");
-				/* Depends on MIPS ASM. */
+/* Depends on MIPS ASM. */
 #endif
 #define TARGET_VERSNUM "1 10"
 
@@ -146,17 +146,17 @@ extern int target_flags;
 
 /* Nonzero if compiling code that Unix assembler can assemble.  */
 #define TARGET_UNIX_ASM (target_flags & 1)
-				/* Debug Mode */
+/* Debug Mode */
 #define TARGET_DEBUG_MODE (target_flags & 2)
 #define TARGET_DEBUGA_MODE (target_flags & 4)
 #define TARGET_DEBUGB_MODE (target_flags & 16)
 #define TARGET_DEBUGC_MODE (target_flags & 32)
 #define TARGET_DEBUGD_MODE (target_flags & 64)
-				/* Register Naming in .s ($21 vs. $a0) */
+/* Register Naming in .s ($21 vs. $a0) */
 #define TARGET_NAME_REGS (target_flags & 8)
-				/* Use addu / subbu or get FIXED_OVFL TRAPS */
+/* Use addu / subbu or get FIXED_OVFL TRAPS */
 #define TARGET_NOFIXED_OVFL (target_flags & 128)
-				/* Optimize for Sdata/Sbss */
+/* Optimize for Sdata/Sbss */
 #define TARGET_GP_OPT (target_flags & 4096)
 #define TARGET_GVALUE ((target_flags >> 8 ) & 0xf)
 
@@ -469,18 +469,18 @@ enum reg_class  { NO_REGS, GR_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES } ;
 #define BASE_REG_CLASS  GR_REGS
 
 
-				/* REGISTER AND CONSTANT CLASSES
-				 */
+/* REGISTER AND CONSTANT CLASSES
+ */
 
 /* Get reg_class from a letter such as appears in the machine
 description.  */
-				/* DEFINED REGISTER CLASSES:
-				**
-				** 'f'     : Floating point registers
-				** 'y'     : General register when used to
-				**           transfer chunks of Floating point
-				**           with mfc1 mtc1 insn
-				 */
+/* DEFINED REGISTER CLASSES:
+**
+** 'f'     : Floating point registers
+** 'y'     : General register when used to
+**           transfer chunks of Floating point
+**           with mfc1 mtc1 insn
+ */
 
 #define REG_CLASS_FROM_LETTER(C)					\
    ((C) == 'f' ? FP_REGS:						\
@@ -508,10 +508,10 @@ description.  */
 /* Similar, but for floating constants, and defining letters G and H.
    Here VALUE is the CONST_DOUBLE rtx itself.  */
 
-				/* DEFINED FLOATING CONSTANT CLASSES:
-				**
-				** 'G'     : Floating point 0
-				 */
+/* DEFINED FLOATING CONSTANT CLASSES:
+**
+** 'G'     : Floating point 0
+ */
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)				\
   ((C) == 'G' && XINT (VALUE, 0) == 0 && XINT (VALUE, 1) == 0)
 
@@ -584,8 +584,8 @@ description.  */
     used..
 */
 #define REG_PARM_STACK_SPACE
-   /* Align stack frames on 64 bits (Double Word )
-   */
+/* Align stack frames on 64 bits (Double Word )
+*/
 
 #define STACK_BOUNDARY 64
 
@@ -674,27 +674,27 @@ printf:
    and about the args processed so far, enough to enable macros
    such as FUNCTION_ARG to determine where the next arg should go.
 */
-				/* On MIPS the following automaton decides */
-				/* where to put things. */
-				/* If you dont believe it, look at Gerry Kane*/
-				/* 's book page D-22 */
+/* On MIPS the following automaton decides */
+/* where to put things. */
+/* If you dont believe it, look at Gerry Kane*/
+/* 's book page D-22 */
 
 #define CUMULATIVE_ARGS struct    { enum arg_state arg_rec_state;int restype,arg_num;}
 
 enum arg_state     { ARG_STA_INIT =0,
-		     ARG_STA_F    =1, /* $f12 */
-		     ARG_STA_FF   =2, /* $f12 $f14 */
-		     ARG_STA_FG   =3, /* $f12 $6   */
-		     ARG_STA_FGG  =4, /* $f12 $6 $7 */
-		     ARG_STA_FGF  =5, /* $f12 $6 STACK */
-		     ARG_STA_G    =6, /* $4 */
-		     ARG_STA_GF   =7, /* $4  ($6,$7) */
-		     ARG_STA_GG   =8, /* $4 $5 */
-		     ARG_STA_GGF  =9, /* $4 $5 ($6,$7) */
-		     ARG_STA_GGG  =10,/* $4 $5 $6 */
-		     ARG_STA_GGGF =11,/* $4 $5 $6 STACK */
-		     ARG_STA_GGGG =12 /* $4 $5 $6 $7 */
-		     };
+                     ARG_STA_F    =1, /* $f12 */
+                     ARG_STA_FF   =2, /* $f12 $f14 */
+                     ARG_STA_FG   =3, /* $f12 $6   */
+                     ARG_STA_FGG  =4, /* $f12 $6 $7 */
+                     ARG_STA_FGF  =5, /* $f12 $6 STACK */
+                     ARG_STA_G    =6, /* $4 */
+                     ARG_STA_GF   =7, /* $4  ($6,$7) */
+                     ARG_STA_GG   =8, /* $4 $5 */
+                     ARG_STA_GGF  =9, /* $4 $5 ($6,$7) */
+                     ARG_STA_GGG  =10,/* $4 $5 $6 */
+                     ARG_STA_GGGF =11,/* $4 $5 $6 STACK */
+                     ARG_STA_GGGG =12 /* $4 $5 $6 $7 */
+                   };
 #define ARG_STA_AUTOMA							\
 {									\
   {ARG_STA_F,ARG_STA_G,44,4        },   /* ARG_STA_INIT */		\
@@ -1206,7 +1206,7 @@ extern char *current_function_name;
    has an effect that depends on the machine mode it is used for.
 */
 
-				/* See if this is of any use here */
+/* See if this is of any use here */
 
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)			\
 { }
@@ -1394,16 +1394,16 @@ extern char *current_function_name;
 #define TARGET_FF 014
 #define TARGET_CR 015
 
-				/*  LIST OF PRINT OPERAND CODES
+/*  LIST OF PRINT OPERAND CODES
 
 
-				** 'x'  X is CONST_INT, prints 16 bits in
-				**      Hexadecimal format = "0x%4x",
-				** 'd'  output integer constant in decimal,
-				** 'u'  Prints an 'u' if flag -mnofixed-ovfl
-				**      has been set, thus selecting addu
-				**      instruction instead of add.
-				*/
+** 'x'  X is CONST_INT, prints 16 bits in
+**      Hexadecimal format = "0x%4x",
+** 'd'  output integer constant in decimal,
+** 'u'  Prints an 'u' if flag -mnofixed-ovfl
+**      has been set, thus selecting addu
+**      instruction instead of add.
+*/
 
 
 /* Print an instruction operand X on file FILE.
@@ -1677,19 +1677,19 @@ extern char *current_function_name;
 */
 
 
-				/* ALL THESE PROBLEMS ARE PRESENTLY SOLVED   */
-				/* USING CONDITIONAL ASSEMBLY + FILE RESCAN  */
+/* ALL THESE PROBLEMS ARE PRESENTLY SOLVED   */
+/* USING CONDITIONAL ASSEMBLY + FILE RESCAN  */
 
 #define EXTRA_SECTIONS in_sdata
 
 /* Define the additional functions to select our additional sections.  */
 
-       /* on the MIPS it is not a good idea to put constants  in the
-	  text section, since this defeats the sdata/data mechanism. This
-	  is especially true when -O2 is used. In this case an effort is
-	  made to address with faster (gp) register relative addressing,
-	  which can only get at sdata and sbss items (there is no stext !!)
-       */
+/* on the MIPS it is not a good idea to put constants  in the
+text section, since this defeats the sdata/data mechanism. This
+is especially true when -O2 is used. In this case an effort is
+made to address with faster (gp) register relative addressing,
+which can only get at sdata and sbss items (there is no stext !!)
+*/
 #define EXTRA_SECTION_FUNCTIONS						\
 void									\
 sdata_section ()							\
@@ -1704,9 +1704,9 @@ sdata_section ()							\
 /* Given a decl node or constant node, choose the section to output it in
    and select that section.  */
 
-       /* following takes  care of constants  emitted from
-	  the hash table entries (see above comment)
-       */
+/* following takes  care of constants  emitted from
+the hash table entries (see above comment)
+*/
 #define SELECT_SECTION_MODE(MODE,RTX)					\
 {									\
   extern int mips_section_threshold;					\
@@ -1716,7 +1716,7 @@ sdata_section ()							\
 	  else								\
 	    data_section ();						\
 }									\
-
+ 
 #define SELECT_SECTION(DECL)						\
 {									\
   extern int mips_section_threshold;					\
@@ -1777,9 +1777,9 @@ sdata_section ()							\
 #define ASM_OUTPUT_REG_PUSH(FILE,REGNO)					\
   (fprintf (FILE,"ERROR: ASM_OUTPUT_REG_PUSH\n"))
 
-				/*  The following macro is taken from the    */
-				/*  C-text of varasm.c. It has been modified */
-				/*  to handle the VARARG_SUSPECTED hack      */
+/*  The following macro is taken from the    */
+/*  C-text of varasm.c. It has been modified */
+/*  to handle the VARARG_SUSPECTED hack      */
 #define  ASM_OUTPUT_ASCII(FILE, P , SIZE)				\
 {  int i;								\
 	  fprintf ((FILE), "\t.ascii \"");				\

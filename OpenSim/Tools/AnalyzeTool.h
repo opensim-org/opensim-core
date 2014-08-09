@@ -33,13 +33,13 @@
 #include "osimToolsDLL.h"
 
 #ifdef SWIG
-	#ifdef OSIMTOOLS_API
-		#undef OSIMTOOLS_API
-		#define OSIMTOOLS_API
-	#endif
+#ifdef OSIMTOOLS_API
+#undef OSIMTOOLS_API
+#define OSIMTOOLS_API
+#endif
 #endif
 
-namespace OpenSim { 
+namespace OpenSim {
 
 //=============================================================================
 //=============================================================================
@@ -50,97 +50,117 @@ namespace OpenSim {
  * @version 1.0
  */
 class OSIMTOOLS_API AnalyzeTool : public AbstractTool {
-OpenSim_DECLARE_CONCRETE_OBJECT(AnalyzeTool, AbstractTool);
+    OpenSim_DECLARE_CONCRETE_OBJECT(AnalyzeTool, AbstractTool);
 
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
 private:
-	/** Name of the states file. */
-	PropertyStr _statesFileNameProp;
-	std::string &_statesFileName;
-	/** Name of the coordinates file. */
-	PropertyStr _coordinatesFileNameProp;
-	std::string &_coordinatesFileName;
-	/** Name of the speeds file. */
-	PropertyStr _speedsFileNameProp;
-	std::string &_speedsFileName;
-	/** Low-pass cut-off frequency for filtering the coordinates (does not apply to states). */
-	PropertyDbl _lowpassCutoffFrequencyProp;
-	double &_lowpassCutoffFrequency;
+    /** Name of the states file. */
+    PropertyStr _statesFileNameProp;
+    std::string &_statesFileName;
+    /** Name of the coordinates file. */
+    PropertyStr _coordinatesFileNameProp;
+    std::string &_coordinatesFileName;
+    /** Name of the speeds file. */
+    PropertyStr _speedsFileNameProp;
+    std::string &_speedsFileName;
+    /** Low-pass cut-off frequency for filtering the coordinates (does not apply to states). */
+    PropertyDbl _lowpassCutoffFrequencyProp;
+    double &_lowpassCutoffFrequency;
 
-	/** Storage for the model states. */
-	Storage *_statesStore;
+    /** Storage for the model states. */
+    Storage *_statesStore;
 
-	/** Whether to write result storages to files. */
-	bool _printResultFiles;
+    /** Whether to write result storages to files. */
+    bool _printResultFiles;
 
     /** Whether the model and states should be loaded from input files */
     bool _loadModelAndInput;
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	virtual ~AnalyzeTool();
-	AnalyzeTool();
-	AnalyzeTool(const std::string &aFileName, bool aLoadModelAndInput=true) SWIG_DECLARE_EXCEPTION;
-	AnalyzeTool(const AnalyzeTool &aObject);
-	explicit AnalyzeTool(Model& aModel);
+    virtual ~AnalyzeTool();
+    AnalyzeTool();
+    AnalyzeTool(const std::string &aFileName, bool aLoadModelAndInput=true) SWIG_DECLARE_EXCEPTION;
+    AnalyzeTool(const AnalyzeTool &aObject);
+    explicit AnalyzeTool(Model& aModel);
 
 private:
-	void setNull();
-	void setupProperties();
-	void constructCorrectiveSprings();
+    void setNull();
+    void setupProperties();
+    void constructCorrectiveSprings();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	AnalyzeTool&
-		operator=(const AnalyzeTool &aAnalyzeTool);
+    AnalyzeTool&
+    operator=(const AnalyzeTool &aAnalyzeTool);
 #endif
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	void setStatesStorage(Storage& aStore);
-	static Storage *createStatesStorageFromCoordinatesAndSpeeds(const Model& aModel, const Storage& aQStore, const Storage& aUStore);
-	Storage& getStatesStorage();
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    void setStatesStorage(Storage& aStore);
+    static Storage *createStatesStorageFromCoordinatesAndSpeeds(const Model& aModel, const Storage& aQStore, const Storage& aUStore);
+    Storage& getStatesStorage();
 
-	const std::string &getStatesFileName() const { return _statesFileName; }
-	void setStatesFileName(const std::string &aFileName) { _statesFileName = aFileName; }
-	const std::string &getCoordinatesFileName() const { return _coordinatesFileName; }
-	void setCoordinatesFileName(const std::string &aFileName) { _coordinatesFileName = aFileName; }
-	const std::string &getSpeedsFileName() const { return _speedsFileName; }
-	void setSpeedsFileName(const std::string &aFileName) { _speedsFileName = aFileName; }
-	double getLowpassCutoffFrequency() const { return _lowpassCutoffFrequency; }
-	void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) { _lowpassCutoffFrequency = aLowpassCutoffFrequency; }
-    const bool getLoadModelAndInput() const { return _loadModelAndInput; }
-    void setLoadModelAndInput(bool b) { _loadModelAndInput = b; }
+    const std::string &getStatesFileName() const {
+        return _statesFileName;
+    }
+    void setStatesFileName(const std::string &aFileName) {
+        _statesFileName = aFileName;
+    }
+    const std::string &getCoordinatesFileName() const {
+        return _coordinatesFileName;
+    }
+    void setCoordinatesFileName(const std::string &aFileName) {
+        _coordinatesFileName = aFileName;
+    }
+    const std::string &getSpeedsFileName() const {
+        return _speedsFileName;
+    }
+    void setSpeedsFileName(const std::string &aFileName) {
+        _speedsFileName = aFileName;
+    }
+    double getLowpassCutoffFrequency() const {
+        return _lowpassCutoffFrequency;
+    }
+    void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) {
+        _lowpassCutoffFrequency = aLowpassCutoffFrequency;
+    }
+    const bool getLoadModelAndInput() const {
+        return _loadModelAndInput;
+    }
+    void setLoadModelAndInput(bool b) {
+        _loadModelAndInput = b;
+    }
 
-	//--------------------------------------------------------------------------
-	// UTILITIES
-	//--------------------------------------------------------------------------
-	void setStatesFromMotion(const SimTK::State& s, const Storage &aMotion, bool aInDegrees) SWIG_DECLARE_EXCEPTION;
-	void loadStatesFromFile(SimTK::State& s ) SWIG_DECLARE_EXCEPTION;
-	void verifyControlsStates();
-	void setPrintResultFiles(bool aToWrite);
+    //--------------------------------------------------------------------------
+    // UTILITIES
+    //--------------------------------------------------------------------------
+    void setStatesFromMotion(const SimTK::State& s, const Storage &aMotion, bool aInDegrees) SWIG_DECLARE_EXCEPTION;
+    void loadStatesFromFile(SimTK::State& s ) SWIG_DECLARE_EXCEPTION;
+    void verifyControlsStates();
+    void setPrintResultFiles(bool aToWrite);
     void disableIntegrationOnlyProbes();
-	//--------------------------------------------------------------------------
-	// INTERFACE
-	//--------------------------------------------------------------------------
-	virtual bool run() SWIG_DECLARE_EXCEPTION;
-	virtual bool run(bool plotting) SWIG_DECLARE_EXCEPTION;
+    //--------------------------------------------------------------------------
+    // INTERFACE
+    //--------------------------------------------------------------------------
+    virtual bool run() SWIG_DECLARE_EXCEPTION;
+    virtual bool run(bool plotting) SWIG_DECLARE_EXCEPTION;
 
-	//--------------------------------------------------------------------------
-	// HELPER
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // HELPER
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	static void run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, const Storage &aStatesStore, bool aSolveForEquilibrium);
+    static void run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, const Storage &aStatesStore, bool aSolveForEquilibrium);
 #endif
 //=============================================================================
 };	// END of class AnalyzeTool

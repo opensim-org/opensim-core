@@ -36,10 +36,10 @@
  *
  * @author Peter Eastman
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 // Excluding this from Doxygen until it has better documentation! -Sam Hamner
-    /// @cond
+/// @cond
 class OSIMCOMMON_API FunctionAdapter : public SimTK::Function
 {
 //=============================================================================
@@ -48,16 +48,16 @@ class OSIMCOMMON_API FunctionAdapter : public SimTK::Function
 protected:
     // REFERENCES
     /** The OpenSim::Function used to evaluate this function. */
-	const OpenSim::Function& _function;
+    const OpenSim::Function& _function;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	FunctionAdapter(const OpenSim::Function &aFunction);
+    FunctionAdapter(const OpenSim::Function &aFunction);
     double calcValue(const SimTK::Vector& x) const;
-	double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const;
-	double calcDerivative(const SimTK::Array_<int>& derivComponents, const SimTK::Vector& x) const;
+    double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const;
+    double calcDerivative(const SimTK::Array_<int>& derivComponents, const SimTK::Vector& x) const;
     int getArgumentSize() const;
     int getMaxDerivativeOrder() const;
 private:

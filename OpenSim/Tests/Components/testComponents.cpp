@@ -39,8 +39,8 @@ void testComponent(const T& instanceToTest);
 // NOTE: disabling randomizePropertyValues weakens the test substantially.
 template <typename T>
 void testModelComponent(const T& instanceToTest,
-        bool randomizePropertyValues=true,
-        Model& model=dummyModel);
+                        bool randomizePropertyValues=true,
+                        Model& model=dummyModel);
 
 int main()
 {
@@ -56,7 +56,8 @@ int main()
     // TODO testModelComponent(PathActuator());
 
     {
-        ContactSphere contactSphere; contactSphere.set_body_name("ground");
+        ContactSphere contactSphere;
+        contactSphere.set_body_name("ground");
         testModelComponent(contactSphere);
     }
 
@@ -77,7 +78,7 @@ int main()
 }
 
 class DummyComponent : public Component {
-	OpenSim_DECLARE_CONCRETE_OBJECT(DummyComponent, Component);
+    OpenSim_DECLARE_CONCRETE_OBJECT(DummyComponent, Component);
 };
 
 
@@ -90,7 +91,7 @@ void testComponent(const T& instanceToTest)
 
 template <typename T>
 void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
-        Model& model)
+                        Model& model)
 {
     // Make a copy so that we can modify the instance.
     T* instance = new T(instanceToTest);
@@ -103,7 +104,7 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
     if (randomizePropertyValues)
     {
         std::cout << "Randomizing the component's properties." << std::endl;
-        randomize(instance); 
+        randomize(instance);
     }
 
     // 2. Ensure that cloning produces an exact copy.
@@ -118,13 +119,13 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
         std::cout << "XML serialization for the clone:" << std::endl;
         std::cout << copyInstance->dump() << std::endl;
         throw Exception(
-                "testComponents: for " + className +
-                ", clone() did not produce an identical object.",
-                __FILE__, __LINE__);
+            "testComponents: for " + className +
+            ", clone() did not produce an identical object.",
+            __FILE__, __LINE__);
     }
     // TODO should try to delete even if exception is thrown.
     delete copyInstance;
-    
+
     // 3. Serialize and de-serialize.
     // ------------------------------
     // This will find issues with serialization.
@@ -139,12 +140,12 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
         std::cout << "XML for serialized instance:" << std::endl;
         instance->dump();
         std::cout << "XML for seriaization of deseralized instance:" <<
-            std::endl;
+                  std::endl;
         deserializedInstance->dump();
         throw Exception(
-                "testComponents: for " + className +
-                ", deserialization did not produce an identical object.",
-                __FILE__, __LINE__);
+            "testComponents: for " + className +
+            ", deserialization did not produce an identical object.",
+            __FILE__, __LINE__);
     }
     // TODO should try to delete even if exception is thrown.
     delete deserializedInstance;
@@ -182,7 +183,7 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
     else
     {
         throw Exception(className + " is not a ModelComponent.",
-                __FILE__, __LINE__);
+                        __FILE__, __LINE__);
     }
 
     // 6. Connect up the aggregate; check that connections are correct.
@@ -205,7 +206,7 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
         const AbstractOutput* thisOutput = it->second.get();
 
         std::cout << "Testing Output " << thisName << ", dependent on " <<
-            thisOutput->getDependsOnStage().getName() << std::endl;
+                  thisOutput->getDependsOnStage().getName() << std::endl;
 
         // Start fresh.
         SimTK::State state(initState);
@@ -216,10 +217,10 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
         if (thisOutput->getDependsOnStage() > SimTK::Stage::Model)
         {
             model.getSystem().realize(state,
-                    thisOutput->getDependsOnStage().prev());
+                                      thisOutput->getDependsOnStage().prev());
             ASSERT_THROW(Exception,
-                    thisOutput->getValueAsString(state);
-            );
+                         thisOutput->getValueAsString(state);
+                        );
         }
 
         // 9. Now realize to the dependsOnStage.
@@ -227,8 +228,8 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
         // is wired.
         model.getSystem().realize(state, thisOutput->getDependsOnStage());
         std::cout << "Component " << className <<
-            ", output " <<thisName << ": " <<
-            thisOutput->getValueAsString(state) << std::endl;
+                  ", output " <<thisName << ": " <<
+                  thisOutput->getValueAsString(state) << std::endl;
     }
 
     // 10. Test for memory leaks by copying and deleting.
@@ -245,11 +246,11 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
         const long double leakPercent = 100.0 * increaseInMemory / initMemory;
 
         ASSERT(leakPercent < acceptableMemoryLeakPercent, __FILE__, __LINE__,
-                "testComponents: memory leak greater than " +
-                to_string(acceptableMemoryLeakPercent) + "%. Initial memory: " +
-                to_string(initMemory/1024) + " KB, increase in memory: " +
-                to_string(increaseInMemory/1024) + " KB, " +
-                to_string(leakPercent) + "%.");
+               "testComponents: memory leak greater than " +
+               to_string(acceptableMemoryLeakPercent) + "%. Initial memory: " +
+               to_string(initMemory/1024) + " KB, increase in memory: " +
+               to_string(increaseInMemory/1024) + " KB, " +
+               to_string(leakPercent) + "%.");
 
         if (reportAllMemoryLeaks && increaseInMemory>0)
             std::cout << "\t[" << className
@@ -272,16 +273,16 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
         const long double leakPercent = 100.0 * increaseInMemory / initMemory;
 
         ASSERT_EQUAL(0.0,
-                (finalInitState.getY() - initState.getY()).norm(),
-                1e-7, __FILE__, __LINE__, "testComponents: initial state "
-                    "differs after repeated calls to initSystem().");
+                     (finalInitState.getY() - initState.getY()).norm(),
+                     1e-7, __FILE__, __LINE__, "testComponents: initial state "
+                     "differs after repeated calls to initSystem().");
 
         ASSERT(leakPercent < acceptableMemoryLeakPercent, __FILE__, __LINE__,
-                "testComponents: memory leak greater than " +
-                to_string(acceptableMemoryLeakPercent) + "%. Initial memory: " +
-                to_string(initMemory/1024) + " KB, increase in memory: " +
-                to_string(increaseInMemory/1024) + " KB, " +
-                to_string(leakPercent) + "%.");
+               "testComponents: memory leak greater than " +
+               to_string(acceptableMemoryLeakPercent) + "%. Initial memory: " +
+               to_string(initMemory/1024) + " KB, increase in memory: " +
+               to_string(increaseInMemory/1024) + " KB, " +
+               to_string(leakPercent) + "%.");
 
         if (reportAllMemoryLeaks && increaseInMemory>0)
             std::cout << "\t[" << className

@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -43,7 +43,7 @@
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 class OSIMCOMMON_API PropertyStr : public Property_Deprecated
 {
@@ -51,50 +51,55 @@ class OSIMCOMMON_API PropertyStr : public Property_Deprecated
 // DATA
 //=============================================================================
 private:
-	/** Value. */
-	std::string _value;
+    /** Value. */
+    std::string _value;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	PropertyStr();
-	PropertyStr(const std::string &aName,
-		const std::string &aValue);
-	PropertyStr(const PropertyStr &aProperty);
-	/*virtual*/ PropertyStr* clone() const;
+    PropertyStr();
+    PropertyStr(const std::string &aName,
+                const std::string &aValue);
+    PropertyStr(const PropertyStr &aProperty);
+    /*virtual*/ PropertyStr* clone() const;
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	PropertyStr& operator=(const PropertyStr &aProperty);
+    PropertyStr& operator=(const PropertyStr &aProperty);
 #endif
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 public:
-	// TYPE
-	virtual std::string getTypeName() const override;
-	// VALUE
-	virtual void setValue(const std::string &aValue);
+    // TYPE
+    virtual std::string getTypeName() const override;
+    // VALUE
+    virtual void setValue(const std::string &aValue);
 #ifndef SWIG
-	virtual std::string& getValueStr();
+    virtual std::string& getValueStr();
 #endif
-	virtual const std::string& getValueStr() const;
-	// VALUE as String
-	virtual std::string toString() const;
+    virtual const std::string& getValueStr() const;
+    // VALUE as String
+    virtual std::string toString() const;
 
-	// Special method to reset the value
-	void clearValue() { _value = getDefaultStr(); setValueIsDefault(true); }
-	static const std::string& getDefaultStr();
+    // Special method to reset the value
+    void clearValue() {
+        _value = getDefaultStr();
+        setValueIsDefault(true);
+    }
+    static const std::string& getDefaultStr();
 
-	bool isValidFileName() { return _value!="" && _value!=getDefaultStr(); }
+    bool isValidFileName() {
+        return _value!="" && _value!=getDefaultStr();
+    }
 
 //=============================================================================
 };	// END of class PropertyStr

@@ -32,17 +32,17 @@ namespace OpenSim {
 //==============================================================================
 //                             MODEL COMPONENT
 //==============================================================================
-ModelComponent::ModelComponent() : _model(NULL) 
+ModelComponent::ModelComponent() : _model(NULL)
 {
 }
 
 ModelComponent::ModelComponent(const std::string& fileName, bool updFromXMLNode)
-:   Component(fileName, updFromXMLNode), _model(NULL)
+    :   Component(fileName, updFromXMLNode), _model(NULL)
 {
 }
 
-ModelComponent::ModelComponent(SimTK::Xml::Element& element) 
-:   Component(element), _model(NULL)
+ModelComponent::ModelComponent(SimTK::Xml::Element& element)
+    :   Component(element), _model(NULL)
 {
 }
 
@@ -50,7 +50,7 @@ const Model& ModelComponent::getModel() const
 {
     if(!_model)
         throw Exception("ModelComponent::getModel(): component does not "
-                        "belong to a model."); 
+                        "belong to a model.");
     return *_model;
 }
 
@@ -58,21 +58,21 @@ Model& ModelComponent::updModel()
 {
     if(!_model)
         throw Exception("ModelComponent::updModel(): component does not "
-                        "belong to a model."); 
+                        "belong to a model.");
     return *_model;
 }
 
 
 void ModelComponent::connect(Component &root)
 {
-	Model* model = dynamic_cast<Model*>(&root);
-	// Allow (model) component to include its own subcomponents
-	// before calling the base method which automatically invokes
-	// connect all the subcomponents.
-	if (model)
-		connectToModel(*model);
+    Model* model = dynamic_cast<Model*>(&root);
+    // Allow (model) component to include its own subcomponents
+    // before calling the base method which automatically invokes
+    // connect all the subcomponents.
+    if (model)
+        connectToModel(*model);
 
-	Super::connect(root);
+    Super::connect(root);
 }
 
 
@@ -84,25 +84,29 @@ void ModelComponent::connectToModel(Model& model)
 
 // Base class implementation of virtual method.
 void ModelComponent::generateDecorations
-    (bool                                        fixed, 
-    const ModelDisplayHints&                    hints,
-    const SimTK::State&                         state,
-    SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const 
+(bool                                        fixed,
+ const ModelDisplayHints&                    hints,
+ const SimTK::State&                         state,
+ SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
 {
-    for(unsigned int i=0; i < _components.size(); i++){
-		ModelComponent *mc = dynamic_cast<ModelComponent*>(_components[i]);
+    for(unsigned int i=0; i < _components.size(); i++) {
+        ModelComponent *mc = dynamic_cast<ModelComponent*>(_components[i]);
         mc->generateDecorations(fixed,hints,state,appendToThis);
-	}
+    }
 }
 
 
 const SimTK::DefaultSystemSubsystem& ModelComponent::
 getDefaultSubsystem() const
-{   return getModel().getDefaultSubsystem(); }
+{
+    return getModel().getDefaultSubsystem();
+}
 
 const SimTK::DefaultSystemSubsystem& ModelComponent::
 updDefaultSubsystem()
-{   return updModel().updDefaultSubsystem(); }
+{
+    return updModel().updDefaultSubsystem();
+}
 
 
 

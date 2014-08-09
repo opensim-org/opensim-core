@@ -42,16 +42,16 @@
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 class Model;
 
 
 /**
  * An analysis for reporting the joint reaction loads from a model. For a given
- * joint, the reaction load is calculated as the forces and moments required to 
+ * joint, the reaction load is calculated as the forces and moments required to
  * constrain the body motions to satisfy the joint as if the joint did not exist.
- * The reaction load acts at the joint center (mobilizer frame) of both the parent 
+ * The reaction load acts at the joint center (mobilizer frame) of both the parent
  * and child bodies and either force can be reported and expressed in the either
  * the child, parent or ground frames. The default behavior is the the force
  * on the child expressed in the ground frame.
@@ -60,157 +60,173 @@ class Model;
  * @version 1.0
  */
 class OSIMANALYSES_API JointReaction : public Analysis {
-OpenSim_DECLARE_CONCRETE_OBJECT(JointReaction, Analysis);
+    OpenSim_DECLARE_CONCRETE_OBJECT(JointReaction, Analysis);
 
 //=============================================================================
 // DATA
 //=============================================================================
 private:
 
-	/* Private struct containing reference indices used to set up the output
-	 *  of each analysed joint.*/
-	struct JointReactionKey
-	{
-		/* name of the joint*/
-		std::string jointName;
-		/* index coresponding to the location of the desrired reaction load 
-		*  in the results of computeReactions()*/
-		int reactionIndex;
-		/* body set index of the parent or child body to which the joint
-		*  reaction is applied*/
-		int onBodyIndex;
-		/* body set index of the parent, child, or ground body in which the 
-		*  joint reaction is expressed*/
-		int inFrameIndex;
-	};
+    /* Private struct containing reference indices used to set up the output
+     *  of each analysed joint.*/
+    struct JointReactionKey
+    {
+        /* name of the joint*/
+        std::string jointName;
+        /* index coresponding to the location of the desrired reaction load
+        *  in the results of computeReactions()*/
+        int reactionIndex;
+        /* body set index of the parent or child body to which the joint
+        *  reaction is applied*/
+        int onBodyIndex;
+        /* body set index of the parent, child, or ground body in which the
+        *  joint reaction is expressed*/
+        int inFrameIndex;
+    };
 
 protected:
-	//--------------------------------------------------------------------
-	// Properties are the user-specified quantities that are read in from
-	// file 
-	//--------------------------------------------------------------------
+    //--------------------------------------------------------------------
+    // Properties are the user-specified quantities that are read in from
+    // file
+    //--------------------------------------------------------------------
 
-	/** String containing the name of the optional forces storage file*/
-	PropertyStr _forcesFileNameProp;
-	std::string &_forcesFileName;
+    /** String containing the name of the optional forces storage file*/
+    PropertyStr _forcesFileNameProp;
+    std::string &_forcesFileName;
 
-	/** String Array containting the names of the joints to be analysed*/
-	PropertyStrArray _jointNamesProp;
-	Array<std::string> &_jointNames;
+    /** String Array containting the names of the joints to be analysed*/
+    PropertyStrArray _jointNamesProp;
+    Array<std::string> &_jointNames;
 
-	/** String Array indicating which body of a joint (parent or child)
-	*   the reaction load is applied to*/
-	PropertyStrArray _onBodyProp;
-	Array<std::string> &_onBody;
+    /** String Array indicating which body of a joint (parent or child)
+    *   the reaction load is applied to*/
+    PropertyStrArray _onBodyProp;
+    Array<std::string> &_onBody;
 
-	/** String Array indicating which frame (ground, parent child)
-	*   the reaction load is expressed in*/
-	PropertyStrArray _inFrameProp;
-	Array<std::string> &_inFrame;
+    /** String Array indicating which frame (ground, parent child)
+    *   the reaction load is expressed in*/
+    PropertyStrArray _inFrameProp;
+    Array<std::string> &_inFrame;
 
-	//-----------------------------------------------------------------------
-	// STORAGE
-	//-----------------------------------------------------------------------
+    //-----------------------------------------------------------------------
+    // STORAGE
+    //-----------------------------------------------------------------------
 
-	/** Storage for holding actuator forces IF SPECIFIED by user.*/
-	Storage *_storeActuation;
+    /** Storage for holding actuator forces IF SPECIFIED by user.*/
+    Storage *_storeActuation;
 
-	/** Storage for recording joint Reaction loads.*/
-	Storage _storeReactionLoads;
+    /** Storage for recording joint Reaction loads.*/
+    Storage _storeReactionLoads;
 
-	//-----------------------------------------------------------------------
-	// Additional storage and internal working variable
-	//-----------------------------------------------------------------------
+    //-----------------------------------------------------------------------
+    // Additional storage and internal working variable
+    //-----------------------------------------------------------------------
 
 
-	/** Internal work array for holding the computed accelerations. */
-	Array<double> _dydt;
+    /** Internal work array for holding the computed accelerations. */
+    Array<double> _dydt;
 
-	/** Internal work array for holding the computed joint loads for all
-	*   joints in the model*/
-	Array<double> _allLoads;
+    /** Internal work array for holding the computed joint loads for all
+    *   joints in the model*/
+    Array<double> _allLoads;
 
-	/** Internal work array for holding the computed joint loads of all 
-	*   joints specified in _jointNames*/
-	Array<double> _Loads;
+    /** Internal work array for holding the computed joint loads of all
+    *   joints specified in _jointNames*/
+    Array<double> _Loads;
 
-	/** Internal work array for holding the JointReactionKeys to identify the 
-	*   desired joints, onBody, and inFrame to be output*/
-	Array<JointReactionKey> _reactionList;
+    /** Internal work array for holding the JointReactionKeys to identify the
+    *   desired joints, onBody, and inFrame to be output*/
+    Array<JointReactionKey> _reactionList;
 
-	bool _useForceStorage;
+    bool _useForceStorage;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	//-------------------------------------------------------------------------
-	// CONSTRUCTION
-	//-------------------------------------------------------------------------
-	JointReaction(Model *aModel=0);
-	JointReaction(const std::string &aFileName);
-	JointReaction(const JointReaction &aObject);
-	virtual ~JointReaction();
+    //-------------------------------------------------------------------------
+    // CONSTRUCTION
+    //-------------------------------------------------------------------------
+    JointReaction(Model *aModel=0);
+    JointReaction(const std::string &aFileName);
+    JointReaction(const JointReaction &aObject);
+    virtual ~JointReaction();
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 
-	//-------------------------------------------------------------------------
-	// OPERATORS
-	//-------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
+    // OPERATORS
+    //-------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	JointReaction& operator=(const JointReaction &aJointReaction);
+    JointReaction& operator=(const JointReaction &aJointReaction);
 #endif
 
-	//========================== Required Methods =============================
-	//-------------------------------------------------------------------------
-	// GET AND SET
-	//-------------------------------------------------------------------------
-	virtual void setModel(Model& aModel);
+    //========================== Required Methods =============================
+    //-------------------------------------------------------------------------
+    // GET AND SET
+    //-------------------------------------------------------------------------
+    virtual void setModel(Model& aModel);
 
     // Property accessors
     /** Public accessors for the forcesFileName property */
-    const std::string& getForcesFileName() { return _forcesFileName; }
-    void setForcesFileName(const std::string newForcesFile) { _forcesFileName = newForcesFile; }
+    const std::string& getForcesFileName() {
+        return _forcesFileName;
+    }
+    void setForcesFileName(const std::string newForcesFile) {
+        _forcesFileName = newForcesFile;
+    }
     /** Public accessors for the JointNames property */
-    const Array<std::string>& getJointNames() const { return _jointNames; }
-    void setJointNames( Array<std::string>& jointNames) { _jointNames = jointNames; }
-     /** Public accessors for the onBody property */
-    const Array<std::string>& getOnBody() const { return _onBody; }
-    void setOnBody( Array<std::string>& onBody) { _onBody = onBody; }
-     /** Public accessors for the inFrame property */
-    const Array<std::string>& getInFrame() const { return _inFrame; }
-    void setInFrame( Array<std::string>& inFrame) { _inFrame = inFrame; }
+    const Array<std::string>& getJointNames() const {
+        return _jointNames;
+    }
+    void setJointNames( Array<std::string>& jointNames) {
+        _jointNames = jointNames;
+    }
+    /** Public accessors for the onBody property */
+    const Array<std::string>& getOnBody() const {
+        return _onBody;
+    }
+    void setOnBody( Array<std::string>& onBody) {
+        _onBody = onBody;
+    }
+    /** Public accessors for the inFrame property */
+    const Array<std::string>& getInFrame() const {
+        return _inFrame;
+    }
+    void setInFrame( Array<std::string>& inFrame) {
+        _inFrame = inFrame;
+    }
 
-	//-------------------------------------------------------------------------
-	// INTEGRATION
-	//----------------------------------------------------------------------
+    //-------------------------------------------------------------------------
+    // INTEGRATION
+    //----------------------------------------------------------------------
     virtual int
-        begin( SimTK::State& s );
+    begin( SimTK::State& s );
     virtual int
-        step( const SimTK::State& s, int setNumber );
+    step( const SimTK::State& s, int setNumber );
     virtual int
-        end( SimTK::State& s );
+    end( SimTK::State& s );
 
 
-	//-------------------------------------------------------------------------
-	// IO
-	//-------------------------------------------------------------------------
-	virtual int
-		printResults(const std::string &aBaseName,const std::string &aDir="",
-		double aDT=-1.0,const std::string &aExtension=".sto");
+    //-------------------------------------------------------------------------
+    // IO
+    //-------------------------------------------------------------------------
+    virtual int
+    printResults(const std::string &aBaseName,const std::string &aDir="",
+                 double aDT=-1.0,const std::string &aExtension=".sto");
 
 
 protected:
-	//========================== Internal Methods =============================
-	int record(const SimTK::State& s );
-	void setupReactionList();
-	void constructDescription();
-	void constructColumnLabels();
-	void setupStorage();
-	void loadForcesFromFile();
+    //========================== Internal Methods =============================
+    int record(const SimTK::State& s );
+    void setupReactionList();
+    void constructDescription();
+    void constructColumnLabels();
+    void setupStorage();
+    void loadForcesFromFile();
 
 //=============================================================================
 }; // END of class JointReaction

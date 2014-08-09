@@ -40,108 +40,108 @@ class ScaleSet;
  * @author Peter Eastman
  */
 class OSIMSIMULATION_API ContactGeometry : public ModelComponent {
-OpenSim_DECLARE_ABSTRACT_OBJECT(ContactGeometry, ModelComponent);
+    OpenSim_DECLARE_ABSTRACT_OBJECT(ContactGeometry, ModelComponent);
 
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
-	Body* _body;
-	VisibleObject	_displayer;
+    Body* _body;
+    VisibleObject	_displayer;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	/**
-	 * Construct an empty ContactGeometry.  This constructor is protected, and is used
-	 * by subclasses.
-	 */
-	ContactGeometry();
-	/**
-	 * Construct a ContactGeometry.  This constructor is protected, and is used
-	 * by subclasses.
-	 *
-	 * @param location     the location of the geometry within the Body it is attached to
-	 * @param orientation  the orientation of the geometry within the Body it is attached to
-	 * @param body         the Body this geometry is attached to
-	 */
+    // CONSTRUCTION
+    /**
+     * Construct an empty ContactGeometry.  This constructor is protected, and is used
+     * by subclasses.
+     */
+    ContactGeometry();
+    /**
+     * Construct a ContactGeometry.  This constructor is protected, and is used
+     * by subclasses.
+     *
+     * @param location     the location of the geometry within the Body it is attached to
+     * @param orientation  the orientation of the geometry within the Body it is attached to
+     * @param body         the Body this geometry is attached to
+     */
     ContactGeometry(const SimTK::Vec3& location, const SimTK::Vec3& orientation, OpenSim::Body& body);
 
 
     /** Body name.  **/
     OpenSim_DECLARE_PROPERTY(body_name, std::string,
-        "Body name to connect the contact geometry to");
+                             "Body name to connect the contact geometry to");
 
     /** Location.  **/
     OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
-        "Location of geometry center in the body frame");
+                             "Location of geometry center in the body frame");
 
     /** Orientation.  **/
     OpenSim_DECLARE_PROPERTY(orientation, SimTK::Vec3,
-        "Orientation of geometry in the body frame");
+                             "Orientation of geometry in the body frame");
 
     /** Display Preference to apply to the contact geometry.  **/
     OpenSim_DECLARE_PROPERTY(display_preference, int,
-        "Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded");
+                             "Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded");
 
     /** Display Color to apply to the contact geometry.  **/
     OpenSim_DECLARE_LIST_PROPERTY_SIZE(color, double, 3,
-        "Display Color");
+                                       "Display Color");
 
 
-	// ACCESSORS
-	/**
-	 * Get the location of the geometry within the Body it is attached to.
-	 */
-	const SimTK::Vec3& getLocation() const;
-	/**
-	 * Set the location of the geometry within the Body it is attached to.
-	 */
-	void setLocation(const SimTK::Vec3& location);
-	/**
-	 * Get the orientation of the geometry within the Body it is attached to.
-	 */
-	const SimTK::Vec3& getOrientation() const;
-	/**
-	 * Set the orientation of the geometry within the Body it is attached to.
-	 */
-	void setOrientation(const SimTK::Vec3& orientation);
+    // ACCESSORS
+    /**
+     * Get the location of the geometry within the Body it is attached to.
+     */
+    const SimTK::Vec3& getLocation() const;
+    /**
+     * Set the location of the geometry within the Body it is attached to.
+     */
+    void setLocation(const SimTK::Vec3& location);
+    /**
+     * Get the orientation of the geometry within the Body it is attached to.
+     */
+    const SimTK::Vec3& getOrientation() const;
+    /**
+     * Set the orientation of the geometry within the Body it is attached to.
+     */
+    void setOrientation(const SimTK::Vec3& orientation);
 #ifndef SWIG
-	/**
-	 * Get the Body this geometry is attached to.
-	 */
-	const OpenSim::Body& getBody() const;
+    /**
+     * Get the Body this geometry is attached to.
+     */
+    const OpenSim::Body& getBody() const;
 #endif
-	/**
-	 * Get the Body this geometry is attached to.
-	 */
-	OpenSim::Body& getBody();
-	/**
-	 * Set the Body this geometry is attached to.
-	 */
-	void setBody(OpenSim::Body& body);
-	/**
-	 * Get the name of the Body this geometry is attached to.
-	 */
+    /**
+     * Get the Body this geometry is attached to.
+     */
+    OpenSim::Body& getBody();
+    /**
+     * Set the Body this geometry is attached to.
+     */
+    void setBody(OpenSim::Body& body);
+    /**
+     * Get the name of the Body this geometry is attached to.
+     */
     const std::string& getBodyName();
-	/**
-	 * Set the name of the Body this geometry is attached to.  This will cause the
+    /**
+     * Set the name of the Body this geometry is attached to.  This will cause the
      * Body to be set to NULL, then resolved when connectToModel() is called.
-	 */
+     */
     void setBodyName(const std::string& name);
     /**
-	 * Get the display_preference of this geometry.
-	 */
+     * Get the display_preference of this geometry.
+     */
     const int getDisplayPreference();
     /**
-	 * Set the display_preference of this geometry.
-	 */
+     * Set the display_preference of this geometry.
+     */
     void setDisplayPreference(const int dispPref);
-	/**
-	 * Create a new SimTK::ContactGeometry based on this object.
-	 */
+    /**
+     * Create a new SimTK::ContactGeometry based on this object.
+     */
     virtual SimTK::ContactGeometry createSimTKContactGeometry() = 0;
     /**
      * Get a Transform representing the position and orientation of the geometry
@@ -149,26 +149,30 @@ public:
      */
     SimTK::Transform getTransform();
 
-	/**
-	* Scale a ContactGeometry based on XYZ scale factors for the bodies.
-	* 
-	* @param aScaleSet Set of XYZ scale factors for the bodies.
-	*/
-	virtual void scale(const ScaleSet& aScaleSet);
+    /**
+    * Scale a ContactGeometry based on XYZ scale factors for the bodies.
+    *
+    * @param aScaleSet Set of XYZ scale factors for the bodies.
+    */
+    virtual void scale(const ScaleSet& aScaleSet);
 
-	// Visible Object Support
-	virtual const VisibleObject* getDisplayer() const { return &_displayer; };
-	virtual VisibleObject* updDisplayer() { return &_displayer; };
-	// Override this method if geometry changes/deforms
-	virtual void updateGeometry() {};
+    // Visible Object Support
+    virtual const VisibleObject* getDisplayer() const {
+        return &_displayer;
+    };
+    virtual VisibleObject* updDisplayer() {
+        return &_displayer;
+    };
+    // Override this method if geometry changes/deforms
+    virtual void updateGeometry() {};
 
 protected:
-	// ModelComponent interface
-	void connectToModel(Model& aModel) override;
+    // ModelComponent interface
+    void connectToModel(Model& aModel) override;
 
 private:
     // INITIALIZATION
-	void setNull();
+    void setNull();
     void constructProperties();
 //=============================================================================
 };	// END of class ContactGeometry

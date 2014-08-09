@@ -34,14 +34,14 @@
 
 
 #ifdef SWIG
-	#ifdef OSIMANALYSES_API
-		#undef OSIMANALYSES_API
-		#define OSIMANALYSES_API
-	#endif
+#ifdef OSIMANALYSES_API
+#undef OSIMANALYSES_API
+#define OSIMANALYSES_API
+#endif
 #endif
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * A class for recording the states of a model
@@ -51,7 +51,7 @@ namespace OpenSim {
  * @version 1.0
  */
 class OSIMANALYSES_API StatesReporter : public Analysis {
-OpenSim_DECLARE_CONCRETE_OBJECT(StatesReporter, Analysis);
+    OpenSim_DECLARE_CONCRETE_OBJECT(StatesReporter, Analysis);
 
 //=============================================================================
 // DATA
@@ -59,62 +59,62 @@ OpenSim_DECLARE_CONCRETE_OBJECT(StatesReporter, Analysis);
 private:
 
 protected:
-	/** States storage. */
-	Storage _statesStore;
+    /** States storage. */
+    Storage _statesStore;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	StatesReporter(Model *aModel=0);
-	StatesReporter(const std::string &aFileName);
-	StatesReporter(const StatesReporter &aObject);
-	virtual ~StatesReporter();
+    StatesReporter(Model *aModel=0);
+    StatesReporter(const std::string &aFileName);
+    StatesReporter(const StatesReporter &aObject);
+    virtual ~StatesReporter();
 
 private:
-	void setNull();
-	void constructDescription();
-	void constructColumnLabels();
-	void setupStorage();
+    void setNull();
+    void constructDescription();
+    void constructColumnLabels();
+    void setupStorage();
 
 public:
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	StatesReporter& operator=(const StatesReporter &aRporter);
+    StatesReporter& operator=(const StatesReporter &aRporter);
 #endif
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	// STORAGE
-	const Storage& getStatesStorage() const
-	{
-		return _statesStore;
-	};
-	Storage& updStatesStorage()
-	{
-		return _statesStore;
-	}
-	//--------------------------------------------------------------------------
-	// ANALYSIS
-	//--------------------------------------------------------------------------
-	virtual int
-        begin(SimTK::State& s );
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    // STORAGE
+    const Storage& getStatesStorage() const
+    {
+        return _statesStore;
+    };
+    Storage& updStatesStorage()
+    {
+        return _statesStore;
+    }
+    //--------------------------------------------------------------------------
+    // ANALYSIS
+    //--------------------------------------------------------------------------
     virtual int
-        step(const SimTK::State& s, int setNumber );
+    begin(SimTK::State& s );
     virtual int
-        end(SimTK::State& s );
+    step(const SimTK::State& s, int setNumber );
+    virtual int
+    end(SimTK::State& s );
 protected:
     virtual int
-        record(const SimTK::State& s );
-	//--------------------------------------------------------------------------
-	// IO
-	//--------------------------------------------------------------------------
+    record(const SimTK::State& s );
+    //--------------------------------------------------------------------------
+    // IO
+    //--------------------------------------------------------------------------
 public:
-	virtual int
-		printResults(const std::string &aBaseName,const std::string &aDir="",
-		double aDT=-1.0,const std::string &aExtension=".sto");
+    virtual int
+    printResults(const std::string &aBaseName,const std::string &aDir="",
+                 double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
 };	// END of class StatesReporter

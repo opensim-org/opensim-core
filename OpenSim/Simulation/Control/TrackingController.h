@@ -35,19 +35,19 @@
 /**
  * TrackingController is an abstract class from which all tracking type of
  * controllers should be derived. This class implements convenience methods
- * to construct dsired trajectories of desired model state values, like joint 
- * angles, from Storage (file) or user-supplied functions and provides methods 
+ * to construct dsired trajectories of desired model state values, like joint
+ * angles, from Storage (file) or user-supplied functions and provides methods
  * for obtaining the error between model and desired state values.
  *
- * Derive classes need only to implement the tracking control law based on 
+ * Derive classes need only to implement the tracking control law based on
  * the error signals computed by this base class.
- * 
+ *
  *
  * @author  Ajay Seth
  * @version 1.0
  */
 
-namespace OpenSim { 
+namespace OpenSim {
 
 class TrackingTask;
 class Storage;
@@ -58,55 +58,55 @@ class OSIMSIMULATION_API TrackingController : public Controller
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION AND DESTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION AND DESTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	/**
-	 * Default constructor.
-	 */
-	TrackingController();
+    /**
+     * Default constructor.
+     */
+    TrackingController();
 
-	/**
-	 * Destructor.  
-	 */
-	virtual ~TrackingController();
+    /**
+     * Destructor.
+     */
+    virtual ~TrackingController();
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	/**
-	 * Set this class's pointer to the storage object containing
-	 * desired model states to point to the storage object passed into
-	 * this method.  This method is currently implemented only by the
-	 * CorrectionController class, which is a subclass of Controller.
-	 *
-	 * @param aYDesStore Pointer to a Storage object containing the
-	 * desired states of the model for the controller to achieve during
-	 * simulation.
-	 */
-	virtual void setDesiredStatesStorage(const Storage* aYDesStore);
-    virtual const Storage& getDesiredStatesStorage() const; 
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    /**
+     * Set this class's pointer to the storage object containing
+     * desired model states to point to the storage object passed into
+     * this method.  This method is currently implemented only by the
+     * CorrectionController class, which is a subclass of Controller.
+     *
+     * @param aYDesStore Pointer to a Storage object containing the
+     * desired states of the model for the controller to achieve during
+     * simulation.
+     */
+    virtual void setDesiredStatesStorage(const Storage* aYDesStore);
+    virtual const Storage& getDesiredStatesStorage() const;
 
-	// ON/OFF
+    // ON/OFF
 
-	//--------------------------------------------------------------------------
-	// CONTROL
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONTROL
+    //--------------------------------------------------------------------------
 
-	/**
-	 * Controller interface
-	 */
-	//void computeControls(const SimTK::State& s, SimTK::Vector& controls) const =0;
+    /**
+     * Controller interface
+     */
+    //void computeControls(const SimTK::State& s, SimTK::Vector& controls) const =0;
 
 private:
-	// A "private" method is one that can be called only by this class,
-	// and not even by subclasses of this class.
+    // A "private" method is one that can be called only by this class,
+    // and not even by subclasses of this class.
 
-	/**
-	 * This method sets all member variables to default (e.g., NULL) values.
-	 */
-	void setNull();
+    /**
+     * This method sets all member variables to default (e.g., NULL) values.
+     */
+    void setNull();
 
 
 
@@ -116,13 +116,13 @@ private:
 //=============================================================================
 
 private:
-	/**
-	 *   storage object containing the desired trajectory
+    /**
+     *   storage object containing the desired trajectory
      */
-	mutable SimTK::ReferencePtr<const Storage> _desiredStatesStorage;
+    mutable SimTK::ReferencePtr<const Storage> _desiredStatesStorage;
 
 
-	friend class ControllerSet;
+    friend class ControllerSet;
 
 //=============================================================================
 };	// END of class Controller

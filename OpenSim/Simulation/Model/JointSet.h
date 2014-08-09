@@ -40,32 +40,32 @@ class Model;
  */
 
 class OSIMSIMULATION_API JointSet :	public ModelComponentSet<Joint> {
-OpenSim_DECLARE_CONCRETE_OBJECT(JointSet, ModelComponentSet<Joint>);
+    OpenSim_DECLARE_CONCRETE_OBJECT(JointSet, ModelComponentSet<Joint>);
 
 public:
-	JointSet();
-	JointSet(Model& model);
-	JointSet(const JointSet& aJointSet);
-	~JointSet();
+    JointSet();
+    JointSet(Model& model);
+    JointSet(const JointSet& aJointSet);
+    ~JointSet();
 
-	// Somehow the following function is not exported from base template
-    JointSet(Model& model, const std::string &aFileName, 
+    // Somehow the following function is not exported from base template
+    JointSet(Model& model, const std::string &aFileName,
              bool aUpdateFromXMLNode = true)
-    :   Super(model, aFileName, aUpdateFromXMLNode) {}
+        :   Super(model, aFileName, aUpdateFromXMLNode) {}
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	JointSet& operator=(const JointSet &aJointSet);
+    JointSet& operator=(const JointSet &aJointSet);
 #endif
-	//--------------------------------------------------------------------------
-	// UTILITIES
-	//--------------------------------------------------------------------------
-	void scale(const ScaleSet& aScaleSet);
+    //--------------------------------------------------------------------------
+    // UTILITIES
+    //--------------------------------------------------------------------------
+    void scale(const ScaleSet& aScaleSet);
 
 private:
-	void setNull();
+    void setNull();
 
 //=============================================================================
 };	// END of class JointSet

@@ -50,9 +50,9 @@ TendonForceLengthCurve::TendonForceLengthCurve()
 }
 
 TendonForceLengthCurve::TendonForceLengthCurve(double strainAtOneNormForce,
-                                               double stiffnessAtOneNormForce,
-                                               double normForceAtToeEnd,
-                                               double curviness)
+        double stiffnessAtOneNormForce,
+        double normForceAtToeEnd,
+        double curviness)
 {
     setNull();
     constructProperties();
@@ -93,12 +93,12 @@ void TendonForceLengthCurve::constructProperties()
 void TendonForceLengthCurve::buildCurve(bool computeIntegral)
 {
     SmoothSegmentedFunction* f = SmoothSegmentedFunctionFactory::
-        createTendonForceLengthCurve(get_strain_at_one_norm_force(),
-                                     m_stiffnessAtOneNormForceInUse,
-                                     m_normForceAtToeEndInUse,
-                                     m_curvinessInUse,
-                                     computeIntegral,
-                                     getName());
+                                 createTendonForceLengthCurve(get_strain_at_one_norm_force(),
+                                         m_stiffnessAtOneNormForceInUse,
+                                         m_normForceAtToeEndInUse,
+                                         m_curvinessInUse,
+                                         computeIntegral,
+                                         getName());
     m_curve = *f;
     delete f;
     setObjectIsUpToDateWithProperties();
@@ -111,8 +111,8 @@ void TendonForceLengthCurve::ensureCurveUpToDate()
     }
 
     if(!getProperty_stiffness_at_one_norm_force().empty()
-        && !getProperty_norm_force_at_toe_end().empty()
-        && !getProperty_curviness().empty()) {
+            && !getProperty_norm_force_at_toe_end().empty()
+            && !getProperty_curviness().empty()) {
 
         m_stiffnessAtOneNormForceInUse = get_stiffness_at_one_norm_force();
         m_normForceAtToeEndInUse       = get_norm_force_at_toe_end();
@@ -120,8 +120,8 @@ void TendonForceLengthCurve::ensureCurveUpToDate()
         m_isFittedCurveBeingUsed       = false;
 
     } else if(getProperty_stiffness_at_one_norm_force().empty()
-        && getProperty_norm_force_at_toe_end().empty()
-        && getProperty_curviness().empty()) {
+              && getProperty_norm_force_at_toe_end().empty()
+              && getProperty_curviness().empty()) {
 
         // Get properties of the reference curve. The reference tendon is from
         // Thelen (2003) and is far too stiff.
@@ -146,10 +146,10 @@ void TendonForceLengthCurve::ensureCurveUpToDate()
         // reference curve.
 
         SimTK_ERRCHK1_ALWAYS(false,
-            "TendonForceLengthCurve::ensureCurveUpToDate()",
-            "%s: Optional parameters stiffness_at_one_norm_force, "
-            "norm_force_at_toe_end, and curviness must either all be set or "
-            "all be empty.", getName().c_str());
+                             "TendonForceLengthCurve::ensureCurveUpToDate()",
+                             "%s: Optional parameters stiffness_at_one_norm_force, "
+                             "norm_force_at_toe_end, and curviness must either all be set or "
+                             "all be empty.", getName().c_str());
     }
 
     buildCurve();
@@ -159,15 +159,25 @@ void TendonForceLengthCurve::ensureCurveUpToDate()
 // GET AND SET METHODS
 //==============================================================================
 double TendonForceLengthCurve::getStrainAtOneNormForce() const
-{   return get_strain_at_one_norm_force(); }
+{
+    return get_strain_at_one_norm_force();
+}
 double TendonForceLengthCurve::getStiffnessAtOneNormForceInUse() const
-{   return m_stiffnessAtOneNormForceInUse; }
+{
+    return m_stiffnessAtOneNormForceInUse;
+}
 double TendonForceLengthCurve::getCurvinessInUse() const
-{   return m_curvinessInUse; }
+{
+    return m_curvinessInUse;
+}
 double TendonForceLengthCurve::getNormForceAtToeEndInUse() const
-{   return m_normForceAtToeEndInUse; }
+{
+    return m_normForceAtToeEndInUse;
+}
 bool TendonForceLengthCurve::isFittedCurveBeingUsed() const
-{   return m_isFittedCurveBeingUsed; }
+{
+    return m_isFittedCurveBeingUsed;
+}
 
 void TendonForceLengthCurve::
 setStrainAtOneNormForce(double aStrainAtOneNormForce)
@@ -177,20 +187,20 @@ setStrainAtOneNormForce(double aStrainAtOneNormForce)
 }
 
 void TendonForceLengthCurve::setOptionalProperties(
-                                            double aStiffnessAtOneNormForce,
-                                            double aNormForceAtToeEnd,
-                                            double aCurviness)
+    double aStiffnessAtOneNormForce,
+    double aNormForceAtToeEnd,
+    double aCurviness)
 {
     SimTK_ERRCHK_ALWAYS(aStiffnessAtOneNormForce > SimTK::SignificantReal*1000,
-        "TendonForceLengthCurve::setOptionalProperties",
-        "The tendon must have a non-zero stiffness");
+                        "TendonForceLengthCurve::setOptionalProperties",
+                        "The tendon must have a non-zero stiffness");
     SimTK_ERRCHK_ALWAYS(aNormForceAtToeEnd > SimTK::SignificantReal*1000
                         && aNormForceAtToeEnd <= 1,
-        "TendonForceLengthCurve::setOptionalProperties",
-        "The tendon must have a normForceAtToeEnd between 0 and 1");
+                        "TendonForceLengthCurve::setOptionalProperties",
+                        "The tendon must have a normForceAtToeEnd between 0 and 1");
     SimTK_ERRCHK_ALWAYS(aCurviness >= 0 && aCurviness <= 1,
-        "TendonForceLengthCurve::setOptionalProperties",
-        "The tendon must have a curviness between 0 and 1");
+                        "TendonForceLengthCurve::setOptionalProperties",
+                        "The tendon must have a curviness between 0 and 1");
 
     set_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
     set_norm_force_at_toe_end(aNormForceAtToeEnd);
@@ -205,12 +215,12 @@ SimTK::Function* TendonForceLengthCurve::createSimTKFunction() const
 {
     // Back the OpenSim::Function with this SimTK::Function.
     return SmoothSegmentedFunctionFactory::createTendonForceLengthCurve(
-                get_strain_at_one_norm_force(),
-                m_stiffnessAtOneNormForceInUse,
-                m_normForceAtToeEndInUse,
-                m_curvinessInUse,
-                true,
-                getName());
+               get_strain_at_one_norm_force(),
+               m_stiffnessAtOneNormForceInUse,
+               m_normForceAtToeEndInUse,
+               m_curvinessInUse,
+               true,
+               getName());
 }
 
 //==============================================================================
@@ -219,18 +229,18 @@ SimTK::Function* TendonForceLengthCurve::createSimTKFunction() const
 double TendonForceLengthCurve::calcValue(double aNormLength) const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties(),
-        "TendonForceLengthCurve: Tendon is not up-to-date with its properties");
+                 "TendonForceLengthCurve: Tendon is not up-to-date with its properties");
     return m_curve.calcValue(aNormLength);
 }
 
 double TendonForceLengthCurve::calcDerivative(double aNormLength,
-                                              int order) const
+        int order) const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties(),
-        "TendonForceLengthCurve: Tendon is not up-to-date with its properties");
+                 "TendonForceLengthCurve: Tendon is not up-to-date with its properties");
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2,
-        "TendonForceLengthCurve::calcDerivative",
-        "order must be 0, 1, or 2, but %i was entered", order);
+                         "TendonForceLengthCurve::calcDerivative",
+                         "order must be 0, 1, or 2, but %i was entered", order);
 
     return m_curve.calcDerivative(aNormLength,order);
 }
@@ -238,7 +248,7 @@ double TendonForceLengthCurve::calcDerivative(double aNormLength,
 double TendonForceLengthCurve::calcIntegral(double aNormLength) const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties(),
-        "TendonForceLengthCurve: Tendon is not up-to-date with its properties");
+                 "TendonForceLengthCurve: Tendon is not up-to-date with its properties");
 
     if (!m_curve.isIntegralAvailable()) {
         TendonForceLengthCurve* mutableThis =
@@ -252,7 +262,7 @@ double TendonForceLengthCurve::calcIntegral(double aNormLength) const
 SimTK::Vec2 TendonForceLengthCurve::getCurveDomain() const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties(),
-        "TendonForceLengthCurve: Tendon is not up-to-date with its properties");
+                 "TendonForceLengthCurve: Tendon is not up-to-date with its properties");
     return m_curve.getCurveDomain();
 }
 
@@ -278,7 +288,7 @@ calcReferenceTendon(double strainAtOneNormForce)
     // Use the extrapolated exponential tendon curve documented in Thelen
     // (2003).
     double FToe = 0.33; //Normalized force at which the transition from the
-                        //  exponential to the linear function is made.
+    //  exponential to the linear function is made.
     double kToe = 3.0;  //The exponential shape factor.
     double e0   = strainAtOneNormForce;
 
@@ -296,11 +306,11 @@ calcReferenceTendon(double strainAtOneNormForce)
 
     // Compute the potental energy stored in the toe region of the exponental.
     double peNormToe = (FToe/(expkToe-1))*(   ((eToe/kToe)*exp(kToe) - eToe)
-                                            - ((eToe/kToe)*exp(0.0)  -  0.0) );
+                       - ((eToe/kToe)*exp(0.0)  -  0.0) );
     // Compute the potential energy stored in the linear region of the curve
     // between the toe region and e0.
     double peNormLin = (kLin*(0.5*e0*e0 - eToe*e0) + FToe*e0)
-                     - (kLin*(0.5*eToe*eToe - eToe*eToe) + FToe*eToe);
+                       - (kLin*(0.5*eToe*eToe - eToe*eToe) + FToe*eToe);
 
     double peNormTotal = peNormToe + peNormLin;
 

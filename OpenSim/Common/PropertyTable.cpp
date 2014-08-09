@@ -37,7 +37,7 @@ using namespace std;
 // Copy constructor has to clone the source properties.
 PropertyTable::PropertyTable(const PropertyTable& source)
 {
-	replaceProperties(source.properties);
+    replaceProperties(source.properties);
 }
 
 //_____________________________________________________________________________
@@ -45,7 +45,7 @@ PropertyTable::PropertyTable(const PropertyTable& source)
 // PropertyTable.
 PropertyTable::~PropertyTable()
 {
-	deleteProperties();
+    deleteProperties();
 }
 
 //_____________________________________________________________________________
@@ -53,8 +53,8 @@ PropertyTable::~PropertyTable()
 PropertyTable& PropertyTable::operator=(const PropertyTable& source)
 {
     if (&source != this)
-	    replaceProperties(source.properties);
-	return *this;
+        replaceProperties(source.properties);
+    return *this;
 }
 
 //_____________________________________________________________________________
@@ -86,8 +86,8 @@ int PropertyTable::adoptProperty(AbstractProperty* prop)
 
     if (hasProperty(name))
         throw OpenSim::Exception
-            ("PropertyTable::adoptProperty(): Property " 
-            + name + " already in table.");
+        ("PropertyTable::adoptProperty(): Property "
+         + name + " already in table.");
 
     propertyIndex[name] = nxtIndex;
     properties.push_back(prop);
@@ -98,36 +98,36 @@ const AbstractProperty& PropertyTable::
 getAbstractPropertyByIndex(int index) const {
     if (index == SimTK::InvalidIndex)
         throw OpenSim::Exception
-           ("PropertyTable::getAbstractPropertyByIndex(): uninitialized " 
-            "property index -- did you forget a constructProperty() call?");
+        ("PropertyTable::getAbstractPropertyByIndex(): uninitialized "
+         "property index -- did you forget a constructProperty() call?");
     if (!(0 <= index && index < getNumProperties()))
         throw OpenSim::Exception
-           ("PropertyTable::getAbstractPropertyByIndex(): index " 
-            + String(index) + " out of range (" 
-            + String(getNumProperties()) + " properties in table).");        
-    return *properties[index]; 
+        ("PropertyTable::getAbstractPropertyByIndex(): index "
+         + String(index) + " out of range ("
+         + String(getNumProperties()) + " properties in table).");
+    return *properties[index];
 }
 
 AbstractProperty& PropertyTable::
 updAbstractPropertyByIndex(int index) {
     if (index == SimTK::InvalidIndex)
         throw OpenSim::Exception
-           ("PropertyTable::updAbstractPropertyByIndex(): uninitialized " 
-            "property index -- did you forget a constructProperty() call?");
+        ("PropertyTable::updAbstractPropertyByIndex(): uninitialized "
+         "property index -- did you forget a constructProperty() call?");
     if (!(0 <= index && index < getNumProperties()))
         throw OpenSim::Exception
-           ("PropertyTable::updAbstractPropertyByIndex(): index " 
-            + String(index) + " out of range (" 
-            + String(getNumProperties()) + " properties in table).");        
-    return *properties[index]; 
+        ("PropertyTable::updAbstractPropertyByIndex(): index "
+         + String(index) + " out of range ("
+         + String(getNumProperties()) + " properties in table).");
+    return *properties[index];
 }
 
 const AbstractProperty& PropertyTable::
 getAbstractPropertyByName(const std::string& name) const {
     const AbstractProperty* p = getPropertyPtr(name);
     if (p == NULL) throw OpenSim::Exception
-        ("PropertyTable::getAbstractPropertyByName(): Property " 
-        + name + " not found.");
+        ("PropertyTable::getAbstractPropertyByName(): Property "
+         + name + " not found.");
     return *p;
 }
 
@@ -135,8 +135,8 @@ AbstractProperty& PropertyTable::
 updAbstractPropertyByName(const std::string& name) {
     AbstractProperty* p = updPropertyPtr(name);
     if (p == NULL) throw OpenSim::Exception
-        ("PropertyTable::updAbstractPropertyByName(): Property " 
-        + name + " not found.");
+        ("PropertyTable::updAbstractPropertyByName(): Property "
+         + name + " not found.");
     return *p;
 }
 
@@ -145,15 +145,15 @@ updAbstractPropertyByName(const std::string& name) {
 // This method is reused in the implementation of any method that
 // takes a property by name.
 int PropertyTable::findPropertyIndex(const std::string& name) const {
-    const std::map<std::string, int>::const_iterator 
-        it = propertyIndex.find(name);
+    const std::map<std::string, int>::const_iterator
+    it = propertyIndex.find(name);
     return it == propertyIndex.end() ? -1 : it->second;
 }
 
-// Private method to replace the existing properties with a deep copy of 
+// Private method to replace the existing properties with a deep copy of
 // the source, and update the index map to match.
 void PropertyTable::replaceProperties
-   (const SimTK::Array_<AbstractProperty*>& source) {
+(const SimTK::Array_<AbstractProperty*>& source) {
     deleteProperties();
     for (unsigned i=0; i < source.size(); ++i) {
         properties.push_back(source[i]->clone());

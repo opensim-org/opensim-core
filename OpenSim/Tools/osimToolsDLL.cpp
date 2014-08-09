@@ -37,9 +37,9 @@ using namespace std;
 //
 static void Plugin_Attach()
 {
-	//cout<<"\n-------------------------------------------------------\n";
-	//cout<<"Library osimTools...\n";
-	//cout<<"-------------------------------------------------------\n\n";
+    //cout<<"\n-------------------------------------------------------\n";
+    //cout<<"Library osimTools...\n";
+    //cout<<"-------------------------------------------------------\n\n";
 }
 
 static void Plugin_Detach()
@@ -57,24 +57,24 @@ static void Plugin_Detach()
 /**
  * This routine is called when the dll is loaded I believe.
  */
-BOOL APIENTRY DllMain( HANDLE hModule, 
-                       DWORD  ul_reason_for_call, 
+BOOL APIENTRY DllMain( HANDLE hModule,
+                       DWORD  ul_reason_for_call,
                        LPVOID lpReserved
-                )
+                     )
 {
-   switch (ul_reason_for_call)
-   {
-      case DLL_PROCESS_ATTACH:
-         Plugin_Attach();
-         break;
+    switch (ul_reason_for_call)
+    {
+    case DLL_PROCESS_ATTACH:
+        Plugin_Attach();
+        break;
 
-      case DLL_PROCESS_DETACH:
-         Plugin_Detach();
-         break;
+    case DLL_PROCESS_DETACH:
+        Plugin_Detach();
+        break;
 
-      case DLL_THREAD_ATTACH:
-      case DLL_THREAD_DETACH:
-			break;
+    case DLL_THREAD_ATTACH:
+    case DLL_THREAD_DETACH:
+        break;
     }
 
     return TRUE;
@@ -82,10 +82,10 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 #elif defined(__linux__)
 static void __attribute__((constructor)) Shared_Object_Constructor()
 {
-   Plugin_Attach();
+    Plugin_Attach();
 }
 static void __attribute__((destructor)) Shared_Object_Destructor()
 {
-   Plugin_Detach();
+    Plugin_Detach();
 }
 #endif

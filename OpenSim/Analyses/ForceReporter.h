@@ -32,14 +32,14 @@
 #include "osimAnalysesDLL.h"
 
 #ifdef SWIG
-	#ifdef OSIMANALYSES_API
-		#undef OSIMANALYSES_API
-		#define OSIMANALYSES_API
-	#endif
+#ifdef OSIMANALYSES_API
+#undef OSIMANALYSES_API
+#define OSIMANALYSES_API
+#endif
 #endif
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 /**
  * A class for recording the Forces applied to a model
@@ -49,7 +49,7 @@ namespace OpenSim {
  * @version 1.0
  */
 class OSIMANALYSES_API ForceReporter : public Analysis {
-OpenSim_DECLARE_CONCRETE_OBJECT(ForceReporter, Analysis);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ForceReporter, Analysis);
 
 //=============================================================================
 // DATA
@@ -58,76 +58,78 @@ private:
 
 protected:
 
-	/** Include constraint forces? */
-	PropertyBool _includeConstraintForcesProp;
-	bool &_includeConstraintForces;
+    /** Include constraint forces? */
+    PropertyBool _includeConstraintForcesProp;
+    bool &_includeConstraintForces;
 
-	/** Force storage. */
-	Storage _forceStore;
+    /** Force storage. */
+    Storage _forceStore;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	ForceReporter(Model *aModel=0);
-	ForceReporter(const std::string &aFileName);
-	// Copy constrctor and virtual copy 
-	ForceReporter(const ForceReporter &aObject);
-	virtual ~ForceReporter();
+    ForceReporter(Model *aModel=0);
+    ForceReporter(const std::string &aFileName);
+    // Copy constrctor and virtual copy
+    ForceReporter(const ForceReporter &aObject);
+    virtual ~ForceReporter();
 
 private:
-	void setNull();
-	void constructDescription();
-	void constructColumnLabels(const SimTK::State& s);
-	void allocateStorage();
-	void deleteStorage();
-	void tidyForceNames();
+    void setNull();
+    void constructDescription();
+    void constructColumnLabels(const SimTK::State& s);
+    void allocateStorage();
+    void deleteStorage();
+    void tidyForceNames();
 
 public:
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	ForceReporter& operator=(const ForceReporter &aActuation);
+    ForceReporter& operator=(const ForceReporter &aActuation);
 #endif
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	// STORAGE
-	const Storage& getForceStorage() const
-	{
-		return _forceStore;
-	};
-	Storage& updForceStorage()
-	{
-		return _forceStore;
-	}
-	// MODEL
-	virtual void setModel(Model& aModel);
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    // STORAGE
+    const Storage& getForceStorage() const
+    {
+        return _forceStore;
+    };
+    Storage& updForceStorage()
+    {
+        return _forceStore;
+    }
+    // MODEL
+    virtual void setModel(Model& aModel);
 
-	//--------------------------------------------------------------------------
-	// ANALYSIS
-	//--------------------------------------------------------------------------
-	void includeConstraintForces(bool flag) {_includeConstraintForces = flag;}
+    //--------------------------------------------------------------------------
+    // ANALYSIS
+    //--------------------------------------------------------------------------
+    void includeConstraintForces(bool flag) {
+        _includeConstraintForces = flag;
+    }
 
 
-	virtual int
-        begin(SimTK::State& s );
     virtual int
-        step(const SimTK::State& s, int setNumber );
+    begin(SimTK::State& s );
     virtual int
-        end(SimTK::State& s );
+    step(const SimTK::State& s, int setNumber );
+    virtual int
+    end(SimTK::State& s );
 protected:
     virtual int
-        record(const SimTK::State& s );
+    record(const SimTK::State& s );
 
-	//--------------------------------------------------------------------------
-	// IO
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // IO
+    //--------------------------------------------------------------------------
 public:
-	virtual int
-		printResults(const std::string &aBaseName,const std::string &aDir="",
-		double aDT=-1.0,const std::string &aExtension=".sto");
+    virtual int
+    printResults(const std::string &aBaseName,const std::string &aDir="",
+                 double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
 };	// END of class ForceReporter

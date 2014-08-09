@@ -44,44 +44,48 @@ namespace OpenSim {
  * @version 1.0
  */
 class OSIMSIMULATION_API BodyScale : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(BodyScale, Object);
+    OpenSim_DECLARE_CONCRETE_OBJECT(BodyScale, Object);
 
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
-	PropertyStrArray _axisNamesProp;
-	Array<std::string>& _axisNames;
+    PropertyStrArray _axisNamesProp;
+    Array<std::string>& _axisNames;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	BodyScale();
-	BodyScale(const BodyScale &aBodyScale);
-	virtual ~BodyScale();
+    BodyScale();
+    BodyScale(const BodyScale &aBodyScale);
+    virtual ~BodyScale();
 
-	void copyData(const BodyScale &aBodyScale);
+    void copyData(const BodyScale &aBodyScale);
 
 #ifndef SWIG
-	BodyScale& operator=(const BodyScale &aBodyScale);
-	const Array<std::string>& getAxisNames() const { return _axisNames; }
+    BodyScale& operator=(const BodyScale &aBodyScale);
+    const Array<std::string>& getAxisNames() const {
+        return _axisNames;
+    }
 #endif
-	Array<std::string>& getAxisNames() { return _axisNames; }
+    Array<std::string>& getAxisNames() {
+        return _axisNames;
+    }
 
-	void setAxisNames(const Array<std::string> &aAxisNames) { 
-		_axisNames = aAxisNames;
-		_axisNamesProp.setValueIsDefault(false);
-	}
+    void setAxisNames(const Array<std::string> &aAxisNames) {
+        _axisNames = aAxisNames;
+        _axisNamesProp.setValueIsDefault(false);
+    }
 
 protected:
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 //=============================================================================
 };	// END of class BodyScale
 //=============================================================================

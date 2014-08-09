@@ -37,19 +37,19 @@ class Model;
  * @authors Michael Sherman
  */
 
-class OSIMSIMULATION_API ComponentSet 
-:   public ModelComponentSet<ModelComponent> {
-OpenSim_DECLARE_CONCRETE_OBJECT(ComponentSet, 
-                                ModelComponentSet<ModelComponent>);
+class OSIMSIMULATION_API ComponentSet
+        :   public ModelComponentSet<ModelComponent> {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ComponentSet,
+                                    ModelComponentSet<ModelComponent>);
 
 public:
     ComponentSet() : Super() {}
 
-	explicit ComponentSet(Model& model) : Super(model) {}
+    explicit ComponentSet(Model& model) : Super(model) {}
 
-	ComponentSet(Model& model, const std::string &aFileName, 
+    ComponentSet(Model& model, const std::string &aFileName,
                  bool aUpdateFromXMLNode=true)
-    :   Super(model, aFileName, aUpdateFromXMLNode) {}
+        :   Super(model, aFileName, aUpdateFromXMLNode) {}
 
     // default copy constructor, copy assignment, destructor
 

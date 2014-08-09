@@ -105,44 +105,60 @@ void ForceVelocityInverseCurve::ensureCurveUpToDate()
 SimTK::Function* ForceVelocityInverseCurve::createSimTKFunction() const
 {
     return SmoothSegmentedFunctionFactory::createFiberForceVelocityInverseCurve(
-        get_max_eccentric_velocity_force_multiplier(),
-        get_concentric_slope_at_vmax(),
-        get_concentric_slope_near_vmax(),
-        get_isometric_slope(),
-        get_eccentric_slope_at_vmax(),
-        get_eccentric_slope_near_vmax(),
-        get_concentric_curviness(),
-        get_eccentric_curviness(),
-        false,
-        getName());
+               get_max_eccentric_velocity_force_multiplier(),
+               get_concentric_slope_at_vmax(),
+               get_concentric_slope_near_vmax(),
+               get_isometric_slope(),
+               get_eccentric_slope_at_vmax(),
+               get_eccentric_slope_near_vmax(),
+               get_concentric_curviness(),
+               get_eccentric_curviness(),
+               false,
+               getName());
 }
 
 //==============================================================================
 // GET AND SET METHODS
 //==============================================================================
 double ForceVelocityInverseCurve::getConcentricSlopeAtVmax() const
-{   return get_concentric_slope_at_vmax(); }
+{
+    return get_concentric_slope_at_vmax();
+}
 double ForceVelocityInverseCurve::getConcentricSlopeNearVmax() const
-{   return get_concentric_slope_near_vmax(); }
+{
+    return get_concentric_slope_near_vmax();
+}
 double ForceVelocityInverseCurve::getIsometricSlope() const
-{   return get_isometric_slope(); }
+{
+    return get_isometric_slope();
+}
 double ForceVelocityInverseCurve::getEccentricSlopeAtVmax() const
-{   return get_eccentric_slope_at_vmax(); }
+{
+    return get_eccentric_slope_at_vmax();
+}
 double ForceVelocityInverseCurve::getEccentricSlopeNearVmax() const
-{   return get_eccentric_slope_near_vmax(); }
+{
+    return get_eccentric_slope_near_vmax();
+}
 double ForceVelocityInverseCurve::getMaxEccentricVelocityForceMultiplier() const
-{   return get_max_eccentric_velocity_force_multiplier(); }
+{
+    return get_max_eccentric_velocity_force_multiplier();
+}
 double ForceVelocityInverseCurve::getConcentricCurviness() const
-{   return get_concentric_curviness(); }
+{
+    return get_concentric_curviness();
+}
 double ForceVelocityInverseCurve::getEccentricCurviness() const
-{   return get_eccentric_curviness(); }
+{
+    return get_eccentric_curviness();
+}
 
 void ForceVelocityInverseCurve::setCurveShape(double aConcentricSlopeAtVmax,
-                                              double aConcentricSlopeNearVmax,
-                                              double aIsometricSlope,
-                                              double aEccentricSlopeAtVmax,
-                                              double aEccentricSlopeNearVmax,
-                                              double aMaxForceMultiplier)
+        double aConcentricSlopeNearVmax,
+        double aIsometricSlope,
+        double aEccentricSlopeAtVmax,
+        double aEccentricSlopeNearVmax,
+        double aMaxForceMultiplier)
 {
     set_concentric_slope_at_vmax(aConcentricSlopeAtVmax);
     set_concentric_slope_near_vmax(aConcentricSlopeNearVmax);
@@ -174,8 +190,8 @@ double ForceVelocityInverseCurve::
 calcValue(double aForceVelocityMultiplier) const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties(),
-        "FiberForceVelocityInverseCurve: Curve is not up-to-date with its "
-        "properties");
+                 "FiberForceVelocityInverseCurve: Curve is not up-to-date with its "
+                 "properties");
     return m_curve.calcValue(aForceVelocityMultiplier);
 }
 
@@ -183,11 +199,11 @@ double ForceVelocityInverseCurve::
 calcDerivative(double aForceVelocityMultiplier, int order) const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties(),
-        "FiberForceVelocityInverseCurve: Curve is not up-to-date with its "
-        "properties");
+                 "FiberForceVelocityInverseCurve: Curve is not up-to-date with its "
+                 "properties");
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2,
-        "ForceVelocityInverseCurve::calcDerivative",
-        "order must be 0, 1, or 2, but %i was entered", order);
+                         "ForceVelocityInverseCurve::calcDerivative",
+                         "order must be 0, 1, or 2, but %i was entered", order);
 
     return m_curve.calcDerivative(aForceVelocityMultiplier,order);
 }
@@ -195,8 +211,8 @@ calcDerivative(double aForceVelocityMultiplier, int order) const
 SimTK::Vec2 ForceVelocityInverseCurve::getCurveDomain() const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties(),
-        "FiberForceVelocityInverseCurve: Curve is not up-to-date with its "
-        "properties");
+                 "FiberForceVelocityInverseCurve: Curve is not up-to-date with its "
+                 "properties");
     return m_curve.getCurveDomain();
 }
 

@@ -23,40 +23,40 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
- * Author:  
+/*
+ * Author:
  */
 
 // INCLUDES
 #include "Scale.h"
 #include "Set.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
 //class Model;
 
 //=============================================================================
 /*
- * A set of scale factors to scale a model 
+ * A set of scale factors to scale a model
  *
  * @author Ayman Habib
  * @version 1.0
  */
 class OSIMCOMMON_API ScaleSet : public Set<Scale> {
-OpenSim_DECLARE_CONCRETE_OBJECT(ScaleSet, Set<Scale>);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ScaleSet, Set<Scale>);
 
 private:
-	void setNull();
+    void setNull();
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	ScaleSet();
-	ScaleSet(const std::string& scalesFileName);
-	~ScaleSet(void);
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    ScaleSet();
+    ScaleSet(const std::string& scalesFileName);
+    ~ScaleSet(void);
 
 #ifndef SWIG
-	ScaleSet& operator=(const ScaleSet &aScaleSet);
+    ScaleSet& operator=(const ScaleSet &aScaleSet);
 #endif
 };
 

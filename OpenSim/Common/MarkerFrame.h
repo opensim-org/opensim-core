@@ -43,42 +43,54 @@ namespace OpenSim {
  * @version 1.0
  */
 class OSIMCOMMON_API MarkerFrame : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(MarkerFrame, Object);
+    OpenSim_DECLARE_CONCRETE_OBJECT(MarkerFrame, Object);
 
 //=============================================================================
 // DATA
 //=============================================================================
 private:
-	int _numMarkers;
-	int _frameNumber;
-	double _frameTime;
-	Units _units;
-	SimTK::Array_<SimTK::Vec3> _markers;
+    int _numMarkers;
+    int _frameNumber;
+    double _frameTime;
+    Units _units;
+    SimTK::Array_<SimTK::Vec3> _markers;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	MarkerFrame();
-	MarkerFrame(int aNumMarkers, int aFrameNumber, double aTime, Units& aUnits);
-	MarkerFrame(const MarkerFrame& aFrame);
-	virtual ~MarkerFrame();
+    MarkerFrame();
+    MarkerFrame(int aNumMarkers, int aFrameNumber, double aTime, Units& aUnits);
+    MarkerFrame(const MarkerFrame& aFrame);
+    virtual ~MarkerFrame();
 
-	void addMarker(const SimTK::Vec3& aCoords);
-	SimTK::Vec3 getMarker(int aIndex) const { return _markers[aIndex]; }
-    SimTK::Vec3& updMarker(int aIndex) { return _markers[aIndex]; }
-	int getFrameNumber() const { return _frameNumber; }
-	void setFrameNumber(int aNumber) { _frameNumber = aNumber; }
-	double getFrameTime() const { return _frameTime; }
-	void scale(double aScaleFactor);
+    void addMarker(const SimTK::Vec3& aCoords);
+    SimTK::Vec3 getMarker(int aIndex) const {
+        return _markers[aIndex];
+    }
+    SimTK::Vec3& updMarker(int aIndex) {
+        return _markers[aIndex];
+    }
+    int getFrameNumber() const {
+        return _frameNumber;
+    }
+    void setFrameNumber(int aNumber) {
+        _frameNumber = aNumber;
+    }
+    double getFrameTime() const {
+        return _frameTime;
+    }
+    void scale(double aScaleFactor);
 
-	const SimTK::Array_<SimTK::Vec3>& getMarkers() const { return _markers;}
+    const SimTK::Array_<SimTK::Vec3>& getMarkers() const {
+        return _markers;
+    }
 
 private:
-	void setNull();
+    void setNull();
 
 //=============================================================================
 };	// END of class MarkerFrame

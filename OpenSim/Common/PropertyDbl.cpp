@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -47,9 +47,9 @@ using namespace std;
  */
 PropertyDbl::
 PropertyDbl(const string &aName,double aValue) :
-	Property_Deprecated(Property_Deprecated::Dbl,aName)
+    Property_Deprecated(Property_Deprecated::Dbl,aName)
 {
-	_value = aValue;
+    _value = aValue;
     setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
@@ -58,9 +58,9 @@ PropertyDbl(const string &aName,double aValue) :
  */
 PropertyDbl::
 PropertyDbl() :
-	Property_Deprecated(Property_Deprecated::Dbl,"DblPropertyName")
+    Property_Deprecated(Property_Deprecated::Dbl,"DblPropertyName")
 {
-	_value = 0.0;
+    _value = 0.0;
     setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
@@ -70,9 +70,9 @@ PropertyDbl() :
  * @param aProperty Property_Deprecated to be copied.
  */
 PropertyDbl::PropertyDbl(const PropertyDbl &aProperty) :
-	Property_Deprecated(aProperty)
+    Property_Deprecated(aProperty)
 {
-	_value = aProperty.getValueDbl();
+    _value = aProperty.getValueDbl();
 }
 //_____________________________________________________________________________
 /**
@@ -84,8 +84,8 @@ PropertyDbl::PropertyDbl(const PropertyDbl &aProperty) :
  */
 PropertyDbl* PropertyDbl::clone() const
 {
-	PropertyDbl* prop = new PropertyDbl(*this);
-	return prop;
+    PropertyDbl* prop = new PropertyDbl(*this);
+    return prop;
 }
 
 
@@ -105,9 +105,9 @@ PropertyDbl* PropertyDbl::clone() const
 PropertyDbl& PropertyDbl::
 operator=(const PropertyDbl &aProperty)
 {
-	Property_Deprecated::operator=(aProperty);
-	_value = aProperty.getValueDbl();
-	return(*this);
+    Property_Deprecated::operator=(aProperty);
+    _value = aProperty.getValueDbl();
+    return(*this);
 }
 
 
@@ -126,7 +126,7 @@ operator=(const PropertyDbl &aProperty)
 std::string PropertyDbl::
 getTypeName() const
 {
-	return "double";
+    return "double";
 }
 
 //-----------------------------------------------------------------------------
@@ -141,7 +141,7 @@ getTypeName() const
 void PropertyDbl::
 setValue(double aValue)
 {
-	_value = aValue;
+    _value = aValue;
 }
 //_____________________________________________________________________________
 /**
@@ -153,7 +153,7 @@ setValue(double aValue)
 double& PropertyDbl::
 getValueDbl()
 {
-	return(_value);
+    return(_value);
 }
 //_____________________________________________________________________________
 /**
@@ -164,7 +164,7 @@ getValueDbl()
 const double& PropertyDbl::
 getValueDbl() const
 {
-	return(_value);
+    return(_value);
 }
 //_____________________________________________________________________________
 /**
@@ -176,13 +176,13 @@ string PropertyDbl::
 toString() const
 {
     if (SimTK::isFinite(_value)) {
-	    char dbl[256];
+        char dbl[256];
         sprintf(dbl, "%g", _value);
         return dbl;
     }
 
     if (SimTK::isNaN(_value)) return "NaN";
-	if (_value ==  SimTK::Infinity) return "Inf";
-	if (_value == -SimTK::Infinity) return "-Inf";
-	return "UnrecognizedNonFinite???";
+    if (_value ==  SimTK::Infinity) return "Inf";
+    if (_value == -SimTK::Infinity) return "-Inf";
+    return "UnrecognizedNonFinite???";
 }

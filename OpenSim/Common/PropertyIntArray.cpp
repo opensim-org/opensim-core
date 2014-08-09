@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -47,10 +47,10 @@ using namespace std;
  */
 PropertyIntArray::
 PropertyIntArray(const string &aName,
-	const Array<int> &aArray) :
-	Property_Deprecated(Property_Deprecated::IntArray,aName), _array(0)
+                 const Array<int> &aArray) :
+    Property_Deprecated(Property_Deprecated::IntArray,aName), _array(0)
 {
-	_array = aArray;
+    _array = aArray;
 }
 //_____________________________________________________________________________
 /**
@@ -58,7 +58,7 @@ PropertyIntArray(const string &aName,
  */
 PropertyIntArray::
 PropertyIntArray() :
-	Property_Deprecated(Property_Deprecated::IntArray,"IntArrayPropertyName"), _array(0)
+    Property_Deprecated(Property_Deprecated::IntArray,"IntArrayPropertyName"), _array(0)
 {
 }
 //_____________________________________________________________________________
@@ -67,12 +67,12 @@ PropertyIntArray() :
  */
 PropertyIntArray::
 PropertyIntArray(const string &aName,
-	int aSize,const int aArray[]) :
-	Property_Deprecated(Property_Deprecated::IntArray,aName), _array(0)
+                 int aSize,const int aArray[]) :
+    Property_Deprecated(Property_Deprecated::IntArray,aName), _array(0)
 {
-	if(aSize<=0) return;
-	if(aArray==NULL) return;
-	_array.append(aSize,aArray);
+    if(aSize<=0) return;
+    if(aArray==NULL) return;
+    _array.append(aSize,aArray);
 }
 //_____________________________________________________________________________
 /**
@@ -81,9 +81,9 @@ PropertyIntArray(const string &aName,
  * @param aProperty Property_Deprecated to be copied.
  */
 PropertyIntArray::PropertyIntArray(const PropertyIntArray &aProperty) :
-	Property_Deprecated(aProperty), _array(0)
+    Property_Deprecated(aProperty), _array(0)
 {
-	_array = aProperty._array;
+    _array = aProperty._array;
 }
 //_____________________________________________________________________________
 /**
@@ -95,8 +95,8 @@ PropertyIntArray::PropertyIntArray(const PropertyIntArray &aProperty) :
  */
 PropertyIntArray* PropertyIntArray::clone() const
 {
-	PropertyIntArray *property = new PropertyIntArray(*this);
-	return(property);
+    PropertyIntArray *property = new PropertyIntArray(*this);
+    return(property);
 }
 
 
@@ -116,9 +116,9 @@ PropertyIntArray* PropertyIntArray::clone() const
 PropertyIntArray& PropertyIntArray::
 operator=(const PropertyIntArray &aProperty)
 {
-	Property_Deprecated::operator =(aProperty);
-	_array = aProperty._array;
-	return(*this);
+    Property_Deprecated::operator =(aProperty);
+    _array = aProperty._array;
+    return(*this);
 }
 
 
@@ -137,7 +137,7 @@ operator=(const PropertyIntArray &aProperty)
 std::string PropertyIntArray::
 getTypeName() const
 {
-	return("int");
+    return("int");
 }
 
 //-----------------------------------------------------------------------------
@@ -152,7 +152,7 @@ getTypeName() const
 void PropertyIntArray::
 setValue(const Array<int>& aArray)
 {
-	_array = aArray;
+    _array = aArray;
 }
 //_____________________________________________________________________________
 /**
@@ -164,10 +164,10 @@ setValue(const Array<int>& aArray)
 void PropertyIntArray::
 setValue(int aSize,const int aArray[])
 {
-	_array.setSize(0);
-	if(aSize<=0) return;
-	if(aArray==NULL) return;
-	_array.append(aSize,aArray);
+    _array.setSize(0);
+    if(aSize<=0) return;
+    if(aArray==NULL) return;
+    _array.append(aSize,aArray);
 }
 //_____________________________________________________________________________
 /**
@@ -179,7 +179,7 @@ setValue(int aSize,const int aArray[])
 Array<int>& PropertyIntArray::
 getValueIntArray()
 {
-	return(_array);
+    return(_array);
 }
 //_____________________________________________________________________________
 /**
@@ -190,7 +190,7 @@ getValueIntArray()
 const Array<int>& PropertyIntArray::
 getValueIntArray() const
 {
-	return(_array);
+    return(_array);
 }
 //_____________________________________________________________________________
 /**
@@ -201,12 +201,12 @@ getValueIntArray() const
 string PropertyIntArray::
 toString() const
 {
-	string str = "(";
-	char intString[256];
-	for(int i=0; i < _array.getSize(); i++){
-		sprintf(intString, "%d", _array[i]);
-		str += (i>0?" ":"") + string(intString);
-	}
-	str += ")";
-	return str;
+    string str = "(";
+    char intString[256];
+    for(int i=0; i < _array.getSize(); i++) {
+        sprintf(intString, "%d", _array[i]);
+        str += (i>0?" ":"") + string(intString);
+    }
+    str += ")";
+    return str;
 }

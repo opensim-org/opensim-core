@@ -45,64 +45,74 @@ namespace OpenSim {
  * @version 1.0
  */
 class OSIMCOMMON_API LinearFunction : public Function {
-OpenSim_DECLARE_CONCRETE_OBJECT(LinearFunction, Function);
+    OpenSim_DECLARE_CONCRETE_OBJECT(LinearFunction, Function);
 
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
 protected:
-	PropertyDblArray _coefficientsProp;
-	Array<double> &_coefficients;
+    PropertyDblArray _coefficientsProp;
+    Array<double> &_coefficients;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	LinearFunction();
-	LinearFunction(Array<double> coefficients);
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    LinearFunction();
+    LinearFunction(Array<double> coefficients);
     LinearFunction(double slope, double intercept);
-	LinearFunction(const LinearFunction &aSpline);
-    
-	virtual ~LinearFunction();
+    LinearFunction(const LinearFunction &aSpline);
+
+    virtual ~LinearFunction();
 
 private:
-	void setNull();
-	void setupProperties();
-	void copyData(const LinearFunction &aLinearFunction);
+    void setNull();
+    void setupProperties();
+    void copyData(const LinearFunction &aLinearFunction);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	LinearFunction& operator=(const LinearFunction &aLinearFunction);
+    LinearFunction& operator=(const LinearFunction &aLinearFunction);
 #endif
 
-	//--------------------------------------------------------------------------
-	// SET AND GET Coefficients
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // SET AND GET Coefficients
+    //--------------------------------------------------------------------------
 public:
-	/** Set Coefficients for slope and intercept */
-	void setCoefficients(Array<double> coefficients);
+    /** Set Coefficients for slope and intercept */
+    void setCoefficients(Array<double> coefficients);
     /** Set slope */
-    void setSlope(double slope) {_coefficients[0] = slope; }
+    void setSlope(double slope) {
+        _coefficients[0] = slope;
+    }
     /** Set intercept */
-    void setIntercept(double intercept) {_coefficients[1] = intercept; }
-	/** Get Coefficients */
-	const Array<double> getCoefficients() const
-	{ return _coefficients; }
+    void setIntercept(double intercept) {
+        _coefficients[1] = intercept;
+    }
+    /** Get Coefficients */
+    const Array<double> getCoefficients() const
+    {
+        return _coefficients;
+    }
     /** Get Slope */
-    double getSlope() { return _coefficients[0]; }
-    /** Get Intercept */ 
-    double getIntercept() { return _coefficients[1]; }
-    
+    double getSlope() {
+        return _coefficients[0];
+    }
+    /** Get Intercept */
+    double getIntercept() {
+        return _coefficients[1];
+    }
 
-	//--------------------------------------------------------------------------
-	// EVALUATION
-	//--------------------------------------------------------------------------
+
+    //--------------------------------------------------------------------------
+    // EVALUATION
+    //--------------------------------------------------------------------------
     virtual SimTK::Function* createSimTKFunction() const;
 
 //=============================================================================

@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -43,9 +43,9 @@ using namespace std;
 //_____________________________________________________________________________
 
 AnalysisSet::AnalysisSet() :
- _enable(_enableProp.getValueBool())
+    _enable(_enableProp.getValueBool())
 {
-	setNull();
+    setNull();
 }
 /**
  * Destructor.
@@ -63,10 +63,10 @@ AnalysisSet::~AnalysisSet()
  * @param aModel Model for the analysis set.
  */
 AnalysisSet::AnalysisSet(Model *aModel) :
- _enable(_enableProp.getValueBool())
+    _enable(_enableProp.getValueBool())
 {
-	setNull();
-	_model = aModel;
+    setNull();
+    _model = aModel;
 }
 //_____________________________________________________________________________
 /**
@@ -75,11 +75,11 @@ AnalysisSet::AnalysisSet(Model *aModel) :
  * @param aFileName Name of the file.
  */
 AnalysisSet::AnalysisSet(const string &aFileName) :
-	Set<Analysis>(aFileName, false),
- _enable(_enableProp.getValueBool())
+    Set<Analysis>(aFileName, false),
+    _enable(_enableProp.getValueBool())
 {
-	setNull();
-	updateFromXMLDocument();
+    setNull();
+    updateFromXMLDocument();
 }
 //_____________________________________________________________________________
 /**
@@ -88,10 +88,10 @@ AnalysisSet::AnalysisSet(const string &aFileName) :
  * @param aSet Analysis set to be copied.
  */
 AnalysisSet::AnalysisSet(const AnalysisSet &aSet) :
-	Set<Analysis>(aSet),
+    Set<Analysis>(aSet),
     _enable(_enableProp.getValueBool())
 {
-	setNull();
+    setNull();
 }
 
 
@@ -109,7 +109,7 @@ setNull()
 }
 void AnalysisSet::
 setupProperties() {
-    
+
     _enableProp.setComment("enable/disable for AnalysisSet");
     _enableProp.setName("enable");
 //    _propertySet.append( &_enableProp );
@@ -118,10 +118,10 @@ setupProperties() {
 AnalysisSet& AnalysisSet::
 operator=(const  AnalysisSet &aSet)
 {
-     Set<Analysis>::operator=(aSet);
- 
-     _enable = aSet._enable;
-     return(*this);
+    Set<Analysis>::operator=(aSet);
+
+    _enable = aSet._enable;
+    return(*this);
 }
 //=============================================================================
 // GET AND SET
@@ -135,12 +135,12 @@ operator=(const  AnalysisSet &aSet)
 void AnalysisSet::
 setModel(Model& aModel)
 {
-	int i;
-	int size = getSize();
-	for(i=0;i<size;i++) {
-		Analysis& analysis = get(i);
-		analysis.setModel(aModel);
-	}
+    int i;
+    int size = getSize();
+    for(i=0; i<size; i++) {
+        Analysis& analysis = get(i);
+        analysis.setModel(aModel);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -151,7 +151,7 @@ setModel(Model& aModel)
 Model& AnalysisSet::
 getModel()
 {
-	return(*_model);
+    return(*_model);
 }
 
 //-----------------------------------------------------------------------------
@@ -167,22 +167,22 @@ getModel()
 void AnalysisSet::
 setOn(bool aTrueFalse)
 {
-	for(int i=0;i<getSize();i++) get(i).setOn(aTrueFalse);
+    for(int i=0; i<getSize(); i++) get(i).setOn(aTrueFalse);
 }
 
 void AnalysisSet::
-setOn(const OpenSim::Array<bool> &aOn) 
+setOn(const OpenSim::Array<bool> &aOn)
 {
-	if(aOn.getSize()!=getSize()) throw Exception("AnalysisSet.setOn: ERROR- incompatible array sizes",__FILE__,__LINE__);
-	for(int i=0; i<getSize(); i++) get(i).setOn(aOn[i]);
+    if(aOn.getSize()!=getSize()) throw Exception("AnalysisSet.setOn: ERROR- incompatible array sizes",__FILE__,__LINE__);
+    for(int i=0; i<getSize(); i++) get(i).setOn(aOn[i]);
 }
 
 OpenSim::Array<bool> AnalysisSet::
 getOn() const
 {
-	Array<bool> on(false,getSize());
-	for(int i=0; i<getSize(); i++) on[i] = get(i).getOn();
-	return on;
+    Array<bool> on(false,getSize());
+    for(int i=0; i<getSize(); i++) on[i] = get(i).getOn();
+    return on;
 }
 
 
@@ -195,16 +195,16 @@ getOn() const
  * called at the beginning of an integration and is intended to be used for
  * any initializations that are necessary.
  *
- * @param s Current state 
+ * @param s Current state
  */
 void AnalysisSet::
 begin(SimTK::State& s )
 {
-	int i;
-	for(i=0;i<getSize();i++) {
-		Analysis& analysis = get(i);
-		if (analysis.getOn()) analysis.begin(s);
-	}
+    int i;
+    for(i=0; i<getSize(); i++) {
+        Analysis& analysis = get(i);
+        if (analysis.getOn()) analysis.begin(s);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -212,16 +212,16 @@ begin(SimTK::State& s )
  * after each successful integration time step and is intended to be used for
  * conducting analyses, driving animations, etc.
  *
- * @param s Current state 
+ * @param s Current state
  */
 void AnalysisSet::
 step( const SimTK::State& s, int stepNumber )
 {
-	int i;
-	for(i=0;i<getSize();i++) {
-		Analysis& analysis = get(i);
-		if (analysis.getOn()) analysis.step(s, stepNumber);
-	}
+    int i;
+    for(i=0; i<getSize(); i++) {
+        Analysis& analysis = get(i);
+        if (analysis.getOn()) analysis.step(s, stepNumber);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -229,16 +229,16 @@ step( const SimTK::State& s, int stepNumber )
  * after an integration has been completed and is intended to be used for
  * performing any finalizations necessary.
  *
- * @param s Current state 
+ * @param s Current state
  */
 void AnalysisSet::
 end(SimTK::State& s)
 {
-	int i;
-	for(i=0;i<getSize();i++) {
-		Analysis& analysis = get(i);
-		if (analysis.getOn()) analysis.end(s);
-	}
+    int i;
+    for(i=0; i<getSize(); i++) {
+        Analysis& analysis = get(i);
+        if (analysis.getOn()) analysis.end(s);
+    }
 }
 
 
@@ -255,14 +255,14 @@ end(SimTK::State& s)
  */
 void AnalysisSet::
 printResults(const string &aBaseName,const string &aDir,double aDT,
-				 const string &aExtension)
+             const string &aExtension)
 {
-	int i;
-	int size = getSize();
-	for(i=0;i<size;i++) {
-		Analysis& analysis = get(i);
-		if(analysis.getOn() && analysis.getPrintResultFiles()) analysis.printResults(aBaseName,aDir,aDT,aExtension);
-	}
+    int i;
+    int size = getSize();
+    for(i=0; i<size; i++) {
+        Analysis& analysis = get(i);
+        if(analysis.getOn() && analysis.getPrintResultFiles()) analysis.printResults(aBaseName,aDir,aDT,aExtension);
+    }
 }
 //=============================================================================
 // UTILITY
@@ -274,5 +274,5 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 void AnalysisSet::
 getAvailableAnalyses(AnalysisSet& as)
 {
-	Object::getRegisteredObjectsOfGivenType<Analysis>(as._objects);
+    Object::getRegisteredObjectsOfGivenType<Analysis>(as._objects);
 }

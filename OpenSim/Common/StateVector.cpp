@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -54,26 +54,26 @@ StateVector::~StateVector()
  * Default constructor.
  */
 StateVector::StateVector(double aT,int aN,const double aData[]) :
-	_data(0.0)
+    _data(0.0)
 {
-	// INITIAL VALUES
-	setNull();
+    // INITIAL VALUES
+    setNull();
 
-	// SET THE DATA
-	setStates(aT,aN,aData);
+    // SET THE DATA
+    setStates(aT,aN,aData);
 }
 //_____________________________________________________________________________
 /**
  * Copy constructor.
  */
 StateVector::StateVector(const StateVector &aVector) :
-	_data(0.0)
+    _data(0.0)
 {
-	// INITIAL VALUES
-	setNull();
+    // INITIAL VALUES
+    setNull();
 
-	// SET STATES
-	setStates(aVector.getTime(),aVector.getSize(),&aVector.getData()[0]);
+    // SET STATES
+    setStates(aVector.getTime(),aVector.getSize(),&aVector.getData()[0]);
 }
 
 
@@ -87,9 +87,9 @@ StateVector::StateVector(const StateVector &aVector) :
 void StateVector::
 setNull()
 {
-	// DATA
-	_t = 0.0;
-	_data.setSize(0);
+    // DATA
+    _t = 0.0;
+    _data.setSize(0);
 }
 
 
@@ -108,9 +108,9 @@ setNull()
 StateVector& StateVector::
 operator=(const StateVector &aStateVector)
 {
-	_t = aStateVector._t;
-	_data = aStateVector._data;
-	return(*this);
+    _t = aStateVector._t;
+    _data = aStateVector._data;
+    return(*this);
 }
 
 //-----------------------------------------------------------------------------
@@ -128,8 +128,8 @@ operator=(const StateVector &aStateVector)
 bool StateVector::
 operator==(const StateVector &aStateVector) const
 {
-	if((_t==aStateVector._t) && (_data==aStateVector._data)) return(true);
-	return(false);
+    if((_t==aStateVector._t) && (_data==aStateVector._data)) return(true);
+    return(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -148,7 +148,7 @@ operator==(const StateVector &aStateVector) const
 bool StateVector::
 operator<(const StateVector &aStateVector) const
 {
-	return(_t < aStateVector._t);
+    return(_t < aStateVector._t);
 }
 
 
@@ -162,7 +162,7 @@ operator<(const StateVector &aStateVector) const
 void StateVector::
 setTime(double aT)
 {
-	_t = aT;
+    _t = aT;
 }
 //_____________________________________________________________________________
 /**
@@ -171,7 +171,7 @@ setTime(double aT)
 double StateVector::
 getTime() const
 {
-	return(_t);
+    return(_t);
 }
 //_____________________________________________________________________________
 /**
@@ -180,12 +180,12 @@ getTime() const
 void StateVector::
 setStates(double aT,int aN,const double *aData)
 {
-	_t = aT;
-	_data.setSize(aN);
-	int size = _data.getSize();
-	for(int i=0;i<size;i++) {
-		_data[i] = aData[i];
-	}
+    _t = aT;
+    _data.setSize(aN);
+    int size = _data.getSize();
+    for(int i=0; i<size; i++) {
+        _data[i] = aData[i];
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -194,7 +194,7 @@ setStates(double aT,int aN,const double *aData)
 int StateVector::
 getSize() const
 {
-	return(_data.getSize());
+    return(_data.getSize());
 }
 //_____________________________________________________________________________
 /**
@@ -203,7 +203,7 @@ getSize() const
 Array<double>& StateVector::
 getData()
 {
-	return(_data);
+    return(_data);
 }
 //_____________________________________________________________________________
 /**
@@ -212,7 +212,7 @@ getData()
 const Array<double>& StateVector::
 getData() const
 {
-	return(_data);
+    return(_data);
 }
 //_____________________________________________________________________________
 /**
@@ -225,11 +225,11 @@ getData() const
 int StateVector::
 getDataValue(int aIndex,double &rValue)
 {
-	if(aIndex<0) return(0);
-	if(aIndex>=_data.getSize()) return(0);
+    if(aIndex<0) return(0);
+    if(aIndex>=_data.getSize()) return(0);
 
-	rValue = _data[aIndex];
-	return(1);
+    rValue = _data[aIndex];
+    return(1);
 }
 
 //_____________________________________________________________________________
@@ -242,10 +242,10 @@ getDataValue(int aIndex,double &rValue)
 void StateVector::
 setDataValue(int aIndex,double &aValue)
 {
-	if(aIndex<0) return;
-	if(aIndex>=_data.getSize()) return;
+    if(aIndex<0) return;
+    if(aIndex>=_data.getSize()) return;
 
-	_data[aIndex]=aValue;
+    _data[aIndex]=aValue;
 }
 
 //=============================================================================
@@ -263,7 +263,7 @@ setDataValue(int aIndex,double &aValue)
 void StateVector::
 shiftTime(double aValue)
 {
-	_t += aValue;
+    _t += aValue;
 }
 //_____________________________________________________________________________
 /**
@@ -274,7 +274,7 @@ shiftTime(double aValue)
 void StateVector::
 scaleTime(double aValue)
 {
-	_t *= aValue;
+    _t *= aValue;
 }
 
 //-----------------------------------------------------------------------------
@@ -289,8 +289,8 @@ scaleTime(double aValue)
 void StateVector::
 add(double aValue)
 {
-	int i;
-	for(i=0;i<_data.getSize();i++)  _data[i] += aValue;
+    int i;
+    for(i=0; i<_data.getSize(); i++)  _data[i] += aValue;
 }
 //_____________________________________________________________________________
 /**
@@ -304,16 +304,16 @@ add(double aValue)
 void StateVector::
 add(int aN,double aY[])
 {
-	if(aY==NULL) return;
-	int i,n=aN;
-	if(n>_data.getSize()) n = _data.getSize();
-	for(i=0;i<n;i++)  _data[i] += aY[i];
+    if(aY==NULL) return;
+    int i,n=aN;
+    if(n>_data.getSize()) n = _data.getSize();
+    for(i=0; i<n; i++)  _data[i] += aY[i];
 }
 //_____________________________________________________________________________
 /**
  * Add a value to a state.
  *
- * Only one state is altered.  This function was implemented so that 
+ * Only one state is altered.  This function was implemented so that
  * a value could be added to an entire column of a Storage.
  *
  * @param aN Index of state to be altered.
@@ -322,9 +322,9 @@ add(int aN,double aY[])
 void StateVector::
 add(int aN,double aValue)
 {
-	if(aValue==0) return;
-	if(aN>_data.getSize()) return;
-	_data[aN] += aValue;
+    if(aValue==0) return;
+    if(aN>_data.getSize()) return;
+    _data[aN] += aValue;
 }
 //_____________________________________________________________________________
 /**
@@ -335,18 +335,18 @@ add(int aN,double aValue)
 void StateVector::
 add(StateVector *aStateVector)
 {
-	if(aStateVector==NULL) return;
+    if(aStateVector==NULL) return;
 
-	// GET SIZE
-	int n = aStateVector->getSize();
-	if(n>_data.getSize()) n = _data.getSize();
+    // GET SIZE
+    int n = aStateVector->getSize();
+    if(n>_data.getSize()) n = _data.getSize();
 
-	// GET DATA
-	Array<double> &data = aStateVector->getData();
+    // GET DATA
+    Array<double> &data = aStateVector->getData();
 
-	// ADD
-	int i;
-	for(i=0;i<n;i++)  _data[i] += data[i];
+    // ADD
+    int i;
+    for(i=0; i<n; i++)  _data[i] += data[i];
 }
 
 //-----------------------------------------------------------------------------
@@ -361,8 +361,8 @@ add(StateVector *aStateVector)
 void StateVector::
 subtract(double aValue)
 {
-	int i;
-	for(i=0;i<_data.getSize();i++)  _data[i] -= aValue;
+    int i;
+    for(i=0; i<_data.getSize(); i++)  _data[i] -= aValue;
 }
 //_____________________________________________________________________________
 /**
@@ -376,10 +376,10 @@ subtract(double aValue)
 void StateVector::
 subtract(int aN,double aY[])
 {
-	if(aY==NULL) return;
-	int i,n=aN;
-	if(n>_data.getSize()) n = _data.getSize();
-	for(i=0;i<n;i++)  _data[i] -= aY[i];
+    if(aY==NULL) return;
+    int i,n=aN;
+    if(n>_data.getSize()) n = _data.getSize();
+    for(i=0; i<n; i++)  _data[i] -= aY[i];
 }
 //_____________________________________________________________________________
 /**
@@ -390,18 +390,18 @@ subtract(int aN,double aY[])
 void StateVector::
 subtract(StateVector *aStateVector)
 {
-	if(aStateVector==NULL) return;
+    if(aStateVector==NULL) return;
 
-	// GET SIZE
-	int n = aStateVector->getSize();
-	if(n>_data.getSize()) n = _data.getSize();
+    // GET SIZE
+    int n = aStateVector->getSize();
+    if(n>_data.getSize()) n = _data.getSize();
 
-	// GET DATA
-	Array<double> &data = aStateVector->getData();
+    // GET DATA
+    Array<double> &data = aStateVector->getData();
 
-	// SUBTRACT
-	int i;
-	for(i=0;i<n;i++)  _data[i] -= data[i];
+    // SUBTRACT
+    int i;
+    for(i=0; i<n; i++)  _data[i] -= data[i];
 }
 
 //-----------------------------------------------------------------------------
@@ -416,8 +416,8 @@ subtract(StateVector *aStateVector)
 void StateVector::
 multiply(double aValue)
 {
-	int i;
-	for(i=0;i<_data.getSize();i++)  _data[i] *= aValue;
+    int i;
+    for(i=0; i<_data.getSize(); i++)  _data[i] *= aValue;
 }
 //_____________________________________________________________________________
 /**
@@ -431,10 +431,10 @@ multiply(double aValue)
 void StateVector::
 multiply(int aN,double aY[])
 {
-	if(aY==NULL) return;
-	int i,n=aN;
-	if(n>_data.getSize()) n = _data.getSize();
-	for(i=0;i<n;i++)  _data[i] *= aY[i];
+    if(aY==NULL) return;
+    int i,n=aN;
+    if(n>_data.getSize()) n = _data.getSize();
+    for(i=0; i<n; i++)  _data[i] *= aY[i];
 }
 //_____________________________________________________________________________
 /**
@@ -445,18 +445,18 @@ multiply(int aN,double aY[])
 void StateVector::
 multiply(StateVector *aStateVector)
 {
-	if(aStateVector==NULL) return;
+    if(aStateVector==NULL) return;
 
-	// GET SIZE
-	int n = aStateVector->getSize();
-	if(n>_data.getSize()) n = _data.getSize();
+    // GET SIZE
+    int n = aStateVector->getSize();
+    if(n>_data.getSize()) n = _data.getSize();
 
-	// GET DATA
-	Array<double> &data = aStateVector->getData();
+    // GET DATA
+    Array<double> &data = aStateVector->getData();
 
-	// MULTIPLY
-	int i;
-	for(i=0;i<n;i++)  _data[i] *= data[i];
+    // MULTIPLY
+    int i;
+    for(i=0; i<n; i++)  _data[i] *= data[i];
 }
 
 //-----------------------------------------------------------------------------
@@ -471,15 +471,15 @@ multiply(StateVector *aStateVector)
 void StateVector::
 divide(double aValue)
 {
-	if(aValue==0.0) {
-		printf("StateVector.divide: ERROR- divide by zero\n");
-		return;
-	}
+    if(aValue==0.0) {
+        printf("StateVector.divide: ERROR- divide by zero\n");
+        return;
+    }
 
-	int i;
-	for(i=0;i<_data.getSize();i++) {
-		_data[i] /= aValue;
-	}
+    int i;
+    for(i=0; i<_data.getSize(); i++) {
+        _data[i] /= aValue;
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -493,14 +493,14 @@ divide(double aValue)
 void StateVector::
 divide(int aN,double aY[])
 {
-	if(aY==NULL) return;
-	int i,n=aN;
-	if(n>_data.getSize()) n = _data.getSize();
-	for(i=0;i<n;i++) {  
-		if(aY[i]==0.0)	_data[i] = SimTK::NaN;
-		else	_data[i] /= aY[i];
-	}
-		
+    if(aY==NULL) return;
+    int i,n=aN;
+    if(n>_data.getSize()) n = _data.getSize();
+    for(i=0; i<n; i++) {
+        if(aY[i]==0.0)	_data[i] = SimTK::NaN;
+        else	_data[i] /= aY[i];
+    }
+
 }
 //_____________________________________________________________________________
 /**
@@ -511,21 +511,21 @@ divide(int aN,double aY[])
 void StateVector::
 divide(StateVector *aStateVector)
 {
-	if(aStateVector==NULL) return;
+    if(aStateVector==NULL) return;
 
-	// GET SIZE
-	int n = aStateVector->getSize();
-	if(n>_data.getSize()) n = _data.getSize();
+    // GET SIZE
+    int n = aStateVector->getSize();
+    if(n>_data.getSize()) n = _data.getSize();
 
-	// GET DATA
-	Array<double> &data = aStateVector->getData();
+    // GET DATA
+    Array<double> &data = aStateVector->getData();
 
-	// DIVIDE
-	int i;
-	for(i=0;i<n;i++) {  
-		if(data[i]==0.0)	_data[i] = SimTK::NaN;
-		else	_data[i] /= data[i];
-	}
+    // DIVIDE
+    int i;
+    for(i=0; i<n; i++) {
+        if(data[i]==0.0)	_data[i] = SimTK::NaN;
+        else	_data[i] /= data[i];
+    }
 }
 
 
@@ -542,41 +542,41 @@ divide(StateVector *aStateVector)
 int StateVector::
 print(FILE *fp) const
 {
-	// CHECK FILE POINTER
-	if(fp==NULL) {
-		printf("StateVector.print(FILE*): null file pointer.\n");
-		return(-1);
-	}
+    // CHECK FILE POINTER
+    if(fp==NULL) {
+        printf("StateVector.print(FILE*): null file pointer.\n");
+        return(-1);
+    }
 
-	// TIME
-	char format[IO_STRLEN];
-	sprintf(format,"%s",IO::GetDoubleOutputFormat());
-	int n=0,nTotal=0;
-	n = fprintf(fp,format,_t);
-	if(n<0) {
-		printf("StateVector.print(FILE*): error writing to file.\n");
-		return(n);
-	}
-	nTotal += n;
+    // TIME
+    char format[IO_STRLEN];
+    sprintf(format,"%s",IO::GetDoubleOutputFormat());
+    int n=0,nTotal=0;
+    n = fprintf(fp,format,_t);
+    if(n<0) {
+        printf("StateVector.print(FILE*): error writing to file.\n");
+        return(n);
+    }
+    nTotal += n;
 
-	// STATES
-	sprintf(format,"\t%s",IO::GetDoubleOutputFormat());
-	for(int i=0;i<_data.getSize();i++) {
-		n = fprintf(fp,format,_data[i]);
-		if(n<0) {
-			printf("StateVector.print(FILE*): error writing to file.\n");
-			return(n);
-		}
-		nTotal += n;
-	}
+    // STATES
+    sprintf(format,"\t%s",IO::GetDoubleOutputFormat());
+    for(int i=0; i<_data.getSize(); i++) {
+        n = fprintf(fp,format,_data[i]);
+        if(n<0) {
+            printf("StateVector.print(FILE*): error writing to file.\n");
+            return(n);
+        }
+        nTotal += n;
+    }
 
-	// CARRIAGE RETURN
-	n = fprintf(fp,"\n");
-	if(n<0) {
-		printf("StateVector.print(FILE*): error writing to file.\n");
-		return(n);
-	}
-	nTotal += n;
+    // CARRIAGE RETURN
+    n = fprintf(fp,"\n");
+    if(n<0) {
+        printf("StateVector.print(FILE*): error writing to file.\n");
+        return(n);
+    }
+    nTotal += n;
 
-	return(nTotal);
+    return(nTotal);
 }

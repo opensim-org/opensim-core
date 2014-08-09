@@ -19,15 +19,15 @@
 #define UNIVERSAL_H
 
 #if MEMORY_LEAK
-  #define _CRTDBG_MAP_ALLOC
-  #include <stdlib.h>
-  #include <crtdbg.h>
-  #define simm_malloc malloc
-  #define simm_calloc calloc
-  #define simm_realloc(ptr, size, rc) realloc(ptr, size)
-  #define mstrcpy(dest, src) {int len=strlen(src)+1; *(dest) = (char*)malloc(len); strcpy(*(dest), src);}
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#define simm_malloc malloc
+#define simm_calloc calloc
+#define simm_realloc(ptr, size, rc) realloc(ptr, size)
+#define mstrcpy(dest, src) {int len=strlen(src)+1; *(dest) = (char*)malloc(len); strcpy(*(dest), src);}
 #else
-  #include <stdlib.h>
+#include <stdlib.h>
 #endif
 
 #include <stdio.h>
@@ -40,7 +40,7 @@
 #include <time.h>
 
 #if defined(_MSC_VER)
-   #define MS_VISUAL_C 1
+#define MS_VISUAL_C 1
 #endif
 
 #define POLYGON_DISPLAY_HACK 1

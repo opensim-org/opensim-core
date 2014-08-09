@@ -36,12 +36,12 @@ using namespace OpenSim;
 //=============================================================================
 // CONSTRUCTOR(S) AND SETUP
 //=============================================================================
-// Uses default (compiler-generated) destructor, copy constructor, copy 
+// Uses default (compiler-generated) destructor, copy constructor, copy
 // assignment operator.
 
 //_____________________________________________________________________________
 // Default constructor.
-JointInternalPowerProbe::JointInternalPowerProbe() 
+JointInternalPowerProbe::JointInternalPowerProbe()
 {
     setNull();
     constructProperties();
@@ -49,8 +49,8 @@ JointInternalPowerProbe::JointInternalPowerProbe()
 
 //_____________________________________________________________________________
 // Convenience constructor.
-JointInternalPowerProbe::JointInternalPowerProbe(const Array<string>& joint_names, 
-    const bool sum_powers_together, const double exponent)
+JointInternalPowerProbe::JointInternalPowerProbe(const Array<string>& joint_names,
+        const bool sum_powers_together, const double exponent)
 {
     setNull();
     constructProperties();
@@ -64,7 +64,7 @@ JointInternalPowerProbe::JointInternalPowerProbe(const Array<string>& joint_name
 // Set the data members of this JointInternalPowerProbe to their null values.
 void JointInternalPowerProbe::setNull()
 {
-	setAuthors("Tim Dorn");
+    setAuthors("Tim Dorn");
     _jointIndex.clear();
 }
 
@@ -154,15 +154,15 @@ void JointInternalPowerProbe::connectToModel(Model& aModel)
     Super::connectToModel(aModel);
 
     // Check to see if 'all' joints are selected for probing.
-	if(getProperty_joint_names().size() > 0)
-	{
-		if(IO::Uppercase(get_joint_names(0)) == "ALL")
-		{
-			Array<string> allJointNames;
-			_model->getJointSet().getNames(allJointNames);
-			set_joint_names(allJointNames);
-		}
-	}
+    if(getProperty_joint_names().size() > 0)
+    {
+        if(IO::Uppercase(get_joint_names(0)) == "ALL")
+        {
+            Array<string> allJointNames;
+            _model->getJointSet().getNames(allJointNames);
+            set_joint_names(allJointNames);
+        }
+    }
 
     // check that each Joints in the joint_names array exists in the model.
     _jointIndex.clear();
@@ -171,8 +171,8 @@ void JointInternalPowerProbe::connectToModel(Model& aModel)
         const string& jointName = getJointNames()[i];
         const int k = _model->getJointSet().getIndex(jointName);
         if (k<0) {
-            string errorMessage = getConcreteClassName() + ": Invalid Joint '" 
-                    + jointName + "' specified in <joint_names>.";
+            string errorMessage = getConcreteClassName() + ": Invalid Joint '"
+                                  + jointName + "' specified in <joint_names>.";
             std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
             setDisabled(true);
         }
@@ -207,7 +207,7 @@ SimTK::Vector JointInternalPowerProbe::computeProbeInputs(const State& s) const
     {
         // Get the "Joint" power from the Joint object.
         const double jointPower = _model->getJointSet()[_jointIndex[i]].calcPower(s);
-        
+
         // Append to output vector.
         if (getSumPowersTogether())
             TotalP(0) += std::pow(jointPower, getExponent());
@@ -220,7 +220,7 @@ SimTK::Vector JointInternalPowerProbe::computeProbeInputs(const State& s) const
 
 
 //_____________________________________________________________________________
-/** 
+/**
  * Returns the number of probe inputs in the vector returned by computeProbeInputs().
  */
 int JointInternalPowerProbe::getNumProbeInputs() const
@@ -233,10 +233,10 @@ int JointInternalPowerProbe::getNumProbeInputs() const
 
 
 //_____________________________________________________________________________
-/** 
+/**
  * Provide labels for the probe values being reported.
  */
-Array<string> JointInternalPowerProbe::getProbeOutputLabels() const 
+Array<string> JointInternalPowerProbe::getProbeOutputLabels() const
 {
     Array<string> labels;
 

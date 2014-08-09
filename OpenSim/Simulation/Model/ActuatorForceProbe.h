@@ -26,13 +26,13 @@
 #include "Probe.h"
 #include "Model.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
 //==============================================================================
 //                               FORCE PROBE
 //==============================================================================
 /**
- * ActuatorForceProbe is a ModelComponent Probe for computing an operation on a 
+ * ActuatorForceProbe is a ModelComponent Probe for computing an operation on a
  * force or sum of forces in the model during a simulation.
  * E.g. Impulse is the integral of force with respect to time.
  *
@@ -41,7 +41,7 @@ namespace OpenSim {
 
 
 class OSIMSIMULATION_API ActuatorForceProbe : public Probe {
-OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorForceProbe, Probe);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorForceProbe, Probe);
 public:
 //==============================================================================
 // PROPERTIES
@@ -52,20 +52,20 @@ public:
 
     /** List of Actuator forces to probe.  **/
     OpenSim_DECLARE_LIST_PROPERTY(actuator_names, std::string,
-        "Specify a list of model actuator forces whose value should be calculated."
-        "Use 'all' to probe all actuators.");
+                                  "Specify a list of model actuator forces whose value should be calculated."
+                                  "Use 'all' to probe all actuators.");
 
     /** Flag to specify whether to report the sum of all forces,
         or report each force value separately.  **/
     OpenSim_DECLARE_PROPERTY(sum_forces_together, bool,
-        "Flag to specify whether to report the sum of all actuator forces, "
-        "or report each force value separately.");
+                             "Flag to specify whether to report the sum of all actuator forces, "
+                             "or report each force value separately.");
 
-    /** Element-wise power exponent to apply to each force prior to the Probe operation. 
+    /** Element-wise power exponent to apply to each force prior to the Probe operation.
     For example, if two actuators A1 and A2 are given in actuator_names, then the
     Probe value will be equal to Force_A1^exponent + Force_A2^exponent.  **/
     OpenSim_DECLARE_PROPERTY(exponent, double,
-        "Element-wise power exponent to apply to each actuator force prior to the Probe operation.");
+                             "Element-wise power exponent to apply to each actuator force prior to the Probe operation.");
 
     /**@}**/
 
@@ -78,8 +78,8 @@ public:
     /** Default constructor */
     ActuatorForceProbe();
     /** Convenience constructor */
-    ActuatorForceProbe(const Array<std::string>& actuator_names, 
-        const bool sum_forces_together, const double exponent);
+    ActuatorForceProbe(const Array<std::string>& actuator_names,
+                       const bool sum_forces_together, const double exponent);
 
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.
@@ -117,7 +117,7 @@ public:
     /** Returns the number of probe inputs in the vector returned by computeProbeInputs(). */
     int getNumProbeInputs() const override;
 
-    /** Returns the column labels of the probe values for reporting. 
+    /** Returns the column labels of the probe values for reporting.
         Currently uses the Probe name as the column label, so be sure
         to name your probe appropiately! */
     virtual OpenSim::Array<std::string> getProbeOutputLabels() const override;

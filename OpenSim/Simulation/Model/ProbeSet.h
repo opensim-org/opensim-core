@@ -29,10 +29,10 @@
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
 
 #ifdef SWIG
-    #ifdef OSIMSIMULATION_API
-        #undef OSIMSIMULATION_API
-        #define OSIMSIMULATION_API
-    #endif
+#ifdef OSIMSIMULATION_API
+#undef OSIMSIMULATION_API
+#define OSIMSIMULATION_API
+#endif
 #endif
 
 namespace OpenSim {
@@ -48,7 +48,7 @@ namespace OpenSim {
  */
 
 class OSIMSIMULATION_API ProbeSet : public ModelComponentSet<Probe> {
-OpenSim_DECLARE_CONCRETE_OBJECT(ProbeSet, ModelComponentSet<Probe>);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ProbeSet, ModelComponentSet<Probe>);
 
 public:
     ProbeSet();

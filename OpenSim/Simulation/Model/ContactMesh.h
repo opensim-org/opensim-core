@@ -33,46 +33,46 @@ namespace OpenSim {
  * @author Peter Eastman
  */
 class OSIMSIMULATION_API ContactMesh : public ContactGeometry {
-OpenSim_DECLARE_CONCRETE_OBJECT(ContactMesh, ContactGeometry);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ContactMesh, ContactGeometry);
 
 //=============================================================================
 // DATA
 //=============================================================================
 private:
     SimTK::ContactGeometry::TriangleMesh* _geometry;
-	PropertyStr _filenameProp;
+    PropertyStr _filenameProp;
     std::string& _filename;
 public:
 //=============================================================================
 // METHODS
 //=============================================================================
-	// CONSTRUCTION
+    // CONSTRUCTION
     /**
      * Construct an empty, uninitialized ContactMesh.
      */
     ContactMesh();
-	/**
-	 * Construct a ContactMesh.
-	 *
-	 * @param filename     the name of the file to load the mesh from
-	 * @param location     the location of the mesh within the Body it is attached to
-	 * @param orientation  the orientation of the mesh within the Body it is attached to
-	 * @param body         the Body this mesh is attached to
-	 */
+    /**
+     * Construct a ContactMesh.
+     *
+     * @param filename     the name of the file to load the mesh from
+     * @param location     the location of the mesh within the Body it is attached to
+     * @param orientation  the orientation of the mesh within the Body it is attached to
+     * @param body         the Body this mesh is attached to
+     */
     ContactMesh(const std::string& filename, const SimTK::Vec3& location, const SimTK::Vec3& orientation, Body& body);
-	/**
-	 * Construct a ContactMesh.
-	 *
-	 * @param filename     the name of the file to load the mesh from
-	 * @param location     the location of the mesh within the Body it is attached to
-	 * @param orientation  the orientation of the mesh within the Body it is attached to
-	 * @param body         the Body this mesh is attached to
+    /**
+     * Construct a ContactMesh.
+     *
+     * @param filename     the name of the file to load the mesh from
+     * @param location     the location of the mesh within the Body it is attached to
+     * @param orientation  the orientation of the mesh within the Body it is attached to
+     * @param body         the Body this mesh is attached to
      * @param name         the name of this object
-	 */
+     */
     ContactMesh(const std::string& filename, const SimTK::Vec3& location, const SimTK::Vec3& orientation, Body& body, const std::string& name);
-	ContactMesh(const ContactMesh& geom);
+    ContactMesh(const ContactMesh& geom);
 
-    #ifndef SWIG
+#ifndef SWIG
     ContactMesh& operator=(const ContactMesh& source) {
         if (&source != this) {
             Super::operator=(source);
@@ -80,7 +80,7 @@ public:
         }
         return *this;
     }
-    #endif
+#endif
 
     void copyData(const ContactMesh& source) {
         _geometry = source._geometry;
@@ -88,19 +88,19 @@ public:
     }
     SimTK::ContactGeometry createSimTKContactGeometry();
 
-	// ACCESSORS
-	/**
-	 * Get the name of the file the mesh is loaded from.
-	 */
+    // ACCESSORS
+    /**
+     * Get the name of the file the mesh is loaded from.
+     */
     const std::string& getFilename() const;
-	/**
-	 * Set the name of the file to load the mesh from.
-	 */
+    /**
+     * Set the name of the file to load the mesh from.
+     */
     void setFilename(const std::string& filename);
 private:
     // INITIALIZATION
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
     /**
      * Load the mesh from disk.
      */

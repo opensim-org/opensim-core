@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -47,10 +47,10 @@ using namespace std;
  */
 PropertyStrArray::
 PropertyStrArray(const string &aName,
-	const Array<string> &aArray) :
-	Property_Deprecated(Property_Deprecated::StrArray,aName), _array("")
+                 const Array<string> &aArray) :
+    Property_Deprecated(Property_Deprecated::StrArray,aName), _array("")
 {
-	_array = aArray;
+    _array = aArray;
 }
 //_____________________________________________________________________________
 /**
@@ -58,7 +58,7 @@ PropertyStrArray(const string &aName,
  */
 PropertyStrArray::
 PropertyStrArray() :
-	Property_Deprecated(Property_Deprecated::StrArray,"StrArrayPropertyName"), _array("")
+    Property_Deprecated(Property_Deprecated::StrArray,"StrArrayPropertyName"), _array("")
 {
 }
 //_____________________________________________________________________________
@@ -67,12 +67,12 @@ PropertyStrArray() :
  */
 PropertyStrArray::
 PropertyStrArray(const string &aName,
-	int aSize,const string *aArray) :
-	Property_Deprecated(Property_Deprecated::StrArray,aName), _array("")
+                 int aSize,const string *aArray) :
+    Property_Deprecated(Property_Deprecated::StrArray,aName), _array("")
 {
-	if(aSize<=0) return;
-	if(aArray==NULL) return;
-	_array.append(aSize,aArray);
+    if(aSize<=0) return;
+    if(aArray==NULL) return;
+    _array.append(aSize,aArray);
 }
 //_____________________________________________________________________________
 /**
@@ -81,9 +81,9 @@ PropertyStrArray(const string &aName,
  * @param aProperty Property_Deprecated to be copied.
  */
 PropertyStrArray::PropertyStrArray(const PropertyStrArray &aProperty) :
-	Property_Deprecated(aProperty), _array("")
+    Property_Deprecated(aProperty), _array("")
 {
-	_array = aProperty._array;
+    _array = aProperty._array;
 }
 //_____________________________________________________________________________
 /**
@@ -95,8 +95,8 @@ PropertyStrArray::PropertyStrArray(const PropertyStrArray &aProperty) :
  */
 PropertyStrArray* PropertyStrArray::clone() const
 {
-	PropertyStrArray *property = new PropertyStrArray(*this);
-	return(property);
+    PropertyStrArray *property = new PropertyStrArray(*this);
+    return(property);
 }
 
 
@@ -116,9 +116,9 @@ PropertyStrArray* PropertyStrArray::clone() const
 PropertyStrArray& PropertyStrArray::
 operator=(const PropertyStrArray &aProperty)
 {
-	Property_Deprecated::operator =(aProperty);
-	_array = aProperty._array;
-	return(*this);
+    Property_Deprecated::operator =(aProperty);
+    _array = aProperty._array;
+    return(*this);
 }
 
 
@@ -137,7 +137,7 @@ operator=(const PropertyStrArray &aProperty)
 std::string PropertyStrArray::
 getTypeName() const
 {
-	return "string";
+    return "string";
 }
 
 //-----------------------------------------------------------------------------
@@ -152,7 +152,7 @@ getTypeName() const
 void PropertyStrArray::
 setValue(const Array<string>& aArray)
 {
-	_array = aArray;
+    _array = aArray;
 }
 //_____________________________________________________________________________
 /**
@@ -164,10 +164,10 @@ setValue(const Array<string>& aArray)
 void PropertyStrArray::
 setValue(int aSize,const string *aArray)
 {
-	_array.setSize(0);
-	if(aSize<=0) return;
-	if(aArray==NULL) return;
-	_array.append(aSize,aArray);
+    _array.setSize(0);
+    if(aSize<=0) return;
+    if(aArray==NULL) return;
+    _array.append(aSize,aArray);
 }
 //_____________________________________________________________________________
 /**
@@ -179,7 +179,7 @@ setValue(int aSize,const string *aArray)
 Array<string>& PropertyStrArray::
 getValueStrArray()
 {
-	return(_array);
+    return(_array);
 }
 //_____________________________________________________________________________
 /**
@@ -190,7 +190,7 @@ getValueStrArray()
 const Array<string>& PropertyStrArray::
 getValueStrArray() const
 {
-	return(_array);
+    return(_array);
 }
 //_____________________________________________________________________________
 /**
@@ -201,9 +201,9 @@ getValueStrArray() const
 string PropertyStrArray::
 toString() const
 {
-	string str = "(";
-	for(int i=0; i < _array.getSize(); i++)
-		str += (i>0?" ":"") + _array[i];
-	str += ")";
-	return str;
+    string str = "(";
+    for(int i=0; i < _array.getSize(); i++)
+        str += (i>0?" ":"") + _array[i];
+    str += ")";
+    return str;
 }

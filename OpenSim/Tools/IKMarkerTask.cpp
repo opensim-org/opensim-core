@@ -48,7 +48,7 @@ IKMarkerTask::IKMarkerTask()
  * Copy constructor.
  */
 IKMarkerTask::IKMarkerTask(const IKMarkerTask &aIKMarkerTask) :
-   IKTask(aIKMarkerTask)
+    IKTask(aIKMarkerTask)
 {
 }
 
@@ -63,7 +63,7 @@ IKMarkerTask::IKMarkerTask(const IKMarkerTask &aIKMarkerTask) :
  */
 IKMarkerTask& IKMarkerTask::operator=(const IKMarkerTask &aIKMarkerTask)
 {
-	IKTask::operator=(aIKMarkerTask);
+    IKTask::operator=(aIKMarkerTask);
 
-	return *this;
+    return *this;
 }

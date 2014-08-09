@@ -32,10 +32,10 @@
 #include "Tool.h"
 
 #ifdef SWIG
-	#ifdef OSIMTOOLS_API
-		#undef OSIMTOOLS_API
-		#define OSIMTOOLS_API
-	#endif
+#ifdef OSIMTOOLS_API
+#undef OSIMTOOLS_API
+#define OSIMTOOLS_API
+#endif
 #endif
 
 namespace OpenSim {
@@ -49,123 +49,145 @@ class Storage;
  * A Tool that performs an Inverse Kinematics analysis with a given model.
  * Inverse kinematics is the solution of internal coordinates that poses
  * the model such that the landmark locations (markers), affixed to the model,
- * minimize the weighted least-squares error with observations of markers 
+ * minimize the weighted least-squares error with observations of markers
  * in spatial coordinates. Observations of coordinates can also be included.
  *
  * @author Ajay Seth
  * @version 1.0
  */
 class OSIMTOOLS_API InverseKinematicsTool: public Tool {
-OpenSim_DECLARE_CONCRETE_OBJECT(InverseKinematicsTool, Tool);
+    OpenSim_DECLARE_CONCRETE_OBJECT(InverseKinematicsTool, Tool);
 
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
 private:
-	
-	/** Pointer to the model being investigated. */
-	Model *_model;
 
-	/** Name of the xml file used to deserialize or construct a model. */
-	PropertyStr _modelFileNameProp;
-	std::string &_modelFileName;
+    /** Pointer to the model being investigated. */
+    Model *_model;
 
-	/** The relative weight of the constraints. Infinity is a strictly enforced constraint. 
-		Any other non-zero positive scalar is the penalty factor for constraint violations. */
-	PropertyDbl _constraintWeightProp;
-	double &_constraintWeight;
+    /** Name of the xml file used to deserialize or construct a model. */
+    PropertyStr _modelFileNameProp;
+    std::string &_modelFileName;
 
-	/** The accuracy of the solution in absolute terms, i.e. the number of significant digits
-	    to which the solution can be trusted. */
-	PropertyDbl _accuracyProp;
-	double &_accuracy;
+    /** The relative weight of the constraints. Infinity is a strictly enforced constraint.
+    	Any other non-zero positive scalar is the penalty factor for constraint violations. */
+    PropertyDbl _constraintWeightProp;
+    double &_constraintWeight;
 
-	// Markers and coordinates to be matched and their respective weightings
-	PropertyObj _ikTaskSetProp;
-	IKTaskSet &_ikTaskSet;
+    /** The accuracy of the solution in absolute terms, i.e. the number of significant digits
+        to which the solution can be trusted. */
+    PropertyDbl _accuracyProp;
+    double &_accuracy;
 
-	// name of marker file that contains marker locations for IK solving
-	PropertyStr _markerFileNameProp;
-	std::string &_markerFileName;
+    // Markers and coordinates to be matched and their respective weightings
+    PropertyObj _ikTaskSetProp;
+    IKTaskSet &_ikTaskSet;
 
-	// name of storage file that contains coordinate values for IK solving
-	PropertyStr _coordinateFileNameProp;
-	std::string &_coordinateFileName;
+    // name of marker file that contains marker locations for IK solving
+    PropertyStr _markerFileNameProp;
+    std::string &_markerFileName;
 
-	// range of frames to solve in marker file, specified by time
-	PropertyDblArray _timeRangeProp;
-	Array<double> &_timeRange;
+    // name of storage file that contains coordinate values for IK solving
+    PropertyStr _coordinateFileNameProp;
+    std::string &_coordinateFileName;
 
-	// flag if inverse kinematics should report marker errors
-	PropertyBool _reportErrorsProp;
-	bool &_reportErrors;
+    // range of frames to solve in marker file, specified by time
+    PropertyDblArray _timeRangeProp;
+    Array<double> &_timeRange;
 
-	// name of motion file with inverse kinematics solution
-	PropertyStr _outputMotionFileNameProp;
-	std::string &_outputMotionFileName;
+    // flag if inverse kinematics should report marker errors
+    PropertyBool _reportErrorsProp;
+    bool &_reportErrors;
 
-	// flag indicating whether or not to resulting marker locations
-	PropertyBool _reportMarkerLocationsProp;
-	bool &_reportMarkerLocations;
+    // name of motion file with inverse kinematics solution
+    PropertyStr _outputMotionFileNameProp;
+    std::string &_outputMotionFileName;
+
+    // flag indicating whether or not to resulting marker locations
+    PropertyBool _reportMarkerLocationsProp;
+    bool &_reportMarkerLocations;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	virtual ~InverseKinematicsTool();
-	InverseKinematicsTool();
-	InverseKinematicsTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
-	InverseKinematicsTool(const InverseKinematicsTool &aObject);
+    virtual ~InverseKinematicsTool();
+    InverseKinematicsTool();
+    InverseKinematicsTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
+    InverseKinematicsTool(const InverseKinematicsTool &aObject);
 
-	/* Register types to be used when reading an InverseKinematicsTool object from xml file. */
-	static void registerTypes();
-	/* Handle reading older formats/Versioning */
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    /* Register types to be used when reading an InverseKinematicsTool object from xml file. */
+    static void registerTypes();
+    /* Handle reading older formats/Versioning */
+    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
-	//---- Setters and getters for various attributes
-	void setModel(Model& aModel) { _model = &aModel; };
-	void setStartTime(double d) { _timeRange[0] = d; };
-	double getStartTime() const {return  _timeRange[0]; };
+    //---- Setters and getters for various attributes
+    void setModel(Model& aModel) {
+        _model = &aModel;
+    };
+    void setStartTime(double d) {
+        _timeRange[0] = d;
+    };
+    double getStartTime() const {
+        return  _timeRange[0];
+    };
 
-	void setEndTime(double d) { _timeRange[1] = d; };
-	double getEndTime() const {return  _timeRange[1]; };
+    void setEndTime(double d) {
+        _timeRange[1] = d;
+    };
+    double getEndTime() const {
+        return  _timeRange[1];
+    };
 
-	void setMarkerDataFileName(const std::string& markerDataFileName) { _markerFileName=markerDataFileName;};
-	const std::string& getMarkerDataFileName() const { return  _markerFileName;};
+    void setMarkerDataFileName(const std::string& markerDataFileName) {
+        _markerFileName=markerDataFileName;
+    };
+    const std::string& getMarkerDataFileName() const {
+        return  _markerFileName;
+    };
 
-	void setCoordinateFileName(const std::string& coordDataFileName) { _coordinateFileName=coordDataFileName;};
-	const std::string& getCoordinateFileName() const { return  _coordinateFileName;};
-    
-	//const OpenSim::Storage& getOutputStorage() const;
+    void setCoordinateFileName(const std::string& coordDataFileName) {
+        _coordinateFileName=coordDataFileName;
+    };
+    const std::string& getCoordinateFileName() const {
+        return  _coordinateFileName;
+    };
+
+    //const OpenSim::Storage& getOutputStorage() const;
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	InverseKinematicsTool&
-		operator=(const InverseKinematicsTool &aInverseKinematicsTool);
+    InverseKinematicsTool&
+    operator=(const InverseKinematicsTool &aInverseKinematicsTool);
 #endif
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	void setOutputMotionFileName(const std::string aOutputMotionFileName) {
-		_outputMotionFileName = aOutputMotionFileName;
-	}
-	std::string getOutputMotionFileName() { return _outputMotionFileName;}
-	IKTaskSet& getIKTaskSet() { return _ikTaskSet; }
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    void setOutputMotionFileName(const std::string aOutputMotionFileName) {
+        _outputMotionFileName = aOutputMotionFileName;
+    }
+    std::string getOutputMotionFileName() {
+        return _outputMotionFileName;
+    }
+    IKTaskSet& getIKTaskSet() {
+        return _ikTaskSet;
+    }
 
-	//--------------------------------------------------------------------------
-	// INTERFACE
-	//--------------------------------------------------------------------------
-	virtual bool run() SWIG_DECLARE_EXCEPTION;
+    //--------------------------------------------------------------------------
+    // INTERFACE
+    //--------------------------------------------------------------------------
+    virtual bool run() SWIG_DECLARE_EXCEPTION;
 
 
 //=============================================================================

@@ -44,96 +44,108 @@ namespace OpenSim {
  * @version 1.0
  */
 class OSIMCOMMON_API Sine : public Function {
-OpenSim_DECLARE_CONCRETE_OBJECT(Sine, Function);
+    OpenSim_DECLARE_CONCRETE_OBJECT(Sine, Function);
 
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
 protected:
 
-	PropertyDbl _amplitudeProp;
-	double &_amplitude;
+    PropertyDbl _amplitudeProp;
+    double &_amplitude;
 
-	PropertyDbl _omegaProp;
-	double &_omega;
+    PropertyDbl _omegaProp;
+    double &_omega;
 
-	PropertyDbl _phaseProp;
-	double &_phase;
+    PropertyDbl _phaseProp;
+    double &_phase;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	Sine() : _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_phaseProp.getValueDbl()) { setupProperties();}
-	// Convenience Constructor
-	Sine(double amplitude, double omega, double phase) : _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_phaseProp.getValueDbl()) {
-		setupProperties();
-		_amplitude = amplitude;  _omega = omega;  _phase = phase; 
-	}
-	// Copy Constructor
-	Sine(const Sine &aFunc): _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_phaseProp.getValueDbl()) {
-			setupProperties();
-			_amplitude = aFunc._amplitude;  _omega = aFunc._omega;  _phase = aFunc._phase; 
-	};
-	virtual ~Sine() {};
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    Sine() : _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_phaseProp.getValueDbl()) {
+        setupProperties();
+    }
+    // Convenience Constructor
+    Sine(double amplitude, double omega, double phase) : _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_phaseProp.getValueDbl()) {
+        setupProperties();
+        _amplitude = amplitude;
+        _omega = omega;
+        _phase = phase;
+    }
+    // Copy Constructor
+    Sine(const Sine &aFunc): _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_phaseProp.getValueDbl()) {
+        setupProperties();
+        _amplitude = aFunc._amplitude;
+        _omega = aFunc._omega;
+        _phase = aFunc._phase;
+    };
+    virtual ~Sine() {};
 
 private:
-	void setupProperties() {
-		_amplitudeProp.setName("amplitude");
-		_amplitudeProp.setComment("amplitude of the sinusoidal function");
-		_amplitudeProp.setValue(1);
-		_propertySet.append(&_amplitudeProp);
+    void setupProperties() {
+        _amplitudeProp.setName("amplitude");
+        _amplitudeProp.setComment("amplitude of the sinusoidal function");
+        _amplitudeProp.setValue(1);
+        _propertySet.append(&_amplitudeProp);
 
-		_omegaProp.setName("omega");
-		_omegaProp.setComment("the angular frequency (omega) in radians/sec");
-		_omegaProp.setValue(1);
-		_propertySet.append(&_omegaProp);
+        _omegaProp.setName("omega");
+        _omegaProp.setComment("the angular frequency (omega) in radians/sec");
+        _omegaProp.setValue(1);
+        _propertySet.append(&_omegaProp);
 
-		_phaseProp.setName("phase");
-		_phaseProp.setComment("the phase shift of the sinusoidal function");
-		_phaseProp.setValue(0);
-		_propertySet.append(&_phaseProp);
-	}
+        _phaseProp.setName("phase");
+        _phaseProp.setComment("the phase shift of the sinusoidal function");
+        _phaseProp.setValue(0);
+        _propertySet.append(&_phaseProp);
+    }
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
-	Sine& operator=(const Sine &func)
-	{
-		Function::operator=(func);
-		_amplitude = func._amplitude;  _omega = func._omega;  _phase = func._phase; 
-		return(*this);
-	}
-	//--------------------------------------------------------------------------
-	// SET AND GET
-	//--------------------------------------------------------------------------
+    Sine& operator=(const Sine &func)
+    {
+        Function::operator=(func);
+        _amplitude = func._amplitude;
+        _omega = func._omega;
+        _phase = func._phase;
+        return(*this);
+    }
+    //--------------------------------------------------------------------------
+    // SET AND GET
+    //--------------------------------------------------------------------------
 public:
 
-	//--------------------------------------------------------------------------
-	// EVALUATION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // EVALUATION
+    //--------------------------------------------------------------------------
     virtual double calcValue(const SimTK::Vector& x) const
-	{
-		return _amplitude*sin(_omega*x[0] + _phase);
-	}
-	
-	double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const
-	{
-		int n = (int)derivComponents.size();
+    {
+        return _amplitude*sin(_omega*x[0] + _phase);
+    }
 
-		return _amplitude*pow(_omega,n)*sin(_omega*x[0] + _phase + n*SimTK::Pi/2);
-	}
+    double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const
+    {
+        int n = (int)derivComponents.size();
 
-	SimTK::Function* createSimTKFunction() const {
-		return new FunctionAdapter(*this);
-	}
-   
-	int getArgumentSize() const {return 1;}
-	int getMaxDerivativeOrder() const {return 10;}
+        return _amplitude*pow(_omega,n)*sin(_omega*x[0] + _phase + n*SimTK::Pi/2);
+    }
+
+    SimTK::Function* createSimTKFunction() const {
+        return new FunctionAdapter(*this);
+    }
+
+    int getArgumentSize() const {
+        return 1;
+    }
+    int getMaxDerivativeOrder() const {
+        return 10;
+    }
 
 //=============================================================================
 };	// END class Sine

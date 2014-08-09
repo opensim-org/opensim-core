@@ -45,7 +45,7 @@ class SimbodyEngine;
 //=============================================================================
 /**
  * An abstract class defining an OpenSim UnilateralConstraint.
- * Specific UnilateralConstraints should be derived from this class. 
+ * Specific UnilateralConstraints should be derived from this class.
  *
  * It is expeced that constraints used to model contact will be unilateral.
  * Furthermore, complex contact constraints can themselves employ several
@@ -59,15 +59,15 @@ class SimbodyEngine;
  * @version 1.0
  */
 class OSIMSIMULATION_API UnilateralConstraint : public Constraint {
-OpenSim_DECLARE_ABSTRACT_OBJECT(UnilateralConstraint, Constraint);
+    OpenSim_DECLARE_ABSTRACT_OBJECT(UnilateralConstraint, Constraint);
 
 //=============================================================================
 // DATA
 //=============================================================================
 
 protected:
-	/** number of constraint equations and thus unilateral conditions to be satisfied */
-	int _numConstraintEquations;
+    /** number of constraint equations and thus unilateral conditions to be satisfied */
+    int _numConstraintEquations;
 
 //=============================================================================
 // METHODS
@@ -76,20 +76,24 @@ protected:
 // CONSTRUCTION
 //--------------------------------------------------------------------------
 public:
-	UnilateralConstraint();
-	virtual ~UnilateralConstraint();
+    UnilateralConstraint();
+    virtual ~UnilateralConstraint();
 
-	virtual int getNumConstraintEquations() {return _numConstraintEquations;};
+    virtual int getNumConstraintEquations() {
+        return _numConstraintEquations;
+    };
 
-	// The unilateral conditions for this constraint.
-	virtual std::vector<bool> unilateralConditionsSatisfied(const SimTK::State &s)
-		{ return std::vector<bool>(_numConstraintEquations, false); };
+    // The unilateral conditions for this constraint.
+    virtual std::vector<bool> unilateralConditionsSatisfied(const SimTK::State &s)
+    {
+        return std::vector<bool>(_numConstraintEquations, false);
+    };
 
 protected:
-	void connectToModel(Model& aModel) override;
+    void connectToModel(Model& aModel) override;
 
 private:
-	void setNull();
+    void setNull();
 
 //=============================================================================
 };	// END of class Constraint

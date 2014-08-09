@@ -37,32 +37,32 @@ using namespace std;
 //==============================================================================
 // CONSTRUCTOR
 //==============================================================================
-// Uses default (compiler-generated) destructor, copy constructor, copy 
+// Uses default (compiler-generated) destructor, copy constructor, copy
 // assignment operator.
 
 //_____________________________________________________________________________
 // Also serves as default constructor (with coordinateName="").
 CoordinateActuator::CoordinateActuator(const string& coordinateName)
 {
-	setNull();
+    setNull();
     constructProperties();
 
     if (!coordinateName.empty())
-	    set_coordinate(coordinateName);
+        set_coordinate(coordinateName);
 }
 //_____________________________________________________________________________
 // Set the data members of this actuator to their null values.
 void CoordinateActuator::setNull()
 {
-	setAuthors("Ajay Seth");
+    setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________
 // Allocate and initialize properties.
 void CoordinateActuator::constructProperties()
 {
-	constructProperty_coordinate();
-	constructProperty_optimal_force(1.0);
+    constructProperty_coordinate();
+    constructProperty_optimal_force(1.0);
 }
 
 
@@ -80,9 +80,9 @@ void CoordinateActuator::constructProperties()
  */
 void CoordinateActuator::setCoordinate(Coordinate* coordinate)
 {
-	_coord = coordinate;
-	if (coordinate)
-		set_coordinate(coordinate->getName());
+    _coord = coordinate;
+    if (coordinate)
+        set_coordinate(coordinate->getName());
 }
 //_____________________________________________________________________________
 /**
@@ -93,7 +93,7 @@ void CoordinateActuator::setCoordinate(Coordinate* coordinate)
  */
 Coordinate* CoordinateActuator::getCoordinate() const
 {
-	return _coord;
+    return _coord;
 }
 
 //-----------------------------------------------------------------------------
@@ -107,7 +107,7 @@ Coordinate* CoordinateActuator::getCoordinate() const
  */
 void CoordinateActuator::setOptimalForce(double optimalForce)
 {
-	set_optimal_force(optimalForce);
+    set_optimal_force(optimalForce);
 }
 //_____________________________________________________________________________
 /**
@@ -117,7 +117,7 @@ void CoordinateActuator::setOptimalForce(double optimalForce)
  */
 double CoordinateActuator::getOptimalForce() const
 {
-	return get_optimal_force();
+    return get_optimal_force();
 }
 //_____________________________________________________________________________
 /**
@@ -127,7 +127,7 @@ double CoordinateActuator::getOptimalForce() const
  */
 double CoordinateActuator::getStress( const SimTK::State& s) const
 {
-	return std::abs(getForce(s) / getOptimalForce()); 
+    return std::abs(getForce(s) / getOptimalForce());
 }
 
 
@@ -141,11 +141,11 @@ double CoordinateActuator::getStress( const SimTK::State& s) const
  */
 double CoordinateActuator::computeActuation( const SimTK::State& s ) const
 {
-	if(!_model)
-		return 0.0;
+    if(!_model)
+        return 0.0;
 
-	// FORCE
-	return getControl(s) * getOptimalForce();
+    // FORCE
+    return getControl(s) * getOptimalForce();
 }
 
 
@@ -158,20 +158,20 @@ double CoordinateActuator::computeActuation( const SimTK::State& s ) const
 ForceSet *CoordinateActuator::
 CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel,double aOptimalForce,bool aIncludeLockedAndConstrainedCoordinates)
 {
-	ForceSet& as = aModel.updForceSet();
-	as.setSize(0);
-	const CoordinateSet& cs = aModel.getCoordinateSet();
-	for(int i=0; i<cs.getSize(); i++) {
-		if(!aIncludeLockedAndConstrainedCoordinates && (cs[i].isConstrained(s))) continue;
-		CoordinateActuator *actuator = new CoordinateActuator();
-		actuator->setCoordinate(&cs.get(i));
-		actuator->setName(cs.get(i).getName()+"_actuator");
-		actuator->setOptimalForce(aOptimalForce);
-		as.append(actuator);
-	}
-	as.invokeConnectToModel(aModel);
-	aModel.invalidateSystem();
-	return &as;
+    ForceSet& as = aModel.updForceSet();
+    as.setSize(0);
+    const CoordinateSet& cs = aModel.getCoordinateSet();
+    for(int i=0; i<cs.getSize(); i++) {
+        if(!aIncludeLockedAndConstrainedCoordinates && (cs[i].isConstrained(s))) continue;
+        CoordinateActuator *actuator = new CoordinateActuator();
+        actuator->setCoordinate(&cs.get(i));
+        actuator->setName(cs.get(i).getName()+"_actuator");
+        actuator->setOptimalForce(aOptimalForce);
+        as.append(actuator);
+    }
+    as.invokeConnectToModel(aModel);
+    aModel.invalidateSystem();
+    return &as;
 }
 
 //==============================================================================
@@ -181,32 +181,32 @@ CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel
 /**
  * Apply the actuator force to BodyA and BodyB.
  */
-void CoordinateActuator::computeForce( const SimTK::State& s, 
-							   SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							   SimTK::Vector& mobilityForces) const
+void CoordinateActuator::computeForce( const SimTK::State& s,
+                                       SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+                                       SimTK::Vector& mobilityForces) const
 {
-	if(!_model) return;
+    if(!_model) return;
 
-   double force;
+    double force;
     if( isForceOverriden(s) ) {
-       force = computeOverrideForce(s);
+        force = computeOverrideForce(s);
     } else {
-       force = computeActuation(s);
+        force = computeActuation(s);
     }
     setForce(s,  force );
 
-	if(isCoordinateValid()){
-       applyGeneralizedForce(s, *_coord, getForce(s), mobilityForces);
+    if(isCoordinateValid()) {
+        applyGeneralizedForce(s, *_coord, getForce(s), mobilityForces);
     } else {
-       std::cout << "CoordinateActuator::computeForce  Invalid coordinate " << std::endl;
+        std::cout << "CoordinateActuator::computeForce  Invalid coordinate " << std::endl;
     }
 }
 
 double CoordinateActuator::
 getSpeed( const SimTK::State& s) const
 {
-	assert(_coord);
-	return _coord->getSpeedValue(s);
+    assert(_coord);
+    return _coord->getSpeedValue(s);
 };
 
 //_____________________________________________________________________________
@@ -218,20 +218,20 @@ getSpeed( const SimTK::State& s) const
  */
 void CoordinateActuator::connectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel);
+    Super::connectToModel(aModel);
 
-	string errorMessage;
+    string errorMessage;
 
     // This will fail if no coordinate has been specified.
-	const string& coordName = get_coordinate();
+    const string& coordName = get_coordinate();
 
-	// Look up the coordinate
-	if (!_model->updCoordinateSet().contains(coordName)) {
-		errorMessage = "CoordinateActuator: Invalid coordinate (" + coordName + ") specified in Actuator " + getName();
-		throw (Exception(errorMessage.c_str()));
-	}
-	else
-		_coord = &_model->updCoordinateSet().get(coordName);
+    // Look up the coordinate
+    if (!_model->updCoordinateSet().contains(coordName)) {
+        errorMessage = "CoordinateActuator: Invalid coordinate (" + coordName + ") specified in Actuator " + getName();
+        throw (Exception(errorMessage.c_str()));
+    }
+    else
+        _coord = &_model->updCoordinateSet().get(coordName);
 }
 
 //_____________________________________________________________________________
@@ -240,17 +240,17 @@ void CoordinateActuator::connectToModel(Model& aModel)
  */
 void CoordinateActuator::addToSystem(SimTK::MultibodySystem& system) const {
 
-     Super::addToSystem( system );
+    Super::addToSystem( system );
 }
 
 //_____________________________________________________________________________
 // Is the coordinate valid?
 bool CoordinateActuator::isCoordinateValid() const
 {
-	if ( !_model || !_coord )
-		return false;
+    if ( !_model || !_coord )
+        return false;
 
-	return true;
+    return true;
 }
 
 

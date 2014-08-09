@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  Author: Ayman Habib 
+/*  Author: Ayman Habib
  */
 
 
@@ -46,12 +46,12 @@ using namespace std;
  */
 PropertyTransform::
 PropertyTransform(const string &aName,
-	const SimTK::Transform& aTransform) :
-PropertyDblArray(aName, OpenSim::Array<double>(0., 6)),
-	_transform(aTransform)
+                  const SimTK::Transform& aTransform) :
+    PropertyDblArray(aName, OpenSim::Array<double>(0., 6)),
+    _transform(aTransform)
 {
-	setType(Transform);
-	getRotationsAndTranslationsAsArray6(&_array[0]);
+    setType(Transform);
+    getRotationsAndTranslationsAsArray6(&_array[0]);
     setAllowableListSize(6);
 }
 //_____________________________________________________________________________
@@ -60,13 +60,13 @@ PropertyDblArray(aName, OpenSim::Array<double>(0., 6)),
  */
 PropertyTransform::
 PropertyTransform(const string &aName,
-	const Array<double> &aArray) :
-PropertyDblArray(aName, aArray)
+                  const Array<double> &aArray) :
+    PropertyDblArray(aName, aArray)
 {
-	setType(Transform);
-	assert(aArray.getSize()==6);
-	_transform.updR().setRotationToBodyFixedXYZ(SimTK::Vec3::getAs(&aArray[0]));
-	_transform.updP() = SimTK::Vec3::getAs(&aArray[3]);
+    setType(Transform);
+    assert(aArray.getSize()==6);
+    _transform.updR().setRotationToBodyFixedXYZ(SimTK::Vec3::getAs(&aArray[0]));
+    _transform.updP() = SimTK::Vec3::getAs(&aArray[3]);
     setAllowableListSize(6);
 }
 //_____________________________________________________________________________
@@ -75,9 +75,9 @@ PropertyDblArray(aName, aArray)
  */
 PropertyTransform::
 PropertyTransform() :
-	PropertyDblArray("TransformPropertyName", OpenSim::Array<double>(0., 6))
+    PropertyDblArray("TransformPropertyName", OpenSim::Array<double>(0., 6))
 {
-	setType(Transform);
+    setType(Transform);
     setAllowableListSize(6);
 }
 //_____________________________________________________________________________
@@ -87,9 +87,9 @@ PropertyTransform() :
  * @param aProperty Property_Deprecated to be copied.
  */
 PropertyTransform::PropertyTransform(const PropertyTransform &aProperty) :
-	PropertyDblArray(aProperty)
+    PropertyDblArray(aProperty)
 {
-	_transform = aProperty._transform;
+    _transform = aProperty._transform;
 }
 //_____________________________________________________________________________
 /**
@@ -101,8 +101,8 @@ PropertyTransform::PropertyTransform(const PropertyTransform &aProperty) :
  */
 PropertyTransform* PropertyTransform::clone() const
 {
-	PropertyTransform *property = new PropertyTransform(*this);
-	return(property);
+    PropertyTransform *property = new PropertyTransform(*this);
+    return(property);
 }
 
 
@@ -122,9 +122,9 @@ PropertyTransform* PropertyTransform::clone() const
 PropertyTransform& PropertyTransform::
 operator=(const PropertyTransform &aProperty)
 {
-	PropertyDblArray::operator =(aProperty);
-	_transform = aProperty._transform;
-	return(*this);
+    PropertyDblArray::operator =(aProperty);
+    _transform = aProperty._transform;
+    return(*this);
 }
 
 
@@ -143,7 +143,7 @@ operator=(const PropertyTransform &aProperty)
 std::string PropertyTransform::
 getTypeName() const
 {
-	return("Transform");
+    return("Transform");
 }
 
 //-----------------------------------------------------------------------------
@@ -171,16 +171,16 @@ setValue(const Array<double>& aArray)
 void PropertyTransform::
 setValue(const SimTK::Transform &aTransform)
 {
-	_transform = aTransform;
-	getRotationsAndTranslationsAsArray6(&_array[0]);
+    _transform = aTransform;
+    getRotationsAndTranslationsAsArray6(&_array[0]);
 }
 void PropertyTransform::
 setValue(int aSize,const double aArray[])
 {
-	assert(aSize==6);
-	PropertyDblArray::setValue(aSize, aArray);
-	_transform.updR().setRotationToBodyFixedXYZ(SimTK::Vec3::getAs(&aArray[0]));
-	_transform.updP() = SimTK::Vec3::getAs(&aArray[3]);
+    assert(aSize==6);
+    PropertyDblArray::setValue(aSize, aArray);
+    _transform.updR().setRotationToBodyFixedXYZ(SimTK::Vec3::getAs(&aArray[0]));
+    _transform.updP() = SimTK::Vec3::getAs(&aArray[3]);
 }
 //_____________________________________________________________________________
 /**
@@ -192,7 +192,7 @@ setValue(int aSize,const double aArray[])
 SimTK::Transform& PropertyTransform::
 getValueTransform()
 {
-	return(_transform);
+    return(_transform);
 }
 //_____________________________________________________________________________
 /**
@@ -203,17 +203,17 @@ getValueTransform()
 const SimTK::Transform& PropertyTransform::
 getValueTransform() const
 {
-	return(_transform);
+    return(_transform);
 }
 void PropertyTransform::getRotationsAndTranslationsAsArray6(double aArray[]) const
 {
-	SimTK::Vec3 translations = _transform.p();
-	SimTK::Vec3 rotations = _transform.R().convertRotationToBodyFixedXYZ();
-	int i=0;
-	for(i=0; i<3; i++){
-		aArray[i] = rotations[i];
-		aArray[i+3] = translations[i];
-	}
+    SimTK::Vec3 translations = _transform.p();
+    SimTK::Vec3 rotations = _transform.R().convertRotationToBodyFixedXYZ();
+    int i=0;
+    for(i=0; i<3; i++) {
+        aArray[i] = rotations[i];
+        aArray[i+3] = translations[i];
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -224,12 +224,12 @@ void PropertyTransform::getRotationsAndTranslationsAsArray6(double aArray[]) con
 string PropertyTransform::
 toString() const
 {
-	string str = "(";
-	char pad[256];
-	double rawData[6];
-	getRotationsAndTranslationsAsArray6(rawData);
-	sprintf(pad, "%g %g %g %g %g %g", rawData[0], rawData[1], rawData[2], rawData[3], rawData[4], rawData[5]);
-	str += string(pad);
-	str += ")";
-	return str;
+    string str = "(";
+    char pad[256];
+    double rawData[6];
+    getRotationsAndTranslationsAsArray6(rawData);
+    sprintf(pad, "%g %g %g %g %g %g", rawData[0], rawData[1], rawData[2], rawData[3], rawData[4], rawData[5]);
+    str += string(pad);
+    str += ")";
+    return str;
 }

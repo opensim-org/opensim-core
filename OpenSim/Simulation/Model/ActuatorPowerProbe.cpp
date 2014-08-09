@@ -37,7 +37,7 @@ using namespace OpenSim;
 //=============================================================================
 //_____________________________________________________________________________
 // Default constructor.
-ActuatorPowerProbe::ActuatorPowerProbe() 
+ActuatorPowerProbe::ActuatorPowerProbe()
 {
     setNull();
     constructProperties();
@@ -45,8 +45,8 @@ ActuatorPowerProbe::ActuatorPowerProbe()
 
 //_____________________________________________________________________________
 // Convenience constructor.
-ActuatorPowerProbe::ActuatorPowerProbe(const Array<string> actuator_names, 
-    const bool sum_powers_together, const double exponent)
+ActuatorPowerProbe::ActuatorPowerProbe(const Array<string> actuator_names,
+                                       const bool sum_powers_together, const double exponent)
 {
     setNull();
     constructProperties();
@@ -148,17 +148,17 @@ void ActuatorPowerProbe::connectToModel(Model& model)
 {
     Super::connectToModel(model);
 
-	// Check to see if 'all' actuators are selected for probing.
-	if(getProperty_actuator_names().size() > 0)
-	{
-		if(IO::Uppercase(get_actuator_names(0)) == "ALL")
-		{
-			Array<string> allActNames;
-			_model->getActuators().getNames(allActNames);
-			set_actuator_names(allActNames);
-			//cout << "Set to all actuators: " << allActNames << endl;
-		}
-	}
+    // Check to see if 'all' actuators are selected for probing.
+    if(getProperty_actuator_names().size() > 0)
+    {
+        if(IO::Uppercase(get_actuator_names(0)) == "ALL")
+        {
+            Array<string> allActNames;
+            _model->getActuators().getNames(allActNames);
+            set_actuator_names(allActNames);
+            //cout << "Set to all actuators: " << allActNames << endl;
+        }
+    }
 
     // check that each Actuator in the actuator_names array exists in the model.
     _actuatorIndex.clear();
@@ -203,7 +203,7 @@ SimTK::Vector ActuatorPowerProbe::computeProbeInputs(const State& s) const
     {
         // Get the "Actuator" power from the Actuator object.
         const double actPower = _model->getActuators()[_actuatorIndex[i]].getPower(s);
-        
+
         // Append to output vector.
         if (getSumPowersTogether())
             TotalP(0) += std::pow(actPower, getExponent());
@@ -216,7 +216,7 @@ SimTK::Vector ActuatorPowerProbe::computeProbeInputs(const State& s) const
 
 
 //_____________________________________________________________________________
-/** 
+/**
  * Returns the number of probe inputs in the vector returned by computeProbeInputs().
  */
 int ActuatorPowerProbe::getNumProbeInputs() const
@@ -229,10 +229,10 @@ int ActuatorPowerProbe::getNumProbeInputs() const
 
 
 //_____________________________________________________________________________
-/** 
+/**
  * Provide labels for the probe values being reported.
  */
-Array<string> ActuatorPowerProbe::getProbeOutputLabels() const 
+Array<string> ActuatorPowerProbe::getProbeOutputLabels() const
 {
     Array<string> labels;
 

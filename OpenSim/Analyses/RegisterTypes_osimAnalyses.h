@@ -28,18 +28,18 @@
 
 extern "C" {
 
-OSIMANALYSES_API void RegisterTypes_osimAnalyses(); 
+    OSIMANALYSES_API void RegisterTypes_osimAnalyses();
 
 }
 // Excluding this from Doxygen until it has better documentation! -Sam Hamner
-    /// @cond
-class osimAnalysesInstantiator 
-{ 
-public: 
-        osimAnalysesInstantiator(); 
-private: 
-        void registerDllClasses(); 
-}; 
+/// @cond
+class osimAnalysesInstantiator
+{
+public:
+    osimAnalysesInstantiator();
+private:
+    void registerDllClasses();
+};
 /// @endcond
 #endif // __RegisterTypes_Analyses_h__
 

@@ -61,17 +61,17 @@ Kinematics::~Kinematics()
  * @param aModel Model for which the kinematics are to be recorded.
  */
 Kinematics::Kinematics(Model *aModel) :
-	Analysis(aModel)
+    Analysis(aModel)
 {
-	// NULL
-	setNull();
+    // NULL
+    setNull();
 
-	// DESCRIPTION
-	constructDescription();
+    // DESCRIPTION
+    constructDescription();
 
-	// CHECK MODEL
-	if(aModel==NULL) return;
-	setModel(*aModel);
+    // CHECK MODEL
+    if(aModel==NULL) return;
+    setModel(*aModel);
 
 }
 //=============================================================================
@@ -87,15 +87,15 @@ Kinematics::Kinematics(Model *aModel) :
  * @param aFileName File name of the document.
  */
 Kinematics::Kinematics(const std::string &aFileName):
-	Analysis(aFileName, false)
+    Analysis(aFileName, false)
 {
-	setNull();
+    setNull();
 
-	// Serialize from XML
-	updateFromXMLDocument();
+    // Serialize from XML
+    updateFromXMLDocument();
 
-	// CONSTRUCT DESCRIPTION AND LABELS
-	constructDescription();
+    // CONSTRUCT DESCRIPTION AND LABELS
+    constructDescription();
 
 }
 
@@ -106,15 +106,15 @@ Kinematics::Kinematics(const std::string &aFileName):
 void Kinematics::
 setNull()
 {
-	constructProperties();
+    constructProperties();
 
-	setName("Kinematics");
-	_pStore=_vStore=_aStore=NULL;
+    setName("Kinematics");
+    _pStore=_vStore=_aStore=NULL;
 
-	// Let the list own the storages so we don't have to manually delete them
-	_storageList.setMemoryOwner(true);
+    // Let the list own the storages so we don't have to manually delete them
+    _storageList.setMemoryOwner(true);
 
-	_recordAccelerations = true;
+    _recordAccelerations = true;
 }
 //_____________________________________________________________________________
 /**
@@ -123,10 +123,10 @@ setNull()
 void Kinematics::
 constructProperties()
 {
-	Array<std::string> coordArray;
-	coordArray.setSize(1);
-	coordArray[0] = "all";
-	constructProperty_coordinates(coordArray);
+    Array<std::string> coordArray;
+    coordArray.setSize(1);
+    coordArray[0] = "all";
+    constructProperty_coordinates(coordArray);
 }
 
 //=============================================================================
@@ -138,26 +138,26 @@ constructProperties()
  */
 void Kinematics::allocateStorage()
 {
-	//Free-up any past storages by resizing which will delete pointers
-	//if memory owner is set to true, as set in setNull() above
-	_storageList.setSize(0);
+    //Free-up any past storages by resizing which will delete pointers
+    //if memory owner is set to true, as set in setNull() above
+    _storageList.setSize(0);
 
-	// ACCELERATIONS
-	if(_recordAccelerations) {
-		_aStore = new Storage(1000,"Accelerations");
-		_aStore->setDescription(getDescription());
-		_storageList.append(_aStore);
-	}
+    // ACCELERATIONS
+    if(_recordAccelerations) {
+        _aStore = new Storage(1000,"Accelerations");
+        _aStore->setDescription(getDescription());
+        _storageList.append(_aStore);
+    }
 
-	// VELOCITIES
-	_vStore = new Storage(1000,"Speeds");
-	_vStore->setDescription(getDescription());
-	_storageList.append(_vStore);
+    // VELOCITIES
+    _vStore = new Storage(1000,"Speeds");
+    _vStore->setDescription(getDescription());
+    _storageList.append(_vStore);
 
-	// POSITIONS
-	_pStore = new Storage(1000,"Coordinates");
-	_pStore->setDescription(getDescription());
-	_storageList.append(_pStore);
+    // POSITIONS
+    _pStore = new Storage(1000,"Coordinates");
+    _pStore->setDescription(getDescription());
+    _storageList.append(_pStore);
 }
 
 
@@ -171,9 +171,18 @@ void Kinematics::allocateStorage()
 void Kinematics::
 deleteStorage()
 {
-	if(_aStore!=NULL) { delete _aStore;  _aStore=NULL; }
-	if(_vStore!=NULL) { delete _vStore;  _vStore=NULL; }
-	if(_pStore!=NULL) { delete _pStore;  _pStore=NULL; }
+    if(_aStore!=NULL) {
+        delete _aStore;
+        _aStore=NULL;
+    }
+    if(_vStore!=NULL) {
+        delete _vStore;
+        _vStore=NULL;
+    }
+    if(_pStore!=NULL) {
+        delete _pStore;
+        _pStore=NULL;
+    }
 }
 
 
@@ -184,30 +193,30 @@ deleteStorage()
 void Kinematics::
 updateCoordinatesToRecord()
 {
-	if(!_model) {
-		_coordinateIndices.setSize(0);
-		_values.setSize(0);
-		return;
-	}
+    if(!_model) {
+        _coordinateIndices.setSize(0);
+        _values.setSize(0);
+        return;
+    }
 
-	const CoordinateSet& coordSet = _model->getCoordinateSet();
-	_coordinateIndices.setSize(getProperty_coordinates().size());
-	for(int i=0; i<getProperty_coordinates().size(); i++) {
-		if(get_coordinates(i) == "all") {
-			_coordinateIndices.setSize(coordSet.getSize());
-			for(int j=0;j<coordSet.getSize();j++) _coordinateIndices[j]=j;
-			break;
-		}
-		
-		int index = coordSet.getIndex(get_coordinates(i));
-		if(index<0) 
-			throw Exception("Kinematics: ERR- Cound not find coordinate named '"+get_coordinates(i)+"'",__FILE__,__LINE__);
-		_coordinateIndices[i] = index;
-	}
-	_values.setSize(_coordinateIndices.getSize());
+    const CoordinateSet& coordSet = _model->getCoordinateSet();
+    _coordinateIndices.setSize(getProperty_coordinates().size());
+    for(int i=0; i<getProperty_coordinates().size(); i++) {
+        if(get_coordinates(i) == "all") {
+            _coordinateIndices.setSize(coordSet.getSize());
+            for(int j=0; j<coordSet.getSize(); j++) _coordinateIndices[j]=j;
+            break;
+        }
 
-	if(_values.getSize()==0) {
-         cout << "WARNING: Kinematics analysis has no coordinates to record values for" << endl;
+        int index = coordSet.getIndex(get_coordinates(i));
+        if(index<0)
+            throw Exception("Kinematics: ERR- Cound not find coordinate named '"+get_coordinates(i)+"'",__FILE__,__LINE__);
+        _coordinateIndices[i] = index;
+    }
+    _values.setSize(_coordinateIndices.getSize());
+
+    if(_values.getSize()==0) {
+        cout << "WARNING: Kinematics analysis has no coordinates to record values for" << endl;
     }
 }
 
@@ -224,17 +233,17 @@ updateCoordinatesToRecord()
 void Kinematics::
 constructDescription()
 {
-	char descrip[1024];
+    char descrip[1024];
 
-	strcpy(descrip,"\nUnits are S.I. units (second, meters, Newtons, ...)");
-	if(getInDegrees()) {
-		strcat(descrip,"\nAngles are in degrees.");
-	} else {
-		strcat(descrip,"\nAngles are in radians.");
-	}
-	strcat(descrip,"\n\n");
+    strcpy(descrip,"\nUnits are S.I. units (second, meters, Newtons, ...)");
+    if(getInDegrees()) {
+        strcat(descrip,"\nAngles are in degrees.");
+    } else {
+        strcat(descrip,"\nAngles are in radians.");
+    }
+    strcat(descrip,"\n\n");
 
-	setDescription(descrip);
+    setDescription(descrip);
 }
 
 //-----------------------------------------------------------------------------
@@ -247,33 +256,33 @@ constructDescription()
 void Kinematics::
 constructColumnLabels()
 {
-	// CHECK FOR NULL
-	if (!_model || _model->getNumSpeeds() == 0)
-	{
-		setColumnLabels(Array<string>());
-		return;
-	}
+    // CHECK FOR NULL
+    if (!_model || _model->getNumSpeeds() == 0)
+    {
+        setColumnLabels(Array<string>());
+        return;
+    }
 
-	Array<string> labels;
-	labels.append("time");
-	const CoordinateSet& cs = _model->getCoordinateSet();
-	for(int i=0; i<_coordinateIndices.getSize(); i++) {
-		labels.append(cs.get(_coordinateIndices[i]).getName());
-	}
+    Array<string> labels;
+    labels.append("time");
+    const CoordinateSet& cs = _model->getCoordinateSet();
+    for(int i=0; i<_coordinateIndices.getSize(); i++) {
+        labels.append(cs.get(_coordinateIndices[i]).getName());
+    }
 
-	setColumnLabels(labels);
-	if (_pStore){
-		_pStore->setColumnLabels(getColumnLabels());
-		if (getInDegrees()) _pStore->setInDegrees(true);
-	}
-	if (_vStore) {
-		_vStore->setColumnLabels(getColumnLabels());
-		if (getInDegrees()) _vStore->setInDegrees(true);
-	}
-	if (_aStore) {
-		_aStore->setColumnLabels(getColumnLabels());
-		if (getInDegrees()) _aStore->setInDegrees(true);
-	}
+    setColumnLabels(labels);
+    if (_pStore) {
+        _pStore->setColumnLabels(getColumnLabels());
+        if (getInDegrees()) _pStore->setInDegrees(true);
+    }
+    if (_vStore) {
+        _vStore->setColumnLabels(getColumnLabels());
+        if (getInDegrees()) _vStore->setInDegrees(true);
+    }
+    if (_aStore) {
+        _aStore->setColumnLabels(getColumnLabels());
+        if (getInDegrees()) _aStore->setInDegrees(true);
+    }
 }
 
 
@@ -289,7 +298,7 @@ constructColumnLabels()
 Storage* Kinematics::
 getAccelerationStorage()
 {
-	return(_aStore);
+    return(_aStore);
 }
 //_____________________________________________________________________________
 /**
@@ -300,7 +309,7 @@ getAccelerationStorage()
 Storage* Kinematics::
 getVelocityStorage()
 {
-	return(_vStore);
+    return(_vStore);
 }
 //_____________________________________________________________________________
 /**
@@ -311,7 +320,7 @@ getVelocityStorage()
 Storage* Kinematics::
 getPositionStorage()
 {
-	return(_pStore);
+    return(_pStore);
 }
 //_____________________________________________________________________________
 /**
@@ -319,15 +328,15 @@ getPositionStorage()
  */
 void Kinematics::setModel(Model& aModel)
 {
-	// BASE CLASS
-	Analysis::setModel(aModel);
+    // BASE CLASS
+    Analysis::setModel(aModel);
 
-	// Allocate storages to containt the results of the analysis
-	allocateStorage();
+    // Allocate storages to containt the results of the analysis
+    allocateStorage();
 
-	// UPDATE LABELS
-	updateCoordinatesToRecord();
-	constructColumnLabels();
+    // UPDATE LABELS
+    updateCoordinatesToRecord();
+    constructColumnLabels();
 }
 
 //-----------------------------------------------------------------------------
@@ -343,9 +352,9 @@ void Kinematics::setModel(Model& aModel)
 void Kinematics::
 setStorageCapacityIncrements(int aIncrement)
 {
-	if (_aStore) _aStore->setCapacityIncrement(aIncrement);
-	_vStore->setCapacityIncrement(aIncrement);
-	_pStore->setCapacityIncrement(aIncrement);
+    if (_aStore) _aStore->setCapacityIncrement(aIncrement);
+    _vStore->setCapacityIncrement(aIncrement);
+    _pStore->setCapacityIncrement(aIncrement);
 }
 
 
@@ -361,48 +370,48 @@ setStorageCapacityIncrements(int aIncrement)
  */
 int Kinematics::record(const SimTK::State& s)
 {
-	if(_recordAccelerations){
-		_model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
+    if(_recordAccelerations) {
+        _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
     }
-	else{
-		_model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
+    else {
+        _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
     }
-	// RECORD RESULTS
-	const CoordinateSet& cs = _model->getCoordinateSet();
-	int nvalues = _coordinateIndices.getSize();
-	for(int i=0;i<nvalues;i++){
-		_values[i] = cs[_coordinateIndices[i]].getValue(s);
-		if(getInDegrees() && (cs[_coordinateIndices[i]].getMotionType() == Coordinate::Rotational))
-			_values[i] *= SimTK_RADIAN_TO_DEGREE;
-	}
-	_pStore->append(s.getTime(),nvalues,&_values[0]);
+    // RECORD RESULTS
+    const CoordinateSet& cs = _model->getCoordinateSet();
+    int nvalues = _coordinateIndices.getSize();
+    for(int i=0; i<nvalues; i++) {
+        _values[i] = cs[_coordinateIndices[i]].getValue(s);
+        if(getInDegrees() && (cs[_coordinateIndices[i]].getMotionType() == Coordinate::Rotational))
+            _values[i] *= SimTK_RADIAN_TO_DEGREE;
+    }
+    _pStore->append(s.getTime(),nvalues,&_values[0]);
 
-	for(int i=0;i<nvalues;i++){
-		_values[i] = cs[_coordinateIndices[i]].getSpeedValue(s);
-		if(getInDegrees() && (cs[_coordinateIndices[i]].getMotionType() == Coordinate::Rotational))
-			_values[i] *= SimTK_RADIAN_TO_DEGREE;
-	}
+    for(int i=0; i<nvalues; i++) {
+        _values[i] = cs[_coordinateIndices[i]].getSpeedValue(s);
+        if(getInDegrees() && (cs[_coordinateIndices[i]].getMotionType() == Coordinate::Rotational))
+            _values[i] *= SimTK_RADIAN_TO_DEGREE;
+    }
 
-	_vStore->append(s.getTime(),nvalues,&_values[0]);
+    _vStore->append(s.getTime(),nvalues,&_values[0]);
 
-	if(_recordAccelerations) {
-		for(int i=0;i<nvalues;i++){
-			_values[i] = cs[_coordinateIndices[i]].getAccelerationValue(s);
-			if(getInDegrees() && (cs[_coordinateIndices[i]].getMotionType() == Coordinate::Rotational))
-				_values[i] *= SimTK_RADIAN_TO_DEGREE;
-		}
-		_aStore->append(s.getTime(),nvalues,&_values[0]);
-	}
+    if(_recordAccelerations) {
+        for(int i=0; i<nvalues; i++) {
+            _values[i] = cs[_coordinateIndices[i]].getAccelerationValue(s);
+            if(getInDegrees() && (cs[_coordinateIndices[i]].getMotionType() == Coordinate::Rotational))
+                _values[i] *= SimTK_RADIAN_TO_DEGREE;
+        }
+        _aStore->append(s.getTime(),nvalues,&_values[0]);
+    }
 
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration 
+ * This method is meant to be called at the begining of an integration
  *
  * @param s current state of System
  *
@@ -411,27 +420,27 @@ int Kinematics::record(const SimTK::State& s)
 int Kinematics::
 begin( SimTK::State& s )
 {
-	if(!proceed()) return(0);
+    if(!proceed()) return(0);
 
-	double time = s.getTime();
-	
-	// RESET STORAGE
-	_pStore->reset(time);
-	_vStore->reset(time);
-	if (_aStore) _aStore->reset(time);
+    double time = s.getTime();
 
-	// RECORD
-	int status = 0;
-	if(_pStore->getSize()<=0) {
-        if(_recordAccelerations && s.getSystemStage() < SimTK::Stage::Acceleration ) 
+    // RESET STORAGE
+    _pStore->reset(time);
+    _vStore->reset(time);
+    if (_aStore) _aStore->reset(time);
+
+    // RECORD
+    int status = 0;
+    if(_pStore->getSize()<=0) {
+        if(_recordAccelerations && s.getSystemStage() < SimTK::Stage::Acceleration )
             _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
-		else
-			_model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
+        else
+            _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
-		status = record(s);
-	}
+        status = record(s);
+    }
 
-	return(status);
+    return(status);
 }
 //_____________________________________________________________________________
 /**
@@ -439,7 +448,7 @@ begin( SimTK::State& s )
  * the execution of a forward integrations or after the integration by
  * feeding it the necessary data.
  *
- * When called during an integration, this method is meant to be called 
+ * When called during an integration, this method is meant to be called
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -452,16 +461,16 @@ begin( SimTK::State& s )
 int Kinematics::
 step(const SimTK::State& s, int stepNumber )
 {
-	if(proceed(stepNumber) && getOn()) record(s);
+    if(proceed(stepNumber) && getOn()) record(s);
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
  * This method is called at the end of an analysis so that any
  * necessary finalizations may be performed.
  *
- * This method is meant to be called at the end of an integration 
+ * This method is meant to be called at the end of an integration
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -474,11 +483,11 @@ step(const SimTK::State& s, int stepNumber )
 int Kinematics::
 end( SimTK::State& s )
 {
-	if (!proceed()) return 0;
+    if (!proceed()) return 0;
 
-	record(s);
+    record(s);
 
-	return(0);
+    return(0);
 }
 
 
@@ -490,7 +499,7 @@ end( SimTK::State& s )
 //_____________________________________________________________________________
 /**
  * Print results.
- * 
+ *
  * The file names are constructed as
  * aDir + "/" + aBaseName + "_" + ComponentName + aExtension
  *
@@ -504,32 +513,32 @@ end( SimTK::State& s )
  */
 int Kinematics::
 printResults(const string &aBaseName,const string &aDir,double aDT,
-				 const string &aExtension)
+             const string &aExtension)
 {
-	if(!getOn()) {
-		printf("Kinematics.printResults: Off- not printing.\n");
-		return(0);
-	}
+    if(!getOn()) {
+        printf("Kinematics.printResults: Off- not printing.\n");
+        return(0);
+    }
 
-	// ACCELERATIONS
-	if(_recordAccelerations) {
-		Storage::printResult(_aStore,aBaseName+"_"+getName()+"_dudt",aDir,aDT,aExtension);
-	}
+    // ACCELERATIONS
+    if(_recordAccelerations) {
+        Storage::printResult(_aStore,aBaseName+"_"+getName()+"_dudt",aDir,aDT,aExtension);
+    }
 
-	// VELOCITIES
-	Storage::printResult(_vStore,aBaseName+"_"+getName()+"_u",aDir,aDT,aExtension);
+    // VELOCITIES
+    Storage::printResult(_vStore,aBaseName+"_"+getName()+"_u",aDir,aDT,aExtension);
 
-	// POSITIONS
-	Storage::printResult(_pStore,aBaseName+"_"+getName()+"_q",aDir,aDT,aExtension);
+    // POSITIONS
+    Storage::printResult(_pStore,aBaseName+"_"+getName()+"_q",aDir,aDT,aExtension);
 
-	/*
-	// POSITIONS (.mot file)
-	// For now (until we resolve the .sto vs .mot issue) also write
-	// an .mot file so the motion can be viewed in SIMM -- Eran.
-	bool writeSIMMHeader=_pStore->getWriteSIMMHeader();
-	_pStore->setWriteSIMMHeader(true);
-	Storage::printResult(_pStore,aBaseName,aDir,aDT,".mot");
-	_pStore->setWriteSIMMHeader(writeSIMMHeader);
-	*/
-	return(0);
+    /*
+    // POSITIONS (.mot file)
+    // For now (until we resolve the .sto vs .mot issue) also write
+    // an .mot file so the motion can be viewed in SIMM -- Eran.
+    bool writeSIMMHeader=_pStore->getWriteSIMMHeader();
+    _pStore->setWriteSIMMHeader(true);
+    Storage::printResult(_pStore,aBaseName,aDir,aDT,".mot");
+    _pStore->setWriteSIMMHeader(writeSIMMHeader);
+    */
+    return(0);
 }

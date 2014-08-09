@@ -29,10 +29,10 @@
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+#ifdef OSIMSIMULATION_API
+#undef OSIMSIMULATION_API
+#define OSIMSIMULATION_API
+#endif
 #endif
 
 namespace OpenSim {
@@ -52,26 +52,26 @@ class Model;
  */
 
 class OSIMSIMULATION_API ConstraintSet : public ModelComponentSet<Constraint> {
-OpenSim_DECLARE_CONCRETE_OBJECT(ConstraintSet, ModelComponentSet<Constraint>);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ConstraintSet, ModelComponentSet<Constraint>);
 
 private:
-	void setNull();
+    void setNull();
 public:
-	ConstraintSet();
-	ConstraintSet(Model& model);
+    ConstraintSet();
+    ConstraintSet(Model& model);
 
-    ConstraintSet(Model& model, const std::string &aFileName, 
+    ConstraintSet(Model& model, const std::string &aFileName,
                   bool aUpdateFromXMLNode=true)
-	:   Super(model, aFileName, aUpdateFromXMLNode) {}
-	ConstraintSet(const ConstraintSet& aAbsConstraintSet);
-	~ConstraintSet(void);
+        :   Super(model, aFileName, aUpdateFromXMLNode) {}
+    ConstraintSet(const ConstraintSet& aAbsConstraintSet);
+    ~ConstraintSet(void);
 
-	//--------------------------------------------------------------------------
-	// UTILITIES
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // UTILITIES
+    //--------------------------------------------------------------------------
 
-	// SCALE
-	void scale(const ScaleSet& aScaleSet);
+    // SCALE
+    void scale(const ScaleSet& aScaleSet);
 
 //=============================================================================
 };	// END of class ConstraintSet

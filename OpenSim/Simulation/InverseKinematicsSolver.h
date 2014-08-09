@@ -36,18 +36,18 @@ class MarkersReference;
 /**
  * Solve for the coordinates (degrees-of-freedom) of the model that satisfy the
  * set of constraints imposed on the model as well as set of desired coordinate
- * values.  The InverseKinematics provides the option to convert the problem to  
+ * values.  The InverseKinematics provides the option to convert the problem to
  * an approximate one where the constraint violations are treated as penalties
  * to be minimized rather than strictly enforced. This can speed up the time
  * solution and can be used to seed the constrained problem near to a solution.
  *
- * The InverseKinematics objective: 
+ * The InverseKinematics objective:
  *   min J = sum(Wm*(m_i-md_i)^T*(m_i-md_i)) + sum(Wq_i*(q_i-qd_i)^2)) + [Wc*sum(c_err)^2]
- * where m_i and md_i are the model and desired marker coordinates (Vec3) 
+ * where m_i and md_i are the model and desired marker coordinates (Vec3)
  * iff Wc == Infinity, second term is not included, but
  *  A is subject to the constraint equations:  G(q)-Go = 0
  *
- * When the model (and the number of goals) is guaranteed not to change and the 
+ * When the model (and the number of goals) is guaranteed not to change and the
  * the initial state is close to the InverseKinematics solution (from initial assemble(),
  * then track() is a efficient method for updating the configuration to track
  * the small change to the desired coorindate value.
@@ -64,85 +64,85 @@ class OSIMSIMULATION_API InverseKinematicsSolver: public AssemblySolver
 //=============================================================================
 protected:
 
-	// The marker reference values and weightings
-	MarkersReference &_markersReference;
+    // The marker reference values and weightings
+    MarkersReference &_markersReference;
 
-	// Markers collectively form a single assembly condition for the SimTK::Assembler
-	SimTK::Markers *_markerAssemblyCondition;
+    // Markers collectively form a single assembly condition for the SimTK::Assembler
+    SimTK::Markers *_markerAssemblyCondition;
 
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	virtual ~InverseKinematicsSolver() {}
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    virtual ~InverseKinematicsSolver() {}
 
-	InverseKinematicsSolver(const Model &model, MarkersReference &markersReference,
-							SimTK::Array_<CoordinateReference> &coordinateReferences,
-							double constraintWeight = SimTK::Infinity);
-	
-	/** Assemble a model configuration that meets the InverseKinematics conditions  
-	    (desired values and constraints) starting from an initial state that  
-		does not have to satisfy the constraints. */
-	//virtual void assemble(SimTK::State &s);
+    InverseKinematicsSolver(const Model &model, MarkersReference &markersReference,
+                            SimTK::Array_<CoordinateReference> &coordinateReferences,
+                            double constraintWeight = SimTK::Infinity);
 
-	/** Obtain a model configuration that meets the InverseKinematics conditions  
-	    (desired values and constraints) given a state that satisfies or
-		is close to satisfying the constraints. Note there can be no change
-		in the number of constrainst or desired coordinates. Desired
-		coordinate values can and should be updated between repeated calls
-		to track a desired trajectory of coordinate values. */
-	//virtual void track(SimTK::State &s);
+    /** Assemble a model configuration that meets the InverseKinematics conditions
+        (desired values and constraints) starting from an initial state that
+    	does not have to satisfy the constraints. */
+    //virtual void assemble(SimTK::State &s);
 
-	/** Change the weighting of a marker to take affect when assemble or track is called next. 
-		Update a marker's weight by name. */
-	void updateMarkerWeight(const std::string &markerName, double value);
-	/** Update a marker's weight by its index. */
-	void updateMarkerWeight(int markerIndex, double value);
-	/** Update all markers weights by order in the markersReference passed in to
-	    construct the solver. */
-	void updateMarkerWeights(const SimTK::Array_<double> &weights);
+    /** Obtain a model configuration that meets the InverseKinematics conditions
+        (desired values and constraints) given a state that satisfies or
+    	is close to satisfying the constraints. Note there can be no change
+    	in the number of constrainst or desired coordinates. Desired
+    	coordinate values can and should be updated between repeated calls
+    	to track a desired trajectory of coordinate values. */
+    //virtual void track(SimTK::State &s);
 
-	/** Compute and return the spatial location of a marker in ground. */
-	SimTK::Vec3 computeCurrentMarkerLocation(const std::string &markerName);
-	SimTK::Vec3 computeCurrentMarkerLocation(int markerIndex);
-	/** Compute and return the spatial locations of all markers in ground. */
-	void computeCurrentMarkerLocations(SimTK::Array_<SimTK::Vec3> &markerLocations);
+    /** Change the weighting of a marker to take affect when assemble or track is called next.
+    	Update a marker's weight by name. */
+    void updateMarkerWeight(const std::string &markerName, double value);
+    /** Update a marker's weight by its index. */
+    void updateMarkerWeight(int markerIndex, double value);
+    /** Update all markers weights by order in the markersReference passed in to
+        construct the solver. */
+    void updateMarkerWeights(const SimTK::Array_<double> &weights);
 
-	/** Compute and return the distance error between model marker and observation. */
-	double computeCurrentMarkerError(const std::string &markerName);
-	double computeCurrentMarkerError(int markerIndex);
-	/** Compute and return the distance errors between all model markers and their observations. */
-	void computeCurrentMarkerErrors(SimTK::Array_<double> &markerErrors);
+    /** Compute and return the spatial location of a marker in ground. */
+    SimTK::Vec3 computeCurrentMarkerLocation(const std::string &markerName);
+    SimTK::Vec3 computeCurrentMarkerLocation(int markerIndex);
+    /** Compute and return the spatial locations of all markers in ground. */
+    void computeCurrentMarkerLocations(SimTK::Array_<SimTK::Vec3> &markerLocations);
 
-	/** Compute and return the squared-distance error between model marker and observation. 
-	    This is cheaper than calling the error and squaring it, since distance from norm-2 */
-	double computeCurrentSquaredMarkerError(const std::string &markerName);
-	double computeCurrentSquaredMarkerError(int markerIndex);
-	/** Compute and return the distance errors between all model marker and observations. */
-	void computeCurrentSquaredMarkerErrors(SimTK::Array_<double> &markerErrors);
-	/** Marker locations and errors may be computed in an order that is different
-	    from tasks file or listed in the model. Retrun the corresponding marker
-		name for an index in the list of marker locations/errors returned by the
-		solver. */
-	std::string getMarkerNameForIndex(int markerIndex) const;
+    /** Compute and return the distance error between model marker and observation. */
+    double computeCurrentMarkerError(const std::string &markerName);
+    double computeCurrentMarkerError(int markerIndex);
+    /** Compute and return the distance errors between all model markers and their observations. */
+    void computeCurrentMarkerErrors(SimTK::Array_<double> &markerErrors);
+
+    /** Compute and return the squared-distance error between model marker and observation.
+        This is cheaper than calling the error and squaring it, since distance from norm-2 */
+    double computeCurrentSquaredMarkerError(const std::string &markerName);
+    double computeCurrentSquaredMarkerError(int markerIndex);
+    /** Compute and return the distance errors between all model marker and observations. */
+    void computeCurrentSquaredMarkerErrors(SimTK::Array_<double> &markerErrors);
+    /** Marker locations and errors may be computed in an order that is different
+        from tasks file or listed in the model. Retrun the corresponding marker
+    	name for an index in the list of marker locations/errors returned by the
+    	solver. */
+    std::string getMarkerNameForIndex(int markerIndex) const;
 
 protected:
-	/** Internal method to convert the CoordinateReferences into goals of the 
-		assembly solver. Subclasses, can add oveeride  to include other goals  
-		such as point of interest matching (Marker tracking). This method is
-		automatically called by assemble. */
-	virtual void setupGoals(SimTK::State &s);
-	/** Internal method to update the time, reference values and/or their 
-		weights that define the goals, based on the passed in state */
-	virtual void updateGoals(const SimTK::State &s);
+    /** Internal method to convert the CoordinateReferences into goals of the
+    	assembly solver. Subclasses, can add oveeride  to include other goals
+    	such as point of interest matching (Marker tracking). This method is
+    	automatically called by assemble. */
+    virtual void setupGoals(SimTK::State &s);
+    /** Internal method to update the time, reference values and/or their
+    	weights that define the goals, based on the passed in state */
+    virtual void updateGoals(const SimTK::State &s);
 
 private:
-	// Non-accessible cache of the marker values to be matched at a given state
-	SimTK::Array_<SimTK::Vec3> _markerValues;
+    // Non-accessible cache of the marker values to be matched at a given state
+    SimTK::Array_<SimTK::Vec3> _markerValues;
 
 
 //=============================================================================

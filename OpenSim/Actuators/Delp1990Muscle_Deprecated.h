@@ -31,10 +31,10 @@
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle_Deprecated.h>
 
 #ifdef SWIG
-	#ifdef OSIMACTUATORS_API
-		#undef OSIMACTUATORS_API
-		#define OSIMACTUATORS_API
-	#endif
+#ifdef OSIMACTUATORS_API
+#undef OSIMACTUATORS_API
+#define OSIMACTUATORS_API
+#endif
 #endif
 
 namespace OpenSim {
@@ -52,111 +52,123 @@ class Function;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API Delp1990Muscle_Deprecated 
-:   public ActivationFiberLengthMuscle_Deprecated {
-OpenSim_DECLARE_CONCRETE_OBJECT(Delp1990Muscle_Deprecated, 
-                                ActivationFiberLengthMuscle_Deprecated);
+class OSIMACTUATORS_API Delp1990Muscle_Deprecated
+        :   public ActivationFiberLengthMuscle_Deprecated {
+    OpenSim_DECLARE_CONCRETE_OBJECT(Delp1990Muscle_Deprecated,
+                                    ActivationFiberLengthMuscle_Deprecated);
 
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
-	/** Scale factor for normalizing time */
-	PropertyDbl _timeScaleProp;
-	double &_timeScale;
+    /** Scale factor for normalizing time */
+    PropertyDbl _timeScaleProp;
+    double &_timeScale;
 
-	/** Parameter used in time constant of ramping up of muscle force */
-	PropertyDbl _activation1Prop;
-	double &_activation1;
+    /** Parameter used in time constant of ramping up of muscle force */
+    PropertyDbl _activation1Prop;
+    double &_activation1;
 
-	/** Parameter used in time constant of ramping up and ramping down of muscle force */
-	PropertyDbl _activation2Prop;
-	double &_activation2;
+    /** Parameter used in time constant of ramping up and ramping down of muscle force */
+    PropertyDbl _activation2Prop;
+    double &_activation2;
 
-	/** Mass between the tendon and muscle fibers */
-	PropertyDbl _massProp;
-	double &_mass;
+    /** Mass between the tendon and muscle fibers */
+    PropertyDbl _massProp;
+    double &_mass;
 
-	/* Function representing force-length behavior of tendon */
-	PropertyObjPtr<Function> _tendonForceLengthCurveProp;
-	Function *&_tendonForceLengthCurve;
+    /* Function representing force-length behavior of tendon */
+    PropertyObjPtr<Function> _tendonForceLengthCurveProp;
+    Function *&_tendonForceLengthCurve;
 
-	/* Function representing active force-length behavior of muscle fibers */
-	PropertyObjPtr<Function> _activeForceLengthCurveProp;
-	Function *&_activeForceLengthCurve;
+    /* Function representing active force-length behavior of muscle fibers */
+    PropertyObjPtr<Function> _activeForceLengthCurveProp;
+    Function *&_activeForceLengthCurve;
 
-	/* Function representing passive force-length behavior of muscle fibers */
-	PropertyObjPtr<Function> _passiveForceLengthCurveProp;
-	Function *&_passiveForceLengthCurve;
+    /* Function representing passive force-length behavior of muscle fibers */
+    PropertyObjPtr<Function> _passiveForceLengthCurveProp;
+    Function *&_passiveForceLengthCurve;
 
-	/* Function representing force-velocity behavior of muscle fibers */
-	PropertyObjPtr<Function> _forceVelocityCurveProp;
-	Function *&_forceVelocityCurve;
+    /* Function representing force-velocity behavior of muscle fibers */
+    PropertyObjPtr<Function> _forceVelocityCurveProp;
+    Function *&_forceVelocityCurve;
 
 private:
-	static const int STATE_FIBER_VELOCITY;
+    static const int STATE_FIBER_VELOCITY;
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	Delp1990Muscle_Deprecated();
-	Delp1990Muscle_Deprecated(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle);
-	Delp1990Muscle_Deprecated(const Delp1990Muscle_Deprecated &aMuscle);
-	virtual ~Delp1990Muscle_Deprecated();
+    Delp1990Muscle_Deprecated();
+    Delp1990Muscle_Deprecated(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle);
+    Delp1990Muscle_Deprecated(const Delp1990Muscle_Deprecated &aMuscle);
+    virtual ~Delp1990Muscle_Deprecated();
 
 #ifndef SWIG
-	Delp1990Muscle_Deprecated& operator=(const Delp1990Muscle_Deprecated &aMuscle);
+    Delp1990Muscle_Deprecated& operator=(const Delp1990Muscle_Deprecated &aMuscle);
 
 #endif
-	void copyData(const Delp1990Muscle_Deprecated &aMuscle);
+    void copyData(const Delp1990Muscle_Deprecated &aMuscle);
 
-	//--------------------------------------------------------------------------
-	// GET
-	//--------------------------------------------------------------------------
-	// Properties
-	virtual double getTimeScale() const { return _timeScale; }
-	virtual double getMass() const { return _mass; }
-	virtual bool setTimeScale(double aTimeScale);
-	virtual bool setActivation1(double aActivation1);
-	virtual bool setActivation2(double aActivation2);
-	virtual bool setMass(double aMass);
-	// Computed quantities
-	virtual double getFiberVelocity(const SimTK::State& s) const { return getStateVariable(s, "fiber_velocity"); }
-	virtual void setFiberVelocity(SimTK::State& s, double fiberVelocity) const { setStateVariable(s, "fiber_velocity", fiberVelocity); }
-	virtual double getFiberVelocityDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, "fiber_velocity"); }
-	virtual void setFiberVelocityDeriv(const SimTK::State& s, double fiberVelocityDeriv) const { setStateVariableDeriv(s, "fiber_velocity", fiberVelocityDeriv); }
-	virtual void setActiveForce(const SimTK::State& s, double aForce) const;
-	virtual double getActiveForce(const SimTK::State& s) const;
+    //--------------------------------------------------------------------------
+    // GET
+    //--------------------------------------------------------------------------
+    // Properties
+    virtual double getTimeScale() const {
+        return _timeScale;
+    }
+    virtual double getMass() const {
+        return _mass;
+    }
+    virtual bool setTimeScale(double aTimeScale);
+    virtual bool setActivation1(double aActivation1);
+    virtual bool setActivation2(double aActivation2);
+    virtual bool setMass(double aMass);
+    // Computed quantities
+    virtual double getFiberVelocity(const SimTK::State& s) const {
+        return getStateVariable(s, "fiber_velocity");
+    }
+    virtual void setFiberVelocity(SimTK::State& s, double fiberVelocity) const {
+        setStateVariable(s, "fiber_velocity", fiberVelocity);
+    }
+    virtual double getFiberVelocityDeriv(const SimTK::State& s) const {
+        return getStateVariableDeriv(s, "fiber_velocity");
+    }
+    virtual void setFiberVelocityDeriv(const SimTK::State& s, double fiberVelocityDeriv) const {
+        setStateVariableDeriv(s, "fiber_velocity", fiberVelocityDeriv);
+    }
+    virtual void setActiveForce(const SimTK::State& s, double aForce) const;
+    virtual double getActiveForce(const SimTK::State& s) const;
 
-	//--------------------------------------------------------------------------
-	// COMPUTATION
-	//--------------------------------------------------------------------------
-	virtual double computeActuation(const SimTK::State& s) const;
-	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
+    //--------------------------------------------------------------------------
+    // COMPUTATION
+    //--------------------------------------------------------------------------
+    virtual double computeActuation(const SimTK::State& s) const;
+    virtual double computeIsometricForce(SimTK::State& s, double activation) const;
 
-	virtual Function* getActiveForceLengthCurve() const;
-	virtual bool setActiveForceLengthCurve(Function* aActiveForceLengthCurve);
-	virtual Function* getPassiveForceLengthCurve() const;
-	virtual bool setPassiveForceLengthCurve(Function* aPassiveForceLengthCurve);
-	virtual Function* getTendonForceLengthCurve() const;
-	virtual bool setTendonForceLengthCurve(Function* aTendonForceLengthCurve);
-	virtual Function* getForceVelocityCurve() const;
-	virtual bool setForceVelocityCurve(Function* aForceVelocityCurve);
+    virtual Function* getActiveForceLengthCurve() const;
+    virtual bool setActiveForceLengthCurve(Function* aActiveForceLengthCurve);
+    virtual Function* getPassiveForceLengthCurve() const;
+    virtual bool setPassiveForceLengthCurve(Function* aPassiveForceLengthCurve);
+    virtual Function* getTendonForceLengthCurve() const;
+    virtual bool setTendonForceLengthCurve(Function* aTendonForceLengthCurve);
+    virtual Function* getForceVelocityCurve() const;
+    virtual bool setForceVelocityCurve(Function* aForceVelocityCurve);
 
 protected:
-	// Model Component Interface
-	void connectToModel(Model& aModel) override;
-	void addToSystem(SimTK::MultibodySystem& system) const override;
-	void computeStateVariableDerivatives(const SimTK::State &s) const override; 
+    // Model Component Interface
+    void connectToModel(Model& aModel) override;
+    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void computeStateVariableDerivatives(const SimTK::State &s) const override;
 
 private:
-	void setNull();
-	void setupProperties();
-	double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
-	double calcFiberForce(double aActivation, double aNormFiberLength, double aNormFiberVelocity) const;
+    void setNull();
+    void setupProperties();
+    double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
+    double calcFiberForce(double aActivation, double aNormFiberLength, double aNormFiberVelocity) const;
 
 //=============================================================================
 };	// END of class Delp1990Muscle_Deprecated

@@ -55,18 +55,18 @@ MuscleFixedWidthPennationModel(double optimalFiberLength,
                                double maximumPennationAngle)
 {
     SimTK_ERRCHK_ALWAYS(optimalFiberLength > 0,
-        "MuscleFixedWidthPennationModel::MuscleFixedWidthPennationModel",
-        "Optimal fiber length must be greater than zero.");
+                        "MuscleFixedWidthPennationModel::MuscleFixedWidthPennationModel",
+                        "Optimal fiber length must be greater than zero.");
 
     SimTK_ERRCHK_ALWAYS(optimalPennationAngle >= 0
                         && optimalPennationAngle < SimTK::Pi/2,
-        "MuscleFixedWidthPennationModel::MuscleFixedWidthPennationModel",
-        "Optimal pennation angle must be in the range [0, Pi/2) radians.");
+                        "MuscleFixedWidthPennationModel::MuscleFixedWidthPennationModel",
+                        "Optimal pennation angle must be in the range [0, Pi/2) radians.");
 
     SimTK_ERRCHK_ALWAYS(maximumPennationAngle >= 0
                         && maximumPennationAngle <= SimTK::Pi/2,
-        "MuscleFixedWidthPennationModel::MuscleFixedWidthPennationModel",
-        "Maximum pennation angle must be in the range [0, Pi/2] radians.");
+                        "MuscleFixedWidthPennationModel::MuscleFixedWidthPennationModel",
+                        "Maximum pennation angle must be in the range [0, Pi/2] radians.");
 
     setNull();
     constructProperties();
@@ -119,17 +119,29 @@ void MuscleFixedWidthPennationModel::ensurePropertiesSet() const
 }
 
 double MuscleFixedWidthPennationModel::getParallelogramHeight() const
-{   return m_parallelogramHeight; }
+{
+    return m_parallelogramHeight;
+}
 double MuscleFixedWidthPennationModel::getOptimalFiberLength() const
-{   return get_optimal_fiber_length(); }
+{
+    return get_optimal_fiber_length();
+}
 double MuscleFixedWidthPennationModel::getMinimumFiberLength() const
-{   return m_minimumFiberLength; }
+{
+    return m_minimumFiberLength;
+}
 double MuscleFixedWidthPennationModel::getMinimumFiberLengthAlongTendon() const
-{   return m_minimumFiberLengthAlongTendon; }
+{
+    return m_minimumFiberLengthAlongTendon;
+}
 double MuscleFixedWidthPennationModel::getOptimalPennationAngle() const
-{   return get_optimal_pennation_angle(); }
+{
+    return get_optimal_pennation_angle();
+}
 double MuscleFixedWidthPennationModel::getMaximumPennationAngle() const
-{   return get_maximum_pennation_angle(); }
+{
+    return get_maximum_pennation_angle();
+}
 
 bool MuscleFixedWidthPennationModel::
 setOptimalFiberLength(double aOptimalFiberLength)
@@ -215,8 +227,8 @@ double MuscleFixedWidthPennationModel::calcPennationAngularVelocity(
 
     if(optimalPennationAngle > SimTK::Eps) {
         SimTK_ERRCHK_ALWAYS(fiberLength > 0,
-            "MuscleFixedWidthPennationModel::calcPennationAngularVelocity",
-            "Fiber length cannot be zero.");
+                            "MuscleFixedWidthPennationModel::calcPennationAngularVelocity",
+                            "Fiber length cannot be zero.");
         dphi = -(fiberVelocity/fiberLength) * tanPennationAngle;
     }
     return dphi;
@@ -231,7 +243,7 @@ calcTendonVelocity(double cosPennationAngle,
                    double muscleVelocity) const
 {
     return muscleVelocity - fiberVelocity*cosPennationAngle
-        + fiberLength*sinPennationAngle*pennationAngularVelocity;
+           + fiberLength*sinPennationAngle*pennationAngularVelocity;
 }
 
 double MuscleFixedWidthPennationModel::
@@ -242,7 +254,7 @@ calcFiberVelocityAlongTendon(double fiberLength,
                              double pennationAngularVelocity) const
 {
     return fiberVelocity*cosPennationAngle
-        - fiberLength*sinPennationAngle*pennationAngularVelocity;
+           - fiberLength*sinPennationAngle*pennationAngularVelocity;
 }
 
 //==============================================================================
@@ -257,11 +269,11 @@ calcPennationAngularAcceleration(double fiberLength,
                                  double pennationAngularVelocity) const
 {
     SimTK_ERRCHK_ALWAYS(fiberLength > 0,
-        "MuscleFixedWidthPennationModel::calcPennationAngularAcceleration",
-        "Fiber length cannot be zero.");
+                        "MuscleFixedWidthPennationModel::calcPennationAngularAcceleration",
+                        "Fiber length cannot be zero.");
     SimTK_ERRCHK_ALWAYS(cosPennationAngle > 0,
-        "MuscleFixedWidthPennationModel::calcPennationAngularAcceleration",
-        "cosPennationAngle cannot be zero.");
+                        "MuscleFixedWidthPennationModel::calcPennationAngularAcceleration",
+                        "cosPennationAngle cannot be zero.");
 
     double numer = sinPennationAngle*cosPennationAngle*
                    (fiberVelocity*fiberVelocity - fiberLength*fiberAcceleration)
@@ -282,8 +294,8 @@ calcFiberAccelerationAlongTendon(double fiberLength,
     return fiberAcceleration*cosPennationAngle
            - fiberLength*sinPennationAngle*pennationAngularAcceleration
            - pennationAngularVelocity*
-             (2.0*fiberVelocity*sinPennationAngle
-              + fiberLength*cosPennationAngle*pennationAngularVelocity);
+           (2.0*fiberVelocity*sinPennationAngle
+            + fiberLength*cosPennationAngle*pennationAngularVelocity);
 }
 
 //==============================================================================
@@ -291,10 +303,10 @@ calcFiberAccelerationAlongTendon(double fiberLength,
 //==============================================================================
 double MuscleFixedWidthPennationModel::
 calc_DFiberLengthAlongTendon_DfiberLength(double fiberLength,
-                                          double sinPennationAngle,
-                                          double cosPennationAngle,
-                                          double DpennationAngle_DfiberLength)
-                                          const
+        double sinPennationAngle,
+        double cosPennationAngle,
+        double DpennationAngle_DfiberLength)
+const
 {
     // d/dlce (lce*cos(phi)) = cos(phi) - lce*sin(phi)*dphi_dlce
     return cosPennationAngle
@@ -303,21 +315,21 @@ calc_DFiberLengthAlongTendon_DfiberLength(double fiberLength,
 
 double MuscleFixedWidthPennationModel::
 calc_DPennationAngularVelocity_DfiberLength(double fiberLength,
-                                            double fiberVelocity,
-                                            double sinPennationAngle,
-                                            double cosPennationAngle,
-                                            double pennationAngularVelocity,
-                                            double DpennationAngle_DfiberLength)
-                                            const
+        double fiberVelocity,
+        double sinPennationAngle,
+        double cosPennationAngle,
+        double pennationAngularVelocity,
+        double DpennationAngle_DfiberLength)
+const
 {
     SimTK_ERRCHK_ALWAYS(cosPennationAngle > SimTK::Eps,
-        "MuscleFixedWidthPennationModel::"
-        "calc_DFiberVelocityAlongTendon_DfiberLength",
-        "Pennation angle must be less than 90 degrees");
+                        "MuscleFixedWidthPennationModel::"
+                        "calc_DFiberVelocityAlongTendon_DfiberLength",
+                        "Pennation angle must be less than 90 degrees");
     SimTK_ERRCHK_ALWAYS(fiberLength > SimTK::Eps,
-        "MuscleFixedWidthPennationModel::"
-        "calc_DFiberVelocityAlongTendon_DfiberLength",
-        "Fiber length is close to 0.");
+                        "MuscleFixedWidthPennationModel::"
+                        "calc_DFiberVelocityAlongTendon_DfiberLength",
+                        "Fiber length is close to 0.");
 
     // dphidt = -(fiberVelocity/fiberLength)*tanPennationAngle
     double tanPhi = sinPennationAngle/cosPennationAngle;
@@ -328,31 +340,31 @@ calc_DPennationAngularVelocity_DfiberLength(double fiberLength,
 
 double MuscleFixedWidthPennationModel::
 calc_DFiberVelocityAlongTendon_DfiberLength(
-                                double fiberLength,
-                                double fiberVelocity,
-                                double sinPennationAngle,
-                                double cosPennationAngle,
-                                double pennationAngularVelocity,
-                                double DpennationAngle_DfiberLength,
-                                double DpennationAngularVelocity_DfiberLength)
-                                const
+    double fiberLength,
+    double fiberVelocity,
+    double sinPennationAngle,
+    double cosPennationAngle,
+    double pennationAngularVelocity,
+    double DpennationAngle_DfiberLength,
+    double DpennationAngularVelocity_DfiberLength)
+const
 {
     // dlceAT = dlce*cos(phi) - lce*sin(phi)*dphidt
     // Now take the partial derivative of dlceAT with respect to lce
     return fiberVelocity*(-sinPennationAngle*DpennationAngle_DfiberLength)
            - sinPennationAngle*pennationAngularVelocity
            - fiberLength*cosPennationAngle
-             *DpennationAngle_DfiberLength*pennationAngularVelocity
+           *DpennationAngle_DfiberLength*pennationAngularVelocity
            - fiberLength*sinPennationAngle
-             *DpennationAngularVelocity_DfiberLength;
+           *DpennationAngularVelocity_DfiberLength;
 }
 
 double MuscleFixedWidthPennationModel::
 calc_DPennationAngle_DfiberLength(double fiberLength) const
 {
     SimTK_ERRCHK_ALWAYS(fiberLength > m_parallelogramHeight,
-        "MuscleFixedWidthPennationModel::calc_DPennationAngle_DfiberLength",
-        "Fiber length is below the lower bound for this muscle.");
+                        "MuscleFixedWidthPennationModel::calc_DPennationAngle_DfiberLength",
+                        "Fiber length is below the lower bound for this muscle.");
 
     // phi = asin( parallelogramHeight/lce)
     // d_phi/d_lce = d/dlce (asin(parallelogramHeight/lce))
@@ -367,8 +379,8 @@ calc_DTendonLength_DfiberLength(double fiberLength,
                                 double DpennationAngle_DfiberLength) const
 {
     SimTK_ERRCHK_ALWAYS(fiberLength > m_parallelogramHeight,
-        "MuscleFixedWidthPennationModel::calc_DTendonLength_DfiberLength",
-        "Fiber length is below the lower bound for this muscle.");
+                        "MuscleFixedWidthPennationModel::calc_DTendonLength_DfiberLength",
+                        "Fiber length is below the lower bound for this muscle.");
 
     // dtl_dlce = DmuscleLength_DfiberLength - cosPennationAngle
     //            + fiberLength*sinPennationAngle*DpennationAngle_DfiberLength
@@ -380,7 +392,7 @@ calc_DTendonLength_DfiberLength(double fiberLength,
 // Kinematic fiber pose equations (useful during initialization)
 //==============================================================================
 double MuscleFixedWidthPennationModel::calcFiberLength(double muscleLength,
-                                                     double tendonLength) const
+        double tendonLength) const
 {
     double fiberLengthAT = muscleLength-tendonLength;
     double fiberLength   = 0.0;

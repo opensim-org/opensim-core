@@ -38,12 +38,12 @@ void add_muscle_attachment_point(ModelStruct* model, int muscleIndex, int pointI
 PlotStruct* add_plot(void);
 void add_preprocessor_option(SBoolean isDefaultOption, const char* format, ...);
 void add_text_to_help_struct(char line[], HelpStruct* hp, SBoolean new_line,
-			     int text_format, int text_xoffset);
+                             int text_format, int text_xoffset);
 int add_window(WindowParams* win_parameters, WinUnion* win_struct,
-	       WindowType type, int ref, SBoolean iconified,
-	       void (*display_function)(WindowParams*, WinUnion*),
-	       void (*update_function)(WindowParams*, WinUnion*),
-	       void (*input_handler)(WindowParams*, WinUnion*, SimmEvent));
+               WindowType type, int ref, SBoolean iconified,
+               void (*display_function)(WindowParams*, WinUnion*),
+               void (*update_function)(WindowParams*, WinUnion*),
+               void (*input_handler)(WindowParams*, WinUnion*, SimmEvent));
 void   addNameToString(char name[], char string[], int maxStringSize);
 void   adjust_main_menu();
 ReturnCode alloc_func(dpFunction** func, int pts);
@@ -68,13 +68,13 @@ void   calc_foot_prints(ModelStruct* model, MotionSequence* motion, smC3DStruct*
 void   calc_function_coefficients(dpFunction* sf);
 void   calc_marker_events(MotionSequence* motion, smC3DStruct *c3d);
 void   calc_joint_transform(int order[], double dofs[], double rmat[][4], double xaxis[],
-		                      double yaxis[], double zaxis[], double axis1[], double axis2[],
-		                      double axis3[], int mode, Direction dir, JointStruct* joint);
+                            double yaxis[], double zaxis[], double axis1[], double axis2[],
+                            double axis3[], int mode, Direction dir, JointStruct* joint);
 void   calc_motion_derivatives(MotionSequence* motion);
 void   calc_muscle_moment_arms(ModelStruct* ms, int musc, GeneralizedCoord* gencoord);
 ReturnCode calc_muscle_tendon_force(ModelStruct* ms, int musc, SBoolean compute_active,
-				    SBoolean compute_passive, double activation,
-				    SBoolean isometric);
+                                    SBoolean compute_passive, double activation,
+                                    SBoolean isometric);
 double calc_muscle_tendon_length(ModelStruct *ms, dpMuscleStruct *muscl);
 double calc_muscle_tendon_velocity(ModelStruct* ms, int musc);
 void   calc_near_and_far_clip_planes(Scene* scene, double viewVecLength);
@@ -95,14 +95,14 @@ void   calc_segment_arms(ModelStruct* ms, int musc, dpMusclePoint *mp1, dpMuscle
 SBoolean check_slider(Slider* sl, SimmEvent se, void (*callback)(int, double, double), int arg1);
 SBoolean check_slider_array(SliderArray* sa, SimmEvent se, void (*callback)(int, double, double));
 int    check_title_area(int title_mask, int mx, int my, WindowParams* win_params,
-			void** struct_ptr, ModelStruct* ms, PlotStruct* ps,
+                        void** struct_ptr, ModelStruct* ms, PlotStruct* ps,
                         title_area_cb);
 void   check_wrapping_points(ModelStruct *ms, dpMuscleStruct *muscl);
 void   clear_preprocessor_options();
 dpFunction* clone_function(ModelStruct* model, dpFunction* oldFunction, SBoolean isMuscleFunc);
 void   collect_system_info(const char folder[]);
 void   confirm_action(WindowParams* win_parameters, char mess[],
-		      void (*confirm_callback)(SBoolean));
+                      void (*confirm_callback)(SBoolean));
 void   confirm_input_handler(SimmEvent se);
 int    convert(ModelStruct* ms, double p[], int n1, int n2);
 void   convertSpacesInString(char str[]);
@@ -169,11 +169,11 @@ void   do_pm_help();
 void   do_se_help();
 void   do_we_help();
 void   do_help_window(HelpStruct* hp, char* windowName, char* iconName,
-		      void (*displayFunction)(WindowParams*, WinUnion*),
-		      void (*updateFunction)(WindowParams*, WinUnion*),
-		      void (*inputHandler)(WindowParams*, WinUnion*, SimmEvent));
+                      void (*displayFunction)(WindowParams*, WinUnion*),
+                      void (*updateFunction)(WindowParams*, WinUnion*),
+                      void (*inputHandler)(WindowParams*, WinUnion*, SimmEvent));
 int    domusclemenus(ModelStruct* ms, MuscleMenu mgroup[], int mlist[],
-		     WindowParams* win_parameters, int mx, int my, int columns[], int *menu);
+                     WindowParams* win_parameters, int mx, int my, int columns[], int *menu);
 void   do_tool_window_shut(const char* toolname, int id);
 double dot_vectors(double vector1[], double vector2[]);
 void   draw_all_muscle_points(ModelStruct* ms, int mx, int my);
@@ -203,7 +203,7 @@ void   draw_help_text(HelpStruct* hp);
 void   draw_help_window(HelpStruct* hp);
 void   draw_highlighted_object(Scene* scene, ModelStruct* model, PickIndex object, SBoolean highlight);
 void   draw_highlighted_polygon(Scene* scene, ModelStruct* ms, int seg_num, int bone_num,
-				int polygon_num, SBoolean highlight);
+                                int polygon_num, SBoolean highlight);
 void   draw_ligament(ModelStruct* ms, int lignum, ModelDrawOptions* mdo);
 void   draw_me_polygon(Scene* scene, ModelStruct* ms, SelectedPolygon* hp, GLenum buffer);
 void   draw_menu(Menu* ms);
@@ -433,10 +433,10 @@ void   make_motion_curve_menu(ModelStruct *model, MotionSequence* motion, int mn
 ReturnCode make_muscle_menus(ModelStruct* ms);
 ReturnCode make_selectors(void);
 void   make_slider(Slider* sl, SliderType type, IntBox bbox, int thumb_thickness,
-		   double value, double min_value, double max_value,
-		   double arrow_step, char label[], void* data);
-void make_cropslider(CropSlider* sl, int originX, int originY, IntBox bbox, int thumb_thickness, double start_value, 
-                     double end_value, double min_value, double max_value, double arrow_step, 
+                   double value, double min_value, double max_value,
+                   double arrow_step, char label[], void* data);
+void make_cropslider(CropSlider* sl, int originX, int originY, IntBox bbox, int thumb_thickness, double start_value,
+                     double end_value, double min_value, double max_value, double arrow_step,
                      char start_label[], char end_label[], void* data);
 #endif
 void   make_string_lower_case(char str_buffer[]);
@@ -508,11 +508,11 @@ void   partialvelocity(ModelStruct* ms, double p[], int from, int to, Generalize
 #if ! ENGINE
 SBoolean peek_simm_event(SimmEvent* se);
 int    place_musclemenu(int menunum, int xoffset, int yoffset, int columns[],
-		        int columns_needed, int column_width, MuscleMenu mgroup[]);
+                        int columns_needed, int column_width, MuscleMenu mgroup[]);
 void   place_slider(Slider*, IntBox bbox);
 void   plot_depthchange(int action, int win);
 void   plotinc(double start, double end, int* numticks, double* starttick,
-	       double* step, char format[]);
+               double* step, char format[]);
 void   plotinput(WindowParams* win_parameters, WinUnion* win_struct, SimmEvent se);
 void   plotkeyinput(WindowParams* win_parameters, WinUnion* win_struct, SimmEvent se);
 void   plotlabels(WindowParams* win_parameters, PlotStruct* p);
@@ -561,10 +561,10 @@ void   remove_preference(const char name[]);
 ReturnCode rename_muscle(ModelStruct* model, dpMuscleStruct* muscle, char newName[]);
 #if ! ENGINE
 ToolStruct* register_tool(int struct_size, unsigned int event_mask,
-			  void (*event_handler)(SimmEvent),
-			  void (*command_handler)(char*),
-			  SBoolean (*query_handler)(QueryType, void*),
-			  char name[], int* ref_number);
+                          void (*event_handler)(SimmEvent),
+                          void (*command_handler)(char*),
+                          SBoolean (*query_handler)(QueryType, void*),
+                          char name[], int* ref_number);
 void   replace_help_text(char new_help_file[], HelpStruct* hp);
 void   reshapewindow(void);
 void   resize_model_display(Scene* scene, ModelStruct*);
@@ -929,19 +929,19 @@ int countUsedFunctions(ModelStruct* ms);
 
 /********************** Function Prototypes in IK_solver *******************/
 int lmdif_(int (*fcn) (void *data, int *m, int *n, double x[], double fvec[],
-           int *iflag), integer *m, integer *n, doublereal *x, 
-           doublereal *fvec, 
-           doublereal *ftol, doublereal *xtol, doublereal *gtol, 
-           integer *maxfev, 
-	doublereal *epsfcn, doublereal *diag, integer *mode, doublereal *factor, 
-   integer *nprint, integer *info, 
-   integer *nfev, doublereal *fjac, integer *ldfjac, integer *ipvt, 
-	doublereal *qtf, doublereal *wa1, doublereal *wa2, doublereal *wa3, 
-   doublereal *wa4, logical *firstframe, doublereal *qrjac, 
-   doublereal *rdiag, void *data);
+                       int *iflag), integer *m, integer *n, doublereal *x,
+           doublereal *fvec,
+           doublereal *ftol, doublereal *xtol, doublereal *gtol,
+           integer *maxfev,
+           doublereal *epsfcn, doublereal *diag, integer *mode, doublereal *factor,
+           integer *nprint, integer *info,
+           integer *nfev, doublereal *fjac, integer *ldfjac, integer *ipvt,
+           doublereal *qtf, doublereal *wa1, doublereal *wa2, doublereal *wa3,
+           doublereal *wa4, logical *firstframe, doublereal *qrjac,
+           doublereal *rdiag, void *data);
 int hessian_(integer *nres, int *nq);
 int hessdecomp_(integer *ierror, int *nq);
-int dpodi_(doublereal *a, integer *lda, integer *n, doublereal *det, 
+int dpodi_(doublereal *a, integer *lda, integer *n, doublereal *det,
            integer *job);
 int dpofa_(doublereal *a, integer *lda, integer *n, integer *info);
 
@@ -952,8 +952,8 @@ SBoolean constraintsToSolve(ModelStruct *model);
 
 /************** Function Prototypes in IK.c **********************/
 SBoolean resolveClosedLoops(ModelStruct *ms, int q_num, double *q_value);
-void calculateResiduals(void *data, int *nres, int *ndof, double q[], 
-                    double resid[], int *iflag);
+void calculateResiduals(void *data, int *nres, int *ndof, double q[],
+                        double resid[], int *iflag);
 
 /**************** Function Prototypes in Loop.c ************************/
 int getLoopPath(int seg, int *path, int dir, LoopStruct *loop);
@@ -963,7 +963,7 @@ SBoolean makeLoops(ModelStruct *ms);
 void markLoopJoints(ModelStruct *ms);
 
 /**************** Function Prototypes in constraint.c ************************/
-void calculateConstraintResids(void *data, int numQ, double q[], int numResid, 
+void calculateConstraintResids(void *data, int numQ, double q[], int numResid,
                                double resid[], int startIndex, int endIndex,
                                int *iflag);
 void updateConstraintInfo(ModelStruct *ms);
@@ -973,15 +973,15 @@ void markAffectedGencoords(ModelStruct *ms);
 /**************** Function Prototypes in LCSolver.c ************************/
 void solve_initial_loops_and_constraints(ModelStruct *model);
 void recalc_default_loops_and_constraints(ModelStruct *ms);
-void solveAllLoopsAndConstraints(ModelStruct *ms, LoopStatus *loopStatus,  
-                                 ConstraintStatus *constraintStatus, 
+void solveAllLoopsAndConstraints(ModelStruct *ms, LoopStatus *loopStatus,
+                                 ConstraintStatus *constraintStatus,
                                  SBoolean enforce_constraints);
 SBoolean solveLCAffectedByJNT(ModelStruct *ms, int joint, LoopStatus *loopStatus,  ConstraintStatus *constraintStatus);
 SBoolean solveLCAffectedByGC(ModelStruct *ms, GeneralizedCoord* controlled_gc, double *gc_value);
 void approveNewDefaultGCs(ModelStruct *ms);
-void evaluateLoopsAndConstraintsInCurrentConfiguration(ModelStruct *ms, LoopStatus *loopStatus, 
-                                 ConstraintStatus *constraintStatus, 
-                                 SBoolean enforce_constraints);
+void evaluateLoopsAndConstraintsInCurrentConfiguration(ModelStruct *ms, LoopStatus *loopStatus,
+        ConstraintStatus *constraintStatus,
+        SBoolean enforce_constraints);
 int convert2(ModelStruct *ms, double p[], int n1, int n2);
 
 #endif /*FUNCTIONS_H*/

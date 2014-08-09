@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*   
- * Author: Jack Middleton 
+/*
+ * Author: Jack Middleton
  */
 
 
@@ -54,7 +54,7 @@ using namespace OpenSim;
  */
 ControlSetController::~ControlSetController()
 {
-	delete _controlSet;
+    delete _controlSet;
 }
 //_____________________________________________________________________________
 /**
@@ -64,7 +64,7 @@ ControlSetController::~ControlSetController()
 ControlSetController::ControlSetController() :
     Controller(),
     _controlsFileName(_controlsFileNameProp.getValueStr() ) {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -72,11 +72,11 @@ ControlSetController::ControlSetController() :
  * Copy constructor.
  */
 ControlSetController::ControlSetController(const ControlSetController &aController) :
-	Controller(aController),
-   _controlsFileName(_controlsFileNameProp.getValueStr())
+    Controller(aController),
+    _controlsFileName(_controlsFileNameProp.getValueStr())
 {
-	setNull();
-	copyData(aController);
+    setNull();
+    copyData(aController);
 }
 
 
@@ -88,14 +88,14 @@ void ControlSetController::setNull()
 {
     setupProperties();
 
-	_model = NULL;
+    _model = NULL;
     _controlSet = NULL;
 
 
 }
 //_____________________________________________________________________________
 /**
- * Set name of ControlSet file 
+ * Set name of ControlSet file
  */
 //_____________________________________________________________________________
 /**
@@ -104,7 +104,7 @@ void ControlSetController::setNull()
 void ControlSetController::
 setControlSetFileName( const std::string&  controlSetFileName )
 {
-   _controlsFileName = controlSetFileName;
+    _controlsFileName = controlSetFileName;
 }
 void ControlSetController::
 setupProperties()
@@ -120,7 +120,7 @@ setupProperties()
  * Copy the member variables of the specified controller.
  */
 void ControlSetController::copyData(const ControlSetController &aController)
-{   
+{
     _controlsFileName = aController._controlsFileName;
 }
 
@@ -138,13 +138,13 @@ void ControlSetController::copyData(const ControlSetController &aController)
 ControlSetController& ControlSetController::
 operator=(const ControlSetController &aController)
 {
-	// BASE CLASS
-	Object::operator=(aController);
+    // BASE CLASS
+    Object::operator=(aController);
 
-	// DATA
-	copyData(aController);
+    // DATA
+    copyData(aController);
 
-	return(*this);
+    return(*this);
 }
 
 
@@ -159,102 +159,102 @@ operator=(const ControlSetController &aController)
 // compute the control value for all actuators this Controller is responsible for
 void ControlSetController::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
 {
-	SimTK_ASSERT( _controlSet , "ControlSetController::computeControls controlSet is NULL");
+    SimTK_ASSERT( _controlSet , "ControlSetController::computeControls controlSet is NULL");
 
-	std::string actName = "";
-	int index = -1;
+    std::string actName = "";
+    int index = -1;
 
-	int na = getActuatorSet().getSize();
+    int na = getActuatorSet().getSize();
 
-	for(int i=0; i< na; ++i){
-		actName = getActuatorSet()[i].getName();
-		index = _controlSet->getIndex(actName);
-		if(index < 0){
-			actName = actName + ".excitation";
-			index = _controlSet->getIndex(actName);
-		}
+    for(int i=0; i< na; ++i) {
+        actName = getActuatorSet()[i].getName();
+        index = _controlSet->getIndex(actName);
+        if(index < 0) {
+            actName = actName + ".excitation";
+            index = _controlSet->getIndex(actName);
+        }
 
-		if(index >= 0){
-			SimTK::Vector actControls(1, _controlSet->get(index).getControlValue(s.getTime()));
-			getActuatorSet()[i].addInControls(actControls, controls);
-		}
-	}
+        if(index >= 0) {
+            SimTK::Vector actControls(1, _controlSet->get(index).getControlValue(s.getTime()));
+            getActuatorSet()[i].addInControls(actControls, controls);
+        }
+    }
 }
 
 double ControlSetController::getFirstTime() const {
     Array<int> controlList;
-   SimTK_ASSERT( _controlSet , "ControlSetController::getFirstTime controlSet is NULL");
+    SimTK_ASSERT( _controlSet , "ControlSetController::getFirstTime controlSet is NULL");
 
 //    std::cout << " ncontrols= "<< _controlSet->getSize() << std::endl<<std::endl;
     _controlSet->getControlList( "ControlLinear" , controlList );
-    
+
     if( controlList.getSize() < 1 ) {
-       return( -SimTK::Infinity );
+        return( -SimTK::Infinity );
     } else {
-       ControlLinear& control = (ControlLinear&)_controlSet->get(controlList[0]);
-       return( control.getFirstTime() );
+        ControlLinear& control = (ControlLinear&)_controlSet->get(controlList[0]);
+        return( control.getFirstTime() );
     }
 }
 
 double ControlSetController::getLastTime() const {
     Array<int> controlList;
     _controlSet->getControlList( "ControlLinear" , controlList );
-    
+
     if(controlList.getSize() < 1 ) {
-       return( SimTK::Infinity );
+        return( SimTK::Infinity );
     } else {
-       ControlLinear& control = (ControlLinear&)_controlSet->get(controlList[0]);
-       return( control.getLastTime() );
+        ControlLinear& control = (ControlLinear&)_controlSet->get(controlList[0]);
+        return( control.getLastTime() );
     }
 }
 
 // for any post XML deserialization intialization
-void ControlSetController::connectToModel(Model& model)  
+void ControlSetController::connectToModel(Model& model)
 {
 
-    SimTK_ASSERT( _controlsFileName!="" , 
-		"ControlSetController::connectToModel controlsFileName is NULL");
+    SimTK_ASSERT( _controlsFileName!="" ,
+                  "ControlSetController::connectToModel controlsFileName is NULL");
 
     if(_controlsFileName!="Unassigned") {
 //        std::cout<<"\n\nControlSetController::connectToModel(): Loading controls from file "<<_controlsFileName<<"."<<std::endl;
 //        std::cout<<"ControlSetController::connectToModel(): Found "<<_controlSet->getSize()<<" controls."<<std::endl;
         delete  _controlSet;
-		if (_controlsFileName.rfind(".sto")!=std::string::npos)
-			_controlSet = new ControlSet(Storage(_controlsFileName));
-		else
-			_controlSet = new ControlSet(_controlsFileName);
+        if (_controlsFileName.rfind(".sto")!=std::string::npos)
+            _controlSet = new ControlSet(Storage(_controlsFileName));
+        else
+            _controlSet = new ControlSet(_controlsFileName);
     }
-	else if (_controlSet == NULL) {
-       std::cout << " ControlSetController::connectToModel(): no Control Set Specified" << std::endl;
-	   setDisabled(true); 
-	   return;  // no more wiring is needed
+    else if (_controlSet == NULL) {
+        std::cout << " ControlSetController::connectToModel(): no Control Set Specified" << std::endl;
+        setDisabled(true);
+        return;  // no more wiring is needed
     }
 
-	// Make sure that we are controlling all the actuators that the control set specifies
-	std::string ext = ".excitation";
-	for(int i =0; _controlSet != NULL && i<_controlSet->getSize(); i++){
-		std::string actName = _controlSet->get(i).getName();
-		if(actName.length()>ext.length() && !(actName.compare(actName.length()-ext.length(), ext.length(), ".excitation"))){
-			actName.erase(actName.length()-ext.length(), ext.length());
-		}
-		if(getProperty_actuator_list().findIndex(actName) < 0) // not already in the list of actuators for this controller
-			updProperty_actuator_list().appendValue(actName);
-	}
+    // Make sure that we are controlling all the actuators that the control set specifies
+    std::string ext = ".excitation";
+    for(int i =0; _controlSet != NULL && i<_controlSet->getSize(); i++) {
+        std::string actName = _controlSet->get(i).getName();
+        if(actName.length()>ext.length() && !(actName.compare(actName.length()-ext.length(), ext.length(), ".excitation"))) {
+            actName.erase(actName.length()-ext.length(), ext.length());
+        }
+        if(getProperty_actuator_list().findIndex(actName) < 0) // not already in the list of actuators for this controller
+            updProperty_actuator_list().appendValue(actName);
+    }
 
     // Controller::connectToModel() calls setActuators() with actuators in the
-    // _actuatorNameList so call connectToModel() after the _controlSet 
+    // _actuatorNameList so call connectToModel() after the _controlSet
     // constructor has been called
-	Super::connectToModel(model);
+    Super::connectToModel(model);
 
 }
 // for adding any components to the model
 void ControlSetController::addToSystem( SimTK::MultibodySystem& system ) const
 {
-	Super::addToSystem(system);
+    Super::addToSystem(system);
 }
 
-// for any intialization requiring a state or the complete system 
+// for any intialization requiring a state or the complete system
 void ControlSetController::initStateFromProperties( SimTK::State& s)  const
 {
-	Super::initStateFromProperties(s);
+    Super::initStateFromProperties(s);
 }

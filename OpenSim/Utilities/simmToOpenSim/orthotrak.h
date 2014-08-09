@@ -14,28 +14,28 @@
 
 STRUCT
 {
-   int numNames;
-   char **markerNames;
+    int numNames;
+    char **markerNames;
 } MarkerNameStruct;
 
-STRUCT 
+STRUCT
 {
-   double inferior;
-   double lateral;
-   double posterior;
+    double inferior;
+    double lateral;
+    double posterior;
 } HJCOffsetStruct;
 
 STRUCT
 {
-   HJCOffsetStruct ROffset;
-   HJCOffsetStruct LOffset;
-   double RFootLength;
-   double LFootLength;
-   double RKneeDiameter;
-   double LKneeDiameter;
-   double RAnkleDiameter;
-   double LAnkleDiameter;
-   double subjectMass;
+    HJCOffsetStruct ROffset;
+    HJCOffsetStruct LOffset;
+    double RFootLength;
+    double LFootLength;
+    double RKneeDiameter;
+    double LKneeDiameter;
+    double RAnkleDiameter;
+    double LAnkleDiameter;
+    double subjectMass;
 } PersonalDataStruct;
 
 

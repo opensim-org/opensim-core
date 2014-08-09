@@ -72,17 +72,17 @@ CompiledExpression& CompiledExpression::operator=(const CompiledExpression& expr
 void CompiledExpression::compileExpression(const ExpressionTreeNode& node, vector<pair<ExpressionTreeNode, int> >& temps) {
     if (findTempIndex(node, temps) != -1)
         return; // We have already processed a node identical to this one.
-    
+
     // Process the child nodes.
-    
+
     vector<int> args;
     for (int i = 0; i < node.getChildren().size(); i++) {
         compileExpression(node.getChildren()[i], temps);
         args.push_back(findTempIndex(node.getChildren()[i], temps));
     }
-    
+
     // Process this node.
-    
+
     if (node.getOperation().getId() == Operation::VARIABLE) {
         variableIndices[node.getOperation().getName()] = (int) workspace.size();
         variableNames.insert(node.getOperation().getName());
@@ -96,7 +96,7 @@ void CompiledExpression::compileExpression(const ExpressionTreeNode& node, vecto
             arguments[stepIndex].push_back(0); // The value won't actually be used.  We just need something there.
         else {
             // If the arguments are sequential, we can just pass a pointer to the first one.
-            
+
             bool sequential = true;
             for (int i = 1; i < args.size(); i++)
                 if (args[i] != args[i-1]+1)
@@ -134,7 +134,7 @@ double& CompiledExpression::getVariableReference(const string& name) {
 
 double CompiledExpression::evaluate() const {
     // Loop over the operations and evaluate each one.
-    
+
     for (int step = 0; step < operation.size(); step++) {
         const vector<int>& args = arguments[step];
         if (args.size() == 1)

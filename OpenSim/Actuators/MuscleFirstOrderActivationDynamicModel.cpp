@@ -51,17 +51,17 @@ MuscleFirstOrderActivationDynamicModel(double tauActivation,
 
     SimTK_ERRCHK1_ALWAYS(tauActivation>SimTK::SignificantReal
                          && tauDeactivation>SimTK::SignificantReal,
-        "MuscleFirstOrderActivationDynamicModel::"
-        "MuscleFirstOrderActivationDynamicModel", "%s: Activation and "
-        "deactivation time constants must be greater than 0",
-        name.c_str());
+                         "MuscleFirstOrderActivationDynamicModel::"
+                         "MuscleFirstOrderActivationDynamicModel", "%s: Activation and "
+                         "deactivation time constants must be greater than 0",
+                         name.c_str());
 
     SimTK_ERRCHK1_ALWAYS(minActivation >= 0
                          && minActivation < 1.0-SimTK::SignificantReal,
-        "MuscleFirstOrderActivationDynamicModel::"
-        "MuscleFirstOrderActivationDynamicModel",
-        "%s: Minimum activation must be in the range [0,1)",
-        name.c_str());
+                         "MuscleFirstOrderActivationDynamicModel::"
+                         "MuscleFirstOrderActivationDynamicModel",
+                         "%s: Minimum activation must be in the range [0,1)",
+                         name.c_str());
 
     set_activation_time_constant(tauActivation);
     set_deactivation_time_constant(tauDeactivation);
@@ -102,14 +102,22 @@ void MuscleFirstOrderActivationDynamicModel::ensureModelUpToDate()
 // GET AND SET METHODS
 //==============================================================================
 double MuscleFirstOrderActivationDynamicModel::getActivationTimeConstant() const
-{   return get_activation_time_constant(); }
+{
+    return get_activation_time_constant();
+}
 double MuscleFirstOrderActivationDynamicModel::
 getDeactivationTimeConstant() const
-{   return get_deactivation_time_constant(); }
+{
+    return get_deactivation_time_constant();
+}
 double MuscleFirstOrderActivationDynamicModel::getMinimumActivation() const
-{   return get_minimum_activation(); }
+{
+    return get_minimum_activation();
+}
 double MuscleFirstOrderActivationDynamicModel::getMaximumActivation() const
-{   return 1.0; }
+{
+    return 1.0;
+}
 
 bool MuscleFirstOrderActivationDynamicModel::
 setActivationTimeConstant(double activationTimeConstant)
@@ -137,7 +145,7 @@ bool MuscleFirstOrderActivationDynamicModel::
 setMinimumActivation(double minimumActivation)
 {
     if(minimumActivation >= 0
-       && minimumActivation < 1.0-SimTK::SignificantReal) {
+            && minimumActivation < 1.0-SimTK::SignificantReal) {
 
         set_minimum_activation(minimumActivation);
         buildModel();
@@ -169,5 +177,5 @@ calcDerivative(double activation, double excitation) const
     } else {
         tau = getDeactivationTimeConstant() / (0.5 + 1.5*clampedActivation);
     }
-	return (clampedExcitation - clampedActivation) / tau;
+    return (clampedExcitation - clampedActivation) / tau;
 }

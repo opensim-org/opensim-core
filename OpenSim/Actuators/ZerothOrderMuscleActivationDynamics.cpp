@@ -31,7 +31,7 @@ using namespace SimTK;
 // CONSTRUCTORS
 //==============================================================================
 ZerothOrderMuscleActivationDynamics::ZerothOrderMuscleActivationDynamics() :
-MuscleActivationDynamics()
+    MuscleActivationDynamics()
 {
     setNull();
     setName("default_ZerothOrderMuscleActivationDynamics");
@@ -40,7 +40,7 @@ MuscleActivationDynamics()
 ZerothOrderMuscleActivationDynamics::
 ZerothOrderMuscleActivationDynamics(const std::string& name,
                                     ExcitationGetter* getter) :
-MuscleActivationDynamics(name, getter)
+    MuscleActivationDynamics(name, getter)
 {
     setNull();
 }
@@ -50,7 +50,9 @@ MuscleActivationDynamics(name, getter)
 //==============================================================================
 double ZerothOrderMuscleActivationDynamics::
 getActivation(const SimTK::State& s) const
-{   return clampToValidInterval(getExcitation(s)); }
+{
+    return clampToValidInterval(getExcitation(s));
+}
 
 void ZerothOrderMuscleActivationDynamics::
 setActivation(SimTK::State& s, double activation) const

@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -35,20 +35,20 @@
 
 #include "IO.h"
 #if defined(__linux__) || defined(__APPLE__)
-	#include <sys/stat.h>
-	#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #elif defined(_MSC_VER)
-	#include <direct.h>
+#include <direct.h>
 #else
-	#include <unistd.h>
+#include <unistd.h>
 #endif
 
 // PATH stuff from Kenny
 #ifdef _MSC_VER
-	#include <direct.h>
-	#define PATH_MAX _MAX_PATH
+#include <direct.h>
+#define PATH_MAX _MAX_PATH
 #else
-	#include <unistd.h>
+#include <unistd.h>
 #endif
 
 // CONSTANTS
@@ -82,19 +82,19 @@ bool IO::_PrintOfflineDocuments = true;
 char* IO::
 ConstructDateAndTimeStamp()
 {
-	// GET DATE AND TIME
-	time_t timeInSeconds;
-	struct tm *timeStruct;
-	time(&timeInSeconds);
-	timeStruct = localtime(&timeInSeconds);
+    // GET DATE AND TIME
+    time_t timeInSeconds;
+    struct tm *timeStruct;
+    time(&timeInSeconds);
+    timeStruct = localtime(&timeInSeconds);
 
-	// CONSTRUCT STAMP
-	char *stamp = new char[64];
-	sprintf(stamp,"%d%02d%02d_%02d%02d%02d",
-		timeStruct->tm_year+1900,timeStruct->tm_mon+1,timeStruct->tm_mday,
-		timeStruct->tm_hour,timeStruct->tm_min,timeStruct->tm_sec);
+    // CONSTRUCT STAMP
+    char *stamp = new char[64];
+    sprintf(stamp,"%d%02d%02d_%02d%02d%02d",
+            timeStruct->tm_year+1900,timeStruct->tm_mon+1,timeStruct->tm_mday,
+            timeStruct->tm_hour,timeStruct->tm_min,timeStruct->tm_sec);
 
-	return(stamp);
+    return(stamp);
 }
 //-----------------------------------------------------------------------------
 // FIXING SLASHES IN PATH
@@ -106,15 +106,15 @@ ConstructDateAndTimeStamp()
 std::string IO::
 FixSlashesInFilePath(const std::string &path)
 {
-	std::string fixedPath = path;
-	for(unsigned int i=0;i<fixedPath.length();i++) {
+    std::string fixedPath = path;
+    for(unsigned int i=0; i<fixedPath.length(); i++) {
 #ifdef WIN32
-		if(fixedPath[i] == '/') fixedPath[i] = '\\';
+        if(fixedPath[i] == '/') fixedPath[i] = '\\';
 #else
-		if(fixedPath[i] == '\\') fixedPath[i] = '/';
+        if(fixedPath[i] == '\\') fixedPath[i] = '/';
 #endif
-	}
-	return fixedPath;
+    }
+    return fixedPath;
 }
 
 //=============================================================================
@@ -133,8 +133,8 @@ FixSlashesInFilePath(const std::string &path)
 void IO::
 SetScientific(bool aTrueFalse)
 {
-	_Scientific = aTrueFalse;
-	ConstructDoubleOutputFormat();
+    _Scientific = aTrueFalse;
+    ConstructDoubleOutputFormat();
 }
 
 //_____________________________________________________________________________
@@ -147,7 +147,7 @@ SetScientific(bool aTrueFalse)
 bool IO::
 GetScientific()
 {
-	return(_Scientific);
+    return(_Scientific);
 }
 
 //-----------------------------------------------------------------------------
@@ -160,8 +160,8 @@ GetScientific()
 void IO::
 SetGFormatForDoubleOutput(bool aTrueFalse)
 {
-	_GFormatForDoubleOutput = aTrueFalse;
-	ConstructDoubleOutputFormat();
+    _GFormatForDoubleOutput = aTrueFalse;
+    ConstructDoubleOutputFormat();
 }
 
 //_____________________________________________________________________________
@@ -170,7 +170,7 @@ SetGFormatForDoubleOutput(bool aTrueFalse)
 bool IO::
 GetGFormatForDoubleOutput()
 {
-	return(_GFormatForDoubleOutput);
+    return(_GFormatForDoubleOutput);
 }
 
 //-----------------------------------------------------------------------------
@@ -191,9 +191,9 @@ GetGFormatForDoubleOutput()
 void IO::
 SetDigitsPad(int aPad)
 {
-	if(aPad<0) aPad = -1;
-	_Pad = aPad;
-	ConstructDoubleOutputFormat();
+    if(aPad<0) aPad = -1;
+    _Pad = aPad;
+    ConstructDoubleOutputFormat();
 }
 //_____________________________________________________________________________
 /**
@@ -210,7 +210,7 @@ SetDigitsPad(int aPad)
 int IO::
 GetDigitsPad()
 {
-	return(_Pad);
+    return(_Pad);
 }
 
 //-----------------------------------------------------------------------------
@@ -226,9 +226,9 @@ GetDigitsPad()
 void IO::
 SetPrecision(int aPrecision)
 {
-	if(aPrecision<0) aPrecision = 0;
-	_Precision = aPrecision;
-	ConstructDoubleOutputFormat();
+    if(aPrecision<0) aPrecision = 0;
+    _Precision = aPrecision;
+    ConstructDoubleOutputFormat();
 }
 //_____________________________________________________________________________
 /**
@@ -240,7 +240,7 @@ SetPrecision(int aPrecision)
 int IO::
 GetPrecision()
 {
-	return(_Precision);
+    return(_Precision);
 }
 
 //-----------------------------------------------------------------------------
@@ -267,7 +267,7 @@ GetPrecision()
 const char* IO::
 GetDoubleOutputFormat()
 {
-	return(_DoubleFormat);
+    return(_DoubleFormat);
 }
 
 //_____________________________________________________________________________
@@ -281,21 +281,21 @@ GetDoubleOutputFormat()
 void IO::
 ConstructDoubleOutputFormat()
 {
-	if(_GFormatForDoubleOutput) {
-		sprintf(_DoubleFormat,"%%g");
-	} else if(_Scientific) {
-		if(_Pad<0) {
-			sprintf(_DoubleFormat,"%%.%dle",_Precision);
-		} else {
-			sprintf(_DoubleFormat,"%%%d.%dle",_Pad+_Precision,_Precision);
-		}
-	} else {
-		if(_Pad<0) {
-			sprintf(_DoubleFormat,"%%.%dlf",_Precision);
-		} else {
-			sprintf(_DoubleFormat,"%%%d.%dlf",_Pad+_Precision,_Precision);
-		}
-	}
+    if(_GFormatForDoubleOutput) {
+        sprintf(_DoubleFormat,"%%g");
+    } else if(_Scientific) {
+        if(_Pad<0) {
+            sprintf(_DoubleFormat,"%%.%dle",_Precision);
+        } else {
+            sprintf(_DoubleFormat,"%%%d.%dle",_Pad+_Precision,_Precision);
+        }
+    } else {
+        if(_Pad<0) {
+            sprintf(_DoubleFormat,"%%.%dlf",_Precision);
+        } else {
+            sprintf(_DoubleFormat,"%%%d.%dlf",_Pad+_Precision,_Precision);
+        }
+    }
 }
 
 //=============================================================================
@@ -311,7 +311,7 @@ ConstructDoubleOutputFormat()
 void IO::
 SetPrintOfflineDocuments(bool aTrueFalse)
 {
-	_PrintOfflineDocuments = aTrueFalse;
+    _PrintOfflineDocuments = aTrueFalse;
 }
 //_____________________________________________________________________________
 /**
@@ -319,7 +319,7 @@ SetPrintOfflineDocuments(bool aTrueFalse)
 bool IO::
 GetPrintOfflineDocuments()
 {
-	return _PrintOfflineDocuments;
+    return _PrintOfflineDocuments;
 }
 //=============================================================================
 // READ
@@ -342,13 +342,13 @@ GetPrintOfflineDocuments()
 string IO::
 ReadToTokenLine(istream &aIS,const string &aToken)
 {
-	string text;
-	while(aIS) {
-		string line = IO::ReadLine(aIS);
-		if(line == aToken) break;
-		text+=line+"\n";
-	}
-	return text;
+    string text;
+    while(aIS) {
+        string line = IO::ReadLine(aIS);
+        if(line == aToken) break;
+        text+=line+"\n";
+    }
+    return text;
 }
 
 //_____________________________________________________________________________
@@ -365,12 +365,12 @@ ReadToTokenLine(istream &aIS,const string &aToken)
 string IO::
 ReadLine(istream &aIS)
 {
-	std::string line;
-	getline(aIS, line);
-	int len=(int)line.length();
-	// deal with reading a DOS-format file in Linux
-	if(len>0 && line[len-1]=='\r') line=line.substr(0,len-1);
-	return line;
+    std::string line;
+    getline(aIS, line);
+    int len=(int)line.length();
+    // deal with reading a DOS-format file in Linux
+    if(len>0 && line[len-1]=='\r') line=line.substr(0,len-1);
+    return line;
 }
 //_____________________________________________________________________________
 /**
@@ -388,17 +388,17 @@ ReadLine(istream &aIS)
 int IO::
 ComputeNumberOfSteps(double aTI,double aTF,double aDT)
 {
-	if(aDT<=0) return(0);
+    if(aDT<=0) return(0);
 
-	double duration = aTF-aTI;
-	int ns = (int)floor(duration/aDT);
-	if((ns*aDT)<(duration-1.0e-2*aDT)) {
-		ns += 2;
-	} else {
-		ns += 1;
-	}
+    double duration = aTF-aTI;
+    int ns = (int)floor(duration/aDT);
+    if((ns*aDT)<(duration-1.0e-2*aDT)) {
+        ns += 2;
+    } else {
+        ns += 1;
+    }
 
-	return(ns);
+    return(ns);
 }
 //_____________________________________________________________________________
 /**
@@ -411,12 +411,12 @@ ComputeNumberOfSteps(double aTI,double aTF,double aDT)
 string IO::
 ReadCharacters(istream &aIS,int aNChar)
 {
-	char *buffer=new char[aNChar+1];
-	aIS.read(buffer,aNChar);
-	buffer[aIS.gcount()] = '\0';
-	string str = buffer;
-	delete[] buffer;
-	return str;
+    char *buffer=new char[aNChar+1];
+    aIS.read(buffer,aNChar);
+    buffer[aIS.gcount()] = '\0';
+    string str = buffer;
+    delete[] buffer;
+    return str;
 }
 
 //_____________________________________________________________________________
@@ -426,17 +426,17 @@ ReadCharacters(istream &aIS,int aNChar)
 FILE* IO::
 OpenFile(const string &aFileName,const string &aMode)
 {
-	FILE *fp = NULL;
+    FILE *fp = NULL;
 
-	// OPEN THE FILE
-	fp = fopen(aFileName.c_str(),aMode.c_str());
-	if(fp==NULL) {
-		printf("IO.OpenFile(const string&,const string&): failed to open %s\n",
-		 aFileName.c_str());
-		return(NULL);
-	}
+    // OPEN THE FILE
+    fp = fopen(aFileName.c_str(),aMode.c_str());
+    if(fp==NULL) {
+        printf("IO.OpenFile(const string&,const string&): failed to open %s\n",
+               aFileName.c_str());
+        return(NULL);
+    }
 
-	return(fp);
+    return(fp);
 }
 //_____________________________________________________________________________
 /**
@@ -445,24 +445,24 @@ OpenFile(const string &aFileName,const string &aMode)
 ifstream *IO::
 OpenInputFile(const string &aFileName,ios_base::openmode mode)
 {
-	ifstream *fs = new ifstream(aFileName.c_str(), ios_base::in | mode);
-	if(!fs || !(*fs)) {
-		printf("IO.OpenInputFile(const string&,openmode mode): failed to open %s\n", aFileName.c_str());
-		return(NULL);
-	}
+    ifstream *fs = new ifstream(aFileName.c_str(), ios_base::in | mode);
+    if(!fs || !(*fs)) {
+        printf("IO.OpenInputFile(const string&,openmode mode): failed to open %s\n", aFileName.c_str());
+        return(NULL);
+    }
 
-	return(fs);
+    return(fs);
 }
 ofstream *IO::
 OpenOutputFile(const string &aFileName,ios_base::openmode mode)
 {
-	ofstream *fs = new ofstream(aFileName.c_str(), ios_base::out | mode);
-	if(!fs || !(*fs)) {
-		printf("IO.OpenOutputFile(const string&,openmode mode): failed to open %s\n", aFileName.c_str());
-		return(NULL);
-	}
+    ofstream *fs = new ofstream(aFileName.c_str(), ios_base::out | mode);
+    if(!fs || !(*fs)) {
+        printf("IO.OpenOutputFile(const string&,openmode mode): failed to open %s\n", aFileName.c_str());
+        return(NULL);
+    }
 
-	return(fs);
+    return(fs);
 }
 //_____________________________________________________________________________
 /**
@@ -474,9 +474,9 @@ makeDir(const string &aDirName)
 {
 
 #if defined __linux__ || defined __APPLE__
-	return mkdir(aDirName.c_str(),S_IRWXU);
+    return mkdir(aDirName.c_str(),S_IRWXU);
 #else
-	return _mkdir(aDirName.c_str());
+    return _mkdir(aDirName.c_str());
 #endif
 }
 //_____________________________________________________________________________
@@ -489,9 +489,9 @@ chDir(const string &aDirName)
 {
 
 #if defined __linux__ || defined __APPLE__
-	return chdir(aDirName.c_str()); 
+    return chdir(aDirName.c_str());
 #else
-	return _chdir(aDirName.c_str());
+    return _chdir(aDirName.c_str());
 #endif
 
 }
@@ -503,55 +503,55 @@ chDir(const string &aDirName)
 string IO::
 getCwd()
 {
-	char buffer[PATH_MAX];
+    char buffer[PATH_MAX];
 #if defined __linux__ || defined __APPLE__
-	char* ptr = getcwd(buffer, PATH_MAX); 
+    char* ptr = getcwd(buffer, PATH_MAX);
 #else
-	_getcwd(buffer, PATH_MAX);
+    _getcwd(buffer, PATH_MAX);
 #endif
-	return string(buffer);
+    return string(buffer);
 }
 
 //_____________________________________________________________________________
 /**
  * Get parent directory of the passed in fileName.
- * 
+ *
 */
 string IO::
 getParentDirectory(const string& fileName)
 {
-	string	result="";
+    string	result="";
 
-	string::size_type dirSep = fileName.rfind('/'); // Unix/Mac dir separator
-	
-	if (dirSep == string::npos)
-		dirSep = fileName.rfind('\\'); // DOS dir separator
-	
-	if (dirSep != string::npos) // if '_fileName' contains path information...
-		result = fileName.substr(0,dirSep+1); // include trailing slashes
+    string::size_type dirSep = fileName.rfind('/'); // Unix/Mac dir separator
 
-	return result;
+    if (dirSep == string::npos)
+        dirSep = fileName.rfind('\\'); // DOS dir separator
+
+    if (dirSep != string::npos) // if '_fileName' contains path information...
+        result = fileName.substr(0,dirSep+1); // include trailing slashes
+
+    return result;
 }
 
 //_____________________________________________________________________________
 /**
  * Get filename part of a passed in URI (also works if a dos/unix path is passed in)
- * 
+ *
 */
 string IO::
 GetFileNameFromURI(const string& aURI)
 {
-	string	result=aURI;
+    string	result=aURI;
 
-	string::size_type dirSep = aURI.rfind('/'); // Unix/Mac dir separator
-	
-	if (dirSep == string::npos)
-		dirSep = aURI.rfind('\\'); // DOS dir separator
-	
-	if (dirSep != string::npos) // if aURI contains path information...
-		result = aURI.substr(dirSep+1);
+    string::size_type dirSep = aURI.rfind('/'); // Unix/Mac dir separator
 
-	return result;
+    if (dirSep == string::npos)
+        dirSep = aURI.rfind('\\'); // DOS dir separator
+
+    if (dirSep != string::npos) // if aURI contains path information...
+        result = aURI.substr(dirSep+1);
+
+    return result;
 }
 
 // TODO: account for '\n' inside comments
@@ -566,7 +566,7 @@ formatText(const string& aComment,const string& leadingWhitespace,int width,cons
         if(pos==string::npos) break;
         string whitespace = aComment.substr(i, pos-i);
         int newlineCount = 0;
-        for(string::size_type j=0;j<whitespace.size();j++) {
+        for(string::size_type j=0; j<whitespace.size(); j++) {
             if (whitespace[j]=='\t') whitespace[j]=' ';
             else if (whitespace[j]=='\n') newlineCount++;
         }
@@ -580,7 +580,7 @@ formatText(const string& aComment,const string& leadingWhitespace,int width,cons
             count += (int)(whitespace.size()+word.size());
         } else {
             if(!formatted.empty()) {
-                if(newlineCount) for(int j=0;j<newlineCount-1;j++) formatted += endlineTokenToInsert;
+                if(newlineCount) for(int j=0; j<newlineCount-1; j++) formatted += endlineTokenToInsert;
                 formatted += endlineTokenToInsert + leadingWhitespace;
             }
             formatted += word;
@@ -594,55 +594,56 @@ string IO::
 GetSuffix(const std::string &aStr, int aLen)
 {
     const int sz = (int)aStr.size();
-	return aStr.substr((sz>=aLen ? sz-aLen : 0));
+    return aStr.substr((sz>=aLen ? sz-aLen : 0));
 }
 
 void IO::
 RemoveSuffix(std::string &rStr, int aLen)
 {
     const int sz = (int)rStr.size();
-	rStr.erase((sz>=aLen ? sz-aLen : 0));
+    rStr.erase((sz>=aLen ? sz-aLen : 0));
 }
 
 string IO::
 replaceSubstring(const std::string &aStr, const std::string &aFrom, const std::string &aTo)
 {
-	string result = aStr;
-	for(string::size_type i = string::npos;;) {
-		i = result.rfind(aFrom, i);
-		if(i==string::npos) break;
-		result.replace(i, aFrom.size(), aTo);
-		if(i==0) break; else i--;
-	}
-	return result;
+    string result = aStr;
+    for(string::size_type i = string::npos;;) {
+        i = result.rfind(aFrom, i);
+        if(i==string::npos) break;
+        result.replace(i, aFrom.size(), aTo);
+        if(i==0) break;
+        else i--;
+    }
+    return result;
 }
 
 void IO::
 TrimLeadingWhitespace(std::string &rStr)
 {
-	string::size_type front = rStr.find_first_not_of(" \t\r\n");
-	rStr.erase(0, front);
+    string::size_type front = rStr.find_first_not_of(" \t\r\n");
+    rStr.erase(0, front);
 }
 
 void IO::
 TrimTrailingWhitespace(std::string &rStr)
 {
-	string::size_type back = rStr.find_last_not_of(" \t\r\n");
-	if(back < rStr.size()-1) rStr.erase(back+1);
+    string::size_type back = rStr.find_last_not_of(" \t\r\n");
+    if(back < rStr.size()-1) rStr.erase(back+1);
 }
 
 std::string IO::
 Lowercase(const std::string &aStr)
 {
-	std::string result = aStr;
-	for(unsigned int i=0; i<aStr.size(); i++) result[i] = tolower(result[i]);
-	return result;
+    std::string result = aStr;
+    for(unsigned int i=0; i<aStr.size(); i++) result[i] = tolower(result[i]);
+    return result;
 }
 
 std::string IO::
 Uppercase(const std::string &aStr)
 {
-	std::string result = aStr;
-	for(unsigned int i=0; i<aStr.size(); i++) result[i] = toupper(result[i]);
-	return result;
+    std::string result = aStr;
+    for(unsigned int i=0; i<aStr.size(); i++) result[i] = toupper(result[i]);
+    return result;
 }

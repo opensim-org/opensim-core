@@ -20,14 +20,14 @@ ReturnCode read_wavefront_file(PolyhedronStruct* ph, char filename[], SBoolean r
 ReturnCode read_stl_ascii_file(PolyhedronStruct* ph, char filename[], SBoolean run_norm);
 ReturnCode read_stl_binary_file(PolyhedronStruct* ph, char filename[], SBoolean run_norm);
 ReturnCode write_binary_file(char filename[], BoundingCube* bc,
-		       PolyhedronStruct polyhedron[], int num_polyhedra,
-		       int vertex_offset);
+                             PolyhedronStruct polyhedron[], int num_polyhedra,
+                             int vertex_offset);
 ReturnCode write_ascii_file(char filename[],  BoundingCube* bc,
-		      PolyhedronStruct polyhedron[], int num_polyhedra,
-		      NormOptions* opt);
+                            PolyhedronStruct polyhedron[], int num_polyhedra,
+                            NormOptions* opt);
 ReturnCode write_old_ascii_file(char filename[], PolyhedronStruct polyhedron[],
-				int num_polyhedra, NormOptions* opt);
+                                int num_polyhedra, NormOptions* opt);
 ReturnCode write_binary_separates(char filename[], PolyhedronStruct polyhedron[],
-			    int num_polyhedra, int vertex_offset);
+                                  int num_polyhedra, int vertex_offset);
 ReturnCode write_ascii_separates(char filename[], PolyhedronStruct polyhedron[],
-			   int num_polyhedra, NormOptions* opt);
+                                 int num_polyhedra, NormOptions* opt);

@@ -31,15 +31,15 @@
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Common/Set.h>
 
-namespace OpenSim { 
+namespace OpenSim {
 
 // Forward declarations of classes that are used by the controller implementation
 class Model;
 class Actuator;
 
 /**
- * Controller is an abstract ModelComponent that defines the interface for   
- * an OpenSim Controller. A controller computes and sets the values of the  
+ * Controller is an abstract ModelComponent that defines the interface for
+ * an OpenSim Controller. A controller computes and sets the values of the
  * controls for the actuators under its control.
  * The defining method of a Controller is its computeControls() method.
  * @see computeControls()
@@ -47,97 +47,101 @@ class Actuator;
  * @author Ajay Seth
  */
 class OSIMSIMULATION_API Controller : public ModelComponent {
-OpenSim_DECLARE_ABSTRACT_OBJECT(Controller, ModelComponent);
+    OpenSim_DECLARE_ABSTRACT_OBJECT(Controller, ModelComponent);
 
 public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
+    /** @name Property declarations
     These are the serializable properties associated with a Controller. **/
     /**@{**/
 
-	OpenSim_DECLARE_PROPERTY(isDisabled, bool, 
-		"Flag (true or false) indicating whether or not the controller is disabled." );
+    OpenSim_DECLARE_PROPERTY(isDisabled, bool,
+                             "Flag (true or false) indicating whether or not the controller is disabled." );
 
-	OpenSim_DECLARE_LIST_PROPERTY(actuator_list, std::string,
-		"The list of model actuators that this controller will control."
-        "The keyword ALL indicates the controller will controll all the acuators in the model" );
+    OpenSim_DECLARE_LIST_PROPERTY(actuator_list, std::string,
+                                  "The list of model actuators that this controller will control."
+                                  "The keyword ALL indicates the controller will controll all the acuators in the model" );
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION AND DESTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION AND DESTRUCTION
+    //--------------------------------------------------------------------------
 public:
 
-	/** Default constructor. */
-	Controller();
+    /** Default constructor. */
+    Controller();
 
-	// Uses default (compiler-generated) destructor, copy constructor and copy 
+    // Uses default (compiler-generated) destructor, copy constructor and copy
     // assignment operator.
 
-	//--------------------------------------------------------------------------
-	// Controller Interface
-	//--------------------------------------------------------------------------
-	/** Get whether or not this controller is disabled.
-	 * @return true when controller is disabled.
-	 */
-	bool isDisabled() const;
+    //--------------------------------------------------------------------------
+    // Controller Interface
+    //--------------------------------------------------------------------------
+    /** Get whether or not this controller is disabled.
+     * @return true when controller is disabled.
+     */
+    bool isDisabled() const;
 
-	/** Disable this controller.
-	 * @param disableFlag Disable if true.
-	 */
-	void setDisabled(bool disableFlag);
+    /** Disable this controller.
+     * @param disableFlag Disable if true.
+     */
+    void setDisabled(bool disableFlag);
 
-	/** replace the current set of actuators with the provided set */
+    /** replace the current set of actuators with the provided set */
     void setActuators(const Set<Actuator>& actuators );
-	/** add to the current set of actuators */
-	void addActuator(const Actuator& actuator);
-	/** get a const reference to the current set of actuators */
-	const Set<Actuator>& getActuatorSet() const;
-	/** get a writable reference to the set of actuators for this controller */
-	Set<Actuator>& updActuators();
+    /** add to the current set of actuators */
+    void addActuator(const Actuator& actuator);
+    /** get a const reference to the current set of actuators */
+    const Set<Actuator>& getActuatorSet() const;
+    /** get a writable reference to the set of actuators for this controller */
+    Set<Actuator>& updActuators();
 
-	/** Compute the control for actuator
-	 *  This method defines the behavior for any concrete controller 
-	 *  and therefore must be implemented by concrete subclasses.
-	 *
-	 * @param s			system state 
-	 * @param controls	writable model controls (all actuators)
-	 */
-	virtual void computeControls(const SimTK::State& s,
-								 SimTK::Vector &controls) const = 0;
+    /** Compute the control for actuator
+     *  This method defines the behavior for any concrete controller
+     *  and therefore must be implemented by concrete subclasses.
+     *
+     * @param s			system state
+     * @param controls	writable model controls (all actuators)
+     */
+    virtual void computeControls(const SimTK::State& s,
+                                 SimTK::Vector &controls) const = 0;
 
-	int getNumControls() const {return _numControls;}
+    int getNumControls() const {
+        return _numControls;
+    }
 
 protected:
 
-	/** Model component interface that permits the controller to be "wired" up
-	   to its actuators. Subclasses can override to perform additional setup. */
-	void connectToModel(Model& model) override;  
+    /** Model component interface that permits the controller to be "wired" up
+       to its actuators. Subclasses can override to perform additional setup. */
+    void connectToModel(Model& model) override;
 
-	/** Model component interface that creates underlying computational components
-	    in the SimTK::MultibodySystem. This includes adding states, creating 
-		measures, etc... required by the controller. */
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+    /** Model component interface that creates underlying computational components
+        in the SimTK::MultibodySystem. This includes adding states, creating
+    	measures, etc... required by the controller. */
+    void addToSystem(SimTK::MultibodySystem& system) const override;
 
-	/** Only a Controller can set its number of controls based on its actuators */
-	void setNumControls(int numControls) {_numControls = numControls; }
+    /** Only a Controller can set its number of controls based on its actuators */
+    void setNumControls(int numControls) {
+        _numControls = numControls;
+    }
 
 private:
-	// number of controls this controller computes 
+    // number of controls this controller computes
     int _numControls;
 
-	// the (sub)set of Model actuators that this controller controls */ 
-	Set<Actuator> _actuatorSet;
+    // the (sub)set of Model actuators that this controller controls */
+    Set<Actuator> _actuatorSet;
 
-	// construct and initialize properties
-	void constructProperties();
+    // construct and initialize properties
+    void constructProperties();
 
-	//friend class ControlSet;
-	friend class ControllerSet;
+    //friend class ControlSet;
+    friend class ControllerSet;
 
 //=============================================================================
 };	// END of class Controller

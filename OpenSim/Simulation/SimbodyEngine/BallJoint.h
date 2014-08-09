@@ -1,4 +1,4 @@
-#ifndef OPENSIM_BALL_JOINT_H_ 
+#ifndef OPENSIM_BALL_JOINT_H_
 #define OPENSIM_BALL_JOINT_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  BallJoint.h                            *
@@ -34,17 +34,17 @@ class Model;
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing an Ball joint.  The underlying implementation 
+ * A class implementing an Ball joint.  The underlying implementation
  * in Simbody is a MobilizedBody::Ball.
  *
  * @author Ajay Seth
  * @version 1.0
  */
 class OSIMSIMULATION_API BallJoint : public Joint {
-OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
+    OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
 
 private:
-	static const int _numMobilities = 3;
+    static const int _numMobilities = 3;
 //=============================================================================
 // DATA
 //=============================================================================
@@ -54,18 +54,20 @@ private:
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	BallJoint();
-	// convenience constructor
-	BallJoint(const std::string &name, const OpenSim::Body& parent, 
-		const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-		const OpenSim::Body& body, 
-		const SimTK::Vec3& locationInBody, const SimTK::Vec3& orientationInBody,
-				/*bool useEulerAngles=true,*/ bool reverse=false);
+    // CONSTRUCTION
+    BallJoint();
+    // convenience constructor
+    BallJoint(const std::string &name, const OpenSim::Body& parent,
+              const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+              const OpenSim::Body& body,
+              const SimTK::Vec3& locationInBody, const SimTK::Vec3& orientationInBody,
+              /*bool useEulerAngles=true,*/ bool reverse=false);
 
-	virtual ~BallJoint();
+    virtual ~BallJoint();
 
-	int numCoordinates() const override {return _numMobilities;} ;
+    int numCoordinates() const override {
+        return _numMobilities;
+    } ;
 
 protected:
     // ModelComponent interface.

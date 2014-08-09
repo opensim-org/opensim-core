@@ -29,10 +29,10 @@
 //=============================================================================
 #include "osimAnalysesDLL.h"
 #ifdef SWIG
-	#ifdef OSIMANALYSES_API
-		#undef OSIMANALYSES_API
-		#define OSIMANALYSES_API
-	#endif
+#ifdef OSIMANALYSES_API
+#undef OSIMANALYSES_API
+#define OSIMANALYSES_API
+#endif
 #endif
 
 #include <OpenSim/Common/Storage.h>
@@ -46,7 +46,7 @@ const int PointKinematicsBUFFER_LENGTH = 2048;
 
 //=============================================================================
 //=============================================================================
-namespace OpenSim { 
+namespace OpenSim {
 
 class Model;
 class Body;
@@ -59,111 +59,111 @@ class Body;
  * @version 1.0
  */
 class OSIMANALYSES_API PointKinematics : public Analysis {
-OpenSim_DECLARE_CONCRETE_OBJECT(PointKinematics, Analysis);
+    OpenSim_DECLARE_CONCRETE_OBJECT(PointKinematics, Analysis);
 
 //=============================================================================
 // DATA
 //=============================================================================
 public:
-	static const int NAME_LENGTH;
-	static const int BUFFER_LENGTH;
+    static const int NAME_LENGTH;
+    static const int BUFFER_LENGTH;
 private:
-	//char _buffer[PointKinematicsBUFFER_LENGTH];
-	//char _tmp[PointKinematicsBUFFER_LENGTH];
-	Body *_body;
-	Body *_relativeToBody;
+    //char _buffer[PointKinematicsBUFFER_LENGTH];
+    //char _tmp[PointKinematicsBUFFER_LENGTH];
+    Body *_body;
+    Body *_relativeToBody;
 protected:
-	// Properties
-	PropertyStr _bodyNameProp;
-	PropertyDblVec3 _pointProp;
-	PropertyStr _pointNameProp;
-	PropertyStr _relativeToBodyNameProp;
+    // Properties
+    PropertyStr _bodyNameProp;
+    PropertyDblVec3 _pointProp;
+    PropertyStr _pointNameProp;
+    PropertyStr _relativeToBodyNameProp;
 
-	// References
-	std::string &_bodyName;
-	SimTK::Vec3 &_point;
-	std::string &_pointName;
-	std::string &_relativeToBodyName;
+    // References
+    std::string &_bodyName;
+    SimTK::Vec3 &_point;
+    std::string &_pointName;
+    std::string &_relativeToBodyName;
 
-	double *_dy;
-	double *_kin;
-	Storage *_pStore;
-	Storage *_vStore;
-	Storage *_aStore;
+    double *_dy;
+    double *_kin;
+    Storage *_pStore;
+    Storage *_vStore;
+    Storage *_aStore;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	PointKinematics(Model *aModel=0);
-	PointKinematics(const std::string &aFileName);
-	PointKinematics(const PointKinematics &aObject);
-	virtual ~PointKinematics();
+    PointKinematics(Model *aModel=0);
+    PointKinematics(const std::string &aFileName);
+    PointKinematics(const PointKinematics &aObject);
+    virtual ~PointKinematics();
 
 private:
-	void setNull();
-	void setupProperties();
-	void constructDescription();
-	void constructColumnLabels();
-	void allocateStorage();
-	void deleteStorage();
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    void setNull();
+    void setupProperties();
+    void constructDescription();
+    void constructColumnLabels();
+    void allocateStorage();
+    void deleteStorage();
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	PointKinematics& operator=(const PointKinematics &aPointKinematics);
+    PointKinematics& operator=(const PointKinematics &aPointKinematics);
 #endif
 public:
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	// BODY
-	void setBodyPoint(const std::string& aBody, const SimTK::Vec3& aPoint);
-	void setBody(Body* aBody);
-	void setRelativeToBody(Body* aBody);
-	Body* getBody();
-	Body* getRelativeToBody();
-	// POINT
-	void setPoint(const SimTK::Vec3& aPoint);
-	void getPoint(SimTK::Vec3& rPoint);
-	// POINT NAME
-	void setPointName(const std::string &aName);
-	const std::string &getPointName();
-	// MODEL
-	virtual void setModel(Model& aModel);
-	
-	// STORAGE
-	void setStorageCapacityIncrements(int aIncrement);
-	Storage* getAccelerationStorage();
-	Storage* getVelocityStorage();
-	Storage* getPositionStorage();
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    // BODY
+    void setBodyPoint(const std::string& aBody, const SimTK::Vec3& aPoint);
+    void setBody(Body* aBody);
+    void setRelativeToBody(Body* aBody);
+    Body* getBody();
+    Body* getRelativeToBody();
+    // POINT
+    void setPoint(const SimTK::Vec3& aPoint);
+    void getPoint(SimTK::Vec3& rPoint);
+    // POINT NAME
+    void setPointName(const std::string &aName);
+    const std::string &getPointName();
+    // MODEL
+    virtual void setModel(Model& aModel);
 
-	//--------------------------------------------------------------------------
-	// ANALYSIS
-	//--------------------------------------------------------------------------
+    // STORAGE
+    void setStorageCapacityIncrements(int aIncrement);
+    Storage* getAccelerationStorage();
+    Storage* getVelocityStorage();
+    Storage* getPositionStorage();
+
+    //--------------------------------------------------------------------------
+    // ANALYSIS
+    //--------------------------------------------------------------------------
 
     virtual int
-        begin( SimTK::State& s);
+    begin( SimTK::State& s);
     virtual int
-        step(const SimTK::State& s, int setNumber);
+    step(const SimTK::State& s, int setNumber);
     virtual int
-        end( SimTK::State& s);
+    end( SimTK::State& s);
 protected:
     virtual int
-        record(const SimTK::State& s );
+    record(const SimTK::State& s );
 
-	//--------------------------------------------------------------------------
-	// IO
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // IO
+    //--------------------------------------------------------------------------
 public:
-	virtual int
-		printResults(const std::string &aBaseName,const std::string &aDir="",
-		double aDT=-1.0,const std::string &aExtension=".sto");
+    virtual int
+    printResults(const std::string &aBaseName,const std::string &aDir="",
+                 double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
 };	// END of class PointKinematics

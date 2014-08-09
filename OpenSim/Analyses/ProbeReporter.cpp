@@ -84,7 +84,7 @@ ProbeReporter::ProbeReporter(const std::string &aFileName): Analysis(aFileName, 
     allocateStorage();
 }
 
-// Copy constrctor and virtual copy 
+// Copy constrctor and virtual copy
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -109,7 +109,7 @@ ProbeReporter::ProbeReporter(const ProbeReporter &aProbeReporter):
  */
 void ProbeReporter::setNull()
 {
-	setAuthors("Tim Dorn");
+    setAuthors("Tim Dorn");
     // NAME
     setName("ProbeReporter");
 }
@@ -296,7 +296,7 @@ begin(SimTK::State& s)
  * the execution of a forward integrations or after the integration by
  * feeding it the necessary data.
  *
- * When called during an integration, this method is meant to be called 
+ * When called during an integration, this method is meant to be called
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -320,7 +320,7 @@ step(const SimTK::State& s, int stepNumber )
  * This method is called at the end of an analysis so that any
  * necessary finalizations may be performed.
  *
- * This method is meant to be called at the end of an integration 
+ * This method is meant to be called at the end of an integration
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -348,7 +348,7 @@ end(SimTK::State& s )
 //_____________________________________________________________________________
 /**
  * Print results.
- * 
+ *
  * The file names are constructed as
  * aDir + "/" + aBaseName + "_" + ComponentName + aExtension
  *
@@ -362,7 +362,7 @@ end(SimTK::State& s )
  */
 int ProbeReporter::
 printResults(const string &aBaseName,const string &aDir,double aDT,
-                 const string &aExtension)
+             const string &aExtension)
 {
     if(!getOn()) {
         printf("ProbeReporter.printResults: Off- not printing.\n");

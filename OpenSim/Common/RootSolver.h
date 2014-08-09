@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*  
- * Author: Frank C. Anderson 
+/*
+ * Author: Frank C. Anderson
  */
 
 
@@ -38,13 +38,13 @@
 
 //template class OSIMCOMMON_API Array<double>;
 
-namespace OpenSim { 
+namespace OpenSim {
 
 //=============================================================================
 //=============================================================================
 /**
  * A class for finding the N roots of N one-dimensional non-linear equations.
- * 
+ *
  * The rational for making this class solve for the roots of N equations
  * simultaneously is that, for some problems, it is more computationally
  * efficient to evaluate the N equations at the same time, as opposed to one
@@ -67,28 +67,28 @@ class OSIMCOMMON_API RootSolver
 // MEMBER VARIABLES
 //=============================================================================
 private:
-	
-	VectorFunctionUncoupledNxN *_function;
+
+    VectorFunctionUncoupledNxN *_function;
 
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	RootSolver(VectorFunctionUncoupledNxN *aFunc);
-	virtual ~RootSolver();
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    RootSolver(VectorFunctionUncoupledNxN *aFunc);
+    virtual ~RootSolver();
 private:
-	void setNull();
+    void setNull();
 
-	//--------------------------------------------------------------------------
-	// SOLVE
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // SOLVE
+    //--------------------------------------------------------------------------
 public:
-	Array<double> solve(const SimTK::State& s, const Array<double> &ax,const Array<double> &bx,
-		const Array<double> &tol);
+    Array<double> solve(const SimTK::State& s, const Array<double> &ax,const Array<double> &bx,
+                        const Array<double> &tol);
 
 //=============================================================================
 };	// END class RootSolver

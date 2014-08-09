@@ -52,74 +52,78 @@ protected:
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	StateTrackingTask() { setNull(); };
-	StateTrackingTask(const StateTrackingTask &aTaskObject) :
-	TrackingTask(aTaskObject)
-	{
-		setNull();
-		copyData(aTaskObject);
-	};
-	virtual ~StateTrackingTask() {};
+    StateTrackingTask() {
+        setNull();
+    };
+    StateTrackingTask(const StateTrackingTask &aTaskObject) :
+        TrackingTask(aTaskObject)
+    {
+        setNull();
+        copyData(aTaskObject);
+    };
+    virtual ~StateTrackingTask() {};
 private:
-	void setNull() {_stateIndex=-1;};
-	void copyData(const StateTrackingTask &aTaskObject) {};
+    void setNull() {
+        _stateIndex=-1;
+    };
+    void copyData(const StateTrackingTask &aTaskObject) {};
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 
 #ifndef SWIG
-	StateTrackingTask& operator=(const StateTrackingTask &aTaskObject) {
-		// BASE CLASS
-		TrackingTask::operator =(aTaskObject);
-		// DATA
-		copyData(aTaskObject);
+    StateTrackingTask& operator=(const StateTrackingTask &aTaskObject) {
+        // BASE CLASS
+        TrackingTask::operator =(aTaskObject);
+        // DATA
+        copyData(aTaskObject);
 
-		return(*this);
-	}
+        return(*this);
+    }
 #endif
-	virtual double getTaskError(const SimTK::State& s) {
-		double val = SimTK::NaN;
-		std::string::size_type dix = getName().find(".");
-		if(dix != std::string::npos){
-			std::string varName = getName();
-			varName.replace(dix, 1, "/");
-			val = _model->getStateVariable(s, varName);
-		}
-		else{
-			val = _model->getStateVariable(s, getName());
-		}
+    virtual double getTaskError(const SimTK::State& s) {
+        double val = SimTK::NaN;
+        std::string::size_type dix = getName().find(".");
+        if(dix != std::string::npos) {
+            std::string varName = getName();
+            varName.replace(dix, 1, "/");
+            val = _model->getStateVariable(s, varName);
+        }
+        else {
+            val = _model->getStateVariable(s, getName());
+        }
 
-		return (_pTrk[0]->calcValue(SimTK::Vector(1,s.getTime()))- val);
-	}
-	/**
-	 * Return the gradient of the tracking error as a vector, whose length 
-	 * is the number of _controller->getModel().getActuators()
-	 */
-	virtual SimTK::Vector getTaskErrorGradient(const SimTK::State& s) {
-		const Set<Actuator>& fSet = _model->getActuators();
-		SimTK::Vector g = SimTK::Vector(fSet.getSize());
-		g = 0.;
-		double taskGradient = -2 * getTaskError(s)* getWeight(0);
-		// set the entry idx in g where fSet[idx] is a substring of getName()
-		for(int i=0; i< fSet.getSize(); i++){
-			if (getName().find(fSet[i].getName())!=std::string::npos){
-				g[i]=taskGradient;
-				break;
-			}
-		}
-		return g;
-	}
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+        return (_pTrk[0]->calcValue(SimTK::Vector(1,s.getTime()))- val);
+    }
+    /**
+     * Return the gradient of the tracking error as a vector, whose length
+     * is the number of _controller->getModel().getActuators()
+     */
+    virtual SimTK::Vector getTaskErrorGradient(const SimTK::State& s) {
+        const Set<Actuator>& fSet = _model->getActuators();
+        SimTK::Vector g = SimTK::Vector(fSet.getSize());
+        g = 0.;
+        double taskGradient = -2 * getTaskError(s)* getWeight(0);
+        // set the entry idx in g where fSet[idx] is a substring of getName()
+        for(int i=0; i< fSet.getSize(); i++) {
+            if (getName().find(fSet[i].getName())!=std::string::npos) {
+                g[i]=taskGradient;
+                break;
+            }
+        }
+        return g;
+    }
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 private:
-	int _stateIndex;	// YIndex of state being tracked in _model, -1 if not found
+    int _stateIndex;	// YIndex of state being tracked in _model, -1 if not found
 //=============================================================================
 };	// END of class StateTrackingTask
 //=============================================================================

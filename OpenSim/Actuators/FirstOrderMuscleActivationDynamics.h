@@ -90,9 +90,9 @@ public:
         These are the serializable properties associated with this class. **/
     //@{
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
-        "Activation time constant (in seconds)");
+                             "Activation time constant (in seconds)");
     OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
-        "Deactivation time constant (in seconds)");
+                             "Deactivation time constant (in seconds)");
     //@}
 
 //==============================================================================

@@ -60,10 +60,10 @@ SMC_Joint::~SMC_Joint()
  * should be used.
  */
 SMC_Joint::SMC_Joint(const string &aCoordinateName) :
-	CMC_Joint(aCoordinateName),
-	_s(_propS.getValueDbl())
+    CMC_Joint(aCoordinateName),
+    _s(_propS.getValueDbl())
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -73,11 +73,11 @@ SMC_Joint::SMC_Joint(const string &aCoordinateName) :
  * @param aTask Joint task to be copied.
  */
 SMC_Joint::SMC_Joint(const SMC_Joint &aTask) :
-	CMC_Joint(aTask),
-	_s(_propS.getValueDbl())
+    CMC_Joint(aTask),
+    _s(_propS.getValueDbl())
 {
-	setNull();
-	copyData(aTask);
+    setNull();
+    copyData(aTask);
 }
 
 
@@ -91,8 +91,8 @@ SMC_Joint::SMC_Joint(const SMC_Joint &aTask) :
 void SMC_Joint::
 setNull()
 {
-	setupProperties();
-	_s = 100.0;
+    setupProperties();
+    _s = 100.0;
 }
 //_____________________________________________________________________________
 /**
@@ -101,11 +101,11 @@ setNull()
 void SMC_Joint::
 setupProperties()
 {
-	_propS.setComment("Parameter for specifying the boundary"
-		"of the surface error. The default for this parameter is 100.0."
-		" Generally, this parameter can have a value in the range of 1.0 to 1000.0.");
-	_propS.setName("surface_error_boundary");
-	_propertySet.append(&_propS);
+    _propS.setComment("Parameter for specifying the boundary"
+                      "of the surface error. The default for this parameter is 100.0."
+                      " Generally, this parameter can have a value in the range of 1.0 to 1000.0.");
+    _propS.setName("surface_error_boundary");
+    _propertySet.append(&_propS);
 }
 
 
@@ -116,7 +116,7 @@ setupProperties()
 void SMC_Joint::
 copyData(const SMC_Joint &aTask)
 {
-	_s = aTask._s;
+    _s = aTask._s;
 }
 
 
@@ -136,13 +136,13 @@ copyData(const SMC_Joint &aTask)
 SMC_Joint& SMC_Joint::
 operator=(const SMC_Joint &aTask)
 {
-	// BASE CLASS
-	CMC_Joint::operator =(aTask);
+    // BASE CLASS
+    CMC_Joint::operator =(aTask);
 
-	// DATA
-	copyData(aTask);
+    // DATA
+    copyData(aTask);
 
-	return(*this);
+    return(*this);
 }
 
 //=============================================================================
@@ -166,40 +166,40 @@ operator=(const SMC_Joint &aTask)
 void SMC_Joint::
 computeDesiredAccelerations( const SimTK::State& state, double aT)
 {
-	_aDes = SimTK::NaN;
+    _aDes = SimTK::NaN;
 
-	// CHECK
-	if(_model==NULL) return;
-	if(_pTrk[0]==NULL) return;
+    // CHECK
+    if(_model==NULL) return;
+    if(_pTrk[0]==NULL) return;
 
-	// COMPUTE ERRORS
-	computeErrors(state, aT);
+    // COMPUTE ERRORS
+    computeErrors(state, aT);
 
-	// Term 1: Experimental Acceleration
-	double a;
-	if(_aTrk[0]==NULL) {
-		std::vector<int> derivComponents(2);
-		derivComponents[0]=0;
-		derivComponents[1]=0;
-		a = (_ka)[0]*_pTrk[0]->calcDerivative(derivComponents,SimTK::Vector(1,aT));
-	} else {
-		a = (_ka)[0]*_aTrk[0]->calcValue(SimTK::Vector(1,aT));
-	}
+    // Term 1: Experimental Acceleration
+    double a;
+    if(_aTrk[0]==NULL) {
+        std::vector<int> derivComponents(2);
+        derivComponents[0]=0;
+        derivComponents[1]=0;
+        a = (_ka)[0]*_pTrk[0]->calcDerivative(derivComponents,SimTK::Vector(1,aT));
+    } else {
+        a = (_ka)[0]*_aTrk[0]->calcValue(SimTK::Vector(1,aT));
+    }
 
-	// Surface Error
-	double s = -_vErr[0] -(_kv)[0]*_pErr[0];
+    // Surface Error
+    double s = -_vErr[0] -(_kv)[0]*_pErr[0];
 
-	// Term 2: Velocity
-	double v = (_kv)[0]*_vErr[0];
+    // Term 2: Velocity
+    double v = (_kv)[0]*_vErr[0];
 
-	// Term 3: Robust Term
-	double r = (_kp)[0] * tanh(s/_s);
+    // Term 3: Robust Term
+    double r = (_kp)[0] * tanh(s/_s);
 
-	// DESIRED ACCELERATION
-	_aDes[0] = a + v - r;
+    // DESIRED ACCELERATION
+    _aDes[0] = a + v - r;
 
-	// PRINT
-	//printf("SMC_Joint.computeDesiredAcceleration:\n");
-	//printf("%s:  t=%lf aDes=%lf a=%lf vErr=%lf pErr=%lf\n",getName(),t,_aDes[0],
-	//	_pTrk[0]->evaluate(2,t),_vErr[0],_pErr[0]);
+    // PRINT
+    //printf("SMC_Joint.computeDesiredAcceleration:\n");
+    //printf("%s:  t=%lf aDes=%lf a=%lf vErr=%lf pErr=%lf\n",getName(),t,_aDes[0],
+    //	_pTrk[0]->evaluate(2,t),_vErr[0],_pErr[0]);
 }

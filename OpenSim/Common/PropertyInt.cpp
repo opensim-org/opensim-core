@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -47,9 +47,9 @@ using namespace std;
  */
 PropertyInt::
 PropertyInt(const string &aName,int aValue) :
-Property_Deprecated(Property_Deprecated::Int,aName)
+    Property_Deprecated(Property_Deprecated::Int,aName)
 {
-	_value = aValue;
+    _value = aValue;
     setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
@@ -58,9 +58,9 @@ Property_Deprecated(Property_Deprecated::Int,aName)
  */
 PropertyInt::
 PropertyInt() :
-Property_Deprecated(Property_Deprecated::Int,"IntPropertyName")
+    Property_Deprecated(Property_Deprecated::Int,"IntPropertyName")
 {
-	_value = 0;
+    _value = 0;
     setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
@@ -70,9 +70,9 @@ Property_Deprecated(Property_Deprecated::Int,"IntPropertyName")
  * @param aProperty Property_Deprecated to be copied.
  */
 PropertyInt::PropertyInt(const PropertyInt &aProperty) :
-	Property_Deprecated(aProperty)
+    Property_Deprecated(aProperty)
 {
-	_value = aProperty.getValueInt();
+    _value = aProperty.getValueInt();
 }
 //_____________________________________________________________________________
 /**
@@ -84,8 +84,8 @@ PropertyInt::PropertyInt(const PropertyInt &aProperty) :
  */
 PropertyInt* PropertyInt::clone() const
 {
-	PropertyInt *property = new PropertyInt(*this);
-	return(property);
+    PropertyInt *property = new PropertyInt(*this);
+    return(property);
 }
 
 
@@ -105,9 +105,9 @@ PropertyInt* PropertyInt::clone() const
 PropertyInt& PropertyInt::
 operator=(const PropertyInt &aProperty)
 {
-	Property_Deprecated::operator =(aProperty);
-	_value = aProperty.getValueInt();
-	return(*this);
+    Property_Deprecated::operator =(aProperty);
+    _value = aProperty.getValueInt();
+    return(*this);
 }
 
 
@@ -126,7 +126,7 @@ operator=(const PropertyInt &aProperty)
 std::string PropertyInt::
 getTypeName() const
 {
-	return("int");
+    return("int");
 }
 
 //-----------------------------------------------------------------------------
@@ -141,7 +141,7 @@ getTypeName() const
 void PropertyInt::
 setValue(int aValue)
 {
-	_value = aValue;
+    _value = aValue;
 }
 //_____________________________________________________________________________
 /**
@@ -153,7 +153,7 @@ setValue(int aValue)
 int& PropertyInt::
 getValueInt()
 {
-	return(_value);
+    return(_value);
 }
 //_____________________________________________________________________________
 /**
@@ -164,7 +164,7 @@ getValueInt()
 const int& PropertyInt::
 getValueInt() const
 {
-	return(_value);
+    return(_value);
 }
 //_____________________________________________________________________________
 /**
@@ -175,7 +175,7 @@ getValueInt() const
 string PropertyInt::
 toString() const
 {
-	char intString[32];
-	sprintf(intString, "%d", _value);
-	return intString;
+    char intString[32];
+    sprintf(intString, "%d", _value);
+    return intString;
 }

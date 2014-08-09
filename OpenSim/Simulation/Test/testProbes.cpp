@@ -24,7 +24,7 @@
 //============================================================================
 //	testProbes builds an OpenSim model containing a Millard2012Equilibrium
 //  muscle model using the OpenSim API and applies a bunch of probes to it.
-//		
+//
 //     Add more test cases to address specific problems with probes
 //
 //============================================================================
@@ -59,21 +59,21 @@ static const int InitializationTest     = 1;
 static const int CorrectnessTest        = 2;
 
 // MUSCLE CONSTANTS
-static const double MaxIsometricForce0  = 100.0, 
-                    OptimalFiberLength0 = 0.1, 
-                    TendonSlackLength0  = 0.2, 
+static const double MaxIsometricForce0  = 100.0,
+                    OptimalFiberLength0 = 0.1,
+                    TendonSlackLength0  = 0.2,
                     PennationAngle0     = 0.0,
                     PennationAngle1     = SimTK::Pi/4;
 
-static const double Activation0     = 0.01, 
-                    Deactivation0   = 0.4,	
-                    ShutteDelpActivation1 = 7.6,	
+static const double Activation0     = 0.01,
+                    Deactivation0   = 0.4,
+                    ShutteDelpActivation1 = 7.6,
                     ShutteDelpActivation2 = 2.5;
 
 /*
-This function completes a controlled activation, controlled stretch simulation 
-of a muscle. After the simulation has completed, the results can be 
-tested in a number of different ways to ensure that the muscle model is 
+This function completes a controlled activation, controlled stretch simulation
+of a muscle. After the simulation has completed, the results can be
+tested in a number of different ways to ensure that the muscle model is
 functioning
 
 @param aMuscle  a path actuator
@@ -83,17 +83,17 @@ functioning
 @param motion   the forced stretch of the simulation
 @param control  the activation control signal that is applied to the muscle
 @param accuracy the desired accuracy of the integrated solution
-@param testType 0: No test, just simulate the muscle 
+@param testType 0: No test, just simulate the muscle
                 1: Initialization test
-                2: Correctness test: ensure that d/dt(KE+PE-W) = 0 
+                2: Correctness test: ensure that d/dt(KE+PE-W) = 0
 @param testTolerance    the desired tolerance associated with the test
 @param printResults print the osim model associated with this test.
 */
-void simulateMuscle(const Muscle &aMuscle, 
-                    double startX, 
-                    double act0, 
-                    const Function *motion, 
-                    const Function *control, 
+void simulateMuscle(const Muscle &aMuscle,
+                    double startX,
+                    double act0,
+                    const Function *motion,
+                    const Function *control,
                     double integrationAccuracy,
                     int testType,
                     double testTolerance,
@@ -103,39 +103,39 @@ void simulateMuscle(const Muscle &aMuscle,
 int main()
 {
     SimTK::Array_<std::string> failures;
-    
-    try { 
-    Millard2012EquilibriumMuscle muscle("muscle",
-                    MaxIsometricForce0,
-                    OptimalFiberLength0,
-                    TendonSlackLength0,
-                    PennationAngle0);
 
-    muscle.setActivationTimeConstant(Activation0);
-    muscle.setDeactivationTimeConstant(Deactivation0);
+    try {
+        Millard2012EquilibriumMuscle muscle("muscle",
+                                            MaxIsometricForce0,
+                                            OptimalFiberLength0,
+                                            TendonSlackLength0,
+                                            PennationAngle0);
 
-    double x0 = 0;
-    double act0 = 0.2;
+        muscle.setActivationTimeConstant(Activation0);
+        muscle.setDeactivationTimeConstant(Deactivation0);
 
-    Constant control(0.5);
+        double x0 = 0;
+        double act0 = 0.2;
 
-    Sine motion(0.1, SimTK::Pi, 0);
+        Constant control(0.5);
 
-    simulateMuscle(muscle, 
-        x0, 
-        act0, 
-        &motion, 
-        &control, 
-        IntegrationAccuracy,
-        CorrectnessTest,
-        CorrectnessTestTolerance,
-        true);
-        
-        
-        cout << "Probes test passed" << endl; 
+        Sine motion(0.1, SimTK::Pi, 0);
+
+        simulateMuscle(muscle,
+                       x0,
+                       act0,
+                       &motion,
+                       &control,
+                       IntegrationAccuracy,
+                       CorrectnessTest,
+                       CorrectnessTestTolerance,
+                       true);
+
+
+        cout << "Probes test passed" << endl;
     }
 
-    catch (const Exception& e) { 
+    catch (const Exception& e) {
         e.print(cerr);
         failures.push_back("testProbes");
     }
@@ -150,35 +150,35 @@ int main()
         return 1;
     }
 
-    
+
     cout << "testProbes Done" << endl;
     return 0;
 }
 
-/*==============================================================================  
-    Main test driver to be used on any muscle model (derived from Muscle) so new 
-    cases should be easy to add currently, the test only verifies that the work 
+/*==============================================================================
+    Main test driver to be used on any muscle model (derived from Muscle) so new
+    cases should be easy to add currently, the test only verifies that the work
     done by the muscle corresponds to the change in system energy.
 
-    TODO: Test will fail wih prescribe motion until the work done by this 
+    TODO: Test will fail wih prescribe motion until the work done by this
     constraint is accounted for.
 ================================================================================
 */
 void simulateMuscle(
-        const Muscle &aMuscModel, 
-        double startX, 
-        double act0, 
-        const Function *motion,  // prescribe motion of free end of muscle
-        const Function *control, // prescribed excitation signal to the muscle
-        double integrationAccuracy,
-        int testType,
-        double testTolerance,
-        bool printResults)
+    const Muscle &aMuscModel,
+    double startX,
+    double act0,
+    const Function *motion,  // prescribe motion of free end of muscle
+    const Function *control, // prescribed excitation signal to the muscle
+    double integrationAccuracy,
+    int testType,
+    double testTolerance,
+    bool printResults)
 {
     string prescribed = (motion == NULL) ? "." : " with Prescribed Motion.";
 
     cout << "\n******************************************************" << endl;
-    cout << "Test " << aMuscModel.getConcreteClassName() 
+    cout << "Test " << aMuscModel.getConcreteClassName()
          << " Model" << prescribed << endl;
     cout << "******************************************************" << endl;
     using SimTK::Vec3;
@@ -190,7 +190,7 @@ void simulateMuscle(
     // Define the initial and final simulation times
     double initialTime = 0.0;
     double finalTime = 4.0;
-    
+
     //Physical properties of the model
     double ballMass = 10;
     double ballRadius = 0.05;
@@ -210,39 +210,39 @@ void simulateMuscle(
     Body& ground = model.getGroundBody();
     ground.addDisplayGeometry("box.vtp");
     ground.updDisplayer()
-        ->setScaleFactors(Vec3(anchorWidth, anchorWidth, 2*anchorWidth));
+    ->setScaleFactors(Vec3(anchorWidth, anchorWidth, 2*anchorWidth));
 
-    OpenSim::Body * ball = new OpenSim::Body("ball", 
-                        ballMass , 
-                        Vec3(0),  
-                        ballMass*SimTK::Inertia::sphere(ballRadius));
-    
+    OpenSim::Body * ball = new OpenSim::Body("ball",
+            ballMass ,
+            Vec3(0),
+            ballMass*SimTK::Inertia::sphere(ballRadius));
+
     ball->addDisplayGeometry("sphere.vtp");
     ball->updDisplayer()->setScaleFactors(Vec3(2*ballRadius));
     // ball connected  to ground via a slider along X
     double xSinG = optimalFiberLength*cos(pennationAngle)+tendonSlackLength;
 
-    SliderJoint* slider = new SliderJoint( "slider", 
-                        ground, 
-                        Vec3(anchorWidth/2+xSinG, 0, 0), 
-                        Vec3(0), 
-                        *ball, 
-                        Vec3(0), 
-                        Vec3(0));
+    SliderJoint* slider = new SliderJoint( "slider",
+                                           ground,
+                                           Vec3(anchorWidth/2+xSinG, 0, 0),
+                                           Vec3(0),
+                                           *ball,
+                                           Vec3(0),
+                                           Vec3(0));
 
     CoordinateSet& jointCoordinateSet = slider->upd_CoordinateSet();
-        jointCoordinateSet[0].setName("tx");
-        jointCoordinateSet[0].setDefaultValue(1.0);
-        jointCoordinateSet[0].setRangeMin(0); 
-        jointCoordinateSet[0].setRangeMax(1.0);
-    
-    if(motion != NULL){
+    jointCoordinateSet[0].setName("tx");
+    jointCoordinateSet[0].setDefaultValue(1.0);
+    jointCoordinateSet[0].setRangeMin(0);
+    jointCoordinateSet[0].setRangeMax(1.0);
+
+    if(motion != NULL) {
         jointCoordinateSet[0].setPrescribedFunction(*motion);
         jointCoordinateSet[0].setDefaultIsPrescribed(true);
     }
     // add ball to model
     model.addBody(ball);
-	model.addJoint(slider);
+    model.addJoint(slider);
 
 
 //==========================================================================
@@ -254,34 +254,34 @@ void simulateMuscle(
     aMuscle->setName("muscle");
     aMuscle->addNewPathPoint("muscle-box", ground, Vec3(anchorWidth/2,0,0));
     aMuscle->addNewPathPoint("muscle-ball", *ball, Vec3(-ballRadius,0,0));
-    
-    ActivationFiberLengthMuscle_Deprecated *aflMuscle 
+
+    ActivationFiberLengthMuscle_Deprecated *aflMuscle
         = dynamic_cast<ActivationFiberLengthMuscle_Deprecated *>(aMuscle);
-    if(aflMuscle){
-        // Define the default states for the muscle that has 
+    if(aflMuscle) {
+        // Define the default states for the muscle that has
         //activation and fiber-length states
         aflMuscle->setDefaultActivation(act0);
         aflMuscle->setDefaultFiberLength(aflMuscle->getOptimalFiberLength());
-    }else{
-        ActivationFiberLengthMuscle *aflMuscle2 
+    } else {
+        ActivationFiberLengthMuscle *aflMuscle2
             = dynamic_cast<ActivationFiberLengthMuscle *>(aMuscle);
-        if(aflMuscle2){
-            // Define the default states for the muscle 
+        if(aflMuscle2) {
+            // Define the default states for the muscle
             //that has activation and fiber-length states
             aflMuscle2->setDefaultActivation(act0);
             aflMuscle2->setDefaultFiberLength(aflMuscle2
-                ->getOptimalFiberLength());
+                                              ->getOptimalFiberLength());
         }
     }
 
     model.addForce(aMuscle);
 
-    // Create a prescribed controller that simply 
+    // Create a prescribed controller that simply
     //applies controls as function of time
     PrescribedController * muscleController = new PrescribedController();
-    if(control != NULL){
+    if(control != NULL) {
         muscleController->setActuators(model.updActuators());
-        // Set the indiviudal muscle control functions 
+        // Set the indiviudal muscle control functions
         //for the prescribed muscle controller
         muscleController->prescribeControlForActuator("muscle",control->clone());
 
@@ -304,7 +304,7 @@ void simulateMuscle(
     cout << "------------\nPROBES\n------------" << endl;
     int probeCounter = 1;
 
-    // Add ActuatorPowerProbe to measure work done by the muscle 
+    // Add ActuatorPowerProbe to measure work done by the muscle
     ActuatorPowerProbe* muscWorkProbe = new ActuatorPowerProbe(muscNames, false, 1);
     //muscWorkProbe->setName("ActuatorWork");
     muscWorkProbe->setOperation("integrate");
@@ -312,15 +312,15 @@ void simulateMuscle(
     ic1 = 9.0;      // some arbitary initial condition.
     muscWorkProbe->setInitialConditions(ic1);
     model.addProbe(muscWorkProbe);
-	model.setup();
-    cout << probeCounter++ << ") Added ActuatorPowerProbe to measure work done by the muscle" << endl; 
+    model.setup();
+    cout << probeCounter++ << ") Added ActuatorPowerProbe to measure work done by the muscle" << endl;
 
-    // Add ActuatorPowerProbe to measure power generated by the muscle 
+    // Add ActuatorPowerProbe to measure power generated by the muscle
     ActuatorPowerProbe* muscPowerProbe = new ActuatorPowerProbe(*muscWorkProbe);	// use copy constructor
     muscPowerProbe->setName("ActuatorPower");
     muscPowerProbe->setOperation("value");
     model.addProbe(muscPowerProbe);
-    cout << probeCounter++ << ") Added ActuatorPowerProbe to measure power generated by the muscle" << endl; 
+    cout << probeCounter++ << ") Added ActuatorPowerProbe to measure power generated by the muscle" << endl;
 
     // Add ActuatorPowerProbe to report the muscle power MINIMUM
     ActuatorPowerProbe* powerProbeMinimum = new ActuatorPowerProbe(*muscPowerProbe);			// use copy constructor
@@ -351,14 +351,14 @@ void simulateMuscle(
     cout << probeCounter++ << ") Added ActuatorPowerProbe to report the muscle power MAXABS" << endl;
 
 
-    // Add ActuatorPowerProbe to measure the square of the power generated by the muscle 
+    // Add ActuatorPowerProbe to measure the square of the power generated by the muscle
     ActuatorPowerProbe* muscPowerSquaredProbe = new ActuatorPowerProbe(*muscPowerProbe);	// use copy constructor
     muscPowerSquaredProbe->setName("ActuatorPowerSquared");
     muscPowerSquaredProbe->setExponent(2.0);
     model.addProbe(muscPowerSquaredProbe);
-    cout << probeCounter++ << ") Added ActuatorPowerProbe to measure the square of the power generated by the muscle" << endl; 
+    cout << probeCounter++ << ") Added ActuatorPowerProbe to measure the square of the power generated by the muscle" << endl;
 
-    // Add JointInternalPowerProbe to measure work done by the joint 
+    // Add JointInternalPowerProbe to measure work done by the joint
     JointInternalPowerProbe* jointWorkProbe = new JointInternalPowerProbe(jointNames, false, 1);
     jointWorkProbe->setName("JointWork");
     jointWorkProbe->setOperation("integrate");
@@ -366,14 +366,14 @@ void simulateMuscle(
     model.addProbe(jointWorkProbe);
     cout << probeCounter++ << ") Added JointPowerProbe to measure work done by the joint" << endl;
 
-    // Add JointPowerProbe to measure power generated by the joint 
+    // Add JointPowerProbe to measure power generated by the joint
     JointInternalPowerProbe* jointPowerProbe = new JointInternalPowerProbe(*jointWorkProbe);	// use copy constructor
     jointPowerProbe->setName("JointPower");
     jointPowerProbe->setOperation("value");
     model.addProbe(jointPowerProbe);
     cout << probeCounter++ << ") Added JointPowerProbe to measure power generated by the joint" << endl;
 
-    // Add ActuatorForceProbe to measure the impulse of the muscle force 
+    // Add ActuatorForceProbe to measure the impulse of the muscle force
     ActuatorForceProbe* impulseProbe = new ActuatorForceProbe(muscNames, false, 1);
     impulseProbe->setName("ActuatorImpulse");
     impulseProbe->setOperation("integrate");
@@ -381,14 +381,14 @@ void simulateMuscle(
     model.addProbe(impulseProbe);
     cout << probeCounter++ << ") Added ActuatorForceProbe to measure the impulse of the muscle force" << endl;
 
-    // Add ActuatorForceProbe to report the muscle force 
+    // Add ActuatorForceProbe to report the muscle force
     ActuatorForceProbe* forceProbe = new ActuatorForceProbe(*impulseProbe);			// use copy constructor
     forceProbe->setName("ActuatorForce");
     forceProbe->setOperation("value");
     model.addProbe(forceProbe);
     cout << probeCounter++ << ") Added ActuatorForceProbe to report the muscle force" << endl;
 
-    // Add ActuatorForceProbe to report the square of the muscle force 
+    // Add ActuatorForceProbe to report the square of the muscle force
     ActuatorForceProbe* forceSquaredProbe = new ActuatorForceProbe(*forceProbe);			// use copy constructor
     forceSquaredProbe->setName("ActuatorForceSquared");
     forceSquaredProbe->setExponent(2.0);
@@ -411,7 +411,7 @@ void simulateMuscle(
     model.addProbe(forceSquaredProbeTwiceScaled);
     cout << probeCounter++ << ") Added ActuatorForceProbe to report the square of the muscle force for the same muscle repeated twice, SCALED BY 0.5" << endl;
 
-    // Add ActuatorForceProbe to report -3.5X the muscle force 
+    // Add ActuatorForceProbe to report -3.5X the muscle force
     double gain2 = -3.50;
     ActuatorForceProbe* forceProbeScale = new ActuatorForceProbe(*impulseProbe);		// use copy constructor
     forceProbeScale->setName("ScaleActuatorForce");
@@ -420,7 +420,7 @@ void simulateMuscle(
     model.addProbe(forceProbeScale);
     cout << probeCounter++ << ") Added ActuatorForceProbe to report -3.5X the muscle force" << endl;
 
-    // Add ActuatorForceProbe to report the differentiated muscle force 
+    // Add ActuatorForceProbe to report the differentiated muscle force
     ActuatorForceProbe* forceProbeDiff = new ActuatorForceProbe(*impulseProbe);		// use copy constructor
     forceProbeDiff->setName("DifferentiateActuatorForce");
     forceProbeDiff->setOperation("differentiate");
@@ -475,7 +475,7 @@ void simulateMuscle(
     cout << probeCounter++ << ") Added ActuatorForceProbe to report the integrated muscle force value, twice - REPORTED INDIVIDUALLY" << endl;
     cout << "initCondVec = " << initCondVec << endl;
 
-    /* Since all components are allocated on the stack don't have model 
+    /* Since all components are allocated on the stack don't have model
        own them (and try to free)*/
 //	model.disownAllComponents();
     model.setName("testProbesModel");
@@ -493,14 +493,14 @@ void simulateMuscle(
     model.addAnalysis(muscleReporter);
     model.print("testProbesModel.osim");
     model.printBasicInfo(cout);
-   
+
 
 
 //==========================================================================
 // 3. SIMULATION Initialization
 //==========================================================================
 
-    // Initialize the system and get the default state    
+    // Initialize the system and get the default state
     SimTK::State& si = model.initSystem();
     SimTK::Vector testRealInitConditions = forceSquaredProbeTwiceReportedIndividually3->getProbeOutputs(si);
 
@@ -511,19 +511,19 @@ void simulateMuscle(
 
     // Define non-zero (defaults are 0) states for the free joint
     // set x-translation value
-    modelCoordinateSet[0].setValue(si, startX, true); 
+    modelCoordinateSet[0].setValue(si, startX, true);
 
     //Copy the initial state
     SimTK::State initialState(si);
 
-    // Check muscle is setup correctly 
-    const PathActuator &muscle 
+    // Check muscle is setup correctly
+    const PathActuator &muscle
         = dynamic_cast<const PathActuator&>(model.updActuators().get("muscle"));
     double length = muscle.getLength(si);
     double trueLength = startX + xSinG - anchorWidth/2;
-    
-    ASSERT_EQUAL(length/trueLength, 1.0, testTolerance, __FILE__, __LINE__, 
-        "testMuscles: path failed to initialize to correct length." );
+
+    ASSERT_EQUAL(length/trueLength, 1.0, testTolerance, __FILE__, __LINE__,
+                 "testMuscles: path failed to initialize to correct length." );
 
     model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
 
@@ -532,7 +532,7 @@ void simulateMuscle(
     double Esys0 = model.getMultibodySystem().calcEnergy(si);
     Esys0 += (Emuscle0 + jointWorkProbe->getProbeOutputs(si)(0));
     double PEsys0 = model.getMultibodySystem().calcPotentialEnergy(si);
-    //cout << "Total initial system energy = " << Esys0 << endl; 
+    //cout << "Total initial system energy = " << Esys0 << endl;
 
 //==========================================================================
 // 4. SIMULATION Integration
@@ -570,8 +570,8 @@ void simulateMuscle(
            "              > 1 : faster than real time\n"
            "              = 1 : real time\n"
            "              < 1 : slower than real time\n",
-            realTimeMultiplier );
-    
+           realTimeMultiplier );
+
     /*
     ASSERT(comp_time <= (finalTime-initialTime));
     printf("testMuscles: PASSED Realtime test\n"
@@ -580,7 +580,7 @@ void simulateMuscle(
     */
 
     //An analysis only writes to a dir that exists, so create here.
-    if(printResults == true){
+    if(printResults == true) {
         Storage states(manager.getStateStorage());
         states.print("testProbes_states.sto");
         probeReporter->getProbeStorage().print("testProbes_probes.sto");

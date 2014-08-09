@@ -56,11 +56,13 @@ int main()
 {
     SimTK::Array_<std::string> failures;
 
-    try{// performance with multiple muscles and wrapping in upper-exremity
-        simulateModelWithMusclesNoViz("TestShoulderModel.osim", 0.02);}
+    try { // performance with multiple muscles and wrapping in upper-exremity
+        simulateModelWithMusclesNoViz("TestShoulderModel.osim", 0.02);
+    }
     catch (const std::exception& e) {
         std::cout << "Exception: " << e.what() << std::endl;
-        failures.push_back("TestShoulderModel (multiple wrap)"); }
+        failures.push_back("TestShoulderModel (multiple wrap)");
+    }
 
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
@@ -139,10 +141,14 @@ public:
     MyCableSpringImpl(const GeneralForceSubsystem& forces,
                       const CablePath& path,
                       Real stiffness, Real nominal, Real damping)
-    :   forces(forces), path(path), k(stiffness), x0(nominal), c(damping)
-    {   assert(stiffness >= 0 && nominal >= 0 && damping >= 0); }
+        :   forces(forces), path(path), k(stiffness), x0(nominal), c(damping)
+    {
+        assert(stiffness >= 0 && nominal >= 0 && damping >= 0);
+    }
 
-    const CablePath& getCablePath() const {return path;}
+    const CablePath& getCablePath() const {
+        return path;
+    }
 
     // Must be at stage Velocity. Evalutes tension if necessary.
     Real getTension(const State& state) const {
@@ -169,8 +175,10 @@ public:
     // Ask the cable to apply body forces given the tension calculated here.
     void calcForce(const State& state, Vector_<SpatialVec>& bodyForces,
                    Vector_<Vec3>& particleForces, Vector& mobilityForces) const
-                   override
-    {   path.applyBodyForces(state, getTension(state), bodyForces); }
+    override
+    {
+        path.applyBodyForces(state, getTension(state), bodyForces);
+    }
 
     // Return the potential energy currently stored by the stretch of the cable.
     Real calcPotentialEnergy(const State& state) const override {
@@ -185,7 +193,7 @@ public:
         Vector initWork(1, 0.);
         workx = forces.allocateZ(state, initWork);
         tensionx = forces.allocateLazyCacheEntry(state, Stage::Velocity,
-                                             new Value<Real>(NaN));
+                   new Value<Real>(NaN));
     }
 
     // Report power dissipation as the derivative for the work variable.
@@ -240,23 +248,33 @@ class MyCableSpring : public SimTK::Force::Custom {
 public:
     MyCableSpring(GeneralForceSubsystem& forces, const CablePath& path,
                   Real stiffness, Real nominal, Real damping)
-    :   SimTK::Force::Custom(forces, new MyCableSpringImpl(forces,path,
-                                                    stiffness,nominal,damping))
+        :   SimTK::Force::Custom(forces, new MyCableSpringImpl(forces,path,
+                                 stiffness,nominal,damping))
     {}
 
     // Expose some useful methods.
     const CablePath& getCablePath() const
-    {   return getImpl().getCablePath(); }
+    {
+        return getImpl().getCablePath();
+    }
     Real getTension(const State& state) const
-    {   return getImpl().getTension(state); }
+    {
+        return getImpl().getTension(state);
+    }
     Real getPowerDissipation(const State& state) const
-    {   return getImpl().getPowerDissipation(state); }
+    {
+        return getImpl().getPowerDissipation(state);
+    }
     Real getDissipatedEnergy(const State& state) const
-    {   return getImpl().getDissipatedEnergy(state); }
+    {
+        return getImpl().getDissipatedEnergy(state);
+    }
 
 private:
     const MyCableSpringImpl& getImpl() const
-    {   return dynamic_cast<const MyCableSpringImpl&>(getImplementation()); }
+    {
+        return dynamic_cast<const MyCableSpringImpl&>(getImplementation());
+    }
 };
 
 static Array_<State> saveStates;
@@ -267,13 +285,13 @@ public:
 
     ShowStuff(const MultibodySystem& mbs,
               Real interval)
-    :   PeriodicEventReporter(interval),
-        mbs(mbs) {}
+        :   PeriodicEventReporter(interval),
+            mbs(mbs) {}
 
     static void showHeading(std::ostream& o) {
         printf("%8s %10s %10s %10s %10s %10s %10s %10s %10s %12s\n",
-            "time", "length", "rate", "integ-rate", "unitpow", "tension", "disswork",
-            "KE", "PE", "KE+PE-W");
+               "time", "length", "rate", "integ-rate", "unitpow", "tension", "disswork",
+               "KE", "PE", "KE+PE-W");
     }
 
     /** This is the implementation of the EventReporter virtual. **/
@@ -331,7 +349,7 @@ void simulateModelWithMusclesNoViz(const string &modelFile, double finalTime, do
     SimTK::State& si = osimModel.initSystem();
 
     const Set<Muscle>& muscles = osimModel.getMuscles();
-    for (int i=0; i<muscles.getSize(); i++){
+    for (int i=0; i<muscles.getSize(); i++) {
         muscles[i].setActivation(si, activation); //setDisabled(si, true);
     }
     osimModel.equilibrateMuscles(si);
@@ -347,21 +365,21 @@ void simulateModelWithMusclesNoViz(const string &modelFile, double finalTime, do
 
 void simulateModelWithPassiveMuscles(const string &modelFile, double finalTime)
 {
-	// Create a new OpenSim model
-	Model osimModel(modelFile);
-	double initialTime = 0;
+    // Create a new OpenSim model
+    Model osimModel(modelFile);
+    double initialTime = 0;
 
-	// Show model visualizer
-	osimModel.setUseVisualizer(true);
+    // Show model visualizer
+    osimModel.setUseVisualizer(true);
 
-	// Initialize the system and get the state representing the state system
-	SimTK::State& si = osimModel.initSystem();
+    // Initialize the system and get the state representing the state system
+    SimTK::State& si = osimModel.initSystem();
 
-	const Set<Muscle>& muscles = osimModel.getMuscles();
-	for (int i=0; i<muscles.getSize(); ++i){
-		muscles[i].setActivation(si, 0); //setDisabled(si, true);
-	}
-	osimModel.equilibrateMuscles(si); 
+    const Set<Muscle>& muscles = osimModel.getMuscles();
+    for (int i=0; i<muscles.getSize(); ++i) {
+        muscles[i].setActivation(si, 0); //setDisabled(si, true);
+    }
+    osimModel.equilibrateMuscles(si);
 
     const ModelVisualizer& modelViz = osimModel.getVisualizer();
     const Visualizer& viz = modelViz.getSimbodyVisualizer();
@@ -383,7 +401,7 @@ void simulateModelWithoutMuscles(const string &modelFile, double finalTime)
 
     // remove all forces
     Set<OpenSim::Force> &forces = osimModel.updForceSet();
-    for(int i = 0; i<forces.getSize(); ++i){
+    for(int i = 0; i<forces.getSize(); ++i) {
         forces.remove(&forces[i]);
     }
 
@@ -666,7 +684,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 
 
         CablePath path(cables, orgMobBody, cableInfo.orgLoc,   // origin
-                            insMobBody, cableInfo.insLoc);  // termination
+                       insMobBody, cableInfo.insLoc);  // termination
 
         // Add obstacles
         for (int j = 0; j < cableInfo.obstacles.getSize(); ++j) {
@@ -681,7 +699,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
                 const WrapSphere* wrapSphere = dynamic_cast<const WrapSphere*>(oi.wrapObjectPtr);
                 if (wrapSphere != 0) {
                     CableObstacle::Surface surf(path, mobBody,
-                        oi.X_BS, SimTK::ContactGeometry::Sphere(wrapSphere->getRadius())); // along y
+                                                oi.X_BS, SimTK::ContactGeometry::Sphere(wrapSphere->getRadius())); // along y
                     if (oi.isActive)
                         surf.setContactPointHints(oi.P_S, oi.Q_S);
                     else
@@ -692,7 +710,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
                 const WrapCylinder* wrapCyl = dynamic_cast<const WrapCylinder*>(oi.wrapObjectPtr);
                 if (wrapCyl != 0) {
                     CableObstacle::Surface surf(path, mobBody,
-                        oi.X_BS, SimTK::ContactGeometry::Cylinder(wrapCyl->getRadius())); // along y
+                                                oi.X_BS, SimTK::ContactGeometry::Cylinder(wrapCyl->getRadius())); // along y
                     if (oi.isActive)
                         surf.setContactPointHints(oi.P_S, oi.Q_S);
                     else
@@ -703,7 +721,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
                 const WrapEllipsoid* wrapEllip = dynamic_cast<const WrapEllipsoid*>(oi.wrapObjectPtr);
                 if (wrapEllip != 0) {
                     CableObstacle::Surface surf(path, mobBody,
-                        oi.X_BS, SimTK::ContactGeometry::Ellipsoid(wrapEllip->getRadii())); // along y
+                                                oi.X_BS, SimTK::ContactGeometry::Ellipsoid(wrapEllip->getRadii())); // along y
                     if (oi.isActive)
                         surf.setContactPointHints(oi.P_S, oi.Q_S);
                     else
@@ -716,7 +734,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
                     Real tubeRadius = (wrapTorus->getOuterRadius()-wrapTorus->getInnerRadius())/2.0;
                     Real torusRadius = wrapTorus->getOuterRadius()-tubeRadius;
                     CableObstacle::Surface surf(path, mobBody,
-                        oi.X_BS, SimTK::ContactGeometry::Torus(torusRadius, tubeRadius)); // along y
+                                                oi.X_BS, SimTK::ContactGeometry::Torus(torusRadius, tubeRadius)); // along y
                     if (oi.isActive)
                         surf.setContactPointHints(oi.P_S, oi.Q_S);
                     else
@@ -764,7 +782,8 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 //    getchar();
 
     // Simulate it.
-    saveStates.clear(); saveStates.reserve(2000);
+    saveStates.clear();
+    saveStates.reserve(2000);
 
     ShowStuff::showHeading(cout);
 

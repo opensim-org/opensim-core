@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -55,10 +55,10 @@
  *
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 class OSIMCOMMON_API Function : public Object {
-OpenSim_DECLARE_ABSTRACT_OBJECT(Function, Object);
+    OpenSim_DECLARE_ABSTRACT_OBJECT(Function, Object);
 
 //=============================================================================
 // DATA
@@ -71,39 +71,39 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	Function();
-	Function(const Function &aFunction);
-	virtual ~Function();
-	virtual void init(Function* aFunction) { }
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    Function();
+    Function(const Function &aFunction);
+    virtual ~Function();
+    virtual void init(Function* aFunction) { }
 
 private:
-	void setNull();
+    void setNull();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	Function& operator=(const Function &aFunction);
+    Function& operator=(const Function &aFunction);
 #endif
-	//--------------------------------------------------------------------------
-	// SET AND GET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // SET AND GET
+    //--------------------------------------------------------------------------
 public:
-	//--------------------------------------------------------------------------
-	// UTILITY
-	//--------------------------------------------------------------------------
-	static Function* makeFunctionOfType(Function* aFunction, const std::string& aNewTypeName);
+    //--------------------------------------------------------------------------
+    // UTILITY
+    //--------------------------------------------------------------------------
+    static Function* makeFunctionOfType(Function* aFunction, const std::string& aNewTypeName);
 
-	//--------------------------------------------------------------------------
-	// EVALUATE
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // EVALUATE
+    //--------------------------------------------------------------------------
     /**
      * Calculate the value of this function at a particular point.
-     * 
+     *
      * @param x     the Vector of input arguments.  Its size must equal the value returned by getArgumentSize().
      */
     virtual double calcValue(const SimTK::Vector& x) const;
@@ -113,7 +113,7 @@ public:
      * a first derivative with respective to component 0.  If derivComponents=={0, 0, 0}, that indicates a third
      * derivative with respective to component 0.  If derivComponents=={4, 7}, that indicates a partial second derivative with
      * respect to components 4 and 7.
-     * 
+     *
      * @param derivComponents  the input components with respect to which the derivative should be taken.  Its size must be
      *                         less than or equal to the value returned by getMaxDerivativeOrder().
      * @param x                the Vector of input arguments.  Its size must equal the value returned by getArgumentSize().
@@ -127,16 +127,16 @@ public:
      * Get the maximum derivative order this Function object can calculate.
      */
     virtual int getMaxDerivativeOrder() const;
-	/**
-	 * Return a SimTK::Function that can be used natively by the
-	 * underlying SimTK::System and its elements.
-	 */
+    /**
+     * Return a SimTK::Function that can be used natively by the
+     * underlying SimTK::System and its elements.
+     */
     virtual SimTK::Function* createSimTKFunction() const = 0;
 
 protected:
     /**
-     * This should be called whenever this object has been modified.  It clears 
-	 * the internal SimTK::Function object used to evaluate it.
+     * This should be called whenever this object has been modified.  It clears
+     * the internal SimTK::Function object used to evaluate it.
      */
     void resetFunction();
 

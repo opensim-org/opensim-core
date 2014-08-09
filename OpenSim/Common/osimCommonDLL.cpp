@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 // INCLUDES
@@ -54,24 +54,24 @@ static void Plugin_Detach()
 /**
  * This routine is called when the dll is loaded I believe.
  */
-BOOL APIENTRY DllMain( HANDLE hModule, 
-                       DWORD  ul_reason_for_call, 
+BOOL APIENTRY DllMain( HANDLE hModule,
+                       DWORD  ul_reason_for_call,
                        LPVOID lpReserved
-                )
+                     )
 {
-   switch (ul_reason_for_call)
-   {
-      case DLL_PROCESS_ATTACH:
-         Plugin_Attach();
-         break;
+    switch (ul_reason_for_call)
+    {
+    case DLL_PROCESS_ATTACH:
+        Plugin_Attach();
+        break;
 
-      case DLL_PROCESS_DETACH:
-         Plugin_Detach();
-         break;
+    case DLL_PROCESS_DETACH:
+        Plugin_Detach();
+        break;
 
-      case DLL_THREAD_ATTACH:
-      case DLL_THREAD_DETACH:
-			break;
+    case DLL_THREAD_ATTACH:
+    case DLL_THREAD_DETACH:
+        break;
     }
 
     return TRUE;
@@ -79,10 +79,10 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 #elif defined(__linux__)
 static void __attribute__((constructor)) Shared_Object_Constructor()
 {
-   Plugin_Attach();
+    Plugin_Attach();
 }
 static void __attribute__((destructor)) Shared_Object_Destructor()
 {
-   Plugin_Detach();
+    Plugin_Detach();
 }
 #endif

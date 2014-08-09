@@ -38,7 +38,7 @@ MuscleActivationDynamics::MuscleActivationDynamics()
 }
 
 MuscleActivationDynamics::MuscleActivationDynamics(const std::string& name,
-                                                   ExcitationGetter* getter)
+        ExcitationGetter* getter)
 {
     setNull();
     constructProperties();
@@ -55,11 +55,17 @@ MuscleActivationDynamics::~MuscleActivationDynamics()
 // ACCESSORS AND MUTATORS
 //==============================================================================
 double MuscleActivationDynamics::getMinimumActivation() const
-{   return get_minimum_activation(); }
+{
+    return get_minimum_activation();
+}
 double MuscleActivationDynamics::getMaximumActivation() const
-{   return get_maximum_activation(); }
+{
+    return get_maximum_activation();
+}
 double MuscleActivationDynamics::getDefaultActivation() const
-{   return get_default_activation(); }
+{
+    return get_default_activation();
+}
 
 void MuscleActivationDynamics::setMinimumActivation(double minimumActivation)
 {
@@ -98,7 +104,9 @@ double MuscleActivationDynamics::getExcitation(const SimTK::State& s) const
 // PROTECTED METHODS
 //==============================================================================
 double MuscleActivationDynamics::clampToValidInterval(double val) const
-{   return clamp(getMinimumActivation(),val,getMaximumActivation()); }
+{
+    return clamp(getMinimumActivation(),val,getMaximumActivation());
+}
 
 //==============================================================================
 // PRIVATE METHODS

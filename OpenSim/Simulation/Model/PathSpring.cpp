@@ -35,7 +35,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static const Vec3 DefaultPathSpringColor(.9,.9,.9); // mostly white 
+static const Vec3 DefaultPathSpringColor(.9,.9,.9); // mostly white
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -44,17 +44,17 @@ static const Vec3 DefaultPathSpringColor(.9,.9,.9); // mostly white
 // Default constructor.
 PathSpring::PathSpring()
 {
-	constructProperties();
+    constructProperties();
 }
 
-PathSpring::PathSpring(const string& name, double restLength, 
-					   double stiffness, double dissipation)
+PathSpring::PathSpring(const string& name, double restLength,
+                       double stiffness, double dissipation)
 {
-	constructProperties();
-	setName(name);
-	set_resting_length(restLength);
-	set_stiffness(stiffness);
-	set_dissipation(dissipation);
+    constructProperties();
+    setName(name);
+    set_resting_length(restLength);
+    set_stiffness(stiffness);
+    set_dissipation(dissipation);
 }
 
 //_____________________________________________________________________________
@@ -63,15 +63,15 @@ PathSpring::PathSpring(const string& name, double restLength,
  */
 void PathSpring::constructProperties()
 {
-	setAuthors("Ajay Seth");
-	constructProperty_GeometryPath(GeometryPath());
-	constructProperty_resting_length(SimTK::NaN);
-	constructProperty_stiffness(SimTK::NaN);
-	constructProperty_dissipation(SimTK::NaN);
+    setAuthors("Ajay Seth");
+    constructProperty_GeometryPath(GeometryPath());
+    constructProperty_resting_length(SimTK::NaN);
+    constructProperty_stiffness(SimTK::NaN);
+    constructProperty_dissipation(SimTK::NaN);
 
-	constructOutput<double>("stretch", 
-	       std::bind(&PathSpring::getStretch, this, std::placeholders::_1),
-				      SimTK::Stage::Position);
+    constructOutput<double>("stretch",
+                            std::bind(&PathSpring::getStretch, this, std::placeholders::_1),
+                            SimTK::Stage::Position);
 }
 
 //_____________________________________________________________________________
@@ -80,7 +80,7 @@ void PathSpring::constructProperties()
  */
 void PathSpring::setRestingLength(double restingLength)
 {
-	set_resting_length(restingLength);
+    set_resting_length(restingLength);
 }
 //_____________________________________________________________________________
 /*
@@ -88,7 +88,7 @@ void PathSpring::setRestingLength(double restingLength)
  */
 void PathSpring::setStiffness(double stiffness)
 {
-	set_stiffness(stiffness);
+    set_stiffness(stiffness);
 }
 //_____________________________________________________________________________
 /*
@@ -96,7 +96,7 @@ void PathSpring::setStiffness(double stiffness)
  */
 void PathSpring::setDissipation(double dissipation)
 {
-	set_dissipation(dissipation);
+    set_dissipation(dissipation);
 }
 
 //_____________________________________________________________________________
@@ -108,44 +108,44 @@ void PathSpring::setDissipation(double dissipation)
  */
 void PathSpring::connectToModel(Model& aModel)
 {
-	GeometryPath& path = upd_GeometryPath();
-	const double& restingLength = get_resting_length();
+    GeometryPath& path = upd_GeometryPath();
+    const double& restingLength = get_resting_length();
 
     path.setDefaultColor(DefaultPathSpringColor);
 
-	// Specify underlying ModelComponents prior to calling 
+    // Specify underlying ModelComponents prior to calling
     // Super::connectToModel() to automatically propagate connectToModel()
     // to subcomponents. Subsequent addToSystem() will also be automatically
-	// propagated to subcomponents.
+    // propagated to subcomponents.
     // TODO: this is awkward; subcomponent API needs to be revisited (sherm)
-	addComponent(&path);
+    addComponent(&path);
 
     //TODO: can't call this at start of override; this is an API bug.
-	Super::connectToModel(aModel);
+    Super::connectToModel(aModel);
 
-	// _model will be NULL when objects are being registered.
-	if (!_model)
-		return;
+    // _model will be NULL when objects are being registered.
+    if (!_model)
+        return;
 
-	// Resting length must be greater than 0.0.
-	assert(restingLength > 0.0);
+    // Resting length must be greater than 0.0.
+    assert(restingLength > 0.0);
 
-	path.setOwner(this);
+    path.setOwner(this);
 }
 
 //_____________________________________________________________________________
 /**
  * allocate and initialize the SimTK state for this PathSpring.
  */
- void PathSpring::addToSystem(SimTK::MultibodySystem& system) const
+void PathSpring::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);
+    Super::addToSystem(system);
 }
 
 
 void PathSpring::initStateFromProperties( SimTK::State& s) const
 {
-	Super::initStateFromProperties(s);
+    Super::initStateFromProperties(s);
 }
 
 
@@ -164,30 +164,30 @@ void PathSpring::initStateFromProperties( SimTK::State& s) const
  */
 double PathSpring::getLength(const SimTK::State& s) const
 {
-	return getGeometryPath().getLength(s);
+    return getGeometryPath().getLength(s);
 }
 
 double PathSpring::getStretch(const SimTK::State& s) const
 {
-	const double& length = getLength(s);
-	const double& restingLength = get_resting_length();
-	return length > restingLength ? (length-restingLength) : 0.0;
+    const double& length = getLength(s);
+    const double& restingLength = get_resting_length();
+    return length > restingLength ? (length-restingLength) : 0.0;
 }
 
 
 double PathSpring::getLengtheningSpeed(const SimTK::State& s) const
 {
-	return getGeometryPath().getLengtheningSpeed(s);
+    return getGeometryPath().getLengtheningSpeed(s);
 }
 
 double PathSpring::getTension(const SimTK::State& s) const
 {
-	// evaluate tension in the spring
-	// note tension is positive and produces shortening
-	// damping opposes lengthening, which is positive lengthening speed
-	// there for stretch and lengthening speed increase tension
-	return getStiffness()*getStretch(s) *					//elastic force
-				(1+getDissipation()*getLengtheningSpeed(s));   //dissipation 
+    // evaluate tension in the spring
+    // note tension is positive and produces shortening
+    // damping opposes lengthening, which is positive lengthening speed
+    // there for stretch and lengthening speed increase tension
+    return getStiffness()*getStretch(s) *					//elastic force
+           (1+getDissipation()*getLengtheningSpeed(s));   //dissipation
 }
 
 
@@ -204,14 +204,14 @@ double PathSpring::getTension(const SimTK::State& s) const
  */
 void PathSpring::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	updGeometryPath().preScale(s, aScaleSet);
+    updGeometryPath().preScale(s, aScaleSet);
 }
 
 //_____________________________________________________________________________
 
 void PathSpring::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	updGeometryPath().scale(s, aScaleSet);
+    updGeometryPath().scale(s, aScaleSet);
 }
 
 //_____________________________________________________________________________
@@ -224,18 +224,18 @@ void PathSpring::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 void PathSpring::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	GeometryPath& path = updGeometryPath();
-	path.postScale(s, aScaleSet);
+    GeometryPath& path = updGeometryPath();
+    path.postScale(s, aScaleSet);
 
-	if (path.getPreScaleLength(s) > 0.0)
-	{
-		double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
-		// Scale resting length by the same amount as the change in
-		// total PathSpring length (in the current body position).
-		upd_resting_length() *= scaleFactor;
+    if (path.getPreScaleLength(s) > 0.0)
+    {
+        double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
+        // Scale resting length by the same amount as the change in
+        // total PathSpring length (in the current body position).
+        upd_resting_length() *= scaleFactor;
 
-		path.setPreScaleLength(s, 0.0);
-	}
+        path.setPreScaleLength(s, 0.0);
+    }
 }
 
 
@@ -247,28 +247,28 @@ void PathSpring::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 double PathSpring::computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const
 {
-	return getGeometryPath().computeMomentArm(s, aCoord);
+    return getGeometryPath().computeMomentArm(s, aCoord);
 }
 
 
 
-void PathSpring::computeForce(const SimTK::State& s, 
-							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							  SimTK::Vector& generalizedForces) const
+void PathSpring::computeForce(const SimTK::State& s,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+                              SimTK::Vector& generalizedForces) const
 {
-	const GeometryPath& path = getGeometryPath();
-	const double& tension = getTension(s);
+    const GeometryPath& path = getGeometryPath();
+    const double& tension = getTension(s);
 
-	OpenSim::Array<PointForceDirection*> PFDs;
-	path.getPointForceDirections(s, &PFDs);
+    OpenSim::Array<PointForceDirection*> PFDs;
+    path.getPointForceDirections(s, &PFDs);
 
-	for (int i=0; i < PFDs.getSize(); i++) {
-		applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), 
+    for (int i=0; i < PFDs.getSize(); i++) {
+        applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(),
                           tension*PFDs[i]->direction(), bodyForces);
-	}
+    }
 
-	for(int i=0; i < PFDs.getSize(); i++)
-		delete PFDs[i];
+    for(int i=0; i < PFDs.getSize(); i++)
+        delete PFDs[i];
 }
 
 //_____________________________________________________________________________
@@ -276,8 +276,8 @@ void PathSpring::computeForce(const SimTK::State& s,
  * Get the visible object used to represent the PathSpring.
  */
 const VisibleObject* PathSpring::getDisplayer() const
-{ 
-	return getGeometryPath().getDisplayer(); 
+{
+    return getGeometryPath().getDisplayer();
 }
 
 //_____________________________________________________________________________
@@ -286,5 +286,5 @@ const VisibleObject* PathSpring::getDisplayer() const
  */
 void PathSpring::updateDisplayer(const SimTK::State& s) const
 {
-	getGeometryPath().updateDisplayer(s);
+    getGeometryPath().updateDisplayer(s);
 }

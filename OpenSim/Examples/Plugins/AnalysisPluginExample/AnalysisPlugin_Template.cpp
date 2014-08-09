@@ -90,18 +90,18 @@ constructProperties()
 void AnalysisPlugin_Template::
 constructDescription()
 {
-	string descrip;
+    string descrip;
 
-	descrip = "\nThis file contains body positions (of origin) and orientations.\n";
-	descrip += "\nUnits are S.I. units (seconds, meters, Newtons, ...)";
-	if(getInDegrees()) {
-		descrip += "\nAngles are in degrees.";
-	} else {
-		descrip += "\nAngles are in radians.";
-	}
-	descrip += "\n\n";
+    descrip = "\nThis file contains body positions (of origin) and orientations.\n";
+    descrip += "\nUnits are S.I. units (seconds, meters, Newtons, ...)";
+    if(getInDegrees()) {
+        descrip += "\nAngles are in degrees.";
+    } else {
+        descrip += "\nAngles are in radians.";
+    }
+    descrip += "\n\n";
 
-	setDescription(descrip);
+    setDescription(descrip);
 }
 
 //_____________________________________________________________________________
@@ -118,38 +118,38 @@ constructDescription()
 void AnalysisPlugin_Template::
 constructColumnLabels()
 {
-	if(_model==NULL) return;
+    if(_model==NULL) return;
 
-	Array<string> labels;
-	labels.append("time");
+    Array<string> labels;
+    labels.append("time");
 
-	const BodySet& bodySet = _model->getBodySet();
+    const BodySet& bodySet = _model->getBodySet();
 
-	if(get_body_names(0) == "all"){
-		_bodyIndices.setSize(bodySet.getSize());
-		// Get indices of all the bodies.
-		for(int j=0;j<bodySet.getSize();j++)
-			_bodyIndices[j]=j;
-	}
-	else{
-		_bodyIndices.setSize(getProperty_body_names().size());
-		// Get indices of just the bodies listed.
-		for(int j=0;j<getProperty_body_names().size();j++)
-			_bodyIndices[j]=bodySet.getIndex(get_body_names(j));
-	}
+    if(get_body_names(0) == "all") {
+        _bodyIndices.setSize(bodySet.getSize());
+        // Get indices of all the bodies.
+        for(int j=0; j<bodySet.getSize(); j++)
+            _bodyIndices[j]=j;
+    }
+    else {
+        _bodyIndices.setSize(getProperty_body_names().size());
+        // Get indices of just the bodies listed.
+        for(int j=0; j<getProperty_body_names().size(); j++)
+            _bodyIndices[j]=bodySet.getIndex(get_body_names(j));
+    }
 
-	//Do the analysis on the bodies that are in the indices list
-	for(int i=0; i<_bodyIndices.getSize(); i++) {
-		const Body& body = bodySet.get(_bodyIndices[i]);
-		labels.append(body.getName() + "_X");
-		labels.append(body.getName() + "_Y");
-		labels.append(body.getName() + "_Z");
-		labels.append(body.getName() + "_Ox");
-		labels.append(body.getName() + "_Oy");
-		labels.append(body.getName() + "_Oz");
-	}
+    //Do the analysis on the bodies that are in the indices list
+    for(int i=0; i<_bodyIndices.getSize(); i++) {
+        const Body& body = bodySet.get(_bodyIndices[i]);
+        labels.append(body.getName() + "_X");
+        labels.append(body.getName() + "_Y");
+        labels.append(body.getName() + "_Z");
+        labels.append(body.getName() + "_Ox");
+        labels.append(body.getName() + "_Oy");
+        labels.append(body.getName() + "_Oz");
+    }
 
-	setColumnLabels(labels);
+    setColumnLabels(labels);
 }
 
 //_____________________________________________________________________________
@@ -164,11 +164,11 @@ constructColumnLabels()
 void AnalysisPlugin_Template::
 setupStorage()
 {
-	// Positions
-	_storePos.reset(0);
-	_storePos.setName("Positions");
-	_storePos.setDescription(getDescription());
-	_storePos.setColumnLabels(getColumnLabels());
+    // Positions
+    _storePos.reset(0);
+    _storePos.setName("Positions");
+    _storePos.setDescription(getDescription());
+    _storePos.setColumnLabels(getColumnLabels());
 }
 
 
@@ -186,17 +186,17 @@ setupStorage()
 void AnalysisPlugin_Template::
 setModel(Model& aModel)
 {
-	// SET THE MODEL IN THE BASE CLASS
-	Super::setModel(aModel);
+    // SET THE MODEL IN THE BASE CLASS
+    Super::setModel(aModel);
 
-	// UPDATE VARIABLES IN THIS CLASS
-	constructDescription();
-	constructColumnLabels();
-	setupStorage();
+    // UPDATE VARIABLES IN THIS CLASS
+    constructDescription();
+    constructColumnLabels();
+    setupStorage();
 
-	//Setup size of work array to hold body positions
-	int numBodies = _bodyIndices.getSize();
-	_bodypos.setSize(6*numBodies);
+    //Setup size of work array to hold body positions
+    int numBodies = _bodyIndices.getSize();
+    _bodypos.setSize(6*numBodies);
 }
 
 
@@ -218,47 +218,47 @@ setModel(Model& aModel)
 int AnalysisPlugin_Template::
 record(const SimTK::State& s)
 {
-	// VARIABLES
-	double dirCos[3][3];
-	SimTK::Vec3 vec,angVec;
-	double Mass = 0.0;
+    // VARIABLES
+    double dirCos[3][3];
+    SimTK::Vec3 vec,angVec;
+    double Mass = 0.0;
 
-	// GROUND BODY
-	const Body& ground = _model->getGroundBody();
+    // GROUND BODY
+    const Body& ground = _model->getGroundBody();
 
-	// POSITION
-	const BodySet& bodySet = _model->getBodySet();
+    // POSITION
+    const BodySet& bodySet = _model->getBodySet();
 
-	for(int i=0;i<_bodyIndices.getSize();i++) {
+    for(int i=0; i<_bodyIndices.getSize(); i++) {
 
-		const Body& body = bodySet.get(_bodyIndices[i]);
-		SimTK::Vec3 com;
-		body.getMassCenter(com);
+        const Body& body = bodySet.get(_bodyIndices[i]);
+        SimTK::Vec3 com;
+        body.getMassCenter(com);
 
-		// GET POSITIONS AND EULER ANGLES
-		_model->getSimbodyEngine().getPosition(s,body,com,vec);
-		_model->getSimbodyEngine().getDirectionCosines(s,body,dirCos);
-		_model->getSimbodyEngine().convertDirectionCosinesToAngles(dirCos,
-			&angVec[0],&angVec[1],&angVec[2]);
+        // GET POSITIONS AND EULER ANGLES
+        _model->getSimbodyEngine().getPosition(s,body,com,vec);
+        _model->getSimbodyEngine().getDirectionCosines(s,body,dirCos);
+        _model->getSimbodyEngine().convertDirectionCosinesToAngles(dirCos,
+                &angVec[0],&angVec[1],&angVec[2]);
 
-		// CONVERT TO DEGREES?
-		if(getInDegrees()) {
-			angVec *= SimTK_RADIAN_TO_DEGREE;
-		}			
+        // CONVERT TO DEGREES?
+        if(getInDegrees()) {
+            angVec *= SimTK_RADIAN_TO_DEGREE;
+        }
 
-		// FILL KINEMATICS ARRAY
-		int I=6*i;
-		memcpy(&_bodypos[I],&vec[0],3*sizeof(double));
-		memcpy(&_bodypos[I+3],&angVec[0],3*sizeof(double));
-	}
-	_storePos.append(s.getTime(),_bodypos.getSize(),&_bodypos[0]);
+        // FILL KINEMATICS ARRAY
+        int I=6*i;
+        memcpy(&_bodypos[I],&vec[0],3*sizeof(double));
+        memcpy(&_bodypos[I+3],&angVec[0],3*sizeof(double));
+    }
+    _storePos.append(s.getTime(),_bodypos.getSize(),&_bodypos[0]);
 
-	// VELOCITY 
+    // VELOCITY
 
-	// ACCELERATIONS
+    // ACCELERATIONS
 
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -281,18 +281,18 @@ record(const SimTK::State& s)
 int AnalysisPlugin_Template::
 begin(SimTK::State& s)
 {
-	if(!proceed()) return(0);
+    if(!proceed()) return(0);
 
-	// RESET STORAGE
-	_storePos.reset(s.getTime());  //->reset(s.getTime());
+    // RESET STORAGE
+    _storePos.reset(s.getTime());  //->reset(s.getTime());
 
-	// RECORD
-	int status = 0;
-	if(_storePos.getSize()<=0) {
-		status = record(s);
-	}
+    // RECORD
+    int status = 0;
+    if(_storePos.getSize()<=0) {
+        status = record(s);
+    }
 
-	return(status);
+    return(status);
 }
 //_____________________________________________________________________________
 /**
@@ -319,11 +319,11 @@ begin(SimTK::State& s)
 int AnalysisPlugin_Template::
 step(const SimTK::State& s, int stepNumber)
 {
-	if(!proceed(stepNumber)) return(0);
+    if(!proceed(stepNumber)) return(0);
 
-	record(s);
+    record(s);
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -346,11 +346,11 @@ step(const SimTK::State& s, int stepNumber)
 int AnalysisPlugin_Template::
 end(SimTK::State& s)
 {
-	if(!proceed()) return(0);
+    if(!proceed()) return(0);
 
-	record(s);
+    record(s);
 
-	return(0);
+    return(0);
 }
 
 
@@ -362,7 +362,7 @@ end(SimTK::State& s)
 //_____________________________________________________________________________
 /**
  * Print results.
- * 
+ *
  * The file names are constructed as
  * aDir + "/" + aBaseName + "_" + ComponentName + aExtension
  *
@@ -376,18 +376,18 @@ end(SimTK::State& s)
  */
 int AnalysisPlugin_Template::
 printResults(const string &aBaseName,const string &aDir,double aDT,
-				 const string &aExtension)
+             const string &aExtension)
 {
-	// POSITIONS
-	//_storePos.scaleTime(_model->getTimeNormConstant());
-	Storage::printResult(&_storePos,aBaseName+"_"+getName()+"_pos",aDir,aDT,aExtension);
+    // POSITIONS
+    //_storePos.scaleTime(_model->getTimeNormConstant());
+    Storage::printResult(&_storePos,aBaseName+"_"+getName()+"_pos",aDir,aDT,aExtension);
 
-	// VELOCITIES
+    // VELOCITIES
 
 
-	// ACCELERATIONS
+    // ACCELERATIONS
 
-	return(0);
+    return(0);
 }
 
 

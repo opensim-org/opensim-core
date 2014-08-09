@@ -57,14 +57,14 @@ SymbolicExpressionReporter::~SymbolicExpressionReporter()
  * @param aModel Model for which the states are to be recorded.
  */
 SymbolicExpressionReporter::SymbolicExpressionReporter(Model *aModel) :
-	Analysis(aModel),
-	_expressionStr(_expressionStrProp.getValueStr())
+    Analysis(aModel),
+    _expressionStr(_expressionStrProp.getValueStr())
 {
-	// NULL
-	setNull();
+    // NULL
+    setNull();
 
-	// DESCRIPTION
-	constructDescription();
+    // DESCRIPTION
+    constructDescription();
 }
 //_____________________________________________________________________________
 /**
@@ -76,35 +76,35 @@ SymbolicExpressionReporter::SymbolicExpressionReporter(Model *aModel) :
  * @param aFileName File name of the document.
  */
 SymbolicExpressionReporter::SymbolicExpressionReporter(const std::string &aFileName):
-Analysis(aFileName, false),
-_expressionStr(_expressionStrProp.getValueStr()),
-_resultStore(100,"Expression")
+    Analysis(aFileName, false),
+    _expressionStr(_expressionStrProp.getValueStr()),
+    _resultStore(100,"Expression")
 {
-	setNull();
+    setNull();
 
-	// Serialize from XML
-	updateFromXMLDocument();
+    // Serialize from XML
+    updateFromXMLDocument();
 
-	// DESCRIPTION
-	constructDescription();
+    // DESCRIPTION
+    constructDescription();
 
-	// STORAGE
-	setupStorage();
+    // STORAGE
+    setupStorage();
 }
 
-// Copy constrctor and virtual copy 
+// Copy constrctor and virtual copy
 //_____________________________________________________________________________
 /**
  * Copy constructor.
  *
  */
 SymbolicExpressionReporter::SymbolicExpressionReporter(const SymbolicExpressionReporter &aSymbolicExpressionReporter):
-Analysis(aSymbolicExpressionReporter),
-_expressionStr(_expressionStrProp.getValueStr())
+    Analysis(aSymbolicExpressionReporter),
+    _expressionStr(_expressionStrProp.getValueStr())
 {
-	setNull();
-	// COPY TYPE AND NAME
-	*this = aSymbolicExpressionReporter;
+    setNull();
+    // COPY TYPE AND NAME
+    *this = aSymbolicExpressionReporter;
 }
 
 //=============================================================================
@@ -117,24 +117,24 @@ _expressionStr(_expressionStrProp.getValueStr())
 void SymbolicExpressionReporter::
 setNull()
 {
-	// NAME
-	setName("SymbolicExpressionReporter");
+    // NAME
+    setName("SymbolicExpressionReporter");
 
-	setupProperties();
+    setupProperties();
 }
 //--------------------------------------------------------------------------
 // OPERATORS
 //--------------------------------------------------------------------------
 SymbolicExpressionReporter& SymbolicExpressionReporter::operator=(const SymbolicExpressionReporter &aSymbolicExpressionReporter)
 {
-	// BASE CLASS
-	Analysis::operator=(aSymbolicExpressionReporter);
+    // BASE CLASS
+    Analysis::operator=(aSymbolicExpressionReporter);
 
-	// STORAGE
-	setupStorage();
+    // STORAGE
+    setupStorage();
 
-	_expressionStr = aSymbolicExpressionReporter._expressionStr;
-	return (*this);
+    _expressionStr = aSymbolicExpressionReporter._expressionStr;
+    return (*this);
 }
 //_____________________________________________________________________________
 /**
@@ -143,9 +143,9 @@ SymbolicExpressionReporter& SymbolicExpressionReporter::operator=(const Symbolic
 void SymbolicExpressionReporter::
 setupProperties()
 {
-	_expressionStrProp.setComment("Expression to be evaluated, variables allowed are state names.");
-	_expressionStrProp.setName("expression");
-	_propertySet.append( &_expressionStrProp );
+    _expressionStrProp.setComment("Expression to be evaluated, variables allowed are state names.");
+    _expressionStrProp.setName("expression");
+    _propertySet.append( &_expressionStrProp );
 }
 
 //_____________________________________________________________________________
@@ -155,11 +155,11 @@ setupProperties()
 void SymbolicExpressionReporter::
 setupStorage()
 {
-	// ACCELERATIONS
-	_resultStore.setDescription(getDescription());
-	// Keep references o all storages in a list for uniform access from GUI
-	_storageList.append(&_resultStore);
-	_storageList.setMemoryOwner(false);
+    // ACCELERATIONS
+    _resultStore.setDescription(getDescription());
+    // Keep references o all storages in a list for uniform access from GUI
+    _storageList.append(&_resultStore);
+    _storageList.setMemoryOwner(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -172,19 +172,19 @@ setupStorage()
 void SymbolicExpressionReporter::
 constructDescription()
 {
-	char descrip[1024];
+    char descrip[1024];
 
-	strcpy(descrip,"\nThis file contains expression evaluation ");
-	strcat(descrip,"during a simulation.\n");
-	strcat(descrip,"\nUnits are S.I. units (second, meters, Newtons, ...)");
-	if(getInDegrees()) {
-		strcat(descrip,"\nAngles are in degrees.");
-	} else {
-		strcat(descrip,"\nAngles are in radians.");
-	}
-	strcat(descrip,"\n\n");
+    strcpy(descrip,"\nThis file contains expression evaluation ");
+    strcat(descrip,"during a simulation.\n");
+    strcat(descrip,"\nUnits are S.I. units (second, meters, Newtons, ...)");
+    if(getInDegrees()) {
+        strcat(descrip,"\nAngles are in degrees.");
+    } else {
+        strcat(descrip,"\nAngles are in radians.");
+    }
+    strcat(descrip,"\n\n");
 
-	setDescription(descrip);
+    setDescription(descrip);
 }
 
 //-----------------------------------------------------------------------------
@@ -197,14 +197,14 @@ constructDescription()
 void SymbolicExpressionReporter::
 constructColumnLabels()
 {
-	if (_model)
-	{
-		// ASSIGN
-		Array<string> columnLabels;
-		columnLabels.insert(0, "time");	
-		columnLabels.insert(1, "expression");
-		_resultStore.setColumnLabels(columnLabels);
-	}
+    if (_model)
+    {
+        // ASSIGN
+        Array<string> columnLabels;
+        columnLabels.insert(0, "time");
+        columnLabels.insert(1, "expression");
+        _resultStore.setColumnLabels(columnLabels);
+    }
 }
 
 //=============================================================================
@@ -217,24 +217,24 @@ constructColumnLabels()
 int SymbolicExpressionReporter::
 record(const SimTK::State& s)
 {
-	if(_model==NULL) return(-1);
+    if(_model==NULL) return(-1);
 
-	// MAKE SURE ALL QUANTITIES ARE VALID
+    // MAKE SURE ALL QUANTITIES ARE VALID
     _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity );
-	// Get state variable names and values in same order and use that to update map
-	Array<std::string> stateNames = _model->getStateVariableNames();
-	SimTK::Vector rStateValues = _model->getStateVariableValues(s);
+    // Get state variable names and values in same order and use that to update map
+    Array<std::string> stateNames = _model->getStateVariableNames();
+    SimTK::Vector rStateValues = _model->getStateVariableValues(s);
 
-	// update map between names and values, then pass it to expression evaluator
-	for(int i=0; i<stateNames.getSize(); i++){
-		_variables.find(stateNames[i])->second = rStateValues[i];
-	}
-	double value = Lepton::Parser::parse(_expressionStr).evaluate(_variables);
-	StateVector nextRow = StateVector(s.getTime());
-	 nextRow.getData().append(value);
-	_resultStore.append(nextRow);
+    // update map between names and values, then pass it to expression evaluator
+    for(int i=0; i<stateNames.getSize(); i++) {
+        _variables.find(stateNames[i])->second = rStateValues[i];
+    }
+    double value = Lepton::Parser::parse(_expressionStr).evaluate(_variables);
+    StateVector nextRow = StateVector(s.getTime());
+    nextRow.getData().append(value);
+    _resultStore.append(nextRow);
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -254,23 +254,23 @@ record(const SimTK::State& s)
 int SymbolicExpressionReporter::
 begin( SimTK::State& s)
 {
-	if(!proceed()) return(0);
-	// LABELS
-	constructColumnLabels();
-	// RESET STORAGE
-	_resultStore.reset(s.getTime());
-	// Populate list of names, initial values from s
-	Array<std::string> stateNames = _model->getStateVariableNames();
-	for(int i=0; i< stateNames.getSize(); i++){
-		_variables.insert(pair<string, double>(stateNames[i], 0.0));
-	}
-	// RECORD
-	int status = 0;
-	if(_resultStore.getSize()<=0) {
-		status = record(s);
-	}
+    if(!proceed()) return(0);
+    // LABELS
+    constructColumnLabels();
+    // RESET STORAGE
+    _resultStore.reset(s.getTime());
+    // Populate list of names, initial values from s
+    Array<std::string> stateNames = _model->getStateVariableNames();
+    for(int i=0; i< stateNames.getSize(); i++) {
+        _variables.insert(pair<string, double>(stateNames[i], 0.0));
+    }
+    // RECORD
+    int status = 0;
+    if(_resultStore.getSize()<=0) {
+        status = record(s);
+    }
 
-	return(status);
+    return(status);
 }
 //_____________________________________________________________________________
 /**
@@ -278,7 +278,7 @@ begin( SimTK::State& s)
  * the execution of a forward integrations or after the integration by
  * feeding it the necessary data.
  *
- * When called during an integration, this method is meant to be called 
+ * When called during an integration, this method is meant to be called
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -291,18 +291,18 @@ begin( SimTK::State& s)
 int SymbolicExpressionReporter::
 step(const SimTK::State& s, int stepNumber )
 {
-	if(!proceed(stepNumber)) return(0);
+    if(!proceed(stepNumber)) return(0);
 
-	record(s);
+    record(s);
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
  * This method is called at the end of an analysis so that any
  * necessary finalizations may be performed.
  *
- * This method is meant to be called at the end of an integration 
+ * This method is meant to be called at the end of an integration
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -314,11 +314,11 @@ step(const SimTK::State& s, int stepNumber )
 int SymbolicExpressionReporter::
 end( SimTK::State& s )
 {
-	if (!proceed()) return 0;
+    if (!proceed()) return 0;
 
-	record(s);
+    record(s);
 
-	return(0);
+    return(0);
 }
 
 
@@ -330,7 +330,7 @@ end( SimTK::State& s )
 //_____________________________________________________________________________
 /**
  * Print results.
- * 
+ *
  * The file names are constructed as
  * aDir + "/" + aBaseName + "_" + ComponentName + aExtension
  *
@@ -344,15 +344,15 @@ end( SimTK::State& s )
  */
 int SymbolicExpressionReporter::
 printResults(const string &aBaseName,const string &aDir,double aDT,
-				 const string &aExtension)
+             const string &aExtension)
 {
-	if(!getOn()) {
-		printf("SymbolicExpressionReporter.printResults: Off- not printing.\n");
-		return(0);
-	}
+    if(!getOn()) {
+        printf("SymbolicExpressionReporter.printResults: Off- not printing.\n");
+        return(0);
+    }
 
-	std::string prefix=aBaseName+"_"+getName()+"_";
-	Storage::printResult(&_resultStore, prefix+"states", aDir, aDT, aExtension);
+    std::string prefix=aBaseName+"_"+getName()+"_";
+    Storage::printResult(&_resultStore, prefix+"states", aDir, aDT, aExtension);
 
-	return(0);
+    return(0);
 }

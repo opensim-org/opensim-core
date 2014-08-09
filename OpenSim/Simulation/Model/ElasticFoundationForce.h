@@ -34,14 +34,14 @@ class Model;
 //==============================================================================
 //                       ELASTIC FOUNDATION FORCE
 //==============================================================================
-/** This Force subclass implements an elastic foundation contact model. It 
-places a spring at the center of each face of each ContactMesh it acts on.  
-Those springs interact with all objects (both meshes and other objects) the 
+/** This Force subclass implements an elastic foundation contact model. It
+places a spring at the center of each face of each ContactMesh it acts on.
+Those springs interact with all objects (both meshes and other objects) the
 mesh comes in contact with.
 
 @author Peter Eastman **/
 class OSIMSIMULATION_API ElasticFoundationForce : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(ElasticFoundationForce, Force);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ElasticFoundationForce, Force);
 public:
     class ContactParameters;
     class ContactParametersSet;
@@ -52,11 +52,11 @@ public:
     These are the serializable properties associated with this class. Others
     are inherited from the superclass. **/
     /**@{**/
-	OpenSim_DECLARE_PROPERTY(contact_parameters, 
-        ElasticFoundationForce::ContactParametersSet,
-		"Material properties.");
-	OpenSim_DECLARE_PROPERTY(transition_velocity, double,
-		"Slip velocity (creep) at which peak static friction occurs.");
+    OpenSim_DECLARE_PROPERTY(contact_parameters,
+                             ElasticFoundationForce::ContactParametersSet,
+                             "Material properties.");
+    OpenSim_DECLARE_PROPERTY(transition_velocity, double,
+                             "Slip velocity (creep) at which peak static friction occurs.");
     /**@}**/
 
 
@@ -66,10 +66,10 @@ public:
     ElasticFoundationForce();
     explicit ElasticFoundationForce(ContactParameters* params);
 
-	/**
-	 * Create a SimTK::Force which implements this Force.
-	 */
-	void addToSystem(SimTK::MultibodySystem& system) const;
+    /**
+     * Create a SimTK::Force which implements this Force.
+     */
+    void addToSystem(SimTK::MultibodySystem& system) const;
     ContactParametersSet& updContactParametersSet();
     const ContactParametersSet& getContactParametersSet();
 
@@ -99,20 +99,20 @@ public:
     void setViscousFriction(double friction);
     void addGeometry(const std::string& name);
 
-	//-----------------------------------------------------------------------------
-	// Reporting
-	//-----------------------------------------------------------------------------
-	/** 
-	 * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
-	 */
-	virtual OpenSim::Array<std::string> getRecordLabels() const ;
-	/**
-	*  Provide the value(s) to be reported that correspond to the labels
-	*/
-	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
+    //-----------------------------------------------------------------------------
+    // Reporting
+    //-----------------------------------------------------------------------------
+    /**
+     * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
+     */
+    virtual OpenSim::Array<std::string> getRecordLabels() const ;
+    /**
+    *  Provide the value(s) to be reported that correspond to the labels
+    */
+    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
 private:
     // INITIALIZATION
-	void constructProperties();
+    void constructProperties();
 
 //==============================================================================
 };	// END of class ElasticFoundationForce
@@ -124,10 +124,10 @@ private:
 //              ELASTIC FOUNDATION FORCE :: CONTACT PARAMETERS
 //==============================================================================
 
-class OSIMSIMULATION_API ElasticFoundationForce::ContactParameters 
-:   public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(ElasticFoundationForce::ContactParameters, 
-                                Object);
+class OSIMSIMULATION_API ElasticFoundationForce::ContactParameters
+        :   public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ElasticFoundationForce::ContactParameters,
+                                    Object);
 public:
 //==============================================================================
 // PROPERTIES
@@ -136,27 +136,27 @@ public:
     These are the serializable properties associated with this class. Others
     are inherited from the superclass. **/
     /**@{**/
-	OpenSim_DECLARE_LIST_PROPERTY(geometry, std::string,
-		"Names of geometry objects affected by these parameters.");
+    OpenSim_DECLARE_LIST_PROPERTY(geometry, std::string,
+                                  "Names of geometry objects affected by these parameters.");
 
-	OpenSim_DECLARE_PROPERTY(stiffness, double,
-		"");
-	OpenSim_DECLARE_PROPERTY(dissipation, double,
-		"");
-	OpenSim_DECLARE_PROPERTY(static_friction, double,
-		"");
-	OpenSim_DECLARE_PROPERTY(dynamic_friction, double,
-		"");
-	OpenSim_DECLARE_PROPERTY(viscous_friction, double,
-		"");
+    OpenSim_DECLARE_PROPERTY(stiffness, double,
+                             "");
+    OpenSim_DECLARE_PROPERTY(dissipation, double,
+                             "");
+    OpenSim_DECLARE_PROPERTY(static_friction, double,
+                             "");
+    OpenSim_DECLARE_PROPERTY(dynamic_friction, double,
+                             "");
+    OpenSim_DECLARE_PROPERTY(viscous_friction, double,
+                             "");
     /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
     ContactParameters();
-    ContactParameters(double stiffness, double dissipation, 
-                      double staticFriction, double dynamicFriction, 
+    ContactParameters(double stiffness, double dissipation,
+                      double staticFriction, double dynamicFriction,
                       double viscousFriction);
 
     const Property<std::string>& getGeometry() const;
@@ -174,7 +174,7 @@ public:
     void setViscousFriction(double friction);
 
 private:
-	void constructProperties();
+    void constructProperties();
 };
 
 
@@ -182,16 +182,16 @@ private:
 //             ELASTIC FOUNDATION FORCE :: CONTACT PARAMETERS SET
 //==============================================================================
 
-class OSIMSIMULATION_API ElasticFoundationForce::ContactParametersSet 
-:   public Set<ElasticFoundationForce::ContactParameters> {
-OpenSim_DECLARE_CONCRETE_OBJECT(ElasticFoundationForce::ContactParametersSet, 
-                                Set<ElasticFoundationForce::ContactParameters>);
+class OSIMSIMULATION_API ElasticFoundationForce::ContactParametersSet
+        :   public Set<ElasticFoundationForce::ContactParameters> {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ElasticFoundationForce::ContactParametersSet,
+                                    Set<ElasticFoundationForce::ContactParameters>);
 
 public:
-	ContactParametersSet();
+    ContactParametersSet();
 
 private:
-	void setNull();
+    void setNull();
 };
 
 #endif

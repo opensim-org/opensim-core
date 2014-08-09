@@ -41,9 +41,9 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-UnilateralConstraint::UnilateralConstraint() 
+UnilateralConstraint::UnilateralConstraint()
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -65,7 +65,7 @@ UnilateralConstraint::~UnilateralConstraint()
  */
 void UnilateralConstraint::setNull()
 {
-	setAuthors("Ajay Seth");
+    setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________
@@ -77,8 +77,8 @@ void UnilateralConstraint::setNull()
  */
 void UnilateralConstraint::connectToModel(Model& aModel)
 {
-	// Base class
-	Super::connectToModel(aModel);
+    // Base class
+    Super::connectToModel(aModel);
 }
 
 //=============================================================================

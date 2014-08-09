@@ -34,14 +34,14 @@ namespace OpenSim {
 //=============================================================================
 // CONSTRUCTOR
 //=============================================================================
-// Uses default (compiler-generated) destructor, copy constructor, copy 
+// Uses default (compiler-generated) destructor, copy constructor, copy
 // assignment operator.
 
 //_____________________________________________________________________________
 // Default constructor.
 ContactGeometry::ContactGeometry() : ModelComponent()
 {
-	setNull();
+    setNull();
     constructProperties();
 }
 
@@ -49,7 +49,7 @@ ContactGeometry::ContactGeometry() : ModelComponent()
 // Convienience constructor.
 ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, Body& body) : ModelComponent()
 {
-	setNull();
+    setNull();
     constructProperties();
 
     _body = &body;
@@ -60,7 +60,7 @@ ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, 
 
 void ContactGeometry::setNull()
 {
-	setAuthors("Peter Eastman");
+    setAuthors("Peter Eastman");
     _body = NULL;
 }
 
@@ -77,7 +77,7 @@ void ContactGeometry::constructProperties()
     constructProperty_display_preference(1);
 
     Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
-	defaultColor[0] = 0.0; 
+    defaultColor[0] = 0.0;
     constructProperty_color(defaultColor);
 }
 
@@ -104,9 +104,9 @@ void ContactGeometry::setOrientation(const Vec3& orientation)
 SimTK::Transform ContactGeometry::getTransform()
 {
     return SimTK::Transform(Rotation(SimTK::BodyRotationSequence,
-        get_orientation()[0], SimTK::XAxis,
-        get_orientation()[1], SimTK::YAxis,
-        get_orientation()[2], SimTK::ZAxis), get_location());
+                                     get_orientation()[0], SimTK::XAxis,
+                                     get_orientation()[1], SimTK::YAxis,
+                                     get_orientation()[2], SimTK::ZAxis), get_location());
 }
 
 Body& ContactGeometry::getBody()
@@ -149,17 +149,17 @@ void ContactGeometry::setDisplayPreference(const int dispPref)
 void ContactGeometry::connectToModel(Model& aModel)
 {
     try {
-    	_body = &aModel.updBodySet().get(get_body_name());
-		_model = &aModel;
+        _body = &aModel.updBodySet().get(get_body_name());
+        _model = &aModel;
     }
-	catch (...)
+    catch (...)
     {
         std::string errorMessage = "Invalid body (" + get_body_name() + ") specified in contact geometry " + getName();
-		throw (Exception(errorMessage.c_str()));
-	}
-	_body->updDisplayer()->addDependent(updDisplayer());
-	_displayer.setTransform(getTransform());
-	_displayer.setOwner(this);
+        throw (Exception(errorMessage.c_str()));
+    }
+    _body->updDisplayer()->addDependent(updDisplayer());
+    _displayer.setTransform(getTransform());
+    _displayer.setOwner(this);
 }
 
 void ContactGeometry::scale(const ScaleSet& aScaleSet)

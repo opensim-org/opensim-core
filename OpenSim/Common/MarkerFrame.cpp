@@ -40,11 +40,11 @@ using namespace OpenSim;
  * Default constructor.
  */
 MarkerFrame::MarkerFrame() :
-	_numMarkers(0),
-	_frameNumber(-1),
-	_units()
+    _numMarkers(0),
+    _frameNumber(-1),
+    _units()
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -57,27 +57,27 @@ MarkerFrame::MarkerFrame() :
  * @param aUnits the units of the XYZ marker coordinates
  */
 MarkerFrame::MarkerFrame(int aNumMarkers, int aFrameNumber, double aTime, Units& aUnits) :
-	_numMarkers(aNumMarkers),
-	_frameNumber(aFrameNumber),
-	_frameTime(aTime),
-	_units(aUnits)
+    _numMarkers(aNumMarkers),
+    _frameNumber(aFrameNumber),
+    _frameTime(aTime),
+    _units(aUnits)
 {
-	setNull();
+    setNull();
 }
 
 /**
  * Copy constructor.
  */
 MarkerFrame::MarkerFrame(const MarkerFrame& aFrame) :
-   Object(aFrame)
+    Object(aFrame)
 {
-	setNull();
+    setNull();
 
-	_numMarkers = aFrame._numMarkers;
-	_frameNumber = aFrame._frameNumber;
-	_frameTime = aFrame._frameTime;
-	_units = aFrame._units;
-	_markers = aFrame._markers;
+    _numMarkers = aFrame._numMarkers;
+    _frameNumber = aFrame._frameNumber;
+    _frameTime = aFrame._frameTime;
+    _units = aFrame._units;
+    _markers = aFrame._markers;
 }
 
 //_____________________________________________________________________________
@@ -97,7 +97,7 @@ MarkerFrame::~MarkerFrame()
  */
 void MarkerFrame::setNull()
 {
-	setAuthors("Peter Loan");
+    setAuthors("Peter Loan");
 }
 
 //=============================================================================
@@ -111,8 +111,8 @@ void MarkerFrame::setNull()
  */
 void MarkerFrame::addMarker(const SimTK::Vec3& aCoords)
 {
-	//SimmPoint* pt = new SimmPoint(aCoords);
-	_markers.push_back(aCoords);
+    //SimmPoint* pt = new SimmPoint(aCoords);
+    _markers.push_back(aCoords);
 }
 
 //=============================================================================
@@ -126,9 +126,9 @@ void MarkerFrame::addMarker(const SimTK::Vec3& aCoords)
  */
 void MarkerFrame::scale(double aScaleFactor)
 {
-	for (int i = 0; i < _numMarkers; i++)
-	{
-		//SimTK::Vec3& pt = _markers[i]->get();
-		_markers[i] *= aScaleFactor;
-	}
+    for (int i = 0; i < _numMarkers; i++)
+    {
+        //SimTK::Vec3& pt = _markers[i]->get();
+        _markers[i] *= aScaleFactor;
+    }
 }

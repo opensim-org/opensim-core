@@ -46,10 +46,10 @@ void scaleGait2354_GUI(bool useMarkerPlacement);
 int main()
 {
     try {
- 
-		scaleGait2354();
-		scaleGait2354_GUI(false);
-		//scaleGait2354_GUI(true);
+
+        scaleGait2354();
+        scaleGait2354_GUI(false);
+        //scaleGait2354_GUI(true);
 
     }
     catch (const Exception& e) {
@@ -62,125 +62,125 @@ int main()
 
 void compareModel(const Model& resultModel, const std::string& stdFileName, double tol)
 {
-	// Load std model and realize it to Velocity just in case
-	Model* refModel = new Model(stdFileName);
-	SimTK::State& sStd = refModel->initSystem();
+    // Load std model and realize it to Velocity just in case
+    Model* refModel = new Model(stdFileName);
+    SimTK::State& sStd = refModel->initSystem();
 
-	const SimTK::State& s = resultModel.getWorkingState();
-	resultModel.getMultibodySystem().realize(s, SimTK::Stage::Velocity);
+    const SimTK::State& s = resultModel.getWorkingState();
+    resultModel.getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
-	ASSERT(sStd.getNQ()==s.getNQ());	
-	// put them in same configuration
-	sStd.updQ() = s.getQ();
-	refModel->getMultibodySystem().realize(sStd, SimTK::Stage::Velocity);
+    ASSERT(sStd.getNQ()==s.getNQ());
+    // put them in same configuration
+    sStd.updQ() = s.getQ();
+    refModel->getMultibodySystem().realize(sStd, SimTK::Stage::Velocity);
 
-	ASSERT(sStd.getNU()==s.getNU());	
-	ASSERT(sStd.getNZ()==s.getNZ());	
+    ASSERT(sStd.getNU()==s.getNU());
+    ASSERT(sStd.getNZ()==s.getNZ());
 
-	// Now cycle thru ModelComponents recursively
+    // Now cycle thru ModelComponents recursively
 
-	delete refModel;
+    delete refModel;
 }
 
 void scaleGait2354()
 {
-	// SET OUTPUT FORMATTING
-	IO::SetDigitsPad(4);
+    // SET OUTPUT FORMATTING
+    IO::SetDigitsPad(4);
 
-	std::string setupFilePath;
-	ScaleTool* subject;
-	Model* model;
+    std::string setupFilePath;
+    ScaleTool* subject;
+    Model* model;
 
-	// Remove old results if any
-	FILE* file2Remove = IO::OpenFile(setupFilePath+"subject01_scaleSet_applied.xml", "w");
-	fclose(file2Remove);
-	file2Remove = IO::OpenFile(setupFilePath+"subject01_simbody.osim", "w");
-	fclose(file2Remove);
+    // Remove old results if any
+    FILE* file2Remove = IO::OpenFile(setupFilePath+"subject01_scaleSet_applied.xml", "w");
+    fclose(file2Remove);
+    file2Remove = IO::OpenFile(setupFilePath+"subject01_simbody.osim", "w");
+    fclose(file2Remove);
 
-	// Construct model and read parameters file
-	subject = new ScaleTool("subject01_Setup_Scale.xml");
+    // Construct model and read parameters file
+    subject = new ScaleTool("subject01_Setup_Scale.xml");
 
-	// Keep track of the folder containing setup file, wil be used to locate results to comapre against
-	setupFilePath=subject->getPathToSubject();
+    // Keep track of the folder containing setup file, wil be used to locate results to comapre against
+    setupFilePath=subject->getPathToSubject();
 
-	model = subject->createModel();
+    model = subject->createModel();
 
     SimTK::State& s = model->updWorkingState();
     model->getMultibodySystem().realize(s, SimTK::Stage::Position );
 
-	if(!model) {
-		//throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
-		cout << "scale: ERROR- No model specified.";
+    if(!model) {
+        //throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
+        cout << "scale: ERROR- No model specified.";
     }
 
-	ASSERT(!subject->isDefaultModelScaler() && subject->getModelScaler().getApply());
-	ModelScaler& scaler = subject->getModelScaler();
-	ASSERT(scaler.processModel(s, model, subject->getPathToSubject(), subject->getSubjectMass()));
+    ASSERT(!subject->isDefaultModelScaler() && subject->getModelScaler().getApply());
+    ModelScaler& scaler = subject->getModelScaler();
+    ASSERT(scaler.processModel(s, model, subject->getPathToSubject(), subject->getSubjectMass()));
 
-	/*
-	if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply()) {
-		MarkerPlacer& placer = subject->getMarkerPlacer();
-	    if( false == placer.processModel(s, model, subject->getPathToSubject())) return(false);
-	}
-	else {
+    /*
+    if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply()) {
+    	MarkerPlacer& placer = subject->getMarkerPlacer();
+        if( false == placer.processModel(s, model, subject->getPathToSubject())) return(false);
+    }
+    else {
         return(1);
-	}
-	*/
-	// Compare ScaleSet
-	ScaleSet stdScaleSet = ScaleSet(setupFilePath+"std_subject01_scaleSet_applied.xml");
+    }
+    */
+    // Compare ScaleSet
+    ScaleSet stdScaleSet = ScaleSet(setupFilePath+"std_subject01_scaleSet_applied.xml");
 
-	const ScaleSet& computedScaleSet = ScaleSet(setupFilePath+"subject01_scaleSet_applied.xml");
+    const ScaleSet& computedScaleSet = ScaleSet(setupFilePath+"subject01_scaleSet_applied.xml");
 
-	ASSERT(computedScaleSet == stdScaleSet);
-    
-	delete model;
-	delete subject;
+    ASSERT(computedScaleSet == stdScaleSet);
+
+    delete model;
+    delete subject;
 }
 
 void scaleGait2354_GUI(bool useMarkerPlacement)
 {
-	// SET OUTPUT FORMATTING
-	IO::SetDigitsPad(4);
+    // SET OUTPUT FORMATTING
+    IO::SetDigitsPad(4);
 
-	// Construct model and read parameters file
-	ScaleTool* subject = new ScaleTool("subject01_Setup_Scale_GUI.xml");
-	std::string setupFilePath=subject->getPathToSubject();
+    // Construct model and read parameters file
+    ScaleTool* subject = new ScaleTool("subject01_Setup_Scale_GUI.xml");
+    std::string setupFilePath=subject->getPathToSubject();
 
-	// Remove old results if any
-	FILE* file2Remove = IO::OpenFile(setupFilePath+"subject01_scaleSet_applied_GUI.xml", "w");
-	fclose(file2Remove);
-	file2Remove = IO::OpenFile(setupFilePath+"subject01_scaledOnly_GUI.osim", "w");
-	fclose(file2Remove);
+    // Remove old results if any
+    FILE* file2Remove = IO::OpenFile(setupFilePath+"subject01_scaleSet_applied_GUI.xml", "w");
+    fclose(file2Remove);
+    file2Remove = IO::OpenFile(setupFilePath+"subject01_scaledOnly_GUI.osim", "w");
+    fclose(file2Remove);
 
-	Model guiModel("gait2354_simbody.osim");
-	
-	// Keep track of the folder containing setup file, wil be used to locate results to comapre against
-	guiModel.initSystem();
-	MarkerSet *markerSet = new MarkerSet(setupFilePath + subject->getGenericModelMaker().getMarkerSetFileName());
-	guiModel.updateMarkerSet(*markerSet);
+    Model guiModel("gait2354_simbody.osim");
 
-	// processedModelContext.processModelScale(scaleTool.getModelScaler(), processedModel, "", scaleTool.getSubjectMass())
-	guiModel.getMultibodySystem().realizeTopology();
-	SimTK::State* configState=&guiModel.updWorkingState();
-	bool retValue= subject->getModelScaler().processModel(*configState, &guiModel, setupFilePath, subject->getSubjectMass());
-	// Model has changed need to recreate a valid state 
-	guiModel.getMultibodySystem().realizeTopology();
+    // Keep track of the folder containing setup file, wil be used to locate results to comapre against
+    guiModel.initSystem();
+    MarkerSet *markerSet = new MarkerSet(setupFilePath + subject->getGenericModelMaker().getMarkerSetFileName());
+    guiModel.updateMarkerSet(*markerSet);
+
+    // processedModelContext.processModelScale(scaleTool.getModelScaler(), processedModel, "", scaleTool.getSubjectMass())
+    guiModel.getMultibodySystem().realizeTopology();
+    SimTK::State* configState=&guiModel.updWorkingState();
+    bool retValue= subject->getModelScaler().processModel(*configState, &guiModel, setupFilePath, subject->getSubjectMass());
+    // Model has changed need to recreate a valid state
+    guiModel.getMultibodySystem().realizeTopology();
     configState=&guiModel.updWorkingState();
-	guiModel.getMultibodySystem().realize(*configState, SimTK::Stage::Position);
+    guiModel.getMultibodySystem().realize(*configState, SimTK::Stage::Position);
 
 
-	if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply()) {
-		MarkerPlacer& placer = subject->getMarkerPlacer();
-	    if( false == placer.processModel(*configState, &guiModel, subject->getPathToSubject())) 
-			throw Exception("testScale filed to place markers");
-	}
+    if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply()) {
+        MarkerPlacer& placer = subject->getMarkerPlacer();
+        if( false == placer.processModel(*configState, &guiModel, subject->getPathToSubject()))
+            throw Exception("testScale filed to place markers");
+    }
 
-	// Compare ScaleSet
-	ScaleSet stdScaleSet = ScaleSet(setupFilePath+"std_subject01_scaleSet_applied.xml");
+    // Compare ScaleSet
+    ScaleSet stdScaleSet = ScaleSet(setupFilePath+"std_subject01_scaleSet_applied.xml");
 
-	const ScaleSet& computedScaleSet = ScaleSet(setupFilePath+"subject01_scaleSet_applied_GUI.xml");
+    const ScaleSet& computedScaleSet = ScaleSet(setupFilePath+"subject01_scaleSet_applied_GUI.xml");
 
-	ASSERT(computedScaleSet == stdScaleSet);
+    ASSERT(computedScaleSet == stdScaleSet);
 
-	delete subject;
+    delete subject;
 }

@@ -122,161 +122,161 @@ ExpressionTreeNode ParsedExpression::substituteSimplerExpression(const Expressio
     for (int i = 0; i < (int) children.size(); i++)
         children[i] = substituteSimplerExpression(node.getChildren()[i]);
     switch (node.getOperation().getId()) {
-        case Operation::ADD:
-        {
-            double first = getConstantValue(children[0]);
-            double second = getConstantValue(children[1]);
-            if (first == 0.0) // Add 0
-                return children[1];
-            if (second == 0.0) // Add 0
-                return children[0];
-            if (first == first) // Add a constant
-                return ExpressionTreeNode(new Operation::AddConstant(first), children[1]);
-            if (second == second) // Add a constant
-                return ExpressionTreeNode(new Operation::AddConstant(second), children[0]);
-            if (children[1].getOperation().getId() == Operation::NEGATE) // a+(-b) = a-b
-                return ExpressionTreeNode(new Operation::Subtract(), children[0], children[1].getChildren()[0]);
-            if (children[0].getOperation().getId() == Operation::NEGATE) // (-a)+b = b-a
-                return ExpressionTreeNode(new Operation::Subtract(), children[1], children[0].getChildren()[0]);
-            break;
+    case Operation::ADD:
+    {
+        double first = getConstantValue(children[0]);
+        double second = getConstantValue(children[1]);
+        if (first == 0.0) // Add 0
+            return children[1];
+        if (second == 0.0) // Add 0
+            return children[0];
+        if (first == first) // Add a constant
+            return ExpressionTreeNode(new Operation::AddConstant(first), children[1]);
+        if (second == second) // Add a constant
+            return ExpressionTreeNode(new Operation::AddConstant(second), children[0]);
+        if (children[1].getOperation().getId() == Operation::NEGATE) // a+(-b) = a-b
+            return ExpressionTreeNode(new Operation::Subtract(), children[0], children[1].getChildren()[0]);
+        if (children[0].getOperation().getId() == Operation::NEGATE) // (-a)+b = b-a
+            return ExpressionTreeNode(new Operation::Subtract(), children[1], children[0].getChildren()[0]);
+        break;
+    }
+    case Operation::SUBTRACT:
+    {
+        if (children[0] == children[1])
+            return ExpressionTreeNode(new Operation::Constant(0.0)); // Subtracting anything from itself is 0
+        double first = getConstantValue(children[0]);
+        if (first == 0.0) // Subtract from 0
+            return ExpressionTreeNode(new Operation::Negate(), children[1]);
+        double second = getConstantValue(children[1]);
+        if (second == 0.0) // Subtract 0
+            return children[0];
+        if (second == second) // Subtract a constant
+            return ExpressionTreeNode(new Operation::AddConstant(-second), children[0]);
+        if (children[1].getOperation().getId() == Operation::NEGATE) // a-(-b) = a+b
+            return ExpressionTreeNode(new Operation::Add(), children[0], children[1].getChildren()[0]);
+        break;
+    }
+    case Operation::MULTIPLY:
+    {
+        double first = getConstantValue(children[0]);
+        double second = getConstantValue(children[1]);
+        if (first == 0.0 || second == 0.0) // Multiply by 0
+            return ExpressionTreeNode(new Operation::Constant(0.0));
+        if (first == 1.0) // Multiply by 1
+            return children[1];
+        if (second == 1.0) // Multiply by 1
+            return children[0];
+        if (children[0].getOperation().getId() == Operation::CONSTANT) { // Multiply by a constant
+            if (children[1].getOperation().getId() == Operation::MULTIPLY_CONSTANT) // Combine two multiplies into a single one
+                return ExpressionTreeNode(new Operation::MultiplyConstant(first*dynamic_cast<const Operation::MultiplyConstant*>(&children[1].getOperation())->getValue()), children[1].getChildren()[0]);
+            return ExpressionTreeNode(new Operation::MultiplyConstant(first), children[1]);
         }
-        case Operation::SUBTRACT:
-        {
-            if (children[0] == children[1])
-                return ExpressionTreeNode(new Operation::Constant(0.0)); // Subtracting anything from itself is 0
-            double first = getConstantValue(children[0]);
-            if (first == 0.0) // Subtract from 0
-                return ExpressionTreeNode(new Operation::Negate(), children[1]);
-            double second = getConstantValue(children[1]);
-            if (second == 0.0) // Subtract 0
-                return children[0];
-            if (second == second) // Subtract a constant
-                return ExpressionTreeNode(new Operation::AddConstant(-second), children[0]);
-            if (children[1].getOperation().getId() == Operation::NEGATE) // a-(-b) = a+b
-                return ExpressionTreeNode(new Operation::Add(), children[0], children[1].getChildren()[0]);
-            break;
-        }
-        case Operation::MULTIPLY:
-        {
-            double first = getConstantValue(children[0]);
-            double second = getConstantValue(children[1]);
-            if (first == 0.0 || second == 0.0) // Multiply by 0
-                return ExpressionTreeNode(new Operation::Constant(0.0));
-            if (first == 1.0) // Multiply by 1
-                return children[1];
-            if (second == 1.0) // Multiply by 1
-                return children[0];
-            if (children[0].getOperation().getId() == Operation::CONSTANT) { // Multiply by a constant
-                if (children[1].getOperation().getId() == Operation::MULTIPLY_CONSTANT) // Combine two multiplies into a single one
-                    return ExpressionTreeNode(new Operation::MultiplyConstant(first*dynamic_cast<const Operation::MultiplyConstant*>(&children[1].getOperation())->getValue()), children[1].getChildren()[0]);
-                return ExpressionTreeNode(new Operation::MultiplyConstant(first), children[1]);
-            }
-            if (children[1].getOperation().getId() == Operation::CONSTANT) { // Multiply by a constant
-                if (children[0].getOperation().getId() == Operation::MULTIPLY_CONSTANT) // Combine two multiplies into a single one
-                    return ExpressionTreeNode(new Operation::MultiplyConstant(second*dynamic_cast<const Operation::MultiplyConstant*>(&children[0].getOperation())->getValue()), children[0].getChildren()[0]);
-                return ExpressionTreeNode(new Operation::MultiplyConstant(second), children[0]);
-            }
-            if (children[0].getOperation().getId() == Operation::NEGATE && children[1].getOperation().getId() == Operation::NEGATE) // The two negations cancel
-                return ExpressionTreeNode(new Operation::Multiply(), children[0].getChildren()[0], children[1].getChildren()[0]);
-            if (children[0].getOperation().getId() == Operation::NEGATE && children[1].getOperation().getId() == Operation::MULTIPLY_CONSTANT) // Negate the constant
-                return ExpressionTreeNode(new Operation::Multiply(), children[0].getChildren()[0], ExpressionTreeNode(new Operation::MultiplyConstant(-dynamic_cast<const Operation::MultiplyConstant*>(&children[1].getOperation())->getValue()), children[1].getChildren()[0]));
-            if (children[1].getOperation().getId() == Operation::NEGATE && children[0].getOperation().getId() == Operation::MULTIPLY_CONSTANT) // Negate the constant
-                return ExpressionTreeNode(new Operation::Multiply(), ExpressionTreeNode(new Operation::MultiplyConstant(-dynamic_cast<const Operation::MultiplyConstant*>(&children[0].getOperation())->getValue()), children[0].getChildren()[0]), children[1].getChildren()[0]);
-            if (children[0].getOperation().getId() == Operation::NEGATE) // Pull the negation out so it can possibly be optimized further
-                return ExpressionTreeNode(new Operation::Negate(), ExpressionTreeNode(new Operation::Multiply(), children[0].getChildren()[0], children[1]));
-            if (children[1].getOperation().getId() == Operation::NEGATE) // Pull the negation out so it can possibly be optimized further
-                return ExpressionTreeNode(new Operation::Negate(), ExpressionTreeNode(new Operation::Multiply(), children[0], children[1].getChildren()[0]));
-            if (children[1].getOperation().getId() == Operation::RECIPROCAL) // a*(1/b) = a/b
-                return ExpressionTreeNode(new Operation::Divide(), children[0], children[1].getChildren()[0]);
-            if (children[0].getOperation().getId() == Operation::RECIPROCAL) // (1/a)*b = b/a
-                return ExpressionTreeNode(new Operation::Divide(), children[1], children[0].getChildren()[0]);
-            if (children[0] == children[1])
-                return ExpressionTreeNode(new Operation::Square(), children[0]); // x*x = square(x)
-            if (children[0].getOperation().getId() == Operation::SQUARE && children[0].getChildren()[0] == children[1])
-                return ExpressionTreeNode(new Operation::Cube(), children[1]); // x*x*x = cube(x)
-            if (children[1].getOperation().getId() == Operation::SQUARE && children[1].getChildren()[0] == children[0])
-                return ExpressionTreeNode(new Operation::Cube(), children[0]); // x*x*x = cube(x)
-            break;
-        }
-        case Operation::DIVIDE:
-        {
-            if (children[0] == children[1])
-                return ExpressionTreeNode(new Operation::Constant(1.0)); // Dividing anything from itself is 0
-            double numerator = getConstantValue(children[0]);
-            if (numerator == 0.0) // 0 divided by something
-                return ExpressionTreeNode(new Operation::Constant(0.0));
-            if (numerator == 1.0) // 1 divided by something
-                return ExpressionTreeNode(new Operation::Reciprocal(), children[1]);
-            double denominator = getConstantValue(children[1]);
-            if (denominator == 1.0) // Divide by 1
-                return children[0];
-            if (children[1].getOperation().getId() == Operation::CONSTANT) {
-                if (children[0].getOperation().getId() == Operation::MULTIPLY_CONSTANT) // Combine a multiply and a divide into one multiply
-                    return ExpressionTreeNode(new Operation::MultiplyConstant(dynamic_cast<const Operation::MultiplyConstant*>(&children[0].getOperation())->getValue()/denominator), children[0].getChildren()[0]);
-                return ExpressionTreeNode(new Operation::MultiplyConstant(1.0/denominator), children[0]); // Replace a divide with a multiply
-            }
-            if (children[0].getOperation().getId() == Operation::NEGATE && children[1].getOperation().getId() == Operation::NEGATE) // The two negations cancel
-                return ExpressionTreeNode(new Operation::Divide(), children[0].getChildren()[0], children[1].getChildren()[0]);
-            if (children[1].getOperation().getId() == Operation::NEGATE && children[0].getOperation().getId() == Operation::MULTIPLY_CONSTANT) // Negate the constant
-                return ExpressionTreeNode(new Operation::Divide(), ExpressionTreeNode(new Operation::MultiplyConstant(-dynamic_cast<const Operation::MultiplyConstant*>(&children[0].getOperation())->getValue()), children[0].getChildren()[0]), children[1].getChildren()[0]);
-            if (children[0].getOperation().getId() == Operation::NEGATE) // Pull the negation out so it can possibly be optimized further
-                return ExpressionTreeNode(new Operation::Negate(), ExpressionTreeNode(new Operation::Divide(), children[0].getChildren()[0], children[1]));
-            if (children[1].getOperation().getId() == Operation::NEGATE) // Pull the negation out so it can possibly be optimized further
-                return ExpressionTreeNode(new Operation::Negate(), ExpressionTreeNode(new Operation::Divide(), children[0], children[1].getChildren()[0]));
-            if (children[1].getOperation().getId() == Operation::RECIPROCAL) // a/(1/b) = a*b
-                return ExpressionTreeNode(new Operation::Multiply(), children[0], children[1].getChildren()[0]);
-            break;
-        }
-        case Operation::POWER:
-        {
-            double base = getConstantValue(children[0]);
-            if (base == 0.0) // 0 to any power is 0
-                return ExpressionTreeNode(new Operation::Constant(0.0));
-            if (base == 1.0) // 1 to any power is 1
-                return ExpressionTreeNode(new Operation::Constant(1.0));
-            double exponent = getConstantValue(children[1]);
-            if (exponent == 0.0) // x^0 = 1
-                return ExpressionTreeNode(new Operation::Constant(1.0));
-            if (exponent == 1.0) // x^1 = x
-                return children[0];
-            if (exponent == -1.0) // x^-1 = recip(x)
-                return ExpressionTreeNode(new Operation::Reciprocal(), children[0]);
-            if (exponent == 2.0) // x^2 = square(x)
-                return ExpressionTreeNode(new Operation::Square(), children[0]);
-            if (exponent == 3.0) // x^3 = cube(x)
-                return ExpressionTreeNode(new Operation::Cube(), children[0]);
-            if (exponent == 0.5) // x^0.5 = sqrt(x)
-                return ExpressionTreeNode(new Operation::Sqrt(), children[0]);
-            if (exponent == exponent) // Constant power
-                return ExpressionTreeNode(new Operation::PowerConstant(exponent), children[0]);
-            break;
-        }
-        case Operation::NEGATE:
-        {
-            if (children[0].getOperation().getId() == Operation::MULTIPLY_CONSTANT) // Combine a multiply and a negate into a single multiply
-                return ExpressionTreeNode(new Operation::MultiplyConstant(-dynamic_cast<const Operation::MultiplyConstant*>(&children[0].getOperation())->getValue()), children[0].getChildren()[0]);
-            if (children[0].getOperation().getId() == Operation::CONSTANT) // Negate a constant
-                return ExpressionTreeNode(new Operation::Constant(-getConstantValue(children[0])));
-            if (children[0].getOperation().getId() == Operation::NEGATE) // The two negations cancel
-                return children[0].getChildren()[0];
-            break;
-        }
-        case Operation::MULTIPLY_CONSTANT:
-        {
+        if (children[1].getOperation().getId() == Operation::CONSTANT) { // Multiply by a constant
             if (children[0].getOperation().getId() == Operation::MULTIPLY_CONSTANT) // Combine two multiplies into a single one
-                return ExpressionTreeNode(new Operation::MultiplyConstant(dynamic_cast<const Operation::MultiplyConstant*>(&node.getOperation())->getValue()*dynamic_cast<const Operation::MultiplyConstant*>(&children[0].getOperation())->getValue()), children[0].getChildren()[0]);
-            if (children[0].getOperation().getId() == Operation::CONSTANT) // Multiply two constants
-                return ExpressionTreeNode(new Operation::Constant(dynamic_cast<const Operation::MultiplyConstant*>(&node.getOperation())->getValue()*getConstantValue(children[0])));
-            if (children[0].getOperation().getId() == Operation::NEGATE) // Combine a multiply and a negate into a single multiply
-                return ExpressionTreeNode(new Operation::MultiplyConstant(-dynamic_cast<const Operation::MultiplyConstant*>(&node.getOperation())->getValue()), children[0].getChildren()[0]);
-            break;
+                return ExpressionTreeNode(new Operation::MultiplyConstant(second*dynamic_cast<const Operation::MultiplyConstant*>(&children[0].getOperation())->getValue()), children[0].getChildren()[0]);
+            return ExpressionTreeNode(new Operation::MultiplyConstant(second), children[0]);
         }
-        default:
-        {
-            // If operation ID is not one of the above,
-            // we don't substitute a simpler expression.
-            break;
+        if (children[0].getOperation().getId() == Operation::NEGATE && children[1].getOperation().getId() == Operation::NEGATE) // The two negations cancel
+            return ExpressionTreeNode(new Operation::Multiply(), children[0].getChildren()[0], children[1].getChildren()[0]);
+        if (children[0].getOperation().getId() == Operation::NEGATE && children[1].getOperation().getId() == Operation::MULTIPLY_CONSTANT) // Negate the constant
+            return ExpressionTreeNode(new Operation::Multiply(), children[0].getChildren()[0], ExpressionTreeNode(new Operation::MultiplyConstant(-dynamic_cast<const Operation::MultiplyConstant*>(&children[1].getOperation())->getValue()), children[1].getChildren()[0]));
+        if (children[1].getOperation().getId() == Operation::NEGATE && children[0].getOperation().getId() == Operation::MULTIPLY_CONSTANT) // Negate the constant
+            return ExpressionTreeNode(new Operation::Multiply(), ExpressionTreeNode(new Operation::MultiplyConstant(-dynamic_cast<const Operation::MultiplyConstant*>(&children[0].getOperation())->getValue()), children[0].getChildren()[0]), children[1].getChildren()[0]);
+        if (children[0].getOperation().getId() == Operation::NEGATE) // Pull the negation out so it can possibly be optimized further
+            return ExpressionTreeNode(new Operation::Negate(), ExpressionTreeNode(new Operation::Multiply(), children[0].getChildren()[0], children[1]));
+        if (children[1].getOperation().getId() == Operation::NEGATE) // Pull the negation out so it can possibly be optimized further
+            return ExpressionTreeNode(new Operation::Negate(), ExpressionTreeNode(new Operation::Multiply(), children[0], children[1].getChildren()[0]));
+        if (children[1].getOperation().getId() == Operation::RECIPROCAL) // a*(1/b) = a/b
+            return ExpressionTreeNode(new Operation::Divide(), children[0], children[1].getChildren()[0]);
+        if (children[0].getOperation().getId() == Operation::RECIPROCAL) // (1/a)*b = b/a
+            return ExpressionTreeNode(new Operation::Divide(), children[1], children[0].getChildren()[0]);
+        if (children[0] == children[1])
+            return ExpressionTreeNode(new Operation::Square(), children[0]); // x*x = square(x)
+        if (children[0].getOperation().getId() == Operation::SQUARE && children[0].getChildren()[0] == children[1])
+            return ExpressionTreeNode(new Operation::Cube(), children[1]); // x*x*x = cube(x)
+        if (children[1].getOperation().getId() == Operation::SQUARE && children[1].getChildren()[0] == children[0])
+            return ExpressionTreeNode(new Operation::Cube(), children[0]); // x*x*x = cube(x)
+        break;
+    }
+    case Operation::DIVIDE:
+    {
+        if (children[0] == children[1])
+            return ExpressionTreeNode(new Operation::Constant(1.0)); // Dividing anything from itself is 0
+        double numerator = getConstantValue(children[0]);
+        if (numerator == 0.0) // 0 divided by something
+            return ExpressionTreeNode(new Operation::Constant(0.0));
+        if (numerator == 1.0) // 1 divided by something
+            return ExpressionTreeNode(new Operation::Reciprocal(), children[1]);
+        double denominator = getConstantValue(children[1]);
+        if (denominator == 1.0) // Divide by 1
+            return children[0];
+        if (children[1].getOperation().getId() == Operation::CONSTANT) {
+            if (children[0].getOperation().getId() == Operation::MULTIPLY_CONSTANT) // Combine a multiply and a divide into one multiply
+                return ExpressionTreeNode(new Operation::MultiplyConstant(dynamic_cast<const Operation::MultiplyConstant*>(&children[0].getOperation())->getValue()/denominator), children[0].getChildren()[0]);
+            return ExpressionTreeNode(new Operation::MultiplyConstant(1.0/denominator), children[0]); // Replace a divide with a multiply
         }
+        if (children[0].getOperation().getId() == Operation::NEGATE && children[1].getOperation().getId() == Operation::NEGATE) // The two negations cancel
+            return ExpressionTreeNode(new Operation::Divide(), children[0].getChildren()[0], children[1].getChildren()[0]);
+        if (children[1].getOperation().getId() == Operation::NEGATE && children[0].getOperation().getId() == Operation::MULTIPLY_CONSTANT) // Negate the constant
+            return ExpressionTreeNode(new Operation::Divide(), ExpressionTreeNode(new Operation::MultiplyConstant(-dynamic_cast<const Operation::MultiplyConstant*>(&children[0].getOperation())->getValue()), children[0].getChildren()[0]), children[1].getChildren()[0]);
+        if (children[0].getOperation().getId() == Operation::NEGATE) // Pull the negation out so it can possibly be optimized further
+            return ExpressionTreeNode(new Operation::Negate(), ExpressionTreeNode(new Operation::Divide(), children[0].getChildren()[0], children[1]));
+        if (children[1].getOperation().getId() == Operation::NEGATE) // Pull the negation out so it can possibly be optimized further
+            return ExpressionTreeNode(new Operation::Negate(), ExpressionTreeNode(new Operation::Divide(), children[0], children[1].getChildren()[0]));
+        if (children[1].getOperation().getId() == Operation::RECIPROCAL) // a/(1/b) = a*b
+            return ExpressionTreeNode(new Operation::Multiply(), children[0], children[1].getChildren()[0]);
+        break;
+    }
+    case Operation::POWER:
+    {
+        double base = getConstantValue(children[0]);
+        if (base == 0.0) // 0 to any power is 0
+            return ExpressionTreeNode(new Operation::Constant(0.0));
+        if (base == 1.0) // 1 to any power is 1
+            return ExpressionTreeNode(new Operation::Constant(1.0));
+        double exponent = getConstantValue(children[1]);
+        if (exponent == 0.0) // x^0 = 1
+            return ExpressionTreeNode(new Operation::Constant(1.0));
+        if (exponent == 1.0) // x^1 = x
+            return children[0];
+        if (exponent == -1.0) // x^-1 = recip(x)
+            return ExpressionTreeNode(new Operation::Reciprocal(), children[0]);
+        if (exponent == 2.0) // x^2 = square(x)
+            return ExpressionTreeNode(new Operation::Square(), children[0]);
+        if (exponent == 3.0) // x^3 = cube(x)
+            return ExpressionTreeNode(new Operation::Cube(), children[0]);
+        if (exponent == 0.5) // x^0.5 = sqrt(x)
+            return ExpressionTreeNode(new Operation::Sqrt(), children[0]);
+        if (exponent == exponent) // Constant power
+            return ExpressionTreeNode(new Operation::PowerConstant(exponent), children[0]);
+        break;
+    }
+    case Operation::NEGATE:
+    {
+        if (children[0].getOperation().getId() == Operation::MULTIPLY_CONSTANT) // Combine a multiply and a negate into a single multiply
+            return ExpressionTreeNode(new Operation::MultiplyConstant(-dynamic_cast<const Operation::MultiplyConstant*>(&children[0].getOperation())->getValue()), children[0].getChildren()[0]);
+        if (children[0].getOperation().getId() == Operation::CONSTANT) // Negate a constant
+            return ExpressionTreeNode(new Operation::Constant(-getConstantValue(children[0])));
+        if (children[0].getOperation().getId() == Operation::NEGATE) // The two negations cancel
+            return children[0].getChildren()[0];
+        break;
+    }
+    case Operation::MULTIPLY_CONSTANT:
+    {
+        if (children[0].getOperation().getId() == Operation::MULTIPLY_CONSTANT) // Combine two multiplies into a single one
+            return ExpressionTreeNode(new Operation::MultiplyConstant(dynamic_cast<const Operation::MultiplyConstant*>(&node.getOperation())->getValue()*dynamic_cast<const Operation::MultiplyConstant*>(&children[0].getOperation())->getValue()), children[0].getChildren()[0]);
+        if (children[0].getOperation().getId() == Operation::CONSTANT) // Multiply two constants
+            return ExpressionTreeNode(new Operation::Constant(dynamic_cast<const Operation::MultiplyConstant*>(&node.getOperation())->getValue()*getConstantValue(children[0])));
+        if (children[0].getOperation().getId() == Operation::NEGATE) // Combine a multiply and a negate into a single multiply
+            return ExpressionTreeNode(new Operation::MultiplyConstant(-dynamic_cast<const Operation::MultiplyConstant*>(&node.getOperation())->getValue()), children[0].getChildren()[0]);
+        break;
+    }
+    default:
+    {
+        // If operation ID is not one of the above,
+        // we don't substitute a simpler expression.
+        break;
+    }
 
     }
     return ExpressionTreeNode(node.getOperation().clone(), children);

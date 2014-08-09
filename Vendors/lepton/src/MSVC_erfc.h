@@ -3,12 +3,12 @@
 
 /*
  * Up to version 11 (VC++ 2012), Microsoft does not support the
- * standard C99 erf() and erfc() functions so we have to fake them here. 
+ * standard C99 erf() and erfc() functions so we have to fake them here.
  * These were added in version 12 (VC++ 2013), which sets _MSC_VER=1800
  * (VC11 has _MSC_VER=1700).
  */
 
-#if defined(_MSC_VER) 
+#if defined(_MSC_VER)
 #define M_PI 3.14159265358979323846264338327950288
 
 #if _MSC_VER <= 1700 // 1700 is VC11, 1800 is VC12 
@@ -77,7 +77,7 @@ static double erfc(double x)
         n+= 0.5;
         q1= q2;
         q2= b/d;
-      } while (fabs(q1-q2)/q2 > rel_error);
+    } while (fabs(q1-q2)/q2 > rel_error);
     return one_sqrtpi*exp(-x*x)*q2;
 }
 

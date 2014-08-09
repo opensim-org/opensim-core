@@ -47,68 +47,68 @@ class Coordinate;
  * @version 1.0
  */
 class OSIMTOOLS_API CMC_Joint : public CMC_Task {
-OpenSim_DECLARE_CONCRETE_OBJECT(CMC_Joint, CMC_Task);
+    OpenSim_DECLARE_CONCRETE_OBJECT(CMC_Joint, CMC_Task);
 
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
-	/** Name of the generalized coordinate to be tracked. */
-	PropertyStr _propCoordinateName;
-	/** Error limit on the coordinate. */
-	PropertyDbl _propLimit;
+    /** Name of the generalized coordinate to be tracked. */
+    PropertyStr _propCoordinateName;
+    /** Error limit on the coordinate. */
+    PropertyDbl _propLimit;
 
-	// REFERENCES
-	std::string &_coordinateName;
-	double &_limit;
+    // REFERENCES
+    std::string &_coordinateName;
+    double &_limit;
 
-	// Work Variables
-	Coordinate *_q;
+    // Work Variables
+    Coordinate *_q;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	CMC_Joint(const std::string &aCoordinateName = "");
-	CMC_Joint(const CMC_Joint &aTask);
-	virtual ~CMC_Joint();
+    CMC_Joint(const std::string &aCoordinateName = "");
+    CMC_Joint(const CMC_Joint &aTask);
+    virtual ~CMC_Joint();
 
 private:
-	void setNull();
-	void setupProperties();
-	void copyData(const CMC_Joint &aTask);
-	void updateWorkVariables();
+    void setNull();
+    void setupProperties();
+    void copyData(const CMC_Joint &aTask);
+    void updateWorkVariables();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	CMC_Joint& operator=(const CMC_Joint &aTask);
+    CMC_Joint& operator=(const CMC_Joint &aTask);
 #endif
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	virtual void setModel(Model& aModel);
-	void setCoordinateName(const std::string &aName);
-	std::string getCoordinateName() const;
-	double getLimit() const;
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    virtual void setModel(Model& aModel);
+    void setCoordinateName(const std::string &aName);
+    std::string getCoordinateName() const;
+    double getLimit() const;
 
-	//--------------------------------------------------------------------------
-	// COMPUTATIONS
-	//--------------------------------------------------------------------------
-	virtual void computeErrors(const SimTK::State& s, double aT);
-	virtual void computeDesiredAccelerations(const SimTK::State& s, double aT);
-	virtual void computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF);
-	virtual void computeAccelerations(const SimTK::State& s );
+    //--------------------------------------------------------------------------
+    // COMPUTATIONS
+    //--------------------------------------------------------------------------
+    virtual void computeErrors(const SimTK::State& s, double aT);
+    virtual void computeDesiredAccelerations(const SimTK::State& s, double aT);
+    virtual void computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF);
+    virtual void computeAccelerations(const SimTK::State& s );
 
-	//--------------------------------------------------------------------------
-	// XML
-	//--------------------------------------------------------------------------
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    //--------------------------------------------------------------------------
+    // XML
+    //--------------------------------------------------------------------------
+    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 
 //=============================================================================

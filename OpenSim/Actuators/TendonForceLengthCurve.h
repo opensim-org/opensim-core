@@ -31,10 +31,10 @@
 #include <simbody/internal/common.h>
 
 #ifdef SWIG
-    #ifdef OSIMACTUATORS_API
-        #undef OSIMACTUATORS_API
-        #define OSIMACTUATORS_API
-    #endif
+#ifdef OSIMACTUATORS_API
+#undef OSIMACTUATORS_API
+#define OSIMACTUATORS_API
+#endif
 #endif
 
 namespace OpenSim {
@@ -147,7 +147,7 @@ namespace OpenSim {
     @author Matt Millard
 */
 class OSIMACTUATORS_API TendonForceLengthCurve : public Function {
-OpenSim_DECLARE_CONCRETE_OBJECT(TendonForceLengthCurve, Function);
+    OpenSim_DECLARE_CONCRETE_OBJECT(TendonForceLengthCurve, Function);
 public:
 //==============================================================================
 // PROPERTIES
@@ -156,13 +156,13 @@ public:
         These are the serializable properties associated with this class. **/
     /**@{**/
     OpenSim_DECLARE_PROPERTY(strain_at_one_norm_force, double,
-        "Tendon strain at a tension of 1 normalized force");
+                             "Tendon strain at a tension of 1 normalized force");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(stiffness_at_one_norm_force, double,
-        "Tendon stiffness at a tension of 1 normalized force");
+                                      "Tendon stiffness at a tension of 1 normalized force");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(norm_force_at_toe_end, double,
-        "Normalized force developed at the end of the toe region");
+                                      "Normalized force developed at the end of the toe region");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(curviness, double,
-        "Tendon curve bend, from linear (0) to maximum bend (1)");
+                                      "Tendon curve bend, from linear (0) to maximum bend (1)");
     /**@}**/
 
 //==============================================================================

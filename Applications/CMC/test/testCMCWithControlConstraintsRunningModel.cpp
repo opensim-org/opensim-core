@@ -33,59 +33,64 @@ using namespace std;
 void testRunningModel();
 
 int main() {
-	Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
-	//Object::renameType("Thelen2003Muscle", "Millard2012AccelerationMuscle");
-	//Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
+    Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
+    //Object::renameType("Thelen2003Muscle", "Millard2012AccelerationMuscle");
+    //Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
     SimTK::Array_<std::string> failures;
 
-    try {testRunningModel();}
+    try {
+        testRunningModel();
+    }
     catch (const std::exception& e)
-		{  cout << e.what() <<endl; failures.push_back("testRunningModel"); }
+    {
+        cout << e.what() <<endl;
+        failures.push_back("testRunningModel");
+    }
 
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
 
-	cout << "Done" << endl;
+    cout << "Done" << endl;
 
     return 0;
 }
 
 void testRunningModel()
 {
-	cout<<"\n******************************************************************" << endl;
-	cout << "*                     testRunningModel                     *" << endl;
-	cout << "******************************************************************\n" << endl;
-	CMCTool cmc("runningModel_Setup_CMC_test.xml");
-	cmc.run();
+    cout<<"\n******************************************************************" << endl;
+    cout << "*                     testRunningModel                     *" << endl;
+    cout << "******************************************************************\n" << endl;
+    CMCTool cmc("runningModel_Setup_CMC_test.xml");
+    cmc.run();
 
-	Storage results("runningModel_CMC_Results/runningModel_CMC_test_Kinematics_q.sto");
-	Storage standard("runningModel_Kinematics_q.sto");
+    Storage results("runningModel_CMC_Results/runningModel_CMC_test_Kinematics_q.sto");
+    Storage standard("runningModel_Kinematics_q.sto");
 
-	int nq = results.getColumnLabels().getSize()-1;
+    int nq = results.getColumnLabels().getSize()-1;
 
-	// Tracking kinematics angles in degrees should be within 3 degrees (see standard versus input)
-	Array<double> rms_tols(3.00, nq);
-	rms_tols[3] = 0.0025; // pelvis translations in m should be with 2.5mm
-	rms_tols[4] = 0.0025;
-	rms_tols[5] = 0.0025;
+    // Tracking kinematics angles in degrees should be within 3 degrees (see standard versus input)
+    Array<double> rms_tols(3.00, nq);
+    rms_tols[3] = 0.0025; // pelvis translations in m should be with 2.5mm
+    rms_tols[4] = 0.0025;
+    rms_tols[5] = 0.0025;
 
-	CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testRunningModel tracking failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testRunningModel tracking failed");
 
-	Storage results_states("runningModel_CMC_Results/runningModel_CMC_test_states.sto");
-	Storage standard_states("std_runningModel_CMC_states.sto");
+    Storage results_states("runningModel_CMC_Results/runningModel_CMC_test_states.sto");
+    Storage standard_states("std_runningModel_CMC_states.sto");
 
-	int nc = results_states.getColumnLabels().getSize()-1;
+    int nc = results_states.getColumnLabels().getSize()-1;
 
-	// already passed tracking kinematics so focus on muscle states
-	Array<double> rms_states_tols(0.6, nc);
-	for(int i = nq; i< 2*nq; ++i)
-	{
-		rms_states_tols[i] = 0.2; // velocities
-	}
+    // already passed tracking kinematics so focus on muscle states
+    Array<double> rms_states_tols(0.6, nc);
+    for(int i = nq; i< 2*nq; ++i)
+    {
+        rms_states_tols[i] = 0.2; // velocities
+    }
 
-	CHECK_STORAGE_AGAINST_STANDARD(results_states, standard_states, rms_states_tols, __FILE__, __LINE__, "testRunningModel activations failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results_states, standard_states, rms_states_tols, __FILE__, __LINE__, "testRunningModel activations failed");
 
-	cout << "\n testRunningModel passed\n" << endl;
+    cout << "\n testRunningModel passed\n" << endl;
 }

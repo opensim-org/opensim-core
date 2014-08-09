@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -45,10 +45,10 @@
  * @see GCVSpline
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
+namespace OpenSim {
 
 class OSIMCOMMON_API GCVSplineSet : public FunctionSet {
-OpenSim_DECLARE_CONCRETE_OBJECT(GCVSplineSet, FunctionSet);
+    OpenSim_DECLARE_CONCRETE_OBJECT(GCVSplineSet, FunctionSet);
 
 //=============================================================================
 // DATA
@@ -59,30 +59,30 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	GCVSplineSet();
-	GCVSplineSet(const char *aFileName);
-	GCVSplineSet(int aDegree,const Storage *aStore,double aErrorVariance=0.0);
-	virtual ~GCVSplineSet();
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    GCVSplineSet();
+    GCVSplineSet(const char *aFileName);
+    GCVSplineSet(int aDegree,const Storage *aStore,double aErrorVariance=0.0);
+    virtual ~GCVSplineSet();
 
 private:
-	void setNull();
-	void construct(int aDegree,const Storage *aStore,double aErrorVariance);
+    void setNull();
+    void construct(int aDegree,const Storage *aStore,double aErrorVariance);
 
-	//--------------------------------------------------------------------------
-	// SET AND GET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // SET AND GET
+    //--------------------------------------------------------------------------
 public:
-	GCVSpline* getGCVSpline(int aIndex) const;
-	double getMinX() const;
-	double getMaxX() const;
+    GCVSpline* getGCVSpline(int aIndex) const;
+    double getMinX() const;
+    double getMaxX() const;
 
-	//--------------------------------------------------------------------------
-	// UTILITY
-	//--------------------------------------------------------------------------
-	Storage* constructStorage(int aDerivOrder,double aDX=-1);
+    //--------------------------------------------------------------------------
+    // UTILITY
+    //--------------------------------------------------------------------------
+    Storage* constructStorage(int aDerivOrder,double aDX=-1);
 
 //=============================================================================
 };	// END class GCVSplineSet

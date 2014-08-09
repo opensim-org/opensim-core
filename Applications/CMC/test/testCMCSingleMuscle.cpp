@@ -36,46 +36,54 @@ int main() {
 
     SimTK::Array_<std::string> failures;
 
-    try {testSingleMuscle();}
+    try {
+        testSingleMuscle();
+    }
     catch (const std::exception& e)
-		{  cout << e.what() <<endl; failures.push_back("testSingleMuscle"); }
+    {
+        cout << e.what() <<endl;
+        failures.push_back("testSingleMuscle");
+    }
 
-	// redo with the Millard2012EquilibriumMuscle 
-	Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
+    // redo with the Millard2012EquilibriumMuscle
+    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
 
-    try {testSingleMuscle();}
+    try {
+        testSingleMuscle();
+    }
     catch (const std::exception& e)
-		{	cout << e.what() <<endl; 
-			failures.push_back("testSingleMuscle_Millard"); }
-    
+    {   cout << e.what() <<endl;
+        failures.push_back("testSingleMuscle_Millard");
+    }
+
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
 
-	cout << "Done" << endl;
+    cout << "Done" << endl;
 
     return 0;
 }
 
 void testSingleMuscle() {
-	cout<<"\n******************************************************************" << endl;
-	cout << "*                         testSingleMuscle                       *" << endl;
-	cout << "******************************************************************\n" << endl;
-	ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
-	forward.run();
+    cout<<"\n******************************************************************" << endl;
+    cout << "*                         testSingleMuscle                       *" << endl;
+    cout << "******************************************************************\n" << endl;
+    ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
+    forward.run();
 
-	CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
-	cmc.run();
+    CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
+    cmc.run();
 
-	Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
-	Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
+    Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
+    Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
 
-	Array<double> tols(0.0005, 4);
-	const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-	string base = "testSingleMuscle "+ muscleType;
+    Array<double> tols(0.0005, 4);
+    const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
+    string base = "testSingleMuscle "+ muscleType;
 
-	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, tols, __FILE__, __LINE__, base+" failed");
-	
-	cout << "\n" << base << " passed\n" << endl;
+    CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, tols, __FILE__, __LINE__, base+" failed");
+
+    cout << "\n" << base << " passed\n" << endl;
 }

@@ -35,15 +35,15 @@
 
 
 #ifdef SWIG
-	#ifdef OSIMANALYSES_API
-		#undef OSIMANALYSES_API
-		#define OSIMANALYSES_API
-	#endif
+#ifdef OSIMANALYSES_API
+#undef OSIMANALYSES_API
+#define OSIMANALYSES_API
+#endif
 #endif
 
 
 
-namespace OpenSim { 
+namespace OpenSim {
 
 
 //=============================================================================
@@ -52,199 +52,219 @@ namespace OpenSim {
  * A class for recording and computting basic quantities (length, shortening
  * velocity, tendon length, ...) for muscles during a simulation.
  *
- * @author Ajay Seth, Matthew Millard, Katherine Holzbaur, Frank C. Anderson 
+ * @author Ajay Seth, Matthew Millard, Katherine Holzbaur, Frank C. Anderson
  * @version 1.0
  */
 class OSIMANALYSES_API MuscleAnalysis : public Analysis {
-OpenSim_DECLARE_CONCRETE_OBJECT(MuscleAnalysis, Analysis);
+    OpenSim_DECLARE_CONCRETE_OBJECT(MuscleAnalysis, Analysis);
 #ifndef SWIG
 //=============================================================================
 // DATA
 //=============================================================================
 public:
-	// STRUCT FOR PAIRING MOMENT ARM STORAGE OBJECTS WITH THEIR
-	// ASSOCIATE GENERALIZED COORDINATE
+    // STRUCT FOR PAIRING MOMENT ARM STORAGE OBJECTS WITH THEIR
+    // ASSOCIATE GENERALIZED COORDINATE
 
-	typedef struct {
-		Coordinate *q;
-		Storage *momentArmStore;
-		Storage *momentStore;
-	}  
+    typedef struct {
+        Coordinate *q;
+        Storage *momentArmStore;
+        Storage *momentStore;
+    }
 // Excluding this from Doxygen until it has better documentation! -Sam Hamner
     /// @cond
 
-	StorageCoordinatePair;
+    StorageCoordinatePair;
 #endif
-	/// @endcond
+    /// @endcond
 private:
 
-	/** List of muscles for which to compute moment arms. */
-	PropertyStrArray _muscleListProp;
+    /** List of muscles for which to compute moment arms. */
+    PropertyStrArray _muscleListProp;
 
-	/** List of generalized coordinates for which to compute moment arms. */
-	PropertyStrArray _coordinateListProp;
+    /** List of generalized coordinates for which to compute moment arms. */
+    PropertyStrArray _coordinateListProp;
 
-	/** Compute moments and moment arms. */
-	PropertyBool _computeMomentsProp;
+    /** Compute moments and moment arms. */
+    PropertyBool _computeMomentsProp;
 
-	/** Pennation angle storage. */
-	Storage *_pennationAngleStore;
-	/** Muscle-tendon length storage. */
-	Storage *_lengthStore;
-	/** Fiber length storage. */
-	Storage *_fiberLengthStore;
-	/** Normalized fiber length storage. */
-	Storage *_normalizedFiberLengthStore;
-	/** Tendon length storage. */
-	Storage *_tendonLengthStore;
+    /** Pennation angle storage. */
+    Storage *_pennationAngleStore;
+    /** Muscle-tendon length storage. */
+    Storage *_lengthStore;
+    /** Fiber length storage. */
+    Storage *_fiberLengthStore;
+    /** Normalized fiber length storage. */
+    Storage *_normalizedFiberLengthStore;
+    /** Tendon length storage. */
+    Storage *_tendonLengthStore;
 
-	/** Lengthening velocity of the muscle fibers. */
-	Storage *_fiberVelocityStore;
-	/** Normalized lengthening velocity of the muscle fibers. */
-	Storage *_normFiberVelocityStore;
-	/** Angular velocity of the muscle fibers. */
-	Storage *_pennationAngularVelocityStore;
+    /** Lengthening velocity of the muscle fibers. */
+    Storage *_fiberVelocityStore;
+    /** Normalized lengthening velocity of the muscle fibers. */
+    Storage *_normFiberVelocityStore;
+    /** Angular velocity of the muscle fibers. */
+    Storage *_pennationAngularVelocityStore;
 
-	/** Force applied by the muscle. */
-	Storage *_forceStore;
-	/** Force in the muscle fibers. */
-	Storage *_fiberForceStore;
-	/** Active force in the muscle fibers. */
-	Storage *_activeFiberForceStore;
-	/** Passive force in the muscle fibers. */
-	Storage *_passiveFiberForceStore;
-	/** Active force in the muscle fibers along tendon. */
-	Storage *_activeFiberForceAlongTendonStore;
-	/** Passive force in the muscle fibers along tendon. */
-	Storage *_passiveFiberForceAlongTendonStore;
+    /** Force applied by the muscle. */
+    Storage *_forceStore;
+    /** Force in the muscle fibers. */
+    Storage *_fiberForceStore;
+    /** Active force in the muscle fibers. */
+    Storage *_activeFiberForceStore;
+    /** Passive force in the muscle fibers. */
+    Storage *_passiveFiberForceStore;
+    /** Active force in the muscle fibers along tendon. */
+    Storage *_activeFiberForceAlongTendonStore;
+    /** Passive force in the muscle fibers along tendon. */
+    Storage *_passiveFiberForceAlongTendonStore;
 
-	/** Fiber power */
-	Storage *_fiberActivePowerStore;
+    /** Fiber power */
+    Storage *_fiberActivePowerStore;
     Storage *_fiberPassivePowerStore;
-	/** Tendon power */
-	Storage *_tendonPowerStore;
-	/** Muscle actuator power */
-	Storage *_musclePowerStore;
+    /** Tendon power */
+    Storage *_tendonPowerStore;
+    /** Muscle actuator power */
+    Storage *_musclePowerStore;
 
-	// FOR MOMENT ARMS AND MOMENTS----------------
-	/** Work array for holding the list of muscles.  This array */
-	Array<std::string> _muscleList;
+    // FOR MOMENT ARMS AND MOMENTS----------------
+    /** Work array for holding the list of muscles.  This array */
+    Array<std::string> _muscleList;
 
-	/** Work array for holding the list of coordinates. */
-	Array<std::string> _coordinateList;
+    /** Work array for holding the list of coordinates. */
+    Array<std::string> _coordinateList;
 
-	bool _computeMoments;
+    bool _computeMoments;
 #ifndef SWIG
-	/** Array of active storage and coordinate pairs. */
-	ArrayPtrs<StorageCoordinatePair> _momentArmStorageArray;
+    /** Array of active storage and coordinate pairs. */
+    ArrayPtrs<StorageCoordinatePair> _momentArmStorageArray;
 #endif
-	/** Array of active muscles. */
-	ArrayPtrs<Muscle> _muscleArray;
+    /** Array of active muscles. */
+    ArrayPtrs<Muscle> _muscleArray;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	MuscleAnalysis(Model *aModel=0);
-	MuscleAnalysis(const std::string &aFileName);
-	MuscleAnalysis(const MuscleAnalysis &aObject);
-	virtual ~MuscleAnalysis();
+    MuscleAnalysis(Model *aModel=0);
+    MuscleAnalysis(const std::string &aFileName);
+    MuscleAnalysis(const MuscleAnalysis &aObject);
+    virtual ~MuscleAnalysis();
 
 private:
-	void setNull();
-	void setupProperties();
-	void constructDescription();
-	void constructColumnLabels();
+    void setNull();
+    void setupProperties();
+    void constructDescription();
+    void constructColumnLabels();
 
 public:
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	MuscleAnalysis& operator=(const MuscleAnalysis &aMuscleAnalysis);
+    MuscleAnalysis& operator=(const MuscleAnalysis &aMuscleAnalysis);
 #endif
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	virtual void setModel(Model& aModel);
-	void setStorageCapacityIncrements(int aIncrement);
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    virtual void setModel(Model& aModel);
+    void setStorageCapacityIncrements(int aIncrement);
 
-    Storage* getPennationAngleStorage() const { 
-        return _pennationAngleStore; }
-	Storage* getMuscleTendonLengthStorage() const { 
-        return _lengthStore; }
-	Storage* getFiberLengthStorage() const { 
-        return _fiberLengthStore; }
-	Storage* getNormalizedFiberLengthStorage() const { 
-        return _normalizedFiberLengthStore; }
-	Storage* getTendonLengthStorage() const { 
-        return _tendonLengthStore; }
+    Storage* getPennationAngleStorage() const {
+        return _pennationAngleStore;
+    }
+    Storage* getMuscleTendonLengthStorage() const {
+        return _lengthStore;
+    }
+    Storage* getFiberLengthStorage() const {
+        return _fiberLengthStore;
+    }
+    Storage* getNormalizedFiberLengthStorage() const {
+        return _normalizedFiberLengthStore;
+    }
+    Storage* getTendonLengthStorage() const {
+        return _tendonLengthStore;
+    }
 
-    Storage* getFiberVelocityStorage() const { 
-        return _fiberVelocityStore; }
-    Storage* getNormalizedFiberVelocityStorage() const { 
-        return _normFiberVelocityStore; }
-    Storage* getPennationAngularVelocityStorage() const { 
-        return _pennationAngularVelocityStore; }
+    Storage* getFiberVelocityStorage() const {
+        return _fiberVelocityStore;
+    }
+    Storage* getNormalizedFiberVelocityStorage() const {
+        return _normFiberVelocityStore;
+    }
+    Storage* getPennationAngularVelocityStorage() const {
+        return _pennationAngularVelocityStore;
+    }
 
-	Storage* getForceStorage() const { 
-        return _forceStore; }
-	Storage* getFiberForceStorage() const { 
-        return _fiberForceStore; }
-	Storage* getActiveFiberForceStorage() const { 
-        return _activeFiberForceStore; }
-	Storage* getPassiveFiberForceStorage() const { 
-        return _passiveFiberForceStore; }
-	Storage* getActiveFiberForceAlongTendonStorage() const { 
-        return _activeFiberForceAlongTendonStore; }
-	Storage* getPassiveFiberForceAlongTendonStorage() const { 
-        return _passiveFiberForceAlongTendonStore; }
-	
-    Storage* getFiberActivePowerStorage() const { 
-        return _fiberActivePowerStore; }
-    Storage* getFiberPassivePowerStorage() const { 
-        return _fiberPassivePowerStore; }
-    Storage* getTendonPowerStorage() const { 
-        return _tendonPowerStore; }
-    Storage* getMusclePowerStorage() const { 
-        return _musclePowerStore; }
+    Storage* getForceStorage() const {
+        return _forceStore;
+    }
+    Storage* getFiberForceStorage() const {
+        return _fiberForceStore;
+    }
+    Storage* getActiveFiberForceStorage() const {
+        return _activeFiberForceStore;
+    }
+    Storage* getPassiveFiberForceStorage() const {
+        return _passiveFiberForceStore;
+    }
+    Storage* getActiveFiberForceAlongTendonStorage() const {
+        return _activeFiberForceAlongTendonStore;
+    }
+    Storage* getPassiveFiberForceAlongTendonStorage() const {
+        return _passiveFiberForceAlongTendonStore;
+    }
+
+    Storage* getFiberActivePowerStorage() const {
+        return _fiberActivePowerStore;
+    }
+    Storage* getFiberPassivePowerStorage() const {
+        return _fiberPassivePowerStore;
+    }
+    Storage* getTendonPowerStorage() const {
+        return _tendonPowerStore;
+    }
+    Storage* getMusclePowerStorage() const {
+        return _musclePowerStore;
+    }
 
     void setMuscles(Array<std::string>& aMuscles);
-	void setCoordinates(Array<std::string>& aCoordinates);
+    void setCoordinates(Array<std::string>& aCoordinates);
 
-	void setComputeMoments(bool aTrueFalse) {
-		_computeMoments = aTrueFalse;
-	}
-	bool getComputeMoments() const {
-		return _computeMoments;
-	}
+    void setComputeMoments(bool aTrueFalse) {
+        _computeMoments = aTrueFalse;
+    }
+    bool getComputeMoments() const {
+        return _computeMoments;
+    }
 #ifndef SWIG
-	const ArrayPtrs<StorageCoordinatePair>& getMomentArmStorageArray() const { return _momentArmStorageArray; }
+    const ArrayPtrs<StorageCoordinatePair>& getMomentArmStorageArray() const {
+        return _momentArmStorageArray;
+    }
 #endif
-	//--------------------------------------------------------------------------
-	// ANALYSIS
-	//--------------------------------------------------------------------------
-	virtual int
-        begin( SimTK::State& s );
+    //--------------------------------------------------------------------------
+    // ANALYSIS
+    //--------------------------------------------------------------------------
     virtual int
-        step(const SimTK::State& s, int setNumber );
+    begin( SimTK::State& s );
     virtual int
-        end( SimTK::State& s );
+    step(const SimTK::State& s, int setNumber );
+    virtual int
+    end( SimTK::State& s );
 protected:
     virtual int
-        record(const SimTK::State& s );
-	//--------------------------------------------------------------------------
-	// IO
-	//--------------------------------------------------------------------------
+    record(const SimTK::State& s );
+    //--------------------------------------------------------------------------
+    // IO
+    //--------------------------------------------------------------------------
 public:
-	virtual int
-		printResults(const std::string &aBaseName,const std::string &aDir="",
-		double aDT=-1.0,const std::string &aExtension=".sto");
-	/** 
+    virtual int
+    printResults(const std::string &aBaseName,const std::string &aDir="",
+                 double aDT=-1.0,const std::string &aExtension=".sto");
+    /**
      * Intended for use only by GUI that holds one MuscleAnalysis and keeps changing attributes to generate various plots
      * For all other use cases, the code handles the allocation/deallocation of resources internally.
      */
- 	void allocateStorageObjects();
+    void allocateStorageObjects();
 //=============================================================================
 };	// END of class MuscleAnalysis
 
