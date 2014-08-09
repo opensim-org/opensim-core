@@ -53,7 +53,7 @@ void testTorqueActuator();
 void testBodyActuator();
 void testClutchedPathSpring();
 void testMcKibbenActuator();
-void testMultiCoordinateActuator();
+//void testMultiCoordinateActuator();
 
 int main()
 {
@@ -75,10 +75,10 @@ int main()
 	catch (const std::exception& e){
 		cout << e.what() << endl; failures.push_back("testMcKibbenActuator");
 	}
-    try { testMultiCoordinateActuator(); }
+    /*try { testMultiCoordinateActuator(); }
     catch (const std::exception& e){
         cout << e.what() << endl; failures.push_back("testMultiCoordinateActuator");
-    }
+    }*/
     if (!failures.empty()) {
 		cout << "Done, with failure(s): " << failures << endl;
         return 1;
@@ -529,7 +529,7 @@ void testClutchedPathSpring()
 		1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
 }
 
-class MultiCoordinateController : public Controller
+/*class MultiCoordinateController : public Controller
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(MultiCoordinateController, Controller);
     void computeControls(const SimTK::State& s, SimTK::Vector& controls) const
@@ -557,7 +557,7 @@ void testMultiCoordinateActuator()
     manager.setInitialTime(0); manager.setFinalTime(10.0);
     manager.integrate(state);
 }
-
+*/
 
 void testBodyActuator()
 {
