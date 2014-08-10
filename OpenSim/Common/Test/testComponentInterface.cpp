@@ -481,6 +481,8 @@ int main() {
 		MultibodySystem system2;
 		TheWorld *world2 = new TheWorld(modelFile);
 		
+        world2->updComponent("Foo").getOutput("Output1");
+        world2->updComponent("Foo").getInput("input1");
 		world2->updComponent("Bar").getConnector<Foo>("childFoo");
 
 		ASSERT(theWorld == *world2, __FILE__, __LINE__,
