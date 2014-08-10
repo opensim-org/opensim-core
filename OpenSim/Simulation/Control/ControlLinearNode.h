@@ -1,5 +1,5 @@
-#ifndef _ControlLinearNode_h_
-#define _ControlLinearNode_h_
+#ifndef OPENSIM_CONTROLLINEARNODE_H_
+#define OPENSIM_CONTROLLINEARNODE_H_
 /* -------------------------------------------------------------------------- *
  *                       OpenSim:  ControlLinearNode.h                        *
  * -------------------------------------------------------------------------- *
@@ -36,6 +36,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * A control node used to reconstruct a piecewise linear control.
  *
@@ -50,8 +52,6 @@
  * @version 1.0
  * @see ControlLinear
  */
-namespace OpenSim { 
-
 class OSIMSIMULATION_API ControlLinearNode : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(ControlLinearNode, Object);
 

@@ -1,5 +1,5 @@
-#ifndef _PropertyInt_h_
-#define _PropertyInt_h_
+#ifndef OPENSIM_PROPERTYINT_H_
+#define OPENSIM_PROPERTYINT_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  PropertyInt.h                           *
  * -------------------------------------------------------------------------- *
@@ -36,6 +36,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * Class PropertyInt extends class Property.  It consists of an integer
  * value and the methods for accessing and modifying this value.
@@ -43,8 +45,6 @@
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API PropertyInt : public Property_Deprecated
 {
 
@@ -93,4 +93,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif //__PropertyInt_h__
+#endif // OPENSIM_PROPERTYINT_H_

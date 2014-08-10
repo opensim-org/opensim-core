@@ -1,5 +1,5 @@
-#ifndef __FunctionAdapter_h__
-#define __FunctionAdapter_h__
+#ifndef OPENSIM_FUNCTIONADAPTER_H_
+#define OPENSIM_FUNCTIONADAPTER_H_
 /* -------------------------------------------------------------------------- *
  *                        OpenSim:  FunctionAdapter.h                         *
  * -------------------------------------------------------------------------- *
@@ -31,15 +31,15 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
+// Excluding this from Doxygen until it has better documentation! -Sam Hamner
+/// @cond
 /**
  * This is a SimTK::Function that acts as a wrapper around an OpenMM::Function.
  *
  * @author Peter Eastman
  */
-namespace OpenSim { 
-
-// Excluding this from Doxygen until it has better documentation! -Sam Hamner
-    /// @cond
 class OSIMCOMMON_API FunctionAdapter : public SimTK::Function
 {
 //=============================================================================
@@ -73,4 +73,4 @@ private:
 //=============================================================================
 //=============================================================================
 
-#endif  // __FunctionAdapter_h__
+#endif // OPENSIM_FUNCTIONADAPTER_H_

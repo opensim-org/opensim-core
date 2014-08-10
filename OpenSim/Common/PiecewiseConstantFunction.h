@@ -1,5 +1,5 @@
-#ifndef _PiecewiseConstantFunction_h_
-#define _PiecewiseConstantFunction_h_
+#ifndef OPENSIM_PIECEWISECONSTANTFUNCTION_H_
+#define OPENSIM_PIECEWISECONSTANTFUNCTION_H_
 /* -------------------------------------------------------------------------- *
  *                   OpenSim:  PiecewiseConstantFunction.h                    *
  * -------------------------------------------------------------------------- *
@@ -37,6 +37,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * A class implementing a step function.
  *
@@ -46,8 +48,6 @@
  * @author Peter Loan
  * @version 1.0
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API PiecewiseConstantFunction : public Function {
 OpenSim_DECLARE_CONCRETE_OBJECT(PiecewiseConstantFunction, Function);
 
@@ -129,5 +129,5 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif  // __PiecewiseConstantFunction_h__
+#endif // OPENSIM_PIECEWISECONSTANTFUNCTION_H_
 

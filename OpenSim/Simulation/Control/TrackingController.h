@@ -32,6 +32,12 @@
 
 //=============================================================================
 //=============================================================================
+
+namespace OpenSim { 
+
+class TrackingTask;
+class Storage;
+
 /**
  * TrackingController is an abstract class from which all tracking type of
  * controllers should be derived. This class implements convenience methods
@@ -42,16 +48,9 @@
  * Derive classes need only to implement the tracking control law based on 
  * the error signals computed by this base class.
  * 
- *
  * @author  Ajay Seth
  * @version 1.0
  */
-
-namespace OpenSim { 
-
-class TrackingTask;
-class Storage;
-
 class OSIMSIMULATION_API TrackingController : public Controller
 {
 

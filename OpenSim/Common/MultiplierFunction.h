@@ -1,5 +1,5 @@
-#ifndef _MultiplierFunction_h_
-#define _MultiplierFunction_h_
+#ifndef OPENSIM_MULTIPLIERFUNCTION_H_
+#define OPENSIM_MULTIPLIERFUNCTION_H_
 /* -------------------------------------------------------------------------- *
  *                       OpenSim:  MultiplierFunction.h                       *
  * -------------------------------------------------------------------------- *
@@ -34,6 +34,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * A class implementing a Function and a scale factor for the function's value.
  *
@@ -43,8 +45,6 @@
  * @author Peter Loan
  * @version 1.0
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API MultiplierFunction : public Function {
 OpenSim_DECLARE_CONCRETE_OBJECT(MultiplierFunction, Function);
 
@@ -114,4 +114,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif  // __MultiplierFunction_h__
+#endif  // OPENSIM_MULTIPIERFUNCTION_H_

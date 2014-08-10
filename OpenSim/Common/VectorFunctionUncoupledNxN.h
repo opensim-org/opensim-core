@@ -1,5 +1,5 @@
-#ifndef _VectorFunctionUncoupledNxN_h_
-#define _VectorFunctionUncoupledNxN_h_
+#ifndef OPENSIM_VECTORFUNCTIONUNCOUPLEDNXN_H_
+#define OPENSIM_VECTORFUNCTIONUNCOUPLEDNXN_H_
 /* -------------------------------------------------------------------------- *
  *                   OpenSim:  VectorFunctionUncoupledNxN.h                   *
  * -------------------------------------------------------------------------- *
@@ -38,6 +38,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * An abstract class for representing a vector function.
  *
@@ -53,8 +55,6 @@
  *
  * @author Frank C. Anderson and Saryn R. Goldberg
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API VectorFunctionUncoupledNxN : public VectorFunction {
 OpenSim_DECLARE_ABSTRACT_OBJECT(VectorFunctionUncoupledNxN, VectorFunction);
 
@@ -112,4 +112,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif  // __VectorFunctionUncoupledNxN_h__
+#endif // OPENSIM_VECTORFUNCTIONUNCOUPLEDNXN_H_

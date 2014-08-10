@@ -1,5 +1,5 @@
-#ifndef _PropertyStrArray_h_
-#define _PropertyStrArray_h_
+#ifndef OPENSIM_PROPERTYSTRARRAY_H_
+#define OPENSIM_PROPERTYSTRARRAY_H_
 /* -------------------------------------------------------------------------- *
  *                        OpenSim:  PropertyStrArray.h                        *
  * -------------------------------------------------------------------------- *
@@ -27,7 +27,6 @@
  * Author: Frank C. Anderson 
  */
 
-
 // INCLUDES
 #include "osimCommonDLL.h"
 #include <string>
@@ -38,6 +37,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * Class PropertyStrArray extends class Property.  It consists of an
  * array of strings (i.e., Array<string>) and the methods for accessing
@@ -46,8 +47,6 @@
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API PropertyStrArray : public Property_Deprecated
 {
 
@@ -111,4 +110,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif //__PropertyStrArray_h__
+#endif // OPENSIM_PROPERTYSTRARRAY_H_

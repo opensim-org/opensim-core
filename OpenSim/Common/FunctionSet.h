@@ -27,9 +27,6 @@
  * Author: Frank C. Anderson 
  */
 
-
-
-
 // INCLUDES
 #include "osimCommonDLL.h"
 #include "Object.h"
@@ -39,14 +36,14 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * A class for holding a set of functions.
  *
  * @see Function
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API FunctionSet : public Set<Function> {
 OpenSim_DECLARE_CONCRETE_OBJECT(FunctionSet, Set<Function>);
 

@@ -1,5 +1,5 @@
-#ifndef _PropertyObjArray_h_
-#define _PropertyObjArray_h_
+#ifndef OPENSIM_PROPERTYOBJARRAY_H_
+#define OPENSIM_PROPERTYOBJARRAY_H_
 /* -------------------------------------------------------------------------- *
  *                        OpenSim:  PropertyObjArray.h                        *
  * -------------------------------------------------------------------------- *
@@ -38,6 +38,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * Class PropertyObjArray extends class Property.
  * Assumes template T is a class derived from Object.
@@ -45,8 +47,6 @@
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 template<class T = Object>
 class PropertyObjArray : public Property_Deprecated
 {
@@ -152,4 +152,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif //__PropertyObjArray_h__
+#endif // OPENSIM_PROPERTYOBJARRAY_H_

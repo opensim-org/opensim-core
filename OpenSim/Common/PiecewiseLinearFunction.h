@@ -1,5 +1,5 @@
-#ifndef _PiecewiseLinearFunction_h_
-#define _PiecewiseLinearFunction_h_
+#ifndef OPENSIM_PIECEWISELINEARFUNCTION_H_
+#define OPENSIM_PIECEWISELINEARFUNCTION_H_
 /* -------------------------------------------------------------------------- *
  *                    OpenSim:  PiecewiseLinearFunction.h                     *
  * -------------------------------------------------------------------------- *
@@ -37,6 +37,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * A class implementing a linear function.
  *
@@ -46,8 +48,6 @@
  * @author Peter Loan
  * @version 1.0
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API PiecewiseLinearFunction : public Function {
 OpenSim_DECLARE_CONCRETE_OBJECT(PiecewiseLinearFunction, Function);
 
@@ -135,4 +135,4 @@ private:
 //=============================================================================
 //=============================================================================
 
-#endif  // __PiecewiseLinearFunction_h__
+#endif  // OPENSIM_PIECEWISELINEARFUNCTION_H_

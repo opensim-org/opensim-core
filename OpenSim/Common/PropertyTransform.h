@@ -1,5 +1,5 @@
-#ifndef _PropertyTransform_h_
-#define _PropertyTransform_h_
+#ifndef OPENSIM_PROPERTYTRANSFORM_H_
+#define OPENSIM_PROPERTYTRANSFORM_H_
 /* -------------------------------------------------------------------------- *
  *                       OpenSim:  PropertyTransform.h                        *
  * -------------------------------------------------------------------------- *
@@ -34,6 +34,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * Class PropertyTransform extends class Property.  It consists of a
  * Transform (i.e., SimTK::Transform) and the methods for accessing
@@ -42,8 +44,6 @@
  * @version 1.0
  * @author Ayman HAbib
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API PropertyTransform : public PropertyDblArray
 {
 
@@ -105,4 +105,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif //__PropertyTransform_h__
+#endif // OPENSIM_PROPERTYTRANSFORM_H_

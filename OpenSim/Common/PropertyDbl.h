@@ -1,5 +1,5 @@
-#ifndef _PropertyDbl_h_
-#define _PropertyDbl_h_
+#ifndef OPENSIM_PROPERTYDBL_H_
+#define OPENSIM_PROPERTYDBL_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  PropertyDbl.h                           *
  * -------------------------------------------------------------------------- *
@@ -27,15 +27,15 @@
  * Author: Frank C. Anderson 
  */
 
-
 // INCLUDES
 #include "osimCommonDLL.h"
 #include <string>
 #include "Property_Deprecated.h"
 
+//=============================================================================
+//=============================================================================
+namespace OpenSim { 
 
-//=============================================================================
-//=============================================================================
 /**
  * Class PropertyDbl extends class Property.  It consists of a double
  * value and the methods for accessing and modifying this value.
@@ -43,8 +43,6 @@
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API PropertyDbl : public Property_Deprecated
 {
 
@@ -96,4 +94,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif //__PropertyDbl_h__
+#endif // OPENSIM_PROPERTYDBL_H_
