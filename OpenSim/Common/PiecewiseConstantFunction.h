@@ -1,5 +1,5 @@
-#ifndef OPENSIM_PIECEWISECONSTANTFUNCTION_H_
-#define OPENSIM_PIECEWISECONSTANTFUNCTION_H_
+#ifndef OPENSIM_PIECEWISE_CONSTANT_FUNCTION_H_
+#define OPENSIM_PIECEWISE_CONSTANT_FUNCTION_H_
 /* -------------------------------------------------------------------------- *
  *                   OpenSim:  PiecewiseConstantFunction.h                    *
  * -------------------------------------------------------------------------- *
@@ -129,5 +129,5 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // OPENSIM_PIECEWISECONSTANTFUNCTION_H_
+#endif // OPENSIM_PIECEWISE_CONSTANT_FUNCTION_H_
 

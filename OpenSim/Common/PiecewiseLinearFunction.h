@@ -1,5 +1,5 @@
-#ifndef OPENSIM_PIECEWISELINEARFUNCTION_H_
-#define OPENSIM_PIECEWISELINEARFUNCTION_H_
+#ifndef OPENSIM_PIECEWISE_LINEAR_FUNCTION_H_
+#define OPENSIM_PIECEWISE_LINEAR_FUNCTION_H_
 /* -------------------------------------------------------------------------- *
  *                    OpenSim:  PiecewiseLinearFunction.h                     *
  * -------------------------------------------------------------------------- *
@@ -135,4 +135,4 @@ private:
 //=============================================================================
 //=============================================================================
 
-#endif  // OPENSIM_PIECEWISELINEARFUNCTION_H_
+#endif  // OPENSIM_PIECEWISE_LINEAR_FUNCTION_H_

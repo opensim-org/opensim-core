@@ -1,5 +1,5 @@
-#ifndef OPENSIM_GCVSPLINESET_H_
-#define OPENSIM_GCVSPLINESET_H_
+#ifndef OPENSIM_GCV_SPLINE_SET_H_
+#define OPENSIM_GCV_SPLINE_SET_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  GCVSplineSet.h                          *
  * -------------------------------------------------------------------------- *
@@ -89,4 +89,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // OPENSIM_GCVSPLINESET_H_
+#endif // OPENSIM_GCV_SPLINESET_H_

@@ -1,5 +1,5 @@
-#ifndef OPENSIM_VECTORFUNCTIONUNCOUPLEDNXN_H_
-#define OPENSIM_VECTORFUNCTIONUNCOUPLEDNXN_H_
+#ifndef OPENSIM_VECTOR_FUNCTION_UNCOUPLED_NXN_H_
+#define OPENSIM_VECTOR_FUNCTION_UNCOUPLED_NXN_H_
 /* -------------------------------------------------------------------------- *
  *                   OpenSim:  VectorFunctionUncoupledNxN.h                   *
  * -------------------------------------------------------------------------- *
@@ -112,4 +112,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // OPENSIM_VECTORFUNCTIONUNCOUPLEDNXN_H_
+#endif // OPENSIM_VECTOR_FUNCTION_UNCOUPLED_NXN_H_

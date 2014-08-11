@@ -1,5 +1,5 @@
-#ifndef OPENSIM_PROPERTYDBLVEC_H_
-#define OPENSIM_PROPERTYDBLVEC_H_
+#ifndef OPENSIM_PROPERTY_DBL_VEC_H_
+#define OPENSIM_PROPERTY_DBL_VEC_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  PropertyDblVec.h                         *
  * -------------------------------------------------------------------------- *
@@ -151,4 +151,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // OPENSIM_PROPERTYDBLVEC_H_
+#endif // OPENSIM_PROPERTY_DBL_VEC_H_

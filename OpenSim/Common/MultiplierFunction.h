@@ -1,5 +1,5 @@
-#ifndef OPENSIM_MULTIPLIERFUNCTION_H_
-#define OPENSIM_MULTIPLIERFUNCTION_H_
+#ifndef OPENSIM_MULTIPLIER_FUNCTION_H_
+#define OPENSIM_MULTIPLIER_FUNCTION_H_
 /* -------------------------------------------------------------------------- *
  *                       OpenSim:  MultiplierFunction.h                       *
  * -------------------------------------------------------------------------- *
@@ -114,4 +114,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif  // OPENSIM_MULTIPIERFUNCTION_H_
+#endif  // OPENSIM_MULTIPIER_FUNCTION_H_

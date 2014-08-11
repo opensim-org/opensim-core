@@ -1,5 +1,5 @@
-#ifndef OPENSIM_PROPERTYTRANSFORM_H_
-#define OPENSIM_PROPERTYTRANSFORM_H_
+#ifndef OPENSIM_PROPERTY_TRANSFORM_H_
+#define OPENSIM_PROPERTY_TRANSFORM_H_
 /* -------------------------------------------------------------------------- *
  *                       OpenSim:  PropertyTransform.h                        *
  * -------------------------------------------------------------------------- *
@@ -105,4 +105,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // OPENSIM_PROPERTYTRANSFORM_H_
+#endif // OPENSIM_PROPERTY_TRANSFORM_H_

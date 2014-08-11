@@ -1,5 +1,5 @@
-#ifndef OPENSIM_ANALYSISSET_H_
-#define OPENSIM_ANALYSISSET_H_
+#ifndef OPENSIM_ANALYSIS_SET_H_
+#define OPENSIM_ANALYSIS_SET_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  AnalysisSet.h                           *
  * -------------------------------------------------------------------------- *
@@ -122,6 +122,6 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // __AnalysisSet_h__
+#endif // OPENSIM_ANALYSIS_SET_H_
 
 

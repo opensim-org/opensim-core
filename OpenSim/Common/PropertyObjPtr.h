@@ -1,5 +1,5 @@
-#ifndef OPENSIM_PROPERTYOBJPTR_H_
-#define OPENSIM_PROPERTYOBJPTR_H_
+#ifndef OPENSIM_PROPERTY_OBJ_PTR_H_
+#define OPENSIM_PROPERTY_OBJ_PTR_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  PropertyObjPtr.h                         *
  * -------------------------------------------------------------------------- *
@@ -136,4 +136,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // OPENSIM_PROPERTYOBJPTR_H_
+#endif // OPENSIM_PROPERTY_OBJ_PTR_H_

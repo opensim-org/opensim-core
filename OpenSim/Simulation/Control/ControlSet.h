@@ -1,5 +1,5 @@
-#ifndef OPENSIM_CONTROLSET_H_
-#define OPENSIM_CONTROLSET_H_
+#ifndef OPENSIM_CONTROL_SET_H_
+#define OPENSIM_CONTROL_SET_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  ControlSet.h                           *
  * -------------------------------------------------------------------------- *
@@ -146,6 +146,6 @@ public:
 //=============================================================================
 
 
-#endif // OPENSIM_CONTROLSET_H_
+#endif // OPENSIM_CONTROL_SET_H_
 
 

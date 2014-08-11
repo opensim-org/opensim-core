@@ -1,5 +1,5 @@
-#ifndef OPENSIM_PROPERTYSTRARRAY_H_
-#define OPENSIM_PROPERTYSTRARRAY_H_
+#ifndef OPENSIM_PROPERTY_STR_ARRAY_H_
+#define OPENSIM_PROPERTY_STR_ARRAY_H_
 /* -------------------------------------------------------------------------- *
  *                        OpenSim:  PropertyStrArray.h                        *
  * -------------------------------------------------------------------------- *
@@ -110,4 +110,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // OPENSIM_PROPERTYSTRARRAY_H_
+#endif // OPENSIM_PROPERTY_STR_ARRAY_H_

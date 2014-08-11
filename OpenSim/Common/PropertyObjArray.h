@@ -1,5 +1,5 @@
-#ifndef OPENSIM_PROPERTYOBJARRAY_H_
-#define OPENSIM_PROPERTYOBJARRAY_H_
+#ifndef OPENSIM_PROPERTY_OBJ_ARRAY_H_
+#define OPENSIM_PROPERTY_OBJ_ARRAY_H_
 /* -------------------------------------------------------------------------- *
  *                        OpenSim:  PropertyObjArray.h                        *
  * -------------------------------------------------------------------------- *
@@ -152,4 +152,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // OPENSIM_PROPERTYOBJARRAY_H_
+#endif // OPENSIM_PROPERTY_OBJ_ARRAY_H_

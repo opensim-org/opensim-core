@@ -1,5 +1,5 @@
-#ifndef OPENSIM_VECTORFUNCTIONFORACTUATORS_H_
-#define OPENSIM_VECTORFUNCTIONFORACTUATORS_H_
+#ifndef OPENSIM_VECTOR_FUNCTION_FOR_ACTUATORS_H_
+#define OPENSIM_VECTOR_FUNCTION_FOR_ACTUATORS_H_
 /* -------------------------------------------------------------------------- *
  *                   OpenSim:  VectorFunctionForActuators.h                   *
  * -------------------------------------------------------------------------- *
@@ -145,4 +145,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif  // OPENSIM_VECTORFUNCTIONFORACTUATORS_H_
+#endif  // OPENSIM_VECTOR_FUNCTION_FOR_ACTUATORS_H_

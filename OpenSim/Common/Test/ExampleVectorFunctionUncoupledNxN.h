@@ -1,5 +1,5 @@
-#ifndef OPENSIM_EXAMPLEVECTORFUNCTIONUNCOUUPLEDNXN_H_
-#define OPENSIM_EXAMPLEVECTORFUNCTIONUNCOUUPLEDNXN_H_
+#ifndef OPENSIM_EXAMPLE_VECTOR_FUNCTION_UNCOUUPLED_NXN_H_
+#define OPENSIM_EXAMPLE_VECTOR_FUNCTION_UNCOUUPLED_NXN_H_
 /* -------------------------------------------------------------------------- *
  *               OpenSim:  ExampleVectorFunctionUncoupledNxN.h                *
  * -------------------------------------------------------------------------- *
@@ -152,4 +152,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // OPENSIM_EXAMPLEVECTORFUNCTIONUNCOUUPLEDNXN_H_
+#endif // OPENSIM_EXAMPLE_VECTOR_FUNCTION_UNCOUUPLED_NXN_H_
