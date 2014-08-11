@@ -66,8 +66,8 @@ void Frame::setNull()
 //_____________________________________________________________________________
 const SimTK::Transform Frame::calcTransformToOtherFrame(const SimTK::State& state, const Frame& frame) const
 {
-	SimTK::Transform ground_X_me = calcTransformToGround(state);
-	SimTK::Transform ground_X_other = frame.calcTransformToGround(state);
+    SimTK::Transform ground_X_me = calcGroundTransform(state);
+    SimTK::Transform ground_X_other = frame.calcGroundTransform(state);
 	return ~ground_X_other*ground_X_me;
 }
 

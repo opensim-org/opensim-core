@@ -450,7 +450,7 @@ Body* Body::addSlave()
 /**
  * Implementation of Frame interface by Body
  */
-const SimTK::Transform Body::calcTransformToGround(const SimTK::State& state) const {
+const SimTK::Transform Body::calcGroundTransform(const SimTK::State& state) const {
 
     const SimTK::MobilizedBody &B = getModel().getMatterSubsystem().getMobilizedBody(_index);
     const SimTK::Transform& ground_X_B = B.getBodyTransform(state);

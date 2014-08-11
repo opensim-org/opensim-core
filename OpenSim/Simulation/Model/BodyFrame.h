@@ -73,8 +73,7 @@ public:
 
 	/** Spatial Operations for Frames*/
 	const SimTK::Transform& getTransform() const override;
-	const SimTK::Transform calcTransformToGround(const SimTK::State &state) const override;
-	virtual const SimTK::Transform calcTransformFromGround(const SimTK::State &state) const;
+	const SimTK::Transform calcGroundTransform(const SimTK::State &state) const override;
 	void setBody(const Body& body);
 	const Body& getBody();
 

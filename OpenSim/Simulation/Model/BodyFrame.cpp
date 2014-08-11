@@ -85,7 +85,7 @@ const SimTK::Transform& BodyFrame::getTransform() const
 {
 	return identityTransform; 
 }
-const SimTK::Transform BodyFrame::calcTransformToGround(const SimTK::State &state) const
+const SimTK::Transform BodyFrame::calcGroundTransform(const SimTK::State &state) const
 {
 	const Body& myBody = getConnector<Body>("body").getConnectee();
 	const SimTK::MobilizedBodyIndex mbi = myBody.getIndex();
@@ -96,10 +96,6 @@ const SimTK::Transform BodyFrame::calcTransformToGround(const SimTK::State &stat
 	return ground_X_B;
 }
 
-const SimTK::Transform BodyFrame::calcTransformFromGround(const SimTK::State &state) const
-{
-	return ~calcTransformToGround(state);
-}
 //=============================================================================
 // GET AND SET
 //=============================================================================

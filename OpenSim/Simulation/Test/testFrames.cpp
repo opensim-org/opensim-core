@@ -80,14 +80,12 @@ void testBodyFrame()
 {
 	Model* dPendulum = new Model("double_pendulum.osim");
 	const OpenSim::Body& rod1 = dPendulum->getBodySet().get("rod1");
-	//BodyFrame* rod1Frame = new BodyFrame(rod1);
-	//dPendulum->addModelComponent(rod1Frame);
 	SimTK::State& st = dPendulum->initSystem();
 	for (double ang = 0; ang <= 90.0; ang += 10.){
 		double radAngle = SimTK::convertDegreesToRadians(ang);
 		const Coordinate& coord = dPendulum->getCoordinateSet().get("q1");
 		coord.setValue(st, radAngle);
-		SimTK::Transform xform = rod1.calcTransformToGround(st);
+        SimTK::Transform xform = rod1.calcGroundTransform(st);
 		// By construction the transform should gove a translation of .353553, .353553, 0.0 since 0.353553 = .5 /sqr(2)
 		double dNorm = (xform.p() - SimTK::Vec3(0.5*std::sin(radAngle), -0.5*std::cos(radAngle), 0.)).norm();
 		assert(dNorm < 1e-6);
@@ -104,8 +102,6 @@ void testFixedFrameOnBodyFrame()
 {
 	Model* dPendulum = new Model("double_pendulum.osim");
 	const OpenSim::Body& rod1 = dPendulum->getBodySet().get("rod1");
-	//BodyFrame* rod1Frame = new BodyFrame(rod1);
-	//dPendulum->addModelComponent(rod1Frame);
     FixedFrame* atOriginFrame = new FixedFrame(rod1);
 	SimTK::Transform relXform;
 	relXform.setP(SimTK::Vec3(0.0, .5, 0.0));
@@ -113,8 +109,8 @@ void testFixedFrameOnBodyFrame()
 	atOriginFrame->setTransform(relXform);
 	dPendulum->addModelComponent(atOriginFrame);
 	SimTK::State& st = dPendulum->initSystem();
-	const SimTK::Transform rod1FrameXform = rod1.calcTransformToGround(st);
-	SimTK::Transform xform = atOriginFrame->calcTransformToGround(st);
+    const SimTK::Transform rod1FrameXform = rod1.calcGroundTransform(st);
+    SimTK::Transform xform = atOriginFrame->calcGroundTransform(st);
 	// xform should have 0.0 translation
 	assert(xform.p().norm() < 1e-6);
 	return;
@@ -123,15 +119,8 @@ void testFixedFrameOnBodyFrame()
 void testStationOnFrame()
 {
 	Model* dPendulum = new Model("double_pendulum.osim");
-	// Create "named" ground frame 
-	//BodyFrame* gndFrame = new BodyFrame(dPendulum->getGroundBody());
-	//gndFrame->setName("gnd_frame");
-	//dPendulum->addModelComponent(gndFrame);	
-	// Create "rod1" frame
+	// Get "rod1" frame
 	const OpenSim::Body& rod1 = dPendulum->getBodySet().get("rod1");
-	//BodyFrame* rod1Frame = new BodyFrame(rod1); // Frame at end of first link
-	//rod1Frame->setName("rod1_frame");
-	//dPendulum->addModelComponent(rod1Frame);
 	const SimTK::Vec3& com = rod1.get_mass_center();
 	// Create station aligned with rod1 com in rod1_frame
 	Station* myStation = new Station();
