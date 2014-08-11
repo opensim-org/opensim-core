@@ -38,7 +38,7 @@ namespace OpenSim {
 class Coordinate;
 
 /**
- * An force that exerts a generalized force based on spring-like
+ * A Force that exerts a generalized force based on spring-like
  * characteristics (stiffness and viscosity).  
  *
  * @author Frank C. Anderson, Ajay Seth
