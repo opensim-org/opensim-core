@@ -170,7 +170,7 @@ On Windows using Visual Studio
 7. Set the remaining configuration options.
     * `BUILD_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
-      hile to build; if you want to build OpenSim quickly, you can turn this
+      while to build; if you want to build OpenSim quickly, you can turn this
       off.
     * `BUILD_JAVA_WRAPPING` if you want to access OpenSim through MATLAB or
       Java; see dependencies above.
@@ -273,14 +273,14 @@ On Mac using Xcode
    changing the `CMAKE_INSTALL_PREFIX` variable. We'll assume you set it to
    `~/opensim-core`. If you choose a different installation location, make
    sure to use *yours* where we use `~/opensim-core` below. You should *not*
-   use `/usr/`, `/usr/local/`, or any typical system paths.
+   use `/usr/`, `/usr/local/` (because our installation does not yet conform to the [FHS](http://www.pathname.com/fhs/)), but [`/opt/`](http://www.tldp.org/LDP/Linux-Filesystem-Hierarchy/html/opt.html) is okay.
 6. Tell CMake where you installed Simbody by setting the `SIMBODY_HOME`
    variable to where you installed Simbody (e.g., `~/simbody`). If you
    installed Simbody using `brew`, then CMake will find Simbody automatically.
 7. Set the remaining configuration options.
     * `BUILD_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
-      hile to build; if you want to build OpenSim quickly, you can turn this
+      while to build; if you want to build OpenSim quickly, you can turn this
       off.
     * `BUILD_JAVA_WRAPPING` if you want to access OpenSim through MATLAB or
       Java; see dependencies above.
@@ -424,7 +424,7 @@ And you could get all the optional dependencies via:
 8. Set the remaining configuration options.
     * `BUILD_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
-      hile to build; if you want to build OpenSim quickly, you can turn this
+      while to build; if you want to build OpenSim quickly, you can turn this
       off.
     * `BUILD_JAVA_WRAPPING` if you want to access OpenSim through MATLAB or
       Java; see dependencies above.
