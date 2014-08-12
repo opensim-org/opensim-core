@@ -22,28 +22,31 @@
  * -------------------------------------------------------------------------- */
 
 /* Whenever you change this test:
- * 1. Copy the new code over to the README.md, making the necessary changes
- *    related to the `TESTING` definition.
+ * 1. Copy the new code over to the README.md, making sure to omit the
+ * preprocessor lines (#ifdef VISUALIZE; #endif).
  *
- * If your changes would cause the gif to change substantially:
- * 1. Uncomment the `TESTING` defininition.
- * 2. When the visualizer pops up, click View -> Save Movie.
- * 3. cd into testREADME_1 and run the following commands (on Linux):
+ * If your changes would cause the gif to change substantially, make a new gif:
+ * 1. Uncomment the `VISUALIZE` defininition.
+ * 2. Recompile and execute this code (testREADME in your build directory).
+ * 3. When the visualizer pops up, click View -> Save Movie.
+ * 4. cd into testREADME_1 and run the following commands (on Linux):
  *      $ convert 'Frame*.png[400x470+200+100]' \( +clone -set delay 100 \)
  *          +swap +delete opensim_double_pendulum_muscle_1.gif
  *      $ gifsicle --crop-transparency --optimize=O3 --colors=32 --delay 5 <
  *          opensim_double_pendulum_muscle_1.gif >
  *          opensim_double_pendulum_muscle.gif
+ * 5. Copy your gif over to OpenSim/doc/images, and commit it to the
+ *    repository.
  */
 
-#define TESTING
+// #define VISUALIZE
 
 #include <OpenSim/OpenSim.h>
 using namespace SimTK;
 using namespace OpenSim; using OpenSim::Body;
 int main() {
     Model model;
-#ifndef TESTING
+#ifdef VISUALIZE
     model.setUseVisualizer(true);
 #endif
     // Two links, with mass of 1 kg, center of mass at the
@@ -87,7 +90,7 @@ int main() {
     model.equilibrateMuscles(state);
 
     // Add display geometry.
-#ifndef TESTING
+#ifdef VISUALIZE
     model.updMatterSubsystem().setShowDefaultGeometry(true);
     Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
     viz.setBackgroundColor(Vec3(1, 1, 1));
@@ -101,7 +104,7 @@ int main() {
     RungeKuttaMersonIntegrator integrator(model.getSystem());
     Manager manager(model, integrator);
     manager.setInitialTime(0); manager.setFinalTime(10.0);
-#ifndef TESTING
+#ifdef VISUALIZE // To give you the chance to click View -> Save Movie.
     getchar();
 #endif
     manager.integrate(state);
