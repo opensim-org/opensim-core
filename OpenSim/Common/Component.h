@@ -1060,7 +1060,9 @@ template <class T> friend class ComponentMeasure;
      *  3. It takes only one input, which is const SimTK::State&
      *
      * If these are not true for your case, then use the more general method
-     * Component::constructOutput(const std::string&, const std::function<T(const SimTK::State&)>, const SimTK::Stage&).
+     * Component::constructOutput(const std::string&, 
+     *                            const std::function<T(const SimTK::State&)>,
+     *                            const SimTK::Stage&).
      *
      * Here's an example. Say your Component has a method calcForce:
      *  @code
@@ -1087,20 +1089,23 @@ template <class T> friend class ComponentMeasure;
 	* Construct an Output (wire) for the Component as function of the State.
 	* Specifiy a (member) function of the state implemented by this component to
 	* be an Output and include the Stage that output is dependent on. If no
-    * Stage is specified it defaults to Acceleration. Here's an example. Say you have a class Markers that manages markers, you have an instance of this class as a member variable in your Component, and Markers has a method `Vec3 Markers\:\:calcMarkerPos(const SimTK\:\:State& s, std\:\:string marker);` to compute
-    * motion capture marker positions, given the name of a marker.
-     *  @code
-     *  constructOutput<SimTK::Vec3>("ankle_marker_pos",
-     *          std::bind(&Markers::calcMarkerPos, _markers,
-     *          std::placeholders::_1, "ankle"),
-     *          SimTK::Stage::Position);
-	 *  @endcode
+    * Stage is specified it defaults to Acceleration. Here's an example. Say you 
+    * have a class Markers that manages markers, you have an instance of this class
+    * as a member variable in your Component, and Markers has a method
+    * `Vec3 Markers\:\:calcMarkerPos(const SimTK\:\:State& s, std\:\:string marker);`
+    * to compute motion capture marker positions, given the name of a marker.
+    *  @code
+    *  constructOutput<SimTK::Vec3>("ankle_marker_pos",
+    *          std::bind(&Markers::calcMarkerPos, _markers,
+    *          std::placeholders::_1, "ankle"),
+    *          SimTK::Stage::Position);
+    *  @endcode
 	*/
 	template <typename T>
 	void constructOutput(const std::string& name, 
 		const std::function<T(const SimTK::State&)> outputFunction, 
 		const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
-		_outputsTable[name] = new Output<T>(name, outputFunction, dependsOn);
+		    _outputsTable[name] = new Output<T>(name, outputFunction, dependsOn);
 	}
     
 	/**
