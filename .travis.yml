@@ -69,5 +69,5 @@ script:
   # Get a python package with which to run the tests.
   - sudo apt-get install python-nose
   # Run the python tests, verbosely.
-  - nosetests -v
+  - nosetests opensim/tests/test_consistent_with_jython.py:test_makeUlnaHeavy -v
 
