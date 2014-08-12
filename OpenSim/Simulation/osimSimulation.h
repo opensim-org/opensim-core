@@ -67,7 +67,6 @@
 #include "Model/MuscleActiveFiberPowerProbe.h"
 #include "Model/Umberger2010MuscleMetabolicsProbe.h"
 #include "Model/Frame.h"
-#include "Model/BodyFrame.h"
 #include "Model/FixedFrame.h"
 
 #include "Manager/Manager.h"

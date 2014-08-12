@@ -69,7 +69,6 @@
 #include "Model/Umberger2010MuscleMetabolicsProbe.h"
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
 #include "Model/Frame.h"
-#include "Model/BodyFrame.h"
 #include "Model/FixedFrame.h"
 
 #include "Control/ControlSet.h"
@@ -173,7 +172,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     // CURRENT RELEASE
     Object::registerType( SimbodyEngine() );
     Object::registerType( OpenSim::Body() );
-	Object::registerType( BodyFrame());
 	Object::registerType( FixedFrame());
     Object::registerType( WeldConstraint() );
     Object::registerType( PointConstraint() );

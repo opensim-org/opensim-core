@@ -49,21 +49,15 @@ int main()
     // Do not delete this line. It is used to allow users to optionally pass in their own model.
     dummyModel.setName("dummyModel");
 	Model groundModel;
-	BodyFrame bFrame;
-	bFrame.setName("ground_frame");
-	bFrame.setBody(groundModel.getGroundBody());
-	//bFrame.updConnector<Body>("body").set_connected_to_name("ground");
-	groundModel.print("body_frame_model.xml");
-	testModelComponent(bFrame, false, groundModel);
 	FixedFrame fFrame;
 	fFrame.setName("fixed_frame");
-	fFrame.setParentFrame(bFrame);
+    fFrame.setParentFrame(groundModel.getGroundBody());
 	groundModel.print("fixed_frame_model.xml");
 	testModelComponent(fFrame, false, groundModel);
 
 	Station myStation;
 	myStation.set_location(SimTK::Vec3(1., 2., 3.));
-	myStation.updConnector<Frame>("reference_frame").set_connected_to_name("ground_frame");
+	myStation.updConnector<Frame>("reference_frame").set_connected_to_name("ground");
 	testModelComponent(myStation, false, groundModel);
     // Add a line here for each model component that we want to test.
     testModelComponent(ClutchedPathSpring());

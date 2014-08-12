@@ -36,8 +36,8 @@ class Body;
 //=============================================================================
 /**
  * A class implementing a Station. A Station is a fixed point defined with 
- * respect to a reference Frame. The reference Frame can be a BodyFrame (fixed 
- * to a Body), a FixedFrame (affixed to another Frame) or any other Frame.
+ * respect to a reference Frame. The reference Frame can be a Body (fixed 
+ * to origin of a Body), a FixedFrame (affixed to another Frame) or any other Frame.
  *
  * @author Ayman Habib
  * @version 1.0

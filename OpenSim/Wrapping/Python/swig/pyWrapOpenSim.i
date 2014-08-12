@@ -63,7 +63,6 @@ own project.
 #include <OpenSim/Simulation/MomentArmSolver.h>
 
 #include <OpenSim/Simulation/Model/Frame.h>
-#include <OpenSim/Simulation/Model/BodyFrame.h>
 #include <OpenSim/Simulation/Model/FixedFrame.h>
 
 #include <OpenSim/Simulation/Model/Force.h>
@@ -95,7 +94,6 @@ own project.
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodyFrame.h>
 #include <OpenSim/Simulation/Model/FixedFrame.h>
 
 #include <OpenSim/Simulation/Control/Control.h>
@@ -820,7 +818,6 @@ namespace SimTK {
 %include <OpenSim/Simulation/MomentArmSolver.h>
 
 %include <OpenSim/Simulation/Model/Frame.h>
-%include <OpenSim/Simulation/Model/BodyFrame.h>
 %include <OpenSim/Simulation/Model/FixedFrame.h>
 
 %include <OpenSim/Simulation/Model/Force.h>

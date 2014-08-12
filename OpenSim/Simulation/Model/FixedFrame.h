@@ -36,7 +36,7 @@ class Body;
 //=============================================================================
 /**
  * A FixedFrame is a Frame based off another Frame (parent frame) that could be either 
- * another FixedFrame or a BodyFrame.
+ * another FixedFrame or a Body (which is a Frame).
  * 
  *
  * @author Matt DeMers
