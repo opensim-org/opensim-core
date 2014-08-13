@@ -22,12 +22,13 @@
  * -------------------------------------------------------------------------- */
 //========================  Actuators Tested ==================================
 //
-//	Tests Include:
-//      1.  testTorqueActuator()
-//		2.	testClutchedPathSpring()
-//		3.	testMcKibbenActuator()
+// Tests Include:
+//    1. testTorqueActuator()
+//    2. testBodyActuator()
+//    2. testClutchedPathSpring()
+//    3. testMcKibbenActuator()
 //		
-//     Add tests here as Actuators are added to OpenSim
+// Add tests here as Actuators are added to OpenSim
 //
 //=============================================================================
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -55,30 +56,30 @@ void testMcKibbenActuator();
 
 int main()
 {
-	SimTK::Array_<std::string> failures;
+    SimTK::Array_<std::string> failures;
 
-	try {testTorqueActuator();}
+    try { testTorqueActuator(); }
     catch (const std::exception& e){
-		cout << e.what() <<endl; failures.push_back("testTorqueActuator");
-	}
-	try {testBodyActuator();}
-	catch (const std::exception& e){
-		cout << e.what() <<endl; failures.push_back("testBodyActuator");
-	}
-	/*try {testClutchedPathSpring();}
+        cout << e.what() <<endl; failures.push_back("testTorqueActuator");
+    }
+    try { testBodyActuator(); }
+    catch (const std::exception& e) {
+        cout << e.what() <<endl; failures.push_back("testBodyActuator");
+    }
+    try { testClutchedPathSpring(); }
     catch (const std::exception& e){
-		cout << e.what() <<endl; failures.push_back("testClutchedPathSpring");
-	}*/
-	try { testMcKibbenActuator(); }
-	catch (const std::exception& e){
-		cout << e.what() << endl; failures.push_back("testMcKibbenActuator");
-	}
+        cout << e.what() <<endl; failures.push_back("testClutchedPathSpring");
+    }
+    try { testMcKibbenActuator(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl; failures.push_back("testMcKibbenActuator");
+    }
     if (!failures.empty()) {
-		cout << "Done, with failure(s): " << failures << endl;
+        cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
-	cout << "Done, testActuators passed." << endl;
 
+    cout << "Done, testActuators passed." << endl;
 }
 
 void testMcKibbenActuator()
