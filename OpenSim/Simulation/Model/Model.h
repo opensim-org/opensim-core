@@ -46,6 +46,7 @@
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/ModelDisplayHints.h>
+#include <OpenSim/Simulation/Model/Frame.h>
 #include "Simbody.h"
 
 
@@ -54,6 +55,7 @@ namespace OpenSim {
 
 class Analysis;
 class Body;
+class Frame;
 class BodySet;
 class JointSet;
 class Constraint;
