@@ -539,8 +539,7 @@ void Model::finalizeFromProperties()
 			_multibodyTree.addBody(bs[i].getName(), 
 								   bs[i].getMass(), 
 								   false, 
-								   &bs[i]);
-		
+								   &bs[i]);	
 		}
 	}
 
@@ -622,9 +621,6 @@ void Model::finalizeFromProperties()
 		}
 	}
 
-
-	// Some validation - TODO Remove and put in Body
-	validateMassProperties();
 	if (getValidationLog().size() > 0) {
 		cout << "The following Errors/Warnings were encountered while building the model. " <<
 			getValidationLog() << endl;
@@ -1979,40 +1975,6 @@ void Model::overrideAllActuators( SimTK::State& s, bool flag) {
          as[i].overrideForce(s, flag );
      }
 
-}
-//_____________________________________________________________________________
-/**
- * validateMassProperties: Internal method to check that specified mass properties for the bodies are physically possible
- * that is, satisfy the triangular inequality condition specified in the Docygen doc. of SimTK::MassPRoperties
- * If not true, then the values are forced to satisfy the inequality and a warning is issued.
- * It is assumed that mass properties are all set already
- *
- *
- */
-
-void Model::validateMassProperties(bool fixMassProperties)
-{
-	String msg = "";
-	bool invalid = false;
-
-	for (int i=0; i < getBodySet().getSize(); i++){
-		Body& b = updBodySet()[i];
-		if (b == getGroundBody()) continue;	// Ground's mass properties are unused
-
-		const Vec6& inertiaVec = b.get_inertia();
-		
-		try {
-			// Attempt to form a valid inertia matrix
-			//SimTK::Inertia(inertiaVec.getSubVec<3>(0), inertiaVec.getSubVec<3>(3));
-		}
-		catch(const SimTK::Exception::Base& ex){	
-			invalid = true;
-			msg += "Body: "+b.getName()+" has non-physical mass properties.";
-			msg += ex.getMessage();
-		}
-	}
-	if (invalid)
-		throw Exception(msg);
 }
 
 const Object& Model::getObjectByTypeAndName(const std::string& typeString, const std::string& nameString) {
