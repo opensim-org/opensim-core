@@ -326,7 +326,7 @@ public:
 		// get the Connector and check if it is connected.
 		const AbstractConnector& connector = getConnector<T>(name);
 		if (connector.isConnected()){
-			return (Connector<T>::downcast(connector)).getConectee();
+			return (Connector<T>::downcast(connector)).getConnectee();
 		}
 		else{
 			std::stringstream msg;
