@@ -43,8 +43,7 @@ before_install:
   - cd ../
   
   ## Detect if we should check memory leaks with valgrind.
-  - "export TRAVIS_COMMIT_MSG=\"$(git log --format=%B --no-merges -n 1)\""
-  - echo "$TRAVIS_COMMIT_MSG" | grep '\[ci valgrind\]'; export RUN_VALGRIND=$?; true
+  - git log --format=%B --no-merges -n 1 | grep '\[ci valgrind\]'; export RUN_VALGRIND=$?; true
   - if [ $RUN_VALGRIND = "0" ]; then sudo apt-get install -qq valgrind; fi
   - if [ $RUN_VALGRIND = "0" ]; then export CTEST_FLAGS="-D ExperimentalMemCheck"; fi
 
