@@ -144,7 +144,7 @@ void Actuator_::addInControls(const Vector& actuatorControls, Vector& modelContr
 /** Default constructor */
 Actuator::Actuator()
 {
-	constructProperties();
+	constructInfrastructure();
 }
 
 
@@ -158,6 +158,11 @@ void Actuator::constructProperties()
 	constructProperty_max_control( Infinity);
 }
 
+void Actuator::constructOutputs() 
+{
+	constructOutput<double>("force", &Actuator::getForce, SimTK::Stage::Velocity);
+	constructOutput<double>("speed", &Actuator::getSpeed, SimTK::Stage::Velocity);	
+}
 
 // Create the underlying computational system component(s) that support the
 // Actuator model component

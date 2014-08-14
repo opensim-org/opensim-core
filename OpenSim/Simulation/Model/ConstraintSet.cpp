@@ -60,7 +60,6 @@ ConstraintSet::ConstraintSet(Model& model) : Super(model)
 ConstraintSet::ConstraintSet(const ConstraintSet& aAbsConstraintSet)
 :   Super(aAbsConstraintSet)
 {
-	setNull();
 	*this = aAbsConstraintSet;
 }
 
@@ -74,24 +73,6 @@ void ConstraintSet::setNull()
 {
 	setAuthors("Ajay Seth");
 }
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-#ifndef SWIG
-ConstraintSet& ConstraintSet::operator=(const ConstraintSet &aConstraintSet)
-{
-	Set<Constraint>::operator=(aConstraintSet);
-
-	return *this;
-}
-#endif
 
 //=============================================================================
 // UTILITY

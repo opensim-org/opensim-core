@@ -34,19 +34,22 @@ before_install:
   - cd ../
 
   ## Install SWIG to build Java/python wrapping.
-  - wget http://sourceforge.net/projects/swig/files/swig/swig-2.0.12/swig-2.0.12.tar.gz/download
-  - mv download swig-2.0.12.tar.gz
-  - tar xzf swig-2.0.12.tar.gz
-  - cd swig-2.0.12
+  - wget http://sourceforge.net/projects/swig/files/swig/swig-2.0.10/swig-2.0.10.tar.gz/download
+  - mv download swig-2.0.10.tar.gz
+  - tar xzf swig-2.0.10.tar.gz
+  - cd swig-2.0.10
   - ./configure && make && sudo make -j8 install
   # Go back to the directory containing OpenSim.
   - cd ../
 
 install:
   # Configure OpenSim.
-  - cmake . -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DCMAKE_PREFIX_PATH=simbody-install -DCMAKE_CXX_FLAGS=-Werror
+  - cmake . -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DSIMBODY_HOME=simbody-install -DCMAKE_CXX_FLAGS=-Werror
   # Build OpenSim.
-  - make -j8
+  # gcc is crashing when building osimJavaJNI with other targets (_opensim?).
+  # gcc does not crash if we build _opensim separately.
+  - if [ "$CXX" = "g++-4.8" ]; then make -j8 osimJavaJNI; fi
+  - make -j8 # This'll build _opensim and the tests.
 
 script:
   # Install OpenSim.

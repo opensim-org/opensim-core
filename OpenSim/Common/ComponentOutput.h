@@ -42,7 +42,7 @@ namespace OpenSim {
 /**
  * Output formalizes the accesss to a value of interest computed by the 
  * owning Component. The value is then exposed and easily accessible for use by
- * other components (e.g. to satisfy an Input, @see Input).
+ * other components (e.g. to satisfy an Input).
  * The purpose of an Output is to bind a value of interest to a component's 
  * member function (generator), and provide a generic interface to the value, 
  * its type and label so it can be easily identified. It also specifies the 
@@ -62,10 +62,6 @@ namespace OpenSim {
  *
  * @author  Ajay Seth
  */
-
-/**
-* Abstract base class representing an arbitrary Output as self-describing type.
-*/
 class OSIMCOMMON_API AbstractOutput {
 public:
 	AbstractOutput() : numSigFigs(8), dependsOnStage(SimTK::Stage::Infinity) {}
@@ -109,6 +105,7 @@ public:
 	/** Convenience constructor
 	Create a Component::Output bound to a specific method of the Component and 
 	valid at a given realization Stage.
+    @param name             The name of the output.
 	@param outputFunction	The output function to be invoked (returns Output T)
 	@param dependsOnStage	Stage at which Output can be evaluated. */
 	explicit Output(const std::string& name,

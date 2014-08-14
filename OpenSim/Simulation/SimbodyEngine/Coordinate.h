@@ -274,6 +274,9 @@ private:
 		void setDerivative(const SimTK::State& state, double deriv) const override;
 	};
 
+	// construct outputs
+	void constructOutputs() override;
+
 	// All coordinates (Simbody mobility) have associated constraints that
 	// perform joint locking, prescribed motion and range of motion.
 	// Constraints are created upon setup: locked, precribedFunction
