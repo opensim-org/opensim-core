@@ -32,7 +32,6 @@ ELSE(DOXYGEN_EXECUTABLE-NOTFOUND)
     # (sherm 20120127)
 
     FILE(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/html/")
-    FILE(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/html/images/")
 
     ###############
     # RUN DOXYGEN #
@@ -44,8 +43,10 @@ ELSE(DOXYGEN_EXECUTABLE-NOTFOUND)
 
     # There is an "images" directory containing the pictures needed by
     # the main page Copy all the files into html/images.
-    FILE(COPY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSim/doc/images/"
-         DESTINATION "${PROJECT_BINARY_DIR}/html/images/")
+    ADD_CUSTOM_COMMAND(TARGET doxygen POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/OpenSim/doc/images"
+        "${PROJECT_BINARY_DIR}/html/images/")
 
     ################
     # INSTALLATION #
