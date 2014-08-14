@@ -491,7 +491,7 @@ void testClutchedPathSpring()
 
 	// spring is reclamped at 7s so keep integrating
 	manager.setInitialTime(final_t);
-	final_t = 1.0;
+	final_t = 10.0;
 	manager.setFinalTime(final_t);
 	manager.integrate(state);
 
