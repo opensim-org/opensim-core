@@ -11,8 +11,8 @@ env:
 
 before_install:
   ## Get Simbody and its dependencies.
-  - sudo apt-get update
-  - sudo apt-get install liblapack-dev
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq liblapack-dev
   # Must get a newer gcc so we can compile with C++11,
   # when using gcc OR Clang.
   # from https://github.com/travis-ci/travis-ci/issues/979.
@@ -45,6 +45,11 @@ before_install:
   - ./configure && make && sudo make -j8 install
   # Go back to the directory containing OpenSim.
   - cd ../
+  
+  ## Detect if we should check memory leaks with valgrind.
+  - git log --format=%B --no-merges -n 1 | grep '\[ci valgrind\]'; export RUN_VALGRIND=$?; true
+  - if [ $RUN_VALGRIND = "0" ]; then sudo apt-get install -qq valgrind; fi
+  - if [ $RUN_VALGRIND = "0" ]; then export CTEST_FLAGS="-D ExperimentalMemCheck"; fi
 
 install:
   # Configure OpenSim.
@@ -57,7 +62,11 @@ install:
 
 script:
   # Test OpenSim.
-  - ctest -j8 --output-on-failure
+  - ctest -j8 --output-on-failure $CTEST_FLAGS
+
+  ## Print out valgrind output.
+  - if [ $RUN_VALGRIND ]; then find Testing/Temporary -name "MemoryCheck*" -print | xargs cat; fi
+
   ## Test python wrapping.
   # Install OpenSim. Suppress output.
   - make -j8 install > /dev/null
@@ -73,4 +82,3 @@ script:
   - sudo apt-get install python-nose
   # Run the python tests, verbosely.
   - nosetests -v
-
