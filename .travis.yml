@@ -62,7 +62,6 @@ script:
   # This is temporary; in the future, we will use the opensim-models repo.
   - mkdir -p $OPENSIM_HOME/Models/Arm26 && cp OpenSim/Tools/Test/arm26.osim "$_"
   - mkdir -p $OPENSIM_HOME/Models/Gait10dof18musc && cp Applications/CMC/test/gait10dof18musc_subject01.osim "$_/gait10dof18musc.osim"
-  - tree $OPENSIM_HOME/Models
   # Go to the python wrapping package directory.
   - cd opensim-install/sdk/python
   - echo "$TRAVIS_BUILD_DIR/opensim-install/lib" | sudo tee /etc/ld.so.conf.d/opensim.conf
@@ -70,5 +69,5 @@ script:
   # Get a python package with which to run the tests.
   - sudo apt-get install python-nose
   # Run the python tests, verbosely.
-  - nosetests opensim/tests/test_consistent_with_jython.py:test_makeUlnaHeavy -v
+  - nosetests -v
 
