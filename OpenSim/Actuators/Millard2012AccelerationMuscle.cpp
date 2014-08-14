@@ -227,7 +227,7 @@ void Millard2012AccelerationMuscle::finalizeFromProperties()
 Millard2012AccelerationMuscle::Millard2012AccelerationMuscle()            
 {    
     setNull();
-    constructProperties();
+    constructInfrastructure();
 	finalizeFromProperties();
 }
 
@@ -237,7 +237,7 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
                   double aPennationAngle)
 {
     setNull();
-    constructProperties();
+    constructInfrastructure();
 
     setName(aName);    
     setMaxIsometricForce(aMaxIsometricForce);

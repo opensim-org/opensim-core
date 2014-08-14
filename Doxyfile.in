@@ -332,22 +332,6 @@ INLINE_SIMPLE_STRUCTS  = NO
 
 TYPEDEF_HIDES_STRUCT   = NO
 
-# The SYMBOL_CACHE_SIZE determines the size of the internal cache use to 
-# determine which symbols to keep in memory and which to flush to disk. 
-# When the cache is full, less often used symbols will be written to disk. 
-# For small to medium size projects (<1000 input files) the default value is 
-# probably good enough. For larger projects a too small cache size can cause 
-# doxygen to be busy swapping symbols to and from disk most of the time 
-# causing a significant performance penalty. 
-# If the system has enough physical memory increasing the cache will improve the 
-# performance by keeping more symbols in memory. Note that the value works on 
-# a logarithmic scale so increasing the size by one will roughly double the 
-# memory usage. The cache size is given by this formula: 
-# 2^(16+SYMBOL_CACHE_SIZE). The valid range is 0..9, the default is 0, 
-# corresponding to a cache size of 2^16 = 65536 symbols.
-
-SYMBOL_CACHE_SIZE      = 0
-
 # Similar to the SYMBOL_CACHE_SIZE the size of the symbol lookup cache can be 
 # set using LOOKUP_CACHE_SIZE. This cache is used to resolve symbols given 
 # their name and scope. Since this can be an expensive process and often the 
@@ -561,12 +545,6 @@ MAX_INITIALIZER_LINES  = 30
 # list will mention the files that were used to generate the documentation.
 
 SHOW_USED_FILES        = YES
-
-# If the sources in your project are distributed over multiple directories 
-# then setting the SHOW_DIRECTORIES tag to YES will show the directory hierarchy 
-# in the documentation. The default is NO.
-
-SHOW_DIRECTORIES       = NO
 
 # Set the SHOW_FILES tag to NO to disable the generation of the Files page. 
 # This will remove the Files entry from the Quick Index and from the 
@@ -947,13 +925,13 @@ HTML_FILE_EXTENSION    = .html
 # have to redo this when upgrading to a newer version of doxygen or when 
 # changing the value of configuration settings such as GENERATE_TREEVIEW!
 
-HTML_HEADER            = header.html
+HTML_HEADER            =
 
 # The HTML_FOOTER tag can be used to specify a personal HTML footer for 
 # each generated HTML page. If it is left blank doxygen will generate a 
 # standard footer.
 
-HTML_FOOTER            = footer.html
+HTML_FOOTER            =
 
 # The HTML_STYLESHEET tag can be used to specify a user-defined cascading 
 # style sheet that is used by each HTML page. It can be used to 
@@ -962,7 +940,7 @@ HTML_FOOTER            = footer.html
 # the style sheet file to the HTML output directory, so don't put your own 
 # style sheet in the HTML output directory as well, or it will be erased!
 
-HTML_STYLESHEET        = opensim.css
+HTML_STYLESHEET        =
 
 # The HTML_EXTRA_FILES tag can be used to specify one or more extra images or 
 # other source files which should be copied to the HTML output directory. Note 
@@ -1003,12 +981,6 @@ HTML_COLORSTYLE_GAMMA  = 80
 # this to NO can help when comparing the output of multiple runs.
 
 HTML_TIMESTAMP         = YES
-
-# If the HTML_ALIGN_MEMBERS tag is set to YES, the members of classes, 
-# files or namespaces will be aligned in HTML using tables. If set to 
-# NO a bullet list will be used.
-
-HTML_ALIGN_MEMBERS     = YES
 
 # If the HTML_DYNAMIC_SECTIONS tag is set to YES then the generated HTML 
 # documentation will contain sections that can be hidden and shown after the 
@@ -1196,11 +1168,6 @@ GENERATE_TREEVIEW      = YES
 
 ENUM_VALUES_PER_LINE   = 4
 
-# By enabling USE_INLINE_TREES, doxygen will generate the Groups, Directories, 
-# and Class Hierarchy pages using a tree view instead of an ordered list.
-
-USE_INLINE_TREES       = YES
-
 # If the treeview is enabled (see GENERATE_TREEVIEW) then this tag can be 
 # used to set the initial width (in pixels) of the frame in which the tree 
 # is shown.
@@ -1272,7 +1239,7 @@ SEARCHENGINE           = YES
 # and does not have live searching capabilities.
 
 SERVER_BASED_SEARCH    = NO
-EXTERNAL_SEARCH        = YES
+EXTERNAL_SEARCH        = NO
 #---------------------------------------------------------------------------
 # configuration options related to the LaTeX output
 #---------------------------------------------------------------------------
@@ -1450,7 +1417,7 @@ MAN_LINKS              = NO
 # generate an XML file that captures the structure of 
 # the code including all documentation.
 
-GENERATE_XML           = YES
+GENERATE_XML           = NO
 
 # The XML_OUTPUT tag is used to specify where the XML pages will be put. 
 # If a relative path is entered the value of OUTPUT_DIRECTORY will be 
@@ -1608,7 +1575,7 @@ SKIP_FUNCTION_MACROS   = YES
 # If a tag file is not located in the directory in which doxygen 
 # is run, you must also specify the path to the tagfile here.
 
-TAGFILES               = 
+TAGFILES               = "@Simbody_DOXYGEN_TAGFILE@=@OPENSIM_SIMBODY_DOXYGEN_LOCATION@"
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create 
 # a tag file that is based on the input files it reads.
@@ -1681,7 +1648,7 @@ DOT_NUM_THREADS        = 0
 # the DOTFONTPATH environment variable or by setting DOT_FONTPATH to the 
 # directory containing the font.
 
-DOT_FONTNAME           = FreeSans
+DOT_FONTNAME           =
 
 # The DOT_FONTSIZE tag can be used to set the size of the font of dot graphs. 
 # The default size is 10pt.

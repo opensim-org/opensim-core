@@ -4,6 +4,10 @@ language: cpp
 compiler:
   - clang
   - gcc
+  
+env:
+  # The python tests look for this environment variable.
+  - OPENSIM_HOME=$TRAVIS_BUILD_DIR/opensim-install
 
 before_install:
   ## Get Simbody and its dependencies.
@@ -34,10 +38,10 @@ before_install:
   - cd ../
 
   ## Install SWIG to build Java/python wrapping.
-  - wget http://sourceforge.net/projects/swig/files/swig/swig-2.0.12/swig-2.0.12.tar.gz/download
-  - mv download swig-2.0.12.tar.gz
-  - tar xzf swig-2.0.12.tar.gz
-  - cd swig-2.0.12
+  - wget http://sourceforge.net/projects/swig/files/swig/swig-2.0.10/swig-2.0.10.tar.gz/download
+  - mv download swig-2.0.10.tar.gz
+  - tar xzf swig-2.0.10.tar.gz
+  - cd swig-2.0.10
   - ./configure && make && sudo make -j8 install
   # Go back to the directory containing OpenSim.
   - cd ../
@@ -49,12 +53,32 @@ before_install:
 
 install:
   # Configure OpenSim.
-  - cmake . -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DCMAKE_PREFIX_PATH=simbody-install -DCMAKE_CXX_FLAGS=-Werror
+  - cmake . -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DSIMBODY_HOME=simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME
   # Build OpenSim.
-  - make -j8
+  # gcc is crashing when building osimJavaJNI with other targets (_opensim?).
+  # gcc does not crash if we build _opensim separately.
+  - if [ "$CXX" = "g++-4.8" ]; then make -j8 osimJavaJNI; fi
+  - make -j8 # This'll build _opensim and the tests.
 
 script:
-  # Install OpenSim.
+  # Test OpenSim.
   - ctest -j8 --output-on-failure $CTEST_FLAGS
-  # Print out valgrind output.
+
+  ## Print out valgrind output.
   - if [ $RUN_VALGRIND ]; then find Testing/Temporary -name "MemoryCheck*" -print | xargs cat; fi
+
+  ## Test python wrapping.
+  # Install OpenSim. Suppress output.
+  - make -j8 install > /dev/null
+  # For python tests, we need to copy over some model files.
+  # This is temporary; in the future, we will use the opensim-models repo.
+  - mkdir -p $OPENSIM_HOME/Models/Arm26 && cp OpenSim/Tools/Test/arm26.osim "$_"
+  - mkdir -p $OPENSIM_HOME/Models/Gait10dof18musc && cp Applications/CMC/test/gait10dof18musc_subject01.osim "$_/gait10dof18musc.osim"
+  # Go to the python wrapping package directory.
+  - cd opensim-install/sdk/python
+  - echo "$TRAVIS_BUILD_DIR/opensim-install/lib" | sudo tee /etc/ld.so.conf.d/opensim.conf
+  - sudo ldconfig
+  # Get a python package with which to run the tests.
+  - sudo apt-get install python-nose
+  # Run the python tests, verbosely.
+  - nosetests -v

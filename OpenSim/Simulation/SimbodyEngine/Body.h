@@ -62,11 +62,9 @@ public:
 
 	OpenSim_DECLARE_UNNAMED_PROPERTY(WrapObjectSet,
 		"Set of wrap objects fixed to this body that GeometryPaths can wrap over.");
+    OpenSim_DECLARE_UNNAMED_PROPERTY(VisibleObject,
+        "For visualization in the Simbody visualizer or OpenSim GUI.");
 	/**@}**/
-protected:
-
-	/** For display of the body. */
-	VisibleObject _displayer;
 
 //=============================================================================
 // PUBLIC METHODS
@@ -99,7 +97,9 @@ public:
 	void setInertia(const SimTK::Inertia& aInertia);
 
 	/** Assemble body interial properties: mass, center of mass location, moment 
-	    of inertia about the origin of the body and return as SimTK::MassProperties */
+        of inertia about the origin of the body and return as
+        SimTK::MassProperties.
+     */
 	SimTK::MassProperties getMassProperties() const;
 
 	void scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass = false);
@@ -109,20 +109,22 @@ public:
 
 	virtual void addDisplayGeometry(const std::string &aGeometryFileName);
 
-	const VisibleObject* getDisplayer() const { return &_displayer; }
-	VisibleObject*	updDisplayer() { return &_displayer; };
+	const VisibleObject* getDisplayer() const { return &get_VisibleObject(); }
+	VisibleObject* updDisplayer() { return &upd_VisibleObject(); }
 
 	const SimTK::MobilizedBodyIndex getIndex() const {return _index;};
 	
-	/**
-	* Get the named wrap object, if it exists.
+    /** Get the named wrap object, if it exists.
 	*
 	* @param aName Name of the wrap object.
-	* @return const Pointer to the wrap object. */
+	* @return const Pointer to the wrap object.
+    */
 	const WrapObject* getWrapObject(const std::string& aName) const;
 	const WrapObjectSet& getWrapObjectSet() const { return get_WrapObjectSet(); }
 
-	/** add a wrap object to the body. Note that the body takes ownership of the WrapObject */
+    /** Add a wrap object to the Body. Note that the Body takes ownership of
+     * the WrapObject.
+     */
 	void addWrapObject(WrapObject* wrapObject);
 
 protected:
@@ -137,6 +139,9 @@ protected:
 
 private:
 
+	/** Component Interface */
+	void constructProperties();
+
 	/** Return the equivalent (internal) SimTK::Rigid::Body for this body.
 	    Not valid until after addToSystem on Body has be called.*/
 	const SimTK::Body::Rigid& getInternalRigidBody() const {
@@ -146,9 +151,6 @@ private:
 	/** Override of the default implementation to account for versioning. */
 	void updateFromXMLNode(SimTK::Xml::Element& aNode,
 		int versionNumber = -1) override;
-
-	void setNull();
-	void constructProperties();
 
 	// mutable because fist get constructs tensor from properties
 	mutable SimTK::Inertia _inertia;
