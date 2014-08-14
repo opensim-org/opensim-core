@@ -42,7 +42,7 @@ before_install:
   # Go back to the directory containing OpenSim.
   - cd ../
   
-  ## Detect if we should run valgrind.
+  ## Detect if we should check memory leaks with valgrind.
   - "export TRAVIS_COMMIT_MSG=\"$(git log --format=%B --no-merges -n 1)\""
   - echo "$TRAVIS_COMMIT_MSG" | grep '\[ci valgrind\]'; export RUN_VALGRIND=$?; true
   - if [ $RUN_VALGRIND = "0" ]; then sudo apt-get install -qq valgrind; fi
