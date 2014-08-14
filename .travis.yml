@@ -41,6 +41,11 @@ before_install:
   - ./configure && make && sudo make -j8 install
   # Go back to the directory containing OpenSim.
   - cd ../
+  
+  ## Detect if we should run valgrind.
+  - "export TRAVIS_COMMIT_MSG=\"$(git log --format=%B --no-merges -n 1)\""
+  - echo "$TRAVIS_COMMIT_MSG" | grep '\[ci valgrind\]'; export RUN_VALGRIND=$?; true
+  - if [ $RUN_VALGRIND ]; then export CTEST_FLAGS="-D ExperimentalMemCheck"; fi
 
 install:
   # Configure OpenSim.
@@ -50,4 +55,5 @@ install:
 
 script:
   # Install OpenSim.
-  - ctest -j8 --output-on-failure
+  - ctest -j8 --output-on-failure $CTEST_FLAGS
+  - if [ $RUN_VALGRIND]; then find Testing/Temporary -name "MemoryCheck*" -print | xargs cat
