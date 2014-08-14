@@ -56,4 +56,5 @@ install:
 script:
   # Install OpenSim.
   - ctest -j8 --output-on-failure $CTEST_FLAGS
+  # Print out valgrind output.
   - if [ $RUN_VALGRIND]; then find Testing/Temporary -name "MemoryCheck*" -print | xargs cat
