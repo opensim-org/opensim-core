@@ -670,8 +670,8 @@ void testBodyActuator()
 
 	// Check that de/serialization works
 	Model modelFromFile("TestBodyActuatorModel.osim");
-	//ASSERT(modelFromFile == *model, __FILE__, __LINE__,
-	//	"Model from file FAILED to match model in memory.");
+	ASSERT(modelFromFile == *model, __FILE__, __LINE__,
+		"Model from file FAILED to match model in memory.");
 
 	std::cout << " ********** Test BodyActuator time = ********** " <<
 		1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;

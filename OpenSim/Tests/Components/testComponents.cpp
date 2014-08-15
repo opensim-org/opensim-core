@@ -73,9 +73,9 @@ int main()
     }*/
 
 	{
-		/*Body* body1 = new Body();
-		BodyActuator bodyAct(*body1);
-		testModelComponent(bodyAct);*/
+		Model model;
+		BodyActuator bodyAct(model.getGroundBody());
+		testModelComponent(bodyAct, true, model);
 
 		//testModelComponent(BodyActuator());
 	}
