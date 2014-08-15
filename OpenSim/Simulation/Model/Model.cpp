@@ -171,8 +171,6 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 			}
             if (versionNumber < 30500) {
                 // Create JointSet node after BodySet under <OpenSimDocument>/<Model>
-                String test;
-                aNode.writeToString(test);
                 SimTK::Xml::Element jointSetElement("JointSet");
                 SimTK::Xml::Element jointObjects("objects");
                 jointSetElement.insertNodeBefore(jointSetElement.element_begin(), jointObjects);
@@ -182,8 +180,7 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 SimTK::Xml::element_iterator  objects_node = bodySetNode->element_begin("objects");
                 SimTK::Xml::element_iterator bodyIter= objects_node->element_begin("Body"); 
                 for (; bodyIter != objects_node->element_end(); ++bodyIter) {
-                    bodyIter->writeToString(test);
-                    std::string body_name = bodyIter->getOptionalAttributeValue("name");
+                     std::string body_name = bodyIter->getOptionalAttributeValue("name");
                     //cout << "Processing body " <<  body_name << std::endl;
                     SimTK::Xml::element_iterator  joint_node =  bodyIter->element_begin("Joint");
                     if (joint_node->element_begin()!= joint_node->element_end()){
@@ -196,10 +193,11 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                         //cout << "Processing Joint " << concreteJointNode->getElementTag() << "Parent body " << parent_name << std::endl;
                         XMLDocument::addConnector(*concreteJointNode, "Connector_Body_", "parent_body", parent_name);
                         XMLDocument::addConnector(*concreteJointNode, "Connector_Body_", "child_body", body_name);
-                        concreteJointNode->removeNode(parentBodyElement);
+                        concreteJointNode->eraseNode(parentBodyElement);
                         jointObjects.insertNodeAfter(jointObjects.node_end(), *concreteJointNode);
+                        detach_joint_node.clearOrphan();
                     }
-                    bodyIter->removeNode(joint_node);
+                    bodyIter->eraseNode(joint_node);
 				}
             }
 	// Call base class now assuming _node has been corrected for current version

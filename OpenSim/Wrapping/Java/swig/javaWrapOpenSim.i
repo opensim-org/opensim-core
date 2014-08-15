@@ -292,6 +292,8 @@ using namespace SimTK;
   public double[] getTimeRange() { return new double[]{getStartFrameTime(), getLastFrameTime()}; }
 %}
 
+%newobject *::clone; 
+
 %typemap(javacode) OpenSim::Array<double> %{
 	public void fromString(String string) {
       // Remove open and close parenth if any
