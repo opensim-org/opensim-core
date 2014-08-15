@@ -72,7 +72,7 @@ public:
 	@param[in] name   the name associated with this actuator
 	@param[in] body   the body that the actuator applies torque to
 	*/
-	BodyActuator(const OpenSim::Body& body); //const std::string& name,
+	explicit BodyActuator(const OpenSim::Body& body); //const std::string& name,
 
 	// Uses default (compiler-generated) destructor, copy constructor, copy 
 	// assignment operator.
