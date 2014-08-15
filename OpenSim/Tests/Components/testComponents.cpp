@@ -73,9 +73,11 @@ int main()
     }*/
 
 	{
-		BodyActuator bodyAct;
-		bodyAct.updConnector<Body>("body").set_connected_to_name("ground");
-		testModelComponent(bodyAct);
+		/*Body* body1 = new Body();
+		BodyActuator bodyAct(*body1);
+		testModelComponent(bodyAct);*/
+
+		//testModelComponent(BodyActuator());
 	}
 
     testModelComponent(Bhargava2004MuscleMetabolicsProbe());

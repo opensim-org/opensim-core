@@ -45,23 +45,30 @@ using SimTK::Vec3;
 //=============================================================================
 // Uses default (compiler-generated) destructor, copy constructor, copy 
 // assignment operator.
-
 //_____________________________________________________________________________
 /**
-* Also serves as default constructor.
+* Default constructor.
 */
-BodyActuator::BodyActuator(const string& bodyName)
+BodyActuator::BodyActuator()
+{
+	constructInfrastructure();
+}
+//_____________________________________________________________________________
+/**
+* Convenience constructor.
+*/
+BodyActuator::BodyActuator(const OpenSim::Body& body) //const string& aName,
 {
 	setAuthors("Soha Pouya, Michael Sherman");
 	constructInfrastructure();
 
-	if (!bodyName.empty())
-		set_body(bodyName);
+	updConnector<Body>("body").set_connected_to_name(body.getName());
+
+	//setName(aName);
 }
 
 void BodyActuator::constructProperties()
 {
-	constructProperty_body();
 }
 //_____________________________________________________________________________
 /**
@@ -71,13 +78,42 @@ void BodyActuator::constructStructuralConnectors() {
 	constructStructuralConnector<Body>("body");
 }
 
+void BodyActuator::setBodyName(const std::string& name)
+{
+	updConnector<Body>("body").set_connected_to_name(name);
+}
+
+const std::string& BodyActuator::getBodyName() const
+{
+	return getConnector<Body>("body").get_connected_to_name();
+}
+
+//=============================================================================
+// GET AND SET
+//=============================================================================
+//_____________________________________________________________________________
+/**
+* Set the Body to which the BodyActuator is applied
+*/
+void BodyActuator::setBody(OpenSim::Body& body)
+{
+	updConnector<Body>("body").connect(body);
+}
+
+/**
+* Get the Body to which the BodyActuator is applied
+*/
+const OpenSim::Body& BodyActuator::getBody() const
+{
+	return getConnector<Body>("body").getConnectee();
+}
 
 //==============================================================================
 // APPLICATION
 //==============================================================================
 //_____________________________________________________________________________
 /**
-* Apply the actuator force to BodyA and BodyB.
+* Apply the actuator force/torque to Body.
 */
 void BodyActuator::computeForce(const SimTK::State& s,
 	SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
@@ -103,7 +139,7 @@ void BodyActuator::computeForce(const SimTK::State& s,
 }
 //_____________________________________________________________________________
 /**
-* Sets the actual Body reference _body
+* Sets the actual Body reference 
 */
 void BodyActuator::connectToModel(Model& model)
 {

@@ -54,25 +54,47 @@ public:
         There are no serializable properties associated with this class (except
         inherited ones). **/
     /**@{**/
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(body, std::string,
-        "Name of Body to which this actuator is applied.");
+    //OpenSim_DECLARE_OPTIONAL_PROPERTY(body, std::string,
+      //  "Name of Body to which this actuator is applied.");
     /**@}**/
 
 	//==============================================================================
 	// PUBLIC METHODS
 	//==============================================================================
-	/** Default constructor or construct with body name given. An empty
-	name ("") is treated as though it were unspecified. **/
-	explicit BodyActuator(const std::string& bodyName = "");
+	/** Default constructor leaves body names unspecified. **/
+	BodyActuator();
+
+	/** Convenience Constructor.
+	Create a body actuator that applies a vector of spatial force (i.e. torques and
+	forces) on a body. The torque is applied about the axis specified in body's body 
+	frame.
+
+	@param[in] name   the name associated with this actuator
+	@param[in] body   the body that the actuator applies torque to
+	*/
+	BodyActuator(const OpenSim::Body& body); //const std::string& name,
 
 	// Uses default (compiler-generated) destructor, copy constructor, copy 
 	// assignment operator.
+
+	// GET & SET
+	// Relating to the body
+	void setBodyName(const std::string& name);
+	const std::string& getBodyName() const;
+
+	void setBody(OpenSim::Body& body);
+	const OpenSim::Body& getBody() const;
 
 private:
 	//--------------------------------------------------------------------------
 	// Implement Component interface
 	//--------------------------------------------------------------------------
+	/** Construct the infrastructure of the BodyActuator component.
+	Begin with its properties. */
 	void constructProperties();
+
+	/** Next define its structural dependencies on other components.
+	This will be the body that force/torques are applied to.*/
 	void constructStructuralConnectors() override;
 
 	//--------------------------------------------------------------------------
