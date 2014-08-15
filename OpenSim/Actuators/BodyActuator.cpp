@@ -36,11 +36,6 @@ using SimTK::Vec3;
 
 
 //=============================================================================
-// STATICS
-//=============================================================================
-
-
-//=============================================================================
 // CONSTRUCTORS
 //=============================================================================
 // Uses default (compiler-generated) destructor, copy constructor, copy 
@@ -58,14 +53,12 @@ BodyActuator::BodyActuator()
 /**
 * Convenience constructor.
 */
-BodyActuator::BodyActuator(const OpenSim::Body& body) //const string& aName,
+BodyActuator::BodyActuator(const OpenSim::Body& body)
 {
 	setAuthors("Soha Pouya, Michael Sherman");
 	constructInfrastructure();
 
 	updConnector<Body>("body").set_connected_to_name(body.getName());
-
-	//setName(aName);
 }
 
 void BodyActuator::constructProperties()

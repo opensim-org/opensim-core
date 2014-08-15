@@ -47,16 +47,6 @@ class Model;
 class OSIMACTUATORS_API BodyActuator : public Actuator {
 	OpenSim_DECLARE_CONCRETE_OBJECT(BodyActuator, Actuator);
 public:
-	//==============================================================================
-	// PROPERTIES
-	//==============================================================================
-	/** @name Property declarations
-        There are no serializable properties associated with this class (except
-        inherited ones). **/
-    /**@{**/
-    //OpenSim_DECLARE_OPTIONAL_PROPERTY(body, std::string,
-      //  "Name of Body to which this actuator is applied.");
-    /**@}**/
 
 	//==============================================================================
 	// PUBLIC METHODS
@@ -72,13 +62,14 @@ public:
 	@param[in] name   the name associated with this actuator
 	@param[in] body   the body that the actuator applies torque to
 	*/
-	explicit BodyActuator(const OpenSim::Body& body); //const std::string& name,
+	explicit BodyActuator(const OpenSim::Body& body);
 
 	// Uses default (compiler-generated) destructor, copy constructor, copy 
 	// assignment operator.
 
-	// GET & SET
-	// Relating to the body
+	//--------------------------------------------------------------------------
+	// Get & Set
+	//--------------------------------------------------------------------------
 	void setBodyName(const std::string& name);
 	const std::string& getBodyName() const;
 
