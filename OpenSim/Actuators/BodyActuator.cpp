@@ -51,6 +51,7 @@ using SimTK::Vec3;
 */
 BodyActuator::BodyActuator()
 {
+	setAuthors("Soha Pouya, Michael Sherman");
 	constructInfrastructure();
 }
 //_____________________________________________________________________________
