@@ -114,8 +114,6 @@ public:
 	virtual double getPower(const SimTK::State& s) const = 0;
 	virtual void computeEquilibrium(SimTK::State& s) const { }
 
-	virtual void overrideForce(SimTK::State& s, bool flag) const = 0;
-
 //=============================================================================
 };	// END of class Actuator
 //=============================================================================
