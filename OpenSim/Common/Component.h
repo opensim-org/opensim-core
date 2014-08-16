@@ -1051,27 +1051,33 @@ template <class T> friend class ComponentMeasure;
 	}
 
     /**
-     * A convenient way to construct an Output.  Here, we assume the following
-     * about componentMemberFunction, the function that returns the output:
-     *
-     *  1. It is a member function of \a this Component.
-     *  2. The member function is const.
-     *  3. It takes only one input, which is const SimTK::State&
-     *
-     * If these are not true for your case, then use the more general method
-     * Component::constructOutput(const std::string&, const std::function<T(const SimTK::State&)>, const SimTK::Stage&).
-     *
-     * Here's an example. Say your Component has a method calcForce:
-     *  @code
-     *  constructOutput<SimTK::Vec3>("force", &MyComponent::calcForce,
-     *          SimTK::Stage::Velocity);
-     *  @endcode
+       A convenient way to construct an Output.  Here, we assume the following
+       about componentMemberFunction, the function that returns the output:
+
+           -# It is a member function of \a this Component.
+           -# The member function is const.
+           -# It takes only one input, which is const SimTK::State&
+      
+       If these are not true for your case, then use the more general method
+       %Component::constructOutput(const std::string&,
+                                  const std::function<T(const SimTK:State&)>,
+                                  const SimTK::Stage&).
+      
+       Here's an example. Say your Component has a method calcForce:
+        @code
+        constructOutput<SimTK::Vec3>("force", &MyComponent::calcForce,
+                SimTK::Stage::Velocity);
+        @endcode
      */
 #ifndef SWIG // SWIG can't parse the const at the end of the second argument.
     template <typename T, typename Class>
     void constructOutput(const std::string& name,
-            T(Class::*componentMemberFunction)(const SimTK::State&) const,
+            T(Class::*const componentMemberFunction)(const SimTK::State&) const,
             const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
+        // The `const` in `Class::*const componentMemberFunction` means this
+        // function can't assign componentMemberFunction to some other function
+        // pointer. This is unlikely, since that function would have to match
+        // the same template parameters (T and Class).
         constructOutput<T>(name, std::bind(componentMemberFunction,
                     static_cast<Class*>(this),
                     std::placeholders::_1), dependsOn);
@@ -1079,17 +1085,21 @@ template <class T> friend class ComponentMeasure;
 #endif
 
 	/**
-	* Construct an Output (wire) for the Component as function of the State.
-	* Specifiy a (member) function of the state implemented by this component to
-	* be an Output and include the Stage that output is dependent on. If no
-    * Stage is specified it defaults to Acceleration. Here's an example. Say you have a class Markers that manages markers, you have an instance of this class as a member variable in your Component, and Markers has a method `Vec3 Markers\:\:calcMarkerPos(const SimTK\:\:State& s, std\:\:string marker);` to compute
-    * motion capture marker positions, given the name of a marker.
-     *  @code
-     *  constructOutput<SimTK::Vec3>("ankleMarkerPos",
-     *          std::bind(&Markers::calcMarkerPos, _markers,
-     *          std::placeholders::_1, "ankle"),
-     *          SimTK::Stage::Position);
-	 *  @endcode
+	  Construct an Output (wire) for the Component as function of the State.
+	  Specifiy a (member) function of the state implemented by this component to
+	  be an Output and include the Stage that output is dependent on. If no
+      Stage is specified it defaults to Acceleration. Here's an example. Say you 
+      have a class Markers that manages markers, you have an instance of this class
+      as a member variable in your Component, and Markers has a method
+      <tt> Vec3 Markers::calcMarkerPos(const SimTK::State& s, std::string
+      marker);</tt>
+      to compute motion capture marker positions, given the name of a marker.
+       @code
+       constructOutput<SimTK::Vec3>("ankle_marker_pos",
+               std::bind(&Markers::calcMarkerPos, _markers,
+               std::placeholders::_1, "ankle"),
+               SimTK::Stage::Position);
+       @endcode
 	*/
 	template <typename T>
 	void constructOutput(const std::string& name, 
