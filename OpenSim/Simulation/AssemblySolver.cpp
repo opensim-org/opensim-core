@@ -75,14 +75,7 @@ AssemblySolver::AssemblySolver
 
 AssemblySolver::~AssemblySolver()
 {
-	SimTK::Array_<CoordinateReference>::iterator p;
-	for(p = _coordinateReferencesp->begin(); 
-        p != _coordinateReferencesp->end(); p++)
-	{ 
-		p = _coordinateReferencesp->erase(p);
-		--p;
-	}
-
+    _coordinateReferencesp->deallocate();
 	delete _assembler;
 }
 
