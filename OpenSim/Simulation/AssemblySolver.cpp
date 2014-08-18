@@ -38,9 +38,9 @@ namespace OpenSim {
  * @param model to assemble
  */
 AssemblySolver::AssemblySolver
-   (const Model &model, SimTK::Array_<CoordinateReference> &coordinateReferences,
+   (const Model &model, const SimTK::Array_<CoordinateReference> &coordinateReferences,
 	double constraintWeight) : Solver(model),
-    _coordinateReferencesp(&coordinateReferences)
+    _coordinateReferencesp(coordinateReferences)
 {
 	setAuthors("Ajay Seth");
 	_assembler = NULL;
@@ -56,14 +56,14 @@ AssemblySolver::AssemblySolver
 	SimTK::Array_<CoordinateReference>::iterator p;
 
 	// Cycle through coordinate references
-	for(p = _coordinateReferencesp->begin(); 
-        p != _coordinateReferencesp->end(); p++) 
+	for(p = _coordinateReferencesp.begin(); 
+        p != _coordinateReferencesp.end(); p++) 
     {
 		if(p){
 			//Find if any references that are empty and throw them away
 			if(p->getName() == "" || p->getName() == "unknown"){
 				//Get rid of the corresponding reference too
-				p = _coordinateReferencesp->erase(p);
+				p = _coordinateReferencesp.erase(p);
 			}
 			// Otherwise an error if the coordinate does not exist for this model
 			else if ( !modelCoordSet.contains(p->getName())){
@@ -75,7 +75,6 @@ AssemblySolver::AssemblySolver
 
 AssemblySolver::~AssemblySolver()
 {
-    _coordinateReferencesp->deallocate();
 	delete _assembler;
 }
 
@@ -113,8 +112,8 @@ void AssemblySolver::setupGoals(SimTK::State &s)
 	SimTK::Array_<CoordinateReference>::iterator p;
 
 	// Cycle through coordinate references
-	for(p = _coordinateReferencesp->begin(); 
-        p != _coordinateReferencesp->end(); p++) {
+	for(p = _coordinateReferencesp.begin(); 
+        p != _coordinateReferencesp.end(); p++) {
 		if(p){
 			CoordinateReference *coordRef = p;
 			const Coordinate &coord = modelCoordSet.get(coordRef->getName());
@@ -125,7 +124,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
 				coord.setLocked(s, false);
 				
 				//Get rid of the corresponding reference too
-				_coordinateReferencesp->erase(p);
+				_coordinateReferencesp.erase(p);
 				p--; //decrement since erase automatically points to next in the list
 			}
 			else if(!(coord.get_is_free_to_satisfy_constraints())) {
@@ -140,7 +139,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
 		}
 	}
 
-	unsigned int nqrefs  = _coordinateReferencesp->size(), 
+	unsigned int nqrefs  = _coordinateReferencesp.size(), 
                  nqgoals = _coordinateAssemblyConditions.size();
 	//Should have a one-to-one matched arrays
 	if(nqrefs != nqgoals)
@@ -154,8 +153,8 @@ void AssemblySolver::updateCoordinateReference(const std::string &coordName, dou
 	SimTK::Array_<CoordinateReference>::iterator p;
 
 	// Cycle through coordinate references
-	for(p = _coordinateReferencesp->begin(); 
-        p != _coordinateReferencesp->end(); p++) {
+	for(p = _coordinateReferencesp.begin(); 
+        p != _coordinateReferencesp.end(); p++) {
 		if(p->getName() == coordName){
 			p->setValueFunction(*new Constant(value));
 			p->setWeight(weight);
@@ -169,11 +168,11 @@ void AssemblySolver::updateCoordinateReference(const std::string &coordName, dou
 		weights that define the goals, based on the passed in state. */
 void AssemblySolver::updateGoals(const SimTK::State &s)
 {
-	unsigned int nqrefs = _coordinateReferencesp->size();
+	unsigned int nqrefs = _coordinateReferencesp.size();
 	for(unsigned int i=0; i<nqrefs; i++){
 		//update goal values from reference.
 		_coordinateAssemblyConditions[i]->setValue
-           ((*_coordinateReferencesp)[i].getValue(s));
+           ((_coordinateReferencesp)[i].getValue(s));
 		//_assembler->setAssemblyConditionWeight(_coordinateAssemblyConditions[i]->
 	}
 }

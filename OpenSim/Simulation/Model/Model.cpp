@@ -1533,8 +1533,7 @@ void Model::applyDefaultConfiguration(SimTK::State& s)
 void Model::createAssemblySolver(const SimTK::State& s)
 {
     // Allocate on heap so AssemblySolver can take ownership.
-	SimTK::Array_<CoordinateReference>* coordsToTrack = 
-        new SimTK::Array_<CoordinateReference>();
+	SimTK::Array_<CoordinateReference>coordsToTrack;
 
 	for(int i=0; i<getNumCoordinates(); ++i){
 		// Iff a coordinate is dependent on other coordinates for its value, 
@@ -1542,7 +1541,7 @@ void Model::createAssemblySolver(const SimTK::State& s)
 		if(!_coordinateSet[i].isDependent(s)){
 			Constant reference(_coordinateSet[i].getValue(s));
 			CoordinateReference coordRef(_coordinateSet[i].getName(), reference);
-			coordsToTrack->push_back(coordRef);
+			coordsToTrack.push_back(coordRef);
 		}
 	}
 
@@ -1550,9 +1549,9 @@ void Model::createAssemblySolver(const SimTK::State& s)
 	delete _assemblySolver;
 
 	// Use the assembler to generate the initial pose from Coordinate defaults
-	// that also satisfies the constraints. AssemblySolver takes over ownership
-    // of coordsToTrack
-	_assemblySolver = new AssemblySolver(*this, *coordsToTrack);
+	// that also satisfies the constraints. AssemblySolver makes copy of
+    // coordsToTrack
+	_assemblySolver = new AssemblySolver(*this, coordsToTrack);
 	_assemblySolver->setConstraintWeight(SimTK::Infinity);
     _assemblySolver->setAccuracy(get_assembly_accuracy());
 }
