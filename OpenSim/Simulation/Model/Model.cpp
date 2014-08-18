@@ -1532,8 +1532,8 @@ void Model::applyDefaultConfiguration(SimTK::State& s)
  */
 void Model::createAssemblySolver(const SimTK::State& s)
 {
-    // Allocate on heap so AssemblySolver can take ownership.
-	SimTK::Array_<CoordinateReference>coordsToTrack;
+    // Allocate on stack and pass to AssemblySolver to make working copy.
+	SimTK::Array_<CoordinateReference> coordsToTrack;
 
 	for(int i=0; i<getNumCoordinates(); ++i){
 		// Iff a coordinate is dependent on other coordinates for its value, 
