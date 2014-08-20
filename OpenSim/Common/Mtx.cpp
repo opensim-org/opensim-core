@@ -399,7 +399,7 @@ Multiply(int aNR1,int aNCR,int aNC2,const double *aM1,const double *aM2,
  *
  * If the arguments are not valid (aM==NULL), then -1 is returned.
  * If the matrix is not invertible, then -2 is returned.
- * Othersise, 0 is returned.
+ * Otherwise, 0 is returned.
  *
  * It is permissible for aM to overlap in memory with aMInv.
  */
