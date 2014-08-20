@@ -911,13 +911,6 @@ private:
 	// construct outputs
 	void constructOutputs() override;
 
-	// Internal method to check that specified mass properties for the bodies 
-    // are physically possible that is, satisfy the triangular inequality 
-    // and other requirements specified in the Doxygen description of 
-    // SimTK::MassProperties. If not true, then the values are forced to 
-    // satisfy the inequality and a warning is issued.
-	void validateMassProperties(bool fixMassProperties=true);
-
 	void createAssemblySolver(const SimTK::State& s);
 
     // To provide access to private _modelComponents member.

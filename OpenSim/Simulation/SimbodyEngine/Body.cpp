@@ -80,10 +80,22 @@ void Body::constructProperties()
 
 void Body::finalizeFromProperties()
 {
-	const SimTK::MassProperties& massProps = getMassProperties();
-	_internalRigidBody = SimTK::Body::Rigid(massProps);
+	//TODO: Need a better design so ground body is not exposed in XML
+	//like every other body. One idea is to remove ground body altogether.
+	//Instead of using ground Body as a holder of geometry, a flat list of
+	//geometry could be associated with frames. A frame could be
+	//referenced by name and 'ground' could be an automatic keyword for
+	//connecting to the ground reference frame. -aseth
+
+	// do not evaluate mass properties for ground since they are irrelevant
+	if (SimTK::String(getName()).toLower() != "ground"){
+		const SimTK::MassProperties& massProps = getMassProperties();
+		_internalRigidBody = SimTK::Body::Rigid(massProps);
+	}
 	
 	_index.invalidate();
+
+	setObjectIsUpToDateWithProperties();
 }
 
 //_____________________________________________________________________________
@@ -157,8 +169,37 @@ const SimTK::Inertia& Body::getInertia() const
 	// Has not been set programmatically
 	if (_inertia.isNaN()){
 		// initialize from properties
-		const SimTK::Vec6& Ivec = get_inertia();
-		_inertia = SimTK::Inertia(Ivec.getSubVec<3>(0), Ivec.getSubVec<3>(3));
+		const double& m = getMass();
+		// if mass is zero, non-zero inertia makes no sense
+		if (-SimTK::Eps <= m && m <= SimTK::Eps){
+			// force zero intertia
+			cout<<"Body '"<<getName()<<"' is massless but nonzero inertia provided.";
+			cout<<" Inertia reset to zero. "<<"Otherwise provide nonzero mass."<< endl;
+			_inertia = SimTK::Inertia(0);
+		}
+		else{
+			const SimTK::Vec6& Ivec = get_inertia();
+			try {
+				_inertia = SimTK::Inertia(Ivec.getSubVec<3>(0), Ivec.getSubVec<3>(3));
+			} 
+			catch (const std::exception& ex){
+				// Should throw an Exception but we have models we have released with
+				// bad intertias. E.g. early gait23 models had an error in the inertia
+				// of the toes Body. We cannot allow failures with our models so 
+				// raise a warning and do something sensible with the values at hand.
+				cout << "WARNING: Body " + getName() + " has invalid inertia. " << endl;
+				cout << ex.what() << endl;
+
+				// get some aggregate value for the inertia based on exsiting values
+				double diag = Ivec.getSubVec<3>(0).norm()/sqrt(3);
+
+				// and then assume a spherical shape.
+				_inertia = SimTK::Inertia(Vec3(diag), Vec3(0));
+				
+				cout << getName() << " Body's inertia being reset to:" << endl;
+				cout << _inertia << endl;
+			}
+		}
 	}
 	return _inertia;
 }
@@ -363,9 +404,24 @@ SimTK::MassProperties Body::getMassProperties() const
 {
 	const double& m = get_mass();
 	const Vec3& com = get_mass_center();
-	const SimTK::Inertia& Icom = getInertia();
 
-	return SimTK::MassProperties(m, com, Icom.shiftFromMassCenter(com, m));
+	try{
+		const SimTK::Inertia& Icom = getInertia();
+
+		SimTK::Inertia Ib = Icom;
+		// If com and body, b, frame are coincident then don't bother shifting
+		if (com.norm() > SimTK::Eps) {
+			// shift if com has nonzero distance from b
+			Ib = Icom.shiftFromMassCenter(com, m);
+		}
+	
+		return SimTK::MassProperties(m, com, Ib);
+	}
+	catch (const std::exception& ex) {
+		string msg = "Body " + getName() + " has invalid mass properties. ";
+		msg += ex.what();
+		throw Exception(msg, __FILE__, __LINE__);
+	}
 }
 
 //_____________________________________________________________________________

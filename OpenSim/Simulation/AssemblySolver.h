@@ -68,9 +68,8 @@ protected:
 	// Weight for built-in constraints to be satisfied
 	double _constraintWeight;
 
-	// The coordinates reference value and weighting. This is just a reference;
-    // don't delete it. It's kept as a pointer just to allow assignment.
-	SimTK::Array_<CoordinateReference>* _coordinateReferencesp;
+	// The coordinates reference value and weighting. This is full copy rather than ref.
+	SimTK::Array_<CoordinateReference> _coordinateReferencesp;
 
 	// Underlying SimTK::Assembler that will perform the assembly
 	SimTK::Assembler *_assembler;
@@ -89,7 +88,7 @@ public:
 	    of the assembly and (optional)constraint weight. Default is infinity
 		constraint weighting (i.e. rigidly enforced) during assembly. */
 	AssemblySolver(const Model &model, 
-				   SimTK::Array_<CoordinateReference> &coordinateReferences,
+				   const SimTK::Array_<CoordinateReference> &coordinateReferences,
 				   double constraintWeight = SimTK::Infinity);
 
 	virtual ~AssemblySolver();
@@ -107,7 +106,7 @@ public:
 	/** Specify which coordinates to match, each with a desired value and a
 	    relative weighting. */
 	const SimTK::Array_<CoordinateReference>& getCoordinateReferences() const
-    {   return *_coordinateReferencesp; };
+    {   return _coordinateReferencesp; };
 	/** Once a set of coordinates has been specified its reference value and 
         weight can be updated directly */
 	void updateCoordinateReference(const std::string &coordName, double value, 
