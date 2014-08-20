@@ -265,10 +265,6 @@ void PropertySet::
 append(Property_Deprecated *aProperty, const string& aName)
 {
 	_array.append(aProperty);
-
-	// Add the property to the specified group, creating the group if necessary.
-	PropertyGroup* group = addGroup(aName);
-	group->add(aProperty);
 }
 
 //=============================================================================
@@ -288,12 +284,6 @@ remove(const string &aName)
 	PropertyInt prop(aName,0);
 	for(i=0;i<_array.getSize();i++) {
 		if((*_array[i]) == prop) {
-			// Found a match, so remove the property from all the groups,
-			// and then remove the property.
-			int j;
-			for (j=0; j <_propertyGroups.getSize(); j++) {
-				_propertyGroups.get(j)->remove(_array[i]);
-			}
 			_array.remove(i);
 			return;
 		}
@@ -318,138 +308,4 @@ clear()
 	// Remove all the properties.
 	_array.setSize(0);
 	_array.trim();
-
-	// Remove all the groups.
-	_propertyGroups.setSize(0);
-	_propertyGroups.trim();
-}
-
-//_____________________________________________________________________________
-/**
- * Add an empty group to the set, if it is not already in there.
- */
-PropertyGroup* PropertySet::
-addGroup(string aGroupName)
-{
-    int index = _propertyGroups.getIndex(aGroupName);
-	if (index == -1) {
-		PropertyGroup* group = new PropertyGroup(aGroupName);
-	   _propertyGroups.append(group);
-       return group;
-	}
-	return _propertyGroups.get(index);
-}
-
-//_____________________________________________________________________________
-/**
- * Add a property to a group. The group will be created if it does not already
- * exist, but the property must already be in the PropertySet for it to be
- * added to the group.
- */
-void PropertySet::
-addPropertyToGroup(std::string aGroupName, std::string aPropertyName)
-{
-	Property_Deprecated* prop = _array.get(aPropertyName);
-	if (prop)
-	{
-		PropertyGroup* group = _propertyGroups.get(aGroupName);
-		if (group == NULL)
-			group = addGroup(aGroupName);
-		group->add(prop);
-	}
-}
-
-//_____________________________________________________________________________
-/**
- * Add a property to a group. The group and the property must already be in the
- * PropertySet.
- */
-void PropertySet::
-addPropertyToGroup(PropertyGroup* aGroup, std::string aPropertyName)
-{
-	// Make sure the group and property are in the PropertySet before adding the
-	// property to the group.
-	Property_Deprecated* prop = _array.get(aPropertyName);
-	if (prop && aGroup)
-	{
-		int i;
-		for (i = 0; i < _propertyGroups.getSize(); i++) {
-			if (_propertyGroups.get(i) == aGroup) {
-				aGroup->add(prop);
-			}
-		}
-	}
-}
-
-//_____________________________________________________________________________
-/**
- * Add a property to a group. The group and the property must already be in the
- * PropertySet.
- */
-void PropertySet::
-addPropertyToGroup(PropertyGroup* aGroup, Property_Deprecated* aProperty)
-{
-	// Make sure the group and property are in the PropertySet before adding the
-	// property to the group.
-	int index = _array.getIndex(aProperty);
-	if (index >= 0 && aGroup)
-	{
-		int i;
-		for (i = 0; i < _propertyGroups.getSize(); i++) {
-			if (_propertyGroups.get(i) == aGroup) {
-				aGroup->add(_array[index]);
-			}
-		}
-	}
-}
-
-//_____________________________________________________________________________
-/**
- * Add a property to a group. The group will be created if it does not already
- * exist, but the property must already be in the PropertySet for it to be
- * added to the group.
- */
-void PropertySet::
-addPropertyToGroup(std::string aGroupName, Property_Deprecated* aProperty)
-{
-	int index = _array.getIndex(aProperty);
-	if (index >= 0)
-	{
-		PropertyGroup* group = _propertyGroups.get(aGroupName);
-		if (group == NULL)
-			group = addGroup(aGroupName);
-		group->add(aProperty);
-	}
-}
-
-//_____________________________________________________________________________
-/**
- * Get the group containing the passed-in property.
- */
-PropertyGroup* PropertySet::
-getGroupContaining(Property_Deprecated* aProperty)
-{
-	int i;
-	for (i = 0; i < _propertyGroups.getSize(); i++) {
-	   if (_propertyGroups[i]->getPropertyIndex(aProperty) >= 0)
-		   return _propertyGroups.get(i);
-	}
-
-	return NULL;
-}
-
-//_____________________________________________________________________________
-/**
- * Get the index of the group containing the passed-in property.
- */
-int PropertySet::
-getGroupIndexContaining(Property_Deprecated* aProperty)
-{
-	int i;
-	for (i = 0; i < _propertyGroups.getSize(); i++) {
-	   if (_propertyGroups.get(i)->getPropertyIndex(aProperty) >= 0)
-		   return i;
-	}
-
-	return -1;
 }
