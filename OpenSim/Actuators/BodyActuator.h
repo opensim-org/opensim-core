@@ -31,16 +31,17 @@ namespace OpenSim {
 class Body;
 class Model;
 
-//==============================================================================
+//=============================================================================
 //                              BODY ACTUATOR
-//==============================================================================
+//=============================================================================
 /**
- * Apply a spatial force (that is, force and torque) on the origin of the given
+ * Apply a spatial force (that is, [torque, force]) on the origin of the given
  * body. That is, the force is applied at the origin; torques don't have
- * associated points. This actuator has no states; the control is simply the
- * force/torque to be applied to the model and is passed through directly.
- * The associated Controller is expected to generate forces/torques in the body
- * frame.
+ * associated points. This actuator has no states; the control signal should 
+ * provide a 6D vector including [torque(3D), force(3D)] that is supposed to be 
+ * applied to the selected body.
+ * The associated Controller is expected to generate [torque, force] in the 
+ * ground frame.
  *
  * @author Soha Pouya, Michael Sherman
  */
@@ -48,16 +49,16 @@ class OSIMACTUATORS_API BodyActuator : public Actuator {
 	OpenSim_DECLARE_CONCRETE_OBJECT(BodyActuator, Actuator);
 public:
 
-	//==============================================================================
+	//==========================================================================
 	// PUBLIC METHODS
-	//==============================================================================
+	//==========================================================================
 	/** Default constructor leaves body names unspecified. **/
 	BodyActuator();
 
 	/** Convenience Constructor.
-	Create a body actuator that applies a vector of spatial force (i.e. torques and
-	forces) on a body. The torque is applied about the axis specified in body's body 
-	frame.
+	Create a body actuator that applies a vector of spatial forces in the form 
+	of [torque, force] on a body. The torque is applied about the axis specified
+	in ground frame.
 
 	@param[in] body   the body that the actuator applies torque to
 	*/
@@ -107,7 +108,7 @@ private:
 	double getPower(const SimTK::State& s) const override;
 	void overrideForce(SimTK::State& s, bool flag) const {}
 
-	//=============================================================================
+	//=========================================================================
 };	// END of class BodyActuator
 
 }; //namespace
