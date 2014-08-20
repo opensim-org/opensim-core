@@ -131,6 +131,32 @@ void BodyActuator::computeForce(const SimTK::State& s,
 	applyForceToPoint(s, body, Vec3(0), forceVec_G, bodyForces);
 
 }
+
+double BodyActuator::getPower(const SimTK::State& s) const
+{
+	const Body& body = getConnector<Body>("body").getConnectee();
+
+	SimTK::MobilizedBodyIndex body_mbi = getModel().getBodySet().get(body.getName()).getIndex();
+	const SimTK::MobilizedBody& body_mb = getModel().getMatterSubsystem().getMobilizedBody(body_mbi);
+	SimTK::SpatialVec bodySpatialVelocities = body_mb.getBodyVelocity(s);
+
+	SimTK::Vector bodyVelocityVec(6);
+	bodyVelocityVec[0] = bodySpatialVelocities[0][0];
+	bodyVelocityVec[1] = bodySpatialVelocities[0][1];
+	bodyVelocityVec[2] = bodySpatialVelocities[0][2];
+	bodyVelocityVec[3] = bodySpatialVelocities[1][0];
+	bodyVelocityVec[4] = bodySpatialVelocities[1][1];
+	bodyVelocityVec[5] = bodySpatialVelocities[1][2];
+
+	const SimTK::Vector bodyForceVals = getControls(s);
+
+	double power = 0.0;
+	for (int i = 0; i < 6; i++){
+		power += bodyForceVals[i] * bodyVelocityVec[i];
+	}
+
+	return power;
+}
 //_____________________________________________________________________________
 /**
 * Sets the actual Body reference 

@@ -97,14 +97,14 @@ private:
 	// Implement Force interface
 	//--------------------------------------------------------------------------
 	void computeForce(const SimTK::State& state,
-	SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-	SimTK::Vector& mobilityForces) const override;
+					SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+					SimTK::Vector& mobilityForces) const override;
 
 	//--------------------------------------------------------------------------
 	// Implement Actuator interface.
 	//--------------------------------------------------------------------------
 	int numControls() const override { return 6; }
-	double getPower(const SimTK::State& s) const { return 0; }
+	double getPower(const SimTK::State& s) const override;
 	void overrideForce(SimTK::State& s, bool flag) const {}
 
 	//=============================================================================
