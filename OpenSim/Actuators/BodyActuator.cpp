@@ -113,22 +113,18 @@ void BodyActuator::computeForce(const SimTK::State& s,
 	SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
 	SimTK::Vector& generalizedForces) const
 {
-	const SimbodyEngine& engine = getModel().getSimbodyEngine();
-
 	const Body& body = getConnector<Body>("body").getConnectee();
+	SimTK::MobilizedBodyIndex body_mbi = getModel().getBodySet().get(body.getName()).getIndex();
+	const SimTK::MobilizedBody& body_mb = getModel().getMatterSubsystem().getMobilizedBody(body_mbi);
 
-	const SimTK::Vector bodyForceVals = getControls(s);
-	const Vec3 torqueVec_B(bodyForceVals[0], bodyForceVals[1], bodyForceVals[2]);
-	const Vec3 forceVec_B(bodyForceVals[3], bodyForceVals[4], bodyForceVals[5]);
+	Vec3 bodyOriginLocation = body_mb.getBodyOriginLocation(s);
 
-	Vec3 torqueVec_G, forceVec_G;
-	engine.transform(s, body, torqueVec_B,
-		engine.getGroundBody(), torqueVec_G);
-	engine.transform(s, body, forceVec_B,
-		engine.getGroundBody(), forceVec_G);
+	const SimTK::Vector bodyForceInGround = getControls(s);
+	const Vec3 torqueVec_G(bodyForceInGround[0], bodyForceInGround[1], bodyForceInGround[2]);
+	const Vec3 forceVec_G(bodyForceInGround[3], bodyForceInGround[4], bodyForceInGround[5]);
 
 	applyTorque(s, body, torqueVec_G, bodyForces);
-	applyForceToPoint(s, body, Vec3(0), forceVec_G, bodyForces);
+	applyForceToPoint(s, body, bodyOriginLocation, forceVec_G, bodyForces);
 
 }
 
