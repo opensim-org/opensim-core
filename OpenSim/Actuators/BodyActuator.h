@@ -59,7 +59,6 @@ public:
 	forces) on a body. The torque is applied about the axis specified in body's body 
 	frame.
 
-	@param[in] name   the name associated with this actuator
 	@param[in] body   the body that the actuator applies torque to
 	*/
 	explicit BodyActuator(const OpenSim::Body& body);
