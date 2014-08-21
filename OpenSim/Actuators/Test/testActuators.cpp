@@ -79,7 +79,7 @@ int main()
     }
 	try { testActuatorsCombination(); }
 	catch (const std::exception& e) {
-		cout << e.what() << endl; failures.push_back("testBodyActuator");
+		cout << e.what() << endl; failures.push_back("testActuatorsCombination");
 	}
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
@@ -791,7 +791,7 @@ void testActuatorsCombination()
 
 	// ------ build the model
 	model->print("TestActuatorCombinationModel.osim");
-	model->setUseVisualizer(false);
+	model->setUseVisualizer(true);
 
 	// get a new system and state to reflect additions to the model
 	State& state1 = model->initSystem();
@@ -845,7 +845,7 @@ void testActuatorsCombination()
 	// compare the acc due to forces/torques applied by all actuator
 	model->computeStateVariableDerivatives(state1);
 
-	const Vector &udotActuatorsCombination = state1.getUDot();
+	Vector udotActuatorsCombination = state1.getUDot();
 	udotActuatorsCombination.dump("Accelerations due to all 3 actuators");
 
 
@@ -868,7 +868,7 @@ void testActuatorsCombination()
 	// make the torque component as the sum of body and torque actuators used in 
 	// previous tets case
 	for (int i = 0; i < 3; i++){
-		bodyActuatorSum_Controls(i) = 2 * torqueInG(i);
+		bodyActuatorSum_Controls(i) = torqueInG(i);
 	}
 	// also apply the force component around x-axis which was applied by a 
 	// pointActuator in previous test case
@@ -885,7 +885,7 @@ void testActuatorsCombination()
 	// now compare the acc due to forces/torques applied by this body actuator
 	model->computeStateVariableDerivatives(state2);
 
-	const Vector &udotOnlyBodyActuator = state2.getUDot();
+	Vector udotOnlyBodyActuator = state2.getUDot();
 	udotOnlyBodyActuator.dump("Accelerations due to only-one body actuator");
 
 	// Verify that the bodyActuator_sum also generates the same acceleration
