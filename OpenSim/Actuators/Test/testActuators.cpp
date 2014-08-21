@@ -27,6 +27,7 @@
 //    2. testBodyActuator()
 //    2. testClutchedPathSpring()
 //    3. testMcKibbenActuator()
+//	  4. testActuatorsCombination()
 //		
 // Add tests here as Actuators are added to OpenSim
 //
@@ -53,6 +54,8 @@ void testTorqueActuator();
 void testBodyActuator();
 void testClutchedPathSpring();
 void testMcKibbenActuator();
+void testActuatorsCombination();
+
 
 int main()
 {
@@ -74,6 +77,10 @@ int main()
     catch (const std::exception& e) {
         cout << e.what() << endl; failures.push_back("testMcKibbenActuator");
     }
+	try { testActuatorsCombination(); }
+	catch (const std::exception& e) {
+		cout << e.what() << endl; failures.push_back("testBodyActuator");
+	}
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
@@ -525,7 +532,16 @@ void testClutchedPathSpring()
 }
 
 
-
+//====================================================================================
+//                              TEST BODY ACTUATOR
+//====================================================================================
+/**
+* This test verifies the use of BodyActuator for applying spatial forces to a selected
+* body. It checks if using a BodyActuator generates equivalent acceleration compared 
+* to when applying the forces via mobilityForce.
+*
+* @author Soha Pouya
+*/
 void testBodyActuator()
 {
 	using namespace SimTK;
@@ -545,15 +561,20 @@ void testBodyActuator()
 	double r = 0.25,  h = 1.0;
 	double blockMass = 20.0, blockSideLength = 0.1;
 	Vec3 blockMassCenter(0);
-	Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
+	Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, 
+		blockSideLength, blockSideLength);
 
-	OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
+	OpenSim::Body *block = new OpenSim::Body("block", blockMass, 
+		blockMassCenter, blockInertia);
 
 	// Add display geometry to the block to visualize in the GUI
 	block->addDisplayGeometry("block.vtp");
 
-	Vec3 locationInParent(0, blockSideLength / 2, 0), orientationInParent(0), locationInBody(0), orientationInBody(0);
-	FreeJoint *blockToGroundFree = new FreeJoint("blockToGroundBall", ground, locationInParent, orientationInParent, *block, locationInBody, orientationInBody);
+	Vec3 locationInParent(0, blockSideLength / 2, 0), orientationInParent(0), 
+		locationInBody(0), orientationInBody(0);
+	FreeJoint *blockToGroundFree = new FreeJoint("blockToGroundBall", 
+		ground, locationInParent, orientationInParent, 
+		*block, locationInBody, orientationInBody);
 	
 	model->addBody(block);
 	model->addJoint(blockToGroundFree);
@@ -567,7 +588,9 @@ void testBodyActuator()
 	Vec3 torqueAxis(1 / sqrt(2.0), 0, 1 / sqrt(2.0));
 	Vec3 torqueInG = torqueMag*torqueAxis;
 
-	
+	// ---------------------------------------------------------------------------
+	// Use MobilityForces to Apply the given Torques and Forces to the body
+	// ---------------------------------------------------------------------------
 	State& state = model->initSystem();
 
 	model->getMultibodySystem().realize(state, Stage::Dynamics);
@@ -611,14 +634,14 @@ void testBodyActuator()
 
 	// clear the mobility forces
 	mobilityForces = 0;
-	
-	//Now add the actuator to the model and control it to generate the same
-	//torque as applied directly to the multibody system (above)
 
-	// Create and add the torque actuator to the model
+	// ---------------------------------------------------------------------------
+	// Use a BodyActuator to Apply the same given Torques and Forces to the body
+	// ---------------------------------------------------------------------------
+
+	// Create and add the body actuator to the model
 	BodyActuator* actuator = new BodyActuator(*block);
 	actuator->setName("BodyAct");
-	//actuator->updConnector<OpenSim::Body>("body").set_connected_to_name("block");
 	model->addForce(actuator);
 
 	model->print("TestBodyActuatorModel.osim");
@@ -627,34 +650,36 @@ void testBodyActuator()
 	// get a new system and state to reflect additions to the model
 	State& state1 = model->initSystem();
 
+	// -------------- Provide control signals for bodyActuator ----------
 	// Get the default control vector of the model
 	Vector modelControls = model->getDefaultControls();
 	
-	// Spedicfy a vector of control signals to include desired torques and forces to apply
+	// Spedicfy a vector of control signals to include desired torques and forces
 	Vector fixedControls(6);
 	for (int i = 0; i < 3; i++){
 		fixedControls(i) = torqueInG(i);
 		fixedControls(i + 3) = forceInG(i);
 	}
-	fixedControls.dump("Body forces applied by body Actuator:");
+	fixedControls.dump("Spatial forces applied by body Actuator:");
 
 	// Add control values and set their values
 	actuator->addInControls(fixedControls, modelControls);
 	model->setDefaultControls(modelControls);
 
-	// now compare the acc due to forces/torques applied by body actuator
+	// ------------------- Compute Acc and Compare -------------
+	// Compute the acc due to spatial forces applied by body actuator
 	model->computeStateVariableDerivatives(state1);
 
 	const Vector &udotBodyActuator = state1.getUDot();
 	udotBodyActuator.dump("Accelerations due to body actuator");
 
-	// Verify that the TorqueActuator also generates the same acceleration
+	// Verify that the BodyActuator also generates the same acceleration
 	// as the equivalent applied mobility force
 	for (int i = 0; i<udotBodyActuator.size(); ++i){
 		ASSERT_EQUAL(udotMobility[i], udotBodyActuator[i], 1.0e-12);
 	}
 
-	// Setup integrator and manager
+	// -------------- Setup integrator and manager -------------------
 	RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
 	integrator.setAccuracy(integ_accuracy);
 	Manager manager(*model, integrator);
@@ -664,6 +689,7 @@ void testBodyActuator()
 	manager.setFinalTime(final_t);
 	manager.integrate(state1);
 
+	// ----------------- Test Copying the model -------------------
 	// Before exiting lets see if copying the spring works
 	BodyActuator* copyOfActuator = actuator->clone();
 	ASSERT(*copyOfActuator == *actuator);
@@ -674,5 +700,211 @@ void testBodyActuator()
 		"Model from file FAILED to match model in memory.");
 
 	std::cout << " ********** Test BodyActuator time = ********** " <<
+		1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;
+}
+
+
+
+//==================================================================================
+//                         TEST ACTUATORS COMBINATION
+//==================================================================================
+/**
+* This test verifies if using a BodyActuator generates equivalent result in the body
+* acceleration compared to when using a combination of PointActuaor, TorqueActuaor 
+* and BodyActuator. 
+* It therefore also verifies model consistency when user defines and uses a 
+* combination of these 3 actuators. 
+* 
+* @author Soha Pouya
+*/
+void testActuatorsCombination()
+{
+	using namespace SimTK;
+	// start timing
+	std::clock_t startTime = std::clock();
+
+	// Setup OpenSim model
+	Model *model = new Model;
+
+	// turn off gravity
+	model->setGravity(Vec3(0));
+
+	//OpenSim bodies
+	OpenSim::Body& ground = model->getGroundBody();
+
+	//Cylindrical bodies
+	double r = 0.25, h = 1.0;
+	double blockMass = 20.0, blockSideLength = 0.1;
+	Vec3 blockMassCenter(0);
+	Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, 
+									blockSideLength, blockSideLength);
+
+	OpenSim::Body *block = new OpenSim::Body("block", blockMass, 
+									blockMassCenter, blockInertia);
+
+	// Add display geometry to the block to visualize in the GUI
+	block->addDisplayGeometry("block.vtp");
+
+	Vec3 locationInParent(0, blockSideLength / 2, 0), orientationInParent(0), 
+		 locationInBody(0), orientationInBody(0);
+	FreeJoint *blockToGroundFree = new FreeJoint("blockToGroundBall", 
+				ground, locationInParent, orientationInParent, 
+				*block, locationInBody, orientationInBody);
+
+	model->addBody(block);
+	model->addJoint(blockToGroundFree);
+
+	// specify magnitude and direction of applied force and torque
+	double forceMag = 1.0;
+	Vec3 forceAxis(1, 1, 1);
+	Vec3 forceInG = forceMag * forceAxis;
+
+	double torqueMag = 2.1234567890;
+	Vec3 torqueAxis(1 / sqrt(2.0), 0, 1 / sqrt(2.0));
+	Vec3 torqueInG = torqueMag*torqueAxis;
+
+	// needed to be called here once to build controller for body actuator
+	State& state = model->initSystem();
+	
+	// ---------------------------------------------------------------------------
+	// Add a set of PointActuator, TorqueActuator and BodyActuator to the model
+	// ---------------------------------------------------------------------------
+	// Create and add a body actuator to the model
+	BodyActuator* bodyActuator1 = new BodyActuator(*block);
+	bodyActuator1->setName("BodyAct1");
+	model->addForce(bodyActuator1);
+	
+	// Create and add a torque actuator to the model
+	TorqueActuator* torqueActuator =
+		new TorqueActuator(*block, ground, torqueAxis, true);
+	torqueActuator->setName("torqueAct");
+	model->addForce(torqueActuator);
+
+	// Create and add a point actuator to the model
+	PointActuator* pointActuator =
+		new PointActuator("block");
+	pointActuator->setName("pointAct");
+	Vec3 dir_x; dir_x.setToZero(); dir_x(0) = 1;
+	pointActuator->set_direction(dir_x);
+	model->addForce(pointActuator);
+
+
+	// ------ build the model
+	model->print("TestActuatorCombinationModel.osim");
+	model->setUseVisualizer(false);
+
+	// get a new system and state to reflect additions to the model
+	State& state1 = model->initSystem();
+
+	// ------------------- Provide control signals for bodyActuator ----------------
+	// Get the default control vector of the model
+	Vector modelControls = model->getDefaultControls();
+
+	// Spedicfy a vector of control signals for desired torques and forces
+	Vector bodyActuator1Controls(6);
+	for (int i = 0; i < 3; i++){
+		bodyActuator1Controls(i) = torqueInG(i);
+		bodyActuator1Controls(i + 3) = 0.0;
+	}
+	bodyActuator1Controls.dump("Spatial forces applied by first Body Actuator:");
+
+	// Add control values and set their values
+	bodyActuator1->addInControls(bodyActuator1Controls, modelControls);
+	model->setDefaultControls(modelControls);
+
+	// ---------------- Provide control signals for torqueActuator -----------------
+	Vector torqueActuatorControls(1); // input to addInControl should be a Vector
+	torqueActuatorControls(0) = torqueMag; // axis already defined when initializing 
+
+	Vector torqueActuatorVector(3); // to print out the 3D vector of applied torque
+	for (int i = 0; i < 3; i++){
+		torqueActuatorVector(i) = torqueInG(i);
+	}
+	torqueActuatorVector.dump("Torques applied by the Torque Actuator:");
+
+	// Add control values and set their values
+	torqueActuator->addInControls(torqueActuatorControls, modelControls);
+	model->setDefaultControls(modelControls);
+
+	// ------------------ Provide control signals for pointActuator ----------------
+	Vector pointActuatorControls(1);
+	pointActuatorControls(0) = forceMag;
+
+	Vector forceActuatorVector(3); // to print out the whole force vector
+	forceActuatorVector.setToZero();
+	forceActuatorVector(0) = forceInG(0); // only apply the force in X direcion
+	
+	forceActuatorVector.dump("Forces applied by the point Actuator:");
+
+	// Add control values and set their values
+	pointActuator->addInControls(pointActuatorControls, modelControls);
+	model->setDefaultControls(modelControls);
+
+	
+	// ----------------------- Compute the acc to Compare later --------------------
+	// compare the acc due to forces/torques applied by all actuator
+	model->computeStateVariableDerivatives(state1);
+
+	const Vector &udotActuatorsCombination = state1.getUDot();
+	udotActuatorsCombination.dump("Accelerations due to all 3 actuators");
+
+
+	// -----------------------------------------------------------------------------
+	// Add a BodyActuator to enclose all of the above spatial forces in one Actuator 
+	// -----------------------------------------------------------------------------
+	// Create and add a body actuator to the model
+	BodyActuator* bodyActuator_sum = new BodyActuator(*block);
+	bodyActuator_sum->setName("BodyAct_Sum");
+	model->addForce(bodyActuator_sum);
+
+	State& state2 = model->initSystem();
+
+	// Get the default control vector of the model
+	Vector modelControls_2 = model->getDefaultControls();
+
+	// Spedicfy a vector of control signals for desired torques and forces
+	Vector bodyActuatorSum_Controls(6);
+	bodyActuatorSum_Controls.setToZero();
+	// make the torque component as the sum of body and torque actuators used in 
+	// previous tets case
+	for (int i = 0; i < 3; i++){
+		bodyActuatorSum_Controls(i) = 2 * torqueInG(i);
+	}
+	// also apply the force component around x-axis which was applied by a 
+	// pointActuator in previous test case
+	bodyActuatorSum_Controls(3) = forceInG(0);
+
+	bodyActuatorSum_Controls.dump("Spatial forces applied by 2nd Body Actuator:");
+	std:cout <<"(encloses sum of the above spatial forces in one BodyActuator)"<< std::endl;
+
+	// Add control values and set their values
+	bodyActuator_sum->addInControls(bodyActuatorSum_Controls, modelControls_2);
+	model->setDefaultControls(modelControls_2);
+
+	// --------------------------- Comptue Acc and Compare -------------------------
+	// now compare the acc due to forces/torques applied by this body actuator
+	model->computeStateVariableDerivatives(state2);
+
+	const Vector &udotOnlyBodyActuator = state2.getUDot();
+	udotOnlyBodyActuator.dump("Accelerations due to only-one body actuator");
+
+	// Verify that the bodyActuator_sum also generates the same acceleration
+	// as the equivalent applied by 3 Actuators in previous test case
+	for (int i = 0; i<udotActuatorsCombination.size(); ++i){
+		ASSERT_EQUAL(udotOnlyBodyActuator[i], udotActuatorsCombination[i], 1.0e-12);
+	}
+
+	// ------------------------ Setup integrator and manager -----------------------
+	RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
+	integrator.setAccuracy(integ_accuracy);
+	Manager manager(*model, integrator);
+
+	manager.setInitialTime(0.0);
+	double final_t = 1.00;
+	manager.setFinalTime(final_t);
+	manager.integrate(state2);
+
+
+	std::cout << " ********** Test Actuator Combination time = ********** " <<
 		1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;
 }
