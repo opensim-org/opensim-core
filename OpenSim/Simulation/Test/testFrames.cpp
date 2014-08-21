@@ -59,7 +59,7 @@ int main()
 
 	try { testStationOnFrame(); }
 	catch (const std::exception& e){
-		cout << e.what() << endl; failures.push_back("testFixedFrameOnBodyFrame");
+		cout << e.what() << endl; failures.push_back("testStationOnFrame");
 	}
 
     if (!failures.empty()) {
@@ -110,7 +110,7 @@ void testFixedFrameOnBodyFrame()
 	dPendulum->addModelComponent(atOriginFrame);
 	SimTK::State& st = dPendulum->initSystem();
     const SimTK::Transform rod1FrameXform = rod1.calcGroundTransform(st);
-    SimTK::Transform xform = atOriginFrame->calcGroundTransform(st);
+    SimTK::Transform xform = atOriginFrame->getGroundTransform(st);
 	// xform should have 0.0 translation
 	assert(xform.p().norm() < 1e-6);
 	return;

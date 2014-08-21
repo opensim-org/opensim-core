@@ -43,7 +43,7 @@ using SimTK::Vec3;
 /**
  * Default constructor.
  */
-FixedFrame::FixedFrame() : Frame()
+FixedFrame::FixedFrame() : RigidFrame()
 {
 	setNull();
 	constructInfrastructure();
@@ -51,14 +51,23 @@ FixedFrame::FixedFrame() : Frame()
 
 //_____________________________________________________________________________
 /**
- * Constructor.
+ * Constructors.
  */
-FixedFrame::FixedFrame(const Frame& parent_frame) : Frame()
+FixedFrame::FixedFrame(const RigidFrame& parent_frame) : RigidFrame()
 {
 	setNull();
 	constructInfrastructure();
 	setParentFrame(parent_frame);
 	
+}
+
+FixedFrame::FixedFrame(const RigidFrame& parent_frame, const SimTK::Transform& xform) : RigidFrame()
+{
+	setNull();
+	constructInfrastructure();
+	setParentFrame(parent_frame);
+	setTransform(xform);
+
 }
 //_____________________________________________________________________________
 /**
@@ -84,7 +93,7 @@ void FixedFrame::constructProperties()
 
 void FixedFrame::constructStructuralConnectors()
 {
-	constructStructuralConnector<Frame>("parent_frame");
+	constructStructuralConnector<RigidFrame>("parent_frame");
 }
 
 
@@ -108,11 +117,11 @@ void FixedFrame::setTransform(const SimTK::Transform& xform)
 	set_translation(xform.p());
 	set_orientation(xform.R().convertRotationToBodyFixedXYZ());
 }
-const SimTK::Transform FixedFrame::calcGroundTransform(const SimTK::State &state) const
+const SimTK::Transform& FixedFrame::calcGroundTransform(const SimTK::State &state) const
 {
 
 
-    return getTransform()*getParentFrame().calcGroundTransform(state);
+    return getTransform()*getParentFrame().getGroundTransform(state);
 
 }
 
@@ -120,11 +129,11 @@ const SimTK::Transform FixedFrame::calcGroundTransform(const SimTK::State &state
 // GET AND SET
 //=============================================================================
 //_____________________________________________________________________________
-void FixedFrame::setParentFrame(const Frame& parent_frame) 
+void FixedFrame::setParentFrame(const RigidFrame& parent_frame) 
 { 
-	updConnector<Frame>("parent_frame").connect(parent_frame); 
+	updConnector<RigidFrame>("parent_frame").connect(parent_frame); 
 }
-const Frame& FixedFrame::getParentFrame() const { return getConnector<Frame>("parent_frame").getConnectee(); }
+const RigidFrame& FixedFrame::getParentFrame() const { return getConnector<RigidFrame>("parent_frame").getConnectee(); }
 
 
 

@@ -45,7 +45,7 @@ using SimTK::Vec3;
 /**
  * Default constructor.
  */
-Body::Body() : Frame()
+Body::Body() : RigidFrame()
 {
 	constructProperties();
 }
@@ -55,7 +55,7 @@ Body::Body() : Frame()
  * Constructor.
  */
 Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,const SimTK::Inertia& aInertia) :
-   Frame()
+   RigidFrame()
 {
 	constructProperties();
 	setName(aName);
@@ -450,7 +450,7 @@ Body* Body::addSlave()
 /**
  * Implementation of Frame interface by Body
  */
-const SimTK::Transform Body::calcGroundTransform(const SimTK::State& state) const {
+const SimTK::Transform& Body::calcGroundTransform(const SimTK::State& state) const {
 
     const SimTK::MobilizedBody &B = getModel().getMatterSubsystem().getMobilizedBody(_index);
     const SimTK::Transform& ground_X_B = B.getBodyTransform(state);

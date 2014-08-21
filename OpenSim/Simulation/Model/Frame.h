@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2013 Stanford University and the Authors                *
- * Author(s): Ajay Seth, Ayman Habib                                          *
+ * Author(s): Matt DeMers, Ajay Seth, Ayman Habib                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -66,22 +66,100 @@ public:
 	/** default contructor*/
 	Frame();
 
-	/** Spatial Operations for Frames*/
-	virtual const SimTK::Transform& getTransform() const = 0;
-    virtual const SimTK::Transform calcGroundTransform(const SimTK::State& state) const = 0;
-	const SimTK::Transform calcTransformToOtherFrame(const SimTK::State& state, const Frame& frame) const;
-	const SimTK::Vec3 expressVectorInAnotherFrame(const SimTK::State& state, const SimTK::Vec3& vec, const Frame& frame) const;
-	const SimTK::Vec3 expressPointInAnotherFrame(const SimTK::State& state, const SimTK::Vec3& point, const Frame& frame) const;
+	/** @name Spatial Operations for Frames
+	These methods allow access to the frame's transfrom and add some convenience
+	To do math with the transform.*/
+	/**@{**/
 
+	/**
+	* Get the transform that describes the translation and rotation of this
+	* frame (F frame) relative to its parent frame (P frame).  This method 
+	* returns the transform converting quantities expressed in F frame to 
+	* quantities expressed in the P frame. This is mathematically stated as, 
+	* vec_P = P_X_F*vec_F , 
+	* where P_X_F is the transform returned by getTransform.
+	*
+	* @param state       The state applied to the model when determining the 
+	*                    transform.
+	* @return transform  The transform between this frame and its parent frame
+	*/
+	/*
+	const SimTK::Transform& getTransform(const SimTK::State& state) const {
+		return calcTransform(state);
+	}*/
+	/**
+	* Get the transform that describes the translation and rotation of this
+	* frame (F frame) relative to the ground frame (G frame).  This method 
+	* returns the transform converting quantities expressed in F frame to 
+	* quantities expressed in the G frame. This is mathematically stated as,
+	* vec_G = G_X_F*vec_F ,
+	* where G_X_F is the transform returned by getGroundTransform.
+	* 
+	* @param state       The state applied to the model when determining the 
+	*                    transform.
+	* @return transform  The transform between this frame and the ground frame
+	*/
+	const SimTK::Transform& getGroundTransform(const SimTK::State& state) const {
+		return calcGroundTransform(state);
+	}
+	/**
+	* Get the transform that describes the translation and rotation of this
+	* frame (F frame) relative to another frame (A frame).  This method returns
+	* the transform converting quantities expressed in F frame to quantities
+	* expressed in the A frame. This is mathematically stated as,
+	* vec_A = A_X_F*vec_F ,
+	* where A_X_F is the transform returned by getGroundTransform.
+	* 
+	* @param state       The state applied to the model when determining the 
+	*                    transform.
+	* @param otherFrame  a second frame
+	* @return transform  The transform between this frame and otherFrame
+	*/
+	
+	const SimTK::Transform& calcTransformToOtherFrame(const SimTK::State& state, const Frame& otherFrame) const;
+	/**
+	* Take a vector expressed in this frame (F frame) as the same vector
+	* expressed in another frame (A frame).  This re-expression accounts
+	* for the difference in orientation between the frames. In mathematical
+	* form, this method returns vec_A, where vec_A = A_R_F*vec.  THIS METHOD
+	* DOES NOT PERFORM A HOMOGENOUS TRANSFORM, thus is does not add 
+	* translations to the vector.
+	*
+	* @param state       The state applied to the model when determining the
+	*                    transform.
+	* @param vec		 The vector to be re-expressed.
+	* @param otherFrame  The frame in which the vector will be re-expressed
+	* @return newVec     The expression of the vector in otherFrame.
+	* */
+	const SimTK::Vec3 expressVectorInAnotherFrame(const SimTK::State& state, const SimTK::Vec3& vec, const Frame& otherFrame) const;
+	/**
+	* Take a point located and expressed in this frame (F frame) and determine
+	* its location expressed in another frame (A frame) using the homogeneous 
+	* transformation. This transformation accounts for the difference in 
+	* orientation and translation between the frames. In mathematical form, 
+	* this method returns point_A, where point_A = A_T_F*point.
+	*
+	* @param state       The state applied to the model when determining the
+	*                    transform.
+	* @param vec		 The point to be re-expressed.
+	* @param otherFrame  The frame in which the point will be re-expressed
+	* @return newVec     The expression of the point measured in otherFrame.
+	*/
+	const SimTK::Vec3 expressPointInAnotherFrame(const SimTK::State& state, const SimTK::Vec3& point, const Frame& otherFrame) const;
+	/**@}**/
 	
 private:
 	void setNull();
 
 protected:
-	static const SimTK::Transform identityTransform;
+	/** @name Utility methods
+	These methods just help with frame computations*/
+	/**@{**/
+	virtual const SimTK::Transform& calcGroundTransform(const SimTK::State& state) const = 0;
+	/**@}**/
 
 //=============================================================================
-};	// END of class Body
+};	// END of class Frame
 //=============================================================================
 //=============================================================================
 
