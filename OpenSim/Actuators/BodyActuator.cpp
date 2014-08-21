@@ -114,26 +114,36 @@ void BodyActuator::computeForce(const SimTK::State& s,
 	SimTK::Vector& generalizedForces) const
 {
 	const Body& body = getConnector<Body>("body").getConnectee();
-	SimTK::MobilizedBodyIndex body_mbi = getModel().getBodySet().get(body.getName()).getIndex();
-	const SimTK::MobilizedBody& body_mb = getModel().getMatterSubsystem().getMobilizedBody(body_mbi);
+	SimTK::MobilizedBodyIndex body_mbi = body.getIndex();
+	const SimTK::MobilizedBody& body_mb = getModel().getMatterSubsystem().
+											getMobilizedBody(body_mbi);
 
 	Vec3 bodyOriginLocation = body_mb.getBodyOriginLocation(s);
 
 	const SimTK::Vector bodyForceInGround = getControls(s);
-	const Vec3 torqueVec_G(bodyForceInGround[0], bodyForceInGround[1], bodyForceInGround[2]);
-	const Vec3 forceVec_G(bodyForceInGround[3], bodyForceInGround[4], bodyForceInGround[5]);
+	const Vec3 torqueVec_G(bodyForceInGround[0], bodyForceInGround[1], 
+							bodyForceInGround[2]);
+	const Vec3 forceVec_G(bodyForceInGround[3], bodyForceInGround[4],
+						bodyForceInGround[5]);
 
 	applyTorque(s, body, torqueVec_G, bodyForces);
 	applyForceToPoint(s, body, bodyOriginLocation, forceVec_G, bodyForces);
 
 }
 
+//_____________________________________________________________________________
+/**
+* Compute power consumed by moving the body via applied spatial force.
+* Reads the body spatial velocity vector and spatial force vector applied via
+* BodyActuator and computes the power as p = F (dotProdcut) V.
+*/
 double BodyActuator::getPower(const SimTK::State& s) const
 {
 	const Body& body = getConnector<Body>("body").getConnectee();
 
-	SimTK::MobilizedBodyIndex body_mbi = getModel().getBodySet().get(body.getName()).getIndex();
-	const SimTK::MobilizedBody& body_mb = getModel().getMatterSubsystem().getMobilizedBody(body_mbi);
+	SimTK::MobilizedBodyIndex body_mbi = body.getIndex();
+	const SimTK::MobilizedBody& body_mb = getModel().getMatterSubsystem().
+												getMobilizedBody(body_mbi);
 	SimTK::SpatialVec bodySpatialVelocities = body_mb.getBodyVelocity(s);
 
 	SimTK::Vector bodyVelocityVec(6);
