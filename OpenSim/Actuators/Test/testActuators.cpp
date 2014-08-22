@@ -778,6 +778,7 @@ void testActuatorsCombination()
 	BodyActuator* bodyActuator1 = new BodyActuator(*block);
 	bodyActuator1->setName("BodyAct1");
 	model->addForce(bodyActuator1);
+	bodyActuator1->set_point(Vec3(0, blockSideLength / 2, 0));
 	
 	// Create and add a torque actuator to the model
 	TorqueActuator* torqueActuator =
@@ -790,7 +791,7 @@ void testActuatorsCombination()
 		new PointActuator("block");
 	pointActuator->setName("pointAct");
 	pointActuator->set_direction(forceAxis);
-	pointActuator->set_point(Vec3(0));
+	pointActuator->set_point(Vec3(0, blockSideLength/2,0));
 	model->addForce(pointActuator);
 
 	// ------ build the model -----
@@ -859,6 +860,8 @@ void testActuatorsCombination()
 	BodyActuator* bodyActuator_sum = new BodyActuator(*block);
 	bodyActuator_sum->setName("BodyAct_Sum");
 	model->addForce(bodyActuator_sum);
+	bodyActuator_sum->set_point(Vec3(0, blockSideLength / 2, 0));
+
 
 	State& state2 = model->initSystem();
 	model->setUseVisualizer(true);
