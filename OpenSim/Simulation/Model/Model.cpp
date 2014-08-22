@@ -1177,6 +1177,18 @@ int Model::getNumBodies() const
 {
 	return  getBodySet().getSize();
 }
+
+//_____________________________________________________________________________
+/**
+* Get the total number of frames in the model (not including Bodies).
+*
+* @return Number of frames.
+*/
+int Model::getNumFrames() const
+{
+    return  getFrameSet().getSize();
+}
+
 //_____________________________________________________________________________
 /**
  * Get the total number of joints in the model.
