@@ -52,6 +52,7 @@
 
 #include "Muscle.h"
 #include "CoordinateSet.h"
+#include "FrameSet.h"
 #include "BodySet.h"
 #include "AnalysisSet.h"
 #include "ForceSet.h"
@@ -255,6 +256,9 @@ void Model::constructProperties()
 
 	BodySet bodies;
 	constructProperty_BodySet(bodies);
+
+    FrameSet frames;
+    constructProperty_FrameSet(frames);
 
 	JointSet joints;
 	constructProperty_JointSet(joints);
@@ -828,6 +832,18 @@ void Model::addBody(OpenSim::Body* body)
 		updBodySet().adoptAndAppend(body);
 		addComponent(body);
 	}
+}
+
+//_____________________________________________________________________________
+/*
+* Add a Frame to the Model.
+*/
+void Model::addFrame(OpenSim::Frame* frame)
+{
+    if (frame){
+        updFrameSet().adoptAndAppend(frame);
+        addComponent(frame);
+    }
 }
 
 //_____________________________________________________________________________
