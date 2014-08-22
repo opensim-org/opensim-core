@@ -54,6 +54,12 @@ public:
 	/** @name Property declarations
 	These are the serializable properties associated with this class. **/
 	/**@{**/
+	OpenSim_DECLARE_PROPERTY(point, SimTK::Vec3,
+		"Location of application point; in body frame unless "
+		"point_is_global=true");
+	/** The default is point_is_global=false. **/
+	OpenSim_DECLARE_PROPERTY(point_is_global, bool,
+		"Interpret point in Ground frame if true; otherwise, body frame.");
 	/** The default is spatial_force_is_global=true. **/
 	OpenSim_DECLARE_PROPERTY(spatial_force_is_global, bool,
 		"Interpret axis in Ground frame if true; otherwise, body's frame.");
@@ -78,10 +84,20 @@ public:
 	// assignment operator.
 
 	explicit BodyActuator(const OpenSim::Body& body,
-						  bool axisInGroundNotInBodyFrame = true);
+						  const SimTK::Vec3& point = SimTK::Vec3(0), //pointOfApplication
+						  bool pointInGround = false,
+						  bool axisInGround = true);
 	//--------------------------------------------------------------------------
 	// Get & Set
 	//--------------------------------------------------------------------------
+	/** Set the 'spatial_force_is_global' property that determines how to
+	interpret the 'axis' vector; if not global (Ground frame) it is in body's
+	frame. **/
+	void setPoint(SimTK::Vec3& point)
+	{set_point(point);}
+	/** Return the current value of the 'spatial_force_is_global' property. **/
+	const SimTK::Vec3& getPoint() const
+	{return get_point();}
 
 	/** Set the 'spatial_force_is_global' property that determines how to 
 	interpret the 'axis' vector; if not global (Ground frame) it is in body's  

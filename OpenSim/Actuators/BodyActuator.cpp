@@ -48,24 +48,31 @@ BodyActuator::BodyActuator()
 {
 	setAuthors("Soha Pouya, Michael Sherman");
 	constructInfrastructure();
+
 }
 //_____________________________________________________________________________
 /**
 * Convenience constructor.
 */
 BodyActuator::BodyActuator(const OpenSim::Body& body, 
-						   bool axisInGroundNotInBodyFrame)
+						   const SimTK::Vec3& point,
+						   bool pointIsInGround,
+						   bool axisInGround)
 {
 	setAuthors("Soha Pouya, Michael Sherman");
 	constructInfrastructure();
 
 	updConnector<Body>("body").set_connected_to_name(body.getName());
 
-	set_spatial_force_is_global(axisInGroundNotInBodyFrame);
+	set_point(point); // origin
+	set_point_is_global(pointIsInGround);
+	set_spatial_force_is_global(axisInGround);
 }
 
 void BodyActuator::constructProperties()
 {
+	constructProperty_point(Vec3(0)); // origin
+	constructProperty_point_is_global(false);
 	constructProperty_spatial_force_is_global(true);
 }
 //_____________________________________________________________________________
@@ -127,7 +134,7 @@ void BodyActuator::computeForce(const SimTK::State& s,
 	const SimTK::MobilizedBody& body_mb = getModel().getMatterSubsystem().
 											getMobilizedBody(body_mbi);
 
-	Vec3 bodyOriginLocationInBody = Vec3(0); // body_mb.getBodyOriginLocation(s);
+	Vec3 pointOfApplication = Vec3(0); //get_point(); //body_mb.getBodyOriginLocation(s);
 
 	// get the control signals
 	const SimTK::Vector bodyForceVals = getControls(s);
@@ -145,8 +152,14 @@ void BodyActuator::computeForce(const SimTK::State& s,
 		engine.transform(s, body, forceVec, engine.getGroundBody(), forceVec);
 	}
 
+	// if the point of applying force is not in body frame (which is the default 
+	// case) transform it to body frame
+	if (get_point_is_global())
+		engine.transformPosition(s, engine.getGroundBody(), pointOfApplication,
+								 body, pointOfApplication);
+
 	applyTorque(s, body, torqueVec, bodyForces);
-	applyForceToPoint(s, body, bodyOriginLocationInBody, forceVec, bodyForces);
+	applyForceToPoint(s, body, pointOfApplication, forceVec, bodyForces);
 
 }
 
