@@ -31,7 +31,6 @@
 // STATICS
 //=============================================================================
 using namespace std;
-//using namespace SimTK;
 using namespace OpenSim;
 using SimTK::Mat33;
 using SimTK::Vec3;
@@ -60,20 +59,20 @@ void Frame::setNull()
 // FRAME COMPUTATIONS
 //=============================================================================
 //_____________________________________________________________________________
-const SimTK::Transform& Frame::calcTransformToOtherFrame(const SimTK::State& state, const Frame& otherFrame) const
+SimTK::Transform Frame::calcTransformToOtherFrame(const SimTK::State& state, const Frame& otherFrame) const
 {
     SimTK::Transform ground_X_me = calcGroundTransform(state);
     SimTK::Transform ground_X_other = otherFrame.calcGroundTransform(state);
 	return ~ground_X_other*ground_X_me;
 }
 
-const SimTK::Vec3 Frame::expressVectorInAnotherFrame(const SimTK::State& state, const SimTK::Vec3& vec, const Frame& frame) const
+SimTK::Vec3 Frame::expressVectorInAnotherFrame(const SimTK::State& state, const SimTK::Vec3& vec, const Frame& frame) const
 {
 	SimTK::Transform other_X_me = calcTransformToOtherFrame(state, frame);
 	return other_X_me.R()*vec;
 }
 
-const SimTK::Vec3 Frame::expressPointInAnotherFrame(const SimTK::State& state, const SimTK::Vec3& point, const Frame& otherFrame) const
+SimTK::Vec3 Frame::expressPointInAnotherFrame(const SimTK::State& state, const SimTK::Vec3& point, const Frame& otherFrame) const
 {
 	SimTK::Transform other_X_me = calcTransformToOtherFrame(state, otherFrame);
 	return other_X_me*point;

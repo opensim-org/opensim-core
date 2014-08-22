@@ -110,7 +110,7 @@ protected:
     // Model component interface.
 	void constructStructuralConnectors() override;
 	// Frame interface
-	const SimTK::Transform& calcGroundTransform(const SimTK::State& state) const override;
+	SimTK::Transform calcGroundTransform(const SimTK::State& state) const override;
 	
 
 

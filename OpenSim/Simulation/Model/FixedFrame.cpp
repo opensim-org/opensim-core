@@ -117,10 +117,9 @@ void FixedFrame::setTransform(const SimTK::Transform& xform)
 	set_translation(xform.p());
 	set_orientation(xform.R().convertRotationToBodyFixedXYZ());
 }
-const SimTK::Transform& FixedFrame::calcGroundTransform(const SimTK::State &state) const
+
+SimTK::Transform FixedFrame::calcGroundTransform(const SimTK::State &state) const
 {
-
-
     return getTransform()*getParentFrame().getGroundTransform(state);
 
 }

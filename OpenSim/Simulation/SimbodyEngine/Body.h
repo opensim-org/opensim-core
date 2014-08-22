@@ -129,7 +129,7 @@ public:
 
     // Frame interface
     /** Get transform to Ground frame */
-    const SimTK::Transform& calcGroundTransform(const SimTK::State& state) const override;
+    SimTK::Transform calcGroundTransform(const SimTK::State& state) const override;
 
  protected:
     // Model component interface.

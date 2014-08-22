@@ -73,22 +73,6 @@ public:
 
 	/**
 	* Get the transform that describes the translation and rotation of this
-	* frame (F frame) relative to its parent frame (P frame).  This method 
-	* returns the transform converting quantities expressed in F frame to 
-	* quantities expressed in the P frame. This is mathematically stated as, 
-	* vec_P = P_X_F*vec_F , 
-	* where P_X_F is the transform returned by getTransform.
-	*
-	* @param state       The state applied to the model when determining the 
-	*                    transform.
-	* @return transform  The transform between this frame and its parent frame
-	*/
-	/*
-	const SimTK::Transform& getTransform(const SimTK::State& state) const {
-		return calcTransform(state);
-	}*/
-	/**
-	* Get the transform that describes the translation and rotation of this
 	* frame (F frame) relative to the ground frame (G frame).  This method 
 	* returns the transform converting quantities expressed in F frame to 
 	* quantities expressed in the G frame. This is mathematically stated as,
@@ -99,9 +83,10 @@ public:
 	*                    transform.
 	* @return transform  The transform between this frame and the ground frame
 	*/
-	const SimTK::Transform& getGroundTransform(const SimTK::State& state) const {
+	SimTK::Transform getGroundTransform(const SimTK::State& state) const {
 		return calcGroundTransform(state);
 	}
+
 	/**
 	* Get the transform that describes the translation and rotation of this
 	* frame (F frame) relative to another frame (A frame).  This method returns
@@ -116,7 +101,7 @@ public:
 	* @return transform  The transform between this frame and otherFrame
 	*/
 	
-	const SimTK::Transform& calcTransformToOtherFrame(const SimTK::State& state, const Frame& otherFrame) const;
+	SimTK::Transform calcTransformToOtherFrame(const SimTK::State& state, const Frame& otherFrame) const;
 	/**
 	* Take a vector expressed in this frame (F frame) as the same vector
 	* expressed in another frame (A frame).  This re-expression accounts
@@ -131,7 +116,7 @@ public:
 	* @param otherFrame  The frame in which the vector will be re-expressed
 	* @return newVec     The expression of the vector in otherFrame.
 	* */
-	const SimTK::Vec3 expressVectorInAnotherFrame(const SimTK::State& state, const SimTK::Vec3& vec, const Frame& otherFrame) const;
+	SimTK::Vec3 expressVectorInAnotherFrame(const SimTK::State& state, const SimTK::Vec3& vec, const Frame& otherFrame) const;
 	/**
 	* Take a point located and expressed in this frame (F frame) and determine
 	* its location expressed in another frame (A frame) using the homogeneous 
@@ -145,7 +130,7 @@ public:
 	* @param otherFrame  The frame in which the point will be re-expressed
 	* @return newVec     The expression of the point measured in otherFrame.
 	*/
-	const SimTK::Vec3 expressPointInAnotherFrame(const SimTK::State& state, const SimTK::Vec3& point, const Frame& otherFrame) const;
+	SimTK::Vec3 expressPointInAnotherFrame(const SimTK::State& state, const SimTK::Vec3& point, const Frame& otherFrame) const;
 	/**@}**/
 	
 private:
@@ -155,7 +140,7 @@ protected:
 	/** @name Utility methods
 	These methods just help with frame computations*/
 	/**@{**/
-	virtual const SimTK::Transform& calcGroundTransform(const SimTK::State& state) const = 0;
+	virtual SimTK::Transform calcGroundTransform(const SimTK::State& state) const = 0;
 	/**@}**/
 
 //=============================================================================
