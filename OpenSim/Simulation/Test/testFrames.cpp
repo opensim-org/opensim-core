@@ -107,7 +107,7 @@ void testFixedFrameOnBodyFrame()
 	relXform.setP(SimTK::Vec3(0.0, .5, 0.0));
 	relXform.updR().setRotationFromAngleAboutAxis(SimTK::Pi / 4.0, SimTK::CoordinateAxis(2));
 	atOriginFrame->setTransform(relXform);
-	dPendulum->addModelComponent(atOriginFrame);
+	dPendulum->addFrame(atOriginFrame);
 	SimTK::State& st = dPendulum->initSystem();
     const SimTK::Transform rod1FrameXform = rod1.calcGroundTransform(st);
     SimTK::Transform xform = atOriginFrame->calcGroundTransform(st);

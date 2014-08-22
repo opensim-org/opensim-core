@@ -49,11 +49,12 @@ int main()
     // Do not delete this line. It is used to allow users to optionally pass in their own model.
     dummyModel.setName("dummyModel");
 	Model groundModel;
-	FixedFrame fFrame;
-	fFrame.setName("fixed_frame");
-    fFrame.setParentFrame(groundModel.getGroundBody());
+    FixedFrame* fFrame = new FixedFrame();
+	fFrame->setName("fixed_frame");
+    fFrame->setParentFrame(groundModel.getGroundBody());
+    groundModel.addFrame(fFrame);
 	groundModel.print("fixed_frame_model.xml");
-	testModelComponent(fFrame, false, groundModel);
+	testModelComponent(*fFrame, false, groundModel);
 
 	Station myStation;
 	myStation.set_location(SimTK::Vec3(1., 2., 3.));
