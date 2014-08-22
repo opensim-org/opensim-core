@@ -53,16 +53,20 @@ BodyActuator::BodyActuator()
 /**
 * Convenience constructor.
 */
-BodyActuator::BodyActuator(const OpenSim::Body& body)
+BodyActuator::BodyActuator(const OpenSim::Body& body, 
+						   bool axisInGroundNotInBodyFrame)
 {
 	setAuthors("Soha Pouya, Michael Sherman");
 	constructInfrastructure();
 
 	updConnector<Body>("body").set_connected_to_name(body.getName());
+
+	set_spatial_force_is_global(axisInGroundNotInBodyFrame);
 }
 
 void BodyActuator::constructProperties()
 {
+	constructProperty_spatial_force_is_global(true);
 }
 //_____________________________________________________________________________
 /**
@@ -110,24 +114,39 @@ const OpenSim::Body& BodyActuator::getBody() const
 * Apply the actuator force/torque to Body.
 */
 void BodyActuator::computeForce(const SimTK::State& s,
-	SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-	SimTK::Vector& generalizedForces) const
+							    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+								SimTK::Vector& generalizedForces) const
 {
+	if (!_model) return;
+
+	const SimbodyEngine& engine = getModel().getSimbodyEngine();
+	const bool spatialForceIsGlobal = getSpatialForceIsGlobal();
+	
 	const Body& body = getConnector<Body>("body").getConnectee();
 	SimTK::MobilizedBodyIndex body_mbi = body.getIndex();
 	const SimTK::MobilizedBody& body_mb = getModel().getMatterSubsystem().
 											getMobilizedBody(body_mbi);
 
-	Vec3 bodyOriginLocation = body_mb.getBodyOriginLocation(s);
+	Vec3 bodyOriginLocationInBody = Vec3(0); // body_mb.getBodyOriginLocation(s);
 
-	const SimTK::Vector bodyForceInGround = getControls(s);
-	const Vec3 torqueVec_G(bodyForceInGround[0], bodyForceInGround[1], 
-							bodyForceInGround[2]);
-	const Vec3 forceVec_G(bodyForceInGround[3], bodyForceInGround[4],
-						bodyForceInGround[5]);
+	// get the control signals
+	const SimTK::Vector bodyForceVals = getControls(s);
 
-	applyTorque(s, body, torqueVec_G, bodyForces);
-	applyForceToPoint(s, body, bodyOriginLocation, forceVec_G, bodyForces);
+	// Read spatialForces which should be in ground frame by default
+	Vec3 torqueVec(bodyForceVals[0], bodyForceVals[1],
+		bodyForceVals[2]);
+	Vec3 forceVec(bodyForceVals[3], bodyForceVals[4],
+		bodyForceVals[5]);
+
+	// if the user has given the spatialForces in body frame, transform them to
+	// global (ground) frame
+	if (!spatialForceIsGlobal){
+		engine.transform(s, body, torqueVec, engine.getGroundBody(), torqueVec);
+		engine.transform(s, body, forceVec, engine.getGroundBody(), forceVec);
+	}
+
+	applyTorque(s, body, torqueVec, bodyForces);
+	applyForceToPoint(s, body, bodyOriginLocationInBody, forceVec, bodyForces);
 
 }
 

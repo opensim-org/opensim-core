@@ -48,10 +48,21 @@ class Model;
 class OSIMACTUATORS_API BodyActuator : public Actuator {
 	OpenSim_DECLARE_CONCRETE_OBJECT(BodyActuator, Actuator);
 public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+	/** @name Property declarations
+	These are the serializable properties associated with this class. **/
+	/**@{**/
+	/** The default is spatial_force_is_global=true. **/
+	OpenSim_DECLARE_PROPERTY(spatial_force_is_global, bool,
+		"Interpret axis in Ground frame if true; otherwise, body's frame.");
+	/**@}**/
 
-	//==========================================================================
-	// PUBLIC METHODS
-	//==========================================================================
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
+
 	/** Default constructor leaves body names unspecified. **/
 	BodyActuator();
 
@@ -62,19 +73,33 @@ public:
 
 	@param[in] body   the body that the actuator applies torque to
 	*/
-	explicit BodyActuator(const OpenSim::Body& body);
 
 	// Uses default (compiler-generated) destructor, copy constructor, copy 
 	// assignment operator.
 
+	explicit BodyActuator(const OpenSim::Body& body,
+						  bool axisInGroundNotInBodyFrame = true);
 	//--------------------------------------------------------------------------
 	// Get & Set
 	//--------------------------------------------------------------------------
+
+	/** Set the 'spatial_force_is_global' property that determines how to 
+	interpret the 'axis' vector; if not global (Ground frame) it is in body's  
+	frame. **/
+	void setSpatialForceIsGlobal(bool isGlobal)
+	{set_spatial_force_is_global(isGlobal);}
+	/** Return the current value of the 'spatial_force_is_global' property. **/
+	bool getSpatialForceIsGlobal() const
+	{return get_spatial_force_is_global();}
+
+	/* Set the body to which this actuator applies spatial forces. */
+	void setBody(OpenSim::Body& body);
+	const OpenSim::Body& getBody() const;
+
+	/* Set the body names to which this actuator applies spatial forces. */
 	void setBodyName(const std::string& name);
 	const std::string& getBodyName() const;
 
-	void setBody(OpenSim::Body& body);
-	const OpenSim::Body& getBody() const;
 
 private:
 	//--------------------------------------------------------------------------
