@@ -77,9 +77,6 @@ public:
 	/** Convenience constructors */	
 	FixedFrame(const RigidFrame& parent_frame);
 	FixedFrame(const RigidFrame& parent_frame, const SimTK::Transform& xform);
-
-	/** @name Get and set
-	/**@{**/
 	
 	/** Set the parent reference frame*/
 	void setParentFrame(const RigidFrame& frame);
