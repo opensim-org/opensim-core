@@ -65,10 +65,6 @@ int main()
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testTorqueActuator");
     }
-    try { testBodyActuator(); }
-    catch (const std::exception& e) {
-        cout << e.what() <<endl; failures.push_back("testBodyActuator");
-    }
     try { testClutchedPathSpring(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testClutchedPathSpring");
@@ -77,6 +73,10 @@ int main()
     catch (const std::exception& e) {
         cout << e.what() << endl; failures.push_back("testMcKibbenActuator");
     }
+	try { testBodyActuator(); }
+	catch (const std::exception& e) {
+		cout << e.what() << endl; failures.push_back("testBodyActuator");
+	}
 	try { testActuatorsCombination(); }
 	catch (const std::exception& e) {
 		cout << e.what() << endl; failures.push_back("testActuatorsCombination");
@@ -554,18 +554,18 @@ void testBodyActuator()
 	// turn off gravity
 	model->setGravity(Vec3(0));
 
-	//OpenSim bodies
+	//OpenSim body 1: Ground
 	OpenSim::Body& ground = model->getGroundBody();
 
-	//Cylindrical bodies
-	double r = 0.25,  h = 1.0;
-	double blockMass = 20.0, blockSideLength = 0.1;
+	// OpenSim body 2: A Block
+	// Geometrical/Inertial properties for the block
+	double blockMass = 1.0, blockSideLength = 1;
 	Vec3 blockMassCenter(0);
-	Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, 
-		blockSideLength, blockSideLength);
+	Inertia blockInertia = blockMass*Inertia::brick(blockSideLength/2,
+		blockSideLength/2, blockSideLength/2); // for the halves see doxygen for brick 
 
 	OpenSim::Body *block = new OpenSim::Body("block", blockMass, 
-		blockMassCenter, blockInertia);
+											 blockMassCenter, blockInertia);
 
 	// Add display geometry to the block to visualize in the GUI
 	block->addDisplayGeometry("block.vtp");
@@ -584,8 +584,8 @@ void testBodyActuator()
 	Vec3 forceAxis(1, 1, 1);
 	Vec3 forceInG = forceMag * forceAxis;
 
-	double torqueMag = 2.1234567890;
-	Vec3 torqueAxis(1 / sqrt(2.0), 0, 1 / sqrt(2.0));
+	double torqueMag = 1.0;
+	Vec3 torqueAxis(1, 1, 1);
 	Vec3 torqueInG = torqueMag*torqueAxis;
 
 	// ---------------------------------------------------------------------------
@@ -606,7 +606,7 @@ void testBodyActuator()
 	bodyForces.dump("Body Forces after applying 6D spatial force to the block");
 
 	model->getMultibodySystem().realize(state, Stage::Acceleration);
-	const Vector& udotBody = state.getUDot();
+	Vector udotBody = state.getUDot();
 	udotBody.dump("Accelerations due to body forces");
 
 	// clear body forces
@@ -625,7 +625,7 @@ void testBodyActuator()
 
 
 	model->getMultibodySystem().realize(state, Stage::Acceleration);
-	const Vector& udotMobility = state.getUDot();
+	Vector udotMobility = state.getUDot();
 	udotMobility.dump("Accelerations due to mobility forces");
 
 	for (int i = 0; i<udotMobility.size(); ++i){
@@ -670,7 +670,7 @@ void testBodyActuator()
 	// Compute the acc due to spatial forces applied by body actuator
 	model->computeStateVariableDerivatives(state1);
 
-	const Vector &udotBodyActuator = state1.getUDot();
+	Vector udotBodyActuator = state1.getUDot();
 	udotBodyActuator.dump("Accelerations due to body actuator");
 
 	// Verify that the BodyActuator also generates the same acceleration
@@ -737,6 +737,7 @@ void testActuatorsCombination()
 	// Geometrical/Inertial properties for the block
 	double blockMass = 1.0, blockSideLength = 1.0;
 	Vec3 blockMassCenter(0);
+	// Brick Inertia: for the halves see doxygen  
 	Inertia blockInertia = blockMass*Inertia::brick(blockSideLength/2, 
 									blockSideLength/2, blockSideLength/2);
 	std::cout << "blockInertia: " << blockInertia << std::endl;
@@ -794,7 +795,7 @@ void testActuatorsCombination()
 
 	// ------ build the model -----
 	model->print("TestActuatorCombinationModel.osim");
-	model->setUseVisualizer(true);
+	model->setUseVisualizer(false);
 
 	// get a new system and state to reflect additions to the model
 	State& state1 = model->initSystem();
