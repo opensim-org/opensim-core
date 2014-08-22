@@ -56,8 +56,8 @@ BodyActuator::BodyActuator()
 */
 BodyActuator::BodyActuator(const OpenSim::Body& body, 
 						   const SimTK::Vec3& point,
-						   bool pointIsInGround,
-						   bool axisInGround)
+						   bool pointIsGlobal,
+						   bool spatialForceIsGlobal)
 {
 	setAuthors("Soha Pouya, Michael Sherman");
 	constructInfrastructure();
@@ -65,8 +65,8 @@ BodyActuator::BodyActuator(const OpenSim::Body& body,
 	updConnector<Body>("body").set_connected_to_name(body.getName());
 
 	set_point(point); // origin
-	set_point_is_global(pointIsInGround);
-	set_spatial_force_is_global(axisInGround);
+	set_point_is_global(pointIsGlobal);
+	set_spatial_force_is_global(spatialForceIsGlobal);
 }
 
 void BodyActuator::constructProperties()
@@ -134,7 +134,7 @@ void BodyActuator::computeForce(const SimTK::State& s,
 	const SimTK::MobilizedBody& body_mb = getModel().getMatterSubsystem().
 											getMobilizedBody(body_mbi);
 
-	Vec3 pointOfApplication = Vec3(0); //get_point(); //body_mb.getBodyOriginLocation(s);
+	Vec3 pointOfApplication = get_point(); 
 
 	// get the control signals
 	const SimTK::Vector bodyForceVals = getControls(s);

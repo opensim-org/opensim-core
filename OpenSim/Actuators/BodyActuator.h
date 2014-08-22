@@ -84,20 +84,27 @@ public:
 	// assignment operator.
 
 	explicit BodyActuator(const OpenSim::Body& body,
-						  const SimTK::Vec3& point = SimTK::Vec3(0), //pointOfApplication
-						  bool pointInGround = false,
-						  bool axisInGround = true);
+						  const SimTK::Vec3& point = SimTK::Vec3(0),
+						  bool pointIsGlobal = false,
+						  bool spatialForceIsGlobal = true);
 	//--------------------------------------------------------------------------
 	// Get & Set
 	//--------------------------------------------------------------------------
-	/** Set the 'spatial_force_is_global' property that determines how to
-	interpret the 'axis' vector; if not global (Ground frame) it is in body's
-	frame. **/
+	/** Set the 'point' property that determines where the force vector should
+	be applied. The default is the origin of the body Vec3(0). **/
 	void setPoint(SimTK::Vec3& point)
 	{set_point(point);}
-	/** Return the current value of the 'spatial_force_is_global' property. **/
+	/** Return the current value of the 'point' property. **/
 	const SimTK::Vec3& getPoint() const
 	{return get_point();}
+
+	/** Set the 'point_is_global' property that determines whether the point is  
+    specified in inertial coordinates or in the body's local coordinates. **/
+	void setPointForceIsGlobal(bool isGlobal)
+	{set_point_is_global(isGlobal);	}
+	/** Return the current value of the 'point_is_global' property. **/
+	bool getPointIsGlobal() const
+	{return get_point_is_global();	}
 
 	/** Set the 'spatial_force_is_global' property that determines how to 
 	interpret the 'axis' vector; if not global (Ground frame) it is in body's  
