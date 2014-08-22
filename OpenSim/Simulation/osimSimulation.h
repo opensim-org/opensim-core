@@ -68,6 +68,7 @@
 #include "Model/Umberger2010MuscleMetabolicsProbe.h"
 #include "Model/Frame.h"
 #include "Model/FixedFrame.h"
+#include "Model/RigidFrame.h"
 
 #include "Manager/Manager.h"
 

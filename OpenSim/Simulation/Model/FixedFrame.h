@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/RigidFrame.h>
 
 
 namespace OpenSim {
@@ -41,8 +41,8 @@ class Body;
  *
  * @author Matt DeMers
  */
-class OSIMSIMULATION_API FixedFrame : public Frame {
-	OpenSim_DECLARE_CONCRETE_OBJECT(FixedFrame, Frame);
+class OSIMSIMULATION_API FixedFrame : public RigidFrame {
+	OpenSim_DECLARE_CONCRETE_OBJECT(FixedFrame, RigidFrame);
 public:
 //==============================================================================
 // PROPERTIES
@@ -74,23 +74,46 @@ public:
 	/** default contructor*/
 	FixedFrame();
 
-	/** Convenience constructor */	
-	FixedFrame(const Frame& parent_frame);
+	/** Convenience constructors */	
+	FixedFrame(const RigidFrame& parent_frame);
+	FixedFrame(const RigidFrame& parent_frame, const SimTK::Transform& xform);
 
-	/** Spatial Operations for Frames*/
-	virtual const SimTK::Transform& getTransform() const;
-	void setTransform(const SimTK::Transform& xform);
-    virtual const SimTK::Transform calcGroundTransform(const SimTK::State &state) const;
-
+	/** @name Get and set
+	/**@{**/
+	
 	/** Set the parent reference frame*/
-	void setParentFrame(const Frame& frame);
+	void setParentFrame(const RigidFrame& frame);
 	/** Get the parent reference frame*/
-	const Frame& getParentFrame() const;
+	const RigidFrame& getParentFrame() const;
+	/**
+	* Get the transform that describes the translation and rotation of this
+	* frame (F frame) relative to its parent frame (P frame).  This method
+	* returns the transform converting quantities expressed in F frame to
+	* quantities expressed in the P frame. This is mathematically stated as,
+	* vec_P = P_X_F*vec_F ,
+	* where P_X_F is the transform returned by getTransform.
+	*
+	* @param state       The state applied to the model when determining the
+	*                    transform.
+	* @return transform  The transform between this frame and its parent frame
+	*/
+	const SimTK::Transform& getTransform() const;
+	/** Set the transform the translates and rotates this frame (F frame) from 
+	* its parent frame (P frame). You should provide the transform P_x_F
+	* such that vec_P = P_X_F*vec_F
+	*
+	* @param transform  The transform between this frame and its parent frame
+	*/
+	void setTransform(const SimTK::Transform& xform);
+	
+
+	
 
 protected:
     // Model component interface.
 	void constructStructuralConnectors() override;
-
+	// Frame interface
+	const SimTK::Transform& calcGroundTransform(const SimTK::State& state) const override;
 	
 
 

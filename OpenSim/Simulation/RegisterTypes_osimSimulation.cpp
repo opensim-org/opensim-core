@@ -71,6 +71,7 @@
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
 #include "Model/Frame.h"
 #include "Model/FixedFrame.h"
+#include "Model/RigidFrame.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -236,6 +237,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 	// Register commonly used Connectors for de/serialization
 	Object::registerType(Connector<OpenSim::Body>());
 	Object::registerType(Connector<Frame>());
+	Object::registerType(Connector<RigidFrame>());
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.
