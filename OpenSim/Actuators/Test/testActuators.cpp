@@ -760,12 +760,12 @@ void testActuatorsCombination()
 	model->addJoint(blockToGroundFree);
 
 	// specify magnitude and direction of desired force and torque vectors to apply
-	double forceMag = 0.0;
-	Vec3 forceAxis(1, 1, 1);
+	double forceMag = 1.0;
+	Vec3 forceAxis(1, 0, 0);
 	Vec3 forceInG = forceMag * forceAxis;
 
-	double torqueMag = 2.1234567890;
-	Vec3 torqueAxis(1 / sqrt(2.0), 0, 1 / sqrt(2.0));
+	double torqueMag = 1;
+	Vec3 torqueAxis(1, 0, 0);
 	Vec3 torqueInG = torqueMag*torqueAxis;
 
 	// needed to be called here once to build controller for body actuator
@@ -805,11 +805,10 @@ void testActuatorsCombination()
 	Vector modelControls = model->getDefaultControls();
 
 	// Spedicfy a vector of control signals for desired torques and forces
-	Vector bodyActuator1Controls(6);
-	for (int i = 0; i < 3; i++){
-		bodyActuator1Controls(i) = torqueInG(i);
-		bodyActuator1Controls(i + 3) = forceInG(i);
-	}
+	Vector bodyActuator1Controls(6); bodyActuator1Controls.setToZero();
+	bodyActuator1Controls(0) = torqueInG(0); // torque in x-direction
+	bodyActuator1Controls(3) = forceInG(0); // force along x-direction
+	
 	bodyActuator1Controls.dump("Spatial forces applied by first Body Actuator:");
 
 	// Add control values and set their values
