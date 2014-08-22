@@ -729,15 +729,17 @@ void testActuatorsCombination()
 	// turn off gravity
 	model->setGravity(Vec3(0));
 
-	//OpenSim bodies
+	// OpenSim bodies: 1) The ground
 	OpenSim::Body& ground = model->getGroundBody();
+	//ground.addDisplayGeometry("block.vtp");
 
-	//Cylindrical bodies
-	double r = 0.25, h = 1.0;
-	double blockMass = 20.0, blockSideLength = 0.1;
+	// OpenSim bodies: 2) A Block
+	// Geometrical/Inertial properties for the block
+	double blockMass = 1.0, blockSideLength = 1.0;
 	Vec3 blockMassCenter(0);
-	Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, 
-									blockSideLength, blockSideLength);
+	Inertia blockInertia = blockMass*Inertia::brick(blockSideLength/2, 
+									blockSideLength/2, blockSideLength/2);
+	std::cout << "blockInertia: " << blockInertia << std::endl;
 
 	OpenSim::Body *block = new OpenSim::Body("block", blockMass, 
 									blockMassCenter, blockInertia);
@@ -745,17 +747,19 @@ void testActuatorsCombination()
 	// Add display geometry to the block to visualize in the GUI
 	block->addDisplayGeometry("block.vtp");
 
-	Vec3 locationInParent(0, blockSideLength / 2, 0), orientationInParent(0), 
+	// Make a FreeJoint from block to ground
+	Vec3 locationInParent(0, blockSideLength/2, 0), orientationInParent(0), //locationInParent(0, blockSideLength, 0)
 		 locationInBody(0), orientationInBody(0);
-	FreeJoint *blockToGroundFree = new FreeJoint("blockToGroundBall", 
+	FreeJoint *blockToGroundFree = new FreeJoint("blockToGroundFreeJoint", 
 				ground, locationInParent, orientationInParent, 
 				*block, locationInBody, orientationInBody);
 
+	// Add the body and joint to the model
 	model->addBody(block);
 	model->addJoint(blockToGroundFree);
 
-	// specify magnitude and direction of applied force and torque
-	double forceMag = 1.0;
+	// specify magnitude and direction of desired force and torque vectors to apply
+	double forceMag = 0.0;
 	Vec3 forceAxis(1, 1, 1);
 	Vec3 forceInG = forceMag * forceAxis;
 
@@ -784,12 +788,11 @@ void testActuatorsCombination()
 	PointActuator* pointActuator =
 		new PointActuator("block");
 	pointActuator->setName("pointAct");
-	Vec3 dir_x; dir_x.setToZero(); dir_x(0) = 1;
-	pointActuator->set_direction(dir_x);
+	pointActuator->set_direction(forceAxis);
+	pointActuator->set_point(Vec3(0));
 	model->addForce(pointActuator);
 
-
-	// ------ build the model
+	// ------ build the model -----
 	model->print("TestActuatorCombinationModel.osim");
 	model->setUseVisualizer(true);
 
@@ -804,7 +807,7 @@ void testActuatorsCombination()
 	Vector bodyActuator1Controls(6);
 	for (int i = 0; i < 3; i++){
 		bodyActuator1Controls(i) = torqueInG(i);
-		bodyActuator1Controls(i + 3) = 0.0;
+		bodyActuator1Controls(i + 3) = forceInG(i);
 	}
 	bodyActuator1Controls.dump("Spatial forces applied by first Body Actuator:");
 
@@ -827,14 +830,14 @@ void testActuatorsCombination()
 	model->setDefaultControls(modelControls);
 
 	// ------------------ Provide control signals for pointActuator ----------------
-	Vector pointActuatorControls(1);
-	pointActuatorControls(0) = forceMag;
+	Vector pointActuatorControls(1); // input to addInControl should be a Vector
+	pointActuatorControls(0) = forceMag; // axis already defined when initializing
 
-	Vector forceActuatorVector(3); // to print out the whole force vector
-	forceActuatorVector.setToZero();
-	forceActuatorVector(0) = forceInG(0); // only apply the force in X direcion
-	
-	forceActuatorVector.dump("Forces applied by the point Actuator:");
+	Vector pointActuatorVector(3); // to print out the whole force vector
+	for (int i = 0; i < 3; i++){
+		pointActuatorVector(i) = forceInG(i);
+	}
+	pointActuatorVector.dump("Forces applied by the point Actuator:");
 
 	// Add control values and set their values
 	pointActuator->addInControls(pointActuatorControls, modelControls);
@@ -858,6 +861,7 @@ void testActuatorsCombination()
 	model->addForce(bodyActuator_sum);
 
 	State& state2 = model->initSystem();
+	model->setUseVisualizer(true);
 
 	// Get the default control vector of the model
 	Vector modelControls_2 = model->getDefaultControls();
@@ -865,14 +869,12 @@ void testActuatorsCombination()
 	// Spedicfy a vector of control signals for desired torques and forces
 	Vector bodyActuatorSum_Controls(6);
 	bodyActuatorSum_Controls.setToZero();
-	// make the torque component as the sum of body and torque actuators used in 
-	// previous tets case
+	// make the torque component as the sum of body, torque and point actuators used 
+	// in previous tets case
 	for (int i = 0; i < 3; i++){
-		bodyActuatorSum_Controls(i) = torqueInG(i);
-	}
-	// also apply the force component around x-axis which was applied by a 
-	// pointActuator in previous test case
-	bodyActuatorSum_Controls(3) = forceInG(0);
+		bodyActuatorSum_Controls(i)   = 2*torqueInG(i);
+		bodyActuatorSum_Controls(i+3) = 2*forceInG(i);
+	}	
 
 	bodyActuatorSum_Controls.dump("Spatial forces applied by 2nd Body Actuator:");
 	std:cout <<"(encloses sum of the above spatial forces in one BodyActuator)"<< std::endl;
