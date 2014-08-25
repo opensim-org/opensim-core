@@ -41,6 +41,7 @@ using namespace std;
 
 void testBodyFrame();
 void testFixedFrameOnBodyFrame();
+void testFixedFrameOnBodyFrameSerialize();
 void testStationOnFrame();
 
 int main()
@@ -57,7 +58,12 @@ int main()
 		cout << e.what() <<endl; failures.push_back("testFixedFrameOnBodyFrame");
 	}
 
-	try { testStationOnFrame(); }
+    try { testFixedFrameOnBodyFrameSerialize(); }
+    catch (const std::exception& e){
+        cout << e.what() << endl; failures.push_back("testFixedFrameOnBodyFrame");
+    }
+    
+    try { testStationOnFrame(); }
 	catch (const std::exception& e){
 		cout << e.what() << endl; failures.push_back("testStationOnFrame");
 	}
@@ -114,6 +120,29 @@ void testFixedFrameOnBodyFrame()
 	// xform should have 0.0 translation
 	assert(xform.p().norm() < 1e-6);
 	return;
+}
+
+void testFixedFrameOnBodyFrameSerialize()
+{
+    Model* dPendulum = new Model("double_pendulum.osim");
+    const OpenSim::Body& rod1 = dPendulum->getBodySet().get("rod1");
+    FixedFrame* atOriginFrame = new FixedFrame(rod1);
+    atOriginFrame->setName("myExtraFrame");
+    SimTK::Transform relXform;
+    relXform.setP(SimTK::Vec3(0.0, .5, 0.0));
+    relXform.updR().setRotationFromAngleAboutAxis(SimTK::Pi / 4.0, SimTK::CoordinateAxis(2));
+    atOriginFrame->setTransform(relXform);
+    dPendulum->addFrame(atOriginFrame);
+    SimTK::State& st1 = dPendulum->initSystem();
+    SimTK::Transform xformPre = atOriginFrame->getGroundTransform(st1);
+    dPendulum->print("double_pendulum_extraFrame.osim");
+    // now read the model from file
+    Model* dPendulumWFrame = new Model("double_pendulum_extraFrame.osim");
+    SimTK::State& st2 = dPendulumWFrame->initSystem();
+    const Frame& myExtraFrame = dPendulumWFrame->getFrameSet().get("myExtraFrame");
+    SimTK::Transform xformPost = myExtraFrame.getGroundTransform(st2);
+    assert((xformPost.p()- xformPre.p()).norm() < 1e-6);
+    return;
 }
 
 void testStationOnFrame()

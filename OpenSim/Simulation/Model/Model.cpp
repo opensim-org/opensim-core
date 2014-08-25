@@ -545,6 +545,15 @@ void Model::finalizeFromProperties()
 		}
 	}
 
+    if (getFrameSet().getSize() > 0)
+    {
+        FrameSet& fs = updFrameSet();
+        int nf = fs.getSize();
+        for (int i = 0; i<nf; ++i)
+            addComponent(&fs[i]);
+
+    }
+
 	// Populate lists of model joints and coordinates according to the Bodies
 	// setup here who own the Joints which in turn own the model's Coordinates
 	// this list of Coordinates is now available for setting up constraints and forces

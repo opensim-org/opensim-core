@@ -104,10 +104,8 @@ void FixedFrame::constructStructuralConnectors()
 const SimTK::Transform& FixedFrame::getTransform() const
 {
 	// If properties have been updated, then update the cached transform object to be in sync.
-	if (!isObjectUpToDateWithProperties()){
-		transform.updP() = get_translation();
-		transform.updR().setRotationToBodyFixedXYZ(get_orientation());
-	}
+	transform.updP() = get_translation();
+	transform.updR().setRotationToBodyFixedXYZ(get_orientation());
 	return transform;
 }
 void FixedFrame::setTransform(const SimTK::Transform& xform)

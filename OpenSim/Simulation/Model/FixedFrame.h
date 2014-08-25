@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
+#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/RigidFrame.h>
 
 
