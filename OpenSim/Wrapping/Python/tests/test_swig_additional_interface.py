@@ -34,7 +34,7 @@ def test_markAdopted2():
     a.addAnalysis(osim.MuscleAnalysis())
     a.addController(osim.PrescribedController())
     
-    body = osim.Body('body',
+    body = osim.Body('body1',
             1.0,
             osim.Vec3(0, 0, 0),
             osim.Inertia(0, 0, 0)
@@ -50,8 +50,9 @@ def test_markAdopted2():
             loc_in_parent, orient_in_parent,
             body,
             loc_in_body, orient_in_parent)
-    print "adding a body.."
+    print "adding a body and joint.."
     a.addBody(body)
+    a.addJoint(joint)
     print "Creating a ConstantDistanceConstraint.."
     constr = osim.ConstantDistanceConstraint()
     constr.setBody1ByName("ground")
