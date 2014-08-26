@@ -50,8 +50,9 @@ def test_markAdopted2():
             loc_in_parent, orient_in_parent,
             body,
             loc_in_body, orient_in_parent)
-    print "adding a body and joint.."
+    print "adding a body .."
     a.addBody(body)
+    print "adding a joint .."
     a.addJoint(joint)
     print "Creating a ConstantDistanceConstraint.."
     constr = osim.ConstantDistanceConstraint()
