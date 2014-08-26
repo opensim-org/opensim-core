@@ -12,7 +12,7 @@ def test_check_env_var():
                 "variable OPENSIM_HOME "
                 "to an OpenSim installation.")
 
-def test_markAdopted():
+def test_markAdopted1():
     """Ensures that we can tell an object that some other object is managing
     its memory.
     """
@@ -23,7 +23,7 @@ def test_markAdopted():
     assert a.this
     assert not a.thisown
 
-def test_markAdopted():
+def test_markAdopted2():
     a = osim.Model()
 
     # We just need the following not to not cause a segfault.
@@ -40,18 +40,19 @@ def test_markAdopted():
             osim.Inertia(0, 0, 0)
             )
 
-    loc_in_parent = osim.Vec3(0, -0, 0)
+    loc_in_parent = osim.Vec3(0, 0, 0)
     orient_in_parent = osim.Vec3(0, 0, 0)
     loc_in_body = osim.Vec3(0, 0, 0)
     orient_in_body = osim.Vec3(0, 0, 0)
+	print "creating Weld Joint.."
     joint = osim.WeldJoint("weld_joint",
             a.getGroundBody(),
             loc_in_parent, orient_in_parent,
             body,
             loc_in_body, orient_in_parent)
-
+	print "adding a body.."
     a.addBody(body)
-
+	print "Creating a ConstantDistanceConstraint.."
     constr = osim.ConstantDistanceConstraint()
     constr.setBody1ByName("ground")
     constr.setBody1PointLocation(osim.Vec3(0, 0, 0))
