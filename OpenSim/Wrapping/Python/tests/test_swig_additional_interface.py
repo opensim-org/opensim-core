@@ -44,15 +44,15 @@ def test_markAdopted2():
     orient_in_parent = osim.Vec3(0, 0, 0)
     loc_in_body = osim.Vec3(0, 0, 0)
     orient_in_body = osim.Vec3(0, 0, 0)
-	print "creating Weld Joint.."
+    print "creating Weld Joint.."
     joint = osim.WeldJoint("weld_joint",
             a.getGroundBody(),
             loc_in_parent, orient_in_parent,
             body,
             loc_in_body, orient_in_parent)
-	print "adding a body.."
+    print "adding a body.."
     a.addBody(body)
-	print "Creating a ConstantDistanceConstraint.."
+    print "Creating a ConstantDistanceConstraint.."
     constr = osim.ConstantDistanceConstraint()
     constr.setBody1ByName("ground")
     constr.setBody1PointLocation(osim.Vec3(0, 0, 0))
