@@ -1,10 +1,13 @@
 # To learn about this file, go to http://docs.travis-ci.com/user/languages/c/
 language: cpp
 
-compiler:
-  - clang
-  - gcc
-  
+matrix:
+  include:
+    - compiler: clang
+      env: BUILD_JAVA_WRAPPING=on
+    - compiler: gcc
+      env: BUILD_JAVA_WRAPPING=off
+
 env:
   # The python tests look for this environment variable.
   - OPENSIM_HOME=$TRAVIS_BUILD_DIR/opensim-install
@@ -53,12 +56,9 @@ before_install:
 
 install:
   # Configure OpenSim.
-  - cmake . -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DSIMBODY_HOME=simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME
+  - cmake . -DBUILD_JAVA_WRAPPING=$BUILD_JAVA_WRAPPING -DBUILD_PYTHON_WRAPPING=on -DSIMBODY_HOME=simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME
   # Build OpenSim.
-  # gcc is crashing when building osimJavaJNI with other targets (_opensim?).
-  # gcc does not crash if we build _opensim separately.
-  - if [ "$CXX" = "g++-4.8" ]; then make -j8 osimJavaJNI; fi
-  - make -j8 # This'll build _opensim and the tests.
+  - make -j8
 
 script:
   # Test OpenSim.
