@@ -171,30 +171,6 @@ def test_markAdoptedSets():
     del s
     del o
 
-    s = osim.ForceSet()
-    o = osim.BushingForce()
-    s.adoptAndAppend(o)
-    del s
-    del o
-
-    cs = osim.ControllerSet()
-    csc = osim.PrescribedController()
-    cs.adoptAndAppend(csc)
-    del cs
-    del csc
-
-    s = osim.ContactGeometrySet()
-    o = osim.ContactHalfSpace()
-    s.adoptAndAppend(o)
-    del s
-    del o
-
-    s = osim.AnalysisSet()
-    o = osim.MuscleAnalysis()
-    s.adoptAndAppend(o)
-    del s
-    del o
-
     s = osim.ControlSet()
     o = osim.ControlLinear()
     s.adoptAndAppend(o)
@@ -207,26 +183,8 @@ def test_markAdoptedSets():
     del s
     del o
 
-    s = osim.BodySet()
-    o = osim.Body()
-    s.adoptAndAppend(o)
-    del s
-    del o
-
     s = osim.BodyScaleSet()
     o = osim.BodyScale()
-    s.adoptAndAppend(o)
-    del s
-    del o
-
-    s = osim.CoordinateSet()
-    o = osim.Coordinate()
-    s.adoptAndAppend(o)
-    del s
-    del o
-
-    s = osim.JointSet()
-    o = osim.BallJoint()
     s.adoptAndAppend(o)
     del s
     del o
@@ -263,7 +221,6 @@ def test_markAdoptedSets():
     # del o
 
 
-    s = osim.ConstraintSet()
     a = osim.Model()
     body = osim.Body('body',
             1.0,
@@ -289,6 +246,5 @@ def test_markAdoptedSets():
     constr.setBody2ByName("body")
     constr.setBody2PointLocation(osim.Vec3(1, 0, 0))
     constr.setConstantDistance(1)
-
-    s.adoptAndAppend(constr)
+    a.addConstraint(constr)
 
