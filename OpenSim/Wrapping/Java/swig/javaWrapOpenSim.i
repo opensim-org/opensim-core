@@ -806,6 +806,7 @@ namespace SimTK {
 %include <OpenSim/Simulation/MomentArmSolver.h>
 
 %include <OpenSim/Simulation/Model/Frame.h>
+%include <OpenSim/Simulation/Model/RigidFrame.h>
 %include <OpenSim/Simulation/Model/FixedFrame.h>
 
 %include <OpenSim/Simulation/Model/Force.h>

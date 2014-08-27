@@ -307,6 +307,8 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
 MODEL_ADOPT_HELPER(ModelComponent);
 MODEL_ADOPT_HELPER(Body);
 MODEL_ADOPT_HELPER(Probe);
+MODEL_ADOPT_HELPER(Joint);
+MODEL_ADOPT_HELPER(Frame);
 MODEL_ADOPT_HELPER(Constraint);
 MODEL_ADOPT_HELPER(ContactGeometry);
 MODEL_ADOPT_HELPER(Analysis);
@@ -573,6 +575,7 @@ namespace SimTK {
 %include <OpenSim/Simulation/MomentArmSolver.h>
 
 %include <OpenSim/Simulation/Model/Frame.h>
+%include <OpenSim/Simulation/Model/RigidFrame.h>
 %include <OpenSim/Simulation/Model/FixedFrame.h>
 
 %include <OpenSim/Simulation/Model/Force.h>
@@ -826,18 +829,7 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
 
 SET_ADOPT_HELPER(Geometry);
 SET_ADOPT_HELPER(Scale);
-SET_ADOPT_HELPER(Force);
-SET_ADOPT_HELPER(Controller);
-SET_ADOPT_HELPER(ContactGeometry);
-SET_ADOPT_HELPER(Analysis);
-SET_ADOPT_HELPER(Control);
-SET_ADOPT_HELPER(Marker);
-SET_ADOPT_HELPER(Body);
 SET_ADOPT_HELPER(BodyScale);
-SET_ADOPT_HELPER(Coordinate);
-SET_ADOPT_HELPER(Joint);
-SET_ADOPT_HELPER(Probe);
-SET_ADOPT_HELPER(Constraint);
 SET_ADOPT_HELPER(PathPoint);
 SET_ADOPT_HELPER(IKTask);
 SET_ADOPT_HELPER(MarkerPair);
@@ -859,4 +851,6 @@ SET_ADOPT_HELPER(Measurement);
         aProbe._markAdopted()
         return super(ProbeSet, self).adoptAndAppend(aProbe)
 %}
+
+
 };
