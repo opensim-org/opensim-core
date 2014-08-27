@@ -9,8 +9,9 @@ matrix:
       env: BUILD_JAVA_WRAPPING=off
 
 env:
-  # The python tests look for this environment variable.
-  - OPENSIM_HOME=$TRAVIS_BUILD_DIR/opensim-install
+  global:
+    # The python tests look for this environment variable.
+    - OPENSIM_HOME=$TRAVIS_BUILD_DIR/opensim-install
 
 before_install:
   ## Get Simbody and its dependencies.
