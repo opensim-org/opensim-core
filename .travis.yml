@@ -4,14 +4,14 @@ language: cpp
 matrix:
   include:
     - compiler: clang
-      env: BUILD_WRAPPING=on
+      env: BUILD_WRAPPING=on NPROC=8
     - compiler: gcc
-      env: BUILD_WRAPPING=off
+      env: BUILD_WRAPPING=off NPROC=2
 
 env:
   global:
     # The python tests look for this environment variable.
-    - OPENSIM_HOME=$TRAVIS_BUILD_DIR/opensim-install
+    - OPENSIM_HOME=$TRAVIS_BUILD_DIR/opensim-install SWIG=swig-2.0.10
 
 before_install:
   ## Get Simbody and its dependencies.
@@ -42,10 +42,10 @@ before_install:
   - cd ../
 
   ## Install SWIG to build Java/python wrapping.
-  - wget http://sourceforge.net/projects/swig/files/swig/swig-2.0.10/swig-2.0.10.tar.gz/download
-  - mv download swig-2.0.10.tar.gz
-  - tar xzf swig-2.0.10.tar.gz
-  - cd swig-2.0.10
+  - wget http://sourceforge.net/projects/swig/files/swig/$SWIG/$SWIG.tar.gz/download
+  - mv download $SWIG.tar.gz
+  - tar xzf $SWIG.tar.gz
+  - cd $SWIG
   - ./configure && make && sudo make -j8 install
   # Go back to the directory containing OpenSim.
   - cd ../
@@ -59,7 +59,7 @@ install:
   # Configure OpenSim.
   - cmake . -DBUILD_JAVA_WRAPPING=$BUILD_WRAPPING -DBUILD_PYTHON_WRAPPING=$BUILD_WRAPPING -DSIMBODY_HOME=simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME
   # Build OpenSim.
-  - make -j8
+  - make -j$NPROC
 
 script:
   # Test OpenSim.
