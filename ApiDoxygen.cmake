@@ -47,7 +47,7 @@ ELSE(DOXYGEN_EXECUTABLE-NOTFOUND)
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_CURRENT_SOURCE_DIR}/OpenSim/doc/images"
         "${PROJECT_BINARY_DIR}/html/images/")
-
+    
     ################
     # INSTALLATION #
     ################
