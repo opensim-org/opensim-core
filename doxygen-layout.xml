@@ -62,7 +62,6 @@
   <!-- Layout definition for a class page -->
   <class>
     <briefdescription visible="yes"/>
-    <includes visible="$SHOW_INCLUDE_FILES"/>
     <inheritancegraph visible="$CLASS_GRAPH"/>
     <collaborationgraph visible="$COLLABORATION_GRAPH"/>
     <allmemberslink visible="yes"/>
@@ -72,6 +71,9 @@
       <publicslots title=""/>
       <signals title=""/>
       <publicmethods title=""/>
+     </memberdecl>
+    <detaileddescription title=""/>
+    <memberdecl>
       <publicstaticmethods title=""/>
       <publicattributes title=""/>
       <publicstaticattributes title=""/>
@@ -98,7 +100,6 @@
       <related title="" subtitle=""/>
       <membergroups visible="yes"/>
     </memberdecl>
-    <detaileddescription title=""/>
     <memberdef>
       <typedefs title=""/>
       <enums title=""/>
@@ -111,6 +112,7 @@
     </memberdef>
     <usedfiles visible="$SHOW_USED_FILES"/>
     <authorsection visible="yes"/>
+    <includes visible="$SHOW_INCLUDE_FILES"/>
   </class>
 
   <!-- Layout definition for a namespace page -->
@@ -220,4 +222,3 @@
     <detaileddescription title=""/>
   </directory>
 </doxygenlayout>
-About | Forums | Terms | Privacy | Downloads | Meta

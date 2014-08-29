@@ -149,7 +149,7 @@ a {
 
 a:hover {
     text-decoration: none;
-    color: #62B9ED;
+    color: #637da4;
     text-shadow: none;
 }
 
@@ -195,7 +195,7 @@ dl.el {
 
 .fragment {
     margin-top: 20px;
-    background-color: #27292C;
+    background-color: #939393;
     width: 100%;
     border-radius: 3px;
 }
@@ -264,12 +264,12 @@ body {
 }
 
 div.contents {
-    margin: 1.5em;
+    margin: 0em;
 }
 
 /* If the first element of the contents is a table, give it some space */
 div.contents > table {
-    margin-top: 1.5em;
+    margin-top: 0.5em;
 }
 
 td.indexkey {
@@ -313,7 +313,7 @@ tr.memlist td {
 
 /* Don't show the [static] column in full member list */
 tr.memlist td code {
-    display: none;
+    display:none;
 }
 
 p.formulaDsp {
@@ -354,11 +354,11 @@ img.footer {
 /* @group Code Colorization */
 
 span.keyword {
-    color: #D67C7B
+    color: #804a49
 }
 
 span.keywordtype {
-    color: #C0A7C6
+    color: #3a3a3a
 }
 
 span.keywordflow {
@@ -366,7 +366,7 @@ span.keywordflow {
 }
 
 span.comment {
-    color: #6A6C73
+    color: #3a3a3a
 }
 
 span.preprocessor {
@@ -456,7 +456,7 @@ table.memberdecls {
 .memItemLeft, .memItemRight,
 .memTemplItemLeft, .memTemplItemRight, .memTemplParams {
     background-color: white;
-    border: none;
+    border: black;
     margin: 4px;
     padding: .25em 0;
 }
@@ -512,7 +512,7 @@ table.memberdecls {
 .memitem {
     padding: 0;
     margin-top: .5em;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .memname {
@@ -525,7 +525,8 @@ table.memberdecls {
         padding: 6px 0px 6px 0px;
         color: #333;
         font-weight: normal;
-        background-color: #F6F6F6;
+        background-color: #F6F6F6 !important;
+        border-color: #6A6A6A;
         padding-left: 9px;
 }
 
@@ -542,6 +543,7 @@ table.memberdecls {
         border-left: 1px solid #F6F6F6;
         border-right: 1px solid #F6F6F6;
         background-color: white;
+        border-color: #6A6A6A !important;;
         border-top-width: 0;
         padding: .8em 12px 0 12px;
 }
@@ -574,7 +576,7 @@ dl.reflist dt {
 
 .paramtype {
     white-space: nowrap;
-    color: #DD6800;
+    color: #000000;
 }
 
 .paramname {
@@ -891,8 +893,8 @@ div.header
 div.headertitle
 {
     padding: 10px 5px 10px 20px;
-    background-color: #f6f6f6;
-    color: #333;
+    background-color: #444;
+    color: white;
     min-height: 36px;
 }
 
@@ -1000,7 +1002,7 @@ dl.bug
     width: 100%;
     color: white;
     font-weight: bold;
-    background: #FA7622;
+    background: #455772;
 }
 
 .image
@@ -1179,7 +1181,7 @@ dl.citelist dd {
 }
 
 #nav-tree .selected {
-    background-color: #F87631 !important;
+    background-color: #637da4 !important;
     border-top: none;
     background-image: none;
 }
@@ -1291,8 +1293,8 @@ dl.citelist dd {
 }
 
 .inherit_header td {
-    padding-top: 30px;
-    padding-bottom: 10px;
+    padding-top: 2px;
+    padding-bottom: 5px;
     font: 13px normal "Lucida Grande", Helvetica, Arial, Geneva, sans-serif;
     font-size: 14px;
 }
@@ -1310,5 +1312,5 @@ right: 5px;
 }
 
 .groupheader {
-    color: #FA7622;
+    color: #313e52;
 }
