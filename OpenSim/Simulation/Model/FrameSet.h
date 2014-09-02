@@ -45,7 +45,6 @@ OpenSim_DECLARE_CONCRETE_OBJECT(FrameSet, ModelComponentSet<Frame>);
 public:
 	FrameSet();
 	FrameSet(Model& model);
-	FrameSet(const FrameSet& aFrameSet);
 	~FrameSet();
 
 	// Somehow the following function is not exported from base template
@@ -56,13 +55,7 @@ public:
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
-#ifndef SWIG
-	FrameSet& operator=(const FrameSet &aFrameSet);
-#endif
 
-
-private:
-	void setNull();
 
 //=============================================================================
 };	// END of class FrameSet
