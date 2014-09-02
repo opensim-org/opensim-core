@@ -70,7 +70,7 @@ script:
 
   ## Test python wrapping.
   # Install OpenSim. Suppress output.
-  - make -j8 install > /dev/null
+  - make -j8 install
   # For python tests, we need to copy over some model files.
   # This is temporary; in the future, we will use the opensim-models repo.
   - mkdir -p $OPENSIM_HOME/Models/Arm26 && cp OpenSim/Tools/Test/arm26.osim "$_"
