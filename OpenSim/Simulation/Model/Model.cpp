@@ -52,6 +52,7 @@
 
 #include "Muscle.h"
 #include "CoordinateSet.h"
+#include "FrameSet.h"
 #include "BodySet.h"
 #include "AnalysisSet.h"
 #include "ForceSet.h"
@@ -255,6 +256,9 @@ void Model::constructProperties()
 
 	BodySet bodies;
 	constructProperty_BodySet(bodies);
+
+    FrameSet frames;
+    constructProperty_FrameSet(frames);
 
 	JointSet joints;
 	constructProperty_JointSet(joints);
@@ -540,6 +544,15 @@ void Model::finalizeFromProperties()
 								   &bs[i]);	
 		}
 	}
+
+    if (getFrameSet().getSize() > 0)
+    {
+        FrameSet& fs = updFrameSet();
+        int nf = fs.getSize();
+        for (int i = 0; i<nf; ++i)
+            addComponent(&fs[i]);
+
+    }
 
 	// Populate lists of model joints and coordinates according to the Bodies
 	// setup here who own the Joints which in turn own the model's Coordinates
@@ -828,6 +841,18 @@ void Model::addBody(OpenSim::Body* body)
 		updBodySet().adoptAndAppend(body);
 		addComponent(body);
 	}
+}
+
+//_____________________________________________________________________________
+/*
+* Add a Frame to the Model.
+*/
+void Model::addFrame(OpenSim::Frame* frame)
+{
+    if (frame){
+        updFrameSet().adoptAndAppend(frame);
+        addComponent(frame);
+    }
 }
 
 //_____________________________________________________________________________
@@ -1161,6 +1186,18 @@ int Model::getNumBodies() const
 {
 	return  getBodySet().getSize();
 }
+
+//_____________________________________________________________________________
+/**
+* Get the total number of frames in the model (not including Bodies).
+*
+* @return Number of frames.
+*/
+int Model::getNumFrames() const
+{
+    return  getFrameSet().getSize();
+}
+
 //_____________________________________________________________________________
 /**
  * Get the total number of joints in the model.

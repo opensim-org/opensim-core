@@ -25,6 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "Body.h"
+#include <OpenSim/Simulation/Model/Frame.h>
 #include "WeldConstraint.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -44,7 +45,7 @@ using SimTK::Vec3;
 /**
  * Default constructor.
  */
-Body::Body() : ModelComponent()
+Body::Body() : RigidFrame()
 {
 	constructProperties();
 }
@@ -54,7 +55,7 @@ Body::Body() : ModelComponent()
  * Constructor.
  */
 Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,const SimTK::Inertia& aInertia) :
-   ModelComponent()
+   RigidFrame()
 {
 	constructProperties();
 	setName(aName);
@@ -502,3 +503,13 @@ Body* Body::addSlave()
 	return slave;
 }
 
+/**
+ * Implementation of Frame interface by Body
+ */
+SimTK::Transform Body::calcGroundTransform(const SimTK::State& state) const {
+
+    const SimTK::MobilizedBody &B = getModel().getMatterSubsystem().getMobilizedBody(_index);
+    const SimTK::Transform& ground_X_B = B.getBodyTransform(state);
+
+    return ground_X_B;
+}
