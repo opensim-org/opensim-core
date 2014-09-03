@@ -81,4 +81,4 @@ script:
   # Get a python package with which to run the tests.
   - sudo apt-get install python-nose
   # Run the python tests, verbosely.
-  - nosetests -v --nocapture
+  - nosetests -v

@@ -46,8 +46,6 @@
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/ModelDisplayHints.h>
-#include <OpenSim/Simulation/Model/Frame.h>
-#include <OpenSim/Simulation/Model/FrameSet.h>
 #include "Simbody.h"
 
 
@@ -56,7 +54,6 @@ namespace OpenSim {
 
 class Analysis;
 class Body;
-class Frame;
 class BodySet;
 class JointSet;
 class Constraint;
@@ -79,7 +76,6 @@ class ControllerSet;
 class ModelDisplayHints;
 class ModelVisualizer;
 class ComponentSet;
-class FrameSet;
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
@@ -171,12 +167,9 @@ public:
 	OpenSim_DECLARE_UNNAMED_PROPERTY(BodySet,
 	    "List of bodies that make up this model.");
 
-    OpenSim_DECLARE_UNNAMED_PROPERTY(JointSet,
-        "List of joints that connect the bodies.");
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(FrameSet,
-        "List of Frames that various objects can be anchored to or expressed in, Body frames are builtin and not included in this list.");
-    /**@}**/
+	OpenSim_DECLARE_UNNAMED_PROPERTY(JointSet,
+		"List of joints that connect the bodies.");
+	/**@}**/
 
 //=============================================================================
 // METHODS
@@ -438,7 +431,6 @@ public:
 	void addForce(Force *force);
 	void addProbe(Probe *probe);
 	void addContactGeometry(ContactGeometry *contactGeometry);
-    void addFrame(Frame* frame);
 	/** remove passed in Probe from model **/
     void removeProbe(Probe *probe);
 	//--------------------------------------------------------------------------
@@ -546,17 +538,11 @@ public:
 	 */
 	int getNumBodies() const;
 
-    /**
-    * Get the total number of frames in the model.
-    * @return Number of Frames (not including Body frames).
-    */
-    int getNumFrames() const;
-
-    /**
-    * Get the total number of joints in the model.
-    * @return Number of joints.
-    */
-    int getNumJoints() const;
+	/**
+	 * Get the total number of joints in the model.
+	 * @return Number of joints.
+	 */
+	int getNumJoints() const;
 
 	/**
 	 * Get the total number of coordinates in the model.
@@ -755,18 +741,10 @@ public:
 
 
     //--------------------------------------------------------------------------
-    // FRAMES
-    //--------------------------------------------------------------------------
-    FrameSet& updFrameSet() { return upd_FrameSet(); }
-    const FrameSet& getFrameSet() const { return get_FrameSet(); }
-
-
-    //--------------------------------------------------------------------------
     // CONSTRAINTS
     //--------------------------------------------------------------------------
     ConstraintSet& updConstraintSet() { return upd_ConstraintSet(); }
     const ConstraintSet& getConstraintSet() const { return get_ConstraintSet(); }
-
 
     //--------------------------------------------------------------------------
     // MARKERS
@@ -861,7 +839,7 @@ public:
 	 * Utility to get a reference to an Object based on its name and type
 	 * throws an exception if the object was not found.
 	 * names are case sensitive
-	 * @param typeString the type of object being looked up (Body, Force, Constraint, Coordinate, Joint, Marker, Controller, Frame)
+	 * @param typeString the type of object being looked up (Body, Force, Constraint, Coordinate, Joint, Marker, Controller)
 	 * @param nameString the name of the object being looked up
 	 * @return reference to the object if found or throws an exception.
 	 */
