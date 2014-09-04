@@ -44,7 +44,6 @@
 #include "Model/Ligament.h"
 #include "Model/JointSet.h"
 #include "Model/Marker.h"
-#include "Model/Station.h"
 #include "Model/MarkerSet.h"
 #include "Model/PathPoint.h"
 #include "Model/PathPointSet.h"
@@ -66,9 +65,6 @@
 #include "Model/JointInternalPowerProbe.h"
 #include "Model/MuscleActiveFiberPowerProbe.h"
 #include "Model/Umberger2010MuscleMetabolicsProbe.h"
-#include "Model/Frame.h"
-#include "Model/FixedFrame.h"
-#include "Model/RigidFrame.h"
 
 #include "Manager/Manager.h"
 

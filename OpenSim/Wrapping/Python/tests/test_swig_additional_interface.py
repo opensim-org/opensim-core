@@ -12,7 +12,7 @@ def test_check_env_var():
                 "variable OPENSIM_HOME "
                 "to an OpenSim installation.")
 
-def test_markAdopted1():
+def test_markAdopted():
     """Ensures that we can tell an object that some other object is managing
     its memory.
     """
@@ -23,7 +23,7 @@ def test_markAdopted1():
     assert a.this
     assert not a.thisown
 
-def test_markAdopted2():
+def test_markAdopted():
     a = osim.Model()
 
     # We just need the following not to not cause a segfault.
@@ -34,27 +34,24 @@ def test_markAdopted2():
     a.addAnalysis(osim.MuscleAnalysis())
     a.addController(osim.PrescribedController())
     
-    body = osim.Body('body1',
+    body = osim.Body('body',
             1.0,
             osim.Vec3(0, 0, 0),
             osim.Inertia(0, 0, 0)
             )
 
-    loc_in_parent = osim.Vec3(0, 0, 0)
+    loc_in_parent = osim.Vec3(0, -0, 0)
     orient_in_parent = osim.Vec3(0, 0, 0)
     loc_in_body = osim.Vec3(0, 0, 0)
     orient_in_body = osim.Vec3(0, 0, 0)
-    print "creating Weld Joint.."
     joint = osim.WeldJoint("weld_joint",
             a.getGroundBody(),
             loc_in_parent, orient_in_parent,
             body,
             loc_in_body, orient_in_parent)
-    print "adding a body .."
+
     a.addBody(body)
-    print "adding a joint .."
-    a.addJoint(joint)
-    print "Creating a ConstantDistanceConstraint.."
+
     constr = osim.ConstantDistanceConstraint()
     constr.setBody1ByName("ground")
     constr.setBody1PointLocation(osim.Vec3(0, 0, 0))
@@ -171,6 +168,30 @@ def test_markAdoptedSets():
     del s
     del o
 
+    s = osim.ForceSet()
+    o = osim.BushingForce()
+    s.adoptAndAppend(o)
+    del s
+    del o
+
+    cs = osim.ControllerSet()
+    csc = osim.PrescribedController()
+    cs.adoptAndAppend(csc)
+    del cs
+    del csc
+
+    s = osim.ContactGeometrySet()
+    o = osim.ContactHalfSpace()
+    s.adoptAndAppend(o)
+    del s
+    del o
+
+    s = osim.AnalysisSet()
+    o = osim.MuscleAnalysis()
+    s.adoptAndAppend(o)
+    del s
+    del o
+
     s = osim.ControlSet()
     o = osim.ControlLinear()
     s.adoptAndAppend(o)
@@ -183,8 +204,26 @@ def test_markAdoptedSets():
     del s
     del o
 
+    s = osim.BodySet()
+    o = osim.Body()
+    s.adoptAndAppend(o)
+    del s
+    del o
+
     s = osim.BodyScaleSet()
     o = osim.BodyScale()
+    s.adoptAndAppend(o)
+    del s
+    del o
+
+    s = osim.CoordinateSet()
+    o = osim.Coordinate()
+    s.adoptAndAppend(o)
+    del s
+    del o
+
+    s = osim.JointSet()
+    o = osim.BallJoint()
     s.adoptAndAppend(o)
     del s
     del o
@@ -221,6 +260,7 @@ def test_markAdoptedSets():
     # del o
 
 
+    s = osim.ConstraintSet()
     a = osim.Model()
     body = osim.Body('body',
             1.0,
@@ -246,5 +286,6 @@ def test_markAdoptedSets():
     constr.setBody2ByName("body")
     constr.setBody2PointLocation(osim.Vec3(1, 0, 0))
     constr.setConstantDistance(1)
-    a.addConstraint(constr)
+
+    s.adoptAndAppend(constr)
 

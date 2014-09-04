@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2013 Stanford University and the Authors                *
- * Author(s): Ajay Seth, Ayman Habib, Matt DeMers                             *
+ * Author(s): Ajay Seth, Ayman Habib                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/Model/RigidFrame.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 
@@ -42,8 +42,8 @@ class WrapObjectSet;
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API Body : public RigidFrame {
-	OpenSim_DECLARE_CONCRETE_OBJECT(Body, RigidFrame);
+class OSIMSIMULATION_API Body : public ModelComponent {
+OpenSim_DECLARE_CONCRETE_OBJECT(Body, ModelComponent);
 public:
 //==============================================================================
 // PROPERTIES
@@ -127,11 +127,7 @@ public:
      */
 	void addWrapObject(WrapObject* wrapObject);
 
-    // Frame interface
-    /** Get transform to Ground frame */
-    SimTK::Transform calcGroundTransform(const SimTK::State& state) const override;
-
- protected:
+protected:
     // Model component interface.
 	void finalizeFromProperties() override;
 	void connectToModel(Model& model) override;
