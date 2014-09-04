@@ -1,7 +1,8 @@
 /* The standard CSS for doxygen 1.8.7 */
 
 body, table, div, p, dl {
-	font: 13px normal "Lucida Grande", Helvetica, Arial, Geneva, sans-serif;
+	font-family: Lucida Grande, Verdana, Geneva, Arial, sans-serif;
+	font-size: 12px;
 }
 
 table {
@@ -561,9 +562,8 @@ table.memberdecls {
         color: #253555;
         font-weight: bold;
         text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9);
-        background-image:url('nav_f.png');
         background-repeat:repeat-x;
-        background-color: #E2E8F2;
+        background-color: #E2E2E2;
         /* opera specific markup */
         box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
         border-top-right-radius: 4px;

@@ -61,19 +61,19 @@
 
   <!-- Layout definition for a class page -->
   <class>
-    <briefdescription visible="yes"/>
+    <briefdescription visible="YES"/>
     <inheritancegraph visible="$CLASS_GRAPH"/>
     <collaborationgraph visible="$COLLABORATION_GRAPH"/>
     <allmemberslink visible="yes"/>
+    <memberdecl>
+      <publicmethods title=""/>
+    </memberdecl>
+    <detaileddescription title=""/>
     <memberdecl>
       <nestedclasses visible="yes" title=""/>
       <publictypes title=""/>
       <publicslots title=""/>
       <signals title=""/>
-      <publicmethods title=""/>
-     </memberdecl>
-    <detaileddescription title=""/>
-    <memberdecl>
       <publicstaticmethods title=""/>
       <publicattributes title=""/>
       <publicstaticattributes title=""/>
