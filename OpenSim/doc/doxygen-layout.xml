@@ -39,13 +39,13 @@
   <navindex>
     <tab type="mainpage" visible="yes" title=""/>
     <tab type="pages" visible="yes" title="" intro=""/>
-    <tab type="modules" visible="yes" title="" intro=""/>
+    <tab type="modules" visible="no" title="" intro=""/>
     <tab type="namespaces" visible="yes" title="">
       <tab type="namespaces" visible="yes" title="" intro=""/>
       <tab type="namespacemembers" visible="yes" title="" intro=""/>
     </tab>
-    <tab type="classes" visible="yes" title="Classes, Structs and Unions">
-      <tab type="classes" visible="yes" title="Classes, Structs and Unions" intro=""/>
+    <tab type="classes" visible="yes" title="Classes">
+      <tab type="classes" visible="yes" title="Class List " intro=""/>
       <tab type="classindex" visible="$ALPHABETICAL_INDEX" title=""/> 
       <tab type="hierarchy" visible="yes" title="" intro=""/>
       <tab type="classmembers" visible="yes" title="" intro=""/>
@@ -68,8 +68,22 @@
     <memberdecl>
       <publicmethods title=""/>
     </memberdecl>
-    <detaileddescription title=""/>
-    <memberdecl>
+   
+    <detaileddescription title="Detailed Description "/>
+    <memberdef>
+      <constructors title=""/>
+      <typedefs title=""/>
+      <functions title=""/>
+      <!-- <enums title=""/>
+      
+      
+      <related title=""/>
+      <variables title=""/>
+      <properties title=""/>
+      <events title=""/> -->
+    </memberdef>
+
+    <!-- <memberdecl>
       <nestedclasses visible="yes" title=""/>
       <publictypes title=""/>
       <publicslots title=""/>
@@ -99,17 +113,8 @@
       <friends title=""/>
       <related title="" subtitle=""/>
       <membergroups visible="yes"/>
-    </memberdecl>
-    <memberdef>
-      <typedefs title=""/>
-      <enums title=""/>
-      <constructors title=""/>
-      <functions title=""/>
-      <related title=""/>
-      <variables title=""/>
-      <properties title=""/>
-      <events title=""/>
-    </memberdef>
+    </memberdecl> -->
+    
     <usedfiles visible="$SHOW_USED_FILES"/>
     <authorsection visible="yes"/>
     <includes visible="$SHOW_INCLUDE_FILES"/>

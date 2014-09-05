@@ -46,7 +46,8 @@ h1, h2, h3, h4 {
 }
 
 h2.groupheader {
-	font-size: 120%;
+	font-size: 150%;
+	border-bottom: 1px solid #879ECB;;
 }
 
 h3.groupheader {
@@ -279,7 +280,7 @@ div.groupText {
 
 body {
 	background-color: white;
-	color: white;
+	color: black;
         margin: 0;
 }
 
@@ -924,13 +925,201 @@ table.fieldtable {
         border-top-right-radius: 4px;
         border-bottom: 1px solid #A8B8D9;
 }
+/* ADDITIONS */
+.tabs, .tabs2, .tabs3 {
+    background: #F6F6F6 !important;
+    border-bottom: 1px solid #eaeaea;
+    width: 100%;
+    z-index: 101;
+    font-size: 110%;
+}
 
+.tabs a, .tabs2 a{
+    text-align: center;
+}
+
+.tabs2 {
+    font-size: 90%;
+}
+
+.tablist {
+    margin: 0;
+    padding: 0;
+    display: table;
+}
+
+.tablist li {
+    float: left;
+    display: table-cell;
+    line-height: 36px;
+    list-style: none;
+    background: inherit;
+    padding: 0;
+}
+
+.tablist a {
+    display: block;
+    padding: 0 20px;
+    font-weight: bold;
+    text-decoration: none;
+    outline: none;
+    background: none;
+    color: #444;
+    border-right: 1px solid #eaeaea;
+}
+
+.tablist a:hover {
+    background: inherit;
+    text-decoration: none;
+    text-shadow: none;
+    color: gray;
+}
+
+.tabs3 {
+    font-size: 100%;
+    max-height: 20px;
+    line-height: 0px;
+}
+
+.tabs3 li {
+    padding: 0px;
+    margin: 0px;
+    line-height: 20px;
+}
+
+.tabs3 .tablist a {
+    padding: 0 10px;
+    height: 20px;
+    padding-top: 0px;
+    margin-top: 0px;
+}
+
+.tablist li.current a {
+    background: #ddd;
+    color: #444;
+    text-shadow: none;
+}
+
+.tabs2 li{
+     padding: 0px;
+    margin: 0px;
+    line-height: 30px;
+}
+
+
+#nav-tree .children_ul {
+    margin:0;
+    padding:1px;
+}
+
+#nav-tree ul {
+    list-style:none outside none;
+    margin:0px;
+    padding: 5px;
+}
+
+#nav-tree li {
+    white-space:nowrap;
+    margin:0px;
+    padding-top: 1px;
+}
+
+#nav-tree .plus {
+    margin:0px;
+}
+
+#nav-tree .selected {
+    background-color: #9CAFD4 !important;
+    border-top: none;
+    background-image: none;
+}
+
+#nav-tree img {
+  margin:0px;
+  padding:0px;
+  border:0px;
+  -webkit-filter: grayscale(1);
+  width: 8px;
+  height: 11px;
+  margin-top: -4px;
+}
+
+#nav-tree .selected img {
+     -webkit-filter: grayscale(0);
+}
+
+#nav-tree a {
+  text-decoration:none;
+  padding:0px;
+  margin:0px;
+  outline:none;
+  color: #333;
+}
+
+#nav-tree .label {
+  margin:0px;
+  padding:0px;
+}
+
+#nav-tree .label a {
+  padding:2px;
+}
+
+#nav-tree .selected a {
+  text-decoration:none;
+  padding:2px;
+  margin:0px;
+  color: white;
+  text-shadow: none;
+  font-weight: bold;
+}
+
+#nav-tree .children_ul {
+  margin:0px;
+  padding:0px;
+}
+
+#nav-tree .item {
+  margin:0px;
+  padding:0px;
+  height:17px;
+}
+
+#nav-tree {
+  padding: 0px 0px;
+  background: white;
+  font-size:14px;
+  overflow:auto;
+  padding-right: 0px !important;
+  margin-right: -5px !important;
+}
+
+.ui-resizable .ui-resizable-handle {
+  display:block;
+  background-image: none !important;
+}
+
+.ui-resizable-e {
+  background: #eaeaea !important;
+  cursor:e-resize;
+  height:100%;
+  right:0;
+  top:0;
+  width: 1px !important;
+}
+
+.ui-resizable-handle {
+  display:none;
+  font-size:0.1px;
+  position:absolute;
+  z-index:1;
+}
 
 .tabsearch {
 	top: 0px;
 	left: 10px;
 	height: 36px;
-	background-image: url('tab_b.png');
+	background-color: red;
 	z-index: 101;
 	overflow: hidden;
 	font-size: 13px;
@@ -938,10 +1127,11 @@ table.fieldtable {
 
 .navpath ul
 {
-	font-size: 11px;
-	background-image:url('tab_b.png');
+	font-size: 9px;
+	background-color: #b7b7b7;
+	background: -webkit-gradient(linear,left top,left bottom,from(whitesmoke),to(#CCC));
 	background-repeat:repeat-x;
-	background-position: 0 -5px;
+	background-position: 0 0px;
 	height:30px;
 	line-height:30px;
 	color:#8AA0CC;
@@ -1135,7 +1325,7 @@ dl.section dd {
 
 #projectnumber
 {
-	font: 50% Tahoma, Arial,sans-serif;
+	font: 75% Tahoma, Arial,sans-serif;
 	margin: 0px;
 	padding: 0px;
 }
@@ -1145,6 +1335,8 @@ dl.section dd {
 	padding: 0px;
 	margin: 0px;
 	width: 100%;
+	color: white;
+	background-color: #252D38;
 	border-bottom: 1px solid #CCC;
 	background: -webkit-gradient(linear,left top,left bottom,from(#485D77),to(#252D38)) !important;
 }

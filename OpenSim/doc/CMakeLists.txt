@@ -44,16 +44,6 @@ ELSE(DOXYGEN_EXECUTABLE-NOTFOUND)
     # "doxygen" target directly; it isn't run by default.
     ADD_CUSTOM_TARGET(doxygen ${DOXYGEN_EXECUTABLE} ${DOXY_CONFIG}) 
 
-    IF(FALSE)
-    SET(FILES_TO_COPY doxygen-layout.xml doxygen.css)
-    FOREACH(THIS_FILE ${FILES_TO_COPY})
-	    ADD_CUSTOM_COMMAND(TARGET doxygen PRE_BUILD
-	        COMMAND ${CMAKE_COMMAND} -E copy
-	        "${CMAKE_CURRENT_SOURCE_DIR}/${THIS_FILE}"
-	        "${CMAKE_CURRENT_BINARY_DIR}")
-	 ENDFOREACH()
-	 ENDIF()
-
     # There is an "images" directory containing the pictures needed by
     # the main page Copy all the files into html/images.
     ADD_CUSTOM_COMMAND(TARGET doxygen POST_BUILD
