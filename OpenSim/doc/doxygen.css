@@ -197,13 +197,15 @@ pre.fragment {
 div.fragment {
         padding: 4px 6px;
         margin: 4px 8px 4px 2px;
-	background-color: #FBFCFD;
-	border: 1px solid #C4CFE5;
+	background-color: #e3e3e3;
+	border: 1px solid #e3e3e3;
+	font-family: courier !important;
 }
 
 div.line {
-	font-family: sans-serif;
-        font-size: 13px;
+	font-family: courier;
+    font-size: 11px;
+    color: #717171;
 	min-height: 13px;
 	line-height: 1.0;
 	text-wrap: unrestricted;
@@ -347,11 +349,11 @@ img.footer {
 /* @group Code Colorization */
 
 span.keyword {
-	color: #008000
+	color: #B30303
 }
 
 span.keywordtype {
-	color: #604020
+	color: #ac3646
 }
 
 span.keywordflow {
@@ -359,7 +361,7 @@ span.keywordflow {
 }
 
 span.comment {
-	color: #800000
+	color: #2d499d
 }
 
 span.preprocessor {
