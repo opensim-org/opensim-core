@@ -206,7 +206,7 @@ div.line {
 	font-family: courier;
     font-size: 11px;
     color: #717171;
-	min-height: 13px;
+	min-height: 13px; 
 	line-height: 1.0;
 	text-wrap: unrestricted;
 	white-space: -moz-pre-wrap; /* Moz */
@@ -826,7 +826,7 @@ div.directory {
 }
 
 table.directory {
-    font: 400 14px Roboto,sans-serif;
+    font: 400 12px Roboto,sans-serif;
 }
 
 /* @end */
