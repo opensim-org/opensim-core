@@ -46,7 +46,7 @@ ELSE(DOXYGEN_EXECUTABLE-NOTFOUND)
 
     # There is an "images" directory containing the pictures needed by
     # the main page Copy all the files into html/images.
-    ADD_CUSTOM_COMMAND(TARGET doxygen POST_BUILD
+    ADD_CUSTOM_COMMAND(TARGET doxygen PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_CURRENT_SOURCE_DIR}/images"
         "${PROJECT_BINARY_DIR}/html/images" 
