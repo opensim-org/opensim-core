@@ -134,9 +134,9 @@ const RigidFrame& FixedFrame::getParentFrame() const { return getConnector<Rigid
 
 
 //----------------- Get Body that the FixedFrame is affixed to.
-const OpenSim::Body& FixedFrame::getBody(void) const {
-    RigidFrame& parent = const_cast<RigidFrame&>(getParentFrame());
-    OpenSim::Body* parentBody = Body::safeDownCast(&parent);
+const OpenSim::Body& FixedFrame::getBody() const {
+    const RigidFrame& parent = getParentFrame();
+    const OpenSim::Body* parentBody = dynamic_cast<const OpenSim::Body *>(&parent);
     if (parentBody != 0)
         return *parentBody;
     return getParentFrame().getBody();
