@@ -64,7 +64,7 @@ namespace OpenSim {
 		// CONSTRUCTION
 		//--------------------------------------------------------------------------
 		/** default contructor*/
-		RigidFrame();
+        RigidFrame();
 
         virtual const OpenSim::Body& getBody() const = 0;
 

@@ -136,6 +136,7 @@ const RigidFrame& FixedFrame::getParentFrame() const { return getConnector<Rigid
 //----------------- Get Body that the FixedFrame is affixed to.
 const OpenSim::Body& FixedFrame::getBody() const {
     const RigidFrame& parent = getParentFrame();
+    // The following line could've used safeDownCast but that fails for const pointers!
     const OpenSim::Body* parentBody = dynamic_cast<const OpenSim::Body *>(&parent);
     if (parentBody != 0)
         return *parentBody;
