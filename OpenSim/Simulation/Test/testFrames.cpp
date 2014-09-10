@@ -154,7 +154,7 @@ void testStationOnFrame()
 	// Create station aligned with rod1 com in rod1_frame
 	Station* myStation = new Station();
 	myStation->set_location(com);
-	myStation->updConnector<Frame>("reference_frame").set_connected_to_name("rod1");
+	myStation->updConnector<RigidFrame>("reference_frame").set_connected_to_name("rod1");
 	dPendulum->addModelComponent(myStation);
 	// myStation should coinicde with com location of rod1 in ground
 	SimTK::State& st = dPendulum->initSystem();

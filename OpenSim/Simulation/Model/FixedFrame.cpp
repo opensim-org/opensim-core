@@ -133,7 +133,14 @@ void FixedFrame::setParentFrame(const RigidFrame& parent_frame)
 const RigidFrame& FixedFrame::getParentFrame() const { return getConnector<RigidFrame>("parent_frame").getConnectee(); }
 
 
-
+//----------------- Get Body that the FixedFrame is affixed to.
+const OpenSim::Body& FixedFrame::getBody(void) const {
+    RigidFrame& parent = const_cast<RigidFrame&>(getParentFrame());
+    OpenSim::Body* parentBody = Body::safeDownCast(&parent);
+    if (parentBody != 0)
+        return *parentBody;
+    return getParentFrame().getBody();
+}
 
 //=============================================================================
 // SCALING

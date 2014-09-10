@@ -130,7 +130,7 @@ public:
     // Frame interface
     /** Get transform to Ground frame */
     SimTK::Transform calcGroundTransform(const SimTK::State& state) const override;
-
+    const OpenSim::Body& getBody(void) const{ return *this; }
  protected:
     // Model component interface.
 	void finalizeFromProperties() override;

@@ -398,7 +398,7 @@ void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel, Marker
 	{
 		Marker& modelMarker = markerSet.get(i);
 
-		if (!modelMarker.getFixed())
+		if (true/*!modelMarker.getFixed()*/)
 		{
 			int index = aPose.getMarkerIndex(modelMarker.getName());
 			if (index >= 0)

@@ -439,6 +439,7 @@ public:
 	void addProbe(Probe *probe);
 	void addContactGeometry(ContactGeometry *contactGeometry);
     void addFrame(Frame* frame);
+    void addMarker(Marker *marker);
 	/** remove passed in Probe from model **/
     void removeProbe(Probe *probe);
 	//--------------------------------------------------------------------------

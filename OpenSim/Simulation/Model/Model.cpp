@@ -554,7 +554,16 @@ void Model::finalizeFromProperties()
 
     }
 
-	// Populate lists of model joints and coordinates according to the Bodies
+    if (getMarkerSet().getSize() > 0)
+    {
+        MarkerSet& ms = updMarkerSet();
+        int nf = ms.getSize();
+        for (int i = 0; i<nf; ++i)
+            addComponent(&ms[i]);
+    }
+
+
+    // Populate lists of model joints and coordinates according to the Bodies
 	// setup here who own the Joints which in turn own the model's Coordinates
 	// this list of Coordinates is now available for setting up constraints and forces
 
@@ -852,6 +861,17 @@ void Model::addFrame(OpenSim::Frame* frame)
     if (frame){
         updFrameSet().adoptAndAppend(frame);
         addComponent(frame);
+    }
+}
+//_____________________________________________________________________________
+/*
+* Add a Marker to the Model.
+*/
+void Model::addMarker(OpenSim::Marker* marker)
+{
+    if (marker){
+        updMarkerSet().adoptAndAppend(marker);
+        addComponent(marker);
     }
 }
 
@@ -1654,10 +1674,13 @@ int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
  */
 void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 {
+    aMarkerSet.print("rt_markers.xml");
 	for (int i = 0; i < aMarkerSet.getSize(); i++)
 	{
 		Marker& updatingMarker = aMarkerSet.get(i);
-		const string& updatingBodyName = updatingMarker.getBodyName();
+        std::string markerDump =updatingMarker.dump();
+        std::cout << markerDump;
+		//const string& updatingBodyName = updatingMarker.getBodyName();
 
 		/* If there is already a marker in the model with that name,
 		 * update it with the parameters from the updating marker,
@@ -1666,29 +1689,31 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 		if (updMarkerSet().contains(updatingMarker.getName()))
 		{
     		Marker& modelMarker = updMarkerSet().get(updatingMarker.getName());
+            std::string ctype = modelMarker.getConnector<RigidFrame>("reference_frame").getConnectedToTypeName();
+            std::string cName = modelMarker.getConnector<RigidFrame>("reference_frame").get_connected_to_name();
 			/* If the updating marker is on a different body, delete the
 			 * marker from the model and add the updating one (as long as
 			 * the updating marker's body exists in the model).
 			 */
-			if (modelMarker.getBody().getName() != updatingBodyName)
-			{
+			//if (modelMarker.getBody().getName() != updatingBodyName)
+			//{
 				upd_MarkerSet().remove(&modelMarker);
 				// Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
-				upd_MarkerSet().adoptAndAppend(updatingMarker.clone());
-			}
-			else
-			{
-				modelMarker.updateFromMarker(updatingMarker);
-			}
+				//upd_MarkerSet().adoptAndAppend(updatingMarker.clone());
+			//}
+			//else
+			//{
+			//	modelMarker.updateFromMarker(updatingMarker);
+			//}
 		}
-		else
+		//else
 		{
 			/* The model does not contain a marker by that name. If it has
 			 * a body by that name, add the updating marker to the markerset.
 			 */
 			// Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
-			if (getBodySet().contains(updatingBodyName))
-				upd_MarkerSet().adoptAndAppend(updatingMarker.clone());
+			//if (getBodySet().contains(updatingBodyName))
+				addMarker(updatingMarker.clone());
 		}
 	}
 
@@ -1696,10 +1721,14 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
     // _body pointers are up to date; but note that we've already called 
     // it before so we need to make sure the connectMarkerToModel() function
 	// supports getting called multiple times.
-	for (int i = 0; i < get_MarkerSet().getSize(); i++)
-		get_MarkerSet().get(i).connectMarkerToModel(*this);
-
-	cout << "Updated markers in model " << getName() << endl;
+    initSystem();
+    for (int i = 0; i < get_MarkerSet().getSize(); i++){
+        const Marker& modelMarker = get_MarkerSet().get(i);
+        std::string ctype = modelMarker.getConnector<RigidFrame>("reference_frame").getConnectedToTypeName();
+        std::string cName = modelMarker.getConnector<RigidFrame>("reference_frame").get_connected_to_name();
+        const Body& bRef = modelMarker.getBody();
+    }
+    cout << "Updated markers in model " << getName() << endl;
 }
 
 //_____________________________________________________________________________
@@ -1722,7 +1751,6 @@ int Model::deleteUnusedMarkers(const OpenSim::Array<string>& aMarkerNames)
 		{
 			// Delete the marker, but don't increment i or else you'll
 			// skip over the marker right after the deleted one.
-			upd_MarkerSet().get(i).removeSelfFromDisplay();
 			upd_MarkerSet().remove(i);
 			numDeleted++;
 		}

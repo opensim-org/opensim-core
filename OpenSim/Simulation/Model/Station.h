@@ -28,10 +28,12 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "OpenSim/Simulation/Model/ModelComponent.h"
 #include "OpenSim/Simulation/Model/Frame.h"
+#include "OpenSim/Simulation/Model/RigidFrame.h"
 
 namespace OpenSim {
 
 class Body;
+
 //=============================================================================
 //=============================================================================
 /**
@@ -63,9 +65,9 @@ public:
 	Station();
 	virtual ~Station();
 	/** getter of Reference Frame off which the Station is defined */
-	const OpenSim::Frame& getReferenceFrame() const;
+	const OpenSim::RigidFrame& getReferenceFrame() const;
 	/** setter of Reference Frame off which the Station is defined */
-	void setReferenceFrame(const OpenSim::Frame& aFrame);
+	void setReferenceFrame(const OpenSim::RigidFrame& aFrame);
 	/** Main functionality provided by Station is to reexpress its location in another Frame */
 	SimTK::Vec3 reexpressLocationInFrame(const SimTK::State& s, OpenSim::Frame& aFrame) const;
 private:

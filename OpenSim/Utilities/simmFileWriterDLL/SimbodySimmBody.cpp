@@ -126,7 +126,7 @@ void SimbodySimmBody::write(ofstream& aStream)
             aStream << "marker " << marker.getName() << "\t" << marker.getOffset()[0] << " " <<
                marker.getOffset()[1] << " " << marker.getOffset()[2] << " " << outputWeight;
 
-            if (marker.getFixed())
+            if (false/*marker.getFixed()*/)
                aStream << " fixed" << endl;
             else
                aStream << endl;

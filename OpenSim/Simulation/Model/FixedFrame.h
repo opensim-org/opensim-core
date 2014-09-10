@@ -104,9 +104,11 @@ public:
 	*/
 	void setTransform(const SimTK::Transform& xform);
 	
-
+    /** Return reference to the Body that Frame is affixed to, either directly or through 
+    * intermediate Frames
+    */
+    const OpenSim::Body& getBody() const;
 	
-
 protected:
     // Model component interface.
 	void constructStructuralConnectors() override;

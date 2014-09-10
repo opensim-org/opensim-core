@@ -74,7 +74,7 @@ public:
 	void scale(const ScaleSet& aScaleSet);
 	/** Add a prefix to marker names for all markers in the set**/
 	void addNamePrefix(const std::string& prefix);
-	Marker* addMarker( const std::string& aName, const double aOffset[3], OpenSim::Body& aBody);
+	Marker* addMarker( const std::string& aName, const SimTK::Vec3& aOffset, OpenSim::Body& aBody);
 //=============================================================================
 };	// END of class MarkerSet
 //=============================================================================

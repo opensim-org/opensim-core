@@ -33,8 +33,6 @@
 using namespace std;
 //using namespace SimTK;
 using namespace OpenSim;
-using SimTK::Mat33;
-using SimTK::Vec3;
 
 //=============================================================================
 // CONSTRUCTOR(S)

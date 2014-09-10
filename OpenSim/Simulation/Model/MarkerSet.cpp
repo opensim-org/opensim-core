@@ -25,6 +25,7 @@
 #include "Marker.h"
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -175,7 +176,7 @@ void MarkerSet::addNamePrefix(const string& prefix)
 /**
  * Create a new marker and add it to the set.
  */
-Marker* MarkerSet::addMarker(const string& aName, const double aOffset[3], OpenSim::Body& aBody)
+Marker* MarkerSet::addMarker(const string& aName, const SimTK::Vec3& aOffset, OpenSim::Body& aBody)
 {
 	// If a marker by this name already exists, do nothing.
 	if (contains(aName))
@@ -187,7 +188,7 @@ Marker* MarkerSet::addMarker(const string& aName, const double aOffset[3], OpenS
 	m->setOffset(aOffset);
     // Body will be based on this name when marker is connected to Model.
 	m->setBodyName(aBody.getName()); 
-	m->connectMarkerToModel(aBody.getModel());
+	m->connectMarkerToModel(aBody.updModel());
 	adoptAndAppend(m);
 
 	return m;

@@ -32,7 +32,7 @@
 namespace OpenSim {
 
 	class Model;
-
+    class Body;
 	//=============================================================================
 	//=============================================================================
 	/**
@@ -66,7 +66,7 @@ namespace OpenSim {
 		/** default contructor*/
 		RigidFrame();
 
-		
+        virtual const OpenSim::Body& getBody() const = 0;
 
 	private:
 		void setNull();
