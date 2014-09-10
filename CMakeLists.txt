@@ -561,10 +561,6 @@ ADD_CUSTOM_TARGET (RUN_TESTS_PARALLEL
     COMMAND ${cmd}
 )
 
-## This adds a target "doxygen" for building the doxygen docs, as well as 
-## an INSTALL procedure.
-INCLUDE(ApiDoxygen.cmake)
-
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenSim project")
 SET(CPACK_PACKAGE_VENDOR "Stanford University, National Center for Biomedical Computation")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt")
