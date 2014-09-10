@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Peter Loan                                                      *
+ * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -45,53 +45,15 @@ FrameSet::~FrameSet(void)
  */
 FrameSet::FrameSet()
 {
-	setNull();
+	
 }
 
 FrameSet::FrameSet(Model& model) :
 	ModelComponentSet<Frame>(model)
 {
-	setNull();
+	
 }
 
-//_____________________________________________________________________________
-/**
- * Copy constructor of a FrameSet.
- */
-FrameSet::FrameSet(const FrameSet& aFrameSet):
-	ModelComponentSet<Frame>(aFrameSet)
-{
-	setNull();
-	*this = aFrameSet;
-}
-
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-/**
- * Set the data members of this FrameSet to their null values.
- */
-void FrameSet::setNull()
-{
-}
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-#ifndef SWIG
-FrameSet& FrameSet::operator=(const FrameSet &aFrameSet)
-{
-	Set<Frame>::operator=(aFrameSet);
-	return (*this);
-}
-#endif
 
 //=============================================================================
 // UTILITY
