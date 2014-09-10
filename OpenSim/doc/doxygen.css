@@ -199,7 +199,7 @@ div.fragment {
         margin: 4px 8px 4px 2px;
 	background-color: #e3e3e3;
 	border: 1px solid #e3e3e3;
-	font-family: courier !important;
+	font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace !important;
 }
 
 div.line {
@@ -1084,7 +1084,7 @@ table.fieldtable {
 #nav-tree .item {
   margin:0px;
   padding:0px;
-  height:17px;
+  height:16px;
 }
 
 #nav-tree {
