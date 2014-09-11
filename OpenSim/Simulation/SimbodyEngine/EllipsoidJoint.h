@@ -28,15 +28,17 @@
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
-/**
- * A class implementing an Ellipsoid joint.  The underlying implementation 
- * in Simbody is a MobilizedBody::Ellipsoid.
- *
- * @author Ajay Seth
- * @version 1.0
- */
+/** @defgroup RigidBodyModel  Joints    
+    @class ELLipSoid   
+
+A class implementing an Ellipsoid joint.  The underlying implementation 
+in Simbody is a MobilizedBody::Ellipsoid.
+
+@author Ajay Seth
+@version 1.0
+*/
+
+
 class OSIMSIMULATION_API EllipsoidJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(EllipsoidJoint, Joint);
 

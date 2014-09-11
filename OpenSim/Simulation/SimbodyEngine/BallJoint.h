@@ -31,15 +31,45 @@ namespace OpenSim {
 
 class Model;
 
-//=============================================================================
-//=============================================================================
-/**
- * A class implementing an Ball joint.  The underlying implementation 
- * in Simbody is a MobilizedBody::Ball.
- *
- * @author Ajay Seth
- * @version 1.0
- */
+/** 
+
+<P> A class implementing a Ball joint. The underlying implementation is Simbody is a
+Mobilized::Ball. A modeling option allows the joint to use a Euler sequence. </P>
+
+\image html small_ballJoint.gif
+
+<strong>Python Example</strong> 
+
+\code{.py}
+
+## Assumes that you have created two bodies 'block1' and 'block2'
+## Generate joint specific properties
+
+import opensim as osim
+
+locationInParent    = modeling.Vec3(-0.05, -0.35, -0)
+orientationInParent = modeling.Vec3(0,0,0)
+locationInChild     = modeling.Vec3(-0.2,0.4,-0.2)
+orientationInChild  = modeling.Vec3(0,1.5,0)
+
+joint1  = modeling.BallJoint('bloclJoint', 
+                                ,block1, 
+                                ,locInParent
+                                ,oriInParent
+                                ,block2
+                                ,locInChild
+                                ,oriInChild
+                                ,0)
+block1.setJoint(joint1)
+model.addBody(block2)
+
+\endcode
+
+@author Ajay Seth
+@version 1.0
+
+*/
+
 class OSIMSIMULATION_API BallJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
 

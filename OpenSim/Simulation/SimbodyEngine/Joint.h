@@ -33,31 +33,34 @@ class Model;
 class Body;
 class ScaleSet;
 
-//=============================================================================
-//=============================================================================
-/**
- * An OpenSim Joint is an OpenSim::ModelComponent which connects two Bodies 
- * together and speficies their relative permissible motion as described in  
- * internal coordinates. The base Joint specifies the two frames (on each body),
- * which the joint spans. The relative motion (including the # of coordinates)
- * are defined by concrete Joints, which specify the permissible kinematics of
- * a child joint frame (on a child body) with respect to a parent joint frame
- * (on a parent body). The designation of parent and child are used only to
- * identify the directionality of the joint and in which frame the joint
- * coordinates are expressed. For example, A PinJoint between a parent, P, 
- * and a child body, B, frames has a coordinate value of zero when the two 
- * frames are aligned and positive coordinate values are the angle between the 
- * frames' X-axes given a positive Z-rotation of the child frame about the  
- * coincident Z-axis in the parent frame.
- *
- * Concrete Joints can specify relative translations and even coupled 
- * rotations and translations (@see EllipsoidJoint and CustomJoint). For more
- * details on how the underlying formulation supports coupled curvilinear
- * joints, see "Minimal formulation of joint motion for biomechanisms", 2010
- * A Seth, M Sherman, P Eastman, S Delp; Nonlinear dynamics 62 (1), 291-303
- *
- * @author Ajay Seth
- */
+/** 
+
+An OpenSim Joint is an OpenSim::ModelComponent which connects two Bodies 
+together and speficies their relative permissible motion as described in  
+internal coordinates. The base Joint specifies the two frames (on each body),
+which the joint spans. The relative motion (including the # of coordinates)
+are defined by concrete Joints, which specify the permissible kinematics of
+a child joint frame (on a child body) with respect to a parent joint frame
+(on a parent body). The designation of parent and child are used only to
+identify the directionality of the joint and in which frame the joint
+coordinates are expressed. 
+
+For example, A PinJoint between a parent, P, and a child body, B, 
+frames has a coordinate value of zero when the two frames are aligned 
+and positive coordinate values are the angle between the frames' X-axes given  
+a positive Z-rotation of the child frame about the coincident Z-axis in 
+the parent frame.
+
+Concrete Joints can specify relative translations and even coupled 
+rotations and translations (see EllipsoidJoint and CustomJoint). For more
+details on how the underlying formulation supports coupled curvilinear
+joints, see "Minimal formulation of joint motion for biomechanisms", 2010
+A Seth, M Sherman, P Eastman, S Delp; Nonlinear dynamics 62 (1), 291-303
+
+@author Ajay Seth
+*/
+
+
 class OSIMSIMULATION_API Joint : public ModelComponent {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Joint, ModelComponent);
 
