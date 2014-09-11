@@ -855,6 +855,8 @@ namespace SimTK {
 
 %include <OpenSim/Simulation/Manager/Manager.h>
 %include <OpenSim/Simulation/Model/AbstractTool.h>
+
+%include <OpenSim/Simulation/Model/Station.h>
 %include <OpenSim/Simulation/Model/Marker.h>
 %template(SetMarkers) OpenSim::Set<OpenSim::Marker>;
 %include <OpenSim/Simulation/Model/MarkerSet.h>
