@@ -61,7 +61,6 @@ public:
 	Marker();
 	virtual ~Marker();
 
-	void updateFromMarker(const Marker &aMarker);
 	const SimTK::Vec3& getOffset() const { return get_location(); }
     void setOffset(const SimTK::Vec3& aOffset) {
         upd_location() = aOffset;
