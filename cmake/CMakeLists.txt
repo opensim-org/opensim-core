@@ -7,7 +7,7 @@ CONFIGURE_FILE(OpenSimConfig.cmake.in
     "${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfig.cmake" @ONLY)
 
 # Version file.
-include(CMakePackageConfigHelpers)
+include(WriteBasicConfigVersionFile)
 WRITE_BASIC_CONFIG_VERSION_FILE(
     "${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfigVersion.cmake"
     VERSION "${OPENSIM_VERSION}"
