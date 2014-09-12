@@ -17,8 +17,8 @@ set(my_header_files myexe.h)
 # specify the installation directory in the CMAKE_PREFIX_PATH variable.
 find_package(OpenSim REQUIRED)
 
-include_directories(${OpenSimSimbody_INCLUDE_DIRS})
+include_directories(${OpenSim_INCLUDE_DIRS})
 link_directories(${OpenSim_LIB_DIR})
 
 add_executable(myexe ${my_source_files} ${my_header_files})
-target_link_libraries(myexe ${OpenSimSimbody_LIBRARIES})
+target_link_libraries(myexe ${OpenSim_LIBRARIES})
