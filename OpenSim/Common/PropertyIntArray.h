@@ -1,5 +1,5 @@
-#ifndef _PropertyIntArray_h_
-#define _PropertyIntArray_h_
+#ifndef OPENSIM_PROPERTY_INT_ARRAY_H_
+#define OPENSIM_PROPERTY_INT_ARRAY_H_
 /* -------------------------------------------------------------------------- *
  *                        OpenSim:  PropertyIntArray.h                        *
  * -------------------------------------------------------------------------- *
@@ -38,6 +38,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * Class PropertyIntArray extends class Property.  It consists of an
  * array of integers (i.e., Array<int>) and the methods for accessing
@@ -46,8 +48,6 @@
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API PropertyIntArray : public Property_Deprecated
 {
 
@@ -110,4 +110,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif //__PropertyIntArray_h__
+#endif // OPENSIM_PROPERTY_INT_ARRAY_H_

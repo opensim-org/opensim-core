@@ -1,5 +1,5 @@
-#ifndef _AnalysisSet_h_
-#define _AnalysisSet_h_
+#ifndef OPENSIM_ANALYSIS_SET_H_
+#define OPENSIM_ANALYSIS_SET_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  AnalysisSet.h                           *
  * -------------------------------------------------------------------------- *
@@ -36,6 +36,10 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
+class Model;
+
 /**
  * A class for holding and managing a set of integration callbacks for
  * a model.
@@ -43,10 +47,6 @@
  * @author Frank C. Anderson
  * @version 1.0
  */
-namespace OpenSim { 
-
-class Model;
-
 class OSIMSIMULATION_API AnalysisSet : public Set<Analysis> {
 OpenSim_DECLARE_CONCRETE_OBJECT(AnalysisSet, Set<Analysis>);
 
@@ -122,6 +122,6 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // __AnalysisSet_h__
+#endif // OPENSIM_ANALYSIS_SET_H_
 
 

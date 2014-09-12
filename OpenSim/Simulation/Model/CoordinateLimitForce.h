@@ -32,6 +32,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim {
+
 /**
  * Generate a force that acts to limit the range of motion of a coordinate.
  * Force is experienced at upper and lower limits of the coordinate value
@@ -50,8 +52,6 @@
  *
  * @author Ajay Seth
  */
-namespace OpenSim {
-
 class OSIMSIMULATION_API CoordinateLimitForce : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateLimitForce, Force);
 public:

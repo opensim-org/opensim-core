@@ -1,5 +1,5 @@
-#ifndef _Array_h_
-#define _Array_h_
+#ifndef OPENSIM_ARRAY_H_
+#define OPENSIM_ARRAY_H_
 /* -------------------------------------------------------------------------- *
  *                             OpenSim:  Array.h                              *
  * -------------------------------------------------------------------------- *
@@ -36,6 +36,8 @@ static const int Array_CAPMIN = 1;
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * A class for storing an array of values of type T.  The capacity of the class
  * grows as needed.  To use this template for a class of type T, class T should
@@ -46,8 +48,6 @@ static const int Array_CAPMIN = 1;
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 template<class T> class Array
 {
 
@@ -929,4 +929,4 @@ int searchBinary(const T &aValue,bool aFindFirst=false,
 
 
 
-#endif //__Array_h__
+#endif // OPENSIM_ARRAY_H_

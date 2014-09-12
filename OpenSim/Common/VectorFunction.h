@@ -1,5 +1,5 @@
-#ifndef _VectorFunction_h_
-#define _VectorFunction_h_
+#ifndef OPENSIM_VECTOR_FUNCTION_H_
+#define OPENSIM_VECTOR_FUNCTION_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  VectorFunction.h                         *
  * -------------------------------------------------------------------------- *
@@ -37,6 +37,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * An abstract class for representing a vector function.
  *
@@ -52,8 +54,6 @@
  *
  * @author Frank C. Anderson and Saryn R. Goldberg
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API VectorFunction : public Object {
 OpenSim_DECLARE_ABSTRACT_OBJECT(VectorFunction, Object);
 
@@ -130,4 +130,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif  // __VectorFunction_h__
+#endif  // OPENSIM_VECTOR_FUNCTION_H_

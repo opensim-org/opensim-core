@@ -1,5 +1,5 @@
-#ifndef _PropertyStr_h_
-#define _PropertyStr_h_
+#ifndef OPENSIM_PROPERTY_STR_H_
+#define OPENSIM_PROPERTY_STR_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  PropertyStr.h                           *
  * -------------------------------------------------------------------------- *
@@ -36,15 +36,15 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
- * Class PropertyInt extends class Property.  It consists of a string
+ * Class PropertyStr extends class Property.  It consists of a string
  * value and the methods for accessing and modifying this value.
  *
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API PropertyStr : public Property_Deprecated
 {
 //=============================================================================
@@ -103,4 +103,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif //__PropertyStr_h__
+#endif // OPENSIM_PROPERTY_STR_H_

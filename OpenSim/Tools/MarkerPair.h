@@ -34,6 +34,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim {
+
 /**
  * A class for holding the names of a pair of markers (for making
  * measurements on a model).
@@ -41,8 +43,6 @@
  * @author Peter Loan
  * @version 1.0
  */
-namespace OpenSim { 
-
 class OSIMTOOLS_API MarkerPair : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MarkerPair, Object);
 

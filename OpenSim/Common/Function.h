@@ -41,6 +41,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * An abstract class for representing a function.
  *
@@ -55,8 +57,6 @@
  *
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API Function : public Object {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Function, Object);
 
