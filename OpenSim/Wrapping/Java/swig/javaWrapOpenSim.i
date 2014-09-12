@@ -187,6 +187,7 @@
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/PointActuator.h>
 #include <OpenSim/Actuators/TorqueActuator.h>
+#include <OpenSim/Actuators/BodyActuator.h>
 #include <OpenSim/Actuators/PointToPointActuator.h>
 #include <OpenSim/Actuators/ClutchedPathSpring.h>
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
@@ -916,9 +917,8 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/ProbeSet.h>
 %include <OpenSim/Simulation/Model/SystemEnergyProbe.h>
 %include <OpenSim/Simulation/Model/JointInternalPowerProbe.h>
-%include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
-%include <OpenSim/Simulation/Model/ActuatorForceProbe.h>
-
+#include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
+#include <OpenSim/Simulation/Model/ActuatorForceProbe.h>
 %include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
 %include <OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.h>
 %include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
@@ -985,6 +985,7 @@ namespace SimTK {
 %include <OpenSim/Actuators/CoordinateActuator.h>
 %include <OpenSim/Actuators/PointActuator.h>
 %include <OpenSim/Actuators/TorqueActuator.h>
+%include <OpenSim/Actuators/BodyActuator.h>
 %include <OpenSim/Actuators/PointToPointActuator.h>
 %include <OpenSim/Actuators/ClutchedPathSpring.h>
 %include <OpenSim/Actuators/SpringGeneralizedForce.h>

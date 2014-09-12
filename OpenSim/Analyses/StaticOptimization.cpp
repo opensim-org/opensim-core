@@ -374,7 +374,7 @@ record(const SimTK::State& s)
 	// Parameter bounds
 	SimTK::Vector lowerBounds(na), upperBounds(na);
 	for(int i=0,j=0;i<fs.getSize();i++) {
-		Actuator& act = fs.get(i);
+		ScalarActuator& act = *dynamic_cast<ScalarActuator*>(&fs.get(i));
 		lowerBounds(j) = act.getMinControl();
 	    upperBounds(j) = act.getMaxControl();
         j++;
@@ -606,8 +606,17 @@ begin(SimTK::State& s )
 		status = record(s);
 		const Set<Actuator>& fs = _modelWorkingCopy->getActuators();
 		for(int k=0;k<fs.getSize();k++) {
-			Actuator& act = fs.get(k);
-			cout << "Bounds for " << act.getName() << ": " << act.getMinControl()<< " to "<< act.getMaxControl() << endl;
+			ScalarActuator* act = dynamic_cast<ScalarActuator *>(&fs[k]);
+			if (act){
+				cout << "Bounds for " << act->getName() << ": "
+					<< act->getMinControl() << " to "
+					<< act->getMaxControl() << endl;
+			}
+			else{
+				std::string msg = getConcreteClassName();
+				msg += "::can only process scalar Actuator types.";
+				throw Exception(msg);
+			}
 		}
 	}
 

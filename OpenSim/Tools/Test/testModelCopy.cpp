@@ -73,10 +73,12 @@ void testCopyModel(string fileName)
 	// Compare state
 	ASSERT ((defaultState.getY()-defaultStateOfCopy2.getY()).norm() < 1e-7);
 	ASSERT ((defaultState.getZ()-defaultStateOfCopy2.getZ()).norm() < 1e-7);
+	
 	delete newModel;
 
 	size_t mem2 = getCurrentRSS( );
 	int64_t delta = mem2-mem1;
 
-	cout << "Memory change AFTER copy and init:  " << delta/1024 << "KB." << endl;
+	cout << "Memory change AFTER copy and init and delete:  " 
+		 << double(delta)/mem1*100 << "%." << endl;
 }

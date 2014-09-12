@@ -1,7 +1,7 @@
-#ifndef OPENSIM_COORDINATE_ACTUATOR_H_
-#define OPENSIM_COORDINATE_ACTUATOR_H_
+#ifndef OPENSIM_MULTICOORDINATE_ACTUATOR_H_
+#define OPENSIM_MULTICOORDINATE_ACTUATOR_H_
 /* -------------------------------------------------------------------------- *
- *                       OpenSim:  CoordinateActuator.h                       *
+ *                       OpenSim:  MultiCoordinateActuator.h                  *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,9 +9,9 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                                       *
- * Contributor(s): Frank C. Anderson                                          *
+ * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Author(s): Chris Dembia                                                    *
+ * Contributor(s): Soha Pouya, Michael Sherman                                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -26,29 +26,23 @@
 
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 
 namespace OpenSim { 
 
-class Coordinate;
-class ForceSet;
-class Model;
-
 //==============================================================================
-//                           COORDINATE ACTUATOR
+//                           MULTICOORDINATE ACTUATOR
 //==============================================================================
 /**
- * An actuator that applies a generalized force to along a generalized
- * a generalized coordinate, which is proportional to its input control.
- * It replaces the GeneralizeForce class implemented by Frank C. Anderson
- *
- * @author Ajay Seth
- * @author Frank C. Anderson
+ * An actuator that applies generalized forces for all coordinates (mobilities
+ * in Simbody parlance) in the Model. This is more efficient than using a
+ * separate CoordinateActuator for each coordinate, but is less flexible (can't
+ * specify separate min/max control values for different coordinates). This
+ * Actuator_ is particularly useful for controllers that apply generalized
+ * forces to all/most coordinates.
  */
-class OSIMACTUATORS_API CoordinateActuator : public ScalarActuator {
-OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateActuator, ScalarActuator);
+class OSIMACTUATORS_API MultiCoordinateActuator : public Actuator {
+OpenSim_DECLARE_CONCRETE_OBJECT(MultiCoordinateActuator, Actuator);
 public:
 //==============================================================================
 // PROPERTIES
@@ -56,40 +50,12 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
-	OpenSim_DECLARE_OPTIONAL_PROPERTY(coordinate, std::string,
-		"Name of the generalized coordinate to which the actuator applies.");
-	OpenSim_DECLARE_PROPERTY(optimal_force, double,
-		"The maximum generalized force produced by this actuator.");
     /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-    /** Default constructor leaves coordinate name unspecified, or you can
-    provide it. **/
-	explicit CoordinateActuator(const std::string& coordinateName="");
-
-    // Uses default (compiler-generated) destructor, copy constructor, copy 
-    // assignment operator.
-
-	/** Set the 'optimal_force' property. **/
-	void setOptimalForce(double optimalForce);
-    /** Get the current setting of the 'optimal_force' property. **/
-	double getOptimalForce() const override; // part of Actuator interface
-
-	//--------------------------------------------------------------------------
-	// UTILITY
-	//--------------------------------------------------------------------------
-	static ForceSet* CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel,double aOptimalForce = 1,bool aIncludeLockedAndConstrainedCoordinates = true);
-
-	bool isCoordinateValid() const;
-	double getSpeed( const SimTK::State& s) const;
-
-    /** Set the reference pointer to point to the given Coordinate and set
-    the 'coordinate' name property also. **/
-    void setCoordinate(Coordinate* aCoordinate);
-    /** Get a pointer to the Coordinate to which this actuator refers. **/
-	Coordinate* getCoordinate() const;
+	MultiCoordinateActuator();
 
 //==============================================================================
 // PRIVATE
@@ -102,14 +68,21 @@ private:
 					  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 					  SimTK::Vector& mobilityForces) const override;
 
-
 	//--------------------------------------------------------------------------
-	// Implement Actuator interface (also see getOptimalForce() above)
+	// Implement Actuator_ interface (also see getOptimalForce() above)
 	//--------------------------------------------------------------------------
-	double  computeActuation( const SimTK::State& s) const override;
-	// Return the stress, defined as abs(force/optimal_force).
-	double getStress( const SimTK::State& s ) const override;
+    int numControls() const override;
 
+	double getPower(const SimTK::State& s) const { return 0; }
+	void overrideForce(SimTK::State& s, bool flag) const {}
+
+	/*double computeActuation(const SimTK::State& s) const override
+    {
+        throw Exception(
+                "MultiCoordinateActuator actuates multiple degrees of freedom; "
+                "this method returns a scalar and is meaningless for this "
+                "Actuator_.", __FILE__, __LINE__);
+    }*/
 
 	//--------------------------------------------------------------------------
 	// Implement ModelComponent interface
@@ -120,23 +93,15 @@ private:
 	//--------------------------------------------------------------------------
 	// Implement Object interface.
 	//--------------------------------------------------------------------------
-	void setNull();
 	void constructProperties();
 
-
-    // Note: reference pointers are automatically set to null on construction 
-    // and also on copy construction and copy assignment.
-
-	// Corresponding generalized coordinate to which the coordinate actuator
-    // is applied.
-    SimTK::ReferencePtr<Coordinate> _coord;
 //==============================================================================
-};	// END of class CoordinateActuator
+};	// END of class MultiCoordinateActuator
 
 }; //namespace
 //==============================================================================
 //==============================================================================
 
-#endif // OPENSIM_COORDINATE_ACTUATOR_H_
+#endif // OPENSIM_MULTICOORDINATE_ACTUATOR_H_
 
 

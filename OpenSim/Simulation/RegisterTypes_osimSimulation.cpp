@@ -215,8 +215,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     Object::registerType( PathActuator() );
     Object::registerType( ProbeSet() );
-    Object::registerType( ActuatorPowerProbe() );
-    Object::registerType( ActuatorForceProbe() );
     Object::registerType( JointInternalPowerProbe() );
     Object::registerType( SystemEnergyProbe() );
     Object::registerType( Umberger2010MuscleMetabolicsProbe() );

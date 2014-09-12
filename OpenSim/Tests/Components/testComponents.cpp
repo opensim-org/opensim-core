@@ -72,6 +72,12 @@ int main()
         testModelComponent(pinJoint, true, model);
     }*/
 
+	{
+		BodyActuator bodyAct;
+		bodyAct.updConnector<Body>("body").set_connected_to_name("ground");
+		testModelComponent(bodyAct);
+	}
+
     testModelComponent(Bhargava2004MuscleMetabolicsProbe());
     testModelComponent(Umberger2010MuscleMetabolicsProbe());
 }

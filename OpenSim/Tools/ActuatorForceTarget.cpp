@@ -236,12 +236,11 @@ computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerfo
 	const Set<Actuator> &fSet = _controller->getActuatorSet();
 
 	for(int i=0;i<fSet.getSize();i++) {
-        Actuator& act = fSet.get(i);
-        act.setOverrideForce(s, aF[i]);
-        act.overrideForce(s,true);
-
-        
+		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+        act->setOverrideForce(s, aF[i]);
+        act->overrideForce(s,true);      
 	}
+
     _controller->getModel().getMultibodySystem().realize(s, SimTK::Stage::Acceleration );
 
 	CMC_TaskSet& taskSet = _controller->updTaskSet();
@@ -253,8 +252,8 @@ computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerfo
 	// PERFORMANCE
 	double sqrtStressTermWeight = sqrt(_stressTermWeight);
 	for(int i=0;i<fSet.getSize();i++) {
-        Actuator& act = fSet.get(i);
-        rForcePerformanceVector[i] = sqrtStressTermWeight * act.getStress(s);
+		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+        rForcePerformanceVector[i] = sqrtStressTermWeight * act->getStress(s);
      }
 
 	int nacc = aDes.getSize();
@@ -262,8 +261,8 @@ computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerfo
 
 	// reset the actuator control
 	for(int i=0;i<fSet.getSize();i++) {
-        Actuator& act = fSet.get(i);
-        act.overrideForce(s,false);
+		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+        act->overrideForce(s,false);
 	}
 
 

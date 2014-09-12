@@ -859,8 +859,10 @@ void Manager::initialize(SimTK::State& s, double dt )
         double tReal = s.getTime();
 	
     	// STORE STARTING CONTROLS
-		if(_model->isControlled())
+		if (_model->isControlled()){
+			_controllerSet->setModel(*_model);
 			_controllerSet->storeControls(s, 0);
+		}
 
     	// STORE STARTING STATES
     	if(hasStateStorage()) {

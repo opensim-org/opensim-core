@@ -53,8 +53,8 @@ class Model;
  *
  * @author Ajay Seth, Matt DeMers
  */
-class OSIMACTUATORS_API TorqueActuator : public Actuator {
-OpenSim_DECLARE_CONCRETE_OBJECT(TorqueActuator, Actuator);
+class OSIMACTUATORS_API TorqueActuator : public ScalarActuator {
+	OpenSim_DECLARE_CONCRETE_OBJECT(TorqueActuator, ScalarActuator);
 public:
 //==============================================================================
 // PROPERTIES

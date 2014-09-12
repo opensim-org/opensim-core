@@ -27,8 +27,10 @@
 #include "RegisterTypes_osimActuators.h"
 
 #include "CoordinateActuator.h"
+#include "MultiCoordinateActuator.h"
 #include "PointActuator.h"
 #include "TorqueActuator.h"
+#include "BodyActuator.h"
 #include "PointToPointActuator.h"
 #include "ClutchedPathSpring.h"
 
@@ -77,8 +79,10 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
   try {
 
 	Object::registerType( CoordinateActuator() );
+	Object::registerType( MultiCoordinateActuator() );
 	Object::registerType( PointActuator() );
 	Object::registerType( TorqueActuator() );
+	Object::registerType( BodyActuator() );
 	Object::registerType( PointToPointActuator() );
 	Object::registerType( ClutchedPathSpring() );
 
