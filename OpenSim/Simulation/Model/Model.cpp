@@ -1480,8 +1480,9 @@ void Model::printBasicInfo(std::ostream &aOStream) const
 	aOStream<<"         constraints: "<<getConstraintSet().getSize()<<std::endl;
 	aOStream<<"             markers: "<<getMarkerSet().getSize()<<std::endl;
 	aOStream<<"         controllers: "<<getControllerSet().getSize()<<std::endl;
-	aOStream<<"  contact geometries: "<<getContactGeometrySet().getSize()<<std::endl;
-	aOStream<<"misc modelcomponents: "<<getMiscModelComponentSet().getSize()<<std::endl;
+    aOStream << "  contact geometries: " << getContactGeometrySet().getSize() << std::endl;
+    aOStream << "  f        ramess: " << getFrameSet().getSize() << std::endl;
+    aOStream << "misc modelcomponents: " << getMiscModelComponentSet().getSize() << std::endl;
 
 }
 //_____________________________________________________________________________
@@ -1674,13 +1675,9 @@ int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
  */
 void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 {
-    aMarkerSet.print("rt_markers.xml");
 	for (int i = 0; i < aMarkerSet.getSize(); i++)
 	{
 		Marker& updatingMarker = aMarkerSet.get(i);
-        std::string markerDump =updatingMarker.dump();
-        std::cout << markerDump;
-		//const string& updatingBodyName = updatingMarker.getBodyName();
 
 		/* If there is already a marker in the model with that name,
 		 * update it with the parameters from the updating marker,
@@ -1689,8 +1686,6 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 		if (updMarkerSet().contains(updatingMarker.getName()))
 		{
     		Marker& modelMarker = updMarkerSet().get(updatingMarker.getName());
-            std::string ctype = modelMarker.getConnector<RigidFrame>("reference_frame").getConnectedToTypeName();
-            std::string cName = modelMarker.getConnector<RigidFrame>("reference_frame").get_connected_to_name();
 			/* If the updating marker is on a different body, delete the
 			 * marker from the model and add the updating one (as long as
 			 * the updating marker's body exists in the model).
@@ -1722,12 +1717,6 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
     // it before so we need to make sure the connectMarkerToModel() function
 	// supports getting called multiple times.
     initSystem();
-    for (int i = 0; i < get_MarkerSet().getSize(); i++){
-        const Marker& modelMarker = get_MarkerSet().get(i);
-        std::string ctype = modelMarker.getConnector<RigidFrame>("reference_frame").getConnectedToTypeName();
-        std::string cName = modelMarker.getConnector<RigidFrame>("reference_frame").get_connected_to_name();
-        const Body& bRef = modelMarker.getBody();
-    }
     cout << "Updated markers in model " << getName() << endl;
 }
 
@@ -2028,6 +2017,7 @@ void Model::disownAllComponents()
 	updAnalysisSet().setMemoryOwner(false);
 	updMarkerSet().setMemoryOwner(false);
     updProbeSet().setMemoryOwner(false);
+    updFrameSet().setMemoryOwner(false);
 }
 
 void Model::overrideAllActuators( SimTK::State& s, bool flag) {
@@ -2054,9 +2044,11 @@ const Object& Model::getObjectByTypeAndName(const std::string& typeString, const
         return getMarkerSet().get(nameString);
 	else if (typeString=="Controller") 
         return getControllerSet().get(nameString);
-    else if (typeString=="Probe") 
+    else if (typeString == "Probe")
         return getProbeSet().get(nameString);
-	throw Exception("Model::getObjectByTypeAndName: no object of type "+typeString+
+    else if (typeString == "Frame")
+        return getFrameSet().get(nameString);
+    throw Exception("Model::getObjectByTypeAndName: no object of type " + typeString +
 		" and name "+nameString+" was found in the model.");
 
 }
