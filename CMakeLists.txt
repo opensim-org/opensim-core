@@ -567,9 +567,6 @@ ADD_CUSTOM_TARGET (RUN_TESTS_PARALLEL
     COMMAND ${cmd}
 )
 
-## This adds a target "doxygen" for building the doxygen docs, as well as 
-## an INSTALL procedure.
-INCLUDE(ApiDoxygen.cmake)
 
 # Create buildinfo.txt file and place under sdk to include product version, platform and compiler for troubleshooting purposes
 SET(VERSION_FILE_PATH ${CMAKE_BINARY_DIR}/buildinfo.txt)
