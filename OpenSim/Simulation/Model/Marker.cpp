@@ -65,23 +65,6 @@ void Marker::setNull()
 {
 
 }
-
-//=============================================================================
-// UTILITY
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Update an existing marker with parameter values from a
- * new one, but only for the parameters that were explicitly
- * specified in the XML node.
- *
- * @param aMarker marker to update from
- */
-void Marker::updateFromMarker(const Marker &aMarker)
-{
-    (*this) == aMarker;
-}
-
 //_____________________________________________________________________________
 /**
  * Set the 'body name' field, which is used when the marker is added to
@@ -182,7 +165,7 @@ void Marker::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
 
     if (versionNumber < XMLDocument::getLatestVersion()){
-        if (versionNumber < 30500) {
+        if (versionNumber < 30501) {
             // Parse name of Body under <body>node
             SimTK::Xml::element_iterator bIter = aNode.element_begin("body");
             SimTK::String bName = bIter->getValue();
