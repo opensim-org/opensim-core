@@ -2,8 +2,7 @@ OpenSim: NOTICE
 ---------------
 The OpenSim API uses the open source Apache 2.0 license (below), making it
 suitable for any use commercial, government, academic, or personal. Please see
-the notes below the license for more information about how to acknowledge us and
-a full list of authors.
+the notes below the license for more information about how to acknowledge us.
 
 /* -------------------------------------------------------------------------- *
  *                               OpenSim License                              *
@@ -50,15 +49,5 @@ medical research and human health.
 
 If you use plugins, models, or other components contributed by your fellow
 researchers, you must acknowledge their work as described in the license that
-accompanies each of these files. 
-
-Author List
------------
-The following people have contributed to the OpenSim API:
-
-Frank C. Anderson, Allison S. Arnold, Scott L. Delp, Matt S. DeMers, Tim Dorn,
-Brian Garner, Saryn R. Goldberg, Eran Guendelman, Ayman Habib, Samuel R. Hamner,
-Jennifer L. Hicks, Katherine R. S. Holzbaur, Chand T. John, Cassidy Kelly, May
-Q. Liu, Peter Loan, Jack Middleton, Matthew Millard, Paul C. Mitiguy, Jeffrey A.
-Reinbolt, Ajay Seth, Michael A. Sherman, Darryl G. Thelen, Kevin Xu
+accompanies each of these files.
 
