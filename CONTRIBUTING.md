@@ -22,27 +22,27 @@ Contributors
 ------------
 Here is a partial list of contributors; please let us know if you know of a missing name.
 
-Frank C. Anderson
-Allison S. Arnold
-Scott L. Delp
-Matt S. DeMers
-Tim Dorn,
-Brian Garner
-Saryn R. Goldberg
-Eran Guendelman
-Ayman Habib
-Samuel R. Hamner
-Jennifer L. Hicks
-Katherine R. S. Holzbaur
-Chand T. John
-Cassidy Kelly
-May Q. Liu
-Peter Loan
-Jack Middleton
-Matthew Millard
-Paul C. Mitiguy
-Jeffrey A. Reinbolt
-Ajay Seth
-Michael A. Sherman
-Darryl G. Thelen
-Kevin Xu
+- Frank C. Anderson
+- Allison S. Arnold
+- Scott L. Delp
+- Matt S. DeMers
+- Tim Dorn
+- Brian Garner
+- Saryn R. Goldberg
+- Eran Guendelman
+- Ayman Habib
+- Samuel R. Hamner
+- Jennifer L. Hicks
+- Katherine R. S. Holzbaur
+- Chand T. John
+- Cassidy Kelly
+- May Q. Liu
+- Peter Loan
+- Jack Middleton
+- Matthew Millard
+- Paul C. Mitiguy
+- Jeffrey A. Reinbolt
+- Ajay Seth
+- Michael A. Sherman
+- Darryl G. Thelen
+- Kevin Xu
