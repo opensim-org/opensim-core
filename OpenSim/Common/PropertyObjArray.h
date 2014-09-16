@@ -109,7 +109,7 @@ public:
 	// SIZE
 	virtual int getArraySize() const { return _array.getSize(); }
 	// VALUE
-	virtual Object* getValueObjPtr(int index) { return (Object*)_array.get(index); }
+	virtual Object* getValueObjPtr(int index) const { return (Object*)_array.get(index); }
 	virtual void appendValue(Object *obj) { 
 		if(!isValidObject(obj)) 
             throw Exception("PropertyObjArray: ERR- Attempting to append invalid object of type "

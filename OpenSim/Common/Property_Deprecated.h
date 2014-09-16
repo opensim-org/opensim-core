@@ -275,10 +275,10 @@ public:
 #endif
 	// ObjPtr
 	virtual void setValue(Object *aValue) { Property_PROPERTY_TYPE_MISMATCH(); }
-	virtual Object* getValueObjPtr() { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual Object* getValueObjPtr() const { Property_PROPERTY_TYPE_MISMATCH(); }
 
 	// Obj Array
-	virtual Object* getValueObjPtr(int index) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual Object* getValueObjPtr(int index) const { Property_PROPERTY_TYPE_MISMATCH(); }
 	virtual void appendValue(Object *obj) { Property_PROPERTY_TYPE_MISMATCH(); }
 	virtual void clearObjArray() { Property_PROPERTY_TYPE_MISMATCH(); }
 

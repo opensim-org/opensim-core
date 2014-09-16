@@ -194,7 +194,7 @@ void AbstractProperty::readFromXMLParentElement(Xml::Element& parent,
 }
 
 
-void AbstractProperty::writeToXMLParentElement(Xml::Element& parent) {
+void AbstractProperty::writeToXMLParentElement(Xml::Element& parent) const {
 	// Add comment if any.
 	if (!getComment().empty())
 		parent.insertNodeAfter(parent.node_end(), Xml::Comment(getComment()));
@@ -216,12 +216,11 @@ void AbstractProperty::writeToXMLParentElement(Xml::Element& parent) {
     //      <ObjectTypeTag ...> value </ObjectTypeTag> 
     // otherwise.
 
-    Object& obj = updValueAsObject();
+    const Object& obj = getValueAsObject();
 
     // If this is a named property then the lone object must have its
     // name attribute set to the property name.
-    obj.setName(isUnnamedProperty() ? "" : getName());
-
+    (const_cast<Object&>(obj)).setName(isUnnamedProperty() ? "" : getName());
     obj.updateXMLNode(parent);
 }
 
