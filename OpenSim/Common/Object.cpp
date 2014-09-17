@@ -1271,7 +1271,7 @@ updateXMLNode(SimTK::Xml::Element& aParent) const
 					   for(int j=0;j<prop->getArraySize();j++)
 						prop->getValueObjPtr(j)->updateXMLNode(objectArrayElement);
 				} else { // ObjPtr
-					Object *object = prop->getValueObjPtr();
+					const Object *object = prop->getValueObjPtr();
 					SimTK::Xml::Element objectBaseElement(prop->getName());
 					myObjectElement.insertNodeAfter(myObjectElement.node_end(), objectBaseElement);
 					if(object) { // Add node for base classHEREHEREHERE

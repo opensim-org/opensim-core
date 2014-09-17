@@ -1258,7 +1258,7 @@ ObjectProperty<T>::writeToXMLElement
     (SimTK::Xml::Element& propertyElement) const 
 {
     for (int i=0; i < objects.size(); ++i)
-        const_cast<T&>(*objects[i]).updateXMLNode(propertyElement);
+        (objects[i])->updateXMLNode(propertyElement);
 }
 
 

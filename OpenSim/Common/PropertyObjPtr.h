@@ -124,7 +124,7 @@ public:
 	// VALUE
 	virtual bool isValidObject(const Object *aValue) const { return dynamic_cast<const T*>(aValue)!=0; }
 	virtual void setValue(Object *aValue) { delete _value; _value = dynamic_cast<T*>(aValue); }
-	virtual Object* getValueObjPtr() const { return _value; }
+    const Object* getValueObjPtr() const override { return _value; }
 	T*& getValueObjPtrRef() { return _value; }
 	// VALUE as String
 	virtual std::string toString() const {return "(ObjectPointer)";}
