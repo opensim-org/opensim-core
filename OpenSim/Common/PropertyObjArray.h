@@ -80,9 +80,11 @@ public:
     virtual bool isAcceptableObjectTag
         (const std::string& objectTypeTag) const override {return true;}
     virtual const Object& getValueAsObject(int index) const override
-    {  return *const_cast<PropertyObjArray*>(this)->getValueObjPtr(index); }
+    {  return *getValueObjPtr(index); }
     virtual Object& updValueAsObject(int index) override
-    {   return *getValueObjPtr(index); }
+    {
+        return const_cast<Object&>(*getValueObjPtr(index));
+    }
     virtual void setValueAsObject(const Object& obj, int index) override
     {   _array.set(index, dynamic_cast<T*>(obj.clone())); }
 
@@ -109,7 +111,7 @@ public:
 	// SIZE
 	virtual int getArraySize() const { return _array.getSize(); }
 	// VALUE
-	virtual Object* getValueObjPtr(int index) { return (Object*)_array.get(index); }
+	virtual const Object* getValueObjPtr(int index) const override { return (Object*)_array.get(index); }
 	virtual void appendValue(Object *obj) { 
 		if(!isValidObject(obj)) 
             throw Exception("PropertyObjArray: ERR- Attempting to append invalid object of type "

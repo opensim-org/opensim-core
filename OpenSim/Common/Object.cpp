@@ -1075,7 +1075,7 @@ updateDefaultObjectsFromXMLNode()
 //_____________________________________________________________________________
 
 void Object::
-updateXMLNode(SimTK::Xml::Element& aParent)
+updateXMLNode(SimTK::Xml::Element& aParent) const
 {
 	// Handle non-inlined object
 	if(!getInlined()) {
@@ -1122,7 +1122,7 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 	// LOOP THROUGH PROPERTIES
     bool wroteAnyProperties = false;
 	for(int i=0; i < _propertyTable.getNumProperties(); ++i) {
-		AbstractProperty& prop = _propertyTable.updAbstractPropertyByIndex(i);
+		const AbstractProperty& prop = _propertyTable.getAbstractPropertyByIndex(i);
 	    
         // Don't write out if this is just a default value.
         if (!prop.getValueIsDefault() || Object::getSerializeAllDefaults()) {
@@ -1141,7 +1141,7 @@ updateXMLNode(SimTK::Xml::Element& aParent)
     // TODO: get rid of this
 	for(int i=0;i<_propertySet.getSize();i++) {
 
-		Property_Deprecated *prop = _propertySet.get(i);
+		const Property_Deprecated *prop = _propertySet.get(i);
         if (prop->getValueIsDefault() && !Object::getSerializeAllDefaults())
             continue;
 
@@ -1230,32 +1230,8 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 		// Obj
 		case(Property_Deprecated::Obj) : {
 			PropertyObj *propObj = (PropertyObj*)prop;
-			Object &object = prop->getValueObj();
+			const Object &object = prop->getValueObj();
 			object.updateXMLNode(myObjectElement);
-			/*
-			if(propObj->getMatchName()) {
-				
-				// Find the first element with correct tag & name attribute
-				string objName = object.getName();
-				elmt = XMLNode::GetFirstChildElementByTagName(myObjectElement, object.getType(), &objName);
-			} else {
-				// Find the first element with correct tag (name not important)
-				elmt = XMLNode::GetFirstChildElementByTagName(myObjectElement, object.getType());
-			}
-
-			if(!elmt && !prop->getValueIsDefault()) {
-				elmt = XMLNode::InsertNewElementWithComment(myObjectElement, object.getType(), object.getName(), prop->getComment(), aNodeIndex);
-			} else if (elmt && !prop->getComment().empty()) {
-				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,prop->getComment());
-			}
-
-			if(elmt) {
-				// If it's not inlined, hopefully calling updateXMLNode will be enough...
-				// (it probably won't touch the referring element, only the offline document)
-				if(object.getInlined()) object.setXMLNode(elmt);
-				else object._refNode = elmt;
-				object.updateXMLNode(myObjectElement);
-			}*/
 			break; }
 
 		// ObjArray AND ObjPtr (handled very similarly)
@@ -1271,7 +1247,7 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 					   for(int j=0;j<prop->getArraySize();j++)
 						prop->getValueObjPtr(j)->updateXMLNode(objectArrayElement);
 				} else { // ObjPtr
-					Object *object = prop->getValueObjPtr();
+					const Object *object = prop->getValueObjPtr();
 					SimTK::Xml::Element objectBaseElement(prop->getName());
 					myObjectElement.insertNodeAfter(myObjectElement.node_end(), objectBaseElement);
 					if(object) { // Add node for base classHEREHEREHERE
@@ -1407,7 +1383,7 @@ setAllPropertiesUseDefault(bool aUseDefault)
  * default, the object is printed to standard out.  
  */
 bool Object::
-print(const string &aFileName)
+print(const string &aFileName) const
 {
 	// Temporarily change current directory so that inlined files are written to correct relative directory
 	std::string savedCwd = IO::getCwd();
