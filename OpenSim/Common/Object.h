@@ -856,6 +856,7 @@ private:
 	// The XML document, if any, associated with this object.
     // This is mutable since it's cached on deserialization and is 
     // kept up to date to maintain "defaults" and document file path
+    //TODO: why does an Object need to know where it was last written? Seems flaky and should be revisited
 	mutable XMLDocument     *_document;
 	// Flag indicating whether the object is serialized to this _document or 
     // to another fresh document, also cached for subsequent printing/writing.
