@@ -220,6 +220,10 @@ void AbstractProperty::writeToXMLParentElement(Xml::Element& parent) const {
 
     // If this is a named property then the lone object must have its
     // name attribute set to the property name.
+    //
+    // KLUGE: We shouldn't const_cast here to change obj name, instead the 
+    // name of the object should be set ahead of time. Revisit when DeprecatedProperties are gone.
+    // -Ayman 09/14
     (const_cast<Object&>(obj)).setName(isUnnamedProperty() ? "" : getName());
     obj.updateXMLNode(parent);
 }

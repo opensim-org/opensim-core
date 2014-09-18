@@ -1232,30 +1232,6 @@ updateXMLNode(SimTK::Xml::Element& aParent) const
 			PropertyObj *propObj = (PropertyObj*)prop;
 			const Object &object = prop->getValueObj();
 			object.updateXMLNode(myObjectElement);
-			/*
-			if(propObj->getMatchName()) {
-				
-				// Find the first element with correct tag & name attribute
-				string objName = object.getName();
-				elmt = XMLNode::GetFirstChildElementByTagName(myObjectElement, object.getType(), &objName);
-			} else {
-				// Find the first element with correct tag (name not important)
-				elmt = XMLNode::GetFirstChildElementByTagName(myObjectElement, object.getType());
-			}
-
-			if(!elmt && !prop->getValueIsDefault()) {
-				elmt = XMLNode::InsertNewElementWithComment(myObjectElement, object.getType(), object.getName(), prop->getComment(), aNodeIndex);
-			} else if (elmt && !prop->getComment().empty()) {
-				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,prop->getComment());
-			}
-
-			if(elmt) {
-				// If it's not inlined, hopefully calling updateXMLNode will be enough...
-				// (it probably won't touch the referring element, only the offline document)
-				if(object.getInlined()) object.setXMLNode(elmt);
-				else object._refNode = elmt;
-				object.updateXMLNode(myObjectElement);
-			}*/
 			break; }
 
 		// ObjArray AND ObjPtr (handled very similarly)
