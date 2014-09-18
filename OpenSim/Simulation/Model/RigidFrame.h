@@ -31,52 +31,56 @@
 
 namespace OpenSim {
 
-	class Model;
-    class Body;
-	//=============================================================================
-	//=============================================================================
-	/**
-	* A RigidFrame is a modeling abstraction that defines a Righthanded CoordinateSystem
-	* attached rigidly to another Frame
-	*
-	* @author Matt DeMers
-	*/
-	class OSIMSIMULATION_API RigidFrame : public Frame {
-		OpenSim_DECLARE_ABSTRACT_OBJECT(RigidFrame, Frame);
-	public:
-		//==============================================================================
-		// PROPERTIES
-		//==============================================================================
-		/** @name Property declarations
-		These are the serializable properties associated with a RigidFrame. **/
-		/**@{**/
-		/**@}**/
-	protected:
+class Model;
+class Body;
+//=============================================================================
+//=============================================================================
+/**
+* A RigidFrame is fixed to a Body. That is, its transform to this body is
+* constant. A RigidFrame can be a Body itself. The body to which this frame is
+* attached can be obtained via getBody(). Thus, it is guaranteed that any
+* objects fixed to a rigid frame are also fixed to some Body in the system.
+*
+* @author Matt DeMers
+*/
+class OSIMSIMULATION_API RigidFrame : public Frame {
+	OpenSim_DECLARE_ABSTRACT_OBJECT(RigidFrame, Frame);
+public:
+	//==========================================================================
+	// PROPERTIES
+	//==========================================================================
+	/** @name Property declarations
+	These are the serializable properties associated with a RigidFrame. **/
+	/**@{**/
+	/**@}**/
+protected:
 
 
 
-		//=============================================================================
-		// PUBLIC METHODS
-		//=============================================================================
+	//==========================================================================
+	// PUBLIC METHODS
+	//==========================================================================
 
-	public:
-		//--------------------------------------------------------------------------
-		// CONSTRUCTION
-		//--------------------------------------------------------------------------
-		/** default contructor*/
-        RigidFrame();
+public:
+	//--------------------------------------------------------------------------
+	// CONSTRUCTION
+	//--------------------------------------------------------------------------
+    RigidFrame();
 
-        virtual const OpenSim::Body& getBody() const = 0;
+    /** Return reference to the Body that Frame is affixed to, either directly
+     * or through intermediate Frames.
+     */
+    virtual const OpenSim::Body& getBody() const = 0;
 
-	private:
-		void setNull();
+private:
+	void setNull();
 
-	protected:
+protected:
 
-		//=============================================================================
-	};	// END of class RigidFrame
-	//=============================================================================
-	//=============================================================================
+	//==========================================================================
+};	// END of class RigidFrame
+//=============================================================================
+//=============================================================================
 
 } // end of namespace OpenSim
 

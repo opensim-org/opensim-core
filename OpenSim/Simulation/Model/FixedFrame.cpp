@@ -61,7 +61,8 @@ FixedFrame::FixedFrame(const RigidFrame& parent_frame) : RigidFrame()
 	
 }
 
-FixedFrame::FixedFrame(const RigidFrame& parent_frame, const SimTK::Transform& xform) : RigidFrame()
+FixedFrame::FixedFrame(const RigidFrame& parent_frame, const SimTK::Transform&
+        xform) : RigidFrame()
 {
 	setNull();
 	constructInfrastructure();
@@ -103,7 +104,8 @@ void FixedFrame::constructStructuralConnectors()
 //_____________________________________________________________________________
 const SimTK::Transform& FixedFrame::getTransform() const
 {
-	// If properties have been updated, then update the cached transform object to be in sync.
+    // If properties have been updated, then update the cached transform object
+    // to be in sync.
 	transform.updP() = get_translation();
 	transform.updR().setRotationToBodyFixedXYZ(get_orientation());
 	return transform;
@@ -111,12 +113,14 @@ const SimTK::Transform& FixedFrame::getTransform() const
 void FixedFrame::setTransform(const SimTK::Transform& xform)
 {
 	transform = xform;
-// Make sure properties are updated in case we either call gettters or serialize after this call
+    // Make sure properties are updated in case we either call gettters or
+    // serialize after this call
 	set_translation(xform.p());
 	set_orientation(xform.R().convertRotationToBodyFixedXYZ());
 }
 
-SimTK::Transform FixedFrame::calcGroundTransform(const SimTK::State &state) const
+SimTK::Transform FixedFrame::calcGroundTransform(const SimTK::State &state)
+    const
 {
     return getTransform()*getParentFrame().getGroundTransform(state);
 
@@ -130,14 +134,19 @@ void FixedFrame::setParentFrame(const RigidFrame& parent_frame)
 { 
 	updConnector<RigidFrame>("parent_frame").connect(parent_frame); 
 }
-const RigidFrame& FixedFrame::getParentFrame() const { return getConnector<RigidFrame>("parent_frame").getConnectee(); }
+const RigidFrame& FixedFrame::getParentFrame() const
+{
+    return getConnector<RigidFrame>("parent_frame").getConnectee();
+}
 
 
 //----------------- Get Body that the FixedFrame is affixed to.
 const OpenSim::Body& FixedFrame::getBody() const {
     const RigidFrame& parent = getParentFrame();
-    // The following line could've used safeDownCast but that fails for const pointers!
-    const OpenSim::Body* parentBody = dynamic_cast<const OpenSim::Body *>(&parent);
+    // The following line could've used safeDownCast but that fails for const
+    // pointers!
+    const OpenSim::Body* parentBody =
+        dynamic_cast<const OpenSim::Body *>(&parent);
     if (parentBody != 0)
         return *parentBody;
     return getParentFrame().getBody();

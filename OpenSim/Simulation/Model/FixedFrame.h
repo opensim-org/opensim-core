@@ -36,9 +36,12 @@ class Body;
 //=============================================================================
 //=============================================================================
 /**
- * A FixedFrame is a Frame based off another Frame (parent frame) that could be either 
- * another FixedFrame or a Body (which is a Frame).
- * 
+ * A FixedFrame is a Frame whose position and orientation is given with respect
+ * to another RigidFrame. Additionally, the transform to the parent FixedFrame
+ * is constant.
+ *
+ * Since this frame is a RigidFrame, it is also fixed in some Body. The body to
+ * which this frame is attached can be obtained via getBody().
  *
  * @author Matt DeMers
  */
@@ -53,10 +56,10 @@ public:
     /**@{**/
 	
 	OpenSim_DECLARE_PROPERTY(translation, SimTK::Vec3, 
-		"Translation from the parent frame's origin to this frame's origin, " 
+		"Position of this frame's origin from the parent frame's origin, " 
 		"expressed in the parent frame.");
 	OpenSim_DECLARE_PROPERTY(orientation, SimTK::Vec3,
-		"orientation of this frame in its parent frame, expressed as a "
+		"Orientation of this frame in its parent frame, expressed as a "
 		"body-fixed x-y-z rotation sequence.");
 	
 	/**@}**/
@@ -72,12 +75,27 @@ public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-	/** default contructor*/
+    /** By default, the frame is not connected to any parent frame,
+     * and its transform is an identity transform.
+     */
 	FixedFrame();
 
-	/** Convenience constructors */	
+    /** A convenience constructor that initializes the connections and
+     * properties of this object.
+     *
+     * @param[in] parent_frame the parent reference frame.
+     */
 	FixedFrame(const RigidFrame& parent_frame);
-	FixedFrame(const RigidFrame& parent_frame, const SimTK::Transform& xform);
+
+    /** A convenience constructor that initializes the connections and
+     * properties of this object.
+     *
+     * @param[in] parent_frame the parent reference frame.
+     * @param[in] transform The transform between this frame and its parent
+     *                      frame.
+     */
+    FixedFrame(const RigidFrame& parent_frame, const SimTK::Transform&
+            transform);
 	
 	/** Set the parent reference frame*/
 	void setParentFrame(const RigidFrame& frame);
@@ -90,38 +108,43 @@ public:
 	* quantities expressed in the P frame. This is mathematically stated as,
 	* vec_P = P_X_F*vec_F ,
 	* where P_X_F is the transform returned by getTransform.
+    *
+    * This transform is computed using the translation and orientation
+    * properties of this object.
 	*
 	* @param state       The state applied to the model when determining the
 	*                    transform.
-	* @return transform  The transform between this frame and its parent frame
+	* @return transform  The transform between this frame and its parent frame.
 	*/
 	const SimTK::Transform& getTransform() const;
 	/** Set the transform the translates and rotates this frame (F frame) from 
 	* its parent frame (P frame). You should provide the transform P_x_F
-	* such that vec_P = P_X_F*vec_F
+	* such that vec_P = P_X_F*vec_F.
+    *
+    * This transform is stored via the translation and orientation
+    * properties of this object.
 	*
-	* @param transform  The transform between this frame and its parent frame
+	* @param transform  The transform between this frame and its parent frame.
 	*/
-	void setTransform(const SimTK::Transform& xform);
+	void setTransform(const SimTK::Transform& transform);
 	
-    /** Return reference to the Body that Frame is affixed to, either directly or through 
-    * intermediate Frames
-    */
-    const OpenSim::Body& getBody() const;
+    const OpenSim::Body& getBody() const override;
 	
 protected:
     // Model component interface.
 	void constructStructuralConnectors() override;
 	// Frame interface
-	SimTK::Transform calcGroundTransform(const SimTK::State& state) const override;
+    SimTK::Transform calcGroundTransform(const SimTK::State& state) const
+        override;
 	
-
-
 private:
 
 	void setNull();
 	void constructProperties() override;
-	mutable SimTK::Transform transform; // made mutable since it's used only for caching, public const methods can still modify it.
+
+    // made mutable since it's used only for caching, public const methods can
+    // still modify it.
+	mutable SimTK::Transform transform;
 
 
 //=============================================================================
