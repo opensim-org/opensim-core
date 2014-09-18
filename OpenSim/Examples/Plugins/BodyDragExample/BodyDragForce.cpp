@@ -111,14 +111,14 @@ void BodyDragForce::computeForce(const SimTK::State& s,
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForces) const
 {
-	if(_model==NULL) return;		// some minor error checking
+	if(!_model) return;		// some minor error checking
 
 	SimTK::Vec3 bodyCoMPosBody, bodyCoMPosGround, bodyCoMVelGround, bodyCoMVelGroundRaisedPower, dragForceGround, dragForceBody, oppVelSign;
 	BodySet &bs = _model->updBodySet();										// get body set
 	Body &ground = _model->getSimbodyEngine().getGroundBody();				// get ground body
 	Body &aBody = bs.get(get_body_name());										// get the body to apply the force to
 
-	aBody.getMassCenter(bodyCoMPosBody);													// get CoM position of body in the BODY coordinate system
+	bodyCoMPosBody = aBody.getMassCenter();													// get CoM position of body in the BODY coordinate system
 	_model->getSimbodyEngine().getPosition(s, aBody, bodyCoMPosBody, bodyCoMPosGround);		// get CoM position of body in the GROUND coordinate system
 	_model->getSimbodyEngine().getVelocity(s, aBody, bodyCoMPosBody, bodyCoMVelGround);		// get CoM velocity of body in the GROUND coordinate system
 
@@ -197,7 +197,7 @@ OpenSim::Array<double> BodyDragForce::getRecordValues(const SimTK::State& s) con
 	Body &ground = _model->getSimbodyEngine().getGroundBody();				// get ground body
 	Body &aBody = bs.get(get_body_name());										// get the body to apply the force to
 
-	aBody.getMassCenter(bodyCoMPosBody);													// get CoM position of body in the BODY coordinate system
+	bodyCoMPosBody = aBody.getMassCenter();													// get CoM position of body in the BODY coordinate system
 	_model->getSimbodyEngine().getPosition(s, aBody, bodyCoMPosBody, bodyCoMPosGround);		// get CoM position of body in the GROUND coordinate system
 	_model->getSimbodyEngine().getVelocity(s, aBody, bodyCoMPosBody, bodyCoMVelGround);		// get CoM velocity of body in the GROUND coordinate system
 
