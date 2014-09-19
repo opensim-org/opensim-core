@@ -26,13 +26,13 @@ DOXYFILE_ENCODING      = UTF-8
 # identify the project. Note that if you do not use Doxywizard you need 
 # to put quotes around the project name if it contains spaces.
 
-PROJECT_NAME           = @PROJECT_NAME@
+PROJECT_NAME           = API
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. 
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER         = "OpenSim 3.2"
+PROJECT_NUMBER         = "3.2"
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description 
 # for a project that appears at the top of each page and should give viewer 
@@ -45,14 +45,14 @@ PROJECT_BRIEF          =
 # exceed 55 pixels and the maximum width should not exceed 200 pixels. 
 # Doxygen will copy the logo to the output directory.
 
-PROJECT_LOGO           = 
+PROJECT_LOGO           = "@CMAKE_CURRENT_SOURCE_DIR@/images/OpenSimLogoWhiteHorizontal_small.png"
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 # base path where the generated documentation will be put. 
 # If a relative path is entered, it will be relative to the location 
 # where doxygen was started. If left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = 
+OUTPUT_DIRECTORY       = @PROJECT_BINARY_DIR@
 
 # If the CREATE_SUBDIRS tag is set to YES, then doxygen will create 
 # 4096 sub-directories (in 2 levels) under the output directory of each output 
@@ -575,7 +575,7 @@ FILE_VERSION_FILTER    =
 # You can optionally specify a file name after the option, if omitted 
 # DoxygenLayout.xml will be used as the name of the layout file.
 
-LAYOUT_FILE            = 
+LAYOUT_FILE            = "@CMAKE_CURRENT_SOURCE_DIR@/doxygen-layout.xml" 
 
 # The CITE_BIB_FILES tag can be used to specify one or more bib files 
 # containing the references data. This must be a list of .bib files. The 
@@ -745,8 +745,7 @@ EXCLUDE_PATTERNS       = *.svn \
                          */Wrap/* \
                          */Utilities/* \
                          */Models/* \
-                         */Applications/* \
-						 */extra_html/*
+                         */Applications/*
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names 
 # (namespaces, classes, functions, etc.) that should be excluded from the 
@@ -940,7 +939,7 @@ HTML_FOOTER            =
 # the style sheet file to the HTML output directory, so don't put your own 
 # style sheet in the HTML output directory as well, or it will be erased!
 
-HTML_STYLESHEET        =
+HTML_STYLESHEET        = "@CMAKE_CURRENT_SOURCE_DIR@/doxygen.css"
 
 # The HTML_EXTRA_FILES tag can be used to specify one or more extra images or 
 # other source files which should be copied to the HTML output directory. Note 
@@ -988,7 +987,7 @@ HTML_TIMESTAMP         = YES
 # JavaScript and DHTML is required (for instance Mozilla 1.0+, Firefox 
 # Netscape 6.0+, Internet explorer 5.0+, Konqueror, or Safari).
 
-HTML_DYNAMIC_SECTIONS  = NO
+HTML_DYNAMIC_SECTIONS  = YES
 
 # If the GENERATE_DOCSET tag is set to YES, additional index files 
 # will be generated that can be used as input for Apple's Xcode 3 
@@ -1429,13 +1428,13 @@ XML_OUTPUT             = xml
 # which can be used by a validating XML parser to check the 
 # syntax of the XML files.
 
-XML_SCHEMA             = 
+#XML_SCHEMA             = 
 
 # The XML_DTD tag can be used to specify an XML DTD, 
 # which can be used by a validating XML parser to check the 
 # syntax of the XML files.
 
-XML_DTD                = 
+#XML_DTD                = 
 
 # If the XML_PROGRAMLISTING tag is set to YES Doxygen will 
 # dump the program listings (including syntax highlighting 

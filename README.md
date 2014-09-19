@@ -477,7 +477,7 @@ Your changes will only take effect in new terminal windows.
 
 
 [travisci]: https://travis-ci.org/opensim-org/opensim-core
-[buildstatus_image]: https://travis-ci.org/opensim-org/opensim-core.svg
+[buildstatus_image]: https://travis-ci.org/opensim-org/opensim-core.svg?branch=master
 [running_gif]: OpenSim/doc/images/opensim_running.gif
 [simple_example_gif]: OpenSim/doc/images/opensim_double_pendulum_muscle.gif
 [java]: http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase6-419409.html

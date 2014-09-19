@@ -27,16 +27,15 @@
 #include <OpenSim/Common/VisibleObject.h>
 
 //==============================================================================
-//                          POINT TO POINT SPRING
 //==============================================================================
+namespace OpenSim { 
+
 /**
  * A simple point to point spring with a resting length and stiffness.
  * Points are connected to bodies and are defined in the body frame.
  *
  * @author Ajay Seth
  */
-namespace OpenSim { 
-
 class OSIMSIMULATION_API PointToPointSpring : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(PointToPointSpring, Force);
 public:

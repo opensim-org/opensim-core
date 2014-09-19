@@ -251,7 +251,9 @@ using namespace SimTK;
 %rename(OpenSimObject) OpenSim::Object;
 %rename(OpenSimException) OpenSim::Exception;
 
-%rename(printToXML) OpenSim::Object::print(const std::string&);
+%newobject *::clone; 
+
+%rename(printToXML) OpenSim::Object::print(const std::string&) const;
 %rename(printToXML) OpenSim::XMLDocument::print(const std::string&);
 %rename(printToXML) OpenSim::XMLDocument::print();
 %rename(printToFile) OpenSim::Storage::print;

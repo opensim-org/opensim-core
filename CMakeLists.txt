@@ -8,12 +8,19 @@ PROJECT (OpenSim)
 #
 #----------------------------------------------------
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.6)
 if(COMMAND cmake_policy)
         cmake_policy(SET CMP0003 NEW)
         cmake_policy(SET CMP0005 NEW)
 endif(COMMAND cmake_policy)
 
+SET(OPENSIM_MAJOR_VERSION 3)
+SET(OPENSIM_MINOR_VERSION 2)
+SET(OPENSIM_PATCH_VERSION 0)
+
+SET(OPENSIM_VERSION
+    "${OPENSIM_MAJOR_VERSION}.${OPENSIM_MINOR_VERSION}.${OPENSIM_PATCH_VERSION}"
+    )
 
 SET(BUILD_BINARY_DIR ${CMAKE_BINARY_DIR}
     CACHE PATH 
@@ -328,8 +335,7 @@ IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
     ENDIF()
 ENDIF()
 
-# Disable Build using the simtk headers and libraries checked in the repository. 
-SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
+SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 SET(BUILD_USING_NAMESPACE "OpenSim")
 
@@ -561,23 +567,11 @@ ADD_CUSTOM_TARGET (RUN_TESTS_PARALLEL
     COMMAND ${cmd}
 )
 
-## This adds a target "doxygen" for building the doxygen docs, as well as 
-## an INSTALL procedure.
-INCLUDE(ApiDoxygen.cmake)
-
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenSim project")
-SET(CPACK_PACKAGE_VENDOR "Stanford University, National Center for Biomedical Computation")
-SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt")
-SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/Copyright.txt")
-SET(CPACK_PACKAGE_VERSION_MAJOR "3")
-SET(CPACK_PACKAGE_VERSION_MINOR "2")
-SET(CPACK_PACKAGE_VERSION_PATCH "0")
-SET(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSim ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
 
 # Create buildinfo.txt file and place under sdk to include product version, platform and compiler for troubleshooting purposes
 SET(VERSION_FILE_PATH ${CMAKE_BINARY_DIR}/buildinfo.txt)
 # MESSAGE("version file="${VERSION_FILE_PATH})
-FILE(WRITE ${VERSION_FILE_PATH} "Product Version=${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
+FILE(WRITE ${VERSION_FILE_PATH} "Product Version=${OPENSIM_MAJOR_VERSION}.${OPENSIM_MINOR_VERSION}")
 FILE(APPEND  ${VERSION_FILE_PATH} "\n")
 FILE(APPEND  ${VERSION_FILE_PATH} "Compiler=${CMAKE_GENERATOR}-${CMAKE_CXX_COMPILER_ID}")
 FILE(APPEND  ${VERSION_FILE_PATH} "\n")
@@ -585,18 +579,16 @@ FILE(APPEND  ${VERSION_FILE_PATH} "Platform=${Platform}-${PLATFORM_ABI}")
 FILE(APPEND  ${VERSION_FILE_PATH} "\n")
 INSTALL(FILES ${VERSION_FILE_PATH} DESTINATION sdk)
 
-#
-# Build the documentation
-#
 
 #-----------------------------------------------------------------------------
 SET(BUILD_API_ONLY OFF CACHE BOOL "Build/install only headers, libraries,
     wrapping, tests; not applications (ik, rra, etc.).")
 MARK_AS_ADVANCED( BUILD_API_ONLY )
 
-IF(BUILD_API_ONLY)
-	SUBDIRS(Vendors OpenSim)
-ELSE(BUILD_API_ONLY)
-	SUBDIRS(Vendors OpenSim Applications)
-ENDIF(BUILD_API_ONLY)
+ADD_SUBDIRECTORY(Vendors)
+ADD_SUBDIRECTORY(OpenSim)
+IF(NOT BUILD_API_ONLY)
+    ADD_SUBDIRECTORY(Applications)
+ENDIF()
 
+ADD_SUBDIRECTORY(cmake)
