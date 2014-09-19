@@ -27,6 +27,7 @@
 //=============================================================================
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Common/Function.h>
+#include <OpenSim/Common/Constant.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include "TransformAxis.h"
@@ -123,7 +124,7 @@ void TransformAxis::setNull()
 void TransformAxis::constructProperties() {
     constructProperty_coordinates();
     constructProperty_axis(Vec3(1,0,0)); // use x-axis by default
-    constructProperty_function();
+    constructProperty_function(Constant(0));
 }
 
 //=============================================================================

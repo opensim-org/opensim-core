@@ -66,7 +66,7 @@ public:
     /** The optional "function" property holds the transform function of the 
     generalized coordinates used to represent the amount of transformation 
     along the specified axis. **/
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(function, Function,
+    OpenSim_DECLARE_PROPERTY(function, Function,
        "Transform function of the generalized coordinates used to \
        represent the amount of transformation along a specified axis.");
     /**@}**/

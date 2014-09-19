@@ -570,12 +570,9 @@ void Model::finalizeFromProperties()
 				&js[i]);
 		}
 	}
-
-	updCoordinateSet().populate(*this);
 		
 	if(getConstraintSet().getSize()>0)
 	{
-
 		ConstraintSet &cs = updConstraintSet();
 		int nc = cs.getSize();
 		for (int i = 0; i<nc; ++i){
@@ -627,6 +624,8 @@ void Model::finalizeFromProperties()
 	}
 
 	Super::finalizeFromProperties();
+
+    updCoordinateSet().populate(*this);
 }
 
 void Model::connectToModel(Model &model)
@@ -687,8 +686,8 @@ void Model::connectToModel(Model &model)
 		if (mob.isAddedBaseMobilizer()){
 			// create and add the base joint to enable these dofs
 			Body* child = static_cast<Body*>(mob.getOutboardBodyRef());
-			cout << "Body '" << child->getName() << "' not connected by a Joint "
-				<< "a FreeJoint will be added to connect it to ground." << endl;
+			cout << "Body '" << child->getName() << "' not connected by a Joint.\n"
+				<< "A FreeJoint will be added to connect it to ground." << endl;
 			Body* ground = static_cast<Body*>(mob.getInboardBodyRef());
 
 			// Verify that this is an orphan and it was assigned to ground

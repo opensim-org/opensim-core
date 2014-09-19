@@ -49,30 +49,40 @@ int main()
 void testCopyModel(string fileName)
 {
 	size_t mem1 = getCurrentRSS( );
-	cout << "Memory use BEFORE load, copy and init: " << mem1 << "Bytes." << endl;
+	cout << "Memory use BEFORE load, copy and init: " << mem1/1024 << "KB" << endl;
 
+	Model *test = nullptr;
+	for (int i = 0; i < 1000; ++i){
+		test = new Model();
+		delete test;
+	}
+	
+	
 	Model* model = new Model(fileName, false);
-	model->print("clone_" + fileName);
+	//model->print("clone_" + fileName);
 
-	SimTK::State defaultState = model->initSystem();
+	//SimTK::State& defaultState = model->initSystem();
+	
 	Model* modelCopy = new Model(*model);
 	// At this point properties should all match. assert that
 	ASSERT(*model==*modelCopy);
-	delete model;
 
-	SimTK::State& defaultStateOfCopy = modelCopy->initSystem();
+	//SimTK::State& defaultStateOfCopy = modelCopy->initSystem();
 	// Compare state
-	defaultState.getY().dump("defaultState:Y");
-	ASSERT ((defaultState.getY()-defaultStateOfCopy.getY()).norm() < 1e-7);
+	//defaultState.getY().dump("defaultState:Y");
+	//ASSERT ((defaultState.getY()-defaultStateOfCopy.getY()).norm() < 1e-7);
 
 	//  Now delete original model and make sure copy can stand
 	Model *newModel = modelCopy->clone();
 	// Compare state again
-	delete modelCopy;
-	SimTK::State& defaultStateOfCopy2 = newModel->initSystem();
+	
+	//SimTK::State& defaultStateOfCopy2 = newModel->initSystem();
 	// Compare state
-	ASSERT ((defaultState.getY()-defaultStateOfCopy2.getY()).norm() < 1e-7);
-	ASSERT ((defaultState.getZ()-defaultStateOfCopy2.getZ()).norm() < 1e-7);
+	//ASSERT ((defaultState.getY()-defaultStateOfCopy2.getY()).norm() < 1e-7);
+	//ASSERT ((defaultState.getZ()-defaultStateOfCopy2.getZ()).norm() < 1e-7);
+
+	delete model;
+	delete modelCopy;
 	delete newModel;
 
 	size_t mem2 = getCurrentRSS( );

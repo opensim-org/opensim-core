@@ -1,5 +1,5 @@
-#ifndef __auxiliaryTestFunctions_h__
-#define __auxiliaryTestFunctions_h__
+#ifndef OPENSIM_AUXILIARY_TEST_FUNCTIONS_H_
+#define OPENSIM_AUXILIARY_TEST_FUNCTIONS_H_
 /* -------------------------------------------------------------------------- *
  *                     OpenSim:  auxiliaryTestFunctions.h                     *
  * -------------------------------------------------------------------------- *
@@ -24,6 +24,9 @@
 
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Common/LinearFunction.h>
+#include <OpenSim/Common/PropertyObjArray.h>
 #include "getRSS.h"
 
 using namespace OpenSim;
@@ -82,7 +85,7 @@ do { \
 
 static OpenSim::Object* randomize(OpenSim::Object* obj)
 {
-    if (obj==0) return 0; // maybe empty tag
+    if (obj==nullptr) return 0; // maybe empty tag
     std::stringstream stream;
     stream << rand();
     obj->setName(obj->getConcreteClassName()+stream.str());
@@ -91,31 +94,70 @@ static OpenSim::Object* randomize(OpenSim::Object* obj)
         AbstractProperty& ap = obj->updPropertyByIndex(p); 
         //cout << ap.getName() << "=" << ap.toString() << endl;
         // Check return values from Property API for debugging purposes
-        bool t1 = ap.isListProperty();
+        bool isList = ap.isListProperty();
         bool t2 = ap.isObjectProperty();
         bool t3 = ap.isOneObjectProperty();
         bool t4 = ap.isOneValueProperty();
         string ts = ap.getTypeName();
-        cout << ts << endl;
+        //cout << ts << endl;
         if (ap.isOptionalProperty()) 
             continue;
-        if (ts == "bool"&& !ap.isListProperty()) ap.updValue<bool>()= !ap.getValue<bool>();
-        else if (ts == "integer"&& !ap.isListProperty()) ap.updValue<int>()=rand();
-        else if (ts == "double" && !ap.isListProperty()) ap.updValue<double>()=(double) rand();
-        else if (ts == "double" && ap.isListProperty() && ap.getMaxListSize() < 20){
+        if (ts == "bool"&& !isList) ap.updValue<bool>() = !ap.getValue<bool>();
+        else if (ts == "integer"&& !isList) ap.updValue<int>() = rand();
+        else if (ts == "double" && !isList) ap.updValue<double>() = (double)rand();
+        else if (ts == "Vec3" && !isList){
+            Property<SimTK::Vec3>& prop = Property<SimTK::Vec3>::updAs(ap);
+            prop = SimTK::Vec3(abs(rand()), abs(rand()), abs(rand()));
+        }
+        else if (ts == "Vec6" && !isList){
+            // Only property that uses a Vec6 is the inertia property
+            // Might as well select valid inertias for the purpose of testing
+            Property<SimTK::Vec6>& prop = Property<SimTK::Vec6>::updAs(ap);
+            double Ixx = abs(rand());
+            double Ixy = 0.01*Ixx;
+            prop = SimTK::Vec6(Ixx, Ixx, Ixx, Ixy, Ixy, Ixy);
+        }
+        else if (ts == "string"){
+            string base("ABCXYZ");
+            if (isList){
+                stringstream val;
+                val << base << "_" << ap.size();
+                ap.appendValue<string>(val.str());
+            }
+            else{
+                ap.updValue<string>() = base;
+            }
+        }
+        else if (ts == "double" && isList && ap.getMaxListSize() < 20){
             for (int i=0; i< ap.getMaxListSize(); ++i)
                 ap.updValue<double>(i) = (double) rand();
         }
-		else if (ap.isObjectProperty() && !ap.isListProperty()){
+        else if (ts == "Function"){
+            //FunctionSet's objects getTypeName() returns "Function"
+            //which is wrong! This is a HACK to test that we aren't
+            //treating the PropertyObjArray<Function> as a Function.
+            PropertyObjArray<Function>* propObjArray =
+                dynamic_cast<PropertyObjArray<Function>*>(&ap);
+            if (propObjArray){
+                if (propObjArray->size()){
+                    randomize(&(propObjArray->updValueAsObject(0)));
+                }
+            }
+            else{
+                Property<OpenSim::Function>& prop = Property<Function>::updAs(ap);
+                prop = LinearFunction();
+            }
+            
+        }
+        else if (ap.isObjectProperty() && !isList){
 			randomize(&ap.updValueAsObject(0));
 			ap.setValueIsDefault(false);
 		}
 		else{
-			cerr << "Unrecognized Property" << std::endl;
-			cerr << ap.getName() << ": " << ap.toString() << std::endl;
+            //cerr << "Unrecognized Property:"<< ap.getName()<< ":" << ap.toString() << endl;
 		}
      }
      return obj;
 }
 
-#endif // __auxiliaryTestFunctions_h__
+#endif // OPENSIM_AUXILIARY_TEST_FUNCTIONS_H_

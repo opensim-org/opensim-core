@@ -322,19 +322,56 @@ public:
 	*                   the Connector
 	*/
 	template<typename T>
-	const T& getConnectee(const std::string& name) const	{
-		// get the Connector and check if it is connected.
-		const AbstractConnector& connector = getConnector<T>(name);
-		if (connector.isConnected()){
-			return (Connector<T>::downcast(connector)).getConnectee();
-		}
-		else{
-			std::stringstream msg;
-			msg << "Component::getConnection() ERR- Connector '" << name << "' not connected.\n "
-				<< "for component '" << getName() << "' of type " << getConcreteClassName();
-			throw Exception(msg.str(), __FILE__, __LINE__);
-		}
-	}
+    const T& getConnectee(const std::string& name) const	{
+        // get the Connector and check if it is connected.
+        const AbstractConnector& connector = getConnector<T>(name);
+        if (connector.isConnected()){
+            return (Connector<T>::downcast(connector)).getConnectee();
+        }
+        else{
+            std::stringstream msg;
+            msg << "Component::getConnection() ERR- Connector '" << name << "' not connected.\n "
+                << "for component '" << getName() << "' of type " << getConcreteClassName();
+            throw Exception(msg.str(), __FILE__, __LINE__);
+        }
+    }
+
+
+    /** Access Connectors of this component in a generic way. 
+    *  Get the number of Connectors and then access a Connector by index.
+    *  For example:
+    *  @code
+    *  for (int i = 0; i < myComp.getNumConnectors(); ++i){
+           const AbstractConnector& connector = myComp.getConnector(i);
+           // check status: e.g. is it connected?
+           ...
+           AbstractConnector& connector = myComp.updConnector(i);
+           // change the status: e.g. disconnect or change/define connectee;
+    *  }
+    *  @endcode
+    *
+    * @see getNumConnectors()
+    * @see getConnector(int i);
+    */
+
+    /** Access the number of Connectors that this component has. */
+    int getNumConnectors() const {
+        return getProperty_connectors().size();
+    }
+
+    /** Access a read-only Connector by index. 
+    * @see getNumConnectors()
+    */
+    const AbstractConnector& getConnector(int i) const {
+        return get_connectors(i);
+    }
+
+    /** Access a writeable Connector by index.
+    * @see getNumConnectors()
+    */
+    AbstractConnector& updConnector(int i) {
+        return upd_connectors(i);
+    }
 
 	/**
 	* Get the Input provided by this Component by name.
@@ -390,21 +427,20 @@ public:
 		}
 	}
 
-    /** An iterator for the map of Outputs of this component, pointing at the
-     * beginning of the map. This can be used in a loop as such:
+    typedef std::map<std::string, std::unique_ptr<const AbstractOutput> >::
+        const_iterator OutputsIterator;
+    /** An iterator to traverse all the Outputs of this component, pointing at the
+     * first Output. This can be used in a loop as such:
      *
      *  @code
-     *  std::map<std::string, const AbstractOutput*>::const_iterator it;
+     *  OutputsIterator it;
      *  for (it = myComp.getOutputsBegin(); it != myComp.getOutputsEnd(); it++)
      *  { ... }
 	 *  @endcode
      *
      * @see getOutputsEnd()
      */
-    std::map<std::string, std::unique_ptr<const AbstractOutput>
-        >::const_iterator
-        getOutputsBegin() const
-    {
+     OutputsIterator getOutputsBegin() const {
         return _outputsTable.begin();
     }
 
@@ -413,10 +449,7 @@ public:
      *
      * @see getOutputsBegin()
      */
-    std::map<std::string, std::unique_ptr<const AbstractOutput>
-        >::const_iterator
-        getOutputsEnd() const
-    {
+    OutputsIterator getOutputsEnd() const {
         return _outputsTable.end();
     }
 
@@ -735,7 +768,7 @@ template <class T> friend class ComponentMeasure;
 	 Override the corresponding private virtual method to customize any of them. */ 
 	void constructInfrastructure() {
 		constructProperties();
-		constructStructuralConnectors();
+		constructConnectors();
 		constructInputs();
 		constructOutputs();
 	}
@@ -1028,7 +1061,7 @@ template <class T> friend class ComponentMeasure;
 	* message if the provided Component is incompatible or non-existant.
 	*/
 	template <typename T>
-	void constructStructuralConnector(const std::string& name) {
+	void constructConnector(const std::string& name) {
 		int ix = updProperty_connectors().adoptAndAppendValue(
 			new Connector<T>(name, SimTK::Stage::Topology));
 		//add pointer to connectorsTable so we can access connectors easily by name
@@ -1288,7 +1321,7 @@ private:
 	//Connectors are resolved in Component's connect().
 	//constructStructuralDependencies is a series of calls to constrcuctConnector()
 	//which adds a component by name and type to a dependency Connectors table.
-	virtual void constructStructuralConnectors() {}
+	virtual void constructConnectors() {}
 
 	//Construct the table of Inputs for this component. A Component::Input is a
 	//dependency on the Output of another Component. Unlike a structural 
