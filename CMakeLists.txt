@@ -14,6 +14,9 @@ if(COMMAND cmake_policy)
         cmake_policy(SET CMP0005 NEW)
 endif(COMMAND cmake_policy)
 
+
+# OpenSim version.
+# ----------------
 SET(OPENSIM_MAJOR_VERSION 3)
 SET(OPENSIM_MINOR_VERSION 2)
 SET(OPENSIM_PATCH_VERSION 0)
@@ -22,6 +25,15 @@ SET(OPENSIM_VERSION
     "${OPENSIM_MAJOR_VERSION}.${OPENSIM_MINOR_VERSION}.${OPENSIM_PATCH_VERSION}"
     )
 
+
+# CMake module path.
+# ------------------
+SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+INCLUDE(OpenSimMacros)
+
+
+# Build binary directory.
+# -----------------------
 SET(BUILD_BINARY_DIR ${CMAKE_BINARY_DIR}
     CACHE PATH 
     "The OpenSim build (not the install) puts all the libraries and executables together here (with /Release, etc. appended on some platforms).")
@@ -31,6 +43,20 @@ SET(BUILD_BINARY_DIR ${CMAKE_BINARY_DIR}
 SET(EXECUTABLE_OUTPUT_PATH ${BUILD_BINARY_DIR})
 SET(LIBRARY_OUTPUT_PATH ${BUILD_BINARY_DIR})
 
+
+# Cotire.
+# -------
+OPTION(OPENSIM_USE_COTIRE
+    "Use cotire (https://github.com/sakra/cotire) to speed up compilation by using precompiled headers."
+    OFF)
+MARK_AS_ADVANCED(OPENSIM_USE_COTIRE)
+IF(OPENSIM_USE_COTIRE)
+    INCLUDE(cotire)
+ENDIF()
+
+
+# Build using namespace.
+# ----------------------
 # Use this to generate a private set of libraries whose names
 # won't conflict with installed versions.
 SET(BUILD_USING_NAMESPACE "" CACHE STRING
@@ -45,6 +71,9 @@ ENDIF(BUILD_USING_NAMESPACE)
 SET(PROCESSOR_COUNT 8 CACHE STRING "Number of processors in the CPU")
 MARK_AS_ADVANCED(PROCESSOR_COUNT)
 
+
+# Simbody libraries.
+# ------------------
 # This will be initialized to the environment variable of the same name
 # if it is set, otherwise it will be empty.
 SET(SIMBODY_HOME $ENV{SIMBODY_HOME} CACHE
@@ -69,14 +98,13 @@ MARK_AS_ADVANCED( SimTKSIMBODY_LIBRARY_NAME )
 MARK_AS_ADVANCED( SimTKMATH_LIBRARY_NAME )
 MARK_AS_ADVANCED( SimTKCOMMON_LIBRARY_NAME )
 
-
 SET(SimTKCOMMON_SHARED_LIBRARY ${SimTKCOMMON_LIBRARY_NAME})
 SET(SimTKMATH_SHARED_LIBRARY ${SimTKMATH_LIBRARY_NAME})
 SET(SimTKSIMBODY_SHARED_LIBRARY ${SimTKSIMBODY_LIBRARY_NAME})
 
-#
-## Platform
-#
+
+# Platform.
+# ---------
 # Create a platform name useful for finding things in the Platform
 # directory.
 IF(WIN32)
@@ -334,8 +362,6 @@ IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     ENDIF()
 ENDIF()
-
-SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 SET(BUILD_USING_NAMESPACE "OpenSim")
 
