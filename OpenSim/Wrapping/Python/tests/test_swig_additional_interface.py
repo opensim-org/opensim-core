@@ -177,12 +177,6 @@ def test_markAdoptedSets():
     del s
     del o
 
-    s = osim.MarkerSet()
-    o = osim.Marker()
-    s.adoptAndAppend(o)
-    del s
-    del o
-
     s = osim.BodyScaleSet()
     o = osim.BodyScale()
     s.adoptAndAppend(o)
