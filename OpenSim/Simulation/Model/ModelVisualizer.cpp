@@ -142,11 +142,11 @@ void DefaultGeometry::generateDecorations
         for (int i=0; i < markers.getSize(); ++i) {
             const Marker& marker = markers[i];
             const OpenSim::Body& body = marker.getBody();
-            const Vec3& p_BM = marker.getOffset();
+            const Vec3& p_BM = marker.get_location();
             geometry.push_back(
                 DecorativeSphere(_dispMarkerRadius).setBodyId(body.getIndex())
                 .setColor(pink).setOpacity(_dispMarkerOpacity)
-                .setTransform(marker.getOffset()));
+                .setTransform(marker.get_location()));
         }
     }
 

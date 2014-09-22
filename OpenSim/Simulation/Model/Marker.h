@@ -61,11 +61,6 @@ public:
 	Marker();
 	virtual ~Marker();
 
-	const SimTK::Vec3& getOffset() const { return get_location(); }
-    void setOffset(const SimTK::Vec3& aOffset) {
-        upd_location() = aOffset;
-    };
-
     const std::string& getBodyName() const;
 	void setBodyName(const std::string& aName);
     const OpenSim::Body& getBody() const {
@@ -74,7 +69,6 @@ public:
 	void changeBody(const OpenSim::Body& aBody );
 	void changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody );
 	void scale(const SimTK::Vec3& aScaleFactors);
-	void connectMarkerToModel(Model& aModel);
 
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode,

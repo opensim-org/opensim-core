@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Set.h>
+#include <OpenSim/Simulation/Model/ModelComponentSet.h>
 #include "Marker.h"
 
 #ifdef SWIG
@@ -49,18 +49,17 @@ class Body;
  * @version 1.0
  */
 
-class OSIMSIMULATION_API MarkerSet : public Set<Marker> {
-OpenSim_DECLARE_CONCRETE_OBJECT(MarkerSet, Set<Marker>);
+class OSIMSIMULATION_API MarkerSet : public ModelComponentSet<Marker> {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MarkerSet, ModelComponentSet<Marker>);
 
 private:
 	void setNull();
 public:
 	MarkerSet();
-	MarkerSet(const std::string& aMarkersFileName) SWIG_DECLARE_EXCEPTION;
+	MarkerSet(Model& aModel, const std::string& aMarkersFileName) SWIG_DECLARE_EXCEPTION;
 	MarkerSet(const MarkerSet& aMarkerSet);
 	~MarkerSet(void);
 
-    void connectMarkersToModel(Model& aModel);
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

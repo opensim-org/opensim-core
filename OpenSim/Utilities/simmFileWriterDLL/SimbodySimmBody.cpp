@@ -123,8 +123,8 @@ void SimbodySimmBody::write(ofstream& aStream)
             // TODO: Got rid of weight property from markers for now...
             double outputWeight = 1;
 
-            aStream << "marker " << marker.getName() << "\t" << marker.getOffset()[0] << " " <<
-               marker.getOffset()[1] << " " << marker.getOffset()[2] << " " << outputWeight;
+            aStream << "marker " << marker.getName() << "\t" << marker.get_location()[0] << " " <<
+                marker.get_location()[1] << " " << marker.get_location()[2] << " " << outputWeight;
 
             if (false/*marker.getFixed()*/)
                aStream << " fixed" << endl;

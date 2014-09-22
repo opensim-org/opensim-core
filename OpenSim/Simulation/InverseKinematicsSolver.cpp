@@ -234,7 +234,7 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
 				getModel().getMatterSubsystem().
 				getMobilizedBody(marker.getBody().getIndex());
 				_markerAssemblyCondition->
-					addMarker(marker.getName(), mobod, marker.getOffset(),
+                    addMarker(marker.getName(), mobod, marker.get_location(),
 					markerWeights[i]);
 
 			//cout << "IKSolver Marker: " << markerNames[i] << " " << marker.getName() << "  weight: " << markerWeights[i] << endl;

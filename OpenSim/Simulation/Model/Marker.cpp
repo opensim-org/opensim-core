@@ -96,7 +96,7 @@ const string& Marker::getBodyName() const
 //_____________________________________________________________________________
 /**
  * Change the body that this marker is attached to. It assumes that the body is
- * already set, so that connectMarkerToModel() needs to be called to update 
+ * already set, so that connectToModel() needs to be called to update 
  * dependent information.
  *
  * @param aBody Reference to the body.
@@ -108,13 +108,13 @@ void Marker::changeBody(const OpenSim::Body& aBody)
 		return;
 
 	setBodyName(aBody.getName());
-	connectMarkerToModel(updModel());
+    connectToModel(updModel());
 }
 
 //_____________________________________________________________________________
 /**
  * Change the body that this marker is attached to. It assumes that the body is
- * already set, so that connectMarkerToModel() needs to be called to update 
+ * already set, so that connectToModel() needs to be called to update 
  * dependent information.
  *
  * @param s State.
@@ -129,10 +129,10 @@ void Marker::changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aB
 	// Preserve location means to switch bodies without changing
 	// the location of the marker in the inertial reference frame.
     Vec3 newOffset;
-    aBody.getModel().getSimbodyEngine().transformPosition(s, getBody(), getOffset(), aBody, newOffset);
-    setOffset(newOffset);
+    aBody.getModel().getSimbodyEngine().transformPosition(s, getBody(), get_location(), aBody, newOffset);
+    set_location(newOffset);
 	setBodyName(aBody.getName());
-	connectMarkerToModel(aBody.updModel());
+    connectToModel(aBody.updModel());
 }
 
 //=============================================================================
@@ -147,12 +147,6 @@ void Marker::changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aB
 void Marker::scale(const SimTK::Vec3& aScaleFactors)
 {
     upd_location() = get_location().elementwiseMultiply(aScaleFactors);
-}
-
-
-void Marker::connectMarkerToModel(Model& aModel)
-{
-    Super::connectToModel(aModel);
 }
 
 //_____________________________________________________________________________

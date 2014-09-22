@@ -23,6 +23,7 @@
 
 #include "MarkerSet.h"
 #include "Marker.h"
+#include "Model.h"
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
@@ -46,8 +47,8 @@ MarkerSet::~MarkerSet(void)
 /**
  * Constructor of a markerSet from a file.
  */
-MarkerSet::MarkerSet(const string& aMarkersFileName) :
-	Set<Marker>(aMarkersFileName, false)
+MarkerSet::MarkerSet(Model& aModel, const string& aMarkersFileName) :
+ModelComponentSet<Marker>(aModel, aMarkersFileName, false)
 {
 	setNull();
 	SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
@@ -59,7 +60,7 @@ MarkerSet::MarkerSet(const string& aMarkersFileName) :
  * Default constructor of a markerSet.
  */
 MarkerSet::MarkerSet() :
-	Set<Marker>()
+ModelComponentSet<Marker>()
 {
 	setNull();
 }
@@ -69,7 +70,7 @@ MarkerSet::MarkerSet() :
  * Copy constructor of a markerSet.
  */
 MarkerSet::MarkerSet(const MarkerSet& aMarkerSet):
-Set<Marker>(aMarkerSet)
+ModelComponentSet<Marker>(aMarkerSet)
 {
 	setNull();
 	*this = aMarkerSet;
@@ -83,20 +84,6 @@ Set<Marker>(aMarkerSet)
  */
 void MarkerSet::setNull()
 {
-}
-
-/**
- * Post construction initialization.
- */
-void MarkerSet::connectMarkersToModel(Model& aModel)
-{
-	// Invoke base class method.
-	setupGroups();
-
-	// Do members
-	for (int i = 0; i < getSize(); i++)
-		get(i).connectMarkerToModel(aModel);
-
 }
 
 //=============================================================================
@@ -185,11 +172,10 @@ Marker* MarkerSet::addMarker(const string& aName, const SimTK::Vec3& aOffset, Op
 	// Create a marker and add it to the set.
 	Marker* m = new Marker();
 	m->setName(aName);
-	m->setOffset(aOffset);
+	m->set_location(aOffset);
     // Body will be based on this name when marker is connected to Model.
 	m->setBodyName(aBody.getName()); 
-	m->connectMarkerToModel(aBody.updModel());
-	adoptAndAppend(m);
+    aBody.updModel().addMarker(m);
 
 	return m;
 }

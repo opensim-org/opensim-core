@@ -393,7 +393,7 @@ double ModelScaler::takeModelMeasurement(const SimTK::State& s, const Model& aMo
     }
 	const Marker& marker1 = aModel.getMarkerSet().get(aName1);
 	const Marker& marker2 = aModel.getMarkerSet().get(aName2);
-	return aModel.getSimbodyEngine().calcDistance(s, marker1.getBody(), marker1.getOffset(), marker2.getBody(), marker2.getOffset());
+    return aModel.getSimbodyEngine().calcDistance(s, marker1.getBody(), marker1.get_location(), marker2.getBody(), marker2.get_location());
 }
 
 //_____________________________________________________________________________

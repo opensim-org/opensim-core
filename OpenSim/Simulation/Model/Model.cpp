@@ -787,7 +787,7 @@ void Model::connectToModel(Model &model)
 	// Reorder coordinates in order of the underlying mobilities
 	updCoordinateSet().populate(*this);
 
-	updMarkerSet().connectMarkersToModel(*this);
+    updMarkerSet().invokeConnectToModel(*this);
 	updContactGeometrySet().invokeConnectToModel(*this);
 	updForceSet().setupGroups();
 	updControllerSet().setActuators(updActuators());
