@@ -38,7 +38,7 @@ using namespace std;
 //Default constructor.
 PointToPointSpring::PointToPointSpring()
 {
-    setNull();
+	setNull();
     constructInfrastructure();
 }
 //_____________________________________________________________________________
@@ -46,20 +46,20 @@ PointToPointSpring::PointToPointSpring()
 PointToPointSpring::
     PointToPointSpring(const PhysicalFrame& body1, SimTK::Vec3 point1, 
                        const PhysicalFrame& body2, SimTK::Vec3 point2,
-                       double stiffness, double restlength )
+                                       double stiffness, double restlength )
 {
-    setNull();
+	setNull();
     constructInfrastructure();
 
     // Set properties to the passed-in values.
     setBody1(body1);
     setBody2(body2);
 
-    setPoint1(point1);
-    setPoint2(point2);
+	setPoint1(point1);
+	setPoint2(point2);
 
-    setStiffness(stiffness);
-    setRestlength(restlength);
+	setStiffness(stiffness);
+	setRestlength(restlength);
 }
 
 void PointToPointSpring::constructConnectors()
@@ -77,7 +77,7 @@ void PointToPointSpring::constructConnectors()
  */
 void PointToPointSpring::setNull()
 {
-    setAuthors("Ajay Seth"); 
+	setAuthors("Ajay Seth"); 
 }
 
 
@@ -87,12 +87,12 @@ void PointToPointSpring::setNull()
  */
 void PointToPointSpring::constructProperties()
 {
-    const SimTK::Vec3 bodyOrigin(0.0, 0.0, 0.0);
-    constructProperty_point1(bodyOrigin);
-    constructProperty_point2(bodyOrigin);
+	const SimTK::Vec3 bodyOrigin(0.0, 0.0, 0.0);
+	constructProperty_point1(bodyOrigin);
+	constructProperty_point2(bodyOrigin);
 
-    constructProperty_stiffness(1.0);
-    constructProperty_rest_length(0.0);
+	constructProperty_stiffness(1.0);
+	constructProperty_rest_length(0.0);
 }
 
 void PointToPointSpring::setBody1(const PhysicalFrame& body)
@@ -115,42 +115,32 @@ const PhysicalFrame& PointToPointSpring::getBody2() const
     return getConnector<PhysicalFrame>("body2").getConnectee();
 }
 
-
-//_____________________________________________________________________________
-/**
- * Get the visible object used to represent the spring.
- */
-VisibleObject* PointToPointSpring::getDisplayer() const
-{ 
-    return const_cast<VisibleObject*>(&_displayer); 
-}
-
 void PointToPointSpring::updateDisplayer(const SimTK::State& s)
 {
-    SimTK::Vec3 globalLocation1, globalLocation2;
+	SimTK::Vec3 globalLocation1, globalLocation2;
     const PhysicalFrame& body1 = getBody1();
     const PhysicalFrame& body2 = getBody2();
-
+    /**
     globalLocation1 = body1.getGroundTransform(s)*getPoint1();
     globalLocation2 = body2.getGroundTransform(s)*getPoint2();
 
-    if (_displayer.countGeometry()==0){
-        Geometry *g = new LineGeometry();
-        g->setFixed(false);
-        _displayer.addGeometry(g);
-    }
-    ((LineGeometry *)_displayer.getGeometry(0))->
-        setPoints(globalLocation1, globalLocation2);
+	if (_displayer.countGeometry()==0){
+		Geometry *g = new LineGeometry();
+		g->setFixed(false);
+		_displayer.addGeometry(g);
+	}
+	((LineGeometry *)_displayer.getGeometry(0))->
+        setPoints(globalLocation1, globalLocation2);*/
 }
 
 void PointToPointSpring::updateGeometry(const SimTK::State& s)
 {
-    if (_displayer.countGeometry()==0){
-        Geometry *g = new LineGeometry();
-        g->setFixed(false);
-        _displayer.addGeometry(g);
-    }
-    updateDisplayer(s);
+/*	if (_displayer.countGeometry()==0){
+		Geometry *g = new LineGeometry();
+		g->setFixed(false);
+		_displayer.addGeometry(g);
+	}*/
+	updateDisplayer(s);
 }
 
 //=============================================================================
@@ -160,7 +150,7 @@ void PointToPointSpring::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model); // Let base class connect first.
 
-    if(getName() == "")
+	if(getName() == "")
         setName("pointToPointSpring");
 }
 
@@ -174,19 +164,19 @@ void PointToPointSpring::extendAddToSystem(SimTK::MultibodySystem& system) const
     const PhysicalFrame& body1 = getBody1();
     const PhysicalFrame& body2 = getBody2();
 
-    // Get underlying mobilized bodies
+	// Get underlying mobilized bodies
     const SimTK::MobilizedBody& b1 = body1.getMobilizedBody();
     const SimTK::MobilizedBody& b2 = body2.getMobilizedBody();
 
     // Now create a Simbody Force::TwoPointLinearSpring
     SimTK::Force::TwoPointLinearSpring simtkSpring
-        (_model->updForceSubsystem(), b1, getPoint1(), b2, getPoint2(), 
+       (_model->updForceSubsystem(), b1, getPoint1(), b2, getPoint2(), 
         getStiffness(), getRestlength());
     
     // Beyond the const Component get the index so we can access the 
     // SimTK::Force later.
-    PointToPointSpring* mutableThis = const_cast<PointToPointSpring *>(this);
-    mutableThis->_index = simtkSpring.getForceIndex();
+	PointToPointSpring* mutableThis = const_cast<PointToPointSpring *>(this);
+	mutableThis->_index = simtkSpring.getForceIndex();
 }
 
 
@@ -201,56 +191,56 @@ OpenSim::Array<std::string> PointToPointSpring::getRecordLabels() const
     const string& body1Name = getBody1().getName();
     const string& body2Name = getBody2().getName();
 
-    OpenSim::Array<std::string> labels("");
-    labels.append(getName()+"."+body1Name+".force.X");
-    labels.append(getName()+"."+body1Name+".force.Y");
-    labels.append(getName()+"."+body1Name+".force.Z");
-    labels.append(getName()+"."+body1Name+".point.X");
-    labels.append(getName()+"."+body1Name+".point.Y");
-    labels.append(getName()+"."+body1Name+".point.Z");
-    labels.append(getName()+"."+body2Name+".force.X");
-    labels.append(getName()+"."+body2Name+".force.Y");
-    labels.append(getName()+"."+body2Name+".force.Z");
-    labels.append(getName()+"."+body2Name+".point.X");
-    labels.append(getName()+"."+body2Name+".point.Y");
-    labels.append(getName()+"."+body2Name+".point.Z");
+	OpenSim::Array<std::string> labels("");
+	labels.append(getName()+"."+body1Name+".force.X");
+	labels.append(getName()+"."+body1Name+".force.Y");
+	labels.append(getName()+"."+body1Name+".force.Z");
+	labels.append(getName()+"."+body1Name+".point.X");
+	labels.append(getName()+"."+body1Name+".point.Y");
+	labels.append(getName()+"."+body1Name+".point.Z");
+	labels.append(getName()+"."+body2Name+".force.X");
+	labels.append(getName()+"."+body2Name+".force.Y");
+	labels.append(getName()+"."+body2Name+".force.Z");
+	labels.append(getName()+"."+body2Name+".point.X");
+	labels.append(getName()+"."+body2Name+".point.Y");
+	labels.append(getName()+"."+body2Name+".point.Z");
 
-    return labels;
+	return labels;
 }
 
 // Provide the value(s) to be reported that correspond to the labels.
 OpenSim::Array<double> PointToPointSpring::
 getRecordValues(const SimTK::State& state) const 
 {
-    OpenSim::Array<double> values(1);
+	OpenSim::Array<double> values(1);
 
-    const SimTK::Force::TwoPointLinearSpring& 
+	const SimTK::Force::TwoPointLinearSpring& 
         simtkSpring = SimTK::Force::TwoPointLinearSpring::downcast
                                 (_model->getForceSubsystem().getForce(_index));
 
-    SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
-    SimTK::Vector_<SimTK::Vec3> particleForces(0);
-    SimTK::Vector mobilityForces(0);
+	SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
+	SimTK::Vector_<SimTK::Vec3> particleForces(0);
+	SimTK::Vector mobilityForces(0);
 
     const PhysicalFrame& body1 = getBody1();
     const PhysicalFrame& body2 = getBody2();
 
-    //get the net force added to the system contributed by the Spring
-    simtkSpring.calcForceContribution(state, bodyForces, particleForces, 
+	//get the net force added to the system contributed by the Spring
+	simtkSpring.calcForceContribution(state, bodyForces, particleForces, 
                                       mobilityForces);
     SimTK::Vec3 forces = bodyForces(body1.getMobilizedBodyIndex())[1];
-    values.append(3, &forces[0]);
+	values.append(3, &forces[0]);
 
-    SimTK::Vec3 gpoint(0);
-    _model->getSimbodyEngine().getPosition(state, body1, getPoint1(), gpoint);
-    values.append(3, &gpoint[0]);
+	SimTK::Vec3 gpoint(0);
+	_model->getSimbodyEngine().getPosition(state, body1, getPoint1(), gpoint);
+	values.append(3, &gpoint[0]);
 
     forces = bodyForces(body2.getMobilizedBodyIndex())[1];
-    values.append(3, &forces[0]);
+	values.append(3, &forces[0]);
 
-    _model->getSimbodyEngine().getPosition(state, body2, getPoint2(), gpoint);
-    values.append(3, &gpoint[0]);
+	_model->getSimbodyEngine().getPosition(state, body2, getPoint2(), gpoint);
+	values.append(3, &gpoint[0]);
 
-    return values;
+	return values;
 }
 

@@ -15,10 +15,7 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/ObjectGroup.h>
 #include <OpenSim/Common/Geometry.h>
-#include <OpenSim/Common/DisplayGeometry.h>
 #include <OpenSim/Common/Set.h>
-#include <OpenSim/Common/GeometrySet.h>
-#include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/StateVector.h>
 #include <OpenSim/Common/StorageInterface.h>
 #include <OpenSim/Common/Storage.h>
@@ -746,11 +743,7 @@ namespace SimTK {
 %include <OpenSim/Common/Object.h>
 %include <OpenSim/Common/ObjectGroup.h>
 %include <OpenSim/Common/Geometry.h>
-%include <OpenSim/Common/DisplayGeometry.h>
 %include <OpenSim/Common/Set.h>
-%template(SetGeometry) OpenSim::Set<OpenSim::DisplayGeometry>;
-%include <OpenSim/Common/GeometrySet.h>
-%include <OpenSim/Common/VisibleObject.h>
 %include <OpenSim/Common/StateVector.h>
 %include <OpenSim/Common/StorageInterface.h>
 %include <OpenSim/Common/Storage.h>

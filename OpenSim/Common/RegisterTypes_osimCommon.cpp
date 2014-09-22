@@ -24,12 +24,12 @@
 
 #include "Object.h"
 #include "Component.h"
-#include "VisibleObject.h"
 #include "RegisterTypes_osimCommon.h"
 #include "FunctionSet.h"
 #include "GCVSplineSet.h"
 #include "ScaleSet.h"
 #include "GCVSpline.h"
+#include "Geometry.h"
 
 #include "Scale.h"
 #include "SimmSpline.h"
@@ -42,9 +42,6 @@
 #include "MultiplierFunction.h"
 #include "PolynomialFunction.h"
 
-#include "DisplayGeometry.h"
-#include "GeometrySet.h"
-#include "VisibleObject.h"
 #include "ObjectGroup.h"
 
 #include <string>
@@ -66,42 +63,37 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 
     Object::registerType(Connector<Component>());
 
-    // Register commonly used Inputs for de/serialization
-    Object::registerType(Input<double>());
-    Object::registerType(Input<SimTK::Vec3>());
-    Object::registerType(Input<SimTK::Vector>());
-    Object::registerType(Input<SimTK::SpatialVec>());
+	// Register commonly used Inputs for de/serialization
+	Object::registerType(Input<double>());
+	Object::registerType(Input<SimTK::Vec3>());
+	Object::registerType(Input<SimTK::Vector>());
+	Object::registerType(Input<SimTK::SpatialVec>());
 
-    //SimTK::Xml::setXmlCondenseWhiteSpace(false);
-    Object::registerType( FunctionSet() );
-    Object::registerType( GCVSplineSet() );
-    Object::registerType( ScaleSet() );
+	//SimTK::Xml::setXmlCondenseWhiteSpace(false);
+	Object::registerType( FunctionSet() );
+	Object::registerType( GCVSplineSet() );
+	Object::registerType( ScaleSet() );
 
-    Object::registerType( GCVSpline() );
+	Object::registerType( GCVSpline() );
 
-    Object::registerType( Scale() );
-    Object::registerType( SimmSpline() );
-    Object::registerType( Constant() );
-    Object::registerType( Sine() );
-    Object::registerType( StepFunction() );
-    Object::registerType( LinearFunction() );
-    Object::registerType( PiecewiseLinearFunction() );
-    Object::registerType( PiecewiseConstantFunction() );
-    Object::registerType( MultiplierFunction() );
-    Object::registerType(PolynomialFunction());
-
-
-    Object::registerType( DisplayGeometry() );
-    Object::registerType( GeometrySet() );
-    Object::registerType( VisibleObject() );
-    Object::registerType( ObjectGroup() );
+	Object::registerType( Scale() );
+	Object::registerType( SimmSpline() );
+	Object::registerType( Constant() );
+	Object::registerType( Sine() );
+	Object::registerType( StepFunction() );
+	Object::registerType( LinearFunction() );
+	Object::registerType( PiecewiseLinearFunction() );
+	Object::registerType( PiecewiseConstantFunction() );
+	Object::registerType( MultiplierFunction() );
+	Object::registerType(PolynomialFunction());
+	Object::registerType( ObjectGroup() );
 
     // TODO: temporarily map old NaturalCubicSpline (which wasn't a 
     // natural cubic spline) to renamed SimmSpline class. Later we
     // will replace this with an actual natural cubic spline.
-    Object::renameType("NaturalCubicSpline", "SimmSpline");
-    // To support older type name of "natCubicSpline"
-    Object::renameType("natCubicSpline", "SimmSpline");
+	Object::renameType("NaturalCubicSpline", "SimmSpline");
+	// To support older type name of "natCubicSpline"
+	Object::renameType("natCubicSpline", "SimmSpline");
 
   } catch (const std::exception& e) {
     std::cerr 

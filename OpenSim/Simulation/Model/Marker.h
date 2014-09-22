@@ -35,7 +35,6 @@ namespace OpenSim {
 
 class Body;
 class Model;
-class VisibleObject;
 
 
 //=============================================================================

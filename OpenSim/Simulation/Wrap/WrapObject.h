@@ -25,6 +25,7 @@
 
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Geometry.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/PropertyBool.h>
@@ -32,15 +33,14 @@
 #include <OpenSim/Common/PropertyStr.h>
 
 #ifdef SWIG
-    #ifdef OSIMSIMULATION_API
-        #undef OSIMSIMULATION_API
-        #define OSIMSIMULATION_API
-    #endif
+	#ifdef OSIMSIMULATION_API
+		#undef OSIMSIMULATION_API
+		#define OSIMSIMULATION_API
+	#endif
 #endif
 
 namespace OpenSim {
 
-class VisibleObject;
 class Body;
 class PathPoint;
 class PathWrap;
@@ -65,58 +65,54 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(WrapObject, Object);
 // DATA
 //=============================================================================
 public:
-    enum WrapQuadrant
-    {
-        allQuadrants,
-        negativeX,
-        positiveX,
-        negativeY,
-        positiveY,
-        negativeZ,
-        positiveZ
-    };
+	enum WrapQuadrant
+	{
+		allQuadrants,
+		negativeX,
+		positiveX,
+		negativeY,
+		positiveY,
+		negativeZ,
+		positiveZ
+	};
 
-    enum WrapAction
-    {
-        noWrap,          // the path segment did not intersect the wrap object
-        insideRadius,    // one or both path points are inside the wrap object
-        wrapped,         // successful wrap, but may not be 'best' path
-        mandatoryWrap    // successful wrap that must be used (e.g., both tangent
-    };                  // points are on the constrained side of the wrap object)
+	enum WrapAction
+	{
+		noWrap,          // the path segment did not intersect the wrap object
+		insideRadius,    // one or both path points are inside the wrap object
+		wrapped,         // successful wrap, but may not be 'best' path
+		mandatoryWrap    // successful wrap that must be used (e.g., both tangent
+	};                  // points are on the constrained side of the wrap object)
 
 protected:
 
-    PropertyDblArray _xyzBodyRotationProp;
-    Array<double>& _xyzBodyRotation;
+	PropertyDblArray _xyzBodyRotationProp;
+	Array<double>& _xyzBodyRotation;
 
-    PropertyDblVec3 _translationProp;
-    SimTK::Vec3 & _translation;
+	PropertyDblVec3 _translationProp;
+	SimTK::Vec3 & _translation;
 
-    PropertyBool _activeProp;
-    bool& _active;
+	PropertyBool _activeProp;
+	bool& _active;
 
-    PropertyStr _quadrantNameProp;
-    std::string& _quadrantName;
+	PropertyStr _quadrantNameProp;
+	std::string& _quadrantName;
 
-    // Support for Display
-    PropertyObj _displayerProp;
-    VisibleObject &_displayer;
-
-    WrapQuadrant _quadrant;
-    int _wrapAxis;
-    int _wrapSign;
+	WrapQuadrant _quadrant;
+	int _wrapAxis;
+	int _wrapSign;
 
     SimTK::ReferencePtr<PhysicalFrame> _body;
 
-    SimTK::Transform _pose;
-    const Model* _model;
+	SimTK::Transform _pose;
+	const Model* _model;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
+	// CONSTRUCTION
+	//--------------------------------------------------------------------------
 public:
     /** Display Preference to apply to the contact geometry.  **/
     OpenSim_DECLARE_PROPERTY(display_preference, int,
@@ -127,48 +123,45 @@ public:
         "Display Color");
 
     WrapObject();
-    WrapObject(const WrapObject& aWrapObject);
-    virtual ~WrapObject();
+	WrapObject(const WrapObject& aWrapObject);
+	virtual ~WrapObject();
 
 #ifndef SWIG
-    WrapObject& operator=(const WrapObject& aWrapObject);
+	WrapObject& operator=(const WrapObject& aWrapObject);
 #endif
    void copyData(const WrapObject& aWrapObject);
 
-    virtual void scale(const SimTK::Vec3& aScaleFactors);
+	virtual void scale(const SimTK::Vec3& aScaleFactors);
     virtual void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody);
 
     PhysicalFrame& getBody() const { return *_body; }
-    const double* getXYZBodyRotation() const { return &_xyzBodyRotation[0]; }
-    const double* getTranslation() const { return &_translation[0]; }
-    bool getActive() const { return _active; }
-    bool getActiveUseDefault() const { return _activeProp.getValueIsDefault(); }
-    const char* getQuadrantName() const { return _quadrantName.c_str(); }
-    bool getQuadrantNameUseDefault() const { return _quadrantNameProp.getValueIsDefault(); }
-    void setQuadrantName(const std::string& aName);
+	const double* getXYZBodyRotation() const { return &_xyzBodyRotation[0]; }
+	const double* getTranslation() const { return &_translation[0]; }
+	bool getActive() const { return _active; }
+	bool getActiveUseDefault() const { return _activeProp.getValueIsDefault(); }
+	const char* getQuadrantName() const { return _quadrantName.c_str(); }
+	bool getQuadrantNameUseDefault() const { return _quadrantNameProp.getValueIsDefault(); }
+	void setQuadrantName(const std::string& aName);
         const SimTK::Transform& getTransform() const { return _pose; }
-    virtual const char* getWrapTypeName() const = 0;
-    virtual std::string getDimensionsString() const { return ""; } // TODO: total SIMM hack!
+	virtual const char* getWrapTypeName() const = 0;
+	virtual std::string getDimensionsString() const { return ""; } // TODO: total SIMM hack!
 #ifndef SWIG
-    int wrapPathSegment( const SimTK::State& s, PathPoint& aPoint1, PathPoint& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult) const;
-    virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const = 0;
+	int wrapPathSegment( const SimTK::State& s, PathPoint& aPoint1, PathPoint& aPoint2,
+		const PathWrap& aPathWrap, WrapResult& aWrapResult) const;
+	virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+		const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const = 0;
 #endif
-    // Visible Object Support
-    const VisibleObject* getDisplayer() const override { return &_displayer; }
-    VisibleObject* updDisplayer() override { return &_displayer; }
-    virtual void updateGeometry() {}
+	virtual void updateGeometry() {};
 
 protected:
-    void setupProperties();
-    void setupQuadrant();
-    void setGeometryQuadrants(AnalyticGeometry *aGeometry) const;
+	void setupProperties();
+	void setupQuadrant();
+	void setGeometryQuadrants(AnalyticGeometry *aGeometry) const;
 private:
-    void setNull();
+	void setNull();
     void constructProperties();
 //=============================================================================
-};  // END of class WrapObject
+};	// END of class WrapObject
 //=============================================================================
 //=============================================================================
 

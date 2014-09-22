@@ -385,6 +385,7 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
     for (int i=0; i < bodies.getSize(); ++i) {
         const Body& body = bodies[i];
         const MobilizedBodyIndex bx = body.getMobilizedBodyIndex();
+        /*
         const VisibleObject& visible = *body.getDisplayer();
         Vec3 scale; visible.getScaleFactors(scale);
         const Transform X_BV = visible.getTransform();
@@ -458,7 +459,7 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
                                         .elementwiseMultiply(scale);
             dmesh.setScaleFactors(netScale); 
             _viz->addDecoration(bx, X_BV*geo.getTransform(), dmesh);
-        }
+        }*/
     }
 
     // Collect any fixed geometry from the ModelComponents.

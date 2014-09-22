@@ -22,9 +22,9 @@
 * -------------------------------------------------------------------------- */
 
 //============================================================================
-//  testProbes builds an OpenSim model containing a Millard2012Equilibrium
+//	testProbes builds an OpenSim model containing a Millard2012Equilibrium
 //  muscle model using the OpenSim API and applies a bunch of probes to it.
-//      
+//		
 //     Add more test cases to address specific problems with probes
 //
 //============================================================================
@@ -49,14 +49,14 @@ using namespace OpenSim;
 using namespace std;
 
 //==============================================================================
-static const double IntegrationAccuracy = 1e-8;
-static const double SimulationTestTolerance = 1e-6;
+static const double IntegrationAccuracy         = 1e-8;
+static const double SimulationTestTolerance     = 1e-6;
 static const double InitializationTestTolerance = 1e-8;
-static const double CorrectnessTestTolerance = 1e-8;
+static const double CorrectnessTestTolerance    = 1e-8;
 
-static const int SimulationTest = 0;
-static const int InitializationTest = 1;
-static const int CorrectnessTest = 2;
+static const int SimulationTest         = 0;
+static const int InitializationTest     = 1;
+static const int CorrectnessTest        = 2;
 
 // MUSCLE CONSTANTS
 static const double MaxIsometricForce0 = 100.0,
@@ -94,10 +94,10 @@ void simulateMuscle(const Muscle &aMuscle,
     double act0,
     const Function *motion,
     const Function *control,
-    double integrationAccuracy,
-    int testType,
-    double testTolerance,
-    bool printResults);
+                    double integrationAccuracy,
+                    int testType,
+                    double testTolerance,
+                    bool printResults);
 
 
 int main()
@@ -105,31 +105,31 @@ int main()
     SimTK::Array_<std::string> failures;
 
     try {
-        Millard2012EquilibriumMuscle muscle("muscle",
-            MaxIsometricForce0,
-            OptimalFiberLength0,
-            TendonSlackLength0,
-            PennationAngle0);
+    Millard2012EquilibriumMuscle muscle("muscle",
+                    MaxIsometricForce0,
+                    OptimalFiberLength0,
+                    TendonSlackLength0,
+                    PennationAngle0);
 
-        muscle.setActivationTimeConstant(Activation0);
-        muscle.setDeactivationTimeConstant(Deactivation0);
+    muscle.setActivationTimeConstant(Activation0);
+    muscle.setDeactivationTimeConstant(Deactivation0);
 
-        double x0 = 0;
-        double act0 = 0.2;
+    double x0 = 0;
+    double act0 = 0.2;
 
-        Constant control(0.5);
+    Constant control(0.5);
 
-        Sine motion(0.1, SimTK::Pi, 0);
+    Sine motion(0.1, SimTK::Pi, 0);
 
         simulateMuscle(muscle,
             x0,
             act0,
             &motion,
             &control,
-            IntegrationAccuracy,
-            CorrectnessTest,
-            CorrectnessTestTolerance,
-            true);
+        IntegrationAccuracy,
+        CorrectnessTest,
+        CorrectnessTestTolerance,
+        true);
 
 
         cout << "Probes test passed" << endl;
@@ -168,18 +168,18 @@ void simulateMuscle(
     const Muscle &aMuscModel,
     double startX,
     double act0,
-    const Function *motion,  // prescribe motion of free end of muscle
-    const Function *control, // prescribed excitation signal to the muscle
-    double integrationAccuracy,
-    int testType,
-    double testTolerance,
-    bool printResults)
+        const Function *motion,  // prescribe motion of free end of muscle
+        const Function *control, // prescribed excitation signal to the muscle
+        double integrationAccuracy,
+        int testType,
+        double testTolerance,
+        bool printResults)
 {
     string prescribed = (motion == NULL) ? "." : " with Prescribed Motion.";
 
     cout << "\n******************************************************" << endl;
     cout << "Test " << aMuscModel.getConcreteClassName()
-        << " Model" << prescribed << endl;
+         << " Model" << prescribed << endl;
     cout << "******************************************************" << endl;
     using SimTK::Vec3;
 
@@ -200,8 +200,8 @@ void simulateMuscle(
     Model model;
 
     double optimalFiberLength = aMuscModel.getOptimalFiberLength();
-    double pennationAngle = aMuscModel.getPennationAngleAtOptimalFiberLength();
-    double tendonSlackLength = aMuscModel.getTendonSlackLength();
+    double pennationAngle     = aMuscModel.getPennationAngleAtOptimalFiberLength();
+    double tendonSlackLength  = aMuscModel.getTendonSlackLength();
 
     // Use a copy of the muscle model passed in to add path points later
     PathActuator *aMuscle = aMuscModel.clone();
@@ -209,16 +209,13 @@ void simulateMuscle(
     // Get a reference to the model's ground body
     Ground& ground = model.updGround();
     ground.addDisplayGeometry("box.vtp");
-    ground.updDisplayer()
-        ->setScaleFactors(Vec3(anchorWidth, anchorWidth, 2 * anchorWidth));
 
     OpenSim::Body * ball = new OpenSim::Body("ball",
         ballMass,
         Vec3(0),
-        ballMass*SimTK::Inertia::sphere(ballRadius));
+                        ballMass*SimTK::Inertia::sphere(ballRadius));
 
     ball->addDisplayGeometry("sphere.vtp");
-    ball->updDisplayer()->setScaleFactors(Vec3(2 * ballRadius));
     // ball connected  to ground via a slider along X
     double xSinG = optimalFiberLength*cos(pennationAngle) + tendonSlackLength;
 
@@ -228,13 +225,13 @@ void simulateMuscle(
         Vec3(0),
         *ball,
         Vec3(0),
-        Vec3(0));
+                        Vec3(0));
 
     CoordinateSet& jointCoordinateSet = slider->upd_CoordinateSet();
-    jointCoordinateSet[0].setName("tx");
-    jointCoordinateSet[0].setDefaultValue(1.0);
+        jointCoordinateSet[0].setName("tx");
+        jointCoordinateSet[0].setDefaultValue(1.0);
     jointCoordinateSet[0].setRangeMin(0);
-    jointCoordinateSet[0].setRangeMax(1.0);
+        jointCoordinateSet[0].setRangeMax(1.0);
 
     if (motion != NULL){
         jointCoordinateSet[0].setPrescribedFunction(*motion);
@@ -242,7 +239,7 @@ void simulateMuscle(
     }
     // add ball to model
     model.addBody(ball);
-    model.addJoint(slider);
+	model.addJoint(slider);
 
 
     //==========================================================================
@@ -313,39 +310,39 @@ void simulateMuscle(
     ic1 = 9.0;      // some arbitary initial condition.
     muscWorkProbe->setInitialConditions(ic1);
     model.addProbe(muscWorkProbe);
-    model.setup();
+	model.setup();
     cout << probeCounter++ << ") Added ActuatorPowerProbe to measure work done by the muscle" << endl;
 
     // Add ActuatorPowerProbe to measure power generated by the muscle 
-    ActuatorPowerProbe* muscPowerProbe = new ActuatorPowerProbe(*muscWorkProbe);    // use copy constructor
+    ActuatorPowerProbe* muscPowerProbe = new ActuatorPowerProbe(*muscWorkProbe);	// use copy constructor
     muscPowerProbe->setName("ActuatorPower");
     muscPowerProbe->setOperation("value");
     model.addProbe(muscPowerProbe);
     cout << probeCounter++ << ") Added ActuatorPowerProbe to measure power generated by the muscle" << endl;
 
     // Add ActuatorPowerProbe to report the muscle power MINIMUM
-    ActuatorPowerProbe* powerProbeMinimum = new ActuatorPowerProbe(*muscPowerProbe);            // use copy constructor
+    ActuatorPowerProbe* powerProbeMinimum = new ActuatorPowerProbe(*muscPowerProbe);			// use copy constructor
     powerProbeMinimum->setName("ActuatorPowerMinimum");
     powerProbeMinimum->setOperation("minimum");
     model.addProbe(powerProbeMinimum);
     cout << probeCounter++ << ") Added ActuatorPowerProbe to report the muscle power MINIMUM" << endl;
 
     // Add ActuatorPowerProbe to report the muscle power ABSOLUTE MINIMUM
-    ActuatorPowerProbe* powerProbeMinAbs = new ActuatorPowerProbe(*muscPowerProbe);         // use copy constructor
+    ActuatorPowerProbe* powerProbeMinAbs = new ActuatorPowerProbe(*muscPowerProbe);			// use copy constructor
     powerProbeMinAbs->setName("ActuatorPowerMinAbs");
     powerProbeMinAbs->setOperation("minabs");
     model.addProbe(powerProbeMinAbs);
     cout << probeCounter++ << ") Added ActuatorPowerProbe to report the muscle power MINABS" << endl;
 
     // Add ActuatorPowerProbe to report the muscle power MAXIMUM
-    ActuatorPowerProbe* powerProbeMaximum = new ActuatorPowerProbe(*muscPowerProbe);            // use copy constructor
+    ActuatorPowerProbe* powerProbeMaximum = new ActuatorPowerProbe(*muscPowerProbe);			// use copy constructor
     powerProbeMaximum->setName("ActuatorPowerMaximum");
     powerProbeMaximum->setOperation("maximum");
     model.addProbe(powerProbeMaximum);
     cout << probeCounter++ << ") Added ActuatorPowerProbe to report the muscle power MAXIMUM" << endl;
 
     // Add ActuatorPowerProbe to report the muscle power MAXABS
-    ActuatorPowerProbe* powerProbeMaxAbs = new ActuatorPowerProbe(*muscPowerProbe);         // use copy constructor
+    ActuatorPowerProbe* powerProbeMaxAbs = new ActuatorPowerProbe(*muscPowerProbe);			// use copy constructor
     powerProbeMaxAbs->setName("ActuatorPowerMaxAbs");
     powerProbeMaxAbs->setOperation("maxabs");
     model.addProbe(powerProbeMaxAbs);
@@ -353,7 +350,7 @@ void simulateMuscle(
 
 
     // Add ActuatorPowerProbe to measure the square of the power generated by the muscle 
-    ActuatorPowerProbe* muscPowerSquaredProbe = new ActuatorPowerProbe(*muscPowerProbe);    // use copy constructor
+    ActuatorPowerProbe* muscPowerSquaredProbe = new ActuatorPowerProbe(*muscPowerProbe);	// use copy constructor
     muscPowerSquaredProbe->setName("ActuatorPowerSquared");
     muscPowerSquaredProbe->setExponent(2.0);
     model.addProbe(muscPowerSquaredProbe);
@@ -368,7 +365,7 @@ void simulateMuscle(
     cout << probeCounter++ << ") Added JointPowerProbe to measure work done by the joint" << endl;
 
     // Add JointPowerProbe to measure power generated by the joint 
-    JointInternalPowerProbe* jointPowerProbe = new JointInternalPowerProbe(*jointWorkProbe);    // use copy constructor
+    JointInternalPowerProbe* jointPowerProbe = new JointInternalPowerProbe(*jointWorkProbe);	// use copy constructor
     jointPowerProbe->setName("JointPower");
     jointPowerProbe->setOperation("value");
     model.addProbe(jointPowerProbe);
@@ -383,21 +380,21 @@ void simulateMuscle(
     cout << probeCounter++ << ") Added ActuatorForceProbe to measure the impulse of the muscle force" << endl;
 
     // Add ActuatorForceProbe to report the muscle force 
-    ActuatorForceProbe* forceProbe = new ActuatorForceProbe(*impulseProbe);         // use copy constructor
+    ActuatorForceProbe* forceProbe = new ActuatorForceProbe(*impulseProbe);			// use copy constructor
     forceProbe->setName("ActuatorForce");
     forceProbe->setOperation("value");
     model.addProbe(forceProbe);
     cout << probeCounter++ << ") Added ActuatorForceProbe to report the muscle force" << endl;
 
     // Add ActuatorForceProbe to report the square of the muscle force 
-    ActuatorForceProbe* forceSquaredProbe = new ActuatorForceProbe(*forceProbe);            // use copy constructor
+    ActuatorForceProbe* forceSquaredProbe = new ActuatorForceProbe(*forceProbe);			// use copy constructor
     forceSquaredProbe->setName("ActuatorForceSquared");
     forceSquaredProbe->setExponent(2.0);
     model.addProbe(forceSquaredProbe);
     cout << probeCounter++ << ") Added ActuatorForceProbe to report the square of the muscle force " << endl;
 
     // Add ActuatorForceProbe to report the square of the muscle force for the same muscle repeated twice
-    ActuatorForceProbe* forceSquaredProbeTwice = new ActuatorForceProbe(*forceSquaredProbe);            // use copy constructor
+    ActuatorForceProbe* forceSquaredProbeTwice = new ActuatorForceProbe(*forceSquaredProbe);			// use copy constructor
     forceSquaredProbeTwice->setName("ActuatorForceSquared_RepeatedTwice");
     forceSquaredProbeTwice->setSumForcesTogether(true);
     forceSquaredProbeTwice->setActuatorNames(muscNamesTwice);
@@ -405,7 +402,7 @@ void simulateMuscle(
     cout << probeCounter++ << ") Added ActuatorForceProbe to report the square of the muscle force for the same muscle repeated twice" << endl;
 
     // Add ActuatorForceProbe to report the square of the muscle force for the same muscle repeated twice, SCALED BY 0.5
-    ActuatorForceProbe* forceSquaredProbeTwiceScaled = new ActuatorForceProbe(*forceSquaredProbeTwice);         // use copy constructor
+    ActuatorForceProbe* forceSquaredProbeTwiceScaled = new ActuatorForceProbe(*forceSquaredProbeTwice);			// use copy constructor
     forceSquaredProbeTwice->setName("ActuatorForceSquared_RepeatedTwiceThenHalved");
     double gain1 = 0.5;
     forceSquaredProbeTwiceScaled->setGain(gain1);
@@ -414,7 +411,7 @@ void simulateMuscle(
 
     // Add ActuatorForceProbe to report -3.5X the muscle force 
     double gain2 = -3.50;
-    ActuatorForceProbe* forceProbeScale = new ActuatorForceProbe(*impulseProbe);        // use copy constructor
+    ActuatorForceProbe* forceProbeScale = new ActuatorForceProbe(*impulseProbe);		// use copy constructor
     forceProbeScale->setName("ScaleActuatorForce");
     forceProbeScale->setOperation("value");
     forceProbeScale->setGain(gain2);
@@ -422,7 +419,7 @@ void simulateMuscle(
     cout << probeCounter++ << ") Added ActuatorForceProbe to report -3.5X the muscle force" << endl;
 
     // Add ActuatorForceProbe to report the differentiated muscle force 
-    ActuatorForceProbe* forceProbeDiff = new ActuatorForceProbe(*impulseProbe);     // use copy constructor
+    ActuatorForceProbe* forceProbeDiff = new ActuatorForceProbe(*impulseProbe);		// use copy constructor
     forceProbeDiff->setName("DifferentiateActuatorForce");
     forceProbeDiff->setOperation("differentiate");
     model.addProbe(forceProbeDiff);
@@ -438,7 +435,7 @@ void simulateMuscle(
     cout << probeCounter++ << ") Added SystemEnergyProbe to measure the system KE+PE" << endl;
 
     // Add SystemEnergyProbe to measure system power (d/dt system KE+PE)
-    SystemEnergyProbe* sysPowerProbe = new SystemEnergyProbe(*sysEnergyProbe);  // use copy constructor
+    SystemEnergyProbe* sysPowerProbe = new SystemEnergyProbe(*sysEnergyProbe);	// use copy constructor
     sysPowerProbe->setName("SystemPower");
     sysPowerProbe->setDisabled(false);
     sysPowerProbe->setOperation("differentiate");
@@ -446,7 +443,7 @@ void simulateMuscle(
     cout << probeCounter++ << ") Added SystemEnergyProbe to measure system power (d/dt system KE+PE)" << endl;
 
     // Add ActuatorForceProbe to report the muscle force value, twice -- REPORTED INDIVIDUALLY AS VECTORS
-    ActuatorForceProbe* forceSquaredProbeTwiceReportedIndividually1 = new ActuatorForceProbe(*forceProbe);          // use copy constructor
+    ActuatorForceProbe* forceSquaredProbeTwiceReportedIndividually1 = new ActuatorForceProbe(*forceProbe);			// use copy constructor
     forceSquaredProbeTwiceReportedIndividually1->setName("MuscleForce_VALUE_VECTOR");
     forceSquaredProbeTwiceReportedIndividually1->setSumForcesTogether(false);    // report individually
     forceSquaredProbeTwiceReportedIndividually1->setActuatorNames(muscNamesTwice);
@@ -456,7 +453,7 @@ void simulateMuscle(
     cout << probeCounter++ << ") Added ActuatorForceProbe to report the muscle force value, twice - REPORTED INDIVIDUALLY" << endl;
 
     // Add ActuatorForceProbe to report the differentiated muscle force value, twice -- REPORTED INDIVIDUALLY AS VECTORS
-    ActuatorForceProbe* forceSquaredProbeTwiceReportedIndividually2 = new ActuatorForceProbe(*forceSquaredProbeTwiceReportedIndividually1);         // use copy constructor
+    ActuatorForceProbe* forceSquaredProbeTwiceReportedIndividually2 = new ActuatorForceProbe(*forceSquaredProbeTwiceReportedIndividually1);			// use copy constructor
     forceSquaredProbeTwiceReportedIndividually2->setName("MuscleForce_DIFFERENTIATE_VECTOR");
     forceSquaredProbeTwiceReportedIndividually2->setSumForcesTogether(false);    // report individually
     forceSquaredProbeTwiceReportedIndividually2->setOperation("differentiate");
@@ -464,7 +461,7 @@ void simulateMuscle(
     cout << probeCounter++ << ") Added ActuatorForceProbe to report the differentiated muscle force value, twice - REPORTED INDIVIDUALLY" << endl;
 
     // Add ActuatorForceProbe to report the integrated muscle force value, twice -- REPORTED INDIVIDUALLY AS VECTORS
-    ActuatorForceProbe* forceSquaredProbeTwiceReportedIndividually3 = new ActuatorForceProbe(*forceSquaredProbeTwiceReportedIndividually1);         // use copy constructor
+    ActuatorForceProbe* forceSquaredProbeTwiceReportedIndividually3 = new ActuatorForceProbe(*forceSquaredProbeTwiceReportedIndividually1);			// use copy constructor
     forceSquaredProbeTwiceReportedIndividually3->setName("MuscleForce_INTEGRATE_VECTOR");
     forceSquaredProbeTwiceReportedIndividually3->setSumForcesTogether(false);    // report individually
     forceSquaredProbeTwiceReportedIndividually3->setOperation("integrate");
@@ -477,7 +474,7 @@ void simulateMuscle(
     cout << "initCondVec = " << initCondVec << endl;
 
     /* Since all components are allocated on the stack don't have model
-    own them (and try to free)*/
+       own them (and try to free)*/
     //  model.disownAllComponents();
     model.setName("testProbesModel");
     cout << "Saving model... " << endl;
@@ -567,17 +564,17 @@ void simulateMuscle(
 
     double realTimeMultiplier = ((finalTime - initialTime) / comp_time);
     printf("testMuscles: Realtime Multiplier: %f\n"
-        "           :  simulation duration / clock duration\n"
-        "              > 1 : faster than real time\n"
-        "              = 1 : real time\n"
-        "              < 1 : slower than real time\n",
+           "           :  simulation duration / clock duration\n"
+           "              > 1 : faster than real time\n"
+           "              = 1 : real time\n"
+           "              < 1 : slower than real time\n",
         realTimeMultiplier);
 
     /*
     ASSERT(comp_time <= (finalTime-initialTime));
     printf("testMuscles: PASSED Realtime test\n"
-    "             %s simulation time: %f with accuracy %f\n\n",
-    actuatorType.c_str(), comp_time , accuracy);
+           "             %s simulation time: %f with accuracy %f\n\n",
+                         actuatorType.c_str(), comp_time , accuracy);
     */
 
     //An analysis only writes to a dir that exists, so create here.

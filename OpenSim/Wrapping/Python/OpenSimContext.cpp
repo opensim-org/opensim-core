@@ -138,8 +138,8 @@ void OpenSimContext::updateDisplayer(Force& f) {
     Object& pathObj = pathProp.updValueAsObject();
     return dynamic_cast<GeometryPath*>(&pathObj)->updateDisplayer(*_configState);
   }
-  if (f.getDisplayer()!= NULL)
-    f.updateDisplayer(*_configState);
+  /*if (f.getDisplayer()!= NULL)
+    f.updateDisplayer(*_configState);*/
 }
 
 void OpenSimContext::copyMuscle(Muscle& from, Muscle& to) {
