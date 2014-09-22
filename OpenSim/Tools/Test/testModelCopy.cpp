@@ -73,7 +73,8 @@ void testCopyModel(string fileName)
 	//ASSERT ((defaultState.getY()-defaultStateOfCopy.getY()).norm() < 1e-7);
 
 	//  Now delete original model and make sure copy can stand
-	Model *newModel = modelCopy->clone();
+	Model *cloneModel = modelCopy->clone();
+    ASSERT(*model == *cloneModel);
 	// Compare state again
 	
 	//SimTK::State& defaultStateOfCopy2 = newModel->initSystem();
@@ -83,7 +84,7 @@ void testCopyModel(string fileName)
 
 	delete model;
 	delete modelCopy;
-	delete newModel;
+    delete cloneModel;
 
 	size_t mem2 = getCurrentRSS( );
 	int64_t delta = mem2-mem1;

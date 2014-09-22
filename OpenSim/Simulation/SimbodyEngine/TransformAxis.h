@@ -37,7 +37,9 @@ class Coordinate;
 //==============================================================================
 /**
  * A class expressing a transformation of a child body in relation to a parent
- * body along either a translation or rotation axis.
+ * body along either a translation or about a rotation axis. The TransformAxis
+ * function specified the spatial displacement that is achieved as a function
+ * of the generalized coordinate(s).
  *
  * @author Peter Loan, Frank C. Anderson, Jeffrey A. Reinbolt, Ajay Seth,
  *         Michael Sherman
@@ -63,12 +65,13 @@ public:
     OpenSim_DECLARE_PROPERTY(axis, SimTK::Vec3,
        "Rotation or translation axis for the transform.");
 
-    /** The optional "function" property holds the transform function of the 
-    generalized coordinates used to represent the amount of transformation 
-    along the specified axis. **/
+    /** The "function" property holds the transform function of the 
+    generalized coordinate(s) used to represent the amount of displacement 
+    about/along the specified axis. If none is specified a Constant function
+    is applied. **/
     OpenSim_DECLARE_PROPERTY(function, Function,
        "Transform function of the generalized coordinates used to \
-       represent the amount of transformation along a specified axis.");
+       represent the amount of displacement along a specified axis.");
     /**@}**/
 
 //==============================================================================
@@ -128,7 +131,7 @@ public:
     {   return !getProperty_function().empty();}
 
     /** Get the custom function that maps between the generalized coordinates 
-    and the amount of transformation along the specified axis. If no function 
+    and the amount of displacement along the specified axis. If no function 
     has been specified, this throws an exception; check first with hasFunction()
     if you aren't sure. **/
     const Function& getFunction() const;
@@ -136,13 +139,13 @@ public:
     Function& updFunction();
 
     /** %Set the custom function that maps between the generalized coordinates 
-    and the amount of transformation along the specified axis. This object 
+    and the amount of displacement about/along the specified axis. This object 
     adopts ownership of the Function object, don't delete it yourself! It will
     be deleted when this %TransformAxis object is deleted. **/
     void setFunction(Function* function);
 
     /** %Set the custom function that maps between the generalized coordinates
-    and the amount of transformation along the specified axis. This method 
+    and the amount of transformation about/along the specified axis. This method 
     creates a \e copy of the supplied Function object, which is unaffected.
     Use the other signature if you want this %TransformAxis to take over 
     ownership of the Function object. **/

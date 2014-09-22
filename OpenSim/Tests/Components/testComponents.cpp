@@ -43,22 +43,18 @@ int main()
     SimTK::Array_<std::string> failures;
 
     // get all registered Components
-    ArrayPtrs<Component> availableComponents;
-    // Uncomment when we all Components have been updated to fully
-    // exploit the Component interface via Connectors, Inputs and Outputs
-    //Object::getRegisteredObjectsOfGivenType(availableComponents);
+    SimTK::Array_<Component*> availableComponents;
 
-    availableComponents.setMemoryOwner(false);
     // starting with type Body
     ArrayPtrs<Body> availableBodies;
     Object::getRegisteredObjectsOfGivenType(availableBodies);
-    availableComponents.append(availableBodies[0]);
+    availableComponents.push_back(availableBodies[0]);
 
     // then type Joint
     ArrayPtrs<Joint> availableJoints;
     Object::getRegisteredObjectsOfGivenType(availableJoints);
     for (int i = 0; i < availableJoints.size(); ++i) {
-        availableComponents.append(availableJoints[i]);
+        availableComponents.push_back(availableJoints[i]);
     }
 
     // continue with Constraint, Actuator, Frame, ...
@@ -66,9 +62,9 @@ int main()
     //Example of an updated force that passes
     ArrayPtrs<PointToPointSpring> availablePointToPointSpring;
     Object::getRegisteredObjectsOfGivenType(availablePointToPointSpring);
-    availableComponents.append(availablePointToPointSpring[0]);
+    availableComponents.push_back(availablePointToPointSpring[0]);
 
-    for (int i = 0; i < availableComponents.getSize(); i++) {
+    for (unsigned int i = 0; i < availableComponents.size(); i++) {
         try {
             testComponent(*availableComponents[i]);
         }

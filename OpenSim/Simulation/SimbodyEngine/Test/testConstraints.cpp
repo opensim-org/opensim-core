@@ -965,22 +965,22 @@ void testRollingOnSurfaceConstraint()
     SimTK::Constraint::NoSlip1D contactPointXdir(cb, SimTK::Vec3(0), SimTK::UnitVec3(1, 0, 0), surface, rod);
     SimTK::Constraint::NoSlip1D contactPointZdir(cb, SimTK::Vec3(0), SimTK::UnitVec3(0, 0, 1), surface, rod);
     
-	// Simbody model state setup
-	system.realizeTopology();
-	State state = system.getDefaultState();
+    // Simbody model state setup
+    system.realizeTopology();
+    State state = system.getDefaultState();
 
-	//state = system.realizeTopology();
-	state.updQ()[0] = theta;
+    //state = system.realizeTopology();
+    state.updQ()[0] = theta;
     state.updQ()[1] = 0;
     state.updQ()[2] = 0;
-	state.updU()[0] = omega;
+    state.updU()[0] = omega;
 
-	system.realize(state, Stage::Acceleration);
-	state.getUDot().dump("Simbody Accelerations");
+    system.realize(state, Stage::Acceleration);
+    state.getUDot().dump("Simbody Accelerations");
 
-	Vec3 pcom = system.getMatterSubsystem().calcSystemMassCenterLocationInGround(state);
-	Vec3 vcom = system.getMatterSubsystem().calcSystemMassCenterVelocityInGround(state);
-	Vec3 acom = system.getMatterSubsystem().calcSystemMassCenterAccelerationInGround(state);
+    Vec3 pcom = system.getMatterSubsystem().calcSystemMassCenterLocationInGround(state);
+    Vec3 vcom = system.getMatterSubsystem().calcSystemMassCenterVelocityInGround(state);
+    Vec3 acom = system.getMatterSubsystem().calcSystemMassCenterAccelerationInGround(state);
 
     //==========================================================================================================
     // Setup OpenSim model
@@ -993,32 +993,29 @@ void testRollingOnSurfaceConstraint()
     ground.updDisplayer()->updGeometrySet()[0].setColor(Vec3(1, 0, 0));
 
     //OpenSim rod
-    OpenSim::Body osim_rod("rod", mass, comInRod, inertiaAboutCom);
-    osim_rod.addDisplayGeometry("cylinder.vtp");
-    osim_rod.updDisplayer()->updGeometrySet()[0].setScaleFactors(2*halfRodLength*Vec3(0.1, 1, 0.1));
-    osim_rod.updDisplayer()->updGeometrySet()[0].setTransform(Transform(comInRod));
+    auto osim_rod = new OpenSim::Body("rod", mass, comInRod, inertiaAboutCom);
+    osim_rod->addDisplayGeometry("cylinder.vtp");
+    osim_rod->updDisplayer()->updGeometrySet()[0]
+        .setScaleFactors(2*halfRodLength*Vec3(0.1, 1, 0.1));
+    osim_rod->updDisplayer()->updGeometrySet()[0]
+        .setTransform(Transform(comInRod));
 
     // create rod as a free joint
-    PlanarJoint rodJoint("rodToGround", ground, Vec3(0), Vec3(0), osim_rod, Vec3(0), Vec3(0));
+    auto rodJoint = new PlanarJoint("rodToGround", ground, Vec3(0), Vec3(0),
+                                                *osim_rod, Vec3(0), Vec3(0));
 
     // Add the thigh body which now also contains the hip joint to the model
-    osimModel->addBody(&osim_rod);
-    osimModel->addJoint(&rodJoint);
+    osimModel->addBody(osim_rod);
+    osimModel->addJoint(rodJoint);
 
     // add a point on line constraint
-    RollingOnSurfaceConstraint roll;
-    roll.setRollingBodyByName("rod");
-    roll.setSurfaceBodyByName("ground");
+    auto roll = new RollingOnSurfaceConstraint();
+    roll->setRollingBodyByName("rod");
+    roll->setSurfaceBodyByName("ground");
 
-    double h = roll.get_surface_height();
+    double h = roll->get_surface_height();
     
-        //ground, normLineDirection, pointOnLine, osim_rod, pointOnFollower);
-    osimModel->addConstraint(&roll);
-
-
-    // BAD: have to set memoryOwner to false or program will crash when this test is complete.
-    osimModel->disownAllComponents();
-
+    osimModel->addConstraint(roll);
     osimModel->setGravity(gravity_vec);
 
     //Add analyses before setting up the model for simulation
@@ -1030,11 +1027,10 @@ void testRollingOnSurfaceConstraint()
     // for the model if it does not exist.
     //osimModel->setUseVisualizer(true);
     State osim_state = osimModel->initSystem();
-    roll.setDisabled(osim_state, false);
+    roll->setDisabled(osim_state, false);
     osim_state.updY() = state.getY();
 
-
-   // osim_state.updY() = state.getY();
+    // compute model accelerations
     osimModel->computeStateVariableDerivatives(osim_state);
     osim_state.getUDot().dump("Osim Accelerations");
 
@@ -1046,7 +1042,7 @@ void testRollingOnSurfaceConstraint()
     Vec3 osim_vcom = osimModel->calcMassCenterVelocity(osim_state);
     Vec3 osim_acom = osimModel->calcMassCenterAcceleration(osim_state);
 
-    Vec3 tol(1e-6);
+    Vec3 tol(SimTK::SignificantReal);
 
     ASSERT_EQUAL(pcom, osim_pcom, tol);
     ASSERT_EQUAL(vcom, osim_vcom, tol);
