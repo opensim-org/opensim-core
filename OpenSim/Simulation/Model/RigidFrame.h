@@ -67,6 +67,7 @@ public:
 	//--------------------------------------------------------------------------
     RigidFrame();
 
+    virtual ~RigidFrame() {};
     /** Return reference to the Body that Frame is affixed to, either directly
      * or through intermediate Frames.
      */

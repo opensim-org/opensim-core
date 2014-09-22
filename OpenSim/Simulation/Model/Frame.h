@@ -67,6 +67,7 @@ public:
 	//--------------------------------------------------------------------------
 	Frame();
 
+    virtual ~Frame() {};
 	/** @name Spatial Operations for Frames
     These methods allow access to the frame's transform and some convenient
     operations that could be performed with this transform.*/

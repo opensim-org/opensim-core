@@ -80,6 +80,7 @@ public:
      */
 	FixedFrame();
 
+    virtual ~FixedFrame() {};
     /** A convenience constructor that initializes the connections and
      * properties of this object.
      *
