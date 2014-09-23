@@ -898,11 +898,12 @@ void testActuatorsCombination()
 
 	// Verify that the bodyActuator_sum also generates the same acceleration
 	// as the equivalent applied by 3 Actuators in previous test case
+	// Also make sure that accelerations are not zero accidentally
+	ASSERT(udotOnlyBodyActuator.norm() != 0.0 || udotActuatorsCombination.norm() != 0.0);
 	for (int i = 0; i<udotActuatorsCombination.size(); ++i){
 		ASSERT_EQUAL(udotOnlyBodyActuator[i], udotActuatorsCombination[i], 1.0e-12);
-		
 	}
-
+	
 	// ------------------------ Setup integrator and manager -----------------------
 	RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
 	integrator.setAccuracy(integ_accuracy);
