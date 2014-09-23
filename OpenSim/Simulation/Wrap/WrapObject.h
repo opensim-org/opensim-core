@@ -25,7 +25,6 @@
 
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Geometry.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/PropertyBool.h>
@@ -156,7 +155,7 @@ public:
 protected:
 	void setupProperties();
 	void setupQuadrant();
-	void setGeometryQuadrants(AnalyticGeometry *aGeometry) const;
+	//void setGeometryQuadrants(AnalyticGeometry *aGeometry) const;
 private:
 	void setNull();
     void constructProperties();

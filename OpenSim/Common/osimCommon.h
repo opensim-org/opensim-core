@@ -30,7 +30,6 @@
 #include "ScaleSet.h"
 #include "GCVSpline.h"
 #include "IO.h"
-#include "Geometry.h"
 
 #include "Scale.h"
 #include "SimmSpline.h"

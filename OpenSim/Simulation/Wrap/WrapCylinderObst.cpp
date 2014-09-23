@@ -151,10 +151,10 @@ void WrapCylinderObst::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody
 		string errorMessage = "Error: radius for WrapCylinderObst " + getName() + " was either not specified, or is negative.";
 		throw Exception(errorMessage);
 	}
-
+/*
 	AnalyticCylinder* cyl = new AnalyticCylinder(_radius, _length);
 	setGeometryQuadrants(cyl);
-
+*/
 	if (_wrapDirectionName == "righthand" || _wrapDirectionName == "right" || _wrapDirectionName == "righthanded" || _wrapDirectionName == "Righthand" || _wrapDirectionName == "Right" || _wrapDirectionName == "Righthanded")
 		_wrapDirection = righthand;
 	else

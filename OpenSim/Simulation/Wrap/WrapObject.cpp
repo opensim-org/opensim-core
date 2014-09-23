@@ -165,7 +165,7 @@ void WrapObject::scale(const SimTK::Vec3& aScaleFactors)
  * set quadrants for the geometric object representing the wrap object
  * This has to be done after geometry object creation so it's not 
  * part of WrapObject::connectToModelAndBody()
- */
+ *
 void WrapObject::setGeometryQuadrants(OpenSim::AnalyticGeometry *aGeometry) const
 {
 	// The following code should be moved to the base class WrapObject
@@ -179,7 +179,7 @@ void WrapObject::setGeometryQuadrants(OpenSim::AnalyticGeometry *aGeometry) cons
 			quads[2*_wrapAxis+1]=false;
 	}
 	aGeometry->setQuadrants(quads);
-}
+}*/
 //_____________________________________________________________________________
 /**
  * Copy data members from one WrapObject to another.

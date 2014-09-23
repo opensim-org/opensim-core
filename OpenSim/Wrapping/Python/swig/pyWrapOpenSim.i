@@ -24,7 +24,6 @@ own project.
 #include <OpenSim/Common/PropertyGroup.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/ObjectGroup.h>
-#include <OpenSim/Common/Geometry.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/StateVector.h>
 #include <OpenSim/Common/StorageInterface.h>
@@ -514,7 +513,6 @@ namespace SimTK {
 %template(ArrayPtrsPropertyGroup) OpenSim::ArrayPtrs<OpenSim::PropertyGroup>;
 %include <OpenSim/Common/Object.h>
 %include <OpenSim/Common/ObjectGroup.h>
-%include <OpenSim/Common/Geometry.h>
 %include <OpenSim/Common/Set.h>
 %include <OpenSim/Common/StateVector.h>
 %include <OpenSim/Common/StorageInterface.h>
@@ -820,14 +818,6 @@ namespace SimTK {
 A macro to facilitate adding adoptAndAppend methods to these sets. For NAME ==
 Geometry, the macro expands to:
 
-%extend OpenSim::GeometrySet {
-%pythoncode %{
-    def adoptAndAppend(self, aGeometry):
-        aGeometry._markAdopted()
-        return super(GeometrySet, self).adoptAndAppend(aGeometry)
-%}
-};
-
 note: ## is a "glue" operator: `a ## b` --> `ab`.
 */
 %define SET_ADOPT_HELPER(NAME)
@@ -840,7 +830,6 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
 };
 %enddef
 
-SET_ADOPT_HELPER(Geometry);
 SET_ADOPT_HELPER(Scale);
 SET_ADOPT_HELPER(BodyScale);
 SET_ADOPT_HELPER(PathPoint);

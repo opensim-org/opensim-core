@@ -14,7 +14,6 @@
 #include <OpenSim/Common/PropertyGroup.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/ObjectGroup.h>
-#include <OpenSim/Common/Geometry.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/StateVector.h>
 #include <OpenSim/Common/StorageInterface.h>
@@ -493,57 +492,6 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 	$action
 }
 
-%exception OpenSim::AnalyticGeometry::dynamic_cast(Geometry *geometry) {
-    $action
-    if (!result) {
-        jclass excep = jenv->FindClass("java/lang/ClassCastException");
-        if (excep) {
-            jenv->ThrowNew(excep, "dynamic_cast exception");
-        }
-    }
-}
-
-%extend OpenSim::AnalyticGeometry {
-    static OpenSim::AnalyticGeometry *dynamic_cast(OpenSim::Geometry *geometry) {
-        return dynamic_cast<OpenSim::AnalyticGeometry *>(geometry);
-    }
-};
-
-%extend OpenSim::LineGeometry {
-    static LineGeometry *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<LineGeometry *>(geometry);
-    }
-};
-
-%extend OpenSim::AnalyticSphere {
-    static AnalyticSphere *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<AnalyticSphere *>(geometry);
-    }
-};
-
-%extend OpenSim::AnalyticCylinder {
-    static AnalyticCylinder *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<AnalyticCylinder *>(geometry);
-    }
-};
-
-%extend OpenSim::AnalyticEllipsoid {
-    static AnalyticEllipsoid *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<AnalyticEllipsoid *>(geometry);
-    }
-};
-
-%extend OpenSim::AnalyticTorus {
-    static AnalyticTorus *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<AnalyticTorus *>(geometry);
-    }
-};
-
-%extend OpenSim::PolyhedralGeometry {
-    static PolyhedralGeometry *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<PolyhedralGeometry *>(geometry);
-    }
-};
 
 %extend OpenSim::Body {
 	void getInertia(Array<double>& rInertia) {
@@ -742,7 +690,6 @@ namespace SimTK {
 %template(ArrayPtrsPropertyGroup) OpenSim::ArrayPtrs<OpenSim::PropertyGroup>;
 %include <OpenSim/Common/Object.h>
 %include <OpenSim/Common/ObjectGroup.h>
-%include <OpenSim/Common/Geometry.h>
 %include <OpenSim/Common/Set.h>
 %include <OpenSim/Common/StateVector.h>
 %include <OpenSim/Common/StorageInterface.h>

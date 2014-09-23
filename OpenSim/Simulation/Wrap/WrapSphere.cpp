@@ -123,9 +123,10 @@ void WrapSphere::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 		string errorMessage = "Error: radius for wrapSphere " + getName() + " was either not specified, or is negative.";
 		throw Exception(errorMessage);
 	}
-
+/*
 	AnalyticSphere* sphere = new AnalyticSphere(_radius);
 	setGeometryQuadrants(sphere);
+*/
 }
 
 //_____________________________________________________________________________

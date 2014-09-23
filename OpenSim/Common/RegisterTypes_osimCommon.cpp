@@ -29,7 +29,6 @@
 #include "GCVSplineSet.h"
 #include "ScaleSet.h"
 #include "GCVSpline.h"
-#include "Geometry.h"
 
 #include "Scale.h"
 #include "SimmSpline.h"

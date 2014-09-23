@@ -25,7 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "GeometryPath.h"
-#include <OpenSim/Common/Geometry.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>

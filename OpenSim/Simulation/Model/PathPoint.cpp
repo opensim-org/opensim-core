@@ -31,7 +31,6 @@
 #include "GeometryPath.h"
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h> 
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
-#include <OpenSim/Common/Geometry.h>
 
 //=============================================================================
 // STATICS
