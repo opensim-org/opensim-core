@@ -188,10 +188,7 @@ double BodyActuator::getPower(const SimTK::State& s) const
 
 	const SimTK::Vector bodyForceVals = getControls(s);
 
-	double power = 0.0;
-	for (int i = 0; i < 6; i++){
-		power += bodyForceVals[i] * bodyVelocityVec[i];
-	}
+	double power = ~bodyForceVals * bodyVelocityVec;
 
 	return power;
 }
