@@ -761,12 +761,14 @@ void testActuatorsCombination()
 
 	// specify magnitude and direction of desired force and torque vectors to apply
 	double forceMag = 1.0;
-	Vec3 forceAxis(1 / sqrt(3), 1 / sqrt(3), 1 / sqrt(3));
-	Vec3 forceInG = forceMag * forceAxis;
+	Vec3 forceAxis(1, 1, 1);
+	SimTK::UnitVec3 forceUnitAxis(forceAxis); // to normalize
+	Vec3 forceInG = forceMag * forceUnitAxis;
 
 	double torqueMag = 1.0;
-	Vec3 torqueAxis(1 / sqrt(3), 1 / sqrt(3), 1 / sqrt(3));
-	Vec3 torqueInG = torqueMag*torqueAxis;
+	Vec3 torqueAxis(1, 2, 1);
+	SimTK::UnitVec3 torqueUnitAxis(torqueAxis); // to normalize
+	Vec3 torqueInG = torqueMag*torqueUnitAxis;
 
 	// needed to be called here once to build controller for body actuator
 	State& state = model->initSystem();
@@ -782,7 +784,7 @@ void testActuatorsCombination()
 	
 	// Create and add a torque actuator to the model
 	TorqueActuator* torqueActuator =
-		new TorqueActuator(*block, ground, torqueAxis, true);
+		new TorqueActuator(*block, ground, torqueUnitAxis, true);
 	torqueActuator->setName("torqueAct");
 	model->addForce(torqueActuator);
 
@@ -790,7 +792,7 @@ void testActuatorsCombination()
 	PointActuator* pointActuator =
 		new PointActuator("block");
 	pointActuator->setName("pointAct");
-	pointActuator->set_direction(forceAxis);
+	pointActuator->set_direction(forceUnitAxis);
 	pointActuator->set_point(Vec3(0, blockSideLength/2,0));
 	model->addForce(pointActuator);
 
@@ -898,6 +900,7 @@ void testActuatorsCombination()
 	// as the equivalent applied by 3 Actuators in previous test case
 	for (int i = 0; i<udotActuatorsCombination.size(); ++i){
 		ASSERT_EQUAL(udotOnlyBodyActuator[i], udotActuatorsCombination[i], 1.0e-12);
+		
 	}
 
 	// ------------------------ Setup integrator and manager -----------------------
