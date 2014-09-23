@@ -192,13 +192,5 @@ double BodyActuator::getPower(const SimTK::State& s) const
 
 	return power;
 }
-//_____________________________________________________________________________
-/**
-* Sets the actual Body reference 
-*/
-void BodyActuator::connectToModel(Model& model)
-{
-	Super::connectToModel(model);
-}
 
 

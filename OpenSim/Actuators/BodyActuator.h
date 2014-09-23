@@ -137,12 +137,6 @@ private:
 	void constructStructuralConnectors() override;
 
 	//--------------------------------------------------------------------------
-	// Implement ModelComponent interface
-	//--------------------------------------------------------------------------
-	// Setup method to initialize Body reference
-	void connectToModel(Model& model) override;
-
-	//--------------------------------------------------------------------------
 	// Implement Force interface
 	//--------------------------------------------------------------------------
 	void computeForce(const SimTK::State& state,
