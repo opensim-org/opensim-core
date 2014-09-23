@@ -252,6 +252,9 @@ void testTorqueActuator()
 	const Vector& udotMobility = state.getUDot();
 	udotMobility.dump("Accelerations due to mobility forces");
 
+	// First make sure that accelerations are not zero accidentally
+	ASSERT(udotMobility.norm() != 0.0 || udotBody.norm() != 0.0);
+	// Then check if they are equal
 	for(int i=0; i<udotMobility.size(); ++i){
 		ASSERT_EQUAL(udotMobility[i], udotBody[i], 1.0e-12);
 	}
@@ -294,7 +297,10 @@ void testTorqueActuator()
 
 	const Vector &udotTorqueActuator = state.getUDot();
 
-	// Verify that the TorqueActuator also generates the same acceleration
+	// First make sure that accelerations are not zero accidentally
+	ASSERT(udotMobility.norm() != 0.0 || udotTorqueActuator.norm() != 0.0);
+
+	// Then verify that the TorqueActuator also generates the same acceleration
 	// as the equivalent applied mobility force
 	for(int i=0; i<udotMobility.size(); ++i){
 		ASSERT_EQUAL(udotMobility[i], udotTorqueActuator[i], 1.0e-12);
@@ -628,6 +634,9 @@ void testBodyActuator()
 	Vector udotMobility = state.getUDot();
 	udotMobility.dump("Accelerations due to mobility forces");
 
+	// First make sure that accelerations are not zero accidentally
+	ASSERT(udotMobility.norm() != 0.0 || udotBody.norm() != 0.0);
+	// Then check if they are equal
 	for (int i = 0; i<udotMobility.size(); ++i){
 		ASSERT_EQUAL(udotMobility[i], udotBody[i], 1.0e-12);
 	}
@@ -673,7 +682,9 @@ void testBodyActuator()
 	Vector udotBodyActuator = state1.getUDot();
 	udotBodyActuator.dump("Accelerations due to body actuator");
 
-	// Verify that the BodyActuator also generates the same acceleration
+	// First make sure that accelerations are not zero accidentally
+	ASSERT(udotMobility.norm() != 0.0 || udotBodyActuator.norm() != 0.0);
+	// Then verify that the BodyActuator also generates the same acceleration
 	// as the equivalent applied mobility force
 	for (int i = 0; i<udotBodyActuator.size(); ++i){
 		ASSERT_EQUAL(udotMobility[i], udotBodyActuator[i], 1.0e-12);
