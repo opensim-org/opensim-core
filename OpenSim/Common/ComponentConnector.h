@@ -184,7 +184,7 @@ public:
 	/** Derived classes must satisfy this Interface */
 	/** get the type of object this connector connects to*/
 	std::string getConnectedToTypeName() const override
-	{ return SimTK::NiceTypeName<T>::name(); }
+	{ return T::getClassName(); }
 
 	SimTK_DOWNCAST(Connector, AbstractConnector);
 

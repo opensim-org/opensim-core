@@ -300,9 +300,9 @@ protected:
     }
 
 private:
-	void constructStructuralConnectors() override{
-		constructStructuralConnector<Foo>("parentFoo");
-		constructStructuralConnector<Foo>("childFoo");
+	void constructConnectors() override{
+		constructConnector<Foo>("parentFoo");
+		constructConnector<Foo>("childFoo");
 	}
 
 	void constructOutputs() override {
