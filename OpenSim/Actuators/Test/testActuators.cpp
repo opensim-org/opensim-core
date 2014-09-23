@@ -690,7 +690,7 @@ void testBodyActuator()
 	manager.integrate(state1);
 
 	// ----------------- Test Copying the model -------------------
-	// Before exiting lets see if copying the spring works
+	// Before exiting lets see if copying the actuator works
 	BodyActuator* copyOfActuator = actuator->clone();
 	ASSERT(*copyOfActuator == *actuator);
 
@@ -806,7 +806,7 @@ void testActuatorsCombination()
 	Vector modelControls = model->getDefaultControls();
 
 	// Spedicfy a vector of control signals for desired torques and forces
-	Vector bodyActuator1Controls(6); bodyActuator1Controls.setToZero();
+	Vector bodyActuator1Controls(6,0.0); 
 	bodyActuator1Controls(0) = torqueInG(0); // torque in x-direction
 	bodyActuator1Controls(3) = forceInG(0); // force along x-direction
 	
@@ -870,8 +870,8 @@ void testActuatorsCombination()
 	Vector modelControls_2 = model->getDefaultControls();
 
 	// Spedicfy a vector of control signals for desired torques and forces
-	Vector bodyActuatorSum_Controls(6);
-	bodyActuatorSum_Controls.setToZero();
+	Vector bodyActuatorSum_Controls(6,0.0);
+
 	// make the torque component as the sum of body, torque and point actuators used 
 	// in previous tets case
 	for (int i = 0; i < 3; i++){
