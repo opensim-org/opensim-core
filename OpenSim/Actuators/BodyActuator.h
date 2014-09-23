@@ -77,11 +77,11 @@ public:
 	of [torque, force] on a body. The torque is applied about the axis specified
 	in ground frame.
 
-	@param[in] body   the body that the actuator applies torque to
+	@param[in] body					the body that the actuator applies torque to
+	@param[in] point				the point that the force is applied to
+	@param[in] pointIsGlobal		a flag to set if the point is in global frame
+	@param[in] spatialForceIsGlobal a flag to set if the force is in global frame
 	*/
-
-	// Uses default (compiler-generated) destructor, copy constructor, copy 
-	// assignment operator.
 
 	explicit BodyActuator(const OpenSim::Body& body,
 						  const SimTK::Vec3& point = SimTK::Vec3(0),
@@ -98,6 +98,7 @@ public:
 	const SimTK::Vec3& getPoint() const
 	{return get_point();}
 
+
 	/** Set the 'point_is_global' property that determines whether the point is  
     specified in inertial coordinates or in the body's local coordinates. **/
 	void setPointForceIsGlobal(bool isGlobal)
@@ -105,6 +106,7 @@ public:
 	/** Return the current value of the 'point_is_global' property. **/
 	bool getPointIsGlobal() const
 	{return get_point_is_global();	}
+
 
 	/** Set the 'spatial_force_is_global' property that determines how to 
 	interpret the 'axis' vector; if not global (Ground frame) it is in body's  
@@ -115,9 +117,11 @@ public:
 	bool getSpatialForceIsGlobal() const
 	{return get_spatial_force_is_global();}
 
+
 	/* Set the body to which this actuator applies spatial forces. */
 	void setBody(OpenSim::Body& body);
 	const OpenSim::Body& getBody() const;
+
 
 	/* Set the body names to which this actuator applies spatial forces. */
 	void setBodyName(const std::string& name);
