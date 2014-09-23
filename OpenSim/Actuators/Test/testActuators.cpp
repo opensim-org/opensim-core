@@ -761,11 +761,11 @@ void testActuatorsCombination()
 
 	// specify magnitude and direction of desired force and torque vectors to apply
 	double forceMag = 1.0;
-	Vec3 forceAxis(1, 0, 0);
+	Vec3 forceAxis(1 / sqrt(3), 1 / sqrt(3), 1 / sqrt(3));
 	Vec3 forceInG = forceMag * forceAxis;
 
-	double torqueMag = 1;
-	Vec3 torqueAxis(1, 0, 0);
+	double torqueMag = 1.0;
+	Vec3 torqueAxis(1 / sqrt(3), 1 / sqrt(3), 1 / sqrt(3));
 	Vec3 torqueInG = torqueMag*torqueAxis;
 
 	// needed to be called here once to build controller for body actuator
@@ -777,8 +777,8 @@ void testActuatorsCombination()
 	// Create and add a body actuator to the model
 	BodyActuator* bodyActuator1 = new BodyActuator(*block);
 	bodyActuator1->setName("BodyAct1");
+	bodyActuator1->set_point(Vec3(0, blockSideLength/2, 0));
 	model->addForce(bodyActuator1);
-	bodyActuator1->set_point(Vec3(0, blockSideLength / 2, 0));
 	
 	// Create and add a torque actuator to the model
 	TorqueActuator* torqueActuator =
@@ -807,8 +807,9 @@ void testActuatorsCombination()
 
 	// Spedicfy a vector of control signals for desired torques and forces
 	Vector bodyActuator1Controls(6,0.0); 
-	bodyActuator1Controls(0) = torqueInG(0); // torque in x-direction
-	bodyActuator1Controls(3) = forceInG(0); // force along x-direction
+	for (int i=0; i<3; i++) bodyActuator1Controls(i) = torqueInG(i); // torque in 3 axes
+	for (int i=0; i<3; i++) bodyActuator1Controls(i+3) = forceInG(i); // force along 3 axes
+	
 	
 	bodyActuator1Controls.dump("Spatial forces applied by first Body Actuator:");
 
@@ -880,7 +881,7 @@ void testActuatorsCombination()
 	}	
 
 	bodyActuatorSum_Controls.dump("Spatial forces applied by 2nd Body Actuator:");
-	std:cout <<"(encloses sum of the above spatial forces in one BodyActuator)"<< std::endl;
+	std::cout <<"(encloses sum of the above spatial forces in one BodyActuator)"<< std::endl;
 
 	// Add control values and set their values
 	bodyActuator_sum->addInControls(bodyActuatorSum_Controls, modelControls_2);
