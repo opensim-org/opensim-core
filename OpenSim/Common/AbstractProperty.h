@@ -210,7 +210,7 @@ public:
 
     /** Given an XML parent element, append a single child element representing
     the serialized form of this property. **/
-    void writeToXMLParentElement(SimTK::Xml::Element& parent);
+    void writeToXMLParentElement(SimTK::Xml::Element& parent) const;
 
 
     /** %Set the property name. **/

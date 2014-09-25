@@ -1,5 +1,5 @@
-#ifndef _PropertyBool_h_
-#define _PropertyBool_h_
+#ifndef OPENSIM_PROPERTY_BOOL_H_
+#define OPENSIM_PROPERTY_BOOL_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  PropertyBool.h                          *
  * -------------------------------------------------------------------------- *
@@ -36,6 +36,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * Class PropertyBool extends class Property.  It consists of a boolean
  * value and the methods for accessing and modifying this value.
@@ -43,8 +45,6 @@
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API PropertyBool : public Property_Deprecated
 {
 
@@ -92,4 +92,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif //__PropertyBool_h__
+#endif // OPENSIM_PROPERTY_BOOL_H_

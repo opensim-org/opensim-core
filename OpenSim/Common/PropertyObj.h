@@ -1,5 +1,5 @@
-#ifndef _PropertyObj_h_
-#define _PropertyObj_h_
+#ifndef OPENSIM_PROPERTY_OBJ_H_
+#define OPENSIM_PROPERTY_OBJ_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  PropertyObj.h                           *
  * -------------------------------------------------------------------------- *
@@ -37,6 +37,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * Class PropertyObj extends class Property.  It consists of a pointer to
  * an object and the methods for accessing and modifying this object.
@@ -44,8 +46,6 @@
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API PropertyObj : public Property_Deprecated
 {
 
@@ -109,4 +109,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif //__PropertyObj_h__
+#endif // OPENSIM_PROPERTY_OBJ_H_

@@ -330,7 +330,8 @@ computeConstraintVector(SimTK::State& s, const Vector &x,Vector &c) const
 
 	// reset the actuator control 
 	for(int i=0;i<fSet.getSize();i++) {
-        fSet[i].overrideForce(s,false);
+		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+        act->overrideForce(s,false);
 	}
 
     _controller->getModel().getMultibodySystem().realizeModel(s);

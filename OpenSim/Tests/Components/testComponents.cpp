@@ -33,96 +33,94 @@ static Model dummyModel;
 const double acceptableMemoryLeakPercent = 2.0;
 const bool reportAllMemoryLeaks = true;
 
-template <typename T>
-void testComponent(const T& instanceToTest);
 
-// NOTE: disabling randomizePropertyValues weakens the test substantially.
-template <typename T>
-void testModelComponent(const T& instanceToTest,
-        bool randomizePropertyValues=true,
-        Model& model=dummyModel);
+void testComponent(const Component& instanceToTest);
+
+void addObjectAsComponentToModel(Object* instance, Model& model);
 
 int main()
 {
-    // Do not delete this line. It is used to allow users to optionally pass in their own model.
-    dummyModel.setName("dummyModel");
+    SimTK::Array_<std::string> failures;
 
-    // Add a line here for each model component that we want to test.
-    testModelComponent(ClutchedPathSpring());
-    testModelComponent(Thelen2003Muscle(), false);
-    testModelComponent(Millard2012EquilibriumMuscle(), false);
-    //testModelComponent(Millard2012AccelerationMuscle(), false);
-    // TODO randomized properties out of range; throws exception.
-    // TODO testModelComponent(PathActuator());
+    // get all registered Components
+    SimTK::Array_<Component*> availableComponents;
 
-    {
-        ContactSphere contactSphere; contactSphere.set_body_name("ground");
-        testModelComponent(contactSphere);
+    // starting with type Body
+    ArrayPtrs<Body> availableBodies;
+    Object::getRegisteredObjectsOfGivenType(availableBodies);
+    availableComponents.push_back(availableBodies[0]);
+
+    // then type Joint
+    ArrayPtrs<Joint> availableJoints;
+    Object::getRegisteredObjectsOfGivenType(availableJoints);
+    for (int i = 0; i < availableJoints.size(); ++i) {
+        availableComponents.push_back(availableJoints[i]);
     }
 
-    /*{ TODO memory leak with initSystem.
-        Body* body1 = new Body(); body1->setName("body1"); body1->setMass(1.0);
-        PinJoint pinJoint;
-        pinJoint.updConnector<Body>("parent_body").
-            set_connected_to_name("ground");
-        pinJoint.updConnector<Body>("child_body").
-            set_connected_to_name("body1");
-        //TODO Model model; model.addBody(body1);
-        Model model("gait10dof18musc_subject01.osim"); model.addBody(body1);
-        testModelComponent(pinJoint, true, model);
-    }*/
+    // continue with Constraint, Actuator, Frame, ...
 
-	{
-		BodyActuator bodyAct;
-		bodyAct.updConnector<Body>("body").set_connected_to_name("ground");
-		testModelComponent(bodyAct);
-	}
+    //Example of an updated force that passes
+    ArrayPtrs<PointToPointSpring> availablePointToPointSpring;
+    Object::getRegisteredObjectsOfGivenType(availablePointToPointSpring);
+    availableComponents.push_back(availablePointToPointSpring[0]);
 
-    testModelComponent(Bhargava2004MuscleMetabolicsProbe());
-    testModelComponent(Umberger2010MuscleMetabolicsProbe());
+    for (unsigned int i = 0; i < availableComponents.size(); i++) {
+        try {
+            testComponent(*availableComponents[i]);
+        }
+        catch (const std::exception& e) {
+            cout << "*******************************************************\n";
+            cout<< "FAILURE: " << availableComponents[i]->getConcreteClassName() << endl;
+            cout<< e.what() << endl;
+            failures.push_back(availableComponents[i]->getConcreteClassName());
+        }
+    }
+    
+    if (!failures.empty()) {
+        cout << "*******************************************************\n";
+        cout << "Done, with failure(s): " << failures << endl;
+        cout << failures.size() << "/" << availableComponents.size() 
+            << " components failed test." << endl;
+        cout << 100 * (availableComponents.size() - failures.size()) / availableComponents.size()
+            << "% components passed." << endl;
+        cout << "*******************************************************\n" << endl;
+        return 1;
+    }
+    cout << "\ntestComponents PASSED. " << availableComponents.size() 
+        << " components were tested." << endl;
 }
 
-class DummyComponent : public Component {
-	OpenSim_DECLARE_CONCRETE_OBJECT(DummyComponent, Component);
-};
 
-
-template <typename T>
-void testComponent(const T& instanceToTest)
+//template <typename T>
+void testComponent(const Component& instanceToTest)
 {
-    // TODO
-    throw Exception("Not implemented.");
-}
+    // Empty model used to serve as the aggregate Component
+    Model model;
 
-template <typename T>
-void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
-        Model& model)
-{
     // Make a copy so that we can modify the instance.
-    T* instance = new T(instanceToTest);
-    string className = instance->getConcreteClassName();
+    Component* instance = instanceToTest.clone();
+    const string& className = instance->getConcreteClassName();
 
-    std::cout << "\nTesting " << className << std::endl;
+    cout << "\n**********************************************************\n";
+    cout << "* Testing " << className << endl;
+    cout << "**********************************************************" << endl;
 
     // 1. Set properties to random values.
     // -----------------------------------
-    if (randomizePropertyValues)
-    {
-        std::cout << "Randomizing the component's properties." << std::endl;
-        randomize(instance); 
-    }
+    cout << "Randomizing the component's properties." << endl;
+    randomize(instance); 
 
     // 2. Ensure that cloning produces an exact copy.
     // ----------------------------------------------
     // This will find missing calls to copyProperty_<name>().
-    std::cout << "Cloning the component." << std::endl;
-    T* copyInstance = instance->clone();
+    cout << "Cloning the component." << endl;
+    Component* copyInstance = instance->clone();
     if (!(*copyInstance == *instance))
     {
-        std::cout << "XML serialization for the first instance:" << std::endl;
-        std::cout << instance->dump() << std::endl;
-        std::cout << "XML serialization for the clone:" << std::endl;
-        std::cout << copyInstance->dump() << std::endl;
+        cout << "XML serialization for the first instance:" << endl;
+        cout << instance->dump() << endl;
+        cout << "XML serialization for the clone:" << endl;
+        cout << copyInstance->dump() << endl;
         throw Exception(
                 "testComponents: for " + className +
                 ", clone() did not produce an identical object.",
@@ -134,18 +132,18 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
     // 3. Serialize and de-serialize.
     // ------------------------------
     // This will find issues with serialization.
-    std::cout << "Serializing and deserializing component." << std::endl;
+    cout << "Serializing and deserializing component." << endl;
     string serializationFilename =
         "testing_serialization_" + className + ".xml";
     instance->print(serializationFilename);
-    T* deserializedInstance =
-        static_cast<T*>(Object::makeObjectFromFile(serializationFilename));
+    Object* deserializedInstance =
+        static_cast<Object*>(Object::makeObjectFromFile(serializationFilename));
     if (!(*deserializedInstance == *instance))
     {
-        std::cout << "XML for serialized instance:" << std::endl;
+        cout << "XML for serialized instance:" << endl;
         instance->dump();
-        std::cout << "XML for seriaization of deseralized instance:" <<
-            std::endl;
+        cout << "XML for seriaization of deseralized instance:" <<
+            endl;
         deserializedInstance->dump();
         throw Exception(
                 "testComponents: for " + className +
@@ -157,7 +155,7 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
 
     // 4. Set up the aggregate component.
     // -------------------------------------------------------------------
-    std::cout << "Set up aggregate component." << std::endl;
+    cout << "Set up aggregate component." << endl;
     if (model.getName() == "dummyModel")
     {
         // User did not provide a model; create a fresh model.
@@ -166,7 +164,160 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
 
     // 5. Add this component to an aggregate component.
     // ------------------------------------------------
-    std::cout << "Add this ModelComponent to the model." << std::endl;
+    addObjectAsComponentToModel(instance, model);
+
+    // 6. Connect up the aggregate; check that connections are correct.
+    // ----------------------------------------------------------------
+    // First make sure Connectors are satisfied.
+    int nc = instance->getNumConnectors();
+    for (int i = 0; i < nc; ++i){
+        AbstractConnector& connector = instance->updConnector(i);
+        cout << "Connector '" << connector.getName() << "' has dependency on: "
+            << connector.getConnectedToTypeName() << endl;
+        Object* dependency =
+            Object::newInstanceOfType(connector.getConnectedToTypeName());
+        
+        //give it some random values including a name
+        randomize(dependency);
+        connector.set_connected_to_name(dependency->getName());
+
+        // add the dependency 
+        addObjectAsComponentToModel(dependency, model);
+    }
+
+    // This method calls connect().
+    cout << "Call Model::setup()." << endl;
+    try{
+        model.setup();
+    }
+    catch (const std::exception &x) {
+        cout << "testComponents::" << className << " unable to connect to model:" << endl;
+        cout << " '" << x.what() << "'" <<endl;
+        cout << "Error is likely due to " << className;
+        cout << " having structural dependencies that are not specified as Connectors.";
+        cout << endl;
+    }
+
+    // 7. Build the system.
+    // --------------------
+    SimTK::State initState;
+    try{
+        initState = model.initSystem();
+    }
+    catch (const std::exception &x) {
+        cout << "testComponents::" << className << " unable to initialize the system:" << endl;
+        cout << " '" << x.what() << "'" << endl;
+        cout << "Skipping ... " << endl;
+    }
+
+    // Outputs.
+    // --------
+    cout << "Invoking Output's." << endl;
+    for (auto it = instance->getOutputsBegin();
+            it != instance->getOutputsEnd(); ++it)
+    {
+        const std::string thisName = it->first;
+        const AbstractOutput* thisOutput = it->second.get();
+
+        cout << "Testing Output " << thisName << ", dependent on " <<
+            thisOutput->getDependsOnStage().getName() << endl;
+
+        // Start fresh.
+        SimTK::State state(initState);
+
+        // 8. Check that each output throws an exception if we're below its
+        // dependsOnStage. Model::initSystem() gives us a state that is already
+        // realized to Model.
+        if (thisOutput->getDependsOnStage() > SimTK::Stage::Model)
+        {
+            model.getSystem().realize(state,
+                    thisOutput->getDependsOnStage().prev());
+            ASSERT_THROW(Exception,
+                    thisOutput->getValueAsString(state);
+            );
+        }
+
+        // 9. Now realize to the dependsOnStage.
+        // Doesn't matter what the value is; just want to make sure the output
+        // is wired.
+        model.getSystem().realize(state, thisOutput->getDependsOnStage());
+        cout << "Component " << className <<", output " <<thisName << ": " <<
+            thisOutput->getValueAsString(state) << endl;
+    }
+
+    // 10. Test for memory leaks by copying and deleting.
+    // --------------------------------------------------
+    const long double leakTol = 0.1; //percent
+
+    cout << "Testing for memory leaks from copying." << endl;
+    {
+        unsigned int nCopies = 100;
+        const size_t initMemory = getCurrentRSS();
+        for (unsigned int ileak = 0; ileak < nCopies; ++ileak)
+        {
+            Component* copy = instance->clone();
+            delete copy;
+        }
+        const int64_t increaseInMemory = getCurrentRSS() - initMemory;
+        const long double leakPercent = (100.0*increaseInMemory/initMemory)/nCopies;
+
+        stringstream msg;
+        msg << className << ".clone() increased memory use by "
+            << setprecision(3) << leakPercent << "%";
+
+        ASSERT(leakPercent < leakTol, __FILE__, __LINE__,
+            msg.str() + "excceeds tolerance (" + to_string(leakTol) + ").\n"
+            "Initial memory: " +
+            to_string(initMemory / 1024) + "KB increaseed by " +
+            to_string(increaseInMemory / 1024) + "KB over " + to_string(nCopies) +
+            " iterations = " + to_string(leakPercent) + "%.\n"); // << endl;
+
+        if (reportAllMemoryLeaks && increaseInMemory>0)
+            cout << msg.str()  << endl;
+    }
+
+    // 11. Test that repeated calls to initSystem do not change test results,
+    // and that memory does not leak.
+    // ------------------------------------------------------------------------
+    cout << "Testing for memory leaks from initSystem." << endl;
+    {
+        unsigned int nLoops = 100;
+        SimTK::State& finalInitState(initState);
+        const size_t initMemory = getCurrentRSS();
+        for (unsigned int ileak = 0; ileak < nLoops; ++ileak)
+        {
+            finalInitState = model.initSystem();
+        }
+        const int64_t increaseInMemory = getCurrentRSS() - initMemory;
+        const long double leakPercent = (100.0*increaseInMemory/initMemory)/nLoops;
+
+        ASSERT_EQUAL(0.0,
+                (finalInitState.getY() - initState.getY()).norm(),
+                1e-7, __FILE__, __LINE__, "testComponents: " + 
+                instanceToTest.getConcreteClassName() + " initial state " +
+                "differs after repeated calls to initSystem().");
+
+        stringstream msg;
+        msg << className << ".initSystem() increased memory use by "
+            << setprecision(3) << leakPercent << "%.";
+
+        ASSERT(leakPercent < leakTol, __FILE__, __LINE__,
+            msg.str() + "\nExcceeds tolerance of " + to_string(leakTol) + "%.\n" 
+            + "Initial memory: " +
+            to_string(initMemory / 1024) + "KB increased by " +
+            to_string(increaseInMemory / 1024) + "KB over " + to_string(nLoops) +
+            " iterations = " + to_string(leakPercent) + "%.\n"); // << endl;
+
+        if (reportAllMemoryLeaks && increaseInMemory>0)
+            cout << msg.str() << endl;
+    }
+}
+
+void addObjectAsComponentToModel(Object* instance, Model& model)
+{
+    const string& className = instance->getConcreteClassName();
+
+    cout << "Adding " << className << " to the model." << endl;
     if (Object::isObjectTypeDerivedFrom< Analysis >(className))
         model.addAnalysis(dynamic_cast<Analysis*>(instance));
     else if (Object::isObjectTypeDerivedFrom< Body >(className))
@@ -188,110 +339,6 @@ void testModelComponent(const T& instanceToTest, bool randomizePropertyValues,
     else
     {
         throw Exception(className + " is not a ModelComponent.",
-                __FILE__, __LINE__);
-    }
-
-    // 6. Connect up the aggregate; check that connections are correct.
-    // ----------------------------------------------------------------
-    // This method calls connect().
-    std::cout << "Call Model::setup()." << std::endl;
-    model.setup();
-
-    // 7. Build the system.
-    // --------------------
-    SimTK::State& initState = model.initSystem();
-
-    // Outputs.
-    // --------
-    std::cout << "Testing Output's." << std::endl;
-    for (auto it = instance->getOutputsBegin();
-            it != instance->getOutputsEnd(); ++it)
-    {
-        const std::string thisName = it->first;
-        const AbstractOutput* thisOutput = it->second.get();
-
-        std::cout << "Testing Output " << thisName << ", dependent on " <<
-            thisOutput->getDependsOnStage().getName() << std::endl;
-
-        // Start fresh.
-        SimTK::State state(initState);
-
-        // 8. Check that each output throws an exception if we're below its
-        // dependsOnStage. Model::initSystem() gives us a state that is already
-        // realized to Model.
-        if (thisOutput->getDependsOnStage() > SimTK::Stage::Model)
-        {
-            model.getSystem().realize(state,
-                    thisOutput->getDependsOnStage().prev());
-            ASSERT_THROW(Exception,
-                    thisOutput->getValueAsString(state);
-            );
-        }
-
-        // 9. Now realize to the dependsOnStage.
-        // Doesn't matter what the value is; just want to make sure the output
-        // is wired.
-        model.getSystem().realize(state, thisOutput->getDependsOnStage());
-        std::cout << "Component " << className <<
-            ", output " <<thisName << ": " <<
-            thisOutput->getValueAsString(state) << std::endl;
-    }
-
-    // 10. Test for memory leaks by copying and deleting.
-    // --------------------------------------------------
-    std::cout << "Testing for memory leaks from copying." << std::endl;
-    {
-        const size_t initMemory = getCurrentRSS();
-        for (unsigned int ileak = 0; ileak < 1000; ++ileak)
-        {
-            T* copy = new T(*instance);
-            delete copy;
-        }
-        const int64_t increaseInMemory = getCurrentRSS() - initMemory;
-        const long double leakPercent = 100.0 * increaseInMemory / initMemory;
-
-        ASSERT(leakPercent < acceptableMemoryLeakPercent, __FILE__, __LINE__,
-                "testComponents: memory leak greater than " +
-                to_string(acceptableMemoryLeakPercent) + "%. Initial memory: " +
-                to_string(initMemory/1024) + " KB, increase in memory: " +
-                to_string(increaseInMemory/1024) + " KB, " +
-                to_string(leakPercent) + "%.");
-
-        if (reportAllMemoryLeaks && increaseInMemory>0)
-            std::cout << "\t[" << className
-                      << "] copying increased memory use by "
-                      << setprecision(3) << leakPercent << "%" << std::endl;
-    }
-
-    // 11. Test that repeated calls to initSystem do not change test results,
-    // and that memory does not leak.
-    // ------------------------------------------------------------------------
-    std::cout << "Testing for memory leaks from initSystem." << std::endl;
-    {
-        SimTK::State& finalInitState(initState);
-        const size_t initMemory = getCurrentRSS();
-        for (unsigned int ileak = 0; ileak < 500; ++ileak)
-        {
-            finalInitState = model.initSystem();
-        }
-        const int64_t increaseInMemory = getCurrentRSS() - initMemory;
-        const long double leakPercent = 100.0 * increaseInMemory / initMemory;
-
-        ASSERT_EQUAL(0.0,
-                (finalInitState.getY() - initState.getY()).norm(),
-                1e-7, __FILE__, __LINE__, "testComponents: initial state "
-                    "differs after repeated calls to initSystem().");
-
-        ASSERT(leakPercent < acceptableMemoryLeakPercent, __FILE__, __LINE__,
-                "testComponents: memory leak greater than " +
-                to_string(acceptableMemoryLeakPercent) + "%. Initial memory: " +
-                to_string(initMemory/1024) + " KB, increase in memory: " +
-                to_string(increaseInMemory/1024) + " KB, " +
-                to_string(leakPercent) + "%.");
-
-        if (reportAllMemoryLeaks && increaseInMemory>0)
-            std::cout << "\t[" << className
-                      << "] initSystem increased memory use by "
-                      << setprecision(3) << leakPercent << "%" << std::endl;
+            __FILE__, __LINE__);
     }
 }

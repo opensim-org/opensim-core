@@ -22,13 +22,15 @@
  * -------------------------------------------------------------------------- */
 //========================  Actuators Tested ==================================
 //
-//	Tests Include:
-//      1.  testTorqueActuator()
-//		2.	testClutchedPathSpring()
-//		3.	testMcKibbenActuator()
-//		4.  testMultiCoordinateActuator()
+// Tests Include:
+//    1. testTorqueActuator()
+//    2. testBodyActuator()
+//    2. testClutchedPathSpring()
+//    3. testMcKibbenActuator()
+//	  4. testActuatorsCombination()
+// 	  5. testMultiCoordinateActuator()
 //		
-//     Add tests here as Actuators are added to OpenSim
+// Add tests here as Actuators are added to OpenSim
 //
 //=============================================================================
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -53,38 +55,43 @@ void testTorqueActuator();
 void testBodyActuator();
 void testClutchedPathSpring();
 void testMcKibbenActuator();
+void testActuatorsCombination();
 //void testMultiCoordinateActuator();
 
 int main()
 {
-	SimTK::Array_<std::string> failures;
+    SimTK::Array_<std::string> failures;
 
-	try {testTorqueActuator();}
+    try { testTorqueActuator(); }
     catch (const std::exception& e){
-		cout << e.what() <<endl; failures.push_back("testTorqueActuator");
-	}
-	try {testBodyActuator();}
-	catch (const std::exception& e){
-		cout << e.what() <<endl; failures.push_back("testBodyActuator");
-	}
-	/*try {testClutchedPathSpring();}
+        cout << e.what() <<endl; failures.push_back("testTorqueActuator");
+    }
+    try { testClutchedPathSpring(); }
     catch (const std::exception& e){
-		cout << e.what() <<endl; failures.push_back("testClutchedPathSpring");
-	}*/
-	try { testMcKibbenActuator(); }
-	catch (const std::exception& e){
-		cout << e.what() << endl; failures.push_back("testMcKibbenActuator");
+        cout << e.what() <<endl; failures.push_back("testClutchedPathSpring");
+    }
+    try { testMcKibbenActuator(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl; failures.push_back("testMcKibbenActuator");
+    }
+	try { testBodyActuator(); }
+	catch (const std::exception& e) {
+		cout << e.what() << endl; failures.push_back("testBodyActuator");
+	}
+	try { testActuatorsCombination(); }
+	catch (const std::exception& e) {
+		cout << e.what() << endl; failures.push_back("testActuatorsCombination");
 	}
     /*try { testMultiCoordinateActuator(); }
     catch (const std::exception& e){
         cout << e.what() << endl; failures.push_back("testMultiCoordinateActuator");
     }*/
     if (!failures.empty()) {
-		cout << "Done, with failure(s): " << failures << endl;
+        cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
-	cout << "Done, testActuators passed." << endl;
 
+    cout << "Done, testActuators passed." << endl;
 }
 
 void testMcKibbenActuator()
@@ -250,6 +257,9 @@ void testTorqueActuator()
 	const Vector& udotMobility = state.getUDot();
 	udotMobility.dump("Accelerations due to mobility forces");
 
+	// First make sure that accelerations are not zero accidentally
+	ASSERT(udotMobility.norm() != 0.0 || udotBody.norm() != 0.0);
+	// Then check if they are equal
 	for(int i=0; i<udotMobility.size(); ++i){
 		ASSERT_EQUAL(udotMobility[i], udotBody[i], 1.0e-12);
 	}
@@ -292,7 +302,10 @@ void testTorqueActuator()
 
 	const Vector &udotTorqueActuator = state.getUDot();
 
-	// Verify that the TorqueActuator also generates the same acceleration
+	// First make sure that accelerations are not zero accidentally
+	ASSERT(udotMobility.norm() != 0.0 || udotTorqueActuator.norm() != 0.0);
+
+	// Then verify that the TorqueActuator also generates the same acceleration
 	// as the equivalent applied mobility force
 	for(int i=0; i<udotMobility.size(); ++i){
 		ASSERT_EQUAL(udotMobility[i], udotTorqueActuator[i], 1.0e-12);
@@ -496,7 +509,7 @@ void testClutchedPathSpring()
 
 	// spring is reclamped at 7s so keep integrating
 	manager.setInitialTime(final_t);
-	final_t = 1.0;
+	final_t = 10.0;
 	manager.setFinalTime(final_t);
 	manager.integrate(state);
 
@@ -559,6 +572,16 @@ void testMultiCoordinateActuator()
 }
 */
 
+//====================================================================================
+//                              TEST BODY ACTUATOR
+//====================================================================================
+/**
+* This test verifies the use of BodyActuator for applying spatial forces to a selected
+* body. It checks if using a BodyActuator generates equivalent acceleration compared 
+* to when applying the forces via mobilityForce.
+*
+* @author Soha Pouya
+*/
 void testBodyActuator()
 {
 	using namespace SimTK;
@@ -571,22 +594,27 @@ void testBodyActuator()
 	// turn off gravity
 	model->setGravity(Vec3(0));
 
-	//OpenSim bodies
+	//OpenSim body 1: Ground
 	OpenSim::Body& ground = model->getGroundBody();
 
-	//Cylindrical bodies
-	double r = 0.25,  h = 1.0;
-	double blockMass = 20.0, blockSideLength = 0.1;
+	// OpenSim body 2: A Block
+	// Geometrical/Inertial properties for the block
+	double blockMass = 1.0, blockSideLength = 1;
 	Vec3 blockMassCenter(0);
-	Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
+	Inertia blockInertia = blockMass*Inertia::brick(blockSideLength/2,
+		blockSideLength/2, blockSideLength/2); // for the halves see doxygen for brick 
 
-	OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
+	OpenSim::Body *block = new OpenSim::Body("block", blockMass, 
+											 blockMassCenter, blockInertia);
 
 	// Add display geometry to the block to visualize in the GUI
 	block->addDisplayGeometry("block.vtp");
 
-	Vec3 locationInParent(0, blockSideLength / 2, 0), orientationInParent(0), locationInBody(0), orientationInBody(0);
-	FreeJoint *blockToGroundFree = new FreeJoint("blockToGroundBall", ground, locationInParent, orientationInParent, *block, locationInBody, orientationInBody);
+	Vec3 locationInParent(0, blockSideLength / 2, 0), orientationInParent(0), 
+		locationInBody(0), orientationInBody(0);
+	FreeJoint *blockToGroundFree = new FreeJoint("blockToGroundBall", 
+		ground, locationInParent, orientationInParent, 
+		*block, locationInBody, orientationInBody);
 	
 	model->addBody(block);
 	model->addJoint(blockToGroundFree);
@@ -596,11 +624,13 @@ void testBodyActuator()
 	Vec3 forceAxis(1, 1, 1);
 	Vec3 forceInG = forceMag * forceAxis;
 
-	double torqueMag = 2.1234567890;
-	Vec3 torqueAxis(1 / sqrt(2.0), 0, 1 / sqrt(2.0));
+	double torqueMag = 1.0;
+	Vec3 torqueAxis(1, 1, 1);
 	Vec3 torqueInG = torqueMag*torqueAxis;
 
-	
+	// ---------------------------------------------------------------------------
+	// Use MobilityForces to Apply the given Torques and Forces to the body
+	// ---------------------------------------------------------------------------
 	State& state = model->initSystem();
 
 	model->getMultibodySystem().realize(state, Stage::Dynamics);
@@ -616,7 +646,7 @@ void testBodyActuator()
 	bodyForces.dump("Body Forces after applying 6D spatial force to the block");
 
 	model->getMultibodySystem().realize(state, Stage::Acceleration);
-	const Vector& udotBody = state.getUDot();
+	Vector udotBody = state.getUDot();
 	udotBody.dump("Accelerations due to body forces");
 
 	// clear body forces
@@ -635,22 +665,26 @@ void testBodyActuator()
 
 
 	model->getMultibodySystem().realize(state, Stage::Acceleration);
-	const Vector& udotMobility = state.getUDot();
+	Vector udotMobility = state.getUDot();
 	udotMobility.dump("Accelerations due to mobility forces");
 
+	// First make sure that accelerations are not zero accidentally
+	ASSERT(udotMobility.norm() != 0.0 || udotBody.norm() != 0.0);
+	// Then check if they are equal
 	for (int i = 0; i<udotMobility.size(); ++i){
 		ASSERT_EQUAL(udotMobility[i], udotBody[i], 1.0e-12);
 	}
 
 	// clear the mobility forces
 	mobilityForces = 0;
-	
-	//Now add the actuator to the model and control it to generate the same
-	//torque as applied directly to the multibody system (above)
 
-	// Create and add the torque actuator to the model
-	BodyActuator* actuator = new BodyActuator("BodyAct");
-	actuator->updConnector<OpenSim::Body>("body").set_connected_to_name("block");
+	// ---------------------------------------------------------------------------
+	// Use a BodyActuator to Apply the same given Torques and Forces to the body
+	// ---------------------------------------------------------------------------
+
+	// Create and add the body actuator to the model
+	BodyActuator* actuator = new BodyActuator(*block);
+	actuator->setName("BodyAct");
 	model->addForce(actuator);
 
 	model->print("TestBodyActuatorModel.osim");
@@ -659,44 +693,49 @@ void testBodyActuator()
 	// get a new system and state to reflect additions to the model
 	State& state1 = model->initSystem();
 
+	// -------------- Provide control signals for bodyActuator ----------
 	// Get the default control vector of the model
 	Vector modelControls = model->getDefaultControls();
 	
-	// Spedicfy a vector of control signals to include desired torques and forces to apply
+	// Spedicfy a vector of control signals to include desired torques and forces
 	Vector fixedControls(6);
 	for (int i = 0; i < 3; i++){
 		fixedControls(i) = torqueInG(i);
 		fixedControls(i + 3) = forceInG(i);
 	}
-	fixedControls.dump("Body forces applied by body Actuator:");
+	fixedControls.dump("Spatial forces applied by body Actuator:");
 
 	// Add control values and set their values
 	actuator->addInControls(fixedControls, modelControls);
 	model->setDefaultControls(modelControls);
 
-	// now compare the acc due to forces/torques applied by body actuator
+	// ------------------- Compute Acc and Compare -------------
+	// Compute the acc due to spatial forces applied by body actuator
 	model->computeStateVariableDerivatives(state1);
 
-	const Vector &udotBodyActuator = state1.getUDot();
+	Vector udotBodyActuator = state1.getUDot();
 	udotBodyActuator.dump("Accelerations due to body actuator");
 
-	// Verify that the TorqueActuator also generates the same acceleration
+	// First make sure that accelerations are not zero accidentally
+	ASSERT(udotMobility.norm() != 0.0 || udotBodyActuator.norm() != 0.0);
+	// Then verify that the BodyActuator also generates the same acceleration
 	// as the equivalent applied mobility force
 	for (int i = 0; i<udotBodyActuator.size(); ++i){
 		ASSERT_EQUAL(udotMobility[i], udotBodyActuator[i], 1.0e-12);
 	}
 
-	// Setup integrator and manager
+	// -------------- Setup integrator and manager -------------------
 	RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
 	integrator.setAccuracy(integ_accuracy);
 	Manager manager(*model, integrator);
 
 	manager.setInitialTime(0.0);
-	double final_t = 10.00;
+	double final_t = 1.00;
 	manager.setFinalTime(final_t);
 	manager.integrate(state1);
 
-	// Before exiting lets see if copying the spring works
+	// ----------------- Test Copying the model -------------------
+	// Before exiting lets see if copying the actuator works
 	BodyActuator* copyOfActuator = actuator->clone();
 	ASSERT(*copyOfActuator == *actuator);
 
@@ -708,3 +747,219 @@ void testBodyActuator()
 	std::cout << " ********** Test BodyActuator time = ********** " <<
 		1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;
 }
+
+
+//==================================================================================
+//                         TEST ACTUATORS COMBINATION
+//==================================================================================
+/**
+* This test verifies if using a BodyActuator generates equivalent result in the body
+* acceleration compared to when using a combination of PointActuaor, TorqueActuaor 
+* and BodyActuator. 
+* It therefore also verifies model consistency when user defines and uses a 
+* combination of these 3 actuators. 
+* 
+* @author Soha Pouya
+*/
+void testActuatorsCombination()
+{
+	using namespace SimTK;
+	// start timing
+	std::clock_t startTime = std::clock();
+
+	// Setup OpenSim model
+	Model *model = new Model;
+
+	// turn off gravity
+	model->setGravity(Vec3(0));
+
+	// OpenSim bodies: 1) The ground
+	OpenSim::Body& ground = model->getGroundBody();
+	//ground.addDisplayGeometry("block.vtp");
+
+	// OpenSim bodies: 2) A Block
+	// Geometrical/Inertial properties for the block
+	double blockMass = 1.0, blockSideLength = 1.0;
+	Vec3 blockMassCenter(0);
+	// Brick Inertia: for the halves see doxygen  
+	Inertia blockInertia = blockMass*Inertia::brick(blockSideLength/2, 
+									blockSideLength/2, blockSideLength/2);
+	std::cout << "blockInertia: " << blockInertia << std::endl;
+
+	OpenSim::Body *block = new OpenSim::Body("block", blockMass, 
+									blockMassCenter, blockInertia);
+
+	// Add display geometry to the block to visualize in the GUI
+	block->addDisplayGeometry("block.vtp");
+
+	// Make a FreeJoint from block to ground
+	Vec3 locationInParent(0, blockSideLength/2, 0), orientationInParent(0), //locationInParent(0, blockSideLength, 0)
+		 locationInBody(0), orientationInBody(0);
+	FreeJoint *blockToGroundFree = new FreeJoint("blockToGroundFreeJoint", 
+				ground, locationInParent, orientationInParent, 
+				*block, locationInBody, orientationInBody);
+
+	// Add the body and joint to the model
+	model->addBody(block);
+	model->addJoint(blockToGroundFree);
+
+	// specify magnitude and direction of desired force and torque vectors to apply
+	double forceMag = 1.0;
+	Vec3 forceAxis(1, 1, 1);
+	SimTK::UnitVec3 forceUnitAxis(forceAxis); // to normalize
+	Vec3 forceInG = forceMag * forceUnitAxis;
+
+	double torqueMag = 1.0;
+	Vec3 torqueAxis(1, 2, 1);
+	SimTK::UnitVec3 torqueUnitAxis(torqueAxis); // to normalize
+	Vec3 torqueInG = torqueMag*torqueUnitAxis;
+
+	// needed to be called here once to build controller for body actuator
+	State& state = model->initSystem();
+	
+	// ---------------------------------------------------------------------------
+	// Add a set of PointActuator, TorqueActuator and BodyActuator to the model
+	// ---------------------------------------------------------------------------
+	// Create and add a body actuator to the model
+	BodyActuator* bodyActuator1 = new BodyActuator(*block);
+	bodyActuator1->setName("BodyAct1");
+	bodyActuator1->set_point(Vec3(0, blockSideLength/2, 0));
+	model->addForce(bodyActuator1);
+	
+	// Create and add a torque actuator to the model
+	TorqueActuator* torqueActuator =
+		new TorqueActuator(*block, ground, torqueUnitAxis, true);
+	torqueActuator->setName("torqueAct");
+	model->addForce(torqueActuator);
+
+	// Create and add a point actuator to the model
+	PointActuator* pointActuator =
+		new PointActuator("block");
+	pointActuator->setName("pointAct");
+	pointActuator->set_direction(forceUnitAxis);
+	pointActuator->set_point(Vec3(0, blockSideLength/2,0));
+	model->addForce(pointActuator);
+
+	// ------ build the model -----
+	model->print("TestActuatorCombinationModel.osim");
+	model->setUseVisualizer(false);
+
+	// get a new system and state to reflect additions to the model
+	State& state1 = model->initSystem();
+
+	// ------------------- Provide control signals for bodyActuator ----------------
+	// Get the default control vector of the model
+	Vector modelControls = model->getDefaultControls();
+
+	// Spedicfy a vector of control signals for desired torques and forces
+	Vector bodyActuator1Controls(6,0.0); 
+	for (int i=0; i<3; i++) bodyActuator1Controls(i) = torqueInG(i); // torque in 3 axes
+	for (int i=0; i<3; i++) bodyActuator1Controls(i+3) = forceInG(i); // force along 3 axes
+	
+	
+	bodyActuator1Controls.dump("Spatial forces applied by first Body Actuator:");
+
+	// Add control values and set their values
+	bodyActuator1->addInControls(bodyActuator1Controls, modelControls);
+	model->setDefaultControls(modelControls);
+
+	// ---------------- Provide control signals for torqueActuator -----------------
+	Vector torqueActuatorControls(1); // input to addInControl should be a Vector
+	torqueActuatorControls(0) = torqueMag; // axis already defined when initializing 
+
+	Vector torqueActuatorVector(3); // to print out the 3D vector of applied torque
+	for (int i = 0; i < 3; i++){
+		torqueActuatorVector(i) = torqueInG(i);
+	}
+	torqueActuatorVector.dump("Torques applied by the Torque Actuator:");
+
+	// Add control values and set their values
+	torqueActuator->addInControls(torqueActuatorControls, modelControls);
+	model->setDefaultControls(modelControls);
+
+	// ------------------ Provide control signals for pointActuator ----------------
+	Vector pointActuatorControls(1); // input to addInControl should be a Vector
+	pointActuatorControls(0) = forceMag; // axis already defined when initializing
+
+	Vector pointActuatorVector(3); // to print out the whole force vector
+	for (int i = 0; i < 3; i++){
+		pointActuatorVector(i) = forceInG(i);
+	}
+	pointActuatorVector.dump("Forces applied by the point Actuator:");
+
+	// Add control values and set their values
+	pointActuator->addInControls(pointActuatorControls, modelControls);
+	model->setDefaultControls(modelControls);
+
+	
+	// ----------------------- Compute the acc to Compare later --------------------
+	// compare the acc due to forces/torques applied by all actuator
+	model->computeStateVariableDerivatives(state1);
+
+	Vector udotActuatorsCombination = state1.getUDot();
+	udotActuatorsCombination.dump("Accelerations due to all 3 actuators");
+
+
+	// -----------------------------------------------------------------------------
+	// Add a BodyActuator to enclose all of the above spatial forces in one Actuator 
+	// -----------------------------------------------------------------------------
+	// Create and add a body actuator to the model
+	BodyActuator* bodyActuator_sum = new BodyActuator(*block);
+	bodyActuator_sum->setName("BodyAct_Sum");
+	model->addForce(bodyActuator_sum);
+	bodyActuator_sum->set_point(Vec3(0, blockSideLength / 2, 0));
+
+
+	State& state2 = model->initSystem();
+	model->setUseVisualizer(true);
+
+	// Get the default control vector of the model
+	Vector modelControls_2 = model->getDefaultControls();
+
+	// Spedicfy a vector of control signals for desired torques and forces
+	Vector bodyActuatorSum_Controls(6,0.0);
+
+	// make the torque component as the sum of body, torque and point actuators used 
+	// in previous tets case
+	for (int i = 0; i < 3; i++){
+		bodyActuatorSum_Controls(i)   = 2*torqueInG(i);
+		bodyActuatorSum_Controls(i+3) = 2*forceInG(i);
+	}	
+
+	bodyActuatorSum_Controls.dump("Spatial forces applied by 2nd Body Actuator:");
+	std::cout <<"(encloses sum of the above spatial forces in one BodyActuator)"<< std::endl;
+
+	// Add control values and set their values
+	bodyActuator_sum->addInControls(bodyActuatorSum_Controls, modelControls_2);
+	model->setDefaultControls(modelControls_2);
+
+	// --------------------------- Comptue Acc and Compare -------------------------
+	// now compare the acc due to forces/torques applied by this body actuator
+	model->computeStateVariableDerivatives(state2);
+
+	Vector udotOnlyBodyActuator = state2.getUDot();
+	udotOnlyBodyActuator.dump("Accelerations due to only-one body actuator");
+
+	// Verify that the bodyActuator_sum also generates the same acceleration
+	// as the equivalent applied by 3 Actuators in previous test case
+	// Also make sure that accelerations are not zero accidentally
+	ASSERT(udotOnlyBodyActuator.norm() != 0.0 || udotActuatorsCombination.norm() != 0.0);
+	for (int i = 0; i<udotActuatorsCombination.size(); ++i){
+		ASSERT_EQUAL(udotOnlyBodyActuator[i], udotActuatorsCombination[i], 1.0e-12);
+	}
+	
+	// ------------------------ Setup integrator and manager -----------------------
+	RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
+	integrator.setAccuracy(integ_accuracy);
+	Manager manager(*model, integrator);
+
+	manager.setInitialTime(0.0);
+	double final_t = 1.00;
+	manager.setFinalTime(final_t);
+	manager.integrate(state2);
+
+
+	std::cout << " ********** Test Actuator Combination time = ********** " <<
+		1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;
+}
+>>>>>>> createSpatialActuator-issue62

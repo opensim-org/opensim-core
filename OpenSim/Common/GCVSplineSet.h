@@ -1,5 +1,5 @@
-#ifndef _GCVSplineSet_h_
-#define _GCVSplineSet_h_
+#ifndef OPENSIM_GCV_SPLINE_SET_H_
+#define OPENSIM_GCV_SPLINE_SET_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  GCVSplineSet.h                          *
  * -------------------------------------------------------------------------- *
@@ -27,8 +27,6 @@
  * Author: Frank C. Anderson 
  */
 
-
-
 // INCLUDES
 #include "osimCommonDLL.h"
 #include "Object.h"
@@ -39,14 +37,14 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * A class for holding a set of generalized cross-validated splines.
  *
  * @see GCVSpline
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API GCVSplineSet : public FunctionSet {
 OpenSim_DECLARE_CONCRETE_OBJECT(GCVSplineSet, FunctionSet);
 
@@ -91,4 +89,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif  // __GCVSplineSet_h__
+#endif // OPENSIM_GCV_SPLINESET_H_

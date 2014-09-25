@@ -1,5 +1,5 @@
-#ifndef _PropertyDblArray_h_
-#define _PropertyDblArray_h_
+#ifndef OPENSIM_PROPERTY_DBL_ARRAY_H_
+#define OPENSIM_PROPERTY_DBL_ARRAY_H_
 /* -------------------------------------------------------------------------- *
  *                        OpenSim:  PropertyDblArray.h                        *
  * -------------------------------------------------------------------------- *
@@ -38,6 +38,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * Class PropertyDblArray extends class Property.  It consists of an
  * array of doubles (i.e., Array<double>) and the methods for accessing
@@ -46,8 +48,6 @@
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API PropertyDblArray : public Property_Deprecated
 {
 
@@ -114,4 +114,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif //__PropertyDblArray_h__
+#endif // OPENSIM_PROPERTY_DBL_ARRAY_H_

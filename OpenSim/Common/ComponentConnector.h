@@ -118,7 +118,7 @@ public:
 	virtual std::string getConnectedToTypeName() const = 0;
 
 	/** Connect this Connector to the provided connectee object */
-	virtual void connect(const Object& conectee) = 0;
+	virtual void connect(const Object& connectee) = 0;
 
 	/** Disconnect this Connector from the connectee object */
 	virtual void disconnect() = 0;
@@ -154,14 +154,14 @@ public:
 		return !connectee.empty();
 	}
 
-	/** Temporary access to the conectee for testing purposes. Real useage
+	/** Temporary access to the connectee for testing purposes. Real useage
 	    will be through the Connector (and Input) interfaces. 
 		For example, Input should short circuit to its Output's getValue()
 		once it is connected.
 	Return a const reference to the object connected to this Connector */
 	const T& getConnectee() const { return connectee.getRef(); }
 
-	/** Connect this Connector to the provided conectee object */
+	/** Connect this Connector to the provided connectee object */
 	void connect(const Object& object) override{
 		const T* objT = dynamic_cast<const T*>(&object);
 		if (objT) {
@@ -184,7 +184,7 @@ public:
 	/** Derived classes must satisfy this Interface */
 	/** get the type of object this connector connects to*/
 	std::string getConnectedToTypeName() const override
-	{ return SimTK::NiceTypeName<T>::name(); }
+	{ return T::getClassName(); }
 
 	SimTK_DOWNCAST(Connector, AbstractConnector);
 

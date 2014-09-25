@@ -178,27 +178,29 @@ For example, you can click on the "Model Component" block to see a list of model
 	</tr>
 </table>
 <!-- End ImageReady Slices -->
-<br/>
-<b>Other specific classes of interest:</b>
-<br/>
-<a href = "classOpenSim_1_1Actuator.html">OpenSim::Actuator</a> <br/>
-<a href = "classOpenSim_1_1Body.html">OpenSim::Body</a> <br/>
-<a href = "classOpenSim_1_1Force.html">OpenSim::Force</a> <br/>
-<a href = "classOpenSim_1_1Function.html">OpenSim::Function</a> <br/>
-<a href = "classOpenSim_1_1Joint.html">OpenSim::Joint</a> <br/>
-<a href = "classOpenSim_1_1Mtx.html">OpenSim::Mtx</a> <br/>
-<a href = "classOpenSim_1_1Muscle.html">OpenSim::Muscle</a> <br/>
-<br/>
-<a href = "https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1Matrix__.html">SimTK::Matrix</a> <br/>
-<a href = "https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1Vector__.html">SimTK::Vector</a> <br/>
-<a href = "https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1Vec.html">SimTK::Vec</a> <br/>
-<a href = "https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1UnitVec.html">SimTK::UnitVec</a> <br/>
-<a href = "https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1Rotation__.html">SimTK::Rotation</a> <br/>
-<a href = "https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1MobilizedBody.html">SimTK::MobilizedBody</a> <br/>
-<a href = "https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1SimbodyMatterSubsystem.html">SimTK::SimbodyMatterSubsystem</a> <br/>
-<a href = "https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1State.html">SimTK::State</a> <br/>
 
 \endhtmlonly
+
+<b>Other specific classes of interest in OpenSim:</b>
+
+- OpenSim::Actuator
+- OpenSim::Body
+- OpenSim::Force
+- OpenSim::Function
+- OpenSim::Joint
+- OpenSim::Muscle
+
+<b>Classes of interest in Simbody:</b>
+
+- SimTK::Matrix_
+- SimTK::Vector_
+- SimTK::Vec
+- SimTK::UnitVec
+- SimTK::Rotation
+- SimTK::MobilizedBody
+- SimTK::SimbodyMatterSubsystem
+- SimTK::State
+
 **/
 
 /** @page OpenSim_license_page  OpenSim Copyright and License

@@ -407,7 +407,7 @@ public:
         if (isListProperty()) {
             throw OpenSim::Exception(
                 "Property<T>::setValue(value): property " + getName()
-                + "is a list property so must be set either to a list "
+                + " is a list property so must be set either to a list "
                   "of values, or elementwise using indexing.");
         }
         setValue(0, value);
