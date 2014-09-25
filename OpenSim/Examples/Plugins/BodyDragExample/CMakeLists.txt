@@ -1,71 +1,44 @@
-Project(BodyDragForce)
+PROJECT(BodyDragForce)
 
-cmake_minimum_required(VERSION 2.6)
-if(COMMAND cmake_policy)
-        cmake_policy(SET CMP0003 NEW)
-        cmake_policy(SET CMP0005 NEW)
-endif(COMMAND cmake_policy)
-
-SET(KIT plugin)
-SET(UKIT PLUGIN)
-
-SET(NameSpace "OpenSim_")
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.6)
 
 FILE(GLOB SOURCE_FILES *.cpp)
 FILE(GLOB INCLUDE_FILES *.h)
 
-SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release"
-      CACHE STRING "Semicolon separated list of supported configuration types, only supports Debug, Release, MinSizeRel, and RelWithDebInfo, anything else will be ignored." FORCE )
-
-SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
-
-SET(OPENSIM_INSTALL_DIR "C:/Program Files (x86)/OpenSim 3.0/" CACHE PATH 
-    "Top-level directory of OpenSim install")
+SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
+    CACHE PATH "Top-level directory of OpenSim install")
 
 SET(PLUGIN_NAME "BodyDragForce" CACHE STRING "Name of shared library to create")
 
-### HEADERS
-SET(OPENSIM_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include)
-SET(SIMTK_HEADERS_DIR   ${OPENSIM_INSTALL_DIR}/sdk/include/SimTK/include)
+# OpenSim uses C++11 language features.
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR
+        "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    # Using C++11 on OSX requires using libc++ instead of libstd++.
+    # libc++ is an implementation of the C++ standard library for OSX.
+    if(APPLE)
+        if(XCODE)
+            set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
+            set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+        else()
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+        endif()
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    endif()
+endif()
 
-INCLUDE_DIRECTORIES(${OPENSIM_HEADERS_DIR} 
-                    ${SIMTK_HEADERS_DIR})
+FIND_PACKAGE(OpenSim REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")
 
-### LIBRARIES
-SET(OPENSIM_LIBS_DIR  
-    ${OPENSIM_INSTALL_DIR}/lib
-    ${OPENSIM_INSTALL_DIR}/sdk/lib)
-LINK_DIRECTORIES(${OPENSIM_LIBS_DIR})
-
-# Assumes Windows
-LINK_LIBRARIES(
-	debug osimCommon_d     optimized osimCommon
-	debug osimSimulation_d optimized osimSimulation
-	debug osimAnalyses_d   optimized osimAnalyses
-	debug osimActuators_d  optimized osimActuators
-	debug osimTools_d      optimized osimTools
-	debug     ${NameSpace}SimTKcommon_d
-    optimized ${NameSpace}SimTKcommon
-	debug     ${NameSpace}SimTKmath_d
-    optimized ${NameSpace}SimTKmath
-	debug     ${NameSpace}SimTKsimbody_d
-    optimized ${NameSpace}SimTKsimbody
-    pthreadVC2
-)
+INCLUDE_DIRECTORIES(${OpenSim_INCLUDE_DIRS})
+LINK_DIRECTORIES(${OpenSim_LIB_DIR})
 
 ADD_LIBRARY(${PLUGIN_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
-IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	SET(CMAKE_INSTALL_PREFIX ${OPENSIM_INSTALL_DIR}/ CACHE PATH 
-        "Install path prefix." FORCE)
-ENDIF()
-
-MARK_AS_ADVANCED(EXECUTABLE_OUTPUT_PATH)
-MARK_AS_ADVANCED(LIBRARY_OUTPUT_PATH)
+TARGET_LINK_LIBRARIES(${PLUGIN_NAME} ${OpenSim_LIBRARIES})
 
 SET_TARGET_PROPERTIES(
 	${PLUGIN_NAME} PROPERTIES
-	DEFINE_SYMBOL ${EXPORT_MACRO}
+    DEFINE_SYMBOL OSIMPLUGIN_EXPORTS
 	PROJECT_LABEL "Libraries - ${PLUGIN_NAME}")
 
 INSTALL_TARGETS(/plugins RUNTIME_DIRECTORY /plugins  ${PLUGIN_NAME})

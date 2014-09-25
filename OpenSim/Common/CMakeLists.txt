@@ -50,11 +50,13 @@ SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
 # archives are only needed at link time so go in sdk/lib.
 IF(WIN32)
     INSTALL(TARGETS osim${KIT}
+            EXPORT OpenSimTargets
             RUNTIME DESTINATION bin
             LIBRARY DESTINATION sdk/lib
             ARCHIVE DESTINATION sdk/lib)
 ELSE()
     INSTALL(TARGETS osim${KIT}
+            EXPORT OpenSimTargets
             RUNTIME DESTINATION bin
             LIBRARY DESTINATION lib
             ARCHIVE DESTINATION sdk/lib)

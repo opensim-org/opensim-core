@@ -1,5 +1,5 @@
-#ifndef _PropertyObjPtr_h_
-#define _PropertyObjPtr_h_
+#ifndef OPENSIM_PROPERTY_OBJ_PTR_H_
+#define OPENSIM_PROPERTY_OBJ_PTR_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  PropertyObjPtr.h                         *
  * -------------------------------------------------------------------------- *
@@ -29,22 +29,21 @@
 #include "Object.h"
 #include "Property_Deprecated.h"
 
+//=============================================================================
+//=============================================================================
+namespace OpenSim { 
 
-//=============================================================================
-//=============================================================================
 /**
- * Class PropertyObjPtr extends class Property.  It differs from ProprtyObj
- * in that PropertyObj looks for  an XML element with a specific tag name (matching
- * the object type), PropertyObjPtr accepts any recognized object type.  It's
- * essentially like a singleton PropertyObjArray.
+ * Class PropertyObjPtr extends class Property.  It differs from ProprtyObj in
+ * that PropertyObj looks for  an XML element with a specific tag name
+ * (matching the object type), PropertyObjPtr accepts any recognized object
+ * type.  It's essentially like a singleton PropertyObjArray.
  *
  * Note: Class owns its Object _value (so it is deleted as appropriate).
  *
  * @version 1.0
  * @author Eran Guendelman
  */
-namespace OpenSim { 
-
 template<class T=Object> class PropertyObjPtr : public Property_Deprecated
 {
 
@@ -125,7 +124,7 @@ public:
 	// VALUE
 	virtual bool isValidObject(const Object *aValue) const { return dynamic_cast<const T*>(aValue)!=0; }
 	virtual void setValue(Object *aValue) { delete _value; _value = dynamic_cast<T*>(aValue); }
-	virtual Object* getValueObjPtr() { return _value; }
+    const Object* getValueObjPtr() const override { return _value; }
 	T*& getValueObjPtrRef() { return _value; }
 	// VALUE as String
 	virtual std::string toString() const {return "(ObjectPointer)";}
@@ -137,4 +136,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif //__PropertyObjPtr_h__
+#endif // OPENSIM_PROPERTY_OBJ_PTR_H_

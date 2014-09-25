@@ -254,9 +254,200 @@ public:
      */
     Array<std::string> getStateVariableNames() const;
 
+    /** @name Component Connector Access methods
+        Access Connectors of this component in a generic way and also by name.
+    */
+    //@{ 
+    
+    /** Access the number of Connectors that this component has. 
+        Get the number of Connectors and then access a Connector by index.
+        For example:
+        @code
+        for (int i = 0; i < myComp.getNumConnectors(); ++i){
+        const AbstractConnector& connector = myComp.getConnector(i);
+        // check status: e.g. is it connected?
+        ...
+        AbstractConnector& connector = myComp.updConnector(i);
+        // change the status: e.g. disconnect or change/define connectee;
+        }
+        @endcode
+        @see getNumConnectors()
+        @see getConnector(int i);
+    */
+    int getNumConnectors() const {
+        return getProperty_connectors().size();
+    }
 
-   /** @name Component State Access methods
-     * Get and set modeling option, state, discrete and/or cache variables in the State
+    /** Access a read-only Connector by index.
+    @see getNumConnectors()
+    */
+    const AbstractConnector& getConnector(int i) const {
+        return get_connectors(i);
+    }
+
+    /** Access a writeable Connector by index.
+    @see getNumConnectors()
+    */
+    AbstractConnector& updConnector(int i) {
+        return upd_connectors(i);
+    }
+
+    /**
+    * Get the Connector provided by this Component by name.
+    *
+    * @param name		the name of the Connector
+    * @return const reference to the (Abstract)Connector
+    */
+    template<typename T> Connector<T>&
+        updConnector(const std::string& name)
+    {
+            return *const_cast<Connector<T>*>(&getConnector<T>(name));
+    }
+
+    template<typename T>
+    const Connector<T>& getConnector(const std::string& name) const
+    {
+        const AbstractConnector* found = findConnector(name);
+
+        if (!found){
+            std::stringstream msg;
+            msg << "Component::getConnector: ERR- no Connector '" << name << "' found.\n "
+                << "for component '" << getName() << "' of type "
+                << getConcreteClassName();
+            throw Exception(msg.str(), __FILE__, __LINE__);
+        }
+
+        return (Connector<T>::downcast(*found));
+    }
+
+    /**
+    * Get the "connectee" object that the Component's Connector
+    * is bound to. Guaranteed to be valid only after the Component
+    * has been connected (that is connect() has been invoked).
+    * If Connector has not been connected an exception is thrown.
+    *
+    * @param name		the name of the connector
+    * @return T   	    const reference to object that satisfies
+    *                   the Connector
+    */
+    template<typename T>
+    const T& getConnectee(const std::string& name) const	{
+        // get the Connector and check if it is connected.
+        const AbstractConnector& connector = getConnector<T>(name);
+        if (connector.isConnected()){
+            return (Connector<T>::downcast(connector)).getConnectee();
+        }
+        else{
+            std::stringstream msg;
+            msg << "Component::getConnection() ERR- Connector '" << name << "' not connected.\n "
+                << "for component '" << getName() << "' of type " << getConcreteClassName();
+            throw Exception(msg.str(), __FILE__, __LINE__);
+        }
+    }
+    //@} end of Component Connector Access methods
+
+    /** Define OutputsIterator for convenience */
+    typedef std::map<std::string, std::unique_ptr<const AbstractOutput> >::
+        const_iterator OutputsIterator;
+
+    /** @name Component Inputs and Outputs Access methods
+        Access inputs and ouputs by name and iterate over all outputs.
+    */
+    //@{ 
+
+    /**
+    * Get the Input provided by this Component by name.
+    *
+    * @param name   the name of the Input
+    * @return       const reference to the AbstractInput
+    */
+    const AbstractInput& getInput(const std::string& name) const
+    {
+        auto it = _inputsTable.find(name);
+
+        if (it != _inputsTable.end()) {
+            return *it->second;
+        }
+        else {
+            std::string::size_type back = name.rfind("/");
+            std::string prefix = name.substr(0, back);
+            std::string inName = name.substr(back + 1, name.length() - back);
+
+            const Component* found = findComponent(prefix);
+            if (found)
+                return found->getInput(inName);
+        }
+        std::stringstream msg;
+        msg << "Component::getInput: ERR- no input '" << name << "' found.\n "
+            << "for component '" << getName() << "' of type "
+            << getConcreteClassName();
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
+
+    /**
+    * Get the Output provided by this Component by name.
+    *
+    * @param name   the name of the cache variable
+    * @return       const reference to the AbstractOutput
+    */
+    const AbstractOutput& getOutput(const std::string& name) const
+    {
+        auto it = _outputsTable.find(name);
+
+        if (it != _outputsTable.end()) {
+            return *it->second;
+        }
+        else {
+            std::string::size_type back = name.rfind("/");
+            std::string prefix = name.substr(0, back);
+            std::string outName = name.substr(back + 1, name.length() - back);
+
+            const Component* found = findComponent(prefix);
+            // if found is this component again, no point trying to find
+            // output again, otherwise we would not have reached here 
+            if (found && (found != this)) {
+                return found->getOutput(outName);
+            }
+        }
+
+        std::stringstream msg;
+        msg << "Component::getOutput: ERR-  no output '" << name << "' found.\n "
+            << "for component '" << getName() << "' of type "
+            << getConcreteClassName();
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
+
+    /** An iterator to traverse all the Outputs of this component, pointing at the
+    * first Output. This can be used in a loop as such:
+    *
+    *  @code
+    *  OutputsIterator it;
+    *  for (it = myComp.getOutputsBegin(); it != myComp.getOutputsEnd(); it++)
+    *  { ... }
+    *  @endcode
+    *
+    * @see getOutputsEnd()
+    */
+    OutputsIterator getOutputsBegin() const {
+        return _outputsTable.begin();
+    }
+
+    /** An iterator for the map of Outputs of this component, pointing at the
+    * end of the map. This can be used in a loop as such:
+    *
+    * @see getOutputsBegin()
+    */
+    OutputsIterator getOutputsEnd() const {
+        return _outputsTable.end();
+    }
+
+    //@} end of Component Inputs and Outputs Access methods
+
+
+
+    /** @name Component State Access methods
+        Get and set modeling option, input and output values, state variable, 
+        discrete and/or cache variables in the State.
      */ 
     //@{
     
@@ -284,89 +475,6 @@ public:
     void setModelingOption(SimTK::State& state, const std::string& name, int flag) const;
 
 	/**
-	* Get the Connector provided by this Component by name.
-	*
-	* @param name		the name of the Connector
-	* @return const reference to the (Abstract)Connector
-	*/
-	template<typename T> Connector<T>& 
-		updConnector(const std::string& name) 
-	{
-		return *const_cast<Connector<T>*>(&getConnector<T>(name));
-	}
-
-	template<typename T> 
-	const Connector<T>& getConnector(const std::string& name) const
-	{
-		const AbstractConnector* found = findConnector(name);
-
-		if (!found){
-			std::stringstream msg;
-			msg << "Component::getConnector: ERR- no Connector '" << name << "' found.\n "
-				<< "for component '" << getName() << "' of type "
-				<< getConcreteClassName();
-			throw Exception(msg.str(), __FILE__, __LINE__);
-		}
-
-		return (Connector<T>::downcast(*found));
-	}
-
-	/**
-	* Get the "connectee" object that the Component's Connector
-	* is bound to. Gauranteed to be valid only after the Component
-	* has been connected (that is connect() has been invoked).
-	* If Connector has not been connected an exception is thrown.
-	*
-	* @param name		the name of the connector
-	* @return T   	    const reference to object that satisfies
-	*                   the Connector
-	*/
-	template<typename T>
-	const T& getConnectee(const std::string& name) const	{
-		// get the Connector and check if it is connected.
-		const AbstractConnector& connector = getConnector<T>(name);
-		if (connector.isConnected()){
-			return (Connector<T>::downcast(connector)).getConectee();
-		}
-		else{
-			std::stringstream msg;
-			msg << "Component::getConnection() ERR- Connector '" << name << "' not connected.\n "
-				<< "for component '" << getName() << "' of type " << getConcreteClassName();
-			throw Exception(msg.str(), __FILE__, __LINE__);
-		}
-	}
-
-	/**
-	* Get the Input provided by this Component by name.
-	*
-	* @param name		the name of the input
-	* @return input	const reference to the AbstractInput
-	*/
-	const AbstractInput& getInput(const std::string& name) const
-	{
-		auto it = _inputsTable.find(name);
-
-		if (it != _inputsTable.end()) {
-			return *it->second;
-		}
-		else {
-			std::string::size_type back = name.rfind("/");
-			std::string prefix = name.substr(0, back);
-			std::string inName = name.substr(back + 1, name.length() - back);
-
-			const Component* found = findComponent(prefix);
-			if (found)
-				return found->getInput(inName);
-		}
-
-		std::stringstream msg;
-		msg << "Component::getInput: ERR- no input '" << name <<"' found.\n "
-				<< "for component '" << getName() << "' of type "
-				<< getConcreteClassName();
-		throw Exception(msg.str(), __FILE__, __LINE__);
-	}
-
-	/**
 	* Get the Input value that this component is dependent on.
 	* Check if Input is connected, otherwise it will throw an
 	* exception.
@@ -390,70 +498,6 @@ public:
 		}
 	}
 
-    /** An iterator for the map of Outputs of this component, pointing at the
-     * beginning of the map. This can be used in a loop as such:
-     *
-     *  @code
-     *  std::map<std::string, const AbstractOutput*>::const_iterator it;
-     *  for (it = myComp.getOutputsBegin(); it != myComp.getOutputsEnd(); it++)
-     *  { ... }
-	 *  @endcode
-     *
-     * @see getOutputsEnd()
-     */
-    std::map<std::string, std::unique_ptr<const AbstractOutput>
-        >::const_iterator
-        getOutputsBegin() const
-    {
-        return _outputsTable.begin();
-    }
-
-    /** An iterator for the map of Outputs of this component, pointing at the
-     * end of the map. This can be used in a loop as such:
-     *
-     * @see getOutputsBegin()
-     */
-    std::map<std::string, std::unique_ptr<const AbstractOutput>
-        >::const_iterator
-        getOutputsEnd() const
-    {
-        return _outputsTable.end();
-    }
-
-
-	/**
-	* Get the Output provided by this Component by name.
-	*
-	* @param name   the name of the cache variable
-	* @return       const reference to the AbstractOutput
-	*/
-	const AbstractOutput& getOutput(const std::string& name) const
-	{
-		auto it = _outputsTable.find(name);
-
-		if (it != _outputsTable.end()) {
-			return *it->second;
-		}
-		else {
-			std::string::size_type back = name.rfind("/");
-			std::string prefix = name.substr(0, back);
-			std::string outName = name.substr(back+1, name.length()-back);
-
-			const Component* found = findComponent(prefix);
-			// if found is this component again, no point trying to find
-			// output again, otherwise we would not have reached here 
-			if (found && (found != this)) { 
-				return found->getOutput(outName);
-			}
-		}
-
-		std::stringstream msg;
-		msg << "Component::getOutput: ERR-  no output '" << name << "' found.\n "
-			<< "for component '" << getName() << "' of type "
-			<< getConcreteClassName();
-		throw Exception(msg.str(), __FILE__, __LINE__);
-	}
-
 	/**
 	* Get the Output value provided by this Component by name.
 	*
@@ -468,7 +512,7 @@ public:
 	}
 	
 	
-	/**
+    /**
      * Get the value of a state variable allocated by this Component.
      *
      * To connect this StateVariable as an input to another component (such as
@@ -476,14 +520,14 @@ public:
      * corresponding Output:
      *  @code
      *  foo.getInput("input1").connect(bar.getOutput(name));
-	 *  @endcode
+     *  @endcode
      *
      * @param state   the State for which to get the value
      * @param name    the name (string) of the state variable of interest
      */
     double getStateVariable(const SimTK::State& state, const std::string& name) const;
 
-	/**
+    /**
      * Set the value of a state variable allocated by this Component by name.
      *
      * @param state  the State for which to set the value
@@ -493,34 +537,34 @@ public:
     void setStateVariable(SimTK::State& state, const std::string& name, double value) const;
 
 
-	/**
+    /**
      * Get all values of the state variables allocated by this Component.
-	 * Includes state variables allocated by its subcomponents.
+     * Includes state variables allocated by its subcomponents.
      *
      * @param state   the State for which to get the value
      * @return Vector of state variable values of length getNumStateVariables()
-	 *                in the order returned by getStateVariableNames()
+     *                in the order returned by getStateVariableNames()
      */
-	SimTK::Vector getStateVariableValues(const SimTK::State& state) const;
+    SimTK::Vector getStateVariableValues(const SimTK::State& state) const;
 
-	/**
+    /**
      * Set all values of the state variables allocated by this Component.
-	 * Includes state variables allocated by its subcomponents.
+     * Includes state variables allocated by its subcomponents.
      *
      * @param state   the State for which to get the value
      * @param values  Vector of state variable values of length getNumStateVariables()
-	 *                in the order returned by getStateVariableNames()
+     *                in the order returned by getStateVariableNames()
      */
-	void setStateVariableValues(SimTK::State& state, const SimTK::Vector& values);
+    void setStateVariableValues(SimTK::State& state, const SimTK::Vector& values);
 
-	/**
+    /**
      * Get the value of a state variable derivative computed by this Component.
      *
      * @param state   the State for which to get the derivative value
      * @param name    the name (string) of the state variable of interest
      */
     double getStateVariableDerivative(const SimTK::State& state, 
-		const std::string& name) const;
+        const std::string& name) const;
 
     /**
      * Get the value of a discrete variable allocated by this Component by name.
@@ -735,7 +779,7 @@ template <class T> friend class ComponentMeasure;
 	 Override the corresponding private virtual method to customize any of them. */ 
 	void constructInfrastructure() {
 		constructProperties();
-		constructStructuralConnectors();
+		constructConnectors();
 		constructInputs();
 		constructOutputs();
 	}
@@ -1009,7 +1053,7 @@ template <class T> friend class ComponentMeasure;
     /** Perform computations that may depend on anything but are only used
     for reporting and cannot affect subsequent simulation behavior. **/
     virtual void realizeReport(const SimTK::State& state) const;
-    //@}
+    //@} end of Component Advanced Interface
 
 
     /** @name     Component System Creation and Access Methods
@@ -1028,7 +1072,7 @@ template <class T> friend class ComponentMeasure;
 	* message if the provided Component is incompatible or non-existant.
 	*/
 	template <typename T>
-	void constructStructuralConnector(const std::string& name) {
+	void constructConnector(const std::string& name) {
 		int ix = updProperty_connectors().adoptAndAppendValue(
 			new Connector<T>(name, SimTK::Stage::Topology));
 		//add pointer to connectorsTable so we can access connectors easily by name
@@ -1051,27 +1095,33 @@ template <class T> friend class ComponentMeasure;
 	}
 
     /**
-     * A convenient way to construct an Output.  Here, we assume the following
-     * about componentMemberFunction, the function that returns the output:
-     *
-     *  1. It is a member function of \a this Component.
-     *  2. The member function is const.
-     *  3. It takes only one input, which is const SimTK::State&
-     *
-     * If these are not true for your case, then use the more general method
-     * Component::constructOutput(const std::string&, const std::function<T(const SimTK::State&)>, const SimTK::Stage&).
-     *
-     * Here's an example. Say your Component has a method calcForce:
-     *  @code
-     *  constructOutput<SimTK::Vec3>("force", &MyComponent::calcForce,
-     *          SimTK::Stage::Velocity);
-     *  @endcode
+       A convenient way to construct an Output.  Here, we assume the following
+       about componentMemberFunction, the function that returns the output:
+
+           -# It is a member function of \a this Component.
+           -# The member function is const.
+           -# It takes only one input, which is const SimTK::State&
+      
+       If these are not true for your case, then use the more general method
+       %Component::constructOutput(const std::string&,
+                                  const std::function<T(const SimTK:State&)>,
+                                  const SimTK::Stage&).
+      
+       Here's an example. Say your Component has a method calcForce:
+        @code
+        constructOutput<SimTK::Vec3>("force", &MyComponent::calcForce,
+                SimTK::Stage::Velocity);
+        @endcode
      */
 #ifndef SWIG // SWIG can't parse the const at the end of the second argument.
     template <typename T, typename Class>
     void constructOutput(const std::string& name,
-            T(Class::*componentMemberFunction)(const SimTK::State&) const,
+            T(Class::*const componentMemberFunction)(const SimTK::State&) const,
             const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration) {
+        // The `const` in `Class::*const componentMemberFunction` means this
+        // function can't assign componentMemberFunction to some other function
+        // pointer. This is unlikely, since that function would have to match
+        // the same template parameters (T and Class).
         constructOutput<T>(name, std::bind(componentMemberFunction,
                     static_cast<Class*>(this),
                     std::placeholders::_1), dependsOn);
@@ -1079,17 +1129,21 @@ template <class T> friend class ComponentMeasure;
 #endif
 
 	/**
-	* Construct an Output (wire) for the Component as function of the State.
-	* Specifiy a (member) function of the state implemented by this component to
-	* be an Output and include the Stage that output is dependent on. If no
-    * Stage is specified it defaults to Acceleration. Here's an example. Say you have a class Markers that manages markers, you have an instance of this class as a member variable in your Component, and Markers has a method `Vec3 Markers\:\:calcMarkerPos(const SimTK\:\:State& s, std\:\:string marker);` to compute
-    * motion capture marker positions, given the name of a marker.
-     *  @code
-     *  constructOutput<SimTK::Vec3>("ankleMarkerPos",
-     *          std::bind(&Markers::calcMarkerPos, _markers,
-     *          std::placeholders::_1, "ankle"),
-     *          SimTK::Stage::Position);
-	 *  @endcode
+	  Construct an Output (wire) for the Component as function of the State.
+	  Specifiy a (member) function of the state implemented by this component to
+	  be an Output and include the Stage that output is dependent on. If no
+      Stage is specified it defaults to Acceleration. Here's an example. Say you 
+      have a class Markers that manages markers, you have an instance of this class
+      as a member variable in your Component, and Markers has a method
+      <tt> Vec3 Markers::calcMarkerPos(const SimTK::State& s, std::string
+      marker);</tt>
+      to compute motion capture marker positions, given the name of a marker.
+       @code
+       constructOutput<SimTK::Vec3>("ankle_marker_pos",
+               std::bind(&Markers::calcMarkerPos, _markers,
+               std::placeholders::_1, "ankle"),
+               SimTK::Stage::Position);
+       @endcode
 	*/
 	template <typename T>
 	void constructOutput(const std::string& name, 
@@ -1288,7 +1342,7 @@ private:
 	//Connectors are resolved in Component's connect().
 	//constructStructuralDependencies is a series of calls to constrcuctConnector()
 	//which adds a component by name and type to a dependency Connectors table.
-	virtual void constructStructuralConnectors() {}
+	virtual void constructConnectors() {}
 
 	//Construct the table of Inputs for this component. A Component::Input is a
 	//dependency on the Output of another Component. Unlike a structural 

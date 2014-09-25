@@ -1,5 +1,5 @@
-#ifndef _Storage_h_
-#define _Storage_h_
+#ifndef OPENSIM_STORAGE_H_
+#define OPENSIM_STORAGE_H_
 /* -------------------------------------------------------------------------- *
  *                            OpenSim:  Storage.h                             *
  * -------------------------------------------------------------------------- *
@@ -37,6 +37,12 @@
 const int Storage_DEFAULT_CAPACITY = 256;
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
+typedef std::map<std::string, std::string, std::less<std::string> > MapKeysToValues;
+
+//static std::string[] simmReservedKeys;
+ 
 /**
  * A class for storing an array of statevectors.  A statevector is an
  * array of data that has an associated time stamp (see StateVector).
@@ -57,11 +63,6 @@ const int Storage_DEFAULT_CAPACITY = 256;
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
-typedef std::map<std::string, std::string, std::less<std::string> > MapKeysToValues;
-
-//static std::string[] simmReservedKeys;
 class OSIMCOMMON_API Storage : public StorageInterface {
 OpenSim_DECLARE_CONCRETE_OBJECT(Storage, StorageInterface);
 
@@ -317,4 +318,4 @@ private:
 //=============================================================================
 //=============================================================================
 
-#endif //__Storage_h__
+#endif // OPENSIM_STORAGE_H_

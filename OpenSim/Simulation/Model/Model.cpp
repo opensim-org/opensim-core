@@ -171,8 +171,6 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 			}
             if (versionNumber < 30500) {
                 // Create JointSet node after BodySet under <OpenSimDocument>/<Model>
-                String test;
-                aNode.writeToString(test);
                 SimTK::Xml::Element jointSetElement("JointSet");
                 SimTK::Xml::Element jointObjects("objects");
                 jointSetElement.insertNodeBefore(jointSetElement.element_begin(), jointObjects);
@@ -182,8 +180,7 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 SimTK::Xml::element_iterator  objects_node = bodySetNode->element_begin("objects");
                 SimTK::Xml::element_iterator bodyIter= objects_node->element_begin("Body"); 
                 for (; bodyIter != objects_node->element_end(); ++bodyIter) {
-                    bodyIter->writeToString(test);
-                    std::string body_name = bodyIter->getOptionalAttributeValue("name");
+                     std::string body_name = bodyIter->getOptionalAttributeValue("name");
                     //cout << "Processing body " <<  body_name << std::endl;
                     SimTK::Xml::element_iterator  joint_node =  bodyIter->element_begin("Joint");
                     if (joint_node->element_begin()!= joint_node->element_end()){
@@ -196,10 +193,11 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                         //cout << "Processing Joint " << concreteJointNode->getElementTag() << "Parent body " << parent_name << std::endl;
                         XMLDocument::addConnector(*concreteJointNode, "Connector_Body_", "parent_body", parent_name);
                         XMLDocument::addConnector(*concreteJointNode, "Connector_Body_", "child_body", body_name);
-                        concreteJointNode->removeNode(parentBodyElement);
+                        concreteJointNode->eraseNode(parentBodyElement);
                         jointObjects.insertNodeAfter(jointObjects.node_end(), *concreteJointNode);
+                        detach_joint_node.clearOrphan();
                     }
-                    bodyIter->removeNode(joint_node);
+                    bodyIter->eraseNode(joint_node);
 				}
             }
 	// Call base class now assuming _node has been corrected for current version
@@ -539,8 +537,7 @@ void Model::finalizeFromProperties()
 			_multibodyTree.addBody(bs[i].getName(), 
 								   bs[i].getMass(), 
 								   false, 
-								   &bs[i]);
-		
+								   &bs[i]);	
 		}
 	}
 
@@ -571,12 +568,9 @@ void Model::finalizeFromProperties()
 				&js[i]);
 		}
 	}
-
-	updCoordinateSet().populate(*this);
 		
 	if(getConstraintSet().getSize()>0)
 	{
-
 		ConstraintSet &cs = updConstraintSet();
 		int nc = cs.getSize();
 		for (int i = 0; i<nc; ++i){
@@ -622,15 +616,14 @@ void Model::finalizeFromProperties()
 		}
 	}
 
-
-	// Some validation - TODO Remove and put in Body
-	validateMassProperties();
 	if (getValidationLog().size() > 0) {
 		cout << "The following Errors/Warnings were encountered while building the model. " <<
 			getValidationLog() << endl;
 	}
 
 	Super::finalizeFromProperties();
+
+    updCoordinateSet().populate(*this);
 }
 
 void Model::connectToModel(Model &model)
@@ -691,8 +684,8 @@ void Model::connectToModel(Model &model)
 		if (mob.isAddedBaseMobilizer()){
 			// create and add the base joint to enable these dofs
 			Body* child = static_cast<Body*>(mob.getOutboardBodyRef());
-			cout << "Body '" << child->getName() << "' not connected by a Joint "
-				<< "a FreeJoint will be added to connect it to ground." << endl;
+			cout << "Body '" << child->getName() << "' not connected by a Joint.\n"
+				<< "A FreeJoint will be added to connect it to ground." << endl;
 			Body* ground = static_cast<Body*>(mob.getInboardBodyRef());
 
 			// Verify that this is an orphan and it was assigned to ground
@@ -1538,9 +1531,8 @@ void Model::applyDefaultConfiguration(SimTK::State& s)
  */
 void Model::createAssemblySolver(const SimTK::State& s)
 {
-    // Allocate on heap so AssemblySolver can take ownership.
-	SimTK::Array_<CoordinateReference>* coordsToTrack = 
-        new SimTK::Array_<CoordinateReference>();
+    // Allocate on stack and pass to AssemblySolver to make working copy.
+	SimTK::Array_<CoordinateReference> coordsToTrack;
 
 	for(int i=0; i<getNumCoordinates(); ++i){
 		// Iff a coordinate is dependent on other coordinates for its value, 
@@ -1548,7 +1540,7 @@ void Model::createAssemblySolver(const SimTK::State& s)
 		if(!_coordinateSet[i].isDependent(s)){
 			Constant reference(_coordinateSet[i].getValue(s));
 			CoordinateReference coordRef(_coordinateSet[i].getName(), reference);
-			coordsToTrack->push_back(coordRef);
+			coordsToTrack.push_back(coordRef);
 		}
 	}
 
@@ -1556,9 +1548,9 @@ void Model::createAssemblySolver(const SimTK::State& s)
 	delete _assemblySolver;
 
 	// Use the assembler to generate the initial pose from Coordinate defaults
-	// that also satisfies the constraints. AssemblySolver takes over ownership
-    // of coordsToTrack
-	_assemblySolver = new AssemblySolver(*this, *coordsToTrack);
+	// that also satisfies the constraints. AssemblySolver makes copy of
+    // coordsToTrack
+	_assemblySolver = new AssemblySolver(*this, coordsToTrack);
 	_assemblySolver->setConstraintWeight(SimTK::Infinity);
     _assemblySolver->setAccuracy(get_assembly_accuracy());
 }
@@ -1980,40 +1972,6 @@ void Model::overrideAllActuators( SimTK::State& s, bool flag) {
          act->overrideForce(s, flag );
      }
 
-}
-//_____________________________________________________________________________
-/**
- * validateMassProperties: Internal method to check that specified mass properties for the bodies are physically possible
- * that is, satisfy the triangular inequality condition specified in the Docygen doc. of SimTK::MassPRoperties
- * If not true, then the values are forced to satisfy the inequality and a warning is issued.
- * It is assumed that mass properties are all set already
- *
- *
- */
-
-void Model::validateMassProperties(bool fixMassProperties)
-{
-	String msg = "";
-	bool invalid = false;
-
-	for (int i=0; i < getBodySet().getSize(); i++){
-		Body& b = updBodySet()[i];
-		if (b == getGroundBody()) continue;	// Ground's mass properties are unused
-
-		const Vec6& inertiaVec = b.get_inertia();
-		
-		try {
-			// Attempt to form a valid inertia matrix
-			//SimTK::Inertia(inertiaVec.getSubVec<3>(0), inertiaVec.getSubVec<3>(3));
-		}
-		catch(const SimTK::Exception::Base& ex){	
-			invalid = true;
-			msg += "Body: "+b.getName()+" has non-physical mass properties.";
-			msg += ex.getMessage();
-		}
-	}
-	if (invalid)
-		throw Exception(msg);
 }
 
 const Object& Model::getObjectByTypeAndName(const std::string& typeString, const std::string& nameString) {

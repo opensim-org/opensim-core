@@ -29,7 +29,7 @@ def test_markAdopted():
     # We just need the following not to not cause a segfault.
 
     # Model add*
-    a.addComponent(osim.PathActuator())
+    a.addForce(osim.PathActuator())
     a.addProbe(osim.Umberger2010MuscleMetabolicsProbe())
     a.addAnalysis(osim.MuscleAnalysis())
     a.addController(osim.PrescribedController())

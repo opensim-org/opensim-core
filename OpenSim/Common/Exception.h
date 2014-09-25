@@ -1,5 +1,5 @@
-#ifndef _Exception_h_
-#define _Exception_h_
+#ifndef OPENSIM_EXCEPTION_H_
+#define OPENSIM_EXCEPTION_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  Exception.h                            *
  * -------------------------------------------------------------------------- *
@@ -32,20 +32,10 @@
 #include "osimCommonDLL.h"
 #include <string>
 
-//using namespace std;
 #ifdef WIN32
 #pragma warning( disable : 4251 )	// VC2010 no-dll export of std::string
 #endif
 
-
-//=============================================================================
-//=============================================================================
-/**
- * A class for basic exception functionality.
- *
- * @version 1.0
- * @author Frank C. Anderson
- */
 #ifdef SWIG
 	#ifdef OSIMCOMMON_API
 		#undef OSIMCOMMON_API
@@ -53,8 +43,17 @@
 	#endif
 #endif
 
+//=============================================================================
+//=============================================================================
+
 namespace OpenSim { 
 
+/**
+ * A class for basic exception functionality.
+ *
+ * @version 1.0
+ * @author Frank C. Anderson
+ */
 class OSIMCOMMON_API Exception  : public std::exception {
 
 //=============================================================================
@@ -97,4 +96,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // __Exception_h__
+#endif // OPENSIM_EXCEPTION_H_
