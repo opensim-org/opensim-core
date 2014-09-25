@@ -79,8 +79,8 @@ void BodyActuator::constructProperties()
 /**
 * Construct Structural Connectors
 */
-void BodyActuator::constructStructuralConnectors() {
-	constructStructuralConnector<Body>("body");
+void BodyActuator::constructConnectors() {
+	constructConnector<Body>("body");
 }
 
 void BodyActuator::setBodyName(const std::string& name)

@@ -138,7 +138,7 @@ private:
 
 	/** Next define its structural dependencies on other components.
 	This will be the body that force/torques are applied to.*/
-	void constructStructuralConnectors() override;
+	void constructConnectors() override;
 
 	//--------------------------------------------------------------------------
 	// Implement Force interface
