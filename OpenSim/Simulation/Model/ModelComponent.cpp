@@ -34,16 +34,19 @@ namespace OpenSim {
 //==============================================================================
 ModelComponent::ModelComponent() : _model(NULL) 
 {
+    constructProperty_GeometryList();
 }
 
 ModelComponent::ModelComponent(const std::string& fileName, bool updFromXMLNode)
 :   Component(fileName, updFromXMLNode), _model(NULL)
 {
+    constructProperty_GeometryList();
 }
 
 ModelComponent::ModelComponent(SimTK::Xml::Element& element) 
 :   Component(element), _model(NULL)
 {
+    constructProperty_GeometryList();
 }
 
 const Model& ModelComponent::getModel() const

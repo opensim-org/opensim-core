@@ -43,15 +43,15 @@
 
 // INCLUDES
 #include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
 #include "Simbody.h"
 
 namespace OpenSim {
 
 class Model;
 class ModelDisplayHints;
-
-
 //==============================================================================
 //                            MODEL COMPONENT
 //==============================================================================
@@ -79,9 +79,18 @@ class ModelDisplayHints;
  *
  * @author Ajay Seth, Michael Sherman
  */
+
 class OSIMSIMULATION_API ModelComponent : public Component {
 OpenSim_DECLARE_ABSTRACT_OBJECT(ModelComponent, Component);
-
+// PROPERTIES
+//==============================================================================
+/** @name Property declarations
+These are the serializable properties associated with this class. **/
+/**@{**/
+protected:
+OpenSim_DECLARE_OPTIONAL_PROPERTY(GeometryList, GeometrySet,
+        "Geometry that can be attached to the Model Component");
+/**@}**/
 //==============================================================================
 // METHODS
 //==============================================================================
