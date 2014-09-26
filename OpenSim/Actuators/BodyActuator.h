@@ -85,7 +85,7 @@ public:
 	@param[in] spatialForceIsGlobal a flag to set if the force is in global frame
 	*/
 
-	explicit BodyActuator(const OpenSim::Body& body,
+	explicit BodyActuator(const Body& body,
 						  const SimTK::Vec3& point = SimTK::Vec3(0),
 						  bool pointIsGlobal = false,
 						  bool spatialForceIsGlobal = true);
@@ -121,11 +121,11 @@ public:
 
 
 	/* Set the body to which this actuator applies spatial forces. */
-	void setBody(OpenSim::Body& body);
-	const OpenSim::Body& getBody() const;
+	void setBody(const Body& body);
+	const Body& getBody() const;
 
 
-	/* Set the body names to which this actuator applies spatial forces. */
+	/* Set the body name to which this actuator applies spatial forces. */
 	void setBodyName(const std::string& name);
 	const std::string& getBodyName() const;
 
