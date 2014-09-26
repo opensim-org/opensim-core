@@ -638,7 +638,7 @@ void testBodyActuator()
 	ASSERT(udotMobility.norm() != 0.0 || udotBody.norm() != 0.0);
 	// Then check if they are equal
 	for (int i = 0; i<udotMobility.size(); ++i){
-		ASSERT_EQUAL(udotMobility[i], udotBody[i], 1.0e-12);
+		ASSERT_EQUAL(udotMobility[i], udotBody[i], SimTK::Eps);
 	}
 
 	// clear the mobility forces
@@ -687,7 +687,7 @@ void testBodyActuator()
 	// Then verify that the BodyActuator also generates the same acceleration
 	// as the equivalent applied mobility force
 	for (int i = 0; i<udotBodyActuator.size(); ++i){
-		ASSERT_EQUAL(udotMobility[i], udotBodyActuator[i], 1.0e-12);
+		ASSERT_EQUAL(udotMobility[i], udotBodyActuator[i], SimTK::Eps);
 	}
 
 	// -------------- Setup integrator and manager -------------------
