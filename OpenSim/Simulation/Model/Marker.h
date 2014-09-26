@@ -64,7 +64,7 @@ public:
     const std::string& getBodyName() const;
 	void setBodyName(const std::string& aName);
     const OpenSim::Body& getBody() const {
-        return getReferenceFrame().getBody();
+        return getReferenceFrame().getAnchorBody();
     }
 	void changeBody(const OpenSim::Body& aBody );
 	void changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody );

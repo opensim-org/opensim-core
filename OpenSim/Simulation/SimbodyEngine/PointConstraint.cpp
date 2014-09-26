@@ -142,8 +142,8 @@ void PointConstraint::addToSystem(SimTK::MultibodySystem& system) const
     Super::addToSystem(system);
 
 	// Get underlying mobilized bodies
-	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body1->getIndex());
-	SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body2->getIndex());
+	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body1->getMobilizedBodyIndex());
+	SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body2->getMobilizedBodyIndex());
 
     // Now create a Simbody Constraint::Point
     SimTK::Constraint::Ball simtkPoint(b1, get_location_body_1(), b2, get_location_body_2());

@@ -196,9 +196,9 @@ void ExpressionBasedPointToPointForce::
 
 	// Get underlying mobilized bodies
 	mutableThis->_b1 = 
-		&_model->getMatterSubsystem().getMobilizedBody(body1.getIndex());
+		&_model->getMatterSubsystem().getMobilizedBody(body1.getMobilizedBodyIndex());
 	mutableThis->_b2 =
-		&_model->getMatterSubsystem().getMobilizedBody(body2.getIndex());
+		&_model->getMatterSubsystem().getMobilizedBody(body2.getMobilizedBodyIndex());
 }
 
 //=============================================================================
@@ -294,14 +294,14 @@ getRecordValues(const SimTK::State& state) const
 	_model->getForceSubsystem().getForce(_index)
 		.calcForceContribution(state, bodyForces, particleForces, mobilityForces);
 	
-	SimTK::Vec3 forces = bodyForces(body1.getIndex())[1];
+	SimTK::Vec3 forces = bodyForces(body1.getMobilizedBodyIndex())[1];
 	values.append(3, &forces[0]);
 
 	SimTK::Vec3 gpoint(0);
 	_model->getSimbodyEngine().getPosition(state, body1, getPoint1(), gpoint);
 	values.append(3, &gpoint[0]);
 
-	forces = bodyForces(body2.getIndex())[1];
+	forces = bodyForces(body2.getMobilizedBodyIndex())[1];
 	values.append(3, &forces[0]);
 
 	_model->getSimbodyEngine().getPosition(state, body2, getPoint2(), gpoint);

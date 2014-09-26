@@ -221,8 +221,8 @@ void ExpressionBasedBushingForce::addToSystem(SimTK::MultibodySystem& system) co
 	ExpressionBasedBushingForce* mutableThis = const_cast<ExpressionBasedBushingForce *>(this);
 
     // Get underlying mobilized bodies
-	mutableThis->_b1 = &_model->updMatterSubsystem().getMobilizedBody(body1.getIndex());
-	mutableThis->_b2 = &_model->updMatterSubsystem().getMobilizedBody(body2.getIndex());
+	mutableThis->_b1 = &_model->updMatterSubsystem().getMobilizedBody(body1.getMobilizedBodyIndex());
+	mutableThis->_b2 = &_model->updMatterSubsystem().getMobilizedBody(body2.getMobilizedBodyIndex());
 	// Define the transforms for the bushing frames affixed to the specified bodies
 	SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(orientationInBody1);
 	SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(orientationInBody2);
@@ -652,12 +652,12 @@ void ExpressionBasedBushingForce::generateDecorations
         SimTK::DecorativeFrame body2Frame(0.2);
 
         // attach frame 1 to body 1, translate and rotate it to the location of the bushing
-        body1Frame.setBodyId( _model->getBodySet().get(get_body_1()).getIndex() );
+		body1Frame.setBodyId(_model->getBodySet().get(get_body_1()).getMobilizedBodyIndex());
         body1Frame.setTransform(_inb1);
         body1Frame.setColor(frame1color);
 
         // attach frame 2 to body 2, translate and rotate it to the location of the bushing
-        body2Frame.setBodyId( _model->getBodySet().get(get_body_2()).getIndex() );
+		body2Frame.setBodyId(_model->getBodySet().get(get_body_2()).getMobilizedBodyIndex());
         body2Frame.setTransform(_inb2);
         body2Frame.setColor(frame2color);
 

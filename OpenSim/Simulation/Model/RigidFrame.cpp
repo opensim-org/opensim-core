@@ -52,4 +52,25 @@ void RigidFrame::setNull()
 	setAuthors("Matt DeMers");
 }
 
+bool RigidFrame::isAnchoredToBody() const
+{
+	if (_body.empty()) { return false; }
+	return true;
+}
+
+const OpenSim::Body& RigidFrame::getAnchorBody() const
+{
+	if (isAnchoredToBody())
+	{
+		return *_body;
+	}
+	else
+	{
+		string errorMessage;
+		errorMessage = "RigidFrame: " + getName() + " is not anchored to an OpenSim Body.";
+		errorMessage += "\nYou should check for connectivity first using RigidFrame.isAnchoredToBody().";
+		throw (Exception(errorMessage.c_str()));
+	}
+
+}
 

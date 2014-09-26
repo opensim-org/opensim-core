@@ -47,6 +47,7 @@ using SimTK::Vec3;
  */
 Body::Body() : RigidFrame()
 {
+	_body = this;
 	constructProperties();
 }
 
@@ -55,9 +56,8 @@ Body::Body() : RigidFrame()
  * Constructor.
  */
 Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,const SimTK::Inertia& aInertia) :
-   RigidFrame()
+   Body()
 {
-	constructProperties();
 	setName(aName);
 	set_mass(aMass);
 	set_mass_center(aMassCenter);

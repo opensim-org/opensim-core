@@ -68,16 +68,34 @@ public:
     RigidFrame();
 
     virtual ~RigidFrame() {};
-    /** Return reference to the Body that Frame is affixed to, either directly
-     * or through intermediate Frames.
+	/** Test if this RigidFrame is anchored to a Body.
+	 */
+	bool isAnchoredToBody() const;
+    /** 
+	 * If RigidFrame is anchored to a Body, either directly or through,
+	 * intermediate Frames, return a reference to that Body. Check isAnchoredToBody()
+	 * before calling. Throws an exception if this RigidFrame is not connected to a body.
      */
-    virtual const OpenSim::Body& getBody() const = 0;
+	const OpenSim::Body& getAnchorBody() const;
+
+	/**
+	 * All RigidFrames are ultimately anchored to a SimTK::Mobilized body.  
+	 * Return the MobilizedBodyIndex of the MobilizedBody to which this RigidFrame
+	 * is anchored.
+	 */
+	const SimTK::MobilizedBodyIndex getMobilizedBodyIndex() const { return _index; }
 
 private:
 	void setNull();
-
+	
 protected:
-
+	/* ID for the underlying mobilized body in Simbody system.
+	Only Joint can set, since it defines the mobilized body type and
+	the connection to the parent body in the multibody tree. */
+	mutable SimTK::MobilizedBodyIndex _index;
+	/* Smart pointer to the Body to which this RigidFrame is connected.
+	Will be null if not connected to a body*/
+	mutable SimTK::ReferencePtr<OpenSim::Body> _body;
 	//==========================================================================
 };	// END of class RigidFrame
 //=============================================================================

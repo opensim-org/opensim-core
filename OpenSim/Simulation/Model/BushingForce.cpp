@@ -148,8 +148,8 @@ void BushingForce::addToSystem(SimTK::MultibodySystem& system) const
 	Body& body2 = _model->updBodySet().get(body2Name);
 
 	// Get underlying mobilized bodies
-	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody(body1.getIndex());
-	SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody(body2.getIndex());
+	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody(body1.getMobilizedBodyIndex());
+	SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody(body2.getMobilizedBodyIndex());
 	// Build the transforms
 	SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(orientationInBody1);
 	SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(orientationInBody2);
@@ -257,13 +257,13 @@ getRecordValues(const SimTK::State& state) const
 
 	//get the net force added to the system contributed by the bushing
 	simtkSpring.calcForceContribution(state, bodyForces, particleForces, mobilityForces);
-	SimTK::Vec3 forces = bodyForces(_model->getBodySet().get(body1Name).getIndex())[1];
-	SimTK::Vec3 torques = bodyForces(_model->getBodySet().get(body1Name).getIndex())[0];
+	SimTK::Vec3 forces = bodyForces(_model->getBodySet().get(body1Name).getMobilizedBodyIndex())[1];
+	SimTK::Vec3 torques = bodyForces(_model->getBodySet().get(body1Name).getMobilizedBodyIndex())[0];
 	values.append(3, &forces[0]);
 	values.append(3, &torques[0]);
 
-	forces = bodyForces(_model->getBodySet().get(body2Name).getIndex())[1];
-	torques = bodyForces(_model->getBodySet().get(body2Name).getIndex())[0];
+	forces = bodyForces(_model->getBodySet().get(body2Name).getMobilizedBodyIndex())[1];
+	torques = bodyForces(_model->getBodySet().get(body2Name).getMobilizedBodyIndex())[0];
 
 	values.append(3, &forces[0]);
 	values.append(3, &torques[0]);

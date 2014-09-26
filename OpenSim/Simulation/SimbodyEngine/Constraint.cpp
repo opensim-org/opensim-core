@@ -221,7 +221,7 @@ Array<std::string> Constraint::getRecordLabels() const
 		const SimTK::MobilizedBodyIndex &bx =  b.getMobilizedBodyIndex();
 		Body *bod = NULL;
 		for(int j=0; j<bodies.getSize(); ++j ){
-			if(bodies[j].getIndex() == bx){
+			if(bodies[j].getMobilizedBodyIndex() == bx){
 				bod = &bodies[j];
 				break;
 			}

@@ -76,6 +76,7 @@ FixedFrame::FixedFrame(const RigidFrame& parent_frame, const SimTK::Transform&
 */
 void FixedFrame::setNull()
 {
+	isCacheInitialized = false;
 	transform.setToZero();
 	setAuthors("Matt DeMers");
 }
@@ -97,7 +98,16 @@ void FixedFrame::constructStructuralConnectors()
 	constructStructuralConnector<RigidFrame>("parent_frame");
 }
 
+void FixedFrame::addToSystem(SimTK::MultibodySystem& system) const
+{
+	// Traverse the tree of consecutive FixedFrame connections to determine 
+	// this FixedFrame's root segment (Body/MobilizedBody).  We store that 
+	// information instead of recomputing it on the fly when asked for information
+	// about our connection to a root segment.
 
+	initFixedFrameCache();
+
+}
 //=============================================================================
 // FRAME COMPUTATIONS
 //=============================================================================
@@ -117,15 +127,46 @@ void FixedFrame::setTransform(const SimTK::Transform& xform)
     // serialize after this call
 	set_translation(xform.p());
 	set_orientation(xform.R().convertRotationToBodyFixedXYZ());
+	// indicate that the cache is not initialized
+	isCacheInitialized = false;
 }
 
 SimTK::Transform FixedFrame::calcGroundTransform(const SimTK::State &state)
     const
 {
+	
     return getTransform()*getParentFrame().getGroundTransform(state);
 
 }
 
+void FixedFrame::initFixedFrameCache() const
+{
+	const RigidFrame& parent = getParentFrame();
+	const OpenSim::FixedFrame* parentFixedFrame =
+		+dynamic_cast<const OpenSim::FixedFrame *>(&parent);
+	if (parentFixedFrame != 0)
+	{
+		// The parent frame is another FixedFrame
+		// The parent FixedFrame must resolve its hierarchy before we ask
+		// for its root Body or MobilizedBodyIndex.
+		// check if the FixedFrame has populated its root segments
+		if (parentFixedFrame->isCacheInitialized == 0)
+		{
+			parentFixedFrame->initFixedFrameCache();
+		}
+		// all variables pointing to the parents root Body and or MobilizedBody should be valid
+	}
+
+	// Ask my parent RigidFrame which root Body/MobilizedBody I'm attached to
+
+	_index = parent.getMobilizedBodyIndex();
+	if (parent.isAnchoredToBody())
+	{
+		_body.reset(const_cast<OpenSim::Body*>(&parent.getAnchorBody()));
+	}
+	
+	
+}
 //=============================================================================
 // GET AND SET
 //=============================================================================
@@ -139,18 +180,6 @@ const RigidFrame& FixedFrame::getParentFrame() const
     return getConnector<RigidFrame>("parent_frame").getConnectee();
 }
 
-
-//----------------- Get Body that the FixedFrame is affixed to.
-const OpenSim::Body& FixedFrame::getBody() const {
-    const RigidFrame& parent = getParentFrame();
-    // The following line could've used safeDownCast but that fails for const
-    // pointers!
-    const OpenSim::Body* parentBody =
-        dynamic_cast<const OpenSim::Body *>(&parent);
-    if (parentBody != 0)
-        return *parentBody;
-    return getParentFrame().getBody();
-}
 
 //=============================================================================
 // SCALING

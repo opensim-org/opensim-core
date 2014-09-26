@@ -101,6 +101,10 @@ void testBodyFrame()
 		assert(std::fabs(angles[1]) < 1e-6);
 		assert(std::fabs(angles[2] - radAngle) < 1e-6);
 	}
+
+	// make sure that this Body, which is a Frame, reports that its anchor body is itself.
+	assert(rod1.isAnchoredToBody() == true);
+	assert(rod1.getName() == rod1.getAnchorBody().getName);
 	return;
 }
 
@@ -119,6 +123,38 @@ void testFixedFrameOnBodyFrame()
     SimTK::Transform xform = atOriginFrame->getGroundTransform(st);
 	// xform should have 0.0 translation
 	assert(xform.p().norm() < 1e-6);
+	// make sure that this FixedFrame knows that it is rigidly fixed to rod1
+	assert(atOriginFrame.isAnchoredToBody() == true);
+	assert(rod1.getName() == atOriginFrame.getAnchorBody().getName);
+	return;
+}
+
+void testFixedFrameOnFixedFrame()
+{
+	Model* dPendulum = new Model("double_pendulum.osim");
+	const OpenSim::Body& rod1 = dPendulum->getBodySet().get("rod1");
+	FixedFrame* atOriginFrame = new FixedFrame(rod1);
+	SimTK::Transform relXform;
+	relXform.setP(SimTK::Vec3(0.0, .5, 0.0));
+	relXform.updR().setRotationFromAngleAboutAxis(SimTK::Pi / 4.0, SimTK::CoordinateAxis(2));
+	atOriginFrame->setTransform(relXform);
+	dPendulum->addFrame(atOriginFrame);
+
+	//connect a second frame to the first FixedFrame without any offset
+	FixedFrame* secondFrame = atOriginFrame->clone();
+	secondFrame->setParentFrame(*atOriginFrame);
+	relXform.setP(SimTK::Vec3(0.0));
+	secondFrame->setTransform(relXform);
+	dPendulum->addFrame(secondFrame);
+
+	SimTK::State& st = dPendulum->initSystem();
+	const SimTK::Transform rod1FrameXform = rod1.calcGroundTransform(st);
+	SimTK::Transform xform = secondFrame->getGroundTransform(st);
+	// xform should have 0.0 translation
+	assert(xform.p().norm() < 1e-6);
+	// make sure that this FixedFrame knows that it is rigidly fixed to rod1
+	assert(secondFrame.isAnchoredToBody() == true);
+	assert(rod1.getName() == secondFrame.getAnchorBody().getName);
 	return;
 }
 
@@ -142,6 +178,9 @@ void testFixedFrameOnBodyFrameSerialize()
     const Frame& myExtraFrame = dPendulumWFrame->getFrameSet().get("myExtraFrame");
     SimTK::Transform xformPost = myExtraFrame.getGroundTransform(st2);
     assert((xformPost.p()- xformPre.p()).norm() < 1e-6);
+	// make sure that this FixedFrame knows that it is rigidly fixed to rod1
+	assert(myExtraFrame.isAnchoredToBody() == true);
+	assert(rod1.getName() == myExtraFrame.getAnchorBody().getName);
     return;
 }
 

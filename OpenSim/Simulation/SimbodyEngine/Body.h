@@ -112,7 +112,7 @@ public:
 	const VisibleObject* getDisplayer() const { return &get_VisibleObject(); }
 	VisibleObject* updDisplayer() { return &upd_VisibleObject(); }
 
-	const SimTK::MobilizedBodyIndex getIndex() const {return _index;};
+	
 	
     /** Get the named wrap object, if it exists.
 	*
@@ -130,7 +130,7 @@ public:
     // Frame interface
     /** Get transform to Ground frame */
     SimTK::Transform calcGroundTransform(const SimTK::State& state) const override;
-    const OpenSim::Body& getBody(void) const{ return *this; }
+
  protected:
     // Model component interface.
 	void finalizeFromProperties() override;
@@ -158,11 +158,6 @@ private:
 
 	// mutable because fist get constructs tensor from properties
 	mutable SimTK::Inertia _inertia;
-
-	/* ID for the underlying mobilized body in Simbody system.
-	    Only Joint can set, since it defines the mobilized body type and
-		the connection to the parent body in the multibody tree. */
-	mutable SimTK::MobilizedBodyIndex _index;
 
 	SimTK::Array_<Body*> _slaves;
 

@@ -113,19 +113,19 @@ void testAssembleModelWithConstraints(string modelFile)
 		const JointSet& js = model.getJointSet();
 		for (int i = 0; i < js.getSize(); ++i){
 			const Joint& j = js[i];
-			viz.addDecoration(j.getParentBody().getIndex(),
+			viz.addDecoration(j.getParentBody().getMobilizedBodyIndex(),
 				j.getParentTransform(),
 				SimTK::DecorativeFrame(0.05));
-			viz.addDecoration(j.getChildBody().getIndex(),
+			viz.addDecoration(j.getChildBody().getMobilizedBodyIndex(),
 				j.getChildTransform(),
 				SimTK::DecorativeFrame(0.033));
-			viz.addDecoration(j.getChildBody().getIndex(),
+			viz.addDecoration(j.getChildBody().getMobilizedBodyIndex(),
 				Transform(),
 				SimTK::DecorativeSphere(0.033));
 			if (j.getChildBody().getName() == "pelvis"){
 				SimTK::DecorativeBrick geom(Vec3(0.10, 0.05, 0.20));
 				geom.setColor(Vec3(0.1, 1.0, 0.1));
-				viz.addDecoration(j.getChildBody().getIndex(),
+				viz.addDecoration(j.getChildBody().getMobilizedBodyIndex(),
 					Transform(), geom);
 			}
 		}

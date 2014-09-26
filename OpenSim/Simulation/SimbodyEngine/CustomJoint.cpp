@@ -225,7 +225,7 @@ void CustomJoint::addToSystem(SimTK::MultibodySystem& system) const
 	// preserved, the inboard must exist first.
 	if (get_reverse()){
 		inb = system.updMatterSubsystem().updMobilizedBody(
-			getChildBody().getIndex());
+			getChildBody().getMobilizedBodyIndex());
 		inbX = &getChildTransform();
 
 		outb = getParentInternalRigidBody();
@@ -235,7 +235,7 @@ void CustomJoint::addToSystem(SimTK::MultibodySystem& system) const
 	}
 	else{
 		inb = system.updMatterSubsystem().updMobilizedBody(
-			getParentBody().getIndex());
+			getParentBody().getMobilizedBodyIndex());
 		outb = getChildInternalRigidBody();
 	}
 

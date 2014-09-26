@@ -212,9 +212,9 @@ void testTorqueActuator()
 	Vector_<SpatialVec>& bodyForces = 
 		model->getMultibodySystem().updRigidBodyForces(state, Stage::Dynamics);
 	bodyForces.dump("Body Forces before applying torque");
-	model->getMatterSubsystem().addInBodyTorque(state, bodyA->getIndex(), 
+	model->getMatterSubsystem().addInBodyTorque(state, bodyA->getMobilizedBodyIndex(),
 		torqueMag*torqueAxis, bodyForces);
-	model->getMatterSubsystem().addInBodyTorque(state, bodyB->getIndex(), 
+	model->getMatterSubsystem().addInBodyTorque(state, bodyB->getMobilizedBodyIndex(),
 		-torqueMag*torqueAxis, bodyForces);
 	bodyForces.dump("Body Forces after applying torque to bodyA and bodyB");
 

@@ -129,15 +129,19 @@ public:
 	*/
 	void setTransform(const SimTK::Transform& transform);
 	
-    const OpenSim::Body& getBody() const override;
-	
 protected:
-    // Model component interface.
+    
+	/** Model Component Interface */
+	
+	void addToSystem(SimTK::MultibodySystem& system) const override;
 	void constructStructuralConnectors() override;
 	// Frame interface
     SimTK::Transform calcGroundTransform(const SimTK::State& state) const
         override;
-	
+	// Helpers for initializing fixed frames
+	// this helper function is called during buildSytem, after all connnection are resolved
+	void initFixedFrameCache() const;
+	mutable bool isCacheInitialized;
 private:
 
 	void setNull();
