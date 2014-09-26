@@ -136,7 +136,7 @@ private:
 	//--------------------------------------------------------------------------
 	/** Construct the infrastructure of the BodyActuator component.
 	Begin with its properties. */
-	void constructProperties();
+	void constructProperties() override;
 
 	/** Next define its structural dependencies on other components.
 	This will be the body that force/torques are applied to.*/
