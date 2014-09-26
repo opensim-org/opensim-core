@@ -120,10 +120,10 @@ void Joint::constructProperties()
 	constructProperty_reverse(false);
 }
 
-void Joint::constructStructuralConnectors()
+void Joint::constructConnectors()
 {
-	constructStructuralConnector<Body>("parent_body");
-	constructStructuralConnector<Body>("child_body");
+	constructConnector<Body>("parent_body");
+	constructConnector<Body>("child_body");
 }
 
 void Joint::setParentBodyName(const std::string& name)

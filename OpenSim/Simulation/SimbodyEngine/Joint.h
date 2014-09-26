@@ -414,7 +414,7 @@ private:
 
 	/** Next define its structural dependencies on other components.
 		These will be the parent and child bodies of the Joint.*/
-	void constructStructuralConnectors() override;
+	void constructConnectors() override;
 
 	/** Utility method for accessing the number of mobilities provided by 
 	    an underlying MobilizedBody */

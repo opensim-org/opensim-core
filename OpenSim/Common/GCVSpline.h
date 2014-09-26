@@ -1,5 +1,5 @@
-#ifndef _GCVSpline_h_
-#define _GCVSpline_h_
+#ifndef OPENSIM_GCV_SPLINE_H_
+#define OPENSIM_GCV_SPLINE_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  GCVSpline.h                            *
  * -------------------------------------------------------------------------- *
@@ -45,6 +45,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * A class for representing a smooth function with a generalized
  * cross-validation spline.  Linear, cubic, qunitic, and heptic splines
@@ -72,8 +74,6 @@
  *
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API GCVSpline : public Function {
 OpenSim_DECLARE_CONCRETE_OBJECT(GCVSpline, Function);
 
@@ -179,4 +179,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif  // __GCVSpline_h__
+#endif  // OPENSIM_GCV_SPLINE_H_

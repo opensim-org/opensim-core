@@ -1,5 +1,5 @@
-#ifndef __StepFunction_h__
-#define __StepFunction_h__
+#ifndef OPENSIM_STEP_FUNCTION_H_
+#define OPENSIM_STEP_FUNCTION_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  StepFunction.h                          *
  * -------------------------------------------------------------------------- *
@@ -134,4 +134,4 @@ public:
 
 } // end of namespace OpenSim
 
-#endif  // __StepFunction_h__
+#endif  // OPENSIM_STEP_FUNCTION_H_

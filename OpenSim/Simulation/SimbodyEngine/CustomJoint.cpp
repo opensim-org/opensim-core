@@ -64,9 +64,7 @@ CustomJoint::CustomJoint(const std::string &name, const OpenSim::Body &parent,
 {
 	constructProperties();
 	set_SpatialTransform(aSpatialTransform);
-
-	constructCoordinates();
-	updSpatialTransform().connectToJoint(*this);
+    finalizeFromProperties();
 }
 
 //_____________________________________________________________________________
@@ -82,9 +80,7 @@ CustomJoint::CustomJoint(const std::string &name, const OpenSim::Body &parent,
 			child, locationInchild, orientationInChild, reverse)
 {
 	constructProperties();
-
-	constructCoordinates();
-	updSpatialTransform().connectToJoint(*this);
+    finalizeFromProperties();
 }
 
 //_____________________________________________________________________________
@@ -177,36 +173,55 @@ void CustomJoint::scale(const ScaleSet& aScaleSet)
 void CustomJoint::constructCoordinates()
 {
 	CoordinateSet& coordinateSet = upd_CoordinateSet();
-
-	// In case we're making a copy, we need to restore "properties" from 
-	// _coordinateSet after we construct them anew
-	CoordinateSet savedCoordinates = coordinateSet;
-
-	coordinateSet.setSize(0);
+    const SpatialTransform& spatialTransform = getSpatialTransform();
+    OpenSim::Array<std::string> coordinateNames
+        = spatialTransform.getCoordinateNames();
 
 	// Check how many coordinates are required
-	int ncoords = getSpatialTransform().getCoordinateNames().getSize();
+    int ncoords = coordinateNames.getSize();
 
-	for(int i = 0; i< ncoords ; i++){
-		Coordinate *coord = new Coordinate();
-		std::string coordName = getSpatialTransform().getCoordinateNames()[i];
-		coord->setName(coordName);
-		int coordIndex = savedCoordinates.getIndex(coordName);
-		if (coordIndex!=-1){
-			Coordinate& origCoord = savedCoordinates.get(coordIndex);
-			coord->setDefaultValue(origCoord.getDefaultValue());
-			coord->setDefaultSpeedValue(origCoord.getDefaultSpeedValue());
-			coord->setRangeMin(origCoord.getRangeMin());
-			coord->setRangeMax(origCoord.getRangeMax());
-			coord->setMotionType(origCoord.getMotionType());
-			coord->setDefaultClamped(origCoord.getDefaultClamped());
-			coord->setDefaultLocked(origCoord.getDefaultLocked());
-			coord->setDefaultIsPrescribed(origCoord.getDefaultIsPrescribed());
-			if (origCoord.getDefaultIsPrescribed())
-				coord->setPrescribedFunction(origCoord.getPrescribedFunction());
-		}
-		coordinateSet.adoptAndAppend(coord);
-	}
+    for (int i = 0; i < ncoords; i++){
+        std::string coordName = spatialTransform.getCoordinateNames()[i];
+
+        int coordIndex = coordinateSet.getIndex(coordName);
+        Coordinate* coord = nullptr;
+        if (coordIndex < 0){
+            coord = new Coordinate();
+            coord->setName(coordName);
+            // Let joint take ownership as it should
+            coordinateSet.adoptAndAppend(coord);
+        }
+        else {
+            //if already in the set it was already specified 
+            continue;
+        }
+
+        // Determine if the MotionType of the Coordinate based
+        // on which TransformAxis it is relate to 0-2 are Rotational
+        // and 3-5 are Translational. Coordinates appearing
+        // in both categories are Coupled
+        Coordinate::MotionType mt = Coordinate::MotionType::Coupled;
+        for (int j = 0; j < 3; ++j){
+            if (spatialTransform[j]
+                .getCoordinateNamesInArray().findIndex(coordName) >= 0){
+                mt = Coordinate::MotionType::Rotational;
+                break;
+            }
+        }
+        for (int j = 0; j < 3; ++j){
+            if (spatialTransform[j + 3]
+                .getCoordinateNamesInArray().findIndex(coordName) >= 0){
+                if (mt == Coordinate::MotionType::Rotational){
+                    // already had a Rotational contribution so must be coupled
+                    mt = Coordinate::MotionType::Coupled;
+                }
+                // otherwise just Translational
+                else mt = Coordinate::MotionType::Translational;
+                break;
+            }
+        }
+        coord->setMotionType(mt);
+    }
 }
 
 //=============================================================================

@@ -497,9 +497,9 @@ void testSpringMass()
 
 	osimModel->setGravity(gravity_vec);
 
-	PointToPointSpring spring("ground", 
+	PointToPointSpring spring(osimModel->getGroundBody(), 
 		Vec3(0.,restlength,0.), 
-		"ball", 
+		ball, 
 		Vec3(0.), 
 		stiffness, 
 		restlength);
