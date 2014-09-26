@@ -154,7 +154,6 @@ private:
 	//--------------------------------------------------------------------------
 	int numControls() const override { return 6; }
 	double getPower(const SimTK::State& s) const override;
-	void overrideForce(SimTK::State& s, bool flag) const {}
 
 	//=========================================================================
 };	// END of class BodyActuator
