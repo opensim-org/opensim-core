@@ -35,13 +35,15 @@ class Model;
 //                              BODY ACTUATOR
 //=============================================================================
 /**
- * Apply a spatial force (that is, [torque, force]) on the origin of the given
- * body. That is, the force is applied at the origin; torques don't have
- * associated points. This actuator has no states; the control signal should 
- * provide a 6D vector including [torque(3D), force(3D)] that is supposed to be 
- * applied to the selected body.
- * The associated Controller is expected to generate [torque, force] in the 
- * ground frame.
+ * Apply a spatial force (that is, [torque, force]) on a given point of the 
+ * given body. That is, the force is applied at the given point; torques don't
+ * have associated points. This actuator has no states; the control signal  
+ * should provide a 6D vector including [torque(3D), force(3D)] that is supposed 
+ * to be applied to the body.
+ * The associated controller can generate the spatial force [torque, force] both
+ * in the body and global (ground) frame. The default is assumed to be global 
+ * frame. The point of application can be specified both in the body and global 
+ * (ground) frame. The default is assumed to be the body frame.
  *
  * @author Soha Pouya, Michael Sherman
  */
@@ -77,9 +79,9 @@ public:
 	of [torque, force] on a body. The torque is applied about the axis specified
 	in ground frame.
 
-	@param[in] body					the body that the actuator applies torque to
-	@param[in] point				the point that the force is applied to
-	@param[in] pointIsGlobal		a flag to set if the point is in global frame
+	@param[in] body                 the body that the actuator applies torque to
+	@param[in] point                the point that the force is applied to
+	@param[in] pointIsGlobal        a flag to set if the point is in global frame
 	@param[in] spatialForceIsGlobal a flag to set if the force is in global frame
 	*/
 
