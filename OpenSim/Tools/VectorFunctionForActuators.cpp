@@ -286,8 +286,8 @@ evaluate( const SimTK::State& s, double *aX, double *rF)
 	// Vector function values
 	int j = 0;
 	for(i=0;i<N;i++) {
-        Actuator& act = forceSet.get(i); 
-	    rF[j] = act.getForce(getCMCActSubsys()->getCompleteState()) - _f[j];
+		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&forceSet[i]);
+	    rF[j] = act->getForce(getCMCActSubsys()->getCompleteState()) - _f[j];
         j++;
 	}
 

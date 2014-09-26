@@ -26,6 +26,7 @@
 #include "CoordinateActuator.h"
 #include "PointActuator.h"
 #include "TorqueActuator.h"
+#include "BodyActuator.h"
 #include "PointToPointActuator.h"
 #include "SpringGeneralizedForce.h"
 #include "ClutchedPathSpring.h"

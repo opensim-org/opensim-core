@@ -1968,7 +1968,8 @@ void Model::overrideAllActuators( SimTK::State& s, bool flag) {
      Set<Actuator>& as = updActuators();
 
      for(int i=0;i<as.getSize();i++) {
-         as[i].overrideForce(s, flag );
+		 ScalarActuator* act = dynamic_cast<ScalarActuator*>(&as[i]);
+         act->overrideForce(s, flag );
      }
 
 }

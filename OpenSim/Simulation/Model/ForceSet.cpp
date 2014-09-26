@@ -190,7 +190,7 @@ append(Force *aForce)
 {
 	bool success = ModelComponentSet<Force>::adoptAndAppend(aForce);
 
-	if((success)&&(_model!=NULL)) {
+	if((success)&&(&updModel()!=NULL)) {
 		updateActuators();
 		updateMuscles();
 	}
@@ -214,7 +214,7 @@ append(Force &aForce)
     bool success = ModelComponentSet<Force>::cloneAndAppend(aForce);
 
 
-	if((success)&&(_model!=NULL)) {
+	if ((success) && (&getModel() != NULL)) {
 		updateActuators();
 	    updateMuscles();
 	}
@@ -320,7 +320,7 @@ void ForceSet::updateActuators()
     _actuators.setSize(0);
     for (int i = 0; i < getSize(); ++i)
     {
-        Actuator* act = dynamic_cast<Actuator*>(&get(i));
+		Actuator* act = dynamic_cast<Actuator*>(&get(i));
         if (act != NULL)  _actuators.adoptAndAppend(act);
     }
 }
@@ -369,7 +369,7 @@ void ForceSet::
 getStateVariableNames(OpenSim::Array<std::string> &rNames) const
 {
 	for(int i=0;i<getSize();i++) {
-		Actuator *act = dynamic_cast<Actuator*>(&get(i)); 
+		ScalarActuator *act = dynamic_cast<ScalarActuator*>(&get(i));
        
 		if(act) {
             rNames.append(act->getStateVariableNames());
@@ -391,10 +391,10 @@ check() const
 	bool status=true;
 
 	// LOOP THROUGH ACTUATORS
-	Actuator *act;
+	ScalarActuator *act;
 	int size = getSize();
 	for(int i=0;i<size;i++) {
-		act = dynamic_cast<Actuator *>(&get(i));
+		act = dynamic_cast<ScalarActuator *>(&get(i));
 		if(!act) continue;
 	}
 
