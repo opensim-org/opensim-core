@@ -77,9 +77,9 @@ void Station::constructProperties()
 }
 
 
-void Station::constructStructuralConnectors()
+void Station::constructConnectors()
 {
-    constructStructuralConnector<RigidFrame>("reference_frame");
+    constructConnector<RigidFrame>("reference_frame");
 }
 
 /**

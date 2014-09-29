@@ -134,7 +134,7 @@ protected:
 	/** Model Component Interface */
 	
 	void addToSystem(SimTK::MultibodySystem& system) const override;
-	void constructStructuralConnectors() override;
+	void constructConnectors() override;
 	// Frame interface
     SimTK::Transform calcGroundTransform(const SimTK::State& state) const
         override;

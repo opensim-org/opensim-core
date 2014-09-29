@@ -48,7 +48,10 @@ int main()
     // starting with type Body
     ArrayPtrs<Body> availableBodies;
     Object::getRegisteredObjectsOfGivenType(availableBodies);
-    availableComponents.push_back(availableBodies[0]);
+	for (int i = 0; i < availableBodies.size(); ++i) {
+		availableComponents.push_back(availableBodies[i]);
+	}
+
 
     // then type Joint
     ArrayPtrs<Joint> availableJoints;
@@ -334,6 +337,8 @@ void addObjectAsComponentToModel(Object* instance, Model& model)
         model.addProbe(dynamic_cast<Probe*>(instance));
     else if (Object::isObjectTypeDerivedFrom< Joint >(className))
         model.addJoint(dynamic_cast<Joint*>(instance));
+	else if (Object::isObjectTypeDerivedFrom< Frame >(className))
+		model.addFrame(dynamic_cast<Frame*>(instance));
     else if (Object::isObjectTypeDerivedFrom< ModelComponent >(className))
         model.addModelComponent(dynamic_cast<ModelComponent*>(instance));
     else

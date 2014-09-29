@@ -73,7 +73,7 @@ public:
 private:
 	void setNull();
 	void constructProperties() override;
-	void constructStructuralConnectors() override;
+	void constructConnectors() override;
 
 //=============================================================================
 };	// END of class Station

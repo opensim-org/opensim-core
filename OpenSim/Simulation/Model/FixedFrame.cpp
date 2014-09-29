@@ -93,9 +93,9 @@ void FixedFrame::constructProperties()
 	// transform at default
 }
 
-void FixedFrame::constructStructuralConnectors()
+void FixedFrame::constructConnectors()
 {
-	constructStructuralConnector<RigidFrame>("parent_frame");
+	constructConnector<RigidFrame>("parent_frame");
 }
 
 void FixedFrame::addToSystem(SimTK::MultibodySystem& system) const
