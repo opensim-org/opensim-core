@@ -162,7 +162,7 @@ void FixedFrame::initFixedFrameCache() const
 	_index = parent.getMobilizedBodyIndex();
 	if (parent.isAnchoredToBody())
 	{
-		_body.reset(const_cast<OpenSim::Body*>(&parent.getAnchorBody()));
+		_body=parent.getAnchorBody();
 	}
 	
 	

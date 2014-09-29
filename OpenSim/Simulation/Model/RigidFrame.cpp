@@ -54,8 +54,7 @@ void RigidFrame::setNull()
 
 bool RigidFrame::isAnchoredToBody() const
 {
-	if (_body.empty()) { return false; }
-	return true;
+	return !_body.empty();
 }
 
 const OpenSim::Body& RigidFrame::getAnchorBody() const

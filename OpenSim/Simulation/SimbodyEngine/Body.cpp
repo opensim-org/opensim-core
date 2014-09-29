@@ -47,7 +47,7 @@ using SimTK::Vec3;
  */
 Body::Body() : RigidFrame()
 {
-	_body = this;
+	//_body = this;
 	constructProperties();
 }
 
@@ -56,8 +56,9 @@ Body::Body() : RigidFrame()
  * Constructor.
  */
 Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,const SimTK::Inertia& aInertia) :
-   Body()
+	RigidFrame()
 {
+	constructProperties();
 	setName(aName);
 	set_mass(aMass);
 	set_mass_center(aMassCenter);
@@ -129,6 +130,8 @@ void Body::connectToModel(Model& aModel)
 		}
 	}
 
+	_body = *this;
+
 }
 
 void Body::addToSystem(SimTK::MultibodySystem& system) const
@@ -137,7 +140,7 @@ void Body::addToSystem(SimTK::MultibodySystem& system) const
 		Body * mutableThis = const_cast<Body *>(this);
 		mutableThis->_index = SimTK::GroundIndex;
 	}
-
+	
 	// Add subcomponents of the Body (namely its Joint)
 	Super::addToSystem(system);
 }

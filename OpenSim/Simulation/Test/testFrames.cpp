@@ -42,6 +42,7 @@ using namespace std;
 void testBodyFrame();
 void testFixedFrameOnBodyFrame();
 void testFixedFrameOnBodyFrameSerialize();
+void testFixedFrameOnFixedFrame();
 void testStationOnFrame();
 
 int main()
@@ -63,6 +64,11 @@ int main()
         cout << e.what() << endl; failures.push_back("testFixedFrameOnBodyFrame");
     }
     
+	try { testFixedFrameOnFixedFrame(); }
+	catch (const std::exception& e){
+		cout << e.what() << endl; failures.push_back("testFixedFrameOnFixedFrame");
+	}
+
     try { testStationOnFrame(); }
 	catch (const std::exception& e){
 		cout << e.what() << endl; failures.push_back("testStationOnFrame");
@@ -104,7 +110,7 @@ void testBodyFrame()
 
 	// make sure that this Body, which is a Frame, reports that its anchor body is itself.
 	assert(rod1.isAnchoredToBody() == true);
-	assert(rod1.getName() == rod1.getAnchorBody().getName);
+	assert(rod1.getName() == rod1.getAnchorBody().getName());
 	return;
 }
 
@@ -124,8 +130,8 @@ void testFixedFrameOnBodyFrame()
 	// xform should have 0.0 translation
 	assert(xform.p().norm() < 1e-6);
 	// make sure that this FixedFrame knows that it is rigidly fixed to rod1
-	assert(atOriginFrame.isAnchoredToBody() == true);
-	assert(rod1.getName() == atOriginFrame.getAnchorBody().getName);
+	assert(atOriginFrame->isAnchoredToBody() == true);
+	assert(rod1.getName() == atOriginFrame->getAnchorBody().getName());
 	return;
 }
 
@@ -153,8 +159,8 @@ void testFixedFrameOnFixedFrame()
 	// xform should have 0.0 translation
 	assert(xform.p().norm() < 1e-6);
 	// make sure that this FixedFrame knows that it is rigidly fixed to rod1
-	assert(secondFrame.isAnchoredToBody() == true);
-	assert(rod1.getName() == secondFrame.getAnchorBody().getName);
+	assert(secondFrame->isAnchoredToBody() == true);
+	assert(rod1.getName() == secondFrame->getAnchorBody().getName());
 	return;
 }
 
@@ -175,12 +181,12 @@ void testFixedFrameOnBodyFrameSerialize()
     // now read the model from file
     Model* dPendulumWFrame = new Model("double_pendulum_extraFrame.osim");
     SimTK::State& st2 = dPendulumWFrame->initSystem();
-    const Frame& myExtraFrame = dPendulumWFrame->getFrameSet().get("myExtraFrame");
-    SimTK::Transform xformPost = myExtraFrame.getGroundTransform(st2);
+    const FixedFrame* myExtraFrame = dynamic_cast<const FixedFrame*> (&dPendulumWFrame->getFrameSet().get("myExtraFrame"));
+    SimTK::Transform xformPost = myExtraFrame->getGroundTransform(st2);
     assert((xformPost.p()- xformPre.p()).norm() < 1e-6);
 	// make sure that this FixedFrame knows that it is rigidly fixed to rod1
-	assert(myExtraFrame.isAnchoredToBody() == true);
-	assert(rod1.getName() == myExtraFrame.getAnchorBody().getName);
+	assert(myExtraFrame->isAnchoredToBody() == true);
+	assert(rod1.getName() == myExtraFrame->getAnchorBody().getName());
     return;
 }
 
@@ -208,4 +214,3 @@ void testStationOnFrame()
 	}
 	return;
 }
-

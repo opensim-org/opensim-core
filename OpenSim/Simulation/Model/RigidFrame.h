@@ -95,7 +95,7 @@ protected:
 	mutable SimTK::MobilizedBodyIndex _index;
 	/* Smart pointer to the Body to which this RigidFrame is connected.
 	Will be null if not connected to a body*/
-	mutable SimTK::ReferencePtr<OpenSim::Body> _body;
+	mutable SimTK::ReferencePtr<const OpenSim::Body> _body;
 	//==========================================================================
 };	// END of class RigidFrame
 //=============================================================================
