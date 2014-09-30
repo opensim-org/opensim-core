@@ -75,24 +75,28 @@ int main()
 
 		// Add display geometry to the ground to visualize in the Visualizer and GUI
 		// add a checkered floor
-		ground.addDisplayGeometry("checkered_floor.vtp");
+		Geometry& floorGeometry = ground.addMeshGeometry("checkered_floor.vtp");
 		// add anchors for the muscles to be fixed too
-		ground.addDisplayGeometry("block.vtp");
-		ground.addDisplayGeometry("block.vtp");
+        Geometry& leftAnchorGeometry = ground.addMeshGeometry("block.vtp");
+        Geometry& rightAnchorGeometry = ground.addMeshGeometry("block.vtp");
 
 		// block is 0.1 by 0.1 by 0.1m cube and centered at origin. 
 		// transform anchors to be placed at the two extremes of the sliding block (to come)
-        /*
-		GeometrySet& geometry = ground.updDisplayer()->updGeometrySet();
-		DisplayGeometry& anchor1 = geometry[1];
-		DisplayGeometry& anchor2 = geometry[2];
+
 		// scale the anchors
-		anchor1.setScaleFactors(Vec3(5, 1, 1));
-		anchor2.setScaleFactors(Vec3(5, 1, 1));
+		leftAnchorGeometry.set_scale_factors(Vec3(5, 1, 1));
+        rightAnchorGeometry.set_scale_factors(Vec3(5, 1, 1));
 		// reposition the anchors
-		anchor1.setTransform(Transform(Vec3(0, 0.05, 0.35)));
-		anchor2.setTransform(Transform(Vec3(0, 0.05, -0.35)));
-        */
+        OpenSim::FixedFrame* leftAnchorFrame = new FixedFrame(ground, Transform(Vec3(0, 0.05, 0.35)));
+        leftAnchorFrame->setName("LeftAnchor");
+        osimModel.addFrame(leftAnchorFrame);
+        leftAnchorGeometry.set_frame_name(leftAnchorFrame->getName());
+
+        OpenSim::FixedFrame* rightAnchorFrame = new FixedFrame(ground, Transform(Vec3(0, 0.05, -0.35)));
+        rightAnchorFrame->setName("RightAnchor");
+        osimModel.addFrame(rightAnchorFrame);
+        rightAnchorGeometry.set_frame_name(rightAnchorFrame->getName());
+        
 		// BLOCK BODY
 		Vec3 blockMassCenter(0);
 		Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
@@ -101,7 +105,7 @@ int main()
 		OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
 
 		// Add display geometry to the block to visualize in the GUI
-		block->addDisplayGeometry("block.vtp");
+		block->addMeshGeometry("block.vtp");
 
 		// FREE JOINT
 
@@ -193,8 +197,8 @@ int main()
 		// Define contact parameters for elastic foundation force
 		OpenSim::ElasticFoundationForce::ContactParameters *contactParams = 
 			new OpenSim::ElasticFoundationForce::ContactParameters(stiffness, dissipation, friction, friction, viscosity);
-		contactParams->addGeometry("cube");
-		contactParams->addGeometry("floor");
+		contactParams->addMeshGeometry("cube");
+		contactParams->addMeshGeometry("floor");
 		
 		// Create a new elastic foundation (contact) force between the floor and cube.
 		OpenSim::ElasticFoundationForce *contactForce = new OpenSim::ElasticFoundationForce(contactParams);

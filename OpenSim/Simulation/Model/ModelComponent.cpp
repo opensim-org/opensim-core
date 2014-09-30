@@ -34,19 +34,19 @@ namespace OpenSim {
 //==============================================================================
 ModelComponent::ModelComponent() : _model(NULL) 
 {
-    constructProperty_GeometryList();
+    constructProperty_GeometrySet();
 }
 
 ModelComponent::ModelComponent(const std::string& fileName, bool updFromXMLNode)
 :   Component(fileName, updFromXMLNode), _model(NULL)
 {
-    constructProperty_GeometryList();
+    constructProperty_GeometrySet();
 }
 
 ModelComponent::ModelComponent(SimTK::Xml::Element& element) 
 :   Component(element), _model(NULL)
 {
-    constructProperty_GeometryList();
+    constructProperty_GeometrySet();
 }
 
 const Model& ModelComponent::getModel() const
@@ -71,12 +71,12 @@ Model& ModelComponent::updModel()
 void ModelComponent::extendConnect(Component &root)
 {
     Super::extendConnect(root);
-    Model* model = dynamic_cast<Model*>(&root);
-    // Allow (model) component to include its own subcomponents
-    // before calling the base method which automatically invokes
-    // connect all the subcomponents.
-    if (model)
-        connectToModel(*model);
+	Model* model = dynamic_cast<Model*>(&root);
+	// Allow (model) component to include its own subcomponents
+	// before calling the base method which automatically invokes
+	// connect all the subcomponents.
+	if (model)
+		connectToModel(*model);
 }
 
 
@@ -95,9 +95,9 @@ void ModelComponent::generateDecorations
     SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const 
 {
     for(unsigned int i=0; i < _components.size(); i++){
-        ModelComponent *mc = dynamic_cast<ModelComponent*>(_components[i]);
+		ModelComponent *mc = dynamic_cast<ModelComponent*>(_components[i]);
         mc->generateDecorations(fixed,hints,state,appendToThis);
-    }
+	}
 }
 
 const SimTK::DefaultSystemSubsystem& ModelComponent::

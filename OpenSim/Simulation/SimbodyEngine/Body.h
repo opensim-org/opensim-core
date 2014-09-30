@@ -100,7 +100,7 @@ public:
 	void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true);
 	void scaleMass(double aScaleFactor);
 
-	virtual void addDisplayGeometry(const std::string &aGeometryFileName);
+    OpenSim::Geometry& addMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
  protected:
 
     // Model component interface.

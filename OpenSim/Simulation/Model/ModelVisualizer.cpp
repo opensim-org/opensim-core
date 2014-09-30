@@ -385,14 +385,15 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
     for (int i=0; i < bodies.getSize(); ++i) {
         const Body& body = bodies[i];
         const MobilizedBodyIndex bx = body.getMobilizedBodyIndex();
-        /*
-        const VisibleObject& visible = *body.getDisplayer();
-        Vec3 scale; visible.getScaleFactors(scale);
-        const Transform X_BV = visible.getTransform();
-        const GeometrySet&   geomSet = visible.getGeometrySet();
+        const GeometrySet& geomSet = body.get_GeometrySet();
+        //const VisibleObject& visible = *body.getDisplayer();
+        //Vec3 scale; visible.getScaleFactors(scale);
+        //const Transform X_BV = visible.getTransform();
+        //const GeometrySet&   geomSet = visible.getGeometrySet();
         for (int g=0; g < geomSet.getSize(); ++g) {
-            const DisplayGeometry& geo = geomSet[g];
-            const DisplayGeometry::DisplayPreference pref = geo.getDisplayPreference();
+            Geometry& geo = geomSet[g];
+            //const DisplayGeometry::DisplayPreference pref = geo.getDisplayPreference();
+            /*
             DecorativeGeometry::Representation rep;
             switch(pref) {
                 case DisplayGeometry::None: 
@@ -407,8 +408,9 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
                     break;
                 default: assert(!"bad DisplayPreference");
             };
-
-            const std::string& file = geo.getGeometryFile();
+            */
+            const OpenSim::MeshGeometry* mGeom = MeshGeometry::safeDownCast(&geo);
+            const std::string& file = mGeom->get_mesh_file();
             bool isAbsolutePath; string directory, fileName, extension; 
             SimTK::Pathname::deconstructPathname(file,
                 isAbsolutePath, directory, fileName, extension);
@@ -453,13 +455,13 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
             }
 
             DecorativeMesh dmesh(pmesh);
-            dmesh.setColor(geo.getColor());
-            dmesh.setOpacity(geo.getOpacity());
-            const Vec3 netScale = geo.getScaleFactors()
-                                        .elementwiseMultiply(scale);
+            //dmesh.setColor(geo.getColor());
+            //dmesh.setOpacity(geo.getOpacity());
+            const Vec3 netScale = geo.get_scale_factors();
             dmesh.setScaleFactors(netScale); 
-            _viz->addDecoration(bx, X_BV*geo.getTransform(), dmesh);
-        }*/
+            Transform xformRelativeToBody = geo.getTransform(state, body);
+            _viz->addDecoration(bx, xformRelativeToBody, dmesh);
+        }
     }
 
     // Collect any fixed geometry from the ModelComponents.

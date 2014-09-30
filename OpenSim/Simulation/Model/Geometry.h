@@ -25,8 +25,8 @@
 
 #include "SimTKcommon.h"
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/Set.h>
 #include "ModelComponent.h"
-#include "ModelComponentSet.h"
 
 // Geometry.h
 // Authors: Ayman Habib
@@ -63,8 +63,9 @@
 
 namespace OpenSim { 
 
-// CONSTANTS
-
+class RigidFrame;
+class Model;
+class Frame;
 //=============================================================================
 //=============================================================================
 /**
@@ -78,49 +79,26 @@ namespace OpenSim {
 // Base Geometry
 class OSIMSIMULATION_API Geometry : public Component {
     OpenSim_DECLARE_ABSTRACT_OBJECT(Geometry, Component);
-
 public:
-	// Basically subtypes so that we can do dynamic casting safely on GUI side, based on type
-	enum GeometryType{
-		None, Sphere,  Cylinder, Cone, Ellipsoid, Torus, Line, Arrow	
-	};
-private:
-	bool			_fixed; /** to indicate if the geometry is fixed vs deformable */
-protected:
-	GeometryType	_analyticType;
+    // Scale factors
+    OpenSim_DECLARE_PROPERTY(scale_factors, SimTK::Vec3,
+        "Scale factors in X, Y, Z directotions respectively.");
+    OpenSim_DECLARE_PROPERTY(frame_name, std::string,
+        "Name of the Frame that this Geometry is attached to.");
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	Geometry():
-	_fixed(true),
-	_analyticType(None)
-	{}
+	Geometry()
+	{
+        constructProperty_scale_factors(SimTK::Vec3(1));
+        constructProperty_frame_name("ground");
+    }
 	virtual ~Geometry() {}
 	//=============================================================================
 	// METHODS
 	//=============================================================================
-	// Retrieve analytic type
-	const GeometryType getShape() const
-	{
-		return _analyticType;
-	}
-	// Check if the geometry corresponds to an analytic geometry
-	virtual bool isAnalytic() const
-	{
-		return _analyticType!=None;
-	}
-	// Mark geometry as Fixed (so that vtk resources are allocated once,
-	// potentially use the same vtkGeometry more than once.)
-	virtual void setFixed(bool aFixed)
-	{
-		_fixed = aFixed;
-	}
-	virtual bool getFixed() const
-	{
-		return _fixed;
-	}
-
+    SimTK::Transform getTransform(const SimTK::State& state, const OpenSim::RigidFrame& frame) const;
 //=============================================================================
 };	// END of class Geometry
 
@@ -131,6 +109,7 @@ public:
  */
 class OSIMSIMULATION_API LineGeometry : public Geometry
 {	
+    OpenSim_DECLARE_CONCRETE_OBJECT(LineGeometry, Geometry);
 protected:
 	SimTK::Vec3 _point1;
 	SimTK::Vec3 _point2;
@@ -138,7 +117,6 @@ public:
 	LineGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2):
 	  Geometry()
 	{
-		_analyticType=Line;
 		_point1 = aPoint1;
 		_point2 = aPoint2;
 	}
@@ -147,7 +125,6 @@ public:
 	  _point1(0.0),
 	  _point2(0.0)
 	{
-		_analyticType=Line;
 	}
 	virtual ~LineGeometry() {}
 	// Get & Set end points
@@ -173,11 +150,11 @@ public:
 
 class OSIMSIMULATION_API ArrowGeometry : public LineGeometry
 {	
+    OpenSim_DECLARE_CONCRETE_OBJECT(ArrowGeometry, Geometry);
 public:
 	ArrowGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aUnitDirTo, double aLength):
 	  LineGeometry(aPoint1, /* aPoint1+aLength* */aUnitDirTo)
 	{
-		_analyticType = Arrow;
 	}
 	virtual ~ArrowGeometry() {}
 };
@@ -203,10 +180,9 @@ private:
 	bool					_bounds[6];		//-X, +X, -Y, +Y, -Z, +Z
 	bool					_piece;
 public:
-	AnalyticGeometry(GeometryType aGeometricType):
+	AnalyticGeometry():
 		_piece(false)
 	{
-		_analyticType=aGeometricType;
 		for(int i=0; i<6; i++) _bounds[i]=true;
 	}
 	virtual ~AnalyticGeometry() {}
@@ -233,15 +209,14 @@ public:
 class OSIMSIMULATION_API AnalyticSphere : public AnalyticGeometry
 {
 OpenSim_DECLARE_CONCRETE_OBJECT(AnalyticSphere, AnalyticGeometry);
-
 protected:
 	double				_attributes[1];
 public:
 	AnalyticSphere():
-		AnalyticGeometry(Sphere)
+		AnalyticGeometry()
 		{}
 	AnalyticSphere(double radius):
-		AnalyticGeometry(Sphere)
+		AnalyticGeometry()
 		{
 			_attributes[0] = radius;
 		}
@@ -266,14 +241,15 @@ public:
 
 class OSIMSIMULATION_API AnalyticEllipsoid : public AnalyticGeometry
 {
+    OpenSim_DECLARE_CONCRETE_OBJECT(AnalyticEllipsoid, AnalyticGeometry);
 protected:
 	double				_attributes[3];
 public:
 	AnalyticEllipsoid():
-		AnalyticGeometry(Ellipsoid)
+		AnalyticGeometry()
 		{}
 	AnalyticEllipsoid(double radius1, double radius2, double radius3):
-		AnalyticGeometry(Ellipsoid){
+		AnalyticGeometry(){
 			_attributes[0] = radius1;
 			_attributes[1] = radius2;
 			_attributes[2] = radius3;
@@ -296,14 +272,15 @@ public:
 
 class OSIMSIMULATION_API AnalyticCylinder : public AnalyticGeometry
 {
+    OpenSim_DECLARE_CONCRETE_OBJECT(AnalyticCylinder, AnalyticGeometry);
 protected:
 	double				_attributes[2];
 public:
 	AnalyticCylinder():
-		AnalyticGeometry(Cylinder)
+		AnalyticGeometry()
 		{}
 	AnalyticCylinder(const double radius, const double height):
-		AnalyticGeometry(Cylinder)
+		AnalyticGeometry()
 		{
 			_attributes[0]=radius;
 			_attributes[1]=height;
@@ -319,14 +296,15 @@ public:
 
 class OSIMSIMULATION_API AnalyticTorus : public AnalyticGeometry
 {
+    OpenSim_DECLARE_CONCRETE_OBJECT(AnalyticTorus, AnalyticGeometry);
 protected:
 	double				_attributes[2];
 public:
 	AnalyticTorus():
-		AnalyticGeometry(Torus)
+		AnalyticGeometry()
 		{}
 	AnalyticTorus(const double ringRadius, const double crossSectionRadius):
-		AnalyticGeometry(Torus)
+		AnalyticGeometry()
 		{
 			_attributes[0]=ringRadius;
 			_attributes[1]=crossSectionRadius;
@@ -343,21 +321,21 @@ public:
 class OSIMSIMULATION_API MeshGeometry : public Geometry
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(MeshGeometry, Geometry);
-protected:
+public:
 	std::string _geometryFile;
-    OpenSim_DECLARE_PROPERTY(meshFilename, std::string,
+    OpenSim_DECLARE_PROPERTY(mesh_file, std::string,
         "Name of geometry file.");
 
 public:
 	MeshGeometry(const std::string& geomFile):
 	Geometry()
 	{
-    constructProperty_meshFilename("");
-    upd_meshFilename() = geomFile;
+    constructProperty_mesh_file("");
+    upd_mesh_file() = geomFile;
 	}
 	const std::string&  getGeometryFilename() const
 	{
-		return get_meshFilename();
+		return get_mesh_file();
 	};
 
 };

@@ -55,7 +55,7 @@ int main()
 			
 		// Get the ground body
         Ground& ground = osimModel.updGround();
-		ground.addDisplayGeometry("checkered_floor.vtp");
+		ground.addMeshGeometry("checkered_floor.vtp");
 
 		// create linkage body
 		double linkageMass = 0.001, linkageLength = 0.5, linkageDiameter = 0.06;
@@ -67,13 +67,13 @@ int main()
 		OpenSim::Body* linkage1 = new OpenSim::Body("linkage1", linkageMass, linkageMassCenter, linkageMass*linkageInertia);
         /*
 		// Graphical representation
-		linkage1->addDisplayGeometry("cylinder.vtp");
+		linkage1->addMeshGeometry("cylinder.vtp");
 		//This cylinder.vtp geometry is 1 meter tall, 1 meter diameter.  Scale and shift it to look pretty
 		GeometrySet& geometry = linkage1->updDisplayer()->updGeometrySet();
 		DisplayGeometry& thinCylinder = geometry[0];
 		thinCylinder.setScaleFactors(linkageDimensions);
 		thinCylinder.setTransform(Transform(Vec3(0.0,linkageLength/2.0,0.0)));
-		linkage1->addDisplayGeometry("sphere.vtp");
+		linkage1->addMeshGeometry("sphere.vtp");
 		//This sphere.vtp is 1 meter in diameter.  Scale it.
 		geometry[1].setScaleFactors(Vec3(0.1));
 		*/
@@ -86,7 +86,7 @@ int main()
 		Vec3 blockMassCenter(0);
 		Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
 		OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
-		block->addDisplayGeometry("block.vtp");
+		block->addMeshGeometry("block.vtp");
 		//This block.vtp is 0.1x0.1x0.1 meters.  scale its appearance
 		//block->updDisplayer()->updGeometrySet()[0].setScaleFactors(Vec3(2.0));
 
