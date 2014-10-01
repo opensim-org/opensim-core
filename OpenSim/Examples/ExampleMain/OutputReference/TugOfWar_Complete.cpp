@@ -197,8 +197,8 @@ int main()
 		// Define contact parameters for elastic foundation force
 		OpenSim::ElasticFoundationForce::ContactParameters *contactParams = 
 			new OpenSim::ElasticFoundationForce::ContactParameters(stiffness, dissipation, friction, friction, viscosity);
-		contactParams->addMeshGeometry("cube");
-		contactParams->addMeshGeometry("floor");
+		contactParams->addGeometry("cube");
+		contactParams->addGeometry("floor");
 		
 		// Create a new elastic foundation (contact) force between the floor and cube.
 		OpenSim::ElasticFoundationForce *contactForce = new OpenSim::ElasticFoundationForce(contactParams);
