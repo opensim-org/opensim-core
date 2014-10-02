@@ -49,8 +49,119 @@
 #include "Simbody.h"
 #include <functional>
 #include <memory>
+#include <stack>
 
 namespace OpenSim {
+
+template <typename T> class tree_iterator;
+
+template <typename T>
+class tree {
+public:
+    typedef tree_iterator<T> iterator;
+    tree(const T* root) : m_root(root) {}
+    iterator begin();
+    iterator end();
+private:
+    const T* m_root;
+    friend class tree_iterator<T>;
+};
+
+template <typename T>
+class tree_iterator {
+    friend class tree<T>;
+public:
+    bool operator==(const tree_iterator& iter) const {
+        // TODO
+        return m_node == &*iter;
+    }
+    bool operator!=(const tree_iterator& iter) const {
+        // TODO
+        return m_node != &*iter;
+    }
+    const T& operator*() const { return *m_node; }
+    const T* operator->() const { return m_node; }
+    tree_iterator<T>& operator++();
+private:
+    const T* m_node;
+    tree<T>* m_tree;
+    std::stack<const T*> m_stack;
+    tree_iterator(const T* node, tree<T>* t) : m_node(node), m_tree(t) {
+        if (node == nullptr) {
+            m_stack.push(nullptr);
+        }
+        else {
+            stackUpSubcomponents();
+        }
+    }
+    void stackUpSubcomponents() {
+        for (unsigned int i = 0; i < m_node->_components.size(); ++i) {
+            m_stack.push(m_node->_components[i]);
+        }
+    }
+};
+
+template <typename T>
+typename tree<T>::iterator tree<T>::begin() {
+    // If we want the iterator to start at the root of the tree:
+    return iterator(m_root, this);
+
+    // If we want the iterator to start at the first subcomponent:
+    /*
+    if (m_root != nullptr && m_root->_components.size() != 0) {
+        return iterator(m_root->_components[0], this);
+    }
+    return iterator(nullptr, this);
+    */
+
+    /* TODO more efficient version. to avoid storing a stack.
+    const T* current = m_root;
+    if (current != nullptr) {
+        while (current->_components.size() != 0) {
+            current = current->_components[0];
+        }
+    }
+    return iterator(current, this);
+    */
+}
+
+template <typename T>
+typename tree<T>::iterator tree<T>::end() {
+    return iterator(nullptr, this);
+}
+
+template <typename T>
+tree_iterator<T>& tree_iterator<T>::operator++() {
+    // TODO inefficient b/c we are storing a stack.
+    if (m_stack.size() == 0) {
+        // We are at the end of the tree.
+        m_node = nullptr;
+        return *this;
+    }
+    m_node = m_stack.top();
+    m_stack.pop();
+
+    stackUpSubcomponents();
+    return *this;
+
+    /* TODO more efficient, to avoid storing a stack (iterators get copied a
+     * lot if using postfix incrementing).
+    T* node;
+    if (m_node == nullptr) {
+        m_node = m_tree->m_root;
+        if (m_node == nullptr) {
+            throw Exception();
+        }
+        while (m_node._components.size() != 0) {
+            m_node = m_node._components[0];
+        }
+    }
+    else {
+        node = 
+    }
+    */
+}
+
 
 //==============================================================================
 //                            OPENSIM COMPONENT
@@ -227,6 +338,15 @@ public:
 	 * is composed of.
      */
     //const ComponentIterator&  getComponentsIterator();
+
+    tree<Component> getComponents() const {
+        return tree<Component>(this);
+    }
+    template <typename T>
+    friend class tree;
+    template <typename T>
+    friend class tree_iterator;
+
 
 	/**
      * Get a subcomponent of this Component by its name. 

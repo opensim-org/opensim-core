@@ -422,6 +422,24 @@ int main() {
 			cout << e.what() << endl;
 		}
 
+        // Test out the iterator.
+        tree<Component> worldTree = theWorld.getComponents();
+        std::cout << "tree begin: " << worldTree.begin()->getName() << std::endl;
+        for (tree<Component>::iterator it = worldTree.begin();
+                it != worldTree.end();
+                ++it) {
+            std::cout << "Iterator is at: " << it->getName() << std::endl;
+        }
+        /*
+        std::cout << "Using range-for loop: " << std::endl;
+        for (const Component& component : worldTree) {
+            std::cout << "Iterator is at: " << component.getName() << std::endl;
+        }
+        for (auto& component : worldTree) {
+            std::cout << "Iterator is at: " << component.getName() << std::endl;
+        }
+        */
+
 		Foo& foo2 = *new Foo();
 		foo2.setName("Foo2");
 		foo2.set_mass(3.0);
