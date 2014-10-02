@@ -110,28 +110,28 @@ public:
 class OSIMSIMULATION_API LineGeometry : public Geometry
 {	
     OpenSim_DECLARE_CONCRETE_OBJECT(LineGeometry, Geometry);
-protected:
-	SimTK::Vec3 _point1;
-	SimTK::Vec3 _point2;
+    OpenSim_DECLARE_PROPERTY(start_point, SimTK::Vec3,
+        "Line start point.");
+    OpenSim_DECLARE_PROPERTY(end_point, SimTK::Vec3,
+        "Line end point.");
 public:
 	LineGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2):
 	  Geometry()
 	{
-		_point1 = aPoint1;
-		_point2 = aPoint2;
+        constructProperties();
+        setPoints(aPoint1, aPoint2);
 	}
 	LineGeometry():
-	  Geometry(),
-	  _point1(0.0),
-	  _point2(0.0)
+	  Geometry()
 	{
+        constructProperties();
 	}
 	virtual ~LineGeometry() {}
 	// Get & Set end points
 	void getPoints(SimTK::Vec3& rPoint1, SimTK::Vec3& rPoint2) const 
 	{
-		rPoint1 = _point1;
-		rPoint2 = _point2;
+		rPoint1 = get_start_point();
+		rPoint2 = get_end_point();
 	}
 	void getPoints(double rPoint1[], double rPoint2[]) const // A variant that uses basic types for use by GUI
 	{
@@ -139,13 +139,18 @@ public:
 	}
 	void setPoints(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2)
 	{
-		_point1 = aPoint1;
-		_point2 = aPoint2;
-	}
+        upd_start_point() = aPoint1;
+        upd_end_point() = aPoint2;
+    }
 	void setPoints(double aPoint1[], double aPoint2[])	// A variant that uses basic types for use by GUI
 	{
 		setPoints(SimTK::Vec3::updAs(aPoint1), SimTK::Vec3::updAs(aPoint2));
 	}
+private:
+    void constructProperties(){
+        constructProperty_start_point(SimTK::Vec3(0));
+        constructProperty_end_point(SimTK::Vec3(1));
+    }
 };
 
 class OSIMSIMULATION_API ArrowGeometry : public LineGeometry
@@ -176,6 +181,8 @@ class OSIMSIMULATION_API AnalyticGeometry : public Geometry
 	// Cylinder  [Radius, Height, unused, ...]
 	// Cone		 [BaseRadius, TopRadius, Height, unused, ..]
 	// Ellipsoid [AxisLength1, AxisLength2, AxisLength3, unused, ..]
+    OpenSim_DECLARE_LIST_PROPERTY(quadrants, std::string,
+        "Quadrants to use: combination of +X -X +Y -Y +Z -Z space separated."); 
 private:
 	bool					_bounds[6];		//-X, +X, -Y, +Y, -Z, +Z
 	bool					_piece;
@@ -183,6 +190,7 @@ public:
 	AnalyticGeometry():
 		_piece(false)
 	{
+        constructProperties();
 		for(int i=0; i<6; i++) _bounds[i]=true;
 	}
 	virtual ~AnalyticGeometry() {}
@@ -204,32 +212,36 @@ public:
 	{
 		return _piece;
 	}
+private:
+    void constructProperties() {
+        constructProperty_quadrants();
+    }
 };
 
 class OSIMSIMULATION_API AnalyticSphere : public AnalyticGeometry
 {
 OpenSim_DECLARE_CONCRETE_OBJECT(AnalyticSphere, AnalyticGeometry);
 protected:
-	double				_attributes[1];
+	double				_radius;
 public:
-	AnalyticSphere():
-		AnalyticGeometry()
-		{}
+    OpenSim_DECLARE_PROPERTY(radius, double,
+        "Radius of sphere."); 
+    AnalyticSphere() :
+	AnalyticGeometry()
+	{
+        constructProperties();
+    }
 	AnalyticSphere(double radius):
 		AnalyticGeometry()
 		{
-			_attributes[0] = radius;
+        constructProperties();
+        upd_radius() = radius;
 		}
 	virtual ~AnalyticSphere() {}
-	const double& getRadius() const
-	{
-		//assert(_analyticType==Sphere);
-		return _attributes[0];
-	}
 	void setSphereRadius(double radius)
 	{
 		//assert(_analyticType==Sphere);
-			_attributes[0] = radius;		
+        upd_radius() = radius;
 	}
 	static AnalyticGeometry* createSphere(double radius)
 	{
@@ -237,36 +249,40 @@ public:
 		sphere->setSphereRadius(radius);
 		return sphere;
 	}
+private:
+    void constructProperties(){
+        constructProperty_radius(1.0);
+    }
 };	// AnalyticSphere
 
 class OSIMSIMULATION_API AnalyticEllipsoid : public AnalyticGeometry
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(AnalyticEllipsoid, AnalyticGeometry);
 protected:
-	double				_attributes[3];
+	double				_radii[3];
 public:
 	AnalyticEllipsoid():
 		AnalyticGeometry()
 		{}
 	AnalyticEllipsoid(double radius1, double radius2, double radius3):
 		AnalyticGeometry(){
-			_attributes[0] = radius1;
-			_attributes[1] = radius2;
-			_attributes[2] = radius3;
+        _radii[0] = radius1;
+        _radii[1] = radius2;
+        _radii[2] = radius3;
 	}
 	virtual ~AnalyticEllipsoid() {}
 	void setEllipsoidParams(double radius1, double radius2, double radius3)
 	{
 		//assert(_analyticType==Sphere);
-		_attributes[0] = radius1;
-		_attributes[1] = radius2;
-		_attributes[2] = radius3;
+        _radii[0] = radius1;
+        _radii[1] = radius2;
+        _radii[2] = radius3;
 	}
 	void getEllipsoidParams(double params[])
 	{
 		//assert(_analyticType==Ellipsoid);
 		for(int i=0;i<3; i++)
-			params[i] = _attributes[i];
+            params[i] = _radii[i];
 	}
 };
 
@@ -274,7 +290,8 @@ class OSIMSIMULATION_API AnalyticCylinder : public AnalyticGeometry
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(AnalyticCylinder, AnalyticGeometry);
 protected:
-	double				_attributes[2];
+    double				_radius;
+    double				_height;
 public:
 	AnalyticCylinder():
 		AnalyticGeometry()
@@ -282,15 +299,15 @@ public:
 	AnalyticCylinder(const double radius, const double height):
 		AnalyticGeometry()
 		{
-			_attributes[0]=radius;
-			_attributes[1]=height;
+        _radius = radius;
+        _height = height;
 		}
 	virtual ~AnalyticCylinder() {}
 	void getCylinderParams(double params[]) const
 	{
 		//assert(_analyticType==Cylinder);
-		params[0] = _attributes[0];
-		params[1] = _attributes[1];
+        params[0] = _radius;
+        params[1] = _height;
 	}
 };
 
@@ -298,7 +315,7 @@ class OSIMSIMULATION_API AnalyticTorus : public AnalyticGeometry
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(AnalyticTorus, AnalyticGeometry);
 protected:
-	double				_attributes[2];
+	double				_radii[2];
 public:
 	AnalyticTorus():
 		AnalyticGeometry()
@@ -306,15 +323,15 @@ public:
 	AnalyticTorus(const double ringRadius, const double crossSectionRadius):
 		AnalyticGeometry()
 		{
-			_attributes[0]=ringRadius;
-			_attributes[1]=crossSectionRadius;
+			_radii[0]=ringRadius;
+			_radii[1]=crossSectionRadius;
 		}
 	virtual ~AnalyticTorus() {}
 	void getTorusParams(double params[]) const
 	{
 		//assert(_analyticType==Torus);
-		params[0] = _attributes[0];
-		params[1] = _attributes[1];
+		params[0] = _radii[0];
+		params[1] = _radii[1];
 	}
 };
 

@@ -79,8 +79,8 @@ void Body::constructProperties()
 void Body::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
-    const SimTK::MassProperties& massProps = getMassProperties();
-    _internalRigidBody = SimTK::Body::Rigid(massProps);
+		const SimTK::MassProperties& massProps = getMassProperties();
+		_internalRigidBody = SimTK::Body::Rigid(massProps);
 }
 
 //_____________________________________________________________________________
@@ -127,10 +127,15 @@ OpenSim::Geometry& Body::addMeshGeometry(const std::string& aGeometryFileName, c
     MeshGeometry* geom = new MeshGeometry(aGeometryFileName);
     geom->set_scale_factors(scale);
     geom->set_frame_name(getName());
+    return addGeometry(geom);
+}
+
+OpenSim::Geometry& Body::addGeometry(OpenSim::Geometry* geom) {
+    if (getProperty_GeometrySet().empty())
+        updProperty_GeometrySet().adoptAndAppendValue(new GeometrySet());
     upd_GeometrySet().adoptAndAppend(geom);
     return *geom;
 }
-
 
 
 //_____________________________________________________________________________
@@ -213,7 +218,7 @@ void Body::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
 		upd_mass_center()[i] *= aScaleFactors[i];
 	}
 
-    scaleInertialProperties(aScaleFactors, aScaleMass);
+		scaleInertialProperties(aScaleFactors, aScaleMass);
 }
 
 //_____________________________________________________________________________

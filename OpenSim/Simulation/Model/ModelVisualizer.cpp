@@ -392,6 +392,8 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
         //const GeometrySet&   geomSet = visible.getGeometrySet();
         for (int g=0; g < geomSet.getSize(); ++g) {
             Geometry& geo = geomSet[g];
+            const Vec3 netScale = geo.get_scale_factors();
+            Transform xformRelativeToBody = geo.getTransform(state, body);
             //const DisplayGeometry::DisplayPreference pref = geo.getDisplayPreference();
             /*
             DecorativeGeometry::Representation rep;
@@ -410,57 +412,69 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
             };
             */
             const OpenSim::MeshGeometry* mGeom = MeshGeometry::safeDownCast(&geo);
-            const std::string& file = mGeom->get_mesh_file();
-            bool isAbsolutePath; string directory, fileName, extension; 
-            SimTK::Pathname::deconstructPathname(file,
-                isAbsolutePath, directory, fileName, extension);
-            const string lowerExtension = SimTK::String::toLower(extension);
-            if (lowerExtension != ".vtp" && lowerExtension != ".obj") {
-                std::clog << "ModelVisualizer ignoring '" << file
-                    << "'; only .vtp and .obj files currently supported.\n";
-                continue;
-            }
-
-            // File is a .vtp or .obj. See if we can find it.
-            Array_<string> attempts;
-            bool foundIt = findGeometryFile(file, isAbsolutePath, attempts);
-
-            if (!foundIt) {
-                std::clog << "ModelVisualizer couldn't find file '" << file
-                    << "'; tried\n";
-                for (unsigned i=0; i < attempts.size(); ++i)
-                    std::clog << "  " << attempts[i] << "\n";
-                if (!isAbsolutePath && 
-                    !Pathname::environmentVariableExists("OPENSIM_HOME"))
-                    std::clog << "Set environment variable OPENSIM_HOME "
-                              << "to search $OPENSIM_HOME/Geometry.\n";
-                continue;
-            }
-
-            SimTK::PolygonalMesh pmesh;
-            try {
-                if (lowerExtension == ".vtp") {
-                    pmesh.loadVtpFile(attempts.back());
-                } else {
-                    std::ifstream objFile;
-                    objFile.open(attempts.back().c_str());
-                    pmesh.loadObjFile(objFile);
-                    // objFile closes when destructed
+            if (mGeom){
+                const std::string& file = mGeom->get_mesh_file();
+                bool isAbsolutePath; string directory, fileName, extension;
+                SimTK::Pathname::deconstructPathname(file,
+                    isAbsolutePath, directory, fileName, extension);
+                const string lowerExtension = SimTK::String::toLower(extension);
+                if (lowerExtension != ".vtp" && lowerExtension != ".obj") {
+                    std::clog << "ModelVisualizer ignoring '" << file
+                        << "'; only .vtp and .obj files currently supported.\n";
+                    continue;
                 }
-            } catch(const std::exception& e) {
-                std::clog << "ModelVisualizer couldn't read " 
-                            << attempts.back() << " because:\n"
-                            << e.what() << "\n";
-                continue;
-            }
 
-            DecorativeMesh dmesh(pmesh);
-            //dmesh.setColor(geo.getColor());
-            //dmesh.setOpacity(geo.getOpacity());
-            const Vec3 netScale = geo.get_scale_factors();
-            dmesh.setScaleFactors(netScale); 
-            Transform xformRelativeToBody = geo.getTransform(state, body);
-            _viz->addDecoration(bx, xformRelativeToBody, dmesh);
+                // File is a .vtp or .obj. See if we can find it.
+                Array_<string> attempts;
+                bool foundIt = findGeometryFile(file, isAbsolutePath, attempts);
+
+                if (!foundIt) {
+                    std::clog << "ModelVisualizer couldn't find file '" << file
+                        << "'; tried\n";
+                    for (unsigned i = 0; i < attempts.size(); ++i)
+                        std::clog << "  " << attempts[i] << "\n";
+                    if (!isAbsolutePath &&
+                        !Pathname::environmentVariableExists("OPENSIM_HOME"))
+                        std::clog << "Set environment variable OPENSIM_HOME "
+                        << "to search $OPENSIM_HOME/Geometry.\n";
+                    continue;
+                }
+
+                SimTK::PolygonalMesh pmesh;
+                try {
+                    if (lowerExtension == ".vtp") {
+                        pmesh.loadVtpFile(attempts.back());
+                    }
+                    else {
+                        std::ifstream objFile;
+                        objFile.open(attempts.back().c_str());
+                        pmesh.loadObjFile(objFile);
+                        // objFile closes when destructed
+                    }
+                }
+                catch (const std::exception& e) {
+                    std::clog << "ModelVisualizer couldn't read "
+                        << attempts.back() << " because:\n"
+                        << e.what() << "\n";
+                    continue;
+                }
+
+                DecorativeMesh dmesh(pmesh);
+                dmesh.setScaleFactors(netScale);
+                //dmesh.setColor(geo.getColor());
+                //dmesh.setOpacity(geo.getOpacity());
+                _viz->addDecoration(bx, xformRelativeToBody, dmesh);
+            }
+            else if (AnalyticGeometry::safeDownCast(&geo)){
+                const Vec3 netScale = geo.get_scale_factors();
+                if (AnalyticSphere::safeDownCast(&geo)){
+                    AnalyticSphere* sphere = AnalyticSphere::safeDownCast(&geo);
+                    DecorativeSphere deco(sphere->get_radius());
+                    deco.setScaleFactors(netScale);
+                    _viz->addDecoration(bx, xformRelativeToBody, deco);
+                }
+                
+            }
         }
     }
 
