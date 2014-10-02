@@ -44,17 +44,6 @@ SET(EXECUTABLE_OUTPUT_PATH ${BUILD_BINARY_DIR})
 SET(LIBRARY_OUTPUT_PATH ${BUILD_BINARY_DIR})
 
 
-# Cotire.
-# -------
-OPTION(OPENSIM_USE_COTIRE
-    "Use cotire (https://github.com/sakra/cotire) to speed up compilation by using precompiled headers."
-    OFF)
-MARK_AS_ADVANCED(OPENSIM_USE_COTIRE)
-IF(OPENSIM_USE_COTIRE)
-    INCLUDE(cotire)
-ENDIF()
-
-
 # Build using namespace.
 # ----------------------
 # Use this to generate a private set of libraries whose names
