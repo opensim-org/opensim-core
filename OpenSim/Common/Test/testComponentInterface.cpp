@@ -423,9 +423,9 @@ int main() {
 		}
 
         // Test out the iterator.
-        tree<Component> worldTree = theWorld.getComponents();
+        ComponentTree<Component> worldTree = theWorld.getComponents();
         std::cout << "tree begin: " << worldTree.begin()->getName() << std::endl;
-        for (tree<Component>::iterator it = worldTree.begin();
+        for (ComponentTree<Component>::iterator it = worldTree.begin();
                 it != worldTree.end();
                 ++it) {
             std::cout << "Iterator is at: " << it->getName() << std::endl;
@@ -436,6 +436,13 @@ int main() {
             std::cout << "Iterator is at: " << component.getName() << std::endl;
         }
         for (auto& component : worldTree) {
+            std::cout << "Iterator is at: " << component.getName() << std::endl;
+        }
+        */
+
+        /* TODO causes segfault.
+        std::cout << "Iterate over only Foo's." << std::endl;
+        for (auto& component : theWorld.getComponents<Foo>()) {
             std::cout << "Iterator is at: " << component.getName() << std::endl;
         }
         */

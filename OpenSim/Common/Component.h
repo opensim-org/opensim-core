@@ -53,40 +53,42 @@
 
 namespace OpenSim {
 
-template <typename T> class tree_iterator;
+class Component;
+template <typename T> class ComponentTreeIterator;
 
 template <typename T>
-class tree {
+class ComponentTree {
 public:
-    typedef tree_iterator<T> iterator;
-    tree(const T* root) : m_root(root) {}
+    typedef ComponentTreeIterator<T> iterator;
+    ComponentTree(const Component* root) : m_root(root) {}
     iterator begin();
     iterator end();
 private:
-    const T* m_root;
-    friend class tree_iterator<T>;
+    const Component* m_root;
+    friend class ComponentTreeIterator<T>;
 };
 
 template <typename T>
-class tree_iterator {
-    friend class tree<T>;
+class ComponentTreeIterator {
+    friend class ComponentTree<T>;
 public:
-    bool operator==(const tree_iterator& iter) const {
+    bool operator==(const ComponentTreeIterator& iter) const {
         // TODO
         return m_node == &*iter;
     }
-    bool operator!=(const tree_iterator& iter) const {
+    bool operator!=(const ComponentTreeIterator& iter) const {
         // TODO
         return m_node != &*iter;
     }
-    const T& operator*() const { return *m_node; }
-    const T* operator->() const { return m_node; }
-    tree_iterator<T>& operator++();
+    const T& operator*() const { return *dynamic_cast<const T*>(m_node); }
+    const T* operator->() const { return dynamic_cast<const T*>(m_node); }
+    ComponentTreeIterator<T>& operator++();
 private:
-    const T* m_node;
-    tree<T>* m_tree;
-    std::stack<const T*> m_stack;
-    tree_iterator(const T* node, tree<T>* t) : m_node(node), m_tree(t) {
+    const Component* m_node;
+    ComponentTree<T>* m_tree;
+    std::stack<const Component*> m_stack;
+    ComponentTreeIterator(const Component* node, ComponentTree<T>* t) :
+            m_node(node), m_tree(t) {
         if (node == nullptr) {
             m_stack.push(nullptr);
         }
@@ -94,73 +96,8 @@ private:
             stackUpSubcomponents();
         }
     }
-    void stackUpSubcomponents() {
-        for (unsigned int i = 0; i < m_node->_components.size(); ++i) {
-            m_stack.push(m_node->_components[i]);
-        }
-    }
+    void stackUpSubcomponents();
 };
-
-template <typename T>
-typename tree<T>::iterator tree<T>::begin() {
-    // If we want the iterator to start at the root of the tree:
-    return iterator(m_root, this);
-
-    // If we want the iterator to start at the first subcomponent:
-    /*
-    if (m_root != nullptr && m_root->_components.size() != 0) {
-        return iterator(m_root->_components[0], this);
-    }
-    return iterator(nullptr, this);
-    */
-
-    /* TODO more efficient version. to avoid storing a stack.
-    const T* current = m_root;
-    if (current != nullptr) {
-        while (current->_components.size() != 0) {
-            current = current->_components[0];
-        }
-    }
-    return iterator(current, this);
-    */
-}
-
-template <typename T>
-typename tree<T>::iterator tree<T>::end() {
-    return iterator(nullptr, this);
-}
-
-template <typename T>
-tree_iterator<T>& tree_iterator<T>::operator++() {
-    // TODO inefficient b/c we are storing a stack.
-    if (m_stack.size() == 0) {
-        // We are at the end of the tree.
-        m_node = nullptr;
-        return *this;
-    }
-    m_node = m_stack.top();
-    m_stack.pop();
-
-    stackUpSubcomponents();
-    return *this;
-
-    /* TODO more efficient, to avoid storing a stack (iterators get copied a
-     * lot if using postfix incrementing).
-    T* node;
-    if (m_node == nullptr) {
-        m_node = m_tree->m_root;
-        if (m_node == nullptr) {
-            throw Exception();
-        }
-        while (m_node._components.size() != 0) {
-            m_node = m_node._components[0];
-        }
-    }
-    else {
-        node = 
-    }
-    */
-}
 
 
 //==============================================================================
@@ -339,13 +276,14 @@ public:
      */
     //const ComponentIterator&  getComponentsIterator();
 
-    tree<Component> getComponents() const {
-        return tree<Component>(this);
+    template <typename T=Component>
+    ComponentTree<T> getComponents() const {
+        return ComponentTree<T>(this);
     }
     template <typename T>
-    friend class tree;
+    friend class ComponentTree;
     template <typename T>
-    friend class tree_iterator;
+    friend class ComponentTreeIterator;
 
 
 	/**
@@ -1736,6 +1674,80 @@ private:
 };	// END of class Component
 //==============================================================================
 //==============================================================================
+
+template <typename T>
+typename ComponentTree<T>::iterator ComponentTree<T>::begin() {
+    // If we want the iterator to start at the root of the tree:
+    return iterator(m_root, this);
+
+    // If we want the iterator to start at the first subcomponent:
+    /*
+    if (m_root != nullptr && m_root->_components.size() != 0) {
+        return iterator(m_root->_components[0], this);
+    }
+    return iterator(nullptr, this);
+    */
+
+    /* TODO more efficient version. to avoid storing a stack.
+    const T* current = m_root;
+    if (current != nullptr) {
+        while (current->_components.size() != 0) {
+            current = current->_components[0];
+        }
+    }
+    return iterator(current, this);
+    */
+}
+
+template <typename T>
+typename ComponentTree<T>::iterator ComponentTree<T>::end() {
+    return iterator(nullptr, this);
+}
+
+template <typename T>
+void ComponentTreeIterator<T>::stackUpSubcomponents() {
+    for (unsigned int i = 0; i < m_node->_components.size(); ++i) {
+        m_stack.push(m_node->_components[i]);
+    }
+}
+template <typename T>
+ComponentTreeIterator<T>& ComponentTreeIterator<T>::operator++() {
+    // TODO inefficient b/c we are storing a stack.
+    if (m_stack.size() == 0) {
+        // We are at the end of the tree.
+        m_node = nullptr;
+        return *this;
+    }
+    m_node = m_stack.top();
+    m_stack.pop();
+
+    stackUpSubcomponents();
+
+    // If this object is of the correct type, then we can return the iterator.
+    if (dynamic_cast<const T*>(m_node) != nullptr) {
+        return *this;
+    }
+
+    // Move onto the next item in the tree; perhaps it'll be of type T.
+    return operator++();
+
+    /* TODO more efficient, to avoid storing a stack (iterators get copied a
+     * lot if using postfix incrementing).
+    T* node;
+    if (m_node == nullptr) {
+        m_node = m_tree->m_root;
+        if (m_node == nullptr) {
+            throw Exception();
+        }
+        while (m_node._components.size() != 0) {
+            m_node = m_node._components[0];
+        }
+    }
+    else {
+        node = 
+    }
+    */
+}
 
 } // end of namespace OpenSim
 
