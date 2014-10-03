@@ -139,8 +139,21 @@ protected:
     SimTK::Transform calcGroundTransform(const SimTK::State& state) const
         override;
 	// Helpers for initializing fixed frames
+    //--------------------------------------
+    
+    /**
+    * Get the fixed transform between my anchor segment and myself
+    *
+    * @return transform  The transform between this frame and its parent frame.
+    */
+    const SimTK::Transform getAnchorTransform() const;
 	// this helper function is called during buildSytem, after all connnection are resolved
 	void initFixedFrameCache() const;
+    // call this helper function whenever there is a structural change
+    // meaning when the transform or parent frame is updated.
+    void invalidate() const;
+    // Check the validity of the tree of RigidFrames connecting this to a base segment
+    bool isPathToBaseValid() const;
 	mutable bool isCacheInitialized;
 private:
 
@@ -149,7 +162,13 @@ private:
 
     // made mutable since it's used only for caching, public const methods can
     // still modify it.
+    
+    // a private member to cache the tranform on my parent frame
 	mutable SimTK::Transform transform;
+
+    // a private member to cache the transform describing my offset from
+    // my anchor segment
+    mutable SimTK::Transform anchorTransform;
 
 
 //=============================================================================

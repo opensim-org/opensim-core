@@ -90,6 +90,7 @@ int main()
 
 void testBodyFrame()
 {
+    cout << "Running testBodyFrame" << endl;
 	Model* dPendulum = new Model("double_pendulum.osim");
 	const OpenSim::Body& rod1 = dPendulum->getBodySet().get("rod1");
 	SimTK::State& st = dPendulum->initSystem();
@@ -116,6 +117,7 @@ void testBodyFrame()
 
 void testFixedFrameOnBodyFrame()
 {
+    cout << "Running testFixedFrameOnBodyFrame" << endl;
 	Model* dPendulum = new Model("double_pendulum.osim");
 	const OpenSim::Body& rod1 = dPendulum->getBodySet().get("rod1");
     FixedFrame* atOriginFrame = new FixedFrame(rod1);
@@ -137,6 +139,7 @@ void testFixedFrameOnBodyFrame()
 
 void testFixedFrameOnFixedFrame()
 {
+    cout << "Running testFixedFrameOnFrame" << endl;
 	Model* dPendulum = new Model("double_pendulum.osim");
 	const OpenSim::Body& rod1 = dPendulum->getBodySet().get("rod1");
 	FixedFrame* atOriginFrame = new FixedFrame(rod1);
@@ -166,6 +169,7 @@ void testFixedFrameOnFixedFrame()
 
 void testFixedFrameOnBodyFrameSerialize()
 {
+    cout << "Running testFixedFrameOnBodyFrameSerialize" << endl;
     Model* dPendulum = new Model("double_pendulum.osim");
     const OpenSim::Body& rod1 = dPendulum->getBodySet().get("rod1");
     FixedFrame* atOriginFrame = new FixedFrame(rod1);
@@ -192,6 +196,7 @@ void testFixedFrameOnBodyFrameSerialize()
 
 void testStationOnFrame()
 {
+    cout << "Running testStationOnFrame" << endl;
 	Model* dPendulum = new Model("double_pendulum.osim");
 	// Get "rod1" frame
 	const OpenSim::Body& rod1 = dPendulum->getBodySet().get("rod1");

@@ -78,6 +78,7 @@ void FixedFrame::setNull()
 {
 	isCacheInitialized = false;
 	transform.setToZero();
+    anchorTransform.setToNaN();
 	setAuthors("Matt DeMers");
 }
 //_____________________________________________________________________________
@@ -127,16 +128,56 @@ void FixedFrame::setTransform(const SimTK::Transform& xform)
     // serialize after this call
 	set_translation(xform.p());
 	set_orientation(xform.R().convertRotationToBodyFixedXYZ());
-	// indicate that the cache is not initialized
-	isCacheInitialized = false;
+    invalidate();
+	
 }
 
 SimTK::Transform FixedFrame::calcGroundTransform(const SimTK::State &state)
     const
 {
-	
-    return getTransform()*getParentFrame().getGroundTransform(state);
+    // this check is a good idea, but may be too conservative.  If the user
+    // has a state and the system is valid, my cache should be valid
+    if (isPathToBaseValid() == 0)
+    {
+        initFixedFrameCache();
+    }
+    //return getTransform()*getParentFrame().getGroundTransform(state);
+    return getAnchorTransform()*_model->getMatterSubsystem().getMobilizedBody(getMobilizedBodyIndex()).getBodyTransform(state);
 
+}
+
+void FixedFrame::invalidate() const
+{
+    isCacheInitialized = false;
+    anchorTransform.setToNaN();
+    if (!_model.empty())
+    {
+        _model->invalidateSystem();
+    }
+    //_model->invalidateSystem(); 
+    
+}
+
+bool FixedFrame::isPathToBaseValid() const
+{
+    //  check if I'm valid first
+    if (isCacheInitialized == 0) { return false; }
+
+    // check if my parent is another FixedFrame
+    const FixedFrame* parent = dynamic_cast<const FixedFrame*>(&getParentFrame());
+    if (parent != 0)
+    {
+        // check if my parent FixedFrame is valid
+        return parent->isPathToBaseValid();
+    }
+    // otherwise, I'm valid and my parent is a base segment
+    return true;
+
+}
+
+const SimTK::Transform FixedFrame::getAnchorTransform() const
+{
+    return anchorTransform;
 }
 
 void FixedFrame::initFixedFrameCache() const
@@ -150,12 +191,19 @@ void FixedFrame::initFixedFrameCache() const
 		// The parent FixedFrame must resolve its hierarchy before we ask
 		// for its root Body or MobilizedBodyIndex.
 		// check if the FixedFrame has populated its root segments
-		if (parentFixedFrame->isCacheInitialized == 0)
+		if (parentFixedFrame->isPathToBaseValid() == 0)
 		{
 			parentFixedFrame->initFixedFrameCache();
 		}
 		// all variables pointing to the parents root Body and or MobilizedBody should be valid
+        anchorTransform = getTransform()*parentFixedFrame->getAnchorTransform();
 	}
+    else
+    {
+        // if I'm not on a fixed frame, I'm on an anchor segment.  Therefore, my anchor transform
+        // is the same as my local transform
+        anchorTransform = getTransform();
+    }
 
 	// Ask my parent RigidFrame which root Body/MobilizedBody I'm attached to
 
@@ -165,7 +213,7 @@ void FixedFrame::initFixedFrameCache() const
 		_body=parent.getAnchorBody();
 	}
 	
-	
+    isCacheInitialized = true;
 }
 //=============================================================================
 // GET AND SET
@@ -173,7 +221,8 @@ void FixedFrame::initFixedFrameCache() const
 //_____________________________________________________________________________
 void FixedFrame::setParentFrame(const RigidFrame& parent_frame) 
 { 
-	updConnector<RigidFrame>("parent_frame").connect(parent_frame); 
+	updConnector<RigidFrame>("parent_frame").connect(parent_frame);
+    invalidate();
 }
 const RigidFrame& FixedFrame::getParentFrame() const
 {
