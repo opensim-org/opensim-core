@@ -239,18 +239,8 @@ void Model::setNull()
 
 void Model::constructProperties()
 {
-	constructProperty_assembly_accuracy(1e-9);
-
-	constructProperty_gravity(SimTK::Vec3(0.0, -9.80665, 0.0));
-
-	constructProperty_credits("Frank Anderson, Peter Loan, Ayman Habib, Ajay Seth, Michael Sherman");
-
-	constructProperty_publications("List of publications related to model...");
-	
-	constructProperty_length_units("meters");
 	_lengthUnits = Units::Meters;
 
-	constructProperty_force_units("N");
 	_forceUnits = Units::Newtons;
 
 	BodySet bodies;

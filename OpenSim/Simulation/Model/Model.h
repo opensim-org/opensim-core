@@ -117,7 +117,7 @@ public:
 	/** @name Property declarations
 	These are the serializable properties associated with a Model. **/
 	/**@{**/
-	OpenSim_DECLARE_PROPERTY(assembly_accuracy, double,
+	OpenSim_DECLARE_PROPERTY_DEFAULT(assembly_accuracy, double,
 	"Specify how accurate the resulting configuration of a model assembly "
 	"should be. This translates to the number of signficant digits in the "
 	"resulting coordinate values. Therefore, if you require initial conditions "
@@ -126,22 +126,28 @@ public:
 	"default. NOTE: Failure for a model to satisfy the assembly accuracy often "
 	"indicates inconsistency in the constraints. For example, the feet are welded " 
 	"at locations measured to five significant digits while the model lacks dofs "
-	"to change stance width, in which case it cannot achieve 1e-9 accuracy." );
+	"to change stance width, in which case it cannot achieve 1e-9 accuracy.",
+    1e-9);
 
-	OpenSim_DECLARE_PROPERTY(gravity,SimTK::Vec3,
-		"Acceleration due to gravity, expressed in ground.");
+	OpenSim_DECLARE_PROPERTY_DEFAULT(gravity,SimTK::Vec3,
+		"Acceleration due to gravity, expressed in ground.",
+        SimTK::Vec3(0.0, -9.80665, 0.0));
 
-	OpenSim_DECLARE_PROPERTY(credits,std::string,
-		"Credits (e.g., model author names) associated with the model.");
+	OpenSim_DECLARE_PROPERTY_DEFAULT(credits,std::string,
+		"Credits (e.g., model author names) associated with the model.",
+        "Frank Anderson, Peter Loan, Ayman Habib, Ajay Seth, Michael Sherman");
 
-	OpenSim_DECLARE_PROPERTY(publications,std::string,
-		"Publications and references associated with the model.");
+	OpenSim_DECLARE_PROPERTY_DEFAULT(publications,std::string,
+		"Publications and references associated with the model.",
+        "List of publications related to model...");
 
-	OpenSim_DECLARE_PROPERTY(length_units,std::string,
-		"Units for all lengths.");
+	OpenSim_DECLARE_PROPERTY_DEFAULT(length_units,std::string,
+		"Units for all lengths.",
+        "meters");
 
-	OpenSim_DECLARE_PROPERTY(force_units,std::string,
-		"Units for all forces.");
+	OpenSim_DECLARE_PROPERTY_DEFAULT(force_units,std::string,
+		"Units for all forces.",
+        "N");
 
 	OpenSim_DECLARE_UNNAMED_PROPERTY(ControllerSet, 
 		"Controllers that provide the control inputs for Actuators.");	
