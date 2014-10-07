@@ -88,7 +88,7 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(ModelComponent, Component);
 These are the serializable properties associated with this class. **/
 /**@{**/
 public:
-OpenSim_DECLARE_OPTIONAL_PROPERTY(GeometrySet, GeometrySet,
+    OpenSim_DECLARE_LIST_PROPERTY(GeometrySet, Geometry,
         "Geometry that can be attached to the Model Component");
 /**@}**/
 //==============================================================================

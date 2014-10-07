@@ -164,7 +164,7 @@ void WrapDoubleCylinderObst::connectToModelAndBody(Model& aModel, OpenSim::Body&
 		throw Exception(errorMessage);
 	}
 /*
-	AnalyticCylinder* cyl = new AnalyticCylinder(_radiusUcyl, _length);
+	Cylinder* cyl = new Cylinder(_radiusUcyl, _length);
 	setGeometryQuadrants(cyl);
 */
 	// Check wrapUcylDirectionName

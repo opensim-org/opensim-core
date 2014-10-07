@@ -77,25 +77,41 @@ int main()
 		// add a checkered floor
 		Geometry& floorGeometry = ground.addMeshGeometry("checkered_floor.vtp");
 		// add anchors for the muscles to be fixed too
-        Geometry& leftAnchorGeometry = ground.addMeshGeometry("block.vtp");
-        Geometry& rightAnchorGeometry = ground.addMeshGeometry("block.vtp");
+        Geometry* leftAnchorGeometry = new Mesh("block.vtp");
+        Geometry* rightAnchorGeometry = new Mesh("block.vtp");
 
 		// block is 0.1 by 0.1 by 0.1m cube and centered at origin. 
 		// transform anchors to be placed at the two extremes of the sliding block (to come)
 
 		// scale the anchors
-		leftAnchorGeometry.set_scale_factors(Vec3(5, 1, 1));
-        rightAnchorGeometry.set_scale_factors(Vec3(5, 1, 1));
+		leftAnchorGeometry->set_scale_factors(Vec3(5, 1, 1));
+        rightAnchorGeometry->set_scale_factors(Vec3(5, 1, 1));
 		// reposition the anchors
         OpenSim::FixedFrame* leftAnchorFrame = new FixedFrame(ground, Transform(Vec3(0, 0.05, 0.35)));
         leftAnchorFrame->setName("LeftAnchor");
         osimModel.addFrame(leftAnchorFrame);
-        leftAnchorGeometry.set_frame_name(leftAnchorFrame->getName());
+        leftAnchorGeometry->set_frame_name(leftAnchorFrame->getName());
+        ground.addGeometry(leftAnchorGeometry);
 
         OpenSim::FixedFrame* rightAnchorFrame = new FixedFrame(ground, Transform(Vec3(0, 0.05, -0.35)));
         rightAnchorFrame->setName("RightAnchor");
         osimModel.addFrame(rightAnchorFrame);
-        rightAnchorGeometry.set_frame_name(rightAnchorFrame->getName());
+        rightAnchorGeometry->set_frame_name(rightAnchorFrame->getName());
+        ground.addGeometry(rightAnchorGeometry);
+        
+        Geometry* cylGeometry = new Cylinder(0.2, .3);
+        OpenSim::FixedFrame* cylFrame = new FixedFrame(ground, Transform(Vec3(-.2, 0.0, 0.)));
+        cylFrame->setName("CylAnchor");
+        osimModel.addFrame(cylFrame);
+        cylGeometry->set_frame_name("CylAnchor");
+        ground.addGeometry(cylGeometry);
+
+        Geometry* ellipsoidGeometry = new Ellipsoid(0.2, .7, .5);
+        OpenSim::FixedFrame* ellipsoidFrame = new FixedFrame(ground, Transform(Vec3(-.6, 0.6, 0.)));
+        ellipsoidFrame->setName("EllipsoidAnchor");
+        osimModel.addFrame(ellipsoidFrame);
+        ellipsoidGeometry->set_frame_name("EllipsoidAnchor");
+        ground.addGeometry(ellipsoidGeometry);
         
 		// BLOCK BODY
 		Vec3 blockMassCenter(0);
@@ -106,7 +122,11 @@ int main()
 
 		// Add display geometry to the block to visualize in the GUI
 		block->addMeshGeometry("block.vtp");
-
+        
+        Geometry* sphereGeometry = new Sphere(0.1);
+        sphereGeometry->set_frame_name(block->getName());
+        block->addGeometry(sphereGeometry);
+        
 		// FREE JOINT
 
 		// Create a new free joint with 6 degrees-of-freedom (coordinates) between the block and ground bodies

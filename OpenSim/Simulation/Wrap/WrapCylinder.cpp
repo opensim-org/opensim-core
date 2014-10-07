@@ -164,7 +164,7 @@ void WrapCylinder::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 		string errorMessage = "Error: radius for WrapCylinder " + getName() + " was either not specified, or is negative.";
 		throw Exception(errorMessage);
 	}
-/*	AnalyticCylinder* cyl = new AnalyticCylinder(_radius, _length);
+/*	Cylinder* cyl = new Cylinder(_radius, _length);
 	setGeometryQuadrants(cyl);
 */
 }

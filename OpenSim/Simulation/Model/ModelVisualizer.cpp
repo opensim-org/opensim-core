@@ -385,13 +385,13 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
     for (int i=0; i < bodies.getSize(); ++i) {
         const Body& body = bodies[i];
         const MobilizedBodyIndex bx = body.getMobilizedBodyIndex();
-        const GeometrySet& geomSet = body.get_GeometrySet();
+        int nGeom = body.getProperty_GeometrySet().size();
         //const VisibleObject& visible = *body.getDisplayer();
         //Vec3 scale; visible.getScaleFactors(scale);
         //const Transform X_BV = visible.getTransform();
         //const GeometrySet&   geomSet = visible.getGeometrySet();
-        for (int g=0; g < geomSet.getSize(); ++g) {
-            Geometry& geo = geomSet[g];
+        for (int g=0; g < nGeom; ++g) {
+            const Geometry& geo = body.get_GeometrySet(g);
             const Vec3 netScale = geo.get_scale_factors();
             Transform xformRelativeToBody = geo.getTransform(state, body);
             //const DisplayGeometry::DisplayPreference pref = geo.getDisplayPreference();
@@ -411,7 +411,7 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
                 default: assert(!"bad DisplayPreference");
             };
             */
-            const OpenSim::MeshGeometry* mGeom = MeshGeometry::safeDownCast(&geo);
+            const OpenSim::Mesh* mGeom = Mesh::safeDownCast(const_cast<OpenSim::Geometry*>(&geo));
             if (mGeom){
                 const std::string& file = mGeom->get_mesh_file();
                 bool isAbsolutePath; string directory, fileName, extension;
@@ -461,19 +461,13 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
 
                 DecorativeMesh dmesh(pmesh);
                 dmesh.setScaleFactors(netScale);
-                //dmesh.setColor(geo.getColor());
-                //dmesh.setOpacity(geo.getOpacity());
                 _viz->addDecoration(bx, xformRelativeToBody, dmesh);
             }
-            else if (AnalyticGeometry::safeDownCast(&geo)){
-                const Vec3 netScale = geo.get_scale_factors();
-                if (AnalyticSphere::safeDownCast(&geo)){
-                    AnalyticSphere* sphere = AnalyticSphere::safeDownCast(&geo);
-                    DecorativeSphere deco(sphere->get_radius());
-                    deco.setScaleFactors(netScale);
-                    _viz->addDecoration(bx, xformRelativeToBody, deco);
-                }
-                
+            else { 
+                SimTK::Array_<SimTK::DecorativeGeometry> deocrationsForGeom;
+                geo.createDecorativeGeometry(deocrationsForGeom);
+                for (int g = 0; g < deocrationsForGeom.size(); ++g)
+                    _viz->addDecoration(bx, xformRelativeToBody, deocrationsForGeom[g]);
             }
         }
     }

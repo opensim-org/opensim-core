@@ -121,19 +121,14 @@ void Body::extendConnectToModel(Model& aModel)
  */
 OpenSim::Geometry& Body::addMeshGeometry(const std::string& aGeometryFileName, const SimTK::Vec3 scale)
 {
-	//updDisplayer()->setGeometryFileName(updDisplayer()->getNumGeometryFiles(), aGeometryFileName);
-    if (getProperty_GeometrySet().empty())
-        updProperty_GeometrySet().adoptAndAppendValue(new GeometrySet());
-    MeshGeometry* geom = new MeshGeometry(aGeometryFileName);
+    Mesh* geom = new Mesh(aGeometryFileName);
     geom->set_scale_factors(scale);
     geom->set_frame_name(getName());
     return addGeometry(geom);
 }
 
 OpenSim::Geometry& Body::addGeometry(OpenSim::Geometry* geom) {
-    if (getProperty_GeometrySet().empty())
-        updProperty_GeometrySet().adoptAndAppendValue(new GeometrySet());
-    upd_GeometrySet().adoptAndAppend(geom);
+    this->append_GeometrySet(*geom);
     return *geom;
 }
 

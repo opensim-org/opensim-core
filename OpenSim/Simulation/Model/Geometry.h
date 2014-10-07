@@ -95,11 +95,14 @@ public:
         constructProperty_frame_name("ground");
     }
 	virtual ~Geometry() {}
+
 	//=============================================================================
 	// METHODS
 	//=============================================================================
     SimTK::Transform getTransform(const SimTK::State& state, const OpenSim::RigidFrame& frame) const;
-//=============================================================================
+
+    virtual void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& ) const {};
+    //=============================================================================
 };	// END of class Geometry
 
 /***
@@ -146,6 +149,8 @@ public:
 	{
 		setPoints(SimTK::Vec3::updAs(aPoint1), SimTK::Vec3::updAs(aPoint2));
 	}
+
+    void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
     void constructProperties(){
         constructProperty_start_point(SimTK::Vec3(0));
@@ -153,6 +158,7 @@ private:
     }
 };
 
+// unimplemented yet, make Properties
 class OSIMSIMULATION_API ArrowGeometry : public LineGeometry
 {	
     OpenSim_DECLARE_CONCRETE_OBJECT(ArrowGeometry, Geometry);
@@ -162,25 +168,18 @@ public:
 	{
 	}
 	virtual ~ArrowGeometry() {}
+
+    void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override {};
 };
 
 
 /**
  * Utility class used to abstract anayltic geometry. 
- * If the differentiation between types becomes an issue, or more info need
- * to be stuffed in this class, it may be worth it to separate it into a bunch,
- * one per shape.
  */
 class OSIMSIMULATION_API AnalyticGeometry : public Geometry
 {	 
     OpenSim_DECLARE_ABSTRACT_OBJECT(AnalyticGeometry, Geometry);
-	// Common array of attributes for analytic geometry we can represent
-	// Meaning depends on _analyticType as follows.
 	// Amended with a quadrants array to support pieces of analytic geometry (for wrapping)
-	// Sphere	[Radius, unused, unused, unused, unused, unused]
-	// Cylinder  [Radius, Height, unused, ...]
-	// Cone		 [BaseRadius, TopRadius, Height, unused, ..]
-	// Ellipsoid [AxisLength1, AxisLength2, AxisLength3, unused, ..]
     OpenSim_DECLARE_LIST_PROPERTY(quadrants, std::string,
         "Quadrants to use: combination of +X -X +Y -Y +Z -Z space separated."); 
 private:
@@ -218,133 +217,138 @@ private:
     }
 };
 
-class OSIMSIMULATION_API AnalyticSphere : public AnalyticGeometry
+class OSIMSIMULATION_API Sphere : public AnalyticGeometry
 {
-OpenSim_DECLARE_CONCRETE_OBJECT(AnalyticSphere, AnalyticGeometry);
-protected:
-	double				_radius;
+OpenSim_DECLARE_CONCRETE_OBJECT(Sphere, AnalyticGeometry);
 public:
     OpenSim_DECLARE_PROPERTY(radius, double,
         "Radius of sphere."); 
-    AnalyticSphere() :
+    Sphere() :
 	AnalyticGeometry()
 	{
         constructProperties();
     }
-	AnalyticSphere(double radius):
+	Sphere(double radius):
 		AnalyticGeometry()
 		{
         constructProperties();
         upd_radius() = radius;
 		}
-	virtual ~AnalyticSphere() {}
+	virtual ~Sphere() {}
 	void setSphereRadius(double radius)
 	{
 		//assert(_analyticType==Sphere);
         upd_radius() = radius;
 	}
-	static AnalyticGeometry* createSphere(double radius)
-	{
-		AnalyticSphere* sphere = new AnalyticSphere();
-		sphere->setSphereRadius(radius);
-		return sphere;
-	}
+    void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
     void constructProperties(){
         constructProperty_radius(1.0);
     }
-};	// AnalyticSphere
+};	// Sphere
 
-class OSIMSIMULATION_API AnalyticEllipsoid : public AnalyticGeometry
+class OSIMSIMULATION_API Ellipsoid : public AnalyticGeometry
 {
-    OpenSim_DECLARE_CONCRETE_OBJECT(AnalyticEllipsoid, AnalyticGeometry);
-protected:
-	double				_radii[3];
+    OpenSim_DECLARE_CONCRETE_OBJECT(Ellipsoid, AnalyticGeometry);
 public:
-	AnalyticEllipsoid():
-		AnalyticGeometry()
-		{}
-	AnalyticEllipsoid(double radius1, double radius2, double radius3):
+    OpenSim_DECLARE_PROPERTY(radii, SimTK::Vec3, "Radii of Ellipsoid."); 
+    Ellipsoid() :
+	AnalyticGeometry()
+	{
+        constructProperties();
+    }
+	Ellipsoid(double radius1, double radius2, double radius3):
 		AnalyticGeometry(){
-        _radii[0] = radius1;
-        _radii[1] = radius2;
-        _radii[2] = radius3;
+        constructProperties();
+        setEllipsoidParams(radius1, radius2, radius3);
 	}
-	virtual ~AnalyticEllipsoid() {}
+	virtual ~Ellipsoid() {}
 	void setEllipsoidParams(double radius1, double radius2, double radius3)
 	{
 		//assert(_analyticType==Sphere);
-        _radii[0] = radius1;
-        _radii[1] = radius2;
-        _radii[2] = radius3;
-	}
-	void getEllipsoidParams(double params[])
+        upd_radii()[0] = radius1;
+        upd_radii()[1] = radius2;
+        upd_radii()[2] = radius3;
+    }
+	void getEllipsoidParams(SimTK::Vec3& params)
 	{
-		//assert(_analyticType==Ellipsoid);
-		for(int i=0;i<3; i++)
-            params[i] = _radii[i];
-	}
+        params = get_radii();
+	} 
+    void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
+private:
+    void constructProperties() {
+        constructProperty_radii(SimTK::Vec3(0.5, 1., 2.));
+    }
 };
 
-class OSIMSIMULATION_API AnalyticCylinder : public AnalyticGeometry
+class OSIMSIMULATION_API Cylinder : public AnalyticGeometry
 {
-    OpenSim_DECLARE_CONCRETE_OBJECT(AnalyticCylinder, AnalyticGeometry);
-protected:
-    double				_radius;
-    double				_height;
+    OpenSim_DECLARE_CONCRETE_OBJECT(Cylinder, AnalyticGeometry);
 public:
-	AnalyticCylinder():
-		AnalyticGeometry()
-		{}
-	AnalyticCylinder(const double radius, const double height):
+    OpenSim_DECLARE_PROPERTY(radius, double, "Radius of cylinder.");
+    OpenSim_DECLARE_PROPERTY(height, double, "Height of cylinder.");
+    Cylinder() :
+	AnalyticGeometry()
+	{
+        constructProperties();
+    }
+	Cylinder(const double radius, const double height):
 		AnalyticGeometry()
 		{
-        _radius = radius;
-        _height = height;
+        constructProperties();
+        upd_radius() = radius;
+        upd_height() = height;
 		}
-	virtual ~AnalyticCylinder() {}
-	void getCylinderParams(double params[]) const
+	virtual ~Cylinder() {}
+	void getCylinderParams(SimTK::Vec2& params) const
 	{
 		//assert(_analyticType==Cylinder);
-        params[0] = _radius;
-        params[1] = _height;
+        params[0] = get_radius();
+        params[1] = get_height();
 	}
+    void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
+private:
+    void constructProperties() {
+        constructProperty_radius(1.0);
+        constructProperty_height(0.5);
+    }
 };
-
-class OSIMSIMULATION_API AnalyticTorus : public AnalyticGeometry
+// unimplemented need Properties too
+class OSIMSIMULATION_API Torus : public AnalyticGeometry
 {
-    OpenSim_DECLARE_CONCRETE_OBJECT(AnalyticTorus, AnalyticGeometry);
-protected:
-	double				_radii[2];
+    OpenSim_DECLARE_CONCRETE_OBJECT(Torus, AnalyticGeometry);
 public:
-	AnalyticTorus():
+    OpenSim_DECLARE_PROPERTY(cross_section, double, "Cross section radius");
+    OpenSim_DECLARE_PROPERTY(ring_radius, double, "Radius of the torus ring.");
+public:
+	Torus():
 		AnalyticGeometry()
 		{}
-	AnalyticTorus(const double ringRadius, const double crossSectionRadius):
+	Torus(const double ringRadius, const double crossSectionRadius):
 		AnalyticGeometry()
 		{
-			_radii[0]=ringRadius;
-			_radii[1]=crossSectionRadius;
+			upd_ring_radius()=ringRadius;
+			upd_cross_section()=crossSectionRadius;
 		}
-	virtual ~AnalyticTorus() {}
+	virtual ~Torus() {}
 	void getTorusParams(double params[]) const
 	{
 		//assert(_analyticType==Torus);
-		params[0] = _radii[0];
-		params[1] = _radii[1];
+        params[0] = get_ring_radius();
+		params[1] = get_cross_section();
 	}
+    void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override {};
 };
 
-class OSIMSIMULATION_API MeshGeometry : public Geometry
+class OSIMSIMULATION_API Mesh : public Geometry
 {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MeshGeometry, Geometry);
+    OpenSim_DECLARE_CONCRETE_OBJECT(Mesh, Geometry);
 public:
-	std::string _geometryFile;
     OpenSim_DECLARE_PROPERTY(mesh_file, std::string,
         "Name of geometry file.");
 
 public:
-	MeshGeometry(const std::string& geomFile):
+    Mesh(const std::string& geomFile) :
 	Geometry()
 	{
     constructProperty_mesh_file("");
@@ -354,10 +358,9 @@ public:
 	{
 		return get_mesh_file();
 	};
+    void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 
 };
-
-typedef OpenSim::Set<Geometry> GeometrySet;
 }; //namespace
 //=============================================================================
 //=============================================================================

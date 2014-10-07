@@ -133,7 +133,7 @@ void WrapEllipsoid::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 		throw Exception(errorMessage);
 	}
 /*
-    AnalyticEllipsoid* ellipsoid = new AnalyticEllipsoid();
+    Ellipsoid* ellipsoid = new Ellipsoid();
 	ellipsoid->setEllipsoidParams(_dimensions[0], _dimensions[1], _dimensions[2]);
 	setGeometryQuadrants(ellipsoid);
 */

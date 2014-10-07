@@ -31,11 +31,13 @@
 #include "RigidFrame.h"
 #include "Geometry.h"
 #include "Model.h"
+#include "ModelVisualizer.h"
 //=============================================================================
 // STATICS
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using namespace SimTK;
 
 /**
  * Compute Transform of a Geometry w.r.t. passed in Frame
@@ -50,3 +52,88 @@ SimTK::Transform OpenSim::Geometry::getTransform(const SimTK::State& state, cons
     return gFrame.calcTransformToOtherFrame(state, frame);
 }
 
+void Sphere::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+{
+    const Vec3 netScale = get_scale_factors();
+    DecorativeSphere deco(get_radius());
+    deco.setScaleFactors(netScale);
+    decoGeoms.push_back(deco);
+}
+
+
+void Cylinder::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+{
+    const Vec3 netScale = get_scale_factors();
+    DecorativeCylinder deco(get_radius(), get_height()/2.);
+    deco.setScaleFactors(netScale);
+    decoGeoms.push_back(deco);
+}
+
+void LineGeometry::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+{
+    const Vec3 netScale = get_scale_factors();
+    DecorativeLine deco(get_start_point(), get_end_point());
+    deco.setScaleFactors(netScale);
+    decoGeoms.push_back(deco);
+}
+
+void Ellipsoid::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+{
+    const Vec3 netScale = get_scale_factors();
+    DecorativeEllipsoid deco(get_radii());
+    deco.setScaleFactors(netScale);
+    decoGeoms.push_back(deco);
+}
+
+void Mesh::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+{
+    const std::string& file = get_mesh_file();
+    bool isAbsolutePath; string directory, fileName, extension;
+    SimTK::Pathname::deconstructPathname(file,
+        isAbsolutePath, directory, fileName, extension);
+    const string lowerExtension = SimTK::String::toLower(extension);
+    if (lowerExtension != ".vtp" && lowerExtension != ".obj") {
+        std::clog << "ModelVisualizer ignoring '" << file
+            << "'; only .vtp and .obj files currently supported.\n";
+        return;
+    }
+
+    // File is a .vtp or .obj. See if we can find it.
+    Array_<string> attempts;
+    bool foundIt = false;// ModelVisualizer::findGeometryFile(file, isAbsolutePath, attempts);
+
+    if (!foundIt) {
+        std::clog << "ModelVisualizer couldn't find file '" << file
+            << "'; tried\n";
+        for (unsigned i = 0; i < attempts.size(); ++i)
+            std::clog << "  " << attempts[i] << "\n";
+        if (!isAbsolutePath &&
+            !Pathname::environmentVariableExists("OPENSIM_HOME"))
+            std::clog << "Set environment variable OPENSIM_HOME "
+            << "to search $OPENSIM_HOME/Geometry.\n";
+        return;
+    }
+
+    SimTK::PolygonalMesh pmesh;
+    try {
+        if (lowerExtension == ".vtp") {
+            pmesh.loadVtpFile(attempts.back());
+        }
+        else {
+            std::ifstream objFile;
+            objFile.open(attempts.back().c_str());
+            pmesh.loadObjFile(objFile);
+            // objFile closes when destructed
+        }
+    }
+    catch (const std::exception& e) {
+        std::clog << "ModelVisualizer couldn't read "
+            << attempts.back() << " because:\n"
+            << e.what() << "\n";
+        return;
+    }
+
+    DecorativeMesh dmesh(pmesh);
+    dmesh.setScaleFactors(get_scale_factors());
+    decoGeoms.push_back(dmesh);
+}
