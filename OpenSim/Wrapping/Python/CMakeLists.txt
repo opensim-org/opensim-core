@@ -38,11 +38,26 @@ ADD_CUSTOM_COMMAND(
         ${swig_interface_file_fullname}
     DEPENDS ${swig_interface_file_fullname})
 
+FILE(GLOB OSIM_HEADERS
+    ${OpenSim_SOURCE_DIR}/OpenSim/Common/*.h
+    ${OpenSim_SOURCE_DIR}/OpenSim/Simulation/*.h
+    ${OpenSim_SOURCE_DIR}/OpenSim/Simulation/Control/*.h
+    ${OpenSim_SOURCE_DIR}/OpenSim/Simulation/Manager/*.h
+    ${OpenSim_SOURCE_DIR}/OpenSim/Simulation/Model/*.h
+    ${OpenSim_SOURCE_DIR}/OpenSim/Simulation/SimbodyEngine/*.h
+    ${OpenSim_SOURCE_DIR}/OpenSim/Simulation/Wrap/*.h
+    ${OpenSim_SOURCE_DIR}/OpenSim/Analyses/*.h
+    ${OpenSim_SOURCE_DIR}/OpenSim/Actuators/*.h
+    ${OpenSim_SOURCE_DIR}/OpenSim/Tools/*.h
+    ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/SWIGSimTK/*.h
+    )
 ADD_CUSTOM_TARGET(PyWrap
     DEPENDS ${swig_output_cxx_file_fullname}
-        ${swig_output_header_file_fullname})
+        ${swig_output_header_file_fullname}
+        ${OSIM_HEADERS})
 
-SET_TARGET_PROPERTIES(PyWrap PROPERTIES PROJECT_LABEL "Python Bindings - Generate")
+SET_TARGET_PROPERTIES(PyWrap PROPERTIES
+    PROJECT_LABEL "Python Bindings - Generate")
 
 SET(SOURCE_FILES OpenSimContext.cpp "${swig_output_cxx_file_fullname}")
 SET(INCLUDE_FILES OpenSimContext.h "${swig_output_header_file_fullname}")
