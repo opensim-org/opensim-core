@@ -348,13 +348,18 @@ public:
         "Name of geometry file.");
 
 public:
+    Mesh() :
+        Geometry()
+    {
+        constructProperty_mesh_file("");
+    }
     Mesh(const std::string& geomFile) :
-	Geometry()
-	{
-    constructProperty_mesh_file("");
-    upd_mesh_file() = geomFile;
-	}
-	const std::string&  getGeometryFilename() const
+        Geometry()
+    {
+        constructProperty_mesh_file("");
+        upd_mesh_file() = geomFile;
+    }
+    const std::string&  getGeometryFilename() const
 	{
 		return get_mesh_file();
 	};
