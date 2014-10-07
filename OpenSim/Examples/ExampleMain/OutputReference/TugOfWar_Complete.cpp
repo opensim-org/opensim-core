@@ -286,7 +286,7 @@ int main()
 		//////////////////////////
 
 		// set use visualizer to true to visualize the simulation live
-		osimModel.setUseVisualizer(true);
+		osimModel.setUseVisualizer(false);
 
 		// Initialize the system and get the default state
 		SimTK::State& si = osimModel.initSystem();
