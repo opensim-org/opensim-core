@@ -76,6 +76,7 @@
 #include "Model/SystemEnergyProbe.h"
 #include "Model/Umberger2010MuscleMetabolicsProbe.h"
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
+#include "Model/Geometry.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -158,7 +159,11 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( PathPointSet() );
     Object::registerType( ConditionalPathPoint() );
     Object::registerType( MovingPathPoint() );
-    Object::registerType( GeometryPath() );
+    Object::registerType(Sphere());
+    Object::registerType(Cylinder());
+    Object::registerType(Ellipsoid());
+    Object::registerType(Mesh());
+    Object::registerType(GeometryPath());
 
     Object::registerType( ControlSet() );
     Object::registerType( ControlConstant() );
