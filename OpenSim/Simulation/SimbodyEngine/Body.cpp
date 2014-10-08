@@ -412,8 +412,80 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 			SimTK::Xml::Element inertiaNode("inertia", strInertia);
 			aNode.insertNodeAfter(aNode.element_end(), inertiaNode);
 		}
+        if (versionNumber < 30502){
+            // Find node for <VisibleObject> remove it then create Geometry for the 
+            SimTK::Xml::element_iterator iIter = aNode.element_begin("VisibleObject");
+            if (iIter != aNode.element_end()){
+                SimTK::Xml::Element visObjElement = SimTK::Xml::Element::getAs(aNode.removeNode(iIter));
+                // Scale factors
+                SimTK::Vec3 outerScaleFactors(1.0);
+                SimTK::Xml::element_iterator outerScaleFactortIter = visObjElement.element_begin("scale_factors");
+                if (outerScaleFactortIter != visObjElement.element_end()){
+                    outerScaleFactors = outerScaleFactortIter->getValueAs<SimTK::Vec3>();
+                }
+                SimTK::Vec6 outerTransform(0.0);
+                SimTK::Xml::element_iterator outerTransformIter = visObjElement.element_begin("transform");
+                if (outerTransformIter != visObjElement.element_end()){
+                    outerTransform = outerTransformIter->getValueAs<SimTK::Vec6>();
+                }
+                SimTK::Xml::element_iterator geomSetIter = visObjElement.element_begin("GeometrySet");
+                if (geomSetIter != visObjElement.element_end()){
+                    convertDisplayGeometryToGeometryXML(aNode, outerScaleFactors, outerTransform, *geomSetIter);
+                }
+            }
+        }
 	}
 	Super::updateFromXMLNode(aNode, versionNumber);
+}
+
+void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
+    const SimTK::Vec3& outerScaleFactors, const SimTK::Vec6& outerTransform, 
+    SimTK::Xml::Element& geomSetElement) const
+{
+    std::string bodyName = bodyNode.getRequiredAttribute("name").getValue();
+
+    SimTK::Xml::element_iterator objectsIter = geomSetElement.element_begin("objects");
+
+    if (objectsIter != geomSetElement.element_end()){
+        SimTK::Xml::Element geometrySetNode("GeometrySet");
+        bodyNode.insertNodeAfter(bodyNode.element_end(), geometrySetNode);
+
+        SimTK::Xml::element_iterator displayGeomIter = objectsIter->element_begin("DisplayGeometry");
+        while (displayGeomIter != objectsIter->element_end()){
+            // Create a <Mesh> Element and populate it
+            // geometry_file
+            std::string geomFile = "";
+            SimTK::Xml::element_iterator geomFileIter = displayGeomIter->element_begin("geometry_file");
+            if (geomFileIter != displayGeomIter->element_end()){
+                geomFile = geomFileIter->getValueAs<SimTK::String>();
+            }
+            // transform
+            SimTK::Vec6 localXform(0.);
+            SimTK::Xml::element_iterator localXformIter = displayGeomIter->element_begin("transform");
+            if (localXformIter != displayGeomIter->element_end()){
+                localXform = localXformIter->getValueAs<SimTK::Vec6>();
+            }
+            // scale_factor
+            SimTK::Vec3 localScale(0.);
+            SimTK::Xml::element_iterator localScaleIter = displayGeomIter->element_begin("scale_factors");
+            if (localScaleIter != displayGeomIter->element_end()){
+                localScale = localScaleIter->getValueAs<SimTK::Vec3>();
+            }
+            // Now compose scale factors and xforms and create new node to insert into bodyNode
+             SimTK::Xml::Element meshNode("Mesh");
+             SimTK::Xml::Element frameNode("frame_name", bodyName);
+             SimTK::Xml::Element meshFileNode("mesh_file", geomFile);
+             std::stringstream localScaleStr;
+             localScaleStr << localScale[0] << " " << localScale[1] << " " << localScale[2];
+             SimTK::Xml::Element scaleFactorsNode("scale_factors", localScaleStr.str());
+             meshNode.insertNodeAfter(meshNode.element_end(), scaleFactorsNode);
+             meshNode.insertNodeAfter(meshNode.element_end(), frameNode);
+             meshNode.insertNodeAfter(meshNode.element_end(), meshFileNode);
+             // Insert Mesh into parent
+             geometrySetNode.insertNodeAfter(geometrySetNode.element_end(), meshNode);
+             displayGeomIter++;
+        }
+    }
 }
 
 Body* Body::addSlave()

@@ -47,6 +47,9 @@ SimTK::Transform OpenSim::Geometry::getTransform(const SimTK::State& state, cons
     const OpenSim::Model& model = frame.getModel();
     const OpenSim::Frame& gFrame = model.getBodySet().contains(get_frame_name()) ? model.getBodySet().get(get_frame_name()) :
         model.getFrameSet().get(get_frame_name());
+    if (gFrame == frame) // Identity transform, no need to call Frame methods
+        return Transform();
+
     if (model.getBodySet().contains(frame.getName()))
         return  gFrame.calcTransformToOtherFrame(state, model.getBodySet().get(frame.getName()));
     return gFrame.calcTransformToOtherFrame(state, frame);

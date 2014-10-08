@@ -393,6 +393,7 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
         for (int g=0; g < nGeom; ++g) {
             const Geometry& geo = body.get_GeometrySet(g);
             const Vec3 netScale = geo.get_scale_factors();
+            const std::string frameName = geo.get_frame_name();
             Transform xformRelativeToBody = geo.getTransform(state, body);
             //const DisplayGeometry::DisplayPreference pref = geo.getDisplayPreference();
             /*
