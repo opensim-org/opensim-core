@@ -517,6 +517,7 @@ void Body::generateDecorations(bool fixed, const ModelDisplayHints& hints, const
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
 {
     if (!fixed) return;
+    Super::generateDecorations(fixed, hints, state, appendToThis);
     const SimTK::MobilizedBodyIndex bx = getIndex();
     int nGeom = getProperty_GeometrySet().size();
     //const VisibleObject& visible = *body.getDisplayer();
