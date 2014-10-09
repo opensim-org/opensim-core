@@ -100,8 +100,9 @@ public:
 	void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true);
 	void scaleMass(double aScaleFactor);
 
-    OpenSim::Geometry& addMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
-    OpenSim::Geometry& addGeometry(OpenSim::Geometry* aGeometry);
+    void addMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+        SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const;
 
  protected:
 

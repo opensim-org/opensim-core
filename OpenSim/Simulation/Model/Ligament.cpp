@@ -292,15 +292,3 @@ void Ligament::computeForce(const SimTK::State& s,
 		delete PFDs[i];
 }
 
-//_____________________________________________________________________________
-/**
- * Get the visible object used to represent the Ligament.
- */
-//_____________________________________________________________________________
-/**
- * Update the visible object used to represent the Ligament.
- */
-void Ligament::updateDisplayer(const SimTK::State& s) const
-{
-	getGeometryPath().updateDisplayer(s);
-}

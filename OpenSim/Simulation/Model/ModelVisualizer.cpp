@@ -257,9 +257,10 @@ void ModelVisualizer::show(const SimTK::State& state) const {
 //  - look for the geometry file in modelDir/Geometry
 //  - look for the geometry file in installDir/Geometry
 bool ModelVisualizer::
-findGeometryFile(const std::string&          geoFile,
+findGeometryFile(const Model& aModel, 
+                 const std::string&          geoFile,
                  bool&                       geoFileIsAbsolute,
-                 SimTK::Array_<std::string>& attempts) const
+                 SimTK::Array_<std::string>& attempts) 
 {
     attempts.clear();
     std::string geoDirectory, geoFileName, geoExtension; 
@@ -273,12 +274,12 @@ findGeometryFile(const std::string&          geoFile,
     } else {  
         const string geoDir = "Geometry" + Pathname::getPathSeparator();
         string modelDir;
-        if (_model.getInputFileName() == "Unassigned") 
+        if (aModel.getInputFileName() == "Unassigned") 
             modelDir = Pathname::getCurrentWorkingDirectory();
         else {
             bool isAbsolutePath; string directory, fileName, extension; 
             SimTK::Pathname::deconstructPathname(
-                _model.getInputFileName(), 
+                aModel.getInputFileName(),
                 isAbsolutePath, directory, fileName, extension);
             modelDir = isAbsolutePath 
                 ? directory
@@ -379,100 +380,6 @@ void ModelVisualizer::createVisualizer() {
 // We also rummage through the model to find fixed geometry that should be part
 // of every frame. The supplied State must be realized through Instance stage.
 void ModelVisualizer::collectFixedGeometry(const State& state) const {
-    // Run through all the bodies and try to open the meshes associated
-    // with them.
-    const BodySet& bodies = _model.getBodySet();
-    for (int i=0; i < bodies.getSize(); ++i) {
-        const Body& body = bodies[i];
-        const MobilizedBodyIndex bx = body.getMobilizedBodyIndex();
-        int nGeom = body.getProperty_GeometrySet().size();
-        //const VisibleObject& visible = *body.getDisplayer();
-        //Vec3 scale; visible.getScaleFactors(scale);
-        //const Transform X_BV = visible.getTransform();
-        //const GeometrySet&   geomSet = visible.getGeometrySet();
-        for (int g=0; g < nGeom; ++g) {
-            const Geometry& geo = body.get_GeometrySet(g);
-            const Vec3 netScale = geo.get_scale_factors();
-            const std::string frameName = geo.get_frame_name();
-            Transform xformRelativeToBody = geo.getTransform(state, body);
-            //const DisplayGeometry::DisplayPreference pref = geo.getDisplayPreference();
-            /*
-            DecorativeGeometry::Representation rep;
-            switch(pref) {
-                case DisplayGeometry::None: 
-                    continue; // don't bother with this one (TODO: is that right)
-                case DisplayGeometry::WireFrame: 
-                    rep=DecorativeGeometry::DrawWireframe; 
-                    break;
-                case DisplayGeometry::SolidFill:
-                case DisplayGeometry::FlatShaded:
-                case DisplayGeometry::GouraudShaded:
-                    rep = DecorativeGeometry::DrawSurface;
-                    break;
-                default: assert(!"bad DisplayPreference");
-            };
-            */
-            const OpenSim::Mesh* mGeom = Mesh::safeDownCast(const_cast<OpenSim::Geometry*>(&geo));
-            if (mGeom){
-                const std::string& file = mGeom->get_mesh_file();
-                bool isAbsolutePath; string directory, fileName, extension;
-                SimTK::Pathname::deconstructPathname(file,
-                    isAbsolutePath, directory, fileName, extension);
-                const string lowerExtension = SimTK::String::toLower(extension);
-                if (lowerExtension != ".vtp" && lowerExtension != ".obj") {
-                    std::clog << "ModelVisualizer ignoring '" << file
-                        << "'; only .vtp and .obj files currently supported.\n";
-                    continue;
-                }
-
-                // File is a .vtp or .obj. See if we can find it.
-                Array_<string> attempts;
-                bool foundIt = findGeometryFile(file, isAbsolutePath, attempts);
-
-                if (!foundIt) {
-                    std::clog << "ModelVisualizer couldn't find file '" << file
-                        << "'; tried\n";
-                    for (unsigned i = 0; i < attempts.size(); ++i)
-                        std::clog << "  " << attempts[i] << "\n";
-                    if (!isAbsolutePath &&
-                        !Pathname::environmentVariableExists("OPENSIM_HOME"))
-                        std::clog << "Set environment variable OPENSIM_HOME "
-                        << "to search $OPENSIM_HOME/Geometry.\n";
-                    continue;
-                }
-
-                SimTK::PolygonalMesh pmesh;
-                try {
-                    if (lowerExtension == ".vtp") {
-                        pmesh.loadVtpFile(attempts.back());
-                    }
-                    else {
-                        std::ifstream objFile;
-                        objFile.open(attempts.back().c_str());
-                        pmesh.loadObjFile(objFile);
-                        // objFile closes when destructed
-                    }
-                }
-                catch (const std::exception& e) {
-                    std::clog << "ModelVisualizer couldn't read "
-                        << attempts.back() << " because:\n"
-                        << e.what() << "\n";
-                    continue;
-                }
-
-                DecorativeMesh dmesh(pmesh);
-                dmesh.setScaleFactors(netScale);
-                _viz->addDecoration(bx, xformRelativeToBody, dmesh);
-            }
-            else { 
-                SimTK::Array_<SimTK::DecorativeGeometry> deocrationsForGeom;
-                geo.createDecorativeGeometry(deocrationsForGeom);
-                for (int g = 0; g < deocrationsForGeom.size(); ++g)
-                    _viz->addDecoration(bx, xformRelativeToBody, deocrationsForGeom[g]);
-            }
-        }
-    }
-
     // Collect any fixed geometry from the ModelComponents.
     Array_<DecorativeGeometry> fixedGeometry;
     _model.generateDecorations
@@ -480,6 +387,7 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
 
     for (unsigned i=0; i < fixedGeometry.size(); ++i) {
         const DecorativeGeometry& dgeo = fixedGeometry[i];
+        //cout << dgeo.getBodyId() << dgeo.getTransform() << endl;
         _viz->addDecoration(MobilizedBodyIndex(dgeo.getBodyId()), 
                             Transform(), dgeo);
     }

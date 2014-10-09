@@ -100,6 +100,12 @@ void ModelComponent::generateDecorations
 	}
 }
 
+void ModelComponent::adoptGeometry(OpenSim::Geometry* geom) {
+    append_GeometrySet(*geom);
+    return;
+}
+
+
 const SimTK::DefaultSystemSubsystem& ModelComponent::
 getDefaultSubsystem() const
 {   return getModel().getDefaultSubsystem(); }

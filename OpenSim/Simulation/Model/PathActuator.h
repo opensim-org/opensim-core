@@ -123,11 +123,6 @@ public:
 	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
 	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 
-	//--------------------------------------------------------------------------
-	// Visible Object Support
-	//--------------------------------------------------------------------------
-	virtual void updateDisplayer(const SimTK::State& s) const;
-
 protected:
     /** Override this method if you would like to calculate a color for use when
     the %PathActuator's path is displayed in the visualizer. You do not have 

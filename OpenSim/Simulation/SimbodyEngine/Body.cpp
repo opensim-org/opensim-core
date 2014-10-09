@@ -27,6 +27,7 @@
 #include "Body.h"
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ModelVisualizer.h>
 
 //=============================================================================
 // STATICS
@@ -119,17 +120,12 @@ void Body::extendConnectToModel(Model& aModel)
  *
  * @param aGeometryFileName Geometry filename.
  */
-OpenSim::Geometry& Body::addMeshGeometry(const std::string& aGeometryFileName, const SimTK::Vec3 scale)
+void Body::addMeshGeometry(const std::string& aGeometryFileName, const SimTK::Vec3 scale)
 {
     Mesh* geom = new Mesh(aGeometryFileName);
     geom->set_scale_factors(scale);
     geom->set_frame_name(getName());
-    return addGeometry(geom);
-}
-
-OpenSim::Geometry& Body::addGeometry(OpenSim::Geometry* geom) {
-    this->append_GeometrySet(*geom);
-    return *geom;
+    adoptGeometry(geom);
 }
 
 
@@ -506,3 +502,113 @@ Body* Body::addSlave()
 	return slave;
 }
 
+/**
+ * Implementation of Frame interface by Body
+ */
+SimTK::Transform Body::calcGroundTransform(const SimTK::State& state) const {
+
+    const SimTK::MobilizedBody &B = getModel().getMatterSubsystem().getMobilizedBody(_index);
+    const SimTK::Transform& ground_X_B = B.getBodyTransform(state);
+
+    return ground_X_B;
+}
+
+void Body::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
+{
+    if (!fixed) return;
+    const SimTK::MobilizedBodyIndex bx = getIndex();
+    int nGeom = getProperty_GeometrySet().size();
+    //const VisibleObject& visible = *body.getDisplayer();
+    //Vec3 scale; visible.getScaleFactors(scale);
+    //const Transform X_BV = visible.getTransform();
+    //const GeometrySet&   geomSet = visible.getGeometrySet();
+    for (int g = 0; g < nGeom; ++g) {
+        const Geometry& geo = get_GeometrySet(g);
+        const Vec3 netScale = geo.get_scale_factors();
+        const std::string frameName = geo.get_frame_name();
+        SimTK::Transform xformRelativeToBody = geo.getTransform(state, *this);
+        //const DisplayGeometry::DisplayPreference pref = geo.getDisplayPreference();
+        /*
+        DecorativeGeometry::Representation rep;
+        switch(pref) {
+        case DisplayGeometry::None:
+        continue; // don't bother with this one (TODO: is that right)
+        case DisplayGeometry::WireFrame:
+        rep=DecorativeGeometry::DrawWireframe;
+        break;
+        case DisplayGeometry::SolidFill:
+        case DisplayGeometry::FlatShaded:
+        case DisplayGeometry::GouraudShaded:
+        rep = DecorativeGeometry::DrawSurface;
+        break;
+        default: assert(!"bad DisplayPreference");
+        };
+        */
+        const OpenSim::Mesh* mGeom = Mesh::safeDownCast(const_cast<OpenSim::Geometry*>(&geo));
+        if (mGeom){
+            const std::string& file = mGeom->get_mesh_file();
+            bool isAbsolutePath; string directory, fileName, extension;
+            SimTK::Pathname::deconstructPathname(file,
+                isAbsolutePath, directory, fileName, extension);
+            const string lowerExtension = SimTK::String::toLower(extension);
+            if (lowerExtension != ".vtp" && lowerExtension != ".obj") {
+                std::clog << "ModelVisualizer ignoring '" << file
+                    << "'; only .vtp and .obj files currently supported.\n";
+                continue;
+            }
+
+            // File is a .vtp or .obj. See if we can find it.
+            SimTK::Array_<string> attempts;
+            bool foundIt = ModelVisualizer::findGeometryFile(getModel(), file, isAbsolutePath, attempts);
+
+            if (!foundIt) {
+                std::clog << "ModelVisualizer couldn't find file '" << file
+                    << "'; tried\n";
+                for (unsigned i = 0; i < attempts.size(); ++i)
+                    std::clog << "  " << attempts[i] << "\n";
+                if (!isAbsolutePath &&
+                    !SimTK::Pathname::environmentVariableExists("OPENSIM_HOME"))
+                    std::clog << "Set environment variable OPENSIM_HOME "
+                    << "to search $OPENSIM_HOME/Geometry.\n";
+                continue;
+            }
+
+            SimTK::PolygonalMesh pmesh;
+            try {
+                if (lowerExtension == ".vtp") {
+                    pmesh.loadVtpFile(attempts.back());
+                }
+                else {
+                    std::ifstream objFile;
+                    objFile.open(attempts.back().c_str());
+                    pmesh.loadObjFile(objFile);
+                    // objFile closes when destructed
+                }
+            }
+            catch (const std::exception& e) {
+                std::clog << "ModelVisualizer couldn't read "
+                    << attempts.back() << " because:\n"
+                    << e.what() << "\n";
+                continue;
+            }
+
+            SimTK::DecorativeMesh dmesh(pmesh);
+            dmesh.setScaleFactors(netScale);
+            dmesh.setTransform(xformRelativeToBody);
+            dmesh.setBodyId(bx);
+            appendToThis.push_back(dmesh);
+        }
+        else {
+            SimTK::Array_<SimTK::DecorativeGeometry> deocrationsForGeom;
+            geo.createDecorativeGeometry(deocrationsForGeom);
+            for (int g = 0; g < deocrationsForGeom.size(); ++g){
+                //_viz->addDecoration(bx, xformRelativeToBody, deocrationsForGeom[g]);
+                SimTK::DecorativeGeometry dg = deocrationsForGeom[g];
+                dg.setTransform(xformRelativeToBody);
+                dg.setBodyId(bx);
+                appendToThis.push_back(dg);
+            }
+        }
+    }
+}

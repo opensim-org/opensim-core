@@ -75,7 +75,7 @@ int main()
 
 		// Add display geometry to the ground to visualize in the Visualizer and GUI
 		// add a checkered floor
-		Geometry& floorGeometry = ground.addMeshGeometry("checkered_floor.vtp");
+		ground.addMeshGeometry("checkered_floor.vtp");
 		// add anchors for the muscles to be fixed too
         Geometry* leftAnchorGeometry = new Mesh("block.vtp");
         Geometry* rightAnchorGeometry = new Mesh("block.vtp");
@@ -91,27 +91,27 @@ int main()
         leftAnchorFrame->setName("LeftAnchor");
         osimModel.addFrame(leftAnchorFrame);
         leftAnchorGeometry->set_frame_name(leftAnchorFrame->getName());
-        ground.addGeometry(leftAnchorGeometry);
+        ground.adoptGeometry(leftAnchorGeometry);
 
         OpenSim::FixedFrame* rightAnchorFrame = new FixedFrame(ground, Transform(Vec3(0, 0.05, -0.35)));
         rightAnchorFrame->setName("RightAnchor");
         osimModel.addFrame(rightAnchorFrame);
         rightAnchorGeometry->set_frame_name(rightAnchorFrame->getName());
-        ground.addGeometry(rightAnchorGeometry);
+        ground.adoptGeometry(rightAnchorGeometry);
         
         Geometry* cylGeometry = new Cylinder(0.2, .3);
         OpenSim::FixedFrame* cylFrame = new FixedFrame(ground, Transform(Vec3(-.2, 0.0, 0.)));
         cylFrame->setName("CylAnchor");
         osimModel.addFrame(cylFrame);
         cylGeometry->set_frame_name("CylAnchor");
-        ground.addGeometry(cylGeometry);
+        ground.adoptGeometry(cylGeometry);
 
         Geometry* ellipsoidGeometry = new Ellipsoid(0.2, .7, .5);
         OpenSim::FixedFrame* ellipsoidFrame = new FixedFrame(ground, Transform(Vec3(-.6, 0.6, 0.)));
         ellipsoidFrame->setName("EllipsoidAnchor");
         osimModel.addFrame(ellipsoidFrame);
         ellipsoidGeometry->set_frame_name("EllipsoidAnchor");
-        ground.addGeometry(ellipsoidGeometry);
+        ground.adoptGeometry(ellipsoidGeometry);
         
 		// BLOCK BODY
 		Vec3 blockMassCenter(0);
@@ -125,7 +125,7 @@ int main()
         
         Geometry* sphereGeometry = new Sphere(0.1);
         sphereGeometry->set_frame_name(block->getName());
-        block->addGeometry(sphereGeometry);
+        block->adoptGeometry(sphereGeometry);
         
 		// FREE JOINT
 

@@ -179,11 +179,6 @@ protected:
 		return values;
 	}
 
-	//--------------------------------------------------------------------------
-	// Display
-	//--------------------------------------------------------------------------
-	void updateDisplayer(const SimTK::State& s) const override;
-
 private:
     void constructProperties() override;
     void constructOutputs() override;

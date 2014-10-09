@@ -178,11 +178,8 @@ public:
 	void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 
 	//--------------------------------------------------------------------------
-	// Visible Object Support
+	// Visualization Support
 	//--------------------------------------------------------------------------
-	
-	void updateDisplayer(const SimTK::State& s) const override;
-
     // Update the geometry attached to the path (location of path points and connecting segments
 	//  all in global/interial frame)
 	virtual void updateGeometry(const SimTK::State& s) const;
