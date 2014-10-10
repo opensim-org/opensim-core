@@ -1,20 +1,28 @@
-Guidelines for contributing to OpenSim-Core
+Guidelines for Contributing to OpenSim-Core
 ===========================================
 
-Outdated guidelines can be found [here](http://simtk-confluence.stanford.edu:8080/display/OpenSim/Contributing+to+the+OpenSim+Source+Code).
-
-We also have [coding standards](http://simtk-confluence.stanford.edu:8080/display/OpenSim/OpenSim+Coding+Standards) that your contribution must follow.
+We encourage everyone to contribute to the OpenSim-Core repository. This could be making a pull request, as described below, or letting us know about a bug or issue. We've set up the following guidelines for making contributions through a pull request. The purpose of our contribution policy is to ensure that all code in OpenSim-Core has undergone real scrutiny, thereby reducing the likelihood of errors. Even the best programmers can fall victim to lack of oversight that leads to duplication, inefficiency and, worst of all, confusion. For it to be effective, no one is exempt.
 
 
-Making a pull request
+Making a Pull Request
 ---------------------
-To help the people who review your pull request, please include a detailed description of what changes or additions the pull request includes and what you have done to test and verify the changes. If there is an existing issue or set of issues that documents the problem the pull request is solving, you can reference it. But, please make sure detailed information about the commit is easily available.
+(1) To help the people who review your pull request, you must include a detailed description of what changes or additions the pull request includes and what you have done to test and verify the changes. If there is an existing issue or set of issues that documents the problem the pull request is solving, you can reference it. But, please make sure detailed information about the commit is easily available.
+
+(2) Make sure that your request conforms to OpenSim's [coding standards](http://simtk-confluence.stanford.edu:8080/display/OpenSim/OpenSim+Coding+Standards).
+
+(3) Make sure that tests pass on your local machine before making a pull request.
+
+(4) Typo fixes can be merged by any member of the Dev Team.
+
+(5) Updates to comments. Doxygen, compiler compatibility, or Cmake files must be reviewed by at least one member of the Dev Team, before being merged. The original author or review may merge the changes.
+
+(6) Any other changes to the code require review by at least two members of the Dev Team. If the pull request involves adding a new class or performing a major object/algorithm refactor one of these reviewers must be an Owner.
 
 Thank you for contributing!
 
 
-Running tests through GitHub
-----------------------------
+Checking for Memory Leaks through GitHub
+----------------------------------------
 If you want to check memory leaks, you can have Travis-CI run valgrind on the test cases. Just put `[ci valgrind]` in your commit message.
 
 
@@ -46,3 +54,5 @@ Here is a partial list of contributors; please let us know if you know of a miss
 - Michael A. Sherman
 - Darryl G. Thelen
 - Kevin Xu
+- Justin Si
+- Soha Pouya
