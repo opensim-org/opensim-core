@@ -128,20 +128,6 @@ const Array<PathPoint*>& OpenSimContext::getCurrentDisplayPath(GeometryPath& g) 
   return g.getCurrentDisplayPath(*_configState);
 }
 
-void OpenSimContext::updateDisplayer(Force& f) {
-  // If muscle or force acting along a path then call respective updateDisplayer otherwise do nothing for now
-  realizeVelocity();
-  if (dynamic_cast<Muscle*>(&f)!= NULL)
-    return dynamic_cast<Muscle*>(&f)->updateDisplayer(*_configState);
-  if (f.hasGeometryPath()){
-    AbstractProperty& pathProp = f.updPropertyByName("GeometryPath");
-    Object& pathObj = pathProp.updValueAsObject();
-    return dynamic_cast<GeometryPath*>(&pathObj)->updateDisplayer(*_configState);
-  }
-  /*if (f.getDisplayer()!= NULL)
-    f.updateDisplayer(*_configState);*/
-}
-
 void OpenSimContext::copyMuscle(Muscle& from, Muscle& to) {
   to = from;
   _configState->invalidateAll(SimTK::Stage::Position);
