@@ -49,10 +49,10 @@ Here is a partial list of contributors; please let us know if you know of a miss
 - Jack Middleton
 - Matthew Millard
 - Paul C. Mitiguy
+- Soha Pouya
 - Jeffrey A. Reinbolt
 - Ajay Seth
 - Michael A. Sherman
+- Justin Si
 - Darryl G. Thelen
 - Kevin Xu
-- Justin Si
-- Soha Pouya
