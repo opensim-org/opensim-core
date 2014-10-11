@@ -128,7 +128,7 @@ double PointActuator::getOptimalForce() const
 // Get the stress of the force.
 double PointActuator::getStress( const SimTK::State& s) const
 {
-	return std::abs(getForce(s) / getOptimalForce()); 
+	return std::abs(getActuation(s) / getOptimalForce()); 
 }
 
 
@@ -167,12 +167,12 @@ void PointActuator::computeForce(const SimTK::State& s,
 
     double force;
 
-    if( isForceOverriden(s) ) {
-       force = computeOverrideForce(s);
+	if (isActuationOverriden(s)) {
+		force = computeOverrideActuation(s);
     } else {
        force = computeActuation(s);
     }
-    setForce(s,  force );
+	setActuation(s, force);
 
 	
 	Vec3 forceVec = force*SimTK::UnitVec3(get_direction());

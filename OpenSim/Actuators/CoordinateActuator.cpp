@@ -121,13 +121,13 @@ double CoordinateActuator::getOptimalForce() const
 }
 //_____________________________________________________________________________
 /**
- * Get the stress of the force.
+ * Get the stress of the force (using the actuation signal).
  *
  * @return Stress.
  */
 double CoordinateActuator::getStress( const SimTK::State& s) const
 {
-	return std::abs(getForce(s) / getOptimalForce()); 
+	return std::abs(getActuation(s) / getOptimalForce()); 
 }
 
 
@@ -188,15 +188,15 @@ void CoordinateActuator::computeForce( const SimTK::State& s,
 	if(!_model) return;
 
    double force;
-    if( isForceOverriden(s) ) {
-       force = computeOverrideForce(s);
+   if (isActuationOverriden(s)) {
+	   force = computeOverrideActuation(s);
     } else {
        force = computeActuation(s);
     }
-    setForce(s,  force );
+   setActuation(s, force);
 
 	if(isCoordinateValid()){
-       applyGeneralizedForce(s, *_coord, getForce(s), mobilityForces);
+		applyGeneralizedForce(s, *_coord, getActuation(s), mobilityForces);
     } else {
        std::cout << "CoordinateActuator::computeForce  Invalid coordinate " << std::endl;
     }

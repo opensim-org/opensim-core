@@ -256,7 +256,7 @@ double Schutte1993Muscle_Deprecated::computeActuation(const SimTK::State& s) con
 	setFiberLengthDeriv(s, fiberLengthDeriv * _optimalFiberLength / get_time_scale());
 
 	tendonForce = tendonForce * _maxIsometricForce;
-	setForce(s, tendonForce);
+	setActuation(s, tendonForce);
 	setTendonForce(s, tendonForce);
 	setPassiveForce(s, passiveForce * _maxIsometricForce);
 
@@ -457,8 +457,8 @@ double Schutte1993Muscle_Deprecated::computeIsometricForce(SimTK::State& s, doub
 
    if (_optimalFiberLength < ROUNDOFF_ERROR) {
       setStateVariable(s, STATE_FIBER_LENGTH_NAME, 0.0);
-		setPassiveForce(s, 0.0);
-      setForce(s, 0.0);
+	  setPassiveForce(s, 0.0);
+	  setActuation(s, 0.0);
       setTendonForce(s, 0.0);
       return 0.0;
    }
@@ -490,14 +490,14 @@ double Schutte1993Muscle_Deprecated::computeIsometricForce(SimTK::State& s, doub
         setPassiveForce(s, passiveForce );
 		setStateVariable(s, STATE_FIBER_LENGTH_NAME,  fiberLength);
 		tendonForce = (activeForce + passiveForce) * cos_factor;
-		setForce(s, tendonForce);
+		setActuation(s, tendonForce);
 		setTendonForce(s, tendonForce);
       return tendonForce;
    } else if (length < _tendonSlackLength) {
 		setStateVariable(s, STATE_FIBER_LENGTH_NAME,  muscle_width);
 		setPassiveForce(s, 0.0);
-      setForce(s, 0.0);
-      setTendonForce(s, 0.0);
+		setActuation(s, 0.0);
+        setTendonForce(s, 0.0);
       return 0.0;
    } else {
       fiberLength = _optimalFiberLength;
@@ -535,8 +535,8 @@ double Schutte1993Muscle_Deprecated::computeIsometricForce(SimTK::State& s, doub
          tendon_force = 0.0;
       else
          tendon_force = getTendonForceLengthCurve().calcValue(SimTK::Vector(1, tendon_strain)) * _maxIsometricForce;
-		setForce(s, tendon_force);
-		setTendonForce(s, tendon_force);
+		 setActuation(s, tendon_force);
+		 setTendonForce(s, tendon_force);
 
       old_error_force = error_force;
  

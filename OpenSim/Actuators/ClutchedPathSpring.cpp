@@ -144,7 +144,7 @@ double ClutchedPathSpring::getTension(const SimTK::State& s) const
 	// note tension is positive and produces shortening
 	// damping opposes lengthening, which is positive lengthening speed
 	// there for stretch and lengthening speed increase tension
-	return getForce(s); 
+	return getActuation(s);
 }
 
 
@@ -159,7 +159,7 @@ double ClutchedPathSpring::computeActuation(const SimTK::State& s) const
 				(getStiffness()*getStretch(s) *					//elastic force
 				(1+getDissipation()*getLengtheningSpeed(s)));   //dissipation 
 	
-	setForce(s, tension);
+	setActuation(s, tension);
 	return tension;
 }
 

@@ -593,7 +593,7 @@ public:
     ProbeSet& updProbeSet() { return upd_ProbeSet(); };
 
 	/**
-     * Get the subset of misc ModelComponents in the model
+     * Get the subst of misc ModelComponents in the model
      * @return The set of misc ModelComponents
      */
 	const ComponentSet& getMiscModelComponentSet() const 

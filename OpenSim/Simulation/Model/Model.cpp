@@ -1969,7 +1969,7 @@ void Model::overrideAllActuators( SimTK::State& s, bool flag) {
 
      for(int i=0;i<as.getSize();i++) {
 		 ScalarActuator* act = dynamic_cast<ScalarActuator*>(&as[i]);
-         act->overrideForce(s, flag );
+		 act->overrideActuation(s, flag);
      }
 
 }

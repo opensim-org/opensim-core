@@ -116,7 +116,7 @@ void TorqueActuator::setBodyB(const Body& aBody)
 // Calculate the stress of the force.
 double TorqueActuator::getStress(const State& s) const
 {
-	return std::abs(getForce(s) / getOptimalForce()); 
+	return std::abs(getActuation(s) / getOptimalForce());
 }
 //_____________________________________________________________________________
 /**
@@ -152,17 +152,17 @@ void TorqueActuator::computeForce(const State& s,
 	
     double force = 0;
 
-    if( isForceOverriden(s) ) {
-       force = computeOverrideForce(s);
+	if (isActuationOverriden(s)) {
+		force = computeOverrideActuation(s);
     } else {
        force = computeActuation(s);
     }
-    setForce(s,  force );
+	setActuation(s, force);
 
 	if(!_bodyA)
 		return;
 	
-    setForce(s, force );
+	setActuation(s, force);
 	Vec3 torque = force*UnitVec3(axis);
 	
 	if (!torqueIsGlobal)

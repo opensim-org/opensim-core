@@ -696,7 +696,7 @@ double  Millard2012AccelerationMuscle::
 
     
     const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
-    setForce(s,         mdi.tendonForce);
+	setActuation(s, mdi.tendonForce);
     return( mdi.tendonForce );
 }
 
@@ -749,14 +749,14 @@ void Millard2012AccelerationMuscle::
 
             case 0: //converged, all is normal
             {
-                setForce(s,tendonForce);
+				setActuation(s, tendonForce);
 		        setFiberLength(s,fiberLength);
                 setFiberVelocity(s,fiberVelocity);
             }break;
 
             case 1: //lower fiber length bound hit
             {
-                setForce(s,tendonForce);
+				setActuation(s, tendonForce);
                 setFiberLength(s,fiberLength);
                 setFiberVelocity(s,fiberVelocity);
 
@@ -768,7 +768,7 @@ void Millard2012AccelerationMuscle::
 
             case 2: //Maximum number of iterations exceeded.
             {
-                setForce(s,0.0);
+				setActuation(s, 0.0);
                 setFiberLength(s,m_penMdl.getOptimalFiberLength());
                 setFiberVelocity(s,0.0);
 
@@ -815,7 +815,7 @@ void Millard2012AccelerationMuscle::
                     "and a fiber velocity equal to 0.0 ",
                         muscleName.c_str());
 
-                setForce(s,0.0);
+				setActuation(s, 0.0);
                 setFiberLength(s,m_penMdl.getOptimalFiberLength());
                 setFiberVelocity(s,0.0);
         }
@@ -832,7 +832,7 @@ void Millard2012AccelerationMuscle::
         cerr << "    and a fiber length velocity equal to 0 ..." 
              << endl;
 
-        setForce(s,0);
+		setActuation(s, 0);
 		setFiberLength(s,getOptimalFiberLength());
         setFiberVelocity(s,0.0);
     }
