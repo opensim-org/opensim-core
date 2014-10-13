@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                                       *
+ * Author(s): Ajay Seth, Soha Pouya                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -42,16 +42,17 @@ class Controller;
 class Coordinate;
 
 //=============================================================================
-//                   ACTUATOR_ (vector of control values)
+//           ACTUATOR (base class to make a vector of control values)
 //=============================================================================
 /**
  * Base class for an actuator (e.g., a torque motor, muscle, ...) that requires
- * external input (controls) to generate force.
+ * a generic external input (a vector of controls) to generate force. This class
+ * therefore covers scalarActautor as a special case with scalar control value. 
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API Actuator_ : public Force {
-OpenSim_DECLARE_ABSTRACT_OBJECT(Actuator_, Force);
+class OSIMSIMULATION_API Actuator : public Force {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Actuator, Force);
 //=============================================================================
 // NO PROPERTIES
 //=============================================================================
@@ -71,7 +72,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	Actuator_();
+	Actuator();
 
     // default destructor, copy constructor, copy assignment
 
@@ -83,7 +84,7 @@ private:
 	//--------------------------------------------------------------------------
 protected:
 	// ModelComponent Interface
-	virtual void addToSystem(SimTK::MultibodySystem& system) const;
+	virtual void addToSystem(SimTK::MultibodySystem& system) const override;
 
 	// Update the geometry attached to the actuator. Use inertial frame.
 	virtual void updateGeometry();
@@ -110,28 +111,27 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual double computeActuation( const SimTK::State& s) const = 0;
+	virtual double getPower(const SimTK::State& s) const = 0;
 	virtual void computeEquilibrium(SimTK::State& s) const { }
 
-
 //=============================================================================
-};	// END of class Actuator_
+};	// END of class Actuator
 //=============================================================================
 
 
 //==============================================================================
-//                       ACTUATOR (scalar control value)
+//                       SCALARACTUATOR (scalar control value)
 //==============================================================================
 
 /**
- * Derived class for an actuator (e.g., a torque motor, muscle, ...) that 
- * requires exactly one external input (control) to generate a scalar
- * value force, such as a torque/force magnitude or a tension.
+ * This is a derived class from the base class actuator (e.g., a torque motor, 
+ * muscle, ...) that requires exactly one external input (control) to generate 
+ * a scalar value force, such as a torque/force magnitude or a tension.
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API Actuator : public Actuator_ {
-OpenSim_DECLARE_ABSTRACT_OBJECT(Actuator, Actuator_);
+class OSIMSIMULATION_API ScalarActuator : public Actuator {
+	OpenSim_DECLARE_ABSTRACT_OBJECT(ScalarActuator, Actuator);
 public:
 //==============================================================================
 // PROPERTIES
@@ -152,7 +152,7 @@ public:
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-	Actuator();
+	ScalarActuator();
 
     // default destructor, copy constructor, copy assignment
 
@@ -218,8 +218,12 @@ public:
 
 
 protected:
+
+	// Actuator interface
+	virtual double computeActuation(const SimTK::State& s) const = 0;
+
 	// ModelComponent Interface
-	virtual void addToSystem(SimTK::MultibodySystem& system) const;
+	virtual void addToSystem(SimTK::MultibodySystem& system) const override;
 
 	double computeOverrideForce(const SimTK::State& s ) const;
 
@@ -249,7 +253,7 @@ private:
 	void constructOutputs() override;
 
 //=============================================================================
-};	// END of class Actuator
+};	// END of class ScalarActuator
 //=============================================================================
 
 } // end of namespace OpenSim

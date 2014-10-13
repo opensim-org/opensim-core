@@ -212,9 +212,6 @@ public:
 		FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
 		OpenSim::Array<double> &rControls,bool aVerbosePrinting);
 
-    virtual void setActuators( const Set<Actuator>& actuators );
-
-
      virtual void setupProperties();
 
  protected:

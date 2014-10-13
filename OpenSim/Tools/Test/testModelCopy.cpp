@@ -89,5 +89,6 @@ void testCopyModel(string fileName)
 	size_t mem2 = getCurrentRSS( );
 	int64_t delta = mem2-mem1;
 
-	cout << "Memory change AFTER copy and init:  " << delta/1024 << "KB." << endl;
+	cout << "Memory change AFTER copy and init and delete:  " 
+		 << double(delta)/mem1*100 << "%." << endl;
 }

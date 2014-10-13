@@ -32,7 +32,7 @@
 namespace OpenSim {
 
 class Model;
-class Actuator;
+class ScalarActuator;
 class Muscle;
 
 //=============================================================================
