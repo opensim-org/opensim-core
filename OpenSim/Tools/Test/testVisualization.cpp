@@ -88,7 +88,7 @@ int main()
 {
 	try {
 		LoadOpenSimLibrary("osimActuators");
-        testVisModel("arm26.osim");
+        //testVisModel("toyLeg.osim");
 	}
 	catch (const OpenSim::Exception& e) {
         e.print(cerr);
@@ -102,6 +102,7 @@ void testVisModel(string fileName)
 {
 
 	Model* model = new Model(fileName, true);
+    model->print("udated_" + fileName);
     SimTK::State& si = model->initSystem();
     ModelDisplayHints mdh; // default
     SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
@@ -117,6 +118,7 @@ void testVisModel(string fileName)
     buffer << t.rdbuf();
     std::string fromFile = buffer.str();
     std::string fromModel = dgiText.getAsString();
+    std::cout << fromModel << std::endl;
     int same = fromFile.compare(fromModel);
 	delete model;
     ASSERT(same == 0);
