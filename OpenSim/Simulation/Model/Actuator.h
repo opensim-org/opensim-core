@@ -189,9 +189,9 @@ public:
     * Enable/disable a ScalarActuator's override actuation.
     *
     * The actuation normally produced by a ScalarActuator can be overriden and
-    * When the ScalarActuator's actuation signal is overriden, the ScalarActuator
-    * will by defualt produce a constant actuation signal which can be set 
-    * with setOverrideActuation().
+    * When the ScalarActuator's actuation is overriden, the ScalarActuator will
+    * by defualt produce a constant actuation which can be set with
+    * setOverrideActuation().
 	*
     * @param s    current state
     * @param flag true = override ScalarActuator's output actuation
@@ -228,11 +228,11 @@ protected:
 
 	double computeOverrideActuation(const SimTK::State& s) const;
 
-	//Actuation signal reporting
+	//Actuation reporting
 	/** 
-	 * Methods to query a actuation signal for the value actually applied
-	 * during simulation The names of the quantities (column labels) is
-	 * returned by this first function getRecordLabels()
+	 * Methods to query a actuation for the value actually applied during 
+	 * simulation. The names of the quantities (column labels) is returned
+	 * by this first function getRecordLabels()
 	 */
 	OpenSim::Array<std::string> getRecordLabels() const {
 		OpenSim::Array<std::string> labels("");
@@ -241,7 +241,7 @@ protected:
 	}
 	/**
 	 * Given SimTK::State object extract all the values necessary to report 
-	 * actuation signals, application location frame, etc. used in conjunction 
+	 * actuation, application location frame, etc. used in conjunction 
 	 * with getRecordLabels and should return same size Array
 	 */
 	OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {
