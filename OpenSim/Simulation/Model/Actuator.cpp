@@ -161,7 +161,7 @@ void ScalarActuator::constructProperties()
 
 void ScalarActuator::constructOutputs() 
 {
-	constructOutput<double>("Actuation", &ScalarActuator::getActuation, SimTK::Stage::Velocity);
+	constructOutput<double>("actuation", &ScalarActuator::getActuation, SimTK::Stage::Velocity);
 	constructOutput<double>("speed", &ScalarActuator::getSpeed, SimTK::Stage::Velocity);
 }
 
