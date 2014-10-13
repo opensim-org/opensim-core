@@ -165,7 +165,7 @@ void ScalarActuator::constructOutputs()
 }
 
 // Create the underlying computational system component(s) that support the
-// Actuator model component
+// ScalarActuator model component
 void ScalarActuator::addToSystem(SimTK::MultibodySystem& system) const
 {
 	Super::addToSystem(system);

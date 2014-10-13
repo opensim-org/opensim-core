@@ -186,20 +186,21 @@ public:
     // Overriding Actuation
     //--------------------------------------------------------------------------
     /**
-    * Enable/disable an Actuator's override actuation.
+    * Enable/disable a ScalarActuator's override actuation.
     *
-    * The actuation normally produced by an Actuator can be overriden and
-    * When the Actuator's actuation signal is overriden, the Actuator will by defualt
-    * produce a constant actuation signal which can be set with setOverrideActuation().
-    *
+    * The actuation normally produced by a ScalarActuator can be overriden and
+    * When the ScalarActuator's actuation signal is overriden, the ScalarActuator
+    * will by defualt produce a constant actuation signal which can be set 
+    * with setOverrideActuation().
+	*
     * @param s    current state
-    * @param flag true = override Actuator's output actuation
-    *             false = use Actuator's computed forc (normal operation)
+    * @param flag true = override ScalarActuator's output actuation
+    *             false = use ScalarActuator's computed forc (normal operation)
     */
 	void overrideActuation(SimTK::State& s, bool flag) const;
 
     /**
-    *  return Actuator's override status
+    *  return ScalarActuator's override status
     */
 	bool isActuationOverriden(const SimTK::State& s) const;
 
@@ -219,7 +220,7 @@ public:
 
 protected:
 
-	// Actuator interface
+	// ScalarActuator interface
 	virtual double computeActuation(const SimTK::State& s) const = 0;
 
 	// ModelComponent Interface
@@ -229,9 +230,9 @@ protected:
 
 	//Actuation signal reporting
 	/** 
-	 * Methods to query a actuation signal for the value actually applied during simulation
-	 * The names of the quantities (column labels) is returned by this first function
-	 * getRecordLabels()
+	 * Methods to query a actuation signal for the value actually applied
+	 * during simulation The names of the quantities (column labels) is
+	 * returned by this first function getRecordLabels()
 	 */
 	OpenSim::Array<std::string> getRecordLabels() const {
 		OpenSim::Array<std::string> labels("");
@@ -239,9 +240,9 @@ protected:
 		return labels;
 	}
 	/**
-	 * Given SimTK::State object extract all the values necessary to report actuation signals, 
-	 * application location frame, etc. used in conjunction with getRecordLabels and should 
-	 * return same size Array
+	 * Given SimTK::State object extract all the values necessary to report 
+	 * actuation signals, application location frame, etc. used in conjunction 
+	 * with getRecordLabels and should return same size Array
 	 */
 	OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {
 		OpenSim::Array<double> values(1);
