@@ -653,15 +653,6 @@ constraintJacobian(const SimTK::Vector &parameters, const bool new_parameters, S
 void StaticOptimizationTarget::
 computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vector &rAccel) const
 {
-	//LARGE_INTEGER start;
-	//LARGE_INTEGER stop;
-	//LARGE_INTEGER frequency;
-
-	//QueryPerformanceFrequency(&frequency);
-	//QueryPerformanceCounter(&start);
-
-	// SimTK requires that time be >= 0 when setting Discreate variables (overrideActuation)
-	// JACKM: Need to talk to sherm if this restriction can be removed
 	double time = s.getTime();
 	
 
