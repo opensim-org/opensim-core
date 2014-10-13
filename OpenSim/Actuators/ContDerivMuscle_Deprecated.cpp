@@ -391,8 +391,8 @@ double ContDerivMuscle_Deprecated::computeActuation(const SimTK::State& s) const
    /* Un-normalize the muscle state derivatives and forces. */
    /* Note: Do not need to Un-Normalize activation dynamics equation since activation, deactivation parameters
      specified in muscle file are now independent of time scale */
-     setActivationDeriv(s, normStateDeriv[STATE_ACTIVATION]) ;
-     setFiberLengthDeriv(s, normStateDeriv[STATE_FIBER_LENGTH] * Vmax );
+    setActivationDeriv(s, normStateDeriv[STATE_ACTIVATION]) ;
+    setFiberLengthDeriv(s, normStateDeriv[STATE_FIBER_LENGTH] * Vmax );
 
     tendonForce = tendonForce * _maxIsometricForce;
 	setActuation(s, tendonForce);
