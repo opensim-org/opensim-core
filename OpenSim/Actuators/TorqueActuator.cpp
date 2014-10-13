@@ -154,20 +154,20 @@ void TorqueActuator::computeForce(const State& s,
 	const bool torqueIsGlobal = getTorqueIsGlobal();
 	const Vec3& axis = getAxis();
 	
-    double force = 0;
+    double actuation = 0;
 
 	if (isActuationOverriden(s)) {
-		force = computeOverrideActuation(s);
+		actuation = computeOverrideActuation(s);
     } else {
-       force = computeActuation(s);
+		actuation = computeActuation(s);
     }
-	setActuation(s, force);
+	setActuation(s, actuation);
 
 	if(!_bodyA)
 		return;
 	
-	setActuation(s, force);
-	Vec3 torque = force*UnitVec3(axis);
+	setActuation(s, actuation);
+	Vec3 torque = actuation * UnitVec3(axis);
 	
 	if (!torqueIsGlobal)
 		engine.transform(s, *_bodyA, torque, engine.getGroundBody(), torque);
