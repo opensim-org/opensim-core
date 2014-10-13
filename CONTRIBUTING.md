@@ -3,7 +3,7 @@ Guidelines for Contributing to OpenSim-Core
 
 We encourage everyone to contribute to the OpenSim-Core repository. This could be making a pull request, as described below, or letting us know about a bug or issue. We've set up the following guidelines for making contributions through a pull request. The purpose of our contribution policy is to ensure that all code in OpenSim-Core has undergone real scrutiny, thereby reducing the likelihood of errors. 
 
-Even great programmers benefit from additional eyeballs on their code to catch bugs, avoid duplication and inefficiency, watch for standards violations, and to check that the code is as clear to others as it is to its author. We appreciate contributions and our dev team is collaborative and constructive -- don't be shy!
+Even great programmers benefit from additional eyeballs on their code to catch bugs, avoid duplication and inefficiency, watch for standards violations, and to check that the code is as clear to others as it is to its author. We appreciate contributions and our development team is collaborative and constructive -- don't be shy!
 
 
 Making a Pull Request
