@@ -78,8 +78,8 @@ public:
 	* frame (F frame) relative to the ground frame (G frame).  This method
 	* returns the transform converting quantities expressed in F frame to
 	* quantities expressed in the G frame. This is mathematically stated as,
-	* vec_G = G_X_F*vec_F ,
-	* where G_X_F is the transform returned by getGroundTransform.
+	* vec_G = X_GF*vec_F ,
+	* where X_GF is the transform returned by getGroundTransform.
 	*
 	* @param state       The state applied to the model when determining the
 	*                    transform.
@@ -94,22 +94,22 @@ public:
 	* frame (F frame) relative to another frame (A frame).  This method returns
 	* the transform converting quantities expressed in F frame to quantities
 	* expressed in the A frame. This is mathematically stated as,
-	* vec_A = A_X_F*vec_F ,
-	* where A_X_F is the transform returned by getGroundTransform.
+	* vec_A = X_AF*vec_F ,
+	* where X_AF is the transform returned by this method.
 	*
 	* @param state       The state applied to the model when determining the
 	*                    transform.
 	* @param otherFrame  a second frame
 	* @return transform  The transform between this frame and otherFrame
 	*/
-    SimTK::Transform calcTransformToOtherFrame(const SimTK::State& state, const
+    SimTK::Transform findTransformBetween(const SimTK::State& state, const
             Frame& otherFrame) const;
 
 	/**
-	* Take a vector expressed in this frame (F frame) as the same vector
-	* expressed in another frame (A frame).  This re-expression accounts
+	* Take a vector expressed in this frame (F frame) re-express the same vector 
+	* in another frame (A frame).  This re-expression accounts
 	* for the difference in orientation between the frames. In mathematical
-	* form, this method returns vec_A, where vec_A = A_R_F*vec.  THIS METHOD
+	* form, this method returns vec_A, where vec_A = R_AF*vec.  THIS METHOD
 	* DOES NOT PERFORM A HOMOGENOUS TRANSFORM, thus is does not add
 	* translations to the vector.
 	*
@@ -127,7 +127,7 @@ public:
 	* its location expressed in another frame (A frame) using the homogeneous
 	* transformation. This transformation accounts for the difference in
 	* orientation and translation between the frames. In mathematical form,
-	* this method returns point_A, where point_A = A_T_F*point.
+	* this method returns point_A, where point_A = T_AF*point.
 	*
 	* @param state       The state applied to the model when determining the
 	*                    transform.
@@ -135,7 +135,7 @@ public:
 	* @param otherFrame  The frame in which the point will be re-expressed
 	* @return newVec     The expression of the point measured in otherFrame.
 	*/
-    SimTK::Vec3 expressPointInAnotherFrame(const SimTK::State& state, const
+    SimTK::Vec3 findLocationInAnotherFrame(const SimTK::State& state, const
             SimTK::Vec3& point, const Frame& otherFrame) const;
 	/**@}**/
 

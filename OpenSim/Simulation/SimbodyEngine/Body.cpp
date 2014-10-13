@@ -267,7 +267,7 @@ void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScale
 	double unscaledMass = get_mass();
 
 	// Calculate and store the product of the scale factors.
-	double massScaleFactor = fabs(aScaleFactors[0] * aScaleFactors[1] * aScaleFactors[2]);
+	double massScaleFactor = abs(aScaleFactors[0] * aScaleFactors[1] * aScaleFactors[2]);
 
 	// Scale the mass.
 	if (aScaleMass)
@@ -512,7 +512,7 @@ Body* Body::addSlave()
 SimTK::Transform Body::calcGroundTransform(const SimTK::State& state) const {
 
     const SimTK::MobilizedBody &B = getModel().getMatterSubsystem().getMobilizedBody(_index);
-    const SimTK::Transform& ground_X_B = B.getBodyTransform(state);
+    const SimTK::Transform& X_GB = B.getBodyTransform(state);
 
-    return ground_X_B;
+    return X_GB;
 }

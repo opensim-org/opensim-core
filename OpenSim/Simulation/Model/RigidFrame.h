@@ -36,10 +36,8 @@ class Body;
 //=============================================================================
 //=============================================================================
 /**
-* A RigidFrame is fixed to a Body. That is, its transform to this body is
-* constant. A RigidFrame can be a Body itself. The body to which this frame is
-* attached can be obtained via getBody(). Thus, it is guaranteed that any
-* objects fixed to a rigid frame are also fixed to some Body in the system.
+* A RigidFrame is fixed to body in the articulating, multibody system. That is,
+* its transform to this body is constant. A RigidFrame can be a Body itself. 
 *
 * @author Matt DeMers
 */
@@ -73,17 +71,17 @@ public:
 	bool isAnchoredToBody() const;
     /** 
 	 * If RigidFrame is anchored to a Body, either directly or through,
-	 * intermediate Frames, return a reference to that Body. Check isAnchoredToBody()
-	 * before calling. Throws an exception if this RigidFrame is not connected to a body.
+	 * intermediate FixedFrames, return a reference to that Body. Check isAnchoredToBody()
+	 * before calling. Throws an exception if this RigidFrame is not connected to a Body.
      */
 	const OpenSim::Body& getAnchorBody() const;
 
 	/**
-	 * All RigidFrames are ultimately anchored to a SimTK::Mobilized body.  
+	 * All RigidFrames are ultimately anchored to a SimTK::MobilizedBody.  
 	 * Return the MobilizedBodyIndex of the MobilizedBody to which this RigidFrame
 	 * is anchored.
 	 */
-	const SimTK::MobilizedBodyIndex getMobilizedBodyIndex() const { return _index; }
+	SimTK::MobilizedBodyIndex getMobilizedBodyIndex() const { return _index; }
 
 private:
 	void setNull();

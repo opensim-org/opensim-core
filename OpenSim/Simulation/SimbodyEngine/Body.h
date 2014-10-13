@@ -127,11 +127,11 @@ public:
      */
 	void addWrapObject(WrapObject* wrapObject);
 
+ protected:
+
     // Frame interface
     /** Get transform to Ground frame */
     SimTK::Transform calcGroundTransform(const SimTK::State& state) const override;
-
- protected:
     // Model component interface.
 	void finalizeFromProperties() override;
 	void connectToModel(Model& model) override;

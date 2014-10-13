@@ -37,9 +37,11 @@ class Body;
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Station. A Station is a fixed point defined with 
- * respect to a reference Frame. The reference Frame can be a Body (fixed 
- * to origin of a Body), a FixedFrame (affixed to another Frame) or any other Frame.
+ * A class implementing a Station. A Station is a point fixed to and defined with 
+ * respect to a reference frame. The reference frame can be a Body (fixed 
+ * to origin of a Body), a FixedFrame (affixed to another RigidFrame) or any 
+ * other RigidFrame. The main functionality provided by Station is to find its 
+ * location in any Frame.
  *
  * @author Ayman Habib
  * @version 1.0
@@ -68,8 +70,8 @@ public:
 	const OpenSim::RigidFrame& getReferenceFrame() const;
 	/** setter of Reference Frame off which the Station is defined */
 	void setReferenceFrame(const OpenSim::RigidFrame& aFrame);
-	/** Main functionality provided by Station is to reexpress its location in another Frame */
-	SimTK::Vec3 reexpressLocationInFrame(const SimTK::State& s, OpenSim::Frame& aFrame) const;
+	/** Find this Station's location in any Frame */
+	SimTK::Vec3 findLocationInFrame(const SimTK::State& s, OpenSim::Frame& aFrame) const;
 private:
 	void setNull();
 	void constructProperties() override;

@@ -76,7 +76,7 @@ FixedFrame::FixedFrame(const RigidFrame& parent_frame, const SimTK::Transform&
 */
 void FixedFrame::setNull()
 {
-	isCacheInitialized = false;
+	_isCacheInitialized = false;
 	transform.setToZero();
     anchorTransform.setToNaN();
 	setAuthors("Matt DeMers");
@@ -148,20 +148,18 @@ SimTK::Transform FixedFrame::calcGroundTransform(const SimTK::State &state)
 
 void FixedFrame::invalidate() const
 {
-    isCacheInitialized = false;
+    _isCacheInitialized = false;
     anchorTransform.setToNaN();
     if (!_model.empty())
     {
         _model->invalidateSystem();
-    }
-    //_model->invalidateSystem(); 
-    
+    }    
 }
 
 bool FixedFrame::isPathToBaseValid() const
 {
     //  check if I'm valid first
-    if (isCacheInitialized == 0) { return false; }
+    if (_isCacheInitialized == 0) { return false; }
 
     // check if my parent is another FixedFrame
     const FixedFrame* parent = dynamic_cast<const FixedFrame*>(&getParentFrame());
@@ -213,7 +211,7 @@ void FixedFrame::initFixedFrameCache() const
 		_body=parent.getAnchorBody();
 	}
 	
-    isCacheInitialized = true;
+    _isCacheInitialized = true;
 }
 //=============================================================================
 // GET AND SET

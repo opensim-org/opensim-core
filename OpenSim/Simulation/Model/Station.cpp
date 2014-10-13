@@ -104,11 +104,11 @@ void Station::setReferenceFrame(const OpenSim::RigidFrame& aFrame)
     updConnector<RigidFrame>("reference_frame").connect(aFrame);
 }
 
-SimTK::Vec3 Station::reexpressLocationInFrame(const SimTK::State& s,
+SimTK::Vec3 Station::findLocationInFrame(const SimTK::State& s,
         OpenSim::Frame& aFrame) const
 {
 	// Get the transform from the station's frame to the other frame
 	SimTK::Vec3 currentLocation = get_location();
-    return getReferenceFrame().expressPointInAnotherFrame(s, currentLocation,
+    return getReferenceFrame().findLocationInAnotherFrame(s, currentLocation,
             aFrame);
 }

@@ -98,15 +98,15 @@ void testBodyFrame()
 		double radAngle = SimTK::convertDegreesToRadians(ang);
 		const Coordinate& coord = dPendulum->getCoordinateSet().get("q1");
 		coord.setValue(st, radAngle);
-        SimTK::Transform xform = rod1.calcGroundTransform(st);
+        SimTK::Transform xform = rod1.getGroundTransform(st);
 		// By construction the transform should gove a translation of .353553, .353553, 0.0 since 0.353553 = .5 /sqr(2)
 		double dNorm = (xform.p() - SimTK::Vec3(0.5*std::sin(radAngle), -0.5*std::cos(radAngle), 0.)).norm();
 		assert(dNorm < 1e-6);
 		// The rotation part is a pure bodyfixed Z-rotation by radAngle.
 		SimTK::Vec3 angles = xform.R().convertRotationToBodyFixedXYZ();
-		assert(std::fabs(angles[0]) < 1e-6);
-		assert(std::fabs(angles[1]) < 1e-6);
-		assert(std::fabs(angles[2] - radAngle) < 1e-6);
+		assert(std::abs(angles[0]) < 1e-6);
+		assert(std::abs(angles[1]) < 1e-6);
+		assert(std::abs(angles[2] - radAngle) < 1e-6);
 	}
 
 	// make sure that this Body, which is a Frame, reports that its anchor body is itself.
@@ -127,7 +127,7 @@ void testFixedFrameOnBodyFrame()
 	atOriginFrame->setTransform(relXform);
 	dPendulum->addFrame(atOriginFrame);
 	SimTK::State& st = dPendulum->initSystem();
-    const SimTK::Transform rod1FrameXform = rod1.calcGroundTransform(st);
+    const SimTK::Transform rod1FrameXform = rod1.getGroundTransform(st);
     SimTK::Transform xform = atOriginFrame->getGroundTransform(st);
 	// xform should have 0.0 translation
 	assert(xform.p().norm() < 1e-6);
@@ -157,7 +157,7 @@ void testFixedFrameOnFixedFrame()
 	dPendulum->addFrame(secondFrame);
 
 	SimTK::State& st = dPendulum->initSystem();
-	const SimTK::Transform rod1FrameXform = rod1.calcGroundTransform(st);
+	const SimTK::Transform rod1FrameXform = rod1.getGroundTransform(st);
 	SimTK::Transform xform = secondFrame->getGroundTransform(st);
 	// xform should have 0.0 translation
 	assert(xform.p().norm() < 1e-6);
@@ -212,7 +212,7 @@ void testStationOnFrame()
 		double radAngle = SimTK::convertDegreesToRadians(ang);
 		const Coordinate& coord = dPendulum->getCoordinateSet().get("q1");
 		coord.setValue(st, radAngle);
-        SimTK::Vec3 comInGround = myStation->reexpressLocationInFrame(st, dPendulum->getGroundBody());
+        SimTK::Vec3 comInGround = myStation->findLocationInFrame(st, dPendulum->getGroundBody());
 		SimTK::Vec3 comBySimbody(0.);
 		dPendulum->getSimbodyEngine().getPosition(st, rod1, com, comBySimbody);
 		assert((comInGround - comBySimbody).norm() < 1e-6);

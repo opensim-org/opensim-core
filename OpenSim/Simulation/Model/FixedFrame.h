@@ -36,12 +36,9 @@ class Body;
 //=============================================================================
 //=============================================================================
 /**
- * A FixedFrame is a Frame whose position and orientation is given with respect
- * to another RigidFrame. Additionally, the transform to the parent FixedFrame
+ * A FixedFrame is a RigidFrame whose position and orientation is given with respect
+ * to another RigidFrame. Additionally, the transform to the parent RigidFrame
  * is constant.
- *
- * Since this frame is a RigidFrame, it is also fixed in some Body. The body to
- * which this frame is attached can be obtained via getBody().
  *
  * @author Matt DeMers
  */
@@ -107,20 +104,18 @@ public:
 	* frame (F frame) relative to its parent frame (P frame).  This method
 	* returns the transform converting quantities expressed in F frame to
 	* quantities expressed in the P frame. This is mathematically stated as,
-	* vec_P = P_X_F*vec_F ,
-	* where P_X_F is the transform returned by getTransform.
+	* vec_P = X_PF*vec_F ,
+	* where X_PF is the transform returned by getTransform.
     *
     * This transform is computed using the translation and orientation
     * properties of this object.
 	*
-	* @param state       The state applied to the model when determining the
-	*                    transform.
 	* @return transform  The transform between this frame and its parent frame.
 	*/
 	const SimTK::Transform& getTransform() const;
 	/** Set the transform the translates and rotates this frame (F frame) from 
-	* its parent frame (P frame). You should provide the transform P_x_F
-	* such that vec_P = P_X_F*vec_F.
+	* its parent frame (P frame). You should provide the transform X_PF
+	* such that vec_P = X_PF*vec_F.
     *
     * This transform is stored via the translation and orientation
     * properties of this object.
@@ -131,30 +126,42 @@ public:
 	
 protected:
     
-	/** Model Component Interface */
 	
+    /** @name Model Component Interface
+    These methods adhere to the Model Component Interface**/
+    /**@{**/
+    
 	void addToSystem(SimTK::MultibodySystem& system) const override;
 	void constructConnectors() override;
-	// Frame interface
+    /**@}**/
+
+    /** @name Frame Interface
+    These methods adhere to the Frame Interface**/
+    /**@{**/
+    
     SimTK::Transform calcGroundTransform(const SimTK::State& state) const
         override;
-	// Helpers for initializing fixed frames
-    //--------------------------------------
-    
+    /**@}**/
+
+
+    /** @name Utilities
+    Internal helpers used by FixedFrames for initializing themselves.**/
+    /**@{**/
     /**
-    * Get the fixed transform between my anchor segment and myself
+    * Get the fixed transform between this frame and the fundamental RigidFrame it is anchored to.
     *
-    * @return transform  The transform between this frame and its parent frame.
+    * @return Transform  The transform between this frame and its anchor RigidFrame.
     */
     const SimTK::Transform getAnchorTransform() const;
-	// this helper function is called during buildSytem, after all connnection are resolved
+	/** this helper function is called during buildSytem, after all connnection are resolved. **/
 	void initFixedFrameCache() const;
-    // call this helper function whenever there is a structural change
-    // meaning when the transform or parent frame is updated.
+    /** call this helper function whenever there is a structural change
+    **  meaning when the transform or parent frame is updated. */
     void invalidate() const;
-    // Check the validity of the tree of RigidFrames connecting this to a base segment
+    /** Check the validity of the tree of RigidFrames connecting this to a base segment. */
     bool isPathToBaseValid() const;
-	mutable bool isCacheInitialized;
+	mutable bool _isCacheInitialized;
+    /**@}**/
 private:
 
 	void setNull();

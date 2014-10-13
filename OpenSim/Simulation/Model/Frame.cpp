@@ -59,7 +59,7 @@ void Frame::setNull()
 // FRAME COMPUTATIONS
 //=============================================================================
 //_____________________________________________________________________________
-SimTK::Transform Frame::calcTransformToOtherFrame(const SimTK::State& state,
+SimTK::Transform Frame::findTransformBetween(const SimTK::State& state,
         const Frame& otherFrame) const
 {
     SimTK::Transform ground_X_me = calcGroundTransform(state);
@@ -70,14 +70,14 @@ SimTK::Transform Frame::calcTransformToOtherFrame(const SimTK::State& state,
 SimTK::Vec3 Frame::expressVectorInAnotherFrame(const SimTK::State& state, const
         SimTK::Vec3& vec, const Frame& frame) const
 {
-	SimTK::Transform other_X_me = calcTransformToOtherFrame(state, frame);
+    SimTK::Transform other_X_me = findTransformBetween(state, frame);
 	return other_X_me.R()*vec;
 }
 
-SimTK::Vec3 Frame::expressPointInAnotherFrame(const SimTK::State& state, const
+SimTK::Vec3 Frame::findLocationInAnotherFrame(const SimTK::State& state, const
         SimTK::Vec3& point, const Frame& otherFrame) const
 {
-	SimTK::Transform other_X_me = calcTransformToOtherFrame(state, otherFrame);
+    SimTK::Transform other_X_me = findTransformBetween(state, otherFrame);
 	return other_X_me*point;
 }
 
