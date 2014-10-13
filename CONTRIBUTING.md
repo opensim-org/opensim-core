@@ -1,7 +1,9 @@
 Guidelines for Contributing to OpenSim-Core
 ===========================================
 
-We encourage everyone to contribute to the OpenSim-Core repository. This could be making a pull request, as described below, or letting us know about a bug or issue. We've set up the following guidelines for making contributions through a pull request. The purpose of our contribution policy is to ensure that all code in OpenSim-Core has undergone real scrutiny, thereby reducing the likelihood of errors. Even the best programmers can fall victim to lack of oversight that leads to duplication, inefficiency and, worst of all, confusion. For the policy to be effective, no one is exempt.
+We encourage everyone to contribute to the OpenSim-Core repository. This could be making a pull request, as described below, or letting us know about a bug or issue. We've set up the following guidelines for making contributions through a pull request. The purpose of our contribution policy is to ensure that all code in OpenSim-Core has undergone real scrutiny, thereby reducing the likelihood of errors. 
+
+Even great programmers benefit from additional eyeballs on their code to catch bugs, avoid duplication and inefficiency, watch for standards violations, and to check that the code is as clear to others as it is to its author. We appreciate contributions and our dev team is collaborative and constructive -- don't be shy!
 
 
 Making a Pull Request
@@ -16,7 +18,7 @@ Making a Pull Request
 
 5. Updates to comments. Doxygen, compiler compatibility, or CMake files must be reviewed by at least one member of the Dev Team before being merged. The original author or the reviewer(s) may merge the pull request.
 
-6. Any other changes to the code require review by at least two members of the Dev Team. If the pull request involves adding a new class or performing a major object/algorithm refactor, one of these reviewers must be an Owner. The original author may NOT merge the pull request.
+6. Any other changes to the code require review by at least two members of the [Dev Team](https://github.com/orgs/opensim-org/teams/dev-team). If the pull request involves adding a new class or performing a major object/algorithm refactor, one of these reviewers must be an [Owner] (https://github.com/orgs/opensim-org/teams/owners). The original author may NOT merge the pull request.
 
 Thank you for contributing!
 
