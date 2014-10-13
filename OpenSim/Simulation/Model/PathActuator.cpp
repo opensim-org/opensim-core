@@ -124,10 +124,10 @@ double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
 }
 //_____________________________________________________________________________
 /**
- * Get the stress of the force.
- *
- * @return Stress.
- */
+* Get the stress of the force. This would be the force or torque provided by
+* this actuator divided by its optimal force.
+* @return Stress.
+*/
 double PathActuator::getStress( const SimTK::State& s) const
 {
 	return fabs(getActuation(s)/get_optimal_force()); 

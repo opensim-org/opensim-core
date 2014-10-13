@@ -113,7 +113,11 @@ void TorqueActuator::setBodyB(const Body& aBody)
 // COMPUTATIONS
 //==============================================================================
 //_____________________________________________________________________________
-// Calculate the stress of the force.
+/**
+* Get the stress of the force. This would be the force or torque provided by
+* this actuator divided by its optimal force.
+* @return Stress.
+*/
 double TorqueActuator::getStress(const State& s) const
 {
 	return std::abs(getActuation(s) / getOptimalForce());

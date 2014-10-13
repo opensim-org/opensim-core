@@ -121,8 +121,8 @@ double CoordinateActuator::getOptimalForce() const
 }
 //_____________________________________________________________________________
 /**
- * Get the stress of the force (using the actuation signal).
- *
+ * Get the stress of the force. This would be the force or torque provided by 
+ * this actuator divided by its optimal force.
  * @return Stress.
  */
 double CoordinateActuator::getStress( const SimTK::State& s) const

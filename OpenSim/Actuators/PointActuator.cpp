@@ -125,7 +125,8 @@ double PointActuator::getOptimalForce() const
 	return get_optimal_force();
 }
 //_____________________________________________________________________________
-// Get the stress of the force.
+// Get the stress of the force. This would be the force or torque provided by 
+// this actuator divided by its optimal force.
 double PointActuator::getStress( const SimTK::State& s) const
 {
 	return std::abs(getActuation(s) / getOptimalForce()); 
