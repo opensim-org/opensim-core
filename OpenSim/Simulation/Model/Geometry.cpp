@@ -88,6 +88,14 @@ void Ellipsoid::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry
     decoGeoms.push_back(deco);
 }
 
+void Brick::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+{
+    const Vec3 netScale = get_scale_factors();
+    DecorativeBrick deco(get_half_lengths());
+    deco.setScaleFactors(netScale);
+    decoGeoms.push_back(deco);
+}
+
 void Mesh::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const std::string& file = get_mesh_file();

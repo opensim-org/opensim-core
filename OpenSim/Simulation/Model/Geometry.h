@@ -340,6 +340,30 @@ public:
     void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override {};
 };
 
+class OSIMSIMULATION_API Brick : public Geometry
+{
+    OpenSim_DECLARE_CONCRETE_OBJECT(Brick, Geometry);
+public:
+public:
+    OpenSim_DECLARE_PROPERTY(half_lengths, SimTK::Vec3, "Half lengths in X, Y, Z respectively.");
+
+public:
+    Brick() :
+        Geometry()
+    {
+        constructProperty_half_lengths(SimTK::Vec3(0.1, 0.2, 0.3));
+    }
+    Brick(const SimTK::Vec3& halfLengths) :
+        Geometry()
+    {
+        constructProperty_half_lengths(SimTK::Vec3(0.1, 0.2, 0.3));
+        upd_half_lengths() = halfLengths;
+    }
+    virtual ~Brick() {}
+    void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
+
+};
+
 class OSIMSIMULATION_API Mesh : public Geometry
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(Mesh, Geometry);
@@ -359,6 +383,7 @@ public:
         constructProperty_mesh_file("");
         upd_mesh_file() = geomFile;
     }
+    virtual ~Mesh() {};
     const std::string&  getGeometryFilename() const
 	{
 		return get_mesh_file();
