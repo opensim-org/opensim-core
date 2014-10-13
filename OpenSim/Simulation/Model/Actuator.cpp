@@ -148,7 +148,6 @@ ScalarActuator::ScalarActuator()
 	constructInfrastructure();
 }
 
-
 /**
  * Set up the serializable member variables. This involves constructing and
  * initializing properties.
@@ -188,18 +187,11 @@ double ScalarActuator::getControl(const SimTK::State& s) const
 	return getControls(s)[0];
 }
 
-//_____________________________________________________________________________
-/**
- * getStress needs to be overridden by derived classes to be usable
- */
 double ScalarActuator::getStress(const SimTK::State& s) const
 {
 	OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
 }
-//_____________________________________________________________________________
-/**
- * getOptimalForce needs to be overridden by derived classes to be usable
- */
+
 double ScalarActuator::getOptimalForce() const
 {
 	OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
@@ -226,12 +218,6 @@ void ScalarActuator::setSpeed(const State &s, double speed) const
     setCacheVariable<double>(s, "speed", speed);
 }
 
-
-//___________________________________________________________________________
-/**
- * overrideActuation sets flag to indicate actuator's actuation siganl compuation is being
- * overridden
- */
 void ScalarActuator::overrideActuation(SimTK::State& s, bool flag) const
 {
     setModelingOption(s, "override_actuation", int(flag));
@@ -242,9 +228,6 @@ bool ScalarActuator::isActuationOverriden(const SimTK::State& s) const
     return (getModelingOption(s, "override_actuation") > 0);
 }
        
-//_____________________________________________________________________________
-/** set the value used when an actuator's actuation signal compuation is overridden
- */
 void ScalarActuator::setOverrideActuation(SimTK::State& s, double actuation) const
 {
 	setDiscreteVariable(s, "override_actuation", actuation);;
