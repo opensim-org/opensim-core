@@ -14,9 +14,9 @@ Making a Pull Request
 
 4. Typo fixes can be merged by any member of the Dev Team.
 
-5. Updates to comments. Doxygen, compiler compatibility, or CMake files must be reviewed by at least one member of the Dev Team before being merged. The original author or reviewer may merge the changes.
+5. Updates to comments. Doxygen, compiler compatibility, or CMake files must be reviewed by at least one member of the Dev Team before being merged. The original author or the reviewer(s) may merge the pull request.
 
-6. Any other changes to the code require review by at least two members of the Dev Team. If the pull request involves adding a new class or performing a major object/algorithm refactor one of these reviewers must be an Owner.
+6. Any other changes to the code require review by at least two members of the Dev Team. If the pull request involves adding a new class or performing a major object/algorithm refactor, one of these reviewers must be an Owner. The original author may NOT merge the pull request.
 
 Thank you for contributing!
 
