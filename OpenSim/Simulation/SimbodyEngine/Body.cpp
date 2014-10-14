@@ -447,6 +447,7 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
         bodyNode.insertNodeAfter(bodyNode.element_end(), geometrySetNode);
 
         SimTK::Xml::element_iterator displayGeomIter = objectsIter->element_begin("DisplayGeometry");
+        int counter = 1;
         while (displayGeomIter != objectsIter->element_end()){
             // Create a <Mesh> Element and populate it
             // geometry_file
@@ -469,6 +470,8 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
             }
             // Now compose scale factors and xforms and create new node to insert into bodyNode
              SimTK::Xml::Element meshNode("Mesh");
+             std::string geomName = "geom_" + to_string(counter);
+             meshNode.setAttributeValue("name", geomName);
              SimTK::Xml::Element frameNode("frame_name", bodyName);
              SimTK::Xml::Element meshFileNode("mesh_file", geomFile);
              std::stringstream localScaleStr;
@@ -603,7 +606,7 @@ void Body::generateDecorations(bool fixed, const ModelDisplayHints& hints, const
         else {
             SimTK::Array_<SimTK::DecorativeGeometry> deocrationsForGeom;
             geo.createDecorativeGeometry(deocrationsForGeom);
-            for (int g = 0; g < deocrationsForGeom.size(); ++g){
+            for (unsigned g = 0; g < deocrationsForGeom.size(); ++g){
                 //_viz->addDecoration(bx, xformRelativeToBody, deocrationsForGeom[g]);
                 SimTK::DecorativeGeometry dg = deocrationsForGeom[g];
                 dg.setTransform(xformRelativeToBody);
