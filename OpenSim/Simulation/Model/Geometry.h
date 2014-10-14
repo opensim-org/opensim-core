@@ -286,31 +286,31 @@ class OSIMSIMULATION_API Cylinder : public AnalyticGeometry
     OpenSim_DECLARE_CONCRETE_OBJECT(Cylinder, AnalyticGeometry);
 public:
     OpenSim_DECLARE_PROPERTY(radius, double, "Radius of cylinder.");
-    OpenSim_DECLARE_PROPERTY(height, double, "Height of cylinder.");
+    OpenSim_DECLARE_PROPERTY(half_height, double, "Half-Height of cylinder.");
     Cylinder() :
 	AnalyticGeometry()
 	{
         constructProperties();
     }
-	Cylinder(const double radius, const double height):
+	Cylinder(const double radius, const double hheight):
 		AnalyticGeometry()
 		{
         constructProperties();
         upd_radius() = radius;
-        upd_height() = height;
+        upd_half_height() = hheight;
 		}
 	virtual ~Cylinder() {}
 	void getCylinderParams(SimTK::Vec2& params) const
 	{
 		//assert(_analyticType==Cylinder);
         params[0] = get_radius();
-        params[1] = get_height();
+        params[1] = get_half_height();
 	}
     void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
     void constructProperties() {
-        constructProperty_radius(1.0);
-        constructProperty_height(0.5);
+        constructProperty_radius(0.5);
+        constructProperty_half_height(0.5);
     }
 };
 // unimplemented need Properties too

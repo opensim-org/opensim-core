@@ -67,7 +67,7 @@ void Sphere::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& 
 void Cylinder::createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
-    DecorativeCylinder deco(get_radius(), get_height()/2.);
+    DecorativeCylinder deco(get_radius(), get_half_height());
     deco.setScaleFactors(netScale);
     decoGeoms.push_back(deco);
 }
