@@ -604,9 +604,9 @@ void testBodyActuator()
 		model->getMultibodySystem().updRigidBodyForces(state, Stage::Dynamics);
 	bodyForces.dump("Body Forces before applying 6D spatial force:");
 
-	model->getMatterSubsystem().addInBodyTorque(state, block->getIndex(),
+    model->getMatterSubsystem().addInBodyTorque(state, block->getMobilizedBodyIndex(),
 		torqueInG, bodyForces);
-	model->getMatterSubsystem().addInStationForce(state, block->getIndex(),
+    model->getMatterSubsystem().addInStationForce(state, block->getMobilizedBodyIndex(),
 		Vec3(0), forceInG, bodyForces);
 
 	bodyForces.dump("Body Forces after applying 6D spatial force to the block");
