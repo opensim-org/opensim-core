@@ -795,6 +795,7 @@ void Model::extendConnectToModel(Model &model)
 
 	// TODO: Get rid of the SimbodyEngine
 	updSimbodyEngine().connectSimbodyEngineToModel(*this);
+
 }
 
 
@@ -967,6 +968,8 @@ void Model::setup()
 
 	//now connect the Model and all its subcomponents all up
 	connect(*this);
+
+    populatePathID("");
 }
 
 //_____________________________________________________________________________
@@ -1893,13 +1896,13 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
                 }
                 else {
                     // try replacing the '/' with '.' in the last connection
-                    name = rStateNames[i];
-                    name.replace(last, 1, ".");
-                    last = name.rfind("/");
+				name = rStateNames[i];
+				name.replace(last, 1, ".");
+				last = name.rfind("/");
                     name = name.substr(last + 1, rStateNames[i].length() - last);
-                    fix = originalStorage.getColumnLabels().findIndex(name);
-                }
-            }
+				fix = originalStorage.getColumnLabels().findIndex(name);
+			}
+		}
         }
 		mapColumns[i] = fix;
 		if (fix==-1){
