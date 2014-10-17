@@ -26,7 +26,6 @@
  */
 #include <cstdio>
 #include "Manager.h"
-#include <OpenSim/Simulation/Control/ControlConstant.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
