@@ -71,7 +71,7 @@ public:
 	/** setter of Reference Frame off which the Station is defined */
 	void setReferenceFrame(const OpenSim::RigidFrame& aFrame);
 	/** Find this Station's location in any Frame */
-	SimTK::Vec3 findLocationInFrame(const SimTK::State& s, OpenSim::Frame& aFrame) const;
+	SimTK::Vec3 findLocationInFrame(const SimTK::State& s, const OpenSim::Frame& aFrame) const;
 private:
 	void setNull();
 	void constructProperties() override;

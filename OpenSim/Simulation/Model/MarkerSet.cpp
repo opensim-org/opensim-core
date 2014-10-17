@@ -130,13 +130,13 @@ void MarkerSet::scale(const ScaleSet& scaleSet)
 	for (int i = 0; i < getSize(); i++)
 	{
 		Marker& nextMarker = get(i);
-		const string& refBodyName = nextMarker.getBodyName();
+		const string& refFrameName = nextMarker.getFrameName();
 		//assert(refBodyName);
 		bool found = false;
 		for (int j = 0; j < scaleSet.getSize() && !found; j++)
 		{
 			Scale& nextScale = scaleSet.get(j);
-			if (nextScale.getSegmentName() == refBodyName)
+			if (nextScale.getSegmentName() == refFrameName)
 			{
 				found = true;
 				nextScale.getScaleFactors(scaleFactors);
@@ -163,7 +163,7 @@ void MarkerSet::addNamePrefix(const string& prefix)
 /**
  * Create a new marker and add it to the set.
  */
-Marker* MarkerSet::addMarker(const string& aName, const SimTK::Vec3& aOffset, OpenSim::Body& aBody)
+Marker* MarkerSet::addMarker(const string& aName, const SimTK::Vec3& aOffset, OpenSim::RigidFrame& aRigidFrame)
 {
 	// If a marker by this name already exists, do nothing.
 	if (contains(aName))
@@ -173,9 +173,9 @@ Marker* MarkerSet::addMarker(const string& aName, const SimTK::Vec3& aOffset, Op
 	Marker* m = new Marker();
 	m->setName(aName);
 	m->set_location(aOffset);
-    // Body will be based on this name when marker is connected to Model.
-	m->setBodyName(aBody.getName()); 
-    aBody.updModel().addMarker(m);
+    // Frame will be based on this name when marker is connected to Model.
+	m->setFrameName(aRigidFrame.getName()); 
+    aRigidFrame.updModel().addMarker(m);
 
 	return m;
 }

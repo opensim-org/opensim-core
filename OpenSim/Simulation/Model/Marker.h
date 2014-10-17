@@ -61,13 +61,10 @@ public:
 	Marker();
 	virtual ~Marker();
 
-    const std::string& getBodyName() const;
-	void setBodyName(const std::string& aName);
-    const OpenSim::Body& getBody() const {
-        return getReferenceFrame().getAnchorBody();
-    }
-	void changeBody(const OpenSim::Body& aBody );
-	void changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody );
+    const std::string& getFrameName() const;
+	void setFrameName(const std::string& aName);
+	void changeFrame(const OpenSim::RigidFrame& aRigidFrame );
+	void changeFramePreserveLocation(const SimTK::State& s, OpenSim::RigidFrame& aRigidFrame );
 	void scale(const SimTK::Vec3& aScaleFactors);
 
     /** Override of the default implementation to account for versioning. */

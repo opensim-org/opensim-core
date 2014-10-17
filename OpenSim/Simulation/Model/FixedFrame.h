@@ -135,24 +135,10 @@ protected:
 	void constructConnectors() override;
     /**@}**/
 
-    /** @name Frame Interface
-    These methods adhere to the Frame Interface**/
-    /**@{**/
-    
-    SimTK::Transform calcGroundTransform(const SimTK::State& state) const
-        override;
-    /**@}**/
-
-
     /** @name Utilities
     Internal helpers used by FixedFrames for initializing themselves.**/
     /**@{**/
-    /**
-    * Get the fixed transform between this frame and the fundamental RigidFrame it is anchored to.
-    *
-    * @return Transform  The transform between this frame and its anchor RigidFrame.
-    */
-    const SimTK::Transform getAnchorTransform() const;
+    
 	/** this helper function is called during buildSytem, after all connnection are resolved. **/
 	void initFixedFrameCache() const;
     /** call this helper function whenever there is a structural change
@@ -171,12 +157,7 @@ private:
     // still modify it.
     
     // a private member to cache the tranform on my parent frame
-	mutable SimTK::Transform transform;
-
-    // a private member to cache the transform describing my offset from
-    // my anchor segment
-    mutable SimTK::Transform anchorTransform;
-
+	mutable SimTK::Transform _transform;
 
 //=============================================================================
 };	// END of class FixedFrame

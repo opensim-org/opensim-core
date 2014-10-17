@@ -410,7 +410,7 @@ void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel, Marker
 					Vec3 globalPt = globalMarker;
 					double conversionFactor = aPose.getUnits().convertTo(aModel.getLengthUnits());
 					pt = conversionFactor*globalPt;
-					engine.transformPosition(s, engine.getGroundBody(), pt, modelMarker.getBody(), pt2);
+                    pt2 = modelMarker.getReferenceFrame().findLocationInAnotherFrame(s, pt, engine.getGroundBody());
                     modelMarker.set_location(pt2);
 				}
 				else

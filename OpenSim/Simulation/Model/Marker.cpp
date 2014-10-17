@@ -67,72 +67,81 @@ void Marker::setNull()
 }
 //_____________________________________________________________________________
 /**
- * Set the 'body name' field, which is used when the marker is added to
+ * Set the 'frame name' field, which is used when the marker is added to
  * an existing model.
  *
- * @param aName name of body
+ * @param aName name of frame
  */
-void Marker::setBodyName(const string& aName)
+void Marker::setFrameName(const string& aName)
 {
-    setReferenceFrame(getModel().getBodySet().get(aName));
+    const RigidFrame* refFrame = dynamic_cast<const RigidFrame*>(&getModel().getFrameSet().get(aName));
+    if (refFrame)
+    {
+        setReferenceFrame(*refFrame);
+    }
+    else
+    {
+        string errorMessage = "Markers must be fixed to RigidFrames. " + string(aName) + " is not a RigidFrame.";
+        throw Exception(errorMessage);
+    }
 
 }
 
 //_____________________________________________________________________________
 /**
- * Get the 'body name' field, which is used when the marker is added to
+ * Get the 'frame name' field, which is used when the marker is added to
  * an existing model.
  *
- * @return Pointer to the body name.
+ * @return aName frame name.
  */
-const string& Marker::getBodyName() const
+const string& Marker::getFrameName() const
 {
 	//if (_bodyNameProp.getValueIsDefault())
 	//	return NULL;
 
-    return getBody().getName();
+    return getReferenceFrame().getName();
 }
 
 //_____________________________________________________________________________
 /**
- * Change the body that this marker is attached to. It assumes that the body is
+ * Change the RigidFrame that this marker is attached to. It assumes that the frame is
  * already set, so that connectToModel() needs to be called to update 
  * dependent information.
  *
- * @param aBody Reference to the body.
+ * @param aFrame Reference to the RigidFrame.
  */
-void Marker::changeBody(const OpenSim::Body& aBody)
+void Marker::changeFrame(const OpenSim::RigidFrame& aRigidFrame)
 {
 
-    if (aBody == getBody())
+    if (aRigidFrame == getReferenceFrame())
 		return;
 
-	setBodyName(aBody.getName());
+	setFrameName(aRigidFrame.getName());
     connectToModel(updModel());
 }
 
 //_____________________________________________________________________________
 /**
- * Change the body that this marker is attached to. It assumes that the body is
+ * Change the RigidFrame that this marker is attached to. It assumes that the body is
  * already set, so that connectToModel() needs to be called to update 
  * dependent information.
  *
  * @param s State.
- * @param aBody Reference to the body.
+ * @param aBody Reference to the RigidFrame.
  */
-void Marker::changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody)
+void Marker::changeFramePreserveLocation(const SimTK::State& s, OpenSim::RigidFrame& aRigidFrame)
 {
 
-    if (aBody == getBody())
+    if (aRigidFrame == getReferenceFrame())
 		return;
 
 	// Preserve location means to switch bodies without changing
 	// the location of the marker in the inertial reference frame.
-    Vec3 newOffset;
-    aBody.getModel().getSimbodyEngine().transformPosition(s, getBody(), get_location(), aBody, newOffset);
-    set_location(newOffset);
-	setBodyName(aBody.getName());
-    connectToModel(aBody.updModel());
+    Vec3 newLocation;
+    newLocation = findLocationInFrame(s, aRigidFrame);
+    set_location(newLocation);
+	setFrameName(aRigidFrame.getName());
+    connectToModel(aRigidFrame.updModel());
 }
 
 //=============================================================================

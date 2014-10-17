@@ -66,23 +66,21 @@ public:
     RigidFrame();
 
     virtual ~RigidFrame() {};
-	/** Test if this RigidFrame is anchored to a Body.
-	 */
-	bool isAnchoredToBody() const;
-    /** 
-	 * If RigidFrame is anchored to a Body, either directly or through,
-	 * intermediate FixedFrames, return a reference to that Body. Check isAnchoredToBody()
-	 * before calling. Throws an exception if this RigidFrame is not connected to a Body.
-     */
-	const OpenSim::Body& getAnchorBody() const;
 
 	/**
-	 * All RigidFrames are ultimately anchored to a SimTK::MobilizedBody.  
+	 * All RigidFrames are ultimately rooted to a SimTK::MobilizedBody.  
 	 * Return the MobilizedBodyIndex of the MobilizedBody to which this RigidFrame
-	 * is anchored.
+	 * is rooted.
+     *
+     * @return index The MobilizedBodyIndex corresponding to this RigidFrame's MobilizedBody
 	 */
 	SimTK::MobilizedBodyIndex getMobilizedBodyIndex() const { return _index; }
-
+    /**
+     * Get the fixed transform describing this RigidFrame's transform in its root MobilizedBody.
+     *
+     * @return Transform  The transform between this frame and its root RigidFrame.
+    */
+    SimTK::Transform getTransformInMobilizedBody() const { return _mbTransform; }
 private:
 	void setNull();
 	
@@ -91,9 +89,14 @@ protected:
 	Only Joint can set, since it defines the mobilized body type and
 	the connection to the parent body in the multibody tree. */
 	mutable SimTK::MobilizedBodyIndex _index;
-	/* Smart pointer to the Body to which this RigidFrame is connected.
-	Will be null if not connected to a body*/
-	mutable SimTK::ReferencePtr<const OpenSim::Body> _body;
+    /* RigidFrames, by definition have a fixed transform in their root MobilizedBody.
+    This stores the fixed transform of this RigidFrame in it's root MobilizedBody*/
+    mutable SimTK::Transform _mbTransform;
+    /** @name Frame Interface
+    These methods adhere to the Frame Interface**/
+    /**@{**/
+    SimTK::Transform calcGroundTransform(const SimTK::State& state) const override;
+    /**@}**/
 	//==========================================================================
 };	// END of class RigidFrame
 //=============================================================================

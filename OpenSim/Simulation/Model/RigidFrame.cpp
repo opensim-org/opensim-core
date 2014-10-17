@@ -52,24 +52,14 @@ void RigidFrame::setNull()
 	setAuthors("Matt DeMers");
 }
 
-bool RigidFrame::isAnchoredToBody() const
-{
-	return !_body.empty();
-}
+/**
+* Implementation of Frame interface by RigidFrame
+*/
+SimTK::Transform RigidFrame::calcGroundTransform(const SimTK::State& state) const {
 
-const OpenSim::Body& RigidFrame::getAnchorBody() const
-{
-	if (isAnchoredToBody())
-	{
-		return *_body;
-	}
-	else
-	{
-		string errorMessage;
-		errorMessage = "RigidFrame: " + getName() + " is not anchored to an OpenSim Body.";
-		errorMessage += "\nYou should check for connectivity first using RigidFrame.isAnchoredToBody().";
-		throw (Exception(errorMessage.c_str()));
-	}
+    const SimTK::MobilizedBody &B = getModel().getMatterSubsystem().getMobilizedBody(_index);
+    const SimTK::Transform& X_GB = B.getBodyTransform(state);
 
+    return X_GB*getTransformInMobilizedBody();
 }
 

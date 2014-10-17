@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                             OpenSim:  FixedFrame.cpp                             *
+ *                       OpenSim:  FixedFrame.cpp                             *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -77,8 +77,8 @@ FixedFrame::FixedFrame(const RigidFrame& parent_frame, const SimTK::Transform&
 void FixedFrame::setNull()
 {
 	_isCacheInitialized = false;
-	transform.setToZero();
-    anchorTransform.setToNaN();
+	_transform.setToZero();
+    _mbTransform.setToZero();
 	setAuthors("Matt DeMers");
 }
 //_____________________________________________________________________________
@@ -117,13 +117,13 @@ const SimTK::Transform& FixedFrame::getTransform() const
 {
     // If properties have been updated, then update the cached transform object
     // to be in sync.
-	transform.updP() = get_translation();
-	transform.updR().setRotationToBodyFixedXYZ(get_orientation());
-	return transform;
+	_transform.updP() = get_translation();
+	_transform.updR().setRotationToBodyFixedXYZ(get_orientation());
+	return _transform;
 }
 void FixedFrame::setTransform(const SimTK::Transform& xform)
 {
-	transform = xform;
+	_transform = xform;
     // Make sure properties are updated in case we either call gettters or
     // serialize after this call
 	set_translation(xform.p());
@@ -132,24 +132,10 @@ void FixedFrame::setTransform(const SimTK::Transform& xform)
 	
 }
 
-SimTK::Transform FixedFrame::calcGroundTransform(const SimTK::State &state)
-    const
-{
-    // this check is a good idea, but may be too conservative.  If the user
-    // has a state and the system is valid, my cache should be valid
-    if (isPathToBaseValid() == 0)
-    {
-        initFixedFrameCache();
-    }
-    //return getTransform()*getParentFrame().getGroundTransform(state);
-    return getAnchorTransform()*_model->getMatterSubsystem().getMobilizedBody(getMobilizedBodyIndex()).getBodyTransform(state);
-
-}
-
 void FixedFrame::invalidate() const
 {
     _isCacheInitialized = false;
-    anchorTransform.setToNaN();
+    _mbTransform.setToNaN();
     if (!_model.empty())
     {
         _model->invalidateSystem();
@@ -173,11 +159,6 @@ bool FixedFrame::isPathToBaseValid() const
 
 }
 
-const SimTK::Transform FixedFrame::getAnchorTransform() const
-{
-    return anchorTransform;
-}
-
 void FixedFrame::initFixedFrameCache() const
 {
 	const RigidFrame& parent = getParentFrame();
@@ -187,29 +168,25 @@ void FixedFrame::initFixedFrameCache() const
 	{
 		// The parent frame is another FixedFrame
 		// The parent FixedFrame must resolve its hierarchy before we ask
-		// for its root Body or MobilizedBodyIndex.
+		// for its root MobilizedBodyIndex.
 		// check if the FixedFrame has populated its root segments
 		if (parentFixedFrame->isPathToBaseValid() == 0)
 		{
 			parentFixedFrame->initFixedFrameCache();
 		}
-		// all variables pointing to the parents root Body and or MobilizedBody should be valid
-        anchorTransform = getTransform()*parentFixedFrame->getAnchorTransform();
+		// all variables pointing to the parents root MobilizedBody should be valid
+        _mbTransform = getTransform()*parentFixedFrame->getTransformInMobilizedBody();
 	}
     else
     {
-        // if I'm not on a fixed frame, I'm on an anchor segment.  Therefore, my anchor transform
-        // is the same as my local transform
-        anchorTransform = getTransform();
+        // if I'm not on a FixedFrame, I'm on a Body or other root RigidFrame.  
+        // Therefore, my root transform is the same as my local transform
+        _mbTransform = getTransform();
     }
 
 	// Ask my parent RigidFrame which root Body/MobilizedBody I'm attached to
 
 	_index = parent.getMobilizedBodyIndex();
-	if (parent.isAnchoredToBody())
-	{
-		_body=parent.getAnchorBody();
-	}
 	
     _isCacheInitialized = true;
 }

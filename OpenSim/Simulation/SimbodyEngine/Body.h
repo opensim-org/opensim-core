@@ -129,9 +129,6 @@ public:
 
  protected:
 
-    // Frame interface
-    /** Get transform to Ground frame */
-    SimTK::Transform calcGroundTransform(const SimTK::State& state) const override;
     // Model component interface.
 	void finalizeFromProperties() override;
 	void connectToModel(Model& model) override;

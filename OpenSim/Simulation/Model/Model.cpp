@@ -1650,11 +1650,11 @@ int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
 	{
 		// Eran: we make a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
 		Marker* marker = aMarkerSet.get(i).clone();
-		const string& bodyName = marker->getBodyName();
-		if (getBodySet().contains(bodyName))
+		const string& frameName = marker->getFrameName();
+		if (getFrameSet().contains(frameName))
 		{
-    		OpenSim::Body& body = updBodySet().get(bodyName);
-			marker->changeBody(body);
+    		const OpenSim::RigidFrame* frame = dynamic_cast<const RigidFrame*>(&getFrameSet().get(frameName));
+			if(frame) marker->changeFrame(*frame);
 			upd_MarkerSet().adoptAndAppend(marker);
 			numAdded++;
 		}

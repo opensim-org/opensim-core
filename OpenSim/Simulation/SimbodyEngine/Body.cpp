@@ -95,6 +95,7 @@ void Body::finalizeFromProperties()
 	}
 	
 	_index.invalidate();
+    _mbTransform.setToZero();
 
 	setObjectIsUpToDateWithProperties();
 }
@@ -129,9 +130,6 @@ void Body::connectToModel(Model& aModel)
 			_slaves[i]->_internalRigidBody = SimTK::Body::Rigid(slaveMassProps);
 		}
 	}
-
-	_body = *this;
-
 }
 
 void Body::addToSystem(SimTK::MultibodySystem& system) const
@@ -506,13 +504,3 @@ Body* Body::addSlave()
 	return slave;
 }
 
-/**
- * Implementation of Frame interface by Body
- */
-SimTK::Transform Body::calcGroundTransform(const SimTK::State& state) const {
-
-    const SimTK::MobilizedBody &B = getModel().getMatterSubsystem().getMobilizedBody(_index);
-    const SimTK::Transform& X_GB = B.getBodyTransform(state);
-
-    return X_GB;
-}
