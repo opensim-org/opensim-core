@@ -113,8 +113,8 @@ void SimbodySimmBody::write(ofstream& aStream)
       for (int i = 0; i < markerSet.getSize(); i++)
       {
          const Marker& marker = markerSet.get(i);
-
-         if (&marker.getBody() == _body)
+         const Body* refBody = dynamic_cast<const Body*>(marker.getReferenceFrame());
+         if (refBody && ( refBody == _body))
          {
             // Write out log(_weight) + 1 as marker weight instead of _weight,
             // so that we won't have markers with radius 1000 if _weight=1000.
