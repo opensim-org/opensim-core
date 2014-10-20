@@ -30,8 +30,8 @@ So OpenSim header guards should be written like this:
 #define OPENSIM_PROPERTY_TABLE_H_
  // ... stuff ...
 #endif // OPENSIM_PROPERTY_TABLE_H_
-That matches the scheme used in Simbody and avoids all of the above problems. (Trailing underscore, but not leading, is allowed.)
 ```
+This matches the scheme used in Simbody and avoids all of the above problems. (Trailing underscore, but not leading, is allowed.)
 
 ## Creating New OpenSim Objects
 
