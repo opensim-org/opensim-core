@@ -5,7 +5,7 @@
 
 Header Guards are the lines like:
 
-```Cpp
+```cpp
 #ifndef _PropertyTable_h_ // <-- don't do it this way!
 #define _PropertyTable_h_
  // ... stuff ...
@@ -25,7 +25,7 @@ One other minor issue is that preprocessor macros should typically have very ugl
 
 So OpenSim header guards should be written like this:
 
-```Cpp
+```cpp
 #ifndef OPENSIM_PROPERTY_TABLE_H_ // <-- yes, do it this way!
 #define OPENSIM_PROPERTY_TABLE_H_
  // ... stuff ...
@@ -41,7 +41,7 @@ Example:
 
 In MyNewComponent.h:
 
-```Cpp
+```cpp
 class MyNewComponent : public SomeIntermediateClassDerivedFromObject {
  ...
  void createSystem();
@@ -50,7 +50,7 @@ class MyNewComponent : public SomeIntermediateClassDerivedFromObject {
 
 In MyNewComponent.cpp:
 
-```Cpp
+```cpp
 void MyNewComponent::createSystem() {
  Super::createSystem(); // invoke the parent’s method
  //NOT: SomeIntermediateClassDerivedFromObject::createSystem()
@@ -66,7 +66,7 @@ Now if someone changes the class structure later so that you component’s paren
 You should let the compiler automatically generate the copy constructor and copy assignment operator for your classes whenever possible. But sometimes you have to write one. Here is the basic template for copy assignment:
 
 
-```Cpp
+```cpp
 MyClass& operator=(const MyClass& source) {
  if (&source != this) {
    // copy stuff from source to this
@@ -119,10 +119,10 @@ In C “throw” and “return” are not functions. It is misleading to enclose
 Both pre-increment i and post-increment i are available. When you don’t look at the result, they are logically equivalent. For simple types they are physically equivalent too. But for complicated types (like iterators), the pre-increment is much cheaper computationally, because it doesn’t require separate storage for saving the previous result. Therefore you should get in the habit of using pre-increment in all your loops:
 
  
-```Cpp
-/*YES*/ for (int i; i < limit; i); 
+```cpp
+/*YES*/ for (int i; i < limit; ++i); 
  
-/*NO*/ for (int i; i < limit; i); 
+/*NO*/ for (int i; i < limit; i++); 
 ```
 
 This will prevent you from using the wrong operator in the expensive cases, which are not always obvious.
@@ -133,7 +133,7 @@ Of course in cases where you actually need the pre- or post-value for something,
 
 References and pointers create new types. That is “T”, “T*”, and “T&” are three distinct types. You can tell because you can make typedefs like this:
 
-```Cpp
+```cpp
 typedef T  SameAsT; 
  
 typedef T* PointerToT;
@@ -151,7 +151,7 @@ ReferenceToT tref1=a, tref2=b; // both are type T&
 
 Therefore you should place the “*” and “&” next to the type, not the variable, because logically they are part of the type. Unfortunately, the C language had a bug in its syntax which has been inherited by C. A line like “char* a,b” is treated like “char* a; char b;” rather than “char* a; char* b;”, but if I write “typedef char* CharPtr;” then “CharPtr a,b” declares both to be pointers. There is no perfect solution because the language is broken. However, there is no problem in argument lists (since each variable has to have its own type). So I recommend that you simply avoid the misleading multiple-declaration form when using pointers or references. Just use separate declarations or a typedef. Then always put the “*” and “&” with the type where they belong. So argument lists should look like this:
 
-``` Cpp
+```cpp
 /*YES*/ f(int I, string& name, char* something);
  
 /*NO*/ f(int I, string &name, char *something);
