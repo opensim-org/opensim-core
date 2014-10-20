@@ -113,7 +113,7 @@ void SimbodySimmBody::write(ofstream& aStream)
       for (int i = 0; i < markerSet.getSize(); i++)
       {
          const Marker& marker = markerSet.get(i);
-         const Body* refBody = dynamic_cast<const Body*>(marker.getReferenceFrame());
+         const Body* refBody = dynamic_cast<const Body*>(&marker.getReferenceFrame());
          if (refBody && ( refBody == _body))
          {
             // Write out log(_weight) + 1 as marker weight instead of _weight,
