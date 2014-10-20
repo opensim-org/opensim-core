@@ -6,7 +6,7 @@
   - [Creating New OpenSim Objects](#creating-new-opensim-objects)
   - [Assignment Operators in C](#assignment-operators-in-c)
   - [Documenting your Code](#documenting-your-code)
-  - [Tab Settings](#tab-settings)
+  - [Replace Tabs with Four Spaces](#replace-tabs-with-four-spaces)
   - [Renaming Classes in the OpenSim API](#renaming-classes-in-the-opensim-api)
   - [Naming Conventions](#naming-conventions)
   - [Other C Coding Style Suggestions](#other-c-coding-style-suggestions)
@@ -99,7 +99,7 @@ Doxygen only looks in your .h files. It does not generate documentation from cpp
 
 Read more about doxygen on this page: Guide to Building Doxygen
 
-## Tab Settings
+## Replace Tabs with Four Spaces
 
 Please be sure that your IDE (code editor) is set to replace tabs with four spaces. You should never allow tab characters to get into your code. They will look great to you, but most other people will see your code as randomly formatted.
 
