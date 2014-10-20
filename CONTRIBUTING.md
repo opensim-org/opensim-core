@@ -1,5 +1,19 @@
+
+
 # Coding Standards
 
+  - [Header Guards](#header-guards)
+  - [Creating New OpenSim Objects](#creating-new-opensim-objects)
+  - [Assignment Operators in C](#assignment-operators-in-c)
+  - [Documenting your Code](#documenting-your-code)
+  - [Tab Settings](#tab-settings)
+  - [Renaming Classes in the OpenSim API](#renaming-classes-in-the-opensim-api)
+  - [Naming Conventions](#naming-conventions)
+  - [Other C Coding Style Suggestions](#other-c-coding-style-suggestions)
+    - [Throw and return are not functions](#throw-and-return-are-not-functions)
+    - [Always use pre-increment and pre-decrement operators when you have a choice](#always-use-pre-increment-and-pre-decrement-operators-when-you-have-a-choice)
+    - [Place pointer and reference symbols with the type](#place-pointer-and-reference-symbols-with-the-type)
+  - [Removing Methods](#removing-methods)
 
 ## Header Guards
 
@@ -129,7 +143,7 @@ This will prevent you from using the wrong operator in the expensive cases, whic
 
 Of course in cases where you actually need the pre- or post-value for something, you should use the appropriate operator. 
 
-### Place “*” and “&” with the type, not the variable
+### Place pointer and reference symbols with the type
 
 References and pointers create new types. That is “T”, “T*”, and “T&” are three distinct types. You can tell because you can make typedefs like this:
 
