@@ -430,22 +430,29 @@ int main() {
                 ++it) {
             std::cout << "Iterator is at: " << it->getName() << std::endl;
         }
-        /*
-        std::cout << "Using range-for loop: " << std::endl;
-        for (const Component& component : worldTree) {
-            std::cout << "Iterator is at: " << component.getName() << std::endl;
-        }
-        for (auto& component : worldTree) {
-            std::cout << "Iterator is at: " << component.getName() << std::endl;
-        }
-        */
 
-        /* TODO causes segfault.
+        ComponentList<Component> worldTreeAsList = theWorld.getComponentList();
+        std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
+        for (ComponentList<Component>::iterator it = worldTreeAsList.begin();
+            it != worldTreeAsList.end();
+            it++) {
+            std::cout << "Iterator is at: " << it->getName() << std::endl;
+        }
+
+        
+        std::cout << "Using range-for loop: " << std::endl;
+        for (const Component& component : worldTreeAsList) {
+            std::cout << "Iterator is at: " << component.getName() << std::endl;
+        }
+        for (auto& component : worldTreeAsList) {
+            std::cout << "Iterator is at: " << component.getName() << std::endl;
+        }
+        
+        /* TODO causes segfault (because of dereferencing a null pointer since begin returns pointer to wrong type.
         std::cout << "Iterate over only Foo's." << std::endl;
         for (auto& component : theWorld.getComponents<Foo>()) {
             std::cout << "Iterator is at: " << component.getName() << std::endl;
-        }
-        */
+        }*/
 
 		Foo& foo2 = *new Foo();
 		foo2.setName("Foo2");

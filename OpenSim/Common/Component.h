@@ -99,6 +99,54 @@ private:
     void stackUpSubcomponents();
 };
 
+//=======================================
+// a Proposed iterator that utilizes pointers stored with components 
+// to traverse the tree in PreOrder fashion as a list
+// much simpler and can be layered easily to provide filtering
+template <typename T> class ComponentListIterator;
+
+template <typename T>
+class ComponentList {
+public:
+    typedef ComponentListIterator<T> iterator;
+    ComponentList(const Component* root) : m_root(root) {}
+    iterator begin() {
+        return ComponentListIterator<T>(m_root);
+    }
+    iterator end() {
+        return nullptr;
+    }
+private:
+    const Component* m_root;
+    friend class ComponentListIterator<T>;
+};
+
+template <typename T>
+class ComponentListIterator {
+    friend class ComponentList<T>;
+public:
+    bool operator==(const ComponentListIterator& iter) const {
+        return m_node == &*iter;
+    }
+    bool operator!=(const ComponentListIterator& iter) const {
+         return m_node != &*iter;
+    }
+    const T& operator*() const { return *dynamic_cast<const T*>(m_node); } // m_node need to be kept pointing at correct type otherwise will crash
+    const T* operator->() const { return dynamic_cast<const T*>(m_node); }
+    ComponentListIterator<T>& operator++() {
+        if (m_node->_components.size() > 0){ // has children, go down tree
+            m_node = m_node->_components[0];
+            return *this;
+        }
+        m_node = m_node->_nextComponent; // up tree if needed or sibling
+        return *this;
+    };
+private:
+    const Component* m_node;
+    ComponentListIterator(const Component* node) :
+        m_node(node){};
+};
+
 
 //==============================================================================
 //                            OPENSIM COMPONENT
@@ -274,8 +322,6 @@ public:
      * Get an iterator through the underlying components that this component 
 	 * is composed of.
      */
-    //const ComponentIterator&  getComponentsIterator();
-
     template <typename T=Component>
     ComponentTree<T> getComponents() const {
         return ComponentTree<T>(this);
@@ -284,8 +330,16 @@ public:
     friend class ComponentTree;
     template <typename T>
     friend class ComponentTreeIterator;
-
-
+    /**
+     * A List variant of iterator that doesn't require a stack but leverages the fact that the structure of 
+     * the tree is static, also assumes preorder traversal so that a node is processed before its children
+     */
+    template <typename T = Component>
+    ComponentList<T> getComponentList() const {
+        return ComponentList<T>(this);
+    }
+    template <typename T>
+    friend class ComponentListIterator;
 	/**
      * Get a subcomponent of this Component by its name. 
 	 * Note using a component's full "path" name is faster and will provide a
@@ -1529,6 +1583,7 @@ protected:
 private:
 	class Connection;
 	
+    Component* _nextComponent;
 	// Reference pointer to the system that this component belongs to.
 	SimTK::ReferencePtr<SimTK::MultibodySystem> _system;
 

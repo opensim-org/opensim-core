@@ -104,6 +104,7 @@ Component::Component() : Object()
 {
 	constructProperty_connectors();
 	finalizeFromProperties();
+    _nextComponent = nullptr;
 }
 
 Component::Component(const std::string& fileName, bool updFromXMLNode)
@@ -111,6 +112,7 @@ Component::Component(const std::string& fileName, bool updFromXMLNode)
 {
 	constructProperty_connectors();
 	finalizeFromProperties();
+    _nextComponent = nullptr;
 }
 
 Component::Component(SimTK::Xml::Element& element) 
@@ -164,6 +166,13 @@ void Component::connect(Component &root)
 	// First give the subcomponents the opportunity to connect themselves
     for(unsigned int i=0; i<_components.size(); i++){
 		_components[i]->connect(root);
+        if (i == _components.size() - 1)
+            _components[i]->_nextComponent = root._nextComponent;
+        else
+            _components[i]->_nextComponent = _components[i+1];
+        /*std::cout << "next of " << _components[i]->getName() << " is " <<
+            ((_components[i]->_nextComponent == nullptr)? "nullptr" : _components[i]->_nextComponent->getName()) 
+            << std::endl;*/
 	}
 
 	// rebuilding the connectors table, which was emptied by clearStateAllocations
