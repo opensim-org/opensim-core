@@ -435,7 +435,7 @@ int main() {
         std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
         for (ComponentList<Component>::iterator it = worldTreeAsList.begin();
             it != worldTreeAsList.end();
-            it++) {
+            ++it) {
             std::cout << "Iterator is at: " << it->getName() << std::endl;
         }
 
