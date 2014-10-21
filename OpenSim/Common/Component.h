@@ -133,14 +133,7 @@ public:
     }
     const T& operator*() const { return *dynamic_cast<const T*>(m_node); } // m_node need to be kept pointing at correct type otherwise will crash
     const T* operator->() const { return dynamic_cast<const T*>(m_node); }
-    ComponentListIterator<T>& operator++() {
-        if (m_node->_components.size() > 0){ // has children, go down tree
-            m_node = m_node->_components[0];
-            return *this;
-        }
-        m_node = m_node->_nextComponent; // up tree if needed or sibling
-        return *this;
-    };
+    ComponentListIterator<T>& operator++();
 private:
     const Component* m_node;
     ComponentListIterator(const Component* node) :
@@ -1804,6 +1797,15 @@ ComponentTreeIterator<T>& ComponentTreeIterator<T>::operator++() {
     */
 }
 
+template <typename T>
+ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
+     if (m_node->_components.size() > 0){ // has children, go down tree
+         m_node = m_node->_components[0];
+         return *this;
+     }
+     m_node = m_node->_nextComponent; // up tree if needed or sibling
+     return *this;
+ };
 } // end of namespace OpenSim
 
 #endif // OPENSIM_COMPONENT_H_
