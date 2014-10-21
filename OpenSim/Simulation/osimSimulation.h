@@ -95,6 +95,7 @@
 #include "SimbodyEngine/EllipsoidJoint.h"
 #include "SimbodyEngine/BallJoint.h"
 #include "SimbodyEngine/PinJoint.h"
+#include "SimbodyEngine/PlanarJoint.h"
 #include "SimbodyEngine/SliderJoint.h"
 #include "SimbodyEngine/FreeJoint.h"
 #include "SimbodyEngine/CustomJoint.h"
