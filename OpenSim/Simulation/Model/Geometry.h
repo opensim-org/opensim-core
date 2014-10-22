@@ -27,6 +27,7 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Set.h>
 #include "ModelComponent.h"
+#include "Appearance.h"
 
 // Geometry.h
 // Authors: Ayman Habib
@@ -102,6 +103,16 @@ public:
     SimTK::Transform getTransform(const SimTK::State& state, const OpenSim::RigidFrame& frame) const;
 
     virtual void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& ) const {};
+    // Manage Appearance or how the Geometry is rendered.
+    const Appearance& getAppearance() const { return _appearance; };
+    Appearance& updAppearance() { return _appearance; };
+    void setDecorativeGeometryAppearance(SimTK::DecorativeGeometry& decoration) const {
+        decoration.setColor(_appearance.get_color());
+        decoration.setOpacity(_appearance.get_opacity());
+        decoration.setRepresentation((SimTK::DecorativeGeometry::Representation)_appearance.get_representation());
+    };
+private:
+    Appearance _appearance;
     //=============================================================================
 };	// END of class Geometry
 
