@@ -20,6 +20,8 @@ Making a Pull Request
 
 6. Any other changes to the code require review by at least two members of the Dev Team. If the pull request involves adding a new class or performing a major object/algorithm refactor, one of these reviewers must be an Owner. The Owners and Dev Team are Teams within the opensim-org GitHub organization. The original author may NOT merge the pull request. 
 
+A few additional practices will help streamline the code review process. Please use tags (i.e. @user_name) and quoting to help keep the discussion organized. Please also call for a meeting or Skype call when discussions start to stagnate. In addition, we recommend getting input on your interface design before implementing a major new component or other change.
+
 Thank you for contributing!
 
 
