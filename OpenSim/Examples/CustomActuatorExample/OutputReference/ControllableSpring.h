@@ -146,7 +146,7 @@ void computeForce(const SimTK::State& s,
 
 	// find the force magnitude and set it. then form the force vector
 	double forceMagnitude = (get_rest_length() - length)*stiffness;
-    setForce(s,  forceMagnitude );
+    setActuation(s,  forceMagnitude );
 	SimTK::Vec3 force = forceMagnitude*direction;
 
 	// appy equal and opposite forces to the bodies
