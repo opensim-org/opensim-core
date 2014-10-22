@@ -65,28 +65,33 @@ int main()
 		Inertia linkageInertia = Inertia::cylinderAlongY(linkageDiameter/2.0, linkageLength/2.0);
 
 		OpenSim::Body* linkage1 = new OpenSim::Body("linkage1", linkageMass, linkageMassCenter, linkageMass*linkageInertia);
-        /*
+        
 		// Graphical representation
-		linkage1->addMeshGeometry("cylinder.vtp");
+        Cylinder* cyl = new Cylinder();
 		//This cylinder.vtp geometry is 1 meter tall, 1 meter diameter.  Scale and shift it to look pretty
-		GeometrySet& geometry = linkage1->updDisplayer()->updGeometrySet();
-		DisplayGeometry& thinCylinder = geometry[0];
-		thinCylinder.setScaleFactors(linkageDimensions);
-		thinCylinder.setTransform(Transform(Vec3(0.0,linkageLength/2.0,0.0)));
-		linkage1->addMeshGeometry("sphere.vtp");
+        cyl->set_scale_factors(linkageDimensions);
+        Frame* cyl1Frame = new FixedFrame(*linkage1, Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
+        cyl1Frame->setName("Cyl1_frame");
+        osimModel.addFrame(cyl1Frame);
+        cyl->set_frame_name("Cyl1_frame");
+        linkage1->adoptGeometry(cyl);
+
+		linkage1->adoptGeometry(new Sphere(0.1));
 		//This sphere.vtp is 1 meter in diameter.  Scale it.
-		geometry[1].setScaleFactors(Vec3(0.1));
-		*/
+		
 		// Creat a second linkage body
 		OpenSim::Body* linkage2 = new OpenSim::Body(*linkage1);
 		linkage2->setName("linkage2");
-
+        Frame* cyl2Frame = new FixedFrame(*linkage2, Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
+        cyl2Frame->setName("Cyl2_frame");
+        osimModel.addFrame(cyl2Frame);
+        (linkage2->upd_GeometrySet(0)).set_frame_name("Cyl2_frame");
 		// Creat a block to be the pelvis
 		double blockMass = 20.0, blockSideLength = 0.2;
 		Vec3 blockMassCenter(0);
 		Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
 		OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
-		block->addMeshGeometry("block.vtp");
+        block->adoptGeometry(new Brick(SimTK::Vec3(0.05, 0.05, 0.05)));
 		//This block.vtp is 0.1x0.1x0.1 meters.  scale its appearance
 		//block->updDisplayer()->updGeometrySet()[0].setScaleFactors(Vec3(2.0));
 
@@ -184,7 +189,7 @@ int main()
 
 		// enable the model visualizer see the model in action, which can be
 		// useful for debugging
-		osimModel.setUseVisualizer(false);
+		osimModel.setUseVisualizer(true);
 
 		// Initialize system
 		SimTK::State& si = osimModel.initSystem();
@@ -213,6 +218,7 @@ int main()
 		si.getU().dump("Initial u's");
 		std::cout << "Initial time: " << si.getTime() << std::endl;
 
+        osimModel.dumpPathID();
 		// Integrate
 		manager.setInitialTime(t0);
 		manager.setFinalTime(tf);
