@@ -4,12 +4,12 @@
 
   - [Header Guards](#header-guards)
   - [Creating New OpenSim Objects](#creating-new-opensim-objects)
-  - [Assignment Operators in C](#assignment-operators-in-c)
+  - [Assignment Operators in C++](#assignment-operators-in-c)
   - [Documenting your Code](#documenting-your-code)
   - [Replace Tabs with Four Spaces](#replace-tabs-with-four-spaces)
   - [Renaming Classes in the OpenSim API](#renaming-classes-in-the-opensim-api)
   - [Naming Conventions](#naming-conventions)
-  - [Other C Coding Style Suggestions](#other-c-coding-style-suggestions)
+  - [Other C++ Coding Style Suggestions](#other-c-coding-style-suggestions)
     - [Throw and return are not functions](#throw-and-return-are-not-functions)
     - [Always use pre-increment and pre-decrement operators when you have a choice](#always-use-pre-increment-and-pre-decrement-operators-when-you-have-a-choice)
     - [Place pointer and reference symbols with the type](#place-pointer-and-reference-symbols-with-the-type)
@@ -29,11 +29,11 @@ Header Guards are the lines like:
 that surround every header file to prevent it from being included multiple times. There are two problems with OpenSim’s choice of names for the header guards:
 
 1. They can interfere with user code, and
-2. They violate the C standard.
+2. They violate the C++ standard.
 
 OpenSim uses many very common class names, like “Object” and “Array” and probably “PropertyTable”. These are likely to appear in other code libraries as well, so anyone who combines OpenSim API with other libraries or their own code may have conflicts. The way you are supposed to avoid that is very simple – the header guards should be unique symbols, easily achieved by including the product name in them (that is, they should contain “OPENSIM”).
 
-The C standard prohibits user code from using identifiers that contain double underscore (“__”) or begin with an underscore followed by a capital letter (“_P”). Those symbols are reserved for the compiler and the std:: library. OpenSim’s use of symbols like that means it is subject to conflict with the compiler, either now or in future releases or new platforms. Hopefully those conflicts would cause compiler errors, but that is not guaranteed.
+The C++ standard prohibits user code from using identifiers that contain double underscore (“__”) or begin with an underscore followed by a capital letter (“_P”). Those symbols are reserved for the compiler and the std:: library. OpenSim’s use of symbols like that means it is subject to conflict with the compiler, either now or in future releases or new platforms. Hopefully those conflicts would cause compiler errors, but that is not guaranteed.
 
 One other minor issue is that preprocessor macros should typically have very ugly names with LOTS_OF_CAPS to make it obvious that they are not ordinary identifiers, and to avoid conflicts with NiceCamelHumpIdentifiers.
 
@@ -75,7 +75,7 @@ void MyNewComponent::createSystem() {
 
 Now if someone changes the class structure later so that you component’s parent changes in the header file, the code in the .cpp file (which will have been long forgotten) will automatically change its behavior.
 
-##Assignment Operators in C
+##Assignment Operators in C++
 
 You should let the compiler automatically generate the copy constructor and copy assignment operator for your classes whenever possible. But sometimes you have to write one. Here is the basic template for copy assignment:
 
@@ -112,7 +112,7 @@ Sometimes it makes sense to change the name of a class in OpenSim because the na
 
 **Deserialization** : The code that reads objects from XML files keys on the String representing class name to create corresponding objects (e.g. "PinJoint" class shows in XML as <PinJoint>). If you change the name of PinJoint (e.g. to MyPinJoint) you need to make sure old models that have the tag <PinJoint> still work. Normally this is captured by test cases. If you decide to make the change, you'll have to edit the file "RegisterTypes_osimSimulation.cpp" and add the line Object::renameType("PinJoint", "MyPinJoint"), so that the deserialization code knows how to handle the XML tag.
 
-**Swig wrapping and GUI** : Most API users don't build the GUI, however they should continue to build the JavaWrapping to make sure changes on the C side do not cause serious problems downstream to either the GUI or scripts that we'll be distributing that utilize the Java wrapping. The mechanics for this procedure are as follows:
+**Swig wrapping and GUI** : Most API users don't build the GUI, however they should continue to build the JavaWrapping to make sure changes on the C++ side do not cause serious problems downstream to either the GUI or scripts that we'll be distributing that utilize the Java wrapping. The mechanics for this procedure are as follows:
 - Turn on JavaWrapping in CMake.  You have to have Swig and Java installed.
 - Build JavaWrap project to run SWIG (http://www.swig.org/, version 2.0.4)
 - Run test case testContext which ends up simulating a few GUI calls.
@@ -122,11 +122,11 @@ If a class is not included in the wrapping interface file ("OpenSim/Java/swig/ja
 ## Naming Conventions
 Please follow the convention that property names use “lower_case_with_underscores” as their names, while object types use “CamelCaseUpAndDownWithoutUnderscores”. That ensures no conflicts with XML tag names and makes it easy to tell a property name from an object name.
 
-## Other C Coding Style Suggestions
+## Other C++ Coding Style Suggestions
 
 ### Throw and return are not functions
 
-In C “throw” and “return” are not functions. It is misleading to enclose their arguments in parentheses. That is, you should write “return x;” not “return(x);”. A parenthesized expression is not treated the same as a function argument list. For example f(a,b) and return(a,b) mean different things (the former is a 2-argument function call; the latter is an invocation of the rarely-used “comma operator”).
+In C++ “throw” and “return” are not functions. It is misleading to enclose their arguments in parentheses. That is, you should write “return x;” not “return(x);”. A parenthesized expression is not treated the same as a function argument list. For example f(a,b) and return(a,b) mean different things (the former is a 2-argument function call; the latter is an invocation of the rarely-used “comma operator”).
 
 ### Always use pre-increment and pre-decrement operators when you have a choice
 
@@ -163,7 +163,7 @@ PointerToT   tptr1,   tptr2;   // both are type T*
 ReferenceToT tref1=a, tref2=b; // both are type T&
 ```
 
-Therefore you should place the “*” and “&” next to the type, not the variable, because logically they are part of the type. Unfortunately, the C language had a bug in its syntax which has been inherited by C. A line like “char* a,b” is treated like “char* a; char b;” rather than “char* a; char* b;”, but if I write “typedef char* CharPtr;” then “CharPtr a,b” declares both to be pointers. There is no perfect solution because the language is broken. However, there is no problem in argument lists (since each variable has to have its own type). So I recommend that you simply avoid the misleading multiple-declaration form when using pointers or references. Just use separate declarations or a typedef. Then always put the “*” and “&” with the type where they belong. So argument lists should look like this:
+Therefore you should place the “*” and “&” next to the type, not the variable, because logically they are part of the type. Unfortunately, the C++ language had a bug in its syntax which has been inherited by C++. A line like “char* a,b” is treated like “char* a; char b;” rather than “char* a; char* b;”, but if I write “typedef char* CharPtr;” then “CharPtr a,b” declares both to be pointers. There is no perfect solution because the language is broken. However, there is no problem in argument lists (since each variable has to have its own type). So I recommend that you simply avoid the misleading multiple-declaration form when using pointers or references. Just use separate declarations or a typedef. Then always put the “*” and “&” with the type where they belong. So argument lists should look like this:
 
 ```cpp
 /*YES*/ f(int I, string& name, char* something);
@@ -173,4 +173,4 @@ Therefore you should place the “*” and “&” next to the type, not the var
 
 ## Removing Methods
 
-When cleaning up classes and removing methods, if you decide to remove a method then it's necessary to remove both the prototype from the header and the implementation from the cpp file (if any). While C doesn't complain, leaving the prototype in the header file with no implementation anywhere causes problems for wrapping. Swig runs only on the headers and has no way of knowing if there's an implementation or not. Since the methods end up being exported, they then have to be resolved at compile time of the osimJavaJNI project. 
+When cleaning up classes and removing methods, if you decide to remove a method then it's necessary to remove both the prototype from the header and the implementation from the cpp file (if any). While C++ doesn't complain, leaving the prototype in the header file with no implementation anywhere causes problems for wrapping. Swig runs only on the headers and has no way of knowing if there's an implementation or not. Since the methods end up being exported, they then have to be resolved at compile time of the osimJavaJNI project. 
