@@ -119,7 +119,12 @@ public:
      * Get a modifiable reference to the Model this component is part of.
      */
     Model& updModel();
-
+    /**
+     * hasGeometry returns a boolean flag indicating whether the TopComponent has published any Geometry
+     */
+    const bool hasGeometry() const {
+        return getProperty_GeometrySet().size() > 0;
+    }
     /**
      * Adopt the passed in Geometry and add it to the visualization of this ModelComponent
      */

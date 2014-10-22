@@ -24,6 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include "Simbody.h"
 #include "Body.h"
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -37,6 +38,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Mat33;
 using SimTK::Vec3;
+using SimTK::DecorativeGeometry;
 
 //=============================================================================
 // CONSTRUCTOR(S)
@@ -483,6 +485,7 @@ void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
              // Insert Mesh into parent
              geometrySetNode.insertNodeAfter(geometrySetNode.element_end(), meshNode);
              displayGeomIter++;
+             counter++;
         }
     }
 }
@@ -519,36 +522,36 @@ SimTK::Transform Body::calcGroundTransform(const SimTK::State& state) const {
 void Body::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
 {
-    if (!fixed) return;
     Super::generateDecorations(fixed, hints, state, appendToThis);
+    if (!fixed) return;
     const SimTK::MobilizedBodyIndex bx = getIndex();
     int nGeom = getProperty_GeometrySet().size();
-    //const VisibleObject& visible = *body.getDisplayer();
-    //Vec3 scale; visible.getScaleFactors(scale);
-    //const Transform X_BV = visible.getTransform();
-    //const GeometrySet&   geomSet = visible.getGeometrySet();
+
     for (int g = 0; g < nGeom; ++g) {
         const Geometry& geo = get_GeometrySet(g);
+        const std::string geoID = geo.getPathID();
         const Vec3 netScale = geo.get_scale_factors();
         const std::string frameName = geo.get_frame_name();
         SimTK::Transform xformRelativeToBody = geo.getTransform(state, *this);
-        //const DisplayGeometry::DisplayPreference pref = geo.getDisplayPreference();
-        /*
+        const Appearance& ap = geo.getAppearance();
+        int repG = ap.get_representation();
+        Vec3 color = ap.get_color();
+        double opacity = ap.get_opacity();
         DecorativeGeometry::Representation rep;
-        switch(pref) {
-        case DisplayGeometry::None:
+        switch (repG) {
+        case 0:
         continue; // don't bother with this one (TODO: is that right)
-        case DisplayGeometry::WireFrame:
+        case 1:
+        case 2:
         rep=DecorativeGeometry::DrawWireframe;
         break;
-        case DisplayGeometry::SolidFill:
-        case DisplayGeometry::FlatShaded:
-        case DisplayGeometry::GouraudShaded:
-        rep = DecorativeGeometry::DrawSurface;
+        case 3:
+        case 4:
+            rep = DecorativeGeometry::DrawSurface;
         break;
         default: assert(!"bad DisplayPreference");
         };
-        */
+        
         const OpenSim::Mesh* mGeom = Mesh::safeDownCast(const_cast<OpenSim::Geometry*>(&geo));
         if (mGeom){
             const std::string& file = mGeom->get_mesh_file();
@@ -600,6 +603,7 @@ void Body::generateDecorations(bool fixed, const ModelDisplayHints& hints, const
             SimTK::DecorativeMesh dmesh(pmesh);
             dmesh.setScaleFactors(netScale);
             dmesh.setTransform(xformRelativeToBody);
+            geo.setDecorativeGeometryAppearance(dmesh);
             dmesh.setBodyId(bx);
             appendToThis.push_back(dmesh);
         }
@@ -611,6 +615,7 @@ void Body::generateDecorations(bool fixed, const ModelDisplayHints& hints, const
                 SimTK::DecorativeGeometry dg = deocrationsForGeom[g];
                 dg.setTransform(xformRelativeToBody);
                 dg.setBodyId(bx);
+                geo.setDecorativeGeometryAppearance(dg);
                 appendToThis.push_back(dg);
             }
         }

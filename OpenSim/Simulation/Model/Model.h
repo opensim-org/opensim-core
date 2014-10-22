@@ -44,6 +44,7 @@
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/FrameSet.h>
 #include <OpenSim/Simulation/Model/Ground.h>
+#include <OpenSim/Simulation/Model/ModelDisplay.h>
 #include "Simbody.h"
 
 
@@ -175,6 +176,9 @@ public:
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(FrameSet,
         "List of Frames that various objects can be anchored to or expressed in, Body frames are builtin and not included in this list.");
+
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ModelDisplay,
+        "Display preferences for the model and for specific objects");
     /**@}**/
 
 //=============================================================================

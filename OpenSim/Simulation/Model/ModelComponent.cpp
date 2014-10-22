@@ -85,6 +85,11 @@ void ModelComponent::connectToModel(Model& model)
 {
     _model = &model;
     extendConnectToModel(model);
+    int geomSize = getProperty_GeometrySet().size();
+    if (geomSize > 0){
+        for (int i = 0; i < geomSize; ++i)
+            addComponent(&upd_GeometrySet(i));
+    }
 }
 
 // Base class implementation of virtual method.
@@ -96,12 +101,14 @@ void ModelComponent::generateDecorations
 {
     for(unsigned int i=0; i < _components.size(); i++){
 		ModelComponent *mc = dynamic_cast<ModelComponent*>(_components[i]);
-        mc->generateDecorations(fixed,hints,state,appendToThis);
+        if (mc)
+            mc->generateDecorations(fixed,hints,state,appendToThis);
 	}
 }
 
 void ModelComponent::adoptGeometry(OpenSim::Geometry* geom) {
     append_GeometrySet(*geom);
+    addComponent(geom); // Geometry is a subcomponent.
     return;
 }
 
