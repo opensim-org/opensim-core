@@ -46,7 +46,10 @@ using namespace std;
 
 // up version to 20301 for separation of RRATool, CMCTool
 // up version to 20302 for Muscle's pennation_angle -> pennation_angle_at_optimal
-const int XMLDocument::LatestVersion = 30500;	
+// up version to 30500 for OpenSim 4.0 development and Connectors
+// up version to 30501 for Changing serialization of Marker
+
+const int XMLDocument::LatestVersion = 30501;	
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================

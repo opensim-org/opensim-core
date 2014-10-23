@@ -156,7 +156,7 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
 	
 	// Keep track of the folder containing setup file, wil be used to locate results to comapre against
 	guiModel.initSystem();
-	MarkerSet *markerSet = new MarkerSet(setupFilePath + subject->getGenericModelMaker().getMarkerSetFileName());
+    MarkerSet *markerSet = new MarkerSet(guiModel, setupFilePath + subject->getGenericModelMaker().getMarkerSetFileName());
 	guiModel.updateMarkerSet(*markerSet);
 
 	// processedModelContext.processModelScale(scaleTool.getModelScaler(), processedModel, "", scaleTool.getSubjectMass())

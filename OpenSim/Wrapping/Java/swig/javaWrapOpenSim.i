@@ -52,6 +52,9 @@
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
 #include <OpenSim/Simulation/MomentArmSolver.h>
 
+#include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/FixedFrame.h>
+
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
 #include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
@@ -803,6 +806,10 @@ namespace SimTK {
 %include <OpenSim/Simulation/InverseDynamicsSolver.h>
 %include <OpenSim/Simulation/MomentArmSolver.h>
 
+%include <OpenSim/Simulation/Model/Frame.h>
+%include <OpenSim/Simulation/Model/RigidFrame.h>
+%include <OpenSim/Simulation/Model/FixedFrame.h>
+
 %include <OpenSim/Simulation/Model/Force.h>
 %template(SetForces) OpenSim::Set<OpenSim::Force>;
 %template(ModelComponentSetForces) OpenSim::ModelComponentSet<OpenSim::Force>;
@@ -849,6 +856,7 @@ namespace SimTK {
 
 %include <OpenSim/Simulation/Manager/Manager.h>
 %include <OpenSim/Simulation/Model/AbstractTool.h>
+%include <OpenSim/Simulation/Model/Station.h>
 %include <OpenSim/Simulation/Model/Marker.h>
 %template(SetMarkers) OpenSim::Set<OpenSim::Marker>;
 %include <OpenSim/Simulation/Model/MarkerSet.h>

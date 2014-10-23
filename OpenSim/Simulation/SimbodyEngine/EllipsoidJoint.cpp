@@ -167,7 +167,7 @@ void EllipsoidJoint::initStateFromProperties(SimTK::State& s) const
 			                             yangle, YAxis, zangle, ZAxis);
 
 		EllipsoidJoint* mutableThis = const_cast<EllipsoidJoint*>(this);
-		matter.getMobilizedBody(getChildBody().getIndex()).setQToFitRotation(s, r);
+		matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).setQToFitRotation(s, r);
 	}
 }
 
@@ -178,7 +178,7 @@ void EllipsoidJoint::setPropertiesFromState(const SimTK::State& state)
     // Override default in case of quaternions.
     const SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-        Rotation r = matter.getMobilizedBody(getChildBody().getIndex())
+		Rotation r = matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex())
 			.getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
 
@@ -213,12 +213,12 @@ void EllipsoidJoint::generateDecorations
         SimTK::DecorativeFrame parentFrame(dimension);
 
         // attach frame to body, translate and rotate it to the location of the joint
-		childFrame.setBodyId(getChildBody().getIndex());
+		childFrame.setBodyId(getChildBody().getMobilizedBodyIndex());
 		childFrame.setTransform(getChildTransform());
 		childFrame.setColor(frame1color);
 
         // attach frame to parent, translate and rotate it to the location of the joint
-        parentFrame.setBodyId( getParentBody().getIndex() );
+		parentFrame.setBodyId(getParentBody().getMobilizedBodyIndex());
 		parentFrame.setTransform(getParentTransform());
         parentFrame.setColor(frame2color);
 

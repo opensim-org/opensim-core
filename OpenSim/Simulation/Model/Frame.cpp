@@ -1,7 +1,5 @@
-#ifndef OPENSIM_MARKER_H_
-#define OPENSIM_MARKER_H_
 /* -------------------------------------------------------------------------- *
- *                             OpenSim:  Marker.h                             *
+ *                             OpenSim:  Frame.cpp                             *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
- * Author(s): Ayman Habib, Peter Loan                                         *
+ * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Author(s): Matt DeMers & Ayman Habib                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,64 +21,63 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
-// INCLUDE
-#include <iostream>
-#include <math.h>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "Station.h"
-#include "SimTKcommon.h"
-
-namespace OpenSim {
-
-class Body;
-class Model;
-class VisibleObject;
-
+//=============================================================================
+// INCLUDES
+//=============================================================================
+#include "Frame.h"
+#include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
+// STATICS
 //=============================================================================
+using namespace std;
+using namespace OpenSim;
+using SimTK::Mat33;
+using SimTK::Vec3;
+
+//=============================================================================
+// CONSTRUCTOR(S)
+//=============================================================================
+//_____________________________________________________________________________
 /**
- * A class implementing a Mocap marker.
- *
- * @author Ayman Habib, Peter Loan
- * @version 2.0
+ * Default constructor.
  */
-class OSIMSIMULATION_API Marker : public Station {
-    OpenSim_DECLARE_CONCRETE_OBJECT(Marker, Station);
+Frame::Frame() : ModelComponent()
+{
+	setNull();
+	
+}
 
-class Body;
+
+void Frame::setNull()
+{
+	setAuthors("Matt DeMers");
+}
+
 
 //=============================================================================
-// METHODS
+// FRAME COMPUTATIONS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-public:
-	Marker();
-	virtual ~Marker();
+//_____________________________________________________________________________
+SimTK::Transform Frame::findTransformBetween(const SimTK::State& state,
+        const Frame& otherFrame) const
+{
+    SimTK::Transform ground_X_me = calcGroundTransform(state);
+    SimTK::Transform ground_X_other = otherFrame.calcGroundTransform(state);
+	return ~ground_X_other*ground_X_me;
+}
 
-    const std::string& getFrameName() const;
-	void setFrameName(const std::string& aName);
-	void changeFrame(const OpenSim::RigidFrame& aRigidFrame );
-	void changeFramePreserveLocation(const SimTK::State& s, OpenSim::RigidFrame& aRigidFrame );
-	void scale(const SimTK::Vec3& aScaleFactors);
+SimTK::Vec3 Frame::expressVectorInAnotherFrame(const SimTK::State& state, const
+        SimTK::Vec3& vec, const Frame& frame) const
+{
+    SimTK::Transform other_X_me = findTransformBetween(state, frame);
+	return other_X_me.R()*vec;
+}
 
-    /** Override of the default implementation to account for versioning. */
-    void updateFromXMLNode(SimTK::Xml::Element& aNode,
-        int versionNumber = -1) override;
-
-private:
-	void setNull();
-	void setupProperties();
-//=============================================================================
-};	// END of class Marker
-//=============================================================================
-//=============================================================================
-
-} // end of namespace OpenSim
-
-#endif // OPENSIM_MARKER_H_
-
+SimTK::Vec3 Frame::findLocationInAnotherFrame(const SimTK::State& state, const
+        SimTK::Vec3& point, const Frame& otherFrame) const
+{
+    SimTK::Transform other_X_me = findTransformBetween(state, otherFrame);
+	return other_X_me*point;
+}
 

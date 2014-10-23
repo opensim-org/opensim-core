@@ -133,8 +133,8 @@ void RollingOnSurfaceConstraint::addToSystem(SimTK::MultibodySystem& system) con
     Super::addToSystem(system);
 
 	// Get underlying mobilized bodies
-	SimTK::MobilizedBody roller = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_rollingBody->getIndex());
-	SimTK::MobilizedBody surface = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_surfaceBody->getIndex());
+	SimTK::MobilizedBody roller = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_rollingBody->getMobilizedBodyIndex());
+	SimTK::MobilizedBody surface = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_surfaceBody->getMobilizedBodyIndex());
 	
 	// Add a ficticious massless body to be the "Case" reference body coincident with surface for the no-slip constraint
 	SimTK::MobilizedBody::Weld  cb(surface, SimTK::Body::Massless());
@@ -430,9 +430,9 @@ void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state,
 			int anc = simConstraint.getAncestorMobilizedBody().getMobilizedBodyIndex();
 			
 			for(int j=0; j< ncb; j++){
-				if(_surfaceBody->getIndex() == simConstraint.getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex(j)).getMobilizedBodyIndex())
+				if (_surfaceBody->getMobilizedBodyIndex() == simConstraint.getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex(j)).getMobilizedBodyIndex())
 					sbi = j;
-				if(_rollingBody->getIndex() == simConstraint.getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex(j)).getMobilizedBodyIndex())
+				if (_rollingBody->getMobilizedBodyIndex() == simConstraint.getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex(j)).getMobilizedBodyIndex())
 					rbi = j;
 			}
 

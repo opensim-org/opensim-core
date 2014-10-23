@@ -1,7 +1,5 @@
-#ifndef OPENSIM_MARKER_H_
-#define OPENSIM_MARKER_H_
 /* -------------------------------------------------------------------------- *
- *                             OpenSim:  Marker.h                             *
+ *                           OpenSim:  FrameSet.cpp                           *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -10,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2014 Stanford University and the Authors                *
- * Author(s): Ayman Habib, Peter Loan                                         *
+ * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,64 +21,49 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "FrameSet.h"
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ComponentSet.h>
 
-// INCLUDE
-#include <iostream>
-#include <math.h>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "Station.h"
-#include "SimTKcommon.h"
-
-namespace OpenSim {
-
-class Body;
-class Model;
-class VisibleObject;
-
+using namespace std;
+using namespace OpenSim;
 
 //=============================================================================
+// DESTRUCTOR AND CONSTRUCTORS
 //=============================================================================
+//_____________________________________________________________________________
 /**
- * A class implementing a Mocap marker.
- *
- * @author Ayman Habib, Peter Loan
- * @version 2.0
+ * Destructor.
  */
-class OSIMSIMULATION_API Marker : public Station {
-    OpenSim_DECLARE_CONCRETE_OBJECT(Marker, Station);
+FrameSet::~FrameSet(void)
+{
+}
 
-class Body;
+//_____________________________________________________________________________
+/**
+ * Default constructor of a FrameSet.
+ */
+FrameSet::FrameSet()
+{
+	
+}
+
+FrameSet::FrameSet(Model& model) :
+	ModelComponentSet<Frame>(model)
+{
+	
+}
+
 
 //=============================================================================
-// METHODS
+// UTILITY
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-public:
-	Marker();
-	virtual ~Marker();
-
-    const std::string& getFrameName() const;
-	void setFrameName(const std::string& aName);
-	void changeFrame(const OpenSim::RigidFrame& aRigidFrame );
-	void changeFramePreserveLocation(const SimTK::State& s, OpenSim::RigidFrame& aRigidFrame );
-	void scale(const SimTK::Vec3& aScaleFactors);
-
-    /** Override of the default implementation to account for versioning. */
-    void updateFromXMLNode(SimTK::Xml::Element& aNode,
-        int versionNumber = -1) override;
-
-private:
-	void setNull();
-	void setupProperties();
-//=============================================================================
-};	// END of class Marker
-//=============================================================================
-//=============================================================================
-
-} // end of namespace OpenSim
-
-#endif // OPENSIM_MARKER_H_
-
-
+//_____________________________________________________________________________
+/**
+ * Scale Frame set by a set of scale factors
+ *
+void FrameSet::scale(const ScaleSet& aScaleSet)
+{
+	for(int i=0; i<getSize(); i++) get(i).scale(aScaleSet);
+}
+*/

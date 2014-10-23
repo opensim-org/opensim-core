@@ -319,7 +319,7 @@ const SimTK::SpatialVec& InducedAccelerationsSolver::
 	body = &_modelCopy.getBodySet()[ind];
 
 	return _modelCopy.getMatterSubsystem()
-		.getMobilizedBody(body->getIndex())
+		.getMobilizedBody(body->getMobilizedBodyIndex())
 		.getBodyAcceleration(s_solver);
 }
 

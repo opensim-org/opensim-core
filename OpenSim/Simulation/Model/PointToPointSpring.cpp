@@ -183,9 +183,9 @@ void PointToPointSpring::addToSystem(SimTK::MultibodySystem& system) const
 
 	// Get underlying mobilized bodies
 	SimTK::MobilizedBody b1 = _model->getMatterSubsystem()
-                                .getMobilizedBody(body1.getIndex());
+                                        .getMobilizedBody(body1.getMobilizedBodyIndex());
 	SimTK::MobilizedBody b2 = _model->getMatterSubsystem()
-                                .getMobilizedBody(body2.getIndex());
+                                        .getMobilizedBody(body2.getMobilizedBodyIndex());
 
     // Now create a Simbody Force::TwoPointLinearSpring
     SimTK::Force::TwoPointLinearSpring simtkSpring
@@ -247,14 +247,14 @@ getRecordValues(const SimTK::State& state) const
 	//get the net force added to the system contributed by the Spring
 	simtkSpring.calcForceContribution(state, bodyForces, particleForces, 
                                       mobilityForces);
-	SimTK::Vec3 forces = bodyForces(body1.getIndex())[1];
+	SimTK::Vec3 forces = bodyForces(body1.getMobilizedBodyIndex())[1];
 	values.append(3, &forces[0]);
 
 	SimTK::Vec3 gpoint(0);
 	_model->getSimbodyEngine().getPosition(state, body1, getPoint1(), gpoint);
 	values.append(3, &gpoint[0]);
 
-	forces = bodyForces(body2.getIndex())[1];
+	forces = bodyForces(body2.getMobilizedBodyIndex())[1];
 	values.append(3, &forces[0]);
 
 	_model->getSimbodyEngine().getPosition(state, body2, getPoint2(), gpoint);

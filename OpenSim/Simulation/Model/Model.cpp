@@ -52,6 +52,7 @@
 
 #include "Muscle.h"
 #include "CoordinateSet.h"
+#include "FrameSet.h"
 #include "BodySet.h"
 #include "AnalysisSet.h"
 #include "ForceSet.h"
@@ -255,6 +256,9 @@ void Model::constructProperties()
 
 	BodySet bodies;
 	constructProperty_BodySet(bodies);
+
+    FrameSet frames;
+    constructProperty_FrameSet(frames);
 
 	JointSet joints;
 	constructProperty_JointSet(joints);
@@ -541,7 +545,25 @@ void Model::finalizeFromProperties()
 		}
 	}
 
-	// Populate lists of model joints and coordinates according to the Bodies
+    if (getFrameSet().getSize() > 0)
+    {
+        FrameSet& fs = updFrameSet();
+        int nf = fs.getSize();
+        for (int i = 0; i<nf; ++i)
+            addComponent(&fs[i]);
+
+    }
+
+    if (getMarkerSet().getSize() > 0)
+    {
+        MarkerSet& ms = updMarkerSet();
+        int nf = ms.getSize();
+        for (int i = 0; i<nf; ++i)
+            addComponent(&ms[i]);
+    }
+
+
+    // Populate lists of model joints and coordinates according to the Bodies
 	// setup here who own the Joints which in turn own the model's Coordinates
 	// this list of Coordinates is now available for setting up constraints and forces
 
@@ -764,7 +786,7 @@ void Model::connectToModel(Model &model)
 	// Reorder coordinates in order of the underlying mobilities
 	updCoordinateSet().populate(*this);
 
-	updMarkerSet().connectMarkersToModel(*this);
+    updMarkerSet().invokeConnectToModel(*this);
 	updContactGeometrySet().invokeConnectToModel(*this);
 	updForceSet().setupGroups();
 	updControllerSet().setActuators(updActuators());
@@ -827,6 +849,29 @@ void Model::addBody(OpenSim::Body* body)
 		updBodySet().adoptAndAppend(body);
 		addComponent(body);
 	}
+}
+
+//_____________________________________________________________________________
+/*
+* Add a Frame to the Model.
+*/
+void Model::addFrame(OpenSim::Frame* frame)
+{
+    if (frame){
+        updFrameSet().adoptAndAppend(frame);
+        addComponent(frame);
+    }
+}
+//_____________________________________________________________________________
+/*
+* Add a Marker to the Model.
+*/
+void Model::addMarker(OpenSim::Marker* marker)
+{
+    if (marker){
+        updMarkerSet().adoptAndAppend(marker);
+        addComponent(marker);
+    }
 }
 
 //_____________________________________________________________________________
@@ -1160,6 +1205,18 @@ int Model::getNumBodies() const
 {
 	return  getBodySet().getSize();
 }
+
+//_____________________________________________________________________________
+/**
+* Get the total number of frames in the model (not including Bodies).
+*
+* @return Number of frames.
+*/
+int Model::getNumFrames() const
+{
+    return  getFrameSet().getSize();
+}
+
 //_____________________________________________________________________________
 /**
  * Get the total number of joints in the model.
@@ -1422,8 +1479,9 @@ void Model::printBasicInfo(std::ostream &aOStream) const
 	aOStream<<"         constraints: "<<getConstraintSet().getSize()<<std::endl;
 	aOStream<<"             markers: "<<getMarkerSet().getSize()<<std::endl;
 	aOStream<<"         controllers: "<<getControllerSet().getSize()<<std::endl;
-	aOStream<<"  contact geometries: "<<getContactGeometrySet().getSize()<<std::endl;
-	aOStream<<"misc modelcomponents: "<<getMiscModelComponentSet().getSize()<<std::endl;
+    aOStream << "  contact geometries: " << getContactGeometrySet().getSize() << std::endl;
+    aOStream << "  f        ramess: " << getFrameSet().getSize() << std::endl;
+    aOStream << "misc modelcomponents: " << getMiscModelComponentSet().getSize() << std::endl;
 
 }
 //_____________________________________________________________________________
@@ -1592,11 +1650,11 @@ int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
 	{
 		// Eran: we make a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
 		Marker* marker = aMarkerSet.get(i).clone();
-		const string& bodyName = marker->getBodyName();
-		if (getBodySet().contains(bodyName))
+		const string& frameName = marker->getFrameName();
+		if (getFrameSet().contains(frameName))
 		{
-    		OpenSim::Body& body = updBodySet().get(bodyName);
-			marker->changeBody(body);
+    		const OpenSim::RigidFrame* frame = dynamic_cast<const RigidFrame*>(&getFrameSet().get(frameName));
+			if(frame) marker->changeFrame(*frame);
 			upd_MarkerSet().adoptAndAppend(marker);
 			numAdded++;
 		}
@@ -1619,7 +1677,6 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 	for (int i = 0; i < aMarkerSet.getSize(); i++)
 	{
 		Marker& updatingMarker = aMarkerSet.get(i);
-		const string& updatingBodyName = updatingMarker.getBodyName();
 
 		/* If there is already a marker in the model with that name,
 		 * update it with the parameters from the updating marker,
@@ -1632,25 +1689,25 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 			 * marker from the model and add the updating one (as long as
 			 * the updating marker's body exists in the model).
 			 */
-			if (modelMarker.getBody().getName() != updatingBodyName)
-			{
+			//if (modelMarker.getBody().getName() != updatingBodyName)
+			//{
 				upd_MarkerSet().remove(&modelMarker);
 				// Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
-				upd_MarkerSet().adoptAndAppend(updatingMarker.clone());
-			}
-			else
-			{
-				modelMarker.updateFromMarker(updatingMarker);
-			}
+				//upd_MarkerSet().adoptAndAppend(updatingMarker.clone());
+			//}
+			//else
+			//{
+			//	modelMarker.updateFromMarker(updatingMarker);
+			//}
 		}
-		else
+		//else
 		{
 			/* The model does not contain a marker by that name. If it has
 			 * a body by that name, add the updating marker to the markerset.
 			 */
 			// Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
-			if (getBodySet().contains(updatingBodyName))
-				upd_MarkerSet().adoptAndAppend(updatingMarker.clone());
+			//if (getBodySet().contains(updatingBodyName))
+				addMarker(updatingMarker.clone());
 		}
 	}
 
@@ -1658,10 +1715,8 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
     // _body pointers are up to date; but note that we've already called 
     // it before so we need to make sure the connectMarkerToModel() function
 	// supports getting called multiple times.
-	for (int i = 0; i < get_MarkerSet().getSize(); i++)
-		get_MarkerSet().get(i).connectMarkerToModel(*this);
-
-	cout << "Updated markers in model " << getName() << endl;
+    initSystem();
+    cout << "Updated markers in model " << getName() << endl;
 }
 
 //_____________________________________________________________________________
@@ -1684,7 +1739,6 @@ int Model::deleteUnusedMarkers(const OpenSim::Array<string>& aMarkerNames)
 		{
 			// Delete the marker, but don't increment i or else you'll
 			// skip over the marker right after the deleted one.
-			upd_MarkerSet().get(i).removeSelfFromDisplay();
 			upd_MarkerSet().remove(i);
 			numDeleted++;
 		}
@@ -1962,6 +2016,7 @@ void Model::disownAllComponents()
 	updAnalysisSet().setMemoryOwner(false);
 	updMarkerSet().setMemoryOwner(false);
     updProbeSet().setMemoryOwner(false);
+    updFrameSet().setMemoryOwner(false);
 }
 
 void Model::overrideAllActuators( SimTK::State& s, bool flag) {
@@ -1989,9 +2044,11 @@ const Object& Model::getObjectByTypeAndName(const std::string& typeString, const
         return getMarkerSet().get(nameString);
 	else if (typeString=="Controller") 
         return getControllerSet().get(nameString);
-    else if (typeString=="Probe") 
+    else if (typeString == "Probe")
         return getProbeSet().get(nameString);
-	throw Exception("Model::getObjectByTypeAndName: no object of type "+typeString+
+    else if (typeString == "Frame")
+        return getFrameSet().get(nameString);
+    throw Exception("Model::getObjectByTypeAndName: no object of type " + typeString +
 		" and name "+nameString+" was found in the model.");
 
 }

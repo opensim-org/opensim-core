@@ -203,7 +203,7 @@ OpenSim::Body& SimbodyEngine::getGroundBody() const
 void SimbodyEngine::getPosition(const SimTK::State& s, const OpenSim::Body &aBody, const Vec3& aPoint, Vec3& rPos) const
 {
 	const OpenSim::Body* b = (OpenSim::Body*)(&aBody);
-	rPos = _model->getMatterSubsystem().getMobilizedBody(b->getIndex()).findStationLocationInGround(s, aPoint);
+	rPos = _model->getMatterSubsystem().getMobilizedBody(b->getMobilizedBodyIndex()).findStationLocationInGround(s, aPoint);
 }
 
 //_____________________________________________________________________________
@@ -220,7 +220,7 @@ void SimbodyEngine::getPosition(const SimTK::State& s, const OpenSim::Body &aBod
 void SimbodyEngine::getVelocity(const SimTK::State& s, const OpenSim::Body &aBody, const Vec3& aPoint, Vec3& rVel) const
 {
 	const Body* b = (Body*)(&aBody);
-	rVel = _model->getMatterSubsystem().getMobilizedBody(b->getIndex()).findStationVelocityInGround(s, aPoint);
+	rVel = _model->getMatterSubsystem().getMobilizedBody(b->getMobilizedBodyIndex()).findStationVelocityInGround(s, aPoint);
 }
 
 //_____________________________________________________________________________
@@ -240,7 +240,7 @@ void SimbodyEngine::getVelocity(const SimTK::State& s, const OpenSim::Body &aBod
 void SimbodyEngine::getAcceleration(const SimTK::State& s, const OpenSim::Body &aBody, const Vec3& aPoint, Vec3& rAcc) const
 {
 	const Body* b = (Body*)(&aBody);
-	rAcc = _model->getMatterSubsystem().getMobilizedBody(b->getIndex()).findStationAccelerationInGround(s, aPoint);
+	rAcc = _model->getMatterSubsystem().getMobilizedBody(b->getMobilizedBodyIndex()).findStationAccelerationInGround(s, aPoint);
 }
 
 //_____________________________________________________________________________
@@ -253,7 +253,7 @@ void SimbodyEngine::getAcceleration(const SimTK::State& s, const OpenSim::Body &
 void SimbodyEngine::getDirectionCosines(const SimTK::State& s, const OpenSim::Body &aBody, double rDirCos[3][3]) const
 {
 	const Body* b = (Body*)(&aBody);
-	Mat33::updAs(&rDirCos[0][0]) = _model->getMatterSubsystem().getMobilizedBody(b->getIndex()).getBodyRotation(s).asMat33();
+	Mat33::updAs(&rDirCos[0][0]) = _model->getMatterSubsystem().getMobilizedBody(b->getMobilizedBodyIndex()).getBodyRotation(s).asMat33();
 }
 
 //_____________________________________________________________________________
@@ -266,7 +266,7 @@ void SimbodyEngine::getDirectionCosines(const SimTK::State& s, const OpenSim::Bo
 void SimbodyEngine::getDirectionCosines(const SimTK::State& s, const OpenSim::Body &aBody, double *rDirCos) const
 {
 	const Body* b = (Body*)(&aBody);
-	Mat33::updAs(rDirCos) = _model->getMatterSubsystem().getMobilizedBody(b->getIndex()).getBodyRotation(s).asMat33();
+	Mat33::updAs(rDirCos) = _model->getMatterSubsystem().getMobilizedBody(b->getMobilizedBodyIndex()).getBodyRotation(s).asMat33();
 }
 
 //_____________________________________________________________________________
@@ -279,7 +279,7 @@ void SimbodyEngine::getDirectionCosines(const SimTK::State& s, const OpenSim::Bo
 void SimbodyEngine::getAngularVelocity(const SimTK::State& s, const OpenSim::Body &aBody, Vec3& rAngVel) const
 {
 	const Body *b = (Body*)(&aBody);
-	rAngVel = _model->getMatterSubsystem().getMobilizedBody(b->getIndex()).getBodyAngularVelocity(s);
+	rAngVel = _model->getMatterSubsystem().getMobilizedBody(b->getMobilizedBodyIndex()).getBodyAngularVelocity(s);
 }
 
 //_____________________________________________________________________________
@@ -292,7 +292,7 @@ void SimbodyEngine::getAngularVelocity(const SimTK::State& s, const OpenSim::Bod
 void SimbodyEngine::getAngularVelocityBodyLocal(const SimTK::State& s, const OpenSim::Body &aBody, Vec3& rAngVel) const
 {
 	const Body *b = (Body*)(&aBody);
-	rAngVel = _model->getMatterSubsystem().getMobilizedBody(b->getIndex()).getBodyAngularVelocity(s);
+	rAngVel = _model->getMatterSubsystem().getMobilizedBody(b->getMobilizedBodyIndex()).getBodyAngularVelocity(s);
 }
 
 //_____________________________________________________________________________
@@ -306,7 +306,7 @@ void SimbodyEngine::getAngularVelocityBodyLocal(const SimTK::State& s, const Ope
 void SimbodyEngine::getAngularAcceleration(const SimTK::State& s, const OpenSim::Body &aBody, Vec3& rAngAcc) const
 {
 	const Body *b = (Body*)(&aBody);
-	rAngAcc = _model->getMatterSubsystem().getMobilizedBody(b->getIndex()).getBodyAngularAcceleration(s);
+	rAngAcc = _model->getMatterSubsystem().getMobilizedBody(b->getMobilizedBodyIndex()).getBodyAngularAcceleration(s);
 }
 
 //_____________________________________________________________________________
@@ -319,7 +319,7 @@ void SimbodyEngine::getAngularAcceleration(const SimTK::State& s, const OpenSim:
 void SimbodyEngine::getAngularAccelerationBodyLocal(const SimTK::State& s, const OpenSim::Body &aBody, Vec3& rAngAcc) const
 {
 	const Body *b = (Body*)(&aBody);
-	rAngAcc = _model->getMatterSubsystem().getMobilizedBody(b->getIndex()).getBodyAngularAcceleration(s);
+	rAngAcc = _model->getMatterSubsystem().getMobilizedBody(b->getMobilizedBodyIndex()).getBodyAngularAcceleration(s);
 }
 
 //_____________________________________________________________________________
@@ -334,9 +334,9 @@ SimTK::Transform SimbodyEngine::getTransform(const SimTK::State& s, const OpenSi
 	const Body* b = (Body*)(&aBody);
 	/*
 	double aMat[4][4];
-	Mat44::updAs(&aMat[0][0]) = _model->getMatterSubsystem()->getMobilizedBody(b->getIndex()).getBodyTransform(s).toMat44();
+	Mat44::updAs(&aMat[0][0]) = _model->getMatterSubsystem()->getMobilizedBody(b->getMobilizedBodyIndex()).getBodyTransform(s).toMat44();
 	return Transform(aMat);*/
-	return (_model->getMatterSubsystem().getMobilizedBody(b->getIndex()).getBodyTransform(s));
+	return (_model->getMatterSubsystem().getMobilizedBody(b->getMobilizedBodyIndex()).getBodyTransform(s));
 }
 
 //--------------------------------------------------------------------------
@@ -387,8 +387,8 @@ void SimbodyEngine::computeReactions(const SimTK::State& s, Vector_<Vec3>& rForc
     //Separate SimTK SpatialVecs to Forces and Torques	
 	// SpatialVec = Vec2<Vec3 torque, Vec3 force>
 	for(int i=0; i<nb; i++){
-         rTorques[i] = reactionForces[bodies[i].getIndex()](0);
-         rForces[i] = reactionForces[bodies[i].getIndex()](1);
+         rTorques[i] = reactionForces[bodies[i].getMobilizedBodyIndex()](0);
+         rForces[i] = reactionForces[bodies[i].getMobilizedBodyIndex()](1);
 	}
 }
 
@@ -411,7 +411,7 @@ void SimbodyEngine::transform(const SimTK::State& s, const OpenSim::Body &aBodyF
 	const Body* bTo = (const Body*)&aBodyTo;
 
 	//Get input vector as a Vec3 to make the call down to Simbody and update the output vector 
-	Vec3::updAs(rVec) = _model->getMatterSubsystem().getMobilizedBody(bFrom->getIndex()).expressVectorInAnotherBodyFrame(s, Vec3::getAs(aVec), _model->getMatterSubsystem().getMobilizedBody(bTo->getIndex()));
+	Vec3::updAs(rVec) = _model->getMatterSubsystem().getMobilizedBody(bFrom->getMobilizedBodyIndex()).expressVectorInAnotherBodyFrame(s, Vec3::getAs(aVec), _model->getMatterSubsystem().getMobilizedBody(bTo->getMobilizedBodyIndex()));
 }
 
 //_____________________________________________________________________________
@@ -430,7 +430,7 @@ void SimbodyEngine::transform(const SimTK::State& s, const OpenSim::Body &aBodyF
 	const Body* bTo = (const Body*)&aBodyTo;
 
 	//Get input vector as a Vec3 to make the call down to Simbody and update the output vector 
-	rVec = _model->getMatterSubsystem().getMobilizedBody(bFrom->getIndex()).expressVectorInAnotherBodyFrame(s, aVec, _model->getMatterSubsystem().getMobilizedBody(bTo->getIndex()));
+	rVec = _model->getMatterSubsystem().getMobilizedBody(bFrom->getMobilizedBodyIndex()).expressVectorInAnotherBodyFrame(s, aVec, _model->getMatterSubsystem().getMobilizedBody(bTo->getMobilizedBodyIndex()));
 }
 
 //_____________________________________________________________________________
@@ -453,7 +453,7 @@ transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const d
 	const Body* bTo = (const Body*)&aBodyTo;
 
 	//Get input vector as a Vec3 to make the call down to Simbody and update the output vector 
-	Vec3::updAs(rPos) = _model->getMatterSubsystem().getMobilizedBody(bFrom->getIndex()).findStationLocationInAnotherBody(s, Vec3::getAs(aPos), _model->getMatterSubsystem().getMobilizedBody(bTo->getIndex()));
+	Vec3::updAs(rPos) = _model->getMatterSubsystem().getMobilizedBody(bFrom->getMobilizedBodyIndex()).findStationLocationInAnotherBody(s, Vec3::getAs(aPos), _model->getMatterSubsystem().getMobilizedBody(bTo->getMobilizedBodyIndex()));
 }
 
 //_____________________________________________________________________________
@@ -477,7 +477,7 @@ transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const V
 	const Body* bTo = (const Body*)&aBodyTo;
 
 	//Get input vector as a Vec3 to make the call down to Simbody and update the output vector 
-	rPos = _model->getMatterSubsystem().getMobilizedBody(bFrom->getIndex()).findStationLocationInAnotherBody(s, aPos, _model->getMatterSubsystem().getMobilizedBody(bTo->getIndex()));
+	rPos = _model->getMatterSubsystem().getMobilizedBody(bFrom->getMobilizedBodyIndex()).findStationLocationInAnotherBody(s, aPos, _model->getMatterSubsystem().getMobilizedBody(bTo->getMobilizedBodyIndex()));
 }
 
 //_____________________________________________________________________________
@@ -493,7 +493,7 @@ void SimbodyEngine::transformPosition(const SimTK::State& s, const OpenSim::Body
 	const Body* bFrom = (const Body*)&aBodyFrom;
 
 	//Get input vector as a Vec3 to make the call down to Simbody and update the output vector 
-	Vec3::updAs(rPos) = _model->getMatterSubsystem().getMobilizedBody(bFrom->getIndex()).findStationLocationInGround(s, Vec3::getAs(aPos));
+	Vec3::updAs(rPos) = _model->getMatterSubsystem().getMobilizedBody(bFrom->getMobilizedBodyIndex()).findStationLocationInGround(s, Vec3::getAs(aPos));
 }
 
 //_____________________________________________________________________________
@@ -510,7 +510,7 @@ transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom,const Ve
 {
 	const Body* bFrom = (const Body*)&aBodyFrom;
 	_model->getMultibodySystem().realize(s, SimTK::Stage::Position);
-	rPos = _model->getMatterSubsystem().getMobilizedBody(bFrom->getIndex()).findStationLocationInGround(s, aPos);
+	rPos = _model->getMatterSubsystem().getMobilizedBody(bFrom->getMobilizedBodyIndex()).findStationLocationInGround(s, aPos);
 }
 
 //_____________________________________________________________________________
@@ -529,7 +529,7 @@ calcDistance(const SimTK::State& s, const OpenSim::Body& aBody1, const Vec3& aPo
 {
 	const Body* b1 = (Body*)(&aBody1);
 	const Body* b2 = (Body*)(&aBody2);
-	return _model->getMatterSubsystem().getMobilizedBody(b1->getIndex()).calcStationToStationDistance(s, aPoint1, _model->getMatterSubsystem().getMobilizedBody(b2->getIndex()), aPoint2);
+	return _model->getMatterSubsystem().getMobilizedBody(b1->getMobilizedBodyIndex()).calcStationToStationDistance(s, aPoint1, _model->getMatterSubsystem().getMobilizedBody(b2->getMobilizedBodyIndex()), aPoint2);
 }
 
 //_____________________________________________________________________________
@@ -546,7 +546,7 @@ double SimbodyEngine::calcDistance(const SimTK::State& s, const OpenSim::Body& a
 {
 	const Body* b1 = (Body*)(&aBody1);
 	const Body* b2 = (Body*)(&aBody2);
-	return _model->getMatterSubsystem().getMobilizedBody(b1->getIndex()).calcStationToStationDistance(s, Vec3::getAs(aPoint1), _model->getMatterSubsystem().getMobilizedBody(b2->getIndex()), Vec3::getAs(aPoint2));
+	return _model->getMatterSubsystem().getMobilizedBody(b1->getMobilizedBodyIndex()).calcStationToStationDistance(s, Vec3::getAs(aPoint1), _model->getMatterSubsystem().getMobilizedBody(b2->getMobilizedBodyIndex()), Vec3::getAs(aPoint2));
 }
 
 //_____________________________________________________________________________

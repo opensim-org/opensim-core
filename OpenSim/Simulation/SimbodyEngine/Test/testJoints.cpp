@@ -193,7 +193,7 @@ protected:
 
 		// CREATE MOBILIZED BODY for body rotation about body Z
 		MobilizedBody simtkMasslessBody1 = createMobilizedBody<MobilizedBody::Pin>(
-			system.updMatterSubsystem().updMobilizedBody(getParentBody().getIndex()),
+			system.updMatterSubsystem().updMobilizedBody(getParentBody().getMobilizedBodyIndex()),
 			parentTransform,
 			massless,
 			childTransform0,
@@ -1705,10 +1705,10 @@ void testEquivalentBodyForceForGenForces(Model &model)
 	for(int j=0; j < model.getJointSet().getSize(); ++j){
 		Joint &joint = model.getJointSet()[j];
 		const OpenSim::Body &body = joint.getChildBody();
-		MobilizedBodyIndex mbx = body.getIndex();
+		MobilizedBodyIndex mbx = body.getMobilizedBodyIndex();
 
 		const OpenSim::Body &parent = joint.getParentBody();
-		MobilizedBodyIndex mpx = parent.getIndex();
+		MobilizedBodyIndex mpx = parent.getMobilizedBodyIndex();
 
 		Vec3 rB_Bo(0), rB_Po(0);
 		rB_Bo = joint.getLocationInChild();

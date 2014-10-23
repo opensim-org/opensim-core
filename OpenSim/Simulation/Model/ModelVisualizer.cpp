@@ -141,12 +141,12 @@ void DefaultGeometry::generateDecorations
         const MarkerSet& markers = _model.getMarkerSet();
         for (int i=0; i < markers.getSize(); ++i) {
             const Marker& marker = markers[i];
-            const OpenSim::Body& body = marker.getBody();
-            const Vec3& p_BM = marker.getOffset();
+            const OpenSim::RigidFrame& frame = marker.getReferenceFrame();
+            const Vec3& p_BM = frame.getTransformInMobilizedBody()*marker.get_location();
             geometry.push_back(
-                DecorativeSphere(_dispMarkerRadius).setBodyId(body.getIndex())
+				DecorativeSphere(_dispMarkerRadius).setBodyId(frame.getMobilizedBodyIndex())
                 .setColor(pink).setOpacity(_dispMarkerOpacity)
-                .setTransform(marker.getOffset()));
+                .setTransform(marker.get_location()));
         }
     }
 
@@ -160,7 +160,7 @@ void DefaultGeometry::generateDecorations
         for (int i = 0; i < bodies.getSize(); i++) {
             const OpenSim::Body& body = bodies[i];
             const Transform& X_GB = 
-                matter.getMobilizedBody(body.getIndex()).getBodyTransform(state);
+				matter.getMobilizedBody(body.getMobilizedBodyIndex()).getBodyTransform(state);
             const WrapObjectSet& wrapObjects = body.getWrapObjectSet();
             for (int j = 0; j < wrapObjects.getSize(); j++) {
                 const string type = wrapObjects[j].getConcreteClassName();
@@ -213,7 +213,7 @@ void DefaultGeometry::generateDecorations
         for (int i = 0; i < contactGeometries.getSize(); i++) {
             const OpenSim::Body& body = contactGeometries.get(i).getBody();
             const Transform& X_GB = 
-                matter.getMobilizedBody(body.getIndex()).getBodyTransform(state);
+				matter.getMobilizedBody(body.getMobilizedBodyIndex()).getBodyTransform(state);
             const string type = contactGeometries.get(i).getConcreteClassName();
             const int displayPref = contactGeometries.get(i).getDisplayPreference();
             //cout << type << ": " << contactGeometries.get(i).getName() << ": disp pref = " << displayPref << endl;
@@ -384,7 +384,7 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
     const BodySet& bodies = _model.getBodySet();
     for (int i=0; i < bodies.getSize(); ++i) {
         const Body& body = bodies[i];
-        const MobilizedBodyIndex bx = body.getIndex();
+		const MobilizedBodyIndex bx = body.getMobilizedBodyIndex();
         const VisibleObject& visible = *body.getDisplayer();
         Vec3 scale; visible.getScaleFactors(scale);
         const Transform X_BV = visible.getTransform();

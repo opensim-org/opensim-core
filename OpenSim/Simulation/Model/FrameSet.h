@@ -1,7 +1,7 @@
-#ifndef __MarkerSet_h__
-#define __MarkerSet_h__
+#ifndef OPENSIM_FRAME_SET_H_
+#define OPENSIM_FRAME_SET_H_
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  MarkerSet.h                            *
+ *                            OpenSim:  FrameSet.h                            *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ayman Habib, Peter Loan                                         *
+ * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Author(s): Ayman Habib                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,62 +23,45 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
-#include "Marker.h"
-
-#ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
-#endif
 
 namespace OpenSim {
 
 class Model;
-class ScaleSet;
-class Body;
 
 //=============================================================================
 //=============================================================================
 /**
- * A class for holding a set of markers for inverse kinematics.
+ * A class for holding a set of Frames.
  *
- * @authors Ayman Habib, Peter Loan
+ * @authors Ayman Habib
  * @version 1.0
  */
 
-class OSIMSIMULATION_API MarkerSet : public ModelComponentSet<Marker> {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MarkerSet, ModelComponentSet<Marker>);
+class OSIMSIMULATION_API FrameSet :	public ModelComponentSet<Frame> {
+OpenSim_DECLARE_CONCRETE_OBJECT(FrameSet, ModelComponentSet<Frame>);
 
-private:
-	void setNull();
 public:
-	MarkerSet();
-	MarkerSet(Model& aModel, const std::string& aMarkersFileName) SWIG_DECLARE_EXCEPTION;
-	MarkerSet(const MarkerSet& aMarkerSet);
-	~MarkerSet(void);
+	FrameSet();
+	FrameSet(Model& model);
+	~FrameSet();
+
+	// Somehow the following function is not exported from base template
+    FrameSet(Model& model, const std::string &aFileName, 
+             bool aUpdateFromXMLNode = true)
+    :   Super(model, aFileName, aUpdateFromXMLNode) {}
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
-#ifndef SWIG
-	MarkerSet& operator=(const MarkerSet &aMarkerSet);
-#endif
-	//--------------------------------------------------------------------------
-	// UTILITIES
-	//--------------------------------------------------------------------------
-	void getMarkerNames(Array<std::string>& aMarkerNamesArray);
-	void scale(const ScaleSet& aScaleSet);
-	/** Add a prefix to marker names for all markers in the set**/
-	void addNamePrefix(const std::string& prefix);
-	Marker* addMarker( const std::string& aName, const SimTK::Vec3& aOffset, OpenSim::RigidFrame& aRigidFrame);
+
+
 //=============================================================================
-};	// END of class MarkerSet
+};	// END of class FrameSet
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __MarkerSet_h__
+#endif // OPENSIM_FRAME_SET_H_

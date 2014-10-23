@@ -190,7 +190,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
     const PathPoint* lastPoint = points[0];	
     Vec3 lastLoc_B = lastPoint->getLocation();
-    MobilizedBodyIndex lastBody = lastPoint->getBody().getIndex();
+	MobilizedBodyIndex lastBody = lastPoint->getBody().getMobilizedBodyIndex();
 
     if (hints.getShowPathPoints())
         DefaultGeometry::drawPathPoint(lastBody, lastLoc_B, getColor(state), 
@@ -202,7 +202,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
     for(int j = 1; j < points.getSize(); j++) {
         const PathPoint* point = points[j];
         const Vec3 loc_B = point->getLocation();
-        const MobilizedBodyIndex body = point->getBody().getIndex();
+		const MobilizedBodyIndex body = point->getBody().getMobilizedBodyIndex();
 
         if(hints.getShowPathPoints())
             DefaultGeometry::drawPathPoint(body, loc_B, getColor(state), 
@@ -360,8 +360,8 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
     for (int i = 0; i < np-1; ++i) {
         start = currentPath[i];
         end = currentPath[i+1];
-        bo = &matter.getMobilizedBody(start->getBody().getIndex());
-        bf = &matter.getMobilizedBody(end->getBody().getIndex());
+		bo = &matter.getMobilizedBody(start->getBody().getMobilizedBodyIndex());
+		bf = &matter.getMobilizedBody(end->getBody().getMobilizedBodyIndex());
 
         if (bo != bf) {
             // Find the positions of start and end in the inertial frame.

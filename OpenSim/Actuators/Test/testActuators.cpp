@@ -226,9 +226,9 @@ void testTorqueActuator()
 	Vector_<SpatialVec>& bodyForces = 
 		model->getMultibodySystem().updRigidBodyForces(state, Stage::Dynamics);
 	bodyForces.dump("Body Forces before applying torque");
-	model->getMatterSubsystem().addInBodyTorque(state, bodyA->getIndex(), 
+	model->getMatterSubsystem().addInBodyTorque(state, bodyA->getMobilizedBodyIndex(),
 		torqueMag*torqueAxis, bodyForces);
-	model->getMatterSubsystem().addInBodyTorque(state, bodyB->getIndex(), 
+	model->getMatterSubsystem().addInBodyTorque(state, bodyB->getMobilizedBodyIndex(),
 		-torqueMag*torqueAxis, bodyForces);
 	bodyForces.dump("Body Forces after applying torque to bodyA and bodyB");
 
@@ -604,9 +604,9 @@ void testBodyActuator()
 		model->getMultibodySystem().updRigidBodyForces(state, Stage::Dynamics);
 	bodyForces.dump("Body Forces before applying 6D spatial force:");
 
-	model->getMatterSubsystem().addInBodyTorque(state, block->getIndex(),
+    model->getMatterSubsystem().addInBodyTorque(state, block->getMobilizedBodyIndex(),
 		torqueInG, bodyForces);
-	model->getMatterSubsystem().addInStationForce(state, block->getIndex(),
+    model->getMatterSubsystem().addInStationForce(state, block->getMobilizedBodyIndex(),
 		Vec3(0), forceInG, bodyForces);
 
 	bodyForces.dump("Body Forces after applying 6D spatial force to the block");
