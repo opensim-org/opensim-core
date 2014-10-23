@@ -469,7 +469,7 @@ OpenSim::Array<double> CoupledBushingForce::getRecordValues(const SimTK::State& 
 {
 	OpenSim::Array<double> values(1);
 
-	const SimTK::Force::LinearBushing &simtkSpring = (SimTK::Force::LinearBushing &)(_model->getForceSubsystem().getActuation(_index));
+	const SimTK::Force::LinearBushing &simtkSpring = (SimTK::Force::LinearBushing &)(_model->getForceSubsystem().getForce(_index));
 
 	SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
 	SimTK::Vector_<SimTK::Vec3> particleForces(0);
