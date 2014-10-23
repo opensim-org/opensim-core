@@ -72,8 +72,26 @@ int main()
 		// GROUND BODY
         // Get a reference to the model's ground frame
         Ground& ground = osimModel.updGround();
+        // Create Frames to attach Geometry to
+        // Left brick
+        OpenSim::FixedFrame* leftAnchorFrame = new FixedFrame(ground, Transform(Vec3(0, 0.05, 0.35)));
+        leftAnchorFrame->setName("LeftAnchor");
+        osimModel.addFrame(leftAnchorFrame);
+        // Right brick
+        OpenSim::FixedFrame* rightAnchorFrame = new FixedFrame(ground, Transform(Vec3(0, 0.05, -0.35)));
+        rightAnchorFrame->setName("RightAnchor");
+        osimModel.addFrame(rightAnchorFrame);
+        // Cylinder
+        OpenSim::FixedFrame* cylFrame = new FixedFrame(ground, Transform(Vec3(-.2, 0.0, 0.)));
+        cylFrame->setName("CylAnchor");
+        osimModel.addFrame(cylFrame);
+        // Ellipsoid
+        OpenSim::FixedFrame* ellipsoidFrame = new FixedFrame(ground, Transform(Vec3(-.6, 0.6, 0.)));
+        ellipsoidFrame->setName("EllipsoidAnchor");
+        osimModel.addFrame(ellipsoidFrame);
 
-		// Add display geometry to the ground to visualize in the Visualizer and GUI
+
+        // Add display geometry to the ground to visualize in the Visualizer and GUI
 		// add a checkered floor
 		ground.addMeshGeometry("checkered_floor.vtp");
 		// add anchors for the muscles to be fixed to
@@ -90,30 +108,18 @@ int main()
 		leftAnchorGeometry->set_scale_factors(Vec3(5, 1, 1));
         rightAnchorGeometry->set_scale_factors(Vec3(5, 1, 1));
 		// reposition the anchors
-        OpenSim::FixedFrame* leftAnchorFrame = new FixedFrame(ground, Transform(Vec3(0, 0.05, 0.35)));
-        leftAnchorFrame->setName("LeftAnchor");
-        osimModel.addFrame(leftAnchorFrame);
         leftAnchorGeometry->set_frame_name(leftAnchorFrame->getName());
         ground.adoptGeometry(leftAnchorGeometry);
-
-        OpenSim::FixedFrame* rightAnchorFrame = new FixedFrame(ground, Transform(Vec3(0, 0.05, -0.35)));
-        rightAnchorFrame->setName("RightAnchor");
-        osimModel.addFrame(rightAnchorFrame);
         rightAnchorGeometry->set_frame_name(rightAnchorFrame->getName());
         ground.adoptGeometry(rightAnchorGeometry);
         
         Geometry* cylGeometry = new Cylinder(0.2, .3);
-        OpenSim::FixedFrame* cylFrame = new FixedFrame(ground, Transform(Vec3(-.2, 0.0, 0.)));
-        cylFrame->setName("CylAnchor");
-        osimModel.addFrame(cylFrame);
         cylGeometry->set_frame_name("CylAnchor");
         cylGeometry->setRepresentation(Geometry::DrawWireframe);
         ground.adoptGeometry(cylGeometry);
 
         Geometry* ellipsoidGeometry = new Ellipsoid(0.2, .7, .5);
-        OpenSim::FixedFrame* ellipsoidFrame = new FixedFrame(ground, Transform(Vec3(-.6, 0.6, 0.)));
-        ellipsoidFrame->setName("EllipsoidAnchor");
-        osimModel.addFrame(ellipsoidFrame);
+        ellipsoidGeometry->setColor(SimTK::Vec3(1.0, .5, 0.1));
         ellipsoidGeometry->set_frame_name("EllipsoidAnchor");
         ground.adoptGeometry(ellipsoidGeometry);
         
@@ -294,7 +300,7 @@ int main()
 
 		// Initialize the system and get the default state
 		SimTK::State& si = osimModel.initSystem();
-		
+        /*
         OpenSim::AppearanceMap& aMap = osimModel.upd_ModelDisplay().upd_AppearanceMap();
         ComponentList<Component> compList = osimModel.getComponentList();
         std::cout << "list begin: " << compList.begin()->getName() << std::endl;
@@ -315,7 +321,7 @@ int main()
                 std::cout << "Iterator is at: " << it->get_GeometrySet(j).getPathID() << std::endl;
             }
         }
-        osimModel.print("tugOfWar_model_withDisplay.osim");
+        osimModel.print("tugOfWar_model_withDisplay.osim"); */
         // Enable constraint consistent with current configuration of the model
 		constDist->setDisabled(si, false);
 
@@ -358,7 +364,29 @@ int main()
 
 		// Save the forces
 		reporter->getForceStorage().print("tugOfWar_forces.mot");
-	}
+        /*
+        Model roundTripModel("tugOfWar_model_withDisplay.osim");
+        roundTripModel.setUseVisualizer(true);
+
+        // Initialize the system and get the default state
+        SimTK::State& si_rt = roundTripModel.initSystem();
+        roundTripModel.getMultibodySystem().realize(si_rt, Stage::Velocity);
+        // Compute initial conditions for muscles
+        roundTripModel.equilibrateMuscles(si_rt);
+        // Create the integrator for integrating system dynamics
+        SimTK::RungeKuttaMersonIntegrator integrator_rt(roundTripModel.getMultibodySystem());
+        integrator_rt.setAccuracy(1.0e-6);
+
+        // Create the manager managing the forward integration and its outputs
+        Manager manager_rt(roundTripModel, integrator_rt);
+
+        // Integrate from initial time to final time
+        manager_rt.setInitialTime(initialTime);
+        manager_rt.setFinalTime(finalTime);
+        cout << "\nIntegrating from " << initialTime << " to " << finalTime << endl;
+        manager_rt.integrate(si_rt);
+        */
+    }
 	catch (const std::exception& ex)
     {
         cerr << ex.what() << endl;
