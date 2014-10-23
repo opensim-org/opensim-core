@@ -76,9 +76,12 @@ int main()
 		// Add display geometry to the ground to visualize in the Visualizer and GUI
 		// add a checkered floor
 		ground.addMeshGeometry("checkered_floor.vtp");
-		// add anchors for the muscles to be fixed too
-        Geometry* leftAnchorGeometry = new Mesh("block.vtp");
-        Geometry* rightAnchorGeometry = new Mesh("block.vtp");
+		// add anchors for the muscles to be fixed to
+        Geometry* leftAnchorGeometry = new Brick(SimTK::Vec3(0.05, 0.05, 0.05));
+        leftAnchorGeometry->setColor(SimTK::Vec3(0.0, 1.0, 0.0));
+        Geometry* rightAnchorGeometry = new Brick(SimTK::Vec3(0.05, 0.05, 0.05));
+        rightAnchorGeometry->setColor(SimTK::Vec3(1.0, 1.0, 0.0));
+        rightAnchorGeometry->setOpacity(0.5);
 
 		// block is 0.1 by 0.1 by 0.1m cube and centered at origin. 
 		// transform anchors to be placed at the two extremes of the sliding block (to come)
@@ -104,6 +107,7 @@ int main()
         cylFrame->setName("CylAnchor");
         osimModel.addFrame(cylFrame);
         cylGeometry->set_frame_name("CylAnchor");
+        cylGeometry->setRepresentation(Geometry::DrawWireframe);
         ground.adoptGeometry(cylGeometry);
 
         Geometry* ellipsoidGeometry = new Ellipsoid(0.2, .7, .5);
@@ -291,7 +295,28 @@ int main()
 		// Initialize the system and get the default state
 		SimTK::State& si = osimModel.initSystem();
 		
-		// Enable constraint consistent with current configuration of the model
+        OpenSim::AppearanceMap& aMap = osimModel.upd_ModelDisplay().upd_AppearanceMap();
+        ComponentList<Component> compList = osimModel.getComponentList();
+        std::cout << "list begin: " << compList.begin()->getName() << std::endl;
+        for (ComponentList<Component>::iterator cit = compList.begin();
+            cit != compList.end();
+            ++cit) {
+            //std::cout << "Iterator is at: " << cit->getName() << std::endl;
+            const Component& comp = *cit;
+            const OpenSim::ModelComponent* it = dynamic_cast<const ModelComponent*>(&comp);
+            if (it == nullptr) continue;
+            int sz = it->getProperty_GeometrySet().size();
+            for (int j = 0; j < sz; ++j) {
+                GeometryAppearance ga;
+                const Geometry& nextGeom = it->get_GeometrySet(j);
+                ga.set_geometryID(it->get_GeometrySet(j).getPathID());
+                ga.set_Appearance(it->get_GeometrySet(j).getAppearance());
+                aMap.append_AppearanceList(ga);
+                std::cout << "Iterator is at: " << it->get_GeometrySet(j).getPathID() << std::endl;
+            }
+        }
+        osimModel.print("tugOfWar_model_withDisplay.osim");
+        // Enable constraint consistent with current configuration of the model
 		constDist->setDisabled(si, false);
 
 		cout << "Start height = "<< h_start << endl;
