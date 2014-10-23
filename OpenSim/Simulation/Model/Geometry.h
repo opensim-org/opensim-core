@@ -86,7 +86,16 @@ public:
         "Scale factors in X, Y, Z directotions respectively.");
     OpenSim_DECLARE_PROPERTY(frame_name, std::string,
         "Name of the Frame that this Geometry is attached to.");
-	//--------------------------------------------------------------------------
+
+    enum Representation {
+        Hide = 0,
+        DrawPoints = 1, ///< Use a cloud of points.
+        DrawWireframe = 2, ///< Use a line drawing.
+        DrawSurface = 3, ///< Use a shaded surface.
+
+        DrawDefault = -1  ///< Let someone else decide.
+    };
+    //--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
@@ -111,6 +120,16 @@ public:
         decoration.setOpacity(_appearance.get_opacity());
         decoration.setRepresentation((SimTK::DecorativeGeometry::Representation)_appearance.get_representation());
     };
+    // Convenient access to Appearance constituents
+    void setColor(const SimTK::Vec3& color) { _appearance.set_color(color); };
+    const SimTK::Vec3& getColor() const { return _appearance.get_color(); };
+
+    void setOpacity(const double opacity) { _appearance.set_opacity(opacity); };
+    const double getOpacity() { return _appearance.get_opacity(); };
+
+    void setRepresentation(const Representation& rep) { _appearance.set_representation(rep); };
+    const Representation& getRepresentation() { return (const Representation&)_appearance.get_representation(); };
+
 private:
     Appearance _appearance;
     //=============================================================================
