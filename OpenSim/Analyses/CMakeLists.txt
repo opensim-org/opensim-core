@@ -1,65 +1,11 @@
-SET(KIT Analyses)
-SET(UKIT ANALYSES)
 
-##
-## Version stuff
-##
-SET(OPENSIM_ANALYSES_LIBRARY_NAME osim${KIT})
-SET(OPENSIM_ANALYSES_MAJOR_VERSION 3)
-SET(OPENSIM_ANALYSES_MINOR_VERSION 0)
-SET(OPENSIM_ANALYSES_BUILD_VERSION 0)
-SET(OPENSIM_ANALYSES_COPYRIGHT_YEARS "2005-6")
-# comma separated list of authors
-SET(OPENSIM_ANALYSES_AUTHORS  "Clay_Anderson-Ayman_Habib_and_Peter_Loan") 
+FILE(GLOB INCLUDES *.h)
+FILE(GLOB SOURCES *.cpp)
 
-
-ADD_DEFINITIONS(-DOPENSIM_ANALYSES_LIBRARY_NAME=${OPENSIM_ANALYSES_LIBRARY_NAME}
--DOPENSIM_ANALYSES_MAJOR_VERSION=${OPENSIM_ANALYSES_MAJOR_VERSION}
--DOPENSIM_ANALYSES_MINOR_VERSION=${OPENSIM_ANALYSES_MINOR_VERSION}
--DOPENSIM_ANALYSES_BUILD_VERSION=${OPENSIM_ANALYSES_BUILD_VERSION}
--DOPENSIM_ANALYSES_COPYRIGHT_YEARS="${OPENSIM_ANALYSES_COPYRIGHT_YEARS}"
--DOPENSIM_ANALYSES_AUTHORS="${OPENSIM_ANALYSES_AUTHORS}"
--DOPENSIM_ANALYSES_TYPE="Shared")
-
-FILE(GLOB SOURCE_FILES *.cpp)
-FILE(GLOB INCLUDE_FILES *.h)
-
-INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-		    ${OpenSim_SOURCE_DIR}/Vendors 
-		    ${OpenSim_SOURCE_DIR}/Tools)
-
-SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
-
-LINK_LIBRARIES( debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
-		debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
-		debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators
-				${SIMTK_ALL_LIBS})
-
-ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
-
-SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
-   DEFINE_SYMBOL ${EXPORT_MACRO}
-   PROJECT_LABEL "Libraries - osim${KIT}"
-)
-
-# Shared libraries are needed at runtime for applications, so we put them
-# at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
-# or OpemSim/lib/*.dylib (Mac). Windows .lib files, and Linux/Mac .a static
-# archives are only needed at link time so go in sdk/lib.
-IF(WIN32)
-    INSTALL(TARGETS osim${KIT}
-            EXPORT OpenSimTargets
-            RUNTIME DESTINATION bin
-            LIBRARY DESTINATION sdk/lib
-            ARCHIVE DESTINATION sdk/lib)
-ELSE()
-    INSTALL(TARGETS osim${KIT}
-            EXPORT OpenSimTargets
-            RUNTIME DESTINATION bin
-            LIBRARY DESTINATION lib
-            ARCHIVE DESTINATION sdk/lib)
-ENDIF()
-
-INSTALL(FILES ${INCLUDE_FILES}
-        DESTINATION sdk/include/OpenSim/${KIT})
-
+OPENSIM_ADD_LIBRARY(
+    KIT Analyses
+    AUTHORS "Clay_Anderson-Ayman_Habib-Peter_Loan"
+    LINKLIBS osimCommon osimSimulation osimActuators
+    INCLUDES ${INCLUDES}
+    SOURCES ${SOURCES}
+    )
