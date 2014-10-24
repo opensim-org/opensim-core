@@ -88,7 +88,8 @@ void ModelComponent::connectToModel(Model& model)
     int geomSize = getProperty_GeometrySet().size();
     if (geomSize > 0){
         for (int i = 0; i < geomSize; ++i)
-            addComponent(&upd_GeometrySet(i));
+            if (findComponent(get_GeometrySet(i).getName())==nullptr)
+                addComponent(&upd_GeometrySet(i));
     }
 }
 
