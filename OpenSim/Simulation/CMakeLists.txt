@@ -18,7 +18,6 @@ ENDFOREACH()
 
 OPENSIM_ADD_LIBRARY(
     KIT Simulation
-    AUTHORS "Ajay_Seth-Michael_Sherman-Ayman_Habib"
     LINKLIBS ${SIMTK_ALL_LIBS} osimCommon osimLepton
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}

@@ -2,7 +2,6 @@ include(CMakeParseArguments)
 
 # Create an OpenSim API library. Here are the arguments:
 # KIT: Name of the library (e.g., Common).
-# AUTHORS: A string listing authors of the library.
 # LINKLIBS: List of libraries (targets) to link against.
 # INCLUDES: List of header files for the library (obtain via FILE(GLOB ...)).
 # SOURCES: List of cpp files for the library (obtain via FILE(GLOB ...)).
@@ -18,7 +17,6 @@ include(CMakeParseArguments)
 #
 #   OPENSIM_ADD_LIBRARY(
 #       KIT Common
-#       AUTHORS "Clay_Anderson-Ayman_Habib_and_Peter_Loan"
 #       LINKLIBS ${SIMTK_COMMON_LIB} ${SIMTK_MATH_LIB} ${MATH_LIBS_TO_USE}
 #       INCLUDES ${INCLUDES}
 #       SOURCES ${SOURCES}
@@ -30,7 +28,7 @@ FUNCTION(OPENSIM_ADD_LIBRARY)
     # ----------------
     # http://www.cmake.org/cmake/help/v2.8.9/cmake.html#module:CMakeParseArguments
     SET(options "")
-    SET(oneValueArgs KIT AUTHORS)
+    SET(oneValueArgs KIT)
     SET(multiValueArgs LINKLIBS INCLUDES SOURCES TESTDIRS INCLUDEDIRS)
     CMAKE_PARSE_ARGUMENTS(
         OSIMADDLIB "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -49,7 +47,6 @@ FUNCTION(OPENSIM_ADD_LIBRARY)
         -DOPENSIM_${OSIMADDLIB_UKIT}_MINOR_VERSION=${OPENSIM_MINOR_VERSION}
         -DOPENSIM_${OSIMADDLIB_UKIT}_BUILD_VERSION=${OPENSIM_PATCH_VERSION}
         -DOPENSIM_${OSIMADDLIB_UKIT}_COPYRIGHT_YEARS="2005-2014"
-        -DOPENSIM_${OSIMADDLIB_UKIT}_AUTHORS="${AUTHORS}"
         -DOPENSIM_${OSIMADDLIB_UKIT}_TYPE="Shared"
         )
 
