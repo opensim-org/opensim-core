@@ -42,15 +42,16 @@ cmake_minimum_required(VERSION 2.8.6)
 
 SET(KIT plugin)
 SET(UKIT PLUGIN)
+SET(PLUGIN_NAME "osimExpressionReporter")
 
-FILE(GLOB SOURCE_FILES *.cpp)
-FILE(GLOB INCLUDE_FILES *.h)
-
+# Settings.
+# ---------
 SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
         CACHE PATH "Top-level directory of OpenSim install")
 
-SET(PLUGIN_NAME "osimExpressionReporter")
 
+# Find and hook up to OpenSim.
+# ----------------------------
 # OpenSim uses C++11 language features.
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR
         "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
@@ -73,10 +74,13 @@ FIND_PACKAGE(OpenSim REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")
 INCLUDE_DIRECTORIES(${OpenSim_INCLUDE_DIRS})
 LINK_DIRECTORIES(${OpenSim_LIB_DIR})
 
+# Configure this project.
+# -----------------------
+FILE(GLOB SOURCE_FILES *.cpp)
+FILE(GLOB INCLUDE_FILES *.h)
 ADD_LIBRARY(${PLUGIN_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 
 TARGET_LINK_LIBRARIES(${PLUGIN_NAME} ${OpenSim_LIBRARIES})
-
 
 SET(EXPORT_MACRO OSIMEXPPLUGIN_EXPORTS)
 SET_TARGET_PROPERTIES(
@@ -84,6 +88,8 @@ SET_TARGET_PROPERTIES(
     DEFINE_SYMBOL ${EXPORT_MACRO}
     PROJECT_LABEL "Libraries - ${PLUGIN_NAME}")
 
+# Configure installation.
+# -----------------------
 IF(WIN32)
     INSTALL_TARGETS(/sdk/lib/ RUNTIME_DIRECTORY /bin ${PLUGIN_NAME})
 ELSE(WIN32)

@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 2.6)
 
 SET(BUILD_API_EXAMPLES ON CACHE BOOL "Build examples that are used for the OpenSimAPIExamples distribution")
 MARK_AS_ADVANCED(BUILD_API_EXAMPLES)
@@ -13,6 +12,7 @@ INSTALL(DIRECTORY CustomActuatorExample DESTINATION sdk/APIExamples PATTERN ".sv
 INSTALL(DIRECTORY OptimizationExample_Arm26 DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)
 INSTALL(DIRECTORY checkEnvironment DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)
 INSTALL(DIRECTORY SimpleOptimizationExample DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)
+INSTALL(DIRECTORY SymbolicExpressionReporter DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)
 ADD_SUBDIRECTORY(SymbolicExpressionReporter)
 
 ELSEIF (BUILD_API_EXAMPLES)

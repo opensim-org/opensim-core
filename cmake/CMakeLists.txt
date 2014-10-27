@@ -15,6 +15,7 @@ WRITE_BASIC_CONFIG_VERSION_FILE(
 
 INSTALL(
     FILES
+        "SampleCMakeLists.txt"
         "${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfig.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfigVersion.cmake"
     DESTINATION
