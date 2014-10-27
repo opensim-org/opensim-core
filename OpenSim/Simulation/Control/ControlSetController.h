@@ -116,15 +116,6 @@ protected:
 
 	// for any post XML deserialization intialization
     void finalizeFromProperties() override;
-    
-    // connect this Controller to the model
-    void connectToModel(Model& model) override;
-
-	// for adding any Controller elements to the underlying system
-	void addToSystem( SimTK::MultibodySystem& system) const override; 
-
-	// for any intialization requiring a state or the complete system 
-	void initStateFromProperties( SimTK::State& s) const override;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

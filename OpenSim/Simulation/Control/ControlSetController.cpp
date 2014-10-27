@@ -242,23 +242,3 @@ void ControlSetController::finalizeFromProperties()
     Super::finalizeFromProperties();
 }
 
-// for any post XML deserialization intialization
-void ControlSetController::connectToModel(Model& model)  
-{
-    // Controller::connectToModel() calls setActuators() with actuators in the
-    // _actuatorNameList so call connectToModel() after the _controlSet 
-    // constructor has been called
-	Super::connectToModel(model);
-}
-
-// for adding any components to the model
-void ControlSetController::addToSystem( SimTK::MultibodySystem& system ) const
-{
-	Super::addToSystem(system);
-}
-
-// for any intialization requiring a state or the complete system 
-void ControlSetController::initStateFromProperties( SimTK::State& s)  const
-{
-	Super::initStateFromProperties(s);
-}
