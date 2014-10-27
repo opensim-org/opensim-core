@@ -134,13 +134,12 @@ void Body::connectToModel(Model& aModel)
 
 void Body::addToSystem(SimTK::MultibodySystem& system) const
 {
-	if(getName() == "ground"){
-		Body * mutableThis = const_cast<Body *>(this);
-		mutableThis->_index = SimTK::GroundIndex;
-	}
-	
-	// Add subcomponents of the Body (namely its Joint)
-	Super::addToSystem(system);
+    Super::addToSystem(system);
+
+    if(getName() == "ground"){
+        Body * mutableThis = const_cast<Body *>(this);
+        mutableThis->_index = SimTK::GroundIndex;
+    }
 }
 
 
