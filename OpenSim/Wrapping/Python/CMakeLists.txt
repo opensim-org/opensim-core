@@ -22,7 +22,6 @@ SET(swig_output_header_file_fullname
     ${CMAKE_CURRENT_BINARY_DIR}/pyOpenSim_wrap.h)
 SET(swig_interface_file_fullname
     ${OpenSim_SOURCE_DIR}/OpenSim/Wrapping/Python/swig/pyWrapOpenSim.i)
-SET(SimTK_INCLUDE_PATH ${SIMTK_INCLUDE_DIR})
 
 # Using a custom command / custom target pair so that SWIG is only run when
 # it's out of date. Previously, we used a custom target only. But, custom
