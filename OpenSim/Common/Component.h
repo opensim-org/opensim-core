@@ -833,7 +833,7 @@ template <class T> friend class ComponentMeasure;
 	virtual void finalizeFromProperties();
 
     /** Perform any necessary initializations required to connect the component
-    (including it subcomponents) to other components and mark the connection status.
+    (and it subcomponents) to other components and mark the connection status.
 	Provides a check for error conditions. connect() is invoked on all components 
 	to form a directed acyclic graph of the multibody system, prior to creating the
 	Simbody MultibodySystem to represent it computationally. It may also be invoked
@@ -842,7 +842,7 @@ template <class T> friend class ComponentMeasure;
 	The "root" Component argument is the root node of the directed graph composed
 	of all the subcomponents (and their subcomponents and so on ...) and their
 	interconnections. This should yield a fully connected root component. For 
-	ModelComponents	this is the Model component. But a Model can be connected to
+	ModelComponents this is the Model component. But a Model can be connected to
 	an environment or world component with several other models, by choosing the
 	environment/world as the root.
     
@@ -856,17 +856,17 @@ template <class T> friend class ComponentMeasure;
     @endcode   */
 	virtual void connect(Component &root);
 
-	/** Opportunity to remove connection related information. 
-	If you override this method, be sure to invoke the base class method first,
-		using code like this :
-		@code
-		void MyComponent::disconnect(Component& root) {
-			// disconnect your subcomponents first
-			Super::disconnect(); 
-			//your code to wipeout your connection related information
-	}
-	@endcode  */
-	virtual void disconnect();
+    /** Opportunity to remove connection related information. 
+    If you override this method, be sure to invoke the base class method first,
+    using code like this :
+    @code
+        void MyComponent::disconnect(Component& root) {
+        // disconnect your subcomponents and your Super first
+        Super::disconnect(); 
+        //your code to wipeout your connection related information
+    }
+    @endcode  */
+    virtual void disconnect();
 
 
     /** Add appropriate Simbody elements (if needed) to the System 
@@ -878,30 +878,45 @@ template <class T> friend class ComponentMeasure;
     and their derivatives, discrete variables, and cache entries are available 
     and can be called within addToSystem() only.
 
-    Note that this method is const; you must not modify your model component
+    Note that this method is const; you may not modify your model component
     or the containing model during this call. Any modifications you need should
     instead be performed in finalizeFromProperties() or at the latest connect(),
-	which are non-const. The only exception is that you may need to record access 
-	information for resources you create in the \a system, such as an index number.
-	You should declare those data members mutable so that you can set them here.
-	For common Components, OpenSim base classes either provide convenience methods
-	or handle indices automatically. 
+    which are non-const. The only exception is that you may need to record access 
+    information for resources you create in the \a system, such as an index number.
+    For most Components, OpenSim base classes either provide convenience methods
+    or handle indices automatically. Otherwise, you must declare indices as mutable
+    data members so that you can set them here.
    
     If you override this method, be sure to invoke the base class method at the
-    end, using code like this:
+    beginning, using code like this:
     @code
     void MyComponent::addToSystem(SimTK::MultibodySystem& system) const {
-		// ... your code goes here
-		// call Super class to invoke method on subcomponents
+        // Do any additions required by your Super
         Super::addToSystem(system);       
+        // (Typical) have your (sub)components add themselves to the system
+        componentsAddToSystem(system)
+        // your code here to add more underlying system elelments
+        
+        // if you did not call componentsAddToSystem(system) above your code
+        // this is your final opportunity to do so. Otherwise, (sub)components
+        // will not have the chance to add themselves to the system.
     }
     @endcode
 
-    @param[in,out] system   The System being created.
+    @param[in,out] system   The MultibodySystem being added to.
 
     @see addModelingOption(), addStateVariable(), addDiscreteVariables(), 
          addCacheVariable() **/
     virtual void addToSystem(SimTK::MultibodySystem& system) const;
+
+    /** Invoke addToSystem() on the sub-components of this Component.
+    Concrete Components can choose when to add their (sub)components according
+    to the needs of the Component. Typically, we add the components to the system
+    prior to this Component. In some instances, such as a Joint, the Coordinate 
+    components cannot be added until the Joint has added its underlying 
+    representation to the system and obtained information (index) the Coordinate
+    needs to access its values.*/
+    void componentsAddToSystem(SimTK::MultibodySystem& system) const;
 
 
     /** Transfer property values or other state-independent initial values

@@ -254,7 +254,6 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
  void Millard2012AccelerationMuscle::connectToModel(Model& model)
  {
     Super::connectToModel(model);
-	finalizeFromProperties();
  }
 
  void Millard2012AccelerationMuscle::

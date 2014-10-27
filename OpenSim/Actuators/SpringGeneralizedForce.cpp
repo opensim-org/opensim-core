@@ -191,8 +191,8 @@ void SpringGeneralizedForce::computeForce(const SimTK::State& s,
 /**
  * Sets the actual Coordinate reference _coord
  */
-void SpringGeneralizedForce::
-addToSystem(SimTK::MultibodySystem& system) const {
+void SpringGeneralizedForce::addToSystem(SimTK::MultibodySystem& system) const
+{
     Super::addToSystem( system );
 
 	if (_model) {

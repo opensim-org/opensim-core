@@ -1084,8 +1084,8 @@ void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
 }
 
 // for any post XML deserialization intialization
-void CMC::connectToModel(Model& model)   {
-
+void CMC::connectToModel(Model& model)
+{
 	Super::connectToModel(model);
 
 	// STORAGE
