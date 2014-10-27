@@ -288,6 +288,7 @@ int main()
 		muscle2->setDefaultFiberLength(optimalFiberLength);
 		muscle1->setDefaultFiberLength(optimalFiberLength);
 
+        osimModel.dumpPathName();
 		// Save the model to a file
 		osimModel.print("tugOfWar_model.osim");
 
@@ -315,10 +316,10 @@ int main()
             for (int j = 0; j < sz; ++j) {
                 GeometryAppearance ga;
                 const Geometry& nextGeom = it->get_GeometrySet(j);
-                ga.set_geometryID(it->get_GeometrySet(j).getPathID());
+                ga.set_geometryID(it->get_GeometrySet(j).getPathName());
                 ga.set_Appearance(it->get_GeometrySet(j).getAppearance());
                 aMap.append_AppearanceList(ga);
-                std::cout << "Iterator is at: " << it->get_GeometrySet(j).getPathID() << std::endl;
+                std::cout << "Iterator is at: " << it->get_GeometrySet(j).getPathName() << std::endl;
             }
         }
         osimModel.print("tugOfWar_model_withDisplay.osim"); */

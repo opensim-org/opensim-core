@@ -1521,24 +1521,24 @@ private:
         }
     }
 public:
-    const std::string& getPathID() const {
-        return _pathID;
+    const std::string& getPathName() const {
+        return _pathName;
     }
-    void dumpPathID() const {
-         std::cout << getConcreteClassName() << ": ID= " << getPathID() << std::endl;
+    void dumpPathName() const {
+         std::cout << getConcreteClassName() << ": ID= " << getPathName() << std::endl;
          for (unsigned int i = 0; i<_components.size(); i++)
-             _components[i]->dumpPathID();
+             _components[i]->dumpPathName();
 
      }
 protected:
-    // Populate _pathID for Component and all its children
-    void populatePathID(const std::string& parentPath) {
+    // Populate _pathName for Component and all its children
+    void populatePathName(const std::string& parentPath) {
         if (getName().empty())
-            _pathID = parentPath + "/" + getConcreteClassName();
+            _pathName = parentPath + "/" + getConcreteClassName();
         else
-            _pathID = parentPath+"/"+getName();
+            _pathName = parentPath+"/"+getName();
         for (unsigned int i = 0; i<_components.size(); i++)
-            _components[i]->populatePathID(getPathID());
+            _components[i]->populatePathName(getPathName());
     }
 	//Derived Components must create concrete StateVariables to expose their state 
 	//variables. When exposing state variables allocated by the underlying Simbody
@@ -1624,8 +1624,8 @@ private:
     void baseAddToSystem(SimTK::MultibodySystem& system) const;
     // Reference pointer to the successor of the current Component in Pre-order traversal
     SimTK::ReferencePtr<Component> _nextComponent;
-    // PathID
-    std::string _pathID;
+    // PathName
+    std::string _pathName;
 
 	// Reference pointer to the system that this component belongs to.
 	SimTK::ReferencePtr<SimTK::MultibodySystem> _system;
