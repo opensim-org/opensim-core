@@ -438,13 +438,14 @@ int main() {
         for (auto& component : worldTreeAsList) {
             std::cout << "Iterator is at: " << component.getName() << std::endl;
         }
-        /*
+        
         // TODO causes segfault (because of dereferencing a null pointer since begin returns pointer to wrong type.
         std::cout << "Iterate over only Foo's." << std::endl;
         for (auto& component : theWorld.getComponentList<Foo>()) {
             std::cout << "Iterator is at: " << component.getName() << std::endl;
         }
-        */
+        
+
 		Foo& foo2 = *new Foo();
 		foo2.setName("Foo2");
 		foo2.set_mass(3.0);
@@ -456,6 +457,12 @@ int main() {
 
 		// Bar should connect now
 		theWorld.connect();
+
+        std::cout << "Iterate over only Foo's." << std::endl;
+        for (auto& component : theWorld.getComponentList<Foo>()) {
+            std::cout << "Iterator is at: " << component.getName() << std::endl;
+        }
+
 		theWorld.buildUpSystem(system);
 
 		// do any other input/output connections

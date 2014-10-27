@@ -89,10 +89,13 @@ public:
     const T& operator*() const { return *dynamic_cast<const T*>(m_node); } // m_node need to be kept pointing at correct type otherwise will crash
     const T* operator->() const { return dynamic_cast<const T*>(m_node); }
     ComponentListIterator<T>& operator++();
+    void advanceToNextValidComponent();
 private:
     const Component* m_node;
     ComponentListIterator(const Component* node) :
-        m_node(node){};
+        m_node(node){
+        advanceToNextValidComponent(); // in case node is not of type T
+    };
 };
 
 
@@ -1675,14 +1678,25 @@ private:
 
 template <typename T>
 ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
-    const Component* candidate = nullptr;
-    if (m_node->_components.size() > 0){ // has children, go down tree
+    if (m_node->_components.size() > 0)
         m_node = m_node->_components[0];
-        return (*this);
-    }
-    m_node = m_node->_nextComponent;
+    else
+        m_node = m_node->_nextComponent;
+    advanceToNextValidComponent(); // make sure we have a m_node of type T after advancing
      return *this;
  };
+
+template <typename T>
+void ComponentListIterator<T>::advanceToNextValidComponent() {
+    // Advance m_node to next valid (of type T) if needed
+    while (dynamic_cast<const T*>(m_node) == nullptr && m_node != nullptr){
+        if (m_node->_components.size() > 0)
+            m_node = m_node->_components[0];
+        else
+            m_node = m_node->_nextComponent;
+    }
+    return;
+}
 } // end of namespace OpenSim
 
 #endif // OPENSIM_COMPONENT_H_
