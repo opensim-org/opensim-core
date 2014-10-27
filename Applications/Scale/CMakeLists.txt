@@ -10,7 +10,7 @@ TARGET_LINK_LIBRARIES(${APPNAME}
           debug osimTools${CMAKE_DEBUG_POSTFIX} optimized osimTools
           debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
           debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
-          debug ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKcommon)
+          )
 
 
 INSTALL_TARGETS(/bin/ ${APPNAME})
