@@ -162,8 +162,8 @@ public:
 
 protected:
 	/** Component Interface */
-	void connect(Component& root) override {
-		Super::connect(root);
+    void connect(Component& root, const Component* parent) override {
+		Super::connect(root, parent);
 		// do any internal wiring
 		world = dynamic_cast<TheWorld*>(&root);
 	}
@@ -249,8 +249,8 @@ public:
 
 protected:
 	/** Component Interface */
-	void connect(Component& root) override{
-		Super::connect(root);
+    void connect(Component& root, const Component* parent) override{
+		Super::connect(root, parent);
 		// do any internal wiring
 		world = dynamic_cast<TheWorld*>(&root);
 		// perform custom checking
@@ -422,15 +422,6 @@ int main() {
 			cout << e.what() << endl;
 		}
 
-        // Test out the iterator.
-        ComponentTree<Component> worldTree = theWorld.getComponents();
-        std::cout << "tree begin: " << worldTree.begin()->getName() << std::endl;
-        for (ComponentTree<Component>::iterator it = worldTree.begin();
-                it != worldTree.end();
-                ++it) {
-            std::cout << "Iterator is at: " << it->getName() << std::endl;
-        }
-
         ComponentList<Component> worldTreeAsList = theWorld.getComponentList();
         std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
         for (ComponentList<Component>::iterator it = worldTreeAsList.begin();
@@ -447,13 +438,13 @@ int main() {
         for (auto& component : worldTreeAsList) {
             std::cout << "Iterator is at: " << component.getName() << std::endl;
         }
-        
-        /* TODO causes segfault (because of dereferencing a null pointer since begin returns pointer to wrong type.
+        /*
+        // TODO causes segfault (because of dereferencing a null pointer since begin returns pointer to wrong type.
         std::cout << "Iterate over only Foo's." << std::endl;
-        for (auto& component : theWorld.getComponents<Foo>()) {
+        for (auto& component : theWorld.getComponentList<Foo>()) {
             std::cout << "Iterator is at: " << component.getName() << std::endl;
-        }*/
-
+        }
+        */
 		Foo& foo2 = *new Foo();
 		foo2.setName("Foo2");
 		foo2.set_mass(3.0);

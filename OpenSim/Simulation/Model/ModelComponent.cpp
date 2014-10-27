@@ -63,7 +63,7 @@ Model& ModelComponent::updModel()
 }
 
 
-void ModelComponent::connect(Component &root)
+void ModelComponent::connect(Component &root, const Component* parent)
 {
 	Model* model = dynamic_cast<Model*>(&root);
 	// Allow (model) component to include its own subcomponents

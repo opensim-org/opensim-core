@@ -248,7 +248,7 @@ template <class T> friend class ModelComponentSet;
     /** Satisfy the general Component interface, but this is not part of the
 	  * ModelComponent interface. ModelComponent::connect() ensures that
 	  * connectToModel() on ModelComponent subcomponents are invoked. **/
-	void connect(Component& root) FINAL_11;
+    void connect(Component& root, const Component* parent=nullptr) FINAL_11;
 
 private:
 	const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;
