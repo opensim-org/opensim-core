@@ -82,11 +82,6 @@ IF(WIN32)
     MARK_AS_ADVANCED( SimTKMATH_LIBRARY_NAME )
     MARK_AS_ADVANCED( SimTKCOMMON_LIBRARY_NAME )
 
-
-    SET(SimTKCOMMON_SHARED_LIBRARY ${SimTKCOMMON_LIBRARY_NAME})
-    SET(SimTKMATH_SHARED_LIBRARY ${SimTKMATH_LIBRARY_NAME})
-    SET(SimTKSIMBODY_SHARED_LIBRARY ${SimTKSIMBODY_LIBRARY_NAME})
-
 ENDIF()
 
 # Specify number of cores to run for build
@@ -363,8 +358,8 @@ IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
 ENDIF()
 
 
-## Find Simbody.
-
+# Find Simbody.
+# -------------
 # As of Simbody 3.4, Simbody has a SimbodyConfig.cmake file, which is a
 # preferred way to find Simbody over the previous FindSimbody.cmake script.
 # NO_MODULE means we will not allow the use of a FindSimbody.cmake script.
@@ -399,57 +394,9 @@ IF(NOT Simbody_FOUND)
         SIMBODY_HOME to the installation directory of Simbody.")
 ENDIF()
 
-include_directories(${Simbody_INCLUDE_DIR})
-link_directories(${Simbody_LIB_DIR})
 
-
-# Determine which math libraries to use for this platform.
-SET(BUILD_USING_OTHER_LAPACK "" CACHE STRING
- "If you have your own Lapack, put its library basename here. Default is to use lapack.")
-
-set(default_lapack_libs "lapack;blas")
-if(WIN32)
-    set(default_lapack_libs "liblapack;libblas")
-endif()
-SET(LAPACK_BEING_USED ${default_lapack_libs} CACHE STRING
-"Basename of the actual Lapack library we're depending on; can't change here; see variable BUILD_USING_OTHER_LAPACK." FORCE)
-
-IF(BUILD_USING_OTHER_LAPACK)
-    SET(LAPACK_BEING_USED ${BUILD_USING_OTHER_LAPACK} CACHE STRING
-"Basename of the actual Lapack library we're depending on; can't change here; see variable BUILD_USING_OTHER_LAPACK." FORCE)
-ENDIF(BUILD_USING_OTHER_LAPACK)
-
-#IF(${CMAKE_C_COMPILER} MATCHES "cl")
-    ## Assume Microsoft Visual Studio
-	#    SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthreadVC2)
-	#ELSE(${CMAKE_C_COMPILER} MATCHES "cl")
-	#    IF(APPLE)
-	#    SET(REALTIME_LIB)
-	# ELSE()
-	#    SET(REALTIME_LIB rt)
-	# ENDIF()
-	#SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthread ${REALTIME_LIB} dl)
-	#ENDIF(${CMAKE_C_COMPILER} MATCHES "cl")
-
-IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
-    IF(APPLE)
-	    SET(REALTIME_LIB)
-    ELSE()
-	    SET(REALTIME_LIB rt)
-    ENDIF()
-    SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthread ${REALTIME_LIB} dl)
-    SET(MATH_LIBS_TO_USE_VN ${LAPACK_BEING_USED} pthread ${REALTIME_LIB} dl)
-ELSE()
-    ## Assume Microsoft Visual Studio
-    if(${PLATFORM_ABI} MATCHES "x64")
-        SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthreadVC2_x64)
-        SET(MATH_LIBS_TO_USE_VN ${LAPACK_BEING_USED} pthreadVC2_x64)
-    else()
-        SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthreadVC2)
-        SET(MATH_LIBS_TO_USE_VN ${LAPACK_BEING_USED} pthreadVC2)
-    endif()
-ENDIF()
-
+# Copy files over from the Simbody installation.
+# ----------------------------------------------
 IF(WIN32)
     # Copy files over from the Simbody installation.
 
@@ -515,42 +462,42 @@ IF(WIN32)
 ENDIF()
 
 IF(NOT LIBRARY_OUTPUT_PATH)
-  SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/${VCVERSION} CACHE INTERNAL "Single output directory for building all libraries.")
-ENDIF(NOT LIBRARY_OUTPUT_PATH)
+    SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/${VCVERSION} CACHE INTERNAL
+        "Single output directory for building all libraries.")
+ENDIF()
 IF(NOT EXECUTABLE_OUTPUT_PATH)
-  SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/${VCVERSION} CACHE INTERNAL "Single output directory for building all executables.")
-ENDIF(NOT EXECUTABLE_OUTPUT_PATH)
+  SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/${VCVERSION} CACHE INTERNAL
+      "Single output directory for building all executables.")
+ENDIF()
+
 SET(OpenSim_LIBRARY_DIR ${LIBRARY_OUTPUT_PATH})
 SET(OpenSim_EXECUTABLE_DIR ${EXECUTABLE_OUTPUT_PATH})
 
+# Specify directories for Simbody headers and libraries.
+# ------------------------------------------------------
+INCLUDE_DIRECTORIES("${Simbody_INCLUDE_DIR}")
+IF(WIN32)
+    LINK_DIRECTORIES("${OpenSim_LIBRARY_DIR}")
+ELSE()
+    LINK_DIRECTORIES("${Simbody_LIB_DIR}")
+ENDIF()
+
 # Other than Windows we can debug without debuggable SimTK libraries
 IF(WIN32)
-SET(CMAKE_DEBUG_POSTFIX "_d" CACHE INTERNAL "" FORCE)
+    SET(CMAKE_DEBUG_POSTFIX "_d" CACHE INTERNAL "" FORCE)
 ELSE(WIN32)
-SET(CMAKE_DEBUG_POSTFIX "_d" CACHE STRING "Suffix for debug libraries")
+    SET(CMAKE_DEBUG_POSTFIX "_d" CACHE STRING "Suffix for debug libraries")
 ENDIF(WIN32)
 
-#
-INCLUDE_DIRECTORIES(${Simbody_INCLUDE_DIR})
 
-IF(WIN32)
-		LINK_DIRECTORIES(${Simbody_LIB_DIR} ${OpenSim_LIBRARY_DIR})
-ELSE(WIN32)
-	IF(APPLE)
-		LINK_DIRECTORIES(${Simbody_LIB_DIR} ${OpenSim_LIBRARY_DIR})
-	ELSE(APPLE) # Linux?
-		LINK_DIRECTORIES(${Simbody_LIB_DIR}/ ${OpenSim_LIBRARY_DIR})
-	ENDIF(APPLE)
-ENDIF(WIN32)
+SET(SIMTK_COMMON_LIB debug     ${SimTKCOMMON_LIBRARY_NAME}${CMAKE_DEBUG_POSTFIX}
+                     optimized ${SimTKCOMMON_LIBRARY_NAME})
+SET(SIMTK_MATH_LIB debug     ${SimTKMATH_LIBRARY_NAME}${CMAKE_DEBUG_POSTFIX}
+                   optimized ${SimTKMATH_LIBRARY_NAME})
+SET(SIMTK_SIMBODY_LIB debug     ${SimTKSIMBODY_LIBRARY_NAME}${CMAKE_DEBUG_POSTFIX}
+                      optimized ${SimTKSIMBODY_LIBRARY_NAME})
 
-SET(SIMTK_COMMON_LIB debug ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKcommon)
-SET(SIMTK_MATH_LIB debug ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKmath)
-SET(SIMTK_SIMBODY_LIB debug ${NameSpace}SimTKsimbody${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKsimbody)
-
-SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
-                    ${SIMTK_MATH_LIB} 
-                    ${SIMTK_SIMBODY_LIB} 
-                    ${MATH_LIBS_TO_USE})
+SET(SIMTK_ALL_LIBS ${SIMTK_COMMON_LIB} ${SIMTK_MATH_LIB} ${SIMTK_SIMBODY_LIB})
 
 
 ## The following are required to uses Dart and the Cdash dashboard per Jesse
