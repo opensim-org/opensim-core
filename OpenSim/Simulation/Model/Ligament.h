@@ -142,7 +142,7 @@ protected:
 
     // Implement ModelComponent interface.
     /** Extension of parent class method; derived classes may extend further. **/
-	void connectToModel(Model& aModel) override;
+    void finalizeFromProperties() override;
     /** Extension of parent class method; derived classes may extend further. **/
 	void addToSystem(SimTK::MultibodySystem& system) const override;
     /** Extension of parent class method; derived classes may extend further. **/

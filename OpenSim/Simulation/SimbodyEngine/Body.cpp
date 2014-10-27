@@ -97,7 +97,7 @@ void Body::finalizeFromProperties()
 	_index.invalidate();
     _mbTransform.setToZero();
 
-	setObjectIsUpToDateWithProperties();
+    Super::finalizeFromProperties();
 }
 
 //_____________________________________________________________________________

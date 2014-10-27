@@ -106,31 +106,20 @@ void PathSpring::setDissipation(double dissipation)
  *
  * @param aModel model containing this PathSpring.
  */
-void PathSpring::connectToModel(Model& aModel)
+void PathSpring::finalizeFromProperties()
 {
-	GeometryPath& path = upd_GeometryPath();
-	const double& restingLength = get_resting_length();
-
+    GeometryPath& path = upd_GeometryPath();
+    path.setName("path");
     path.setDefaultColor(DefaultPathSpringColor);
+    addComponent(&path);
 
-	// Specify underlying ModelComponents prior to calling 
-    // Super::connectToModel() to automatically propagate connectToModel()
-    // to subcomponents. Subsequent addToSystem() will also be automatically
-	// propagated to subcomponents.
-    // TODO: this is awkward; subcomponent API needs to be revisited (sherm)
-	addComponent(&path);
+    // Resting length must be greater than 0.0.
+    assert(get_resting_length() > 0.0);
+    path.setOwner(this);
 
-    //TODO: can't call this at start of override; this is an API bug.
-	Super::connectToModel(aModel);
-
-	// _model will be NULL when objects are being registered.
-	if (!_model)
-		return;
-
-	// Resting length must be greater than 0.0.
-	assert(restingLength > 0.0);
-
-	path.setOwner(this);
+    // Call up the chain to mark Component as being up-to-date
+    // with its properties 
+    Super::finalizeFromProperties();
 }
 
 //_____________________________________________________________________________

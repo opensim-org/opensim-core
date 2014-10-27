@@ -115,9 +115,12 @@ protected:
 	void copyData(const ControlSetController &aController);
 
 	// for any post XML deserialization intialization
-	void connectToModel(Model& model) override;
+    void finalizeFromProperties() override;
+    
+    // connect this Controller to the model
+    void connectToModel(Model& model) override;
 
-	// for adding any components to the model
+	// for adding any Controller elements to the underlying system
 	void addToSystem( SimTK::MultibodySystem& system) const override; 
 
 	// for any intialization requiring a state or the complete system 

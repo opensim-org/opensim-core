@@ -643,9 +643,9 @@ void Model::finalizeFromProperties()
 			getValidationLog() << endl;
 	}
 
-	Super::finalizeFromProperties();
-
     updCoordinateSet().populate(*this);
+
+	Super::finalizeFromProperties();
 }
 
 void Model::connectToModel(Model &model)
@@ -746,7 +746,6 @@ void Model::connectToModel(Model &model)
 	
 	}
 	joints.setMemoryOwner(isMemoryOwner);
-
 
 	// Add the loop joints if any.
 	for (int lcx = 0; lcx < _multibodyTree.getNumLoopConstraints(); ++lcx) {
@@ -1018,7 +1017,6 @@ void Model::cleanup()
 
 void Model::setDefaultProperties()
 {
-
 	// Initialize the length and force units from the strings specified in the model file.
 	// If they were not specified, use meters and Newtons.
 	_lengthUnits = Units(get_length_units());
@@ -1033,17 +1031,6 @@ void Model::initStateFromProperties(SimTK::State& state) const
 	Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
 	controlsCache.updValue(state).resize(_defaultControls.size());
 	controlsCache.updValue(state) = _defaultControls;
-
-	/*
-    _bodySet.invokeInitStateFromProperties(state);
-    _constraintSet.invokeInitStateFromProperties(state);
-    _contactGeometrySet.invokeInitStateFromProperties(state);
-    _jointSet.invokeInitStateFromProperties(state);
-    _forceSet.invokeInitStateFromProperties(state);
-	_controllerSet.invokeInitStateFromProperties(state);
-	_componentSet.invokeInitStateFromProperties(state);
-    _probeSet.invokeInitStateFromProperties(state);
-	*/
 }
 
 void Model::setPropertiesFromState(const SimTK::State& state)

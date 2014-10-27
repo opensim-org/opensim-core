@@ -76,40 +76,23 @@ void Ligament::constructProperties()
 	constructProperty_force_length_curve(forceLengthCurve);
 }
 
-//------------------------------------------------------------------------------
-//                            CONNECT TO MODEL
-//------------------------------------------------------------------------------
-/**
- * Perform some setup functions that happen after the
- * ligament has been deserialized or copied.
- *
- * @param aModel model containing this ligament.
- */
-void Ligament::connectToModel(Model& aModel)
+
+void Ligament::finalizeFromProperties()
 {
-	GeometryPath& path = upd_GeometryPath();
-	const double& restingLength = get_resting_length();
+    GeometryPath& path = upd_GeometryPath();
+
+    // Resting length must be greater than 0.0.
+    assert(get_resting_length() > 0.0);
 
     path.setDefaultColor(DefaultLigamentColor);
 
-	// Specify underlying ModelComponents prior to calling 
+    // Specify underlying ModelComponents prior to calling 
     // Super::connectToModel() to automatically propagate connectToModel()
     // to subcomponents. Subsequent addToSystem() will also be automatically
-	// propagated to subcomponents.
+    // propagated to subcomponents.
     // TODO: this is awkward; subcomponent API needs to be revisited (sherm)
-	addComponent(&path);
-
-    //TODO: can't call this at start of override; this is an API bug.
-	Super::connectToModel(aModel);
-
-	// _model will be NULL when objects are being registered.
-	if (!_model)
-		return;
-
-	// Resting length must be greater than 0.0.
-	assert(restingLength > 0.0);
-
-	path.setOwner(this);
+    addComponent(&path);
+    path.setOwner(this);
 }
 
 
