@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2013 Stanford University and the Authors                *
- * Author(s): Ajay Seth, Ayman Habib                                          *
+ * Author(s): Ajay Seth, Ayman Habib, Matt DeMers                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/Model/ModelComponent.h>
+#include <OpenSim/Simulation/Model/RigidFrame.h>
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 
@@ -42,8 +42,8 @@ class WrapObjectSet;
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API Body : public ModelComponent {
-OpenSim_DECLARE_CONCRETE_OBJECT(Body, ModelComponent);
+class OSIMSIMULATION_API Body : public RigidFrame {
+	OpenSim_DECLARE_CONCRETE_OBJECT(Body, RigidFrame);
 public:
 //==============================================================================
 // PROPERTIES
@@ -112,7 +112,7 @@ public:
 	const VisibleObject* getDisplayer() const { return &get_VisibleObject(); }
 	VisibleObject* updDisplayer() { return &upd_VisibleObject(); }
 
-	const SimTK::MobilizedBodyIndex getIndex() const {return _index;};
+	
 	
     /** Get the named wrap object, if it exists.
 	*
@@ -127,7 +127,8 @@ public:
      */
 	void addWrapObject(WrapObject* wrapObject);
 
-protected:
+ protected:
+
     // Model component interface.
 	void finalizeFromProperties() override;
 	void connectToModel(Model& model) override;
@@ -154,11 +155,6 @@ private:
 
 	// mutable because fist get constructs tensor from properties
 	mutable SimTK::Inertia _inertia;
-
-	/* ID for the underlying mobilized body in Simbody system.
-	    Only Joint can set, since it defines the mobilized body type and
-		the connection to the parent body in the multibody tree. */
-	mutable SimTK::MobilizedBodyIndex _index;
 
 	SimTK::Array_<Body*> _slaves;
 

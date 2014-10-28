@@ -1,7 +1,5 @@
-#ifndef OPENSIM_PLANAR_JOINT_H_
-#define OPENSIM_PLANAR_JOINT_H_
 /* -------------------------------------------------------------------------- *
- *                          OpenSim:  SliderJoint.h                           *
+ *                           OpenSim:  FrameSet.cpp                           *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                                       *
+ * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,60 +21,49 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "FrameSet.h"
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ComponentSet.h>
 
-// INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "Joint.h"
-
-namespace OpenSim {
+using namespace std;
+using namespace OpenSim;
 
 //=============================================================================
+// DESTRUCTOR AND CONSTRUCTORS
 //=============================================================================
+//_____________________________________________________________________________
 /**
- * A PlanarJoint provides three DoFs: rotation about the the common Z of the
- * parent and child joint frames, X and Y translation in the parent body's 
- * joint frame. The underlying Simbody implementation is a 
- * MobilizedBody::Planar. 
- *
- * @author Ajay Seth
- * @version 1.0
+ * Destructor.
  */
-class OSIMSIMULATION_API PlanarJoint : public Joint {
-OpenSim_DECLARE_CONCRETE_OBJECT(PlanarJoint, Joint);
+FrameSet::~FrameSet(void)
+{
+}
 
-private:
-	static const int _numMobilities = 3;
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
+//_____________________________________________________________________________
+/**
+ * Default constructor of a FrameSet.
+ */
+FrameSet::FrameSet()
+{
+	
+}
 
+FrameSet::FrameSet(Model& model) :
+	ModelComponentSet<Frame>(model)
+{
+	
+}
 
-//=============================================================================
-// METHODS
-//=============================================================================
-public:
-	// CONSTRUCTION
-	PlanarJoint();
-
-	// Convenience constructor
-	PlanarJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
-				    bool reverse=false);
-
-	int numCoordinates() const { return _numMobilities; }
-
-protected:
-	/** Model component interface */
-    void addToSystem(SimTK::MultibodySystem& system) const override;
 
 //=============================================================================
-};	// END of class PlanarJoint
+// UTILITY
 //=============================================================================
-//=============================================================================
-
-} // end of namespace OpenSim
-
-#endif // OPENSIM_PLANAR_JOINT_H_
-
-
+//_____________________________________________________________________________
+/**
+ * Scale Frame set by a set of scale factors
+ *
+void FrameSet::scale(const ScaleSet& aScaleSet)
+{
+	for(int i=0; i<getSize(); i++) get(i).scale(aScaleSet);
+}
+*/

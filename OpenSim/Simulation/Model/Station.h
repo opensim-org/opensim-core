@@ -1,7 +1,7 @@
-#ifndef __MarkerSet_h__
-#define __MarkerSet_h__
+#ifndef OPENSIM_STATION_H_
+#define OPENSIM_STATION_H_
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  MarkerSet.h                            *
+ *                            OpenSim:  Station.h                             *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ayman Habib, Peter Loan                                         *
+ * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,62 +23,67 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Simulation/Model/ModelComponentSet.h>
-#include "Marker.h"
 
-#ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
-#endif
+// INCLUDE
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include "OpenSim/Simulation/Model/ModelComponent.h"
+#include "OpenSim/Simulation/Model/Frame.h"
+#include "OpenSim/Simulation/Model/RigidFrame.h"
 
 namespace OpenSim {
 
-class Model;
-class ScaleSet;
 class Body;
 
 //=============================================================================
 //=============================================================================
 /**
- * A class for holding a set of markers for inverse kinematics.
+ * A class implementing a Station. A Station is a point fixed to and defined with 
+ * respect to a reference frame. The reference frame can be a Body (fixed 
+ * to origin of a Body), a FixedFrame (affixed to another RigidFrame) or any 
+ * other RigidFrame. The main functionality provided by Station is to find its 
+ * location in any Frame.
  *
- * @authors Ayman Habib, Peter Loan
+ * @author Ayman Habib
  * @version 1.0
  */
+class OSIMSIMULATION_API Station : public ModelComponent {
+OpenSim_DECLARE_CONCRETE_OBJECT(Station, ModelComponent);
+public:
+	//==============================================================================
+	// PROPERTIES
+	//==============================================================================
+	/** @name Property declarations
+	These are the serializable properties associated with a Station. **/
+	/**@{**/
+	OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
+		"The location (Vec3) of the station in a reference frame. "
+		"Frame is specified as Connector.");
+	/**@}**/
 
-class OSIMSIMULATION_API MarkerSet : public ModelComponentSet<Marker> {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MarkerSet, ModelComponentSet<Marker>);
-
+public:
+	//--------------------------------------------------------------------------
+	// CONSTRUCTION
+	//--------------------------------------------------------------------------
+	Station();
+	virtual ~Station();
+	/** getter of Reference Frame off which the Station is defined */
+	const OpenSim::RigidFrame& getReferenceFrame() const;
+	/** setter of Reference Frame off which the Station is defined */
+	void setReferenceFrame(const OpenSim::RigidFrame& aFrame);
+	/** Find this Station's location in any Frame */
+	SimTK::Vec3 findLocationInFrame(const SimTK::State& s, const OpenSim::Frame& aFrame) const;
 private:
 	void setNull();
-public:
-	MarkerSet();
-	MarkerSet(Model& aModel, const std::string& aMarkersFileName) SWIG_DECLARE_EXCEPTION;
-	MarkerSet(const MarkerSet& aMarkerSet);
-	~MarkerSet(void);
+	void constructProperties() override;
+	void constructConnectors() override;
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
-#ifndef SWIG
-	MarkerSet& operator=(const MarkerSet &aMarkerSet);
-#endif
-	//--------------------------------------------------------------------------
-	// UTILITIES
-	//--------------------------------------------------------------------------
-	void getMarkerNames(Array<std::string>& aMarkerNamesArray);
-	void scale(const ScaleSet& aScaleSet);
-	/** Add a prefix to marker names for all markers in the set**/
-	void addNamePrefix(const std::string& prefix);
-	Marker* addMarker( const std::string& aName, const SimTK::Vec3& aOffset, OpenSim::RigidFrame& aRigidFrame);
 //=============================================================================
-};	// END of class MarkerSet
+};	// END of class Station
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __MarkerSet_h__
+#endif // OPENSIM_STATION_H_
+
+

@@ -352,9 +352,9 @@ void OpenSimContext::deletePathWrap(GeometryPath& p, int num) {
 // Markers
 void OpenSimContext::setBody(Marker& currentMarker, Body&  newBody, bool b) {
     if( b ) {
-         currentMarker.changeBodyPreserveLocation( *_configState, newBody );
+         currentMarker.changeFramePreserveLocation( *_configState, newBody );
     } else {
-         currentMarker.changeBody( newBody );
+         currentMarker.changeFrame( newBody );
     }
     return;
 }

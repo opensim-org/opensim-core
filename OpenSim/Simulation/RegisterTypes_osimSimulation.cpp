@@ -28,6 +28,7 @@
 #include "Model/AnalysisSet.h"
 #include "Model/Model.h"
 #include "Model/ForceSet.h"
+#include "Model/FrameSet.h"
 #include "Model/BodyScale.h"
 #include "Model/BodyScaleSet.h"
 #include "Model/BodySet.h"
@@ -44,6 +45,7 @@
 #include "Model/Ligament.h"
 #include "Model/JointSet.h"
 #include "Model/Marker.h"
+#include "Model/Station.h"
 #include "Model/MarkerSet.h"
 #include "Model/PathPoint.h"
 #include "Model/PathPointSet.h"
@@ -67,6 +69,9 @@
 #include "Model/SystemEnergyProbe.h"
 #include "Model/Umberger2010MuscleMetabolicsProbe.h"
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
+#include "Model/Frame.h"
+#include "Model/FixedFrame.h"
+#include "Model/RigidFrame.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -131,8 +136,9 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( AnalysisSet() );
     Object::registerType( Model() );
     Object::registerType( BodyScale() );
-    Object::registerType( BodyScaleSet() );
-    Object::registerType( BodySet() );
+    Object::registerType( BodyScaleSet());
+    Object::registerType( FrameSet());
+    Object::registerType( BodySet());
 	Object::registerType( ComponentSet() );
 	Object::registerType( ControllerSet() );
     Object::registerType( ConstraintSet() );
@@ -142,6 +148,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     Object::registerType( JointSet() );
     Object::registerType( Marker() );
+    Object::registerType( Station() );
     Object::registerType( MarkerSet() );
     Object::registerType( PathPoint() );
     Object::registerType( PathPointSet() );
@@ -168,6 +175,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     // CURRENT RELEASE
     Object::registerType( SimbodyEngine() );
     Object::registerType( OpenSim::Body() );
+	Object::registerType( FixedFrame());
     Object::registerType( WeldConstraint() );
     Object::registerType( PointConstraint() );
     Object::registerType( ConstantDistanceConstraint() );
@@ -226,6 +234,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
 	// Register commonly used Connectors for de/serialization
 	Object::registerType(Connector<OpenSim::Body>());
+	Object::registerType(Connector<Frame>());
+	Object::registerType(Connector<RigidFrame>());
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.

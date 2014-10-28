@@ -25,6 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "Body.h"
+#include <OpenSim/Simulation/Model/Frame.h>
 #include "WeldConstraint.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -44,8 +45,9 @@ using SimTK::Vec3;
 /**
  * Default constructor.
  */
-Body::Body() : ModelComponent()
+Body::Body() : RigidFrame()
 {
+	//_body = this;
 	constructProperties();
 }
 
@@ -54,7 +56,7 @@ Body::Body() : ModelComponent()
  * Constructor.
  */
 Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,const SimTK::Inertia& aInertia) :
-   ModelComponent()
+	RigidFrame()
 {
 	constructProperties();
 	setName(aName);
@@ -93,6 +95,7 @@ void Body::finalizeFromProperties()
 	}
 	
 	_index.invalidate();
+    _mbTransform.setToZero();
 
 	setObjectIsUpToDateWithProperties();
 }
@@ -127,7 +130,6 @@ void Body::connectToModel(Model& aModel)
 			_slaves[i]->_internalRigidBody = SimTK::Body::Rigid(slaveMassProps);
 		}
 	}
-
 }
 
 void Body::addToSystem(SimTK::MultibodySystem& system) const
@@ -136,7 +138,7 @@ void Body::addToSystem(SimTK::MultibodySystem& system) const
 		Body * mutableThis = const_cast<Body *>(this);
 		mutableThis->_index = SimTK::GroundIndex;
 	}
-
+	
 	// Add subcomponents of the Body (namely its Joint)
 	Super::addToSystem(system);
 }
@@ -263,7 +265,7 @@ void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScale
 	double unscaledMass = get_mass();
 
 	// Calculate and store the product of the scale factors.
-	double massScaleFactor = fabs(aScaleFactors[0] * aScaleFactors[1] * aScaleFactors[2]);
+	double massScaleFactor = abs(aScaleFactors[0] * aScaleFactors[1] * aScaleFactors[2]);
 
 	// Scale the mass.
 	if (aScaleMass)

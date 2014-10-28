@@ -1,7 +1,7 @@
-#ifndef OPENSIM_PLANAR_JOINT_H_
-#define OPENSIM_PLANAR_JOINT_H_
+#ifndef OPENSIM_FRAME_SET_H_
+#define OPENSIM_FRAME_SET_H_
 /* -------------------------------------------------------------------------- *
- *                          OpenSim:  SliderJoint.h                           *
+ *                            OpenSim:  FrameSet.h                            *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                                       *
+ * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Author(s): Ayman Habib                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,60 +23,45 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
-// INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "Joint.h"
+#include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/ModelComponentSet.h>
 
 namespace OpenSim {
+
+class Model;
 
 //=============================================================================
 //=============================================================================
 /**
- * A PlanarJoint provides three DoFs: rotation about the the common Z of the
- * parent and child joint frames, X and Y translation in the parent body's 
- * joint frame. The underlying Simbody implementation is a 
- * MobilizedBody::Planar. 
+ * A class for holding a set of Frames.
  *
- * @author Ajay Seth
+ * @authors Ayman Habib
  * @version 1.0
  */
-class OSIMSIMULATION_API PlanarJoint : public Joint {
-OpenSim_DECLARE_CONCRETE_OBJECT(PlanarJoint, Joint);
 
-private:
-	static const int _numMobilities = 3;
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
+class OSIMSIMULATION_API FrameSet :	public ModelComponentSet<Frame> {
+OpenSim_DECLARE_CONCRETE_OBJECT(FrameSet, ModelComponentSet<Frame>);
 
-
-//=============================================================================
-// METHODS
-//=============================================================================
 public:
-	// CONSTRUCTION
-	PlanarJoint();
+	FrameSet();
+	FrameSet(Model& model);
+	~FrameSet();
 
-	// Convenience constructor
-	PlanarJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
-				    bool reverse=false);
+	// Somehow the following function is not exported from base template
+    FrameSet(Model& model, const std::string &aFileName, 
+             bool aUpdateFromXMLNode = true)
+    :   Super(model, aFileName, aUpdateFromXMLNode) {}
 
-	int numCoordinates() const { return _numMobilities; }
+	//--------------------------------------------------------------------------
+	// OPERATORS
+	//--------------------------------------------------------------------------
 
-protected:
-	/** Model component interface */
-    void addToSystem(SimTK::MultibodySystem& system) const override;
 
 //=============================================================================
-};	// END of class PlanarJoint
+};	// END of class FrameSet
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // OPENSIM_PLANAR_JOINT_H_
-
-
+#endif // OPENSIM_FRAME_SET_H_

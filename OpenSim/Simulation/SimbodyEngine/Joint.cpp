@@ -418,7 +418,7 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s, const
 		throw Exception("Joint::calcEquivalentSpatialForce(): input mobilityForces does not match model's mobilities");
 	}
 
-	const SimTK::MobilizedBodyIndex &mbx = getChildBody().getIndex();
+	const SimTK::MobilizedBodyIndex &mbx = getChildBody().getMobilizedBodyIndex();
 	// build a unique list of underlying MobilizedBodies that are involved
 	// with this Joint in addition to and not including that of the child body
 
