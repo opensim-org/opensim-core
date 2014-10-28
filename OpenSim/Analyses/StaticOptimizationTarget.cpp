@@ -292,7 +292,7 @@ getActuation(SimTK::State& s, const SimTK::Vector &parameters, SimTK::Vector &fo
 	computeAcceleration(s, parameters, tempAccel);
 	for(int i=0,j=0;i<fs.getSize();i++) {
 		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fs.get(i));
-		if( act )forces(j++) = act->getForce(s);
+		if( act )forces(j++) = act->getActuation(s);
 	}
 }
 //==============================================================================
@@ -339,7 +339,7 @@ computeActuatorAreas(const SimTK::State& s )
 	for(int i=0, j=0;i<forceSet.getSize();i++) {
 		ScalarActuator *act = dynamic_cast<ScalarActuator*>(&forceSet.get(i));
         if( act ) {
- 		     act->setForce(s, 1.0);
+ 		     act->setActuation(s, 1.0);
     		 _recipAreaSquared[j] = act->getStress(s);
     		 _recipAreaSquared[j] *= _recipAreaSquared[j];
              j++;
@@ -653,15 +653,6 @@ constraintJacobian(const SimTK::Vector &parameters, const bool new_parameters, S
 void StaticOptimizationTarget::
 computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vector &rAccel) const
 {
-	//LARGE_INTEGER start;
-	//LARGE_INTEGER stop;
-	//LARGE_INTEGER frequency;
-
-	//QueryPerformanceFrequency(&frequency);
-	//QueryPerformanceCounter(&start);
-
-	// SimTK requires that time be >= 0 when setting Discreate variables (overrideForce)
-	// JACKM: Need to talk to sherm if this restriction can be removed
 	double time = s.getTime();
 	
 
@@ -669,7 +660,7 @@ computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vect
 	for(int i=0,j=0;i<fs.getSize();i++)  {
 		ScalarActuator *act = dynamic_cast<ScalarActuator*>(&fs.get(i));
 		 if( act ) {
-             act->setOverrideForce(s,parameters[j]*_optimalForce[j]);
+			 act->setOverrideActuation(s, parameters[j] * _optimalForce[j]);
 		 }
          j++;
     }

@@ -136,7 +136,7 @@ void ActivationFiberLengthMuscle::
 	double adot = 0;
 	double ldot = 0;
 
-    if (!isDisabled(s) && !isForceOverriden(s)) {
+	if (!isDisabled(s) && !isActuationOverriden(s)) {
 		adot = getActivationRate(s);
 		ldot = getFiberVelocity(s);
 	}
@@ -236,11 +236,11 @@ void ActivationFiberLengthMuscle::computeForce(const SimTK::State& s,
 {
 	Muscle::computeForce(s, bodyForces, generalizedForces);
 
-	if( isForceOverriden(s) ) {
+	if (isActuationOverriden(s)) {
 		// Also define the state derivatives, since realize acceleration will
 		// ask for muscle derivatives, which will be integrated
-		// in the case the force is being overridden, the states aren't being used
-		// but a valid derivative cache entry is still required
+		// in the case the actuation is being overridden, the states aren't 
+		// being used but a valid derivative cache entry is still required
 		int numStateVariables = getNumStateVariables();
 		Array<std::string> stateVariableNames = getStateVariableNames();
 		for (int i = 0; i < numStateVariables; ++i) {

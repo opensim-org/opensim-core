@@ -89,7 +89,7 @@ double McKibbenActuator::computeActuation( const SimTK::State& s ) const
 	
 	
 	double force = (pressure / (4*pow(N,2)*SimTK::Pi)) * (3*pow(length, 2) - pow(B,2));
-	setForce(s, force);
+	setActuation(s, force);
 	
 	return force;
 }

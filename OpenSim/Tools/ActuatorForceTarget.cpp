@@ -237,8 +237,8 @@ computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerfo
 
 	for(int i=0;i<fSet.getSize();i++) {
 		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
-        act->setOverrideForce(s, aF[i]);
-        act->overrideForce(s,true);      
+        act->setOverrideActuation(s, aF[i]);
+		act->overrideActuation(s, true);
 	}
 
     _controller->getModel().getMultibodySystem().realize(s, SimTK::Stage::Acceleration );
@@ -262,7 +262,7 @@ computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerfo
 	// reset the actuator control
 	for(int i=0;i<fSet.getSize();i++) {
 		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
-        act->overrideForce(s,false);
+		act->overrideActuation(s, false);
 	}
 
 

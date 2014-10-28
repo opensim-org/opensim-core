@@ -519,7 +519,7 @@ int MuscleAnalysis::record(const SimTK::State& s)
 	Array<double> penAngVel(nan,nm);
 
 	// Muscle component forces
-	Array<double> force(nan,nm), fibforce(nan,nm);
+	Array<double> force(nan, nm), fibforce(nan, nm);
 	Array<double> actfibforce(nan,nm), passfibforce(nan,nm);
 	Array<double> actfibforcealongten(nan,nm), passfibforcealongten(nan,nm);
 
@@ -557,7 +557,7 @@ int MuscleAnalysis::record(const SimTK::State& s)
 			// Compute muscle forces that are dependent on Positions, Velocities
 			// so that later quantities are valid and setForce is called
 			_muscleArray[i]->computeActuation(s);
-			force[i] = _muscleArray[i]->getForce(s);
+			force[i] = _muscleArray[i]->getActuation(s);
 			fibforce[i] = _muscleArray[i]->getFiberForce(s);
 			actfibforce[i] = _muscleArray[i]->getActiveFiberForce(s);
 			passfibforce[i] = _muscleArray[i]->getPassiveFiberForce(s);
