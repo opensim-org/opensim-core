@@ -24,6 +24,7 @@ ADD_SUBDIRECTORY(CustomActuatorExample)
 ADD_SUBDIRECTORY(MuscleExample)
 ADD_SUBDIRECTORY(SimpleOptimizationExample)
 ADD_SUBDIRECTORY(Environment)
+ADD_SUBDIRECTORY(IteratorExample)
 ADD_SUBDIRECTORY(README)
 
 ADD_SUBDIRECTORY(Wrapping)

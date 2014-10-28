@@ -72,7 +72,7 @@ void ModelComponent::connect(Component &root, const Component* parent)
 	if (model)
 		connectToModel(*model);
 
-	Super::connect(root);
+    Super::connect(root, parent);
 }
 
 

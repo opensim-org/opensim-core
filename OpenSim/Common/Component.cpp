@@ -164,8 +164,7 @@ void Component::connect(Component &root, const Component* parent)
     reset();
 
 	// First give the subcomponents the opportunity to connect themselves
-    for(unsigned int i=0; i<_components.size(); i++){
-		_components[i]->connect(root, this);
+    for (unsigned int i = 0; i < _components.size(); i++){
         if (i == _components.size() - 1){
             // use parent's sibling if any
             if (parent == nullptr)
@@ -174,8 +173,19 @@ void Component::connect(Component &root, const Component* parent)
                 _components[i]->_nextComponent = parent->_nextComponent;
         }
         else
-            _components[i]->_nextComponent = _components[i+1];
+            _components[i]->_nextComponent = _components[i + 1];
+        /*
+        if (_components[i]->_nextComponent == nullptr)
+            std::cout << "Successor of " << _components[i]->getConcreteClassName() << ":"
+            << _components[i]->getName() << " is null " << std::endl;
+        else
+            std::cout << "Successor of " << _components[i]->getConcreteClassName() << ":"
+            << _components[i]->getName() << " is " << _components[i]->_nextComponent->getConcreteClassName() << ":"
+            << _components[i]->_nextComponent->getName() << std::endl;*/
+    }
 
+    for(unsigned int i=0; i<_components.size(); i++){
+        _components[i]->connect(root, _components[i]);
 	}
 
 	// rebuilding the connectors table, which was emptied by clearStateAllocations
