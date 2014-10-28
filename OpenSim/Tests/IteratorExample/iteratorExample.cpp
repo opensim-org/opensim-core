@@ -39,26 +39,41 @@ int main(int argc, char **argv)
         model->initSystem();
         ComponentList<Component> componentsList = model->getComponentList();
         std::cout << "list begin: " << componentsList.begin()->getName() << std::endl;
+        int numComponents = 0;
         for (ComponentList<Component>::iterator it = componentsList.begin();
             it != componentsList.end();
             ++it) {
-            std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getName() << std::endl;
+                std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getName() << std::endl;
+                numComponents++;
         }
         
         ComponentList<OpenSim::Body> bodiesList = model->getComponentList<OpenSim::Body>();
+        int numBodies = 0;
         std::cout << "Bodies list begin: " << bodiesList.begin()->getName() << std::endl;
         for (ComponentList<OpenSim::Body>::iterator it = bodiesList.begin();
         it != bodiesList.end();
         ++it) {
-        std::cout << "Iterator is at Body: " << it->getName() << std::endl;
+            std::cout << "Iterator is at Body: " << it->getName() << std::endl;
+            numBodies++;
         }
 
+        int numMuscles = 0;
         std::cout << "Using range-for loop over Muscles: " << std::endl;
         ComponentList<Muscle> musclesList = model->getComponentList<Muscle>();
         for (const Muscle& muscle : musclesList) {
-        std::cout << "Iterator is at muscle: " << muscle.getName() << std::endl;
+            std::cout << "Iterator is at muscle: " << muscle.getName() << std::endl;
+            numMuscles++;
         }
         
+        int numGeomPaths = 0;
+        ComponentList<GeometryPath> geomPathList = model->getComponentList<GeometryPath>();
+        for (const GeometryPath& gpath : geomPathList) {
+            numGeomPaths++;
+        }
+        cout << "Num all components = " << numComponents << std::endl;
+        cout << "Num bodies = " << numBodies << std::endl;
+        cout << "Num Muscles = " << numMuscles << std::endl;
+        cout << "Num GeometryPath components = " << numGeomPaths << std::endl;
         delete model;
 
     }
