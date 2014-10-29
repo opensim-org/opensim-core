@@ -173,9 +173,13 @@ const SimTK::Inertia& Body::getInertia() const
 		const double& m = getMass();
 		// if mass is zero, non-zero inertia makes no sense
 		if (-SimTK::Eps <= m && m <= SimTK::Eps){
-			// force zero intertia
-			cout<<"Body '"<<getName()<<"' is massless but nonzero inertia provided.";
-			cout<<" Inertia reset to zero. "<<"Otherwise provide nonzero mass."<< endl;
+		    // if inertia is non-zero.
+		    if (!(-SimTK::Eps <= get_inertia() && get_inertia() <= SimTK::Eps)) {
+    			cout<<"Body '"<<getName()<<"' is massless but nonzero inertia provided.";
+    			cout<<" Inertia reset to zero. "<<"Otherwise provide nonzero mass."<< endl;
+    			upd_inertia().setToZero();
+		    }
+		    // force zero intertia
 			_inertia = SimTK::Inertia(0);
 		}
 		else{
