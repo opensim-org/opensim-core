@@ -203,9 +203,9 @@ void ExpressionBasedBushingForce::connectToModel(Model& aModel)
 	}
 }
 
-void ExpressionBasedBushingForce::addToSystem(SimTK::MultibodySystem& system) const
+void ExpressionBasedBushingForce::doAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::doAddToSystem(system);
 
 	const string&      body1Name            = get_body_1();
 	const string&      body2Name            = get_body_2();

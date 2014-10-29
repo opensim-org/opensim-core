@@ -40,7 +40,7 @@ class ForceAdapter;
  * This abstract class represents a force applied to bodies or generalized 
  * coordinates during a simulation. Each subclass represents a different type 
  * of force. The actual force computation is done by a SimTK::Force, which is 
- * created by addToSystem().
+ * created by doAddToSystem().
  *
  * @author Peter Eastman
  * @author Ajay Seth
@@ -137,9 +137,9 @@ protected:
 
 	/** Default is to create a ForceAdapter which is a SimTK::Force::Custom
 	as the underlying computational component. Subclasses override to employ 
-    other SimTK::Forces; be sure to invoke Force::addToSystem() at the
+    other SimTK::Forces; be sure to invoke Force::doAddToSystem() at the
     beginning of the overriding method. **/
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void doAddToSystem(SimTK::MultibodySystem& system) const override;
 	/** Subclass should override; be sure to invoke 
     Force::setPropertiesFromState() at the beginning of the overriding method. **/
     void setPropertiesFromState(const SimTK::State& state) override;

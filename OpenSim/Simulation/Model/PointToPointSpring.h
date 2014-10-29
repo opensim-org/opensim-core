@@ -118,7 +118,7 @@ public:
 	// ModelComponent interface
 	//-----------------------------------------------------------------------------
 	void connectToModel(Model& model) override;
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void doAddToSystem(SimTK::MultibodySystem& system) const override;
 
 	//-----------------------------------------------------------------------------
 	// Reporting

@@ -251,15 +251,10 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
 //=============================================================================
 // Model Component Interface
 //=============================================================================
- void Millard2012AccelerationMuscle::connectToModel(Model& model)
- {
-    Super::connectToModel(model);
- }
-
  void Millard2012AccelerationMuscle::
-     addToSystem(SimTK::MultibodySystem& system) const
+     doAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::doAddToSystem(system);
 
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
         "Millard2012AccelerationMuscle: Muscle is not"
@@ -268,7 +263,7 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
     addStateVariable(STATE_ACTIVATION_NAME);
     addStateVariable(STATE_FIBER_LENGTH_NAME);
     addStateVariable(STATE_FIBER_VELOCITY_NAME);
-}
+ }
 
 void Millard2012AccelerationMuscle::initStateFromProperties(SimTK::State& s) const
 {

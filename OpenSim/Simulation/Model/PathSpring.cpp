@@ -122,21 +122,6 @@ void PathSpring::finalizeFromProperties()
     Super::finalizeFromProperties();
 }
 
-//_____________________________________________________________________________
-/**
- * allocate and initialize the SimTK state for this PathSpring.
- */
- void PathSpring::addToSystem(SimTK::MultibodySystem& system) const
-{
-	Super::addToSystem(system);
-}
-
-
-void PathSpring::initStateFromProperties( SimTK::State& s) const
-{
-	Super::initStateFromProperties(s);
-}
-
 
 //=============================================================================
 // GET AND SET

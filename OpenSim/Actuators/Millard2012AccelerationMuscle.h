@@ -712,16 +712,10 @@ protected:
 //==============================================================================
 //ModelComponent Interface requirements
 //==============================================================================
-
-    /**Sets up the ModelComponent from the model, if necessary
-    @param model the dynamic model
-    */
-    void connectToModel(Model& model) FINAL_11;
-
     /**Creates the ModelComponent so that it can be used in simulation
     @param system the multibody system
     */
-	void addToSystem(SimTK::MultibodySystem& system) const FINAL_11;
+	void doAddToSystem(SimTK::MultibodySystem& system) const FINAL_11;
 
     /**Initializes the state of the ModelComponent
     @param s the state of the model

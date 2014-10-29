@@ -804,7 +804,7 @@ void Model::connectToModel(Model &model)
 
 // ModelComponent interface enables this model to be treated as a subcomponent of another model by 
 // creating components in its system.
-void Model::addToSystem(SimTK::MultibodySystem& system) const
+void Model::doAddToSystem(SimTK::MultibodySystem& system) const
 {
     Model *mutableThis = const_cast<Model *>(this);
 
@@ -812,7 +812,7 @@ void Model::addToSystem(SimTK::MultibodySystem& system) const
     mutableThis->_defaultControls.resize(0);
 
     // Create the shared cache that will hold all model controls
-    // This must be created before Actuator.addToSystem() since Actuator will append 
+    // This must be created before Actuator.doAddToSystem() since Actuator will append 
     // its "slots" and retain its index by accessing this cached Vector
     // value depends on velocity and invalidates dynamics BUT should not trigger
     // recomputation of the controls which are necessary for dynamics
@@ -820,9 +820,6 @@ void Model::addToSystem(SimTK::MultibodySystem& system) const
         Stage::Velocity, Stage::Acceleration);
 
     mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
-
-    // Let all the ModelComponents add their parts to the System.
-    Super::addToSystem(system);
 }
 
 

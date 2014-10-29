@@ -108,7 +108,7 @@ protected:
 					    SimTK::Vector& mobilityForces) const override;
 	
     // ModelComponent interface.
-    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void doAddToSystem(SimTK::MultibodySystem& system) const override;
 
 	// Setup method to initialize coordinate reference
 	void connectToModel(Model& model) override;

@@ -121,7 +121,7 @@ protected:
 	/** Model component interface that creates underlying computational components
 	    in the SimTK::MultibodySystem. This includes adding states, creating 
 		measures, etc... required by the controller. */
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void doAddToSystem(SimTK::MultibodySystem& system) const override;
 
 	/** Only a Controller can set its number of controls based on its actuators */
 	void setNumControls(int numControls) {_numControls = numControls; }

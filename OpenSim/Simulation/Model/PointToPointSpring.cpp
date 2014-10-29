@@ -174,28 +174,28 @@ void PointToPointSpring::connectToModel(Model& model)
 //=============================================================================
 // Create the underlying system component(s)
 //=============================================================================
-void PointToPointSpring::addToSystem(SimTK::MultibodySystem& system) const
+void PointToPointSpring::doAddToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);    // Base class first.
+    Super::doAddToSystem(system);
 
-	const Body& body1 = getBody1();
-	const Body& body2 = getBody2();
+    const Body& body1 = getBody1();
+    const Body& body2 = getBody2();
 
-	// Get underlying mobilized bodies
-	SimTK::MobilizedBody b1 = _model->getMatterSubsystem()
+    // Get underlying mobilized bodies
+    SimTK::MobilizedBody b1 = _model->getMatterSubsystem()
                                         .getMobilizedBody(body1.getMobilizedBodyIndex());
-	SimTK::MobilizedBody b2 = _model->getMatterSubsystem()
+    SimTK::MobilizedBody b2 = _model->getMatterSubsystem()
                                         .getMobilizedBody(body2.getMobilizedBodyIndex());
 
     // Now create a Simbody Force::TwoPointLinearSpring
     SimTK::Force::TwoPointLinearSpring simtkSpring
-       (_model->updForceSubsystem(), b1, getPoint1(), b2, getPoint2(), 
+        (_model->updForceSubsystem(), b1, getPoint1(), b2, getPoint2(), 
         getStiffness(), getRestlength());
     
     // Beyond the const Component get the index so we can access the 
     // SimTK::Force later.
-	PointToPointSpring* mutableThis = const_cast<PointToPointSpring *>(this);
-	mutableThis->_index = simtkSpring.getForceIndex();
+    PointToPointSpring* mutableThis = const_cast<PointToPointSpring *>(this);
+    mutableThis->_index = simtkSpring.getForceIndex();
 }
 
 

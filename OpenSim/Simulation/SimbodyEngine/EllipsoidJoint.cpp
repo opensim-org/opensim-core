@@ -141,14 +141,12 @@ void EllipsoidJoint::scale(const ScaleSet& aScaleSet)
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void EllipsoidJoint::addToSystem(SimTK::MultibodySystem& system) const
+void EllipsoidJoint::doAddToSystem(SimTK::MultibodySystem& system) const
 {
 	// CREATE MOBILIZED BODY
 	MobilizedBody::Ellipsoid mobod =
 		createMobilizedBody<MobilizedBody::Ellipsoid>(system);
 	mobod.setDefaultRadii(get_radii_x_y_z());
-    // TODO: Joints require super class to be called last.
-    Super::addToSystem(system);
 }
 
 void EllipsoidJoint::initStateFromProperties(SimTK::State& s) const

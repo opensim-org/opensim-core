@@ -170,13 +170,13 @@ public:
 	virtual int numCoordinates() const {return _numMobilities;};
 
 protected:
-	void addToSystem(SimTK::MultibodySystem& system) const override
+	void doAddToSystem(SimTK::MultibodySystem& system) const override
 	{
 		using namespace SimTK;
 
 		const CoordinateSet& coordinateSet = get_CoordinateSet();
 		string msg = getConcreteClassName() +
-			"::addToSystem() ERROR - number of DOFs does not match number of Coordinates specified.";
+			"::doAddToSystem() ERROR - number of DOFs does not match number of Coordinates specified.";
 		SimTK_ASSERT(coordinateSet.getSize() == _numMobilities, msg.c_str());
 		// Assign the underlying indices to access System resources (state values) for the Coordinate subcomponents
 
@@ -224,9 +224,6 @@ protected:
 			SimTK::Body::Rigid(getChildBody().getMassProperties()),
 			childTransform2,
 			coordinateIndexForMobility, &getChildBody());
-
-        // TODO: Joints require super class to be called last.
-        Super::addToSystem(system);
 	}
 
 //=============================================================================

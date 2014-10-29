@@ -47,9 +47,9 @@ ElasticFoundationForce::ElasticFoundationForce(ContactParameters* params)
     addContactParameters(params);
 }
 
-void ElasticFoundationForce::addToSystem(SimTK::MultibodySystem& system) const
+void ElasticFoundationForce::doAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::doAddToSystem(system);
 
     const ContactParametersSet& contactParametersSet = 
         get_contact_parameters();

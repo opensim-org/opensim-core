@@ -76,11 +76,7 @@ SliderJoint::SliderJoint(const std::string &name, const Body& parent,
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void SliderJoint::addToSystem(SimTK::MultibodySystem& system) const
+void SliderJoint::doAddToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<SimTK::MobilizedBody::Slider>(system);
-
-    // TODO: Joints require super class to be called last.
-    Super::addToSystem(system);
+    createMobilizedBody<SimTK::MobilizedBody::Slider>(system);
 }
-

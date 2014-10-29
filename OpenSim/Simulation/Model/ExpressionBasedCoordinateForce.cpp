@@ -112,9 +112,9 @@ void ExpressionBasedCoordinateForce::connectToModel(Model& aModel)
 // Create the underlying system component(s)
 //=============================================================================
 void ExpressionBasedCoordinateForce::
-	addToSystem(SimTK::MultibodySystem& system) const
+	doAddToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);    // Base class first.
+	Super::doAddToSystem(system);    // Base class first.
 	addCacheVariable<double>("force_magnitude", 0.0, SimTK::Stage::Velocity);
 }
 

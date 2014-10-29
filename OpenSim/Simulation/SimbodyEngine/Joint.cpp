@@ -371,13 +371,9 @@ void Joint::setChildMobilizedBodyIndex(const SimTK::MobilizedBodyIndex index) co
 }
 
 
-// TODO: note that child must invoke Joint::addToSystem()
-// *after* it creates its mobilized body; that is an API bug.
-void Joint::addToSystem(SimTK::MultibodySystem& system) const
+void Joint::doAddToSystem(SimTK::MultibodySystem& system) const
 {
-	// add sub components (e.g. Coordinates) once we have necessary system indices
-	Super::addToSystem(system);
-
+    Super::doAddToSystem(system);
 	/* TODO: Useful to include through debug message/log in the future
 	cout << getConcreteClassName() << ":'" << getName() << "' connects parent '";
 	cout << getParentBodyName() << "'[" << getParentBody().getIndex() << "] and child '";
@@ -654,7 +650,7 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
 }
 
 /* Return the equivalent (internal) SimTK::Rigid::Body for a given parent OR
-child OpenSim::Body. Not guaranteed to be valid until after addToSystem on
+child OpenSim::Body. Not guaranteed to be valid until after doAddToSystem on
 Body has be called  */
 const SimTK::Body::Rigid& Joint::getParentInternalRigidBody() const
 {

@@ -144,7 +144,7 @@ protected:
     /** Extension of parent class method; derived classes may extend further. **/
     void finalizeFromProperties() override;
     /** Extension of parent class method; derived classes may extend further. **/
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void doAddToSystem(SimTK::MultibodySystem& system) const override;
     /** Extension of parent class method; derived classes may extend further. **/
     void realizeDynamics(const SimTK::State& state) const override;
 

@@ -239,9 +239,9 @@ void CoupledBushingForce::connectToModel(Model& aModel)
 	}
 }
 
-void CoupledBushingForce::addToSystem(SimTK::MultibodySystem& system) const
+void CoupledBushingForce::doAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::doAddToSystem(system);
 
 	Body &body1 = _model->updBodySet().get(_body1Name);
 	Body &body2 = _model->updBodySet().get(_body2Name);

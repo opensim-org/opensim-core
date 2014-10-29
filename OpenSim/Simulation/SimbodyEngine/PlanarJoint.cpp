@@ -78,10 +78,7 @@ PlanarJoint::PlanarJoint(const std::string &name, OpenSim::Body& parent,
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void PlanarJoint::addToSystem(SimTK::MultibodySystem& system) const
+void PlanarJoint::doAddToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Planar>(system);
-
-    // TODO: Joints require super class to be called last.
-    Super::addToSystem(system);
+    createMobilizedBody<MobilizedBody::Planar>(system);
 }

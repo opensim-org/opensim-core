@@ -228,7 +228,7 @@ void CustomJoint::constructCoordinates()
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void CustomJoint::addToSystem(SimTK::MultibodySystem& system) const
+void CustomJoint::doAddToSystem(SimTK::MultibodySystem& system) const
 {
 	SimTK::MobilizedBody inb;
 	SimTK::Body outb;
@@ -294,9 +294,6 @@ void CustomJoint::addToSystem(SimTK::MultibodySystem& system) const
         getConcreteClassName().c_str());
 
 	assignSystemIndicesToBodyAndCoordinates(simtkBody, mobilized, nc, 0);
-	
-    // TODO: Joints require super class to be called last.
-    Super::addToSystem(system);
 }
 
 //=============================================================================
@@ -429,7 +426,7 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 			}
 		}
 	}
-	// Axes should be independent otherwise Simbody throws an exception in addToSystem
+	// Axes should be independent otherwise Simbody throws an exception in doAddToSystem
 	double tol = 1e-5;
     // Verify that none of the rotation axes are colinear
 	const std::vector<SimTK::Vec3> axes=getSpatialTransform().getAxes();

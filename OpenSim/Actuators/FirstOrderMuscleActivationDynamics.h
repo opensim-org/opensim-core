@@ -138,7 +138,7 @@ public:
     //@{
 
     /** Adds activation to the state. **/
-    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void doAddToSystem(SimTK::MultibodySystem& system) const override;
 
     /** Initializes the activation state variable to \c default_activation. **/
     void initStateFromProperties(SimTK::State& s) const override;

@@ -157,8 +157,6 @@ protected:
 
     /** Implement ModelComponent interface. */
 	void finalizeFromProperties() override;
-	void addToSystem(SimTK::MultibodySystem& system) const override;
-	void initStateFromProperties(SimTK::State& s) const override;
 
 	//Force reporting
 	/** 

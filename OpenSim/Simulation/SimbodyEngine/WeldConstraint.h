@@ -91,7 +91,7 @@ protected:
 	/**
 	 * Create a SimTK::Constraint::Weld which implements this Weld.
 	 */
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void doAddToSystem(SimTK::MultibodySystem& system) const override;
 
 private:
 	void setNull();

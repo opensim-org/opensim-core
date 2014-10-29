@@ -219,7 +219,7 @@ public:
      void connectToModel(Model& model) override;
 
      // for adding any components to the underlying system
-     void addToSystem( SimTK::MultibodySystem& system) const override; 
+     void doAddToSystem( SimTK::MultibodySystem& system) const override; 
 
 //=============================================================================
 };	// END of class CMC

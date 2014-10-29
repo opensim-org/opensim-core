@@ -158,16 +158,6 @@ public:
     }
 
     /**
-     * Invoke addToSystem() on each element of the Set.
-     * @see ModelComponent::addToSystem()
-     */
-    virtual void invokeAddToSystem(SimTK::MultibodySystem& system) const
-    {
-        for (int i = 0; i < Set<T>::getSize(); i++)
-            static_cast<const ModelComponent&>(Set<T>::get(i)).addToSystem(system);
-    }
-
-    /**
      * Invoke initStateFromProperties() on each element of the Set.
      * @see ModelComponent::initStateFromProperties()
      */

@@ -122,7 +122,7 @@ protected:
 	/**
 	 * Create a SimTK::Constraint::CoordinateCooupler which implements this constraint.
 	 */
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void doAddToSystem(SimTK::MultibodySystem& system) const override;
 
 private:
 	void setNull();

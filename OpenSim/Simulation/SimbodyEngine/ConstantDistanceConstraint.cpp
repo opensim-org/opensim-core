@@ -147,9 +147,9 @@ void ConstantDistanceConstraint::connectToModel(Model& aModel)
 	_body2 = &aModel.updBodySet().get(body2Name);
 }
 
-void ConstantDistanceConstraint::addToSystem(SimTK::MultibodySystem& system) const
+void ConstantDistanceConstraint::doAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::doAddToSystem(system);
 
 	// Get underlying mobilized bodies
 	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body1->getMobilizedBodyIndex());

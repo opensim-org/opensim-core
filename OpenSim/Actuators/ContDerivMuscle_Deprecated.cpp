@@ -200,10 +200,9 @@ void ContDerivMuscle_Deprecated::connectToModel(Model& aModel)
 }
 
    
-void ContDerivMuscle_Deprecated::addToSystem(SimTK::MultibodySystem& system) const
+void ContDerivMuscle_Deprecated::doAddToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);
-
+    Super::doAddToSystem(system);
 	ContDerivMuscle_Deprecated* mutableThis = const_cast<ContDerivMuscle_Deprecated *>(this);
 
 	// Cache the computed active and passive muscle force

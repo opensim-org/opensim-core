@@ -187,9 +187,9 @@ void CoordinateCouplerConstraint::connectToModel(Model& aModel)
 }
 
 
-void CoordinateCouplerConstraint::addToSystem(SimTK::MultibodySystem& system) const
+void CoordinateCouplerConstraint::doAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::doAddToSystem(system);
 
 	/** List of mobilized body indices established when constraint is set up */
 	std::vector<SimTK::MobilizedBodyIndex> mob_bodies;

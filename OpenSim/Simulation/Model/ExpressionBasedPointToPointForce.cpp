@@ -181,9 +181,9 @@ void ExpressionBasedPointToPointForce::connectToModel(Model& model)
 // Create the underlying system component(s)
 //=============================================================================
 void ExpressionBasedPointToPointForce::
-	addToSystem(SimTK::MultibodySystem& system) const
+	doAddToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);    // Base class first.
+	Super::doAddToSystem(system);    // Base class first.
 
 	Body& body1 = _model->updBodySet().get(getBody1Name());
 	Body& body2 = _model->updBodySet().get(getBody2Name());

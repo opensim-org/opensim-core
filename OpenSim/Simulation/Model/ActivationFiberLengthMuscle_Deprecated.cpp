@@ -91,10 +91,9 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
 /**
  * allocate and initialize the SimTK state for this acuator.
  */
- void ActivationFiberLengthMuscle_Deprecated::addToSystem(SimTK::MultibodySystem& system) const
+ void ActivationFiberLengthMuscle_Deprecated::doAddToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);
-
+    Super::doAddToSystem(system);
 	const string& className = getConcreteClassName();
 	const string& suffix = " flag is not currently implemented.";
 

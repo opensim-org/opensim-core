@@ -129,9 +129,9 @@ void BushingForce::connectToModel(Model& aModel)
 	}
 }
 
-void BushingForce::addToSystem(SimTK::MultibodySystem& system) const
+void BushingForce::doAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::doAddToSystem(system);
 
 	const string&      body1Name            = get_body_1();
 	const string&      body2Name            = get_body_2();

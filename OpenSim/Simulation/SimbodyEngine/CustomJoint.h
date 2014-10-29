@@ -100,7 +100,7 @@ private:
         Super::finalizeFromProperties();
     }
 	void connectToModel(Model& aModel) override;
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void doAddToSystem(SimTK::MultibodySystem& system) const override;
 
 	void constructProperties();
     void constructCoordinates();
