@@ -21,8 +21,6 @@
  * -------------------------------------------------------------------------- */
 #include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <windows.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -30,14 +28,13 @@ using namespace std;
 int main(int argc, char **argv)
 {
     try {
-        LoadOpenSimLibrary("osimActuators");
 
         std::string filename = "arm26.osim";
         if (argc > 1) filename = argv[1];
 
-        Model *model = new Model(filename);
-        model->initSystem();
-        ComponentList<Component> componentsList = model->getComponentList();
+        Model model(filename);
+        model.initSystem();
+        ComponentList<Component> componentsList = model.getComponentList();
         std::cout << "list begin: " << componentsList.begin()->getName() << std::endl;
         int numComponents = 0;
         for (ComponentList<Component>::iterator it = componentsList.begin();
@@ -47,7 +44,7 @@ int main(int argc, char **argv)
                 numComponents++;
         }
         
-        ComponentList<OpenSim::Body> bodiesList = model->getComponentList<OpenSim::Body>();
+        ComponentList<OpenSim::Body> bodiesList = model.getComponentList<OpenSim::Body>();
         int numBodies = 0;
         std::cout << "Bodies list begin: " << bodiesList.begin()->getName() << std::endl;
         for (ComponentList<OpenSim::Body>::iterator it = bodiesList.begin();
@@ -59,14 +56,14 @@ int main(int argc, char **argv)
 
         int numMuscles = 0;
         std::cout << "Using range-for loop over Muscles: " << std::endl;
-        ComponentList<Muscle> musclesList = model->getComponentList<Muscle>();
+        ComponentList<Muscle> musclesList = model.getComponentList<Muscle>();
         for (const Muscle& muscle : musclesList) {
             std::cout << "Iterator is at muscle: " << muscle.getName() << std::endl;
             numMuscles++;
         }
         
         int numGeomPaths = 0;
-        ComponentList<GeometryPath> geomPathList = model->getComponentList<GeometryPath>();
+        ComponentList<GeometryPath> geomPathList = model.getComponentList<GeometryPath>();
         for (const GeometryPath& gpath : geomPathList) {
             numGeomPaths++;
         }
@@ -74,7 +71,6 @@ int main(int argc, char **argv)
         cout << "Num bodies = " << numBodies << std::endl;
         cout << "Num Muscles = " << numMuscles << std::endl;
         cout << "Num GeometryPath components = " << numGeomPaths << std::endl;
-        delete model;
 
     }
     catch (Exception &ex) {

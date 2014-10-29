@@ -7,5 +7,5 @@ ADD_EXECUTABLE(iteratorExample ${SOURCE_FILES} ${INCLUDE_FILES})
 
 SET_TARGET_PROPERTIES(iteratorExample PROPERTIES
 	${EXCLUDE_IF_MINIMAL_BUILD}
-	PROJECT_LABEL "Tests - iteratorExample"
+	PROJECT_LABEL "Examples - iteratorExample"
 )
