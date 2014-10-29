@@ -174,7 +174,7 @@ void FixedFrame::initFixedFrameCache() const
         {
             parentFixedFrame->initFixedFrameCache();
         }
-        // all variables pointing to the parents root MobilizedBody should be valid
+        // all variables pointing to the parent's root MobilizedBody should be valid
         // X_BF = X_BP*X_PF
         _mbTransform = parentFixedFrame->getTransformInMobilizedBody()*getTransform();
     }
