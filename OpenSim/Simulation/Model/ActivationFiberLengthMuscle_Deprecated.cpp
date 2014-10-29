@@ -263,7 +263,7 @@ double ActivationFiberLengthMuscle_Deprecated::getFiberForce(const SimTK::State&
 	if(fabs(cos_penang) < SimTK::Zero) {
 		force = SimTK::NaN;
 	} else {
-		force = getForce(s) / cos_penang;
+		force = getActuation(s) / cos_penang;
 	}
 
 	return force;
@@ -317,10 +317,10 @@ void ActivationFiberLengthMuscle_Deprecated::setPassiveForce(const SimTK::State&
 }
 
 double ActivationFiberLengthMuscle_Deprecated::getTendonForce(const SimTK::State& s) const {
-	return getForce(s);
+	return getActuation(s);
 }
 void ActivationFiberLengthMuscle_Deprecated::setTendonForce(const SimTK::State& s, double force) const {
-	setForce(s, force);
+	setActuation(s, force);
 }
 double ActivationFiberLengthMuscle_Deprecated::getActivation(const SimTK::State& s) const {
 	return getStateVariable(s, STATE_ACTIVATION_NAME);
@@ -348,7 +348,7 @@ double ActivationFiberLengthMuscle_Deprecated::getExcitation( const SimTK::State
  */
 double ActivationFiberLengthMuscle_Deprecated::getStress(const SimTK::State& s) const
 {
-	return getForce(s) / get_max_isometric_force();
+	return getActuation(s) / get_max_isometric_force();
 }
 
 //==============================================================================
@@ -396,7 +396,7 @@ void ActivationFiberLengthMuscle_Deprecated::computeForce(const SimTK::State& s,
 {
 	Super::computeForce(s, bodyForces, generalizedForces);
 
-	if( isForceOverriden(s) ) {
+	if (isActuationOverriden(s)) {
 		// Also define the state derivatives, since realize acceleration will
 		// ask for muscle derivatives, which will be integrated
 		// in the case the force is being overridden, the states aren't being used
@@ -541,7 +541,7 @@ void ActivationFiberLengthMuscle_Deprecated::calcMuscleDynamicsInfo(const SimTK:
 	const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
 	const double &maxIsometricForce = getMaxIsometricForce();
 
-	double tendonForce = getForce(s);
+	double tendonForce = getActuation(s);
 	mdi.normTendonForce = tendonForce/maxIsometricForce;
 	
 	mdi.passiveFiberForce = mli.fiberPassiveForceLengthMultiplier * maxIsometricForce;

@@ -216,7 +216,7 @@ SimTK::Vector ActuatorForceProbe::computeProbeInputs(const State& s) const
 	{
 		// Get the Actuator force.
 		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_model->getActuators()[_actuatorIndex[i]]);
-		const double Ftmp = act->getForce(s);
+		const double Ftmp = act->getActuation(s);
 
 		// Append to output vector.
 		if (getSumForcesTogether())

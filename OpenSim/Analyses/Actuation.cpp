@@ -378,7 +378,7 @@ record(const SimTK::State& s)
 	for (int i = 0, iact = 0; i<fSet.getSize(); i++) {
 		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
 		if (!fSet.get(i).get_isDisabled())
-			_fsp[iact++] = act->getForce(s);
+			_fsp[iact++] = act->getActuation(s);
 	}
 	_forceStore->append(tReal, _na, _fsp);
 

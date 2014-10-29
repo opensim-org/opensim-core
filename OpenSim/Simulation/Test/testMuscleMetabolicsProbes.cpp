@@ -215,7 +215,7 @@ public:
     double computeActuation(const SimTK::State& s) const override
     {
         const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
-        setForce(s, mdi.tendonForce);
+		setActuation(s, mdi.tendonForce);
         return mdi.tendonForce;
     }
 
