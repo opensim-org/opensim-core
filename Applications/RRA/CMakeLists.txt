@@ -1,7 +1,7 @@
 SET(APPNAME rra)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-						  ${OpenSim_SOURCE_DIR}/Vendors)
+                          ${OpenSim_SOURCE_DIR}/Vendors)
 
 # cmake should automatically figure out what other libraries are needed
 LINK_LIBRARIES(debug osimTools${CMAKE_DEBUG_POSTFIX} optimized osimTools
@@ -22,7 +22,7 @@ SET_TARGET_PROPERTIES(${APPNAME} PROPERTIES PROJECT_LABEL "Applications - ${APPN
 #ENDIF (UNIX)
 
 IF(BUILD_TESTING)
-	SUBDIRS(test)
+    SUBDIRS(test)
 ENDIF(BUILD_TESTING)
 
 

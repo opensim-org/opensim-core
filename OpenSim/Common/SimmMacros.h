@@ -31,7 +31,7 @@ namespace OpenSim {
 #define MIN(a,b) ((a)<=(b)?(a):(b))
 #define DABS(a) ((a)>(double)0.0?(a):(-(a)))
 #define DSIGN(a) ((a)>=0.0?(1):(-1))
-#define SQR(x)	((x) * (x))
+#define SQR(x)  ((x) * (x))
 #define EQUAL_WITHIN_ERROR(a,b) (DABS(((a)-(b))) <= ROUNDOFF_ERROR)
 #define NOT_EQUAL_WITHIN_ERROR(a,b) (DABS(((a)-(b))) > ROUNDOFF_ERROR)
 #define EQUAL_WITHIN_TOLERANCE(a,b,c) (DABS(((a)-(b))) <= (c))

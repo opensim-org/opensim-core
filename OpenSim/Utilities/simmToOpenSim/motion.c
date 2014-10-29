@@ -252,7 +252,7 @@ MotionSequence* get_motion_by_name(ModelStruct* model, const char name[])
 {
    if (model)
    {
-		int i;
+        int i;
 
       for (i=0; i<model->motion_array_size; i++)
       {
@@ -343,7 +343,7 @@ SBoolean add_motion_to_model(MotionSequence* motion, ModelStruct* model, SBoolea
    motion_num = get_motion_number(model, motion);
 #if ! OPENSMAC && ! ENGINE
    make_marker_trails(model, motion);
-	make_force_trails(model, motion);
+    make_force_trails(model, motion);
 
    make_motion_curve_menu(model, motion, motion_num);
 
@@ -404,7 +404,7 @@ SBoolean add_motion_to_model(MotionSequence* motion, ModelStruct* model, SBoolea
 
    glueAddMenuEntryWithValue(model->xvarmenu, motion->name, model->numgencoords + motion_num);
    model->dis.devs = (int*)simm_realloc(model->dis.devs, (model->dis.numdevs + 2) * sizeof(int), &rc);
-   model->dis.dev_values = (int*)simm_realloc(model->dis.dev_values,	(model->dis.numdevs + 2) * sizeof(int), &rc2);
+   model->dis.dev_values = (int*)simm_realloc(model->dis.dev_values,    (model->dis.numdevs + 2) * sizeof(int), &rc2);
    if (rc == code_bad || rc2 == code_bad)
    {
       error(none,"Cannot link motion to the model.");
@@ -442,9 +442,9 @@ static SBoolean link_model_to_motion(ModelStruct* model, MotionSequence* motion,
    char* ptr = NULL;
    GeneralizedCoord* gencoord = NULL;
 
-	// In case this function is being called on a motion already added to a model
-	// (e.g., after normalizing or smoothing), free the pointers that are about to
-	// be re-allocated.
+    // In case this function is being called on a motion already added to a model
+    // (e.g., after normalizing or smoothing), free the pointers that are about to
+    // be re-allocated.
    for (i=0; i<motion->mopt.num_motion_object_instances; )
    {
       if (motion->mopt.motion_object_instance[i]->num_channels > 0)
@@ -462,8 +462,8 @@ static SBoolean link_model_to_motion(ModelStruct* model, MotionSequence* motion,
    if (motion->mopt.num_motion_object_instances == 0)
       FREE_IFNOTNULL(motion->mopt.motion_object_instance);
 
-	FREE_IFNOTNULL(motion->mopt.other_data);
-	*num_other_data = 0;
+    FREE_IFNOTNULL(motion->mopt.other_data);
+    *num_other_data = 0;
 
    for (i = 0; i < model->numgencoords; i++)
    {
@@ -1124,11 +1124,11 @@ void free_motion(MotionSequence* motion, ModelStruct* model)
          FREE_IFNOTNULL(motion->event);
       }
 
-		FREE_IFNOTNULL(motion->mopt.gencoords);
-		FREE_IFNOTNULL(motion->mopt.genc_velocities);
-		FREE_IFNOTNULL(motion->mopt.muscles);
-		FREE_IFNOTNULL(motion->mopt.ligaments);
-		FREE_IFNOTNULL(motion->mopt.other_data);
+        FREE_IFNOTNULL(motion->mopt.gencoords);
+        FREE_IFNOTNULL(motion->mopt.genc_velocities);
+        FREE_IFNOTNULL(motion->mopt.muscles);
+        FREE_IFNOTNULL(motion->mopt.ligaments);
+        FREE_IFNOTNULL(motion->mopt.other_data);
 
       if (motion->mopt.motion_object_instance)
       {
@@ -1494,22 +1494,22 @@ ReturnCode write_motion(MotionSequence *motion, const char filename[])
       {
          // The scale factor is the magnitude of any row or column in the rotation matrix.
          double eulerRot[3], nvec[3];
-			memset(nvec, 0, 3 * sizeof(double));
+            memset(nvec, 0, 3 * sizeof(double));
          extract_xyz_rot_bodyfixed(mi->currentXform, eulerRot);
          fprintf(file, "%s %lf %lf %lf %lf %lf %lf %lf\n", mi->name,
             normalize_vector(mi->currentXform[0], nvec),                            // scale factor
             mi->currentXform[3][0], mi->currentXform[3][1], mi->currentXform[3][2], // translations
-				eulerRot[0] * RTOD, eulerRot[1] * RTOD, eulerRot[2] * RTOD);            // XYZ Euler rotations
+                eulerRot[0] * RTOD, eulerRot[1] * RTOD, eulerRot[2] * RTOD);            // XYZ Euler rotations
       }
       else if (mi->type == ForcePlateObject)
       {
          double eulerRot[3], nvec[3];
-			memset(nvec, 0, 3 * sizeof(double));
+            memset(nvec, 0, 3 * sizeof(double));
          extract_xyz_rot_bodyfixed(mi->currentXform, eulerRot);
          fprintf(file, "%s", mi->name);
          // Scale factors are the magnitudes of the rows.
-			fprintf(file, " %lf %lf %lf", VECTOR_MAGNITUDE(mi->currentXform[0]), VECTOR_MAGNITUDE(mi->currentXform[1]),
-				VECTOR_MAGNITUDE(mi->currentXform[2]));
+            fprintf(file, " %lf %lf %lf", VECTOR_MAGNITUDE(mi->currentXform[0]), VECTOR_MAGNITUDE(mi->currentXform[1]),
+                VECTOR_MAGNITUDE(mi->currentXform[2]));
          fprintf(file, " %lf %lf %lf", mi->currentXform[3][0], mi->currentXform[3][1], mi->currentXform[3][2]);
          fprintf(file, " %lf %lf %lf\n", eulerRot[0] * RTOD, eulerRot[1] * RTOD, eulerRot[2] * RTOD);
       }
@@ -2017,39 +2017,39 @@ void normalize_motion(MotionSequence* motion, ModelStruct* model)
       }
    }
 
-	link_model_to_motion(model, motion, &num_other, NULL);
+    link_model_to_motion(model, motion, &num_other, NULL);
 
    // Recalculate the current frame, using the previously calculated percent.
    motion->mopt.current_value = percent * 100.0;
    motion->mopt.current_frame = percent * (motion->number_of_datarows - 1) + MOTION_OFFSET;
 
 #if ! OPENSMAC && ! ENGINE
-	make_marker_trails(model, motion);
-	make_force_trails(model, motion);
+    make_marker_trails(model, motion);
+    make_force_trails(model, motion);
 
    queue_model_redraw(model);
 #endif
 
-	// After interpolating, force plate forces can sometimes go negative.
-	//TODO5.0: there's got to be a better way than this...
+    // After interpolating, force plate forces can sometimes go negative.
+    //TODO5.0: there's got to be a better way than this...
 #if 1
-	for (i=0; i<motion->mopt.num_motion_object_instances; i++)
-	{
-		for (j=0; j<motion->mopt.motion_object_instance[i]->num_channels; j++)
-		{
-			int comp = motion->mopt.motion_object_instance[i]->channels[j].component;
-			if (comp == MO_VX || comp == MO_VY || comp == MO_VZ)
-			{
-				int k, col = motion->mopt.motion_object_instance[i]->channels[j].column;
-				for (k=0; k<motion->number_of_datarows; k++)
-				{
-					double value = ABS(motion->motiondata[col][k]);
-					if (value < 1.0)
-						motion->motiondata[col][k] = 0.0;
-				}
-			}
-		}
-	}
+    for (i=0; i<motion->mopt.num_motion_object_instances; i++)
+    {
+        for (j=0; j<motion->mopt.motion_object_instance[i]->num_channels; j++)
+        {
+            int comp = motion->mopt.motion_object_instance[i]->channels[j].component;
+            if (comp == MO_VX || comp == MO_VY || comp == MO_VZ)
+            {
+                int k, col = motion->mopt.motion_object_instance[i]->channels[j].column;
+                for (k=0; k<motion->number_of_datarows; k++)
+                {
+                    double value = ABS(motion->motiondata[col][k]);
+                    if (value < 1.0)
+                        motion->motiondata[col][k] = 0.0;
+                }
+            }
+        }
+    }
 #endif
 
 #if ! OPENSMAC && ! ENGINE
@@ -2140,32 +2140,32 @@ void smooth_motion(MotionSequence* motion, ModelStruct* model, double cutoff_fre
    link_model_to_motion(model, motion, &num_other, NULL);
 
 #if ! OPENSMAC && ! ENGINE
-	make_marker_trails(model, motion);
-	make_force_trails(model, motion);
+    make_marker_trails(model, motion);
+    make_force_trails(model, motion);
 
    queue_model_redraw(model);
 #endif
 
-	// After interpolating, force plate forces can sometimes go negative.
-	//TODO5.0: there's got to be a better way than this...
+    // After interpolating, force plate forces can sometimes go negative.
+    //TODO5.0: there's got to be a better way than this...
 #if 1
-	for (i=0; i<motion->mopt.num_motion_object_instances; i++)
-	{
-		for (j=0; j<motion->mopt.motion_object_instance[i]->num_channels; j++)
-		{
-			int comp = motion->mopt.motion_object_instance[i]->channels[j].component;
-			if (comp == MO_VX || comp == MO_VY || comp == MO_VZ)
-			{
-				int k, col = motion->mopt.motion_object_instance[i]->channels[j].column;
-				for (k=0; k<motion->number_of_datarows; k++)
-				{
-					double value = ABS(motion->motiondata[col][k]);
-					if (value < 1.0)
-						motion->motiondata[col][k] = 0.0;
-				}
-			}
-		}
-	}
+    for (i=0; i<motion->mopt.num_motion_object_instances; i++)
+    {
+        for (j=0; j<motion->mopt.motion_object_instance[i]->num_channels; j++)
+        {
+            int comp = motion->mopt.motion_object_instance[i]->channels[j].component;
+            if (comp == MO_VX || comp == MO_VY || comp == MO_VZ)
+            {
+                int k, col = motion->mopt.motion_object_instance[i]->channels[j].column;
+                for (k=0; k<motion->number_of_datarows; k++)
+                {
+                    double value = ABS(motion->motiondata[col][k]);
+                    if (value < 1.0)
+                        motion->motiondata[col][k] = 0.0;
+                }
+            }
+        }
+    }
 #endif
 
    //TODO5.0: send MOTION_CHANGED event so model viewer can update?
@@ -2244,169 +2244,169 @@ SBoolean is_marker_data_visible(MotionSequence* motion, int motionObject, int ro
 
 int get_frame_number(smC3DStruct* c3d, double time)
 {
-	int i;
+    int i;
 
-	for (i=0; i<c3d->motionData->header.numFrames; i++)
-	{
-		if (c3d->motionData->frameList[i].time >= time)
-			return i;
-	}
+    for (i=0; i<c3d->motionData->header.numFrames; i++)
+    {
+        if (c3d->motionData->frameList[i].time >= time)
+            return i;
+    }
 
-	return c3d->motionData->header.numFrames - 1;
+    return c3d->motionData->header.numFrames - 1;
 }
 
 MotionObjectInstance* add_foot_print(ModelStruct* model, MotionSequence* motion, const char name[], double scale,
                                      double translation[], double eulerRotation[])
 {
-	int i, j, index, motion_object = -1;
-	MotionObjectInstance* mi = NULL;
-	ReturnCode rc;
+    int i, j, index, motion_object = -1;
+    MotionObjectInstance* mi = NULL;
+    ReturnCode rc;
 
-	index = motion->mopt.num_motion_object_instances++;
+    index = motion->mopt.num_motion_object_instances++;
 
-	if (motion->mopt.motion_object_instance == NULL)
-	{
-		motion->mopt.motion_object_instance = (MotionObjectInstance**)
-			simm_malloc(motion->mopt.num_motion_object_instances * sizeof(MotionObjectInstance*));
-	}
-	else
-	{
-		motion->mopt.motion_object_instance = (MotionObjectInstance**)
-			simm_realloc(motion->mopt.motion_object_instance, motion->mopt.num_motion_object_instances * sizeof(MotionObjectInstance*), &rc);
-	}
+    if (motion->mopt.motion_object_instance == NULL)
+    {
+        motion->mopt.motion_object_instance = (MotionObjectInstance**)
+            simm_malloc(motion->mopt.num_motion_object_instances * sizeof(MotionObjectInstance*));
+    }
+    else
+    {
+        motion->mopt.motion_object_instance = (MotionObjectInstance**)
+            simm_realloc(motion->mopt.motion_object_instance, motion->mopt.num_motion_object_instances * sizeof(MotionObjectInstance*), &rc);
+    }
 
-	if (motion->mopt.motion_object_instance == NULL)
-	{
-		motion->mopt.num_motion_object_instances--;
-		return NULL;
-	}
+    if (motion->mopt.motion_object_instance == NULL)
+    {
+        motion->mopt.num_motion_object_instances--;
+        return NULL;
+    }
 
-	for (i=0; i<model->num_motion_objects; i++)
-	{
-		if (STRINGS_ARE_EQUAL(model->motion_objects[i].name, name))
-		{
-			motion_object = i;
-			break;
-		}
-	}
-	if (motion_object == -1)
-		return NULL;
+    for (i=0; i<model->num_motion_objects; i++)
+    {
+        if (STRINGS_ARE_EQUAL(model->motion_objects[i].name, name))
+        {
+            motion_object = i;
+            break;
+        }
+    }
+    if (motion_object == -1)
+        return NULL;
 
-	// Initialize a new motion object instance.
-	mi = motion->mopt.motion_object_instance[index] = (MotionObjectInstance*)simm_calloc(1, sizeof(MotionObjectInstance));
+    // Initialize a new motion object instance.
+    mi = motion->mopt.motion_object_instance[index] = (MotionObjectInstance*)simm_calloc(1, sizeof(MotionObjectInstance));
 
    mstrcpy(&mi->name, model->motion_objects[motion_object].name);
-	mi->type = FootPrintObject;
-	mi->object = motion_object;
-	mi->segment = model->ground_segment;
-	mi->drawmode = model->motion_objects[motion_object].drawmode;
-	mi->current_value = -1.0;
-	mi->visible = yes;
-	identity_matrix(mi->currentXform);
-	copy_material(&model->dis.mat.materials[model->motion_objects[motion_object].material], &mi->currentMaterial);
+    mi->type = FootPrintObject;
+    mi->object = motion_object;
+    mi->segment = model->ground_segment;
+    mi->drawmode = model->motion_objects[motion_object].drawmode;
+    mi->current_value = -1.0;
+    mi->visible = yes;
+    identity_matrix(mi->currentXform);
+    copy_material(&model->dis.mat.materials[model->motion_objects[motion_object].material], &mi->currentMaterial);
 
-	if (eulerRotation)
-	{
-		x_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[0]);
-		y_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[1]);
-		z_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[2]);
-	}
+    if (eulerRotation)
+    {
+        x_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[0]);
+        y_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[1]);
+        z_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[2]);
+    }
 
-	for (i=0; i<3; i++)
-		for (j=0; j<3; j++)
-			mi->currentXform[i][j] *= scale;
+    for (i=0; i<3; i++)
+        for (j=0; j<3; j++)
+            mi->currentXform[i][j] *= scale;
 
-	if (translation)
-	{
-		mi->currentXform[3][0] = translation[0];
-		mi->currentXform[3][1] = translation[1];
-		mi->currentXform[3][2] = translation[2];
-	}
+    if (translation)
+    {
+        mi->currentXform[3][0] = translation[0];
+        mi->currentXform[3][1] = translation[1];
+        mi->currentXform[3][2] = translation[2];
+    }
 
-	return mi;
+    return mi;
 }
 
 MotionObjectInstance* add_force_plate(ModelStruct* model, MotionSequence* motion, const char name[], double scale[],
                                       double translation[], double eulerRotation[])
 {
-	int i, j, index, motion_object = -1;
-	MotionObjectInstance* mi = NULL;
-	ReturnCode rc;
+    int i, j, index, motion_object = -1;
+    MotionObjectInstance* mi = NULL;
+    ReturnCode rc;
 
-	index = motion->mopt.num_motion_object_instances++;
+    index = motion->mopt.num_motion_object_instances++;
 
-	if (motion->mopt.motion_object_instance == NULL)
-	{
-		motion->mopt.motion_object_instance = (MotionObjectInstance**)
-			simm_malloc(motion->mopt.num_motion_object_instances * sizeof(MotionObjectInstance*));
-	}
-	else
-	{
-		motion->mopt.motion_object_instance = (MotionObjectInstance**)
-			simm_realloc(motion->mopt.motion_object_instance, motion->mopt.num_motion_object_instances * sizeof(MotionObjectInstance*), &rc);
-	}
+    if (motion->mopt.motion_object_instance == NULL)
+    {
+        motion->mopt.motion_object_instance = (MotionObjectInstance**)
+            simm_malloc(motion->mopt.num_motion_object_instances * sizeof(MotionObjectInstance*));
+    }
+    else
+    {
+        motion->mopt.motion_object_instance = (MotionObjectInstance**)
+            simm_realloc(motion->mopt.motion_object_instance, motion->mopt.num_motion_object_instances * sizeof(MotionObjectInstance*), &rc);
+    }
 
-	if (motion->mopt.motion_object_instance == NULL)
-	{
-		motion->mopt.num_motion_object_instances--;
-		return NULL;
-	}
+    if (motion->mopt.motion_object_instance == NULL)
+    {
+        motion->mopt.num_motion_object_instances--;
+        return NULL;
+    }
 
-	for (i=0; i<model->num_motion_objects; i++)
-	{
-		if (STRINGS_ARE_EQUAL(model->motion_objects[i].name, name))
-		{
-			motion_object = i;
-			break;
-		}
-	}
-	if (motion_object == -1)
-		return NULL;
+    for (i=0; i<model->num_motion_objects; i++)
+    {
+        if (STRINGS_ARE_EQUAL(model->motion_objects[i].name, name))
+        {
+            motion_object = i;
+            break;
+        }
+    }
+    if (motion_object == -1)
+        return NULL;
 
-	// Initialize a new motion object instance.
-	mi = motion->mopt.motion_object_instance[index] = (MotionObjectInstance*)simm_calloc(1, sizeof(MotionObjectInstance));
+    // Initialize a new motion object instance.
+    mi = motion->mopt.motion_object_instance[index] = (MotionObjectInstance*)simm_calloc(1, sizeof(MotionObjectInstance));
 
    mstrcpy(&mi->name, model->motion_objects[motion_object].name);
-	mi->type = ForcePlateObject;
-	mi->object = motion_object;
-	mi->segment = model->ground_segment;
-	mi->drawmode = model->motion_objects[motion_object].drawmode;
-	mi->current_value = -1.0;
-	mi->visible = yes;
-	identity_matrix(mi->currentXform);
-	copy_material(&model->dis.mat.materials[model->motion_objects[motion_object].material], &mi->currentMaterial);
+    mi->type = ForcePlateObject;
+    mi->object = motion_object;
+    mi->segment = model->ground_segment;
+    mi->drawmode = model->motion_objects[motion_object].drawmode;
+    mi->current_value = -1.0;
+    mi->visible = yes;
+    identity_matrix(mi->currentXform);
+    copy_material(&model->dis.mat.materials[model->motion_objects[motion_object].material], &mi->currentMaterial);
 
-	if (eulerRotation)
-	{
-		x_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[0]);
-		y_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[1]);
-		z_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[2]);
-	}
+    if (eulerRotation)
+    {
+        x_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[0]);
+        y_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[1]);
+        z_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[2]);
+    }
 
-	if (scale)
-	{
-		for (i=0; i<3; i++)
-			for (j=0; j<3; j++)
-				mi->currentXform[i][j] *= scale[i];
-	}
+    if (scale)
+    {
+        for (i=0; i<3; i++)
+            for (j=0; j<3; j++)
+                mi->currentXform[i][j] *= scale[i];
+    }
 
-	if (translation)
-	{
-		mi->currentXform[3][0] = translation[0];
-		mi->currentXform[3][1] = translation[1];
-		mi->currentXform[3][2] = translation[2];
-	}
+    if (translation)
+    {
+        mi->currentXform[3][0] = translation[0];
+        mi->currentXform[3][1] = translation[1];
+        mi->currentXform[3][2] = translation[2];
+    }
 
-	if (0)
-	{
-		double mat[4][4];
-		printf("add_force_plate, rot = %lf %lf %lf\n", eulerRotation[0], eulerRotation[1], eulerRotation[2]);
-		print_4x4matrix(mi->currentXform);
-		for (i=0; i<3; i++)
-			printf("row %d mag = %lf\n", i, VECTOR_MAGNITUDE(mi->currentXform[i]));
-		transpose_4x4matrix(mi->currentXform, mat);
-		for (i=0; i<3; i++)
-			printf("col %d mag = %lf\n", i, VECTOR_MAGNITUDE(mat[i]));
-	}
-	return mi;
+    if (0)
+    {
+        double mat[4][4];
+        printf("add_force_plate, rot = %lf %lf %lf\n", eulerRotation[0], eulerRotation[1], eulerRotation[2]);
+        print_4x4matrix(mi->currentXform);
+        for (i=0; i<3; i++)
+            printf("row %d mag = %lf\n", i, VECTOR_MAGNITUDE(mi->currentXform[i]));
+        transpose_4x4matrix(mi->currentXform, mat);
+        for (i=0; i<3; i++)
+            printf("col %d mag = %lf\n", i, VECTOR_MAGNITUDE(mat[i]));
+    }
+    return mi;
 }

@@ -431,21 +431,21 @@ void calc_function_coefficients(dpFunction* sf)
    memset(sf->c, 0.0, sf->coefficient_array_size * sizeof(double));
    memset(sf->d, 0.0, sf->coefficient_array_size * sizeof(double));
 
-	if (sf->type == dpLinearFunction)
-	{
-		int i;
+    if (sf->type == dpLinearFunction)
+    {
+        int i;
 
-		if (sf->numpoints < 2)
-		{
-			error(abort_action, "Error: linear function must have at least 2 points.");
-			return;
-		}
+        if (sf->numpoints < 2)
+        {
+            error(abort_action, "Error: linear function must have at least 2 points.");
+            return;
+        }
 
-		/* For a linear function, the slope of each segment is stored in the b array. */
-		for (i = 0; i < sf->numpoints - 1; i++)
-			sf->b[i] = (sf->y[i+1] - sf->y[i]) / (sf->x[i+1] - sf->x[i]);
-		sf->b[sf->numpoints - 1] = sf->b[sf->numpoints - 2];
-	}
+        /* For a linear function, the slope of each segment is stored in the b array. */
+        for (i = 0; i < sf->numpoints - 1; i++)
+            sf->b[i] = (sf->y[i+1] - sf->y[i]) / (sf->x[i+1] - sf->x[i]);
+        sf->b[sf->numpoints - 1] = sf->b[sf->numpoints - 2];
+    }
    else if (sf->type == dpNaturalCubicSpline)
    {
       calc_natural_cubic_coefficients(sf);
@@ -481,7 +481,7 @@ void calc_function_coefficients(dpFunction* sf)
       gcvspl(sf->x, sf->y, &sf->numpoints, weight_x, weight_y, &half_order, 
              &sf->numpoints, &k, &mode, &val, sf->c, &sf->numpoints, work, &ier);
 
-		free(weight_x);
+        free(weight_x);
       free(weight_y);
       free(work);
 
@@ -536,8 +536,8 @@ double interpolate_function(double abscissa, dpFunction* func, Derivative deriv,
       /* If the abscissa is less than x[0], return y[0]. */
       return func->y[0];
    }
-	else if (func->type == dpLinearFunction)
-	{
+    else if (func->type == dpLinearFunction)
+    {
       if (abscissa < func->x[0])
       {
          if (deriv == zeroth)
@@ -562,7 +562,7 @@ double interpolate_function(double abscissa, dpFunction* func, Derivative deriv,
             }
          }
       }
-	}
+    }
    else if (func->type == dpGCVSpline)
    {
       int l = 1;
@@ -792,8 +792,8 @@ int findHighestUserFuncNum(ModelStruct* ms)
 
    for (i=0; i<ms->func_array_size; i++)
    {
-	   if (ms->function[i] && ms->function[i]->used == dpYes && ms->function[i]->usernum > highest_user_num)
-	      highest_user_num = ms->function[i]->usernum;
+       if (ms->function[i] && ms->function[i]->used == dpYes && ms->function[i]->usernum > highest_user_num)
+          highest_user_num = ms->function[i]->usernum;
    }
 
    return highest_user_num;
@@ -805,8 +805,8 @@ int countUsedFunctions(ModelStruct* ms)
    int i, count=0;
 
    for (i=0; i<ms->func_array_size; i++)
-	   if (ms->function[i] && ms->function[i]->used == dpYes)
-	      count++;
+       if (ms->function[i] && ms->function[i]->used == dpYes)
+          count++;
 
    return count;
 }
@@ -831,9 +831,9 @@ dpFunction* getFunctionByUserNumber(ModelStruct* model, int userNumber)
 {
    int i;
 
-	for (i=0; i<model->func_array_size; i++)
-		if (model->function[i] && model->function[i]->used == yes && model->function[i]->usernum == userNumber)
-			return model->function[i];
+    for (i=0; i<model->func_array_size; i++)
+        if (model->function[i] && model->function[i]->used == yes && model->function[i]->usernum == userNumber)
+            return model->function[i];
 
    return NULL;
 }

@@ -55,8 +55,8 @@ CMC_Orientation::~CMC_Orientation()
  */
 CMC_Orientation::CMC_Orientation()
 {
-	// NULL
-	setNull();
+    // NULL
+    setNull();
 }
 
 
@@ -70,7 +70,7 @@ CMC_Orientation::CMC_Orientation()
 void CMC_Orientation::
 setNull()
 {
-	_nTrk = 3;
+    _nTrk = 3;
 }
 
 

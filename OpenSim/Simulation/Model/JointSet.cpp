@@ -45,13 +45,13 @@ JointSet::~JointSet(void)
  */
 JointSet::JointSet()
 {
-	setNull();
+    setNull();
 }
 
 JointSet::JointSet(Model& model) :
-	ModelComponentSet<Joint>(model)
+    ModelComponentSet<Joint>(model)
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -59,10 +59,10 @@ JointSet::JointSet(Model& model) :
  * Copy constructor of a JointSet.
  */
 JointSet::JointSet(const JointSet& aJointSet):
-	ModelComponentSet<Joint>(aJointSet)
+    ModelComponentSet<Joint>(aJointSet)
 {
-	setNull();
-	*this = aJointSet;
+    setNull();
+    *this = aJointSet;
 }
 
 //=============================================================================
@@ -88,8 +88,8 @@ void JointSet::setNull()
 #ifndef SWIG
 JointSet& JointSet::operator=(const JointSet &aJointSet)
 {
-	Set<Joint>::operator=(aJointSet);
-	return (*this);
+    Set<Joint>::operator=(aJointSet);
+    return (*this);
 }
 #endif
 
@@ -102,5 +102,5 @@ JointSet& JointSet::operator=(const JointSet &aJointSet)
  */
 void JointSet::scale(const ScaleSet& aScaleSet)
 {
-	for(int i=0; i<getSize(); i++) get(i).scale(aScaleSet);
+    for(int i=0; i<getSize(); i++) get(i).scale(aScaleSet);
 }

@@ -63,9 +63,9 @@ FunctionSet::~FunctionSet()
  * @param aName Name of the function set.
  */
 FunctionSet::FunctionSet() :
-	Set<Function>()
+    Set<Function>()
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -75,10 +75,10 @@ FunctionSet::FunctionSet() :
  * @param aFileName Name of the file.
  */
 FunctionSet::FunctionSet(const string &aFileName) :
-	Set<Function>(aFileName, false)
+    Set<Function>(aFileName, false)
 {
-	setNull();
-	updateFromXMLDocument();
+    setNull();
+    updateFromXMLDocument();
 }
 
 
@@ -113,17 +113,17 @@ setNull()
 double FunctionSet::
 evaluate(int aIndex,int aDerivOrder,double aX) const
 {
-	Function& func = get(aIndex);
+    Function& func = get(aIndex);
 
-	SimTK::Vector arg = SimTK::Vector(1, aX);
-	if (aDerivOrder==0)
-		return (func.calcValue(arg));
+    SimTK::Vector arg = SimTK::Vector(1, aX);
+    if (aDerivOrder==0)
+        return (func.calcValue(arg));
 
-	std::vector<int> derivComponents;
-	for(int i=0; i<aDerivOrder; i++)
-		derivComponents.push_back(0);
+    std::vector<int> derivComponents;
+    for(int i=0; i<aDerivOrder; i++)
+        derivComponents.push_back(0);
 
-	return( func.calcDerivative(derivComponents, arg) );
+    return( func.calcDerivative(derivComponents, arg) );
 }
 
 //_____________________________________________________________________________
@@ -142,20 +142,20 @@ evaluate(int aIndex,int aDerivOrder,double aX) const
 void FunctionSet::
 evaluate(Array<double> &rValues,int aDerivOrder,double aX) const
 {
-	int size = getSize();
-	rValues.setSize(size);
+    int size = getSize();
+    rValues.setSize(size);
 
-	int i;
-	for(i=0;i<size;i++) {
-		Function& func = get(i);
-		if (aDerivOrder==0)
-			rValues[i] = func.calcValue(SimTK::Vector(1,aX));
-		else {
-			std::vector<int> derivComponents;
-			for(int j=0; j<aDerivOrder; j++)
-				derivComponents.push_back(0);
-			rValues[i] = func.calcDerivative(derivComponents, SimTK::Vector(1,aX));
+    int i;
+    for(i=0;i<size;i++) {
+        Function& func = get(i);
+        if (aDerivOrder==0)
+            rValues[i] = func.calcValue(SimTK::Vector(1,aX));
+        else {
+            std::vector<int> derivComponents;
+            for(int j=0; j<aDerivOrder; j++)
+                derivComponents.push_back(0);
+            rValues[i] = func.calcDerivative(derivComponents, SimTK::Vector(1,aX));
 
-		}
-	}
+        }
+    }
 }

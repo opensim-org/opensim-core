@@ -39,7 +39,7 @@ static dllObjectInstantiator instantiator;
  */
 OSIMPLUGIN_API void RegisterTypes_osimPlugin()
 {
-	Object::registerType( CoupledBushingForce() );
+    Object::registerType( CoupledBushingForce() );
 }
 
 dllObjectInstantiator::dllObjectInstantiator() 

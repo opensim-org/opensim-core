@@ -53,8 +53,8 @@ using namespace std;
 */
 Actuation::~Actuation()
 {
-	if (_fsp != NULL) { delete[] _fsp;  _fsp = NULL; }
-	deleteStorage();
+    if (_fsp != NULL) { delete[] _fsp;  _fsp = NULL; }
+    deleteStorage();
 }
 //_____________________________________________________________________________
 /**
@@ -66,11 +66,11 @@ Actuation::~Actuation()
 Actuation::Actuation(Model *aModel) :
 Analysis(aModel)
 {
-	// NULL
-	setNull();
+    // NULL
+    setNull();
 
-	// DESCRIPTION
-	constructDescription();
+    // DESCRIPTION
+    constructDescription();
 
 
 }
@@ -86,16 +86,16 @@ Analysis(aModel)
 Actuation::Actuation(const std::string &aFileName) :
 Analysis(aFileName, false)
 {
-	setNull();
+    setNull();
 
-	// Serialize from XML
-	updateFromXMLDocument();
+    // Serialize from XML
+    updateFromXMLDocument();
 
-	// DESCRIPTION
-	constructDescription();
+    // DESCRIPTION
+    constructDescription();
 
-	// STORAGE
-	allocateStorage();
+    // STORAGE
+    allocateStorage();
 }
 
 // Copy constrctor and virtual copy 
@@ -107,9 +107,9 @@ Analysis(aFileName, false)
 Actuation::Actuation(const Actuation &aActuation) :
 Analysis(aActuation)
 {
-	setNull();
-	// COPY TYPE AND NAME
-	*this = aActuation;
+    setNull();
+    // COPY TYPE AND NAME
+    *this = aActuation;
 }
 
 
@@ -123,38 +123,38 @@ Analysis(aActuation)
 void Actuation::
 setNull()
 {
-	// NAME
-	setName("Actuation");
+    // NAME
+    setName("Actuation");
 
-	_na = 0;
-	_fsp = NULL;
-	_forceStore = NULL;
-	_speedStore = NULL;
-	_powerStore = NULL;
+    _na = 0;
+    _fsp = NULL;
+    _forceStore = NULL;
+    _speedStore = NULL;
+    _powerStore = NULL;
 }
 //--------------------------------------------------------------------------
 // OPERATORS
 //--------------------------------------------------------------------------
 Actuation& Actuation::operator=(const Actuation &aActuation)
 {
-	// BASE CLASS
-	Analysis::operator=(aActuation);
+    // BASE CLASS
+    Analysis::operator=(aActuation);
 
-	// Deallocate _fsp if already allocated
-	if (_fsp != NULL) { delete[] _fsp;  _fsp = NULL; }
+    // Deallocate _fsp if already allocated
+    if (_fsp != NULL) { delete[] _fsp;  _fsp = NULL; }
 
-	// STORAGE
-	deleteStorage();
-	allocateStorage();
+    // STORAGE
+    deleteStorage();
+    allocateStorage();
 
-	// CHECK MODEL
-	if (_model != NULL) {
-		_na = getNumEnabledActuators();
-		_fsp = new double[_na];
-		constructColumnLabels();
-	}
+    // CHECK MODEL
+    if (_model != NULL) {
+        _na = getNumEnabledActuators();
+        _fsp = new double[_na];
+        constructColumnLabels();
+    }
 
-	return (*this);
+    return (*this);
 }
 //_____________________________________________________________________________
 /**
@@ -162,28 +162,28 @@ Actuation& Actuation::operator=(const Actuation &aActuation)
 */
 void Actuation::setModel(Model& aModel)
 {
-	// BASE CLASS
-	Analysis::setModel(aModel);
+    // BASE CLASS
+    Analysis::setModel(aModel);
 
-	// NUMBER OF ACTUATORS
-	if (_model){
-		_na = getNumEnabledActuators();
-	}
-	else
-		_na = 0;
+    // NUMBER OF ACTUATORS
+    if (_model){
+        _na = getNumEnabledActuators();
+    }
+    else
+        _na = 0;
 
-	if (_na <= 0){
-		cout << "WARNING: Actuation analysis cancled. There are no Actuators in the model." << endl;
-		return;
-	}
+    if (_na <= 0){
+        cout << "WARNING: Actuation analysis cancled. There are no Actuators in the model." << endl;
+        return;
+    }
 
-	// STORAGE
-	deleteStorage();
-	allocateStorage();
+    // STORAGE
+    deleteStorage();
+    allocateStorage();
 
 
-	// UPDATE LABELS
-	constructColumnLabels();
+    // UPDATE LABELS
+    constructColumnLabels();
 }
 //_____________________________________________________________________________
 /**
@@ -192,21 +192,21 @@ void Actuation::setModel(Model& aModel)
 void Actuation::
 allocateStorage()
 {
-	// ACCELERATIONS
-	_forceStore = new Storage(1000, "ActuatorForces");
-	_forceStore->setDescription(getDescription());
-	// Keep references o all storages in a list for uniform access from GUI
-	_storageList.append(_forceStore);
-	_storageList.setMemoryOwner(false);
-	// VELOCITIES
-	_speedStore = new Storage(1000, "ActuatorSpeeds");
-	_speedStore->setDescription(getDescription());
-	_storageList.append(_speedStore);
+    // ACCELERATIONS
+    _forceStore = new Storage(1000, "ActuatorForces");
+    _forceStore->setDescription(getDescription());
+    // Keep references o all storages in a list for uniform access from GUI
+    _storageList.append(_forceStore);
+    _storageList.setMemoryOwner(false);
+    // VELOCITIES
+    _speedStore = new Storage(1000, "ActuatorSpeeds");
+    _speedStore->setDescription(getDescription());
+    _storageList.append(_speedStore);
 
-	// POSITIONS
-	_powerStore = new Storage(1000, "ActuatorPowers");
-	_powerStore->setDescription(getDescription());
-	_storageList.append(_powerStore);
+    // POSITIONS
+    _powerStore = new Storage(1000, "ActuatorPowers");
+    _powerStore->setDescription(getDescription());
+    _storageList.append(_powerStore);
 }
 
 //-----------------------------------------------------------------------------
@@ -219,36 +219,36 @@ allocateStorage()
 void Actuation::
 constructDescription()
 {
-	char descrip[1024];
+    char descrip[1024];
 
-	strcpy(descrip, "\nThis file contains either the forces, speeds, or ");
-	strcat(descrip, "powers developed\nby the actuators of a model ");
-	strcat(descrip, "during a simulation.\n");
+    strcpy(descrip, "\nThis file contains either the forces, speeds, or ");
+    strcat(descrip, "powers developed\nby the actuators of a model ");
+    strcat(descrip, "during a simulation.\n");
 
-	strcat(descrip, "\nAn actuator force is a generalized force, meaning that");
-	strcat(descrip, " it can be either a force (N) or a torque (Nm).\n");
+    strcat(descrip, "\nAn actuator force is a generalized force, meaning that");
+    strcat(descrip, " it can be either a force (N) or a torque (Nm).\n");
 
-	strcat(descrip, "\nAn actuator speed is the rate at which an actuator ");
-	strcat(descrip, "shortens. Depending on the actuator,\na speed can be ");
-	strcat(descrip, "either a translational speed (m/s) or an angular speed ");
-	strcat(descrip, "(deg/s or rad/s).\n");
+    strcat(descrip, "\nAn actuator speed is the rate at which an actuator ");
+    strcat(descrip, "shortens. Depending on the actuator,\na speed can be ");
+    strcat(descrip, "either a translational speed (m/s) or an angular speed ");
+    strcat(descrip, "(deg/s or rad/s).\n");
 
-	strcat(descrip, "\nAn actuator power (Watts) is the rate at which an ");
-	strcat(descrip, "actuator does work.  Positive power means\nthat the ");
-	strcat(descrip, "actuator is delivering energy to the model; negative ");
-	strcat(descrip, "power means that the actuator\nis absorbing energy ");
-	strcat(descrip, "from the model.\n");
+    strcat(descrip, "\nAn actuator power (Watts) is the rate at which an ");
+    strcat(descrip, "actuator does work.  Positive power means\nthat the ");
+    strcat(descrip, "actuator is delivering energy to the model; negative ");
+    strcat(descrip, "power means that the actuator\nis absorbing energy ");
+    strcat(descrip, "from the model.\n");
 
-	strcat(descrip, "\nUnits are S.I. units (second, meters, Newtons, ...)");
-	if (getInDegrees()) {
-		strcat(descrip, "\nAngles are in degrees.");
-	}
-	else {
-		strcat(descrip, "\nAngles are in radians.");
-	}
-	strcat(descrip, "\n\n");
+    strcat(descrip, "\nUnits are S.I. units (second, meters, Newtons, ...)");
+    if (getInDegrees()) {
+        strcat(descrip, "\nAngles are in degrees.");
+    }
+    else {
+        strcat(descrip, "\nAngles are in radians.");
+    }
+    strcat(descrip, "\n\n");
 
-	setDescription(descrip);
+    setDescription(descrip);
 }
 
 //-----------------------------------------------------------------------------
@@ -261,19 +261,19 @@ constructDescription()
 void Actuation::
 constructColumnLabels()
 {
-	if (_model)
-	{
-		// ASSIGN
-		Array<string> labels;
-		labels.append("time");
-		const Set<Actuator>& ai = _model->getActuators();
-		for (int i = 0; i < ai.getSize(); i++)
-			if (!ai.get(i).get_isDisabled()) labels.append(ai.get(i).getName());
-		setColumnLabels(labels);
-	}
-	_forceStore->setColumnLabels(getColumnLabels());
-	_speedStore->setColumnLabels(getColumnLabels());
-	_powerStore->setColumnLabels(getColumnLabels());
+    if (_model)
+    {
+        // ASSIGN
+        Array<string> labels;
+        labels.append("time");
+        const Set<Actuator>& ai = _model->getActuators();
+        for (int i = 0; i < ai.getSize(); i++)
+            if (!ai.get(i).get_isDisabled()) labels.append(ai.get(i).getName());
+        setColumnLabels(labels);
+    }
+    _forceStore->setColumnLabels(getColumnLabels());
+    _speedStore->setColumnLabels(getColumnLabels());
+    _powerStore->setColumnLabels(getColumnLabels());
 }
 
 
@@ -287,9 +287,9 @@ constructColumnLabels()
 void Actuation::
 deleteStorage()
 {
-	if (_forceStore != NULL) { delete _forceStore;  _forceStore = NULL; }
-	if (_speedStore != NULL) { delete _speedStore;  _speedStore = NULL; }
-	if (_powerStore != NULL) { delete _powerStore;  _powerStore = NULL; }
+    if (_forceStore != NULL) { delete _forceStore;  _forceStore = NULL; }
+    if (_speedStore != NULL) { delete _speedStore;  _speedStore = NULL; }
+    if (_powerStore != NULL) { delete _powerStore;  _powerStore = NULL; }
 }
 
 
@@ -309,7 +309,7 @@ deleteStorage()
 Storage* Actuation::
 getForceStorage() const
 {
-	return(_forceStore);
+    return(_forceStore);
 }
 //_____________________________________________________________________________
 /**
@@ -320,7 +320,7 @@ getForceStorage() const
 Storage* Actuation::
 getSpeedStorage() const
 {
-	return(_speedStore);
+    return(_speedStore);
 }
 //_____________________________________________________________________________
 /**
@@ -331,7 +331,7 @@ getSpeedStorage() const
 Storage* Actuation::
 getPowerStorage() const
 {
-	return(_powerStore);
+    return(_powerStore);
 }
 
 
@@ -348,9 +348,9 @@ getPowerStorage() const
 void Actuation::
 setStorageCapacityIncrements(int aIncrement)
 {
-	_forceStore->setCapacityIncrement(aIncrement);
-	_speedStore->setCapacityIncrement(aIncrement);
-	_powerStore->setCapacityIncrement(aIncrement);
+    _forceStore->setCapacityIncrement(aIncrement);
+    _speedStore->setCapacityIncrement(aIncrement);
+    _powerStore->setCapacityIncrement(aIncrement);
 }
 
 
@@ -365,40 +365,40 @@ setStorageCapacityIncrements(int aIncrement)
 int Actuation::
 record(const SimTK::State& s)
 {
-	if (_model == NULL) return(-1);
+    if (_model == NULL) return(-1);
 
-	// MAKE SURE ALL ACTUATION QUANTITIES ARE VALID
-	_model->getMultibodySystem().realize(s, SimTK::Stage::Dynamics);
+    // MAKE SURE ALL ACTUATION QUANTITIES ARE VALID
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Dynamics);
 
-	// TIME NORMALIZATION
-	double tReal = s.getTime();
+    // TIME NORMALIZATION
+    double tReal = s.getTime();
 
-	// FORCE
-	const Set<Actuator>& fSet = _model->getActuators();
-	for (int i = 0, iact = 0; i<fSet.getSize(); i++) {
-		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
-		if (!fSet.get(i).get_isDisabled())
-			_fsp[iact++] = act->getActuation(s);
-	}
-	_forceStore->append(tReal, _na, _fsp);
+    // FORCE
+    const Set<Actuator>& fSet = _model->getActuators();
+    for (int i = 0, iact = 0; i<fSet.getSize(); i++) {
+        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+        if (!fSet.get(i).get_isDisabled())
+            _fsp[iact++] = act->getActuation(s);
+    }
+    _forceStore->append(tReal, _na, _fsp);
 
-	// SPEED
-	for (int i = 0, iact = 0; i<fSet.getSize(); i++) {
-		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
-		if (!fSet.get(i).get_isDisabled())
-			_fsp[iact++] = act->getSpeed(s);
-	}
-	_speedStore->append(tReal, _na, _fsp);
+    // SPEED
+    for (int i = 0, iact = 0; i<fSet.getSize(); i++) {
+        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+        if (!fSet.get(i).get_isDisabled())
+            _fsp[iact++] = act->getSpeed(s);
+    }
+    _speedStore->append(tReal, _na, _fsp);
 
-	// POWER
-	for (int i = 0, iact = 0; i<fSet.getSize(); i++) {
-		if (!fSet.get(i).get_isDisabled())
-			_fsp[iact++] = fSet.get(i).getPower(s);
-	}
-	_powerStore->append(tReal, _na, _fsp);
+    // POWER
+    for (int i = 0, iact = 0; i<fSet.getSize(); i++) {
+        if (!fSet.get(i).get_isDisabled())
+            _fsp[iact++] = fSet.get(i).getPower(s);
+    }
+    _powerStore->append(tReal, _na, _fsp);
 
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -420,35 +420,35 @@ record(const SimTK::State& s)
 int Actuation::
 begin(SimTK::State& s)
 {
-	if (!proceed()) return(0);
+    if (!proceed()) return(0);
 
-	// NUMBER OF ACTUATORS
-	int na = _model->getActuators().getSize();
-	_na = na;
-	// WORK ARRAY
-	if (_fsp != NULL) delete[] _fsp;
-	_fsp = new double[_na];
+    // NUMBER OF ACTUATORS
+    int na = _model->getActuators().getSize();
+    _na = na;
+    // WORK ARRAY
+    if (_fsp != NULL) delete[] _fsp;
+    _fsp = new double[_na];
 
-	// RESET STORAGE
-	if (_forceStore == NULL)
-		_forceStore = new Storage();
-	if (_speedStore == NULL)
-		_speedStore = new Storage();
-	if (_powerStore == NULL)
-		_powerStore = new Storage();
+    // RESET STORAGE
+    if (_forceStore == NULL)
+        _forceStore = new Storage();
+    if (_speedStore == NULL)
+        _speedStore = new Storage();
+    if (_powerStore == NULL)
+        _powerStore = new Storage();
 
-	// RESET STORAGE
-	_forceStore->reset(s.getTime());
-	_speedStore->reset(s.getTime());
-	_powerStore->reset(s.getTime());
+    // RESET STORAGE
+    _forceStore->reset(s.getTime());
+    _speedStore->reset(s.getTime());
+    _powerStore->reset(s.getTime());
 
-	// RECORD
-	int status = 0;
-	if (_forceStore->getSize() <= 0) {
-		status = record(s);
-	}
+    // RECORD
+    int status = 0;
+    if (_forceStore->getSize() <= 0) {
+        status = record(s);
+    }
 
-	return(status);
+    return(status);
 }
 //_____________________________________________________________________________
 /**
@@ -470,11 +470,11 @@ begin(SimTK::State& s)
 int Actuation::
 step(const SimTK::State& s, int stepNumber)
 {
-	if (!proceed(stepNumber)) return(0);
+    if (!proceed(stepNumber)) return(0);
 
-	record(s);
+    record(s);
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -494,11 +494,11 @@ step(const SimTK::State& s, int stepNumber)
 int Actuation::
 end(SimTK::State& s)
 {
-	if (!proceed()) return 0;
+    if (!proceed()) return 0;
 
-	record(s);
+    record(s);
 
-	return(0);
+    return(0);
 }
 
 
@@ -526,17 +526,17 @@ int Actuation::
 printResults(const string &aBaseName, const string &aDir, double aDT,
 const string &aExtension)
 {
-	if (!getOn()) {
-		printf("Actuation.printResults: Off- not printing.\n");
-		return(0);
-	}
+    if (!getOn()) {
+        printf("Actuation.printResults: Off- not printing.\n");
+        return(0);
+    }
 
-	std::string prefix = aBaseName + "_" + getName() + "_";
-	Storage::printResult(_forceStore, prefix + "force", aDir, aDT, aExtension);
-	Storage::printResult(_speedStore, prefix + "speed", aDir, aDT, aExtension);
-	Storage::printResult(_powerStore, prefix + "power", aDir, aDT, aExtension);
+    std::string prefix = aBaseName + "_" + getName() + "_";
+    Storage::printResult(_forceStore, prefix + "force", aDir, aDT, aExtension);
+    Storage::printResult(_speedStore, prefix + "speed", aDir, aDT, aExtension);
+    Storage::printResult(_powerStore, prefix + "power", aDir, aDT, aExtension);
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -550,11 +550,11 @@ int Actuation::
 getNumEnabledActuators()
 {
 
-	const Set<Actuator>& actuators = _model->getActuators();
-	int numActuators = actuators.getSize();
-	int numEnabled = numActuators;
-	for (int i = 0; i< numActuators; i++)
-		if (actuators[i].get_isDisabled()) numEnabled--;
+    const Set<Actuator>& actuators = _model->getActuators();
+    int numActuators = actuators.getSize();
+    int numEnabled = numActuators;
+    for (int i = 0; i< numActuators; i++)
+        if (actuators[i].get_isDisabled()) numEnabled--;
 
-	return numEnabled;
+    return numEnabled;
 }

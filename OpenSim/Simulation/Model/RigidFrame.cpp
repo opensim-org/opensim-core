@@ -42,14 +42,14 @@ using namespace OpenSim;
 */
 RigidFrame::RigidFrame() : Frame()
 {
-	setNull();
+    setNull();
 
 }
 
 
 void RigidFrame::setNull()
 {
-	setAuthors("Matt DeMers");
+    setAuthors("Matt DeMers");
 }
 
 /**

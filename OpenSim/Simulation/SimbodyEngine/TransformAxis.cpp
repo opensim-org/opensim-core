@@ -48,24 +48,24 @@ using SimTK::Vec3; using SimTK::State; using SimTK::Vector; using SimTK::Xml;
 //_____________________________________________________________________________
 // Default constructor.
 TransformAxis::TransformAxis() {
-	setNull();
-	constructProperties();
+    setNull();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
 // Constructor with coordinate names and axis.
 TransformAxis::TransformAxis(const Array<string>& coordNames, 
                              const Vec3&          axis) {
-	setNull();
-	constructProperties();
-	setCoordinateNames(coordNames);
-	setAxis(axis);
+    setNull();
+    constructProperties();
+    setCoordinateNames(coordNames);
+    setAxis(axis);
 }
 // Constructor from XML node.
 TransformAxis::TransformAxis(Xml::Element& aNode) {
-	setNull();
-	constructProperties();
-	updateFromXMLNode(aNode);
+    setNull();
+    constructProperties();
+    updateFromXMLNode(aNode);
 }
 
 //_____________________________________________________________________________
@@ -77,14 +77,14 @@ TransformAxis::TransformAxis(Xml::Element& aNode) {
  */
 void TransformAxis::connectToJoint(const Joint& aJoint)
 {
-	string errorMessage;
+    string errorMessage;
 
-	_joint = &aJoint;
+    _joint = &aJoint;
 
-	// Look up the coordinates by name.
+    // Look up the coordinates by name.
     const Property<string>& coordNames = getProperty_coordinates();
-	int nc = coordNames.size();
-	const CoordinateSet& coords = _joint->getCoordinateSet();
+    int nc = coordNames.size();
+    const CoordinateSet& coords = _joint->getCoordinateSet();
 
     // If a Function has been assigned then we have to insist that any 
     // specified coordinates actually exist in this joint.
@@ -94,15 +94,15 @@ void TransformAxis::connectToJoint(const Joint& aJoint)
     if (!hasFunction())
         return; // no need to check
 
-	for(int i=0; i< nc; ++i) {
+    for(int i=0; i< nc; ++i) {
         if (!coords.contains(coordNames[i])) {
-			errorMessage += "Invalid coordinate (" 
+            errorMessage += "Invalid coordinate (" 
                             + coordNames[i] 
                             + ") specified for TransformAxis " 
                             + getName() + " in joint " + aJoint.getName();
-			throw (Exception(errorMessage));
-		}
-	}
+            throw (Exception(errorMessage));
+        }
+    }
 }
 
 
@@ -139,14 +139,14 @@ void TransformAxis::constructProperties() {
 double TransformAxis::getValue(const State& s )
 {
     const Property<string>& coordNames = getCoordinateNames();
-	const int nc = coordNames.size();
-	const CoordinateSet& coords = _joint->getCoordinateSet();
+    const int nc = coordNames.size();
+    const CoordinateSet& coords = _joint->getCoordinateSet();
 
-	Vector workX(nc, 0.0);
-	for (int i=0; i < nc; ++i)
-		workX[i] = coords.get(coordNames[i]).getValue(s);
+    Vector workX(nc, 0.0);
+    for (int i=0; i < nc; ++i)
+        workX[i] = coords.get(coordNames[i]).getValue(s);
 
-	return getFunction().calcValue(workX);
+    return getFunction().calcValue(workX);
 }
 
 //_____________________________________________________________________________
@@ -155,7 +155,7 @@ const OpenSim::Function& TransformAxis::getFunction() const
     const Property<Function>& function = getProperty_function();
     if (function.empty())
         throw Exception("TransformAxis::getFunction(): no Function is defined");
-	return function.getValue();
+    return function.getValue();
 }
 
 OpenSim::Function& TransformAxis::updFunction()
@@ -163,7 +163,7 @@ OpenSim::Function& TransformAxis::updFunction()
     Property<Function>& function = updProperty_function();
     if (function.empty())
         throw Exception("TransformAxis::getFunction(): no Function is defined");
-	return function.updValue();
+    return function.updValue();
 }
 
 //_____________________________________________________________________________
@@ -185,11 +185,11 @@ void TransformAxis::setFunction(const OpenSim::Function& func)
 void TransformAxis::updateFromXMLNode
    (Xml::Element& node, int versionNumber)
 {
-	// Version before refactoring spatialTransform.
+    // Version before refactoring spatialTransform.
     // TODO: this is handled in CustomJoint's updateFromXMLNode() method
     // but should be dealt with here. Can't do it both places, though.
 
     //XMLDocument::renameChildNode(node, "coordinate", "coordinates");
 
-	Super::updateFromXMLNode(node, versionNumber);
+    Super::updateFromXMLNode(node, versionNumber);
 }

@@ -39,15 +39,15 @@ class OSIMTOOLS_API IKMarkerTask : public IKTask {
 OpenSim_DECLARE_CONCRETE_OBJECT(IKMarkerTask, IKTask);
 
 public:
-	IKMarkerTask();
-	IKMarkerTask(const IKMarkerTask &aIKMarkerTask);
+    IKMarkerTask();
+    IKMarkerTask(const IKMarkerTask &aIKMarkerTask);
 
 #ifndef SWIG
-	IKMarkerTask& operator=(const IKMarkerTask &aIKMarkerTask);
+    IKMarkerTask& operator=(const IKMarkerTask &aIKMarkerTask);
 #endif
 
 //=============================================================================
-};	// END of class IKMarkerTask
+};  // END of class IKMarkerTask
 //=============================================================================
 //=============================================================================
 

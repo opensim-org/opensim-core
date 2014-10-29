@@ -1,13 +1,13 @@
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-		    ${OpenSim_SOURCE_DIR}/Vendors)
+            ${OpenSim_SOURCE_DIR}/Vendors)
 
 
 LINK_LIBRARIES( debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
-		debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
-		debug osimAnalyses${CMAKE_DEBUG_POSTFIX} optimized osimAnalyses
-   		debug ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} 
+        debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
+        debug osimAnalyses${CMAKE_DEBUG_POSTFIX} optimized osimAnalyses
+        debug ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} 
         optimized   ${NameSpace}SimTKcommon
-   		debug ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} 
+        debug ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} 
         optimized  ${NameSpace}SimTKmath)
 
 ADD_EXECUTABLE(testForward testForward.cpp)

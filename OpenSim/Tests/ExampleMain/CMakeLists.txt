@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 2.6)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-		    ${OpenSim_SOURCE_DIR}/Vendors)
+            ${OpenSim_SOURCE_DIR}/Vendors)
 
 LINK_LIBRARIES( debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
-		debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
-		debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators
-		debug osimAnalyses${CMAKE_DEBUG_POSTFIX} optimized osimAnalyses
-		debug osimTools${CMAKE_DEBUG_POSTFIX} optimized osimTools
-		${SIMTK_ALL_LIBS})
+        debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
+        debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators
+        debug osimAnalyses${CMAKE_DEBUG_POSTFIX} optimized osimAnalyses
+        debug osimTools${CMAKE_DEBUG_POSTFIX} optimized osimTools
+        ${SIMTK_ALL_LIBS})
 
 # Variable definitions
 SET(EXAMPLE_TARGET exampleMain)
@@ -23,12 +23,12 @@ ADD_EXECUTABLE(${TEST_TARGET} ${TEST_TARGET}.cpp)
 TARGET_LINK_LIBRARIES(${TEST_TARGET} ${LINK_LIBRARIES})
 
 FILE(GLOB TEST_FILES 
-	${EXAMPLE_DIR}/*.obj 
-	${EXAMPLE_DIR}/*.osim 
-	${EXAMPLE_DIR}/*.xml 
-	${EXAMPLE_DIR}/*.sto 
-	${EXAMPLE_DIR}/*.mot
-	*.obj *.osim *.xml *.sto *.mot)
+    ${EXAMPLE_DIR}/*.obj 
+    ${EXAMPLE_DIR}/*.osim 
+    ${EXAMPLE_DIR}/*.xml 
+    ${EXAMPLE_DIR}/*.sto 
+    ${EXAMPLE_DIR}/*.mot
+    *.obj *.osim *.xml *.sto *.mot)
 
 #
 # Copy files to run dir

@@ -43,10 +43,10 @@ ForceAdapter::ForceAdapter(const Force& force) : _force(&force)
 // METHODS TO CALCULATE FORCE AND ENERGY
 //-----------------------------------------------------------------------------
 void ForceAdapter::calcForce(const SimTK::State& state,
-	SimTK::Vector_<SimTK::SpatialVec>& bodyForces,SimTK::Vector_<SimTK::Vec3>& particleForces,
-	SimTK::Vector& mobilityForces) const
+    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,SimTK::Vector_<SimTK::Vec3>& particleForces,
+    SimTK::Vector& mobilityForces) const
 {
-	_force->computeForce(state, bodyForces, mobilityForces);
+    _force->computeForce(state, bodyForces, mobilityForces);
 }
 
 SimTK::Real ForceAdapter::calcPotentialEnergy(const SimTK::State& state) const
@@ -55,5 +55,5 @@ SimTK::Real ForceAdapter::calcPotentialEnergy(const SimTK::State& state) const
 }
 
 bool ForceAdapter::shouldBeParallelized() const {
-	return _force->shouldBeParallelized(); 
+    return _force->shouldBeParallelized(); 
 }

@@ -169,5 +169,5 @@ calcDerivative(double activation, double excitation) const
     } else {
         tau = getDeactivationTimeConstant() / (0.5 + 1.5*clampedActivation);
     }
-	return (clampedExcitation - clampedActivation) / tau;
+    return (clampedExcitation - clampedActivation) / tau;
 }

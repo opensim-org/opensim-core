@@ -96,8 +96,8 @@ void Marker::setFrameName(const string& aName)
  */
 const string& Marker::getFrameName() const
 {
-	//if (_bodyNameProp.getValueIsDefault())
-	//	return NULL;
+    //if (_bodyNameProp.getValueIsDefault())
+    //  return NULL;
 
     return getReferenceFrame().getName();
 }
@@ -114,9 +114,9 @@ void Marker::changeFrame(const OpenSim::RigidFrame& aRigidFrame)
 {
 
     if (aRigidFrame == getReferenceFrame())
-		return;
+        return;
 
-	setFrameName(aRigidFrame.getName());
+    setFrameName(aRigidFrame.getName());
     connectToModel(updModel());
 }
 
@@ -133,14 +133,14 @@ void Marker::changeFramePreserveLocation(const SimTK::State& s, OpenSim::RigidFr
 {
 
     if (aRigidFrame == getReferenceFrame())
-		return;
+        return;
 
-	// Preserve location means to switch bodies without changing
-	// the location of the marker in the inertial reference frame.
+    // Preserve location means to switch bodies without changing
+    // the location of the marker in the inertial reference frame.
     Vec3 newLocation;
     newLocation = findLocationInFrame(s, aRigidFrame);
     set_location(newLocation);
-	setFrameName(aRigidFrame.getName());
+    setFrameName(aRigidFrame.getName());
     connectToModel(aRigidFrame.updModel());
 }
 

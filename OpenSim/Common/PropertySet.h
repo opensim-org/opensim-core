@@ -39,10 +39,10 @@
 
 
 #ifdef SWIG
-	#ifdef OSIMCOMMON_API
-		#undef OSIMCOMMON_API
-		#define OSIMCOMMON_API
-	#endif
+    #ifdef OSIMCOMMON_API
+        #undef OSIMCOMMON_API
+        #define OSIMCOMMON_API
+    #endif
 #endif
 
 #ifndef SWIG
@@ -78,62 +78,62 @@ class OSIMCOMMON_API PropertySet
 // DATA
 //=============================================================================
 public:
-	/** Set of properties. */
-	ArrayPtrs<Property_Deprecated> _array;
+    /** Set of properties. */
+    ArrayPtrs<Property_Deprecated> _array;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	PropertySet();
-	PropertySet(const PropertySet &aSet);
-	virtual ~PropertySet() { _array.setSize(0); };
+    PropertySet();
+    PropertySet(const PropertySet &aSet);
+    virtual ~PropertySet() { _array.setSize(0); };
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	friend std::ostream& operator<<(std::ostream &aOut,
-															const PropertySet &aSet) {
-		aOut << "\nProperty Set:\n";
-		for(int i=0;i<aSet.getSize();i++) aOut << *aSet.get(i) << "\n";
-		return(aOut);
-	}
+    friend std::ostream& operator<<(std::ostream &aOut,
+                                                            const PropertySet &aSet) {
+        aOut << "\nProperty Set:\n";
+        for(int i=0;i<aSet.getSize();i++) aOut << *aSet.get(i) << "\n";
+        return(aOut);
+    }
 #endif
-	//--------------------------------------------------------------------------
-	// ACCESS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // ACCESS
+    //--------------------------------------------------------------------------
 public:
-	// Empty?
-	bool isEmpty() const;
-	// Number of properties
-	int getSize() const;
-	// Get
-	virtual Property_Deprecated* get(int i) throw (Exception);
+    // Empty?
+    bool isEmpty() const;
+    // Number of properties
+    int getSize() const;
+    // Get
+    virtual Property_Deprecated* get(int i) throw (Exception);
 #ifndef SWIG
-	virtual const Property_Deprecated* get(int i) const;
+    virtual const Property_Deprecated* get(int i) const;
 #endif
-	virtual Property_Deprecated* get(const std::string &aName) throw (Exception);
+    virtual Property_Deprecated* get(const std::string &aName) throw (Exception);
 #ifndef SWIG
-	virtual const Property_Deprecated* get(const std::string &aName) const;
+    virtual const Property_Deprecated* get(const std::string &aName) const;
 #endif
-	virtual const Property_Deprecated* contains(const std::string& aName) const;
+    virtual const Property_Deprecated* contains(const std::string& aName) const;
 #ifndef SWIG
-	virtual Property_Deprecated* contains(const std::string& aName);
+    virtual Property_Deprecated* contains(const std::string& aName);
 #endif
-	// Append
-	virtual void append(Property_Deprecated *aProperty);
-	virtual void append(Property_Deprecated *aProperty, const std::string& aName);
-	// Remove
-	virtual void remove(const std::string &aName);
-	// Clear
-	virtual void clear();
+    // Append
+    virtual void append(Property_Deprecated *aProperty);
+    virtual void append(Property_Deprecated *aProperty, const std::string& aName);
+    // Remove
+    virtual void remove(const std::string &aName);
+    // Clear
+    virtual void clear();
 
 //=============================================================================
-};	// END of class PropertySet
+};  // END of class PropertySet
 
 }; //namespace
 //=============================================================================

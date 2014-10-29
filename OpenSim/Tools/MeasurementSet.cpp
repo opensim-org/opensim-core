@@ -42,9 +42,9 @@ MeasurementSet::~MeasurementSet(void)
  * Default constructor of a MeasurementSet.
  */
 MeasurementSet::MeasurementSet() :
-	Set<Measurement>()
+    Set<Measurement>()
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -52,10 +52,10 @@ MeasurementSet::MeasurementSet() :
  * Copy constructor of a MeasurementSet.
  */
 MeasurementSet::MeasurementSet(const MeasurementSet& aSimmMeasurementSet):
-	Set<Measurement>(aSimmMeasurementSet)
+    Set<Measurement>(aSimmMeasurementSet)
 {
-	setNull();
-	*this = aSimmMeasurementSet;
+    setNull();
+    *this = aSimmMeasurementSet;
 }
 
 //=============================================================================
@@ -80,7 +80,7 @@ void MeasurementSet::setNull()
 #ifndef SWIG
 MeasurementSet& MeasurementSet::operator=(const MeasurementSet &aSimmMeasurementSet)
 {
-	Set<Measurement>::operator=(aSimmMeasurementSet);
-	return (*this);
+    Set<Measurement>::operator=(aSimmMeasurementSet);
+    return (*this);
 }
 #endif

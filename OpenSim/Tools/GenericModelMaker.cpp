@@ -43,10 +43,10 @@ using namespace OpenSim;
  */
 GenericModelMaker::GenericModelMaker() :
    _fileName(_fileNameProp.getValueStr()),
-	_markerSetFileName(_markerSetFileNameProp.getValueStr())
+    _markerSetFileName(_markerSetFileNameProp.getValueStr())
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -66,11 +66,11 @@ GenericModelMaker::~GenericModelMaker()
 GenericModelMaker::GenericModelMaker(const GenericModelMaker &aGenericModelMaker) :
    Object(aGenericModelMaker),
    _fileName(_fileNameProp.getValueStr()),
-	_markerSetFileName(_markerSetFileNameProp.getValueStr())
+    _markerSetFileName(_markerSetFileNameProp.getValueStr())
 {
-	setNull();
-	setupProperties();
-	copyData(aGenericModelMaker);
+    setNull();
+    setupProperties();
+    copyData(aGenericModelMaker);
 }
 
 
@@ -85,8 +85,8 @@ GenericModelMaker::GenericModelMaker(const GenericModelMaker &aGenericModelMaker
  */
 void GenericModelMaker::copyData(const GenericModelMaker &aGenericModelMaker)
 {
-	_fileName = aGenericModelMaker._fileName;
-	_markerSetFileName = aGenericModelMaker._markerSetFileName;
+    _fileName = aGenericModelMaker._fileName;
+    _markerSetFileName = aGenericModelMaker._markerSetFileName;
 }
 
 //_____________________________________________________________________________
@@ -103,15 +103,15 @@ void GenericModelMaker::setNull()
  */
 void GenericModelMaker::setupProperties()
 {
-	_fileNameProp.setComment("Model file (.osim) for the unscaled model."); 
-	_fileNameProp.setName("model_file");
-	_propertySet.append(&_fileNameProp);
+    _fileNameProp.setComment("Model file (.osim) for the unscaled model."); 
+    _fileNameProp.setName("model_file");
+    _propertySet.append(&_fileNameProp);
 
-	_markerSetFileNameProp.setComment("Set of model markers used to scale the model. "
-		"Scaling is done based on distances between model markers compared to "
-		"the same distances between the corresponding experimental markers.");
-	_markerSetFileNameProp.setName("marker_set_file");
-	_propertySet.append(&_markerSetFileNameProp);
+    _markerSetFileNameProp.setComment("Set of model markers used to scale the model. "
+        "Scaling is done based on distances between model markers compared to "
+        "the same distances between the corresponding experimental markers.");
+    _markerSetFileNameProp.setName("marker_set_file");
+    _propertySet.append(&_markerSetFileNameProp);
 }
 
 //_____________________________________________________________________________
@@ -120,7 +120,7 @@ void GenericModelMaker::setupProperties()
  */
 void GenericModelMaker::registerTypes()
 {
-	//Object::registerType(Marker());
+    //Object::registerType(Marker());
 }
 
 //=============================================================================
@@ -134,12 +134,12 @@ void GenericModelMaker::registerTypes()
  */
 GenericModelMaker& GenericModelMaker::operator=(const GenericModelMaker &aGenericModelMaker)
 {
-	// BASE CLASS
-	Object::operator=(aGenericModelMaker);
+    // BASE CLASS
+    Object::operator=(aGenericModelMaker);
 
-	copyData(aGenericModelMaker);
+    copyData(aGenericModelMaker);
 
-	return(*this);
+    return(*this);
 }
 
 //=============================================================================
@@ -154,28 +154,28 @@ GenericModelMaker& GenericModelMaker::operator=(const GenericModelMaker &aGeneri
  */
 Model* GenericModelMaker::processModel(const string& aPathToSubject)
 {
-	Model* model = NULL;
+    Model* model = NULL;
 
-	cout << endl << "Step 1: Loading generic model" << endl;
+    cout << endl << "Step 1: Loading generic model" << endl;
 
-	try
-	{
-		_fileName = aPathToSubject + _fileName;
+    try
+    {
+        _fileName = aPathToSubject + _fileName;
 
-		model = new Model(_fileName);
-		model->initSystem();
+        model = new Model(_fileName);
+        model->initSystem();
 
-		if (!_markerSetFileNameProp.getValueIsDefault() && _markerSetFileName !="Unassigned") {
-			cout << "Loading marker set from '" << aPathToSubject+_markerSetFileName+"'" << endl;
+        if (!_markerSetFileNameProp.getValueIsDefault() && _markerSetFileName !="Unassigned") {
+            cout << "Loading marker set from '" << aPathToSubject+_markerSetFileName+"'" << endl;
             MarkerSet *markerSet = new MarkerSet(*model, aPathToSubject + _markerSetFileName);
-			model->updateMarkerSet(*markerSet);
-		}
-	}
-	catch (const Exception& x)
-	{
-		x.print(cout);
-		return NULL;
-	}
+            model->updateMarkerSet(*markerSet);
+        }
+    }
+    catch (const Exception& x)
+    {
+        x.print(cout);
+        return NULL;
+    }
 
-	return model;
+    return model;
 }

@@ -48,32 +48,32 @@ bool OpenSim::readNonCommentStringFromStream(istream &aStream, string &rBuffer)
 {
    size_t start, end;
 
-	rBuffer = "\0";
-	while (1)
-	{
-		if (rBuffer.empty())
-			if (!readStringFromStream(aStream, rBuffer))
-				return false;
+    rBuffer = "\0";
+    while (1)
+    {
+        if (rBuffer.empty())
+            if (!readStringFromStream(aStream, rBuffer))
+                return false;
 
-		start = rBuffer.find("/*");
-		if (start != rBuffer.npos)
-		{
-			while (1)
-			{
-				end = rBuffer.find("*/");
-				if (end == rBuffer.npos) // if end was not found
-					readStringFromStream(aStream, rBuffer);
-				else
-				{
-					rBuffer.erase(start, end+2);
-					break;
-				}
-			}
-		}
-		else
-			break;
-	}
-	return true;
+        start = rBuffer.find("/*");
+        if (start != rBuffer.npos)
+        {
+            while (1)
+            {
+                end = rBuffer.find("*/");
+                if (end == rBuffer.npos) // if end was not found
+                    readStringFromStream(aStream, rBuffer);
+                else
+                {
+                    rBuffer.erase(start, end+2);
+                    break;
+                }
+            }
+        }
+        else
+            break;
+    }
+    return true;
 }
 
 //_____________________________________________________________________________
@@ -265,20 +265,20 @@ bool OpenSim::readDoubleFromString(string &aString, double *rNumber, bool allowN
    if (aString.empty())
       return false;
    // Remove leading spaces
-	while(aString[0]==' ') aString.erase(0, 1);
+    while(aString[0]==' ') aString.erase(0, 1);
    /* remove any characters before the number */
    i = aString.find_first_of("0123456789-.", 0);
    if (i != 0){
-	   if (allowNaNs){
-		   std::string NaNString = "NAN";
-		   std::string prefix = aString.substr(0, 3);
-		   std::transform(prefix.begin(), prefix.end(),prefix.begin(), ::toupper);
-		   if (prefix==NaNString){
-				aString.erase(0, 3);
-				*rNumber = SimTK::NaN;
-				return true;
-		   }
-	   }
+       if (allowNaNs){
+           std::string NaNString = "NAN";
+           std::string prefix = aString.substr(0, 3);
+           std::transform(prefix.begin(), prefix.end(),prefix.begin(), ::toupper);
+           if (prefix==NaNString){
+                aString.erase(0, 3);
+                *rNumber = SimTK::NaN;
+                return true;
+           }
+       }
       aString.erase(0, i);
    }
    /* remove number from string, copy number to buffer */
@@ -317,13 +317,13 @@ bool OpenSim::readDoubleFromString(string &aString, double *rNumber, bool allowN
  */
 bool OpenSim::readVectorFromString(string &aString, SimTK::Vec3 &rVec)
 {
-	bool ok = true;
+    bool ok = true;
 
-	SimTK::Vec3& vecPtr = rVec;
-	ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[0]);
-	ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[1]);
-	ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[2]);
-	return ok;
+    SimTK::Vec3& vecPtr = rVec;
+    ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[0]);
+    ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[1]);
+    ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[2]);
+    return ok;
 }
 
 //_____________________________________________________________________________
@@ -385,7 +385,7 @@ bool OpenSim::readCoordinatesFromString(string &aString, double rVec[3], bool al
       /* if you have 3 TABS in a row, coordinate data is missing */
       if (numTabs == 3)
       {
-			rVec[0] = rVec[1] = rVec[2] = SimTK::NaN;
+            rVec[0] = rVec[1] = rVec[2] = SimTK::NaN;
          numCoords = 3;
       }
       if (numCoords == 3)
@@ -444,15 +444,15 @@ void OpenSim::convertString(string& aString, bool aPrependUnderscore)
 
    /* If the first character is a number, prepend an underscore. */
    if (aPrependUnderscore && aString[0] >= '0' && aString[0] <= '9')
-		aString.insert(0, "_");
+        aString.insert(0, "_");
 }
 
 string OpenSim::getCurrentTimeString()
 {
    time_t t = time(NULL);
 
-	char buf[100];
+    char buf[100];
    strftime(buf, 100, "%m/%d/%Y %I:%M:%S %p", localtime(&t));
 
-	return string(buf);
+    return string(buf);
 }
