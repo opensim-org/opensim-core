@@ -1467,21 +1467,21 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
  */
 void Model::printBasicInfo(std::ostream &aOStream) const
 {
-	aOStream<<"               MODEL: "<<getName()<<std::endl;
-	aOStream<<"         coordinates: "<<getCoordinateSet().getSize()<<std::endl;
-	aOStream<<"              forces: "<<getForceSet().getSize()<<std::endl;
-	aOStream<<"           actuators: "<<getActuators().getSize()<<std::endl;
-	aOStream<<"             muscles: "<<getMuscles().getSize()<<std::endl;
-	aOStream<<"            analyses: "<<getNumAnalyses()<<std::endl;
-	aOStream<<"              probes: "<<getProbeSet().getSize()<<std::endl;
-	aOStream<<"              bodies: "<<getBodySet().getSize()<<std::endl;
-	aOStream<<"              joints: "<<((OpenSim::Model*)this)->getJointSet().getSize()<<std::endl;
-	aOStream<<"         constraints: "<<getConstraintSet().getSize()<<std::endl;
-	aOStream<<"             markers: "<<getMarkerSet().getSize()<<std::endl;
-	aOStream<<"         controllers: "<<getControllerSet().getSize()<<std::endl;
-    aOStream << "  contact geometries: " << getContactGeometrySet().getSize() << std::endl;
-    aOStream << "  f        ramess: " << getFrameSet().getSize() << std::endl;
-    aOStream << "misc modelcomponents: " << getMiscModelComponentSet().getSize() << std::endl;
+    aOStream<<"               MODEL: "<<getName()<<std::endl;
+    aOStream<<"         coordinates: "<<getCoordinateSet().getSize()<<std::endl;
+    aOStream<<"              forces: "<<getForceSet().getSize()<<std::endl;
+    aOStream<<"           actuators: "<<getActuators().getSize()<<std::endl;
+    aOStream<<"             muscles: "<<getMuscles().getSize()<<std::endl;
+    aOStream<<"            analyses: "<<getNumAnalyses()<<std::endl;
+    aOStream<<"              probes: "<<getProbeSet().getSize()<<std::endl;
+    aOStream<<"              bodies: "<<getBodySet().getSize()<<std::endl;
+    aOStream<<"              joints: "<<((OpenSim::Model*)this)->getJointSet().getSize()<<std::endl;
+    aOStream<<"         constraints: "<<getConstraintSet().getSize()<<std::endl;
+    aOStream<<"             markers: "<<getMarkerSet().getSize()<<std::endl;
+    aOStream<<"         controllers: "<<getControllerSet().getSize()<<std::endl;
+    aOStream<<"  contact geometries: "<< getContactGeometrySet().getSize() << std::endl;
+    aOStream<<"              frames: "<< getFrameSet().getSize() << std::endl;
+    aOStream<<"misc modelcomponents: "<< getMiscModelComponentSet().getSize() << std::endl;
 
 }
 //_____________________________________________________________________________
