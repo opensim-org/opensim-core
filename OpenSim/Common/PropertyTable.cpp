@@ -37,7 +37,7 @@ using namespace std;
 // Copy constructor has to clone the source properties.
 PropertyTable::PropertyTable(const PropertyTable& source)
 {
-	replaceProperties(source.properties);
+    replaceProperties(source.properties);
 }
 
 //_____________________________________________________________________________
@@ -45,7 +45,7 @@ PropertyTable::PropertyTable(const PropertyTable& source)
 // PropertyTable.
 PropertyTable::~PropertyTable()
 {
-	deleteProperties();
+    deleteProperties();
 }
 
 //_____________________________________________________________________________
@@ -53,8 +53,8 @@ PropertyTable::~PropertyTable()
 PropertyTable& PropertyTable::operator=(const PropertyTable& source)
 {
     if (&source != this)
-	    replaceProperties(source.properties);
-	return *this;
+        replaceProperties(source.properties);
+    return *this;
 }
 
 //_____________________________________________________________________________

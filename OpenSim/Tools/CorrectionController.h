@@ -51,88 +51,88 @@ OpenSim_DECLARE_CONCRETE_OBJECT(CorrectionController, TrackingController);
 // DATA
 //=============================================================================
 protected:
-	/** Gain for position errors.  This property can be specified in a
-	 *  setup file. */
-	PropertyDbl _kpProp;
-	double &_kp;
-	/** Gain for velocity errors.  This property can be specified in a
-	 *  setup file. */
-	PropertyDbl _kvProp;
-	double &_kv;
+    /** Gain for position errors.  This property can be specified in a
+     *  setup file. */
+    PropertyDbl _kpProp;
+    double &_kp;
+    /** Gain for velocity errors.  This property can be specified in a
+     *  setup file. */
+    PropertyDbl _kvProp;
+    double &_kv;
 
-	/** States for the simulation. */
-	Storage *_yDesStore;
+    /** States for the simulation. */
+    Storage *_yDesStore;
 
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	CorrectionController();
-	CorrectionController(const std::string &aFileName, bool aUpdateFromXMLNode = true);
-	CorrectionController(const CorrectionController &aController);
-	virtual ~CorrectionController();
+    CorrectionController();
+    CorrectionController(const std::string &aFileName, bool aUpdateFromXMLNode = true);
+    CorrectionController(const CorrectionController &aController);
+    virtual ~CorrectionController();
 
 private:
-	void setNull();
+    void setNull();
 protected:
-	void setupProperties();
-	void copyData(const CorrectionController &aController);
+    void setupProperties();
+    void copyData(const CorrectionController &aController);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 
 #ifndef SWIG
 
-	/**
-	 * Assignment operator.  This method is called automatically whenever a
-	 * command of the form "controller1 = controller2;" is made, where both
-	 * controller1 and controller2 are both of type Controller.  Although
-	 * Controller cannot be instantiated directly, a subclass of Controller
-	 * could implement its own operator= method that calls Controller's
-	 * operator= method.  If the subclass does not implement its own operator=
-	 * method, then when a command of the form "controller1 = controller2" is
-	 * made, where both controller1 and controller2 are instants of the
-	 * subclass, the Controller class's operator= method will be called
-	 * automatically.
-	 *
-	 * @param aController The controller to be copied.
-	 * @return Reference to the altered object.
-	 */
-	CorrectionController& operator=(const CorrectionController &aController);
+    /**
+     * Assignment operator.  This method is called automatically whenever a
+     * command of the form "controller1 = controller2;" is made, where both
+     * controller1 and controller2 are both of type Controller.  Although
+     * Controller cannot be instantiated directly, a subclass of Controller
+     * could implement its own operator= method that calls Controller's
+     * operator= method.  If the subclass does not implement its own operator=
+     * method, then when a command of the form "controller1 = controller2" is
+     * made, where both controller1 and controller2 are instants of the
+     * subclass, the Controller class's operator= method will be called
+     * automatically.
+     *
+     * @param aController The controller to be copied.
+     * @return Reference to the altered object.
+     */
+    CorrectionController& operator=(const CorrectionController &aController);
 
 #endif
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	double getKp() const;
-	void setKp(double aKp);
-	double getKv() const;
-	void setKv(double aKv);
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    double getKp() const;
+    void setKp(double aKp);
+    double getKv() const;
+    void setKv(double aKv);
 
-	//--------------------------------------------------------------------------
-	// COMPUTATION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // COMPUTATION
+    //--------------------------------------------------------------------------
     void computeControls(const SimTK::State& s, SimTK::Vector& controls) const override;
 
 protected:
-	// for any post XML deseraialization intialization
-	void connectToModel(Model& model) override;
+    // for any post XML deseraialization intialization
+    void connectToModel(Model& model) override;
 
-	// controller creation once the setup is complete 
-	void addToSystem( SimTK::MultibodySystem& system) const override;   
+    // controller creation once the setup is complete 
+    void addToSystem( SimTK::MultibodySystem& system) const override;   
 
-	// for any intialization requiring a state or the complete system 
-	void initStateFromProperties( SimTK::State& s) const override;
+    // for any intialization requiring a state or the complete system 
+    void initStateFromProperties( SimTK::State& s) const override;
 
 //=============================================================================
-};	// END of class CorrectionController
+};  // END of class CorrectionController
 //=============================================================================
 //=============================================================================
 

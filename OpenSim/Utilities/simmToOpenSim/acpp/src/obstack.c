@@ -78,7 +78,7 @@ _obstack_begin (h, size, alignment, chunkfun, freefun)
     {
       int extra = 4;
       if (extra < DEFAULT_ROUNDING)
-	extra = DEFAULT_ROUNDING;
+    extra = DEFAULT_ROUNDING;
       size = 4096 - extra;
     }
 
@@ -87,7 +87,7 @@ _obstack_begin (h, size, alignment, chunkfun, freefun)
   h->chunk_size = size;
   h->alignment_mask = alignment - 1;
 
-  chunk	= h->chunk = (*h->chunkfun) (h->chunk_size);
+  chunk = h->chunk = (*h->chunkfun) (h->chunk_size);
   h->next_free = h->object_base = chunk->contents;
   h->chunk_limit = chunk->limit
    = (char *) chunk + h->chunk_size;
@@ -105,9 +105,9 @@ _obstack_newchunk (h, length)
      struct obstack *h;
      int length;
 {
-  register struct _obstack_chunk*	old_chunk = h->chunk;
-  register struct _obstack_chunk*	new_chunk;
-  register long	new_size;
+  register struct _obstack_chunk*   old_chunk = h->chunk;
+  register struct _obstack_chunk*   new_chunk;
+  register long new_size;
   register int obj_size = h->next_free - h->object_base;
   register int i;
   int already;
@@ -128,12 +128,12 @@ _obstack_newchunk (h, length)
   if (h->alignment_mask + 1 >= DEFAULT_ALIGNMENT)
     {
       for (i = obj_size / sizeof (COPYING_UNIT) - 1;
-	   i >= 0; i--)
-	((COPYING_UNIT *)new_chunk->contents)[i]
-	  = ((COPYING_UNIT *)h->object_base)[i];
+       i >= 0; i--)
+    ((COPYING_UNIT *)new_chunk->contents)[i]
+      = ((COPYING_UNIT *)h->object_base)[i];
       /* We used to copy the odd few remaining bytes as one extra COPYING_UNIT,
-	 but that can cross a page boundary on a machine
-	 which does not do strict alignment for COPYING_UNITS.  */
+     but that can cross a page boundary on a machine
+     which does not do strict alignment for COPYING_UNITS.  */
       already = obj_size / sizeof (COPYING_UNIT) * sizeof (COPYING_UNIT);
     }
   else
@@ -155,8 +155,8 @@ _obstack_allocated_p (h, obj)
      struct obstack *h;
      POINTER obj;
 {
-  register struct _obstack_chunk*  lp;	/* below addr of any objects in this chunk */
-  register struct _obstack_chunk*  plp;	/* point to previous chunk if any */
+  register struct _obstack_chunk*  lp;  /* below addr of any objects in this chunk */
+  register struct _obstack_chunk*  plp; /* point to previous chunk if any */
 
   lp = (h)->chunk;
   while (lp != 0 && ((POINTER)lp > obj || (POINTER)(lp)->limit < obj))
@@ -180,8 +180,8 @@ _obstack_free (h, obj)
      POINTER obj;
 #endif
 {
-  register struct _obstack_chunk*  lp;	/* below addr of any objects in this chunk */
-  register struct _obstack_chunk*  plp;	/* point to previous chunk if any */
+  register struct _obstack_chunk*  lp;  /* below addr of any objects in this chunk */
+  register struct _obstack_chunk*  plp; /* point to previous chunk if any */
 
   lp = (h)->chunk;
   while (lp != 0 && ((POINTER)lp > obj || (POINTER)(lp)->limit < obj))

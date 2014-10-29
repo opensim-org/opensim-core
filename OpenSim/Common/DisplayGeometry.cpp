@@ -54,7 +54,7 @@ _scaleFactors(_propScaleFactors.getValueDblVec()),
 _displayPreference((DisplayPreference&)_propDisplayPreference.getValueInt()),
 _opacity(_propOpacity.getValueDbl())
 {
-	setNull();
+    setNull();
 }
 
 DisplayGeometry::DisplayGeometry(const std::string &aFileName) :
@@ -67,9 +67,9 @@ _scaleFactors(_propScaleFactors.getValueDblVec()),
 _displayPreference((DisplayPreference&)_propDisplayPreference.getValueInt()),
 _opacity(_propOpacity.getValueDbl())
 {
-	setNull();
+    setNull();
 
-	_geometryFile=aFileName;
+    _geometryFile=aFileName;
 }
 
 //_____________________________________________________________________________
@@ -89,9 +89,9 @@ _scaleFactors(_propScaleFactors.getValueDblVec()),
 _displayPreference((DisplayPreference&)_propDisplayPreference.getValueInt()),
 _opacity(_propOpacity.getValueDbl())
 {
-	setNull();
-	//setupProperties();
-	copyData(aGeometryPiece);
+    setNull();
+    //setupProperties();
+    copyData(aGeometryPiece);
 
 }
 //=============================================================================
@@ -104,17 +104,17 @@ _opacity(_propOpacity.getValueDbl())
 void DisplayGeometry::
 setNull()
 {
-	setName("");
+    setName("");
 
-	setupProperties();
+    setupProperties();
 
-	// Assign default values
-	_color = 1.0;
-	_textureFile="";
-	_transform=SimTK::Transform();
-	_scaleFactors = 1.0;
-	_displayPreference = GouraudShaded;
-	_opacity = 1.0;
+    // Assign default values
+    _color = 1.0;
+    _textureFile="";
+    _transform=SimTK::Transform();
+    _scaleFactors = 1.0;
+    _displayPreference = GouraudShaded;
+    _opacity = 1.0;
 }
 
 //_____________________________________________________________________________
@@ -124,50 +124,50 @@ setNull()
 void DisplayGeometry::setupProperties()
 {
 
-	_propGeometryFile.setName("geometry_file");
-	_propGeometryFile.setComment("Name of geometry file .vtp, .stl, .obj");
-	_propertySet.append(&_propGeometryFile);
+    _propGeometryFile.setName("geometry_file");
+    _propGeometryFile.setComment("Name of geometry file .vtp, .stl, .obj");
+    _propertySet.append(&_propGeometryFile);
 
-	_propColor.setName("color");
-	_propColor.setComment("Color used to display the geometry when visible");
-	_propertySet.append(&_propColor);
+    _propColor.setName("color");
+    _propColor.setComment("Color used to display the geometry when visible");
+    _propertySet.append(&_propColor);
 
-	_propTextureFile.setName("texture_file");
-	_propTextureFile.setComment("Name of texture file .jpg, .bmp");
-	_propertySet.append(&_propTextureFile);
+    _propTextureFile.setName("texture_file");
+    _propTextureFile.setComment("Name of texture file .jpg, .bmp");
+    _propertySet.append(&_propTextureFile);
 
-	_propTransform.setName("transform");
-	_propTransform.setComment("in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz");
-	_propertySet.append(&_propTransform);
+    _propTransform.setName("transform");
+    _propTransform.setComment("in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz");
+    _propertySet.append(&_propTransform);
 
-	_propScaleFactors.setName("scale_factors");
-	_propScaleFactors.setComment("Three scale factors for display purposes: scaleX scaleY scaleZ");
-	_propertySet.append(&_propScaleFactors);
+    _propScaleFactors.setName("scale_factors");
+    _propScaleFactors.setComment("Three scale factors for display purposes: scaleX scaleY scaleZ");
+    _propertySet.append(&_propScaleFactors);
 
-	_propDisplayPreference.setName("display_preference");
-	_propDisplayPreference.setComment("Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded");
-	_propertySet.append(&_propDisplayPreference);
+    _propDisplayPreference.setName("display_preference");
+    _propDisplayPreference.setComment("Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded");
+    _propertySet.append(&_propDisplayPreference);
 
-	_propOpacity.setName("opacity");
-	_propOpacity.setComment("Display opacity between 0.0 and 1.0");
-	_propertySet.append(&_propOpacity);
+    _propOpacity.setName("opacity");
+    _propOpacity.setComment("Display opacity between 0.0 and 1.0");
+    _propertySet.append(&_propOpacity);
 
 }
 
 void DisplayGeometry::copyData(const DisplayGeometry &aGeometryPiece)
 {
-	_geometryFile=aGeometryPiece._geometryFile;
-	_color=aGeometryPiece._color;
-	_textureFile=aGeometryPiece._textureFile;
-	_transform=aGeometryPiece._transform;
-	_scaleFactors=aGeometryPiece._scaleFactors;
-	_displayPreference=aGeometryPiece._displayPreference;
-	_opacity = aGeometryPiece._opacity;
+    _geometryFile=aGeometryPiece._geometryFile;
+    _color=aGeometryPiece._color;
+    _textureFile=aGeometryPiece._textureFile;
+    _transform=aGeometryPiece._transform;
+    _scaleFactors=aGeometryPiece._scaleFactors;
+    _displayPreference=aGeometryPiece._displayPreference;
+    _opacity = aGeometryPiece._opacity;
 }
 
 void DisplayGeometry::setRotationsAndTRanslations(double aArray[])
 {
-	_propTransform.setValue(6, aArray);
+    _propTransform.setValue(6, aArray);
 }
 //=============================================================================
 // OPERATORS
@@ -180,7 +180,7 @@ void DisplayGeometry::setRotationsAndTRanslations(double aArray[])
  */
 DisplayGeometry& DisplayGeometry::operator=(const DisplayGeometry &aDisplayGeometry)
 {
-	Object::operator=(aDisplayGeometry);
-	copyData(aDisplayGeometry);
-	return(*this);
+    Object::operator=(aDisplayGeometry);
+    copyData(aDisplayGeometry);
+    return(*this);
 }

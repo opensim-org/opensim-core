@@ -212,12 +212,12 @@ dpJointType identify_joint_type(ModelStruct* ms, int jointnum)
       find_translation_axis(jnt, axis2, function_dof, 0);
       if (axes_are_parallel(axis1, axis2, no) == yes)
       {
-	      /* If the one rotation happens after the translations,
-	       * then this is a [normal] cylinder joint. If it happens
-	       * before, then this is a reverse cylinder joint, and the
-	       * translations have to be added to the other body segment.
-	       */
-	      for (i=0; i<3; i++)
+          /* If the one rotation happens after the translations,
+           * then this is a [normal] cylinder joint. If it happens
+           * before, then this is a reverse cylinder joint, and the
+           * translations have to be added to the other body segment.
+           */
+          for (i=0; i<3; i++)
          {
             if (jnt->dofs[i].type == function_dof || NOT_EQUAL_WITHIN_ERROR(jnt->dofs[i].value,0.0))
                break;
@@ -467,9 +467,9 @@ int find_rotation_axis(JointStruct* jnt, double axis[])
    for (i=0; i<3; i++)
    {
       if (jnt->dofs[i].type == function_dof)
-	 break;
+     break;
       else if (NOT_EQUAL_WITHIN_ERROR(jnt->dofs[i].value,0.0))
-	 break;
+     break;
    }
 
    if (i == 3)
@@ -935,7 +935,7 @@ dpModelStruct* copyModelToDPModel(ModelStruct* ms, int muscleList[])
 {
    int i, j, k, segNum, count;
    ReturnCode rc;
-	dpQStruct* gencoord;
+    dpQStruct* gencoord;
    GeneralizedCoord *temp_gc;
    dpQStruct* temp_q;
    dpModelStruct* dp;
@@ -944,10 +944,10 @@ dpModelStruct* copyModelToDPModel(ModelStruct* ms, int muscleList[])
 
    dp->simmModel = (dpSimmModelID)ms;
 
-	/* This is only set to yes by set_up_kinetics_input() in the
-	 * simulation code.
-	 */
-	dp->newInverseSimulation = dpNo;
+    /* This is only set to yes by set_up_kinetics_input() in the
+     * simulation code.
+     */
+    dp->newInverseSimulation = dpNo;
 
    /* To fill in the dpModelStruct, you need to know how
     * the SIMM segments/joints are mapped to the SD/FAST segments/joints.
@@ -1512,7 +1512,7 @@ static void copyQsToDP(ModelStruct* ms, dpModelStruct* dp)
       {
          /* Locked gencoords are modeled as fixed Qs (as of version 4.1.1). */
          if (gc && gc->locked == yes)
-				q->type = dpFixedQ;
+                q->type = dpFixedQ;
          else
             q->type = dpUnconstrainedQ;
       }
@@ -1530,13 +1530,13 @@ static void copyQsToDP(ModelStruct* ms, dpModelStruct* dp)
       {
          q->range_start = gc->range.start;
          q->range_end = gc->range.end;
-			q->pd_stiffness = gc->pd_stiffness;
+            q->pd_stiffness = gc->pd_stiffness;
       }
       else
       {
          q->range_start = -99999.9;
          q->range_end = 99999.9;
-			q->pd_stiffness = 0.0;
+            q->pd_stiffness = 0.0;
       }
       if (dof->sd.fixed == yes || dof->sd.constrained == yes)
       {
@@ -1660,7 +1660,7 @@ static void copySegmentsToDP(ModelStruct* ms, dpModelStruct* dp)
 
 
 void copyPolyhedronToDPPolyhedron(PolyhedronStruct* from, dpPolyhedronStruct** to,
-											 int SimmSegNum, int SDSegNum, ModelStruct* ms)
+                                             int SimmSegNum, int SDSegNum, ModelStruct* ms)
 {
    int i, j;
    dpPolyhedronStruct* ph;
@@ -1743,7 +1743,7 @@ int find_nth_rotation(JointStruct* jnt, int n)
 
    for (i=1; i<4; i++)
       if (i != min_index && i != max_index)
-	 return i;
+     return i;
    
    return -1;
 }

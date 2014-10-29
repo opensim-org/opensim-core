@@ -195,12 +195,12 @@ ReturnCode check_polyhedron(PolyhedronStruct* ph)
          ph->polygon[i].thrown_out = yes;
       for (j=0; j<ph->polygon[i].num_vertices; j++)
       {
-	      if (ph->polygon[i].vertex_index[j] >= ph->num_vertices ||
-	         ph->polygon[i].vertex_index[j] < 0)
-	      {
-	         fprintf(stderr,"Bad polyhedron: vertex index out of range.\n");
-	         return code_bad;
-	      }
+          if (ph->polygon[i].vertex_index[j] >= ph->num_vertices ||
+             ph->polygon[i].vertex_index[j] < 0)
+          {
+             fprintf(stderr,"Bad polyhedron: vertex index out of range.\n");
+             return code_bad;
+          }
       }
    }
 
@@ -317,7 +317,7 @@ PolyhedronStruct* clone_polyhedron(PolyhedronStruct* from)
 
    for (i=0; i<4; i++)
       for (j=0; j<4; j++)
-	 to->transform_matrix[i][j] = from->transform_matrix[i][j];
+     to->transform_matrix[i][j] = from->transform_matrix[i][j];
 
    to->selected = from->selected;
    to->selected_vertex = from->selected_vertex;
@@ -370,7 +370,7 @@ void copy_polyhedron(PolyhedronStruct* from, PolyhedronStruct* to)
 
    for (i=0; i<4; i++)
       for (j=0; j<4; j++)
-	 to->transform_matrix[i][j] = from->transform_matrix[i][j];
+     to->transform_matrix[i][j] = from->transform_matrix[i][j];
 
    to->selected = from->selected;
    to->selected_vertex = from->selected_vertex;
@@ -439,7 +439,7 @@ void copy_pintersegmentstruct(PInterSegmentStruct* from, PInterSegmentStruct* to
 
 
 void copy_pintersegmentliststruct(PInterSegmentListStruct* from,
-				  PInterSegmentListStruct* to)
+                  PInterSegmentListStruct* to)
 {
    int i;
 
@@ -568,17 +568,17 @@ void calc_polygon_bounding_cube(PolyhedronStruct* ph, PolygonStruct* p)
    {
       v = &ph->vertex[p->vertex_index[i]];
       if (v->coord[0] < p->bc.x1)
-	 p->bc.x1 = v->coord[0];
+     p->bc.x1 = v->coord[0];
       if (v->coord[0] > p->bc.x2)
-	 p->bc.x2 = v->coord[0];
+     p->bc.x2 = v->coord[0];
       if (v->coord[1] < p->bc.y1)
-	 p->bc.y1 = v->coord[1];
+     p->bc.y1 = v->coord[1];
       if (v->coord[1] > p->bc.y2)
-	 p->bc.y2 = v->coord[1];
+     p->bc.y2 = v->coord[1];
       if (v->coord[2] < p->bc.z1)
-	 p->bc.z1 = v->coord[2];
+     p->bc.z1 = v->coord[2];
       if (v->coord[2] > p->bc.z2)
-	 p->bc.z2 = v->coord[2];
+     p->bc.z2 = v->coord[2];
    }
 
 }
@@ -599,19 +599,19 @@ void calc_polyhedron_bounding_cube(PolyhedronStruct* ph)
    for (i=0; i<ph->num_vertices; i++)
    {
       if (ph->vertex[i].coord[0] < ph->bc.x1)
-	 ph->bc.x1 = ph->vertex[i].coord[0];
+     ph->bc.x1 = ph->vertex[i].coord[0];
       if (ph->vertex[i].coord[0] > ph->bc.x2)
-	 ph->bc.x2 = ph->vertex[i].coord[0];
+     ph->bc.x2 = ph->vertex[i].coord[0];
 
       if (ph->vertex[i].coord[1] < ph->bc.y1)
-	 ph->bc.y1 = ph->vertex[i].coord[1];
+     ph->bc.y1 = ph->vertex[i].coord[1];
       if (ph->vertex[i].coord[1] > ph->bc.y2)
-	 ph->bc.y2 = ph->vertex[i].coord[1];
+     ph->bc.y2 = ph->vertex[i].coord[1];
 
       if (ph->vertex[i].coord[2] < ph->bc.z1)
-	 ph->bc.z1 = ph->vertex[i].coord[2];
+     ph->bc.z1 = ph->vertex[i].coord[2];
       if (ph->vertex[i].coord[2] > ph->bc.z2)
-	 ph->bc.z2 = ph->vertex[i].coord[2];
+     ph->bc.z2 = ph->vertex[i].coord[2];
    }
 
 }
@@ -687,12 +687,12 @@ int find_other_polygon(PolyhedronStruct* ph, int p1, int v1, int v2)
    for (i=0; i<vs1->polygon_count; i++)
    {
       if (vs1->polygons[i] == p1)
-	 continue;
+     continue;
       for (j=0; j<vs2->polygon_count; j++)
       {
-	 if ((vs1->polygons[i] == vs2->polygons[j]) &&
-	     (ph->polygon[vs1->polygons[i]].thrown_out == no))
-	    return (vs1->polygons[i]);
+     if ((vs1->polygons[i] == vs2->polygons[j]) &&
+         (ph->polygon[vs1->polygons[i]].thrown_out == no))
+        return (vs1->polygons[i]);
       }
    }
 
@@ -724,9 +724,9 @@ int subdivide_input_polyhedron(PolyhedronStruct* ip, PolyhedronStruct** phs)
    for (i=0; i<ip->num_polygons; i++)
    {
       if (ip->polygon[i].thrown_out == yes)
-	      ip->polygon[i].polyhedron_number = SKIP_ME;
+          ip->polygon[i].polyhedron_number = SKIP_ME;
       else
-	      ip->polygon[i].polyhedron_number = 0;
+          ip->polygon[i].polyhedron_number = 0;
    }
 
    for (i=0; i<ip->num_vertices; i++)
@@ -758,9 +758,9 @@ int subdivide_input_polyhedron(PolyhedronStruct* ip, PolyhedronStruct** phs)
       write_pos = 1;
 
       if (num_polyhedra == 1)
-	      (*phs) = (PolyhedronStruct*)simm_malloc(sizeof(PolyhedronStruct));
+          (*phs) = (PolyhedronStruct*)simm_malloc(sizeof(PolyhedronStruct));
       else
-	      (*phs) = (PolyhedronStruct*)simm_realloc((*phs),num_polyhedra*sizeof(PolyhedronStruct),&rc);
+          (*phs) = (PolyhedronStruct*)simm_realloc((*phs),num_polyhedra*sizeof(PolyhedronStruct),&rc);
 
       ph = &(*phs)[ph_num-1];
 
@@ -771,57 +771,57 @@ int subdivide_input_polyhedron(PolyhedronStruct* ip, PolyhedronStruct** phs)
       ph->show_normals = ip->show_normals;
 
       ph->polygon = (PolygonStruct*)simm_malloc((ip->num_polygons-polys_used_so_far)*
-						sizeof(PolygonStruct));
+                        sizeof(PolygonStruct));
       ph->vertex = (VertexStruct*)simm_malloc((ip->num_vertices-verts_used_so_far)*
-						sizeof(VertexStruct));
+                        sizeof(VertexStruct));
 
       for (i=0; i<ip->num_polygons-polys_used_so_far; i++)
-	      preread_init_polygon(&ph->polygon[i]);
+          preread_init_polygon(&ph->polygon[i]);
       for (i=0; i<ip->num_vertices-verts_used_so_far; i++)
-	      preread_init_vertex(&ph->vertex[i],i);
+          preread_init_vertex(&ph->vertex[i],i);
 
       while (read_pos < write_pos)
       {
-	      p_old = &ip->polygon[poly_list[read_pos++]];
+          p_old = &ip->polygon[poly_list[read_pos++]];
 
-	      /* For each vertex in this polygon,
-	       *   1. copy the vertex info to the new polyhedron structure
-	       *   2. put all the polygons that use this vertex into poly_list.
-	       */
-	      for (i=0; i<p_old->num_vertices; i++)
-	      {
-	         v_old = &ip->vertex[p_old->vertex_index[i]];
-	         if (v_old->polyhedron_number != 0)
-	         {
-	            /* This vertex has already been added to the new polyhedron,
-		          * so just copy its new index into the old polygon (so that
-		          * it gets copied into the new polygon later).
-		          */
-	            p_old->vertex_index[i] = v_old->new_index;
-	               continue;
-	         }
-	         v_old->polyhedron_number = ph_num;
-	         v_new = &ph->vertex[ph->num_vertices];
-	         copy_vertex(v_old,v_new);
-	         v_new->polyhedron_number = 0;
-	         v_new->new_index = ph->num_vertices;
-	         v_old->new_index = ph->num_vertices;
-	         p_old->vertex_index[i] = ph->num_vertices;
-	         for (j=0; j<v_old->polygon_count; j++)
-	         {
-	            if (ip->polygon[v_old->polygons[j]].polyhedron_number == 0) // crash here when applying two deform objects and norming in BE
-	            {
-		            poly_list[write_pos++] = v_old->polygons[j];
-		            ip->polygon[v_old->polygons[j]].polyhedron_number = ph_num;
-	            }
-	         }
-	         ph->num_vertices++;
-	      }
+          /* For each vertex in this polygon,
+           *   1. copy the vertex info to the new polyhedron structure
+           *   2. put all the polygons that use this vertex into poly_list.
+           */
+          for (i=0; i<p_old->num_vertices; i++)
+          {
+             v_old = &ip->vertex[p_old->vertex_index[i]];
+             if (v_old->polyhedron_number != 0)
+             {
+                /* This vertex has already been added to the new polyhedron,
+                  * so just copy its new index into the old polygon (so that
+                  * it gets copied into the new polygon later).
+                  */
+                p_old->vertex_index[i] = v_old->new_index;
+                   continue;
+             }
+             v_old->polyhedron_number = ph_num;
+             v_new = &ph->vertex[ph->num_vertices];
+             copy_vertex(v_old,v_new);
+             v_new->polyhedron_number = 0;
+             v_new->new_index = ph->num_vertices;
+             v_old->new_index = ph->num_vertices;
+             p_old->vertex_index[i] = ph->num_vertices;
+             for (j=0; j<v_old->polygon_count; j++)
+             {
+                if (ip->polygon[v_old->polygons[j]].polyhedron_number == 0) // crash here when applying two deform objects and norming in BE
+                {
+                    poly_list[write_pos++] = v_old->polygons[j];
+                    ip->polygon[v_old->polygons[j]].polyhedron_number = ph_num;
+                }
+             }
+             ph->num_vertices++;
+          }
 
-	      /* Now copy the polygon to the new polyhedron structure */
-	      p_new = &ph->polygon[ph->num_polygons++];
-	      copy_polygon(p_old,p_new);
-	      p_new->polyhedron_number = 0;
+          /* Now copy the polygon to the new polyhedron structure */
+          p_new = &ph->polygon[ph->num_polygons++];
+          copy_polygon(p_old,p_new);
+          p_new->polyhedron_number = 0;
       }
 
       /* Now that you're done making this polyhedron, realloc the polygon and vertex arrays. */
@@ -870,40 +870,40 @@ void find_vertex_normals(PolyhedronStruct* ph, NormOptions* opt)
       if (verbose == yes)
       {
 /*
-	 printf("Bad polyhedron... ");
-	 print_polyhedron(ph,"");
+     printf("Bad polyhedron... ");
+     print_polyhedron(ph,"");
 */
       }
       for (i=0; i<ph->num_vertices; i++)
       {
-	 if (ph->vertex[i].thrown_out == no && ph->vertex[i].polygon_count > 0)
-	 {
-	    poly_num = ph->vertex[i].polygons[0];
-	    ph->vertex[i].normal[0] = ph->polygon[poly_num].normal[0];
-	    ph->vertex[i].normal[1] = ph->polygon[poly_num].normal[1];
-	    ph->vertex[i].normal[2] = ph->polygon[poly_num].normal[2];
-	 }
-	 else
-	 {
-	    ph->vertex[i].normal[0] = 0.0;
-	    ph->vertex[i].normal[1] = 0.0;
-	    ph->vertex[i].normal[2] = 1.0;
-	 }
+     if (ph->vertex[i].thrown_out == no && ph->vertex[i].polygon_count > 0)
+     {
+        poly_num = ph->vertex[i].polygons[0];
+        ph->vertex[i].normal[0] = ph->polygon[poly_num].normal[0];
+        ph->vertex[i].normal[1] = ph->polygon[poly_num].normal[1];
+        ph->vertex[i].normal[2] = ph->polygon[poly_num].normal[2];
+     }
+     else
+     {
+        ph->vertex[i].normal[0] = 0.0;
+        ph->vertex[i].normal[1] = 0.0;
+        ph->vertex[i].normal[2] = 1.0;
+     }
       }
    }
 
    if (opt->vertex_order == clockwise)
    {
       if (verbose == yes)
-	 printf("   Assuming vertices  have clockwise ordering within each polygon.\n");
+     printf("   Assuming vertices  have clockwise ordering within each polygon.\n");
       for (i=0; i<ph->num_polygons; i++)
-	 reverse_vertex_order(&ph->polygon[i]);
+     reverse_vertex_order(&ph->polygon[i]);
    }
    else if (opt->vertex_order == counterclockwise)
    {
       /* order is already correct */
       if (verbose == yes)
-	 printf("   Assuming vertices have counterclockwise ordering within each polygon.\n");
+     printf("   Assuming vertices have counterclockwise ordering within each polygon.\n");
    }
    else
    {
@@ -941,66 +941,66 @@ void make_polygons_consistent(PolyhedronStruct* ph, NormOptions* opt)
       shallowest_vertex = find_shallowest_vertex(ph,top_vertex);
 
       find_polygons_sharing_edge(ph,top_vertex,shallowest_vertex,
-				 &polygon1,&polygon2);
+                 &polygon1,&polygon2);
 
       if (polygon1 != -1 && polygon2 != -1)
       {
-	      break;
+          break;
       }
       else if (num_tries > 21)
       {
-	      /* You just tried to rotate the polyhedron 20 times to find
-	       * a convex section (two polygons sharing the shallowest edge
-	       * descending from the topmost vertex), and failed.
-	       */
-	      if (verbose == yes)
-	         printf("   Couldn't find two faces sharing shallowest edge (%d %d).\n",
-		         top_vertex+1, shallowest_vertex+1);
-	      unorient_polyhedron(ph,rot_matrix);
-	      if (polygon1 == -1 && polygon2 == -1)
-	      {
-	         if (verbose == yes)
-	         {
-	            printf("   ...badly formed polyhedron.\n");
-	            printf("      Assuming polygons are already in counterclockwise order.\n");
-	            printf("      Use \"-cw\" if they are clockwise.\n");
-	         }
-	      }
-	      else
-	      {
-	         ref_mag = VECTOR_MAGNITUDE(opt->reference_normal);
-	         poly_num = (polygon1 == -1) ? polygon2 : polygon1;
-	         if (EQUAL_WITHIN_ERROR(ref_mag,0.0))
-	         {
-	            if (verbose == yes)
-	            {
-		            printf("   ...assuming that polygon %d faces up (+Y).\n", poly_num);
-		            printf("      use \"-rn\" to specify other direction.\n");
-	            }
-	            opt->reference_normal[0] = 0.0;
-	            opt->reference_normal[1] = 1.0;
-	            opt->reference_normal[2] = 0.0;
-	         }
-	         else
-	         {
-	            if (verbose == yes)
-		            printf("   ...using reference normal to orient polygon %d.\n", poly_num);
-	         }
-	         if (DOT_VECTORS(ph->polygon[poly_num].normal,opt->reference_normal) < 0.0)
-	            reverse_vertex_order(&ph->polygon[poly_num]);
-	         order_all_vertex_lists(ph,poly_num);
-	      }
-	      return;
+          /* You just tried to rotate the polyhedron 20 times to find
+           * a convex section (two polygons sharing the shallowest edge
+           * descending from the topmost vertex), and failed.
+           */
+          if (verbose == yes)
+             printf("   Couldn't find two faces sharing shallowest edge (%d %d).\n",
+                 top_vertex+1, shallowest_vertex+1);
+          unorient_polyhedron(ph,rot_matrix);
+          if (polygon1 == -1 && polygon2 == -1)
+          {
+             if (verbose == yes)
+             {
+                printf("   ...badly formed polyhedron.\n");
+                printf("      Assuming polygons are already in counterclockwise order.\n");
+                printf("      Use \"-cw\" if they are clockwise.\n");
+             }
+          }
+          else
+          {
+             ref_mag = VECTOR_MAGNITUDE(opt->reference_normal);
+             poly_num = (polygon1 == -1) ? polygon2 : polygon1;
+             if (EQUAL_WITHIN_ERROR(ref_mag,0.0))
+             {
+                if (verbose == yes)
+                {
+                    printf("   ...assuming that polygon %d faces up (+Y).\n", poly_num);
+                    printf("      use \"-rn\" to specify other direction.\n");
+                }
+                opt->reference_normal[0] = 0.0;
+                opt->reference_normal[1] = 1.0;
+                opt->reference_normal[2] = 0.0;
+             }
+             else
+             {
+                if (verbose == yes)
+                    printf("   ...using reference normal to orient polygon %d.\n", poly_num);
+             }
+             if (DOT_VECTORS(ph->polygon[poly_num].normal,opt->reference_normal) < 0.0)
+                reverse_vertex_order(&ph->polygon[poly_num]);
+             order_all_vertex_lists(ph,poly_num);
+          }
+          return;
       }
       else
       {
-	      reorient_polyhedron(ph,rot_matrix);
-	      num_tries++;
+          reorient_polyhedron(ph,rot_matrix);
+          num_tries++;
       }
    }
 
    match_vertex_orders(&ph->polygon[polygon1],&ph->polygon[polygon2],
-		       top_vertex,shallowest_vertex);
+               top_vertex,shallowest_vertex);
 
    angle1 = compute_angle_between_vectors(ph->polygon[polygon1].normal,yaxis);
    angle2 = compute_angle_between_vectors(ph->polygon[polygon2].normal,yaxis);
@@ -1019,7 +1019,7 @@ void make_polygons_consistent(PolyhedronStruct* ph, NormOptions* opt)
       find_other_edge(ph,polygon1,top_vertex,shallowest_vertex,norm_edge1);
       find_other_edge(ph,polygon2,top_vertex,shallowest_vertex,norm_edge2);
       find_plane_normal_to_line(&plane,ph->vertex[top_vertex].coord,
-				ph->vertex[shallowest_vertex].coord);
+                ph->vertex[shallowest_vertex].coord);
       plane.d = 0.0;
       project_point_onto_plane(yaxis,&plane,proj_yaxis);
       project_point_onto_plane(norm_edge1,&plane,proj_norm_edge1);
@@ -1027,14 +1027,14 @@ void make_polygons_consistent(PolyhedronStruct* ph, NormOptions* opt)
       b_angle1 = compute_angle_between_vectors(proj_norm_edge1,proj_yaxis);
       b_angle2 = compute_angle_between_vectors(proj_norm_edge2,proj_yaxis);
       if ((b_angle1 < b_angle2 && angle1 <= M_PI_2) ||
-	  (b_angle1 >= b_angle2 && angle1 > M_PI_2))
+      (b_angle1 >= b_angle2 && angle1 > M_PI_2))
       {
-	 order_all_vertex_lists(ph,polygon1);
+     order_all_vertex_lists(ph,polygon1);
       }
       else
       {
-	 reverse_vertex_order(&ph->polygon[polygon1]);
-	 order_all_vertex_lists(ph,polygon1);
+     reverse_vertex_order(&ph->polygon[polygon1]);
+     order_all_vertex_lists(ph,polygon1);
       }
    }
 
@@ -1073,10 +1073,10 @@ void calc_vertex_normals(PolyhedronStruct* ph, NormOptions* opt)
    {
       for (j=0; j<ph->polygon[i].num_vertices; j++)
       {
-	 vertex = ph->polygon[i].vertex_index[j];
-	 ph->vertex[vertex].normal[0] += ph->polygon[i].normal[0];
-	 ph->vertex[vertex].normal[1] += ph->polygon[i].normal[1];
-	 ph->vertex[vertex].normal[2] += ph->polygon[i].normal[2];
+     vertex = ph->polygon[i].vertex_index[j];
+     ph->vertex[vertex].normal[0] += ph->polygon[i].normal[0];
+     ph->vertex[vertex].normal[1] += ph->polygon[i].normal[1];
+     ph->vertex[vertex].normal[2] += ph->polygon[i].normal[2];
       }
    }
 
@@ -1085,9 +1085,9 @@ void calc_vertex_normals(PolyhedronStruct* ph, NormOptions* opt)
       magnitude = normalize_vector(ph->vertex[i].normal,ph->vertex[i].normal);
       if (EQUAL_WITHIN_ERROR(magnitude,0.0))
       {
-	 ph->vertex[i].normal[0] = opt->reference_normal[0];
-	 ph->vertex[i].normal[1] = opt->reference_normal[1];
-	 ph->vertex[i].normal[2] = opt->reference_normal[2];
+     ph->vertex[i].normal[0] = opt->reference_normal[0];
+     ph->vertex[i].normal[1] = opt->reference_normal[1];
+     ph->vertex[i].normal[2] = opt->reference_normal[2];
       }
    }
 
@@ -1108,10 +1108,10 @@ void order_all_vertex_lists(PolyhedronStruct* ph, int polygon)
       for (i=0; i<ph->num_polygons; i++)
       {
          if (ph->polygon[i].normal_computed == yes_proc)
-	 {
-	    start_polygon = i;
-	    break;
-	 }
+     {
+        start_polygon = i;
+        break;
+     }
       }
 
       if (i == ph->num_polygons)
@@ -1120,19 +1120,19 @@ void order_all_vertex_lists(PolyhedronStruct* ph, int polygon)
       poly = &ph->polygon[start_polygon];
       for (i=0; i<poly->num_vertices; i++)
       {
-	 if (i == poly->num_vertices-1)
-	    vertex2 = poly->vertex_index[0];
-	 else
-	    vertex2 = poly->vertex_index[i+1];
-	 p2 = find_other_polygon(ph,start_polygon,
-				 poly->vertex_index[i],vertex2);
-	 if (p2 != -1 && ph->polygon[p2].normal_computed == no_proc)
-	 {
-	    order = polygon_contains_edge(&ph->polygon[p2],poly->vertex_index[i],vertex2);
-	    if (order == clockwise)
-	       reverse_vertex_order(&ph->polygon[p2]);
-	    ph->polygon[p2].normal_computed = yes_proc;
-	 }
+     if (i == poly->num_vertices-1)
+        vertex2 = poly->vertex_index[0];
+     else
+        vertex2 = poly->vertex_index[i+1];
+     p2 = find_other_polygon(ph,start_polygon,
+                 poly->vertex_index[i],vertex2);
+     if (p2 != -1 && ph->polygon[p2].normal_computed == no_proc)
+     {
+        order = polygon_contains_edge(&ph->polygon[p2],poly->vertex_index[i],vertex2);
+        if (order == clockwise)
+           reverse_vertex_order(&ph->polygon[p2]);
+        ph->polygon[p2].normal_computed = yes_proc;
+     }
       }
       poly->normal_computed = yes_and_propagated;
    }
@@ -1188,7 +1188,7 @@ void calc_polygon_normal(PolyhedronStruct* ph, PolygonStruct* p)
  */
 
 void match_vertex_orders(PolygonStruct* polygon1, PolygonStruct* polygon2,
-			 int vertex1, int vertex2)
+             int vertex1, int vertex2)
 {
 
    int order1, order2;
@@ -1227,7 +1227,7 @@ void reverse_vertex_order(PolygonStruct* p)
 
 
 void find_polygons_sharing_edge(PolyhedronStruct* ph, int vertex1, int vertex2,
-				int* polygon1, int* polygon2)
+                int* polygon1, int* polygon2)
 {
 
    int i, j, polygons_found_so_far = 0;
@@ -1238,19 +1238,19 @@ void find_polygons_sharing_edge(PolyhedronStruct* ph, int vertex1, int vertex2,
    {
       for (j=0; j<ph->vertex[vertex2].polygon_count; j++)
       {
-	 if (ph->vertex[vertex1].polygons[i] == ph->vertex[vertex2].polygons[j])
-	 {
-	    if (polygons_found_so_far == 0)
-	    {
-	       *polygon1 = ph->vertex[vertex1].polygons[i];
-	       polygons_found_so_far = 1;
-	    }
-	    else
-	    {
-	       *polygon2 = ph->vertex[vertex1].polygons[i];
-	       return;
-	    }
-	 }
+     if (ph->vertex[vertex1].polygons[i] == ph->vertex[vertex2].polygons[j])
+     {
+        if (polygons_found_so_far == 0)
+        {
+           *polygon1 = ph->vertex[vertex1].polygons[i];
+           polygons_found_so_far = 1;
+        }
+        else
+        {
+           *polygon2 = ph->vertex[vertex1].polygons[i];
+           return;
+        }
+     }
       }
    }
 
@@ -1280,9 +1280,9 @@ VertexOrder polygon_contains_edge(PolygonStruct* p, int vertex1, int vertex2)
    if (i == p->num_vertices-1)
    {
       if (p->vertex_index[0] == vertex2)
-	 return clockwise;
+     return clockwise;
       if (p->vertex_index[i-1] == vertex2)
-	 return counterclockwise;
+     return counterclockwise;
       return unspecified_order;
    }
 
@@ -1362,7 +1362,7 @@ VerticesFound get_adjacent_vertices(PolygonStruct* p, int seed_vertex, int* prev
 
    for (i=0; i<p->num_vertices; i++)
       if (p->vertex_index[i] == seed_vertex)
-	 break;
+     break;
 
    if (i == p->num_vertices)
       return (found_none);
@@ -1380,7 +1380,7 @@ VerticesFound get_adjacent_vertices(PolygonStruct* p, int seed_vertex, int* prev
 
 
 void find_other_edge(PolyhedronStruct* ph, int poly, int start_vertex,
-		     int adj_vertex, double other_edge[])
+             int adj_vertex, double other_edge[])
 {
 
    int i, v1, v2, other_vertex, first_vertex, second_vertex;
@@ -1391,7 +1391,7 @@ void find_other_edge(PolyhedronStruct* ph, int poly, int start_vertex,
 
    for (i=0; i<p->num_vertices; i++)
       if (p->vertex_index[i] == start_vertex)
-	 break;
+     break;
 
    if (i == p->num_vertices)
       return;
@@ -1464,12 +1464,12 @@ void find_zero_area_polygons(PolyhedronStruct* ph)
    for (i=0; i<ph->num_polygons; i++)
    {
       if (ph->polygon[i].thrown_out == yes)
-	 continue;
+     continue;
 
       if (ph->polygon[i].num_vertices > 3)
       {
-	 find_zero_area_nontriangle(ph,i);
-	 continue;
+     find_zero_area_nontriangle(ph,i);
+     continue;
       }
 
       v1 = ph->polygon[i].vertex_index[0];
@@ -1488,17 +1488,17 @@ void find_zero_area_polygons(PolyhedronStruct* ph)
       cross_vectors(vec1,vec2,cross_vec);
       mag1 = normalize_vector(cross_vec,cross_vec);
       if ((mag1 > COLLINEAR_EPSILON) && (mag1 < 2.0 - COLLINEAR_EPSILON))
-	 continue;
+     continue;
 
       cross_vectors(vec2,vec3,cross_vec);
       mag2 = normalize_vector(cross_vec,cross_vec);
       if ((mag2 > COLLINEAR_EPSILON) && (mag2 < 2.0 - COLLINEAR_EPSILON))
-	 continue;
+     continue;
 /*
       printf("polygon[%d] (%d %d %d) has zero area (%.6lf, %.6lf) (old=%d)\n",
-	     i, ph->polygon[i].vertex_index[0],
-	     ph->polygon[i].vertex_index[1], ph->polygon[i].vertex_index[2], mag1,
-	     mag2, ph->polygon[i].old);
+         i, ph->polygon[i].vertex_index[0],
+         ph->polygon[i].vertex_index[1], ph->polygon[i].vertex_index[2], mag1,
+         mag2, ph->polygon[i].old);
 */
    }
 
@@ -1515,12 +1515,12 @@ void remove_zero_area_polygons(PolyhedronStruct* ph)
    for (i=0; i<ph->num_polygons; i++)
    {
       if (ph->polygon[i].thrown_out == yes)
-	 continue;
+     continue;
 
       if (ph->polygon[i].num_vertices > 3)
       {
-	 remove_zero_area_nontriangle(ph,i);
-	 continue;
+     remove_zero_area_nontriangle(ph,i);
+     continue;
       }
 
       v1 = ph->polygon[i].vertex_index[0];
@@ -1539,55 +1539,55 @@ void remove_zero_area_polygons(PolyhedronStruct* ph)
       cross_vectors(vec1,vec2,cross_vec);
       mag = normalize_vector(cross_vec,cross_vec);
       if ((mag > COLLINEAR_EPSILON) && (mag < 2.0 - COLLINEAR_EPSILON))
-	 continue;
+     continue;
 
       cross_vectors(vec2,vec3,cross_vec);
       mag = normalize_vector(cross_vec,cross_vec);
       if ((mag > COLLINEAR_EPSILON) && (mag < 2.0 - COLLINEAR_EPSILON))
-	 continue;
+     continue;
 
       /* If you make it to here, the triangle has [near]-zero area, so
        * find the vertex that is between the other two.
        */
       if (edge_length[0] > edge_length[1])
       {
-	 if (edge_length[0] > edge_length[2])
-	 {
-	    v = v3;
-	    e1 = v1;
-	    e2 = v2;
-	 }
-	 else
-	 {
-	    v = v2;
-	    e1 = v1;
-	    e2 = v3;
-	 }
+     if (edge_length[0] > edge_length[2])
+     {
+        v = v3;
+        e1 = v1;
+        e2 = v2;
+     }
+     else
+     {
+        v = v2;
+        e1 = v1;
+        e2 = v3;
+     }
       }
       else
       {
-	 if (edge_length[1] > edge_length[2])
-	 {
-	    v = v1;
-	    e1 = v2;
-	    e2 = v3;
-	 }
-	 else
-	 {
-	    v = v2;
-	    e1 = v1;
-	    e2 = v3;
-	 }
+     if (edge_length[1] > edge_length[2])
+     {
+        v = v1;
+        e1 = v2;
+        e2 = v3;
+     }
+     else
+     {
+        v = v2;
+        e1 = v1;
+        e2 = v3;
+     }
       }
 
       p = find_other_polygon(ph,i,e1,e2);
       if (p == -1)
       {
-	 printf("zero area: no other polygon (%d) with %d %d\n", i, e1, e2);
+     printf("zero area: no other polygon (%d) with %d %d\n", i, e1, e2);
       }
       else
       {
-	 add_vert_to_poly(ph,p,e1,e2,v);
+     add_vert_to_poly(ph,p,e1,e2,v);
       }
       throw_out_polygon(ph,i);
    }
@@ -1619,8 +1619,8 @@ void find_zero_area_nontriangle(PolyhedronStruct* ph, int pl)
 
       if (v_angle[i] > ANGLE_EPSILON && v_angle[i] < M_PI - ANGLE_EPSILON)
       {
-	 free(v_angle);
-	 return;
+     free(v_angle);
+     return;
       }
    }
 /*
@@ -1660,8 +1660,8 @@ void remove_zero_area_nontriangle(PolyhedronStruct* ph, int pl)
 
       if (v_angle[i] > ANGLE_EPSILON && v_angle[i] < M_PI - ANGLE_EPSILON)
       {
-	 free(v_angle);
-	 return;
+     free(v_angle);
+     return;
       }
    }
 /*
@@ -1683,10 +1683,10 @@ void remove_zero_area_nontriangle(PolyhedronStruct* ph, int pl)
    {
       if (ANGLES_APX_EQ(v_angle[i],0.0))
       {
-	 if (count > 1)
-	    printf("Too many 0.0 angles in polygon %d\n", pl);
-	 else
-	    edge[count++] = i;
+     if (count > 1)
+        printf("Too many 0.0 angles in polygon %d\n", pl);
+     else
+        edge[count++] = i;
       }
    }
 
@@ -1719,8 +1719,8 @@ void remove_zero_area_nontriangle(PolyhedronStruct* ph, int pl)
    {
       plist[index].v_num = ps->vertex_index[i];
       plist[index].distance =
-	 distancesqr_between_vertices(ph->vertex[plist[0].v_num].coord,
-				      ph->vertex[plist[index].v_num].coord);
+     distancesqr_between_vertices(ph->vertex[plist[0].v_num].coord,
+                      ph->vertex[plist[index].v_num].coord);
       plist[index++].side = 0;
    }
 
@@ -1728,8 +1728,8 @@ void remove_zero_area_nontriangle(PolyhedronStruct* ph, int pl)
    {
       plist[index].v_num = ps->vertex_index[i];
       plist[index].distance =
-	 distancesqr_between_vertices(ph->vertex[plist[0].v_num].coord,
-				      ph->vertex[plist[index].v_num].coord);
+     distancesqr_between_vertices(ph->vertex[plist[0].v_num].coord,
+                      ph->vertex[plist[index].v_num].coord);
       plist[index++].side = 1;
    }
 
@@ -1737,17 +1737,17 @@ void remove_zero_area_nontriangle(PolyhedronStruct* ph, int pl)
    {
       plist[index].v_num = ps->vertex_index[i];
       plist[index].distance =
-	 distancesqr_between_vertices(ph->vertex[plist[0].v_num].coord,
-				      ph->vertex[plist[index].v_num].coord);
+     distancesqr_between_vertices(ph->vertex[plist[0].v_num].coord,
+                      ph->vertex[plist[index].v_num].coord);
       plist[index++].side = 1;
    }
 
    qsort(plist,ps->num_vertices,sizeof(PListStruct),
-	 (int(*)(const void*,const void*))compare_dist);
+     (int(*)(const void*,const void*))compare_dist);
 /*
    for (i=0; i<ps->num_vertices; i++)
       printf("plist[%d] = %d, %lf, %d\n", i, plist[i].v_num,
-	     plist[i].distance, plist[i].side);
+         plist[i].distance, plist[i].side);
 */
    /* Now that you have a sorted list of vertices between plist[0] and plist[nv-1],
     * use them to add vertices to the polygons that border this zero-area one.
@@ -1758,46 +1758,46 @@ void remove_zero_area_nontriangle(PolyhedronStruct* ph, int pl)
    for (i=1; i<ps->num_vertices-1; i++)
    {
       if (plist[i].side != 1)
-	 continue;
+     continue;
       e1 = plist[i-1].v_num;
       /* Find the first vertex after this one (plist[i]) not on side1 */
       for (j=i+1; j<ps->num_vertices; j++)
-	 if (plist[j].side != 1)
-	    break;
+     if (plist[j].side != 1)
+        break;
       e2 = plist[j].v_num;
       p = find_other_polygon(ph,pl,e1,e2);
       if (p == -1)
-	 printf("zero area: no other polygon (%d) with %d %d\n", pl, e1, e2);
+     printf("zero area: no other polygon (%d) with %d %d\n", pl, e1, e2);
       else
       {
 /*
-	 printf("adding %d between %d and %d in polygon %d\n", plist[i].v_num,
-		e1, e2, p);
+     printf("adding %d between %d and %d in polygon %d\n", plist[i].v_num,
+        e1, e2, p);
 */
-	 add_vert_to_poly(ph,p,e1,e2,plist[i].v_num);
+     add_vert_to_poly(ph,p,e1,e2,plist[i].v_num);
       }
    }
 
    for (i=1; i<ps->num_vertices-1; i++)
    {
       if (plist[i].side != 0)
-	 continue;
+     continue;
       e1 = plist[i-1].v_num;
       /* Find the first vertex after this one (plist[i]) not on side0 */
       for (j=i+1; j<ps->num_vertices; j++)
-	 if (plist[j].side != 0)
-	    break;
+     if (plist[j].side != 0)
+        break;
       e2 = plist[j].v_num;
       p = find_other_polygon(ph,pl,e1,e2);
       if (p == -1)
-	 printf("zero area: no other polygon (%d) with %d %d\n", pl, e1, e2);
+     printf("zero area: no other polygon (%d) with %d %d\n", pl, e1, e2);
       else
       {
 /*
-	 printf("adding %d between %d and %d in polygon %d\n", plist[i].v_num,
-		e1, e2, p);
+     printf("adding %d between %d and %d in polygon %d\n", plist[i].v_num,
+        e1, e2, p);
 */
-	 add_vert_to_poly(ph,p,e1,e2,plist[i].v_num);
+     add_vert_to_poly(ph,p,e1,e2,plist[i].v_num);
       }
    }
 
@@ -1915,7 +1915,7 @@ void remove_polygon_from_vert_poly_list(VertexStruct* v, int poly_num)
 
    for (i=0; i<v->polygon_count; i++)
       if (v->polygons[i] == poly_num)
-	 break;
+     break;
 
    if (i == v->polygon_count)
       return;
@@ -1940,7 +1940,7 @@ void replace_vertex_index(PolygonStruct* p, int old_index, int new_index)
    for (i=0; i<p->num_vertices; i++)
    {
       if (p->vertex_index[i] == old_index)
-	 p->vertex_index[i] = new_index;
+     p->vertex_index[i] = new_index;
    }
 
 }
@@ -1961,34 +1961,34 @@ void remove_degenerate_polygons(PolyhedronStruct* ph)
     * (hoping that the hole will get filled in later).
     */
 
-	for (i=0; i<ph->num_polygons; i++)
-	{
-		if (ph->polygon[i].thrown_out == yes || ph->polygon[i].old == yes)
-			continue;
-		for (j=0; j<ph->polygon[i].num_vertices; j++)
-		{
-			for (k=j+1; k<ph->polygon[i].num_vertices; k++)
-			{
-				if (ph->polygon[i].vertex_index[j] == ph->polygon[i].vertex_index[k])
-				{
-					/*
-					printf("polygon %d is degenerate ", i);
-					for (m=0; m<ph->polygon[i].num_vertices; m++)
-					printf("%d ", ph->polygon[i].vertex_index[m]);
-					printf("\n");
-					*/
-					if ((ph->polygon[i].num_vertices < 4) || (fix_polygon(ph,i) == -1))
-					{
-						throw_out_polygon(ph,i);
-						num_removed++;
-					}
-					/* major hack (setting j) to break out of both loops */
-					j = ph->polygon[i].num_vertices;
-					break;
-				}
-			}
-		}
-	}
+    for (i=0; i<ph->num_polygons; i++)
+    {
+        if (ph->polygon[i].thrown_out == yes || ph->polygon[i].old == yes)
+            continue;
+        for (j=0; j<ph->polygon[i].num_vertices; j++)
+        {
+            for (k=j+1; k<ph->polygon[i].num_vertices; k++)
+            {
+                if (ph->polygon[i].vertex_index[j] == ph->polygon[i].vertex_index[k])
+                {
+                    /*
+                    printf("polygon %d is degenerate ", i);
+                    for (m=0; m<ph->polygon[i].num_vertices; m++)
+                    printf("%d ", ph->polygon[i].vertex_index[m]);
+                    printf("\n");
+                    */
+                    if ((ph->polygon[i].num_vertices < 4) || (fix_polygon(ph,i) == -1))
+                    {
+                        throw_out_polygon(ph,i);
+                        num_removed++;
+                    }
+                    /* major hack (setting j) to break out of both loops */
+                    j = ph->polygon[i].num_vertices;
+                    break;
+                }
+            }
+        }
+    }
 
    if (verbose == yes)
       printf("   %d degenerate polygons removed.\n", num_removed);
@@ -2001,28 +2001,28 @@ void remove_overlapping_polygons(PolyhedronStruct* ph)
    int i, j, num_removed = 0;
 
    /* Remove all overlapping polygons. A polygon is overlapping if
-	 * its vertex list is identical to some other polygon's list
-	 * (if the order of the vertices is different the polygon is
-	 * still overlapping).
+     * its vertex list is identical to some other polygon's list
+     * (if the order of the vertices is different the polygon is
+     * still overlapping).
     */
 
-	for (i = 0; i < ph->num_polygons; i++)
-	{
-		if (ph->polygon[i].thrown_out == yes || ph->polygon[i].old == yes)
-			continue;
+    for (i = 0; i < ph->num_polygons; i++)
+    {
+        if (ph->polygon[i].thrown_out == yes || ph->polygon[i].old == yes)
+            continue;
 
-		for (j = i+1; j < ph->num_polygons; j++)
-		{
-			if (ph->polygon[j].thrown_out == yes || ph->polygon[j].old == yes)
-				continue;
+        for (j = i+1; j < ph->num_polygons; j++)
+        {
+            if (ph->polygon[j].thrown_out == yes || ph->polygon[j].old == yes)
+                continue;
 
-			if (vertex_lists_identical(ph, i, j))
-			{
-				throw_out_polygon(ph, j);
-				num_removed++;
-			}
-		}
-	}
+            if (vertex_lists_identical(ph, i, j))
+            {
+                throw_out_polygon(ph, j);
+                num_removed++;
+            }
+        }
+    }
 
    if (verbose == yes)
       printf("   %d overlapping polygons removed.\n", num_removed);
@@ -2031,77 +2031,77 @@ void remove_overlapping_polygons(PolyhedronStruct* ph)
 
 int vertex_lists_identical(PolyhedronStruct* ph, int poly1, int poly2)
 {
-	int i, j;
+    int i, j;
 
-	if (ph->polygon[poly1].num_vertices != ph->polygon[poly2].num_vertices)
-		return 0;
+    if (ph->polygon[poly1].num_vertices != ph->polygon[poly2].num_vertices)
+        return 0;
 
-	for (i = 0; i < ph->polygon[poly1].num_vertices; i++)
-	{
-		for (j = 0; j < ph->polygon[poly2].num_vertices; j++)
-		{
-			if (ph->polygon[poly1].vertex_index[i] == ph->polygon[poly2].vertex_index[j])
-				break;
-		}
-		if (j == ph->polygon[poly2].num_vertices)
-			return 0;
-	}
+    for (i = 0; i < ph->polygon[poly1].num_vertices; i++)
+    {
+        for (j = 0; j < ph->polygon[poly2].num_vertices; j++)
+        {
+            if (ph->polygon[poly1].vertex_index[i] == ph->polygon[poly2].vertex_index[j])
+                break;
+        }
+        if (j == ph->polygon[poly2].num_vertices)
+            return 0;
+    }
 
-	return 1;
+    return 1;
 }
 
 
 void remove_extra_polygons(PolyhedronStruct* ph)
 {
    int i, j, k, num_removed = 0;
-	int v1, v2, num_brothers, num_triplets;
+    int v1, v2, num_brothers, num_triplets;
 
    /* Remove all extra polygons. A polygon is extra if two or
-	 * more of its edges are shared by 2 or more other polygons.
+     * more of its edges are shared by 2 or more other polygons.
     */
 
-	for (i = 0; i < ph->num_polygons; i++)
-	{
-		if (ph->polygon[i].thrown_out == yes || ph->polygon[i].old == yes)
-			continue;
+    for (i = 0; i < ph->num_polygons; i++)
+    {
+        if (ph->polygon[i].thrown_out == yes || ph->polygon[i].old == yes)
+            continue;
 
-		num_triplets = 0;
+        num_triplets = 0;
 
-		if (i == 838)
-		{
-			num_triplets = 0;
-		}
+        if (i == 838)
+        {
+            num_triplets = 0;
+        }
 
-		for (j = 0; j < ph->polygon[i].num_vertices; j++)
-		{
-			v1 = ph->polygon[i].vertex_index[j];
-			v2 = ph->polygon[i].vertex_index[(j+1) % ph->polygon[i].num_vertices];
-			num_brothers = 0;
+        for (j = 0; j < ph->polygon[i].num_vertices; j++)
+        {
+            v1 = ph->polygon[i].vertex_index[j];
+            v2 = ph->polygon[i].vertex_index[(j+1) % ph->polygon[i].num_vertices];
+            num_brothers = 0;
 
-			for (k = 0; k < ph->num_polygons; k++)
-			{
-				if (k != i && ph->polygon[k].thrown_out == no && ph->polygon[k].old == no)
-				{
-					if (polygon_contains_edge(&ph->polygon[k], v1, v2) > 0)
-					{
-						if (++num_brothers > 1)
-							break;
-					}
-				}
-			}
+            for (k = 0; k < ph->num_polygons; k++)
+            {
+                if (k != i && ph->polygon[k].thrown_out == no && ph->polygon[k].old == no)
+                {
+                    if (polygon_contains_edge(&ph->polygon[k], v1, v2) > 0)
+                    {
+                        if (++num_brothers > 1)
+                            break;
+                    }
+                }
+            }
 
-			if (num_brothers > 1)
-				num_triplets++;
+            if (num_brothers > 1)
+                num_triplets++;
 
-			//printf("p %d e %d: brothers = %d\n", i, j, num_brothers);
-		}
+            //printf("p %d e %d: brothers = %d\n", i, j, num_brothers);
+        }
 
-		if (num_triplets > 1)
-		{
-			throw_out_polygon(ph, i);
-			num_removed++;
-		}
-	}
+        if (num_triplets > 1)
+        {
+            throw_out_polygon(ph, i);
+            num_removed++;
+        }
+    }
 
    if (verbose == yes)
       printf("   %d extra polygons removed.\n", num_removed);
@@ -2126,10 +2126,10 @@ int fix_polygon(PolyhedronStruct* ph, int pl)
    for (i=0; i<ps->num_vertices; i++)
    {
       for (j=0; j<count; j++)
-	 if (ps->vertex_index[i] == vlist[j])
-	    break;
+     if (ps->vertex_index[i] == vlist[j])
+        break;
       if (j == count)
-	 vlist[count++] = ps->vertex_index[i];
+     vlist[count++] = ps->vertex_index[i];
    }
 
    /* If there are less than 3 vertices, the attempted fix failed */
@@ -2176,32 +2176,32 @@ void order_polygons(PolyhedronStruct* polyhedron, int order_format)
    for (i=0; i<polyhedron->num_polygons; i++)
    {
       if (polyhedron->polygon[i].thrown_out == yes)
-	 continue;
+     continue;
       polyhedron->polygon[i].ordering_value = 0.0;
       for (j=0; j<polyhedron->polygon[i].num_vertices; j++)
-	 polyhedron->polygon[i].ordering_value +=
-	    polyhedron->vertex[polyhedron->polygon[i].vertex_index[j]].coord[axis];
+     polyhedron->polygon[i].ordering_value +=
+        polyhedron->vertex[polyhedron->polygon[i].vertex_index[j]].coord[axis];
       polyhedron->polygon[i].ordering_value /= polyhedron->polygon[i].num_vertices;
    }
 
    for (i=0; i<polyhedron->num_polygons; i++)
    {
       if (polyhedron->polygon[i].thrown_out == yes)
-	 continue;
+     continue;
       min_so_far = polyhedron->polygon[i].ordering_value;
       index_of_min = i;
       for (j=i+1; j<polyhedron->num_polygons; j++)
       {
-	 if (polyhedron->polygon[j].thrown_out == yes)
-	    continue;
-	 if (polyhedron->polygon[j].ordering_value < min_so_far)
-	 {
-	    min_so_far = polyhedron->polygon[j].ordering_value;
-	    index_of_min = j;
-	 }
+     if (polyhedron->polygon[j].thrown_out == yes)
+        continue;
+     if (polyhedron->polygon[j].ordering_value < min_so_far)
+     {
+        min_so_far = polyhedron->polygon[j].ordering_value;
+        index_of_min = j;
+     }
       }
       if (index_of_min != i)
-	 swap_polygons(polyhedron,i,index_of_min);
+     swap_polygons(polyhedron,i,index_of_min);
    }
 
    if (verbose == yes)
@@ -2236,19 +2236,19 @@ void order_vertices(PolyhedronStruct* polyhedron, int order_format)
    for (i=0; i<polyhedron->num_vertices; i++)
    {
       if (polyhedron->vertex[i].thrown_out == yes)
-	 continue;
+     continue;
       min_so_far = polyhedron->vertex[i].coord[axis];
       index_of_min = i;
       for (j=i+1; j<polyhedron->num_vertices; j++)
       {
-	 if (polyhedron->vertex[j].coord[axis] < min_so_far)
-	 {
-	    min_so_far = polyhedron->vertex[j].coord[axis];
-	    index_of_min = j;
-	 }
+     if (polyhedron->vertex[j].coord[axis] < min_so_far)
+     {
+        min_so_far = polyhedron->vertex[j].coord[axis];
+        index_of_min = j;
+     }
       }
       if (index_of_min != i)
-	 swap_vertex_indices(polyhedron,i,index_of_min);
+     swap_vertex_indices(polyhedron,i,index_of_min);
    }
 
 }
@@ -2267,13 +2267,13 @@ void swap_vertex_indices(PolyhedronStruct* ph, int index1, int index2)
    for (i=0; i<ph->num_polygons; i++)
    {
       if (ph->polygon[i].thrown_out == yes)
-	 continue;
+     continue;
       for (j=0; j<ph->polygon[i].num_vertices; j++)
       {
-	 if (ph->polygon[i].vertex_index[j] == index1)
-	    ph->polygon[i].vertex_index[j] = index2;
-	 else if (ph->polygon[i].vertex_index[j] == index2)
-	    ph->polygon[i].vertex_index[j] = index1;
+     if (ph->polygon[i].vertex_index[j] == index1)
+        ph->polygon[i].vertex_index[j] = index2;
+     else if (ph->polygon[i].vertex_index[j] == index2)
+        ph->polygon[i].vertex_index[j] = index1;
       }
    }
 
@@ -2300,24 +2300,24 @@ void fill_holes(PolyhedronStruct* ph, SBoolean fill_holes)
    for (i=0; i<ph->num_polygons; i++)
    {
       if (ph->polygon[i].thrown_out == yes)
-	 continue;
+     continue;
       for (j=0; j<ph->polygon[i].num_vertices; j++)
       {
-	 v1 = ph->polygon[i].vertex_index[j];
-	 if (j == ph->polygon[i].num_vertices-1)
-	    v2 = ph->polygon[i].vertex_index[0];
-	 else
-	    v2 = ph->polygon[i].vertex_index[j+1];
-	 if (find_other_polygon(ph,i,v1,v2) == -1)
-	 {
-	    edgelist[count][0] = v1;
-	    edgelist[count++][1] = v2;
-	 }
-	 if (count >= MAX_HOLE_EDGES)
-	 {
-	    i = ph->num_polygons;   /* hack to break out of both loops */
-	    break;
-	 }
+     v1 = ph->polygon[i].vertex_index[j];
+     if (j == ph->polygon[i].num_vertices-1)
+        v2 = ph->polygon[i].vertex_index[0];
+     else
+        v2 = ph->polygon[i].vertex_index[j+1];
+     if (find_other_polygon(ph,i,v1,v2) == -1)
+     {
+        edgelist[count][0] = v1;
+        edgelist[count++][1] = v2;
+     }
+     if (count >= MAX_HOLE_EDGES)
+     {
+        i = ph->num_polygons;   /* hack to break out of both loops */
+        break;
+     }
       }
    }
 
@@ -2329,10 +2329,10 @@ void fill_holes(PolyhedronStruct* ph, SBoolean fill_holes)
    while (count > 0)
    {
       for (i=0; i<num_edges; i++)
-	 if (edgeused[i] == 0)
-	    break;
+     if (edgeused[i] == 0)
+        break;
       if (i == num_edges)
-	 break;
+     break;
       e_num = i;
 
       start_v = vertex_index[0] = edgelist[e_num][0];
@@ -2342,81 +2342,81 @@ void fill_holes(PolyhedronStruct* ph, SBoolean fill_holes)
 
       while (1)
       {
-	 for (i=0; i<num_edges; i++)
-	 {
-	    if (edgeused[i] == 0)
-	    {
-	       if (edgelist[i][0] == other_end)
-	       {
-		  other_end = edgelist[i][1];
-		  edgeused[i] = 1;
-		  break;
-	       }
-	       else if (edgelist[i][1] == other_end)
-	       {
-		  other_end = edgelist[i][0];
-		  edgeused[i] = 1;
-		  break;
-	       }
-	    }
-	 }
-	 if (i == num_edges)
-	 {
-/*	    printf("couldn't navigate around hole\n");*/
-	    /* Got a partial polygon (open loop of edges), just treat it
-	     * like a complete polygon for now.
-	     */
-	    if (v_num >= 3)
-	    {
-	       new_p = make_new_polygon(ph,v_num,vertex_index,0,normal,0.0,yes,yes);
-	       num_holes_filled++;
-	    }
-	    break;
-	 }
-	 if (other_end == start_v)
-	 {
-	    /* Got a complete polygon (closed loop of edges) */
-	    new_p = make_new_polygon(ph,v_num,vertex_index,0,normal,0.0,yes,yes);
-	    num_holes_filled++;
+     for (i=0; i<num_edges; i++)
+     {
+        if (edgeused[i] == 0)
+        {
+           if (edgelist[i][0] == other_end)
+           {
+          other_end = edgelist[i][1];
+          edgeused[i] = 1;
+          break;
+           }
+           else if (edgelist[i][1] == other_end)
+           {
+          other_end = edgelist[i][0];
+          edgeused[i] = 1;
+          break;
+           }
+        }
+     }
+     if (i == num_edges)
+     {
+/*      printf("couldn't navigate around hole\n");*/
+        /* Got a partial polygon (open loop of edges), just treat it
+         * like a complete polygon for now.
+         */
+        if (v_num >= 3)
+        {
+           new_p = make_new_polygon(ph,v_num,vertex_index,0,normal,0.0,yes,yes);
+           num_holes_filled++;
+        }
+        break;
+     }
+     if (other_end == start_v)
+     {
+        /* Got a complete polygon (closed loop of edges) */
+        new_p = make_new_polygon(ph,v_num,vertex_index,0,normal,0.0,yes,yes);
+        num_holes_filled++;
 /*
-	    printf("filled hole with (%d): ", new_p);
-	    for (j=0; j<v_num; j++)
-	       printf("%d ", vertex_index[j]);
-	    printf("\n");
+        printf("filled hole with (%d): ", new_p);
+        for (j=0; j<v_num; j++)
+           printf("%d ", vertex_index[j]);
+        printf("\n");
 */
-	    break;
-	 }
-	 else
-	 {
-	    /* See if the new edge forms a loop at some vertex other than
-	     * the first one (e.g., a figure 8 hole).
-	     */
-	    for (j=1; j<v_num; j++)
-	    {
-	       if (other_end == vertex_index[j])
-		  break;
-	    }
-	    if (j == v_num)
-	    {
-	       /* Didn't form a loop: add the new edge to the developing polygon */
-	       vertex_index[v_num++] = other_end;
-	    }
-	    else
-	    {
-	       /* Make a new polygon from this loop */
-	       nv = v_num - j;
-	       new_p = make_new_polygon(ph,nv,&vertex_index[j],0,normal,0.0,yes,yes);
-	       num_holes_filled++;
+        break;
+     }
+     else
+     {
+        /* See if the new edge forms a loop at some vertex other than
+         * the first one (e.g., a figure 8 hole).
+         */
+        for (j=1; j<v_num; j++)
+        {
+           if (other_end == vertex_index[j])
+          break;
+        }
+        if (j == v_num)
+        {
+           /* Didn't form a loop: add the new edge to the developing polygon */
+           vertex_index[v_num++] = other_end;
+        }
+        else
+        {
+           /* Make a new polygon from this loop */
+           nv = v_num - j;
+           new_p = make_new_polygon(ph,nv,&vertex_index[j],0,normal,0.0,yes,yes);
+           num_holes_filled++;
 /*
-	       printf("filled hole with (%d): ", new_p);
-	       for (k=j; k<v_num; k++)
-		  printf("%d ", vertex_index[k]);
-	       printf("\n");
+           printf("filled hole with (%d): ", new_p);
+           for (k=j; k<v_num; k++)
+          printf("%d ", vertex_index[k]);
+           printf("\n");
 */
-	       /* Now set v_num to effectively clip the loop out of vertex_index[] */
-	       v_num = j + 1;
-	    }
-	 }
+           /* Now set v_num to effectively clip the loop out of vertex_index[] */
+           v_num = j + 1;
+        }
+     }
       }
    }
 
@@ -2434,16 +2434,16 @@ void check_edge_usage(PolyhedronStruct* ph)
    for (j=0; j<ph->num_polygons; j++)
    {
       if (ph->polygon[j].thrown_out == yes)
-	 continue;
+     continue;
       for (k=0; k<ph->polygon[j].num_vertices; k++)
       {
-	 v1 = ph->polygon[j].vertex_index[k];
-	 if (k == ph->polygon[j].num_vertices-1)
-	    v2 = ph->polygon[j].vertex_index[0];
-	 else
-	    v2 = ph->polygon[j].vertex_index[k+1];
-	 if (find_other_polygon(ph,j,v1,v2) == -1)
-	    printf("edge %d %d is unshared (%d only)\n", v1, v2, j);
+     v1 = ph->polygon[j].vertex_index[k];
+     if (k == ph->polygon[j].num_vertices-1)
+        v2 = ph->polygon[j].vertex_index[0];
+     else
+        v2 = ph->polygon[j].vertex_index[k+1];
+     if (find_other_polygon(ph,j,v1,v2) == -1)
+        printf("edge %d %d is unshared (%d only)\n", v1, v2, j);
       }
    }
 
@@ -2463,29 +2463,29 @@ void check_edge_lengths(PolyhedronStruct* ph, double max_edge_length)
    for (i=0; i<ph->num_polygons; i++)
    {
       if (ph->polygon[i].thrown_out == yes)
-	 continue;
+     continue;
       p = &ph->polygon[i];
       for (j=0; j<p->num_vertices; j++)
       {
-	 vi1 = j;
-	 vi2 = (j+1)%p->num_vertices;
-	 v1 = ph->polygon[i].vertex_index[vi1];
-	 v2 = ph->polygon[i].vertex_index[vi2];
-	 vec[0] = ph->vertex[v1].coord[0] - ph->vertex[v2].coord[0];
-	 vec[1] = ph->vertex[v1].coord[1] - ph->vertex[v2].coord[1];
-	 vec[2] = ph->vertex[v1].coord[2] - ph->vertex[v2].coord[2];
-	 len = VECTOR_MAGNITUDE(vec);
-	 if (len > max_edge_length)
-	 {
-	    vert[0] = (ph->vertex[v1].coord[0] + ph->vertex[v2].coord[0]) * 0.5;
-	    vert[1] = (ph->vertex[v1].coord[1] + ph->vertex[v2].coord[1]) * 0.5;
-	    vert[2] = (ph->vertex[v1].coord[2] + ph->vertex[v2].coord[2]) * 0.5;
-	    v_new = make_new_vertex(ph,vert,ph->vertex[v1].polyhedron_number,no,yes);
-	    add_vertex(ph,i,vi1,vi2,v_new);
-	    i--;
-	    num_edges_split++;
-	    break;
-	 }
+     vi1 = j;
+     vi2 = (j+1)%p->num_vertices;
+     v1 = ph->polygon[i].vertex_index[vi1];
+     v2 = ph->polygon[i].vertex_index[vi2];
+     vec[0] = ph->vertex[v1].coord[0] - ph->vertex[v2].coord[0];
+     vec[1] = ph->vertex[v1].coord[1] - ph->vertex[v2].coord[1];
+     vec[2] = ph->vertex[v1].coord[2] - ph->vertex[v2].coord[2];
+     len = VECTOR_MAGNITUDE(vec);
+     if (len > max_edge_length)
+     {
+        vert[0] = (ph->vertex[v1].coord[0] + ph->vertex[v2].coord[0]) * 0.5;
+        vert[1] = (ph->vertex[v1].coord[1] + ph->vertex[v2].coord[1]) * 0.5;
+        vert[2] = (ph->vertex[v1].coord[2] + ph->vertex[v2].coord[2]) * 0.5;
+        v_new = make_new_vertex(ph,vert,ph->vertex[v1].polyhedron_number,no,yes);
+        add_vertex(ph,i,vi1,vi2,v_new);
+        i--;
+        num_edges_split++;
+        break;
+     }
       }
    }
 
@@ -2511,27 +2511,27 @@ void triangulate_polygons(PolyhedronStruct* ph, TriangulateOption triangulate)
 /*
       if (verbose == yes)
       {
-	 printf("Triangulating polygons (simple technique)... ");
-	 fflush(stdout);
+     printf("Triangulating polygons (simple technique)... ");
+     fflush(stdout);
       }
 */
       for (i=0, polys_to_add=0, verts_to_add=0; i<ph->num_polygons; i++)
       {
-	 if (ph->polygon[i].thrown_out == yes)
-	    continue;
-	 if (ph->polygon[i].num_vertices == 3)
-	    continue;
-	 if (ph->polygon[i].num_vertices == 4)
-	    polys_to_add++;
-	 else if (ph->polygon[i].num_vertices > 6)
-	 {
-	    polys_to_add += (ph->polygon[i].num_vertices - 1);
-	    verts_to_add++;
-	 }
-	 else
-	 {
-	    polys_to_add += (ph->polygon[i].num_vertices - 3);
-	 }
+     if (ph->polygon[i].thrown_out == yes)
+        continue;
+     if (ph->polygon[i].num_vertices == 3)
+        continue;
+     if (ph->polygon[i].num_vertices == 4)
+        polys_to_add++;
+     else if (ph->polygon[i].num_vertices > 6)
+     {
+        polys_to_add += (ph->polygon[i].num_vertices - 1);
+        verts_to_add++;
+     }
+     else
+     {
+        polys_to_add += (ph->polygon[i].num_vertices - 3);
+     }
       }
    }
    else if (triangulate == complex_tri)
@@ -2539,30 +2539,30 @@ void triangulate_polygons(PolyhedronStruct* ph, TriangulateOption triangulate)
 /*
       if (verbose == yes)
       {
-	 printf("Triangulating polygons (complex technique)... ");
-	 fflush(stdout);
+     printf("Triangulating polygons (complex technique)... ");
+     fflush(stdout);
       }
 */
       for (i=0, polys_to_add=0, verts_to_add=0; i<ph->num_polygons; i++)
       {
-	 if (ph->polygon[i].thrown_out == yes)
-	    continue;
-	 if (ph->polygon[i].num_vertices == 3)
-	    continue;
-	 if (ph->polygon[i].num_vertices == 4)
-	 {
-	    polys_to_add += 3;
-	    verts_to_add++;
-	 }
-	 else if (ph->polygon[i].num_vertices > 6)
-	 {
-	    polys_to_add += (ph->polygon[i].num_vertices - 1);
-	    verts_to_add++;
-	 }
-	 else
-	 {
-	    polys_to_add += (ph->polygon[i].num_vertices - 3);
-	 }
+     if (ph->polygon[i].thrown_out == yes)
+        continue;
+     if (ph->polygon[i].num_vertices == 3)
+        continue;
+     if (ph->polygon[i].num_vertices == 4)
+     {
+        polys_to_add += 3;
+        verts_to_add++;
+     }
+     else if (ph->polygon[i].num_vertices > 6)
+     {
+        polys_to_add += (ph->polygon[i].num_vertices - 1);
+        verts_to_add++;
+     }
+     else
+     {
+        polys_to_add += (ph->polygon[i].num_vertices - 3);
+     }
       }
    }
 
@@ -2570,52 +2570,52 @@ void triangulate_polygons(PolyhedronStruct* ph, TriangulateOption triangulate)
 
    if (polys_to_add > 0)
       ph->polygon = (PolygonStruct*)simm_realloc(ph->polygon,
-			(ph->num_polygons+polys_to_add)*sizeof(PolygonStruct),&rc);
+            (ph->num_polygons+polys_to_add)*sizeof(PolygonStruct),&rc);
 
    if (verts_to_add > 0)
       ph->vertex = (VertexStruct*)simm_realloc(ph->vertex,
-			 (ph->num_vertices+verts_to_add)*sizeof(VertexStruct),&rc);
+             (ph->num_vertices+verts_to_add)*sizeof(VertexStruct),&rc);
 
    for (i=0; i<ph->num_polygons; i++)
    {
       if (ph->polygon[i].thrown_out == yes)
-	 continue;
+     continue;
 
       if (ph->polygon[i].num_vertices == 3)
-	 continue;
+     continue;
 
       if (ph->polygon[i].num_vertices == 4)
       {
-	 if (triangulate == simple_tri)
-	 {
-	    v_split = find_largest_angle(ph,i);
-	    v_index[0] = ph->polygon[i].vertex_index[v_split];
-	    v_index[1] = ph->polygon[i].vertex_index[(v_split+2)%4];
-	    v_index[2] = ph->polygon[i].vertex_index[(v_split+3)%4];
-	    make_new_polygon(ph,3,v_index,ph->polygon[i].polyhedron_number,
-			     ph->polygon[i].normal,ph->polygon[i].d,no,no);
-	    v_index[0] = ph->polygon[i].vertex_index[v_split];
-	    v_index[1] = ph->polygon[i].vertex_index[(v_split+1)%4];
-	    v_index[2] = ph->polygon[i].vertex_index[(v_split+2)%4];
-	    change_vertex_indices(ph,i,v_index,3);
-	 }
-	 else
-	 {
-	    quarter_quad(ph,i);
-	 }
+     if (triangulate == simple_tri)
+     {
+        v_split = find_largest_angle(ph,i);
+        v_index[0] = ph->polygon[i].vertex_index[v_split];
+        v_index[1] = ph->polygon[i].vertex_index[(v_split+2)%4];
+        v_index[2] = ph->polygon[i].vertex_index[(v_split+3)%4];
+        make_new_polygon(ph,3,v_index,ph->polygon[i].polyhedron_number,
+                 ph->polygon[i].normal,ph->polygon[i].d,no,no);
+        v_index[0] = ph->polygon[i].vertex_index[v_split];
+        v_index[1] = ph->polygon[i].vertex_index[(v_split+1)%4];
+        v_index[2] = ph->polygon[i].vertex_index[(v_split+2)%4];
+        change_vertex_indices(ph,i,v_index,3);
+     }
+     else
+     {
+        quarter_quad(ph,i);
+     }
       }
       else if (ph->polygon[i].num_vertices == 5)
       {
-	 trisect_fiver(ph,i);
+     trisect_fiver(ph,i);
       }
       else if (ph->polygon[i].num_vertices == 6)
       {
-	 bisect_sixer(ph,i);
-	 i--;
+     bisect_sixer(ph,i);
+     i--;
       }
       else
       {
-	 split_large_polygon(ph,i,no,no);
+     split_large_polygon(ph,i,no,no);
       }
    }
 
@@ -2640,11 +2640,11 @@ void quarter_quad(PolyhedronStruct* ph, int poly_num)
    v4 = p->vertex_index[3];
 
    pt[0] = (ph->vertex[v1].coord[0] + ph->vertex[v2].coord[0] +
-	    ph->vertex[v3].coord[0] + ph->vertex[v4].coord[0]) / 4.0;
+        ph->vertex[v3].coord[0] + ph->vertex[v4].coord[0]) / 4.0;
    pt[1] = (ph->vertex[v1].coord[1] + ph->vertex[v2].coord[1] +
-	    ph->vertex[v3].coord[1] + ph->vertex[v4].coord[1]) / 4.0;
+        ph->vertex[v3].coord[1] + ph->vertex[v4].coord[1]) / 4.0;
    pt[2] = (ph->vertex[v1].coord[2] + ph->vertex[v2].coord[2] +
-	    ph->vertex[v3].coord[2] + ph->vertex[v4].coord[2]) / 4.0;
+        ph->vertex[v3].coord[2] + ph->vertex[v4].coord[2]) / 4.0;
 
    new_v = make_new_vertex(ph,pt,ph->vertex[v1].polyhedron_number,no,no);
 
@@ -2685,11 +2685,11 @@ void split_triangle(PolyhedronStruct* ph, int poly_num)
    v3 = p->vertex_index[2];
 
    pt[0] = (ph->vertex[v1].coord[0] + ph->vertex[v2].coord[0] +
-	    ph->vertex[v3].coord[0]) / 3.0;
+        ph->vertex[v3].coord[0]) / 3.0;
    pt[1] = (ph->vertex[v1].coord[1] + ph->vertex[v2].coord[1] +
-	    ph->vertex[v3].coord[1]) / 3.0;
+        ph->vertex[v3].coord[1]) / 3.0;
    pt[2] = (ph->vertex[v1].coord[2] + ph->vertex[v2].coord[2] +
-	    ph->vertex[v3].coord[2]) / 3.0;
+        ph->vertex[v3].coord[2]) / 3.0;
 
    new_v = make_new_vertex(ph,pt,ph->vertex[v1].polyhedron_number,no,no);
 
@@ -2722,13 +2722,13 @@ SBoolean polygon_very_concave(PolyhedronStruct* ph, int poly_num)
    {
       v2 = ph->polygon[poly_num].vertex_index[i];
       if (i == 0)
-	 v1 = ph->polygon[poly_num].vertex_index[ph->polygon[poly_num].num_vertices-1];
+     v1 = ph->polygon[poly_num].vertex_index[ph->polygon[poly_num].num_vertices-1];
       else
-	 v1 = ph->polygon[poly_num].vertex_index[i-1];
+     v1 = ph->polygon[poly_num].vertex_index[i-1];
       if (i == ph->polygon[poly_num].num_vertices-1)
-	 v3 = ph->polygon[poly_num].vertex_index[0];
+     v3 = ph->polygon[poly_num].vertex_index[0];
       else
-	 v3 = ph->polygon[poly_num].vertex_index[i+1];
+     v3 = ph->polygon[poly_num].vertex_index[i+1];
 
       vec1[0] = ph->vertex[v1].coord[0] - ph->vertex[v2].coord[0];
       vec1[1] = ph->vertex[v1].coord[1] - ph->vertex[v2].coord[1];
@@ -2744,11 +2744,11 @@ SBoolean polygon_very_concave(PolyhedronStruct* ph, int poly_num)
       dot_product = vec1[0]*vec2[0] + vec1[1]*vec2[1] + vec1[2]*vec2[2];
 
       if (dot_product < -1.0)
-	 angle_sum += 180.0;
+     angle_sum += 180.0;
       else if (dot_product > 1.0)
-	 angle_sum += 0.0;
+     angle_sum += 0.0;
       else
-	 angle_sum += RTOD*acos(dot_product);
+     angle_sum += RTOD*acos(dot_product);
    }
 
    ext_angle = 360.0/ph->polygon[poly_num].num_vertices;
@@ -2822,11 +2822,11 @@ void trisect_fiver(PolyhedronStruct* ph, int old_polygon)
       v_angle[i] = compute_angle_between_vectors(vec1,vec2);
 
       if (v_angle[i] > M_PI - ANGLE_EPSILON)
-	 col[count++] = i;
+     col[count++] = i;
       if (v_angle[i] > max_angle)
       {
-	 max_angle = v_angle[i];
-	 max_index = i;
+     max_angle = v_angle[i];
+     max_index = i;
       }
    }
 
@@ -2838,15 +2838,15 @@ void trisect_fiver(PolyhedronStruct* ph, int old_polygon)
    {
       if (col[0] == 0 && col[1] == p->num_vertices-1)
       {
-	 v_split = 2;
+     v_split = 2;
       }
       else if ((col[1] - col[0]) == 1)
       {
-	 v_split = (col[0] + 3) % p->num_vertices;
+     v_split = (col[0] + 3) % p->num_vertices;
       }
       else
       {
-	 v_split = col[0];
+     v_split = col[0];
       }
    }
    else
@@ -2899,11 +2899,11 @@ void bisect_sixer(PolyhedronStruct* ph, int old_polygon)
       v_angle[i] = compute_angle_between_vectors(vec1,vec2);
 
       if (v_angle[i] > M_PI - ANGLE_EPSILON)
-	 col[count++] = i;
+     col[count++] = i;
       if (v_angle[i] > max_angle)
       {
-	 max_angle = v_angle[i];
-	 max_index = i;
+     max_angle = v_angle[i];
+     max_index = i;
       }
    }
 
@@ -2915,20 +2915,20 @@ void bisect_sixer(PolyhedronStruct* ph, int old_polygon)
    {
       if ((col[0] == 0) && (col[1] == 1) && (col[2] == p->num_vertices-1))
       {
-	 v_split = 3;
+     v_split = 3;
       }
       else if ((col[0] == 0) && (col[1] == p->num_vertices-2) &&
-	       (col[2] == p->num_vertices-1))
+           (col[2] == p->num_vertices-1))
       {
-	 v_split = 2;
+     v_split = 2;
       }
       else if ((col[0] == col[1] - 1) && (col[1] == col[2] - 1))
       {
-	 v_split = (col[1] + 3) % p->num_vertices;
+     v_split = (col[1] + 3) % p->num_vertices;
       }
       else
       {
-	 v_split = max_index;
+     v_split = max_index;
       }
    }
    else
@@ -2965,13 +2965,13 @@ int find_largest_angle(PolyhedronStruct* ph, int poly_num)
    {
       v2 = ph->polygon[poly_num].vertex_index[i];
       if (i == 0)
-	 v1 = ph->polygon[poly_num].vertex_index[ph->polygon[poly_num].num_vertices-1];
+     v1 = ph->polygon[poly_num].vertex_index[ph->polygon[poly_num].num_vertices-1];
       else
-	 v1 = ph->polygon[poly_num].vertex_index[i-1];
+     v1 = ph->polygon[poly_num].vertex_index[i-1];
       if (i == ph->polygon[poly_num].num_vertices-1)
-	 v3 = ph->polygon[poly_num].vertex_index[0];
+     v3 = ph->polygon[poly_num].vertex_index[0];
       else
-	 v3 = ph->polygon[poly_num].vertex_index[i+1];
+     v3 = ph->polygon[poly_num].vertex_index[i+1];
 
       vec1[0] = ph->vertex[v1].coord[0] - ph->vertex[v2].coord[0];
       vec1[1] = ph->vertex[v1].coord[1] - ph->vertex[v2].coord[1];
@@ -2987,19 +2987,19 @@ int find_largest_angle(PolyhedronStruct* ph, int poly_num)
       dot_product = vec1[0]*vec2[0] + vec1[1]*vec2[1] + vec1[2]*vec2[2];
 
       if (dot_product < -1.0)
-	 angle[i] = M_PI;
+     angle[i] = M_PI;
       else if (dot_product > 1.0)
-	 angle[i] = 0.0;
+     angle[i] = 0.0;
       else
-	 angle[i] = acos(dot_product);
+     angle[i] = acos(dot_product);
    }
 
    for (i=0, max_angle=MINMDOUBLE; i<ph->polygon[poly_num].num_vertices; i++)
    {
       if (angle[i] > max_angle)
       {
-	 max_angle = angle[i];
-	 max_v = i;
+     max_angle = angle[i];
+     max_v = i;
       }
    }
 
@@ -3022,11 +3022,11 @@ void change_vertex_indices(PolyhedronStruct* ph, int p_num, int v_index[], int n
    {
       for (j=0; j<num_v; j++)
       {
-	 if (p->vertex_index[i] == v_index[j])
-	    break;
+     if (p->vertex_index[i] == v_index[j])
+        break;
       }
       if (j == num_v)
-	 remove_polygon_from_vert_poly_list(&ph->vertex[p->vertex_index[i]],p_num);
+     remove_polygon_from_vert_poly_list(&ph->vertex[p->vertex_index[i]],p_num);
    }
 
    p->vertex_index = (int*)simm_realloc(p->vertex_index,num_v*sizeof(int),&rc);
@@ -3044,7 +3044,7 @@ void change_vertex_indices(PolyhedronStruct* ph, int p_num, int v_index[], int n
 
 
 void split_large_polygon(PolyhedronStruct* ph, int poly_num, SBoolean realloc_vertices,
-			 SBoolean realloc_polygons)
+             SBoolean realloc_polygons)
 {
 
    int i, ph_num, v_index[3], new_v;
@@ -3082,7 +3082,7 @@ void split_large_polygon(PolyhedronStruct* ph, int poly_num, SBoolean realloc_ve
       v_index[2] = new_v;
       
       make_new_polygon(ph,3,v_index,p->polyhedron_number,
-		       normal,p->d,realloc_polygons,no);
+               normal,p->d,realloc_polygons,no);
       
       p = &ph->polygon[poly_num];
    }
@@ -3132,7 +3132,7 @@ void unorient_polyhedron(PolyhedronStruct* ph, double rot_mat[][3])
 
 
 int make_new_vertex(PolyhedronStruct* ph, double pt[], int ph_num,
-		    SBoolean check_existing, SBoolean realloc_array)
+            SBoolean check_existing, SBoolean realloc_array)
 {
 
    int i, v_num;
@@ -3145,17 +3145,17 @@ int make_new_vertex(PolyhedronStruct* ph, double pt[], int ph_num,
    {
       for (i=ph->num_vertices-1; i>=0; i--)
       {
-	 tmp = pt[0] - ph->vertex[i].coord[0];
-	 if (tmp > BOOL_EPSILON || tmp < -BOOL_EPSILON)
-	    continue;
-	 tmp = pt[1] - ph->vertex[i].coord[1];
-	 if (tmp > BOOL_EPSILON || tmp < -BOOL_EPSILON)
-	    continue;
-	 tmp = pt[2] - ph->vertex[i].coord[2];
-	 if (tmp > BOOL_EPSILON || tmp < -BOOL_EPSILON)
-	    continue;
-/*	 printf("make_new_vertex(ph = %p, matched %d)\n", ph, i);*/
-	 return (i);
+     tmp = pt[0] - ph->vertex[i].coord[0];
+     if (tmp > BOOL_EPSILON || tmp < -BOOL_EPSILON)
+        continue;
+     tmp = pt[1] - ph->vertex[i].coord[1];
+     if (tmp > BOOL_EPSILON || tmp < -BOOL_EPSILON)
+        continue;
+     tmp = pt[2] - ph->vertex[i].coord[2];
+     if (tmp > BOOL_EPSILON || tmp < -BOOL_EPSILON)
+        continue;
+/*   printf("make_new_vertex(ph = %p, matched %d)\n", ph, i);*/
+     return (i);
       }
    }
 
@@ -3183,8 +3183,8 @@ int make_new_vertex(PolyhedronStruct* ph, double pt[], int ph_num,
 
 
 int make_new_polygon(PolyhedronStruct* ph, int num_vertices, int v_index[],
-		     int ph_num, double normal[], double d, SBoolean realloc_array,
-		     SBoolean recalc_normal)
+             int ph_num, double normal[], double d, SBoolean realloc_array,
+             SBoolean recalc_normal)
 {
 
    int i, poly_num;
@@ -3196,10 +3196,10 @@ int make_new_polygon(PolyhedronStruct* ph, int num_vertices, int v_index[],
    if (realloc_array == yes)
    {
       if (ph->num_polygons == 1)
-	 ph->polygon = (PolygonStruct*)simm_malloc(sizeof(PolygonStruct));
+     ph->polygon = (PolygonStruct*)simm_malloc(sizeof(PolygonStruct));
       else
-	 ph->polygon = (PolygonStruct*)simm_realloc(ph->polygon,
-				ph->num_polygons*sizeof(PolygonStruct),&rc);
+     ph->polygon = (PolygonStruct*)simm_realloc(ph->polygon,
+                ph->num_polygons*sizeof(PolygonStruct),&rc);
    }
 
    p = &ph->polygon[poly_num];
@@ -3250,20 +3250,20 @@ void add_poly_to_vert_poly_lists(PolyhedronStruct* ph, PolygonStruct* p, int pol
    {
       v = &ph->vertex[p->vertex_index[i]];
       if (v->thrown_out == yes)
-	 printf("OOPS: adding to v[deleted].polygons\n");
+     printf("OOPS: adding to v[deleted].polygons\n");
       for (j=0; j<v->polygon_count; j++)
       {
-	 if (v->polygons[j] == poly_num)
-	 {
-/*	    printf("add_poly_to_vert_poly_lists: already there!\n");*/
-	    break;
-	 }
+     if (v->polygons[j] == poly_num)
+     {
+/*      printf("add_poly_to_vert_poly_lists: already there!\n");*/
+        break;
+     }
       }
       if (j == v->polygon_count)
       {
-	 v->polygon_count++;
-	 v->polygons = (int*)simm_realloc(v->polygons,v->polygon_count*sizeof(int),&rc);
-	 v->polygons[v->polygon_count-1] = poly_num;
+     v->polygon_count++;
+     v->polygons = (int*)simm_realloc(v->polygons,v->polygon_count*sizeof(int),&rc);
+     v->polygons[v->polygon_count-1] = poly_num;
       }
    }
 
@@ -3288,62 +3288,62 @@ void convexify_polygons(PolyhedronStruct* ph, NormOptions* opt)
    for (i=0; i<ph->num_polygons; i++)
    {
       if (ph->polygon[i].num_vertices < 4)
-	 continue;
+     continue;
       if (ph->polygon[i].thrown_out == yes)
-	 continue;
+     continue;
       else
       {
-	 if ((v1 = polygon_is_concave(ph,i)) != -1)
-	 {
-	    if (ph->polygon[i].num_vertices == 4)
-	    {
-	       v2 = (v1+2)%ph->polygon[i].num_vertices;
-	       bisect_polygon(ph,i,v1,v2);
-	    }
-	    else
-	    {
-	       /* Make a vertex (on the other side of the polygon) to form
-		* the splitting edge with.  This new vertex (v_new) gets inserted
-		* right after v2 in the polygon's vertex list.
-		*/
-	       v2 = find_bisection_point(ph,i,v1,p_bisect);
-	       if (v2 == -1)
-		  continue;
+     if ((v1 = polygon_is_concave(ph,i)) != -1)
+     {
+        if (ph->polygon[i].num_vertices == 4)
+        {
+           v2 = (v1+2)%ph->polygon[i].num_vertices;
+           bisect_polygon(ph,i,v1,v2);
+        }
+        else
+        {
+           /* Make a vertex (on the other side of the polygon) to form
+        * the splitting edge with.  This new vertex (v_new) gets inserted
+        * right after v2 in the polygon's vertex list.
+        */
+           v2 = find_bisection_point(ph,i,v1,p_bisect);
+           if (v2 == -1)
+          continue;
 
-	       v_from = ph->polygon[i].vertex_index[v1];
-	       v_new = make_new_vertex(ph,p_bisect,ph->vertex[v2].polyhedron_number,no,yes);
+           v_from = ph->polygon[i].vertex_index[v1];
+           v_new = make_new_vertex(ph,p_bisect,ph->vertex[v2].polyhedron_number,no,yes);
 
-	       /* The edge you want to split (by putting v_new in the middle of it)
-		* is defined by v2 and the next vertex after v2. Store these indices
-		* in e1 and e2.
-		*/
-	       e1 = v2;
-	       e2 = (v2+1)%(ph->polygon[i].num_vertices);
-	       add_vertex(ph,i,e1,e2,v_new);
+           /* The edge you want to split (by putting v_new in the middle of it)
+        * is defined by v2 and the next vertex after v2. Store these indices
+        * in e1 and e2.
+        */
+           e1 = v2;
+           e2 = (v2+1)%(ph->polygon[i].num_vertices);
+           add_vertex(ph,i,e1,e2,v_new);
 
-	       /* The bisection vertices may have moved when you added v_new to
-		* the polygon, so now you want to find their new indices and put
-		* them in e1 and e2.
-		*/
-	       for (j=0; j<ph->polygon[i].num_vertices; j++)
-		  if (ph->polygon[i].vertex_index[j] == v_from)
-		     break;
-	       e1 = j;
-	       for (j=0; j<ph->polygon[i].num_vertices; j++)
-		  if (ph->polygon[i].vertex_index[j] == v_new)
-		     break;
-	       e2 = j;
+           /* The bisection vertices may have moved when you added v_new to
+        * the polygon, so now you want to find their new indices and put
+        * them in e1 and e2.
+        */
+           for (j=0; j<ph->polygon[i].num_vertices; j++)
+          if (ph->polygon[i].vertex_index[j] == v_from)
+             break;
+           e1 = j;
+           for (j=0; j<ph->polygon[i].num_vertices; j++)
+          if (ph->polygon[i].vertex_index[j] == v_new)
+             break;
+           e2 = j;
 
-	       /* Now do a simple bisection from e1 to e2 */
-	       bisect_polygon(ph,i,e1,e2);
+           /* Now do a simple bisection from e1 to e2 */
+           bisect_polygon(ph,i,e1,e2);
 
-	       /* Backup the loop so you scan the original polygon again
-		* (because it may still be concave in some other region).
-		*/
-	       i--;
-	    }
-	    num_concave++;
-	 }
+           /* Backup the loop so you scan the original polygon again
+        * (because it may still be concave in some other region).
+        */
+           i--;
+        }
+        num_concave++;
+     }
       }
    }
 
@@ -3376,16 +3376,16 @@ int polygon_is_concave(PolyhedronStruct* ph, int poly)
    for (i=0; i<p->num_vertices; i++)
    {
       MAKE_3DVECTOR(ph->vertex[p->vertex_index[i]].coord,
-		    ph->vertex[p->vertex_index[(i+1)%p->num_vertices]].coord,v2);
+            ph->vertex[p->vertex_index[(i+1)%p->num_vertices]].coord,v2);
       MAKE_3DVECTOR(ph->vertex[p->vertex_index[i]].coord,
-		    ph->vertex[p->vertex_index[(i+p->num_vertices-1)%
-						p->num_vertices]].coord,v1);
+            ph->vertex[p->vertex_index[(i+p->num_vertices-1)%
+                        p->num_vertices]].coord,v1);
       normalize_vector(v1,v1);
       normalize_vector(v2,v2);
       cross_vectors(v2,v1,ref_vector);
       mag = normalize_vector(ref_vector,ref_vector);
       if (mag > COLLINEAR_EPSILON)
-	 break;
+     break;
    }
 
    /* Now form normal vectors for each vertex, and dot them with the reference
@@ -3394,22 +3394,22 @@ int polygon_is_concave(PolyhedronStruct* ph, int poly)
    for (i=0, sign_sum=0; i<p->num_vertices; i++)
    {
       MAKE_3DVECTOR(ph->vertex[p->vertex_index[i]].coord,
-		    ph->vertex[p->vertex_index[(i+1)%p->num_vertices]].coord,v2);
+            ph->vertex[p->vertex_index[(i+1)%p->num_vertices]].coord,v2);
       MAKE_3DVECTOR(ph->vertex[p->vertex_index[i]].coord,
-		    ph->vertex[p->vertex_index[(i+p->num_vertices-1)%
-						p->num_vertices]].coord,v1);
+            ph->vertex[p->vertex_index[(i+p->num_vertices-1)%
+                        p->num_vertices]].coord,v1);
       normalize_vector(v1,v1);
       normalize_vector(v2,v2);
       cross_vectors(v2,v1,normal);
       mag = normalize_vector(normal,normal);
       if (EQUAL_WITHIN_ERROR(mag,0.0))
       {
-	 dot_product[i] = 1;
+     dot_product[i] = 1;
       }
       else
       {
-	 vec_dot = DOT_VECTORS(normal,ref_vector);
-	 dot_product[i] = SIGN(vec_dot);
+     vec_dot = DOT_VECTORS(normal,ref_vector);
+     dot_product[i] = SIGN(vec_dot);
       }
       sign_sum += dot_product[i];
    }
@@ -3434,8 +3434,8 @@ int polygon_is_concave(PolyhedronStruct* ph, int poly)
    {
       if (DABS(ref_vector[i]) < min_so_far)
       {
-	 min_so_far = DABS(ref_vector[i]);
-	 axis = i;
+     min_so_far = DABS(ref_vector[i]);
+     axis = i;
       }
    }
 
@@ -3445,8 +3445,8 @@ int polygon_is_concave(PolyhedronStruct* ph, int poly)
    {
       if (ph->vertex[p->vertex_index[i]].coord[axis] < min_so_far)
       {
-	 min_so_far = ph->vertex[p->vertex_index[i]].coord[axis];
-	 min_index = i;
+     min_so_far = ph->vertex[p->vertex_index[i]].coord[axis];
+     min_index = i;
       }
    }
 
@@ -3477,14 +3477,14 @@ int polygon_is_concave(PolyhedronStruct* ph, int poly)
    if (dot_product[min_index] > 0)
    {
       for (i=0; i<p->num_vertices; i++)
-	 if (dot_product[i] == -1)
-	    return (i);
+     if (dot_product[i] == -1)
+        return (i);
    }
    else
    {
       for (i=0; i<p->num_vertices; i++)
-	 if (dot_product[i] == 1)
-	    return (i);
+     if (dot_product[i] == 1)
+        return (i);
    }
 
    return (-1);
@@ -3518,11 +3518,11 @@ void split_edge(PolyhedronStruct* bone, int poly_num, int edge_num)
    if (poly2 != -1)
    {
       bone->vertex[newv].normal[0] = (bone->polygon[poly_num].normal[0] +
-				      bone->polygon[poly2].normal[0]) * 0.5;
+                      bone->polygon[poly2].normal[0]) * 0.5;
       bone->vertex[newv].normal[1] = (bone->polygon[poly_num].normal[1] +
-				      bone->polygon[poly2].normal[1]) * 0.5;
+                      bone->polygon[poly2].normal[1]) * 0.5;
       bone->vertex[newv].normal[2] = (bone->polygon[poly_num].normal[2] +
-				      bone->polygon[poly2].normal[2]) * 0.5;
+                      bone->polygon[poly2].normal[2]) * 0.5;
       normalize_vector(bone->vertex[newv].normal,bone->vertex[newv].normal);
    }
 
@@ -3539,13 +3539,13 @@ int find_nth_polygon(PolyhedronStruct* bone, int vertex_num, int* n)
    {
       for (j=0; j<bone->polygon[i].num_vertices; j++)
       {
-	 if (bone->polygon[i].vertex_index[j] == vertex_num)
-	    count++;
-	 if (count == *n)
-	 {
-	    (*n)++;
-	    return (i);
-	 }
+     if (bone->polygon[i].vertex_index[j] == vertex_num)
+        count++;
+     if (count == *n)
+     {
+        (*n)++;
+        return (i);
+     }
       }
    }
 
@@ -3557,11 +3557,11 @@ int find_nth_polygon(PolyhedronStruct* bone, int vertex_num, int* n)
    {
       for (j=0; j<bone->polygon[i].num_vertices; j++)
       {
-	 if (bone->polygon[i].vertex_index[j] == vertex_num)
-	 {
-	    *n = 2;
-	    return (i);
-	 }
+     if (bone->polygon[i].vertex_index[j] == vertex_num)
+     {
+        *n = 2;
+        return (i);
+     }
       }
    }
 
@@ -3624,12 +3624,12 @@ void add_vert_to_poly(PolyhedronStruct* ph, int poly, int vert1, int vert2, int 
    for (i=0; i<p->num_vertices; i++)
    {
       if (i == p->num_vertices-1)
-	 index2 = 0;
+     index2 = 0;
       else
-	 index2 = i+1;
+     index2 = i+1;
       if ((p->vertex_index[i] == vert1 && p->vertex_index[index2] == vert2) ||
-	  (p->vertex_index[index2] == vert1 && p->vertex_index[i] == vert2))
-	 break;
+      (p->vertex_index[index2] == vert1 && p->vertex_index[i] == vert2))
+     break;
    }
 
    if (i == p->num_vertices)
@@ -3730,9 +3730,9 @@ int find_bisection_point(PolyhedronStruct* ph, int poly, int v1, double p_bisect
 
    /* Make the ray that you'll project to the other side of the polygon */
    MAKE_3DVECTOR(ph->vertex[p->vertex_index[(v1+p->num_vertices-1)%p->num_vertices]].coord,
-		 ph->vertex[p->vertex_index[v1]].coord,ray1);
+         ph->vertex[p->vertex_index[v1]].coord,ray1);
    MAKE_3DVECTOR(ph->vertex[p->vertex_index[(v1+1)%p->num_vertices]].coord,
-		 ph->vertex[p->vertex_index[v1]].coord,ray2);
+         ph->vertex[p->vertex_index[v1]].coord,ray2);
    mag1 = normalize_vector(ray1,ray1);
    mag2 = normalize_vector(ray2,ray2);
    ray[0] = ray1[0] + ray2[0];
@@ -3810,32 +3810,32 @@ int find_bisection_point(PolyhedronStruct* ph, int poly, int v1, double p_bisect
       printf("ray2= %lf %lf %lf\n", ray2[0], ray2[1], ray2[2]);
       printf("ray= %lf %lf %lf\n", ray[0], ray[1], ray[2]);
       printf("%lf %lf %lf segment ground\n", ph->vertex[p->vertex_index[v1]].coord[0],
-	     ph->vertex[p->vertex_index[v1]].coord[1],
-	     ph->vertex[p->vertex_index[v1]].coord[2]);
+         ph->vertex[p->vertex_index[v1]].coord[1],
+         ph->vertex[p->vertex_index[v1]].coord[2]);
       printf("%lf %lf %lf segment ground\n\n",
-	     ray1[0]+ph->vertex[p->vertex_index[v1]].coord[0],
-	     ray1[1]+ph->vertex[p->vertex_index[v1]].coord[1],
-	     ray1[2]+ph->vertex[p->vertex_index[v1]].coord[2]);
+         ray1[0]+ph->vertex[p->vertex_index[v1]].coord[0],
+         ray1[1]+ph->vertex[p->vertex_index[v1]].coord[1],
+         ray1[2]+ph->vertex[p->vertex_index[v1]].coord[2]);
       printf("%lf %lf %lf segment ground\n", ph->vertex[p->vertex_index[v1]].coord[0],
-	     ph->vertex[p->vertex_index[v1]].coord[1],
-	     ph->vertex[p->vertex_index[v1]].coord[2]);
+         ph->vertex[p->vertex_index[v1]].coord[1],
+         ph->vertex[p->vertex_index[v1]].coord[2]);
       printf("%lf %lf %lf segment ground\n\n",
-	     ray2[0]+ph->vertex[p->vertex_index[v1]].coord[0],
-	     ray2[1]+ph->vertex[p->vertex_index[v1]].coord[1],
-	     ray2[2]+ph->vertex[p->vertex_index[v1]].coord[2]);
+         ray2[0]+ph->vertex[p->vertex_index[v1]].coord[0],
+         ray2[1]+ph->vertex[p->vertex_index[v1]].coord[1],
+         ray2[2]+ph->vertex[p->vertex_index[v1]].coord[2]);
       printf("%lf %lf %lf segment ground\n", ph->vertex[p->vertex_index[v1]].coord[0],
-	     ph->vertex[p->vertex_index[v1]].coord[1],
-	     ph->vertex[p->vertex_index[v1]].coord[2]);
+         ph->vertex[p->vertex_index[v1]].coord[1],
+         ph->vertex[p->vertex_index[v1]].coord[2]);
       printf("%lf %lf %lf segment ground\n\n",
-	     5.0*ray[0]+ph->vertex[p->vertex_index[v1]].coord[0],
-	     5.0*ray[1]+ph->vertex[p->vertex_index[v1]].coord[1],
-	     5.0*ray[2]+ph->vertex[p->vertex_index[v1]].coord[2]);
+         5.0*ray[0]+ph->vertex[p->vertex_index[v1]].coord[0],
+         5.0*ray[1]+ph->vertex[p->vertex_index[v1]].coord[1],
+         5.0*ray[2]+ph->vertex[p->vertex_index[v1]].coord[2]);
       for (i=0; i<ph->polygon[poly].num_vertices; i++)
       {
-	 printf("[%d] %lf %lf %lf\n", ph->polygon[poly].vertex_index[i]+1,
-		ph->vertex[ph->polygon[poly].vertex_index[i]].coord[0],
-		ph->vertex[ph->polygon[poly].vertex_index[i]].coord[1],
-		ph->vertex[ph->polygon[poly].vertex_index[i]].coord[2]);
+     printf("[%d] %lf %lf %lf\n", ph->polygon[poly].vertex_index[i]+1,
+        ph->vertex[ph->polygon[poly].vertex_index[i]].coord[0],
+        ph->vertex[ph->polygon[poly].vertex_index[i]].coord[1],
+        ph->vertex[ph->polygon[poly].vertex_index[i]].coord[2]);
       }
       fflush(stdout);
    }
@@ -4010,14 +4010,14 @@ void throw_out_polygon(PolyhedronStruct* ph, int p)
 {
    int i;
 
-	if (ph->polygon[p].thrown_out == no)
-	{
-		for (i=0; i<ph->polygon[p].num_vertices; i++)
-			remove_polygon_from_vert_poly_list(&ph->vertex[ph->polygon[p].vertex_index[i]],p);
-		FREE_IFNOTNULL(ph->polygon[p].vertex_index);
-		ph->polygon[p].thrown_out = yes;
-		ph->num_removed_polygons++;
-	}
+    if (ph->polygon[p].thrown_out == no)
+    {
+        for (i=0; i<ph->polygon[p].num_vertices; i++)
+            remove_polygon_from_vert_poly_list(&ph->vertex[ph->polygon[p].vertex_index[i]],p);
+        FREE_IFNOTNULL(ph->polygon[p].vertex_index);
+        ph->polygon[p].thrown_out = yes;
+        ph->num_removed_polygons++;
+    }
 }
 
 
@@ -4102,12 +4102,12 @@ void print_polygon(PolygonStruct* p)
    printf("    ordering_value= %lf,  ", p->ordering_value);
    printf("    d= %lf, old = %d\n", p->d, p->old);
    printf("    bc= %.4lf %.4lf    %.4lf %.4lf    %.4lf %.4lf\n", p->bc.x1, p->bc.x2,
-	  p->bc.y1, p->bc.y2, p->bc.z1, p->bc.z2);
+      p->bc.y1, p->bc.y2, p->bc.z1, p->bc.z2);
    printf("    coplanar_flag= %d,  polygon_mark= %d, poly_output= %d,  poly_adjpush= %d\n",
-	  p->boolcode.coplanar_flag, p->boolcode.polygon_mark, p->boolcode.poly_output, p->boolcode.poly_adjpush);
+      p->boolcode.coplanar_flag, p->boolcode.polygon_mark, p->boolcode.poly_output, p->boolcode.poly_adjpush);
    printf("    seg_list.num_inter_seg= %d\n", p->boolcode.seg_list.num_inter_seg);
    printf("    seg_list.seg= 0x%p,  seg_list.segmaxx= 0x%p\n", p->boolcode.seg_list.seg,
-	  p->boolcode.seg_list.segmaxx);
+      p->boolcode.seg_list.segmaxx);
    printf("    seglst_num= %d, seglst= 0x%p\n", p->boolcode.seglst_num, p->boolcode.seglst);
 */
 }

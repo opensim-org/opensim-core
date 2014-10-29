@@ -47,26 +47,26 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ContactGeometrySet,
                                 ModelComponentSet<ContactGeometry>);
 
 private:
-	void setNull();
+    void setNull();
 public:
-	ContactGeometrySet();
-	ContactGeometrySet(Model& model);
-	ContactGeometrySet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode);
-	ContactGeometrySet(const ContactGeometrySet& aContactGeometrySet);
-	~ContactGeometrySet(void);
+    ContactGeometrySet();
+    ContactGeometrySet(Model& model);
+    ContactGeometrySet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode);
+    ContactGeometrySet(const ContactGeometrySet& aContactGeometrySet);
+    ~ContactGeometrySet(void);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	ContactGeometrySet& operator=(const ContactGeometrySet &aContactGeometrySet);
+    ContactGeometrySet& operator=(const ContactGeometrySet &aContactGeometrySet);
 #endif
-	//--------------------------------------------------------------------------
-	// UTILITIES
-	//--------------------------------------------------------------------------
-	void scale(const ScaleSet& aScaleSet);
+    //--------------------------------------------------------------------------
+    // UTILITIES
+    //--------------------------------------------------------------------------
+    void scale(const ScaleSet& aScaleSet);
 //=============================================================================
-};	// END of class ContactGeometrySet
+};  // END of class ContactGeometrySet
 //=============================================================================
 //=============================================================================
 
