@@ -912,7 +912,7 @@ template <class T> friend class ComponentMeasure;
         // ... your code goes here
     }
     @endcode   */
-    virtual void connect(Component &root, const Component* parent=nullptr);
+    virtual void connect(Component &root, const bool topLevel=false);
 
 	/** Opportunity to remove connection related information. 
 	If you override this method, be sure to invoke the base class method first,

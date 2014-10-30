@@ -63,7 +63,7 @@ Model& ModelComponent::updModel()
 }
 
 
-void ModelComponent::connect(Component &root, const Component* parent)
+void ModelComponent::connect(Component &root, const bool topLevel)
 {
 	Model* model = dynamic_cast<Model*>(&root);
 	// Allow (model) component to include its own subcomponents
@@ -72,7 +72,7 @@ void ModelComponent::connect(Component &root, const Component* parent)
 	if (model)
 		connectToModel(*model);
 
-    Super::connect(root, parent);
+    Super::connect(root, topLevel);
 }
 
 

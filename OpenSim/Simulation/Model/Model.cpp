@@ -970,7 +970,7 @@ void Model::setup()
 	disconnect();
 
 	//now connect the Model and all its subcomponents all up
-	connect(*this);
+	connect(*this, true);
 }
 
 /**

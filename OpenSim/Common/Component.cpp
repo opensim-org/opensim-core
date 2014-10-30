@@ -151,7 +151,7 @@ void Component::finalizeFromProperties()
 
 // Base class implementation of virtual method.
 // Call connect on all components and find unconnected Connectors a
-void Component::connect(Component &root, const Component* parent)
+void Component::connect(Component &root, bool topLevel)
 {
 	if (!isObjectUpToDateWithProperties()){
 		// if edits occur between construction and connect() this is
@@ -167,10 +167,10 @@ void Component::connect(Component &root, const Component* parent)
     for (unsigned int i = 0; i < _components.size(); i++){
         if (i == _components.size() - 1){
             // use parent's sibling if any
-            if (parent == nullptr)
+            if (topLevel)
                 _components[i]->_nextComponent = nullptr;
             else
-                _components[i]->_nextComponent = parent->_nextComponent;
+                _components[i]->_nextComponent = _nextComponent;
         }
         else
             _components[i]->_nextComponent = _components[i + 1];
@@ -185,7 +185,7 @@ void Component::connect(Component &root, const Component* parent)
     }
 
     for(unsigned int i=0; i<_components.size(); i++){
-        _components[i]->connect(root, _components[i]);
+        _components[i]->connect(root);
 	}
 
 	// rebuilding the connectors table, which was emptied by clearStateAllocations

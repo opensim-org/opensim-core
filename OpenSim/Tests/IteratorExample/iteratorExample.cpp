@@ -21,6 +21,7 @@
  * -------------------------------------------------------------------------- */
 #include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -28,6 +29,7 @@ using namespace std;
 int main(int argc, char **argv)
 {
     try {
+        LoadOpenSimLibrary("osimActuators");
 
         std::string filename = "arm26.osim";
         if (argc > 1) filename = argv[1];
