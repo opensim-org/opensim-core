@@ -786,6 +786,16 @@ namespace SimTK {
 %include <OpenSim/Common/ComponentOutput.h>
 %include <OpenSim/Common/ComponentConnector.h>
 %include <OpenSim/Common/Component.h>
+%include <OpenSim/Common/ComponentList.h>
+
+%template(ComponentList_Iter) OpenSim::ComponentListIterator<OpenSim::Component>;
+%template(ComponentList_IterBodies) OpenSim::ComponentListIterator<OpenSim::Body>;
+%template(ComponentList_IterMuscles) OpenSim::ComponentListIterator<OpenSim::Muscle>;
+%template(ComponentList_IterForces) OpenSim::ComponentListIterator<OpenSim::Force>;
+%template(ComponentList_IterMarkers) OpenSim::ComponentListIterator<OpenSim::Marker>;
+%template(ComponentList_IterJoints) OpenSim::ComponentListIterator<OpenSim::Joint>;
+%template(ComponentList_IterGeometryPaths) OpenSim::ComponentListIterator<OpenSim::GeometryPath>;
+
 %include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
 %include <OpenSim/Common/ScaleSet.h>
