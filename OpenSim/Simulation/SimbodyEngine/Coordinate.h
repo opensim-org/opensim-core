@@ -220,7 +220,7 @@ public:
 
 protected:
 	// Only model should be invoking these ModelComponent interface methods.
-    void doAddToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 	//State structure is locked and now we can assign names to state variables
 	//allocated by underlying components after modeling options have been 
 	//factored in.

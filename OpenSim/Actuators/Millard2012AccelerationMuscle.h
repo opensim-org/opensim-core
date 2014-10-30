@@ -715,7 +715,7 @@ protected:
     /**Creates the ModelComponent so that it can be used in simulation
     @param system the multibody system
     */
-	void doAddToSystem(SimTK::MultibodySystem& system) const FINAL_11;
+	void extendAddToSystem(SimTK::MultibodySystem& system) const FINAL_11;
 
     /**Initializes the state of the ModelComponent
     @param s the state of the model

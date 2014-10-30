@@ -82,7 +82,7 @@ PinJoint::PinJoint(const std::string &name, const OpenSim::Body &parent,
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void PinJoint::doAddToSystem(SimTK::MultibodySystem& system) const
+void PinJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     createMobilizedBody<MobilizedBody::Pin>(system);
 }

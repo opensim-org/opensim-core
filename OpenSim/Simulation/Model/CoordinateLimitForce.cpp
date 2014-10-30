@@ -238,9 +238,9 @@ void CoordinateLimitForce::connectToModel(Model& aModel)
 
 
 /** Create the underlying Force that is part of the multibodysystem. */
-void CoordinateLimitForce::doAddToSystem(SimTK::MultibodySystem& system) const
+void CoordinateLimitForce::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::doAddToSystem(system);
+	Super::extendAddToSystem(system);
 
 	addCacheVariable<double>("dissipationPower", 0.0, SimTK::Stage::Dynamics);
 

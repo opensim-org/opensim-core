@@ -73,7 +73,7 @@ GimbalJoint::GimbalJoint(const std::string &name, OpenSim::Body& parent,
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void GimbalJoint::doAddToSystem(SimTK::MultibodySystem& system) const
+void GimbalJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     createMobilizedBody<MobilizedBody::Gimbal>(system);
 }

@@ -131,7 +131,7 @@ protected:
     These methods adhere to the Model Component Interface**/
     /**@{**/
     
-	void doAddToSystem(SimTK::MultibodySystem& system) const override;
+	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 	void constructConnectors() override;
     /**@}**/
 

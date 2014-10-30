@@ -104,9 +104,9 @@ void ClutchedPathSpring::setInitialStretch(double stretch0)
 /**
  * allocate and initialize the SimTK state for this ClutchedPathSpring.
  */
- void ClutchedPathSpring::doAddToSystem(SimTK::MultibodySystem& system) const
+ void ClutchedPathSpring::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::doAddToSystem(system);
+    Super::extendAddToSystem(system);
 	// The spring force is dependent of stretch so only invalidate dynamics
 	// if the stretch state changes
 	addStateVariable("stretch");

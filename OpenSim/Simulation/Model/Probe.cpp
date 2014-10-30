@@ -138,9 +138,9 @@ void Probe::connectToModel(Model& model)
 /**
  * Create the underlying system component(s).
  */
-void Probe::doAddToSystem(MultibodySystem& system) const
+void Probe::extendAddToSystem(MultibodySystem& system) const
 {
-    Super::doAddToSystem(system);
+    Super::extendAddToSystem(system);
 
     if (isDisabled())
         return;

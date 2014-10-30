@@ -113,7 +113,7 @@ protected:
 	/**
 	 * Create a SimTK::Force which implements this Force.
 	 */
-	void doAddToSystem(SimTK::MultibodySystem& system) const;
+	void extendAddToSystem(SimTK::MultibodySystem& system) const;
 
 
 private:

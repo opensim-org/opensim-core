@@ -208,9 +208,9 @@ protected:
     at the beginning of the overriding method. **/
     void connectToModel(Model& model) override;
 
-    /** Concrete probes may override; be sure to invoke Super::doAddToSystem()
+    /** Concrete probes may override; be sure to invoke Super::extendAddToSystem()
     at the beginning of the overriding method. **/
-    void doAddToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 
 private:

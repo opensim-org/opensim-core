@@ -165,7 +165,7 @@ void WeldConstraint::connectToModel(Model& aModel)
 	_body2 = &aModel.updBodySet().get(body2Name);
 }
 
-void WeldConstraint::doAddToSystem(SimTK::MultibodySystem& system) const
+void WeldConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     // Get underlying mobilized bodies
     SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody(_body1->getMobilizedBodyIndex());

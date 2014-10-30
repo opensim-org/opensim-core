@@ -139,7 +139,7 @@ protected:
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForce) const;
 
-	virtual void doAddToSystem(SimTK::MultibodySystem& system) const;
+	virtual void extendAddToSystem(SimTK::MultibodySystem& system) const;
 	virtual void initStateFromProperties(SimTK::State& s) const;
     virtual void setPropertiesFromState(const SimTK::State& state);
 

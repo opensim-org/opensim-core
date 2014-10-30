@@ -172,7 +172,7 @@ protected:
 	// ModelComponent interface
 	//-----------------------------------------------------------------------------
 	void connectToModel(Model& model) override;
-	void doAddToSystem(SimTK::MultibodySystem& system) const override;
+	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 	/** how to display the Spring */
 	VisibleObject _displayer;

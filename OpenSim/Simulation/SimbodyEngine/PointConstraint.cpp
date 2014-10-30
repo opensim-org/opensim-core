@@ -138,9 +138,9 @@ void PointConstraint::connectToModel(Model& aModel)
 	_body2 = &aModel.updBodySet().get(body2Name);
 }
 
-void PointConstraint::doAddToSystem(SimTK::MultibodySystem& system) const
+void PointConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::doAddToSystem(system);
+    Super::extendAddToSystem(system);
 
     // Get underlying mobilized bodies
     SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body1->getMobilizedBodyIndex());

@@ -176,9 +176,9 @@ void FunctionBasedBushingForce::connectToModel(Model& aModel)
 	}
 }
 
-void FunctionBasedBushingForce::doAddToSystem(SimTK::MultibodySystem& system) const
+void FunctionBasedBushingForce::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::doAddToSystem(system);
+    Super::extendAddToSystem(system);
 
 	const string&      body1Name            = get_body_1();
 	const string&      body2Name            = get_body_2();

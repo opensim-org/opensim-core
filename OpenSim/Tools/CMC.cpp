@@ -1104,9 +1104,9 @@ void CMC::connectToModel(Model& model)
 
 }
 // for adding any components to the model
-void CMC::doAddToSystem( SimTK::MultibodySystem& system)  const
+void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
 {
-    Super::doAddToSystem(system);
+    Super::extendAddToSystem(system);
 
 	// add event handler for updating controls for next window 
 	CMC* mutableThis = const_cast<CMC *>(this);

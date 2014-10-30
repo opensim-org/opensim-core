@@ -128,7 +128,7 @@ void RollingOnSurfaceConstraint::connectToModel(Model& aModel)
 	}
 }
 
-void RollingOnSurfaceConstraint::doAddToSystem(SimTK::MultibodySystem& system) const
+void RollingOnSurfaceConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
 	// Get underlying mobilized bodies
 	SimTK::MobilizedBody roller = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_rollingBody->getMobilizedBodyIndex());

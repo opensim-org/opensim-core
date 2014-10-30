@@ -81,7 +81,7 @@ WeldJoint::WeldJoint(const std::string &name, const OpenSim::Body &parent,
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void WeldJoint::doAddToSystem(SimTK::MultibodySystem& system) const
+void WeldJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     createMobilizedBody<SimTK::MobilizedBody::Weld>(system);
 }

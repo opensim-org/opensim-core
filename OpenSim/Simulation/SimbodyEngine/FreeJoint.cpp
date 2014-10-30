@@ -115,7 +115,7 @@ void FreeJoint::setNull()
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void FreeJoint::doAddToSystem(SimTK::MultibodySystem& system) const
+void FreeJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     createMobilizedBody<MobilizedBody::Free>(system);
 }

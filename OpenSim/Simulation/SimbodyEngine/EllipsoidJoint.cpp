@@ -141,7 +141,7 @@ void EllipsoidJoint::scale(const ScaleSet& aScaleSet)
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void EllipsoidJoint::doAddToSystem(SimTK::MultibodySystem& system) const
+void EllipsoidJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
 	// CREATE MOBILIZED BODY
 	MobilizedBody::Ellipsoid mobod =

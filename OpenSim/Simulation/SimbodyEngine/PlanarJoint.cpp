@@ -78,7 +78,7 @@ PlanarJoint::PlanarJoint(const std::string &name, OpenSim::Body& parent,
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void PlanarJoint::doAddToSystem(SimTK::MultibodySystem& system) const
+void PlanarJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     createMobilizedBody<MobilizedBody::Planar>(system);
 }

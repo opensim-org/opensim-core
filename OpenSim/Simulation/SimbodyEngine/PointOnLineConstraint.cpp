@@ -147,9 +147,9 @@ void PointOnLineConstraint::connectToModel(Model& aModel)
 	_followerBody = &aModel.updBodySet().get(followerBodyName);
 }
 
-void PointOnLineConstraint::doAddToSystem(SimTK::MultibodySystem& system) const
+void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::doAddToSystem(system);
+    Super::extendAddToSystem(system);
     // Get underlying mobilized bodies
     SimTK::MobilizedBody lb = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_lineBody->getMobilizedBodyIndex());
     SimTK::MobilizedBody fb = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_followerBody->getMobilizedBodyIndex());

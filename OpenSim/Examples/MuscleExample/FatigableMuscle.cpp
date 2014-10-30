@@ -77,10 +77,10 @@ void FatigableMuscle::constructProperties()
 }
 
 // Define new states and their derivatives in the underlying system
-void FatigableMuscle::doAddToSystem(SimTK::MultibodySystem& system) const
+void FatigableMuscle::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     // Allow Millard2012EquilibriumMuscle to add its states, before extending
-    Super::doAddToSystem(system);
+    Super::extendAddToSystem(system);
 
 	// Now add the states necessary to implement the fatigable behavior
 	addStateVariable("target_activation");

@@ -62,9 +62,9 @@ void ActivationFiberLengthMuscle::constructProperties()
 
 //_____________________________________________________________________________
 // Allocate Simbody System resources for this actuator.
- void ActivationFiberLengthMuscle::doAddToSystem(SimTK::MultibodySystem& system) const
+ void ActivationFiberLengthMuscle::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::doAddToSystem(system);
+    Super::extendAddToSystem(system);
     const string& className = getConcreteClassName();
 	const string& suffix = " flag is not currently implemented.";
 

@@ -76,7 +76,7 @@ SliderJoint::SliderJoint(const std::string &name, const Body& parent,
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void SliderJoint::doAddToSystem(SimTK::MultibodySystem& system) const
+void SliderJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     createMobilizedBody<SimTK::MobilizedBody::Slider>(system);
 }

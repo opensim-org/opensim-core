@@ -68,7 +68,7 @@ public:
 
 protected:
 	/** Model component interface */
-    void doAddToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 //=============================================================================
 };	// END of class PlanarJoint

@@ -62,9 +62,9 @@ void Actuator::setNull()
 
 // Create the underlying computational system component(s) that support the
 // Actuator model component
-void Actuator::doAddToSystem(SimTK::MultibodySystem& system) const
+void Actuator::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::doAddToSystem(system);
+    Super::extendAddToSystem(system);
     // Beyond the const Component get the index so we can access the SimTK::Force later
 	Actuator* mutableThis = const_cast<Actuator *>(this);
 
@@ -165,9 +165,9 @@ void ScalarActuator::constructOutputs()
 
 // Create the underlying computational system component(s) that support the
 // ScalarActuator model component
-void ScalarActuator::doAddToSystem(SimTK::MultibodySystem& system) const
+void ScalarActuator::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::doAddToSystem(system);
+    Super::extendAddToSystem(system);
 	// Add modeling flag to compute actuation with dynamic or by-pass with 
     // override actuation provided
 	addModelingOption("override_actuation", 1);

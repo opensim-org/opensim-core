@@ -49,9 +49,9 @@ HuntCrossleyForce::HuntCrossleyForce(ContactParameters* params)
 }
 
 
-void HuntCrossleyForce::doAddToSystem(SimTK::MultibodySystem& system) const
+void HuntCrossleyForce::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::doAddToSystem(system);
+    Super::extendAddToSystem(system);
 
     const ContactParametersSet& contactParametersSet = 
         get_contact_parameters();

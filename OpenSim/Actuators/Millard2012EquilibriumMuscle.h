@@ -509,7 +509,7 @@ protected:
     void connectToModel(Model& model) override;
 
     /** Creates the ModelComponent so that it can be used in simulation */
-    void doAddToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     /** Initializes the state of the ModelComponent */
     void initStateFromProperties(SimTK::State& s) const override;

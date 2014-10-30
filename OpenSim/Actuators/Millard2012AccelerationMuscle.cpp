@@ -252,9 +252,9 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
 // Model Component Interface
 //=============================================================================
  void Millard2012AccelerationMuscle::
-     doAddToSystem(SimTK::MultibodySystem& system) const
+     extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::doAddToSystem(system);
+    Super::extendAddToSystem(system);
 
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
         "Millard2012AccelerationMuscle: Muscle is not"

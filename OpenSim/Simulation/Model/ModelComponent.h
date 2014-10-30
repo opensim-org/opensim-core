@@ -70,7 +70,7 @@ class ModelDisplayHints;
  *
  * The primary responsibility of a ModelComponent is to add its computational 
  * representation(s) of physical musculoskeletal structures to the underlying
- * SimTK::System by implementing doAddToSystem().
+ * SimTK::System by implementing extendAddToSystem().
  *
  * Additional methods provide support for adding modeling options, state and
  * cache variables (@see Component).
@@ -234,7 +234,7 @@ template <class T> friend class ModelComponentSet;
 
     /** @name     ModelComponent System Creation and Access Methods
      * These methods support implementing concrete ModelComponents. Add methods
-     * can only be called inside of doAddToSystem() and are useful for creating
+     * can only be called inside of extendAddToSystem() and are useful for creating
      * the underlying SimTK::System level variables that are used for computing
      * values of interest.
      * @warning Accessors for System indices are intended for component internal use only.

@@ -76,9 +76,9 @@ setDeactivationTimeConstant(double deactivationTimeConstant)
 // MODELCOMPONENT INTERFACE REQUIREMENTS
 //==============================================================================
 void FirstOrderMuscleActivationDynamics::
-doAddToSystem(SimTK::MultibodySystem& system) const
+extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::doAddToSystem(system);
+    Super::extendAddToSystem(system);
     addStateVariable(STATE_NAME_ACTIVATION, SimTK::Stage::Dynamics);
 }
 

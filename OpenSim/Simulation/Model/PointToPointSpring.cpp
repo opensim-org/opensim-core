@@ -174,9 +174,9 @@ void PointToPointSpring::connectToModel(Model& model)
 //=============================================================================
 // Create the underlying system component(s)
 //=============================================================================
-void PointToPointSpring::doAddToSystem(SimTK::MultibodySystem& system) const
+void PointToPointSpring::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::doAddToSystem(system);
+    Super::extendAddToSystem(system);
 
     const Body& body1 = getBody1();
     const Body& body2 = getBody2();

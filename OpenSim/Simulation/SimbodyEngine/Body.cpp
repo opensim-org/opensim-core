@@ -132,7 +132,7 @@ void Body::connectToModel(Model& aModel)
 	}
 }
 
-void Body::doAddToSystem(SimTK::MultibodySystem& system) const
+void Body::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     if(getName() == "ground"){
         Body * mutableThis = const_cast<Body *>(this);

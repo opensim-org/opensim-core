@@ -210,7 +210,7 @@ void Component::disconnect()
 void Component::addToSystem(SimTK::MultibodySystem& system) const
 {
     baseAddToSystem(system);
-    doAddToSystem(system);
+    extendAddToSystem(system);
     componentsAddToSystem(system);
 }
 
@@ -223,7 +223,7 @@ void Component::baseAddToSystem(SimTK::MultibodySystem& system) const
 {
     if (!isObjectUpToDateWithProperties()) {
         std::string msg = "Component " + getConcreteClassName() + "::" + getName();
-        msg += " cannot doAddToSystem until it is up-to-date with its properties.";
+        msg += " cannot extendAddToSystem until it is up-to-date with its properties.";
 
         throw Exception(msg);
     }

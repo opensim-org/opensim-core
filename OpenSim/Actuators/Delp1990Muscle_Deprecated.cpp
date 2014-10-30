@@ -232,9 +232,9 @@ void Delp1990Muscle_Deprecated::connectToModel(Model& aModel)
 		throw Exception("Delp1990Muscle_Deprecated::connectToModel(): ERROR- No force velocity curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
 }
 
-void Delp1990Muscle_Deprecated::doAddToSystem(SimTK::MultibodySystem& system) const
+void Delp1990Muscle_Deprecated::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::doAddToSystem(system);
+    Super::extendAddToSystem(system);
 	addStateVariable("fiber_velocity");
 }
 

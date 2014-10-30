@@ -128,9 +128,9 @@ void GeometryPath::connectToModel(Model& aModel)
 /*
  * Create the SimTK state, dicrete and/or cache for this GeometryPath.
  */
- void GeometryPath::doAddToSystem(SimTK::MultibodySystem& system) const 
+ void GeometryPath::extendAddToSystem(SimTK::MultibodySystem& system) const 
 {
-    Super::doAddToSystem(system);
+    Super::extendAddToSystem(system);
 
     // Allocate cache entries to save the current length and speed(=d/dt length)
     // of the path in the cache. Length depends only on q's so will be valid

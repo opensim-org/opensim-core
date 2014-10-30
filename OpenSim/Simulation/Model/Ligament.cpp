@@ -88,7 +88,7 @@ void Ligament::finalizeFromProperties()
 
     // Specify underlying ModelComponents prior to calling 
     // Super::connectToModel() to automatically propagate connectToModel()
-    // to subcomponents. Subsequent doAddToSystem() will also be automatically
+    // to subcomponents. Subsequent extendAddToSystem() will also be automatically
     // propagated to subcomponents.
     // TODO: this is awkward; subcomponent API needs to be revisited (sherm)
     addComponent(&path);
@@ -127,9 +127,9 @@ SimTK::Vec3 Ligament::computePathColor(const SimTK::State& state) const {
 /**
  * allocate and initialize the SimTK state for this ligament.
  */
- void Ligament::doAddToSystem(SimTK::MultibodySystem& system) const
+ void Ligament::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::doAddToSystem(system);
+	Super::extendAddToSystem(system);
 	// Cache the computed tension and strain of the ligament
 	addCacheVariable<double>("tension", 0.0, SimTK::Stage::Velocity);
 	addCacheVariable<double>("strain", 0.0, SimTK::Stage::Velocity);
