@@ -1631,6 +1631,29 @@ private:
 };	// END of class Component
 //==============================================================================
 //==============================================================================
+//==============================================================================
+// Implment methods for ComponentListIterator
+template <typename T>
+ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
+    if (m_node->_components.size() > 0)
+        m_node = m_node->_components[0];
+    else
+        m_node = m_node->_nextComponent;
+    advanceToNextValidComponent(); // make sure we have a m_node of type T after advancing
+    return *this;
+};
+
+template <typename T>
+void ComponentListIterator<T>::advanceToNextValidComponent() {
+    // Advance m_node to next valid (of type T) if needed
+    while (dynamic_cast<const T*>(m_node) == nullptr && m_node != nullptr){
+        if (m_node->_components.size() > 0)
+            m_node = m_node->_components[0];
+        else
+            m_node = m_node->_nextComponent;
+    }
+    return;
+}
 
 } // end of namespace OpenSim
 
