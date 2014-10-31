@@ -9,3 +9,6 @@ SET_TARGET_PROPERTIES(iteratorExample PROPERTIES
 	${EXCLUDE_IF_MINIMAL_BUILD}
 	PROJECT_LABEL "Examples - iteratorExample"
 )
+SET(TEST_TARGET testIterators)
+SET(TEST_DIR ${OpenSim_BINARY_DIR}/OpenSim/Tests/testIterators)
+
