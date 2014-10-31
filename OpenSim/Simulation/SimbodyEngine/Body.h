@@ -153,8 +153,7 @@ private:
 	void updateFromXMLNode(SimTK::Xml::Element& aNode,
 		int versionNumber = -1) override;
 
-	// mutable because fist get constructs tensor from properties
-	mutable SimTK::Inertia _inertia;
+	SimTK::Inertia _inertia;
 
 	SimTK::Array_<Body*> _slaves;
 

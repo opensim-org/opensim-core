@@ -55,7 +55,8 @@ Body::Body() : RigidFrame()
 /**
  * Constructor.
  */
-Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,const SimTK::Inertia& aInertia) :
+Body::Body(const std::string &aName, double aMass,
+        const SimTK::Vec3& aMassCenter, const SimTK::Inertia& aInertia) :
 	RigidFrame()
 {
 	constructProperties();
@@ -90,10 +91,21 @@ void Body::finalizeFromProperties()
 
 	// do not evaluate mass properties for ground since they are irrelevant
 	if (SimTK::String(getName()).toLower() != "ground"){
+
+        // if mass is zero, non-zero inertia makes no sense
+        const double& m = getMass();
+        if ((-SimTK::Eps <= m && m <= SimTK::Eps) &&
+                !get_inertia().isNumericallyEqual(0, SimTK::Eps)) {
+            cout << "Body '" << getName() << "' is massless but nonzero "
+                "inertia provided. Inertia reset to zero. Provide nonzero "
+                "mass to use nonzero inertia." << endl;
+            upd_inertia().setToZero();
+        }
+
 		const SimTK::MassProperties& massProps = getMassProperties();
 		_internalRigidBody = SimTK::Body::Rigid(massProps);
 	}
-	
+
 	_index.invalidate();
     _mbTransform.setToZero();
 
@@ -167,46 +179,34 @@ void Body::addDisplayGeometry(const std::string &aGeometryFileName)
  */
 const SimTK::Inertia& Body::getInertia() const
 {
-	// Has not been set programmatically
-	if (_inertia.isNaN()){
-		// initialize from properties
-		const double& m = getMass();
-		// if mass is zero, non-zero inertia makes no sense
-		if (-SimTK::Eps <= m && m <= SimTK::Eps){
-		    // if inertia is non-zero.
-		    if (!(-SimTK::Eps <= get_inertia() && get_inertia() <= SimTK::Eps)) {
-    			cout<<"Body '"<<getName()<<"' is massless but nonzero inertia provided.";
-    			cout<<" Inertia reset to zero. "<<"Otherwise provide nonzero mass."<< endl;
-    			upd_inertia().setToZero();
-		    }
-		    // force zero intertia
-			_inertia = SimTK::Inertia(0);
-		}
-		else{
-			const SimTK::Vec6& Ivec = get_inertia();
-			try {
-				_inertia = SimTK::Inertia(Ivec.getSubVec<3>(0), Ivec.getSubVec<3>(3));
-			} 
-			catch (const std::exception& ex){
-				// Should throw an Exception but we have models we have released with
-				// bad intertias. E.g. early gait23 models had an error in the inertia
-				// of the toes Body. We cannot allow failures with our models so 
-				// raise a warning and do something sensible with the values at hand.
-				cout << "WARNING: Body " + getName() + " has invalid inertia. " << endl;
-				cout << ex.what() << endl;
+    // Has not been set programmatically
+    if (_inertia.isNaN()) {
+        const SimTK::Vec6& Ivec = get_inertia();
+        try {
+            const_cast<Body*>(this)->_inertia =
+                SimTK::Inertia(Ivec.getSubVec<3>(0), Ivec.getSubVec<3>(3));
+        }
+        catch (const std::exception& ex) {
+            // Should throw an Exception but we have models we have released
+            // with bad intertias. E.g. early gait23 models had an error in the
+            // inertia of the toes Body. We cannot allow failures with our
+            // models so raise a warning and do something sensible with the
+            // values at hand.
+            cout << "WARNING: Body " + getName() + " has invalid inertia. " << endl;
+            cout << ex.what() << endl;
 
-				// get some aggregate value for the inertia based on exsiting values
-				double diag = Ivec.getSubVec<3>(0).norm()/sqrt(3);
+            // get some aggregate value for the inertia based on exsiting values
+            double diag = Ivec.getSubVec<3>(0).norm()/sqrt(3);
 
-				// and then assume a spherical shape.
-				_inertia = SimTK::Inertia(Vec3(diag), Vec3(0));
-				
-				cout << getName() << " Body's inertia being reset to:" << endl;
-				cout << _inertia << endl;
-			}
-		}
-	}
-	return _inertia;
+            // and then assume a spherical shape.
+            const_cast<Body*>(this)->_inertia =
+                SimTK::Inertia(Vec3(diag), Vec3(0));
+
+            cout << getName() << " Body's inertia being reset to:" << endl;
+            cout << _inertia << endl;
+        }
+    }
+    return _inertia;
 }
 //_____________________________________________________________________________
 /**
@@ -469,9 +469,12 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 	if (versionNumber < XMLDocument::getLatestVersion()){
 		if (versionNumber < 30500) {
 			SimTK::Vec6 newInertia(1.0, 1.0, 1.0, 0., 0., 0.);
-			std::string inertiaComponents[] = { "inertia_xx", "inertia_yy", "inertia_zz", "inertia_xy", "inertia_xz", "inertia_yz" };
+			std::string inertiaComponents[] = {
+                "inertia_xx", "inertia_yy", "inertia_zz",
+                "inertia_xy", "inertia_xz", "inertia_yz" };
 			for (int i = 0; i<6; ++i){
-				SimTK::Xml::element_iterator iIter = aNode.element_begin(inertiaComponents[i]);
+                SimTK::Xml::element_iterator iIter =
+                    aNode.element_begin(inertiaComponents[i]);
 				if (iIter != aNode.element_end()){
 					newInertia[i] = iIter->getValueAs<double>();
 					aNode.removeNode(iIter);
