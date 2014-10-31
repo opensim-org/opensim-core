@@ -69,7 +69,7 @@ public:
     //@{
 
     /** Allocates a cache variable for storing the current activation. **/
-    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     /** Initializes the activation cache variable to \c default_activation and
         marks it valid. **/

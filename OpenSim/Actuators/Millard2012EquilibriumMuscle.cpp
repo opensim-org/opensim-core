@@ -1094,9 +1094,9 @@ void Millard2012EquilibriumMuscle::connectToModel(Model& model)
 }
 
 void Millard2012EquilibriumMuscle::
-addToSystem(SimTK::MultibodySystem& system) const
+extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     SimTK_ASSERT(isObjectUpToDateWithProperties(),
         "Millard2012EquilibriumMuscle: Muscle properties are not up-to-date");

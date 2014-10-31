@@ -156,9 +156,7 @@ protected:
 							  SimTK::Vector& generalizedForces) const override; 
 
     /** Implement ModelComponent interface. */
-	void connectToModel(Model& aModel) override;
-	void addToSystem(SimTK::MultibodySystem& system) const override;
-	void initStateFromProperties(SimTK::State& s) const override;
+	void finalizeFromProperties() override;
 
 	//Force reporting
 	/** 

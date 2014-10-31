@@ -124,7 +124,7 @@ protected:
 // ModelComponent interface
 //==============================================================================
 	void connectToModel(Model& model) override;
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 
 private:

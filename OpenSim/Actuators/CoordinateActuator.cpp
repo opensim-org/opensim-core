@@ -234,14 +234,6 @@ void CoordinateActuator::connectToModel(Model& aModel)
 		_coord = &_model->updCoordinateSet().get(coordName);
 }
 
-//_____________________________________________________________________________
-/**
- *  Create underlying SimTK::Force
- */
-void CoordinateActuator::addToSystem(SimTK::MultibodySystem& system) const {
-
-     Super::addToSystem( system );
-}
 
 //_____________________________________________________________________________
 // Is the coordinate valid?

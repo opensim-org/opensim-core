@@ -115,12 +115,9 @@ void FreeJoint::setNull()
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void FreeJoint::addToSystem(SimTK::MultibodySystem& system) const
+void FreeJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Free>(system);
-
-    // TODO: Joints require super class to be called last.
-    Super::addToSystem(system);
+    createMobilizedBody<MobilizedBody::Free>(system);
 }
 
 void FreeJoint::initStateFromProperties(SimTK::State& s) const
@@ -144,7 +141,6 @@ void FreeJoint::initStateFromProperties(SimTK::State& s) const
 
 		FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
 		matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).setQToFitTransform(s, Transform(r, t));
-
 	}
 }
 

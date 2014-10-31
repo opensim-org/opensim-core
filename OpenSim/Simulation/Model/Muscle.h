@@ -360,7 +360,7 @@ protected:
 	
 	/** Model Component creation interface */
 	void connectToModel(Model& aModel) override;
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 	void setPropertiesFromState(const SimTK::State &s) override;
 	void initStateFromProperties(SimTK::State& state) const override;
 	

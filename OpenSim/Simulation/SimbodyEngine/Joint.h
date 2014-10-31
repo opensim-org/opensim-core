@@ -249,10 +249,7 @@ public:
 protected:
 	// build Joint transforms from properties
 	void finalizeFromProperties() override;
-	// TODO: child overrides must invoke Joint::addToSystem()
-    // *after* they create the MobilizedBody. This is an API bug
-    // since we want to have children invoke parent first.
-    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void initStateFromProperties(SimTK::State& s) const override;
     void setPropertiesFromState(const SimTK::State& state) override;
 
@@ -277,14 +274,14 @@ protected:
 	SimTK::SpatialVec calcEquivalentSpatialForceForMobilizedBody(const SimTK::State &s, const SimTK::MobilizedBodyIndex mbx, const SimTK::Vector &mobilityForces) const;
 
 	/** Return the equivalent (internal) SimTK::Rigid::Body for the parent/child
-	    OpenSim::Body. Not valid until after addToSystem on the Body has been called.*/
+	    OpenSim::Body. Not valid until after extendAddToSystem on the Body has been called.*/
 	const SimTK::Body::Rigid& getParentInternalRigidBody() const; 
 	const SimTK::Body::Rigid& getChildInternalRigidBody() const;
 
 
 	/** Utility method for creating the underlying MobilizedBody of the desired 
 	    type of the concrete Joint. It is templatized by the MobilizedBody type. 
-		Concrete class cannot override this method but can customize addToSystem()
+		Concrete class cannot override this method but can customize extendAddToSystem()
 		instead of using this service. It assumes that the MobilizedBody is 
 		associated with the child body, unless the Joint is specified as 
 		reversed in which case the parent is the Body that is "mobilized".

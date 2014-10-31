@@ -137,7 +137,7 @@ namespace OpenSim {
  * The Component interface is automatically invoked by the System and its 
  * realizations. Component users and most developers need not concern themselves
  * with \c Topology, \c %Model or \c Instance stages. That interaction is managed
- * by Component when component creators implement addToSystem() and use the 
+ * by Component when component creators implement extendAddToSystem() and use the 
  * services provided by Component. Component creators do need to determine and 
  * specify stage dependencies for Discrete and CacheVariables that they add to 
  * their components. For example, the throttle controller reads its value from
@@ -166,7 +166,7 @@ namespace OpenSim {
  *
  * The primary responsibility of a Component is to add its computational 
  * representation(s) to the underlying SimTK::System by implementing
- * addToSystem().
+ * extendAddToSystem().
  *
  * Additional methods provide support for adding modeling options, state and
  * cache variables.
@@ -215,6 +215,9 @@ public:
 	
     /** Destructor is virtual to allow concrete Component to cleanup. **/
 	virtual ~Component() {}
+
+    /** Have the Component add itself to the underlying computational System */
+    void addToSystem(SimTK::MultibodySystem& system) const;
 
 	/**
      * Get the underlying MultibodySystem that this component is connected to.
@@ -833,7 +836,7 @@ template <class T> friend class ComponentMeasure;
 	virtual void finalizeFromProperties();
 
     /** Perform any necessary initializations required to connect the component
-    (including it subcomponents) to other components and mark the connection status.
+    (and it subcomponents) to other components and mark the connection status.
 	Provides a check for error conditions. connect() is invoked on all components 
 	to form a directed acyclic graph of the multibody system, prior to creating the
 	Simbody MultibodySystem to represent it computationally. It may also be invoked
@@ -842,7 +845,7 @@ template <class T> friend class ComponentMeasure;
 	The "root" Component argument is the root node of the directed graph composed
 	of all the subcomponents (and their subcomponents and so on ...) and their
 	interconnections. This should yield a fully connected root component. For 
-	ModelComponents	this is the Model component. But a Model can be connected to
+	ModelComponents this is the Model component. But a Model can be connected to
 	an environment or world component with several other models, by choosing the
 	environment/world as the root.
     
@@ -856,58 +859,67 @@ template <class T> friend class ComponentMeasure;
     @endcode   */
 	virtual void connect(Component &root);
 
-	/** Opportunity to remove connection related information. 
-	If you override this method, be sure to invoke the base class method first,
-		using code like this :
-		@code
-		void MyComponent::disconnect(Component& root) {
-			// disconnect your subcomponents first
-			Super::disconnect(); 
-			//your code to wipeout your connection related information
-	}
-	@endcode  */
-	virtual void disconnect();
+    /** Opportunity to remove connection related information. 
+    If you override this method, be sure to invoke the base class method first,
+    using code like this :
+    @code
+        void MyComponent::disconnect(Component& root) {
+        // disconnect your subcomponents and your Super first
+        Super::disconnect(); 
+        //your code to wipeout your connection related information
+    }
+    @endcode  */
+    virtual void disconnect();
 
 
     /** Add appropriate Simbody elements (if needed) to the System 
     corresponding to this component and specify needed state resources. 
-    addToSystem() is called when the Simbody System is being created to 
+    extendAddToSystem() is called when the Simbody System is being created to 
     represent a completed system (model) for computation. That is, connect()
-    will already have been invoked on all components before any addToSystem()
+    will already have been invoked on all components before any extendAddToSystem()
     call is made. Helper methods for adding modeling options, state variables 
     and their derivatives, discrete variables, and cache entries are available 
-    and can be called within addToSystem() only.
+    and can be called within extendAddToSystem() only.
 
-    Note that this method is const; you must not modify your model component
+    Note that this method is const; you may not modify your model component
     or the containing model during this call. Any modifications you need should
     instead be performed in finalizeFromProperties() or at the latest connect(),
-	which are non-const. The only exception is that you may need to record access 
-	information for resources you create in the \a system, such as an index number.
-	You should declare those data members mutable so that you can set them here.
-	For common Components, OpenSim base classes either provide convenience methods
-	or handle indices automatically. 
+    which are non-const. The only exception is that you may need to record access 
+    information for resources you create in the \a system, such as an index number.
+    For most Components, OpenSim base classes either provide convenience methods
+    or handle indices automatically. Otherwise, you must declare indices as mutable
+    data members so that you can set them here.
    
     If you override this method, be sure to invoke the base class method at the
-    end, using code like this:
+    beginning, using code like this:
     @code
-    void MyComponent::addToSystem(SimTK::MultibodySystem& system) const {
-		// ... your code goes here
-		// call Super class to invoke method on subcomponents
-        Super::addToSystem(system);       
+    void MyComponent::extendAddToSystem(SimTK::MultibodySystem& system) const {
+        // Perform any additions to the system required by your Super
+        Super::extendAddToSystem(system);       
+        // ... your code goes here
     }
     @endcode
 
-    @param[in,out] system   The System being created.
+    @param[in,out] system   The MultibodySystem being added to.
 
     @see addModelingOption(), addStateVariable(), addDiscreteVariables(), 
          addCacheVariable() **/
-    virtual void addToSystem(SimTK::MultibodySystem& system) const;
+    virtual void extendAddToSystem(SimTK::MultibodySystem& system) const {};
+
+    /** Invoke extendAddToSystem() on the sub-components of this Component.
+    Concrete Components can choose when to add their (sub)components according
+    to the needs of the Component. Typically, we add the components to the system
+    prior to this Component. In some instances, such as a Joint, the Coordinate 
+    components cannot be added until the Joint has added its underlying 
+    representation to the system and obtained information (index) the Coordinate
+    needs to access its values.*/
+    void componentsAddToSystem(SimTK::MultibodySystem& system) const;
 
 
     /** Transfer property values or other state-independent initial values
     into this component's state variables in the passed-in \a state argument.
     This is called after a SimTK::System and State have been created for the 
-    Model (that is, after addToSystem() has been called on all components). 
+    Model (that is, after extendAddToSystem() has been called on all components). 
     You should override this method if your component has properties
     (serializable values) that can affect initial values for your state
     variables. You can also perform any other state-independent calculations
@@ -953,7 +965,7 @@ template <class T> friend class ComponentMeasure;
     using the addStateVariable() method, then %computeStateVariableDerivatives()
     must be implemented to provide time derivatives for those states.
     Override to set the derivatives of state variables added to the system 
-	by this component. (also see addToSystem()). If the component adds states
+	by this component. (also see extendAddToSystem()). If the component adds states
 	and computeStateVariableDerivatives is not implemented by the component,
 	an exception is thrown when the system tries to evaluate its derivates.
 
@@ -1058,7 +1070,7 @@ template <class T> friend class ComponentMeasure;
 
     /** @name     Component System Creation and Access Methods
      * These methods support implementing concrete Components. Add methods
-     * can only be called inside of addToSystem() and are useful for creating
+     * can only be called inside of extendAddToSystem() and are useful for creating
      * the underlying SimTK::System level variables that are used for computing
      * values of interest.
      * @warning Accessors for System indices are intended for component internal use only.
@@ -1155,7 +1167,7 @@ template <class T> friend class ComponentMeasure;
     
 	/**
      * Add another Component as a subcomponent of this Component.
-     * Component methods (e.g. addToSystem(), initStateFromProperties(), ...) are 
+     * Component methods (e.g. extendAddToSystem(), initStateFromProperties(), ...) are 
      * therefore invoked on subcomponents when called on this Component. Realization is 
      * also performed automatically on subcomponents. This Component does not take 
 	 * ownership of designated subcomponents and does not destroy them when the Component.
@@ -1470,6 +1482,9 @@ protected:
 
 private:
 	class Connection;
+
+    /// Base Component musct create underlying resources in computational System */
+    void baseAddToSystem(SimTK::MultibodySystem& system) const;
 	
 	// Reference pointer to the system that this component belongs to.
 	SimTK::ReferencePtr<SimTK::MultibodySystem> _system;
@@ -1491,7 +1506,7 @@ private:
     // Underlying SimTK custom measure ComponentMeasure, which implements
     // the realizations in the subsystem by calling private concrete methods on
     // the Component. Every model component has one of these, allocated
-    // in its addToSystem() method, and placed in the System's default subsystem.
+    // in its extendAddToSystem() method, and placed in the System's default subsystem.
     SimTK::MeasureIndex  _simTKcomponentIndex;
 
     // Structure to hold modeling option information. Modeling options are
@@ -1592,12 +1607,12 @@ private:
 
     // Map names of modeling options for the Component to their underlying
     // SimTK indices.
-    // These are mutable here so they can ONLY be modified in addToSystem().
+    // These are mutable here so they can ONLY be modified in extendAddToSystem().
     // This is not an API bug. The purpose of these maps is to automate the 
 	// bookkeeping of component variables (state variables and cache entries) with 
 	// their index in the computational system. The earliest time we have a valid 
 	// index is when we ask the system to allocate the resources and that only
-	// happens in addToSystem. Furthermore, addToSystem may not alter the Component
+	// happens in extendAddToSystem. Furthermore, extendAddToSystem may not alter the Component
 	// in any way that would effect its behavior- that is why it it const!
 	// The setting of the variable indices is not in the public interface and is 
 	// not polymorphic.

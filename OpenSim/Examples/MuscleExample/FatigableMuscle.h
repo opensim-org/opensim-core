@@ -51,7 +51,7 @@ namespace OpenSim {
  * by derived muscle classes. The FatigableMuscle derives from
  * Millard2012EquilibriumMuscle, which is a concrete implementation of the 
  * Muscle interface. The dynamics for fatigue are added by overriding methods 
- * addToSystem() which allocates the additional states and 
+ * extendAddToSystem() which allocates the additional states and 
  * computeStateVariableDerivatives() to specify their dynamics (derivatives). 
  *
  * @see Millard2012EquilibriumMuscle
@@ -143,7 +143,7 @@ protected:
 	// Model Component Interface
 	/** add new dynamical states to the multibody system corresponding
 	    to this muscle */
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 	/** initialize muscle state variables from properties. For example, any 
 	    properties that contain default state values */
 	void initStateFromProperties(SimTK::State& s) const override;

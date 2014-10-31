@@ -115,7 +115,6 @@ private:
 	// Implement ModelComponent interface
 	//--------------------------------------------------------------------------
 	void connectToModel(Model& aModel) override;
-	void addToSystem(SimTK::MultibodySystem& system) const override;
 
 	//--------------------------------------------------------------------------
 	// Implement Object interface.

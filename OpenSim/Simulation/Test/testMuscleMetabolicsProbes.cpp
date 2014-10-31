@@ -171,9 +171,9 @@ public:
         Super::connectToModel(model);
     }
 
-    void addToSystem(SimTK::MultibodySystem& system) const override
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override
     {
-        Super::addToSystem(system);
+        Super::extendAddToSystem(system);
         addStateVariable(stateName_fiberLength);
         addStateVariable(stateName_fiberVelocity);
     }

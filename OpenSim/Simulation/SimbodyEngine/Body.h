@@ -132,7 +132,7 @@ public:
     // Model component interface.
 	void finalizeFromProperties() override;
 	void connectToModel(Model& model) override;
-	void addToSystem(SimTK::MultibodySystem& system) const override;	
+	void extendAddToSystem(SimTK::MultibodySystem& system) const override;	
 
 	// Underlying multibody tree building operations. Should only be called
 	// by the connecting Joint
@@ -144,7 +144,7 @@ private:
 	void constructProperties();
 
 	/** Return the equivalent (internal) SimTK::Rigid::Body for this body.
-	    Not valid until after addToSystem on Body has be called.*/
+	    Not valid until after extendAddToSystem on Body has be called.*/
 	const SimTK::Body::Rigid& getInternalRigidBody() const {
 		return _internalRigidBody;
 	}

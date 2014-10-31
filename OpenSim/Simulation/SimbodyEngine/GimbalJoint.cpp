@@ -73,12 +73,9 @@ GimbalJoint::GimbalJoint(const std::string &name, OpenSim::Body& parent,
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void GimbalJoint::addToSystem(SimTK::MultibodySystem& system) const
+void GimbalJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Gimbal>(system);
-
-    // TODO: Joints require super class to be called last.
-    Super::addToSystem(system);
+    createMobilizedBody<MobilizedBody::Gimbal>(system);
 }
 
 void GimbalJoint::initStateFromProperties(SimTK::State& s) const

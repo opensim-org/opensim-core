@@ -174,9 +174,9 @@ void Coordinate::finalizeFromProperties()
 	_lockedWarningGiven=false;
 }
 
-void Coordinate::addToSystem(SimTK::MultibodySystem& system) const
+void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
 	//create lock constraint automatically
 	// The underlying SimTK constraint
