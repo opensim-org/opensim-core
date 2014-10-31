@@ -393,7 +393,7 @@ bool OpenSimContext::processModelScale(ModelScaler& modelScaler,
                      double aFinalMass) {
   aModel->getMultibodySystem().realizeTopology();
     _configState=&aModel->updWorkingState();
-  bool retValue= modelScaler.processModel(*_configState, aModel, aPathToSubject, aFinalMass);
+  bool retValue= modelScaler.processModel(aModel, aPathToSubject, aFinalMass);
   // Model has changed need to recreate a valid state
   aModel->getMultibodySystem().realizeTopology();
     _configState=&aModel->updWorkingState();
@@ -404,7 +404,7 @@ bool OpenSimContext::processModelScale(ModelScaler& modelScaler,
 bool OpenSimContext::processModelMarkerPlacer( MarkerPlacer& markerPlacer,
                         Model* aModel,
                         const std::string& aPathToSubject) {
-  return markerPlacer.processModel(*_configState, aModel, aPathToSubject);
+  return markerPlacer.processModel(aModel, aPathToSubject);
 }
 
 double OpenSimContext::computeMeasurementScaleFactor(ModelScaler& modelScaler,
