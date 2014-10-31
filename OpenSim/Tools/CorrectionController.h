@@ -125,9 +125,6 @@ protected:
 	// for any post XML deseraialization intialization
 	void connectToModel(Model& model) override;
 
-	// controller creation once the setup is complete 
-	void addToSystem( SimTK::MultibodySystem& system) const override;   
-
 	// for any intialization requiring a state or the complete system 
 	void initStateFromProperties( SimTK::State& s) const override;
 

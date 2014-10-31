@@ -104,9 +104,9 @@ void ClutchedPathSpring::setInitialStretch(double stretch0)
 /**
  * allocate and initialize the SimTK state for this ClutchedPathSpring.
  */
- void ClutchedPathSpring::addToSystem(SimTK::MultibodySystem& system) const
+ void ClutchedPathSpring::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 	// The spring force is dependent of stretch so only invalidate dynamics
 	// if the stretch state changes
 	addStateVariable("stretch");
@@ -144,7 +144,7 @@ double ClutchedPathSpring::getTension(const SimTK::State& s) const
 	// note tension is positive and produces shortening
 	// damping opposes lengthening, which is positive lengthening speed
 	// there for stretch and lengthening speed increase tension
-	return getForce(s); 
+	return getActuation(s);
 }
 
 
@@ -159,7 +159,7 @@ double ClutchedPathSpring::computeActuation(const SimTK::State& s) const
 				(getStiffness()*getStretch(s) *					//elastic force
 				(1+getDissipation()*getLengtheningSpeed(s)));   //dissipation 
 	
-	setForce(s, tension);
+	setActuation(s, tension);
 	return tension;
 }
 

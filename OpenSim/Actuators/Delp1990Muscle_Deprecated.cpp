@@ -232,12 +232,11 @@ void Delp1990Muscle_Deprecated::connectToModel(Model& aModel)
 		throw Exception("Delp1990Muscle_Deprecated::connectToModel(): ERROR- No force velocity curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
 }
 
-void Delp1990Muscle_Deprecated::addToSystem(SimTK::MultibodySystem& system) const
+void Delp1990Muscle_Deprecated::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);
-	
+    Super::extendAddToSystem(system);
 	addStateVariable("fiber_velocity");
- }
+}
 
 void Delp1990Muscle_Deprecated::setActiveForce( const SimTK::State& s, double force ) const {
     setCacheVariable<double>(s, "activeForce", force);
@@ -399,7 +398,7 @@ double Delp1990Muscle_Deprecated::computeActuation(const SimTK::State& s) const
 
 	tendonForce *= _maxIsometricForce; 
 	setTendonForce(s, tendonForce);
-	setForce(s, tendonForce);
+	setActuation(s, tendonForce);
 	setPassiveForce(s, getPassiveForce(s) * _maxIsometricForce);
 	setActiveForce(s, getActiveForce(s) * _maxIsometricForce);
 
@@ -606,14 +605,14 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
 			setPassiveForce(s, 0.0);
 
 		setTendonForce(s, (getActiveForce(s) + getPassiveForce(s)) * cos_factor);
-		setForce(s, getTendonForce(s));
+		setActuation(s, getTendonForce(s));
 	} else if (length < _tendonSlackLength) {
 		tendon_length = length;
 		setStateVariable(s, STATE_FIBER_LENGTH_NAME,  muscle_width);
 		setActiveForce(s, 0.0);
 		setPassiveForce(s, 0.0);
 		setTendonForce(s, 0.0);
-		setForce(s, 0.0);
+		setActuation(s, 0.0);
 		return 0.0;
 	} else {
 		cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngleAtOptimal));  
@@ -653,7 +652,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
 		else
 			tendon_force = getTendonForceLengthCurve()->calcValue(SimTK::Vector(1, tendon_strain)) * _maxIsometricForce;
 		setTendonForce(s, tendon_force);
-		setForce(s, tendon_force);
+		setActuation(s, tendon_force);
 
 		old_error_force = error_force;
  

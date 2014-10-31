@@ -50,9 +50,9 @@ MuscleActivationDynamics(name, getter)
 //==============================================================================
 // MODELCOMPONENT INTERFACE REQUIREMENTS
 //==============================================================================
-void ConstantMuscleActivation::addToSystem(SimTK::MultibodySystem& system) const
+void ConstantMuscleActivation::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
     addCacheVariable<double>(CACHE_NAME_ACTIVATION, getDefaultActivation(),
                              SimTK::Stage::Topology);
 }

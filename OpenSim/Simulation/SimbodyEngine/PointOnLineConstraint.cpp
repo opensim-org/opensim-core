@@ -125,7 +125,8 @@ void PointOnLineConstraint::constructProperties()
  *
  * @param aModel OpenSim model containing this PointOnLineConstraint.
  */
-void PointOnLineConstraint::connectToModel(Model& aModel) {
+void PointOnLineConstraint::connectToModel(Model& aModel)
+{
 	Super::connectToModel(aModel);
 
 	string errorMessage;
@@ -146,25 +147,24 @@ void PointOnLineConstraint::connectToModel(Model& aModel) {
 	_followerBody = &aModel.updBodySet().get(followerBodyName);
 }
 
-void PointOnLineConstraint::addToSystem(SimTK::MultibodySystem& system) const
+void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
+    // Get underlying mobilized bodies
+    SimTK::MobilizedBody lb = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_lineBody->getMobilizedBodyIndex());
+    SimTK::MobilizedBody fb = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_followerBody->getMobilizedBodyIndex());
 
-	// Get underlying mobilized bodies
-	SimTK::MobilizedBody lb = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_lineBody->getMobilizedBodyIndex());
-	SimTK::MobilizedBody fb = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_followerBody->getMobilizedBodyIndex());
-
-	// Normalize Line Direction
-	SimTK::UnitVec3 normLineDirection(get_line_direction_vec().normalize());
+    // Normalize Line Direction
+    SimTK::UnitVec3 normLineDirection(get_line_direction_vec().normalize());
 
     // Now create a Simbody Constraint::PointOnLine
-	//PointOnLine(MobilizedBody& lineBody_B, const UnitVec3& defaultLineDirection_B, const Vec3& defaultPointOnLine_B,
-	//           MobilizedBody& followerBody_F, const Vec3& defaultFollowerPoint_F);
+    //PointOnLine(MobilizedBody& lineBody_B, const UnitVec3& defaultLineDirection_B, const Vec3& defaultPointOnLine_B,
+    //           MobilizedBody& followerBody_F, const Vec3& defaultFollowerPoint_F);
     SimTK::Constraint::PointOnLine simtkPointOnLine(lb, normLineDirection, get_point_on_line(), fb, get_point_on_follower());
     
     // Beyond the const Component get the index so we can access the SimTK::Constraint later
-	PointOnLineConstraint* mutableThis = const_cast<PointOnLineConstraint *>(this);
-	mutableThis->_index = simtkPointOnLine.getConstraintIndex();
+    PointOnLineConstraint* mutableThis = const_cast<PointOnLineConstraint *>(this);
+    mutableThis->_index = simtkPointOnLine.getConstraintIndex();
 }
 
 //=============================================================================

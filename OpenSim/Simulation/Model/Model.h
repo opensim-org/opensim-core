@@ -608,7 +608,7 @@ public:
     ProbeSet& updProbeSet() { return upd_ProbeSet(); };
 
 	/**
-     * Get the subset of misc ModelComponents in the model
+     * Get the subst of misc ModelComponents in the model
      * @return The set of misc ModelComponents
      */
 	const ComponentSet& getMiscModelComponentSet() const 
@@ -896,7 +896,7 @@ public:
 	void finalizeFromProperties() override;
 
 	void connectToModel(Model& model)  override;
-	void addToSystem(SimTK::MultibodySystem& system) const override; 
+	void extendAddToSystem(SimTK::MultibodySystem& system) const override; 
     void initStateFromProperties(SimTK::State& state) const override;
 
 	/**

@@ -68,7 +68,7 @@ public:
 	int numCoordinates() const override {return _numMobilities;};
 
 protected:
-    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 //=============================================================================
 };	// END of class PinJoint

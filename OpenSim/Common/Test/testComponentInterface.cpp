@@ -83,7 +83,7 @@ protected:
 		Super::finalizeFromProperties();
 	}
 	
-	void addToSystem(MultibodySystem& system) const override {
+	void extendAddToSystem(MultibodySystem& system) const override {
 		if (system.hasMatterSubsystem()){
 			matter = system.updMatterSubsystem();
 		}
@@ -101,8 +101,6 @@ protected:
 
 			system.updMatterSubsystem().setShowDefaultGeometry(true);
 		}
-
-		Super::addToSystem(system);
 	}
 
 private:
@@ -168,8 +166,8 @@ protected:
 		world = dynamic_cast<TheWorld*>(&root);
 	}
 
-	void addToSystem(MultibodySystem &system) const override {
-		Super::addToSystem(system);
+	void extendAddToSystem(MultibodySystem &system) const override {
+		Super::extendAddToSystem(system);
 
 		SimbodyMatterSubsystem& matter = system.updMatterSubsystem();
 
@@ -265,8 +263,7 @@ protected:
 	// Copied here from Component for testing purposes.
 
 
-	void addToSystem(MultibodySystem& system) const override{
-        Super::addToSystem(system);
+	void extendAddToSystem(MultibodySystem& system) const override{
 
 		GeneralForceSubsystem& forces = world->updForceSubsystem();
 		SimbodyMatterSubsystem& matter = world->updMatterSubsystem();

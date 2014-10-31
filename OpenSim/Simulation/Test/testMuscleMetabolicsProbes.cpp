@@ -171,9 +171,9 @@ public:
         Super::connectToModel(model);
     }
 
-    void addToSystem(SimTK::MultibodySystem& system) const override
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override
     {
-        Super::addToSystem(system);
+        Super::extendAddToSystem(system);
         addStateVariable(stateName_fiberLength);
         addStateVariable(stateName_fiberVelocity);
     }
@@ -215,7 +215,7 @@ public:
     double computeActuation(const SimTK::State& s) const override
     {
         const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
-        setForce(s, mdi.tendonForce);
+		setActuation(s, mdi.tendonForce);
         return mdi.tendonForce;
     }
 

@@ -110,13 +110,13 @@ void PointToPointActuator::setBodyB(Body* aBody)
 //==============================================================================
 //_____________________________________________________________________________
 /**
- * Get the stress of the force.
- *
+ * Get the stress of the force. This would be the force or torque provided by 
+ * this actuator divided by its optimal force.
  * @return Stress.
  */
 double PointToPointActuator::getStress( const SimTK::State& s) const
 {
-	return std::abs(getForce(s) / getOptimalForce()); 
+	return std::abs(getActuation(s) / getOptimalForce()); 
 }
 //_____________________________________________________________________________
 /**
@@ -193,12 +193,12 @@ void PointToPointActuator::computeForce(const SimTK::State& s,
 	// Find the force magnitude and set it. Then form the force vector.
 	double forceMagnitude;
 
-    if( isForceOverriden(s) ) {
-       forceMagnitude = computeOverrideForce(s);
+	if (isActuationOverriden(s)) {
+		forceMagnitude = computeOverrideActuation(s);
     } else {
        forceMagnitude = computeActuation(s);
     }
-    setForce(s,  forceMagnitude );
+	setActuation(s, forceMagnitude);
 
 	const SimTK::Vec3 force = forceMagnitude*direction;
 

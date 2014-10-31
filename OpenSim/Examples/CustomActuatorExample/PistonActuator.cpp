@@ -174,13 +174,13 @@ double PistonActuator::getOptimalForce() const
 }
 //_____________________________________________________________________________
 /**
- * Get the stress of the force.
- *
+ * Get the stress of the force. This would be the force or torque provided by 
+ * this actuator divided by its optimal force.
  * @return Stress.
  */
 double PistonActuator::getStress( const SimTK::State& s) const
 {
-	return fabs(getForce(s)/get_optimal_force()); 
+	return fabs(getActuation(s) / get_optimal_force());
 }
 
 
@@ -252,7 +252,7 @@ void PistonActuator::computeForce(const SimTK::State& s,
 
 	// find the force magnitude and set it. then form the force vector
 	double forceMagnitude = computeActuation(s);
-	setForce(s,  forceMagnitude );
+	setActuation(s,  forceMagnitude );
 	SimTK::Vec3 force = forceMagnitude*direction;
 
 	// appy equal and opposite forces to the bodies
