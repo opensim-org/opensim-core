@@ -97,7 +97,7 @@ void Body::finalizeFromProperties()
 	_index.invalidate();
     _mbTransform.setToZero();
 
-	setObjectIsUpToDateWithProperties();
+    Super::finalizeFromProperties();
 }
 
 //_____________________________________________________________________________
@@ -132,15 +132,12 @@ void Body::connectToModel(Model& aModel)
 	}
 }
 
-void Body::addToSystem(SimTK::MultibodySystem& system) const
+void Body::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	if(getName() == "ground"){
-		Body * mutableThis = const_cast<Body *>(this);
-		mutableThis->_index = SimTK::GroundIndex;
-	}
-	
-	// Add subcomponents of the Body (namely its Joint)
-	Super::addToSystem(system);
+    if(getName() == "ground"){
+        Body * mutableThis = const_cast<Body *>(this);
+        mutableThis->_index = SimTK::GroundIndex;
+    }
 }
 
 

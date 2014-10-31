@@ -90,9 +90,9 @@ void Force::constructProperties()
 
 // Create an underlying SimTK::Force to represent the OpenSim::Force in the 
 // computational system.  Create a SimTK::Force::Custom by default.
-void Force::addToSystem(SimTK::MultibodySystem& system) const
+void Force::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);
+	Super::extendAddToSystem(system);
 
 	ForceAdapter* adapter = new ForceAdapter(*this);
     SimTK::Force::Custom force(_model->updForceSubsystem(), adapter);

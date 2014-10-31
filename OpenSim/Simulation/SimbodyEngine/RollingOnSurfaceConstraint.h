@@ -109,7 +109,7 @@ public:
 	/**
 	 * Create the SimTK::Constraints: which implements this RollingOnSurfaceConstraint.
 	 */
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 	/**
 	 * Populate the the SimTK::State: with defaults for the RollingOnSurfaceConstraint.
 	 */

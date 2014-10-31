@@ -96,7 +96,8 @@ void GeometryPath::setNull()
  *
  * @param aModel The model containing this path.
  */
-void GeometryPath::connectToModel(Model& aModel) {
+void GeometryPath::connectToModel(Model& aModel)
+{
     Super::connectToModel(aModel);
 
     // aModel will be NULL when objects are being registered.
@@ -127,9 +128,9 @@ void GeometryPath::connectToModel(Model& aModel) {
 /*
  * Create the SimTK state, dicrete and/or cache for this GeometryPath.
  */
- void GeometryPath::addToSystem(SimTK::MultibodySystem& system) const 
+ void GeometryPath::extendAddToSystem(SimTK::MultibodySystem& system) const 
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     // Allocate cache entries to save the current length and speed(=d/dt length)
     // of the path in the cache. Length depends only on q's so will be valid

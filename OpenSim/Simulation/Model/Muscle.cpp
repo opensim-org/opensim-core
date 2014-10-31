@@ -255,9 +255,9 @@ void Muscle::connectToModel(Model& aModel)
 }
 
 // Add Muscle's contributions to the underlying system
- void Muscle::addToSystem(SimTK::MultibodySystem& system) const
+ void Muscle::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);
+	Super::extendAddToSystem(system);
 
 	addModelingOption("ignore_tendon_compliance", 1);
 	addModelingOption("ignore_activation_dynamics", 1);

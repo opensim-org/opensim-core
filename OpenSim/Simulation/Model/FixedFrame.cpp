@@ -99,7 +99,7 @@ void FixedFrame::constructConnectors()
     constructConnector<RigidFrame>("parent_frame");
 }
 
-void FixedFrame::addToSystem(SimTK::MultibodySystem& system) const
+void FixedFrame::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     // Traverse the tree of consecutive FixedFrame connections to determine 
     // this FixedFrame's root segment (Body/MobilizedBody).  We store that 

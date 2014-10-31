@@ -643,9 +643,9 @@ void Model::finalizeFromProperties()
 			getValidationLog() << endl;
 	}
 
-	Super::finalizeFromProperties();
-
     updCoordinateSet().populate(*this);
+
+	Super::finalizeFromProperties();
 }
 
 void Model::connectToModel(Model &model)
@@ -747,7 +747,6 @@ void Model::connectToModel(Model &model)
 	}
 	joints.setMemoryOwner(isMemoryOwner);
 
-
 	// Add the loop joints if any.
 	for (int lcx = 0; lcx < _multibodyTree.getNumLoopConstraints(); ++lcx) {
 		const MultibodyGraphMaker::LoopConstraint& loop =
@@ -805,25 +804,22 @@ void Model::connectToModel(Model &model)
 
 // ModelComponent interface enables this model to be treated as a subcomponent of another model by 
 // creating components in its system.
-void Model::addToSystem(SimTK::MultibodySystem& system) const
+void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	Model *mutableThis = const_cast<Model *>(this);
+    Model *mutableThis = const_cast<Model *>(this);
 
-	// Reset the vector of all controls' defaults
-	mutableThis->_defaultControls.resize(0);
+    // Reset the vector of all controls' defaults
+    mutableThis->_defaultControls.resize(0);
 
-	// Create the shared cache that will hold all model controls
-	// This must be created before Actuator.addToSystem() since Actuator will append 
-	// its "slots" and retain its index by accessing this cached Vector
-	// value depends on velocity and invalidates dynamics BUT should not trigger
-	// recomputation of the controls which are necessary for dynamics
-	Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(), 
-		Stage::Velocity, Stage::Acceleration);
+    // Create the shared cache that will hold all model controls
+    // This must be created before Actuator.extendAddToSystem() since Actuator will append 
+    // its "slots" and retain its index by accessing this cached Vector
+    // value depends on velocity and invalidates dynamics BUT should not trigger
+    // recomputation of the controls which are necessary for dynamics
+    Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(), 
+        Stage::Velocity, Stage::Acceleration);
 
-	mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
-
-    // Let all the ModelComponents add their parts to the System.
-	Super::addToSystem(system);
+    mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
 }
 
 
@@ -1018,7 +1014,6 @@ void Model::cleanup()
 
 void Model::setDefaultProperties()
 {
-
 	// Initialize the length and force units from the strings specified in the model file.
 	// If they were not specified, use meters and Newtons.
 	_lengthUnits = Units(get_length_units());
@@ -1033,17 +1028,6 @@ void Model::initStateFromProperties(SimTK::State& state) const
 	Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
 	controlsCache.updValue(state).resize(_defaultControls.size());
 	controlsCache.updValue(state) = _defaultControls;
-
-	/*
-    _bodySet.invokeInitStateFromProperties(state);
-    _constraintSet.invokeInitStateFromProperties(state);
-    _contactGeometrySet.invokeInitStateFromProperties(state);
-    _jointSet.invokeInitStateFromProperties(state);
-    _forceSet.invokeInitStateFromProperties(state);
-	_controllerSet.invokeInitStateFromProperties(state);
-	_componentSet.invokeInitStateFromProperties(state);
-    _probeSet.invokeInitStateFromProperties(state);
-	*/
 }
 
 void Model::setPropertiesFromState(const SimTK::State& state)
