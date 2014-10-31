@@ -22,17 +22,17 @@
 #include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
 
-int main(int argc, char **argv)
+int main()
 {
     try {
         LoadOpenSimLibrary("osimActuators");
 
         std::string filename = "arm26.osim";
-        if (argc > 1) filename = argv[1];
 
         Model model(filename);
         model.initSystem();
@@ -73,9 +73,13 @@ int main(int argc, char **argv)
         cout << "Num bodies = " << numBodies << std::endl;
         cout << "Num Muscles = " << numMuscles << std::endl;
         cout << "Num GeometryPath components = " << numGeomPaths << std::endl;
-
+        ASSERT(numComponents == 23);
+        ASSERT(numBodies == model.getNumBodies());
+        ASSERT(numMuscles == model.getMuscles().getSize());
     }
     catch (Exception &ex) {
         ex.print(std::cout);
     }
+    cout << "Done" << endl;
+    return 0;
 }
