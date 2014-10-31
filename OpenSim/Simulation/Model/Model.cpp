@@ -1433,23 +1433,25 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
 
 	if (returnVal)
 	{
-		initSystem();	// This crashes now trying to delete the old matterSubsystem
-    	updSimbodyEngine().connectSimbodyEngineToModel(*this);
-	    getMultibodySystem().realizeTopology();
-        SimTK::State& newState = updWorkingState();
-        getMultibodySystem().realize( newState, SimTK::Stage::Velocity);
+//		initSystem();	// This crashes now trying to delete the old matterSubsystem
+//    	updSimbodyEngine().connectSimbodyEngineToModel(*this);
+//	    getMultibodySystem().realizeTopology();
+//        SimTK::State& newState = updWorkingState();
+//        getMultibodySystem().realize( newState, SimTK::Stage::Velocity);
 
 		for (i = 0; i < get_ForceSet().getSize(); i++) {
             PathActuator* act = dynamic_cast<PathActuator*>(&get_ForceSet().get(i));
             if( act ) {
-	 		    act->postScale(newState, aScaleSet);
+	 		    act->postScale(s, aScaleSet);
             }
         }
 
-		// 5. Put the model back in whatever pose it was in.
+        // Changed the model after scaling path actuators. Have to recreate system!
+        s = initSystem();
 
-        newState.updY() = savedConfiguration;
-		getMultibodySystem().realize( newState, SimTK::Stage::Velocity );
+		// 5. Put the model back in whatever pose it was in.
+        s.updY() = savedConfiguration;
+		getMultibodySystem().realize( s, SimTK::Stage::Velocity );
 	}
 
     return returnVal;

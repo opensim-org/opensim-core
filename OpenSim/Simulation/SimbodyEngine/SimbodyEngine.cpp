@@ -731,7 +731,15 @@ void SimbodyEngine::formEulerTransform(const SimTK::State& s, const OpenSim::Bod
  */
 bool SimbodyEngine::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass, bool aPreserveMassDist)
 {
+    // second argument is falg to scale the masses of the bodies along with the geometry
+    // if preserve mass ditribution is true the masses are not scaled here
 	_model->updBodySet().scale(aScaleSet, !aPreserveMassDist);
+
+    // When bodies are scaled, the properties of the model are changed.
+    // The general rule is that you MUST recreate and initialize the system 
+    // when properties of the model change. We must do that here or
+    // we will be querying a stale system (e.g. wrong body properties!).
+    s = _model->initSystem();
 
 	// Now that the masses of the individual bodies have
 	// been scaled (if aPreserveMassDist == false), get the
@@ -746,14 +754,26 @@ bool SimbodyEngine::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFi
 			double factor = aFinalMass / mass;
 			for (int i = 0; i < _model->getBodySet().getSize(); i++)
 				_model->getBodySet().get(i).scaleMass(factor);
+            
+            // recereate system and update state after updating masses
+            s = _model->initSystem();
+
+            double newMass = _model->getTotalMass(s);
+            double normDiffMass = abs(aFinalMass - newMass) / aFinalMass;
+
+            // check if the difference in after scale mass and the specified 
+            // subject (target) mass is significant
+            if (normDiffMass > SimTK::SignificantReal) {
+                throw Exception("Model::scale() scaled model mass does not match specified subject mass.");
+            }
 		}
 	}
 	
 	// Now scale the joints.
-   _model->updJointSet().scale(aScaleSet);
+    _model->updJointSet().scale(aScaleSet);
 
-   	// Now scale translational coupled coordinate constraints.
-   _model->updConstraintSet().scale(aScaleSet);
+    // Now scale translational coupled coordinate constraints.
+    _model->updConstraintSet().scale(aScaleSet);
 
 	// Now scale the markers.
 	_model->updMarkerSet().scale(aScaleSet);

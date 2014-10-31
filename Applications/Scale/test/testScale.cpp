@@ -115,7 +115,7 @@ void scaleGait2354()
 
 	ASSERT(!subject->isDefaultModelScaler() && subject->getModelScaler().getApply());
 	ModelScaler& scaler = subject->getModelScaler();
-	ASSERT(scaler.processModel(s, model, subject->getPathToSubject(), subject->getSubjectMass()));
+	ASSERT(scaler.processModel(model, subject->getPathToSubject(), subject->getSubjectMass()));
 
 	/*
 	if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply()) {
@@ -162,7 +162,7 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
 	// processedModelContext.processModelScale(scaleTool.getModelScaler(), processedModel, "", scaleTool.getSubjectMass())
 	guiModel.getMultibodySystem().realizeTopology();
 	SimTK::State* configState=&guiModel.updWorkingState();
-	bool retValue= subject->getModelScaler().processModel(*configState, &guiModel, setupFilePath, subject->getSubjectMass());
+	bool retValue= subject->getModelScaler().processModel(&guiModel, setupFilePath, subject->getSubjectMass());
 	// Model has changed need to recreate a valid state 
 	guiModel.getMultibodySystem().realizeTopology();
     configState=&guiModel.updWorkingState();
@@ -171,8 +171,8 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
 
 	if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply()) {
 		MarkerPlacer& placer = subject->getMarkerPlacer();
-	    if( false == placer.processModel(*configState, &guiModel, subject->getPathToSubject())) 
-			throw Exception("testScale filed to place markers");
+	    if( false == placer.processModel(&guiModel, subject->getPathToSubject())) 
+			throw Exception("testScale failed to place markers");
 	}
 
 	// Compare ScaleSet
