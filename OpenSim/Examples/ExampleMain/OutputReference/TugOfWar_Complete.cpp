@@ -365,28 +365,6 @@ int main()
 
 		// Save the forces
 		reporter->getForceStorage().print("tugOfWar_forces.mot");
-        /*
-        Model roundTripModel("tugOfWar_model_withDisplay.osim");
-        roundTripModel.setUseVisualizer(true);
-
-        // Initialize the system and get the default state
-        SimTK::State& si_rt = roundTripModel.initSystem();
-        roundTripModel.getMultibodySystem().realize(si_rt, Stage::Velocity);
-        // Compute initial conditions for muscles
-        roundTripModel.equilibrateMuscles(si_rt);
-        // Create the integrator for integrating system dynamics
-        SimTK::RungeKuttaMersonIntegrator integrator_rt(roundTripModel.getMultibodySystem());
-        integrator_rt.setAccuracy(1.0e-6);
-
-        // Create the manager managing the forward integration and its outputs
-        Manager manager_rt(roundTripModel, integrator_rt);
-
-        // Integrate from initial time to final time
-        manager_rt.setInitialTime(initialTime);
-        manager_rt.setFinalTime(finalTime);
-        cout << "\nIntegrating from " << initialTime << " to " << finalTime << endl;
-        manager_rt.integrate(si_rt);
-        */
     }
 	catch (const std::exception& ex)
     {

@@ -88,7 +88,7 @@ int main()
 {
 	try {
 		LoadOpenSimLibrary("osimActuators");
-        //testVisModel("arm26.osim");
+        testVisModel("BuiltinGeometry.osim");
 	}
 	catch (const OpenSim::Exception& e) {
         e.print(cerr);
@@ -117,6 +117,7 @@ void testVisModel(string fileName)
     buffer << t.rdbuf();
     std::string fromFile = buffer.str();
     std::string fromModel = dgiText.getAsString();
+    cout << fromModel << endl;
     int same = fromFile.compare(fromModel);
 	delete model;
     ASSERT(same == 0);
