@@ -73,7 +73,10 @@ int main()
         cout << "Num bodies = " << numBodies << std::endl;
         cout << "Num Muscles = " << numMuscles << std::endl;
         cout << "Num GeometryPath components = " << numGeomPaths << std::endl;
-        ASSERT(numComponents == 23);
+        // Components = Model+3Body+3Marker+2(Joint+Coordinate)+6(Muscle+GeometryPath)
+        // Should test against 1+#Bodies+#Markers+#Joints+#Constraints+#Coordinates+#Forces+#ForcesWithPath+..
+        // Would that account for internal (split-bodies etc.?
+        ASSERT(numComponents == 23); 
         ASSERT(numBodies == model.getNumBodies());
         ASSERT(numMuscles == model.getMuscles().getSize());
     }
