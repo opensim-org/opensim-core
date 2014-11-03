@@ -38,32 +38,6 @@ template <typename T> class ComponentListIterator;
 //==============================================================================
 // Class used to help iterate over specific Components
 //
-class ComponentFilter {
-public:
-    ComponentFilter() {};
-    virtual ~ComponentFilter() {};
-    virtual bool accept(const Component& comp) const = 0;
-};
-template <typename T>
-class ComponentFilterByType : public ComponentFilter {
-public:
-    ComponentFilterByType() {};
-    virtual ~ComponentFilterByType() {};
-    bool accept(const Component& comp) const override {
-        return dynamic_cast<const T*>(&comp);
-    }
-};
-
-/**
- * example Compoenents that have geometry i.e. comp.hasGeometry() returns true
- * By having filters as classes rather than baked in it's more flexible and they can be used from Scripting
- * class CompoenentWithGeometryFilter: public ComponentFilter {
- * public:
- *   bool accept(const Component& comp) const override {
- *        return comp.hasGeometry();
-    }
- * }
-*/
 template <typename T>
 class ComponentList {
 public:
