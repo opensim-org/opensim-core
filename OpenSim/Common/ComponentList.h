@@ -44,7 +44,7 @@ public:
     virtual bool accept(const Component& comp) const = 0;
 };
 template <typename T>
-class ComponentFilterByType {
+class ComponentFilterByType : public ComponentFilter {
 public:
     bool accept(const Component& comp) const override {
         return dynamic_cast<const T*>(&comp);
