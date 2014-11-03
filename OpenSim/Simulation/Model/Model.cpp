@@ -498,8 +498,9 @@ void Model::createMultibodySystem()
 }
 
 
-void Model::finalizeFromProperties()
+void Model::extendFinalizeFromProperties()
 {
+    Super::extendFinalizeFromProperties();
 
     // building the system for the first time, need to tell
     // multibodyTree builder what joints are available
@@ -561,7 +562,6 @@ void Model::finalizeFromProperties()
         for (int i = 0; i<nf; ++i)
             addComponent(&ms[i]);
     }
-
 
     // Populate lists of model joints and coordinates according to the Bodies
     // setup here who own the Joints which in turn own the model's Coordinates
@@ -644,8 +644,6 @@ void Model::finalizeFromProperties()
     }
 
     updCoordinateSet().populate(*this);
-
-    Super::finalizeFromProperties();
 }
 
 void Model::connectToModel(Model &model)

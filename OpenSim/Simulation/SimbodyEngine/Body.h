@@ -130,7 +130,7 @@ public:
  protected:
 
     // Model component interface.
-	void finalizeFromProperties() override;
+	void extendFinalizeFromProperties() override;
 	void connectToModel(Model& model) override;
 	void extendAddToSystem(SimTK::MultibodySystem& system) const override;	
 

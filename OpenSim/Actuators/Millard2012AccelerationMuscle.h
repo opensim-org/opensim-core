@@ -783,7 +783,7 @@ private:
 
     /*Checks to make sure that none of the muscle model's properties have
     changed, and if any have changed then rebuild muscle model.*/
-	void finalizeFromProperties();
+	void extendFinalizeFromProperties();
 
     /*       
     @param ami A struct that holds all of the necessary quantities to compute

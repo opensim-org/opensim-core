@@ -172,10 +172,10 @@ void Millard2012EquilibriumMuscle::buildMuscle()
     setObjectIsUpToDateWithProperties();
 }
 
-void Millard2012EquilibriumMuscle::finalizeFromProperties()
+void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
 {
-       buildMuscle();
-	   Super::finalizeFromProperties();
+    Super::extendFinalizeFromProperties();
+    buildMuscle();
 }
 
 //==============================================================================
@@ -185,7 +185,7 @@ Millard2012EquilibriumMuscle::Millard2012EquilibriumMuscle()
 {
     setNull();
     constructInfrastructure();
-	finalizeFromProperties();
+    finalizeFromProperties();
 }
 
 Millard2012EquilibriumMuscle::Millard2012EquilibriumMuscle(
@@ -201,7 +201,7 @@ double aTendonSlackLength, double aPennationAngle)
     setTendonSlackLength(aTendonSlackLength);
     setPennationAngleAtOptimalFiberLength(aPennationAngle);
 
-	finalizeFromProperties();
+    finalizeFromProperties();
 }
 
 //==============================================================================
@@ -286,7 +286,7 @@ setMuscleConfiguration(bool ignoreTendonCompliance,
     set_ignore_tendon_compliance(ignoreTendonCompliance);
     set_ignore_activation_dynamics(ignoreActivationDynamics);
     setFiberDamping(dampingCoefficient);
-	finalizeFromProperties();
+    finalizeFromProperties();
 }
 
 void Millard2012EquilibriumMuscle::setFiberDamping(double dampingCoefficient)

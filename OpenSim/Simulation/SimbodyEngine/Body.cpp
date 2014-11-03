@@ -79,8 +79,10 @@ void Body::constructProperties()
 }
 
 
-void Body::finalizeFromProperties()
+void Body::extendFinalizeFromProperties()
 {
+    Super::extendFinalizeFromProperties();
+
     //TODO: Need a better design so ground body is not exposed in XML
     //like every other body. One idea is to remove ground body altogether.
     //Instead of using ground Body as a holder of geometry, a flat list of
@@ -96,8 +98,6 @@ void Body::finalizeFromProperties()
     
     _index.invalidate();
     _mbTransform.setToZero();
-
-    Super::finalizeFromProperties();
 }
 
 //_____________________________________________________________________________

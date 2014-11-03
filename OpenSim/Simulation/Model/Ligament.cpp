@@ -77,8 +77,10 @@ void Ligament::constructProperties()
 }
 
 
-void Ligament::finalizeFromProperties()
+void Ligament::extendFinalizeFromProperties()
 {
+    Super::extendFinalizeFromProperties();
+
     GeometryPath& path = upd_GeometryPath();
 
     // Resting length must be greater than 0.0.
