@@ -50,7 +50,7 @@ const Model& ModelComponent::getModel() const
 {
     if(!_model)
         throw Exception("ModelComponent::getModel(): component does not "
-                        "belong to a model."); 
+                "belong to a model. Have you called Model::initSystem()?"); 
     return *_model;
 }
 
@@ -58,7 +58,7 @@ Model& ModelComponent::updModel()
 {
     if(!_model)
         throw Exception("ModelComponent::updModel(): component does not "
-                        "belong to a model."); 
+                "belong to a model. Have you called Model::initSystem()?"); 
     return *_model;
 }
 

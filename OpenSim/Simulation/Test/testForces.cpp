@@ -322,8 +322,8 @@ void testExpressionBasedPointToPointForce()
 	// Save the forces
 	//reporter->getForceStorage().print("path_spring_forces.mot");
 	double d = model->getSimbodyEngine().calcDistance(state, ground, p1, ball, p2);
-	const MobilizedBody& b1 = model->getMatterSubsystem().getMobilizedBody(ground.getMobilizedBodyIndex());
-	const MobilizedBody& b2 = model->getMatterSubsystem().getMobilizedBody(ball.getMobilizedBodyIndex());
+	const MobilizedBody& b1 = ground.getMobilizedBody();
+	const MobilizedBody& b2 = ball.getMobilizedBody();
 
 	double ddot = b1.calcStationToStationDistanceTimeDerivative(state, p1, b2, p2);
 
