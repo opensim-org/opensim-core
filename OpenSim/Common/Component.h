@@ -220,6 +220,10 @@ public:
         Marks the Component as up to date with its properties. */
     void finalizeFromProperties();
 
+    /** Connect this Component to its aggregate component, which is the root
+        of a tree of components.*/
+    void connect(Component& root);
+
     /** Have the Component add itself to the underlying computational System */
     void addToSystem(SimTK::MultibodySystem& system) const;
 
@@ -856,12 +860,15 @@ template <class T> friend class ComponentMeasure;
     If you override this method, be sure to invoke the base class method first, 
     using code like this:
     @code
-    void MyComponent::connect(Component& root) {
-        Super::connect(root); // invoke parent class method
+    void MyComponent::extendConnect(Component& root) {
+        Super::extendConnect(root); // invoke parent class method
         // ... your code goes here
     }
     @endcode   */
-    virtual void connect(Component &root);
+    virtual void extendConnect(Component& root) {};
+
+    /** Invoke connect() on the (sub)components of this Component.*/
+    void componentsConnect(Component& root) const;
 
     /** Opportunity to remove connection related information. 
     If you override this method, be sure to invoke the base class method first,
@@ -880,7 +887,7 @@ template <class T> friend class ComponentMeasure;
     corresponding to this component and specify needed state resources. 
     extendAddToSystem() is called when the Simbody System is being created to 
     represent a completed system (model) for computation. That is, connect()
-    will already have been invoked on all components before any extendAddToSystem()
+    will already have been invoked on all components before any addToSystem()
     call is made. Helper methods for adding modeling options, state variables 
     and their derivatives, discrete variables, and cache entries are available 
     and can be called within extendAddToSystem() only.

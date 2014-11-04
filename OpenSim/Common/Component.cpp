@@ -155,8 +155,7 @@ void Component::componentsFinalizeFromProperties() const
     }
 }
 
-// Base class implementation of virtual method.
-// Call connect on all components and find unconnected Connectors a
+// Base class implementation of non virtual connect method.
 void Component::connect(Component &root)
 {
     if (!isObjectUpToDateWithProperties()){
@@ -164,17 +163,10 @@ void Component::connect(Component &root)
         // the last chance to finalize before addToSystm.
         finalizeFromProperties();
     }
-    
-    //clear all state indice maps for finding state variables, modeling
-    //options and cache variables. Also the map of connectors is reset.
+
     reset();
 
-    // First give the subcomponents the opportunity to connect themselves
-    for(unsigned int i=0; i<_components.size(); i++){
-        _components[i]->connect(root);
-    }
-
-    // rebuilding the connectors table, which was emptied by clearStateAllocations
+    // rebuilding the connectors table, which was emptied by reset
     for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
         AbstractConnector& connector = upd_connectors(ix);
         connector.disconnect();
@@ -190,12 +182,27 @@ void Component::connect(Component &root)
                 + connector.get_connected_to_name() + "' to satisfy Connector<" +
                 connector.getConnectedToTypeName() + "> '" + connector.getName() + "'.");
         }
-    //is connected or an exception was thrown
+        //is connected or an exception was thrown
     }
-    
+
+    // Allow derived Components to handle/check their connections
+    extendConnect(root);
+
+    componentsConnect(root);
+
     // Forming connections changes the Connector which is a property
     // Remark as upToDate.
     setObjectIsUpToDateWithProperties();
+}
+
+
+// Call connect on all components and find unconnected Connectors a
+void Component::componentsConnect(Component& root) const
+{
+    // First give the subcomponents the opportunity to connect themselves
+    for(unsigned int i=0; i<_components.size(); i++){
+        _components[i]->connect(root);
+    }
 }
 
 void Component::disconnect()
