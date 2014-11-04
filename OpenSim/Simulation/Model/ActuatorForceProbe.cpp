@@ -158,9 +158,9 @@ void ActuatorForceProbe::setExponent(const double exponent)
 *
 * @param aModel OpenSim model containing this ActuatorForceProbe.
 */
-void ActuatorForceProbe::connectToModel(Model& model)
+void ActuatorForceProbe::extendConnectToModel(Model& model)
 {
-	Super::connectToModel(model);
+	Super::extendConnectToModel(model);
 
 	// Check to see if 'all' actuators are selected for probing.
 	if (getProperty_actuator_names().size() > 0)

@@ -139,9 +139,9 @@ void WeldConstraint::constructProperties()
  *
  * @param aModel OpenSim model containing this WeldConstraint.
  */
-void WeldConstraint::connectToModel(Model& aModel)
+void WeldConstraint::extendConnectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel);
+	Super::extendConnectToModel(aModel);
     
     string errorMessage;
 

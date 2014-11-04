@@ -145,8 +145,8 @@ public:
     /**
      * Set the Model this object is part of and allow each contained
      * ModelComponent to connect itself to the Model by invoking its 
-     * connectToModel() method.
-     * @see ModelComponent::connectToModel()
+     * extendConnectToModel() method.
+     * @see ModelComponent::extendConnectToModel()
      */
     virtual void invokeConnectToModel(Model& model)
     {

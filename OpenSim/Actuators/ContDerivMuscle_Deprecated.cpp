@@ -194,9 +194,9 @@ void ContDerivMuscle_Deprecated::setupProperties()
  *
  * @param aModel model containing this ContDerivMuscle_Deprecated.
  */
-void ContDerivMuscle_Deprecated::connectToModel(Model& aModel)
+void ContDerivMuscle_Deprecated::extendConnectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel);
+	Super::extendConnectToModel(aModel);
 }
 
    

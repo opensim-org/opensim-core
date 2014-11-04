@@ -281,7 +281,7 @@ public:
     /** After the %Model and its components have been constructed, call this to
     interconnect the components and then create the Simbody
     MultibodySystem needed to represent the %Model computationally. The
-    connectToModel() method of each contained ModelComponent will be invoked,
+    extendConnectToModel() method of each contained ModelComponent will be invoked,
     and then their addToSystem() methods are invoked.   
     The resulting MultibodySystem is maintained internally by the %Model. After 
     this call, you may obtain a writable reference to the System using 
@@ -895,7 +895,7 @@ public:
     /**@{**/
     void extendFinalizeFromProperties() override;
 
-    void connectToModel(Model& model)  override;
+    void extendConnectToModel(Model& model)  override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override; 
     void initStateFromProperties(SimTK::State& state) const override;
 

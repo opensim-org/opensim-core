@@ -107,9 +107,9 @@ void Body::extendFinalizeFromProperties()
  *
  * @param aModel OpenSim model containing this Body.
  */
-void Body::connectToModel(Model& aModel)
+void Body::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
     for(int i=0; i< get_WrapObjectSet().getSize(); i++)
         get_WrapObjectSet().get(i).connectToModelAndBody(aModel, *this);

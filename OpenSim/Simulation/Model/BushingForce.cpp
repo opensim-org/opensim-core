@@ -106,9 +106,9 @@ void BushingForce::constructProperties()
  *
  * @param aModel OpenSim model containing this BushingForce.
  */
-void BushingForce::connectToModel(Model& aModel)
+void BushingForce::extendConnectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel); // base class first
+	Super::extendConnectToModel(aModel); // base class first
 
 	string errorMessage;
 	const string& body1Name = get_body_1(); // error if unspecified

@@ -126,9 +126,9 @@ void Bhargava2004MuscleMetabolicsProbe::constructProperties()
  *
  * @param aModel OpenSim model containing this Bhargava2004MuscleMetabolicsProbe.
  */
-void Bhargava2004MuscleMetabolicsProbe::connectToModel(Model& aModel)
+void Bhargava2004MuscleMetabolicsProbe::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
     if (isDisabled()) return;   // Nothing to connect
 
     const int nM = 

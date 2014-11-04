@@ -120,7 +120,7 @@ protected:
     //virtual void computeInitialFiberEquilibrium(SimTK::State& s) const;
     
 	/** Model Component Interface */
-	void connectToModel(Model& aModel) override;
+	void extendConnectToModel(Model& aModel) override;
 	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 	void initStateFromProperties(SimTK::State& s) const override;
     void setPropertiesFromState(const SimTK::State& state) override;

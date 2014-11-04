@@ -75,9 +75,9 @@ Thelen2003Muscle(const std::string& aName,  double aMaxIsometricForce,
 //====================================================================
 // Model Component Interface
 //====================================================================
-void Thelen2003Muscle::connectToModel(Model& aModel)
+void Thelen2003Muscle::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
     ensureMuscleUpToDate();
 }
 

@@ -97,7 +97,7 @@ public:
 private:
     // ModelComponent extension interface 
     void extendFinalizeFromProperties() override;
-    void connectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     void constructProperties();

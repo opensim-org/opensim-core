@@ -101,9 +101,9 @@ void MuscleActiveFiberPowerProbe::setMuscleNames(const Array<string>& muscleName
  *
  * @param aModel OpenSim model containing this MuscleActiveFiberPowerProbe.
  */
-void MuscleActiveFiberPowerProbe::connectToModel(Model& model)
+void MuscleActiveFiberPowerProbe::extendConnectToModel(Model& model)
 {
-    Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 
     // check that each Muscle in the actuator_names array exists in the model
     int nA = getMuscleNames().size();

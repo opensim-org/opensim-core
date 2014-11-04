@@ -359,7 +359,7 @@ protected:
     SimTK::Vec3 computePathColor(const SimTK::State& state) const override;
 	
 	/** Model Component creation interface */
-	void connectToModel(Model& aModel) override;
+	void extendConnectToModel(Model& aModel) override;
 	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 	void setPropertiesFromState(const SimTK::State &s) override;
 	void initStateFromProperties(SimTK::State& state) const override;

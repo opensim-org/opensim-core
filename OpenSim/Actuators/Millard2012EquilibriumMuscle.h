@@ -506,7 +506,7 @@ protected:
 // MODELCOMPONENT INTERFACE REQUIREMENTS
 //==============================================================================
     /** Sets up the ModelComponent from the model, if necessary */
-    void connectToModel(Model& model) override;
+    void extendConnectToModel(Model& model) override;
 
     /** Creates the ModelComponent so that it can be used in simulation */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;

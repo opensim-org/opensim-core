@@ -96,9 +96,9 @@ void GeometryPath::setNull()
  *
  * @param aModel The model containing this path.
  */
-void GeometryPath::connectToModel(Model& aModel)
+void GeometryPath::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
     // aModel will be NULL when objects are being registered.
     if (&aModel == NULL)

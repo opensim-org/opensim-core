@@ -62,9 +62,9 @@ void ToyReflexController::constructProperties()
 	constructProperty_gain(1.0);
 }
 
-void ToyReflexController::connectToModel(Model &model)
+void ToyReflexController::extendConnectToModel(Model &model)
 {
-	Super::connectToModel(model);
+	Super::extendConnectToModel(model);
 
 	// get the list of actuators assigned to the reflex controller
 	Set<Actuator>& actuators = updActuators();

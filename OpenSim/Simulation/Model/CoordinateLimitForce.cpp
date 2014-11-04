@@ -76,7 +76,7 @@ CoordinateLimitForce::CoordinateLimitForce
 //_____________________________________________________________________________
 // Set the data members of this actuator to their null values. Note that we
 // also use this after copy construction or copy assignment; these should be
-// calculated at connectToModel().
+// calculated at extendConnectToModel().
 void CoordinateLimitForce::setNull()
 {
 	setAuthors("Ajay Seth");
@@ -196,9 +196,9 @@ bool CoordinateLimitForce::isComputingDissipationEnergy() const
  *
  * @param aModel OpenSim model containing this CoordinateLimitForce.
  */
-void CoordinateLimitForce::connectToModel(Model& aModel)
+void CoordinateLimitForce::extendConnectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel);
+	Super::extendConnectToModel(aModel);
 
     string errorMessage;
 

@@ -149,9 +149,9 @@ void JointInternalPowerProbe::setExponent(const double exponent)
  *
  * @param aModel OpenSim model containing this JointInternalPowerProbe.
  */
-void JointInternalPowerProbe::connectToModel(Model& aModel)
+void JointInternalPowerProbe::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
     // Check to see if 'all' joints are selected for probing.
 	if(getProperty_joint_names().size() > 0)

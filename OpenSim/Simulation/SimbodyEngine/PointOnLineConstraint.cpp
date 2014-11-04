@@ -125,9 +125,9 @@ void PointOnLineConstraint::constructProperties()
  *
  * @param aModel OpenSim model containing this PointOnLineConstraint.
  */
-void PointOnLineConstraint::connectToModel(Model& aModel)
+void PointOnLineConstraint::extendConnectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel);
+	Super::extendConnectToModel(aModel);
 
 	string errorMessage;
 	// Look up the two bodies being constrained together by name in the

@@ -214,22 +214,22 @@ void Delp1990Muscle_Deprecated::setupProperties()
  *
  * @param aModel model containing this Delp1990Muscle_Deprecated.
  */
-void Delp1990Muscle_Deprecated::connectToModel(Model& aModel)
+void Delp1990Muscle_Deprecated::extendConnectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel);
+	Super::extendConnectToModel(aModel);
 
 	// aModel will be NULL when objects are being registered.
 	if (!_model)
 		return;
 
 	if(!getActiveForceLengthCurve()) 
-		throw Exception("Delp1990Muscle_Deprecated::connectToModel(): ERROR- No active force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
+		throw Exception("Delp1990Muscle_Deprecated::extendConnectToModel(): ERROR- No active force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
 	else if(!getPassiveForceLengthCurve())
-		throw Exception("Delp1990Muscle_Deprecated::connectToModel(): ERROR- No passive force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
+		throw Exception("Delp1990Muscle_Deprecated::extendConnectToModel(): ERROR- No passive force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
 	else if(!getTendonForceLengthCurve())
-		throw Exception("Delp1990Muscle_Deprecated::connectToModel(): ERROR- No tendon force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
+		throw Exception("Delp1990Muscle_Deprecated::extendConnectToModel(): ERROR- No tendon force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
 	else if(!getForceVelocityCurve())
-		throw Exception("Delp1990Muscle_Deprecated::connectToModel(): ERROR- No force velocity curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
+		throw Exception("Delp1990Muscle_Deprecated::extendConnectToModel(): ERROR- No force velocity curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
 }
 
 void Delp1990Muscle_Deprecated::extendAddToSystem(SimTK::MultibodySystem& system) const

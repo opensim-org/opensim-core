@@ -160,7 +160,7 @@ public:
     //--------------------------------------------------------------------------
     // MODELCOMPONENT INTERFACE
     //--------------------------------------------------------------------------
-    void connectToModel(Model& model) override
+    void extendConnectToModel(Model& model) override
     {
         #ifdef USE_ACTIVATION_DYNAMICS_MODEL
         ZerothOrderMuscleActivationDynamics &zomad =
@@ -168,7 +168,7 @@ public:
         includeAsSubComponent(&zomad);
         #endif
 
-        Super::connectToModel(model);
+        Super::extendConnectToModel(model);
     }
 
     void extendAddToSystem(SimTK::MultibodySystem& system) const override

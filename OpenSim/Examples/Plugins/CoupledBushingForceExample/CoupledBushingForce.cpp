@@ -222,9 +222,9 @@ void CoupledBushingForce::setupProperties()
  *
  * @param aModel OpenSim model containing this CoupledBushingForce.
  */
-void CoupledBushingForce::connectToModel(Model& aModel)
+void CoupledBushingForce::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
 	string errorMessage;
 	// Look up the two bodies being connected by bushing by name in the

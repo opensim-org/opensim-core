@@ -1088,9 +1088,9 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
 //==============================================================================
 // MODELCOMPONENT INTERFACE REQUIREMENTS
 //==============================================================================
-void Millard2012EquilibriumMuscle::connectToModel(Model& model)
+void Millard2012EquilibriumMuscle::extendConnectToModel(Model& model)
 {
-    Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 }
 
 void Millard2012EquilibriumMuscle::

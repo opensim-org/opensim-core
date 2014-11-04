@@ -131,7 +131,7 @@ public:
 
     // Model component interface.
 	void extendFinalizeFromProperties() override;
-	void connectToModel(Model& model) override;
+	void extendConnectToModel(Model& model) override;
 	void extendAddToSystem(SimTK::MultibodySystem& system) const override;	
 
 	// Underlying multibody tree building operations. Should only be called

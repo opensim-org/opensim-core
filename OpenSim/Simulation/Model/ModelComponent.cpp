@@ -79,6 +79,7 @@ void ModelComponent::extendConnect(Component &root)
 void ModelComponent::connectToModel(Model& model)
 {
     _model = &model;
+    extendConnectToModel(model);
 }
 
 // Base class implementation of virtual method.

@@ -241,9 +241,9 @@ void Muscle::setMaxContractionVelocity(double aMaxContractionVelocity)
 //=============================================================================
 // ModelComponent Interface Implementation
 //=============================================================================
-void Muscle::connectToModel(Model& aModel)
+void Muscle::extendConnectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel);
+	Super::extendConnectToModel(aModel);
 
 	_muscleWidth = getOptimalFiberLength()
                     * sin(getPennationAngleAtOptimalFiberLength());

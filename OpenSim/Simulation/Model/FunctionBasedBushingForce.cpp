@@ -146,9 +146,9 @@ void FunctionBasedBushingForce::constructProperties()
  *
  * @param aModel OpenSim model containing this FunctionBasedBushingForce.
  */
-void FunctionBasedBushingForce::connectToModel(Model& aModel)
+void FunctionBasedBushingForce::extendConnectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel); // base class first
+	Super::extendConnectToModel(aModel); // base class first
 
 	string errorMessage;
 	const string& body1Name = get_body_1(); // error if unspecified

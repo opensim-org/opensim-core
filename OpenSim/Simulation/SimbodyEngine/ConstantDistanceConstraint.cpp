@@ -125,9 +125,9 @@ void ConstantDistanceConstraint::constructProperties()
  *
  * @param aModel OpenSim model containing this ConstantDistanceConstraint.
  */
-void ConstantDistanceConstraint::connectToModel(Model& aModel)
+void ConstantDistanceConstraint::extendConnectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel);
+	Super::extendConnectToModel(aModel);
 
 	string errorMessage;
 

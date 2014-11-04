@@ -163,9 +163,9 @@ void PointToPointSpring::updateGeometry(const SimTK::State& s)
 //=============================================================================
 // Connect this force element to the rest of the model.
 //=============================================================================
-void PointToPointSpring::connectToModel(Model& model)
+void PointToPointSpring::extendConnectToModel(Model& model)
 {
-	Super::connectToModel(model);	// Let base class connect first.
+	Super::extendConnectToModel(model);	// Let base class connect first.
 
 	if(getName() == "")
 		setName("pointToPointSpring");

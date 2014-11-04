@@ -104,9 +104,9 @@ void RollingOnSurfaceConstraint::constructProperties()
  *
  * @param aEngine dynamics engine containing this RollingOnSurfaceConstraint.
  */
-void RollingOnSurfaceConstraint::connectToModel(Model& aModel)
+void RollingOnSurfaceConstraint::extendConnectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel);
+	Super::extendConnectToModel(aModel);
 
 	string errorMessage;
 

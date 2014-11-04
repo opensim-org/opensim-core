@@ -104,7 +104,7 @@ public:
 	virtual ~RollingOnSurfaceConstraint();
 
     // ModelComponent interface.
-	void connectToModel(Model& aModel) override;
+	void extendConnectToModel(Model& aModel) override;
 
 	/**
 	 * Create the SimTK::Constraints: which implements this RollingOnSurfaceConstraint.

@@ -116,9 +116,9 @@ void PointConstraint::constructProperties()
  *
  * @param aModel OpenSim model containing this PointConstraint.
  */
-void PointConstraint::connectToModel(Model& aModel)
+void PointConstraint::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
     
     string errorMessage;
 

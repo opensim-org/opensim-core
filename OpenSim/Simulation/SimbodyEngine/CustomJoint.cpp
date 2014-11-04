@@ -104,9 +104,9 @@ void CustomJoint::extendFinalizeFromProperties()
 }
 
 
-void CustomJoint::connectToModel(Model& aModel)
+void CustomJoint::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
     /* Set up spatial transform for this custom joint. */
     updSpatialTransform().connectToJoint(*this);

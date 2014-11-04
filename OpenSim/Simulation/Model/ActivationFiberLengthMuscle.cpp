@@ -106,9 +106,9 @@ void ActivationFiberLengthMuscle::setPropertiesFromState(const SimTK::State& sta
     setDefaultFiberLength(getStateVariable(state, STATE_FIBER_LENGTH_NAME));
 }
 
-void ActivationFiberLengthMuscle::connectToModel(Model& aModel)
+void ActivationFiberLengthMuscle::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 }
 
 double ActivationFiberLengthMuscle::getDefaultActivation() const {

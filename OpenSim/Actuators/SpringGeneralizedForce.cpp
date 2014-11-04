@@ -74,9 +74,9 @@ void SpringGeneralizedForce::constructProperties()
  * Sets the _model pointer to proper value
  * _coordinate is actually set inside _createSystem
  */
-void SpringGeneralizedForce::connectToModel(Model& model)
+void SpringGeneralizedForce::extendConnectToModel(Model& model)
 {
-	Super::connectToModel(model);
+	Super::extendConnectToModel(model);
 
     _coord = &model.updCoordinateSet().get(get_coordinate());
 }

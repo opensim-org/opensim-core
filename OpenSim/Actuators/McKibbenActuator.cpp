@@ -116,8 +116,8 @@ void McKibbenActuator::computeForce(const SimTK::State& s,
 /**
  * Sets the actual Body references _bodyA and _bodyB
  */
-void McKibbenActuator::connectToModel(Model& model)
+void McKibbenActuator::extendConnectToModel(Model& model)
 {
-	Super::connectToModel(model);
+	Super::extendConnectToModel(model);
 
 }

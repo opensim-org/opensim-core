@@ -261,12 +261,12 @@ void PistonActuator::computeForce(const SimTK::State& s,
 }
 //_____________________________________________________________________________
 /**
- * connectToModel() sets the actual Body references _bodyA and _bodyB
+ * extendConnectToModel() sets the actual Body references _bodyA and _bodyB
  */
 void PistonActuator::
-connectToModel(Model& aModel)
+extendConnectToModel(Model& aModel)
 {
-	Super::connectToModel( aModel);
+	Super::extendConnectToModel( aModel);
 
 	if (_model) {
 		_bodyA = &_model->updBodySet().get(upd_bodyA());

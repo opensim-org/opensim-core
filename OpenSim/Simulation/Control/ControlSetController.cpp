@@ -216,8 +216,8 @@ void ControlSetController::extendFinalizeFromProperties()
         "ControlSetController::extendFinalizeFromProperties controlsFileName is NULL");
 
     if (_controlsFileName != "Unassigned") {
-        //        std::cout<<"\n\nControlSetController::connectToModel(): Loading controls from file "<<_controlsFileName<<"."<<std::endl;
-        //        std::cout<<"ControlSetController::connectToModel(): Found "<<_controlSet->getSize()<<" controls."<<std::endl;
+        //        std::cout<<"\n\nControlSetController::extendConnectToModel(): Loading controls from file "<<_controlsFileName<<"."<<std::endl;
+        //        std::cout<<"ControlSetController::extendConnectToModel(): Found "<<_controlSet->getSize()<<" controls."<<std::endl;
         delete  _controlSet;
         if (_controlsFileName.rfind(".sto") != std::string::npos)
             _controlSet = new ControlSet(Storage(_controlsFileName));

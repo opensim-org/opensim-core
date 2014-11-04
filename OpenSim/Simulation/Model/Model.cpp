@@ -646,9 +646,9 @@ void Model::extendFinalizeFromProperties()
     updCoordinateSet().populate(*this);
 }
 
-void Model::connectToModel(Model &model)
+void Model::extendConnectToModel(Model &model)
 {
-    Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 
     if (&model != this){
         cout << "Model::" << getName() <<

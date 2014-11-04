@@ -165,9 +165,9 @@ void ExpressionBasedBushingForce::constructProperties()
  *
  * @param aModel OpenSim model containing this ExpressionBasedBushingForce.
  */
-void ExpressionBasedBushingForce::connectToModel(Model& aModel)
+void ExpressionBasedBushingForce::extendConnectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel); // base class first
+	Super::extendConnectToModel(aModel); // base class first
 
 	// must initialize the 6 force functions using the user provided expressions
 	setMxExpression(get_Mx_expression());

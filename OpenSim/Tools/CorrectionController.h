@@ -123,7 +123,7 @@ public:
 
 protected:
 	// for any post XML deseraialization intialization
-	void connectToModel(Model& model) override;
+	void extendConnectToModel(Model& model) override;
 
 	// for any intialization requiring a state or the complete system 
 	void initStateFromProperties( SimTK::State& s) const override;

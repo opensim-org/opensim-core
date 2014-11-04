@@ -145,9 +145,9 @@ void ExpressionBasedPointToPointForce::updateGeometry(const SimTK::State& s)
 //=============================================================================
 // Connect this force element to the rest of the model.
 //=============================================================================
-void ExpressionBasedPointToPointForce::connectToModel(Model& model)
+void ExpressionBasedPointToPointForce::extendConnectToModel(Model& model)
 {
-	Super::connectToModel(model);	// Let base class connect first.
+	Super::extendConnectToModel(model);	// Let base class connect first.
 
 	string errorMessage;
 

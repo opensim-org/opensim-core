@@ -116,7 +116,7 @@ protected:
 
 	/** Model component interface that permits the controller to be "wired" up
 	   to its actuators. Subclasses can override to perform additional setup. */
-	void connectToModel(Model& model) override;  
+	void extendConnectToModel(Model& model) override;  
 
 	/** Model component interface that creates underlying computational components
 	    in the SimTK::MultibodySystem. This includes adding states, creating 

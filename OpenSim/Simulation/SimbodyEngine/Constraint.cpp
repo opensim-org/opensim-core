@@ -81,9 +81,9 @@ void Constraint::constructProperties(void)
  *
  * @param aModel OpenSim model containing this Constraint.
  */
-void Constraint::connectToModel(Model& aModel)
+void Constraint::extendConnectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel);
+	Super::extendConnectToModel(aModel);
 }
 
 void Constraint::initStateFromProperties(SimTK::State& s) const

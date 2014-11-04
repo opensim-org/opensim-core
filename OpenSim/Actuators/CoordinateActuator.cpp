@@ -216,9 +216,9 @@ getSpeed( const SimTK::State& s) const
  *
  * @param aModel OpenSim model containing this CoordinateActuator.
  */
-void CoordinateActuator::connectToModel(Model& aModel)
+void CoordinateActuator::extendConnectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel);
+	Super::extendConnectToModel(aModel);
 
 	string errorMessage;
 

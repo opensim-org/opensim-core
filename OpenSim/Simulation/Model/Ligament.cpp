@@ -89,7 +89,7 @@ void Ligament::extendFinalizeFromProperties()
     path.setDefaultColor(DefaultLigamentColor);
 
     // Specify underlying ModelComponents prior to calling 
-    // Super::connectToModel() to automatically propagate connectToModel()
+    // Super::extendConnectToModel() to automatically propagate extendConnectToModel()
     // to subcomponents. Subsequent extendAddToSystem() will also be automatically
     // propagated to subcomponents.
     // TODO: this is awkward; subcomponent API needs to be revisited (sherm)

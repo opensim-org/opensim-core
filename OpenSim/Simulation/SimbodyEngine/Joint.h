@@ -193,7 +193,7 @@ public:
     const SimTK::Vec3& getOrientationInParent() const;
 
     /** Get the Joint frames expressed as body transforms. Only available after 
-        connectToModel() has been called on the Joint. */
+        extendConnectToModel() has been called on the Joint. */
     const SimTK::Transform& getParentTransform() const
         { return _jointFrameInParent; }
     const SimTK::Transform& getChildTransform() const
@@ -424,7 +424,7 @@ private:
     // Only Model's connectToModel can access private
     // members of the Joint to set Joint connected to a slave body
     // of a master body. 
-    friend Model; // void Model::connectToModel(Model &model);
+    friend Model; // void Model::extendConnectToModel(Model &model);
 
     void setSlaveBodyForParent(Body& slaveForParent){
         _slaveBodyForParent = slaveForParent;

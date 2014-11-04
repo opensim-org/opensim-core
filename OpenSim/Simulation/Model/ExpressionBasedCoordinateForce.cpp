@@ -83,9 +83,9 @@ void ExpressionBasedCoordinateForce::constructProperties()
 //=============================================================================
 // Connect this force element to the rest of the model.
 //=============================================================================
-void ExpressionBasedCoordinateForce::connectToModel(Model& aModel)
+void ExpressionBasedCoordinateForce::extendConnectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel);
+	Super::extendConnectToModel(aModel);
 
     string errorMessage;
 	const string& coordName = get_coordinate();

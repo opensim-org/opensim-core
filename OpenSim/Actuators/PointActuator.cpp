@@ -198,9 +198,9 @@ void PointActuator::computeForce(const SimTK::State& s,
 /**
  * Sets the actual Body reference _body
  */
-void PointActuator::connectToModel(Model& model)
+void PointActuator::extendConnectToModel(Model& model)
 {
-	Super::connectToModel(model);
+	Super::extendConnectToModel(model);
 
 	string errorMessage;
 
