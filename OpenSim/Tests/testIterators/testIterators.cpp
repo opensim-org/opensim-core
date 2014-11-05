@@ -27,6 +27,15 @@
 using namespace OpenSim;
 using namespace std;
 
+class ComponentWithStateVariables : public ComponentFilter {
+public:
+    ComponentWithStateVariables() {};
+    bool choose(const Component* comp) const override {
+        return (comp->getNumStateVariables()>0);
+    };
+    virtual ~ComponentWithStateVariables() {}
+
+};
 int main()
 {
     try {
@@ -76,9 +85,17 @@ int main()
         // Components = Model+3Body+3Marker+2(Joint+Coordinate)+6(Muscle+GeometryPath)
         // Should test against 1+#Bodies+#Markers+#Joints+#Constraints+#Coordinates+#Forces+#ForcesWithPath+..
         // Would that account for internal (split-bodies etc.?
+        int numComponentsWithStateVariables = 0;
+        ComponentList<ModelComponent> compWithStates = model.getComponentList<ModelComponent>();
+        compWithStates.setFilter(new ComponentWithStateVariables());
+        for (const ModelComponent& comp : compWithStates) {
+            cout << comp.getConcreteClassName() << ":" << comp.getName() << endl;
+            numComponentsWithStateVariables++;
+        }
         ASSERT(numComponents == 23); 
         ASSERT(numBodies == model.getNumBodies());
         ASSERT(numMuscles == model.getMuscles().getSize());
+        ASSERT(numComponentsWithStateVariables == 11);
     }
     catch (Exception &ex) {
         ex.print(std::cout);

@@ -1661,7 +1661,7 @@ ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
 template <typename T>
 void ComponentListIterator<T>::advanceToNextValidComponent() {
     // Advance m_node to next valid (of type T) if needed
-    while (dynamic_cast<const T*>(m_node) == nullptr && m_node != nullptr){
+    while (m_node != nullptr && !m_filter->choose(m_node)){
         if (m_node->_components.size() > 0)
             m_node = m_node->_components[0];
         else

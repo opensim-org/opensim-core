@@ -38,19 +38,44 @@ template <typename T> class ComponentListIterator;
 //==============================================================================
 // Class used to help iterate over specific Components
 //
+class ComponentFilter {
+public:
+    ComponentFilter() {};
+    virtual bool choose(const Component* comp) const = 0;
+    virtual ~ComponentFilter() {}
+};
+
+template <typename T>
+class ComponentFilterByType : public ComponentFilter {
+public:
+    ComponentFilterByType() {};
+    bool choose(const Component* comp) const {
+        return dynamic_cast<const T*>(comp) != nullptr;
+    };
+    virtual ~ComponentFilterByType() {}
+
+};
 template <typename T>
 class ComponentList {
 public:
     typedef ComponentListIterator<T> iterator;
-    ComponentList(const Component* root) : m_root(root) {}
+    typedef ComponentFilter filter;
+#ifndef SWIG
+    ComponentList(const Component* root, filter* f = new ComponentFilterByType<T>()) : m_root(root), m_filter(f){}
+#endif
+    virtual ~ComponentList() { delete m_filter;  }
     iterator begin() {
-        return ComponentListIterator<T>(m_root);
+        return ComponentListIterator<T>(m_root, m_filter);
+    }
+    void setFilter(filter* filter){
+        m_filter = filter;
     }
     iterator end() {
         return nullptr;
     }
 private:
     const Component* m_root;
+    filter* m_filter;
     friend class ComponentListIterator<T>;
 };
 
@@ -82,12 +107,16 @@ public:
     ComponentListIterator<T>& operator++();
     ComponentListIterator<T>& next() { return ++(*this); }
 private:
+#ifndef SWIG
     void advanceToNextValidComponent();
     const Component* m_node;
-    ComponentListIterator(const Component* node) :
-        m_node(node){
+    const ComponentFilter* m_filter;
+    ComponentListIterator(const Component* node, ComponentFilter* filter = new ComponentFilterByType<T>()) :
+        m_node(node),
+        m_filter(filter){
         advanceToNextValidComponent(); // in case node is not of type T
     };
+#endif
 };
 
 } // end of namespace OpenSim
