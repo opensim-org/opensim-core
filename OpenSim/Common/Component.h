@@ -224,6 +224,10 @@ public:
         of a tree of components.*/
     void connect(Component& root);
 
+    /** Disconnect this Component from its aggregate component. Empties all
+        component's connectors and sets them as disconnected.*/
+    void disconnect();
+
     /** Have the Component add itself to the underlying computational System */
     void addToSystem(SimTK::MultibodySystem& system) const;
 
@@ -876,11 +880,11 @@ template <class T> friend class ComponentMeasure;
     @code
         void MyComponent::disconnect(Component& root) {
         // disconnect your subcomponents and your Super first
-        Super::disconnect(); 
+        Super::extendDisconnect(); 
         //your code to wipeout your connection related information
     }
     @endcode  */
-    virtual void disconnect();
+    //void extendDisconnect();
 
 
     /** Add appropriate Simbody elements (if needed) to the System 
