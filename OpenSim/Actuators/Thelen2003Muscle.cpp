@@ -88,9 +88,9 @@ void Thelen2003Muscle::ensureMuscleUpToDate()
     }
 }
 
-void Thelen2003Muscle::initStateFromProperties(SimTK::State& s) const
+void Thelen2003Muscle::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 
 }
     

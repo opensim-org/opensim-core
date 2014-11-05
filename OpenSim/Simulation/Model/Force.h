@@ -131,9 +131,10 @@ protected:
     // ModelComponent interface.
     //--------------------------------------------------------------------------
 
-	/** Subclass should override; be sure to invoke Force::initStateFromProperties() at the
+	/** Subclass should override; be sure to invoke 
+    Super::extendInitStateFromProperties() at the
     beginning of the overriding method. **/
-	void initStateFromProperties(SimTK::State& state) const override;
+	void extendInitStateFromProperties(SimTK::State& state) const override;
 
 	/** Default is to create a ForceAdapter which is a SimTK::Force::Custom
 	as the underlying computational component. Subclasses override to employ 

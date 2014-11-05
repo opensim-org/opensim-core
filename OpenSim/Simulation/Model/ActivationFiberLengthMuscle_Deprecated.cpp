@@ -116,9 +116,9 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
 	addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Velocity);
  }
 
- void ActivationFiberLengthMuscle_Deprecated::initStateFromProperties( SimTK::State& s) const
+ void ActivationFiberLengthMuscle_Deprecated::extendInitStateFromProperties( SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 
 	setActivation(s, _defaultActivation);
 	setFiberLength(s, _defaultFiberLength);

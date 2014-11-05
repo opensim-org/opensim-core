@@ -120,9 +120,9 @@ void FreeJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
     createMobilizedBody<MobilizedBody::Free>(system);
 }
 
-void FreeJoint::initStateFromProperties(SimTK::State& s) const
+void FreeJoint::extendInitStateFromProperties(SimTK::State& s) const
 {
-	Super::initStateFromProperties(s);
+	Super::extendInitStateFromProperties(s);
 
 	const MultibodySystem& system = _model->getMultibodySystem();
 	const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();

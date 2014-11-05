@@ -113,7 +113,7 @@ public:
 	/**
 	 * Populate the the SimTK::State: with defaults for the RollingOnSurfaceConstraint.
 	 */
-	void initStateFromProperties(SimTK::State& state) const override;
+	void extendInitStateFromProperties(SimTK::State& state) const override;
 	/**
 	 * Given an existing SimTK::State set defaults for the RollingOnSurfaceConstraint.
 	 */

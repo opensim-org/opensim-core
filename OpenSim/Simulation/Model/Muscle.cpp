@@ -286,8 +286,8 @@ void Muscle::setPropertiesFromState(const SimTK::State& state)
     set_ignore_activation_dynamics(getIgnoreActivationDynamics(state));
 }
 
-void  Muscle::initStateFromProperties(SimTK::State& state) const {
-    Super::initStateFromProperties(state);
+void  Muscle::extendInitStateFromProperties(SimTK::State& state) const {
+    Super::extendInitStateFromProperties(state);
 
     setIgnoreTendonCompliance(state, 
         get_ignore_tendon_compliance());

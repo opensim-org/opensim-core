@@ -177,9 +177,9 @@ public:
         addStateVariable(stateName_fiberVelocity);
     }
 
-    void initStateFromProperties(SimTK::State& s) const override
+    void extendInitStateFromProperties(SimTK::State& s) const override
     {
-        Super::initStateFromProperties(s);
+        Super::extendInitStateFromProperties(s);
         setFiberLength(s, getOptimalFiberLength());
     }
 

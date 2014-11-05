@@ -73,7 +73,7 @@ public:
 
     /** Initializes the activation cache variable to \c default_activation and
         marks it valid. **/
-    void initStateFromProperties(SimTK::State& s) const override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
 
     /** Sets \c default_activation to the current value of the activation cache
         variable. **/

@@ -163,9 +163,9 @@ void RollingOnSurfaceConstraint::extendAddToSystem(SimTK::MultibodySystem& syste
     mutableThis->_index = _indices[0];
 }
 
-void RollingOnSurfaceConstraint::initStateFromProperties(SimTK::State& state) const
+void RollingOnSurfaceConstraint::extendInitStateFromProperties(SimTK::State& state) const
 {
-    Super::initStateFromProperties(state);
+    Super::extendInitStateFromProperties(state);
 
     // All constraints treated the same as default behavior at initilization
     for(int i=0; i < _numConstraintEquations; i++){

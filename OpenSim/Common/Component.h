@@ -231,6 +231,9 @@ public:
     /** Have the Component add itself to the underlying computational System */
     void addToSystem(SimTK::MultibodySystem& system) const;
 
+    /** Initialize Component's state variable values from its properties */
+    void initStateFromProperties(SimTK::State& state) const;
+
     /**
      * Get the underlying MultibodySystem that this component is connected to.
      */
@@ -921,15 +924,8 @@ template <class T> friend class ComponentMeasure;
          addCacheVariable() **/
     virtual void extendAddToSystem(SimTK::MultibodySystem& system) const {};
 
-    /** Invoke extendAddToSystem() on the sub-components of this Component.
-    Concrete Components can choose when to add their (sub)components according
-    to the needs of the Component. Typically, we add the components to the system
-    prior to this Component. In some instances, such as a Joint, the Coordinate 
-    components cannot be added until the Joint has added its underlying 
-    representation to the system and obtained information (index) the Coordinate
-    needs to access its values.*/
+    /** Invoke extendAddToSystem() on the (sub)components of this Component.*/
     void componentsAddToSystem(SimTK::MultibodySystem& system) const;
-
 
     /** Transfer property values or other state-independent initial values
     into this component's state variables in the passed-in \a state argument.
@@ -943,8 +939,8 @@ template <class T> friend class ComponentMeasure;
     If you override this method, be sure to invoke the base class method first, 
     using code like this:
     @code
-    void MyComponent::initStateFromProperties(SimTK::State& state) const {
-        Super::initStateFromProperties(state); // invoke parent class method
+    void MyComponent::extendInitStateFromProperties(SimTK::State& state) const {
+        Super::extendInitStateFromProperties(state); // invoke parent class method
         // ... your code goes here
     }
     @endcode
@@ -953,7 +949,12 @@ template <class T> friend class ComponentMeasure;
         The state that will receive the new initial conditions.
 
     @see setPropertiesFromState() **/
-    virtual void initStateFromProperties(SimTK::State& state) const;
+    virtual void extendInitStateFromProperties(SimTK::State& state) const {};
+
+    /** Invoke componentsInitStateFromProperties() on the (sub)components of this 
+        Component */
+    void Component::componentsInitStateFromProperties(SimTK::State& state) const;
+
 
     /** Update this component's property values to match the specified State,
     if the component has created any state variable that is intended to
@@ -973,7 +974,7 @@ template <class T> friend class ComponentMeasure;
         The State from which values may be extracted to set persistent
         property values.
 
-    @see initStateFromProperties() **/
+    @see extendInitStateFromProperties() **/
     virtual void setPropertiesFromState(const SimTK::State& state);
 
     /** If a model component has allocated any continuous state variables
@@ -1182,7 +1183,7 @@ template <class T> friend class ComponentMeasure;
     
     /**
      * Add another Component as a subcomponent of this Component.
-     * Component methods (e.g. extendAddToSystem(), initStateFromProperties(), ...) are 
+     * Component methods (e.g. addToSystem(), initStateFromProperties(), ...) are 
      * therefore invoked on subcomponents when called on this Component. Realization is 
      * also performed automatically on subcomponents. This Component does not take 
      * ownership of designated subcomponents and does not destroy them when the Component.

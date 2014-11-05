@@ -297,7 +297,7 @@ protected:
 
     /** Implement the ModelComponent interface */
     void extendConnectToModel(Model& aModel) override;
-    void initStateFromProperties(SimTK::State& s) const override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
     void setPropertiesFromState(const SimTK::State& state) override;
 
 private:

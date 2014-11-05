@@ -151,9 +151,9 @@ void GeometryPath::extendConnectToModel(Model& aModel)
                                   SimTK::Stage::Topology);
 }
 
-void GeometryPath::initStateFromProperties( SimTK::State& s) const
+ void GeometryPath::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
     markCacheVariableValid(s, "color"); // it is OK at its default value
 }
 

@@ -112,7 +112,7 @@ void ClutchedPathSpring::setInitialStretch(double stretch0)
 	addStateVariable("stretch");
 }
 
- void ClutchedPathSpring::initStateFromProperties(SimTK::State& state) const
+ void ClutchedPathSpring::extendInitStateFromProperties(SimTK::State& state) const
  {
 	 setStateVariable(state, "stretch", get_initial_stretch());
  }

@@ -720,7 +720,7 @@ protected:
     /**Initializes the state of the ModelComponent
     @param s the state of the model
     */
-	void initStateFromProperties(SimTK::State& s) const FINAL_11;
+	void extendInitStateFromProperties(SimTK::State& s) const FINAL_11;
     
     /**Sets the default state for ModelComponent
     @param s the state of the model

@@ -291,7 +291,7 @@ void CorrectionController::extendConnectToModel(Model& model)
 }
 
 // for any intialization requiring a state or the complete system 
-void CorrectionController::initStateFromProperties( SimTK::State& s) const
+void CorrectionController::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 }

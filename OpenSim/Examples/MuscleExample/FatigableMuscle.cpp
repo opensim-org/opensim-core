@@ -92,9 +92,9 @@ void FatigableMuscle::extendAddToSystem(SimTK::MultibodySystem& system) const
 	addCacheVariable("fatigued_motor_units_deriv", 0.0, SimTK::Stage::Dynamics);
 }
 
-void FatigableMuscle::initStateFromProperties(SimTK::State& s) const
+void FatigableMuscle::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 	setTargetActivation(s, getDefaultTargetActivation());
 	setActiveMotorUnits(s, getDefaultActiveMotorUnits());
 	setFatiguedMotorUnits(s, getDefaultFatiguedMotorUnits());

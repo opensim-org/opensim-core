@@ -103,9 +103,9 @@ void Force::extendAddToSystem(SimTK::MultibodySystem& system) const
 }
 
 
-void Force::initStateFromProperties(SimTK::State& s) const
+void Force::extendInitStateFromProperties(SimTK::State& s) const
 {
-	Super::initStateFromProperties(s);
+	Super::extendInitStateFromProperties(s);
 
 	SimTK::Force& simForce = _model->updForceSubsystem().updForce(_index);
 

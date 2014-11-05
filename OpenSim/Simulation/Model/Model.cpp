@@ -1018,9 +1018,9 @@ void Model::setDefaultProperties()
     _forceUnits = Units(get_force_units());
 }
 
-void Model::initStateFromProperties(SimTK::State& state) const
+void Model::extendInitStateFromProperties(SimTK::State& state) const
 {
-    Super::initStateFromProperties(state);
+    Super::extendInitStateFromProperties(state);
     // Allocate the size and default values for controls
     // Actuators will have a const view into the cache
     Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));

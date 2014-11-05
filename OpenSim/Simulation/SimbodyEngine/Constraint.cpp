@@ -86,9 +86,9 @@ void Constraint::extendConnectToModel(Model& aModel)
     Super::extendConnectToModel(aModel);
 }
 
-void Constraint::initStateFromProperties(SimTK::State& s) const
+void Constraint::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
     SimTK::Constraint& simConstraint = 
         _model->updMatterSubsystem().updConstraint(_index);
 

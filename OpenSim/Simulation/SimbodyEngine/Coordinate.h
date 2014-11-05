@@ -225,7 +225,7 @@ protected:
     //allocated by underlying components after modeling options have been 
     //factored in.
     void realizeInstance(const SimTK::State& state) const override;
-    void initStateFromProperties(SimTK::State& s) const override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
     void setPropertiesFromState(const SimTK::State& state) override;
 
     // Only the coordinate or the joint itself can specify the owner

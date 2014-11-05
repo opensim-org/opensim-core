@@ -262,17 +262,24 @@ void Component::componentsAddToSystem(SimTK::MultibodySystem& system) const
         _components[i]->addToSystem(system);
 }
 
-// Base class implementation of virtual method.
-void Component::initStateFromProperties(SimTK::State& state) const {
+void Component::initStateFromProperties(SimTK::State& state) const
+{
+    extendInitStateFromProperties(state);
+    componentsInitStateFromProperties(state);
+}
+
+void Component::componentsInitStateFromProperties(SimTK::State& state) const
+{
     for(unsigned int i=0; i < _components.size(); i++)
         _components[i]->initStateFromProperties(state);
-};
+}
 
 // Base class implementation of virtual method.
-void Component::setPropertiesFromState(const SimTK::State& state) {
+void Component::setPropertiesFromState(const SimTK::State& state)
+{
     for(unsigned int i=0; i < _components.size(); i++)
         _components[i]->setPropertiesFromState(state);
-};
+}
 
 // Base class implementation of virtual method. Note that we're not handling
 // subcomponents here; this method gets called from realizeAcceleration()

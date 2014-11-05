@@ -83,9 +83,9 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
 }
 
 void FirstOrderMuscleActivationDynamics::
-initStateFromProperties(SimTK::State& s) const
+extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
     setActivation(s, getDefaultActivation());
 }
 

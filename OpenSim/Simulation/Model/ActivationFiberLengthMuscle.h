@@ -122,7 +122,7 @@ protected:
 	/** Model Component Interface */
 	void extendConnectToModel(Model& aModel) override;
 	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-	void initStateFromProperties(SimTK::State& s) const override;
+	void extendInitStateFromProperties(SimTK::State& s) const override;
     void setPropertiesFromState(const SimTK::State& state) override;
 	void computeStateVariableDerivatives(const SimTK::State& s) const override;
 

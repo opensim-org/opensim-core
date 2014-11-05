@@ -141,7 +141,7 @@ public:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     /** Initializes the activation state variable to \c default_activation. **/
-    void initStateFromProperties(SimTK::State& s) const override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
 
     /** Sets \c default_activation to the current value of the activation state
         variable. **/

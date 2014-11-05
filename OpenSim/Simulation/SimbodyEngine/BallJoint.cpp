@@ -80,9 +80,9 @@ void BallJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
     createMobilizedBody<MobilizedBody::Ball>(system);
 }
 
-void BallJoint::initStateFromProperties(SimTK::State& s) const
+void BallJoint::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 
     const MultibodySystem& system = getModel().getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();

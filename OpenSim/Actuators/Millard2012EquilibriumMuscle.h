@@ -512,7 +512,7 @@ protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     /** Initializes the state of the ModelComponent */
-    void initStateFromProperties(SimTK::State& s) const override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
 
     /** Sets the default state for the ModelComponent */
     void setPropertiesFromState(const SimTK::State& s) override;

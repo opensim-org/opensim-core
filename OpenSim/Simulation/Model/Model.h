@@ -897,7 +897,7 @@ public:
 
     void extendConnectToModel(Model& model)  override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override; 
-    void initStateFromProperties(SimTK::State& state) const override;
+    void extendInitStateFromProperties(SimTK::State& state) const override;
 
     /**
      * Given a State, set all default values for this Model to match those 

@@ -235,7 +235,7 @@ void Coordinate::realizeInstance(const SimTK::State& state) const
     /* Set the YIndex on the StateVariable */
 }
 
-void Coordinate::initStateFromProperties(State& s) const
+void Coordinate::extendInitStateFromProperties(State& s) const
 {
     // Cannot enforce the constraint, since state of constraints may still be undefined
     const MobilizedBody& mb=_model->getMatterSubsystem().getMobilizedBody(_bodyIndex);

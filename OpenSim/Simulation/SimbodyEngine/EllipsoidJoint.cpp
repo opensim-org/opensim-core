@@ -149,9 +149,9 @@ void EllipsoidJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 	mobod.setDefaultRadii(get_radii_x_y_z());
 }
 
-void EllipsoidJoint::initStateFromProperties(SimTK::State& s) const
+void EllipsoidJoint::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 
 	const SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
 	

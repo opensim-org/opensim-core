@@ -1111,9 +1111,9 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
 }
 
 void Millard2012EquilibriumMuscle::
-initStateFromProperties(SimTK::State& s) const
+extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 
     if(!get_ignore_activation_dynamics()) {
         setActivation(s, getDefaultActivation());

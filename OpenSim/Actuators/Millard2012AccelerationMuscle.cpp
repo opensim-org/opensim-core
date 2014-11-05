@@ -264,9 +264,9 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
     addStateVariable(STATE_FIBER_VELOCITY_NAME);
  }
 
-void Millard2012AccelerationMuscle::initStateFromProperties(SimTK::State& s) const
+void Millard2012AccelerationMuscle::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 
     setActivation(s, getDefaultActivation());
     setFiberLength(s, getDefaultFiberLength());

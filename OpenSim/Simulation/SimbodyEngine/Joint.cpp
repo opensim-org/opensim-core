@@ -379,13 +379,13 @@ void Joint::extendAddToSystem(SimTK::MultibodySystem& system) const
      */
 }
 
-void Joint::initStateFromProperties(SimTK::State& s) const
+void Joint::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 
     const CoordinateSet& coordinateSet = get_CoordinateSet();
     for (int i = 0; i < coordinateSet.getSize(); i++)
-        coordinateSet.get(i).initStateFromProperties(s);
+        coordinateSet.get(i).extendInitStateFromProperties(s);
 }
 
 void Joint::setPropertiesFromState(const SimTK::State& state)
