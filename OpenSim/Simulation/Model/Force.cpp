@@ -168,15 +168,25 @@ double Force::computePotentialEnergy(const SimTK::State& state) const
 void Force::applyForceToPoint(const SimTK::State &s, const OpenSim::Body &aBody, const Vec3& aPoint, 
                                     const Vec3& aForce, Vector_<SpatialVec> &bodyForces) const
 {
+<<<<<<< HEAD
     _model->getMatterSubsystem().addInStationForce(s, SimTK::MobilizedBodyIndex(aBody.getMobilizedBodyIndex()),
                                                    aPoint, aForce, bodyForces);
+=======
+	_model->getMatterSubsystem().addInStationForce(s, aBody.getMobilizedBodyIndex(),
+												   aPoint, aForce, bodyForces);
+>>>>>>> master
 }
 
 void Force::applyTorque(const SimTK::State &s, const OpenSim::Body &aBody, 
                               const Vec3& aTorque, Vector_<SpatialVec> &bodyForces) const
 {
+<<<<<<< HEAD
     _model->getMatterSubsystem().addInBodyTorque(s, SimTK::MobilizedBodyIndex(aBody.getMobilizedBodyIndex()),
                                                  aTorque, bodyForces);
+=======
+	_model->getMatterSubsystem().addInBodyTorque(s, aBody.getMobilizedBodyIndex(),
+												 aTorque, bodyForces);
+>>>>>>> master
 }
 
 void Force::applyGeneralizedForce(const SimTK::State &s, const Coordinate &aCoord, 

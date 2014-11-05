@@ -194,11 +194,17 @@ void ExpressionBasedPointToPointForce::
     ExpressionBasedPointToPointForce* mutableThis =
         const_cast<ExpressionBasedPointToPointForce *>(this);
 
+<<<<<<< HEAD
     // Get underlying mobilized bodies
     mutableThis->_b1 = 
         &_model->getMatterSubsystem().getMobilizedBody(body1.getMobilizedBodyIndex());
     mutableThis->_b2 =
         &_model->getMatterSubsystem().getMobilizedBody(body2.getMobilizedBodyIndex());
+=======
+	// Get underlying mobilized bodies
+    mutableThis->_b1 = &body1.getMobilizedBody();
+    mutableThis->_b2 = &body2.getMobilizedBody();
+>>>>>>> master
 }
 
 //=============================================================================

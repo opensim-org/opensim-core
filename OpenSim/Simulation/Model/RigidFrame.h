@@ -68,13 +68,36 @@ public:
     virtual ~RigidFrame() {};
 
 	/**
-	 * All RigidFrames are ultimately rooted to a SimTK::MobilizedBody.  
-	 * Return the MobilizedBodyIndex of the MobilizedBody to which this RigidFrame
-	 * is rooted.
+     * All RigidFrames are ultimately rooted to a SimTK::MobilizedBody.  Return
+     * the MobilizedBodyIndex of the MobilizedBody to which this RigidFrame is
+     * rooted. This index is only available after Model::initSystem() is
+     * invoked.
      *
-     * @return index The MobilizedBodyIndex corresponding to this RigidFrame's MobilizedBody
+     * @return index The MobilizedBodyIndex corresponding to this RigidFrame's
+     * MobilizedBody
+     *
+     * @see getMobilizedBody, updMobilizedBody
 	 */
 	SimTK::MobilizedBodyIndex getMobilizedBodyIndex() const { return _index; }
+
+    /**
+     * The SimTK::MobilizedBody to which this RigidFrame is rooted. This
+     * MobilizedBody is only available after Model::initSystem() has been
+     * invoked.
+     *
+     * @see getMobilizedBodyIndex
+     */
+    const SimTK::MobilizedBody& getMobilizedBody() const;
+
+    /**
+     * The SimTK::MobilizedBody to which this RigidFrame is rooted. This
+     * MobilizedBody is only available after Model::initSystem() has been
+     * invoked.
+     *
+     * @see getMobilizedBodyIndex
+     */
+    SimTK::MobilizedBody& updMobilizedBody();
+
     /**
      * Get the fixed transform describing this RigidFrame's transform in its root MobilizedBody.
      *

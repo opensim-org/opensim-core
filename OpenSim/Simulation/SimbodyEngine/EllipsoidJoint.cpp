@@ -151,6 +151,7 @@ void EllipsoidJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 
 void EllipsoidJoint::extendInitStateFromProperties(SimTK::State& s) const
 {
+<<<<<<< HEAD
     Super::extendInitStateFromProperties(s);
 
     const SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
@@ -167,6 +168,24 @@ void EllipsoidJoint::extendInitStateFromProperties(SimTK::State& s) const
         EllipsoidJoint* mutableThis = const_cast<EllipsoidJoint*>(this);
         matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).setQToFitRotation(s, r);
     }
+=======
+    Super::initStateFromProperties(s);
+
+	const SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
+	
+	if (!matter.getUseEulerAngles(s)){
+		const CoordinateSet& coordinateSet = get_CoordinateSet();
+
+		double xangle = coordinateSet[0].getDefaultValue();
+		double yangle = coordinateSet[1].getDefaultValue();
+		double zangle = coordinateSet[2].getDefaultValue();
+		Rotation r(BodyRotationSequence, xangle, XAxis, 
+			                             yangle, YAxis, zangle, ZAxis);
+
+		EllipsoidJoint* mutableThis = const_cast<EllipsoidJoint*>(this);
+		getChildBody().getMobilizedBody().setQToFitRotation(s, r);
+	}
+>>>>>>> master
 }
 
 void EllipsoidJoint::extendSetPropertiesFromState(const SimTK::State& state)
@@ -176,8 +195,12 @@ void EllipsoidJoint::extendSetPropertiesFromState(const SimTK::State& state)
     // Override default in case of quaternions.
     const SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
+<<<<<<< HEAD
         Rotation r = matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex())
             .getBodyRotation(state);
+=======
+        Rotation r = getChildBody().getMobilizedBody().getBodyRotation(state);
+>>>>>>> master
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
 
         const CoordinateSet& coordinateSet = get_CoordinateSet();

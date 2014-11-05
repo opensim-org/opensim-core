@@ -130,6 +130,7 @@ void RollingOnSurfaceConstraint::extendConnectToModel(Model& aModel)
 
 void RollingOnSurfaceConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+<<<<<<< HEAD
     // Get underlying mobilized bodies
     SimTK::MobilizedBody roller = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_rollingBody->getMobilizedBodyIndex());
     SimTK::MobilizedBody surface = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_surfaceBody->getMobilizedBodyIndex());
@@ -161,6 +162,39 @@ void RollingOnSurfaceConstraint::extendAddToSystem(SimTK::MultibodySystem& syste
     // For example, enabling and disabling. This enables a compound constraint to be treated
     // like a single constraint for the purpose of enabling/disabling and getting output
     mutableThis->_index = _indices[0];
+=======
+	// Get underlying mobilized bodies
+	SimTK::MobilizedBody& roller = _rollingBody->updMobilizedBody();
+	SimTK::MobilizedBody& surface = _surfaceBody->updMobilizedBody();
+	
+	// Add a ficticious massless body to be the "Case" reference body coincident with surface for the no-slip constraint
+	SimTK::MobilizedBody::Weld  cb(surface, SimTK::Body::Massless());
+
+	// Constrain the roller to the surface
+	SimTK::Constraint::PointInPlane contactY(surface, SimTK::UnitVec3(get_surface_normal()), get_surface_height(), roller,Vec3(0));
+	SimTK::Constraint::ConstantAngle contactTorqueAboutY(surface, SimTK::UnitVec3(1,0,0), roller, SimTK::UnitVec3(0,0,1));
+	// Constrain the roller to roll on surface and not slide 
+	SimTK::Constraint::NoSlip1D contactPointXdir(cb, SimTK::Vec3(0), SimTK::UnitVec3(1,0,0), surface, roller);
+	SimTK::Constraint::NoSlip1D contactPointZdir(cb, SimTK::Vec3(0), SimTK::UnitVec3(0,0,1), surface, roller);
+
+	 // Beyond the const Component get the index so we can access the SimTK::Constraint later
+	RollingOnSurfaceConstraint* mutableThis = const_cast<RollingOnSurfaceConstraint *>(this);
+	// Make sure that there is nothing in the list of constraint indices
+	mutableThis->_indices.clear();
+	// Get the index so we can access the SimTK::Constraint later
+	mutableThis->_indices.push_back(contactY.getConstraintIndex());
+	mutableThis->_indices.push_back(contactTorqueAboutY.getConstraintIndex());
+	mutableThis->_indices.push_back(contactPointXdir.getConstraintIndex());
+	mutableThis->_indices.push_back(contactPointZdir.getConstraintIndex());
+
+	mutableThis->_numConstraintEquations = (int)_indices.size();
+
+	// For compound constraints, the bodies and/or mobilities involved must be characterized by
+	// the first "master" constraint, which dictates the behavior of the other constraints
+	// For example, enabling and disabling. This enables a compound constraint to be treated
+	// like a single constraint for the purpose of enabling/disabling and getting output
+	mutableThis->_index = _indices[0];
+>>>>>>> master
 }
 
 void RollingOnSurfaceConstraint::extendInitStateFromProperties(SimTK::State& state) const

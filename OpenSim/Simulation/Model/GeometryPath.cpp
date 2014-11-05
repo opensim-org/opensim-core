@@ -361,8 +361,13 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
     for (int i = 0; i < np-1; ++i) {
         start = currentPath[i];
         end = currentPath[i+1];
+<<<<<<< HEAD
         bo = &matter.getMobilizedBody(start->getBody().getMobilizedBodyIndex());
         bf = &matter.getMobilizedBody(end->getBody().getMobilizedBodyIndex());
+=======
+		bo = &start->getBody().getMobilizedBody();
+		bf = &end->getBody().getMobilizedBody();
+>>>>>>> master
 
         if (bo != bf) {
             // Find the positions of start and end in the inertial frame.

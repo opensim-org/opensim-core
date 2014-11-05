@@ -243,6 +243,7 @@ void CoupledBushingForce::extendAddToSystem(SimTK::MultibodySystem& system) cons
 {
     Super::extendAddToSystem(system);
 
+<<<<<<< HEAD
     Body &body1 = _model->updBodySet().get(_body1Name);
     Body &body2 = _model->updBodySet().get(_body2Name);
 
@@ -258,6 +259,23 @@ void CoupledBushingForce::extendAddToSystem(SimTK::MultibodySystem& system) cons
     // Hang on to the transforms for the bushing frames
     mutableThis->_inb1 = SimTK::Transform(r1, _locationInBody1);
     mutableThis->_inb2 = SimTK::Transform(r2, _locationInBody2);
+=======
+	Body &body1 = _model->updBodySet().get(_body1Name);
+	Body &body2 = _model->updBodySet().get(_body2Name);
+
+	// Beyond the const Component get access to underlying SimTK elements
+	CoupledBushingForce* mutableThis = const_cast<CoupledBushingForce *>(this);
+
+	// Get underlying mobilized bodies
+	mutableThis->_b1 = &body1.getMobilizedBody();
+	mutableThis->_b2 = &body2.getMobilizedBody();
+	// Define the transforms for the bushing frames affixed to the specified bodies
+	SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(_orientationInBody1);
+	SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(_orientationInBody2);
+	// Hang on to the transforms for the bushing frames
+	mutableThis->_inb1 = SimTK::Transform(r1, _locationInBody1);
+	mutableThis->_inb2 = SimTK::Transform(r2, _locationInBody2);
+>>>>>>> master
 }
 
 //=============================================================================
@@ -511,6 +529,7 @@ void CoupledBushingForce::constructMatricesFromProperties()
 
 void CoupledBushingForce::updatePropertiesFromMatrices()
 {
+<<<<<<< HEAD
     _stiffnessMatrixRow1Prop.setValue(_stiffnessMatrix(0));
     _stiffnessMatrixRow2Prop.setValue(_stiffnessMatrix(1));
     _stiffnessMatrixRow3Prop.setValue(_stiffnessMatrix(2));
@@ -525,3 +544,19 @@ void CoupledBushingForce::updatePropertiesFromMatrices()
     _dampingMatrixRow5Prop.setValue(_dampingMatrix(4));
     _dampingMatrixRow6Prop.setValue(_dampingMatrix(5));
 }
+=======
+	_stiffnessMatrixRow1Prop.setValue(_stiffnessMatrix(0));
+	_stiffnessMatrixRow2Prop.setValue(_stiffnessMatrix(1));
+	_stiffnessMatrixRow3Prop.setValue(_stiffnessMatrix(2));
+	_stiffnessMatrixRow4Prop.setValue(_stiffnessMatrix(3));
+	_stiffnessMatrixRow5Prop.setValue(_stiffnessMatrix(4));
+	_stiffnessMatrixRow6Prop.setValue(_stiffnessMatrix(5));
+
+	_dampingMatrixRow1Prop.setValue(_dampingMatrix(0));
+	_dampingMatrixRow2Prop.setValue(_dampingMatrix(1));
+	_dampingMatrixRow3Prop.setValue(_dampingMatrix(2));
+	_dampingMatrixRow4Prop.setValue(_dampingMatrix(3));
+	_dampingMatrixRow5Prop.setValue(_dampingMatrix(4));
+	_dampingMatrixRow6Prop.setValue(_dampingMatrix(5));
+}
+>>>>>>> master

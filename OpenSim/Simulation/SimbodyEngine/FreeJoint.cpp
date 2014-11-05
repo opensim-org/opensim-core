@@ -122,6 +122,7 @@ void FreeJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 
 void FreeJoint::extendInitStateFromProperties(SimTK::State& s) const
 {
+<<<<<<< HEAD
     Super::extendInitStateFromProperties(s);
 
     const MultibodySystem& system = _model->getMultibodySystem();
@@ -142,6 +143,28 @@ void FreeJoint::extendInitStateFromProperties(SimTK::State& s) const
         FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
         matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).setQToFitTransform(s, Transform(r, t));
     }
+=======
+	Super::initStateFromProperties(s);
+
+	const MultibodySystem& system = _model->getMultibodySystem();
+	const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
+	if (!matter.getUseEulerAngles(s)){
+		int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
+
+		const CoordinateSet& coordinateSet = get_CoordinateSet();
+
+		double xangle = coordinateSet.get(zero).getDefaultValue();
+		double yangle = coordinateSet.get(1).getDefaultValue();
+		double zangle = coordinateSet.get(2).getDefaultValue();
+		Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
+		Vec3 t(coordinateSet.get(3).getDefaultValue(),
+			coordinateSet.get(4).getDefaultValue(),
+			coordinateSet.get(5).getDefaultValue());
+
+		FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
+		getChildBody().getMobilizedBody().setQToFitTransform(s, Transform(r, t));
+	}
+>>>>>>> master
 }
 
 void FreeJoint::extendSetPropertiesFromState(const SimTK::State& state)
@@ -152,8 +175,13 @@ void FreeJoint::extendSetPropertiesFromState(const SimTK::State& state)
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
+<<<<<<< HEAD
         Rotation r = matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).getMobilizerTransform(state).R();
         Vec3 t = matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).getMobilizerTransform(state).p();
+=======
+		Rotation r = getChildBody().getMobilizedBody().getMobilizerTransform(state).R();
+		Vec3 t = getChildBody().getMobilizedBody().getMobilizerTransform(state).p();
+>>>>>>> master
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
         int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
         

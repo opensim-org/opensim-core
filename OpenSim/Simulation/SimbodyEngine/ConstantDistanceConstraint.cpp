@@ -151,9 +151,15 @@ void ConstantDistanceConstraint::extendAddToSystem(SimTK::MultibodySystem& syste
 {
     Super::extendAddToSystem(system);
 
+<<<<<<< HEAD
     // Get underlying mobilized bodies
     SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body1->getMobilizedBodyIndex());
     SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body2->getMobilizedBodyIndex());
+=======
+	// Get underlying mobilized bodies
+	SimTK::MobilizedBody& b1 = _body1->updMobilizedBody();
+	SimTK::MobilizedBody& b2 = _body2->updMobilizedBody();
+>>>>>>> master
 
     // Now create a Simbody Constraint::Point
     //SimTK::Constraint::Ball simtkPoint(b1, _locationInBody1, b2, _locationInBody2);
