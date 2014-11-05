@@ -659,8 +659,8 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 
         const OpenSim::Body& orgBody = osimModel.getBodySet().get(cableInfo.orgBodyName);
         const OpenSim::Body& insBody = osimModel.getBodySet().get(cableInfo.insBodyName);
-		const MobilizedBody& orgMobBody = matter.getMobilizedBody(orgBody.getMobilizedBodyIndex());
-		const MobilizedBody& insMobBody = matter.getMobilizedBody(insBody.getMobilizedBodyIndex());
+		const MobilizedBody& orgMobBody = orgBody.getMobilizedBody();
+		const MobilizedBody& insMobBody = insBody.getMobilizedBody();
 //        cout << "origin mob idx = " << orgBody.getIndex() << endl;
 //        cout << "insertion mob idx = " << insBody.getIndex() << endl;
 
@@ -672,7 +672,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         for (int j = 0; j < cableInfo.obstacles.getSize(); ++j) {
             ObstacleInfo oi = cableInfo.obstacles[j];
             const OpenSim::Body& osBody = osimModel.getBodySet().get(oi.bodyName);
-			const MobilizedBody& mobBody = matter.getMobilizedBody(osBody.getMobilizedBodyIndex());
+			const MobilizedBody& mobBody = osBody.getMobilizedBody();
 
             if (oi.isVia) {
                 CableObstacle::ViaPoint via(path, mobBody, oi.X_BS.p());

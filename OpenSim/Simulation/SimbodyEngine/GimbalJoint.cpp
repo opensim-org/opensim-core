@@ -95,7 +95,7 @@ void GimbalJoint::initStateFromProperties(SimTK::State& s) const
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
 	
 	GimbalJoint* mutableThis = const_cast<GimbalJoint*>(this);
-	matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).setQToFitRotation(s, r);
+	getChildBody().getMobilizedBody().setQToFitRotation(s, r);
 }
 
 void GimbalJoint::setPropertiesFromState(const SimTK::State& state)
@@ -106,7 +106,7 @@ void GimbalJoint::setPropertiesFromState(const SimTK::State& state)
     const MultibodySystem&        system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-		Rotation r = matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).getBodyRotation(state);
+		Rotation r = getChildBody().getMobilizedBody().getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
 	
 		const CoordinateSet& coordinateSet = get_CoordinateSet();

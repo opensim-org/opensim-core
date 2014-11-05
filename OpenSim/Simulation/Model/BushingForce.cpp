@@ -148,8 +148,8 @@ void BushingForce::extendAddToSystem(SimTK::MultibodySystem& system) const
 	Body& body2 = _model->updBodySet().get(body2Name);
 
 	// Get underlying mobilized bodies
-	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody(body1.getMobilizedBodyIndex());
-	SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody(body2.getMobilizedBodyIndex());
+	const SimTK::MobilizedBody& b1 = body1.getMobilizedBody();
+	const SimTK::MobilizedBody& b2 = body2.getMobilizedBody();
 	// Build the transforms
 	SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(orientationInBody1);
 	SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(orientationInBody2);

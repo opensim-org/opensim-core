@@ -182,10 +182,8 @@ void PointToPointSpring::extendAddToSystem(SimTK::MultibodySystem& system) const
     const Body& body2 = getBody2();
 
     // Get underlying mobilized bodies
-    SimTK::MobilizedBody b1 = _model->getMatterSubsystem()
-                                        .getMobilizedBody(body1.getMobilizedBodyIndex());
-    SimTK::MobilizedBody b2 = _model->getMatterSubsystem()
-                                        .getMobilizedBody(body2.getMobilizedBodyIndex());
+    const SimTK::MobilizedBody& b1 = body1.getMobilizedBody();
+    const SimTK::MobilizedBody& b2 = body2.getMobilizedBody();
 
     // Now create a Simbody Force::TwoPointLinearSpring
     SimTK::Force::TwoPointLinearSpring simtkSpring

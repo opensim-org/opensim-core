@@ -165,7 +165,7 @@ void EllipsoidJoint::initStateFromProperties(SimTK::State& s) const
 			                             yangle, YAxis, zangle, ZAxis);
 
 		EllipsoidJoint* mutableThis = const_cast<EllipsoidJoint*>(this);
-		matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).setQToFitRotation(s, r);
+		getChildBody().getMobilizedBody().setQToFitRotation(s, r);
 	}
 }
 
@@ -176,8 +176,7 @@ void EllipsoidJoint::setPropertiesFromState(const SimTK::State& state)
     // Override default in case of quaternions.
     const SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-		Rotation r = matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex())
-			.getBodyRotation(state);
+        Rotation r = getChildBody().getMobilizedBody().getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
 
 		const CoordinateSet& coordinateSet = get_CoordinateSet();
