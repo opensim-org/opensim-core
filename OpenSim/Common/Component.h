@@ -890,7 +890,7 @@ template <class T> friend class ComponentMeasure;
         //your code to wipeout your connection related information
     }
     @endcode  */
-    //void extendDisconnect();
+    //virtual void extendDisconnect() {};
 
 
     /** Add appropriate Simbody elements (if needed) to the System 
@@ -955,7 +955,7 @@ template <class T> friend class ComponentMeasure;
     virtual void extendInitStateFromProperties(SimTK::State& state) const {};
 
     /** Invoke initStateFromProperties() on (sub)components of this Component */
-    void Component::componentsInitStateFromProperties(SimTK::State& state) const;
+    void componentsInitStateFromProperties(SimTK::State& state) const;
 
 
     /** Update this component's property values to match the specified State,
