@@ -234,7 +234,6 @@ void CustomJoint::constructCoordinates()
 //_____________________________________________________________________________
 void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-<<<<<<< HEAD
     SimTK::MobilizedBody inb;
     SimTK::Body outb;
     const SimTK::Transform* inbX = &getParentTransform();
@@ -244,8 +243,7 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
     // of inboard and outboard bodies, although the joint direction will be 
     // preserved, the inboard must exist first.
     if (get_reverse()){
-        inb = system.updMatterSubsystem().updMobilizedBody(
-            getChildBody().getMobilizedBodyIndex());
+        inb = getChildBody().getMobilizedBody();
         inbX = &getChildTransform();
 
         outb = getParentInternalRigidBody();
@@ -254,8 +252,7 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
         mobilized = &getParentBody();
     }
     else{
-        inb = system.updMatterSubsystem().updMobilizedBody(
-            getParentBody().getMobilizedBodyIndex());
+        inb = getParentBody().getMobilizedBody();
         outb = getChildInternalRigidBody();
     }
 
@@ -270,41 +267,7 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 
     SimTK_ASSERT1(numMobilities > 0,
         "%s must have 1 or more mobilities (dofs).",
-=======
-	SimTK::MobilizedBody inb;
-	SimTK::Body outb;
-	const SimTK::Transform* inbX = &getParentTransform();
-	const SimTK::Transform* outbX = &getChildTransform();
-	const OpenSim::Body* mobilized = &getChildBody();
-	// if the joint is reversed then flip the underlying tree representation
-	// of inboard and outboard bodies, although the joint direction will be 
-	// preserved, the inboard must exist first.
-	if (get_reverse()){
-        inb = getChildBody().getMobilizedBody();
-		inbX = &getChildTransform();
 
-		outb = getParentInternalRigidBody();
-		outbX = &getParentTransform();
-
-		mobilized = &getParentBody();
-	}
-	else{
-        inb = getParentBody().getMobilizedBody();
-		outb = getChildInternalRigidBody();
-	}
-
-	const CoordinateSet& coords = get_CoordinateSet();
-	// Some initializations
-	int numMobilities = coords.getSize();  // Note- should check that all coordinates are used.
-	std::vector<std::vector<int> > coordinateIndices =
-		getSpatialTransform().getCoordinateIndices();
-	std::vector<const SimTK::Function*> functions =
-		getSpatialTransform().getFunctions();
-	std::vector<Vec3> axes = getSpatialTransform().getAxes();
-
-	SimTK_ASSERT1(numMobilities > 0,
-		"%s must have 1 or more mobilities (dofs).",
->>>>>>> master
                   getConcreteClassName().c_str());
     SimTK_ASSERT1(numMobilities <= 6,
         "%s cannot exceed 6 mobilities (dofs).",

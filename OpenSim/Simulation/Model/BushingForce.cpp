@@ -133,7 +133,6 @@ void BushingForce::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
 
-<<<<<<< HEAD
     const string&      body1Name            = get_body_1();
     const string&      body2Name            = get_body_2();
     const SimTK::Vec3& locationInBody1      = get_location_body_1();
@@ -149,8 +148,8 @@ void BushingForce::extendAddToSystem(SimTK::MultibodySystem& system) const
     Body& body2 = _model->updBodySet().get(body2Name);
 
     // Get underlying mobilized bodies
-    SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody(body1.getMobilizedBodyIndex());
-    SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody(body2.getMobilizedBodyIndex());
+    const SimTK::MobilizedBody& b1 = body1.getMobilizedBody();
+    const SimTK::MobilizedBody& b2 = body2.getMobilizedBody();
     // Build the transforms
     SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(orientationInBody1);
     SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(orientationInBody2);
@@ -158,32 +157,6 @@ void BushingForce::extendAddToSystem(SimTK::MultibodySystem& system) const
     SimTK::Transform inb2(r2, locationInBody2);
 
     Vec6 stiffness(rotStiffness[0], rotStiffness[1], rotStiffness[2], 
-=======
-	const string&      body1Name            = get_body_1();
-	const string&      body2Name            = get_body_2();
-	const SimTK::Vec3& locationInBody1      = get_location_body_1();
-	const SimTK::Vec3& orientationInBody1   = get_orientation_body_1();
-	const SimTK::Vec3& locationInBody2      = get_location_body_2();
-	const SimTK::Vec3& orientationInBody2   = get_orientation_body_2();
-	const SimTK::Vec3& rotStiffness         = get_rotational_stiffness();
-	const SimTK::Vec3& transStiffness       = get_translational_stiffness();
-	const SimTK::Vec3& rotDamping           = get_rotational_damping();
-	const SimTK::Vec3& transDamping         = get_translational_damping();
-
-	Body& body1 = _model->updBodySet().get(body1Name);
-	Body& body2 = _model->updBodySet().get(body2Name);
-
-	// Get underlying mobilized bodies
-	const SimTK::MobilizedBody& b1 = body1.getMobilizedBody();
-	const SimTK::MobilizedBody& b2 = body2.getMobilizedBody();
-	// Build the transforms
-	SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(orientationInBody1);
-	SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(orientationInBody2);
-	SimTK::Transform inb1(r1, locationInBody1);
-	SimTK::Transform inb2(r2, locationInBody2);
-
-	Vec6 stiffness(rotStiffness[0], rotStiffness[1], rotStiffness[2], 
->>>>>>> master
                    transStiffness[0], transStiffness[1], transStiffness[2]);
     Vec6 damping(rotDamping[0], rotDamping[1], rotDamping[2], 
                  transDamping[0], transDamping[1], transDamping[2]);

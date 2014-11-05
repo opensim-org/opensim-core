@@ -95,15 +95,8 @@ void BallJoint::extendInitStateFromProperties(SimTK::State& s) const
     double yangle = coordinateSet[1].getDefaultValue();
     double zangle = coordinateSet[2].getDefaultValue();
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
-<<<<<<< HEAD
-    
     BallJoint* mutableThis = const_cast<BallJoint*>(this);
-    matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).setQToFitRotation(s, r);
-=======
-	
-	BallJoint* mutableThis = const_cast<BallJoint*>(this);
-	getChildBody().getMobilizedBody().setQToFitRotation(s, r);
->>>>>>> master
+    getChildBody().getMobilizedBody().setQToFitRotation(s, r);
 }
 
 void BallJoint::extendSetPropertiesFromState(const SimTK::State& state)
@@ -114,11 +107,7 @@ void BallJoint::extendSetPropertiesFromState(const SimTK::State& state)
     const MultibodySystem&        system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-<<<<<<< HEAD
-        Rotation r = matter.getMobilizedBody(MobilizedBodyIndex(getChildBody().getMobilizedBodyIndex())).getBodyRotation(state);
-=======
-		Rotation r = getChildBody().getMobilizedBody().getBodyRotation(state);
->>>>>>> master
+        Rotation r = getChildBody().getMobilizedBody().getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
     
         const CoordinateSet& coordinateSet = get_CoordinateSet();
