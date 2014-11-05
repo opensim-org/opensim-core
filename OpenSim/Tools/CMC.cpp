@@ -1083,14 +1083,9 @@ void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
 	double *val = &controls[0];
 }
 
-void CMC::setActuators( const Set<Actuator>& actSet ) 
-{
-	Super::setActuators(actSet);
-}
-
 // for any post XML deserialization intialization
-void CMC::connectToModel(Model& model)   {
-
+void CMC::connectToModel(Model& model)
+{
 	Super::connectToModel(model);
 
 	// STORAGE
@@ -1109,9 +1104,9 @@ void CMC::connectToModel(Model& model)   {
 
 }
 // for adding any components to the model
-void CMC::addToSystem( SimTK::MultibodySystem& system)  const
+void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
 	// add event handler for updating controls for next window 
 	CMC* mutableThis = const_cast<CMC *>(this);
@@ -1120,7 +1115,8 @@ void CMC::addToSystem( SimTK::MultibodySystem& system)  const
 
 	system.updDefaultSubsystem().addEventHandler(computeControlsHandler );
 
-	int nActs = getActuatorSet().getSize();
+	const Set<Actuator>& fSet = getActuatorSet();
+	int nActs = fSet.getSize();
 
 	mutableThis->_controlSetIndices.setSize(nActs);
 
@@ -1133,21 +1129,24 @@ void CMC::addToSystem( SimTK::MultibodySystem& system)  const
 	double xmin =0, xmax=0;
 
 	std::string actName = "";
+	
 	for(int i=0; i < nActs; ++i ) {
-        Actuator& act = getActuatorSet().get(i);
+
+		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+        //Actuator& act = getActuatorSet().get(i);
 
         ControlLinear *control = new ControlLinear();
-        control->setName(act.getName() + ".excitation" );
+        control->setName(act->getName() + ".excitation" );
 
-		xmin = act.getMinControl();
+		xmin = act->getMinControl();
 		if (xmin ==-SimTK::Infinity)
 			xmin =-MAX_CONTROLS_FOR_RRA;
 		
-		xmax =  act.getMaxControl();
+		xmax =  act->getMaxControl();
 		if (xmax ==SimTK::Infinity)
 			xmax =MAX_CONTROLS_FOR_RRA;
 
-		Muscle *musc = dynamic_cast<Muscle *>(&act);
+		Muscle *musc = dynamic_cast<Muscle *>(act);
 		// if controlling muscles, CMC requires that the control be constant (i.e. piecewise constant or use steps)
 		// since it uses this assumption to rootsolve for the required controls over the CMC time-window.
 		if(musc){

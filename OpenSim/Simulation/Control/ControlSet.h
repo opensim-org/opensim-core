@@ -1,5 +1,5 @@
-#ifndef _ControlSet_h_
-#define _ControlSet_h_
+#ifndef OPENSIM_CONTROL_SET_H_
+#define OPENSIM_CONTROL_SET_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  ControlSet.h                           *
  * -------------------------------------------------------------------------- *
@@ -37,6 +37,10 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
+class ControlLinear;
+
 /**
  * A class for holding and managing a set of controls for a dynamic
  * simulation.
@@ -44,10 +48,6 @@
  * @author Frank C. Anderson
  * @version 1.0
  */
-namespace OpenSim { 
-
-class ControlLinear;
-
 class OSIMSIMULATION_API ControlSet : public Set<Control> {
 OpenSim_DECLARE_CONCRETE_OBJECT(ControlSet, Set<Control>);
 
@@ -146,6 +146,6 @@ public:
 //=============================================================================
 
 
-#endif // __ControlSet_h__
+#endif // OPENSIM_CONTROL_SET_H_
 
 

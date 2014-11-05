@@ -47,9 +47,9 @@ ElasticFoundationForce::ElasticFoundationForce(ContactParameters* params)
     addContactParameters(params);
 }
 
-void ElasticFoundationForce::addToSystem(SimTK::MultibodySystem& system) const
+void ElasticFoundationForce::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     const ContactParametersSet& contactParametersSet = 
         get_contact_parameters();
@@ -71,7 +71,7 @@ void ElasticFoundationForce::addToSystem(SimTK::MultibodySystem& system) const
 		        throw (Exception(errorMessage.c_str()));
 	        }
 	        ContactGeometry& geom = _model->updContactGeometrySet().get(params.getGeometry()[j]);
-            contacts.addBody(set, matter.updMobilizedBody(SimTK::MobilizedBodyIndex(geom.getBody().getIndex())), geom.createSimTKContactGeometry(), geom.getTransform());
+			contacts.addBody(set, matter.updMobilizedBody(SimTK::MobilizedBodyIndex(geom.getBody().getMobilizedBodyIndex())), geom.createSimTKContactGeometry(), geom.getTransform());
             if (dynamic_cast<ContactMesh*>(&geom) != NULL)
                 force.setBodyParameters(SimTK::ContactSurfaceIndex(contacts.getNumBodies(set)-1), 
                     params.getStiffness(), params.getDissipation(),
@@ -347,8 +347,8 @@ OpenSim::Array<double> ElasticFoundationForce::getRecordValues(const SimTK::Stat
 			ContactGeometry& geom = _model->updContactGeometrySet().get(params.getGeometry()[j]);
 			std::string bodyName = geom.getBodyName();
 	
-			SimTK::Vec3 forces = bodyForces(_model->getBodySet().get(bodyName).getIndex())[1];
-			SimTK::Vec3 torques = bodyForces(_model->getBodySet().get(bodyName).getIndex())[0];
+			SimTK::Vec3 forces = bodyForces(_model->getBodySet().get(bodyName).getMobilizedBodyIndex())[1];
+			SimTK::Vec3 torques = bodyForces(_model->getBodySet().get(bodyName).getMobilizedBodyIndex())[0];
 
 			values.append(3, &forces[0]);
 			values.append(3, &torques[0]);

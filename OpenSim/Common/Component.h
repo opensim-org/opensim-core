@@ -137,7 +137,7 @@ namespace OpenSim {
  * The Component interface is automatically invoked by the System and its 
  * realizations. Component users and most developers need not concern themselves
  * with \c Topology, \c %Model or \c Instance stages. That interaction is managed
- * by Component when component creators implement addToSystem() and use the 
+ * by Component when component creators implement extendAddToSystem() and use the 
  * services provided by Component. Component creators do need to determine and 
  * specify stage dependencies for Discrete and CacheVariables that they add to 
  * their components. For example, the throttle controller reads its value from
@@ -166,7 +166,7 @@ namespace OpenSim {
  *
  * The primary responsibility of a Component is to add its computational 
  * representation(s) to the underlying SimTK::System by implementing
- * addToSystem().
+ * extendAddToSystem().
  *
  * Additional methods provide support for adding modeling options, state and
  * cache variables.
@@ -216,6 +216,9 @@ public:
     /** Destructor is virtual to allow concrete Component to cleanup. **/
 	virtual ~Component() {}
 
+    /** Have the Component add itself to the underlying computational System */
+    void addToSystem(SimTK::MultibodySystem& system) const;
+
 	/**
      * Get the underlying MultibodySystem that this component is connected to.
      */
@@ -254,9 +257,200 @@ public:
      */
     Array<std::string> getStateVariableNames() const;
 
+    /** @name Component Connector Access methods
+        Access Connectors of this component in a generic way and also by name.
+    */
+    //@{ 
+    
+    /** Access the number of Connectors that this component has. 
+        Get the number of Connectors and then access a Connector by index.
+        For example:
+        @code
+        for (int i = 0; i < myComp.getNumConnectors(); ++i){
+        const AbstractConnector& connector = myComp.getConnector(i);
+        // check status: e.g. is it connected?
+        ...
+        AbstractConnector& connector = myComp.updConnector(i);
+        // change the status: e.g. disconnect or change/define connectee;
+        }
+        @endcode
+        @see getNumConnectors()
+        @see getConnector(int i);
+    */
+    int getNumConnectors() const {
+        return getProperty_connectors().size();
+    }
 
-   /** @name Component State Access methods
-     * Get and set modeling option, state, discrete and/or cache variables in the State
+    /** Access a read-only Connector by index.
+    @see getNumConnectors()
+    */
+    const AbstractConnector& getConnector(int i) const {
+        return get_connectors(i);
+    }
+
+    /** Access a writeable Connector by index.
+    @see getNumConnectors()
+    */
+    AbstractConnector& updConnector(int i) {
+        return upd_connectors(i);
+    }
+
+    /**
+    * Get the Connector provided by this Component by name.
+    *
+    * @param name		the name of the Connector
+    * @return const reference to the (Abstract)Connector
+    */
+    template<typename T> Connector<T>&
+        updConnector(const std::string& name)
+    {
+            return *const_cast<Connector<T>*>(&getConnector<T>(name));
+    }
+
+    template<typename T>
+    const Connector<T>& getConnector(const std::string& name) const
+    {
+        const AbstractConnector* found = findConnector(name);
+
+        if (!found){
+            std::stringstream msg;
+            msg << "Component::getConnector: ERR- no Connector '" << name << "' found.\n "
+                << "for component '" << getName() << "' of type "
+                << getConcreteClassName();
+            throw Exception(msg.str(), __FILE__, __LINE__);
+        }
+
+        return (Connector<T>::downcast(*found));
+    }
+
+    /**
+    * Get the "connectee" object that the Component's Connector
+    * is bound to. Guaranteed to be valid only after the Component
+    * has been connected (that is connect() has been invoked).
+    * If Connector has not been connected an exception is thrown.
+    *
+    * @param name		the name of the connector
+    * @return T   	    const reference to object that satisfies
+    *                   the Connector
+    */
+    template<typename T>
+    const T& getConnectee(const std::string& name) const	{
+        // get the Connector and check if it is connected.
+        const AbstractConnector& connector = getConnector<T>(name);
+        if (connector.isConnected()){
+            return (Connector<T>::downcast(connector)).getConnectee();
+        }
+        else{
+            std::stringstream msg;
+            msg << "Component::getConnection() ERR- Connector '" << name << "' not connected.\n "
+                << "for component '" << getName() << "' of type " << getConcreteClassName();
+            throw Exception(msg.str(), __FILE__, __LINE__);
+        }
+    }
+    //@} end of Component Connector Access methods
+
+    /** Define OutputsIterator for convenience */
+    typedef std::map<std::string, std::unique_ptr<const AbstractOutput> >::
+        const_iterator OutputsIterator;
+
+    /** @name Component Inputs and Outputs Access methods
+        Access inputs and ouputs by name and iterate over all outputs.
+    */
+    //@{ 
+
+    /**
+    * Get the Input provided by this Component by name.
+    *
+    * @param name   the name of the Input
+    * @return       const reference to the AbstractInput
+    */
+    const AbstractInput& getInput(const std::string& name) const
+    {
+        auto it = _inputsTable.find(name);
+
+        if (it != _inputsTable.end()) {
+            return *it->second;
+        }
+        else {
+            std::string::size_type back = name.rfind("/");
+            std::string prefix = name.substr(0, back);
+            std::string inName = name.substr(back + 1, name.length() - back);
+
+            const Component* found = findComponent(prefix);
+            if (found)
+                return found->getInput(inName);
+        }
+        std::stringstream msg;
+        msg << "Component::getInput: ERR- no input '" << name << "' found.\n "
+            << "for component '" << getName() << "' of type "
+            << getConcreteClassName();
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
+
+    /**
+    * Get the Output provided by this Component by name.
+    *
+    * @param name   the name of the cache variable
+    * @return       const reference to the AbstractOutput
+    */
+    const AbstractOutput& getOutput(const std::string& name) const
+    {
+        auto it = _outputsTable.find(name);
+
+        if (it != _outputsTable.end()) {
+            return *it->second;
+        }
+        else {
+            std::string::size_type back = name.rfind("/");
+            std::string prefix = name.substr(0, back);
+            std::string outName = name.substr(back + 1, name.length() - back);
+
+            const Component* found = findComponent(prefix);
+            // if found is this component again, no point trying to find
+            // output again, otherwise we would not have reached here 
+            if (found && (found != this)) {
+                return found->getOutput(outName);
+            }
+        }
+
+        std::stringstream msg;
+        msg << "Component::getOutput: ERR-  no output '" << name << "' found.\n "
+            << "for component '" << getName() << "' of type "
+            << getConcreteClassName();
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
+
+    /** An iterator to traverse all the Outputs of this component, pointing at the
+    * first Output. This can be used in a loop as such:
+    *
+    *  @code
+    *  OutputsIterator it;
+    *  for (it = myComp.getOutputsBegin(); it != myComp.getOutputsEnd(); it++)
+    *  { ... }
+    *  @endcode
+    *
+    * @see getOutputsEnd()
+    */
+    OutputsIterator getOutputsBegin() const {
+        return _outputsTable.begin();
+    }
+
+    /** An iterator for the map of Outputs of this component, pointing at the
+    * end of the map. This can be used in a loop as such:
+    *
+    * @see getOutputsBegin()
+    */
+    OutputsIterator getOutputsEnd() const {
+        return _outputsTable.end();
+    }
+
+    //@} end of Component Inputs and Outputs Access methods
+
+
+
+    /** @name Component State Access methods
+        Get and set modeling option, input and output values, state variable, 
+        discrete and/or cache variables in the State.
      */ 
     //@{
     
@@ -284,89 +478,6 @@ public:
     void setModelingOption(SimTK::State& state, const std::string& name, int flag) const;
 
 	/**
-	* Get the Connector provided by this Component by name.
-	*
-	* @param name		the name of the Connector
-	* @return const reference to the (Abstract)Connector
-	*/
-	template<typename T> Connector<T>& 
-		updConnector(const std::string& name) 
-	{
-		return *const_cast<Connector<T>*>(&getConnector<T>(name));
-	}
-
-	template<typename T> 
-	const Connector<T>& getConnector(const std::string& name) const
-	{
-		const AbstractConnector* found = findConnector(name);
-
-		if (!found){
-			std::stringstream msg;
-			msg << "Component::getConnector: ERR- no Connector '" << name << "' found.\n "
-				<< "for component '" << getName() << "' of type "
-				<< getConcreteClassName();
-			throw Exception(msg.str(), __FILE__, __LINE__);
-		}
-
-		return (Connector<T>::downcast(*found));
-	}
-
-	/**
-	* Get the "connectee" object that the Component's Connector
-	* is bound to. Gauranteed to be valid only after the Component
-	* has been connected (that is connect() has been invoked).
-	* If Connector has not been connected an exception is thrown.
-	*
-	* @param name		the name of the connector
-	* @return T   	    const reference to object that satisfies
-	*                   the Connector
-	*/
-	template<typename T>
-	const T& getConnectee(const std::string& name) const	{
-		// get the Connector and check if it is connected.
-		const AbstractConnector& connector = getConnector<T>(name);
-		if (connector.isConnected()){
-			return (Connector<T>::downcast(connector)).getConnectee();
-		}
-		else{
-			std::stringstream msg;
-			msg << "Component::getConnection() ERR- Connector '" << name << "' not connected.\n "
-				<< "for component '" << getName() << "' of type " << getConcreteClassName();
-			throw Exception(msg.str(), __FILE__, __LINE__);
-		}
-	}
-
-	/**
-	* Get the Input provided by this Component by name.
-	*
-	* @param name		the name of the input
-	* @return input	const reference to the AbstractInput
-	*/
-	const AbstractInput& getInput(const std::string& name) const
-	{
-		auto it = _inputsTable.find(name);
-
-		if (it != _inputsTable.end()) {
-			return *it->second;
-		}
-		else {
-			std::string::size_type back = name.rfind("/");
-			std::string prefix = name.substr(0, back);
-			std::string inName = name.substr(back + 1, name.length() - back);
-
-			const Component* found = findComponent(prefix);
-			if (found)
-				return found->getInput(inName);
-		}
-
-		std::stringstream msg;
-		msg << "Component::getInput: ERR- no input '" << name <<"' found.\n "
-				<< "for component '" << getName() << "' of type "
-				<< getConcreteClassName();
-		throw Exception(msg.str(), __FILE__, __LINE__);
-	}
-
-	/**
 	* Get the Input value that this component is dependent on.
 	* Check if Input is connected, otherwise it will throw an
 	* exception.
@@ -390,70 +501,6 @@ public:
 		}
 	}
 
-    /** An iterator for the map of Outputs of this component, pointing at the
-     * beginning of the map. This can be used in a loop as such:
-     *
-     *  @code
-     *  std::map<std::string, const AbstractOutput*>::const_iterator it;
-     *  for (it = myComp.getOutputsBegin(); it != myComp.getOutputsEnd(); it++)
-     *  { ... }
-	 *  @endcode
-     *
-     * @see getOutputsEnd()
-     */
-    std::map<std::string, std::unique_ptr<const AbstractOutput>
-        >::const_iterator
-        getOutputsBegin() const
-    {
-        return _outputsTable.begin();
-    }
-
-    /** An iterator for the map of Outputs of this component, pointing at the
-     * end of the map. This can be used in a loop as such:
-     *
-     * @see getOutputsBegin()
-     */
-    std::map<std::string, std::unique_ptr<const AbstractOutput>
-        >::const_iterator
-        getOutputsEnd() const
-    {
-        return _outputsTable.end();
-    }
-
-
-	/**
-	* Get the Output provided by this Component by name.
-	*
-	* @param name   the name of the cache variable
-	* @return       const reference to the AbstractOutput
-	*/
-	const AbstractOutput& getOutput(const std::string& name) const
-	{
-		auto it = _outputsTable.find(name);
-
-		if (it != _outputsTable.end()) {
-			return *it->second;
-		}
-		else {
-			std::string::size_type back = name.rfind("/");
-			std::string prefix = name.substr(0, back);
-			std::string outName = name.substr(back+1, name.length()-back);
-
-			const Component* found = findComponent(prefix);
-			// if found is this component again, no point trying to find
-			// output again, otherwise we would not have reached here 
-			if (found && (found != this)) { 
-				return found->getOutput(outName);
-			}
-		}
-
-		std::stringstream msg;
-		msg << "Component::getOutput: ERR-  no output '" << name << "' found.\n "
-			<< "for component '" << getName() << "' of type "
-			<< getConcreteClassName();
-		throw Exception(msg.str(), __FILE__, __LINE__);
-	}
-
 	/**
 	* Get the Output value provided by this Component by name.
 	*
@@ -468,7 +515,7 @@ public:
 	}
 	
 	
-	/**
+    /**
      * Get the value of a state variable allocated by this Component.
      *
      * To connect this StateVariable as an input to another component (such as
@@ -476,14 +523,14 @@ public:
      * corresponding Output:
      *  @code
      *  foo.getInput("input1").connect(bar.getOutput(name));
-	 *  @endcode
+     *  @endcode
      *
      * @param state   the State for which to get the value
      * @param name    the name (string) of the state variable of interest
      */
     double getStateVariable(const SimTK::State& state, const std::string& name) const;
 
-	/**
+    /**
      * Set the value of a state variable allocated by this Component by name.
      *
      * @param state  the State for which to set the value
@@ -493,34 +540,34 @@ public:
     void setStateVariable(SimTK::State& state, const std::string& name, double value) const;
 
 
-	/**
+    /**
      * Get all values of the state variables allocated by this Component.
-	 * Includes state variables allocated by its subcomponents.
+     * Includes state variables allocated by its subcomponents.
      *
      * @param state   the State for which to get the value
      * @return Vector of state variable values of length getNumStateVariables()
-	 *                in the order returned by getStateVariableNames()
+     *                in the order returned by getStateVariableNames()
      */
-	SimTK::Vector getStateVariableValues(const SimTK::State& state) const;
+    SimTK::Vector getStateVariableValues(const SimTK::State& state) const;
 
-	/**
+    /**
      * Set all values of the state variables allocated by this Component.
-	 * Includes state variables allocated by its subcomponents.
+     * Includes state variables allocated by its subcomponents.
      *
      * @param state   the State for which to get the value
      * @param values  Vector of state variable values of length getNumStateVariables()
-	 *                in the order returned by getStateVariableNames()
+     *                in the order returned by getStateVariableNames()
      */
-	void setStateVariableValues(SimTK::State& state, const SimTK::Vector& values);
+    void setStateVariableValues(SimTK::State& state, const SimTK::Vector& values);
 
-	/**
+    /**
      * Get the value of a state variable derivative computed by this Component.
      *
      * @param state   the State for which to get the derivative value
      * @param name    the name (string) of the state variable of interest
      */
     double getStateVariableDerivative(const SimTK::State& state, 
-		const std::string& name) const;
+        const std::string& name) const;
 
     /**
      * Get the value of a discrete variable allocated by this Component by name.
@@ -735,7 +782,7 @@ template <class T> friend class ComponentMeasure;
 	 Override the corresponding private virtual method to customize any of them. */ 
 	void constructInfrastructure() {
 		constructProperties();
-		constructStructuralConnectors();
+		constructConnectors();
 		constructInputs();
 		constructOutputs();
 	}
@@ -789,7 +836,7 @@ template <class T> friend class ComponentMeasure;
 	virtual void finalizeFromProperties();
 
     /** Perform any necessary initializations required to connect the component
-    (including it subcomponents) to other components and mark the connection status.
+    (and it subcomponents) to other components and mark the connection status.
 	Provides a check for error conditions. connect() is invoked on all components 
 	to form a directed acyclic graph of the multibody system, prior to creating the
 	Simbody MultibodySystem to represent it computationally. It may also be invoked
@@ -798,7 +845,7 @@ template <class T> friend class ComponentMeasure;
 	The "root" Component argument is the root node of the directed graph composed
 	of all the subcomponents (and their subcomponents and so on ...) and their
 	interconnections. This should yield a fully connected root component. For 
-	ModelComponents	this is the Model component. But a Model can be connected to
+	ModelComponents this is the Model component. But a Model can be connected to
 	an environment or world component with several other models, by choosing the
 	environment/world as the root.
     
@@ -812,58 +859,67 @@ template <class T> friend class ComponentMeasure;
     @endcode   */
 	virtual void connect(Component &root);
 
-	/** Opportunity to remove connection related information. 
-	If you override this method, be sure to invoke the base class method first,
-		using code like this :
-		@code
-		void MyComponent::disconnect(Component& root) {
-			// disconnect your subcomponents first
-			Super::disconnect(); 
-			//your code to wipeout your connection related information
-	}
-	@endcode  */
-	virtual void disconnect();
+    /** Opportunity to remove connection related information. 
+    If you override this method, be sure to invoke the base class method first,
+    using code like this :
+    @code
+        void MyComponent::disconnect(Component& root) {
+        // disconnect your subcomponents and your Super first
+        Super::disconnect(); 
+        //your code to wipeout your connection related information
+    }
+    @endcode  */
+    virtual void disconnect();
 
 
     /** Add appropriate Simbody elements (if needed) to the System 
     corresponding to this component and specify needed state resources. 
-    addToSystem() is called when the Simbody System is being created to 
+    extendAddToSystem() is called when the Simbody System is being created to 
     represent a completed system (model) for computation. That is, connect()
-    will already have been invoked on all components before any addToSystem()
+    will already have been invoked on all components before any extendAddToSystem()
     call is made. Helper methods for adding modeling options, state variables 
     and their derivatives, discrete variables, and cache entries are available 
-    and can be called within addToSystem() only.
+    and can be called within extendAddToSystem() only.
 
-    Note that this method is const; you must not modify your model component
+    Note that this method is const; you may not modify your model component
     or the containing model during this call. Any modifications you need should
     instead be performed in finalizeFromProperties() or at the latest connect(),
-	which are non-const. The only exception is that you may need to record access 
-	information for resources you create in the \a system, such as an index number.
-	You should declare those data members mutable so that you can set them here.
-	For common Components, OpenSim base classes either provide convenience methods
-	or handle indices automatically. 
+    which are non-const. The only exception is that you may need to record access 
+    information for resources you create in the \a system, such as an index number.
+    For most Components, OpenSim base classes either provide convenience methods
+    or handle indices automatically. Otherwise, you must declare indices as mutable
+    data members so that you can set them here.
    
     If you override this method, be sure to invoke the base class method at the
-    end, using code like this:
+    beginning, using code like this:
     @code
-    void MyComponent::addToSystem(SimTK::MultibodySystem& system) const {
-		// ... your code goes here
-		// call Super class to invoke method on subcomponents
-        Super::addToSystem(system);       
+    void MyComponent::extendAddToSystem(SimTK::MultibodySystem& system) const {
+        // Perform any additions to the system required by your Super
+        Super::extendAddToSystem(system);       
+        // ... your code goes here
     }
     @endcode
 
-    @param[in,out] system   The System being created.
+    @param[in,out] system   The MultibodySystem being added to.
 
     @see addModelingOption(), addStateVariable(), addDiscreteVariables(), 
          addCacheVariable() **/
-    virtual void addToSystem(SimTK::MultibodySystem& system) const;
+    virtual void extendAddToSystem(SimTK::MultibodySystem& system) const {};
+
+    /** Invoke extendAddToSystem() on the sub-components of this Component.
+    Concrete Components can choose when to add their (sub)components according
+    to the needs of the Component. Typically, we add the components to the system
+    prior to this Component. In some instances, such as a Joint, the Coordinate 
+    components cannot be added until the Joint has added its underlying 
+    representation to the system and obtained information (index) the Coordinate
+    needs to access its values.*/
+    void componentsAddToSystem(SimTK::MultibodySystem& system) const;
 
 
     /** Transfer property values or other state-independent initial values
     into this component's state variables in the passed-in \a state argument.
     This is called after a SimTK::System and State have been created for the 
-    Model (that is, after addToSystem() has been called on all components). 
+    Model (that is, after extendAddToSystem() has been called on all components). 
     You should override this method if your component has properties
     (serializable values) that can affect initial values for your state
     variables. You can also perform any other state-independent calculations
@@ -909,7 +965,7 @@ template <class T> friend class ComponentMeasure;
     using the addStateVariable() method, then %computeStateVariableDerivatives()
     must be implemented to provide time derivatives for those states.
     Override to set the derivatives of state variables added to the system 
-	by this component. (also see addToSystem()). If the component adds states
+	by this component. (also see extendAddToSystem()). If the component adds states
 	and computeStateVariableDerivatives is not implemented by the component,
 	an exception is thrown when the system tries to evaluate its derivates.
 
@@ -1009,12 +1065,12 @@ template <class T> friend class ComponentMeasure;
     /** Perform computations that may depend on anything but are only used
     for reporting and cannot affect subsequent simulation behavior. **/
     virtual void realizeReport(const SimTK::State& state) const;
-    //@}
+    //@} end of Component Advanced Interface
 
 
     /** @name     Component System Creation and Access Methods
      * These methods support implementing concrete Components. Add methods
-     * can only be called inside of addToSystem() and are useful for creating
+     * can only be called inside of extendAddToSystem() and are useful for creating
      * the underlying SimTK::System level variables that are used for computing
      * values of interest.
      * @warning Accessors for System indices are intended for component internal use only.
@@ -1028,7 +1084,7 @@ template <class T> friend class ComponentMeasure;
 	* message if the provided Component is incompatible or non-existant.
 	*/
 	template <typename T>
-	void constructStructuralConnector(const std::string& name) {
+	void constructConnector(const std::string& name) {
 		int ix = updProperty_connectors().adoptAndAppendValue(
 			new Connector<T>(name, SimTK::Stage::Topology));
 		//add pointer to connectorsTable so we can access connectors easily by name
@@ -1111,7 +1167,7 @@ template <class T> friend class ComponentMeasure;
     
 	/**
      * Add another Component as a subcomponent of this Component.
-     * Component methods (e.g. addToSystem(), initStateFromProperties(), ...) are 
+     * Component methods (e.g. extendAddToSystem(), initStateFromProperties(), ...) are 
      * therefore invoked on subcomponents when called on this Component. Realization is 
      * also performed automatically on subcomponents. This Component does not take 
 	 * ownership of designated subcomponents and does not destroy them when the Component.
@@ -1298,7 +1354,7 @@ private:
 	//Connectors are resolved in Component's connect().
 	//constructStructuralDependencies is a series of calls to constrcuctConnector()
 	//which adds a component by name and type to a dependency Connectors table.
-	virtual void constructStructuralConnectors() {}
+	virtual void constructConnectors() {}
 
 	//Construct the table of Inputs for this component. A Component::Input is a
 	//dependency on the Output of another Component. Unlike a structural 
@@ -1426,6 +1482,9 @@ protected:
 
 private:
 	class Connection;
+
+    /// Base Component musct create underlying resources in computational System */
+    void baseAddToSystem(SimTK::MultibodySystem& system) const;
 	
 	// Reference pointer to the system that this component belongs to.
 	SimTK::ReferencePtr<SimTK::MultibodySystem> _system;
@@ -1447,7 +1506,7 @@ private:
     // Underlying SimTK custom measure ComponentMeasure, which implements
     // the realizations in the subsystem by calling private concrete methods on
     // the Component. Every model component has one of these, allocated
-    // in its addToSystem() method, and placed in the System's default subsystem.
+    // in its extendAddToSystem() method, and placed in the System's default subsystem.
     SimTK::MeasureIndex  _simTKcomponentIndex;
 
     // Structure to hold modeling option information. Modeling options are
@@ -1548,12 +1607,12 @@ private:
 
     // Map names of modeling options for the Component to their underlying
     // SimTK indices.
-    // These are mutable here so they can ONLY be modified in addToSystem().
+    // These are mutable here so they can ONLY be modified in extendAddToSystem().
     // This is not an API bug. The purpose of these maps is to automate the 
 	// bookkeeping of component variables (state variables and cache entries) with 
 	// their index in the computational system. The earliest time we have a valid 
 	// index is when we ask the system to allocate the resources and that only
-	// happens in addToSystem. Furthermore, addToSystem may not alter the Component
+	// happens in extendAddToSystem. Furthermore, extendAddToSystem may not alter the Component
 	// in any way that would effect its behavior- that is why it it const!
 	// The setting of the variable indices is not in the public interface and is 
 	// not polymorphic.

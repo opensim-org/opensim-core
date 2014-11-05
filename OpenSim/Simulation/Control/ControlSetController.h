@@ -1,3 +1,6 @@
+#ifndef OPENSIM_CONTROL_SET_CONTROLLER_H_
+#define OPENSIM_CONTROL_SET_CONTROLLER_H_
+
 /* -------------------------------------------------------------------------- *
  *                      OpenSim:  ControlSetController.h                      *
  * -------------------------------------------------------------------------- *
@@ -21,16 +24,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//=============================================================================
-//=============================================================================
-/**
- * ControllerSetController that simply assigns controls from a ControlSet
- * @author Jack Middleton, Ajay Seth 
- * @version 1.0
- */
-
-#ifndef _Control_Set_Controller_h_
-#define _Control_Set_Controller_h_
 
 //============================================================================
 // INCLUDE
@@ -46,12 +39,17 @@
 #include "Controller.h"
 #include "SimTKsimbody.h"
 
-
-
+//=============================================================================
+//=============================================================================
 namespace OpenSim { 
 
 class ControlSet;
 
+/**
+ * ControlSetController that simply assigns controls from a ControlSet
+ * @author Jack Middleton, Ajay Seth 
+ * @version 1.0
+ */
 class OSIMSIMULATION_API ControlSetController : public Controller {
 OpenSim_DECLARE_CONCRETE_OBJECT(ControlSetController, Controller);
 
@@ -117,13 +115,7 @@ protected:
 	void copyData(const ControlSetController &aController);
 
 	// for any post XML deserialization intialization
-	void connectToModel(Model& model) override;
-
-	// for adding any components to the model
-	void addToSystem( SimTK::MultibodySystem& system) const override; 
-
-	// for any intialization requiring a state or the complete system 
-	void initStateFromProperties( SimTK::State& s) const override;
+    void finalizeFromProperties() override;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -169,6 +161,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // __Control_Set_Controller_h__
-
-
+#endif // OPENSIM_CONTROL_SET_CONTROLLER_H_

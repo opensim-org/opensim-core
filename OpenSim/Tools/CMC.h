@@ -212,9 +212,6 @@ public:
 		FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
 		OpenSim::Array<double> &rControls,bool aVerbosePrinting);
 
-    virtual void setActuators( const Set<Actuator>& actuators );
-
-
      virtual void setupProperties();
 
  protected:
@@ -222,7 +219,7 @@ public:
      void connectToModel(Model& model) override;
 
      // for adding any components to the underlying system
-     void addToSystem( SimTK::MultibodySystem& system) const override; 
+     void extendAddToSystem( SimTK::MultibodySystem& system) const override; 
 
 //=============================================================================
 };	// END of class CMC

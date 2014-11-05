@@ -206,7 +206,7 @@ double RigidTendonMuscle::computeActuation(const State& s) const
 	double force = getFiberForce(s)*mli.cosPennationAngle;
 	// store force in the system cache so if needed again it won't have to be
     // recalculated
-	setForce(s, force);
+	setActuation(s, force);
 
 	return(force);
 }

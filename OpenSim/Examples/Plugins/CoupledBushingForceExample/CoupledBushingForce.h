@@ -178,7 +178,7 @@ protected:
 	/**
 	 * Create a SimTK::Force which implements this CoupledBushingForce as part of the SimTK::MultibodySystem.
 	 */
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 
 private:

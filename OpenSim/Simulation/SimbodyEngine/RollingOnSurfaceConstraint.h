@@ -1,5 +1,5 @@
-#ifndef __RollingOnSurfaceConstraint_h__
-#define __RollingOnSurfaceConstraint_h__
+#ifndef OPENSIM_ROLLING_ON_SURFACE_CONSTRAINT_H_
+#define OPENSIM_ROLLING_ON_SURFACE_CONSTRAINT_H_
 /* -------------------------------------------------------------------------- *
  *                   OpenSim:  RollingOnSurfaceConstraint.h                   *
  * -------------------------------------------------------------------------- *
@@ -25,9 +25,6 @@
 
 
 // INCLUDE
-#include <string>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec.h>
 #include "UnilateralConstraint.h"
 #include "Body.h"
 
@@ -64,19 +61,27 @@ OpenSim_DECLARE_CONCRETE_OBJECT(RollingOnSurfaceConstraint,
 //=============================================================================
 // DATA
 //=============================================================================
-protected:
+public:
 
-	OpenSim_DECLARE_PROPERTY(rolling_body, std::string, "Specify the rolling body for this constraint.");
+	OpenSim_DECLARE_PROPERTY(rolling_body, std::string,
+        "Specify the rolling body for this constraint.");
 
-	OpenSim_DECLARE_PROPERTY(surface_body, std::string, "Specify the body containing the surface (plane) that the rolling body rolls on.");
+	OpenSim_DECLARE_PROPERTY(surface_body, std::string,
+        "Specify the body containing the surface (plane) that the rolling body rolls on.");
 
-	OpenSim_DECLARE_PROPERTY(surface_normal, SimTK::Vec3, "Surface normal direction in the surface body.");
+	OpenSim_DECLARE_PROPERTY(surface_normal, SimTK::Vec3,
+        "Surface normal direction in the surface body.");
 
-	OpenSim_DECLARE_PROPERTY(surface_height, double, "Surface height in the direction of the normal in the surface body.");
+	OpenSim_DECLARE_PROPERTY(surface_height, double,
+        "Surface height in the direction of the normal in the surface body.");
 
-	OpenSim_DECLARE_PROPERTY(friction_coefficient, double, "Coulomb friction coefficient for rolling on the surface.");
+	OpenSim_DECLARE_PROPERTY(friction_coefficient, double,
+        "Coulomb friction coefficient for rolling on the surface.");
 
-	OpenSim_DECLARE_PROPERTY(contact_radius, double, "A guess at the area of contact approximated by a circle of radius.");
+	OpenSim_DECLARE_PROPERTY(contact_radius, double,
+        "A guess at the area of contact approximated by a circle of radius.");
+
+private:
 
 	/** First body is the rolling body. */
 	Body *_rollingBody;
@@ -104,7 +109,7 @@ public:
 	/**
 	 * Create the SimTK::Constraints: which implements this RollingOnSurfaceConstraint.
 	 */
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 	/**
 	 * Populate the the SimTK::State: with defaults for the RollingOnSurfaceConstraint.
 	 */
@@ -163,6 +168,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __RollingOnSurfaceConstraint_h__
+#endif // OPENSIM_ROLLING_ON_SURFACE_CONSTRAINT_H_
 
 

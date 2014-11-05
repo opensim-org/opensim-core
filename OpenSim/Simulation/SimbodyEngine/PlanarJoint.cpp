@@ -49,23 +49,27 @@ PlanarJoint::PlanarJoint() :
 	constructCoordinates();
 
 	const CoordinateSet& coordinateSet = get_CoordinateSet();
-	coordinateSet[0].setMotionType(Coordinate::Translational);
+	coordinateSet[1].setMotionType(Coordinate::Translational);
+	coordinateSet[2].setMotionType(Coordinate::Translational);
 }
 
 //_____________________________________________________________________________
 /**
  * Convenience Constructor.
  */
-	PlanarJoint::PlanarJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, bool reverse) :
-	Joint(name, parent, locationInParent,orientationInParent,
-			body, locationInBody, orientationInBody, reverse)
+PlanarJoint::PlanarJoint(const std::string &name, OpenSim::Body& parent,
+        SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
+        OpenSim::Body& body, SimTK::Vec3 locationInBody,
+        SimTK::Vec3 orientationInBody, bool reverse) :
+    Joint(name, parent, locationInParent,orientationInParent,
+            body, locationInBody, orientationInBody, reverse)
 {
 	setAuthors("Ajay Seth");
 	constructCoordinates();
 
 	const CoordinateSet& coordinateSet = get_CoordinateSet();
-	coordinateSet[0].setMotionType(Coordinate::Translational);
+	coordinateSet[1].setMotionType(Coordinate::Translational);
+	coordinateSet[2].setMotionType(Coordinate::Translational);
 }
 
 
@@ -74,10 +78,7 @@ PlanarJoint::PlanarJoint() :
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void PlanarJoint::addToSystem(SimTK::MultibodySystem& system) const
+void PlanarJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Planar>(system);
-
-    // TODO: Joints require super class to be called last.
-    Super::addToSystem(system);
+    createMobilizedBody<MobilizedBody::Planar>(system);
 }

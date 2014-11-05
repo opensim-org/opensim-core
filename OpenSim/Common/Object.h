@@ -529,7 +529,7 @@ public:
         this object already has an XML node associated with it, no new nodes 
         are ever generated and the parent node is not used. 
     **/
-	virtual void updateXMLNode(SimTK::Xml::Element& parent);
+	virtual void updateXMLNode(SimTK::Xml::Element& parent) const;
 
 	/** Inlined means an in-memory Object that is not associated with
     an XMLDocument. **/
@@ -566,7 +566,7 @@ public:
     the suffix to use is ".osim". This is useful for writing out a Model that
     has been created programmatically, and also very useful for testing and
     debugging. **/
-    bool print(const std::string& fileName);
+    bool print(const std::string& fileName) const;
 
     /** dump the XML representation of this %Object into an std::string and return it.
     Mainly intended for debugging and for use by the XML browser in the GUI. **/
@@ -854,10 +854,13 @@ private:
     bool            _objectIsUpToDate;
 
 	// The XML document, if any, associated with this object.
-	XMLDocument     *_document;
+    // This is mutable since it's cached on deserialization and is 
+    // kept up to date to maintain "defaults" and document file path
+    //TODO: why does an Object need to know where it was last written? Seems flaky and should be revisited
+	mutable XMLDocument     *_document;
 	// Flag indicating whether the object is serialized to this _document or 
-    // to another fresh document.
-	bool            _inlined;
+    // to another fresh document, also cached for subsequent printing/writing.
+	mutable bool            _inlined;
 
 //==============================================================================
 };	// END of class Object
@@ -1258,7 +1261,7 @@ ObjectProperty<T>::writeToXMLElement
     (SimTK::Xml::Element& propertyElement) const 
 {
     for (int i=0; i < objects.size(); ++i)
-        const_cast<T&>(*objects[i]).updateXMLNode(propertyElement);
+        (objects[i])->updateXMLNode(propertyElement);
 }
 
 

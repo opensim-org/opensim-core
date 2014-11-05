@@ -165,25 +165,23 @@ void WeldConstraint::connectToModel(Model& aModel)
 	_body2 = &aModel.updBodySet().get(body2Name);
 }
 
-void WeldConstraint::addToSystem(SimTK::MultibodySystem& system) const
+void WeldConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
-
-	// Get underlying mobilized bodies
-	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody(_body1->getIndex());
-	SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody(_body2->getIndex());
-	// Build the transforms
-	SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(get_orientation_body_1());
-	SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(get_orientation_body_2());
-	SimTK::Transform inb1(r1, get_location_body_1());
-	SimTK::Transform inb2(r2, get_location_body_2());
+    // Get underlying mobilized bodies
+    SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody(_body1->getMobilizedBodyIndex());
+    SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody(_body2->getMobilizedBodyIndex());
+    // Build the transforms
+    SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(get_orientation_body_1());
+    SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(get_orientation_body_2());
+    SimTK::Transform inb1(r1, get_location_body_1());
+    SimTK::Transform inb2(r2, get_location_body_2());
 
     // Now create a Simbody Constraint::Weld
     SimTK::Constraint::Weld simtkWeld(b1, inb1, b2, inb2);
     
     // Beyond the const Component get the index so we can access the SimTK::Constraint later
-	WeldConstraint* mutableThis = const_cast<WeldConstraint *>(this);
-	mutableThis->_index = simtkWeld.getConstraintIndex();
+    WeldConstraint* mutableThis = const_cast<WeldConstraint *>(this);
+    mutableThis->_index = simtkWeld.getConstraintIndex();
 }
 
 //=============================================================================

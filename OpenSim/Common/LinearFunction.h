@@ -1,5 +1,5 @@
-#ifndef __LinearFunction_h__
-#define __LinearFunction_h__
+#ifndef OPENSIM_LINEAR_FUNCTION_H_
+#define OPENSIM_LINEAR_FUNCTION_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  LinearFunction.h                         *
  * -------------------------------------------------------------------------- *
@@ -112,4 +112,4 @@ public:
 
 } // end of namespace OpenSim
 
-#endif  // __LinearFunction_h__
+#endif  // OPENSIM_LINEAR_FUNCTION_H_

@@ -46,20 +46,20 @@ using namespace std;
 PointToPointSpring::PointToPointSpring()
 {
 	setNull();
-    constructProperties();
+    constructInfrastructure();
 }
 //_____________________________________________________________________________
 // Convenience constructor for API users.
-PointToPointSpring::PointToPointSpring(string body1Name, SimTK::Vec3 point1, 
-									   string body2Name, SimTK::Vec3 point2, 
+PointToPointSpring::PointToPointSpring(const Body& body1, SimTK::Vec3 point1, 
+                                       const Body& body2, SimTK::Vec3 point2,
                                        double stiffness, double restlength )
 {
 	setNull();
-    constructProperties();
+    constructInfrastructure();
 
     // Set properties to the passed-in values.
-	setBody1Name(body1Name);
-	setBody2Name(body2Name);
+	setBody1(body1);
+	setBody2(body2);
 
 	setPoint1(point1);
 	setPoint2(point2);
@@ -68,6 +68,11 @@ PointToPointSpring::PointToPointSpring(string body1Name, SimTK::Vec3 point1,
 	setRestlength(restlength);
 }
 
+void PointToPointSpring::constructConnectors()
+{
+    constructConnector<Body>("body1");
+    constructConnector<Body>("body2");
+}
 
 //=============================================================================
 // CONSTRUCTION
@@ -88,9 +93,6 @@ void PointToPointSpring::setNull()
  */
 void PointToPointSpring::constructProperties()
 {
-	constructProperty_body1();
-	constructProperty_body2();
-
 	const SimTK::Vec3 bodyOrigin(0.0, 0.0, 0.0);
 	constructProperty_point1(bodyOrigin);
 	constructProperty_point2(bodyOrigin);
@@ -98,6 +100,27 @@ void PointToPointSpring::constructProperties()
 	constructProperty_stiffness(1.0);
 	constructProperty_rest_length(0.0);
 }
+
+void PointToPointSpring::setBody1(const Body& body)
+{
+    updConnector<Body>("body1").connect(body);
+}
+
+void PointToPointSpring::setBody2(const Body& body)
+{
+    updConnector<Body>("body2").connect(body);
+}
+
+const Body& PointToPointSpring::getBody1() const
+{
+    return getConnector<Body>("body1").getConnectee();
+}
+
+const Body& PointToPointSpring::getBody2() const
+{
+    return getConnector<Body>("body2").getConnectee();
+}
+
 
 //_____________________________________________________________________________
 /**
@@ -111,8 +134,8 @@ VisibleObject* PointToPointSpring::getDisplayer() const
 void PointToPointSpring::updateDisplayer(const SimTK::State& s)
 {
 	SimTK::Vec3 globalLocation1, globalLocation2;
-	const OpenSim::Body& body1 = _model->getBodySet().get(getBody1Name());
-	const OpenSim::Body& body2 = _model->getBodySet().get(getBody2Name());
+	const OpenSim::Body& body1 = getBody1();
+	const OpenSim::Body& body2 = getBody2();
 	_model->getSimbodyEngine().transformPosition(s, body1, getPoint1(), 
                                                  globalLocation1);
 	_model->getSimbodyEngine().transformPosition(s, body2, getPoint2(),
@@ -144,52 +167,35 @@ void PointToPointSpring::connectToModel(Model& model)
 {
 	Super::connectToModel(model);	// Let base class connect first.
 
-	string errorMessage;
-
-	const string& body1Name = getBody1Name();
-	const string& body2Name = getBody2Name();
-
-	// Look up the two bodies being connected together by name in the model
-	if (!model.updBodySet().contains(body1Name)) {
-		errorMessage = "Invalid body1 (" + body1Name + ") specified for Spring "
-                        + getName();
-		throw (Exception(errorMessage));
-	}
-	if (!model.updBodySet().contains(body2Name)) {
-		errorMessage = "Invalid body2 (" + body2Name + ") specified for Spring "
-                        + getName();
-		throw (Exception(errorMessage));
-	}
-
 	if(getName() == "")
-		setName("spring");
+		setName("pointToPointSpring");
 }
 
 //=============================================================================
 // Create the underlying system component(s)
 //=============================================================================
-void PointToPointSpring::addToSystem(SimTK::MultibodySystem& system) const
+void PointToPointSpring::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);    // Base class first.
+    Super::extendAddToSystem(system);
 
-	Body& body1 = _model->updBodySet().get(getBody1Name());
-	Body& body2 = _model->updBodySet().get(getBody2Name());
+    const Body& body1 = getBody1();
+    const Body& body2 = getBody2();
 
-	// Get underlying mobilized bodies
-	SimTK::MobilizedBody b1 = _model->getMatterSubsystem()
-                                        .getMobilizedBody(body1.getIndex());
-	SimTK::MobilizedBody b2 = _model->getMatterSubsystem()
-                                        .getMobilizedBody(body2.getIndex());
+    // Get underlying mobilized bodies
+    SimTK::MobilizedBody b1 = _model->getMatterSubsystem()
+                                        .getMobilizedBody(body1.getMobilizedBodyIndex());
+    SimTK::MobilizedBody b2 = _model->getMatterSubsystem()
+                                        .getMobilizedBody(body2.getMobilizedBodyIndex());
 
     // Now create a Simbody Force::TwoPointLinearSpring
     SimTK::Force::TwoPointLinearSpring simtkSpring
-       (_model->updForceSubsystem(), b1, getPoint1(), b2, getPoint2(), 
+        (_model->updForceSubsystem(), b1, getPoint1(), b2, getPoint2(), 
         getStiffness(), getRestlength());
     
     // Beyond the const Component get the index so we can access the 
     // SimTK::Force later.
-	PointToPointSpring* mutableThis = const_cast<PointToPointSpring *>(this);
-	mutableThis->_index = simtkSpring.getForceIndex();
+    PointToPointSpring* mutableThis = const_cast<PointToPointSpring *>(this);
+    mutableThis->_index = simtkSpring.getForceIndex();
 }
 
 
@@ -201,8 +207,8 @@ void PointToPointSpring::addToSystem(SimTK::MultibodySystem& system) const
 // reported.
 OpenSim::Array<std::string> PointToPointSpring::getRecordLabels() const 
 {
-	const string& body1Name = getBody1Name();
-	const string& body2Name = getBody2Name();
+	const string& body1Name = getBody1().getName();
+	const string& body2Name = getBody2().getName();
 
 	OpenSim::Array<std::string> labels("");
 	labels.append(getName()+"."+body1Name+".force.X");
@@ -235,20 +241,20 @@ getRecordValues(const SimTK::State& state) const
 	SimTK::Vector_<SimTK::Vec3> particleForces(0);
 	SimTK::Vector mobilityForces(0);
 
-	const Body& body1 = _model->getBodySet().get(getBody1Name());
-	const Body& body2 = _model->getBodySet().get(getBody2Name());
+	const Body& body1 = getBody1();
+	const Body& body2 = getBody2();
 
 	//get the net force added to the system contributed by the Spring
 	simtkSpring.calcForceContribution(state, bodyForces, particleForces, 
                                       mobilityForces);
-	SimTK::Vec3 forces = bodyForces(body1.getIndex())[1];
+	SimTK::Vec3 forces = bodyForces(body1.getMobilizedBodyIndex())[1];
 	values.append(3, &forces[0]);
 
 	SimTK::Vec3 gpoint(0);
 	_model->getSimbodyEngine().getPosition(state, body1, getPoint1(), gpoint);
 	values.append(3, &gpoint[0]);
 
-	forces = bodyForces(body2.getIndex())[1];
+	forces = bodyForces(body2.getMobilizedBodyIndex())[1];
 	values.append(3, &forces[0]);
 
 	_model->getSimbodyEngine().getPosition(state, body2, getPoint2(), gpoint);

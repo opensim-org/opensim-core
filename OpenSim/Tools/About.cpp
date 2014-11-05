@@ -40,22 +40,22 @@
 #define MAKE_STRING(a) STR(a)
 
 #define GET_VERSION_STRING  \
-    MAKE_VERSION_STRING(OPENSIM_OSIMTOOLS_MAJOR_VERSION,  \
-                        OPENSIM_OSIMTOOLS_MINOR_VERSION,  \
-                        OPENSIM_OSIMTOOLS_BUILD_VERSION)
+    MAKE_VERSION_STRING(OPENSIM_TOOLS_MAJOR_VERSION,  \
+                        OPENSIM_TOOLS_MINOR_VERSION,  \
+                        OPENSIM_TOOLS_BUILD_VERSION)
 
 #define GET_COPYRIGHT_STRING \
-    MAKE_COPYRIGHT_STRING(OPENSIM_OSIMTOOLS_COPYRIGHT_YEARS, \
-                          OPENSIM_OSIMTOOLS_AUTHORS)
+    MAKE_COPYRIGHT_STRING(OPENSIM_TOOLS_COPYRIGHT_YEARS, \
+                          OPENSIM_TOOLS_AUTHORS)
 
 #define GET_AUTHORS_STRING \
-    MAKE_STRING(OPENSIM_OSIMTOOLS_AUTHORS)
+    MAKE_STRING(OPENSIM_TOOLS_AUTHORS)
 
 #define GET_LIBRARY_STRING \
-    MAKE_STRING(OPENSIM_OSIMTOOLS_LIBRARY_NAME)
+    MAKE_STRING(OPENSIM_TOOLS_LIBRARY_NAME)
 
 #define GET_TYPE_STRING \
-    MAKE_STRING(OPENSIM_OSIMTOOLS_TYPE)
+    MAKE_STRING(OPENSIM_TOOLS_TYPE)
 
 #ifndef NDEBUG
     #define GET_DEBUG_STRING "debug"
@@ -76,9 +76,9 @@ void opensim_version_actuators(int* major, int* minor, int* build) {
     static const char* v = "OPENSIM version="   GET_VERSION_STRING;
     static const char* c = "OPENSIM copyright=" GET_COPYRIGHT_STRING;
 
-    if (major) *major = OPENSIM_OSIMTOOLS_MAJOR_VERSION;
-    if (minor) *minor = OPENSIM_OSIMTOOLS_MINOR_VERSION;
-    if (build) *build = OPENSIM_OSIMTOOLS_BUILD_VERSION;
+    if (major) *major = OPENSIM_TOOLS_MAJOR_VERSION;
+    if (minor) *minor = OPENSIM_TOOLS_MINOR_VERSION;
+    if (build) *build = OPENSIM_TOOLS_BUILD_VERSION;
 
     // Force statics to be present in the binary (Release mode otherwise 
     // optimizes them away).

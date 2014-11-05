@@ -47,8 +47,8 @@ class Model;
  * @author Ajay Seth
  * @author Frank C. Anderson
  */
-class OSIMACTUATORS_API CoordinateActuator : public Actuator {
-OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateActuator, Actuator);
+class OSIMACTUATORS_API CoordinateActuator : public ScalarActuator {
+OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateActuator, ScalarActuator);
 public:
 //==============================================================================
 // PROPERTIES
@@ -115,7 +115,6 @@ private:
 	// Implement ModelComponent interface
 	//--------------------------------------------------------------------------
 	void connectToModel(Model& aModel) override;
-	void addToSystem(SimTK::MultibodySystem& system) const override;
 
 	//--------------------------------------------------------------------------
 	// Implement Object interface.

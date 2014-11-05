@@ -88,7 +88,7 @@ protected:
 	/**
 	 * Create a SimTK::Constraint::Ball which implements this Point constraint.
 	 */
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 private:
 	void setNull();

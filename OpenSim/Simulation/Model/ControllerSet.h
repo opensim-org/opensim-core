@@ -91,14 +91,12 @@ public:
     bool addController(Controller *aController);
 
 
-    virtual void constructStorage();
-    virtual void storeControls( const SimTK::State& s, int step );
-    virtual void printControlStorage( const std::string& fileName) const;
-    virtual void setActuators( Set<Actuator>& );
+    void constructStorage();
+    void storeControls( const SimTK::State& s, int step );
+    void printControlStorage( const std::string& fileName) const;
+    void setActuators(Set<Actuator>& actuators);
 
-    virtual bool check() const;
-
-    virtual void setDesiredStates( Storage* yStore); 
+    void setDesiredStates( Storage* yStore); 
 
 	// Controller interface
 	virtual void computeControls(const SimTK::State& s, SimTK::Vector &controls) const; 

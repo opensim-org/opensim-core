@@ -256,11 +256,6 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
 	}
 }
 
-void CorrectionController::addToSystem(SimTK::MultibodySystem& system) const
-{ 
-    Super::addToSystem(system);
-}
-
 // for any post XML deserialization intialization
 void CorrectionController::connectToModel(Model& model)
 {

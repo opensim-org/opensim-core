@@ -77,23 +77,6 @@ GCVSpline() :
 	setNull();
 }
 //_____________________________________________________________________________
-/**
- * Construct a spline of a specified degree given arrays of paired data points
- * (x,f(x)). A name for the spline may be specified.
- *
- * @param aDegree Degree of the spline.  Only the following degrees
- * are supported: 1 = linear, 3 = cubic, 5 = quintic, and 7 = heptic.
- * @param aN Number of data points.
- * @param aX Array of independent values- should be aN long.
- * @param aF Array of function values- should be aN long.
- * @param aName Optional name of the spline.
- * @param aErrorVariance Estimate of the variance of the error in the data to
- * be fit.  If negative, the variance will be estimated.  If 0.0, the fit will
- * try to fit the data points exactly- no smoothing.  If positive, the fit
- * will be smoothed according to the specified variance. The larger the error
- * variance, the more the smoothing.  The smoothing parameter, p, in
- * Woltring (1986) is computed based on the error variance.
- */
 GCVSpline::
 GCVSpline(int aDegree,int aN,const double *aX,const double *aF,
 	const string &aName,double aErrorVariance) :
@@ -280,10 +263,6 @@ void GCVSpline::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 //_____________________________________________________________________________
 /**
  * Initialize the spline with X and Y values.
- *
- * @param aN the number of X and Y values
- * @param aXValues the X values
- * @param aYValues the Y values
  */
 void GCVSpline::
 init(Function* aFunction)
@@ -376,12 +355,6 @@ operator=(const GCVSpline &aSpline)
 // DEGREE
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set the degree of this spline.
- *
- * @param aDegree Degree of spline.  Legal values: 1 = linear, 3 = cubic,
- * 5 = quintic, 7 = heptic.
- */
 void GCVSpline::
 setDegree(int aDegree)
 {
@@ -404,11 +377,6 @@ setDegree(int aDegree)
 	}
 }
 //_____________________________________________________________________________
-/**
- * Get the degree of this spline.
- *
- * @return Degree of spline: 1 = linear, 3 = cubic, 5 = quintic, 7 = heptic.
- */
 int GCVSpline::
 getDegree() const
 {
@@ -420,11 +388,6 @@ getDegree() const
 // ORDER
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Get the order of this spline.
- *
- * @return Order of spline: 2 = linear, 4 = cubic, 6 = quintic, 8 = heptic.
- */
 int GCVSpline::
 getOrder() const
 {
@@ -436,11 +399,6 @@ getOrder() const
 // HALF ORDER
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Get the half order of this spline.
- *
- * @return Half order of spline: 1 = linear, 2 = cubic, 3 = quintic, 4 = heptic.
- */
 int GCVSpline::
 getHalfOrder() const
 {
@@ -451,12 +409,6 @@ getHalfOrder() const
 // NUMBER OF DATA POINTS (N)
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Get size or number of independent data points (or number of coefficients)
- * used to construct the spline.
- *
- * @return Number of data points (or number of coefficients).
- */
 int GCVSpline::
 getSize() const
 {
@@ -467,50 +419,24 @@ getSize() const
 // X AND COEFFICIENTS
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Get the array of independent variables used to construct the spline.
- * For the number of independent variable data points use getN().
- *
- * @return Pointer to the independent variable data points.
- * @see getN();
- */
 const Array<double>& GCVSpline::
 getX() const
 {
 	return(_x);
 }
 //_____________________________________________________________________________
-/**
- * Get the array of independent variables used to construct the spline.
- * For the number of independent variable data points use getN().
- *
- * @return Pointer to the independent variable data points.
- * @see getN();
- */
 const double* GCVSpline::
 getXValues() const
 {
 	return(&_x[0]);
 }
 //_____________________________________________________________________________
-/**
- * Get the array of dependent variables used to construct the spline.
- *
- * @return Pointer to the dependent variable data points.
- */
 const double* GCVSpline::
 getYValues() const
 {
 	return(&_y[0]);
 }
 //_____________________________________________________________________________
-/**
- * Get the array of coefficients for the spline.
- * For the number of coefficients use getNX().
- *
- * @return Pointer to the coefficients.
- * @see getCoefficients();
- */
 const Array<double>& GCVSpline::
 getCoefficients() const
 {
@@ -570,11 +496,6 @@ setY(int aIndex, double aValue)
 // MIN AND MAX X
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Get the minimum value of the independent variable.
- *
- * @return Minimum value of the independent variable.
- */
 double GCVSpline::
 getMinX() const
 {
@@ -582,11 +503,6 @@ getMinX() const
 	return(_x.get(0));
 }
 //_____________________________________________________________________________
-/**
- * Get the maximum value of the independent variable.
- *
- * @return Maximum value of the independent variable.
- */
 double GCVSpline::
 getMaxX() const
 {

@@ -207,30 +207,40 @@ void Component::disconnect()
 	reset();
 }
 
+void Component::addToSystem(SimTK::MultibodySystem& system) const
+{
+    baseAddToSystem(system);
+    extendAddToSystem(system);
+    componentsAddToSystem(system);
+}
+
 // Base class implementation of virtual method.
 // Every Component owns an underlying SimTK::Measure 
 // which is a ComponentMeasure<T> and is added to the System's default
 // subsystem. That measure is used only for the side effect of its realize()
 // methods being called; its value is not used.
-void Component::addToSystem(SimTK::MultibodySystem& system) const
+void Component::baseAddToSystem(SimTK::MultibodySystem& system) const
 {
-	if (!isObjectUpToDateWithProperties()) {
-		std::string msg = "Component " + getConcreteClassName() + "::" + getName();
-		msg += " cannot addToSystem until it is up-to-date with its properties.";
+    if (!isObjectUpToDateWithProperties()) {
+        std::string msg = "Component " + getConcreteClassName() + "::" + getName();
+        msg += " cannot extendAddToSystem until it is up-to-date with its properties.";
 
-		throw Exception(msg);
-	}
-	
-	// Briefly get write access to the Component to record some
+        throw Exception(msg);
+    }
+
+    // Briefly get write access to the Component to record some
     // information associated with the System; that info is const after this.
     Component* mutableThis = const_cast<Component *>(this);
-	mutableThis->_system = system;
+    mutableThis->_system = system;
 
     // Allocate the ComponentMeasure, point it to this Component for 
     // making realize() calls, and add it to the system's default subsystem. 
     ComponentMeasure<double> mcMeasure(system.updDefaultSubsystem(), *this);
     mutableThis->_simTKcomponentIndex = mcMeasure.getSubsystemMeasureIndex();
+}
 
+void Component::componentsAddToSystem(SimTK::MultibodySystem& system) const
+{
     // Invoke same method on subcomponents. TODO: is this right? The 
     // subcomponents add themselves to the system before the parent component.
     for(unsigned int i=0; i<_components.size(); i++)

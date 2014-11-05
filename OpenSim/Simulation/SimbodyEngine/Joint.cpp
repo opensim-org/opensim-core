@@ -120,10 +120,10 @@ void Joint::constructProperties()
 	constructProperty_reverse(false);
 }
 
-void Joint::constructStructuralConnectors()
+void Joint::constructConnectors()
 {
-	constructStructuralConnector<Body>("parent_body");
-	constructStructuralConnector<Body>("child_body");
+	constructConnector<Body>("parent_body");
+	constructConnector<Body>("child_body");
 }
 
 void Joint::setParentBodyName(const std::string& name)
@@ -371,13 +371,9 @@ void Joint::setChildMobilizedBodyIndex(const SimTK::MobilizedBodyIndex index) co
 }
 
 
-// TODO: note that child must invoke Joint::addToSystem()
-// *after* it creates its mobilized body; that is an API bug.
-void Joint::addToSystem(SimTK::MultibodySystem& system) const
+void Joint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	// add sub components (e.g. Coordinates) once we have necessary system indices
-	Super::addToSystem(system);
-
+    Super::extendAddToSystem(system);
 	/* TODO: Useful to include through debug message/log in the future
 	cout << getConcreteClassName() << ":'" << getName() << "' connects parent '";
 	cout << getParentBodyName() << "'[" << getParentBody().getIndex() << "] and child '";
@@ -418,7 +414,7 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s, const
 		throw Exception("Joint::calcEquivalentSpatialForce(): input mobilityForces does not match model's mobilities");
 	}
 
-	const SimTK::MobilizedBodyIndex &mbx = getChildBody().getIndex();
+	const SimTK::MobilizedBodyIndex &mbx = getChildBody().getMobilizedBodyIndex();
 	// build a unique list of underlying MobilizedBodies that are involved
 	// with this Joint in addition to and not including that of the child body
 
@@ -654,7 +650,7 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
 }
 
 /* Return the equivalent (internal) SimTK::Rigid::Body for a given parent OR
-child OpenSim::Body. Not guaranteed to be valid until after addToSystem on
+child OpenSim::Body. Not guaranteed to be valid until after extendAddToSystem on
 Body has be called  */
 const SimTK::Body::Rigid& Joint::getParentInternalRigidBody() const
 {

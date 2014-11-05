@@ -132,17 +132,15 @@ void Coordinate::constructProperties(void)
 	constructProperty_is_free_to_satisfy_constraints(false);
 }
 
+
 //_____________________________________________________________________________
-/**
+/*
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aModel OpenSim model containing this Coordinate.
  */
-void Coordinate::connectToModel(Model& aModel)
+void Coordinate::finalizeFromProperties()
 {
-	Super::connectToModel(aModel);
-
 	string prefix = "Coordinate(" + getName() + ")::connectToModel: ";
 
 	if((IO::Lowercase(get_motion_type()) == "rotational") || get_motion_type() == "")
@@ -176,9 +174,9 @@ void Coordinate::connectToModel(Model& aModel)
 	_lockedWarningGiven=false;
 }
 
-void Coordinate::addToSystem(SimTK::MultibodySystem& system) const
+void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
 	//create lock constraint automatically
 	// The underlying SimTK constraint

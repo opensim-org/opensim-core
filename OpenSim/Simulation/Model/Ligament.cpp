@@ -76,40 +76,23 @@ void Ligament::constructProperties()
 	constructProperty_force_length_curve(forceLengthCurve);
 }
 
-//------------------------------------------------------------------------------
-//                            CONNECT TO MODEL
-//------------------------------------------------------------------------------
-/**
- * Perform some setup functions that happen after the
- * ligament has been deserialized or copied.
- *
- * @param aModel model containing this ligament.
- */
-void Ligament::connectToModel(Model& aModel)
+
+void Ligament::finalizeFromProperties()
 {
-	GeometryPath& path = upd_GeometryPath();
-	const double& restingLength = get_resting_length();
+    GeometryPath& path = upd_GeometryPath();
+
+    // Resting length must be greater than 0.0.
+    assert(get_resting_length() > 0.0);
 
     path.setDefaultColor(DefaultLigamentColor);
 
-	// Specify underlying ModelComponents prior to calling 
+    // Specify underlying ModelComponents prior to calling 
     // Super::connectToModel() to automatically propagate connectToModel()
-    // to subcomponents. Subsequent addToSystem() will also be automatically
-	// propagated to subcomponents.
+    // to subcomponents. Subsequent extendAddToSystem() will also be automatically
+    // propagated to subcomponents.
     // TODO: this is awkward; subcomponent API needs to be revisited (sherm)
-	addComponent(&path);
-
-    //TODO: can't call this at start of override; this is an API bug.
-	Super::connectToModel(aModel);
-
-	// _model will be NULL when objects are being registered.
-	if (!_model)
-		return;
-
-	// Resting length must be greater than 0.0.
-	assert(restingLength > 0.0);
-
-	path.setOwner(this);
+    addComponent(&path);
+    path.setOwner(this);
 }
 
 
@@ -144,9 +127,9 @@ SimTK::Vec3 Ligament::computePathColor(const SimTK::State& state) const {
 /**
  * allocate and initialize the SimTK state for this ligament.
  */
- void Ligament::addToSystem(SimTK::MultibodySystem& system) const
+ void Ligament::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);
+	Super::extendAddToSystem(system);
 	// Cache the computed tension and strain of the ligament
 	addCacheVariable<double>("tension", 0.0, SimTK::Stage::Velocity);
 	addCacheVariable<double>("strain", 0.0, SimTK::Stage::Velocity);

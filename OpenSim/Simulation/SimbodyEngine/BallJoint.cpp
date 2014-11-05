@@ -75,12 +75,9 @@ BallJoint::BallJoint(const std::string &name, const OpenSim::Body& parent,
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void BallJoint::addToSystem(SimTK::MultibodySystem& system) const
+void BallJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Ball>(system);
-
-    // TODO: Joints require super class to be called last.
-    Super::addToSystem(system);
+    createMobilizedBody<MobilizedBody::Ball>(system);
 }
 
 void BallJoint::initStateFromProperties(SimTK::State& s) const
@@ -100,7 +97,7 @@ void BallJoint::initStateFromProperties(SimTK::State& s) const
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
 	
 	BallJoint* mutableThis = const_cast<BallJoint*>(this);
-    matter.getMobilizedBody(getChildBody().getIndex()).setQToFitRotation(s, r);
+	matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).setQToFitRotation(s, r);
 }
 
 void BallJoint::setPropertiesFromState(const SimTK::State& state)
@@ -111,7 +108,7 @@ void BallJoint::setPropertiesFromState(const SimTK::State& state)
     const MultibodySystem&        system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-        Rotation r = matter.getMobilizedBody(MobilizedBodyIndex(getChildBody().getIndex())).getBodyRotation(state);
+		Rotation r = matter.getMobilizedBody(MobilizedBodyIndex(getChildBody().getMobilizedBodyIndex())).getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
 	
 		const CoordinateSet& coordinateSet = get_CoordinateSet();

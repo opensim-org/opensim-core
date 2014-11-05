@@ -96,7 +96,8 @@ void GeometryPath::setNull()
  *
  * @param aModel The model containing this path.
  */
-void GeometryPath::connectToModel(Model& aModel) {
+void GeometryPath::connectToModel(Model& aModel)
+{
     Super::connectToModel(aModel);
 
     // aModel will be NULL when objects are being registered.
@@ -127,9 +128,9 @@ void GeometryPath::connectToModel(Model& aModel) {
 /*
  * Create the SimTK state, dicrete and/or cache for this GeometryPath.
  */
- void GeometryPath::addToSystem(SimTK::MultibodySystem& system) const 
+ void GeometryPath::extendAddToSystem(SimTK::MultibodySystem& system) const 
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     // Allocate cache entries to save the current length and speed(=d/dt length)
     // of the path in the cache. Length depends only on q's so will be valid
@@ -190,7 +191,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
     const PathPoint* lastPoint = points[0];	
     Vec3 lastLoc_B = lastPoint->getLocation();
-    MobilizedBodyIndex lastBody = lastPoint->getBody().getIndex();
+	MobilizedBodyIndex lastBody = lastPoint->getBody().getMobilizedBodyIndex();
 
     if (hints.getShowPathPoints())
         DefaultGeometry::drawPathPoint(lastBody, lastLoc_B, getColor(state), 
@@ -202,7 +203,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
     for(int j = 1; j < points.getSize(); j++) {
         const PathPoint* point = points[j];
         const Vec3 loc_B = point->getLocation();
-        const MobilizedBodyIndex body = point->getBody().getIndex();
+		const MobilizedBodyIndex body = point->getBody().getMobilizedBodyIndex();
 
         if(hints.getShowPathPoints())
             DefaultGeometry::drawPathPoint(body, loc_B, getColor(state), 
@@ -360,8 +361,8 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
     for (int i = 0; i < np-1; ++i) {
         start = currentPath[i];
         end = currentPath[i+1];
-        bo = &matter.getMobilizedBody(start->getBody().getIndex());
-        bf = &matter.getMobilizedBody(end->getBody().getIndex());
+		bo = &matter.getMobilizedBody(start->getBody().getMobilizedBodyIndex());
+		bf = &matter.getMobilizedBody(end->getBody().getMobilizedBodyIndex());
 
         if (bo != bf) {
             // Find the positions of start and end in the inertial frame.

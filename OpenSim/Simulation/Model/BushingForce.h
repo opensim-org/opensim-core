@@ -136,7 +136,7 @@ private:
 	//--------------------------------------------------------------------------
 	void connectToModel(Model& aModel) override;
 	// Create a SimTK::Force::LinarBushing which implements this BushingForce.
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 	void setNull();
 	void constructProperties();

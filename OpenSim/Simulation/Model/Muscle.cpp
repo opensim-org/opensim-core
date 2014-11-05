@@ -255,9 +255,9 @@ void Muscle::connectToModel(Model& aModel)
 }
 
 // Add Muscle's contributions to the underlying system
- void Muscle::addToSystem(SimTK::MultibodySystem& system) const
+ void Muscle::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::addToSystem(system);
+	Super::extendAddToSystem(system);
 
 	addModelingOption("ignore_tendon_compliance", 1);
 	addModelingOption("ignore_activation_dynamics", 1);
@@ -638,7 +638,7 @@ updMusclePotentialEnergyInfo(const SimTK::State& s) const
  */
 double Muscle::getStress(const SimTK::State& s) const
 {
-	return getForce(s) / getMaxIsometricForce();
+	return getActuation(s) / getMaxIsometricForce();
 }
 
 
@@ -704,10 +704,10 @@ void Muscle::computeForce(const SimTK::State& s,
 {
 	Super::computeForce(s, bodyForces, generalizedForces); // Calls compute actuation.
 
-	// NOTE: Force could be negative, in particular during CMC, when the optimizer
-	// is computing gradients, but in those cases the force will be overridden
-	// and will not be computed by the muscle
-	if (!isForceOverriden(s) && (getForce(s) < -SimTK::SqrtEps)) {
+	// NOTE: Actuation could be negative, in particular during CMC, when the optimizer
+	// is computing gradients, but in those cases the actuation will be 
+	// overridden and will not be computed by the muscle
+	if (!isActuationOverriden(s) && (getActuation(s) < -SimTK::SqrtEps)) {
 		string msg = getConcreteClassName()
             + "::computeForce, muscle "+ getName() + " force < 0";
 		cout << msg << " at time = " << s.getTime() << endl;
