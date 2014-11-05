@@ -131,8 +131,8 @@ void RollingOnSurfaceConstraint::connectToModel(Model& aModel)
 void RollingOnSurfaceConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
 	// Get underlying mobilized bodies
-	SimTK::MobilizedBody roller = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_rollingBody->getMobilizedBodyIndex());
-	SimTK::MobilizedBody surface = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_surfaceBody->getMobilizedBodyIndex());
+	SimTK::MobilizedBody& roller = _rollingBody->updMobilizedBody();
+	SimTK::MobilizedBody& surface = _surfaceBody->updMobilizedBody();
 	
 	// Add a ficticious massless body to be the "Case" reference body coincident with surface for the no-slip constraint
 	SimTK::MobilizedBody::Weld  cb(surface, SimTK::Body::Massless());

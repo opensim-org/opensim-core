@@ -151,8 +151,8 @@ void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) co
 {
     Super::extendAddToSystem(system);
     // Get underlying mobilized bodies
-    SimTK::MobilizedBody lb = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_lineBody->getMobilizedBodyIndex());
-    SimTK::MobilizedBody fb = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_followerBody->getMobilizedBodyIndex());
+    SimTK::MobilizedBody& lb = _lineBody->updMobilizedBody();
+    SimTK::MobilizedBody& fb = _followerBody->updMobilizedBody();
 
     // Normalize Line Direction
     SimTK::UnitVec3 normLineDirection(get_line_direction_vec().normalize());

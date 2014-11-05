@@ -250,8 +250,8 @@ void CoupledBushingForce::extendAddToSystem(SimTK::MultibodySystem& system) cons
 	CoupledBushingForce* mutableThis = const_cast<CoupledBushingForce *>(this);
 
 	// Get underlying mobilized bodies
-	mutableThis->_b1 = &_model->updMatterSubsystem().getMobilizedBody(body1.getMobilizedBodyIndex());
-	mutableThis->_b2 = &_model->updMatterSubsystem().getMobilizedBody(body2.getMobilizedBodyIndex());
+	mutableThis->_b1 = &body1.getMobilizedBody();
+	mutableThis->_b2 = &body2.getMobilizedBody();
 	// Define the transforms for the bushing frames affixed to the specified bodies
 	SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(_orientationInBody1);
 	SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(_orientationInBody2);

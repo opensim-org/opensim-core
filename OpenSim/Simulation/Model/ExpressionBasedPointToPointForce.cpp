@@ -195,10 +195,8 @@ void ExpressionBasedPointToPointForce::
 		const_cast<ExpressionBasedPointToPointForce *>(this);
 
 	// Get underlying mobilized bodies
-	mutableThis->_b1 = 
-		&_model->getMatterSubsystem().getMobilizedBody(body1.getMobilizedBodyIndex());
-	mutableThis->_b2 =
-		&_model->getMatterSubsystem().getMobilizedBody(body2.getMobilizedBodyIndex());
+    mutableThis->_b1 = &body1.getMobilizedBody();
+    mutableThis->_b2 = &body2.getMobilizedBody();
 }
 
 //=============================================================================
