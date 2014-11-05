@@ -109,7 +109,7 @@ void Millard2012EquilibriumMuscle::buildMuscle()
         // A few parameters may need to be adjusted to avoid singularities
         // (e.g., if an elastic tendon is used with no fiber damping).
         if(!get_ignore_tendon_compliance() && !use_fiber_damping) {
-			set_minimum_activation(clamp(0.01, get_minimum_activation(), 1));
+            set_minimum_activation(clamp(0.01, get_minimum_activation(), 1));
 
             if(falCurve.getMinValue() < 0.1) {
                 falCurve.setMinValue(0.1);
@@ -124,7 +124,7 @@ void Millard2012EquilibriumMuscle::buildMuscle()
             }
 
         } else { //singularity-free model
-			set_minimum_activation(clamp(0, get_minimum_activation(), 1));
+            set_minimum_activation(clamp(0, get_minimum_activation(), 1));
             falCurve.setMinValue(0.0);
             fvCurve.setCurveShape(0.0, conSlopeNearVmax, isometricSlope,
                                   0.0, eccSlopeNearVmax, eccForceMax);
@@ -385,7 +385,7 @@ double Millard2012EquilibriumMuscle::
 computeActuation(const SimTK::State& s) const
 {
     const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
-	setActuation(s, mdi.tendonForce);
+    setActuation(s, mdi.tendonForce);
     return mdi.tendonForce;
 }
 
@@ -441,14 +441,14 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
         switch(flag_status) {
             case 0: //converged
             {
-				setActuation(s, tendonForce);
+                setActuation(s, tendonForce);
                 setFiberLength(s,fiberLength);
 
             }break;
 
             case 1: //lower bound on fiber length was reached
             {
-				setActuation(s, tendonForce);
+                setActuation(s, tendonForce);
                 setFiberLength(s,fiberLength);
                 printf("\n\nMillard2012EquilibriumMuscle Initialization:"
                        "%s is at its minimum length of %f\n",
@@ -457,7 +457,7 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
 
             case 2: //maximum number of iterations reached
             {
-				setActuation(s, 0.0);
+                setActuation(s, 0.0);
                 setFiberLength(s,penMdl.getOptimalFiberLength());
 
                 char msgBuffer[1000];
@@ -491,7 +491,7 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
                        "Setting tendon force to 0.0 and fiber length to the "
                        "optimal fiber length.",
                        getName().c_str());
-				setActuation(s, 0.0);
+                setActuation(s, 0.0);
                 setFiberLength(s,penMdl.getOptimalFiberLength());
         }
 
@@ -503,7 +503,7 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
         cerr << e.what() << endl;
         cerr << "Continuing with initial tendon force of 0 and a fiber length "
                 "equal to the optimal fiber length.\n\n" << endl;
-		setActuation(s, 0);
+        setActuation(s, 0);
         setFiberLength(s,getOptimalFiberLength());
     }
 }
@@ -557,14 +557,14 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
         switch(flag_status) {
             case 0: //converged
             {
-				setActuation(s, tendonForce);
+                setActuation(s, tendonForce);
                 setFiberLength(s,fiberLength);
 
             }break;
 
             case 1: //lower bound on fiber length was reached
             {
-				setActuation(s, tendonForce);
+                setActuation(s, tendonForce);
                 setFiberLength(s,fiberLength);
                 printf("\n\nMillard2012EquilibriumMuscle static solution:"
                        "%s is at its minimum length of %f\n",
@@ -573,7 +573,7 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
 
             case 2: //maximum number of iterations reached
             {
-				setActuation(s, 0.0);
+                setActuation(s, 0.0);
                 setFiberLength(s,penMdl.getOptimalFiberLength());
 
                 char msgBuffer[1000];
@@ -607,7 +607,7 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
                        "Setting tendon force to 0.0 and fiber length to the "
                        "optimal fiber length.",
                        getName().c_str());
-				setActuation(s, 0.0);
+                setActuation(s, 0.0);
                 setFiberLength(s,penMdl.getOptimalFiberLength());
         }
 
@@ -619,7 +619,7 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
         cerr << e.what() << endl;
         cerr << "Continuing with initial tendon force of 0 and a fiber length "
                 "equal to the optimal fiber length.\n\n" << endl;
-		setActuation(s, 0);
+        setActuation(s, 0);
         setFiberLength(s,getOptimalFiberLength());
     }
 }
@@ -724,8 +724,8 @@ void Millard2012EquilibriumMuscle::calcMuscleLengthInfo(const SimTK::State& s,
 // MUSCLE INFERFACE REQUIREMENTS -- MUSCLE POTENTIAL ENERGY INFO
 //==============================================================================
 void Millard2012EquilibriumMuscle::
-	calcMusclePotentialEnergyInfo(const SimTK::State& s,
-		MusclePotentialEnergyInfo& mpei) const
+    calcMusclePotentialEnergyInfo(const SimTK::State& s,
+        MusclePotentialEnergyInfo& mpei) const
 {
     // Get musculotendon actuator properties.
     double maxIsoForce    = getMaxIsometricForce();
@@ -733,7 +733,7 @@ void Millard2012EquilibriumMuscle::
     double tendonSlackLen = getTendonSlackLength();
 
     try {
-		// Get the quantities that we've already computed.
+        // Get the quantities that we've already computed.
         const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
 
         // Get muscle-specific properties.
@@ -764,7 +764,7 @@ void Millard2012EquilibriumMuscle::
         }
 
         mpei.musclePotentialEnergy = mpei.fiberPotentialEnergy +
-									 mpei.tendonPotentialEnergy;
+                                     mpei.tendonPotentialEnergy;
 
     } catch(const std::exception &x) {
         std::string msg = "Exception caught in Millard2012EquilibriumMuscle::"
@@ -1080,7 +1080,7 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         std::string msg = "Exception caught in Millard2012EquilibriumMuscle::"
                           "calcMuscleDynamicsInfo from " + getName() + "\n"
                           + x.what();
-		cerr << msg << endl;
+        cerr << msg << endl;
         throw OpenSim::Exception(msg);
     }
 }
@@ -1137,26 +1137,26 @@ setPropertiesFromState(const SimTK::State& s)
 }
 
 void Millard2012EquilibriumMuscle::
-	computeStateVariableDerivatives(const SimTK::State& s) const
+    computeStateVariableDerivatives(const SimTK::State& s) const
 {
     // Activation dynamics if not ignored
     if(!get_ignore_activation_dynamics()) {
-		double adot = 0;
-		// if not disabled or overriden then compute its derivative
-		if (!isDisabled(s) && !isActuationOverriden(s)) {
-			adot =getActivationDerivative(s);
-		}
-		setStateVariableDerivative(s, STATE_ACTIVATION_NAME, adot);
+        double adot = 0;
+        // if not disabled or overriden then compute its derivative
+        if (!isDisabled(s) && !isActuationOverriden(s)) {
+            adot =getActivationDerivative(s);
+        }
+        setStateVariableDerivative(s, STATE_ACTIVATION_NAME, adot);
     }
 
     // Fiber length is the next state (if it is a state at all)
     if(!get_ignore_tendon_compliance()) {
-		double ldot = 0;
-		// if not disabled or overriden then compute its derivative
-		if (!isDisabled(s) && !isActuationOverriden(s)) {
-			ldot = getFiberVelocity(s);
-		}
-		setStateVariableDerivative(s, STATE_FIBER_LENGTH_NAME, ldot);
+        double ldot = 0;
+        // if not disabled or overriden then compute its derivative
+        if (!isDisabled(s) && !isActuationOverriden(s)) {
+            ldot = getFiberVelocity(s);
+        }
+        setStateVariableDerivative(s, STATE_FIBER_LENGTH_NAME, ldot);
     }
 }
 

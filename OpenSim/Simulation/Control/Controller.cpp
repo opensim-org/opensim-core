@@ -47,7 +47,7 @@ using namespace std;
  */
 Controller::Controller() 
 {
-	constructProperties();
+    constructProperties();
 }
 
 
@@ -61,12 +61,12 @@ Controller::Controller()
  */
 void Controller::constructProperties()
 {
-	setAuthors("Ajay Seth, Frank Anderson, Chand John, Samuel Hamner");
-	constructProperty_isDisabled(false);
-	constructProperty_actuator_list();
+    setAuthors("Ajay Seth, Frank Anderson, Chand John, Samuel Hamner");
+    constructProperty_isDisabled(false);
+    constructProperty_actuator_list();
 
-	// Set is only a reference list, not ownership
-	_actuatorSet.setMemoryOwner(false);
+    // Set is only a reference list, not ownership
+    _actuatorSet.setMemoryOwner(false);
 }
 
 
@@ -84,7 +84,7 @@ void Controller::constructProperties()
 bool Controller::isDisabled() const
 {
     if( getModel().getAllControllersEnabled() ) {
-	   return( get_isDisabled() );
+       return( get_isDisabled() );
     } else {
        return( true );
     }
@@ -95,33 +95,33 @@ bool Controller::isDisabled() const
  */
 void Controller::setDisabled(bool aTrueFalse)
 {
-	upd_isDisabled()=aTrueFalse;
+    upd_isDisabled()=aTrueFalse;
 }
 
 // for any post XML deseraialization intialization
 void Controller::extendConnectToModel(Model& model)
 {
-	Super::extendConnectToModel(model);
+    Super::extendConnectToModel(model);
 
-	if (getProperty_actuator_list().size() > 0){
-		if (IO::Uppercase(get_actuator_list(0)) == "ALL"){
-			setActuators(model.getActuators());
-			// setup actuators to ensure actuators added by controllers are also setup properly
-			// TODO: Adopt the controls (discrete state variables) of the Actuator
-			return;
-		}
-		else{
-			Set<Actuator> actuatorsByName;
-			for (int i = 0; i < getProperty_actuator_list().size(); i++){
-				if (model.updActuators().contains(get_actuator_list(i)))
-					actuatorsByName.adoptAndAppend(&model.updActuators().get(get_actuator_list(i)));
-				else
-					cerr << "WARN: Controller::connectToModel : Actuator " << get_actuator_list(i) << " was not found and will be ignored." << endl;
-			}
-			actuatorsByName.setMemoryOwner(false);
-			setActuators(actuatorsByName);
-		}
-	}
+    if (getProperty_actuator_list().size() > 0){
+        if (IO::Uppercase(get_actuator_list(0)) == "ALL"){
+            setActuators(model.getActuators());
+            // setup actuators to ensure actuators added by controllers are also setup properly
+            // TODO: Adopt the controls (discrete state variables) of the Actuator
+            return;
+        }
+        else{
+            Set<Actuator> actuatorsByName;
+            for (int i = 0; i < getProperty_actuator_list().size(); i++){
+                if (model.updActuators().contains(get_actuator_list(i)))
+                    actuatorsByName.adoptAndAppend(&model.updActuators().get(get_actuator_list(i)));
+                else
+                    cerr << "WARN: Controller::connectToModel : Actuator " << get_actuator_list(i) << " was not found and will be ignored." << endl;
+            }
+            actuatorsByName.setMemoryOwner(false);
+            setActuators(actuatorsByName);
+        }
+    }
 }
 
 /**
@@ -129,35 +129,35 @@ void Controller::extendConnectToModel(Model& model)
  */
 void Controller::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::extendAddToSystem(system);
+    Super::extendAddToSystem(system);
 }
 
 // makes a request for which actuators a controller will control
 void Controller::setActuators(const Set<Actuator>& actuators)
 {
-	//Rebuild consistent set of actuator lists
-	_actuatorSet.setSize(0);
-	updProperty_actuator_list().clear();
-	for (int i = 0; i< actuators.getSize(); i++){
-		addActuator(actuators[i]);
-	}
-	// make sure controller does not take ownership
-	_actuatorSet.setMemoryOwner(false);
+    //Rebuild consistent set of actuator lists
+    _actuatorSet.setSize(0);
+    updProperty_actuator_list().clear();
+    for (int i = 0; i< actuators.getSize(); i++){
+        addActuator(actuators[i]);
+    }
+    // make sure controller does not take ownership
+    _actuatorSet.setMemoryOwner(false);
 }
 
 
 void Controller::addActuator(const Actuator& actuator)
 {
-	// want to keep a reference not make a clone
-	// but set interface does not take const pointer
-	// just const ref that forces a copy
-	// const_cast only to add to the private set of actuators
-	Actuator* mutable_act = const_cast<Actuator *>(&actuator);
-	_actuatorSet.adoptAndAppend(mutable_act);
+    // want to keep a reference not make a clone
+    // but set interface does not take const pointer
+    // just const ref that forces a copy
+    // const_cast only to add to the private set of actuators
+    Actuator* mutable_act = const_cast<Actuator *>(&actuator);
+    _actuatorSet.adoptAndAppend(mutable_act);
 
-	int found = updProperty_actuator_list().findIndex(actuator.getName());
-	if (found < 0) //add if the actuator isn't already in the list
-		updProperty_actuator_list().appendValue(actuator.getName());
+    int found = updProperty_actuator_list().findIndex(actuator.getName());
+    if (found < 0) //add if the actuator isn't already in the list
+        updProperty_actuator_list().appendValue(actuator.getName());
 }
 
 Set<Actuator>& Controller::updActuators() { return _actuatorSet; }

@@ -162,13 +162,12 @@ public:
     //--------------------------------------------------------------------------
     void extendConnectToModel(Model& model) override
     {
+        Super::extendConnectToModel(model);
         #ifdef USE_ACTIVATION_DYNAMICS_MODEL
         ZerothOrderMuscleActivationDynamics &zomad =
             upd_ZerothOrderMuscleActivationDynamics();
         includeAsSubComponent(&zomad);
         #endif
-
-        Super::extendConnectToModel(model);
     }
 
     void extendAddToSystem(SimTK::MultibodySystem& system) const override

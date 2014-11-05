@@ -39,14 +39,14 @@ using namespace std;
 // Destructor.
 CoordinateLimitForce::~CoordinateLimitForce()
 {
-	delete _upStep;
-	delete _loStep;
+    delete _upStep;
+    delete _loStep;
 }
 //_____________________________________________________________________________
 // Default constructor.
 CoordinateLimitForce::CoordinateLimitForce()
 {
-	setNull();
+    setNull();
     constructProperties();
 }
 
@@ -54,23 +54,23 @@ CoordinateLimitForce::CoordinateLimitForce()
 // Convenience constructor.
 CoordinateLimitForce::CoordinateLimitForce
    (const string& coordName, double q_upper, 
-	double K_upper,	double q_lower, double K_lower, double damping, double dq, 
-	bool computeDissipationEnergy) : Force()
+    double K_upper, double q_lower, double K_lower, double damping, double dq, 
+    bool computeDissipationEnergy) : Force()
 {
-	setNull();
+    setNull();
     constructProperties();
 
-	set_coordinate(coordName);
-	set_upper_stiffness(K_upper);
-	set_upper_limit(q_upper);
-	set_lower_stiffness(K_lower);
-	set_lower_limit(q_lower);
-	set_damping(damping);
-	set_transition(dq);
+    set_coordinate(coordName);
+    set_upper_stiffness(K_upper);
+    set_upper_limit(q_upper);
+    set_lower_stiffness(K_lower);
+    set_lower_limit(q_lower);
+    set_damping(damping);
+    set_transition(dq);
 
-	set_compute_dissipation_energy(computeDissipationEnergy);
+    set_compute_dissipation_energy(computeDissipationEnergy);
 
-	setName(coordName + "_LimitForce");
+    setName(coordName + "_LimitForce");
 }
 
 //_____________________________________________________________________________
@@ -79,37 +79,37 @@ CoordinateLimitForce::CoordinateLimitForce
 // calculated at extendConnectToModel().
 void CoordinateLimitForce::setNull()
 {
-	setAuthors("Ajay Seth");
-	_upStep = NULL;
-	_loStep = NULL;
-	
-	// Scaling for coordinate values in m or degrees (rotational) 
-	_w = SimTK::NaN;
+    setAuthors("Ajay Seth");
+    _upStep = NULL;
+    _loStep = NULL;
+    
+    // Scaling for coordinate values in m or degrees (rotational) 
+    _w = SimTK::NaN;
 
-	// Coordinate limits in internal (SI) units (m or rad)
-	_qup = SimTK::NaN;
-	_qlow = SimTK::NaN;
-	// Constant stiffnesses in internal (SI) N/m or Nm/rad
-	_Kup = SimTK::NaN;;
-	_Klow = SimTK::NaN;
+    // Coordinate limits in internal (SI) units (m or rad)
+    _qup = SimTK::NaN;
+    _qlow = SimTK::NaN;
+    // Constant stiffnesses in internal (SI) N/m or Nm/rad
+    _Kup = SimTK::NaN;;
+    _Klow = SimTK::NaN;
 
-	// Damping in internal (SI) units of N/(m/s) or Nm/(rad/s)
-	_damp = SimTK::NaN;
+    // Damping in internal (SI) units of N/(m/s) or Nm/(rad/s)
+    _damp = SimTK::NaN;
 
-	_coord = NULL;
+    _coord = NULL;
 }
 //_____________________________________________________________________________
 // Allocate and initialize properties.
 void CoordinateLimitForce::constructProperties()
 {
-	constructProperty_coordinate("UNASSIGNED");
-	constructProperty_upper_stiffness(1.0);
-	constructProperty_upper_limit(0.0);
-	constructProperty_lower_stiffness(1.0);
-	constructProperty_lower_limit(0.0);
-	constructProperty_damping(0.001);
-	constructProperty_transition(0.1);
-	constructProperty_compute_dissipation_energy(false);
+    constructProperty_coordinate("UNASSIGNED");
+    constructProperty_upper_stiffness(1.0);
+    constructProperty_upper_limit(0.0);
+    constructProperty_lower_stiffness(1.0);
+    constructProperty_lower_limit(0.0);
+    constructProperty_damping(0.001);
+    constructProperty_transition(0.1);
+    constructProperty_compute_dissipation_energy(false);
 }
 
 
@@ -118,37 +118,37 @@ void CoordinateLimitForce::constructProperties()
 //=============================================================================
 void CoordinateLimitForce::setUpperStiffness(double aUpperStiffness)
 {
-	set_upper_stiffness(aUpperStiffness);
+    set_upper_stiffness(aUpperStiffness);
 }
 
 void CoordinateLimitForce::setUpperLimit(double aUpperLimit)
 {
-	set_upper_limit(aUpperLimit);
+    set_upper_limit(aUpperLimit);
 }
 
 void CoordinateLimitForce::setLowerStiffness(double aLowerStiffness)
 {
-	set_lower_stiffness(aLowerStiffness);
+    set_lower_stiffness(aLowerStiffness);
 }
 
 void CoordinateLimitForce::setLowerLimit(double aLowerLimit)
 {
-	set_lower_limit(aLowerLimit);
+    set_lower_limit(aLowerLimit);
 }
 
 void CoordinateLimitForce::setDamping(double aDamping)
 {
-	set_damping(aDamping);
+    set_damping(aDamping);
 }
 
 void CoordinateLimitForce::setTransition(double aTransition)
 {
-	set_transition(aTransition);
+    set_transition(aTransition);
 }
 
 void CoordinateLimitForce::setComputeDissipationEnergy(bool flag)
 {
-	set_compute_dissipation_energy(flag);
+    set_compute_dissipation_energy(flag);
 }
 
 //_____________________________________________________________________________
@@ -157,36 +157,36 @@ void CoordinateLimitForce::setComputeDissipationEnergy(bool flag)
  */
 double CoordinateLimitForce::getUpperStiffness() const
 {
-	return get_upper_stiffness();
+    return get_upper_stiffness();
 }
 
 double CoordinateLimitForce::getUpperLimit() const
 {
-	return get_upper_limit();
+    return get_upper_limit();
 }
 
 double CoordinateLimitForce::getLowerStiffness() const
 {
-	return get_lower_stiffness();
+    return get_lower_stiffness();
 }
 double CoordinateLimitForce::getLowerLimit() const
 {
-	return get_lower_limit();
+    return get_lower_limit();
 }
 
 double CoordinateLimitForce::getDamping() const
 {
-	return get_damping();
+    return get_damping();
 }
 
 double CoordinateLimitForce::getTransition() const
 {
-	return get_transition();
+    return get_transition();
 }
 
 bool CoordinateLimitForce::isComputingDissipationEnergy() const
 {
-	return get_compute_dissipation_energy();
+    return get_compute_dissipation_energy();
 }
 
 //_____________________________________________________________________________
@@ -198,55 +198,55 @@ bool CoordinateLimitForce::isComputingDissipationEnergy() const
  */
 void CoordinateLimitForce::extendConnectToModel(Model& aModel)
 {
-	Super::extendConnectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
     string errorMessage;
 
-	const string& coordName = get_coordinate();
-	const double& upperStiffness = get_upper_stiffness();
-	const double& upperLimit = get_upper_limit();
-	const double& lowerStiffness = get_lower_stiffness();
-	const double& lowerLimit = get_lower_limit();
-	const double& transition = get_transition();
-	const double& damping = get_damping();
+    const string& coordName = get_coordinate();
+    const double& upperStiffness = get_upper_stiffness();
+    const double& upperLimit = get_upper_limit();
+    const double& lowerStiffness = get_lower_stiffness();
+    const double& lowerLimit = get_lower_limit();
+    const double& transition = get_transition();
+    const double& damping = get_damping();
 
-	// Look up the coordinate
-	if (!_model->updCoordinateSet().contains(coordName)) {
-		errorMessage = "CoordinateLimitForce: Invalid coordinate (" + coordName + ") specified in Actuator " + getName();
-		throw (Exception(errorMessage.c_str()));
-	}
-	_coord = &_model->updCoordinateSet().get(coordName);
+    // Look up the coordinate
+    if (!_model->updCoordinateSet().contains(coordName)) {
+        errorMessage = "CoordinateLimitForce: Invalid coordinate (" + coordName + ") specified in Actuator " + getName();
+        throw (Exception(errorMessage.c_str()));
+    }
+    _coord = &_model->updCoordinateSet().get(coordName);
 
-	// scaling for units
-	_w = (_coord->getMotionType() == Coordinate::Rotational) ? SimTK_DEGREE_TO_RADIAN : 1.0;
+    // scaling for units
+    _w = (_coord->getMotionType() == Coordinate::Rotational) ? SimTK_DEGREE_TO_RADIAN : 1.0;
 
-	_qup = _w*upperLimit;
-	_qlow = _w*lowerLimit;
-	_Kup = upperStiffness/_w;
-	_Klow = lowerStiffness/_w;
-	_damp = damping/_w;
+    _qup = _w*upperLimit;
+    _qlow = _w*lowerLimit;
+    _Kup = upperStiffness/_w;
+    _Klow = lowerStiffness/_w;
+    _damp = damping/_w;
 
-	delete _upStep;
-	delete _loStep;
+    delete _upStep;
+    delete _loStep;
 
-	// Define the transition from no stiffness to the upperStiffness as coordinate increases 
-	// beyond the upper limit
-	_upStep = new SimTK::Function::Step(0.0, _Kup, _qup, _qup+_w*transition);
-	// Define the transition from lowerStiffness to zero as coordinate increases to the lower limit
-	_loStep = new SimTK::Function::Step(_Klow, 0.0, _qlow-_w*transition, _qlow);
+    // Define the transition from no stiffness to the upperStiffness as coordinate increases 
+    // beyond the upper limit
+    _upStep = new SimTK::Function::Step(0.0, _Kup, _qup, _qup+_w*transition);
+    // Define the transition from lowerStiffness to zero as coordinate increases to the lower limit
+    _loStep = new SimTK::Function::Step(_Klow, 0.0, _qlow-_w*transition, _qlow);
 }
 
 
 /** Create the underlying Force that is part of the multibodysystem. */
 void CoordinateLimitForce::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::extendAddToSystem(system);
+    Super::extendAddToSystem(system);
 
-	addCacheVariable<double>("dissipationPower", 0.0, SimTK::Stage::Dynamics);
+    addCacheVariable<double>("dissipationPower", 0.0, SimTK::Stage::Dynamics);
 
-	if(isComputingDissipationEnergy()){
-		addStateVariable("dissipatedEnergy");
-	}
+    if(isComputingDissipationEnergy()){
+        addStateVariable("dissipatedEnergy");
+    }
 }
 
 //=============================================================================
@@ -258,98 +258,98 @@ void CoordinateLimitForce::extendAddToSystem(SimTK::MultibodySystem& system) con
  *
  */
 void CoordinateLimitForce::computeForce( const SimTK::State& s, 
-							   SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							   SimTK::Vector& mobilityForces) const
+                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+                               SimTK::Vector& mobilityForces) const
 {
-	applyGeneralizedForce(s, *_coord, calcLimitForce(s), mobilityForces);
+    applyGeneralizedForce(s, *_coord, calcLimitForce(s), mobilityForces);
 }
 
 double CoordinateLimitForce::calcLimitForce( const SimTK::State& s) const
 {
-	double q = _coord->getValue(s);
-	SimTK::Vector qv(1,q);
-	double K_up = _upStep->calcValue(qv);
-	double K_low = _loStep->calcValue(qv);
+    double q = _coord->getValue(s);
+    SimTK::Vector qv(1,q);
+    double K_up = _upStep->calcValue(qv);
+    double K_low = _loStep->calcValue(qv);
 
-	double qdot = _coord->getSpeedValue(s);
-	double f_up = -K_up*(q - _qup);
-	double f_low = K_low*(_qlow - q);
+    double qdot = _coord->getSpeedValue(s);
+    double f_up = -K_up*(q - _qup);
+    double f_low = K_low*(_qlow - q);
 
-	// dividing the stiffness by the constant yields the transition function that can 
-	// also be appplied to damping
-	double f_damp = -_damp*(K_up/_Kup + K_low/_Klow)*qdot;
+    // dividing the stiffness by the constant yields the transition function that can 
+    // also be appplied to damping
+    double f_damp = -_damp*(K_up/_Kup + K_low/_Klow)*qdot;
 
-	// disspative power is negative power but is already implied by "dissipation"
-	// so negate power so that dissipation power is a positive number
-	double dissPower = -qdot*f_damp;
-	setCacheVariable<double>(s, "dissipationPower", dissPower);
+    // disspative power is negative power but is already implied by "dissipation"
+    // so negate power so that dissipation power is a positive number
+    double dissPower = -qdot*f_damp;
+    setCacheVariable<double>(s, "dissipationPower", dissPower);
 
-	double f_limit = f_up + f_low + f_damp;
+    double f_limit = f_up + f_low + f_damp;
 
-	return f_limit;
+    return f_limit;
 }
 
 // Potential energy stored in the limit spring
 double CoordinateLimitForce::computePotentialEnergy(const SimTK::State& s) const
 {
-	double q = _coord->getValue(s);
-	SimTK::Vector qv(1,q);
+    double q = _coord->getValue(s);
+    SimTK::Vector qv(1,q);
 
-	double K=0;
-	double delta = 0;
-	if(q > _qup){ // against upper limit
-		K = _Kup;
-		delta = q-_qup;
-	}
-	else if(q < _qlow){ // against lower limit
-		K = _Klow;
-		delta = (_qlow-q);
-	}
-	else{
-		// no limits being hit
-		return 0.0;
-	}
-	
-	const double &trans = _w*get_transition();
+    double K=0;
+    double delta = 0;
+    if(q > _qup){ // against upper limit
+        K = _Kup;
+        delta = q-_qup;
+    }
+    else if(q < _qlow){ // against lower limit
+        K = _Klow;
+        delta = (_qlow-q);
+    }
+    else{
+        // no limits being hit
+        return 0.0;
+    }
+    
+    const double &trans = _w*get_transition();
 
-	if(delta >= trans){
-		// = 5/14*K*trans^2 - 1/2*K*trans^2 + 1/2*K*(delta)^2
-		return K*((-2.0/14.0)*trans*trans + 0.5*(delta)*(delta));
-	}
-	else{
-		double x = delta/trans;
-		// This is the integral of K(x)*x*dx evaluated at
-		// x = delta/trans, where 
-		// K(x) = K*(10*x^3-15*x^4+6*x^5) is the definition of an
-		// S curve continuous step function defined in Simbody
-		// SimTK/include/SimTKcommon/Scalar.h
-		return K*x*x*x*(2.0-2.5*x+(6.0/7.0)*x*x) * (delta*delta);
-	}
+    if(delta >= trans){
+        // = 5/14*K*trans^2 - 1/2*K*trans^2 + 1/2*K*(delta)^2
+        return K*((-2.0/14.0)*trans*trans + 0.5*(delta)*(delta));
+    }
+    else{
+        double x = delta/trans;
+        // This is the integral of K(x)*x*dx evaluated at
+        // x = delta/trans, where 
+        // K(x) = K*(10*x^3-15*x^4+6*x^5) is the definition of an
+        // S curve continuous step function defined in Simbody
+        // SimTK/include/SimTKcommon/Scalar.h
+        return K*x*x*x*(2.0-2.5*x+(6.0/7.0)*x*x) * (delta*delta);
+    }
 }
 // power dissipated by the damping term of the coodinate limit force
 double CoordinateLimitForce::getPowerDissipation(const SimTK::State& s) const
 {
-	return  getCacheVariable<double>(s, "dissipationPower");
+    return  getCacheVariable<double>(s, "dissipationPower");
 }
 
 // energy dissipated by the damping term of the coodinate limit force
 double CoordinateLimitForce::getDissipatedEnergy(const SimTK::State& s) const
 {
-	if(isComputingDissipationEnergy()){
-		return getStateVariable(s, "dissipatedEnergy");
-	} else {
-		throw Exception("CoordinateLimitForce::getDissipatedEnergy() compute_dissipation_energy set to false.");
-		return SimTK::NaN;
-	}
+    if(isComputingDissipationEnergy()){
+        return getStateVariable(s, "dissipatedEnergy");
+    } else {
+        throw Exception("CoordinateLimitForce::getDissipatedEnergy() compute_dissipation_energy set to false.");
+        return SimTK::NaN;
+    }
 }
 
 void CoordinateLimitForce::
-	computeStateVariableDerivatives(const SimTK::State& s) const
+    computeStateVariableDerivatives(const SimTK::State& s) const
 {
     if (!isDisabled(s) && isComputingDissipationEnergy()){
-		setStateVariableDerivative(s, "dissipatedEnergy", 
-			getPowerDissipation(s));
-	}
+        setStateVariableDerivative(s, "dissipatedEnergy", 
+            getPowerDissipation(s));
+    }
 }
 
 
@@ -359,18 +359,18 @@ void CoordinateLimitForce::
  * getRecordLabels()
  */
 Array<std::string> CoordinateLimitForce::getRecordLabels() const {
-	OpenSim::Array<std::string> labels("");
-	labels.append(getName());
-	labels.append("PotentialEnergy");
-	return labels;
+    OpenSim::Array<std::string> labels("");
+    labels.append(getName());
+    labels.append("PotentialEnergy");
+    return labels;
 }
 /**
  * Given SimTK::State object extract all the values necessary to report forces, application location
  * frame, etc. used in conjunction with getRecordLabels and should return same size Array
  */
 Array<double> CoordinateLimitForce::getRecordValues(const SimTK::State& state) const {
-	OpenSim::Array<double> values(0.0, 0, 2);
-	values.append(calcLimitForce(state));
-	values.append(computePotentialEnergy(state));
-	return values;
+    OpenSim::Array<double> values(0.0, 0, 2);
+    values.append(calcLimitForce(state));
+    values.append(computePotentialEnergy(state));
+    return values;
 }
