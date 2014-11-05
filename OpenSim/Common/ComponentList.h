@@ -107,16 +107,19 @@ public:
     ComponentListIterator<T>& operator++();
     ComponentListIterator<T>& next() { return ++(*this); }
 private:
-#ifndef SWIG
     void advanceToNextValidComponent();
     const Component* m_node;
     const ComponentFilter* m_filter;
-    ComponentListIterator(const Component* node, ComponentFilter* filter = new ComponentFilterByType<T>()) :
+    ComponentListIterator(const Component* node, ComponentFilter* filter = nullptr) :
         m_node(node),
         m_filter(filter){
+        if (filter == nullptr)
+            filter = new ComponentFilterByType<T>();
         advanceToNextValidComponent(); // in case node is not of type T
     };
-#endif
+    ~ComponentListIterator() {
+        if (filter != nullptr) delete filter;
+    }
 };
 
 } // end of namespace OpenSim
