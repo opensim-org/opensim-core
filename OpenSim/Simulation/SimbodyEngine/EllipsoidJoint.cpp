@@ -169,9 +169,9 @@ void EllipsoidJoint::extendInitStateFromProperties(SimTK::State& s) const
 	}
 }
 
-void EllipsoidJoint::setPropertiesFromState(const SimTK::State& state)
+void EllipsoidJoint::extendSetPropertiesFromState(const SimTK::State& state)
 {
-	Super::setPropertiesFromState(state);
+	Super::extendSetPropertiesFromState(state);
 
     // Override default in case of quaternions.
     const SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();

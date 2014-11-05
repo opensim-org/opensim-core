@@ -124,9 +124,9 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
 	setFiberLength(s, _defaultFiberLength);
 }
 
-void ActivationFiberLengthMuscle_Deprecated::setPropertiesFromState(const SimTK::State& state)
+void ActivationFiberLengthMuscle_Deprecated::extendSetPropertiesFromState(const SimTK::State& state)
 {
-	Super::setPropertiesFromState(state);
+	Super::extendSetPropertiesFromState(state);
 
     _defaultActivation = getActivation(state);
     _defaultFiberLength = getFiberLength(state);

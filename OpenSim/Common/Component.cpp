@@ -274,8 +274,13 @@ void Component::componentsInitStateFromProperties(SimTK::State& state) const
         _components[i]->initStateFromProperties(state);
 }
 
-// Base class implementation of virtual method.
 void Component::setPropertiesFromState(const SimTK::State& state)
+{
+    extendSetPropertiesFromState(state);
+    componentsSetPropertiesFromState(state);
+}
+
+void Component::componentsSetPropertiesFromState(const SimTK::State& state)
 {
     for(unsigned int i=0; i < _components.size(); i++)
         _components[i]->setPropertiesFromState(state);

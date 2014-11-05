@@ -91,18 +91,15 @@ void Thelen2003Muscle::ensureMuscleUpToDate()
 void Thelen2003Muscle::extendInitStateFromProperties(SimTK::State& s) const
 {
     Super::extendInitStateFromProperties(s);
-
 }
-    
 
 void Thelen2003Muscle::
-    setPropertiesFromState(const SimTK::State& s)
+    extendSetPropertiesFromState(const SimTK::State& s)
 {
-    Super::setPropertiesFromState(s);      
+    Super::extendSetPropertiesFromState(s);      
     ensureMuscleUpToDate();
       
 }
-
 
 void Thelen2003Muscle::buildMuscle(){
     std::string caller(getName());

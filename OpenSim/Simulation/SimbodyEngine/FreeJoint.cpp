@@ -144,9 +144,9 @@ void FreeJoint::extendInitStateFromProperties(SimTK::State& s) const
 	}
 }
 
-void FreeJoint::setPropertiesFromState(const SimTK::State& state)
+void FreeJoint::extendSetPropertiesFromState(const SimTK::State& state)
 {
-	Super::setPropertiesFromState(state);
+	Super::extendSetPropertiesFromState(state);
 
     // Override default behavior in case of quaternions.
     const MultibodySystem& system = _model->getMultibodySystem();

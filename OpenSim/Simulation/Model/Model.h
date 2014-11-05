@@ -903,7 +903,7 @@ public:
      * Given a State, set all default values for this Model to match those 
      * found in the State.
      */
-    void setPropertiesFromState(const SimTK::State& state) override;
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
     void generateDecorations
        (bool                                        fixed, 

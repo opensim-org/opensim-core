@@ -99,9 +99,9 @@ void Constraint::extendInitStateFromProperties(SimTK::State& s) const
         simConstraint.enable(s);
 }
 
-void Constraint::setPropertiesFromState(const SimTK::State& state)
+void Constraint::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
     set_isDisabled(isDisabled(state));
 }
 

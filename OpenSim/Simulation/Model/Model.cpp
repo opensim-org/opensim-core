@@ -1028,9 +1028,9 @@ void Model::extendInitStateFromProperties(SimTK::State& state) const
     controlsCache.updValue(state) = _defaultControls;
 }
 
-void Model::setPropertiesFromState(const SimTK::State& state)
+void Model::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
 }
 
 void Model::generateDecorations

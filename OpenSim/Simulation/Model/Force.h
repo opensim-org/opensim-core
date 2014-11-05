@@ -142,8 +142,8 @@ protected:
     beginning of the overriding method. **/
 	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 	/** Subclass should override; be sure to invoke 
-    Force::setPropertiesFromState() at the beginning of the overriding method. **/
-    void setPropertiesFromState(const SimTK::State& state) override;
+    Force::extendSetPropertiesFromState() at the beginning of the overriding method. **/
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
     
     //--------------------------------------------------------------------------
     // Force interface.

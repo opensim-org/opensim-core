@@ -63,9 +63,9 @@ void ConstantMuscleActivation::extendInitStateFromProperties(SimTK::State& s) co
     setActivation(s, getDefaultActivation());
 }
 
-void ConstantMuscleActivation::setPropertiesFromState(const SimTK::State& s)
+void ConstantMuscleActivation::extendSetPropertiesFromState(const SimTK::State& s)
 {
-    Super::setPropertiesFromState(s);
+    Super::extendSetPropertiesFromState(s);
     setDefaultActivation(getActivation(s));
 }
 

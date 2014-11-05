@@ -117,7 +117,7 @@ public:
 	/**
 	 * Given an existing SimTK::State set defaults for the RollingOnSurfaceConstraint.
 	 */
-	void setPropertiesFromState(const SimTK::State& state) override;
+	void extendSetPropertiesFromState(const SimTK::State& state) override;
 
 	//SET 
 	void setRollingBodyByName(std::string aBodyName);

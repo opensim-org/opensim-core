@@ -1124,9 +1124,9 @@ extendInitStateFromProperties(SimTK::State& s) const
 }
 
 void Millard2012EquilibriumMuscle::
-setPropertiesFromState(const SimTK::State& s)
+extendSetPropertiesFromState(const SimTK::State& s)
 {
-    Super::setPropertiesFromState(s);
+    Super::extendSetPropertiesFromState(s);
 
     if(!get_ignore_activation_dynamics()) {
         setDefaultActivation(getStateVariable(s,STATE_ACTIVATION_NAME));

@@ -234,6 +234,9 @@ public:
     /** Initialize Component's state variable values from its properties */
     void initStateFromProperties(SimTK::State& state) const;
 
+    /** Set Component's properties given a state. */
+    void setPropertiesFromState(const SimTK::State& state);
+
     /**
      * Get the underlying MultibodySystem that this component is connected to.
      */
@@ -948,11 +951,10 @@ template <class T> friend class ComponentMeasure;
     @param      state
         The state that will receive the new initial conditions.
 
-    @see setPropertiesFromState() **/
+    @see extendSetPropertiesFromState() **/
     virtual void extendInitStateFromProperties(SimTK::State& state) const {};
 
-    /** Invoke componentsInitStateFromProperties() on the (sub)components of this 
-        Component */
+    /** Invoke initStateFromProperties() on (sub)components of this Component */
     void Component::componentsInitStateFromProperties(SimTK::State& state) const;
 
 
@@ -964,8 +966,8 @@ template <class T> friend class ComponentMeasure;
     If you override this method, be sure to invoke the base class method first, 
     using code like this:
     @code
-    void MyComponent::setPropertiesFromState(const SimTK::State& state) {
-        Super::setPropertiesFromState(state); // invoke parent class method
+    void MyComponent::extendSetPropertiesFromState(const SimTK::State& state) {
+        Super::extendSetPropertiesFromState(state); // invoke parent class method
         // ... your code goes here
     }
     @endcode
@@ -975,7 +977,10 @@ template <class T> friend class ComponentMeasure;
         property values.
 
     @see extendInitStateFromProperties() **/
-    virtual void setPropertiesFromState(const SimTK::State& state);
+    virtual void extendSetPropertiesFromState(const SimTK::State& state) {};
+
+    /** Invoke setPropertiesFromState() on (sub)components of this Component */
+    void componentsSetPropertiesFromState(const SimTK::State& state);
 
     /** If a model component has allocated any continuous state variables
     using the addStateVariable() method, then %computeStateVariableDerivatives()

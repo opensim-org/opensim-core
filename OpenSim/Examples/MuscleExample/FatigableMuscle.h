@@ -149,7 +149,7 @@ protected:
 	void extendInitStateFromProperties(SimTK::State& s) const override;
 	/** use the current values in the state to update any properties such as 
 	    default values for state variables */
-	void setPropertiesFromState(const SimTK::State& s) override;
+	void extendSetPropertiesFromState(const SimTK::State& s) override;
 
 	//-------------------------------------------------------------------------
 	// COMPUTATIONS

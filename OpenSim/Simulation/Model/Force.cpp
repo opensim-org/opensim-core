@@ -117,9 +117,9 @@ void Force::extendInitStateFromProperties(SimTK::State& s) const
 
 }
 
-void Force::setPropertiesFromState(const SimTK::State& state)
+void Force::extendSetPropertiesFromState(const SimTK::State& state)
 {
-	Super::setPropertiesFromState(state);
+	Super::extendSetPropertiesFromState(state);
 
     set_isDisabled(isDisabled(state));
 }

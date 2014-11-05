@@ -278,9 +278,9 @@ void Muscle::extendConnectToModel(Model& aModel)
        ("potentialEnergyInfo", MusclePotentialEnergyInfo(), SimTK::Stage::Velocity);
  }
 
-void Muscle::setPropertiesFromState(const SimTK::State& state)
+void Muscle::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
 
     set_ignore_tendon_compliance(getIgnoreTendonCompliance(state));
     set_ignore_activation_dynamics(getIgnoreActivationDynamics(state));

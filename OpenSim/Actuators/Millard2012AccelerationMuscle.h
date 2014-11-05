@@ -725,7 +725,7 @@ protected:
     /**Sets the default state for ModelComponent
     @param s the state of the model
     */
-    void setPropertiesFromState(const SimTK::State& s) FINAL_11;
+    void extendSetPropertiesFromState(const SimTK::State& s) FINAL_11;
 	
     /**computes state variable derivatives
     @param s the state of the model

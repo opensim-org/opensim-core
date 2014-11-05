@@ -183,9 +183,9 @@ public:
         setFiberLength(s, getOptimalFiberLength());
     }
 
-    void setPropertiesFromState(const SimTK::State& s) override
+    void extendSetPropertiesFromState(const SimTK::State& s) override
     {
-        Super::setPropertiesFromState(s);
+        Super::extendSetPropertiesFromState(s);
         setOptimalFiberLength(getFiberLength(s));
     }
 

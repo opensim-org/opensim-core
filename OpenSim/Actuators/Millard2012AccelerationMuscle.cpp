@@ -274,9 +274,9 @@ void Millard2012AccelerationMuscle::extendInitStateFromProperties(SimTK::State& 
 }
     
 void Millard2012AccelerationMuscle::
-    setPropertiesFromState(const SimTK::State& s)
+    extendSetPropertiesFromState(const SimTK::State& s)
 {
-    Super::setPropertiesFromState(s);
+    Super::extendSetPropertiesFromState(s);
 
     setDefaultActivation(getStateVariable(s,STATE_ACTIVATION_NAME));
     setDefaultFiberLength(getStateVariable(s,STATE_FIBER_LENGTH_NAME));

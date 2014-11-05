@@ -1339,7 +1339,7 @@ void testExternalForce()
 
 	// only xf4 is should be affected and set it to offset Tz+px*Fy = 2+0.1*10 = 3.
 	freeCoords[3].setValue(s3, 0.4); // yield -3Nm for force only
-	model.setPropertiesFromState(s3);
+    model.setPropertiesFromState(s3);
 
     RungeKuttaMersonIntegrator integrator3(model.getMultibodySystem());
 	integrator3.setAccuracy(accuracy);
@@ -1387,7 +1387,7 @@ void testExternalForce()
 
 	// only xf4 is should be affected and set it to offset Tz+px*Fy = 2+0.1*10 = 3.
 	freeCoords[3].setValue(s4, 0);
-	model.setPropertiesFromState(s4);
+    model.setPropertiesFromState(s4);
 
     RungeKuttaMersonIntegrator integrator4(model.getMultibodySystem());
 	integrator4.setAccuracy(accuracy);

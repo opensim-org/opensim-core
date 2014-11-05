@@ -180,9 +180,9 @@ void RollingOnSurfaceConstraint::extendInitStateFromProperties(SimTK::State& sta
     }
 }
 
-void RollingOnSurfaceConstraint::setPropertiesFromState(const SimTK::State& state)
+void RollingOnSurfaceConstraint::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
 
     set_isDisabled(isDisabled(state));
     for(int i=0; i < _numConstraintEquations; i++){

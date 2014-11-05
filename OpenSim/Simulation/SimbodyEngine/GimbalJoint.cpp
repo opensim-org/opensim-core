@@ -98,9 +98,9 @@ void GimbalJoint::extendInitStateFromProperties(SimTK::State& s) const
     matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).setQToFitRotation(s, r);
 }
 
-void GimbalJoint::setPropertiesFromState(const SimTK::State& state)
+void GimbalJoint::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
 
     // Override default behavior in case of quaternions.
     const MultibodySystem&        system = _model->getMultibodySystem();

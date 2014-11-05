@@ -388,13 +388,13 @@ void Joint::extendInitStateFromProperties(SimTK::State& s) const
         coordinateSet.get(i).extendInitStateFromProperties(s);
 }
 
-void Joint::setPropertiesFromState(const SimTK::State& state)
+void Joint::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
 
     const CoordinateSet& coordinateSet = get_CoordinateSet();
     for (int i = 0; i < coordinateSet.getSize(); i++)
-        coordinateSet.get(i).setPropertiesFromState(state);
+        coordinateSet.get(i).extendSetPropertiesFromState(state);
 }
 
 

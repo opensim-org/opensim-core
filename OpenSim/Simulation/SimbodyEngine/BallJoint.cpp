@@ -100,9 +100,9 @@ void BallJoint::extendInitStateFromProperties(SimTK::State& s) const
 	matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).setQToFitRotation(s, r);
 }
 
-void BallJoint::setPropertiesFromState(const SimTK::State& state)
+void BallJoint::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
 
     // Override default behavior in case of quaternions.
     const MultibodySystem&        system = _model->getMultibodySystem();

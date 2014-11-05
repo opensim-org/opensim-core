@@ -141,7 +141,7 @@ protected:
 
 	virtual void extendAddToSystem(SimTK::MultibodySystem& system) const;
 	virtual void extendInitStateFromProperties(SimTK::State& s) const;
-    virtual void setPropertiesFromState(const SimTK::State& state);
+    virtual void extendSetPropertiesFromState(const SimTK::State& state);
 
 	virtual void setStateVariableDeriv(const SimTK::State& s, const std::string &aStateName, double aValue) const;
 	virtual double getStateVariableDeriv(const SimTK::State& s, const std::string &aStateName) const;

@@ -226,7 +226,7 @@ protected:
     //factored in.
     void realizeInstance(const SimTK::State& state) const override;
     void extendInitStateFromProperties(SimTK::State& s) const override;
-    void setPropertiesFromState(const SimTK::State& state) override;
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
     // Only the coordinate or the joint itself can specify the owner
     // of Coordinate

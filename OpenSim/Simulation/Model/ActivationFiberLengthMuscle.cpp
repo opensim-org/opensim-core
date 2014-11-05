@@ -98,9 +98,9 @@ void ActivationFiberLengthMuscle::constructProperties()
     setFiberLength(s, getDefaultFiberLength());
 }
 
-void ActivationFiberLengthMuscle::setPropertiesFromState(const SimTK::State& state)
+void ActivationFiberLengthMuscle::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);    // invoke superclass implementation
+    Super::extendSetPropertiesFromState(state);    // invoke superclass implementation
 
     setDefaultActivation(getStateVariable(state, STATE_ACTIVATION_NAME));
     setDefaultFiberLength(getStateVariable(state, STATE_FIBER_LENGTH_NAME));

@@ -254,7 +254,7 @@ void Coordinate::extendInitStateFromProperties(State& s) const
     setLocked(s, get_locked());
 }
 
-void Coordinate::setPropertiesFromState(const SimTK::State& state)
+void Coordinate::extendSetPropertiesFromState(const SimTK::State& state)
 {
     upd_default_value() = _model->getMatterSubsystem().getMobilizedBody(_bodyIndex).getOneQ(state,_mobilizerQIndex);
     upd_default_speed_value() = _model->getMatterSubsystem().getMobilizedBody(_bodyIndex).getOneU(state,_mobilizerQIndex);

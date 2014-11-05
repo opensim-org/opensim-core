@@ -70,7 +70,7 @@ protected:
 	// ModelComponent interface.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendInitStateFromProperties(SimTK::State& s) const override;
-    void setPropertiesFromState(const SimTK::State& state) override;
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
 private:
 	SimTK::MobilizedBodyIndex _masslessBodyIndex;

@@ -515,7 +515,7 @@ protected:
     void extendInitStateFromProperties(SimTK::State& s) const override;
 
     /** Sets the default state for the ModelComponent */
-    void setPropertiesFromState(const SimTK::State& s) override;
+    void extendSetPropertiesFromState(const SimTK::State& s) override;
 
     /** Computes state variable derivatives */
     void computeStateVariableDerivatives(const SimTK::State& s) const override;
