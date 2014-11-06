@@ -44,7 +44,7 @@ before_install:
   ## Install SWIG to build Java/python wrapping.
   - wget --output-document=swig.tar.gz https://github.com/swig/swig/archive/rel-2.0.10.tar.gz
   - tar xzf swig.tar.gz && cd swig-rel-2.0.10
-  - ./configure && make && sudo make -j8 install
+  - ./autogen.sh && ./configure && make && sudo make -j8 install
   # Go back to the directory containing OpenSim.
   - cd ../
   
