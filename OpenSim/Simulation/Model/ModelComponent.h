@@ -100,7 +100,7 @@ public:
     virtual ~ModelComponent() {}
 
     /** Connect this ModelComponent to its aggregate- a  Model */
-    void ModelComponent::connectToModel(Model& model);
+    void connectToModel(Model& model);
 
     /**
      * Get a const reference to the Model this component is part of.
