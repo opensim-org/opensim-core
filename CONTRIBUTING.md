@@ -128,7 +128,7 @@ class MyNewComponent : public SomeIntermediateClassDerivedFromObject {
 In MyNewComponent.cpp:
 
 ```cpp
-void MyNewComponent::createSystem() {
+void MyNewComponent::extendBaseClassMethod() {
  Super::extendBaseClassMethod(); // invoke the parent’s method
  //NOT: SomeIntermediateClassDerivedFromObject::extendBaseClassMethod()
   
