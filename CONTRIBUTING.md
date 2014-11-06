@@ -121,7 +121,7 @@ In MyNewComponent.h:
 ```cpp
 class MyNewComponent : public SomeIntermediateClassDerivedFromObject {
  ...
- void createSystem();
+ void extendBaseClassMethod() override;
 }
 ```
 
@@ -129,8 +129,8 @@ In MyNewComponent.cpp:
 
 ```cpp
 void MyNewComponent::createSystem() {
- Super::createSystem(); // invoke the parent’s method
- //NOT: SomeIntermediateClassDerivedFromObject::createSystem()
+ Super::extendBaseClassMethod(); // invoke the parent’s method
+ //NOT: SomeIntermediateClassDerivedFromObject::extendBaseClassMethod()
   
  // now do the local stuff
 } 
