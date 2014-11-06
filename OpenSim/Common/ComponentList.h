@@ -38,13 +38,20 @@ template <typename T> class ComponentListIterator;
 //==============================================================================
 // Class used to help iterate over specific Components
 //
+/**
+* A class to specifiy a filter to be used to iterate thru compoenents. More flexible than filtering
+* based on Type only. To write your custom filter, extend this class and implement the choose method.
+* This's more typical visitor design pattern
+*/
 class ComponentFilter {
 public:
     ComponentFilter() {};
     virtual bool choose(const Component* comp) const = 0;
     virtual ~ComponentFilter() {}
 };
-
+/**
+* A class to filter components based on Type, used as default filter for iterator
+*/
 template <typename T>
 class ComponentFilterByType : public ComponentFilter {
 public:
@@ -55,6 +62,9 @@ public:
     virtual ~ComponentFilterByType() {}
 
 };
+/**
+* Collection of components to iterate through
+*/
 template <typename T>
 class ComponentList {
 public:
