@@ -11,7 +11,7 @@ matrix:
 env:
   global:
     # The python tests look for this environment variable.
-    - OPENSIM_HOME=$TRAVIS_BUILD_DIR/opensim-install SWIG=swig-2.0.10
+    - OPENSIM_HOME=$TRAVIS_BUILD_DIR/opensim-install
 
 before_install:
   ## Get Simbody and its dependencies.
@@ -42,10 +42,8 @@ before_install:
   - cd ../
 
   ## Install SWIG to build Java/python wrapping.
-  - wget http://sourceforge.net/projects/swig/files/swig/$SWIG/$SWIG.tar.gz/download
-  - mv download $SWIG.tar.gz
-  - tar xzf $SWIG.tar.gz
-  - cd $SWIG
+  - wget --output-document=swig.tar.gz https://github.com/swig/swig/archive/rel-2.0.10.tar.gz
+  - tar xzf swig.tar.gz && cd swig-rel-2.0.10
   - ./configure && make && sudo make -j8 install
   # Go back to the directory containing OpenSim.
   - cd ../
