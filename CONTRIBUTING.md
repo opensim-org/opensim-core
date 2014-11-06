@@ -80,27 +80,7 @@ Here is a partial list of contributors; please let us know if you know of a miss
 
 ## Header Guards
 
-Header Guards are the lines like:
-
-```cpp
-#ifndef _PropertyTable_h_ // <-- don't do it this way!
-#define _PropertyTable_h_
- // ... stuff ...
-#endif //_PropertyTable_h_
-```
-
-that surround every header file to prevent it from being included multiple times. There are two problems with OpenSim’s choice of names for the header guards:
-
-1. They can interfere with user code, and
-2. They violate the C++ standard.
-
-OpenSim uses many very common class names, like “Object” and “Array” and probably “PropertyTable”. These are likely to appear in other code libraries as well, so anyone who combines OpenSim API with other libraries or their own code may have conflicts. The way you are supposed to avoid that is very simple – the header guards should be unique symbols, easily achieved by including the product name in them (that is, they should contain “OPENSIM”).
-
-The C++ standard prohibits user code from using identifiers that contain double underscore (“__”) or begin with an underscore followed by a capital letter (“_P”). Those symbols are reserved for the compiler and the std:: library. OpenSim’s use of symbols like that means it is subject to conflict with the compiler, either now or in future releases or new platforms. Hopefully those conflicts would cause compiler errors, but that is not guaranteed.
-
-One other minor issue is that preprocessor macros should typically have very ugly names with LOTS_OF_CAPS to make it obvious that they are not ordinary identifiers, and to avoid conflicts with NiceCamelHumpIdentifiers.
-
-So OpenSim header guards should be written like this:
+Header gaurds are preprocessor defines that surround every header file to prevent it from being included multiple times. OpenSim header guards should be written like this:
 
 ```cpp
 #ifndef OPENSIM_PROPERTY_TABLE_H_ // <-- yes, do it this way!
@@ -109,6 +89,26 @@ So OpenSim header guards should be written like this:
 #endif // OPENSIM_PROPERTY_TABLE_H_
 ```
 This matches the scheme used in Simbody and avoids all of the above problems. (Trailing underscore, but not leading, is allowed.)
+
+They should not look like this:
+
+```cpp
+#ifndef _PropertyTable_h_ // <-- don't do it this way!
+#define _PropertyTable_h_
+ // ... stuff ...
+#endif //_PropertyTable_h_
+```
+
+There are two problems with these header guards:
+
+1. They can interfere with user code, and
+2. They violate the C++ standard.
+
+OpenSim uses many very common class names, like “Object” and “Array” and probably “PropertyTable”. These are likely to appear in other code libraries as well, so anyone who combines OpenSim API with other libraries or their own code may have conflicts. A simple rule to avoid conflicts is for the header guards to be unique symbols, easily achieved by including the product name in them (that is, they should contain “OPENSIM”).
+
+As a reminder, the C++ standard prohibits user code from using identifiers that contain double underscore (“__”) or begin with an underscore followed by a capital letter (“_P”). Those symbols are reserved for the compiler and the std:: library. Use of symbols like that means it is subject to conflict with the compiler, either now or in future releases or new platforms. Hopefully those conflicts would cause compiler errors, but that is not guaranteed.
+
+One other minor point is that preprocessor macros should typically have very ugly names with LOTS_OF_CAPS to make it obvious that they are not ordinary identifiers, and to avoid conflicts with NiceCamelHumpIdentifiers used for class names.
 
 ## Creating New OpenSim Objects
 
