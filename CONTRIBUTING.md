@@ -88,7 +88,7 @@ Header gaurds are preprocessor defines that surround every header file to preven
  // ... stuff ...
 #endif // OPENSIM_PROPERTY_TABLE_H_
 ```
-This matches the scheme used in Simbody and avoids all of the above problems. (Trailing underscore, but not leading, is allowed.)
+This matches the scheme used in Simbody and avoids all of the following problems. (Trailing underscore, but not leading, is allowed.)
 
 They should not look like this:
 
