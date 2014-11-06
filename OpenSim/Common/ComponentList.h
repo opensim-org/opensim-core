@@ -62,15 +62,17 @@ public:
     typedef ComponentFilter filter;
 #ifndef SWIG
     ComponentList(const Component* root, filter* f = new ComponentFilterByType<T>()) : m_root(root), m_filter(f){}
+#else
+    ComponentList(const Component* root) : m_root(root), m_filter(new ComponentFilterByType<T>()){}
 #endif
     virtual ~ComponentList() { delete m_filter;  }
-    iterator begin() {
+    ComponentListIterator<T> begin() {
         return ComponentListIterator<T>(m_root, m_filter);
     }
     void setFilter(filter* filter){
         m_filter = filter;
     }
-    iterator end() {
+    ComponentListIterator<T> end() {
         return nullptr;
     }
 private:
@@ -107,13 +109,19 @@ public:
     ComponentListIterator<T>& operator++();
     ComponentListIterator<T>& next() { return ++(*this); }
 private:
-#ifndef SWIG
     void advanceToNextValidComponent();
     const Component* m_node;
     const ComponentFilter* m_filter;
+#ifndef SWIG
     ComponentListIterator(const Component* node, ComponentFilter* filter = new ComponentFilterByType<T>()) :
         m_node(node),
         m_filter(filter){
+        advanceToNextValidComponent(); // in case node is not of type T
+    };
+#else
+    ComponentListIterator(const Component* node) :
+        m_node(node),
+        m_filter(new ComponentFilterByType<T>()){
         advanceToNextValidComponent(); // in case node is not of type T
     };
 #endif
