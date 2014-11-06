@@ -116,6 +116,8 @@ private:
     ComponentListIterator(const Component* node, ComponentFilter* filter = new ComponentFilterByType<T>()) :
         m_node(node),
         m_filter(filter){
+        if (filter == nullptr)
+            filter = new ComponentFilterByType<T>();
         advanceToNextValidComponent(); // in case node is not of type T
     };
 #else
