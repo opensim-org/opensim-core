@@ -1,4 +1,4 @@
-#ifndef OPENSIM_BALL_JOINT_H_ 
+#ifndef OPENSIM_BALL_JOINT_H_
 #define OPENSIM_BALL_JOINT_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  BallJoint.h                            *
@@ -31,43 +31,14 @@ namespace OpenSim {
 
 class Model;
 
-/** 
+/**
 
-<P> A class implementing a Ball joint. The underlying implementation is Simbody is a
-Mobilized::Ball. A modeling option allows the joint to use a Euler sequence. </P>
+A class implementing a Ball joint. The underlying implementation is Simbody is a
+<a href="https://simtk.org/api_docs/simbody/api_docs/Simbody/html/classSimTK_1_1MobilizedBody_1_1Ball.html#details">Mobilized::Ball</a>. The opensim Ball joint implementats a fixed 1-2-3 body fixed Euler sequence, without translations, for generalized coordinates calcualtion. Generalized speeds are equal to the computed angular velocities (\f$\vec{u} = \vec{\omega}\f$), not a differentiation of position (\f$\vec{u} \neq \dot{\vec{q}}\f$)
 
 \image html small_ballJoint.gif
 
-<strong>Python Example</strong> 
-
-\code{.py}
-
-## Assumes that you have created two bodies 'block1' and 'block2'
-## Generate joint specific properties
-
-import opensim as osim
-
-locationInParent    = modeling.Vec3(-0.05, -0.35, -0)
-orientationInParent = modeling.Vec3(0,0,0)
-locationInChild     = modeling.Vec3(-0.2,0.4,-0.2)
-orientationInChild  = modeling.Vec3(0,1.5,0)
-
-joint1  = modeling.BallJoint('bloclJoint', 
-                                ,block1, 
-                                ,locInParent
-                                ,oriInParent
-                                ,block2
-                                ,locInChild
-                                ,oriInChild
-                                ,0)
-block1.setJoint(joint1)
-model.addBody(block2)
-
-\endcode
-
 @author Ajay Seth
-@version 1.0
-
 */
 
 class OSIMSIMULATION_API BallJoint : public Joint {
@@ -87,9 +58,9 @@ public:
 	// CONSTRUCTION
 	BallJoint();
 	// convenience constructor
-	BallJoint(const std::string &name, const OpenSim::Body& parent, 
+	BallJoint(const std::string &name, const OpenSim::Body& parent,
 		const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-		const OpenSim::Body& body, 
+		const OpenSim::Body& body,
 		const SimTK::Vec3& locationInBody, const SimTK::Vec3& orientationInBody,
 				/*bool useEulerAngles=true,*/ bool reverse=false);
 
@@ -111,5 +82,3 @@ protected:
 } // end of namespace OpenSim
 
 #endif // OPENSIM_BALL_JOINT_H_
-
-

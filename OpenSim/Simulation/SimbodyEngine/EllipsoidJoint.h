@@ -28,11 +28,22 @@
 
 namespace OpenSim {
 
-/** @defgroup RigidBodyModel  Joints    
-    @class ELLipSoid   
+/**
 
-A class implementing an Ellipsoid joint.  The underlying implementation 
-in Simbody is a MobilizedBody::Ellipsoid.
+A class implementing a Ellipsoid joint. The underlying implementation
+is a Simbody <a href="https://simtk.org/api_docs/simbody/api_docs/Simbody/html/classSimTK_1_1MobilizedBody_1_1Ellipsoid.html#details">Mobilizedbody::Ellipsoid</a>.
+A Planar joint provides three ordered mobilities; rotation about Z and translation in X then Y.
+
+\image html small_planarJoint.gif
+
+
+@author Ajay Seth
+@version 1.0
+*/
+
+
+
+
 
 @author Ajay Seth
 @version 1.0
@@ -51,10 +62,10 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
+    /** @name Property declarations
     These are the serializable properties associated with an EllipsoidJoint. **/
     /**@{**/
-	OpenSim_DECLARE_PROPERTY(radii_x_y_z, SimTK::Vec3, 
+	OpenSim_DECLARE_PROPERTY(radii_x_y_z, SimTK::Vec3,
 		"Radii of the ellipsoid fixed to the parent frame, "
 		"specified as a Vec3(rX, rY, rZ).");
 	/**@}**/
@@ -88,7 +99,7 @@ protected:
 
     // Visual support in SimTK visualizer
 	void generateDecorations(
-        bool fixed, 
+        bool fixed,
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const;
@@ -104,5 +115,3 @@ private:
 } // end of namespace OpenSim
 
 #endif // OPENSIM_ELLIPSOID_JOINT_H_
-
-

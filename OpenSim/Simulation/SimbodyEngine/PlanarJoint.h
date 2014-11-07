@@ -33,14 +33,18 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A PlanarJoint provides three DoFs: rotation about the the common Z of the
- * parent and child joint frames, X and Y translation in the parent body's 
- * joint frame. The underlying Simbody implementation is a 
- * MobilizedBody::Planar. 
- *
- * @author Ajay Seth
- * @version 1.0
- */
+
+A class implementing a Planar joint. The underlying implementation
+is a Simbody <a href="https://simtk.org/api_docs/simbody/api_docs/Simbody/html/classSimTK_1_1MobilizedBody_1_1Planar.html#details">Mobilizedbody::Planar</a>.
+A Planar joint provides three ordered mobilities; rotation about Z and translation in X then Y.
+
+\image html small_planarJoint.gif
+
+
+@author Ajay Seth
+@version 1.0
+*/
+
 class OSIMSIMULATION_API PlanarJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PlanarJoint, Joint);
 
@@ -61,7 +65,7 @@ public:
 
 	// Convenience constructor
 	PlanarJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
+					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
 				    bool reverse=false);
 
 	int numCoordinates() const { return _numMobilities; }
@@ -78,5 +82,3 @@ protected:
 } // end of namespace OpenSim
 
 #endif // OPENSIM_PLANAR_JOINT_H_
-
-
