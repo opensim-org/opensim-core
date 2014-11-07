@@ -41,12 +41,12 @@ template <typename T> class ComponentListIterator;
 /**
 * A class to specifiy a filter to be used to iterate thru compoenents. More flexible than filtering
 * based on Type only. To write your custom filter, extend this class and implement the choose method.
-* This's more typical visitor design pattern
+* This's more typical visitor design pattern.
 */
 class ComponentFilter {
 public:
     ComponentFilter() {};
-    virtual bool choose(const Component* comp) const = 0;
+    virtual bool isMatch(const Component* comp) const = 0;
     virtual ~ComponentFilter() {}
 };
 /**
@@ -56,7 +56,7 @@ template <typename T>
 class ComponentFilterByType : public ComponentFilter {
 public:
     ComponentFilterByType() {};
-    bool choose(const Component* comp) const {
+    bool isMatch(const Component* comp) const {
         return dynamic_cast<const T*>(comp) != nullptr;
     };
     virtual ~ComponentFilterByType() {}
@@ -94,9 +94,9 @@ private:
 //==============================================================================
 //                            OPENSIM ComponentListIterator
 //==============================================================================
-// Class used to iterate over subcomponents of specific type, default to all Compoentns 
+// Class used to iterate over subcomponents of specific type, default to all Components
 //
-/** Usa as:
+/** Use as:
 @code
 ComponentList<GeometryPath> geomPathList = model.getComponentList<GeometryPath>();
 for (const GeometryPath& gpath : geomPathList) {
@@ -129,13 +129,13 @@ private:
         if (filter == nullptr)
             filter = new ComponentFilterByType<T>();
         advanceToNextValidComponent(); // in case node is not of type T
-    };
+    }
 #else
     ComponentListIterator(const Component* node) :
         m_node(node),
         m_filter(new ComponentFilterByType<T>()){
         advanceToNextValidComponent(); // in case node is not of type T
-    };
+    }
 #endif
 };
 

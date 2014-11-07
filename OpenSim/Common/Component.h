@@ -229,11 +229,10 @@ public:
 		{ return *_system; } 
 
 	/**
-     * Get an iterator through the underlying components that this component 
-	 * is composed of.
-     *
-     * A List variant of iterator that doesn't require a stack but leverages the fact that the structure of 
-     * the tree is static, also assumes preorder traversal so that a node is processed before its children
+     * Get an iterator through the underlying subcomponents that this component is composed of. The hierarchy 
+     * of Components/subComponents forms a tree and the tree structure is fixed when the system is created.
+     * The order of the Components is that of tree preorder traversal so that a component is processed before 
+     * all its subcomponents. All addComponent calls must be done before calling this method on the top model.
      */
     template <typename T = Component>
     ComponentList<T> getComponentList() const {
@@ -1500,7 +1499,7 @@ private:
     /// Base Component musct create underlying resources in computational System */
     void baseAddToSystem(SimTK::MultibodySystem& system) const;
 	
-    Component* _nextComponent;
+    SimTK::ReferencePtr<const Component> _nextComponent;
 	// Reference pointer to the system that this component belongs to.
 	SimTK::ReferencePtr<SimTK::MultibodySystem> _system;
 
@@ -1661,7 +1660,7 @@ ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
 template <typename T>
 void ComponentListIterator<T>::advanceToNextValidComponent() {
     // Advance m_node to next valid (of type T) if needed
-    while (m_node != nullptr && !m_filter->choose(m_node)){
+    while (m_node != nullptr && !m_filter->isMatch(m_node)){
         if (m_node->_components.size() > 0)
             m_node = m_node->_components[0];
         else

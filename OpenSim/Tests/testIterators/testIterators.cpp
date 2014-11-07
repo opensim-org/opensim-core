@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                       OpenSim:  iteratorExample.cpp                        *
+ *                       OpenSim:  testIterators.cpp                        *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -30,7 +30,7 @@ using namespace std;
 class ComponentWithStateVariables : public ComponentFilter {
 public:
     ComponentWithStateVariables() {};
-    bool choose(const Component* comp) const override {
+    bool isMatch(const Component* comp) const override {
         return (comp->getNumStateVariables()>0);
     };
     virtual ~ComponentWithStateVariables() {}

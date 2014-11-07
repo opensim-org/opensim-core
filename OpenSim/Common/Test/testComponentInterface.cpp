@@ -436,7 +436,6 @@ int main() {
             std::cout << "Iterator is at: " << component.getName() << std::endl;
         }
         
-        // TODO causes segfault (because of dereferencing a null pointer since begin returns pointer to wrong type.
         std::cout << "Iterate over only Foo's." << std::endl;
         for (auto& component : theWorld.getComponentList<Foo>()) {
             std::cout << "Iterator is at: " << component.getName() << std::endl;
