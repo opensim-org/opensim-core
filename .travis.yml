@@ -53,8 +53,9 @@ before_install:
   - if [ $RUN_VALGRIND = "0" ]; then export CTEST_FLAGS="-D ExperimentalMemCheck"; fi
 
 install:
+  - mkdir ~/opensim-core-build && cd ~/opensim-core-build
   # Configure OpenSim.
-  - cmake . -DBUILD_JAVA_WRAPPING=$BUILD_WRAPPING -DBUILD_PYTHON_WRAPPING=$BUILD_WRAPPING -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME
+  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$BUILD_WRAPPING -DBUILD_PYTHON_WRAPPING=$BUILD_WRAPPING -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME
   # Build OpenSim.
   - make -j$NPROC
 
@@ -83,6 +84,7 @@ script:
   - if [ "$BUILD_WRAPPING" = "on" ]; then nosetests -v; fi
 
   ## Ensure that there are no tabs in source code.
+  - cd $TRAVIS_BUILD_DIR
   # Replace all tabs in certain files with spaces.
   - find . -name 'CMakeLists.txt' -or -name '*.cpp' -or -name '*.c' -or -name '*.h' ! -type d -exec bash -c 'expand --tabs 4 "$0" > /tmp/e && mv /tmp/e "$0"' {} \;
   # Check to see if this resulted in any changes.
