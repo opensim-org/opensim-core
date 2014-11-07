@@ -216,6 +216,20 @@ public:
     /** Destructor is virtual to allow concrete Component to cleanup. **/
     virtual ~Component() {}
 
+
+    /** @name Component Structural Interface
+    The structural interface ensures that deserialization, resolution of 
+    inter-connections, and handling of dependencies are performed systematically
+    and prior to system creation, followed by allocation of necessary System
+    resources. These methods can be extended by virtual methods that form the
+    Component Extension Interface (e.g. #extendFinalizeFromProperties) 
+    that can be implemented by subclasses of Components.
+
+    Component ensures that the corresponding calls are propogated to all of its
+    (sub)components. */
+
+    //@{
+
     /** Update Component's internal data members based on properties.
         Marks the Component as up to date with its properties. */
     void finalizeFromProperties();
@@ -236,6 +250,9 @@ public:
 
     /** Set Component's properties given a state. */
     void setPropertiesFromState(const SimTK::State& state);
+
+    // End of Component Structural Interface (public non-virtual).
+    //@} 
 
     /**
      * Get the underlying MultibodySystem that this component is connected to.
@@ -274,6 +291,7 @@ public:
      * and its subcomponents
      */
     Array<std::string> getStateVariableNames() const;
+
 
     /** @name Component Connector Access methods
         Access Connectors of this component in a generic way and also by name.
@@ -805,20 +823,18 @@ template <class T> friend class ComponentMeasure;
         constructOutputs();
     }
 
-    /** @name           Component Basic Interface
+    /** @name  Component Extension Interface
     The interface ensures that deserialization, resolution of inter-connections,
     and handling of dependencies are performed systematically and prior to 
     system creation, followed by allocation of necessary System resources. These 
     methods are virtual and may be implemented by subclasses of 
     Components. 
     
-    @note Every implementation of virtual method xxx(args) must begin
-    with the line "Super::xxx(args);" to ensure that the parent class methods
-    execute before the child class method, starting with Component::xxx()
-    and going down. 
+    @note Every implementation of virtual extend method xxx(args) must begin
+    with the line "Super::extend<xxx>(args);" to ensure that the parent class
+    is called before the child class method.
     
-    The base class implementations here do two things: (1) take care of any
-    needs of the %Component base class itself, and then (2) ensure that the 
+    The base class implementations ensures that the 
     corresponding calls are made to any subcomponents that have been specified 
     by derived %Component objects, via calls to the addComponent() method. 
     So assuming that your concrete %Component and all intermediate classes from
@@ -880,6 +896,7 @@ template <class T> friend class ComponentMeasure;
     /** Invoke connect() on the (sub)components of this Component.*/
     void componentsConnect(Component& root) const;
 
+    ///@cond
     /** Opportunity to remove connection related information. 
     If you override this method, be sure to invoke the base class method first,
     using code like this :
@@ -891,7 +908,7 @@ template <class T> friend class ComponentMeasure;
     }
     @endcode  */
     //virtual void extendDisconnect() {};
-
+    ///@endcond
 
     /** Add appropriate Simbody elements (if needed) to the System 
     corresponding to this component and specify needed state resources. 
@@ -1029,10 +1046,10 @@ template <class T> friend class ComponentMeasure;
                             const std::string& name, double deriv) const;
 
 
-    // End of Model Component Basic Interface (protected virtuals).
+    // End of Component Extension Interface (protected virtuals).
     //@} 
 
-    /** @name           Component Advanced Interface
+    /** @name  Component Advanced Interface
     You probably won't need to override methods in this section. These provide
     a way for you to perform computations ("realizations") that must be 
     scheduled in carefully-ordered stages as described in the class description
