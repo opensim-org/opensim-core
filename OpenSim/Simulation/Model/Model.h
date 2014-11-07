@@ -885,19 +885,17 @@ public:
     /**@}**/
 
     //--------------------------------------------------------------------------
-    /**@name         Implementation of ModelComponent interface
+    /**@name         Implementation of Component interface
 
     These methods are %Model's implementation of virtual methods defined in
-    the ModelComponent class from which %Model derives. The implementations
-    here serve as dispatchers that treat all contained ModelComponents (and
-    model elements that are not ModelComponents) as subcomponents whose 
-    corresponding methods need to be called. **/
+    the Component class from which %Model derives. **/
     /**@{**/
     void extendFinalizeFromProperties() override;
 
     void extendConnectToModel(Model& model)  override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override; 
     void extendInitStateFromProperties(SimTK::State& state) const override;
+    /**@}**/
 
     /**
      * Given a State, set all default values for this Model to match those 
@@ -905,14 +903,20 @@ public:
      */
     void extendSetPropertiesFromState(const SimTK::State& state) override;
 
+    //--------------------------------------------------------------------------
+    /**@name         Implementation of ModelComponent interface
+
+    These methods are %Model's implementation of virtual methods defined in
+    the ModelComponent class from which %Model derives. **/
+    /**@{**/
     void generateDecorations
        (bool                                        fixed, 
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const 
                                                                 override;
-    
     /**@}**/
+    
     //--------------------------------------------------------------------------
 
 private:

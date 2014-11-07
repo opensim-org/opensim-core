@@ -228,7 +228,7 @@ public:
     Component ensures that the corresponding calls are propogated to all of its
     (sub)components. */
 
-    //@{
+    ///@{
 
     /** Update Component's internal data members based on properties.
         Marks the Component as up to date with its properties. */
@@ -252,7 +252,7 @@ public:
     void setPropertiesFromState(const SimTK::State& state);
 
     // End of Component Structural Interface (public non-virtual).
-    //@} 
+    ///@} 
 
     /**
      * Get the underlying MultibodySystem that this component is connected to.
@@ -848,7 +848,7 @@ template <class T> friend class ComponentMeasure;
       -# finally calls to that same method for \e all subcomponents
     You should consider this ordering when designing a %Component.  **/ 
 
-    //@{
+    ///@{
     /** Perform any time invariant calculation, data structure initializations or
     other component configuration based on its properties necessary to form a  
     functioning, yet not connected component. It also marks the Component
@@ -1047,7 +1047,7 @@ template <class T> friend class ComponentMeasure;
 
 
     // End of Component Extension Interface (protected virtuals).
-    //@} 
+    ///@} 
 
     /** @name  Component Advanced Interface
     You probably won't need to override methods in this section. These provide
@@ -1521,7 +1521,7 @@ protected:
 private:
     class Connection;
 
-    /// Base Component musct create underlying resources in computational System */
+    /// Base Component must create underlying resources in computational System.
     void baseAddToSystem(SimTK::MultibodySystem& system) const;
     
     // Reference pointer to the system that this component belongs to.
