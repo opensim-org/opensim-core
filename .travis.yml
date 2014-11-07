@@ -81,3 +81,11 @@ script:
   - if [ "$BUILD_WRAPPING" = "on" ]; then sudo apt-get install python-nose; fi
   # Run the python tests, verbosely.
   - if [ "$BUILD_WRAPPING" = "on" ]; then nosetests -v; fi
+
+  ## Ensure that there are no tabs in source code.
+  # Replace all tabs in certain files with spaces.
+  - find . -name 'CMakeLists.txt' -or -name '*.cpp' -or -name '*.c' -or -name '*.h' ! -type d -exec bash -c 'expand --tabs 4 "$0" > /tmp/e && mv /tmp/e "$0"' {} \;
+  # Check to see if this resulted in any changes.
+  - if ! git diff --quiet HEAD --; then echo "Tabs exist. Convert to spaces."; fi;
+  # This line will cause the travis test to fail if there are tabs.
+  - git diff --quiet HEAD --
