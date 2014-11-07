@@ -1,4 +1,4 @@
-When possible, we provide the GitHub issues or pull requeststhat
+When possible, we provide the GitHub issues or pull requests that
 are related to the items below. If there is no issue or pull
 request related to the change, then we may provide a commit hash.
 
