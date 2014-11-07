@@ -151,7 +151,7 @@ void Component::finalizeFromProperties()
 
 // Base class implementation of virtual method.
 // Call connect on all components and find unconnected Connectors a
-void Component::connect(Component &root, bool topLevel)
+void Component::connect(Component &root)
 {
     if (!isObjectUpToDateWithProperties()){
         // if edits occur between construction and connect() this is
@@ -167,7 +167,7 @@ void Component::connect(Component &root, bool topLevel)
     for (unsigned int i = 0; i < _components.size(); i++){
         if (i == _components.size() - 1){
             // use parent's sibling if any
-            if (topLevel)
+            if (this==&root)
                 _components[i]->_nextComponent = nullptr;
             else
                 _components[i]->_nextComponent = _nextComponent;

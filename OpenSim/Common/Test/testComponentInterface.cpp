@@ -160,8 +160,8 @@ public:
 
 protected:
 	/** Component Interface */
-    void connect(Component& root, bool topLevel) override {
-        Super::connect(root, topLevel);
+    void connect(Component& root) override {
+        Super::connect(root);
 		// do any internal wiring
 		world = dynamic_cast<TheWorld*>(&root);
 	}
@@ -247,8 +247,8 @@ public:
 
 protected:
 	/** Component Interface */
-    void connect(Component& root, bool topLevel) override{
-        Super::connect(root, topLevel);
+    void connect(Component& root) override{
+        Super::connect(root);
 		// do any internal wiring
 		world = dynamic_cast<TheWorld*>(&root);
 		// perform custom checking
