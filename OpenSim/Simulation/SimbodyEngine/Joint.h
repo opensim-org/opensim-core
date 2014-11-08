@@ -65,7 +65,7 @@ A Seth, M Sherman, P Eastman, S Delp; Nonlinear dynamics 62 (1), 291-303
 <b>Python example</b>
 \code{.py}
     ##Define a ball joint between blockA and blockB
-    abJoint  = modeling.BallJoint('JointName',blockA,locInParent,oriInParent,blockB,locInChild,oriInChild, 0)
+    abJoint  = osim.BallJoint('JointName',blockA,locInParent,oriInParent,blockB,locInChild,oriInChild, 0)
 \endcode
 
 @author Ajay Seth

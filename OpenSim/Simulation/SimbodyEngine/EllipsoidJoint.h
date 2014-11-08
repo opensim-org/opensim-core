@@ -32,18 +32,16 @@ namespace OpenSim {
 
 A class implementing a Ellipsoid joint. The underlying implementation
 is a Simbody <a href="https://simtk.org/api_docs/simbody/api_docs/Simbody/html/classSimTK_1_1MobilizedBody_1_1Ellipsoid.html#details">Mobilizedbody::Ellipsoid</a>.
-A Planar joint provides three ordered mobilities; rotation about Z and translation in X then Y.
+A Ellipsoid joint provides three mobilities – coordinated rotation and translation along the surface of an ellipsoid fixed to the parent body. The ellipsoid surface is determined by an input Vec3 which describes the ellipsoid radius;
 
-\image html small_planarJoint.gif
+\code{.py}
+		## Python example for input radius (in meters)
+		ellipsRadii = Vec3(0.1,0.2, 0)
+\endcode
 
+Generalized speeds are equal to the computed angular velocities (\f$\vec{u} = \vec{\omega}\f$), not a differentiation of position (\f$\vec{u} \neq \dot{\vec{q}}\f$)
 
-@author Ajay Seth
-@version 1.0
-*/
-
-
-
-
+\image html small_EllipsoidJoint.gif
 
 @author Ajay Seth
 @version 1.0
