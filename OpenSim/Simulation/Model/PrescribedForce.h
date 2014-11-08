@@ -243,7 +243,7 @@ public:
 
 protected:
 	/** ModelComponent interface. **/ 
-	void connectToModel(Model& model) override;
+	void extendConnectToModel(Model& model) override;
 	/** Force interface. **/
 	virtual void computeForce
        (const SimTK::State&                state, 

@@ -271,7 +271,7 @@ private:
 	//--------------------------------------------------------------------------
 	// Implement ModelComponent interface.
 	//--------------------------------------------------------------------------
-	void connectToModel(Model& aModel) override;
+	void extendConnectToModel(Model& aModel) override;
 	// Create a SimTK::Force::LinarBushing which implements this ExpressionBasedBushingForce.
 	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     //--------------------------------------------------------------------------

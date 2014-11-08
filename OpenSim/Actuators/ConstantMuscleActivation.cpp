@@ -57,15 +57,15 @@ void ConstantMuscleActivation::extendAddToSystem(SimTK::MultibodySystem& system)
                              SimTK::Stage::Topology);
 }
 
-void ConstantMuscleActivation::initStateFromProperties(SimTK::State& s) const
+void ConstantMuscleActivation::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
     setActivation(s, getDefaultActivation());
 }
 
-void ConstantMuscleActivation::setPropertiesFromState(const SimTK::State& s)
+void ConstantMuscleActivation::extendSetPropertiesFromState(const SimTK::State& s)
 {
-    Super::setPropertiesFromState(s);
+    Super::extendSetPropertiesFromState(s);
     setDefaultActivation(getActivation(s));
 }
 

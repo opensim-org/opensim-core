@@ -427,7 +427,7 @@ private:
     //--------------------------------------------------------------------------
     // ModelComponent Interface
     //--------------------------------------------------------------------------
-    void connectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
     void connectIndividualMetabolicMuscle
        (Model& aModel, 
         Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter& mm);

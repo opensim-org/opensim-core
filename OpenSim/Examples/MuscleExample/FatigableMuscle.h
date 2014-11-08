@@ -146,10 +146,10 @@ protected:
 	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 	/** initialize muscle state variables from properties. For example, any 
 	    properties that contain default state values */
-	void initStateFromProperties(SimTK::State& s) const override;
+	void extendInitStateFromProperties(SimTK::State& s) const override;
 	/** use the current values in the state to update any properties such as 
 	    default values for state variables */
-	void setPropertiesFromState(const SimTK::State& s) override;
+	void extendSetPropertiesFromState(const SimTK::State& s) override;
 
 	//-------------------------------------------------------------------------
 	// COMPUTATIONS

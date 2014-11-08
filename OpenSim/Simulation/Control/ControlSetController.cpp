@@ -208,14 +208,16 @@ double ControlSetController::getLastTime() const {
     }
 }
 
-void ControlSetController::finalizeFromProperties()
+void ControlSetController::extendFinalizeFromProperties()
 {
+    Super::extendFinalizeFromProperties();
+
     SimTK_ASSERT(_controlsFileName != "",
-        "ControlSetController::finalizeFromProperties controlsFileName is NULL");
+        "ControlSetController::extendFinalizeFromProperties controlsFileName is NULL");
 
     if (_controlsFileName != "Unassigned") {
-        //        std::cout<<"\n\nControlSetController::connectToModel(): Loading controls from file "<<_controlsFileName<<"."<<std::endl;
-        //        std::cout<<"ControlSetController::connectToModel(): Found "<<_controlSet->getSize()<<" controls."<<std::endl;
+        //        std::cout<<"\n\nControlSetController::extendConnectToModel(): Loading controls from file "<<_controlsFileName<<"."<<std::endl;
+        //        std::cout<<"ControlSetController::extendConnectToModel(): Found "<<_controlSet->getSize()<<" controls."<<std::endl;
         delete  _controlSet;
         if (_controlsFileName.rfind(".sto") != std::string::npos)
             _controlSet = new ControlSet(Storage(_controlsFileName));
@@ -223,7 +225,7 @@ void ControlSetController::finalizeFromProperties()
             _controlSet = new ControlSet(_controlsFileName);
     }
     else if (_controlSet == NULL) {
-        std::cout << " ControlSetController::finalizeFromProperties(): no Control Set Specified" << std::endl;
+        std::cout << " ControlSetController::extendFinalizeFromProperties(): no Control Set Specified" << std::endl;
         setDisabled(true);
         return;  // no more wiring is needed
     }
@@ -238,7 +240,5 @@ void ControlSetController::finalizeFromProperties()
         if (getProperty_actuator_list().findIndex(actName) < 0) // not already in the list of actuators for this controller
             updProperty_actuator_list().appendValue(actName);
     }
-
-    Super::finalizeFromProperties();
 }
 

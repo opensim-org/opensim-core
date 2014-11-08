@@ -75,9 +75,9 @@ Thelen2003Muscle(const std::string& aName,  double aMaxIsometricForce,
 //====================================================================
 // Model Component Interface
 //====================================================================
-void Thelen2003Muscle::connectToModel(Model& aModel)
+void Thelen2003Muscle::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
     ensureMuscleUpToDate();
 }
 
@@ -88,21 +88,18 @@ void Thelen2003Muscle::ensureMuscleUpToDate()
     }
 }
 
-void Thelen2003Muscle::initStateFromProperties(SimTK::State& s) const
+void Thelen2003Muscle::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
-
+    Super::extendInitStateFromProperties(s);
 }
-    
 
 void Thelen2003Muscle::
-    setPropertiesFromState(const SimTK::State& s)
+    extendSetPropertiesFromState(const SimTK::State& s)
 {
-    Super::setPropertiesFromState(s);      
+    Super::extendSetPropertiesFromState(s);      
     ensureMuscleUpToDate();
       
 }
-
 
 void Thelen2003Muscle::buildMuscle(){
     std::string caller(getName());
