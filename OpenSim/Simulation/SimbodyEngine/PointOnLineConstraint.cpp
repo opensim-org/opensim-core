@@ -56,10 +56,10 @@ PointOnLineConstraint::~PointOnLineConstraint()
  * Default constructor.
  */
 PointOnLineConstraint::PointOnLineConstraint() :
-	Constraint()
+    Constraint()
 {
-	setNull();
-	constructProperties();
+    setNull();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -67,16 +67,16 @@ PointOnLineConstraint::PointOnLineConstraint() :
  * Convenience (API) constructor.
  */
    PointOnLineConstraint::PointOnLineConstraint(OpenSim::Body& lineBody, Vec3 lineDirection, Vec3 pointOnLine,
-			OpenSim::Body& followerBody, Vec3 followerPoint) :
-	Constraint()
+            OpenSim::Body& followerBody, Vec3 followerPoint) :
+    Constraint()
 {
-	setNull();
-	constructProperties();
-	set_line_body(lineBody.getName());
-	set_line_direction_vec(lineDirection);
-	set_point_on_line(pointOnLine);
-	set_follower_body(followerBody.getName());
-	set_point_on_follower(followerPoint);
+    setNull();
+    constructProperties();
+    set_line_body(lineBody.getName());
+    set_line_direction_vec(lineDirection);
+    set_point_on_line(pointOnLine);
+    set_follower_body(followerBody.getName());
+    set_point_on_follower(followerPoint);
 }
 
 
@@ -90,7 +90,7 @@ PointOnLineConstraint::PointOnLineConstraint() :
  */
 void PointOnLineConstraint::setNull()
 {
-	setAuthors("Samuel R. Hamner ");
+    setAuthors("Samuel R. Hamner ");
 }
 
 //_____________________________________________________________________________
@@ -99,23 +99,23 @@ void PointOnLineConstraint::setNull()
  */
 void PointOnLineConstraint::constructProperties()
 {
-	// Line Body Name
-	constructProperty_line_body("");
+    // Line Body Name
+    constructProperty_line_body("");
 
-	//Default location and orientation (rotation sequence)
-	SimTK::Vec3 origin(0.0, 0.0, 0.0);
+    //Default location and orientation (rotation sequence)
+    SimTK::Vec3 origin(0.0, 0.0, 0.0);
 
-	// Line Direction
-	constructProperty_line_direction_vec(origin);
+    // Line Direction
+    constructProperty_line_direction_vec(origin);
 
-	// Default Point On Line
-	constructProperty_point_on_line(origin);
+    // Default Point On Line
+    constructProperty_point_on_line(origin);
 
-	// Follower Body
-	constructProperty_follower_body("");
+    // Follower Body
+    constructProperty_follower_body("");
 
-	// Point On Follower Body 
-	constructProperty_point_on_follower(origin);
+    // Point On Follower Body 
+    constructProperty_point_on_follower(origin);
 }
 
 //_____________________________________________________________________________
@@ -125,26 +125,26 @@ void PointOnLineConstraint::constructProperties()
  *
  * @param aModel OpenSim model containing this PointOnLineConstraint.
  */
-void PointOnLineConstraint::connectToModel(Model& aModel)
+void PointOnLineConstraint::extendConnectToModel(Model& aModel)
 {
-	Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
-	string errorMessage;
-	// Look up the two bodies being constrained together by name in the
-	// model and might as well keep a pointer to them
-	std::string lineBodyName = get_line_body();
-	std::string followerBodyName = get_follower_body();
+    string errorMessage;
+    // Look up the two bodies being constrained together by name in the
+    // model and might as well keep a pointer to them
+    std::string lineBodyName = get_line_body();
+    std::string followerBodyName = get_follower_body();
 
-	if (!aModel.updBodySet().contains(lineBodyName)) {
-		errorMessage = "Invalid line body (" + lineBodyName + ") specified in Constraint " + getName();
-		throw (Exception(errorMessage.c_str()));
-	}
-	if (!aModel.updBodySet().contains(followerBodyName)) {
-		errorMessage = "Invalid follower body (" + followerBodyName + ") specified in Constraint " + getName();
-		throw (Exception(errorMessage.c_str()));
-	}
-	_lineBody = &aModel.updBodySet().get(lineBodyName);
-	_followerBody = &aModel.updBodySet().get(followerBodyName);
+    if (!aModel.updBodySet().contains(lineBodyName)) {
+        errorMessage = "Invalid line body (" + lineBodyName + ") specified in Constraint " + getName();
+        throw (Exception(errorMessage.c_str()));
+    }
+    if (!aModel.updBodySet().contains(followerBodyName)) {
+        errorMessage = "Invalid follower body (" + followerBodyName + ") specified in Constraint " + getName();
+        throw (Exception(errorMessage.c_str()));
+    }
+    _lineBody = &aModel.updBodySet().get(lineBodyName);
+    _followerBody = &aModel.updBodySet().get(followerBodyName);
 }
 
 void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
@@ -175,28 +175,28 @@ void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) co
  * Following methods set attributes of the point on line constraint */
 void PointOnLineConstraint::setLineBodyByName(std::string aBodyName)
 {
-	set_line_body(aBodyName);
+    set_line_body(aBodyName);
 }
 
 void PointOnLineConstraint::setFollowerBodyByName(std::string aBodyName)
 {
-	set_follower_body(aBodyName);
+    set_follower_body(aBodyName);
 }
 
 /** Set the line direction for the point on line constraint*/
 void PointOnLineConstraint::setLineDirection(Vec3 direction)
 {
-	set_line_direction_vec(direction);
+    set_line_direction_vec(direction);
 }
 
 /** Set the location of the point on the line*/
 void PointOnLineConstraint::setPointOnLine(Vec3 point)
 {
-	set_point_on_line(point);
+    set_point_on_line(point);
 }
 
 /** Set the location of the point on the follower body*/
 void PointOnLineConstraint::setPointOnFollower(Vec3 point)
 {
-	set_point_on_follower(point);
+    set_point_on_follower(point);
 }

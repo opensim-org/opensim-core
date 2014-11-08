@@ -79,8 +79,10 @@ void Body::constructProperties()
 }
 
 
-void Body::finalizeFromProperties()
+void Body::extendFinalizeFromProperties()
 {
+    Super::extendFinalizeFromProperties();
+
     //TODO: Need a better design so ground body is not exposed in XML
     //like every other body. One idea is to remove ground body altogether.
     //Instead of using ground Body as a holder of geometry, a flat list of
@@ -96,8 +98,6 @@ void Body::finalizeFromProperties()
     
     _index.invalidate();
     _mbTransform.setToZero();
-
-    Super::finalizeFromProperties();
 }
 
 //_____________________________________________________________________________
@@ -107,9 +107,9 @@ void Body::finalizeFromProperties()
  *
  * @param aModel OpenSim model containing this Body.
  */
-void Body::connectToModel(Model& aModel)
+void Body::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
     for(int i=0; i< get_WrapObjectSet().getSize(); i++)
         get_WrapObjectSet().get(i).connectToModelAndBody(aModel, *this);

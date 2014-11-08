@@ -118,9 +118,9 @@ void Umberger2010MuscleMetabolicsProbe::constructProperties()
  *
  * @param aModel OpenSim model containing this Umberger2010MuscleMetabolicsProbe.
  */
-void Umberger2010MuscleMetabolicsProbe::connectToModel(Model& aModel)
+void Umberger2010MuscleMetabolicsProbe::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
     if (isDisabled()) return;   // Nothing to connect
 
     const int nM = 

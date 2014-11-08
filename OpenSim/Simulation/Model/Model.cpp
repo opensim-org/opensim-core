@@ -498,8 +498,9 @@ void Model::createMultibodySystem()
 }
 
 
-void Model::finalizeFromProperties()
+void Model::extendFinalizeFromProperties()
 {
+    Super::extendFinalizeFromProperties();
 
     // building the system for the first time, need to tell
     // multibodyTree builder what joints are available
@@ -561,7 +562,6 @@ void Model::finalizeFromProperties()
         for (int i = 0; i<nf; ++i)
             addComponent(&ms[i]);
     }
-
 
     // Populate lists of model joints and coordinates according to the Bodies
     // setup here who own the Joints which in turn own the model's Coordinates
@@ -644,13 +644,11 @@ void Model::finalizeFromProperties()
     }
 
     updCoordinateSet().populate(*this);
-
-    Super::finalizeFromProperties();
 }
 
-void Model::connectToModel(Model &model)
+void Model::extendConnectToModel(Model &model)
 {
-    Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 
     if (&model != this){
         cout << "Model::" << getName() <<
@@ -1020,9 +1018,9 @@ void Model::setDefaultProperties()
     _forceUnits = Units(get_force_units());
 }
 
-void Model::initStateFromProperties(SimTK::State& state) const
+void Model::extendInitStateFromProperties(SimTK::State& state) const
 {
-    Super::initStateFromProperties(state);
+    Super::extendInitStateFromProperties(state);
     // Allocate the size and default values for controls
     // Actuators will have a const view into the cache
     Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
@@ -1030,9 +1028,9 @@ void Model::initStateFromProperties(SimTK::State& state) const
     controlsCache.updValue(state) = _defaultControls;
 }
 
-void Model::setPropertiesFromState(const SimTK::State& state)
+void Model::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
 }
 
 void Model::generateDecorations

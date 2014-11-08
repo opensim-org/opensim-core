@@ -141,11 +141,11 @@ public:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     /** Initializes the activation state variable to \c default_activation. **/
-    void initStateFromProperties(SimTK::State& s) const override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
 
     /** Sets \c default_activation to the current value of the activation state
         variable. **/
-    void setPropertiesFromState(const SimTK::State& s) override;
+    void extendSetPropertiesFromState(const SimTK::State& s) override;
 
     /** Calculates the time derivative of activation using a first-order dynamic
         model. Respects the lower bound on activation while preserving the

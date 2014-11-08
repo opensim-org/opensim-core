@@ -106,8 +106,10 @@ void PathSpring::setDissipation(double dissipation)
  *
  * @param aModel model containing this PathSpring.
  */
-void PathSpring::finalizeFromProperties()
+void PathSpring::extendFinalizeFromProperties()
 {
+    Super::extendFinalizeFromProperties();
+
     GeometryPath& path = upd_GeometryPath();
     path.setName("path");
     path.setDefaultColor(DefaultPathSpringColor);
@@ -116,10 +118,6 @@ void PathSpring::finalizeFromProperties()
     // Resting length must be greater than 0.0.
     assert(get_resting_length() > 0.0);
     path.setOwner(this);
-
-    // Call up the chain to mark Component as being up-to-date
-    // with its properties 
-    Super::finalizeFromProperties();
 }
 
 

@@ -195,8 +195,8 @@ public:
 
 protected:
     // ModelComponent interface.
-	void connectToModel(Model& aModel) override;
-	void initStateFromProperties(SimTK::State& s) const override;
+	void extendConnectToModel(Model& aModel) override;
+	void extendInitStateFromProperties(SimTK::State& s) const override;
 	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 	// Visual support GeometryPath drawing in SimTK visualizer.

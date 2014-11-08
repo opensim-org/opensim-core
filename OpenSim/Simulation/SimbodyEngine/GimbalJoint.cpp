@@ -51,22 +51,22 @@ GimbalJoint::~GimbalJoint()
  */
 GimbalJoint::GimbalJoint() : Joint()
 {
-	setAuthors("Tim Dorn, Ajay Seth");
-	constructCoordinates();
+    setAuthors("Tim Dorn, Ajay Seth");
+    constructCoordinates();
 }
 //_____________________________________________________________________________
 /**
  * Convenience Constructor.
  */
 GimbalJoint::GimbalJoint(const std::string &name, OpenSim::Body& parent, 
-					 Vec3 locationInParent, Vec3 orientationInParent,
-					 OpenSim::Body& body, Vec3 locationInBody, Vec3 orientationInBody, 
-					 bool reverse) :
-			Joint(name, parent, locationInParent,orientationInParent,
-					body, locationInBody, orientationInBody, reverse)
+                     Vec3 locationInParent, Vec3 orientationInParent,
+                     OpenSim::Body& body, Vec3 locationInBody, Vec3 orientationInBody, 
+                     bool reverse) :
+            Joint(name, parent, locationInParent,orientationInParent,
+                    body, locationInBody, orientationInBody, reverse)
 {
-	setAuthors("Tim Dorn, Ajay Seth");
-	constructCoordinates();
+    setAuthors("Tim Dorn, Ajay Seth");
+    constructCoordinates();
 }
 
 //=============================================================================
@@ -78,38 +78,38 @@ void GimbalJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
     createMobilizedBody<MobilizedBody::Gimbal>(system);
 }
 
-void GimbalJoint::initStateFromProperties(SimTK::State& s) const
+void GimbalJoint::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (matter.getUseEulerAngles(s))
         return;
 
-	const CoordinateSet& coordinateSet = get_CoordinateSet();
+    const CoordinateSet& coordinateSet = get_CoordinateSet();
 
-	double xangle = coordinateSet[0].getDefaultValue();
+    double xangle = coordinateSet[0].getDefaultValue();
     double yangle = coordinateSet[1].getDefaultValue();
     double zangle = coordinateSet[2].getDefaultValue();
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
-	
-	GimbalJoint* mutableThis = const_cast<GimbalJoint*>(this);
-	getChildBody().getMobilizedBody().setQToFitRotation(s, r);
+
+    GimbalJoint* mutableThis = const_cast<GimbalJoint*>(this);
+    getChildBody().getMobilizedBody().setQToFitRotation(s, r);
 }
 
-void GimbalJoint::setPropertiesFromState(const SimTK::State& state)
+void GimbalJoint::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
 
     // Override default behavior in case of quaternions.
     const MultibodySystem&        system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-		Rotation r = getChildBody().getMobilizedBody().getBodyRotation(state);
+        Rotation r = getChildBody().getMobilizedBody().getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
-	
-		const CoordinateSet& coordinateSet = get_CoordinateSet();
+    
+        const CoordinateSet& coordinateSet = get_CoordinateSet();
 
         coordinateSet[0].setDefaultValue(angles[0]);
         coordinateSet[1].setDefaultValue(angles[1]);

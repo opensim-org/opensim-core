@@ -1636,8 +1636,8 @@ void testCustomVsCompoundJoint()
 
 	state2.updQ() = state1.getQ();
 
-	customModel.setPropertiesFromState(state1);
-	compoundModel.setPropertiesFromState(state2);
+    customModel.setPropertiesFromState(state1);
+    compoundModel.setPropertiesFromState(state2);
 
 	customModel.print("Gimbal_CustomZXY_test.osim");
 	compoundModel.print("Gimbal_CompoundPinsZXY_test.osim");	
