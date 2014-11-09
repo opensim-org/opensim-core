@@ -31,8 +31,8 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
-A class implementing a Gimbal joint. The underlying implementation is a Simbody
-<a href="https://simtk.org/api_docs/simbody/api_docs/Simbody/html/classSimTK_1_1MobilizedBody_1_1Gimbal.html#details">Mobilized::Gimbal</a>. The opensim Gimbal joint implementation uses a fixed 1-2-3 body fixed Euler sequence for generalized coordinates calcualtion. Gimbal joints have a singularity when Y is near \f$\frac{\pi}{2}\f$. Generalized speeds are equal to the Eular angle derivatives  (\f$\vec{u} = \dot{\vec{q}}\f$)
+A class implementing a Gimbal joint. The underlying implementation Simbody is a
+MobilizedBody::Gimbal. The opensim Gimbal joint implementation uses a fixed 1-2-3 (x-y-z) body fixed Euler sequence for generalized coordinates calcualtion. Gimbal joints have a singularity when Y is near \f$\frac{\pi}{2}\f$. Generalized speeds are equal to the Eular angle derivatives  (\f$\vec{u} = \dot{\vec{q}}\f$)
 
 \image html small_gimbalJoint.gif
 

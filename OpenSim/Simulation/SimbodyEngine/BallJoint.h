@@ -33,8 +33,7 @@ class Model;
 
 /**
 
-A class implementing a Ball joint. The underlying implementation is Simbody is a
-<a href="https://simtk.org/api_docs/simbody/api_docs/Simbody/html/classSimTK_1_1MobilizedBody_1_1Ball.html#details">MobilizedBody::Ball</a>. The opensim Ball joint implementats a fixed 1-2-3 body fixed Euler sequence, without translations, for generalized coordinates calcualtion. Generalized speeds are equal to the computed angular velocities (\f$\vec{u} = \vec{\omega}\f$), not a differentiation of position (\f$\vec{u} \neq \dot{\vec{q}}\f$)
+A class implementing a Ball joint. The underlying implementation in Simbody is MobilizedBody::Ball. The OpenSim Ball joint implements a fixed 1-2-3 (X-Y-Z) body-fixed Euler sequence, without translations, for generalized coordinate calculation. Generalized speeds are equal to the computed angular velocities (\f$\vec{u} = \vec{\omega}\f$), not a differentiation of position (\f$\vec{u} \neq \dot{\vec{q}}\f$)
 
 \image html small_ballJoint.gif
 

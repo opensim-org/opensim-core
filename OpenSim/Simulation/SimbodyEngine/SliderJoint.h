@@ -32,8 +32,8 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
-A class implementing a Slider joint.  A class implementing a Slider joint.  The underlying implementation is a Simbody
-<a href="https://simtk.org/api_docs/simbody/api_docs/Simbody/html/classSimTK_1_1MobilizedBody_1_1Slider.html#details">Mobilized::Slider</a>.
+A class implementing a Slider joint.  A class implementing a Slider joint.  The underlying implementation in Simbody is a
+MobilizedBody::Slider.
 Slider provides a single mobility along the common X-axis of the joint frames (not body) in the parent and body.
 
 \image html small_sliderJoint.gif

@@ -35,8 +35,7 @@ namespace OpenSim {
 /**
 
 A class implementing a Planar joint. The underlying implementation
-is a Simbody <a href="https://simtk.org/api_docs/simbody/api_docs/Simbody/html/classSimTK_1_1MobilizedBody_1_1Planar.html#details">Mobilizedbody::Planar</a>.
-A Planar joint provides three ordered mobilities; rotation about Z and translation in X then Y.
+in Simbody is a Mobilizedbody::Planar. A Planar joint provides three ordered mobilities; rotation about Z and translation in X then Y.
 
 \image html small_planarJoint.gif
 

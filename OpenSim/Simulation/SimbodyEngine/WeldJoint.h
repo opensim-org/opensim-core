@@ -32,7 +32,7 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
-A class implementing a Weld joint. The underlying implementation is a Simbody <a href="https://simtk.org/api_docs/simbody/api_docs/Simbody/html/classSimTK_1_1MobilizedBody_1_1Weld.html#details">MobilizedBody::Weld</a>.
+A class implementing a Weld joint. The underlying implementation in Simbody is a MobilizedBody::Weld.
 There is no relative motion of bodies joined by a WeldJoint. Weld joints are often used to to create composite bodies from smaller simpler bodies. You can also get the reaction force at the weld in the usual manner.
 
 @author Ajay Seth

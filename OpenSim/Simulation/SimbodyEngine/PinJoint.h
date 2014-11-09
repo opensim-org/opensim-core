@@ -33,8 +33,8 @@ namespace OpenSim {
 //=============================================================================
 /**
 
-A Class implementing a Pin joint . The underlying implementation is a Simbody
-<a href="https://simtk.org/api_docs/simbody/api_docs/Simbody/html/classSimTK_1_1MobilizedBody_1_1Pin.html#details">Mobilized::Pin</a>. Pin provides one DOF about the common
+A Class implementing a Pin joint . The underlying implementation in Simbody is a
+MobilizedBody::Pin. Pin provides one DOF about the common
 Z-axis of the joint (not body) frames in the parent and child body. If you want rotation about a different direction, rotate the joint and body frames such that the z axes
 are in the desired direction.The single generalized coordinate q is the rotation angle in radians,
 and the generalized speed u is the rotation rate in radians/time unit (\f$\vec{u} = \dot{\vec{q}}\f$).

@@ -32,8 +32,8 @@ class SpatialTransform;
 
 /**
 
-A class implementing a custom joint.  The underlying implementation is a Simbody
-<a href="https://simtk.org/api_docs/simbody/api_docs/Simbody/html/classSimTK_1_1MobilizedBody_1_1FunctionBased.html#details">MobilizedBody::FunctionBased</a>. Custom joints offer a generic joint representation, which can be used to model both conventional (pins, slider, universal, etc…) as well as more complex biomechanical joints. The behavior of a CustomJoint is specified by its SpatialTransform. A SpatialTransform is comprised of 6 TransformAxes (3 rotations and 3 translations) that define the spatial position of Child in Parent as a function of coordinates. Each transform axis enables a function of joint coordinates to operate about or along its axis. The order of the spatial transform is fixed with rotations first followed by translations. Subsequently, coupled motion (i.e., describing motion of two degrees of freedom as a function of one coordinate) is easily handled.
+A class implementing a custom joint.  The underlying implementation in Simbody is a
+MobilizedBody::FunctionBased. Custom joints offer a generic joint representation, which can be used to model both conventional (pins, slider, universal, etc…) as well as more complex biomechanical joints. The behavior of a CustomJoint is specified by its SpatialTransform. A SpatialTransform is comprised of 6 TransformAxes (3 rotations and 3 translations) that define the spatial position of Child in Parent as a function of coordinates. Each transform axis enables a function of joint coordinates to operate about or along its axis. The order of the spatial transform is fixed with rotations first followed by translations. Subsequently, coupled motion (i.e., describing motion of two degrees of freedom as a function of one coordinate) is easily handled.
 
 @author Ajay Seth, Frank C. Anderson
  */
@@ -63,7 +63,7 @@ public:
 //==============================================================================
     // CONSTRUCTION
     CustomJoint();
-    
+
     /** Construct joint with supplied coordinates and transform axes */
     CustomJoint(const std::string &name, const Body& parent,
             const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
@@ -77,7 +77,7 @@ public:
             const Body& child,
             const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
             bool reverse = false);
-    
+
     // default destructor, copy constructor, copy assignment
 
     int numCoordinates() const override {return get_CoordinateSet().getSize();};
@@ -96,7 +96,7 @@ public:
         override;
 
 private:
-    // ModelComponent extension interface 
+    // ModelComponent extension interface
     void extendFinalizeFromProperties() override;
     void extendConnectToModel(Model& aModel) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
