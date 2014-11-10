@@ -7,12 +7,29 @@ Even great programmers benefit from additional eyeballs on their code to catch b
 
 Thank you for contributing!
 
+  - [Making a Pull Request](#making-a-pull-request)
+  - [Checking for Memory Leaks through GitHub](#checking-for-memory-leaks-through-github)
+  - [Contributors](#contributors)
+  - [Coding Standards](#coding-standards)
+    - [Header Guards](#header-guards)
+    - [Creating New OpenSim Objects](#creating-new-opensim-objects)
+    - [Assignment Operators in C++](#assignment-operators-in-c)
+    - [Documenting your Code](#documenting-your-code)
+    - [Replace Tabs with Four Spaces](#replace-tabs-with-four-spaces)
+    - [Renaming Classes in the OpenSim API](#renaming-classes-in-the-opensim-api)
+    - [Naming Conventions](#naming-conventions)
+    - [Other C++ Coding Style Suggestions](#other-c-coding-style-suggestions)
+      - [Throw and return are not functions](#throw-and-return-are-not-functions)
+      - [Always use pre-increment and pre-decrement operators when you have a choice](#always-use-pre-increment-and-pre-decrement-operators-when-you-have-a-choice)
+      - [Place pointer and reference symbols with the type](#place-pointer-and-reference-symbols-with-the-type)
+    - [Removing Methods](#removing-methods)
+
 
 Making a Pull Request
 ---------------------
 1. To help the people who review your pull request, you must include a detailed description of what changes or additions the pull request includes and what you have done to test and verify the changes. If there is an existing issue or set of issues that documents the problem the pull request is solving, you can reference it. But, please make sure detailed information about the commits is easily available.
 
-2. Make sure that your request conforms to OpenSim's [coding standards](http://simtk-confluence.stanford.edu:8080/display/OpenSim/OpenSim+Coding+Standards).
+2. Make sure that your request conforms to our [coding standards](#coding-standards).
 
 3. Make sure that tests pass on your local machine before making a pull request. The [README.md](https://github.com/opensim-org/opensim-core) mentions how to run the tests.
 
@@ -64,19 +81,6 @@ Here is a partial list of contributors; please let us know if you know of a miss
 
 
 # Coding Standards
-
-  - [Header Guards](#header-guards)
-  - [Creating New OpenSim Objects](#creating-new-opensim-objects)
-  - [Assignment Operators in C++](#assignment-operators-in-c)
-  - [Documenting your Code](#documenting-your-code)
-  - [Replace Tabs with Four Spaces](#replace-tabs-with-four-spaces)
-  - [Renaming Classes in the OpenSim API](#renaming-classes-in-the-opensim-api)
-  - [Naming Conventions](#naming-conventions)
-  - [Other C++ Coding Style Suggestions](#other-c-coding-style-suggestions)
-    - [Throw and return are not functions](#throw-and-return-are-not-functions)
-    - [Always use pre-increment and pre-decrement operators when you have a choice](#always-use-pre-increment-and-pre-decrement-operators-when-you-have-a-choice)
-    - [Place pointer and reference symbols with the type](#place-pointer-and-reference-symbols-with-the-type)
-  - [Removing Methods](#removing-methods)
 
 ## Header Guards
 
