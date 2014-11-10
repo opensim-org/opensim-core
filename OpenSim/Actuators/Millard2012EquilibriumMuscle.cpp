@@ -313,7 +313,7 @@ setActivation(SimTK::State& s, double activation) const
         setControls(SimTK::Vector(1, activation), controls);
         _model->setControls(s, controls);
     } else {
-        setStateVariable(s, STATE_ACTIVATION_NAME, clampActivation(activation));
+        setStateVariableValue(s, STATE_ACTIVATION_NAME, clampActivation(activation));
     }
     markCacheVariableInvalid(s,"velInfo");
     markCacheVariableInvalid(s,"dynamicsInfo");
@@ -370,7 +370,7 @@ void Millard2012EquilibriumMuscle::
 setFiberLength(SimTK::State& s, double fiberLength) const
 {
     if(!get_ignore_tendon_compliance()) {
-        setStateVariable(s, STATE_FIBER_LENGTH_NAME,
+        setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,
                          clampFiberLength(fiberLength));
         markCacheVariableInvalid(s,"lengthInfo");
         markCacheVariableInvalid(s,"velInfo");
@@ -691,7 +691,7 @@ void Millard2012EquilibriumMuscle::calcMuscleLengthInfo(const SimTK::State& s,
                                 tendonSlackLen));
         } else {                                            // elastic tendon
             mli.fiberLength = clampFiberLength(
-                                getStateVariable(s, STATE_FIBER_LENGTH_NAME));
+                                getStateVariableValue(s, STATE_FIBER_LENGTH_NAME));
         }
 
         mli.normFiberLength   = mli.fiberLength / optFiberLength;
@@ -821,7 +821,7 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
 
             double a = SimTK::NaN;
             if(!get_ignore_activation_dynamics()) {
-                a = clampActivation(getStateVariable(s, STATE_ACTIVATION_NAME));
+                a = clampActivation(getStateVariableValue(s, STATE_ACTIVATION_NAME));
             } else {
                 a = clampActivation(getControl(s));
             }
@@ -855,7 +855,7 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
 
             double a = SimTK::NaN;
             if(!get_ignore_activation_dynamics()) {
-                a = clampActivation(getStateVariable(s, STATE_ACTIVATION_NAME));
+                a = clampActivation(getStateVariableValue(s, STATE_ACTIVATION_NAME));
             } else {
                 a = clampActivation(getControl(s));
             }
@@ -963,7 +963,7 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         // Compute dynamic quantities.
         double a = SimTK::NaN;
         if(!get_ignore_activation_dynamics()) {
-            a = clampActivation(getStateVariable(s, STATE_ACTIVATION_NAME));
+            a = clampActivation(getStateVariableValue(s, STATE_ACTIVATION_NAME));
         } else {
             a = clampActivation(getControl(s));
         }
@@ -1129,10 +1129,10 @@ extendSetPropertiesFromState(const SimTK::State& s)
     Super::extendSetPropertiesFromState(s);
 
     if(!get_ignore_activation_dynamics()) {
-        setDefaultActivation(getStateVariable(s,STATE_ACTIVATION_NAME));
+        setDefaultActivation(getStateVariableValue(s,STATE_ACTIVATION_NAME));
     }
     if(!get_ignore_tendon_compliance()) {
-        setDefaultFiberLength(getStateVariable(s,STATE_FIBER_LENGTH_NAME));
+        setDefaultFiberLength(getStateVariableValue(s,STATE_FIBER_LENGTH_NAME));
     }
 }
 

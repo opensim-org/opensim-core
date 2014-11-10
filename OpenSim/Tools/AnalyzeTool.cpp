@@ -625,7 +625,7 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
 		Array<std::string> stateNames = aStatesStore.getColumnLabels();
         for (int j=0; j<stateData.size(); ++j){
 			// storage labels included time at index 0 so +1 to skip
-            aModel.setStateVariable(s, stateNames[j+1], stateData[j]);
+            aModel.setStateVariableValue(s, stateNames[j+1], stateData[j]);
 		}
        
 		// Adjust configuration to match constraints and other goals

@@ -336,7 +336,7 @@ double CoordinateLimitForce::getPowerDissipation(const SimTK::State& s) const
 double CoordinateLimitForce::getDissipatedEnergy(const SimTK::State& s) const
 {
     if(isComputingDissipationEnergy()){
-        return getStateVariable(s, "dissipatedEnergy");
+        return getStateVariableValue(s, "dissipatedEnergy");
     } else {
         throw Exception("CoordinateLimitForce::getDissipatedEnergy() compute_dissipation_energy set to false.");
         return SimTK::NaN;

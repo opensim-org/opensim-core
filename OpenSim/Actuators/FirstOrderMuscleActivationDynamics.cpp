@@ -111,13 +111,13 @@ computeStateVariableDerivatives(const SimTK::State& s) const
 double FirstOrderMuscleActivationDynamics::
 getActivation(const SimTK::State& s) const
 {
-    return clampToValidInterval(getStateVariable(s, STATE_NAME_ACTIVATION));
+    return clampToValidInterval(getStateVariableValue(s, STATE_NAME_ACTIVATION));
 }
 
 void FirstOrderMuscleActivationDynamics::setActivation(SimTK::State& s,
                                                        double activation) const
 {
-    setStateVariable(s, STATE_NAME_ACTIVATION,
+    setStateVariableValue(s, STATE_NAME_ACTIVATION,
                      clampToValidInterval(activation));
 }
 

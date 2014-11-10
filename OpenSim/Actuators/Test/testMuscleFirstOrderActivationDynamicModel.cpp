@@ -561,7 +561,7 @@ class MySystemGuts : public SimTK::System::Guts {
     // Implement required System::Guts virtuals.
     MySystemGuts* cloneImpl() const {return new MySystemGuts(*this);}
 
-    // During realizeTopology() we allocate the needed State.
+    // During extendRealizeTopology() we allocate the needed State.
     int realizeTopologyImpl(State& state) const {
         // HERE'S WHERE THE IC GETS SET
         Vector zInit(1, funcData.m_ic); // initial value for z

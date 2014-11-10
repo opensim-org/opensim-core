@@ -143,7 +143,7 @@ public:
     //--------------------------------------------------------------------------
     void setFiberLength(SimTK::State& s, double fiberLength) const
     {
-        setStateVariable(s, stateName_fiberLength, fiberLength);
+        setStateVariableValue(s, stateName_fiberLength, fiberLength);
         markCacheVariableInvalid(s, "lengthInfo");
         markCacheVariableInvalid(s, "velInfo");
         markCacheVariableInvalid(s, "dynamicsInfo");
@@ -151,7 +151,7 @@ public:
 
     void setNormFiberVelocity(SimTK::State& s, double normFiberVelocity) const
     {
-        setStateVariable(s, stateName_fiberVelocity, normFiberVelocity *
+        setStateVariableValue(s, stateName_fiberVelocity, normFiberVelocity *
                          getMaxContractionVelocity() * getOptimalFiberLength());
         markCacheVariableInvalid(s, "velInfo");
         markCacheVariableInvalid(s, "dynamicsInfo");
@@ -222,7 +222,7 @@ public:
     void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli)
         const override
     {
-        mli.fiberLength            = getStateVariable(s, stateName_fiberLength);
+        mli.fiberLength            = getStateVariableValue(s, stateName_fiberLength);
         mli.fiberLengthAlongTendon = mli.fiberLength;
         mli.normFiberLength        = mli.fiberLength / getOptimalFiberLength();
         mli.tendonLength           = 0;
@@ -250,7 +250,7 @@ public:
     void calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi)
         const override
     {
-        fvi.fiberVelocity = getStateVariable(s, stateName_fiberVelocity);
+        fvi.fiberVelocity = getStateVariableValue(s, stateName_fiberVelocity);
         fvi.fiberVelocityAlongTendon = fvi.fiberVelocity;
         fvi.normFiberVelocity        = fvi.fiberVelocity /
                         (getMaxContractionVelocity() * getOptimalFiberLength());

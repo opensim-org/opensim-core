@@ -292,7 +292,7 @@ public:
 
     /** After buildSystem() has been called, and any additional modifications
     to the Simbody MultibodySystem have been made, call this method to finalize 
-    the MultibodySystem (by calling its realizeTopology() method), obtain an 
+    the MultibodySystem (by calling its extendRealizeTopology() method), obtain an 
     initial state, and assemble it so that position constraints are 
     satisified. The initStateFromProperties() method of each contained
     ModelComponent will be invoked. A reference to the writable internally-

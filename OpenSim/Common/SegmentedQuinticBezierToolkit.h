@@ -774,7 +774,7 @@ class MySystemGuts : public SimTK::System::Guts {
     // Implement required System::Guts virtuals.
     MySystemGuts* cloneImpl() const {return new MySystemGuts(*this);}
 
-    // During realizeTopology() we allocate the needed State.
+    // During extendRealizeTopology() we allocate the needed State.
     int realizeTopologyImpl(SimTK::State& state) const {
         // HERE'S WHERE THE IC GETS SET
         SimTK::Vector zInit(1, bdata._initalValue); // initial value for z
@@ -782,7 +782,7 @@ class MySystemGuts : public SimTK::System::Guts {
         return 0;
     }
 
-    // During realizeAcceleration() we calculate the State derivative.
+    // During extendRealizeAcceleration() we calculate the State derivative.
     int realizeAccelerationImpl(const SimTK::State& state) const {
         SimTK::Real x = state.getTime();
 

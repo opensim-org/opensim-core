@@ -228,12 +228,12 @@ bool ScalarActuator::isActuationOverriden(const SimTK::State& s) const
        
 void ScalarActuator::setOverrideActuation(SimTK::State& s, double actuation) const
 {
-	setDiscreteVariable(s, "override_actuation", actuation);;
+	setDiscreteVariableValue(s, "override_actuation", actuation);;
 }
 
 double ScalarActuator::getOverrideActuation(const SimTK::State& s) const
 {
-    return getDiscreteVariable(s, "override_actuation");
+    return getDiscreteVariableValue(s, "override_actuation");
 }
 double ScalarActuator::computeOverrideActuation(const SimTK::State& s) const
 {

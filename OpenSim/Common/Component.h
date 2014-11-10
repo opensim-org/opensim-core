@@ -254,6 +254,37 @@ public:
     // End of Component Structural Interface (public non-virtual).
     ///@} 
 
+    /**@name       Realize the Simbody System and State to
+
+    Methods in this section enable advanced and scripting users access to
+    realize the Simbody MultibodySystem and the provided state to the a
+    a particular computaions dictated by the realization Stage.
+    Note that these are not accessible until after initSystem() has been
+    invoked on this %Model. **/
+    /**@{**/
+
+    ///** Perform computations that depend only on time and earlier stages. **/
+    //void extendRealizeTime(const SimTK::State& state) const;
+    ///** Perform computations that depend only on position-level state
+    //variables and computations performed in earlier stages (including time). **/
+    //void extendRealizePosition(const SimTK::State& state) const;
+    ///** Perform computations that depend only on velocity-level state
+    //variables and computations performed in earlier stages (including position,
+    //and time). **/
+    //void extendRealizeVelocity(const SimTK::State& state) const;
+    ///** Perform computations (typically forces) that may depend on
+    //dynamics-stage state variables, and on computations performed in earlier
+    //stages (including velocity, position, and time), but not on other forces,
+    //accelerations, constraint multipliers, or reaction forces. **/
+    //void extendRealizeDynamics(const SimTK::State& state) const;
+    ///** Perform computations that may depend on applied forces. **/
+    //void extendRealizeAcceleration(const SimTK::State& state) const;
+    ///** Perform computations that may depend on anything but are only used
+    //for reporting and cannot affect subsequent simulation behavior. **/
+    //void extendRealizeReport(const SimTK::State& state) const;
+
+    /**@}**/
+
     /**
      * Get the underlying MultibodySystem that this component is connected to.
      */
@@ -564,7 +595,7 @@ public:
      * @param state   the State for which to get the value
      * @param name    the name (string) of the state variable of interest
      */
-    double getStateVariable(const SimTK::State& state, const std::string& name) const;
+    double getStateVariableValue(const SimTK::State& state, const std::string& name) const;
 
     /**
      * Set the value of a state variable allocated by this Component by name.
@@ -573,7 +604,7 @@ public:
      * @param name   the name of the state variable
      * @param value  the value to set
      */
-    void setStateVariable(SimTK::State& state, const std::string& name, double value) const;
+    void setStateVariableValue(SimTK::State& state, const std::string& name, double value) const;
 
 
     /**
@@ -612,7 +643,7 @@ public:
      * @param name    the name of the state variable
      * @return value  the discrete variable value
      */
-    double getDiscreteVariable(const SimTK::State& state, const std::string& name) const;
+    double getDiscreteVariableValue(const SimTK::State& state, const std::string& name) const;
 
     /**
      * Set the value of a discrete variable allocated by this Component by name.
@@ -621,7 +652,7 @@ public:
      * @param name   the name of the dsicrete variable
      * @param value  the value to set
      */
-    void setDiscreteVariable(SimTK::State& state, const std::string& name, double value) const;
+    void setDiscreteVariableValue(SimTK::State& state, const std::string& name, double value) const;
 
     /**
      * Get the value of a cache variable allocated by this Component by name.
@@ -1060,7 +1091,7 @@ template <class T> friend class ComponentMeasure;
 
     @note Once again it is crucial that, if you override a method here,
     you invoke the superclass method as the <em>first line</em> in your
-    implementation, via a call like "Super::realizePosition(state);". This 
+    implementation, via a call like "Super::extendRealizePosition(state);". This 
     will ensure that all necessary base class computations are performed, and
     that subcomponents are handled properly.
 
@@ -1075,34 +1106,34 @@ template <class T> friend class ComponentMeasure;
     //@{
     /** Obtain state resources that are needed unconditionally, and perform
     computations that depend only on the system topology. **/
-    virtual void realizeTopology(SimTK::State& state) const;
+    virtual void extendRealizeTopology(SimTK::State& state) const;
     /** Obtain and name state resources (like state variables allocated by
     an underlying Simbody component) that may be needed, depending on modeling
     options. Also, perform any computations that depend only on topology and 
     selected modeling options. **/
-    virtual void realizeModel(SimTK::State& state) const;
+    virtual void extendRealizeModel(SimTK::State& state) const;
     /** Perform computations that depend only on instance variables, like
     lengths and masses. **/
-    virtual void realizeInstance(const SimTK::State& state) const;
+    virtual void extendRealizeInstance(const SimTK::State& state) const;
     /** Perform computations that depend only on time and earlier stages. **/
-    virtual void realizeTime(const SimTK::State& state) const;
+    virtual void extendRealizeTime(const SimTK::State& state) const;
     /** Perform computations that depend only on position-level state
     variables and computations performed in earlier stages (including time). **/
-    virtual void realizePosition(const SimTK::State& state) const;
+    virtual void extendRealizePosition(const SimTK::State& state) const;
     /** Perform computations that depend only on velocity-level state 
     variables and computations performed in earlier stages (including position, 
     and time). **/
-    virtual void realizeVelocity(const SimTK::State& state) const;
+    virtual void extendRealizeVelocity(const SimTK::State& state) const;
     /** Perform computations (typically forces) that may depend on 
     dynamics-stage state variables, and on computations performed in earlier
     stages (including velocity, position, and time), but not on other forces,
     accelerations, constraint multipliers, or reaction forces. **/
-    virtual void realizeDynamics(const SimTK::State& state) const;
+    virtual void extendRealizeDynamics(const SimTK::State& state) const;
     /** Perform computations that may depend on applied forces. **/
-    virtual void realizeAcceleration(const SimTK::State& state) const;
+    virtual void extendRealizeAcceleration(const SimTK::State& state) const;
     /** Perform computations that may depend on anything but are only used
     for reporting and cannot affect subsequent simulation behavior. **/
-    virtual void realizeReport(const SimTK::State& state) const;
+    virtual void extendRealizeReport(const SimTK::State& state) const;
     //@} end of Component Advanced Interface
 
 
@@ -1262,7 +1293,7 @@ template <class T> friend class ComponentMeasure;
     this method. If the StateVariable is NOT hidden, this also creates an
     Output in this Component with the same name as the StateVariable. Reporters
     should use this Output to get the StateVariable's value (instead of using
-    getStateVariable()). */
+    getStateVariableValue()). */
     void addStateVariable(Component::StateVariable*  stateVariable) const;
 
     /** Add a system discrete variable belonging to this Component, give

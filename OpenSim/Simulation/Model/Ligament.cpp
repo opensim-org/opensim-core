@@ -95,8 +95,8 @@ void Ligament::extendFinalizeFromProperties()
 //                            REALIZE DYNAMICS
 //------------------------------------------------------------------------------
 // See if anyone has an opinion about the path color and change it if so.
-void Ligament::realizeDynamics(const SimTK::State& state) const {
-    Super::realizeDynamics(state); // Mandatory first line
+void Ligament::extendRealizeDynamics(const SimTK::State& state) const {
+    Super::extendRealizeDynamics(state); // Mandatory first line
 
     if(!isDisabled(state)){
         const SimTK::Vec3 color = computePathColor(state);
