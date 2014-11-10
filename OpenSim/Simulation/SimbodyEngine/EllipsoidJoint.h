@@ -28,15 +28,25 @@
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
 /**
- * A class implementing an Ellipsoid joint.  The underlying implementation 
- * in Simbody is a MobilizedBody::Ellipsoid.
- *
- * @author Ajay Seth
- * @version 1.0
- */
+
+A class implementing a Ellipsoid joint. The underlying implementation
+in Simbody is a MobilizedBody::Ellipsoid. A Ellipsoid joint provides three mobilities – coordinated rotation and translation along the surface of an ellipsoid fixed to the parent body. The ellipsoid surface is determined by an input Vec3 which describes the ellipsoid radius;
+
+\code{.py}
+		## Python example for input radius (in meters)
+		ellipsRadii = Vec3(0.1,0.2, 0)
+\endcode
+
+Generalized speeds are equal to the computed angular velocities (\f$\vec{u} = \vec{\omega}\f$), not a differentiation of position (\f$\vec{u} \neq \dot{\vec{q}}\f$)
+
+\image html small_ellipsoid.gif
+
+@author Ajay Seth
+@version 1.0
+*/
+
+
 class OSIMSIMULATION_API EllipsoidJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(EllipsoidJoint, Joint);
 
@@ -49,10 +59,10 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
+    /** @name Property declarations
     These are the serializable properties associated with an EllipsoidJoint. **/
     /**@{**/
-	OpenSim_DECLARE_PROPERTY(radii_x_y_z, SimTK::Vec3, 
+	OpenSim_DECLARE_PROPERTY(radii_x_y_z, SimTK::Vec3,
 		"Radii of the ellipsoid fixed to the parent frame, "
 		"specified as a Vec3(rX, rY, rZ).");
 	/**@}**/
@@ -86,7 +96,7 @@ protected:
 
     // Visual support in SimTK visualizer
 	void generateDecorations(
-        bool fixed, 
+        bool fixed,
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const;
@@ -102,5 +112,3 @@ private:
 } // end of namespace OpenSim
 
 #endif // OPENSIM_ELLIPSOID_JOINT_H_
-
-

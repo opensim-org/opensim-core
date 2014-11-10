@@ -95,5 +95,3 @@ public:
 }; // end namespace
 
 #endif // SMC_Joint_h__
-
-
