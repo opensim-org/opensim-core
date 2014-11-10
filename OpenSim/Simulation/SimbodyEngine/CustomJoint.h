@@ -34,18 +34,20 @@ class SpatialTransform;
 //                              CUSTOM JOINT
 //==============================================================================
 /**
- * A class implementing a custom joint.  The underlying component in Simbody
- * is a Function-based mobilizer.
- *
- * @author Frank C. Anderson, Ajay Seth
- */
+
+A class implementing a custom joint.  The underlying implementation in Simbody is a
+SimTK::MobilizedBody::FunctionBased. Custom joints offer a generic joint representation, which can be used to model both conventional (pins, slider, universal, etc…) as well as more complex biomechanical joints. The behavior of a CustomJoint is specified by its SpatialTransform. A SpatialTransform is comprised of 6 TransformAxes (3 rotations and 3 translations) that define the spatial position of Child in Parent as a function of coordinates. Each transform axis enables a function of joint coordinates to operate about or along its axis. The order of the spatial transform is fixed with rotations first followed by translations. Subsequently, coupled motion (i.e., describing motion of two degrees of freedom as a function of one coordinate) is easily handled.
+
+@author Ajay Seth, Frank C. Anderson
+*/
+
 class OSIMSIMULATION_API CustomJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(CustomJoint, Joint);
 public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** @name Property declarations 
+    /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
 
@@ -62,7 +64,7 @@ public:
 //==============================================================================
     // CONSTRUCTION
     CustomJoint();
-    
+
     /** Construct joint with supplied coordinates and transform axes */
     CustomJoint(const std::string &name, const Body& parent,
             const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
@@ -76,7 +78,7 @@ public:
             const Body& child,
             const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
             bool reverse = false);
-    
+
     // default destructor, copy constructor, copy assignment
 
     int numCoordinates() const override {return get_CoordinateSet().getSize();};
@@ -84,7 +86,7 @@ public:
     // Get and Set Transforms
     const SpatialTransform& getSpatialTransform() const
     {   return get_SpatialTransform(); }
-    SpatialTransform& updSpatialTransform() 
+    SpatialTransform& updSpatialTransform()
     {   return upd_SpatialTransform(); }
 
     // SCALE
@@ -95,7 +97,7 @@ public:
         override;
 
 private:
-    // ModelComponent extension interface 
+    // ModelComponent extension interface
     void extendFinalizeFromProperties() override;
     void extendConnectToModel(Model& aModel) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
@@ -114,7 +116,7 @@ private:
 };  // END of class CustomJoint
 //==============================================================================
 //==============================================================================
-template <> 
+template <>
 SimTK::MobilizedBody::FunctionBased
     CustomJoint::createMobilizedBody<SimTK::MobilizedBody::FunctionBased>(
                             SimTK::MobilizedBody& inboard,
@@ -128,5 +130,3 @@ SimTK::MobilizedBody::FunctionBased
 } // end of namespace OpenSim
 
 #endif // OPENSIM_CUSTOM_JOINT_H_
-
-
