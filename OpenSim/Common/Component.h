@@ -264,24 +264,24 @@ public:
     /**@{**/
 
     ///** Perform computations that depend only on time and earlier stages. **/
-    //void extendRealizeTime(const SimTK::State& state) const;
+    //void realizeTime(const SimTK::State& state) const;
     ///** Perform computations that depend only on position-level state
     //variables and computations performed in earlier stages (including time). **/
-    //void extendRealizePosition(const SimTK::State& state) const;
+    //void realizePosition(const SimTK::State& state) const;
     ///** Perform computations that depend only on velocity-level state
     //variables and computations performed in earlier stages (including position,
     //and time). **/
-    //void extendRealizeVelocity(const SimTK::State& state) const;
+    //void realizeVelocity(const SimTK::State& state) const;
     ///** Perform computations (typically forces) that may depend on
     //dynamics-stage state variables, and on computations performed in earlier
     //stages (including velocity, position, and time), but not on other forces,
     //accelerations, constraint multipliers, or reaction forces. **/
-    //void extendRealizeDynamics(const SimTK::State& state) const;
+    //void realizeDynamics(const SimTK::State& state) const;
     ///** Perform computations that may depend on applied forces. **/
-    //void extendRealizeAcceleration(const SimTK::State& state) const;
+    //void realizeAcceleration(const SimTK::State& state) const;
     ///** Perform computations that may depend on anything but are only used
     //for reporting and cannot affect subsequent simulation behavior. **/
-    //void extendRealizeReport(const SimTK::State& state) const;
+    //void realizeReport(const SimTK::State& state) const;
 
     /**@}**/
 
