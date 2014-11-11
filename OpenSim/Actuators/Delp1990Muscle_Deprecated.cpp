@@ -239,11 +239,11 @@ void Delp1990Muscle_Deprecated::extendAddToSystem(SimTK::MultibodySystem& system
 }
 
 void Delp1990Muscle_Deprecated::setActiveForce( const SimTK::State& s, double force ) const {
-    setCacheVariable<double>(s, "activeForce", force);
+    setCacheVariableValue<double>(s, "activeForce", force);
 }
 
 double Delp1990Muscle_Deprecated::getActiveForce( const SimTK::State& s) const {
-    return getCacheVariable<double>(s, "activeForce");
+    return getCacheVariableValue<double>(s, "activeForce");
 }
 
 
@@ -348,7 +348,7 @@ bool Delp1990Muscle_Deprecated::setMass(double aMass)
 void Delp1990Muscle_Deprecated::computeStateVariableDerivatives(const SimTK::State &s) const
 {
     Super::computeStateVariableDerivatives(s);
-    setStateVariableDerivative(s, "fiber_velocity", getFiberVelocityDeriv(s));
+    setStateVariableDerivativeValue(s, "fiber_velocity", getFiberVelocityDeriv(s));
 }
 
 //_____________________________________________________________________________

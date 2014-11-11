@@ -213,11 +213,11 @@ void ContDerivMuscle_Deprecated::extendAddToSystem(SimTK::MultibodySystem& syste
 
 
 void ContDerivMuscle_Deprecated::setPassiveForce(const SimTK::State& s, double force ) const {
-    setCacheVariable<double>(s, "passiveForce", force);
+    setCacheVariableValue<double>(s, "passiveForce", force);
 }
 
 double ContDerivMuscle_Deprecated::getPassiveForce( const SimTK::State& s) const {
-    return getCacheVariable<double>(s, "passiveForce");
+    return getCacheVariableValue<double>(s, "passiveForce");
 }
 
 void ContDerivMuscle_Deprecated::setTendonForce(const SimTK::State& s, double force) const {
@@ -229,11 +229,11 @@ double ContDerivMuscle_Deprecated::getTendonForce(const SimTK::State& s) const {
 }
 
 void ContDerivMuscle_Deprecated::setActiveForce( const SimTK::State& s, double force ) const {
-    setCacheVariable<double>(s, "activeForce", force);
+    setCacheVariableValue<double>(s, "activeForce", force);
 }
 
 double ContDerivMuscle_Deprecated::getActiveForce( const SimTK::State& s) const {
-    return getCacheVariable<double>(s, "activeForce");
+    return getCacheVariableValue<double>(s, "activeForce");
 }
 
 

@@ -294,9 +294,9 @@ void Millard2012AccelerationMuscle::
         vdot = getFiberAcceleration(s);
     }
 
-    setStateVariableDerivative(s, STATE_ACTIVATION_NAME, adot);
-    setStateVariableDerivative(s, STATE_FIBER_LENGTH_NAME, ldot);
-    setStateVariableDerivative(s, STATE_FIBER_VELOCITY_NAME, vdot);
+    setStateVariableDerivativeValue(s, STATE_ACTIVATION_NAME, adot);
+    setStateVariableDerivativeValue(s, STATE_FIBER_LENGTH_NAME, ldot);
+    setStateVariableDerivativeValue(s, STATE_FIBER_VELOCITY_NAME, vdot);
 }
 
 //=============================================================================

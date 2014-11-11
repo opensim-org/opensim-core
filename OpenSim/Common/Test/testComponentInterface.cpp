@@ -288,9 +288,9 @@ protected:
     }
 
     void computeStateVariableDerivatives(const SimTK::State& state) const override {
-        setStateVariableDerivative(state, "fiberLength", 2.0);
-        setStateVariableDerivative(state, "activation", 3.0 * state.getTime());
-        setStateVariableDerivative(state, "hiddenStateVar", 
+        setStateVariableDerivativeValue(state, "fiberLength", 2.0);
+        setStateVariableDerivativeValue(state, "activation", 3.0 * state.getTime());
+        setStateVariableDerivativeValue(state, "hiddenStateVar", 
                                           exp(-0.5 * state.getTime()));
     }
 

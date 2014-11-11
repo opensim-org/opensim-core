@@ -653,7 +653,7 @@ double Component::
 
 // Get the value of a state variable derivative computed by this Component.
 double Component::
-    getStateVariableDerivative(const SimTK::State& state, 
+    getStateVariableDerivativeValue(const SimTK::State& state, 
                                 const std::string& name) const
 {
     computeStateVariableDerivatives(state);
@@ -734,7 +734,7 @@ void Component::
 
 // Set the derivative of a state variable computed by this Component by name.
 void Component::
-    setStateVariableDerivative(const State& state, 
+    setStateVariableDerivativeValue(const State& state, 
                                const std::string& name, double value) const
 {
     std::map<std::string, StateVariableInfo>::const_iterator it;
@@ -1069,13 +1069,13 @@ void Component::AddedStateVariable::setValue(SimTK::State& state, double value) 
 double Component::AddedStateVariable::
     getDerivative(const SimTK::State& state) const
 {
-    return getOwner().getCacheVariable<double>(state, getName()+"_deriv");
+    return getOwner().getCacheVariableValue<double>(state, getName()+"_deriv");
 }
 
 void Component::AddedStateVariable::
     setDerivative(const SimTK::State& state, double deriv) const
 {
-    return getOwner().setCacheVariable<double>(state, getName()+"_deriv", deriv);
+    return getOwner().setCacheVariableValue<double>(state, getName()+"_deriv", deriv);
 }
 
 

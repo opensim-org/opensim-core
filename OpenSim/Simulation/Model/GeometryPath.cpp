@@ -266,7 +266,7 @@ const OpenSim::Array <PathPoint*> & GeometryPath::
 getCurrentPath(const SimTK::State& s)  const
 {
     computePath(s);   // compute checks if path needs to be recomputed
-    return getCacheVariable< Array<PathPoint*> >(s, "current_path");
+    return getCacheVariableValue< Array<PathPoint*> >(s, "current_path");
 }
 
 // get the the path as PointForceDirections directions 
@@ -446,7 +446,7 @@ getCurrentDisplayPath(const SimTK::State& s) const
 {
     // update the geometry to make sure the current display path is up to date.
     // updateGeometry(s);
-    return getCacheVariable<Array <PathPoint*> >(s, "current_display_path" );
+    return getCacheVariableValue<Array <PathPoint*> >(s, "current_display_path" );
 }
 
 //_____________________________________________________________________________
@@ -459,7 +459,7 @@ void GeometryPath::updateGeometrySize(const SimTK::State& s) const
 {
     const int numberOfSegments = get_display().countGeometry();
     const Array<PathPoint*>& currentDisplayPath = 
-        getCacheVariable<Array<PathPoint*> >(s, "current_display_path");
+        getCacheVariableValue<Array<PathPoint*> >(s, "current_display_path");
 
     // Track whether we're creating geometry from scratch or
     // just updating
@@ -505,7 +505,7 @@ void GeometryPath::updateGeometryLocations(const SimTK::State& s) const
     SimTK::Vec3 globalLocation;
     SimTK::Vec3 previousPointGlobalLocation;
     const Array<PathPoint*>& currentDisplayPath = 
-        getCacheVariable<Array<PathPoint*> >(s, "current_display_path");
+        getCacheVariableValue<Array<PathPoint*> >(s, "current_display_path");
 
     GeometryPath * mutableThis = const_cast<GeometryPath*>(this);
 
@@ -568,22 +568,22 @@ void GeometryPath::updateGeometry(const SimTK::State& s) const
 double GeometryPath::getLength( const SimTK::State& s) const
 {
     computePath(s);  // compute checks if path needs to be recomputed
-    return( getCacheVariable<double>(s, "length") );
+    return( getCacheVariableValue<double>(s, "length") );
 }
 
 void GeometryPath::setLength( const SimTK::State& s, double length ) const
 {
-    setCacheVariable<double>(s, "length", length); 
+    setCacheVariableValue<double>(s, "length", length); 
 }
 
 void GeometryPath::setColor(const SimTK::State& s, const SimTK::Vec3& color) const
 {
-    setCacheVariable<SimTK::Vec3>(s, "color", color);
+    setCacheVariableValue<SimTK::Vec3>(s, "color", color);
 }
 
 Vec3 GeometryPath::getColor(const SimTK::State& s) const
 {
-    return getCacheVariable<SimTK::Vec3>(s, "color");
+    return getCacheVariableValue<SimTK::Vec3>(s, "color");
 }
 
 
@@ -596,11 +596,11 @@ Vec3 GeometryPath::getColor(const SimTK::State& s) const
 double GeometryPath::getLengtheningSpeed( const SimTK::State& s) const
 {
     computeLengtheningSpeed(s);
-    return getCacheVariable<double>(s, "speed");
+    return getCacheVariableValue<double>(s, "speed");
 }
 void GeometryPath::setLengtheningSpeed( const SimTK::State& s, double speed ) const
 {
-    setCacheVariable<double>(s, "speed", speed);    
+    setCacheVariableValue<double>(s, "speed", speed);    
 }
 
 void GeometryPath::setPreScaleLength( const SimTK::State& s, double length ) {
@@ -977,7 +977,7 @@ void GeometryPath::computePath(const SimTK::State& s) const
 
     // Clear the current path.
     Array<PathPoint*>& currentPath = 
-        updCacheVariable<Array<PathPoint*> >(s, "current_path");
+        updCacheVariableValue<Array<PathPoint*> >(s, "current_path");
     currentPath.setSize(0);
 
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -1386,7 +1386,7 @@ void GeometryPath::updateDisplayer(const SimTK::State& s) const
 void GeometryPath::updateDisplayPath(const SimTK::State& s) const
 {
     Array<PathPoint*>& currentDisplayPath = 
-        updCacheVariable<Array<PathPoint*> >(s, "current_display_path");
+        updCacheVariableValue<Array<PathPoint*> >(s, "current_display_path");
     // Clear the current display path. Delete all path points
     // that have a NULL path pointer. This means that they were
     // created by an earlier call to updateDisplayPath() and are
@@ -1399,7 +1399,7 @@ void GeometryPath::updateDisplayPath(const SimTK::State& s) const
     currentDisplayPath.setSize(0);
 
     const Array<PathPoint*>& currentPath =  
-        getCacheVariable<Array<PathPoint*> >(s, "current_path");
+        getCacheVariableValue<Array<PathPoint*> >(s, "current_path");
     for (int i=0; i<currentPath.getSize(); i++) {
         PathPoint* mp = currentPath.get(i);
         PathWrapPoint* mwp = dynamic_cast<PathWrapPoint*>(mp);

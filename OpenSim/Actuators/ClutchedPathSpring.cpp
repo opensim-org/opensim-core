@@ -170,7 +170,7 @@ void ClutchedPathSpring::
 					getLengtheningSpeed(s) : // clutch is engaged
 					-getStretch(s)/get_relaxation_time_constant();
 
-	setStateVariableDerivative(s, "stretch", zdot);
+	setStateVariableDerivativeValue(s, "stretch", zdot);
 }
 
 SimTK::Vec3 ClutchedPathSpring::computePathColor(const SimTK::State& state) const 
