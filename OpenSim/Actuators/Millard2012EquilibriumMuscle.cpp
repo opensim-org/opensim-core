@@ -184,7 +184,7 @@ void Millard2012EquilibriumMuscle::finalizeFromProperties()
 Millard2012EquilibriumMuscle::Millard2012EquilibriumMuscle()
 {
     setNull();
-    constructProperties();
+    constructInfrastructure();
 	finalizeFromProperties();
 }
 
@@ -193,7 +193,7 @@ const std::string &aName, double aMaxIsometricForce, double aOptimalFiberLength,
 double aTendonSlackLength, double aPennationAngle)
 {
     setNull();
-    constructProperties();
+    constructInfrastructure();
 
     setName(aName);
     setMaxIsometricForce(aMaxIsometricForce);

@@ -95,6 +95,10 @@ public:
         override;
 
 private:
+    void finalizeFromProperties() override {
+        constructCoordinates();
+        Super::finalizeFromProperties();
+    }
 	void connectToModel(Model& aModel) override;
 	void addToSystem(SimTK::MultibodySystem& system) const override;
 

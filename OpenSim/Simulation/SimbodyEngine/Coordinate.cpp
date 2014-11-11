@@ -132,17 +132,15 @@ void Coordinate::constructProperties(void)
 	constructProperty_is_free_to_satisfy_constraints(false);
 }
 
+
 //_____________________________________________________________________________
-/**
+/*
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aModel OpenSim model containing this Coordinate.
  */
-void Coordinate::connectToModel(Model& aModel)
+void Coordinate::finalizeFromProperties()
 {
-	Super::connectToModel(aModel);
-
 	string prefix = "Coordinate(" + getName() + ")::connectToModel: ";
 
 	if((IO::Lowercase(get_motion_type()) == "rotational") || get_motion_type() == "")
@@ -631,6 +629,15 @@ void Coordinate::setClamped(SimTK::State& s, bool aLocked) const
 	setModelingOption(s, "is_clamped", (int)aLocked);
 }
 
+void Coordinate::constructOutputs()
+{
+	//return the coordinate value
+	constructOutput<double>("coord",std::bind(&Coordinate::getValue,this,std::placeholders::_1),SimTK::Stage::Position);
+	//return the speed value;
+	constructOutput<double>("speed",std::bind(&Coordinate::getSpeedValue,this,std::placeholders::_1),SimTK::Stage::Velocity);
+	//return the acceleration value;
+	constructOutput<double>("acc",std::bind(&Coordinate::getAccelerationValue,this,std::placeholders::_1),SimTK::Stage::Acceleration);
+}
 
 
 //-----------------------------------------------------------------------------

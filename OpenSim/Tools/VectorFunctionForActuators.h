@@ -1,5 +1,5 @@
-#ifndef _VectorFunctionForActuators_h_
-#define _VectorFunctionForActuators_h_
+#ifndef OPENSIM_VECTOR_FUNCTION_FOR_ACTUATORS_H_
+#define OPENSIM_VECTOR_FUNCTION_FOR_ACTUATORS_H_
 /* -------------------------------------------------------------------------- *
  *                   OpenSim:  VectorFunctionForActuators.h                   *
  * -------------------------------------------------------------------------- *
@@ -33,6 +33,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * An abstract class for representing a vector function.
  *
@@ -48,8 +50,6 @@
  *
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class VectorFunctionForActuators : public VectorFunctionUncoupledNxN {
 OpenSim_DECLARE_CONCRETE_OBJECT(VectorFunctionForActuators, 
                                 VectorFunctionUncoupledNxN);
@@ -145,4 +145,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif  // __VectorFunctionForActuators_h__
+#endif  // OPENSIM_VECTOR_FUNCTION_FOR_ACTUATORS_H_

@@ -49,7 +49,7 @@ class OSIMANALYSES_API StaticOptimizationTarget : public SimTK::OptimizerSystem
 public:
 	/** Smallest allowable perturbation size for computing derivatives. */
 	static const double SMALLDX;
-	/** . */
+
 private:
 
 	/** Work model. */

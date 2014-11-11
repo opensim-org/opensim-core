@@ -194,6 +194,7 @@ own project.
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/PointActuator.h>
 #include <OpenSim/Actuators/TorqueActuator.h>
+#include <OpenSim/Actuators/BodyActuator.h>
 #include <OpenSim/Actuators/PointToPointActuator.h>
 #include <OpenSim/Actuators/ClutchedPathSpring.h>
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
@@ -251,7 +252,9 @@ using namespace SimTK;
 %rename(OpenSimObject) OpenSim::Object;
 %rename(OpenSimException) OpenSim::Exception;
 
-%rename(printToXML) OpenSim::Object::print(const std::string&);
+%newobject *::clone; 
+
+%rename(printToXML) OpenSim::Object::print(const std::string&) const;
 %rename(printToXML) OpenSim::XMLDocument::print(const std::string&);
 %rename(printToXML) OpenSim::XMLDocument::print();
 %rename(printToFile) OpenSim::Storage::print;
@@ -927,7 +930,6 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/JointInternalPowerProbe.h>
 %include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
 %include <OpenSim/Simulation/Model/ActuatorForceProbe.h>
-
 %include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
 %include <OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.h>
 %include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
@@ -974,6 +976,7 @@ namespace SimTK {
 %include <OpenSim/Actuators/CoordinateActuator.h>
 %include <OpenSim/Actuators/PointActuator.h>
 %include <OpenSim/Actuators/TorqueActuator.h>
+%include <OpenSim/Actuators/BodyActuator.h>
 %include <OpenSim/Actuators/PointToPointActuator.h>
 %include <OpenSim/Actuators/ClutchedPathSpring.h>
 %include <OpenSim/Actuators/SpringGeneralizedForce.h>

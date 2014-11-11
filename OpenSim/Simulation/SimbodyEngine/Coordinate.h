@@ -220,8 +220,6 @@ public:
 
 protected:
 	// Only model should be invoking these ModelComponent interface methods.
-    // Also see connectToModel() above.
-	void connectToModel(Model& aModel) override;
     void addToSystem(SimTK::MultibodySystem& system) const override;
 	//State structure is locked and now we can assign names to state variables
 	//allocated by underlying components after modeling options have been 
@@ -305,8 +303,10 @@ private:
 
 	mutable bool _lockedWarningGiven;
 
-	// PRIVATE METHODS
-	void constructProperties();
+	// PRIVATE METHODS implementing the Component interface
+    void constructProperties() override;
+    void constructOutputs() override;
+    void finalizeFromProperties() override;
 
 	friend class CoordinateCouplerConstraint; 
 	friend class Joint; 

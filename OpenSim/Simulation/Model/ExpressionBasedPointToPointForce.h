@@ -28,8 +28,9 @@
 #include <Vendors/lepton/include/Lepton.h>
 
 //==============================================================================
-//                    EXPRESSION BASED POINT TO POINT FORCE
 //==============================================================================
+namespace OpenSim { 
+
 /**
  * A point-to-point Force who's force magnitude is determined by a user-defined
  * expression, with the distance (d) and its time derivative (ddot) as variables. 
@@ -48,8 +49,6 @@
  *
  * @author Ajay Seth
  */
-namespace OpenSim { 
-
 class OSIMSIMULATION_API ExpressionBasedPointToPointForce : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(ExpressionBasedPointToPointForce, Force);
 public:

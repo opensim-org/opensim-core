@@ -300,9 +300,9 @@ protected:
     }
 
 private:
-	void constructStructuralConnectors() override{
-		constructStructuralConnector<Foo>("parentFoo");
-		constructStructuralConnector<Foo>("childFoo");
+	void constructConnectors() override{
+		constructConnector<Foo>("parentFoo");
+		constructConnector<Foo>("childFoo");
 	}
 
 	void constructOutputs() override {
@@ -482,6 +482,10 @@ int main() {
 		TheWorld *world2 = new TheWorld(modelFile);
 		
 		world2->updComponent("Bar").getConnector<Foo>("childFoo");
+        // We haven't called connect yet, so this connection isn't made yet.
+		ASSERT_THROW(OpenSim::Exception,
+                world2->updComponent("Bar").getConnectee<Foo>("childFoo");
+                );
 
 		ASSERT(theWorld == *world2, __FILE__, __LINE__,
 			"Model serialization->deserialization FAILED");
@@ -490,6 +494,8 @@ int main() {
 		world2->connect();
 
 		world2->updComponent("Bar").getConnector<Foo>("childFoo");
+        ASSERT("Foo2" ==
+                world2->updComponent("Bar").getConnectee<Foo>("childFoo").getName());
 
 		world2->buildUpSystem(system2);
 		s = system2.realizeTopology();
@@ -500,6 +506,7 @@ int main() {
 		TheWorld world3;
 		world3= *world2;
 		world3.getComponent("Bar").getConnector<Foo>("parentFoo");
+
 		ASSERT(world3 == (*world2), __FILE__, __LINE__, 
 			"Model copy assignment FAILED");
 

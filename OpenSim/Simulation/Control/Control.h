@@ -1,5 +1,5 @@
-#ifndef _Control_h_
-#define _Control_h_
+#ifndef OPENSIM_CONTROL_H_
+#define OPENSIM_CONTROL_H_
 /* -------------------------------------------------------------------------- *
  *                            OpenSim:  Control.h                             *
  * -------------------------------------------------------------------------- *
@@ -38,6 +38,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * A class that represents a control in a dynamic simulation.
  *
@@ -72,8 +74,6 @@
  * @author Frank C. Anderson
  * @version 1.0
  */
-namespace OpenSim { 
-
 class OSIMSIMULATION_API Control : public Object {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Control, Object);
 

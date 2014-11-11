@@ -42,8 +42,8 @@ class Model;
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API PathActuator : public Actuator {
-OpenSim_DECLARE_CONCRETE_OBJECT(PathActuator, Actuator);
+class OSIMSIMULATION_API PathActuator : public ScalarActuator {
+	OpenSim_DECLARE_CONCRETE_OBJECT(PathActuator, ScalarActuator);
 public:
 //=============================================================================
 // PROPERTIES

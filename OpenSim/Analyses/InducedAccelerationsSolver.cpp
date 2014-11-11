@@ -222,7 +222,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
 		Force &force = _modelCopy.getForceSet().get(ai);
 		force.setDisabled(s_solver, false);
 
-		Actuator *actuator = dynamic_cast<Actuator*>(&force);
+		ScalarActuator *actuator = dynamic_cast<ScalarActuator*>(&force);
 		if(actuator){
 			if(computeActuatorPotentialOnly){
 				actuator->overrideForce(s_solver, true);

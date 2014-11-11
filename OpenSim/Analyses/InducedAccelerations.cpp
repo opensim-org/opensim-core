@@ -685,8 +685,9 @@ int InducedAccelerations::record(const SimTK::State& s)
 				throw Exception("InducedAcceleration: ERR- Could not find actuator '"+_contributors[c],__FILE__,__LINE__);
 			
 			Actuator &actuator = _model->getActuators().get(ai);
-			actuator.setDisabled(s_analysis, false);
-			actuator.overrideForce(s_analysis, false);
+			ScalarActuator* act = dynamic_cast<ScalarActuator*>(&actuator);
+			act->setDisabled(s_analysis, false);
+			act->overrideForce(s_analysis, false);
 			Muscle *muscle = dynamic_cast<Muscle *>(&actuator);
 			if(muscle){
 				if(_computePotentialsOnly){

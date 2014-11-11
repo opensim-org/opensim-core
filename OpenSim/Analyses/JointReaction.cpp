@@ -576,8 +576,11 @@ record(const SimTK::State& s)
 				cout << "The actuator, " << actuatorName << ", was not found in the forces file." << endl;
 				break;
 			}
-			actuatorSet->get(actuatorIndex).overrideForce(s_analysis,true);
-			actuatorSet->get(actuatorIndex).setOverrideForce(s_analysis,forces[storageIndex]);
+			const ScalarActuator* act = dynamic_cast<const ScalarActuator*>(&actuatorSet[actuatorIndex]);
+			if (act){
+				act->overrideForce(s_analysis, true);
+				act->setOverrideForce(s_analysis, forces[storageIndex]);
+			}
 		}
 	}
 	// VARIABLES

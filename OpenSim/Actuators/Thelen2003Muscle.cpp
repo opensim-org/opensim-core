@@ -47,7 +47,7 @@ using namespace SimTK;
 Thelen2003Muscle::Thelen2003Muscle()          
 {    
     setNull();
-    constructProperties();
+    constructInfrastructure();
     ensureMuscleUpToDate();
 }
 
@@ -61,7 +61,7 @@ Thelen2003Muscle(const std::string& aName,  double aMaxIsometricForce,
                   double aPennationAngle)
 {
     setNull();
-    constructProperties();
+    constructInfrastructure();
     setName(aName);
     
     setMaxIsometricForce(aMaxIsometricForce);

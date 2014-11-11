@@ -8,12 +8,25 @@ PROJECT (OpenSim)
 #
 #----------------------------------------------------
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.6)
 if(COMMAND cmake_policy)
         cmake_policy(SET CMP0003 NEW)
         cmake_policy(SET CMP0005 NEW)
 endif(COMMAND cmake_policy)
 
+SET(OPENSIM_MAJOR_VERSION 3)
+SET(OPENSIM_MINOR_VERSION 2)
+SET(OPENSIM_PATCH_VERSION 0)
+
+# Don't include the patch version if it is 0.
+SET(PATCH_VERSION_STRING)
+IF(OPENSIM_PATCH_VERSION)
+    SET(PATCH_VERSION_STRING ".${OPENSIM_PATCH_VERSION}")
+ENDIF()
+
+SET(OPENSIM_VERSION
+    "${OPENSIM_MAJOR_VERSION}.${OPENSIM_MINOR_VERSION}${PATCH_VERSION_STRING}"
+    )
 
 SET(BUILD_BINARY_DIR ${CMAKE_BINARY_DIR}
     CACHE PATH 
@@ -40,8 +53,8 @@ MARK_AS_ADVANCED(PROCESSOR_COUNT)
 
 # This will be initialized to the environment variable of the same name
 # if it is set, otherwise it will be empty.
-SET(SimTK_INSTALL_DIR $ENV{SimTK_INSTALL_DIR} CACHE
-  PATH "Where to look for the Simbody libraries; you can change this.")
+SET(SIMBODY_HOME $ENV{SIMBODY_HOME} CACHE
+    PATH "The location of the Simbody installation to use; you can change this. Set as empty to let CMake search for Simbody automatically.")
 
 #
 # These are the names of all the libraries we depend on. These are
@@ -119,8 +132,8 @@ SET(BUILD_PLATFORM "${PLATFORM_NAME}:${PLATFORM_ABI}" CACHE STRING
 # Allow build of binaries on Leopard that work on Tiger
 # Plus, -m32 is required for building on Snow Leopard, until we have a 64-bit Mac Lapack
 IF( APPLE )
-   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.4 -m32" )
-   SET( CMAKE_C_FLAGS "-mmacosx-version-min=10.4 -m32" )
+    SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.8 -m32" )
+    SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.8 -m32" )
    SET( LIB64  )
    SET(ARCH64 OFF) 
 ENDIF( APPLE )
@@ -295,16 +308,17 @@ ELSE(WIN32)
 	SET(NameSpace "")	## No renamed SimTK libraries except on Windows
 	IF(APPLE)
 	   IF(ARCH64) 
-		   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.4" )
+           SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.8" )
 	   ELSE (ARCH64)
-		   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.4 -m32" )
+           SET( CMAKE_CXX_FLAGS
+               "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.8 -m32" )
 	   ENDIF (ARCH64)
 	ELSE (APPLE)
 	   IF(ARCH64) 
-		  SET( CMAKE_CXX_FLAGS "-m64" )
+           SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64" )
 	   ELSE (ARCH64)
 		  # I don't believe setting the CXX flags is working in cmake.
-		  SET( CMAKE_CXX_FLAGS "-m32" )
+          SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32" )
 	   ENDIF(ARCH64)
 	ENDIF (APPLE)
 ENDIF(WIN32)
@@ -312,26 +326,59 @@ ENDIF(WIN32)
 # C++11: In revision 8629, we started using std::unique_ptr, which requires
 # C++11 features to be enabled when using GCC or Clang.
 IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    # Using C++11 on OSX requires using libc++ instead of libstd++.
+    # libc++ is an implementation of the C++ standard library for OSX.
     IF(APPLE)
-        # Using C++11 on OSX requires using libc++ instead of libstd++.
-        # libc++ is an implementation of the C++ standard library for OSX.
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+        IF(XCODE)
+            SET(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
+            SET(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+        ELSE()
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+        ENDIF()
+    ELSE() # not APPLE
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     ENDIF()
 ENDIF()
 
-# Disable Build using the simtk headers and libraries checked in the repository. 
-SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
+SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 SET(BUILD_USING_NAMESPACE "OpenSim")
-# To accommodate a change in Simbody install organization with Simbody 3.4.
-IF(WIN32)
-    # Use the FindSimbody.cmake file in this directory, as the
-    # install organization hasn't changed on Windows.
-    FIND_PACKAGE(Simbody REQUIRED)
+
+## Find Simbody.
+
+# As of Simbody 3.4, Simbody has a SimbodyConfig.cmake file, which is a
+# preferred way to find Simbody over the previous FindSimbody.cmake script.
+# NO_MODULE means we will not allow the use of a FindSimbody.cmake script.
+SET(SIMBODY_VERSION_TO_USE 3.5)
+
+# Find Simbody freshly by unsetting this CMake-generated variable.
+UNSET(Simbody_DIR CACHE)
+IF("${SIMBODY_HOME}" STREQUAL "")
+    # We assume the only case in which the user
+    # wants us to search for Simbody is if they left SIMBODY_HOME empty.
+    # If the user specifies an invalid SIMBODY_HOME by accident,
+    # we shouldn't let that fail silently and still search for 
+    # Simbody elsewhere; they may never realize
+    # we are not using their requested installation of Simbody.
+    FIND_PACKAGE(Simbody ${SIMBODY_VERSION_TO_USE} QUIET
+        NO_MODULE)
 ELSE()
-    # Use the SimbodyConfig.cmake file within a Simbody installation.
-    FIND_PACKAGE(Simbody REQUIRED PATHS "${SimTK_INSTALL_DIR}" NO_MODULE)
+    # Find the package using the user-specified path.
+    # NO_DEFAULT_PATH will cause find_package to only 
+    # look in the provided PATHS.
+    FIND_PACKAGE(Simbody ${SIMBODY_VERSION_TO_USE} QUIET
+        PATHS "${SIMBODY_HOME}" NO_MODULE NO_DEFAULT_PATH)
+ENDIF()
+# This variable appears in the CMake GUI and could confuse users,
+# since this variable can't be changed manually.
+MARK_AS_ADVANCED(Simbody_DIR)
+
+# If Simbody is not found, Simbody_FOUND is false.
+IF(NOT Simbody_FOUND)
+    MESSAGE(FATAL_ERROR "
+        Simbody ${SIMBODY_VERSION_TO_USE} not found. Install Simbody and set
+        SIMBODY_HOME to the installation directory of Simbody.")
 ENDIF()
 
 include_directories(${Simbody_INCLUDE_DIR})
@@ -526,23 +573,11 @@ ADD_CUSTOM_TARGET (RUN_TESTS_PARALLEL
     COMMAND ${cmd}
 )
 
-## This adds a target "doxygen" for building the doxygen docs, as well as 
-## an INSTALL procedure.
-INCLUDE(ApiDoxygen.cmake)
-
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenSim project")
-SET(CPACK_PACKAGE_VENDOR "Stanford University, National Center for Biomedical Computation")
-SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt")
-SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/Copyright.txt")
-SET(CPACK_PACKAGE_VERSION_MAJOR "3")
-SET(CPACK_PACKAGE_VERSION_MINOR "2")
-SET(CPACK_PACKAGE_VERSION_PATCH "0")
-SET(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSim ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
 
 # Create buildinfo.txt file and place under sdk to include product version, platform and compiler for troubleshooting purposes
 SET(VERSION_FILE_PATH ${CMAKE_BINARY_DIR}/buildinfo.txt)
 # MESSAGE("version file="${VERSION_FILE_PATH})
-FILE(WRITE ${VERSION_FILE_PATH} "Product Version=${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
+FILE(WRITE ${VERSION_FILE_PATH} "Product Version=${OPENSIM_MAJOR_VERSION}.${OPENSIM_MINOR_VERSION}")
 FILE(APPEND  ${VERSION_FILE_PATH} "\n")
 FILE(APPEND  ${VERSION_FILE_PATH} "Compiler=${CMAKE_GENERATOR}-${CMAKE_CXX_COMPILER_ID}")
 FILE(APPEND  ${VERSION_FILE_PATH} "\n")
@@ -550,18 +585,16 @@ FILE(APPEND  ${VERSION_FILE_PATH} "Platform=${Platform}-${PLATFORM_ABI}")
 FILE(APPEND  ${VERSION_FILE_PATH} "\n")
 INSTALL(FILES ${VERSION_FILE_PATH} DESTINATION sdk)
 
-#
-# Build the documentation
-#
 
 #-----------------------------------------------------------------------------
 SET(BUILD_API_ONLY OFF CACHE BOOL "Build/install only headers, libraries,
     wrapping, tests; not applications (ik, rra, etc.).")
 MARK_AS_ADVANCED( BUILD_API_ONLY )
 
-IF(BUILD_API_ONLY)
-	SUBDIRS(Vendors OpenSim)
-ELSE(BUILD_API_ONLY)
-	SUBDIRS(Vendors OpenSim Applications)
-ENDIF(BUILD_API_ONLY)
+ADD_SUBDIRECTORY(Vendors)
+ADD_SUBDIRECTORY(OpenSim)
+IF(NOT BUILD_API_ONLY)
+    ADD_SUBDIRECTORY(Applications)
+ENDIF()
 
+ADD_SUBDIRECTORY(cmake)

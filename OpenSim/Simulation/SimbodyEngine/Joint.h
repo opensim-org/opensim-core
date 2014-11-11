@@ -353,15 +353,15 @@ protected:
 	                             multibody tree 
 	@param[in] outboardTransform  the transform locating the joint (mobilizer)
 	                              frame on the outboard body
-    @param[in/out] startingCoordinateIndex
+    @param[in,out] startingCoordinateIndex
 	                             the starting index of mobilities
 	                             enabled by the created MobilizedBody and used
 								 to assign mobility indices to the Joint's
 								 coordinates. It is incremented by the number of
 								 mobilities of the MobilizedBody created
-	@param[optional] associatedBody  the Body associated with the MobilizeBody.
-	                                 The MobilizedBody index is assigned to the
-									 associated Body.
+	@param[in] associatedBody    (optional) the Body associated with the
+                                 MobilizeBody. The MobilizedBody index is
+                                 assigned to the associated Body.
 	*/
 	template <typename T>
 	T createMobilizedBody(SimTK::MobilizedBody& inboard, 
@@ -414,7 +414,7 @@ private:
 
 	/** Next define its structural dependencies on other components.
 		These will be the parent and child bodies of the Joint.*/
-	void constructStructuralConnectors() override;
+	void constructConnectors() override;
 
 	/** Utility method for accessing the number of mobilities provided by 
 	    an underlying MobilizedBody */

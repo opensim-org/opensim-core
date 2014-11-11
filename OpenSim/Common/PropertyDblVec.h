@@ -1,5 +1,5 @@
-#ifndef _PropertyDblVec_h_
-#define _PropertyDblVec_h_
+#ifndef OPENSIM_PROPERTY_DBL_VEC_H_
+#define OPENSIM_PROPERTY_DBL_VEC_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  PropertyDblVec.h                         *
  * -------------------------------------------------------------------------- *
@@ -34,6 +34,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * Class PropertyDblVec_ extends class Property.  It consists of a small
  * vector of doubles (i.e., SimTK::Vec<M>) and the methods for accessing
@@ -41,8 +43,6 @@
  *
  * @author Ayman Habib, Ajay Seth, Michael Sherman
  */
-namespace OpenSim { 
-
 template<int M> class PropertyDblVec_ : public Property_Deprecated
 {
 
@@ -151,4 +151,4 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif //__PropertyDblVec__h__
+#endif // OPENSIM_PROPERTY_DBL_VEC_H_

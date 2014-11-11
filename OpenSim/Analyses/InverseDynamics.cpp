@@ -283,7 +283,7 @@ void InverseDynamics::
 computeAcceleration(SimTK::State& s, double *aF,double *rAccel) const
 {
 	for(int i=0,j=0; i<_forceSet->getSize(); i++) {
-        Actuator* act = dynamic_cast<Actuator*>(&_forceSet->get(i));
+		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
         if( act ) {
             act->setOverrideForce(s,aF[j++]);
         }
@@ -313,9 +313,9 @@ record(const SimTK::State& s)
 	// Set model Q's and U's
     SimTK::State sWorkingCopy = _modelWorkingCopy->getWorkingState();
 
-	// Set modeiling options for Actuators to be overriden
+	// Set modeling options for Actuators to be overriden
 	for(int i=0,j=0; i<_forceSet->getSize(); i++) {
-        Actuator* act = dynamic_cast<Actuator*>(&_forceSet->get(i));
+        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
         if( act ) {
             act->overrideForce(sWorkingCopy,true);
         }
@@ -477,7 +477,7 @@ begin(SimTK::State& s )
 		_performanceMatrix.resize(nf,nf);
 		_performanceMatrix = 0;
 		for(int i=0,j=0; i<nf; i++) {
-            Actuator* act = dynamic_cast<Actuator*>(&_forceSet->get(i));
+			ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
             if( act ) {
                 act->setForce(sWorkingCopy,1);
 			    _performanceMatrix(j,j) = act->getStress(sWorkingCopy);

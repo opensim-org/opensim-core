@@ -81,10 +81,6 @@ public:
 	/** Set of properties. */
 	ArrayPtrs<Property_Deprecated> _array;
 
-protected:
-	/** Array of property groups. */
-	ArrayPtrs<PropertyGroup> _propertyGroups;
-
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -135,15 +131,6 @@ public:
 	virtual void remove(const std::string &aName);
 	// Clear
 	virtual void clear();
-
-   PropertyGroup* addGroup(std::string aGroupName);
-   void addPropertyToGroup(std::string aGroupName, std::string aPropertyName);
-   void addPropertyToGroup(PropertyGroup* aGroup, std::string aPropertyName);
-	void addPropertyToGroup(PropertyGroup* aGroup, Property_Deprecated* aProperty);
-	void addPropertyToGroup(std::string aGroupName, Property_Deprecated* aProperty);
-	ArrayPtrs<PropertyGroup>& getGroups() { return _propertyGroups; }
-	PropertyGroup* getGroupContaining(Property_Deprecated* aProperty);
-	int getGroupIndexContaining(Property_Deprecated* aProperty);
 
 //=============================================================================
 };	// END of class PropertySet
