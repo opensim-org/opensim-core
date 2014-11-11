@@ -34,8 +34,9 @@ namespace OpenSim {
 /**
 
 A Class implementing a Pin joint . The underlying implementation in Simbody is a
-SimTK::MobilizedBody::Pin. Pin provides one DOF about the common
-Z-axis of the joint (not body) frames in the parent and child body. If you want rotation about a different direction, rotate the joint and body frames such that the z axes
+SimTK::MobilizedBody::Pin. Pin provides one DOF about the common Z-axis of the
+joint (not body) frames in the parent and child body. If you want rotation about
+a different direction, rotate the joint and body frames such that the z axes
 are in the desired direction.
 
 \image html pinJoint.gif
