@@ -635,7 +635,7 @@ Array<std::string> Component::getStateVariableNames() const
 
 // Get the value of a state variable allocated by this Component.
 double Component::
-    getStateVariable(const SimTK::State& s, const std::string& name) const
+    getStateVariableValue(const SimTK::State& s, const std::string& name) const
 {
     // find the state variable with this component or its subcomponents
     const StateVariable* rsv = findStateVariable(name);
@@ -653,7 +653,7 @@ double Component::
 
 // Get the value of a state variable derivative computed by this Component.
 double Component::
-    getStateVariableDerivative(const SimTK::State& state, 
+    getStateVariableDerivativeValue(const SimTK::State& state, 
                                 const std::string& name) const
 {
     computeStateVariableDerivatives(state);
@@ -684,7 +684,7 @@ double Component::
 // Set the value of a state variable allocated by this Component given its index
 // for this component.
 void Component::
-    setStateVariable(State& s, const std::string& name, double value) const
+    setStateVariableValue(State& s, const std::string& name, double value) const
 {
     // find the state variable
     const StateVariable* rsv = findStateVariable(name);
@@ -710,7 +710,7 @@ SimTK::Vector Component::
 
     Vector stateVariableValues(nsv, SimTK::NaN);
     for(int i=0; i<nsv; ++i){
-        stateVariableValues[i]=getStateVariable(state, names[i]);
+        stateVariableValues[i]=getStateVariableValue(state, names[i]);
     }
 
     return stateVariableValues;
@@ -728,13 +728,13 @@ void Component::
 
     Vector stateVariableValues(nsv, SimTK::NaN);
     for(int i=0; i<nsv; ++i){
-        setStateVariable(state, names[i], values[i]);
+        setStateVariableValue(state, names[i], values[i]);
     }
 }
 
 // Set the derivative of a state variable computed by this Component by name.
 void Component::
-    setStateVariableDerivative(const State& state, 
+    setStateVariableDerivativeValue(const State& state, 
                                const std::string& name, double value) const
 {
     std::map<std::string, StateVariableInfo>::const_iterator it;
@@ -756,7 +756,7 @@ void Component::
 
 // Get the value of a discrete variable allocated by this Component by name.
 double Component::
-getDiscreteVariable(const SimTK::State& s, const std::string& name) const
+getDiscreteVariableValue(const SimTK::State& s, const std::string& name) const
 {
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.find(name);
@@ -778,7 +778,7 @@ getDiscreteVariable(const SimTK::State& s, const std::string& name) const
 
 // Set the value of a discrete variable allocated by this Component by name.
 void Component::
-setDiscreteVariable(SimTK::State& s, const std::string& name, double value) const
+setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value) const
 {
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.find(name);
@@ -1069,13 +1069,13 @@ void Component::AddedStateVariable::setValue(SimTK::State& state, double value) 
 double Component::AddedStateVariable::
     getDerivative(const SimTK::State& state) const
 {
-    return getOwner().getCacheVariable<double>(state, getName()+"_deriv");
+    return getOwner().getCacheVariableValue<double>(state, getName()+"_deriv");
 }
 
 void Component::AddedStateVariable::
     setDerivative(const SimTK::State& state, double deriv) const
 {
-    return getOwner().setCacheVariable<double>(state, getName()+"_deriv", deriv);
+    return getOwner().setCacheVariableValue<double>(state, getName()+"_deriv", deriv);
 }
 
 

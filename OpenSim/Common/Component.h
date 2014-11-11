@@ -564,7 +564,7 @@ public:
      * @param state   the State for which to get the value
      * @param name    the name (string) of the state variable of interest
      */
-    double getStateVariable(const SimTK::State& state, const std::string& name) const;
+    double getStateVariableValue(const SimTK::State& state, const std::string& name) const;
 
     /**
      * Set the value of a state variable allocated by this Component by name.
@@ -573,7 +573,7 @@ public:
      * @param name   the name of the state variable
      * @param value  the value to set
      */
-    void setStateVariable(SimTK::State& state, const std::string& name, double value) const;
+    void setStateVariableValue(SimTK::State& state, const std::string& name, double value) const;
 
 
     /**
@@ -602,7 +602,7 @@ public:
      * @param state   the State for which to get the derivative value
      * @param name    the name (string) of the state variable of interest
      */
-    double getStateVariableDerivative(const SimTK::State& state, 
+    double getStateVariableDerivativeValue(const SimTK::State& state, 
         const std::string& name) const;
 
     /**
@@ -612,7 +612,7 @@ public:
      * @param name    the name of the state variable
      * @return value  the discrete variable value
      */
-    double getDiscreteVariable(const SimTK::State& state, const std::string& name) const;
+    double getDiscreteVariableValue(const SimTK::State& state, const std::string& name) const;
 
     /**
      * Set the value of a discrete variable allocated by this Component by name.
@@ -621,7 +621,7 @@ public:
      * @param name   the name of the dsicrete variable
      * @param value  the value to set
      */
-    void setDiscreteVariable(SimTK::State& state, const std::string& name, double value) const;
+    void setDiscreteVariableValue(SimTK::State& state, const std::string& name, double value) const;
 
     /**
      * Get the value of a cache variable allocated by this Component by name.
@@ -631,7 +631,7 @@ public:
      * @return T	 const reference to the cache variable's value
      */
     template<typename T> const T& 
-    getCacheVariable(const SimTK::State& state, const std::string& name) const
+    getCacheVariableValue(const SimTK::State& state, const std::string& name) const
     {
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
@@ -659,7 +659,7 @@ public:
      * @return value modifiable reference to the cache variable's value
      */
     template<typename T> T& 
-    updCacheVariable(const SimTK::State& state, const std::string& name) const
+    updCacheVariableValue(const SimTK::State& state, const std::string& name) const
     {
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
@@ -780,7 +780,7 @@ public:
      * @param value  the new value for this cache variable
      */
     template<typename T> void 
-    setCacheVariable(const SimTK::State& state, const std::string& name, 
+    setCacheVariableValue(const SimTK::State& state, const std::string& name, 
                      const T& value) const
     {
         std::map<std::string, CacheInfo>::const_iterator it;
@@ -1020,7 +1020,7 @@ template <class T> friend class ComponentMeasure;
         double deriv = ... 
 
         // Then set the derivative value by state variable name
-        setStateVariableDerivative(state, "<state_variable_name>", deriv);
+        setStateVariableDerivativeValue(state, "<state_variable_name>", deriv);
     }
     @endcode
 
@@ -1042,7 +1042,7 @@ template <class T> friend class ComponentMeasure;
      * @param name   the name of the state variable
      * @param deriv  the derivative value to set
      */
-    void setStateVariableDerivative(const SimTK::State& state, 
+    void setStateVariableDerivativeValue(const SimTK::State& state, 
                             const std::string& name, double deriv) const;
 
 
@@ -1262,7 +1262,7 @@ template <class T> friend class ComponentMeasure;
     this method. If the StateVariable is NOT hidden, this also creates an
     Output in this Component with the same name as the StateVariable. Reporters
     should use this Output to get the StateVariable's value (instead of using
-    getStateVariable()). */
+    getStateVariableValue()). */
     void addStateVariable(Component::StateVariable*  stateVariable) const;
 
     /** Add a system discrete variable belonging to this Component, give

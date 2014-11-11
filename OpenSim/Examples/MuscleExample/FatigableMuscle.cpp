@@ -149,47 +149,47 @@ void FatigableMuscle::setDefaultFatiguedMotorUnits(double fatiguedMotorUnits) {
 // GET & SET States and their derivatives
 //--------------------------------------------------------------------------
 double FatigableMuscle::getTargetActivation(const SimTK::State& s) const 
-{   return getStateVariable(s, "target_activation"); }
+{   return getStateVariableValue(s, "target_activation"); }
 
 void FatigableMuscle::setTargetActivation(SimTK::State& s,
                                           double fatiguedAct) const
-{   setStateVariable(s, "target_activation", fatiguedAct); }
+{   setStateVariableValue(s, "target_activation", fatiguedAct); }
 
 double FatigableMuscle::getTargetActivationDeriv(const SimTK::State& s) const 
-{   return getStateVariableDerivative(s, "target_activation"); }
+{   return getStateVariableDerivativeValue(s, "target_activation"); }
 
 void FatigableMuscle::setTargetActivationDeriv(const SimTK::State& s,
                                         double fatiguedActDeriv) const 
-{   setStateVariableDerivative(s, "target_activation", fatiguedActDeriv); }
+{   setStateVariableDerivativeValue(s, "target_activation", fatiguedActDeriv); }
 
 
 double FatigableMuscle::getActiveMotorUnits(const SimTK::State& s) const 
-{   return getStateVariable(s, "active_motor_units"); }
+{   return getStateVariableValue(s, "active_motor_units"); }
 
 void FatigableMuscle::setActiveMotorUnits(SimTK::State& s,
                                           double activeMotorUnits) const
-{   setStateVariable(s, "active_motor_units", activeMotorUnits); }
+{   setStateVariableValue(s, "active_motor_units", activeMotorUnits); }
 
 double FatigableMuscle::getActiveMotorUnitsDeriv(const SimTK::State& s) const 
-{   return getStateVariableDerivative(s, "active_motor_units"); }
+{   return getStateVariableDerivativeValue(s, "active_motor_units"); }
 
 void FatigableMuscle::setActiveMotorUnitsDeriv(const SimTK::State& s,
                                         double activeMotorUnitsDeriv) const 
-{   setStateVariableDerivative(s, "active_motor_units", activeMotorUnitsDeriv); }
+{   setStateVariableDerivativeValue(s, "active_motor_units", activeMotorUnitsDeriv); }
 
 double FatigableMuscle::getFatiguedMotorUnits(const SimTK::State& s) const
-{   return getStateVariable(s, "fatigued_motor_units"); }
+{   return getStateVariableValue(s, "fatigued_motor_units"); }
 
 void FatigableMuscle::setFatiguedMotorUnits(SimTK::State& s,
                                             double fatiguedMotorUnits) const
-{   setStateVariable(s, "fatigued_motor_units", fatiguedMotorUnits); }
+{   setStateVariableValue(s, "fatigued_motor_units", fatiguedMotorUnits); }
 
 double FatigableMuscle::getFatiguedMotorUnitsDeriv(const SimTK::State& s) const 
-{    return getStateVariableDerivative(s, "fatigued_motor_units"); }
+{    return getStateVariableDerivativeValue(s, "fatigued_motor_units"); }
 
 void FatigableMuscle::setFatiguedMotorUnitsDeriv(const SimTK::State& s,
                                         double fatiguedMotorUnitsDeriv) const
-{   setStateVariableDerivative(s, "fatigued_motor_units", fatiguedMotorUnitsDeriv); }
+{   setStateVariableDerivativeValue(s, "fatigued_motor_units", fatiguedMotorUnitsDeriv); }
 
 
 //=============================================================================
@@ -233,7 +233,7 @@ void FatigableMuscle::computeStateVariableDerivatives(const SimTK::State& s) con
                             getActiveMotorUnits(s)*targetActivationRate;
 
     // cache the results for fast access by reporting, etc...
-    Super::setStateVariableDerivative(s, "activation", activationRate);
+    Super::setStateVariableDerivativeValue(s, "activation", activationRate);
     setTargetActivationDeriv(s, targetActivationRate);
     setActiveMotorUnitsDeriv(s, activeMotorUnitsDeriv);
     setFatiguedMotorUnitsDeriv(s, fatigueMotorUnitsDeriv);
