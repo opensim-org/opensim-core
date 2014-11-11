@@ -179,10 +179,6 @@ void Component::connect(Component &root)
         else
             _components[i]->_nextComponent.reset(_components[i + 1]);
     }
-    // First give the subcomponents the opportunity to connect themselves
-    for(unsigned int i=0; i<_components.size(); i++){
-        _components[i]->connect(root);
-    }
 
     // rebuilding the connectors table, which was emptied by clearStateAllocations
     for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
