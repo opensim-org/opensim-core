@@ -84,8 +84,10 @@ public:
     // Scale factors
     OpenSim_DECLARE_PROPERTY(scale_factors, SimTK::Vec3,
         "Scale factors in X, Y, Z directotions respectively.");
-    OpenSim_DECLARE_PROPERTY(frame_name, std::string,
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(frame_name, std::string,
         "Name of the Frame that this Geometry is attached to.");
+    OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
+        "Default appearance for this Geometry");
 
     enum Representation {
         Hide = 0,
@@ -102,7 +104,8 @@ public:
 	Geometry()
 	{
         constructProperty_scale_factors(SimTK::Vec3(1));
-        constructProperty_frame_name("ground");
+        constructProperty_frame_name();
+        constructProperty_Appearance(Appearance());
     }
 	virtual ~Geometry() {}
 
@@ -113,25 +116,22 @@ public:
 
     virtual void createDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& ) const {};
     // Manage Appearance or how the Geometry is rendered.
-    const Appearance& getAppearance() const { return _appearance; };
-    Appearance& updAppearance() { return _appearance; };
     void setDecorativeGeometryAppearance(SimTK::DecorativeGeometry& decoration) const {
-        decoration.setColor(_appearance.get_color());
-        decoration.setOpacity(_appearance.get_opacity());
-        decoration.setRepresentation((SimTK::DecorativeGeometry::Representation)_appearance.get_representation());
+        decoration.setColor(get_Appearance().get_color());
+        decoration.setOpacity(get_Appearance().get_opacity());
+        decoration.setRepresentation((SimTK::DecorativeGeometry::Representation)get_Appearance().get_representation());
     };
     // Convenient access to Appearance constituents
-    void setColor(const SimTK::Vec3& color) { _appearance.set_color(color); };
-    const SimTK::Vec3& getColor() const { return _appearance.get_color(); };
+    void setColor(const SimTK::Vec3& color) { upd_Appearance().set_color(color); };
+    const SimTK::Vec3& getColor() const { return get_Appearance().get_color(); };
 
-    void setOpacity(const double opacity) { _appearance.set_opacity(opacity); };
-    const double getOpacity() { return _appearance.get_opacity(); };
+    void setOpacity(const double opacity) { upd_Appearance().set_opacity(opacity); };
+    const double getOpacity() { return get_Appearance().get_opacity(); };
 
-    void setRepresentation(const Representation& rep) { _appearance.set_representation(rep); };
-    const Representation& getRepresentation() { return (const Representation&)_appearance.get_representation(); };
+    void setRepresentation(const Representation& rep) { upd_Appearance().set_representation(rep); };
+    const Representation& getRepresentation() { return (const Representation&)get_Appearance().get_representation(); };
 
-private:
-    Appearance _appearance;
+    virtual const Frame& getFrame();
     //=============================================================================
 };	// END of class Geometry
 

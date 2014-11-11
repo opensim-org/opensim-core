@@ -533,7 +533,7 @@ void Body::generateDecorations(bool fixed, const ModelDisplayHints& hints, const
         const Vec3 netScale = geo.get_scale_factors();
         const std::string frameName = geo.get_frame_name();
         SimTK::Transform xformRelativeToBody = geo.getTransform(state, *this);
-        const Appearance& ap = geo.getAppearance();
+        const Appearance& ap = geo.get_Appearance();
         int repG = ap.get_representation();
         Vec3 color = ap.get_color();
         double opacity = ap.get_opacity();
