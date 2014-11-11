@@ -170,10 +170,10 @@ void Component::connect(Component &root)
             if (this==&root)
                 _components[i]->_nextComponent = nullptr;
             else
-                _components[i]->_nextComponent = _nextComponent;
+                _components[i]->_nextComponent.reset(_nextComponent);
         }
         else
-            _components[i]->_nextComponent =_components[i + 1];
+            _components[i]->_nextComponent.reset(_components[i + 1]);
     }
 
     for(unsigned int i=0; i<_components.size(); i++){

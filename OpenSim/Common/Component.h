@@ -1499,7 +1499,7 @@ private:
     /// Base Component musct create underlying resources in computational System */
     void baseAddToSystem(SimTK::MultibodySystem& system) const;
 	
-    Component* _nextComponent;
+    SimTK::ReferencePtr<Component> _nextComponent;
 	// Reference pointer to the system that this component belongs to.
 	SimTK::ReferencePtr<SimTK::MultibodySystem> _system;
 
@@ -1651,10 +1651,10 @@ template <typename T>
 ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
     if (m_node->_components.size() > 0)
         m_node = m_node->_components[0];
-    else if (m_node->_nextComponent == _root->_nextComponent)
+    else if (m_node->_nextComponent.get() == _root->_nextComponent.get())
         m_node = nullptr;
     else
-        m_node = m_node->_nextComponent;
+        m_node = m_node->_nextComponent.get();
     advanceToNextValidComponent(); // make sure we have a m_node of type T after advancing
     return *this;
 };
@@ -1666,7 +1666,7 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
         if (m_node->_components.size() > 0)
             m_node = m_node->_components[0];
         else {
-            if (m_node->_nextComponent == _root->_nextComponent){ // end of subtree under _root
+            if (m_node->_nextComponent.get() == _root->_nextComponent.get()){ // end of subtree under _root
                 m_node = nullptr;
                 continue;
             }
