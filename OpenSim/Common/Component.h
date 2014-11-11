@@ -564,7 +564,7 @@ public:
      * @param state   the State for which to get the value
      * @param name    the name (string) of the state variable of interest
      */
-    double getStateVariable(const SimTK::State& state, const std::string& name) const;
+    double getStateVariableValue(const SimTK::State& state, const std::string& name) const;
 
     /**
      * Set the value of a state variable allocated by this Component by name.
@@ -573,7 +573,7 @@ public:
      * @param name   the name of the state variable
      * @param value  the value to set
      */
-    void setStateVariable(SimTK::State& state, const std::string& name, double value) const;
+    void setStateVariableValue(SimTK::State& state, const std::string& name, double value) const;
 
 
     /**
@@ -1262,7 +1262,7 @@ template <class T> friend class ComponentMeasure;
     this method. If the StateVariable is NOT hidden, this also creates an
     Output in this Component with the same name as the StateVariable. Reporters
     should use this Output to get the StateVariable's value (instead of using
-    getStateVariable()). */
+    getStateVariableValue()). */
     void addStateVariable(Component::StateVariable*  stateVariable) const;
 
     /** Add a system discrete variable belonging to this Component, give

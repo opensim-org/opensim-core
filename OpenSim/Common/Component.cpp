@@ -635,7 +635,7 @@ Array<std::string> Component::getStateVariableNames() const
 
 // Get the value of a state variable allocated by this Component.
 double Component::
-    getStateVariable(const SimTK::State& s, const std::string& name) const
+    getStateVariableValue(const SimTK::State& s, const std::string& name) const
 {
     // find the state variable with this component or its subcomponents
     const StateVariable* rsv = findStateVariable(name);
@@ -684,7 +684,7 @@ double Component::
 // Set the value of a state variable allocated by this Component given its index
 // for this component.
 void Component::
-    setStateVariable(State& s, const std::string& name, double value) const
+    setStateVariableValue(State& s, const std::string& name, double value) const
 {
     // find the state variable
     const StateVariable* rsv = findStateVariable(name);
@@ -710,7 +710,7 @@ SimTK::Vector Component::
 
     Vector stateVariableValues(nsv, SimTK::NaN);
     for(int i=0; i<nsv; ++i){
-        stateVariableValues[i]=getStateVariable(state, names[i]);
+        stateVariableValues[i]=getStateVariableValue(state, names[i]);
     }
 
     return stateVariableValues;
@@ -728,7 +728,7 @@ void Component::
 
     Vector stateVariableValues(nsv, SimTK::NaN);
     for(int i=0; i<nsv; ++i){
-        setStateVariable(state, names[i], values[i]);
+        setStateVariableValue(state, names[i], values[i]);
     }
 }
 

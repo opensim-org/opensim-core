@@ -538,8 +538,8 @@ int main() {
 
         s = system3.realizeTopology();
 
-        bar.setStateVariable(s, "fiberLength", 1.5);
-        bar.setStateVariable(s, "activation", 0);
+        bar.setStateVariableValue(s, "fiberLength", 1.5);
+        bar.setStateVariableValue(s, "activation", 0);
 
         int nu3 = system3.getMatterSubsystem().getNumMobilities();
 

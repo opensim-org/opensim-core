@@ -278,9 +278,9 @@ void Millard2012AccelerationMuscle::
 {
     Super::extendSetPropertiesFromState(s);
 
-    setDefaultActivation(getStateVariable(s,STATE_ACTIVATION_NAME));
-    setDefaultFiberLength(getStateVariable(s,STATE_FIBER_LENGTH_NAME));
-    setDefaultFiberVelocity(getStateVariable(s,STATE_FIBER_VELOCITY_NAME));
+    setDefaultActivation(getStateVariableValue(s,STATE_ACTIVATION_NAME));
+    setDefaultFiberLength(getStateVariableValue(s,STATE_FIBER_LENGTH_NAME));
+    setDefaultFiberVelocity(getStateVariableValue(s,STATE_FIBER_VELOCITY_NAME));
 }
 
 void Millard2012AccelerationMuscle::
@@ -367,7 +367,7 @@ void Millard2012AccelerationMuscle::
 void Millard2012AccelerationMuscle::
     setActivation(SimTK::State& s, double activation) const
 {
-    setStateVariable(s, STATE_ACTIVATION_NAME, activation);    
+    setStateVariableValue(s, STATE_ACTIVATION_NAME, activation);    
     markCacheVariableInvalid(s,"dynamicsInfo");
     
 }
@@ -375,7 +375,7 @@ void Millard2012AccelerationMuscle::
 void Millard2012AccelerationMuscle::
     setFiberLength(SimTK::State& s, double fiberLength) const
 {
-    setStateVariable(s, STATE_FIBER_LENGTH_NAME, fiberLength);
+    setStateVariableValue(s, STATE_FIBER_LENGTH_NAME, fiberLength);
     markCacheVariableInvalid(s,"lengthInfo");
     markCacheVariableInvalid(s,"velInfo");
     markCacheVariableInvalid(s,"dynamicsInfo");
@@ -385,7 +385,7 @@ void Millard2012AccelerationMuscle::
 void Millard2012AccelerationMuscle::
     setFiberVelocity(SimTK::State& s, double fiberVelocity) const
 {
-    setStateVariable(s, STATE_FIBER_VELOCITY_NAME, fiberVelocity);
+    setStateVariableValue(s, STATE_FIBER_VELOCITY_NAME, fiberVelocity);
     markCacheVariableInvalid(s,"velInfo");
     markCacheVariableInvalid(s,"dynamicsInfo");
     
@@ -862,7 +862,7 @@ void Millard2012AccelerationMuscle::
             = get_FiberCompressiveForceCosPennationCurve(); 
 
         //Populate the output struct
-        mli.fiberLength       = getStateVariable(s, STATE_FIBER_LENGTH_NAME); 
+        mli.fiberLength       = getStateVariableValue(s, STATE_FIBER_LENGTH_NAME); 
 
         mli.normFiberLength   = mli.fiberLength/optFiberLength;
         mli.pennationAngle    = m_penMdl.calcPennationAngle(mli.fiberLength);
@@ -988,7 +988,7 @@ void Millard2012AccelerationMuscle::
         //=========================================================================
 
         //1. Get MuscleLengthInfo & available State information
-        double dlce   = getStateVariable(s, STATE_FIBER_VELOCITY_NAME);
+        double dlce   = getStateVariableValue(s, STATE_FIBER_VELOCITY_NAME);
         double dlceN1  = dlce/(getMaxContractionVelocity()*optFiberLen);
         double lce    = mli.fiberLength;
         double phi    = mli.pennationAngle;
@@ -1060,7 +1060,7 @@ void Millard2012AccelerationMuscle::
         const FiberVelocityInfo &mvi = getFiberVelocityInfo(s);        
         
     //Get the state of this muscle
-        double a   = getStateVariable(s, STATE_ACTIVATION_NAME); 
+        double a   = getStateVariableValue(s, STATE_ACTIVATION_NAME); 
 
     //Get the properties of this muscle
         double mcl            = getLength(s);

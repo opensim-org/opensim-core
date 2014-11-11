@@ -577,7 +577,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
     double length = getLength(s);
 
     // rough initial guess of fiber length
-    setStateVariable(s, STATE_FIBER_LENGTH_NAME,  length - _tendonSlackLength);
+    setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  length - _tendonSlackLength);
 
     // Make first guess of fiber and tendon lengths. Make fiber length equal to
     // optimal_fiber_length so that you start in the middle of the active+passive
@@ -594,7 +594,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
     if (_tendonSlackLength < ROUNDOFF_ERROR) {
         tendon_length = 0.0;
         cos_factor = cos(atan(muscle_width / length));
-        setStateVariable(s, STATE_FIBER_LENGTH_NAME,  length / cos_factor);
+        setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  length / cos_factor);
 
         setActiveForce(s, getActiveForceLengthCurve()->calcValue(SimTK::Vector(1, getFiberLength(s) / _optimalFiberLength)) * aActivation * _maxIsometricForce);
         if (getActiveForce(s) < 0.0)
@@ -608,7 +608,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
         setActuation(s, getTendonForce(s));
     } else if (length < _tendonSlackLength) {
         tendon_length = length;
-        setStateVariable(s, STATE_FIBER_LENGTH_NAME,  muscle_width);
+        setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  muscle_width);
         setActiveForce(s, 0.0);
         setPassiveForce(s, 0.0);
         setTendonForce(s, 0.0);
@@ -624,9 +624,9 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
         if (tendon_length < _tendonSlackLength) {
             tendon_length = _tendonSlackLength;
             cos_factor = cos(atan(muscle_width / (length - tendon_length)));
-            setStateVariable(s, STATE_FIBER_LENGTH_NAME,   (length - tendon_length) / cos_factor );
+            setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,   (length - tendon_length) / cos_factor );
             if (getFiberLength(s) < muscle_width)
-                setStateVariable(s, STATE_FIBER_LENGTH_NAME,  muscle_width);
+                setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  muscle_width);
         }
     }
 
@@ -668,7 +668,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
             percent = DABS(error_force) / (DABS(error_force) + DABS(old_error_force));
             tmp_fiber_length = old_fiber_length;
             old_fiber_length = getFiberLength(s);
-            setStateVariable(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s)+ percent * (tmp_fiber_length - getFiberLength(s)) );
+            setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s)+ percent * (tmp_fiber_length - getFiberLength(s)) );
         } else {
             // Estimate the stiffnesses of the tendon and the fibers. If tendon
             // stiffness is too low, then the next length guess will overshoot
@@ -711,9 +711,9 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
             old_fiber_length = getFiberLength(s);
 
             if (error_force > 0.0)
-                setStateVariable(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s) + length_change);
+                setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s) + length_change);
             else
-                setStateVariable(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s) - length_change);
+                setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s) - length_change);
 
         }
 
@@ -725,7 +725,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
         if (tendon_length < _tendonSlackLength) {
             tendon_length = _tendonSlackLength;
             cos_factor = cos(atan(muscle_width / (length - tendon_length)));
-            setStateVariable(s, STATE_FIBER_LENGTH_NAME,  (length - tendon_length) / cos_factor );
+            setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  (length - tendon_length) / cos_factor );
         }
     }
 

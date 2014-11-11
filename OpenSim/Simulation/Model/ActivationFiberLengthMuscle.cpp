@@ -102,8 +102,8 @@ void ActivationFiberLengthMuscle::extendSetPropertiesFromState(const SimTK::Stat
 {
     Super::extendSetPropertiesFromState(state);    // invoke superclass implementation
 
-    setDefaultActivation(getStateVariable(state, STATE_ACTIVATION_NAME));
-    setDefaultFiberLength(getStateVariable(state, STATE_FIBER_LENGTH_NAME));
+    setDefaultActivation(getStateVariableValue(state, STATE_ACTIVATION_NAME));
+    setDefaultFiberLength(getStateVariableValue(state, STATE_FIBER_LENGTH_NAME));
 }
 
 void ActivationFiberLengthMuscle::extendConnectToModel(Model& aModel)
@@ -152,12 +152,12 @@ void ActivationFiberLengthMuscle::
 
 void ActivationFiberLengthMuscle::setActivation(SimTK::State& s, double activation) const
 {
-    setStateVariable(s, STATE_ACTIVATION_NAME, activation);
+    setStateVariableValue(s, STATE_ACTIVATION_NAME, activation);
 }
 
 void ActivationFiberLengthMuscle::setFiberLength(SimTK::State& s, double fiberLength) const
 {
-    setStateVariable(s, STATE_FIBER_LENGTH_NAME, fiberLength);
+    setStateVariableValue(s, STATE_FIBER_LENGTH_NAME, fiberLength);
     // NOTE: This is a temporary measure since we were forced to allocate
     // fiber length as a Dynamics stage dependent state variable.
     // In order to force the recalculation of the length cache we have to 
