@@ -33,7 +33,7 @@ namespace OpenSim {
 /**
 
 A class implementing a Planar joint. The underlying implementation
-in Simbody is a SimTk::Mobilizedbody::Universal.
+in Simbody is a SimTK::MobilizedBody::Universal.
 Universal joint provides two ordered rotation mobilites about the X axis then Y axis.
 
 \image html universalJoint.gif
