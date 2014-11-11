@@ -140,8 +140,8 @@ void ActivationFiberLengthMuscle::
         ldot = getFiberVelocity(s);
     }
 
-    setStateVariableDerivative(s, STATE_ACTIVATION_NAME, adot);
-    setStateVariableDerivative(s, STATE_FIBER_LENGTH_NAME, ldot);
+    setStateVariableDerivativeValue(s, STATE_ACTIVATION_NAME, adot);
+    setStateVariableDerivativeValue(s, STATE_FIBER_LENGTH_NAME, ldot);
 }
 //==============================================================================
 // GET
@@ -243,7 +243,7 @@ void ActivationFiberLengthMuscle::computeForce(const SimTK::State& s,
         int numStateVariables = getNumStateVariables();
         Array<std::string> stateVariableNames = getStateVariableNames();
         for (int i = 0; i < numStateVariables; ++i) {
-            setStateVariableDerivative(s, stateVariableNames[i], 0.0);
+            setStateVariableDerivativeValue(s, stateVariableNames[i], 0.0);
         }
     } 
 }

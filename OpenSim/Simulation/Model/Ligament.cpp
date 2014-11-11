@@ -244,7 +244,7 @@ void Ligament::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 
 const double& Ligament::getTension(const SimTK::State& s) const
 {
-    return getCacheVariable<double>(s, "tension"); 
+    return getCacheVariableValue<double>(s, "tension"); 
 }
 
 
@@ -272,14 +272,14 @@ void Ligament::computeForce(const SimTK::State& s,
     double force = 0;
 
     if (path.getLength(s) <= restingLength){
-        setCacheVariable<double>(s, "tension", force);
+        setCacheVariableValue<double>(s, "tension", force);
         return;
     }
     
     // evaluate normalized tendon force length curve
     force = getForceLengthCurve().calcValue(
         SimTK::Vector(1, path.getLength(s)/restingLength))* pcsaForce;
-    setCacheVariable<double>(s, "tension", force);
+    setCacheVariableValue<double>(s, "tension", force);
 
     OpenSim::Array<PointForceDirection*> PFDs;
     path.getPointForceDirections(s, &PFDs);

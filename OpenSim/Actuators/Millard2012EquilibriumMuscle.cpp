@@ -1146,7 +1146,7 @@ void Millard2012EquilibriumMuscle::
         if (!isDisabled(s) && !isActuationOverriden(s)) {
             adot =getActivationDerivative(s);
         }
-        setStateVariableDerivative(s, STATE_ACTIVATION_NAME, adot);
+        setStateVariableDerivativeValue(s, STATE_ACTIVATION_NAME, adot);
     }
 
     // Fiber length is the next state (if it is a state at all)
@@ -1156,7 +1156,7 @@ void Millard2012EquilibriumMuscle::
         if (!isDisabled(s) && !isActuationOverriden(s)) {
             ldot = getFiberVelocity(s);
         }
-        setStateVariableDerivative(s, STATE_FIBER_LENGTH_NAME, ldot);
+        setStateVariableDerivativeValue(s, STATE_FIBER_LENGTH_NAME, ldot);
     }
 }
 

@@ -193,8 +193,8 @@ public:
     {
         // This implementation is not intended for use in dynamic simulations.
         const int n = getNumStateVariables();
-        setStateVariableDerivative(s, stateName_fiberLength, 0.0);
-        setStateVariableDerivative(s, stateName_fiberVelocity, 0.0);
+        setStateVariableDerivativeValue(s, stateName_fiberLength, 0.0);
+        setStateVariableDerivativeValue(s, stateName_fiberVelocity, 0.0);
     }
 
     //--------------------------------------------------------------------------
