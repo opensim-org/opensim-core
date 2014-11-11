@@ -120,9 +120,9 @@ public:
     ComponentListIterator<T>& next() { return ++(*this); }
 private:
     void advanceToNextValidComponent();
-    const Component* m_node;
-    const Component* _root;
-    const ComponentFilter* m_filter;
+    const Component* m_node; // Pointer to current Component that the iterator is processing
+    const Component* _root; // Root of subtree of Compoenents that we're iterating over
+    const ComponentFilter* m_filter; // Optional filter to further select Components under _root, defaults to Filter by type
 #ifndef SWIG
     ComponentListIterator(const Component* node, ComponentFilter* filter = new ComponentFilterByType<T>()) :
         m_node(node),
@@ -135,6 +135,7 @@ private:
 #else
     ComponentListIterator(const Component* node) :
         m_node(node),
+        _root(node),
         m_filter(new ComponentFilterByType<T>()){
         advanceToNextValidComponent(); // in case node is not of type T
     }
