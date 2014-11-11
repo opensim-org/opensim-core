@@ -41,21 +41,21 @@ using namespace std;
 // This also serves as the default constructor.
 SpringGeneralizedForce::SpringGeneralizedForce(const string& coordinateName)
 {
-	setNull();
+    setNull();
     constructProperties();
 
     if (!coordinateName.empty())
-	    set_coordinate(coordinateName);
+        set_coordinate(coordinateName);
 }
 
 //_____________________________________________________________________________
 // Set the data members of this force to their null values.
 void SpringGeneralizedForce::setNull()
 {
-	setAuthors("Frank C. Anderson ");
+    setAuthors("Frank C. Anderson ");
 }
 
-	
+    
 //_____________________________________________________________________________
 //
 /**
@@ -63,10 +63,10 @@ void SpringGeneralizedForce::setNull()
  */
 void SpringGeneralizedForce::constructProperties()
 {
-	constructProperty_coordinate();
-	constructProperty_stiffness(0.0);
-	constructProperty_rest_length(0.0);
-	constructProperty_viscosity(0.0);
+    constructProperty_coordinate();
+    constructProperty_stiffness(0.0);
+    constructProperty_rest_length(0.0);
+    constructProperty_viscosity(0.0);
 }
 
 //_____________________________________________________________________________
@@ -74,9 +74,9 @@ void SpringGeneralizedForce::constructProperties()
  * Sets the _model pointer to proper value
  * _coordinate is actually set inside _createSystem
  */
-void SpringGeneralizedForce::connectToModel(Model& model)
+void SpringGeneralizedForce::extendConnectToModel(Model& model)
 {
-	Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 
     _coord = &model.updCoordinateSet().get(get_coordinate());
 }
@@ -96,7 +96,7 @@ void SpringGeneralizedForce::connectToModel(Model& model)
 void SpringGeneralizedForce::
 setRestLength(double aRestLength)
 {
-	set_rest_length(aRestLength);
+    set_rest_length(aRestLength);
 }
 //_____________________________________________________________________________
 /**
@@ -107,7 +107,7 @@ setRestLength(double aRestLength)
 double SpringGeneralizedForce::
 getRestLength() const
 {
-	return get_rest_length();
+    return get_rest_length();
 }
 
 //-----------------------------------------------------------------------------
@@ -124,7 +124,7 @@ getRestLength() const
 void SpringGeneralizedForce::
 setViscosity(double aViscosity)
 {
-	set_viscosity(aViscosity);
+    set_viscosity(aViscosity);
 }
 //_____________________________________________________________________________
 /**
@@ -135,7 +135,7 @@ setViscosity(double aViscosity)
 double SpringGeneralizedForce::
 getViscosity() const
 {
-	return get_viscosity();
+    return get_viscosity();
 }
 
 //-----------------------------------------------------------------------------
@@ -152,7 +152,7 @@ getViscosity() const
 void SpringGeneralizedForce::
 setStiffness(double aStiffness)
 {
-	set_stiffness(aStiffness);
+    set_stiffness(aStiffness);
 }
 //_____________________________________________________________________________
 /**
@@ -164,7 +164,7 @@ double SpringGeneralizedForce::
 getStiffness() const
 {
 
-	return get_stiffness();
+    return get_stiffness();
 }
 
 
@@ -179,13 +179,13 @@ getStiffness() const
  *                   - viscosity * _coordinateSpeed
  */
 void SpringGeneralizedForce::computeForce(const SimTK::State& s, 
-							      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							      SimTK::Vector& generalizedForces) const
+                                  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+                                  SimTK::Vector& generalizedForces) const
 {
-	if( !_model || !_coord ) return;
+    if( !_model || !_coord ) return;
 
-	// FORCE
-	applyGeneralizedForce(s, *_coord, computeForceMagnitude(s), generalizedForces);
+    // FORCE
+    applyGeneralizedForce(s, *_coord, computeForceMagnitude(s), generalizedForces);
 }
 //_____________________________________________________________________________
 /**
@@ -195,10 +195,10 @@ void SpringGeneralizedForce::extendAddToSystem(SimTK::MultibodySystem& system) c
 {
     Super::extendAddToSystem(system);
 
-	if (_model) {
+    if (_model) {
         SpringGeneralizedForce* mthis = 
             const_cast<SpringGeneralizedForce*>(this);
-		mthis->_coord = &_model->updCoordinateSet().get(get_coordinate());
+        mthis->_coord = &_model->updCoordinateSet().get(get_coordinate());
     }
 }
 /** 
@@ -207,19 +207,19 @@ void SpringGeneralizedForce::extendAddToSystem(SimTK::MultibodySystem& system) c
  * getRecordLabels()
  */
 OpenSim::Array<std::string> SpringGeneralizedForce::getRecordLabels() const {
-	OpenSim::Array<std::string> labels("");
-	labels.append(getName()+"_Force");
-	return labels;
+    OpenSim::Array<std::string> labels("");
+    labels.append(getName()+"_Force");
+    return labels;
 }
 /**
  * Given SimTK::State object extract all the values necessary to report forces, application location
  * frame, etc. used in conjunction with getRecordLabels and should return same size Array
  */
 OpenSim::Array<double> SpringGeneralizedForce::getRecordValues(const SimTK::State& state) const {
-	OpenSim::Array<double> values(1);
+    OpenSim::Array<double> values(1);
 
-	values.append(computeForceMagnitude(state));
-	return values;
+    values.append(computeForceMagnitude(state));
+    return values;
 };
 
 /**
@@ -229,9 +229,9 @@ OpenSim::Array<double> SpringGeneralizedForce::getRecordValues(const SimTK::Stat
 double SpringGeneralizedForce::
 computeForceMagnitude(const SimTK::State& s) const
 {
-	double q = _coord->getValue(s);
-	double speed =  _coord->getSpeedValue(s);
-	double force = -getStiffness()*(q - get_rest_length()) 
+    double q = _coord->getValue(s);
+    double speed =  _coord->getSpeedValue(s);
+    double force = -getStiffness()*(q - get_rest_length()) 
                         - get_viscosity()*speed;
-	return force;
+    return force;
 }

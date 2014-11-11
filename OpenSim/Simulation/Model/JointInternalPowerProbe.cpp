@@ -64,7 +64,7 @@ JointInternalPowerProbe::JointInternalPowerProbe(const Array<string>& joint_name
 // Set the data members of this JointInternalPowerProbe to their null values.
 void JointInternalPowerProbe::setNull()
 {
-	setAuthors("Tim Dorn");
+    setAuthors("Tim Dorn");
     _jointIndex.clear();
 }
 
@@ -149,20 +149,20 @@ void JointInternalPowerProbe::setExponent(const double exponent)
  *
  * @param aModel OpenSim model containing this JointInternalPowerProbe.
  */
-void JointInternalPowerProbe::connectToModel(Model& aModel)
+void JointInternalPowerProbe::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
     // Check to see if 'all' joints are selected for probing.
-	if(getProperty_joint_names().size() > 0)
-	{
-		if(IO::Uppercase(get_joint_names(0)) == "ALL")
-		{
-			Array<string> allJointNames;
-			_model->getJointSet().getNames(allJointNames);
-			set_joint_names(allJointNames);
-		}
-	}
+    if(getProperty_joint_names().size() > 0)
+    {
+        if(IO::Uppercase(get_joint_names(0)) == "ALL")
+        {
+            Array<string> allJointNames;
+            _model->getJointSet().getNames(allJointNames);
+            set_joint_names(allJointNames);
+        }
+    }
 
     // check that each Joints in the joint_names array exists in the model.
     _jointIndex.clear();

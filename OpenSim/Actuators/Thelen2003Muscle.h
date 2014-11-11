@@ -296,9 +296,9 @@ protected:
     double calcActivationRate(const SimTK::State& s) const override; 
 
     /** Implement the ModelComponent interface */
-    void connectToModel(Model& aModel) override;
-    void initStateFromProperties(SimTK::State& s) const override;
-    void setPropertiesFromState(const SimTK::State& state) override;
+    void extendConnectToModel(Model& aModel) override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
 private:
     void setNull();

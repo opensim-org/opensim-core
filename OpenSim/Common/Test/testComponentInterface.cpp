@@ -73,14 +73,12 @@ public:
 
 protected:
 	// Component interface implementation
-	void finalizeFromProperties() override {
-		clearComponents();
+    void extendFinalizeFromProperties() override {
+        Super::extendFinalizeFromProperties();
 		// Mark components listed in properties as subcomponents
 		for (int i = 0; i < getProperty_components().size(); ++i){
 			addComponent(&upd_components(i));
 		}
-
-		Super::finalizeFromProperties();
 	}
 	
 	void extendAddToSystem(MultibodySystem& system) const override {
@@ -160,8 +158,8 @@ public:
 
 protected:
 	/** Component Interface */
-    void connect(Component& root) override {
-        Super::connect(root);
+    void extendConnect(Component& root) override {
+        Super::extendConnect(root);
 		// do any internal wiring
 		world = dynamic_cast<TheWorld*>(&root);
 	}
@@ -247,14 +245,14 @@ public:
 
 protected:
 	/** Component Interface */
-    void connect(Component& root) override{
-        Super::connect(root);
+    void extendConnect(Component& root) override{
+        Super::extendConnect(root);
 		// do any internal wiring
 		world = dynamic_cast<TheWorld*>(&root);
 		// perform custom checking
 		if (updConnector<Foo>("parentFoo").getConnectee()
 				== updConnector<Foo>("childFoo").getConnectee()){
-			string msg = "ERROR - Bar::connect()\n";
+            string msg = "ERROR - Bar::extendConnect()\n";
 			msg += " parentFoo and childFoo cannot be the same component.";
 			throw OpenSim::Exception(msg);
 		}
@@ -331,14 +329,12 @@ public:
 		constructInfrastructure();
 	}
 
-	// API calls can change the component properties and underlying components
-	// before proceding to do any calculations make sure those changes are
-	// finalized.
-	void finalizeChanges() { finalizeFromProperties(); }
-
 protected:
 	// Component implementation interface
-	void finalizeFromProperties() override{
+    void extendFinalizeFromProperties() override {
+        // Allow Foo to do its finalize from properties
+        Super::extendFinalizeFromProperties();
+
 		// Mark components listed in properties as subcomponents
 		Foo& foo1 = upd_Foo1();
 		Foo& foo2 = upd_Foo2();
@@ -358,9 +354,6 @@ protected:
 		for (int i = 0; i < updProperty_inertia().size(); ++i) {
 			upd_inertia(i) = inertiaScale*get_inertia(i);
 		}
-
-		// enable newly added subcompenents a chance to finalize
-		Super::finalizeFromProperties();
 	}
 
 private:
@@ -547,7 +540,7 @@ int main() {
 
 		compFoo.set_Foo1(foo);
 		compFoo.set_Foo2(foo2);
-		compFoo.finalizeChanges();
+        compFoo.finalizeFromProperties();
 	
 		world3.add(&compFoo);
 		world3.add(&bar2);

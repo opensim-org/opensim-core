@@ -54,12 +54,12 @@ CorrectionController::~CorrectionController()
  * Default constructor
  */
 CorrectionController::CorrectionController() :
-	TrackingController(), 
+    TrackingController(), 
     _kp(_kpProp.getValueDbl()), 
     _kv(_kvProp.getValueDbl())
 {
-	// NULL
-	setNull();
+    // NULL
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -67,13 +67,13 @@ CorrectionController::CorrectionController() :
  */
 CorrectionController::
 CorrectionController(const string &aFileName, bool aUpdateFromXMLNode) :
-	TrackingController(), 
+    TrackingController(), 
    _kp(_kpProp.getValueDbl()), 
    _kv(_kvProp.getValueDbl())
 {
 
-	setNull();
-	if(aUpdateFromXMLNode) updateFromXMLDocument();
+    setNull();
+    if(aUpdateFromXMLNode) updateFromXMLDocument();
 }
 //_____________________________________________________________________________
 /**
@@ -83,12 +83,12 @@ CorrectionController(const string &aFileName, bool aUpdateFromXMLNode) :
  */
 CorrectionController::
 CorrectionController(const CorrectionController &aController) :
-	TrackingController(aController), 
+    TrackingController(aController), 
     _kp(_kpProp.getValueDbl()), 
     _kv(_kvProp.getValueDbl())
 {
-	setNull();
-	copyData(aController);
+    setNull();
+    copyData(aController);
 }
 
 
@@ -103,7 +103,7 @@ void CorrectionController::
 setNull()
 {
     setupProperties();
-    _model = NULL;	
+    _model = NULL;  
 }
 /**
  ** Assignment operator.
@@ -129,15 +129,15 @@ CorrectionController& CorrectionController::operator=(const CorrectionController
 void CorrectionController::
 setupProperties()
 {
-	_kpProp.setComment("Gain for position errors");
-	_kpProp.setName("kp");
-	_kpProp.setValue(100.0);
-	_propertySet.append( &_kpProp );
+    _kpProp.setComment("Gain for position errors");
+    _kpProp.setName("kp");
+    _kpProp.setValue(100.0);
+    _propertySet.append( &_kpProp );
 
-	_kvProp.setComment("Gain for velocity errors");
-	_kvProp.setName("kv");
-	_kvProp.setValue(20.0);
-	_propertySet.append( &_kvProp );
+    _kvProp.setComment("Gain for velocity errors");
+    _kvProp.setName("kv");
+    _kvProp.setValue(20.0);
+    _propertySet.append( &_kvProp );
 }
 //_____________________________________________________________________________
 /**
@@ -146,9 +146,9 @@ setupProperties()
 void CorrectionController::
 copyData(const CorrectionController &aController)
 {
-	// Copy this class's members.
-	_kp = aController._kp;
-	_kv = aController._kv;
+    // Copy this class's members.
+    _kp = aController._kp;
+    _kv = aController._kv;
 }
 
 
@@ -167,7 +167,7 @@ copyData(const CorrectionController &aController)
 double CorrectionController::
 getKp() const
 {
-	return(_kp);
+    return(_kp);
 }
 //_____________________________________________________________________________
 /**
@@ -178,7 +178,7 @@ getKp() const
 void CorrectionController::
 setKp(double aKp)
 {
-	_kp = aKp;
+    _kp = aKp;
 }
 //_____________________________________________________________________________
 /**
@@ -189,7 +189,7 @@ setKp(double aKp)
 double CorrectionController::
 getKv() const
 {
-	return(_kv);
+    return(_kv);
 }
 //_____________________________________________________________________________
 /**
@@ -199,7 +199,7 @@ getKv() const
  */
 void CorrectionController::setKv(double aKv)
 {
-	_kv = aKv;
+    _kv = aKv;
 }
 
 
@@ -213,85 +213,85 @@ void CorrectionController::setKv(double aKv)
  */
 void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector& controls) const
 {
-	// NUMBER OF MODEL COORDINATES, SPEEDS, AND ACTUATORS
-	// (ALL ARE PROBABLY EQUAL)
-	int nq = _model->getNumCoordinates();
-	int nu = _model->getNumSpeeds();
+    // NUMBER OF MODEL COORDINATES, SPEEDS, AND ACTUATORS
+    // (ALL ARE PROBABLY EQUAL)
+    int nq = _model->getNumCoordinates();
+    int nu = _model->getNumSpeeds();
 
-	double t = s.getTime();
-	
-	// GET CURRENT DESIRED COORDINATES AND SPEEDS
-	// Note: yDesired[0..nq-1] will contain the generalized coordinates
-	// and yDesired[nq..nq+nu-1] will contain the generalized speeds.
-	Array<double> yDesired(0.0,nq+nu);
-	getDesiredStatesStorage().getDataAtTime(t, nq+nu,yDesired);
-	
-	SimTK::Vector actControls(1, 0.0);
+    double t = s.getTime();
+    
+    // GET CURRENT DESIRED COORDINATES AND SPEEDS
+    // Note: yDesired[0..nq-1] will contain the generalized coordinates
+    // and yDesired[nq..nq+nu-1] will contain the generalized speeds.
+    Array<double> yDesired(0.0,nq+nu);
+    getDesiredStatesStorage().getDataAtTime(t, nq+nu,yDesired);
+    
+    SimTK::Vector actControls(1, 0.0);
 
-   	for(int i=0; i< getActuatorSet().getSize(); i++){
-		CoordinateActuator* act = 
-			dynamic_cast<CoordinateActuator*>(&getActuatorSet().get(i));
-		SimTK_ASSERT( act,  "CorrectionController::computeControls dynamic cast failed");
+    for(int i=0; i< getActuatorSet().getSize(); i++){
+        CoordinateActuator* act = 
+            dynamic_cast<CoordinateActuator*>(&getActuatorSet().get(i));
+        SimTK_ASSERT( act,  "CorrectionController::computeControls dynamic cast failed");
 
-		Coordinate *aCoord = act->getCoordinate();
-		if( aCoord->isConstrained(s) ) {
-			actControls =  0.0;
-		} 
-		else
-		{
-			double qval = aCoord->getValue(s);
-			double uval = aCoord->getSpeedValue(s);
+        Coordinate *aCoord = act->getCoordinate();
+        if( aCoord->isConstrained(s) ) {
+            actControls =  0.0;
+        } 
+        else
+        {
+            double qval = aCoord->getValue(s);
+            double uval = aCoord->getSpeedValue(s);
 
-    		// COMPUTE EXCITATIONS
-			double oneOverFmax = 1.0 / act->getOptimalForce();
-			double pErr = qval - yDesired[2*i];
-			double vErr = uval - yDesired[2*i+1];
-			double pErrTerm = _kp*oneOverFmax*pErr;
-			double vErrTerm = _kv*oneOverFmax*vErr;
-			actControls = -vErrTerm - pErrTerm;
-		}
+            // COMPUTE EXCITATIONS
+            double oneOverFmax = 1.0 / act->getOptimalForce();
+            double pErr = qval - yDesired[2*i];
+            double vErr = uval - yDesired[2*i+1];
+            double pErrTerm = _kp*oneOverFmax*pErr;
+            double vErrTerm = _kv*oneOverFmax*vErr;
+            actControls = -vErrTerm - pErrTerm;
+        }
 
-		
-		getActuatorSet()[i].addInControls(actControls, controls);
-	}
+        
+        getActuatorSet()[i].addInControls(actControls, controls);
+    }
 }
 
 // for any post XML deserialization intialization
-void CorrectionController::connectToModel(Model& model)
+void CorrectionController::extendConnectToModel(Model& model)
 {
-	Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 
-	// create an actuator for each generalized coordinate in the model 
-	// add these actuators to the model and set their indexes 
-	const CoordinateSet& cs = _model->getCoordinateSet();
-	for(int i=0; i<cs.getSize(); i++) {
-		std::cout << " CorrectionController::connectToModel(): " 
+    // create an actuator for each generalized coordinate in the model 
+    // add these actuators to the model and set their indexes 
+    const CoordinateSet& cs = _model->getCoordinateSet();
+    for(int i=0; i<cs.getSize(); i++) {
+        std::cout << " CorrectionController::extendConnectToModel(): " 
                   <<  cs.get(i).getName()+"_corrector" << "  added " 
                   << std::endl;
-		std::string name = cs.get(i).getName()+"_corrector";
-		CoordinateActuator *actuator = NULL;
-		if(_model->getForceSet().contains(name)){
-			actuator = (CoordinateActuator *)&_model->getForceSet().get(name);
-		}
-		else{
-			actuator = new CoordinateActuator();
-			actuator->setCoordinate(&cs.get(i));
-			actuator->setName(name);
-			_model->addForce(actuator);
-		}
-			
-		actuator->setOptimalForce(1.0);
-		
-		updActuators().adoptAndAppend(actuator);
+        std::string name = cs.get(i).getName()+"_corrector";
+        CoordinateActuator *actuator = NULL;
+        if(_model->getForceSet().contains(name)){
+            actuator = (CoordinateActuator *)&_model->getForceSet().get(name);
+        }
+        else{
+            actuator = new CoordinateActuator();
+            actuator->setCoordinate(&cs.get(i));
+            actuator->setName(name);
+            _model->addForce(actuator);
+        }
+            
+        actuator->setOptimalForce(1.0);
+        
+        updActuators().adoptAndAppend(actuator);
    }
-	setNumControls(getActuatorSet().getSize());
+    setNumControls(getActuatorSet().getSize());
 
-	printf(" CorrectionController::connectToModel()  num Actuators= %d kv=%f kp=%f \n",
-		_model->getForceSet().getSize(), _kv, _kp );
+    printf(" CorrectionController::extendConnectToModel()  num Actuators= %d kv=%f kp=%f \n",
+        _model->getForceSet().getSize(), _kv, _kp );
 }
 
 // for any intialization requiring a state or the complete system 
-void CorrectionController::initStateFromProperties( SimTK::State& s) const
+void CorrectionController::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 }

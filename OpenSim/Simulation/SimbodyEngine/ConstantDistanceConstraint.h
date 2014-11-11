@@ -98,7 +98,7 @@ public:
 
 
 protected:
-	void connectToModel(Model& aModel) override;
+	void extendConnectToModel(Model& aModel) override;
 	/**
 	 * Create a SimTK::Constraint::Ball which implements this Point constraint.
 	 */

@@ -43,26 +43,26 @@ using SimTK::SpatialVec; using SimTK::UnitVec3; using SimTK::State;
 // Default constructor.
 McKibbenActuator::McKibbenActuator()
 {
-	constructProperties();
+    constructProperties();
 }
 //_____________________________________________________________________________
 // Constructor with given body names.
 McKibbenActuator::McKibbenActuator(const string& name, double num_turns, double thread_length)
 {
-	constructProperties();
-	setName(name);
-	set_number_of_turns(num_turns);
-	set_thread_length(thread_length);
+    constructProperties();
+    setName(name);
+    set_number_of_turns(num_turns);
+    set_thread_length(thread_length);
 }
 
 //_____________________________________________________________________________
 // Construct and initialize properties.
 void McKibbenActuator::constructProperties()
 {
-	setAuthors("Nabeel Allana");
-	constructProperty_number_of_turns(1.5);
-	constructProperty_thread_length(200);
-	constructProperty_cord_length(0);
+    setAuthors("Nabeel Allana");
+    constructProperty_number_of_turns(1.5);
+    constructProperty_thread_length(200);
+    constructProperty_cord_length(0);
 }
 
 
@@ -80,18 +80,18 @@ void McKibbenActuator::constructProperties()
 
 double McKibbenActuator::computeActuation( const SimTK::State& s ) const
 {
-	if(!_model) return 0;
+    if(!_model) return 0;
 
-	double length = getLength(s) - getCordLength();
-	double pressure = getControl(s);
-	double B = getThreadLength();
-	double N = getNumberOfTurns();
-	
-	
-	double force = (pressure / (4*pow(N,2)*SimTK::Pi)) * (3*pow(length, 2) - pow(B,2));
-	setActuation(s, force);
-	
-	return force;
+    double length = getLength(s) - getCordLength();
+    double pressure = getControl(s);
+    double B = getThreadLength();
+    double N = getNumberOfTurns();
+    
+    
+    double force = (pressure / (4*pow(N,2)*SimTK::Pi)) * (3*pow(length, 2) - pow(B,2));
+    setActuation(s, force);
+    
+    return force;
 }
 
 //==============================================================================
@@ -104,20 +104,19 @@ double McKibbenActuator::computeActuation( const SimTK::State& s ) const
  * @param s current SimTK::State
  */
 void McKibbenActuator::computeForce(const SimTK::State& s, 
-							    SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							    SimTK::Vector& generalizedForces) const
+                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+                                SimTK::Vector& generalizedForces) const
 {
 
-	double actuation = computeActuation(s);
+    double actuation = computeActuation(s);
 
-	getGeometryPath().addInEquivalentForces(s, actuation, bodyForces, generalizedForces);
+    getGeometryPath().addInEquivalentForces(s, actuation, bodyForces, generalizedForces);
 }
 //_____________________________________________________________________________
 /**
  * Sets the actual Body references _bodyA and _bodyB
  */
-void McKibbenActuator::connectToModel(Model& model)
+void McKibbenActuator::extendConnectToModel(Model& model)
 {
-	Super::connectToModel(model);
-
+    Super::extendConnectToModel(model);
 }

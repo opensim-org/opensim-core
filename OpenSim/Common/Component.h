@@ -50,7 +50,6 @@
 #include "Simbody.h"
 #include <functional>
 #include <memory>
-#include <stack>
 
 namespace OpenSim {
 
@@ -219,8 +218,43 @@ public:
     /** Destructor is virtual to allow concrete Component to cleanup. **/
 	virtual ~Component() {}
 
+
+    /** @name Component Structural Interface
+    The structural interface ensures that deserialization, resolution of 
+    inter-connections, and handling of dependencies are performed systematically
+    and prior to system creation, followed by allocation of necessary System
+    resources. These methods can be extended by virtual methods that form the
+    Component Extension Interface (e.g. #extendFinalizeFromProperties) 
+    that can be implemented by subclasses of Components.
+
+    Component ensures that the corresponding calls are propogated to all of its
+    (sub)components. */
+
+    ///@{
+
+    /** Update Component's internal data members based on properties.
+        Marks the Component as up to date with its properties. */
+    void finalizeFromProperties();
+
+    /** Connect this Component to its aggregate component, which is the root
+        of a tree of components.*/
+    void connect(Component& root);
+
+    /** Disconnect this Component from its aggregate component. Empties all
+        component's connectors and sets them as disconnected.*/
+    void disconnect();
+
     /** Have the Component add itself to the underlying computational System */
     void addToSystem(SimTK::MultibodySystem& system) const;
+
+    /** Initialize Component's state variable values from its properties */
+    void initStateFromProperties(SimTK::State& state) const;
+
+    /** Set Component's properties given a state. */
+    void setPropertiesFromState(const SimTK::State& state);
+
+    // End of Component Structural Interface (public non-virtual).
+    ///@} 
 
 	/**
      * Get the underlying MultibodySystem that this component is connected to.
@@ -269,6 +303,7 @@ public:
      * and its subcomponents
      */
     Array<std::string> getStateVariableNames() const;
+
 
     /** @name Component Connector Access methods
         Access Connectors of this component in a generic way and also by name.
@@ -800,20 +835,18 @@ template <class T> friend class ComponentMeasure;
 		constructOutputs();
 	}
 
-    /** @name           Component Basic Interface
+    /** @name  Component Extension Interface
     The interface ensures that deserialization, resolution of inter-connections,
     and handling of dependencies are performed systematically and prior to 
     system creation, followed by allocation of necessary System resources. These 
     methods are virtual and may be implemented by subclasses of 
     Components. 
     
-    @note Every implementation of virtual method xxx(args) must begin
-    with the line "Super::xxx(args);" to ensure that the parent class methods
-    execute before the child class method, starting with Component::xxx()
-    and going down. 
+    @note Every implementation of virtual extend method xxx(args) must begin
+    with the line "Super::extend<xxx>(args);" to ensure that the parent class
+    is called before the child class method.
     
-    The base class implementations here do two things: (1) take care of any
-    needs of the %Component base class itself, and then (2) ensure that the 
+    The base class implementations ensures that the 
     corresponding calls are made to any subcomponents that have been specified 
     by derived %Component objects, via calls to the addComponent() method. 
 	So assuming that your concrete %Component and all intermediate classes from
@@ -821,16 +854,13 @@ template <class T> friend class ComponentMeasure;
 	method first, the order of operations enforced here for a call to a single 
 	method will be
       -# %Component base class computations
-      -# calls to that same method for \e all subcomponents
       -# calls to that same method for intermediate %Component-derived 
          objects' computations, in order down from %Component, and
-      -# finally a call to that method for the bottom-level concrete class. 
+      -# call to that method for the bottom-level concrete class. 
+      -# finally calls to that same method for \e all subcomponents
+    You should consider this ordering when designing a %Component.  **/ 
 
-    You should consider this ordering when designing a %Component. In 
-    particular the fact that all your subcomponents will be invoked before you
-    are may be surprising. **/ 
-    //@{
-
+    ///@{
 	/** Perform any time invariant calculation, data structure initializations or
 	other component configuration based on its properties necessary to form a  
 	functioning, yet not connected component. It also marks the Component
@@ -839,14 +869,17 @@ template <class T> friend class ComponentMeasure;
 	If you override this method, be sure to invoke the base class method LAST,
 		using code like this :
 		@code
-		void MyComponent::finalizeFromProperties() {
+        void MyComponent::extendFinalizeFromProperties() {
+            Super::extendFinalizeFromProperties(); // invoke parent class method
 			// ... your code goes here
 			// ... addComponent(...) that are listed in or formed from properties
 			// ... initialize any internal data structures 
-			Super::finalizeFromProperties(); // invoke parent class method
 	    }
 	    @endcode   */
-	virtual void finalizeFromProperties();
+    virtual void extendFinalizeFromProperties() {};
+
+    /** Invoke finalizeFromProperties() on the (sub)components of this Component.*/
+    void componentsFinalizeFromProperties() const;
 
     /** Perform any necessary initializations required to connect the component
     (and it subcomponents) to other components and mark the connection status.
@@ -865,31 +898,35 @@ template <class T> friend class ComponentMeasure;
     If you override this method, be sure to invoke the base class method first, 
     using code like this:
     @code
-    void MyComponent::connect(Component& root) {
-        Super::connect(root); // invoke parent class method
+    void MyComponent::extendConnect(Component& root) {
+        Super::extendConnect(root); // invoke parent class method
         // ... your code goes here
     }
     @endcode   */
-    virtual void connect(Component &root);
+    virtual void extendConnect(Component& root) {};
 
+    /** Invoke connect() on the (sub)components of this Component.*/
+    void componentsConnect(Component& root) const;
+
+    ///@cond
     /** Opportunity to remove connection related information. 
     If you override this method, be sure to invoke the base class method first,
     using code like this :
     @code
         void MyComponent::disconnect(Component& root) {
         // disconnect your subcomponents and your Super first
-        Super::disconnect(); 
+        Super::extendDisconnect(); 
         //your code to wipeout your connection related information
     }
     @endcode  */
-    virtual void disconnect();
-
+    //virtual void extendDisconnect() {};
+    ///@endcond
 
     /** Add appropriate Simbody elements (if needed) to the System 
     corresponding to this component and specify needed state resources. 
     extendAddToSystem() is called when the Simbody System is being created to 
     represent a completed system (model) for computation. That is, connect()
-    will already have been invoked on all components before any extendAddToSystem()
+    will already have been invoked on all components before any addToSystem()
     call is made. Helper methods for adding modeling options, state variables 
     and their derivatives, discrete variables, and cache entries are available 
     and can be called within extendAddToSystem() only.
@@ -919,15 +956,8 @@ template <class T> friend class ComponentMeasure;
          addCacheVariable() **/
     virtual void extendAddToSystem(SimTK::MultibodySystem& system) const {};
 
-    /** Invoke extendAddToSystem() on the sub-components of this Component.
-    Concrete Components can choose when to add their (sub)components according
-    to the needs of the Component. Typically, we add the components to the system
-    prior to this Component. In some instances, such as a Joint, the Coordinate 
-    components cannot be added until the Joint has added its underlying 
-    representation to the system and obtained information (index) the Coordinate
-    needs to access its values.*/
+    /** Invoke extendAddToSystem() on the (sub)components of this Component.*/
     void componentsAddToSystem(SimTK::MultibodySystem& system) const;
-
 
     /** Transfer property values or other state-independent initial values
     into this component's state variables in the passed-in \a state argument.
@@ -941,8 +971,8 @@ template <class T> friend class ComponentMeasure;
     If you override this method, be sure to invoke the base class method first, 
     using code like this:
     @code
-    void MyComponent::initStateFromProperties(SimTK::State& state) const {
-        Super::initStateFromProperties(state); // invoke parent class method
+    void MyComponent::extendInitStateFromProperties(SimTK::State& state) const {
+        Super::extendInitStateFromProperties(state); // invoke parent class method
         // ... your code goes here
     }
     @endcode
@@ -950,8 +980,12 @@ template <class T> friend class ComponentMeasure;
     @param      state
         The state that will receive the new initial conditions.
 
-    @see setPropertiesFromState() **/
-    virtual void initStateFromProperties(SimTK::State& state) const;
+    @see extendSetPropertiesFromState() **/
+    virtual void extendInitStateFromProperties(SimTK::State& state) const {};
+
+    /** Invoke initStateFromProperties() on (sub)components of this Component */
+    void componentsInitStateFromProperties(SimTK::State& state) const;
+
 
     /** Update this component's property values to match the specified State,
     if the component has created any state variable that is intended to
@@ -961,8 +995,8 @@ template <class T> friend class ComponentMeasure;
     If you override this method, be sure to invoke the base class method first, 
     using code like this:
     @code
-    void MyComponent::setPropertiesFromState(const SimTK::State& state) {
-        Super::setPropertiesFromState(state); // invoke parent class method
+    void MyComponent::extendSetPropertiesFromState(const SimTK::State& state) {
+        Super::extendSetPropertiesFromState(state); // invoke parent class method
         // ... your code goes here
     }
     @endcode
@@ -971,8 +1005,11 @@ template <class T> friend class ComponentMeasure;
         The State from which values may be extracted to set persistent
         property values.
 
-    @see initStateFromProperties() **/
-    virtual void setPropertiesFromState(const SimTK::State& state);
+    @see extendInitStateFromProperties() **/
+    virtual void extendSetPropertiesFromState(const SimTK::State& state) {};
+
+    /** Invoke setPropertiesFromState() on (sub)components of this Component */
+    void componentsSetPropertiesFromState(const SimTK::State& state);
 
     /** If a model component has allocated any continuous state variables
     using the addStateVariable() method, then %computeStateVariableDerivatives()
@@ -1021,8 +1058,8 @@ template <class T> friend class ComponentMeasure;
 							const std::string& name, double deriv) const;
 
 
-    // End of Model Component Basic Interface (protected virtuals).
-    //@} 
+    // End of Component Extension Interface (protected virtuals).
+    ///@} 
 
     /** @name           Component Advanced Interface
     You probably won't need to override methods in this section. These provide
@@ -1180,7 +1217,7 @@ template <class T> friend class ComponentMeasure;
     
 	/**
      * Add another Component as a subcomponent of this Component.
-     * Component methods (e.g. extendAddToSystem(), initStateFromProperties(), ...) are 
+     * Component methods (e.g. addToSystem(), initStateFromProperties(), ...) are 
      * therefore invoked on subcomponents when called on this Component. Realization is 
      * also performed automatically on subcomponents. This Component does not take 
 	 * ownership of designated subcomponents and does not destroy them when the Component.
@@ -1496,7 +1533,7 @@ protected:
 private:
 	class Connection;
 
-    /// Base Component musct create underlying resources in computational System */
+    /// Base Component must create underlying resources in computational System.
     void baseAddToSystem(SimTK::MultibodySystem& system) const;
 	
     SimTK::ReferencePtr<Component> _nextComponent;
