@@ -121,10 +121,12 @@ public:
 private:
     void advanceToNextValidComponent();
     const Component* m_node;
+    const Component* _root;
     const ComponentFilter* m_filter;
 #ifndef SWIG
     ComponentListIterator(const Component* node, ComponentFilter* filter = new ComponentFilterByType<T>()) :
         m_node(node),
+        _root(node),
         m_filter(filter){
         if (filter == nullptr)
             filter = new ComponentFilterByType<T>();

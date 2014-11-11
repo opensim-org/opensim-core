@@ -78,13 +78,24 @@ int main()
         for (const GeometryPath& gpath : geomPathList) {
             numGeomPaths++;
         }
+        const OpenSim::Joint& shoulderJnt = model.getJointSet().get(0);
+        // cycle thru components under shoulderJnt should return the Joint itself and the Coordinate
+        int numJntComponents = 0;
+        ComponentList<Component> jComponentsList = shoulderJnt.getComponentList();
+        std::cout << "Components/subComponents under Shoulder Joint:" << std::endl;
+        for (ComponentList<Component>::iterator it = jComponentsList.begin();
+            it != jComponentsList.end();
+            ++it) {
+            std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getName() << std::endl;
+            numJntComponents++;
+        }
         cout << "Num all components = " << numComponents << std::endl;
         cout << "Num bodies = " << numBodies << std::endl;
         cout << "Num Muscles = " << numMuscles << std::endl;
         cout << "Num GeometryPath components = " << numGeomPaths << std::endl;
         // Components = Model+3Body+3Marker+2(Joint+Coordinate)+6(Muscle+GeometryPath)
         // Should test against 1+#Bodies+#Markers+#Joints+#Constraints+#Coordinates+#Forces+#ForcesWithPath+..
-        // Would that account for internal (split-bodies etc.?
+        // Would that account for internal (split-bodies etc.?)
         int numComponentsWithStateVariables = 0;
         ComponentList<ModelComponent> compWithStates = model.getComponentList<ModelComponent>();
         compWithStates.setFilter(new ComponentWithStateVariables());
@@ -96,6 +107,7 @@ int main()
         ASSERT(numBodies == model.getNumBodies());
         ASSERT(numMuscles == model.getMuscles().getSize());
         ASSERT(numComponentsWithStateVariables == 11);
+        ASSERT(numJntComponents == 2);
     }
     catch (Exception &ex) {
         ex.print(std::cout);
