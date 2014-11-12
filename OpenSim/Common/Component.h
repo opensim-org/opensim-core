@@ -256,9 +256,11 @@ public:
 
     /**
      * Get the underlying MultibodySystem that this component is connected to.
+     * Make sure you have called Model::initSystem() prior to accessing the System.
+     * Throws an Exception if the System has not been created OR the this
+     * Component has not been added itself to the System.
      */
-    const SimTK::MultibodySystem& getSystem() const
-        { return *_system; } 
+    const SimTK::MultibodySystem& getSystem() const;
 
     /**
      * Get an iterator through the underlying components that this component 
@@ -1060,7 +1062,7 @@ template <class T> friend class ComponentMeasure;
 
     @note Once again it is crucial that, if you override a method here,
     you invoke the superclass method as the <em>first line</em> in your
-    implementation, via a call like "Super::realizePosition(state);". This 
+    implementation, via a call like "Super::extendRealizePosition(state);". This 
     will ensure that all necessary base class computations are performed, and
     that subcomponents are handled properly.
 
@@ -1075,34 +1077,34 @@ template <class T> friend class ComponentMeasure;
     //@{
     /** Obtain state resources that are needed unconditionally, and perform
     computations that depend only on the system topology. **/
-    virtual void realizeTopology(SimTK::State& state) const;
+    virtual void extendRealizeTopology(SimTK::State& state) const;
     /** Obtain and name state resources (like state variables allocated by
     an underlying Simbody component) that may be needed, depending on modeling
     options. Also, perform any computations that depend only on topology and 
     selected modeling options. **/
-    virtual void realizeModel(SimTK::State& state) const;
+    virtual void extendRealizeModel(SimTK::State& state) const;
     /** Perform computations that depend only on instance variables, like
     lengths and masses. **/
-    virtual void realizeInstance(const SimTK::State& state) const;
+    virtual void extendRealizeInstance(const SimTK::State& state) const;
     /** Perform computations that depend only on time and earlier stages. **/
-    virtual void realizeTime(const SimTK::State& state) const;
+    virtual void extendRealizeTime(const SimTK::State& state) const;
     /** Perform computations that depend only on position-level state
     variables and computations performed in earlier stages (including time). **/
-    virtual void realizePosition(const SimTK::State& state) const;
+    virtual void extendRealizePosition(const SimTK::State& state) const;
     /** Perform computations that depend only on velocity-level state 
     variables and computations performed in earlier stages (including position, 
     and time). **/
-    virtual void realizeVelocity(const SimTK::State& state) const;
+    virtual void extendRealizeVelocity(const SimTK::State& state) const;
     /** Perform computations (typically forces) that may depend on 
     dynamics-stage state variables, and on computations performed in earlier
     stages (including velocity, position, and time), but not on other forces,
     accelerations, constraint multipliers, or reaction forces. **/
-    virtual void realizeDynamics(const SimTK::State& state) const;
+    virtual void extendRealizeDynamics(const SimTK::State& state) const;
     /** Perform computations that may depend on applied forces. **/
-    virtual void realizeAcceleration(const SimTK::State& state) const;
+    virtual void extendRealizeAcceleration(const SimTK::State& state) const;
     /** Perform computations that may depend on anything but are only used
     for reporting and cannot affect subsequent simulation behavior. **/
-    virtual void realizeReport(const SimTK::State& state) const;
+    virtual void extendRealizeReport(const SimTK::State& state) const;
     //@} end of Component Advanced Interface
 
 

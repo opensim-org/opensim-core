@@ -92,7 +92,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
 	// Hang on to a state that has the right flags for contact constraints turned on/off
 	_modelCopy.setPropertiesFromState(s_solver);
 	// Use this state for the remainder of this step (record)
-	s_solver = _modelCopy.getMultibodySystem().realizeTopology();
+    s_solver = _modelCopy.getMultibodySystem().realizeTopology();
 	// DO NOT recreate the system, will lose location of constraint
 	_modelCopy.initStateWithoutRecreatingSystem(s_solver);
 

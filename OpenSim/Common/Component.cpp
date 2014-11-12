@@ -74,23 +74,23 @@ public:
     {   return this->getValueZero(); }
 
     void realizeMeasureTopologyVirtual(SimTK::State& s) const FINAL_11
-    {   _Component.realizeTopology(s); }
+    {   _Component.extendRealizeTopology(s); }
     void realizeMeasureModelVirtual(SimTK::State& s) const FINAL_11
-    {   _Component.realizeModel(s); }
+    {   _Component.extendRealizeModel(s); }
     void realizeMeasureInstanceVirtual(const SimTK::State& s) const FINAL_11
-    {   _Component.realizeInstance(s); }
+    {   _Component.extendRealizeInstance(s); }
     void realizeMeasureTimeVirtual(const SimTK::State& s) const FINAL_11
-    {   _Component.realizeTime(s); }
+    {   _Component.extendRealizeTime(s); }
     void realizeMeasurePositionVirtual(const SimTK::State& s) const FINAL_11
-    {   _Component.realizePosition(s); }
+    {   _Component.extendRealizePosition(s); }
     void realizeMeasureVelocityVirtual(const SimTK::State& s) const FINAL_11
-    {   _Component.realizeVelocity(s); }
+    {   _Component.extendRealizeVelocity(s); }
     void realizeMeasureDynamicsVirtual(const SimTK::State& s) const FINAL_11
-    {   _Component.realizeDynamics(s); }
+    {   _Component.extendRealizeDynamics(s); }
     void realizeMeasureAccelerationVirtual(const SimTK::State& s) const FINAL_11
-    {   _Component.realizeAcceleration(s); }
+    {   _Component.extendRealizeAcceleration(s); }
     void realizeMeasureReportVirtual(const SimTK::State& s) const FINAL_11
-    {   _Component.realizeReport(s); }
+    {   _Component.extendRealizeReport(s); }
 
 private:
     const Component& _Component;
@@ -287,7 +287,7 @@ void Component::componentsSetPropertiesFromState(const SimTK::State& state)
 }
 
 // Base class implementation of virtual method. Note that we're not handling
-// subcomponents here; this method gets called from realizeAcceleration()
+// subcomponents here; this method gets called from extendRealizeAcceleration()
 // which will be invoked for each (sub) component by its own ComponentMeasure.
 void Component::computeStateVariableDerivatives(const SimTK::State& s) const
 {
@@ -681,7 +681,7 @@ double Component::
     return SimTK::NaN;
 }
 
-// Set the value of a state variable allocated by this Component given its index
+// Set the value of a state variable allocated by this Component given its name
 // for this component.
 void Component::
     setStateVariableValue(State& s, const std::string& name, double value) const
@@ -917,13 +917,13 @@ getStateVariablesNamesAddedByComponent() const
 //------------------------------------------------------------------------------
 // This is the base class implementation of a virtual method that can be
 // overridden by derived model components, but they *must* invoke
-// Super::realizeTopology() as the first line in the overriding method so that
+// Super::extendRealizeTopology() as the first line in the overriding method so that
 // this code is executed before theirs.
 // This method is invoked from the ComponentMeasure associated with this
 // Component.
 // Note that subcomponent realize() methods will be invoked by their own
 // ComponentMeasures, so we do not need to forward to subcomponents here.
-void Component::realizeTopology(SimTK::State& s) const
+void Component::extendRealizeTopology(SimTK::State& s) const
 {
 
     const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
@@ -992,7 +992,7 @@ void Component::realizeTopology(SimTK::State& s) const
 //------------------------------------------------------------------------------
 // Base class implementation of virtual method.
 // Collect this component's state variable derivatives.
-void Component::realizeAcceleration(const SimTK::State& s) const
+void Component::extendRealizeAcceleration(const SimTK::State& s) const
 {
     // don't bother computing derivatives if the component has no state variables
     if(getNumStateVariablesAddedByComponent() > 0) {
@@ -1018,19 +1018,31 @@ void Component::realizeAcceleration(const SimTK::State& s) const
     }
 }
 
+const SimTK::MultibodySystem& Component::getSystem() const
+{
+    if (_system.empty()){
+        std::string msg = "Component::getSystem() ";
+        msg += getName() + " has no reference to a System.\n";
+        msg += "Make sure you added the Component to the Model and ";
+        msg += "called Model::initSystem(). ";
+        throw Exception(msg, __FILE__, __LINE__);
+    }
+    return *_system;
+}
+
 //------------------------------------------------------------------------------
 //                         OTHER REALIZE METHODS
 //------------------------------------------------------------------------------
 // Base class implementations of these virtual methods do nothing now but
 // could do something in the future. Users must still invoke Super::realizeXXX()
 // as the first line in their overrides to ensure future compatibility.
-void Component::realizeModel(SimTK::State& state) const {}
-void Component::realizeInstance(const SimTK::State& state) const {}
-void Component::realizeTime(const SimTK::State& state) const {}
-void Component::realizePosition(const SimTK::State& state) const {}
-void Component::realizeVelocity(const SimTK::State& state) const {}
-void Component::realizeDynamics(const SimTK::State& state) const {}
-void Component::realizeReport(const SimTK::State& state) const {}
+void Component::extendRealizeModel(SimTK::State& state) const {}
+void Component::extendRealizeInstance(const SimTK::State& state) const {}
+void Component::extendRealizeTime(const SimTK::State& state) const {}
+void Component::extendRealizePosition(const SimTK::State& state) const {}
+void Component::extendRealizeVelocity(const SimTK::State& state) const {}
+void Component::extendRealizeDynamics(const SimTK::State& state) const {}
+void Component::extendRealizeReport(const SimTK::State& state) const {}
 
 
 //override virtual methods

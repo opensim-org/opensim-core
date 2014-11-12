@@ -27,12 +27,6 @@
 #include "Simbody.h"
 #include "OpenSim/OpenSim.h"
 #include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
-//"MuscleFirstOrderActivationDynamicModel.h"
-//#include <SimTKcommon/Testing.h>
-//#include <OpenSim/Common/Exception.h>
-
-//#include <iostream>
-//#include <fstream>
 
 using namespace std;
 using namespace OpenSim;

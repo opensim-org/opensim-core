@@ -348,7 +348,7 @@ void testPointConstraint()
 	SimTK::Constraint::Ball simtkBall(matter.Ground(), pointOnGround, foot, pointOnFoot);
 
 	// Simbody model state setup
-	system.realizeTopology();
+    system.realizeTopology();
 	State state = system.getDefaultState();
 	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
@@ -428,7 +428,7 @@ void testConstantDistanceConstraint()
 
 
 	// Simbody model state setup
-	system.realizeTopology();
+    system.realizeTopology();
 	State state = system.getDefaultState();
 	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
@@ -593,7 +593,7 @@ void testWeldConstraint()
 	SimTK::Constraint::Weld weld(matter.Ground(), Transform(weldInGround), foot, Transform(weldInFoot));
 
 	// Simbody model state setup
-	system.realizeTopology();
+    system.realizeTopology();
 	State state = system.getDefaultState();
 	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
@@ -686,7 +686,7 @@ void testPointOnLineConstraint()
 	SimTK::Constraint::PointOnLine simtkPointOnLine(matter.Ground(), normLineDirection, pointOnLine, foot, pointOnFollower);
 
 	// Simbody model state setup
-	system.realizeTopology();
+    system.realizeTopology();
 	State state = system.getDefaultState();
 	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
@@ -805,7 +805,7 @@ void testCoordinateCouplerConstraint()
 	//MobilizedBody::Pin shank(thigh, SimTK::Transform(kneeInFemur), SimTK::Body::Rigid(tibiaMass), SimTK::Transform(kneeInTibia));
 
 	// Simbody model state setup
-	system.realizeTopology();
+    system.realizeTopology();
 	State state = system.getDefaultState();
 	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
