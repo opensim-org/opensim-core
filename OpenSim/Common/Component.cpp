@@ -475,8 +475,8 @@ const Component& Component::getComponent(const std::string& name) const
 {  
     const Component* found = findComponent(name);
     if(!found){
-        std::string msg = "Component::getComponent() could not find component '";
-        msg += name + "' from Component '" + getName();
+        std::string msg = "Component::getComponent() could not find subcomponent '";
+        msg += name + "' from Component '" + getName() + "'.";
         throw Exception(msg);
     }
     return *found;
@@ -486,8 +486,8 @@ Component& Component::updComponent(const std::string& name) const
 {
     const Component* found = findComponent(name);
     if(!found){
-        std::string msg = "Component::updComponent() could not find component '";
-        msg += name + "' from Component '" + getName();
+        std::string msg = "Component::updComponent() could not find subcomponent '";
+        msg += name + "' from Component '" + getName() + "'.";
         throw Exception(msg);
     }
     return *const_cast<Component *>(found); 
