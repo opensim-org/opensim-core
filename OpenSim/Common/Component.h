@@ -263,33 +263,35 @@ public:
     invoked on this %Model. **/
     /**@{**/
 
-    ///** Perform computations that depend only on time and earlier stages. **/
-    //void realizeTime(const SimTK::State& state) const;
-    ///** Perform computations that depend only on position-level state
-    //variables and computations performed in earlier stages (including time). **/
-    //void realizePosition(const SimTK::State& state) const;
-    ///** Perform computations that depend only on velocity-level state
-    //variables and computations performed in earlier stages (including position,
-    //and time). **/
-    //void realizeVelocity(const SimTK::State& state) const;
-    ///** Perform computations (typically forces) that may depend on
-    //dynamics-stage state variables, and on computations performed in earlier
-    //stages (including velocity, position, and time), but not on other forces,
-    //accelerations, constraint multipliers, or reaction forces. **/
-    //void realizeDynamics(const SimTK::State& state) const;
-    ///** Perform computations that may depend on applied forces. **/
-    //void realizeAcceleration(const SimTK::State& state) const;
-    ///** Perform computations that may depend on anything but are only used
-    //for reporting and cannot affect subsequent simulation behavior. **/
-    //void realizeReport(const SimTK::State& state) const;
+    /** Perform computations that depend only on time and earlier stages. **/
+    void realizeTime(const SimTK::State& state) const;
+    /** Perform computations that depend only on position-level state
+    variables and computations performed in earlier stages (including time). **/
+    void realizePosition(const SimTK::State& state) const;
+    /** Perform computations that depend only on velocity-level state
+    variables and computations performed in earlier stages (including position,
+    and time). **/
+    void realizeVelocity(const SimTK::State& state) const;
+    /** Perform computations (typically forces) that may depend on
+    dynamics-stage state variables, and on computations performed in earlier
+    stages (including velocity, position, and time), but not on other forces,
+    accelerations, constraint multipliers, or reaction forces. **/
+    void realizeDynamics(const SimTK::State& state) const;
+    /** Perform computations that may depend on applied forces. **/
+    void realizeAcceleration(const SimTK::State& state) const;
+    /** Perform computations that may depend on anything but are only used
+    for reporting and cannot affect subsequent simulation behavior. **/
+    void realizeReport(const SimTK::State& state) const;
 
     /**@}**/
 
     /**
      * Get the underlying MultibodySystem that this component is connected to.
+     * Make sure you have called Model::initSystem() prior to accessing the System.
+     * Throws an Exception if the System has not been created OR the this
+     * Component has not been added itself to the System.
      */
-    const SimTK::MultibodySystem& getSystem() const
-        { return *_system; } 
+    const SimTK::MultibodySystem& getSystem() const;
 
     /**
      * Get an iterator through the underlying components that this component 

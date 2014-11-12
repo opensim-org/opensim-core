@@ -1018,6 +1018,51 @@ void Component::extendRealizeAcceleration(const SimTK::State& s) const
     }
 }
 
+const SimTK::MultibodySystem& Component::getSystem() const
+{
+    if (_system.empty()){
+        std::string msg = "Component::getSystem() ";
+        msg += getName() + " has no reference to a System.\n";
+        msg += "Make sure you added the Component to the Model and ";
+        msg += "called Model::initSystem(). ";
+        throw Exception(msg, __FILE__, __LINE__);
+    }
+    return *_system;
+}
+
+//------------------------------------------------------------------------------
+//          REALIZE THE SYSTEM TO THE REQUIRED COMPUTATIONAL STAGE
+//------------------------------------------------------------------------------
+void Component::realizeTime(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Time);
+}
+
+void Component::realizePosition(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Position);
+}
+
+void Component::realizeVelocity(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Velocity);
+}
+
+void Component::realizeDynamics(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Dynamics);
+}
+
+void Component::realizeAcceleration(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Acceleration);
+}
+
+void Component::realizeReport(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Report);
+}
+
 //------------------------------------------------------------------------------
 //                         OTHER REALIZE METHODS
 //------------------------------------------------------------------------------
