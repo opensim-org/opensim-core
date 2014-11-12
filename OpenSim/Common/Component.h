@@ -1358,8 +1358,8 @@ template <class T> friend class ComponentMeasure;
         linear time (linear search for name at each component level. Whereas
         supplying "elbow_flexion" requires a tree search.
         Returns NULL if Component of that specified name cannot be found. 
-        If the name provided is a component's state variable name and a pointer to
-        a StateVariable pointer is provided, the pointer will be set to the 
+        If the name provided is a component's state variable name and a
+        SateVariable pointer is provided, the pointer will be set to the 
         StateVariable object that was found. This facilitates the getting and setting
         of StateVariables by name. 
         
