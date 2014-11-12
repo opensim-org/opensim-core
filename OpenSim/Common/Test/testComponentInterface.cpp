@@ -445,7 +445,7 @@ int main() {
         for (int i = 0; i < 10; ++i){
             s.updTime() = i*0.01234;
             s.updQ() = (i+1)*q/10.0;
-            foo.realizeVelocity(s);
+            system.realize(s, Stage::Velocity);
 
             const AbstractOutput& out1 = foo.getOutput("Output1");
             const AbstractOutput& out2 = foo.getOutput("Output2");
@@ -458,12 +458,12 @@ int main() {
             cout << out2.getName() <<"|"<< out2.getTypeName() <<"|"<< out2.getValueAsString(s) << endl;
             cout << out3.getName() <<"|"<< out3.getTypeName() <<"|"<< out3.getValueAsString(s) << endl;
             
-            bar.realizeAcceleration(s);
+            system.realize(s, Stage::Acceleration);
             cout << out4.getName() <<"|"<< out4.getTypeName() <<"|"<< out4.getValueAsString(s) << endl;
             cout << out5.getName() <<"|"<< out5.getTypeName() <<"|"<< out5.getValueAsString(s) << endl;
 
             //viz.report(s); 
-            foo.realizeReport(s);
+            system.realize(s, Stage::Report);
 
             cout << "foo.input1 = " << foo.getInputValue<double>(s, "input1") << endl;
         }

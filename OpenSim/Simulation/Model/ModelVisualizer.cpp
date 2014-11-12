@@ -307,7 +307,7 @@ findGeometryFile(const std::string&          geoFile,
 // Call this on a newly-constructed ModelVisualizer (typically from the Model's
 // initSystem() method) to set up the various auxiliary classes used for
 // visualization and user interaction. This involves modifications to the
-// System that must be done prior to extendRealizeTopology(), and may modify the
+// System that must be done prior to realizeTopology(), and may modify the
 // Model also.
 void ModelVisualizer::createVisualizer() {
     _model.updMatterSubsystem().setShowDefaultGeometry(false);

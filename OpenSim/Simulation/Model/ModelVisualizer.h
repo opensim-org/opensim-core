@@ -192,7 +192,7 @@ private:
 
     // Only Model is permitted to create or destruct one of these. Note that
     // this will cause modifications to System that must occur prior to 
-    // extendRealizeTopology().
+    // realizeTopology().
     ModelVisualizer(Model& model) : _model(model), _viz(0) {
         clear();
         createVisualizer();

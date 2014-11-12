@@ -292,7 +292,7 @@ public:
 
     /** After buildSystem() has been called, and any additional modifications
     to the Simbody MultibodySystem have been made, call this method to finalize 
-    the MultibodySystem (by calling its extendRealizeTopology() method), obtain an 
+    the MultibodySystem (by calling its realizeTopology() method), obtain an 
     initial state, and assemble it so that position constraints are 
     satisified. The initStateFromProperties() method of each contained
     ModelComponent will be invoked. A reference to the writable internally-
@@ -422,6 +422,36 @@ public:
     GeneralForceSubsystem allocated by this %Model. **/
     SimTK::GeneralForceSubsystem& updForceSubsystem() 
     {   return *_forceSubsystem; }
+
+    /**@}**/
+
+    /**@name  Realize the Simbody System and State to Computational Stage
+    Methods in this section enable advanced and scripting users access to
+    realize the Simbody MultibodySystem and the provided state to a desireed
+    computaional (realization) Stage.
+    Note that these are not accessible until after initSystem() has been
+    invoked on this %Model. **/
+    /**@{**/
+
+    /** Perform computations that depend only on time and earlier stages. **/
+    void realizeTime(const SimTK::State& state) const;
+    /** Perform computations that depend only on position-level state
+    variables and computations performed in earlier stages (including time). **/
+    void realizePosition(const SimTK::State& state) const;
+    /** Perform computations that depend only on velocity-level state
+    variables and computations performed in earlier stages (including position,
+    and time). **/
+    void realizeVelocity(const SimTK::State& state) const;
+    /** Perform computations (typically forces) that may depend on
+    dynamics-stage state variables, and on computations performed in earlier
+    stages (including velocity, position, and time), but not on other forces,
+    accelerations, constraint multipliers, or reaction forces. **/
+    void realizeDynamics(const SimTK::State& state) const;
+    /** Perform computations that may depend on applied forces. **/
+    void realizeAcceleration(const SimTK::State& state) const;
+    /** Perform computations that may depend on anything but are only used
+    for reporting and cannot affect subsequent simulation behavior. **/
+    void realizeReport(const SimTK::State& state) const;
 
     /**@}**/
 
