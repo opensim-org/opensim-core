@@ -7,7 +7,9 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2014-2014 Stanford University and the Authors                *
+ * Author(s): Ayman Habib                                                     *
+ * Contributer(s) :                                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -27,13 +29,15 @@
 using namespace OpenSim;
 using namespace std;
 
+// Example filter that allows for iterating only through Components that have
+// state variables, used for demonstration purposes.
 class ComponentWithStateVariables : public ComponentFilter {
 public:
     ComponentWithStateVariables() {};
-    bool isMatch(const Component* comp) const override {
-        return (comp->getNumStateVariables()>0);
+    bool isMatch(const Component& comp) const override {
+        return (comp.getNumStateVariables()>0);
     };
-    virtual ~ComponentWithStateVariables() {}
+    ~ComponentWithStateVariables() {}
 
 };
 int main()

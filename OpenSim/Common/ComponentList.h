@@ -9,8 +9,9 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                     *
+ * Copyright (c) 2014-2014 Stanford University and the Authors                *
+ * Authors: Ayman Habib                                                       *
+ * Contributers :                                                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -39,14 +40,17 @@ template <typename T> class ComponentListIterator;
 // Class used to help iterate over specific Components
 //
 /**
-* A class to specifiy a filter to be used to iterate thru compoenents. More flexible than filtering
-* based on Type only. To write your custom filter, extend this class and implement the choose method.
+* A class to specifiy a filter to be used to iterate thru components. More 
+* flexible than filtering based on Type only. To write your custom filter, 
+* extend this class and implement the isMatch method.
 * This's more typical visitor design pattern.
 */
 class ComponentFilter {
 public:
-    ComponentFilter() {};
-    virtual bool isMatch(const Component* comp) const = 0;
+    ComponentFilter() {}
+    /// isMatch is the meat of the ComponentFilter, returns true if comp should
+    /// be iterated over.
+    virtual bool isMatch(const Component& comp) const = 0;
     virtual ~ComponentFilter() {}
 };
 /**
@@ -55,12 +59,13 @@ public:
 template <typename T>
 class ComponentFilterByType : public ComponentFilter {
 public:
-    ComponentFilterByType() {};
-    bool isMatch(const Component* comp) const {
-        return dynamic_cast<const T*>(comp) != nullptr;
-    };
-    virtual ~ComponentFilterByType() {}
-
+    /// Construct a ComponentFilter that selects Compoennts based on type T
+    ComponentFilterByType() {}
+    /// isMatch returns true if comp is of type T or derived class
+    bool isMatch(const Component& comp) const {
+        return dynamic_cast<const T*>(&comp) != nullptr;
+    }
+    ~ComponentFilterByType() {}
 };
 /**
 * Collection of components to iterate through
@@ -68,35 +73,47 @@ public:
 template <typename T>
 class ComponentList {
 public:
+    /// internal name for simple referencing
     typedef ComponentListIterator<T> iterator;
-    typedef ComponentFilter filter;
 #ifndef SWIG
-    ComponentList(const Component* root, filter* f = new ComponentFilterByType<T>()) : m_root(root), m_filter(f){}
+    /// Constructor that takes a Component to iterate over (itself and descendents)
+    /// and an optional ComponentFilter. If ComponentFilter is not specified then
+    /// ComponentFilterByType is used. Users get a chance to change the filter using 
+    /// setFilter
+    ComponentList(const Component& root, ComponentFilter* f =
+        new ComponentFilterByType<T>()) : m_root(root), m_filter(f){}
 #else
-    ComponentList(const Component* root) : m_root(root), m_filter(new ComponentFilterByType<T>()){}
+    ComponentList(const Component& root) : m_root(root), 
+        m_filter(new ComponentFilterByType<T>()){}
 #endif
+    /// destructor
     virtual ~ComponentList() { delete m_filter;  }
+    /// return iterator over the tree of Components rooted at m_root
     ComponentListIterator<T> begin() {
-        return ComponentListIterator<T>(m_root, m_filter);
+        return ComponentListIterator<T>(&m_root, m_filter);
     }
-    void setFilter(filter* filter){
+    /// Provide user specified ComponentFilter.  If passed in the ComponentList 
+    /// takes ownership of it.
+    void setFilter(ComponentFilter* filter){
         m_filter = filter;
     }
+    /// return iterator past end of the list i.e. nullptr
     ComponentListIterator<T> end() {
         return nullptr;
     }
 private:
-    const Component* m_root;
-    filter* m_filter;
+    const Component& m_root; // root of subtree to be iterated over
+    ComponentFilter* m_filter; //     ComponentFilter to choose components 
     friend class ComponentListIterator<T>;
 };
 
 //==============================================================================
 //                            OPENSIM ComponentListIterator
 //==============================================================================
-// Class used to iterate over subcomponents of specific type, default to all Components
-//
-/** Use as:
+/** Class used to iterate over subcomponents of specific type, default to all.
+ * this is const iterator that returns const ref or pointer on dereferencing.
+ *
+ * Use as:
 @code
 ComponentList<GeometryPath> geomPathList = model.getComponentList<GeometryPath>();
 for (const GeometryPath& gpath : geomPathList) {
@@ -114,19 +131,24 @@ public:
     bool operator!=(const ComponentListIterator& iter) const {
          return m_node != &*iter;
     }
-    const T& operator*() const { return *dynamic_cast<const T*>(m_node); } // m_node need to be kept pointing at correct type otherwise will crash
+    /// dereference the iterator to get a Component of proper type matching Filter
+    /// this is const iterator since th
+    const T& operator*() const { return *dynamic_cast<const T*>(m_node); } 
     const T* operator->() const { return dynamic_cast<const T*>(m_node); }
+    /// increment operator to advance 
     ComponentListIterator<T>& operator++();
+    /// method equivalent to increment operator for operator deficient languanges
     ComponentListIterator<T>& next() { return ++(*this); }
 private:
     void advanceToNextValidComponent();
     const Component* m_node; // Pointer to current Component that the iterator is processing
-    const Component* _root; // Root of subtree of Compoenents that we're iterating over
+    const Component& _root; // Root of subtree of Compoenents that we're iterating over
     const ComponentFilter* m_filter; // Optional filter to further select Components under _root, defaults to Filter by type
 #ifndef SWIG
+    /// Constructor that takes a Component and optional ComponentFilter
     ComponentListIterator(const Component* node, ComponentFilter* filter = new ComponentFilterByType<T>()) :
         m_node(node),
-        _root(node),
+        _root(*node),
         m_filter(filter){
         if (filter == nullptr)
             filter = new ComponentFilterByType<T>();
@@ -135,7 +157,7 @@ private:
 #else
     ComponentListIterator(const Component* node) :
         m_node(node),
-        _root(node),
+        _root(*node),
         m_filter(new ComponentFilterByType<T>()){
         advanceToNextValidComponent(); // in case node is not of type T
     }

@@ -272,7 +272,7 @@ public:
      */
     template <typename T = Component>
     ComponentList<T> getComponentList() const {
-        return ComponentList<T>(this);
+        return ComponentList<T>(*this);
     }
     template <typename T>
     friend class ComponentListIterator;
@@ -1690,7 +1690,7 @@ template <typename T>
 ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
     if (m_node->_components.size() > 0)
         m_node = m_node->_components[0];
-    else if (m_node->_nextComponent.get() == _root->_nextComponent.get())
+    else if (m_node->_nextComponent.get() == _root._nextComponent.get())
         m_node = nullptr;
     else
         m_node = m_node->_nextComponent.get();
@@ -1701,11 +1701,11 @@ ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
 template <typename T>
 void ComponentListIterator<T>::advanceToNextValidComponent() {
     // Advance m_node to next valid (of type T) if needed
-    while (m_node != nullptr && !m_filter->isMatch(m_node)){
+    while (m_node != nullptr && !m_filter->isMatch(*m_node)){
         if (m_node->_components.size() > 0)
             m_node = m_node->_components[0];
         else {
-            if (m_node->_nextComponent.get() == _root->_nextComponent.get()){ // end of subtree under _root
+            if (m_node->_nextComponent.get() == _root._nextComponent.get()){ // end of subtree under _root
                 m_node = nullptr;
                 continue;
             }
