@@ -427,8 +427,8 @@ public:
 
     /**@name  Realize the Simbody System and State to Computational Stage
     Methods in this section enable advanced and scripting users access to
-    realize the Simbody MultibodySystem and the provided state to a desireed
-    computaional (realization) Stage.
+    realize the Simbody MultibodySystem and the provided state to a desired
+    computational (realization) Stage.
     Note that these are not accessible until after initSystem() has been
     invoked on this %Model. **/
     /**@{**/
