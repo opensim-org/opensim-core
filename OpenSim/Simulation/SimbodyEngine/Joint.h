@@ -122,18 +122,18 @@ public:
         @param[in] parent   the parent Body that joint connects to
         @param[in] locationInParent    Vec3 of the location of the joint in the
                                        parent body frame.
-        @param[in] orientationInParent Vec3 of the XYZ body-fixed Euler angles of
-                                       the joint frame orientation in the parent
-                                       body frame.
+        @param[in] orientationInParent Vec3 of the XYZ body-fixed Euler angles
+                                       of the joint frame orientation in the
+                                       parent body frame.
         @param[in] child    the child Body that joint connects to
         @param[in] locationInChild     Vec3 of the location of the joint in the
                                        child body frame.
-        @param[in] orientationInChild  Vec3 of the XYZ body-fixed Euler angles of
-                                       the joint frame orientation in the child
-                                       body frame.
-        @param[in] reverse  Advanced optional flag (bool) specifying the direction
-                            of the Joint in the multibody tree. Default is false 
-                            (e.g. forward)
+        @param[in] orientationInChild  Vec3 of the XYZ body-fixed Euler angles
+                                       of the joint frame orientation in the
+                                       child body frame.
+        @param[in] reverse  Advanced optional flag (bool) specifying the 
+                            direction of the Joint in the multibody tree. 
+                            Default is false (that is, forward).
         */
     Joint(const std::string &name, 
           const Body &parent, 
@@ -200,7 +200,7 @@ public:
         { return _jointFrameInChild; }
 
     // Coordinate Set
-    const CoordinateSet& getCoordinateSet() const { return get_CoordinateSet(); }
+    const CoordinateSet& getCoordinateSet() const {return get_CoordinateSet();}
 
     bool getReverse() const { return get_reverse(); }
 
@@ -212,24 +212,34 @@ public:
     bool isCoordinateUsed(const Coordinate& aCoordinate) const;
     
     // Computation
-    /** Given some system mobility (generalized) forces, calculate the equivalent spatial body force for this Joint. 
-    Keep in mind that there are typically nm < 6 mobilities per joint with an infinte set of solutions that can map
-    nm gen forces to 6 spatial force components (3 for torque + 3 for force). The solution returned provides the
-    "most" effective force and torque in the joint frame. This means the smallest magnituded force and/or 
-    torque that will result in the same generalized force. If a generalized force is defined along/about a joint
-    axis, then this should be evident in the reported results as a force or torque on the same axis. 
-    NOTE: Joints comprised of multiple mobilizers and/or constraints, should override this method and account for multiple
-          internal components 
+    /** Given some system mobility (generalized) forces, calculate the 
+    equivalent spatial body force for this Joint. Keep in mind that there are 
+    typically nm < 6 mobilities per joint with an infinte set of solutions that 
+    can map nm gen forces to 6 spatial force components (3 for torque + 3 for 
+    force). The solution returned provides the "most" effective force and torque
+    in the joint frame. This means the smallest magnituded force and/or torque 
+    that will result in the same generalized force. If a generalized force is 
+    defined along/about a joint axis, then this should be evident in the 
+    reported results as a force or torque on the same axis.  NOTE: Joints 
+    comprised of multiple mobilizers and/or constraints, should override this 
+    method and account for multiple internal components.
+
     @param s containing the generalized coordinate and speed values 
-    @param mobilityForces for the system as computed by inverse dynamics, for example 
-    @return spatial force, FB_G, acting on the body connected by this joint at its location B, expressed in ground.  */
-    virtual SimTK::SpatialVec calcEquivalentSpatialForce(const SimTK::State &s, const SimTK::Vector &mobilityForces) const;
+    @param mobilityForces for the system as computed by inverse dynamics, 
+                          for example 
+    @return spatial force, FB_G, acting on the body connected by this joint at 
+    its location B, expressed in ground.  */
+    virtual SimTK::SpatialVec 
+    calcEquivalentSpatialForce(const SimTK::State &s, 
+                               const SimTK::Vector &mobilityForces) const;
 
 
-    /** Joints in general do not contribute power since the reaction space forces
-        are orthogonal to the mobility space. However, when joint motion is prescribed, 
-        the internal forces that move the joint will do work. In this case, the power is
-        non-zero */
+    /** Joints in general do not contribute power since the reaction space 
+        forces are orthogonal to the mobility space. However, when joint motion 
+        is prescribed, the internal forces that move the joint will do work. In 
+        that case, the power is non-zero and the supplied SimTK::State
+        must already have been realized to %Acceleration stage so that 
+        constraint forces are available. */
     virtual double calcPower(const SimTK::State &s) const;
 
     // SCALE
