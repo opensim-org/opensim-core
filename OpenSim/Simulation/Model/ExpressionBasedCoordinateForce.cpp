@@ -139,7 +139,7 @@ double ExpressionBasedCoordinateForce::calcExpressionForce(const SimTK::State& s
     forceVars["q"] = q;
     forceVars["qdot"] = qdot;
     double forceMag = _forceProg.evaluate(forceVars);
-    setCacheVariable<double>(s, "force_magnitude", forceMag);
+    setCacheVariableValue<double>(s, "force_magnitude", forceMag);
     return forceMag;
 }
 
@@ -147,7 +147,7 @@ double ExpressionBasedCoordinateForce::calcExpressionForce(const SimTK::State& s
 const double& ExpressionBasedCoordinateForce::
     getForceMagnitude(const SimTK::State& s)
 {
-    return getCacheVariable<double>(s, "force_magnitude");
+    return getCacheVariableValue<double>(s, "force_magnitude");
 }
 
 

@@ -737,21 +737,6 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 
     system.addEventReporter(new ShowStuff(system, 0.1*0.1));
 
-//    system.invalidateSystemTopologyCache();
-//    system.realizeTopology();
-//    SimTK::State state = system.getDefaultState();
-//    osimModel.copyDefaultStateIntoWorkingState();
-//    matter.setUseEulerAngles(state, true);
-//    system.realizeModel(state);
-//    osimModel.initStateFromProperties(state);
-//    system.realize(state, Stage::Instance);
-//    modelViz.collectFixedGeometry(state);
-//    viz.report(state);
-//    cout << "Hit ENTER ...";
-//    cout.flush();
-//    getchar();
-
-
     SimTK::State& state = osimModel.initializeState();
     viz.report(state);
     for (int i = 0; i < cables.getNumCablePaths(); ++i) {

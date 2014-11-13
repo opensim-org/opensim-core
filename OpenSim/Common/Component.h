@@ -256,9 +256,11 @@ public:
 
     /**
      * Get the underlying MultibodySystem that this component is connected to.
+     * Make sure you have called Model::initSystem() prior to accessing the System.
+     * Throws an Exception if the System has not been created OR the this
+     * Component has not been added itself to the System.
      */
-    const SimTK::MultibodySystem& getSystem() const
-        { return *_system; } 
+    const SimTK::MultibodySystem& getSystem() const;
 
     /**
      * Get an iterator through the underlying components that this component 
@@ -564,7 +566,7 @@ public:
      * @param state   the State for which to get the value
      * @param name    the name (string) of the state variable of interest
      */
-    double getStateVariable(const SimTK::State& state, const std::string& name) const;
+    double getStateVariableValue(const SimTK::State& state, const std::string& name) const;
 
     /**
      * Set the value of a state variable allocated by this Component by name.
@@ -573,7 +575,7 @@ public:
      * @param name   the name of the state variable
      * @param value  the value to set
      */
-    void setStateVariable(SimTK::State& state, const std::string& name, double value) const;
+    void setStateVariableValue(SimTK::State& state, const std::string& name, double value) const;
 
 
     /**
@@ -602,7 +604,7 @@ public:
      * @param state   the State for which to get the derivative value
      * @param name    the name (string) of the state variable of interest
      */
-    double getStateVariableDerivative(const SimTK::State& state, 
+    double getStateVariableDerivativeValue(const SimTK::State& state, 
         const std::string& name) const;
 
     /**
@@ -612,7 +614,7 @@ public:
      * @param name    the name of the state variable
      * @return value  the discrete variable value
      */
-    double getDiscreteVariable(const SimTK::State& state, const std::string& name) const;
+    double getDiscreteVariableValue(const SimTK::State& state, const std::string& name) const;
 
     /**
      * Set the value of a discrete variable allocated by this Component by name.
@@ -621,7 +623,7 @@ public:
      * @param name   the name of the dsicrete variable
      * @param value  the value to set
      */
-    void setDiscreteVariable(SimTK::State& state, const std::string& name, double value) const;
+    void setDiscreteVariableValue(SimTK::State& state, const std::string& name, double value) const;
 
     /**
      * Get the value of a cache variable allocated by this Component by name.
@@ -631,7 +633,7 @@ public:
      * @return T	 const reference to the cache variable's value
      */
     template<typename T> const T& 
-    getCacheVariable(const SimTK::State& state, const std::string& name) const
+    getCacheVariableValue(const SimTK::State& state, const std::string& name) const
     {
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
@@ -659,7 +661,7 @@ public:
      * @return value modifiable reference to the cache variable's value
      */
     template<typename T> T& 
-    updCacheVariable(const SimTK::State& state, const std::string& name) const
+    updCacheVariableValue(const SimTK::State& state, const std::string& name) const
     {
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
@@ -780,7 +782,7 @@ public:
      * @param value  the new value for this cache variable
      */
     template<typename T> void 
-    setCacheVariable(const SimTK::State& state, const std::string& name, 
+    setCacheVariableValue(const SimTK::State& state, const std::string& name, 
                      const T& value) const
     {
         std::map<std::string, CacheInfo>::const_iterator it;
@@ -1020,7 +1022,7 @@ template <class T> friend class ComponentMeasure;
         double deriv = ... 
 
         // Then set the derivative value by state variable name
-        setStateVariableDerivative(state, "<state_variable_name>", deriv);
+        setStateVariableDerivativeValue(state, "<state_variable_name>", deriv);
     }
     @endcode
 
@@ -1042,7 +1044,7 @@ template <class T> friend class ComponentMeasure;
      * @param name   the name of the state variable
      * @param deriv  the derivative value to set
      */
-    void setStateVariableDerivative(const SimTK::State& state, 
+    void setStateVariableDerivativeValue(const SimTK::State& state, 
                             const std::string& name, double deriv) const;
 
 
@@ -1060,7 +1062,7 @@ template <class T> friend class ComponentMeasure;
 
     @note Once again it is crucial that, if you override a method here,
     you invoke the superclass method as the <em>first line</em> in your
-    implementation, via a call like "Super::realizePosition(state);". This 
+    implementation, via a call like "Super::extendRealizePosition(state);". This 
     will ensure that all necessary base class computations are performed, and
     that subcomponents are handled properly.
 
@@ -1075,34 +1077,34 @@ template <class T> friend class ComponentMeasure;
     //@{
     /** Obtain state resources that are needed unconditionally, and perform
     computations that depend only on the system topology. **/
-    virtual void realizeTopology(SimTK::State& state) const;
+    virtual void extendRealizeTopology(SimTK::State& state) const;
     /** Obtain and name state resources (like state variables allocated by
     an underlying Simbody component) that may be needed, depending on modeling
     options. Also, perform any computations that depend only on topology and 
     selected modeling options. **/
-    virtual void realizeModel(SimTK::State& state) const;
+    virtual void extendRealizeModel(SimTK::State& state) const;
     /** Perform computations that depend only on instance variables, like
     lengths and masses. **/
-    virtual void realizeInstance(const SimTK::State& state) const;
+    virtual void extendRealizeInstance(const SimTK::State& state) const;
     /** Perform computations that depend only on time and earlier stages. **/
-    virtual void realizeTime(const SimTK::State& state) const;
+    virtual void extendRealizeTime(const SimTK::State& state) const;
     /** Perform computations that depend only on position-level state
     variables and computations performed in earlier stages (including time). **/
-    virtual void realizePosition(const SimTK::State& state) const;
+    virtual void extendRealizePosition(const SimTK::State& state) const;
     /** Perform computations that depend only on velocity-level state 
     variables and computations performed in earlier stages (including position, 
     and time). **/
-    virtual void realizeVelocity(const SimTK::State& state) const;
+    virtual void extendRealizeVelocity(const SimTK::State& state) const;
     /** Perform computations (typically forces) that may depend on 
     dynamics-stage state variables, and on computations performed in earlier
     stages (including velocity, position, and time), but not on other forces,
     accelerations, constraint multipliers, or reaction forces. **/
-    virtual void realizeDynamics(const SimTK::State& state) const;
+    virtual void extendRealizeDynamics(const SimTK::State& state) const;
     /** Perform computations that may depend on applied forces. **/
-    virtual void realizeAcceleration(const SimTK::State& state) const;
+    virtual void extendRealizeAcceleration(const SimTK::State& state) const;
     /** Perform computations that may depend on anything but are only used
     for reporting and cannot affect subsequent simulation behavior. **/
-    virtual void realizeReport(const SimTK::State& state) const;
+    virtual void extendRealizeReport(const SimTK::State& state) const;
     //@} end of Component Advanced Interface
 
 
@@ -1262,7 +1264,7 @@ template <class T> friend class ComponentMeasure;
     this method. If the StateVariable is NOT hidden, this also creates an
     Output in this Component with the same name as the StateVariable. Reporters
     should use this Output to get the StateVariable's value (instead of using
-    getStateVariable()). */
+    getStateVariableValue()). */
     void addStateVariable(Component::StateVariable*  stateVariable) const;
 
     /** Add a system discrete variable belonging to this Component, give
@@ -1358,8 +1360,8 @@ template <class T> friend class ComponentMeasure;
         linear time (linear search for name at each component level. Whereas
         supplying "elbow_flexion" requires a tree search.
         Returns NULL if Component of that specified name cannot be found. 
-        If the name provided is a component's state variable name and a pointer to
-        a StateVariable pointer is provided, the pointer will be set to the 
+        If the name provided is a component's state variable name and a
+        StateVariable pointer is provided, the pointer will be set to the 
         StateVariable object that was found. This facilitates the getting and setting
         of StateVariables by name. 
         

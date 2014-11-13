@@ -75,13 +75,13 @@ void ConstantMuscleActivation::extendSetPropertiesFromState(const SimTK::State& 
 double ConstantMuscleActivation::getActivation(const SimTK::State& s) const
 {
     return clampToValidInterval(
-        getCacheVariable<double>(s, CACHE_NAME_ACTIVATION));
+        getCacheVariableValue<double>(s, CACHE_NAME_ACTIVATION));
 }
 
 void ConstantMuscleActivation::
 setActivation(SimTK::State& s, double activation) const
 {
-    setCacheVariable<double>(s, CACHE_NAME_ACTIVATION,
+    setCacheVariableValue<double>(s, CACHE_NAME_ACTIVATION,
                              clampToValidInterval(activation));
 }
 

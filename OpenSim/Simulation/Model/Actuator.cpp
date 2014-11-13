@@ -198,22 +198,22 @@ double ScalarActuator::getOptimalForce() const
 double ScalarActuator::getActuation(const State &s) const
 {
     if (isDisabled(s)) return 0.0;
-    return getCacheVariable<double>(s, "actuation");
+    return getCacheVariableValue<double>(s, "actuation");
 }
 
 void ScalarActuator::setActuation(const State& s, double aActuation) const
 {
-	setCacheVariable<double>(s, "actuation", aActuation);
+	setCacheVariableValue<double>(s, "actuation", aActuation);
 }
 
 double ScalarActuator::getSpeed(const State& s) const
 {
-    return getCacheVariable<double>(s, "speed");
+    return getCacheVariableValue<double>(s, "speed");
 }
 
 void ScalarActuator::setSpeed(const State &s, double speed) const
 {
-    setCacheVariable<double>(s, "speed", speed);
+    setCacheVariableValue<double>(s, "speed", speed);
 }
 
 void ScalarActuator::overrideActuation(SimTK::State& s, bool flag) const
@@ -228,12 +228,12 @@ bool ScalarActuator::isActuationOverriden(const SimTK::State& s) const
        
 void ScalarActuator::setOverrideActuation(SimTK::State& s, double actuation) const
 {
-	setDiscreteVariable(s, "override_actuation", actuation);;
+	setDiscreteVariableValue(s, "override_actuation", actuation);;
 }
 
 double ScalarActuator::getOverrideActuation(const SimTK::State& s) const
 {
-    return getDiscreteVariable(s, "override_actuation");
+    return getDiscreteVariableValue(s, "override_actuation");
 }
 double ScalarActuator::computeOverrideActuation(const SimTK::State& s) const
 {
