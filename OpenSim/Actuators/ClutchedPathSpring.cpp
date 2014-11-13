@@ -112,12 +112,12 @@ void ClutchedPathSpring::setInitialStretch(double stretch0)
 	addStateVariable("stretch");
 }
 
- void ClutchedPathSpring::initStateFromProperties(SimTK::State& state) const
+ void ClutchedPathSpring::extendInitStateFromProperties(SimTK::State& state) const
  {
-	 setStateVariable(state, "stretch", get_initial_stretch());
+	 setStateVariableValue(state, "stretch", get_initial_stretch());
  }
 
- void ClutchedPathSpring::setPropertiesFromState(const SimTK::State& state)
+ void ClutchedPathSpring::extendSetPropertiesFromState(const SimTK::State& state)
  {
 	 set_initial_stretch(getStretch(state));
  }
@@ -134,7 +134,7 @@ void ClutchedPathSpring::setInitialStretch(double stretch0)
 
 double ClutchedPathSpring::getStretch(const SimTK::State& s) const
 {
-	return getStateVariable(s, "stretch");
+	return getStateVariableValue(s, "stretch");
 }
 
 
@@ -170,7 +170,7 @@ void ClutchedPathSpring::
 					getLengtheningSpeed(s) : // clutch is engaged
 					-getStretch(s)/get_relaxation_time_constant();
 
-	setStateVariableDerivative(s, "stretch", zdot);
+	setStateVariableDerivativeValue(s, "stretch", zdot);
 }
 
 SimTK::Vec3 ClutchedPathSpring::computePathColor(const SimTK::State& state) const 

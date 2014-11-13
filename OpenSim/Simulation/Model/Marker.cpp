@@ -105,7 +105,7 @@ const string& Marker::getFrameName() const
 //_____________________________________________________________________________
 /**
  * Change the RigidFrame that this marker is attached to. It assumes that the frame is
- * already set, so that connectToModel() needs to be called to update 
+ * already set, so that extendConnectToModel() needs to be called to update 
  * dependent information.
  *
  * @param aFrame Reference to the RigidFrame.
@@ -117,13 +117,13 @@ void Marker::changeFrame(const OpenSim::RigidFrame& aRigidFrame)
 		return;
 
 	setFrameName(aRigidFrame.getName());
-    connectToModel(updModel());
+    extendConnectToModel(updModel());
 }
 
 //_____________________________________________________________________________
 /**
  * Change the RigidFrame that this marker is attached to. It assumes that the body is
- * already set, so that connectToModel() needs to be called to update 
+ * already set, so that extendConnectToModel() needs to be called to update 
  * dependent information.
  *
  * @param s State.
@@ -141,7 +141,7 @@ void Marker::changeFramePreserveLocation(const SimTK::State& s, OpenSim::RigidFr
     newLocation = findLocationInFrame(s, aRigidFrame);
     set_location(newLocation);
 	setFrameName(aRigidFrame.getName());
-    connectToModel(aRigidFrame.updModel());
+    extendConnectToModel(aRigidFrame.updModel());
 }
 
 //=============================================================================

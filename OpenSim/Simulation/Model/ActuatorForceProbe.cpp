@@ -47,8 +47,8 @@ using namespace OpenSim;
 */
 ActuatorForceProbe::ActuatorForceProbe()
 {
-	setNull();
-	constructProperties();
+    setNull();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -56,14 +56,14 @@ ActuatorForceProbe::ActuatorForceProbe()
 * Convenience constructor
 */
 ActuatorForceProbe::ActuatorForceProbe(const Array<string>& actuator_names,
-	const bool sum_forces_together, const double exponent)
+    const bool sum_forces_together, const double exponent)
 {
-	setNull();
-	constructProperties();
+    setNull();
+    constructProperties();
 
-	set_actuator_names(actuator_names);
-	set_sum_forces_together(sum_forces_together);
-	set_exponent(exponent);
+    set_actuator_names(actuator_names);
+    set_sum_forces_together(sum_forces_together);
+    set_exponent(exponent);
 }
 
 
@@ -71,8 +71,8 @@ ActuatorForceProbe::ActuatorForceProbe(const Array<string>& actuator_names,
 // Set the data members of this ActuatorForceProbe to their null values.
 void ActuatorForceProbe::setNull()
 {
-	setAuthors("Tim Dorn");
-	_actuatorIndex.clear();
+    setAuthors("Tim Dorn");
+    _actuatorIndex.clear();
 }
 
 //_____________________________________________________________________________
@@ -81,9 +81,9 @@ void ActuatorForceProbe::setNull()
 */
 void ActuatorForceProbe::constructProperties()
 {
-	constructProperty_actuator_names();
-	constructProperty_sum_forces_together(false);
-	constructProperty_exponent(1.0);
+    constructProperty_actuator_names();
+    constructProperty_sum_forces_together(false);
+    constructProperty_exponent(1.0);
 }
 
 
@@ -96,7 +96,7 @@ void ActuatorForceProbe::constructProperties()
 */
 const Property<string>& ActuatorForceProbe::getActuatorNames() const
 {
-	return getProperty_actuator_names();
+    return getProperty_actuator_names();
 }
 
 //_____________________________________________________________________________
@@ -106,7 +106,7 @@ or report the forces individually.
 */
 const bool ActuatorForceProbe::getSumForcesTogether() const
 {
-	return get_sum_forces_together();
+    return get_sum_forces_together();
 }
 
 //_____________________________________________________________________________
@@ -115,7 +115,7 @@ const bool ActuatorForceProbe::getSumForcesTogether() const
 */
 const double ActuatorForceProbe::getExponent() const
 {
-	return get_exponent();
+    return get_exponent();
 }
 
 //_____________________________________________________________________________
@@ -124,7 +124,7 @@ const double ActuatorForceProbe::getExponent() const
 */
 void ActuatorForceProbe::setActuatorNames(const Array<string>& actuator_names)
 {
-	set_actuator_names(actuator_names);
+    set_actuator_names(actuator_names);
 }
 
 //_____________________________________________________________________________
@@ -134,7 +134,7 @@ or report the force values individually.
 */
 void ActuatorForceProbe::setSumForcesTogether(const bool sum_forces_together)
 {
-	set_sum_forces_together(sum_forces_together);
+    set_sum_forces_together(sum_forces_together);
 }
 
 //_____________________________________________________________________________
@@ -143,7 +143,7 @@ void ActuatorForceProbe::setSumForcesTogether(const bool sum_forces_together)
 */
 void ActuatorForceProbe::setExponent(const double exponent)
 {
-	set_exponent(exponent);
+    set_exponent(exponent);
 }
 
 
@@ -158,41 +158,41 @@ void ActuatorForceProbe::setExponent(const double exponent)
 *
 * @param aModel OpenSim model containing this ActuatorForceProbe.
 */
-void ActuatorForceProbe::connectToModel(Model& model)
+void ActuatorForceProbe::extendConnectToModel(Model& model)
 {
-	Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 
-	// Check to see if 'all' actuators are selected for probing.
-	if (getProperty_actuator_names().size() > 0)
-	{
-		if (IO::Uppercase(get_actuator_names(0)) == "ALL")
-		{
-			Array<string> allActNames;
-			_model->getActuators().getNames(allActNames);
-			set_actuator_names(allActNames);
-			//cout << "Set to all actuators: " << allActNames << endl;
-		}
-	}
+    // Check to see if 'all' actuators are selected for probing.
+    if (getProperty_actuator_names().size() > 0)
+    {
+        if (IO::Uppercase(get_actuator_names(0)) == "ALL")
+        {
+            Array<string> allActNames;
+            _model->getActuators().getNames(allActNames);
+            set_actuator_names(allActNames);
+            //cout << "Set to all actuators: " << allActNames << endl;
+        }
+    }
 
-	// check that each Actuator in the actuator_names array exists in the model.
-	_actuatorIndex.clear();
-	const int nA = getActuatorNames().size();
-	for (int i = 0; i<nA; i++) {
-		const string& actName = getActuatorNames()[i];
-		const int k = model.getActuators().getIndex(actName);
-		if (k<0) {
-			string errorMessage = getConcreteClassName() + ": Invalid Actuator '" + actName + "' specified in <actuator_names>.";
-			std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
-			setDisabled(true);
-			//throw (Exception(errorMessage.c_str()));
-		}
-		else
-			_actuatorIndex.push_back(k);
-	}
+    // check that each Actuator in the actuator_names array exists in the model.
+    _actuatorIndex.clear();
+    const int nA = getActuatorNames().size();
+    for (int i = 0; i<nA; i++) {
+        const string& actName = getActuatorNames()[i];
+        const int k = model.getActuators().getIndex(actName);
+        if (k<0) {
+            string errorMessage = getConcreteClassName() + ": Invalid Actuator '" + actName + "' specified in <actuator_names>.";
+            std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
+            setDisabled(true);
+            //throw (Exception(errorMessage.c_str()));
+        }
+        else
+            _actuatorIndex.push_back(k);
+    }
 
-	// Sanity check. Should never actually happen!
-	if (nA != int(_actuatorIndex.size()))
-		throw (Exception("Size of _actuatorIndex does not match number of Actuators listed in <actuator_names>."));
+    // Sanity check. Should never actually happen!
+    if (nA != int(_actuatorIndex.size()))
+        throw (Exception("Size of _actuatorIndex does not match number of Actuators listed in <actuator_names>."));
 
 }
 
@@ -207,24 +207,24 @@ void ActuatorForceProbe::connectToModel(Model& model)
 */
 SimTK::Vector ActuatorForceProbe::computeProbeInputs(const State& s) const
 {
-	int nA = getActuatorNames().size();
-	SimTK::Vector TotalF(getNumProbeInputs());
-	TotalF = 0;
+    int nA = getActuatorNames().size();
+    SimTK::Vector TotalF(getNumProbeInputs());
+    TotalF = 0;
 
-	// Loop through each actuator in the list of actuator_names.
-	for (int i = 0; i<nA; ++i)
-	{
-		// Get the Actuator force.
-		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_model->getActuators()[_actuatorIndex[i]]);
-		const double Ftmp = act->getActuation(s);
+    // Loop through each actuator in the list of actuator_names.
+    for (int i = 0; i<nA; ++i)
+    {
+        // Get the Actuator force.
+        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_model->getActuators()[_actuatorIndex[i]]);
+        const double Ftmp = act->getActuation(s);
 
-		// Append to output vector.
-		if (getSumForcesTogether())
-			TotalF(0) += std::pow(Ftmp, getExponent());
-		else
-			TotalF(i) = std::pow(Ftmp, getExponent());
-	}
-	return TotalF;
+        // Append to output vector.
+        if (getSumForcesTogether())
+            TotalF(0) += std::pow(Ftmp, getExponent());
+        else
+            TotalF(i) = std::pow(Ftmp, getExponent());
+    }
+    return TotalF;
 }
 
 
@@ -234,10 +234,10 @@ SimTK::Vector ActuatorForceProbe::computeProbeInputs(const State& s) const
 */
 int ActuatorForceProbe::getNumProbeInputs() const
 {
-	if (getSumForcesTogether())
-		return 1;
-	else
-		return getActuatorNames().size();
+    if (getSumForcesTogether())
+        return 1;
+    else
+        return getActuatorNames().size();
 }
 
 
@@ -247,17 +247,17 @@ int ActuatorForceProbe::getNumProbeInputs() const
 */
 Array<string> ActuatorForceProbe::getProbeOutputLabels() const
 {
-	Array<string> labels;
+    Array<string> labels;
 
-	// Report sum of actuator forces
-	if (getSumForcesTogether())
-		labels.append(getName() + "_Summed");
+    // Report sum of actuator forces
+    if (getSumForcesTogether())
+        labels.append(getName() + "_Summed");
 
-	// Report actuator forces individually
-	else {
-		for (int i = 0; i<getActuatorNames().size(); ++i)
-			labels.append(getName() + "_" + getActuatorNames()[i]);
-	}
+    // Report actuator forces individually
+    else {
+        for (int i = 0; i<getActuatorNames().size(); ++i)
+            labels.append(getName() + "_" + getActuatorNames()[i]);
+    }
 
-	return labels;
+    return labels;
 }

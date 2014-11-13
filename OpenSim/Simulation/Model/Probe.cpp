@@ -129,9 +129,9 @@ void Probe::constructOutputs()
 /**
  * Create an underlying OpenSim::Probe
  */
-void Probe::connectToModel(Model& model)
+void Probe::extendConnectToModel(Model& model)
 {
-    Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 }
 
 //_____________________________________________________________________________
