@@ -134,12 +134,12 @@ public:
 	virtual double getNormalizedFiberLength(const SimTK::State& s) const;
 	virtual double getPassiveFiberForce(const SimTK::State& s) const;
 	virtual double getStress(const SimTK::State& s) const;
-	virtual double getActivation(const SimTK::State& s) const { return getStateVariable(s, STATE_ACTIVATION_NAME); }
-    virtual void setActivation(SimTK::State& s, double activation) const { setStateVariable(s, STATE_ACTIVATION_NAME, activation); }
+	virtual double getActivation(const SimTK::State& s) const { return getStateVariableValue(s, STATE_ACTIVATION_NAME); }
+    virtual void setActivation(SimTK::State& s, double activation) const { setStateVariableValue(s, STATE_ACTIVATION_NAME, activation); }
     virtual double getActivationDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_ACTIVATION_NAME); }
     virtual void setActivationDeriv(const SimTK::State& s, double activationDeriv) const { setStateVariableDeriv(s, STATE_ACTIVATION_NAME, activationDeriv); }
-    virtual double getFiberLength(const SimTK::State& s) const { return getStateVariable(s, STATE_FIBER_LENGTH_NAME); }
-    virtual void setFiberLength(SimTK::State& s, double fiberLength) const { setStateVariable(s, STATE_FIBER_LENGTH_NAME, fiberLength); }
+    virtual double getFiberLength(const SimTK::State& s) const { return getStateVariableValue(s, STATE_FIBER_LENGTH_NAME); }
+    virtual void setFiberLength(SimTK::State& s, double fiberLength) const { setStateVariableValue(s, STATE_FIBER_LENGTH_NAME, fiberLength); }
     virtual double getFiberLengthDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_FIBER_LENGTH_NAME); }
     virtual void setFiberLengthDeriv(const SimTK::State& s, double fiberLengthDeriv) const { setStateVariableDeriv(s, STATE_FIBER_LENGTH_NAME, fiberLengthDeriv); }
     virtual void setTendonForce(const SimTK::State& s, double aForce) const;

@@ -152,7 +152,7 @@ protected:
     /** Extension of parent class method; derived classes may extend further. **/
     void extendFinalizeFromProperties() override;
     /** Extension of parent class method; derived classes may extend further. **/
-    void realizeDynamics(const SimTK::State& state) const override;
+    void extendRealizeDynamics(const SimTK::State& state) const override;
 
 private:
     void setNull();

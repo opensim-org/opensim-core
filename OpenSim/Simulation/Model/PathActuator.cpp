@@ -240,8 +240,9 @@ void PathActuator::extendFinalizeFromProperties()
 //                            REALIZE DYNAMICS
 //------------------------------------------------------------------------------
 // See if anyone has an opinion about the path color and change it if so.
-void PathActuator::realizeDynamics(const SimTK::State& state) const {
-    Super::realizeDynamics(state); // Mandatory first line
+void PathActuator::extendRealizeDynamics(const SimTK::State& state) const
+{
+    Super::extendRealizeDynamics(state); // Mandatory first line
 
     // if this force is disabled OR it is being overidden (not computing dynamics)
     // then don't compute the color of the path.

@@ -876,7 +876,6 @@ public:
         return calcUnnormalizedNInvForQuaternion(q)*qdot;
     }
 
-
     /// We want to differentiate qdot=N(q)*w to get qdotdot=N*b+NDot*w where
     /// b is angular acceleration wdot. Note that NDot=NDot(qdot), but it is 
     /// far better to calculate the matrix-vector product NDot(N*w)*w directly
