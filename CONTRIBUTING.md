@@ -15,6 +15,7 @@ Thank you for contributing!
     - [Creating New OpenSim Objects](#creating-new-opensim-objects)
     - [Assignment Operators in C++](#assignment-operators-in-c)
     - [Documenting your Code](#documenting-your-code)
+    - [Each line of text should be at most 80 characters long](#each-line-of-text-should-be-at-most-80-characters-long)
     - [Replace Tabs with Four Spaces](#replace-tabs-with-four-spaces)
     - [Renaming Classes in the OpenSim API](#renaming-classes-in-the-opensim-api)
     - [Naming Conventions](#naming-conventions)
@@ -52,9 +53,17 @@ Here is a partial list of contributors; please let us know if you know of a miss
 
 - Frank C. Anderson
 - Allison S. Arnold
+- Edith Arnold
+- Cindy Au
 - Scott L. Delp
+- Chris Dembia
 - Matt S. DeMers
 - Tim Dorn
+- James Dunne
+- Peter Eastman
+- Dominic Farris
+- Lorenzo Flores
+- Melanie Fox
 - Brian Garner
 - Saryn R. Goldberg
 - Eran Guendelman
@@ -62,22 +71,35 @@ Here is a partial list of contributors; please let us know if you know of a miss
 - Samuel R. Hamner
 - Jennifer L. Hicks
 - Katherine R. S. Holzbaur
+- Daniel Jacobs
 - Chand T. John
 - Cassidy Kelly
+- Marjolein van der Krogt
+- Joy Ku
+- Glen Lichtwark
+- Jingjing Liiu
 - May Q. Liu
 - Peter Loan
+- Katie Lund
 - Jack Middleton
 - Matthew Millard
 - Paul C. Mitiguy
+- Carmichael Ong
 - Soha Pouya
+- Apoorva Rajagopal
 - Jeffrey A. Reinbolt
 - Ajay Seth
+- Amy Silder
+- Andreas Scholz
 - Michael A. Sherman
+- Ian Stavness
+- Katherine Steele
 - Justin Si
 - Darryl G. Thelen
+- Tom Uchida
+- Jack Wang
 - Kevin Xu
-
-
+- Jenny Yong
 
 # Coding Standards
 
@@ -164,6 +186,11 @@ If the “copy stuff” part consists only of assignments that work for self ass
 Doxygen only looks in your .h files. It does not generate documentation from cpp files. Thus comments in .cpp files don't need to follow doxygen formatting, and in fact they should not because it is confusing and makes it look like there is API documentation when there isn't. You should mostly use "//"-style comments in .cpp files, and be sure you are addressing your comments to the right audience -- no doxygen reader will ever see them.
 
 Read more about doxygen on this page: Guide to Building Doxygen
+
+## Each line of text should be at most 80 characters
+
+It is common to display multiple code windows side by side. For the code to display nicely,
+it is necessary to choose a limit on the line length.
 
 ## Replace Tabs with Four Spaces
 
