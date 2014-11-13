@@ -105,7 +105,7 @@ Here is a partial list of contributors; please let us know if you know of a miss
 
 ## Header Guards
 
-Header gaurds are preprocessor defines that surround every header file to prevent it from being included multiple times. OpenSim header guards should be written like this:
+Header guards are preprocessor defines that surround every header file to prevent it from being included multiple times. OpenSim header guards should be written like this:
 
 ```cpp
 #ifndef OPENSIM_PROPERTY_TABLE_H_ // <-- yes, do it this way!
