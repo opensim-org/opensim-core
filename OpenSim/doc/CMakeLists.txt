@@ -11,8 +11,7 @@ ELSE(DOXYGEN_EXECUTABLE-NOTFOUND)
     # This variable must be a STRING; a PATH variable resolves //'s as a single
     # /, but we need to use double slashes for URL's.
     SET(OPENSIM_SIMBODY_DOXYGEN_LOCATION "${Simbody_DOXYGEN_DIR}"
-        CACHE STRING "
-        The location of Simbody's doxygen documentation.
+        CACHE STRING "The location of Simbody's doxygen documentation.
         To link to Simbody Doxygen documentation, you must build
         *and* install Simbody Doxygen documentation. By default,
         OpenSim's Doxygen documentation will link to your *local* Simbody
