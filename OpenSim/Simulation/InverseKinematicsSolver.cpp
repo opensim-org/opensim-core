@@ -230,12 +230,13 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
 		wIndex = mwSet.getIndex(markerNames[i],wIndex);
 		if((index >= 0) && (wIndex >=0)){
 			Marker &marker = modelMarkerSet[index];
-			const SimTK::MobilizedBody &mobod =
-				getModel().getMatterSubsystem().
-				getMobilizedBody(marker.getBody().getIndex());
-				_markerAssemblyCondition->
-					addMarker(marker.getName(), mobod, marker.getOffset(),
-					markerWeights[i]);
+			const SimTK::MobilizedBody& mobod =
+                marker.getReferenceFrame().getMobilizedBody();
+
+            const SimTK::Transform& X_BF = marker.getReferenceFrame().getTransformInMobilizedBody();
+			_markerAssemblyCondition->
+                addMarker(marker.getName(), mobod, X_BF*marker.get_location(),
+				markerWeights[i]);
 
 			//cout << "IKSolver Marker: " << markerNames[i] << " " << marker.getName() << "  weight: " << markerWeights[i] << endl;
 		}

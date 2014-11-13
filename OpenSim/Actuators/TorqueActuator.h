@@ -53,8 +53,8 @@ class Model;
  *
  * @author Ajay Seth, Matt DeMers
  */
-class OSIMACTUATORS_API TorqueActuator : public Actuator {
-OpenSim_DECLARE_CONCRETE_OBJECT(TorqueActuator, Actuator);
+class OSIMACTUATORS_API TorqueActuator : public ScalarActuator {
+	OpenSim_DECLARE_CONCRETE_OBJECT(TorqueActuator, ScalarActuator);
 public:
 //==============================================================================
 // PROPERTIES
@@ -156,7 +156,7 @@ private:
 	// Implement ModelComponent interface
 	//--------------------------------------------------------------------------
 	// Setup method initializes Body reference pointers to match the names.
-	void connectToModel(Model& model) override;
+	void extendConnectToModel(Model& model) override;
 
 	//--------------------------------------------------------------------------
 	// Implement Object interface.

@@ -1,25 +1,25 @@
 /* -------------------------------------------------------------------------- *
- *                      OpenSim:  ActuatorPowerProbe.cpp                      *
- * -------------------------------------------------------------------------- *
- * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
- * See http://opensim.stanford.edu and the NOTICE file for more information.  *
- * OpenSim is developed at Stanford University and supported by the US        *
- * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
- * through the Warrior Web program.                                           *
- *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Frank C. Anderson, Ajay Seth, Tim Dorn                          *
- *                                                                            *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
- * not use this file except in compliance with the License. You may obtain a  *
- * copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
- *                                                                            *
- * Unless required by applicable law or agreed to in writing, software        *
- * distributed under the License is distributed on an "AS IS" BASIS,          *
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
- * See the License for the specific language governing permissions and        *
- * limitations under the License.                                             *
- * -------------------------------------------------------------------------- */
+*                      OpenSim:  ActuatorPowerProbe.cpp                      *
+* -------------------------------------------------------------------------- *
+* The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
+* See http://opensim.stanford.edu and the NOTICE file for more information.  *
+* OpenSim is developed at Stanford University and supported by the US        *
+* National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
+* through the Warrior Web program.                                           *
+*                                                                            *
+* Copyright (c) 2005-2012 Stanford University and the Authors                *
+* Author(s): Frank C. Anderson, Ajay Seth, Tim Dorn                          *
+*                                                                            *
+* Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+* not use this file except in compliance with the License. You may obtain a  *
+* copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
+*                                                                            *
+* Unless required by applicable law or agreed to in writing, software        *
+* distributed under the License is distributed on an "AS IS" BASIS,          *
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+* See the License for the specific language governing permissions and        *
+* limitations under the License.                                             *
+* -------------------------------------------------------------------------- */
 
 //=============================================================================
 // INCLUDES and STATICS
@@ -37,7 +37,7 @@ using namespace OpenSim;
 //=============================================================================
 //_____________________________________________________________________________
 // Default constructor.
-ActuatorPowerProbe::ActuatorPowerProbe() 
+ActuatorPowerProbe::ActuatorPowerProbe()
 {
     setNull();
     constructProperties();
@@ -45,7 +45,7 @@ ActuatorPowerProbe::ActuatorPowerProbe()
 
 //_____________________________________________________________________________
 // Convenience constructor.
-ActuatorPowerProbe::ActuatorPowerProbe(const Array<string> actuator_names, 
+ActuatorPowerProbe::ActuatorPowerProbe(const Array<string> actuator_names,
     const bool sum_powers_together, const double exponent)
 {
     setNull();
@@ -79,8 +79,8 @@ void ActuatorPowerProbe::constructProperties(void)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Returns the names of the Actuators being probed.
- */
+* Returns the names of the Actuators being probed.
+*/
 const Property<string>& ActuatorPowerProbe::getActuatorNames() const
 {
     return getProperty_actuator_names();
@@ -88,9 +88,9 @@ const Property<string>& ActuatorPowerProbe::getActuatorNames() const
 
 //_____________________________________________________________________________
 /**
- * Returns whether to report sum of all actuator powers together
-   or report the actuator powers individually.
- */
+* Returns whether to report sum of all actuator powers together
+or report the actuator powers individually.
+*/
 const bool ActuatorPowerProbe::getSumPowersTogether() const
 {
     return get_sum_powers_together();
@@ -98,8 +98,8 @@ const bool ActuatorPowerProbe::getSumPowersTogether() const
 
 //_____________________________________________________________________________
 /**
- * Returns the exponent to apply to each actuator power.
- */
+* Returns the exponent to apply to each actuator power.
+*/
 const double ActuatorPowerProbe::getExponent() const
 {
     return get_exponent();
@@ -107,8 +107,8 @@ const double ActuatorPowerProbe::getExponent() const
 
 //_____________________________________________________________________________
 /**
- * Sets the names of the Actuators being probed.
- */
+* Sets the names of the Actuators being probed.
+*/
 void ActuatorPowerProbe::setActuatorNames(const Array<string>& actuatorNames)
 {
     set_actuator_names(actuatorNames);
@@ -116,9 +116,9 @@ void ActuatorPowerProbe::setActuatorNames(const Array<string>& actuatorNames)
 
 //_____________________________________________________________________________
 /**
- * Sets whether to report sum of all actuator powers together
-   or report the actuator powers individually.
- */
+* Sets whether to report sum of all actuator powers together
+or report the actuator powers individually.
+*/
 void ActuatorPowerProbe::setSumPowersTogether(const bool sum_powers_together)
 {
     set_sum_powers_together(sum_powers_together);
@@ -126,8 +126,8 @@ void ActuatorPowerProbe::setSumPowersTogether(const bool sum_powers_together)
 
 //_____________________________________________________________________________
 /**
- * Sets the exponent to apply to each actuator power.
- */
+* Sets the exponent to apply to each actuator power.
+*/
 void ActuatorPowerProbe::setExponent(const double exponent)
 {
     set_exponent(exponent);
@@ -139,31 +139,31 @@ void ActuatorPowerProbe::setExponent(const double exponent)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel OpenSim model containing this ActuatorPowerProbe.
- */
-void ActuatorPowerProbe::connectToModel(Model& model)
+* Perform some set up functions that happen after the
+* object has been deserialized or copied.
+*
+* @param aModel OpenSim model containing this ActuatorPowerProbe.
+*/
+void ActuatorPowerProbe::extendConnectToModel(Model& model)
 {
-    Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 
-	// Check to see if 'all' actuators are selected for probing.
-	if(getProperty_actuator_names().size() > 0)
-	{
-		if(IO::Uppercase(get_actuator_names(0)) == "ALL")
-		{
-			Array<string> allActNames;
-			_model->getActuators().getNames(allActNames);
-			set_actuator_names(allActNames);
-			//cout << "Set to all actuators: " << allActNames << endl;
-		}
-	}
+    // Check to see if 'all' actuators are selected for probing.
+    if (getProperty_actuator_names().size() > 0)
+    {
+        if (IO::Uppercase(get_actuator_names(0)) == "ALL")
+        {
+            Array<string> allActNames;
+            _model->getActuators().getNames(allActNames);
+            set_actuator_names(allActNames);
+            //cout << "Set to all actuators: " << allActNames << endl;
+        }
+    }
 
     // check that each Actuator in the actuator_names array exists in the model.
     _actuatorIndex.clear();
     const int nA = getActuatorNames().size();
-    for (int i=0; i<nA; i++) {
+    for (int i = 0; i<nA; i++) {
         const string& actName = getActuatorNames()[i];
         const int k = model.getActuators().getIndex(actName);
         if (k<0) {
@@ -190,8 +190,8 @@ void ActuatorPowerProbe::connectToModel(Model& model)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Compute the Actuator power.
- */
+* Compute the Actuator power.
+*/
 SimTK::Vector ActuatorPowerProbe::computeProbeInputs(const State& s) const
 {
     int nA = getActuatorNames().size();
@@ -199,11 +199,11 @@ SimTK::Vector ActuatorPowerProbe::computeProbeInputs(const State& s) const
     TotalP = 0;
 
     // Loop through each actuator in the list of actuator_names.
-    for (int i=0; i<nA; ++i)
+    for (int i = 0; i<nA; ++i)
     {
         // Get the "Actuator" power from the Actuator object.
         const double actPower = _model->getActuators()[_actuatorIndex[i]].getPower(s);
-        
+
         // Append to output vector.
         if (getSumPowersTogether())
             TotalP(0) += std::pow(actPower, getExponent());
@@ -216,9 +216,9 @@ SimTK::Vector ActuatorPowerProbe::computeProbeInputs(const State& s) const
 
 
 //_____________________________________________________________________________
-/** 
- * Returns the number of probe inputs in the vector returned by computeProbeInputs().
- */
+/**
+* Returns the number of probe inputs in the vector returned by computeProbeInputs().
+*/
 int ActuatorPowerProbe::getNumProbeInputs() const
 {
     if (getSumPowersTogether())
@@ -229,23 +229,22 @@ int ActuatorPowerProbe::getNumProbeInputs() const
 
 
 //_____________________________________________________________________________
-/** 
- * Provide labels for the probe values being reported.
- */
-Array<string> ActuatorPowerProbe::getProbeOutputLabels() const 
+/**
+* Provide labels for the probe values being reported.
+*/
+Array<string> ActuatorPowerProbe::getProbeOutputLabels() const
 {
     Array<string> labels;
 
     // Report sum of actuator powers
     if (getSumPowersTogether())
-        labels.append(getName()+"_Summed");
+        labels.append(getName() + "_Summed");
 
     // Report actuator powers individually
     else {
-        for (int i=0; i<getActuatorNames().size(); ++i)
-            labels.append(getName()+"_"+getActuatorNames()[i]);
+        for (int i = 0; i<getActuatorNames().size(); ++i)
+            labels.append(getName() + "_" + getActuatorNames()[i]);
     }
 
     return labels;
 }
-

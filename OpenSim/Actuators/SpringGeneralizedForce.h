@@ -33,17 +33,17 @@
 
 //==============================================================================
 //==============================================================================
+namespace OpenSim {
+
+class Coordinate;
+
 /**
- * An force that exerts a generalized force based on spring-like
+ * A Force that exerts a generalized force based on spring-like
  * characteristics (stiffness and viscosity).  
  *
  * @author Frank C. Anderson, Ajay Seth
  * @version 2.0
  */
-namespace OpenSim {
-
-class Coordinate;
-
 class OSIMACTUATORS_API SpringGeneralizedForce : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(SpringGeneralizedForce, Force);
 public:
@@ -108,10 +108,10 @@ protected:
 					    SimTK::Vector& mobilityForces) const override;
 	
     // ModelComponent interface.
-    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 	// Setup method to initialize coordinate reference
-	void connectToModel(Model& model) override;
+	void extendConnectToModel(Model& model) override;
 
 private:
 	void setNull();

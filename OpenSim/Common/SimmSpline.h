@@ -36,6 +36,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * A class implementing a smooth function with a cubic spline as 
  * implemented in SIMM. Use a SIMM Spline if you want to reproduce
@@ -47,8 +49,6 @@
  * @author Peter Loan
  * @version 1.0
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API SimmSpline : public Function {
 OpenSim_DECLARE_CONCRETE_OBJECT(SimmSpline, Function);
 

@@ -12,6 +12,9 @@ this_file_dir = os.path.dirname(
 
 import opensim as osim
 
+def assert_almost_equal(valA, valB, tol=1e-5):
+    assert abs(valA - valB) < 1e-5
+
 def test_check_env_var():
     if 'OPENSIM_HOME' not in os.environ:
         raise Exception("To run tests, must set environment "
@@ -24,7 +27,7 @@ def test_makeUlnaHeavy():
     oldModel = osim.Model(os.environ['OPENSIM_HOME'] +
             "/Models/Arm26/arm26.osim")
     # Create a fresh copy
-    myModel = osim.Model(oldModel)
+    myModel = oldModel.clone()
 
     # Initialize the copy, if values need to be set in the model's state
     # pass along the variable myState  returned by initSystem
@@ -39,7 +42,8 @@ def test_makeUlnaHeavy():
 
     # Change mass of forarm in the model
     forearm = myModel.getBodySet().get("r_ulna_radius_hand")
-    forearm.setMass(forearm.getMass() * massScale)
+    newMass = forearm.getMass() * massScale
+    forearm.setMass(newMass)
 
     # Get full path name of original.old model
     fullPathName = oldModel.getInputFileName()
@@ -48,11 +52,10 @@ def test_makeUlnaHeavy():
     newName = os.path.join(this_file_dir, 'Arm26_makeUlnaHeavy.osim')
     myModel.printToXML(newName)
 
-    # Ensure the files are the same.
-    assert (open(newName).readlines() ==
-            open(newName.replace('.osim', '_desired.osim')).readlines())
-    # The *_desired.osim file was created via running this same method through
-    # Jython, with minor modifications (e.g., printToXML was changed to print).
+    deserMyModel = osim.Model(newName)
+    assert_almost_equal(
+            deserMyModel.getBodySet().get("r_ulna_radius_hand").getMass(),
+            newMass)
 
     os.remove(newName)
 
@@ -63,7 +66,7 @@ def test_alterTendonSlackLength():
             "/Models/Arm26/arm26.osim")
 
     # Create a fresh copy
-    myModel = osim.Model(oldModel)
+    myModel = oldModel.clone()
 
     # Initialize the copy, if values needed to be set in state
     # pass along the variable myState returned by initSystem
@@ -89,9 +92,13 @@ def test_alterTendonSlackLength():
     newName = os.path.join(this_file_dir, 'Arm26_alterTendonSlackLength.osim')
     myModel.printToXML(newName)
 
-    # Ensure the files are the same.
-    assert (open(newName).readlines() ==
-            open(newName.replace('.osim', '_desired.osim')).readlines())
+    deserMyModel = osim.Model(newName)
+    for i in range(deserMyModel.getMuscles().getSize()):
+    	oldMuscle = oldModel.getMuscles().get(i)
+    	oldSL = oldMuscle.getTendonSlackLength()
+    	newMuscle = deserMyModel.getMuscles().get(i)
+        assert_almost_equal(newMuscle.getTendonSlackLength(),
+                oldSL * tendonSlackLengthScale)
 
     os.remove(newName)
 
@@ -102,7 +109,7 @@ def test_strengthenModel():
             "/Models/Arm26/arm26.osim")
 
     # Create a fresh copy
-    myModel = osim.Model(oldModel)
+    myModel = oldModel.clone()
 
     # Initialize the copy
     myModel.initSystem()
@@ -124,9 +131,12 @@ def test_strengthenModel():
     newName = os.path.join(this_file_dir, 'Arm26_strengthenModel.osim')
     myModel.printToXML(newName)
 
-    # Ensure the files are the same.
-    assert (open(newName).readlines() ==
-            open(newName.replace('.osim', '_desired.osim')).readlines())
+    deserMyModel = osim.Model(newName)
+    for i in range(deserMyModel.getMuscles().getSize()):
+    	oldMuscle = oldModel.getMuscles().get(i)
+    	newMuscle = deserMyModel.getMuscles().get(i)
+        assert_almost_equal(newMuscle.getMaxIsometricForce(),
+                oldMuscle.getMaxIsometricForce() * scaleFactor)
 
     os.remove(newName)
 
@@ -158,8 +168,14 @@ def test_StorageToPieceWiseLinearFunction():
     fcnName = os.path.join(this_file_dir, 'piecewiseLinearFunction.xml')
     fcn.printToXML(fcnName)
 
-    assert (open(fcnName).readlines() ==
-            open(fcnName.replace('.xml', '_desired.xml')).readlines())
+    assert fcn.getX(0) == 0
+    assert_almost_equal(fcn.getX(1), 0.01)
+    assert_almost_equal(fcn.getX(2), 0.02)
+    assert_almost_equal(fcn.getX(3), 0.03)
+    assert_almost_equal(fcn.getX(4), 0.04)
+    assert_almost_equal(fcn.getY(0), 3.75)
+    assert_almost_equal(fcn.getY(1), 23.025)
+    assert_almost_equal(fcn.getY(2), 13.5575)
 
     os.remove(fcnName)
 
@@ -230,8 +246,5 @@ def test_addMetabolicProbes():
 
     name = os.path.join(this_file_dir, 'gait10dof18musc_probed.osim')
     model.printToXML(name)
-
-    assert (open(name).readlines() ==
-            open(name.replace('.osim', '_desired.osim')).readlines())
 
     os.remove(name)

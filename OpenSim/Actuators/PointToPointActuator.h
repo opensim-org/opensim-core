@@ -46,8 +46,8 @@ class Model;
  *
  * @author Matt DeMers
  */
-class OSIMACTUATORS_API PointToPointActuator : public Actuator {
-OpenSim_DECLARE_CONCRETE_OBJECT(PointToPointActuator, Actuator);
+class OSIMACTUATORS_API PointToPointActuator : public ScalarActuator {
+	OpenSim_DECLARE_CONCRETE_OBJECT(PointToPointActuator, ScalarActuator);
 public:
 //==============================================================================
 // PROPERTIES
@@ -144,7 +144,7 @@ private:
 	// Implement ModelComponent interface
 	//--------------------------------------------------------------------------
 	// Setup method initializes Body reference pointers to match the names.
-	void connectToModel(Model& aModel) override;
+	void extendConnectToModel(Model& aModel) override;
 
 //=============================================================================
 // DATA

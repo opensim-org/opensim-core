@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<OpenSimDocument Version="30000">
-	<PiecewiseLinearFunction>
-		<x> 0 0.01 0.02 0.03 0.04</x>
-		<y> 3.75 23.025 13.5575 10.285 21.0325</y>
-	</PiecewiseLinearFunction>
-</OpenSimDocument>

@@ -32,8 +32,8 @@
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
-#include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/Kinematics.h>
+#include <OpenSim/Analyses/Actuation.h>
 #include "ForwardTool.h"
 #include <OpenSim/Common/DebugUtilities.h>
 #include "CMC.h" 

@@ -118,7 +118,7 @@ public:
 
 protected:
 	/** Model component interface */
-	void connectToModel(Model& model) override;
+	void extendConnectToModel(Model& model) override;
 private:
 	// construct and initialize properties
 	void constructProperties();

@@ -150,7 +150,7 @@ bool ControllerSet::addController(Controller *aController)
 	bool success = Set<Controller>::adoptAndAppend(aController);
 
 	if(success) {
-		aController->connectToModel(*_model);
+		aController->extendConnectToModel(updModel());
 	}
 
 	return success;
@@ -175,19 +175,6 @@ bool ControllerSet::set(int aIndex,Controller *aController)
 	return(success);
 }
 
-//=============================================================================
-// CHECK
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Check that all actuators have a valid controller.
- */
-bool ControllerSet::check() const
-{
-	bool status=true;
-	return(status);
-
-}
 
 void ControllerSet::constructStorage() 
 {
@@ -211,13 +198,8 @@ void ControllerSet::storeControls( const SimTK::State& s, int step  )
     
 	if( size > 0 )
 	{
-		SimTK::Vector controls(_actuatorSet->getSize());
-	    
-		for (int i = 0; i < _actuatorSet->getSize(); i++) {
-			controls[i] = _actuatorSet->get(i).getControl(s);
-		} 
-
-		_controlStore->store( step, s.getTime(), _actuatorSet->getSize(), &controls[0] );
+		_controlStore->store( step, s.getTime(), getModel().getNumControls(), 
+			                  &(getModel().getControls(s)[0]) );
     }
 }
 

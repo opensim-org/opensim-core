@@ -79,10 +79,7 @@ UniversalJoint::UniversalJoint() : Joint()
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void UniversalJoint::addToSystem(SimTK::MultibodySystem& system) const
+void UniversalJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-	createMobilizedBody<MobilizedBody::Universal>(system);
-
-    // TODO: Joints require super class to be called last.
-    Super::addToSystem(system);
+    createMobilizedBody<MobilizedBody::Universal>(system);
 }

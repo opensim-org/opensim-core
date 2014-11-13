@@ -65,9 +65,9 @@ public:
 
 protected:
     // ModelComponent interface.
-    void addToSystem(SimTK::MultibodySystem& system) const override;
-    void initStateFromProperties(SimTK::State& s) const override;
-    void setPropertiesFromState(const SimTK::State& state) override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
 //=============================================================================
 };	// END of class GimbalJoint

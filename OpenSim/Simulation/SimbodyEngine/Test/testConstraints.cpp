@@ -29,42 +29,39 @@
 //
 //	Tests Include:
 //		1. Test locking (constraint) mechansim on coordinates
-//		2. Test WelConstraint againsts Simbody Constraint::Weld
+//		2. Test WelConstraint against Simbody Constraint::Weld
 //      3. PointOnLineConstraint against Simbody built-in PointOnLine constraint (samner)
 //		4. CoordinateCouplerConstraint as a custom knee 
+//      5. RollingOnSurfaceConstraint as foot on floor against SimTK NoSlip1D
 //     Add tests here as new constraint types are added to OpenSim
 //
 //==========================================================================================================
-#include <iostream>
-#include <sstream>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/PointKinematics.h>
-#include <OpenSim/Analyses/PointKinematics.h>
 #include <OpenSim/Analyses/ForceReporter.h>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Exception.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Common/LinearFunction.h>
-#include <OpenSim/Common/FunctionAdapter.h>
-#include <OpenSim/Common/SimmSpline.h>
+#include <OpenSim/Common/osimCommon.h>
+
 #include <OpenSim/Common/FunctionAdapter.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/ConstraintSet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
-#include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
-#include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
+
+#include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/RollingOnSurfaceConstraint.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include "SimTKsimbody.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -142,15 +139,16 @@ void testConstantDistanceConstraint();
 int main()
 {
     try {
-		testPointConstraint();
-		testConstantDistanceConstraint();
-		testRollingOnSurfaceConstraint();
-		testCoordinateLocking();
-		testWeldConstraint();
-		// Compare behavior of PointOnLineConstraint between the foot and ground
-		testPointOnLineConstraint();
-		// Compare behavior of CoordinateCouplerConstraint as a custom knee
-		testCoordinateCouplerConstraint();
+        testPointConstraint();
+        testConstantDistanceConstraint();
+        testCoordinateLocking();
+        testWeldConstraint();
+        // Compare behavior of PointOnLineConstraint between the foot and ground
+        testPointOnLineConstraint();
+        // Compare behavior of CoordinateCouplerConstraint as a custom knee
+        testCoordinateCouplerConstraint();
+        // test OpenSim roll constraint against a composite of Simbody contraints
+        testRollingOnSurfaceConstraint();
 	}
 	catch(const OpenSim::Exception& e) {
         e.print(cerr);
@@ -300,8 +298,8 @@ void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state, Mod
 	qi = state.updQ();
 	ui = state.updU();
 
-	//qi.dump("\nSimbody Final q's:");
-	//ui.dump("\nSimbody Final u's:");
+	qi.dump("\nSimbody Final q's:");
+	ui.dump("\nSimbody Final u's:");
 
 	//==========================================================================================================
 	// Integrate OpenSim model
@@ -350,7 +348,7 @@ void testPointConstraint()
 	SimTK::Constraint::Ball simtkBall(matter.Ground(), pointOnGround, foot, pointOnFoot);
 
 	// Simbody model state setup
-	system.realizeTopology();
+    system.realizeTopology();
 	State state = system.getDefaultState();
 	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
@@ -430,7 +428,7 @@ void testConstantDistanceConstraint()
 
 
 	// Simbody model state setup
-	system.realizeTopology();
+    system.realizeTopology();
 	State state = system.getDefaultState();
 	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
@@ -595,7 +593,7 @@ void testWeldConstraint()
 	SimTK::Constraint::Weld weld(matter.Ground(), Transform(weldInGround), foot, Transform(weldInFoot));
 
 	// Simbody model state setup
-	system.realizeTopology();
+    system.realizeTopology();
 	State state = system.getDefaultState();
 	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
@@ -688,7 +686,7 @@ void testPointOnLineConstraint()
 	SimTK::Constraint::PointOnLine simtkPointOnLine(matter.Ground(), normLineDirection, pointOnLine, foot, pointOnFollower);
 
 	// Simbody model state setup
-	system.realizeTopology();
+    system.realizeTopology();
 	State state = system.getDefaultState();
 	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
@@ -807,7 +805,7 @@ void testCoordinateCouplerConstraint()
 	//MobilizedBody::Pin shank(thigh, SimTK::Transform(kneeInFemur), SimTK::Body::Rigid(tibiaMass), SimTK::Transform(kneeInTibia));
 
 	// Simbody model state setup
-	system.realizeTopology();
+    system.realizeTopology();
 	State state = system.getDefaultState();
 	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
@@ -928,9 +926,21 @@ void testRollingOnSurfaceConstraint()
 	cout << " OpenSim RollingOnSurfaceConstraint Simulation " << endl;
 	cout << "=================================================================" << endl;
 
+    // angle of the rot w.r.t. vertical
+    double theta = -SimTK::Pi / 6; // 30 degs
+    double omega = -2.1234567890;
+    double halfRodLength = 1.0 / (omega*omega);
+
 	UnitVec3 surfaceNormal(0,1,0);
-	double planeHeight = 0.1;
-	Vec3 pointOnFollower(0.2,0.1,0.3);
+	double planeHeight = 0.0;
+    Vec3 comInRod(0, halfRodLength, 0);
+    Vec3 contactPointOnRod(0, 0, 0);
+
+    double mass = 7.0;
+    SimTK::Inertia inertiaAboutCom = mass*SimTK::Inertia::cylinderAlongY(0.1, 1.0);
+
+    SimTK::MassProperties rodMass(7.0, comInRod,
+        inertiaAboutCom.shiftFromMassCenter(comInRod, mass));
 
 	// Define the Simbody system
     MultibodySystem system;
@@ -938,41 +948,107 @@ void testRollingOnSurfaceConstraint()
     GeneralForceSubsystem forces(system);
 	SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
 
-	MassProperties rodMass(10, Vec3(0,0,0), Inertia(Vec3(1.0, 0.2, 1.0)));
-
 	// Create a free joint between the rod and ground
-	MobilizedBody::Free rod(matter.Ground(), Transform(Vec3(0)), 
-		SimTK::Body::Rigid(rodMass), Transform(Vec3(0, -0.5, 0)));
-	
-	// Constrain foot to line on ground
-	SimTK::Constraint::PointInPlane contactY(matter.Ground(), surfaceNormal, planeHeight, rod, pointOnFollower);
+	MobilizedBody::Planar rod(matter.Ground(), Transform(Vec3(0)), 
+        SimTK::Body::Rigid(rodMass), Transform());
 
-	// Simbody model state setup
-	system.realizeTopology();
-	State state = system.getDefaultState();
-	matter.setUseEulerAngles(state, true);
-    system.realizeModel(state);
+    // Get underlying mobilized bodies
+    SimTK::MobilizedBody surface = matter.getGround();
 
-	state.updQ()[2] = Pi/3;
-	state.updU()[0] = 1;
+    // Add a ficticious massless body to be the "Case" reference body coincident with surface for the no-slip constraint
+    SimTK::MobilizedBody::Weld  cb(surface, SimTK::Body::Massless());
 
-	system.realize(state, Stage::Acceleration);
-	state.getUDot().dump("Accelerations");
+    // Constrain the rod to move on the ground surface
+    SimTK::Constraint::PointInPlane contactY(surface, surfaceNormal, planeHeight, rod, contactPointOnRod);
+    SimTK::Constraint::ConstantAngle contactTorqueAboutY(surface, SimTK::UnitVec3(1, 0, 0), rod, SimTK::UnitVec3(0, 0, 1));
+    // Constrain the rod to roll on surface and not slide 
+    SimTK::Constraint::NoSlip1D contactPointXdir(cb, SimTK::Vec3(0), SimTK::UnitVec3(1, 0, 0), surface, rod);
+    SimTK::Constraint::NoSlip1D contactPointZdir(cb, SimTK::Vec3(0), SimTK::UnitVec3(0, 0, 1), surface, rod);
+    
+    // Simbody model state setup
+    system.realizeTopology();
+    State state = system.getDefaultState();
 
-	// The contact point coordinates in the surface body frame 
-	contactY.setDefaultPlaneNormal(surfaceNormal);
-	contactY.setDefaultPlaneHeight(planeHeight);
-	// And the point in the follower (roller) frame
-	contactY.setDefaultFollowerPoint(pointOnFollower);
+    //state = system.realizeTopology();
+    state.updQ()[0] = theta;
+    state.updQ()[1] = 0;
+    state.updQ()[2] = 0;
+    state.updU()[0] = omega;
 
-	state = system.realizeTopology();
-	state.updQ()[2] = Pi/3;
-	state.updU()[0] = 1;
+    system.realize(state, Stage::Acceleration);
+    state.getUDot().dump("Simbody Accelerations");
 
-	system.realize(state, Stage::Acceleration);
-	state.getUDot().dump("Accelerations");
+    Vec3 pcom = system.getMatterSubsystem().calcSystemMassCenterLocationInGround(state);
+    Vec3 vcom = system.getMatterSubsystem().calcSystemMassCenterVelocityInGround(state);
+    Vec3 acom = system.getMatterSubsystem().calcSystemMassCenterAccelerationInGround(state);
 
-	Vec3 pcom = system.getMatterSubsystem().calcSystemMassCenterLocationInGround(state);
-	Vec3 vcom = system.getMatterSubsystem().calcSystemMassCenterVelocityInGround(state);
-	Vec3 acom = system.getMatterSubsystem().calcSystemMassCenterAccelerationInGround(state);
+    //==========================================================================================================
+    // Setup OpenSim model
+    Model *osimModel = new Model;
+    osimModel->setGravity(gravity_vec);
+
+    //OpenSim bodies
+    OpenSim::Body& ground = osimModel->getGroundBody();
+    ground.addDisplayGeometry("arrow.vtp");
+    ground.updDisplayer()->updGeometrySet()[0].setColor(Vec3(1, 0, 0));
+
+    //OpenSim rod
+    auto osim_rod = new OpenSim::Body("rod", mass, comInRod, inertiaAboutCom);
+    osim_rod->addDisplayGeometry("cylinder.vtp");
+    osim_rod->updDisplayer()->updGeometrySet()[0]
+        .setScaleFactors(2*halfRodLength*Vec3(0.1, 1, 0.1));
+    osim_rod->updDisplayer()->updGeometrySet()[0]
+        .setTransform(Transform(comInRod));
+
+    // create rod as a free joint
+    auto rodJoint = new PlanarJoint("rodToGround", ground, Vec3(0), Vec3(0),
+                                                *osim_rod, Vec3(0), Vec3(0));
+
+    // Add the thigh body which now also contains the hip joint to the model
+    osimModel->addBody(osim_rod);
+    osimModel->addJoint(rodJoint);
+
+    // add a point on line constraint
+    auto roll = new RollingOnSurfaceConstraint();
+    roll->setRollingBodyByName("rod");
+    roll->setSurfaceBodyByName("ground");
+
+    double h = roll->get_surface_height();
+    
+    osimModel->addConstraint(roll);
+    osimModel->setGravity(gravity_vec);
+
+    //Add analyses before setting up the model for simulation
+    Kinematics *kinAnalysis = new Kinematics(osimModel);
+    kinAnalysis->setInDegrees(false);
+    osimModel->addAnalysis(kinAnalysis);
+
+    // Need to setup model before adding an analysis since it creates the AnalysisSet
+    // for the model if it does not exist.
+    //osimModel->setUseVisualizer(true);
+    State osim_state = osimModel->initSystem();
+    roll->setDisabled(osim_state, false);
+    osim_state.updY() = state.getY();
+
+    // compute model accelerations
+    osimModel->computeStateVariableDerivatives(osim_state);
+    osim_state.getUDot().dump("Osim Accelerations");
+
+    //osimModel->updVisualizer().updSimbodyVisualizer()
+    //    .setBackgroundType(SimTK::Visualizer::GroundAndSky);
+    //osimModel->getVisualizer().show(osim_state);
+
+    Vec3 osim_pcom = osimModel->calcMassCenterPosition(osim_state);
+    Vec3 osim_vcom = osimModel->calcMassCenterVelocity(osim_state);
+    Vec3 osim_acom = osimModel->calcMassCenterAcceleration(osim_state);
+
+    Vec3 tol(SimTK::SignificantReal);
+
+    ASSERT_EQUAL(pcom, osim_pcom, tol);
+    ASSERT_EQUAL(vcom, osim_vcom, tol);
+    ASSERT_EQUAL(acom, osim_acom, tol);
+
+    //==========================================================================================================
+    // Compare Simbody system and OpenSim model simulations
+    compareSimulations(system, state, osimModel, osim_state, "testRollingOnSurfaceConstraint FAILED\n");
 }

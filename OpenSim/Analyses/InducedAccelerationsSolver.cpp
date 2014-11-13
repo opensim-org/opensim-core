@@ -92,7 +92,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
 	// Hang on to a state that has the right flags for contact constraints turned on/off
 	_modelCopy.setPropertiesFromState(s_solver);
 	// Use this state for the remainder of this step (record)
-	s_solver = _modelCopy.getMultibodySystem().realizeTopology();
+    s_solver = _modelCopy.getMultibodySystem().realizeTopology();
 	// DO NOT recreate the system, will lose location of constraint
 	_modelCopy.initStateWithoutRecreatingSystem(s_solver);
 
@@ -222,11 +222,11 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
 		Force &force = _modelCopy.getForceSet().get(ai);
 		force.setDisabled(s_solver, false);
 
-		Actuator *actuator = dynamic_cast<Actuator*>(&force);
+		ScalarActuator *actuator = dynamic_cast<ScalarActuator*>(&force);
 		if(actuator){
 			if(computeActuatorPotentialOnly){
-				actuator->overrideForce(s_solver, true);
-				actuator->setOverrideForce(s_solver, 1.0);
+				actuator->overrideActuation(s_solver, true);
+				actuator->setOverrideActuation(s_solver, 1.0);
 			}
 		}
 
@@ -318,9 +318,7 @@ const SimTK::SpatialVec& InducedAccelerationsSolver::
 
 	body = &_modelCopy.getBodySet()[ind];
 
-	return _modelCopy.getMatterSubsystem()
-		.getMobilizedBody(body->getIndex())
-		.getBodyAcceleration(s_solver);
+    return body->getMobilizedBody().getBodyAcceleration(s_solver);
 }
 
 

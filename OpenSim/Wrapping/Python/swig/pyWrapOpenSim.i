@@ -11,6 +11,7 @@ own project.
 %{
 #define SWIG_FILE_WITH_INIT
 
+
 #include <OpenSim/version.h>
 #include <SimTKsimbody.h>
 #include <OpenSim/Common/osimCommonDLL.h>
@@ -61,6 +62,9 @@ own project.
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
 #include <OpenSim/Simulation/MomentArmSolver.h>
 
+#include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/FixedFrame.h>
+
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
 #include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
@@ -90,6 +94,8 @@ own project.
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/FixedFrame.h>
+
 #include <OpenSim/Simulation/Control/Control.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Control/ControlConstant.h>
@@ -194,6 +200,7 @@ own project.
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/PointActuator.h>
 #include <OpenSim/Actuators/TorqueActuator.h>
+#include <OpenSim/Actuators/BodyActuator.h>
 #include <OpenSim/Actuators/PointToPointActuator.h>
 #include <OpenSim/Actuators/ClutchedPathSpring.h>
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
@@ -251,7 +258,9 @@ using namespace SimTK;
 %rename(OpenSimObject) OpenSim::Object;
 %rename(OpenSimException) OpenSim::Exception;
 
-%rename(printToXML) OpenSim::Object::print(const std::string&);
+%newobject *::clone; 
+
+%rename(printToXML) OpenSim::Object::print(const std::string&) const;
 %rename(printToXML) OpenSim::XMLDocument::print(const std::string&);
 %rename(printToXML) OpenSim::XMLDocument::print();
 %rename(printToFile) OpenSim::Storage::print;
@@ -266,253 +275,6 @@ using namespace SimTK;
 /* This interface file is for better handling of pointers and references */
 %include "typemaps.i"
 %include "std_string.i"
-/*
-%typemap(javacode) OpenSim::Object %{
-  public boolean equals(Object obj) {
-    boolean equal = false;
-    if (obj instanceof $javaclassname)
-      equal = ((($javaclassname)obj).swigCPtr == this.swigCPtr);
-    return equal;
-  }
-  private int cacheId=-1;  // cache the Id to avoid recomputation for hashing purposes
- 
-  public int hashCode() {
-     if (cacheId==-1)
-        cacheId=(int)swigCPtr;
-     
-    return( cacheId );
-  }
-
-%}
-
-%typemap(javacode) OpenSim::MarkerData %{
-  public double[] getTimeRange() { return new double[]{getStartFrameTime(), getLastFrameTime()}; }
-%}
-
-%typemap(javacode) OpenSim::Array<double> %{
-	public void fromString(String string) {
-      // Remove open and close parenth if any
-      String workString= new String(string);
-      int liveStart = workString.indexOf("(");
-      int liveEnd = workString.indexOf(")");
-      if (liveStart!=-1 && liveEnd!=-1){
-          workString = workString.substring(liveStart+1, liveEnd);
-      }
-      else if (liveStart!=liveEnd){
-          //throw new ParseException("Illegal format: Expect space separated values, optionally between matched parentheses", liveEnd);
-          return;
-      }
-      String[] splits = workString.split(" ");
-      double[] values = new double[splits.length];
-      for(int i=0; i<splits.length; i++){
-           values[i]=Double.parseDouble(splits[i]);
-       }
-       this.setValues(values, splits.length);
-	}
-%}
-
-%javamethodmodifiers OpenSim::Model::addModelComponent "private";
-%javamethodmodifiers OpenSim::Model::addBody "private";
-%javamethodmodifiers OpenSim::Model::addConstraint "private";
-%javamethodmodifiers OpenSim::Model::addForce "private";
-%javamethodmodifiers OpenSim::Model::addProbe "private";
-%javamethodmodifiers OpenSim::Model::addContactGeometry "private";
-%javamethodmodifiers OpenSim::Model::addController "private";
-%javamethodmodifiers OpenSim::Model::addAnalysis "private";
-
-%rename OpenSim::Model::addModelComponent private_addModelComponent;
-%rename OpenSim::Model::addBody private_addBody;
-%rename OpenSim::Model::addConstraint private_addConstraint;
-%rename OpenSim::Model::addForce private_addForce;
-%rename OpenSim::Model::addProbe private_addProbe;
-%rename OpenSim::Model::addContactGeometry private_addContactGeometry;
-%rename OpenSim::Model::addController private_addController;
-%rename OpenSim::Model::addAnalysis private_addAnalysis;
-
-
-%typemap(javacode) OpenSim::FunctionSet %{
-  public boolean adoptAndAppend(Function aFunction) {
-	aFunction.markAdopted();
-    return super.adoptAndAppend(aFunction);
-  }
-%}
-
-%typemap(javacode) OpenSim::Model %{
-  private String originalModelPath = null;
-  // Important that we only refer to originalModelPath if the model's getInputFileName() is not set
-  public void setOriginalModelPathFromModel(Model model) {
-    originalModelPath = null;
-    if(model.getInputFileName()!=null && !model.getInputFileName().equals(""))
-      originalModelPath = (new java.io.File(model.getInputFileName())).getParent();
-	 else if(model.originalModelPath!=null && !model.originalModelPath.equals(""))
-      originalModelPath = model.originalModelPath;
-  }
-  public String getFilePath() {
-    if(getInputFileName()!=null && !getInputFileName().equals("") && (new java.io.File(getInputFileName())).getParent()!=null)
-      return (new java.io.File(getInputFileName())).getParent() + java.io.File.separator;
-    else if(originalModelPath!=null && !originalModelPath.equals(""))
-      return originalModelPath + java.io.File.separator;
-    else return "";
-  }
-
-  public void addProbe(Probe aProbe) {
-	aProbe.markAdopted();
-    private_addProbe(aProbe);
-  }  
-
-  public void addForce(Force aForce) {
-	aForce.markAdopted();
-	private_addForce(aForce);
-  }
-%}
-
-%typemap(javacode) OpenSim::Array<std::string> %{
-   public java.util.Vector<String> toVector() {
-      java.util.Vector<String> vector = new java.util.Vector<String>();
-      vector.setSize(getSize());
-      for(int i=0; i<getSize(); i++) vector.set(i, getitem(i));
-      return vector;
-   }
-   public void append(java.util.Vector<String> vector) {
-      for(int i=0; i<vector.size(); i++) append(vector.get(i));
-   }
-   public static ArrayStr fromVector(java.util.Vector<String> vector) {
-      ArrayStr array = new ArrayStr();
-      array.append(vector);
-      return array;
-   }
-%}
-
-%typemap(javacode) OpenSim::XYFunctionInterface %{
-  private Function  dFunction;  // cache pointer to function so it's not garbage collected early
-
-  public XYFunctionInterface(Function aFunction, Boolean unused) {
-		this(aFunction);
-		dFunction = aFunction;
-  }
-%}
-
-%pragma(java) jniclassclassmodifiers="public class"
-
-SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
-
-%pragma(java) jniclassimports="import javax.swing.JOptionPane;"
-
-%pragma(java) jniclasscode=%{
-  static {
-      try{
-        System.loadLibrary("osimJavaJNI");		// All OpenSim classes required for GUI operation.
-      }
-      catch(UnsatisfiedLinkError e){
-           new JOptionPane("Required library failed to load. Check that the dynamic library osimJavaJNI is in your PATH\n"+e, 
-				JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
-      }
-  }
-%}
-
-
-// Generic Exception handling
-%typemap(throws) SWIGTYPE, SWIGTYPE &, SWIGTYPE *, SWIGTYPE [ANY] %{
-  SWIG_JavaThrowException(jenv, SWIG_JavaIOException,
-                          "C++ $1_type exception thrown");
-  return $null;
-%}
-
-%typemap(throws, throws="java.io.IOException") OpenSim::Exception {
-  jclass excep = jenv->FindClass("java/io/IOException");
-  if (excep)
-    jenv->ThrowNew(excep, ($1).getMessage());
-  return $null;
-}
-
-%exception {
-  if (OpenSim::mapCxxExceptionsToJava){
-	  try {
-	  $action
-	  }
-	  catch(std::exception& _ex){
-		  jclass excep = jenv->FindClass("java/lang/RuntimeException");
-		  if (excep)
-		  jenv->ThrowNew(excep,_ex.what());
-	  }
-  }
-  else
-	$action
-}
-
-%exception OpenSim::AnalyticGeometry::dynamic_cast(Geometry *geometry) {
-    $action
-    if (!result) {
-        jclass excep = jenv->FindClass("java/lang/ClassCastException");
-        if (excep) {
-            jenv->ThrowNew(excep, "dynamic_cast exception");
-        }
-    }
-}
-
-%extend OpenSim::AnalyticGeometry {
-    static OpenSim::AnalyticGeometry *dynamic_cast(OpenSim::Geometry *geometry) {
-        return dynamic_cast<OpenSim::AnalyticGeometry *>(geometry);
-    }
-};
-
-%extend OpenSim::LineGeometry {
-    static LineGeometry *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<LineGeometry *>(geometry);
-    }
-};
-
-%extend OpenSim::AnalyticSphere {
-    static AnalyticSphere *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<AnalyticSphere *>(geometry);
-    }
-};
-
-%extend OpenSim::AnalyticCylinder {
-    static AnalyticCylinder *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<AnalyticCylinder *>(geometry);
-    }
-};
-
-%extend OpenSim::AnalyticEllipsoid {
-    static AnalyticEllipsoid *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<AnalyticEllipsoid *>(geometry);
-    }
-};
-
-%extend OpenSim::AnalyticTorus {
-    static AnalyticTorus *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<AnalyticTorus *>(geometry);
-    }
-};
-
-%extend OpenSim::PolyhedralGeometry {
-    static PolyhedralGeometry *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<PolyhedralGeometry *>(geometry);
-    }
-};
-
-%extend OpenSim::Body {
-	void getCenterOfMass(double dCom[3]) {
-		self->getMassCenter(SimTK::Vec3::updAs(dCom));
-	};
-	void getInertia(Array<double>& rInertia) {
-		SimTK::Mat33 inertia;
-		self->getInertia(inertia);
-		rInertia[0]=inertia[0][0];
-		rInertia[1]=inertia[1][1];
-		rInertia[2]=inertia[2][2];
-		rInertia[3]=inertia[0][1];
-		rInertia[4]=inertia[0][2];
-		rInertia[5]=inertia[1][2];
-
-	};
-	void setInertia(Array<double>& aInertia) {
-		self->setInertia(SimTK::Inertia(aInertia[0], 
-		aInertia[1], aInertia[2], aInertia[3], aInertia[4], aInertia[5]));
-	}
-};
-*/
 
 // Memory management
 // =================
@@ -546,6 +308,8 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
 MODEL_ADOPT_HELPER(ModelComponent);
 MODEL_ADOPT_HELPER(Body);
 MODEL_ADOPT_HELPER(Probe);
+MODEL_ADOPT_HELPER(Joint);
+MODEL_ADOPT_HELPER(Frame);
 MODEL_ADOPT_HELPER(Constraint);
 MODEL_ADOPT_HELPER(ContactGeometry);
 MODEL_ADOPT_HELPER(Analysis);
@@ -811,6 +575,10 @@ namespace SimTK {
 %include <OpenSim/Simulation/InverseDynamicsSolver.h>
 %include <OpenSim/Simulation/MomentArmSolver.h>
 
+%include <OpenSim/Simulation/Model/Frame.h>
+%include <OpenSim/Simulation/Model/RigidFrame.h>
+%include <OpenSim/Simulation/Model/FixedFrame.h>
+
 %include <OpenSim/Simulation/Model/Force.h>
 %template(SetForces) OpenSim::Set<OpenSim::Force>;
 %template(ModelComponentSetForces) OpenSim::ModelComponentSet<OpenSim::Force>;
@@ -857,6 +625,7 @@ namespace SimTK {
 
 %include <OpenSim/Simulation/Manager/Manager.h>
 %include <OpenSim/Simulation/Model/AbstractTool.h>
+%include <OpenSim/Simulation/Model/Station.h>
 %include <OpenSim/Simulation/Model/Marker.h>
 %template(SetMarkers) OpenSim::Set<OpenSim::Marker>;
 %include <OpenSim/Simulation/Model/MarkerSet.h>
@@ -927,7 +696,6 @@ namespace SimTK {
 %include <OpenSim/Simulation/Model/JointInternalPowerProbe.h>
 %include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
 %include <OpenSim/Simulation/Model/ActuatorForceProbe.h>
-
 %include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
 %include <OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.h>
 %include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
@@ -974,6 +742,7 @@ namespace SimTK {
 %include <OpenSim/Actuators/CoordinateActuator.h>
 %include <OpenSim/Actuators/PointActuator.h>
 %include <OpenSim/Actuators/TorqueActuator.h>
+%include <OpenSim/Actuators/BodyActuator.h>
 %include <OpenSim/Actuators/PointToPointActuator.h>
 %include <OpenSim/Actuators/ClutchedPathSpring.h>
 %include <OpenSim/Actuators/SpringGeneralizedForce.h>
@@ -1062,21 +831,14 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
 
 SET_ADOPT_HELPER(Geometry);
 SET_ADOPT_HELPER(Scale);
-SET_ADOPT_HELPER(Force);
-SET_ADOPT_HELPER(Controller);
-SET_ADOPT_HELPER(ContactGeometry);
-SET_ADOPT_HELPER(Analysis);
-SET_ADOPT_HELPER(Control);
-SET_ADOPT_HELPER(Marker);
-SET_ADOPT_HELPER(Body);
 SET_ADOPT_HELPER(BodyScale);
-SET_ADOPT_HELPER(Coordinate);
-SET_ADOPT_HELPER(Joint);
-SET_ADOPT_HELPER(Constraint);
 SET_ADOPT_HELPER(PathPoint);
 SET_ADOPT_HELPER(IKTask);
 SET_ADOPT_HELPER(MarkerPair);
 SET_ADOPT_HELPER(Measurement);
+SET_ADOPT_HELPER(Marker);
+SET_ADOPT_HELPER(Control);
+
 
 // These didn't work with the macro for some reason. I got complaints about
 // multiple definitions of, e.g.,  Function in the target language.
@@ -1094,4 +856,6 @@ SET_ADOPT_HELPER(Measurement);
         aProbe._markAdopted()
         return super(ProbeSet, self).adoptAndAppend(aProbe)
 %}
+
+
 };

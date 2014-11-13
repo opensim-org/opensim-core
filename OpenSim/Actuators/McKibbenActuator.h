@@ -117,7 +117,7 @@ private:
 	// Implement ModelComponent interface
 	//--------------------------------------------------------------------------
 	// Setup method initializes Body reference pointers to match the names.
-	void connectToModel(Model& aModel) override;
+	void extendConnectToModel(Model& aModel) override;
 
 	//--------------------------------------------------------------------------
 	// Visualization interface

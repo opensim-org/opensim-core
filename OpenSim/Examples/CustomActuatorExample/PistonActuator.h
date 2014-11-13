@@ -45,8 +45,8 @@ namespace OpenSim {
 class Body;
 class Model;
 
-class PistonActuator : public Actuator {
-OpenSim_DECLARE_CONCRETE_OBJECT(PistonActuator, Actuator);
+class PistonActuator : public ScalarActuator {
+OpenSim_DECLARE_CONCRETE_OBJECT(PistonActuator, ScalarActuator);
 
 //=============================================================================
 // DATA
@@ -141,7 +141,7 @@ public:
 
 #endif
 	// Setup method to initialize Body reference
-	void connectToModel(Model& aModel) override;
+	void extendConnectToModel(Model& aModel) override;
 
 	//--------------------------------------------------------------------------
 	// XML

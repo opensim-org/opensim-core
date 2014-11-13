@@ -170,13 +170,13 @@ public:
 	virtual int numCoordinates() const {return _numMobilities;};
 
 protected:
-	void addToSystem(SimTK::MultibodySystem& system) const override
+	void extendAddToSystem(SimTK::MultibodySystem& system) const override
 	{
 		using namespace SimTK;
 
 		const CoordinateSet& coordinateSet = get_CoordinateSet();
 		string msg = getConcreteClassName() +
-			"::addToSystem() ERROR - number of DOFs does not match number of Coordinates specified.";
+			"::extendAddToSystem() ERROR - number of DOFs does not match number of Coordinates specified.";
 		SimTK_ASSERT(coordinateSet.getSize() == _numMobilities, msg.c_str());
 		// Assign the underlying indices to access System resources (state values) for the Coordinate subcomponents
 
@@ -193,7 +193,7 @@ protected:
 
 		// CREATE MOBILIZED BODY for body rotation about body Z
 		MobilizedBody simtkMasslessBody1 = createMobilizedBody<MobilizedBody::Pin>(
-			system.updMatterSubsystem().updMobilizedBody(getParentBody().getIndex()),
+			system.updMatterSubsystem().updMobilizedBody(getParentBody().getMobilizedBodyIndex()),
 			parentTransform,
 			massless,
 			childTransform0,
@@ -224,9 +224,6 @@ protected:
 			SimTK::Body::Rigid(getChildBody().getMassProperties()),
 			childTransform2,
 			coordinateIndexForMobility, &getChildBody());
-
-        // TODO: Joints require super class to be called last.
-        Super::addToSystem(system);
 	}
 
 //=============================================================================
@@ -1639,8 +1636,8 @@ void testCustomVsCompoundJoint()
 
 	state2.updQ() = state1.getQ();
 
-	customModel.setPropertiesFromState(state1);
-	compoundModel.setPropertiesFromState(state2);
+    customModel.setPropertiesFromState(state1);
+    compoundModel.setPropertiesFromState(state2);
 
 	customModel.print("Gimbal_CustomZXY_test.osim");
 	compoundModel.print("Gimbal_CompoundPinsZXY_test.osim");	
@@ -1705,10 +1702,10 @@ void testEquivalentBodyForceForGenForces(Model &model)
 	for(int j=0; j < model.getJointSet().getSize(); ++j){
 		Joint &joint = model.getJointSet()[j];
 		const OpenSim::Body &body = joint.getChildBody();
-		MobilizedBodyIndex mbx = body.getIndex();
+		MobilizedBodyIndex mbx = body.getMobilizedBodyIndex();
 
 		const OpenSim::Body &parent = joint.getParentBody();
-		MobilizedBodyIndex mpx = parent.getIndex();
+		MobilizedBodyIndex mpx = parent.getMobilizedBodyIndex();
 
 		Vec3 rB_Bo(0), rB_Po(0);
 		rB_Bo = joint.getLocationInChild();

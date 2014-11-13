@@ -24,7 +24,6 @@ Thank you for contributing!
       - [Place pointer and reference symbols with the type](#place-pointer-and-reference-symbols-with-the-type)
     - [Removing Methods](#removing-methods)
 
-
 Making a Pull Request
 ---------------------
 1. To help the people who review your pull request, you must include a detailed description of what changes or additions the pull request includes and what you have done to test and verify the changes. If there is an existing issue or set of issues that documents the problem the pull request is solving, you can reference it. But, please make sure detailed information about the commits is easily available.

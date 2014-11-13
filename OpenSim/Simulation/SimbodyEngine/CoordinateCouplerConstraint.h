@@ -118,11 +118,11 @@ public:
 	virtual void scale(const ScaleSet& aScaleSet);
 
 protected:
-	void connectToModel(Model& aModel) override;
+	void extendConnectToModel(Model& aModel) override;
 	/**
 	 * Create a SimTK::Constraint::CoordinateCooupler which implements this constraint.
 	 */
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 private:
 	void setNull();

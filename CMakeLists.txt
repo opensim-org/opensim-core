@@ -8,13 +8,38 @@ PROJECT (OpenSim)
 #
 #----------------------------------------------------
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.6)
 if(COMMAND cmake_policy)
         cmake_policy(SET CMP0003 NEW)
         cmake_policy(SET CMP0005 NEW)
 endif(COMMAND cmake_policy)
 
 
+# OpenSim version.
+# ----------------
+SET(OPENSIM_MAJOR_VERSION 3)
+SET(OPENSIM_MINOR_VERSION 2)
+SET(OPENSIM_PATCH_VERSION 0)
+
+# Don't include the patch version if it is 0.
+SET(PATCH_VERSION_STRING)
+IF(OPENSIM_PATCH_VERSION)
+    SET(PATCH_VERSION_STRING ".${OPENSIM_PATCH_VERSION}")
+ENDIF()
+
+SET(OPENSIM_VERSION
+    "${OPENSIM_MAJOR_VERSION}.${OPENSIM_MINOR_VERSION}${PATCH_VERSION_STRING}"
+    )
+
+
+# CMake module path.
+# ------------------
+SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+INCLUDE(OpenSimMacros)
+
+
+# Build binary directory.
+# -----------------------
 SET(BUILD_BINARY_DIR ${CMAKE_BINARY_DIR}
     CACHE PATH 
     "The OpenSim build (not the install) puts all the libraries and executables together here (with /Release, etc. appended on some platforms).")
@@ -24,6 +49,9 @@ SET(BUILD_BINARY_DIR ${CMAKE_BINARY_DIR}
 SET(EXECUTABLE_OUTPUT_PATH ${BUILD_BINARY_DIR})
 SET(LIBRARY_OUTPUT_PATH ${BUILD_BINARY_DIR})
 
+
+# Build using namespace.
+# ----------------------
 # Use this to generate a private set of libraries whose names
 # won't conflict with installed versions.
 SET(BUILD_USING_NAMESPACE "" CACHE STRING
@@ -38,6 +66,9 @@ ENDIF(BUILD_USING_NAMESPACE)
 SET(PROCESSOR_COUNT 8 CACHE STRING "Number of processors in the CPU")
 MARK_AS_ADVANCED(PROCESSOR_COUNT)
 
+
+# Simbody libraries.
+# ------------------
 # This will be initialized to the environment variable of the same name
 # if it is set, otherwise it will be empty.
 SET(SIMBODY_HOME $ENV{SIMBODY_HOME} CACHE
@@ -62,14 +93,13 @@ MARK_AS_ADVANCED( SimTKSIMBODY_LIBRARY_NAME )
 MARK_AS_ADVANCED( SimTKMATH_LIBRARY_NAME )
 MARK_AS_ADVANCED( SimTKCOMMON_LIBRARY_NAME )
 
-
 SET(SimTKCOMMON_SHARED_LIBRARY ${SimTKCOMMON_LIBRARY_NAME})
 SET(SimTKMATH_SHARED_LIBRARY ${SimTKMATH_LIBRARY_NAME})
 SET(SimTKSIMBODY_SHARED_LIBRARY ${SimTKSIMBODY_LIBRARY_NAME})
 
-#
-## Platform
-#
+
+# Platform.
+# ---------
 # Create a platform name useful for finding things in the Platform
 # directory.
 IF(WIN32)
@@ -125,9 +155,9 @@ IF( APPLE )
    SET(ARCH64 OFF) 
 ENDIF( APPLE )
 
-IF(UNIX AND NOT CMAKE_BUILD_TYPE)
+IF(NOT MSVC AND NOT XCODE AND NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release build" FORCE)
-ENDIF (UNIX AND NOT CMAKE_BUILD_TYPE)
+ENDIF()
 
 ## Choose the maximum level of x86 instruction set that the compiler is 
 ## allowed to use. Was using sse2 but changed to let the compilers choose. Most
@@ -327,9 +357,6 @@ IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     ENDIF()
 ENDIF()
-
-# Disable Build using the simtk headers and libraries checked in the repository. 
-SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 
 SET(BUILD_USING_NAMESPACE "OpenSim")
 
@@ -561,23 +588,11 @@ ADD_CUSTOM_TARGET (RUN_TESTS_PARALLEL
     COMMAND ${cmd}
 )
 
-## This adds a target "doxygen" for building the doxygen docs, as well as 
-## an INSTALL procedure.
-INCLUDE(ApiDoxygen.cmake)
-
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenSim project")
-SET(CPACK_PACKAGE_VENDOR "Stanford University, National Center for Biomedical Computation")
-SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt")
-SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/Copyright.txt")
-SET(CPACK_PACKAGE_VERSION_MAJOR "3")
-SET(CPACK_PACKAGE_VERSION_MINOR "2")
-SET(CPACK_PACKAGE_VERSION_PATCH "0")
-SET(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSim ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
 
 # Create buildinfo.txt file and place under sdk to include product version, platform and compiler for troubleshooting purposes
 SET(VERSION_FILE_PATH ${CMAKE_BINARY_DIR}/buildinfo.txt)
 # MESSAGE("version file="${VERSION_FILE_PATH})
-FILE(WRITE ${VERSION_FILE_PATH} "Product Version=${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
+FILE(WRITE ${VERSION_FILE_PATH} "Product Version=${OPENSIM_MAJOR_VERSION}.${OPENSIM_MINOR_VERSION}")
 FILE(APPEND  ${VERSION_FILE_PATH} "\n")
 FILE(APPEND  ${VERSION_FILE_PATH} "Compiler=${CMAKE_GENERATOR}-${CMAKE_CXX_COMPILER_ID}")
 FILE(APPEND  ${VERSION_FILE_PATH} "\n")
@@ -585,18 +600,16 @@ FILE(APPEND  ${VERSION_FILE_PATH} "Platform=${Platform}-${PLATFORM_ABI}")
 FILE(APPEND  ${VERSION_FILE_PATH} "\n")
 INSTALL(FILES ${VERSION_FILE_PATH} DESTINATION sdk)
 
-#
-# Build the documentation
-#
 
 #-----------------------------------------------------------------------------
 SET(BUILD_API_ONLY OFF CACHE BOOL "Build/install only headers, libraries,
     wrapping, tests; not applications (ik, rra, etc.).")
 MARK_AS_ADVANCED( BUILD_API_ONLY )
 
-IF(BUILD_API_ONLY)
-	SUBDIRS(Vendors OpenSim)
-ELSE(BUILD_API_ONLY)
-	SUBDIRS(Vendors OpenSim Applications)
-ENDIF(BUILD_API_ONLY)
+ADD_SUBDIRECTORY(Vendors)
+ADD_SUBDIRECTORY(OpenSim)
+IF(NOT BUILD_API_ONLY)
+    ADD_SUBDIRECTORY(Applications)
+ENDIF()
 
+ADD_SUBDIRECTORY(cmake)

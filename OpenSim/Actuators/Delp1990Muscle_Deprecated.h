@@ -124,8 +124,8 @@ public:
 	virtual bool setActivation2(double aActivation2);
 	virtual bool setMass(double aMass);
 	// Computed quantities
-	virtual double getFiberVelocity(const SimTK::State& s) const { return getStateVariable(s, "fiber_velocity"); }
-	virtual void setFiberVelocity(SimTK::State& s, double fiberVelocity) const { setStateVariable(s, "fiber_velocity", fiberVelocity); }
+	virtual double getFiberVelocity(const SimTK::State& s) const { return getStateVariableValue(s, "fiber_velocity"); }
+	virtual void setFiberVelocity(SimTK::State& s, double fiberVelocity) const { setStateVariableValue(s, "fiber_velocity", fiberVelocity); }
 	virtual double getFiberVelocityDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, "fiber_velocity"); }
 	virtual void setFiberVelocityDeriv(const SimTK::State& s, double fiberVelocityDeriv) const { setStateVariableDeriv(s, "fiber_velocity", fiberVelocityDeriv); }
 	virtual void setActiveForce(const SimTK::State& s, double aForce) const;
@@ -148,8 +148,8 @@ public:
 
 protected:
 	// Model Component Interface
-	void connectToModel(Model& aModel) override;
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void extendConnectToModel(Model& aModel) override;
+	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 	void computeStateVariableDerivatives(const SimTK::State &s) const override; 
 
 private:

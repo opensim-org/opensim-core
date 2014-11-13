@@ -27,16 +27,15 @@
 #include <OpenSim/Common/VisibleObject.h>
 
 //==============================================================================
-//                          POINT TO POINT SPRING
 //==============================================================================
+namespace OpenSim { 
+
 /**
  * A simple point to point spring with a resting length and stiffness.
  * Points are connected to bodies and are defined in the body frame.
  *
  * @author Ajay Seth
  */
-namespace OpenSim { 
-
 class OSIMSIMULATION_API PointToPointSpring : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(PointToPointSpring, Force);
 public:
@@ -46,18 +45,14 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with this class. **/
     /**@{**/
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(body1, std::string,
-		"Name of Body to which 1 end of the spring is attached.");
-	OpenSim_DECLARE_OPTIONAL_PROPERTY(body2, std::string,
-		"Name of Body to which the 2nd end of the spring is attached.");
 	OpenSim_DECLARE_PROPERTY(point1, SimTK::Vec3,
-		"Force application point on body1.");
+		"Spring attachment point on body1.");
 	OpenSim_DECLARE_PROPERTY(point2, SimTK::Vec3,
-		"Force application point on body2.");
+		"Spring attachment point on body2.");
 	OpenSim_DECLARE_PROPERTY(stiffness, double,
 		"Spring stiffness (N/m).");
 	OpenSim_DECLARE_PROPERTY(rest_length, double,
-		"Spring resting length.");
+		"Spring resting length (m).");
     /**@}**/
 
 
@@ -67,15 +62,15 @@ public:
 	/** Default constructor. **/
 	PointToPointSpring();
     /** Convenience constructor for API users.
-    @param body1Name    name of the first body to which the spring is attached
+    @param body1        the first body to which the spring is attached
     @param point1       location where spring is attached on body1
-    @param body2Name    name of the second body to which the spring is attached
+    @param body2        the second body to which the spring is attached
     @param point2       location where spring is attached on body2 
     @param stiffness    spring stiffness
     @param restlength   the resting (zero force) length of the spring
     **/
-	PointToPointSpring( std::string body1Name, SimTK::Vec3 point1, 
-		                std::string body2Name, SimTK::Vec3 point2, 
+    PointToPointSpring( const Body& body1, SimTK::Vec3 point1,
+                        const Body& body2, SimTK::Vec3 point2,
                         double stiffness, double restlength );
 
     // default destructor, copy constructor, copy assignment
@@ -93,12 +88,10 @@ public:
 	/**
 	* Spring end point bodies 
 	*/
-	void setBody1Name(const std::string& body1Name) 
-    {   set_body1(body1Name); }
-	void setBody2Name(const std::string& body2Name) 
-    {   set_body2(body2Name); }
-	const std::string& getBody1Name() const {return get_body1();}
-	const std::string& getBody2Name() const {return get_body2();}
+    void setBody1(const Body& body);
+    void setBody2(const Body& Body);
+    const Body& getBody1() const;
+    const Body& getBody2() const;
 
 	/**
 	* Spring end points 
@@ -124,8 +117,8 @@ public:
 	//-----------------------------------------------------------------------------
 	// ModelComponent interface
 	//-----------------------------------------------------------------------------
-	void connectToModel(Model& model) override;
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void extendConnectToModel(Model& model) override;
+	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 	//-----------------------------------------------------------------------------
 	// Reporting
@@ -145,7 +138,9 @@ protected:
 
 private:
 	void setNull();
-	void constructProperties();
+    void constructProperties() override;
+    /** These will be the two bodies the PointToPointSpring connects to.*/
+    void constructConnectors() override;
 
 //==============================================================================
 };	// END of class PointToPointSpring

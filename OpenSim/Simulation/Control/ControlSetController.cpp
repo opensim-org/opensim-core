@@ -208,53 +208,37 @@ double ControlSetController::getLastTime() const {
     }
 }
 
-// for any post XML deserialization intialization
-void ControlSetController::connectToModel(Model& model)  
+void ControlSetController::extendFinalizeFromProperties()
 {
+    Super::extendFinalizeFromProperties();
 
-    SimTK_ASSERT( _controlsFileName!="" , 
-		"ControlSetController::connectToModel controlsFileName is NULL");
+    SimTK_ASSERT(_controlsFileName != "",
+        "ControlSetController::extendFinalizeFromProperties controlsFileName is NULL");
 
-    if(_controlsFileName!="Unassigned") {
-//        std::cout<<"\n\nControlSetController::connectToModel(): Loading controls from file "<<_controlsFileName<<"."<<std::endl;
-//        std::cout<<"ControlSetController::connectToModel(): Found "<<_controlSet->getSize()<<" controls."<<std::endl;
+    if (_controlsFileName != "Unassigned") {
+        //        std::cout<<"\n\nControlSetController::extendConnectToModel(): Loading controls from file "<<_controlsFileName<<"."<<std::endl;
+        //        std::cout<<"ControlSetController::extendConnectToModel(): Found "<<_controlSet->getSize()<<" controls."<<std::endl;
         delete  _controlSet;
-		if (_controlsFileName.rfind(".sto")!=std::string::npos)
-			_controlSet = new ControlSet(Storage(_controlsFileName));
-		else
-			_controlSet = new ControlSet(_controlsFileName);
+        if (_controlsFileName.rfind(".sto") != std::string::npos)
+            _controlSet = new ControlSet(Storage(_controlsFileName));
+        else
+            _controlSet = new ControlSet(_controlsFileName);
     }
-	else if (_controlSet == NULL) {
-       std::cout << " ControlSetController::connectToModel(): no Control Set Specified" << std::endl;
-	   setDisabled(true); 
-	   return;  // no more wiring is needed
+    else if (_controlSet == NULL) {
+        std::cout << " ControlSetController::extendFinalizeFromProperties(): no Control Set Specified" << std::endl;
+        setDisabled(true);
+        return;  // no more wiring is needed
     }
 
-	// Make sure that we are controlling all the actuators that the control set specifies
-	std::string ext = ".excitation";
-	for(int i =0; _controlSet != NULL && i<_controlSet->getSize(); i++){
-		std::string actName = _controlSet->get(i).getName();
-		if(actName.length()>ext.length() && !(actName.compare(actName.length()-ext.length(), ext.length(), ".excitation"))){
-			actName.erase(actName.length()-ext.length(), ext.length());
-		}
-		if(getProperty_actuator_list().findIndex(actName) < 0) // not already in the list of actuators for this controller
-			updProperty_actuator_list().appendValue(actName);
-	}
-
-    // Controller::connectToModel() calls setActuators() with actuators in the
-    // _actuatorNameList so call connectToModel() after the _controlSet 
-    // constructor has been called
-	Super::connectToModel(model);
-
-}
-// for adding any components to the model
-void ControlSetController::addToSystem( SimTK::MultibodySystem& system ) const
-{
-	Super::addToSystem(system);
+    // Make sure that we are controlling all the actuators that the control set specifies
+    std::string ext = ".excitation";
+    for (int i = 0; _controlSet != NULL && i<_controlSet->getSize(); i++){
+        std::string actName = _controlSet->get(i).getName();
+        if (actName.length()>ext.length() && !(actName.compare(actName.length() - ext.length(), ext.length(), ".excitation"))){
+            actName.erase(actName.length() - ext.length(), ext.length());
+        }
+        if (getProperty_actuator_list().findIndex(actName) < 0) // not already in the list of actuators for this controller
+            updProperty_actuator_list().appendValue(actName);
+    }
 }
 
-// for any intialization requiring a state or the complete system 
-void ControlSetController::initStateFromProperties( SimTK::State& s)  const
-{
-	Super::initStateFromProperties(s);
-}

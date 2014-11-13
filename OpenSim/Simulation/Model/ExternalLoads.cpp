@@ -233,7 +233,7 @@ void ExternalLoads::transformPointsExpressedInGroundToAppliedBodies(const Storag
 
 ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const ExternalForce &exForce, const Storage &kinematics, double startTime, double endTime)
 {
-	if(!_model || !_model->isValidSystem()) // no model and no system underneath, cannot proceed
+	if(!&getModel() || !getModel().isValidSystem()) // no model and no system underneath, cannot proceed
 		throw Exception("ExternalLoads::transformPointExpressedInGroundToAppliedBody() requires a model with a valid system."); 
 
 	if(!exForce._specifiesPoint){ // The external force does not apply a force to a point
@@ -241,17 +241,17 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 		return NULL;
 	}
 
-	if(exForce.getPointExpressedInBodyName() != _model->getGroundBody().getName()){
+	if (exForce.getPointExpressedInBodyName() != getModel().getGroundBody().getName()){
 		cout << "ExternalLoads: WARNING ExternalForce '"<< exForce.getName() <<"' is not expressed in ground and will not be transformed." << endl;
 		return NULL;
 	}
 
-	if(exForce.getAppliedToBodyName() == _model->getGroundBody().getName()){
+	if (exForce.getAppliedToBodyName() == getModel().getGroundBody().getName()){
 		cout << "ExternalLoads: WARNING ExternalForce '"<< exForce.getName() <<"' is applied to a point on ground and will not be transformed." << endl;
 		return NULL;
 	}
 
-	int nq = _model->getNumCoordinates();
+	int nq = getModel().getNumCoordinates();
 	int nt = kinematics.getSize();
 
 	int startIndex=0;
@@ -314,11 +314,11 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 	Vec3 torque(SimTK::NaN);
 	
 	// Checked that we had a model with a valid system, so get its working state
-    SimTK::State& s = _model->updWorkingState();
+	SimTK::State& s = updModel().updWorkingState();
 
 	// get from (ground) and to (applied) bodies 
-	const Body& ground = _model->getGroundBody();
-	const Body& appliedToBody = _model->getBodySet().get(exForce.getAppliedToBodyName());
+	const Body& ground = getModel().getGroundBody();
+	const Body& appliedToBody = getModel().getBodySet().get(exForce.getAppliedToBodyName());
 
 	/*std::map<int, int>      coordinatesToColumns;
 	// create a map entry for each coordinate 0 to nq-1, the contents of which would be -1 if not found in the file otherwise Q index
@@ -337,7 +337,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 
 		// Set the coordinates values in the state in order to position the model according to specified kinematics
 		for (int j = 0; j < nq; j++) {
-			Coordinate& coord = _model->getCoordinateSet().get(j);
+			Coordinate& coord = getModel().getCoordinateSet().get(j);
 			coord.setValue(s, Q[j], j==nq-1);
 			/*if (coordinatesToColumns[j]!=-1)
 				coord.setValue(s, Q[coordinatesToColumns[j]], j==nq-1);*/
@@ -350,7 +350,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 		
 		// get the untransformed point expressed in ground in the ExternalForce specified in  ground (check made above)
 		pGround = exForce.getPointAtTime(time);
-		_model->getSimbodyEngine().transformPosition(s, ground, pGround, appliedToBody, pAppliedBody);
+		getModel().getSimbodyEngine().transformPosition(s, ground, pGround, appliedToBody, pAppliedBody);
 
 		// populate the force data for this instant in time
 		for(int j =0; j<3; ++j){
@@ -436,7 +436,7 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
 			const Array<string> &labels = dataSource->getColumnLabels();
 			// Populate data file and other things that haven't changed
 			// Create a ForceSet out of this XML node, this will create a set of PrescribedForces then we can reassign at a higher level to ExternalForces
-			ModelComponentSet<PrescribedForce> oldForces(*_model, getDocument()->getFileName(), true);
+			ModelComponentSet<PrescribedForce> oldForces(updModel(), getDocument()->getFileName(), true);
 			for(int i=0; i< oldForces.getSize(); i++){
 				PrescribedForce& oldPrescribedForce = oldForces.get(i);
 				ExternalForce* newExternalForce = new ExternalForce();
