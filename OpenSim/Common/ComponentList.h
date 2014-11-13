@@ -68,7 +68,9 @@ public:
     ~ComponentFilterByType() {}
 };
 /**
-* Collection of components to iterate through
+* Collection of components to iterate through.  Typical use is to call 
+* getComponentList to obtain an instance of this class, begin() to get iterator 
+* pointing to first entry in the list then advance iterator until end()
 */
 template <typename T>
 class ComponentList {
@@ -88,16 +90,17 @@ public:
 #endif
     /// destructor
     virtual ~ComponentList() { delete m_filter;  }
-    /// return iterator over the tree of Components rooted at m_root
+    /// return iterator over the tree of Components rooted at the Component passed
+    /// to ComponentList constructor.
     ComponentListIterator<T> begin() {
         return ComponentListIterator<T>(&m_root, m_filter);
     }
-    /// Provide user specified ComponentFilter.  If passed in the ComponentList 
-    /// takes ownership of it.
+    /// Allow users to specified custom ComponentFilter.  If a filter is passed 
+    /// in then the ComponentList takes ownership of it. Do not delete.
     void setFilter(ComponentFilter* filter){
         m_filter = filter;
     }
-    /// return iterator past end of the list i.e. nullptr
+    /// return iterator past end of the list 
     ComponentListIterator<T> end() {
         return nullptr;
     }
@@ -111,7 +114,7 @@ private:
 //                            OPENSIM ComponentListIterator
 //==============================================================================
 /** Class used to iterate over subcomponents of specific type, default to all.
- * this is const iterator that returns const ref or pointer on dereferencing.
+ * this is const iterator that returns const ref or a pointer on dereferencing.
  *
  * Use as:
 @code
@@ -131,13 +134,13 @@ public:
     bool operator!=(const ComponentListIterator& iter) const {
          return m_node != &*iter;
     }
-    /// dereference the iterator to get a Component of proper type matching Filter
-    /// this is const iterator since th
+    /// Dereference the iterator to get a Component of proper type (matching Filter if specified)
+    /// this is const iterator, use only const methods 
     const T& operator*() const { return *dynamic_cast<const T*>(m_node); } 
     const T* operator->() const { return dynamic_cast<const T*>(m_node); }
-    /// increment operator to advance 
+    /// Increment operator to advance 
     ComponentListIterator<T>& operator++();
-    /// method equivalent to increment operator for operator deficient languanges
+    /// Method equivalent to increment operator for operator deficient languages
     ComponentListIterator<T>& next() { return ++(*this); }
 private:
     void advanceToNextValidComponent();
