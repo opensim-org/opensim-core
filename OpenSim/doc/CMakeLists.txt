@@ -19,7 +19,7 @@ ELSE(DOXYGEN_EXECUTABLE-NOTFOUND)
         Doxygen documentation, and this variable is automatically populated 
         with the location of Simbody's Doyxgen files.
         However, when the OpenSim Doxygen documentation is put online, 
-        there is no "local" Simbody Doxygen documentation. In this case, 
+        there is no 'local' Simbody Doxygen documentation. In this case, 
         set this variable to a URL where one can find the correct 
         Simbody Doxygen documentation online. To reset to default
         (the local location of Simbody's Doxygen files), remove this
