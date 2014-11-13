@@ -541,7 +541,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 	// Hang on to a state that has the right flags for contact constraints turned on/off
 	_model->setPropertiesFromState(s_analysis);
 	// Use this state for the remainder of this step (record)
-	s_analysis = _model->getMultibodySystem().realizeTopology();
+    s_analysis = _model->getMultibodySystem().realizeTopology();
 	// DO NOT recreate the system, will lose location of constraint
 	_model->initStateWithoutRecreatingSystem(s_analysis);
 
@@ -687,12 +687,12 @@ int InducedAccelerations::record(const SimTK::State& s)
 			Actuator &actuator = _model->getActuators().get(ai);
 			ScalarActuator* act = dynamic_cast<ScalarActuator*>(&actuator);
 			act->setDisabled(s_analysis, false);
-			act->overrideForce(s_analysis, false);
+			act->overrideActuation(s_analysis, false);
 			Muscle *muscle = dynamic_cast<Muscle *>(&actuator);
 			if(muscle){
 				if(_computePotentialsOnly){
-					muscle->overrideForce(s_analysis, true);
-					muscle->setOverrideForce(s_analysis, 1.0);
+					muscle->overrideActuation(s_analysis, true);
+					muscle->setOverrideActuation(s_analysis, 1.0);
 				}
 			}
 

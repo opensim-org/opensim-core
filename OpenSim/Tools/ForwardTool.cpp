@@ -301,7 +301,7 @@ bool ForwardTool::run()
     if (_yStore!=NULL || startIndexForYStore >= 0){
         Array<std::string> stateNames = _model->getStateVariableNames();
         for (int i=0; i<numStateVariables; i++)
-            _model->setStateVariable(s, stateNames[i], rawData[i]);
+            _model->setStateVariableValue(s, stateNames[i], rawData[i]);
     }
 	// SOLVE FOR EQUILIBRIUM FOR AUXILIARY STATES (E.G., MUSCLE FIBER LENGTHS)
 	if(_solveForEquilibriumForAuxiliaryStates) {

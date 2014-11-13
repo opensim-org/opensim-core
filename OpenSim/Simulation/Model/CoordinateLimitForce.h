@@ -214,9 +214,9 @@ protected:
     //--------------------------------------------------------------------------
     /** Setup this CoordinateLimitForce as part of the model.
         This were the existence of the coordinate to limit is checked. */ 
-    void connectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
     /** Create the underlying Force that is part of the multibodysystem. */
-    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     //--------------------------------------------------------------------------
     // Force Interface

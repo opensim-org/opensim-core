@@ -123,13 +123,10 @@ public:
 
 protected:
 	// for any post XML deseraialization intialization
-	void connectToModel(Model& model) override;
-
-	// controller creation once the setup is complete 
-	void addToSystem( SimTK::MultibodySystem& system) const override;   
+	void extendConnectToModel(Model& model) override;
 
 	// for any intialization requiring a state or the complete system 
-	void initStateFromProperties( SimTK::State& s) const override;
+	void extendInitStateFromProperties( SimTK::State& s) const override;
 
 //=============================================================================
 };	// END of class CorrectionController

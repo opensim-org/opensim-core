@@ -40,7 +40,7 @@ class ForceAdapter;
  * This abstract class represents a force applied to bodies or generalized 
  * coordinates during a simulation. Each subclass represents a different type 
  * of force. The actual force computation is done by a SimTK::Force, which is 
- * created by addToSystem().
+ * created by extendAddToSystem().
  *
  * @author Peter Eastman
  * @author Ajay Seth
@@ -131,18 +131,19 @@ protected:
     // ModelComponent interface.
     //--------------------------------------------------------------------------
 
-	/** Subclass should override; be sure to invoke Force::initStateFromProperties() at the
+	/** Subclass should override; be sure to invoke 
+    Super::extendInitStateFromProperties() at the
     beginning of the overriding method. **/
-	void initStateFromProperties(SimTK::State& state) const override;
+	void extendInitStateFromProperties(SimTK::State& state) const override;
 
 	/** Default is to create a ForceAdapter which is a SimTK::Force::Custom
 	as the underlying computational component. Subclasses override to employ 
-    other SimTK::Forces; be sure to invoke Force::addToSystem() at the
+    other SimTK::Forces; be sure to invoke Force::extendAddToSystem() at the
     beginning of the overriding method. **/
-	void addToSystem(SimTK::MultibodySystem& system) const override;
+	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 	/** Subclass should override; be sure to invoke 
-    Force::setPropertiesFromState() at the beginning of the overriding method. **/
-    void setPropertiesFromState(const SimTK::State& state) override;
+    Force::extendSetPropertiesFromState() at the beginning of the overriding method. **/
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
     
     //--------------------------------------------------------------------------
     // Force interface.

@@ -712,26 +712,20 @@ protected:
 //==============================================================================
 //ModelComponent Interface requirements
 //==============================================================================
-
-    /**Sets up the ModelComponent from the model, if necessary
-    @param model the dynamic model
-    */
-    void connectToModel(Model& model) FINAL_11;
-
     /**Creates the ModelComponent so that it can be used in simulation
     @param system the multibody system
     */
-	void addToSystem(SimTK::MultibodySystem& system) const FINAL_11;
+	void extendAddToSystem(SimTK::MultibodySystem& system) const FINAL_11;
 
     /**Initializes the state of the ModelComponent
     @param s the state of the model
     */
-	void initStateFromProperties(SimTK::State& s) const FINAL_11;
+	void extendInitStateFromProperties(SimTK::State& s) const FINAL_11;
     
     /**Sets the default state for ModelComponent
     @param s the state of the model
     */
-    void setPropertiesFromState(const SimTK::State& s) FINAL_11;
+    void extendSetPropertiesFromState(const SimTK::State& s) FINAL_11;
 	
     /**computes state variable derivatives
     @param s the state of the model
@@ -789,7 +783,7 @@ private:
 
     /*Checks to make sure that none of the muscle model's properties have
     changed, and if any have changed then rebuild muscle model.*/
-	void finalizeFromProperties();
+	void extendFinalizeFromProperties();
 
     /*       
     @param ami A struct that holds all of the necessary quantities to compute

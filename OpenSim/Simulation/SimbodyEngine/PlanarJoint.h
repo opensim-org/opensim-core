@@ -51,8 +51,6 @@ private:
 //=============================================================================
 protected:
 
-	/** Slider has no additional properties*/
-
 
 //=============================================================================
 // METHODS
@@ -70,7 +68,7 @@ public:
 
 protected:
 	/** Model component interface */
-    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 //=============================================================================
 };	// END of class PlanarJoint

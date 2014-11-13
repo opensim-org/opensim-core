@@ -69,15 +69,15 @@ public:
     //@{
 
     /** Allocates a cache variable for storing the current activation. **/
-    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     /** Initializes the activation cache variable to \c default_activation and
         marks it valid. **/
-    void initStateFromProperties(SimTK::State& s) const override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
 
     /** Sets \c default_activation to the current value of the activation cache
         variable. **/
-    void setPropertiesFromState(const SimTK::State& s) override;
+    void extendSetPropertiesFromState(const SimTK::State& s) override;
 
     //@}
 

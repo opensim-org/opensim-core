@@ -23,8 +23,10 @@
 
 #include "MarkerSet.h"
 #include "Marker.h"
+#include "Model.h"
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -45,8 +47,8 @@ MarkerSet::~MarkerSet(void)
 /**
  * Constructor of a markerSet from a file.
  */
-MarkerSet::MarkerSet(const string& aMarkersFileName) :
-	Set<Marker>(aMarkersFileName, false)
+MarkerSet::MarkerSet(Model& aModel, const string& aMarkersFileName) :
+ModelComponentSet<Marker>(aModel, aMarkersFileName, false)
 {
 	setNull();
 	SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
@@ -58,7 +60,7 @@ MarkerSet::MarkerSet(const string& aMarkersFileName) :
  * Default constructor of a markerSet.
  */
 MarkerSet::MarkerSet() :
-	Set<Marker>()
+ModelComponentSet<Marker>()
 {
 	setNull();
 }
@@ -68,7 +70,7 @@ MarkerSet::MarkerSet() :
  * Copy constructor of a markerSet.
  */
 MarkerSet::MarkerSet(const MarkerSet& aMarkerSet):
-Set<Marker>(aMarkerSet)
+ModelComponentSet<Marker>(aMarkerSet)
 {
 	setNull();
 	*this = aMarkerSet;
@@ -82,20 +84,6 @@ Set<Marker>(aMarkerSet)
  */
 void MarkerSet::setNull()
 {
-}
-
-/**
- * Post construction initialization.
- */
-void MarkerSet::connectMarkersToModel(Model& aModel)
-{
-	// Invoke base class method.
-	setupGroups();
-
-	// Do members
-	for (int i = 0; i < getSize(); i++)
-		get(i).connectMarkerToModel(aModel);
-
 }
 
 //=============================================================================
@@ -142,13 +130,13 @@ void MarkerSet::scale(const ScaleSet& scaleSet)
 	for (int i = 0; i < getSize(); i++)
 	{
 		Marker& nextMarker = get(i);
-		const string& refBodyName = nextMarker.getBodyName();
+		const string& refFrameName = nextMarker.getFrameName();
 		//assert(refBodyName);
 		bool found = false;
 		for (int j = 0; j < scaleSet.getSize() && !found; j++)
 		{
 			Scale& nextScale = scaleSet.get(j);
-			if (nextScale.getSegmentName() == refBodyName)
+			if (nextScale.getSegmentName() == refFrameName)
 			{
 				found = true;
 				nextScale.getScaleFactors(scaleFactors);
@@ -175,7 +163,7 @@ void MarkerSet::addNamePrefix(const string& prefix)
 /**
  * Create a new marker and add it to the set.
  */
-Marker* MarkerSet::addMarker(const string& aName, const double aOffset[3], OpenSim::Body& aBody)
+Marker* MarkerSet::addMarker(const string& aName, const SimTK::Vec3& aOffset, OpenSim::RigidFrame& aRigidFrame)
 {
 	// If a marker by this name already exists, do nothing.
 	if (contains(aName))
@@ -184,11 +172,10 @@ Marker* MarkerSet::addMarker(const string& aName, const double aOffset[3], OpenS
 	// Create a marker and add it to the set.
 	Marker* m = new Marker();
 	m->setName(aName);
-	m->setOffset(aOffset);
-    // Body will be based on this name when marker is connected to Model.
-	m->setBodyName(aBody.getName()); 
-	m->connectMarkerToModel(aBody.getModel());
-	adoptAndAppend(m);
+	m->set_location(aOffset);
+    // Frame will be based on this name when marker is connected to Model.
+	m->setFrameName(aRigidFrame.getName()); 
+    aRigidFrame.updModel().addMarker(m);
 
 	return m;
 }

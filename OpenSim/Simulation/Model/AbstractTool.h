@@ -330,7 +330,7 @@ public:
 	* Adds Analysis objects from analysis set to model.
 	*
 	* NOTE: Makes copies of analyses.  Also, both this tool and the model have ownership of their analysis
-	* objects, thereofre making a copy is necessary so a single analysis won't be deleted twice.
+	* objects, therefore making a copy is necessary so a single analysis won't be deleted twice.
 	*
 	* To avoid leaking when the tool is run from the GUI, pointers to the model's copy of the analyses
 	* are kept around so that they can be removed at the end of tool execution.

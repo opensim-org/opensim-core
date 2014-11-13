@@ -49,9 +49,9 @@ HuntCrossleyForce::HuntCrossleyForce(ContactParameters* params)
 }
 
 
-void HuntCrossleyForce::addToSystem(SimTK::MultibodySystem& system) const
+void HuntCrossleyForce::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     const ContactParametersSet& contactParametersSet = 
         get_contact_parameters();
@@ -73,7 +73,7 @@ void HuntCrossleyForce::addToSystem(SimTK::MultibodySystem& system) const
 		        throw Exception(errorMessage);
 	        }
 	        ContactGeometry& geom = _model->updContactGeometrySet().get(params.getGeometry()[j]);
-            contacts.addBody(set, matter.updMobilizedBody(SimTK::MobilizedBodyIndex(geom.getBody().getIndex())), geom.createSimTKContactGeometry(), geom.getTransform());
+			contacts.addBody(set, geom.getBody().getMobilizedBody(), geom.createSimTKContactGeometry(), geom.getTransform());
             force.setBodyParameters(SimTK::ContactSurfaceIndex(contacts.getNumBodies(set)-1), params.getStiffness(), params.getDissipation(),
                 params.getStaticFriction(), params.getDynamicFriction(), params.getViscousFriction());
         }
@@ -351,8 +351,8 @@ getRecordValues(const SimTK::State& state) const
                 _model->updContactGeometrySet().get(params.getGeometry()[j]);
 			std::string bodyName = geom.getBodyName();
 	
-			SimTK::Vec3 forces = bodyForces(_model->getBodySet().get(bodyName).getIndex())[1];
-			SimTK::Vec3 torques = bodyForces(_model->getBodySet().get(bodyName).getIndex())[0];
+			SimTK::Vec3 forces = bodyForces(_model->getBodySet().get(bodyName).getMobilizedBodyIndex())[1];
+			SimTK::Vec3 torques = bodyForces(_model->getBodySet().get(bodyName).getMobilizedBodyIndex())[0];
 
 			values.append(3, &forces[0]);
 			values.append(3, &torques[0]);
