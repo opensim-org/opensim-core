@@ -9,6 +9,7 @@
  *                                                                            *
  * Copyright (c) 2005-2013 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Michael Sherman                                      *
+ * Contributor(s): Ayman Habib                                                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -168,18 +169,6 @@ void Component::connect(Component &root)
 
     reset();
 
-    for (unsigned int i = 0; i < _components.size(); i++){
-        if (i == _components.size() - 1){
-            // use parent's sibling if any
-            if (this==&root)
-                _components[i]->_nextComponent = nullptr;
-            else
-                _components[i]->_nextComponent.reset(_nextComponent);
-        }
-        else
-            _components[i]->_nextComponent.reset(_components[i + 1]);
-    }
-
     // rebuilding the connectors table, which was emptied by clearStateAllocations
     for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
         AbstractConnector& connector = upd_connectors(ix);
@@ -203,6 +192,8 @@ void Component::connect(Component &root)
     extendConnect(root);
 
     componentsConnect(root);
+
+    initComponentTreeTraversal(root);
 
     // Forming connections changes the Connector which is a property
     // Remark as upToDate.

@@ -1455,7 +1455,23 @@ private:
             _connectorsTable[connector.getName()] = ix;
         }
     }
-    
+    // Populate _nextComponent ReferencePtr with a pointer to the next Component in
+    // tree pre-order traversal.
+    void initComponentTreeTraversal(Component &root) {
+        // Going down the tree, node is followed by all its
+        // children in order, last child's successor is the parent's successor.
+        for (unsigned int i = 0; i < _components.size(); i++){
+            if (i == _components.size() - 1){
+                // use parent's sibling if any
+                if (this == &root) // only to be safe if root changes
+                    _components[i]->_nextComponent = nullptr; 
+                else
+                    _components[i]->_nextComponent.reset(_nextComponent);
+            }
+            else
+                _components[i]->_nextComponent.reset(_components[i + 1]);
+        }
+    }
 protected:
     //Derived Components must create concrete StateVariables to expose their state 
     //variables. When exposing state variables allocated by the underlying Simbody
@@ -1539,7 +1555,7 @@ private:
 
     /// Base Component must create underlying resources in computational System.
     void baseAddToSystem(SimTK::MultibodySystem& system) const;
-    
+    // Reference pointer to the successor of the current Component in Pre-order traversal
     SimTK::ReferencePtr<Component> _nextComponent;
     // Reference pointer to the system that this component belongs to.
     SimTK::ReferencePtr<SimTK::MultibodySystem> _system;
@@ -1690,28 +1706,33 @@ private:
 // Implment methods for ComponentListIterator
 template <typename T>
 ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
-    if (m_node->_components.size() > 0)
-        m_node = m_node->_components[0];
-    else if (m_node->_nextComponent.get() == _root._nextComponent.get())
-        m_node = nullptr;
-    else
-        m_node = m_node->_nextComponent.get();
-    advanceToNextValidComponent(); // make sure we have a m_node of type T after advancing
+    // If _node has children then successor is first child
+    // move _node to point to it
+    if (_node->_components.size() > 0)
+        _node = _node->_components[0];
+    // If processing a subtree under _root we stop when our successor is the same
+    // as the successor of _root as this indicates we're leaving the _root's subtree.
+    else if (_node->_nextComponent.get() == _root._nextComponent.get())
+        _node = nullptr;
+    else // move on to the next component we computed earlier for the full tree
+        _node = _node->_nextComponent.get();
+    advanceToNextValidComponent(); // make sure we have a _node of type T after advancing
     return *this;
 };
 
 template <typename T>
 void ComponentListIterator<T>::advanceToNextValidComponent() {
-    // Advance m_node to next valid (of type T) if needed
-    while (m_node != nullptr && !m_filter->isMatch(*m_node)){
-        if (m_node->_components.size() > 0)
-            m_node = m_node->_components[0];
+    // Advance _node to next valid (of type T) if needed
+    // Similar logic to operator++ but applies _filter->isMatch()
+    while (_node != nullptr && !_filter->isMatch(*_node)){
+        if (_node->_components.size() > 0)
+            _node = _node->_components[0];
         else {
-            if (m_node->_nextComponent.get() == _root._nextComponent.get()){ // end of subtree under _root
-                m_node = nullptr;
+            if (_node->_nextComponent.get() == _root._nextComponent.get()){ // end of subtree under _root
+                _node = nullptr;
                 continue;
             }
-            m_node = m_node->_nextComponent;
+            _node = _node->_nextComponent;
         }
     }
     return;
