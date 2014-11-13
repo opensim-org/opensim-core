@@ -206,11 +206,11 @@ Sometimes it makes sense to change the name of a class in OpenSim because the na
 **Deserialization** : The code that reads objects from XML files keys on the String representing class name to create corresponding objects (e.g. "PinJoint" class shows in XML as <PinJoint>). If you change the name of PinJoint (e.g. to MyPinJoint) you need to make sure old models that have the tag <PinJoint> still work. Normally this is captured by test cases. If you decide to make the change, you'll have to edit the file "RegisterTypes_osimSimulation.cpp" and add the line Object::renameType("PinJoint", "MyPinJoint"), so that the deserialization code knows how to handle the XML tag.
 
 **Swig wrapping and GUI** : Most API users don't build the GUI, however they should continue to build the JavaWrapping to make sure changes on the C++ side do not cause serious problems downstream to either the GUI or scripts that we'll be distributing that utilize the Java wrapping. The mechanics for this procedure are as follows:
-- Turn on JavaWrapping in CMake.  You have to have Swig and Java installed.
-- Build JavaWrap project to run SWIG (http://www.swig.org/, version 2.0.4)
+- Turn on JavaWrapping in CMake.  You have to have SWIG and Java installed.
+- Build JavaWrap project to run SWIG (see README.md for obtaining SWIG).
 - Run test case testContext which ends up simulating a few GUI calls.
 
-If a class is not included in the wrapping interface file ("OpenSim/Java/swig/javaWrapOpenSim.i) then the class is likely not used by the GUI and so is safe to change, otherwise please consult with GUI developers first before renaming.
+If a class is not included in the wrapping interface file [OpenSim/Java/swig/javaWrapOpenSim.i](https://github.com/opensim-org/opensim-core/blob/master/OpenSim/Wrapping/Java/swig/javaWrapOpenSim.i) then the class is likely not used by the GUI and so is safe to change, otherwise please consult with GUI developers first before renaming.
 
 ## Naming Conventions
 Please follow the convention that property names use “lower_case_with_underscores” as their names, while object types use “CamelCaseUpAndDownWithoutUnderscores”. That ensures no conflicts with XML tag names and makes it easy to tell a property name from an object name.
