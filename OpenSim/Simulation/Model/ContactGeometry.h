@@ -128,7 +128,7 @@ public:
     const std::string& getBodyName();
 	/**
 	 * Set the name of the Body this geometry is attached to.  This will cause the
-     * Body to be set to NULL, then resolved when connectToModel() is called.
+     * Body to be set to NULL, then resolved when extendConnectToModel() is called.
 	 */
     void setBodyName(const std::string& name);
     /**
@@ -164,7 +164,7 @@ public:
 
 protected:
 	// ModelComponent interface
-	void connectToModel(Model& aModel) override;
+	void extendConnectToModel(Model& aModel) override;
 
 private:
     // INITIALIZATION

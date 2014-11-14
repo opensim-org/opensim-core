@@ -111,9 +111,9 @@ void SystemEnergyProbe::setComputePotentialEnergy(bool c)
  *
  * @param aModel OpenSim model containing this SystemEnergyProbe.
  */
-void SystemEnergyProbe::connectToModel(Model& aModel)
+void SystemEnergyProbe::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 }
 
 //==============================================================================

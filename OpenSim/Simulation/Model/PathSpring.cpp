@@ -44,13 +44,13 @@ static const Vec3 DefaultPathSpringColor(.9,.9,.9); // mostly white
 // Default constructor.
 PathSpring::PathSpring()
 {
-	constructProperties();
+	constructInfrastructure();
 }
 
 PathSpring::PathSpring(const string& name, double restLength, 
 					   double stiffness, double dissipation)
 {
-	constructProperties();
+	constructInfrastructure();
 	setName(name);
 	set_resting_length(restLength);
 	set_stiffness(stiffness);
@@ -68,7 +68,10 @@ void PathSpring::constructProperties()
 	constructProperty_resting_length(SimTK::NaN);
 	constructProperty_stiffness(SimTK::NaN);
 	constructProperty_dissipation(SimTK::NaN);
+}
 
+void PathSpring::constructOutputs()
+{
 	constructOutput<double>("stretch", 
 	       std::bind(&PathSpring::getStretch, this, std::placeholders::_1),
 				      SimTK::Stage::Position);
@@ -106,8 +109,10 @@ void PathSpring::setDissipation(double dissipation)
  *
  * @param aModel model containing this PathSpring.
  */
-void PathSpring::finalizeFromProperties()
+void PathSpring::extendFinalizeFromProperties()
 {
+    Super::extendFinalizeFromProperties();
+
     GeometryPath& path = upd_GeometryPath();
     path.setName("path");
     path.setDefaultColor(DefaultPathSpringColor);
@@ -116,10 +121,6 @@ void PathSpring::finalizeFromProperties()
     // Resting length must be greater than 0.0.
     assert(get_resting_length() > 0.0);
     path.setOwner(this);
-
-    // Call up the chain to mark Component as being up-to-date
-    // with its properties 
-    Super::finalizeFromProperties();
 }
 
 

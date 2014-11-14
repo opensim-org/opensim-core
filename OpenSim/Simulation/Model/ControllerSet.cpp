@@ -150,7 +150,7 @@ bool ControllerSet::addController(Controller *aController)
 	bool success = Set<Controller>::adoptAndAppend(aController);
 
 	if(success) {
-		aController->connectToModel(updModel());
+		aController->extendConnectToModel(updModel());
 	}
 
 	return success;

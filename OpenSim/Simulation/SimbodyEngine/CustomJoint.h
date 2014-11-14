@@ -49,9 +49,9 @@ public:
     These are the serializable properties associated with this class. **/
     /**@{**/
 
-	/** Spatial transform defining how the child body moves with respect
-	to the parent body as a function of the generalized coordinates.
-	Motion over 6 (independent) spatial axes must be defined. */
+    /** Spatial transform defining how the child body moves with respect
+    to the parent body as a function of the generalized coordinates.
+    Motion over 6 (independent) spatial axes must be defined. */
     OpenSim_DECLARE_UNNAMED_PROPERTY(SpatialTransform,
         "Defines how the child body moves with respect to the parent as "
         "a function of the generalized coordinates.");
@@ -60,70 +60,68 @@ public:
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-	// CONSTRUCTION
-	CustomJoint();
-	
-	/** Construct joint with supplied coordinates and transform axes */
-	CustomJoint(const std::string &name, const Body& parent,
-			const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-			const Body& child,
-			const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-			SpatialTransform& aSpatialTransform, bool reverse=false);
+    // CONSTRUCTION
+    CustomJoint();
+    
+    /** Construct joint with supplied coordinates and transform axes */
+    CustomJoint(const std::string &name, const Body& parent,
+            const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+            const Body& child,
+            const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
+            SpatialTransform& aSpatialTransform, bool reverse=false);
 
-	// Construct joint with default (empty) coordinates and axes
-	CustomJoint(const std::string &name, const Body& parent,
-			const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-			const Body& child,
-			const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
-			bool reverse = false);
-	
+    // Construct joint with default (empty) coordinates and axes
+    CustomJoint(const std::string &name, const Body& parent,
+            const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+            const Body& child,
+            const SimTK::Vec3& locationInchild, const SimTK::Vec3& orientationInChild,
+            bool reverse = false);
+    
     // default destructor, copy constructor, copy assignment
 
-	int numCoordinates() const override {return get_CoordinateSet().getSize();};
+    int numCoordinates() const override {return get_CoordinateSet().getSize();};
 
-	// Get and Set Transforms
-	const SpatialTransform& getSpatialTransform() const
+    // Get and Set Transforms
+    const SpatialTransform& getSpatialTransform() const
     {   return get_SpatialTransform(); }
     SpatialTransform& updSpatialTransform() 
     {   return upd_SpatialTransform(); }
 
-	// SCALE
-	void scale(const ScaleSet& aScaleSet) override;
+    // SCALE
+    void scale(const ScaleSet& aScaleSet) override;
 
-	/** Override of the default implementation to account for versioning. */
-	void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1)
+    /** Override of the default implementation to account for versioning. */
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1)
         override;
 
 private:
-    void finalizeFromProperties() override {
-        constructCoordinates();
-        Super::finalizeFromProperties();
-    }
-	void connectToModel(Model& aModel) override;
-	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    // ModelComponent extension interface 
+    void extendFinalizeFromProperties() override;
+    void extendConnectToModel(Model& aModel) override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-	void constructProperties();
+    void constructProperties();
     void constructCoordinates();
 
-	template <typename T>
-	T createMobilizedBody(SimTK::MobilizedBody& inboard,
-		const SimTK::Transform& inboardTransform,
-		const SimTK::Body& outboard,
-		const SimTK::Transform& outboardTransform,
-		int& startingCoorinateIndex) const {};
+    template <typename T>
+    T createMobilizedBody(SimTK::MobilizedBody& inboard,
+        const SimTK::Transform& inboardTransform,
+        const SimTK::Body& outboard,
+        const SimTK::Transform& outboardTransform,
+        int& startingCoorinateIndex) const {};
 
 //==============================================================================
-};	// END of class CustomJoint
+};  // END of class CustomJoint
 //==============================================================================
 //==============================================================================
 template <> 
 SimTK::MobilizedBody::FunctionBased
-	CustomJoint::createMobilizedBody<SimTK::MobilizedBody::FunctionBased>(
-							SimTK::MobilizedBody& inboard,
-							const SimTK::Transform& inboardTransform,
-							const SimTK::Body& outboard,
-							const SimTK::Transform& outboardTransform,
-							int& startingCoorinateIndex) const;
+    CustomJoint::createMobilizedBody<SimTK::MobilizedBody::FunctionBased>(
+                            SimTK::MobilizedBody& inboard,
+                            const SimTK::Transform& inboardTransform,
+                            const SimTK::Body& outboard,
+                            const SimTK::Transform& outboardTransform,
+                            int& startingCoorinateIndex) const;
 
 
 
