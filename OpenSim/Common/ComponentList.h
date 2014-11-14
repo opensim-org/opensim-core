@@ -54,6 +54,8 @@ public:
     virtual bool isMatch(const Component& comp) const = 0;
     /** Destructor of ComponentFilter. */
     virtual ~ComponentFilter() {}
+    /** clone() method so that the the ilter is cached once passed in  */
+    virtual ComponentFilter* clone() const = 0;
 };
 /**
 * A class to filter components based on Type, used as default filter for
@@ -71,6 +73,10 @@ public:
     }
     /** Destructor of ComponentFilterByType. */
     ~ComponentFilterByType() {}
+    /** Method to clone the filter for internal use. */
+    ComponentFilterByType<T>* clone() const {
+        return new ComponentFilterByType<T>(*this);
+    }
 };
 /**
 * Collection (linked list) of components to iterate through.  Typical use is to
@@ -84,42 +90,44 @@ public:
     /// An iterator for iterating through a ComponentList<T>.
     /// The const means that the iterator provides const references/pointers.
     typedef ComponentListIterator<T> iterator;
-#ifndef SWIG
     /** Constructor that takes a Component to iterate over (itself and
      *  descendents) and an optional ComponentFilter. If ComponentFilter is not
      *  specified then ComponentFilterByType is used. You can
-     * change the filter using setFilter().
+     * change the filter using setFilter(). The filter is cloned on construction
+     * and can only be changed using setFilter().
      */
-    ComponentList(const Component& root, ComponentFilter* f =
-        new ComponentFilterByType<T>()) : _root(root), _filter(f){}
-#else
-    ComponentList(const Component& root) : _root(root),
-        _filter(new ComponentFilterByType<T>()){}
-#endif
-    /// Clean up the filter.
-    virtual ~ComponentList() { delete _filter;  }
+    ComponentList(const Component& root, ComponentFilter* f =nullptr
+        ) : _root(root), _filter(f){
+        if (f == nullptr){
+            ComponentFilter* defaultFilter = new ComponentFilterByType<T>();
+            _filter = *defaultFilter; // this makes a clone/local copy
+            delete defaultFilter;
+        }
+    }
+    /// Destructor.
+    virtual ~ComponentList() {}
     /// Return iterator over the tree of Components rooted at the Component
     /// passed to ComponentList constructor.
     ComponentListIterator<T> begin() {
-        return ComponentListIterator<T>(&_root, _filter);
+        return ComponentListIterator<T>(&_root, _filter.getPtr());
     }
     /// Allow users to specify a custom ComponentFilter.  If a filter is passed
     /// Specify a filter through this list. An iterator over this list will
-    /// yield Component's that match this filter. This object takes ownership
-    /// over the filter; do not delete it yourself.
+    /// yield Component's that match this filter. This object makes clone of 
+    /// the filter; you can delete the filter.
     void setFilter(ComponentFilter* filter){
-        if (_filter) delete _filter;
-        _filter = filter;
+        _filter.clear();
+         _filter = *filter;
     }
     /// Use this to check if you have reached the end of the list.
     /// This points past the end of the list, *not* to the last item in the
     /// list.
     ComponentListIterator<T> end() {
-        return nullptr;
+        return ComponentListIterator<T>(nullptr, _filter.getPtr());
     }
 private:
     const Component& _root; // root of subtree to be iterated over
-    ComponentFilter* _filter; //     ComponentFilter to choose components 
+    SimTK::ClonePtr<ComponentFilter> _filter; //     ComponentFilter to choose components 
     friend class ComponentListIterator<T>;
 };
 
@@ -168,26 +176,15 @@ private:
     // Optional filter to further select Components under _root, defaults to
     // Filter by type.
     const ComponentFilter* _filter;
-#ifndef SWIG
     /** Constructor that takes a Component and optional ComponentFilter.
      * If a ComponentFilter is passed in, the iterator takes ownership of it.
      */
-    ComponentListIterator(const Component* node, ComponentFilter* filter = new ComponentFilterByType<T>()) :
+    ComponentListIterator(const Component* node, const ComponentFilter* filter) :
         _node(node),
         _root(*node),
-        _filter(filter){
-        if (filter == nullptr)
-            _filter = new ComponentFilterByType<T>();
+        _filter(filter) {
         advanceToNextValidComponent(); // in case node is not of type T
     }
-#else
-    ComponentListIterator(const Component* node) :
-        _node(node),
-        _root(*node),
-        _filter(new ComponentFilterByType<T>()){
-        advanceToNextValidComponent(); // in case node is not of type T
-    }
-#endif
 };
 
 } // end of namespace OpenSim

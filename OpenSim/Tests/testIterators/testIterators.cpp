@@ -33,12 +33,18 @@ using namespace std;
 // state variables, used for demonstration purposes.
 class ComponentWithStateVariables : public ComponentFilter {
 public:
-    ComponentWithStateVariables() {};
+    ComponentWithStateVariables() {
+        //std::cout << "ComponentWithStateVariables constructed" << std::endl;
+    };
     bool isMatch(const Component& comp) const override {
         return (comp.getNumStateVariables()>0);
     };
-    ~ComponentWithStateVariables() {}
-
+    ~ComponentWithStateVariables() {
+        //std::cout << "ComponentWithStateVariables destructed" << std::endl;
+    }
+    ComponentWithStateVariables* clone() const {
+        return new ComponentWithStateVariables(*this);
+    }
 };
 int main()
 {
@@ -102,7 +108,9 @@ int main()
         // Would that account for internal (split-bodies etc.?)
         int numComponentsWithStateVariables = 0;
         ComponentList<ModelComponent> compWithStates = model.getComponentList<ModelComponent>();
-        compWithStates.setFilter(new ComponentWithStateVariables());
+        ComponentWithStateVariables* myFilter = new ComponentWithStateVariables();
+        compWithStates.setFilter(myFilter); // Filter is cloned and can be deleted safely
+        delete myFilter;
         for (const ModelComponent& comp : compWithStates) {
             cout << comp.getConcreteClassName() << ":" << comp.getName() << endl;
             numComponentsWithStateVariables++;
