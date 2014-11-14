@@ -109,7 +109,7 @@ public:
     /// Return iterator over the tree of Components rooted at the Component
     /// passed to ComponentList constructor.
     ComponentListIterator<T> begin() {
-        return ComponentListIterator<T>(&_root, _filter.getPtr());
+        return ComponentListIterator<T>(&_root, _filter.getRef());
     }
     /// Allow users to specify a custom ComponentFilter.  If a filter is passed
     /// Specify a filter through this list. An iterator over this list will
@@ -123,7 +123,7 @@ public:
     /// This points past the end of the list, *not* to the last item in the
     /// list.
     ComponentListIterator<T> end() {
-        return ComponentListIterator<T>(nullptr, _filter.getPtr());
+        return ComponentListIterator<T>(nullptr, _filter.getRef());
     }
 private:
     const Component& _root; // root of subtree to be iterated over
@@ -175,11 +175,11 @@ private:
     const Component& _root;
     // Optional filter to further select Components under _root, defaults to
     // Filter by type.
-    const ComponentFilter* _filter;
+    const ComponentFilter& _filter;
     /** Constructor that takes a Component and optional ComponentFilter.
      * If a ComponentFilter is passed in, the iterator takes ownership of it.
      */
-    ComponentListIterator(const Component* node, const ComponentFilter* filter) :
+    ComponentListIterator(const Component* node, const ComponentFilter& filter) :
         _node(node),
         _root(*node),
         _filter(filter) {
