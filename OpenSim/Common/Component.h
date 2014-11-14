@@ -276,12 +276,16 @@ public:
     ComponentList<T> getComponentList() const {
         return ComponentList<T>(*this);
     }
-    template <typename T>
-    friend class ComponentListIterator;
-
-
+    /**
+     * Class to hold the list of components/subcomponents to iterate over.
+    */
     template <typename T>
     friend class ComponentList;
+    /**
+     * Class to iterate over ComponentList returned by getComponentList() call
+     */
+    template <typename T>
+    friend class ComponentListIterator;
     /**
      * Get a subcomponent of this Component by its name. 
      * Note using a component's full "path" name is faster and will provide a
@@ -1704,6 +1708,8 @@ private:
 //==============================================================================
 //==============================================================================
 // Implment methods for ComponentListIterator
+/// ComponentListIterator<T> pre-increment operator, advances the iterator to
+/// the next valid entry.
 template <typename T>
 ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
     // If _node has children then successor is first child
@@ -1719,7 +1725,7 @@ ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
     advanceToNextValidComponent(); // make sure we have a _node of type T after advancing
     return *this;
 };
-
+/// Internal method to advance iterator to next valid component.
 template <typename T>
 void ComponentListIterator<T>::advanceToNextValidComponent() {
     // Advance _node to next valid (of type T) if needed
