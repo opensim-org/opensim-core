@@ -169,6 +169,8 @@ void Component::connect(Component &root)
 
     reset();
 
+    initComponentTreeTraversal(root);
+
     // rebuilding the connectors table, which was emptied by clearStateAllocations
     for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
         AbstractConnector& connector = upd_connectors(ix);
@@ -192,8 +194,6 @@ void Component::connect(Component &root)
     extendConnect(root);
 
     componentsConnect(root);
-
-    initComponentTreeTraversal(root);
 
     // Forming connections changes the Connector which is a property
     // Remark as upToDate.

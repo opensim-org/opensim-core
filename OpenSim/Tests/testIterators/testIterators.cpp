@@ -115,6 +115,7 @@ int main()
     }
     catch (Exception &ex) {
         ex.print(std::cout);
+        return 1;
     }
     cout << "Done" << endl;
     return 0;
