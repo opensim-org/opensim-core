@@ -59,13 +59,13 @@ const int Storage::MAX_RESAMPLE_SIZE = 100000;
 // STATICS
 //============================================================================
 string Storage::simmReservedKeys[] = {
-								  "#",
-								  "range", "Range",
-								  "wrap", "Wrap", "WRAP",
-								  "event",
-								  "enforce_loops",
-								  "enforce_constraints",
-								  "calc_derivatives"};
+                                  "#",
+                                  "range", "Range",
+                                  "wrap", "Wrap", "WRAP",
+                                  "event",
+                                  "enforce_loops",
+                                  "enforce_constraints",
+                                  "calc_derivatives"};
 int numSimmReservedKeys=10;	// Keep this number in sync with above array size
 
 // up version to 20301 for separation of RRATool, CMCTool
@@ -92,19 +92,19 @@ Storage::~Storage()
  * Default constructor.
  */
 Storage::Storage(int aCapacity,const string &aName) :
-	StorageInterface(aName),
-	_storage(StateVector())
+    StorageInterface(aName),
+    _storage(StateVector())
 {
-	// SET NULL STATES
-	setNull();
+    // SET NULL STATES
+    setNull();
 
-	// CAPACITY
-	_storage.ensureCapacity(aCapacity);
-	_storage.setCapacityIncrement(-1);
+    // CAPACITY
+    _storage.ensureCapacity(aCapacity);
+    _storage.setCapacityIncrement(-1);
 
-	_fileVersion = Storage::LatestVersion;
-	// SET THE STATES
-	setName(aName);
+    _fileVersion = Storage::LatestVersion;
+    // SET THE STATES
+    setName(aName);
 }
 //_____________________________________________________________________________
 /**
@@ -115,118 +115,118 @@ Storage::Storage(int aCapacity,const string &aName) :
  * constructed.
  */
 Storage::Storage(const string &aFileName, bool readHeadersOnly) :
-	StorageInterface(aFileName),
-	_storage(StateVector())
+    StorageInterface(aFileName),
+    _storage(StateVector())
 {
-	// SET NULL STATES
-	setNull();
+    // SET NULL STATES
+    setNull();
 
-	// OPEN FILE
-	ifstream *fp = IO::OpenInputFile(aFileName);
-	if(fp==NULL) throw Exception("Storage: ERROR- failed to open file " + aFileName, __FILE__,__LINE__);
+    // OPEN FILE
+    ifstream *fp = IO::OpenInputFile(aFileName);
+    if(fp==NULL) throw Exception("Storage: ERROR- failed to open file " + aFileName, __FILE__,__LINE__);
 
-	int nr=0,nc=0;
-	if (!parseHeaders(*fp, nr, nc)) throw Exception("Storage: ERROR- failed to parse headers of file " + aFileName, __FILE__,__LINE__);
-	cout << "Storage: file=" << aFileName << " (nr=" << nr << " nc=" << nc << ")" << endl;
-	// Motion files from SIMM are in degrees
-	if (_fileVersion < 1 && (0 == aFileName.compare (aFileName.length() - 4, 4, ".mot"))) _inDegrees = true;
-	if (_fileVersion < 1) cout << ".. assuming rotations in " << (_inDegrees?"Degrees.":"Radians.") << endl;
-	// IGNORE blank lines after header -- treat \r and \n as end of line chars
-	while(fp->good()) {
-		int c = fp->peek();
-		if(c!='\n' && c!='\r' && c!='\t' && c!=' ') break;
-		fp->get();
-	}
-	// Ayman: Support for oldStyleDescription dropped. 04/11/07
+    int nr=0,nc=0;
+    if (!parseHeaders(*fp, nr, nc)) throw Exception("Storage: ERROR- failed to parse headers of file " + aFileName, __FILE__,__LINE__);
+    cout << "Storage: file=" << aFileName << " (nr=" << nr << " nc=" << nc << ")" << endl;
+    // Motion files from SIMM are in degrees
+    if (_fileVersion < 1 && (0 == aFileName.compare (aFileName.length() - 4, 4, ".mot"))) _inDegrees = true;
+    if (_fileVersion < 1) cout << ".. assuming rotations in " << (_inDegrees?"Degrees.":"Radians.") << endl;
+    // IGNORE blank lines after header -- treat \r and \n as end of line chars
+    while(fp->good()) {
+        int c = fp->peek();
+        if(c!='\n' && c!='\r' && c!='\t' && c!=' ') break;
+        fp->get();
+    }
+    // Ayman: Support for oldStyleDescription dropped. 04/11/07
 
-	// COLUMN LABELS
-	string line;
-	getline(*fp, line);
-	parseColumnLabels(line.c_str());
+    // COLUMN LABELS
+    string line;
+    getline(*fp, line);
+    parseColumnLabels(line.c_str());
 
-	if (_columnLabels.getSize()!= nc){
-		std::cout << "Storage: Warning- inconsistent headers in file " << 
-			aFileName << ". nColumns=" << nc << " but "
-			<< _columnLabels.getSize() << "were found" << std::endl;
-	}
-	// CAPACITY
-	_storage.ensureCapacity(nr);
-	_storage.setCapacityIncrement(-1);
+    if (_columnLabels.getSize()!= nc){
+        std::cout << "Storage: Warning- inconsistent headers in file " << 
+            aFileName << ". nColumns=" << nc << " but "
+            << _columnLabels.getSize() << "were found" << std::endl;
+    }
+    // CAPACITY
+    _storage.ensureCapacity(nr);
+    _storage.setCapacityIncrement(-1);
 
-	// There are situations where we don't want to read the whole file in advance just header
-	if (readHeadersOnly) return;
+    // There are situations where we don't want to read the whole file in advance just header
+    if (readHeadersOnly) return;
 
-	//MM using the occurance of time and range in the column labels to distinguish between
-	//SIMM and non SIMMOtion files.
-	Array<std::string> currentLabels = getColumnLabels();
-	int indexTime = currentLabels.findIndex("time");
-	int indexRange = currentLabels.findIndex("range");
+    //MM using the occurance of time and range in the column labels to distinguish between
+    //SIMM and non SIMMOtion files.
+    Array<std::string> currentLabels = getColumnLabels();
+    int indexTime = currentLabels.findIndex("time");
+    int indexRange = currentLabels.findIndex("range");
 
 
-	// DATA	
-	if(indexTime != -1 || indexRange != -1){ //MM edit
-		int ny = nc-1;
-		double time;
-		double *y = new double[ny];
-		for(int r=0;r<nr;r++) {
-				(*fp)>>time;
-				for(int i=0;i<ny;i++)
-					(*fp)>>y[i];
-				append(time,ny,y);
-		}
-		delete[] y;
-		// CLOSE FILE
-		delete fp;
-	}else{	//MM the modifications below are to make the Storage class
-			//well behaved when it is given data that does not contain a 
-			//time or a range column
-		int ny = nc;
-		double time;
-		double *y = new double[ny];
-		for(int r=0;r<nr;r++) {
-				time=(double)r;
-				for(int i=0;i<ny;i++)
-					(*fp)>>y[i];
-				append(time,ny,y);
-		}
-		delete[] y;
-		// CLOSE FILE
-		delete fp;
-	}
-	// If what we read was really a sIMM motion file, adjust the data 
-	// to account for different assumptions between SIMM.mot OpenSim.sto
+    // DATA	
+    if(indexTime != -1 || indexRange != -1){ //MM edit
+        int ny = nc-1;
+        double time;
+        double *y = new double[ny];
+        for(int r=0;r<nr;r++) {
+                (*fp)>>time;
+                for(int i=0;i<ny;i++)
+                    (*fp)>>y[i];
+                append(time,ny,y);
+        }
+        delete[] y;
+        // CLOSE FILE
+        delete fp;
+    }else{	//MM the modifications below are to make the Storage class
+            //well behaved when it is given data that does not contain a 
+            //time or a range column
+        int ny = nc;
+        double time;
+        double *y = new double[ny];
+        for(int r=0;r<nr;r++) {
+                time=(double)r;
+                for(int i=0;i<ny;i++)
+                    (*fp)>>y[i];
+                append(time,ny,y);
+        }
+        delete[] y;
+        // CLOSE FILE
+        delete fp;
+    }
+    // If what we read was really a sIMM motion file, adjust the data 
+    // to account for different assumptions between SIMM.mot OpenSim.sto
 
-	//MM if this is a SIMM Motion file, post process it as one. Else don't touch the data
+    //MM if this is a SIMM Motion file, post process it as one. Else don't touch the data
     size_t found = aFileName.find(".mot");
     if(indexTime == -1 && found!=string::npos){
-		postProcessSIMMMotion();
-	}
+        postProcessSIMMMotion();
+    }
 }
 //_____________________________________________________________________________
 /**
  * Copy constructor.
  */
 Storage::Storage(const Storage &aStorage,bool aCopyData) :
-	StorageInterface(aStorage),
-	_storage(StateVector())
+    StorageInterface(aStorage),
+    _storage(StateVector())
 {
-	// NULL THE DATA
-	setNull();
+    // NULL THE DATA
+    setNull();
 
-	// CAPACITY
-	_storage.ensureCapacity(aStorage._storage.getCapacity());
-	_storage.setCapacityIncrement(aStorage._storage.getCapacityIncrement());
+    // CAPACITY
+    _storage.ensureCapacity(aStorage._storage.getCapacity());
+    _storage.setCapacityIncrement(aStorage._storage.getCapacityIncrement());
 
-	// SET STATES
-	setName(aStorage.getName());
-	setDescription(aStorage.getDescription());
-	setHeaderToken(aStorage.getHeaderToken());
-	setColumnLabels(aStorage.getColumnLabels());
-	setStepInterval(aStorage.getStepInterval());
-	setInDegrees(aStorage.isInDegrees());
-	_fileVersion = aStorage._fileVersion;
-	// COPY STORED DATA
-	if(aCopyData) copyData(aStorage);
+    // SET STATES
+    setName(aStorage.getName());
+    setDescription(aStorage.getDescription());
+    setHeaderToken(aStorage.getHeaderToken());
+    setColumnLabels(aStorage.getColumnLabels());
+    setStepInterval(aStorage.getStepInterval());
+    setInDegrees(aStorage.isInDegrees());
+    _fileVersion = aStorage._fileVersion;
+    // COPY STORED DATA
+    if(aCopyData) copyData(aStorage);
 }
 //_____________________________________________________________________________
 /**
@@ -240,46 +240,46 @@ Storage::Storage(const Storage &aStorage,bool aCopyData) :
  */
 Storage::
 Storage(const Storage &aStorage,int aStateIndex,int aN,
-			 const char *aDelimiter) :
-	 StorageInterface(aStorage),
-	_storage(StateVector())
+             const char *aDelimiter) :
+     StorageInterface(aStorage),
+    _storage(StateVector())
 {
-	// NULL THE DATA
-	setNull();
+    // NULL THE DATA
+    setNull();
 
-	// CAPACITY
-	_storage.ensureCapacity(aStorage._storage.getCapacity());
-	_storage.setCapacityIncrement(aStorage._storage.getCapacityIncrement());
+    // CAPACITY
+    _storage.ensureCapacity(aStorage._storage.getCapacity());
+    _storage.setCapacityIncrement(aStorage._storage.getCapacityIncrement());
 
-	// SET STATES
-	setName(aStorage.getName());
-	setDescription(aStorage.getDescription());
-	setHeaderToken(aStorage.getHeaderToken());
-	setStepInterval(aStorage.getStepInterval());
-	setInDegrees(aStorage.isInDegrees());
-	_fileVersion = aStorage._fileVersion;
-	// ERROR CHECK
-	if(aStateIndex<0) return;
-	if(aN<=0) return;
+    // SET STATES
+    setName(aStorage.getName());
+    setDescription(aStorage.getDescription());
+    setHeaderToken(aStorage.getHeaderToken());
+    setStepInterval(aStorage.getStepInterval());
+    setInDegrees(aStorage.isInDegrees());
+    _fileVersion = aStorage._fileVersion;
+    // ERROR CHECK
+    if(aStateIndex<0) return;
+    if(aN<=0) return;
 
-	// SET THE DATA
-	int i,n;
-	double time,*data = new double[aN];
-	for(i=0;i<aStorage._storage.getSize();i++) {
-		aStorage.getTime(i,time);
-		n = aStorage.getData(i,aStateIndex,aN,data);
-		append(time,n,data);
-	}
-	delete[] data;
+    // SET THE DATA
+    int i,n;
+    double time,*data = new double[aN];
+    for(i=0;i<aStorage._storage.getSize();i++) {
+        aStorage.getTime(i,time);
+        n = aStorage.getData(i,aStateIndex,aN,data);
+        append(time,n,data);
+    }
+    delete[] data;
 
-	// COPY THE FIRST COLUMN AND COLUMNS aStateIndex+1 through aStateIndex+aN (corresponding to states aStateIndex - aStateIndex+aN-1)
-	int originalNumCol = aStorage.getColumnLabels().getSize();
-	_columnLabels.setSize(0);
-	if(originalNumCol) {
-		_columnLabels.append(aStorage.getColumnLabels()[0]);
-		for(int i=0;i<aN && aStateIndex+1+i<originalNumCol;i++) 
-			_columnLabels.append(aStorage.getColumnLabels()[aStateIndex+1+i]);
-	}
+    // COPY THE FIRST COLUMN AND COLUMNS aStateIndex+1 through aStateIndex+aN (corresponding to states aStateIndex - aStateIndex+aN-1)
+    int originalNumCol = aStorage.getColumnLabels().getSize();
+    _columnLabels.setSize(0);
+    if(originalNumCol) {
+        _columnLabels.append(aStorage.getColumnLabels()[0]);
+        for(int i=0;i<aN && aStateIndex+1+i<originalNumCol;i++) 
+            _columnLabels.append(aStorage.getColumnLabels()[aStateIndex+1+i]);
+    }
 }
 
 
@@ -290,12 +290,12 @@ Storage(const Storage &aStorage,int aStateIndex,int aN,
  */
 Storage& Storage::operator=(const Storage &aStorage)
 {
-	// BASE CLASS
-	StorageInterface::operator=(aStorage);
+    // BASE CLASS
+    StorageInterface::operator=(aStorage);
 
-	// Copy Members
-	copyData(aStorage);
-	return(*this);
+    // Copy Members
+    copyData(aStorage);
+    return(*this);
 }
 
 
@@ -309,12 +309,12 @@ Storage& Storage::operator=(const Storage &aStorage)
 void Storage::
 setNull()
 {
-	_writeSIMMHeader = false;
-	setHeaderToken(DEFAULT_HEADER_TOKEN);
-	_stepInterval = 1;
-	_lastI = 0;
-	_fp = 0;
-	_inDegrees = false;
+    _writeSIMMHeader = false;
+    setHeaderToken(DEFAULT_HEADER_TOKEN);
+    _stepInterval = 1;
+    _lastI = 0;
+    _fp = 0;
+    _inDegrees = false;
 }
 //_____________________________________________________________________________
 /**
@@ -330,18 +330,18 @@ setNull()
 void Storage::
 copyData(const Storage &aStorage)
 {
-	_units = aStorage._units;
-	setInDegrees(aStorage.isInDegrees());
+    _units = aStorage._units;
+    setInDegrees(aStorage.isInDegrees());
 
-	// ENSURE CAPACITY
-	_storage.ensureCapacity(aStorage._storage.getCapacity());
+    // ENSURE CAPACITY
+    _storage.ensureCapacity(aStorage._storage.getCapacity());
 
-	// COPY
-	//rdPtrArray::reset();
-	_storage.setSize(0);
-	for(int i=0;i<aStorage._storage.getSize();i++) {
-		_storage.append(aStorage._storage[i]);
-	}
+    // COPY
+    //rdPtrArray::reset();
+    _storage.setSize(0);
+    for(int i=0;i<aStorage._storage.getSize();i++) {
+        _storage.append(aStorage._storage[i]);
+    }
 }
 
 
@@ -362,8 +362,8 @@ copyData(const Storage &aStorage)
 void Storage::
 setWriteSIMMHeader(bool aTrueFalse)
 {
-	_writeSIMMHeader = aTrueFalse;
-	if (_writeSIMMHeader) setInDegrees(true);
+    _writeSIMMHeader = aTrueFalse;
+    if (_writeSIMMHeader) setInDegrees(true);
 }
 //_____________________________________________________________________________
 /**
@@ -375,7 +375,7 @@ setWriteSIMMHeader(bool aTrueFalse)
 bool Storage::
 getWriteSIMMHeader() const
 {
-	return(_writeSIMMHeader);
+    return(_writeSIMMHeader);
 }
 
 //-----------------------------------------------------------------------------
@@ -394,8 +394,8 @@ getWriteSIMMHeader() const
 void Storage::
 setHeaderToken(const std::string &aToken)
 {
-	if(aToken.empty()) _headerToken = DEFAULT_HEADER_TOKEN;
-	else _headerToken = aToken;
+    if(aToken.empty()) _headerToken = DEFAULT_HEADER_TOKEN;
+    else _headerToken = aToken;
 }
 //_____________________________________________________________________________
 /**
@@ -407,7 +407,7 @@ setHeaderToken(const std::string &aToken)
 const string &Storage::
 getHeaderToken() const
 {
-	return(_headerToken);
+    return(_headerToken);
 }
 
 //-----------------------------------------------------------------------------
@@ -428,12 +428,12 @@ getHeaderToken() const
 const int Storage::
 getStateIndex(const std::string &aColumnName, int startIndex) const
 {
-	int size = _columnLabels.getSize();
-	for(int i=startIndex;i<size;i++)
-		if(_columnLabels[i]==aColumnName)
-			return(i-1);
+    int size = _columnLabels.getSize();
+    for(int i=startIndex;i<size;i++)
+        if(_columnLabels[i]==aColumnName)
+            return(i-1);
 
-	return(-1);
+    return(-1);
 }
 
 
@@ -458,37 +458,37 @@ getStateIndex(const std::string &aColumnName, int startIndex) const
 void Storage::
 parseColumnLabels(const char *aLabels)
 {
-	_columnLabels.setSize(0);
+    _columnLabels.setSize(0);
 
-	// HANDLE NULL POINTER
-	if(aLabels==NULL) return;
+    // HANDLE NULL POINTER
+    if(aLabels==NULL) return;
 
-	// HANDLE ZERO LENGTH STRING
-	int len = (int)strlen(aLabels);
-	if(len==0) return;
+    // HANDLE ZERO LENGTH STRING
+    int len = (int)strlen(aLabels);
+    if(len==0) return;
 
-	// SET NEW
-	char *labelsCopy = new char[len+1];
-	if(aLabels[len-1]=='\n') { 
-		// strip carriage return 
-		strncpy(labelsCopy,aLabels,len-1);
-		labelsCopy[len-1] = 0;
-	} else {
-		strcpy(labelsCopy,aLabels);
-	}
+    // SET NEW
+    char *labelsCopy = new char[len+1];
+    if(aLabels[len-1]=='\n') { 
+        // strip carriage return 
+        strncpy(labelsCopy,aLabels,len-1);
+        labelsCopy[len-1] = 0;
+    } else {
+        strcpy(labelsCopy,aLabels);
+    }
 
-	// Parse 
-	char *token = strtok(labelsCopy,DEFAULT_HEADER_SEPARATOR );
-	while(token!=NULL)
-	{
-		// Append column label
-		_columnLabels.append(token);
+    // Parse 
+    char *token = strtok(labelsCopy,DEFAULT_HEADER_SEPARATOR );
+    while(token!=NULL)
+    {
+        // Append column label
+        _columnLabels.append(token);
 
-		// Get next label 
-		token = strtok( NULL, DEFAULT_HEADER_SEPARATOR );
-	}
+        // Get next label 
+        token = strtok( NULL, DEFAULT_HEADER_SEPARATOR );
+    }
 
-	delete[] labelsCopy;
+    delete[] labelsCopy;
 }
 
 //_____________________________________________________________________________
@@ -498,7 +498,7 @@ parseColumnLabels(const char *aLabels)
 void Storage::
 setColumnLabels(const Array<std::string> &aColumnLabels)
 {
-	_columnLabels = aColumnLabels;
+    _columnLabels = aColumnLabels;
 }
 
 //_____________________________________________________________________________
@@ -510,7 +510,7 @@ setColumnLabels(const Array<std::string> &aColumnLabels)
 const Array<string> &Storage::
 getColumnLabels() const
 {
-	return(_columnLabels);
+    return(_columnLabels);
 }
 
 //-----------------------------------------------------------------------------
@@ -523,8 +523,8 @@ getColumnLabels() const
 void Storage::
 setStepInterval(int aStepInterval)
 {
-	_stepInterval = aStepInterval;
-	if(_stepInterval<0) _stepInterval = 0;
+    _stepInterval = aStepInterval;
+    if(_stepInterval<0) _stepInterval = 0;
 }
 //_____________________________________________________________________________
 /**
@@ -533,7 +533,7 @@ setStepInterval(int aStepInterval)
 int Storage::
 getStepInterval() const
 {
-	return(_stepInterval);
+    return(_stepInterval);
 }
 
 //-----------------------------------------------------------------------------
@@ -550,7 +550,7 @@ getStepInterval() const
 void Storage::
 setCapacityIncrement(int aIncrement)
 {
-	_storage.setCapacityIncrement(aIncrement);
+    _storage.setCapacityIncrement(aIncrement);
 }
 //_____________________________________________________________________________
 /**
@@ -562,7 +562,7 @@ setCapacityIncrement(int aIncrement)
 int Storage::
 getCapacityIncrement() const
 {
-	return(_storage.getCapacityIncrement());
+    return(_storage.getCapacityIncrement());
 }
 
 //-----------------------------------------------------------------------------
@@ -579,17 +579,17 @@ getCapacityIncrement() const
 int Storage::
 getSmallestNumberOfStates() const
 {
-	int n,nmin=0;
-	for(int i=0;i<_storage.getSize();i++) {
-		n = _storage[i].getSize();
-		if(i==0) {
-			nmin = n;
-		} else if(n<nmin) {
-			nmin = n;
-		}
-	}
+    int n,nmin=0;
+    for(int i=0;i<_storage.getSize();i++) {
+        n = _storage[i].getSize();
+        if(i==0) {
+            nmin = n;
+        } else if(n<nmin) {
+            nmin = n;
+        }
+    }
 
-	return(nmin);
+    return(nmin);
 }
 //_____________________________________________________________________________
 /**
@@ -600,13 +600,13 @@ getSmallestNumberOfStates() const
 StateVector* Storage::
 getLastStateVector() const
 {
-	StateVector *vec = NULL;
-	try {
-		vec = &_storage.updLast();
-	} catch(const Exception&) {
-		//x.print(cout);
-	}
-	return(vec);
+    StateVector *vec = NULL;
+    try {
+        vec = &_storage.updLast();
+    } catch(const Exception&) {
+        //x.print(cout);
+    }
+    return(vec);
 }
 //_____________________________________________________________________________
 /**
@@ -620,7 +620,7 @@ getLastStateVector() const
 StateVector* Storage::
 getStateVector(int aTimeIndex) const
 {
-	return(&_storage.updElt(aTimeIndex));
+    return(&_storage.updElt(aTimeIndex));
 }
 
 //-----------------------------------------------------------------------------
@@ -636,10 +636,10 @@ getStateVector(int aTimeIndex) const
 double Storage::
 getFirstTime() const
 {
-	if(_storage.getSize()<=0) {
-		return(SimTK::NaN);
-	}
-	return(_storage[0].getTime());
+    if(_storage.getSize()<=0) {
+        return(SimTK::NaN);
+    }
+    return(_storage[0].getTime());
 }
 //_____________________________________________________________________________
 /**
@@ -651,10 +651,10 @@ getFirstTime() const
 double Storage::
 getLastTime() const
 {
-	if(_storage.getSize()<=0) {
-		return(SimTK::NaN);
-	}
-	return(_storage.getLast().getTime());
+    if(_storage.getSize()<=0) {
+        return(SimTK::NaN);
+    }
+    return(_storage.getLast().getTime());
 }
 //_____________________________________________________________________________
 /**
@@ -665,15 +665,15 @@ getLastTime() const
 double Storage::
 getMinTimeStep() const
 {
-	double *time=NULL;
-	int n = getTimeColumn(time);
-	double dtmin =  SimTK::Infinity;
-	for(int i=1; i<n; i++) {
-		double dt = time[i] - time[i-1];
-		if(dt<dtmin) dtmin = dt;
-	}
-	delete[] time;
-	return dtmin;
+    double *time=NULL;
+    int n = getTimeColumn(time);
+    double dtmin =  SimTK::Infinity;
+    for(int i=1; i<n; i++) {
+        double dt = time[i] - time[i-1];
+        if(dt<dtmin) dtmin = dt;
+    }
+    delete[] time;
+    return dtmin;
 }
 //_____________________________________________________________________________
 /**
@@ -691,18 +691,18 @@ getMinTimeStep() const
 bool Storage::
 getTime(int aTimeIndex,double &rTime,int aStateIndex) const
 {
-	if(aTimeIndex<0) return false;
-	if(aTimeIndex>_storage.getSize()) return false;
+    if(aTimeIndex<0) return false;
+    if(aTimeIndex>_storage.getSize()) return false;
 
-	// GET STATEVECTOR
-	StateVector &vec = _storage[aTimeIndex];
+    // GET STATEVECTOR
+    StateVector &vec = _storage[aTimeIndex];
 
-	// CHECK FOR VALID STATE
-	if(aStateIndex >= vec.getSize()) return false;
+    // CHECK FOR VALID STATE
+    if(aStateIndex >= vec.getSize()) return false;
 
-	// ASSIGN TIME
-	rTime = vec.getTime();
-	return true;
+    // ASSIGN TIME
+    rTime = vec.getTime();
+    return true;
 }
 //_____________________________________________________________________________
 /**
@@ -721,46 +721,46 @@ getTime(int aTimeIndex,double &rTime,int aStateIndex) const
 int Storage::
 getTimeColumn(double *&rTimes,int aStateIndex) const
 {
-	if(_storage.getSize()<=0) return(0);
+    if(_storage.getSize()<=0) return(0);
 
-	// ALLOCATE MEMORY
-	if(rTimes==NULL) {
-		rTimes = new double[_storage.getSize()];
-	}
+    // ALLOCATE MEMORY
+    if(rTimes==NULL) {
+        rTimes = new double[_storage.getSize()];
+    }
 
-	// LOOP THROUGH STATEVECTORS
-	int i,nTimes;
-	StateVector *vec;
-	for(i=nTimes=0;i<_storage.getSize();i++) {
-		vec = getStateVector(i);
-		if(vec==NULL) continue;
-		if(aStateIndex >= vec->getSize()) continue;
-		rTimes[nTimes] = vec->getTime();
-		nTimes++;
-	}
+    // LOOP THROUGH STATEVECTORS
+    int i,nTimes;
+    StateVector *vec;
+    for(i=nTimes=0;i<_storage.getSize();i++) {
+        vec = getStateVector(i);
+        if(vec==NULL) continue;
+        if(aStateIndex >= vec->getSize()) continue;
+        rTimes[nTimes] = vec->getTime();
+        nTimes++;
+    }
 
-	return(nTimes);
+    return(nTimes);
 }
 int Storage::
 getTimeColumn(Array<double> &rTimes,int aStateIndex) const
 {
-	if(_storage.getSize()<=0) return(0);
+    if(_storage.getSize()<=0) return(0);
 
-	rTimes.setSize(_storage.getSize());
+    rTimes.setSize(_storage.getSize());
 
-	// LOOP THROUGH STATEVECTORS
-	int i,nTimes;
-	for(i=nTimes=0;i<_storage.getSize();i++) {
-		StateVector *vec = getStateVector(i);
-		if(vec==NULL) continue;
-		if(aStateIndex >= vec->getSize()) continue;
-		rTimes[nTimes] = vec->getTime();
-		nTimes++;
-	}
+    // LOOP THROUGH STATEVECTORS
+    int i,nTimes;
+    for(i=nTimes=0;i<_storage.getSize();i++) {
+        StateVector *vec = getStateVector(i);
+        if(vec==NULL) continue;
+        if(aStateIndex >= vec->getSize()) continue;
+        rTimes[nTimes] = vec->getTime();
+        nTimes++;
+    }
 
-	rTimes.setSize(nTimes);
+    rTimes.setSize(nTimes);
 
-	return(nTimes);
+    return(nTimes);
 }
 /**
  * Get the time column starting at aTime. Return it in rTimes
@@ -769,16 +769,16 @@ getTimeColumn(Array<double> &rTimes,int aStateIndex) const
 void Storage::
 getTimeColumnWithStartTime(Array<double>& rTimes,double aStartTime) const
 {
-	if(_storage.getSize()<=0) return;
+    if(_storage.getSize()<=0) return;
 
-	int startIndex = findIndex(aStartTime);
+    int startIndex = findIndex(aStartTime);
 
-	double *timesVec=0;
-	int size = getTimeColumn(timesVec);
+    double *timesVec=0;
+    int size = getTimeColumn(timesVec);
 
-	for(int i=startIndex; i<size; i++)
-		rTimes.append(timesVec[i]);
-	delete[] timesVec;
+    for(int i=startIndex; i<size; i++)
+        rTimes.append(timesVec[i]);
+    delete[] timesVec;
 }
 //-----------------------------------------------------------------------------
 // DATA
@@ -796,13 +796,13 @@ getTimeColumnWithStartTime(Array<double>& rTimes,double aStartTime) const
 int Storage::
 getData(int aTimeIndex,int aStateIndex,double &rValue) const
 {
-	if(aTimeIndex<0) return(0);
-	if(aTimeIndex>=_storage.getSize()) return(0);
+    if(aTimeIndex<0) return(0);
+    if(aTimeIndex>=_storage.getSize()) return(0);
 
-	// ASSIGNMENT
-	StateVector *vec = getStateVector(aTimeIndex);
-	if(vec==NULL) return(0);
-	return( vec->getDataValue(aStateIndex,rValue) );
+    // ASSIGNMENT
+    StateVector *vec = getStateVector(aTimeIndex);
+    if(vec==NULL) return(0);
+    return( vec->getDataValue(aStateIndex,rValue) );
 }
 //_____________________________________________________________________________
 /**
@@ -811,33 +811,33 @@ getData(int aTimeIndex,int aStateIndex,double &rValue) const
 int Storage::
 getData(int aTimeIndex,int aStateIndex,int aN,double **rData) const
 {
-	if(aN<=0) return(0);
-	if(aStateIndex<0) return(0);
-	if(aTimeIndex<0) return(0);
-	if(aTimeIndex>=_storage.getSize()) return(0);
+    if(aN<=0) return(0);
+    if(aStateIndex<0) return(0);
+    if(aTimeIndex<0) return(0);
+    if(aTimeIndex>=_storage.getSize()) return(0);
 
-	// GET STATEVECTOR
-	StateVector *vec = getStateVector(aTimeIndex);
-	if(vec==NULL) return(0);
-	if(vec->getSize()<=0) return(0);
+    // GET STATEVECTOR
+    StateVector *vec = getStateVector(aTimeIndex);
+    if(vec==NULL) return(0);
+    if(vec->getSize()<=0) return(0);
 
-	// NUMBER OF STATES TO GET
-	int size = vec->getSize();
-	if(aStateIndex>=size) return(0);
-	int n = aStateIndex + aN;
-	if(n>size) n = size;
-	int N = n - aStateIndex;
+    // NUMBER OF STATES TO GET
+    int size = vec->getSize();
+    if(aStateIndex>=size) return(0);
+    int n = aStateIndex + aN;
+    if(n>size) n = size;
+    int N = n - aStateIndex;
 
-	// ALLOCATE MEMORY
-	if(*rData==NULL) *rData = new double[N];
+    // ALLOCATE MEMORY
+    if(*rData==NULL) *rData = new double[N];
 
-	// ASSIGN DATA
-	int i,j;
-	Array<double> &data = vec->getData();
-	double *pData = *rData;
-	for(i=0,j=aStateIndex;j<n;i++,j++) pData[i] = data[j];
+    // ASSIGN DATA
+    int i,j;
+    Array<double> &data = vec->getData();
+    double *pData = *rData;
+    for(i=0,j=aStateIndex;j<n;i++,j++) pData[i] = data[j];
 
-	return(N);
+    return(N);
 }
 //_____________________________________________________________________________
 /**
@@ -856,8 +856,8 @@ getData(int aTimeIndex,int aStateIndex,int aN,double **rData) const
 int Storage::
 getData(int aTimeIndex,int aStateIndex,int aN,double *rData) const
 {
-	if(rData==NULL) return(0);
-	else return getData(aTimeIndex,aStateIndex,aN,&rData);
+    if(rData==NULL) return(0);
+    else return getData(aTimeIndex,aStateIndex,aN,&rData);
 }
 //_____________________________________________________________________________
 /**
@@ -877,7 +877,7 @@ getData(int aTimeIndex,int aStateIndex,int aN,double *rData) const
 int Storage::
 getData(int aTimeIndex,int aN,double **rData) const
 {
-	return getData(aTimeIndex,0,aN,rData);
+    return getData(aTimeIndex,0,aN,rData);
 }
 //_____________________________________________________________________________
 /**
@@ -892,8 +892,8 @@ getData(int aTimeIndex,int aN,double **rData) const
 int Storage::
 getData(int aTimeIndex,int aN,double *rData) const
 {
-	if(rData==NULL) return(0);
-	else return getData(aTimeIndex,0,aN,&rData);
+    if(rData==NULL) return(0);
+    else return getData(aTimeIndex,0,aN,&rData);
 }
 //_____________________________________________________________________________
 /**
@@ -908,8 +908,8 @@ getData(int aTimeIndex,int aN,double *rData) const
 int Storage::
 getData(int aTimeIndex,int aN,Array<double> &rData) const
 {
-	if(0 == rData.size()) return(0);
-	else return getData(aTimeIndex,0,aN,&rData[0]);
+    if(0 == rData.size()) return(0);
+    else return getData(aTimeIndex,0,aN,&rData[0]);
 }
 //_____________________________________________________________________________
 /**
@@ -929,7 +929,7 @@ getData(int aTimeIndex,int aN,SimTK::Vector& v) const
     int r = getData(aTimeIndex,0,aN,&rData[0]);
     for (int i=0; i<aN; ++i)
         v[i] = rData[i];
-	return r;
+    return r;
 }
 //_____________________________________________________________________________
 /**
@@ -947,66 +947,66 @@ int Storage::
 getDataAtTime(double aT,int aN,double **rData) const
 {
 
-	// FIND THE CORRECT INTERVAL FOR aT
-	int i = findIndex(_lastI,aT);
-	if((i<0)||(_storage.getSize()<=0)) {
-		*rData = NULL;
-		return(0);
-	}
+    // FIND THE CORRECT INTERVAL FOR aT
+    int i = findIndex(_lastI,aT);
+    if((i<0)||(_storage.getSize()<=0)) {
+        *rData = NULL;
+        return(0);
+    }
 
-	// CHECK FOR i AT END POINTS
-	int i1=i,i2=i+1;
+    // CHECK FOR i AT END POINTS
+    int i1=i,i2=i+1;
 
-	if(i2==_storage.getSize()) {
-		i1--;  if(i1<0) i1=0;
-		i2--;  if(i2<0) i2=0;
-	}
+    if(i2==_storage.getSize()) {
+        i1--;  if(i1<0) i1=0;
+        i2--;  if(i2<0) i2=0;
+    }
 
-	// STATES AT FIRST INDEX
-	int n1 = getStateVector(i1)->getSize();
-	double t1 = getStateVector(i1)->getTime();
-	Array<double> &y1 = getStateVector(i1)->getData();
+    // STATES AT FIRST INDEX
+    int n1 = getStateVector(i1)->getSize();
+    double t1 = getStateVector(i1)->getTime();
+    Array<double> &y1 = getStateVector(i1)->getData();
 
-	// STATES AT NEXT INDEX
-	int n2 = getStateVector(i2)->getSize();
-	double t2 = getStateVector(i2)->getTime();
-	Array<double> &y2 = getStateVector(i2)->getData();
+    // STATES AT NEXT INDEX
+    int n2 = getStateVector(i2)->getSize();
+    double t2 = getStateVector(i2)->getTime();
+    Array<double> &y2 = getStateVector(i2)->getData();
 
-	// GET THE SMALLEST N TO PREVENT MEMORY OVER-RUNS
-	int ns = (n1<n2) ? n1 : n2;
+    // GET THE SMALLEST N TO PREVENT MEMORY OVER-RUNS
+    int ns = (n1<n2) ? n1 : n2;
 
-	// ALLOCATE MEMORY?
-	double *y;
-	if(*rData==NULL) {
-		y = new double[ns];
-	} else {
-		y = *rData;
-		if(aN<ns)  ns = aN;
-	}
+    // ALLOCATE MEMORY?
+    double *y;
+    if(*rData==NULL) {
+        y = new double[ns];
+    } else {
+        y = *rData;
+        if(aN<ns)  ns = aN;
+    }
 
-	// ASSIGN VALUES
-	double pct;
-	double num = aT-t1;
-	double den = t2-t1;
-	if(den<SimTK::Eps) {
-		pct = 0.0;
-	} else {
-		pct = num/den;
-	}
+    // ASSIGN VALUES
+    double pct;
+    double num = aT-t1;
+    double den = t2-t1;
+    if(den<SimTK::Eps) {
+        pct = 0.0;
+    } else {
+        pct = num/den;
+    }
 
 
-	for(i=0;i<ns;i++) {
-		if(pct==0.0) {
-			y[i] = y1[i];
-		} else {
-			y[i] = y1[i] + pct*(y2[i]-y1[i]);
-		}
-	}
+    for(i=0;i<ns;i++) {
+        if(pct==0.0) {
+            y[i] = y1[i];
+        } else {
+            y[i] = y1[i] + pct*(y2[i]-y1[i]);
+        }
+    }
 
-	// ASSIGN FOR RETURN
-	*rData = y;	
+    // ASSIGN FOR RETURN
+    *rData = y;	
 
-	return(ns);	
+    return(ns);	
 }
 //_____________________________________________________________________________
 /**
@@ -1022,14 +1022,14 @@ getDataAtTime(double aT,int aN,double **rData) const
 int Storage::
 getDataAtTime(double aT,int aN,double *rData) const
 {
-	if(rData==NULL) return(0);
-	else return getDataAtTime(aT,aN,&rData);
+    if(rData==NULL) return(0);
+    else return getDataAtTime(aT,aN,&rData);
 }
 int Storage::
 getDataAtTime(double aT,int aN,Array<double> &rData) const
 {
-	double *data=&rData[0];
-	return getDataAtTime(aT,aN,&data);
+    double *data=&rData[0];
+    return getDataAtTime(aT,aN,&data);
 }
 int Storage::
 getDataAtTime(double aT,int aN,SimTK::Vector& v) const
@@ -1039,7 +1039,7 @@ getDataAtTime(double aT,int aN,SimTK::Vector& v) const
     int r = getDataAtTime(aT,aN,rData);
     for (int i=0; i<aN; ++i)
         v[i] = rData[i];
-	return r;
+    return r;
 }
 //_____________________________________________________________________________
 /**
@@ -1058,43 +1058,43 @@ getDataAtTime(double aT,int aN,SimTK::Vector& v) const
 int Storage::
 getDataColumn(int aStateIndex,double *&rData) const
 {
-	int n = _storage.getSize();
-	if(n<=0) return(0);
+    int n = _storage.getSize();
+    if(n<=0) return(0);
 
-	// ALLOCATION
-	if(rData==NULL) {
-		rData = new double[n];
-	}
+    // ALLOCATION
+    if(rData==NULL) {
+        rData = new double[n];
+    }
 
-	// ASSIGNMENT
-	int i,nData;
-	for(i=nData=0;i<n;i++) {
-		StateVector *vec = getStateVector(i);
-		if(vec==NULL) continue;
-		if(vec->getDataValue(aStateIndex,rData[nData])) nData++;
-	}
+    // ASSIGNMENT
+    int i,nData;
+    for(i=nData=0;i<n;i++) {
+        StateVector *vec = getStateVector(i);
+        if(vec==NULL) continue;
+        if(vec->getDataValue(aStateIndex,rData[nData])) nData++;
+    }
 
-	return(nData);
+    return(nData);
 }
 int Storage::
 getDataColumn(int aStateIndex,Array<double> &rData) const
 {
-	int n = _storage.getSize();
-	if(n<=0) return(0);
+    int n = _storage.getSize();
+    if(n<=0) return(0);
 
-	rData.setSize(n);
+    rData.setSize(n);
 
-	// ASSIGNMENT
-	int i,nData;
-	for(i=nData=0;i<n;i++) {
-		StateVector *vec = getStateVector(i);
-		if(vec==NULL) continue;
-		if(vec->getDataValue(aStateIndex,rData[nData])) nData++;
-	}
+    // ASSIGNMENT
+    int i,nData;
+    for(i=nData=0;i<n;i++) {
+        StateVector *vec = getStateVector(i);
+        if(vec==NULL) continue;
+        if(vec->getDataValue(aStateIndex,rData[nData])) nData++;
+    }
 
-	rData.setSize(nData);
+    rData.setSize(nData);
 
-	return(nData);
+    return(nData);
 }
 
 /**
@@ -1104,15 +1104,15 @@ getDataColumn(int aStateIndex,Array<double> &rData) const
 void Storage::
 getDataColumn(const std::string& columnName, Array<double>& rData, double aStartTime)
 {
-	if(_storage.getSize()<=0) return;
+    if(_storage.getSize()<=0) return;
 
-	int startIndex = findIndex(aStartTime);
-	int colIndex = getStateIndex(columnName);
-	double *dataVec=0;
-	getDataColumn(colIndex, dataVec);
-	for(int i=startIndex; i<_storage.getSize(); i++)
-		rData.append(dataVec[i]);
-	delete[] dataVec;
+    int startIndex = findIndex(aStartTime);
+    int colIndex = getStateIndex(columnName);
+    double *dataVec=0;
+    getDataColumn(colIndex, dataVec);
+    for(int i=startIndex; i<_storage.getSize(); i++)
+        rData.append(dataVec[i]);
+    delete[] dataVec;
 }
 
 //_____________________________________________________________________________
@@ -1129,18 +1129,18 @@ getDataColumn(const std::string& columnName, Array<double>& rData, double aStart
 void Storage::
 setDataColumn(int aStateIndex,const Array<double> &aData)
 {
-	int n = _storage.getSize();
-	if(n!=aData.getSize()) {
-		cout<<"Storage.setDataColumn: ERR- sizes don't match." << endl;
-		return;
-	}
+    int n = _storage.getSize();
+    if(n!=aData.getSize()) {
+        cout<<"Storage.setDataColumn: ERR- sizes don't match." << endl;
+        return;
+    }
 
-	// ASSIGNMENT
-	for(int i=0;i<n;i++) {
-		StateVector *vec = getStateVector(i);
-		if(vec==NULL) continue;
-		vec->setDataValue(aStateIndex,aData[i]);
-	}
+    // ASSIGNMENT
+    for(int i=0;i<n;i++) {
+        StateVector *vec = getStateVector(i);
+        if(vec==NULL) continue;
+        vec->setDataValue(aStateIndex,aData[i]);
+    }
 }
 /**
  * set values in the column specified by columnName to newValue
@@ -1148,17 +1148,17 @@ setDataColumn(int aStateIndex,const Array<double> &aData)
 void Storage::setDataColumnToFixedValue(const std::string& columnName, double newValue) {
     int n = _storage.getSize();
     int aStateIndex = getStateIndex(columnName);
-	if(aStateIndex==-1) {
-		cout<<"Storage.setDataColumnToFixedValue: ERR- column not found." << endl;
-		return;
-	}
+    if(aStateIndex==-1) {
+        cout<<"Storage.setDataColumnToFixedValue: ERR- column not found." << endl;
+        return;
+    }
 
-	// ASSIGNMENT
-	for(int i=0;i<n;i++) {
-		StateVector *vec = getStateVector(i);
-		if(vec==NULL) continue;
-		vec->setDataValue(aStateIndex,newValue);
-	}
+    // ASSIGNMENT
+    for(int i=0;i<n;i++) {
+        StateVector *vec = getStateVector(i);
+        if(vec==NULL) continue;
+        vec->setDataValue(aStateIndex,newValue);
+    }
 
 }
 
@@ -1179,39 +1179,39 @@ void Storage::setDataColumnToFixedValue(const std::string& columnName, double ne
 int Storage::
 getDataColumn(const std::string& aColumnName,double *&rData) const
 {
-	if (aColumnName.c_str()[0]=='#'){
-		int columnNumber=-1;
-		sscanf(aColumnName.c_str(), "#%d", &columnNumber);
-		return getDataColumn(columnNumber-1, rData);
-	}
-	else
-		return getDataColumn(getStateIndex(aColumnName), rData);
+    if (aColumnName.c_str()[0]=='#'){
+        int columnNumber=-1;
+        sscanf(aColumnName.c_str(), "#%d", &columnNumber);
+        return getDataColumn(columnNumber-1, rData);
+    }
+    else
+        return getDataColumn(getStateIndex(aColumnName), rData);
 }
 
 /** It is desirable to access the block as a single entity provided an identifier that is common 
     to all components (such as prefix in the column label).
-	 @param identifier	string identifying a single block of data 
-	 @param rData		Array<Array<double>> of data belonging to the identifier */
+     @param identifier	string identifying a single block of data 
+     @param rData		Array<Array<double>> of data belonging to the identifier */
 void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<double> >& rData, double startTime) const
 {
 
-	Array<int> found = getColumnIndicesForIdentifier(identifier);
+    Array<int> found = getColumnIndicesForIdentifier(identifier);
 
-	if(found.getSize() == 0){
-		cout << "WARNING: Storage "+getName()+" could not locate data for identifier "+identifier+"." << endl;
-		return;
-	}
-	/* a row of "data" can be shorter than number of columns if time is the first column, since 
-	   that is not considered a state by storage. Need to fix this! -aseth */
-	int nd = getLastStateVector()->getSize();
-	int off = _columnLabels.getSize()-nd;
+    if(found.getSize() == 0){
+        cout << "WARNING: Storage "+getName()+" could not locate data for identifier "+identifier+"." << endl;
+        return;
+    }
+    /* a row of "data" can be shorter than number of columns if time is the first column, since 
+       that is not considered a state by storage. Need to fix this! -aseth */
+    int nd = getLastStateVector()->getSize();
+    int off = _columnLabels.getSize()-nd;
 
 
-	for(int i=0; i<found.getSize(); ++i){
-		Array<double> data = *new Array<double>;
-		getDataColumn(found[i]-off, data);
-		rData.append(data);
-	}
+    for(int i=0; i<found.getSize(); ++i){
+        Array<double> data = *new Array<double>;
+        getDataColumn(found[i]-off, data);
+        rData.append(data);
+    }
 }
 /**
  * Get the list of indices of columns corresponding to passed in identifier
@@ -1219,19 +1219,19 @@ void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<do
  */
 OpenSim::Array<int>  Storage::getColumnIndicesForIdentifier(const std::string& identifier) const
 {
-	Array<int> found;
-	int lid = (int)identifier.length();
+    Array<int> found;
+    int lid = (int)identifier.length();
 
-	if(lid < 1) // an empty identifier should not expect data back
-		return found;
+    if(lid < 1) // an empty identifier should not expect data back
+        return found;
 
-	int startIndex = 0;
-	int size = _columnLabels.getSize();
-	for(int i=startIndex;i<size;++i){
-		if(_columnLabels[i].compare(0,lid, identifier)==0)
-			found.append(i);
-	}
-	return found;
+    int startIndex = 0;
+    int size = _columnLabels.getSize();
+    for(int i=startIndex;i<size;++i){
+        if(_columnLabels[i].compare(0,lid, identifier)==0)
+            found.append(i);
+    }
+    return found;
 }
 //=============================================================================
 // RESET
@@ -1253,11 +1253,11 @@ OpenSim::Array<int>  Storage::getColumnIndicesForIdentifier(const std::string& i
 int Storage::
 reset(int aIndex)
 {
-	if(aIndex>=_storage.getSize()) return(_storage.getSize());
-	if(aIndex<0) aIndex = 0;
-	_storage.setSize(aIndex);
+    if(aIndex>=_storage.getSize()) return(_storage.getSize());
+    if(aIndex<0) aIndex = 0;
+    _storage.setSize(aIndex);
 
-	return(_storage.getSize());
+    return(_storage.getSize());
 }
 //_____________________________________________________________________________
 /**
@@ -1273,10 +1273,10 @@ reset(int aIndex)
 int Storage::
 reset(double aTime)
 {
-	// 1 is added so that the states at or just prior to aT are kept.
-	int index = findIndex(aTime) + 1;
+    // 1 is added so that the states at or just prior to aT are kept.
+    int index = findIndex(aTime) + 1;
 
-	return( reset(index) );
+    return( reset(index) );
 }
 
 
@@ -1287,20 +1287,20 @@ reset(double aTime)
 void Storage::
 crop(const double newStartTime, const double newFinalTime)
 {
-	int startindex = findIndex(newStartTime); 
-	int finalindex = findIndex(newFinalTime); 
-	// Since underlying Array is packed we'll just move what we need up then 
-	// delete remaining rows in reverse order.
-	int numRowsToKeep=finalindex-startindex+1;
-	if (numRowsToKeep <=0){
-		cout<<"Storage.crop: WARNING: No rows will be left." << endl;
-		numRowsToKeep=0;
-	}
-	if (startindex!=0){
-		for(int i=0; i<finalindex-startindex+1; i++)
-			_storage[i]=_storage[startindex+i];
-	}
-	_storage.setSize(numRowsToKeep);
+    int startindex = findIndex(newStartTime); 
+    int finalindex = findIndex(newFinalTime); 
+    // Since underlying Array is packed we'll just move what we need up then 
+    // delete remaining rows in reverse order.
+    int numRowsToKeep=finalindex-startindex+1;
+    if (numRowsToKeep <=0){
+        cout<<"Storage.crop: WARNING: No rows will be left." << endl;
+        numRowsToKeep=0;
+    }
+    if (startindex!=0){
+        for(int i=0; i<finalindex-startindex+1; i++)
+            _storage[i]=_storage[startindex+i];
+    }
+    _storage.setSize(numRowsToKeep);
 }
 
 //=============================================================================
@@ -1316,17 +1316,17 @@ crop(const double newStartTime, const double newFinalTime)
 int Storage::
 append(const StateVector &aStateVector,bool aCheckForDuplicateTime)
 {
-	// TODO: use some tolerance when checking for duplicate time?
-	if(aCheckForDuplicateTime && _storage.getSize() && _storage.getLast().getTime()==aStateVector.getTime())
-		_storage.updLast() = aStateVector;
-	else
-		_storage.append(aStateVector);
+    // TODO: use some tolerance when checking for duplicate time?
+    if(aCheckForDuplicateTime && _storage.getSize() && _storage.getLast().getTime()==aStateVector.getTime())
+        _storage.updLast() = aStateVector;
+    else
+        _storage.append(aStateVector);
 
-	if (_fp!=0){
-		aStateVector.print(_fp);
-		fflush(_fp);
-	}
-	return(_storage.getSize());
+    if (_fp!=0){
+        aStateVector.print(_fp);
+        fflush(_fp);
+    }
+    return(_storage.getSize());
 }
 //_____________________________________________________________________________
 /**
@@ -1341,9 +1341,9 @@ append(const StateVector &aStateVector,bool aCheckForDuplicateTime)
 int Storage::
 append(const Array<StateVector> &aStorage)
 {
-	for(int i=0; i<aStorage.getSize(); i++)
-		_storage.append(aStorage[i]);
-	return(_storage.getSize());
+    for(int i=0; i<aStorage.getSize(); i++)
+        _storage.append(aStorage[i]);
+    return(_storage.getSize());
 }
 //_____________________________________________________________________________
 /**
@@ -1357,20 +1357,20 @@ append(const Array<StateVector> &aStorage)
 int Storage::
 append(double aT,int aN,const double *aY,bool aCheckForDuplicateTime)
 {
-	if(aY==NULL) return(_storage.getSize());
-	if(aN<0) return(_storage.getSize());
+    if(aY==NULL) return(_storage.getSize());
+    if(aN<0) return(_storage.getSize());
 
-	// APPEND
-	StateVector vec(aT,aN,aY);
-	append(vec,aCheckForDuplicateTime);
-	// TODO: use some tolerance when checking for duplicate time?
-	/*
-	if(aCheckForDuplicateTime && _storage.getSize() && _storage.getLast().getTime()==vec.getTime())
-		_storage.getLast() = vec;
-	else
-		_storage.append(vec);
-	*/
-	return(_storage.getSize());
+    // APPEND
+    StateVector vec(aT,aN,aY);
+    append(vec,aCheckForDuplicateTime);
+    // TODO: use some tolerance when checking for duplicate time?
+    /*
+    if(aCheckForDuplicateTime && _storage.getSize() && _storage.getLast().getTime()==vec.getTime())
+        _storage.getLast() = vec;
+    else
+        _storage.append(vec);
+    */
+    return(_storage.getSize());
 }
 //_____________________________________________________________________________
 /**
@@ -1383,8 +1383,8 @@ append(double aT,int aN,const double *aY,bool aCheckForDuplicateTime)
 int Storage::
 append(double aT,const SimTK::Vector& aY,bool aCheckForDuplicateTime)
 {
-	// APPEND
-	return( append ( aT, aY.size(), &aY[0], aCheckForDuplicateTime ));
+    // APPEND
+    return( append ( aT, aY.size(), &aY[0], aCheckForDuplicateTime ));
 }
 //_____________________________________________________________________________
 /**
@@ -1397,8 +1397,8 @@ append(double aT,const SimTK::Vector& aY,bool aCheckForDuplicateTime)
 int Storage::
 append(double aT,const Array<double>& aY,bool aCheckForDuplicateTime)
 {
-	// APPEND
-	return( append ( aT, aY.getSize(), &aY[0], aCheckForDuplicateTime ));
+    // APPEND
+    return( append ( aT, aY.getSize(), &aY[0], aCheckForDuplicateTime ));
 }
 
 //_____________________________________________________________________________
@@ -1416,12 +1416,12 @@ append(double aT,const Array<double>& aY,bool aCheckForDuplicateTime)
 int Storage::
 store(int aStep,double aT,int aN,const double *aY)
 {
-	if(_stepInterval==0) return(_storage.getSize());
-	if((aStep%_stepInterval) == 0) {
-		append(aT,aN,aY);
-	}
+    if(_stepInterval==0) return(_storage.getSize());
+    if((aStep%_stepInterval) == 0) {
+        append(aT,aN,aY);
+    }
 
-	return(_storage.getSize());
+    return(_storage.getSize());
 }
 
 
@@ -1440,9 +1440,9 @@ store(int aStep,double aT,int aN,const double *aY)
 void Storage::
 shiftTime(double aValue)
 {
-	for(int i=0;i<_storage.getSize();i++) {
-		_storage[i].shiftTime(aValue);
-	}
+    for(int i=0;i<_storage.getSize();i++) {
+        _storage[i].shiftTime(aValue);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -1453,9 +1453,9 @@ shiftTime(double aValue)
 void Storage::
 scaleTime(double aValue)
 {
-	for(int i=0;i<_storage.getSize();i++) {
-		_storage[i].scaleTime(aValue);
-	}
+    for(int i=0;i<_storage.getSize();i++) {
+        _storage[i].scaleTime(aValue);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -1471,9 +1471,9 @@ scaleTime(double aValue)
 void Storage::
 add(double aValue)
 {
-	for(int i=0;i<_storage.getSize();i++) {
-		_storage[i].add(aValue);
-	}
+    for(int i=0;i<_storage.getSize();i++) {
+        _storage[i].add(aValue);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -1486,9 +1486,9 @@ add(double aValue)
 void Storage::
 add(int aN, double aValue)
 {
-	for(int i=0;i<_storage.getSize();i++) {
-		_storage[i].add(aN,aValue);
-	}
+    for(int i=0;i<_storage.getSize();i++) {
+        _storage[i].add(aN,aValue);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -1503,9 +1503,9 @@ add(int aN, double aValue)
 void Storage::
 add(int aN,double aY[])
 {
-	for(int i=0;i<_storage.getSize();i++) {
-		_storage[i].add(aN,aY);
-	}
+    for(int i=0;i<_storage.getSize();i++) {
+        _storage[i].add(aN,aY);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -1517,9 +1517,9 @@ add(int aN,double aY[])
 void Storage::
 add(StateVector *aStateVector)
 {
-	for(int i=0;i<_storage.getSize();i++) {
-		_storage[i].add(aStateVector);
-	}
+    for(int i=0;i<_storage.getSize();i++) {
+        _storage[i].add(aStateVector);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -1534,28 +1534,28 @@ s */
 void Storage::
 add(Storage *aStorage)
 {
-	if(aStorage==NULL) return;
+    if(aStorage==NULL) return;
 
-	int n,N=0,nN;
-	double t,*Y=NULL;
-	for(int i=0;i<_storage.getSize();i++) {
+    int n,N=0,nN;
+    double t,*Y=NULL;
+    for(int i=0;i<_storage.getSize();i++) {
 
-		// GET INFO ON THIS STORAGE INSTANCE
-		n = getStateVector(i)->getSize();
-		t = getStateVector(i)->getTime();
+        // GET INFO ON THIS STORAGE INSTANCE
+        n = getStateVector(i)->getSize();
+        t = getStateVector(i)->getTime();
 
-		// GET DATA FROM ARGUMENT
-		N = aStorage->getDataAtTime(t,N,&Y);
+        // GET DATA FROM ARGUMENT
+        N = aStorage->getDataAtTime(t,N,&Y);
 
-		// SET SIZE TO SMALLER
-		nN = (n<N) ? n : N;
+        // SET SIZE TO SMALLER
+        nN = (n<N) ? n : N;
 
-		// ADD
-		_storage[i].add(nN,Y);
-	}
+        // ADD
+        _storage[i].add(nN,Y);
+    }
 
-	// CLEANUP
-	if(Y!=NULL) delete[] Y;
+    // CLEANUP
+    if(Y!=NULL) delete[] Y;
 }
 
 //-----------------------------------------------------------------------------
@@ -1571,9 +1571,9 @@ add(Storage *aStorage)
 void Storage::
 subtract(double aValue)
 {
-	for(int i=0;i<_storage.getSize();i++) {
-		_storage[i].subtract(aValue);
-	}
+    for(int i=0;i<_storage.getSize();i++) {
+        _storage[i].subtract(aValue);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -1588,9 +1588,9 @@ subtract(double aValue)
 void Storage::
 subtract(int aN,double aY[])
 {
-	for(int i=0;i<_storage.getSize();i++) {
-		_storage[i].subtract(aN,aY);
-	}
+    for(int i=0;i<_storage.getSize();i++) {
+        _storage[i].subtract(aN,aY);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -1602,9 +1602,9 @@ subtract(int aN,double aY[])
 void Storage::
 subtract(StateVector *aStateVector)
 {
-	for(int i=0;i<_storage.getSize();i++) {
-		_storage[i].subtract(aStateVector);
-	}
+    for(int i=0;i<_storage.getSize();i++) {
+        _storage[i].subtract(aStateVector);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -1619,28 +1619,28 @@ s */
 void Storage::
 subtract(Storage *aStorage)
 {
-	if(aStorage==NULL) return;
+    if(aStorage==NULL) return;
 
-	int n,N=0,nN;
-	double t,*Y=NULL;
-	for(int i=0;i<_storage.getSize();i++) {
+    int n,N=0,nN;
+    double t,*Y=NULL;
+    for(int i=0;i<_storage.getSize();i++) {
 
-		// GET INFO ON THIS STORAGE INSTANCE
-		n = getStateVector(i)->getSize();
-		t = getStateVector(i)->getTime();
+        // GET INFO ON THIS STORAGE INSTANCE
+        n = getStateVector(i)->getSize();
+        t = getStateVector(i)->getTime();
 
-		// GET DATA FROM ARGUMENT
-		N = aStorage->getDataAtTime(t,N,&Y);
+        // GET DATA FROM ARGUMENT
+        N = aStorage->getDataAtTime(t,N,&Y);
 
-		// SET SIZE TO SMALLER
-		nN = (n<N) ? n : N;
+        // SET SIZE TO SMALLER
+        nN = (n<N) ? n : N;
 
-		// SUBTRACT
-		_storage[i].subtract(nN,Y);
-	}
+        // SUBTRACT
+        _storage[i].subtract(nN,Y);
+    }
 
-	// CLEANUP
-	if(Y!=NULL) delete[] Y;
+    // CLEANUP
+    if(Y!=NULL) delete[] Y;
 }
 
 //-----------------------------------------------------------------------------
@@ -1656,9 +1656,9 @@ subtract(Storage *aStorage)
 void Storage::
 multiply(double aValue)
 {
-	for(int i=0;i<_storage.getSize();i++) {
-		_storage[i].multiply(aValue);
-	}
+    for(int i=0;i<_storage.getSize();i++) {
+        _storage[i].multiply(aValue);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -1673,9 +1673,9 @@ multiply(double aValue)
 void Storage::
 multiply(int aN,double aY[])
 {
-	for(int i=0;i<_storage.getSize();i++) {
-		_storage[i].multiply(aN,aY);
-	}
+    for(int i=0;i<_storage.getSize();i++) {
+        _storage[i].multiply(aN,aY);
+    }
 }
 
 //_____________________________________________________________________________
@@ -1688,9 +1688,9 @@ multiply(int aN,double aY[])
 void Storage::
 multiply(StateVector *aStateVector)
 {
-	for(int i=0;i<_storage.getSize();i++) {
-		_storage[i].multiply(aStateVector);
-	}
+    for(int i=0;i<_storage.getSize();i++) {
+        _storage[i].multiply(aStateVector);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -1705,28 +1705,28 @@ s */
 void Storage::
 multiply(Storage *aStorage)
 {
-	if(aStorage==NULL) return;
+    if(aStorage==NULL) return;
 
-	int n,N=0,nN;
-	double t,*Y=NULL;
-	for(int i=0;i<_storage.getSize();i++) {
+    int n,N=0,nN;
+    double t,*Y=NULL;
+    for(int i=0;i<_storage.getSize();i++) {
 
-		// GET INFO ON THIS STORAGE INSTANCE
-		n = getStateVector(i)->getSize();
-		t = getStateVector(i)->getTime();
+        // GET INFO ON THIS STORAGE INSTANCE
+        n = getStateVector(i)->getSize();
+        t = getStateVector(i)->getTime();
 
-		// GET DATA FROM ARGUMENT
-		N = aStorage->getDataAtTime(t,N,&Y);
+        // GET DATA FROM ARGUMENT
+        N = aStorage->getDataAtTime(t,N,&Y);
 
-		// SET SIZE TO SMALLER
-		nN = (n<N) ? n : N;
+        // SET SIZE TO SMALLER
+        nN = (n<N) ? n : N;
 
-		// MULTIPLY
-		_storage[i].multiply(nN,Y);
-	}
+        // MULTIPLY
+        _storage[i].multiply(nN,Y);
+    }
 
-	// CLEANUP
-	if(Y!=NULL) delete[] Y;
+    // CLEANUP
+    if(Y!=NULL) delete[] Y;
 }
 //_____________________________________________________________________________
 /**
@@ -1738,12 +1738,12 @@ multiply(Storage *aStorage)
 void Storage::
 multiplyColumn(int aIndex, double aValue)
 {
-	double newValue;
-	for(int i=0;i<_storage.getSize();i++) {
-		_storage[i].getDataValue(aIndex, newValue);
-		newValue *= aValue;
-		_storage[i].setDataValue(aIndex, newValue);
-	}
+    double newValue;
+    for(int i=0;i<_storage.getSize();i++) {
+        _storage[i].getDataValue(aIndex, newValue);
+        newValue *= aValue;
+        _storage[i].setDataValue(aIndex, newValue);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -1758,9 +1758,9 @@ multiplyColumn(int aIndex, double aValue)
 void Storage::
 divide(double aValue)
 {
-	for(int i=0;i<_storage.getSize();i++) {
-		_storage[i].divide(aValue);
-	}
+    for(int i=0;i<_storage.getSize();i++) {
+        _storage[i].divide(aValue);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -1774,9 +1774,9 @@ divide(double aValue)
 void Storage::
 divide(int aN,double aY[])
 {
-	for(int i=0;i<_storage.getSize();i++) {
-		_storage[i].divide(aN,aY);
-	}
+    for(int i=0;i<_storage.getSize();i++) {
+        _storage[i].divide(aN,aY);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -1787,9 +1787,9 @@ divide(int aN,double aY[])
 void Storage::
 divide(StateVector *aStateVector)
 {
-	for(int i=0;i<_storage.getSize();i++) {
-		_storage[i].divide(aStateVector);
-	}
+    for(int i=0;i<_storage.getSize();i++) {
+        _storage[i].divide(aStateVector);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -1804,29 +1804,29 @@ s */
 void Storage::
 divide(Storage *aStorage)
 {
-	if(aStorage==NULL) return;
+    if(aStorage==NULL) return;
 
-	int i;
-	int n,N=0,nN;
-	double t,*Y=NULL;
-	for(i=0;i<_storage.getSize();i++) {
+    int i;
+    int n,N=0,nN;
+    double t,*Y=NULL;
+    for(i=0;i<_storage.getSize();i++) {
 
-		// GET INFO ON THIS STORAGE INSTANCE
-		n = getStateVector(i)->getSize();
-		t = getStateVector(i)->getTime();
+        // GET INFO ON THIS STORAGE INSTANCE
+        n = getStateVector(i)->getSize();
+        t = getStateVector(i)->getTime();
 
-		// GET DATA FROM ARGUMENT
-		N = aStorage->getDataAtTime(t,N,&Y);
+        // GET DATA FROM ARGUMENT
+        N = aStorage->getDataAtTime(t,N,&Y);
 
-		// SET SIZE TO SMALLER
-		nN = (n<N) ? n : N;
+        // SET SIZE TO SMALLER
+        nN = (n<N) ? n : N;
 
-		// DIVIDE
-		_storage[i].divide(nN,Y);
-	}
+        // DIVIDE
+        _storage[i].divide(nN,Y);
+    }
 
-	// CLEANUP
-	if(Y!=NULL) delete[] Y;
+    // CLEANUP
+    if(Y!=NULL) delete[] Y;
 }
 
 //=============================================================================
@@ -1848,23 +1848,23 @@ divide(Storage *aStorage)
 int Storage::
 computeAverage(int aN,double *aAve) const
 {
-	int n = computeArea(aN,aAve);
-	if(n==0) return(0);
+    int n = computeArea(aN,aAve);
+    if(n==0) return(0);
 
-	// DIVIDE BY THE TIME RANGE
-	double ti = getFirstTime();
-	double tf = getLastTime();
-	if(tf<=ti) {
-		cout << "Storage.computeAverage: ERROR- time interval invalid." << endl
-			  << "\tfirstTime=" << ti << "  lastTime=" << tf << endl;
-		return(0);
-	}
-	double dt_recip = 1.0 / (tf-ti);
-	for(int i=0;i<n;i++) {
-		aAve[i] *= dt_recip;
-	}
+    // DIVIDE BY THE TIME RANGE
+    double ti = getFirstTime();
+    double tf = getLastTime();
+    if(tf<=ti) {
+        cout << "Storage.computeAverage: ERROR- time interval invalid." << endl
+              << "\tfirstTime=" << ti << "  lastTime=" << tf << endl;
+        return(0);
+    }
+    double dt_recip = 1.0 / (tf-ti);
+    for(int i=0;i<n;i++) {
+        aAve[i] *= dt_recip;
+    }
 
-	return(n);
+    return(n);
 }
 //_____________________________________________________________________________
 /**
@@ -1886,16 +1886,16 @@ computeAverage(int aN,double *aAve) const
 int Storage::
 computeAverage(double aTI,double aTF,int aN,double *aAve) const
 {
-	int n = computeArea(aTI,aTF,aN,aAve);
-	if(n==0) return(0);
+    int n = computeArea(aTI,aTF,aN,aAve);
+    if(n==0) return(0);
 
-	// DIVIDE BY THE TIME RANGE
-	double dt_recip = 1.0 / (aTF-aTI);
-	for(int i=0;i<n;i++) {
-		aAve[i] *= dt_recip;
-	}
+    // DIVIDE BY THE TIME RANGE
+    double dt_recip = 1.0 / (aTF-aTI);
+    for(int i=0;i<n;i++) {
+        aAve[i] *= dt_recip;
+    }
 
-	return(n);
+    return(n);
 }
 
 //_____________________________________________________________________________
@@ -1905,73 +1905,73 @@ computeAverage(double aTI,double aTF,int aN,double *aAve) const
 int Storage::
 integrate(int aI1,int aI2,int aN,double *rArea,Storage *rStorage) const
 {
-	// CHECK THAT THERE ARE STATES STORED
-	if(_storage.getSize()<=0) {
-		cout << "Storage.integrate: ERROR- no stored states." << endl;
-		return(0);
-	}
+    // CHECK THAT THERE ARE STATES STORED
+    if(_storage.getSize()<=0) {
+        cout << "Storage.integrate: ERROR- no stored states." << endl;
+        return(0);
+    }
 
-	// CHECK INDICES
-	if(aI1>=aI2) {
-		cout << "Storage.integrate:  ERROR- aI1 >= aI2." << endl;
-		return(0);
-	}
+    // CHECK INDICES
+    if(aI1>=aI2) {
+        cout << "Storage.integrate:  ERROR- aI1 >= aI2." << endl;
+        return(0);
+    }
 
-	// GET THE SMALLEST NUMBER OF STATES
-	int n = getSmallestNumberOfStates();
-	if(n>aN) n = aN;
-	if(n<=0) {
-		cout << "Storage.computeArea: ERROR- no stored states" << endl;
-		return(0);
-	}
+    // GET THE SMALLEST NUMBER OF STATES
+    int n = getSmallestNumberOfStates();
+    if(n>aN) n = aN;
+    if(n<=0) {
+        cout << "Storage.computeArea: ERROR- no stored states" << endl;
+        return(0);
+    }
 
-	// SET THE INDICES
-	if(aI1<0) aI1 = 0;
-	if(aI2<0) aI2 = _storage.getSize()-1;
+    // SET THE INDICES
+    if(aI1<0) aI1 = 0;
+    if(aI2<0) aI2 = _storage.getSize()-1;
 
-	// WORKING MEMORY
-	double ti,tf;
-	double *yi=NULL,*yf=NULL;
+    // WORKING MEMORY
+    double ti,tf;
+    double *yi=NULL,*yf=NULL;
 
-	bool functionAllocatedArea = false;
-	if(!rArea) {
-		rArea = new double [n];
-		functionAllocatedArea = true;
-	}
+    bool functionAllocatedArea = false;
+    if(!rArea) {
+        rArea = new double [n];
+        functionAllocatedArea = true;
+    }
 
-	// INITIALIZE AREA
-	for(int i=0;i<n;i++) rArea[i]=0.0;
+    // INITIALIZE AREA
+    for(int i=0;i<n;i++) rArea[i]=0.0;
 
-	// RECORD FIRST STATE
-	if(rStorage) {
-		ti = getStateVector(aI1)->getTime();
-		rStorage->append(ti,n,rArea);
-	}
+    // RECORD FIRST STATE
+    if(rStorage) {
+        ti = getStateVector(aI1)->getTime();
+        rStorage->append(ti,n,rArea);
+    }
 
-	// INTEGRATE
-	for(int I=aI1;I<aI2;I++) {
+    // INTEGRATE
+    for(int I=aI1;I<aI2;I++) {
 
-		// INITIAL
-		ti = getStateVector(I)->getTime();
-		yi = getStateVector(I)->getData().get();
+        // INITIAL
+        ti = getStateVector(I)->getTime();
+        yi = getStateVector(I)->getData().get();
 
-		// FINAL
-		tf = getStateVector(I+1)->getTime();
-		yf = getStateVector(I+1)->getData().get();
+        // FINAL
+        tf = getStateVector(I+1)->getTime();
+        yf = getStateVector(I+1)->getData().get();
 
-		// AREA
-		for(int i=0;i<n;i++) {
-			rArea[i] += 0.5*(yf[i]+yi[i])*(tf-ti);
-		}
+        // AREA
+        for(int i=0;i<n;i++) {
+            rArea[i] += 0.5*(yf[i]+yi[i])*(tf-ti);
+        }
 
-		// APPEND
-		if(rStorage) rStorage->append(tf,n,rArea);
-	}
+        // APPEND
+        if(rStorage) rStorage->append(tf,n,rArea);
+    }
 
-	// CLEANUP
-	if(functionAllocatedArea) delete[] rArea;
+    // CLEANUP
+    if(functionAllocatedArea) delete[] rArea;
 
-	return(n);
+    return(n);
 }
 //_____________________________________________________________________________
 /**
@@ -1980,111 +1980,111 @@ integrate(int aI1,int aI2,int aN,double *rArea,Storage *rStorage) const
 int Storage::
 integrate(double aTI,double aTF,int aN,double *rArea,Storage *rStorage) const
 {
-	// CHECK THAT THERE ARE STATES STORED
-	if(_storage.getSize()<=0) {
-		cout << "Storage.integrate: ERROR- no stored states." << endl;
-		return(0);
-	}
+    // CHECK THAT THERE ARE STATES STORED
+    if(_storage.getSize()<=0) {
+        cout << "Storage.integrate: ERROR- no stored states." << endl;
+        return(0);
+    }
 
-	// CHECK INITIAL AND FINAL TIMES
-	if(aTI>=aTF) {
-		cout << "Storage.integrate:  ERROR- bad time range." << endl
-			  << "\tInitial time (" << aTI << ") is not smaller than final time (" << aTF << ")" << endl;
-		return(0);
-	}
+    // CHECK INITIAL AND FINAL TIMES
+    if(aTI>=aTF) {
+        cout << "Storage.integrate:  ERROR- bad time range." << endl
+              << "\tInitial time (" << aTI << ") is not smaller than final time (" << aTF << ")" << endl;
+        return(0);
+    }
 
-	// CHECK TIME RANGE
-	double fstT = getFirstTime();
-	double lstT = getLastTime();
-	if((aTI<fstT)||(aTI>lstT)||(aTF<fstT)||(aTF>lstT)) {
-		cout << "Storage.integrate: ERROR- bad time range." << endl
-			  << "\tThe specified range (" << aTI << " to " << aTF << ") is not covered by" << endl
-			  << "\ttime range of the stored states (" << fstT << " to " << lstT << ")." << endl;
-		return(0);
-	}
+    // CHECK TIME RANGE
+    double fstT = getFirstTime();
+    double lstT = getLastTime();
+    if((aTI<fstT)||(aTI>lstT)||(aTF<fstT)||(aTF>lstT)) {
+        cout << "Storage.integrate: ERROR- bad time range." << endl
+              << "\tThe specified range (" << aTI << " to " << aTF << ") is not covered by" << endl
+              << "\ttime range of the stored states (" << fstT << " to " << lstT << ")." << endl;
+        return(0);
+    }
 
-	// CHECK FOR VALID OUTPUT ARRAYS
-	if(aN<=0) return(0);
+    // CHECK FOR VALID OUTPUT ARRAYS
+    if(aN<=0) return(0);
 
-	// GET THE SMALLEST NUMBER OF STATES
-	int n = getSmallestNumberOfStates();
-	if(n>aN) n = aN;
-	if(n<=0) {
-		cout << "Storage.integrate: ERROR- no stored states" << endl;
-		return(0);
-	}
+    // GET THE SMALLEST NUMBER OF STATES
+    int n = getSmallestNumberOfStates();
+    if(n>aN) n = aN;
+    if(n<=0) {
+        cout << "Storage.integrate: ERROR- no stored states" << endl;
+        return(0);
+    }
 
-	// WORKING MEMORY
-	double ti,tf;
-	double *yI = new double[n];
-	double *yF = new double[n];
+    // WORKING MEMORY
+    double ti,tf;
+    double *yI = new double[n];
+    double *yF = new double[n];
 
-	bool functionAllocatedArea = false;
-	if(!rArea) {
-		rArea = new double [n];
-		functionAllocatedArea = true;
-	}
+    bool functionAllocatedArea = false;
+    if(!rArea) {
+        rArea = new double [n];
+        functionAllocatedArea = true;
+    }
 
-	// INITIALIZE AREA
-	for(int i=0;i<n;i++) rArea[i]=0.0;
+    // INITIALIZE AREA
+    for(int i=0;i<n;i++) rArea[i]=0.0;
 
-	// RECORD FIRST STATE
-	if(rStorage) rStorage->append(aTI,n,rArea);
+    // RECORD FIRST STATE
+    if(rStorage) rStorage->append(aTI,n,rArea);
 
-	// GET RELAVENT STATE INDICES
-	int II = findIndex(aTI)+1;
-	int FF = findIndex(aTF);
+    // GET RELAVENT STATE INDICES
+    int II = findIndex(aTI)+1;
+    int FF = findIndex(aTF);
 
-	// SAME INTERVAL
-	if(II>FF) {
-		getDataAtTime(aTI,n,&yI);
-		getDataAtTime(aTF,n,&yF);
-		for(int i=0;i<n;i++) {
-			rArea[i] += 0.5*(yF[i]+yI[i])*(aTF-aTI);
-		}
-		if(rStorage) rStorage->append(aTF,n,rArea);
+    // SAME INTERVAL
+    if(II>FF) {
+        getDataAtTime(aTI,n,&yI);
+        getDataAtTime(aTF,n,&yF);
+        for(int i=0;i<n;i++) {
+            rArea[i] += 0.5*(yF[i]+yI[i])*(aTF-aTI);
+        }
+        if(rStorage) rStorage->append(aTF,n,rArea);
 
-	// SPANS MULTIPLE INTERVALS
-	} else {
-		double *yi=NULL,*yf=NULL;
+    // SPANS MULTIPLE INTERVALS
+    } else {
+        double *yi=NULL,*yf=NULL;
 
-		// FIRST SLICE
-		getDataAtTime(aTI,n,&yI);
-		tf = getStateVector(II)->getTime();
-		yf = getStateVector(II)->getData().get();
-		for(int i=0;i<n;i++) {
-			rArea[i] += 0.5*(yf[i]+yI[i])*(tf-aTI);
-		}
-		if(rStorage) rStorage->append(tf,n,rArea);
+        // FIRST SLICE
+        getDataAtTime(aTI,n,&yI);
+        tf = getStateVector(II)->getTime();
+        yf = getStateVector(II)->getData().get();
+        for(int i=0;i<n;i++) {
+            rArea[i] += 0.5*(yf[i]+yI[i])*(tf-aTI);
+        }
+        if(rStorage) rStorage->append(tf,n,rArea);
 
-		// INTERVALS
-		for(int I=II;I<FF;I++) {
-			ti = getStateVector(I)->getTime();
-			yi = getStateVector(I)->getData().get();
-			tf = getStateVector(I+1)->getTime();
-			yf = getStateVector(I+1)->getData().get();
-			for(int i=0;i<n;i++) {
-				rArea[i] += 0.5*(yf[i]+yi[i])*(tf-ti);
-			}
-			if(rStorage) rStorage->append(tf,n,rArea);
-		}
+        // INTERVALS
+        for(int I=II;I<FF;I++) {
+            ti = getStateVector(I)->getTime();
+            yi = getStateVector(I)->getData().get();
+            tf = getStateVector(I+1)->getTime();
+            yf = getStateVector(I+1)->getData().get();
+            for(int i=0;i<n;i++) {
+                rArea[i] += 0.5*(yf[i]+yi[i])*(tf-ti);
+            }
+            if(rStorage) rStorage->append(tf,n,rArea);
+        }
 
-		// LAST SLICE
-		ti = getStateVector(FF)->getTime();
-		yi = getStateVector(FF)->getData().get();
-		getDataAtTime(aTF,n,&yF);
-		for(int i=0;i<n;i++) {
-			rArea[i] += 0.5*(yF[i]+yi[i])*(aTF-ti);
-		}
-		if(rStorage) rStorage->append(aTF,n,rArea);
-	}
+        // LAST SLICE
+        ti = getStateVector(FF)->getTime();
+        yi = getStateVector(FF)->getData().get();
+        getDataAtTime(aTF,n,&yF);
+        for(int i=0;i<n;i++) {
+            rArea[i] += 0.5*(yF[i]+yi[i])*(aTF-ti);
+        }
+        if(rStorage) rStorage->append(aTF,n,rArea);
+    }
 
-	// CLEANUP
-	delete[] yI;
-	delete[] yF;
-	if(functionAllocatedArea) delete[] rArea;
+    // CLEANUP
+    delete[] yI;
+    delete[] yF;
+    if(functionAllocatedArea) delete[] rArea;
 
-	return(n);
+    return(n);
 }
 //_____________________________________________________________________________
 /**
@@ -2099,10 +2099,10 @@ integrate(double aTI,double aTF,int aN,double *rArea,Storage *rStorage) const
 int Storage::
 computeArea(int aN,double *aArea) const
 {
-	// CHECK FOR VALID OUTPUT ARRAYS
-	if(aN<=0) return(0);
-	else if(aArea==NULL) return(0);
-	else return integrate(0,_storage.getSize()-1,aN,aArea,NULL);
+    // CHECK FOR VALID OUTPUT ARRAYS
+    if(aN<=0) return(0);
+    else if(aArea==NULL) return(0);
+    else return integrate(0,_storage.getSize()-1,aN,aArea,NULL);
 }
 //_____________________________________________________________________________
 /**
@@ -2121,10 +2121,10 @@ computeArea(int aN,double *aArea) const
 int Storage::
 computeArea(double aTI,double aTF,int aN,double *aArea) const
 {
-	// CHECK FOR VALID OUTPUT ARRAYS
-	if(aN<=0) return(0);
-	else if(aArea==NULL) return(0);
-	else return integrate(aTI,aTF,aN,aArea,NULL);
+    // CHECK FOR VALID OUTPUT ARRAYS
+    if(aN<=0) return(0);
+    else if(aArea==NULL) return(0);
+    else return integrate(aTI,aTF,aN,aArea,NULL);
 }
 //_____________________________________________________________________________
 /**
@@ -2152,16 +2152,16 @@ computeArea(double aTI,double aTF,int aN,double *aArea) const
 Storage* Storage::
 integrate(int aI1,int aI2) const
 {
-	// CREATE COPY
-	Storage *integStore = new Storage(*this,false);
-	integStore->setName(getName()+"_integrated");
+    // CREATE COPY
+    Storage *integStore = new Storage(*this,false);
+    integStore->setName(getName()+"_integrated");
 
-	int n = getSmallestNumberOfStates();
-	int result = integrate(aI1,aI2,n,NULL,integStore);
-	if(result<=0) {
-		delete integStore;
-		return NULL;
-	} else return integStore;
+    int n = getSmallestNumberOfStates();
+    int result = integrate(aI1,aI2,n,NULL,integStore);
+    if(result<=0) {
+        delete integStore;
+        return NULL;
+    } else return integStore;
 }
 //_____________________________________________________________________________
 /**
@@ -2184,16 +2184,16 @@ integrate(int aI1,int aI2) const
 Storage* Storage::
 integrate(double aTI,double aTF) const
 {
-	// CREATE COPY
-	Storage *integStore = new Storage(*this,false);
-	integStore->setName(getName()+"_integrated");
+    // CREATE COPY
+    Storage *integStore = new Storage(*this,false);
+    integStore->setName(getName()+"_integrated");
 
-	int n = getSmallestNumberOfStates();
-	int result = integrate(aTI,aTF,n,NULL,integStore);
-	if(result<=0) {
-		delete integStore;
-		return NULL;
-	} else return integStore;
+    int n = getSmallestNumberOfStates();
+    int result = integrate(aTI,aTF,n,NULL,integStore);
+    if(result<=0) {
+        delete integStore;
+        return NULL;
+    } else return integStore;
 }
 
 //_____________________________________________________________________________
@@ -2206,34 +2206,34 @@ integrate(double aTI,double aTF) const
 void Storage::
 pad(int aPadSize)
 {
-	if (aPadSize==0) return; //Nothing to do
-	// PAD THE TIME COLUMN
-	Array<double> paddedTime;
-	int size = getTimeColumn(paddedTime);
-	Signal::Pad(aPadSize,paddedTime);
-	int newSize = paddedTime.getSize();
+    if (aPadSize==0) return; //Nothing to do
+    // PAD THE TIME COLUMN
+    Array<double> paddedTime;
+    int size = getTimeColumn(paddedTime);
+    Signal::Pad(aPadSize,paddedTime);
+    int newSize = paddedTime.getSize();
 
-	// PAD EACH COLUMN
-	int nc = getSmallestNumberOfStates();
-	Array<double> paddedSignal(0.0,size);
-	StateVector *vecs = new StateVector[newSize];
-	for(int j=0;j<newSize;j++) {
-		vecs[j].getData().setSize(nc);
-		vecs[j].setTime(paddedTime[j]);
-	}
-	for(int i=0;i<nc;i++) {
-		getDataColumn(i,paddedSignal);
-		Signal::Pad(aPadSize,paddedSignal);
-		for(int j=0;j<newSize;j++)
-			vecs[j].setDataValue(i,paddedSignal[j]);
-	}
+    // PAD EACH COLUMN
+    int nc = getSmallestNumberOfStates();
+    Array<double> paddedSignal(0.0,size);
+    StateVector *vecs = new StateVector[newSize];
+    for(int j=0;j<newSize;j++) {
+        vecs[j].getData().setSize(nc);
+        vecs[j].setTime(paddedTime[j]);
+    }
+    for(int i=0;i<nc;i++) {
+        getDataColumn(i,paddedSignal);
+        Signal::Pad(aPadSize,paddedSignal);
+        for(int j=0;j<newSize;j++)
+            vecs[j].setDataValue(i,paddedSignal[j]);
+    }
 
-	// APPEND THE STATEVECTORS
-	_storage.setSize(0);
-	for(int i=0;i<newSize;i++) _storage.append(vecs[i]);
+    // APPEND THE STATEVECTORS
+    _storage.setSize(0);
+    for(int i=0;i<newSize;i++) _storage.append(vecs[i]);
 
-	// CLEANUP
-	delete[] vecs;
+    // CLEANUP
+    delete[] vecs;
 }
 
 //_____________________________________________________________________________
@@ -2248,36 +2248,36 @@ pad(int aPadSize)
 void Storage::
 smoothSpline(int aOrder,double aCutoffFrequency)
 {
-	double dtmin = getMinTimeStep();
+    double dtmin = getMinTimeStep();
 
-	if(dtmin<SimTK::Zero) {
-		cout<<"Storage.SmoothSpline: storage cannot be resampled."<<endl;
-		return;
-	}
+    if(dtmin<SimTK::Zero) {
+        cout<<"Storage.SmoothSpline: storage cannot be resampled."<<endl;
+        return;
+    }
 
-	// RESAMPLE
-	dtmin = resample(dtmin,aOrder);
-	int size = getSize();
-	if(size<(2*aOrder)) {
-		cout<<"Storage.SmoothSpline: too few data points to filter."<<endl;
-		return;
-	}
+    // RESAMPLE
+    dtmin = resample(dtmin,aOrder);
+    int size = getSize();
+    if(size<(2*aOrder)) {
+        cout<<"Storage.SmoothSpline: too few data points to filter."<<endl;
+        return;
+    }
 
-	// LOOP OVER COLUMNS
-	double *times=NULL;
-	int nc = getSmallestNumberOfStates();
-	double *signal=NULL;
-	Array<double> filt(0.0,size);
-	getTimeColumn(times,0);
-	for(int i=0;i<nc;i++) {
-		getDataColumn(i,signal);
-		Signal::SmoothSpline(aOrder,dtmin,aCutoffFrequency,size,times,signal,&filt[0]);
-		setDataColumn(i,filt);
-	}
+    // LOOP OVER COLUMNS
+    double *times=NULL;
+    int nc = getSmallestNumberOfStates();
+    double *signal=NULL;
+    Array<double> filt(0.0,size);
+    getTimeColumn(times,0);
+    for(int i=0;i<nc;i++) {
+        getDataColumn(i,signal);
+        Signal::SmoothSpline(aOrder,dtmin,aCutoffFrequency,size,times,signal,&filt[0]);
+        setDataColumn(i,filt);
+    }
 
-	// CLEANUP
-	delete[] times;
-	delete[] signal;
+    // CLEANUP
+    delete[] times;
+    delete[] signal;
 }
 
 
@@ -2293,33 +2293,33 @@ smoothSpline(int aOrder,double aCutoffFrequency)
 void Storage::
 lowpassIIR(double aCutoffFrequency)
 {
-	double dtmin = getMinTimeStep();
+    double dtmin = getMinTimeStep();
 
-	if(dtmin<SimTK::Zero) {
-		cout<<"Storage.lowpassIIR: storage cannot be resampled."<<endl;
-		return;
-	}
+    if(dtmin<SimTK::Zero) {
+        cout<<"Storage.lowpassIIR: storage cannot be resampled."<<endl;
+        return;
+    }
 
-	// RESAMPLE
-	dtmin = resample(dtmin,5);
-	int size = getSize();
-	if(size<(4)) {
-		cout<<"Storage.lowpassIIR: too few data points to filter."<<endl;
-		return;
-	}
+    // RESAMPLE
+    dtmin = resample(dtmin,5);
+    int size = getSize();
+    if(size<(4)) {
+        cout<<"Storage.lowpassIIR: too few data points to filter."<<endl;
+        return;
+    }
 
-	// LOOP OVER COLUMNS
-	int nc = getSmallestNumberOfStates();
-	double *signal=NULL;
-	Array<double> filt(0.0,size);
-	for(int i=0;i<nc;i++) {
-		getDataColumn(i,signal);
-		Signal::LowpassIIR(dtmin,aCutoffFrequency,size,signal,&filt[0]);
-		setDataColumn(i,filt);
-	}
+    // LOOP OVER COLUMNS
+    int nc = getSmallestNumberOfStates();
+    double *signal=NULL;
+    Array<double> filt(0.0,size);
+    for(int i=0;i<nc;i++) {
+        getDataColumn(i,signal);
+        Signal::LowpassIIR(dtmin,aCutoffFrequency,size,signal,&filt[0]);
+        setDataColumn(i,filt);
+    }
 
-	// CLEANUP
-	delete[] signal;
+    // CLEANUP
+    delete[] signal;
 }
 
 
@@ -2335,33 +2335,33 @@ lowpassIIR(double aCutoffFrequency)
 void Storage::
 lowpassFIR(int aOrder,double aCutoffFrequency)
 {
-	double dtmin = getMinTimeStep();
+    double dtmin = getMinTimeStep();
 
-	if(dtmin<SimTK::Zero) {
-		cout<<"Storage.lowpassFIR: storage cannot be resampled."<<endl;
-		return;
-	}
+    if(dtmin<SimTK::Zero) {
+        cout<<"Storage.lowpassFIR: storage cannot be resampled."<<endl;
+        return;
+    }
 
-	// RESAMPLE
-	dtmin = resample(dtmin,5);
-	int size = getSize();
-	if(size<(2*aOrder)) {
-		cout<<"Storage.lowpassFIR: too few data points to filter."<<endl;
-		return;
-	}
+    // RESAMPLE
+    dtmin = resample(dtmin,5);
+    int size = getSize();
+    if(size<(2*aOrder)) {
+        cout<<"Storage.lowpassFIR: too few data points to filter."<<endl;
+        return;
+    }
 
-	// LOOP OVER COLUMNS
-	int nc = getSmallestNumberOfStates();
-	double *signal=NULL;
-	Array<double> filt(0.0,size);
-	for(int i=0;i<nc;i++) {
-		getDataColumn(i,signal);
-		Signal::LowpassFIR(aOrder,dtmin,aCutoffFrequency,size,signal,&filt[0]);
-		setDataColumn(i,filt);
-	}
+    // LOOP OVER COLUMNS
+    int nc = getSmallestNumberOfStates();
+    double *signal=NULL;
+    Array<double> filt(0.0,size);
+    for(int i=0;i<nc;i++) {
+        getDataColumn(i,signal);
+        Signal::LowpassFIR(aOrder,dtmin,aCutoffFrequency,size,signal,&filt[0]);
+        setDataColumn(i,filt);
+    }
 
-	// CLEANUP
-	delete[] signal;
+    // CLEANUP
+    delete[] signal;
 }
 
 
@@ -2386,20 +2386,20 @@ lowpassFIR(int aOrder,double aCutoffFrequency)
 int Storage::
 findIndex(int aI,double aT) const
 {
-	// MAKE SURE aI IS VALID
-	if(_storage.getSize()<=0) return(-1);
-	if((aI>=_storage.getSize())||(aI<0)) aI=0;
-	if(getStateVector(aI)->getTime()>aT) aI=0;
+    // MAKE SURE aI IS VALID
+    if(_storage.getSize()<=0) return(-1);
+    if((aI>=_storage.getSize())||(aI<0)) aI=0;
+    if(getStateVector(aI)->getTime()>aT) aI=0;
 
-	// SEARCH
-	//cout << "Storage.findIndex: starting at " << aI << endl;
-	int i;
-	for(i=aI;i<_storage.getSize();i++) {
-		if(aT<getStateVector(i)->getTime()) break;
-	}
-	_lastI = i-1;
-	if(_lastI<0) _lastI=0;
-	return(_lastI);
+    // SEARCH
+    //cout << "Storage.findIndex: starting at " << aI << endl;
+    int i;
+    for(i=aI;i<_storage.getSize();i++) {
+        if(aT<getStateVector(i)->getTime()) break;
+    }
+    _lastI = i-1;
+    if(_lastI<0) _lastI=0;
+    return(_lastI);
 }
 //_____________________________________________________________________________
 /**
@@ -2416,14 +2416,14 @@ findIndex(int aI,double aT) const
 int Storage::
 findIndex(double aT) const
 {
-	if(_storage.getSize()<=0) return(-1);
-	int i;
-	for(i=0;i<_storage.getSize();i++) {
-		if(aT<getStateVector(i)->getTime()) break;
-	}
-	_lastI = i-1;
-	if(_lastI<0) _lastI=0;
-	return(_lastI);
+    if(_storage.getSize()<=0) return(-1);
+    int i;
+    for(i=0;i<_storage.getSize();i++) {
+        if(aT<getStateVector(i)->getTime()) break;
+    }
+    _lastI = i-1;
+    if(_lastI<0) _lastI=0;
+    return(_lastI);
 }
 //_____________________________________________________________________________
 /** 
@@ -2432,14 +2432,14 @@ findIndex(double aT) const
  */
 void Storage::findFrameRange(double aStartTime, double aEndTime, int& oStartFrame, int& oEndFrame) const
 {
-	if(aStartTime > aEndTime) {
-		double tmp = aStartTime;
-		aStartTime = aEndTime;
-		aEndTime = tmp;
-	}
+    if(aStartTime > aEndTime) {
+        double tmp = aStartTime;
+        aStartTime = aEndTime;
+        aEndTime = tmp;
+    }
 
-	oStartFrame = findIndex(0, aStartTime);
-	oEndFrame = findIndex(getSize()-1, aEndTime);
+    oStartFrame = findIndex(0, aStartTime);
+    oEndFrame = findIndex(getSize()-1, aEndTime);
 }
 //_____________________________________________________________________________
 /**
@@ -2452,34 +2452,34 @@ void Storage::findFrameRange(double aStartTime, double aEndTime, int& oStartFram
 double Storage::
 resample(double aDT, int aDegree)
 {
-	int numDataRows = _storage.getSize();
+    int numDataRows = _storage.getSize();
 
-	if(numDataRows<=1) return aDT;
+    if(numDataRows<=1) return aDT;
 
-	// Limit aDT based on expected number of samples
-	int maxSamples = MAX_RESAMPLE_SIZE;
-	if((getLastTime()-getFirstTime())/aDT > maxSamples) {
-		double newDT = (getLastTime()-getFirstTime())/maxSamples;
-		cout<<"Storage.resample: WARNING: resampling at time step "<<newDT<<" (but minimum time step is "<<aDT<<")"<<endl;
-		aDT = newDT;
-	}
+    // Limit aDT based on expected number of samples
+    int maxSamples = MAX_RESAMPLE_SIZE;
+    if((getLastTime()-getFirstTime())/aDT > maxSamples) {
+        double newDT = (getLastTime()-getFirstTime())/maxSamples;
+        cout<<"Storage.resample: WARNING: resampling at time step "<<newDT<<" (but minimum time step is "<<aDT<<")"<<endl;
+        aDT = newDT;
+    }
 
-	GCVSplineSet *splineSet = new GCVSplineSet(aDegree,this);
+    GCVSplineSet *splineSet = new GCVSplineSet(aDegree,this);
 
-	Array<std::string> saveLabels = getColumnLabels();
-	// Free up memory used by Storage
-	_storage.setSize(0);
-	// For every column, collect data and fit spline to originalTimes, dataColumn.
-	Storage *newStorage = splineSet->constructStorage(0,aDT);
-	newStorage->setInDegrees(isInDegrees());
-	copyData(*newStorage);
+    Array<std::string> saveLabels = getColumnLabels();
+    // Free up memory used by Storage
+    _storage.setSize(0);
+    // For every column, collect data and fit spline to originalTimes, dataColumn.
+    Storage *newStorage = splineSet->constructStorage(0,aDT);
+    newStorage->setInDegrees(isInDegrees());
+    copyData(*newStorage);
 
-	setColumnLabels(saveLabels);
+    setColumnLabels(saveLabels);
 
-	delete newStorage;
-	delete splineSet;
+    delete newStorage;
+    delete splineSet;
 
-	return aDT;
+    return aDT;
 }
 //_____________________________________________________________________________
 /**
@@ -2488,44 +2488,44 @@ resample(double aDT, int aDegree)
 double Storage::
 resampleLinear(double aDT)
 {
-	int numDataRows = _storage.getSize();
+    int numDataRows = _storage.getSize();
 
-	if(numDataRows<=1) return aDT;
+    if(numDataRows<=1) return aDT;
 
-	// Limit aDT based on expected number of samples
-	int maxSamples = MAX_RESAMPLE_SIZE;
-	if((getLastTime()-getFirstTime())/aDT > maxSamples) {
-		double newDT = (getLastTime()-getFirstTime())/maxSamples;
-		cout<<"Storage.resampleLinear: WARNING: resampling at time step "<<newDT<<" (but minimum time step is "<<aDT<<")"<<endl;
-		aDT = newDT;
-	}
+    // Limit aDT based on expected number of samples
+    int maxSamples = MAX_RESAMPLE_SIZE;
+    if((getLastTime()-getFirstTime())/aDT > maxSamples) {
+        double newDT = (getLastTime()-getFirstTime())/maxSamples;
+        cout<<"Storage.resampleLinear: WARNING: resampling at time step "<<newDT<<" (but minimum time step is "<<aDT<<")"<<endl;
+        aDT = newDT;
+    }
 
-	Array<std::string> saveLabels = getColumnLabels();
+    Array<std::string> saveLabels = getColumnLabels();
 
-	// HOW MANY TIME STEPS?
-	double ti = getFirstTime();
-	double tf = getLastTime();
-	int nr = IO::ComputeNumberOfSteps(ti,tf,aDT);
+    // HOW MANY TIME STEPS?
+    double ti = getFirstTime();
+    double tf = getLastTime();
+    int nr = IO::ComputeNumberOfSteps(ti,tf,aDT);
 
-	Storage *newStorage = new Storage(nr);
+    Storage *newStorage = new Storage(nr);
 
-	// LOOP THROUGH THE DATA
-	int ny=0;
-	double *y=NULL;
-	StateVector vec;
-	for(int i=0; i<nr; i++) {
-		double t = ti+aDT*(double)i;
-		// INTERPOLATE THE STATES
-		ny = getDataAtTime(t,ny,&y);
-		newStorage->append(t,ny,y);
-	}
+    // LOOP THROUGH THE DATA
+    int ny=0;
+    double *y=NULL;
+    StateVector vec;
+    for(int i=0; i<nr; i++) {
+        double t = ti+aDT*(double)i;
+        // INTERPOLATE THE STATES
+        ny = getDataAtTime(t,ny,&y);
+        newStorage->append(t,ny,y);
+    }
 
-	copyData(*newStorage);
+    copyData(*newStorage);
 
-	delete newStorage;
-	delete[] y;
+    delete newStorage;
+    delete[] y;
 
-	return aDT;
+    return aDT;
 }
 
 //_____________________________________________________________________________
@@ -2535,31 +2535,31 @@ resampleLinear(double aDT)
  */
 void Storage::interpolateAt(const Array<double> &targetTimes)
 {
-	for(int i=0; i<targetTimes.getSize();i++){
-		double t = targetTimes[i];
-		// get index for t
-		int tIndex = findIndex(t);
-		// If within small number from t then pass
-		double actualTime=0.0;
-		if (tIndex < getSize()-1){
-			getTime(tIndex+1, actualTime);
-			if (fabs(actualTime - t)<1e-6) 
-					continue;
-		}
-		// or could be the following one too
-		getTime(tIndex, actualTime);
-		if (fabs(actualTime - t)<1e-6) 
-				continue;
-		// create a StateVector and add it
-		double *y=NULL;
-		int ny=0;
-		StateVector vec;
-		// INTERPOLATE THE STATES
-		ny = getDataAtTime(t,ny,&y);
-		vec.setStates(t,ny,y);
+    for(int i=0; i<targetTimes.getSize();i++){
+        double t = targetTimes[i];
+        // get index for t
+        int tIndex = findIndex(t);
+        // If within small number from t then pass
+        double actualTime=0.0;
+        if (tIndex < getSize()-1){
+            getTime(tIndex+1, actualTime);
+            if (fabs(actualTime - t)<1e-6) 
+                    continue;
+        }
+        // or could be the following one too
+        getTime(tIndex, actualTime);
+        if (fabs(actualTime - t)<1e-6) 
+                continue;
+        // create a StateVector and add it
+        double *y=NULL;
+        int ny=0;
+        StateVector vec;
+        // INTERPOLATE THE STATES
+        ny = getDataAtTime(t,ny,&y);
+        vec.setStates(t,ny,y);
 
-		_storage.insert(tIndex+1, vec);
-	}
+        _storage.insert(tIndex+1, vec);
+    }
 }
 //=============================================================================
 // IO
@@ -2573,18 +2573,18 @@ void Storage::interpolateAt(const Array<double> &targetTimes)
 void Storage::
 setOutputFileName(const std::string& aFileName)
 {
-	assert(_fileName=="");
-	_fileName = aFileName;
+    assert(_fileName=="");
+    _fileName = aFileName;
 
-	// OPEN THE FILE
-	_fp = IO::OpenFile(aFileName,"w");
-	if(_fp==NULL) throw(Exception("Could not open file "+aFileName));
-	// WRITE THE HEADER
-	int n=0,nTotal=0;
-	n = writeHeader(_fp);
-	n = writeDescription(_fp);
-	// WRITE THE COLUMN LABELS
-	n = writeColumnLabels(_fp);
+    // OPEN THE FILE
+    _fp = IO::OpenFile(aFileName,"w");
+    if(_fp==NULL) throw(Exception("Could not open file "+aFileName));
+    // WRITE THE HEADER
+    int n=0,nTotal=0;
+    n = writeHeader(_fp);
+    n = writeDescription(_fp);
+    // WRITE THE COLUMN LABELS
+    n = writeColumnLabels(_fp);
 }
 //_____________________________________________________________________________
 /**
@@ -2606,62 +2606,62 @@ setOutputFileName(const std::string& aFileName)
 bool Storage::
 print(const string &aFileName,const string &aMode, const string& aComment) const
 {
-	// OPEN THE FILE
-	FILE *fp = IO::OpenFile(aFileName,aMode);
-	if(fp==NULL) return(false);
+    // OPEN THE FILE
+    FILE *fp = IO::OpenFile(aFileName,aMode);
+    if(fp==NULL) return(false);
 
-	// WRITE THE HEADER
-	int n=0,nTotal=0;
-	n = writeHeader(fp);
-	if(n<0) {
-		cout << "Storage.print(const string&,const string&): failed to" << endl
-			  << " write header to file " << aFileName << endl;
-		return(false);
-	}
+    // WRITE THE HEADER
+    int n=0,nTotal=0;
+    n = writeHeader(fp);
+    if(n<0) {
+        cout << "Storage.print(const string&,const string&): failed to" << endl
+              << " write header to file " << aFileName << endl;
+        return(false);
+    }
 
-	// WRITE SIMM HEADER
-	if(_writeSIMMHeader) {
-		n = writeSIMMHeader(fp, -1, aComment.c_str());
-		if(n<0) {
-			cout << "Storage.print(const string&,const string&): failed to" << endl
-				  << " write SIMM header to file " << aFileName << endl;
-			return(false);
-		}
-	}
-	
-	// WRITE THE DESCRIPTION
-	n = writeDescription(fp);
-	if(n<0) {
-		cout << "Storage.print(const string&,const string&): failed to" << endl
-			  << " write description to file " << aFileName << endl;
-		return(false);
-	}
+    // WRITE SIMM HEADER
+    if(_writeSIMMHeader) {
+        n = writeSIMMHeader(fp, -1, aComment.c_str());
+        if(n<0) {
+            cout << "Storage.print(const string&,const string&): failed to" << endl
+                  << " write SIMM header to file " << aFileName << endl;
+            return(false);
+        }
+    }
+    
+    // WRITE THE DESCRIPTION
+    n = writeDescription(fp);
+    if(n<0) {
+        cout << "Storage.print(const string&,const string&): failed to" << endl
+              << " write description to file " << aFileName << endl;
+        return(false);
+    }
 
-	// WRITE THE COLUMN LABELS
-	n = writeColumnLabels(fp);
-	if(n<0) {
-		cout << "Storage.print(const string&,const string&): failed to" << endl
-			  << " write column labels to file " << aFileName << endl;
-		return(false);
-	}
+    // WRITE THE COLUMN LABELS
+    n = writeColumnLabels(fp);
+    if(n<0) {
+        cout << "Storage.print(const string&,const string&): failed to" << endl
+              << " write column labels to file " << aFileName << endl;
+        return(false);
+    }
 
 //printf("Storage.cpp:print storage=%x  n=%d ",&_storage, _storage.getSize());
 //std::cout << aFileName << endl;
 
-	// VECTORS
-	for(int i=0;i<_storage.getSize();i++) {
-		n = getStateVector(i)->print(fp);
-		if(n<0) {
-			cout << "Storage.print(const string&,const string&): error printing to " << aFileName;
-			return(false);
-		}
-		nTotal += n;		
-	}
+    // VECTORS
+    for(int i=0;i<_storage.getSize();i++) {
+        n = getStateVector(i)->print(fp);
+        if(n<0) {
+            cout << "Storage.print(const string&,const string&): error printing to " << aFileName;
+            return(false);
+        }
+        nTotal += n;		
+    }
 
-	// CLOSE
-	fclose(fp);
+    // CLOSE
+    fclose(fp);
 
-	return(nTotal!=0);
+    return(nTotal!=0);
 }
 //_____________________________________________________________________________
 /**
@@ -2680,91 +2680,91 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
 int Storage::
 print(const string &aFileName,double aDT,const string &aMode) const
 {
-	// CHECK FOR VALID DT
-	if(aDT<=0) return(0);
+    // CHECK FOR VALID DT
+    if(aDT<=0) return(0);
 
-	if (_fp!= NULL) fclose(_fp);
-	// OPEN THE FILE
-	FILE *fp = IO::OpenFile(aFileName,aMode);
-	if(fp==NULL) return(-1);
+    if (_fp!= NULL) fclose(_fp);
+    // OPEN THE FILE
+    FILE *fp = IO::OpenFile(aFileName,aMode);
+    if(fp==NULL) return(-1);
 
-	// HOW MANY TIME STEPS?
-	double ti = getFirstTime();
-	double tf = getLastTime();
-	int nr = IO::ComputeNumberOfSteps(ti,tf,aDT);
+    // HOW MANY TIME STEPS?
+    double ti = getFirstTime();
+    double tf = getLastTime();
+    int nr = IO::ComputeNumberOfSteps(ti,tf,aDT);
 //printf("Storage.cpp:print ti=%f tf=%f dt=%f nr=%d ", ti,tf,aDT,nr );
 //std::cout << aFileName << endl;
 
-	// WRITE THE HEADER
-	int n,nTotal=0;
-	n = writeHeader(fp,aDT);
-	if(n<0) {
-		cout << "Storage.print(const string&,const string&,double): failed to" << endl
-			  << " write header of file " << aFileName << endl;
-		return(n);
-	}
+    // WRITE THE HEADER
+    int n,nTotal=0;
+    n = writeHeader(fp,aDT);
+    if(n<0) {
+        cout << "Storage.print(const string&,const string&,double): failed to" << endl
+              << " write header of file " << aFileName << endl;
+        return(n);
+    }
 
-	// WRITE SIMM HEADER
-	if(_writeSIMMHeader) {
-		n = writeSIMMHeader(fp,aDT);
-		if(n<0) {
-			cout << "Storage.print(const string&,const string&): failed to" << endl
-				  << " write SIMM header to file " << aFileName << endl;
-			return(n);
-		}
-	}
+    // WRITE SIMM HEADER
+    if(_writeSIMMHeader) {
+        n = writeSIMMHeader(fp,aDT);
+        if(n<0) {
+            cout << "Storage.print(const string&,const string&): failed to" << endl
+                  << " write SIMM header to file " << aFileName << endl;
+            return(n);
+        }
+    }
 
-	// WRITE THE DESCRIPTION
-	n = writeDescription(fp);
-	if(n<0) {
-		cout << "Storage.print(const string&,const string&): failed to" << endl
-			  << " write description to file " << aFileName << endl;
-		return(n);
-	}
+    // WRITE THE DESCRIPTION
+    n = writeDescription(fp);
+    if(n<0) {
+        cout << "Storage.print(const string&,const string&): failed to" << endl
+              << " write description to file " << aFileName << endl;
+        return(n);
+    }
 
-	// WRITE THE COLUMN LABELS
-	n = writeColumnLabels(fp);
-	if(n<0) {
-		cout << "Storage.print(const string&,const string&): failed to" << endl
-			  << " write column labels to file " << aFileName << endl;
-		return(n);
-	}
+    // WRITE THE COLUMN LABELS
+    n = writeColumnLabels(fp);
+    if(n<0) {
+        cout << "Storage.print(const string&,const string&): failed to" << endl
+              << " write column labels to file " << aFileName << endl;
+        return(n);
+    }
 
-	// LOOP THROUGH THE DATA
-	int i,ny=0;
-	double t,*y=NULL;
-	StateVector vec;
-	for(t=ti,i=0;i<nr;i++,t=ti+aDT*(double)i) {
+    // LOOP THROUGH THE DATA
+    int i,ny=0;
+    double t,*y=NULL;
+    StateVector vec;
+    for(t=ti,i=0;i<nr;i++,t=ti+aDT*(double)i) {
 
-		// INTERPOLATE THE STATES
-		ny = getDataAtTime(t,ny,&y);
-		vec.setStates(t,ny,y);
+        // INTERPOLATE THE STATES
+        ny = getDataAtTime(t,ny,&y);
+        vec.setStates(t,ny,y);
 
-		// PRINT
-		n = vec.print(fp);
-		if(n<0) {
-			cout << "Storage.print(const string&,const string&): error printing to " << aFileName;
-			return(n);
-		}
-		nTotal += n;		
-	}
+        // PRINT
+        n = vec.print(fp);
+        if(n<0) {
+            cout << "Storage.print(const string&,const string&): error printing to " << aFileName;
+            return(n);
+        }
+        nTotal += n;		
+    }
 
-	// CLEANUP
-	fclose(fp);
-	if(y!=NULL) { delete[] y;  y=NULL; }
+    // CLEANUP
+    fclose(fp);
+    if(y!=NULL) { delete[] y;  y=NULL; }
 
-	return(nTotal);
+    return(nTotal);
 }
 
 void Storage::
 printResult(const Storage *aStorage,const std::string &aName,
-				const std::string &aDir,double aDT,const std::string &aExtension)
+                const std::string &aDir,double aDT,const std::string &aExtension)
 {
-	if(!aStorage) return;
-	std::string path = (aDir=="") ? "." : aDir;
-	std::string name = (aName.rfind(aExtension)==string::npos)? (path + "/" + aName + aExtension) :  (path + "/" + aName);
-	if(aDT<=0.0) aStorage->print(name);
-	else aStorage->print(name,aDT);
+    if(!aStorage) return;
+    std::string path = (aDir=="") ? "." : aDir;
+    std::string name = (aName.rfind(aExtension)==string::npos)? (path + "/" + aName + aExtension) :  (path + "/" + aName);
+    if(aDT<=0.0) aStorage->print(name);
+    else aStorage->print(name,aDT);
 }
 
 //_____________________________________________________________________________
@@ -2774,27 +2774,27 @@ printResult(const Storage *aStorage,const std::string &aName,
 int Storage::
 writeHeader(FILE *rFP,double aDT) const
 {
-	if(rFP==NULL) return(-1);
+    if(rFP==NULL) return(-1);
 
-	// COMPUTE ATTRIBUTES
-	int nr,nc;
-	if(aDT<=0) {
-		nr = _storage.getSize();
-	} else {
-		double ti = getFirstTime();
-		double tf = getLastTime();
-		nr = IO::ComputeNumberOfSteps(ti,tf,aDT);
-	}
-	nc = getSmallestNumberOfStates()+1;
+    // COMPUTE ATTRIBUTES
+    int nr,nc;
+    if(aDT<=0) {
+        nr = _storage.getSize();
+    } else {
+        double ti = getFirstTime();
+        double tf = getLastTime();
+        nr = IO::ComputeNumberOfSteps(ti,tf,aDT);
+    }
+    nc = getSmallestNumberOfStates()+1;
 
-	// ATTRIBUTES
-	fprintf(rFP,"%s\n",getName().c_str());
-	fprintf(rFP,"version=%d\n",LatestVersion);
-	fprintf(rFP,"nRows=%d\n",nr);
-	fprintf(rFP,"nColumns=%d\n",nc);
-	fprintf(rFP,"inDegrees=%s\n",(_inDegrees?"yes":"no"));
+    // ATTRIBUTES
+    fprintf(rFP,"%s\n",getName().c_str());
+    fprintf(rFP,"version=%d\n",LatestVersion);
+    fprintf(rFP,"nRows=%d\n",nr);
+    fprintf(rFP,"nColumns=%d\n",nc);
+    fprintf(rFP,"inDegrees=%s\n",(_inDegrees?"yes":"no"));
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -2805,44 +2805,44 @@ writeHeader(FILE *rFP,double aDT) const
 int Storage::
 writeSIMMHeader(FILE *rFP,double aDT, const char *aComment) const
 {
-	if(rFP==NULL) return(-1);
+    if(rFP==NULL) return(-1);
 
-	// COMMENT
-	// NOTE: avoid writing empty comment because SIMM seems to screw up parsing
-	// of a line with only a #
-	if (aComment && aComment[0])
-		fprintf(rFP,"\n# %s\n", aComment);
-	else
-		fprintf(rFP,"\n# SIMM Motion File Header:\n");
+    // COMMENT
+    // NOTE: avoid writing empty comment because SIMM seems to screw up parsing
+    // of a line with only a #
+    if (aComment && aComment[0])
+        fprintf(rFP,"\n# %s\n", aComment);
+    else
+        fprintf(rFP,"\n# SIMM Motion File Header:\n");
 
-	// NAME
-	fprintf(rFP,"name %s\n",getName().c_str());
+    // NAME
+    fprintf(rFP,"name %s\n",getName().c_str());
 
-	// COLUMNS
-	fprintf(rFP,"datacolumns %d\n",getSmallestNumberOfStates()+1);
+    // COLUMNS
+    fprintf(rFP,"datacolumns %d\n",getSmallestNumberOfStates()+1);
 
-	// ROWS
-	int nRows;
-	if(aDT<=0) {
-		nRows = _storage.getSize();
-	} else {
-		nRows = IO::ComputeNumberOfSteps(getFirstTime(),getLastTime(),aDT);
-	}
-	fprintf(rFP,"datarows %d\n",nRows);
+    // ROWS
+    int nRows;
+    if(aDT<=0) {
+        nRows = _storage.getSize();
+    } else {
+        nRows = IO::ComputeNumberOfSteps(getFirstTime(),getLastTime(),aDT);
+    }
+    fprintf(rFP,"datarows %d\n",nRows);
 
-	// OTHER DATA
-	fprintf(rFP,"otherdata 1\n");
+    // OTHER DATA
+    fprintf(rFP,"otherdata 1\n");
 
-	// RANGE
-	fprintf(rFP,"range %lf %lf\n",getFirstTime(),getLastTime());
-	
-	// Other data from the map
-	MapKeysToValues::const_iterator iter;
+    // RANGE
+    fprintf(rFP,"range %lf %lf\n",getFirstTime(),getLastTime());
+    
+    // Other data from the map
+    MapKeysToValues::const_iterator iter;
 
-	for(iter = _keyValueMap.begin(); iter != _keyValueMap.end(); iter++){
-		fprintf(rFP,"%s %s\n",iter->first.c_str(), iter->second.c_str());
-	}
-	return(0);
+    for(iter = _keyValueMap.begin(); iter != _keyValueMap.end(); iter++){
+        fprintf(rFP,"%s %s\n",iter->first.c_str(), iter->second.c_str());
+    }
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -2851,21 +2851,21 @@ writeSIMMHeader(FILE *rFP,double aDT, const char *aComment) const
 int Storage::
 writeDescription(FILE *rFP) const
 {
-	if(rFP==NULL) return(-1);
+    if(rFP==NULL) return(-1);
 
-	// DESCRIPTION
-	string descrip = getDescription();
-	size_t len = descrip.size();
-	if((len>0)&&(descrip[len-1]!='\n')) {
-		fprintf(rFP,"%s\n",descrip.c_str());
-	} else {
-		fprintf(rFP,"%s",descrip.c_str());
-	}
+    // DESCRIPTION
+    string descrip = getDescription();
+    size_t len = descrip.size();
+    if((len>0)&&(descrip[len-1]!='\n')) {
+        fprintf(rFP,"%s\n",descrip.c_str());
+    } else {
+        fprintf(rFP,"%s",descrip.c_str());
+    }
 
-	// DESCRIPTION TOKEN
-	fprintf(rFP,"%s\n",_headerToken.c_str());
+    // DESCRIPTION TOKEN
+    fprintf(rFP,"%s\n",_headerToken.c_str());
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -2876,80 +2876,80 @@ writeDescription(FILE *rFP) const
 int Storage::
 writeColumnLabels(FILE *rFP) const
 {
-	if(rFP==NULL) return(-1);
+    if(rFP==NULL) return(-1);
 
-	if(_columnLabels.getSize()) {
-		fprintf(rFP,"%s",_columnLabels[0].c_str());
-		for(int i=1;i<_columnLabels.getSize();i++) fprintf(rFP,"\t%s",_columnLabels[i].c_str());
-		fprintf(rFP,"\n");
-	} else {
-		// Write default column labels
-		fprintf(rFP,"time");
-		int n=getSmallestNumberOfStates();
-		for(int i=0;i<n;i++) fprintf(rFP,"\tstate_%d",i);
-		fprintf(rFP,"\n");
-	}
+    if(_columnLabels.getSize()) {
+        fprintf(rFP,"%s",_columnLabels[0].c_str());
+        for(int i=1;i<_columnLabels.getSize();i++) fprintf(rFP,"\t%s",_columnLabels[i].c_str());
+        fprintf(rFP,"\n");
+    } else {
+        // Write default column labels
+        fprintf(rFP,"time");
+        int n=getSmallestNumberOfStates();
+        for(int i=0;i<n;i++) fprintf(rFP,"\tstate_%d",i);
+        fprintf(rFP,"\n");
+    }
 
-	return(0);
+    return(0);
 }
 void Storage::addToRdStorage(Storage& rStorage, double aStartTime, double aEndTime)
 {
-	bool addedData = false;
-	double time, stateTime;
+    bool addedData = false;
+    double time, stateTime;
 
-	/* Loop through the rows in rStorage from aStartTime to aEndTime,
-	 * looking for a match (by time) in the rows of Storage.
-	 * If you find a match, add the columns in the Storage
-	 * to the end of the state vector in the rStorage. If you
-	 * don't find one, it's a fatal error so throw an exception.
-	 * Don't add a column if its name is 'unassigned'.
-	 */
-	int i, j, startIndex, endIndex;
-	rStorage.findFrameRange(aStartTime, aEndTime, startIndex, endIndex);
-	int numColumns=getColumnLabels().getSize();
-	for (i = startIndex; i <= endIndex; i++)
-	{
-		rStorage.getTime(i, stateTime);
-		for (j = 0; j < getSize(); j++)
-		{
-			/* Assume that the first column is 'time'. */
-			time = getStateVector(j)->getTime();
-			if (EQUAL_WITHIN_TOLERANCE(time, stateTime, 0.0001))
-			{
-				Array<double>& states = rStorage.getStateVector(i)->getData();
-				for (int k = 1; k < numColumns; k++)	// Start at 1 to avoid duplicate time column
-				{
-					if (_columnLabels[k] != "Unassigned")
-					{
-						states.append(getStateVector(j)->getData().get(k-1));
-						addedData = true;
-					}
-				}
-				break;
-			}
-		}
-		if (j == getSize())
-		{
-			stringstream errorMessage;
-			errorMessage << "Error: no coordinate data found at time " << stateTime << " in " << _fileName;
-			throw (Exception(errorMessage.str()));
-		}
-	}
+    /* Loop through the rows in rStorage from aStartTime to aEndTime,
+     * looking for a match (by time) in the rows of Storage.
+     * If you find a match, add the columns in the Storage
+     * to the end of the state vector in the rStorage. If you
+     * don't find one, it's a fatal error so throw an exception.
+     * Don't add a column if its name is 'unassigned'.
+     */
+    int i, j, startIndex, endIndex;
+    rStorage.findFrameRange(aStartTime, aEndTime, startIndex, endIndex);
+    int numColumns=getColumnLabels().getSize();
+    for (i = startIndex; i <= endIndex; i++)
+    {
+        rStorage.getTime(i, stateTime);
+        for (j = 0; j < getSize(); j++)
+        {
+            /* Assume that the first column is 'time'. */
+            time = getStateVector(j)->getTime();
+            if (EQUAL_WITHIN_TOLERANCE(time, stateTime, 0.0001))
+            {
+                Array<double>& states = rStorage.getStateVector(i)->getData();
+                for (int k = 1; k < numColumns; k++)	// Start at 1 to avoid duplicate time column
+                {
+                    if (_columnLabels[k] != "Unassigned")
+                    {
+                        states.append(getStateVector(j)->getData().get(k-1));
+                        addedData = true;
+                    }
+                }
+                break;
+            }
+        }
+        if (j == getSize())
+        {
+            stringstream errorMessage;
+            errorMessage << "Error: no coordinate data found at time " << stateTime << " in " << _fileName;
+            throw (Exception(errorMessage.str()));
+        }
+    }
 
-	/* Add the coordinate names to the Storage (if at least
-	 * one row of data was added to the object).
-	 */
-	if (addedData)
-	{
-		const Array<std::string>& oldColumnLabels =rStorage.getColumnLabels();
-		Array<std::string> newColumnLabels(oldColumnLabels);
-		for (int i = 1; i < _columnLabels.getSize(); i++) // Start at 1 to avoid duplicate time label
-		{
-			if (!(_columnLabels[i] == "Unassigned"))
-				newColumnLabels.append( _columnLabels[i]);
-		}
-		rStorage.setColumnLabels(newColumnLabels);
-	}
+    /* Add the coordinate names to the Storage (if at least
+     * one row of data was added to the object).
+     */
+    if (addedData)
+    {
+        const Array<std::string>& oldColumnLabels =rStorage.getColumnLabels();
+        Array<std::string> newColumnLabels(oldColumnLabels);
+        for (int i = 1; i < _columnLabels.getSize(); i++) // Start at 1 to avoid duplicate time label
+        {
+            if (!(_columnLabels[i] == "Unassigned"))
+                newColumnLabels.append( _columnLabels[i]);
+        }
+        rStorage.setColumnLabels(newColumnLabels);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -2960,29 +2960,29 @@ void Storage::addToRdStorage(Storage& rStorage, double aStartTime, double aEndTi
 void Storage::
 addKeyValuePair(const std::string& aKey, const std::string& aValue)
 {
-	if (_keyValueMap.find(aKey)!=_keyValueMap.end()){
-		// Should we warn here? or append in case of comment?
-	}
-	_keyValueMap[aKey]=aValue;
-	//cout << "key, value " << aKey << ", " << aValue << endl;
+    if (_keyValueMap.find(aKey)!=_keyValueMap.end()){
+        // Should we warn here? or append in case of comment?
+    }
+    _keyValueMap[aKey]=aValue;
+    //cout << "key, value " << aKey << ", " << aValue << endl;
 
 }
 // Lookup the value for a key
 void Storage::
 getValueForKey(const std::string& aKey, std::string& rValue) const
 {
-	MapKeysToValues::const_iterator iter =_keyValueMap.find(aKey);
-	if (iter!=_keyValueMap.end()){
-		rValue=iter->second;
-	}
-	else
-		rValue="";
+    MapKeysToValues::const_iterator iter =_keyValueMap.find(aKey);
+    if (iter!=_keyValueMap.end()){
+        rValue=iter->second;
+    }
+    else
+        rValue="";
 
 }
 // Check if the key exists
 bool Storage::hasKey(const std::string& aKey) const
 {
-	return (_keyValueMap.find(aKey)!=_keyValueMap.end());
+    return (_keyValueMap.find(aKey)!=_keyValueMap.end());
 }
 
 //_____________________________________________________________________________
@@ -2993,11 +2993,11 @@ bool Storage::hasKey(const std::string& aKey) const
  */
 bool Storage::isSimmReservedToken(const std::string& aToken)
 {
-	for(int i=0; i<numSimmReservedKeys; i++){
-		if (simmReservedKeys[i]==aToken)
-			return true;
-	}
-	return false;
+    for(int i=0; i<numSimmReservedKeys; i++){
+        if (simmReservedKeys[i]==aToken)
+            return true;
+    }
+    return false;
 }
 //_____________________________________________________________________________
 /**
@@ -3009,81 +3009,81 @@ bool Storage::isSimmReservedToken(const std::string& aToken)
  */
 bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColumns)
 {
-	bool done=false;
-	bool firstLine=true;
-	_fileVersion = 0;
-	// Parse until the end of header
-	while(!done){
-		// NAME
-		string line = IO::ReadLine(aStream);
-		// Always Strip leading and trainling spaces and tabs
-		IO::TrimLeadingWhitespace(line);
-		IO::TrimTrailingWhitespace(line);
-		if(line.empty() && !aStream.good()) {
-			cout << "Storage: ERROR- no more lines in storage file." << endl;
-			return false;
-		}
-		if (line.length()==0)
-			continue;
+    bool done=false;
+    bool firstLine=true;
+    _fileVersion = 0;
+    // Parse until the end of header
+    while(!done){
+        // NAME
+        string line = IO::ReadLine(aStream);
+        // Always Strip leading and trainling spaces and tabs
+        IO::TrimLeadingWhitespace(line);
+        IO::TrimTrailingWhitespace(line);
+        if(line.empty() && !aStream.good()) {
+            cout << "Storage: ERROR- no more lines in storage file." << endl;
+            return false;
+        }
+        if (line.length()==0)
+            continue;
 
-		// Here we have a line. Should be one of:
-		// name
-		// nRows, nr, datarows
-		// nColumns, nc, datacolumns
-		// nd, nDescrip
-		// # Comment
-		size_t delim = line.find_first_of(" \t=");
-		string key = line.substr(0, delim);
-		size_t restidx = line.find_first_not_of(" \t=", delim);
-		string rest = (restidx==string::npos) ? "" : line.substr(restidx);
+        // Here we have a line. Should be one of:
+        // name
+        // nRows, nr, datarows
+        // nColumns, nc, datacolumns
+        // nd, nDescrip
+        // # Comment
+        size_t delim = line.find_first_of(" \t=");
+        string key = line.substr(0, delim);
+        size_t restidx = line.find_first_not_of(" \t=", delim);
+        string rest = (restidx==string::npos) ? "" : line.substr(restidx);
 
-		if (key== "name"){
-			setName(rest);
-		}
-		else if (key== "nr" || key== "nRows" || key== "datarows"){
-			rNumRows = atoi(rest.c_str());			
-		}
-		else if (key== "nc" || key== "nColumns" || key== "datacolumns"){
-			rNumColumns = atoi(rest.c_str());			
-		}
-		else if (isSimmReservedToken(key)) {
-				_keyValueMap[key]= rest;
-		} 
-		else if (key== "units") {
-				_units = Units(rest);
-		}
-		else if (key=="version") {
-			_fileVersion = atoi(rest.c_str());
-		}
-		else if (key=="inDegrees") {
-			string lower = IO::Lowercase(rest);
-			bool inDegrees = (lower=="yes" || lower=="y");
-			setInDegrees(inDegrees);
-		}
-		else if (key=="Angles" && _fileVersion==0){
-			if (line == "Angles are in degrees.")
-				setInDegrees(true);
-			else if (line == "Angles are in radians.")
-				setInDegrees(false);
-		}
-		else if(key== DEFAULT_HEADER_TOKEN){				
-			break;			
-		}
-		else if (firstLine){	// Storage file have their names without "name prefix on first line"
-			setName(line);
-		}
-		firstLine=false;
-	}
-	if(rNumColumns==0 || rNumRows==0) {
-		cout << "Storage: ERROR- failed to parse header of storage file." << endl;
-		return false;
-	}
-	if (_fileVersion < LatestVersion) {
-		if (_fileVersion < 1){
-			cout << "Old version storage/motion file encountered" << endl;
-		}
-	}
-	return true;
+        if (key== "name"){
+            setName(rest);
+        }
+        else if (key== "nr" || key== "nRows" || key== "datarows"){
+            rNumRows = atoi(rest.c_str());			
+        }
+        else if (key== "nc" || key== "nColumns" || key== "datacolumns"){
+            rNumColumns = atoi(rest.c_str());			
+        }
+        else if (isSimmReservedToken(key)) {
+                _keyValueMap[key]= rest;
+        } 
+        else if (key== "units") {
+                _units = Units(rest);
+        }
+        else if (key=="version") {
+            _fileVersion = atoi(rest.c_str());
+        }
+        else if (key=="inDegrees") {
+            string lower = IO::Lowercase(rest);
+            bool inDegrees = (lower=="yes" || lower=="y");
+            setInDegrees(inDegrees);
+        }
+        else if (key=="Angles" && _fileVersion==0){
+            if (line == "Angles are in degrees.")
+                setInDegrees(true);
+            else if (line == "Angles are in radians.")
+                setInDegrees(false);
+        }
+        else if(key== DEFAULT_HEADER_TOKEN){				
+            break;			
+        }
+        else if (firstLine){	// Storage file have their names without "name prefix on first line"
+            setName(line);
+        }
+        firstLine=false;
+    }
+    if(rNumColumns==0 || rNumRows==0) {
+        cout << "Storage: ERROR- failed to parse header of storage file." << endl;
+        return false;
+    }
+    if (_fileVersion < LatestVersion) {
+        if (_fileVersion < 1){
+            cout << "Old version storage/motion file encountered" << endl;
+        }
+    }
+    return true;
 }
 //_____________________________________________________________________________
 /**
@@ -3093,18 +3093,18 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
 void Storage::
 exchangeTimeColumnWith(int aColumnIndex)
 {
-	StateVector* vec;
-	for(int i=0; i< _storage.getSize(); i++){
-		vec = getStateVector(i);
-		double swap = vec->getData().get(aColumnIndex);
-		double time=vec->getTime();
-		vec->setDataValue(aColumnIndex, time);
-		vec->setTime(swap);
-	}
-	// Now column labels
-	string swap = _columnLabels.get(0);
-	_columnLabels.set(aColumnIndex+1, swap);
-	_columnLabels.set(0, "time");
+    StateVector* vec;
+    for(int i=0; i< _storage.getSize(); i++){
+        vec = getStateVector(i);
+        double swap = vec->getData().get(aColumnIndex);
+        double time=vec->getTime();
+        vec->setDataValue(aColumnIndex, time);
+        vec->setTime(swap);
+    }
+    // Now column labels
+    string swap = _columnLabels.get(0);
+    _columnLabels.set(aColumnIndex+1, swap);
+    _columnLabels.set(0, "time");
 
 }
 //_____________________________________________________________________________
@@ -3117,54 +3117,54 @@ exchangeTimeColumnWith(int aColumnIndex)
  */
 void Storage::postProcessSIMMMotion() 
 {
-	Array<std::string> currentLabels = getColumnLabels();
-	// If time is not first column check if it exists somewhere else and exchange
-	if (!(currentLabels.get(0)=="time")){
-		int timeColumnIndx = currentLabels.findIndex("time");
-		if (timeColumnIndx!=-1){ // Exchange column timeColumnIndx with time
-			exchangeTimeColumnWith(timeColumnIndx);
-		}
-		else {	
-			// There was no time column altogether. make one based on
-			// range (if specified) and number of entries
-			MapKeysToValues::iterator iter;
-			iter = _keyValueMap.find("range");	// Should we check "Range", "RANGE" too?
-			if (iter !=_keyValueMap.end()){
-				string rangeValue = iter->second;
-				double start, end;
-				sscanf(rangeValue.c_str(), "%lf %lf", &start, &end);
-				if (_storage.getSize()<2){	// Something wrong throw exception unless start==end
-					if (start !=end){
-						stringstream errorMessage;
-						errorMessage << "Error: Motion file has inconsistent headers";
-						throw (Exception(errorMessage.str()));
-					}
-					else if (_storage.getSize()==1){
-						// Prepend a Time column
-						StateVector vec = _storage.get(0);
-						vec.getData().append(0.0);
-						_columnLabels.append("time");
-						exchangeTimeColumnWith(_columnLabels.findIndex("time"));
-					}
-					else
-						throw (Exception("File has no data"));
-				}
-				else {	// time  column from range, size
-					double timeStep = (end - start)/(_storage.getSize()-1);
-					_columnLabels.append("time");
-					for(int i=0; i<_storage.getSize(); i++){
-						Array<double>& data=_storage.updElt(i).getData();
-						data.append(i*timeStep);
-					}
-					int timeColumnIndex=_columnLabels.findIndex("time");
-					exchangeTimeColumnWith(timeColumnIndex-1);
-				}
-			}
-			else {	// No time specified altogether
-					throw (Exception("Storage::postProcessSIMMMotion no time column found."));
-			}
-		}
-	}
+    Array<std::string> currentLabels = getColumnLabels();
+    // If time is not first column check if it exists somewhere else and exchange
+    if (!(currentLabels.get(0)=="time")){
+        int timeColumnIndx = currentLabels.findIndex("time");
+        if (timeColumnIndx!=-1){ // Exchange column timeColumnIndx with time
+            exchangeTimeColumnWith(timeColumnIndx);
+        }
+        else {	
+            // There was no time column altogether. make one based on
+            // range (if specified) and number of entries
+            MapKeysToValues::iterator iter;
+            iter = _keyValueMap.find("range");	// Should we check "Range", "RANGE" too?
+            if (iter !=_keyValueMap.end()){
+                string rangeValue = iter->second;
+                double start, end;
+                sscanf(rangeValue.c_str(), "%lf %lf", &start, &end);
+                if (_storage.getSize()<2){	// Something wrong throw exception unless start==end
+                    if (start !=end){
+                        stringstream errorMessage;
+                        errorMessage << "Error: Motion file has inconsistent headers";
+                        throw (Exception(errorMessage.str()));
+                    }
+                    else if (_storage.getSize()==1){
+                        // Prepend a Time column
+                        StateVector vec = _storage.get(0);
+                        vec.getData().append(0.0);
+                        _columnLabels.append("time");
+                        exchangeTimeColumnWith(_columnLabels.findIndex("time"));
+                    }
+                    else
+                        throw (Exception("File has no data"));
+                }
+                else {	// time  column from range, size
+                    double timeStep = (end - start)/(_storage.getSize()-1);
+                    _columnLabels.append("time");
+                    for(int i=0; i<_storage.getSize(); i++){
+                        Array<double>& data=_storage.updElt(i).getData();
+                        data.append(i*timeStep);
+                    }
+                    int timeColumnIndex=_columnLabels.findIndex("time");
+                    exchangeTimeColumnWith(timeColumnIndex-1);
+                }
+            }
+            else {	// No time specified altogether
+                    throw (Exception("Storage::postProcessSIMMMotion no time column found."));
+            }
+        }
+    }
 }
 /**
  * Compare column named "aColumnName" in two storage objects
@@ -3175,40 +3175,40 @@ void Storage::postProcessSIMMMotion()
  */
 double Storage::compareColumn(Storage& aOtherStorage, const std::string& aColumnName, double startTime, double endTime)
 {
-	//Subtract one since, the data does not include the time column anymore.
-	int thisColumnIndex=_columnLabels.findIndex(aColumnName)-1;
-	int otherColumnIndex = aOtherStorage._columnLabels.findIndex(aColumnName)-1;
+    //Subtract one since, the data does not include the time column anymore.
+    int thisColumnIndex=_columnLabels.findIndex(aColumnName)-1;
+    int otherColumnIndex = aOtherStorage._columnLabels.findIndex(aColumnName)-1;
 
-	double theDiff = SimTK::NaN;
+    double theDiff = SimTK::NaN;
 
-	if ((thisColumnIndex==-2)||(otherColumnIndex==-2))// not found is now -2 since we subtracted 1 already
-		return theDiff;
+    if ((thisColumnIndex==-2)||(otherColumnIndex==-2))// not found is now -2 since we subtracted 1 already
+        return theDiff;
 
-	// Now we have two columnNumbers. get the data and compare
-	Array<double> thisData, otherData;
-	Array<double> thisTime, otherTime;
-	getDataColumn(thisColumnIndex, thisData);
-	getTimeColumn(thisTime);
+    // Now we have two columnNumbers. get the data and compare
+    Array<double> thisData, otherData;
+    Array<double> thisTime, otherTime;
+    getDataColumn(thisColumnIndex, thisData);
+    getTimeColumn(thisTime);
 
-	aOtherStorage.getDataColumn(otherColumnIndex, otherData);
-	aOtherStorage.getTimeColumn(otherTime);
+    aOtherStorage.getDataColumn(otherColumnIndex, otherData);
+    aOtherStorage.getTimeColumn(otherTime);
 
-	// make sure times match (we probably should make this more flexible to interpolate missing values
-	// but that's not needed for now.
-	theDiff = -SimTK::Infinity;
-	int startIndex = findIndex(startTime);
-	int startIndexOther = aOtherStorage.findIndex(startTime);
-	int endIndex = (endTime==-1.0)?getSize():findIndex(endTime);
-	int endIndexOther = (endTime==-1.0)?(aOtherStorage.getSize()):aOtherStorage.findIndex(endTime);
-	// Make sure we have same number of rows
-	if ((endIndex -startIndex)!= (endIndexOther -startIndexOther)) return (theDiff);
+    // make sure times match (we probably should make this more flexible to interpolate missing values
+    // but that's not needed for now.
+    theDiff = -SimTK::Infinity;
+    int startIndex = findIndex(startTime);
+    int startIndexOther = aOtherStorage.findIndex(startTime);
+    int endIndex = (endTime==-1.0)?getSize():findIndex(endTime);
+    int endIndexOther = (endTime==-1.0)?(aOtherStorage.getSize()):aOtherStorage.findIndex(endTime);
+    // Make sure we have same number of rows
+    if ((endIndex -startIndex)!= (endIndexOther -startIndexOther)) return (theDiff);
 
-	for(int i=startIndex; i< endIndex; i++){
-		if (abs(thisTime[i]-otherTime[startIndexOther+i-startIndex]) > 1E-3) 
-			return SimTK::Infinity;
-		theDiff = std::max(theDiff, fabs(thisData[i]-otherData[startIndexOther+i-startIndex]));
-	}
-	return theDiff;
+    for(int i=startIndex; i< endIndex; i++){
+        if (abs(thisTime[i]-otherTime[startIndexOther+i-startIndex]) > 1E-3) 
+            return SimTK::Infinity;
+        theDiff = std::max(theDiff, fabs(thisData[i]-otherData[startIndexOther+i-startIndex]));
+    }
+    return theDiff;
 }
 /**
  * Compare column named "aColumnName" in two storage objects
@@ -3217,59 +3217,85 @@ double Storage::compareColumn(Storage& aOtherStorage, const std::string& aColumn
  */
 double Storage::compareColumnRMS(Storage& aOtherStorage, const std::string& aColumnName, double startTime, double endTime)
 {
-	//Subtract one since, the data does not include the time column anymore.
-	int thisColumnIndex=_columnLabels.findIndex(aColumnName)-1;
-	int otherColumnIndex = aOtherStorage._columnLabels.findIndex(aColumnName)-1;
+    int thisColumnIndex=_columnLabels.findIndex(aColumnName);
+    int otherColumnIndex = aOtherStorage._columnLabels.findIndex(aColumnName);
 
-	if ((thisColumnIndex < 0) || (otherColumnIndex < 0)) {
-		//Assume new component state variable labeling so redo find with the just the
-		//ending substring instead of its full path name
-		std::string::size_type back = aColumnName.rfind("/");
-		std::string prefix = aColumnName.substr(0, back);
-		std::string shortName = aColumnName.substr(back+1, aColumnName.length()-back);
-		
-		if (thisColumnIndex < 0)
-			thisColumnIndex = _columnLabels.findIndex(shortName) - 1;
+    if ((thisColumnIndex < 0) || (otherColumnIndex < 0)) {
+        //Assume new component state variable labeling so redo find with the just the
+        //ending substring instead of its full path name
+        std::string::size_type back = aColumnName.rfind("/");
+        std::string prefix = aColumnName.substr(0, back);
+        std::string shortName = aColumnName.substr(back+1, aColumnName.length()-back);
+        
+        if (thisColumnIndex < 0)
+            thisColumnIndex = _columnLabels.findIndex(shortName) - 1;
 
-		if (otherColumnIndex < 0)
-			otherColumnIndex = aOtherStorage._columnLabels.findIndex(shortName) - 1;
+        if (otherColumnIndex < 0){
+            otherColumnIndex = aOtherStorage._columnLabels.findIndex(shortName) - 1;
+            if (otherColumnIndex < 0){
+                if (shortName == "value"){
+                    // old formats did not have "/value" so remove it if here
+                    back = prefix.rfind("/");
+                    shortName = prefix.substr(back + 1, prefix.length());
+                    otherColumnIndex = aOtherStorage.getColumnLabels().findIndex(shortName);
+                }
+                else if (shortName == "speed"){
+                    // replace "/speed" (the latest labeling for speeds) with "_u"
+                    back = prefix.rfind("/");
+                    shortName = prefix.substr(back + 1, prefix.length() - back) + "_u";
+                    otherColumnIndex = aOtherStorage.getColumnLabels().findIndex(shortName);
+                }
+                else {
+                    // try replacing the '/' with '.' in the last connection
+                    shortName = aColumnName;
+                    shortName.replace(back, 1, ".");
+                    back = shortName.rfind("/");
+                    shortName = shortName.substr(back + 1, shortName.length() - back);
+                    otherColumnIndex = aOtherStorage.getColumnLabels().findIndex(shortName);
+                }
+            }
+        }
 
-		if ((thisColumnIndex < 0) || (otherColumnIndex < 0))
-			return SimTK::NaN;
-	}
+        if ((thisColumnIndex < 0) || (otherColumnIndex < 0))
+            return SimTK::NaN;
+    }
 
-	// Now we have two columnNumbers. get the data and compare
-	Array<double> thisData, otherData;
-	Array<double> thisTime, otherTime;
-	getDataColumn(thisColumnIndex, thisData);
-	getTimeColumn(thisTime);
-	aOtherStorage.getDataColumn(otherColumnIndex, otherData);
-	aOtherStorage.getTimeColumn(otherTime);
+    //NOTE!!!! Subtract one since, the data does not include the time column!
+    thisColumnIndex -= 1;
+    otherColumnIndex -= 1;
 
-	// get start and end indices
-	if (SimTK::isNaN(startTime))
-		startTime = max(thisTime[0], otherTime[0]);
-	int startIndex = findIndex(startTime);
-	if (thisTime[startIndex] < startTime)
-		++startIndex;
-	if (SimTK::isNaN(endTime))
-		endTime = min(thisTime.getLast(), otherTime.getLast());
-	int endIndex = findIndex(endTime);
-	
-	// create spline in case time values do not match up
-	GCVSpline spline(3, otherTime.getSize(), &otherTime[0], &otherData[0]);
+    // Now we have two columnNumbers. get the data and compare
+    Array<double> thisData, otherData;
+    Array<double> thisTime, otherTime;
+    getDataColumn(thisColumnIndex, thisData);
+    getTimeColumn(thisTime);
+    aOtherStorage.getDataColumn(otherColumnIndex, otherData);
+    aOtherStorage.getTimeColumn(otherTime);
 
-	double rms = 0.;
+    // get start and end indices
+    if (SimTK::isNaN(startTime))
+        startTime = max(thisTime[0], otherTime[0]);
+    int startIndex = findIndex(startTime);
+    if (thisTime[startIndex] < startTime)
+        ++startIndex;
+    if (SimTK::isNaN(endTime))
+        endTime = min(thisTime.getLast(), otherTime.getLast());
+    int endIndex = findIndex(endTime);
+    
+    // create spline in case time values do not match up
+    GCVSpline spline(3, otherTime.getSize(), &otherTime[0], &otherData[0]);
 
-	for(int i = startIndex; i <= endIndex; i++) {
-		SimTK::Vector inputTime(1, thisTime[i]);
-		double diff = thisData[i] - spline.calcValue(inputTime);
-		rms += diff * diff;
-	}
+    double rms = 0.;
 
-	rms = sqrt(rms/(endIndex - startIndex));
+    for(int i = startIndex; i <= endIndex; i++) {
+        SimTK::Vector inputTime(1, thisTime[i]);
+        double diff = thisData[i] - spline.calcValue(inputTime);
+        rms += diff * diff;
+    }
 
-	return rms;
+    rms = sqrt(rms/(endIndex - startIndex));
+
+    return rms;
 }
 /**
  * Compare this storage object with a standard storage object. Find RMS
@@ -3278,21 +3304,21 @@ double Storage::compareColumnRMS(Storage& aOtherStorage, const std::string& aCol
  */
 void Storage::compareWithStandard(Storage& standard, Array<string> &columnsUsed, Array<double> &comparisons)
 {
-	int maxColumns = _columnLabels.getSize();
-	columnsUsed.ensureCapacity(maxColumns);
-	comparisons.ensureCapacity(maxColumns);
+    int maxColumns = _columnLabels.getSize();
+    columnsUsed.ensureCapacity(maxColumns);
+    comparisons.ensureCapacity(maxColumns);
 
-	int columns = 0;
-	for (int i = 1; i < maxColumns; ++i) {
-		double comparison = compareColumnRMS(standard, _columnLabels[i]);
-		if (!SimTK::isNaN(comparison)) {
-			comparisons[columns] = comparison;
-			columnsUsed[columns++] = _columnLabels[i];
-		}
-	}
+    int columns = 0;
+    for (int i = 1; i < maxColumns; ++i) {
+        double comparison = compareColumnRMS(standard, _columnLabels[i]);
+        if (!SimTK::isNaN(comparison)) {
+            comparisons[columns] = comparison;
+            columnsUsed[columns++] = _columnLabels[i];
+        }
+    }
 
-	columnsUsed.setSize(columns);
-	comparisons.setSize(columns);
+    columnsUsed.setSize(columns);
+    comparisons.setSize(columns);
 }
 /**
  * Force column labels for a Storage object to become unique. This is done by prepending the string (n_)
@@ -3301,27 +3327,27 @@ void Storage::compareWithStandard(Storage& standard, Array<string> &columnsUsed,
  * @returns true if labels were changed false otherwise.
  **/
 bool Storage::makeStorageLabelsUnique() {
-	Array<std::string> lbls = getColumnLabels();
-	std::string offending="";
-	bool changedLabels=false;
-	for(int i=0; i< lbls.getSize(); i++){
-		bool isUnique= (lbls.findIndex(lbls[i])==i);
-		if (!isUnique){ // Make new names
-			offending =lbls[i];
-			bool exist=true;
-			std::string newName =offending;
-			changedLabels = true;
-			int c=1;
-			while(exist){
-				char cString[20];
-				sprintf(cString,"%d", c);
-				newName = std::string(cString)+"_"+offending;
-				exist= (lbls.findIndex(newName)!=-1);
-				c++;
-			}
-			lbls[i]= newName;
-		}
-	}
-	if (changedLabels) setColumnLabels(lbls);
-	return (!changedLabels);
+    Array<std::string> lbls = getColumnLabels();
+    std::string offending="";
+    bool changedLabels=false;
+    for(int i=0; i< lbls.getSize(); i++){
+        bool isUnique= (lbls.findIndex(lbls[i])==i);
+        if (!isUnique){ // Make new names
+            offending =lbls[i];
+            bool exist=true;
+            std::string newName =offending;
+            changedLabels = true;
+            int c=1;
+            while(exist){
+                char cString[20];
+                sprintf(cString,"%d", c);
+                newName = std::string(cString)+"_"+offending;
+                exist= (lbls.findIndex(newName)!=-1);
+                c++;
+            }
+            lbls[i]= newName;
+        }
+    }
+    if (changedLabels) setColumnLabels(lbls);
+    return (!changedLabels);
 }

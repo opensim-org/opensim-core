@@ -34,11 +34,11 @@ using namespace std;
 
 template <typename T>
 void ASSERT_EQUAL(T expected, T found, T tolerance, std::string file="", int line=-1, std::string message="") {
-	if (found < expected - tolerance || found > expected + tolerance)
-		throw OpenSim::Exception(message, file, line);
+    if (found < expected - tolerance || found > expected + tolerance)
+        throw OpenSim::Exception(message, file, line);
 }
 inline void ASSERT(bool cond, std::string file="", int line=-1, std::string message="Exception") {
-	if (!cond) throw OpenSim::Exception(message, file, line);
+    if (!cond) throw OpenSim::Exception(message, file, line);
 }
 /**
  * Check this storage object against a standard storage object using the
@@ -47,20 +47,20 @@ inline void ASSERT(bool cond, std::string file="", int line=-1, std::string mess
  */
 void CHECK_STORAGE_AGAINST_STANDARD(OpenSim::Storage& result, OpenSim::Storage& standard, OpenSim::Array<double> tolerances, std::string testFile, int testFileLine, std::string errorMessage)
 {
-	OpenSim::Array<std::string> columnsUsed;
-	OpenSim::Array<double> comparisons;
-	result.compareWithStandard(standard, columnsUsed, comparisons);
+    OpenSim::Array<std::string> columnsUsed;
+    OpenSim::Array<double> comparisons;
+    result.compareWithStandard(standard, columnsUsed, comparisons);
 
-	int ncolumns = columnsUsed.getSize();
+    int ncolumns = columnsUsed.getSize();
 
-	ASSERT(ncolumns > 0, testFile, testFileLine, errorMessage + "- no common columns to compare!");
+    ASSERT(ncolumns > 0, testFile, testFileLine, errorMessage + "- no common columns to compare!");
 
-	for (int i = 0; i < ncolumns; ++i) {
-		std::cout << "column:    " << columnsUsed[i] << std::endl;
-		std::cout << "RMS error: " << comparisons[i] << std::endl;
-		std::cout << "tolerance: " << tolerances[i] << std::endl << std::endl;
-		ASSERT(comparisons[i] < tolerances[i], testFile, testFileLine, errorMessage);
-	}
+    for (int i = 0; i < ncolumns; ++i) {
+        std::cout << "column:    " << columnsUsed[i] << std::endl;
+        std::cout << "RMS error: " << comparisons[i] << std::endl;
+        std::cout << "tolerance: " << tolerances[i] << std::endl << std::endl;
+        ASSERT(comparisons[i] < tolerances[i], testFile, testFileLine, errorMessage);
+    }
 }
 
 // Informed by googletest.
@@ -150,12 +150,12 @@ static OpenSim::Object* randomize(OpenSim::Object* obj)
             
         }
         else if (ap.isObjectProperty() && !isList){
-			randomize(&ap.updValueAsObject(0));
-			ap.setValueIsDefault(false);
-		}
-		else{
+            randomize(&ap.updValueAsObject(0));
+            ap.setValueIsDefault(false);
+        }
+        else{
             //cerr << "Unrecognized Property:"<< ap.getName()<< ":" << ap.toString() << endl;
-		}
+        }
      }
      return obj;
 }

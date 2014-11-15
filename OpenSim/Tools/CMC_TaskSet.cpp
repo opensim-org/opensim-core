@@ -63,13 +63,13 @@ CMC_TaskSet::~CMC_TaskSet()
  * @param aModel Model for which tasks will be set.
  */
 CMC_TaskSet::CMC_TaskSet() :
-	_dataFileName(_dataFileNameProp.getValueStr()),
-	_pTask(0.0),_vTask(0.0),_aTask(0.0),
-	_pErrLast(0.0),_pErr(0.0),_vErrLast(0.0),_vErr(0.0),
-	_kp(0.0),_kv(0.0),_ka(0.0),
-	_w(0.0),_aDes(0.0),_a(0.0)
+    _dataFileName(_dataFileNameProp.getValueStr()),
+    _pTask(0.0),_vTask(0.0),_aTask(0.0),
+    _pErrLast(0.0),_pErr(0.0),_vErrLast(0.0),_vErr(0.0),
+    _kp(0.0),_kv(0.0),_ka(0.0),
+    _w(0.0),_aDes(0.0),_a(0.0)
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -78,15 +78,15 @@ CMC_TaskSet::CMC_TaskSet() :
  * @param aFileName Name of the file.
  */
 CMC_TaskSet::CMC_TaskSet(const string &aFileName) :
-	_dataFileName(_dataFileNameProp.getValueStr()),
-	Set<TrackingTask>(aFileName, false),
-	_pTask(0.0),_vTask(0.0),_aTask(0.0),
-	_pErrLast(0.0),_pErr(0.0),_vErrLast(0.0),_vErr(0.0),
-	_kp(0.0),_kv(0.0),_ka(0.0),
-	_w(0.0),_aDes(0.0),_a(0.0)
+    _dataFileName(_dataFileNameProp.getValueStr()),
+    Set<TrackingTask>(aFileName, false),
+    _pTask(0.0),_vTask(0.0),_aTask(0.0),
+    _pErrLast(0.0),_pErr(0.0),_vErrLast(0.0),_vErr(0.0),
+    _kp(0.0),_kv(0.0),_ka(0.0),
+    _w(0.0),_aDes(0.0),_a(0.0)
 {
-	setNull();
-	updateFromXMLDocument();
+    setNull();
+    updateFromXMLDocument();
 }
 
 
@@ -100,16 +100,16 @@ CMC_TaskSet::CMC_TaskSet(const string &aFileName) :
 void CMC_TaskSet::
 setNull()
 {
-	setupProperties();
+    setupProperties();
 
-	_model = NULL;
-	_pErrLast.setSize(0);
-	_pErr.setSize(0);
-	_vErrLast.setSize(0);
-	_vErr.setSize(0);
-	_w.setSize(0);
-	_aDes.setSize(0);
-	_a.setSize(0);
+    _model = NULL;
+    _pErrLast.setSize(0);
+    _pErr.setSize(0);
+    _vErrLast.setSize(0);
+    _vErr.setSize(0);
+    _w.setSize(0);
+    _aDes.setSize(0);
+    _a.setSize(0);
 }
 //_____________________________________________________________________________
 /**
@@ -118,9 +118,9 @@ setNull()
 void CMC_TaskSet::
 setupProperties()
 {
-	_dataFileNameProp.setName("datafile");
-	_dataFileName="";
-	_propertySet.append(&_dataFileNameProp);
+    _dataFileNameProp.setName("datafile");
+    _dataFileName="";
+    _propertySet.append(&_dataFileNameProp);
 }
 
 
@@ -140,13 +140,13 @@ setupProperties()
 void CMC_TaskSet::
 setModel(Model& aModel)
 {
-	_model = &aModel;
+    _model = &aModel;
 
-	int i;
-	for(i=0;i<getSize();i++) {
-		TrackingTask& task = get(i);
-		task.setModel(*_model);
-	}
+    int i;
+    for(i=0;i<getSize();i++) {
+        TrackingTask& task = get(i);
+        task.setModel(*_model);
+    }
 }
 
 //_____________________________________________________________________________
@@ -158,7 +158,7 @@ setModel(Model& aModel)
 Model* CMC_TaskSet::
 getModel() const
 {
-	return(_model);
+    return(_model);
 }
 
 //-----------------------------------------------------------------------------
@@ -183,56 +183,70 @@ getModel() const
 void CMC_TaskSet::
 setFunctions(FunctionSet &aFuncSet)
 {
-	// LOOP THROUGH TRACK OBJECTS
-	int i,j,iFunc=0;
-	int nTrk;
-	string name;
-	Function *f[3];
-	for(i=0;i<getSize();i++) {
+    // LOOP THROUGH TRACK OBJECTS
+    int i,j,iFunc=0;
+    int nTrk;
+    string name;
+    Function *f[3];
+    for(i=0;i<getSize();i++) {
 
-		// OBJECT
-		TrackingTask& ttask = get(i);
+        // OBJECT
+        TrackingTask& ttask = get(i);
 
-		if (dynamic_cast<StateTrackingTask*>(&ttask)!=NULL) {
-			StateTrackingTask& sTask = dynamic_cast<StateTrackingTask&>(ttask);
-			if (aFuncSet.contains(sTask.getName())){
-				sTask.setTaskFunctions(&aFuncSet.get(sTask.getName()));
-			}
-			else{
-				cout << "State tracking task " << sTask.getName() 
-					<< "has no data to track and will be ignored" << std::endl;
-			}
-			continue;
-		}
-		// If CMC_Task process same way as pre 2.0.2
-		if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
-			continue;
+        if (dynamic_cast<StateTrackingTask*>(&ttask)!=NULL) {
+            StateTrackingTask& sTask = dynamic_cast<StateTrackingTask&>(ttask);
+            if (aFuncSet.contains(sTask.getName())){
+                sTask.setTaskFunctions(&aFuncSet.get(sTask.getName()));
+            }
+            else{
+                cout << "State tracking task " << sTask.getName() 
+                    << "has no data to track and will be ignored" << std::endl;
+            }
+            continue;
+        }
+        // If CMC_Task process same way as pre 2.0.2
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+            continue;
 
-		CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-		// NAME
-		name = task.getName();
-		if(name.empty()) continue;
+        CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
+        // NAME
+        name = task.getName();
+        if(name.empty()) continue;
 
-		// FIND FUNCTION(S)
-		f[0] = f[1] = f[2] = NULL;
-		nTrk = task.getNumTaskFunctions();
-		iFunc = aFuncSet.getIndex(name,iFunc);
-		for(j=0;j<nTrk;j++) {
-			try {
-				f[j] = &aFuncSet.get(iFunc);
-			} catch(const Exception& x) {
-				x.print(cout);
-			}
-			if(f[j]==NULL) break;
-			if(name == f[j]->getName()) {
-				iFunc++;
-			} else {
-				f[j] = NULL;
-				break;
-			}
-		}
-		task.setTaskFunctions(f[0],f[1],f[2]);
-	}
+        // FIND FUNCTION(S)
+        f[0] = f[1] = f[2] = NULL;
+        nTrk = task.getNumTaskFunctions();
+        iFunc = aFuncSet.getIndex(name,iFunc);
+        if (iFunc < 0){
+            const Component& comp = _model->getComponent(name);
+            const Coordinate* coord = dynamic_cast<const Coordinate*>(&comp);
+            if (coord){
+                name = coord->getJoint().getName() + "/" + name + "/value";
+            }
+            iFunc = aFuncSet.getIndex(name, iFunc);
+            if (iFunc < 0){
+                string msg = "CMC_TaskSet::setFunctionsForVelocity: function for task '";
+                msg += name + " not found.";
+                throw Exception(msg);
+            }
+        }
+
+        for(j=0;j<nTrk;j++) {
+            try {
+                f[j] = &aFuncSet.get(iFunc);
+            } catch(const Exception& x) {
+                x.print(cout);
+            }
+            if(f[j]==NULL) break;
+            if(name == f[j]->getName()) {
+                iFunc++;
+            } else {
+                f[j] = NULL;
+                break;
+            }
+        }
+        task.setTaskFunctions(f[0],f[1],f[2]);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -254,45 +268,60 @@ setFunctions(FunctionSet &aFuncSet)
 void CMC_TaskSet::
 setFunctionsForVelocity(FunctionSet &aFuncSet)
 {
-	// LOOP THROUGH TRACK OBJECTS
-	int i,j,iFunc=0;
-	int nTrk;
-	string name;
-	Function *f[3];
+    // LOOP THROUGH TRACK OBJECTS
+    int i,j,iFunc=0;
+    int nTrk;
+    string name;
+    Function *f[3];
 
-	const CoordinateSet& coords = getModel()->getCoordinateSet(); 
+    const CoordinateSet& coords = getModel()->getCoordinateSet(); 
 
-	for(i=0;i<getSize();i++) {
+    for(i=0;i<getSize();i++) {
 
-		// OBJECT
-		TrackingTask& ttask = get(i);
+        // OBJECT
+        TrackingTask& ttask = get(i);
 
-		// If CMC_Task process same way as pre 2.0.2
-		if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
-			continue;
+        // If CMC_Task process same way as pre 2.0.2
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+            continue;
 
-		CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
+        CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
 
-		// NAME
-		name = task.getName();
-		if(name.empty()) continue;
+        // NAME
+        name = task.getName();
+        if(name.empty()) continue;
 
-		const Coordinate& coord = coords.get(name);
+        const Coordinate& coord = coords.get(name);
 
-		// FIND FUNCTION(S)
-		f[0] = f[1] = f[2] = NULL;
-		nTrk = task.getNumTaskFunctions();
-		iFunc = aFuncSet.getIndex(coord.getSpeedName(),iFunc);
-		for(j=0;j<nTrk;j++) {
-			try {
-				f[j] = &aFuncSet.get(iFunc);
-			} catch(const Exception& x) {
-				x.print(cout);
-			}
-			if(f[j]==NULL) break;
-		}
-		task.setTaskFunctionsForVelocity(f[0],f[1],f[2]);
-	}
+        // FIND FUNCTION(S)
+        f[0] = f[1] = f[2] = NULL;
+        nTrk = task.getNumTaskFunctions();
+        iFunc = aFuncSet.getIndex(coord.getSpeedName(),iFunc);
+
+        if (iFunc < 0){
+            const Component& comp = _model->getComponent(name);
+            const Coordinate* coord = dynamic_cast<const Coordinate*>(&comp);
+            if (coord){
+                name = coord->getJoint().getName() + "/" + name + "/speed";
+            }
+            iFunc = aFuncSet.getIndex(name, iFunc);
+            if (iFunc < 0){
+                string msg = "CMC_TaskSet::setFunctionsForVelocity: function for task '";
+                msg += name + " not found.";
+                throw Exception(msg);
+            }
+        }
+
+        for(j=0;j<nTrk;j++) {
+            try {
+                f[j] = &aFuncSet.get(iFunc);
+            } catch(const Exception& x) {
+                x.print(cout);
+            }
+            if(f[j]==NULL) break;
+        }
+        task.setTaskFunctionsForVelocity(f[0],f[1],f[2]);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -305,19 +334,19 @@ setFunctionsForVelocity(FunctionSet &aFuncSet)
 int CMC_TaskSet::
 getNumActiveTaskFunctions() const
 {
-	int count=0;
-	for(int i=0; i<getSize(); i++) {
-		TrackingTask& ttask = get(i);
+    int count=0;
+    for(int i=0; i<getSize(); i++) {
+        TrackingTask& ttask = get(i);
 
-		// If CMC_Task process same way as pre 2.0.2
-		if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
-			continue;
+        // If CMC_Task process same way as pre 2.0.2
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+            continue;
 
-		CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-		for(int j=0; j<task.getNumTaskFunctions(); j++)
-			if(task.getActive(j)) count++;
-	}
-	return count;
+        CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
+        for(int j=0; j<task.getNumTaskFunctions(); j++)
+            if(task.getActive(j)) count++;
+    }
+    return count;
 }
 
 
@@ -340,44 +369,59 @@ getNumActiveTaskFunctions() const
 void CMC_TaskSet::
 setFunctionsForAcceleration(FunctionSet &aFuncSet)
 {
-	// LOOP THROUGH TRACK OBJECTS
-	int i,j,iFunc=0;
-	int nTrk;
-	string name;
-	Function *f[3];
+    // LOOP THROUGH TRACK OBJECTS
+    int i,j,iFunc=0;
+    int nTrk;
+    string name;
+    Function *f[3];
 
-	const CoordinateSet& coords = getModel()->getCoordinateSet(); 
+    const CoordinateSet& coords = getModel()->getCoordinateSet(); 
 
-	for(i=0;i<getSize();i++) {
+    for(i=0;i<getSize();i++) {
 
-		// OBJECT
-		TrackingTask& ttask = get(i);
+        // OBJECT
+        TrackingTask& ttask = get(i);
 
-		// If CMC_Task process same way as pre 2.0.2
-		if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
-			continue;
+        // If CMC_Task process same way as pre 2.0.2
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+            continue;
 
-		CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-		// NAME
-		name = task.getName();
-		if(name.empty()) continue;
+        CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
+        // NAME
+        name = task.getName();
+        if(name.empty()) continue;
 
-		const Coordinate& coord = coords.get(name);
+        const Coordinate& coord = coords.get(name);
 
-		// FIND FUNCTION(S)
-		f[0] = f[1] = f[2] = NULL;
-		nTrk = task.getNumTaskFunctions();
-		iFunc = aFuncSet.getIndex(coord.getSpeedName(),iFunc);
-		for(j=0;j<nTrk;j++) {
-			try {
-				f[j] = &aFuncSet.get(iFunc);
-			} catch(const Exception& x) {
-				x.print(cout);
-			}
-			if(f[j]==NULL) break;
-		}
-		task.setTaskFunctionsForAcceleration(f[0],f[1],f[2]);
-	}
+        // FIND FUNCTION(S)
+        f[0] = f[1] = f[2] = NULL;
+        nTrk = task.getNumTaskFunctions();
+        iFunc = aFuncSet.getIndex(coord.getSpeedName(),iFunc);
+
+        if (iFunc < 0){
+            const Component& comp = _model->getComponent(name);
+            const Coordinate* coord = dynamic_cast<const Coordinate*>(&comp);
+            if (coord){
+                name = coord->getJoint().getName() + "/" + name + "/speed";
+            }
+            iFunc = aFuncSet.getIndex(name, iFunc);
+            if (iFunc < 0){
+                string msg = "CMC_TaskSet::setFunctionsForAcceleration: function for task '";
+                msg += name + " not found.";
+                throw Exception(msg);
+            }
+        }
+
+        for(j=0;j<nTrk;j++) {
+            try {
+                f[j] = &aFuncSet.get(iFunc);
+            } catch(const Exception& x) {
+                x.print(cout);
+            }
+            if(f[j]==NULL) break;
+        }
+        task.setTaskFunctionsForAcceleration(f[0],f[1],f[2]);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -393,26 +437,26 @@ setFunctionsForAcceleration(FunctionSet &aFuncSet)
 OpenSim::Array<double>& CMC_TaskSet::
 getTaskPositions(double aT)
 {
-	_pTask.setSize(0);
+    _pTask.setSize(0);
 
-	int i,j,n;
-	int size = getSize();
-	for(i=0;i<size;i++) {
-		TrackingTask& ttask = get(i);
+    int i,j,n;
+    int size = getSize();
+    for(i=0;i<size;i++) {
+        TrackingTask& ttask = get(i);
 
-		// If CMC_Task process same way as pre 2.0.2
-		if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
-			continue;
+        // If CMC_Task process same way as pre 2.0.2
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+            continue;
 
-		CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-		n = task.getNumTaskFunctions();
-		for(j=0;j<n;j++) {
-			if(!task.getActive(j)) continue;
-			_pTask.append(task.getTaskPosition(j,aT));
-		}
-	}
+        CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
+        n = task.getNumTaskFunctions();
+        for(j=0;j<n;j++) {
+            if(!task.getActive(j)) continue;
+            _pTask.append(task.getTaskPosition(j,aT));
+        }
+    }
 
-	return(_pTask);
+    return(_pTask);
 }
 //_____________________________________________________________________________
 /**
@@ -424,26 +468,26 @@ getTaskPositions(double aT)
 OpenSim::Array<double>& CMC_TaskSet::
 getTaskVelocities(double aT)
 {
-	_vTask.setSize(0);
+    _vTask.setSize(0);
 
-	int i,j,n;
-	int size = getSize();
-	for(i=0;i<size;i++) {
-		TrackingTask& ttask = get(i);
+    int i,j,n;
+    int size = getSize();
+    for(i=0;i<size;i++) {
+        TrackingTask& ttask = get(i);
 
-		// If CMC_Task process same way as pre 2.0.2
-		if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
-			continue;
+        // If CMC_Task process same way as pre 2.0.2
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+            continue;
 
-		CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-		n = task.getNumTaskFunctions();
-		for(j=0;j<n;j++) {
-			if(!task.getActive(j)) continue;
-			_vTask.append(task.getTaskVelocity(j,aT));
-		}
-	}
+        CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
+        n = task.getNumTaskFunctions();
+        for(j=0;j<n;j++) {
+            if(!task.getActive(j)) continue;
+            _vTask.append(task.getTaskVelocity(j,aT));
+        }
+    }
 
-	return(_vTask);
+    return(_vTask);
 }
 //_____________________________________________________________________________
 /**
@@ -455,26 +499,26 @@ getTaskVelocities(double aT)
 OpenSim::Array<double>& CMC_TaskSet::
 getTaskAccelerations(double aT)
 {
-	_aTask.setSize(0);
+    _aTask.setSize(0);
 
-	int i,j,n;
-	int size = getSize();
-	for(i=0;i<size;i++) {
-		TrackingTask& ttask = get(i);
+    int i,j,n;
+    int size = getSize();
+    for(i=0;i<size;i++) {
+        TrackingTask& ttask = get(i);
 
-		// If CMC_Task process same way as pre 2.0.2
-		if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
-			continue;
+        // If CMC_Task process same way as pre 2.0.2
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+            continue;
 
-		CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-		n = task.getNumTaskFunctions();
-		for(j=0;j<n;j++) {
-			if(!task.getActive(j)) continue;
-			_aTask.append(task.getTaskAcceleration(j,aT));
-		}
-	}
+        CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
+        n = task.getNumTaskFunctions();
+        for(j=0;j<n;j++) {
+            if(!task.getActive(j)) continue;
+            _aTask.append(task.getTaskAcceleration(j,aT));
+        }
+    }
 
-	return(_aTask);
+    return(_aTask);
 }
 
 //-----------------------------------------------------------------------------
@@ -490,26 +534,26 @@ getTaskAccelerations(double aT)
 OpenSim::Array<double>& CMC_TaskSet::
 getPositionGains()
 {
-	_kp.setSize(0);
+    _kp.setSize(0);
 
-	int i,j,n;
-	int size = getSize();
-	for(i=0;i<size;i++) {
-		TrackingTask& ttask = get(i);
+    int i,j,n;
+    int size = getSize();
+    for(i=0;i<size;i++) {
+        TrackingTask& ttask = get(i);
 
-		// If CMC_Task process same way as pre 2.0.2
-		if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
-			continue;
+        // If CMC_Task process same way as pre 2.0.2
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+            continue;
 
-		CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-		n = task.getNumTaskFunctions();
-		for(j=0;j<n;j++) {
-			if(!task.getActive(j)) continue;
-			_kp.append(task.getKP(j));
-		}
-	}
+        CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
+        n = task.getNumTaskFunctions();
+        for(j=0;j<n;j++) {
+            if(!task.getActive(j)) continue;
+            _kp.append(task.getKP(j));
+        }
+    }
 
-	return(_kp);
+    return(_kp);
 }
 //_____________________________________________________________________________
 /**
@@ -521,26 +565,26 @@ getPositionGains()
 OpenSim::Array<double>& CMC_TaskSet::
 getVelocityGains()
 {
-	_kv.setSize(0);
+    _kv.setSize(0);
 
-	int i,j,n;
-	int size = getSize();
-	for(i=0;i<size;i++) {
-		TrackingTask& ttask = get(i);
+    int i,j,n;
+    int size = getSize();
+    for(i=0;i<size;i++) {
+        TrackingTask& ttask = get(i);
 
-		// If CMC_Task process same way as pre 2.0.2
-		if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
-			continue;
+        // If CMC_Task process same way as pre 2.0.2
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+            continue;
 
-		CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-		n = task.getNumTaskFunctions();
-		for(j=0;j<n;j++) {
-			if(!task.getActive(j)) continue;
-			_kv.append(task.getKV(j));
-		}
-	}
+        CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
+        n = task.getNumTaskFunctions();
+        for(j=0;j<n;j++) {
+            if(!task.getActive(j)) continue;
+            _kv.append(task.getKV(j));
+        }
+    }
 
-	return(_kv);
+    return(_kv);
 }
 //_____________________________________________________________________________
 /**
@@ -552,26 +596,26 @@ getVelocityGains()
 OpenSim::Array<double>& CMC_TaskSet::
 getAccelerationGains()
 {
-	_ka.setSize(0);
+    _ka.setSize(0);
 
-	int i,j,n;
-	int size = getSize();
-	for(i=0;i<size;i++) {
-		TrackingTask& ttask = get(i);
+    int i,j,n;
+    int size = getSize();
+    for(i=0;i<size;i++) {
+        TrackingTask& ttask = get(i);
 
-		// If CMC_Task process same way as pre 2.0.2
-		if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
-			continue;
+        // If CMC_Task process same way as pre 2.0.2
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+            continue;
 
-		CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-		n = task.getNumTaskFunctions();
-		for(j=0;j<n;j++) {
-			if(!task.getActive(j)) continue;
-			_ka.append(task.getKA(j));
-		}
-	}
+        CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
+        n = task.getNumTaskFunctions();
+        for(j=0;j<n;j++) {
+            if(!task.getActive(j)) continue;
+            _ka.append(task.getKA(j));
+        }
+    }
 
-	return(_ka);
+    return(_ka);
 }
 
 //-----------------------------------------------------------------------------
@@ -585,7 +629,7 @@ getAccelerationGains()
 OpenSim::Array<double>& CMC_TaskSet::
 getPositionErrorsLast()
 {
-	return(_pErrLast);
+    return(_pErrLast);
 }
 //_____________________________________________________________________________
 /**
@@ -595,7 +639,7 @@ getPositionErrorsLast()
 OpenSim::Array<double>& CMC_TaskSet::
 getPositionErrors()
 {
-	return(_pErr);
+    return(_pErr);
 }
 //_____________________________________________________________________________
 /**
@@ -605,7 +649,7 @@ getPositionErrors()
 OpenSim::Array<double>& CMC_TaskSet::
 getVelocityErrorsLast()
 {
-	return(_vErrLast);
+    return(_vErrLast);
 }
 //_____________________________________________________________________________
 /**
@@ -615,7 +659,7 @@ getVelocityErrorsLast()
 OpenSim::Array<double>& CMC_TaskSet::
 getVelocityErrors()
 {
-	return(_vErr);
+    return(_vErr);
 }
 
 //-----------------------------------------------------------------------------
@@ -629,26 +673,26 @@ getVelocityErrors()
 OpenSim::Array<double>& CMC_TaskSet::
 getWeights()
 {
-	_w.setSize(0);
+    _w.setSize(0);
 
-	int i,j,n;
-	int size = getSize();
-	for(i=0;i<size;i++) {
-		TrackingTask& ttask = get(i);
+    int i,j,n;
+    int size = getSize();
+    for(i=0;i<size;i++) {
+        TrackingTask& ttask = get(i);
 
-		// If CMC_Task process same way as pre 2.0.2
-		if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
-			continue;
+        // If CMC_Task process same way as pre 2.0.2
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+            continue;
 
-		CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-		n = task.getNumTaskFunctions();
-		for(j=0;j<n;j++) {
-			if(!task.getActive(j)) continue;
-			_w.append(task.getWeight(j));
-		}
-	}
+        CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
+        n = task.getNumTaskFunctions();
+        for(j=0;j<n;j++) {
+            if(!task.getActive(j)) continue;
+            _w.append(task.getWeight(j));
+        }
+    }
 
-	return(_w);
+    return(_w);
 }
 
 //-----------------------------------------------------------------------------
@@ -662,7 +706,7 @@ getWeights()
 OpenSim::Array<double>& CMC_TaskSet::
 getDesiredAccelerations()
 {
-	return(_aDes);
+    return(_aDes);
 }
 
 //-----------------------------------------------------------------------------
@@ -676,7 +720,7 @@ getDesiredAccelerations()
 OpenSim::Array<double>& CMC_TaskSet::
 getAccelerations()
 {
-	return(_a);
+    return(_a);
 }
 
 
@@ -694,41 +738,41 @@ getAccelerations()
 void CMC_TaskSet::
 recordErrorsAsLastErrors()
 {
-	_pErrLast.setSize(0);
-	_vErrLast.setSize(0);
+    _pErrLast.setSize(0);
+    _vErrLast.setSize(0);
 
-	int i,j;
-	double e0,e1,e2;
-	for(i=0;i<getSize();i++) {
+    int i,j;
+    double e0,e1,e2;
+    for(i=0;i<getSize();i++) {
 
-		// OBJECT
-		TrackingTask& ttask = get(i);
+        // OBJECT
+        TrackingTask& ttask = get(i);
 
-		// If CMC_Task process same way as pre 2.0.2
-		if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
-			continue;
+        // If CMC_Task process same way as pre 2.0.2
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+            continue;
 
-		CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-		
-		// POSITION ERRORS
-		e0 = task.getPositionError(0);
-		e1 = task.getPositionError(1);
-		e2 = task.getPositionError(2);
-		task.setPositionErrorLast(e0,e1,e2);
+        CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
+        
+        // POSITION ERRORS
+        e0 = task.getPositionError(0);
+        e1 = task.getPositionError(1);
+        e2 = task.getPositionError(2);
+        task.setPositionErrorLast(e0,e1,e2);
 
-		// VELOCITY ERRORS
-		e0 = task.getVelocityError(0);
-		e1 = task.getVelocityError(1);
-		e2 = task.getVelocityError(2);
-		task.setVelocityErrorLast(e0,e1,e2);
+        // VELOCITY ERRORS
+        e0 = task.getVelocityError(0);
+        e1 = task.getVelocityError(1);
+        e2 = task.getVelocityError(2);
+        task.setVelocityErrorLast(e0,e1,e2);
 
-		// SET ERRORS
-		for(j=0;j<3;j++) {
-			if(!task.getActive(j)) continue;
-			_pErrLast.append(task.getPositionErrorLast(j));
-			_vErrLast.append(task.getVelocityErrorLast(j));
-		}
-	}
+        // SET ERRORS
+        for(j=0;j<3;j++) {
+            if(!task.getActive(j)) continue;
+            _pErrLast.append(task.getPositionErrorLast(j));
+            _vErrLast.append(task.getVelocityErrorLast(j));
+        }
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -739,31 +783,31 @@ recordErrorsAsLastErrors()
 void CMC_TaskSet::
 computeErrors(const SimTK::State& s, double aT)
 {
-	_pErr.setSize(0);
-	_vErr.setSize(0);
+    _pErr.setSize(0);
+    _vErr.setSize(0);
 
-	int i,j;
-	for(i=0;i<getSize();i++) {
+    int i,j;
+    for(i=0;i<getSize();i++) {
 
-		// OBJECT
-		TrackingTask& ttask = get(i);
+        // OBJECT
+        TrackingTask& ttask = get(i);
 
-		// If CMC_Task process same way as pre 2.0.2
-		if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
-			continue;
+        // If CMC_Task process same way as pre 2.0.2
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+            continue;
 
-		CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-		
-		// COMPUTE
-		task.computeErrors(s, aT);
+        CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
+        
+        // COMPUTE
+        task.computeErrors(s, aT);
 
-		// SET ERRORS
-		for(j=0;j<3;j++) {
-			if(!task.getActive(j)) continue;
-			_pErr.append(task.getPositionError(j));
-			_vErr.append(task.getVelocityError(j));
-		}
-	}
+        // SET ERRORS
+        for(j=0;j<3;j++) {
+            if(!task.getActive(j)) continue;
+            _pErr.append(task.getPositionError(j));
+            _vErr.append(task.getVelocityError(j));
+        }
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -775,34 +819,34 @@ computeErrors(const SimTK::State& s, double aT)
 void CMC_TaskSet::
 computeDesiredAccelerations(const SimTK::State& s, double aT)
 {
-	_w.setSize(0);
-	_aDes.setSize(0);
+    _w.setSize(0);
+    _aDes.setSize(0);
 
-	int i,j;
-	for(i=0;i<getSize();i++) {
+    int i,j;
+    for(i=0;i<getSize();i++) {
 
-		// OBJECT
-		TrackingTask& ttask = get(i);
+        // OBJECT
+        TrackingTask& ttask = get(i);
 
-		// If CMC_Task process same way as pre 2.0.2
-		if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
-			continue;
+        // If CMC_Task process same way as pre 2.0.2
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+            continue;
 
-		CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-		
-		// COMPUTE
-		task.computeDesiredAccelerations(s, aT);
+        CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
+        
+        // COMPUTE
+        task.computeDesiredAccelerations(s, aT);
 
-		// SET WEIGHTS AND ACCELERATIONS
-		for(j=0;j<3;j++) {
-			if(!task.getActive(j)) continue;
-			_w.append(task.getWeight(j));
-			_aDes.append(task.getDesiredAcceleration(j));
-		}
-	}
+        // SET WEIGHTS AND ACCELERATIONS
+        for(j=0;j<3;j++) {
+            if(!task.getActive(j)) continue;
+            _w.append(task.getWeight(j));
+            _aDes.append(task.getDesiredAcceleration(j));
+        }
+    }
 
-	//printf("CMC_TaskSet.computeDesiredAccelerations: %d ",_aDes.size());
-	//printf("track goals are active.\n");
+    //printf("CMC_TaskSet.computeDesiredAccelerations: %d ",_aDes.size());
+    //printf("track goals are active.\n");
 }
 //_____________________________________________________________________________
 /**
@@ -819,34 +863,34 @@ computeDesiredAccelerations(const SimTK::State& s, double aT)
 void CMC_TaskSet::
 computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF)
 {
-	_w.setSize(0);
-	_aDes.setSize(0);
+    _w.setSize(0);
+    _aDes.setSize(0);
 
-	int i,j;
-	for(i=0;i<getSize();i++) {
+    int i,j;
+    for(i=0;i<getSize();i++) {
 
-		// OBJECT
-		TrackingTask& ttask = get(i);
+        // OBJECT
+        TrackingTask& ttask = get(i);
 
-		// If CMC_Task process same way as pre 2.0.2
-		if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
-			continue;
+        // If CMC_Task process same way as pre 2.0.2
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+            continue;
 
-		CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-		
-		// COMPUTE
-		task.computeDesiredAccelerations(s, aTI,aTF);
+        CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
+        
+        // COMPUTE
+        task.computeDesiredAccelerations(s, aTI,aTF);
 
-		// SET WEIGHTS AND ACCELERATIONS
-		for(j=0;j<3;j++) {
-			if(!task.getActive(j)) continue;
-			_w.append(task.getWeight(j));
-			_aDes.append(task.getDesiredAcceleration(j));
-		}
-	}
+        // SET WEIGHTS AND ACCELERATIONS
+        for(j=0;j<3;j++) {
+            if(!task.getActive(j)) continue;
+            _w.append(task.getWeight(j));
+            _aDes.append(task.getDesiredAcceleration(j));
+        }
+    }
 
-	//printf("CMC_TaskSet.computeDesiredAccelerations: %d ",_aDes.size());
-	//printf("track goals are active.\n");
+    //printf("CMC_TaskSet.computeDesiredAccelerations: %d ",_aDes.size());
+    //printf("track goals are active.\n");
 }
 //_____________________________________________________________________________
 /**
@@ -857,32 +901,32 @@ computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF)
 void CMC_TaskSet::
 computeAccelerations(const SimTK::State& s)
 {
-	_a.setSize(0);
+    _a.setSize(0);
 
-	int i,j;
-	for(i=0;i<getSize();i++) {
+    int i,j;
+    for(i=0;i<getSize();i++) {
 
-		// OBJECT
-		TrackingTask& ttask = get(i);
+        // OBJECT
+        TrackingTask& ttask = get(i);
 
-		// If CMC_Task process same way as pre 2.0.2
-		if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
-			continue;
+        // If CMC_Task process same way as pre 2.0.2
+        if (dynamic_cast<CMC_Task*>(&ttask)==NULL) 
+            continue;
 
-		CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
-		
-		// COMPUTE
-		task.computeAccelerations(s);
+        CMC_Task& task = dynamic_cast<CMC_Task&>(ttask);
+        
+        // COMPUTE
+        task.computeAccelerations(s);
 
-		// SET WEIGHTS AND ACCELERATIONS
-		for(j=0;j<3;j++) {
-			if(!task.getActive(j)) continue;
-			_a.append(task.getAcceleration(j));
-		}
-	}
+        // SET WEIGHTS AND ACCELERATIONS
+        for(j=0;j<3;j++) {
+            if(!task.getActive(j)) continue;
+            _a.append(task.getAcceleration(j));
+        }
+    }
 
-	//printf("CMC_TaskSet.computeAccelerations: %d ",_a.size());
-	//printf("track goals are active.\n");
+    //printf("CMC_TaskSet.computeAccelerations: %d ",_a.size());
+    //printf("track goals are active.\n");
 }
 
 
