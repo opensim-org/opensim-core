@@ -2031,13 +2031,47 @@ const Object& Model::getObjectByTypeAndName(const std::string& typeString, const
 
 }
 
+//------------------------------------------------------------------------------
+//          REALIZE THE SYSTEM TO THE REQUIRED COMPUTATIONAL STAGE
+//------------------------------------------------------------------------------
+void Model::realizeTime(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Time);
+}
+
+void Model::realizePosition(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Position);
+}
+
+void Model::realizeVelocity(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Velocity);
+}
+
+void Model::realizeDynamics(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Dynamics);
+}
+
+void Model::realizeAcceleration(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Acceleration);
+}
+
+void Model::realizeReport(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Report);
+}
+
+
 /**
  * Compute the derivatives of the generalized coordinates and speeds.
  */
 void Model::computeStateVariableDerivatives(const SimTK::State &s) const
 {
     try {
-        getMultibodySystem().realize(s, Stage::Acceleration);
+        realizeAcceleration(s);
     }
     catch (const std::exception& e){
         string exmsg = e.what();

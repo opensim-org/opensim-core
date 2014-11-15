@@ -425,6 +425,36 @@ public:
 
     /**@}**/
 
+    /**@name  Realize the Simbody System and State to Computational Stage
+    Methods in this section enable advanced and scripting users access to
+    realize the Simbody MultibodySystem and the provided state to a desireed
+    computaional (realization) Stage.
+    Note that these are not accessible until after initSystem() has been
+    invoked on this %Model. **/
+    /**@{**/
+
+    /** Perform computations that depend only on time and earlier stages. **/
+    void realizeTime(const SimTK::State& state) const;
+    /** Perform computations that depend only on position-level state
+    variables and computations performed in earlier stages (including time). **/
+    void realizePosition(const SimTK::State& state) const;
+    /** Perform computations that depend only on velocity-level state
+    variables and computations performed in earlier stages (including position,
+    and time). **/
+    void realizeVelocity(const SimTK::State& state) const;
+    /** Perform computations (typically forces) that may depend on
+    dynamics-stage state variables, and on computations performed in earlier
+    stages (including velocity, position, and time), but not on other forces,
+    accelerations, constraint multipliers, or reaction forces. **/
+    void realizeDynamics(const SimTK::State& state) const;
+    /** Perform computations that may depend on applied forces. **/
+    void realizeAcceleration(const SimTK::State& state) const;
+    /** Perform computations that may depend on anything but are only used
+    for reporting and cannot affect subsequent simulation behavior. **/
+    void realizeReport(const SimTK::State& state) const;
+
+    /**@}**/
+
     //--------------------------------------------------------------------------
     // CREATE THE MULTIBODY SYSTEM
     //--------------------------------------------------------------------------

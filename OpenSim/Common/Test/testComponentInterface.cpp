@@ -288,9 +288,9 @@ protected:
     }
 
     void computeStateVariableDerivatives(const SimTK::State& state) const override {
-        setStateVariableDerivative(state, "fiberLength", 2.0);
-        setStateVariableDerivative(state, "activation", 3.0 * state.getTime());
-        setStateVariableDerivative(state, "hiddenStateVar", 
+        setStateVariableDerivativeValue(state, "fiberLength", 2.0);
+        setStateVariableDerivativeValue(state, "activation", 3.0 * state.getTime());
+        setStateVariableDerivativeValue(state, "hiddenStateVar", 
                                           exp(-0.5 * state.getTime()));
     }
 
@@ -538,8 +538,8 @@ int main() {
 
         s = system3.realizeTopology();
 
-        bar.setStateVariable(s, "fiberLength", 1.5);
-        bar.setStateVariable(s, "activation", 0);
+        bar.setStateVariableValue(s, "fiberLength", 1.5);
+        bar.setStateVariableValue(s, "activation", 0);
 
         int nu3 = system3.getMatterSubsystem().getNumMobilities();
 

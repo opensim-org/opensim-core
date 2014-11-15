@@ -74,23 +74,23 @@ public:
     {   return this->getValueZero(); }
 
     void realizeMeasureTopologyVirtual(SimTK::State& s) const FINAL_11
-    {   _Component.realizeTopology(s); }
+    {   _Component.extendRealizeTopology(s); }
     void realizeMeasureModelVirtual(SimTK::State& s) const FINAL_11
-    {   _Component.realizeModel(s); }
+    {   _Component.extendRealizeModel(s); }
     void realizeMeasureInstanceVirtual(const SimTK::State& s) const FINAL_11
-    {   _Component.realizeInstance(s); }
+    {   _Component.extendRealizeInstance(s); }
     void realizeMeasureTimeVirtual(const SimTK::State& s) const FINAL_11
-    {   _Component.realizeTime(s); }
+    {   _Component.extendRealizeTime(s); }
     void realizeMeasurePositionVirtual(const SimTK::State& s) const FINAL_11
-    {   _Component.realizePosition(s); }
+    {   _Component.extendRealizePosition(s); }
     void realizeMeasureVelocityVirtual(const SimTK::State& s) const FINAL_11
-    {   _Component.realizeVelocity(s); }
+    {   _Component.extendRealizeVelocity(s); }
     void realizeMeasureDynamicsVirtual(const SimTK::State& s) const FINAL_11
-    {   _Component.realizeDynamics(s); }
+    {   _Component.extendRealizeDynamics(s); }
     void realizeMeasureAccelerationVirtual(const SimTK::State& s) const FINAL_11
-    {   _Component.realizeAcceleration(s); }
+    {   _Component.extendRealizeAcceleration(s); }
     void realizeMeasureReportVirtual(const SimTK::State& s) const FINAL_11
-    {   _Component.realizeReport(s); }
+    {   _Component.extendRealizeReport(s); }
 
 private:
     const Component& _Component;
@@ -287,7 +287,7 @@ void Component::componentsSetPropertiesFromState(const SimTK::State& state)
 }
 
 // Base class implementation of virtual method. Note that we're not handling
-// subcomponents here; this method gets called from realizeAcceleration()
+// subcomponents here; this method gets called from extendRealizeAcceleration()
 // which will be invoked for each (sub) component by its own ComponentMeasure.
 void Component::computeStateVariableDerivatives(const SimTK::State& s) const
 {
@@ -475,8 +475,8 @@ const Component& Component::getComponent(const std::string& name) const
 {  
     const Component* found = findComponent(name);
     if(!found){
-        std::string msg = "Component::getComponent() could not find component '";
-        msg += name + "' from Component '" + getName();
+        std::string msg = "Component::getComponent() could not find subcomponent '";
+        msg += name + "' from Component '" + getName() + "'.";
         throw Exception(msg);
     }
     return *found;
@@ -486,8 +486,8 @@ Component& Component::updComponent(const std::string& name) const
 {
     const Component* found = findComponent(name);
     if(!found){
-        std::string msg = "Component::updComponent() could not find component '";
-        msg += name + "' from Component '" + getName();
+        std::string msg = "Component::updComponent() could not find subcomponent '";
+        msg += name + "' from Component '" + getName() + "'.";
         throw Exception(msg);
     }
     return *const_cast<Component *>(found); 
@@ -635,7 +635,7 @@ Array<std::string> Component::getStateVariableNames() const
 
 // Get the value of a state variable allocated by this Component.
 double Component::
-    getStateVariable(const SimTK::State& s, const std::string& name) const
+    getStateVariableValue(const SimTK::State& s, const std::string& name) const
 {
     // find the state variable with this component or its subcomponents
     const StateVariable* rsv = findStateVariable(name);
@@ -653,7 +653,7 @@ double Component::
 
 // Get the value of a state variable derivative computed by this Component.
 double Component::
-    getStateVariableDerivative(const SimTK::State& state, 
+    getStateVariableDerivativeValue(const SimTK::State& state, 
                                 const std::string& name) const
 {
     computeStateVariableDerivatives(state);
@@ -681,10 +681,10 @@ double Component::
     return SimTK::NaN;
 }
 
-// Set the value of a state variable allocated by this Component given its index
+// Set the value of a state variable allocated by this Component given its name
 // for this component.
 void Component::
-    setStateVariable(State& s, const std::string& name, double value) const
+    setStateVariableValue(State& s, const std::string& name, double value) const
 {
     // find the state variable
     const StateVariable* rsv = findStateVariable(name);
@@ -710,7 +710,7 @@ SimTK::Vector Component::
 
     Vector stateVariableValues(nsv, SimTK::NaN);
     for(int i=0; i<nsv; ++i){
-        stateVariableValues[i]=getStateVariable(state, names[i]);
+        stateVariableValues[i]=getStateVariableValue(state, names[i]);
     }
 
     return stateVariableValues;
@@ -728,13 +728,13 @@ void Component::
 
     Vector stateVariableValues(nsv, SimTK::NaN);
     for(int i=0; i<nsv; ++i){
-        setStateVariable(state, names[i], values[i]);
+        setStateVariableValue(state, names[i], values[i]);
     }
 }
 
 // Set the derivative of a state variable computed by this Component by name.
 void Component::
-    setStateVariableDerivative(const State& state, 
+    setStateVariableDerivativeValue(const State& state, 
                                const std::string& name, double value) const
 {
     std::map<std::string, StateVariableInfo>::const_iterator it;
@@ -756,7 +756,7 @@ void Component::
 
 // Get the value of a discrete variable allocated by this Component by name.
 double Component::
-getDiscreteVariable(const SimTK::State& s, const std::string& name) const
+getDiscreteVariableValue(const SimTK::State& s, const std::string& name) const
 {
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.find(name);
@@ -778,7 +778,7 @@ getDiscreteVariable(const SimTK::State& s, const std::string& name) const
 
 // Set the value of a discrete variable allocated by this Component by name.
 void Component::
-setDiscreteVariable(SimTK::State& s, const std::string& name, double value) const
+setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value) const
 {
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.find(name);
@@ -917,13 +917,13 @@ getStateVariablesNamesAddedByComponent() const
 //------------------------------------------------------------------------------
 // This is the base class implementation of a virtual method that can be
 // overridden by derived model components, but they *must* invoke
-// Super::realizeTopology() as the first line in the overriding method so that
+// Super::extendRealizeTopology() as the first line in the overriding method so that
 // this code is executed before theirs.
 // This method is invoked from the ComponentMeasure associated with this
 // Component.
 // Note that subcomponent realize() methods will be invoked by their own
 // ComponentMeasures, so we do not need to forward to subcomponents here.
-void Component::realizeTopology(SimTK::State& s) const
+void Component::extendRealizeTopology(SimTK::State& s) const
 {
 
     const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
@@ -992,7 +992,7 @@ void Component::realizeTopology(SimTK::State& s) const
 //------------------------------------------------------------------------------
 // Base class implementation of virtual method.
 // Collect this component's state variable derivatives.
-void Component::realizeAcceleration(const SimTK::State& s) const
+void Component::extendRealizeAcceleration(const SimTK::State& s) const
 {
     // don't bother computing derivatives if the component has no state variables
     if(getNumStateVariablesAddedByComponent() > 0) {
@@ -1018,19 +1018,31 @@ void Component::realizeAcceleration(const SimTK::State& s) const
     }
 }
 
+const SimTK::MultibodySystem& Component::getSystem() const
+{
+    if (_system.empty()){
+        std::string msg = "Component::getSystem() ";
+        msg += getName() + " has no reference to a System.\n";
+        msg += "Make sure you added the Component to the Model and ";
+        msg += "called Model::initSystem(). ";
+        throw Exception(msg, __FILE__, __LINE__);
+    }
+    return *_system;
+}
+
 //------------------------------------------------------------------------------
 //                         OTHER REALIZE METHODS
 //------------------------------------------------------------------------------
 // Base class implementations of these virtual methods do nothing now but
 // could do something in the future. Users must still invoke Super::realizeXXX()
 // as the first line in their overrides to ensure future compatibility.
-void Component::realizeModel(SimTK::State& state) const {}
-void Component::realizeInstance(const SimTK::State& state) const {}
-void Component::realizeTime(const SimTK::State& state) const {}
-void Component::realizePosition(const SimTK::State& state) const {}
-void Component::realizeVelocity(const SimTK::State& state) const {}
-void Component::realizeDynamics(const SimTK::State& state) const {}
-void Component::realizeReport(const SimTK::State& state) const {}
+void Component::extendRealizeModel(SimTK::State& state) const {}
+void Component::extendRealizeInstance(const SimTK::State& state) const {}
+void Component::extendRealizeTime(const SimTK::State& state) const {}
+void Component::extendRealizePosition(const SimTK::State& state) const {}
+void Component::extendRealizeVelocity(const SimTK::State& state) const {}
+void Component::extendRealizeDynamics(const SimTK::State& state) const {}
+void Component::extendRealizeReport(const SimTK::State& state) const {}
 
 
 //override virtual methods
@@ -1069,13 +1081,13 @@ void Component::AddedStateVariable::setValue(SimTK::State& state, double value) 
 double Component::AddedStateVariable::
     getDerivative(const SimTK::State& state) const
 {
-    return getOwner().getCacheVariable<double>(state, getName()+"_deriv");
+    return getOwner().getCacheVariableValue<double>(state, getName()+"_deriv");
 }
 
 void Component::AddedStateVariable::
     setDerivative(const SimTK::State& state, double deriv) const
 {
-    return getOwner().setCacheVariable<double>(state, getName()+"_deriv", deriv);
+    return getOwner().setCacheVariableValue<double>(state, getName()+"_deriv", deriv);
 }
 
 

@@ -541,7 +541,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 	// Hang on to a state that has the right flags for contact constraints turned on/off
 	_model->setPropertiesFromState(s_analysis);
 	// Use this state for the remainder of this step (record)
-	s_analysis = _model->getMultibodySystem().realizeTopology();
+    s_analysis = _model->getMultibodySystem().realizeTopology();
 	// DO NOT recreate the system, will lose location of constraint
 	_model->initStateWithoutRecreatingSystem(s_analysis);
 

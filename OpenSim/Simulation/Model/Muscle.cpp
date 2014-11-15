@@ -562,12 +562,12 @@ const Muscle::MuscleLengthInfo& Muscle::getMuscleLengthInfo(const SimTK::State& 
         // we just calculated it and still have a handle on it
         return umli;
     }
-    return getCacheVariable<MuscleLengthInfo>(s, "lengthInfo");
+    return getCacheVariableValue<MuscleLengthInfo>(s, "lengthInfo");
 }
 
 Muscle::MuscleLengthInfo& Muscle::updMuscleLengthInfo(const SimTK::State& s) const
 {
-    return updCacheVariable<MuscleLengthInfo>(s, "lengthInfo");
+    return updCacheVariableValue<MuscleLengthInfo>(s, "lengthInfo");
 }
 
 const Muscle::FiberVelocityInfo& Muscle::
@@ -581,13 +581,13 @@ getFiberVelocityInfo(const SimTK::State& s) const
         // we just calculated it and still have a handle on it
         return ufvi;
     }
-    return getCacheVariable<FiberVelocityInfo>(s, "velInfo");
+    return getCacheVariableValue<FiberVelocityInfo>(s, "velInfo");
 }
 
 Muscle::FiberVelocityInfo& Muscle::
 updFiberVelocityInfo(const SimTK::State& s) const
 {
-    return updCacheVariable<FiberVelocityInfo>(s, "velInfo");
+    return updCacheVariableValue<FiberVelocityInfo>(s, "velInfo");
 }
 
 const Muscle::MuscleDynamicsInfo& Muscle::
@@ -601,12 +601,12 @@ getMuscleDynamicsInfo(const SimTK::State& s) const
         // we just calculated it and still have a handle on it
         return umdi;
     }
-    return getCacheVariable<MuscleDynamicsInfo>(s, "dynamicsInfo");
+    return getCacheVariableValue<MuscleDynamicsInfo>(s, "dynamicsInfo");
 }
 Muscle::MuscleDynamicsInfo& Muscle::
 updMuscleDynamicsInfo(const SimTK::State& s) const
 {
-    return updCacheVariable<MuscleDynamicsInfo>(s, "dynamicsInfo");
+    return updCacheVariableValue<MuscleDynamicsInfo>(s, "dynamicsInfo");
 }
 
 const Muscle::MusclePotentialEnergyInfo& Muscle::
@@ -620,13 +620,13 @@ getMusclePotentialEnergyInfo(const SimTK::State& s) const
         // we just calculated it and still have a handle on it
         return umpei;
     }
-    return getCacheVariable<MusclePotentialEnergyInfo>(s, "potentialEnergyInfo");
+    return getCacheVariableValue<MusclePotentialEnergyInfo>(s, "potentialEnergyInfo");
 }
 
 Muscle::MusclePotentialEnergyInfo& Muscle::
 updMusclePotentialEnergyInfo(const SimTK::State& s) const
 {
-    return updCacheVariable<MusclePotentialEnergyInfo>(s, "potentialEnergyInfo");
+    return updCacheVariableValue<MusclePotentialEnergyInfo>(s, "potentialEnergyInfo");
 }
 
 

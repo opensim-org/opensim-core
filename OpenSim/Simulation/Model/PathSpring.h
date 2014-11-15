@@ -186,7 +186,8 @@ protected:
     void updateDisplayer(const SimTK::State& s) const override;
 
 private:
-    void constructProperties();
+	void constructProperties() override;
+    void constructOutputs() override;
 
 //=============================================================================
 };  // END of class PathSpring

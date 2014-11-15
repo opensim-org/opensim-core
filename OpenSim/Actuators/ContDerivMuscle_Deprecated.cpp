@@ -213,11 +213,11 @@ void ContDerivMuscle_Deprecated::extendAddToSystem(SimTK::MultibodySystem& syste
 
 
 void ContDerivMuscle_Deprecated::setPassiveForce(const SimTK::State& s, double force ) const {
-    setCacheVariable<double>(s, "passiveForce", force);
+    setCacheVariableValue<double>(s, "passiveForce", force);
 }
 
 double ContDerivMuscle_Deprecated::getPassiveForce( const SimTK::State& s) const {
-    return getCacheVariable<double>(s, "passiveForce");
+    return getCacheVariableValue<double>(s, "passiveForce");
 }
 
 void ContDerivMuscle_Deprecated::setTendonForce(const SimTK::State& s, double force) const {
@@ -229,11 +229,11 @@ double ContDerivMuscle_Deprecated::getTendonForce(const SimTK::State& s) const {
 }
 
 void ContDerivMuscle_Deprecated::setActiveForce( const SimTK::State& s, double force ) const {
-    setCacheVariable<double>(s, "activeForce", force);
+    setCacheVariableValue<double>(s, "activeForce", force);
 }
 
 double ContDerivMuscle_Deprecated::getActiveForce( const SimTK::State& s) const {
-    return getCacheVariable<double>(s, "activeForce");
+    return getCacheVariableValue<double>(s, "activeForce");
 }
 
 
@@ -599,7 +599,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
     length = getLength(s);
 
     // rough initial guess of fiber length
-    setStateVariable(s, STATE_FIBER_LENGTH_NAME,  length - _tendonSlackLength);
+    setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  length - _tendonSlackLength);
 
    // Make first guess of fiber and tendon lengths. Make fiber length equal to
    // optimal_fiber_length so that you start in the middle of the active+passive
@@ -616,7 +616,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
    if (_tendonSlackLength < ROUNDOFF_ERROR) {
         tendon_length = 0.0;
         cos_factor = cos(atan(muscle_width /length));
-        setStateVariable(s, STATE_FIBER_LENGTH_NAME,  length / cos_factor);
+        setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  length / cos_factor);
         _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
         setActiveForce(s,  calcActiveForce(s, getFiberLength(s) / _optimalFiberLength) * aActivation * _maxIsometricForce);
@@ -631,7 +631,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
         setActuation(s, getTendonForce(s));
         return getTendonForce(s);
    } else if (length < _tendonSlackLength) {
-      setStateVariable(s, STATE_FIBER_LENGTH_NAME, muscle_width);
+      setStateVariableValue(s, STATE_FIBER_LENGTH_NAME, muscle_width);
       _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
         setActiveForce(s, 0.0);
         setPassiveForce(s, 0.0);
@@ -639,7 +639,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
         setActuation(s, 0.0);
       return 0.0;
    } else {
-      setStateVariable(s, STATE_FIBER_LENGTH_NAME,  _optimalFiberLength);
+      setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  _optimalFiberLength);
       cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngleAtOptimal));  
       tendon_length = length - getFiberLength(s) * cos_factor;
 
@@ -649,9 +649,9 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
       if (tendon_length < _tendonSlackLength) {
          tendon_length = _tendonSlackLength;
          cos_factor = cos(atan(muscle_width / (length - tendon_length)));
-         setStateVariable(s, STATE_FIBER_LENGTH_NAME,  (length - tendon_length) / cos_factor);
+         setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  (length - tendon_length) / cos_factor);
          if (getFiberLength(s) < muscle_width)
-           setStateVariable(s, STATE_FIBER_LENGTH_NAME,  muscle_width);
+           setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  muscle_width);
            _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
       }
@@ -694,7 +694,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
          percent = DABS(error_force) / (DABS(error_force) + DABS(old_error_force));
          tmp_fiber_length = old_fiber_length;
          old_fiber_length = getFiberLength(s);
-         setStateVariable(s, STATE_FIBER_LENGTH_NAME, getFiberLength(s) + percent * (tmp_fiber_length - getFiberLength(s)) );
+         setStateVariableValue(s, STATE_FIBER_LENGTH_NAME, getFiberLength(s) + percent * (tmp_fiber_length - getFiberLength(s)) );
       } else {
          // Estimate the stiffnesses of the tendon and the fibers. If tendon
          // stiffness is too low, then the next length guess will overshoot
@@ -737,9 +737,9 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
          old_fiber_length =  getFiberLength(s);
 
          if (error_force > 0.0)
-             setStateVariable(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s) + length_change);
+             setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s) + length_change);
          else
-             setStateVariable(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s) - length_change);
+             setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s) - length_change);
       }
 
       cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngleAtOptimal));
@@ -750,7 +750,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
       if (tendon_length < _tendonSlackLength) {
          tendon_length = _tendonSlackLength;
          cos_factor = cos(atan(muscle_width / (length - tendon_length)));
-         setStateVariable(s, STATE_FIBER_LENGTH_NAME,  (length - tendon_length) / cos_factor );
+         setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  (length - tendon_length) / cos_factor );
       }
    }
 
