@@ -133,7 +133,7 @@ OpenSim uses many very common class names, like “Object” and “Array” and
 
 As a reminder, the C++ standard prohibits user code from using identifiers that contain double underscore (“__”) or begin with an underscore followed by a capital letter (“_P”). Those symbols are reserved for the compiler and the std:: library. Use of symbols like that means it is subject to conflict with the compiler, either now or in future releases or new platforms. Hopefully those conflicts would cause compiler errors, but that is not guaranteed.
 
-One other minor point is that preprocessor macros should typically have very ugly names with LOTS_OF_CAPS to make it obvious that they are not ordinary identifiers, and to avoid conflicts with NiceCamelHumpIdentifiers used for class names.
+One other minor point is that preprocessor macros should typically have very ugly names with LOTS_OF_CAPS to make it obvious that they are not ordinary identifiers, and to avoid conflicts with NiceUpperCamelCaseIdentifiers used for class names.
 
 ## Creating New OpenSim Objects
 
