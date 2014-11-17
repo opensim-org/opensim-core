@@ -184,7 +184,7 @@ public:
 
     /** Postfix increment operator to get the next item in the ComponentList.
     To enable usage as iter++, although ++iter is more efficient. */
-    ComponentListIterator<T>& operator++(int) {
+    ComponentListIterator<T> operator++(int) {
         ComponentListIterator<T> current = *this;
         next();
         return current;
