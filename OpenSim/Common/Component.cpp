@@ -105,7 +105,6 @@ Component::Component() : Object()
 {
     constructProperty_connectors();
     finalizeFromProperties();
-    _nextComponent = nullptr;
 }
 
 Component::Component(const std::string& fileName, bool updFromXMLNode)
@@ -113,7 +112,6 @@ Component::Component(const std::string& fileName, bool updFromXMLNode)
 {
     constructProperty_connectors();
     finalizeFromProperties();
-    _nextComponent = nullptr;
 }
 
 Component::Component(SimTK::Xml::Element& element) 

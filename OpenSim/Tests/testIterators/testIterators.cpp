@@ -58,7 +58,7 @@ int main()
         ComponentList<Component> componentsList = model.getComponentList();
         std::cout << "list begin: " << componentsList.begin()->getName() << std::endl;
         int numComponents = 0;
-        for (ComponentList<Component>::iterator it = componentsList.begin();
+        for (ComponentList<Component>::const_iterator it = componentsList.begin();
             it != componentsList.end();
             ++it) {
                 std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getName() << std::endl;
@@ -68,7 +68,7 @@ int main()
         ComponentList<OpenSim::Body> bodiesList = model.getComponentList<OpenSim::Body>();
         int numBodies = 0;
         std::cout << "Bodies list begin: " << bodiesList.begin()->getName() << std::endl;
-        for (ComponentList<OpenSim::Body>::iterator it = bodiesList.begin();
+        for (ComponentList<OpenSim::Body>::const_iterator it = bodiesList.begin();
         it != bodiesList.end();
         ++it) {
             std::cout << "Iterator is at Body: " << it->getName() << std::endl;
@@ -93,7 +93,7 @@ int main()
         int numJntComponents = 0;
         ComponentList<Component> jComponentsList = shoulderJnt.getComponentList();
         std::cout << "Components/subComponents under Shoulder Joint:" << std::endl;
-        for (ComponentList<Component>::iterator it = jComponentsList.begin();
+        for (ComponentList<Component>::const_iterator it = jComponentsList.begin();
             it != jComponentsList.end();
             ++it) {
             std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getName() << std::endl;

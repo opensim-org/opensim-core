@@ -1707,7 +1707,7 @@ private:
 //==============================================================================
 //==============================================================================
 //==============================================================================
-// Implment methods for ComponentListIterator
+// Implement methods for ComponentListIterator
 /// ComponentListIterator<T> pre-increment operator, advances the iterator to
 /// the next valid entry.
 template <typename T>
