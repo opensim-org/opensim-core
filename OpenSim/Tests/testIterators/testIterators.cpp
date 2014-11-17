@@ -115,11 +115,22 @@ int main()
             cout << comp.getConcreteClassName() << ":" << comp.getName() << endl;
             numComponentsWithStateVariables++;
         }
+        //Now test a std::iterator method
+        ComponentList<ModelComponent> comps = model.getComponentList<ModelComponent>();
+        ComponentList<ModelComponent>::const_iterator skipIter = comps.begin();
+        int countSkipComponent = 0;
+        while (skipIter != comps.end()){
+            cout << skipIter->getConcreteClassName() << ":" << skipIter->getName() << endl;
+            std::advance(skipIter, 2);
+            countSkipComponent++;
+        }
+
         ASSERT(numComponents == 23); 
         ASSERT(numBodies == model.getNumBodies());
         ASSERT(numMuscles == model.getMuscles().getSize());
         ASSERT(numComponentsWithStateVariables == 11);
         ASSERT(numJntComponents == 2);
+        ASSERT(countSkipComponent == 12);
     }
     catch (Exception &ex) {
         ex.print(std::cout);

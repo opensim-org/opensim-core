@@ -158,7 +158,7 @@ for (const GeometryPath& gpath : geomPathList) {
 @endcode
 */
 template <typename T>
-class ComponentListIterator {
+class ComponentListIterator : public std::iterator<std::forward_iterator_tag, OpenSim::Component>{
     friend class ComponentList<T>;
 public:
     /// Check that the component under the cuurent iterator is same 

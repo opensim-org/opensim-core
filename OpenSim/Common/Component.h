@@ -1712,6 +1712,8 @@ private:
 /// the next valid entry.
 template <typename T>
 ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
+    if (_node==nullptr)
+        return *this;
     // If _node has children then successor is first child
     // move _node to point to it
     if (_node->_components.size() > 0)
