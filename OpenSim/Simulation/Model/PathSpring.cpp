@@ -44,13 +44,13 @@ static const Vec3 DefaultPathSpringColor(.9,.9,.9); // mostly white
 // Default constructor.
 PathSpring::PathSpring()
 {
-	constructProperties();
+	constructInfrastructure();
 }
 
 PathSpring::PathSpring(const string& name, double restLength, 
 					   double stiffness, double dissipation)
 {
-	constructProperties();
+	constructInfrastructure();
 	setName(name);
 	set_resting_length(restLength);
 	set_stiffness(stiffness);
@@ -68,7 +68,10 @@ void PathSpring::constructProperties()
 	constructProperty_resting_length(SimTK::NaN);
 	constructProperty_stiffness(SimTK::NaN);
 	constructProperty_dissipation(SimTK::NaN);
+}
 
+void PathSpring::constructOutputs()
+{
 	constructOutput<double>("stretch", 
 	       std::bind(&PathSpring::getStretch, this, std::placeholders::_1),
 				      SimTK::Stage::Position);
