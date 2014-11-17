@@ -196,7 +196,7 @@ it is necessary to choose a limit on the line length.
 
 Please be sure that your IDE (code editor) is set to replace tabs with four spaces. You should never allow tab characters to get into your code. They will look great to you, but most other people will see your code as randomly formatted.
 
-If you use Visual Studio, goto Tools:Options:Text Editor:C/C/Tabs, set tab size=indent size=4, and check the "Insert spaces" button.
+If you use Visual Studio, goto Tools:Options:Text Editor:C/C++:Tabs, set tab size=indent size=4, and check the "Insert spaces" button.
 
 ## Renaming Classes in the OpenSim API
 
