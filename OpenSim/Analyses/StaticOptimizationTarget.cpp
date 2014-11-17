@@ -594,9 +594,20 @@ computeConstraintVector(SimTK::State& s, const Vector &parameters,Vector &constr
 	// CONSTRAINTS
 	for(int i=0; i<getNumConstraints(); i++) {
 		Coordinate& coord = _model->getCoordinateSet().get(_accelerationIndices[i]);
-		Function& presribedFunc = _statesSplineSet.get(_statesStore->getStateIndex(coord.getSpeedName(),0));
+        int ind = _statesStore->getStateIndex(coord.getSpeedName(), 0);
+        if (ind < 0){
+            string fullname = coord.getJoint().getName() + "/" + coord.getSpeedName();
+            ind = _statesStore->getStateIndex(fullname, 0);
+            if (ind < 0){
+                string msg = "StaticOptimizationTarget::computeConstraintVector: \n";
+                msg+= "target motion for coordinate '";
+                msg += coord.getName() + "' not found.";
+                throw Exception(msg);
+            }
+        }
+		Function& targetFunc = _statesSplineSet.get(ind);
 		std::vector<int> derivComponents(1,0); //take first derivative
-		double targetAcceleration = presribedFunc.calcDerivative(derivComponents,SimTK::Vector(1,s.getTime()));
+        double targetAcceleration = targetFunc.calcDerivative(derivComponents, SimTK::Vector(1, s.getTime()));
 		//std::cout << "computeConstraintVector:" << targetAcceleration << " - " <<  actualAcceleration[i] << endl;
 		constraints[i] = targetAcceleration - actualAcceleration[i];
 	}

@@ -174,6 +174,8 @@ void Coordinate::extendFinalizeFromProperties()
     _lockFunction = new ModifiableConstant(get_default_value(), 1); 
 
     _lockedWarningGiven=false;
+
+    _speedName = getName() + "/speed";
 }
 
 void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
@@ -359,9 +361,9 @@ void Coordinate::setSpeedValue(SimTK::State& s, double aValue) const
     _model->updMatterSubsystem().getMobilizedBody(_bodyIndex).setOneU(s,_mobilizerQIndex,aValue);
 }
 
-const std::string  Coordinate::getSpeedName() const
+const std::string&  Coordinate::getSpeedName() const
 {
-    return getName() + "/speed";
+    return _speedName;
 }
 
 double Coordinate::getAccelerationValue(const SimTK::State& s) const
