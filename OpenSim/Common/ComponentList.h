@@ -147,7 +147,6 @@ private:
  This iterator is const_iterator as it returns only const ref or pointer upon 
  dereferencing.
  This iterator works only in forward direction (not bidirectional)
- Only preIncrement (++iter) syntax is supported.
 
  Use as:
 @code
@@ -180,8 +179,16 @@ public:
     const T* operator->() const { return dynamic_cast<const T*>(_node); }
 
     /** Prefix increment operator to get the next item in the ComponentList.
-     Only pre-increment is implemented, use ++iter and not iter++. */
+     Prefer to use ++iter and not iter++. */
     ComponentListIterator<T>& operator++();
+
+    /** Postfix increment operator to get the next item in the ComponentList.
+    To enable usage as iter++, although ++iter is more efficient. */
+    ComponentListIterator<T>& operator++(int) {
+        ComponentListIterator<T> current = *this;
+        next();
+        return current;
+    }
 
     /** Method equivalent to increment operator for operator-deficient
      languages.

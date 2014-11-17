@@ -75,6 +75,15 @@ int main()
             numBodies++;
         }
 
+        std::cout << "Bodies list begin: " << bodiesList.begin()->getName() << std::endl;
+        int numBodiesPost = 0;
+        for (ComponentList<OpenSim::Body>::const_iterator itPost = bodiesList.begin();
+            itPost != bodiesList.end();
+            itPost++) {
+            std::cout << "Iterator is at Body: " << itPost->getName() << std::endl;
+            numBodiesPost++;
+        }
+
         int numMuscles = 0;
         std::cout << "Using range-for loop over Muscles: " << std::endl;
         ComponentList<Muscle> musclesList = model.getComponentList<Muscle>();
@@ -127,6 +136,7 @@ int main()
 
         ASSERT(numComponents == 23); 
         ASSERT(numBodies == model.getNumBodies());
+        ASSERT(numBodiesPost == numBodies);
         ASSERT(numMuscles == model.getMuscles().getSize());
         ASSERT(numComponentsWithStateVariables == 11);
         ASSERT(numJntComponents == 2);
