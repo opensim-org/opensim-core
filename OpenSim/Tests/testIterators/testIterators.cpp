@@ -74,8 +74,8 @@ int main()
             std::cout << "Iterator is at Body: " << it->getName() << std::endl;
             numBodies++;
         }
-
-        std::cout << "Bodies list begin: " << bodiesList.begin()->getName() << std::endl;
+        // Now we try the post increment variant of the iterator
+        std::cout << "Bodies list begin, using post increment: " << bodiesList.begin()->getName() << std::endl;
         int numBodiesPost = 0;
         for (ComponentList<OpenSim::Body>::const_iterator itPost = bodiesList.begin();
             itPost != bodiesList.end();
