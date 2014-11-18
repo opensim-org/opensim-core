@@ -703,13 +703,7 @@ void Millard2012AccelerationMuscle::
         "Millard2012AccelerationMuscle: Muscle is not"
         " to date with properties");
 
-        //Initialize the fiber length
-        setFiberLength(s, getOptimalFiberLength());
-        //Initialize the fiber velocity
-        setFiberVelocity(s, getDefaultFiberVelocity());
-        //Initialize activation to the users desired setting
-        setActivation(s,getActivation(s));
-
+        //Initial fiber length, fiber velocity, activation from input State s
         _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
         //Compute an initial muscle state that develops the desired force and
