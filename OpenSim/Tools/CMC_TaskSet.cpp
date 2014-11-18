@@ -218,11 +218,8 @@ setFunctions(FunctionSet &aFuncSet)
         nTrk = task.getNumTaskFunctions();
         iFunc = aFuncSet.getIndex(name,iFunc);
         if (iFunc < 0){
-            const Component& comp = _model->getComponent(name);
-            const Coordinate* coord = dynamic_cast<const Coordinate*>(&comp);
-            if (coord){
-                name = coord->getJoint().getName() + "/" + name + "/value";
-            }
+            const Coordinate& coord = _model->getCoordinateSet().get(name);
+            name = coord.getJoint().getName() + "/" + name + "/value";
             iFunc = aFuncSet.getIndex(name, iFunc);
             if (iFunc < 0){
                 string msg = "CMC_TaskSet::setFunctionsForVelocity: function for task '";
@@ -299,11 +296,7 @@ setFunctionsForVelocity(FunctionSet &aFuncSet)
         iFunc = aFuncSet.getIndex(coord.getSpeedName(),iFunc);
 
         if (iFunc < 0){
-            const Component& comp = _model->getComponent(name);
-            const Coordinate* coord = dynamic_cast<const Coordinate*>(&comp);
-            if (coord){
-                name = coord->getJoint().getName() + "/" + name + "/speed";
-            }
+            name = coord.getJoint().getName() + "/" + coord.getSpeedName();
             iFunc = aFuncSet.getIndex(name, iFunc);
             if (iFunc < 0){
                 string msg = "CMC_TaskSet::setFunctionsForVelocity: function for task '";
@@ -399,11 +392,7 @@ setFunctionsForAcceleration(FunctionSet &aFuncSet)
         iFunc = aFuncSet.getIndex(coord.getSpeedName(),iFunc);
 
         if (iFunc < 0){
-            const Component& comp = _model->getComponent(name);
-            const Coordinate* coord = dynamic_cast<const Coordinate*>(&comp);
-            if (coord){
-                name = coord->getJoint().getName() + "/" + name + "/speed";
-            }
+            name = coord.getJoint().getName() + "/" + coord.getSpeedName();
             iFunc = aFuncSet.getIndex(name, iFunc);
             if (iFunc < 0){
                 string msg = "CMC_TaskSet::setFunctionsForAcceleration: function for task '";
