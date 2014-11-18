@@ -117,9 +117,8 @@ int main()
         // Would that account for internal (split-bodies etc.?)
         int numComponentsWithStateVariables = 0;
         ComponentList<ModelComponent> compWithStates = model.getComponentList<ModelComponent>();
-        ComponentWithStateVariables* myFilter = new ComponentWithStateVariables();
-        compWithStates.setFilter(myFilter); // Filter is cloned and can be deleted safely
-        delete myFilter;
+        ComponentWithStateVariables myFilter;
+        compWithStates.setFilter(myFilter); // Filter is cloned and can be deleted or go out of scope safely
         for (const ModelComponent& comp : compWithStates) {
             cout << comp.getConcreteClassName() << ":" << comp.getName() << endl;
             numComponentsWithStateVariables++;

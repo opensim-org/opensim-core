@@ -40,7 +40,7 @@ template <typename T> class ComponentListIterator;
 // Class used to help iterate over specific Components
 //
 /**
- A class to specifiy a filter to be used to iterate through components. More 
+ A class to specify a filter to be used to iterate through components. More 
  flexible than filtering based on Type only. To write your custom filter, 
  extend this class and implement the isMatch() and clone() methods.
 */
@@ -52,10 +52,10 @@ protected:
 public:
     /** Destructor of ComponentFilter, does nothing. */
     virtual ~ComponentFilter() {}
-    /** This is the meat of the ComponentFilter, returns true if comp should
-    be iterated over. */
+    /** This is the meat of the ComponentFilter, returns false if the pased in 
+    component should be skipped over. */
     virtual bool isMatch(const Component& comp) const = 0;
-    /** clone() method so that the filter is cached once passed in.  */
+    /** clone() method needed to make a copy of the filter.  */
     virtual ComponentFilter* clone() const = 0;
 };
 /**
@@ -94,18 +94,23 @@ class ComponentList {
 public:
     /** A const forward iterator for iterating through ComponentList<T>.
     The const indicates that the iterator provides only 
-    const references/pointers, and that compoenents can't be modified 
+    const references/pointers, and that components can't be modified 
     through this iterator. */
     typedef ComponentListIterator<T> const_iterator;
     /** Constructor that takes a Component to iterate over (itself and its
-     descendents) and an optional ComponentFilter. If ComponentFilter is not
-     specified then ComponentFilterByType is used internally. You can
-     change the filter using setFilter() method. The filter is cloned on 
-     construction and can only be changed using setFilter().
-     */
-    ComponentList(const Component& root, const ComponentFilter* f =nullptr
-        ) : _root(root), _filter(f){
-        if (f == nullptr) _filter = new ComponentFilterByType<T>();
+    descendents) and a ComponentFilter. You can
+    change the filter using setFilter() method. The filter is cloned on
+    construction and can only be changed using setFilter().
+    */
+    ComponentList(const Component& root, const ComponentFilter& f) : _root(root), _filter(f){
+    }
+    /** Constructor that takes a Component to iterate over (itself and its
+    descendents). ComponentFilterByType is used internally. You can
+    change the filter using setFilter() method. The filter can be changed 
+    using setFilter().
+    */
+    ComponentList(const Component& root) : _root(root){
+        setDefaultFilter();
     }
     /// Destructor of ComponentList.
     virtual ~ComponentList() {}
@@ -116,15 +121,11 @@ public:
     ComponentListIterator<T> begin() {
         return ComponentListIterator<T>(&_root, _filter.getRef());
     }
-    /** Allow users to specify a custom ComponentFilter. This object makes 
-     clone of the passed in filter; you can delete the filter after this call.
+    /** Allow users to specify a custom ComponentFilter. This object makes a
+     clone of the passed in filter.
      */
-    void setFilter(const ComponentFilter* filter){
-        if (filter == nullptr) {
-            _filter = new ComponentFilterByType<T>();
-        }
-        else
-          _filter = *filter;
+    void setFilter(const ComponentFilter& filter){
+          _filter = filter;
     }
     /** Use this method to check if you have reached the end of the list.
     This points past the end of the list, *not* to the last item in the
@@ -137,6 +138,9 @@ private:
     const Component& _root; // root of subtree to be iterated over
     SimTK::ClonePtr<ComponentFilter> _filter; // filter to choose components 
     friend class ComponentListIterator<T>;
+    // Internal method to setFilter to ComponentFilterByType if no user specified 
+    // filter is provided.
+    void setDefaultFilter() { setFilter(ComponentFilterByType<T>()); }
 };
 
 //==============================================================================
@@ -190,7 +194,7 @@ public:
         return current;
     }
 
-    /** Method equivalent to increment operator for operator-deficient
+    /** Method equivalent to pre-increment operator for operator-deficient
      languages.
      */
     ComponentListIterator<T>& next() { return ++(*this); }
