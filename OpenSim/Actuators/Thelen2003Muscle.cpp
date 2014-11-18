@@ -466,7 +466,7 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
                     "Thelen2003Muscle: Muscle is not"
                     " to date with properties");
 
-        //Initial activation and fiber lengthe from input State, s.
+        //Initial activation and fiber length from input State, s.
         _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
         double activation = getActivation(s);
 
