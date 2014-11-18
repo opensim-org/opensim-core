@@ -115,19 +115,26 @@ int main()
         // Components = Model+3Body+3Marker+2(Joint+Coordinate)+6(Muscle+GeometryPath)
         // Should test against 1+#Bodies+#Markers+#Joints+#Constraints+#Coordinates+#Forces+#ForcesWithPath+..
         // Would that account for internal (split-bodies etc.?)
-        int numComponentsWithStateVariables = 0;
-        ComponentList<ModelComponent> compWithStates = model.getComponentList<ModelComponent>();
+        int numJointsWithStateVariables = 0;
+        ComponentList<Joint> jointsWithStates = model.getComponentList<Joint>();
         ComponentWithStateVariables myFilter;
-        compWithStates.setFilter(myFilter); // Filter is cloned and can be deleted or go out of scope safely
-        for (const ModelComponent& comp : compWithStates) {
+        jointsWithStates.setFilter(myFilter); 
+        for (const Joint& comp : jointsWithStates) {
             cout << comp.getConcreteClassName() << ":" << comp.getName() << endl;
-            numComponentsWithStateVariables++;
+            numJointsWithStateVariables++;
+        }
+        int numModelComponentsWithStateVariables = 0;
+        ComponentList<ModelComponent> comps = model.getComponentList<ModelComponent>();
+        comps.setFilter(myFilter);
+        for (const ModelComponent& comp : comps) {
+            cout << comp.getConcreteClassName() << ":" << comp.getName() << endl;
+            numModelComponentsWithStateVariables++;
         }
         //Now test a std::iterator method
-        ComponentList<ModelComponent> comps = model.getComponentList<ModelComponent>();
-        ComponentList<ModelComponent>::const_iterator skipIter = comps.begin();
+        ComponentList<ModelComponent> allModelComps = model.getComponentList<ModelComponent>();
+        ComponentList<ModelComponent>::const_iterator skipIter = allModelComps.begin();
         int countSkipComponent = 0;
-        while (skipIter != comps.end()){
+        while (skipIter != allModelComps.end()){
             cout << skipIter->getConcreteClassName() << ":" << skipIter->getName() << endl;
             std::advance(skipIter, 2);
             countSkipComponent++;
@@ -137,7 +144,8 @@ int main()
         ASSERT(numBodies == model.getNumBodies());
         ASSERT(numBodiesPost == numBodies);
         ASSERT(numMuscles == model.getMuscles().getSize());
-        ASSERT(numComponentsWithStateVariables == 11);
+        ASSERT(numJointsWithStateVariables == 2);
+        ASSERT(numModelComponentsWithStateVariables == 11);
         ASSERT(numJntComponents == 2);
         ASSERT(countSkipComponent == 12);
     }

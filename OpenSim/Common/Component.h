@@ -1732,7 +1732,7 @@ template <typename T>
 void ComponentListIterator<T>::advanceToNextValidComponent() {
     // Advance _node to next valid (of type T) if needed
     // Similar logic to operator++ but applies _filter->isMatch()
-    while (_node != nullptr && !_filter.isMatch(*_node)){
+    while (_node != nullptr && (dynamic_cast<const T*>(_node) == nullptr || !_filter.isMatch(*_node))){
         if (_node->_components.size() > 0)
             _node = _node->_components[0];
         else {

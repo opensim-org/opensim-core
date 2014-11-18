@@ -52,7 +52,7 @@ protected:
 public:
     /** Destructor of ComponentFilter, does nothing. */
     virtual ~ComponentFilter() {}
-    /** This is the meat of the ComponentFilter, returns false if the pased in 
+    /** This is the meat of the ComponentFilter, returns false if the passed in 
     component should be skipped over. */
     virtual bool isMatch(const Component& comp) const = 0;
     /** clone() method needed to make a copy of the filter.  */
@@ -98,16 +98,16 @@ public:
     through this iterator. */
     typedef ComponentListIterator<T> const_iterator;
     /** Constructor that takes a Component to iterate over (itself and its
-    descendents) and a ComponentFilter. You can
-    change the filter using setFilter() method. The filter is cloned on
+    descendents) and a ComponentFilter. You can change the filter later
+    using the setFilter() method. The filter is cloned on
     construction and can only be changed using setFilter().
     */
-    ComponentList(const Component& root, const ComponentFilter& f) : _root(root), _filter(f){
+    ComponentList(const Component& root, const ComponentFilter& f) : 
+        _root(root), _filter(f){
     }
-    /** Constructor that takes a Component to iterate over (itself and its
+    /** Constructor that takes only a Component to iterate over (itself and its
     descendents). ComponentFilterByType is used internally. You can
-    change the filter using setFilter() method. The filter can be changed 
-    using setFilter().
+    change the filter using setFilter() method. 
     */
     ComponentList(const Component& root) : _root(root){
         setDefaultFilter();
