@@ -79,105 +79,105 @@ class OSIMTOOLS_API CMC : public TrackingController {
 OpenSim_DECLARE_CONCRETE_OBJECT(CMC, TrackingController);
 
 //=============================================================================
-// MEMBER VARIABLES	
+// MEMBER VARIABLES 
 //=============================================================================
 private:
-	/* Corresponding index of an Actuator's controls in CMC's ControlSet */
-	Array<int> _controlSetIndices;
+    /* Corresponding index of an Actuator's controls in CMC's ControlSet */
+    Array<int> _controlSetIndices;
 
 protected:
-	/** Optimizer. */
-	SimTK::Optimizer *_optimizer;
-	/** Optimization target for computing the controls. */
-	OptimizationTarget *_target;
+    /** Optimizer. */
+    SimTK::Optimizer *_optimizer;
+    /** Optimization target for computing the controls. */
+    OptimizationTarget *_target;
 
-	/** Next integration step size that is to be taken by the integrator. */
-	double _dt;
-	/** Last integration step size that was taken before a new integration
-	step size was set in order to step exactly to the target time. */
-	double _lastDT;
-	/** Flag indicating when the last integration step size should be restored.
-	Normally it is restored only following a change to the integration
-	step size that was made to step exactly to the end of a target interval. */
-	bool _restoreDT;
-	/** The target time is the time in the future (in normalized units) for
-	which the controls have been calculated.  If an integrator is taking
-	steps prior to the target time, the controls should not have to be
-	computed again. */
-	double _tf;
+    /** Next integration step size that is to be taken by the integrator. */
+    double _dt;
+    /** Last integration step size that was taken before a new integration
+    step size was set in order to step exactly to the target time. */
+    double _lastDT;
+    /** Flag indicating when the last integration step size should be restored.
+    Normally it is restored only following a change to the integration
+    step size that was made to step exactly to the end of a target interval. */
+    bool _restoreDT;
+    /** The target time is the time in the future (in normalized units) for
+    which the controls have been calculated.  If an integrator is taking
+    steps prior to the target time, the controls should not have to be
+    computed again. */
+    double _tf;
 
     /** The step size used to generate a new target time, once the
     old target time has been reached. */
     double _targetDT;
 
-	/** Whether or not to check the target time. */
-	bool _checkTargetTime;
-	/** Storage object for the position errors. */
-	Storage *_pErrStore;
-	/** Storage object for the velocity errors. */
-	Storage *_vErrStore;
-	/** Storage object for the stress term weight. */
-	Storage *_stressTermWeightStore;
+    /** Whether or not to check the target time. */
+    bool _checkTargetTime;
+    /** Storage object for the position errors. */
+    Storage *_pErrStore;
+    /** Storage object for the velocity errors. */
+    Storage *_vErrStore;
+    /** Storage object for the stress term weight. */
+    Storage *_stressTermWeightStore;
 
-	ControlSet _controlSet;
-	/** List of parameters in the control set that are serving as the
-	controls in the optimization problem. */
-	Array<int> _paramList;
-	/** Flag to indicate whether to use verbose printing. */
-	bool _verbose;
+    ControlSet _controlSet;
+    /** List of parameters in the control set that are serving as the
+    controls in the optimization problem. */
+    Array<int> _paramList;
+    /** Flag to indicate whether to use verbose printing. */
+    bool _verbose;
  
     bool _useCurvatureFilter;
     CMC_TaskSet *_taskSet;
 
-	/** Vector function for estimating actuator forces over a specified time
-	interval. */
-	VectorFunctionForActuators *_predictor;
-	/** Array of actuator forces for achieving the desired accelerations. */
-	Array<double> _f;
+    /** Vector function for estimating actuator forces over a specified time
+    interval. */
+    VectorFunctionForActuators *_predictor;
+    /** Array of actuator forces for achieving the desired accelerations. */
+    Array<double> _f;
 
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	CMC();
-	CMC(Model *aModel,CMC_TaskSet *aTaskSet);
+    CMC();
+    CMC(Model *aModel,CMC_TaskSet *aTaskSet);
     CMC(const CMC& aCmc);
     CMC(const std::string& aFileName, bool aUpdateFromXMLNode = true);
-	virtual ~CMC();
+    virtual ~CMC();
 
-	void setNull();
+    void setNull();
 
 #ifndef SWIG
     CMC&  operator=(const CMC &aCmc);
 #endif
     void copyData(const CMC &aCmc);
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	Array<int>* getParameterList();
-	SimTK::Optimizer* getOptimizer() const;
-	OptimizationTarget* setOptimizationTarget(OptimizationTarget *aTarget, SimTK::Optimizer *aOptimizer);
-	OptimizationTarget* getOptimizationTarget() const;
-	void setDT(double aDT);
-	double getDT() const;
-	void setTargetTime(double aTime);
-	double getTargetTime() const;
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    Array<int>* getParameterList();
+    SimTK::Optimizer* getOptimizer() const;
+    OptimizationTarget* setOptimizationTarget(OptimizationTarget *aTarget, SimTK::Optimizer *aOptimizer);
+    OptimizationTarget* getOptimizationTarget() const;
+    void setDT(double aDT);
+    double getDT() const;
+    void setTargetTime(double aTime);
+    double getTargetTime() const;
     void setTargetDT(double aDT);
     double getTargetDT() const;
-	void setCheckTargetTime(bool aTrueFalse);
-	bool getCheckTargetTime() const;
-	void setActuatorForcePredictor(VectorFunctionForActuators *aPredictor);
-	VectorFunctionForActuators* getActuatorForcePredictor();
-	Storage* getPositionErrorStorage() const;
-	Storage* getVelocityErrorStorage() const;
-	Storage* getStressTermWeightStorage() const;
-	bool getUseReflexes() const;
-	void setUseVerbosePrinting(bool aTrueFalse);
+    void setCheckTargetTime(bool aTrueFalse);
+    bool getCheckTargetTime() const;
+    void setActuatorForcePredictor(VectorFunctionForActuators *aPredictor);
+    VectorFunctionForActuators* getActuatorForcePredictor();
+    Storage* getPositionErrorStorage() const;
+    Storage* getVelocityErrorStorage() const;
+    Storage* getStressTermWeightStorage() const;
+    bool getUseReflexes() const;
+    void setUseVerbosePrinting(bool aTrueFalse);
     bool getUseVerbosePrinting() const;
     void setUseCurvatureFilter(bool aTrueFalse);
     bool getUseCurvatureFilter() const;
@@ -187,42 +187,42 @@ public:
 
     ControlSet& updControlSet() { return _controlSet; }
 
-	//--------------------------------------------------------------------------
-	// UTILITY
-	//--------------------------------------------------------------------------
-	void restoreConfiguration(SimTK::State&s, const SimTK::State& initialState);
-	void obtainActuatorEquilibrium(SimTK::State& s, double tiReal,double dtReal,
-		const Array<double> &x,bool hold);
+    //--------------------------------------------------------------------------
+    // UTILITY
+    //--------------------------------------------------------------------------
+    void restoreConfiguration(SimTK::State&s, const SimTK::State& initialState);
+    void obtainActuatorEquilibrium(SimTK::State& s, double tiReal,double dtReal,
+        const Array<double> &x,bool hold);
 
-	//--------------------------------------------------------------------------
-	// COMPUTATION
-	//--------------------------------------------------------------------------
-	/**
-	 * Controller interface
-	 */
-	virtual void computeControls(const SimTK::State& s, SimTK::Vector& controls) const;
-	virtual void computeInitialStates(SimTK::State& s, double &rTI);
-	/** CMC algroithm */
-	virtual void computeControls(SimTK::State& s, ControlSet &rX);
+    //--------------------------------------------------------------------------
+    // COMPUTATION
+    //--------------------------------------------------------------------------
+    /**
+     * Controller interface
+     */
+    virtual void computeControls(const SimTK::State& s, SimTK::Vector& controls) const;
+    virtual void computeInitialStates(SimTK::State& s, double &rTI);
+    /** CMC algroithm */
+    virtual void computeControls(SimTK::State& s, ControlSet &rX);
 
-	//--------------------------------------------------------------------------
-	// STATIC
-	//--------------------------------------------------------------------------
-	static void
-		FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
-		OpenSim::Array<double> &rControls,bool aVerbosePrinting);
+    //--------------------------------------------------------------------------
+    // STATIC
+    //--------------------------------------------------------------------------
+    static void
+        FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
+        OpenSim::Array<double> &rControls,bool aVerbosePrinting);
 
      virtual void setupProperties();
 
  protected:
-	 // for any post XML deserialization intialization
+     // for any post XML deserialization intialization
      void extendConnectToModel(Model& model) override;
 
      // for adding any components to the underlying system
      void extendAddToSystem( SimTK::MultibodySystem& system) const override; 
 
 //=============================================================================
-};	// END of class CMC
+};  // END of class CMC
 //=============================================================================
 //=============================================================================
 

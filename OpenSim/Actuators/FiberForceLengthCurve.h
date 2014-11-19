@@ -48,11 +48,11 @@ namespace OpenSim {
     fiber at 1 normalized unit of force, and the shape of the curve (its
     'curviness'):
 
-	<h3>Properties</h3>
+    <h3>Properties</h3>
     - \c strainAtZeroForce<br>
-		The fiber strain at which the fiber starts to develop force.
-		strainAtZeroForce = 0.0 means that the fiber will begin developing
-		tension when it is at its resting length.
+        The fiber strain at which the fiber starts to develop force.
+        strainAtZeroForce = 0.0 means that the fiber will begin developing
+        tension when it is at its resting length.
 
     - \c strainAtOneNormForce<br>
         The fiber strain at which the fiber develops 1 unit of normalized force.
@@ -188,7 +188,7 @@ public:
 
     /** Constructs a fiber-force-length curve using the provided parameters and
     assigns a default name. See class documentation for the meaning of these
-	parameters, each of which corresponds to a property. */
+    parameters, each of which corresponds to a property. */
     FiberForceLengthCurve(double strainAtZeroForce,
                           double strainAtOneNormForce,
                           double stiffnessAtLowForce,
@@ -275,7 +275,7 @@ public:
                                double stiffnessAtOneNormForce,
                                double curviness);
 
-	/** Implement the generic OpenSim::Function interface **/
+    /** Implement the generic OpenSim::Function interface **/
     double calcValue(const SimTK::Vector& x) const override
     {
         return calcValue(x[0]);

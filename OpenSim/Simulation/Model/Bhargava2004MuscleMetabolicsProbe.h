@@ -465,7 +465,7 @@ private:
         updMetabolicParameters(const std::string& muscleName);
 
 //=============================================================================
-};	// END of class Bhargava2004MuscleMetabolicsProbe
+};  // END of class Bhargava2004MuscleMetabolicsProbe
 //=============================================================================
 
 //==============================================================================
@@ -580,7 +580,7 @@ private:
     void constructProperties();
 
 //=============================================================================
-};	// END of class MetabolicMuscleParameter
+};  // END of class MetabolicMuscleParameter
 //=============================================================================
 
 
@@ -610,7 +610,7 @@ public:
     
 
 //=============================================================================
-};	// END of class MetabolicMuscleParameterSet
+};  // END of class MetabolicMuscleParameterSet
 //=============================================================================
 
 

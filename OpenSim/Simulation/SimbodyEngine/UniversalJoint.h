@@ -76,7 +76,7 @@ protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 //=============================================================================
-};	// END of class UniversalJoint
+};  // END of class UniversalJoint
 //=============================================================================
 //=============================================================================
 

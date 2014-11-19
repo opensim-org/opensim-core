@@ -94,7 +94,7 @@ public:
     /** Construct ModelComponent from a specific node in an XML document. **/
     explicit ModelComponent(SimTK::Xml::Element& aNode);
 
-	// compiler default copy costructor and assignment operator
+    // compiler default copy costructor and assignment operator
 
     /** Destructor is virtual to allow concrete model component cleanup. **/
     virtual ~ModelComponent() {}
@@ -252,7 +252,7 @@ private:
     * extendConnectToModel() on ModelComponent subcomponents are invoked. **/
     void extendConnect(Component& root) FINAL_11;
 
-	const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;
+    const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;
     const SimTK::DefaultSystemSubsystem& updDefaultSubsystem();
 
     // Clear out all the data fields in the base class. There should be one
@@ -269,7 +269,7 @@ protected:
 
 
 //==============================================================================
-};	// END of class ModelComponent
+};  // END of class ModelComponent
 //==============================================================================
 //=============================================================================
 

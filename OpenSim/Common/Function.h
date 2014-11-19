@@ -71,36 +71,36 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	Function();
-	Function(const Function &aFunction);
-	virtual ~Function();
-	virtual void init(Function* aFunction) { }
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    Function();
+    Function(const Function &aFunction);
+    virtual ~Function();
+    virtual void init(Function* aFunction) { }
 
 private:
-	void setNull();
+    void setNull();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	Function& operator=(const Function &aFunction);
+    Function& operator=(const Function &aFunction);
 #endif
-	//--------------------------------------------------------------------------
-	// SET AND GET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // SET AND GET
+    //--------------------------------------------------------------------------
 public:
-	//--------------------------------------------------------------------------
-	// UTILITY
-	//--------------------------------------------------------------------------
-	static Function* makeFunctionOfType(Function* aFunction, const std::string& aNewTypeName);
+    //--------------------------------------------------------------------------
+    // UTILITY
+    //--------------------------------------------------------------------------
+    static Function* makeFunctionOfType(Function* aFunction, const std::string& aNewTypeName);
 
-	//--------------------------------------------------------------------------
-	// EVALUATE
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // EVALUATE
+    //--------------------------------------------------------------------------
     /**
      * Calculate the value of this function at a particular point.
      * 
@@ -127,21 +127,21 @@ public:
      * Get the maximum derivative order this Function object can calculate.
      */
     virtual int getMaxDerivativeOrder() const;
-	/**
-	 * Return a SimTK::Function that can be used natively by the
-	 * underlying SimTK::System and its elements.
-	 */
+    /**
+     * Return a SimTK::Function that can be used natively by the
+     * underlying SimTK::System and its elements.
+     */
     virtual SimTK::Function* createSimTKFunction() const = 0;
 
 protected:
     /**
      * This should be called whenever this object has been modified.  It clears 
-	 * the internal SimTK::Function object used to evaluate it.
+     * the internal SimTK::Function object used to evaluate it.
      */
     void resetFunction();
 
 //=============================================================================
-};	// END class Function
+};  // END class Function
 
 }; //namespace
 //=============================================================================

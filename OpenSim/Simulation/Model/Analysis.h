@@ -60,16 +60,16 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(Analysis, Object);
 //=============================================================================
 public:
     Model* _model;
-	const Storage* _statesStore;
+    const Storage* _statesStore;
 
 private:
-	/** Whether or not to write output of angles in degrees. */
-	PropertyBool _inDegreesProp;
-	bool &_inDegrees;
+    /** Whether or not to write output of angles in degrees. */
+    PropertyBool _inDegreesProp;
+    bool &_inDegrees;
 
-	// WORK ARRAYS
-	/** Column labels. */
-	Array<std::string> _labels;
+    // WORK ARRAYS
+    /** Column labels. */
+    Array<std::string> _labels;
 
 
 protected:
@@ -78,67 +78,67 @@ protected:
     PropertyInt _stepIntervalProp;
     int &_stepInterval;
 
-	/** On, off flag. */
-	PropertyBool _onProp;
-	bool &_on;
+    /** On, off flag. */
+    PropertyBool _onProp;
+    bool &_on;
 
-	/** Start time for the callback in normalized time. */
-	PropertyDbl _startTimeProp;
-	double &_startTime;
+    /** Start time for the callback in normalized time. */
+    PropertyDbl _startTimeProp;
+    double &_startTime;
 
-	/** End time for the callback in normalized time. */
-	PropertyDbl _endTimeProp;
-	double &_endTime;
-	ArrayPtrs<Storage> _storageList;
-	bool _printResultFiles;
+    /** End time for the callback in normalized time. */
+    PropertyDbl _endTimeProp;
+    double &_endTime;
+    ArrayPtrs<Storage> _storageList;
+    bool _printResultFiles;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 
 public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	/**
-	 * Default constructor.
-	 *
-	 * @param aModel Model on which the analysis is to be performed.
-	 */
-	explicit Analysis(Model *aModel=0);
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    /**
+     * Default constructor.
+     *
+     * @param aModel Model on which the analysis is to be performed.
+     */
+    explicit Analysis(Model *aModel=0);
 
-	/**
-	 * Construct an object from file.
-	 * The object is constructed from the root element of the XML document.
-	 * The type of object is the tag name of the XML root element.
-	 * @param aFileName File name of the document.
+    /**
+     * Construct an object from file.
+     * The object is constructed from the root element of the XML document.
+     * The type of object is the tag name of the XML root element.
+     * @param aFileName File name of the document.
      * @param aUpdateFromXMLNode
-	 */
-	Analysis(const std::string &aFileName, bool aUpdateFromXMLNode = true);
+     */
+    Analysis(const std::string &aFileName, bool aUpdateFromXMLNode = true);
 
-	/**
-	 * Copy constructor.
-	 * @param aAnalysis Object to be copied.
-	 * @see Analysis(const XMLDocument *aDocument)
-	 * @see Analysis(const char *aFileName)
-	 * @see generateXMLDocument()
-	 */
-	Analysis(const Analysis &aAnalysis);
+    /**
+     * Copy constructor.
+     * @param aAnalysis Object to be copied.
+     * @see Analysis(const XMLDocument *aDocument)
+     * @see Analysis(const char *aFileName)
+     * @see generateXMLDocument()
+     */
+    Analysis(const Analysis &aAnalysis);
 
-	virtual ~Analysis();
+    virtual ~Analysis();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	/**
-	 * Assignment operator.
-	 * @return Reference to this object.
-	 */
-	Analysis& operator=(const Analysis &aAnalysis);
+    /**
+     * Assignment operator.
+     * @return Reference to this object.
+     */
+    Analysis& operator=(const Analysis &aAnalysis);
 #endif
 
    virtual int
@@ -149,43 +149,43 @@ public:
         end( SimTK::State& s);
 
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	// MODEL
-	/**
-	 * set pointer to model to be analyzed.
-	 * @param aModel
-	 */
-	virtual void setModel(Model& aModel);
-	// STATES STORAGE
-	/**
-	 * set states storage for analysis.
-	 * @param aStatesStore
-	 */
-	virtual void setStatesStore(const Storage& aStatesStore);
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    // MODEL
+    /**
+     * set pointer to model to be analyzed.
+     * @param aModel
+     */
+    virtual void setModel(Model& aModel);
+    // STATES STORAGE
+    /**
+     * set states storage for analysis.
+     * @param aStatesStore
+     */
+    virtual void setStatesStore(const Storage& aStatesStore);
 
-	// ON,OFF
-	void setOn(bool aTrueFalse);
-	bool getOn() const;
+    // ON,OFF
+    void setOn(bool aTrueFalse);
+    bool getOn() const;
 
-	// START,END
-	void setStartTime(double aStartTime);
-	double getStartTime() const;
+    // START,END
+    void setStartTime(double aStartTime);
+    double getStartTime() const;
 
-	void setEndTime(double aEndTime);
-	double getEndTime() const;
+    void setEndTime(double aEndTime);
+    double getEndTime() const;
 
-	// DEGREES/RADIANS
-	/**
-	 * Set whether or not to write the output of angles in degrees.
-	 * This flag must be set before an analysis is performed to ensure that
-	 * the results are in the proper format.
-	 * @param aTrueFalse Output will be in degrees if "true" and in radians
-	 * if "false".
-	 */
-	void setInDegrees(bool aTrueFalse);
-	bool getInDegrees() const;
+    // DEGREES/RADIANS
+    /**
+     * Set whether or not to write the output of angles in degrees.
+     * This flag must be set before an analysis is performed to ensure that
+     * the results are in the proper format.
+     * @param aTrueFalse Output will be in degrees if "true" and in radians
+     * if "false".
+     */
+    void setInDegrees(bool aTrueFalse);
+    bool getInDegrees() const;
 
     virtual bool proceed(int aStep=0);
 
@@ -195,45 +195,45 @@ public:
     void setStepInterval(int aStepInterval);
     int getStepInterval() const;
 
-	// COLUMN LABLES
-	/**
-	 * Set the column labels for this analysis.
-	 * @param aLabels an Array of strings (labels).
-	 */
-	void setColumnLabels(const Array<std::string> &aLabels);
-	const Array<std::string> &getColumnLabels() const;
+    // COLUMN LABLES
+    /**
+     * Set the column labels for this analysis.
+     * @param aLabels an Array of strings (labels).
+     */
+    void setColumnLabels(const Array<std::string> &aLabels);
+    const Array<std::string> &getColumnLabels() const;
 
 #ifndef SWIG
-	// These symbols are swigged out because they are not defined and never used!
-	// STORAGE INTERVAL
-	void setStorageInterval(int aInterval);
-	int getStorageInterval() const;
+    // These symbols are swigged out because they are not defined and never used!
+    // STORAGE INTERVAL
+    void setStorageInterval(int aInterval);
+    int getStorageInterval() const;
 #endif
-	virtual ArrayPtrs<Storage>& getStorageList();
-	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
-	bool getPrintResultFiles() const { return _printResultFiles; }
+    virtual ArrayPtrs<Storage>& getStorageList();
+    void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
+    bool getPrintResultFiles() const { return _printResultFiles; }
 
-	//--------------------------------------------------------------------------
-	// RESULTS
-	//--------------------------------------------------------------------------
-	/**
-	 * Print the results of the analysis.
-	 *
-	 * @param aBaseName Base name of file to which to print the data.
+    //--------------------------------------------------------------------------
+    // RESULTS
+    //--------------------------------------------------------------------------
+    /**
+     * Print the results of the analysis.
+     *
+     * @param aBaseName Base name of file to which to print the data.
      * @param aDir      Directory name.
-	 * @param aDT       Time interval between results (linear interpolation 
+     * @param aDT       Time interval between results (linear interpolation 
      *                  is used). If not supplied as an argument or negative, 
      *                  all time steps are printed without interpolation.
      * @param aExtension    File extension if not the default ".sto".
-	 *
-	 * @return -1 on error, 0 otherwise.
-	 */	
-	virtual int
-		printResults(const std::string &aBaseName,const std::string &aDir="",
-		double aDT=-1.0,const std::string &aExtension=".sto");
+     *
+     * @return -1 on error, 0 otherwise.
+     */ 
+    virtual int
+        printResults(const std::string &aBaseName,const std::string &aDir="",
+        double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
-};	// END of class Analysis
+};  // END of class Analysis
 
 }; //namespace
 //=============================================================================
