@@ -38,23 +38,23 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class OSIMSIMULATION_API BodyScaleSet :	public Set<BodyScale> {
+class OSIMSIMULATION_API BodyScaleSet : public Set<BodyScale> {
 OpenSim_DECLARE_CONCRETE_OBJECT(BodyScaleSet, Set<BodyScale>);
 
 private:
-	void setNull();
+    void setNull();
 public:
-	BodyScaleSet();
-	BodyScaleSet(const BodyScaleSet& aBodyScaleSet);
-	~BodyScaleSet(void);
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    BodyScaleSet();
+    BodyScaleSet(const BodyScaleSet& aBodyScaleSet);
+    ~BodyScaleSet(void);
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	BodyScaleSet& operator=(const BodyScaleSet &aBodyScaleSet);
+    BodyScaleSet& operator=(const BodyScaleSet &aBodyScaleSet);
 #endif
 //=============================================================================
-};	// END of class BodyScaleSet
+};  // END of class BodyScaleSet
 //=============================================================================
 //=============================================================================
 

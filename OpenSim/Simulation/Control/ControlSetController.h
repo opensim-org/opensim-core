@@ -155,7 +155,7 @@ public:
    double getLastTime() const;
 
 //=============================================================================
-};	// END of class ControlSetController
+};  // END of class ControlSetController
 
 }; //namespace
 //=============================================================================

@@ -118,8 +118,8 @@ typedef struct
    dpBoolean totalMuscleJointTorques;
    dpBoolean optimizedMuscleActivations;
    dpNormalizeOptions normalization;
-	dpBoolean gencoordValues;
-	dpBoolean traditionalInverse;
+    dpBoolean gencoordValues;
+    dpBoolean traditionalInverse;
 } dpOutputOptions;
 
 typedef struct
@@ -148,29 +148,29 @@ typedef struct
 
 typedef enum
 {
-	dpPin,
+    dpPin,
    dpReversePin,
-	dpUniversal,
+    dpUniversal,
    dpReverseUniversal,
-	dpGimbal,
+    dpGimbal,
    dpReverseGimbal,
-	dpBall,
+    dpBall,
    dpReverseBall,
-	dpSlider,
+    dpSlider,
    dpReverseSlider,
-	dpCylindrical,
+    dpCylindrical,
    dpReverseCylindrical,
-	dpPlanar,
+    dpPlanar,
    dpReversePlanar,
-	dpBushing,
-	dpReverseBushing,
-	dpBearing,
-	dpReverseBearing,
-	dpFree,
-	dpReverseFree,
-	dpWeld,
+    dpBushing,
+    dpReverseBushing,
+    dpBearing,
+    dpReverseBearing,
+    dpFree,
+    dpReverseFree,
+    dpWeld,
    dpSkippable,
-	dpUnknownJoint
+    dpUnknownJoint
 } dpJointType;
 
 typedef enum
@@ -190,7 +190,7 @@ typedef enum
    dpStepFunction = 0,
    dpNaturalCubicSpline,
    dpGCVSpline,
-	dpLinearFunction
+    dpLinearFunction
 } dpFunctionType;
 
 typedef enum
@@ -208,34 +208,34 @@ typedef enum
 
 typedef enum
 {
-	dpUnknownContact,
-	dpImpact,
-	dpRestingContact,
-	dpSeparatingContact
+    dpUnknownContact,
+    dpImpact,
+    dpRestingContact,
+    dpSeparatingContact
 } dpCollisionTypes;
 
 typedef struct
 {
-	int body1;				/* SDFast index of body1 */
-	int body2;           /* SDFast index of body2 */
-	double pt1[3];			/* contact point location in body1 frame from b1 com */
-	double pt2[3];       /* contact point location in body2 frame from b2 com */
-	double norm1[3];		/* contact normal on body1 in body1 frame */
-	double norm2[3];     /* contact normal on body2 in body2 frame */
-	double outward_norm[3];	/* from body1 to body2 in ground frame */
-	double vel1[3];		/* velocity of contact point on body1 wrt ground */
-	double vel2[3];      /* velocity of contact point on body2 wrt ground */
-	double rel_vel[3];	/* relative velocity v2 - v1 */
-	double cont_frc[3];	/* contact force or impulse */
-	double acc;				/* magnitude of normal relative acceleration */
-	double coef_rest;		/* coefficient of restitution */
-	double mu_dynamic;	/* dynamic friction coefficient */
-	double mu_static;		/* static friction coefficient */
-	dpCollisionTypes contact_type;	/* IMPACT, CONTACT, or SEPARATING */
-	char type1[30];		/* FACE, VERTEX, or EDGE */
-	char type2[30];      /* FACE, VERTEX, or EDGE */
-	double dist;			/* for ideal contacts along outward normal */
-} dpContactInfo;		   /* contact node */
+    int body1;              /* SDFast index of body1 */
+    int body2;           /* SDFast index of body2 */
+    double pt1[3];          /* contact point location in body1 frame from b1 com */
+    double pt2[3];       /* contact point location in body2 frame from b2 com */
+    double norm1[3];        /* contact normal on body1 in body1 frame */
+    double norm2[3];     /* contact normal on body2 in body2 frame */
+    double outward_norm[3]; /* from body1 to body2 in ground frame */
+    double vel1[3];     /* velocity of contact point on body1 wrt ground */
+    double vel2[3];      /* velocity of contact point on body2 wrt ground */
+    double rel_vel[3];  /* relative velocity v2 - v1 */
+    double cont_frc[3]; /* contact force or impulse */
+    double acc;             /* magnitude of normal relative acceleration */
+    double coef_rest;       /* coefficient of restitution */
+    double mu_dynamic;  /* dynamic friction coefficient */
+    double mu_static;       /* static friction coefficient */
+    dpCollisionTypes contact_type;  /* IMPACT, CONTACT, or SEPARATING */
+    char type1[30];     /* FACE, VERTEX, or EDGE */
+    char type2[30];      /* FACE, VERTEX, or EDGE */
+    double dist;            /* for ideal contacts along outward normal */
+} dpContactInfo;           /* contact node */
 
 typedef struct
 {
@@ -505,7 +505,7 @@ typedef struct
    dpBoolean function_active;
    dpBoolean output;
    double torque;
-	double pd_stiffness;
+    double pd_stiffness;
 } dpQStruct;
 
 typedef struct
@@ -541,8 +541,8 @@ typedef struct
 
 typedef struct
 {
-	double point[3];
-	double vector[3];
+    double point[3];
+    double vector[3];
 } dpForceStruct;
 
 typedef struct
@@ -565,16 +565,16 @@ typedef struct
 
 typedef struct
 {
-	int inboard_body;
-	int outboard_body;
-	int dof;
-	int first_q;
-	int quat;
-	double axes[6][3];
-	double force[3];
-	double torque[3];
+    int inboard_body;
+    int outboard_body;
+    int dof;
+    int first_q;
+    int quat;
+    double axes[6][3];
+    double force[3];
+    double torque[3];
    dpDOFType dof_type[6];
-	dpJointType jnt_type;
+    dpJointType jnt_type;
    dpBoolean loop_joint;
 } dpJointStruct;
 
@@ -621,7 +621,7 @@ typedef struct
    double gravity[3];
    dpSimmModelID simmModel;
    int enforce_constraints;    /* enforce constraint objects while integrating? */
-	int newInverseSimulation;   /* new-style inverse with corrective torques? */
+    int newInverseSimulation;   /* new-style inverse with corrective torques? */
 } dpModelStruct;
 
 DLL int dpInitSimulation(void* params);

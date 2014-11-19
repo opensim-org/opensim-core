@@ -36,9 +36,9 @@ namespace OpenSim {
  * A class implementing a collection of rolling-without-slipping and 
  * non-penetration constraints on a surface.  
  * The underlying Constraints in Simbody are:
- *		PointInPlane to oppose penetration into the ground (unitlaterally)
- *		ConstantAngle about the normal to the enforce no spinning
- *		NoSlip1D along one axis of the plane
+ *      PointInPlane to oppose penetration into the ground (unitlaterally)
+ *      ConstantAngle about the normal to the enforce no spinning
+ *      NoSlip1D along one axis of the plane
  *      NoSlip1D along the other axis
  *
  * mu = Coulomb Friction Coeefficient
@@ -63,106 +63,106 @@ OpenSim_DECLARE_CONCRETE_OBJECT(RollingOnSurfaceConstraint,
 //=============================================================================
 public:
 
-	OpenSim_DECLARE_PROPERTY(rolling_body, std::string,
+    OpenSim_DECLARE_PROPERTY(rolling_body, std::string,
         "Specify the rolling body for this constraint.");
 
-	OpenSim_DECLARE_PROPERTY(surface_body, std::string,
+    OpenSim_DECLARE_PROPERTY(surface_body, std::string,
         "Specify the body containing the surface (plane) that the rolling body rolls on.");
 
-	OpenSim_DECLARE_PROPERTY(surface_normal, SimTK::Vec3,
+    OpenSim_DECLARE_PROPERTY(surface_normal, SimTK::Vec3,
         "Surface normal direction in the surface body.");
 
-	OpenSim_DECLARE_PROPERTY(surface_height, double,
+    OpenSim_DECLARE_PROPERTY(surface_height, double,
         "Surface height in the direction of the normal in the surface body.");
 
-	OpenSim_DECLARE_PROPERTY(friction_coefficient, double,
+    OpenSim_DECLARE_PROPERTY(friction_coefficient, double,
         "Coulomb friction coefficient for rolling on the surface.");
 
-	OpenSim_DECLARE_PROPERTY(contact_radius, double,
+    OpenSim_DECLARE_PROPERTY(contact_radius, double,
         "A guess at the area of contact approximated by a circle of radius.");
 
 private:
 
-	/** First body is the rolling body. */
-	Body *_rollingBody;
+    /** First body is the rolling body. */
+    Body *_rollingBody;
 
-	/** Second body describes the surface body. */
-	Body *_surfaceBody;
+    /** Second body describes the surface body. */
+    Body *_surfaceBody;
 
-	/** Get the indices of underlying constraints to access from Simbody */
-	std::vector<SimTK::ConstraintIndex> _indices;
+    /** Get the indices of underlying constraints to access from Simbody */
+    std::vector<SimTK::ConstraintIndex> _indices;
 
-	/**  This cache acts a temporary hold for the constraint conditions when time has not changed */
-	std::vector<bool> _defaultUnilateralConditions;
+    /**  This cache acts a temporary hold for the constraint conditions when time has not changed */
+    std::vector<bool> _defaultUnilateralConditions;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	RollingOnSurfaceConstraint();
-	virtual ~RollingOnSurfaceConstraint();
+    // CONSTRUCTION
+    RollingOnSurfaceConstraint();
+    virtual ~RollingOnSurfaceConstraint();
 
     // ModelComponent interface.
-	void extendConnectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
 
-	/**
-	 * Create the SimTK::Constraints: which implements this RollingOnSurfaceConstraint.
-	 */
-	void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-	/**
-	 * Populate the the SimTK::State: with defaults for the RollingOnSurfaceConstraint.
-	 */
-	void extendInitStateFromProperties(SimTK::State& state) const override;
-	/**
-	 * Given an existing SimTK::State set defaults for the RollingOnSurfaceConstraint.
-	 */
-	void extendSetPropertiesFromState(const SimTK::State& state) override;
+    /**
+     * Create the SimTK::Constraints: which implements this RollingOnSurfaceConstraint.
+     */
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    /**
+     * Populate the the SimTK::State: with defaults for the RollingOnSurfaceConstraint.
+     */
+    void extendInitStateFromProperties(SimTK::State& state) const override;
+    /**
+     * Given an existing SimTK::State set defaults for the RollingOnSurfaceConstraint.
+     */
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
-	//SET 
-	void setRollingBodyByName(std::string aBodyName);
-	void setSurfaceBodyByName(std::string aBodyName);
-	virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point);
+    //SET 
+    void setRollingBodyByName(std::string aBodyName);
+    void setSurfaceBodyByName(std::string aBodyName);
+    virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point);
 
-	// Methods that makes this a unilateral constraint
-	virtual std::vector<bool> unilateralConditionsSatisfied(const SimTK::State& state);
+    // Methods that makes this a unilateral constraint
+    virtual std::vector<bool> unilateralConditionsSatisfied(const SimTK::State& state);
 
-	virtual bool isDisabled(const SimTK::State& state) const;
+    virtual bool isDisabled(const SimTK::State& state) const;
 
-	// Unilateral conditions are automatically satisfied if constraint is not disabled
-	virtual bool setDisabled(SimTK::State& state, bool isDisabled);
+    // Unilateral conditions are automatically satisfied if constraint is not disabled
+    virtual bool setDisabled(SimTK::State& state, bool isDisabled);
 
-	// This method allows finer granularity over the subconstraints according to imposed behavior
-	bool setDisabled(SimTK::State& state, bool isDisabled, std::vector<bool> shouldBeOn);
+    // This method allows finer granularity over the subconstraints according to imposed behavior
+    bool setDisabled(SimTK::State& state, bool isDisabled, std::vector<bool> shouldBeOn);
 
-	// Set whether constraint is enabled or disabled but use cached values for unilateral conditions
-	// instead of automatic reevaluation
-	bool setDisabledWithCachedUnilateralConditions(bool isDisabled, SimTK::State& state) 
-		{ return setDisabled(state, isDisabled, _defaultUnilateralConditions); };
+    // Set whether constraint is enabled or disabled but use cached values for unilateral conditions
+    // instead of automatic reevaluation
+    bool setDisabledWithCachedUnilateralConditions(bool isDisabled, SimTK::State& state) 
+        { return setDisabled(state, isDisabled, _defaultUnilateralConditions); };
 
-	virtual void calcConstraintForces(const SimTK::State& state, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor, 
-									  SimTK::Vector& mobilityForces) const;
+    virtual void calcConstraintForces(const SimTK::State& state, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor, 
+                                      SimTK::Vector& mobilityForces) const;
 
-	/** 
-	 * Methods to query a Constraint forces (defaults to the Lagrange mulipliers) applied
-	 * The names of the quantities (column labels) is returned by this first function
-	 * getRecordLabels()
-	 */
-	//virtual Array<std::string> getRecordLabels() const;
-	/**
-	 * Given SimTK::State object extract all the values necessary to report constraint forces (multipliers)
-	 * Subclasses can override to report force, application location frame, etc. used in conjunction
-	 * with getRecordLabels and should return same size Array
-	 */
-	//virtual Array<double> getRecordValues(const SimTK::State& state) const;
+    /** 
+     * Methods to query a Constraint forces (defaults to the Lagrange mulipliers) applied
+     * The names of the quantities (column labels) is returned by this first function
+     * getRecordLabels()
+     */
+    //virtual Array<std::string> getRecordLabels() const;
+    /**
+     * Given SimTK::State object extract all the values necessary to report constraint forces (multipliers)
+     * Subclasses can override to report force, application location frame, etc. used in conjunction
+     * with getRecordLabels and should return same size Array
+     */
+    //virtual Array<double> getRecordValues(const SimTK::State& state) const;
 
 private:
 
-	void setNull();
-	void constructProperties();
+    void setNull();
+    void constructProperties();
 
 //=============================================================================
-};	// END of class RollingOnSurfaceConstraint
+};  // END of class RollingOnSurfaceConstraint
 //=============================================================================
 //=============================================================================
 

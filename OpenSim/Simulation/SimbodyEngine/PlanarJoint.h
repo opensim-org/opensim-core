@@ -48,7 +48,7 @@ class OSIMSIMULATION_API PlanarJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PlanarJoint, Joint);
 
 private:
-	static const int _numMobilities = 3;
+    static const int _numMobilities = 3;
 //=============================================================================
 // DATA
 //=============================================================================
@@ -59,22 +59,22 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	PlanarJoint();
+    // CONSTRUCTION
+    PlanarJoint();
 
-	// Convenience constructor
-	PlanarJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
-				    bool reverse=false);
+    // Convenience constructor
+    PlanarJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
+                    OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
+                    bool reverse=false);
 
-	int numCoordinates() const { return _numMobilities; }
+    int numCoordinates() const { return _numMobilities; }
 
 protected:
-	/** Model component interface */
+    /** Model component interface */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 //=============================================================================
-};	// END of class PlanarJoint
+};  // END of class PlanarJoint
 //=============================================================================
 //=============================================================================
 

@@ -52,23 +52,23 @@ class OSIMSIMULATION_API Manager
 // DATA
 //=============================================================================
 private:
-	/** Simulation session name. */
-	std::string _sessionName;
-	/** Model for which the simulation is performed. */
-	Model *_model;
+    /** Simulation session name. */
+    std::string _sessionName;
+    /** Model for which the simulation is performed. */
+    Model *_model;
 
-	/** Integrator. */
+    /** Integrator. */
     SimTK::Integrator* _integ;
 
-	/** Initial time of the simulation. */
-	double _ti;
-	/** Final time of the simulation. */
-	double _tf;
-	/** First dt in an integration. */
-	double _firstDT;
-	
-	/** Storage for the states. */
-	Storage *_stateStore;
+    /** Initial time of the simulation. */
+    double _ti;
+    /** Final time of the simulation. */
+    double _tf;
+    /** First dt in an integration. */
+    double _firstDT;
+    
+    /** Storage for the states. */
+    Storage *_stateStore;
 
    int _steps;
    /** Number of integration step trys. */
@@ -97,13 +97,13 @@ private:
    /** Vector of integration time step deltas. */
    Array<double> _dtArray;
 
-	/** Name to be shown by the UI */
-	static std::string _displayName;
+    /** Name to be shown by the UI */
+    static std::string _displayName;
 
-	/** flag indicating if manager should call Analyses after each step */
+    /** flag indicating if manager should call Analyses after each step */
     bool _performAnalyses;
 
-	/** flag indicating if manager should write to storage  each step */
+    /** flag indicating if manager should write to storage  each step */
     bool _writeToStorage;
 
     /** controllerSet used for the integration */
@@ -117,40 +117,40 @@ private:
 // METHODS
 //=============================================================================
 public:
-	virtual ~Manager();
-	Manager(Model&,  SimTK::Integrator&);
-	/** Constructor that takes a model only and builds integrator internally */
-	Manager(Model& aModel) ;
-	/** A Constructor that does not take a model or controllerSet */
-	Manager();	
+    virtual ~Manager();
+    Manager(Model&,  SimTK::Integrator&);
+    /** Constructor that takes a model only and builds integrator internally */
+    Manager(Model& aModel) ;
+    /** A Constructor that does not take a model or controllerSet */
+    Manager();  
 
 private:
-	void setNull();
-	bool constructStates();
-	bool constructStorage();
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    void setNull();
+    bool constructStates();
+    bool constructStorage();
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
 public:
-	void setSessionName(const std::string &name);
-	void setModel(Model& aModel);
-	const std::string& getSessionName() const;
-	const std::string& toString() const;
+    void setSessionName(const std::string &name);
+    void setModel(Model& aModel);
+    const std::string& getSessionName() const;
+    const std::string& toString() const;
 
     void setPerformAnalyses( bool performAnalyses) { _performAnalyses =  performAnalyses; }
     void setWriteToStorage( bool writeToStorage) { _writeToStorage =  writeToStorage; }
 
-	// Integrator
-	SimTK::Integrator& getIntegrator() const;
-	/** Set the integrator*/
+    // Integrator
+    SimTK::Integrator& getIntegrator() const;
+    /** Set the integrator*/
     void setIntegrator( SimTK::Integrator&);
-	// Initial and final times
-	void setInitialTime(double aTI);
-	double getInitialTime() const;
-	void setFinalTime(double aTF);
-	double getFinalTime() const;
-	void setFirstDT(double aDT);
-	double getFirstDT() const;
+    // Initial and final times
+    void setInitialTime(double aTI);
+    double getInitialTime() const;
+    void setFinalTime(double aTF);
+    double getFinalTime() const;
+    void setFirstDT(double aDT);
+    double getFirstDT() const;
        // SEPECIFIED TIME STEP
    void setUseSpecifiedDT(bool aTrueFalse);
    bool getUseSpecifiedDT() const;
@@ -177,19 +177,19 @@ public:
     // then what is defined by the model 
     void setSystem(SimTK::System* system) { _system = system; }
 
-	//--------------------------------------------------------------------------
-	// EXECUTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // EXECUTION
+    //--------------------------------------------------------------------------
     bool integrate( SimTK::State& s, double dtFirst=1.0e-6 );
     bool doIntegration( SimTK::State& s, int step, double dtFirst );
     void initialize(SimTK::State& s, double dt);
     void finalize( SimTK::State& s);
     double getFixedStepSize(int tArrayStep) const;
 
-	// STATE STORAGE
+    // STATE STORAGE
     bool hasStateStorage() const;
-	void setStateStorage(Storage& aStorage);
-	Storage& getStateStorage() const;
+    void setStateStorage(Storage& aStorage);
+    Storage& getStateStorage() const;
 
    //--------------------------------------------------------------------------
    //  INTERRUPT
@@ -201,7 +201,7 @@ public:
 
 
 //=============================================================================
-};	// END of class Manager
+};  // END of class Manager
 
 }; //namespace
 //=============================================================================

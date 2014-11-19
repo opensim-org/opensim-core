@@ -39,26 +39,26 @@ class Model;
  * @version 1.0
  */
 
-class OSIMSIMULATION_API FrameSet :	public ModelComponentSet<Frame> {
+class OSIMSIMULATION_API FrameSet : public ModelComponentSet<Frame> {
 OpenSim_DECLARE_CONCRETE_OBJECT(FrameSet, ModelComponentSet<Frame>);
 
 public:
-	FrameSet();
-	FrameSet(Model& model);
-	~FrameSet();
+    FrameSet();
+    FrameSet(Model& model);
+    ~FrameSet();
 
-	// Somehow the following function is not exported from base template
+    // Somehow the following function is not exported from base template
     FrameSet(Model& model, const std::string &aFileName, 
              bool aUpdateFromXMLNode = true)
     :   Super(model, aFileName, aUpdateFromXMLNode) {}
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 
 
 //=============================================================================
-};	// END of class FrameSet
+};  // END of class FrameSet
 //=============================================================================
 //=============================================================================
 

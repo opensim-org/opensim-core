@@ -200,7 +200,7 @@ private:
     void setupProperties();
     void moveModelMarkersToPose(SimTK::State& s, Model& aModel, MarkerData& aPose);
 //=============================================================================
-};	// END of class MarkerPlacer
+};  // END of class MarkerPlacer
 //=============================================================================
 //=============================================================================
 

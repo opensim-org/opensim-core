@@ -28,19 +28,19 @@ SBoolean vector_intersects_polyhedron(double pt[], double vec[], PolyhedronStruc
 SBoolean intersect_line_plane(double pt1[], double pt2[],
                               double plane[], double d, double inter[], double* t);
 SBoolean intersect_line_plane01(double pt1[], double pt2[], 
-				double plane[], double d, double inter[], double* t);
+                double plane[], double d, double inter[], double* t);
 SBoolean point_in_polygon3D(double pt[], PolyhedronStruct* ph, int polygon_index);
 int    point_in_polygon2D(double point[], double pgon[][2], int numverts);
 int    polygon_ray_inter3d(PolyhedronStruct* newph, int poly_index, double pt[3], int axes);
 int    polygon_ray_inter_jordanstheorem(double** poly_pts, int numpts,
-					double ptray[3], int axes);
+                    double ptray[3], int axes);
 int point_ray_relation(double* pt, double ptray[], int axes);
 void   make_rotation_matrix(double** mat, double normal[]);
 int    intersect_lines(double p1[], double p2[], double p3[], double p4[],
-		       double p_int1[], double* t, double p_int2[], double* s);
+               double p_int1[], double* t, double p_int2[], double* s);
 int    intersect_lines_scaled(double p1[], double p2[], double p3[], double p4[],
-			      double p_int1[], double* t, double* mag1,
-			      double p_int2[], double* s, double* mag2);
+                  double p_int1[], double* t, double* mag1,
+                  double p_int2[], double* s, double* mag2);
 void clear_vector(double a[], int n);
 void   mult_3x3matrix_by_vector(double mat[][3], double vector[], double result[]);
 void make_3x3_xrot_matrix(double a, double m[][3]);
@@ -51,7 +51,7 @@ void transpose_3x3matrix(double mat[][3], double mat_transpose[][3]);
 void copy_3x3matrix(double from[][3], double to[][3]);
 void mult_3x3_by_vector(double mat[][3], double vec[]);
 int intersect_lines(double p1[], double p2[], double p3[], double p4[],
-		    double p_int1[], double* t, double p_int2[], double* s);
+            double p_int1[], double* t, double p_int2[], double* s);
 void find_plane_normal_to_line(PlaneStruct* plane, double pt1[], double pt2[]);
 double compute_angle_between_vectors(double vector1[], double vector2[]);
 void project_point_onto_plane(double pt[], PlaneStruct* plane, double projpt[]);
@@ -59,7 +59,7 @@ double distance_between_vertices(double vertex1[], double vertex2[]);
 double distancesqr_between_vertices(double vertex1[], double vertex2[]);
 double get_distsqr_point_line(double point[], double pl[], double vl[]);
 void get_point_from_point_line(double point[], double pt[], double vec[],
-			       double closest_pt[]);
+                   double closest_pt[]);
 double atan3(double y, double x);
 void identity_matrix(double m[][4]);
 void x_rotate_matrix_bodyfixed(double m[][4], double radians);  /* body-fixed rotation */

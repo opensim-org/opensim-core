@@ -33,8 +33,8 @@ typedef struct mdrule *MDhandle;
  * in it or adds a new rule if target had none, and unlocks filename.  Lines
  * in filename not matching '^target *:' are left alone.
  */
-extern MDhandle	MDopen(char *, char *, char *, void (*)(char *, ...));
-extern void	MDupdate(MDhandle, char *);
-extern void	MDclose(MDhandle, char *);
+extern MDhandle MDopen(char *, char *, char *, void (*)(char *, ...));
+extern void MDupdate(MDhandle, char *);
+extern void MDclose(MDhandle, char *);
 
 #endif /* __MAKE_DEPEND_H__ */

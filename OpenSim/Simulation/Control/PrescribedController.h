@@ -50,88 +50,88 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PrescribedController, Controller);
 // DATA
 //=============================================================================
 public:
-	/** FunctionSet of prescribed controls associated with each actuator  */
-	OpenSim_DECLARE_PROPERTY(ControlFunctions, FunctionSet,
-		"Functions (one per control) describing the controls for actuators"
-		"specified for this controller." );
+    /** FunctionSet of prescribed controls associated with each actuator  */
+    OpenSim_DECLARE_PROPERTY(ControlFunctions, FunctionSet,
+        "Functions (one per control) describing the controls for actuators"
+        "specified for this controller." );
 
-	/** (Optional) prescribed controls from a storage file  */
-	OpenSim_DECLARE_OPTIONAL_PROPERTY(controls_file, std::string,
-		"Controls storage (.sto) file containing controls for individual "
-		"actuators in the model. Column labels must match actuator names.");
+    /** (Optional) prescribed controls from a storage file  */
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(controls_file, std::string,
+        "Controls storage (.sto) file containing controls for individual "
+        "actuators in the model. Column labels must match actuator names.");
 
-	/** (Optional) interpolation method for controls in storage.  */
-	OpenSim_DECLARE_OPTIONAL_PROPERTY(interpolation_method, int,
-		"Interpolate the controls file data using piecewise: '0-constant', "
-		"'1-linear', '3-cubic' or '5-quintic' functions.");
+    /** (Optional) interpolation method for controls in storage.  */
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(interpolation_method, int,
+        "Interpolate the controls file data using piecewise: '0-constant', "
+        "'1-linear', '3-cubic' or '5-quintic' functions.");
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION AND DESTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION AND DESTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	/** Default constructor */
-	PrescribedController();
+    /** Default constructor */
+    PrescribedController();
 
-	/** Convenience constructor get controls from file
-	 * @param controlsFileName  string containing the controls storage (.sto) 
-	 * @param interpMethodType	int 0-constant, 1-linear, 3-cubic, 5-quintic
-	 *                          defaults to linear.
-	 */
-	PrescribedController(const std::string& controlsFileName, 
-						 int interpMethodType = 1);
+    /** Convenience constructor get controls from file
+     * @param controlsFileName  string containing the controls storage (.sto) 
+     * @param interpMethodType  int 0-constant, 1-linear, 3-cubic, 5-quintic
+     *                          defaults to linear.
+     */
+    PrescribedController(const std::string& controlsFileName, 
+                         int interpMethodType = 1);
 
-	/** Destructor */
-	virtual ~PrescribedController();
+    /** Destructor */
+    virtual ~PrescribedController();
 
-	//--------------------------------------------------------------------------
-	// CONTROL
-	//--------------------------------------------------------------------------
-	/**
-	 * Compute the control values for all actuators under the control of this
-	 * Controller.
-	 *
-	 * @param s             system state 
-	 * @param controls      model controls  
-	 */
-	void computeControls(const SimTK::State& s, 
-						 SimTK::Vector& controls) const override;
+    //--------------------------------------------------------------------------
+    // CONTROL
+    //--------------------------------------------------------------------------
+    /**
+     * Compute the control values for all actuators under the control of this
+     * Controller.
+     *
+     * @param s             system state 
+     * @param controls      model controls  
+     */
+    void computeControls(const SimTK::State& s, 
+                         SimTK::Vector& controls) const override;
 
-	/**
-	 *	Assign a prescribe control function for the desired actuator identified 
-	 *  by its index. Controller takes ownership of the function.
-	 *  @param index                the actuator's index in the controller's set
-	 *  @param prescribedFunction   the actuator's control function
-	 */
-	void prescribeControlForActuator(int index, Function *prescribedFunction);
+    /**
+     *  Assign a prescribe control function for the desired actuator identified 
+     *  by its index. Controller takes ownership of the function.
+     *  @param index                the actuator's index in the controller's set
+     *  @param prescribedFunction   the actuator's control function
+     */
+    void prescribeControlForActuator(int index, Function *prescribedFunction);
 
-	/**
-	 *	Assign a prescribe control function for the desired actuator identified
-	 *  by its name. Controller takes ownership of the function.
-	 *  @param actName                the actuator's name in the controller's set
-	 *  @param prescribedFunction     the actuator's control function
-	 */
-	void prescribeControlForActuator(const std::string actName,
-									 Function *prescribedFunction);
+    /**
+     *  Assign a prescribe control function for the desired actuator identified
+     *  by its name. Controller takes ownership of the function.
+     *  @param actName                the actuator's name in the controller's set
+     *  @param prescribedFunction     the actuator's control function
+     */
+    void prescribeControlForActuator(const std::string actName,
+                                     Function *prescribedFunction);
 
 protected:
-	/** Model component interface */
-	void extendConnectToModel(Model& model) override;
+    /** Model component interface */
+    void extendConnectToModel(Model& model) override;
 private:
-	// construct and initialize properties
-	void constructProperties();
+    // construct and initialize properties
+    void constructProperties();
 
-	// utility
-	Function* createFunctionFromData(const std::string& name,
-		const Array<double>& time, const Array<double>& data);
+    // utility
+    Function* createFunctionFromData(const std::string& name,
+        const Array<double>& time, const Array<double>& data);
 
-	// This method sets all member variables to default (e.g., NULL) values.
-	void setNull();
+    // This method sets all member variables to default (e.g., NULL) values.
+    void setNull();
 
 //=============================================================================
-};	// END of class PrescribedController
+};  // END of class PrescribedController
 
 }; //namespace
 //=============================================================================
