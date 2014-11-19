@@ -59,8 +59,7 @@ public:
     virtual ComponentFilter* clone() const = 0;
 };
 /**
-* A class to filter components based on Type, used as default filter for
-* iterator.
+* A class to filter components based on Type.
 */
 template <typename T>
 class ComponentFilterByType : public ComponentFilter {
@@ -77,6 +76,24 @@ public:
     /** Method to clone the filter so users don't change it behind us. */
     ComponentFilterByType<T>* clone() const {
         return new ComponentFilterByType<T>(*this);
+    }
+};
+/**
+ ComponentFilterMatchAll is a trivial Filter that matches all components.
+*/
+class ComponentFilterMatchAll : public ComponentFilter {
+public:
+    /** Construct a ComponentFilter that selects all Components. */
+    ComponentFilterMatchAll() {}
+    /** The method isMatch() returns true always. */
+    bool isMatch(const Component& comp) const {
+        return true;
+    }
+    /** Destructor of ComponentFilterMatchAll, does nothing. */
+    ~ComponentFilterMatchAll() {}
+    /** Method to clone the filter. */
+    ComponentFilterMatchAll* clone() const {
+        return new ComponentFilterMatchAll(*this);
     }
 };
 /**
@@ -106,7 +123,7 @@ public:
         _root(root), _filter(f){
     }
     /** Constructor that takes only a Component to iterate over (itself and its
-    descendents). ComponentFilterByType is used internally. You can
+    descendents). ComponentFilterMatchAll is used internally. You can
     change the filter using setFilter() method. 
     */
     ComponentList(const Component& root) : _root(root){
@@ -138,9 +155,9 @@ private:
     const Component& _root; // root of subtree to be iterated over
     SimTK::ClonePtr<ComponentFilter> _filter; // filter to choose components 
     friend class ComponentListIterator<T>;
-    // Internal method to setFilter to ComponentFilterByType if no user specified 
+    // Internal method to setFilter to ComponentFilterMatchAll if no user specified 
     // filter is provided.
-    void setDefaultFilter() { setFilter(ComponentFilterByType<T>()); }
+    void setDefaultFilter() { setFilter(ComponentFilterMatchAll()); }
 };
 
 //==============================================================================
