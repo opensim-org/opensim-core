@@ -58,26 +58,7 @@ public:
     /** clone() method needed to make a copy of the filter.  */
     virtual ComponentFilter* clone() const = 0;
 };
-/**
-* A class to filter components based on Type.
-*/
-template <typename T>
-class ComponentFilterByType : public ComponentFilter {
-public:
-    /** Construct a ComponentFilter that selects Components based on type T. */
-    ComponentFilterByType() {}
-    /** The method isMatch() returns true if comp is of type T or a derived 
-    class. */
-    bool isMatch(const Component& comp) const {
-        return dynamic_cast<const T*>(&comp) != nullptr;
-    }
-    /** Destructor of ComponentFilterByType. */
-    ~ComponentFilterByType() {}
-    /** Method to clone the filter so users don't change it behind us. */
-    ComponentFilterByType<T>* clone() const {
-        return new ComponentFilterByType<T>(*this);
-    }
-};
+
 /**
  ComponentFilterMatchAll is a trivial Filter that matches all components.
 */
@@ -220,7 +201,7 @@ private:
     void advanceToNextValidComponent();
     // Pointer to current Component that the iterator is processing.
     const Component* _node;
-    // Root of subtree of Compoenents that we're iterating over.
+    // Root of subtree of Components that we're iterating over.
     const Component& _root;
     /** Optional filter to further select Components under _root, defaults to
     Filter by type. */
