@@ -963,8 +963,8 @@ void Model::setup()
     // clear existing interconnections and all state allocations
     disconnect();
 
-    //now connect the Model and all its subcomponents all up
-    connect(*this);
+	//now connect the Model and all its subcomponents all up
+	connect(*this);
 }
 
 /**

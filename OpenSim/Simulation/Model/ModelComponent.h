@@ -252,7 +252,7 @@ private:
     * extendConnectToModel() on ModelComponent subcomponents are invoked. **/
     void extendConnect(Component& root) FINAL_11;
 
-    const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;
+	const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;
     const SimTK::DefaultSystemSubsystem& updDefaultSubsystem();
 
     // Clear out all the data fields in the base class. There should be one

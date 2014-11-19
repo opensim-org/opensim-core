@@ -46,11 +46,13 @@
 #include "OpenSim/Common/Object.h"
 #include "OpenSim/Common/ComponentConnector.h"
 #include "OpenSim/Common/ComponentOutput.h"
+#include "ComponentList.h"
 #include "Simbody.h"
 #include <functional>
 #include <memory>
 
 namespace OpenSim {
+
 
 //==============================================================================
 //                            OPENSIM COMPONENT
@@ -263,11 +265,27 @@ public:
     const SimTK::MultibodySystem& getSystem() const;
 
     /**
-     * Get an iterator through the underlying components that this component 
-     * is composed of.
+     * Get an iterator thru the underlying subcomponents that this component is 
+     * composed of. The hierarchy of Components/subComponents forms a tree. The 
+     * tree structure is fixed when the system is created.
+     * The order of the Components is that of tree preorder traversal so that a
+     * component is processed before its subcomponents. All addComponent calls 
+     * must be done before calling this method on the top model.
      */
-    //const ComponentIterator&  getComponentsIterator();
-
+    template <typename T = Component>
+    ComponentList<T> getComponentList() const {
+        return ComponentList<T>(*this);
+    }
+    /**
+     * Class to hold the list of components/subcomponents to iterate over.
+    */
+    template <typename T>
+    friend class ComponentList;
+    /**
+     * Class to iterate over ComponentList returned by getComponentList() call
+     */
+    template <typename T>
+    friend class ComponentListIterator;
     /**
      * Get a subcomponent of this Component by its name. 
      * Note using a component's full "path" name is faster and will provide a
@@ -1051,7 +1069,7 @@ template <class T> friend class ComponentMeasure;
     // End of Component Extension Interface (protected virtuals).
     ///@} 
 
-    /** @name  Component Advanced Interface
+    /** @name           Component Advanced Interface
     You probably won't need to override methods in this section. These provide
     a way for you to perform computations ("realizations") that must be 
     scheduled in carefully-ordered stages as described in the class description
@@ -1441,7 +1459,23 @@ private:
             _connectorsTable[connector.getName()] = ix;
         }
     }
-    
+    // Populate _nextComponent ReferencePtr with a pointer to the next Component in
+    // tree pre-order traversal.
+    void initComponentTreeTraversal(Component &root) {
+        // Going down the tree, node is followed by all its
+        // children in order, last child's successor is the parent's successor.
+        for (unsigned int i = 0; i < _components.size(); i++){
+            if (i == _components.size() - 1){
+                // use parent's sibling if any
+                if (this == &root) // only to be safe if root changes
+                    _components[i]->_nextComponent = nullptr; 
+                else
+                    _components[i]->_nextComponent.reset(_nextComponent);
+            }
+            else
+                _components[i]->_nextComponent.reset(_components[i + 1]);
+        }
+    }
 protected:
     //Derived Components must create concrete StateVariables to expose their state 
     //variables. When exposing state variables allocated by the underlying Simbody
@@ -1525,7 +1559,8 @@ private:
 
     /// Base Component must create underlying resources in computational System.
     void baseAddToSystem(SimTK::MultibodySystem& system) const;
-    
+    // Reference pointer to the successor of the current Component in Pre-order traversal
+    SimTK::ReferencePtr<Component> _nextComponent;
     // Reference pointer to the system that this component belongs to.
     SimTK::ReferencePtr<SimTK::MultibodySystem> _system;
 
@@ -1671,6 +1706,45 @@ private:
 };	// END of class Component
 //==============================================================================
 //==============================================================================
+//==============================================================================
+// Implement methods for ComponentListIterator
+/// ComponentListIterator<T> pre-increment operator, advances the iterator to
+/// the next valid entry.
+template <typename T>
+ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
+    if (_node==nullptr)
+        return *this;
+    // If _node has children then successor is first child
+    // move _node to point to it
+    if (_node->_components.size() > 0)
+        _node = _node->_components[0];
+    // If processing a subtree under _root we stop when our successor is the same
+    // as the successor of _root as this indicates we're leaving the _root's subtree.
+    else if (_node->_nextComponent.get() == _root._nextComponent.get())
+        _node = nullptr;
+    else // move on to the next component we computed earlier for the full tree
+        _node = _node->_nextComponent.get();
+    advanceToNextValidComponent(); // make sure we have a _node of type T after advancing
+    return *this;
+};
+/// Internal method to advance iterator to next valid component.
+template <typename T>
+void ComponentListIterator<T>::advanceToNextValidComponent() {
+    // Advance _node to next valid (of type T) if needed
+    // Similar logic to operator++ but applies _filter->isMatch()
+    while (_node != nullptr && (dynamic_cast<const T*>(_node) == nullptr || !_filter.isMatch(*_node))){
+        if (_node->_components.size() > 0)
+            _node = _node->_components[0];
+        else {
+            if (_node->_nextComponent.get() == _root._nextComponent.get()){ // end of subtree under _root
+                _node = nullptr;
+                continue;
+            }
+            _node = _node->_nextComponent;
+        }
+    }
+    return;
+}
 
 } // end of namespace OpenSim
 

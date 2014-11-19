@@ -9,6 +9,7 @@
  *                                                                            *
  * Copyright (c) 2005-2013 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Michael Sherman                                      *
+ * Contributor(s): Ayman Habib                                                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -166,7 +167,9 @@ void Component::connect(Component &root)
 
     reset();
 
-    // rebuilding the connectors table, which was emptied by reset
+    initComponentTreeTraversal(root);
+
+    // rebuilding the connectors table, which was emptied by clearStateAllocations
     for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
         AbstractConnector& connector = upd_connectors(ix);
         connector.disconnect();
