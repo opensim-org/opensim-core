@@ -131,7 +131,6 @@ public:
     void setRepresentation(const Representation& rep) { upd_Appearance().set_representation(rep); };
     const Representation& getRepresentation() { return (const Representation&)get_Appearance().get_representation(); };
 
-    virtual const Frame& getFrame();
     //=============================================================================
 };	// END of class Geometry
 
