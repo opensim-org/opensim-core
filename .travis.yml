@@ -85,9 +85,10 @@ script:
 
   ## Ensure that there are no tabs in source code.
   - cd $TRAVIS_BUILD_DIR
-  # Replace all tabs in certain files with spaces.
-  - find . -name 'CMakeLists.txt' -or -name '*.cpp' -or -name '*.c' -or -name '*.h' ! -type d -exec bash -c 'expand --tabs 4 "$0" > /tmp/e && mv /tmp/e "$0"' {} \;
-  # Check to see if this resulted in any changes.
-  - if ! git diff --quiet HEAD --; then echo "Tabs exist. Convert to spaces."; fi;
-  # This line will cause the travis test to fail if there are tabs.
-  - git diff --quiet HEAD --
+  # GREP returns 0 (true) if there are any matches, and
+  # we don't want any matches. If there are matches,
+  # print a helpful message, and make the test fail by using "false".
+  # The GREP command here checks for any tab characters in the the files
+  # that match the specified pattern. GREP does not pick up explicit tabs
+  # (e.g., literally a \t in a source file).
+  - if grep --recursive --include={CMakeLists.txt,*.cpp,*.c,*.h} -P "\t" . ; then echo "Tabs found in the lines shown above. See CONTRIBUTING.md about tabs."; false; fi
