@@ -22,15 +22,15 @@
  * -------------------------------------------------------------------------- */
 
 //==========================================================================================================
-//	testJoints builds OpenSim models using the OpenSim API and builds an equivalent
+//  testJoints builds OpenSim models using the OpenSim API and builds an equivalent
 //  Simbody system using the Simbody API for each test case. A test fails if the
 //  OpenSim and Simbody final states of the simulation are not equivelent (norm-err
 //  less than 10x integration error tolerance)
 //
-//	Tests Include:
+//  Tests Include:
 //      1. Analytical contact sphere-plane geometry 
 //      2. Mesh-based sphere on analytical plane geometry
-//		3. 
+//      3. 
 //
 //==========================================================================================================
 #include <iostream>
@@ -78,13 +78,13 @@ int main()
 {
     try
     {
-    	testBouncingBall(false);
-    	testBouncingBall(true);
-		testBallToBallContact(false, false, false);
-		testBallToBallContact(true, true, false);
-		testBallToBallContact(true, false, true);
-		testBallToBallContact(true, true, true); 
-		compareHertzAndMeshContactResults();
+        testBouncingBall(false);
+        testBouncingBall(true);
+        testBallToBallContact(false, false, false);
+        testBallToBallContact(true, true, false);
+        testBallToBallContact(true, false, true);
+        testBallToBallContact(true, true, true); 
+        compareHertzAndMeshContactResults();
     }
     catch (const OpenSim::Exception& e) {
         e.print(cerr);
@@ -99,21 +99,21 @@ int main()
 //==========================================================================================================
 int testBouncingBall(bool useMesh)
 {
-	// Setup OpenSim model
-	Model *osimModel = new Model;
+    // Setup OpenSim model
+    Model *osimModel = new Model;
 
-	//OpenSim bodies
+    //OpenSim bodies
     OpenSim::Body& ground = osimModel->getGroundBody();
-	OpenSim::Body ball;
-	ball.setName("ball");
-	ball.set_mass(mass);
-	ball.set_mass_center(Vec3(0));
-	ball.setInertia(Inertia(1.0));
+    OpenSim::Body ball;
+    ball.setName("ball");
+    ball.set_mass(mass);
+    ball.set_mass_center(Vec3(0));
+    ball.setInertia(Inertia(1.0));
 
-	// Add joints
-	FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0));
-	osimModel->addBody(&ball);
-	osimModel->addJoint(&free);
+    // Add joints
+    FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0));
+    osimModel->addBody(&ball);
+    osimModel->addJoint(&free);
 
     // Create ContactGeometry.
     ContactHalfSpace *floor = new ContactHalfSpace(Vec3(0), Vec3(0, 0, -0.5*SimTK_PI), ground, "ground");
@@ -128,86 +128,86 @@ int testBouncingBall(bool useMesh)
     OpenSim::Force* force;
     if (useMesh)
     {
-	    // Add an ElasticFoundationForce.
+        // Add an ElasticFoundationForce.
         OpenSim::ElasticFoundationForce::ContactParameters* contactParams = new OpenSim::ElasticFoundationForce::ContactParameters(1.0e6/radius, 1e-5, 0.0, 0.0, 0.0);
         contactParams->addGeometry("ball");
         contactParams->addGeometry("ground");
         force = new OpenSim::ElasticFoundationForce(contactParams);
-	    osimModel->addForce(force);
+        osimModel->addForce(force);
     }
     else
     {
-	    // Add a HuntCrossleyForce.
+        // Add a HuntCrossleyForce.
         OpenSim::HuntCrossleyForce::ContactParameters* contactParams = new OpenSim::HuntCrossleyForce::ContactParameters(1.0e6, 1e-5, 0.0, 0.0, 0.0);
         contactParams->addGeometry("ball");
         contactParams->addGeometry("ground");
         force = new OpenSim::HuntCrossleyForce(contactParams);
-	    osimModel->addForce(force);
+        osimModel->addForce(force);
     }
 
-	osimModel->setGravity(gravity_vec);
+    osimModel->setGravity(gravity_vec);
 
-	osimModel->setName("TestContactGeomtery_Ball");
-	osimModel->clone()->print("TestContactGeomtery_Ball.osim");
+    osimModel->setName("TestContactGeomtery_Ball");
+    osimModel->clone()->print("TestContactGeomtery_Ball.osim");
 
-	Kinematics* kin = new Kinematics(osimModel);
-	osimModel->addAnalysis(kin);
+    Kinematics* kin = new Kinematics(osimModel);
+    osimModel->addAnalysis(kin);
 
     SimTK::State& osim_state = osimModel->initSystem();
-	osim_state.updQ()[4] = height;
+    osim_state.updQ()[4] = height;
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
 
-	//Initial system energy is all potential
-	double Etot_orig = mass*(-gravity_vec[1])*height;
+    //Initial system energy is all potential
+    double Etot_orig = mass*(-gravity_vec[1])*height;
 
-	//==========================================================================================================
-	// Simulate it and see if it bounces correctly.
- 	cout << "stateY=" << osim_state.getY() << std::endl;
+    //==========================================================================================================
+    // Simulate it and see if it bounces correctly.
+    cout << "stateY=" << osim_state.getY() << std::endl;
 
     RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
-	integrator.setAccuracy(integ_accuracy);
+    integrator.setAccuracy(integ_accuracy);
     Manager manager(*osimModel, integrator);
 
     for (unsigned int i = 0; i < duration/interval; ++i)
     {
         manager.setInitialTime(i*interval);
-		manager.setFinalTime((i+1)*interval);
+        manager.setFinalTime((i+1)*interval);
         manager.integrate(osim_state);
-		double time = osim_state.getTime();
+        double time = osim_state.getTime();
 
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos, vel;
 
-		osimModel->updSimbodyEngine().getPosition(osim_state, osimModel->getBodySet().get("ball"), Vec3(0), pos);
-		osimModel->updSimbodyEngine().getVelocity(osim_state, osimModel->getBodySet().get("ball"), Vec3(0), vel);
+        osimModel->updSimbodyEngine().getPosition(osim_state, osimModel->getBodySet().get("ball"), Vec3(0), pos);
+        osimModel->updSimbodyEngine().getVelocity(osim_state, osimModel->getBodySet().get("ball"), Vec3(0), vel);
 
-		double Etot = mass*((-gravity_vec[1])*pos[1] + 0.5*vel[1]*vel[1]);
+        double Etot = mass*((-gravity_vec[1])*pos[1] + 0.5*vel[1]*vel[1]);
 
-		//cout << "starting system energy = " << Etot_orig << " versus current energy = " << Etot << endl;
-		// contact absorbs and returns energy so make sure not in contact
+        //cout << "starting system energy = " << Etot_orig << " versus current energy = " << Etot << endl;
+        // contact absorbs and returns energy so make sure not in contact
         if (pos[1] > 2*radius)
         {
             ASSERT_EQUAL(Etot_orig, Etot, 1e-2, __FILE__, __LINE__, "Bouncing ball on plane Failed: energy was not conserved.");
         }
         else
         {
-			cout << "In contact at time = " << time << endl; 
+            cout << "In contact at time = " << time << endl; 
             ASSERT(pos[1] < 5.0 && pos[1] > 0);
         }
         ASSERT_EQUAL(0.0, pos[0], 1e-4);
         ASSERT_EQUAL(0.0, pos[2], 1e-4);
-		ASSERT_EQUAL(0.0, vel[0], 1e-3);
+        ASSERT_EQUAL(0.0, vel[0], 1e-3);
         ASSERT_EQUAL(0.0, vel[2], 1e-3);
     }
 
-	std::string prefix = useMesh?"Kinematics_Mesh":"Kinematics_NoMesh";
-	kin->printResults(prefix);
+    std::string prefix = useMesh?"Kinematics_Mesh":"Kinematics_NoMesh";
+    kin->printResults(prefix);
 
-	osimModel->disownAllComponents();
-	// model takes ownership of components unless container set is told otherwise
-	delete osimModel;
+    osimModel->disownAllComponents();
+    // model takes ownership of components unless container set is told otherwise
+    delete osimModel;
 
-	return 0;
+    return 0;
 }
 
 
@@ -215,27 +215,27 @@ int testBouncingBall(bool useMesh)
 // meshes and their combination
 int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh2)
 {
-	// Setup OpenSim model
-	Model *osimModel = new Model;
+    // Setup OpenSim model
+    Model *osimModel = new Model;
 
-	//OpenSim bodies
+    //OpenSim bodies
     OpenSim::Body& ground = osimModel->getGroundBody();
-	OpenSim::Body ball;
-	ball.setName("ball");
-	ball.setMass(mass);
-	ball.setMassCenter(Vec3(0));
-	ball.setInertia(Inertia(1.0));
+    OpenSim::Body ball;
+    ball.setName("ball");
+    ball.setMass(mass);
+    ball.setMassCenter(Vec3(0));
+    ball.setInertia(Inertia(1.0));
 
-	// Add joints
-	FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0));
+    // Add joints
+    FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0));
 
-	osimModel->addBody(&ball);
-	osimModel->addJoint(&free);
+    osimModel->addBody(&ball);
+    osimModel->addJoint(&free);
 
     // Create ContactGeometry.
     OpenSim::ContactGeometry *ball1, *ball2;
 
-	if (useElasticFoundation && useMesh1)
+    if (useElasticFoundation && useMesh1)
         ball1 = new ContactMesh(mesh_file, Vec3(0), Vec3(0), ground, "ball1");
     else
         ball1 = new ContactSphere(radius, Vec3(0), ground, "ball1");
@@ -245,99 +245,99 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
     else
         ball2 = new ContactSphere(radius, Vec3(0), ball, "ball2");
     
-	osimModel->addContactGeometry(ball1);
-	osimModel->addContactGeometry(ball2);
+    osimModel->addContactGeometry(ball1);
+    osimModel->addContactGeometry(ball2);
 
     OpenSim::Force* force;
 
-	std::string prefix;
-	if (useElasticFoundation){
-		
-	}
-	else{
-		
-	}
+    std::string prefix;
+    if (useElasticFoundation){
+        
+    }
+    else{
+        
+    }
     if (useElasticFoundation)
     {
-	    // Add an ElasticFoundationForce.
+        // Add an ElasticFoundationForce.
         OpenSim::ElasticFoundationForce::ContactParameters* contactParams = new OpenSim::ElasticFoundationForce::ContactParameters(1.0e6/(2*radius), 0.001, 0.0, 0.0, 0.0);
         contactParams->addGeometry("ball1");
         contactParams->addGeometry("ball2");
         force = new OpenSim::ElasticFoundationForce(contactParams);
-		prefix = "EF_";
-		prefix += useMesh1 ?"Mesh":"noMesh";
-		prefix += useMesh2 ? "_to_Mesh":"_to_noMesh";
-		
+        prefix = "EF_";
+        prefix += useMesh1 ?"Mesh":"noMesh";
+        prefix += useMesh2 ? "_to_Mesh":"_to_noMesh";
+        
     }
     else
     {
-	    // Add a Hertz HuntCrossleyForce.
+        // Add a Hertz HuntCrossleyForce.
         OpenSim::HuntCrossleyForce::ContactParameters* contactParams = new OpenSim::HuntCrossleyForce::ContactParameters(1.0e6, 0.001, 0.0, 0.0, 0.0);
         contactParams->addGeometry("ball1");
         contactParams->addGeometry("ball2");
         force = new OpenSim::HuntCrossleyForce(contactParams);
-		prefix = "Hertz";
-	    
+        prefix = "Hertz";
+        
     }
 
-	force->setName("contact");
-	osimModel->addForce(force);
-	osimModel->setGravity(gravity_vec);
+    force->setName("contact");
+    osimModel->addForce(force);
+    osimModel->setGravity(gravity_vec);
 
-	osimModel->setName(prefix);
-	osimModel->clone()->print(prefix+".osim");
+    osimModel->setName(prefix);
+    osimModel->clone()->print(prefix+".osim");
 
-	Kinematics* kin = new Kinematics(osimModel);
-	osimModel->addAnalysis(kin);
+    Kinematics* kin = new Kinematics(osimModel);
+    osimModel->addAnalysis(kin);
 
-	ForceReporter* reporter = new ForceReporter(osimModel);
-	osimModel->addAnalysis(reporter);
+    ForceReporter* reporter = new ForceReporter(osimModel);
+    osimModel->addAnalysis(reporter);
 
     SimTK::State& osim_state = osimModel->initSystem();
-	osim_state.updQ()[4] = height;
+    osim_state.updQ()[4] = height;
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
 
-	//==========================================================================================================
-	// Simulate it and see if it bounces correctly.
- 	cout << "stateY=" << osim_state.getY() << std::endl;
+    //==========================================================================================================
+    // Simulate it and see if it bounces correctly.
+    cout << "stateY=" << osim_state.getY() << std::endl;
 
     RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
-	integrator.setAccuracy(integ_accuracy);
-	integrator.setMaximumStepSize(100*integ_accuracy);
+    integrator.setAccuracy(integ_accuracy);
+    integrator.setMaximumStepSize(100*integ_accuracy);
     Manager manager(*osimModel, integrator);
     manager.setInitialTime(0.0);
     manager.setFinalTime(duration);
     manager.integrate(osim_state);
 
-	kin->printResults(prefix);
-	reporter->printResults(prefix);
+    kin->printResults(prefix);
+    reporter->printResults(prefix);
 
-	osimModel->disownAllComponents();
-	// model takes ownership of components unless container set is told otherwise
-	delete osimModel;
+    osimModel->disownAllComponents();
+    // model takes ownership of components unless container set is told otherwise
+    delete osimModel;
 
-	return 0;
+    return 0;
 }
 
 void compareHertzAndMeshContactResults()
 {
-	Storage hertz("Hertz_ForceReporter_forces.sto");
-	Storage meshToMesh("EF_Mesh_to_Mesh_ForceReporter_forces.sto");
-	Storage noMeshToMesh("EF_noMesh_to_Mesh_ForceReporter_forces.sto");
-	Storage meshToNoMesh("EF_Mesh_to_noMesh_ForceReporter_forces.sto");
+    Storage hertz("Hertz_ForceReporter_forces.sto");
+    Storage meshToMesh("EF_Mesh_to_Mesh_ForceReporter_forces.sto");
+    Storage noMeshToMesh("EF_noMesh_to_Mesh_ForceReporter_forces.sto");
+    Storage meshToNoMesh("EF_Mesh_to_noMesh_ForceReporter_forces.sto");
 
-	int nforces = hertz.getColumnLabels().getSize()-1;
+    int nforces = hertz.getColumnLabels().getSize()-1;
 
-	// Hertz theory and ElasticFoundation will not be the same, but they should yield similar results, to withing
-	Array<double> rms_tols_1(12, nforces);
-	CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, hertz, rms_tols_1, __FILE__, __LINE__, "ElasticFoundation FAILED to Match Hertz Contact ");
+    // Hertz theory and ElasticFoundation will not be the same, but they should yield similar results, to withing
+    Array<double> rms_tols_1(12, nforces);
+    CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, hertz, rms_tols_1, __FILE__, __LINE__, "ElasticFoundation FAILED to Match Hertz Contact ");
 
-	// ElasticFoundation on mesh to mesh and mesh to non-mesh should be virtually identical
-	Array<double> rms_tols_2(0.5, nforces);
-	CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, meshToNoMesh, rms_tols_2, __FILE__, __LINE__, "ElasticFoundation Mesh-Mesh FAILED to match Mesh-noMesh Case ");
+    // ElasticFoundation on mesh to mesh and mesh to non-mesh should be virtually identical
+    Array<double> rms_tols_2(0.5, nforces);
+    CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, meshToNoMesh, rms_tols_2, __FILE__, __LINE__, "ElasticFoundation Mesh-Mesh FAILED to match Mesh-noMesh Case ");
 
-	// ElasticFoundation on non-mesh to mesh and mesh to non-mesh should be identical
-	Array<double> rms_tols_3(integ_accuracy, nforces);
-	CHECK_STORAGE_AGAINST_STANDARD(noMeshToMesh, meshToNoMesh, rms_tols_3, __FILE__, __LINE__, "ElasticFoundation noMesh-Mesh FAILED to match Mesh-noMesh Case ");
+    // ElasticFoundation on non-mesh to mesh and mesh to non-mesh should be identical
+    Array<double> rms_tols_3(integ_accuracy, nforces);
+    CHECK_STORAGE_AGAINST_STANDARD(noMeshToMesh, meshToNoMesh, rms_tols_3, __FILE__, __LINE__, "ElasticFoundation noMesh-Mesh FAILED to match Mesh-noMesh Case ");
 
 }

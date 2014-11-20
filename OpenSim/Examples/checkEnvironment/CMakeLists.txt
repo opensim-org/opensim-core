@@ -6,7 +6,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.6)
 # ---------
 SET(TARGET test CACHE STRING "Name of example to build")
 SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
-		CACHE PATH "Top-level directory of OpenSim install")
+        CACHE PATH "Top-level directory of OpenSim install")
 
 # Find and hook up to OpenSim.
 # ----------------------------
@@ -41,8 +41,8 @@ ADD_EXECUTABLE(${TARGET}  ${SOURCE_FILES})
 TARGET_LINK_LIBRARIES(${TARGET} ${OpenSim_LIBRARIES})
 
 SET_TARGET_PROPERTIES(
-	${TARGET} PROPERTIES
-	PROJECT_LABEL "Test Environment")
+    ${TARGET} PROPERTIES
+    PROJECT_LABEL "Test Environment")
 
 
 # Configure installation.

@@ -52,12 +52,12 @@ using namespace OpenSim;
  */
 ControlLinearNode::
 ControlLinearNode(double aT,double aValue) :
-	_t(_propT.getValueDbl()),
-	_value(_propValue.getValueDbl())
+    _t(_propT.getValueDbl()),
+    _value(_propValue.getValueDbl())
 {
-	setNull();
-	_t = aT;
-	_value = aValue;
+    setNull();
+    _t = aT;
+    _value = aValue;
 }
 //_____________________________________________________________________________
 /**
@@ -66,11 +66,11 @@ ControlLinearNode(double aT,double aValue) :
  * @param aControl Control to copy.
  */
 ControlLinearNode::ControlLinearNode(const ControlLinearNode &aControl) :
-	_t(_propT.getValueDbl()),
-	_value(_propValue.getValueDbl())
+    _t(_propT.getValueDbl()),
+    _value(_propValue.getValueDbl())
 {
-	setNull();
-	*this = aControl;
+    setNull();
+    *this = aControl;
 }
 
 
@@ -87,7 +87,7 @@ ControlLinearNode::~ControlLinearNode()
 void ControlLinearNode::
 setNull()
 {
-	setupProperties();
+    setupProperties();
 }
 //_____________________________________________________________________________
 /**
@@ -96,13 +96,13 @@ setNull()
 void ControlLinearNode::
 setupProperties()
 {
-	_propT.setName("t");
-	_propT.setValue(0.0);
-	_propertySet.append(&_propT);
+    _propT.setName("t");
+    _propT.setValue(0.0);
+    _propertySet.append(&_propT);
 
-	_propValue.setName("value");
-	_propValue.setValue(0.0);
-	_propertySet.append(&_propValue);
+    _propValue.setName("value");
+    _propValue.setValue(0.0);
+    _propertySet.append(&_propValue);
 }
 
 
@@ -121,9 +121,9 @@ setupProperties()
 ControlLinearNode& ControlLinearNode::
 operator=(const ControlLinearNode &aNode)
 {
-	_t = aNode._t;
-	_value = aNode._value;
-	return(*this);
+    _t = aNode._t;
+    _value = aNode._value;
+    return(*this);
 }
 
 //-----------------------------------------------------------------------------
@@ -144,9 +144,9 @@ operator=(const ControlLinearNode &aNode)
 bool ControlLinearNode::
 operator==(const ControlLinearNode &aNode) const
 {
-	if((_t) > aNode._t) return(false);
-	if((_t) < aNode._t) return(false);
-	return(true);
+    if((_t) > aNode._t) return(false);
+    if((_t) < aNode._t) return(false);
+    return(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -162,8 +162,8 @@ operator==(const ControlLinearNode &aNode) const
 bool ControlLinearNode::
 operator<(const ControlLinearNode &aNode) const
 {
-	if(_t<aNode._t) return(true);
-	else return(false);
+    if(_t<aNode._t) return(true);
+    else return(false);
 }
 
 
@@ -192,8 +192,8 @@ operator<(const ControlLinearNode &aNode) const
 void ControlLinearNode::
 SetEqualityTolerance(double aTol)
 {
-	_EqualityTolerance = aTol;
-	if(_EqualityTolerance<0.0) _EqualityTolerance = 0.0;
+    _EqualityTolerance = aTol;
+    if(_EqualityTolerance<0.0) _EqualityTolerance = 0.0;
 }
 */
 //_____________________________________________________________________________
@@ -213,7 +213,7 @@ SetEqualityTolerance(double aTol)
 double ControlLinearNode::
 GetEqualityTolerance()
 {
-	return(_EqualityTolerance);
+    return(_EqualityTolerance);
 }
 */
 //-----------------------------------------------------------------------------
@@ -228,7 +228,7 @@ GetEqualityTolerance()
 void ControlLinearNode::
 setTime(double aTime)
 {
-	_t = aTime;
+    _t = aTime;
 }
 //_____________________________________________________________________________
 /**
@@ -239,7 +239,7 @@ setTime(double aTime)
 double ControlLinearNode::
 getTime() const
 {
-	return(_t);
+    return(_t);
 }
 
 //-----------------------------------------------------------------------------
@@ -254,8 +254,8 @@ getTime() const
 void ControlLinearNode::
 setValue(double aValue)
 {
-	_value = aValue;
-	_propValue.setValueIsDefault(false);
+    _value = aValue;
+    _propValue.setValueIsDefault(false);
 }
 //_____________________________________________________________________________
 /**
@@ -266,7 +266,7 @@ setValue(double aValue)
 double ControlLinearNode::
 getValue() const
 {
-	return(_value);
+    return(_value);
 }
 
 //=============================================================================
@@ -288,20 +288,20 @@ getValue() const
 char* ControlLinearNode::
 toString()
 {
-	int size = 8*32; 
-	char *string = new char[size];
-	char tmp[128];
-	const char *format = IO::GetDoubleOutputFormat();
+    int size = 8*32; 
+    char *string = new char[size];
+    char tmp[128];
+    const char *format = IO::GetDoubleOutputFormat();
 
-	strcpy(string,"t=");
-	sprintf(tmp,format,_t);
-	strcat(string,tmp);
+    strcpy(string,"t=");
+    sprintf(tmp,format,_t);
+    strcat(string,tmp);
 
-	strcat(string," value=");
-	sprintf(tmp,format,_value);
-	strcat(string,tmp);
+    strcat(string," value=");
+    sprintf(tmp,format,_value);
+    strcat(string,tmp);
 
-	return(string);
+    return(string);
 }
 
 

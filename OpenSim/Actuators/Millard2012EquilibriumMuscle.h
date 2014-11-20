@@ -498,9 +498,9 @@ protected:
     void calcMuscleDynamicsInfo(const SimTK::State& s,
                                 MuscleDynamicsInfo& mdi) const override;
 
-	/** Calculate the potential energy values associated with the muscle */
-	void  calcMusclePotentialEnergyInfo(const SimTK::State& s, 
-		MusclePotentialEnergyInfo& mpei) const override;
+    /** Calculate the potential energy values associated with the muscle */
+    void  calcMusclePotentialEnergyInfo(const SimTK::State& s, 
+        MusclePotentialEnergyInfo& mpei) const override;
 
 //==============================================================================
 // MODELCOMPONENT INTERFACE REQUIREMENTS
@@ -537,7 +537,7 @@ private:
     void buildMuscle();
 
     // Rebuilds muscle model if any of its properties have changed.
-	void finalizeFromProperties() override;
+    void finalizeFromProperties() override;
 
     /* Calculates the fiber velocity that satisfies the equilibrium equation
     given a fixed fiber length.

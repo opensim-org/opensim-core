@@ -43,14 +43,14 @@ using namespace SimTK;
 /* Default constructor. */
 ToyReflexController::ToyReflexController()
 {
-	constructProperties();
+    constructProperties();
 }
 
 /* Convenience constructor. */
 ToyReflexController::ToyReflexController(double gain)
 {
-	constructProperties();
-	set_gain(gain);
+    constructProperties();
+    set_gain(gain);
 }
 
 
@@ -59,28 +59,28 @@ ToyReflexController::ToyReflexController(double gain)
  */
 void ToyReflexController::constructProperties()
 {
-	constructProperty_gain(1.0);
+    constructProperty_gain(1.0);
 }
 
 void ToyReflexController::connectToModel(Model &model)
 {
-	Super::connectToModel(model);
+    Super::connectToModel(model);
 
-	// get the list of actuators assigned to the reflex controller
-	Set<Actuator>& actuators = updActuators();
+    // get the list of actuators assigned to the reflex controller
+    Set<Actuator>& actuators = updActuators();
 
-	int cnt=0;
+    int cnt=0;
  
-	while(cnt < actuators.getSize()){
-		Muscle *musc = dynamic_cast<Muscle*>(&actuators[cnt]);
-		// control muscles only
-		if(!musc){
-			cout << "ToyReflexController:: WARNING- controller assigned a non-muscle actuator ";
-			cout << actuators[cnt].getName() << " which will be ignored." << endl;
-			actuators.remove(cnt);
-		}else
-			cnt++;
-	}
+    while(cnt < actuators.getSize()){
+        Muscle *musc = dynamic_cast<Muscle*>(&actuators[cnt]);
+        // control muscles only
+        if(!musc){
+            cout << "ToyReflexController:: WARNING- controller assigned a non-muscle actuator ";
+            cout << actuators[cnt].getName() << " which will be ignored." << endl;
+            actuators.remove(cnt);
+        }else
+            cnt++;
+    }
 }
 
 //=============================================================================
@@ -90,34 +90,34 @@ void ToyReflexController::connectToModel(Model &model)
 /**
  * Compute the controls for muscles under influence of this reflex controller
  *
- * @param s			current state of the system
- * @param controls	system wide controls to which this controller can add
+ * @param s         current state of the system
+ * @param controls  system wide controls to which this controller can add
  */
 void ToyReflexController::computeControls(const State& s, Vector &controls) const
-{	
-	// get time
-	double time = s.getTime();
+{   
+    // get time
+    double time = s.getTime();
 
-	// get the list of actuators assigned to the reflex controller
-	const Set<Actuator>& actuators = getActuatorSet();
+    // get the list of actuators assigned to the reflex controller
+    const Set<Actuator>& actuators = getActuatorSet();
 
-	// muscle lengthening speed
-	double speed = 0;
-	// max muscle lengthening (stretch) speed
-	double max_speed = 0;
-	//reflex control
-	double control = 0;
+    // muscle lengthening speed
+    double speed = 0;
+    // max muscle lengthening (stretch) speed
+    double max_speed = 0;
+    //reflex control
+    double control = 0;
 
-	for(int i=0; i<actuators.getSize(); ++i){
-		const Muscle *musc = dynamic_cast<const Muscle*>(&actuators[i]);
-		speed = musc->getLengtheningSpeed(s);
-		// unnormalize muscle's maximum contraction velocity (fib_lengths/sec) 
-		max_speed = musc->getOptimalFiberLength()*musc->getMaxContractionVelocity();
-		control = 0.5*get_gain()*(fabs(speed)+speed)/max_speed;
+    for(int i=0; i<actuators.getSize(); ++i){
+        const Muscle *musc = dynamic_cast<const Muscle*>(&actuators[i]);
+        speed = musc->getLengtheningSpeed(s);
+        // unnormalize muscle's maximum contraction velocity (fib_lengths/sec) 
+        max_speed = musc->getOptimalFiberLength()*musc->getMaxContractionVelocity();
+        control = 0.5*get_gain()*(fabs(speed)+speed)/max_speed;
 
-		SimTK::Vector actControls(1,control);
-		// add reflex controls to whatever controls are already in place.
-		musc->addInControls(actControls, controls);
-	}
+        SimTK::Vector actControls(1,control);
+        // add reflex controls to whatever controls are already in place.
+        musc->addInControls(actControls, controls);
+    }
 }
 

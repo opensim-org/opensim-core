@@ -42,9 +42,9 @@ BodyScaleSet::~BodyScaleSet(void)
  * Default constructor of a BodyScaleSet.
  */
 BodyScaleSet::BodyScaleSet() :
-	Set<BodyScale>()
+    Set<BodyScale>()
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -52,10 +52,10 @@ BodyScaleSet::BodyScaleSet() :
  * Copy constructor of a BodyScaleSet.
  */
 BodyScaleSet::BodyScaleSet(const BodyScaleSet& aBodyScaleSet):
-	Set<BodyScale>(aBodyScaleSet)
+    Set<BodyScale>(aBodyScaleSet)
 {
-	setNull();
-	*this = aBodyScaleSet;
+    setNull();
+    *this = aBodyScaleSet;
 }
 
 //=============================================================================
@@ -80,7 +80,7 @@ void BodyScaleSet::setNull()
 #ifndef SWIG
 BodyScaleSet& BodyScaleSet::operator=(const BodyScaleSet &aBodyScaleSet)
 {
-	Set<BodyScale>::operator=(aBodyScaleSet);
-	return (*this);
+    Set<BodyScale>::operator=(aBodyScaleSet);
+    return (*this);
 }
 #endif

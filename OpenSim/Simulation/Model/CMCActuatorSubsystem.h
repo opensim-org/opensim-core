@@ -117,7 +117,7 @@ class OSIMSIMULATION_API CMCActuatorSubsystem : public Subsystem {
 
     void holdCoordinatesConstant( double t );
     void releaseCoordinates();
-	void setCompleteState(const SimTK::State& s)  {
+    void setCompleteState(const SimTK::State& s)  {
         rep->setCompleteState( s );
     }
     const SimTK::State& getCompleteState() const {

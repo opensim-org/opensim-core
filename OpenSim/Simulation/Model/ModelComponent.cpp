@@ -65,14 +65,14 @@ Model& ModelComponent::updModel()
 
 void ModelComponent::connect(Component &root)
 {
-	Model* model = dynamic_cast<Model*>(&root);
-	// Allow (model) component to include its own subcomponents
-	// before calling the base method which automatically invokes
-	// connect all the subcomponents.
-	if (model)
-		connectToModel(*model);
+    Model* model = dynamic_cast<Model*>(&root);
+    // Allow (model) component to include its own subcomponents
+    // before calling the base method which automatically invokes
+    // connect all the subcomponents.
+    if (model)
+        connectToModel(*model);
 
-	Super::connect(root);
+    Super::connect(root);
 }
 
 
@@ -90,9 +90,9 @@ void ModelComponent::generateDecorations
     SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const 
 {
     for(unsigned int i=0; i < _components.size(); i++){
-		ModelComponent *mc = dynamic_cast<ModelComponent*>(_components[i]);
+        ModelComponent *mc = dynamic_cast<ModelComponent*>(_components[i]);
         mc->generateDecorations(fixed,hints,state,appendToThis);
-	}
+    }
 }
 
 

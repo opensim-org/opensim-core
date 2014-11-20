@@ -542,7 +542,7 @@ public:
     /** Downcast the given AbstractProperty to a concrete
     property of this type (%Property\<T>). An exception is thrown if
     this is not the right type only in DEBUG mode; see isA() if you need to 
-	check first. **/
+    check first. **/
     static const Property& getAs(const AbstractProperty& prop) {
         const Property* p = SimTK_DYNAMIC_CAST_DEBUG<const Property*>(&prop);
         if (p) return *p;
@@ -555,7 +555,7 @@ public:
     /** Downcast the given AbstractProperty to a writable concrete
     property of this type (%Property\<T>). An exception is thrown if
     this is not the right type only in DEBUG mode; see isA() if you need to 
-	check first. **/
+    check first. **/
     static Property& updAs(AbstractProperty& prop) {
         Property* p = SimTK_DYNAMIC_CAST_DEBUG<Property*>(&prop);
         if (p) return *p;
@@ -645,12 +645,12 @@ template<> struct Property<SimTK::Vec3>::TypeHelper  {
 /** TypeHelper specialization for SimTK::Vec6; see double specialization
 for information on floating point comparison. **/
 template<> struct Property<SimTK::Vec6>::TypeHelper  {
-	static const bool IsObjectType = false;
-	static SimpleProperty<SimTK::Vec6>*
-		create(const std::string& name, bool isOne);
-	static std::string getTypeName() { return "Vec6"; }
-	OSIMCOMMON_API static bool isEqual(const SimTK::Vec6& a,
-		const SimTK::Vec6& b);
+    static const bool IsObjectType = false;
+    static SimpleProperty<SimTK::Vec6>*
+        create(const std::string& name, bool isOne);
+    static std::string getTypeName() { return "Vec6"; }
+    OSIMCOMMON_API static bool isEqual(const SimTK::Vec6& a,
+        const SimTK::Vec6& b);
 };
 /** TypeHelper specialization for SimTK::Vector; see double specialization
 for information on floating point comparison. **/
@@ -904,15 +904,15 @@ writeSimplePropertyToStream(std::ostream& o) const
 template<> inline bool SimpleProperty<std::string>::
 readSimplePropertyFromStream(std::istream& in)
 {
-	if(this->getMaxListSize()==1)
-	{
-		std::istringstream& instream = (std::istringstream&)(in);
-		values.clear();
-		values.push_back(instream.str());
-		return true;
+    if(this->getMaxListSize()==1)
+    {
+        std::istringstream& instream = (std::istringstream&)(in);
+        values.clear();
+        values.push_back(instream.str());
+        return true;
    }
    else
-	   return SimTK::readUnformatted(in, values);
+       return SimTK::readUnformatted(in, values);
 }
 
 
@@ -1063,7 +1063,7 @@ TypeHelper::create(const std::string& name, bool isOne)
 inline SimpleProperty<SimTK::Vec6>* Property<SimTK::Vec6>::
 TypeHelper::create(const std::string& name, bool isOne)
 {
-	return new SimpleProperty<SimTK::Vec6>(name, isOne);
+    return new SimpleProperty<SimTK::Vec6>(name, isOne);
 }
 
 inline SimpleProperty<SimTK::Vector>* Property<SimTK::Vector>::

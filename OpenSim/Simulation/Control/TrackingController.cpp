@@ -45,7 +45,7 @@ using namespace std;
  */
 TrackingController::TrackingController() : Controller()
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -67,7 +67,7 @@ TrackingController::~TrackingController()
  */
 void TrackingController::setNull()
 {
-	setAuthors("Ajay Seth");
+    setAuthors("Ajay Seth");
 }
 
 
@@ -76,11 +76,11 @@ void TrackingController::setNull()
 //=============================================================================
 void TrackingController::setDesiredStatesStorage(const Storage* aYDesStore)
 {
-	_desiredStatesStorage = aYDesStore;
+    _desiredStatesStorage = aYDesStore;
 }
 
 const Storage& TrackingController:: getDesiredStatesStorage() const
 {
-	return *_desiredStatesStorage;
+    return *_desiredStatesStorage;
 }
 

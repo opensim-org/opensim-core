@@ -48,7 +48,7 @@ using namespace std;
 Property_Deprecated::
 Property_Deprecated() : AbstractProperty()
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -58,9 +58,9 @@ Property_Deprecated::
 Property_Deprecated(PropertyType aType, const string &aName) 
 :   AbstractProperty()
 {
-	setNull();
-	setName(aName);
-	_propertyType = aType;
+    setNull();
+    setName(aName);
+    _propertyType = aType;
 }
 //_____________________________________________________________________________
 /**
@@ -70,8 +70,8 @@ Property_Deprecated(PropertyType aType, const string &aName)
  */
 Property_Deprecated::Property_Deprecated(const Property_Deprecated &aProperty)
 {
-	setNull();
-	*this = aProperty;
+    setNull();
+    *this = aProperty;
 }
 
 
@@ -85,7 +85,7 @@ Property_Deprecated::Property_Deprecated(const Property_Deprecated &aProperty)
 void Property_Deprecated::
 setNull()
 {
-	_propertyType = Property_Deprecated::None;
+    _propertyType = Property_Deprecated::None;
     _matchName = false;
 }
 
@@ -111,7 +111,7 @@ operator=(const Property_Deprecated& aProperty)
     _propertyType = aProperty._propertyType;
     _matchName = aProperty._matchName;
 
-	return *this;
+    return *this;
 }
 
 //-----------------------------------------------------------------------------
@@ -131,8 +131,8 @@ operator=(const Property_Deprecated& aProperty)
 bool Property_Deprecated::
 operator==(const Property_Deprecated &aProperty) const
 {
-	if(getName() != aProperty.getName()) return(false);
-	return(true);
+    if(getName() != aProperty.getName()) return(false);
+    return(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -151,7 +151,7 @@ operator==(const Property_Deprecated &aProperty) const
 bool Property_Deprecated::
 operator<(const Property_Deprecated &aProperty) const
 {
-	return(getName() < aProperty.getName());
+    return(getName() < aProperty.getName());
 }
 
 //-----------------------------------------------------------------------------
@@ -167,8 +167,8 @@ operator<(const Property_Deprecated &aProperty) const
  * @return Reference to the output stream.
 ostream& operator<<(ostream &aOut,const Property_Deprecated &aProperty)
 {
-	aOut << aProperty.getTypeName() << " " << aProperty.getName();
-	return(aOut);
+    aOut << aProperty.getTypeName() << " " << aProperty.getName();
+    return(aOut);
 }
  */
 
@@ -190,7 +190,7 @@ ostream& operator<<(ostream &aOut,const Property_Deprecated &aProperty)
 void Property_Deprecated::
 setType(PropertyType aType)
 {
-	_propertyType = aType;
+    _propertyType = aType;
 }
 //_____________________________________________________________________________
 /**
@@ -201,7 +201,7 @@ setType(PropertyType aType)
 Property_Deprecated::PropertyType Property_Deprecated::
 getType() const
 {
-	return _propertyType;
+    return _propertyType;
 }
 
 

@@ -212,7 +212,7 @@ typedef union YYSTYPE {
 
 #if (! defined (yyoverflow) \
      && (! defined (__cplusplus) \
-	 || (YYSTYPE_IS_TRIVIAL)))
+     || (YYSTYPE_IS_TRIVIAL)))
 
 /* A type that is properly aligned for any stack member.  */
 union yyalloc
@@ -227,7 +227,7 @@ union yyalloc
 /* The size of an array large to enough to hold all stacks, each with
    N elements.  */
 # define YYSTACK_BYTES(N) \
-     ((N) * (sizeof (short) + sizeof (YYSTYPE))				\
+     ((N) * (sizeof (short) + sizeof (YYSTYPE))             \
       + YYSTACK_GAP_MAXIMUM)
 
 /* Copy COUNT objects from FROM to TO.  The source and destination do
@@ -237,13 +237,13 @@ union yyalloc
 #   define YYCOPY(To, From, Count) \
       __builtin_memcpy (To, From, (Count) * sizeof (*(From)))
 #  else
-#   define YYCOPY(To, From, Count)		\
-      do					\
-	{					\
-	  register YYSIZE_T yyi;		\
-	  for (yyi = 0; yyi < (Count); yyi++)	\
-	    (To)[yyi] = (From)[yyi];		\
-	}					\
+#   define YYCOPY(To, From, Count)      \
+      do                    \
+    {                   \
+      register YYSIZE_T yyi;        \
+      for (yyi = 0; yyi < (Count); yyi++)   \
+        (To)[yyi] = (From)[yyi];        \
+    }                   \
       while (0)
 #  endif
 # endif
@@ -253,15 +253,15 @@ union yyalloc
    elements in the stack, and YYPTR gives the new location of the
    stack.  Advance YYPTR to a properly aligned location for the next
    stack.  */
-# define YYSTACK_RELOCATE(Stack)					\
-    do									\
-      {									\
-	YYSIZE_T yynewbytes;						\
-	YYCOPY (&yyptr->Stack, Stack, yysize);				\
-	Stack = &yyptr->Stack;						\
-	yynewbytes = yystacksize * sizeof (*Stack) + YYSTACK_GAP_MAXIMUM; \
-	yyptr += yynewbytes / sizeof (*yyptr);				\
-      }									\
+# define YYSTACK_RELOCATE(Stack)                    \
+    do                                  \
+      {                                 \
+    YYSIZE_T yynewbytes;                        \
+    YYCOPY (&yyptr->Stack, Stack, yysize);              \
+    Stack = &yyptr->Stack;                      \
+    yynewbytes = yystacksize * sizeof (*Stack) + YYSTACK_GAP_MAXIMUM; \
+    yyptr += yynewbytes / sizeof (*yyptr);              \
+      }                                 \
     while (0)
 
 #endif
@@ -290,7 +290,7 @@ union yyalloc
 #define YYUNDEFTOK  2
 #define YYMAXUTOK   271
 
-#define YYTRANSLATE(YYX) 						\
+#define YYTRANSLATE(YYX)                        \
   ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
 
 /* YYTRANSLATE[YYLEX] -- Bison symbol number corresponding to YYLEX.  */
@@ -540,43 +540,43 @@ static const unsigned char yystos[] =
 # define YYSIZE_T unsigned int
 #endif
 
-#define yyerrok		(yyerrstatus = 0)
-#define yyclearin	(yychar = YYEMPTY)
-#define YYEMPTY		(-2)
-#define YYEOF		0
+#define yyerrok     (yyerrstatus = 0)
+#define yyclearin   (yychar = YYEMPTY)
+#define YYEMPTY     (-2)
+#define YYEOF       0
 
-#define YYACCEPT	goto yyacceptlab
-#define YYABORT		goto yyabortlab
-#define YYERROR		goto yyerrlab1
+#define YYACCEPT    goto yyacceptlab
+#define YYABORT     goto yyabortlab
+#define YYERROR     goto yyerrlab1
 
 
 /* Like YYERROR except do call yyerror.  This remains here temporarily
    to ease the transition to the new meaning of YYERROR, for GCC.
    Once GCC version 2 has supplanted version 1, this can go.  */
 
-#define YYFAIL		goto yyerrlab
+#define YYFAIL      goto yyerrlab
 
 #define YYRECOVERING()  (!!yyerrstatus)
 
-#define YYBACKUP(Token, Value)					\
-do								\
-  if (yychar == YYEMPTY && yylen == 1)				\
-    {								\
-      yychar = (Token);						\
-      yylval = (Value);						\
-      yytoken = YYTRANSLATE (yychar);				\
-      YYPOPSTACK;						\
-      goto yybackup;						\
-    }								\
-  else								\
-    { 								\
+#define YYBACKUP(Token, Value)                  \
+do                              \
+  if (yychar == YYEMPTY && yylen == 1)              \
+    {                               \
+      yychar = (Token);                     \
+      yylval = (Value);                     \
+      yytoken = YYTRANSLATE (yychar);               \
+      YYPOPSTACK;                       \
+      goto yybackup;                        \
+    }                               \
+  else                              \
+    {                               \
       yyerror ("syntax error: cannot back up");\
-      YYERROR;							\
-    }								\
+      YYERROR;                          \
+    }                               \
 while (0)
 
-#define YYTERROR	1
-#define YYERRCODE	256
+#define YYTERROR    1
+#define YYERRCODE   256
 
 /* YYLLOC_DEFAULT -- Compute the default location (before the actions
    are run).  */
@@ -605,27 +605,27 @@ while (0)
 #  define YYFPRINTF fprintf
 # endif
 
-# define YYDPRINTF(Args)			\
-do {						\
-  if (yydebug)					\
-    YYFPRINTF Args;				\
+# define YYDPRINTF(Args)            \
+do {                        \
+  if (yydebug)                  \
+    YYFPRINTF Args;             \
 } while (0)
 
-# define YYDSYMPRINT(Args)			\
-do {						\
-  if (yydebug)					\
-    yysymprint Args;				\
+# define YYDSYMPRINT(Args)          \
+do {                        \
+  if (yydebug)                  \
+    yysymprint Args;                \
 } while (0)
 
-# define YYDSYMPRINTF(Title, Token, Value, Location)		\
-do {								\
-  if (yydebug)							\
-    {								\
-      YYFPRINTF (stderr, "%s ", Title);				\
-      yysymprint (stderr, 					\
-                  Token, Value);	\
-      YYFPRINTF (stderr, "\n");					\
-    }								\
+# define YYDSYMPRINTF(Title, Token, Value, Location)        \
+do {                                \
+  if (yydebug)                          \
+    {                               \
+      YYFPRINTF (stderr, "%s ", Title);             \
+      yysymprint (stderr,                   \
+                  Token, Value);    \
+      YYFPRINTF (stderr, "\n");                 \
+    }                               \
 } while (0)
 
 /*------------------------------------------------------------------.
@@ -649,10 +649,10 @@ yy_stack_print (bottom, top)
   YYFPRINTF (stderr, "\n");
 }
 
-# define YY_STACK_PRINT(Bottom, Top)				\
-do {								\
-  if (yydebug)							\
-    yy_stack_print ((Bottom), (Top));				\
+# define YY_STACK_PRINT(Bottom, Top)                \
+do {                                \
+  if (yydebug)                          \
+    yy_stack_print ((Bottom), (Top));               \
 } while (0)
 
 
@@ -679,10 +679,10 @@ yy_reduce_print (yyrule)
   YYFPRINTF (stderr, "-> %s\n", yytname [yyr1[yyrule]]);
 }
 
-# define YY_REDUCE_PRINT(Rule)		\
-do {					\
-  if (yydebug)				\
-    yy_reduce_print (Rule);		\
+# define YY_REDUCE_PRINT(Rule)      \
+do {                    \
+  if (yydebug)              \
+    yy_reduce_print (Rule);     \
 } while (0)
 
 /* Nonzero means print parse trace.  It is left uninitialized so that
@@ -698,7 +698,7 @@ int yydebug;
 
 
 /* YYINITDEPTH -- initial size of the parser's stacks.  */
-#ifndef	YYINITDEPTH
+#ifndef YYINITDEPTH
 # define YYINITDEPTH 200
 #endif
 
@@ -907,7 +907,7 @@ yyparse ()
      to reallocate them elsewhere.  */
 
   /* The state stack.  */
-  short	yyssa[YYINITDEPTH];
+  short yyssa[YYINITDEPTH];
   short *yyss = yyssa;
   register short *yyssp;
 
@@ -936,7 +936,7 @@ yyparse ()
   yystate = 0;
   yyerrstatus = 0;
   yynerrs = 0;
-  yychar = YYEMPTY;		/* Cause a token to be read.  */
+  yychar = YYEMPTY;     /* Cause a token to be read.  */
 
   /* Initialize stack pointers.
      Waste one element of value and location stack
@@ -967,25 +967,25 @@ yyparse ()
 
 #ifdef yyoverflow
       {
-	/* Give user a chance to reallocate the stack. Use copies of
-	   these so that the &'s don't force the real ones into
-	   memory.  */
-	YYSTYPE *yyvs1 = yyvs;
-	short *yyss1 = yyss;
+    /* Give user a chance to reallocate the stack. Use copies of
+       these so that the &'s don't force the real ones into
+       memory.  */
+    YYSTYPE *yyvs1 = yyvs;
+    short *yyss1 = yyss;
 
 
-	/* Each stack pointer address is followed by the size of the
-	   data in use in that stack, in bytes.  This used to be a
-	   conditional around just the two extra args, but that might
-	   be undefined if yyoverflow is a macro.  */
-	yyoverflow ("parser stack overflow",
-		    &yyss1, yysize * sizeof (*yyssp),
-		    &yyvs1, yysize * sizeof (*yyvsp),
+    /* Each stack pointer address is followed by the size of the
+       data in use in that stack, in bytes.  This used to be a
+       conditional around just the two extra args, but that might
+       be undefined if yyoverflow is a macro.  */
+    yyoverflow ("parser stack overflow",
+            &yyss1, yysize * sizeof (*yyssp),
+            &yyvs1, yysize * sizeof (*yyvsp),
 
-		    &yystacksize);
+            &yystacksize);
 
-	yyss = yyss1;
-	yyvs = yyvs1;
+    yyss = yyss1;
+    yyvs = yyvs1;
       }
 #else /* no yyoverflow */
 # ifndef YYSTACK_RELOCATE
@@ -993,23 +993,23 @@ yyparse ()
 # else
       /* Extend the stack our own way.  */
       if (YYMAXDEPTH <= yystacksize)
-	goto yyoverflowlab;
+    goto yyoverflowlab;
       yystacksize *= 2;
       if (YYMAXDEPTH < yystacksize)
-	yystacksize = YYMAXDEPTH;
+    yystacksize = YYMAXDEPTH;
 
       {
-	short *yyss1 = yyss;
-	union yyalloc *yyptr =
-	  (union yyalloc *) YYSTACK_ALLOC (YYSTACK_BYTES (yystacksize));
-	if (! yyptr)
-	  goto yyoverflowlab;
-	YYSTACK_RELOCATE (yyss);
-	YYSTACK_RELOCATE (yyvs);
+    short *yyss1 = yyss;
+    union yyalloc *yyptr =
+      (union yyalloc *) YYSTACK_ALLOC (YYSTACK_BYTES (yystacksize));
+    if (! yyptr)
+      goto yyoverflowlab;
+    YYSTACK_RELOCATE (yyss);
+    YYSTACK_RELOCATE (yyvs);
 
 #  undef YYSTACK_RELOCATE
-	if (yyss1 != yyssa)
-	  YYSTACK_FREE (yyss1);
+    if (yyss1 != yyssa)
+      YYSTACK_FREE (yyss1);
       }
 # endif
 #endif /* no yyoverflow */
@@ -1019,10 +1019,10 @@ yyparse ()
 
 
       YYDPRINTF ((stderr, "Stack size increased to %lu\n",
-		  (unsigned long int) yystacksize));
+          (unsigned long int) yystacksize));
 
       if (yyss + yystacksize - 1 <= yyssp)
-	YYABORT;
+    YYABORT;
     }
 
   YYDPRINTF ((stderr, "Entering state %d\n", yystate));
@@ -1073,7 +1073,7 @@ yybackup:
   if (yyn <= 0)
     {
       if (yyn == 0 || yyn == YYTABLE_NINF)
-	goto yyerrlab;
+    goto yyerrlab;
       yyn = -yyn;
       goto yyreduce;
     }
@@ -1149,19 +1149,19 @@ yyreduce:
   case 6:
 #line 108 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.value = - yyvsp[0].integer.value;
-			  yyval.integer.unsignedp = yyvsp[0].integer.unsignedp; ;}
+              yyval.integer.unsignedp = yyvsp[0].integer.unsignedp; ;}
     break;
 
   case 7:
 #line 111 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.value = ! yyvsp[0].integer.value;
-			  yyval.integer.unsignedp = 0; ;}
+              yyval.integer.unsignedp = 0; ;}
     break;
 
   case 8:
 #line 114 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.value = ~ yyvsp[0].integer.value;
-			  yyval.integer.unsignedp = yyvsp[0].integer.unsignedp; ;}
+              yyval.integer.unsignedp = yyvsp[0].integer.unsignedp; ;}
     break;
 
   case 9:
@@ -1192,11 +1192,11 @@ yyreduce:
   case 14:
 #line 133 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { if (yyvsp[0].dval == 0.0)
-					{
-					acpp_error("division by zero in expression");
-					yyvsp[0].dval = 1.0;
-					}
-					yyval.dval = yyvsp[-2].dval / yyvsp[0].dval; ;}
+                    {
+                    acpp_error("division by zero in expression");
+                    yyvsp[0].dval = 1.0;
+                    }
+                    yyval.dval = yyvsp[-2].dval / yyvsp[0].dval; ;}
     break;
 
   case 15:
@@ -1217,152 +1217,152 @@ yyreduce:
   case 18:
 #line 149 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp;
-			  if (yyval.integer.unsignedp)
-			    yyval.integer.value = (unsigned) yyvsp[-2].integer.value * yyvsp[0].integer.value;
-			  else
-			    yyval.integer.value = yyvsp[-2].integer.value * yyvsp[0].integer.value; ;}
+              if (yyval.integer.unsignedp)
+                yyval.integer.value = (unsigned) yyvsp[-2].integer.value * yyvsp[0].integer.value;
+              else
+                yyval.integer.value = yyvsp[-2].integer.value * yyvsp[0].integer.value; ;}
     break;
 
   case 19:
 #line 155 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { if (yyvsp[0].integer.value == 0)
-			    {
-			      acpp_error("division by zero in #if");
-			      yyvsp[0].integer.value = 1;
-			    }
-			  yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp;
-			  if (yyval.integer.unsignedp)
-			    yyval.integer.value = (unsigned) yyvsp[-2].integer.value / yyvsp[0].integer.value;
-			  else
-			    yyval.integer.value = yyvsp[-2].integer.value / yyvsp[0].integer.value; ;}
+                {
+                  acpp_error("division by zero in #if");
+                  yyvsp[0].integer.value = 1;
+                }
+              yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp;
+              if (yyval.integer.unsignedp)
+                yyval.integer.value = (unsigned) yyvsp[-2].integer.value / yyvsp[0].integer.value;
+              else
+                yyval.integer.value = yyvsp[-2].integer.value / yyvsp[0].integer.value; ;}
     break;
 
   case 20:
 #line 166 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { if (yyvsp[0].integer.value == 0)
-			    {
-			      acpp_error("division by zero in #if");
-			      yyvsp[0].integer.value = 1;
-			    }
-			  yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp;
-			  if (yyval.integer.unsignedp)
-			    yyval.integer.value = (unsigned) yyvsp[-2].integer.value % yyvsp[0].integer.value;
-			  else
-			    yyval.integer.value = yyvsp[-2].integer.value % yyvsp[0].integer.value; ;}
+                {
+                  acpp_error("division by zero in #if");
+                  yyvsp[0].integer.value = 1;
+                }
+              yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp;
+              if (yyval.integer.unsignedp)
+                yyval.integer.value = (unsigned) yyvsp[-2].integer.value % yyvsp[0].integer.value;
+              else
+                yyval.integer.value = yyvsp[-2].integer.value % yyvsp[0].integer.value; ;}
     break;
 
   case 21:
 #line 177 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.value = yyvsp[-2].integer.value + yyvsp[0].integer.value;
-			  yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp; ;}
+              yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp; ;}
     break;
 
   case 22:
 #line 180 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.value = yyvsp[-2].integer.value - yyvsp[0].integer.value;
-			  yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp; ;}
+              yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp; ;}
     break;
 
   case 23:
 #line 183 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp;
-			  if (yyval.integer.unsignedp)
-			    yyval.integer.value = (unsigned) yyvsp[-2].integer.value << yyvsp[0].integer.value;
-			  else
-			    yyval.integer.value = yyvsp[-2].integer.value << yyvsp[0].integer.value; ;}
+              if (yyval.integer.unsignedp)
+                yyval.integer.value = (unsigned) yyvsp[-2].integer.value << yyvsp[0].integer.value;
+              else
+                yyval.integer.value = yyvsp[-2].integer.value << yyvsp[0].integer.value; ;}
     break;
 
   case 24:
 #line 189 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp;
-			  if (yyval.integer.unsignedp)
-			    yyval.integer.value = (unsigned) yyvsp[-2].integer.value >> yyvsp[0].integer.value;
-			  else
-			    yyval.integer.value = yyvsp[-2].integer.value >> yyvsp[0].integer.value; ;}
+              if (yyval.integer.unsignedp)
+                yyval.integer.value = (unsigned) yyvsp[-2].integer.value >> yyvsp[0].integer.value;
+              else
+                yyval.integer.value = yyvsp[-2].integer.value >> yyvsp[0].integer.value; ;}
     break;
 
   case 25:
 #line 195 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.value = (yyvsp[-2].integer.value == yyvsp[0].integer.value);
-			  yyval.integer.unsignedp = 0; ;}
+              yyval.integer.unsignedp = 0; ;}
     break;
 
   case 26:
 #line 198 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.value = (yyvsp[-2].integer.value != yyvsp[0].integer.value);
-			  yyval.integer.unsignedp = 0; ;}
+              yyval.integer.unsignedp = 0; ;}
     break;
 
   case 27:
 #line 201 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.unsignedp = 0;
-			  if (yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp)
-			    yyval.integer.value = (unsigned) yyvsp[-2].integer.value <= yyvsp[0].integer.value;
-			  else
-			    yyval.integer.value = yyvsp[-2].integer.value <= yyvsp[0].integer.value; ;}
+              if (yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp)
+                yyval.integer.value = (unsigned) yyvsp[-2].integer.value <= yyvsp[0].integer.value;
+              else
+                yyval.integer.value = yyvsp[-2].integer.value <= yyvsp[0].integer.value; ;}
     break;
 
   case 28:
 #line 207 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.unsignedp = 0;
-			  if (yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp)
-			    yyval.integer.value = (unsigned) yyvsp[-2].integer.value >= yyvsp[0].integer.value;
-			  else
-			    yyval.integer.value = yyvsp[-2].integer.value >= yyvsp[0].integer.value; ;}
+              if (yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp)
+                yyval.integer.value = (unsigned) yyvsp[-2].integer.value >= yyvsp[0].integer.value;
+              else
+                yyval.integer.value = yyvsp[-2].integer.value >= yyvsp[0].integer.value; ;}
     break;
 
   case 29:
 #line 213 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.unsignedp = 0;
-			  if (yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp)
-			    yyval.integer.value = (unsigned) yyvsp[-2].integer.value < yyvsp[0].integer.value;
-			  else
-			    yyval.integer.value = yyvsp[-2].integer.value < yyvsp[0].integer.value; ;}
+              if (yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp)
+                yyval.integer.value = (unsigned) yyvsp[-2].integer.value < yyvsp[0].integer.value;
+              else
+                yyval.integer.value = yyvsp[-2].integer.value < yyvsp[0].integer.value; ;}
     break;
 
   case 30:
 #line 219 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.unsignedp = 0;
-			  if (yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp)
-			    yyval.integer.value = (unsigned) yyvsp[-2].integer.value > yyvsp[0].integer.value;
-			  else
-			    yyval.integer.value = yyvsp[-2].integer.value > yyvsp[0].integer.value; ;}
+              if (yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp)
+                yyval.integer.value = (unsigned) yyvsp[-2].integer.value > yyvsp[0].integer.value;
+              else
+                yyval.integer.value = yyvsp[-2].integer.value > yyvsp[0].integer.value; ;}
     break;
 
   case 31:
 #line 225 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.value = yyvsp[-2].integer.value & yyvsp[0].integer.value;
-			  yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp; ;}
+              yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp; ;}
     break;
 
   case 32:
 #line 228 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.value = yyvsp[-2].integer.value ^ yyvsp[0].integer.value;
-			  yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp; ;}
+              yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp; ;}
     break;
 
   case 33:
 #line 231 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.value = yyvsp[-2].integer.value | yyvsp[0].integer.value;
-			  yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp; ;}
+              yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp; ;}
     break;
 
   case 34:
 #line 234 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.value = (yyvsp[-2].integer.value && yyvsp[0].integer.value);
-			  yyval.integer.unsignedp = 0; ;}
+              yyval.integer.unsignedp = 0; ;}
     break;
 
   case 35:
 #line 237 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.value = (yyvsp[-2].integer.value || yyvsp[0].integer.value);
-			  yyval.integer.unsignedp = 0; ;}
+              yyval.integer.unsignedp = 0; ;}
     break;
 
   case 36:
 #line 240 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.value = yyvsp[-4].integer.value ? yyvsp[-2].integer.value : yyvsp[0].integer.value;
-			  yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp; ;}
+              yyval.integer.unsignedp = yyvsp[-2].integer.unsignedp || yyvsp[0].integer.unsignedp; ;}
     break;
 
   case 37:
@@ -1378,7 +1378,7 @@ yyreduce:
   case 39:
 #line 247 "C:\\Users\\Simm\\acppTest\\acpp\\src\\cexp.y"
     { yyval.integer.value = 0;
-			  yyval.integer.unsignedp = 0; ;}
+              yyval.integer.unsignedp = 0; ;}
     break;
 
 
@@ -1423,62 +1423,62 @@ yyerrlab:
       yyn = yypact[yystate];
 
       if (YYPACT_NINF < yyn && yyn < YYLAST)
-	{
-	  YYSIZE_T yysize = 0;
-	  int yytype = YYTRANSLATE (yychar);
-	  const char* yyprefix;
-	  char *yymsg;
-	  int yyx;
+    {
+      YYSIZE_T yysize = 0;
+      int yytype = YYTRANSLATE (yychar);
+      const char* yyprefix;
+      char *yymsg;
+      int yyx;
 
-	  /* Start YYX at -YYN if negative to avoid negative indexes in
-	     YYCHECK.  */
-	  int yyxbegin = yyn < 0 ? -yyn : 0;
+      /* Start YYX at -YYN if negative to avoid negative indexes in
+         YYCHECK.  */
+      int yyxbegin = yyn < 0 ? -yyn : 0;
 
-	  /* Stay within bounds of both yycheck and yytname.  */
-	  int yychecklim = YYLAST - yyn;
-	  int yyxend = yychecklim < YYNTOKENS ? yychecklim : YYNTOKENS;
-	  int yycount = 0;
+      /* Stay within bounds of both yycheck and yytname.  */
+      int yychecklim = YYLAST - yyn;
+      int yyxend = yychecklim < YYNTOKENS ? yychecklim : YYNTOKENS;
+      int yycount = 0;
 
-	  yyprefix = ", expecting ";
-	  for (yyx = yyxbegin; yyx < yyxend; ++yyx)
-	    if (yycheck[yyx + yyn] == yyx && yyx != YYTERROR)
-	      {
-		yysize += yystrlen (yyprefix) + yystrlen (yytname [yyx]);
-		yycount += 1;
-		if (yycount == 5)
-		  {
-		    yysize = 0;
-		    break;
-		  }
-	      }
-	  yysize += (sizeof ("syntax error, unexpected ")
-		     + yystrlen (yytname[yytype]));
-	  yymsg = (char *) YYSTACK_ALLOC (yysize);
-	  if (yymsg != 0)
-	    {
-	      char *yyp = yystpcpy (yymsg, "syntax error, unexpected ");
-	      yyp = yystpcpy (yyp, yytname[yytype]);
+      yyprefix = ", expecting ";
+      for (yyx = yyxbegin; yyx < yyxend; ++yyx)
+        if (yycheck[yyx + yyn] == yyx && yyx != YYTERROR)
+          {
+        yysize += yystrlen (yyprefix) + yystrlen (yytname [yyx]);
+        yycount += 1;
+        if (yycount == 5)
+          {
+            yysize = 0;
+            break;
+          }
+          }
+      yysize += (sizeof ("syntax error, unexpected ")
+             + yystrlen (yytname[yytype]));
+      yymsg = (char *) YYSTACK_ALLOC (yysize);
+      if (yymsg != 0)
+        {
+          char *yyp = yystpcpy (yymsg, "syntax error, unexpected ");
+          yyp = yystpcpy (yyp, yytname[yytype]);
 
-	      if (yycount < 5)
-		{
-		  yyprefix = ", expecting ";
-		  for (yyx = yyxbegin; yyx < yyxend; ++yyx)
-		    if (yycheck[yyx + yyn] == yyx && yyx != YYTERROR)
-		      {
-			yyp = yystpcpy (yyp, yyprefix);
-			yyp = yystpcpy (yyp, yytname[yyx]);
-			yyprefix = " or ";
-		      }
-		}
-	      yyerror (yymsg);
-	      YYSTACK_FREE (yymsg);
-	    }
-	  else
-	    yyerror ("syntax error; also virtual memory exhausted");
-	}
+          if (yycount < 5)
+        {
+          yyprefix = ", expecting ";
+          for (yyx = yyxbegin; yyx < yyxend; ++yyx)
+            if (yycheck[yyx + yyn] == yyx && yyx != YYTERROR)
+              {
+            yyp = yystpcpy (yyp, yyprefix);
+            yyp = yystpcpy (yyp, yytname[yyx]);
+            yyprefix = " or ";
+              }
+        }
+          yyerror (yymsg);
+          YYSTACK_FREE (yymsg);
+        }
+      else
+        yyerror ("syntax error; also virtual memory exhausted");
+    }
       else
 #endif /* YYERROR_VERBOSE */
-	yyerror ("syntax error");
+    yyerror ("syntax error");
     }
 
 
@@ -1486,21 +1486,21 @@ yyerrlab:
   if (yyerrstatus == 3)
     {
       /* If just tried and failed to reuse lookahead token after an
-	 error, discard it.  */
+     error, discard it.  */
 
       /* Return failure if at end of input.  */
       if (yychar == YYEOF)
         {
-	  /* Pop the error token.  */
+      /* Pop the error token.  */
           YYPOPSTACK;
-	  /* Pop the rest of the stack.  */
-	  while (yyss < yyssp)
-	    {
-	      YYDSYMPRINTF ("Error: popping", yystos[*yyssp], yyvsp, yylsp);
-	      yydestruct (yystos[*yyssp], yyvsp);
-	      YYPOPSTACK;
-	    }
-	  YYABORT;
+      /* Pop the rest of the stack.  */
+      while (yyss < yyssp)
+        {
+          YYDSYMPRINTF ("Error: popping", yystos[*yyssp], yyvsp, yylsp);
+          yydestruct (yystos[*yyssp], yyvsp);
+          YYPOPSTACK;
+        }
+      YYABORT;
         }
 
       YYDSYMPRINTF ("Error: discarding", yytoken, &yylval, &yylloc);
@@ -1518,25 +1518,25 @@ yyerrlab:
 | yyerrlab1 -- error raised explicitly by an action.  |
 `----------------------------------------------------*/
 yyerrlab1:
-  yyerrstatus = 3;	/* Each real token shifted decrements this.  */
+  yyerrstatus = 3;  /* Each real token shifted decrements this.  */
 
   for (;;)
     {
       yyn = yypact[yystate];
       if (yyn != YYPACT_NINF)
-	{
-	  yyn += YYTERROR;
-	  if (0 <= yyn && yyn <= YYLAST && yycheck[yyn] == YYTERROR)
-	    {
-	      yyn = yytable[yyn];
-	      if (0 < yyn)
-		break;
-	    }
-	}
+    {
+      yyn += YYTERROR;
+      if (0 <= yyn && yyn <= YYLAST && yycheck[yyn] == YYTERROR)
+        {
+          yyn = yytable[yyn];
+          if (0 < yyn)
+        break;
+        }
+    }
 
       /* Pop the current state because it cannot handle the error token.  */
       if (yyssp == yyss)
-	YYABORT;
+    YYABORT;
 
       YYDSYMPRINTF ("Error: popping", yystos[*yyssp], yyvsp, yylsp);
       yydestruct (yystos[yystate], yyvsp);
@@ -1617,21 +1617,21 @@ parse_number (olen)
   for (c = 0; c < len; c++)
   {
     if (p[c] == '.')
-	{
-	   if (inside_math == 0)
-	   {
+    {
+       if (inside_math == 0)
+       {
           yyerror ("floating point numbers not allowed in #if expressions");
           return ERROR;
-	   }
-	   else
-	   {
-	      char *np = (char*)alloca(len + 1);
-	      bcopy(p, np, len);
-	      np[len] = '\0';
+       }
+       else
+       {
+          char *np = (char*)alloca(len + 1);
+          bcopy(p, np, len);
+          np[len] = '\0';
           yylval.dval = atof(np);
-	      lexptr += len;
+          lexptr += len;
           return DVALUE;
-	   }
+       }
     }
   }
 
@@ -1659,17 +1659,17 @@ parse_number (olen)
     } else {
       /* `l' means long, and `u' means unsigned.  */
       while (1) {
-	if (c == 'l' || c == 'L')
-	  ;
-	else if (c == 'u' || c == 'U')
-	  yylval.integer.unsignedp = 1;
-	else
-	  break;
+    if (c == 'l' || c == 'L')
+      ;
+    else if (c == 'u' || c == 'U')
+      yylval.integer.unsignedp = 1;
+    else
+      break;
 
-	if (len == 0)
-	  break;
-	c = *p++;
-	len--;
+    if (len == 0)
+      break;
+    c = *p++;
+    len--;
       }
       /* Don't look for any more digits after the suffixes.  */
       break;
@@ -1753,22 +1753,22 @@ yylex ()
     
 #ifdef sgi
   case 'L':
-	{
-		/* look for wide char constants */
-		int c2;
-		int i;
-		for(i = 1, c2 = *(lexptr+i); is_hor_space[c2];
-			 ++i,c2 = *(lexptr+i)) 
-			/* do nothing on horiz space stuff */   {  }
-		if(c2 != '\'') {
-		 	/* Not a wide char const. An identifier */
-			break;
-		}
-		lexptr += i ; /* points to the quote now
-			Is wide char constant */
-		tokstart = lexptr;
-		c = c2;  /* c  now a quote */
-	}
+    {
+        /* look for wide char constants */
+        int c2;
+        int i;
+        for(i = 1, c2 = *(lexptr+i); is_hor_space[c2];
+             ++i,c2 = *(lexptr+i)) 
+            /* do nothing on horiz space stuff */   {  }
+        if(c2 != '\'') {
+            /* Not a wide char const. An identifier */
+            break;
+        }
+        lexptr += i ; /* points to the quote now
+            Is wide char constant */
+        tokstart = lexptr;
+        c = c2;  /* c  now a quote */
+    }
 #endif
   case '\'':
     lexptr++;
@@ -1779,10 +1779,10 @@ yylex ()
     /* Sign-extend the constant if chars are signed on target machine.  */
     {
       if (lookup ("__CHAR_UNSIGNED__", sizeof ("__CHAR_UNSIGNED__")-1, -1)
-	  || ((c >> (CHAR_TYPE_SIZE - 1)) & 1) == 0)
-	yylval.integer.value = c & ((1 << CHAR_TYPE_SIZE) - 1);
+      || ((c >> (CHAR_TYPE_SIZE - 1)) & 1) == 0)
+    yylval.integer.value = c & ((1 << CHAR_TYPE_SIZE) - 1);
       else
-	yylval.integer.value = c | ~((1 << CHAR_TYPE_SIZE) - 1);
+    yylval.integer.value = c | ~((1 << CHAR_TYPE_SIZE) - 1);
     }
 
     yylval.integer.unsignedp = 0;
@@ -1838,25 +1838,25 @@ yylex ()
   if ((c >= '0' && c <= '9') || c == '.')
   {
      if (inside_math == 0)
-	 {
+     {
         for (namelen = 0;
-	         c = tokstart[namelen], is_idchar[c] || c == '.'; 
-	         namelen++)
+             c = tokstart[namelen], is_idchar[c] || c == '.'; 
+             namelen++)
            ;
      }
      else
      {
-	    int exp = 0;
+        int exp = 0;
         for (namelen = 0;
-	         c = tokstart[namelen], is_idchar[c] || c == '.' || (exp == 1 && (c == '-' || c == '+')); 
- 		     namelen++)
-		{
-		   if (exp == 0 && (c == 'e' || c == 'E' || c == 'g' || c == 'G'))
-		      exp = 1;
-		   else if (exp == 1 && (c == '-' || c == '+'))
-		      exp = 0;
-		}
-	 }
+             c = tokstart[namelen], is_idchar[c] || c == '.' || (exp == 1 && (c == '-' || c == '+')); 
+             namelen++)
+        {
+           if (exp == 0 && (c == 'e' || c == 'E' || c == 'g' || c == 'G'))
+              exp = 1;
+           else if (exp == 1 && (c == '-' || c == '+'))
+              exp = 0;
+        }
+     }
 
      return parse_number (namelen);
   }
@@ -1921,9 +1921,9 @@ parse_escape (string_ptr)
     case '^':
       c = *(*string_ptr)++;
       if (c == '\\')
-	c = parse_escape (string_ptr);
+    c = parse_escape (string_ptr);
       if (c == '?')
-	return 0177;
+    return 0177;
       return (c & 0200) | (c & 037);
       
     case '0':
@@ -1935,51 +1935,51 @@ parse_escape (string_ptr)
     case '6':
     case '7':
       {
-	register int i = c - '0';
-	register int count = 0;
-	while (++count < 3)
-	  {
-	    c = *(*string_ptr)++;
-	    if (c >= '0' && c <= '7')
-	      i = (i << 3) + c - '0';
-	    else
-	      {
-		(*string_ptr)--;
-		break;
-	      }
-	  }
-	if ((i & ~((1 << CHAR_TYPE_SIZE) - 1)) != 0)
-	  {
-	    i &= (1 << CHAR_TYPE_SIZE) - 1;
-	    acpp_warning ("octal character constant does not fit in a byte");
-	  }
-	return i;
+    register int i = c - '0';
+    register int count = 0;
+    while (++count < 3)
+      {
+        c = *(*string_ptr)++;
+        if (c >= '0' && c <= '7')
+          i = (i << 3) + c - '0';
+        else
+          {
+        (*string_ptr)--;
+        break;
+          }
+      }
+    if ((i & ~((1 << CHAR_TYPE_SIZE) - 1)) != 0)
+      {
+        i &= (1 << CHAR_TYPE_SIZE) - 1;
+        acpp_warning ("octal character constant does not fit in a byte");
+      }
+    return i;
       }
     case 'x':
       {
-	register int i = 0;
-	register int count = 0;
-	for (;;)
-	  {
-	    c = *(*string_ptr)++;
-	    if (c >= '0' && c <= '9')
-	      i = (i << 4) + c - '0';
-	    else if (c >= 'a' && c <= 'f')
-	      i = (i << 4) + c - 'a' + 10;
-	    else if (c >= 'A' && c <= 'F')
-	      i = (i << 4) + c - 'A' + 10;
-	    else
-	      {
-		(*string_ptr)--;
-		break;
-	      }
-	  }
-	if ((i & ~((1 << BITS_PER_UNIT) - 1)) != 0)
-	  {
-	    i &= (1 << BITS_PER_UNIT) - 1;
-	    acpp_warning ("hex character constant does not fit in a byte");
-	  }
-	return i;
+    register int i = 0;
+    register int count = 0;
+    for (;;)
+      {
+        c = *(*string_ptr)++;
+        if (c >= '0' && c <= '9')
+          i = (i << 4) + c - '0';
+        else if (c >= 'a' && c <= 'f')
+          i = (i << 4) + c - 'a' + 10;
+        else if (c >= 'A' && c <= 'F')
+          i = (i << 4) + c - 'A' + 10;
+        else
+          {
+        (*string_ptr)--;
+        break;
+          }
+      }
+    if ((i & ~((1 << BITS_PER_UNIT) - 1)) != 0)
+      {
+        i &= (1 << BITS_PER_UNIT) - 1;
+        acpp_warning ("hex character constant does not fit in a byte");
+      }
+    return i;
       }
     default:
       return c;
@@ -2040,7 +2040,7 @@ parse_c_expression (string)
   
   if (lexptr == 0 || *lexptr == 0) {
     acpp_error("empty #if expression");
-    return 0;			/* don't include the #if group */
+    return 0;           /* don't include the #if group */
   }
 
   /* if there is some sort of scanning error, just return 0 and assume
@@ -2050,12 +2050,12 @@ parse_c_expression (string)
     return 0;
 
   if (yyparse ())
-    return 0;			/* actually this is never reached
-				   the way things stand. */
+    return 0;           /* actually this is never reached
+                   the way things stand. */
   if (*lexptr)
     acpp_error("Junk after end of expression.");
 
-  return expression_value;	/* set by yyparse () */
+  return expression_value;  /* set by yyparse () */
 }
 
 double
@@ -2066,7 +2066,7 @@ parse_c_math_expression (string)
   
   if (lexptr == 0 || *lexptr == 0) {
     acpp_error("empty #if expression");
-    return 0;			/* don't include the #if group */
+    return 0;           /* don't include the #if group */
   }
 
   /* if there is some sort of scanning error, just return 0 and assume
@@ -2076,12 +2076,12 @@ parse_c_math_expression (string)
     return 0;
 
   if (yyparse ())
-    return 0;			/* actually this is never reached
-				   the way things stand. */
+    return 0;           /* actually this is never reached
+                   the way things stand. */
   if (*lexptr)
     acpp_error("Junk after end of expression.");
 
-  return math_value + (double)expression_value;	/* set by yyparse () */
+  return math_value + (double)expression_value; /* set by yyparse () */
 }
 
 #ifdef TEST_EXP_READER

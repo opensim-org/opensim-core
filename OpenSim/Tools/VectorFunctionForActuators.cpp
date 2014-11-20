@@ -57,20 +57,20 @@ VectorFunctionForActuators::~VectorFunctionForActuators()
  */
 VectorFunctionForActuators::
 VectorFunctionForActuators(SimTK::System *aActuatorSystem, Model* model, CMCActuatorSubsystem* actSubsystem) :
-	VectorFunctionUncoupledNxN(model->getControllerSet().get("CMC" ).getActuatorSet().getSize() ),
-	_f(0.0)
+    VectorFunctionUncoupledNxN(model->getControllerSet().get("CMC" ).getActuatorSet().getSize() ),
+    _f(0.0)
 {
-	setNull();
+    setNull();
     _model = model;
-	_CMCActuatorSubsystem = actSubsystem;
-	_CMCActuatorSystem = aActuatorSystem;
-	_integrator = new SimTK::RungeKuttaMersonIntegrator(*aActuatorSystem);
+    _CMCActuatorSubsystem = actSubsystem;
+    _CMCActuatorSystem = aActuatorSystem;
+    _integrator = new SimTK::RungeKuttaMersonIntegrator(*aActuatorSystem);
     _integrator->setAccuracy( 5.0e-6 );
     _integrator->setMaximumStepSize(1.0e-3);
 
     // Don't project constraints while inside the controller
     _integrator->setProjectInterpolatedStates( false );
-	_f.setSize(getNX());
+    _f.setSize(getNX());
 }
 //_____________________________________________________________________________
 /**
@@ -80,13 +80,13 @@ VectorFunctionForActuators(SimTK::System *aActuatorSystem, Model* model, CMCActu
  */
 VectorFunctionForActuators::
 VectorFunctionForActuators(const VectorFunctionForActuators &aVectorFunction) :
-	VectorFunctionUncoupledNxN(aVectorFunction),
-	_f(0.0)
+    VectorFunctionUncoupledNxN(aVectorFunction),
+    _f(0.0)
 {
-	setNull();
+    setNull();
 
-	// ASSIGN
-	setEqual(aVectorFunction);
+    // ASSIGN
+    setEqual(aVectorFunction);
 }
 
 
@@ -100,12 +100,12 @@ VectorFunctionForActuators(const VectorFunctionForActuators &aVectorFunction) :
 void VectorFunctionForActuators::
 setNull()
 {
-	_ti = 0.0;
-	_tf = 0.0;
-	_CMCActuatorSystem    = NULL;
-	_CMCActuatorSubsystem = NULL;
+    _ti = 0.0;
+    _tf = 0.0;
+    _CMCActuatorSystem    = NULL;
+    _CMCActuatorSubsystem = NULL;
     _model             = NULL;
-	_integrator        = NULL;
+    _integrator        = NULL;
 }
 
 //_____________________________________________________________________________
@@ -132,13 +132,13 @@ setEqual(const VectorFunctionForActuators &aVectorFunction)
 VectorFunctionForActuators& VectorFunctionForActuators::
 operator=(const VectorFunctionForActuators &aVectorFunction)
 {
-	// BASE CLASS
-	VectorFunctionUncoupledNxN::operator=(aVectorFunction);
+    // BASE CLASS
+    VectorFunctionUncoupledNxN::operator=(aVectorFunction);
 
-	// DATA
-	setEqual(aVectorFunction);
+    // DATA
+    setEqual(aVectorFunction);
 
-	return(*this);
+    return(*this);
 }
 
 
@@ -157,7 +157,7 @@ operator=(const VectorFunctionForActuators &aVectorFunction)
 void VectorFunctionForActuators::
 setInitialTime(double aTI)
 {
-	_ti = aTI;
+    _ti = aTI;
 }
 //_____________________________________________________________________________
 /**
@@ -168,7 +168,7 @@ setInitialTime(double aTI)
 double VectorFunctionForActuators::
 getInitialTime() const
 {
-	return(_ti);
+    return(_ti);
 }
 
 //-----------------------------------------------------------------------------
@@ -183,7 +183,7 @@ getInitialTime() const
 void VectorFunctionForActuators::
 setFinalTime(double aTF)
 {
-	_tf = aTF;
+    _tf = aTF;
 }
 //_____________________________________________________________________________
 /**
@@ -194,7 +194,7 @@ setFinalTime(double aTF)
 double VectorFunctionForActuators::
 getFinalTime() const
 {
-	return(_tf);
+    return(_tf);
 }
 
 //-----------------------------------------------------------------------------
@@ -209,8 +209,8 @@ getFinalTime() const
 void VectorFunctionForActuators::
 setTargetForces(const double *aF)
 {
-	int i,N=getNX();
-	for(i=0;i<N;i++) _f[i] = aF[i];
+    int i,N=getNX();
+    for(i=0;i<N;i++) _f[i] = aF[i];
 }
 //_____________________________________________________________________________
 /**
@@ -221,8 +221,8 @@ setTargetForces(const double *aF)
 void VectorFunctionForActuators::
 getTargetForces(double *rF) const
 {
-	int i,N=getNX();
-	for(i=0;i<N;i++) rF[i] = _f[i];
+    int i,N=getNX();
+    for(i=0;i<N;i++) rF[i] = _f[i];
 }
 
 
@@ -238,7 +238,7 @@ getTargetForces(double *rF) const
 CMCActuatorSubsystem* VectorFunctionForActuators::
 getCMCActSubsys()
 {
-	return(_CMCActuatorSubsystem);
+    return(_CMCActuatorSubsystem);
 }
 
 
@@ -256,8 +256,8 @@ getCMCActSubsys()
 void VectorFunctionForActuators::
 evaluate( const SimTK::State& s, double *aX, double *rF) 
 {
-	int i;
-	int N = getNX();
+    int i;
+    int N = getNX();
 
     CMC& controller=  dynamic_cast<CMC&>(_model->updControllerSet().get("CMC" ));
     controller.updControlSet().setControlValues(_tf, aX);
@@ -265,31 +265,31 @@ evaluate( const SimTK::State& s, double *aX, double *rF)
     // create a Manager that will integrate just the actuator subsystem and use only the 
     // CMC controller
 
-	Manager manager(*_model, *_integrator);
+    Manager manager(*_model, *_integrator);
     manager.setInitialTime(_ti);
-	manager.setFinalTime(_tf);
+    manager.setFinalTime(_tf);
     manager.setSystem( _CMCActuatorSystem );
     // tell the mangager to not call the analayses or write to storage 
     // while the CMCSubsystem is being integrated.
-	manager.setPerformAnalyses(false); 
-	manager.setWriteToStorage(false); 
-	SimTK::State& actSysState = _CMCActuatorSystem->updDefaultState();
-	getCMCActSubsys()->updZ(actSysState) = _model->getMultibodySystem()
+    manager.setPerformAnalyses(false); 
+    manager.setWriteToStorage(false); 
+    SimTK::State& actSysState = _CMCActuatorSystem->updDefaultState();
+    getCMCActSubsys()->updZ(actSysState) = _model->getMultibodySystem()
                                             .getDefaultSubsystem().getZ(s);
 
     actSysState.setTime(_ti);
 
-	// Integration
+    // Integration
     manager.integrate(actSysState, 0.000001);
 
     const Set<Actuator>& forceSet = controller.getActuatorSet();
-	// Vector function values
-	int j = 0;
-	for(i=0;i<N;i++) {
-		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&forceSet[i]);
-	    rF[j] = act->getForce(getCMCActSubsys()->getCompleteState()) - _f[j];
+    // Vector function values
+    int j = 0;
+    for(i=0;i<N;i++) {
+        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&forceSet[i]);
+        rF[j] = act->getForce(getCMCActSubsys()->getCompleteState()) - _f[j];
         j++;
-	}
+    }
 
 
 }
@@ -302,10 +302,10 @@ evaluate( const SimTK::State& s, double *aX, double *rF)
  */
 void VectorFunctionForActuators::
 evaluate(const SimTK::State& s,  OpenSim::Array<double> &rF,
-			const OpenSim::Array<int> &aDerivWRT)
+            const OpenSim::Array<int> &aDerivWRT)
 {
-	cout<<"\n\nVectorFunctionForActuators.evaluate:  ";
-	cout<<"Unimplemented method\n\n";
+    cout<<"\n\nVectorFunctionForActuators.evaluate:  ";
+    cout<<"Unimplemented method\n\n";
 }
 
 //_____________________________________________________________________________
@@ -318,5 +318,5 @@ evaluate(const SimTK::State& s,  OpenSim::Array<double> &rF,
 void VectorFunctionForActuators::
 evaluate( const SimTK::State& s,  const OpenSim::Array<double> &aX, OpenSim::Array<double> &rF)
 {
-	evaluate( s, &aX[0],&rF[0]);
+    evaluate( s, &aX[0],&rF[0]);
 }

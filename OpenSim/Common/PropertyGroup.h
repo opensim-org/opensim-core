@@ -35,10 +35,10 @@
 namespace OpenSim {
 
 #ifdef SWIG
-	#ifdef OSIMCOMMON_API
-		#undef OSIMCOMMON_API
-		#define OSIMCOMMON_API
-	#endif
+    #ifdef OSIMCOMMON_API
+        #undef OSIMCOMMON_API
+        #define OSIMCOMMON_API
+    #endif
 #endif
 
 //=============================================================================
@@ -56,51 +56,51 @@ class OSIMCOMMON_API PropertyGroup
 // DATA
 //=============================================================================
 private:
-	/** Name of the group. */
-	std::string _name;
+    /** Name of the group. */
+    std::string _name;
 
 protected:
-	/** Pointers to the properties in the group. */
-	Array<Property_Deprecated*> _properties;
+    /** Pointers to the properties in the group. */
+    Array<Property_Deprecated*> _properties;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	PropertyGroup();
-	PropertyGroup(std::string& aName);
-	PropertyGroup(const PropertyGroup &aGroup);
-	virtual ~PropertyGroup();
-	virtual PropertyGroup* clone() const;
+    PropertyGroup();
+    PropertyGroup(std::string& aName);
+    PropertyGroup(const PropertyGroup &aGroup);
+    virtual ~PropertyGroup();
+    virtual PropertyGroup* clone() const;
 
 #ifndef SWIG
-	PropertyGroup& operator=(const PropertyGroup &aGroup);
-	bool operator<(const PropertyGroup &aGroup) const;
-	bool operator==(const PropertyGroup& aGroup) const;
+    PropertyGroup& operator=(const PropertyGroup &aGroup);
+    bool operator<(const PropertyGroup &aGroup) const;
+    bool operator==(const PropertyGroup& aGroup) const;
 #endif
    void copyData(const PropertyGroup &aGroup);
-	void clear();
+    void clear();
 
-	bool contains(const std::string& aName) const;
-	void add(Property_Deprecated* aProperty);
-	void remove(Property_Deprecated* aProperty);
+    bool contains(const std::string& aName) const;
+    void add(Property_Deprecated* aProperty);
+    void remove(Property_Deprecated* aProperty);
 #ifndef SWIG
-	const Array<Property_Deprecated*>& getProperties() const { return _properties; }
+    const Array<Property_Deprecated*>& getProperties() const { return _properties; }
 #endif
-	Property_Deprecated* get(int aIndex);
-	int getPropertyIndex(Property_Deprecated* aProperty) const;
+    Property_Deprecated* get(int aIndex);
+    int getPropertyIndex(Property_Deprecated* aProperty) const;
 
-	// NAME
-	void setName(const std::string &aName) { _name = aName; }
-	const std::string& getName() const { return _name; }
+    // NAME
+    void setName(const std::string &aName) { _name = aName; }
+    const std::string& getName() const { return _name; }
 
 private:
-	void setNull();
+    void setNull();
 //=============================================================================
-};	// END of class PropertyGroup
+};  // END of class PropertyGroup
 //=============================================================================
 //=============================================================================
 

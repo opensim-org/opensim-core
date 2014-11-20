@@ -57,10 +57,10 @@ using SimTK::Matrix;
  */
 ActuatorForceTarget::~ActuatorForceTarget()
 {
-	delete[] _lapackA;
-	delete[] _lapackB;
-	delete[] _lapackSingularValues;
-	delete[] _lapackWork;
+    delete[] _lapackA;
+    delete[] _lapackB;
+    delete[] _lapackSingularValues;
+    delete[] _lapackWork;
 }
 //______________________________________________________________________________
 /**
@@ -70,30 +70,30 @@ ActuatorForceTarget::~ActuatorForceTarget()
  * @param aController Parent controller.
  */
 ActuatorForceTarget::ActuatorForceTarget(int aNX,CMC *aController) :
-	OptimizationTarget(aNX), _controller(aController), _stressTermWeight(1.0)
+    OptimizationTarget(aNX), _controller(aController), _stressTermWeight(1.0)
 {
-	// NUMBER OF CONTROLS
-	if(getNumParameters()<=0) {
-		throw(Exception("ActuatorForceTarget: ERROR- no controls.\n"));
-	}
+    // NUMBER OF CONTROLS
+    if(getNumParameters()<=0) {
+        throw(Exception("ActuatorForceTarget: ERROR- no controls.\n"));
+    }
 
-	// ALLOCATE STATE ARRAYS
-	int ny = _controller->getModel().getNumStateVariables();
-	int nq = _controller->getModel().getNumCoordinates();
-	int nu = _controller->getModel().getNumSpeeds();
-	_y.setSize(ny);
-	_dydt.setSize(ny);
-	_dqdt.setSize(nq);
-	_dudt.setSize(nu);
+    // ALLOCATE STATE ARRAYS
+    int ny = _controller->getModel().getNumStateVariables();
+    int nq = _controller->getModel().getNumCoordinates();
+    int nu = _controller->getModel().getNumSpeeds();
+    _y.setSize(ny);
+    _dydt.setSize(ny);
+    _dqdt.setSize(nq);
+    _dudt.setSize(nu);
 
-	// DERIVATIVE PERTURBATION SIZES;
-	setDX(1.0e-6);
+    // DERIVATIVE PERTURBATION SIZES;
+    setDX(1.0e-6);
 
-	_lapackA = 0;
-	_lapackB = 0;
-	_lapackSingularValues = 0;
-	_lapackLWork = 0;
-	_lapackWork = 0;
+    _lapackA = 0;
+    _lapackB = 0;
+    _lapackSingularValues = 0;
+    _lapackLWork = 0;
+    _lapackWork = 0;
 }
 
 //==============================================================================
@@ -109,7 +109,7 @@ ActuatorForceTarget::ActuatorForceTarget(int aNX,CMC *aController) :
 void ActuatorForceTarget::
 setStressTermWeight(double aWeight)
 {
-	_stressTermWeight = aWeight;
+    _stressTermWeight = aWeight;
 }
 
 
@@ -123,147 +123,147 @@ setStressTermWeight(double aWeight)
 bool ActuatorForceTarget::
 prepareToOptimize(SimTK::State& s, double *x)
 {
-	// Keep around a "copy" of the state so we can use it in objective function 
-	// in cases where we're tracking states
-	_saveState = s;
+    // Keep around a "copy" of the state so we can use it in objective function 
+    // in cases where we're tracking states
+    _saveState = s;
 #ifdef USE_PRECOMPUTED_PERFORMANCE_MATRICES
-	int nu = _controller->getModel().getNumSpeeds();
-	int nf = _controller->getActuatorSet().getSize();
-	int ny = _controller->getModel().getNumStateVariables();
-	int nacc = _controller->updTaskSet().getDesiredAccelerations().getSize();
+    int nu = _controller->getModel().getNumSpeeds();
+    int nf = _controller->getActuatorSet().getSize();
+    int ny = _controller->getModel().getNumStateVariables();
+    int nacc = _controller->updTaskSet().getDesiredAccelerations().getSize();
 
-	_accelPerformanceMatrix.resize(nacc,nf);
-	_accelPerformanceVector.resize(nacc);
+    _accelPerformanceMatrix.resize(nacc,nf);
+    _accelPerformanceVector.resize(nacc);
 
-	_forcePerformanceMatrix.resize(nf,nf);
-	_forcePerformanceVector.resize(nf);
+    _forcePerformanceMatrix.resize(nf,nf);
+    _forcePerformanceVector.resize(nf);
 
-	Vector f(nf), accelVec(nacc), forceVec(nf);
+    Vector f(nf), accelVec(nacc), forceVec(nf);
 
-	// Build matrices and vectors assuming performance is a linear least squares problem.
-	// i.e. assume we're solving
-	//   min || _accelPerformanceMatrix * x + _accelPerformanceVector ||^2 + || _forcePerformanceMatrix * x + _forcePerformanceVector || ^2
-	f = 0;
-	computePerformanceVectors(s, f, _accelPerformanceVector, _forcePerformanceVector);
+    // Build matrices and vectors assuming performance is a linear least squares problem.
+    // i.e. assume we're solving
+    //   min || _accelPerformanceMatrix * x + _accelPerformanceVector ||^2 + || _forcePerformanceMatrix * x + _forcePerformanceVector || ^2
+    f = 0;
+    computePerformanceVectors(s, f, _accelPerformanceVector, _forcePerformanceVector);
 
 
-	for(int j=0; j<nf; j++) {
-		f[j] = 1;
-		computePerformanceVectors(s, f, accelVec, forceVec);
-		for(int i=0; i<nacc; i++) _accelPerformanceMatrix(i,j) = (accelVec[i] - _accelPerformanceVector[i]);
-		for(int i=0; i<nf; i++) _forcePerformanceMatrix(i,j) = (forceVec[i] - _forcePerformanceVector[i]);
-		f[j] = 0;
-	}
+    for(int j=0; j<nf; j++) {
+        f[j] = 1;
+        computePerformanceVectors(s, f, accelVec, forceVec);
+        for(int i=0; i<nacc; i++) _accelPerformanceMatrix(i,j) = (accelVec[i] - _accelPerformanceVector[i]);
+        for(int i=0; i<nf; i++) _forcePerformanceMatrix(i,j) = (forceVec[i] - _forcePerformanceVector[i]);
+        f[j] = 0;
+    }
 
 #ifdef USE_LAPACK_DIRECT_SOLVE
-	// 
-	// Try to solve using lapack
-	//
-	int Am = nacc+nf;
+    // 
+    // Try to solve using lapack
+    //
+    int Am = nacc+nf;
 
-	if(!_lapackA) {
-		_lapackA = new double[Am*nf];
-		_lapackB = new double[Am];
-		_lapackSingularValues = new double[Am];
-		// based on lapack documentation but multiplied by 10 to make it bigger yet (they recommended it be bigger than the minimum)
-		_lapackLWork = 10*(3*Am + max(2*nf,Am)); 
-		_lapackWork = new double[_lapackLWork];
-	}
+    if(!_lapackA) {
+        _lapackA = new double[Am*nf];
+        _lapackB = new double[Am];
+        _lapackSingularValues = new double[Am];
+        // based on lapack documentation but multiplied by 10 to make it bigger yet (they recommended it be bigger than the minimum)
+        _lapackLWork = 10*(3*Am + max(2*nf,Am)); 
+        _lapackWork = new double[_lapackLWork];
+    }
 
-	for(int i=0; i<nacc; i++) for(int j=0; j<nf; j++) _lapackA[j*Am+i] = _accelPerformanceMatrix(i,j);
-	for(int i=nacc; i<Am; i++) for(int j=0; j<nf; j++) _lapackA[j*Am+i] = _forcePerformanceMatrix(i-nacc,j);
-	for(int i=0; i<nacc; i++) _lapackB[i] = -_accelPerformanceVector[i];
-	for(int i=nacc; i<Am; i++) _lapackB[i] = -_forcePerformanceVector[i-nacc];
+    for(int i=0; i<nacc; i++) for(int j=0; j<nf; j++) _lapackA[j*Am+i] = _accelPerformanceMatrix(i,j);
+    for(int i=nacc; i<Am; i++) for(int j=0; j<nf; j++) _lapackA[j*Am+i] = _forcePerformanceMatrix(i-nacc,j);
+    for(int i=0; i<nacc; i++) _lapackB[i] = -_accelPerformanceVector[i];
+    for(int i=nacc; i<Am; i++) _lapackB[i] = -_forcePerformanceVector[i-nacc];
 
-	int info;
-	int nrhs = 1;
-	double rcond = 1e-10;
-	int rank;
+    int info;
+    int nrhs = 1;
+    double rcond = 1e-10;
+    int rank;
 
-	dgelss_(Am, nf, nrhs, _lapackA, Am, _lapackB, Am, _lapackSingularValues, rcond, rank, _lapackWork, _lapackLWork, info);
+    dgelss_(Am, nf, nrhs, _lapackA, Am, _lapackB, Am, _lapackSingularValues, rcond, rank, _lapackWork, _lapackLWork, info);
 
-	// Assume it's valid to begin with
-	bool gotValidSolution = true;
+    // Assume it's valid to begin with
+    bool gotValidSolution = true;
 
-	// Check if it satisfies parameter bounds (if they exist)
-	if(getHasLimits()) {
-		double *lowerBounds, *upperBounds;
-		getParameterLimits(&lowerBounds,&upperBounds);
-		for(int i=0; i<nf; i++) {
-			if(_lapackB[i] < lowerBounds[i] || _lapackB[i] > upperBounds[i]) {
-				gotValidSolution = false;
-				break;
-			}
-		}
-	}
+    // Check if it satisfies parameter bounds (if they exist)
+    if(getHasLimits()) {
+        double *lowerBounds, *upperBounds;
+        getParameterLimits(&lowerBounds,&upperBounds);
+        for(int i=0; i<nf; i++) {
+            if(_lapackB[i] < lowerBounds[i] || _lapackB[i] > upperBounds[i]) {
+                gotValidSolution = false;
+                break;
+            }
+        }
+    }
 
-	// If it's still valid, we return this as the solution and return true since the iterative optimizer doesn't need to be run
-	if(gotValidSolution) {
-		for(int i=0; i<nf; i++)
-			x[i] = _lapackB[i];
-		return true;
-	}
+    // If it's still valid, we return this as the solution and return true since the iterative optimizer doesn't need to be run
+    if(gotValidSolution) {
+        for(int i=0; i<nf; i++)
+            x[i] = _lapackB[i];
+        return true;
+    }
 
 #if 0
-	//
-	// Test lapack solution
-	//
-	SimTK::Vector answer(nf, b);
-	std::cout << "Result from dgglse: " << info << ", rank " << rank << ": " << std::endl << answer << std::endl;
-	double p = (_accelPerformanceMatrix * answer + _accelPerformanceVector).normSqr() + (_forcePerformanceMatrix * answer + _forcePerformanceVector).normSqr();
-	std::cout << "Performance: " << p << std::endl;
-	std::cout << "Violated bounds:\n";
-	ForceSet& Force = model->getForceSet();
-	for(int i=0; i<nf; i++) if(answer[i]<_lowerBounds[i] || answer[i]>_upperBounds[i])
-		std::cout << i << " (" << fSet.get(i).getName() << ") got " << answer[i] << ", bounds are (" << _lowerBounds[i] << "," << _upperBounds[i] << ")" << std::endl;
+    //
+    // Test lapack solution
+    //
+    SimTK::Vector answer(nf, b);
+    std::cout << "Result from dgglse: " << info << ", rank " << rank << ": " << std::endl << answer << std::endl;
+    double p = (_accelPerformanceMatrix * answer + _accelPerformanceVector).normSqr() + (_forcePerformanceMatrix * answer + _forcePerformanceVector).normSqr();
+    std::cout << "Performance: " << p << std::endl;
+    std::cout << "Violated bounds:\n";
+    ForceSet& Force = model->getForceSet();
+    for(int i=0; i<nf; i++) if(answer[i]<_lowerBounds[i] || answer[i]>_upperBounds[i])
+        std::cout << i << " (" << fSet.get(i).getName() << ") got " << answer[i] << ", bounds are (" << _lowerBounds[i] << "," << _upperBounds[i] << ")" << std::endl;
 #endif
 
 #endif
 
-	// Compute the performance gradients (again assuming we have the above linear least squares problem)
-	_performanceGradientMatrix = ~_accelPerformanceMatrix * _accelPerformanceMatrix + ~_forcePerformanceMatrix * _forcePerformanceMatrix;
-	_performanceGradientMatrix *= 2;
-	_performanceGradientVector = ~_accelPerformanceMatrix * _accelPerformanceVector + ~_forcePerformanceMatrix * _forcePerformanceVector;
-	_performanceGradientVector *= 2;
+    // Compute the performance gradients (again assuming we have the above linear least squares problem)
+    _performanceGradientMatrix = ~_accelPerformanceMatrix * _accelPerformanceMatrix + ~_forcePerformanceMatrix * _forcePerformanceMatrix;
+    _performanceGradientMatrix *= 2;
+    _performanceGradientVector = ~_accelPerformanceMatrix * _accelPerformanceVector + ~_forcePerformanceMatrix * _forcePerformanceVector;
+    _performanceGradientVector *= 2;
 
-	return false;
+    return false;
 #endif
 }
 
 void ActuatorForceTarget::
 computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerformanceVector, Vector &rForcePerformanceVector)
 {
-	const Set<Actuator> &fSet = _controller->getActuatorSet();
+    const Set<Actuator> &fSet = _controller->getActuatorSet();
 
-	for(int i=0;i<fSet.getSize();i++) {
-		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+    for(int i=0;i<fSet.getSize();i++) {
+        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
         act->setOverrideForce(s, aF[i]);
         act->overrideForce(s,true);      
-	}
+    }
 
     _controller->getModel().getMultibodySystem().realize(s, SimTK::Stage::Acceleration );
 
-	CMC_TaskSet& taskSet = _controller->updTaskSet();
-	taskSet.computeAccelerations(s);
-	Array<double> &w = taskSet.getWeights();
-	Array<double> &aDes = taskSet.getDesiredAccelerations();
-	Array<double> &a = taskSet.getAccelerations();
+    CMC_TaskSet& taskSet = _controller->updTaskSet();
+    taskSet.computeAccelerations(s);
+    Array<double> &w = taskSet.getWeights();
+    Array<double> &aDes = taskSet.getDesiredAccelerations();
+    Array<double> &a = taskSet.getAccelerations();
 
-	// PERFORMANCE
-	double sqrtStressTermWeight = sqrt(_stressTermWeight);
-	for(int i=0;i<fSet.getSize();i++) {
-		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+    // PERFORMANCE
+    double sqrtStressTermWeight = sqrt(_stressTermWeight);
+    for(int i=0;i<fSet.getSize();i++) {
+        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
         rForcePerformanceVector[i] = sqrtStressTermWeight * act->getStress(s);
      }
 
-	int nacc = aDes.getSize();
-	for(int i=0;i<nacc;i++) rAccelPerformanceVector[i] = sqrt(w[i]) * (a[i] - aDes[i]);
+    int nacc = aDes.getSize();
+    for(int i=0;i<nacc;i++) rAccelPerformanceVector[i] = sqrt(w[i]) * (a[i] - aDes[i]);
 
-	// reset the actuator control
-	for(int i=0;i<fSet.getSize();i++) {
-		ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+    // reset the actuator control
+    for(int i=0;i<fSet.getSize();i++) {
+        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
         act->overrideForce(s,false);
-	}
+    }
 
 
 }
@@ -279,33 +279,33 @@ computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerfo
 int ActuatorForceTarget::
 objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 {
-	const CMC_TaskSet& tset=_controller->getTaskSet();
+    const CMC_TaskSet& tset=_controller->getTaskSet();
 #ifndef USE_PRECOMPUTED_PERFORMANCE_MATRICES
 
-	// Explicit computation of performance (use this if it's not actually linear)
-	int nf = _controller->getActuatorSet().getSize();
-	int nacc = _controller->getTaskSet()->getDesiredAccelerations().getSize();
-	Vector pacc(nacc), pf(nf);
-	computePerformanceVectors(aF,pacc,pf);
-	rP = pacc.normSqr() + pf.normSqr();
+    // Explicit computation of performance (use this if it's not actually linear)
+    int nf = _controller->getActuatorSet().getSize();
+    int nacc = _controller->getTaskSet()->getDesiredAccelerations().getSize();
+    Vector pacc(nacc), pf(nf);
+    computePerformanceVectors(aF,pacc,pf);
+    rP = pacc.normSqr() + pf.normSqr();
 
 #else
 
-	// Use precomputed matrices/vectors to simplify computing performance (works if it's really linear)
-	rP = (_accelPerformanceMatrix * aF + _accelPerformanceVector).normSqr() + (_forcePerformanceMatrix * aF + _forcePerformanceVector).normSqr();
+    // Use precomputed matrices/vectors to simplify computing performance (works if it's really linear)
+    rP = (_accelPerformanceMatrix * aF + _accelPerformanceVector).normSqr() + (_forcePerformanceMatrix * aF + _forcePerformanceVector).normSqr();
 #endif
-	// If tracking states, add in errors from them squared
-	for(int t=0; t<tset.getSize(); t++){
-		TrackingTask& ttask = tset.get(t);
-		StateTrackingTask* stateTask=NULL;
-		if ((stateTask=dynamic_cast<StateTrackingTask*>(&ttask))!= NULL){
-			double err = stateTask->getTaskError(_saveState);
-			rP+= (err * err);
+    // If tracking states, add in errors from them squared
+    for(int t=0; t<tset.getSize(); t++){
+        TrackingTask& ttask = tset.get(t);
+        StateTrackingTask* stateTask=NULL;
+        if ((stateTask=dynamic_cast<StateTrackingTask*>(&ttask))!= NULL){
+            double err = stateTask->getTaskError(_saveState);
+            rP+= (err * err);
 
-		}
-	}
+        }
+    }
 
-	return(0);
+    return(0);
 }
 //______________________________________________________________________________
 /**
@@ -318,19 +318,19 @@ objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 int ActuatorForceTarget::
 gradientFunc(const Vector &x, const bool new_coefficients, Vector &gradient) const
 {
-	int status = 0;
+    int status = 0;
 
 #ifndef USE_PRECOMPUTED_PERFORMANCE_MATRICES
 
-	// Explicit computation of derivative
-	status = OptimizationTarget::CentralDifferences(this,&_dx[0],x,gradient);
+    // Explicit computation of derivative
+    status = OptimizationTarget::CentralDifferences(this,&_dx[0],x,gradient);
 
 #else
 
-	// Use precomputed matrices/vectors
-	gradient = _performanceGradientMatrix * x + _performanceGradientVector;
+    // Use precomputed matrices/vectors
+    gradient = _performanceGradientMatrix * x + _performanceGradientVector;
 
 #endif
 
-	return status;
+    return status;
 }
