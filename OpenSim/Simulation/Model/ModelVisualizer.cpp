@@ -159,8 +159,8 @@ void DefaultGeometry::generateDecorations
         const BodySet& bodies = _model.getBodySet();
         for (int i = 0; i < bodies.getSize(); i++) {
             const OpenSim::Body& body = bodies[i];
-            const Transform& X_GB = 
-                matter.getMobilizedBody(body.getMobilizedBodyIndex()).getBodyTransform(state);
+            const Transform& X_GB =
+                body.getMobilizedBody().getBodyTransform(state);
             const WrapObjectSet& wrapObjects = body.getWrapObjectSet();
             for (int j = 0; j < wrapObjects.getSize(); j++) {
                 const string type = wrapObjects[j].getConcreteClassName();

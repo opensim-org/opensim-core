@@ -165,9 +165,9 @@ void ExpressionBasedBushingForce::constructProperties()
  *
  * @param aModel OpenSim model containing this ExpressionBasedBushingForce.
  */
-void ExpressionBasedBushingForce::connectToModel(Model& aModel)
+void ExpressionBasedBushingForce::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel); // base class first
+    Super::extendConnectToModel(aModel); // base class first
 
     // must initialize the 6 force functions using the user provided expressions
     setMxExpression(get_Mx_expression());
@@ -203,9 +203,9 @@ void ExpressionBasedBushingForce::connectToModel(Model& aModel)
     }
 }
 
-void ExpressionBasedBushingForce::addToSystem(SimTK::MultibodySystem& system) const
+void ExpressionBasedBushingForce::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     const string&      body1Name            = get_body_1();
     const string&      body2Name            = get_body_2();
@@ -221,15 +221,14 @@ void ExpressionBasedBushingForce::addToSystem(SimTK::MultibodySystem& system) co
     ExpressionBasedBushingForce* mutableThis = const_cast<ExpressionBasedBushingForce *>(this);
 
     // Get underlying mobilized bodies
-    mutableThis->_b1 = &_model->updMatterSubsystem().getMobilizedBody(body1.getMobilizedBodyIndex());
-    mutableThis->_b2 = &_model->updMatterSubsystem().getMobilizedBody(body2.getMobilizedBodyIndex());
+    mutableThis->_b1 = &body1.getMobilizedBody();
+    mutableThis->_b2 = &body2.getMobilizedBody();
     // Define the transforms for the bushing frames affixed to the specified bodies
     SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(orientationInBody1);
     SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(orientationInBody2);
     // Hang on to the transforms for the bushing frames
     mutableThis->_inb1 = SimTK::Transform(r1, locationInBody1);
     mutableThis->_inb2 = SimTK::Transform(r2, locationInBody2);
-
 }
 
 //=============================================================================

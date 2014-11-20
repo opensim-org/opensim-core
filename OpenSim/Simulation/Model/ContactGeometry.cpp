@@ -146,7 +146,7 @@ void ContactGeometry::setDisplayPreference(const int dispPref)
     set_display_preference(dispPref);
 }
 
-void ContactGeometry::connectToModel(Model& aModel)
+void ContactGeometry::extendConnectToModel(Model& aModel)
 {
     try {
         _body = &aModel.updBodySet().get(get_body_name());

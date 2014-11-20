@@ -115,12 +115,12 @@ public:
     Object* getOwner() const { return _owner; }
     void setOwner(Object *anObject) {_owner = anObject; };
 
-    /** If you call this prior to addToSystem() it will be used to initialize
+    /** If you call this prior to extendAddToSystem() it will be used to initialize
     the color cache variable. Otherwise %GeometryPath will choose its own
     default which will be some boring shade of gray. **/
     void setDefaultColor(const SimTK::Vec3& color) {set_default_color(color); };
     /** Returns the color that will be used to initialize the color cache
-    at the next addToSystem() call. The actual color used to draw the path
+    at the next extendAddToSystem() call. The actual color used to draw the path
     will be taken from the cache variable, so may have changed. **/
     const SimTK::Vec3& getDefaultColor() const { return get_default_color(); }
 
@@ -195,9 +195,9 @@ public:
 
 protected:
     // ModelComponent interface.
-    void connectToModel(Model& aModel) override;
-    void initStateFromProperties(SimTK::State& s) const override;
-    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void extendConnectToModel(Model& aModel) override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     // Visual support GeometryPath drawing in SimTK visualizer.
     void generateDecorations(

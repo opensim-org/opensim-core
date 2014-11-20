@@ -106,9 +106,9 @@ void BushingForce::constructProperties()
  *
  * @param aModel OpenSim model containing this BushingForce.
  */
-void BushingForce::connectToModel(Model& aModel)
+void BushingForce::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel); // base class first
+    Super::extendConnectToModel(aModel); // base class first
 
     string errorMessage;
     const string& body1Name = get_body_1(); // error if unspecified
@@ -129,9 +129,9 @@ void BushingForce::connectToModel(Model& aModel)
     }
 }
 
-void BushingForce::addToSystem(SimTK::MultibodySystem& system) const
+void BushingForce::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     const string&      body1Name            = get_body_1();
     const string&      body2Name            = get_body_2();
@@ -148,8 +148,8 @@ void BushingForce::addToSystem(SimTK::MultibodySystem& system) const
     Body& body2 = _model->updBodySet().get(body2Name);
 
     // Get underlying mobilized bodies
-    SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody(body1.getMobilizedBodyIndex());
-    SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody(body2.getMobilizedBodyIndex());
+    const SimTK::MobilizedBody& b1 = body1.getMobilizedBody();
+    const SimTK::MobilizedBody& b2 = body2.getMobilizedBody();
     // Build the transforms
     SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(orientationInBody1);
     SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(orientationInBody2);

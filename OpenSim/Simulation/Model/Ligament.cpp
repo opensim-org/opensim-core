@@ -76,39 +76,17 @@ void Ligament::constructProperties()
     constructProperty_force_length_curve(forceLengthCurve);
 }
 
-//------------------------------------------------------------------------------
-//                            CONNECT TO MODEL
-//------------------------------------------------------------------------------
-/**
- * Perform some setup functions that happen after the
- * ligament has been deserialized or copied.
- *
- * @param aModel model containing this ligament.
- */
-void Ligament::connectToModel(Model& aModel)
+
+void Ligament::extendFinalizeFromProperties()
 {
-    GeometryPath& path = upd_GeometryPath();
-    const double& restingLength = get_resting_length();
-
-    path.setDefaultColor(DefaultLigamentColor);
-
-    // Specify underlying ModelComponents prior to calling 
-    // Super::connectToModel() to automatically propagate connectToModel()
-    // to subcomponents. Subsequent addToSystem() will also be automatically
-    // propagated to subcomponents.
-    // TODO: this is awkward; subcomponent API needs to be revisited (sherm)
-    addComponent(&path);
-
-    //TODO: can't call this at start of override; this is an API bug.
-    Super::connectToModel(aModel);
-
-    // _model will be NULL when objects are being registered.
-    if (!_model)
-        return;
+    Super::extendFinalizeFromProperties();
 
     // Resting length must be greater than 0.0.
-    assert(restingLength > 0.0);
+    assert(get_resting_length() > 0.0);
 
+    GeometryPath& path = upd_GeometryPath();
+    path.setDefaultColor(DefaultLigamentColor);
+    addComponent(&path);
     path.setOwner(this);
 }
 
@@ -117,8 +95,8 @@ void Ligament::connectToModel(Model& aModel)
 //                            REALIZE DYNAMICS
 //------------------------------------------------------------------------------
 // See if anyone has an opinion about the path color and change it if so.
-void Ligament::realizeDynamics(const SimTK::State& state) const {
-    Super::realizeDynamics(state); // Mandatory first line
+void Ligament::extendRealizeDynamics(const SimTK::State& state) const {
+    Super::extendRealizeDynamics(state); // Mandatory first line
 
     if(!isDisabled(state)){
         const SimTK::Vec3 color = computePathColor(state);
@@ -144,9 +122,9 @@ SimTK::Vec3 Ligament::computePathColor(const SimTK::State& state) const {
 /**
  * allocate and initialize the SimTK state for this ligament.
  */
- void Ligament::addToSystem(SimTK::MultibodySystem& system) const
+ void Ligament::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
     // Cache the computed tension and strain of the ligament
     addCacheVariable<double>("tension", 0.0, SimTK::Stage::Velocity);
     addCacheVariable<double>("strain", 0.0, SimTK::Stage::Velocity);
@@ -266,7 +244,7 @@ void Ligament::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 
 const double& Ligament::getTension(const SimTK::State& s) const
 {
-    return getCacheVariable<double>(s, "tension"); 
+    return getCacheVariableValue<double>(s, "tension"); 
 }
 
 
@@ -294,14 +272,14 @@ void Ligament::computeForce(const SimTK::State& s,
     double force = 0;
 
     if (path.getLength(s) <= restingLength){
-        setCacheVariable<double>(s, "tension", force);
+        setCacheVariableValue<double>(s, "tension", force);
         return;
     }
     
     // evaluate normalized tendon force length curve
     force = getForceLengthCurve().calcValue(
         SimTK::Vector(1, path.getLength(s)/restingLength))* pcsaForce;
-    setCacheVariable<double>(s, "tension", force);
+    setCacheVariableValue<double>(s, "tension", force);
 
     OpenSim::Array<PointForceDirection*> PFDs;
     path.getPointForceDirections(s, &PFDs);

@@ -141,19 +141,17 @@ void EllipsoidJoint::scale(const ScaleSet& aScaleSet)
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void EllipsoidJoint::addToSystem(SimTK::MultibodySystem& system) const
+void EllipsoidJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     // CREATE MOBILIZED BODY
     MobilizedBody::Ellipsoid mobod =
         createMobilizedBody<MobilizedBody::Ellipsoid>(system);
     mobod.setDefaultRadii(get_radii_x_y_z());
-    // TODO: Joints require super class to be called last.
-    Super::addToSystem(system);
 }
 
-void EllipsoidJoint::initStateFromProperties(SimTK::State& s) const
+void EllipsoidJoint::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 
     const SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
     
@@ -167,19 +165,19 @@ void EllipsoidJoint::initStateFromProperties(SimTK::State& s) const
                                          yangle, YAxis, zangle, ZAxis);
 
         EllipsoidJoint* mutableThis = const_cast<EllipsoidJoint*>(this);
-        matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).setQToFitRotation(s, r);
+        getChildBody().getMobilizedBody().setQToFitRotation(s, r);
     }
 }
 
-void EllipsoidJoint::setPropertiesFromState(const SimTK::State& state)
+void EllipsoidJoint::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
 
     // Override default in case of quaternions.
     const SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-        Rotation r = matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex())
-            .getBodyRotation(state);
+
+        Rotation r = getChildBody().getMobilizedBody().getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
 
         const CoordinateSet& coordinateSet = get_CoordinateSet();

@@ -84,7 +84,7 @@ private:
     //--------------------------------------------------------------------------
 protected:
     // ModelComponent Interface
-    virtual void addToSystem(SimTK::MultibodySystem& system) const override;
+    virtual void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     // Update the geometry attached to the actuator. Use inertial frame.
     virtual void updateGeometry();
@@ -165,12 +165,12 @@ public:
     //Model building
     virtual int numControls() const {return 1;};
 
-    // Accessing force, speed, and power of a scalar valued actuator
-    virtual void setForce(const SimTK::State& s, double aForce) const; 
-    virtual double getForce( const SimTK::State& s) const;
+    // Accessing actuation, speed, and power of a scalar valued actuator
+    virtual void setActuation(const SimTK::State& s, double aActuation) const;
+    virtual double getActuation(const SimTK::State& s) const;
     virtual void setSpeed( const SimTK::State& s, double aspeed) const;
     virtual double getSpeed( const SimTK::State& s) const;
-    virtual double getPower(const SimTK::State& s) const { return getForce(s)*getSpeed(s); }
+    virtual double getPower(const SimTK::State& s) const { return getActuation(s)*getSpeed(s); }
     virtual double getStress(const SimTK::State& s) const;
     virtual double getOptimalForce() const;
 
@@ -183,55 +183,56 @@ public:
     double getMaxControl() const { return get_max_control(); }
 
     //--------------------------------------------------------------------------
-    // Overriding forces
+    // Overriding Actuation
     //--------------------------------------------------------------------------
     /**
-    * Enable/disable an Actuator's override force.
+    * Enable/disable a ScalarActuator's override actuation.
     *
-    * The force normally produced by an Actuator can be overriden and
-    * When the Actuator's force is overriden, the Actuator will by defualt
-    * produce a constant force which can be set with setOverrideForce().
+    * The actuation normally produced by a ScalarActuator can be overriden and
+    * When the ScalarActuator's actuation is overriden, the ScalarActuator will
+    * by defualt produce a constant actuation which can be set with
+    * setOverrideActuation().
     *
     * @param s    current state
-    * @param flag true = override Actuator's output force
-    *             false = use Actuator's computed forc (normal operation)
+    * @param flag true = override ScalarActuator's output actuation
+    *             false = use ScalarActuator's computed forc (normal operation)
     */
-    void overrideForce(SimTK::State& s, bool flag ) const;
+    void overrideActuation(SimTK::State& s, bool flag) const;
 
     /**
-    *  return Actuator's override status
+    *  return ScalarActuator's override status
     */
-    bool isForceOverriden(const SimTK::State& s ) const;
+    bool isActuationOverriden(const SimTK::State& s) const;
 
     /**
-    * set the force value  used when the override is true 
+    * set the actuation value used when the override is true 
     * 
     * @param s      current state
-    * @param value  value of override force   
+    * @param value  value of override actuation   
     */
-    void setOverrideForce(SimTK::State& s, double value ) const;
+    void setOverrideActuation(SimTK::State& s, double value) const;
 
     /**
-    * return override force 
+    * return override actuation 
     */
-    double getOverrideForce(const SimTK::State& s ) const;
+    double getOverrideActuation(const SimTK::State& s) const;
 
 
 protected:
 
-    // Actuator interface
+    // ScalarActuator interface
     virtual double computeActuation(const SimTK::State& s) const = 0;
 
     // ModelComponent Interface
-    virtual void addToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-    double computeOverrideForce(const SimTK::State& s ) const;
+    double computeOverrideActuation(const SimTK::State& s) const;
 
-    //Force reporting
+    //Actuation reporting
     /** 
-     * Methods to query a Force for the value actually applied during simulation
-     * The names of the quantities (column labels) is returned by this first function
-     * getRecordLabels()
+     * Methods to query a actuation for the value actually applied during 
+     * simulation. The names of the quantities (column labels) is returned
+     * by this first function getRecordLabels()
      */
     OpenSim::Array<std::string> getRecordLabels() const {
         OpenSim::Array<std::string> labels("");
@@ -239,12 +240,13 @@ protected:
         return labels;
     }
     /**
-     * Given SimTK::State object extract all the values necessary to report forces, application location
-     * frame, etc. used in conjunction with getRecordLabels and should return same size Array
+     * Given SimTK::State object extract all the values necessary to report 
+     * actuation, application location frame, etc. used in conjunction 
+     * with getRecordLabels and should return same size Array
      */
     OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {
         OpenSim::Array<double> values(1);
-        values.append(getForce(state));
+        values.append(getActuation(state));
         return values;
     }
 

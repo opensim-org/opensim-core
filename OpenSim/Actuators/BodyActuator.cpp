@@ -130,9 +130,7 @@ void BodyActuator::computeForce(const SimTK::State& s,
     const bool spatialForceIsGlobal = getSpatialForceIsGlobal();
     
     const Body& body = getConnector<Body>("body").getConnectee();
-    SimTK::MobilizedBodyIndex body_mbi = body.getMobilizedBodyIndex();
-    const SimTK::MobilizedBody& body_mb = getModel().getMatterSubsystem().
-                                            getMobilizedBody(body_mbi);
+    const SimTK::MobilizedBody& body_mb = body.getMobilizedBody();
 
     Vec3 pointOfApplication = get_point(); 
 
@@ -173,9 +171,7 @@ double BodyActuator::getPower(const SimTK::State& s) const
 {
     const Body& body = getConnector<Body>("body").getConnectee();
 
-    SimTK::MobilizedBodyIndex body_mbi = body.getMobilizedBodyIndex();
-    const SimTK::MobilizedBody& body_mb = getModel().getMatterSubsystem().
-                                                getMobilizedBody(body_mbi);
+    const SimTK::MobilizedBody& body_mb = body.getMobilizedBody();
     SimTK::SpatialVec bodySpatialVelocities = body_mb.getBodyVelocity(s);
 
     SimTK::Vector bodyVelocityVec(6);

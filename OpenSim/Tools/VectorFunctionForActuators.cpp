@@ -287,7 +287,7 @@ evaluate( const SimTK::State& s, double *aX, double *rF)
     int j = 0;
     for(i=0;i<N;i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&forceSet[i]);
-        rF[j] = act->getForce(getCMCActSubsys()->getCompleteState()) - _f[j];
+        rF[j] = act->getActuation(getCMCActSubsys()->getCompleteState()) - _f[j];
         j++;
     }
 

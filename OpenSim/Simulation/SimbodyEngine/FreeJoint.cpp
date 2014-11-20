@@ -115,17 +115,14 @@ void FreeJoint::setNull()
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void FreeJoint::addToSystem(SimTK::MultibodySystem& system) const
+void FreeJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     createMobilizedBody<MobilizedBody::Free>(system);
-
-    // TODO: Joints require super class to be called last.
-    Super::addToSystem(system);
 }
 
-void FreeJoint::initStateFromProperties(SimTK::State& s) const
+void FreeJoint::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
@@ -143,21 +140,21 @@ void FreeJoint::initStateFromProperties(SimTK::State& s) const
             coordinateSet.get(5).getDefaultValue());
 
         FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
-        matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).setQToFitTransform(s, Transform(r, t));
-
+        getChildBody().getMobilizedBody().setQToFitTransform(s, Transform(r, t));
     }
 }
 
-void FreeJoint::setPropertiesFromState(const SimTK::State& state)
+void FreeJoint::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
 
     // Override default behavior in case of quaternions.
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-        Rotation r = matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).getMobilizerTransform(state).R();
-        Vec3 t = matter.getMobilizedBody(getChildBody().getMobilizedBodyIndex()).getMobilizerTransform(state).p();
+        Rotation r = getChildBody().getMobilizedBody().getMobilizerTransform(state).R();
+        Vec3 t = getChildBody().getMobilizedBody().getMobilizerTransform(state).p();
+
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
         int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
         

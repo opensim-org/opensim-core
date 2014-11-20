@@ -123,7 +123,7 @@ public:
 #ifndef SWIG
     MarkerPlacer& operator=(const MarkerPlacer &aMarkerPlacementParams);
 #endif
-    bool processModel( SimTK::State& s, Model* aModel, const std::string& aPathToSubject="");
+    bool processModel(Model* aModel, const std::string& aPathToSubject="");
 
     //--------------------------------------------------------------------------
     // GET AND SET

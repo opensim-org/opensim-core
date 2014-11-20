@@ -498,8 +498,9 @@ void Model::createMultibodySystem()
 }
 
 
-void Model::finalizeFromProperties()
+void Model::extendFinalizeFromProperties()
 {
+    Super::extendFinalizeFromProperties();
 
     // building the system for the first time, need to tell
     // multibodyTree builder what joints are available
@@ -561,7 +562,6 @@ void Model::finalizeFromProperties()
         for (int i = 0; i<nf; ++i)
             addComponent(&ms[i]);
     }
-
 
     // Populate lists of model joints and coordinates according to the Bodies
     // setup here who own the Joints which in turn own the model's Coordinates
@@ -643,14 +643,12 @@ void Model::finalizeFromProperties()
             getValidationLog() << endl;
     }
 
-    Super::finalizeFromProperties();
-
     updCoordinateSet().populate(*this);
 }
 
-void Model::connectToModel(Model &model)
+void Model::extendConnectToModel(Model &model)
 {
-    Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 
     if (&model != this){
         cout << "Model::" << getName() <<
@@ -747,7 +745,6 @@ void Model::connectToModel(Model &model)
     }
     joints.setMemoryOwner(isMemoryOwner);
 
-
     // Add the loop joints if any.
     for (int lcx = 0; lcx < _multibodyTree.getNumLoopConstraints(); ++lcx) {
         const MultibodyGraphMaker::LoopConstraint& loop =
@@ -805,7 +802,7 @@ void Model::connectToModel(Model &model)
 
 // ModelComponent interface enables this model to be treated as a subcomponent of another model by 
 // creating components in its system.
-void Model::addToSystem(SimTK::MultibodySystem& system) const
+void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Model *mutableThis = const_cast<Model *>(this);
 
@@ -813,7 +810,7 @@ void Model::addToSystem(SimTK::MultibodySystem& system) const
     mutableThis->_defaultControls.resize(0);
 
     // Create the shared cache that will hold all model controls
-    // This must be created before Actuator.addToSystem() since Actuator will append 
+    // This must be created before Actuator.extendAddToSystem() since Actuator will append 
     // its "slots" and retain its index by accessing this cached Vector
     // value depends on velocity and invalidates dynamics BUT should not trigger
     // recomputation of the controls which are necessary for dynamics
@@ -821,9 +818,6 @@ void Model::addToSystem(SimTK::MultibodySystem& system) const
         Stage::Velocity, Stage::Acceleration);
 
     mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
-
-    // Let all the ModelComponents add their parts to the System.
-    Super::addToSystem(system);
 }
 
 
@@ -1018,37 +1012,25 @@ void Model::cleanup()
 
 void Model::setDefaultProperties()
 {
-
     // Initialize the length and force units from the strings specified in the model file.
     // If they were not specified, use meters and Newtons.
     _lengthUnits = Units(get_length_units());
     _forceUnits = Units(get_force_units());
 }
 
-void Model::initStateFromProperties(SimTK::State& state) const
+void Model::extendInitStateFromProperties(SimTK::State& state) const
 {
-    Super::initStateFromProperties(state);
+    Super::extendInitStateFromProperties(state);
     // Allocate the size and default values for controls
     // Actuators will have a const view into the cache
     Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
     controlsCache.updValue(state).resize(_defaultControls.size());
     controlsCache.updValue(state) = _defaultControls;
-
-    /*
-    _bodySet.invokeInitStateFromProperties(state);
-    _constraintSet.invokeInitStateFromProperties(state);
-    _contactGeometrySet.invokeInitStateFromProperties(state);
-    _jointSet.invokeInitStateFromProperties(state);
-    _forceSet.invokeInitStateFromProperties(state);
-    _controllerSet.invokeInitStateFromProperties(state);
-    _componentSet.invokeInitStateFromProperties(state);
-    _probeSet.invokeInitStateFromProperties(state);
-    */
 }
 
-void Model::setPropertiesFromState(const SimTK::State& state)
+void Model::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
 }
 
 void Model::generateDecorations
@@ -1433,23 +1415,19 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
 
     if (returnVal)
     {
-        initSystem();   // This crashes now trying to delete the old matterSubsystem
-        updSimbodyEngine().connectSimbodyEngineToModel(*this);
-        getMultibodySystem().realizeTopology();
-        SimTK::State& newState = updWorkingState();
-        getMultibodySystem().realize( newState, SimTK::Stage::Velocity);
-
         for (i = 0; i < get_ForceSet().getSize(); i++) {
             PathActuator* act = dynamic_cast<PathActuator*>(&get_ForceSet().get(i));
             if( act ) {
-                act->postScale(newState, aScaleSet);
+                act->postScale(s, aScaleSet);
             }
         }
 
-        // 5. Put the model back in whatever pose it was in.
+        // Changed the model after scaling path actuators. Have to recreate system!
+        s = initSystem();
 
-        newState.updY() = savedConfiguration;
-        getMultibodySystem().realize( newState, SimTK::Stage::Velocity );
+        // 5. Put the model back in whatever pose it was in.
+        s.updY() = savedConfiguration;
+        getMultibodySystem().realize( s, SimTK::Stage::Velocity );
     }
 
     return returnVal;
@@ -1479,9 +1457,9 @@ void Model::printBasicInfo(std::ostream &aOStream) const
     aOStream<<"         constraints: "<<getConstraintSet().getSize()<<std::endl;
     aOStream<<"             markers: "<<getMarkerSet().getSize()<<std::endl;
     aOStream<<"         controllers: "<<getControllerSet().getSize()<<std::endl;
-    aOStream << "  contact geometries: " << getContactGeometrySet().getSize() << std::endl;
-    aOStream << "  f        ramess: " << getFrameSet().getSize() << std::endl;
-    aOStream << "misc modelcomponents: " << getMiscModelComponentSet().getSize() << std::endl;
+    aOStream<<"  contact geometries: "<< getContactGeometrySet().getSize() << std::endl;
+    aOStream<<"              frames: "<< getFrameSet().getSize() << std::endl;
+    aOStream<<"misc modelcomponents: "<< getMiscModelComponentSet().getSize() << std::endl;
 
 }
 //_____________________________________________________________________________
@@ -2024,7 +2002,7 @@ void Model::overrideAllActuators( SimTK::State& s, bool flag) {
 
      for(int i=0;i<as.getSize();i++) {
          ScalarActuator* act = dynamic_cast<ScalarActuator*>(&as[i]);
-         act->overrideForce(s, flag );
+         act->overrideActuation(s, flag);
      }
 
 }
@@ -2053,13 +2031,47 @@ const Object& Model::getObjectByTypeAndName(const std::string& typeString, const
 
 }
 
+//------------------------------------------------------------------------------
+//          REALIZE THE SYSTEM TO THE REQUIRED COMPUTATIONAL STAGE
+//------------------------------------------------------------------------------
+void Model::realizeTime(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Time);
+}
+
+void Model::realizePosition(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Position);
+}
+
+void Model::realizeVelocity(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Velocity);
+}
+
+void Model::realizeDynamics(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Dynamics);
+}
+
+void Model::realizeAcceleration(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Acceleration);
+}
+
+void Model::realizeReport(const SimTK::State& state) const
+{
+    getSystem().realize(state, Stage::Report);
+}
+
+
 /**
  * Compute the derivatives of the generalized coordinates and speeds.
  */
 void Model::computeStateVariableDerivatives(const SimTK::State &s) const
 {
     try {
-        getMultibodySystem().realize(s, Stage::Acceleration);
+        realizeAcceleration(s);
     }
     catch (const std::exception& e){
         string exmsg = e.what();

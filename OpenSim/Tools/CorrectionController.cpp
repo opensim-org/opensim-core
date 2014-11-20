@@ -256,21 +256,16 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
     }
 }
 
-void CorrectionController::addToSystem(SimTK::MultibodySystem& system) const
-{ 
-    Super::addToSystem(system);
-}
-
 // for any post XML deserialization intialization
-void CorrectionController::connectToModel(Model& model)
+void CorrectionController::extendConnectToModel(Model& model)
 {
-    Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 
     // create an actuator for each generalized coordinate in the model 
     // add these actuators to the model and set their indexes 
     const CoordinateSet& cs = _model->getCoordinateSet();
     for(int i=0; i<cs.getSize(); i++) {
-        std::cout << " CorrectionController::connectToModel(): " 
+        std::cout << " CorrectionController::extendConnectToModel(): " 
                   <<  cs.get(i).getName()+"_corrector" << "  added " 
                   << std::endl;
         std::string name = cs.get(i).getName()+"_corrector";
@@ -291,12 +286,12 @@ void CorrectionController::connectToModel(Model& model)
    }
     setNumControls(getActuatorSet().getSize());
 
-    printf(" CorrectionController::connectToModel()  num Actuators= %d kv=%f kp=%f \n",
+    printf(" CorrectionController::extendConnectToModel()  num Actuators= %d kv=%f kp=%f \n",
         _model->getForceSet().getSize(), _kv, _kp );
 }
 
 // for any intialization requiring a state or the complete system 
-void CorrectionController::initStateFromProperties( SimTK::State& s) const
+void CorrectionController::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 }

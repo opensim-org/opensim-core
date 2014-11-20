@@ -216,10 +216,10 @@ public:
 
  protected:
      // for any post XML deserialization intialization
-     void connectToModel(Model& model) override;
+     void extendConnectToModel(Model& model) override;
 
      // for adding any components to the underlying system
-     void addToSystem( SimTK::MultibodySystem& system) const override; 
+     void extendAddToSystem( SimTK::MultibodySystem& system) const override; 
 
 //=============================================================================
 };  // END of class CMC

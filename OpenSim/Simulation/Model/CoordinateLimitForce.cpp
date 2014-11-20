@@ -76,7 +76,7 @@ CoordinateLimitForce::CoordinateLimitForce
 //_____________________________________________________________________________
 // Set the data members of this actuator to their null values. Note that we
 // also use this after copy construction or copy assignment; these should be
-// calculated at connectToModel().
+// calculated at extendConnectToModel().
 void CoordinateLimitForce::setNull()
 {
     setAuthors("Ajay Seth");
@@ -196,9 +196,9 @@ bool CoordinateLimitForce::isComputingDissipationEnergy() const
  *
  * @param aModel OpenSim model containing this CoordinateLimitForce.
  */
-void CoordinateLimitForce::connectToModel(Model& aModel)
+void CoordinateLimitForce::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
     string errorMessage;
 
@@ -238,9 +238,9 @@ void CoordinateLimitForce::connectToModel(Model& aModel)
 
 
 /** Create the underlying Force that is part of the multibodysystem. */
-void CoordinateLimitForce::addToSystem(SimTK::MultibodySystem& system) const
+void CoordinateLimitForce::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     addCacheVariable<double>("dissipationPower", 0.0, SimTK::Stage::Dynamics);
 
@@ -282,7 +282,7 @@ double CoordinateLimitForce::calcLimitForce( const SimTK::State& s) const
     // disspative power is negative power but is already implied by "dissipation"
     // so negate power so that dissipation power is a positive number
     double dissPower = -qdot*f_damp;
-    setCacheVariable<double>(s, "dissipationPower", dissPower);
+    setCacheVariableValue<double>(s, "dissipationPower", dissPower);
 
     double f_limit = f_up + f_low + f_damp;
 
@@ -329,14 +329,14 @@ double CoordinateLimitForce::computePotentialEnergy(const SimTK::State& s) const
 // power dissipated by the damping term of the coodinate limit force
 double CoordinateLimitForce::getPowerDissipation(const SimTK::State& s) const
 {
-    return  getCacheVariable<double>(s, "dissipationPower");
+    return  getCacheVariableValue<double>(s, "dissipationPower");
 }
 
 // energy dissipated by the damping term of the coodinate limit force
 double CoordinateLimitForce::getDissipatedEnergy(const SimTK::State& s) const
 {
     if(isComputingDissipationEnergy()){
-        return getStateVariable(s, "dissipatedEnergy");
+        return getStateVariableValue(s, "dissipatedEnergy");
     } else {
         throw Exception("CoordinateLimitForce::getDissipatedEnergy() compute_dissipation_energy set to false.");
         return SimTK::NaN;
@@ -347,7 +347,7 @@ void CoordinateLimitForce::
     computeStateVariableDerivatives(const SimTK::State& s) const
 {
     if (!isDisabled(s) && isComputingDissipationEnergy()){
-        setStateVariableDerivative(s, "dissipatedEnergy", 
+        setStateVariableDerivativeValue(s, "dissipatedEnergy", 
             getPowerDissipation(s));
     }
 }

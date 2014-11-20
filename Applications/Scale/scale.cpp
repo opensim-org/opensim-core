@@ -132,25 +132,20 @@ int main(int argc,char **argv)
 
         if(!model) throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
 
-        // Realize the topology and initialize state
-       
-        SimTK::State& s = model->initSystem();
-
         if (!subject->isDefaultModelScaler() && subject->getModelScaler().getApply())
         {
             ModelScaler& scaler = subject->getModelScaler();
-            if(!scaler.processModel(s, model, subject->getPathToSubject(), subject->getSubjectMass())) return 1;
+            if(!scaler.processModel(model, subject->getPathToSubject(), subject->getSubjectMass())) return 1;
         }
         else
         {
             cout << "Scaling parameters disabled (apply is false) or not set. Model is not scaled." << endl;
         }
         
-        SimTK::State& news = model->initSystem();   // old state is messed up by scaling. can't use it
         if (!subject->isDefaultMarkerPlacer())
         {
             MarkerPlacer& placer = subject->getMarkerPlacer();
-            if(!placer.processModel(news, model, subject->getPathToSubject())) return 1;
+            if(!placer.processModel(model, subject->getPathToSubject())) return 1;
         }
         else
         {

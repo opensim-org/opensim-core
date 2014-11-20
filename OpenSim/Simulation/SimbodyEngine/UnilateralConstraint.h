@@ -86,7 +86,7 @@ public:
         { return std::vector<bool>(_numConstraintEquations, false); };
 
 protected:
-    void connectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
 
 private:
     void setNull();

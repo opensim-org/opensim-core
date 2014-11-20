@@ -118,7 +118,7 @@ public:
 
 protected:
     // Model Component Interface
-    void connectToModel(Model& aModel)  override;
+    void extendConnectToModel(Model& aModel)  override;
 
     // Super interface
     double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const;

@@ -285,7 +285,7 @@ computeAcceleration(SimTK::State& s, double *aF,double *rAccel) const
     for(int i=0,j=0; i<_forceSet->getSize(); i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
         if( act ) {
-            act->setOverrideForce(s,aF[j++]);
+            act->setOverrideActuation(s, aF[j++]);
         }
     }
 
@@ -317,7 +317,7 @@ record(const SimTK::State& s)
     for(int i=0,j=0; i<_forceSet->getSize(); i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
         if( act ) {
-            act->overrideForce(sWorkingCopy,true);
+            act->overrideActuation(sWorkingCopy, true);
         }
     }
 
@@ -479,7 +479,7 @@ begin(SimTK::State& s )
         for(int i=0,j=0; i<nf; i++) {
             ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
             if( act ) {
-                act->setForce(sWorkingCopy,1);
+                act->setActuation(sWorkingCopy, 1);
                 _performanceMatrix(j,j) = act->getStress(sWorkingCopy);
                 j++;
              }

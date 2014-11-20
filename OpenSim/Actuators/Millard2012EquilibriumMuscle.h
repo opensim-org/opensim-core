@@ -500,22 +500,22 @@ protected:
 
     /** Calculate the potential energy values associated with the muscle */
     void  calcMusclePotentialEnergyInfo(const SimTK::State& s, 
-        MusclePotentialEnergyInfo& mpei) const override;
+            MusclePotentialEnergyInfo& mpei) const override;
 
 //==============================================================================
 // MODELCOMPONENT INTERFACE REQUIREMENTS
 //==============================================================================
     /** Sets up the ModelComponent from the model, if necessary */
-    void connectToModel(Model& model) override;
+    void extendConnectToModel(Model& model) override;
 
     /** Creates the ModelComponent so that it can be used in simulation */
-    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     /** Initializes the state of the ModelComponent */
-    void initStateFromProperties(SimTK::State& s) const override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
 
     /** Sets the default state for the ModelComponent */
-    void setPropertiesFromState(const SimTK::State& s) override;
+    void extendSetPropertiesFromState(const SimTK::State& s) override;
 
     /** Computes state variable derivatives */
     void computeStateVariableDerivatives(const SimTK::State& s) const override;
@@ -537,7 +537,7 @@ private:
     void buildMuscle();
 
     // Rebuilds muscle model if any of its properties have changed.
-    void finalizeFromProperties() override;
+    void extendFinalizeFromProperties() override;
 
     /* Calculates the fiber velocity that satisfies the equilibrium equation
     given a fixed fiber length.

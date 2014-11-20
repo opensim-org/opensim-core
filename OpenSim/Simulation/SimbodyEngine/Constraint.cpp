@@ -81,14 +81,14 @@ void Constraint::constructProperties(void)
  *
  * @param aModel OpenSim model containing this Constraint.
  */
-void Constraint::connectToModel(Model& aModel)
+void Constraint::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 }
 
-void Constraint::initStateFromProperties(SimTK::State& s) const
+void Constraint::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
     SimTK::Constraint& simConstraint = 
         _model->updMatterSubsystem().updConstraint(_index);
 
@@ -99,9 +99,9 @@ void Constraint::initStateFromProperties(SimTK::State& s) const
         simConstraint.enable(s);
 }
 
-void Constraint::setPropertiesFromState(const SimTK::State& state)
+void Constraint::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
     set_isDisabled(isDisabled(state));
 }
 

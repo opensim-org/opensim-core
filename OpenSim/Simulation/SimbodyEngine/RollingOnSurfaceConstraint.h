@@ -104,20 +104,20 @@ public:
     virtual ~RollingOnSurfaceConstraint();
 
     // ModelComponent interface.
-    void connectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
 
     /**
      * Create the SimTK::Constraints: which implements this RollingOnSurfaceConstraint.
      */
-    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     /**
      * Populate the the SimTK::State: with defaults for the RollingOnSurfaceConstraint.
      */
-    void initStateFromProperties(SimTK::State& state) const override;
+    void extendInitStateFromProperties(SimTK::State& state) const override;
     /**
      * Given an existing SimTK::State set defaults for the RollingOnSurfaceConstraint.
      */
-    void setPropertiesFromState(const SimTK::State& state) override;
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
     //SET 
     void setRollingBodyByName(std::string aBodyName);

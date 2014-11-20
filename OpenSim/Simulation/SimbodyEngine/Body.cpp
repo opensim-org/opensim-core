@@ -79,8 +79,10 @@ void Body::constructProperties()
 }
 
 
-void Body::finalizeFromProperties()
+void Body::extendFinalizeFromProperties()
 {
+    Super::extendFinalizeFromProperties();
+
     //TODO: Need a better design so ground body is not exposed in XML
     //like every other body. One idea is to remove ground body altogether.
     //Instead of using ground Body as a holder of geometry, a flat list of
@@ -96,8 +98,6 @@ void Body::finalizeFromProperties()
     
     _index.invalidate();
     _mbTransform.setToZero();
-
-    setObjectIsUpToDateWithProperties();
 }
 
 //_____________________________________________________________________________
@@ -107,9 +107,9 @@ void Body::finalizeFromProperties()
  *
  * @param aModel OpenSim model containing this Body.
  */
-void Body::connectToModel(Model& aModel)
+void Body::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
     for(int i=0; i< get_WrapObjectSet().getSize(); i++)
         get_WrapObjectSet().get(i).connectToModelAndBody(aModel, *this);
@@ -132,15 +132,12 @@ void Body::connectToModel(Model& aModel)
     }
 }
 
-void Body::addToSystem(SimTK::MultibodySystem& system) const
+void Body::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     if(getName() == "ground"){
         Body * mutableThis = const_cast<Body *>(this);
         mutableThis->_index = SimTK::GroundIndex;
     }
-    
-    // Add subcomponents of the Body (namely its Joint)
-    Super::addToSystem(system);
 }
 
 
@@ -172,7 +169,7 @@ const SimTK::Inertia& Body::getInertia() const
         // initialize from properties
         const double& m = getMass();
         // if mass is zero, non-zero inertia makes no sense
-        if (-SimTK::Eps <= m && m <= SimTK::Eps){
+        if (-SimTK::SignificantReal <= m && m <= SimTK::SignificantReal){
             // force zero intertia
             cout<<"Body '"<<getName()<<"' is massless but nonzero inertia provided.";
             cout<<" Inertia reset to zero. "<<"Otherwise provide nonzero mass."<< endl;

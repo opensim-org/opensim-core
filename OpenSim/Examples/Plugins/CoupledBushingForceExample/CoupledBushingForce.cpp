@@ -222,9 +222,9 @@ void CoupledBushingForce::setupProperties()
  *
  * @param aModel OpenSim model containing this CoupledBushingForce.
  */
-void CoupledBushingForce::connectToModel(Model& aModel)
+void CoupledBushingForce::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
     string errorMessage;
     // Look up the two bodies being connected by bushing by name in the
@@ -239,9 +239,9 @@ void CoupledBushingForce::connectToModel(Model& aModel)
     }
 }
 
-void CoupledBushingForce::addToSystem(SimTK::MultibodySystem& system) const
+void CoupledBushingForce::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     Body &body1 = _model->updBodySet().get(_body1Name);
     Body &body2 = _model->updBodySet().get(_body2Name);
@@ -250,8 +250,8 @@ void CoupledBushingForce::addToSystem(SimTK::MultibodySystem& system) const
     CoupledBushingForce* mutableThis = const_cast<CoupledBushingForce *>(this);
 
     // Get underlying mobilized bodies
-    mutableThis->_b1 = &_model->updMatterSubsystem().getMobilizedBody(body1.getMobilizedBodyIndex());
-    mutableThis->_b2 = &_model->updMatterSubsystem().getMobilizedBody(body2.getMobilizedBodyIndex());
+    mutableThis->_b1 = &body1.getMobilizedBody();
+    mutableThis->_b2 = &body2.getMobilizedBody();
     // Define the transforms for the bushing frames affixed to the specified bodies
     SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(_orientationInBody1);
     SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(_orientationInBody2);

@@ -214,37 +214,36 @@ void Delp1990Muscle_Deprecated::setupProperties()
  *
  * @param aModel model containing this Delp1990Muscle_Deprecated.
  */
-void Delp1990Muscle_Deprecated::connectToModel(Model& aModel)
+void Delp1990Muscle_Deprecated::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
     // aModel will be NULL when objects are being registered.
     if (!_model)
         return;
 
     if(!getActiveForceLengthCurve()) 
-        throw Exception("Delp1990Muscle_Deprecated::connectToModel(): ERROR- No active force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
+        throw Exception("Delp1990Muscle_Deprecated::extendConnectToModel(): ERROR- No active force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
     else if(!getPassiveForceLengthCurve())
-        throw Exception("Delp1990Muscle_Deprecated::connectToModel(): ERROR- No passive force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
+        throw Exception("Delp1990Muscle_Deprecated::extendConnectToModel(): ERROR- No passive force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
     else if(!getTendonForceLengthCurve())
-        throw Exception("Delp1990Muscle_Deprecated::connectToModel(): ERROR- No tendon force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
+        throw Exception("Delp1990Muscle_Deprecated::extendConnectToModel(): ERROR- No tendon force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
     else if(!getForceVelocityCurve())
-        throw Exception("Delp1990Muscle_Deprecated::connectToModel(): ERROR- No force velocity curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
+        throw Exception("Delp1990Muscle_Deprecated::extendConnectToModel(): ERROR- No force velocity curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
 }
 
-void Delp1990Muscle_Deprecated::addToSystem(SimTK::MultibodySystem& system) const
+void Delp1990Muscle_Deprecated::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
-    
+    Super::extendAddToSystem(system);
     addStateVariable("fiber_velocity");
- }
+}
 
 void Delp1990Muscle_Deprecated::setActiveForce( const SimTK::State& s, double force ) const {
-    setCacheVariable<double>(s, "activeForce", force);
+    setCacheVariableValue<double>(s, "activeForce", force);
 }
 
 double Delp1990Muscle_Deprecated::getActiveForce( const SimTK::State& s) const {
-    return getCacheVariable<double>(s, "activeForce");
+    return getCacheVariableValue<double>(s, "activeForce");
 }
 
 
@@ -349,7 +348,7 @@ bool Delp1990Muscle_Deprecated::setMass(double aMass)
 void Delp1990Muscle_Deprecated::computeStateVariableDerivatives(const SimTK::State &s) const
 {
     Super::computeStateVariableDerivatives(s);
-    setStateVariableDerivative(s, "fiber_velocity", getFiberVelocityDeriv(s));
+    setStateVariableDerivativeValue(s, "fiber_velocity", getFiberVelocityDeriv(s));
 }
 
 //_____________________________________________________________________________
@@ -399,7 +398,7 @@ double Delp1990Muscle_Deprecated::computeActuation(const SimTK::State& s) const
 
     tendonForce *= _maxIsometricForce; 
     setTendonForce(s, tendonForce);
-    setForce(s, tendonForce);
+    setActuation(s, tendonForce);
     setPassiveForce(s, getPassiveForce(s) * _maxIsometricForce);
     setActiveForce(s, getActiveForce(s) * _maxIsometricForce);
 
@@ -578,7 +577,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
     double length = getLength(s);
 
     // rough initial guess of fiber length
-    setStateVariable(s, STATE_FIBER_LENGTH_NAME,  length - _tendonSlackLength);
+    setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  length - _tendonSlackLength);
 
     // Make first guess of fiber and tendon lengths. Make fiber length equal to
     // optimal_fiber_length so that you start in the middle of the active+passive
@@ -595,7 +594,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
     if (_tendonSlackLength < ROUNDOFF_ERROR) {
         tendon_length = 0.0;
         cos_factor = cos(atan(muscle_width / length));
-        setStateVariable(s, STATE_FIBER_LENGTH_NAME,  length / cos_factor);
+        setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  length / cos_factor);
 
         setActiveForce(s, getActiveForceLengthCurve()->calcValue(SimTK::Vector(1, getFiberLength(s) / _optimalFiberLength)) * aActivation * _maxIsometricForce);
         if (getActiveForce(s) < 0.0)
@@ -606,14 +605,14 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
             setPassiveForce(s, 0.0);
 
         setTendonForce(s, (getActiveForce(s) + getPassiveForce(s)) * cos_factor);
-        setForce(s, getTendonForce(s));
+        setActuation(s, getTendonForce(s));
     } else if (length < _tendonSlackLength) {
         tendon_length = length;
-        setStateVariable(s, STATE_FIBER_LENGTH_NAME,  muscle_width);
+        setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  muscle_width);
         setActiveForce(s, 0.0);
         setPassiveForce(s, 0.0);
         setTendonForce(s, 0.0);
-        setForce(s, 0.0);
+        setActuation(s, 0.0);
         return 0.0;
     } else {
         cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngleAtOptimal));  
@@ -625,9 +624,9 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
         if (tendon_length < _tendonSlackLength) {
             tendon_length = _tendonSlackLength;
             cos_factor = cos(atan(muscle_width / (length - tendon_length)));
-            setStateVariable(s, STATE_FIBER_LENGTH_NAME,   (length - tendon_length) / cos_factor );
+            setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,   (length - tendon_length) / cos_factor );
             if (getFiberLength(s) < muscle_width)
-                setStateVariable(s, STATE_FIBER_LENGTH_NAME,  muscle_width);
+                setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  muscle_width);
         }
     }
 
@@ -653,7 +652,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
         else
             tendon_force = getTendonForceLengthCurve()->calcValue(SimTK::Vector(1, tendon_strain)) * _maxIsometricForce;
         setTendonForce(s, tendon_force);
-        setForce(s, tendon_force);
+        setActuation(s, tendon_force);
 
         old_error_force = error_force;
  
@@ -669,7 +668,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
             percent = DABS(error_force) / (DABS(error_force) + DABS(old_error_force));
             tmp_fiber_length = old_fiber_length;
             old_fiber_length = getFiberLength(s);
-            setStateVariable(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s)+ percent * (tmp_fiber_length - getFiberLength(s)) );
+            setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s)+ percent * (tmp_fiber_length - getFiberLength(s)) );
         } else {
             // Estimate the stiffnesses of the tendon and the fibers. If tendon
             // stiffness is too low, then the next length guess will overshoot
@@ -712,9 +711,9 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
             old_fiber_length = getFiberLength(s);
 
             if (error_force > 0.0)
-                setStateVariable(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s) + length_change);
+                setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s) + length_change);
             else
-                setStateVariable(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s) - length_change);
+                setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s) - length_change);
 
         }
 
@@ -726,7 +725,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
         if (tendon_length < _tendonSlackLength) {
             tendon_length = _tendonSlackLength;
             cos_factor = cos(atan(muscle_width / (length - tendon_length)));
-            setStateVariable(s, STATE_FIBER_LENGTH_NAME,  (length - tendon_length) / cos_factor );
+            setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  (length - tendon_length) / cos_factor );
         }
     }
 

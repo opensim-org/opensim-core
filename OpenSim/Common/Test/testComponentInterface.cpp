@@ -73,17 +73,15 @@ public:
 
 protected:
     // Component interface implementation
-    void finalizeFromProperties() override {
-        clearComponents();
+    void extendFinalizeFromProperties() override {
+        Super::extendFinalizeFromProperties();
         // Mark components listed in properties as subcomponents
         for (int i = 0; i < getProperty_components().size(); ++i){
             addComponent(&upd_components(i));
         }
-
-        Super::finalizeFromProperties();
     }
     
-    void addToSystem(MultibodySystem& system) const override {
+    void extendAddToSystem(MultibodySystem& system) const override {
         if (system.hasMatterSubsystem()){
             matter = system.updMatterSubsystem();
         }
@@ -101,8 +99,6 @@ protected:
 
             system.updMatterSubsystem().setShowDefaultGeometry(true);
         }
-
-        Super::addToSystem(system);
     }
 
 private:
@@ -162,14 +158,14 @@ public:
 
 protected:
     /** Component Interface */
-    void connect(Component& root) override {
-        Super::connect(root);
+    void extendConnect(Component& root) override {
+        Super::extendConnect(root);
         // do any internal wiring
         world = dynamic_cast<TheWorld*>(&root);
     }
 
-    void addToSystem(MultibodySystem &system) const override {
-        Super::addToSystem(system);
+    void extendAddToSystem(MultibodySystem &system) const override {
+        Super::extendAddToSystem(system);
 
         SimbodyMatterSubsystem& matter = system.updMatterSubsystem();
 
@@ -249,14 +245,14 @@ public:
 
 protected:
     /** Component Interface */
-    void connect(Component& root) override{
-        Super::connect(root);
+    void extendConnect(Component& root) override{
+        Super::extendConnect(root);
         // do any internal wiring
         world = dynamic_cast<TheWorld*>(&root);
         // perform custom checking
         if (updConnector<Foo>("parentFoo").getConnectee()
                 == updConnector<Foo>("childFoo").getConnectee()){
-            string msg = "ERROR - Bar::connect()\n";
+            string msg = "ERROR - Bar::extendConnect()\n";
             msg += " parentFoo and childFoo cannot be the same component.";
             throw OpenSim::Exception(msg);
         }
@@ -265,8 +261,7 @@ protected:
     // Copied here from Component for testing purposes.
 
 
-    void addToSystem(MultibodySystem& system) const override{
-        Super::addToSystem(system);
+    void extendAddToSystem(MultibodySystem& system) const override{
 
         GeneralForceSubsystem& forces = world->updForceSubsystem();
         SimbodyMatterSubsystem& matter = world->updMatterSubsystem();
@@ -293,9 +288,9 @@ protected:
     }
 
     void computeStateVariableDerivatives(const SimTK::State& state) const override {
-        setStateVariableDerivative(state, "fiberLength", 2.0);
-        setStateVariableDerivative(state, "activation", 3.0 * state.getTime());
-        setStateVariableDerivative(state, "hiddenStateVar", 
+        setStateVariableDerivativeValue(state, "fiberLength", 2.0);
+        setStateVariableDerivativeValue(state, "activation", 3.0 * state.getTime());
+        setStateVariableDerivativeValue(state, "hiddenStateVar", 
                                           exp(-0.5 * state.getTime()));
     }
 
@@ -334,14 +329,12 @@ public:
         constructInfrastructure();
     }
 
-    // API calls can change the component properties and underlying components
-    // before proceding to do any calculations make sure those changes are
-    // finalized.
-    void finalizeChanges() { finalizeFromProperties(); }
-
 protected:
     // Component implementation interface
-    void finalizeFromProperties() override{
+    void extendFinalizeFromProperties() override {
+        // Allow Foo to do its finalize from properties
+        Super::extendFinalizeFromProperties();
+
         // Mark components listed in properties as subcomponents
         Foo& foo1 = upd_Foo1();
         Foo& foo2 = upd_Foo2();
@@ -361,9 +354,6 @@ protected:
         for (int i = 0; i < updProperty_inertia().size(); ++i) {
             upd_inertia(i) = inertiaScale*get_inertia(i);
         }
-
-        // enable newly added subcompenents a chance to finalize
-        Super::finalizeFromProperties();
     }
 
 private:
@@ -422,6 +412,29 @@ int main() {
             cout << e.what() << endl;
         }
 
+        ComponentList<Component> worldTreeAsList = theWorld.getComponentList();
+        std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
+        for (ComponentList<Component>::const_iterator it = worldTreeAsList.begin();
+            it != worldTreeAsList.end();
+            ++it) {
+            std::cout << "Iterator is at: " << it->getName() << std::endl;
+        }
+
+        
+        std::cout << "Using range-for loop: " << std::endl;
+        for (const Component& component : worldTreeAsList) {
+            std::cout << "Iterator is at: " << component.getName() << std::endl;
+        }
+        for (auto& component : worldTreeAsList) {
+            std::cout << "Iterator is at: " << component.getName() << std::endl;
+        }
+        
+        std::cout << "Iterate over only Foo's." << std::endl;
+        for (auto& component : theWorld.getComponentList<Foo>()) {
+            std::cout << "Iterator is at: " << component.getName() << std::endl;
+        }
+        
+
         Foo& foo2 = *new Foo();
         foo2.setName("Foo2");
         foo2.set_mass(3.0);
@@ -433,6 +446,12 @@ int main() {
 
         // Bar should connect now
         theWorld.connect();
+
+        std::cout << "Iterate over only Foo's." << std::endl;
+        for (auto& component : theWorld.getComponentList<Foo>()) {
+            std::cout << "Iterator is at: " << component.getName() << std::endl;
+        }
+
         theWorld.buildUpSystem(system);
 
         // do any other input/output connections
@@ -521,7 +540,7 @@ int main() {
 
         compFoo.set_Foo1(foo);
         compFoo.set_Foo2(foo2);
-        compFoo.finalizeChanges();
+        compFoo.finalizeFromProperties();
     
         world3.add(&compFoo);
         world3.add(&bar2);
@@ -548,8 +567,8 @@ int main() {
 
         s = system3.realizeTopology();
 
-        bar.setStateVariable(s, "fiberLength", 1.5);
-        bar.setStateVariable(s, "activation", 0);
+        bar.setStateVariableValue(s, "fiberLength", 1.5);
+        bar.setStateVariableValue(s, "activation", 0);
 
         int nu3 = system3.getMatterSubsystem().getNumMobilities();
 

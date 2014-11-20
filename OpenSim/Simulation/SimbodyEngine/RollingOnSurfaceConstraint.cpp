@@ -104,9 +104,9 @@ void RollingOnSurfaceConstraint::constructProperties()
  *
  * @param aEngine dynamics engine containing this RollingOnSurfaceConstraint.
  */
-void RollingOnSurfaceConstraint::connectToModel(Model& aModel)
+void RollingOnSurfaceConstraint::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
     string errorMessage;
 
@@ -128,13 +128,11 @@ void RollingOnSurfaceConstraint::connectToModel(Model& aModel)
     }
 }
 
-void RollingOnSurfaceConstraint::addToSystem(SimTK::MultibodySystem& system) const
+void RollingOnSurfaceConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
-
     // Get underlying mobilized bodies
-    SimTK::MobilizedBody roller = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_rollingBody->getMobilizedBodyIndex());
-    SimTK::MobilizedBody surface = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_surfaceBody->getMobilizedBodyIndex());
+    SimTK::MobilizedBody& roller = _rollingBody->updMobilizedBody();
+    SimTK::MobilizedBody& surface = _surfaceBody->updMobilizedBody();
     
     // Add a ficticious massless body to be the "Case" reference body coincident with surface for the no-slip constraint
     SimTK::MobilizedBody::Weld  cb(surface, SimTK::Body::Massless());
@@ -165,9 +163,9 @@ void RollingOnSurfaceConstraint::addToSystem(SimTK::MultibodySystem& system) con
     mutableThis->_index = _indices[0];
 }
 
-void RollingOnSurfaceConstraint::initStateFromProperties(SimTK::State& state) const
+void RollingOnSurfaceConstraint::extendInitStateFromProperties(SimTK::State& state) const
 {
-    Super::initStateFromProperties(state);
+    Super::extendInitStateFromProperties(state);
 
     // All constraints treated the same as default behavior at initilization
     for(int i=0; i < _numConstraintEquations; i++){
@@ -182,9 +180,9 @@ void RollingOnSurfaceConstraint::initStateFromProperties(SimTK::State& state) co
     }
 }
 
-void RollingOnSurfaceConstraint::setPropertiesFromState(const SimTK::State& state)
+void RollingOnSurfaceConstraint::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
 
     set_isDisabled(isDisabled(state));
     for(int i=0; i < _numConstraintEquations; i++){

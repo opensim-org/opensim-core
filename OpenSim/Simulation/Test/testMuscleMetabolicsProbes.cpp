@@ -143,7 +143,7 @@ public:
     //--------------------------------------------------------------------------
     void setFiberLength(SimTK::State& s, double fiberLength) const
     {
-        setStateVariable(s, stateName_fiberLength, fiberLength);
+        setStateVariableValue(s, stateName_fiberLength, fiberLength);
         markCacheVariableInvalid(s, "lengthInfo");
         markCacheVariableInvalid(s, "velInfo");
         markCacheVariableInvalid(s, "dynamicsInfo");
@@ -151,7 +151,7 @@ public:
 
     void setNormFiberVelocity(SimTK::State& s, double normFiberVelocity) const
     {
-        setStateVariable(s, stateName_fiberVelocity, normFiberVelocity *
+        setStateVariableValue(s, stateName_fiberVelocity, normFiberVelocity *
                          getMaxContractionVelocity() * getOptimalFiberLength());
         markCacheVariableInvalid(s, "velInfo");
         markCacheVariableInvalid(s, "dynamicsInfo");
@@ -160,33 +160,32 @@ public:
     //--------------------------------------------------------------------------
     // MODELCOMPONENT INTERFACE
     //--------------------------------------------------------------------------
-    void connectToModel(Model& model) override
+    void extendConnectToModel(Model& model) override
     {
+        Super::extendConnectToModel(model);
         #ifdef USE_ACTIVATION_DYNAMICS_MODEL
         ZerothOrderMuscleActivationDynamics &zomad =
             upd_ZerothOrderMuscleActivationDynamics();
         includeAsSubComponent(&zomad);
         #endif
-
-        Super::connectToModel(model);
     }
 
-    void addToSystem(SimTK::MultibodySystem& system) const override
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override
     {
-        Super::addToSystem(system);
+        Super::extendAddToSystem(system);
         addStateVariable(stateName_fiberLength);
         addStateVariable(stateName_fiberVelocity);
     }
 
-    void initStateFromProperties(SimTK::State& s) const override
+    void extendInitStateFromProperties(SimTK::State& s) const override
     {
-        Super::initStateFromProperties(s);
+        Super::extendInitStateFromProperties(s);
         setFiberLength(s, getOptimalFiberLength());
     }
 
-    void setPropertiesFromState(const SimTK::State& s) override
+    void extendSetPropertiesFromState(const SimTK::State& s) override
     {
-        Super::setPropertiesFromState(s);
+        Super::extendSetPropertiesFromState(s);
         setOptimalFiberLength(getFiberLength(s));
     }
 
@@ -194,8 +193,8 @@ public:
     {
         // This implementation is not intended for use in dynamic simulations.
         const int n = getNumStateVariables();
-        setStateVariableDerivative(s, stateName_fiberLength, 0.0);
-        setStateVariableDerivative(s, stateName_fiberVelocity, 0.0);
+        setStateVariableDerivativeValue(s, stateName_fiberLength, 0.0);
+        setStateVariableDerivativeValue(s, stateName_fiberVelocity, 0.0);
     }
 
     //--------------------------------------------------------------------------
@@ -215,7 +214,7 @@ public:
     double computeActuation(const SimTK::State& s) const override
     {
         const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
-        setForce(s, mdi.tendonForce);
+        setActuation(s, mdi.tendonForce);
         return mdi.tendonForce;
     }
 
@@ -223,7 +222,7 @@ public:
     void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli)
         const override
     {
-        mli.fiberLength            = getStateVariable(s, stateName_fiberLength);
+        mli.fiberLength            = getStateVariableValue(s, stateName_fiberLength);
         mli.fiberLengthAlongTendon = mli.fiberLength;
         mli.normFiberLength        = mli.fiberLength / getOptimalFiberLength();
         mli.tendonLength           = 0;
@@ -251,7 +250,7 @@ public:
     void calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi)
         const override
     {
-        fvi.fiberVelocity = getStateVariable(s, stateName_fiberVelocity);
+        fvi.fiberVelocity = getStateVariableValue(s, stateName_fiberVelocity);
         fvi.fiberVelocityAlongTendon = fvi.fiberVelocity;
         fvi.normFiberVelocity        = fvi.fiberVelocity /
                         (getMaxContractionVelocity() * getOptimalFiberLength());

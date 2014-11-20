@@ -194,7 +194,7 @@ public:
     @param filename     Name of a file containing an OpenSim model in XML
                         format; suffix is typically ".osim". 
                         
-    @param finalize  whether to finalizeFromProperties to create a valid OpenSim Model or not on exit, 
+    @param finalize  whether to extendFinalizeFromProperties to create a valid OpenSim Model or not on exit, 
                      defaults to true. If set to false only deserialization is performed.
     **/
     explicit Model(const std::string& filename, bool finalize=true) SWIG_DECLARE_EXCEPTION;
@@ -281,7 +281,7 @@ public:
     /** After the %Model and its components have been constructed, call this to
     interconnect the components and then create the Simbody
     MultibodySystem needed to represent the %Model computationally. The
-    connectToModel() method of each contained ModelComponent will be invoked,
+    extendConnectToModel() method of each contained ModelComponent will be invoked,
     and then their addToSystem() methods are invoked.   
     The resulting MultibodySystem is maintained internally by the %Model. After 
     this call, you may obtain a writable reference to the System using 
@@ -422,6 +422,36 @@ public:
     GeneralForceSubsystem allocated by this %Model. **/
     SimTK::GeneralForceSubsystem& updForceSubsystem() 
     {   return *_forceSubsystem; }
+
+    /**@}**/
+
+    /**@name  Realize the Simbody System and State to Computational Stage
+    Methods in this section enable advanced and scripting users access to
+    realize the Simbody MultibodySystem and the provided state to a desireed
+    computaional (realization) Stage.
+    Note that these are not accessible until after initSystem() has been
+    invoked on this %Model. **/
+    /**@{**/
+
+    /** Perform computations that depend only on time and earlier stages. **/
+    void realizeTime(const SimTK::State& state) const;
+    /** Perform computations that depend only on position-level state
+    variables and computations performed in earlier stages (including time). **/
+    void realizePosition(const SimTK::State& state) const;
+    /** Perform computations that depend only on velocity-level state
+    variables and computations performed in earlier stages (including position,
+    and time). **/
+    void realizeVelocity(const SimTK::State& state) const;
+    /** Perform computations (typically forces) that may depend on
+    dynamics-stage state variables, and on computations performed in earlier
+    stages (including velocity, position, and time), but not on other forces,
+    accelerations, constraint multipliers, or reaction forces. **/
+    void realizeDynamics(const SimTK::State& state) const;
+    /** Perform computations that may depend on applied forces. **/
+    void realizeAcceleration(const SimTK::State& state) const;
+    /** Perform computations that may depend on anything but are only used
+    for reporting and cannot affect subsequent simulation behavior. **/
+    void realizeReport(const SimTK::State& state) const;
 
     /**@}**/
 
@@ -608,7 +638,7 @@ public:
     ProbeSet& updProbeSet() { return upd_ProbeSet(); };
 
     /**
-     * Get the subset of misc ModelComponents in the model
+     * Get the subst of misc ModelComponents in the model
      * @return The set of misc ModelComponents
      */
     const ComponentSet& getMiscModelComponentSet() const 
@@ -885,34 +915,38 @@ public:
     /**@}**/
 
     //--------------------------------------------------------------------------
-    /**@name         Implementation of ModelComponent interface
+    /**@name         Implementation of Component interface
 
     These methods are %Model's implementation of virtual methods defined in
-    the ModelComponent class from which %Model derives. The implementations
-    here serve as dispatchers that treat all contained ModelComponents (and
-    model elements that are not ModelComponents) as subcomponents whose 
-    corresponding methods need to be called. **/
+    the Component class from which %Model derives. **/
     /**@{**/
-    void finalizeFromProperties() override;
+    void extendFinalizeFromProperties() override;
 
-    void connectToModel(Model& model)  override;
-    void addToSystem(SimTK::MultibodySystem& system) const override; 
-    void initStateFromProperties(SimTK::State& state) const override;
+    void extendConnectToModel(Model& model)  override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override; 
+    void extendInitStateFromProperties(SimTK::State& state) const override;
+    /**@}**/
 
     /**
      * Given a State, set all default values for this Model to match those 
      * found in the State.
      */
-    void setPropertiesFromState(const SimTK::State& state) override;
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
+    //--------------------------------------------------------------------------
+    /**@name         Implementation of ModelComponent interface
+
+    These methods are %Model's implementation of virtual methods defined in
+    the ModelComponent class from which %Model derives. **/
+    /**@{**/
     void generateDecorations
        (bool                                        fixed, 
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const 
                                                                 override;
-    
     /**@}**/
+    
     //--------------------------------------------------------------------------
 
 private:

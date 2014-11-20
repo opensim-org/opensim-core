@@ -70,7 +70,7 @@ class ModelDisplayHints;
  *
  * The primary responsibility of a ModelComponent is to add its computational 
  * representation(s) of physical musculoskeletal structures to the underlying
- * SimTK::System by implementing addToSystem().
+ * SimTK::System by implementing extendAddToSystem().
  *
  * Additional methods provide support for adding modeling options, state and
  * cache variables (@see Component).
@@ -99,6 +99,9 @@ public:
     /** Destructor is virtual to allow concrete model component cleanup. **/
     virtual ~ModelComponent() {}
 
+    /** Connect this ModelComponent to its aggregate- a  Model */
+    void connectToModel(Model& model);
+
     /**
      * Get a const reference to the Model this component is part of.
      */
@@ -115,9 +118,6 @@ public:
      */
     virtual void updateDisplayer(const SimTK::State& s) const {};
 
-
-    // End of Model Component State Accessors.
-    //@} 
 
 protected:
 template <class T> friend class ModelComponentSet;
@@ -154,7 +154,7 @@ template <class T> friend class ModelComponentSet;
     //@{
 
     /** Perform any necessary initializations required to connect the 
-    component into the Model, and check for error conditions. connectToModel() 
+    component into the Model, and check for error conditions. extendConnectToModel() 
     is invoked on all components to complete construction of a Model, prior to
     creating a Simbody System to represent it computationally. It may also be
     invoked at times just for its error-checking side effects.
@@ -162,8 +162,8 @@ template <class T> friend class ModelComponentSet;
     If you override this method, be sure to invoke the base class method first, 
     using code like this:
     @code
-    void MyComponent::connectToModel(Model& model) {
-        Super::connectToModel(model); // invoke parent class method
+    void MyComponent::extendConnectToModel(Model& model) {
+        Super::extendConnectToModel(model); // invoke parent class method
         // ... your code goes here
     }
     @endcode
@@ -176,7 +176,7 @@ template <class T> friend class ModelComponentSet;
 
     @param[in,out]  model   The Model currently being constructed to which this
                             %ModelComponent should be connected. **/
-    virtual void connectToModel(Model& model);
+    virtual void extendConnectToModel(Model& model) {};
 
     /** Optional method for generating arbitrary display geometry that reflects
     this %ModelComponent at the specified \a state. This will be called once to 
@@ -234,7 +234,7 @@ template <class T> friend class ModelComponentSet;
 
     /** @name     ModelComponent System Creation and Access Methods
      * These methods support implementing concrete ModelComponents. Add methods
-     * can only be called inside of addToSystem() and are useful for creating
+     * can only be called inside of extendAddToSystem() and are useful for creating
      * the underlying SimTK::System level variables that are used for computing
      * values of interest.
      * @warning Accessors for System indices are intended for component internal use only.
@@ -245,12 +245,13 @@ template <class T> friend class ModelComponentSet;
     // End of System Creation and Access Methods.
     //@} 
 
-    /** Satisfy the general Component interface, but this is not part of the
-      * ModelComponent interface. ModelComponent::connect() ensures that
-      * connectToModel() on ModelComponent subcomponents are invoked. **/
-    void connect(Component& root) FINAL_11;
 
 private:
+    /** Satisfy the general Component interface, but this is not part of the
+    * ModelComponent interface. ModelComponent::extendConnect() ensures that
+    * extendConnectToModel() on ModelComponent subcomponents are invoked. **/
+    void extendConnect(Component& root) FINAL_11;
+
     const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;
     const SimTK::DefaultSystemSubsystem& updDefaultSubsystem();
 

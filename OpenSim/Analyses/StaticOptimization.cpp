@@ -554,7 +554,7 @@ begin(SimTK::State& s )
         for(int i=0,j=0; i<_forceSet->getSize(); i++) {
             ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
             if( act ) {
-                act->overrideForce(sWorkingCopy,true);
+                act->overrideActuation(sWorkingCopy, true);
             }
         }
 

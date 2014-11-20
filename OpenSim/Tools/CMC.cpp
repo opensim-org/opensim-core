@@ -1084,9 +1084,9 @@ void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
 }
 
 // for any post XML deserialization intialization
-void CMC::connectToModel(Model& model)   {
-
-    Super::connectToModel(model);
+void CMC::extendConnectToModel(Model& model)
+{
+    Super::extendConnectToModel(model);
 
     // STORAGE
     Array<string> labels;
@@ -1104,9 +1104,9 @@ void CMC::connectToModel(Model& model)   {
 
 }
 // for adding any components to the model
-void CMC::addToSystem( SimTK::MultibodySystem& system)  const
+void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     // add event handler for updating controls for next window 
     CMC* mutableThis = const_cast<CMC *>(this);

@@ -225,8 +225,8 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
         ScalarActuator *actuator = dynamic_cast<ScalarActuator*>(&force);
         if(actuator){
             if(computeActuatorPotentialOnly){
-                actuator->overrideForce(s_solver, true);
-                actuator->setOverrideForce(s_solver, 1.0);
+                actuator->overrideActuation(s_solver, true);
+                actuator->setOverrideActuation(s_solver, 1.0);
             }
         }
 
@@ -318,9 +318,7 @@ const SimTK::SpatialVec& InducedAccelerationsSolver::
 
     body = &_modelCopy.getBodySet()[ind];
 
-    return _modelCopy.getMatterSubsystem()
-        .getMobilizedBody(body->getMobilizedBodyIndex())
-        .getBodyAcceleration(s_solver);
+    return body->getMobilizedBody().getBodyAcceleration(s_solver);
 }
 
 

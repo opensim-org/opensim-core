@@ -101,17 +101,14 @@ void testBodyFrame()
         SimTK::Transform xform = rod1.getGroundTransform(st);
         // By construction the transform should gove a translation of .353553, .353553, 0.0 since 0.353553 = .5 /sqr(2)
         double dNorm = (xform.p() - SimTK::Vec3(0.5*std::sin(radAngle), -0.5*std::cos(radAngle), 0.)).norm();
-        assert(dNorm < 1e-6);
+        ASSERT(dNorm < 1e-6, __FILE__, __LINE__, "testBodyFrame() failed");
         // The rotation part is a pure bodyfixed Z-rotation by radAngle.
         SimTK::Vec3 angles = xform.R().convertRotationToBodyFixedXYZ();
-        assert(std::abs(angles[0]) < 1e-6);
-        assert(std::abs(angles[1]) < 1e-6);
-        assert(std::abs(angles[2] - radAngle) < 1e-6);
+        ASSERT(std::abs(angles[0]) < 1e-6, __FILE__, __LINE__, "testBodyFrame() failed");
+        ASSERT(std::abs(angles[1]) < 1e-6, __FILE__, __LINE__, "testBodyFrame() failed");
+        ASSERT(std::abs(angles[2] - radAngle) < 1e-6, __FILE__, __LINE__, "testBodyFrame() failed");
     }
 
-    // make sure that this Body, which is a Frame, reports that its anchor body is itself.
-    assert(rod1.isAnchoredToBody() == true);
-    assert(rod1.getName() == rod1.getAnchorBody().getName());
     return;
 }
 
@@ -130,10 +127,10 @@ void testFixedFrameOnBodyFrame()
     const SimTK::Transform rod1FrameXform = rod1.getGroundTransform(st);
     SimTK::Transform xform = atOriginFrame->getGroundTransform(st);
     // xform should have 0.0 translation
-    assert(xform.p().norm() < 1e-6);
-    // make sure that this FixedFrame knows that it is rigidly fixed to rod1
-    assert(atOriginFrame->isAnchoredToBody() == true);
-    assert(rod1.getName() == atOriginFrame->getAnchorBody().getName());
+    ASSERT(xform.p().norm() < 1e-6, __FILE__, __LINE__, "testFixedFrameOnBodyFrame() failed");
+    // make sure that this FixedFrame knows that it is rigidly fixed to the
+    // same MobilizedBody as Body rod1
+    ASSERT(rod1.getMobilizedBodyIndex() == atOriginFrame->getMobilizedBodyIndex(), __FILE__, __LINE__, "testFixedFrameOnBodyFrame() failed");
     return;
 }
 
@@ -160,10 +157,10 @@ void testFixedFrameOnFixedFrame()
     const SimTK::Transform rod1FrameXform = rod1.getGroundTransform(st);
     SimTK::Transform xform = secondFrame->getGroundTransform(st);
     // xform should have 0.0 translation
-    assert(xform.p().norm() < 1e-6);
-    // make sure that this FixedFrame knows that it is rigidly fixed to rod1
-    assert(secondFrame->isAnchoredToBody() == true);
-    assert(rod1.getName() == secondFrame->getAnchorBody().getName());
+    ASSERT(xform.p().norm() < 1e-6, __FILE__, __LINE__, "testFixedFrameOnFixedFrame() failed");
+    // make sure that this FixedFrame knows that it is rigidly fixed to the
+    // same MobilizedBody as Body rod1
+    ASSERT(rod1.getMobilizedBodyIndex() == secondFrame->getMobilizedBodyIndex(), __FILE__, __LINE__, "testFixedFrameOnFixedFrame() failed");
     return;
 }
 
@@ -187,10 +184,10 @@ void testFixedFrameOnBodyFrameSerialize()
     SimTK::State& st2 = dPendulumWFrame->initSystem();
     const FixedFrame* myExtraFrame = dynamic_cast<const FixedFrame*> (&dPendulumWFrame->getFrameSet().get("myExtraFrame"));
     SimTK::Transform xformPost = myExtraFrame->getGroundTransform(st2);
-    assert((xformPost.p()- xformPre.p()).norm() < 1e-6);
-    // make sure that this FixedFrame knows that it is rigidly fixed to rod1
-    assert(myExtraFrame->isAnchoredToBody() == true);
-    assert(rod1.getName() == myExtraFrame->getAnchorBody().getName());
+    ASSERT((xformPost.p() - xformPre.p()).norm() < 1e-6, __FILE__, __LINE__, "testFixedFrameOnBodyFrameSerialized failed");
+    // make sure that this FixedFrame knows that it is rigidly fixed to the
+    // same MobilizedBody as Body rod1
+    ASSERT(rod1.getMobilizedBodyIndex() == myExtraFrame->getMobilizedBodyIndex(), __FILE__, __LINE__, "testFixedFrameOnBodyFrameSerialized() failed");
     return;
 }
 
@@ -215,7 +212,7 @@ void testStationOnFrame()
         SimTK::Vec3 comInGround = myStation->findLocationInFrame(st, dPendulum->getGroundBody());
         SimTK::Vec3 comBySimbody(0.);
         dPendulum->getSimbodyEngine().getPosition(st, rod1, com, comBySimbody);
-        assert((comInGround - comBySimbody).norm() < 1e-6);
+        ASSERT((comInGround - comBySimbody).norm() < 1e-6, __FILE__, __LINE__, "testStationOnFrame() failed");
     }
     return;
 }

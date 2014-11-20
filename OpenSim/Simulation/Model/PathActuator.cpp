@@ -124,13 +124,13 @@ double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
 }
 //_____________________________________________________________________________
 /**
- * Get the stress of the force.
- *
- * @return Stress.
- */
+* Get the stress of the force. This would be the force or torque provided by
+* this actuator divided by its optimal force.
+* @return Stress.
+*/
 double PathActuator::getStress( const SimTK::State& s) const
 {
-    return fabs(getForce(s)/get_optimal_force()); 
+    return fabs(getActuation(s)/get_optimal_force()); 
 }
 
 
@@ -194,14 +194,14 @@ void PathActuator::computeForce( const SimTK::State& s,
     setSpeed(s, speed);
 
     double force =0;
-    if( isForceOverriden(s) ) {
-        force = computeOverrideForce(s);
+    if( isActuationOverriden(s) ) {
+        force = computeOverrideActuation(s);
     } else {
         force = computeActuation(s);
     }
 
     // the force of this actuator used to compute power
-    setForce(s,  force );
+    setActuation(s, force);
 
     path.addInEquivalentForces(s, force, bodyForces, mobilityForces);
 }
@@ -223,7 +223,7 @@ double PathActuator::computeMomentArm(const SimTK::State& s, Coordinate& aCoord)
  *
  * @param aModel OpenSim model containing this PathActuator.
  */
-void PathActuator::finalizeFromProperties()
+void PathActuator::extendFinalizeFromProperties()
 {
     GeometryPath &path = updGeometryPath();
 
@@ -233,19 +233,20 @@ void PathActuator::finalizeFromProperties()
     // Set owner here in case errors happen later so we can put useful message about responsible party.
     path.setOwner(this);
 
-    Super::finalizeFromProperties();
+    Super::extendFinalizeFromProperties();
 }
 
 //------------------------------------------------------------------------------
 //                            REALIZE DYNAMICS
 //------------------------------------------------------------------------------
 // See if anyone has an opinion about the path color and change it if so.
-void PathActuator::realizeDynamics(const SimTK::State& state) const {
-    Super::realizeDynamics(state); // Mandatory first line
+void PathActuator::extendRealizeDynamics(const SimTK::State& state) const
+{
+    Super::extendRealizeDynamics(state); // Mandatory first line
 
     // if this force is disabled OR it is being overidden (not computing dynamics)
     // then don't compute the color of the path.
-    if(!isDisabled(state) && !isForceOverriden(state)){
+    if (!isDisabled(state) && !isActuationOverriden(state)){
         const SimTK::Vec3 color = computePathColor(state);
         if (!color.isNaN())
             getGeometryPath().setColor(state, color);

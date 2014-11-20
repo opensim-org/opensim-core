@@ -75,10 +75,10 @@ void UnilateralConstraint::setNull()
  *
  * @param Model containing this UnilateralConstraint.
  */
-void UnilateralConstraint::connectToModel(Model& aModel)
+void UnilateralConstraint::extendConnectToModel(Model& aModel)
 {
     // Base class
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 }
 
 //=============================================================================

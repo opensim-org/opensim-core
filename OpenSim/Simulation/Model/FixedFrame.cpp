@@ -99,7 +99,7 @@ void FixedFrame::constructConnectors()
     constructConnector<RigidFrame>("parent_frame");
 }
 
-void FixedFrame::addToSystem(SimTK::MultibodySystem& system) const
+void FixedFrame::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     // Traverse the tree of consecutive FixedFrame connections to determine 
     // this FixedFrame's root segment (Body/MobilizedBody).  We store that 
@@ -163,19 +163,20 @@ void FixedFrame::initFixedFrameCache() const
 {
     const RigidFrame& parent = getParentFrame();
     const OpenSim::FixedFrame* parentFixedFrame =
-        +dynamic_cast<const OpenSim::FixedFrame *>(&parent);
+        dynamic_cast<const OpenSim::FixedFrame *>(&parent);
     if (parentFixedFrame != 0)
     {
         // The parent frame is another FixedFrame
         // The parent FixedFrame must resolve its hierarchy before we ask
         // for its root MobilizedBodyIndex.
         // check if the FixedFrame has populated its root segments
-        if (parentFixedFrame->isPathToBaseValid() == 0)
+        if (!parentFixedFrame->isPathToBaseValid())
         {
             parentFixedFrame->initFixedFrameCache();
         }
-        // all variables pointing to the parents root MobilizedBody should be valid
-        _mbTransform = getTransform()*parentFixedFrame->getTransformInMobilizedBody();
+        // all variables pointing to the parent's root MobilizedBody should be valid
+        // X_BF = X_BP*X_PF
+        _mbTransform = parentFixedFrame->getTransformInMobilizedBody()*getTransform();
     }
     else
     {

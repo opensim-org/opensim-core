@@ -96,9 +96,9 @@ void PrescribedController::constructProperties()
 }
 
 
-void PrescribedController::connectToModel(Model& model)
+void PrescribedController::extendConnectToModel(Model& model)
 {
-    Super::connectToModel(model);
+    Super::extendConnectToModel(model);
     if(!getProperty_controls_file().empty()){
         Storage controls(get_controls_file());
         const Array<string>& columns = controls.getColumnLabels();
@@ -148,7 +148,7 @@ void PrescribedController::connectToModel(Model& model)
                     }
                 }
                 else{
-                    cout << "PrescribedController::connectToModel() could not "
+                    cout << "PrescribedController::extendConnectToModel() could not "
                         "find actuator '" << actName << "' in the model." <<endl;
                 }
             }// if found in functions, it has already been prescribed

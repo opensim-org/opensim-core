@@ -129,18 +129,18 @@ void Probe::constructOutputs()
 /**
  * Create an underlying OpenSim::Probe
  */
-void Probe::connectToModel(Model& model)
+void Probe::extendConnectToModel(Model& model)
 {
-    Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 }
 
 //_____________________________________________________________________________
 /**
  * Create the underlying system component(s).
  */
-void Probe::addToSystem(MultibodySystem& system) const
+void Probe::extendAddToSystem(MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     if (isDisabled())
         return;
@@ -166,8 +166,6 @@ void Probe::addToSystem(MultibodySystem& system) const
         beforeOperationValues.push_back(tmpPM);
     }
 
-
-
     // Assign the correct (operation) Measure subclass to the operand
     // ==============================================================
 
@@ -179,8 +177,6 @@ void Probe::addToSystem(MultibodySystem& system) const
             mutableThis->afterOperationValues[i] = beforeOperationValues[i];   
         }
     }
-
-
     // ---------------------------------------------------------------------
     // Integrate the probe value
     // ---------------------------------------------------------------------
@@ -224,8 +220,6 @@ void Probe::addToSystem(MultibodySystem& system) const
                 system, beforeOperationValues[i]);
         }
     }
-
-
     // ---------------------------------------------------------------------
     // Get the minimum of the probe value
     // ---------------------------------------------------------------------
@@ -235,8 +229,6 @@ void Probe::addToSystem(MultibodySystem& system) const
                 system, beforeOperationValues[i]);
         }
     }
-
-
     // ---------------------------------------------------------------------
     // Get the absolute minimum of the probe value
     // ---------------------------------------------------------------------
@@ -246,8 +238,6 @@ void Probe::addToSystem(MultibodySystem& system) const
                 system, beforeOperationValues[i]);
         }
     }
-        
-
     // ---------------------------------------------------------------------
     // Get the maximum of the probe value
     // ---------------------------------------------------------------------
@@ -258,7 +248,6 @@ void Probe::addToSystem(MultibodySystem& system) const
         }
     }
 
-
     // ---------------------------------------------------------------------
     // Get the absolute maximum of the probe value
     // ---------------------------------------------------------------------
@@ -268,7 +257,6 @@ void Probe::addToSystem(MultibodySystem& system) const
                 system, beforeOperationValues[i]);
         }
     }
-
 
     // ---------------------------------------------------------------------
     // Throw exception (invalid operation)
@@ -281,7 +269,6 @@ void Probe::addToSystem(MultibodySystem& system) const
             "'minimum', 'minabs', 'maximum', 'maxabs'." << endl;
         throw (Exception(errorMessage.str()));
     }
-
 }
 
 

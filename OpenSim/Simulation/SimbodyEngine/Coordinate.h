@@ -220,13 +220,13 @@ public:
 
 protected:
     // Only model should be invoking these ModelComponent interface methods.
-    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     //State structure is locked and now we can assign names to state variables
     //allocated by underlying components after modeling options have been 
     //factored in.
-    void realizeInstance(const SimTK::State& state) const override;
-    void initStateFromProperties(SimTK::State& s) const override;
-    void setPropertiesFromState(const SimTK::State& state) override;
+    void extendRealizeInstance(const SimTK::State& state) const override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
     // Only the coordinate or the joint itself can specify the owner
     // of Coordinate
@@ -306,7 +306,7 @@ private:
     // PRIVATE METHODS implementing the Component interface
     void constructProperties() override;
     void constructOutputs() override;
-    void finalizeFromProperties() override;
+    void extendFinalizeFromProperties() override;
 
     friend class CoordinateCouplerConstraint; 
     friend class Joint; 

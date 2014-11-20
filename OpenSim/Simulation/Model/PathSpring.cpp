@@ -44,13 +44,13 @@ static const Vec3 DefaultPathSpringColor(.9,.9,.9); // mostly white
 // Default constructor.
 PathSpring::PathSpring()
 {
-    constructProperties();
+    constructInfrastructure();
 }
 
 PathSpring::PathSpring(const string& name, double restLength, 
                        double stiffness, double dissipation)
 {
-    constructProperties();
+    constructInfrastructure();
     setName(name);
     set_resting_length(restLength);
     set_stiffness(stiffness);
@@ -68,7 +68,10 @@ void PathSpring::constructProperties()
     constructProperty_resting_length(SimTK::NaN);
     constructProperty_stiffness(SimTK::NaN);
     constructProperty_dissipation(SimTK::NaN);
+}
 
+void PathSpring::constructOutputs()
+{
     constructOutput<double>("stretch", 
            std::bind(&PathSpring::getStretch, this, std::placeholders::_1),
                       SimTK::Stage::Position);
@@ -106,46 +109,18 @@ void PathSpring::setDissipation(double dissipation)
  *
  * @param aModel model containing this PathSpring.
  */
-void PathSpring::connectToModel(Model& aModel)
+void PathSpring::extendFinalizeFromProperties()
 {
+    Super::extendFinalizeFromProperties();
+
     GeometryPath& path = upd_GeometryPath();
-    const double& restingLength = get_resting_length();
-
+    path.setName("path");
     path.setDefaultColor(DefaultPathSpringColor);
-
-    // Specify underlying ModelComponents prior to calling 
-    // Super::connectToModel() to automatically propagate connectToModel()
-    // to subcomponents. Subsequent addToSystem() will also be automatically
-    // propagated to subcomponents.
-    // TODO: this is awkward; subcomponent API needs to be revisited (sherm)
     addComponent(&path);
 
-    //TODO: can't call this at start of override; this is an API bug.
-    Super::connectToModel(aModel);
-
-    // _model will be NULL when objects are being registered.
-    if (!_model)
-        return;
-
     // Resting length must be greater than 0.0.
-    assert(restingLength > 0.0);
-
+    assert(get_resting_length() > 0.0);
     path.setOwner(this);
-}
-
-//_____________________________________________________________________________
-/**
- * allocate and initialize the SimTK state for this PathSpring.
- */
- void PathSpring::addToSystem(SimTK::MultibodySystem& system) const
-{
-    Super::addToSystem(system);
-}
-
-
-void PathSpring::initStateFromProperties( SimTK::State& s) const
-{
-    Super::initStateFromProperties(s);
 }
 
 

@@ -158,9 +158,9 @@ void ActuatorForceProbe::setExponent(const double exponent)
 *
 * @param aModel OpenSim model containing this ActuatorForceProbe.
 */
-void ActuatorForceProbe::connectToModel(Model& model)
+void ActuatorForceProbe::extendConnectToModel(Model& model)
 {
-    Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 
     // Check to see if 'all' actuators are selected for probing.
     if (getProperty_actuator_names().size() > 0)
@@ -216,7 +216,7 @@ SimTK::Vector ActuatorForceProbe::computeProbeInputs(const State& s) const
     {
         // Get the Actuator force.
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_model->getActuators()[_actuatorIndex[i]]);
-        const double Ftmp = act->getForce(s);
+        const double Ftmp = act->getActuation(s);
 
         // Append to output vector.
         if (getSumForcesTogether())

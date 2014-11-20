@@ -144,13 +144,14 @@ const std::string& Joint::getChildBodyName() const
     return getConnector<Body>("child_body").get_connected_to_name();
 }
 
-
-void Joint::finalizeFromProperties()
+void Joint::extendFinalizeFromProperties()
 {
+    Super::extendFinalizeFromProperties();
+
+    constructCoordinates();
+
     CoordinateSet& coordinateSet = upd_CoordinateSet();
 
-    //start from a clear slate
-    clearComponents();
     // add all coordinates listed under this joint as 
     // subcomponents as long as the number of coordinates
     // does not exceed the number of dofs.
@@ -185,9 +186,6 @@ void Joint::finalizeFromProperties()
 
     SimTK::Transform parentTransform(parentRotation, locationInParent);
     _jointFrameInParent = parentTransform;
-
-    // now let base invoke on subcomponents
-    Super::finalizeFromProperties();
 }
 
 //=============================================================================
@@ -371,13 +369,9 @@ void Joint::setChildMobilizedBodyIndex(const SimTK::MobilizedBodyIndex index) co
 }
 
 
-// TODO: note that child must invoke Joint::addToSystem()
-// *after* it creates its mobilized body; that is an API bug.
-void Joint::addToSystem(SimTK::MultibodySystem& system) const
+void Joint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    // add sub components (e.g. Coordinates) once we have necessary system indices
-    Super::addToSystem(system);
-
+    Super::extendAddToSystem(system);
     /* TODO: Useful to include through debug message/log in the future
     cout << getConcreteClassName() << ":'" << getName() << "' connects parent '";
     cout << getParentBodyName() << "'[" << getParentBody().getIndex() << "] and child '";
@@ -385,22 +379,22 @@ void Joint::addToSystem(SimTK::MultibodySystem& system) const
      */
 }
 
-void Joint::initStateFromProperties(SimTK::State& s) const
+void Joint::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 
     const CoordinateSet& coordinateSet = get_CoordinateSet();
     for (int i = 0; i < coordinateSet.getSize(); i++)
-        coordinateSet.get(i).initStateFromProperties(s);
+        coordinateSet.get(i).extendInitStateFromProperties(s);
 }
 
-void Joint::setPropertiesFromState(const SimTK::State& state)
+void Joint::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
 
     const CoordinateSet& coordinateSet = get_CoordinateSet();
     for (int i = 0; i < coordinateSet.getSize(); i++)
-        coordinateSet.get(i).setPropertiesFromState(state);
+        coordinateSet.get(i).extendSetPropertiesFromState(state);
 }
 
 
@@ -654,7 +648,7 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
 }
 
 /* Return the equivalent (internal) SimTK::Rigid::Body for a given parent OR
-child OpenSim::Body. Not guaranteed to be valid until after addToSystem on
+child OpenSim::Body. Not guaranteed to be valid until after extendAddToSystem on
 Body has be called  */
 const SimTK::Body::Rigid& Joint::getParentInternalRigidBody() const
 {

@@ -85,7 +85,7 @@ private:
     // Connect properties to local pointers.  */
     void constructProperties();
     // ModelComponent interface to connect this component to its model
-    void connectToModel(Model& aModel);
+    void extendConnectToModel(Model& aModel);
 
     //=============================================================================
 };  // END of class ToyReflexController

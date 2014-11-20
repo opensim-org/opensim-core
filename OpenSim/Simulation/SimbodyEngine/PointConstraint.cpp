@@ -116,8 +116,9 @@ void PointConstraint::constructProperties()
  *
  * @param aModel OpenSim model containing this PointConstraint.
  */
-void PointConstraint::connectToModel(Model& aModel) {
-    Super::connectToModel(aModel);
+void PointConstraint::extendConnectToModel(Model& aModel)
+{
+    Super::extendConnectToModel(aModel);
     
     string errorMessage;
 
@@ -137,13 +138,13 @@ void PointConstraint::connectToModel(Model& aModel) {
     _body2 = &aModel.updBodySet().get(body2Name);
 }
 
-void PointConstraint::addToSystem(SimTK::MultibodySystem& system) const
+void PointConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     // Get underlying mobilized bodies
-    SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body1->getMobilizedBodyIndex());
-    SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body2->getMobilizedBodyIndex());
+    SimTK::MobilizedBody& b1 = _body1->updMobilizedBody();
+    SimTK::MobilizedBody& b2 = _body2->updMobilizedBody();
 
     // Now create a Simbody Constraint::Point
     SimTK::Constraint::Ball simtkPoint(b1, get_location_body_1(), b2, get_location_body_2());

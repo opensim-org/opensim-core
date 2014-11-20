@@ -139,8 +139,10 @@ void Coordinate::constructProperties(void)
  * object has been deserialized or copied.
  *
  */
-void Coordinate::finalizeFromProperties()
+void Coordinate::extendFinalizeFromProperties()
 {
+    Super::extendFinalizeFromProperties();
+
     string prefix = "Coordinate(" + getName() + ")::connectToModel: ";
 
     if((IO::Lowercase(get_motion_type()) == "rotational") || get_motion_type() == "")
@@ -174,9 +176,9 @@ void Coordinate::finalizeFromProperties()
     _lockedWarningGiven=false;
 }
 
-void Coordinate::addToSystem(SimTK::MultibodySystem& system) const
+void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     //create lock constraint automatically
     // The underlying SimTK constraint
@@ -222,18 +224,17 @@ void Coordinate::addToSystem(SimTK::MultibodySystem& system) const
     addStateVariable(ssv);
 }
 
-void Coordinate::realizeInstance(const SimTK::State& state) const
+void Coordinate::extendRealizeInstance(const SimTK::State& state) const
 {
     const MobilizedBody& mb
         = getModel().getMatterSubsystem().getMobilizedBody(_bodyIndex);
 
-    
     int uix = state.getUStart() + mb.getFirstUIndex(state) + _mobilizerQIndex;
 
     /* Set the YIndex on the StateVariable */
 }
 
-void Coordinate::initStateFromProperties(State& s) const
+void Coordinate::extendInitStateFromProperties(State& s) const
 {
     // Cannot enforce the constraint, since state of constraints may still be undefined
     const MobilizedBody& mb=_model->getMatterSubsystem().getMobilizedBody(_bodyIndex);
@@ -252,7 +253,7 @@ void Coordinate::initStateFromProperties(State& s) const
     setLocked(s, get_locked());
 }
 
-void Coordinate::setPropertiesFromState(const SimTK::State& state)
+void Coordinate::extendSetPropertiesFromState(const SimTK::State& state)
 {
     upd_default_value() = _model->getMatterSubsystem().getMobilizedBody(_bodyIndex).getOneQ(state,_mobilizerQIndex);
     upd_default_speed_value() = _model->getMatterSubsystem().getMobilizedBody(_bodyIndex).getOneU(state,_mobilizerQIndex);

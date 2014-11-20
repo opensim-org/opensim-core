@@ -31,12 +31,21 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Free joint.  The underlying implementation 
- * in Simbody is a MobilizedBody::Free.
- *
- * @author Ajay Seth
- * @version 1.0
- */
+
+A class implementing a Free joint.  The underlying implementation
+in Simbody is a SimTK::MobilizedBody::Free.
+Free joint allows unrestricted motion with three rotations and three translations.
+Rotations are modeled similiarly to BallJoint -using quaternions with no
+singulaties- while the translational generalized coordinates are XYZ
+Translations along the parent axis. Generalized speeds are equal to the computed
+angular velocities (\f$\vec{u} = \vec{\omega}\f$), not a differentiation of
+position (\f$\vec{u} \neq \dot{\vec{q}}\f$).
+
+\image html freeJoint.gif
+
+@author Ajay Seth
+*/
+
 class OSIMSIMULATION_API FreeJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(FreeJoint, Joint);
 
@@ -59,7 +68,7 @@ public:
     FreeJoint();
     // Convenience Constructor
     FreeJoint(const std::string &name, Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-          Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
+          Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
           /*bool useEulerAngles=true,*/ bool reverse=false);
 
     virtual ~FreeJoint();
@@ -68,9 +77,9 @@ public:
 
 protected:
     // ModelComponent interface.
-    void addToSystem(SimTK::MultibodySystem& system) const override;
-    void initStateFromProperties(SimTK::State& s) const override;
-    void setPropertiesFromState(const SimTK::State& state) override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
 private:
     SimTK::MobilizedBodyIndex _masslessBodyIndex;
@@ -83,5 +92,3 @@ private:
 } // end of namespace OpenSim
 
 #endif // OPENSIM_FREE_JOINT_H_
-
-

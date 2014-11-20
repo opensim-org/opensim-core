@@ -86,7 +86,7 @@ public:
     // Power: Since lengthening is positive and tension always shortens, positive power
     // is when muscle is shortening under tension.
     virtual double getPower(const SimTK::State& s) const 
-    {   return -getForce(s)*getSpeed(s); }
+    {   return -getActuation(s)*getSpeed(s); }
 
 
     // STRESS
@@ -150,9 +150,9 @@ protected:
     virtual SimTK::Vec3 computePathColor(const SimTK::State& state) const;
 
     /** Extension of parent class method; derived classes may extend further. **/
-    void finalizeFromProperties() override;
+    void extendFinalizeFromProperties() override;
     /** Extension of parent class method; derived classes may extend further. **/
-    void realizeDynamics(const SimTK::State& state) const override;
+    void extendRealizeDynamics(const SimTK::State& state) const override;
 
 private:
     void setNull();

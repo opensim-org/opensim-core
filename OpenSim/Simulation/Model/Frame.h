@@ -131,7 +131,7 @@ public:
     *
     * @param state       The state applied to the model when determining the
     *                    transform.
-    * @param vec         The point to be re-expressed.
+    * @param point       The point to be re-expressed.
     * @param otherFrame  The frame in which the point will be re-expressed
     * @return newVec     The expression of the point measured in otherFrame.
     */

@@ -113,10 +113,14 @@ void TorqueActuator::setBodyB(const Body& aBody)
 // COMPUTATIONS
 //==============================================================================
 //_____________________________________________________________________________
-// Calculate the stress of the force.
+/**
+* Get the stress of the force. This would be the force or torque provided by
+* this actuator divided by its optimal force.
+* @return Stress.
+*/
 double TorqueActuator::getStress(const State& s) const
 {
-    return std::abs(getForce(s) / getOptimalForce()); 
+    return std::abs(getActuation(s) / getOptimalForce());
 }
 //_____________________________________________________________________________
 /**
@@ -150,20 +154,20 @@ void TorqueActuator::computeForce(const State& s,
     const bool torqueIsGlobal = getTorqueIsGlobal();
     const Vec3& axis = getAxis();
     
-    double force = 0;
+    double actuation = 0;
 
-    if( isForceOverriden(s) ) {
-       force = computeOverrideForce(s);
+    if (isActuationOverriden(s)) {
+        actuation = computeOverrideActuation(s);
     } else {
-       force = computeActuation(s);
+        actuation = computeActuation(s);
     }
-    setForce(s,  force );
+    setActuation(s, actuation);
 
     if(!_bodyA)
         return;
     
-    setForce(s, force );
-    Vec3 torque = force*UnitVec3(axis);
+    setActuation(s, actuation);
+    Vec3 torque = actuation * UnitVec3(axis);
     
     if (!torqueIsGlobal)
         engine.transform(s, *_bodyA, torque, engine.getGroundBody(), torque);
@@ -186,13 +190,13 @@ void TorqueActuator::computeForce(const State& s,
 /**
  * Sets the actual Body references _bodyA and _bodyB
  */
-void TorqueActuator::connectToModel(Model& model)
+void TorqueActuator::extendConnectToModel(Model& model)
 {
-    Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 
     if (get_bodyA().empty() || get_bodyB().empty())
         throw OpenSim::Exception(
-            "TorqueActuator::connectToModel(): body name properties "
+            "TorqueActuator::extendConnectToModel(): body name properties "
             "were not set.");
 
     // Look up the bodies by name in the Model, and record pointers to the

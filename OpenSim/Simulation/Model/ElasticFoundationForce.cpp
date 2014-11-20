@@ -47,9 +47,9 @@ ElasticFoundationForce::ElasticFoundationForce(ContactParameters* params)
     addContactParameters(params);
 }
 
-void ElasticFoundationForce::addToSystem(SimTK::MultibodySystem& system) const
+void ElasticFoundationForce::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     const ContactParametersSet& contactParametersSet = 
         get_contact_parameters();
@@ -71,7 +71,7 @@ void ElasticFoundationForce::addToSystem(SimTK::MultibodySystem& system) const
                 throw (Exception(errorMessage.c_str()));
             }
             ContactGeometry& geom = _model->updContactGeometrySet().get(params.getGeometry()[j]);
-            contacts.addBody(set, matter.updMobilizedBody(SimTK::MobilizedBodyIndex(geom.getBody().getMobilizedBodyIndex())), geom.createSimTKContactGeometry(), geom.getTransform());
+            contacts.addBody(set, geom.getBody().getMobilizedBody(), geom.createSimTKContactGeometry(), geom.getTransform());
             if (dynamic_cast<ContactMesh*>(&geom) != NULL)
                 force.setBodyParameters(SimTK::ContactSurfaceIndex(contacts.getNumBodies(set)-1), 
                     params.getStiffness(), params.getDissipation(),

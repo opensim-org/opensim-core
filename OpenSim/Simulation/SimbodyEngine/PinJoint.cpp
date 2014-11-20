@@ -82,10 +82,7 @@ PinJoint::PinJoint(const std::string &name, const OpenSim::Body &parent,
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void PinJoint::addToSystem(SimTK::MultibodySystem& system) const
+void PinJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     createMobilizedBody<MobilizedBody::Pin>(system);
-
-    // TODO: Joints require super class to be called last.
-    Super::addToSystem(system);
 }

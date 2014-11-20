@@ -163,9 +163,9 @@ void PointToPointSpring::updateGeometry(const SimTK::State& s)
 //=============================================================================
 // Connect this force element to the rest of the model.
 //=============================================================================
-void PointToPointSpring::connectToModel(Model& model)
+void PointToPointSpring::extendConnectToModel(Model& model)
 {
-    Super::connectToModel(model);   // Let base class connect first.
+    Super::extendConnectToModel(model); // Let base class connect first.
 
     if(getName() == "")
         setName("pointToPointSpring");
@@ -174,22 +174,20 @@ void PointToPointSpring::connectToModel(Model& model)
 //=============================================================================
 // Create the underlying system component(s)
 //=============================================================================
-void PointToPointSpring::addToSystem(SimTK::MultibodySystem& system) const
+void PointToPointSpring::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);    // Base class first.
+    Super::extendAddToSystem(system);
 
     const Body& body1 = getBody1();
     const Body& body2 = getBody2();
 
     // Get underlying mobilized bodies
-    SimTK::MobilizedBody b1 = _model->getMatterSubsystem()
-                                        .getMobilizedBody(body1.getMobilizedBodyIndex());
-    SimTK::MobilizedBody b2 = _model->getMatterSubsystem()
-                                        .getMobilizedBody(body2.getMobilizedBodyIndex());
+    const SimTK::MobilizedBody& b1 = body1.getMobilizedBody();
+    const SimTK::MobilizedBody& b2 = body2.getMobilizedBody();
 
     // Now create a Simbody Force::TwoPointLinearSpring
     SimTK::Force::TwoPointLinearSpring simtkSpring
-       (_model->updForceSubsystem(), b1, getPoint1(), b2, getPoint2(), 
+        (_model->updForceSubsystem(), b1, getPoint1(), b2, getPoint2(), 
         getStiffness(), getRestlength());
     
     // Beyond the const Component get the index so we can access the 

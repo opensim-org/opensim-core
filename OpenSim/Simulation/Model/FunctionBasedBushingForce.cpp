@@ -146,9 +146,9 @@ void FunctionBasedBushingForce::constructProperties()
  *
  * @param aModel OpenSim model containing this FunctionBasedBushingForce.
  */
-void FunctionBasedBushingForce::connectToModel(Model& aModel)
+void FunctionBasedBushingForce::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel); // base class first
+    Super::extendConnectToModel(aModel); // base class first
 
     string errorMessage;
     const string& body1Name = get_body_1(); // error if unspecified
@@ -176,9 +176,9 @@ void FunctionBasedBushingForce::connectToModel(Model& aModel)
     }
 }
 
-void FunctionBasedBushingForce::addToSystem(SimTK::MultibodySystem& system) const
+void FunctionBasedBushingForce::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     const string&      body1Name            = get_body_1();
     const string&      body2Name            = get_body_2();
@@ -194,8 +194,8 @@ void FunctionBasedBushingForce::addToSystem(SimTK::MultibodySystem& system) cons
     FunctionBasedBushingForce* mutableThis = const_cast<FunctionBasedBushingForce *>(this);
 
     // Get underlying mobilized bodies
-    mutableThis->_b1 = &_model->updMatterSubsystem().getMobilizedBody(body1.getMobilizedBodyIndex());
-    mutableThis->_b2 = &_model->updMatterSubsystem().getMobilizedBody(body2.getMobilizedBodyIndex());
+    mutableThis->_b1 = &body1.getMobilizedBody();
+    mutableThis->_b2 = &body2.getMobilizedBody();
     // Define the transforms for the bushing frames affixed to the specified bodies
     SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(orientationInBody1);
     SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(orientationInBody2);

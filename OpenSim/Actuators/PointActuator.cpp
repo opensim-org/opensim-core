@@ -125,10 +125,11 @@ double PointActuator::getOptimalForce() const
     return get_optimal_force();
 }
 //_____________________________________________________________________________
-// Get the stress of the force.
+// Get the stress of the force. This would be the force or torque provided by 
+// this actuator divided by its optimal force.
 double PointActuator::getStress( const SimTK::State& s) const
 {
-    return std::abs(getForce(s) / getOptimalForce()); 
+    return std::abs(getActuation(s) / getOptimalForce()); 
 }
 
 
@@ -167,12 +168,12 @@ void PointActuator::computeForce(const SimTK::State& s,
 
     double force;
 
-    if( isForceOverriden(s) ) {
-       force = computeOverrideForce(s);
+    if (isActuationOverriden(s)) {
+        force = computeOverrideActuation(s);
     } else {
        force = computeActuation(s);
     }
-    setForce(s,  force );
+    setActuation(s, force);
 
     
     Vec3 forceVec = force*SimTK::UnitVec3(get_direction());
@@ -197,9 +198,9 @@ void PointActuator::computeForce(const SimTK::State& s,
 /**
  * Sets the actual Body reference _body
  */
-void PointActuator::connectToModel(Model& model)
+void PointActuator::extendConnectToModel(Model& model)
 {
-    Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 
     string errorMessage;
 

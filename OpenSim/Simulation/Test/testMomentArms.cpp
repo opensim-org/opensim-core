@@ -327,11 +327,11 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 
         // Verify that the moment-arm calculated is dynamically consistent with moment generated
         if (mass!=0 ) {
-            muscle.overrideForce(s, true);
-            muscle.setOverrideForce(s, 10);
+            muscle.overrideActuation(s, true);
+            muscle.setOverrideActuation(s, 10);
             osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
 
-            double force = muscle.getForce(s);
+            double force = muscle.getActuation(s);
         
             // Get muscle's applied body forces 
             const Vector_<SpatialVec>& appliedBodyForces = osimModel.getMultibodySystem().getRigidBodyForces(s, Stage::Dynamics);

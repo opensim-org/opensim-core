@@ -83,9 +83,9 @@ void ExpressionBasedCoordinateForce::constructProperties()
 //=============================================================================
 // Connect this force element to the rest of the model.
 //=============================================================================
-void ExpressionBasedCoordinateForce::connectToModel(Model& aModel)
+void ExpressionBasedCoordinateForce::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
     string errorMessage;
     const string& coordName = get_coordinate();
@@ -112,9 +112,9 @@ void ExpressionBasedCoordinateForce::connectToModel(Model& aModel)
 // Create the underlying system component(s)
 //=============================================================================
 void ExpressionBasedCoordinateForce::
-    addToSystem(SimTK::MultibodySystem& system) const
+    extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);    // Base class first.
+    Super::extendAddToSystem(system);    // Base class first.
     addCacheVariable<double>("force_magnitude", 0.0, SimTK::Stage::Velocity);
 }
 
@@ -139,7 +139,7 @@ double ExpressionBasedCoordinateForce::calcExpressionForce(const SimTK::State& s
     forceVars["q"] = q;
     forceVars["qdot"] = qdot;
     double forceMag = _forceProg.evaluate(forceVars);
-    setCacheVariable<double>(s, "force_magnitude", forceMag);
+    setCacheVariableValue<double>(s, "force_magnitude", forceMag);
     return forceMag;
 }
 
@@ -147,7 +147,7 @@ double ExpressionBasedCoordinateForce::calcExpressionForce(const SimTK::State& s
 const double& ExpressionBasedCoordinateForce::
     getForceMagnitude(const SimTK::State& s)
 {
-    return getCacheVariable<double>(s, "force_magnitude");
+    return getCacheVariableValue<double>(s, "force_magnitude");
 }
 
 

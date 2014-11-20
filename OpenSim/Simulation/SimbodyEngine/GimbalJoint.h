@@ -28,15 +28,20 @@
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
 /**
- * A class implementing an Gimbal joint.  The underlying implementation 
- * in Simbody is a MobilizedBody::Gimbal.
- *
- * @author Tim Dorn
- * @author Ajay Seth
- */
+A class implementing a Gimbal joint. The underlying implementation Simbody is a
+SimTK::MobilizedBody::Gimbal. The opensim Gimbal joint implementation uses a fixed
+ 1-2-3 (x-y-z) body fixed Euler sequence for generalized coordinates calculation.
+Gimbal joints have a singularity when Y is near \f$\frac{\pi}{2}\f$.
+Generalized speeds are equal to the Eular angle derivatives  (\f$\vec{u} = \dot{\vec{q}}\f$)
+
+\image html gimbalJoint.gif
+
+@author Tim Dorn
+@author Ajay Seth
+*/
+
+
 class OSIMSIMULATION_API GimbalJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(GimbalJoint, Joint);
 
@@ -65,9 +70,9 @@ public:
 
 protected:
     // ModelComponent interface.
-    void addToSystem(SimTK::MultibodySystem& system) const override;
-    void initStateFromProperties(SimTK::State& s) const override;
-    void setPropertiesFromState(const SimTK::State& state) override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
 //=============================================================================
 };  // END of class GimbalJoint
@@ -77,5 +82,3 @@ protected:
 } // end of namespace OpenSim
 
 #endif // OPENSIM_GIMBAL_JOINT_H_
-
-

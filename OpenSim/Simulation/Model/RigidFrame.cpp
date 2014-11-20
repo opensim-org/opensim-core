@@ -52,6 +52,16 @@ void RigidFrame::setNull()
     setAuthors("Matt DeMers");
 }
 
+const SimTK::MobilizedBody& RigidFrame::getMobilizedBody() const
+{
+    return getModel().getMatterSubsystem().getMobilizedBody(_index);
+}
+
+SimTK::MobilizedBody& RigidFrame::updMobilizedBody() 
+{
+    return updModel().updMatterSubsystem().updMobilizedBody(_index);
+}
+
 /**
 * Implementation of Frame interface by RigidFrame
 */

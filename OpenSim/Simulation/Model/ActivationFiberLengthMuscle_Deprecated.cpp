@@ -91,10 +91,9 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
 /**
  * allocate and initialize the SimTK state for this acuator.
  */
- void ActivationFiberLengthMuscle_Deprecated::addToSystem(SimTK::MultibodySystem& system) const
+ void ActivationFiberLengthMuscle_Deprecated::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
-
+    Super::extendAddToSystem(system);
     const string& className = getConcreteClassName();
     const string& suffix = " flag is not currently implemented.";
 
@@ -117,17 +116,17 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
     addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Velocity);
  }
 
- void ActivationFiberLengthMuscle_Deprecated::initStateFromProperties( SimTK::State& s) const
+ void ActivationFiberLengthMuscle_Deprecated::extendInitStateFromProperties( SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 
     setActivation(s, _defaultActivation);
     setFiberLength(s, _defaultFiberLength);
 }
 
-void ActivationFiberLengthMuscle_Deprecated::setPropertiesFromState(const SimTK::State& state)
+void ActivationFiberLengthMuscle_Deprecated::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
 
     _defaultActivation = getActivation(state);
     _defaultFiberLength = getFiberLength(state);
@@ -157,7 +156,7 @@ void ActivationFiberLengthMuscle_Deprecated::setDefaultFiberLength(double length
  */
 void ActivationFiberLengthMuscle_Deprecated::setStateVariableDeriv(const SimTK::State& s, const std::string &aStateName, double aValue) const
 {
-    double& cacheVariable = updCacheVariable<double>(s, aStateName + "_deriv");
+    double& cacheVariable = updCacheVariableValue<double>(s, aStateName + "_deriv");
     cacheVariable = aValue;
     markCacheVariableValid(s, aStateName + "_deriv");
 }
@@ -171,7 +170,7 @@ void ActivationFiberLengthMuscle_Deprecated::setStateVariableDeriv(const SimTK::
  */
 double ActivationFiberLengthMuscle_Deprecated::getStateVariableDeriv(const SimTK::State& s, const std::string &aStateName) const
 {
-    return getCacheVariable<double>(s, aStateName + "_deriv");
+    return getCacheVariableValue<double>(s, aStateName + "_deriv");
 }
 
 //_____________________________________________________________________________
@@ -190,8 +189,8 @@ void ActivationFiberLengthMuscle_Deprecated::
         ldot = getFiberVelocity(s);
     }
 
-    setStateVariableDerivative(s, STATE_ACTIVATION_NAME, adot);
-    setStateVariableDerivative(s, STATE_FIBER_LENGTH_NAME, ldot);
+    setStateVariableDerivativeValue(s, STATE_ACTIVATION_NAME, adot);
+    setStateVariableDerivativeValue(s, STATE_FIBER_LENGTH_NAME, ldot);
 }
 
 //==============================================================================
@@ -201,10 +200,10 @@ void ActivationFiberLengthMuscle_Deprecated::
 // LENGTH
 //-----------------------------------------------------------------------------
 double ActivationFiberLengthMuscle_Deprecated::getFiberLength(const SimTK::State& s) const {
-    return getStateVariable(s, STATE_FIBER_LENGTH_NAME);
+    return getStateVariableValue(s, STATE_FIBER_LENGTH_NAME);
 }
 void ActivationFiberLengthMuscle_Deprecated::setFiberLength(SimTK::State& s, double fiberLength) const {
-    setStateVariable(s, STATE_FIBER_LENGTH_NAME, fiberLength);
+    setStateVariableValue(s, STATE_FIBER_LENGTH_NAME, fiberLength);
 }
 double ActivationFiberLengthMuscle_Deprecated::getFiberLengthDeriv(const SimTK::State& s) const {
     return getStateVariableDeriv(s, STATE_FIBER_LENGTH_NAME);
@@ -264,7 +263,7 @@ double ActivationFiberLengthMuscle_Deprecated::getFiberForce(const SimTK::State&
     if(fabs(cos_penang) < SimTK::Zero) {
         force = SimTK::NaN;
     } else {
-        force = getForce(s) / cos_penang;
+        force = getActuation(s) / cos_penang;
     }
 
     return force;
@@ -311,23 +310,23 @@ double ActivationFiberLengthMuscle_Deprecated::getPassiveFiberForceAlongTendon(c
     return getPassiveFiberForce(s) * cos(getPennationAngle(s));
 }
 double ActivationFiberLengthMuscle_Deprecated::getPassiveForce( const SimTK::State& s) const {
-    return getCacheVariable<double>(s, "passiveForce");
+    return getCacheVariableValue<double>(s, "passiveForce");
 }
 void ActivationFiberLengthMuscle_Deprecated::setPassiveForce(const SimTK::State& s, double force ) const {
-    setCacheVariable<double>(s, "passiveForce", force);
+    setCacheVariableValue<double>(s, "passiveForce", force);
 }
 
 double ActivationFiberLengthMuscle_Deprecated::getTendonForce(const SimTK::State& s) const {
-    return getForce(s);
+    return getActuation(s);
 }
 void ActivationFiberLengthMuscle_Deprecated::setTendonForce(const SimTK::State& s, double force) const {
-    setForce(s, force);
+    setActuation(s, force);
 }
 double ActivationFiberLengthMuscle_Deprecated::getActivation(const SimTK::State& s) const {
-    return getStateVariable(s, STATE_ACTIVATION_NAME);
+    return getStateVariableValue(s, STATE_ACTIVATION_NAME);
 }
 void ActivationFiberLengthMuscle_Deprecated::setActivation(SimTK::State& s, double activation) const {
-    setStateVariable(s, STATE_ACTIVATION_NAME, activation);
+    setStateVariableValue(s, STATE_ACTIVATION_NAME, activation);
 }
 double ActivationFiberLengthMuscle_Deprecated::getActivationDeriv(const SimTK::State& s) const {
     return getStateVariableDeriv(s, STATE_ACTIVATION_NAME);
@@ -349,7 +348,7 @@ double ActivationFiberLengthMuscle_Deprecated::getExcitation( const SimTK::State
  */
 double ActivationFiberLengthMuscle_Deprecated::getStress(const SimTK::State& s) const
 {
-    return getForce(s) / get_max_isometric_force();
+    return getActuation(s) / get_max_isometric_force();
 }
 
 //==============================================================================
@@ -397,7 +396,7 @@ void ActivationFiberLengthMuscle_Deprecated::computeForce(const SimTK::State& s,
 {
     Super::computeForce(s, bodyForces, generalizedForces);
 
-    if( isForceOverriden(s) ) {
+    if (isActuationOverriden(s)) {
         // Also define the state derivatives, since realize acceleration will
         // ask for muscle derivatives, which will be integrated
         // in the case the force is being overridden, the states aren't being used
@@ -512,7 +511,7 @@ void ActivationFiberLengthMuscle_Deprecated::calcMuscleLengthInfo(const SimTK::S
 {
     double norm_muscle_tendon_length = getLength(s) / getOptimalFiberLength();
     
-    mli.fiberLength = getStateVariable(s, STATE_FIBER_LENGTH_NAME);
+    mli.fiberLength = getStateVariableValue(s, STATE_FIBER_LENGTH_NAME);
     
     mli.pennationAngle = calcPennation(mli.fiberLength, getOptimalFiberLength(), getPennationAngleAtOptimalFiberLength());
 
@@ -542,12 +541,12 @@ void ActivationFiberLengthMuscle_Deprecated::calcMuscleDynamicsInfo(const SimTK:
     const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
     const double &maxIsometricForce = getMaxIsometricForce();
 
-    double tendonForce = getForce(s);
+    double tendonForce = getActuation(s);
     mdi.normTendonForce = tendonForce/maxIsometricForce;
     
     mdi.passiveFiberForce = mli.fiberPassiveForceLengthMultiplier * maxIsometricForce;
     
-    mdi.activation = getStateVariable(s, STATE_ACTIVATION_NAME);
+    mdi.activation = getStateVariableValue(s, STATE_ACTIVATION_NAME);
 
     mdi.activeFiberForce =  tendonForce/mli.cosPennationAngle - mdi.passiveFiberForce;
 }

@@ -578,8 +578,8 @@ record(const SimTK::State& s)
             }
             const ScalarActuator* act = dynamic_cast<const ScalarActuator*>(&actuatorSet[actuatorIndex]);
             if (act){
-                act->overrideForce(s_analysis, true);
-                act->setOverrideForce(s_analysis, forces[storageIndex]);
+                act->overrideActuation(s_analysis, true);
+                act->setOverrideActuation(s_analysis, forces[storageIndex]);
             }
         }
     }

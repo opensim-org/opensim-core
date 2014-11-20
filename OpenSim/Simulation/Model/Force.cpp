@@ -90,9 +90,9 @@ void Force::constructProperties()
 
 // Create an underlying SimTK::Force to represent the OpenSim::Force in the 
 // computational system.  Create a SimTK::Force::Custom by default.
-void Force::addToSystem(SimTK::MultibodySystem& system) const
+void Force::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     ForceAdapter* adapter = new ForceAdapter(*this);
     SimTK::Force::Custom force(_model->updForceSubsystem(), adapter);
@@ -103,9 +103,9 @@ void Force::addToSystem(SimTK::MultibodySystem& system) const
 }
 
 
-void Force::initStateFromProperties(SimTK::State& s) const
+void Force::extendInitStateFromProperties(SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);
+    Super::extendInitStateFromProperties(s);
 
     SimTK::Force& simForce = _model->updForceSubsystem().updForce(_index);
 
@@ -117,9 +117,9 @@ void Force::initStateFromProperties(SimTK::State& s) const
 
 }
 
-void Force::setPropertiesFromState(const SimTK::State& state)
+void Force::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
 
     set_isDisabled(isDisabled(state));
 }
@@ -168,14 +168,14 @@ double Force::computePotentialEnergy(const SimTK::State& state) const
 void Force::applyForceToPoint(const SimTK::State &s, const OpenSim::Body &aBody, const Vec3& aPoint, 
                                     const Vec3& aForce, Vector_<SpatialVec> &bodyForces) const
 {
-    _model->getMatterSubsystem().addInStationForce(s, SimTK::MobilizedBodyIndex(aBody.getMobilizedBodyIndex()),
+    _model->getMatterSubsystem().addInStationForce(s, aBody.getMobilizedBodyIndex(),
                                                    aPoint, aForce, bodyForces);
 }
 
 void Force::applyTorque(const SimTK::State &s, const OpenSim::Body &aBody, 
-                              const Vec3& aTorque, Vector_<SpatialVec> &bodyForces) const
+                        const Vec3& aTorque, Vector_<SpatialVec> &bodyForces) const
 {
-    _model->getMatterSubsystem().addInBodyTorque(s, SimTK::MobilizedBodyIndex(aBody.getMobilizedBodyIndex()),
+    _model->getMatterSubsystem().addInBodyTorque(s, aBody.getMobilizedBodyIndex(),
                                                  aTorque, bodyForces);
 }
 

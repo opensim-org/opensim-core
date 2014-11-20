@@ -226,11 +226,9 @@ ModelScaler& ModelScaler::operator=(const ModelScaler &aModelScaler)
  * @param aSubjectMass the final mass of the model after scaling.
  * @return Whether the scaling process was successful or not.
  */
-bool ModelScaler::processModel(SimTK::State& s, Model* aModel, const string& aPathToSubject, double aSubjectMass)
+bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, double aSubjectMass)
 {
-    aModel->getMultibodySystem().realize(s, SimTK::Stage::Position );
-
-    if(!getApply()) return false;
+    if (!getApply()) return false;
 
     int i;
     ScaleSet theScaleSet;
@@ -251,6 +249,9 @@ bool ModelScaler::processModel(SimTK::State& s, Model* aModel, const string& aPa
         bodyScale->setApply(true);
         theScaleSet.adoptAndAppend(bodyScale);
     }
+
+    SimTK::State& s = aModel->initSystem();
+    aModel->getMultibodySystem().realize(s, SimTK::Stage::Position);
 
     try
     {
@@ -336,9 +337,6 @@ bool ModelScaler::processModel(SimTK::State& s, Model* aModel, const string& aPa
             }
             IO::chDir(savedCwd);
         }
-
-
-
     }
     catch (const Exception& x)
     {

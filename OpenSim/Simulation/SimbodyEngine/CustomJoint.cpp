@@ -93,16 +93,20 @@ void CustomJoint::constructProperties()
     constructProperty_SpatialTransform(SpatialTransform());
 }
 
-//_____________________________________________________________________________
-/**
+/*
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
- *
- * @param aEngine dynamics engine containing this CustomJoint.
  */
-void CustomJoint::connectToModel(Model& aModel)
+void CustomJoint::extendFinalizeFromProperties()
 {
-    Super::connectToModel(aModel);
+    constructCoordinates();
+    Joint::extendFinalizeFromProperties();
+}
+
+
+void CustomJoint::extendConnectToModel(Model& aModel)
+{
+    Super::extendConnectToModel(aModel);
 
     /* Set up spatial transform for this custom joint. */
     updSpatialTransform().connectToJoint(*this);
@@ -228,7 +232,7 @@ void CustomJoint::constructCoordinates()
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void CustomJoint::addToSystem(SimTK::MultibodySystem& system) const
+void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     SimTK::MobilizedBody inb;
     SimTK::Body outb;
@@ -239,8 +243,7 @@ void CustomJoint::addToSystem(SimTK::MultibodySystem& system) const
     // of inboard and outboard bodies, although the joint direction will be 
     // preserved, the inboard must exist first.
     if (get_reverse()){
-        inb = system.updMatterSubsystem().updMobilizedBody(
-            getChildBody().getMobilizedBodyIndex());
+        inb = getChildBody().getMobilizedBody();
         inbX = &getChildTransform();
 
         outb = getParentInternalRigidBody();
@@ -249,8 +252,7 @@ void CustomJoint::addToSystem(SimTK::MultibodySystem& system) const
         mobilized = &getParentBody();
     }
     else{
-        inb = system.updMatterSubsystem().updMobilizedBody(
-            getParentBody().getMobilizedBodyIndex());
+        inb = getParentBody().getMobilizedBody();
         outb = getChildInternalRigidBody();
     }
 
@@ -265,6 +267,7 @@ void CustomJoint::addToSystem(SimTK::MultibodySystem& system) const
 
     SimTK_ASSERT1(numMobilities > 0,
         "%s must have 1 or more mobilities (dofs).",
+
                   getConcreteClassName().c_str());
     SimTK_ASSERT1(numMobilities <= 6,
         "%s cannot exceed 6 mobilities (dofs).",
@@ -294,9 +297,6 @@ void CustomJoint::addToSystem(SimTK::MultibodySystem& system) const
         getConcreteClassName().c_str());
 
     assignSystemIndicesToBodyAndCoordinates(simtkBody, mobilized, nc, 0);
-    
-    // TODO: Joints require super class to be called last.
-    Super::addToSystem(system);
 }
 
 //=============================================================================
@@ -429,7 +429,7 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             }
         }
     }
-    // Axes should be independent otherwise Simbody throws an exception in addToSystem
+    // Axes should be independent otherwise Simbody throws an exception in extendAddToSystem
     double tol = 1e-5;
     // Verify that none of the rotation axes are colinear
     const std::vector<SimTK::Vec3> axes=getSpatialTransform().getAxes();

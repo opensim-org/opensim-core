@@ -62,10 +62,9 @@ void ActivationFiberLengthMuscle::constructProperties()
 
 //_____________________________________________________________________________
 // Allocate Simbody System resources for this actuator.
- void ActivationFiberLengthMuscle::addToSystem(SimTK::MultibodySystem& system) const
+ void ActivationFiberLengthMuscle::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);   // invoke superclass implementation
-
+    Super::extendAddToSystem(system);
     const string& className = getConcreteClassName();
     const string& suffix = " flag is not currently implemented.";
 
@@ -91,25 +90,25 @@ void ActivationFiberLengthMuscle::constructProperties()
     addStateVariable(STATE_FIBER_LENGTH_NAME);//, SimTK::Stage::Velocity);
  }
 
- void ActivationFiberLengthMuscle::initStateFromProperties( SimTK::State& s) const
+ void ActivationFiberLengthMuscle::extendInitStateFromProperties( SimTK::State& s) const
 {
-    Super::initStateFromProperties(s);   // invoke superclass implementation
+    Super::extendInitStateFromProperties(s);   // invoke superclass implementation
 
     setActivation(s, getDefaultActivation());
     setFiberLength(s, getDefaultFiberLength());
 }
 
-void ActivationFiberLengthMuscle::setPropertiesFromState(const SimTK::State& state)
+void ActivationFiberLengthMuscle::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);    // invoke superclass implementation
+    Super::extendSetPropertiesFromState(state);    // invoke superclass implementation
 
-    setDefaultActivation(getStateVariable(state, STATE_ACTIVATION_NAME));
-    setDefaultFiberLength(getStateVariable(state, STATE_FIBER_LENGTH_NAME));
+    setDefaultActivation(getStateVariableValue(state, STATE_ACTIVATION_NAME));
+    setDefaultFiberLength(getStateVariableValue(state, STATE_FIBER_LENGTH_NAME));
 }
 
-void ActivationFiberLengthMuscle::connectToModel(Model& aModel)
+void ActivationFiberLengthMuscle::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 }
 
 double ActivationFiberLengthMuscle::getDefaultActivation() const {
@@ -136,13 +135,13 @@ void ActivationFiberLengthMuscle::
     double adot = 0;
     double ldot = 0;
 
-    if (!isDisabled(s) && !isForceOverriden(s)) {
+    if (!isDisabled(s) && !isActuationOverriden(s)) {
         adot = getActivationRate(s);
         ldot = getFiberVelocity(s);
     }
 
-    setStateVariableDerivative(s, STATE_ACTIVATION_NAME, adot);
-    setStateVariableDerivative(s, STATE_FIBER_LENGTH_NAME, ldot);
+    setStateVariableDerivativeValue(s, STATE_ACTIVATION_NAME, adot);
+    setStateVariableDerivativeValue(s, STATE_FIBER_LENGTH_NAME, ldot);
 }
 //==============================================================================
 // GET
@@ -153,12 +152,12 @@ void ActivationFiberLengthMuscle::
 
 void ActivationFiberLengthMuscle::setActivation(SimTK::State& s, double activation) const
 {
-    setStateVariable(s, STATE_ACTIVATION_NAME, activation);
+    setStateVariableValue(s, STATE_ACTIVATION_NAME, activation);
 }
 
 void ActivationFiberLengthMuscle::setFiberLength(SimTK::State& s, double fiberLength) const
 {
-    setStateVariable(s, STATE_FIBER_LENGTH_NAME, fiberLength);
+    setStateVariableValue(s, STATE_FIBER_LENGTH_NAME, fiberLength);
     // NOTE: This is a temporary measure since we were forced to allocate
     // fiber length as a Dynamics stage dependent state variable.
     // In order to force the recalculation of the length cache we have to 
@@ -236,16 +235,15 @@ void ActivationFiberLengthMuscle::computeForce(const SimTK::State& s,
 {
     Muscle::computeForce(s, bodyForces, generalizedForces);
 
-    if( isForceOverriden(s) ) {
+    if (isActuationOverriden(s)) {
         // Also define the state derivatives, since realize acceleration will
         // ask for muscle derivatives, which will be integrated
-        // in the case the force is being overridden, the states aren't being used
-        // but a valid derivative cache entry is still required
+        // in the case the actuation is being overridden, the states aren't 
+        // being used but a valid derivative cache entry is still required
         int numStateVariables = getNumStateVariables();
         Array<std::string> stateVariableNames = getStateVariableNames();
         for (int i = 0; i < numStateVariables; ++i) {
-            setStateVariableDerivative(s, stateVariableNames[i], 0.0);
+            setStateVariableDerivativeValue(s, stateVariableNames[i], 0.0);
         }
     } 
-
 }

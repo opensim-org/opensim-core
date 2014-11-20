@@ -89,7 +89,7 @@ double McKibbenActuator::computeActuation( const SimTK::State& s ) const
     
     
     double force = (pressure / (4*pow(N,2)*SimTK::Pi)) * (3*pow(length, 2) - pow(B,2));
-    setForce(s, force);
+    setActuation(s, force);
     
     return force;
 }
@@ -116,8 +116,7 @@ void McKibbenActuator::computeForce(const SimTK::State& s,
 /**
  * Sets the actual Body references _bodyA and _bodyB
  */
-void McKibbenActuator::connectToModel(Model& model)
+void McKibbenActuator::extendConnectToModel(Model& model)
 {
-    Super::connectToModel(model);
-
+    Super::extendConnectToModel(model);
 }

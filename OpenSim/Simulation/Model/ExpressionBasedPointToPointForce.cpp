@@ -145,9 +145,9 @@ void ExpressionBasedPointToPointForce::updateGeometry(const SimTK::State& s)
 //=============================================================================
 // Connect this force element to the rest of the model.
 //=============================================================================
-void ExpressionBasedPointToPointForce::connectToModel(Model& model)
+void ExpressionBasedPointToPointForce::extendConnectToModel(Model& model)
 {
-    Super::connectToModel(model);   // Let base class connect first.
+    Super::extendConnectToModel(model); // Let base class connect first.
 
     string errorMessage;
 
@@ -181,9 +181,9 @@ void ExpressionBasedPointToPointForce::connectToModel(Model& model)
 // Create the underlying system component(s)
 //=============================================================================
 void ExpressionBasedPointToPointForce::
-    addToSystem(SimTK::MultibodySystem& system) const
+extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);    // Base class first.
+    Super::extendAddToSystem(system);    // Base class first.
 
     Body& body1 = _model->updBodySet().get(getBody1Name());
     Body& body2 = _model->updBodySet().get(getBody2Name());
@@ -195,10 +195,8 @@ void ExpressionBasedPointToPointForce::
         const_cast<ExpressionBasedPointToPointForce *>(this);
 
     // Get underlying mobilized bodies
-    mutableThis->_b1 = 
-        &_model->getMatterSubsystem().getMobilizedBody(body1.getMobilizedBodyIndex());
-    mutableThis->_b2 =
-        &_model->getMatterSubsystem().getMobilizedBody(body2.getMobilizedBodyIndex());
+    mutableThis->_b1 = &body1.getMobilizedBody();
+    mutableThis->_b2 = &body2.getMobilizedBody();
 }
 
 //=============================================================================
@@ -234,7 +232,7 @@ void ExpressionBasedPointToPointForce::computeForce(const SimTK::State& s,
     forceVars["ddot"] = ddot;
 
     double forceMag = _forceProg.evaluate(forceVars);
-    setCacheVariable<double>(s, "force_magnitude", forceMag);
+    setCacheVariableValue<double>(s, "force_magnitude", forceMag);
 
     const Vec3 f1_G = (forceMag/d) * r_G;
 
@@ -246,7 +244,7 @@ void ExpressionBasedPointToPointForce::computeForce(const SimTK::State& s,
 const double& ExpressionBasedPointToPointForce::
     getForceMagnitude(const SimTK::State& s)
 {
-    return getCacheVariable<double>(s, "force_magnitude");
+    return getCacheVariableValue<double>(s, "force_magnitude");
 }
 
 

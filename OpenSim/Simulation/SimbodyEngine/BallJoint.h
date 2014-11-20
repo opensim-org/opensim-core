@@ -1,4 +1,4 @@
-#ifndef OPENSIM_BALL_JOINT_H_ 
+#ifndef OPENSIM_BALL_JOINT_H_
 #define OPENSIM_BALL_JOINT_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  BallJoint.h                            *
@@ -34,12 +34,20 @@ class Model;
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing an Ball joint.  The underlying implementation 
- * in Simbody is a MobilizedBody::Ball.
- *
- * @author Ajay Seth
- * @version 1.0
- */
+
+A class implementing a Ball joint. The underlying implementation in Simbody is
+SimTK::MobilizedBody::Ball. The Ball joint implements a fixed 1-2-3 (X-Y-Z)
+body-fixed Euler sequence, without translations, for generalized coordinate
+calculation. Ball joint uses quaternions in calculation and are therefore
+singularity-free (unlike GimbalJoint). Generalized speeds are equal to the
+computed angular velocities (\f$\vec{u} = \vec{\omega}\f$), not a differentiation
+of position (\f$\vec{u} \neq \dot{\vec{q}}\f$).
+
+\image html ballJoint.gif
+
+@author Ajay Seth
+*/
+
 class OSIMSIMULATION_API BallJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
 
@@ -57,9 +65,9 @@ public:
     // CONSTRUCTION
     BallJoint();
     // convenience constructor
-    BallJoint(const std::string &name, const OpenSim::Body& parent, 
+    BallJoint(const std::string &name, const OpenSim::Body& parent,
         const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-        const OpenSim::Body& body, 
+        const OpenSim::Body& body,
         const SimTK::Vec3& locationInBody, const SimTK::Vec3& orientationInBody,
                 /*bool useEulerAngles=true,*/ bool reverse=false);
 
@@ -69,9 +77,9 @@ public:
 
 protected:
     // ModelComponent interface.
-    void addToSystem(SimTK::MultibodySystem& system) const override;
-    void initStateFromProperties(SimTK::State& s) const override;
-    void setPropertiesFromState(const SimTK::State& state) override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
+    void extendSetPropertiesFromState(const SimTK::State& state) override;
 
 //=============================================================================
 };  // END of class BallJoint
@@ -81,5 +89,3 @@ protected:
 } // end of namespace OpenSim
 
 #endif // OPENSIM_BALL_JOINT_H_
-
-

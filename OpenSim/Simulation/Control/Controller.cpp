@@ -99,9 +99,9 @@ void Controller::setDisabled(bool aTrueFalse)
 }
 
 // for any post XML deseraialization intialization
-void Controller::connectToModel(Model& model)
+void Controller::extendConnectToModel(Model& model)
 {
-    Super::connectToModel(model);
+    Super::extendConnectToModel(model);
 
     if (getProperty_actuator_list().size() > 0){
         if (IO::Uppercase(get_actuator_list(0)) == "ALL"){
@@ -127,9 +127,9 @@ void Controller::connectToModel(Model& model)
 /**
  * Create a Controller in the SimTK::System
  */
-void Controller::addToSystem(SimTK::MultibodySystem& system) const
+void Controller::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 }
 
 // makes a request for which actuators a controller will control

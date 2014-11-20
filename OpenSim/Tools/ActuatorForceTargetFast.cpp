@@ -314,8 +314,8 @@ computeConstraintVector(SimTK::State& s, const Vector &x,Vector &c) const
     // contribution of muscles when applying forces to the model
     for(int i=0;i<nf;i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
-        act->overrideForce(s,true);
-        act->setOverrideForce(s, x[i]);        
+        act->overrideActuation(s, true);
+        act->setOverrideActuation(s, x[i]);
     }
     _controller->getModel().getMultibodySystem().realize(s, SimTK::Stage::Acceleration );
 
@@ -331,7 +331,7 @@ computeConstraintVector(SimTK::State& s, const Vector &x,Vector &c) const
     // reset the actuator control 
     for(int i=0;i<fSet.getSize();i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
-        act->overrideForce(s,false);
+        act->overrideActuation(s, false);
     }
 
     _controller->getModel().getMultibodySystem().realizeModel(s);

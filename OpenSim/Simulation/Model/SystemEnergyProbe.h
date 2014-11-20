@@ -116,7 +116,7 @@ private:
     //--------------------------------------------------------------------------
     // Implement the ModelComponent Interface
     //--------------------------------------------------------------------------
-    void connectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
     
     void setNull();
     void constructProperties();

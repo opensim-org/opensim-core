@@ -241,9 +241,9 @@ void Muscle::setMaxContractionVelocity(double aMaxContractionVelocity)
 //=============================================================================
 // ModelComponent Interface Implementation
 //=============================================================================
-void Muscle::connectToModel(Model& aModel)
+void Muscle::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
     _muscleWidth = getOptimalFiberLength()
                     * sin(getPennationAngleAtOptimalFiberLength());
@@ -255,9 +255,9 @@ void Muscle::connectToModel(Model& aModel)
 }
 
 // Add Muscle's contributions to the underlying system
- void Muscle::addToSystem(SimTK::MultibodySystem& system) const
+ void Muscle::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     addModelingOption("ignore_tendon_compliance", 1);
     addModelingOption("ignore_activation_dynamics", 1);
@@ -278,16 +278,16 @@ void Muscle::connectToModel(Model& aModel)
        ("potentialEnergyInfo", MusclePotentialEnergyInfo(), SimTK::Stage::Velocity);
  }
 
-void Muscle::setPropertiesFromState(const SimTK::State& state)
+void Muscle::extendSetPropertiesFromState(const SimTK::State& state)
 {
-    Super::setPropertiesFromState(state);
+    Super::extendSetPropertiesFromState(state);
 
     set_ignore_tendon_compliance(getIgnoreTendonCompliance(state));
     set_ignore_activation_dynamics(getIgnoreActivationDynamics(state));
 }
 
-void  Muscle::initStateFromProperties(SimTK::State& state) const {
-    Super::initStateFromProperties(state);
+void  Muscle::extendInitStateFromProperties(SimTK::State& state) const {
+    Super::extendInitStateFromProperties(state);
 
     setIgnoreTendonCompliance(state, 
         get_ignore_tendon_compliance());
@@ -562,12 +562,12 @@ const Muscle::MuscleLengthInfo& Muscle::getMuscleLengthInfo(const SimTK::State& 
         // we just calculated it and still have a handle on it
         return umli;
     }
-    return getCacheVariable<MuscleLengthInfo>(s, "lengthInfo");
+    return getCacheVariableValue<MuscleLengthInfo>(s, "lengthInfo");
 }
 
 Muscle::MuscleLengthInfo& Muscle::updMuscleLengthInfo(const SimTK::State& s) const
 {
-    return updCacheVariable<MuscleLengthInfo>(s, "lengthInfo");
+    return updCacheVariableValue<MuscleLengthInfo>(s, "lengthInfo");
 }
 
 const Muscle::FiberVelocityInfo& Muscle::
@@ -581,13 +581,13 @@ getFiberVelocityInfo(const SimTK::State& s) const
         // we just calculated it and still have a handle on it
         return ufvi;
     }
-    return getCacheVariable<FiberVelocityInfo>(s, "velInfo");
+    return getCacheVariableValue<FiberVelocityInfo>(s, "velInfo");
 }
 
 Muscle::FiberVelocityInfo& Muscle::
 updFiberVelocityInfo(const SimTK::State& s) const
 {
-    return updCacheVariable<FiberVelocityInfo>(s, "velInfo");
+    return updCacheVariableValue<FiberVelocityInfo>(s, "velInfo");
 }
 
 const Muscle::MuscleDynamicsInfo& Muscle::
@@ -601,12 +601,12 @@ getMuscleDynamicsInfo(const SimTK::State& s) const
         // we just calculated it and still have a handle on it
         return umdi;
     }
-    return getCacheVariable<MuscleDynamicsInfo>(s, "dynamicsInfo");
+    return getCacheVariableValue<MuscleDynamicsInfo>(s, "dynamicsInfo");
 }
 Muscle::MuscleDynamicsInfo& Muscle::
 updMuscleDynamicsInfo(const SimTK::State& s) const
 {
-    return updCacheVariable<MuscleDynamicsInfo>(s, "dynamicsInfo");
+    return updCacheVariableValue<MuscleDynamicsInfo>(s, "dynamicsInfo");
 }
 
 const Muscle::MusclePotentialEnergyInfo& Muscle::
@@ -620,13 +620,13 @@ getMusclePotentialEnergyInfo(const SimTK::State& s) const
         // we just calculated it and still have a handle on it
         return umpei;
     }
-    return getCacheVariable<MusclePotentialEnergyInfo>(s, "potentialEnergyInfo");
+    return getCacheVariableValue<MusclePotentialEnergyInfo>(s, "potentialEnergyInfo");
 }
 
 Muscle::MusclePotentialEnergyInfo& Muscle::
 updMusclePotentialEnergyInfo(const SimTK::State& s) const
 {
-    return updCacheVariable<MusclePotentialEnergyInfo>(s, "potentialEnergyInfo");
+    return updCacheVariableValue<MusclePotentialEnergyInfo>(s, "potentialEnergyInfo");
 }
 
 
@@ -638,7 +638,7 @@ updMusclePotentialEnergyInfo(const SimTK::State& s) const
  */
 double Muscle::getStress(const SimTK::State& s) const
 {
-    return getForce(s) / getMaxIsometricForce();
+    return getActuation(s) / getMaxIsometricForce();
 }
 
 
@@ -704,10 +704,10 @@ void Muscle::computeForce(const SimTK::State& s,
 {
     Super::computeForce(s, bodyForces, generalizedForces); // Calls compute actuation.
 
-    // NOTE: Force could be negative, in particular during CMC, when the optimizer
-    // is computing gradients, but in those cases the force will be overridden
-    // and will not be computed by the muscle
-    if (!isForceOverriden(s) && (getForce(s) < -SimTK::SqrtEps)) {
+    // NOTE: Actuation could be negative, in particular during CMC, when the optimizer
+    // is computing gradients, but in those cases the actuation will be 
+    // overridden and will not be computed by the muscle
+    if (!isActuationOverriden(s) && (getActuation(s) < -SimTK::SqrtEps)) {
         string msg = getConcreteClassName()
             + "::computeForce, muscle "+ getName() + " force < 0";
         cout << msg << " at time = " << s.getTime() << endl;

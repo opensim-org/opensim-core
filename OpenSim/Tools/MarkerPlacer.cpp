@@ -233,7 +233,7 @@ MarkerPlacer& MarkerPlacer::operator=(const MarkerPlacer &aMarkerPlacer)
  * @param aModel the model to use for the marker placing process.
  * @return Whether the marker placing process was successful or not.
  */
-bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aPathToSubject)
+bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 {
     if(!getApply()) return false;
 
@@ -253,6 +253,9 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
      * pose marker file.
      */
     aModel->deleteUnusedMarkers(staticPose.getMarkerNames());
+
+    // Construct the system and get the working state when done changing the model
+    SimTK::State& s = aModel->initSystem();
     
     // Create references and WeightSets needed to initialize InverseKinemaicsSolver
     Set<MarkerWeight> markerWeightSet;
@@ -302,9 +305,9 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
     }
     double constraintWeight = std::numeric_limits<SimTK::Real>::infinity();
 
-    InverseKinematicsSolver* ikSol = new InverseKinematicsSolver(*aModel, markersReference, coordinateReferences, constraintWeight);
-    ikSol->assemble(s);
-
+    InverseKinematicsSolver ikSol(*aModel, markersReference,
+                                  coordinateReferences, constraintWeight);
+    ikSol.assemble(s);
 
     // Call realize Position so that the transforms are updated and  markers can be moved correctly
     aModel->getMultibodySystem().realize(s, SimTK::Stage::Position);
@@ -316,7 +319,7 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
     double maxSquaredMarkerError = 0.0;
     int worst = -1;
     // Report in the same order as the marker tasks/weights
-    ikSol->computeCurrentSquaredMarkerErrors(squaredMarkerErrors);
+    ikSol.computeCurrentSquaredMarkerErrors(squaredMarkerErrors);
     for(int j=0; j<nm; ++j){
         totalSquaredMarkerError += squaredMarkerErrors[j];
         if(squaredMarkerErrors[j] > maxSquaredMarkerError){
@@ -327,7 +330,7 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
     cout << "Frame at (t=" << s.getTime() << "):\t";
     cout << "total squared error = " << totalSquaredMarkerError;
     cout << ", marker error: RMS=" << sqrt(totalSquaredMarkerError/nm);
-    cout << ", max=" << sqrt(maxSquaredMarkerError) << " (" << ikSol->getMarkerNameForIndex(worst) << ")" << endl;
+    cout << ", max=" << sqrt(maxSquaredMarkerError) << " (" << ikSol.getMarkerNameForIndex(worst) << ")" << endl;
     /* Now move the non-fixed markers on the model so that they are coincident
      * with the measured markers in the static pose. The model is already in
      * the proper configuration so the coordinates do not need to be changed.
@@ -370,7 +373,6 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
                 "w", "File generated from solving marker data for model "+aModel->getName());
         }
     }
-
 
     return true;
 }

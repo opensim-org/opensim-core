@@ -87,11 +87,11 @@ public:
     virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point);
 
 protected:
-    void connectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
     /**
      * Create a SimTK::Constraint::Weld which implements this Weld.
      */
-    void addToSystem(SimTK::MultibodySystem& system) const override;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 private:
     void setNull();

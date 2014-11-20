@@ -155,9 +155,9 @@ void CoordinateCouplerConstraint::constructProperties()
  *
  * @param aModel OpenSim Model containing this CoordinateCouplerConstraint.
  */
-void CoordinateCouplerConstraint::connectToModel(Model& aModel)
+void CoordinateCouplerConstraint::extendConnectToModel(Model& aModel)
 {
-    Super::connectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
     string errorMessage;
 
@@ -187,9 +187,9 @@ void CoordinateCouplerConstraint::connectToModel(Model& aModel)
 }
 
 
-void CoordinateCouplerConstraint::addToSystem(SimTK::MultibodySystem& system) const
+void CoordinateCouplerConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::addToSystem(system);
+    Super::extendAddToSystem(system);
 
     /** List of mobilized body indices established when constraint is set up */
     std::vector<SimTK::MobilizedBodyIndex> mob_bodies;
@@ -207,7 +207,7 @@ void CoordinateCouplerConstraint::addToSystem(SimTK::MultibodySystem& system) co
     }
 
     for(int i=0; i<independentCoordNames.getSize(); i++){
-        // Error checking was handled in connectToModel()
+        // Error checking was handled in extendConnectToModel()
         const Coordinate& aCoordinate = getModel().getCoordinateSet().get(independentCoordNames[i]);
         mob_bodies.push_back(aCoordinate._bodyIndex);
         mob_qs.push_back(SimTK::MobilizerQIndex(aCoordinate._mobilizerQIndex));
