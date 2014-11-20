@@ -224,12 +224,11 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
     addStateVariable(ssv);
 }
 
-void Coordinate::realizeInstance(const SimTK::State& state) const
+void Coordinate::extendRealizeInstance(const SimTK::State& state) const
 {
     const MobilizedBody& mb
         = getModel().getMatterSubsystem().getMobilizedBody(_bodyIndex);
 
-    
     int uix = state.getUStart() + mb.getFirstUIndex(state) + _mobilizerQIndex;
 
     /* Set the YIndex on the StateVariable */

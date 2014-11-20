@@ -35,10 +35,10 @@
 #include "WrapResult.h"
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+    #ifdef OSIMSIMULATION_API
+        #undef OSIMSIMULATION_API
+        #define OSIMSIMULATION_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -65,71 +65,71 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PathWrap, Object);
 //=============================================================================
 public:
 
-	enum WrapMethod
-	{
-		hybrid,
-		midpoint,
-		axial
-	};
+    enum WrapMethod
+    {
+        hybrid,
+        midpoint,
+        axial
+    };
 
 protected:
-	PropertyStr _wrapObjectNameProp;
+    PropertyStr _wrapObjectNameProp;
     std::string &_wrapObjectName;
 
-	PropertyStr _methodNameProp;   // currently used only for ellipsoid wrapping
-	std::string& _methodName;
-	WrapMethod _method;
+    PropertyStr _methodNameProp;   // currently used only for ellipsoid wrapping
+    std::string& _methodName;
+    WrapMethod _method;
 
     PropertyIntArray _rangeProp;
     Array<int> &_range;
 
-	const WrapObject* _wrapObject;
-	GeometryPath* _path;
+    const WrapObject* _wrapObject;
+    GeometryPath* _path;
 
-	WrapResult _previousWrap;  // results from previous wrapping
+    WrapResult _previousWrap;  // results from previous wrapping
 
     PathWrapPoint _wrapPoints[2]; // the two muscle points created when the muscle wraps
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-	PathWrap();
-	PathWrap(const PathWrap& aPathWrap);
-	~PathWrap();
+    PathWrap();
+    PathWrap(const PathWrap& aPathWrap);
+    ~PathWrap();
 
 #ifndef SWIG
-	PathWrap& operator=(const PathWrap& aPathWrap);
-	void connectToModelAndPath(const Model& aModel, GeometryPath& aPath);
-	void setStartPoint( const SimTK::State& s, int aIndex);
-	void setEndPoint( const SimTK::State& s, int aIndex);
+    PathWrap& operator=(const PathWrap& aPathWrap);
+    void connectToModelAndPath(const Model& aModel, GeometryPath& aPath);
+    void setStartPoint( const SimTK::State& s, int aIndex);
+    void setEndPoint( const SimTK::State& s, int aIndex);
 #endif
     void copyData(const PathWrap& aPathWrap);
-	int getStartPoint() const { return _range[0]; }
-	int getEndPoint() const { return _range[1]; }
-	const std::string& getWrapObjectName() const { return _wrapObjectName; }
-	const WrapObject* getWrapObject() const { return _wrapObject; }
-	void setWrapObject(WrapObject& aWrapObject);
-	PathWrapPoint& getWrapPoint(int aIndex);
-	WrapMethod getMethod() const { return _method; }
-	void setMethod(WrapMethod aMethod);
-	const std::string& getMethodName() const { return _methodName; }
-	GeometryPath* getPath() const { return _path; }
+    int getStartPoint() const { return _range[0]; }
+    int getEndPoint() const { return _range[1]; }
+    const std::string& getWrapObjectName() const { return _wrapObjectName; }
+    const WrapObject* getWrapObject() const { return _wrapObject; }
+    void setWrapObject(WrapObject& aWrapObject);
+    PathWrapPoint& getWrapPoint(int aIndex);
+    WrapMethod getMethod() const { return _method; }
+    void setMethod(WrapMethod aMethod);
+    const std::string& getMethodName() const { return _methodName; }
+    GeometryPath* getPath() const { return _path; }
 
-	const WrapResult& getPreviousWrap() const { return _previousWrap; }
-	void setPreviousWrap(const WrapResult& aWrapResult);
-	void resetPreviousWrap();
+    const WrapResult& getPreviousWrap() const { return _previousWrap; }
+    void setPreviousWrap(const WrapResult& aWrapResult);
+    void resetPreviousWrap();
 
 protected:
-	void setupProperties();
+    void setupProperties();
 
 private:
-	void setNull();
+    void setNull();
 //=============================================================================
-};	// END of class PathWrap
+};  // END of class PathWrap
 //=============================================================================
 //=============================================================================
 

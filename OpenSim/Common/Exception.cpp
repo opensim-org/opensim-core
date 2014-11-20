@@ -54,16 +54,16 @@ Exception::
 Exception(const string &aMsg,const string &aFile,int aLine):
 exception()
 {
-	setNull();
+    setNull();
 
-	setMessage(aMsg);
-	_file = aFile;
-	_line = aLine;
+    setMessage(aMsg);
+    _file = aFile;
+    _line = aLine;
 
 // make it assert false when debugging...
 //#ifndef NDEBUG
-//	print(cout);
-//	assert(false);
+//  print(cout);
+//  assert(false);
 //#endif
 }
 
@@ -77,8 +77,8 @@ exception()
 void Exception::
 setNull()
 {
-	setMessage("");
-	_line = -1;
+    setMessage("");
+    _line = -1;
 }
 
 
@@ -97,7 +97,7 @@ setNull()
 void Exception::
 setMessage(const string &aMsg)
 {
-	_msg = aMsg;
+    _msg = aMsg;
 }
 //_____________________________________________________________________________
 /**
@@ -108,7 +108,7 @@ setMessage(const string &aMsg)
 const char* Exception::
 getMessage() const
 {
-	return(_msg.c_str());
+    return(_msg.c_str());
 }
 
 
@@ -127,25 +127,25 @@ getMessage() const
 void Exception::
 print(ostream &aOut) const
 {
-	// HEADER
-	aOut << "\nException:\n";
+    // HEADER
+    aOut << "\nException:\n";
 
-	// MESSAGE
-	// Account for the _msg being multiple lines -- we want to prepend two spaces before each new line
-	string formattedMsg = IO::formatText(_msg, "  ", 75);
-	aOut << "  " << formattedMsg << endl;
+    // MESSAGE
+    // Account for the _msg being multiple lines -- we want to prepend two spaces before each new line
+    string formattedMsg = IO::formatText(_msg, "  ", 75);
+    aOut << "  " << formattedMsg << endl;
 
-	// FILE
-	if(_file.size()>0) {
-		aOut << "  file= " << _file << '\n';
-	}
+    // FILE
+    if(_file.size()>0) {
+        aOut << "  file= " << _file << '\n';
+    }
 
-	// LINE
-	if(_line>=0) {
-		aOut << "  line= " << _line << '\n';
-	}
+    // LINE
+    if(_line>=0) {
+        aOut << "  line= " << _line << '\n';
+    }
 
-	// RETURN
-	aOut << '\n' << endl;
+    // RETURN
+    aOut << '\n' << endl;
 }
 

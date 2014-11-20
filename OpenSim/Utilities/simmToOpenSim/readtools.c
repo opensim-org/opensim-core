@@ -59,7 +59,7 @@ char linear_text[] = "_lin";
 static SBoolean string_contains_closing_paren(char str_buffer[]);
 static char* get_xypair_from_string(char str_buffer[], double* x, double* y);
 static char* parse_string(char str_buffer[], VariableType var_type,
-			  void* dest_var);
+              void* dest_var);
 static void acpp(char in_file[], const char out_file[]);
 
 
@@ -679,7 +679,7 @@ static SBoolean string_contains_closing_paren(char str_buffer[])
    while (*str_buffer != STRING_TERMINATOR)
    {
       if (*(str_buffer++) == ')')
-	 return (yes);
+     return (yes);
    }
 
    return (no);
@@ -756,9 +756,9 @@ static char* parse_string(char str_buffer[], VariableType var_type, void* dest_v
       if (STRING_IS_NOT_NULL(str_buffer))
       {
          while (*str_buffer == '-' || *str_buffer == '.' || *str_buffer == '+' ||
-		*str_buffer == 'e' || *str_buffer == 'E' ||
-		*str_buffer == 'd' || *str_buffer == 'D' ||
-		(*str_buffer >= '0' && *str_buffer <= '9'))
+        *str_buffer == 'e' || *str_buffer == 'E' ||
+        *str_buffer == 'd' || *str_buffer == 'D' ||
+        (*str_buffer >= '0' && *str_buffer <= '9'))
             *(buffer_ptr++) = *(str_buffer++);
          *buffer_ptr = STRING_TERMINATOR;
          if (sscanf(tmp_buffer,"%lg",(double*)dest_var) != 1)
@@ -776,13 +776,13 @@ static char* parse_string(char str_buffer[], VariableType var_type, void* dest_v
             *(buffer_ptr++) = *(str_buffer++);
          *buffer_ptr = STRING_TERMINATOR;
          if (sscanf(tmp_buffer,"%d",(int*)dest_var) != 1)
-	    *((int*)dest_var) = ERRORINT;
+        *((int*)dest_var) = ERRORINT;
       }
       return (str_buffer);
    }
 
    (void)sprintf(errorbuffer,"Unknown variable type (%d) passed to parse_string().",
-	   (int)var_type);
+       (int)var_type);
    error(none,errorbuffer);
 
    return (NULL);
@@ -926,15 +926,15 @@ GeneralizedCoord* name_is_gencoord(char name[], ModelStruct* ms, char suffix[],
    if (functionType && cutoffFrequency)
    {
       int matched_spl = 0, matched_lin = 0;
-		int lin_len = strlen(linear_text);
+        int lin_len = strlen(linear_text);
       int spl_len = strlen(natural_cubic_text);
       int gcv_len = strlen(gcv_text);
 
       *functionType = dpStepFunction;
       *cutoffFrequency = -1.0; // by default there is no smoothing
 
-		if (len >= lin_len)
-		{
+        if (len >= lin_len)
+        {
          if (!strncmp(ptr, linear_text, lin_len))
          {
             *functionType = dpLinearFunction;
@@ -942,9 +942,9 @@ GeneralizedCoord* name_is_gencoord(char name[], ModelStruct* ms, char suffix[],
             len -= lin_len;
             matched_lin = 1;
          }
-		}
+        }
 
-		if (!matched_lin && len >= spl_len)
+        if (!matched_lin && len >= spl_len)
       {
          if (!strncmp(ptr, natural_cubic_text, spl_len))
          {
@@ -1148,7 +1148,7 @@ int name_is_body_segment(ModelStruct* ms, char name[], int* motion_object, int* 
    if (functionType && cutoffFrequency)
    {
       int matched_spl = 0, matched_lin = 0;
-		int lin_len = strlen(linear_text);
+        int lin_len = strlen(linear_text);
       int spl_len = strlen(natural_cubic_text);
       int gcv_len = strlen(gcv_text);
 
@@ -1306,7 +1306,7 @@ int name_is_muscle(ModelStruct* ms, char name[], char suffix[],
    if (functionType && cutoffFrequency)
    {
       int matched_spl = 0, matched_lin = 0;
-		int lin_len = strlen(linear_text);
+        int lin_len = strlen(linear_text);
       int spl_len = strlen(natural_cubic_text);
       int gcv_len = strlen(gcv_text);
 
@@ -1392,27 +1392,27 @@ SBoolean muscle_has_force_params(dpMuscleStruct* ms)
 }
 
 ENUM {
-	NoStringMarker=0,
-	WhiteSpace,
-	SingleQuote,
-	DoubleQuote
+    NoStringMarker=0,
+    WhiteSpace,
+    SingleQuote,
+    DoubleQuote
 } StringMarker;
 
 StringMarker is_string_marker(char ch)
 {
-	if (ch == '\'')
-		return SingleQuote;
-	if (ch == '\"')
-		return DoubleQuote;
-	if (CHAR_IS_WHITE_SPACE(ch) || (ch == STRING_TERMINATOR))
-		return WhiteSpace;
-	return NoStringMarker;
+    if (ch == '\'')
+        return SingleQuote;
+    if (ch == '\"')
+        return DoubleQuote;
+    if (CHAR_IS_WHITE_SPACE(ch) || (ch == STRING_TERMINATOR))
+        return WhiteSpace;
+    return NoStringMarker;
 }
 
 int divide_string(char string[], char* word_array[], int max_words)
 {
    int i, len, num_chars, word_start=0, count=0, last_one_white=1;
-	StringMarker marker = WhiteSpace;
+    StringMarker marker = WhiteSpace;
 
    if (max_words <= 0)
       return 0;
@@ -1424,8 +1424,8 @@ int divide_string(char string[], char* word_array[], int max_words)
    // slot in word_array.
    for (i=0; i<len; i++)
    {
-		StringMarker m = is_string_marker(string[i]);
-		if (m == marker || (marker == WhiteSpace && m != NoStringMarker))
+        StringMarker m = is_string_marker(string[i]);
+        if (m == marker || (marker == WhiteSpace && m != NoStringMarker))
       {
          /* Copy the last word to word_array[] */
          if (last_one_white == 0)
@@ -1438,10 +1438,10 @@ int divide_string(char string[], char* word_array[], int max_words)
                return count;
          }
          last_one_white = 1;
-			if (m == marker)
-				marker = WhiteSpace;
-			else
-				marker = m;
+            if (m == marker)
+                marker = WhiteSpace;
+            else
+                marker = m;
       }
       else
       {
@@ -1452,7 +1452,7 @@ int divide_string(char string[], char* word_array[], int max_words)
    }
 
    // Remove surrounding double-quotes from each word, if any.
-	for (i=0; i<count; i++)
+    for (i=0; i<count; i++)
    {
       int len = strlen(word_array[i]);
       if (len > 1 && word_array[i][0] == '\"' && word_array[i][len-1] == '\"')
@@ -1672,9 +1672,9 @@ static void acpp (char in_file[], const char out_file[])
    /* copy the preprocessed file so we can get a look at it:
     */
    {
-	static int sCounter = 1;
-	sprintf(buffer, "cp %s /suture/usr/people/simm/ACPP-OUT-%d.txt", out_file, sCounter++);
-	glutSystem(buffer);
+    static int sCounter = 1;
+    sprintf(buffer, "cp %s /suture/usr/people/simm/ACPP-OUT-%d.txt", out_file, sCounter++);
+    glutSystem(buffer);
    }
 #endif
 
@@ -1739,8 +1739,8 @@ ReturnCode read_deform (FILE* fp, SegmentStruct* seg, int segmentnum)
 
       if (buffer[0] == '#')
       {
-	 read_nonempty_line(fp,buffer);
-	 continue;
+     read_nonempty_line(fp,buffer);
+     continue;
       }
 
       if (STRINGS_ARE_EQUAL(buffer,"active"))
@@ -2002,11 +2002,11 @@ ReturnCode read_deformity (ModelStruct* ms, FILE* fp)
       ms->deformity_array_size += DEFORMITY_ARRAY_INCREMENT;
 
       ms->deformity = (Deformity*) simm_realloc(ms->deformity,
-			    ms->deformity_array_size * sizeof(Deformity), &rc);
+                ms->deformity_array_size * sizeof(Deformity), &rc);
       if (rc == code_bad)
       {
          ms->deformity_array_size -= DEFORMITY_ARRAY_INCREMENT;
-	         return code_bad;
+             return code_bad;
       }
    }
 
@@ -2029,8 +2029,8 @@ ReturnCode read_deformity (ModelStruct* ms, FILE* fp)
 
       if (buffer[0] == '#')
       {
-	      read_nonempty_line(fp,buffer);
-	      continue;
+          read_nonempty_line(fp,buffer);
+          continue;
       }
 
       if (STRINGS_ARE_EQUAL(buffer,"default_value") || STRINGS_ARE_EQUAL(buffer,"value"))
@@ -2038,8 +2038,8 @@ ReturnCode read_deformity (ModelStruct* ms, FILE* fp)
          if (fscanf(fp, "%lg", &dty->default_value) != 1)
          {
             sprintf(errorbuffer, "Error reading value for deformity: %s.", dty->name);
-	         error(none, errorbuffer);
-	         return code_bad;
+             error(none, errorbuffer);
+             return code_bad;
          }
          else
          {
@@ -2051,8 +2051,8 @@ ReturnCode read_deformity (ModelStruct* ms, FILE* fp)
          if (fscanf(fp, "%lg %lg", &dty->range.start, &dty->range.end) != 2)
          {
             sprintf(errorbuffer, "Error reading range for deformity: %s.", dty->name);
-	         error(none, errorbuffer);
-	         return code_bad;
+             error(none, errorbuffer);
+             return code_bad;
          }
 
          if (dty->range.start > dty->range.end)
@@ -2064,25 +2064,25 @@ ReturnCode read_deformity (ModelStruct* ms, FILE* fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"keys"))
       {
-	      int nk;
-	      char key1[64], key2[64];
-	 
-	      read_line(fp, buffer);
-	 
-	      nk = sscanf(buffer,"%s %s", key1, key2);
-	 
-	      if (nk == 1)
-	         dty->keys[0] = dty->keys[1] = lookup_simm_key(key1);
-	      else if (nk == 2)
-	      {
-	         dty->keys[0] = lookup_simm_key(key1);
-	         dty->keys[1] = lookup_simm_key(key2);
-	      }
-	      else
-	      {
-	         sprintf(errorbuffer, "Error reading keys for deformity: %s.", dty->name);
-	         error(recover,errorbuffer);
-	      }
+          int nk;
+          char key1[64], key2[64];
+     
+          read_line(fp, buffer);
+     
+          nk = sscanf(buffer,"%s %s", key1, key2);
+     
+          if (nk == 1)
+             dty->keys[0] = dty->keys[1] = lookup_simm_key(key1);
+          else if (nk == 2)
+          {
+             dty->keys[0] = lookup_simm_key(key1);
+             dty->keys[1] = lookup_simm_key(key2);
+          }
+          else
+          {
+             sprintf(errorbuffer, "Error reading keys for deformity: %s.", dty->name);
+             error(recover,errorbuffer);
+          }
       }
       else if (STRINGS_ARE_EQUAL(buffer,"deform"))
       {
@@ -2125,20 +2125,20 @@ ReturnCode read_deformity (ModelStruct* ms, FILE* fp)
 
             if (rc != code_fine)
             {
-	            if (dty->deform)
-	               free(dty->deform);
+                if (dty->deform)
+                   free(dty->deform);
 
-	            if (dty->deform_name)
-	               free(dty->deform_name);
+                if (dty->deform_name)
+                   free(dty->deform_name);
 
-	            dty->deform = NULL;
-	            dty->num_deforms = 0;
+                dty->deform = NULL;
+                dty->num_deforms = 0;
 
-	            sprintf(errorbuffer, "Error reading deform \'%s\' for deformity: %s.",
-	               dfmName, dty->name);
-	            error(recover,errorbuffer);
+                sprintf(errorbuffer, "Error reading deform \'%s\' for deformity: %s.",
+                   dfmName, dty->name);
+                error(recover,errorbuffer);
 
-	            return code_bad;
+                return code_bad;
             }
          }
       }

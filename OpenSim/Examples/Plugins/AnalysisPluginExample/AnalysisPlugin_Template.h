@@ -51,7 +51,7 @@ public:
 // PROPERTIES
 //=======================================================================
 /** @name Property declarations
-	These are the serializable properties associated with this class. **/
+    These are the serializable properties associated with this class. **/
 /**@{**/
 
     /** String list property containing the name of the body names*/
@@ -85,69 +85,69 @@ public:
 // INTERNAL MEMBER VARIABLES
 //=======================================================================
 
-	// In addition to properties, add any additional member variables
-	// you need for your analysis.  These variables are not read from
-	// or written to file.  They are just variables you use to execute
-	// your analysis.  For example, you will almost certainly need a
-	// storage object for storing the results of your analysis.
+    // In addition to properties, add any additional member variables
+    // you need for your analysis.  These variables are not read from
+    // or written to file.  They are just variables you use to execute
+    // your analysis.  For example, you will almost certainly need a
+    // storage object for storing the results of your analysis.
 
-	// Storage object for storing and writing out results.  In general,
-	// each storage file that you create will contain only one kind of data.
-	// Create a different storage object for each kind of data.  For example,
-	// create a _storePos for positions, _storeVel for velocities,
-	// _storeAcc for accelerations, etc. */
+    // Storage object for storing and writing out results.  In general,
+    // each storage file that you create will contain only one kind of data.
+    // Create a different storage object for each kind of data.  For example,
+    // create a _storePos for positions, _storeVel for velocities,
+    // _storeAcc for accelerations, etc. */
 
-	// Indices of bodies for kinematics to be reported
-	Array<int> _bodyIndices;
+    // Indices of bodies for kinematics to be reported
+    Array<int> _bodyIndices;
 
-	/** Storage for recording body positions. */
-	Storage _storePos;
+    /** Storage for recording body positions. */
+    Storage _storePos;
 
-	/** Internal work arrays to hold body positions at each time step. */
-	Array<double> _bodypos;
+    /** Internal work arrays to hold body positions at each time step. */
+    Array<double> _bodypos;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 private:
     /** Construct default values for internal member variables, */
-	/** i.e., zero data and set pointers to Null */
-	void setNull();
+    /** i.e., zero data and set pointers to Null */
+    void setNull();
 
-	/** Construct default values for properties */
-	void constructProperties();
+    /** Construct default values for properties */
+    void constructProperties();
 
 public:
     /** Default constructor */
     AnalysisPlugin_Template();
 
     /** setModel */
-	virtual void setModel(Model& aModel);
+    virtual void setModel(Model& aModel);
 
-	//-------------------------------------------------------------------------
-	// METHODS THAT MUST BE OVERRIDDEN
-	//-------------------------------------------------------------------------
-	virtual int
-		begin(SimTK::State& s);
-	virtual int
-		step(const SimTK::State& s, int stepNumber);
-	virtual int
-		end(SimTK::State& s);
+    //-------------------------------------------------------------------------
+    // METHODS THAT MUST BE OVERRIDDEN
+    //-------------------------------------------------------------------------
+    virtual int
+        begin(SimTK::State& s);
+    virtual int
+        step(const SimTK::State& s, int stepNumber);
+    virtual int
+        end(SimTK::State& s);
 
-	//-------------------------------------------------------------------------
-	// IO
-	//-------------------------------------------------------------------------
-	virtual int
-		printResults(const std::string &aBaseName,const std::string &aDir="",
-		double aDT=-1.0,const std::string &aExtension=".sto");
+    //-------------------------------------------------------------------------
+    // IO
+    //-------------------------------------------------------------------------
+    virtual int
+        printResults(const std::string &aBaseName,const std::string &aDir="",
+        double aDT=-1.0,const std::string &aExtension=".sto");
 
 
 protected:
-	//========================== Internal Methods =============================
-	int record(const SimTK::State& s);
-	void constructDescription();
-	void constructColumnLabels();
-	void setupStorage();
+    //========================== Internal Methods =============================
+    int record(const SimTK::State& s);
+    void constructDescription();
+    void constructColumnLabels();
+    void setupStorage();
 
 //=============================================================================
 }; // END of class AnalysisPlugin_Template

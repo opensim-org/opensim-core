@@ -94,7 +94,7 @@ public:
     /** Construct ModelComponent from a specific node in an XML document. **/
     explicit ModelComponent(SimTK::Xml::Element& aNode);
 
-	// compiler default copy costructor and assignment operator
+    // compiler default copy costructor and assignment operator
 
     /** Destructor is virtual to allow concrete model component cleanup. **/
     virtual ~ModelComponent() {}
@@ -269,7 +269,7 @@ protected:
 
 
 //==============================================================================
-};	// END of class ModelComponent
+};  // END of class ModelComponent
 //==============================================================================
 //=============================================================================
 

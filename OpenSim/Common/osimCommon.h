@@ -48,7 +48,7 @@
 #include "ObjectGroup.h"
 #include "StorageInterface.h"
 #include "LoadOpenSimLibrary.h"
-#include "RegisterTypes_osimCommon.h"	// to expose RegisterTypes_osimCommon
+#include "RegisterTypes_osimCommon.h"   // to expose RegisterTypes_osimCommon
 #include "SmoothSegmentedFunctionFactory.h"
 
 #endif // _osimCommon_h_

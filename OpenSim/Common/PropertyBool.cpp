@@ -48,7 +48,7 @@ using namespace std;
 PropertyBool::PropertyBool(const string &aName,bool aValue) 
 :   Property_Deprecated(Property_Deprecated::Bool,aName)
 {
-	_value = aValue;
+    _value = aValue;
     setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
@@ -58,7 +58,7 @@ PropertyBool::PropertyBool(const string &aName,bool aValue)
 PropertyBool::PropertyBool() 
 :   Property_Deprecated(Property_Deprecated::Bool,"BoolPropertyName")
 {
-	_value = false;
+    _value = false;
     setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
@@ -70,7 +70,7 @@ PropertyBool::PropertyBool()
 PropertyBool::PropertyBool(const PropertyBool &aProperty) 
 :   Property_Deprecated(aProperty)
 {
-	_value = aProperty.getValueBool();
+    _value = aProperty.getValueBool();
 }
 //_____________________________________________________________________________
 /**
@@ -82,8 +82,8 @@ PropertyBool::PropertyBool(const PropertyBool &aProperty)
  */
 PropertyBool* PropertyBool::clone() const
 {
-	PropertyBool* prop = new PropertyBool(*this);
-	return prop;
+    PropertyBool* prop = new PropertyBool(*this);
+    return prop;
 }
 
 
@@ -103,9 +103,9 @@ PropertyBool* PropertyBool::clone() const
 PropertyBool& PropertyBool::
 operator=(const PropertyBool &aProperty)
 {
-	Property_Deprecated::operator=(aProperty);
-	_value = aProperty.getValueBool();
-	return(*this);
+    Property_Deprecated::operator=(aProperty);
+    _value = aProperty.getValueBool();
+    return(*this);
 }
 
 
@@ -124,7 +124,7 @@ operator=(const PropertyBool &aProperty)
 std::string PropertyBool::
 getTypeName() const
 {
-	return "bool";
+    return "bool";
 }
 
 //-----------------------------------------------------------------------------
@@ -139,7 +139,7 @@ getTypeName() const
 void PropertyBool::
 setValue(bool aValue)
 {
-	_value = aValue;
+    _value = aValue;
 }
 //_____________________________________________________________________________
 /**
@@ -151,7 +151,7 @@ setValue(bool aValue)
 bool& PropertyBool::
 getValueBool()
 {
-	return(_value);
+    return(_value);
 }
 //_____________________________________________________________________________
 /**
@@ -162,7 +162,7 @@ getValueBool()
 const bool& PropertyBool::
 getValueBool() const
 {
-	return(_value);
+    return(_value);
 }
 //_____________________________________________________________________________
 /**
@@ -173,5 +173,5 @@ getValueBool() const
 string PropertyBool::
 toString() const
 {
-	return _value? "true" : "false";
+    return _value? "true" : "false";
 }

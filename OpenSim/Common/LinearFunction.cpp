@@ -48,10 +48,10 @@ LinearFunction::~LinearFunction()
  * Default constructor.
  */
 LinearFunction::LinearFunction() :
-	_coefficients(_coefficientsProp.getValueDblArray())
+    _coefficients(_coefficientsProp.getValueDblArray())
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -70,11 +70,11 @@ LinearFunction::LinearFunction(double slope, double intercept) :
 /**
  */
 LinearFunction::LinearFunction(Array<double> coefficients) :
-	_coefficients(_coefficientsProp.getValueDblArray())
+    _coefficients(_coefficientsProp.getValueDblArray())
 {
-	setNull();
-	setupProperties();
-	setCoefficients(coefficients);
+    setNull();
+    setupProperties();
+    setCoefficients(coefficients);
 }
 
 //_____________________________________________________________________________
@@ -85,12 +85,12 @@ LinearFunction::LinearFunction(Array<double> coefficients) :
  * @param aLinearFunction LinearFunction object to be copied.
  */
 LinearFunction::LinearFunction(const LinearFunction &aLinearFunction) :
-	Function(aLinearFunction),
-	_coefficients(_coefficientsProp.getValueDblArray())
+    Function(aLinearFunction),
+    _coefficients(_coefficientsProp.getValueDblArray())
 {
-	setNull();
-	setupProperties();
-	copyData(aLinearFunction);
+    setNull();
+    setupProperties();
+    copyData(aLinearFunction);
 }
 
 
@@ -103,7 +103,7 @@ LinearFunction::LinearFunction(const LinearFunction &aLinearFunction) :
  */
 void LinearFunction::setNull()
 {
-	setAuthors("Ajay Seth");
+    setAuthors("Ajay Seth");
 }
 
 //_____________________________________________________________________________
@@ -114,12 +114,12 @@ void LinearFunction::setNull()
  */
 void LinearFunction::setupProperties()
 {
-	Array<double> intitCoeffs(0,2);
-	intitCoeffs[0]=1;
+    Array<double> intitCoeffs(0,2);
+    intitCoeffs[0]=1;
 
-	_coefficientsProp.setName("coefficients");
-	_coefficientsProp.setValue(intitCoeffs);
-	_propertySet.append(&_coefficientsProp);
+    _coefficientsProp.setName("coefficients");
+    _coefficientsProp.setValue(intitCoeffs);
+    _propertySet.append(&_coefficientsProp);
 }
 
 //_____________________________________________________________________________
@@ -133,7 +133,7 @@ void LinearFunction::setupProperties()
  */
 void LinearFunction::copyData(const LinearFunction &aLinearFunction)
 {
-	_coefficients = aLinearFunction._coefficients;
+    _coefficients = aLinearFunction._coefficients;
     resetFunction();
 }
 
@@ -157,13 +157,13 @@ void LinearFunction::setCoefficients(Array<double> coefficients)
  */
 LinearFunction& LinearFunction::operator=(const LinearFunction &aLinearFunction)
 {
-	// BASE CLASS
-	Function::operator=(aLinearFunction);
+    // BASE CLASS
+    Function::operator=(aLinearFunction);
 
-	// DATA
-	copyData(aLinearFunction);
+    // DATA
+    copyData(aLinearFunction);
 
-	return(*this);
+    return(*this);
 }
 
 //=============================================================================
@@ -171,6 +171,6 @@ LinearFunction& LinearFunction::operator=(const LinearFunction &aLinearFunction)
 //=============================================================================
 SimTK::Function* LinearFunction::createSimTKFunction() const 
 {
-	SimTK::Vector coeffs(_coefficients.getSize(), &_coefficients[0]);
+    SimTK::Vector coeffs(_coefficients.getSize(), &_coefficients[0]);
     return new SimTK::Function::Linear(coeffs);
 }

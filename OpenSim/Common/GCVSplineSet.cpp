@@ -51,7 +51,7 @@ GCVSplineSet::~GCVSplineSet()
 GCVSplineSet::
 GCVSplineSet()
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -61,9 +61,9 @@ GCVSplineSet()
  */
 GCVSplineSet::
 GCVSplineSet(const char *aFileName) :
-	FunctionSet(aFileName)
+    FunctionSet(aFileName)
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -90,17 +90,17 @@ GCVSplineSet(const char *aFileName) :
 GCVSplineSet::
 GCVSplineSet(int aDegree,const Storage *aStore,double aErrorVariance)
 {
-	setNull();
-	if(aStore==NULL) return;
-	setName(aStore->getName());
+    setNull();
+    if(aStore==NULL) return;
+    setName(aStore->getName());
 
-	// CAPACITY
-	StateVector *vec = aStore->getStateVector(0);
-	if(vec==NULL) return;
-	ensureCapacity(2*vec->getSize());
+    // CAPACITY
+    StateVector *vec = aStore->getStateVector(0);
+    if(vec==NULL) return;
+    ensureCapacity(2*vec->getSize());
 
-	// CONSTRUCT
-	construct(aDegree,aStore,aErrorVariance);
+    // CONSTRUCT
+    construct(aDegree,aStore,aErrorVariance);
 }
 
 
@@ -127,58 +127,58 @@ setNull()
 void GCVSplineSet::
 construct(int aDegree,const Storage *aStore,double aErrorVariance)
 {
-	if(aStore==NULL) return;
+    if(aStore==NULL) return;
 
-	// DESCRIPTION
-	setDescription(aStore->getDescription());
+    // DESCRIPTION
+    setDescription(aStore->getDescription());
 
-	// GET COLUMN NAMES
-	const Array<std::string> &labels = aStore->getColumnLabels();
-	char tmp[32];
-	std::string name;
+    // GET COLUMN NAMES
+    const Array<std::string> &labels = aStore->getColumnLabels();
+    char tmp[32];
+    std::string name;
 
-	// LOOP THROUGHT THE STATES
-	int nTime=1,nData=1;
-	double *times=NULL,*data=NULL;
-	GCVSpline *spline;
-	//printf("GCVSplineSet.construct:  contructing splines...\n");
-	for(int i=0;nData>0;i++) {
+    // LOOP THROUGHT THE STATES
+    int nTime=1,nData=1;
+    double *times=NULL,*data=NULL;
+    GCVSpline *spline;
+    //printf("GCVSplineSet.construct:  contructing splines...\n");
+    for(int i=0;nData>0;i++) {
 
-		// GET TIMES AND DATA
-		nTime = aStore->getTimeColumn(times,i);
-		nData = aStore->getDataColumn(i,data);
+        // GET TIMES AND DATA
+        nTime = aStore->getTimeColumn(times,i);
+        nData = aStore->getDataColumn(i,data);
 
-		// CHECK
-		if(nTime!=nData) {
-			std::cout << "\nGCVSplineSet.construct: ERR- number of times (" << nTime << ")"
-				  << " and number of data (" << nData << ") don't agree.\n";
-			break;
-		}
-		if(nData==0) break;
+        // CHECK
+        if(nTime!=nData) {
+            std::cout << "\nGCVSplineSet.construct: ERR- number of times (" << nTime << ")"
+                  << " and number of data (" << nData << ") don't agree.\n";
+            break;
+        }
+        if(nData==0) break;
 
-		// GET COLUMN NAME
-		// Note that state i is in column i+1
-		if(i+1 < labels.getSize()) {
-			name = labels[i+1];
-		} else {
-			sprintf(tmp,"data_%d",i);
-			name = tmp;
-		}
+        // GET COLUMN NAME
+        // Note that state i is in column i+1
+        if(i+1 < labels.getSize()) {
+            name = labels[i+1];
+        } else {
+            sprintf(tmp,"data_%d",i);
+            name = tmp;
+        }
 
-		// CONSTRUCT SPLINE
-		//printf("%s\t",name);
-		spline = new GCVSpline(aDegree,nData,times,data,name,aErrorVariance);
-		SimTK::Function* fp = spline->createSimTKFunction();
-		delete fp;  
+        // CONSTRUCT SPLINE
+        //printf("%s\t",name);
+        spline = new GCVSpline(aDegree,nData,times,data,name,aErrorVariance);
+        SimTK::Function* fp = spline->createSimTKFunction();
+        delete fp;  
 
-		// ADD SPLINE
-		adoptAndAppend(spline);
-	}
-	//printf("\n%d splines constructed.\n\n",i);
+        // ADD SPLINE
+        adoptAndAppend(spline);
+    }
+    //printf("\n%d splines constructed.\n\n",i);
 
-	// CLEANUP
-	if(times!=NULL) delete[] times;
-	if(data!=NULL) delete[] data;
+    // CLEANUP
+    if(times!=NULL) delete[] times;
+    if(data!=NULL) delete[] data;
 }
 
 
@@ -195,8 +195,8 @@ construct(int aDegree,const Storage *aStore,double aErrorVariance)
 GCVSpline* GCVSplineSet::
 getGCVSpline(int aIndex) const
 {
-	GCVSpline& func = (GCVSpline&)get(aIndex);
-	return(&func);
+    GCVSpline& func = (GCVSpline&)get(aIndex);
+    return(&func);
 }
 
 
@@ -222,108 +222,108 @@ getGCVSpline(int aIndex) const
 Storage* GCVSplineSet::
 constructStorage(int aDerivOrder,double aDX)
 {
-	if(aDerivOrder<0) return(NULL);
-	if(getSize()<=0) return(NULL);
+    if(aDerivOrder<0) return(NULL);
+    if(getSize()<=0) return(NULL);
 
-	// GET FIRST NON-NULL SPLINE
-	GCVSpline *spl;
-	int n = getSize();
-	for(int i=0;i<n;i++) {
-		spl = getGCVSpline(i);
-		if(spl!=NULL) break;
-	}
-	if(spl==NULL) return(NULL);
+    // GET FIRST NON-NULL SPLINE
+    GCVSpline *spl;
+    int n = getSize();
+    for(int i=0;i<n;i++) {
+        spl = getGCVSpline(i);
+        if(spl!=NULL) break;
+    }
+    if(spl==NULL) return(NULL);
 
-	// HOW MANY X STEPS
-	double xRange = getMaxX() - getMinX();
-	int nSteps;
-	if(aDX<=0.0) {
-		nSteps = spl->getSize();
-	} else {
-		nSteps = 10 + (int)(xRange/aDX);
-	}
+    // HOW MANY X STEPS
+    double xRange = getMaxX() - getMinX();
+    int nSteps;
+    if(aDX<=0.0) {
+        nSteps = spl->getSize();
+    } else {
+        nSteps = 10 + (int)(xRange/aDX);
+    }
 
-	// CONSTRUCT STORAGE OBJECT
-	std::string name="";
-	if(aDerivOrder==0) {
-		name=getName()+"_GCVSpline";
-	} else {
-		char temp[10];
-		sprintf(temp, "%d", aDerivOrder);
-		name=getName()+"_GCVSpline_Deriv_"+std::string(temp);
-	}
-	Storage *store = new Storage(nSteps,name);
+    // CONSTRUCT STORAGE OBJECT
+    std::string name="";
+    if(aDerivOrder==0) {
+        name=getName()+"_GCVSpline";
+    } else {
+        char temp[10];
+        sprintf(temp, "%d", aDerivOrder);
+        name=getName()+"_GCVSpline_Deriv_"+std::string(temp);
+    }
+    Storage *store = new Storage(nSteps,name);
 
-	// DESCRIPTION
-	store->setDescription(getDescription());
+    // DESCRIPTION
+    store->setDescription(getDescription());
 
-	// SET COLUMN LABELS
-	GCVSpline *spline;
-	Array<std::string> labels;
-	labels.append("time");
-	for(int i=0;i<n;i++) {
-		spline = getGCVSpline(i);
-		if(spline==NULL) {
-			char cName[32];
-			sprintf(cName,"data_%d",i);
-			labels.append(std::string(cName));
-		} else {
-			labels.append(spline->getName());
-		}
-	}
-	store->setColumnLabels(labels);
+    // SET COLUMN LABELS
+    GCVSpline *spline;
+    Array<std::string> labels;
+    labels.append("time");
+    for(int i=0;i<n;i++) {
+        spline = getGCVSpline(i);
+        if(spline==NULL) {
+            char cName[32];
+            sprintf(cName,"data_%d",i);
+            labels.append(std::string(cName));
+        } else {
+            labels.append(spline->getName());
+        }
+    }
+    store->setColumnLabels(labels);
 
-	// SET STATES
-	Array<double> y(0.0,n);
+    // SET STATES
+    Array<double> y(0.0,n);
 
-	// LOOP THROUGH THE DATA
-	// constant increments
-	if(aDX>0.0) {
-		for(double x=getMinX(); x<=getMaxX(); x+=aDX) {
-			evaluate(y,aDerivOrder,x);
-			store->append(x,n,&y[0]);
-		}
+    // LOOP THROUGH THE DATA
+    // constant increments
+    if(aDX>0.0) {
+        for(double x=getMinX(); x<=getMaxX(); x+=aDX) {
+            evaluate(y,aDerivOrder,x);
+            store->append(x,n,&y[0]);
+        }
 
-	// original independent variable increments
-	} else {
+    // original independent variable increments
+    } else {
 
-		const Array<double> &xOrig = spl->getX();
-		for(int ix=0;ix<nSteps;ix++) {
+        const Array<double> &xOrig = spl->getX();
+        for(int ix=0;ix<nSteps;ix++) {
 
-			// ONLY WITHIN BOUNDS OF THE SET
-			if(xOrig[ix]<getMinX()) continue;
-			if(xOrig[ix]>getMaxX()) break;
+            // ONLY WITHIN BOUNDS OF THE SET
+            if(xOrig[ix]<getMinX()) continue;
+            if(xOrig[ix]>getMaxX()) break;
 
-			evaluate(y,aDerivOrder,xOrig[ix]);
-			store->append(xOrig[ix],n,&y[0]);
-		}
-	}
+            evaluate(y,aDerivOrder,xOrig[ix]);
+            store->append(xOrig[ix],n,&y[0]);
+        }
+    }
 
-	return(store);
+    return(store);
 }
 
 double GCVSplineSet::getMinX() const
 {
-	double min = SimTK::Infinity;
+    double min = SimTK::Infinity;
 
-	for (int i=0; i<getSize(); i++) {
-		const GCVSpline* spl = getGCVSpline(i);
-		if (spl && spl->getMinX() < min)
-			min = spl->getMinX();
-	}
+    for (int i=0; i<getSize(); i++) {
+        const GCVSpline* spl = getGCVSpline(i);
+        if (spl && spl->getMinX() < min)
+            min = spl->getMinX();
+    }
 
-	return min;
+    return min;
 }
 
 double GCVSplineSet::getMaxX() const
 {
-	double max = -SimTK::Infinity;
+    double max = -SimTK::Infinity;
 
-	for (int i=0; i<getSize(); i++) {
-		const GCVSpline* spl = getGCVSpline(i);
-		if (spl && spl->getMaxX() > max)
-			max = spl->getMaxX();
-	}
+    for (int i=0; i<getSize(); i++) {
+        const GCVSpline* spl = getGCVSpline(i);
+        if (spl && spl->getMaxX() > max)
+            max = spl->getMaxX();
+    }
 
-	return max;
+    return max;
 }

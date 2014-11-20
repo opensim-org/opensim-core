@@ -57,7 +57,7 @@ typedef enum { smNo = 0, smYes = 1 } smBoolean;
 
 typedef enum { smNoAxis = 0, smX, smNegX, smY, smNegY, smZ, smNegZ, smNoAlign } smAxes;
 
-typedef enum {	smXYZ = 1, smXZY, smYXZ, smYZX, smZXY, smZYX } smEulerRotationOrder;
+typedef enum {  smXYZ = 1, smXZY, smYXZ, smYZX, smZXY, smZYX } smEulerRotationOrder;
 
 typedef enum { PFX, PFY, PFZ, PPX, PPY, PMZ, NUM_TYPE1_CHANNELS } smForcePlate1Channels;
 
@@ -901,7 +901,7 @@ typedef struct {
    smBoolean leftArmOnly;
    smBoolean pelvisPresent;
    smBoolean headPresent;
-	smBoolean torsoPresent;
+    smBoolean torsoPresent;
    smBoolean armsUp;
    int rightFingerMarkers[NumFingerMarkers];
    int leftFingerMarkers[NumFingerMarkers];

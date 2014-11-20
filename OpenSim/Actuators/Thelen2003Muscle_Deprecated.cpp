@@ -43,7 +43,7 @@ using namespace OpenSim;
  */
 Thelen2003Muscle_Deprecated::Thelen2003Muscle_Deprecated()
 {
-	constructProperties();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -56,13 +56,13 @@ Thelen2003Muscle_Deprecated::Thelen2003Muscle_Deprecated
     double pennationAngle) 
 :   Super()
 {
-	constructProperties();
+    constructProperties();
 
-	setName(name);
-	setMaxIsometricForce(maxIsometricForce);
-	setOptimalFiberLength(optimalFiberLength);
-	setTendonSlackLength(tendonSlackLength);
-	setPennationAngleAtOptimalFiberLength(pennationAngle);
+    setName(name);
+    setMaxIsometricForce(maxIsometricForce);
+    setOptimalFiberLength(optimalFiberLength);
+    setTendonSlackLength(tendonSlackLength);
+    setPennationAngleAtOptimalFiberLength(pennationAngle);
 }
 
 
@@ -70,17 +70,17 @@ Thelen2003Muscle_Deprecated::Thelen2003Muscle_Deprecated
 // Allocate and initialize properties.
 void Thelen2003Muscle_Deprecated::constructProperties()
 {
-	constructProperty_activation_time_constant(0.01);
-	constructProperty_deactivation_time_constant(0.04);
-	constructProperty_Vmax(10.0);
-	constructProperty_Vmax0(5.0);
-	constructProperty_FmaxTendonStrain(0.033);
-	constructProperty_FmaxMuscleStrain(0.6);
-	constructProperty_KshapeActive(0.5);
-	constructProperty_KshapePassive(4.0);
-	constructProperty_damping(0.05);
-	constructProperty_Af(0.3);
-	constructProperty_Flen(1.8);
+    constructProperty_activation_time_constant(0.01);
+    constructProperty_deactivation_time_constant(0.04);
+    constructProperty_Vmax(10.0);
+    constructProperty_Vmax0(5.0);
+    constructProperty_FmaxTendonStrain(0.033);
+    constructProperty_FmaxMuscleStrain(0.6);
+    constructProperty_KshapeActive(0.5);
+    constructProperty_KshapePassive(4.0);
+    constructProperty_damping(0.05);
+    constructProperty_Af(0.3);
+    constructProperty_Flen(1.8);
 }
 
 
@@ -101,87 +101,87 @@ void Thelen2003Muscle_Deprecated::constructProperties()
 double Thelen2003Muscle_Deprecated::
 computeActuation(const SimTK::State& s) const
 {
-	double tendonForce;
-	double passiveForce;
-	double activationDeriv;
-	double fiberLengthDeriv;
+    double tendonForce;
+    double passiveForce;
+    double activationDeriv;
+    double fiberLengthDeriv;
 
-	double norm_tendon_length, ca;
-	double norm_muscle_tendon_length, pennation_angle;
-	double excitation = getExcitation(s);
+    double norm_tendon_length, ca;
+    double norm_muscle_tendon_length, pennation_angle;
+    double excitation = getExcitation(s);
 
-	/* Normalize the muscle states */
-	double activation = getActivation(s);
-	double normFiberLength = getFiberLength(s) / _optimalFiberLength;
+    /* Normalize the muscle states */
+    double activation = getActivation(s);
+    double normFiberLength = getFiberLength(s) / _optimalFiberLength;
 
-	// Maximum contraction velocity is an activation scaled value
-	double Vmax = getVmax();
-	if (activation < 1.0) {
-		Vmax = getVmax0() + activation*(Vmax-getVmax0());
-	}
-	Vmax = Vmax*_optimalFiberLength;
+    // Maximum contraction velocity is an activation scaled value
+    double Vmax = getVmax();
+    if (activation < 1.0) {
+        Vmax = getVmax0() + activation*(Vmax-getVmax0());
+    }
+    Vmax = Vmax*_optimalFiberLength;
 
-	/* Compute normalized muscle state derivatives */
-	if (excitation >= activation) {
+    /* Compute normalized muscle state derivatives */
+    if (excitation >= activation) {
         activationDeriv = (excitation - activation) / getActivationTimeConstant();
-	} else {
+    } else {
         activationDeriv = (excitation - activation) / getDeactivationTimeConstant();
-	}
+    }
 
-	pennation_angle = calcPennation( normFiberLength, 1.0, _pennationAngleAtOptimal);
-	ca = cos(pennation_angle);
+    pennation_angle = calcPennation( normFiberLength, 1.0, _pennationAngleAtOptimal);
+    ca = cos(pennation_angle);
 
-	norm_muscle_tendon_length = getLength(s) / _optimalFiberLength;
-	norm_tendon_length = norm_muscle_tendon_length - normFiberLength * ca;
+    norm_muscle_tendon_length = getLength(s) / _optimalFiberLength;
+    norm_tendon_length = norm_muscle_tendon_length - normFiberLength * ca;
 
-	tendonForce = calcTendonForce(s,norm_tendon_length);
-	passiveForce = calcPassiveForce(s,normFiberLength);
-	double activeForce = calcActiveForce(s,normFiberLength);
+    tendonForce = calcTendonForce(s,norm_tendon_length);
+    passiveForce = calcPassiveForce(s,normFiberLength);
+    double activeForce = calcActiveForce(s,normFiberLength);
 
-	// NOTE: SimmZajacMuscle has this check, but Darryl's muscle didn't seem to
-	// if (activeForce < 0.0) activeForce = 0.0;
+    // NOTE: SimmZajacMuscle has this check, but Darryl's muscle didn't seem to
+    // if (activeForce < 0.0) activeForce = 0.0;
 
-	/* If pennation equals 90 degrees, fiber length equals muscle width and fiber
-	* velocity goes to zero.  Pennation will stay at 90 until tendon starts to
-	* pull, then "stiff tendon" approximation is used to calculate approximate
-	* fiber velocity.
-	*/
-	if (EQUAL_WITHIN_ERROR(ca, 0.0)) {
-	  if (EQUAL_WITHIN_ERROR(tendonForce, 0.0)) {
-		  fiberLengthDeriv = 0.0;
-			// ms->fiber_velocity = 0.0;
-	  } else {
-		 double h = norm_muscle_tendon_length - _tendonSlackLength;
-		 double w = _optimalFiberLength * sin(_pennationAngleAtOptimal);
-		 double new_fiber_length = sqrt(h*h + w*w) / _optimalFiberLength;
-			double new_pennation_angle = calcPennation( new_fiber_length, 1.0, _pennationAngleAtOptimal);
-		 double new_ca = cos(new_pennation_angle);
-		 fiberLengthDeriv = getLengtheningSpeed(s) / (Vmax * new_ca);
-		}
-	} else {
+    /* If pennation equals 90 degrees, fiber length equals muscle width and fiber
+    * velocity goes to zero.  Pennation will stay at 90 until tendon starts to
+    * pull, then "stiff tendon" approximation is used to calculate approximate
+    * fiber velocity.
+    */
+    if (EQUAL_WITHIN_ERROR(ca, 0.0)) {
+      if (EQUAL_WITHIN_ERROR(tendonForce, 0.0)) {
+          fiberLengthDeriv = 0.0;
+            // ms->fiber_velocity = 0.0;
+      } else {
+         double h = norm_muscle_tendon_length - _tendonSlackLength;
+         double w = _optimalFiberLength * sin(_pennationAngleAtOptimal);
+         double new_fiber_length = sqrt(h*h + w*w) / _optimalFiberLength;
+            double new_pennation_angle = calcPennation( new_fiber_length, 1.0, _pennationAngleAtOptimal);
+         double new_ca = cos(new_pennation_angle);
+         fiberLengthDeriv = getLengtheningSpeed(s) / (Vmax * new_ca);
+        }
+    } else {
 
-		double velocity_dependent_force = tendonForce / ca - passiveForce;
-	//	if (velocity_dependent_force < 0.0)  velocity_dependent_force = 0.0;
+        double velocity_dependent_force = tendonForce / ca - passiveForce;
+    //  if (velocity_dependent_force < 0.0)  velocity_dependent_force = 0.0;
 
-		fiberLengthDeriv = calcFiberVelocity(s,activation,activeForce,velocity_dependent_force);
-	}
+        fiberLengthDeriv = calcFiberVelocity(s,activation,activeForce,velocity_dependent_force);
+    }
 
 
-	/* Un-normalize the muscle state derivatives and forces. */
-	/* Note: Do not need to Un-Normalize activation dynamics equation since activation, deactivation parameters
-	 specified in muscle file are now independent of time scale */
+    /* Un-normalize the muscle state derivatives and forces. */
+    /* Note: Do not need to Un-Normalize activation dynamics equation since activation, deactivation parameters
+     specified in muscle file are now independent of time scale */
 
-	setActivationDeriv(s, activationDeriv );
-	setFiberLengthDeriv(s, fiberLengthDeriv * Vmax );
+    setActivationDeriv(s, activationDeriv );
+    setFiberLengthDeriv(s, fiberLengthDeriv * Vmax );
 
-	tendonForce = tendonForce *  _maxIsometricForce;
-	setActuation(s, tendonForce);
-	setTendonForce(s, tendonForce);
-	setPassiveForce( s, passiveForce * _maxIsometricForce);
+    tendonForce = tendonForce *  _maxIsometricForce;
+    setActuation(s, tendonForce);
+    setTendonForce(s, tendonForce);
+    setPassiveForce( s, passiveForce * _maxIsometricForce);
 
-	//cout << "ThelenMuscle computeActuation " << getName() << "  t=" << s.getTime() << " force = " << tendonForce << endl;
+    //cout << "ThelenMuscle computeActuation " << getName() << "  t=" << s.getTime() << " force = " << tendonForce << endl;
 
-	return( tendonForce );
+    return( tendonForce );
 }
 
 //_____________________________________________________________________________
@@ -199,26 +199,26 @@ computeActuation(const SimTK::State& s) const
 double Thelen2003Muscle_Deprecated::
 calcTendonForce(const SimTK::State& s, double aNormTendonLength) const
 {
-	double norm_resting_length = _tendonSlackLength / _optimalFiberLength;
-	double tendon_strain =  (aNormTendonLength - norm_resting_length) / norm_resting_length;
+    double norm_resting_length = _tendonSlackLength / _optimalFiberLength;
+    double tendon_strain =  (aNormTendonLength - norm_resting_length) / norm_resting_length;
 
-	double KToe = 3;
-	double ToeStrain = 0.609*getFmaxTendonStrain();
-	double ToeForce = 0.333333;
-	double klin = 1.712/getFmaxTendonStrain();
+    double KToe = 3;
+    double ToeStrain = 0.609*getFmaxTendonStrain();
+    double ToeForce = 0.333333;
+    double klin = 1.712/getFmaxTendonStrain();
 
-	double tendon_force;
-	if (tendon_strain>ToeStrain)
-		tendon_force = klin*(tendon_strain-ToeStrain)+ToeForce;
-	else if (tendon_strain>0) 
-		tendon_force = ToeForce*(exp(KToe*tendon_strain/ToeStrain)-1.0)/(exp(KToe)-1);
-	else
-		tendon_force=0.;
+    double tendon_force;
+    if (tendon_strain>ToeStrain)
+        tendon_force = klin*(tendon_strain-ToeStrain)+ToeForce;
+    else if (tendon_strain>0) 
+        tendon_force = ToeForce*(exp(KToe*tendon_strain/ToeStrain)-1.0)/(exp(KToe)-1);
+    else
+        tendon_force=0.;
 
-	// Add on a small stiffness so that tendon never truly goes slack for non-zero tendon lengths
-	tendon_force+=0.001*(1.+tendon_strain);
+    // Add on a small stiffness so that tendon never truly goes slack for non-zero tendon lengths
+    tendon_force+=0.001*(1.+tendon_strain);
 
-	return tendon_force;
+    return tendon_force;
 }
 
 //_____________________________________________________________________________
@@ -234,11 +234,11 @@ calcTendonForce(const SimTK::State& s, double aNormTendonLength) const
  * Dynamic Parameters:
  *   FmaxMuscleStrain - passive muscle strain due to the application of 
  *                      maximum isometric muscle force
- *	 KshapePassive - exponential shape factor
+ *   KshapePassive - exponential shape factor
  *
  *  The normalized force due to passive stretch is given by
  *  For L < (1+maxStrain)*Lo
- *		f/f0 = exp(ks*(L-1)/maxStrain) / exp(ks)
+ *      f/f0 = exp(ks*(L-1)/maxStrain) / exp(ks)
  *
  * @param aNormFiberLength Normalized length of the muscle fiber.
  * @return The passive force in the muscle fibers.
@@ -246,16 +246,16 @@ calcTendonForce(const SimTK::State& s, double aNormTendonLength) const
 double Thelen2003Muscle_Deprecated::
 calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const
 {
-	double passive_force;
+    double passive_force;
 
-	if (aNormFiberLength>(1+getFmaxMuscleStrain())) { // Switch to a linear model at large forces
-		double slope=(getKshapePassive()/getFmaxMuscleStrain())*(exp(getKshapePassive()*(1.0+getFmaxMuscleStrain()-1.0)/getFmaxMuscleStrain())) / (exp(getKshapePassive()));
-		passive_force=1.0+slope*(aNormFiberLength-(1.0+getFmaxMuscleStrain()));
-	}
-	else
-		passive_force = (exp(getKshapePassive()*(aNormFiberLength-1.0)/getFmaxMuscleStrain())) / (exp(getKshapePassive()));
+    if (aNormFiberLength>(1+getFmaxMuscleStrain())) { // Switch to a linear model at large forces
+        double slope=(getKshapePassive()/getFmaxMuscleStrain())*(exp(getKshapePassive()*(1.0+getFmaxMuscleStrain()-1.0)/getFmaxMuscleStrain())) / (exp(getKshapePassive()));
+        passive_force=1.0+slope*(aNormFiberLength-(1.0+getFmaxMuscleStrain()));
+    }
+    else
+        passive_force = (exp(getKshapePassive()*(aNormFiberLength-1.0)/getFmaxMuscleStrain())) / (exp(getKshapePassive()));
 
-	return passive_force;
+    return passive_force;
 }
 
 //_____________________________________________________________________________
@@ -272,8 +272,8 @@ calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const
 double Thelen2003Muscle_Deprecated::
 calcActiveForce(const SimTK::State& s, double aNormFiberLength) const
 {
-	double x=-(aNormFiberLength-1.)*(aNormFiberLength-1.)/getKshapeActive();
-	return exp(x);
+    double x=-(aNormFiberLength-1.)*(aNormFiberLength-1.)/getKshapeActive();
+    return exp(x);
 }
 
 //_____________________________________________________________________________
@@ -288,7 +288,7 @@ calcActiveForce(const SimTK::State& s, double aNormFiberLength) const
  * Dynamic Parameters:
  *   damping - normalized passive damping in parallel with contractile element
  *   Af - velocity shape factor from Hill's equation
- *   Flen	- Maximum normalized force when muscle is lengthening
+ *   Flen   - Maximum normalized force when muscle is lengthening
  *
  * @param aActivation Activation of the muscle.
  * @param aActiveForce Active force in the muscle fibers.
@@ -298,48 +298,48 @@ calcActiveForce(const SimTK::State& s, double aNormFiberLength) const
 double Thelen2003Muscle_Deprecated::
 calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const
 {
-	double epsilon=1.e-6;
+    double epsilon=1.e-6;
 
-	// Don't allow zero activation
-	if (aActivation<epsilon) 
-		aActivation=epsilon;
+    // Don't allow zero activation
+    if (aActivation<epsilon) 
+        aActivation=epsilon;
 
-	double Fa = aActivation*aActiveForce;
-	double Fv = aVelocityDependentForce;
+    double Fa = aActivation*aActiveForce;
+    double Fv = aVelocityDependentForce;
 
-	double norm_fiber_velocity;
-	if (Fv<Fa) {		// Muscle shortening
-		if (Fv<0) {	// Extend the force-velocity curve for negative forces using linear extrapolation
-			double F0=0;
-			double b=Fa+F0/getAf();
-        	double fv0 = (F0-Fa)/(b+getDamping());
-			double F1=epsilon;
-			b=Fa+F1/getAf();
-        	double fv1 = (F1-Fa)/(b+getDamping());
-			b = (F1-F0)/(fv1-fv0);
-        	norm_fiber_velocity = fv0 + (Fv-F0)/b;
-		}
-		else {
-			double b=Fa+Fv/getAf();
-			norm_fiber_velocity = (Fv-Fa)/(b+getDamping());
-		}
-	}
-	else if (Fv<(.95*Fa*getFlen())) {
-		double b=(2+2./getAf())*(Fa*getFlen()-Fv)/(getFlen()-1.);
-		norm_fiber_velocity = (Fv-Fa)/(b+getDamping());
-	}
-	else {  // Extend the force-velocity curve for forces that exceed maximum using linear extrapolation
-		double F0=.95*Fa*getFlen();
-		double b=(2+2./getAf())*(Fa*getFlen()-F0)/(getFlen()-1.);
-		double fv0 = (F0-Fa)/(b+getDamping());
-		double F1=(.95+epsilon)*Fa*getFlen();
-		b=(2+2./getAf())*(Fa*getFlen()-F1)/(getFlen()-1.);
-		double fv1 = (F1-Fa)/(b+getDamping());
-		b = (fv1-fv0)/(F1-F0);
-		norm_fiber_velocity = fv0 + b*(Fv-F0);
-	}
+    double norm_fiber_velocity;
+    if (Fv<Fa) {        // Muscle shortening
+        if (Fv<0) { // Extend the force-velocity curve for negative forces using linear extrapolation
+            double F0=0;
+            double b=Fa+F0/getAf();
+            double fv0 = (F0-Fa)/(b+getDamping());
+            double F1=epsilon;
+            b=Fa+F1/getAf();
+            double fv1 = (F1-Fa)/(b+getDamping());
+            b = (F1-F0)/(fv1-fv0);
+            norm_fiber_velocity = fv0 + (Fv-F0)/b;
+        }
+        else {
+            double b=Fa+Fv/getAf();
+            norm_fiber_velocity = (Fv-Fa)/(b+getDamping());
+        }
+    }
+    else if (Fv<(.95*Fa*getFlen())) {
+        double b=(2+2./getAf())*(Fa*getFlen()-Fv)/(getFlen()-1.);
+        norm_fiber_velocity = (Fv-Fa)/(b+getDamping());
+    }
+    else {  // Extend the force-velocity curve for forces that exceed maximum using linear extrapolation
+        double F0=.95*Fa*getFlen();
+        double b=(2+2./getAf())*(Fa*getFlen()-F0)/(getFlen()-1.);
+        double fv0 = (F0-Fa)/(b+getDamping());
+        double F1=(.95+epsilon)*Fa*getFlen();
+        b=(2+2./getAf())*(Fa*getFlen()-F1)/(getFlen()-1.);
+        double fv1 = (F1-Fa)/(b+getDamping());
+        b = (fv1-fv0)/(F1-F0);
+        norm_fiber_velocity = fv0 + b*(Fv-F0);
+    }
 
-	return norm_fiber_velocity;
+    return norm_fiber_velocity;
 }
 
 //_____________________________________________________________________________
@@ -371,13 +371,13 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 
    if (_optimalFiberLength < ROUNDOFF_ERROR) {
       setStateVariableValue(s, STATE_FIBER_LENGTH_NAME, 0.0);
-		setPassiveForce(s, 0.0);
+        setPassiveForce(s, 0.0);
       setActuation(s, 0.0);
       setTendonForce(s, 0.0);
       return 0.0;
    }
 
-	length = getLength(s);
+    length = getLength(s);
 
    // Make first guess of fiber and tendon lengths. Make fiber length equal to
    // optimal_fiber_length so that you start in the middle of the active+passive
@@ -391,25 +391,25 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 
    double muscle_width = _optimalFiberLength * sin(_pennationAngleAtOptimal);
 
-	if (_tendonSlackLength < ROUNDOFF_ERROR) {
-		tendon_length = 0.0;
-		cos_factor = cos(atan(muscle_width / length));
-		fiberLength = length / cos_factor;
+    if (_tendonSlackLength < ROUNDOFF_ERROR) {
+        tendon_length = 0.0;
+        cos_factor = cos(atan(muscle_width / length));
+        fiberLength = length / cos_factor;
 
-		double activeForce = calcActiveForce(s, fiberLength / _optimalFiberLength)  * aActivation;
-		if (activeForce < 0.0) activeForce = 0.0;
+        double activeForce = calcActiveForce(s, fiberLength / _optimalFiberLength)  * aActivation;
+        if (activeForce < 0.0) activeForce = 0.0;
 
-		passiveForce = calcPassiveForce(s, fiberLength / _optimalFiberLength);
-		if (passiveForce < 0.0) passiveForce = 0.0;
+        passiveForce = calcPassiveForce(s, fiberLength / _optimalFiberLength);
+        if (passiveForce < 0.0) passiveForce = 0.0;
 
-		setPassiveForce(s, passiveForce );
-		setStateVariableValue(s, STATE_FIBER_LENGTH_NAME, fiberLength);
-		tendon_force = (activeForce + passiveForce) * _maxIsometricForce * cos_factor;
-		setActuation(s, tendon_force);
-		setTendonForce(s, tendon_force);
-		return tendon_force;
+        setPassiveForce(s, passiveForce );
+        setStateVariableValue(s, STATE_FIBER_LENGTH_NAME, fiberLength);
+        tendon_force = (activeForce + passiveForce) * _maxIsometricForce * cos_factor;
+        setActuation(s, tendon_force);
+        setTendonForce(s, tendon_force);
+        return tendon_force;
    } else if (length < _tendonSlackLength) {
-		setPassiveForce(s, 0.0);
+        setPassiveForce(s, 0.0);
       setStateVariableValue(s, STATE_FIBER_LENGTH_NAME, muscle_width);
       _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
       setActuation(s, 0.0);
@@ -440,7 +440,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
    // ERROR_LIMIT of each other), stop; else change the length guesses based
    // on the error and try again.
    for (i = 0; i < MAX_ITERATIONS; i++) {
-		double activeForce = calcActiveForce(s, fiberLength/ _optimalFiberLength) * aActivation;
+        double activeForce = calcActiveForce(s, fiberLength/ _optimalFiberLength) * aActivation;
       if( activeForce <  0.0) activeForce = 0.0;
 
       passiveForce =  calcPassiveForce(s, fiberLength / _optimalFiberLength);
@@ -450,8 +450,8 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 
       norm_tendon_length = tendon_length / _optimalFiberLength;
       tendon_force = calcTendonForce(s, norm_tendon_length) * _maxIsometricForce;
-		setActuation(s, tendon_force);
-		setTendonForce(s, tendon_force);
+        setActuation(s, tendon_force);
+        setTendonForce(s, tendon_force);
 
       old_error_force = error_force;
  
@@ -478,15 +478,15 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
          // to get force = (_activeForce+_passiveForce) from the tendon as well.
          // We hope this will happen by setting the tendon stiffness to
          // (_activeForce+_passiveForce) times its maximum stiffness.
-			double tendon_elastic_modulus = 1200.0;
-			double tendon_max_stress = 32.0;
+            double tendon_elastic_modulus = 1200.0;
+            double tendon_max_stress = 32.0;
 
          tendon_stiffness = calcTendonForce(s, norm_tendon_length) *
-				_maxIsometricForce / _tendonSlackLength;
+                _maxIsometricForce / _tendonSlackLength;
 
          min_tendon_stiffness = (activeForce + passiveForce) *
-	         tendon_elastic_modulus * _maxIsometricForce /
-	         (tendon_max_stress * _tendonSlackLength);
+             tendon_elastic_modulus * _maxIsometricForce /
+             (tendon_max_stress * _tendonSlackLength);
 
          if (tendon_stiffness < min_tendon_stiffness)
             tendon_stiffness = min_tendon_stiffness;
@@ -497,8 +497,8 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 
          // determine how much the fiber and tendon lengths have to
          // change to make the error_force zero. But don't let the
-	      // length change exceed half the optimal fiber length because
-	      // that's too big a change to make all at once.
+          // length change exceed half the optimal fiber length because
+          // that's too big a change to make all at once.
          length_change = fabs(error_force/(fiber_stiffness / cos_factor + tendon_stiffness));
 
          if (fabs(length_change / _optimalFiberLength) > 0.5)
@@ -526,11 +526,11 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
          cos_factor = cos(atan(muscle_width / (length - tendon_length)));
          fiberLength = (length - tendon_length) / cos_factor ;
       }
-	}
+    }
 
-	setPassiveForce(s, passiveForce );
-	_model->getMultibodySystem().realize(s, SimTK::Stage::Position);
-	setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  fiberLength);
+    setPassiveForce(s, passiveForce );
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Position);
+    setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  fiberLength);
 
 //cout << "ThelenMuscle computeIsometricForce " << getName() << "  t=" << s.getTime() << " force = " << tendon_force << endl;
 

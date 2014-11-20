@@ -702,12 +702,12 @@ protected:
     @param mdi the muscle dynamics info struct that will hold updated 
             information about the muscle that is available at the dynamics stage    
     */
-	void  calcMuscleDynamicsInfo(const SimTK::State& s, 
+    void  calcMuscleDynamicsInfo(const SimTK::State& s, 
                                     MuscleDynamicsInfo& mdi) const FINAL_11;
 
 
-	void calcMusclePotentialEnergyInfo(const SimTK::State& s,
-		MusclePotentialEnergyInfo& mpei) const FINAL_11;
+    void calcMusclePotentialEnergyInfo(const SimTK::State& s,
+        MusclePotentialEnergyInfo& mpei) const FINAL_11;
  
 //==============================================================================
 //ModelComponent Interface requirements
@@ -715,18 +715,18 @@ protected:
     /**Creates the ModelComponent so that it can be used in simulation
     @param system the multibody system
     */
-	void extendAddToSystem(SimTK::MultibodySystem& system) const FINAL_11;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const FINAL_11;
 
     /**Initializes the state of the ModelComponent
     @param s the state of the model
     */
-	void extendInitStateFromProperties(SimTK::State& s) const FINAL_11;
+    void extendInitStateFromProperties(SimTK::State& s) const FINAL_11;
     
     /**Sets the default state for ModelComponent
     @param s the state of the model
     */
     void extendSetPropertiesFromState(const SimTK::State& s) FINAL_11;
-	
+    
     /**computes state variable derivatives
     @param s the state of the model
     */
@@ -752,7 +752,7 @@ protected:
      @param aStateName the name of the state to get.
      @return The value of the state derivative
     */
-	double getStateVariableDeriv(   const SimTK::State& s, 
+    double getStateVariableDeriv(   const SimTK::State& s, 
                                     const std::string &aStateName) const;
 
 
@@ -760,9 +760,9 @@ private:
     //The name used to access the activation state
     static const std::string STATE_ACTIVATION_NAME;
     //The name used to access the fiber length state
-	static const std::string STATE_FIBER_LENGTH_NAME;
+    static const std::string STATE_FIBER_LENGTH_NAME;
     //The name used to access the fiber velocity state
-	static const std::string STATE_FIBER_VELOCITY_NAME;
+    static const std::string STATE_FIBER_VELOCITY_NAME;
 
     //A struct that holds all of the necessary quantities to compute
     //the fiber and tendon force, acceleration, and stiffness
@@ -783,7 +783,7 @@ private:
 
     /*Checks to make sure that none of the muscle model's properties have
     changed, and if any have changed then rebuild muscle model.*/
-	void extendFinalizeFromProperties();
+    void extendFinalizeFromProperties();
 
     /*       
     @param ami A struct that holds all of the necessary quantities to compute
@@ -1053,7 +1053,7 @@ private:
                                 //                viscoelastic multiplier)
                                 //d(fiber length)
 
-		AccelerationMuscleInfo(): 
+        AccelerationMuscleInfo(): 
             lce(SimTK::NaN),
             dlce_dt(SimTK::NaN),
             lceAT(SimTK::NaN),
@@ -1098,13 +1098,13 @@ private:
             dfpeVEM_dlce(SimTK::NaN),
             dfkVEM_dlce(SimTK::NaN),
             dfcphiVEM_dlce(SimTK::NaN){};
-		friend std::ostream& operator<<(std::ostream& o, 
+        friend std::ostream& operator<<(std::ostream& o, 
             const AccelerationMuscleInfo& ami) {
-			o << "Millard2012AccelerationMuscle::"
+            o << "Millard2012AccelerationMuscle::"
                 "AccelerationMuscleInfo should not be serialized!" 
               << std::endl;
-			return o;
-		}
+            return o;
+        }
     };
 
 

@@ -382,7 +382,7 @@ void SimbodyEngine::computeReactions(const SimTK::State& s, Vector_<Vec3>& rForc
 
     const BodySet &bodies = _model->getBodySet();
 
-    //Separate SimTK SpatialVecs to Forces and Torques	
+    //Separate SimTK SpatialVecs to Forces and Torques  
     // SpatialVec = Vec2<Vec3 torque, Vec3 force>
     for(int i=0; i<nb; i++){
          rTorques[i] = reactionForces[bodies[i].getMobilizedBodyIndex()](0);
@@ -423,7 +423,7 @@ void SimbodyEngine::transform(const SimTK::State& s, const OpenSim::Body &aBodyF
  */
 void SimbodyEngine::transform(const SimTK::State& s, const OpenSim::Body &aBodyFrom, const Vec3& aVec, const OpenSim::Body &aBodyTo, Vec3& rVec) const
 {
-    if(&aBodyFrom == &aBodyTo) { rVec=aVec; return; }	
+    if(&aBodyFrom == &aBodyTo) { rVec=aVec; return; }   
 
     // Get input vector as a Vec3 to make the call down to Simbody and update
     // the output vector 

@@ -51,44 +51,44 @@ public:
 //=============================================================================
     /** @name Property declarations 
     These are the serializable properties associated with a ToyReflexController.*/
-    /**@{**/  	
-	OpenSim_DECLARE_PROPERTY(gain, double, 
-		"Factor by which the stretch reflex is scaled." );
+    /**@{**/    
+    OpenSim_DECLARE_PROPERTY(gain, double, 
+        "Factor by which the stretch reflex is scaled." );
 
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION AND DESTRUCTION
-	//--------------------------------------------------------------------------
-	/** Default constructor. */
-	ToyReflexController();
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION AND DESTRUCTION
+    //--------------------------------------------------------------------------
+    /** Default constructor. */
+    ToyReflexController();
 
-	// Uses default (compiler-generated) destructor, copy constructor and copy 
+    // Uses default (compiler-generated) destructor, copy constructor and copy 
     // assignment operator.
 
-	/** Convenience constructor 
-	* @param gain		gain on the stretch response
-	*/
-	ToyReflexController(double gain);
+    /** Convenience constructor 
+    * @param gain       gain on the stretch response
+    */
+    ToyReflexController(double gain);
 
-	/** Compute the controls for actuators (muscles)
-	 *  This method defines the behavior of the ToyReflexController 
-	 *
-	 * @param s			system state 
-	 * @param controls	writable model controls
-	 */
-	void computeControls(const SimTK::State& s, SimTK::Vector &controls) const override;
+    /** Compute the controls for actuators (muscles)
+     *  This method defines the behavior of the ToyReflexController 
+     *
+     * @param s         system state 
+     * @param controls  writable model controls
+     */
+    void computeControls(const SimTK::State& s, SimTK::Vector &controls) const override;
 
 
 private:
-	// Connect properties to local pointers.  */
-	void constructProperties();
-	// ModelComponent interface to connect this component to its model
-	void extendConnectToModel(Model& aModel);
+    // Connect properties to local pointers.  */
+    void constructProperties();
+    // ModelComponent interface to connect this component to its model
+    void extendConnectToModel(Model& aModel);
 
-	//=============================================================================
-};	// END of class ToyReflexController
+    //=============================================================================
+};  // END of class ToyReflexController
 
 }; //namespace
 //=============================================================================

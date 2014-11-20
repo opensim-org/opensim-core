@@ -1,4 +1,4 @@
-#ifndef OPENSIM_BALL_JOINT_H_ 
+#ifndef OPENSIM_BALL_JOINT_H_
 #define OPENSIM_BALL_JOINT_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  BallJoint.h                            *
@@ -34,17 +34,25 @@ class Model;
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing an Ball joint.  The underlying implementation 
- * in Simbody is a MobilizedBody::Ball.
- *
- * @author Ajay Seth
- * @version 1.0
- */
+
+A class implementing a Ball joint. The underlying implementation in Simbody is
+SimTK::MobilizedBody::Ball. The Ball joint implements a fixed 1-2-3 (X-Y-Z)
+body-fixed Euler sequence, without translations, for generalized coordinate
+calculation. Ball joint uses quaternions in calculation and are therefore
+singularity-free (unlike GimbalJoint). Generalized speeds are equal to the
+computed angular velocities (\f$\vec{u} = \vec{\omega}\f$), not a differentiation
+of position (\f$\vec{u} \neq \dot{\vec{q}}\f$).
+
+\image html ballJoint.gif
+
+@author Ajay Seth
+*/
+
 class OSIMSIMULATION_API BallJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
 
 private:
-	static const int _numMobilities = 3;
+    static const int _numMobilities = 3;
 //=============================================================================
 // DATA
 //=============================================================================
@@ -54,18 +62,18 @@ private:
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	BallJoint();
-	// convenience constructor
-	BallJoint(const std::string &name, const OpenSim::Body& parent, 
-		const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
-		const OpenSim::Body& body, 
-		const SimTK::Vec3& locationInBody, const SimTK::Vec3& orientationInBody,
-				/*bool useEulerAngles=true,*/ bool reverse=false);
+    // CONSTRUCTION
+    BallJoint();
+    // convenience constructor
+    BallJoint(const std::string &name, const OpenSim::Body& parent,
+        const SimTK::Vec3& locationInParent, const SimTK::Vec3& orientationInParent,
+        const OpenSim::Body& body,
+        const SimTK::Vec3& locationInBody, const SimTK::Vec3& orientationInBody,
+                /*bool useEulerAngles=true,*/ bool reverse=false);
 
-	virtual ~BallJoint();
+    virtual ~BallJoint();
 
-	int numCoordinates() const override {return _numMobilities;} ;
+    int numCoordinates() const override {return _numMobilities;} ;
 
 protected:
     // ModelComponent interface.
@@ -74,12 +82,10 @@ protected:
     void extendSetPropertiesFromState(const SimTK::State& state) override;
 
 //=============================================================================
-};	// END of class BallJoint
+};  // END of class BallJoint
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
 #endif // OPENSIM_BALL_JOINT_H_
-
-
