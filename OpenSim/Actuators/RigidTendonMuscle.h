@@ -30,10 +30,10 @@
 #include <OpenSim/Common/PropertyObjPtr.h>
 
 #ifdef SWIG
-	#ifdef OSIMACTUATORS_API
-		#undef OSIMACTUATORS_API
-		#define OSIMACTUATORS_API
-	#endif
+    #ifdef OSIMACTUATORS_API
+        #undef OSIMACTUATORS_API
+        #define OSIMACTUATORS_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -62,19 +62,19 @@ public:
     /** @name Property declarations 
     These are the serializable properties associated with this class. **/
     /**@{**/
-	OpenSim_DECLARE_PROPERTY(active_force_length_curve, Function,
-		"Function representing active force-length behavior of muscle fibers");
-	OpenSim_DECLARE_PROPERTY(passive_force_length_curve, Function,
-		"Function representing passive force-length behavior of muscle fibers");
-	OpenSim_DECLARE_PROPERTY(force_velocity_curve, Function,
-		"Function representing force-velocity behavior of muscle fibers");
+    OpenSim_DECLARE_PROPERTY(active_force_length_curve, Function,
+        "Function representing active force-length behavior of muscle fibers");
+    OpenSim_DECLARE_PROPERTY(passive_force_length_curve, Function,
+        "Function representing passive force-length behavior of muscle fibers");
+    OpenSim_DECLARE_PROPERTY(force_velocity_curve, Function,
+        "Function representing force-velocity behavior of muscle fibers");
     /**@}**/
 
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-	RigidTendonMuscle();
-	RigidTendonMuscle(const std::string&    name,
+    RigidTendonMuscle();
+    RigidTendonMuscle(const std::string&    name,
                       double                maxIsometricForce,
                       double                optimalFiberLength,
                       double                tendonSlackLength,
@@ -83,47 +83,47 @@ public:
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
 
-	/** activation level for this muscle */
-	void setActivation(SimTK::State& s, double activation) const {setExcitation(s, activation); }
+    /** activation level for this muscle */
+    void setActivation(SimTK::State& s, double activation) const {setExcitation(s, activation); }
 
 protected:
 
-	/** calculate muscle's length related values such fiber and tendon lengths,
-		normalized lengths, pennation angle, etc... */
-	void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const;
+    /** calculate muscle's length related values such fiber and tendon lengths,
+        normalized lengths, pennation angle, etc... */
+    void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const;
 
-	/** calculate muscle's velocity related values such fiber and tendon velocities,
-		normalized velocities, pennation angular velocity, etc... */
-	void  calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const;
+    /** calculate muscle's velocity related values such fiber and tendon velocities,
+        normalized velocities, pennation angular velocity, etc... */
+    void  calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const;
 
-	/** calculate muscle's active and passive force-length, force-velocity, 
-	    tendon force, relationships and their related values */
-	void  calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const;
+    /** calculate muscle's active and passive force-length, force-velocity, 
+        tendon force, relationships and their related values */
+    void  calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const;
 
-	/** calculate muscle's fiber and tendon potential energy */
-	void calcMusclePotentialEnergyInfo(const SimTK::State& s,
-		MusclePotentialEnergyInfo& mpei) const;
+    /** calculate muscle's fiber and tendon potential energy */
+    void calcMusclePotentialEnergyInfo(const SimTK::State& s,
+        MusclePotentialEnergyInfo& mpei) const;
 
-	/** compute initial fiber length (velocity) such that muscle fiber and tendon are 
-	    in static equilibrium and update the state */
-	void computeInitialFiberEquilibrium(SimTK::State& s) const {}
+    /** compute initial fiber length (velocity) such that muscle fiber and tendon are 
+        in static equilibrium and update the state */
+    void computeInitialFiberEquilibrium(SimTK::State& s) const {}
 
-	//--------------------------------------------------------------------------
-	// COMPUTATIONS
-	//--------------------------------------------------------------------------
-	double computeActuation( const SimTK::State& s ) const;
-	double computeIsometricForce(SimTK::State& s, double activation) const;
-	void equilibrate(SimTK::State& s) const {}
+    //--------------------------------------------------------------------------
+    // COMPUTATIONS
+    //--------------------------------------------------------------------------
+    double computeActuation( const SimTK::State& s ) const;
+    double computeIsometricForce(SimTK::State& s, double activation) const;
+    void equilibrate(SimTK::State& s) const {}
     
 
 private:
-	void setNull();
-	void constructProperties();
+    void setNull();
+    void constructProperties();
 
 protected:
 
 //==============================================================================
-};	// END of class RigidTendonMuscle
+};  // END of class RigidTendonMuscle
 //==============================================================================
 //==============================================================================
 

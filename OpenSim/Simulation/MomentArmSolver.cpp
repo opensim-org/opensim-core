@@ -39,13 +39,13 @@ namespace OpenSim {
  */
 MomentArmSolver::MomentArmSolver(const Model &model) : Solver(model)
 {
-	setAuthors("Ajay Seth");
-	_stateCopy = model.getWorkingState();
+    setAuthors("Ajay Seth");
+    _stateCopy = model.getWorkingState();
 
-	// Get the body forces equivalent of the point forces of the path
-	_bodyForces = Vector_<SpatialVec>(getModel().getNumBodies(), SpatialVec(0));
-	// get the right size coupling vector
-	_coupling = _stateCopy.getU();
+    // Get the body forces equivalent of the point forces of the path
+    _bodyForces = Vector_<SpatialVec>(getModel().getNumBodies(), SpatialVec(0));
+    // get the right size coupling vector
+    _coupling = _stateCopy.getU();
 }
 
 /*********************************************************************************
@@ -60,101 +60,101 @@ Refer to Moment-arm Theory document by Michael Sherman for details.
 
 **********************************************************************************/
 double MomentArmSolver::solve(const State &state, const Coordinate &aCoord,
-							  const GeometryPath &path) const
+                              const GeometryPath &path) const
 {
-	//Local modifiable copy of the state
-	State& s_ma = _stateCopy;
-	s_ma.updQ() = state.getQ();
+    //Local modifiable copy of the state
+    State& s_ma = _stateCopy;
+    s_ma.updQ() = state.getQ();
 
-	// compute the coupling between coordinates due to constraints
-	_coupling = computeCouplingVector(s_ma, aCoord);
+    // compute the coupling between coordinates due to constraints
+    _coupling = computeCouplingVector(s_ma, aCoord);
 
-	// set speeds to zero
-	s_ma.updU() = 0;
+    // set speeds to zero
+    s_ma.updU() = 0;
 
-	// zero out all the forces
-	_bodyForces *= 0;
-	_generalizedForces = 0;
+    // zero out all the forces
+    _bodyForces *= 0;
+    _generalizedForces = 0;
 
-	// apply a tension of unity to the bodies of the path
-	Vector pathDependentMobilityForces(s_ma.getNU(), 0.0);
-	path.addInEquivalentForces(s_ma, 1.0, _bodyForces, pathDependentMobilityForces);
+    // apply a tension of unity to the bodies of the path
+    Vector pathDependentMobilityForces(s_ma.getNU(), 0.0);
+    path.addInEquivalentForces(s_ma, 1.0, _bodyForces, pathDependentMobilityForces);
 
-	//_bodyForces.dump("bodyForces from addInEquivalentForcesOnBodies");
+    //_bodyForces.dump("bodyForces from addInEquivalentForcesOnBodies");
 
-	// Convert body spatial forces F to equivalent mobility forces f based on 
+    // Convert body spatial forces F to equivalent mobility forces f based on 
     // geometry (no dynamics required): f = ~J(q) * F.
-	getModel().getMultibodySystem().getMatterSubsystem()
+    getModel().getMultibodySystem().getMatterSubsystem()
         .multiplyBySystemJacobianTranspose(s_ma, _bodyForces, _generalizedForces);
 
-	_generalizedForces += pathDependentMobilityForces;
-	// Moment-arm is the effective torque (since tension is 1) at the 
+    _generalizedForces += pathDependentMobilityForces;
+    // Moment-arm is the effective torque (since tension is 1) at the 
     // coordinate of interest taking into account the generalized forces also 
     // acting on other coordinates that are coupled via constraint.
-	return ~_coupling*_generalizedForces;
+    return ~_coupling*_generalizedForces;
 }
 
 
 
 double MomentArmSolver::solve(const State &state, const Coordinate &aCoord,
-							  const Array<PointForceDirection *> &pfds) const
+                              const Array<PointForceDirection *> &pfds) const
 {
-	//const clock_t start = clock();
+    //const clock_t start = clock();
 
-	//Local modifiable copy of the state
-	State& s_ma = _stateCopy;
-	s_ma.updQ() = state.getQ();
+    //Local modifiable copy of the state
+    State& s_ma = _stateCopy;
+    s_ma.updQ() = state.getQ();
 
-	// compute the coupling between coordinates due to constraints
-	_coupling = computeCouplingVector(s_ma, aCoord);
+    // compute the coupling between coordinates due to constraints
+    _coupling = computeCouplingVector(s_ma, aCoord);
 
-	// set speeds to zero
-	s_ma.updU() = 0;
+    // set speeds to zero
+    s_ma.updU() = 0;
 
-	int n = pfds.getSize();
-	// Apply body forces along the geometry described by pfds due to a tension of 1N
-	for(int i=0; i<n; i++) {
-		getModel().getMatterSubsystem().
-			addInStationForce(s_ma, 
-				pfds[i]->body().getMobilizedBodyIndex(), 
-				pfds[i]->point(), pfds[i]->direction(), _bodyForces);
-	}
+    int n = pfds.getSize();
+    // Apply body forces along the geometry described by pfds due to a tension of 1N
+    for(int i=0; i<n; i++) {
+        getModel().getMatterSubsystem().
+            addInStationForce(s_ma, 
+                pfds[i]->body().getMobilizedBodyIndex(), 
+                pfds[i]->point(), pfds[i]->direction(), _bodyForces);
+    }
 
-	//_bodyForces.dump("bodyForces from PointForceDirections");
+    //_bodyForces.dump("bodyForces from PointForceDirections");
 
-	// Convert body spatial forces F to equivalent mobility forces f based on 
+    // Convert body spatial forces F to equivalent mobility forces f based on 
     // geometry (no dynamics required): f = ~J(q) * F.
-	getModel().getMultibodySystem().getMatterSubsystem()
+    getModel().getMultibodySystem().getMatterSubsystem()
         .multiplyBySystemJacobianTranspose(s_ma, _bodyForces, _generalizedForces);
 
-	// Moment-arm is the effective torque (since tension is 1) at the 
+    // Moment-arm is the effective torque (since tension is 1) at the 
     // coordinate of interest taking into account the generalized forces also 
     // acting on other coordinates that are coupled via constraint.
-	return ~_coupling*_generalizedForces;
+    return ~_coupling*_generalizedForces;
 }
 
 SimTK::Vector MomentArmSolver::computeCouplingVector(SimTK::State &state, 
-		const Coordinate &coordinate) const
+        const Coordinate &coordinate) const
 {
-	// make sure copy of the state is realized to at least instance
-	getModel().getMultibodySystem().realize(state, SimTK::Stage::Instance);
+    // make sure copy of the state is realized to at least instance
+    getModel().getMultibodySystem().realize(state, SimTK::Stage::Instance);
 
-	// unlock the coordinate if it is locked
-	coordinate.setLocked(state, false);
+    // unlock the coordinate if it is locked
+    coordinate.setLocked(state, false);
 
-	// Calculate coupling matrix C to determine the influence of other coordinates 
-	// (mobilities) on the coordinate of interest due to constraints
+    // Calculate coupling matrix C to determine the influence of other coordinates 
+    // (mobilities) on the coordinate of interest due to constraints
     state.updU() = 0;
-	// Light-up speed of coordinate of interest and see how other coordinates
-	// affected by constraints respond
+    // Light-up speed of coordinate of interest and see how other coordinates
+    // affected by constraints respond
     coordinate.setSpeedValue(state, 1);
-	getModel().getMultibodySystem().realize(state, SimTK::Stage::Velocity);
+    getModel().getMultibodySystem().realize(state, SimTK::Stage::Velocity);
 
     // Satisfy all the velocity constraints.
     getModel().getMultibodySystem().projectU(state, 1e-10);
-	
-	// Now calculate C. by checking how speeds of other coordinates change
-	// normalized by how much the speed of the coordinate of interest changed 
+    
+    // Now calculate C. by checking how speeds of other coordinates change
+    // normalized by how much the speed of the coordinate of interest changed 
     return state.getU() / coordinate.getSpeedValue(state);
 }
 

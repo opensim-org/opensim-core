@@ -26,8 +26,8 @@
 #define SIGN(a) ((a)>=0?(1):(-1))
 #define _MAX(a,b) ((a)>=(b)?(a):(b))
 #define _MIN(a,b) ((a)<=(b)?(a):(b))
-#define SQR(x)	((x) * (x))
-#define CUBE(x)	((x) * (x) * (x))
+#define SQR(x)  ((x) * (x))
+#define CUBE(x) ((x) * (x) * (x))
 #define DSIGN(a) ((a)>=0.0?(1):(-1))
 #define CEILING(a,b) (((a)+(b)-1)/(b))
 #define SETCOLOR(i,r,g,b) {root.color.cmap[i].red=r; root.color.cmap[i].green=g; \
@@ -73,8 +73,8 @@ while ((a)>(c)) (a)-=((c)-(b));
                                  BOOL_APX_EQ(Pt1[2], Pt2[2]))
 
 #define PTS_ARE_EQUAL3(Pt1, Pt2) (BOOL_APX_EQ3(Pt1[0], Pt2[0]) && \
-				  BOOL_APX_EQ3(Pt1[1], Pt2[1]) && \
-				  BOOL_APX_EQ3(Pt1[2], Pt2[2]))
+                  BOOL_APX_EQ3(Pt1[1], Pt2[1]) && \
+                  BOOL_APX_EQ3(Pt1[2], Pt2[2]))
 
 #define READ4(ptr,fp) {\
 *(((char*)(ptr))  )=getc(fp);\

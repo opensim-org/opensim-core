@@ -41,10 +41,10 @@ using namespace OpenSim;
  */
 ObjectGroup::ObjectGroup() :
    Object(),
-	_memberNames(_memberNamesProp.getValueStrArray())
+    _memberNames(_memberNamesProp.getValueStrArray())
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -53,11 +53,11 @@ ObjectGroup::ObjectGroup() :
  */
 ObjectGroup::ObjectGroup(const string& aName) :
    Object(),
-	_memberNames(_memberNamesProp.getValueStrArray())
+    _memberNames(_memberNamesProp.getValueStrArray())
 {
-	setName(aName);
-	setNull();
-	setupProperties();
+    setName(aName);
+    setNull();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -76,10 +76,10 @@ ObjectGroup::~ObjectGroup()
  */
 ObjectGroup::ObjectGroup(const ObjectGroup &aGroup) :
    Object(aGroup),
-	_memberNames(_memberNamesProp.getValueStrArray())
+    _memberNames(_memberNamesProp.getValueStrArray())
 {
-	setupProperties();
-	copyData(aGroup);
+    setupProperties();
+    copyData(aGroup);
 }
 
 //=============================================================================
@@ -94,7 +94,7 @@ ObjectGroup::ObjectGroup(const ObjectGroup &aGroup) :
 void ObjectGroup::copyData(const ObjectGroup &aGroup)
 {
    _memberNames = aGroup._memberNames;
-	_memberObjects = aGroup._memberObjects; // TODO: this copies pointers... but as long as call setup afterwards it should be okay
+    _memberObjects = aGroup._memberObjects; // TODO: this copies pointers... but as long as call setup afterwards it should be okay
 }
 
 //_____________________________________________________________________________
@@ -103,7 +103,7 @@ void ObjectGroup::copyData(const ObjectGroup &aGroup)
  */
 void ObjectGroup::setNull()
 {
-	_memberObjects.setSize(0);
+    _memberObjects.setSize(0);
 }
 
 //_____________________________________________________________________________
@@ -112,8 +112,8 @@ void ObjectGroup::setNull()
  */
 void ObjectGroup::setupProperties()
 {
-	_memberNamesProp.setName("members");
-	_propertySet.append(&_memberNamesProp);
+    _memberNamesProp.setName("members");
+    _propertySet.append(&_memberNamesProp);
 }
 
 //=============================================================================
@@ -127,12 +127,12 @@ void ObjectGroup::setupProperties()
  */
 ObjectGroup& ObjectGroup::operator=(const ObjectGroup &aGroup)
 {
-	// BASE CLASS
-	Object::operator=(aGroup);
+    // BASE CLASS
+    Object::operator=(aGroup);
 
-	copyData(aGroup);
+    copyData(aGroup);
 
-	return(*this);
+    return(*this);
 }
 
 //_____________________________________________________________________________
@@ -144,10 +144,10 @@ ObjectGroup& ObjectGroup::operator=(const ObjectGroup &aGroup)
  */
 bool ObjectGroup::contains(const string& aName) const
 {
-	for(int i=0; i<_memberObjects.getSize(); i++)
-		if(_memberObjects[i] && _memberObjects[i]->getName()==aName)
-			return true;
-	return false;
+    for(int i=0; i<_memberObjects.getSize(); i++)
+        if(_memberObjects[i] && _memberObjects[i]->getName()==aName)
+            return true;
+    return false;
 }
 
 //_____________________________________________________________________________
@@ -158,13 +158,13 @@ bool ObjectGroup::contains(const string& aName) const
  */
 void ObjectGroup::add(Object* aObject)
 {
-	if (aObject != NULL) {
-		// check if object is already a member of this group
-		if (_memberObjects.findIndex(aObject) != -1) return;
+    if (aObject != NULL) {
+        // check if object is already a member of this group
+        if (_memberObjects.findIndex(aObject) != -1) return;
 
-		_memberObjects.append(aObject);
-		_memberNames.append(aObject->getName());
-	}
+        _memberObjects.append(aObject);
+        _memberNames.append(aObject->getName());
+    }
 }
 
 //_____________________________________________________________________________
@@ -175,14 +175,14 @@ void ObjectGroup::add(Object* aObject)
  */
 void ObjectGroup::remove(const Object* aObject)
 {
-	if (aObject != NULL)
-	{
-		int index = _memberObjects.findIndex(const_cast<Object*>(aObject));
-		if(index >= 0) {
-			_memberObjects.remove(index);
-			_memberNames.remove(index);
-		}
-	}
+    if (aObject != NULL)
+    {
+        int index = _memberObjects.findIndex(const_cast<Object*>(aObject));
+        if(index >= 0) {
+            _memberObjects.remove(index);
+            _memberNames.remove(index);
+        }
+    }
 }
 
 //_____________________________________________________________________________
@@ -194,14 +194,14 @@ void ObjectGroup::remove(const Object* aObject)
  */
 void ObjectGroup::replace(const Object* aOldObject, Object* aNewObject)
 {
-	if (aOldObject != NULL && aNewObject != NULL)
-	{
-		int index = _memberObjects.findIndex(const_cast<Object*>(aOldObject));
-		if(index >= 0) {
-			_memberObjects.updElt(index) = aNewObject;
-			_memberNames.updElt(index) = aNewObject->getName();
-		}
-	}
+    if (aOldObject != NULL && aNewObject != NULL)
+    {
+        int index = _memberObjects.findIndex(const_cast<Object*>(aOldObject));
+        if(index >= 0) {
+            _memberObjects.updElt(index) = aNewObject;
+            _memberNames.updElt(index) = aNewObject->getName();
+        }
+    }
 }
 
 //_____________________________________________________________________________
@@ -217,14 +217,14 @@ void ObjectGroup::replace(const Object* aOldObject, Object* aNewObject)
  */
 void ObjectGroup::setupGroup(ArrayPtrs<Object>& aObjects)
 {
-	_memberObjects.setSize(0); // clear existing contents
-	for (int i=0; i<_memberNames.getSize();) {
+    _memberObjects.setSize(0); // clear existing contents
+    for (int i=0; i<_memberNames.getSize();) {
         int index = aObjects.getIndex(_memberNames.get(i));
-		if (index > -1) {
-			_memberObjects.insert(i, aObjects.get(index));
-			i++;
-		} else {
-			_memberNames.remove(i);
-		}
-	}
+        if (index > -1) {
+            _memberObjects.insert(i, aObjects.get(index));
+            i++;
+        } else {
+            _memberNames.remove(i);
+        }
+    }
 }

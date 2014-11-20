@@ -43,8 +43,8 @@ using SimTK::Vec3;
 Station::Station() :
    ModelComponent()
 {
-	setNull();
-	constructInfrastructure();
+    setNull();
+    constructInfrastructure();
 }
 
 //_____________________________________________________________________________
@@ -61,7 +61,7 @@ Station::~Station()
 */
 void Station::setNull()
 {
-	setAuthors("Ayman Habib");
+    setAuthors("Ayman Habib");
 }
 
 //_____________________________________________________________________________
@@ -70,10 +70,10 @@ void Station::setNull()
 */
 void Station::constructProperties()
 {
-	//Default location
-	SimTK::Vec3 origin(0.0, 0.0, 0.0);
-	// Location in Body 
-	constructProperty_location(origin);
+    //Default location
+    SimTK::Vec3 origin(0.0, 0.0, 0.0);
+    // Location in Body 
+    constructProperty_location(origin);
 }
 
 
@@ -88,7 +88,7 @@ void Station::constructConnectors()
 */
 const RigidFrame& Station::getReferenceFrame() const
 {
-	return getConnector<RigidFrame>("reference_frame").getConnectee();
+    return getConnector<RigidFrame>("reference_frame").getConnectee();
 }
 /**
  * setReferenceFrame sets the "reference_frame" connection
@@ -107,8 +107,8 @@ void Station::setReferenceFrame(const OpenSim::RigidFrame& aFrame)
 SimTK::Vec3 Station::findLocationInFrame(const SimTK::State& s,
         const OpenSim::Frame& aFrame) const
 {
-	// Get the transform from the station's frame to the other frame
-	SimTK::Vec3 currentLocation = get_location();
+    // Get the transform from the station's frame to the other frame
+    SimTK::Vec3 currentLocation = get_location();
     return getReferenceFrame().findLocationInAnotherFrame(s, currentLocation,
             aFrame);
 }

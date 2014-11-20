@@ -46,11 +46,13 @@
 #include "OpenSim/Common/Object.h"
 #include "OpenSim/Common/ComponentConnector.h"
 #include "OpenSim/Common/ComponentOutput.h"
+#include "ComponentList.h"
 #include "Simbody.h"
 #include <functional>
 #include <memory>
 
 namespace OpenSim {
+
 
 //==============================================================================
 //                            OPENSIM COMPONENT
@@ -128,9 +130,9 @@ namespace OpenSim {
  * -# \c %Model         specify modeling choices
  * -# \c Instance       specify modifiable model parameters
  * -# \c Time           compute time dependent quantities
- * -# \c Position       compute position dependent quantities	
+ * -# \c Position       compute position dependent quantities   
  * -# \c Velocity       compute velocity dependent quantities
- * -# \c Dynamics       compute system applied forces and dependent quantities	
+ * -# \c Dynamics       compute system applied forces and dependent quantities  
  * -# \c Acceleration   compute system accelerations and all other derivatives
  * -# \c Report         compute quantities for reporting/output
  *  
@@ -263,11 +265,27 @@ public:
     const SimTK::MultibodySystem& getSystem() const;
 
     /**
-     * Get an iterator through the underlying components that this component 
-     * is composed of.
+     * Get an iterator thru the underlying subcomponents that this component is 
+     * composed of. The hierarchy of Components/subComponents forms a tree. The 
+     * tree structure is fixed when the system is created.
+     * The order of the Components is that of tree preorder traversal so that a
+     * component is processed before its subcomponents. All addComponent calls 
+     * must be done before calling this method on the top model.
      */
-    //const ComponentIterator&  getComponentsIterator();
-
+    template <typename T = Component>
+    ComponentList<T> getComponentList() const {
+        return ComponentList<T>(*this);
+    }
+    /**
+     * Class to hold the list of components/subcomponents to iterate over.
+    */
+    template <typename T>
+    friend class ComponentList;
+    /**
+     * Class to iterate over ComponentList returned by getComponentList() call
+     */
+    template <typename T>
+    friend class ComponentListIterator;
     /**
      * Get a subcomponent of this Component by its name. 
      * Note using a component's full "path" name is faster and will provide a
@@ -276,7 +294,7 @@ public:
      * For example right_elbow/elbow_flexion will return a Coordinate 
      * Component that is a member of the model's right elbow joint Component.
      *
-     * @param name		 the name (string) of the Component of interest
+     * @param name       the name (string) of the Component of interest
      * @return Component the component of interest
      */
     const Component& getComponent(const std::string& name) const;
@@ -336,7 +354,7 @@ public:
     /**
     * Get the Connector provided by this Component by name.
     *
-    * @param name		the name of the Connector
+    * @param name       the name of the Connector
     * @return const reference to the (Abstract)Connector
     */
     template<typename T> Connector<T>&
@@ -367,12 +385,12 @@ public:
     * has been connected (that is connect() has been invoked).
     * If Connector has not been connected an exception is thrown.
     *
-    * @param name		the name of the connector
-    * @return T   	    const reference to object that satisfies
+    * @param name       the name of the connector
+    * @return T         const reference to object that satisfies
     *                   the Connector
     */
     template<typename T>
-    const T& getConnectee(const std::string& name) const	{
+    const T& getConnectee(const std::string& name) const    {
         // get the Connector and check if it is connected.
         const AbstractConnector& connector = getConnector<T>(name);
         if (connector.isConnected()){
@@ -520,12 +538,12 @@ public:
     * Check if Input is connected, otherwise it will throw an
     * exception.
     *
-    * @param state		the State for which to set the value
-    * @param name		the name of the input
-    * @return T   	    const Input value
+    * @param state      the State for which to set the value
+    * @param name       the name of the input
+    * @return T         const Input value
     */
     template<typename T> const T&
-        getInputValue(const SimTK::State& state, const std::string& name) const	{
+        getInputValue(const SimTK::State& state, const std::string& name) const {
         // get the input and check if it is connected.
         const AbstractInput& in = getInput(name);
         if (in.isConnected()){
@@ -542,9 +560,9 @@ public:
     /**
     * Get the Output value provided by this Component by name.
     *
-    * @param state		the State for which to set the value
-    * @param name		the name of the cache variable
-    * @return T   	    const Output value
+    * @param state      the State for which to set the value
+    * @param name       the name of the cache variable
+    * @return T         const Output value
     */
     template<typename T> const T&
         getOutputValue(const SimTK::State& state, const std::string& name) const
@@ -630,7 +648,7 @@ public:
      *
      * @param state  the State from which to get the value
      * @param name   the name of the cache variable
-     * @return T	 const reference to the cache variable's value
+     * @return T     const reference to the cache variable's value
      */
     template<typename T> const T& 
     getCacheVariableValue(const SimTK::State& state, const std::string& name) const
@@ -801,7 +819,7 @@ public:
                 << "for component '"<< getName() << "' of type " 
                 << getConcreteClassName();
             throw Exception(msg.str(),__FILE__,__LINE__);
-        }	
+        }   
     }
     // End of Model Component State Accessors.
     //@} 
@@ -1051,7 +1069,7 @@ template <class T> friend class ComponentMeasure;
     // End of Component Extension Interface (protected virtuals).
     ///@} 
 
-    /** @name  Component Advanced Interface
+    /** @name           Component Advanced Interface
     You probably won't need to override methods in this section. These provide
     a way for you to perform computations ("realizations") that must be 
     scheduled in carefully-ordered stages as described in the class description
@@ -1247,7 +1265,7 @@ template <class T> friend class ComponentMeasure;
     @param[in] stateVariableName     string value to access variable by name
     @param[in] invalidatesStage      the system realization stage that is
                                      invalidated when variable value is changed
-    @param[in] isHidden				 flag (bool) to optionally hide this state
+    @param[in] isHidden              flag (bool) to optionally hide this state
                                      variable from being accessed outside this
                                      component as an Output
     */
@@ -1297,11 +1315,11 @@ template <class T> friend class ComponentMeasure;
     @param[in]      cacheVariableName
         The name you are assigning to this cache entry. Must be unique within
         this model component.
-    @param[in]      variablePrototype	
+    @param[in]      variablePrototype   
         An object defining the type of value, and a default value of that type,
         to be held in this cache entry. Can be a simple int or an elaborate
         class, as long as it has deep copy semantics.
-    @param[in]      dependsOnStage		
+    @param[in]      dependsOnStage      
         This is the highest computational stage on which this cache entry's
         value computation depends. State changes at this level or lower will
         invalidate the cache entry. **/ 
@@ -1426,7 +1444,7 @@ private:
         _namedModelingOptionInfo.clear();
         _namedStateVariableInfo.clear();
         _namedDiscreteVariableInfo.clear();
-        _namedCacheVariableInfo.clear();	
+        _namedCacheVariableInfo.clear();    
     }
 
     // Reset by clearing underlying system indices, disconnecting connectors and
@@ -1441,7 +1459,23 @@ private:
             _connectorsTable[connector.getName()] = ix;
         }
     }
-    
+    // Populate _nextComponent ReferencePtr with a pointer to the next Component in
+    // tree pre-order traversal.
+    void initComponentTreeTraversal(Component &root) {
+        // Going down the tree, node is followed by all its
+        // children in order, last child's successor is the parent's successor.
+        for (unsigned int i = 0; i < _components.size(); i++){
+            if (i == _components.size() - 1){
+                // use parent's sibling if any
+                if (this == &root) // only to be safe if root changes
+                    _components[i]->_nextComponent = nullptr; 
+                else
+                    _components[i]->_nextComponent.reset(_nextComponent);
+            }
+            else
+                _components[i]->_nextComponent.reset(_components[i + 1]);
+        }
+    }
 protected:
     //Derived Components must create concrete StateVariables to expose their state 
     //variables. When exposing state variables allocated by the underlying Simbody
@@ -1457,10 +1491,10 @@ protected:
             subsysIndex(SimTK::InvalidIndex), varIndex(SimTK::InvalidIndex),
             sysYIndex(SimTK::InvalidIndex), hidden(true) {}
         explicit StateVariable(const std::string& name, //state var name
-            const Component& owner,		//owning component
+            const Component& owner,     //owning component
             SimTK::SubsystemIndex sbsix,//subsystem for allocation
-            int varIndex,				//variable's index in subsystem
-            bool hide = false)	        //state variable is hidden or not
+            int varIndex,               //variable's index in subsystem
+            bool hide = false)          //state variable is hidden or not
             : name(name), owner(&owner),
             subsysIndex(sbsix), varIndex(varIndex),
             sysYIndex(SimTK::InvalidIndex), hidden(hide)  {}
@@ -1525,7 +1559,8 @@ private:
 
     /// Base Component must create underlying resources in computational System.
     void baseAddToSystem(SimTK::MultibodySystem& system) const;
-    
+    // Reference pointer to the successor of the current Component in Pre-order traversal
+    SimTK::ReferencePtr<Component> _nextComponent;
     // Reference pointer to the system that this component belongs to.
     SimTK::ReferencePtr<SimTK::MultibodySystem> _system;
 
@@ -1571,7 +1606,7 @@ private:
 
         /** Convience constructor for defining a Component added state variable */ 
         explicit AddedStateVariable(const std::string& name, //state var name
-                        const Component& owner,		  //owning component
+                        const Component& owner,       //owning component
                         SimTK::Stage invalidatesStage,//stage this variable invalidates
                         bool hide=false) : 
                     StateVariable(name, owner,
@@ -1668,9 +1703,48 @@ private:
     // cache information.
     mutable std::map<std::string, CacheInfo>            _namedCacheVariableInfo;
 //==============================================================================
-};	// END of class Component
+};  // END of class Component
 //==============================================================================
 //==============================================================================
+//==============================================================================
+// Implement methods for ComponentListIterator
+/// ComponentListIterator<T> pre-increment operator, advances the iterator to
+/// the next valid entry.
+template <typename T>
+ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
+    if (_node==nullptr)
+        return *this;
+    // If _node has children then successor is first child
+    // move _node to point to it
+    if (_node->_components.size() > 0)
+        _node = _node->_components[0];
+    // If processing a subtree under _root we stop when our successor is the same
+    // as the successor of _root as this indicates we're leaving the _root's subtree.
+    else if (_node->_nextComponent.get() == _root._nextComponent.get())
+        _node = nullptr;
+    else // move on to the next component we computed earlier for the full tree
+        _node = _node->_nextComponent.get();
+    advanceToNextValidComponent(); // make sure we have a _node of type T after advancing
+    return *this;
+};
+/// Internal method to advance iterator to next valid component.
+template <typename T>
+void ComponentListIterator<T>::advanceToNextValidComponent() {
+    // Advance _node to next valid (of type T) if needed
+    // Similar logic to operator++ but applies _filter->isMatch()
+    while (_node != nullptr && (dynamic_cast<const T*>(_node) == nullptr || !_filter.isMatch(*_node))){
+        if (_node->_components.size() > 0)
+            _node = _node->_components[0];
+        else {
+            if (_node->_nextComponent.get() == _root._nextComponent.get()){ // end of subtree under _root
+                _node = nullptr;
+                continue;
+            }
+            _node = _node->_nextComponent;
+        }
+    }
+    return;
+}
 
 } // end of namespace OpenSim
 

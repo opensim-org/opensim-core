@@ -300,8 +300,8 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 
             // We have a valid coordinate reference so now set its weight according to the task
             coordRef->setWeight(coordTask->getWeight());
-            coordinateReferences.push_back(*coordRef);		
-        }			
+            coordinateReferences.push_back(*coordRef);      
+        }           
     }
     double constraintWeight = std::numeric_limits<SimTK::Real>::infinity();
 

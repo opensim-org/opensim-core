@@ -163,7 +163,7 @@ void append_4x4matrix(double mat1[][4], double mat2[][4])
 
    for (i=0; i<4; i++)
       for (j=0; j<4; j++)
-	 mat1[i][j] = mat[i][j];
+     mat1[i][j] = mat[i][j];
 
 }
 
@@ -508,26 +508,26 @@ int point_in_polygon2D(double point[], double pgon[][2], int numverts)
    for (j = numverts+1; --j ;)
    {
       yflag1 = ( vtx1[YY] >= ty );
-	   /* check if endpoints straddle (are on opposite sides) of X axis
-	    * (i.e. the Y's differ); if so, +X ray could intersect this edge.
-	    */
+       /* check if endpoints straddle (are on opposite sides) of X axis
+        * (i.e. the Y's differ); if so, +X ray could intersect this edge.
+        */
       if (yflag0 != yflag1)
       {
          xflag0 = (vtx0[XX] >= tx);
-	     /* check if endpoints are on same side of the Y axis (i.e. X's
-	      * are the same); if so, it's easy to test if edge hits or misses.
-	      */
+         /* check if endpoints are on same side of the Y axis (i.e. X's
+          * are the same); if so, it's easy to test if edge hits or misses.
+          */
          if ( xflag0 == ( vtx1[XX] >= tx ) )
          {
-      		/* if edge's X values both right of the point, must hit */
+            /* if edge's X values both right of the point, must hit */
             if ( xflag0 )
                inside_flag = !inside_flag;
          }
          else
          {
-	 	      /* compute intersection of pgon segment with +X ray, note
-		       * if >= point's X; if so, the ray hits it.
-		       */
+              /* compute intersection of pgon segment with +X ray, note
+               * if >= point's X; if so, the ray hits it.
+               */
             if ((vtx1[XX] - (vtx1[YY]-ty) * (vtx0[XX]-vtx1[XX])/(vtx0[YY]-vtx1[YY])) >= tx)
             {
                inside_flag = !inside_flag;
@@ -576,7 +576,7 @@ int polygon_ray_inter3d(PolyhedronStruct* newph, int poly_index, double pt[3], i
 
    for (i=0; i<3; i++)
       for (j=0; j<3; j++)
-	 amat[i][j] = mat[i][j];
+     amat[i][j] = mat[i][j];
 
    for (i=0; i<numpts; i++)
    {
@@ -597,7 +597,7 @@ int polygon_ray_inter3d(PolyhedronStruct* newph, int poly_index, double pt[3], i
 
 
 int polygon_ray_inter_jordanstheorem(double** poly_pts, int numpts,
-				     double ptray[3], int axes)
+                     double ptray[3], int axes)
 {
 
    int i, newstate, algstate, otheraxes, numinter = 0;
@@ -610,7 +610,7 @@ int polygon_ray_inter_jordanstheorem(double** poly_pts, int numpts,
    for (i=0; i<numpts; i++)
    {
       if ((algstate = point_ray_relation(poly_pts[i],ptray,otheraxes)) != ON_RAY)
-	 break;
+     break;
    }
   
    if (algstate == ON_RAY)
@@ -628,41 +628,41 @@ int polygon_ray_inter_jordanstheorem(double** poly_pts, int numpts,
       count = 0;
       while (point_ray_relation(poly_pts[current],ptray,otheraxes) == algstate)
       {
-	 last = current;
-	 current += 1;
-	 if (current == numpts)
-	    current = 0;
-	 count++; 
-	 if (count == numpts || current == start)
-	 {
-	    quit = TRUE;
-	    break;
-	 }
+     last = current;
+     current += 1;
+     if (current == numpts)
+        current = 0;
+     count++; 
+     if (count == numpts || current == start)
+     {
+        quit = TRUE;
+        break;
+     }
       }
       intermin = 1000000;
       count =0;
       while (point_ray_relation(poly_pts[current],ptray,otheraxes) == ON_RAY)
       {
-	 intermin = _MIN(intermin,poly_pts[current][axes]);
-	 last = current;
-	 current += 1;
-	 if (current == numpts)
-	    current = 0;
-	 count++;
-	 if (current == start)
-	 {
-	    quit = TRUE;
-	 }
+     intermin = _MIN(intermin,poly_pts[current][axes]);
+     last = current;
+     current += 1;
+     if (current == numpts)
+        current = 0;
+     count++;
+     if (current == start)
+     {
+        quit = TRUE;
+     }
       }
       if ((newstate = point_ray_relation(poly_pts[current],ptray,otheraxes))
-	  != algstate)
+      != algstate)
       {
-	 t = (ptray[otheraxes] - poly_pts[current][otheraxes])/
+     t = (ptray[otheraxes] - poly_pts[current][otheraxes])/
             (poly_pts[last][otheraxes] - poly_pts[current][otheraxes]);
-	 inter = poly_pts[last][axes] * t + poly_pts[current][axes] * (1.0-t);
-	 intermin = _MIN(intermin,inter);
-	 if (intermin > ptray[axes] && NOT_EQUAL_WITHIN_TOLERANCE(intermin,ptray[axes],LINE_EPSILON))
-	    numinter++;
+     inter = poly_pts[last][axes] * t + poly_pts[current][axes] * (1.0-t);
+     intermin = _MIN(intermin,inter);
+     if (intermin > ptray[axes] && NOT_EQUAL_WITHIN_TOLERANCE(intermin,ptray[axes],LINE_EPSILON))
+        numinter++;
       }
       algstate = newstate;
    }
@@ -750,7 +750,7 @@ void make_rotation_matrix(double** mat, double normal[])
 }
 
 int intersect_lines(double p1[], double p2[], double p3[], double p4[],
-		    double p_int1[], double* t, double p_int2[], double* s)
+            double p_int1[], double* t, double p_int2[], double* s)
 {
 
    double mag1, mag2, cross_prod[3], denom, vec1[3], vec2[3], mat[3][3];
@@ -815,8 +815,8 @@ int intersect_lines(double p1[], double p2[], double p3[], double p4[],
  */
 
 int intersect_lines_scaled(double p1[], double p2[], double p3[], double p4[],
-			   double p_int1[], double* t, double* mag1,
-			   double p_int2[], double* s, double* mag2)
+               double p_int1[], double* t, double* mag1,
+               double p_int2[], double* s, double* mag2)
 {
 
    double cross_prod[3], denom, vec1[3], vec2[3], mat[3][3];
@@ -1151,7 +1151,7 @@ double get_distsqr_point_line(double point[], double pl[], double vl[])
  * to get the closest point
  */
 void get_point_from_point_line(double point[], double pt[], double vec[],
-			       double closest_pt[])
+                   double closest_pt[])
 {
 
    double v1[3], v2[3];
@@ -1395,7 +1395,7 @@ static void matrix_to_quat (double m[][4], Quat q)
 
    if (NEAR_GT_OR_EQ(trace, 0.0))
    {
-      s	   = sqrt(trace + m[WW][WW]);
+      s    = sqrt(trace + m[WW][WW]);
       q[WW] = s * 0.5;
       s    = 0.5 / s;
 

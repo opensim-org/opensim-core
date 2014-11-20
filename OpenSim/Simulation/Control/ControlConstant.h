@@ -52,12 +52,12 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ControlConstant, Control);
 // MEMBER DATA
 //=============================================================================
 protected:
-	// PROPERTIES
-	/** Control value. */
-	PropertyDbl _propX;
+    // PROPERTIES
+    /** Control value. */
+    PropertyDbl _propX;
 
-	// REFERENCES
-	double &_x;
+    // REFERENCES
+    double &_x;
 
 //=============================================================================
 // METHODS
@@ -68,36 +68,36 @@ public:
      * @param aName Name of the control.
      */
     ControlConstant(double aX=0.0,const char *aName="UNKOWN");
-	ControlConstant(const ControlConstant &aControl);
-	virtual ~ControlConstant();
+    ControlConstant(const ControlConstant &aControl);
+    virtual ~ControlConstant();
 
 private:
-	void setNull();
-	void copyData(const ControlConstant &aControl);
+    void setNull();
+    void copyData(const ControlConstant &aControl);
 protected:
-	void setupProperties();
-	
+    void setupProperties();
+    
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	ControlConstant& operator=(const ControlConstant &aControl);
+    ControlConstant& operator=(const ControlConstant &aControl);
 #endif
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	// PARAMETERS
-	// Number
-	virtual int getNumParameters() const;
-	// Min
-	virtual void setParameterMin(int aI,double aMin);
-	virtual double getParameterMin(int aI) const;
-	// Max
-	virtual void setParameterMax(int aI,double aMax);
-	virtual double getParameterMax(int aI) const;
-	// Time and Neighborhood
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    // PARAMETERS
+    // Number
+    virtual int getNumParameters() const;
+    // Min
+    virtual void setParameterMin(int aI,double aMin);
+    virtual double getParameterMin(int aI) const;
+    // Max
+    virtual void setParameterMax(int aI,double aMax);
+    virtual double getParameterMax(int aI) const;
+    // Time and Neighborhood
     /**
      * For ControlConstant, parameters are not associated with any specific time.
      *
@@ -113,7 +113,7 @@ public:
     virtual void getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const;
 
     /**
-	 * @param aT time
+     * @param aT time
      * @param rList Parameter at index 0 (i.e., the value of the constant)
      * is the only parameter on the list.
      */
@@ -141,13 +141,13 @@ public:
      * @param aT Not used since the control value is constant in time.
      */
     virtual double getControlValue(double aT);
-	virtual double getControlValueMin(double aT=0.0);
-	virtual void setControlValueMin(double aT,double aX);
-	virtual double getControlValueMax(double aT=0.0);
-	virtual void setControlValueMax(double aT,double aX);
+    virtual double getControlValueMin(double aT=0.0);
+    virtual void setControlValueMin(double aT,double aX);
+    virtual double getControlValueMax(double aT=0.0);
+    virtual void setControlValueMax(double aT,double aX);
 
 //=============================================================================
-};	// END of class ControlConstant
+};  // END of class ControlConstant
 
 }; //namespace
 //=============================================================================

@@ -81,60 +81,60 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(Control, Object);
 // MEMBER VARIABLES
 //=============================================================================
 protected:
-	// PROPERTIES
-	/** Flag that specifies whether or not this control is a model control. */
-	PropertyBool _propIsModelControl;
-	/** Flag that specifies whether or not this control should use
-	extrapolation for times outside the time range of the control parameters. */
-	PropertyBool _propExtrapolate;
-	/** Default parameter minimum. */
-	PropertyDbl _propDefaultMin;
-	/** Default parameter maximum. */
-	PropertyDbl _propDefaultMax;
-	/** Flat that indicates whether PD follower filter is on. */
-	PropertyBool _propFilterOn;
+    // PROPERTIES
+    /** Flag that specifies whether or not this control is a model control. */
+    PropertyBool _propIsModelControl;
+    /** Flag that specifies whether or not this control should use
+    extrapolation for times outside the time range of the control parameters. */
+    PropertyBool _propExtrapolate;
+    /** Default parameter minimum. */
+    PropertyDbl _propDefaultMin;
+    /** Default parameter maximum. */
+    PropertyDbl _propDefaultMax;
+    /** Flat that indicates whether PD follower filter is on. */
+    PropertyBool _propFilterOn;
 
-	// REFERENCES TO PROPERTY VALUES
-	/** Reference to the value of the IsModelControl property. */
-	bool &_isModelControl;
-	/** Reference to the value of the Extrapolate flag. */
-	bool &_extrapolate;
-	/** Reference to the value of the DefaultMin property. */
-	double &_defaultMin;
-	/** Reference to the value of the DefaultMax property. */
-	double &_defaultMax;
-	/** Reference to the value of the PropFilterOn property. */
-	bool &_filterOn;
+    // REFERENCES TO PROPERTY VALUES
+    /** Reference to the value of the IsModelControl property. */
+    bool &_isModelControl;
+    /** Reference to the value of the Extrapolate flag. */
+    bool &_extrapolate;
+    /** Reference to the value of the DefaultMin property. */
+    double &_defaultMin;
+    /** Reference to the value of the DefaultMax property. */
+    double &_defaultMax;
+    /** Reference to the value of the PropFilterOn property. */
+    bool &_filterOn;
 
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	Control(const char *aName="UNKNOWN");
-	Control(const Control &aControl);
-	virtual ~Control();
+    Control(const char *aName="UNKNOWN");
+    Control(const Control &aControl);
+    virtual ~Control();
 
 private:
-	void setNull();
+    void setNull();
 protected:
-	virtual void setupProperties();
+    virtual void setupProperties();
     /**
      * Copy the member variables of the specified Control over to this Control
      * instance.
      */
     void copyData(const Control &aControl);
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	Control& operator=(const Control &aControl);
+    Control& operator=(const Control &aControl);
 #endif
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
     /**
      * Sets whether or not this control is a model control.  A model control is
      * a control that is expected by a model. Controls that are not model
@@ -148,7 +148,7 @@ public:
      */
     void setIsModelControl(bool aTrueFalse);
     /// @see setIsModelControl()
-	bool getIsModelControl() const;
+    bool getIsModelControl() const;
     /**
      * Sets whether or not to extrapolate for control curve evaluations that
      * are outide the region of confidence for a control.
@@ -169,14 +169,14 @@ public:
      */
     void setFilterOn(bool aTrueFalse);
     /// @see setFilterOn()
-	bool getFilterOn() const;
-	// PARAMETERS
+    bool getFilterOn() const;
+    // PARAMETERS
     /**
      * Returns the number of parameters that are used to specify the
      * control curve.
      */
     virtual int getNumParameters() const = 0;
-	// Default Parameter Min
+    // Default Parameter Min
     /**
      * Sets the default minimum value of a control parameter.
      * The default minimum is used when no minimum value is specified.
@@ -185,8 +185,8 @@ public:
      */
     void setDefaultParameterMin(double aMin);
     /// @see setDefaultParameterMin()
-	double getDefaultParameterMin() const;
-	// Default Parameter Max
+    double getDefaultParameterMin() const;
+    // Default Parameter Max
     /**
      * Sets the default maximum value of a control parameter.
      * The default maximum is used when no maximum value is specified.
@@ -195,8 +195,8 @@ public:
      */
     void setDefaultParameterMax(double aMax);
     /// @see setDefaultParameterMax()
-	double getDefaultParameterMax() const;
-	// Parameter Min
+    double getDefaultParameterMax() const;
+    // Parameter Min
     /**
      * Sets the minimum value that a control parameter  can take on.
      *
@@ -211,7 +211,7 @@ public:
       * @throws Exception if aI is invalid.
       */
     virtual double getParameterMin(int aI) const = 0;
-	// Parameter Max
+    // Parameter Max
     /**
      * Set the maximum value that a control parameter can take on.
      *
@@ -226,7 +226,7 @@ public:
      * @throws Exception if aI is invalid.
      */
     virtual double getParameterMax(int aI) const = 0;
-	// Parameter Neighborhood
+    // Parameter Neighborhood
     /**
      * Gets the time at which a parameter is specified.
      *
@@ -241,7 +241,7 @@ public:
      * @throws Exception if aI is invalid.
      */
     virtual double
-		getParameterTime(int aI) const = 0;
+        getParameterTime(int aI) const = 0;
     /**
      * Gets the time neighborhood (i.e., the lower and upper bounds of time)
      * in which a control parameter affects the value of the control curve.
@@ -260,17 +260,17 @@ public:
      * @throws Exception if aI is invalid.
      */
     virtual void
-		getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const=0;
+        getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const=0;
     /**
      * Gets the list of parameters that affect the control curve at a
      * specified time.
      *
      * @param aT Time in question.
-	 * @param rList The returned list of parameters.
+     * @param rList The returned list of parameters.
      * @return Length of rList.
      */
     virtual int
-		getParameterList(double aT,Array<int> &rList) = 0;
+        getParameterList(double aT,Array<int> &rList) = 0;
     /**
      * Gets the list of parameters that affect the control curve between two
      * specified times and that do NOT affect the control curve below the lower
@@ -299,7 +299,7 @@ public:
 
     // Parameter Value
     /// @see setParameterValue()
-	virtual double getParameterValue(int aI) const = 0;
+    virtual double getParameterValue(int aI) const = 0;
     /**
      * Sets the value of a control parameter.
      *
@@ -309,7 +309,7 @@ public:
      */
     virtual void setParameterValue(int aI,double aX) = 0;
 
-	// Control Value
+    // Control Value
     /**
      * Gets the value of this control at time aT.
      * If the value of the curve is not defined,
@@ -368,7 +368,7 @@ public:
      * @param aMax Maximum allowed control value.
      */
     virtual void setControlValueMax(double aT,double aMax) = 0;
-	// Convenience methods to get first and last time.
+    // Convenience methods to get first and last time.
     /**
      * Gets the first time for which a parameter is specified. Should be
      * overriden by derived classes that have a defined min time.
@@ -384,7 +384,7 @@ public:
      */
     virtual const double getLastTime() const;
 
-	// UTILITY
+    // UTILITY
     /**
      * Simplify the control (e.g., reduce the number of points in the control
      * curve) based on a set of specified properties.  Each implementation
@@ -398,7 +398,7 @@ public:
      * in derived classes.
      */
     virtual void
-		simplify(const PropertySet &aProperties);
+        simplify(const PropertySet &aProperties);
     /**
      * Filter the control curve at a particular time.
      *
@@ -407,7 +407,7 @@ public:
     virtual void filter(double aT);
 
 //=============================================================================
-};	// END of class Control
+};  // END of class Control
 
 }; //namespace
 //=============================================================================

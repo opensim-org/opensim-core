@@ -362,7 +362,7 @@ private:
         constructProperty_Foo2(Foo());
         constructProperty_scale1(1.0);
         constructProperty_scale2(2.0);
-    }	
+    }   
 }; // End of Class CompoundFoo
 
 SimTK_NICETYPENAME_LITERAL(Foo);
@@ -412,6 +412,29 @@ int main() {
             cout << e.what() << endl;
         }
 
+        ComponentList<Component> worldTreeAsList = theWorld.getComponentList();
+        std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
+        for (ComponentList<Component>::const_iterator it = worldTreeAsList.begin();
+            it != worldTreeAsList.end();
+            ++it) {
+            std::cout << "Iterator is at: " << it->getName() << std::endl;
+        }
+
+        
+        std::cout << "Using range-for loop: " << std::endl;
+        for (const Component& component : worldTreeAsList) {
+            std::cout << "Iterator is at: " << component.getName() << std::endl;
+        }
+        for (auto& component : worldTreeAsList) {
+            std::cout << "Iterator is at: " << component.getName() << std::endl;
+        }
+        
+        std::cout << "Iterate over only Foo's." << std::endl;
+        for (auto& component : theWorld.getComponentList<Foo>()) {
+            std::cout << "Iterator is at: " << component.getName() << std::endl;
+        }
+        
+
         Foo& foo2 = *new Foo();
         foo2.setName("Foo2");
         foo2.set_mass(3.0);
@@ -423,6 +446,12 @@ int main() {
 
         // Bar should connect now
         theWorld.connect();
+
+        std::cout << "Iterate over only Foo's." << std::endl;
+        for (auto& component : theWorld.getComponentList<Foo>()) {
+            std::cout << "Iterator is at: " << component.getName() << std::endl;
+        }
+
         theWorld.buildUpSystem(system);
 
         // do any other input/output connections

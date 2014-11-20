@@ -55,7 +55,7 @@ SET(LIBRARY_OUTPUT_PATH ${BUILD_BINARY_DIR})
 # Use this to generate a private set of libraries whose names
 # won't conflict with installed versions.
 SET(BUILD_USING_NAMESPACE "" CACHE STRING
-	"All library names will be prefixed with 'xxx_' if this is set to xxx.")
+    "All library names will be prefixed with 'xxx_' if this is set to xxx.")
 
 SET(NameSpace)
 IF(BUILD_USING_NAMESPACE)
@@ -103,19 +103,19 @@ SET(SimTKSIMBODY_SHARED_LIBRARY ${SimTKSIMBODY_LIBRARY_NAME})
 # Create a platform name useful for finding things in the Platform
 # directory.
 IF(WIN32)
-	IF(CMAKE_GENERATOR MATCHES  "Visual Studio 8")
-		SET(VCVERSION VC8)
-	ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 8")
-	IF(CMAKE_GENERATOR MATCHES  "Visual Studio 9")
-		SET(VCVERSION VC9)
-	ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 9")
-	IF(CMAKE_GENERATOR MATCHES  "Visual Studio 10")
-		#NOTE: VC12 (VS2013) does not require explicit link line to Psapi library
-		#Specifying here so it will link for VC10
-		link_libraries(Psapi)
-		SET(VCVERSION VC10)
-	ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 10")
-	SET(Platform "Windows")
+    IF(CMAKE_GENERATOR MATCHES  "Visual Studio 8")
+        SET(VCVERSION VC8)
+    ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 8")
+    IF(CMAKE_GENERATOR MATCHES  "Visual Studio 9")
+        SET(VCVERSION VC9)
+    ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 9")
+    IF(CMAKE_GENERATOR MATCHES  "Visual Studio 10")
+        #NOTE: VC12 (VS2013) does not require explicit link line to Psapi library
+        #Specifying here so it will link for VC10
+        link_libraries(Psapi)
+        SET(VCVERSION VC10)
+    ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 10")
+    SET(Platform "Windows")
     SET(NATIVE_COPY_CMD copy)
 ELSEIF(APPLE)
     SET(Platform Mac)
@@ -135,8 +135,8 @@ ENDIF()
 
 IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
     SET(PLATFORM_ABI x64)
-	SET(ARCH64 ON) 
-	#    SET(LIB64 64) Ubuntu 12.05
+    SET(ARCH64 ON) 
+    #    SET(LIB64 64) Ubuntu 12.05
 ELSE()
     SET(PLATFORM_ABI x86)
 ENDIF()
@@ -216,7 +216,7 @@ IF(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     # should have these disabled.
     if (GCC_VERSION VERSION_GREATER 4.3 OR GCC_VERSION VERSION_EQUAL 4.3)
         SET(GCC_OPT_DISABLE 
-	"-fno-tree-vrp -fno-strict-aliasing -fno-guess-branch-probability")
+    "-fno-tree-vrp -fno-strict-aliasing -fno-guess-branch-probability")
     endif()
 
     # C++
@@ -255,7 +255,7 @@ IF(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
     else()
         set(CL_INST_SET)
     endif()
-	
+    
     set(BUILD_LIMIT_PARALLEL_COMPILES "" CACHE STRING
         "Set a maximum number of simultaneous compilations.")
     mark_as_advanced(BUILD_LIMIT_PARALLEL_COMPILES)
@@ -263,30 +263,30 @@ IF(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
 
     ## C++
     SET(CMAKE_CXX_FLAGS_DEBUG        
-	"/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /bigobj /GS- ${CL_INST_SET}" 
+    "/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /bigobj /GS- ${CL_INST_SET}" 
         CACHE STRING "VC++ Debug build compile flags" FORCE)
     SET(CMAKE_CXX_FLAGS_RELEASE        
-	"/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /bigobj /GS- ${CL_INST_SET}" 
+    "/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /bigobj /GS- ${CL_INST_SET}" 
         CACHE STRING "VC++ Release build compile flags" FORCE)
     SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO 
-	"/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /bigobj /GS- ${CL_INST_SET}" 
+    "/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /bigobj /GS- ${CL_INST_SET}" 
         CACHE STRING "VC++ RelWithDebInfo build compile flags" FORCE)
     SET(CMAKE_CXX_FLAGS_MINSIZEREL 
-	"/MP${mxcpu} /D NDEBUG /MD  /O1 /Ob1 /Oi /bigobj /GS- ${CL_INST_SET}" 
+    "/MP${mxcpu} /D NDEBUG /MD  /O1 /Ob1 /Oi /bigobj /GS- ${CL_INST_SET}" 
         CACHE STRING "VC++ MinSizeRel build compile flags" FORCE)
 
     ## C
     SET(CMAKE_C_FLAGS_DEBUG        
-	"/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /GS- ${CL_INST_SET}" 
+    "/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /GS- ${CL_INST_SET}" 
         CACHE STRING "VC++ Debug build compile flags" FORCE)
     SET(CMAKE_C_FLAGS_RELEASE        
-	"/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /GS- ${CL_INST_SET}" 
+    "/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /GS- ${CL_INST_SET}" 
         CACHE STRING "VC++ Release build compile flags" FORCE)
     SET(CMAKE_C_FLAGS_RELWITHDEBINFO 
-	"/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /GS- ${CL_INST_SET}" 
+    "/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /GS- ${CL_INST_SET}" 
         CACHE STRING "VC++ RelWithDebInfo build compile flags" FORCE)
     SET(CMAKE_C_FLAGS_MINSIZEREL 
-	"/MP${mxcpu} /D NDEBUG /MD  /O1 /Ob1 /Oi /GS- ${CL_INST_SET}" 
+    "/MP${mxcpu} /D NDEBUG /MD  /O1 /Ob1 /Oi /GS- ${CL_INST_SET}" 
         CACHE STRING "VC++ MinSizeRel build compile flags" FORCE)
 
 ENDIF()
@@ -311,8 +311,8 @@ ENDIF(WIN32)
 
 ##################################################
 ## Define Platform to
-##			Win32/VC${version}
-##		or	Mac
+##          Win32/VC${version}
+##      or  Mac
 ##      or  Linux
 ##
 ## Also translate ARCH64 to platform specific flags
@@ -322,22 +322,22 @@ INCLUDE(InstallRequiredSystemLibraries)
 
 IF(WIN32)
 ELSE(WIN32)
-	SET(NameSpace "")	## No renamed SimTK libraries except on Windows
-	IF(APPLE)
-	   IF(ARCH64) 
+    SET(NameSpace "")   ## No renamed SimTK libraries except on Windows
+    IF(APPLE)
+       IF(ARCH64) 
            SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.8" )
-	   ELSE (ARCH64)
+       ELSE (ARCH64)
            SET( CMAKE_CXX_FLAGS
                "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.8 -m32" )
-	   ENDIF (ARCH64)
-	ELSE (APPLE)
-	   IF(ARCH64) 
+       ENDIF (ARCH64)
+    ELSE (APPLE)
+       IF(ARCH64) 
            SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64" )
-	   ELSE (ARCH64)
-		  # I don't believe setting the CXX flags is working in cmake.
+       ELSE (ARCH64)
+          # I don't believe setting the CXX flags is working in cmake.
           SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32" )
-	   ENDIF(ARCH64)
-	ENDIF (APPLE)
+       ENDIF(ARCH64)
+    ENDIF (APPLE)
 ENDIF(WIN32)
 
 # C++11: In revision 8629, we started using std::unique_ptr, which requires
@@ -421,21 +421,21 @@ ENDIF(BUILD_USING_OTHER_LAPACK)
 
 #IF(${CMAKE_C_COMPILER} MATCHES "cl")
     ## Assume Microsoft Visual Studio
-	#    SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthreadVC2)
-	#ELSE(${CMAKE_C_COMPILER} MATCHES "cl")
-	#    IF(APPLE)
-	#    SET(REALTIME_LIB)
-	# ELSE()
-	#    SET(REALTIME_LIB rt)
-	# ENDIF()
-	#SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthread ${REALTIME_LIB} dl)
-	#ENDIF(${CMAKE_C_COMPILER} MATCHES "cl")
+    #    SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthreadVC2)
+    #ELSE(${CMAKE_C_COMPILER} MATCHES "cl")
+    #    IF(APPLE)
+    #    SET(REALTIME_LIB)
+    # ELSE()
+    #    SET(REALTIME_LIB rt)
+    # ENDIF()
+    #SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthread ${REALTIME_LIB} dl)
+    #ENDIF(${CMAKE_C_COMPILER} MATCHES "cl")
 
 IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
     IF(APPLE)
-	    SET(REALTIME_LIB)
+        SET(REALTIME_LIB)
     ELSE()
-	    SET(REALTIME_LIB rt)
+        SET(REALTIME_LIB rt)
     ENDIF()
     SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthread ${REALTIME_LIB} dl)
     SET(MATH_LIBS_TO_USE_VN ${LAPACK_BEING_USED} pthread ${REALTIME_LIB} dl)
@@ -467,9 +467,9 @@ ENDIF()
 # This is where we're going to put these binaries.
 SET(COPIED_LIB_FILES)
 FOREACH(LIBF ${LIB_FILES})
-	GET_FILENAME_COMPONENT(LIBF_ROOT ${LIBF} NAME)
-	SET(COPIED_LIB_FILES ${COPIED_LIB_FILES}
-	    "${BUILD_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
+    GET_FILENAME_COMPONENT(LIBF_ROOT ${LIBF} NAME)
+    SET(COPIED_LIB_FILES ${COPIED_LIB_FILES}
+        "${BUILD_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
 ENDFOREACH()
 
 # This target depends on the destination copies of the Simbody files (in the
@@ -478,28 +478,28 @@ ENDFOREACH()
 # directory.
 ADD_CUSTOM_TARGET(SimbodyFiles ALL DEPENDS ${COPIED_LIB_FILES})
 SET_TARGET_PROPERTIES(SimbodyFiles
- 	PROPERTIES PROJECT_LABEL "Library - Simbody Files")
+    PROPERTIES PROJECT_LABEL "Library - Simbody Files")
 
 FOREACH(LIBF ${LIB_FILES})
     # MESSAGE("LIB_FILE" ${LIBF})
-	GET_FILENAME_COMPONENT(LIBF_ROOT ${LIBF} NAME)
-	GET_FILENAME_COMPONENT(LIBF_SUFFIX ${LIBF} EXT)
-	SET(COPIED_LIBF "${BUILD_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
-	FILE(TO_NATIVE_PATH "${LIBF}" LIBF_SRC)
-	FILE(TO_NATIVE_PATH "${COPIED_LIBF}" LIBF_DEST)
+    GET_FILENAME_COMPONENT(LIBF_ROOT ${LIBF} NAME)
+    GET_FILENAME_COMPONENT(LIBF_SUFFIX ${LIBF} EXT)
+    SET(COPIED_LIBF "${BUILD_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
+    FILE(TO_NATIVE_PATH "${LIBF}" LIBF_SRC)
+    FILE(TO_NATIVE_PATH "${COPIED_LIBF}" LIBF_DEST)
 
     # Copy Simbody files if they are out of date. This is invoked because
     # the SimbodyFiles target depends on these output files.
-	ADD_CUSTOM_COMMAND(OUTPUT "${COPIED_LIBF}"
-		COMMAND ${NATIVE_COPY_CMD} "${LIBF_SRC}" "${LIBF_DEST}"
-		DEPENDS "${LIBF}"
-		COMMENT "Copy ${LIBF_SRC} -> ${LIBF_DEST}"
-		VERBATIM)
+    ADD_CUSTOM_COMMAND(OUTPUT "${COPIED_LIBF}"
+        COMMAND ${NATIVE_COPY_CMD} "${LIBF_SRC}" "${LIBF_DEST}"
+        DEPENDS "${LIBF}"
+        COMMENT "Copy ${LIBF_SRC} -> ${LIBF_DEST}"
+        VERBATIM)
 ENDFOREACH()
 
 INSTALL(DIRECTORY ${Simbody_INCLUDE_DIR} DESTINATION sdk/include/SimTK 
-			PATTERN ".svn" EXCLUDE)
-			
+            PATTERN ".svn" EXCLUDE)
+            
 
 IF(NOT LIBRARY_OUTPUT_PATH)
   SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/${VCVERSION} CACHE INTERNAL "Single output directory for building all libraries.")
@@ -521,20 +521,20 @@ ENDIF(WIN32)
 INCLUDE_DIRECTORIES(${Simbody_INCLUDE_DIR})
 
 IF(WIN32)
-		LINK_DIRECTORIES(${Simbody_LIB_DIR} ${OpenSim_LIBRARY_DIR})
+        LINK_DIRECTORIES(${Simbody_LIB_DIR} ${OpenSim_LIBRARY_DIR})
 ELSE(WIN32)
-	IF(APPLE)
-		LINK_DIRECTORIES(${Simbody_LIB_DIR} ${OpenSim_LIBRARY_DIR})
-	ELSE(APPLE) # Linux?
-		LINK_DIRECTORIES(${Simbody_LIB_DIR}/ ${OpenSim_LIBRARY_DIR})
-	ENDIF(APPLE)
+    IF(APPLE)
+        LINK_DIRECTORIES(${Simbody_LIB_DIR} ${OpenSim_LIBRARY_DIR})
+    ELSE(APPLE) # Linux?
+        LINK_DIRECTORIES(${Simbody_LIB_DIR}/ ${OpenSim_LIBRARY_DIR})
+    ENDIF(APPLE)
 ENDIF(WIN32)
 
 SET(SIMTK_COMMON_LIB debug ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKcommon)
 SET(SIMTK_MATH_LIB debug ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKmath)
 SET(SIMTK_SIMBODY_LIB debug ${NameSpace}SimTKsimbody${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKsimbody)
 
-SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
+SET(SIMTK_ALL_LIBS  ${SIMTK_COMMON_LIB} 
                     ${SIMTK_MATH_LIB} 
                     ${SIMTK_SIMBODY_LIB} 
                     ${MATH_LIBS_TO_USE})
@@ -544,25 +544,25 @@ SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB}
 # platforms.  Libraries (shared or otherwise) go in /lib, except on Windows 
 # where the ".dll" files go in bin along with executables. Anything that
 # is only needed for programmers goes in sdk/lib.
-IF(WIN32)	
-	FILE(GLOB THIRDPARTY_BIN_FILES 
-					${Simbody_BIN_DIR}/*.dll	# non repository layout
-					${Simbody_BIN_DIR}/*.exe
-					${Simbody_BIN_DIR}/${VCVERSION}/*.dll
-					${Simbody_BIN_DIR}/${VCVERSION}/*.exe)
-	FILE(GLOB THIRDPARTY_SDKLIB_FILES 
-					${Simbody_LIB_DIR}/*.lib	# non repository layout
-					${Simbody_LIB_DIR}/${VCVERSION}/*.lib)
+IF(WIN32)   
+    FILE(GLOB THIRDPARTY_BIN_FILES 
+                    ${Simbody_BIN_DIR}/*.dll    # non repository layout
+                    ${Simbody_BIN_DIR}/*.exe
+                    ${Simbody_BIN_DIR}/${VCVERSION}/*.dll
+                    ${Simbody_BIN_DIR}/${VCVERSION}/*.exe)
+    FILE(GLOB THIRDPARTY_SDKLIB_FILES 
+                    ${Simbody_LIB_DIR}/*.lib    # non repository layout
+                    ${Simbody_LIB_DIR}/${VCVERSION}/*.lib)
 ELSE(WIN32)
-	FILE(GLOB THIRDPARTY_BIN_FILES 
+    FILE(GLOB THIRDPARTY_BIN_FILES 
         ${Simbody_BIN_DIR}/*) # executables only (e.g. visualizer)
     # If the LIB_DIR is some common place for libraries (e.g., /usr/lib),
     # we only want to copy over the libraries that have SimTK in the name.
-	FILE(GLOB THIRDPARTY_LIB_FILES 
+    FILE(GLOB THIRDPARTY_LIB_FILES 
         ${Simbody_LIB_DIR}/*SimTK*.so
         ${Simbody_LIB_DIR}/*SimTK*.so.*
         ${Simbody_LIB_DIR}/*SimTK*.dylib)
-	FILE(GLOB THIRDPARTY_SDKLIB_FILES 
+    FILE(GLOB THIRDPARTY_SDKLIB_FILES 
         ${Simbody_LIB_DIR}/*SimTK*.a)
 ENDIF(WIN32)
 

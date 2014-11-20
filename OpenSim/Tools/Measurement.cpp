@@ -41,14 +41,14 @@ using SimTK::Vec3;
  * Default constructor.
  */
 Measurement::Measurement() :
-	_markerPairSetProp(PropertyObj("", MarkerPairSet())),
-	_markerPairSet((MarkerPairSet&)_markerPairSetProp.getValueObj()),
-	_bodyScaleSetProp(PropertyObj("", BodyScaleSet())),
-	_bodyScaleSet((BodyScaleSet&)_bodyScaleSetProp.getValueObj()),
-	_apply(_applyProp.getValueBool())
+    _markerPairSetProp(PropertyObj("", MarkerPairSet())),
+    _markerPairSet((MarkerPairSet&)_markerPairSetProp.getValueObj()),
+    _bodyScaleSetProp(PropertyObj("", BodyScaleSet())),
+    _bodyScaleSet((BodyScaleSet&)_bodyScaleSetProp.getValueObj()),
+    _apply(_applyProp.getValueBool())
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -67,15 +67,15 @@ Measurement::~Measurement()
  */
 Measurement::Measurement(const Measurement &aMeasurement) :
    Object(aMeasurement),
-	_markerPairSetProp(PropertyObj("", MarkerPairSet())),
-	_markerPairSet((MarkerPairSet&)_markerPairSetProp.getValueObj()),
-	_bodyScaleSetProp(PropertyObj("", BodyScaleSet())),
-	_bodyScaleSet((BodyScaleSet&)_bodyScaleSetProp.getValueObj()),
-	_apply(_applyProp.getValueBool())
+    _markerPairSetProp(PropertyObj("", MarkerPairSet())),
+    _markerPairSet((MarkerPairSet&)_markerPairSetProp.getValueObj()),
+    _bodyScaleSetProp(PropertyObj("", BodyScaleSet())),
+    _bodyScaleSet((BodyScaleSet&)_bodyScaleSetProp.getValueObj()),
+    _apply(_applyProp.getValueBool())
 {
-	setNull();
-	setupProperties();
-	copyData(aMeasurement);
+    setNull();
+    setupProperties();
+    copyData(aMeasurement);
 }
 
 //=============================================================================
@@ -89,9 +89,9 @@ Measurement::Measurement(const Measurement &aMeasurement) :
  */
 void Measurement::copyData(const Measurement &aMeasurement)
 {
-	_markerPairSet = aMeasurement._markerPairSet;
-	_bodyScaleSet = aMeasurement._bodyScaleSet;
-	_apply = aMeasurement._apply;
+    _markerPairSet = aMeasurement._markerPairSet;
+    _bodyScaleSet = aMeasurement._bodyScaleSet;
+    _apply = aMeasurement._apply;
 }
 
 //_____________________________________________________________________________
@@ -108,18 +108,18 @@ void Measurement::setNull()
  */
 void Measurement::setupProperties()
 {
-	_applyProp.setComment("Flag to turn on and off scaling for this measurement.");
-	_applyProp.setName("apply");
-	_applyProp.setValue(true);
-	_propertySet.append(&_applyProp);
+    _applyProp.setComment("Flag to turn on and off scaling for this measurement.");
+    _applyProp.setName("apply");
+    _applyProp.setValue(true);
+    _propertySet.append(&_applyProp);
 
-	_markerPairSetProp.setComment("Set of marker pairs used to determine the scale factors.");
-	_markerPairSetProp.setName("MarkerPairSet");
-	_propertySet.append(&_markerPairSetProp);
+    _markerPairSetProp.setComment("Set of marker pairs used to determine the scale factors.");
+    _markerPairSetProp.setName("MarkerPairSet");
+    _propertySet.append(&_markerPairSetProp);
 
-	_bodyScaleSetProp.setComment("Set of bodies to be scaled by this measurement.");
-	_bodyScaleSetProp.setName("BodyScaleSet");
-	_propertySet.append(&_bodyScaleSetProp);
+    _bodyScaleSetProp.setComment("Set of bodies to be scaled by this measurement.");
+    _bodyScaleSetProp.setName("BodyScaleSet");
+    _propertySet.append(&_bodyScaleSetProp);
 }
 
 //_____________________________________________________________________________
@@ -128,8 +128,8 @@ void Measurement::setupProperties()
  */
 void Measurement::registerTypes()
 {
-	Object::registerType(MarkerPair());
-	Object::registerType(BodyScale());
+    Object::registerType(MarkerPair());
+    Object::registerType(BodyScale());
 }
 
 //=============================================================================
@@ -143,12 +143,12 @@ void Measurement::registerTypes()
  */
 Measurement& Measurement::operator=(const Measurement &aMeasurement)
 {
-	// BASE CLASS
-	Object::operator=(aMeasurement);
+    // BASE CLASS
+    Object::operator=(aMeasurement);
 
-	copyData(aMeasurement);
+    copyData(aMeasurement);
 
-	return(*this);
+    return(*this);
 }
 
 /* Apply a scale factor to a scale set, according to the elements of
@@ -164,28 +164,28 @@ Measurement& Measurement::operator=(const Measurement &aMeasurement)
  */
 void Measurement::applyScaleFactor(double aFactor, ScaleSet& aScaleSet)
 {
-	for (int i = 0; i < _bodyScaleSet.getSize(); i++)
-	{
-		const string& bodyName = _bodyScaleSet[i].getName();
-		for (int j = 0; j < aScaleSet.getSize(); j++)
-		{
-			if (aScaleSet[j].getSegmentName() == bodyName)
-			{
-				const Array<std::string>& axisNames = _bodyScaleSet[i].getAxisNames();
-				Vec3 factors(1.0);
-				aScaleSet[j].getScaleFactors(factors);
+    for (int i = 0; i < _bodyScaleSet.getSize(); i++)
+    {
+        const string& bodyName = _bodyScaleSet[i].getName();
+        for (int j = 0; j < aScaleSet.getSize(); j++)
+        {
+            if (aScaleSet[j].getSegmentName() == bodyName)
+            {
+                const Array<std::string>& axisNames = _bodyScaleSet[i].getAxisNames();
+                Vec3 factors(1.0);
+                aScaleSet[j].getScaleFactors(factors);
 
-				for (int k = 0; k < axisNames.getSize(); k++)
-				{
-					if (axisNames[k] == "x" || axisNames[k] == "X")
-						factors[0] = aFactor;
-					else if (axisNames[k] == "y" || axisNames[k] == "Y")
-						factors[1] = aFactor;
-					else if (axisNames[k] == "z" || axisNames[k] == "Z")
-						factors[2] = aFactor;
-				}
-				aScaleSet[j].setScaleFactors(factors);
-			}
-		}
-	}
+                for (int k = 0; k < axisNames.getSize(); k++)
+                {
+                    if (axisNames[k] == "x" || axisNames[k] == "X")
+                        factors[0] = aFactor;
+                    else if (axisNames[k] == "y" || axisNames[k] == "Y")
+                        factors[1] = aFactor;
+                    else if (axisNames[k] == "z" || axisNames[k] == "Z")
+                        factors[2] = aFactor;
+                }
+                aScaleSet[j].setScaleFactors(factors);
+            }
+        }
+    }
 }

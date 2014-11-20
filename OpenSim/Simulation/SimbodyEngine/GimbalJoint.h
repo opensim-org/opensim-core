@@ -46,7 +46,7 @@ class OSIMSIMULATION_API GimbalJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(GimbalJoint, Joint);
 
 private:
-	static const int _numMobilities = 3;
+    static const int _numMobilities = 3;
 //=============================================================================
 // DATA
 //=============================================================================
@@ -57,16 +57,16 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	GimbalJoint();
-	// convenience constructor
-	GimbalJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-				OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
-				/*bool useEulerAngles=true,*/ bool reverse=false);
+    // CONSTRUCTION
+    GimbalJoint();
+    // convenience constructor
+    GimbalJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
+                OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
+                /*bool useEulerAngles=true,*/ bool reverse=false);
 
-	virtual ~GimbalJoint();
+    virtual ~GimbalJoint();
 
-	int numCoordinates() const override  {return _numMobilities;}
+    int numCoordinates() const override  {return _numMobilities;}
 
 protected:
     // ModelComponent interface.
@@ -75,7 +75,7 @@ protected:
     void extendSetPropertiesFromState(const SimTK::State& state) override;
 
 //=============================================================================
-};	// END of class GimbalJoint
+};  // END of class GimbalJoint
 //=============================================================================
 //=============================================================================
 

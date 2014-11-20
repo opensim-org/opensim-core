@@ -9,6 +9,7 @@
  *                                                                            *
  * Copyright (c) 2005-2013 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Michael Sherman                                      *
+ * Contributor(s): Ayman Habib                                                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -166,7 +167,9 @@ void Component::connect(Component &root)
 
     reset();
 
-    // rebuilding the connectors table, which was emptied by reset
+    initComponentTreeTraversal(root);
+
+    // rebuilding the connectors table, which was emptied by clearStateAllocations
     for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
         AbstractConnector& connector = upd_connectors(ix);
         connector.disconnect();
@@ -305,7 +308,7 @@ void Component::computeStateVariableDerivatives(const SimTK::State& s) const
         if(nasv > 0){
             std::stringstream msg;
             msg << "Component " + getConcreteClassName()+"::"+getName();
-            msg	<< " added " << nasv << " state variables and ";
+            msg << " added " << nasv << " state variables and ";
             msg << " must specify their derivatives." << std::endl; 
 
             throw Exception(msg.str());
@@ -815,7 +818,7 @@ void Component::addComponent(Component *aComponent)
     if ( _components.empty() ){
         _components.push_back(aComponent);
     }
-    else{ //otherwise check that it isn't apart of the component already		
+    else{ //otherwise check that it isn't apart of the component already        
         SimTK::Array_<Component *>::iterator it =
             std::find(_components.begin(), _components.end(), aComponent);
         if ( it == _components.end() ){

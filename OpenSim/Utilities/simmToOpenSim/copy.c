@@ -48,7 +48,7 @@
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
 static ReturnCode copy_nondefault_dyn_params(dpMuscleStruct* from, dpMuscleStruct* to,
-					     dpMuscleStruct* deffrom, dpMuscleStruct* defto);
+                         dpMuscleStruct* deffrom, dpMuscleStruct* defto);
 static ReturnCode copy_nonnull_dyn_params(dpMuscleStruct* from, dpMuscleStruct* to);
 static MotionSequence* copy_motion(MotionSequence* from);
 static dpQStruct* get_q_from_gencoord_dp(dpModelStruct* model, GeneralizedCoord *genc);
@@ -109,15 +109,15 @@ void copy_gencoord_info(GeneralizedCoord *from, SaveGencoords *to)
  */
 void copy_function(dpFunction* from, dpFunction* to)
 {
-	int numToCopy = _MIN(to->coefficient_array_size, from->coefficient_array_size);
+    int numToCopy = _MIN(to->coefficient_array_size, from->coefficient_array_size);
 
-	to->type = from->type;
-	to->numpoints = from->numpoints;
-	to->source = from->source;
-	to->status = from->status;
-	to->used = from->used;
-	to->usernum = from->usernum;
-	to->cutoff_frequency = from->cutoff_frequency;
+    to->type = from->type;
+    to->numpoints = from->numpoints;
+    to->source = from->source;
+    to->status = from->status;
+    to->used = from->used;
+    to->usernum = from->usernum;
+    to->cutoff_frequency = from->cutoff_frequency;
 
    memcpy(to->x, from->x, numToCopy * sizeof(double));
    memcpy(to->y, from->y, numToCopy * sizeof(double));
@@ -339,19 +339,19 @@ ReturnCode copy_default_muscle(dpMuscleStruct* from, dpMuscleStruct* to, ModelSt
    }
 
    if (from->excitation_abscissa == NULL)
-	{
+    {
       to->excitation_abscissa = from->excitation_abscissa;
-	}
-	else
+    }
+    else
    {
       to->excitation_abscissa = (void**)simm_malloc(sizeof(void*));
       if (to->excitation_abscissa == NULL)
          return code_bad;
-		if (*from->excitation_abscissa == TIME)
-			*to->excitation_abscissa = TIME;
-		else
+        if (*from->excitation_abscissa == TIME)
+            *to->excitation_abscissa = TIME;
+        else
       {
-			*to->excitation_abscissa = (void*)enter_gencoord(modelTo, ((GeneralizedCoord*)(*from->excitation_abscissa))->name, no);
+            *to->excitation_abscissa = (void*)enter_gencoord(modelTo, ((GeneralizedCoord*)(*from->excitation_abscissa))->name, no);
          // If you got a NULL in the destination, but the source has an abscissa, something went wrong
          if (*to->excitation_abscissa == NULL && *from->excitation_abscissa != NULL)
             return code_bad;
@@ -482,17 +482,17 @@ ReturnCode copy_default_muscle_dp(dpMuscleStruct* from, dpMuscleStruct* to, dpMo
    }
 
    if (from->excitation_abscissa == NULL)
-	{
+    {
       to->excitation_abscissa = from->excitation_abscissa;
-	}
-	else
+    }
+    else
    {
       to->excitation_abscissa = (void**)simm_malloc(sizeof(void*));
       if (to->excitation_abscissa == NULL)
          return code_bad;
-		if (*from->excitation_abscissa == TIME)
-			*to->excitation_abscissa = TIME;
-		else
+        if (*from->excitation_abscissa == TIME)
+            *to->excitation_abscissa = TIME;
+        else
       {
          *to->excitation_abscissa = (void*)get_q_from_gencoord_dp(modelTo, (GeneralizedCoord*)(*from->excitation_abscissa));
          // If you got a NULL in the destination, but the source has an abscissa, something went wrong
@@ -577,7 +577,7 @@ ReturnCode copy_muscle(dpMuscleStruct* from, dpMuscleStruct* to, dpMuscleStruct*
    if (from->path)
    {
       to->path = (dpMusclePathStruct*)simm_calloc(1, sizeof(dpMusclePathStruct));
-		//free_muscle(to, defto); // just to test!
+        //free_muscle(to, defto); // just to test!
 
       if (copy_muscle_path(from->path, to->path) == code_bad)
          return code_bad;
@@ -691,16 +691,16 @@ ReturnCode copy_muscle(dpMuscleStruct* from, dpMuscleStruct* to, dpMuscleStruct*
    else
    {
       if (from->excitation_abscissa == NULL)
-		{
+        {
          to->excitation_abscissa = NULL;
-		}
+        }
       else
       {
          if ((to->excitation_abscissa = (void**)simm_malloc(sizeof(void*))) == NULL)
             return code_bad;
-			if (*from->excitation_abscissa == TIME)
-				*to->excitation_abscissa = TIME;
-			else
+            if (*from->excitation_abscissa == TIME)
+                *to->excitation_abscissa = TIME;
+            else
          {
             *to->excitation_abscissa = (void*)enter_gencoord(modelTo, ((GeneralizedCoord*)(*from->excitation_abscissa))->name, no);
             // If you got a NULL in the destination, but the source has an abscissa, something went wron
@@ -725,7 +725,7 @@ ReturnCode copy_muscle(dpMuscleStruct* from, dpMuscleStruct* to, dpMuscleStruct*
    }
 
    if (copy_ndint(from->muscle_model_index,&to->muscle_model_index,
-		  deffrom->muscle_model_index,defto->muscle_model_index) == code_bad)
+          deffrom->muscle_model_index,defto->muscle_model_index) == code_bad)
       return code_bad;
 
    to->saved = NULL;
@@ -807,7 +807,7 @@ ReturnCode copy_muscle_dp(dpMuscleStruct* from, dpMuscleStruct* to, dpMuscleStru
    if (from->path)
    {
       to->path = (dpMusclePathStruct*)simm_calloc(1, sizeof(dpMusclePathStruct));
-		//free_muscle(to, defto); // just to test!
+        //free_muscle(to, defto); // just to test!
 
       if (copy_muscle_path_dp(from->path, to->path, modelTo) == code_bad)
          return code_bad;
@@ -921,18 +921,18 @@ ReturnCode copy_muscle_dp(dpMuscleStruct* from, dpMuscleStruct* to, dpMuscleStru
    else
    {
       if (from->excitation_abscissa == NULL)
-		{
+        {
          to->excitation_abscissa = NULL;
-		}
+        }
       else
       {
          if ((to->excitation_abscissa = (void**)simm_malloc(sizeof(void*))) == NULL)
             return code_bad;
-			if (*from->excitation_abscissa == TIME)
-				*to->excitation_abscissa = TIME;
-			else
+            if (*from->excitation_abscissa == TIME)
+                *to->excitation_abscissa = TIME;
+            else
          {
-				*to->excitation_abscissa = (void*)get_q_from_gencoord_dp(modelTo, (GeneralizedCoord*)(*from->excitation_abscissa));
+                *to->excitation_abscissa = (void*)get_q_from_gencoord_dp(modelTo, (GeneralizedCoord*)(*from->excitation_abscissa));
             // If you got a NULL in the destination, but the source has an abscissa, something went wron
             if (*to->excitation_abscissa == NULL && *from->excitation_abscissa != NULL)
                return code_bad;
@@ -955,7 +955,7 @@ ReturnCode copy_muscle_dp(dpMuscleStruct* from, dpMuscleStruct* to, dpMuscleStru
    }
 
    if (copy_ndint(from->muscle_model_index,&to->muscle_model_index,
-		  deffrom->muscle_model_index,defto->muscle_model_index) == code_bad)
+          deffrom->muscle_model_index,defto->muscle_model_index) == code_bad)
       return code_bad;
 
    to->saved = NULL;
@@ -1082,10 +1082,10 @@ JointStruct* copy_joints(ModelStruct* model, JointStruct from[], int num)
       {
          mstrcpy(&to[i].dofs[j].sd.name, from[i].dofs[j].sd.name);
          mstrcpy(&to[i].dofs[j].sd.con_name, from[i].dofs[j].sd.con_name);
-			if (from[i].dofs[j].function)
-				to[i].dofs[j].function = getFunctionByUserNumber(model, from[i].dofs[j].function->usernum);
-			if (from[i].dofs[j].gencoord)
-				to[i].dofs[j].gencoord = enter_gencoord(model, from[i].dofs[j].gencoord->name, no);
+            if (from[i].dofs[j].function)
+                to[i].dofs[j].function = getFunctionByUserNumber(model, from[i].dofs[j].function->usernum);
+            if (from[i].dofs[j].gencoord)
+                to[i].dofs[j].gencoord = enter_gencoord(model, from[i].dofs[j].gencoord->name, no);
       }
       if (model->numsegments > 0)
       {
@@ -1342,12 +1342,12 @@ GeneralizedCoord** copy_gencoords(ModelStruct* model, GeneralizedCoord* from[], 
          to[i]->group = (int*)simm_malloc(sizeof(int)*to[i]->numgroups);
          memcpy(to[i]->group, from[i]->group, sizeof(int)*to[i]->numgroups);
       }
-		if (from[i]->restraint_function)
-			to[i]->restraint_function = getFunctionByUserNumber(model, from[i]->restraint_function->usernum);
-		if (from[i]->min_restraint_function)
-			to[i]->min_restraint_function = getFunctionByUserNumber(model, from[i]->min_restraint_function->usernum);
-		if (from[i]->max_restraint_function)
-			to[i]->max_restraint_function = getFunctionByUserNumber(model, from[i]->max_restraint_function->usernum);
+        if (from[i]->restraint_function)
+            to[i]->restraint_function = getFunctionByUserNumber(model, from[i]->restraint_function->usernum);
+        if (from[i]->min_restraint_function)
+            to[i]->min_restraint_function = getFunctionByUserNumber(model, from[i]->min_restraint_function->usernum);
+        if (from[i]->max_restraint_function)
+            to[i]->max_restraint_function = getFunctionByUserNumber(model, from[i]->max_restraint_function->usernum);
 
 #if INCLUDE_MOCAP_MODULE
       mstrcpy(&to[i]->mocap_segment, from[i]->mocap_segment);
@@ -1746,9 +1746,9 @@ ModelStruct* copy_model(ModelStruct* ms)
    mstrcpy(&copy->lengthUnits, ms->lengthUnits);
    mstrcpy(&copy->HTRtranslationUnits, ms->HTRtranslationUnits);
 
-	for (i=0; i<2*GENBUFFER; i++)
-		if (ms->genc_help[i].text)
-			mstrcpy(&copy->genc_help[i].text, ms->genc_help[i].text);
+    for (i=0; i<2*GENBUFFER; i++)
+        if (ms->genc_help[i].text)
+            mstrcpy(&copy->genc_help[i].text, ms->genc_help[i].text);
 
    // copy pathptrs
    copy->pathptrs = NULL;
@@ -1781,12 +1781,12 @@ ModelStruct* copy_model(ModelStruct* ms)
       mstrcpy(&copy->motionfilename[i], ms->motionfilename[i]);
    mstrcpy(&copy->mocap_dir, ms->mocap_dir);
 
-	// Functions must be copied first so that all components that use them can
-	// get the appropriate pointer from the copied function array.
+    // Functions must be copied first so that all components that use them can
+    // get the appropriate pointer from the copied function array.
    copy->function = copy_functions(ms->function, ms->func_array_size, &copy->func_array_size);
 
-	// Gencoords must be copied before joints because DOFs contain pointers
-	// to gencoords.
+    // Gencoords must be copied before joints because DOFs contain pointers
+    // to gencoords.
    copy->gencgroup = copy_gencoord_groups(ms->gencgroup, ms->numgencgroups);
    copy->gencgroup_array_size = ms->numgencgroups;
    copy->gencoord = copy_gencoords(copy, ms->gencoord, ms->numgencoords);
@@ -1795,7 +1795,7 @@ ModelStruct* copy_model(ModelStruct* ms)
    copy->worldobj = copy_world_objects(ms->worldobj, ms->numworldobjects);
    copy->world_array_size = ms->numworldobjects;
 
-	// Segments have to be copied before joints, because of joint->in_seg_ground_path.
+    // Segments have to be copied before joints, because of joint->in_seg_ground_path.
    copy->seggroup = copy_segment_groups(ms->seggroup, ms->numseggroups);
    copy->seggroup_array_size = ms->numseggroups;
    copy->segment = copy_segments(ms->segment, ms->numsegments);
@@ -1841,7 +1841,7 @@ ModelStruct* copy_model(ModelStruct* ms)
 }
 
 static ReturnCode copy_nondefault_dyn_params(dpMuscleStruct* from, dpMuscleStruct* to,
-					                              dpMuscleStruct* deffrom, dpMuscleStruct* defto)
+                                                  dpMuscleStruct* deffrom, dpMuscleStruct* defto)
 {
    int i;
 
@@ -1933,18 +1933,18 @@ ReturnCode alloc_func(dpFunction** func, int size)
 /* Given a gencoord struct, return the QStruct that has the same name */
 static dpQStruct* get_q_from_gencoord_dp(dpModelStruct* model, GeneralizedCoord *genc)
 {
-	int i;
+    int i;
 
    if (model->q == NULL)
       return NULL;
 
-	for (i=0; i<model->nq; i++)
-	{
+    for (i=0; i<model->nq; i++)
+    {
       if (&model->q[i] == NULL)
          return NULL;
-		if (STRINGS_ARE_EQUAL(genc->name, model->q[i].name))
-			return &model->q[i];
-	}
+        if (STRINGS_ARE_EQUAL(genc->name, model->q[i].name))
+            return &model->q[i];
+    }
 
-	return NULL;
+    return NULL;
 }

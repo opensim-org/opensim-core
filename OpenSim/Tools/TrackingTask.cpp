@@ -45,15 +45,15 @@ using namespace OpenSim;
  */
 TrackingTask::~TrackingTask()
 {
-	if(_pTrk[0]!=NULL) { delete _pTrk[0];  _pTrk[0]=NULL; }
-	if(_pTrk[1]!=NULL) { delete _pTrk[1];  _pTrk[1]=NULL; }
-	if(_pTrk[2]!=NULL) { delete _pTrk[2];  _pTrk[2]=NULL; }
-	if(_vTrk[0]!=NULL) { delete _vTrk[0];  _vTrk[0]=NULL; }
-	if(_vTrk[1]!=NULL) { delete _vTrk[1];  _vTrk[1]=NULL; }
-	if(_vTrk[2]!=NULL) { delete _vTrk[2];  _vTrk[2]=NULL; }
-	if(_aTrk[0]!=NULL) { delete _aTrk[0];  _aTrk[0]=NULL; }
-	if(_aTrk[1]!=NULL) { delete _aTrk[1];  _aTrk[1]=NULL; }
-	if(_aTrk[2]!=NULL) { delete _aTrk[2];  _aTrk[2]=NULL; }
+    if(_pTrk[0]!=NULL) { delete _pTrk[0];  _pTrk[0]=NULL; }
+    if(_pTrk[1]!=NULL) { delete _pTrk[1];  _pTrk[1]=NULL; }
+    if(_pTrk[2]!=NULL) { delete _pTrk[2];  _pTrk[2]=NULL; }
+    if(_vTrk[0]!=NULL) { delete _vTrk[0];  _vTrk[0]=NULL; }
+    if(_vTrk[1]!=NULL) { delete _vTrk[1];  _vTrk[1]=NULL; }
+    if(_vTrk[2]!=NULL) { delete _vTrk[2];  _vTrk[2]=NULL; }
+    if(_aTrk[0]!=NULL) { delete _aTrk[0];  _aTrk[0]=NULL; }
+    if(_aTrk[1]!=NULL) { delete _aTrk[1];  _aTrk[1]=NULL; }
+    if(_aTrk[2]!=NULL) { delete _aTrk[2];  _aTrk[2]=NULL; }
 }
 //_____________________________________________________________________________
 /**
@@ -63,7 +63,7 @@ TrackingTask::TrackingTask():
 _on(_propOn.getValueBool()),
 _w(_propW.getValueDblArray())
 {
-	setNull();
+    setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -72,12 +72,12 @@ _w(_propW.getValueDblArray())
  * @param aTask Task object to be copied.
  */
 TrackingTask::TrackingTask(const TrackingTask& aTask) :
-	Object(aTask),
-	_on(_propOn.getValueBool()),
-	_w(_propW.getValueDblArray())
+    Object(aTask),
+    _on(_propOn.getValueBool()),
+    _w(_propW.getValueDblArray())
 {
-	setNull();
-	copyData(aTask);
+    setNull();
+    copyData(aTask);
 }
 
 
@@ -91,14 +91,14 @@ TrackingTask::TrackingTask(const TrackingTask& aTask) :
 void TrackingTask::
 setNull()
 {
-	setName(DEFAULT_NAME);
-	setupProperties();
+    setName(DEFAULT_NAME);
+    setupProperties();
 
-	_model = NULL;
-	_nTrk = 0;
-	_pTrk[0] = _pTrk[1] = _pTrk[2] = NULL;
-	_vTrk[0] = _vTrk[1] = _vTrk[2] = NULL;
-	_aTrk[0] = _aTrk[1] = _aTrk[2] = NULL;
+    _model = NULL;
+    _nTrk = 0;
+    _pTrk[0] = _pTrk[1] = _pTrk[2] = NULL;
+    _vTrk[0] = _vTrk[1] = _vTrk[2] = NULL;
+    _aTrk[0] = _aTrk[1] = _aTrk[2] = NULL;
 }
 //_____________________________________________________________________________
 /**
@@ -107,17 +107,17 @@ setNull()
 void TrackingTask::
 setupProperties()
 {
-	_propOn.setComment("Flag (true or false) indicating whether or not a task is enabled.");
-	_propOn.setName("on");
-	_propOn.setValue(true);
-	_propertySet.append(&_propOn);
+    _propOn.setComment("Flag (true or false) indicating whether or not a task is enabled.");
+    _propOn.setName("on");
+    _propOn.setValue(true);
+    _propertySet.append(&_propOn);
 
-	Array<double> weight(1.0,3);
-	_propW.setComment("Weight with which a task is tracked relative to other tasks. "
-		"To track a task more tightly, make the weight larger.");
-	_propW.setName("weight");
-	_propW.setValue(weight);
-	_propertySet.append(&_propW);
+    Array<double> weight(1.0,3);
+    _propW.setComment("Weight with which a task is tracked relative to other tasks. "
+        "To track a task more tightly, make the weight larger.");
+    _propW.setName("weight");
+    _propW.setValue(weight);
+    _propertySet.append(&_propW);
 }
 
 //_____________________________________________________________________________
@@ -129,9 +129,9 @@ setupProperties()
 void TrackingTask::
 copyData(const TrackingTask &aTask)
 {
-	_model = aTask.getModel();
-	setOn(aTask.getOn());
-	_w = aTask._w;
+    _model = aTask.getModel();
+    setOn(aTask.getOn());
+    _w = aTask._w;
 }
 
 
@@ -150,13 +150,13 @@ copyData(const TrackingTask &aTask)
 TrackingTask& TrackingTask::
 operator=(const TrackingTask &aTask)
 {
-	// BASE CLASS
-	Object::operator =(aTask);
+    // BASE CLASS
+    Object::operator =(aTask);
 
-	// DATA
-	copyData(aTask);
+    // DATA
+    copyData(aTask);
 
-	return(*this);
+    return(*this);
 }
 
 
@@ -175,7 +175,7 @@ operator=(const TrackingTask &aTask)
 void TrackingTask::
 setModel(Model& aModel)
 {
-	_model = &aModel;
+    _model = &aModel;
 }
 
 //_____________________________________________________________________________
@@ -187,7 +187,7 @@ setModel(Model& aModel)
 Model* TrackingTask::
 getModel() const
 {
-	return(_model);
+    return(_model);
 }
 
 //-----------------------------------------------------------------------------
@@ -202,7 +202,7 @@ getModel() const
 void TrackingTask::
 setOn(bool aTrueFalse)
 {
-	_on = aTrueFalse;
+    _on = aTrueFalse;
 }
 //_____________________________________________________________________________
 /**
@@ -213,7 +213,7 @@ setOn(bool aTrueFalse)
 bool TrackingTask::
 getOn() const
 {
-	return(_on);
+    return(_on);
 }
 
 //-----------------------------------------------------------------------------
@@ -230,9 +230,9 @@ getOn() const
 void TrackingTask::
 setWeight(double aW0,double aW1,double aW2)
 {
-	_w[0] = aW0;
-	_w[1] = aW1;
-	_w[2] = aW2;
+    _w[0] = aW0;
+    _w[1] = aW1;
+    _w[2] = aW2;
 }
 //_____________________________________________________________________________
 /**
@@ -244,9 +244,9 @@ setWeight(double aW0,double aW1,double aW2)
 double TrackingTask::
 getWeight(int aWhich) const
 {
-	if(aWhich<0) return(0.0);
-	if(aWhich>2) return(0.0);
-	return(_w[aWhich]);
+    if(aWhich<0) return(0.0);
+    if(aWhich>2) return(0.0);
+    return(_w[aWhich]);
 }
 
 //-----------------------------------------------------------------------------
@@ -261,7 +261,7 @@ getWeight(int aWhich) const
 int TrackingTask::
 getNumTaskFunctions() const
 {
-	return(_nTrk);
+    return(_nTrk);
 }
 
 //_____________________________________________________________________________
@@ -275,13 +275,13 @@ getNumTaskFunctions() const
  * @param aF2 Function for track goal 2.
  */
 void TrackingTask::setTaskFunctions(Function *aF0,
-				 Function *aF1,Function *aF2)
+                 Function *aF1,Function *aF2)
 {
-	if(_pTrk[0]!=NULL) { delete _pTrk[0];  _pTrk[0]=NULL; }
-	if(_pTrk[1]!=NULL) { delete _pTrk[1];  _pTrk[1]=NULL; }
-	if(_pTrk[2]!=NULL) { delete _pTrk[2];  _pTrk[2]=NULL; }
+    if(_pTrk[0]!=NULL) { delete _pTrk[0];  _pTrk[0]=NULL; }
+    if(_pTrk[1]!=NULL) { delete _pTrk[1];  _pTrk[1]=NULL; }
+    if(_pTrk[2]!=NULL) { delete _pTrk[2];  _pTrk[2]=NULL; }
 
-	if(aF0!=NULL) _pTrk[0] = aF0->clone();
-	if(aF1!=NULL) _pTrk[1] = aF1->clone();
-	if(aF2!=NULL) _pTrk[2] = aF2->clone();
+    if(aF0!=NULL) _pTrk[0] = aF0->clone();
+    if(aF1!=NULL) _pTrk[1] = aF1->clone();
+    if(aF2!=NULL) _pTrk[2] = aF2->clone();
 }

@@ -35,19 +35,19 @@ using namespace std;
 
 int main()
 {
-	try {
-		InverseDynamicsTool id1("arm26_Setup_InverseDynamics.xml");
-		id1.run();
-		Storage result1("Results/arm26_InverseDynamics.sto"), standard1("std_arm26_InverseDynamics.sto");
-		CHECK_STORAGE_AGAINST_STANDARD( result1, standard1, Array<double>(1e-2, 23), __FILE__, __LINE__, "testArm failed");
-		cout << "testArm passed" << endl;
+    try {
+        InverseDynamicsTool id1("arm26_Setup_InverseDynamics.xml");
+        id1.run();
+        Storage result1("Results/arm26_InverseDynamics.sto"), standard1("std_arm26_InverseDynamics.sto");
+        CHECK_STORAGE_AGAINST_STANDARD( result1, standard1, Array<double>(1e-2, 23), __FILE__, __LINE__, "testArm failed");
+        cout << "testArm passed" << endl;
 
-		InverseDynamicsTool id2("subject01_Setup_InverseDynamics.xml");
-		id2.run();
-		Storage result2("Results/subject01_InverseDynamics.sto"), standard2("std_subject01_InverseDynamics.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(2.0, 23), __FILE__, __LINE__, "testGait failed");
-		cout << "testGait passed" << endl;
-	}
+        InverseDynamicsTool id2("subject01_Setup_InverseDynamics.xml");
+        id2.run();
+        Storage result2("Results/subject01_InverseDynamics.sto"), standard2("std_subject01_InverseDynamics.sto");
+        CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(2.0, 23), __FILE__, __LINE__, "testGait failed");
+        cout << "testGait passed" << endl;
+    }
     catch (const Exception& e) {
         e.print(cerr);
         return 1;

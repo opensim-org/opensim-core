@@ -36,22 +36,22 @@ using namespace std;
 // LoadLibrary used to be a macro for dlopen but we want to transparently support
 // adding the "lib" prefix to library names when loading them, so made it a function
 static void *LoadLibrary(const std::string &name, std::string &actualNameLoaded) {
-	void *lib = dlopen(name.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-	if(!lib) {
-		std::string libName = OpenSim::IO::GetFileNameFromURI(name);
-		if(libName.size()<3 || libName.substr(0,3)!="lib") { // if it doesn't already have lib prefix
-			libName = OpenSim::IO::getParentDirectory(name) + "lib" + libName;
-			//std::cout << "Loading " << name << " failed, trying " << libName << " (for linux compatibility)" << std::endl;
-			lib = dlopen(libName.c_str(), RTLD_LAZY | RTLD_GLOBAL); 
-		}
-	}
-	return lib;
+    void *lib = dlopen(name.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+    if(!lib) {
+        std::string libName = OpenSim::IO::GetFileNameFromURI(name);
+        if(libName.size()<3 || libName.substr(0,3)!="lib") { // if it doesn't already have lib prefix
+            libName = OpenSim::IO::getParentDirectory(name) + "lib" + libName;
+            //std::cout << "Loading " << name << " failed, trying " << libName << " (for linux compatibility)" << std::endl;
+            lib = dlopen(libName.c_str(), RTLD_LAZY | RTLD_GLOBAL); 
+        }
+    }
+    return lib;
 }
 #define LoadLibraryError() { char* err=dlerror(); if(err) cout<<"dlerror: "<<err<<endl; }
 #else
 HINSTANCE LoadLibrary(const std::string &name, std::string &actualNameLoaded) {
-	actualNameLoaded = name;
-	return LoadLibrary(name.c_str());
+    actualNameLoaded = name;
+    return LoadLibrary(name.c_str());
 }
 #define LoadLibraryError()
 #endif
@@ -77,67 +77,67 @@ OPENSIM_PORTABLE_HMODULE
 WINAPI
 OpenSim::LoadOpenSimLibrary(const std::string &lpLibFileName, bool verbose)
 {
-	string libraryExtension;
+    string libraryExtension;
 #ifdef __linux__
-	libraryExtension=".so";
+    libraryExtension=".so";
 #endif
-	string fixedLibFileName = IO::FixSlashesInFilePath(lpLibFileName);
-	string actualLibFileName = fixedLibFileName + libraryExtension;
-	static const string debugSuffix="_d";
-	bool hasDebugSuffix = (IO::GetSuffix(fixedLibFileName,(int)debugSuffix.size())==debugSuffix);
-	string actualNameLoaded;
+    string fixedLibFileName = IO::FixSlashesInFilePath(lpLibFileName);
+    string actualLibFileName = fixedLibFileName + libraryExtension;
+    static const string debugSuffix="_d";
+    bool hasDebugSuffix = (IO::GetSuffix(fixedLibFileName,(int)debugSuffix.size())==debugSuffix);
+    string actualNameLoaded;
 
-	OPENSIM_PORTABLE_HINSTANCE libraryHandle = NULL;
+    OPENSIM_PORTABLE_HINSTANCE libraryHandle = NULL;
 
-	// If we're in debug mode and a release library is specified, or we're in release
-	// mode and a debug library is specified, we'll first try loading the debug library,
-	// and then try loading the release library.
-	bool tryDebugThenRelease = false;
+    // If we're in debug mode and a release library is specified, or we're in release
+    // mode and a debug library is specified, we'll first try loading the debug library,
+    // and then try loading the release library.
+    bool tryDebugThenRelease = false;
 #ifdef _DEBUG
-	if(!hasDebugSuffix) {
-		if(verbose) cout << "Will try loading debug library first" << endl;
-		tryDebugThenRelease = true;
-	}
+    if(!hasDebugSuffix) {
+        if(verbose) cout << "Will try loading debug library first" << endl;
+        tryDebugThenRelease = true;
+    }
 #else
-	if(hasDebugSuffix) {
-		if(verbose) cout << "WARNING: Trying to load a debug library into release osimSimulation" << endl;
-		tryDebugThenRelease = true;
-	}
+    if(hasDebugSuffix) {
+        if(verbose) cout << "WARNING: Trying to load a debug library into release osimSimulation" << endl;
+        tryDebugThenRelease = true;
+    }
 #endif
 
-	if(tryDebugThenRelease) {
-		if(hasDebugSuffix) IO::RemoveSuffix(fixedLibFileName,(int)debugSuffix.size());
-		string debugLibFileName = fixedLibFileName + debugSuffix + libraryExtension;
-		string releaseLibFileName = fixedLibFileName + libraryExtension;
-		if ((libraryHandle = LoadLibrary(debugLibFileName,actualNameLoaded))) {
-			if(verbose) cout << "Loaded library " << actualNameLoaded << endl;
-		} else {
-			LoadLibraryError();
-			if(verbose) cout << "Loading of debug library " << debugLibFileName << " Failed. Trying " << releaseLibFileName << endl;
-			if ((libraryHandle = LoadLibrary(releaseLibFileName,actualNameLoaded))) {
-				if(verbose) cout << "Loaded library " << actualNameLoaded << endl;
-			} else {
-				LoadLibraryError();
-				if(verbose) cout << "Failed to load either debug or release library " << releaseLibFileName << endl;
-			}
-		}
-	} else {
-		if ((libraryHandle = LoadLibrary(actualLibFileName,actualNameLoaded))) {
-			if(verbose) cout << "Loaded library " << actualNameLoaded << endl;
-		} else {
-			LoadLibraryError();
-			if(verbose) cout << "Failed to load library " << actualLibFileName << endl;
-		}
-	}
+    if(tryDebugThenRelease) {
+        if(hasDebugSuffix) IO::RemoveSuffix(fixedLibFileName,(int)debugSuffix.size());
+        string debugLibFileName = fixedLibFileName + debugSuffix + libraryExtension;
+        string releaseLibFileName = fixedLibFileName + libraryExtension;
+        if ((libraryHandle = LoadLibrary(debugLibFileName,actualNameLoaded))) {
+            if(verbose) cout << "Loaded library " << actualNameLoaded << endl;
+        } else {
+            LoadLibraryError();
+            if(verbose) cout << "Loading of debug library " << debugLibFileName << " Failed. Trying " << releaseLibFileName << endl;
+            if ((libraryHandle = LoadLibrary(releaseLibFileName,actualNameLoaded))) {
+                if(verbose) cout << "Loaded library " << actualNameLoaded << endl;
+            } else {
+                LoadLibraryError();
+                if(verbose) cout << "Failed to load either debug or release library " << releaseLibFileName << endl;
+            }
+        }
+    } else {
+        if ((libraryHandle = LoadLibrary(actualLibFileName,actualNameLoaded))) {
+            if(verbose) cout << "Loaded library " << actualNameLoaded << endl;
+        } else {
+            LoadLibraryError();
+            if(verbose) cout << "Failed to load library " << actualLibFileName << endl;
+        }
+    }
 
-	return libraryHandle;
+    return libraryHandle;
 }
 
 OSIMCOMMON_API void
 OpenSim::LoadOpenSimLibrary(const std::string &aLibraryName)
 {
-	OPENSIM_PORTABLE_HINSTANCE library = LoadOpenSimLibrary(aLibraryName.c_str(), false);
-	if(!library) { cout<<"ERROR- library "<<aLibraryName<<" could not be loaded.\n\n"; }
+    OPENSIM_PORTABLE_HINSTANCE library = LoadOpenSimLibrary(aLibraryName.c_str(), false);
+    if(!library) { cout<<"ERROR- library "<<aLibraryName<<" could not be loaded.\n\n"; }
 }
 
 //_____________________________________________________________________________
@@ -153,21 +153,21 @@ OpenSim::LoadOpenSimLibrary(const std::string &aLibraryName)
 OSIMCOMMON_API void 
 OpenSim::LoadOpenSimLibraries(int argc,char **argv)
 {
-	int i;
-	string option;
-	OPENSIM_PORTABLE_HINSTANCE library;
-	for(i=0;i<argc;i++) {
-		if(argv[i][0]!='-') continue;
-		option = argv[i];
-		if((i+1)>=argc) break;  // no more arguments.
-		if((option=="-Library")||(option=="-L")) {
-			string libraryName = argv[i+1];
-			library = LoadOpenSimLibrary(libraryName.c_str(), true);
-			if(library==NULL) {
-				cout<<"ERROR- library "<<libraryName<<" could not be loaded.\n" << endl;
-			} else {
-				i++;
-			}
-		}
-	}
+    int i;
+    string option;
+    OPENSIM_PORTABLE_HINSTANCE library;
+    for(i=0;i<argc;i++) {
+        if(argv[i][0]!='-') continue;
+        option = argv[i];
+        if((i+1)>=argc) break;  // no more arguments.
+        if((option=="-Library")||(option=="-L")) {
+            string libraryName = argv[i+1];
+            library = LoadOpenSimLibrary(libraryName.c_str(), true);
+            if(library==NULL) {
+                cout<<"ERROR- library "<<libraryName<<" could not be loaded.\n" << endl;
+            } else {
+                i++;
+            }
+        }
+    }
 }

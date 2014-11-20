@@ -48,7 +48,7 @@ class OSIMSIMULATION_API EllipsoidJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(EllipsoidJoint, Joint);
 
 private:
-	static const int _numMobilities = 3;
+    static const int _numMobilities = 3;
 //=============================================================================
 // DATA
 //=============================================================================
@@ -59,31 +59,31 @@ public:
     /** @name Property declarations
     These are the serializable properties associated with an EllipsoidJoint. **/
     /**@{**/
-	OpenSim_DECLARE_PROPERTY(radii_x_y_z, SimTK::Vec3,
-		"Radii of the ellipsoid fixed to the parent frame, "
-		"specified as a Vec3(rX, rY, rZ).");
-	/**@}**/
+    OpenSim_DECLARE_PROPERTY(radii_x_y_z, SimTK::Vec3,
+        "Radii of the ellipsoid fixed to the parent frame, "
+        "specified as a Vec3(rX, rY, rZ).");
+    /**@}**/
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION
-	EllipsoidJoint();
-	// convenience constructor
-	EllipsoidJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-				OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
-				SimTK::Vec3 ellipsoidRadii, bool reverse=false);
+    // CONSTRUCTION
+    EllipsoidJoint();
+    // convenience constructor
+    EllipsoidJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
+                OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
+                SimTK::Vec3 ellipsoidRadii, bool reverse=false);
 
-	virtual ~EllipsoidJoint();
+    virtual ~EllipsoidJoint();
 
-	int numCoordinates() const override { return _numMobilities; }
+    int numCoordinates() const override { return _numMobilities; }
 
-	//Set properties
-	void setEllipsoidRadii(const SimTK::Vec3& radii);
+    //Set properties
+    void setEllipsoidRadii(const SimTK::Vec3& radii);
 
-	// SCALE
-	void scale(const ScaleSet& aScaleSet) override;
+    // SCALE
+    void scale(const ScaleSet& aScaleSet) override;
 
 protected:
     // ModelComponent interface.
@@ -92,17 +92,17 @@ protected:
     void extendSetPropertiesFromState(const SimTK::State& state) override;
 
     // Visual support in SimTK visualizer
-	void generateDecorations(
+    void generateDecorations(
         bool fixed,
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const;
 
 private:
-	void constructProperties();
+    void constructProperties();
 
 //=============================================================================
-};	// END of class EllipsoidJoint
+};  // END of class EllipsoidJoint
 //=============================================================================
 //=============================================================================
 

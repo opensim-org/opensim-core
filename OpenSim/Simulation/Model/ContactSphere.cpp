@@ -36,8 +36,8 @@ ContactSphere::ContactSphere(double radius, const SimTK::Vec3& location, Body& b
     ContactGeometry(location, SimTK::Vec3(0.0), body),
     _radius(_radiusProp.getValueDbl())
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
     _radius = radius;
 }
 
@@ -45,8 +45,8 @@ ContactSphere::ContactSphere(double radius, const SimTK::Vec3& location, Body& b
     ContactGeometry(location, SimTK::Vec3(0.0), body),
     _radius(_radiusProp.getValueDbl())
 {
-	setNull();
-	setupProperties();
+    setNull();
+    setupProperties();
     _radius = radius;
     setName(name);
 }
@@ -55,20 +55,20 @@ ContactSphere::ContactSphere(const ContactSphere& geom) :
     ContactGeometry(geom),
     _radius(_radiusProp.getValueDbl())
 {
-	setNull();
-	setupProperties();
-	_radius = geom._radius;
+    setNull();
+    setupProperties();
+    _radius = geom._radius;
 }
 
 void ContactSphere::setNull()
 {
-	setAuthors("Peter Eastman");
+    setAuthors("Peter Eastman");
 }
 
 void ContactSphere::setupProperties()
 {
-	_radiusProp.setName("radius");
-	_propertySet.append(&_radiusProp);
+    _radiusProp.setName("radius");
+    _propertySet.append(&_radiusProp);
 }
 
 
@@ -84,7 +84,7 @@ void ContactSphere::setRadius(double radius)
 
 SimTK::ContactGeometry ContactSphere::createSimTKContactGeometry()
 {
-	_displayer.addGeometry(AnalyticSphere::createSphere(_radius));
+    _displayer.addGeometry(AnalyticSphere::createSphere(_radius));
     return SimTK::ContactGeometry::Sphere(_radius);
 }
 
@@ -103,7 +103,7 @@ void ContactSphere::generateDecorations(bool fixed, const ModelDisplayHints& hin
     geometry.push_back(SimTK::DecorativeSphere(getRadius())
                            .setTransform(Transform(getLocation()))
                            //.setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
-						   .setBodyId(getBody().getMobilizedBodyIndex())
+                           .setBodyId(getBody().getMobilizedBodyIndex())
                            .setColor(SimTK::Vec3(0,1,0))
                            .setOpacity(0.5));
 }

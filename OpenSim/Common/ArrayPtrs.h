@@ -64,20 +64,20 @@ template<class T> class ArrayPtrs
 // DATA
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 protected:
-	/** Flag indicating whether this ArrayPtrs object is responsible for
-	(owns) the memory associated with the pointers in its array and therefore
-	should issue deletes for the pointers upon destruction.  By default,
-	_memoryOwner = true. */
-	bool _memoryOwner;
-	/** Size of the array.  Also the index of the first empty array element. */
-	int _size;
-	/** Current capacity of the array. */
-	int _capacity;
-	/** Increment by which the current capacity is increased when the capacity
-	of this array is reached.  If negative, capacity doubles. */
-	int _capacityIncrement;
-	/** Array of pointers to objects of type T. */
-	T **_array;
+    /** Flag indicating whether this ArrayPtrs object is responsible for
+    (owns) the memory associated with the pointers in its array and therefore
+    should issue deletes for the pointers upon destruction.  By default,
+    _memoryOwner = true. */
+    bool _memoryOwner;
+    /** Size of the array.  Also the index of the first empty array element. */
+    int _size;
+    /** Current capacity of the array. */
+    int _capacity;
+    /** Increment by which the current capacity is increased when the capacity
+    of this array is reached.  If negative, capacity doubles. */
+    int _capacityIncrement;
+    /** Array of pointers to objects of type T. */
+    T **_array;
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // METHODS
@@ -97,11 +97,11 @@ public:
  */
 virtual ~ArrayPtrs()
 {
-	if(_memoryOwner) clearAndDestroy();
+    if(_memoryOwner) clearAndDestroy();
 
-	// ARRAY
-	delete[] _array;
-	_array = NULL;
+    // ARRAY
+    delete[] _array;
+    _array = NULL;
 }
 //_____________________________________________________________________________
 /**
@@ -112,11 +112,11 @@ virtual ~ArrayPtrs()
  */
 explicit ArrayPtrs(int aCapacity=1)
 {
-	setNull();
+    setNull();
 
-	// CAPACITY
-	if(aCapacity<1)  aCapacity = 1;
-	ensureCapacity(aCapacity);
+    // CAPACITY
+    if(aCapacity<1)  aCapacity = 1;
+    ensureCapacity(aCapacity);
 
 }
 //_____________________________________________________________________________
@@ -127,8 +127,8 @@ explicit ArrayPtrs(int aCapacity=1)
  */
 ArrayPtrs(const ArrayPtrs<T> &aArray)
 {
-	setNull();
-	*this = aArray;
+    setNull();
+    *this = aArray;
 }
 
 
@@ -139,11 +139,11 @@ private:
  */
 void setNull()
 {
-	_memoryOwner = true;
-	_size = 0;
-	_capacityIncrement = -1;
-	_capacity = 0;
-	_array = NULL;
+    _memoryOwner = true;
+    _size = 0;
+    _capacityIncrement = -1;
+    _capacity = 0;
+    _array = NULL;
 }
 
 public:
@@ -158,14 +158,14 @@ public:
  */
 void clearAndDestroy()
 {
-	if(_array==NULL) return;
-	
-	int i;
-	for(i=0;i<_size;i++) {
-		delete _array[i];  _array[i]=NULL;
-	}
+    if(_array==NULL) return;
+    
+    int i;
+    for(i=0;i<_size;i++) {
+        delete _array[i];  _array[i]=NULL;
+    }
 
-	_size = 0;
+    _size = 0;
 }
 
 
@@ -191,26 +191,26 @@ public:
 #ifndef SWIG
 ArrayPtrs<T>& operator=(const ArrayPtrs<T> &aArray)
 {
-	// DELETE OLD ARRAY
-	if(_memoryOwner) clearAndDestroy();
+    // DELETE OLD ARRAY
+    if(_memoryOwner) clearAndDestroy();
 
-	// COPY MEMBER VARIABLES
-	_size = aArray._size;
-	_capacity = aArray._capacity;
-	_capacityIncrement = aArray._capacityIncrement;
+    // COPY MEMBER VARIABLES
+    _size = aArray._size;
+    _capacity = aArray._capacity;
+    _capacityIncrement = aArray._capacityIncrement;
 
-	// ARRAY
-	int i;
-	if(_array!=NULL) delete[] _array;
-	_array = new T*[_capacity];
-	for(i=0;i<_size;i++) {
-		if(aArray._array[i]!=NULL)  _array[i] = aArray._array[i]->clone();
-	}
+    // ARRAY
+    int i;
+    if(_array!=NULL) delete[] _array;
+    _array = new T*[_capacity];
+    for(i=0;i<_size;i++) {
+        if(aArray._array[i]!=NULL)  _array[i] = aArray._array[i]->clone();
+    }
 
-	// TAKE OWNERSHIP OF MEMORY
-	_memoryOwner = true;
+    // TAKE OWNERSHIP OF MEMORY
+    _memoryOwner = true;
 
-	return(*this);
+    return(*this);
 }
 
 //-----------------------------------------------------------------------------
@@ -229,14 +229,14 @@ ArrayPtrs<T>& operator=(const ArrayPtrs<T> &aArray)
  */
 bool operator==(const ArrayPtrs<T> &aArray) const
 {
-	if(_size != aArray._size) return(false);
+    if(_size != aArray._size) return(false);
 
-	int i;
-	for(i=0;i<_size;i++) {
-		if( !(_array[i]==aArray._array[i]) ) return(false);
-	}
+    int i;
+    for(i=0;i<_size;i++) {
+        if( !(_array[i]==aArray._array[i]) ) return(false);
+    }
 
-	return(true);
+    return(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -258,7 +258,7 @@ bool operator==(const ArrayPtrs<T> &aArray) const
  */
 T* operator[](int aIndex) const
 {
-	return( _array[aIndex] );
+    return( _array[aIndex] );
 }
 //_____________________________________________________________________________
 //-----------------------------------------------------------------------------
@@ -277,22 +277,22 @@ T* operator[](int aIndex) const
  */
 friend std::ostream& operator<<(std::ostream &aOut,const ArrayPtrs<T> &aArray)
 {
-	aOut << "ArrayPtrs[" << aArray.getSize() <<"] =";
+    aOut << "ArrayPtrs[" << aArray.getSize() <<"] =";
 
-	int i;
-	T* obj;
-	for(i=0;i<aArray.getSize();i++)  {
-		aOut << " ";
-		obj = aArray[i];
-		if(obj==NULL) {
-			aOut << "NULL";
-		} else {
-			// The following line is having trouble compiling on IRIX.
-			//aOut << *obj;
-		}
-	}
+    int i;
+    T* obj;
+    for(i=0;i<aArray.getSize();i++)  {
+        aOut << " ";
+        obj = aArray[i];
+        if(obj==NULL) {
+            aOut << "NULL";
+        } else {
+            // The following line is having trouble compiling on IRIX.
+            //aOut << *obj;
+        }
+    }
 
-	return(aOut);
+    return(aOut);
 }
 
 
@@ -310,7 +310,7 @@ friend std::ostream& operator<<(std::ostream &aOut,const ArrayPtrs<T> &aArray)
  */
 void setMemoryOwner(bool aTrueFalse)
 {
-	_memoryOwner = aTrueFalse;
+    _memoryOwner = aTrueFalse;
 }
 //_____________________________________________________________________________
 /**
@@ -325,7 +325,7 @@ void setMemoryOwner(bool aTrueFalse)
  */
 bool getMemoryOwner() const
 {
-	return(_memoryOwner);
+    return(_memoryOwner);
 }
 
 
@@ -356,26 +356,26 @@ bool getMemoryOwner() const
  */
 bool computeNewCapacity(int aMinCapacity,int &rNewCapacity)
 {
-	rNewCapacity = _capacity;
-	if(rNewCapacity < 1) rNewCapacity = 1;
+    rNewCapacity = _capacity;
+    if(rNewCapacity < 1) rNewCapacity = 1;
 
-	// CHECK FOR ZERO INCREMENT
-	if(_capacityIncrement == 0) {
-		std::cout << "ArrayPtrs.computeNewCapacity: WARN- capacity is set";
-		std::cout << " not to increase (i.e., _capacityIncrement==0).\n";
-		return(false);
-	}
+    // CHECK FOR ZERO INCREMENT
+    if(_capacityIncrement == 0) {
+        std::cout << "ArrayPtrs.computeNewCapacity: WARN- capacity is set";
+        std::cout << " not to increase (i.e., _capacityIncrement==0).\n";
+        return(false);
+    }
 
-	// INCREMENT UNTIL LARGER THAN THE MINIMUM SIZE
-	while(rNewCapacity < aMinCapacity) {
-		if(_capacityIncrement < 0) {
-			rNewCapacity = 2 * rNewCapacity;
-		} else {
-			rNewCapacity = rNewCapacity + _capacityIncrement;
-		}
-	}
+    // INCREMENT UNTIL LARGER THAN THE MINIMUM SIZE
+    while(rNewCapacity < aMinCapacity) {
+        if(_capacityIncrement < 0) {
+            rNewCapacity = 2 * rNewCapacity;
+        } else {
+            rNewCapacity = rNewCapacity + _capacityIncrement;
+        }
+    }
 
-	return(true);
+    return(true);
 }
 //_____________________________________________________________________________
 /**
@@ -387,32 +387,32 @@ bool computeNewCapacity(int aMinCapacity,int &rNewCapacity)
  */
 bool ensureCapacity(int aCapacity)
 {
-	// CHECK REQUESTED CAPACITY
-	if(aCapacity < 1) aCapacity = 1;
-	if(_capacity>=aCapacity) return(true);
+    // CHECK REQUESTED CAPACITY
+    if(aCapacity < 1) aCapacity = 1;
+    if(_capacity>=aCapacity) return(true);
 
-	// ALLOCATE THE NEW ARRAY
-	int i;
-	T **newArray = new T*[aCapacity];
-	if(newArray==NULL) {
-		std::cout << "ArrayPtrs.ensureCapacity: ERR- failed to increase capacity.\n";
-		return(false);
-	}
+    // ALLOCATE THE NEW ARRAY
+    int i;
+    T **newArray = new T*[aCapacity];
+    if(newArray==NULL) {
+        std::cout << "ArrayPtrs.ensureCapacity: ERR- failed to increase capacity.\n";
+        return(false);
+    }
 
-	// COPY CURRENT ARRAY
-	if(_array!=NULL) {
-		for(i=0;i<_size;i++) newArray[i] = _array[i];
-		for(i=_size;i<aCapacity;i++) newArray[i] = NULL;
-		delete[] _array;
-	} else {
-		for(i=0;i<aCapacity;i++) newArray[i] = NULL;
-	}
-	
-	// REASSIGN
-	_capacity = aCapacity;
-	_array = newArray;
+    // COPY CURRENT ARRAY
+    if(_array!=NULL) {
+        for(i=0;i<_size;i++) newArray[i] = _array[i];
+        for(i=_size;i<aCapacity;i++) newArray[i] = NULL;
+        delete[] _array;
+    } else {
+        for(i=0;i<aCapacity;i++) newArray[i] = NULL;
+    }
+    
+    // REASSIGN
+    _capacity = aCapacity;
+    _array = newArray;
 
-	return(true);
+    return(true);
 }
 
 //_____________________________________________________________________________
@@ -425,31 +425,31 @@ bool ensureCapacity(int aCapacity)
  */
 void trim()
 {
-	// COMPUTE NEW CAPACITY
-	int newCapacity = _size + 1;
-	if(newCapacity>=_capacity) return;
-	if(newCapacity<1) newCapacity = 1;
+    // COMPUTE NEW CAPACITY
+    int newCapacity = _size + 1;
+    if(newCapacity>=_capacity) return;
+    if(newCapacity<1) newCapacity = 1;
 
-	// TEMPORARY ARRAY
-	T **array = _array;
+    // TEMPORARY ARRAY
+    T **array = _array;
 
-	// ALLOCATE NEW ARRAY
-	_array = new T*[newCapacity];
-	if(_array==NULL) {
-		std::cout << "ArrayPtrs.trim: ERR- unable to allocate array.\n";
-		return;
-	}
+    // ALLOCATE NEW ARRAY
+    _array = new T*[newCapacity];
+    if(_array==NULL) {
+        std::cout << "ArrayPtrs.trim: ERR- unable to allocate array.\n";
+        return;
+    }
 
-	// RESET PREVIOUS VALUES
-	int i;
-	for(i=0;i<_size;i++) _array[i] = array[i];
-	_array[_size] = NULL;
+    // RESET PREVIOUS VALUES
+    int i;
+    for(i=0;i<_size;i++) _array[i] = array[i];
+    _array[_size] = NULL;
 
-	// SET CORRECT CAPACITY
-	_capacity = newCapacity;
+    // SET CORRECT CAPACITY
+    _capacity = newCapacity;
 
-	// DELETE OLD ARRAY
-	delete[] array;
+    // DELETE OLD ARRAY
+    delete[] array;
 }
 //_____________________________________________________________________________
 /**
@@ -457,7 +457,7 @@ void trim()
  */
 int getCapacity() const
 {
-	return(_capacity);
+    return(_capacity);
 }
 
 //-----------------------------------------------------------------------------
@@ -475,7 +475,7 @@ int getCapacity() const
  */
 void setCapacityIncrement(int aIncrement)
 {
-	_capacityIncrement = aIncrement;
+    _capacityIncrement = aIncrement;
 }
 //_____________________________________________________________________________
 /**
@@ -483,7 +483,7 @@ void setCapacityIncrement(int aIncrement)
  */
 int getCapacityIncrement() const
 {
-	return(_capacityIncrement);
+    return(_capacityIncrement);
 }
 #endif
 //=============================================================================
@@ -512,21 +512,21 @@ int getCapacityIncrement() const
  */
 bool setSize(int aSize)
 {
-	if(aSize==_size) return(true);
-	if(aSize>_size) return(false);
-	if(aSize<0) aSize = 0;
-	if(aSize<_size) {
-		int i;
-		for(i=(_size-1);i>=aSize;i--) {
-			if(_array[i]!=NULL) {
-				if(getMemoryOwner()) { delete _array[i]; }
-				_array[i] = NULL;
-			}
-		}
-		_size = aSize;
-	}
+    if(aSize==_size) return(true);
+    if(aSize>_size) return(false);
+    if(aSize<0) aSize = 0;
+    if(aSize<_size) {
+        int i;
+        for(i=(_size-1);i>=aSize;i--) {
+            if(_array[i]!=NULL) {
+                if(getMemoryOwner()) { delete _array[i]; }
+                _array[i] = NULL;
+            }
+        }
+        _size = aSize;
+    }
 
-	return(true);
+    return(true);
 }
 //_____________________________________________________________________________
 /**
@@ -536,7 +536,7 @@ bool setSize(int aSize)
  */
 int getSize() const
 {
-	return(_size);
+    return(_size);
 }
 
 /** Alternate name for getSize(). **/
@@ -558,21 +558,21 @@ int size() const {return getSize();}
  */
 int getIndex(const T *aObject,int aStartIndex=0) const
 {
-	if(aStartIndex<0) aStartIndex=0;
-	if(aStartIndex>=getSize()) aStartIndex=0;
+    if(aStartIndex<0) aStartIndex=0;
+    if(aStartIndex>=getSize()) aStartIndex=0;
 
-	// SEARCH STARTING FROM aStartIndex
-	int i;
-	for(i=aStartIndex;i<getSize();i++) {
-		if(_array[i] == aObject) return(i);
-	}
+    // SEARCH STARTING FROM aStartIndex
+    int i;
+    for(i=aStartIndex;i<getSize();i++) {
+        if(_array[i] == aObject) return(i);
+    }
 
-	// SEARCH FROM BEGINNING
-	for(i=0;i<aStartIndex;i++) {
-		if(_array[i] == aObject) return(i);
-	}
+    // SEARCH FROM BEGINNING
+    for(i=0;i<aStartIndex;i++) {
+        if(_array[i] == aObject) return(i);
+    }
 
-	return(-1);
+    return(-1);
 }
 //_____________________________________________________________________________
 /**
@@ -587,21 +587,21 @@ int getIndex(const T *aObject,int aStartIndex=0) const
  */
 int getIndex(const std::string &aName,int aStartIndex=0) const
 {
-	if(aStartIndex<0) aStartIndex=0;
-	if(aStartIndex>=getSize()) aStartIndex=0;
+    if(aStartIndex<0) aStartIndex=0;
+    if(aStartIndex>=getSize()) aStartIndex=0;
 
-	// SEARCH STARTING FROM aStartIndex
-	int i;
-	for(i=aStartIndex;i<getSize();i++) {
-		if(_array[i]->getName() == aName) return(i);
-	}
+    // SEARCH STARTING FROM aStartIndex
+    int i;
+    for(i=aStartIndex;i<getSize();i++) {
+        if(_array[i]->getName() == aName) return(i);
+    }
 
-	// SEARCH FROM BEGINNING
-	for(i=0;i<aStartIndex;i++) {
-		if(_array[i]->getName() == aName) return(i);
-	}
+    // SEARCH FROM BEGINNING
+    for(i=0;i<aStartIndex;i++) {
+        if(_array[i]->getName() == aName) return(i);
+    }
 
-	return(-1);
+    return(-1);
 }
 
 //-----------------------------------------------------------------------------
@@ -616,26 +616,26 @@ int getIndex(const std::string &aName,int aStartIndex=0) const
  */
 bool append(T *aObject)
 {
-	if(aObject==NULL) {
-		std::cout<<"ArrayPtrs.append: ERR- NULL pointer."<<std::endl;
-		return(false);
-	}
+    if(aObject==NULL) {
+        std::cout<<"ArrayPtrs.append: ERR- NULL pointer."<<std::endl;
+        return(false);
+    }
 
-	// ENSURE CAPACITY
-	if((_size+1)>=_capacity) {
-		int newCapacity;
-		bool success;
-		success = computeNewCapacity(_size+1,newCapacity);
-		if(!success) return(success);
-		success = ensureCapacity(newCapacity);
-		if(!success) return(success);
-	}
+    // ENSURE CAPACITY
+    if((_size+1)>=_capacity) {
+        int newCapacity;
+        bool success;
+        success = computeNewCapacity(_size+1,newCapacity);
+        if(!success) return(success);
+        success = ensureCapacity(newCapacity);
+        if(!success) return(success);
+    }
 
-	// SET
-	_array[_size] = aObject;
-	_size++;
+    // SET
+    _array[_size] = aObject;
+    _size++;
 
-	return(true);
+    return(true);
 }
 //_____________________________________________________________________________
 /**
@@ -646,15 +646,15 @@ bool append(T *aObject)
  */
 bool append(ArrayPtrs<T> &aArray)
 {
-	// LOOP THROUGH THE ELEMENTS
-	bool success;
-	int i,n=aArray.getSize();
-	for(i=0;i<n;i++) {
-		success = append(aArray[i]);
-		if(!success) return(success);
-	}
+    // LOOP THROUGH THE ELEMENTS
+    bool success;
+    int i,n=aArray.getSize();
+    for(i=0;i<n;i++) {
+        success = append(aArray[i]);
+        if(!success) return(success);
+    }
 
-	return(true);
+    return(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -678,44 +678,44 @@ bool append(ArrayPtrs<T> &aArray)
  */
 bool insert(int aIndex,T *aObject)
 {
-	// NULL POINTER
-	if(aObject==NULL) {
-		std::cout<<"ArrayPtrs.insert: ERR- NULL pointer."<<std::endl;
-		return(false);
-	}
+    // NULL POINTER
+    if(aObject==NULL) {
+        std::cout<<"ArrayPtrs.insert: ERR- NULL pointer."<<std::endl;
+        return(false);
+    }
 
-	// NEGATIVE INDEX
-	if(aIndex<0) {
-		std::cout << "ArrayPtrs.insert: ERR- aIndex was less than 0.\n";
-		return(false);
-	}
+    // NEGATIVE INDEX
+    if(aIndex<0) {
+        std::cout << "ArrayPtrs.insert: ERR- aIndex was less than 0.\n";
+        return(false);
+    }
 
-	// INDEX PAST END OF ARRAY
-	if(aIndex>_size) {
-		return(false);
-	}
+    // INDEX PAST END OF ARRAY
+    if(aIndex>_size) {
+        return(false);
+    }
 
-	// ENSURE CAPACITY
-	if((_size+1)>=_capacity) {
-		int newCapacity;
-		bool success;
-		success = computeNewCapacity(_size+1,newCapacity);
-		if(!success) return(success);
-		success = ensureCapacity(newCapacity);
-		if(!success) return(success);
-	}
+    // ENSURE CAPACITY
+    if((_size+1)>=_capacity) {
+        int newCapacity;
+        bool success;
+        success = computeNewCapacity(_size+1,newCapacity);
+        if(!success) return(success);
+        success = ensureCapacity(newCapacity);
+        if(!success) return(success);
+    }
 
-	// SHIFT ARRAY
-	int i;
-	for(i=_size;i>aIndex;i--) {
-		_array[i] = _array[i-1];
-	}
+    // SHIFT ARRAY
+    int i;
+    for(i=_size;i>aIndex;i--) {
+        _array[i] = _array[i-1];
+    }
 
-	// SET
-	_array[aIndex] = aObject;
-	_size++;
+    // SET
+    _array[aIndex] = aObject;
+    _size++;
 
-	return(true);
+    return(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -737,25 +737,25 @@ bool insert(int aIndex,T *aObject)
  */
 bool remove(int aIndex)
 {
-	if(aIndex<0) {
-		return(false);
-	}
-	if(aIndex>=_size) {
-		return(false);
-	}
+    if(aIndex<0) {
+        return(false);
+    }
+    if(aIndex>=_size) {
+        return(false);
+    }
 
-	// DELETE CURRENT OBJECT
-	if(getMemoryOwner()&&(_array[aIndex]!=NULL)) delete _array[aIndex];
+    // DELETE CURRENT OBJECT
+    if(getMemoryOwner()&&(_array[aIndex]!=NULL)) delete _array[aIndex];
 
-	// SHIFT ARRAY
-	int i;
-	_size--;
-	for(i=aIndex;i<_size;i++) {
-		_array[i] = _array[i+1];
-	}
-	_array[_size] = NULL;
+    // SHIFT ARRAY
+    int i;
+    _size--;
+    for(i=aIndex;i<_size;i++) {
+        _array[i] = _array[i+1];
+    }
+    _array[_size] = NULL;
 
-	return(true);
+    return(true);
 }
 //_____________________________________________________________________________
 /**
@@ -772,8 +772,8 @@ bool remove(int aIndex)
  */
 bool remove(const T* aObject)
 {
-	int index = getIndex(aObject);
-	return( remove(index) );
+    int index = getIndex(aObject);
+    return( remove(index) );
 }
 
 
@@ -797,21 +797,21 @@ bool remove(const T* aObject)
  */
 bool set(int aIndex,T *aObject)
 {
-	if(aIndex<0) return(false);
-	if(aIndex>_size) return(false);
+    if(aIndex<0) return(false);
+    if(aIndex>_size) return(false);
 
-	// APPEND
-	if(aIndex==_size) {
-		bool success;
-		success = append(aObject);
-		return(success);
-	}
+    // APPEND
+    if(aIndex==_size) {
+        bool success;
+        success = append(aObject);
+        return(success);
+    }
 
-	// SET
-	if(getMemoryOwner() && (_array[aIndex]!=NULL)) delete _array[aIndex];
-	_array[aIndex] = aObject;
+    // SET
+    if(getMemoryOwner() && (_array[aIndex]!=NULL)) delete _array[aIndex];
+    _array[aIndex] = aObject;
 
-	return(true);
+    return(true);
 }
 //_____________________________________________________________________________
 /**
@@ -831,15 +831,15 @@ bool set(int aIndex,T *aObject)
  */
 T* get(int aIndex)
 {
-	if((aIndex<0)||(aIndex>=_size)) {
-		throw(Exception("ArrayPtrs.get: Array index out of bounds."));
-	}
-	if(_array[aIndex]==NULL) {
-		throw(Exception("ArrayPtrs.get: NULL pointer.",
-			__FILE__,__LINE__));
-	}
+    if((aIndex<0)||(aIndex>=_size)) {
+        throw(Exception("ArrayPtrs.get: Array index out of bounds."));
+    }
+    if(_array[aIndex]==NULL) {
+        throw(Exception("ArrayPtrs.get: NULL pointer.",
+            __FILE__,__LINE__));
+    }
 
-	return(_array[aIndex]);
+    return(_array[aIndex]);
 }
 //_____________________________________________________________________________
 /**
@@ -860,15 +860,15 @@ T* get(int aIndex)
 #ifndef SWIG
 const T* get(int aIndex) const
 {
-	if((aIndex<0)||(aIndex>=_size)) {
-		throw(Exception("ArrayPtrs.get: Array index out of bounds."));
-	}
-	if(_array[aIndex]==NULL) {
-		throw(Exception("ArrayPtrs.get: NULL pointer.",
-			__FILE__,__LINE__));
-	}
+    if((aIndex<0)||(aIndex>=_size)) {
+        throw(Exception("ArrayPtrs.get: Array index out of bounds."));
+    }
+    if(_array[aIndex]==NULL) {
+        throw(Exception("ArrayPtrs.get: NULL pointer.",
+            __FILE__,__LINE__));
+    }
 
-	return(_array[aIndex]);
+    return(_array[aIndex]);
 }
 #endif
 //_____________________________________________________________________________
@@ -885,13 +885,13 @@ const T* get(int aIndex) const
  */
 T* get(const std::string &aName)
 {
-	int index = getIndex(aName);
-	if(index==-1) {
-		std::string msg = "ArrayPtrs.get(aName): No object with name ";
-		msg += aName;
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
-	return(_array[index]);
+    int index = getIndex(aName);
+    if(index==-1) {
+        std::string msg = "ArrayPtrs.get(aName): No object with name ";
+        msg += aName;
+        throw( Exception(msg,__FILE__,__LINE__) );
+    }
+    return(_array[index]);
 }
 //_____________________________________________________________________________
 /**
@@ -908,13 +908,13 @@ T* get(const std::string &aName)
 #ifndef SWIG
 const T* get(const std::string &aName) const
 {
-	int index = getIndex(aName);
-	if(index==-1) {
-		std::string msg = "ArrayPtrs.get(aName): No object with name ";
-		msg += aName;
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
-	return(_array[index]);
+    int index = getIndex(aName);
+    if(index==-1) {
+        std::string msg = "ArrayPtrs.get(aName): No object with name ";
+        msg += aName;
+        throw( Exception(msg,__FILE__,__LINE__) );
+    }
+    return(_array[index]);
 }
 #endif
 //_____________________________________________________________________________
@@ -926,10 +926,10 @@ const T* get(const std::string &aName) const
  */
 T* getLast() const
 {
-	if(_size<=0) {
-		throw(Exception("Array is empty."));
-	}
-	return(_array[_size-1]);
+    if(_size<=0) {
+        throw(Exception("Array is empty."));
+    }
+    return(_array[_size-1]);
 }
 
 
@@ -969,60 +969,60 @@ T* getLast() const
  * to aValue, -1 is returned.
  */
 int searchBinary(const T &aObject,bool aFindFirst=false,
-					  int aLo=-1,int aHi=-1) const
+                      int aLo=-1,int aHi=-1) const
 {
-	if(_size<=0) return(-1);
-	int lo = aLo;  if(lo<0) lo = 0;
-	int hi = aHi;  if((hi<0)||(hi>=_size)) hi = _size - 1;
-	int mid = -1;
+    if(_size<=0) return(-1);
+    int lo = aLo;  if(lo<0) lo = 0;
+    int hi = aHi;  if((hi<0)||(hi>=_size)) hi = _size - 1;
+    int mid = -1;
 
-	// CHECK lo AND hi
-	if(lo>hi) return(-1);
+    // CHECK lo AND hi
+    if(lo>hi) return(-1);
 
-	// SEARCH
-	while(lo <= hi) {
-		mid = (lo + hi) / 2;
-		if(aObject < *_array[mid]) {
-			hi = mid - 1;
-		} else if(*_array[mid] < aObject) {
-			lo = mid + 1;
-		} else {
-			break;
-		}
-	}
+    // SEARCH
+    while(lo <= hi) {
+        mid = (lo + hi) / 2;
+        if(aObject < *_array[mid]) {
+            hi = mid - 1;
+        } else if(*_array[mid] < aObject) {
+            lo = mid + 1;
+        } else {
+            break;
+        }
+    }
 
-	// MAKE SURE LESS THAN
-	if(aObject < *_array[mid]) mid--;
-	if(mid<=0) {
-		return(mid);
-	}
+    // MAKE SURE LESS THAN
+    if(aObject < *_array[mid]) mid--;
+    if(mid<=0) {
+        return(mid);
+    }
 
-	// FIND FIRST
-	if(aFindFirst) {
-		if(*_array[mid-1]<*_array[mid]) {
-			return(mid);
-		}
-		lo = aLo;  if(lo<0) lo = 0;
-		hi = mid;
-		int mid2 = mid;
-		T *obj2 = _array[mid];
-		while(lo <= hi) {
-			mid2 = (lo + hi) / 2;
-			if(*_array[mid2] == *obj2) {
-				hi = mid2 - 1;
-			} else if(*_array[mid2] < *obj2) {
-				lo = mid2 + 1;
-			}
-		}
-		if(*_array[mid2] < *obj2) mid2++;
-		if(mid2<mid) mid = mid2;
-	}
+    // FIND FIRST
+    if(aFindFirst) {
+        if(*_array[mid-1]<*_array[mid]) {
+            return(mid);
+        }
+        lo = aLo;  if(lo<0) lo = 0;
+        hi = mid;
+        int mid2 = mid;
+        T *obj2 = _array[mid];
+        while(lo <= hi) {
+            mid2 = (lo + hi) / 2;
+            if(*_array[mid2] == *obj2) {
+                hi = mid2 - 1;
+            } else if(*_array[mid2] < *obj2) {
+                lo = mid2 + 1;
+            }
+        }
+        if(*_array[mid2] < *obj2) mid2++;
+        if(mid2<mid) mid = mid2;
+    }
 
-	return(mid);
+    return(mid);
 }
 
 //=============================================================================
-};	// END of class ArrayPtrs
+};  // END of class ArrayPtrs
 
 }; //namespace
 //=============================================================================
